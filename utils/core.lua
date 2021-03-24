@@ -113,19 +113,11 @@ end
 
 function Public.find_entities_by_last_user(player, surface, filters)
     if type(player) == 'string' or not player then
-        error(
-            "bad argument #1 to '" ..
-                debug.getinfo(1, 'n').name .. "' (number or LuaPlayer expected, got " .. type(player) .. ')',
-            1
-        )
+        error("bad argument #1 to '" .. debug.getinfo(1, 'n').name .. "' (number or LuaPlayer expected, got " .. type(player) .. ')', 1)
         return
     end
     if type(surface) ~= 'table' and type(surface) ~= 'number' then
-        error(
-            "bad argument #2 to '" ..
-                debug.getinfo(1, 'n').name .. "' (number or LuaSurface expected, got " .. type(surface) .. ')',
-            1
-        )
+        error("bad argument #2 to '" .. debug.getinfo(1, 'n').name .. "' (number or LuaSurface expected, got " .. type(surface) .. ')', 1)
         return
     end
     local entities = {}
@@ -232,49 +224,49 @@ end
 
 --- Takes msg and prints it to all players. Also prints to the log and discord
 -- @param msg <string> The message to print
--- @param warning_prefix <string> The name of the module/warning
-function Public.action_warning(warning_prefix, msg)
+-- @param warning_prefixes <string> The name of the module/warning
+function Public.action_warning(warning_prefixes, msg)
     game.print(prefix .. msg, Color.yellow)
-    msg = format('%s %s', warning_prefix, msg)
+    msg = format('%s %s', warning_prefixes, msg)
     print(msg)
     Server.to_discord_bold(msg)
 end
 
 --- Takes msg and prints it to all players. Also prints to the log and discord
 -- @param msg <string> The message to print
--- @param warning_prefix <string> The name of the module/warning
-function Public.action_warning_embed(warning_prefix, msg)
+-- @param warning_prefixes <string> The name of the module/warning
+function Public.action_warning_embed(warning_prefixes, msg)
     game.print(prefix .. msg, Color.yellow)
-    msg = format('%s %s', warning_prefix, msg)
+    msg = format('%s %s', warning_prefixes, msg)
     print(msg)
     Server.to_discord_embed(msg)
 end
 
 --- Takes msg and prints it to the log and discord.
 -- @param msg <string> The message to print
--- @param warning_prefix <string> The name of the module/warning
-function Public.action_to_discord(warning_prefix, msg)
-    msg = format('%s %s', warning_prefix, msg)
+-- @param warning_prefixes <string> The name of the module/warning
+function Public.action_to_discord(warning_prefixes, msg)
+    msg = format('%s %s', warning_prefixes, msg)
     print(msg)
     Server.to_discord_bold(msg)
 end
 
 --- Takes msg and prints it to all players except provided player. Also prints to the log and discord
 -- @param msg <string> The message to print
--- @param warning_prefix <string> The name of the module/warning
+-- @param warning_prefixes <string> The name of the module/warning
 -- @param player <LuaPlayer> the player not to send the message to
-function Public.silent_action_warning(warning_prefix, msg, player)
+function Public.silent_action_warning(warning_prefixes, msg, player)
     Public.print_except(prefix .. msg, player, Color.yellow)
-    msg = format('%s %s', warning_prefix, msg)
+    msg = format('%s %s', warning_prefixes, msg)
     print(msg)
     Server.to_discord_bold(msg)
 end
 
 --- Takes msg and logs it.
 -- @param msg <string> The message to print
--- @param warning_prefix <string> The name of the module/warning
-function Public.log_msg(warning_prefix, msg)
-    msg = format('%s %s', warning_prefix, msg)
+-- @param warning_prefixes <string> The name of the module/warning
+function Public.log_msg(warning_prefixes, msg)
+    msg = format('%s %s', warning_prefixes, msg)
     print(msg)
 end
 

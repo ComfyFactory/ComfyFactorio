@@ -48,7 +48,7 @@ local STD_BASE_CONTROL = 'lua52c+factorio+factorio_control+factorio_defines+fact
 --[Assume Factorio Control stage as default]--
 -------------------------------------------------------------------------------
 std = STD_CONTROL
-globals = {'print', '_DEBUG', '_CHEATS', '_DUMP_ENV', 'ServerCommands', 'Debug', '_LIFECYCLE', '_STAGE', 'get_game_version', 'is_loaded', 'is_game_modded', 'is_mod_loaded', 'require'}
+globals = {'print', '_DEBUG', '_CHEATS', '_DUMP_ENV', 'ServerCommands', 'Debug', '_LIFECYCLE', '_STAGE', 'get_game_version', 'is_loaded', 'is_game_modded', 'is_mod_loaded', 'require', 'comfy_panel_tabs'}
 max_line_length = LINE_LENGTH
 
 not_globals = NOT_GLOBALS
@@ -232,6 +232,7 @@ stds.factorio_control = {
             other_fields = false,
             read_only = true,
             fields = {
+                'set_visible',
                 'draw_line',
                 'draw_text',
                 'draw_circle',
@@ -323,6 +324,7 @@ stds.factorio_control = {
             other_fields = false,
             read_only = false,
             fields = {
+                "disable_tutorial_triggers",
                 "auto_save",
                 "ban_player",
                 "check_consistency",
@@ -617,7 +619,7 @@ stds.stdlib = {
     read_globals = {
         table = {
             fields = {
-                "map", "avg", "count_keys", "sum", "max", "remove", "insert", "invert", "first", "sort", "compare", "maxn", "any", "array_to_dictionary",
+                "mean", "binary_search", "shuffle_table", "map", "avg", "count_keys", "sum", "max", "remove", "insert", "invert", "first", "sort", "compare", "maxn", "any", "array_to_dictionary",
                 "each", "flatten", "keys", "filter", "remove_keys", "flexcopy", "find", "fullcopy", "values", "pack", "deepcopy", "concat", "clear", "min",
                 "is_empty", "merge", "size", "dictionary_merge", "unpack", "last"
             },
@@ -631,7 +633,7 @@ stds.stdlib = {
         },
         math = {
             fields = {
-                "asin", "max", "modf", "midrange_mean", "pow", "ldexp", "maxuint16", "fmod", "round_to", "randomseed", "huge", "harmonic_mean", "tan",
+                "asin", "max", "clamp", "round", "modf", "midrange_mean", "pow", "ldexp", "maxuint16", "fmod", "round_to", "randomseed", "huge", "harmonic_mean", "tan",
                 "maxint32", "quadratic_mean", "pi", "energetic_mean", "minint8", "frexp", "generalized_mean", "rad", "sin", "sinh", "min", "geometric_mean",
                 "atan", "avg", "cosh", "maxint8", "arithmetic_mean", "exp", "sum", "round", "maxuint64", "minint64", "ceil", "maxint64", "atan2", "floor_to",
                 "floor", "log", "maxint16", "minint16", "tanh", "acos", "deg", "cos", "log10", "maxuint8", "abs", "weighted_mean", "random", "maxuint32",
@@ -1069,6 +1071,19 @@ stds.factorio_defines = {
                     },
                     input_action = {
                         fields = {
+                            'build_item',
+                            'change_blueprint_book_record_label',
+                            'change_single_blueprint_record_label',
+                            'clear_selected_blueprint',
+                            'clear_selected_deconstruction_item',
+                            'set_single_blueprint_record_icon',
+                            'set_logistic_trash_filter_item',
+                            'drop_to_blueprint_book',
+                            'open_tutorials_gui',
+                            'upgrade_opened_blueprint',
+                            'create_blueprint_like',
+                            'clear_selected_upgrade_item',
+                            'open_kills_gui',
                             'change_item_description',
                             'fast_entity_transfer',
                             'set_recipe_notifications',

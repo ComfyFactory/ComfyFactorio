@@ -1,3 +1,4 @@
+--luacheck: ignore
 local Difficulty = require 'modules.difficulty_vote'
 
 local difficulties_votes = {
@@ -10,7 +11,7 @@ local difficulties_votes = {
     [7] = {amount_modifier = 2.12, strength_modifier = 2.50, boss_modifier = 1.3}
 }
 
-function get_biter()
+local function get_biter()
     local max_chance = 0
     for k, v in pairs(global.biter_chances) do
         max_chance = max_chance + v
@@ -25,7 +26,7 @@ function get_biter()
     end
 end
 
-function get_worm()
+local function get_worm()
     local max_chance = 0
     for k, v in pairs(global.worm_chances) do
         max_chance = max_chance + v
@@ -40,7 +41,7 @@ function get_worm()
     end
 end
 
-function set_biter_chances(level)
+local function set_biter_chances(level)
     global.biter_chances = {
         ['small-biter'] = 500 - level * 10,
         ['small-spitter'] = 500 - level * 10,
@@ -66,7 +67,7 @@ function set_biter_chances(level)
     end
 end
 
-function set_worm_chances(level)
+local function set_worm_chances(level)
     global.worm_chances = {
         ['small-worm-turret'] = 500 - level * 10,
         ['medium-worm-turret'] = level * 10,
@@ -103,14 +104,12 @@ local function is_boss_stage()
     end
 end
 
-function add_enemies(surface, tiles)
+local function add_enemies(surface, tiles)
     local Diff = Difficulty.get()
     table.shuffle_table(tiles)
 
     if is_boss_stage() then
-        set_biter_chances(
-            math.floor((global.current_level * difficulties_votes[Diff.difficulty_vote_index].strength_modifier) + 15)
-        )
+        set_biter_chances(math.floor((global.current_level * difficulties_votes[Diff.difficulty_vote_index].strength_modifier) + 15))
         local boss_count = math.random(1, math.floor(global.current_level * 0.5) + 1)
         if boss_count > 16 then
             boss_count = 16
@@ -120,11 +119,7 @@ function add_enemies(surface, tiles)
                 local unit = surface.create_entity({name = get_biter(), position = tile.position, force = 'enemy'})
                 unit.ai_settings.allow_destroy_when_commands_fail = false
                 unit.ai_settings.allow_try_return_to_spawner = false
-                add_boss_unit(
-                    unit,
-                    (3 + global.current_level * 0.2) * difficulties_votes[Diff.difficulty_vote_index].boss_modifier,
-                    0.55
-                )
+                add_boss_unit(unit, (3 + global.current_level * 0.2) * difficulties_votes[Diff.difficulty_vote_index].boss_modifier, 0.55)
                 global.alive_boss_enemy_count = global.alive_boss_enemy_count + 1
                 global.alive_boss_enemy_entities[unit.unit_number] = unit
                 global.alive_enemies = global.alive_enemies + 1
@@ -138,8 +133,7 @@ function add_enemies(surface, tiles)
 
     if global.current_level > 2 then
         if math.random(1, 5) == 1 or is_boss_stage() then
-            local evolution =
-                (global.current_level * 2 * difficulties_votes[Diff.difficulty_vote_index].strength_modifier) * 0.01
+            local evolution = (global.current_level * 2 * difficulties_votes[Diff.difficulty_vote_index].strength_modifier) * 0.01
             if evolution > 1 then
                 evolution = 1
             end
@@ -149,11 +143,7 @@ function add_enemies(surface, tiles)
                 count = 5
             end
             for k, tile in pairs(tiles) do
-                if
-                    surface.can_place_entity(
-                        {name = 'biter-spawner', position = tile.position, force = 'enemy_spawners'}
-                    )
-                 then
+                if surface.can_place_entity({name = 'biter-spawner', position = tile.position, force = 'enemy_spawners'}) then
                     surface.create_entity({name = 'biter-spawner', position = tile.position, force = 'enemy_spawners'})
                     global.alive_enemies = global.alive_enemies + 1
                     count = count - 1
@@ -183,9 +173,7 @@ function add_enemies(surface, tiles)
         end
     end
 
-    set_biter_chances(
-        math.floor(global.current_level * difficulties_votes[Diff.difficulty_vote_index].strength_modifier) + 1
-    )
+    set_biter_chances(math.floor(global.current_level * difficulties_votes[Diff.difficulty_vote_index].strength_modifier) + 1)
     local amount = ((global.current_level * 25) / #global.stages) * global.current_stage
     amount = amount * difficulties_votes[Diff.difficulty_vote_index].amount_modifier
     for k, tile in pairs(tiles) do

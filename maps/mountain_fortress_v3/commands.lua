@@ -125,7 +125,7 @@ commands.add_command(
 commands.add_command(
     'disable_biters',
     'Usable only for admins - sets the queue speed of this map!',
-    function(cmd)
+    function()
         local player = game.player
 
         if not player and player.valid then

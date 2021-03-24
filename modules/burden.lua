@@ -54,11 +54,11 @@ local function check_burden(event)
     end
 end
 
-local function on_init(event)
+local function on_init()
     script.on_event(defines.events.on_player_main_inventory_changed, check_burden)
 end
 
-local function on_load(event)
+local function on_load()
     script.on_event(defines.events.on_player_main_inventory_changed, check_burden)
 end
 

@@ -72,15 +72,9 @@ local function enemy_territory(surface, left_top)
                         if surface.can_place_entity({name = 'biter-spawner', force = 'decoratives', position = pos}) then
                             local entity
                             if math_random(1, 4) == 1 then
-                                entity =
-                                    surface.create_entity(
-                                    {name = 'spitter-spawner', force = 'decoratives', position = pos}
-                                )
+                                entity = surface.create_entity({name = 'spitter-spawner', force = 'decoratives', position = pos})
                             else
-                                entity =
-                                    surface.create_entity(
-                                    {name = 'biter-spawner', force = 'decoratives', position = pos}
-                                )
+                                entity = surface.create_entity({name = 'biter-spawner', force = 'decoratives', position = pos})
                             end
                             entity.active = false
                             entity.destructible = false
@@ -143,15 +137,9 @@ local function generate_spawn_area(this, surface)
     surface.create_entity({name = 'electric-beam', position = {665, -10}, source = {665, -10}, target = {601, -127}})
 
     for _, tile in pairs(surface.find_tiles_filtered({name = {'water', 'deepwater'}, area = {{-145, -133}, {32, 59}}})) do
-        local noise =
-            math_abs(
-            simplex_noise(tile.position.x * 0.02, tile.position.y * 0.02, game.surfaces[1].map_gen_settings.seed) * 16
-        )
+        local noise = math_abs(simplex_noise(tile.position.x * 0.02, tile.position.y * 0.02, game.surfaces[1].map_gen_settings.seed) * 16)
         if tile.position.x > -160 + noise then
-            surface.set_tiles(
-                {{name = get_replacement_tile(surface, tile.position), position = {tile.position.x, tile.position.y}}},
-                true
-            )
+            surface.set_tiles({{name = get_replacement_tile(surface, tile.position), position = {tile.position.x, tile.position.y}}}, true)
         end
     end
 
@@ -216,8 +204,7 @@ local function generate_spawn_area(this, surface)
         entity.destroy()
     end
 
-    local turret_pos =
-        surface.find_non_colliding_position('gun-turret', {spawn_position_x, spawn_position_y - 5}, 50, 1)
+    local turret_pos = surface.find_non_colliding_position('gun-turret', {spawn_position_x, spawn_position_y - 5}, 50, 1)
     local turret = surface.create_entity({name = 'gun-turret', position = turret_pos, force = 'player'})
     turret.insert({name = 'firearm-magazine', count = 32})
 
@@ -226,10 +213,7 @@ local function generate_spawn_area(this, surface)
             local market_pos = {x = this.market.position.x + x, y = this.market.position.y + y}
             local distance_to_center = x ^ 2 + y ^ 2
             if distance_to_center > 64 and distance_to_center < 225 then
-                if
-                    math_random(1, 3) == 1 and
-                        surface.can_place_entity({name = 'wooden-chest', position = market_pos, force = 'player'})
-                 then
+                if math_random(1, 3) == 1 and surface.can_place_entity({name = 'wooden-chest', position = market_pos, force = 'player'}) then
                     surface.create_entity({name = 'wooden-chest', position = market_pos, force = 'player'})
                 end
             end
@@ -243,12 +227,10 @@ local function generate_spawn_area(this, surface)
         end
     end
 
-    local character_pos =
-        surface.find_non_colliding_position('character', {spawn_position_x + 1, spawn_position_y}, 50, 1)
+    local character_pos = surface.find_non_colliding_position('character', {spawn_position_x + 1, spawn_position_y}, 50, 1)
     game.forces['player'].set_spawn_position(character_pos, surface)
     for _, player in pairs(game.connected_players) do
-        local spawn_pos =
-            surface.find_non_colliding_position('character', {spawn_position_x + 1, spawn_position_y}, 50, 1)
+        local spawn_pos = surface.find_non_colliding_position('character', {spawn_position_x + 1, spawn_position_y}, 50, 1)
         player.teleport(spawn_pos, surface)
     end
     this.spawn_area_generated = true

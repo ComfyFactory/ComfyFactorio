@@ -78,7 +78,6 @@ Gui.on_click(
             return
         end
 
-        
         local right_panel = data.right_panel
         local selected_header = data.selected_header
         local input_text_box = data.input_text_box

@@ -27,8 +27,7 @@ function Public.show(container)
 
     for key, _ in pairs(global) do
         if not ignore[key] then
-            local header =
-                left_panel.add({type = 'flow'}).add {type = 'label', name = header_name, caption = tostring(key)}
+            local header = left_panel.add({type = 'flow'}).add {type = 'label', name = header_name, caption = tostring(key)}
             Gui.set_data(header, key)
         end
     end
@@ -43,8 +42,7 @@ function Public.show(container)
     input_text_box_style.height = 32
     input_text_box_style.maximal_width = 1000
 
-    local refresh_button =
-        right_top_flow.add {type = 'sprite-button', name = refresh_name, sprite = 'utility/reset', tooltip = 'refresh'}
+    local refresh_button = right_top_flow.add {type = 'sprite-button', name = refresh_name, sprite = 'utility/reset', tooltip = 'refresh'}
     local refresh_button_style = refresh_button.style
     refresh_button_style.width = 32
     refresh_button_style.height = 32

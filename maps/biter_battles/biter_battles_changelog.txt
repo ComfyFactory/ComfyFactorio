@@ -106,7 +106,7 @@ biter attack balls
 more spy fish duration
 added tooltips
 changed print messages
-message on player death 
+message on player death
 
 0.07
 Improved biter searching

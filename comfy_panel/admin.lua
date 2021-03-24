@@ -438,10 +438,10 @@ local create_admin_panel = (function(player, frame)
     line.style.top_margin = 8
     line.style.bottom_margin = 8
 
-    local l = frame.add({type = 'label', caption = 'Global Actions:'})
-    local t = frame.add({type = 'table', column_count = 2})
-    local buttons = {
-        t.add(
+    frame.add({type = 'label', caption = 'Global Actions:'})
+    local actionTable = frame.add({type = 'table', column_count = 2})
+    local bottomButtons = {
+        actionTable.add(
             {
                 type = 'button',
                 caption = 'Destroy global speakers',
@@ -449,7 +449,7 @@ local create_admin_panel = (function(player, frame)
                 tooltip = 'Destroys all speakers that are set to play sounds globally.'
             }
         ),
-        t.add(
+        actionTable.add(
             {
                 type = 'button',
                 caption = 'Delete blueprints',
@@ -459,15 +459,15 @@ local create_admin_panel = (function(player, frame)
         )
         ---	t.add({type = "button", caption = "Cancel all deconstruction orders", name = "remove_all_deconstruction_orders"})
     }
-    for _, button in pairs(buttons) do
+    for _, button in pairs(bottomButtons) do
         button.style.font = 'default-bold'
         button.style.font_color = {r = 0.98, g = 0.66, b = 0.22}
         button.style.minimal_width = 80
     end
 
-    local line = frame.add {type = 'line'}
-    line.style.top_margin = 8
-    line.style.bottom_margin = 8
+    local bottomLine = frame.add {type = 'line'}
+    bottomLine.style.top_margin = 8
+    bottomLine.style.bottom_margin = 8
 
     local histories = {}
     if antigrief.capsule_history then
@@ -498,9 +498,9 @@ local create_admin_panel = (function(player, frame)
     local search_text = search_table.add({type = 'textfield'})
     search_text.style.width = 140
 
-    local l = frame.add({type = 'label', caption = '----------------------------------------------'})
-    l.style.font = 'default-listbox'
-    l.style.font_color = {r = 0.98, g = 0.66, b = 0.22}
+    local bottomLine2 = frame.add({type = 'label', caption = '----------------------------------------------'})
+    bottomLine2.style.font = 'default-listbox'
+    bottomLine2.style.font_color = {r = 0.98, g = 0.66, b = 0.22}
 
     local selected_index_2 = 1
     if global.admin_panel_selected_history_index then
@@ -588,7 +588,7 @@ local function get_position_from_string(str)
     end
     local x = string.sub(str, x_pos, x_pos + a)
 
-    local a = 1
+    local a1 = 1
     for i = 1, string.len(str), 1 do
         local s = string.sub(str, y_pos + i, y_pos + i)
         if not s then
@@ -597,10 +597,10 @@ local function get_position_from_string(str)
         if string.byte(s) == 32 then
             break
         end
-        a = a + 1
+        a1 = a1 + 1
     end
 
-    local y = string.sub(str, y_pos, y_pos + a)
+    local y = string.sub(str, y_pos, y_pos + a1)
     x = tonumber(x)
     y = tonumber(y)
     local position = {x = x, y = y}

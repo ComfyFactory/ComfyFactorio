@@ -430,58 +430,58 @@ local function add_global_stats(frame)
 
     local t = frame.add {type = 'table', column_count = 6}
 
-    local l = t.add {type = 'label', caption = 'Rockets: '}
-    l.style.font = 'default-game'
-    l.style.font_color = {r = 175, g = 75, b = 255}
-    l.style.minimal_width = 100
+    local rocket_label = t.add {type = 'label', caption = 'Rockets: '}
+    rocket_label.style.font = 'default-game'
+    rocket_label.style.font_color = {r = 175, g = 75, b = 255}
+    rocket_label.style.minimal_width = 100
 
-    local l = t.add {type = 'label', caption = score.rockets_launched}
-    l.style.font = 'heading-2'
-    l.style.font_color = {r = 0.9, g = 0.9, b = 0.9}
-    l.style.minimal_width = 100
+    local launched_rockets_label = t.add {type = 'label', caption = score.rockets_launched}
+    launched_rockets_label.style.font = 'heading-2'
+    launched_rockets_label.style.font_color = {r = 0.9, g = 0.9, b = 0.9}
+    launched_rockets_label.style.minimal_width = 100
 
-    local l = t.add {type = 'label', caption = 'Dead bugs: '}
-    l.style.font = 'default-game'
-    l.style.font_color = {r = 0.90, g = 0.3, b = 0.3}
-    l.style.minimal_width = 100
+    local dead_bugs_label = t.add {type = 'label', caption = 'Dead bugs: '}
+    dead_bugs_label.style.font = 'default-game'
+    dead_bugs_label.style.font_color = {r = 0.90, g = 0.3, b = 0.3}
+    dead_bugs_label.style.minimal_width = 100
 
-    local l = t.add {type = 'label', caption = score.biters_killed}
-    l.style.font = 'heading-2'
-    l.style.font_color = {r = 0.9, g = 0.9, b = 0.9}
-    l.style.minimal_width = 100
+    local biters_killed_label = t.add {type = 'label', caption = score.biters_killed}
+    biters_killed_label.style.font = 'heading-2'
+    biters_killed_label.style.font_color = {r = 0.9, g = 0.9, b = 0.9}
+    biters_killed_label.style.minimal_width = 100
 
-    local l = t.add {type = 'label', caption = 'Breached zones: '}
-    l.style.font = 'default-game'
-    l.style.font_color = {r = 0, g = 128, b = 0}
-    l.style.minimal_width = 100
+    local breached_zones_label = t.add {type = 'label', caption = 'Breached zones: '}
+    breached_zones_label.style.font = 'default-game'
+    breached_zones_label.style.font_color = {r = 0, g = 128, b = 0}
+    breached_zones_label.style.minimal_width = 100
     local zone = score.breached_zone - 1
     if score.breached_zone == 0 then
         zone = 0
     end
-    local l = t.add {type = 'label', caption = zone}
-    l.style.font = 'heading-2'
-    l.style.font_color = {r = 0.9, g = 0.9, b = 0.9}
-    l.style.minimal_width = 100
+    local zone_label = t.add {type = 'label', caption = zone}
+    zone_label.style.font = 'heading-2'
+    zone_label.style.font_color = {r = 0.9, g = 0.9, b = 0.9}
+    zone_label.style.minimal_width = 100
 
-    local l = t.add {type = 'label', caption = 'Highest wave: '}
-    l.style.font = 'default-game'
-    l.style.font_color = {r = 128, g = 128, b = 0.9}
-    l.style.minimal_width = 100
+    local highest_wave_label = t.add {type = 'label', caption = 'Highest wave: '}
+    highest_wave_label.style.font = 'default-game'
+    highest_wave_label.style.font_color = {r = 128, g = 128, b = 0.9}
+    highest_wave_label.style.minimal_width = 100
 
-    local l = t.add {type = 'label', caption = score.wave_number}
-    l.style.font = 'heading-2'
-    l.style.font_color = {r = 0.9, g = 0.9, b = 0.9}
-    l.style.minimal_width = 100
+    local wave_number_label = t.add {type = 'label', caption = score.wave_number}
+    wave_number_label.style.font = 'heading-2'
+    wave_number_label.style.font_color = {r = 0.9, g = 0.9, b = 0.9}
+    wave_number_label.style.minimal_width = 100
 
-    local l = t.add {type = 'label', caption = 'Last run total time: '}
-    l.style.font = 'default-game'
-    l.style.font_color = {r = 0.9, g = 128, b = 128}
-    l.style.minimal_width = 100
+    local last_total_label = t.add {type = 'label', caption = 'Last run total time: '}
+    last_total_label.style.font = 'default-game'
+    last_total_label.style.font_color = {r = 0.9, g = 128, b = 128}
+    last_total_label.style.minimal_width = 100
 
-    local l = t.add {type = 'label', caption = Core.format_time(score.total_time)}
-    l.style.font = 'heading-2'
-    l.style.font_color = {r = 0.9, g = 0.9, b = 0.9}
-    l.style.minimal_width = 100
+    local format_time_label = t.add {type = 'label', caption = Core.format_time(score.total_time)}
+    format_time_label.style.font = 'heading-2'
+    format_time_label.style.font_color = {r = 0.9, g = 0.9, b = 0.9}
+    format_time_label.style.minimal_width = 100
 end
 
 local show_score = (function(player, frame)
@@ -560,7 +560,7 @@ local show_score = (function(player, frame)
         }
     )
     scroll_pane.style.maximal_height = 400
-    local t = scroll_pane.add {type = 'table', column_count = 5}
+    t = scroll_pane.add {type = 'table', column_count = 5}
 
     -- Score entries
     for _, entry in pairs(score_list) do
@@ -585,7 +585,7 @@ local show_score = (function(player, frame)
         local b = entry.built_entities > 0 and entry.built_entities or 'Not MVP'
         local m = entry.mined_entities > 0 and entry.mined_entities or 'Not MVP'
 
-        local line = {
+        line = {
             {caption = entry.name, color = special_color},
             {caption = tostring(k)},
             {caption = tostring(d)},

@@ -98,8 +98,7 @@ function Public.reset_game()
     if not this.active_surface_index then
         this.active_surface_index = game.create_surface('crab_defender', map_gen_settings).index
     else
-        this.active_surface_index =
-            Reset.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings, starting_items).index
+        this.active_surface_index = Reset.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings, starting_items).index
     end
 
     local surface = game.surfaces[this.active_surface_index]
@@ -546,8 +545,7 @@ local send_unit_group = function(unit_group)
     local commands = {}
     local this = FDT.get()
     for x = unit_group.position.x, this.market.position.x, -64 do
-        local destination =
-            unit_group.surface.find_non_colliding_position('stone-wall', {x = x, y = unit_group.position.y}, 32, 4)
+        local destination = unit_group.surface.find_non_colliding_position('stone-wall', {x = x, y = unit_group.position.y}, 32, 4)
         if destination then
             commands[#commands + 1] = {
                 type = defines.command.attack_area,
@@ -587,10 +585,7 @@ local spawn_boss_units = function(surface)
     local Diff = Difficulty.get()
     local this = FDT.get()
     if this.wave_count <= 2000 then
-        game.print(
-            {'crab_defender.boss_message', this.wave_count, {'crab_defender.' .. this.wave_count}},
-            {r = 0.8, g = 0.1, b = 0.1}
-        )
+        game.print({'crab_defender.boss_message', this.wave_count, {'crab_defender.' .. this.wave_count}}, {r = 0.8, g = 0.1, b = 0.1})
     else
         game.print({'crab_defender.boss_message', this.wave_count}, {r = 0.8, g = 0.1, b = 0.1})
     end
@@ -877,15 +872,13 @@ local is_game_lost = function()
                     t.add(
                     {
                         type = 'label',
-                        caption = math.floor(((this.market_age / 60) / 60) / 60) ..
-                            ' hours ' .. math.ceil((this.market_age % 216000 / 60) / 60) .. ' minutes'
+                        caption = math.floor(((this.market_age / 60) / 60) / 60) .. ' hours ' .. math.ceil((this.market_age % 216000 / 60) / 60) .. ' minutes'
                     }
                 )
                 market_age_label.style.font = 'default-bold'
                 market_age_label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
             else
-                market_age_label =
-                    t.add({type = 'label', caption = math.ceil((this.market_age % 216000 / 60) / 60) .. ' minutes'})
+                market_age_label = t.add({type = 'label', caption = math.ceil((this.market_age % 216000 / 60) / 60) .. ' minutes'})
                 market_age_label.style.font = 'default-bold'
                 market_age_label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
             end
@@ -897,8 +890,7 @@ local is_game_lost = function()
             mvp_defender_label.style.font = 'default-listbox'
             mvp_defender_label.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
 
-            local mvp_killscore_label =
-                t.add({type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score})
+            local mvp_killscore_label = t.add({type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score})
             mvp_killscore_label.style.font = 'default-bold'
             mvp_killscore_label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 
@@ -920,8 +912,7 @@ local is_game_lost = function()
             mvp_deaths_label.style.font = 'default-listbox'
             mvp_deaths_label.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
 
-            local mvp_deaths_name_label =
-                t.add({type = 'label', caption = mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times'})
+            local mvp_deaths_name_label = t.add({type = 'label', caption = mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times'})
             mvp_deaths_name_label.style.font = 'default-bold'
             mvp_deaths_name_label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 
@@ -953,10 +944,7 @@ local is_game_lost = function()
 end
 
 local damage_entities_in_radius = function(surface, position, radius, damage)
-    local entities_to_damage =
-        surface.find_entities_filtered(
-        {area = {{position.x - radius, position.y - radius}, {position.x + radius, position.y + radius}}}
-    )
+    local entities_to_damage = surface.find_entities_filtered({area = {{position.x - radius, position.y - radius}, {position.x + radius, position.y + radius}}})
     for _, entity in pairs(entities_to_damage) do
         if entity.valid then
             if entity.health and entity.name ~= 'land-mine' then
@@ -982,8 +970,8 @@ local market_kill_visuals = function()
         return
     end
 
-    local is_branch_18 = sub(branch_version, 3, 4)
-    local get_active_version = sub(game.active_mods.base, 3, 4)
+    -- local is_branch_18 = sub(branch_version, 3, 4)
+    -- local get_active_version = sub(game.active_mods.base, 3, 4)
 
     if not surface or not surface.valid then
         return
@@ -993,8 +981,8 @@ local market_kill_visuals = function()
         return
     end
 
-    local m = 32
-    local m2 = m * 0.005
+    -- local m = 32
+    -- local m2 = m * 0.005
     -- if get_active_version >= is_branch_18 then
     --     for i = 1, 1024, 1 do
     --         surface.create_particle(
@@ -1089,12 +1077,7 @@ local on_entity_died = function(event)
                 for _, visual in pairs(splash.visuals) do
                     surface.create_entity({name = visual, position = event.entity.position})
                 end
-                damage_entities_in_radius(
-                    surface,
-                    event.entity.position,
-                    splash.radius,
-                    math_random(splash.damage_min, splash.damage_max)
-                )
+                damage_entities_in_radius(surface, event.entity.position, splash.radius, math_random(splash.damage_min, splash.damage_max))
                 return
             end
         end
@@ -1191,9 +1174,7 @@ local on_built_entity = function(event)
                 {
                     name = 'flying-text',
                     position = entity.position,
-                    text = this.entity_limits[entity.name].placed ..
-                        ' / ' ..
-                            this.entity_limits[entity.name].limit .. ' ' .. this.entity_limits[entity.name].str .. 's',
+                    text = this.entity_limits[entity.name].placed .. ' / ' .. this.entity_limits[entity.name].limit .. ' ' .. this.entity_limits[entity.name].str .. 's',
                     color = {r = 0.98, g = 0.66, b = 0.22}
                 }
             )
@@ -1212,8 +1193,7 @@ local on_built_entity = function(event)
             if get_score then
                 if get_score[player.force.name] then
                     if get_score[player.force.name].players[player.name] then
-                        get_score[player.force.name].players[player.name].built_entities =
-                            get_score[player.force.name].players[player.name].built_entities - 1
+                        get_score[player.force.name].players[player.name].built_entities = get_score[player.force.name].players[player.name].built_entities - 1
                     end
                 end
             end
@@ -1249,9 +1229,7 @@ local on_robot_built_entity = function(event)
                 {
                     name = 'flying-text',
                     position = entity.position,
-                    text = this.entity_limits[entity.name].placed ..
-                        ' / ' ..
-                            this.entity_limits[entity.name].limit .. ' ' .. this.entity_limits[entity.name].str .. 's',
+                    text = this.entity_limits[entity.name].placed .. ' / ' .. this.entity_limits[entity.name].limit .. ' ' .. this.entity_limits[entity.name].str .. 's',
                     color = {r = 0.98, g = 0.66, b = 0.22}
                 }
             )
@@ -1401,10 +1379,7 @@ local has_the_game_ended = function()
         if this.game_restart_timer % 1800 == 0 then
             if this.game_restart_timer > 0 then
                 this.game_reset = true
-                game.print(
-                    'Game will ' .. cause_msg .. ' in ' .. this.game_restart_timer / 60 .. ' seconds!',
-                    {r = 0.22, g = 0.88, b = 0.22}
-                )
+                game.print('Game will ' .. cause_msg .. ' in ' .. this.game_restart_timer / 60 .. ' seconds!', {r = 0.22, g = 0.88, b = 0.22})
             end
             if this.soft_reset and this.game_restart_timer == 0 then
                 this.game_reset_tick = nil

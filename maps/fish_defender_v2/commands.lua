@@ -95,17 +95,14 @@ commands.add_command(
     'stop_generate_map',
     'Usable only for admins - controls the scenario!',
     function()
-        local p
         local player = game.player
 
-        if not player or not player.valid then
-            p = log
-        else
-            p = player.print
+        if player and player.valid then
             if not player.admin then
                 return
             end
         end
+
         local stop_generating_map = FDT.get('stop_generating_map')
         if not stop_generating_map then
             FDT.set('stop_generating_map', true)

@@ -2,8 +2,9 @@ local Queue = {}
 
 function Queue.new()
     local queue = {
-    _head = 1,
-    _tail = 0}
+        _head = 1,
+        _tail = 0
+    }
     return queue
 end
 
@@ -24,7 +25,7 @@ function Queue.push_to_end(queue, element)
     queue._tail = index
 end
 
-function Queue.empty (queue)
+function Queue.empty(queue)
     return queue._head > queue._tail
 end
 

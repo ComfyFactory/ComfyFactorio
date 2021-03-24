@@ -17,27 +17,27 @@ Global.register(
 Public.level_depth = 512
 Public.level_width = 512
 function Public.reset_table()
--- @start
+    -- @start
     -- these 3 are in case of stop/start/reloading the instance
-    this.biter_dam=0
-    this.cap=2
-     this.biter_health=0
-     this.change_dist=false
-     this.spider_health=0
-    this.arty=0
+    this.biter_dam = 0
+    this.cap = 2
+    this.biter_health = 0
+    this.change_dist = false
+    this.spider_health = 0
+    this.arty = 0
     this.health = 0
     this.flame = 0
     this.roll = 0
-	this.pass = false
-  this.single = true
-  this.science = 0
-  this.number = 0
-  this.first = true
+    this.pass = false
+    this.single = true
+    this.science = 0
+    this.number = 0
+    this.first = true
     this.times = 1
     this.change = false
-	this.pos = {x=0,y=0}
-	this.last = 0
-	this.rock = nil
+    this.pos = {x = 0, y = 0}
+    this.last = 0
+    this.rock = nil
     this.soft_reset = true
     this.restart = false
     this.shutdown = false
@@ -160,7 +160,6 @@ function Public.reset_table()
     for _, player in pairs(this.players) do
         player.died = false
     end
-
 end
 function Public.get(key)
     if key then

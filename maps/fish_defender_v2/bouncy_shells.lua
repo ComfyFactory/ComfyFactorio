@@ -25,11 +25,7 @@ local function bounce(surface, position, ammo)
         return
     end
     local valid_entities = {}
-    for _, e in pairs(
-        surface.find_entities_filtered(
-            {area = {{position.x - radius, position.y - radius}, {position.x + radius, position.y + radius}}}
-        )
-    ) do
+    for _, e in pairs(surface.find_entities_filtered({area = {{position.x - radius, position.y - radius}, {position.x + radius, position.y + radius}}})) do
         if e.health then
             if e.force.name ~= 'player' then
                 --local distance_from_center = math_sqrt((e.position.x - position.x) ^ 2 + (e.position.y - position.y) ^ 2)

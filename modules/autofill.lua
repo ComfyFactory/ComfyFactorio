@@ -356,13 +356,7 @@ local function auto_insert_into_turret(player, turret)
         return
     end
 
-    local ret =
-        move_multiple(
-        inventory,
-        turret,
-        {'artillery-shell', 'uranium-rounds-magazine', 'piercing-rounds-magazine', 'firearm-magazine'},
-        autofill_amount
-    )
+    local ret = move_multiple(inventory, turret, {'artillery-shell', 'uranium-rounds-magazine', 'piercing-rounds-magazine', 'firearm-magazine'}, autofill_amount)
 
     if (ret > 1) then
         show_text('[Autofill] Inserted ' .. ret .. '!', turret.position, Color.info, player.surface)
@@ -384,21 +378,11 @@ local function auto_insert_into_vehicle(player, vehicle)
     end
 
     if ((vehicle.name == 'car') or (vehicle.name == 'tank')) then
-        move_multiple(
-            inventory,
-            vehicle,
-            {'uranium-rounds-magazine', 'piercing-rounds-magazine', 'firearm-magazine'},
-            autofill_amount
-        )
+        move_multiple(inventory, vehicle, {'uranium-rounds-magazine', 'piercing-rounds-magazine', 'firearm-magazine'}, autofill_amount)
     end
 
     if (vehicle.name == 'tank') then
-        move_multiple(
-            inventory,
-            vehicle,
-            {'explosive-uranium-cannon-shell', 'uranium-cannon-shell', 'explosive-cannon-shell', 'cannon-shell'},
-            autofill_amount
-        )
+        move_multiple(inventory, vehicle, {'explosive-uranium-cannon-shell', 'uranium-cannon-shell', 'explosive-cannon-shell', 'cannon-shell'}, autofill_amount)
     end
 end
 

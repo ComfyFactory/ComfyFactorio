@@ -291,15 +291,6 @@ local function dot2(g, x, y)
     return x * g[1] + y * g[2]
 end
 
-local function dot(g, ...)
-    local v = {...}
-    local sum = 0
-    for i = 1, #v do
-        sum = sum + v[i] * g[i]
-    end
-    return sum
-end
-
 local F2 = 0.5 * (math.sqrt(3.0) - 1.0)
 local G2 = (3.0 - math.sqrt(3.0)) / 6.0
 
@@ -326,7 +317,7 @@ function Simplex.d2(xin, yin, seed)
         i1 = 0
         j1 = 1
     end
-     -- upper triangle, YX order: (0,0)->(0,1)->(1,1)
+    -- upper triangle, YX order: (0,0)->(0,1)->(1,1)
     -- A step of (1,0) in (i,j) means a step of (1-c,-c) in (x,y), and
     -- a step of (0,1) in (i,j) means a step of (-c,1-c) in (x,y), where
     -- c = (3-sqrt(3))/6

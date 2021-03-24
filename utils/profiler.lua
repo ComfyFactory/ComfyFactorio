@@ -75,6 +75,7 @@ commands.add_command('stopProfiler', 'Stops profiling', stopCommand)
 --	assert_raw(expr, ...)
 --end
 local error_raw = error
+--luacheck: ignore error
 function error(...)
     Profiler.Stop(false, 'Error raised')
     error_raw(...)
@@ -191,8 +192,8 @@ local function DumpTree(averageMs)
         end
         table_sort(sort, sort_Call)
 
-        for i = 1, #sort do
-            local call = sort[i]
+        for ii = 1, #sort do
+            local call = sort[ii]
 
             if line >= 19 then --Localised string can only have up to 20 parameters
                 local newStr = {''} --So nest them!

@@ -14,22 +14,22 @@ Global.register(
 
 function Public.reset_table()
     for k, _ in pairs(townytable) do
-      townytable[k] = nil
+        townytable[k] = nil
     end
-	townytable.requests = {}
-  townytable.request_cooldowns = {}
-	townytable.town_centers = {}
-	townytable.cooldowns = {}
-	townytable.size_of_town_centers = 0
-	townytable.swarms = {}
-	townytable.town_buttons = {}
+    townytable.requests = {}
+    townytable.request_cooldowns = {}
+    townytable.town_centers = {}
+    townytable.cooldowns = {}
+    townytable.size_of_town_centers = 0
+    townytable.swarms = {}
+    townytable.town_buttons = {}
 end
 
 function Public.get_table()
     return townytable
 end
 
-local on_init = function ()
+local on_init = function()
     Public.reset_table()
 end
 

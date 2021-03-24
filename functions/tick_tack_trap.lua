@@ -28,7 +28,7 @@ local kaboom_weights = {
 
 local kabooms = {}
 for _, t in pairs(kaboom_weights) do
-    for x = 1, t.chance, 1 do
+    for _ = 1, t.chance, 1 do
         table.insert(kabooms, t.name)
     end
 end
@@ -66,8 +66,7 @@ local function create_kaboom(surface, position, name)
                 color = {r = 0.8, g = 0.0, b = 0.0}
             }
         )
-        local nearest_player_unit =
-            surface.find_nearest_enemy({position = position, max_distance = 128, force = 'enemy'})
+        local nearest_player_unit = surface.find_nearest_enemy({position = position, max_distance = 128, force = 'enemy'})
         if nearest_player_unit then
             target = nearest_player_unit.position
         end

@@ -727,11 +727,11 @@ local function get_main_command(group)
         }
         if obstacles then
             shuffle_distance(obstacles, old_position)
-            for i = 1, #obstacles, 1 do
-                if obstacles[i].valid then
+            for ii = 1, #obstacles, 1 do
+                if obstacles[ii].valid then
                     commands[#commands + 1] = {
                         type = defines.command.attack,
-                        target = obstacles[i],
+                        target = obstacles[ii],
                         distraction = defines.distraction.by_anything
                     }
                 end

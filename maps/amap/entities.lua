@@ -1,3 +1,4 @@
+--luacheck: ignore
 require 'modules.rocks_broken_paint_tiles'
 
 local Event = require 'utils.event'
@@ -12,12 +13,10 @@ local Callbacks = require 'maps.amap.functions'
 
 local Locomotive = require 'maps.amap.locomotive'
 
-
 local Alert = require 'utils.alert'
 local Task = require 'utils.task'
 local Score = require 'comfy_panel.score'
 local Token = require 'utils.token'
-
 
 -- tables
 local WPT = require 'maps.amap.table'

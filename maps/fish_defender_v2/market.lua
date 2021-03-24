@@ -171,16 +171,12 @@ local function slot_upgrade(player, offer_index)
 
     local gain = 1
     if offer_index == 5 then
-        price =
-            math.ceil(
-            (entity_limits[slot_upgrade_offers[offer_index][1]].limit / 3) * entity_limits[slot_upgrade_offers[offer_index][1]].slot_price
-        )
+        price = math.ceil((entity_limits[slot_upgrade_offers[offer_index][1]].limit / 3) * entity_limits[slot_upgrade_offers[offer_index][1]].slot_price)
         gain = 3
     end
 
     if slot_upgrade_offers[offer_index][1] == 'flamethrower-turret' then
-        price =
-            (entity_limits[slot_upgrade_offers[offer_index][1]].limit + 1) * entity_limits[slot_upgrade_offers[offer_index][1]].slot_price
+        price = (entity_limits[slot_upgrade_offers[offer_index][1]].limit + 1) * entity_limits[slot_upgrade_offers[offer_index][1]].slot_price
     end
 
     local coins_removed = player.remove_item({name = 'coin', count = price})
@@ -193,10 +189,7 @@ local function slot_upgrade(player, offer_index)
     end
 
     entity_limits[slot_upgrade_offers[offer_index][1]].limit = entity_limits[slot_upgrade_offers[offer_index][1]].limit + gain
-    game.print(
-        player.name .. ' has bought a ' .. slot_upgrade_offers[offer_index][2] .. ' slot for ' .. price .. ' coins!',
-        {r = 0.22, g = 0.77, b = 0.44}
-    )
+    game.print(player.name .. ' has bought a ' .. slot_upgrade_offers[offer_index][2] .. ' slot for ' .. price .. ' coins!', {r = 0.22, g = 0.77, b = 0.44})
 
     refresh_market_offers()
 end

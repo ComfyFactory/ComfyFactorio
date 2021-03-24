@@ -1,6 +1,6 @@
 -- trees get randomly hit by lightning strikes --  mewmew
 
-local event = require 'utils.event'
+local Event = require 'utils.event'
 local Difficulty = require 'modules.difficulty_vote'
 local math_random = math.random
 
@@ -74,7 +74,7 @@ local function create_particles(surface, name, position, amount)
 end
 
 local r = 128
-local function get_random_area(surface)
+local function get_random_area()
     local p = game.players[math_random(1, #game.players)].position
     if not p then
         return
@@ -96,7 +96,7 @@ end
 
 local function tick()
     local Diff = Difficulty.get()
-    local r = 48
+    r = 48
     if Diff.difficulty_vote_index then
         r = difficulties_votes[Diff.difficulty_vote_index]
     end
@@ -104,12 +104,11 @@ local function tick()
         return
     end
     local surface = game.players[1].surface
-    for a = 1, 8, 1 do
+    for _ = 1, 8, 1 do
         if kill_random_tree(surface) then
             return
         end
     end
 end
 
-event.on_nth_tick(60, tick)
-event.add(defines.events.on_entity_damaged, on_entity_damaged)
+Event.on_nth_tick(60, tick)

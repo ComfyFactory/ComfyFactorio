@@ -71,7 +71,7 @@ local function charge(player)
     end
 end
 
-local function on_player_joined_game(event)
+local function on_player_joined_game()
     draw_charging_gui()
 end
 

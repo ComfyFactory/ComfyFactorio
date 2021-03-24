@@ -169,20 +169,18 @@ end
 
 --- Returns a table with % chance values for each item of a weighted_table
 -- @param weighted_table <table> of tables with items and their weights
--- @param item_index <number> of the index of items, defaults to 1
 -- @param weight_index <number> of the index of the weights, defaults to 2
-function table.get_random_weighted_chances(weighted_table, item_index, weight_index)
+function table.get_random_weighted_chances(weighted_table, weight_index)
     local total_weight = 0
-    item_index = item_index or 1
     weight_index = weight_index or 2
     for _, v in pairs(weighted_table) do
         total_weight = total_weight + v[weight_index]
     end
-	local chance_table = {}
-	for k, v in pairs(weighted_table) do
+    local chance_table = {}
+    for k, v in pairs(weighted_table) do
         chance_table[k] = v[weight_index] / total_weight
     end
-	return chance_table
+    return chance_table
 end
 
 --- Creates a fisher-yates shuffle of a sequential number-indexed table

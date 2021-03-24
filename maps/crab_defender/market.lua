@@ -43,12 +43,10 @@ local function refresh_market_offers()
     local str1 = 'Gun Turret Slot for ' .. tostring(this.entity_limits['gun-turret'].limit * this.entity_limits['gun-turret'].slot_price)
     str1 = str1 .. ' Coins.'
 
-    local str2 =
-        'Laser Turret Slot for ' .. tostring(this.entity_limits['laser-turret'].limit * this.entity_limits['laser-turret'].slot_price)
+    local str2 = 'Laser Turret Slot for ' .. tostring(this.entity_limits['laser-turret'].limit * this.entity_limits['laser-turret'].slot_price)
     str2 = str2 .. ' Coins.'
 
-    local str3 =
-        'Artillery Slot for ' .. tostring(this.entity_limits['artillery-turret'].limit * this.entity_limits['artillery-turret'].slot_price)
+    local str3 = 'Artillery Slot for ' .. tostring(this.entity_limits['artillery-turret'].limit * this.entity_limits['artillery-turret'].slot_price)
     str3 = str3 .. ' Coins.'
 
     local current_limit = 1
@@ -58,9 +56,7 @@ local function refresh_market_offers()
     local str4 = 'Flamethrower Turret Slot for ' .. tostring(current_limit * this.entity_limits['flamethrower-turret'].slot_price)
     str4 = str4 .. ' Coins.'
 
-    local str5 =
-        'Landmine Slot for ' ..
-        tostring(math.ceil((this.entity_limits['land-mine'].limit / 3) * this.entity_limits['land-mine'].slot_price))
+    local str5 = 'Landmine Slot for ' .. tostring(math.ceil((this.entity_limits['land-mine'].limit / 3) * this.entity_limits['land-mine'].slot_price))
     str5 = str5 .. ' Coins.'
 
     local market_items = {
@@ -172,23 +168,16 @@ end
 
 local function slot_upgrade(player, offer_index)
     local this = FDT.get()
-    local price =
-        this.entity_limits[slot_upgrade_offers[offer_index][1]].limit * this.entity_limits[slot_upgrade_offers[offer_index][1]].slot_price
+    local price = this.entity_limits[slot_upgrade_offers[offer_index][1]].limit * this.entity_limits[slot_upgrade_offers[offer_index][1]].slot_price
 
     local gain = 1
     if offer_index == 5 then
-        price =
-            math.ceil(
-            (this.entity_limits[slot_upgrade_offers[offer_index][1]].limit / 3) *
-                this.entity_limits[slot_upgrade_offers[offer_index][1]].slot_price
-        )
+        price = math.ceil((this.entity_limits[slot_upgrade_offers[offer_index][1]].limit / 3) * this.entity_limits[slot_upgrade_offers[offer_index][1]].slot_price)
         gain = 3
     end
 
     if slot_upgrade_offers[offer_index][1] == 'flamethrower-turret' then
-        price =
-            (this.entity_limits[slot_upgrade_offers[offer_index][1]].limit + 1) *
-            this.entity_limits[slot_upgrade_offers[offer_index][1]].slot_price
+        price = (this.entity_limits[slot_upgrade_offers[offer_index][1]].limit + 1) * this.entity_limits[slot_upgrade_offers[offer_index][1]].slot_price
     end
 
     local coins_removed = player.remove_item({name = 'coin', count = price})
@@ -201,10 +190,7 @@ local function slot_upgrade(player, offer_index)
     end
 
     this.entity_limits[slot_upgrade_offers[offer_index][1]].limit = this.entity_limits[slot_upgrade_offers[offer_index][1]].limit + gain
-    game.print(
-        player.name .. ' has bought a ' .. slot_upgrade_offers[offer_index][2] .. ' slot for ' .. price .. ' coins!',
-        {r = 0.22, g = 0.77, b = 0.44}
-    )
+    game.print(player.name .. ' has bought a ' .. slot_upgrade_offers[offer_index][2] .. ' slot for ' .. price .. ' coins!', {r = 0.22, g = 0.77, b = 0.44})
     if math.random(1, 2) == 1 then
         Server.to_discord_bold(
             table.concat {

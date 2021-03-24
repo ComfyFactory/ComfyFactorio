@@ -109,17 +109,13 @@ commands.add_command(
     function(cmd)
         local trusted = session.get_trusted_table()
         local player = game.player
-        local p
 
         if player then
             if player ~= nil then
-                p = player.print
                 if not player.admin then
-                    p("You're not admin!", {r = 1, g = 0.5, b = 0.1})
+                    player.print("You're not admin!", {r = 1, g = 0.5, b = 0.1})
                     return
                 end
-            else
-                p = log
             end
 
             if cmd.parameter == nil then

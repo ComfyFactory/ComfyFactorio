@@ -1,4 +1,5 @@
 local Module = {}
+-- luacheck: ignore math
 
 Module.distance = function(pos1, pos2)
     local dx = pos2.x - pos1.x
@@ -7,7 +8,7 @@ Module.distance = function(pos1, pos2)
 end
 
 -- rounds number (num) to certain number of decimal places (idp)
-math.round = function(num, idp)
+function math.round(num, idp)
     local mult = 10 ^ (idp or 0)
     return math.floor(num * mult + 0.5) / mult
 end
@@ -53,28 +54,17 @@ Module.cast_bool = function(var)
     end
 end
 
-Module.find_entities_by_last_user =
-    function(player, surface, filters)
+Module.find_entities_by_last_user = function(player, surface, filters)
     if type(player) == 'string' or not player then
-        error(
-            "bad argument #1 to '" ..
-                debug.getinfo(1, 'n').name .. "' (number or LuaPlayer expected, got " .. type(player) .. ')',
-            1
-        )
+        error("bad argument #1 to '" .. debug.getinfo(1, 'n').name .. "' (number or LuaPlayer expected, got " .. type(player) .. ')', 1)
         return
     end
     if type(surface) ~= 'table' and type(surface) ~= 'number' then
-        error(
-            "bad argument #2 to '" ..
-                debug.getinfo(1, 'n').name .. "' (number or LuaSurface expected, got " .. type(surface) .. ')',
-            1
-        )
+        error("bad argument #2 to '" .. debug.getinfo(1, 'n').name .. "' (number or LuaSurface expected, got " .. type(surface) .. ')', 1)
         return
     end
     local entities = {}
-    local surface = surface
-    local player = player
-    local filters = filters or {}
+    filters = filters or {}
     if type(surface) == 'number' then
         surface = game.surfaces[surface]
     end
@@ -97,7 +87,6 @@ Module.ternary = function(c, t, f)
         return f
     end
 end
-
 
 local minutes_to_ticks = 60 * 60
 local hours_to_ticks = 60 * 60 * 60

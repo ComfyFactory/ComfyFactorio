@@ -29,7 +29,7 @@ local special_descriptions = {
     ['laser-pointer'] = 'Unlock Laser Pointer - The biters are on a quest to slay the red (artillery) dot.'
 }
 
-function place_fish_market(surface, position)
+local function place_fish_market(surface, position)
     local market = surface.create_entity({name = 'market', position = position, force = 'player'})
     market.minable = false
     return market
@@ -47,33 +47,23 @@ local function refresh_market_offers()
         end
     end
 
-    local str1 =
-        'Gun Turret Slot for ' ..
-        tostring(this.entity_limits['gun-turret'].limit * this.entity_limits['gun-turret'].slot_price)
+    local str1 = 'Gun Turret Slot for ' .. tostring(this.entity_limits['gun-turret'].limit * this.entity_limits['gun-turret'].slot_price)
     str1 = str1 .. ' Coins.'
 
-    local str2 =
-        'Laser Turret Slot for ' ..
-        tostring(this.entity_limits['laser-turret'].limit * this.entity_limits['laser-turret'].slot_price)
+    local str2 = 'Laser Turret Slot for ' .. tostring(this.entity_limits['laser-turret'].limit * this.entity_limits['laser-turret'].slot_price)
     str2 = str2 .. ' Coins.'
 
-    local str3 =
-        'Artillery Slot for ' ..
-        tostring(this.entity_limits['artillery-turret'].limit * this.entity_limits['artillery-turret'].slot_price)
+    local str3 = 'Artillery Slot for ' .. tostring(this.entity_limits['artillery-turret'].limit * this.entity_limits['artillery-turret'].slot_price)
     str3 = str3 .. ' Coins.'
 
     local current_limit = 1
     if this.entity_limits['flamethrower-turret'].limit ~= 0 then
         current_limit = current_limit + this.entity_limits['flamethrower-turret'].limit
     end
-    local str4 =
-        'Flamethrower Turret Slot for ' ..
-        tostring(current_limit * this.entity_limits['flamethrower-turret'].slot_price)
+    local str4 = 'Flamethrower Turret Slot for ' .. tostring(current_limit * this.entity_limits['flamethrower-turret'].slot_price)
     str4 = str4 .. ' Coins.'
 
-    local str5 =
-        'Landmine Slot for ' ..
-        tostring(math.ceil((this.entity_limits['land-mine'].limit / 3) * this.entity_limits['land-mine'].slot_price))
+    local str5 = 'Landmine Slot for ' .. tostring(math.ceil((this.entity_limits['land-mine'].limit / 3) * this.entity_limits['land-mine'].slot_price))
     str5 = str5 .. ' Coins.'
 
     local market_items = {
@@ -195,24 +185,16 @@ end
 
 local function slot_upgrade(player, offer_index)
     local this = FDT.get()
-    local price =
-        this.entity_limits[slot_upgrade_offers[offer_index][1]].limit *
-        this.entity_limits[slot_upgrade_offers[offer_index][1]].slot_price
+    local price = this.entity_limits[slot_upgrade_offers[offer_index][1]].limit * this.entity_limits[slot_upgrade_offers[offer_index][1]].slot_price
 
     local gain = 1
     if offer_index == 5 then
-        price =
-            math.ceil(
-            (this.entity_limits[slot_upgrade_offers[offer_index][1]].limit / 3) *
-                this.entity_limits[slot_upgrade_offers[offer_index][1]].slot_price
-        )
+        price = math.ceil((this.entity_limits[slot_upgrade_offers[offer_index][1]].limit / 3) * this.entity_limits[slot_upgrade_offers[offer_index][1]].slot_price)
         gain = 3
     end
 
     if slot_upgrade_offers[offer_index][1] == 'flamethrower-turret' then
-        price =
-            (this.entity_limits[slot_upgrade_offers[offer_index][1]].limit + 1) *
-            this.entity_limits[slot_upgrade_offers[offer_index][1]].slot_price
+        price = (this.entity_limits[slot_upgrade_offers[offer_index][1]].limit + 1) * this.entity_limits[slot_upgrade_offers[offer_index][1]].slot_price
     end
 
     local coins_removed = player.remove_item({name = 'coin', count = price})
@@ -224,19 +206,12 @@ local function slot_upgrade(player, offer_index)
         return false
     end
 
-    this.entity_limits[slot_upgrade_offers[offer_index][1]].limit =
-        this.entity_limits[slot_upgrade_offers[offer_index][1]].limit + gain
-    game.print(
-        player.name .. ' has bought a ' .. slot_upgrade_offers[offer_index][2] .. ' slot for ' .. price .. ' coins!',
-        {r = 0.22, g = 0.77, b = 0.44}
-    )
+    this.entity_limits[slot_upgrade_offers[offer_index][1]].limit = this.entity_limits[slot_upgrade_offers[offer_index][1]].limit + gain
+    game.print(player.name .. ' has bought a ' .. slot_upgrade_offers[offer_index][2] .. ' slot for ' .. price .. ' coins!', {r = 0.22, g = 0.77, b = 0.44})
     if math.random(1, 2) == 1 then
         Server.to_discord_bold(
             table.concat {
-                '*** ' ..
-                    player.name ..
-                        ' has bought a ' ..
-                            slot_upgrade_offers[offer_index][2] .. ' slot for ' .. price .. ' coins! ***'
+                '*** ' .. player.name .. ' has bought a ' .. slot_upgrade_offers[offer_index][2] .. ' slot for ' .. price .. ' coins! ***'
             }
         )
     end
@@ -349,3 +324,5 @@ end
 
 Event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
 Event.add(defines.events.on_gui_opened, on_gui_opened)
+
+return place_fish_market

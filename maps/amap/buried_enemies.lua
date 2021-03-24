@@ -67,7 +67,6 @@ local function spawn_biters(data)
     local h = floor(abs(position.y))
     local wave_number = WD.get('wave_number')
     local max_biters = WPT.get('biters')
-    
 
     if max_biters.amount >= max_biters.limit then
         return
@@ -82,9 +81,9 @@ local function spawn_biters(data)
 
     local function trigger_health()
         local m = 0.0015
-        
-         m = m * 1.05
-        
+
+        m = m * 1.05
+
         local boosted_health = 1.25
 
         if wave_number <= 10 then

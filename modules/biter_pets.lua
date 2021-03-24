@@ -17,14 +17,12 @@ end
 local function floaty_hearts(entity, c)
     local position = {x = entity.position.x - 0.75, y = entity.position.y - 1}
     local b = 1.35
-    for a = 1, c, 1 do
+    for _ = 1, c, 1 do
         local p = {
             (position.x + 0.4) + (b * -1 + math_random(0, b * 20) * 0.1),
             position.y + (b * -1 + math_random(0, b * 20) * 0.1)
         }
-        entity.surface.create_entity(
-            {name = 'flying-text', position = p, text = '♥', color = {math_random(150, 255), 0, 255}}
-        )
+        entity.surface.create_entity({name = 'flying-text', position = p, text = '♥', color = {math_random(150, 255), 0, 255}})
     end
 end
 
@@ -119,12 +117,11 @@ function Public.tame_unit_for_closest_player(unit)
         return
     end
 
-    for i = 2, #valid_players, 1 do
-        local player = valid_players[i + 1]
-        if player.position.x ^ 2 + player.position.y ^ 2 < nearest_player.position.x ^ 2 + nearest_player.position.y ^ 2 then
-            nearest_player = spawner
-        end
-    end
+    -- for i = 2, #valid_players, 1 do
+    --     local player = valid_players[i + 1]
+    --     if player.position.x ^ 2 + player.position.y ^ 2 < nearest_player.position.x ^ 2 + nearest_player.position.y ^ 2 then
+    --     end
+    -- end
 
     Public.biter_pets_tame_unit(nearest_player, unit, true)
 end
@@ -191,13 +188,13 @@ local function on_player_dropped_item(event)
     end
 end
 
-local function on_init(event)
+local function on_init()
     global.biter_pets = {}
 end
 
-local event = require 'utils.event'
-event.on_init(on_init)
-event.add(defines.events.on_player_dropped_item, on_player_dropped_item)
-event.add(defines.events.on_player_changed_position, on_player_changed_position)
+local Event = require 'utils.event'
+Event.on_init(on_init)
+Event.add(defines.events.on_player_dropped_item, on_player_dropped_item)
+Event.add(defines.events.on_player_changed_position, on_player_changed_position)
 
 return Public

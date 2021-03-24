@@ -371,8 +371,7 @@ local function gui_opened(event)
     local selected = mode and mode or 1
     local tbl = controls.add {type = 'table', column_count = 1}
 
-    local limit_tooltip =
-        '[color=yellow]Limit Info:[/color]\nThis is only usable if you intend to use this chest for one item.'
+    local limit_tooltip = '[color=yellow]Limit Info:[/color]\nThis is only usable if you intend to use this chest for one item.'
 
     local mode_tooltip =
         '[color=yellow]Mode Info:[/color]\nEnabled: will active the chest and allow for insertions.\nDisabled: will deactivate the chest and let´s the player utilize the GUI to retrieve items.\nLimited: will deactivate the chest as per limit.'

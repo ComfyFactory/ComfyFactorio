@@ -33,16 +33,20 @@ local tostring = tostring
 inspect.KEY =
     setmetatable(
     {},
-    {__tostring = function()
+    {
+        __tostring = function()
             return 'inspect.KEY'
-        end}
+        end
+    }
 )
 inspect.METATABLE =
     setmetatable(
     {},
-    {__tostring = function()
+    {
+        __tostring = function()
             return 'inspect.METATABLE'
-        end}
+        end
+    }
 )
 
 -- Apostrophizes the string if it has quotes, but not aphostrophes
@@ -384,9 +388,11 @@ end
 
 setmetatable(
     inspect,
-    {__call = function(_, ...)
+    {
+        __call = function(_, ...)
             return inspect.inspect(...)
-        end}
+        end
+    }
 )
 
 return inspect

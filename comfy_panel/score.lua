@@ -119,7 +119,6 @@ local function get_total_biter_killcount(force)
 end
 
 local function add_global_stats(frame, player)
-    local score = this.score_table[player.force.name]
     local t = frame.add {type = 'table', column_count = 5}
 
     local l = t.add {type = 'label', caption = 'Rockets launched: '}
@@ -127,29 +126,29 @@ local function add_global_stats(frame, player)
     l.style.font_color = {r = 175, g = 75, b = 255}
     l.style.minimal_width = 140
 
-    local l = t.add {type = 'label', caption = player.force.rockets_launched}
-    l.style.font = 'default-listbox'
-    l.style.font_color = {r = 0.9, g = 0.9, b = 0.9}
-    l.style.minimal_width = 123
+    local rocketsLaunched_label = t.add {type = 'label', caption = player.force.rockets_launched}
+    rocketsLaunched_label.style.font = 'default-listbox'
+    rocketsLaunched_label.style.font_color = {r = 0.9, g = 0.9, b = 0.9}
+    rocketsLaunched_label.style.minimal_width = 123
 
-    local l = t.add {type = 'label', caption = 'Dead bugs: '}
-    l.style.font = 'default-game'
-    l.style.font_color = {r = 0.90, g = 0.3, b = 0.3}
-    l.style.minimal_width = 100
+    local bugs_dead_label = t.add {type = 'label', caption = 'Dead bugs: '}
+    bugs_dead_label.style.font = 'default-game'
+    bugs_dead_label.style.font_color = {r = 0.90, g = 0.3, b = 0.3}
+    bugs_dead_label.style.minimal_width = 100
 
-    local l = t.add {type = 'label', caption = tostring(get_total_biter_killcount(player.force))}
-    l.style.font = 'default-listbox'
-    l.style.font_color = {r = 0.9, g = 0.9, b = 0.9}
-    l.style.minimal_width = 145
+    local killcount_label = t.add {type = 'label', caption = tostring(get_total_biter_killcount(player.force))}
+    killcount_label.style.font = 'default-listbox'
+    killcount_label.style.font_color = {r = 0.9, g = 0.9, b = 0.9}
+    killcount_label.style.minimal_width = 145
 
-    local l =
+    local floatingScore_label =
         t.add {
         type = 'checkbox',
         caption = 'Show floating numbers',
         state = global.show_floating_killscore[player.name],
         name = 'show_floating_killscore_texts'
     }
-    l.style.font_color = {r = 0.8, g = 0.8, b = 0.8}
+    floatingScore_label.style.font_color = {r = 0.8, g = 0.8, b = 0.8}
 end
 
 local show_score = (function(player, frame)
@@ -219,7 +218,7 @@ local show_score = (function(player, frame)
         }
     )
     scroll_pane.style.maximal_height = 400
-    local t = scroll_pane.add {type = 'table', column_count = 5}
+    local column_table = scroll_pane.add {type = 'table', column_count = 5}
 
     -- Score entries
     for _, entry in pairs(score_list) do
@@ -230,7 +229,7 @@ local show_score = (function(player, frame)
             b = p.color.b * 0.6 + 0.4,
             a = 1
         }
-        local line = {
+        local lines = {
             {caption = entry.name, color = special_color},
             {caption = tostring(entry.killscore)},
             {caption = tostring(entry.deaths)},
@@ -239,9 +238,9 @@ local show_score = (function(player, frame)
         }
         local default_color = {r = 0.9, g = 0.9, b = 0.9}
 
-        for _, column in ipairs(line) do
+        for _, column in ipairs(lines) do
             local label =
-                t.add {
+                column_table.add {
                 type = 'label',
                 caption = column.caption,
                 color = column.color or default_color
@@ -336,7 +335,7 @@ local function on_gui_click(event)
     -- No more to handle
 end
 
-local function on_rocket_launched(event)
+local function on_rocket_launched()
     refresh_score_full()
 end
 

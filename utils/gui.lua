@@ -20,7 +20,6 @@ Gui.token =
     end
 )
 
-local top_elements = {}
 local on_visible_handlers = {}
 local on_pre_hidden_handlers = {}
 
@@ -184,6 +183,7 @@ local function custom_handler_factory(handlers)
     end
 end
 
+--luacheck: ignore custom_raise
 local function custom_raise(handlers, element, player)
     local handler = handlers[element.name]
     if not handler then

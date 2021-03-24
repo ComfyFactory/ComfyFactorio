@@ -1,3 +1,4 @@
+--luacheck: ignore
 -- fish defender -- by mewmew --
 
 --require "modules.rpg"
@@ -784,8 +785,7 @@ local function is_game_lost()
                 t.add(
                 {
                     type = 'label',
-                    caption = math.floor(((this.market_age / 60) / 60) / 60) ..
-                        ' hours ' .. math.ceil((this.market_age % 216000 / 60) / 60) .. ' minutes'
+                    caption = math.floor(((this.market_age / 60) / 60) / 60) .. ' hours ' .. math.ceil((this.market_age % 216000 / 60) / 60) .. ' minutes'
                 }
             )
             l.style.font = 'default-bold'
@@ -855,8 +855,7 @@ local function is_game_lost()
 end
 
 local function damage_entities_in_radius(surface, position, radius, damage)
-    local entities_to_damage =
-        surface.find_entities_filtered({area = {{position.x - radius, position.y - radius}, {position.x + radius, position.y + radius}}})
+    local entities_to_damage = surface.find_entities_filtered({area = {{position.x - radius, position.y - radius}, {position.x + radius, position.y + radius}}})
     for _, entity in pairs(entities_to_damage) do
         if entity.valid then
             if entity.health and entity.name ~= 'land-mine' then
@@ -1015,10 +1014,7 @@ local function on_player_joined_game(event)
     end
 
     if player.surface.index ~= active_surface_index and surface.is_chunk_generated({0, 0}) then
-        player.teleport(
-            surface.find_non_colliding_position('character', game.forces['player'].get_spawn_position(surface), 50, 1),
-            active_surface_index
-        )
+        player.teleport(surface.find_non_colliding_position('character', game.forces['player'].get_spawn_position(surface), 50, 1), active_surface_index)
     else
         if player.surface.index ~= active_surface_index then
             player.teleport(game.forces['player'].get_spawn_position(surface), active_surface_index)
@@ -1053,8 +1049,7 @@ local function on_built_entity(event)
                 {
                     name = 'flying-text',
                     position = entity.position,
-                    text = this.entity_limits[entity.name].placed ..
-                        ' / ' .. this.entity_limits[entity.name].limit .. ' ' .. this.entity_limits[entity.name].str .. 's',
+                    text = this.entity_limits[entity.name].placed .. ' / ' .. this.entity_limits[entity.name].limit .. ' ' .. this.entity_limits[entity.name].str .. 's',
                     color = {r = 0.98, g = 0.66, b = 0.22}
                 }
             )
@@ -1073,8 +1068,7 @@ local function on_built_entity(event)
             if get_score then
                 if get_score[player.force.name] then
                     if get_score[player.force.name].players[player.name] then
-                        get_score[player.force.name].players[player.name].built_entities =
-                            get_score[player.force.name].players[player.name].built_entities - 1
+                        get_score[player.force.name].players[player.name].built_entities = get_score[player.force.name].players[player.name].built_entities - 1
                     end
                 end
             end
@@ -1094,8 +1088,7 @@ local function on_robot_built_entity(event)
                 {
                     name = 'flying-text',
                     position = entity.position,
-                    text = entity_limits[entity.name].placed ..
-                        ' / ' .. entity_limits[entity.name].limit .. ' ' .. entity_limits[entity.name].str .. 's',
+                    text = entity_limits[entity.name].placed .. ' / ' .. entity_limits[entity.name].limit .. ' ' .. entity_limits[entity.name].str .. 's',
                     color = {r = 0.98, g = 0.66, b = 0.22}
                 }
             )

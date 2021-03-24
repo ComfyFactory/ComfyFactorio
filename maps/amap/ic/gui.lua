@@ -4,7 +4,7 @@ local Gui = require 'utils.gui'
 local Tabs = require 'comfy_panel.main'
 local Event = require 'utils.event'
 local rpgtable = require 'modules.rpg.table'
-local Loot = require'maps.amap.loot'
+local Loot = require 'maps.amap.loot'
 local Public = {}
 local Alert = require 'utils.alert'
 --! Gui Frames
@@ -356,9 +356,9 @@ end
 add_toolbar = function(player, remove)
     if remove then
         if player.gui.top[main_toolbar_name] then
-		player.gui.top[cool].destroy()
-		player.gui.top[buyxp].destroy()
-    player.gui.top[gambel].destroy()
+            player.gui.top[cool].destroy()
+            player.gui.top[buyxp].destroy()
+            player.gui.top[gambel].destroy()
             player.gui.top[main_toolbar_name].destroy()
 
             return
@@ -394,7 +394,7 @@ add_toolbar = function(player, remove)
             tooltip = {'amap.gambel'}
         }
     )
-	    player.gui.top.add(
+    player.gui.top.add(
         {
             type = 'sprite-button',
             sprite = 'item/rocket-part',
@@ -414,9 +414,9 @@ remove_toolbar = function(player)
 
     if player.gui.top[main_toolbar_name] then
         player.gui.top[main_toolbar_name].destroy()
-		player.gui.top[cool].destroy()
-		player.gui.top[buyxp].destroy()
-    player.gui.top[gambel].destroy()
+        player.gui.top[cool].destroy()
+        player.gui.top[buyxp].destroy()
+        player.gui.top[gambel].destroy()
         return
     end
 end
@@ -465,81 +465,81 @@ Gui.on_click(
     end
 )
 Gui.on_click(
-    gambel ,
+    gambel,
     function(event)
         local player = event.player
         local something = player.get_inventory(defines.inventory.chest)
-          for k, v in pairs(something.get_contents()) do
-             local t = {name = k, count = v}
-      if t.name == 'coin' then
-      if v > 999 then
-        player.remove_item{name='coin', count = '1000'}
-	   local roll = math.random(1,100)
-     if roll <= 36 then
-       player.insert{name='coin', count = '2500'}
-	   player.print({'amap.gambel1'})
-	   return
-	   else
-	   player.print({'amap.gambel2'})
-	   return
-    end
-	else
-		player.print({'amap.noenough'})
-		return
-	end
-	end
-	end
+        for k, v in pairs(something.get_contents()) do
+            local t = {name = k, count = v}
+            if t.name == 'coin' then
+                if v > 999 then
+                    player.remove_item {name = 'coin', count = '1000'}
+                    local roll = math.random(1, 100)
+                    if roll <= 36 then
+                        player.insert {name = 'coin', count = '2500'}
+                        player.print({'amap.gambel1'})
+                        return
+                    else
+                        player.print({'amap.gambel2'})
+                        return
+                    end
+                else
+                    player.print({'amap.noenough'})
+                    return
+                end
+            end
+        end
     end
 )
 
 Gui.on_click(
-    cool ,
+    cool,
     function(event)
         local player = event.player
-		local something = player.get_inventory(defines.inventory.chest)
-     for k, v in pairs(something.get_contents()) do
-        local t = {name = k, count = v}
- if t.name == 'coin' then
- if v > 2999 then
- player.remove_item{name='coin', count = '3000'}
- local luck = math.floor(math.random(1,130))
- player.print({'amap.lucknb'})
- player.print(luck)
-    local magic = luck*5+100
-       local msg = {'amap.whatopen'}
-	Loot.cool(player.surface, player.surface.find_non_colliding_position("steel-chest", player.position, 20, 1, true) or player.position, 'steel-chest', magic)
-		  Alert.alert_player(player, 5, msg)
-		  return
-		  else
-		  player.print({'amap.noenough'})
-		  return
- end
- end
-   end
+        local something = player.get_inventory(defines.inventory.chest)
+        for k, v in pairs(something.get_contents()) do
+            local t = {name = k, count = v}
+            if t.name == 'coin' then
+                if v > 2999 then
+                    player.remove_item {name = 'coin', count = '3000'}
+                    local luck = math.floor(math.random(1, 130))
+                    player.print({'amap.lucknb'})
+                    player.print(luck)
+                    local magic = luck * 5 + 100
+                    local msg = {'amap.whatopen'}
+                    Loot.cool(player.surface, player.surface.find_non_colliding_position('steel-chest', player.position, 20, 1, true) or player.position, 'steel-chest', magic)
+                    Alert.alert_player(player, 5, msg)
+                    return
+                else
+                    player.print({'amap.noenough'})
+                    return
+                end
+            end
+        end
     end
 )
 Gui.on_click(
-    buyxp ,
+    buyxp,
     function(event)
         local player = event.player
-		local something = player.get_inventory(defines.inventory.chest)
-     for k, v in pairs(something.get_contents()) do
-        local t = {name = k, count = v}
- if t.name == 'coin' then
- if v > 4999 then
- player.remove_item{name='coin', count = '5000'}
- local rpg_t = rpgtable.get('rpg_t')
+        local something = player.get_inventory(defines.inventory.chest)
+        for k, v in pairs(something.get_contents()) do
+            local t = {name = k, count = v}
+            if t.name == 'coin' then
+                if v > 4999 then
+                    player.remove_item {name = 'coin', count = '5000'}
+                    local rpg_t = rpgtable.get('rpg_t')
 
- rpg_t[player.index].xp = rpg_t[player.index].xp +1000
-       local msg = {'amap.buyover'}
-		  Alert.alert_player(player, 5, msg)
-		  return
-		  else
-		  player.print({'amap.noenough'})
-		  return
- end
- end
-   end
+                    rpg_t[player.index].xp = rpg_t[player.index].xp + 1000
+                    local msg = {'amap.buyover'}
+                    Alert.alert_player(player, 5, msg)
+                    return
+                else
+                    player.print({'amap.noenough'})
+                    return
+                end
+            end
+        end
     end
 )
 Gui.on_click(

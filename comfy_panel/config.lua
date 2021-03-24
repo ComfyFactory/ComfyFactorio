@@ -58,11 +58,11 @@ local function spaghett_deny_building(event)
 end
 
 local function spaghett()
-    local spaghett = global.comfy_panel_config.spaghett
-    if spaghett.enabled then
+    local spaghetti = global.comfy_panel_config.spaghett
+    if spaghetti.enabled then
         for _, f in pairs(game.forces) do
             if f.technologies['logistic-system'].researched then
-                spaghett.undo[f.index] = true
+                spaghetti.undo[f.index] = true
             end
             f.technologies['logistic-system'].enabled = false
             f.technologies['logistic-system'].researched = false
@@ -70,9 +70,9 @@ local function spaghett()
     else
         for _, f in pairs(game.forces) do
             f.technologies['logistic-system'].enabled = true
-            if spaghett.undo[f.index] then
+            if spaghetti.undo[f.index] then
                 f.technologies['logistic-system'].researched = true
-                spaghett.undo[f.index] = nil
+                spaghetti.undo[f.index] = nil
             end
         end
     end
@@ -270,31 +270,31 @@ local fortress_functions = {
 
 local function add_switch(element, switch_state, name, description_main, description)
     local t = element.add({type = 'table', column_count = 5})
-    local label = t.add({type = 'label', caption = 'ON'})
-    label.style.padding = 0
-    label.style.left_padding = 10
-    label.style.font_color = {0.77, 0.77, 0.77}
+    local on_label = t.add({type = 'label', caption = 'ON'})
+    on_label.style.padding = 0
+    on_label.style.left_padding = 10
+    on_label.style.font_color = {0.77, 0.77, 0.77}
     local switch = t.add({type = 'switch', name = name})
     switch.switch_state = switch_state
     switch.style.padding = 0
     switch.style.margin = 0
-    local label = t.add({type = 'label', caption = 'OFF'})
-    label.style.padding = 0
-    label.style.font_color = {0.70, 0.70, 0.70}
+    local off_label = t.add({type = 'label', caption = 'OFF'})
+    off_label.style.padding = 0
+    off_label.style.font_color = {0.70, 0.70, 0.70}
 
-    local label = t.add({type = 'label', caption = description_main})
-    label.style.padding = 2
-    label.style.left_padding = 10
-    label.style.minimal_width = 120
-    label.style.font = 'heading-2'
-    label.style.font_color = {0.88, 0.88, 0.99}
+    local desc_main_label = t.add({type = 'label', caption = description_main})
+    desc_main_label.style.padding = 2
+    desc_main_label.style.left_padding = 10
+    desc_main_label.style.minimal_width = 120
+    desc_main_label.style.font = 'heading-2'
+    desc_main_label.style.font_color = {0.88, 0.88, 0.99}
 
-    local label = t.add({type = 'label', caption = description})
-    label.style.padding = 2
-    label.style.left_padding = 10
-    label.style.single_line = false
-    label.style.font = 'heading-3'
-    label.style.font_color = {0.85, 0.85, 0.85}
+    local desc_label = t.add({type = 'label', caption = description})
+    desc_label.style.padding = 2
+    desc_label.style.left_padding = 10
+    desc_label.style.single_line = false
+    desc_label.style.font = 'heading-3'
+    desc_label.style.font_color = {0.85, 0.85, 0.85}
 
     return switch
 end
@@ -450,14 +450,14 @@ local build_config_gui = (function(player, frame)
 
             scroll_pane.add({type = 'line'})
 
-            local switch_state = 'right'
+            local team_balancing_state = 'right'
             if global.bb_settings.team_balancing then
-                switch_state = 'left'
+                team_balancing_state = 'left'
             end
             local switch =
                 add_switch(
                 scroll_pane,
-                switch_state,
+                team_balancing_state,
                 'bb_team_balancing_toggle',
                 'Team Balancing',
                 'Players can only join a team that has less or equal players than the opposing.'
@@ -468,14 +468,20 @@ local build_config_gui = (function(player, frame)
 
             scroll_pane.add({type = 'line'})
 
-            local switch_state = 'right'
+            local only_admins_vote_state = 'right'
             if global.bb_settings.only_admins_vote then
-                switch_state = 'left'
+                only_admins_vote_state = 'left'
             end
-            local switch =
-                add_switch(scroll_pane, switch_state, 'bb_only_admins_vote', 'Admin Vote', 'Only admins can vote for map difficulty. Clears all currently existing votes.')
+            local only_admins_vote_switch =
+                add_switch(
+                scroll_pane,
+                only_admins_vote_state,
+                'bb_only_admins_vote',
+                'Admin Vote',
+                'Only admins can vote for map difficulty. Clears all currently existing votes.'
+            )
             if not admin then
-                switch.ignored_by_interaction = true
+                only_admins_vote_switch.ignored_by_interaction = true
             end
 
             scroll_pane.add({type = 'line'})

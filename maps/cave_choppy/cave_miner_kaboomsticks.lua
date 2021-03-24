@@ -1,3 +1,4 @@
+--luacheck: ignore
 local Event = require 'utils.event'
 
 local damage_per_explosive = 100
@@ -1650,8 +1651,7 @@ local circle_coordinates = {
 
 local function process_explosion_tile(pos, explosion_index, current_radius)
     local surface = game.surfaces[global.explosion_schedule[explosion_index].surface]
-    local target_entities =
-        surface.find_entities_filtered({area = {{pos.x - 0.5, pos.y - 0.5}, {pos.x + 0.499, pos.y + 0.499}}})
+    local target_entities = surface.find_entities_filtered({area = {{pos.x - 0.5, pos.y - 0.5}, {pos.x + 0.499, pos.y + 0.499}}})
     local explosion_animation = 'explosion'
 
     local tile = surface.get_tile(pos)
@@ -1660,8 +1660,7 @@ local function process_explosion_tile(pos, explosion_index, current_radius)
             explosion_animation = 'big-explosion'
             surface.set_tiles({{name = 'dirt-5', position = pos}}, true)
         end
-        global.explosion_schedule[explosion_index].damage_remaining =
-            global.explosion_schedule[explosion_index].damage_remaining - out_of_map_tile_health
+        global.explosion_schedule[explosion_index].damage_remaining = global.explosion_schedule[explosion_index].damage_remaining - out_of_map_tile_health
     else
         local decay_explosion = true
         for _, entity in pairs(target_entities) do
@@ -1670,8 +1669,7 @@ local function process_explosion_tile(pos, explosion_index, current_radius)
             end
         end
         if decay_explosion then
-            global.explosion_schedule[explosion_index].damage_remaining =
-                global.explosion_schedule[explosion_index].damage_remaining - empty_tile_damage_decay
+            global.explosion_schedule[explosion_index].damage_remaining = global.explosion_schedule[explosion_index].damage_remaining - empty_tile_damage_decay
         end
     end
 
@@ -1682,13 +1680,11 @@ local function process_explosion_tile(pos, explosion_index, current_radius)
                 if entity.health > 500 then
                     explosion_animation = 'big-artillery-explosion'
                 end
-                global.explosion_schedule[explosion_index].damage_remaining =
-                    global.explosion_schedule[explosion_index].damage_remaining - entity.health
+                global.explosion_schedule[explosion_index].damage_remaining = global.explosion_schedule[explosion_index].damage_remaining - entity.health
                 entity.damage(999999, 'player', 'explosion')
             else
                 entity.damage(global.explosion_schedule[explosion_index].damage_remaining, 'player', 'explosion')
-                global.explosion_schedule[explosion_index].damage_remaining =
-                    global.explosion_schedule[explosion_index].damage_remaining - entity.health
+                global.explosion_schedule[explosion_index].damage_remaining = global.explosion_schedule[explosion_index].damage_remaining - entity.health
             end
         end
     end
@@ -1731,8 +1727,7 @@ local function create_explosion_schedule(entity)
 
     for current_radius = 1, 23, 1 do
         global.explosion_schedule[#global.explosion_schedule][current_radius] = {}
-        global.explosion_schedule[#global.explosion_schedule][current_radius].trigger_tick =
-            game.tick + (current_radius * 8)
+        global.explosion_schedule[#global.explosion_schedule][current_radius].trigger_tick = game.tick + (current_radius * 8)
 
         local circle_coords = circle_coordinates[current_radius]
 
@@ -1774,12 +1769,7 @@ local function on_tick(event)
                 for radius = 1, #global.explosion_schedule[explosion_index], 1 do
                     if global.explosion_schedule[explosion_index][radius].trigger_tick == tick then
                         for tile_index = 1, #global.explosion_schedule[explosion_index][radius], 1 do
-                            local continue_explosion =
-                                process_explosion_tile(
-                                global.explosion_schedule[explosion_index][radius][tile_index],
-                                explosion_index,
-                                radius
-                            )
+                            local continue_explosion = process_explosion_tile(global.explosion_schedule[explosion_index][radius][tile_index], explosion_index, radius)
                             if not continue_explosion then
                                 global.explosion_schedule[explosion_index] = {}
                                 break
