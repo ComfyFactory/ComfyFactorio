@@ -8,8 +8,7 @@ local function on_research_finished(event)
     local this = FDT.get()
 
     if not this.shotgun_shell_damage_modifier_old[force_name] then
-        this.shotgun_shell_damage_modifier_old[force_name] =
-            game.forces[force_name].get_ammo_damage_modifier('shotgun-shell') - 0.1
+        this.shotgun_shell_damage_modifier_old[force_name] = game.forces[force_name].get_ammo_damage_modifier('shotgun-shell') - 0.1
     end
 
     if string.sub(research.name, 0, 26) == 'physical-projectile-damage' then
@@ -19,8 +18,7 @@ local function on_research_finished(event)
         game.forces[force_name].set_ammo_damage_modifier('shotgun-shell', current_damage + additional_gain)
     end
 
-    this.shotgun_shell_damage_modifier_old[force_name] =
-        game.forces[force_name].get_ammo_damage_modifier('shotgun-shell')
+    this.shotgun_shell_damage_modifier_old[force_name] = game.forces[force_name].get_ammo_damage_modifier('shotgun-shell')
 end
 
 local function on_init()

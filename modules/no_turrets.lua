@@ -1,22 +1,26 @@
 local turret_types = {
-	["ammo-turret"] = true,
-	["artillery-turret"] = true,
-	["electric-turret"] = true,
-	["fluid-turret"] = true,
+    ['ammo-turret'] = true,
+    ['artillery-turret'] = true,
+    ['electric-turret'] = true,
+    ['fluid-turret'] = true
 }
 
 local function destroy_turret(entity)
-	if not entity.valid then return end
-	if not turret_types[entity.type] then return end
-	entity.die()
+    if not entity.valid then
+        return
+    end
+    if not turret_types[entity.type] then
+        return
+    end
+    entity.die()
 end
 
 local function on_built_entity(event)
-	destroy_turret(event.created_entity)
+    destroy_turret(event.created_entity)
 end
 
 local function on_robot_built_entity(event)
-	destroy_turret(event.created_entity)
+    destroy_turret(event.created_entity)
 end
 
 local event = require 'utils.event'

@@ -39,8 +39,7 @@ local function get_chunk(surface)
     if #global.trees_grow_chunk_raffle == 0 then
         return false
     end
-    local p =
-        global.trees_grow_chunk_position[global.trees_grow_chunk_raffle[math_random(1, #global.trees_grow_chunk_raffle)]]
+    local p = global.trees_grow_chunk_position[global.trees_grow_chunk_raffle[math_random(1, #global.trees_grow_chunk_raffle)]]
     local str = coord_string(p.x, p.y)
     if not global.trees_grow_chunk_next_visit[str] then
         return p
@@ -59,7 +58,7 @@ local function get_trees(surface)
     local trees = surface.find_entities_filtered({type = 'tree', area = {{p.x * 32, p.y * 32}, {p.x * 32 + 32, p.y * 32 + 32}}})
 
     local a = 750
-	local Diff = Difficulty.get()
+    local Diff = Difficulty.get()
     if Diff.difficulty_vote_value then
         a = a / Diff.difficulty_vote_value
     end
@@ -86,13 +85,7 @@ local function grow_trees(surface)
         if not blacklist[tree.name] then
             local vector = vectors[math_random(1, #vectors)]
 
-            local p =
-                surface.find_non_colliding_position(
-                'car',
-                {tree.position.x + vector[1], tree.position.y + vector[2]},
-                8,
-                4
-            )
+            local p = surface.find_non_colliding_position('car', {tree.position.x + vector[1], tree.position.y + vector[2]}, 8, 4)
             if p then
                 local tile = surface.get_tile(p)
                 if resistant_tiles[tile.name] then

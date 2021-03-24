@@ -26,10 +26,7 @@ local function on_entity_damaged(event)
     if weapon.name ~= 'pistol' then
         return
     end
-    if
-        ammo.name ~= 'firearm-magazine' and ammo.name ~= 'piercing-rounds-magazine' and
-            ammo.name ~= 'uranium-rounds-magazine'
-     then
+    if ammo.name ~= 'firearm-magazine' and ammo.name ~= 'piercing-rounds-magazine' and ammo.name ~= 'uranium-rounds-magazine' then
         return
     end
     if not event.entity.valid then

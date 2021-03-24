@@ -69,10 +69,7 @@ local infini_ores = {'iron-ore', 'iron-ore', 'copper-ore', 'coal', 'stone'}
 local function on_player_joined_game(event)
     local surface = game.surfaces['railway_troopers']
     local player = game.players[event.player_index]
-    player.teleport(
-        surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 32, 0.5),
-        surface
-    )
+    player.teleport(surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 32, 0.5), surface)
 end
 
 local function on_entity_died(event)
@@ -171,9 +168,7 @@ local function draw_east_side(surface, left_top)
                     treasure_chest(surface, position)
                 end
                 if math_random(1, 4096) == 1 and surface.can_place_entity({name = 'wooden-chest', position = position}) then
-                    surface.create_entity(
-                        {name = 'crude-oil', position = position, amount = math_abs(position.x) * 10000 + 1000000}
-                    )
+                    surface.create_entity({name = 'crude-oil', position = position, amount = math_abs(position.x) * 10000 + 1000000})
                 end
             end
         end
@@ -243,10 +238,7 @@ local function on_tick()
             return
         end
 
-        local wagons =
-            surface.find_entities_filtered(
-            {name = {'locomotive', 'cargo-wagon', 'fluid-wagon', 'artillery-wagon'}, limit = 1}
-        )
+        local wagons = surface.find_entities_filtered({name = {'locomotive', 'cargo-wagon', 'fluid-wagon', 'artillery-wagon'}, limit = 1})
         if not wagons[1] then
             game.print('All the choos have have been destroyed! Game Over!', {200, 0, 0})
             global.reset_railway_troopers = 1
@@ -280,9 +272,7 @@ local function on_tick()
         end
         global.size_of_collapse_tiles = global.size_of_collapse_tiles - 1
         local position = tile.position
-        for _, e in pairs(
-            surface.find_entities_filtered({area = {{position.x, position.y - 1}, {position.x + 2, position.y + 1}}})
-        ) do
+        for _, e in pairs(surface.find_entities_filtered({area = {{position.x, position.y - 1}, {position.x + 2, position.y + 1}}})) do
             e.die()
         end
         surface.set_tiles({{name = 'out-of-map', position = tile.position}}, true)

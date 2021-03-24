@@ -15,8 +15,7 @@ local function damage_entities_around_target(entity, damage)
     ) do
         if e.health then
             if e.force.name ~= 'player' then
-                local distance_from_center =
-                    math.sqrt((e.position.x - entity.position.x) ^ 2 + (e.position.y - entity.position.y) ^ 2)
+                local distance_from_center = math.sqrt((e.position.x - entity.position.x) ^ 2 + (e.position.y - entity.position.y) ^ 2)
                 if distance_from_center <= radius then
                     e.damage(damage, 'player', 'explosion')
                 end

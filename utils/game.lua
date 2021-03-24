@@ -72,7 +72,7 @@ function Game.player_print(str)
 end
 
 function Game.get_player(mixed)
-    if type(mixed) == "table" then
+    if type(mixed) == 'table' then
         if mixed.__self then
             return mixed and mixed.valid and mixed
         elseif mixed.player_index then

@@ -296,10 +296,7 @@ local function on_entity_died(event)
                 p.gui.left['slowmo_cam'].destroy()
             end
             local frame = p.gui.left.add({type = 'frame', name = 'slowmo_cam', caption = msg[math.random(1, #msg)]})
-            local camera =
-                frame.add(
-                {type = 'camera', name = 'mini_cam_element', position = entity.position, zoom = 1.5, surface_index = 1}
-            )
+            local camera = frame.add({type = 'camera', name = 'mini_cam_element', position = entity.position, zoom = 1.5, surface_index = 1})
             camera.style.minimal_width = 400
             camera.style.minimal_height = 400
         end

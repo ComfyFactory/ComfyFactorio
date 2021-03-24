@@ -5,14 +5,14 @@ local random = math.random
 local floor = math.floor
 
 local blacklist = {
-  --  ['cargo-wagon'] = true,
-  --  ['locomotive'] = true,
-  --  ['artillery-wagon'] = true,
-  --  ['artillery-turret'] = true,
-  --  ['fluid-wagon'] = true,
-  --  ['land-mine'] = true,
-   ['car'] = true,
-   ['tank'] = true,
+    --  ['cargo-wagon'] = true,
+    --  ['locomotive'] = true,
+    --  ['artillery-wagon'] = true,
+    --  ['artillery-turret'] = true,
+    --  ['fluid-wagon'] = true,
+    --  ['land-mine'] = true,
+    ['car'] = true,
+    ['tank'] = true,
     ['spidertron'] = true
 }
 
@@ -270,11 +270,10 @@ function Public.get_random_item(rarity, sell, buy)
 end
 
 function Public.mountain_market(surface, position, rarity, buy)
-    if (rarity <= 1)
-	then
-	rarity = 1
-	end
---  game.print(rarity)
+    if (rarity <= 1) then
+        rarity = 1
+    end
+    --  game.print(rarity)
     local types = get_types()
     table.shuffle_table(types)
     local items = get_market_item_list(rarity)

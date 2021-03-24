@@ -97,10 +97,7 @@ local function transport_resources(container1, container2, transport_type)
         local name2, amount2 = get_table(bf)
         amount1 = amount1 or 0
         amount2 = amount2 or 0
-        if
-            ((not name1 and not name2) or (name1 and name2 and name1 ~= name2) or (amount1 < 1 and amount2 < 1) or
-                (amount1 == amount2))
-         then
+        if ((not name1 and not name2) or (name1 and name2 and name1 ~= name2) or (amount1 < 1 and amount2 < 1) or (amount1 == amount2)) then
             return
         end
         if (not name1) then
@@ -184,12 +181,7 @@ local function create_underground_floor(surface, size, going_down)
         tile_generation('hazard-concrete-left', {x = 0, y = 0}, {x = -3, y = 3}, {x = 6, y = 3})
         tile_generation('hazard-concrete-left', {x = 0, y = 0}, {x = -2, y = -2}, {x = 4, y = 3})
     else
-        tile_generation(
-            'black-refined-concrete',
-            {x = 0, y = 0},
-            {x = -size / 2, y = -size / 2},
-            {x = size - 1, y = size}
-        )
+        tile_generation('black-refined-concrete', {x = 0, y = 0}, {x = -size / 2, y = -size / 2}, {x = size - 1, y = size})
     end
 end
 
@@ -219,9 +211,7 @@ local function create_main_surface(rebuild)
         hidden_dimension.main_surface.reference.minable = false
         hidden_dimension.main_surface.reference.destructible = false
         hidden_dimension.main_surface.reference.operable = false
-        hidden_dimension.main_surface.reference.get_inventory(defines.inventory.fuel).insert(
-            {name = 'coal', count = 100}
-        )
+        hidden_dimension.main_surface.reference.get_inventory(defines.inventory.fuel).insert({name = 'coal', count = 100})
         return
     end
     if not hidden_dimension.main_surface.reference or not hidden_dimension.main_surface.reference.valid then
@@ -235,9 +225,7 @@ local function create_main_surface(rebuild)
         hidden_dimension.main_surface.reference.minable = false
         hidden_dimension.main_surface.reference.destructible = false
         hidden_dimension.main_surface.reference.operable = false
-        hidden_dimension.main_surface.reference.get_inventory(defines.inventory.fuel).insert(
-            {name = 'coal', count = 100}
-        )
+        hidden_dimension.main_surface.reference.get_inventory(defines.inventory.fuel).insert({name = 'coal', count = 100})
         if hidden_dimension.logistic_research_level == 0 then
             return
         end
@@ -260,9 +248,7 @@ local function create_underground_surfaces()
         floor_table.name = name
         floor_table.size = 16
 
-        floor_table.surface.destroy_decoratives(
-            {area = {{-floor_table.size, -floor_table.size}, {floor_table.size, floor_table.size}}}
-        )
+        floor_table.surface.destroy_decoratives({area = {{-floor_table.size, -floor_table.size}, {floor_table.size, floor_table.size}}})
 
         create_underground_floor(floor_table.surface, floor_table.size, going_down)
 
@@ -406,11 +392,7 @@ local function logistic_update()
 
     entrance_transport_resources(hidden_dimension.level_1.going_down, hidden_dimension.level_2.going_up)
 
-    transport_resources(
-        hidden_dimension.level_1.going_down.reference,
-        hidden_dimension.level_1.going_up.reference,
-        'average'
-    )
+    transport_resources(hidden_dimension.level_1.going_down.reference, hidden_dimension.level_1.going_up.reference, 'average')
 
     energy_update(hidden_dimension.energy)
 end
@@ -418,10 +400,7 @@ end
 local function on_research_finished(event)
     local hidden_dimension = HDT.get('hidden_dimension')
 
-    if
-        event.research.name == 'automation' or event.research.name == 'automation-2' or
-            event.research.name == 'automation-3'
-     then
+    if event.research.name == 'automation' or event.research.name == 'automation-2' or event.research.name == 'automation-3' then
         if event.research.name == 'automation' then
             hidden_dimension.level_1.size = 32
             hidden_dimension.level_2.size = 32
@@ -497,20 +476,11 @@ local function through_teleporter_update()
         teleport_players_around(hidden_dimension.level_1.going_up.reference, hidden_dimension.main_surface.reference)
     end
 
-    if
-        hidden_dimension.level_1 and hidden_dimension.level_1.going_down and
-            hidden_dimension.level_1.going_down.reference
-     then
-        teleport_players_around(
-            hidden_dimension.level_1.going_down.reference,
-            hidden_dimension.level_2.going_up.reference
-        )
+    if hidden_dimension.level_1 and hidden_dimension.level_1.going_down and hidden_dimension.level_1.going_down.reference then
+        teleport_players_around(hidden_dimension.level_1.going_down.reference, hidden_dimension.level_2.going_up.reference)
     end
     if hidden_dimension.level_2 and hidden_dimension.level_2.going_up and hidden_dimension.level_2.going_up.reference then
-        teleport_players_around(
-            hidden_dimension.level_2.going_up.reference,
-            hidden_dimension.level_1.going_down.reference
-        )
+        teleport_players_around(hidden_dimension.level_2.going_up.reference, hidden_dimension.level_1.going_down.reference)
     end
 end
 
@@ -605,11 +575,7 @@ function Public.create_chests(surface, level, build_type)
 
     local function add_container(name, pos, direction, type)
         local container_entity
-        container_entity =
-            logistic_building.surface.find_entity(
-            name,
-            {logistic_building.position.x + pos.x, logistic_building.position.y + pos.y}
-        )
+        container_entity = logistic_building.surface.find_entity(name, {logistic_building.position.x + pos.x, logistic_building.position.y + pos.y})
         if container_entity == nil then
             local pos2 = {logistic_building.position.x + pos.x, logistic_building.position.y + pos.y}
             if name == 'loader' or name == 'fast-loader' or name == 'express-loader' then
@@ -622,20 +588,17 @@ function Public.create_chests(surface, level, build_type)
                 }
                 container_entity.direction = direction
             elseif name == 'pipe-to-ground' then
-                container_entity =
-                    logistic_building.surface.create_entity {name = name, position = pos2, force = game.forces.player}
+                container_entity = logistic_building.surface.create_entity {name = name, position = pos2, force = game.forces.player}
                 container_entity.direction = direction
             elseif name == energy then
-                container_entity =
-                    logistic_building.surface.create_entity {name = name, position = pos2, force = game.forces.player}
+                container_entity = logistic_building.surface.create_entity {name = name, position = pos2, force = game.forces.player}
                 container_entity.minable = false
                 container_entity.destructible = false
                 container_entity.operable = false
                 container_entity.power_production = 0
                 container_entity.electric_buffer_size = 10000000
             else
-                container_entity =
-                    logistic_building.surface.create_entity {name = name, position = pos2, force = game.forces.player}
+                container_entity = logistic_building.surface.create_entity {name = name, position = pos2, force = game.forces.player}
             end
         end
         container_entity.minable = false

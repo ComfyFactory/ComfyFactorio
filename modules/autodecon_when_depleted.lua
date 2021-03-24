@@ -1,4 +1,4 @@
-local event = require 'utils.event' 
+local event = require 'utils.event'
 local function is_depleted(drill, entity)
     local position = drill.position
     local area

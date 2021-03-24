@@ -204,10 +204,7 @@ local function draw_main_frame(player, target, chest_id)
     local text =
         tbl.add {
         type = 'label',
-        caption = format(
-            'Stores unlimited quantity of items (up to ' ..
-                amount_and_types .. ' types).\nRead the tooltip by hovering the question-mark above!'
-        )
+        caption = format('Stores unlimited quantity of items (up to ' .. amount_and_types .. ' types).\nRead the tooltip by hovering the question-mark above!')
     }
     text.style.single_line = false
 

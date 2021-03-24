@@ -23,8 +23,7 @@ Global.register(
 
 local function create_floaty_text(surface, position, name, count)
     if autostash.floating_text_y_offsets[position.x .. '_' .. position.y] then
-        autostash.floating_text_y_offsets[position.x .. '_' .. position.y] =
-            autostash.floating_text_y_offsets[position.x .. '_' .. position.y] - 0.5
+        autostash.floating_text_y_offsets[position.x .. '_' .. position.y] = autostash.floating_text_y_offsets[position.x .. '_' .. position.y] - 0.5
     else
         autostash.floating_text_y_offsets[position.x .. '_' .. position.y] = 0
     end
@@ -336,10 +335,7 @@ local function auto_stash(player, event)
     local r = 1
     local area = {{player.position.x - r, player.position.y - r}, {player.position.x + r, player.position.y + r}}
     if shift then
-        if
-            button == defines.mouse_button_type.right or
-                button == defines.mouse_button_type.left and autostash.insert_into_wagon
-         then
+        if button == defines.mouse_button_type.right or button == defines.mouse_button_type.left and autostash.insert_into_wagon then
             chests = get_nearby_chests(player, area)
         end
     else

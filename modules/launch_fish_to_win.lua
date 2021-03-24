@@ -98,8 +98,7 @@ local function fish_in_space_toggle_button(player)
     if player.gui.top['fish_in_space_toggle'] then
         return
     end
-    local button =
-        player.gui.top.add {name = 'fish_in_space_toggle', type = 'sprite-button', sprite = 'item/raw-fish', tooltip = 'Fish in Space'}
+    local button = player.gui.top.add {name = 'fish_in_space_toggle', type = 'sprite-button', sprite = 'item/raw-fish', tooltip = 'Fish in Space'}
     button.style.font = 'default-bold'
     button.style.minimal_height = 38
     button.style.minimal_width = 38

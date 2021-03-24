@@ -245,10 +245,7 @@ local function on_player_built_tile(event)
         return
     end
     local placed_tiles = event.tiles
-    if
-        placed_tiles[1].old_tile.name ~= 'deepwater' and placed_tiles[1].old_tile.name ~= 'water' and
-            placed_tiles[1].old_tile.name ~= 'water-green'
-     then
+    if placed_tiles[1].old_tile.name ~= 'deepwater' and placed_tiles[1].old_tile.name ~= 'water' and placed_tiles[1].old_tile.name ~= 'water-green' then
         return
     end
     local player = game.get_player(event.player_index)
@@ -354,12 +351,7 @@ local function on_player_used_capsule(event)
 
             local prefix = '{Capsule}'
             msg = format(player.name .. ' damaged: %s with: %s', get_entities(name, entities), name)
-            local ban_msg =
-                format(
-                'Damaged: %s with: %s. This action was performed automatically. Visit getcomfy.eu/discord for forgiveness',
-                get_entities(name, entities),
-                name
-            )
+            local ban_msg = format('Damaged: %s with: %s. This action was performed automatically. Visit getcomfy.eu/discord for forgiveness', get_entities(name, entities), name)
 
             do_action(player, prefix, msg, ban_msg, true)
         else
@@ -394,10 +386,7 @@ local function on_entity_died(event)
     local cause = event.cause
     local name
 
-    if
-        (cause and cause.name == 'character' and cause.player and cause.force.name == event.entity.force.name and
-            not blacklisted_types[event.entity.type])
-     then
+    if (cause and cause.name == 'character' and cause.player and cause.force.name == event.entity.force.name and not blacklisted_types[event.entity.type]) then
         local player = cause.player
         name = player.name
 
@@ -709,9 +698,7 @@ local function on_player_cancelled_crafting(event)
                 '{Crafting}',
                 player.name ..
                     ' canceled their craft of item ' ..
-                        event.recipe.name ..
-                            ' of total count ' ..
-                                crafting_queue_item_count .. ' in raw items (' .. crafted_items .. ' slots) but had no inventory left.'
+                        event.recipe.name .. ' of total count ' .. crafting_queue_item_count .. ' in raw items (' .. crafted_items .. ' slots) but had no inventory left.'
             )
         end
 
@@ -806,27 +793,18 @@ local function on_permission_group_edited(event)
                 action = k
             end
         end
-        Utils.log_msg(
-            '{Permission_Group}',
-            player.name .. ' edited ' .. group.name .. ' with type: ' .. event.type .. ' with action: ' .. action
-        )
+        Utils.log_msg('{Permission_Group}', player.name .. ' edited ' .. group.name .. ' with type: ' .. event.type .. ' with action: ' .. action)
     end
     if event.other_player_index then
         local other_player = game.get_player(event.other_player_index)
         if other_player and other_player.valid then
-            Utils.log_msg(
-                '{Permission_Group}',
-                player.name .. ' moved ' .. other_player.name .. ' with type: ' .. event.type .. ' to group: ' .. group.name
-            )
+            Utils.log_msg('{Permission_Group}', player.name .. ' moved ' .. other_player.name .. ' with type: ' .. event.type .. ' to group: ' .. group.name)
         end
     end
     local old_name = event.old_name
     local new_name = event.new_name
     if old_name and new_name then
-        Utils.log_msg(
-            '{Permission_Group}',
-            player.name .. ' renamed ' .. group.name .. '. New name: ' .. new_name .. '. Old Name: ' .. old_name
-        )
+        Utils.log_msg('{Permission_Group}', player.name .. ' renamed ' .. group.name .. '. New name: ' .. new_name .. '. Old Name: ' .. old_name)
     end
 end
 

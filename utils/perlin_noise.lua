@@ -166,16 +166,8 @@ function Perlin.noise(x, y, z, bit)
     -- Take the weighted average between all 8 unit cube coordinates
     return lerp(
         w,
-        lerp(
-            v,
-            lerp(u, grad(AAA, x, y, z, bit), grad(BAA, x - 1, y, z, bit)),
-            lerp(u, grad(ABA, x, y - 1, z), grad(BBA, x - 1, y - 1, z, bit))
-        ),
-        lerp(
-            v,
-            lerp(u, grad(AAB, x, y, z - 1, bit), grad(BAB, x - 1, y, z - 1)),
-            lerp(u, grad(ABB, x, y - 1, z - 1, bit), grad(BBB, x - 1, y - 1, z - 1, bit))
-        )
+        lerp(v, lerp(u, grad(AAA, x, y, z, bit), grad(BAA, x - 1, y, z, bit)), lerp(u, grad(ABA, x, y - 1, z), grad(BBA, x - 1, y - 1, z, bit))),
+        lerp(v, lerp(u, grad(AAB, x, y, z - 1, bit), grad(BAB, x - 1, y, z - 1)), lerp(u, grad(ABB, x, y - 1, z - 1, bit), grad(BBB, x - 1, y - 1, z - 1, bit)))
     )
 end
 

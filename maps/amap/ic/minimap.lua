@@ -89,8 +89,6 @@ local function kill_minimap(player)
     end
 end
 
-
-
 local function kill_frame(player)
     if player.gui.left.minimap_toggle_frame then
         local element = player.gui.left.minimap_toggle_frame.minimap_frame
@@ -122,10 +120,7 @@ local function draw_minimap(player, surface, position)
     local player_data = get_player_data(player)
     local frame = player.gui.left.minimap_toggle_frame
     if not frame then
-        frame =
-            player.gui.left.add(
-            {type = 'frame', direction = 'vertical', name = 'minimap_toggle_frame', caption = 'Minimap'}
-        )
+        frame = player.gui.left.add({type = 'frame', direction = 'vertical', name = 'minimap_toggle_frame', caption = 'Minimap'})
     end
     frame.visible = true
     local element = frame['minimap_frame']
@@ -169,8 +164,8 @@ function Public.update_minimap()
         if Functions.get_player_surface(ic, player) and player.gui.left.minimap_toggle_frame then
             kill_frame(player)
             draw_minimap(player)
-          else
-          kill_minimap(player)
+        else
+            kill_minimap(player)
         end
     end
 end

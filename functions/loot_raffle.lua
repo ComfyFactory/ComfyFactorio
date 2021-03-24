@@ -309,7 +309,7 @@ local tech_tier_list = {
     'grenade',
     'defender-capsule',
     'car',
-	'refined-concrete',
+    'refined-concrete',
     'refined-hazard-concrete',
     'modular-armor',
     'night-vision-equipment',

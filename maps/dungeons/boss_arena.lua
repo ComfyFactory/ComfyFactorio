@@ -50,8 +50,7 @@ local function wipedown_arena(arena)
     local player = arenatable.active_player[arena]
     local surface = game.surfaces['dungeons_floor_arena']
     local area = arena_areas[arena].area
-    local acids =
-        surface.find_entities_filtered {area = {{area[1][1] - 5, area[1][2] - 5}, {area[2][1] + 5, area[2][2] + 5}}, type = 'fire'}
+    local acids = surface.find_entities_filtered {area = {{area[1][1] - 5, area[1][2] - 5}, {area[2][1] + 5, area[2][2] + 5}}, type = 'fire'}
     for _, acid in pairs(acids) do
         acid.destroy()
     end
@@ -248,22 +247,9 @@ local function player_died(arena, player)
         local level = arenatable.bosses[player.index]
         --game.print({"dungeons_tiered.player_lost", player.name, arenatable.bosses[player.index]})
         if level % 10 == 0 and level > 0 then
-            Alert.alert_all_players(
-                8,
-                {'dungeons_tiered.player_lost', player.name, arenatable.bosses[player.index]},
-                {r = 0.8, g = 0.2, b = 0},
-                'entity/behemoth-biter',
-                0.7
-            )
+            Alert.alert_all_players(8, {'dungeons_tiered.player_lost', player.name, arenatable.bosses[player.index]}, {r = 0.8, g = 0.2, b = 0}, 'entity/behemoth-biter', 0.7)
         else
-            Alert.alert_player(
-                player,
-                8,
-                {'dungeons_tiered.player_lost', player.name, arenatable.bosses[player.index]},
-                {r = 0.8, g = 0.2, b = 0},
-                'entity/behemoth-biter',
-                0.7
-            )
+            Alert.alert_player(player, 8, {'dungeons_tiered.player_lost', player.name, arenatable.bosses[player.index]}, {r = 0.8, g = 0.2, b = 0}, 'entity/behemoth-biter', 0.7)
         end
     end
 end
@@ -279,22 +265,9 @@ local function boss_died(arena)
     --teleport_player_out(arena, player)
     RPG_F.gain_xp(player, 4 + level, true)
     if level % 10 == 0 and level > 0 then
-        Alert.alert_all_players(
-            8,
-            {'dungeons_tiered.player_won', player.name, arenatable.bosses[player.index]},
-            {r = 0.8, g = 0.2, b = 0},
-            'entity/behemoth-biter',
-            0.7
-        )
+        Alert.alert_all_players(8, {'dungeons_tiered.player_won', player.name, arenatable.bosses[player.index]}, {r = 0.8, g = 0.2, b = 0}, 'entity/behemoth-biter', 0.7)
     else
-        Alert.alert_player(
-            player,
-            8,
-            {'dungeons_tiered.player_won', player.name, arenatable.bosses[player.index]},
-            {r = 0.8, g = 0.2, b = 0},
-            'entity/behemoth-biter',
-            0.7
-        )
+        Alert.alert_player(player, 8, {'dungeons_tiered.player_won', player.name, arenatable.bosses[player.index]}, {r = 0.8, g = 0.2, b = 0}, 'entity/behemoth-biter', 0.7)
     end
     --game.print({"dungeons_tiered.player_won", player.name, arenatable.bosses[player.index]})
     arenatable.bosses[player.index] = arenatable.bosses[player.index] + 1
@@ -420,18 +393,14 @@ local function shoot(surface, biter, player)
     if player.surface ~= surface then
         return
     end
-    surface.create_entity(
-        {name = 'destroyer-capsule', position = biter.position, target = player.character, source = biter, speed = 1, force = biter.force}
-    )
+    surface.create_entity({name = 'destroyer-capsule', position = biter.position, target = player.character, source = biter, speed = 1, force = biter.force})
 end
 
 local function slow(surface, biter, player)
     if player.surface ~= surface then
         return
     end
-    surface.create_entity(
-        {name = 'slowdown-capsule', position = biter.position, target = player.character, source = biter, speed = 1, max_range = 100}
-    )
+    surface.create_entity({name = 'slowdown-capsule', position = biter.position, target = player.character, source = biter, speed = 1, max_range = 100})
 end
 
 local function acid_spit(surface, biter, player, tier)
@@ -524,9 +493,9 @@ local function on_init()
     local arena_surface = game.create_surface('dungeons_floor_arena')
     local map_gen_settings = arena_surface.map_gen_settings
     BiterHealthBooster.set_surface_activity('dungeons_floor_arena', true)
-  	map_gen_settings.height = 3
-  	map_gen_settings.width = 3
-  	arena_surface.map_gen_settings = map_gen_settings
+    map_gen_settings.height = 3
+    map_gen_settings.width = 3
+    arena_surface.map_gen_settings = map_gen_settings
     arena.set_allows_action(defines.input_action.cancel_craft, false)
     arena.set_allows_action(defines.input_action.edit_permission_group, false)
     arena.set_allows_action(defines.input_action.import_permissions_string, false)

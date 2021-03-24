@@ -167,8 +167,7 @@ local function create_choppy_stats_gui(player)
     captions[1].tooltip = 'Amount of ores harvested.'
 
     global.total_ores_mined =
-        global.stats_ores_found + game.forces.player.item_production_statistics.get_input_count('coal') +
-        game.forces.player.item_production_statistics.get_input_count('iron-ore') +
+        global.stats_ores_found + game.forces.player.item_production_statistics.get_input_count('coal') + game.forces.player.item_production_statistics.get_input_count('iron-ore') +
         game.forces.player.item_production_statistics.get_input_count('copper-ore') +
         game.forces.player.item_production_statistics.get_input_count('uranium-ore')
 
@@ -387,11 +386,7 @@ local function on_chunk_generated(event)
     surface.set_tiles(tiles, true)
 
     for _, e in pairs(surface.find_entities_filtered({area = event.area, type = 'unit-spawner'})) do
-        for _, entity in pairs(
-            e.surface.find_entities_filtered(
-                {area = {{e.position.x - 7, e.position.y - 7}, {e.position.x + 7, e.position.y + 7}}, force = 'neutral'}
-            )
-        ) do
+        for _, entity in pairs(e.surface.find_entities_filtered({area = {{e.position.x - 7, e.position.y - 7}, {e.position.x + 7, e.position.y + 7}}, force = 'neutral'})) do
             if entity.valid then
                 entity.destroy()
             end
@@ -548,8 +543,7 @@ local function on_player_mined_entity(event)
             {
                 name = 'flying-text',
                 position = entity.position,
-                text = '+' ..
-                    amount .. ' [item=' .. main_item .. '] +' .. second_item_amount .. ' [item=' .. second_item .. ']',
+                text = '+' .. amount .. ' [item=' .. main_item .. '] +' .. second_item_amount .. ' [item=' .. second_item .. ']',
                 color = {r = 0.8, g = 0.8, b = 0.8}
             }
         )
@@ -621,8 +615,7 @@ local function init()
     local newPlace = init_surface(game.create_surface('choppy'))
     local surface = game.surfaces['choppy']
     newPlace.request_to_generate_chunks({0, 0}, 4)
-    global.surface_choppy_elevator =
-        surface.create_entity({name = 'player-port', position = {1, -4}, force = game.forces.neutral})
+    global.surface_choppy_elevator = surface.create_entity({name = 'player-port', position = {1, -4}, force = game.forces.neutral})
     global.surface_choppy_chest = Module.create_chest(surface, {1, -8}, storage)
 
     rendering.draw_text {

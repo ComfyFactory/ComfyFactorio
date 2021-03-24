@@ -2429,7 +2429,9 @@ Event.add(
 
         local winter_mode = WPT.get('winter_mode')
         if winter_mode then
-            rendering.draw_sprite({sprite = "tile/lab-white", x_scale = 32, y_scale = 32, target = left_top, surface = surface, tint = {r = 0.6, g = 0.6, b = 0.6, a = 0.6}, render_layer = "ground"})
+            rendering.draw_sprite(
+                {sprite = 'tile/lab-white', x_scale = 32, y_scale = 32, target = left_top, surface = surface, tint = {r = 0.6, g = 0.6, b = 0.6, a = 0.6}, render_layer = 'ground'}
+            )
         end
 
         if left_top.y == -128 and left_top.x == -128 then

@@ -56,8 +56,7 @@ end
 function Public.passive_pollution_rate(jumps, difficulty, filter_upgrades)
     local baserate = 1 * jumps
 
-    local modifiedrate =
-        baserate * Public.pollution_filter_upgrade_factor(filter_upgrades) * math_max(0, difficulty_sloped(difficulty, 5 / 4))
+    local modifiedrate = baserate * Public.pollution_filter_upgrade_factor(filter_upgrades) * math_max(0, difficulty_sloped(difficulty, 5 / 4))
 
     return modifiedrate
 end
@@ -249,7 +248,7 @@ function Public.market_offers()
             price = {{'coin', 3000}, {'express-transport-belt', 10}, {'fast-loader', 1}},
             offer = {type = 'give-item', item = 'express-loader', count = 1}
         },
-        {price = {{'coin', 2}, {'steel-plate', 1}, {'explosives', 10}}, offer = {type = 'give-item', item = 'land-mine', count = 1}},
+        {price = {{'coin', 2}, {'steel-plate', 1}, {'explosives', 10}}, offer = {type = 'give-item', item = 'land-mine', count = 1}}
     }
 end
 function Public.initial_cargo_boxes()

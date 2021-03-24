@@ -109,11 +109,7 @@ local function do_splash_damage_around_entity(source_entity, player)
                         surface.create_entity({name = 'blood-fountain', position = entity.position})
                     end
                 end
-                local damage =
-                    math_random(
-                    math.ceil((damage_min * research_damage_bonus) / 16),
-                    math.ceil((damage_max * research_damage_bonus) / 16)
-                )
+                local damage = math_random(math.ceil((damage_min * research_damage_bonus) / 16), math.ceil((damage_max * research_damage_bonus) / 16))
                 entity.damage(damage, player.force, 'physical')
             end
         end
@@ -148,8 +144,7 @@ local function enhance(event)
     event.entity.health = event.entity.health + event.final_damage_amount
 
     local research_damage_bonus = player.force.get_ammo_damage_modifier('laser-turret') + 1
-    local damage =
-        math_random(math.ceil(damage_min * research_damage_bonus), math.ceil(damage_max * research_damage_bonus))
+    local damage = math_random(math.ceil(damage_min * research_damage_bonus), math.ceil(damage_max * research_damage_bonus))
     event.entity.damage(damage, player.force, 'physical')
     return true
 end

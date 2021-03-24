@@ -286,11 +286,7 @@ local function process_chunk(area)
     surface.set_tiles(tiles, true)
 
     for _, e in pairs(surface.find_entities_filtered({area = area, type = 'unit-spawner'})) do
-        for _, entity in pairs(
-            e.surface.find_entities_filtered(
-                {area = {{e.position.x - 7, e.position.y - 7}, {e.position.x + 7, e.position.y + 7}}, force = 'neutral'}
-            )
-        ) do
+        for _, entity in pairs(e.surface.find_entities_filtered({area = {{e.position.x - 7, e.position.y - 7}, {e.position.x + 7, e.position.y + 7}}, force = 'neutral'})) do
             if entity.valid then
                 entity.destroy()
             end
@@ -415,9 +411,8 @@ local function on_player_joined_game(event)
 
     global.average_worm_amount_per_chunk = 2
     global.worm_distance = surface.map_gen_settings.starting_area * 300
-    game.forces.player.technologies["landfill"].enabled = false
-    game.forces.player.technologies["spidertron"].enabled = false
-    
+    game.forces.player.technologies['landfill'].enabled = false
+    game.forces.player.technologies['spidertron'].enabled = false
 
     if global.choppy_nightmare then
         surface.daytime = 0.5
@@ -516,10 +511,7 @@ local function treasure(player, amount)
     end
     global.choppy_loaderswon = global.choppy_loaderswon + 1
 
-    player.print(
-        "You notice a strange device underneath the roots of the tree. It's a " .. prize .. ', talk about lucky!!',
-        {r = 0.98, g = 0.66, b = 0.22}
-    )
+    player.print("You notice a strange device underneath the roots of the tree. It's a " .. prize .. ', talk about lucky!!', {r = 0.98, g = 0.66, b = 0.22})
 end
 
 local function generate_treevein(entity, player)
@@ -550,11 +542,7 @@ local function generate_treevein(entity, player)
         --local size_raffle = {{"huge", 24, 40},{"big", 16, 28},{"small", 8, 18},{"tiny", 5, 10}}
         local size_raffle = {{'huge', 24, 40}, {'big', 16, 28}, {'small', 8, 18}}
         local size = size_raffle[math_random(1, #size_raffle)]
-        player.print(
-            "You notice something underneath the roots of the tree. It's a " ..
-                size[1] .. ' vein of ' .. mined_loot .. '!!',
-            {r = 0.98, g = 0.66, b = 0.22}
-        )
+        player.print("You notice something underneath the roots of the tree. It's a " .. size[1] .. ' vein of ' .. mined_loot .. '!!', {r = 0.98, g = 0.66, b = 0.22})
         --tile_distance_to_center = math.sqrt(tile_distance_to_center)
         local ore_entities_placed = 0
         local modifier_raffle = {{0, -1}, {-1, 0}, {1, 0}, {0, 1}}
@@ -648,8 +636,7 @@ local function on_player_mined_entity(event)
             {
                 name = 'flying-text',
                 position = entity.position,
-                text = '+' ..
-                    amount .. ' [item=' .. main_item .. '] +' .. second_item_amount .. ' [item=' .. second_item .. ']',
+                text = '+' .. amount .. ' [item=' .. main_item .. '] +' .. second_item_amount .. ' [item=' .. second_item .. ']',
                 color = {r = 0.8, g = 0.8, b = 0.8}
             }
         )

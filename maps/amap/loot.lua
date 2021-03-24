@@ -144,7 +144,6 @@ function Public.cool(surface, position, chest, magic)
     for _, item_stack in pairs(item_stacks) do
         container.insert(item_stack)
     end
-    
 
     for _ = 1, 3, 1 do
         if random(1, 8) == 1 then

@@ -326,7 +326,7 @@ function Simplex.d2(xin, yin, seed)
         i1 = 0
         j1 = 1
     end
-     -- upper triangle, YX order: (0,0)->(0,1)->(1,1)
+    -- upper triangle, YX order: (0,0)->(0,1)->(1,1)
     -- A step of (1,0) in (i,j) means a step of (1-c,-c) in (x,y), and
     -- a step of (0,1) in (i,j) means a step of (-c,1-c) in (x,y), where
     -- c = (3-sqrt(3))/6

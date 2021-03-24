@@ -15,176 +15,197 @@ dDvwOggD5OVRCgB6jdiQHZDCsKHJ2HWHkayH80hyBGB6Q80ERUHL
 NEADqAUOPGCGe4aYHheYIfxHOY7MDKDGCBVX4BiEB5IBmYUhBZwY
 GZAAGDyOnLntR4A3uWt/A==<<<
 ]]
-
-local Biters = require "modules.towny.biters"
-local Combat_balance = require "modules.towny.combat_balance"
-local Building = require "modules.towny.building"
-local Info = require "modules.towny.info"
-local Market = require "modules.towny.market"
-local Team = require "modules.towny.team"
-local Town_center = require "modules.towny.town_center"
-local Table = require "modules.towny.table"
-require "modules.custom_death_messages"
-require "modules.flashlight_toggle_button"
-require "modules.global_chat_toggle"
-require "modules.biters_yield_coins"
+local Biters = require 'modules.towny.biters'
+local Combat_balance = require 'modules.towny.combat_balance'
+local Building = require 'modules.towny.building'
+local Info = require 'modules.towny.info'
+local Market = require 'modules.towny.market'
+local Team = require 'modules.towny.team'
+local Town_center = require 'modules.towny.town_center'
+local Table = require 'modules.towny.table'
+require 'modules.custom_death_messages'
+require 'modules.flashlight_toggle_button'
+require 'modules.global_chat_toggle'
+require 'modules.biters_yield_coins'
 
 local function on_player_joined_game(event)
-	local townytable = Table.get_table()
-	local player = game.players[event.player_index]
-	Info.toggle_button(player)
-	Info.show(player)
-	Info.new_town_button(player)
+    local townytable = Table.get_table()
+    local player = game.players[event.player_index]
+    Info.toggle_button(player)
+    Info.show(player)
+    Info.new_town_button(player)
 
-	Team.set_player_color(player)
+    Team.set_player_color(player)
 
-	if player.force.index ~= 1 then return end
+    if player.force.index ~= 1 then
+        return
+    end
 
-	Team.set_player_to_outlander(player)
+    Team.set_player_to_outlander(player)
 
-	if player.online_time == 0 then
-		Team.give_outlander_items(player)
-		return
-	end
+    if player.online_time == 0 then
+        Team.give_outlander_items(player)
+        return
+    end
 
-	if not townytable.requests[player.index] then return end
-	if townytable.requests[player.index] ~= "kill-character" then return end
-	if player.character then
-		if player.character.valid then
-			player.character.die()
-		end
-	end
-	townytable.requests[player.index] = nil
+    if not townytable.requests[player.index] then
+        return
+    end
+    if townytable.requests[player.index] ~= 'kill-character' then
+        return
+    end
+    if player.character then
+        if player.character.valid then
+            player.character.die()
+        end
+    end
+    townytable.requests[player.index] = nil
 end
 
 local function on_player_respawned(event)
-	local player = game.players[event.player_index]
-	if player.force.index ~= 1 then return end
-	Team.set_player_to_outlander(player)
-	Team.give_outlander_items(player)
-	Biters.clear_spawn_for_player(player)
+    local player = game.players[event.player_index]
+    if player.force.index ~= 1 then
+        return
+    end
+    Team.set_player_to_outlander(player)
+    Team.give_outlander_items(player)
+    Biters.clear_spawn_for_player(player)
 end
 
 local function on_player_used_capsule(event)
-	Combat_balance.fish(event)
+    Combat_balance.fish(event)
 end
 
 local function on_built_entity(event)
-	if Town_center.found(event) then return end
-	if Building.prevent_isolation(event) then return end
-	Building.restrictions(event)
+    if Town_center.found(event) then
+        return
+    end
+    if Building.prevent_isolation(event) then
+        return
+    end
+    Building.restrictions(event)
 end
 
 local function on_robot_built_entity(event)
-	if Building.prevent_isolation(event) then return end
-	Building.restrictions(event)
+    if Building.prevent_isolation(event) then
+        return
+    end
+    Building.restrictions(event)
 end
 
 local function on_player_built_tile(event)
-	Building.prevent_isolation_landfill(event)
+    Building.prevent_isolation_landfill(event)
 end
 
 local function on_robot_built_tile(event)
-	Building.prevent_isolation_landfill(event)
+    Building.prevent_isolation_landfill(event)
 end
 
 local function on_entity_died(event)
-	local entity = event.entity
-	if entity.name == "market" then
-		Team.kill_force(entity.force.name)
-	end
+    local entity = event.entity
+    if entity.name == 'market' then
+        Team.kill_force(entity.force.name)
+    end
 end
 
 local function on_entity_damaged(event)
-	local entity = event.entity
-	if entity.name == "market" then
-		Town_center.set_market_health(entity, event.final_damage_amount)
-	end
+    local entity = event.entity
+    if entity.name == 'market' then
+        Town_center.set_market_health(entity, event.final_damage_amount)
+    end
 end
 
 local function on_player_repaired_entity(event)
-	local entity = event.entity
-	if entity.name == "market" then
-		Town_center.set_market_health(entity, -4)
-	end
+    local entity = event.entity
+    if entity.name == 'market' then
+        Town_center.set_market_health(entity, -4)
+    end
 end
 
 local function on_player_dropped_item(event)
-	local player = game.players[event.player_index]
-	local entity = event.entity
-	if entity.stack.name == "raw-fish" then
-		Team.ally_town(player, entity)
-		return
-	end
-	if entity.stack.name == "coal" then
-		Team.declare_war(player, entity)
-		return
-	end
+    local player = game.players[event.player_index]
+    local entity = event.entity
+    if entity.stack.name == 'raw-fish' then
+        Team.ally_town(player, entity)
+        return
+    end
+    if entity.stack.name == 'coal' then
+        Team.declare_war(player, entity)
+        return
+    end
 end
 
 local function on_console_command(event)
-	Team.set_town_color(event)
+    Team.set_town_color(event)
 end
 
 local function on_market_item_purchased(event)
-	Market.offer_purchased(event)
-	Market.refresh_offers(event)
+    Market.offer_purchased(event)
+    Market.refresh_offers(event)
 end
 
 local function on_gui_opened(event)
-	Market.refresh_offers(event)
+    Market.refresh_offers(event)
 end
 
 local function on_gui_click(event)
-	Info.close(event)
-	Info.toggle(event)
-	Info.toggle_town(event)
+    Info.close(event)
+    Info.toggle(event)
+    Info.toggle_town(event)
 end
 
 local function on_research_finished(event)
-	Combat_balance.research(event)
-	local townytable = Table.get_table()
-	local town_center = townytable.town_centers[event.research.force.name]
-	if not town_center then return end
-	town_center.research_counter = town_center.research_counter + 1
+    Combat_balance.research(event)
+    local townytable = Table.get_table()
+    local town_center = townytable.town_centers[event.research.force.name]
+    if not town_center then
+        return
+    end
+    town_center.research_counter = town_center.research_counter + 1
 end
 
 local function on_player_died(event)
-	local player = game.players[event.player_index]
-	if not player.character then return end
-	if not player.character.valid then return end
-	Team.reveal_entity_to_all(player.character)
+    local player = game.players[event.player_index]
+    if not player.character then
+        return
+    end
+    if not player.character.valid then
+        return
+    end
+    Team.reveal_entity_to_all(player.character)
 end
 
 local function on_player_changed_force(event)
-	Info.update_new_town_button(game.players[event.player_index])
+    Info.update_new_town_button(game.players[event.player_index])
 end
 
 local tick_actions = {
-	[60 * 5] = Team.update_town_chart_tags,
-	[60 * 10] = Team.set_all_player_colors,
-	[60 * 20] = Biters.wipe_units_out_of_evo_range,
-	[60 * 25] = Biters.unit_groups_start_moving,
-	[60 * 45] = Biters.validate_swarms,
-	[60 * 50] = Biters.swarm,
-	[60 * 55] = Biters.set_evolution,
+    [60 * 5] = Team.update_town_chart_tags,
+    [60 * 10] = Team.set_all_player_colors,
+    [60 * 20] = Biters.wipe_units_out_of_evo_range,
+    [60 * 25] = Biters.unit_groups_start_moving,
+    [60 * 45] = Biters.validate_swarms,
+    [60 * 50] = Biters.swarm,
+    [60 * 55] = Biters.set_evolution
 }
 
 local function on_nth_tick(event)
-	local tick = game.tick % 3600
-	if not tick_actions[tick] then return end
-	tick_actions[tick]()
+    local tick = game.tick % 3600
+    if not tick_actions[tick] then
+        return
+    end
+    tick_actions[tick]()
 end
 
 local function on_init()
-	game.difficulty_settings.technology_price_multiplier = 0.30
-	game.map_settings.enemy_evolution.time_factor = 0
-	game.map_settings.enemy_evolution.destroy_factor = 0
-	game.map_settings.enemy_evolution.pollution_factor = 0
-	game.map_settings.pollution.enabled = false
-	game.map_settings.enemy_expansion.enabled = true
+    game.difficulty_settings.technology_price_multiplier = 0.30
+    game.map_settings.enemy_evolution.time_factor = 0
+    game.map_settings.enemy_evolution.destroy_factor = 0
+    game.map_settings.enemy_evolution.pollution_factor = 0
+    game.map_settings.pollution.enabled = false
+    game.map_settings.enemy_expansion.enabled = true
 
-	Team.setup_player_force()
+    Team.setup_player_force()
 end
 
 local Event = require 'utils.event'

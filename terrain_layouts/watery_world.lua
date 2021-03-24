@@ -13,9 +13,7 @@ SdABNhCuMsYIUyHfgdGB3mYrCRCCVC/EQOyG1IQPjwJs/Ywkv1oD
 sGMCGR/oImoOGCJBi6QhSlw4gUz3DXA8LzADuM5zHdgZAYxQKq+A
 MUgPEjihRgFoQUcmBkQAJi8BPc6XQMAy367Og==<<<
 ]]
-
-
-local get_noise = require "utils.get_noise"
+local get_noise = require 'utils.get_noise'
 local math_random = math.random
 local math_floor = math.floor
 local math_abs = math.abs
@@ -23,52 +21,60 @@ local math_abs = math.abs
 local spawn_size = 160
 local spawn_check = spawn_size + 96
 
-local waters = {"deepwater", "water"}
+local waters = {'deepwater', 'water'}
 
 local function is_water(position, noise, seed)
-	if math_abs(position.y) <= spawn_check or math_abs(position.x) <= spawn_check then
-		local border_noise = get_noise("cave_ponds", position, seed)
-		if math_abs(position.x) + border_noise * 10 < spawn_size and math_abs(position.y) + border_noise * 10 < spawn_size then return false end
-		if math_abs(position.x) + border_noise * 10 < spawn_size + 32 and math_abs(position.y) + border_noise * 10 < spawn_size + 32 then return true end
-	end
-	if math_abs(noise) < 0.15 then return end
-	if math_abs(noise) > 0.80 then return end
-	return true
+    if math_abs(position.y) <= spawn_check or math_abs(position.x) <= spawn_check then
+        local border_noise = get_noise('cave_ponds', position, seed)
+        if math_abs(position.x) + border_noise * 10 < spawn_size and math_abs(position.y) + border_noise * 10 < spawn_size then
+            return false
+        end
+        if math_abs(position.x) + border_noise * 10 < spawn_size + 32 and math_abs(position.y) + border_noise * 10 < spawn_size + 32 then
+            return true
+        end
+    end
+    if math_abs(noise) < 0.15 then
+        return
+    end
+    if math_abs(noise) > 0.80 then
+        return
+    end
+    return true
 end
 
-local function on_chunk_generated(event)	
-	local surface = event.surface
-	local seed = surface.map_gen_settings.seed
-	local left_top_x = event.area.left_top.x
-	local left_top_y = event.area.left_top.y
-	local set_tiles = surface.set_tiles
-	local get_tile = surface.get_tile
-	local position
-	local noise
-	
-	for x = 0, 31, 1 do
-		for y = 0, 31, 1 do			
-			position = {x = left_top_x + x, y = left_top_y + y}				
-			if not get_tile(position).collides_with("resource-layer") then 
-				noise = get_noise("watery_world", position, seed)
-				if is_water(position, noise, seed) then
-					set_tiles({{name = waters[math_floor(noise * 10 % 2 + 1)], position = position}}, true)
-					if math_random(1, 128) == 1 then 
-						surface.create_entity({name = global.watery_world_fishes[math_random(1, #global.watery_world_fishes)], position = position})
-					end
-				end
-			end				
-		end
-	end
+local function on_chunk_generated(event)
+    local surface = event.surface
+    local seed = surface.map_gen_settings.seed
+    local left_top_x = event.area.left_top.x
+    local left_top_y = event.area.left_top.y
+    local set_tiles = surface.set_tiles
+    local get_tile = surface.get_tile
+    local position
+    local noise
+
+    for x = 0, 31, 1 do
+        for y = 0, 31, 1 do
+            position = {x = left_top_x + x, y = left_top_y + y}
+            if not get_tile(position).collides_with('resource-layer') then
+                noise = get_noise('watery_world', position, seed)
+                if is_water(position, noise, seed) then
+                    set_tiles({{name = waters[math_floor(noise * 10 % 2 + 1)], position = position}}, true)
+                    if math_random(1, 128) == 1 then
+                        surface.create_entity({name = global.watery_world_fishes[math_random(1, #global.watery_world_fishes)], position = position})
+                    end
+                end
+            end
+        end
+    end
 end
 
 local function on_init()
-	global.watery_world_fishes = {}
-	for _, prototype in pairs(game.entity_prototypes) do
-		if prototype.type == "fish" then
-			table.insert(global.watery_world_fishes, prototype.name)
-		end
-	end
+    global.watery_world_fishes = {}
+    for _, prototype in pairs(game.entity_prototypes) do
+        if prototype.type == 'fish' then
+            table.insert(global.watery_world_fishes, prototype.name)
+        end
+    end
 end
 
 local Event = require 'utils.event'

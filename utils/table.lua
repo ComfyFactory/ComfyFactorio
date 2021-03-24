@@ -178,11 +178,11 @@ function table.get_random_weighted_chances(weighted_table, item_index, weight_in
     for _, v in pairs(weighted_table) do
         total_weight = total_weight + v[weight_index]
     end
-	local chance_table = {}
-	for k, v in pairs(weighted_table) do
+    local chance_table = {}
+    for k, v in pairs(weighted_table) do
         chance_table[k] = v[weight_index] / total_weight
     end
-	return chance_table
+    return chance_table
 end
 
 --- Creates a fisher-yates shuffle of a sequential number-indexed table

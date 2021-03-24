@@ -2,11 +2,7 @@ local radius = 3
 
 local function splash_damage(surface, position, final_damage_amount)
     local damage = math.random(math.floor(final_damage_amount * 3), math.floor(final_damage_amount * 4))
-    for _, e in pairs(
-        surface.find_entities_filtered(
-            {area = {{position.x - radius, position.y - radius}, {position.x + radius, position.y + radius}}}
-        )
-    ) do
+    for _, e in pairs(surface.find_entities_filtered({area = {{position.x - radius, position.y - radius}, {position.x + radius, position.y + radius}}})) do
         if e.valid and e.health then
             local distance_from_center = math.sqrt((e.position.x - position.x) ^ 2 + (e.position.y - position.y) ^ 2)
             if distance_from_center <= radius then

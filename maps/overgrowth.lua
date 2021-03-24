@@ -225,13 +225,7 @@ local function on_player_mined_entity(event)
     trap(entity)
 
     if event.player_index then
-        create_particles(
-            entity.surface,
-            'wooden-particle',
-            entity.position,
-            128,
-            game.players[event.player_index].position
-        )
+        create_particles(entity.surface, 'wooden-particle', entity.position, 128, game.players[event.player_index].position)
         game.players[event.player_index].insert({name = 'coin', count = 1})
         return
     end

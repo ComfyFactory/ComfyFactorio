@@ -89,8 +89,7 @@ local function create_wave_gui(player)
         progressbar.style.maximal_width = 120
         progressbar.style.top_padding = 10
     else
-        local time_remaining =
-            math.floor(((global.wave_grace_period - (game.tick % global.wave_grace_period)) / 60) / 60)
+        local time_remaining = math.floor(((global.wave_grace_period - (game.tick % global.wave_grace_period)) / 60) / 60)
         if time_remaining <= 0 then
             global.wave_grace_period = nil
             return
@@ -443,10 +442,7 @@ local boss_wave_names = {
 local function spawn_boss_units(surface)
     local Diff = Difficulty.get()
     if boss_wave_names[global.wave_count] then
-        game.print(
-            'Boss Wave ' .. global.wave_count .. ' - - ' .. boss_wave_names[global.wave_count],
-            {r = 0.8, g = 0.1, b = 0.1}
-        )
+        game.print('Boss Wave ' .. global.wave_count .. ' - - ' .. boss_wave_names[global.wave_count], {r = 0.8, g = 0.1, b = 0.1})
     else
         game.print('Boss Wave ' .. global.wave_count, {r = 0.8, g = 0.1, b = 0.1})
     end
@@ -466,12 +462,7 @@ local function spawn_boss_units(surface)
             if pos then
                 local biter = surface.create_entity({name = entry.name, position = pos})
                 global.boss_biters[biter.unit_number] = biter
-                add_boss_unit(
-                    biter,
-                    global.biter_evasion_health_increase_factor * 8 *
-                        difficulties_votes[Diff.difficulty_vote_index].strength_modifier,
-                    0.70
-                )
+                add_boss_unit(biter, global.biter_evasion_health_increase_factor * 8 * difficulties_votes[Diff.difficulty_vote_index].strength_modifier, 0.70)
                 biter_group.add_member(biter)
             end
         end
@@ -568,8 +559,7 @@ local function wake_up_the_biters(surface)
 		})
 
 	]]
-    local nearest_player_unit =
-        surface.find_nearest_enemy({position = {x = 256, y = 0}, max_distance = 512, force = 'enemy'})
+    local nearest_player_unit = surface.find_nearest_enemy({position = {x = 256, y = 0}, max_distance = 512, force = 'enemy'})
     if not nearest_player_unit then
         return
     end
@@ -674,8 +664,7 @@ local function damage_entity_outside_of_fence(e)
         return
     end
 
-    e.health =
-        e.health - math_random(math.floor(e.prototype.max_health * 0.05), math.floor(e.prototype.max_health * 0.1))
+    e.health = e.health - math_random(math.floor(e.prototype.max_health * 0.05), math.floor(e.prototype.max_health * 0.1))
     if e.health <= 0 then
         e.die('enemy')
     end
@@ -914,8 +903,7 @@ local function is_game_lost()
                 t.add(
                 {
                     type = 'label',
-                    caption = math.floor(((global.market_age / 60) / 60) / 60) ..
-                        ' hours ' .. math.ceil((global.market_age % 216000 / 60) / 60) .. ' minutes'
+                    caption = math.floor(((global.market_age / 60) / 60) / 60) .. ' hours ' .. math.ceil((global.market_age % 216000 / 60) / 60) .. ' minutes'
                 }
             )
             l.style.font = 'default-bold'
@@ -931,8 +919,7 @@ local function is_game_lost()
             local l = t.add({type = 'label', caption = 'MVP Defender >> '})
             l.style.font = 'default-listbox'
             l.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-            local l =
-                t.add({type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score})
+            local l = t.add({type = 'label', caption = mvp.killscore.name .. ' with a score of ' .. mvp.killscore.score})
             l.style.font = 'default-bold'
             l.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 
@@ -986,10 +973,7 @@ local function is_game_lost()
 end
 
 local function damage_entities_in_radius(surface, position, radius, damage)
-    local entities_to_damage =
-        surface.find_entities_filtered(
-        {area = {{position.x - radius, position.y - radius}, {position.x + radius, position.y + radius}}}
-    )
+    local entities_to_damage = surface.find_entities_filtered({area = {{position.x - radius, position.y - radius}, {position.x + radius, position.y + radius}}})
     for _, entity in pairs(entities_to_damage) do
         if entity.valid then
             if entity.health and entity.name ~= 'land-mine' then
@@ -1084,12 +1068,7 @@ local function on_entity_died(event)
                 for _, visual in pairs(splash.visuals) do
                     surface.create_entity({name = visual, position = event.entity.position})
                 end
-                damage_entities_in_radius(
-                    surface,
-                    event.entity.position,
-                    splash.radius,
-                    math_random(splash.damage_min, splash.damage_max)
-                )
+                damage_entities_in_radius(surface, event.entity.position, splash.radius, math_random(splash.damage_min, splash.damage_max))
                 return
             end
         end
@@ -1378,20 +1357,13 @@ local function on_chunk_generated(event)
     if left_top.x <= -196 then
         local search_area = {{left_top.x - 32, left_top.y - 32}, {left_top.x + 32, left_top.y + 32}}
         if surface.count_tiles_filtered({name = 'water', area = search_area}) == 0 and math_random(1, 64) == 1 then
-            map_functions.draw_noise_tile_circle(
-                {x = left_top.x + math_random(1, 30), y = left_top.y + math_random(1, 30)},
-                'water',
-                surface,
-                math_random(6, 12)
-            )
+            map_functions.draw_noise_tile_circle({x = left_top.x + math_random(1, 30), y = left_top.y + math_random(1, 30)}, 'water', surface, math_random(6, 12))
         end
 
         if not global.spawn_ores_generated then
             local spawn_position_x = -76
 
-            surface.create_entity(
-                {name = 'electric-beam', position = {160, -96}, source = {160, -96}, target = {160, 96}}
-            )
+            surface.create_entity({name = 'electric-beam', position = {160, -96}, source = {160, -96}, target = {160, 96}})
 
             local tiles = {}
             local replacement_tile = get_replacement_tile(surface)
@@ -1446,12 +1418,8 @@ local function on_chunk_generated(event)
                     local pos = {x = global.market.position.x + x, y = global.market.position.y + y}
                     local distance_to_center = math.sqrt(x ^ 2 + y ^ 2)
                     if distance_to_center > 8 and distance_to_center < 15 then
-                        if
-                            math_random(1, 3) == 1 and
-                                surface.can_place_entity({name = 'wooden-chest', position = pos, force = 'player'})
-                         then
-                            local chest =
-                                surface.create_entity({name = 'wooden-chest', position = pos, force = 'player'})
+                        if math_random(1, 3) == 1 and surface.can_place_entity({name = 'wooden-chest', position = pos, force = 'player'}) then
+                            local chest = surface.create_entity({name = 'wooden-chest', position = pos, force = 'player'})
                         end
                     end
                 end
@@ -1572,15 +1540,9 @@ local function on_chunk_generated(event)
                         if surface.can_place_entity({name = 'biter-spawner', force = 'decoratives', position = pos}) then
                             local entity
                             if math_random(1, 4) == 1 then
-                                entity =
-                                    surface.create_entity(
-                                    {name = 'spitter-spawner', force = 'decoratives', position = pos}
-                                )
+                                entity = surface.create_entity({name = 'spitter-spawner', force = 'decoratives', position = pos})
                             else
-                                entity =
-                                    surface.create_entity(
-                                    {name = 'biter-spawner', force = 'decoratives', position = pos}
-                                )
+                                entity = surface.create_entity({name = 'biter-spawner', force = 'decoratives', position = pos})
                             end
                             entity.active = false
                             entity.destructible = false
@@ -1598,10 +1560,7 @@ local function on_chunk_generated(event)
             decorative_names[#decorative_names + 1] = k
         end
     end
-    surface.regenerate_decorative(
-        decorative_names,
-        {{x = math.floor(event.area.left_top.x / 32), y = math.floor(event.area.left_top.y / 32)}}
-    )
+    surface.regenerate_decorative(decorative_names, {{x = math.floor(event.area.left_top.x / 32), y = math.floor(event.area.left_top.y / 32)}})
 end
 
 local function on_built_entity(event)
@@ -1619,10 +1578,7 @@ local function on_built_entity(event)
                 {
                     name = 'flying-text',
                     position = entity.position,
-                    text = global.entity_limits[entity.name].placed ..
-                        ' / ' ..
-                            global.entity_limits[entity.name].limit ..
-                                ' ' .. global.entity_limits[entity.name].str .. 's',
+                    text = global.entity_limits[entity.name].placed .. ' / ' .. global.entity_limits[entity.name].limit .. ' ' .. global.entity_limits[entity.name].str .. 's',
                     color = {r = 0.98, g = 0.66, b = 0.22}
                 }
             )
@@ -1641,8 +1597,7 @@ local function on_built_entity(event)
             if get_score then
                 if get_score[player.force.name] then
                     if get_score[player.force.name].players[player.name] then
-                        get_score[player.force.name].players[player.name].built_entities =
-                            get_score[player.force.name].players[player.name].built_entities - 1
+                        get_score[player.force.name].players[player.name].built_entities = get_score[player.force.name].players[player.name].built_entities - 1
                     end
                 end
             end
@@ -1661,10 +1616,7 @@ local function on_robot_built_entity(event)
                 {
                     name = 'flying-text',
                     position = entity.position,
-                    text = global.entity_limits[entity.name].placed ..
-                        ' / ' ..
-                            global.entity_limits[entity.name].limit ..
-                                ' ' .. global.entity_limits[entity.name].str .. 's',
+                    text = global.entity_limits[entity.name].placed .. ' / ' .. global.entity_limits[entity.name].limit .. ' ' .. global.entity_limits[entity.name].str .. 's',
                     color = {r = 0.98, g = 0.66, b = 0.22}
                 }
             )
@@ -1715,10 +1667,7 @@ local function on_tick()
             end
             if global.game_restart_timer % 1800 == 0 then
                 if global.game_restart_timer > 0 then
-                    game.print(
-                        'Map will restart in ' .. global.game_restart_timer / 60 .. ' seconds!',
-                        {r = 0.22, g = 0.88, b = 0.22}
-                    )
+                    game.print('Map will restart in ' .. global.game_restart_timer / 60 .. ' seconds!', {r = 0.22, g = 0.88, b = 0.22})
                 end
                 if global.game_restart_timer == 0 then
                     game.print('Map is restarting!', {r = 0.22, g = 0.88, b = 0.22})

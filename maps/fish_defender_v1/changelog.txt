@@ -1,5 +1,5 @@
 0.26
-the west side now has worms and rocks as obstacles instead of nests 
+the west side now has worms and rocks as obstacles instead of nests
 biter wave fixes
 
 0.25

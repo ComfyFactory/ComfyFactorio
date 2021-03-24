@@ -165,11 +165,7 @@ local function generate_spawn_area(surface)
     end
 
     for _, entity in pairs(surface.find_entities_filtered({type = {'resource', 'cliff'}, area = {{-300, -256}, {300, 300}}})) do
-        if
-            entity.position.x >
-                -300 +
-                    math_abs(simplex_noise(entity.position.x * 0.02, entity.position.y * 0.02, game.surfaces[1].map_gen_settings.seed) * 32)
-         then
+        if entity.position.x > -300 + math_abs(simplex_noise(entity.position.x * 0.02, entity.position.y * 0.02, game.surfaces[1].map_gen_settings.seed) * 32) then
             entity.destroy()
         end
     end

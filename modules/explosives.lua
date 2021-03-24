@@ -68,8 +68,7 @@ local function grow_cell(cell)
             y = cell.position.y + explosives.vectors[i][2]
         }
         if not explosives.cells[pos_to_key(position)] then
-            local distance =
-                math_sqrt((cell.origin_position.x - position.x) ^ 2 + (cell.origin_position.y - position.y) ^ 2)
+            local distance = math_sqrt((cell.origin_position.x - position.x) ^ 2 + (cell.origin_position.y - position.y) ^ 2)
             if distance < radius then
                 positions[#positions + 1] = position
             end
@@ -176,10 +175,7 @@ local function damage_area(cell)
         if cell.health > explosives.tiles[key] then
             cell.health = cell.health - explosives.tiles[key]
             explosives.tiles[key] = nil
-            if
-                math_abs(tile.position.y) < surface.map_gen_settings.height * 0.5 and
-                    math_abs(tile.position.x) < surface.map_gen_settings.width * 0.5
-             then
+            if math_abs(tile.position.y) < surface.map_gen_settings.height * 0.5 and math_abs(tile.position.x) < surface.map_gen_settings.width * 0.5 then
                 surface.set_tiles({{name = 'landfill', position = tile.position}}, true)
             end
         else

@@ -22,9 +22,7 @@ local function floaty_hearts(entity, c)
             (position.x + 0.4) + (b * -1 + math_random(0, b * 20) * 0.1),
             position.y + (b * -1 + math_random(0, b * 20) * 0.1)
         }
-        entity.surface.create_entity(
-            {name = 'flying-text', position = p, text = '♥', color = {math_random(150, 255), 0, 255}}
-        )
+        entity.surface.create_entity({name = 'flying-text', position = p, text = '♥', color = {math_random(150, 255), 0, 255}})
     end
 end
 

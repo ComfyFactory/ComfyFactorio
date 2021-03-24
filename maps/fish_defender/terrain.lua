@@ -90,10 +90,7 @@ local function is_body(p)
 
     --Fish Fins
     distance_to_center_1 = ((p.x - fin_circle_center_1.x) ^ 2 + (p.y - fin_circle_center_1.y) ^ 2)
-    if
-        distance_to_center_1 + math_abs(simplex_noise(0, p.y * 0.075, game.surfaces[1].map_gen_settings.seed) * 32000) >
-            square_fin_radius
-     then
+    if distance_to_center_1 + math_abs(simplex_noise(0, p.y * 0.075, game.surfaces[1].map_gen_settings.seed) * 32000) > square_fin_radius then
         distance_to_center_2 = ((p.x - fin_circle_center_2.x) ^ 2 + (p.y - fin_circle_center_2.y) ^ 2)
         if distance_to_center_2 < square_fin_radius then
             return true
@@ -151,38 +148,16 @@ local function generate_spawn_area(surface)
 
     surface.create_entity({name = 'electric-beam', position = {160, -96}, source = {160, -96}, target = {160, 96}})
 
-    for _, tile in pairs(
-        surface.find_tiles_filtered({name = {'water', 'deepwater'}, area = {{-160, -160}, {160, 160}}})
-    ) do
-        local noise =
-            math_abs(
-            simplex_noise(tile.position.x * 0.02, tile.position.y * 0.02, game.surfaces[1].map_gen_settings.seed) * 16
-        )
+    for _, tile in pairs(surface.find_tiles_filtered({name = {'water', 'deepwater'}, area = {{-160, -160}, {160, 160}}})) do
+        local noise = math_abs(simplex_noise(tile.position.x * 0.02, tile.position.y * 0.02, game.surfaces[1].map_gen_settings.seed) * 16)
         if tile.position.x > -160 + noise then
-            surface.set_tiles(
-                {{name = get_replacement_tile(surface, tile.position), position = {tile.position.x, tile.position.y}}},
-                true
-            )
+            surface.set_tiles({{name = get_replacement_tile(surface, tile.position), position = {tile.position.x, tile.position.y}}}, true)
         end
     end
 
-    for _, entity in pairs(
-        surface.find_entities_filtered(
-            {type = {'resource', 'cliff'}, area = {{spawn_position_x - 32, -256}, {160, 256}}}
-        )
-    ) do
+    for _, entity in pairs(surface.find_entities_filtered({type = {'resource', 'cliff'}, area = {{spawn_position_x - 32, -256}, {160, 256}}})) do
         if is_body(entity.position) then
-            if
-                entity.position.x >
-                    spawn_position_x - 32 +
-                        math_abs(
-                            simplex_noise(
-                                entity.position.x * 0.02,
-                                entity.position.y * 0.02,
-                                game.surfaces[1].map_gen_settings.seed
-                            ) * 16
-                        )
-             then
+            if entity.position.x > spawn_position_x - 32 + math_abs(simplex_noise(entity.position.x * 0.02, entity.position.y * 0.02, game.surfaces[1].map_gen_settings.seed) * 16) then
                 entity.destroy()
             end
         end
@@ -232,8 +207,7 @@ local function generate_spawn_area(surface)
             }
         )
     ) do
-        local distance_to_center =
-            math_sqrt((entity.position.x - market.position.x) ^ 2 + (entity.position.y - market.position.y) ^ 2)
+        local distance_to_center = math_sqrt((entity.position.x - market.position.x) ^ 2 + (entity.position.y - market.position.y) ^ 2)
         if distance_to_center < r then
             if math_random(1, r) > distance_to_center then
                 entity.destroy()
@@ -252,10 +226,7 @@ local function generate_spawn_area(surface)
             --if distance_to_center > 8 and distance_to_center < 15 then
             local distance_to_center = x ^ 2 + y ^ 2
             if distance_to_center > 64 and distance_to_center < 225 then
-                if
-                    math_random(1, 3) == 1 and
-                        surface.can_place_entity({name = 'wooden-chest', position = pos, force = 'player'})
-                 then
+                if math_random(1, 3) == 1 and surface.can_place_entity({name = 'wooden-chest', position = pos, force = 'player'}) then
                     local chest = surface.create_entity({name = 'wooden-chest', position = pos, force = 'player'})
                 end
             end
@@ -311,15 +282,9 @@ local function enemy_territory(surface, left_top)
                         if surface.can_place_entity({name = 'biter-spawner', force = 'decoratives', position = pos}) then
                             local entity
                             if math_random(1, 4) == 1 then
-                                entity =
-                                    surface.create_entity(
-                                    {name = 'spitter-spawner', force = 'decoratives', position = pos}
-                                )
+                                entity = surface.create_entity({name = 'spitter-spawner', force = 'decoratives', position = pos})
                             else
-                                entity =
-                                    surface.create_entity(
-                                    {name = 'biter-spawner', force = 'decoratives', position = pos}
-                                )
+                                entity = surface.create_entity({name = 'biter-spawner', force = 'decoratives', position = pos})
                             end
                             entity.active = false
                             entity.destructible = false
@@ -351,10 +316,7 @@ local function enemy_territory(surface, left_top)
     end
     for _, tile in pairs(surface.find_tiles_filtered({name = {'water', 'deepwater'}, area = area})) do
         if is_enemy_territory(tile.position) then
-            surface.set_tiles(
-                {{name = get_replacement_tile(surface, tile.position), position = {tile.position.x, tile.position.y}}},
-                true
-            )
+            surface.set_tiles({{name = get_replacement_tile(surface, tile.position), position = {tile.position.x, tile.position.y}}}, true)
         end
     end
 end
@@ -416,10 +378,7 @@ local function plankton_territory(surface, position, seed)
     local snoise = simplex_noise
     local noise = snoise(position.x * 0.009, position.y * 0.009, seed)
     local d = 196
-    if
-        position.x + position.y > (d * -1) - (math_abs(noise) * d * 3) and
-            position.x > position.y - (d + (math_abs(noise) * d * 3))
-     then
+    if position.x + position.y > (d * -1) - (math_abs(noise) * d * 3) and position.x > position.y - (d + (math_abs(noise) * d * 3)) then
         return 'out-of-map'
     end
 
@@ -438,9 +397,7 @@ local function plankton_territory(surface, position, seed)
         local i = math_floor(noise * 6) % 4 + 1
         --surface.set_tiles({{name = "grass-" .. i, position = position}}, true)
         if noise_2 < -0.86 then
-            surface.create_entity(
-                {name = 'uranium-ore', position = position, amount = 1 + 1000 * math_abs(noise_2 * 2)}
-            )
+            surface.create_entity({name = 'uranium-ore', position = position, amount = 1 + 1000 * math_abs(noise_2 * 2)})
             return ('grass-' .. i)
         end
         if math_random(1, 3) ~= 1 then
