@@ -78,6 +78,9 @@ local function normal_chunk(surface, left_top)
 		end
 	end
   surface.set_tiles(tiles, true)
+  if random(1, 60) == 1 then
+    Functions.build_blueprint(surface, left_top, random(4, 6), "neutral")
+  end
   Functions.spawn_treasures(surface, treasure)
   Functions.spawn_entities(surface, entities)
   for _, pos in pairs(factories) do

@@ -151,7 +151,7 @@ function Public.restart_settings()
 	game.forces.player.technologies["power-armor-mk2"].enabled = false
 	game.forces.player.technologies["railway"].researched = true
 	game.forces.player.recipes["pistol"].enabled = false
-	game.forces.player.ghost_time_to_live = 5 * 60 * 60
+	game.forces.player.ghost_time_to_live = 15 * 60 * 60
 end
 
 function Public.set_difficulty_settings()
@@ -371,7 +371,11 @@ end
 function Public.setup_world(surface)
 	local objective = Chrono_table.get_table()
 	local world = objective.world
-	surface.min_brightness = 0
+	if objective.chronojumps <= 2 then
+		surface.min_brightness = 0.5
+	else
+		surface.min_brightness = 0
+	end
 	surface.brightness_visual_weights = {1, 1, 1}
 	objective.surface = surface
 	surface.daytime = world.daytime

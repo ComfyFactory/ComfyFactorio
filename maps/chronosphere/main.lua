@@ -266,6 +266,7 @@ Event.add(defines.events.on_player_changed_position, On_Event.on_player_changed_
 Event.add(defines.events.on_technology_effects_reset, Event_functions.on_technology_effects_reset)
 Event.add(defines.events.on_gui_click, Gui.on_gui_click)
 Event.add(defines.events.on_pre_player_died, On_Event.on_pre_player_died)
+Event.add(defines.events.script_raised_revive, On_Event.script_raised_revive)
 
 if _DEBUG then
 	local Session = require 'utils.datastore.session_data'
