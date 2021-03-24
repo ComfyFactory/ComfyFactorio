@@ -1,3 +1,4 @@
+--luacheck: ignore
 local WPT = require 'maps.amap.table'
 local Event = require 'utils.event'
 local Public = {}

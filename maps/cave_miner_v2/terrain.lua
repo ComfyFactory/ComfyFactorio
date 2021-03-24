@@ -1,3 +1,4 @@
+--luacheck: ignore
 local Public = {}
 
 local GetNoise = require 'utils.get_noise'

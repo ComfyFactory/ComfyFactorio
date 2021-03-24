@@ -3,10 +3,7 @@ local BiterRaffle = require 'functions.biter_raffle'
 local DungeonsTable = require 'maps.dungeons.table'
 
 local table_shuffle_table = table.shuffle_table
-local table_insert = table.insert
-local table_remove = table.remove
 local math_random = math.random
-local math_abs = math.abs
 local math_sqrt = math.sqrt
 local math_floor = math.floor
 
@@ -15,7 +12,7 @@ local function add_enemy_units(surface, room)
     for _, tile in pairs(room.room_tiles) do
         if math_random(1, 2) == 1 then
             local name = BiterRaffle.roll('spitter', Functions.get_dungeon_evolution_factor(surface.index) * 1.5)
-            local unit = surface.create_entity({name = name, position = tile.position, force = dungeontable.enemy_forces[surface.index]})
+            surface.create_entity({name = name, position = tile.position, force = dungeontable.enemy_forces[surface.index]})
         end
     end
 end

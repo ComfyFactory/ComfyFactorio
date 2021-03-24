@@ -970,8 +970,8 @@ local market_kill_visuals = function()
         return
     end
 
-    local is_branch_18 = sub(branch_version, 3, 4)
-    local get_active_version = sub(game.active_mods.base, 3, 4)
+    -- local is_branch_18 = sub(branch_version, 3, 4)
+    -- local get_active_version = sub(game.active_mods.base, 3, 4)
 
     if not surface or not surface.valid then
         return
@@ -981,8 +981,8 @@ local market_kill_visuals = function()
         return
     end
 
-    local m = 32
-    local m2 = m * 0.005
+    -- local m = 32
+    -- local m2 = m * 0.005
     -- if get_active_version >= is_branch_18 then
     --     for i = 1, 1024, 1 do
     --         surface.create_particle(

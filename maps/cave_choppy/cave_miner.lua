@@ -1,3 +1,4 @@
+--luacheck: ignore
 -- Cave Miner -- mewmew made this --
 -- modified by Gerkiz --
 

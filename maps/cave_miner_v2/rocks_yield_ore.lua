@@ -1,3 +1,4 @@
+--luacheck: ignore
 local Functions = require 'maps.cave_miner_v2.functions'
 
 local max_spill = 60

@@ -8,7 +8,6 @@ local WD = require 'modules.wave_defense.table'
 local Public = {}
 local main_tile_name = 'black-refined-concrete'
 local RPG = require 'modules.rpg.table'
-local Loot = require 'maps.amap.loot'
 local function validate_entity(entity)
     if not (entity and entity.valid) then
         return false

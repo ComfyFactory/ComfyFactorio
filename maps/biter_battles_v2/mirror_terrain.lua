@@ -1,3 +1,4 @@
+--luacheck:ignore
 local Public = {}
 
 local Functions = require 'maps.biter_battles_v2.functions'

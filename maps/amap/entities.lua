@@ -1,3 +1,4 @@
+--luacheck: ignore
 require 'modules.rocks_broken_paint_tiles'
 
 local Event = require 'utils.event'

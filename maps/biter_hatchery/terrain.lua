@@ -1,3 +1,4 @@
+--luacheck: ignore
 local math_abs = math.abs
 local math_random = math.random
 local GetNoise = require 'utils.get_noise'

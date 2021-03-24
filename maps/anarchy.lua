@@ -4,10 +4,7 @@ require 'maps.hunger_games_map_intro'
 require 'modules.hunger_games'
 require 'modules.dynamic_player_spawn'
 
-local simplex_noise = require 'utils.simplex_noise'
-simplex_noise = simplex_noise.d2
-local event = require 'utils.event'
-local table_insert = table.insert
+local Event = require 'utils.event'
 local math_random = math.random
 local map_functions = require 'tools.map_functions'
 
@@ -73,5 +70,5 @@ local function on_chunk_generated(event)
     end
 end
 
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
-event.add(defines.events.on_chunk_generated, on_chunk_generated)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_chunk_generated, on_chunk_generated)

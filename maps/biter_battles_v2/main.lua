@@ -1,3 +1,4 @@
+--luacheck:ignore
 -- Biter Battles v2 -- by MewMew
 
 local Ai = require 'maps.biter_battles_v2.ai'

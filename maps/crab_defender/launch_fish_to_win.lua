@@ -166,13 +166,13 @@ local function fish_in_space_gui(player)
     progressbar.style.maximal_width = 100
     progressbar.style.top_padding = 10
 
-    local label = frame.add({type = 'label', caption = this.fish_in_space .. '/' .. tostring(this.catplanet_goals[i + 1].goal)})
+    label = frame.add({type = 'label', caption = this.fish_in_space .. '/' .. tostring(this.catplanet_goals[i + 1].goal)})
     label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 
     if this.catplanet_goals[i].rank then
-        local label = frame.add({type = 'label', caption = '  ~Rank~'})
+        label = frame.add({type = 'label', caption = '  ~Rank~'})
         label.style.font_color = {r = 0.75, g = 0.75, b = 0.75}
-        local label = frame.add({type = 'label', caption = this.catplanet_goals[i].rank})
+        label = frame.add({type = 'label', caption = this.catplanet_goals[i].rank})
         label.style.font = 'default-bold'
         label.style.font_color = this.catplanet_goals[i].color
     end

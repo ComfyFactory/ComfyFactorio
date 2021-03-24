@@ -1,3 +1,4 @@
+--luacheck: ignore
 local Public = {}
 
 local Constants = require 'maps.cave_miner_v2.constants'

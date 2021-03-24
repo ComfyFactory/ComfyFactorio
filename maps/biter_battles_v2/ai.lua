@@ -1,3 +1,4 @@
+--luacheck:ignore
 local Public = {}
 local BiterRaffle = require 'maps.biter_battles_v2.biter_raffle'
 local Functions = require 'maps.biter_battles_v2.functions'
@@ -42,7 +43,7 @@ local threat_values = {
 
 local function get_active_biter_count(biter_force_name)
     local count = 0
-    for _, biter in pairs(global.active_biters[biter_force_name]) do
+    for _, _ in pairs(global.active_biters[biter_force_name]) do
         count = count + 1
     end
     return count
@@ -256,7 +257,7 @@ local function select_units_around_spawner(spawner, force_name, side_target)
 
     --Manual spawning of units
     local roll_type = unit_type_raffle[math_random(1, size_of_unit_type_raffle)]
-    for c = 1, max_unit_count - unit_count, 1 do
+    for _ = 1, max_unit_count - unit_count, 1 do
         if threat < 0 then
             break
         end
@@ -352,7 +353,7 @@ end
 
 local function get_active_threat(biter_force_name)
     local active_threat = 0
-    for unit_number, biter in pairs(global.active_biters[biter_force_name]) do
+    for _, biter in pairs(global.active_biters[biter_force_name]) do
         if biter.entity then
             if biter.entity.valid then
                 active_threat = active_threat + threat_values[biter.entity.name]
@@ -436,7 +437,6 @@ local function create_attack_group(surface, force_name, biter_force_name)
 end
 
 Public.pre_main_attack = function()
-    local surface = game.surfaces['biter_battles']
     local force_name = global.next_attack
 
     if not global.training_mode or (global.training_mode and #game.forces[force_name].connected_players > 0) then
@@ -476,7 +476,7 @@ Public.wake_up_sleepy_groups = function()
     local biter_force_name = force_name .. '_biters'
     local entity
     local unit_group
-    for unit_number, biter in pairs(global.active_biters[biter_force_name]) do
+    for _, biter in pairs(global.active_biters[biter_force_name]) do
         entity = biter.entity
         if entity then
             if entity.valid then

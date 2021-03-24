@@ -32,7 +32,7 @@ function Public.set_health_modifier(force_index, modifier)
 end
 
 function Public.reset_tables()
-    for k, v in pairs(fhb) do
+    for k, _ in pairs(fhb) do
         fhb[k] = nil
     end
 end

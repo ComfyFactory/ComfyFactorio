@@ -1,3 +1,4 @@
+--luacheck: ignore
 local Event = require 'utils.event'
 
 local damage_per_explosive = 100

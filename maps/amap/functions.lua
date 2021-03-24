@@ -1,3 +1,4 @@
+--luacheck: ignore
 local Token = require 'utils.token'
 local Task = require 'utils.task'
 local Event = require 'utils.event'

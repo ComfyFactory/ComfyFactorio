@@ -1,3 +1,4 @@
+--luacheck: ignore
 local Event = require 'utils.event'
 local WD = require 'modules.wave_defense.table'
 local WPT = require 'maps.amap.table'

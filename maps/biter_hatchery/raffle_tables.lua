@@ -1,3 +1,4 @@
+--luacheck: ignore
 local raffle = {
     ['automation-science-pack'] = {{}, 1},
     ['logistic-science-pack'] = {{}, 2},

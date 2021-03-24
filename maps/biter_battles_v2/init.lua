@@ -1,3 +1,4 @@
+--luacheck:ignore
 local Terrain = require 'maps.biter_battles_v2.terrain'
 local Force_health_booster = require 'modules.force_health_booster'
 local Score = require 'comfy_panel.score'

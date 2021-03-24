@@ -1,3 +1,4 @@
+--luacheck: ignore
 require 'modules.rpg.main'
 require 'maps.amap.relax'
 require 'maps.amap.diff'

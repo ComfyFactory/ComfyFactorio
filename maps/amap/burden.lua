@@ -1,3 +1,4 @@
+--luacheck: ignore
 local Event = require 'utils.event'
 local Modifier = require 'player_modifiers'
 local Color = require 'utils.color_presets'

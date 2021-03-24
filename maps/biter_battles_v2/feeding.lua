@@ -1,3 +1,4 @@
+--luacheck:ignore
 local bb_config = require 'maps.biter_battles_v2.config'
 local Force_health_booster = require 'modules.force_health_booster'
 local Functions = require 'maps.biter_battles_v2.functions'

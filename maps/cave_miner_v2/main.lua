@@ -1,3 +1,4 @@
+--luacheck: ignore
 local Constants = require 'maps.cave_miner_v2.constants'
 local Event = require 'utils.event'
 local Explosives = require 'modules.explosives_2'

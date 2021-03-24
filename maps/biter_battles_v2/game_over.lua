@@ -1,3 +1,4 @@
+--luacheck:ignore
 local Functions = require 'maps.biter_battles_v2.functions'
 local Gui = require 'maps.biter_battles_v2.gui'
 local Init = require 'maps.biter_battles_v2.init'

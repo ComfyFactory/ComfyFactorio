@@ -1,3 +1,4 @@
+--luacheck: ignore
 local Event = require 'utils.event'
 local Global = require 'utils.global'
 

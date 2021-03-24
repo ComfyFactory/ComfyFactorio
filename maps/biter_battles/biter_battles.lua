@@ -1,5 +1,5 @@
 -- Biter Battles -- mewmew made this --
-
+--luacheck:ignore
 local Server = require 'utils.server'
 local Score = require 'comfy_panel.score'
 local Global = require 'utils.global'

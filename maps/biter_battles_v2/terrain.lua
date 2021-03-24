@@ -1,3 +1,4 @@
+--luacheck:ignore
 local Public = {}
 local LootRaffle = require 'functions.loot_raffle'
 local BiterRaffle = require 'functions.biter_raffle'

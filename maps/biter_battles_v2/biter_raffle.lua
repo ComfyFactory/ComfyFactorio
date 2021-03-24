@@ -1,3 +1,4 @@
+--luacheck:ignore
 local Public = {}
 local math_random = math.random
 local math_floor = math.floor

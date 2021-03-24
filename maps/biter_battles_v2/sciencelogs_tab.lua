@@ -1,3 +1,4 @@
+--luacheck:ignore
 -- science logs tab --
 
 local Tabs = require 'comfy_panel.main'

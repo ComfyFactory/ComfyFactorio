@@ -1,3 +1,4 @@
+--luacheck:ignore
 local simplex_noise = require 'tools.simplex_noise'
 local Event = require 'utils.event'
 biter_battles_terrain = {}

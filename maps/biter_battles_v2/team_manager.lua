@@ -1,3 +1,4 @@
+--luacheck:ignore
 local Public = {}
 local Server = require 'utils.server'
 

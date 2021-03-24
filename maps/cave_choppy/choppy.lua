@@ -1,3 +1,4 @@
+--luacheck: ignore
 --choppy-- mewmew made this --
 -- modified by gerkiz
 

@@ -1,3 +1,4 @@
+--luacheck:ignore
 local simplex_noise = require 'utils.simplex_noise'
 local simplex_noise = simplex_noise.d2
 local event = require 'utils.event'

@@ -1,3 +1,4 @@
+--luacheck: ignore
 require 'modules.no_turrets'
 require 'modules.no_acid_puddles'
 local Tabs = require 'comfy_panel.main'
@@ -11,7 +12,6 @@ local Unit_health_booster = require 'modules.biter_health_booster'
 local Map = require 'modules.map_info'
 local Global = require 'utils.global'
 local Server = require 'utils.server'
-local Public = {}
 
 local math_random = math.random
 
@@ -55,7 +55,7 @@ for x = worm_turret_spawn_radius * -1, 0, 1 do
     end
 end
 
-local function spawn_worm_turret(surface, force_name, food_item)
+local function spawn_worm_turret(surface, force_name)
     local r_max = surface.count_entities_filtered({type = 'turret', force = force_name}) + 1
     if r_max > 256 then
         return

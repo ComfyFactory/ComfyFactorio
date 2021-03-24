@@ -1,3 +1,4 @@
+--luacheck:ignore
 local string_sub = string.sub
 local math_random = math.random
 local math_round = math.round

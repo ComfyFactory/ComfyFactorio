@@ -1,6 +1,5 @@
 local Global = require 'utils.global'
 local surface_name = 'amap'
-local WPT = require 'maps.amap.table'
 local Reset = require 'maps.amap.soft_reset'
 
 local Public = {}
