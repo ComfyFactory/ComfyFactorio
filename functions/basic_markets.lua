@@ -74,7 +74,6 @@ market.defense = {
     ['gun-turret'] = {value = 64, rarity = 1},
     ['laser-turret'] = {value = 1024, rarity = 6},
     ['flamethrower-turret'] = {value = 2048, rarity = 6},
-    ['flamethrower-turret'] = {value = 2048, rarity = 6},
     ['artillery-turret'] = {value = 8192, rarity = 8},
     ['rocket-silo'] = {value = 64000, rarity = 10}
 }
@@ -146,7 +145,7 @@ market.wire = {
 
 local function get_types()
     local types = {}
-    for k, v in pairs(market) do
+    for k, _ in pairs(market) do
         types[#types + 1] = k
     end
     return types
@@ -214,18 +213,6 @@ local function get_market_item_list(market_types, rarity)
     return list
 end
 
-local function get_random_market_item_list(rarity)
-    local types = get_types()
-    table.shuffle_table(types)
-    for i = 1, #types, 1 do
-        local items = get_market_item_list({types[i]}, rarity)
-        if items then
-            return items
-        end
-    end
-    return false
-end
-
 function Public.mountain_market(surface, position, rarity)
     local types = get_types()
     table.shuffle_table(types)
@@ -236,7 +223,7 @@ function Public.mountain_market(surface, position, rarity)
     if #items > 0 then
         table.shuffle_table(items)
     end
-    local market = surface.create_entity({name = 'market', position = position, force = 'neutral'})
+    local m = surface.create_entity({name = 'market', position = position, force = 'neutral'})
 
     local blacklist = {
         ['cargo-wagon'] = true,
@@ -252,21 +239,21 @@ function Public.mountain_market(surface, position, rarity)
             break
         end
         if not blacklist[item.offer.item] then
-            market.add_market_item(items[i])
+            m.add_market_item(items[i])
         end
     end
 
     local sells = get_resource_market_sells()
     for i = 1, math.random(1, 3), 1 do
-        market.add_market_item(sells[i])
+        m.add_market_item(sells[i])
     end
 
     local buys = get_resource_market_buys()
     for i = 1, math.random(1, 3), 1 do
-        market.add_market_item(buys[i])
+        m.add_market_item(buys[i])
     end
 
-    return market
+    return m
 end
 
 function Public.super_market(surface, position, rarity)
@@ -277,28 +264,28 @@ function Public.super_market(surface, position, rarity)
     if #items > 0 then
         table.shuffle_table(items)
     end
-    local market = surface.create_entity({name = 'market', position = position, force = 'neutral'})
-    market.minable = false
-    market.destructible = false
+    local m = surface.create_entity({name = 'market', position = position, force = 'neutral'})
+    m.minable = false
+    m.destructible = false
 
     for i = 1, math.random(6, 12), 1 do
         if not items[i] then
             break
         end
-        market.add_market_item(items[i])
+        m.add_market_item(items[i])
     end
 
     local sells = get_resource_market_sells()
     for i = 1, math.random(1, 3), 1 do
-        market.add_market_item(sells[i])
+        m.add_market_item(sells[i])
     end
 
     local buys = get_resource_market_buys()
     for i = 1, math.random(1, 3), 1 do
-        market.add_market_item(buys[i])
+        m.add_market_item(buys[i])
     end
 
-    return market
+    return m
 end
 
 return Public

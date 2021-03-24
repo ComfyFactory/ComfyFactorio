@@ -1,4 +1,5 @@
 local Module = {}
+-- luacheck: ignore math
 
 Module.distance = function(pos1, pos2)
     local dx = pos2.x - pos1.x
@@ -7,7 +8,7 @@ Module.distance = function(pos1, pos2)
 end
 
 -- rounds number (num) to certain number of decimal places (idp)
-math.round = function(num, idp)
+function math.round(num, idp)
     local mult = 10 ^ (idp or 0)
     return math.floor(num * mult + 0.5) / mult
 end
@@ -63,9 +64,7 @@ Module.find_entities_by_last_user = function(player, surface, filters)
         return
     end
     local entities = {}
-    local surface = surface
-    local player = player
-    local filters = filters or {}
+    filters = filters or {}
     if type(surface) == 'number' then
         surface = game.surfaces[surface]
     end

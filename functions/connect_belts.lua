@@ -1,10 +1,3 @@
-local direction_translation = {
-    ['north'] = 1,
-    ['east'] = 2,
-    ['south'] = 3,
-    ['west'] = 4
-}
-
 local direction_tendencies = {
     [1] = {0, 2, 4, 6},
     [2] = {2, 4, 6, 0},
@@ -16,7 +9,6 @@ local function get_optimal_direction(entity, direction_tendency)
     local original_direction = entity.direction
     local optimal_direction = entity.direction
     local max_connection_count = #entity.belt_neighbours['inputs'] + #entity.belt_neighbours['outputs']
-    local original_count = #entity.belt_neighbours['inputs'] + #entity.belt_neighbours['outputs']
 
     for _, d in pairs(direction_tendency) do
         entity.direction = d
@@ -54,8 +46,8 @@ local function get_optimal_direction(entity, direction_tendency)
     return optimal_direction
 end
 
-function connect_belts(entities, d)
-    for a = 1, 4, 1 do
+local function connect_belts(entities, d)
+    for _ = 1, 4, 1 do
         local r = d
         if not r then
             r = math.random(1, 4)

@@ -1,6 +1,7 @@
 --draws lines modified by noise -- mewmew
 
 local simplex_noise = require 'utils.simplex_noise'.d2
+local Public = {}
 
 local function get_brush(size)
     local vectors = {}
@@ -14,14 +15,14 @@ local function get_brush(size)
     return vectors
 end
 
-function noise_vector_entity_path(surface, entity_name, position, base_vector, length, collision)
+function Public.noise_vector_entity_path(surface, entity_name, position, base_vector, length, collision)
     local seed_1 = math.random(1, 10000000)
     local seed_2 = math.random(1, 10000000)
     local vector = {}
     local entities = {}
     local minimal_movement = 0.5
 
-    for a = 1, length, 1 do
+    for _ = 1, length, 1 do
         if collision then
             if surface.can_place_entity({name = entity_name, position = position}) then
                 entities[#entities + 1] = surface.create_entity({name = entity_name, position = position})
@@ -52,7 +53,7 @@ function noise_vector_entity_path(surface, entity_name, position, base_vector, l
     return entities
 end
 
-function noise_vector_tile_path(surface, tile_name, position, base_vector, length, brush_size, whitelist)
+function Public.noise_vector_tile_path(surface, tile_name, position, base_vector, length, brush_size, whitelist)
     local seed_1 = math.random(1, 10000000)
     local seed_2 = math.random(1, 10000000)
     local m = math.random(1, 100) * 0.001
@@ -61,7 +62,7 @@ function noise_vector_tile_path(surface, tile_name, position, base_vector, lengt
     local minimal_movement = 0.65
     local brush_vectors = get_brush(brush_size)
 
-    for a = 1, length, 1 do
+    for _ = 1, length, 1 do
         for _, v in pairs(brush_vectors) do
             local p = {x = position.x + v[1], y = position.y + v[2]}
             if whitelist then
@@ -100,3 +101,5 @@ function noise_vector_tile_path(surface, tile_name, position, base_vector, lengt
 end
 
 --/c noise_vector_path(game.player.surface, "tree-04", game.player.position, {0,0})
+
+return Public

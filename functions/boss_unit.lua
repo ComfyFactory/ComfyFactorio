@@ -1,6 +1,6 @@
 --adds a health bar and health increase to a unit
 
-local function create_healthbar(entity, size)
+--[[ local function create_healthbar(entity, size)
     return rendering.draw_sprite(
         {
             sprite = 'virtual-signal/signal-white',
@@ -13,8 +13,7 @@ local function create_healthbar(entity, size)
             surface = entity.surface
         }
     )
-end
-
+end ]]
 local function set_healthbar(boss_unit)
     local m = boss_unit.health / boss_unit.max_health
     local x_scale = rendering.get_y_scale(boss_unit.healthbar_id) * 15
@@ -22,7 +21,7 @@ local function set_healthbar(boss_unit)
     rendering.set_color(boss_unit.healthbar_id, {math.floor(255 - 255 * m), math.floor(200 * m), 0})
 end
 
-function add_boss_unit(entity, health_factor, size)
+--[[ local function add_boss_unit(entity, health_factor, size)
     if not entity then
         return
     end
@@ -41,8 +40,7 @@ function add_boss_unit(entity, health_factor, size)
         s = size
     end
     global.boss_units[entity.unit_number] = {entity = entity, max_health = health, health = health, healthbar_id = create_healthbar(entity, s), last_update = game.tick}
-end
-
+end ]]
 local function on_entity_damaged(event)
     local entity = event.entity
     if not entity.valid then

@@ -34,13 +34,13 @@ local function draw_cell(surface, cell, cell_size, wall_entity_name, force_name)
     end
 end
 
-local function draw_maze(surface, position, size, cell_size, wall_entity_name, force_name)
+local function draw_maze(maze_cells, surface, _, _, cell_size, wall_entity_name, force_name)
     for _, cell in pairs(maze_cells) do
         draw_cell(surface, cell, cell_size, wall_entity_name, force_name)
     end
 end
 
-local function get_random_occupied_cell()
+local function get_random_occupied_cell(maze_cells)
     local occupied_cells = {}
     for c, cell in pairs(maze_cells) do
         if cell.occupied then
@@ -55,7 +55,7 @@ local function get_random_occupied_cell()
     return occupied_cells[math.random(1, #occupied_cells)]
 end
 
-local function set_dead_cells()
+local function set_dead_cells(maze_cells)
     local directions = {
         {0, -1},
         {0, 1},
@@ -79,7 +79,7 @@ local function set_dead_cells()
     end
 end
 
-local function expand_cell(current_cell)
+local function expand_cell(maze_cells, current_cell)
     local expansion_raffle = {
         {0, -1, 'north', 'south'},
         {0, 1, 'south', 'north'},
@@ -102,12 +102,12 @@ local function expand_cell(current_cell)
     return false
 end
 
-local function expand(size)
-    local current_cell = maze_cells[get_random_occupied_cell()]
+local function expand(maze_cells)
+    local current_cell = maze_cells[get_random_occupied_cell(maze_cells)]
     while true do
-        current_cell = expand_cell(current_cell)
+        current_cell = expand_cell(maze_cells, current_cell)
         if not current_cell then
-            set_dead_cells()
+            set_dead_cells(maze_cells)
             current_cell = maze_cells[get_random_occupied_cell()]
         end
         if not current_cell then
@@ -116,7 +116,7 @@ local function expand(size)
     end
 end
 
-local function disable_borders(size)
+local function disable_borders(maze_cells, size)
     for s = size * -1, size, 1 do
         maze_cells[coord_string(s, size * -1)].north = false
         maze_cells[coord_string(s, size)].south = false
@@ -125,7 +125,7 @@ local function disable_borders(size)
     end
 end
 
-function create_maze(surface, position, size, cell_size, wall_entity_name, force_name, borderless)
+local function create_maze(surface, position, size, cell_size, wall_entity_name, force_name, borderless)
     if not surface then
         game.print('No surface given.')
         return
@@ -147,7 +147,7 @@ function create_maze(surface, position, size, cell_size, wall_entity_name, force
         return
     end
 
-    maze_cells = {}
+    local maze_cells = {}
 
     for x = size * -1, size, 1 do
         for y = size * -1, size, 1 do
@@ -169,10 +169,12 @@ function create_maze(surface, position, size, cell_size, wall_entity_name, force
     maze_cells[coord_string(size, 0)].east = false
 
     if borderless then
-        disable_borders(size)
+        disable_borders(maze_cells, size)
     end
 
-    expand(size)
+    expand(maze_cells)
 
-    draw_maze(surface, position, size, cell_size, wall_entity_name, force_name)
+    draw_maze(maze_cells, surface, position, size, cell_size, wall_entity_name, force_name)
 end
+
+return create_maze

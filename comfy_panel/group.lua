@@ -60,7 +60,7 @@ local build_group_gui = (function(player, frame)
     scroll_pane.style.maximal_height = total_height - 50
     scroll_pane.style.minimal_height = total_height - 50
 
-    local t = scroll_pane.add({type = 'table', name = 'groups_table', column_count = 4})
+    t = scroll_pane.add({type = 'table', name = 'groups_table', column_count = 4})
     for _, h in pairs(headings) do
         local l = t.add({type = 'label', caption = ''})
         l.style.minimal_width = h[2]
@@ -84,7 +84,7 @@ local build_group_gui = (function(player, frame)
             color = {r = color.r * 0.6 + 0.4, g = color.g * 0.6 + 0.4, b = color.b * 0.6 + 0.4, a = 1}
             l.style.font_color = color
             l.style.single_line = false
-            local l = t.add({type = 'label', caption = group.description})
+            l = t.add({type = 'label', caption = group.description})
             l.style.top_padding = 16
             l.style.bottom_padding = 16
             l.style.minimal_width = description_width
@@ -95,8 +95,8 @@ local build_group_gui = (function(player, frame)
             local tt = t.add({type = 'table', column_count = member_columns})
             for _, p in pairs(game.connected_players) do
                 if group.name == this.player_group[p.name] then
-                    local l = tt.add({type = 'label', caption = p.name})
-                    local color = {
+                    l = tt.add({type = 'label', caption = p.name})
+                    color = {
                         r = p.color.r * 0.6 + 0.4,
                         g = p.color.g * 0.6 + 0.4,
                         b = p.color.b * 0.6 + 0.4,
@@ -108,7 +108,7 @@ local build_group_gui = (function(player, frame)
                 end
             end
 
-            local tt = t.add({type = 'table', name = group.name, column_count = 1})
+            tt = t.add({type = 'table', name = group.name, column_count = 1})
             if group.name ~= this.player_group[player.name] then
                 local b = tt.add({type = 'button', caption = 'Join'})
                 b.style.font = 'default-bold'
@@ -126,7 +126,7 @@ local build_group_gui = (function(player, frame)
                 b.style.minimal_width = actions_width
                 b.style.maximal_width = actions_width
             else
-                local l = tt.add({type = 'label', caption = ''})
+                l = tt.add({type = 'label', caption = ''})
                 l.style.minimal_width = actions_width
                 l.style.maximal_width = actions_width
             end
@@ -134,10 +134,10 @@ local build_group_gui = (function(player, frame)
     end
 
     local frame2 = frame.add({type = 'frame', name = 'frame2'})
-    local t = frame2.add({type = 'table', name = 'group_table', column_count = 3})
+    t = frame2.add({type = 'table', name = 'group_table', column_count = 3})
     local textfield = t.add({type = 'textfield', name = 'new_group_name', text = 'Name'})
     textfield.style.minimal_width = 200
-    local textfield = t.add({type = 'textfield', name = 'new_group_description', text = 'Description'})
+    textfield = t.add({type = 'textfield', name = 'new_group_description', text = 'Description'})
     textfield.style.minimal_width = 400
     local b = t.add({type = 'button', name = 'create_new_group', caption = 'Create'})
     b.style.minimal_width = 150
@@ -154,7 +154,7 @@ local function refresh_gui()
 
                 build_group_gui(p, frame)
 
-                local frame = Tabs.comfy_panel_get_active_frame(p)
+                frame = Tabs.comfy_panel_get_active_frame(p)
                 frame.frame2.group_table.new_group_name.text = new_group_name
                 frame.frame2.group_table.new_group_description.text = new_group_description
             end
@@ -286,11 +286,11 @@ local function on_gui_click(event)
             end
 
             if event.element.type == 'button' and event.element.caption == 'Delete' then
-                for _, p in pairs(game.players) do
-                    if this.player_group[p.name] then
-                        if this.player_group[p.name] == event.element.parent.name then
-                            this.player_group[p.name] = '[Group]'
-                            p.tag = ''
+                for _, players in pairs(game.players) do
+                    if this.player_group[players.name] then
+                        if this.player_group[players.name] == event.element.parent.name then
+                            this.player_group[players.name] = '[Group]'
+                            players.tag = ''
                         end
                     end
                 end

@@ -28,7 +28,7 @@ local kaboom_weights = {
 
 local kabooms = {}
 for _, t in pairs(kaboom_weights) do
-    for x = 1, t.chance, 1 do
+    for _ = 1, t.chance, 1 do
         table.insert(kabooms, t.name)
     end
 end

@@ -32,7 +32,7 @@ local function create_tile_chain(surface, tile, count, straightness)
     }
     modifiers = shuffle(modifiers)
 
-    for a = 1, count, 1 do
+    for _ = 1, count, 1 do
         local tile_placed = false
 
         if math.random(0, 100) > straightness then

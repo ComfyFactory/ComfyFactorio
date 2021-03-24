@@ -23,7 +23,7 @@ function Public.screen_to_bypass(elem)
     return screen_elements
 end
 
-function Public.get_tabs(data)
+function Public.get_tabs()
     return comfy_panel_tabs
 end
 
@@ -98,38 +98,38 @@ local function main_frame(player)
             local secs = Server.get_current_time()
             if secs then
                 local tab = tabbed_pane.add({type = 'tab', caption = name})
-                local frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
-                frame.style.minimal_height = 480
-                frame.style.maximal_height = 480
-                frame.style.minimal_width = 800
-                frame.style.maximal_width = 800
-                tabbed_pane.add_tab(tab, frame)
+                local name_frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
+                name_frame.style.minimal_height = 480
+                name_frame.style.maximal_height = 480
+                name_frame.style.minimal_width = 800
+                name_frame.style.maximal_width = 800
+                tabbed_pane.add_tab(tab, name_frame)
             end
         elseif func.admin == true then
             if player.admin then
                 local tab = tabbed_pane.add({type = 'tab', caption = name})
-                local frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
-                frame.style.minimal_height = 480
-                frame.style.maximal_height = 480
-                frame.style.minimal_width = 800
-                frame.style.maximal_width = 800
-                tabbed_pane.add_tab(tab, frame)
+                local name_frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
+                name_frame.style.minimal_height = 480
+                name_frame.style.maximal_height = 480
+                name_frame.style.minimal_width = 800
+                name_frame.style.maximal_width = 800
+                tabbed_pane.add_tab(tab, name_frame)
             end
         else
             local tab = tabbed_pane.add({type = 'tab', caption = name})
-            local frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
-            frame.style.minimal_height = 480
-            frame.style.maximal_height = 480
-            frame.style.minimal_width = 800
-            frame.style.maximal_width = 800
-            tabbed_pane.add_tab(tab, frame)
+            local name_frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
+            name_frame.style.minimal_height = 480
+            name_frame.style.maximal_height = 480
+            name_frame.style.minimal_width = 800
+            name_frame.style.maximal_width = 800
+            tabbed_pane.add_tab(tab, name_frame)
         end
     end
 
     local tab = tabbed_pane.add({type = 'tab', name = 'comfy_panel_close', caption = 'X'})
     tab.style.maximal_width = 32
-    local frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
-    tabbed_pane.add_tab(tab, frame)
+    local t_frame = tabbed_pane.add({type = 'frame', direction = 'vertical'})
+    tabbed_pane.add_tab(tab, t_frame)
 
     for _, child in pairs(tabbed_pane.children) do
         child.style.padding = 8

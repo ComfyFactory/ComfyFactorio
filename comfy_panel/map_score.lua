@@ -18,9 +18,7 @@ local function get_sorted_score()
     return list
 end
 
-local score_list = (function(player, frame)
-    local highscore = global.custom_highscore
-
+local score_list = (function(_, frame)
     frame.clear()
     frame.style.padding = 4
     frame.style.margin = 0
@@ -40,26 +38,26 @@ local score_list = (function(player, frame)
     label.style.minimal_width = 30
     label.style.font = 'heading-2'
     label.style.padding = 3
-    local label = t.add({type = 'label', caption = 'Player:'})
-    label.style.minimal_width = 160
-    label.style.font = 'heading-2'
-    label.style.padding = 3
-    local label = t.add({type = 'label', caption = global.custom_highscore.description})
-    label.style.minimal_width = 160
-    label.style.font = 'heading-2'
-    label.style.padding = 3
+    local player_label = t.add({type = 'label', caption = 'Player:'})
+    player_label.style.minimal_width = 160
+    player_label.style.font = 'heading-2'
+    player_label.style.padding = 3
+    local desc_label = t.add({type = 'label', caption = global.custom_highscore.description})
+    desc_label.style.minimal_width = 160
+    desc_label.style.font = 'heading-2'
+    desc_label.style.padding = 3
 
     for key, score in pairs(get_sorted_score()) do
-        local label = t.add({type = 'label', caption = key})
-        label.style.font = 'heading-2'
-        label.style.padding = 1
-        local label = t.add({type = 'label', caption = score.name})
-        label.style.font = 'heading-2'
-        label.style.padding = 1
-        label.style.font_color = game.players[score.name].chat_color
-        local label = t.add({type = 'label', caption = score.points})
-        label.style.font = 'heading-2'
-        label.style.padding = 1
+        local key_label = t.add({type = 'label', caption = key})
+        key_label.style.font = 'heading-2'
+        key_label.style.padding = 1
+        local scoreName_label = t.add({type = 'label', caption = score.name})
+        scoreName_label.style.font = 'heading-2'
+        scoreName_label.style.padding = 1
+        scoreName_label.style.font_color = game.players[score.name].chat_color
+        local points_label = t.add({type = 'label', caption = score.points})
+        points_label.style.font = 'heading-2'
+        points_label.style.padding = 1
     end
 end)
 
@@ -68,16 +66,16 @@ function Public.set_score_description(str)
 end
 
 function Public.set_score(player, count)
-    local score_list = global.custom_highscore.score_list
-    score_list[player.index] = count
+    local score_lists = global.custom_highscore.score_list
+    score_lists[player.index] = count
 end
 
 function Public.get_score(player)
-    local score_list = global.custom_highscore.score_list
-    if not score_list[player.index] then
-        score_list[player.index] = 0
+    local score_lists = global.custom_highscore.score_list
+    if not score_lists[player.index] then
+        score_lists[player.index] = 0
     end
-    return score_list[player.index]
+    return score_lists[player.index]
 end
 
 function Public.reset_score()

@@ -26,7 +26,7 @@ local function create_entity_chain(surface, entity, count, straightness)
     modifiers = shuffle(modifiers)
     modifiers_d = shuffle(modifiers_d)
 
-    for a = 1, count, 1 do
+    for _ = 1, count, 1 do
         local entity_placed = false
 
         if math.random(0, 100) > straightness then

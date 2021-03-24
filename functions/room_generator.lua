@@ -256,9 +256,9 @@ local function expand_path_tiles_width(surface, room)
     if not entrance_tile then
         return
     end
-    local position = entrance_tile.position
+    local ent_tile_pos = entrance_tile.position
     for k, v in pairs(expansion_vectors) do
-        local tile = surface.get_tile({position.x + v[1], position.y + v[2]})
+        local tile = surface.get_tile({ent_tile_pos.x + v[1], ent_tile_pos.y + v[2]})
         if tile.collides_with('resource-layer') then
             table_remove(expansion_vectors, k)
         end
@@ -268,9 +268,9 @@ local function expand_path_tiles_width(surface, room)
     end
 
     if not exit_tile.collides_with('resource-layer') then
-        local position = exit_tile.position
+        local exit_tile_pos = exit_tile.position
         for k, v in pairs(expansion_vectors) do
-            local tile = surface.get_tile({position.x + v[1], position.y + v[2]})
+            local tile = surface.get_tile({exit_tile_pos.x + v[1], exit_tile_pos.y + v[2]})
             if tile.collides_with('resource-layer') then
                 table_remove(expansion_vectors, k)
             end
@@ -288,7 +288,7 @@ local function expand_path_tiles_width(surface, room)
         if k > max_expansion_count then
             break
         end
-        for k2, path_tile in pairs(path_tiles) do
+        for _, path_tile in pairs(path_tiles) do
             local tile = surface.get_tile({path_tile.position.x + v[1], path_tile.position.y + v[2]})
             if tile.collides_with('resource-layer') then
                 table_insert(tiles, tile)
@@ -313,7 +313,7 @@ local function is_bridge_valid(surface, vector, room)
     for _, tile in pairs(bridge_tiles) do
         for d = -5, 5, 1 do
             local p = {tile.position.x + scan_vector[1] * d, tile.position.y + scan_vector[2] * d}
-            local tile = surface.get_tile(p)
+            tile = surface.get_tile(p)
             if not tile.collides_with('resource-layer') then
                 return
             end
@@ -373,7 +373,7 @@ function Public.get_room(surface, position, shape)
         return room
     end
 
-    local room = build_bridge(surface, position)
+    room = build_bridge(surface, position)
     if room then
         expand_path_tiles_width(surface, room)
         return room
