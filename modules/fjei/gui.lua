@@ -1,7 +1,7 @@
+--luacheck: ignore
 local Functions = require 'modules.fjei.functions'
 local math_ceil = math.ceil
 local math_abs = math.abs
-local string_find = string.find
 local table_remove = table.remove
 local table_insert = table.insert
 local main_window_width = 228
@@ -139,7 +139,7 @@ local function add_choose_elem_button(element, name, is_recipe)
 end
 
 local function add_sprite_icon(element, name, is_recipe, use_localised_name)
-    local sprite_type = false
+    local sprite_type
     if is_recipe then
         sprite_type = 'recipe'
     else

@@ -40,7 +40,7 @@ end
 local function set_raffle()
     global.rocks_yield_ore_veins.raffle = {}
     for _, t in pairs(get_chances()) do
-        for x = 1, t[2], 1 do
+        for _ = 1, t[2], 1 do
             table.insert(global.rocks_yield_ore_veins.raffle, t[1])
         end
     end

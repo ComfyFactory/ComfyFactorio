@@ -1,3 +1,4 @@
+--luacheck: ignore
 local game_status = {}
 local Server = require 'utils.server'
 

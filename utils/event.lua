@@ -1,4 +1,6 @@
--- luacheck: globals script
+--luacheck: ignore function_table
+--luacheck: ignore function_nth_tick_table
+--luacheck: globals script
 --- This Module allows for registering multiple handlers to the same event, overcoming the limitation of script.register.
 --
 -- ** Event.add(event_name, handler) **
@@ -94,7 +96,6 @@
 --
 -- The table contains extra information that you want to pass to the handler.
 -- script.raise_event(event_id, {extra = 'data'})
-
 local EventCore = require 'utils.event_core'
 local Global = require 'utils.global'
 local Token = require 'utils.token'
@@ -110,6 +111,7 @@ local stage_load = _STAGE.load
 local script_on_event = script.on_event
 local script_on_nth_tick = script.on_nth_tick
 local generate_event_name = script.generate_event_name
+
 local function_table = function_table
 local function_nth_tick_table = function_nth_tick_table
 

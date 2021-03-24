@@ -232,6 +232,7 @@ stds.factorio_control = {
             other_fields = false,
             read_only = true,
             fields = {
+                'set_visible',
                 'draw_line',
                 'draw_text',
                 'draw_circle',
@@ -323,6 +324,7 @@ stds.factorio_control = {
             other_fields = false,
             read_only = false,
             fields = {
+                "disable_tutorial_triggers",
                 "auto_save",
                 "ban_player",
                 "check_consistency",
@@ -617,7 +619,7 @@ stds.stdlib = {
     read_globals = {
         table = {
             fields = {
-                "shuffle_table", "map", "avg", "count_keys", "sum", "max", "remove", "insert", "invert", "first", "sort", "compare", "maxn", "any", "array_to_dictionary",
+                "mean", "binary_search", "shuffle_table", "map", "avg", "count_keys", "sum", "max", "remove", "insert", "invert", "first", "sort", "compare", "maxn", "any", "array_to_dictionary",
                 "each", "flatten", "keys", "filter", "remove_keys", "flexcopy", "find", "fullcopy", "values", "pack", "deepcopy", "concat", "clear", "min",
                 "is_empty", "merge", "size", "dictionary_merge", "unpack", "last"
             },
@@ -1069,6 +1071,7 @@ stds.factorio_defines = {
                     },
                     input_action = {
                         fields = {
+                            'open_kills_gui',
                             'change_item_description',
                             'fast_entity_transfer',
                             'set_recipe_notifications',

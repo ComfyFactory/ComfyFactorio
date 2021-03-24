@@ -1,3 +1,4 @@
+--luacheck: ignore
 local Public = {}
 
 function Public.settings()

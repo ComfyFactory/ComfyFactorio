@@ -162,7 +162,7 @@ local function poll_difficulty(player)
         b.style.minimal_width = 160
         b.tooltip = this.tooltip[i]
     end
-    local b = frame.add({type = 'label', caption = '- - - - - - - - - - - - - - - - - -'})
+    frame.add({type = 'label', caption = '- - - - - - - - - - - - - - - - - -'})
     local b =
         frame.add(
         {

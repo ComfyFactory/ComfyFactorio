@@ -1,3 +1,4 @@
+--luacheck: ignore
 -- nightfall -- by mewmew --
 
 local event = require 'utils.event'

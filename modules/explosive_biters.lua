@@ -1,6 +1,6 @@
 -- biters explode --  by mewmew
 
-local event = require 'utils.event'
+local Event = require 'utils.event'
 
 local biter_values = {
     ['medium-biter'] = {'blood-explosion-big', 20, 1.5},
@@ -42,4 +42,4 @@ local function on_entity_died(event)
     end
 end
 
-event.add(defines.events.on_entity_died, on_entity_died)
+Event.add(defines.events.on_entity_died, on_entity_died)

@@ -1,3 +1,4 @@
+--luacheck: ignore
 require 'modules.biters_yield_ore'
 require 'modules.rocks_yield_ore_veins'
 

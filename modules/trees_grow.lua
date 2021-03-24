@@ -1,6 +1,6 @@
 -- trees multiply --  mewmew
 
-local event = require 'utils.event'
+local Event = require 'utils.event'
 local math_random = math.random
 local Difficulty = require 'modules.difficulty_vote'
 
@@ -29,13 +29,12 @@ local blacklist = {
 }
 
 local function coord_string(x, y)
-    str = tostring(x) .. '_'
+    local str = tostring(x) .. '_'
     str = str .. tostring(y)
     return str
 end
 
-local function get_chunk(surface)
-    local Diff = Difficulty.get()
+local function get_chunk()
     if #global.trees_grow_chunk_raffle == 0 then
         return false
     end
@@ -80,7 +79,7 @@ local function grow_trees(surface)
     if Diff.difficulty_vote_index then
         m = Diff.difficulty_vote_index
     end
-    for a = 1, math_random(m, math.ceil(m * 1.5)), 1 do
+    for _ = 1, math_random(m, math.ceil(m * 1.5)), 1 do
         local tree = trees[math_random(1, #trees)]
         if not blacklist[tree.name] then
             local vector = vectors[math_random(1, #vectors)]
@@ -116,20 +115,20 @@ local function on_chunk_charted(event)
     global.trees_grow_chunk_position[str] = {x = position.x, y = position.y}
 end
 
-local function tick(event)
+local function tick()
     if not game.connected_players[1] then
         return
     end
     local surface = game.connected_players[1].surface
 
-    for a = 1, 32, 1 do
+    for _ = 1, 32, 1 do
         if grow_trees(surface) then
             break
         end
     end
 end
 
-local function on_init(event)
+local function on_init()
     global.trees_grow_chunk_next_visit = {}
     global.trees_grow_chunk_raffle = {}
     global.trees_grow_chunk_position = {}
@@ -138,6 +137,6 @@ local function on_init(event)
     global.trees_grow_chunks_charted_counter = 0
 end
 
-event.on_init(on_init)
-event.on_nth_tick(1, tick)
-event.add(defines.events.on_chunk_charted, on_chunk_charted)
+Event.on_init(on_init)
+Event.on_nth_tick(1, tick)
+Event.add(defines.events.on_chunk_charted, on_chunk_charted)

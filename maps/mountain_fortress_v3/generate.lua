@@ -578,8 +578,6 @@ local function on_chunk(event)
     end
     if force_chunk then
         do_chunk(event)
-    elseif event.tick == 0 then
-        --do_chunk(event)
     else
         schedule_chunk(event)
     end

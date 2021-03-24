@@ -1,3 +1,4 @@
+--luacheck: ignore
 -- territorial control by Gerkiz
 
 local Map = require 'modules.map_info'

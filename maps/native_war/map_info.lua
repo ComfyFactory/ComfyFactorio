@@ -1,3 +1,4 @@
+--luacheck: ignore
 local Public = {}
 
 local function create_map_intro_button(player)

@@ -1,6 +1,6 @@
 -- biters gain strength scaling with player amount in the game -- by mewmew
 
-local event = require 'utils.event'
+local Event = require 'utils.event'
 
 local function refresh_difficulty()
     global.connected_players = #game.connected_players
@@ -34,14 +34,14 @@ local function on_entity_damaged(event)
     event.entity.health = event.entity.health + event.final_damage_amount
 end
 
-local function on_player_joined_game(event)
+local function on_player_joined_game()
     refresh_difficulty()
 end
 
-local function on_player_left_game(event)
+local function on_player_left_game()
     refresh_difficulty()
 end
 
-event.add(defines.events.on_player_left_game, on_player_left_game)
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
-event.add(defines.events.on_entity_damaged, on_entity_damaged)
+Event.add(defines.events.on_player_left_game, on_player_left_game)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_entity_damaged, on_entity_damaged)

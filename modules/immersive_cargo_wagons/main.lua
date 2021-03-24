@@ -3,8 +3,6 @@ local Event = require 'utils.event'
 local Functions = require 'modules.immersive_cargo_wagons.functions'
 local Public = {}
 
-local math_round = math.round
-
 local icw = {}
 Global.register(
     icw,
@@ -21,7 +19,7 @@ function Public.reset()
             end
         end
     end
-    for k, v in pairs(icw) do
+    for k, _ in pairs(icw) do
         icw[k] = nil
     end
     icw.doors = {}
@@ -148,7 +146,7 @@ local function on_player_died(event)
     Functions.kill_minimap(game.players[event.player_index])
 end
 
-local function on_train_created(event)
+local function on_train_created()
     Functions.request_reconstruction(icw)
 end
 

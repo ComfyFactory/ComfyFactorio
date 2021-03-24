@@ -1,3 +1,4 @@
+--luacheck: ignore
 --labyrinth-- mewmew made this --
 require 'maps.labyrinth_map_intro'
 require 'modules.teleporters'

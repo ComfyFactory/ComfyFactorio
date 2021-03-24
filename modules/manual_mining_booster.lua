@@ -1,6 +1,6 @@
 --manually mining continuously will speed it up
 
-local event = require 'utils.event'
+local Event = require 'utils.event'
 
 local valid_entities = {
     ['rock-big'] = true,
@@ -44,10 +44,10 @@ local function tick()
     end
 end
 
-local function on_init(event)
+local function on_init()
     global.manual_mining_booster = {}
 end
 
-event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
-event.on_nth_tick(60, tick)
-event.on_init(on_init)
+Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
+Event.on_nth_tick(60, tick)
+Event.on_init(on_init)

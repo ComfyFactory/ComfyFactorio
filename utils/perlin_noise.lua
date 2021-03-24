@@ -58,52 +58,52 @@ end
 -- Gradient function finds dot product between pseudorandom gradient vector
 -- and the vector from input coordinate to a unit cube vertex
 local dot_product = {
-    [0x0] = function(x, y, z)
+    [0x0] = function(x, y)
         return x + y
     end,
-    [0x1] = function(x, y, z)
+    [0x1] = function(x, y)
         return -x + y
     end,
-    [0x2] = function(x, y, z)
+    [0x2] = function(x, y)
         return x - y
     end,
-    [0x3] = function(x, y, z)
+    [0x3] = function(x, y)
         return -x - y
     end,
-    [0x4] = function(x, y, z)
+    [0x4] = function(x, z)
         return x + z
     end,
-    [0x5] = function(x, y, z)
+    [0x5] = function(x, z)
         return -x + z
     end,
-    [0x6] = function(x, y, z)
+    [0x6] = function(x, z)
         return x - z
     end,
-    [0x7] = function(x, y, z)
+    [0x7] = function(x, z)
         return -x - z
     end,
-    [0x8] = function(x, y, z)
+    [0x8] = function(y, z)
         return y + z
     end,
-    [0x9] = function(x, y, z)
+    [0x9] = function(y, z)
         return -y + z
     end,
-    [0xA] = function(x, y, z)
+    [0xA] = function(y, z)
         return y - z
     end,
-    [0xB] = function(x, y, z)
+    [0xB] = function(y, z)
         return -y - z
     end,
-    [0xC] = function(x, y, z)
+    [0xC] = function(x, y)
         return y + x
     end,
-    [0xD] = function(x, y, z)
+    [0xD] = function(y, z)
         return -y + z
     end,
-    [0xE] = function(x, y, z)
+    [0xE] = function(x, y)
         return y - x
     end,
-    [0xF] = function(x, y, z)
+    [0xF] = function(y, z)
         return -y - z
     end
 }
@@ -116,8 +116,8 @@ local function fade(t)
     return t * t * t * (t * (t * 6 - 15) + 10)
 end
 
-local function lerp(t, a, b)
-    return a + t * (b - a)
+local function lerp(t, a, bs)
+    return a + t * (bs - a)
 end
 
 -- Return range: [-1, 1]

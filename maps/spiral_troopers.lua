@@ -1,3 +1,4 @@
+--luacheck: ignore
 --spiral troopers-- mewmew wrote this -- inspired from kyte
 
 local event = require 'utils.event'

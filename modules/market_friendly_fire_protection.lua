@@ -1,4 +1,4 @@
-local event = require 'utils.event'
+local Event = require 'utils.event'
 
 local function on_entity_damaged(event)
     if event.entity.name ~= 'market' then
@@ -13,4 +13,4 @@ local function on_entity_damaged(event)
     return true
 end
 
-event.add(defines.events.on_entity_damaged, on_entity_damaged)
+Event.add(defines.events.on_entity_damaged, on_entity_damaged)

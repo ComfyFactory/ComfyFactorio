@@ -16,7 +16,6 @@ end
 f.draw_noise_tile_ring = function(surface, position, name, radius_min, radius_max)
     local modifier_1 = math_random(2, 5) * 0.01
     local seed = game.surfaces[1].map_gen_settings.seed
-    local tiles = {}
 
     for y = radius_max * -2, radius_max * 2, 1 do
         for x = radius_max * -2, radius_max * 2, 1 do
@@ -35,7 +34,6 @@ f.draw_noise_entity_ring = function(surface, position, name, force, radius_min, 
     local modifier_1 = 1 / (radius_max * 2)
     local modifier_2 = 1 / (radius_max * 0.5)
     local seed = game.surfaces[1].map_gen_settings.seed
-    local tiles = {}
 
     for y = radius_max * -2, radius_max * 2, 1 do
         for x = radius_max * -2, radius_max * 2, 1 do
@@ -215,7 +213,6 @@ f.draw_oil_circle = function(position, name, surface, radius, richness)
     if not richness then
         return
     end
-    local math_random = math.random
     local count = 0
     local max_count = 0
     while count < radius and max_count < 100000 do
@@ -254,7 +251,6 @@ f.draw_smoothed_out_ore_circle = function(position, name, surface, radius, richn
     if not richness then
         return
     end
-    local math_random = math.random
     local noise_seed_add = 25000
     local richness_part = richness / radius
     for y = radius * -2, radius * 2, 1 do
@@ -292,7 +288,6 @@ f.draw_crazy_smoothed_out_ore_circle = function(position, name, surface, radius,
     if not richness then
         return
     end
-    local math_random = math.random
     local noise_seed_add = 25000
     local richness_part = richness / radius
     for y = radius * -1, radius, 1 do
@@ -316,10 +311,9 @@ end
 
 f.create_cluster = function(name, pos, size, surface, spread, resource_amount)
     local p = {x = pos.x, y = pos.y}
-    local math_random = math.random
     local original_pos = {x = pos.x, y = pos.y}
-    local entity_has_been_placed = false
-    for z = 1, size, 1 do
+    local entity_has_been_placed
+    for _ = 1, size, 1 do
         entity_has_been_placed = false
         local y = 1
         if spread then
@@ -329,7 +323,7 @@ f.create_cluster = function(name, pos, size, surface, spread, resource_amount)
         modifier_raffle = shuffle(modifier_raffle)
         for x = 1, 8, 1 do
             local m = modifier_raffle[x]
-            local pos = {x = p.x + m[1], y = p.y + m[2]}
+            pos = {x = p.x + m[1], y = p.y + m[2]}
             if resource_amount then
                 if surface.can_place_entity({name = name, position = pos, amount = resource_amount}) then
                     surface.create_entity {name = name, position = pos, amount = resource_amount}

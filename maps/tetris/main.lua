@@ -1,3 +1,4 @@
+--luacheck: ignore
 --tetris by mewmew
 
 --18x10 gb

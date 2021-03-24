@@ -1,6 +1,6 @@
 -- spitters spit biters, because why not -- by mewmew
 
-local event = require 'utils.event'
+local Event = require 'utils.event'
 
 local radius = 3
 local max_biters_in_radius = 3
@@ -30,4 +30,4 @@ local function on_entity_damaged(event)
     end
 end
 
-event.add(defines.events.on_entity_damaged, on_entity_damaged)
+Event.add(defines.events.on_entity_damaged, on_entity_damaged)

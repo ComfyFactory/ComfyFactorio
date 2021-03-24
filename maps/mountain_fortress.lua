@@ -1,3 +1,4 @@
+--luacheck: ignore
 -- mountain digger fortress -- by mewmew --
 
 require 'modules.rpg'

@@ -1,3 +1,4 @@
+--luacheck: ignore
 --[[
 Exchange Strings:
 

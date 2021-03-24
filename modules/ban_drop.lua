@@ -22,7 +22,6 @@ end
 
 local function on_player_banned(event)
     local player = game.players[event.player_index]
-    local position = player.position
     drop_inventory(player, player.get_inventory(defines.inventory.character_main))
     drop_inventory(player, player.get_inventory(defines.inventory.character_guns))
     drop_inventory(player, player.get_inventory(defines.inventory.character_ammo))

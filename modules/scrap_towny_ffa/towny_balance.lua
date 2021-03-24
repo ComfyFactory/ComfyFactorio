@@ -1,3 +1,4 @@
+--luacheck: ignore
 --Towny balance things by Gerkiz --
 
 local player_ammo_starting_modifiers = {

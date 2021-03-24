@@ -1,7 +1,7 @@
 -- biters and their buildings gain pseudo hp increase through the means of evasion mechanics -- by mewmew
 -- use global.biter_evasion_health_increase_factor to modify their health
 
-local event = require 'utils.event'
+local Event = require 'utils.event'
 local random_max = 1000000
 local types = {
     ['unit'] = true,
@@ -36,5 +36,5 @@ local function on_init()
     global.biter_evasion_health_increase_factor = 1
 end
 
-event.on_init(on_init)
-event.add(defines.events.on_entity_damaged, on_entity_damaged)
+Event.on_init(on_init)
+Event.add(defines.events.on_entity_damaged, on_entity_damaged)

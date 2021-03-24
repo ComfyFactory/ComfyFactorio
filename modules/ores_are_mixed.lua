@@ -1,4 +1,4 @@
-local event = require 'utils.event'
+local Event = require 'utils.event'
 local simplex_noise = require 'utils.simplex_noise'.d2
 local ore_raffle = {
     'iron-ore',
@@ -29,4 +29,4 @@ local function on_chunk_generated(event)
     end
 end
 
-event.add(defines.events.on_chunk_generated, on_chunk_generated)
+Event.add(defines.events.on_chunk_generated, on_chunk_generated)

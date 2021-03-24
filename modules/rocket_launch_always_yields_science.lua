@@ -1,6 +1,6 @@
 -- rocket launch always yields space science -- by mewmew
 
-local event = require 'utils.event'
+local Event = require 'utils.event'
 
 local function on_rocket_launched(event)
     local rocket_inventory = event.rocket.get_inventory(defines.inventory.rocket)
@@ -11,4 +11,4 @@ local function on_rocket_launched(event)
     rocket_silo_inventory.insert({name = 'space-science-pack', count = 1000})
 end
 
-event.add(defines.events.on_rocket_launched, on_rocket_launched)
+Event.add(defines.events.on_rocket_launched, on_rocket_launched)

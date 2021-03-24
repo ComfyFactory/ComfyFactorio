@@ -1,6 +1,6 @@
 --moving players attract biters from far away
 
-local event = require 'utils.event'
+local Event = require 'utils.event'
 local math_random = math.random
 
 local function on_player_changed_position(event)
@@ -34,9 +34,9 @@ local function on_player_changed_position(event)
     global.biters_attack_moving_players_last_action_tick = game.tick
 end
 
-local function on_init(event)
+local function on_init()
     global.biters_attack_moving_players_last_action_tick = 0
 end
 
-event.add(defines.events.on_player_changed_position, on_player_changed_position)
-event.on_init(on_init)
+Event.add(defines.events.on_player_changed_position, on_player_changed_position)
+Event.on_init(on_init)

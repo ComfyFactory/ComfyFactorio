@@ -1,3 +1,4 @@
+--luacheck: ignore
 -- cuuuubee
 local event = require 'utils.event'
 

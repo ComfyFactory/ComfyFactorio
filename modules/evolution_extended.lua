@@ -2,7 +2,7 @@
 
 require 'modules.biter_evasion_hp_increaser'
 
-local event = require 'utils.event'
+local Event = require 'utils.event'
 local simplex_noise = require 'utils.simplex_noise'.d2
 local gui_refreshrate = 900
 
@@ -91,15 +91,14 @@ local function tick()
     global.color_counter = global.color_counter + 1
 end
 
-local function on_init(event)
+local function on_init()
     global.evolution_factor = 0
     global.color_counter = 0
 
-    local hours_to_max_evo = 24
     local ticks_to_max_evo = 12 * 60 * 60 * 60
     global.tick_gain = math.round((1 / ticks_to_max_evo) * gui_refreshrate, 8)
 end
 
-event.add(defines.events.on_entity_died, on_entity_died)
-event.on_nth_tick(gui_refreshrate, tick)
-event.on_init(on_init)
+Event.add(defines.events.on_entity_died, on_entity_died)
+Event.on_nth_tick(gui_refreshrate, tick)
+Event.on_init(on_init)

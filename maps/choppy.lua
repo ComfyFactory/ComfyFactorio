@@ -1,3 +1,4 @@
+--luacheck: ignore
 --choppy-- mewmew made this --
 
 require 'modules.dynamic_landfill'

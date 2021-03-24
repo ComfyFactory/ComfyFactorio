@@ -1,7 +1,6 @@
 -- prints death messages to all forces with custom texts -- by mewmew
 
-local event = require 'utils.event'
-local math_random = math.random
+local Event = require 'utils.event'
 local message_color = {r = 0.9, g = 0.9, b = 0.9}
 
 local messages = {
@@ -76,4 +75,4 @@ local function on_player_died(event)
     end
 end
 
-event.add(defines.events.on_player_died, on_player_died)
+Event.add(defines.events.on_player_died, on_player_died)

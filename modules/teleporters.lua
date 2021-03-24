@@ -1,4 +1,4 @@
-local event = require 'utils.event'
+local Event = require 'utils.event'
 local key_item = 'computer'
 local blacklisted_tiles = {'out-of-map', 'water', 'deepwater', 'water-green', 'lab-white', 'lab-dark-1'}
 local teleporter_names = {
@@ -83,7 +83,7 @@ local teleporter_names = {
 }
 
 local charged_accumulators_required = 8
-function get_power_status(teleporter_index, drain_power)
+local function get_power_status(teleporter_index, drain_power)
     local surface = game.surfaces[global.teleporters[teleporter_index].surface]
     local a = {
         left_top = {x = global.teleporters[teleporter_index].position.x - 5, y = global.teleporters[teleporter_index].position.y - 5},
@@ -140,7 +140,7 @@ local function gui_teleporter(player, visited_teleporter_index)
     local l = t.add({type = 'label', caption = '<Teleporter> '})
     l.style.font_color = {r = 0.35, g = 0.5, b = 1}
     l.style.font = 'heading-1'
-    local l = t.add({type = 'label', caption = global.teleporters[visited_teleporter_index].name, name = visited_teleporter_index})
+    l = t.add({type = 'label', caption = global.teleporters[visited_teleporter_index].name, name = visited_teleporter_index})
     l.style.font_color = {r = 0.77, g = 0.77, b = 0.77}
     l.style.font = 'default-bold'
     l.style.top_padding = 4
@@ -172,7 +172,7 @@ local function gui_teleporter(player, visited_teleporter_index)
         local surface = game.surfaces[global.teleporters[x].surface]
         local tile = surface.get_tile(global.teleporters[x].position)
         if x ~= visited_teleporter_index and tile.name == 'lab-white' then
-            local t = scroll_pane.add({type = 'table', column_count = 2})
+            t = scroll_pane.add({type = 'table', column_count = 2})
 
             local b = t.add({type = 'button', caption = '> ' .. global.teleporters[x].name .. ' <', name = 'teleporter_' .. x})
             b.style.minimal_width = 250
@@ -183,7 +183,7 @@ local function gui_teleporter(player, visited_teleporter_index)
 
             local tt = t.add({type = 'table', column_count = 2})
 
-            local l = tt.add({type = 'label', caption = global.teleporters[x].surface .. ': '})
+            l = tt.add({type = 'label', caption = global.teleporters[x].surface .. ': '})
             l.style.font_color = {r = 0.22, g = 0.88, b = 0.44}
             l.style.font = 'default-bold'
             l.style.minimal_width = 65
@@ -191,14 +191,14 @@ local function gui_teleporter(player, visited_teleporter_index)
             l.style.bottom_padding = 0
             l.style.left_padding = 8
 
-            local l = tt.add({type = 'label', caption = 'X: ' .. tostring(global.teleporters[x].position.x) .. '  Y: ' .. tostring(global.teleporters[x].position.y)})
+            l = tt.add({type = 'label', caption = 'X: ' .. tostring(global.teleporters[x].position.x) .. '  Y: ' .. tostring(global.teleporters[x].position.y)})
             l.style.font = 'default'
             l.style.font_color = {r = 0.77, g = 0.77, b = 0.77}
             l.style.minimal_width = 100
             l.style.top_padding = 0
             l.style.bottom_padding = 0
 
-            local l = tt.add({type = 'label', caption = 'Distance: '})
+            l = tt.add({type = 'label', caption = 'Distance: '})
             l.style.font_color = {r = 0.22, g = 0.88, b = 0.44}
             l.style.font = 'default-bold'
             l.style.minimal_width = 65
@@ -206,7 +206,7 @@ local function gui_teleporter(player, visited_teleporter_index)
             l.style.bottom_padding = 0
             l.style.left_padding = 8
 
-            local l =
+            l =
                 tt.add(
                 {
                     type = 'label',
@@ -222,7 +222,7 @@ local function gui_teleporter(player, visited_teleporter_index)
             l.style.bottom_padding = 0
 
             if #global.teleporters > 2 and x ~= 1 then
-                local l = scroll_pane.add({type = 'label', caption = '-----------------------------------------------------------------'})
+                l = scroll_pane.add({type = 'label', caption = '-----------------------------------------------------------------'})
                 l.style.font_color = {r = 0.77, g = 0.77, b = 0.77}
                 l.style.font = 'default'
                 l.style.top_padding = 0
@@ -356,7 +356,7 @@ local function on_gui_click(event)
     end
 end
 
-event.add(defines.events.on_player_changed_position, on_player_changed_position)
-event.add(defines.events.on_player_dropped_item, on_player_dropped_item)
-event.add(defines.events.on_player_main_inventory_changed, on_player_main_inventory_changed)
-event.add(defines.events.on_gui_click, on_gui_click)
+Event.add(defines.events.on_player_changed_position, on_player_changed_position)
+Event.add(defines.events.on_player_dropped_item, on_player_dropped_item)
+Event.add(defines.events.on_player_main_inventory_changed, on_player_main_inventory_changed)
+Event.add(defines.events.on_gui_click, on_gui_click)

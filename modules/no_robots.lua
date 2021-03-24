@@ -1,6 +1,6 @@
-local event = require 'utils.event'
+local Event = require 'utils.event'
 
-local function on_player_joined_game(event)
+local function on_player_joined_game()
     game.forces['player'].technologies['logistic-system'].enabled = false
     game.forces['player'].technologies['construction-robotics'].enabled = false
     game.forces['player'].technologies['logistic-robotics'].enabled = false
@@ -27,4 +27,4 @@ local function on_player_joined_game(event)
     game.forces['player'].technologies['worker-robots-speed-6'].enabled = false
 end
 
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)

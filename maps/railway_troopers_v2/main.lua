@@ -20,10 +20,6 @@ local map_height = 64
 
 local math_random = math.random
 local math_floor = math.floor
-local table_insert = table.insert
-local table_remove = table.remove
-local math_sqrt = math.sqrt
-local math_round = math.round
 local math_abs = math.abs
 
 local function place_spawn_entities(surface)
@@ -42,7 +38,7 @@ local function place_spawn_entities(surface)
     entity.get_inventory(defines.inventory.cargo_wagon).insert({name = 'rail', count = 200})
     Immersive_cargo_wagons.register_wagon(entity)
 
-    local entity = surface.create_entity({name = 'locomotive', position = {-18, 0}, force = 'player', direction = 2})
+    entity = surface.create_entity({name = 'locomotive', position = {-18, 0}, force = 'player', direction = 2})
     entity.get_inventory(defines.inventory.fuel).insert({name = 'wood', count = 25})
     Immersive_cargo_wagons.register_wagon(entity)
 end
@@ -52,7 +48,6 @@ local function treasure_chest(surface, position)
     budget = budget * math_random(25, 175) * 0.01
     if math_random(1, 200) == 1 then
         budget = budget * 10
-        container_name = 'crash-site-chest-' .. math_random(1, 2)
     end
     budget = math_floor(budget) + 1
 
@@ -63,8 +58,6 @@ local function treasure_chest(surface, position)
     end
     container.minable = false
 end
-
-local infini_ores = {'iron-ore', 'iron-ore', 'copper-ore', 'coal', 'stone'}
 
 local function on_player_joined_game(event)
     local surface = game.surfaces['railway_troopers']
@@ -289,7 +282,7 @@ local function on_init()
         surface.delete_chunk({chunk.x, chunk.y})
     end
 
-    local map_gen_settings = {
+    local new_map_gen_settings = {
         ['water'] = 0.50,
         ['starting_area'] = 0.60,
         terrain_segmentation = 20,
@@ -305,7 +298,7 @@ local function on_init()
             ['enemy-base'] = {frequency = 256, size = 2, richness = 1}
         }
     }
-    game.create_surface('railway_troopers', map_gen_settings)
+    game.create_surface('railway_troopers', new_map_gen_settings)
 
     global.reset_railway_troopers = 2
 
@@ -317,6 +310,5 @@ Event.on_init(on_init)
 Event.add(defines.events.on_tick, on_tick)
 Event.add(defines.events.on_research_finished, on_research_finished)
 Event.add(defines.events.on_entity_died, on_entity_died)
-Event.add(defines.events.on_entity_spawned, on_entity_spawned)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_chunk_generated, on_chunk_generated)

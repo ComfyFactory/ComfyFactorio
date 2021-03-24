@@ -1,3 +1,4 @@
+--luacheck: ignore
 -- factorio scenario -- tank conquest -- xalpha made this --
 
 local blueprint_poi_base_json = require 'maps.tank_conquest.blueprint_poi_base_json'

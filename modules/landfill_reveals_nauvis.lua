@@ -1,25 +1,12 @@
 -- placing landfill in another surface will reveal nauvis -- by mewmew
 
-local regenerate_decoratives = true
-
-local event = require 'utils.event'
-local math_random = math.random
-local table_insert = table.insert
+local Event = require 'utils.event'
 local water_tile_whitelist = {
     ['water'] = true,
     ['deepwater'] = true,
     ['water-green'] = true,
     ['deepwater-green'] = true
 }
-
-local function shuffle(tbl)
-    local size = #tbl
-    for i = size, 1, -1 do
-        local rand = math.random(size)
-        tbl[i], tbl[rand] = tbl[rand], tbl[i]
-    end
-    return tbl
-end
 
 local function get_chunk_position(position)
     local chunk_position = {}
@@ -99,7 +86,7 @@ local function generate_chunks(position)
     nauvis.force_generate_chunk_requests()
 end
 
-local function process_tile(surface, position, old_tile, inventory)
+local function process_tile(surface, position, old_tile)
     local nauvis = game.surfaces.nauvis
     generate_chunks(position)
     local new_tile = nauvis.get_tile(position)
@@ -113,7 +100,7 @@ local function process_tile(surface, position, old_tile, inventory)
     for _, e in pairs(nauvis.find_entities_filtered({area = area})) do
         place_entity(surface, e)
     end
-    local area = {{position.x - 1, position.y - 1}, {position.x + 0.999, position.y + 0.999}}
+    area = {{position.x - 1, position.y - 1}, {position.x + 0.999, position.y + 0.999}}
     for _, d in pairs(nauvis.find_decoratives_filtered {area = area}) do
         surface.create_decoratives {check_collision = true, decoratives = {{amount = d.amount, position = d.position, name = d.decorative.name}}}
     end
@@ -141,5 +128,5 @@ local function on_robot_built_tile(event)
     reveal(event.robot.surface, event.tiles, event.robot.get_inventory(defines.inventory.robot_cargo))
 end
 
-event.add(defines.events.on_robot_built_tile, on_robot_built_tile)
-event.add(defines.events.on_player_built_tile, on_player_built_tile)
+Event.add(defines.events.on_robot_built_tile, on_robot_built_tile)
+Event.add(defines.events.on_player_built_tile, on_player_built_tile)

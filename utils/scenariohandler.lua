@@ -1,4 +1,3 @@
-local Color = require 'utils.color_presets'
 local Server = require 'utils.server'
 local Global = require 'utils.globals'
 
@@ -106,7 +105,7 @@ commands.add_command(
             else
                 game.print(mapkeeper .. ' server, has reset the game!', {r = 0.98, g = 0.66, b = 0.22})
             end
-            reset_map()
+            -- reset_map()
             p('[WARNING] Game has been reset!')
             return
         end

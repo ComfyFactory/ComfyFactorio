@@ -1,3 +1,4 @@
+--luacheck: ignore
 -- forest maze from mewmew
 
 require 'modules.satellite_score'

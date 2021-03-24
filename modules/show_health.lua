@@ -1,6 +1,6 @@
-local event = require 'utils.event'
-local game = require 'utils.game'
-event.add(
+local Event = require 'utils.event'
+
+Event.add(
     defines.events.on_entity_damaged,
     function(event)
         local entity = event.entity

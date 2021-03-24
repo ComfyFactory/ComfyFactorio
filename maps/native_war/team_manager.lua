@@ -1,3 +1,4 @@
+--luacheck: ignore
 local Public = {}
 
 local wait_messages = {

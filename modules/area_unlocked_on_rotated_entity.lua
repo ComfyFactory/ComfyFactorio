@@ -1,3 +1,4 @@
+--luacheck: ignore
 --unlocks areas when the entity at the position is rotated
 --define the entities by position like this:
 -- global.level_unlocks = {

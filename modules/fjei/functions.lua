@@ -1,3 +1,4 @@
+--luacheck: ignore
 local table_insert = table.insert
 local string_find = string.find
 

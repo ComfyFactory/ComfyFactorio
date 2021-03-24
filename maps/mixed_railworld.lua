@@ -1,3 +1,4 @@
+--luacheck: ignore
 local event = require 'utils.event'
 
 require 'modules.spawners_contain_acid'

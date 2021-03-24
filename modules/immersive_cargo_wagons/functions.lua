@@ -1,3 +1,4 @@
+--luacheck: ignore
 local Public = {}
 
 local Constants = require 'modules.immersive_cargo_wagons.constants'

@@ -1,3 +1,4 @@
+--luacheck: ignore
 require 'functions.maze'
 
 local event = require 'utils.event'

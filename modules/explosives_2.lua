@@ -1,7 +1,9 @@
-local Public = {}
-
+local Event = require 'utils.event'
 local Global = require 'utils.global'
+
+local Public = {}
 local explosives = {}
+
 Global.register(
     explosives,
     function(tbl)
@@ -149,7 +151,7 @@ local function process_explosion(instance)
     return true
 end
 
-function spawn_explosion(surface, position, amount)
+local function spawn_explosion(surface, position, amount)
     if not explosives.instances then
         explosives.instances = {}
     end
@@ -219,7 +221,6 @@ local function on_init()
     explosives.destructible_tiles = {}
 end
 
-local Event = require 'utils.event'
 Event.on_init(on_init)
 Event.on_nth_tick(speed, on_tick)
 Event.add(defines.events.on_entity_died, on_entity_died)

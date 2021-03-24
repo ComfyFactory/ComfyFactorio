@@ -1,3 +1,4 @@
+--luacheck: ignore
 local function is_position_inside_playfield(position)
     if position.x > playfield_area.right_bottom.x then
         return false

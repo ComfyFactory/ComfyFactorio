@@ -25,7 +25,7 @@ function Public.Pop_info()
     return map_info
 end
 
-local create_map_intro = (function(player, frame)
+local create_map_intro = (function(_, frame)
     frame.clear()
     frame.style.padding = 4
     frame.style.margin = 0

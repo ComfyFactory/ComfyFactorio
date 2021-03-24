@@ -1,3 +1,4 @@
+--luacheck: ignore
 local event = require 'utils.event'
 local simplex_noise = require 'utils.simplex_noise'.d2
 require 'modules.satellite_score'

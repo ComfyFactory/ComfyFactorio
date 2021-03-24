@@ -1,3 +1,4 @@
+--luacheck: ignore
 local simplex_noise = require 'utils.simplex_noise'.d2
 local math_random = math.random
 local wod_logo_tiles = require 'maps.wave_of_death.logo'

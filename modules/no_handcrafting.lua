@@ -5,7 +5,7 @@ local function disable_recipe(recipe, force)
     force.set_hand_crafting_disabled_for_recipe(recipe.name, 1)
 end
 
-local function on_player_joined_game(event)
+local function on_player_joined_game()
     if game.tick == 0 then
         local surface = game.surfaces[1]
 
@@ -18,9 +18,9 @@ local function on_player_joined_game(event)
         power_pole.minable = true
 
         local assembler = surface.create_entity({name = 'assembling-machine-2', position = {x = -4, y = -1}, force = 'player'})
-        e.destructible = false
-        e.minable = false
-        e.operable = true
+        assembler.destructible = false
+        assembler.minable = false
+        assembler.operable = true
     end
 end
 
@@ -34,6 +34,5 @@ local function on_pre_player_crafted_item(event)
 end
 
 local Event = require 'utils.event'
-Event.on_init(on_init)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_pre_player_crafted_item, on_pre_player_crafted_item)

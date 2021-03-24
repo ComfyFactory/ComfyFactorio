@@ -1,7 +1,7 @@
 -- changes placed landfill tiles, adapting the new tile to adjecant tiles -- by mewmew
 
-local regenerate_decoratives = true
-local event = require 'utils.event'
+local regenerate_decoratives_value = true
+local Event = require 'utils.event'
 local math_random = math.random
 local table_insert = table.insert
 local water_tile_whitelist = {
@@ -103,7 +103,7 @@ local function on_player_built_tile(event)
     for _, placed_tile in pairs(event.tiles) do
         if water_tile_whitelist[placed_tile.old_tile.name] then
             place_fitting_tile(placed_tile.position, surface, event.tiles)
-            if regenerate_decoratives then
+            if regenerate_decoratives_value then
                 if math_random(1, 5) == 1 then
                     regenerate_decoratives(surface, placed_tile.position)
                 end
@@ -130,5 +130,5 @@ local function on_robot_built_tile(event)
     end
 end
 
-event.add(defines.events.on_player_built_tile, on_player_built_tile)
-event.add(defines.events.on_robot_built_tile, on_robot_built_tile)
+Event.add(defines.events.on_player_built_tile, on_player_built_tile)
+Event.add(defines.events.on_robot_built_tile, on_robot_built_tile)

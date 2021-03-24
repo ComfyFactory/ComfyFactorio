@@ -1,4 +1,4 @@
-local event = require 'utils.event'
+local Event = require 'utils.event'
 
 local main_caption = ' --Cave Miner-- '
 local sub_caption = ' *diggy diggy hole* '
@@ -26,7 +26,7 @@ local function create_map_intro(player)
     l.style.top_padding = 6
     l.style.bottom_padding = 6
 
-    local l = tt.add {type = 'label', caption = sub_caption}
+    l = tt.add {type = 'label', caption = sub_caption}
     l.style.font = 'default'
     l.style.font_color = {r = 0.99, g = 0.99, b = 0.2}
     l.style.minimal_width = 280
@@ -40,9 +40,9 @@ local function create_map_intro(player)
     b.style.right_padding = 4
     b.style.bottom_padding = 2
 
-    local tt = t.add {type = 'table', column_count = 1}
-    local frame = t.add {type = 'frame'}
-    local l = frame.add {type = 'label', caption = info}
+    t.add {type = 'table', column_count = 1}
+    frame = t.add {type = 'frame'}
+    l = frame.add {type = 'label', caption = info}
     l.style.single_line = false
     l.style.font_color = {r = 0.95, g = 0.95, b = 0.95}
 end
@@ -70,5 +70,5 @@ local function on_gui_click(event)
     end
 end
 
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
-event.add(defines.events.on_gui_click, on_gui_click)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_gui_click, on_gui_click)

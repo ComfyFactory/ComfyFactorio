@@ -25,7 +25,7 @@ local function on_player_joined_game(event)
     end
 end
 
-local function on_player_left_game(event)
+local function on_player_left_game()
     set_difficulty()
 end
 

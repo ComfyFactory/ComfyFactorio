@@ -1,5 +1,5 @@
 -- clear the player respawn from enemies with a kaboom --  by mewmew
-local event = require 'utils.event'
+local Event = require 'utils.event'
 
 local function damage_entities_in_radius(surface, position, radius)
     local entities_to_damage = surface.find_entities_filtered({area = {{position.x - radius, position.y - radius}, {position.x + radius, position.y + radius}}})
@@ -17,4 +17,4 @@ local function on_player_respawned(event)
     damage_entities_in_radius(player.surface, player.position, 11)
 end
 
-event.add(defines.events.on_player_respawned, on_player_respawned)
+Event.add(defines.events.on_player_respawned, on_player_respawned)

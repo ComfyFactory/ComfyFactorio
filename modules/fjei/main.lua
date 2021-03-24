@@ -1,3 +1,4 @@
+--luacheck: ignore
 --[[
 FJEI - "Factorio Just enough items"
 A comfy recipe browser - MewMew

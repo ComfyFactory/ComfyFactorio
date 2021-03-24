@@ -1,3 +1,4 @@
+--luacheck: ignore
 ----------share chat with spectator force-------------------
 local function on_console_chat(event)
     if not event.message then

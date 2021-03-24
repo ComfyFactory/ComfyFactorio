@@ -46,7 +46,7 @@ end
 local function set_raffle()
     global.rocks_yield_ore['raffle'] = {}
     for _, t in pairs(get_chances()) do
-        for x = 1, t[2], 1 do
+        for _ = 1, t[2], 1 do
             table.insert(global.rocks_yield_ore['raffle'], t[1])
         end
     end
@@ -184,7 +184,7 @@ local function on_entity_died(event)
     global.rocks_yield_ore['ores_mined'] = global.rocks_yield_ore['ores_mined'] + count
     surface.spill_item_stack(pos, {name = ore, count = count}, true)
 
-    local count = math_random(1, 3)
+    count = math_random(1, 3)
     global.rocks_yield_ore['ores_mined'] = global.rocks_yield_ore['ores_mined'] + count
     surface.spill_item_stack(pos, {name = 'stone', count = math_random(1, 3)}, true)
 

@@ -1,6 +1,6 @@
 -- players trample paths, tiles change as players walk around
 
-local event = require 'utils.event'
+local Event = require 'utils.event'
 local math_random = math.random
 
 local blacklisted_tiles = {
@@ -64,4 +64,4 @@ local function on_player_changed_position(event)
     player.surface.set_tiles({{name = new_tile, position = tile.position}}, true)
 end
 
-event.add(defines.events.on_player_changed_position, on_player_changed_position)
+Event.add(defines.events.on_player_changed_position, on_player_changed_position)

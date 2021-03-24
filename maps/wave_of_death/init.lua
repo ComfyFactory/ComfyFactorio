@@ -1,3 +1,4 @@
+--luacheck: ignore
 local function init_surface()
     local map_gen_settings = {}
     map_gen_settings.water = '0'

@@ -1,6 +1,6 @@
 -- stepping or driving on anything other than concrete or stone-path will melt you into molten state -- by mewmew
 
-local event = require 'utils.event'
+local Event = require 'utils.event'
 
 local immune_tiles = {
     ['concrete'] = true,
@@ -64,7 +64,7 @@ end
 --process_player(player)
 --end
 
-local function tick(event)
+local function tick()
     for _, p in pairs(game.connected_players) do
         process_player(p)
     end
@@ -78,6 +78,6 @@ local function on_player_joined_game(event)
     end
 end
 
-event.on_nth_tick(5, tick)
---event.add(defines.events.on_player_changed_position, on_player_changed_position)
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.on_nth_tick(5, tick)
+--Event.add(defines.events.on_player_changed_position, on_player_changed_position)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)

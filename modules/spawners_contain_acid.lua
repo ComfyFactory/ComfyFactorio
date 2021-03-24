@@ -1,5 +1,4 @@
-local event = require 'utils.event'
-local math_random = math.random
+local Event = require 'utils.event'
 local radius = 16
 
 local targets = {}
@@ -34,4 +33,4 @@ local function on_entity_died(event)
     end
 end
 
-event.add(defines.events.on_entity_died, on_entity_died)
+Event.add(defines.events.on_entity_died, on_entity_died)

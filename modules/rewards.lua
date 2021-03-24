@@ -106,44 +106,43 @@ local function show_rewards(player)
     if global.rewards[player.name].level then
         str = tostring(current_level)
     end
-    local l = t.add {type = 'label', caption = str}
+    l = t.add {type = 'label', caption = str}
     l.style.font = 'default-bold'
     l.style.font_color = {r = 0.9, g = 0.9, b = 0.9}
     l.style.minimal_width = 123
 
-    local t = frame.add {type = 'table', column_count = 1}
+    t = frame.add {type = 'table', column_count = 1}
 
-    local l = t.add {type = 'label', caption = 'Progress to Next Level: '}
+    l = t.add {type = 'label', caption = 'Progress to Next Level: '}
     l.style.font = 'default-bold'
     l.style.font_color = {r = 244, g = 212, b = 66}
     l.style.minimal_width = 123
 
-    local t = frame.add {type = 'table', column_count = 1}
-
+    t = frame.add {type = 'table', column_count = 1}
+    local value
     if kill_score then
         value = ((kill_score - min_score) / (floor(next_level_score) - min_score))
     end
-    local l = t.add {type = 'progressbar', value = value}
+    l = t.add {type = 'progressbar', value = value}
     l.style.font = 'default-bold'
     l.style.font_color = {r = 0.9, g = 0.9, b = 0.9}
     l.style.minimal_width = 123
 
-    local t = frame.add {type = 'table', column_count = 1}
+    t = frame.add {type = 'table', column_count = 1}
 
-    local l = t.add {type = 'label', caption = 'Next Reward: '}
+    l = t.add {type = 'label', caption = 'Next Reward: '}
     l.style.font = 'default-bold'
     l.style.font_color = {r = 244, g = 212, b = 66}
     l.style.minimal_width = 123
 
-    local t = frame.add {type = 'table', column_count = 1}
+    t = frame.add {type = 'table', column_count = 1}
 
-    local leveled_list = {}
     for _, v in pairs(rewards_loot[next_level]) do
-        local str = '0'
+        str = '0'
         if global.rewards[player.name].level then
             str = tostring(v.count .. ' ' .. v.text)
         end
-        local l = t.add {type = 'label', caption = str}
+        l = t.add {type = 'label', caption = str}
         l.style.font = 'default-bold'
         l.style.font_color = {r = 0.9, g = 0.9, b = 0.9}
         l.style.minimal_width = 123
@@ -183,7 +182,7 @@ local callback =
         end
         for i = 1, #data.pos_list, 1 do
             if data.pos_list[i].distance >= data.run then
-                local splash = data.surface.create_entity({name = 'water-splash', position = data.pos_list[i].position})
+                data.surface.create_entity({name = 'water-splash', position = data.pos_list[i].position})
             end
         end
     end
@@ -197,14 +196,13 @@ local function reward_messages(data)
         return
     end
     local print_text = ''
-    local text_effect =
-        player.surface.create_entity(
+
+    player.surface.create_entity(
         {name = 'flying-text', position = {player.position.x, player.position.y}, text = 'Reached Combat Level: ' .. data.next_level, color = {r = 0.2, g = 1.0, b = 0.1}}
     )
     -- Loop through all of the rewards for this level and print out flying text
     for i = 1, #item_rewards, 1 do
-        local text_effect =
-            player.surface.create_entity(
+        player.surface.create_entity(
             {name = 'flying-text', position = {player.position.x, player.position.y + (i * 0.5)}, text = item_rewards[i].text, color = {r = 1.0, g = 1.0, b = 1.0}}
         )
         if i > 1 then
@@ -248,16 +246,14 @@ local function kill_rewards(event)
             local inserted_count = pinsert {name = item.name, count = item.count}
             -- Check if player inventory is full, store remaining rewards in table
             if (item.count - inserted_count) > 0 then
-                local queue_pos = #global.inventory_queue[player.name].items
                 surface.spill_item_stack(center_position, {name = item.name, count = (item.count - inserted_count)}, true)
                 player.print('[WARNING] Inventory Full, Rewards Dropped', {r = 1.0, g = 0.0, b = 0.0})
             end
         end
         -- Creates the level up effect in a radius
         for i = 1, 5, 1 do
-            local area = {}
             local pos_list = {}
-            area = {left_top = {x = (center_position.x - i), y = (center_position.y - i)}, right_bottom = {x = (center_position.x + i + 1), y = (center_position.y + i + 1)}}
+            local area = {left_top = {x = (center_position.x - i), y = (center_position.y - i)}, right_bottom = {x = (center_position.x + i + 1), y = (center_position.y + i + 1)}}
             for _, t in pairs(surface.find_tiles_filtered {area = area}) do
                 local distance = floor(sqrt((center_position.x - t.position.x) ^ 2 + (center_position.y - t.position.y) ^ 2))
                 if (distance <= i) then

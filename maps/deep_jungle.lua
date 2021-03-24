@@ -1,3 +1,4 @@
+--luacheck: ignore
 --deep jungle-- mewmew made this --
 require 'modules.no_deconstruction_of_neutral_entities'
 require 'modules.spawners_contain_biters'

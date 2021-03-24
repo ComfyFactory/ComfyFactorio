@@ -1,6 +1,6 @@
-local event = require 'utils.event'
+local Event = require 'utils.event'
 
-local function on_tick(event)
+local function on_tick()
     if global.map_pregeneration_is_active then
         if game.tick % 600 == 0 then
             local r = 1
@@ -20,7 +20,7 @@ local function on_tick(event)
     end
 end
 
-function map_pregen(chunk_radius)
+local function map_pregen(chunk_radius)
     if chunk_radius then
         global.chunk_radius = chunk_radius
     else
@@ -35,4 +35,6 @@ function map_pregen(chunk_radius)
     global.map_pregeneration_is_active = true
 end
 
-event.add(defines.events.on_tick, on_tick)
+Event.add(defines.events.on_tick, on_tick)
+
+return map_pregen

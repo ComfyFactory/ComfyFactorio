@@ -1,3 +1,4 @@
+--luacheck: ignore
 require 'modules.mineable_wreckage_yields_scrap'
 require 'modules.wave_defense.main'
 local Map = require 'modules.map_info'

@@ -1,7 +1,7 @@
 --This will add a new game mechanic so that containers with explosives actually go boom when they get damaged.
 --Made by MewMew
 
-local event = require 'utils.event'
+local Event = require 'utils.event'
 
 local damage_per_explosive = 100
 local empty_tile_damage_decay = 100
@@ -1752,14 +1752,13 @@ local function on_entity_damaged(event)
     end
 end
 
-local function on_tick(event)
+local function on_tick()
     if global.explosion_schedule then
         local tick = game.tick
         local explosion_schedule_is_alive = false
         for explosion_index = 1, #global.explosion_schedule, 1 do
             if #global.explosion_schedule[explosion_index] > 0 then
                 explosion_schedule_is_alive = true
-                local surface = game.surfaces[global.explosion_schedule[explosion_index].surface]
                 for radius = 1, #global.explosion_schedule[explosion_index], 1 do
                     if global.explosion_schedule[explosion_index][radius].trigger_tick == tick then
                         for tile_index = 1, #global.explosion_schedule[explosion_index][radius], 1 do
@@ -1783,5 +1782,5 @@ local function on_tick(event)
     end
 end
 
-event.add(defines.events.on_entity_damaged, on_entity_damaged)
-event.add(defines.events.on_tick, on_tick)
+Event.add(defines.events.on_entity_damaged, on_entity_damaged)
+Event.add(defines.events.on_tick, on_tick)

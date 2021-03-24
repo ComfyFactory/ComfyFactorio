@@ -1,3 +1,4 @@
+--luacheck: ignore
 --lost desert-- mewmew made this --
 
 require 'modules.rocks_broken_paint_tiles'

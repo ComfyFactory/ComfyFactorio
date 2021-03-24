@@ -1,3 +1,4 @@
+--luacheck: ignore
 --junkyard-- mewmew made this --
 
 require 'modules.dynamic_landfill'

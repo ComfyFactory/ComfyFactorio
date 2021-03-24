@@ -1,3 +1,5 @@
+local Public = {}
+
 local shop_list = {
     ['coal'] = 1,
     ['copper-ore'] = 1,
@@ -11,7 +13,7 @@ local shop_list = {
     ['wood'] = 0.75
 }
 
-function create_shopping_chest(surface, position, destructible)
+function Public.create_shopping_chest(surface, position, destructible)
     local entity = surface.create_entity({name = 'logistic-chest-requester', position = position, force = 'shopping_chests'})
     entity.minable = false
     if not destructible then
@@ -19,7 +21,7 @@ function create_shopping_chest(surface, position, destructible)
     end
 end
 
-function create_dump_chest(surface, position, destructible)
+function Public.create_dump_chest(surface, position, destructible)
     local entity = surface.create_entity({name = 'logistic-chest-passive-provider', position = position, force = 'shopping_chests'})
     entity.minable = false
     if not destructible then
@@ -73,16 +75,16 @@ local function process_shopping_chest(k, chest)
     chest.surface.create_entity({name = 'flying-text', position = chest.position, text = '-' .. spent_credits .. ' ø', color = {r = 200, g = 160, b = 30}})
 end
 
-local function process_dump_chest(k, chest)
+local function process_dump_chest(key, chest)
     if not chest.valid then
-        global.dump_chests[k] = nil
+        global.dump_chests[key] = nil
         return
     end
     local inventory = chest.get_inventory(defines.inventory.chest)
     if inventory.is_empty() then
         return
     end
-    for k, price in pairs(shop_list) do
+    for k, _ in pairs(shop_list) do
         local removed = inventory.remove(k)
         if removed > 0 then
             local gain = removed * shop_list[k]
@@ -173,7 +175,9 @@ local function on_init()
     game.forces.shopping_chests.set_friend('player', true)
 end
 
-local event = require 'utils.event'
-event.add(defines.events.on_gui_opened, on_gui_opened)
-event.on_nth_tick(120, tick)
-event.on_init(on_init)
+local Event = require 'utils.event'
+Event.add(defines.events.on_gui_opened, on_gui_opened)
+Event.on_nth_tick(120, tick)
+Event.on_init(on_init)
+
+return Public

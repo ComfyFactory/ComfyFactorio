@@ -2,7 +2,6 @@
 
 require 'player_modifiers'
 
-local math_random = math.random
 local P = require 'player_modifiers'
 
 local starve_messages = {' ran out of foodstamps.', ' starved.', ' should not have skipped breakfast today.'}
@@ -101,7 +100,7 @@ local function update_hunger_gui(player)
     player.gui.top['hunger_frame'].style.font_color = player_hunger_color_list[global.player_hunger[player.name]]
 end
 
-function hunger_update(player, food_value)
+local function hunger_update(player, food_value)
     local player_modifiers = P.get_table()
     if not player.character then
         return

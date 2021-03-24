@@ -1,7 +1,5 @@
 local Public = {}
 
-local math_abs = math.abs
-
 local score_values = {
     ['small-spitter'] = 1,
     ['small-biter'] = 1,
@@ -19,7 +17,7 @@ local score_values = {
     ['spitter-spawner'] = 16
 }
 
-function Public.set_daytime_difficulty(surface, tick)
+function Public.set_daytime_difficulty(surface)
     local daytime = surface.daytime
     if daytime < 0.30 then
         surface.peaceful_mode = true

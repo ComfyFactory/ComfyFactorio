@@ -6,10 +6,9 @@
 require 'modules.custom_death_messages'
 require 'maps.hunger_games_map_intro'
 require 'modules.dynamic_player_spawn'
-local Score = require 'comfy_panel.score'
 --require "maps.modules.hunger_games_balance"
 
-local event = require 'utils.event'
+local Event = require 'utils.event'
 local message_color = {r = 0.98, g = 0.66, b = 0.22}
 
 local function anarchy_gui_button(player)
@@ -65,7 +64,7 @@ local function anarchy_gui(player)
     scroll_pane.style.maximal_height = total_height - 50
     scroll_pane.style.minimal_height = total_height - 50
 
-    local t = scroll_pane.add({type = 'table', name = 'groups_table', column_count = 4})
+    t = scroll_pane.add({type = 'table', name = 'groups_table', column_count = 4})
     for _, h in pairs(headings) do
         local l = t.add({type = 'label', caption = ''})
         l.style.minimal_width = h[2]
@@ -82,7 +81,7 @@ local function anarchy_gui(player)
         l.style.font_color = group.color
         l.style.single_line = false
 
-        local l = t.add({type = 'label', caption = group.description})
+        l = t.add({type = 'label', caption = group.description})
         l.style.top_padding = 16
         l.style.bottom_padding = 16
         l.style.minimal_width = description_width
@@ -94,7 +93,7 @@ local function anarchy_gui(player)
         for _, member in pairs(group.members) do
             local p = game.players[member]
             if p.connected then
-                local l = tt.add({type = 'label', caption = tostring(p.name)})
+                l = tt.add({type = 'label', caption = tostring(p.name)})
                 local color = {r = p.color.r * 0.6 + 0.4, g = p.color.g * 0.6 + 0.4, b = p.color.b * 0.6 + 0.4, a = 1}
                 l.style.font_color = color
                 l.style.maximal_width = members_width * 2
@@ -104,24 +103,24 @@ local function anarchy_gui(player)
         for _, member in pairs(group.members) do
             local p = game.players[member]
             if not p.connected then
-                local l = tt.add({type = 'label', caption = tostring(p.name)})
+                l = tt.add({type = 'label', caption = tostring(p.name)})
                 local color = {r = 0.59, g = 0.59, b = 0.59, a = 1}
                 l.style.font_color = color
                 l.style.maximal_width = members_width * 2
             end
         end
 
-        local tt = t.add({type = 'table', name = group.name, column_count = 1})
+        tt = t.add({type = 'table', name = group.name, column_count = 1})
 
         if not group.members[player.name] then
-            local b = tt.add({type = 'button', caption = 'Join'})
+            b = tt.add({type = 'button', caption = 'Join'})
             b.style.font = 'default-bold'
             b.style.minimal_width = actions_width
             b.style.maximal_width = actions_width
         end
 
         if group.members[player.name] then
-            local b = tt.add({type = 'button', caption = 'Leave'})
+            b = tt.add({type = 'button', caption = 'Leave'})
             b.style.font = 'default-bold'
             b.style.minimal_width = actions_width
             b.style.maximal_width = actions_width
@@ -129,12 +128,12 @@ local function anarchy_gui(player)
     end
 
     local frame2 = frame.add({type = 'frame', name = 'frame2'})
-    local t = frame2.add({type = 'table', name = 'group_table', column_count = 3})
+    t = frame2.add({type = 'table', name = 'group_table', column_count = 3})
     local textfield = t.add({type = 'textfield', name = 'new_group_name', text = 'Name'})
     textfield.style.minimal_width = group_name_width
-    local textfield = t.add({type = 'textfield', name = 'new_group_description', text = 'Description'})
+    textfield = t.add({type = 'textfield', name = 'new_group_description', text = 'Description'})
     textfield.style.minimal_width = description_width + members_width * member_columns
-    local b = t.add({type = 'button', name = 'create_new_group', caption = 'Create'})
+    b = t.add({type = 'button', name = 'create_new_group', caption = 'Create'})
     b.style.minimal_width = actions_width * 2 - 12
     b.style.font = 'default-bold'
 end
@@ -148,7 +147,7 @@ local function refresh_gui()
 
             anarchy_gui(p)
 
-            local frame = p.gui.left['anarchy_group_frame']
+            frame = p.gui.left['anarchy_group_frame']
             frame.frame2.group_table.new_group_name.text = new_group_name
             frame.frame2.group_table.new_group_description.text = new_group_description
         end
@@ -270,7 +269,7 @@ local function new_group(frame, player)
         color = {r = color.r * 0.6 + 0.4, g = color.g * 0.6 + 0.4, b = color.b * 0.6 + 0.4, a = 1}
 
         global.alliance_groups[new_group_name] = {name = new_group_name, color = color, description = new_group_description, members = {[tostring(player.name)] = player.index}}
-        local color = {r = player.color.r * 0.7 + 0.3, g = player.color.g * 0.7 + 0.3, b = player.color.b * 0.7 + 0.3, a = 1}
+        color = {r = player.color.r * 0.7 + 0.3, g = player.color.g * 0.7 + 0.3, b = player.color.b * 0.7 + 0.3, a = 1}
         game.print(tostring(player.name) .. ' has founded a new group!', color)
         game.print('>> ' .. new_group_name, {r = 0.98, g = 0.66, b = 0.22})
         game.print(new_group_description, {r = 0.85, g = 0.85, b = 0.85})
@@ -473,8 +472,7 @@ local function on_console_chat(event)
         end
     end
 
-    local color = {}
-    color = player.color
+    local color = player.color
     color.r = color.r * 0.6 + 0.35
     color.g = color.g * 0.6 + 0.35
     color.b = color.b * 0.6 + 0.35
@@ -493,7 +491,7 @@ local function on_player_respawned(event)
     local player = game.players[event.player_index]
     player.insert {name = 'iron-plate', count = 8}
 end
-
+--[[
 local function on_built_entity(event)
     local get_score = Score.get_table().score_table
     local entity = event.created_entity
@@ -516,11 +514,10 @@ local function on_built_entity(event)
         end
     end
     entity.destroy()
-end
-
---event.add(defines.events.on_built_entity, on_built_entity)
---event.add(defines.events.on_player_died, on_player_died)
-event.add(defines.events.on_player_respawned, on_player_respawned)
-event.add(defines.events.on_console_chat, on_console_chat)
-event.add(defines.events.on_gui_click, on_gui_click)
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
+end ]]
+--Event.add(defines.events.on_built_entity, on_built_entity)
+--Event.add(defines.events.on_player_died, on_player_died)
+Event.add(defines.events.on_player_respawned, on_player_respawned)
+Event.add(defines.events.on_console_chat, on_console_chat)
+Event.add(defines.events.on_gui_click, on_gui_click)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)

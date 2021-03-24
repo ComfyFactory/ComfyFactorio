@@ -56,7 +56,7 @@ local function draw_screen_gui(player)
         return
     end
 
-    local frame =
+    frame =
         player.gui.screen.add(
         {
             type = 'frame',

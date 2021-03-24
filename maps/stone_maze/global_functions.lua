@@ -1,3 +1,4 @@
+--luacheck: ignore
 function get_biter()
     local max_chance = 0
     for i = 1, 4, 1 do

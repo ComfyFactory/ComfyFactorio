@@ -1,4 +1,4 @@
-function cheat_mode()
+local function cheat_mode()
     local surface = game.players[1].surface
     game.player.cheat_mode = true
     game.players[1].insert({name = 'power-armor-mk2'})
@@ -28,3 +28,5 @@ function cheat_mode()
     local chart = 128
     game.forces['player'].chart(surface, {lefttop = {x = chart * -1, y = chart * -1}, rightbottom = {x = chart, y = chart}})
 end
+
+return cheat_mode()

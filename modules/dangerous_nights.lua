@@ -1,6 +1,6 @@
 -- nighttime is dangerous, stay near your lamps -- by mewmew
 
-local event = require 'utils.event'
+local Event = require 'utils.event'
 
 local unearthing_worm = require 'functions.unearthing_worm'
 local unearthing_biters = require 'functions.unearthing_biters'
@@ -74,4 +74,4 @@ local function on_player_changed_position(event)
     end
 end
 
-event.add(defines.events.on_player_changed_position, on_player_changed_position)
+Event.add(defines.events.on_player_changed_position, on_player_changed_position)

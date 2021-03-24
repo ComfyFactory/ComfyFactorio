@@ -1,3 +1,4 @@
+--luacheck: ignore
 --optionals
 require 'modules.satellite_score'
 require 'modules.dangerous_goods'

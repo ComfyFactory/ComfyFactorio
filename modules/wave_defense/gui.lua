@@ -10,11 +10,11 @@ local function create_gui(player)
     label.style.font = 'default-bold'
     label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 
-    local label = frame.add({type = 'label', caption = ' ', name = 'wave_number'})
-    label.style.font_color = {r = 0.88, g = 0.88, b = 0.88}
-    label.style.font = 'default-bold'
-    label.style.right_padding = 4
-    label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+    local wave_number_label = frame.add({type = 'label', caption = ' ', name = 'wave_number'})
+    wave_number_label.style.font_color = {r = 0.88, g = 0.88, b = 0.88}
+    wave_number_label.style.font = 'default-bold'
+    wave_number_label.style.right_padding = 4
+    wave_number_label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 
     local progressbar = frame.add({type = 'progressbar', name = 'progressbar', value = 0})
     local experimental = get_game_version()
@@ -34,21 +34,21 @@ local function create_gui(player)
     line.style.left_padding = 4
     line.style.right_padding = 4
 
-    local label = frame.add({type = 'label', caption = ' ', name = 'threat', tooltip = {'wave_defense.tooltip_1'}})
-    label.style.font = 'default-bold'
-    label.style.left_padding = 4
-    label.style.font_color = {r = 150, g = 0, b = 255}
+    local threat_label = frame.add({type = 'label', caption = ' ', name = 'threat', tooltip = {'wave_defense.tooltip_1'}})
+    threat_label.style.font = 'default-bold'
+    threat_label.style.left_padding = 4
+    threat_label.style.font_color = {r = 150, g = 0, b = 255}
 
-    local label = frame.add({type = 'label', caption = ' ', name = 'threat_value', tooltip = {'wave_defense.tooltip_1'}})
-    label.style.font = 'default-bold'
-    label.style.right_padding = 1
-    label.style.minimal_width = 10
-    label.style.font_color = {r = 150, g = 0, b = 255}
+    local threat_value_label = frame.add({type = 'label', caption = ' ', name = 'threat_value', tooltip = {'wave_defense.tooltip_1'}})
+    threat_value_label.style.font = 'default-bold'
+    threat_value_label.style.right_padding = 1
+    threat_value_label.style.minimal_width = 10
+    threat_value_label.style.font_color = {r = 150, g = 0, b = 255}
 
-    local label = frame.add({type = 'label', caption = ' ', name = 'threat_gains', tooltip = {'wave_defense.tooltip_2'}})
-    label.style.font = 'default'
-    label.style.left_padding = 1
-    label.style.right_padding = 1
+    local threat_gains_label = frame.add({type = 'label', caption = ' ', name = 'threat_gains', tooltip = {'wave_defense.tooltip_2'}})
+    threat_gains_label.style.font = 'default'
+    threat_gains_label.style.left_padding = 1
+    threat_gains_label.style.right_padding = 1
 end
 
 --display threat gain/loss per minute during last 15 minutes

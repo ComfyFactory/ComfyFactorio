@@ -1,13 +1,12 @@
 -- too many same entities close together will explode
 
-local event = require 'utils.event'
+local Event = require 'utils.event'
 local math_random = math.random
 require 'utils.table'
 
 local search_radius = 6
 local explosions = {'explosion', 'explosion', 'explosion', 'explosion', 'explosion', 'explosion', 'medium-explosion', 'uranium-cannon-explosion', 'uranium-cannon-explosion'}
 
-local default_limit = 2
 local entity_limits = {
     ['transport-belt'] = search_radius * 2 + 1,
     ['pipe'] = search_radius * 2 + 2,
@@ -120,7 +119,6 @@ local function spaghett(surface, entity, inventory, player)
                 global.last_spaghett_error[player.index] = 0
             end
             if game.tick - global.last_spaghett_error[player.index] > 30 then
-                local gb = math.random(0, 150)
                 surface.create_entity(
                     {
                         name = 'flying-text',
@@ -148,7 +146,7 @@ local function on_robot_built_entity(event)
     spaghett(event.robot.surface, event.created_entity, event.robot.get_inventory(defines.inventory.robot_cargo))
 end
 
-function on_player_created(event)
+local function on_player_created(event)
     local force = game.players[event.player_index].force
     force.technologies['logistic-system'].enabled = false
     force.technologies['construction-robotics'].enabled = false
@@ -176,7 +174,7 @@ function on_player_created(event)
     force.technologies['worker-robots-speed-6'].enabled = false
 end
 
-event.add(defines.events.on_player_created, on_player_created)
-event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
-event.add(defines.events.on_built_entity, on_built_entity)
-event.add(defines.events.on_player_rotated_entity, on_player_rotated_entity)
+Event.add(defines.events.on_player_created, on_player_created)
+Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
+Event.add(defines.events.on_built_entity, on_built_entity)
+Event.add(defines.events.on_player_rotated_entity, on_player_rotated_entity)

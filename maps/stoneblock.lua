@@ -1,3 +1,4 @@
+--luacheck: ignore
 -- digging thingie -- by mewmew --
 
 require 'modules.satellite_score'

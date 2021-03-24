@@ -1,3 +1,4 @@
+--luacheck: ignore
 -- crossing -- by mewmew --
 
 local event = require 'utils.event'

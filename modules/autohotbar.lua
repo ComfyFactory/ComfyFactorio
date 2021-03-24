@@ -1,3 +1,4 @@
+--luacheck: ignore
 local event = require 'utils.event'
 
 local function get_empty_hotbar_slot(player)

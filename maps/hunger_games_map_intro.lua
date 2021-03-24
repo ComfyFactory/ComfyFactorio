@@ -1,3 +1,4 @@
+--luacheck: ignore
 local event = require 'utils.event'
 
 local main_caption = ' --Hunger Games Mode-- '

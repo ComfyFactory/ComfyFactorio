@@ -1,6 +1,6 @@
 -- toggle your flashlight -- by mewmew
 
-local event = require 'utils.event'
+local Event = require 'utils.event'
 local message_color = {r = 200, g = 200, b = 0}
 
 local function on_gui_click(event)
@@ -64,6 +64,6 @@ local function on_player_joined_game(event)
     b.style.bottom_padding = 2
 end
 
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
-event.add(defines.events.on_player_respawned, on_player_respawned)
-event.add(defines.events.on_gui_click, on_gui_click)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_player_respawned, on_player_respawned)
+Event.add(defines.events.on_gui_click, on_gui_click)

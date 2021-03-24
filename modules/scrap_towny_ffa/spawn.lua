@@ -1,3 +1,4 @@
+--luacheck: ignore
 local Public = {}
 
 local table_size = table.size

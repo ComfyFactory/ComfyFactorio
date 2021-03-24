@@ -1,3 +1,4 @@
+--luacheck: ignore
 --lost-- mewmew made this --
 
 require 'modules.landfill_reveals_nauvis'

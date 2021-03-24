@@ -1,3 +1,4 @@
+--luacheck: ignore
 --deep jungle-- mewmew made this --
 local map_functions = require 'tools.map_functions'
 local simplex_noise = require 'utils.simplex_noise'

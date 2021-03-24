@@ -106,7 +106,7 @@ local scrap_yield_amounts = {
 
 local scrap_raffle = {}
 for _, t in pairs(mining_chance_weights) do
-    for x = 1, t.chance, 1 do
+    for _ = 1, t.chance, 1 do
         table.insert(scrap_raffle, t.name)
     end
 end

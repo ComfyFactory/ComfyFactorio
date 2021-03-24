@@ -1,7 +1,7 @@
 -- improves the damage of the railgun and adds visual effects -- by mewmew
 -- laser turret research will increase it´s damage even further --
 
-local event = require 'utils.event'
+local Event = require 'utils.event'
 local damage_min = 400
 local damage_max = 800
 local math_random = math.random
@@ -15,7 +15,7 @@ local biological_target_types = {
     ['unit-spawner'] = true
 }
 
-local function create_visuals(source_entity, target_entity)
+local function create_visuals(_, target_entity)
     if not additional_visual_effects then
         return
     end
@@ -112,4 +112,4 @@ local function on_entity_damaged(event)
     event.entity.damage(damage, player.force, 'physical')
 end
 
-event.add(defines.events.on_entity_damaged, on_entity_damaged)
+Event.add(defines.events.on_entity_damaged, on_entity_damaged)

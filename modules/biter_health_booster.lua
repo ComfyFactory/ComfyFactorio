@@ -26,7 +26,7 @@ local function clean_table()
     local units_to_delete = {}
 
     --Mark all health boost entries for deletion
-    for key, health in pairs(global.biter_health_boost_units) do
+    for key, _ in pairs(global.biter_health_boost_units) do
         units_to_delete[key] = true
     end
 

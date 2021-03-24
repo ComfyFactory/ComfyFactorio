@@ -1,3 +1,4 @@
+--luacheck: ignore
 -- Refactor-io -- made by mewmew and p.p
 
 require 'modules.satellite_score'

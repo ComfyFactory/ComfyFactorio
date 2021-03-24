@@ -1,3 +1,4 @@
+--luacheck: ignore
 require 'modules.biter_reanimator'
 require 'maps.native_war.share_chat'
 require 'maps.native_war.mineable_wreckage_yields_scrap'

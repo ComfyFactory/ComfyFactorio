@@ -1,4 +1,4 @@
-local event = require 'utils.event'
+local Event = require 'utils.event'
 local math_random = math.random
 
 local function shuffle(tbl)
@@ -508,5 +508,5 @@ local function on_tick()
     end
 end
 
-event.add(defines.events.on_entity_damaged, on_entity_damaged)
-event.add(defines.events.on_tick, on_tick)
+Event.add(defines.events.on_entity_damaged, on_entity_damaged)
+Event.add(defines.events.on_tick, on_tick)

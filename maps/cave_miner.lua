@@ -1,3 +1,4 @@
+--luacheck: ignore
 -- Cave Miner -- mewmew made this --
 
 require 'modules.rocks_heal_over_time'

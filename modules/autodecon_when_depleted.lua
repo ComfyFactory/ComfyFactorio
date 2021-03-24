@@ -1,3 +1,4 @@
+--luacheck: ignore
 local event = require 'utils.event'
 local function is_depleted(drill, entity)
     local position = drill.position

@@ -1,6 +1,6 @@
 -- this automatically sets player's force spawn point to where a lot of buildings are
 
-local event = require 'utils.event'
+local Event = require 'utils.event'
 
 local valid_types = {'boiler', 'furnace', 'generator', 'offshore-pump', 'lab', 'assembling-machine'}
 
@@ -15,4 +15,4 @@ local function on_built_entity(event)
     end
 end
 
-event.add(defines.events.on_built_entity, on_built_entity)
+Event.add(defines.events.on_built_entity, on_built_entity)

@@ -53,30 +53,6 @@ local function is_scrap(name)
     return false
 end
 
-local scrap_entities = {
-    'crash-site-assembling-machine-1-broken',
-    'crash-site-assembling-machine-2-broken',
-    'crash-site-lab-broken',
-    'medium-ship-wreck',
-    'small-ship-wreck',
-    'crash-site-chest-1',
-    'crash-site-chest-2',
-    'crash-site-chest-1',
-    'crash-site-chest-2',
-    'crash-site-chest-1',
-    'crash-site-chest-2',
-    'big-ship-wreck-1',
-    'big-ship-wreck-2',
-    'big-ship-wreck-3',
-    'big-ship-wreck-1',
-    'big-ship-wreck-2',
-    'big-ship-wreck-3',
-    'big-ship-wreck-1',
-    'big-ship-wreck-2',
-    'big-ship-wreck-3'
-}
-local scrap_entities_index = #scrap_entities
-
 local mining_chance_weights = {
     {name = 'iron-plate', chance = 1000},
     {name = 'iron-gear-wheel', chance = 750},
@@ -183,7 +159,7 @@ local scrap_yield_amounts = {
 
 local scrap_raffle = {}
 for _, t in pairs(mining_chance_weights) do
-    for x = 1, t.chance, 1 do
+    for _ = 1, t.chance, 1 do
         table.insert(scrap_raffle, t.name)
     end
 end
@@ -203,7 +179,7 @@ local function place_scrap(surface, position)
         local e = surface.create_entity({name = scraps_inv[math_random(1, #scraps_inv)], position = position, force = 'neutral'})
         local i = e.get_inventory(defines.inventory.chest)
         if i then
-            for x = 1, math_random(6, 18), 1 do
+            for _ = 1, math_random(6, 18), 1 do
                 local loot = scrap_raffle[math_random(1, size_of_scrap_raffle)]
 
                 i.insert({name = loot, count = math_floor(scrap_yield_amounts[loot] * math_random(5, 35) * 0.1) + 1})

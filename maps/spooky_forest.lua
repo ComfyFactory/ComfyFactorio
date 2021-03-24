@@ -1,3 +1,4 @@
+--luacheck: ignore
 -- spooky forest -- by mewmew --
 
 require 'modules.trees_randomly_die'

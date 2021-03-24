@@ -1,3 +1,4 @@
+--luacheck: ignore
 local function assert_argument_valid(a, arg_type)
     arg_type = arg_type or 'table'
     if type(a) ~= arg_type then

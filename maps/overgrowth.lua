@@ -1,3 +1,4 @@
+--luacheck: ignore
 --overgrowth-- by mewmew --
 
 require 'modules.dynamic_landfill'

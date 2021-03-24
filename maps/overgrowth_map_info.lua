@@ -1,3 +1,4 @@
+--luacheck: ignore
 local event = require 'utils.event'
 
 local info =

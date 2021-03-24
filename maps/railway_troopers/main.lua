@@ -5,9 +5,6 @@ require 'modules.biters_yield_ore'
 local math_random = math.random
 local math_floor = math.floor
 local table_insert = table.insert
-local table_remove = table.remove
-local math_sqrt = math.sqrt
-local math_round = math.round
 local math_abs = math.abs
 
 local map_height = 96
@@ -149,7 +146,7 @@ local function draw_east_side(surface, left_top)
             entity.get_inventory(defines.inventory.cargo_wagon).insert({name = 'grenade', count = 32})
             entity.get_inventory(defines.inventory.cargo_wagon).insert({name = 'pistol', count = 10})
             entity.get_inventory(defines.inventory.cargo_wagon).insert({name = 'rail', count = 100})
-            local entity = surface.create_entity({name = 'locomotive', position = {-18, 0}, force = 'player', direction = 2})
+            entity = surface.create_entity({name = 'locomotive', position = {-18, 0}, force = 'player', direction = 2})
             entity.get_inventory(defines.inventory.fuel).insert({name = 'wood', count = 25})
         end
     end

@@ -1,3 +1,4 @@
+--luacheck: ignore
 local room = {}
 
 room.empty = function(surface, cell_left_top, direction)

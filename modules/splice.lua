@@ -1,6 +1,6 @@
 -- biter splicing -- global.splice_modifier can be increased for increased difficulty -- by mewmew
 
-local event = require 'utils.event'
+local Event = require 'utils.event'
 
 local biter_fragmentation = {
     ['medium-biter'] = {'small-biter', 1},
@@ -21,7 +21,7 @@ local function on_entity_died(event)
         if amount < 1 then
             return
         end
-        for x = 1, amount, 1 do
+        for _ = 1, amount, 1 do
             local p = entity.surface.find_non_colliding_position(biter_fragmentation[entity.name][1], entity.position, 3, 0.5)
             if p then
                 entity.surface.create_entity({name = biter_fragmentation[entity.name][1], position = p})
@@ -30,4 +30,4 @@ local function on_entity_died(event)
     end
 end
 
-event.add(defines.events.on_entity_died, on_entity_died)
+Event.add(defines.events.on_entity_died, on_entity_died)

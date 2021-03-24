@@ -1,3 +1,4 @@
+--luacheck: ignore
 --rivers-- mewmew made this --
 
 require 'modules.satellite_score'

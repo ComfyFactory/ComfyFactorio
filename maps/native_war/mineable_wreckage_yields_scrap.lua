@@ -1,3 +1,4 @@
+--luacheck: ignore
 --mineable-wreckage yields scrap -- by mewmew
 
 local mining_chance_weights = {

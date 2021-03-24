@@ -1,3 +1,4 @@
+--luacheck: ignore
 local function spectate_button()
 end
 

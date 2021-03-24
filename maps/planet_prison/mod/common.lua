@@ -526,8 +526,8 @@ Public.get_convex_hull = function(_vertices)
         vertices[3]
     }
     local point
-    for i = 4, #vertices do
-        point = vertices[i]
+    for ii = 4, #vertices do
+        point = vertices[ii]
 
         while #stack > 1 and convex_hull_turn(point, rev(stack, 1), rev(stack)) >= 0 do
             remove(stack)

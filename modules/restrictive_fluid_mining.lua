@@ -1,6 +1,6 @@
 -- restricts mining of fluid filled entities -- by mewmew
 
-local event = require 'utils.event'
+local Event = require 'utils.event'
 local math_random = math.random
 
 local message_color = {r = 255, g = 150, b = 0}
@@ -86,5 +86,5 @@ local function on_robot_mined_entity(event)
     restrict_fluid_mining(event)
 end
 
-event.add(defines.events.on_robot_mined_entity, on_robot_mined_entity)
-event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
+Event.add(defines.events.on_robot_mined_entity, on_robot_mined_entity)
+Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)

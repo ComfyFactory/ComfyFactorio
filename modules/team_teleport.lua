@@ -250,10 +250,10 @@ local function create_teleport_gui(player)
         l.style.font = 'heading-2'
         l.style.minimal_width = 120
 
-        local l = t.add({type = 'label', caption = '       Distance: '})
+        l = t.add({type = 'label', caption = '       Distance: '})
         l.style.font = 'heading-2'
 
-        local l = t.add({type = 'label', caption = tostring(k.distance)})
+        l = t.add({type = 'label', caption = tostring(k.distance)})
         l.style.font_color = {r = 0.66, g = 0.66, b = 0.99}
         l.style.font = 'heading-2'
         l.style.minimal_width = 100

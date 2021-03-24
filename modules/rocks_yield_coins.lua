@@ -1,4 +1,4 @@
-local event = require 'utils.event'
+local Event = require 'utils.event'
 
 local coin_yield = {
     ['rock-big'] = 3,
@@ -16,4 +16,4 @@ local function on_player_mined_entity(event)
     end
 end
 
-event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
+Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)

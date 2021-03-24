@@ -1,3 +1,4 @@
+--luacheck: ignore
 --tank battles (royale)-- mewmew made this --
 
 local event = require 'utils.event'

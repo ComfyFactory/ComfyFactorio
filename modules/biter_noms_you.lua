@@ -1,6 +1,6 @@
 --biters make comic like text sounds when they damage something -- mewmew
 
-local event = require 'utils.event'
+local Event = require 'utils.event'
 local math_random = math.random
 
 local strings = {
@@ -69,4 +69,4 @@ local function on_entity_damaged(event)
     end
 end
 
-event.add(defines.events.on_entity_damaged, on_entity_damaged)
+Event.add(defines.events.on_entity_damaged, on_entity_damaged)

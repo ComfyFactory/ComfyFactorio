@@ -1,3 +1,4 @@
+--luacheck: ignore
 local Basic_markets = require 'functions.basic_markets'
 local Biter_pets = require 'modules.biter_pets'
 local get_noise = require 'maps.stone_maze.noise'

@@ -1,3 +1,4 @@
+--luacheck: ignore
 require 'modules.satellite_score'
 require 'modules.thirst'
 

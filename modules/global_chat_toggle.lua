@@ -83,7 +83,6 @@ local function on_console_chat(event)
 end
 
 local Event = require 'utils.event'
-Event.on_init(on_init)
 Event.add(defines.events.on_console_chat, on_console_chat)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_gui_click, on_gui_click)

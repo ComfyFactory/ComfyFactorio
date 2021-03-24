@@ -1,3 +1,4 @@
+--luacheck: ignore
 local Public = {}
 local Team = require 'maps.native_war.team'
 local XP = require 'maps.native_war.xp'

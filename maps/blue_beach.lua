@@ -11,21 +11,6 @@ local WD = require 'modules.wave_defense.table'
 require 'modules.wave_defense.main'
 
 local math_random = math.random
-local simplex_noise = require 'utils.simplex_noise'.d2
-
-local function get_noise(name, pos)
-    local seed = game.surfaces[1].map_gen_settings.seed
-    local noise_seed_add = 25000
-    seed = seed + noise_seed_add
-    if name == 'sands' then
-        local noise = {}
-        noise[1] = simplex_noise(pos.x * 0.016, pos.y * 0.012, seed)
-        seed = seed + noise_seed_add
-        noise[2] = simplex_noise(pos.x * 0.064, pos.y * 0.048, seed)
-        local noise = noise[1] + noise[2] * 0.1
-        return noise
-    end
-end
 
 local landfill_drops = {
     ['small-biter'] = 1,
@@ -42,13 +27,6 @@ local landfill_drops = {
     ['medium-worm-turret'] = 32,
     ['big-worm-turret'] = 48,
     ['behemoth-worm-turret'] = 64
-}
-
-local turrets = {
-    [1] = 'small-worm-turret',
-    [2] = 'medium-worm-turret',
-    [3] = 'big-worm-turret',
-    [4] = 'behemoth-worm-turret'
 }
 
 local tile_coords = {}
@@ -70,7 +48,7 @@ local function north_side(surface, left_top)
         return
     end
 
-    for a = 1, math_random(3, 5), 1 do
+    for _ = 1, math_random(3, 5), 1 do
         local coord_modifier = tile_coords[math_random(1, #tile_coords)]
         local pos = {left_top.x + coord_modifier[1], left_top.y + coord_modifier[2]}
         local name = 'biter-spawner'

@@ -1,3 +1,4 @@
+--luacheck: ignore
 local event = require 'utils.event'
 local math_random = math.random
 local math_floor = math.floor

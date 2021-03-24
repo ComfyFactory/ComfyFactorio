@@ -17,14 +17,6 @@ local weights = {
     {'uranium-ore', 2}
 }
 
-local texts = {
-    ['iron-ore'] = {'Iron ore', {r = 200, g = 200, b = 180}},
-    ['copper-ore'] = {'Copper ore', {r = 221, g = 133, b = 6}},
-    ['uranium-ore'] = {'Uranium ore', {r = 50, g = 250, b = 50}},
-    ['coal'] = {'Coal', {r = 0, g = 0, b = 0}},
-    ['stone'] = {'Stone', {r = 200, g = 160, b = 30}}
-}
-
 local particles = {
     ['iron-ore'] = 'iron-ore-particle',
     ['copper-ore'] = 'copper-ore-particle',
@@ -35,7 +27,7 @@ local particles = {
 
 local ore_raffle = {}
 for _, t in pairs(weights) do
-    for x = 1, t[2], 1 do
+    for _ = 1, t[2], 1 do
         insert(ore_raffle, t[1])
     end
 end

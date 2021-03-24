@@ -1,3 +1,4 @@
+--luacheck: ignore
 local biter_waves = require 'maps.wave_of_death.biter_waves'
 local ai = {}
 

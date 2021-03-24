@@ -1,4 +1,4 @@
-local event = require 'utils.event'
+local Event = require 'utils.event'
 
 local function on_console_chat(event)
     if not event.message then
@@ -53,9 +53,9 @@ local function on_console_chat(event)
     }
 end
 
-local function on_init(event)
+local function on_init()
     global.player_floaty_chat = {}
 end
 
-event.on_init(on_init)
-event.add(defines.events.on_console_chat, on_console_chat)
+Event.on_init(on_init)
+Event.add(defines.events.on_console_chat, on_console_chat)

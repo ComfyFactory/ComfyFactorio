@@ -1,7 +1,7 @@
 --This will add a new game mechanic so that containers with certain fluids explode when they get damaged or are destroyed.
 --Made by MewMew
 
-local event = require 'utils.event'
+local Event = require 'utils.event'
 
 local empty_tile_damage_decay = 50
 local out_of_map_tile_health = 1500
@@ -947,14 +947,13 @@ local function on_entity_damaged(event)
     end
 end
 
-local function on_tick(event)
+local function on_tick()
     if global.fluid_explosion_schedule then
         local tick = game.tick
         local explosion_schedule_is_alive = false
         for explosion_index = 1, #global.fluid_explosion_schedule, 1 do
             if #global.fluid_explosion_schedule[explosion_index] > 0 then
                 explosion_schedule_is_alive = true
-                local surface = game.surfaces[global.fluid_explosion_schedule[explosion_index].surface]
                 for radius = 1, #global.fluid_explosion_schedule[explosion_index], 1 do
                     if global.fluid_explosion_schedule[explosion_index][radius].trigger_tick == tick then
                         for tile_index = 1, #global.fluid_explosion_schedule[explosion_index][radius], 1 do
@@ -978,5 +977,5 @@ local function on_tick(event)
     end
 end
 
-event.add(defines.events.on_entity_damaged, on_entity_damaged)
-event.add(defines.events.on_tick, on_tick)
+Event.add(defines.events.on_entity_damaged, on_entity_damaged)
+Event.add(defines.events.on_tick, on_tick)

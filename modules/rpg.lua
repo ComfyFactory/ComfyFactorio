@@ -1,3 +1,4 @@
+--luacheck: ignore
 --[[
 Character Experience Gain RPG by MewMew
 

@@ -1,3 +1,4 @@
+--luacheck: ignore
 -- Map by Kyte & MewMew
 
 require 'maps.wave_of_death.intro'

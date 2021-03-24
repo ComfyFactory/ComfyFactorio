@@ -1,3 +1,4 @@
+--luacheck: ignore
 local Event = require 'utils.event'
 local HDT = require 'modules.hidden_dimension.table'
 

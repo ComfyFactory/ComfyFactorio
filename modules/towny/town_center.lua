@@ -1,3 +1,4 @@
+--luacheck: ignore
 local Team = require 'modules.towny.team'
 local Table = require 'modules.towny.table'
 local Public = {}

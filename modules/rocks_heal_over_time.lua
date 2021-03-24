@@ -1,4 +1,5 @@
 -- rocks and other entities heal over time -- by mewmew
+local Event = require 'utils.event'
 
 local entity_whitelist = {
     ['rock-big'] = true,
@@ -38,17 +39,16 @@ local function on_entity_damaged(event)
     global.entities_regenerate_health[tostring(event.entity.position.x) .. '_' .. tostring(event.entity.position.y)] = {last_damage = game.tick, entity = event.entity}
 end
 
-local function tick(event)
+local function tick()
     for key, entity in pairs(global.entities_regenerate_health) do
         process_entity(entity, key)
     end
 end
 
-local function on_init(event)
+local function on_init()
     global.entities_regenerate_health = {}
 end
 
-local event = require 'utils.event'
-event.on_nth_tick(1800, tick)
-event.on_init(on_init)
-event.add(defines.events.on_entity_damaged, on_entity_damaged)
+Event.on_nth_tick(1800, tick)
+Event.on_init(on_init)
+Event.add(defines.events.on_entity_damaged, on_entity_damaged)

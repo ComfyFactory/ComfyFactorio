@@ -5,10 +5,9 @@ require 'modules.surrounded_by_worms'
 
 local simplex_noise = require 'utils.simplex_noise'
 simplex_noise = simplex_noise.d2
-local event = require 'utils.event'
+local Event = require 'utils.event'
 local table_insert = table.insert
 local math_random = math.random
-local map_functions = require 'tools.map_functions'
 
 local function get_noise(name, pos)
     local seed = game.surfaces[1].map_gen_settings.seed
@@ -23,7 +22,7 @@ local function get_noise(name, pos)
         noise[3] = simplex_noise(pos.x * 0.05, pos.y * 0.05, seed)
         seed = seed + noise_seed_add
         noise[4] = simplex_noise(pos.x * 0.1, pos.y * 0.1, seed)
-        local noise = noise[1] + noise[2] * 0.3 + noise[3] * 0.2 + noise[4] * 0.1
+        noise = noise[1] + noise[2] * 0.3 + noise[3] * 0.2 + noise[4] * 0.1
         --noise = noise * 0.5
         return noise
     end
@@ -97,7 +96,6 @@ local function on_chunk_generated(event)
     end
 end
 
-event.add(defines.events.on_entity_died, on_entity_died)
-event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
-event.add(defines.events.on_chunk_generated, on_chunk_generated)
+Event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_chunk_generated, on_chunk_generated)

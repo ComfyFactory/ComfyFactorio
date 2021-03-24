@@ -1,3 +1,4 @@
+--luacheck: ignore
 local math_random = math.random
 local Global = require 'utils.global'
 local visuals_delay = 1800

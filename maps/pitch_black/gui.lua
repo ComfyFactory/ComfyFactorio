@@ -17,7 +17,7 @@ local function create_score_gui(player)
     element.style.minimal_width = 56
     element.tooltip = tooltip
 
-    local element = t.add({type = 'label', caption = 0})
+    element = t.add({type = 'label', caption = 0})
     element.style.font = 'heading-1'
     element.style.font_color = {100, 0, 255}
     element.style.horizontal_align = 'left'

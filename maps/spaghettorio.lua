@@ -1,3 +1,4 @@
+--luacheck: ignore
 --spaghettorio-- mewmew made this -- inspired by redlabel
 
 local simplex_noise = require 'utils.simplex_noise'

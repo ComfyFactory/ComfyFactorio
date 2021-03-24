@@ -1,19 +1,11 @@
-local math_abs = math.abs
 local math_floor = math.floor
-local math_sqrt = math.sqrt
-local math_round = math.round
 local math_random = math.random
-local table_shuffle_table = table.shuffle_table
 local table_insert = table.insert
 local table_remove = table.remove
 
-require 'functions.noise_vector_path'
+local NoiseVector = require 'functions.noise_vector_path'
 
-local function pos_to_key(position)
-    return tostring(position.x .. '_' .. position.y)
-end
-
-local function get_vector(position)
+local function get_vector()
     local x = 1000 - math_random(0, 2000)
     local y = -1000 + math_random(0, 1100)
 
@@ -43,7 +35,7 @@ local function draw_branch(surface, key)
         return
     end
 
-    local tiles = noise_vector_tile_path(surface, 'green-refined-concrete', position, vector, size * 4, size * 0.25)
+    local tiles = NoiseVector.noise_vector_tile_path(surface, 'green-refined-concrete', position, vector, size * 4, size * 0.25)
 
     for i = #tiles - math_random(0, 3), #tiles, 1 do
         table_insert(

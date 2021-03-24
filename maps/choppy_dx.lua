@@ -1,3 +1,4 @@
+--luacheck: ignore
 --choppy-- mewmew made this --
 --neko barons attempt to mix up map gen--
 

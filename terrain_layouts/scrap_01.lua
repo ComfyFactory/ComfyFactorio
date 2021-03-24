@@ -136,7 +136,7 @@ local scrap_yield_amounts = {
 
 local scrap_raffle = {}
 for _, t in pairs(mining_chance_weights) do
-    for x = 1, t.chance, 1 do
+    for _ = 1, t.chance, 1 do
         table.insert(scrap_raffle, t.name)
     end
 end
@@ -156,7 +156,7 @@ local function place_scrap(surface, position)
         local e = surface.create_entity({name = scrap_entities[math_random(1, scrap_entities_index)], position = position, force = 'neutral'})
         local i = e.get_inventory(defines.inventory.chest)
         if i then
-            for x = 1, math_random(6, 18), 1 do
+            for _ = 1, math_random(6, 18), 1 do
                 local loot = scrap_raffle[math_random(1, size_of_scrap_raffle)]
 
                 i.insert({name = loot, count = math_floor(scrap_yield_amounts[loot] * math_random(5, 35) * 0.1) + 1})

@@ -291,15 +291,6 @@ local function dot2(g, x, y)
     return x * g[1] + y * g[2]
 end
 
-local function dot(g, ...)
-    local v = {...}
-    local sum = 0
-    for i = 1, #v do
-        sum = sum + v[i] * g[i]
-    end
-    return sum
-end
-
 local F2 = 0.5 * (math.sqrt(3.0) - 1.0)
 local G2 = (3.0 - math.sqrt(3.0)) / 6.0
 

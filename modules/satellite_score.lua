@@ -1,6 +1,6 @@
 -- level up ranks with launching satellites -- by mewmew
 
-local event = require 'utils.event'
+local Event = require 'utils.event'
 local Server = require 'utils.server'
 
 local function get_rank()
@@ -21,7 +21,7 @@ local function satellite_score_toggle_button(player)
     button.style.minimal_width = 38
     button.style.padding = 1
 end
-
+--[[
 local function level_up_popup(player)
     local reward = global.satellite_score[get_rank()]
     if player.gui.center['level_up_popup'] then
@@ -35,8 +35,7 @@ local function level_up_popup(player)
     button.style.minimal_width = string.len(reward.msg) * 7
     button.style.font = 'default-listbox'
     button.style.font_color = {r = 0.77, g = 0.77, b = 0.77}
-end
-
+end ]]
 local function satellites_in_space_gui(player)
     --if global.satellites_in_space == 0 then return end
     local i = get_rank()
@@ -58,13 +57,13 @@ local function satellites_in_space_gui(player)
     progressbar.style.maximal_width = 100
     progressbar.style.top_padding = 10
 
-    local label = frame.add({type = 'label', caption = global.satellites_in_space .. '/' .. tostring(global.satellite_score[i + 1].goal)})
+    label = frame.add({type = 'label', caption = global.satellites_in_space .. '/' .. tostring(global.satellite_score[i + 1].goal)})
     label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 
     if global.satellite_score[i].rank then
-        local label = frame.add({type = 'label', caption = '  ~Rank~'})
+        label = frame.add({type = 'label', caption = '  ~Rank~'})
         label.style.font_color = {r = 0.75, g = 0.75, b = 0.75}
-        local label = frame.add({type = 'label', caption = global.satellite_score[i].rank})
+        label = frame.add({type = 'label', caption = global.satellite_score[i].rank})
         label.style.font = 'default-bold'
         label.style.font_color = global.satellite_score[i].color
     end
@@ -162,6 +161,6 @@ local function on_gui_click(event)
     end
 end
 
-event.add(defines.events.on_gui_click, on_gui_click)
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
-event.add(defines.events.on_rocket_launched, on_rocket_launched)
+Event.add(defines.events.on_gui_click, on_gui_click)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_rocket_launched, on_rocket_launched)
