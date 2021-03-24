@@ -2,6 +2,7 @@ local Treasure = require 'maps.chronosphere.treasure'
 local Simplex_noise = require "utils.simplex_noise".d2
 local Raffle = require "maps.chronosphere.raffles"
 local Chrono_table = require 'maps.chronosphere.table'
+local Blueprints = require 'maps.chronosphere.worlds.blueprints'
 local abs = math.abs
 local random = math.random
 local sqrt = math.sqrt
@@ -192,6 +193,18 @@ function Public.process_labyrinth_cell(pos, seed)
 
 	scheduletable.lab_cells[tostring(cell_position.x) .. "_" .. tostring(cell_position.y)] = true
 	return true
+end
+
+function Public.build_blueprint(surface, position, id, force)
+	local item = surface.create_entity{name = "item-on-ground", position = position, stack = {name = "blueprint", count = 1}}
+	local success = item.stack.import_stack(Blueprints[id])
+	if success <= 0 then
+		local ghosts = item.stack.build_blueprint{surface = surface, force = force, position = position, force_build = true}
+		for _, ghost in pairs(ghosts) do
+			ghost.silent_revive({raise_revive = true})
+		end
+	end
+	if item.valid then item.destroy() end
 end
 
 return Public

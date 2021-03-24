@@ -33,6 +33,10 @@ end
 
 ---- CHRONO/POLLUTION BALANCE ----
 
+function Public.factory_level(difficulty)
+  return math.floor(1000 * difficulty_sloped(difficulty, 1 / 3))
+end
+
 function Public.pollution_filter_upgrade_factor(upgrades2)
     return 1 / (1 + upgrades2 / 4)
 end
@@ -124,7 +128,9 @@ Public.wagon_starting_items = {
     {name = 'firearm-magazine', count = 16},
     {name = 'iron-plate', count = 16},
     {name = 'wood', count = 16},
-    {name = 'burner-mining-drill', count = 8}
+    {name = 'burner-mining-drill', count = 8},
+    {name = 'grenade', count = 10},
+    {name = 'gun-turret', count = 2}
 }
 
 function Public.jumps_until_overstay_is_on(difficulty) --both overstay penalties, and evoramp
@@ -151,7 +157,7 @@ function Public.coin_reward_per_second_jumped_early(seconds, difficulty)
 end
 
 function Public.upgrades_coin_cost_difficulty_scaling(difficulty)
-    return difficulty_sloped(difficulty, 3 / 5)
+    return difficulty_sloped(difficulty, 4 / 5)
 end
 
 function Public.flamers_nerfs_size(jumps, difficulty)

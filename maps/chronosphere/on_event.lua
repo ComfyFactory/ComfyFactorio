@@ -231,4 +231,27 @@ function Public.on_pre_player_died(event)
 	end
 end
 
+function Public.script_raised_revive(event)
+	local entity = event.entity
+	if not entity or not entity.valid then return end
+	if entity.force.name == "player" then return end
+	if entity.force.name == "scrapyard" then
+		if entity.name == "gun-turret" then
+			entity.insert({name = "uranium-rounds-magazine", count = 128})
+		elseif entity.name == "artillery-turret" then
+			entity.insert({name = "artillery-shell", count = 30})
+		elseif entity.name == "accumulator" then
+			entity.energy = 5000000
+		elseif entity.name == "storage-tank" then
+			entity.insert_fluid({name = "light-oil", amount = 15000})
+		end
+	end
+	if entity.force.name == "neutral" then
+		if entity.is_entity_with_health then
+			entity.health = math.random(-10, entity.prototype.max_health)
+			if entity.health <= 0 then entity.die(entity.force) end
+		end
+	end
+end
+
 return Public

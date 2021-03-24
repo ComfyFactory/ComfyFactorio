@@ -7,6 +7,7 @@ local math_max = math.max
 local math_min = math.min
 local Upgrades = require "maps.chronosphere.upgrade_list"
 local Production = require 'maps.chronosphere.production_list'
+local ProdFunctions = require 'maps.chronosphere.production'
 local Balance = require "maps.chronosphere.balance"
 local Difficulty = require 'modules.difficulty_vote'
 local Minimap = require "maps.chronosphere.minimap"
@@ -127,8 +128,8 @@ end
 
 local function calculate_xp(key)
 	local production_table = Chrono_table.get_production_table()
-	local level = math.floor((production_table.experience[key] / 1000)^(1 / 2))
-	return (production_table.experience[key] / 1000)^(1 / 2) - level
+	local level = ProdFunctions.calculate_factory_level(production_table.experience[key], false)
+	return level - math.floor(level)
 end
 
 local function update_upgrades_gui(player)
