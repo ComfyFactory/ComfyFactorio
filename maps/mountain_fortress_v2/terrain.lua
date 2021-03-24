@@ -1,3 +1,4 @@
+--luacheck: ignore
 local Biters = require 'modules.wave_defense.biter_rolls'
 local Immersive_cargo_wagons = require 'modules.immersive_cargo_wagons.main'
 local Treasure = require 'maps.mountain_fortress_v2.treasure'

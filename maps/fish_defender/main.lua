@@ -1,3 +1,4 @@
+--luacheck: ignore
 -- fish defender -- by mewmew --
 
 --require "modules.rpg"

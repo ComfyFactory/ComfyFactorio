@@ -8,7 +8,6 @@ local Public = {}
 
 local table_shuffle_table = table.shuffle_table
 local table_insert = table.insert
-local table_remove = table.remove
 local math_random = math.random
 local math_floor = math.floor
 
@@ -203,7 +202,7 @@ local item_worths = {
 }
 
 local item_names = {}
-for k, v in pairs(item_worths) do
+for k, _ in pairs(item_worths) do
     table_insert(item_names, k)
 end
 local size_of_item_names = #item_names
@@ -288,7 +287,7 @@ function Public.roll(budget, max_slots, blacklist)
     local final_stack_set
     local final_stack_set_worth = 0
 
-    for attempt = 1, 5, 1 do
+    for _ = 1, 5, 1 do
         local item_stack_set, item_stack_set_worth = roll_item_stacks(budget, max_slots, b)
         if item_stack_set_worth > final_stack_set_worth or item_stack_set_worth == budget then
             final_stack_set = item_stack_set

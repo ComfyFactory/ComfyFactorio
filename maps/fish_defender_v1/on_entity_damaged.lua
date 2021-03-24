@@ -1,4 +1,4 @@
-local event = require 'utils.event'
+local Event = require 'utils.event'
 
 local enhance_railgun = require 'maps.fish_defender_v1.railgun_enhancer'
 local explosive_bullets = require 'maps.fish_defender_v1.explosive_gun_bullets'
@@ -59,4 +59,4 @@ local function on_entity_damaged(event)
     end
 end
 
-event.add(defines.events.on_entity_damaged, on_entity_damaged)
+Event.add(defines.events.on_entity_damaged, on_entity_damaged)

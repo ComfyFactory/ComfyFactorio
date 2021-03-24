@@ -158,7 +158,7 @@ function Public.treasure_chest(surface, position, container_name)
     end
 
     for _, t in pairs(chest_loot) do
-        for x = 1, t.weight, 1 do
+        for _ = 1, t.weight, 1 do
             if t.d_min <= distance_to_center and t.d_max >= distance_to_center then
                 table.insert(chest_raffle, t[1])
             end
@@ -168,7 +168,7 @@ function Public.treasure_chest(surface, position, container_name)
     local e = surface.create_entity({name = container_name, position = position, force = 'neutral'})
     e.minable = false
     local i = e.get_inventory(defines.inventory.chest)
-    for x = 1, math_random(2, 6), 1 do
+    for _ = 1, math_random(2, 6), 1 do
         local loot = chest_raffle[math_random(1, #chest_raffle)]
         i.insert(loot)
     end

@@ -1,3 +1,4 @@
+--luacheck: ignore
 local math_random = math.random
 local simplex_noise = require 'utils.simplex_noise'.d2
 

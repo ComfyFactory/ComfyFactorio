@@ -182,7 +182,7 @@ local function on_gui_closed(event)
     container_opened(event)
 end
 
-local ores = {'iron-ore', 'iron-ore', 'copper-ore', 'coal'}
+local inf_ores = {'iron-ore', 'iron-ore', 'copper-ore', 'coal'}
 local function infini_rock(entity)
     if entity.type ~= 'simple-entity' then
         return
@@ -190,7 +190,7 @@ local function infini_rock(entity)
     local a = math.floor(expanse.square_size * 0.5)
     if entity.position.x == a and entity.position.y == a then
         entity.surface.create_entity({name = 'rock-big', position = {a, a}})
-        entity.surface.spill_item_stack(entity.position, {name = ores[math.random(1, 4)], count = math.random(80, 160)}, true, nil, true)
+        entity.surface.spill_item_stack(entity.position, {name = inf_ores[math.random(1, 4)], count = math.random(80, 160)}, true, nil, true)
         entity.surface.spill_item_stack(entity.position, {name = 'stone', count = math.random(15, 30)}, true, nil, true)
     end
 end
@@ -243,7 +243,7 @@ local function on_player_left_game(event)
     end
 end
 
-local function on_init(event)
+local function on_init()
     local T = Map_info.Pop_info()
     T.localised_category = 'expanse'
     T.main_caption_color = {r = 170, g = 170, b = 0}

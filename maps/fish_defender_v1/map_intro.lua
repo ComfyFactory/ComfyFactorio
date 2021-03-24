@@ -1,4 +1,5 @@
-local event = require 'utils.event'
+--luacheck: ignore
+local Event = require 'utils.event'
 
 local main_caption = ' --Fish Defender-- '
 local sub_caption = ' *blb blubby blub* '
@@ -107,5 +108,5 @@ local function on_player_joined_game(event)
     end
 end
 
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
-event.add(defines.events.on_gui_click, on_gui_click)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_gui_click, on_gui_click)

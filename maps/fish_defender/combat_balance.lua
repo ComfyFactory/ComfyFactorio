@@ -1,4 +1,4 @@
-local event = require 'utils.event'
+local Event = require 'utils.event'
 local gain_multiplier = 4
 
 local balance_functions = {
@@ -59,5 +59,5 @@ local function on_init()
     global.combat_balance = {}
 end
 
-event.on_init(on_init)
-event.add(defines.events.on_research_finished, on_research_finished)
+Event.on_init(on_init)
+Event.add(defines.events.on_research_finished, on_research_finished)

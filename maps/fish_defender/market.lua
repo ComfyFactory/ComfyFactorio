@@ -29,7 +29,7 @@ local special_descriptions = {
     ['laser-pointer'] = 'Unlock Laser Pointer - The biters are on a quest to slay the red (artillery) dot.'
 }
 
-function place_fish_market(surface, position)
+local function place_fish_market(surface, position)
     local market = surface.create_entity({name = 'market', position = position, force = 'player'})
     market.minable = false
     return market
@@ -324,3 +324,5 @@ end
 
 Event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
 Event.add(defines.events.on_gui_opened, on_gui_opened)
+
+return place_fish_market

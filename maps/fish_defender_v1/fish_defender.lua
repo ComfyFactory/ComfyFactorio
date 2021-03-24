@@ -1,3 +1,4 @@
+--luacheck: ignore
 -- fish defender -- by mewmew --
 
 require 'maps.fish_defender_v1.map_intro'

@@ -1,3 +1,4 @@
+--luacheck: ignore
 local math_abs = math.abs
 local math_random = math.random
 local math_floor = math.floor

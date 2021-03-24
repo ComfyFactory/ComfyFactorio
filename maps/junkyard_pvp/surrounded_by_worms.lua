@@ -1,4 +1,4 @@
-local event = require 'utils.event'
+local Event = require 'utils.event'
 local math_random = math.random
 local turrets = {
     [1] = 'small-worm-turret',
@@ -31,7 +31,7 @@ local function on_chunk_generated(event)
         highest_worm_tier = 4
     end
 
-    for a = 1, 4, 1 do
+    for _ = 1, 4, 1 do
         local coord_modifier = tile_coords[math_random(1, #tile_coords)]
         local pos = {left_top.x + coord_modifier[1], left_top.y + coord_modifier[2]}
         local name = turrets[math_random(1, highest_worm_tier)]
@@ -42,4 +42,4 @@ local function on_chunk_generated(event)
     end
 end
 
-event.add(defines.events.on_chunk_generated, on_chunk_generated)
+Event.add(defines.events.on_chunk_generated, on_chunk_generated)

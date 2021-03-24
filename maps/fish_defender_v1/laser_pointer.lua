@@ -1,4 +1,4 @@
-local event = require 'utils.event'
+local Event = require 'utils.event'
 local radius = 32
 
 local function on_player_used_capsule(event)
@@ -32,4 +32,4 @@ local function on_player_used_capsule(event)
     end
 end
 
-event.add(defines.events.on_player_used_capsule, on_player_used_capsule)
+Event.add(defines.events.on_player_used_capsule, on_player_used_capsule)

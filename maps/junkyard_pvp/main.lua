@@ -1,3 +1,4 @@
+--luacheck: ignore
 local Tabs = require 'comfy_panel.main'
 local Map_score = require 'modules.map_score'
 local Terrain = require 'maps.junkyard_pvp.terrain'

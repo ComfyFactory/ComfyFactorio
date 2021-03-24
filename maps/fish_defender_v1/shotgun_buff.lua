@@ -1,4 +1,4 @@
-local event = require 'utils.event'
+local Event = require 'utils.event'
 local gain_multiplier = 4
 
 local function on_research_finished(event)
@@ -24,5 +24,5 @@ local function on_init()
     global.shotgun_shell_damage_modifier_old = {}
 end
 
-event.on_init(on_init)
-event.add(defines.events.on_research_finished, on_research_finished)
+Event.on_init(on_init)
+Event.add(defines.events.on_research_finished, on_research_finished)

@@ -1,3 +1,4 @@
+--luacheck: ignore
 local Immersive_cargo_wagons = require 'modules.immersive_cargo_wagons.main'
 local Public = {}
 

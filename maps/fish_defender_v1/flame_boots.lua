@@ -1,5 +1,4 @@
-local event = require 'utils.event'
-local math_random = math.random
+local Event = require 'utils.event'
 
 local function on_player_changed_position(event)
     if not global.flame_boots then
@@ -54,5 +53,5 @@ local function on_init()
     end
 end
 
-event.on_init(on_init)
-event.add(defines.events.on_player_changed_position, on_player_changed_position)
+Event.on_init(on_init)
+Event.add(defines.events.on_player_changed_position, on_player_changed_position)

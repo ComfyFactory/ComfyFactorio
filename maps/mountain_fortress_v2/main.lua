@@ -1,3 +1,4 @@
+--luacheck: ignore
 -- Mountain digger fortress, protect the cargo wagon! -- by MewMew
 
 global.offline_loot = true

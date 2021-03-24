@@ -1,4 +1,4 @@
-local event = require 'utils.event'
+local Event = require 'utils.event'
 local radius = 8
 
 local function damage_entities_around_target(entity, damage)
@@ -39,4 +39,4 @@ local function on_entity_died(event)
     damage_entities_around_target(event.entity, damage)
 end
 
-event.add(defines.events.on_entity_died, on_entity_died)
+Event.add(defines.events.on_entity_died, on_entity_died)

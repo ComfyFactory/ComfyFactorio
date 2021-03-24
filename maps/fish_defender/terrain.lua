@@ -1,3 +1,4 @@
+--luacheck: ignore
 local Event = require 'utils.event'
 local map_functions = require 'tools.map_functions'
 local simplex_noise = require 'utils.simplex_noise'.d2

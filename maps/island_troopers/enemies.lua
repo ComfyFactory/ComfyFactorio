@@ -1,3 +1,4 @@
+--luacheck: ignore
 local Difficulty = require 'modules.difficulty_vote'
 
 local difficulties_votes = {
@@ -10,7 +11,7 @@ local difficulties_votes = {
     [7] = {amount_modifier = 2.12, strength_modifier = 2.50, boss_modifier = 1.3}
 }
 
-function get_biter()
+local function get_biter()
     local max_chance = 0
     for k, v in pairs(global.biter_chances) do
         max_chance = max_chance + v
@@ -25,7 +26,7 @@ function get_biter()
     end
 end
 
-function get_worm()
+local function get_worm()
     local max_chance = 0
     for k, v in pairs(global.worm_chances) do
         max_chance = max_chance + v
@@ -40,7 +41,7 @@ function get_worm()
     end
 end
 
-function set_biter_chances(level)
+local function set_biter_chances(level)
     global.biter_chances = {
         ['small-biter'] = 500 - level * 10,
         ['small-spitter'] = 500 - level * 10,
@@ -66,7 +67,7 @@ function set_biter_chances(level)
     end
 end
 
-function set_worm_chances(level)
+local function set_worm_chances(level)
     global.worm_chances = {
         ['small-worm-turret'] = 500 - level * 10,
         ['medium-worm-turret'] = level * 10,
@@ -103,7 +104,7 @@ local function is_boss_stage()
     end
 end
 
-function add_enemies(surface, tiles)
+local function add_enemies(surface, tiles)
     local Diff = Difficulty.get()
     table.shuffle_table(tiles)
 

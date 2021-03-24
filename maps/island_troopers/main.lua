@@ -1,3 +1,4 @@
+--luacheck: ignore
 --map by mewmew and kyte
 
 require 'maps.island_troopers.map_intro'

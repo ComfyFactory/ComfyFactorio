@@ -5,7 +5,7 @@ require 'maps.fish_defender_v1.crumbly_walls'
 require 'maps.fish_defender_v1.vehicle_nanobots'
 require 'maps.fish_defender_v1.laser_pointer'
 
-local event = require 'utils.event'
+local Event = require 'utils.event'
 local Server = require 'utils.server'
 
 local slot_upgrade_offers = {
@@ -28,7 +28,7 @@ local special_descriptions = {
     ['laser-pointer'] = 'Unlock Laser Pointer - The biters are on a quest to slay the red (artillery) dot.'
 }
 
-function place_fish_market(surface, position)
+local function place_fish_market(surface, position)
     local market = surface.create_entity({name = 'market', position = position, force = 'player'})
     market.minable = false
     return market
@@ -278,5 +278,7 @@ local function on_gui_opened(event)
     end
 end
 
-event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
-event.add(defines.events.on_gui_opened, on_gui_opened)
+Event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
+Event.add(defines.events.on_gui_opened, on_gui_opened)
+
+return place_fish_market

@@ -56,7 +56,7 @@ local function get_cell_value(expanse, left_top)
     end
 
     local distance = math.sqrt(left_top.x ^ 2 + left_top.y ^ 2)
-    local value = value * (distance * expanse.price_distance_modifier)
+    value = value * (distance * expanse.price_distance_modifier)
     local ore_modifier = distance * (expanse.price_distance_modifier / 20)
     if ore_modifier > expanse.max_ore_price_modifier then
         ore_modifier = expanse.max_ore_price_modifier

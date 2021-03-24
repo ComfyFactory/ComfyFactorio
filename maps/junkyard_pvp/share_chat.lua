@@ -8,8 +8,7 @@ local function on_console_chat(event)
     end
     local player = game.players[event.player_index]
 
-    local color = {}
-    color = player.color
+    local color = player.color
     color.r = color.r * 0.6 + 0.35
     color.g = color.g * 0.6 + 0.35
     color.b = color.b * 0.6 + 0.35

@@ -1,6 +1,5 @@
 local radius = 9
 local math_random = math.random
-local math_sqrt = math.sqrt
 
 local ammo_to_projectile_translation = {
     ['shotgun-shell'] = 'shotgun-pellet',
@@ -12,7 +11,6 @@ local function create_projectile(surface, position, target, name)
         {
             name = name,
             position = position,
-            force = force,
             source = position,
             target = target,
             max_range = 16,
@@ -41,7 +39,7 @@ local function bounce(surface, position, ammo)
         return
     end
 
-    for c = 1, math_random(3, 6), 1 do
+    for _ = 1, math_random(3, 6), 1 do
         create_projectile(surface, position, valid_entities[math_random(1, #valid_entities)].position, ammo)
     end
 end
