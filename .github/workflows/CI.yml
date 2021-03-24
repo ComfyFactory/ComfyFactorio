@@ -26,4 +26,4 @@ jobs:
       with:
           # URL to the luacheckrc configuration file to be used during checking.
           # Per https://github.com/Roang-zero1/factorio-mod-luacheck/issues/2 - an empty string will use the project's .luacheckrc
-          luacheckrc_url: "" # optional, default is https://raw.githubusercontent.com/Nexela/Factorio-luacheckrc/0.17/.luacheckrc
+          luacheckrc_url: "https://raw.githubusercontent.com/ComfyFactory/ComfyFactorio/develop/.luacheckrc" # optional, default is https://raw.githubusercontent.com/Nexela/Factorio-luacheckrc/0.17/.luacheckrc
