@@ -1071,6 +1071,18 @@ stds.factorio_defines = {
                     },
                     input_action = {
                         fields = {
+                            'build_item',
+                            'change_blueprint_book_record_label',
+                            'change_single_blueprint_record_label',
+                            'clear_selected_blueprint',
+                            'clear_selected_deconstruction_item',
+                            'set_single_blueprint_record_icon',
+                            'set_logistic_trash_filter_item',
+                            'drop_to_blueprint_book',
+                            'open_tutorials_gui',
+                            'upgrade_opened_blueprint',
+                            'create_blueprint_like',
+                            'clear_selected_upgrade_item',
                             'open_kills_gui',
                             'change_item_description',
                             'fast_entity_transfer',

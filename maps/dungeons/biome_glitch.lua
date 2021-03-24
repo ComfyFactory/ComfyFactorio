@@ -2,10 +2,7 @@ local Functions = require 'maps.dungeons.functions'
 local DungeonsTable = require 'maps.dungeons.table'
 
 local table_shuffle_table = table.shuffle_table
-local table_insert = table.insert
-local table_remove = table.remove
 local math_random = math.random
-local math_abs = math.abs
 
 local ores = {'iron-ore', 'copper-ore', 'coal', 'stone'}
 

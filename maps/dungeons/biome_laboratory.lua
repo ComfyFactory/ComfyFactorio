@@ -21,7 +21,6 @@ local function laboratory(surface, room)
         table_insert(tiles, tile)
     end
 
-    local seed = game.surfaces[surface.index].map_gen_settings.seed + math_random(1, 1000000)
     for _, tile in pairs(tiles) do
         surface.set_tiles({{name = rainbow_tiles[math_random(1, 2)], position = tile.position}}, true)
     end

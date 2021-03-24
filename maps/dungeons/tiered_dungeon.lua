@@ -32,12 +32,7 @@ Biomes.treasure = require 'maps.dungeons.biome_treasure'
 Biomes.market = require 'maps.dungeons.biome_market'
 Biomes.laboratory = require 'maps.dungeons.biome_laboratory'
 
-local table_shuffle_table = table.shuffle_table
-local table_insert = table.insert
-local table_remove = table.remove
 local math_random = math.random
-local math_abs = math.abs
-local math_floor = math.floor
 local math_round = math.round
 
 local disabled_for_deconstruction = {
@@ -380,9 +375,9 @@ local function on_chunk_generated(event)
     surface.set_tiles(tiles, true)
 
     local rock_positions = {}
-    local set_tiles = surface.set_tiles
-    local nauvis_seed = game.surfaces[surface.index].map_gen_settings.seed
-    local s = math_floor(nauvis_seed * 0.1) + 100
+    -- local set_tiles = surface.set_tiles
+    -- local nauvis_seed = game.surfaces[surface.index].map_gen_settings.seed
+    -- local s = math_floor(nauvis_seed * 0.1) + 100
     -- for a = 1, 7, 1 do
     -- 	local b = a * s
     -- 	local c = 0.0035 + a * 0.0035
@@ -519,8 +514,8 @@ local function on_player_mined_entity(event)
 end
 
 local function on_entity_died(event)
-    local rpg_extra = RPG_T.get('rpg_extra')
-    local hp_units = BiterHealthBooster.get('biter_health_boost_units')
+    -- local rpg_extra = RPG_T.get('rpg_extra')
+    -- local hp_units = BiterHealthBooster.get('biter_health_boost_units')
     local entity = event.entity
     if not entity.valid then
         return
@@ -543,7 +538,7 @@ local function on_marked_for_deconstruction(event)
 end
 
 local function map_gen_settings()
-    local map_gen_settings = {
+    local map_gen_setting = {
         ['seed'] = math_random(1, 1000000),
         ['water'] = 0,
         ['starting_area'] = 1,
@@ -555,7 +550,7 @@ local function map_gen_settings()
             ['decorative'] = {treat_missing_as_default = false}
         }
     }
-    return map_gen_settings
+    return map_gen_setting
 end
 
 local function get_lowest_safe_floor(player)
@@ -783,7 +778,7 @@ local function on_init()
     local nauvis = game.surfaces[1]
     nauvis.daytime = 0.25
     nauvis.freeze_daytime = true
-    local map_gen_settings = nauvis.map_gen_settings
+    map_gen_settings = nauvis.map_gen_settings
     map_gen_settings.height = 3
     map_gen_settings.width = 3
     nauvis.map_gen_settings = map_gen_settings

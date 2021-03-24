@@ -5,7 +5,7 @@ require 'modules.satellite_score'
 
 local MapInfo = require 'modules.map_info'
 local Room_generator = require 'functions.room_generator'
-local RPG = require 'modules.rpg'
+require 'modules.rpg'
 local BiterHealthBooster = require 'modules.biter_health_booster'
 local BiterRaffle = require 'functions.biter_raffle'
 local Functions = require 'maps.dungeons.functions'
@@ -24,9 +24,7 @@ Biomes.glitch = require 'maps.dungeons.biome_glitch'
 Biomes.acid_zone = require 'maps.dungeons.biome_acid_zone'
 Biomes.rainbow = require 'maps.dungeons.biome_rainbow'
 
-local table_shuffle_table = table.shuffle_table
 local table_insert = table.insert
-local table_remove = table.remove
 local math_random = math.random
 local math_abs = math.abs
 local math_floor = math.floor
@@ -138,8 +136,6 @@ local function expand(surface, position)
     if not room.room_tiles[1] then
         return
     end
-
-    local a = 2000
 
     dungeontable.depth[surface.index] = dungeontable.depth[surface.index] + 1
 
@@ -392,8 +388,8 @@ local function on_init()
     surface.force_generate_chunk_requests()
     surface.daytime = 0.30
 
-    local surface = game.surfaces[1]
-    local map_gen_settings = surface.map_gen_settings
+    surface = game.surfaces[1]
+    map_gen_settings = surface.map_gen_settings
     map_gen_settings.height = 3
     map_gen_settings.width = 3
     surface.map_gen_settings = map_gen_settings

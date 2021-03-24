@@ -4,11 +4,9 @@ local BiterRaffle = require 'functions.biter_raffle'
 local LootRaffle = require 'functions.loot_raffle'
 local Get_noise = require 'utils.get_noise'
 local DungeonsTable = require 'maps.dungeons.table'
-local RPG_T = require 'modules.rpg.table'
+require 'modules.rpg.table'
 
 local table_shuffle_table = table.shuffle_table
-local table_insert = table.insert
-local table_remove = table.remove
 local math_random = math.random
 local math_abs = math.abs
 local math_floor = math.floor
@@ -25,41 +23,41 @@ end
 local function blacklist(surface_index, special)
     local dungeontable = DungeonsTable.get_dungeontable()
     local evolution_factor = Public.get_dungeon_evolution_factor(surface_index)
-    local blacklist = {}
+    local blacklists = {}
     --general unused items on dungeons
-    blacklist['cliff-explosives'] = true
+    blacklists['cliff-explosives'] = true
     --items that would trivialize stuff if dropped too early
     if dungeontable.item_blacklist and not special then
         if evolution_factor < 0.9 then
-            blacklist['discharge-defense-equipment'] = true
-            blacklist['power-armor-mk2'] = true
-            blacklist['fusion-reactor-equipment'] = true
-            blacklist['rocket-silo'] = true
-            blacklist['discharge-defense-remote'] = true
+            blacklists['discharge-defense-equipment'] = true
+            blacklists['power-armor-mk2'] = true
+            blacklists['fusion-reactor-equipment'] = true
+            blacklists['rocket-silo'] = true
+            blacklists['discharge-defense-remote'] = true
         end
         if evolution_factor < 0.7 then
-            blacklist['energy-shield-mk2-equipment'] = true
-            blacklist['personal-laser-defense-equipment'] = true
-            blacklist['personal-roboport-mk2-equipment'] = true
-            blacklist['battery-mk2-equipment'] = true
-            blacklist['nuclear-reactor'] = true
-            blacklist['artillery-turret'] = true
-            blacklist['artillery-wagon'] = true
-            blacklist['power-armor'] = true
+            blacklists['energy-shield-mk2-equipment'] = true
+            blacklists['personal-laser-defense-equipment'] = true
+            blacklists['personal-roboport-mk2-equipment'] = true
+            blacklists['battery-mk2-equipment'] = true
+            blacklists['nuclear-reactor'] = true
+            blacklists['artillery-turret'] = true
+            blacklists['artillery-wagon'] = true
+            blacklists['power-armor'] = true
         end
         if evolution_factor < 0.4 then
-            blacklist['steam-turbine'] = true
-            blacklist['heat-exchanger'] = true
-            blacklist['heat-pipe'] = true
-            blacklist['express-loader'] = true
-            blacklist['modular-armor'] = true
-            blacklist['solar-panel-equipment'] = true
-            blacklist['energy-shield-equipment'] = true
-            blacklist['battery-equipment'] = true
-            blacklist['solar-panel-equipment'] = true
+            blacklists['steam-turbine'] = true
+            blacklists['heat-exchanger'] = true
+            blacklists['heat-pipe'] = true
+            blacklists['express-loader'] = true
+            blacklists['modular-armor'] = true
+            blacklists['solar-panel-equipment'] = true
+            blacklists['energy-shield-equipment'] = true
+            blacklists['battery-equipment'] = true
+            blacklists['solar-panel-equipment'] = true
         end
     end
-    return blacklist
+    return blacklists
 end
 
 local function special_loot(value)
@@ -336,7 +334,6 @@ function Public.create_scrap(surface, position)
 end
 
 local function get_ore_amount(surface_index)
-    local dungeontable = DungeonsTable.get_dungeontable()
     local scaling = game.forces.player.mining_drill_productivity_bonus
     local amount = 5000 * Public.get_dungeon_evolution_factor(surface_index) * (1 + scaling)
     if amount > 500 then
@@ -460,8 +457,8 @@ function Public.draw_spawn(surface)
     end
     surface.set_tiles(tiles, true)
 
-    local tiles = {}
-    local i = 1
+    tiles = {}
+    i = 1
     for x = -2, 2, 1 do
         for y = -2, 2, 1 do
             local position = {x = x, y = y}
@@ -476,8 +473,8 @@ function Public.draw_spawn(surface)
     end
     surface.set_tiles(tiles, true)
 
-    local tiles = {}
-    local i = 1
+    tiles = {}
+    i = 1
     for x = spawn_size * -1, spawn_size, 1 do
         for y = spawn_size * -1, spawn_size, 1 do
             local position = {x = x, y = y}
@@ -526,7 +523,7 @@ function Public.draw_spawn(surface)
     end
 
     local entities = {}
-    local i = 1
+    i = 1
     for x = spawn_size * -1 - 16, spawn_size + 16, 1 do
         for y = spawn_size * -1 - 16, spawn_size + 16, 1 do
             local position = {x = x, y = y}
@@ -557,31 +554,31 @@ function Public.draw_spawn(surface)
         if surface.index > dungeontable.original_surface_index then
             table.insert(dungeontable.transport_surfaces, surface.index)
             dungeontable.transport_chests_inputs[surface.index] = {}
-            for i = 1, 2, 1 do
+            for iv = 1, 2, 1 do
                 local chest = surface.create_entity({name = 'blue-chest', position = {-12 + i * 8, -4}, force = 'player'})
-                dungeontable.transport_chests_inputs[surface.index][i] = chest
+                dungeontable.transport_chests_inputs[surface.index][iv] = chest
                 chest.destructible = false
                 chest.minable = false
             end
             dungeontable.transport_poles_outputs[surface.index] = {}
-            for i = 1, 2, 1 do
+            for ix = 1, 2, 1 do
                 local pole = surface.create_entity({name = 'constant-combinator', position = {-15 + i * 10, -5}, force = 'player'})
-                dungeontable.transport_poles_outputs[surface.index][i] = pole
+                dungeontable.transport_poles_outputs[surface.index][ix] = pole
                 pole.destructible = false
                 pole.minable = false
             end
         end
         dungeontable.transport_chests_outputs[surface.index] = {}
-        for i = 1, 2, 1 do
+        for ic = 1, 2, 1 do
             local chest = surface.create_entity({name = 'red-chest', position = {-12 + i * 8, 4}, force = 'player'})
-            dungeontable.transport_chests_outputs[surface.index][i] = chest
+            dungeontable.transport_chests_outputs[surface.index][ic] = chest
             chest.destructible = false
             chest.minable = false
         end
         dungeontable.transport_poles_inputs[surface.index] = {}
-        for i = 1, 2, 1 do
+        for ib = 1, 2, 1 do
             local pole = surface.create_entity({name = 'medium-electric-pole', position = {-15 + i * 10, 5}, force = 'player'})
-            dungeontable.transport_poles_inputs[surface.index][i] = pole
+            dungeontable.transport_poles_inputs[surface.index][ib] = pole
             pole.destructible = false
             pole.minable = false
         end

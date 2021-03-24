@@ -46,8 +46,6 @@ local function reset_arena(arena)
 end
 
 local function wipedown_arena(arena)
-    local arenatable = DungeonsTable.get_arenatable()
-    local player = arenatable.active_player[arena]
     local surface = game.surfaces['dungeons_floor_arena']
     local area = arena_areas[arena].area
     local acids = surface.find_entities_filtered {area = {{area[1][1] - 5, area[1][2] - 5}, {area[2][1] + 5, area[2][2] + 5}}, type = 'fire'}

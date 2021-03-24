@@ -1,14 +1,11 @@
 local Functions = require 'maps.dungeons.functions'
-local BiterRaffle = require 'functions.biter_raffle'
+require 'functions.biter_raffle'
 local DungeonsTable = require 'maps.dungeons.table'
 
 local table_shuffle_table = table.shuffle_table
 local table_insert = table.insert
-local table_remove = table.remove
 local math_random = math.random
 local math_abs = math.abs
-local math_sqrt = math.sqrt
-local math_floor = math.floor
 
 local function horizontal_water_barrier(surface, room)
     local a = room.radius * 2
@@ -90,8 +87,7 @@ local function island(surface, room)
     for x = 0, a, 1 do
         for y = 0, a, 1 do
             local p = {x = left_top.x + x, y = left_top.y + y}
-            if math_abs(p.x - center_position.x) < room.radius * 0.6 and math_abs(p.y - center_position.y) < room.radius * 0.6 then
-            else
+            if not math_abs(p.x - center_position.x) < room.radius * 0.6 and math_abs(p.y - center_position.y) < room.radius * 0.6 then
                 surface.set_tiles({{name = 'water', position = p}})
                 if math_random(1, 16) == 1 then
                     surface.create_entity({name = 'fish', position = p})
@@ -127,8 +123,7 @@ local function cross_inverted(surface, room)
     for x = 0, a, 1 do
         for y = 0, a, 1 do
             local p = {x = left_top.x + x, y = left_top.y + y}
-            if math_abs(p.x - center_position.x) > room.radius * 0.33 and math_abs(p.y - center_position.y) > room.radius * 0.33 then
-            else
+            if not math_abs(p.x - center_position.x) > room.radius * 0.33 and math_abs(p.y - center_position.y) > room.radius * 0.33 then
                 surface.set_tiles({{name = 'water', position = p}})
                 if math_random(1, 16) == 1 then
                     surface.create_entity({name = 'fish', position = p})
@@ -209,7 +204,7 @@ local function biome(surface, room)
     water_shapes[math_random(1, #water_shapes)](surface, room)
 
     for key, tile in pairs(room.room_tiles) do
-        local tile = surface.get_tile(tile.position)
+        tile = surface.get_tile(tile.position)
         if not tile.collides_with('resource-layer') then
             if math_random(1, 10) == 1 then
                 surface.create_entity({name = 'stone', position = tile.position, amount = Functions.get_common_resource_amount(surface.index)})
