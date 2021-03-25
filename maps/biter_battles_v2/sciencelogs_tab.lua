@@ -1,4 +1,4 @@
---luacheck:ignore
+--luacheck: ignore
 -- science logs tab --
 
 local Tabs = require 'comfy_panel.main'
@@ -12,6 +12,9 @@ local forces_list = tables.forces_list
 local science_list = tables.science_list
 local evofilter_list = tables.evofilter_list
 local food_value_table_version = tables.food_value_table_version
+local Token = require 'utils.token'
+
+local module_name = 'MutagenLog'
 
 local function initialize_dropdown_users_choice()
     global.dropdown_users_choice_force = {}
@@ -218,7 +221,7 @@ local function add_science_logs(player, element)
     end
 end
 
-function comfy_panel_get_active_frame(player)
+local function comfy_panel_get_active_frame(player)
     if not player.gui.left.comfy_panel then
         return false
     end
@@ -228,14 +231,17 @@ function comfy_panel_get_active_frame(player)
     return player.gui.left.comfy_panel.tabbed_pane.tabs[player.gui.left.comfy_panel.tabbed_pane.selected_tab_index].content
 end
 
-local build_config_gui = (function(player, frame)
+local function build_config_gui(data)
+    local player = data.player
     local frame_sciencelogs = comfy_panel_get_active_frame(player)
     if not frame_sciencelogs then
         return
     end
     frame_sciencelogs.clear()
     add_science_logs(player, frame_sciencelogs)
-end)
+end
+
+local build_config_gui_token = Token.register(build_config_gui)
 
 local function on_gui_selection_state_changed(event)
     local player = game.players[event.player_index]
@@ -248,18 +254,18 @@ local function on_gui_selection_state_changed(event)
     end
     if name == 'dropdown-force' then
         global.dropdown_users_choice_force[player.name] = event.element.selected_index
-        build_config_gui(player, frame_sciencelogs)
+        build_config_gui({player = player})
     end
     if name == 'dropdown-science' then
         global.dropdown_users_choice_science[player.name] = event.element.selected_index
-        build_config_gui(player, frame_sciencelogs)
+        build_config_gui({player = player})
     end
     if name == 'dropdown-evofilter' then
         global.dropdown_users_choice_evo_filter[player.name] = event.element.selected_index
-        build_config_gui(player, frame_sciencelogs)
+        build_config_gui({player = player})
     end
 end
 
 event.add(defines.events.on_gui_selection_state_changed, on_gui_selection_state_changed)
 
-comfy_panel_tabs['MutagenLog'] = {gui = build_config_gui, admin = false}
+Tabs.add_tab_to_gui({name = module_name, id = build_config_gui_token, admin = false})

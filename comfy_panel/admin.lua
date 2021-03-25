@@ -5,8 +5,10 @@ local Jailed = require 'utils.datastore.jail_data'
 local Tabs = require 'comfy_panel.main'
 local AntiGrief = require 'antigrief'
 local SpamProtection = require 'utils.spam_protection'
+local Token = require 'utils.token'
 
 local lower = string.lower
+local module_name = 'Admin'
 
 local function admin_only_message(str)
     for _, player in pairs(game.connected_players) do
@@ -324,7 +326,7 @@ local function text_changed(event)
     if not frame then
         return
     end
-    if frame.name ~= 'Admin' then
+    if frame.name ~= module_name then
         return
     end
 
@@ -342,7 +344,9 @@ local function text_changed(event)
     draw_events(data)
 end
 
-local create_admin_panel = (function(player, frame)
+local function create_admin_panel(data)
+    local player = data.player
+    local frame = data.frame
     local antigrief = AntiGrief.get()
     frame.clear()
 
@@ -513,13 +517,15 @@ local create_admin_panel = (function(player, frame)
     drop_down_2.style.right_padding = 12
     drop_down_2.style.left_padding = 12
 
-    local data = {
+    local datas = {
         frame = frame,
         antigrief = antigrief
     }
 
-    draw_events(data)
-end)
+    draw_events(datas)
+end
+
+local create_admin_panel_token = Token.register(create_admin_panel)
 
 local admin_functions = {
     ['jail'] = jail,
@@ -608,25 +614,32 @@ local function get_position_from_string(str)
 end
 
 local function on_gui_click(event)
-    local player = game.players[event.player_index]
+    local element = event.element
+    if not element or not element.valid then
+        return
+    end
+    local player = game.get_player(event.player_index)
+
+    local name = event.element.name
+
+    if name == 'tab_Admin' then
+        local is_spamming = SpamProtection.is_spamming(player, nil, 'Admin tab_Admin')
+        if is_spamming then
+            return
+        end
+    end
 
     local frame = Tabs.comfy_panel_get_active_frame(player)
     if not frame then
         return
     end
 
-    if not event.element.valid then
-        return
-    end
-
-    local name = event.element.name
-
     if name == 'mini_camera' or name == 'mini_cam_element' then
         player.gui.center['mini_camera'].destroy()
         return
     end
 
-    if frame.name ~= 'Admin' then
+    if frame.name ~= module_name then
         return
     end
 
@@ -659,27 +672,27 @@ local function on_gui_click(event)
     if not frame then
         return
     end
-    if not event.element.caption then
+    if not element.caption then
         return
     end
-    local position = get_position_from_string(event.element.caption)
+    local position = get_position_from_string(element.caption)
     if not position then
         return
     end
 
-    local surface = get_surface_from_string(event.element.caption)
+    local surface = get_surface_from_string(element.caption)
     if not surface then
         return
     end
 
     if player.gui.center['mini_camera'] then
-        if player.gui.center['mini_camera'].caption == event.element.caption then
+        if player.gui.center['mini_camera'].caption == element.caption then
             player.gui.center['mini_camera'].destroy()
             return
         end
     end
 
-    create_mini_camera_gui(player, event.element.caption, position, surface)
+    create_mini_camera_gui(player, element.caption, position, surface)
 end
 
 local function on_gui_selection_state_changed(event)
@@ -696,7 +709,7 @@ local function on_gui_selection_state_changed(event)
         if not frame then
             return
         end
-        if frame.name ~= 'Admin' then
+        if frame.name ~= module_name then
             return
         end
 
@@ -704,8 +717,8 @@ local function on_gui_selection_state_changed(event)
         if is_spamming then
             return
         end
-
-        create_admin_panel(player, frame)
+        local data = {player = player, frame = frame}
+        create_admin_panel(data)
     end
     if name == 'admin_player_select' then
         if not global.admin_panel_selected_player_index then
@@ -717,7 +730,7 @@ local function on_gui_selection_state_changed(event)
         if not frame then
             return
         end
-        if frame.name ~= 'Admin' then
+        if frame.name ~= module_name then
             return
         end
 
@@ -726,11 +739,12 @@ local function on_gui_selection_state_changed(event)
             return
         end
 
-        create_admin_panel(player, frame)
+        local data = {player = player, frame = frame}
+        create_admin_panel(data)
     end
 end
 
-comfy_panel_tabs['Admin'] = {gui = create_admin_panel, admin = true}
+Tabs.add_tab_to_gui({name = module_name, id = create_admin_panel_token, admin = true})
 
 Event.add(defines.events.on_gui_text_changed, text_changed)
 Event.add(defines.events.on_gui_click, on_gui_click)

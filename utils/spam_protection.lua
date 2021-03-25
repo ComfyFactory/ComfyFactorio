@@ -4,7 +4,7 @@ local Public = {}
 
 local this = {
     prevent_spam = {}, -- the default table where all player indexes will be stored
-    default_tick = 10, -- this defines the default tick to check weather or not a user is spamming a button.
+    default_tick = 5, -- this defines the default tick to check weather or not a user is spamming a button.
     _DEBUG = false
 }
 
@@ -57,7 +57,6 @@ function Public.is_spamming(player, value_to_compare, text)
     if this.prevent_spam[player.index] then
         if (tick - this.prevent_spam[player.index]) > value then
             Public.set_new_value(player)
-            debug_str(player.name .. ' is not spamming.')
             return false -- is not spamming
         else
             debug_str(player.name .. ' is spamming.')
