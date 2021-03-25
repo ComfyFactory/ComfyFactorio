@@ -92,7 +92,6 @@ end
 
 function Public.replace_water(surface, left_top)
     local tiles = {}
-    local hidden_tiles = {}
     for x = 0, 31, 1 do
         for y = 0, 31, 1 do
             local p = {x = left_top.x + x, y = left_top.y + y}

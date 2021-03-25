@@ -1,8 +1,5 @@
 local random = math.random
 local abs = math.abs
-local max = math.max
-local min = math.min
-local floor = math.floor
 local Functions = require 'maps.chronosphere.world_functions'
 local Raffle = require 'maps.chronosphere.raffles'
 local Chrono_table = require 'maps.chronosphere.table'
@@ -121,8 +118,6 @@ local function empty_chunk(surface, left_top)
 end
 
 local function riverlands(variant, surface, left_top)
-    local id = variant.id
-
     if abs(left_top.y) <= 31 and abs(left_top.x) <= 31 then
         empty_chunk(surface, left_top)
         return

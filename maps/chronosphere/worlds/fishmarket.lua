@@ -1,12 +1,9 @@
 local random = math.random
 local abs = math.abs
-local max = math.max
-local min = math.min
 local floor = math.floor
 local Balance = require 'maps.chronosphere.balance'
 local Functions = require 'maps.chronosphere.world_functions'
 local Raffle = require 'maps.chronosphere.raffles'
-local Chrono_table = require 'maps.chronosphere.table'
 local Specials = require 'maps.chronosphere.terrain_specials'
 local simplex_noise = require 'utils.simplex_noise'.d2
 local Difficulty = require 'modules.difficulty_vote'
@@ -61,7 +58,6 @@ local function process_tile(p, seed, tiles, entities)
     else
         if p.x > 800 and abs(p.y) < p.x - 800 then --tail
             tiles[#tiles + 1] = {name = 'grass-1', position = p}
-            local roll = random(1, biters)
             roll_biters(p, biters, entities)
         else
             tiles[#tiles + 1] = {name = 'out-of-map', position = p}
@@ -83,7 +79,7 @@ local function market_chunk(surface, left_top)
     Specials.fish_market(surface, left_top)
 end
 
-local function normal_chunk(surface, left_top, level, planet)
+local function normal_chunk(surface, left_top)
     local tiles = {}
     local entities = {}
     local seed = surface.map_gen_settings.seed
@@ -97,9 +93,7 @@ local function normal_chunk(surface, left_top, level, planet)
     Functions.spawn_entities(surface, entities)
 end
 
-local function basic(variant, surface, left_top)
-    local id = variant.id
-
+local function fishmarket(variant, surface, left_top)
     if abs(left_top.y) <= 31 and abs(left_top.x - 864) <= 31 then
         market_chunk(surface, left_top)
         return
@@ -107,4 +101,4 @@ local function basic(variant, surface, left_top)
     normal_chunk(surface, left_top)
 end
 
-return basic
+return fishmarket

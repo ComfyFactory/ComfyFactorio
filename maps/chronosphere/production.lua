@@ -130,7 +130,6 @@ end
 
 function Public.register_random_assembler(entity, id, tier)
     local production = Chrono_table.get_production_table()
-    local objective = Chrono_table.get_table()
     if not entity or not entity.valid then
         return
     end

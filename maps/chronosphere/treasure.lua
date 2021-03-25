@@ -5,7 +5,6 @@ local Difficulty = require 'modules.difficulty_vote'
 local math_random = math.random
 local math_abs = math.abs
 local math_max = math.max
-local math_min = math.min
 local math_ceil = math.ceil
 
 local Public = {}
@@ -294,8 +293,6 @@ function Public.treasure_chest(surface, position, container_name)
     if jumps == 0 then
         difficulty = 1
     end --Always treat the first level as normal difficulty
-
-    local chest_raffle = {}
 
     local distance = (jumps / 40)
     if distance > 1 then

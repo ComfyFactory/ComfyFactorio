@@ -472,7 +472,7 @@ local function talks(nearby_characters)
         local symbols = {'.', '!'}
         local arg1 = symbols[math_random(1, #symbols)]
         local randomphrase = texts['multiple_characters_convo_starters'][math_random(1, #texts['multiple_characters_convo_starters'])]
-        local str = str .. string.format(randomphrase, arg1)
+        str = str .. string.format(randomphrase, arg1)
         if math_random(1, 15) == 1 then
             local randomphrase2 = texts['old_talks'][math_random(1, #texts['old_talks'])]
             str = str .. randomphrase2
@@ -582,7 +582,7 @@ local function analyze_random_nearby_entity()
         return false
     end
 
-    local str = ''
+    local str
     local arg1 = entity.name
     local arg2 = ''
     if entity.health and math_random(1, 3) == 1 then
@@ -592,7 +592,7 @@ local function analyze_random_nearby_entity()
         arg1 = arg1 .. entity.prototype.max_health
         arg1 = arg1 .. ')'
         local randomphrase = texts['neutral_findings'][math_random(1, #texts['neutral_findings'])]
-        str = string.format(randomphrase, arg1, '')
+        str = string.format(randomphrase, arg1, arg2)
     else
         local symbols = {'.', '!', '?', '?'}
         arg2 = symbols[math_random(1, 3)]

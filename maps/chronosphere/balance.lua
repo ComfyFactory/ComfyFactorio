@@ -5,11 +5,9 @@ local Chrono_table = require 'maps.chronosphere.table'
 local math_floor = math.floor
 local math_min = math.min
 local math_max = math.max
-local math_abs = math.abs
 local math_ceil = math.ceil
 local math_pow = math.pow
 local math_random = math.random
-local math_log = math.log
 
 --- DIFFICULTY SCALING CURVES ---
 
@@ -366,14 +364,14 @@ function Public.scrap()
 
     local scrap_raffle = {}
     for k, t in pairs(main_loot) do
-        for x = 1, t.chance, 1 do
+        for _ = 1, t.chance, 1 do
             table.insert(scrap_raffle, {name = k, amount = t.amount})
         end
     end
 
     local second_raffle = {}
     for k, t in pairs(second_loot) do
-        for x = 1, t.chance, 1 do
+        for _ = 1, t.chance, 1 do
             table.insert(second_raffle, {name = k, amount = t.amount})
         end
     end

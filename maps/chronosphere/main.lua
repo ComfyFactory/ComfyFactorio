@@ -19,12 +19,10 @@ local On_Event = require 'maps.chronosphere.on_event'
 local Reset = require 'functions.soft_reset'
 local Tick_functions = require 'maps.chronosphere.tick_functions'
 local Upgrades = require 'maps.chronosphere.upgrades'
-local World_functions = require 'maps.chronosphere.world_functions'
 local Worlds = require 'maps.chronosphere.world_list'
 require 'maps.chronosphere.config_tab'
 
 local function generate_overworld(surface, optworld)
-    local objective = Chrono_table.get_table()
     Worlds.determine_world(optworld)
     Chrono.message_on_arrival()
     Chrono.setup_world(surface)
@@ -163,7 +161,7 @@ local function drain_accumulators()
     end
 end
 
-local function tick()
+local function do_tick()
     local objective = Chrono_table.get_table()
     local tick = game.tick
     Ai.Tick_actions(tick)
@@ -179,7 +177,7 @@ local function tick()
     if tick % 60 == 0 then
         objective.passivetimer = objective.passivetimer + 1
         if objective.world.id ~= 7 then
-            Tick_functions.update_charges(tick)
+            Tick_functions.update_charges()
             drain_accumulators()
         end
         Factories.produce_assemblers()
@@ -273,7 +271,7 @@ end
 
 local Event = require 'utils.event'
 Event.on_init(on_init)
-Event.on_nth_tick(10, tick)
+Event.on_nth_tick(10, do_tick)
 Event.add(defines.events.on_entity_damaged, On_Event.on_entity_damaged)
 Event.add(defines.events.on_entity_died, On_Event.on_entity_died)
 Event.add(defines.events.on_player_joined_game, On_Event.on_player_joined_game)
@@ -300,19 +298,14 @@ if _DEBUG then
             local player = game.player
             local trusted = Session.get_trusted_table()
             local param = tostring(cmd.parameter)
-            local p
-
             if player then
                 if player ~= nil then
-                    p = player.print
                     if not trusted[player.name] then
                         if not player.admin then
-                            p('[ERROR] Only admins and trusted weebs are allowed to run this command!', Color.fail)
+                            player.print('[ERROR] Only admins and trusted weebs are allowed to run this command!', Color.fail)
                             return
                         end
                     end
-                else
-                    p = log
                 end
             end
             chronojump(param)

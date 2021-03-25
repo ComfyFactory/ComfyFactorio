@@ -11,7 +11,6 @@ local math_min = math.min
 local math_cos = math.cos
 local math_sin = math.sin
 local math_rad = math.rad
-local math_exp = math.exp
 
 function Public.realtime_events()
     local objective = Chrono_table.get_table()
@@ -401,7 +400,7 @@ function Public.request_chunks()
     --surface.force_generate_chunk_requests()
 end
 
-function Public.update_charges(tick)
+function Public.update_charges()
     local objective = Chrono_table.get_table()
     if objective.chronocharges < objective.chronochargesneeded and objective.world.id ~= 7 then -- < 2000
         objective.chronocharges = objective.chronocharges + objective.passive_chronocharge_rate
@@ -415,13 +414,7 @@ end
 local function shoot_laser(surface, source, enemy)
     local force = source.force
     surface.create_entity {name = 'laser-beam', position = source.position, force = 'player', target = enemy, source = source, max_length = 32, duration = 60}
-    local damage = enemy.damage(20 * (1 + force.get_ammo_damage_modifier('laser') + force.get_gun_speed_modifier('laser')), force, 'laser', source)
-end
-
-local function shoot_acid(surface, source, enemy)
-    local force = source.force
-    surface.create_entity({name = 'acid-stream-spitter-behemoth', position = source.position, target = enemy, source = source, force = force})
-    --local damage = enemy.damage(20 * (1 + force.get_ammo_damage_modifier("biological") + force.get_gun_speed_modifier("laser")), force, "laser", source)
+    enemy.damage(20 * (1 + force.get_ammo_damage_modifier('laser') + force.get_gun_speed_modifier('laser')), force, 'laser', source)
 end
 
 function Public.laser_defense()

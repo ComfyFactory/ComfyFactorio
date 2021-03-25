@@ -1,7 +1,6 @@
 local random = math.random
 local abs = math.abs
 local max = math.max
-local min = math.min
 local floor = math.floor
 local Functions = require 'maps.chronosphere.world_functions'
 local Raffle = require 'maps.chronosphere.raffles'
@@ -10,7 +9,6 @@ local Chrono_table = require 'maps.chronosphere.table'
 local function process_tile(p, seed, tiles, entities, treasure)
     local objective = Chrono_table.get_table()
     local noise1 = Functions.get_noise('scrapyard', p, seed)
-    local biters = objective.world.variant.biters
     local evo = game.forces['enemy'].evolution_factor
     local handicap = max(0, 120 - objective.chronojumps * 20)
 
@@ -90,8 +88,6 @@ local function empty_chunk(surface, left_top)
 end
 
 local function swamp(variant, surface, left_top)
-    local id = variant.id
-
     if abs(left_top.y) <= 63 and abs(left_top.x) <= 63 then
         empty_chunk(surface, left_top)
     end

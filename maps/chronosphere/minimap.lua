@@ -38,7 +38,7 @@ local function get_player_data(player)
 end
 
 function Public.toggle_auto(player)
-    local player_data = get_player_data(player)
+    get_player_data(player)
     local playertable = Chrono_table.get_player_table()
     local switch = player.gui.screen.icw_map_frame['switch_auto_map']
     if switch.switch_state == 'left' then
@@ -63,12 +63,12 @@ local function kill_minimap(player)
     --if element.visible then element.visible = false end
 end
 
-local function kill_frame(player)
-    if player.gui.screen.icw_map_frame then
-        local element = player.gui.screen.icw_map_frame.icw_map
-        element.destroy()
-    end
-end
+-- local function kill_frame(player)
+--     if player.gui.screen.icw_map_frame then
+--         local element = player.gui.screen.icw_map_frame.icw_map
+--         element.destroy()
+--     end
+-- end
 
 local function draw_minimap(player)
     local objective = Chrono_table.get_table()
@@ -79,7 +79,7 @@ local function draw_minimap(player)
     if not frame then
         frame = player.gui.screen.add({type = 'frame', direction = 'vertical', name = 'icw_map_frame', caption = {'chronosphere.minimap'}})
         frame.location = player_data.coords or {x = 10, y = 45}
-        switch_state = 'right'
+        local switch_state = 'right'
         if player_data.auto_map then
             switch_state = 'left'
         end
@@ -141,10 +141,10 @@ function Public.update_minimap(player)
             draw_minimap(player)
         end
     else
-        for _, player in pairs(game.connected_players) do
-            kill_minimap(player)
-            if player.surface.name == 'cargo_wagon' then
-                draw_minimap(player)
+        for _, p in pairs(game.connected_players) do
+            kill_minimap(p)
+            if p.surface.name == 'cargo_wagon' then
+                draw_minimap(p)
             end
         end
     end

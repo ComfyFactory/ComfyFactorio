@@ -179,7 +179,7 @@ local function update_upgrades_gui(player)
         end
     end
     local t2 = frame['production_table']
-    for key, product in pairs(Production) do
+    for key, _ in pairs(Production) do
         t2['product' .. key].number = math.floor((production_table.experience[key] / 1000) ^ (1 / 2))
         t2['product_bar' .. key].value = calculate_xp(key)
         t2['product_bar' .. key].tooltip = math.floor(calculate_xp(key) * 1000) / 10 .. '%'
@@ -201,9 +201,8 @@ local function world_gui(player)
     frame.style.maximal_height = 500
     frame.style.minimal_width = 200
     frame.style.maximal_width = 400
-    local l = {}
-    l[1] = frame.add({type = 'label', name = 'world_name', caption = {'chronosphere.gui_world_0', world.variant.name}})
-    l[2] = frame.add({type = 'label', caption = {'chronosphere.gui_world_1'}})
+    frame.add({type = 'label', name = 'world_name', caption = {'chronosphere.gui_world_0', world.variant.name}})
+    frame.add({type = 'label', caption = {'chronosphere.gui_world_1'}})
     local table0 = frame.add({type = 'table', name = 'world_ores', column_count = 3})
     table0.add({type = 'sprite-button', name = 'iron-ore', sprite = 'item/iron-ore', enabled = false, number = world.variant.fe})
     table0.add({type = 'sprite-button', name = 'copper-ore', sprite = 'item/copper-ore', enabled = false, number = world.variant.cu})
@@ -211,7 +210,7 @@ local function world_gui(player)
     table0.add({type = 'sprite-button', name = 'stone', sprite = 'item/stone', enabled = false, number = world.variant.s})
     table0.add({type = 'sprite-button', name = 'uranium-ore', sprite = 'item/uranium-ore', enabled = false, number = world.variant.u})
     table0.add({type = 'sprite-button', name = 'oil', sprite = 'fluid/crude-oil', enabled = false, number = world.variant.o})
-    l[3] = frame.add({type = 'label', name = 'richness', caption = {'chronosphere.gui_world_2', world.ores.name}})
+    frame.add({type = 'label', name = 'richness', caption = {'chronosphere.gui_world_2', world.ores.name}})
     frame.add({type = 'label', name = 'world_time', caption = {'chronosphere.gui_world_5', world.dayspeed.name}})
     frame.add({type = 'line'})
     frame.add({type = 'label', name = 'world_biters', caption = {'chronosphere.gui_world_3', math_floor(evolution * 100, 1)}})
@@ -301,7 +300,6 @@ function Public_gui.update_gui(player)
     local objective = Chrono_table.get_table()
     local difficulty = Difficulty.get().difficulty_vote_value
 
-    local tick = game.tick
     update_world_gui(player)
     update_upgrades_gui(player)
     if not player.gui.top.chronosphere then
@@ -337,8 +335,8 @@ function Public_gui.update_gui(player)
 	end
 	]]
     if objective.jump_countdown_start_time == -1 then
-        local powerobserved, storedbattery, seconds_ETA = 0, 0, 0
-        seconds_ETA = ETA_seconds_until_full(powerobserved, storedbattery)
+        local powerobserved, storedbattery = 0, 0
+        local seconds_ETA = ETA_seconds_until_full(powerobserved, storedbattery)
 
         gui.timer.caption = {'chronosphere.gui_3'}
         gui.timer_value.caption = math_floor(seconds_ETA / 60) .. 'm' .. seconds_ETA % 60 .. 's'
@@ -351,9 +349,8 @@ function Public_gui.update_gui(player)
             gui.timer2.style.font_color = {r = 0.98, g = 0, b = 0}
             gui.timer_value2.style.font_color = {r = 0.98, g = 0, b = 0}
         else
-            local bestcase = 0
             if objective.accumulators then
-                bestcase = math_floor(ETA_seconds_until_full(#objective.accumulators * 300000, storedbattery))
+                local bestcase = math_floor(ETA_seconds_until_full(#objective.accumulators * 300000, storedbattery))
                 gui.timer2.caption = {'chronosphere.gui_3_1'}
                 gui.timer_value2.caption = math_floor(bestcase / 60) .. 'm' .. bestcase % 60 .. 's (drawing ' .. #objective.accumulators * 0.3 .. 'MW)'
                 gui.timer2.style.font_color = {r = 0, g = 200, b = 0}
@@ -507,7 +504,7 @@ local function upgrades_gui(player)
     end
     local prod_table = frame.add({type = 'table', name = 'production_table', column_count = 4})
     for key, product in pairs(Production) do
-        local recipe = Production[key].recipe_override or Production[key].name
+        local recipe = product.recipe_override or product.name
         prod_table.add(
             {
                 type = 'sprite-button',
