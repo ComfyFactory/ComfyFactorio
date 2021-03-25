@@ -373,7 +373,7 @@ function Public.create_wagon_room()
         local inventory = e.get_inventory(defines.inventory.chest)
         inventory.insert(cargo_boxes[loot_i])
         i = i + 1
-    end  
+    end 
     for key = 1, 20, 1 do
         local factory
         if List[key].kind == 'furnace' then
