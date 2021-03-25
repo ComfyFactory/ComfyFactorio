@@ -706,7 +706,7 @@ local function refresh()
             if frame.name ~= module_name then
                 return
             end
-            local data = {player = player, frame = frame, sort_by = 'this.player_list.sorting_method[player.index]'}
+            local data = {player = player, frame = frame, sort_by = this.player_list.sorting_method[player.index]}
             player_list_show(data)
         end
     end
