@@ -3,6 +3,9 @@
 local Tabs = require 'comfy_panel.main'
 local Global = require 'utils.global'
 local SpamProtection = require 'utils.spam_protection'
+local Token = require 'utils.token'
+
+local module_name = 'Groups'
 
 local this = {
     player_group = {},
@@ -20,7 +23,9 @@ Global.register(
 
 local Public = {}
 
-local build_group_gui = (function(player, frame)
+local function build_group_gui(data)
+    local player = data.player
+    local frame = data.frame
     local group_name_width = 150
     local description_width = 240
     local members_width = 90
@@ -142,17 +147,20 @@ local build_group_gui = (function(player, frame)
     local b = t.add({type = 'button', name = 'create_new_group', caption = 'Create'})
     b.style.minimal_width = 150
     b.style.font = 'default-bold'
-end)
+end
+
+local build_group_gui_token = Token.register(build_group_gui)
 
 local function refresh_gui()
     for _, p in pairs(game.connected_players) do
         local frame = Tabs.comfy_panel_get_active_frame(p)
         if frame then
-            if frame.name == 'Groups' then
+            if frame.name == module_name then
                 local new_group_name = frame.frame2.group_table.new_group_name.text
                 local new_group_description = frame.frame2.group_table.new_group_description.text
 
-                build_group_gui(p, frame)
+                local data = {player = p, frame = frame}
+                build_group_gui(data)
 
                 frame = Tabs.comfy_panel_get_active_frame(p)
                 frame.frame2.group_table.new_group_name.text = new_group_name
@@ -179,24 +187,26 @@ local function alphanumeric(str)
 end
 
 local function on_gui_click(event)
-    if not event then
+    local element = event.element
+    if not element or not element.valid then
         return
     end
-
-    if not event.element then
-        return
-    end
-    if not event.element.valid then
-        return
-    end
+    local player = game.get_player(event.player_index)
 
     local name = event.element.name
-    local player = game.players[event.player_index]
+
+    if name == 'tab_Groups' then
+        local is_spamming = SpamProtection.is_spamming(player, nil, 'Groups tab_Groups')
+        if is_spamming then
+            return
+        end
+    end
+
     local frame = Tabs.comfy_panel_get_active_frame(player)
     if not frame then
         return
     end
-    if frame.name ~= 'Groups' then
+    if frame.name ~= module_name then
         return
     end
 
@@ -254,7 +264,7 @@ local function on_gui_click(event)
         end
     end
 
-    local p = event.element.parent
+    local p = element.parent
     if p then
         p = p.parent
     end
@@ -266,9 +276,9 @@ local function on_gui_click(event)
                 return
             end
 
-            if event.element.type == 'button' and event.element.caption == 'Join' then
-                this.player_group[player.name] = event.element.parent.name
-                local str = '[' .. event.element.parent.name
+            if element.type == 'button' and element.caption == 'Join' then
+                this.player_group[player.name] = element.parent.name
+                local str = '[' .. element.parent.name
                 str = str .. ']'
                 player.tag = str
                 if game.tick - this.join_spam_protection[player.name] > 600 then
@@ -278,29 +288,29 @@ local function on_gui_click(event)
                         b = player.color.b * 0.7 + 0.3,
                         a = 1
                     }
-                    game.print(player.name .. ' has joined group "' .. event.element.parent.name .. '"', color)
+                    game.print(player.name .. ' has joined group "' .. element.parent.name .. '"', color)
                     this.join_spam_protection[player.name] = game.tick
                 end
                 refresh_gui()
                 return
             end
 
-            if event.element.type == 'button' and event.element.caption == 'Delete' then
+            if element.type == 'button' and element.caption == 'Delete' then
                 for _, players in pairs(game.players) do
                     if this.player_group[players.name] then
-                        if this.player_group[players.name] == event.element.parent.name then
+                        if this.player_group[players.name] == element.parent.name then
                             this.player_group[players.name] = '[Group]'
                             players.tag = ''
                         end
                     end
                 end
-                game.print(player.name .. ' deleted group "' .. event.element.parent.name .. '"')
-                this.tag_groups[event.element.parent.name] = nil
+                game.print(player.name .. ' deleted group "' .. element.parent.name .. '"')
+                this.tag_groups[element.parent.name] = nil
                 refresh_gui()
                 return
             end
 
-            if event.element.type == 'button' and event.element.caption == 'Leave' then
+            if element.type == 'button' and element.caption == 'Leave' then
                 this.player_group[player.name] = '[Group]'
                 player.tag = ''
                 refresh_gui()
@@ -328,7 +338,7 @@ function Public.reset_groups()
     this.tag_groups = {}
 end
 
-comfy_panel_tabs['Groups'] = {gui = build_group_gui, admin = false}
+Tabs.add_tab_to_gui({name = module_name, id = build_group_gui_token, admin = false})
 
 local event = require 'utils.event'
 event.add(defines.events.on_gui_click, on_gui_click)

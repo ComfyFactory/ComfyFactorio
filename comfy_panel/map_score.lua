@@ -1,3 +1,8 @@
+local Tabs = require 'comfy_panel.main'
+local Token = require 'utils.token'
+
+local module_name = 'Map Scores'
+
 local Public = {}
 
 local function get_sorted_score()
@@ -18,7 +23,8 @@ local function get_sorted_score()
     return list
 end
 
-local score_list = (function(_, frame)
+local function score_list(data)
+    local frame = data.frame
     frame.clear()
     frame.style.padding = 4
     frame.style.margin = 0
@@ -59,7 +65,9 @@ local score_list = (function(_, frame)
         points_label.style.font = 'heading-2'
         points_label.style.padding = 1
     end
-end)
+end
+
+local score_list_token = Token.register(score_list)
 
 function Public.set_score_description(str)
     global.custom_highscore.description = str
@@ -92,7 +100,7 @@ local function on_init()
     }
 end
 
-comfy_panel_tabs['Map Scores'] = {gui = score_list, admin = false}
+Tabs.add_tab_to_gui({name = module_name, id = score_list_token, admin = false})
 
 local event = require 'utils.event'
 event.on_init(on_init)

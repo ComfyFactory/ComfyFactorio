@@ -2,6 +2,10 @@
 
 local Chrono_table = require 'maps.chronosphere.table'
 local Chrono = require 'maps.chronosphere.chrono'
+local Token = require 'utils.token'
+local Tabs = require 'comfy_panel.tabs'
+
+local module_name = 'ChronoTrain'
 
 local functions = {
     ['comfy_panel_offline_accidents'] = function(event)
@@ -145,7 +149,8 @@ local function add_switch(element, switch_state, name, description_main, descrip
     label.style.font_color = {0.85, 0.85, 0.85}
 end
 
-local build_config_gui = (function(_, frame)
+local function build_config_gui(data)
+    local frame = data.frame
     local objective = Chrono_table.get_table()
     local switch_state
     frame.clear()
@@ -208,7 +213,9 @@ local build_config_gui = (function(_, frame)
     frame['comfy_panel_game_lost_confirm_table'].visible = false
 
     line_elements[#line_elements + 1] = frame.add({type = 'line'})
-end)
+end
+
+local build_config_gui_token = Token.register(build_config_gui)
 
 local function on_gui_click(event)
     if not event.element then
@@ -223,7 +230,7 @@ local function on_gui_click(event)
     end
 end
 
-comfy_panel_tabs['ChronoTrain'] = {gui = build_config_gui, admin = true}
+Tabs.add_tab_to_gui({name = module_name, id = build_config_gui_token, admin = true})
 
 local event = require 'utils.event'
 event.add(defines.events.on_gui_click, on_gui_click)

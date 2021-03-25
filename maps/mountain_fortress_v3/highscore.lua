@@ -9,6 +9,7 @@ local WD = require 'modules.wave_defense.table'
 local Core = require 'utils.core'
 local SpamProtection = require 'utils.spam_protection'
 
+local module_name = 'Highscore'
 local score_dataset = 'highscores'
 local score_key = 'mountain_fortress_v3_scores'
 local set_data = Server.set_data
@@ -484,7 +485,9 @@ local function add_global_stats(frame)
     format_time_label.style.minimal_width = 100
 end
 
-local show_score = (function(player, frame)
+local function show_score(data)
+    local player = data.player
+    local frame = data.frame
     frame.clear()
 
     local flow = frame.add {type = 'flow'}
@@ -607,7 +610,9 @@ local show_score = (function(player, frame)
             label.style.horizontal_align = 'right'
         end -- foreach column
     end -- foreach entry
-end) -- show_score
+end
+
+local show_score_token = Token.register(show_score)
 
 local function on_gui_click(event)
     if not event then
@@ -625,7 +630,7 @@ local function on_gui_click(event)
     if not frame then
         return
     end
-    if frame.name ~= 'Highscore' then
+    if frame.name ~= module_name then
         return
     end
 
@@ -652,7 +657,7 @@ local function on_gui_click(event)
             sorting_pref.method = 'descending'
             sorting_pref.column = column
         end
-        show_score(player, frame)
+        show_score({player = player, frame = frame})
         return
     end
 end
@@ -682,7 +687,7 @@ Server.on_data_set_changed(
     end
 )
 
-comfy_panel_tabs['Highscore'] = {gui = show_score, admin = false, only_server_sided = true}
+Tabs.add_tab_to_gui({name = module_name, id = show_score_token, admin = false, only_server_sided = true})
 
 Event.on_init(on_init)
 Event.add(defines.events.on_player_left_game, on_player_left_game)

@@ -19,8 +19,11 @@ local Jailed = require 'utils.datastore.jail_data'
 local Tabs = require 'comfy_panel.main'
 local Global = require 'utils.global'
 local SpamProtection = require 'utils.spam_protection'
+local Token = require 'utils.token'
 
 local Public = {}
+
+local module_name = 'Players'
 
 local this = {
     player_list = {
@@ -387,7 +390,10 @@ local function get_sorted_list(sort_by)
     return player_list
 end
 
-local function player_list_show(player, frame, sort_by)
+local function player_list_show(data)
+    local player = data.player
+    local frame = data.frame
+    local sort_by = data.sort_by
     -- Frame management
     frame.clear()
     frame.style.padding = 8
@@ -446,6 +452,10 @@ local function player_list_show(player, frame, sort_by)
         this.player_list.sorting_method[player.index] = sort_by
     else
         sort_by = this.player_list.sorting_method[player.index]
+    end
+
+    if not sort_by then
+        sort_by = 'total_time_played_desc'
     end
 
     header_modifier[sort_by](headers)
@@ -579,58 +589,67 @@ local function player_list_show(player, frame, sort_by)
     end
 end
 
+local player_list_show_token = Token.register(player_list_show)
+
 local function on_gui_click(event)
-    if not event then
+    local element = event.element
+    if not element or not element.valid then
         return
     end
 
-    if not event.element then
-        return
-    end
-    if not event.element.valid then
-        return
-    end
-    if not event.element.name then
-        return
+    local name = element.name
+    local player = game.get_player(event.player_index)
+
+    if name == 'tab_Players' then
+        local is_spamming = SpamProtection.is_spamming(player, nil, 'PlayerList tab_Players')
+        if is_spamming then
+            return
+        end
     end
 
-    local player = game.players[event.player_index]
     local frame = Tabs.comfy_panel_get_active_frame(player)
     if not frame then
         return
     end
-    if frame.name ~= 'Players' then
+    if frame.name ~= module_name then
         return
     end
 
-    local name = event.element.name
     local actions = {
         ['player_list_panel_header_2'] = function()
-            if string.find(event.element.caption, symbol_desc) then
-                player_list_show(player, frame, 'name_asc')
+            if string.find(element.caption, symbol_desc) then
+                local data = {player = player, frame = frame, sort_by = 'name_asc'}
+                player_list_show(data)
             else
-                player_list_show(player, frame, 'name_desc')
+                local data = {player = player, frame = frame, sort_by = 'name_desc'}
+                player_list_show(data)
             end
         end,
         ['player_list_panel_header_3'] = function()
-            if string.find(event.element.caption, symbol_desc) then
-                player_list_show(player, frame, 'total_time_played_asc')
+            if string.find(element.caption, symbol_desc) then
+                local data = {player = player, frame = frame, sort_by = 'total_time_played_asc'}
+                player_list_show(data)
             else
-                player_list_show(player, frame, 'total_time_played_desc')
+                local data = {player = player, frame = frame, sort_by = 'total_time_played_desc'}
+                player_list_show(data)
             end
         end,
         ['player_list_panel_header_4'] = function()
-            if string.find(event.element.caption, symbol_desc) then
-                player_list_show(player, frame, 'time_played_asc')
+            if string.find(element.caption, symbol_desc) then
+                local data = {player = player, frame = frame, sort_by = 'time_played_asc'}
+                player_list_show(data)
             else
-                player_list_show(player, frame, 'time_played_desc')
+                local data = {player = player, frame = frame, sort_by = 'time_played_desc'}
+                player_list_show(data)
             end
         end,
         ['player_list_panel_header_5'] = function()
-            if string.find(event.element.caption, symbol_desc) then
-                player_list_show(player, frame, 'pokes_asc')
+            if string.find(element.caption, symbol_desc) then
+                local data = {player = player, frame = frame, sort_by = 'pokes_asc'}
+                player_list_show(data)
             else
-                player_list_show(player, frame, 'pokes_desc')
+                local data = {player = player, frame = frame, sort_by = 'pokes_desc'}
+                player_list_show(data)
             end
         end
     }
@@ -645,11 +664,11 @@ local function on_gui_click(event)
         return
     end
 
-    if not event.element.valid then
+    if not element.valid then
         return
     end
     --Locate other players
-    local index = tonumber(event.element.name)
+    local index = tonumber(element.name)
     if index and game.players[index] and index == game.players[index].index then
         local target = game.players[index]
         if not target or not target.valid then
@@ -658,12 +677,12 @@ local function on_gui_click(event)
         Where.create_mini_camera_gui(player, target.name, target.position, target.surface.index)
     end
     --Poke other players
-    if string.sub(event.element.name, 1, 11) == 'poke_player' then
-        local poked_player = string.sub(event.element.name, 13, string.len(event.element.name))
+    if string.sub(element.name, 1, 11) == 'poke_player' then
+        local poked_player = string.sub(element.name, 13, string.len(element.name))
         if player.name == poked_player then
             return
         end
-        if this.player_list.last_poke_tick[event.element.player_index] + 300 < game.tick then
+        if this.player_list.last_poke_tick[element.player_index] + 300 < game.tick then
             local str = '>> '
             str = str .. player.name
             str = str .. ' has poked '
@@ -673,7 +692,7 @@ local function on_gui_click(event)
             str = str .. pokemessages[z]
             str = str .. ' <<'
             game.print(str)
-            this.player_list.last_poke_tick[event.element.player_index] = game.tick
+            this.player_list.last_poke_tick[element.player_index] = game.tick
             local p = game.players[poked_player]
             this.player_list.pokes[p.index] = this.player_list.pokes[p.index] + 1
         end
@@ -684,10 +703,11 @@ local function refresh()
     for _, player in pairs(game.connected_players) do
         local frame = Tabs.comfy_panel_get_active_frame(player)
         if frame then
-            if frame.name ~= 'Players' then
+            if frame.name ~= module_name then
                 return
             end
-            player_list_show(player, frame, this.player_list.sorting_method[player.index])
+            local data = {player = player, frame = frame, sort_by = 'this.player_list.sorting_method[player.index]'}
+            player_list_show(data)
         end
     end
 end
@@ -715,7 +735,7 @@ function Public.show_roles_in_list(value)
     return this.show_roles_in_list
 end
 
-comfy_panel_tabs['Players'] = {gui = player_list_show, admin = false}
+Tabs.add_tab_to_gui({name = module_name, id = player_list_show_token, admin = false})
 
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_left_game, on_player_left_game)

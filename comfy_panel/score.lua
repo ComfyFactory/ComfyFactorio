@@ -4,12 +4,15 @@ local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Tabs = require 'comfy_panel.main'
 local SpamProtection = require 'utils.spam_protection'
+local Token = require 'utils.token'
 
 local Public = {}
 local this = {
     score_table = {},
     sort_by = {}
 }
+
+local module_name = 'Scoreboard'
 
 Global.register(
     this,
@@ -151,7 +154,9 @@ local function add_global_stats(frame, player)
     floatingScore_label.style.font_color = {r = 0.8, g = 0.8, b = 0.8}
 end
 
-local show_score = (function(player, frame)
+local function show_score(data)
+    local player = data.player
+    local frame = data.frame
     frame.clear()
 
     Public.init_player_table(player)
@@ -251,14 +256,16 @@ local show_score = (function(player, frame)
             label.style.horizontal_align = 'right'
         end -- foreach column
     end -- foreach entry
-end) -- show_score
+end
+
+local show_score_token = Token.register(show_score)
 
 local function refresh_score_full()
     for _, player in pairs(game.connected_players) do
         local frame = Tabs.comfy_panel_get_active_frame(player)
         if frame then
-            if frame.name == 'Scoreboard' then
-                show_score(player, frame)
+            if frame.name == module_name then
+                show_score({player = player, frame = frame})
             end
         end
     end
@@ -279,23 +286,25 @@ local function on_player_joined_game(event)
 end
 
 local function on_gui_click(event)
-    if not event then
+    local element = event.element
+    if not element or not element.valid then
         return
+    end
+    local player = game.get_player(event.player_index)
+    local name = event.element.name
+
+    if name == 'tab_Scoreboard' then
+        local is_spamming = SpamProtection.is_spamming(player, nil, 'Scoreboard tab_Scoreboard')
+        if is_spamming then
+            return
+        end
     end
 
-    if not event.element then
-        return
-    end
-    if not event.element.valid then
-        return
-    end
-
-    local player = game.players[event.player_index]
     local frame = Tabs.comfy_panel_get_active_frame(player)
     if not frame then
         return
     end
-    if frame.name ~= 'Scoreboard' then
+    if frame.name ~= module_name then
         return
     end
 
@@ -304,11 +313,9 @@ local function on_gui_click(event)
         return
     end
 
-    local name = event.element.name
-
     -- Handles click on the checkbox, for floating score
     if name == 'show_floating_killscore_texts' then
-        global.show_floating_killscore[player.name] = event.element.state
+        global.show_floating_killscore[player.name] = element.state
         return
     end
 
@@ -328,7 +335,7 @@ local function on_gui_click(event)
             sorting_pref.method = 'descending'
             sorting_pref.column = column
         end
-        show_score(player, frame)
+        show_score({player = player, frame = frame})
         return
     end
 
@@ -485,7 +492,7 @@ local function on_built_entity(event)
     score.built_entities = 1 + (score.built_entities or 0)
 end
 
-comfy_panel_tabs['Scoreboard'] = {gui = show_score, admin = false}
+Tabs.add_tab_to_gui({name = module_name, id = show_score_token, admin = false})
 
 Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 Event.add(defines.events.on_player_died, on_player_died)

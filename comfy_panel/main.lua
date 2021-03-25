@@ -1,9 +1,9 @@
 --[[
 Comfy Panel
 
-To add a tab, insert into the "comfy_panel_tabs" table.
+To add a tab, insert into the "main_gui_tabs" table.
 
-Example: comfy_panel_tabs["mapscores"] = {gui = draw_map_scores, admin = false}
+Example: main_gui_tabs["mapscores"] = {gui = draw_map_scores, admin = false}
 if admin = true, then tab is visible only for admins (usable for map-specific settings)
 
 draw_map_scores would be a function with the player and the frame as arguments
@@ -12,19 +12,47 @@ draw_map_scores would be a function with the player and the frame as arguments
 local Event = require 'utils.event'
 local Server = require 'utils.server'
 local SpamProtection = require 'utils.spam_protection'
+local Token = require 'utils.token'
 
-comfy_panel_tabs = {}
-
+local main_gui_tabs = {}
 local Public = {}
 local screen_elements = {}
+
+--- This adds the given gui to the main gui.
+---@param tbl
+function Public.add_tab_to_gui(tbl)
+    if not tbl then
+        return
+    end
+    if not tbl.name then
+        return
+    end
+    if not tbl.id then
+        return
+    end
+    local admin = tbl.admin or false
+    local only_server_sided = tbl.only_server_sided or false
+
+    if not main_gui_tabs[tbl.name] then
+        main_gui_tabs[tbl.name] = {id = tbl.id, admin = admin, only_server_sided = only_server_sided}
+    else
+        error('Given name: ' .. tbl.name .. ' already exists in table.')
+    end
+end
 
 function Public.screen_to_bypass(elem)
     screen_elements[elem] = true
     return screen_elements
 end
 
-function Public.get_tabs()
-    return comfy_panel_tabs
+--- Fetches the main gui tabs. You are forbidden to write as this is local.
+---@param key
+function Public.get(key)
+    if key then
+        return main_gui_tabs[key]
+    else
+        return main_gui_tabs
+    end
 end
 
 function Public.comfy_panel_clear_left_gui(player)
@@ -70,7 +98,23 @@ function Public.comfy_panel_refresh_active_tab(player)
     if not frame then
         return
     end
-    comfy_panel_tabs[frame.name].gui(player, frame)
+
+    local tab = main_gui_tabs[frame.name]
+    if not tab then
+        return
+    end
+    local id = tab.id
+    if not id then
+        return
+    end
+    local func = Token.get(id)
+
+    local data = {
+        player = player,
+        frame = frame
+    }
+
+    return func(data)
 end
 
 local function top_button(player)
@@ -85,7 +129,7 @@ local function top_button(player)
 end
 
 local function main_frame(player)
-    local tabs = comfy_panel_tabs
+    local tabs = main_gui_tabs
     Public.comfy_panel_clear_left_gui(player)
 
     local frame = player.gui.left.add({type = 'frame', name = 'comfy_panel'})
@@ -97,7 +141,7 @@ local function main_frame(player)
         if func.only_server_sided then
             local secs = Server.get_current_time()
             if secs then
-                local tab = tabbed_pane.add({type = 'tab', caption = name})
+                local tab = tabbed_pane.add({type = 'tab', caption = name, name = 'tab_' .. name})
                 local name_frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
                 name_frame.style.minimal_height = 480
                 name_frame.style.maximal_height = 480
@@ -107,7 +151,7 @@ local function main_frame(player)
             end
         elseif func.admin == true then
             if player.admin then
-                local tab = tabbed_pane.add({type = 'tab', caption = name})
+                local tab = tabbed_pane.add({type = 'tab', caption = name, name = 'tab_' .. name})
                 local name_frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
                 name_frame.style.minimal_height = 480
                 name_frame.style.maximal_height = 480
@@ -116,7 +160,7 @@ local function main_frame(player)
                 tabbed_pane.add_tab(tab, name_frame)
             end
         else
-            local tab = tabbed_pane.add({type = 'tab', caption = name})
+            local tab = tabbed_pane.add({type = 'tab', caption = name, name = 'tab_' .. name})
             local name_frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
             name_frame.style.minimal_height = 480
             name_frame.style.maximal_height = 480
@@ -156,20 +200,16 @@ local function on_player_joined_game(event)
 end
 
 local function on_gui_click(event)
-    if not event then
+    local element = event.element
+    if not element or not element.valid then
         return
     end
 
     local player = game.players[event.player_index]
 
-    if not event.element then
-        return
-    end
-    if not event.element.valid then
-        return
-    end
+    local name = element.name
 
-    if event.element.name == 'comfy_panel_top_button' then
+    if name == 'comfy_panel_top_button' then
         local is_spamming = SpamProtection.is_spamming(player, nil, 'Comfy Main GUI Click')
         if is_spamming then
             return
@@ -186,7 +226,7 @@ local function on_gui_click(event)
         end
     end
 
-    if event.element.caption == 'X' and event.element.name == 'comfy_panel_close' then
+    if element.caption == 'X' and name == 'comfy_panel_close' then
         local is_spamming = SpamProtection.is_spamming(player, nil, 'Comfy Main Gui Close Button')
         if is_spamming then
             return
@@ -196,16 +236,13 @@ local function on_gui_click(event)
         return
     end
 
-    if not event.element.caption then
+    if not element.caption then
         return
     end
-    if event.element.type ~= 'tab' then
+    if element.type ~= 'tab' then
         return
     end
-    local is_spamming = SpamProtection.is_spamming(player, nil, 'Comfy Main Gui No Func')
-    if is_spamming then
-        return
-    end
+
     Public.comfy_panel_refresh_active_tab(player)
 end
 

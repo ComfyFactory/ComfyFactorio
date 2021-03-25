@@ -1,6 +1,4 @@
---luacheck:ignore
-local bb_config = require 'maps.biter_battles_v2.config'
-local event = require 'utils.event'
+local Event = require 'utils.event'
 local Server = require 'utils.server'
 
 local difficulties = {
@@ -63,14 +61,18 @@ local function poll_difficulty(player)
     for i = 1, 7, 1 do
         local b = frame.add({type = 'button', name = tostring(i), caption = difficulties[i].name .. ' (' .. difficulties[i].str .. ')'})
         b.style.font_color = difficulties[i].color
-        b.style.font = 'heading-2'
-        b.style.minimal_width = 180
+        b.style.minimal_width = 190
+        b.style.horizontal_align = 'center'
+        b.style.bottom_padding = 2
     end
-    local b = frame.add({type = 'label', caption = '- - - - - - - - - - - - - - - - - - - -'})
+    frame.add({type = 'label', caption = '- - - - - - - - - - - - - - - - - - - -'})
+
     local b = frame.add({type = 'button', name = 'close', caption = 'Close (' .. math.floor((timeout - tick) / 3600) .. ' minutes left)'})
     b.style.font_color = {r = 0.66, g = 0.0, b = 0.66}
     b.style.font = 'heading-3'
+    b.style.horizontal_align = 'center'
     b.style.minimal_width = 96
+    b.style = 'dialog_button'
 end
 
 local function set_difficulty()
@@ -186,6 +188,6 @@ local function on_gui_click(event)
     event.element.parent.destroy()
 end
 
-event.add(defines.events.on_gui_click, on_gui_click)
-event.add(defines.events.on_player_left_game, on_player_left_game)
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_gui_click, on_gui_click)
+Event.add(defines.events.on_player_left_game, on_player_left_game)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)

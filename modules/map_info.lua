@@ -2,6 +2,9 @@ local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Tabs = require 'comfy_panel.main'
 local SpamProtection = require 'utils.spam_protection'
+local Token = require 'utils.token'
+
+local module_name = 'Map Info'
 
 local map_info = {
     localised_category = false,
@@ -25,7 +28,8 @@ function Public.Pop_info()
     return map_info
 end
 
-local create_map_intro = (function(_, frame)
+local function create_map_intro(data)
+    local frame = data.frame
     frame.clear()
     frame.style.padding = 4
     frame.style.margin = 0
@@ -89,7 +93,9 @@ local create_map_intro = (function(_, frame)
     b.style.left_margin = 333
     b.style.horizontal_align = 'center'
     b.style.vertical_align = 'center'
-end)
+end
+
+local create_map_intro_token = Token.register(create_map_intro)
 
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
@@ -124,7 +130,7 @@ local function on_gui_click(event)
     end
 end
 
-comfy_panel_tabs['Map Info'] = {gui = create_map_intro, admin = false}
+Tabs.add_tab_to_gui({name = module_name, id = create_map_intro_token, admin = false})
 
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_gui_click, on_gui_click)

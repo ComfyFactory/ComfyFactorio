@@ -4,8 +4,12 @@ local Antigrief = require 'antigrief'
 local Color = require 'utils.color_presets'
 local SessionData = require 'utils.datastore.session_data'
 local Utils = require 'utils.core'
+local Tabs = require 'comfy_panel.main'
 local SpamProtection = require 'utils.spam_protection'
 local BottomFrame = require 'comfy_panel.bottom_frame'
+local Token = require 'utils.token'
+
+local module_name = 'Config'
 
 local spaghett_entity_blacklist = {
     ['logistic-chest-requester'] = true,
@@ -299,7 +303,10 @@ local function add_switch(element, switch_state, name, description_main, descrip
     return switch
 end
 
-local build_config_gui = (function(player, frame)
+local function build_config_gui(data)
+    local player = data.player
+    local frame = data.frame
+
     local AG = Antigrief.get()
     local switch_state
     local label
@@ -577,7 +584,9 @@ local build_config_gui = (function(player, frame)
             e.style.margin = 0
         end
     end
-end)
+end
+
+local build_config_gui_token = Token.register(build_config_gui)
 
 local function on_gui_switch_state_changed(event)
     local player = game.players[event.player_index]
@@ -645,7 +654,7 @@ local function on_init()
     global.comfy_panel_disable_antigrief = false
 end
 
-comfy_panel_tabs['Config'] = {gui = build_config_gui, admin = false}
+Tabs.add_tab_to_gui({name = module_name, id = build_config_gui_token, admin = false})
 
 local Event = require 'utils.event'
 Event.on_init(on_init)
