@@ -273,8 +273,7 @@ function Public.create_wagon_room()
         }
     end
 
-    local market1_text =
-        rendering.draw_text {
+    rendering.draw_text {
         text = {'chronosphere.train_market'},
         surface = surface,
         target = market,
@@ -285,8 +284,7 @@ function Public.create_wagon_room()
         alignment = 'center',
         scale_with_zoom = false
     }
-    local upgrade_text =
-        rendering.draw_text {
+    rendering.draw_text {
         text = {'chronosphere.train_upgrades'},
         surface = surface,
         target = objective.upgradechest[8],
@@ -297,8 +295,7 @@ function Public.create_wagon_room()
         alignment = 'center',
         scale_with_zoom = false
     }
-    local upgrade_sub_text =
-        rendering.draw_text {
+    rendering.draw_text {
         text = {'chronosphere.train_upgrades_sub'},
         surface = surface,
         target = objective.upgradechest[8],
@@ -363,7 +360,7 @@ function Public.create_wagon_room()
         if not positions[i] then
             break
         end
-        local e = surface.create_entity({name = 'wooden-chest', position = positions[i], force = 'player', create_build_effect_smoke = false})
+        surface.create_entity({name = 'wooden-chest', position = positions[i], force = 'player', create_build_effect_smoke = false})
         i = i + 1
     end
 
@@ -377,8 +374,8 @@ function Public.create_wagon_room()
         inventory.insert(cargo_boxes[loot_i])
         i = i + 1
     end
-    local factory = 'assembling-machine-2'
     for key = 1, 20, 1 do
+        local factory
         if List[key].kind == 'furnace' then
             factory = 'electric-furnace'
         else

@@ -37,8 +37,8 @@ function Public.on_player_mined_entity(event)
     if entity.name == 'rock-huge' or entity.name == 'rock-big' or entity.name == 'sand-rock-big' then
         if objective.world.id == 3 then --rocky worlds
             event.buffer.clear()
-        elseif objective.world.id == 5 then --maze worlds
-            --nothing
+        -- elseif objective.world.id == 5 then --maze worlds
+        --     --nothing
         else
             Ores.prospect_ores(entity, entity.surface, entity.position)
         end
@@ -60,7 +60,6 @@ function Public.pre_player_mined_item(event)
 end
 
 function Public.on_pre_player_left_game(event)
-    local objective = Chrono_table.get_table()
     local playertable = Chrono_table.get_player_table()
     local player = game.players[event.player_index]
     if player.controller_type == defines.controllers.editor then

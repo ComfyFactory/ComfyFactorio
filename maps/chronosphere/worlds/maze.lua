@@ -1,7 +1,5 @@
 local random = math.random
 local abs = math.abs
-local max = math.max
-local min = math.min
 local floor = math.floor
 local Functions = require 'maps.chronosphere.world_functions'
 local Raffle = require 'maps.chronosphere.raffles'
@@ -111,7 +109,7 @@ local function normal_chunk(surface, left_top)
         if things == 'prospect' then
             Ores.prospect_ores(nil, surface, {x = left_top.x + 16, y = left_top.y + 16})
         elseif things == 'camp' or things == 'lab' then
-            Specials.defended_position(surface, left_top, entities)
+            Specials.defended_position(left_top, entities)
             if things == 'lab' then
                 entities[#entities + 1] = {name = 'lab', position = {x = left_top.x + 15, y = left_top.y + 15}, force = 'neutral'}
             end
@@ -146,9 +144,7 @@ local function empty_chunk(surface, left_top)
     Functions.replace_water(surface, left_top)
 end
 
-local function maze(variant, surface, left_top)
-    local id = variant.id
-
+local function maze(_, surface, left_top)
     if abs(left_top.y) <= 31 and abs(left_top.x) <= 31 then
         empty_chunk(surface, left_top)
         return

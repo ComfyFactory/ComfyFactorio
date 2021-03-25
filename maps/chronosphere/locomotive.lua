@@ -33,7 +33,6 @@ function Public.locomotive_spawn(surface, position, wagons)
         position.y = position.y - 64
     end
     for y = -10, 18, 2 do
-        local rail = {name = 'straight-rail', position = {position.x, position.y + y}, force = 'player', direction = 0}
         surface.create_entity({name = 'straight-rail', position = {position.x, position.y + y}, force = 'player', direction = 0})
     end
     objective.locomotive = surface.create_entity({name = 'locomotive', position = {position.x, position.y + -6}, force = 'player'})

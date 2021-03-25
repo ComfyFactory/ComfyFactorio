@@ -1,5 +1,4 @@
 local Chrono_table = require 'maps.chronosphere.table'
-local Balance = require 'maps.chronosphere.balance'
 local Raffle = require 'maps.chronosphere.raffles'
 local Public = {}
 local simplex_noise = require 'utils.simplex_noise'.d2
@@ -83,7 +82,7 @@ local function get_size_of_ore(ore, world)
     return final_size
 end
 
-local function get_oil_amount(pos, oil_w, richness)
+local function get_oil_amount(oil_w, richness)
     local objective = Chrono_table.get_table()
     local hundred_percent = 300000
     return math_ceil((hundred_percent / 50) * (3 + objective.chronojumps) * oil_w * richness)
@@ -127,7 +126,7 @@ local function spawn_ore_vein(surface, pos, world, extrasize)
 
     --if surface.can_place_entity({name = choice, position = pos, amount = 1}) then
     if choice == 'crude-oil' then
-        local amount = get_oil_amount(pos, oil.w, world.ores.factor)
+        local amount = get_oil_amount(oil.w, world.ores.factor)
         if extrasize then
             amount = amount * 2
         end

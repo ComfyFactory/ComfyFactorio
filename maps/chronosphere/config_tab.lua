@@ -105,7 +105,6 @@ local functions = {
         end
     end,
     ['comfy_panel_game_lost_confirm'] = function(event)
-        local objective = Chrono_table.get_table()
         if game.players[event.player_index].admin then
             if event.element.switch_state == 'left' then
                 Chrono.objective_died()

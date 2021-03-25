@@ -8,7 +8,7 @@ local Raffle = require 'maps.chronosphere.raffles'
 local Chrono_table = require 'maps.chronosphere.table'
 local Specials = require 'maps.chronosphere.terrain_specials'
 
-local function process_tile(p, seed, tiles, entities, treasure, factories)
+local function process_tile(p, seed, entities, treasure, factories)
     local objective = Chrono_table.get_table()
     local noise1 = Functions.get_noise('scrapyard', p, seed)
     local noise2 = Functions.get_noise('large_caves', p, seed)
@@ -68,7 +68,6 @@ local function process_tile(p, seed, tiles, entities, treasure, factories)
 end
 
 local function normal_chunk(surface, left_top)
-  local tiles = {}
 	local entities = {}
 	local treasure = {}
   local factories = {}
@@ -76,10 +75,9 @@ local function normal_chunk(surface, left_top)
   for y = 0, 31, 1 do
 		for x = 0, 31, 1 do
 			local p = {x = left_top.x + x, y = left_top.y + y}
-			process_tile(p, seed, tiles, entities, treasure, factories)
+			process_tile(p, seed, entities, treasure, factories)
 		end
 	end
-  surface.set_tiles(tiles, true)
   if random(1, 60) == 1 then
     Functions.build_blueprint(surface, left_top, random(4, 6), "neutral")
   end
@@ -91,7 +89,6 @@ local function normal_chunk(surface, left_top)
 end
 
 local function empty_chunk(surface, left_top)
-    local tiles = {}
     local entities = {}
     local treasure = {}
     local factories = {}
@@ -100,10 +97,9 @@ local function empty_chunk(surface, left_top)
     for y = 0, 31, 1 do
         for x = 0, 31, 1 do
             local p = {x = left_top.x + x, y = left_top.y + y}
-            process_tile(p, seed, tiles, entities, treasure, factories)
+            process_tile(p, seed, entities, treasure, factories)
         end
     end
-    surface.set_tiles(tiles, true)
     Functions.replace_water(surface, left_top)
 end
 

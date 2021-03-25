@@ -4,8 +4,6 @@ local Factories = require 'maps.chronosphere.production'
 local Public = {}
 
 function Public.production_factory(surface, position)
-    local objective = Chrono_table.get_table()
-    local production = Chrono_table.get_production_table()
     local factory = Factories.roll_random_assembler()
     local entity = surface.create_entity({name = factory.entity, force = 'neutral', position = position})
     entity.destructible = false
@@ -136,7 +134,7 @@ function Public.fish_market(surface, left_top)
     track.minable = false
 end
 
-function Public.defended_position(surface, left_top, entities)
+function Public.defended_position(left_top, entities)
     local positions = {
         {x = left_top.x + 9, y = left_top.y + 9},
         {x = left_top.x + 9, y = left_top.y + 16},

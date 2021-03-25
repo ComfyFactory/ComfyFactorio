@@ -8,14 +8,13 @@ local Raffle = require 'maps.chronosphere.raffles'
 local Chrono_table = require 'maps.chronosphere.table'
 local Specials = require 'maps.chronosphere.terrain_specials'
 
-local function process_tile(p, seed, tiles, entities, treasure, factories)
+local function process_tile(p, seed, tiles, entities, factories)
     local objective = Chrono_table.get_table()
     local danger = 0
     if objective.world.variant.id == 2 then
         danger = 1
     end
     local noise1 = Functions.get_noise('scrapyard', p, seed)
-    local biters = objective.world.variant.biters
     local moisture = objective.world.variant.moisture
     local handicap = max(0, 160 - objective.chronojumps * 20)
     --Chasms
@@ -99,13 +98,12 @@ end
 local function danger_chunk(surface, left_top)
     local tiles = {}
     local entities = {}
-    local treasure = {}
     local factories = {}
     local seed = surface.map_gen_settings.seed
     for y = 0, 31, 1 do
         for x = 0, 31, 1 do
             local p = {x = left_top.x + x, y = left_top.y + y}
-            process_tile(p, seed, tiles, entities, treasure, factories)
+            process_tile(p, seed, tiles, entities, factories)
         end
     end
     surface.set_tiles(tiles, true)
@@ -116,17 +114,15 @@ end
 local function normal_chunk(surface, left_top)
     local tiles = {}
     local entities = {}
-    local treasure = {}
     local factories = {}
     local seed = surface.map_gen_settings.seed
     for y = 0, 31, 1 do
         for x = 0, 31, 1 do
             local p = {x = left_top.x + x, y = left_top.y + y}
-            process_tile(p, seed, tiles, entities, treasure, factories)
+            process_tile(p, seed, tiles, entities, factories)
         end
     end
     surface.set_tiles(tiles, true)
-    Functions.spawn_treasures(surface, treasure)
     Functions.spawn_entities(surface, entities)
     for _, pos in pairs(factories) do
         Specials.production_factory(surface, pos)
@@ -136,14 +132,13 @@ end
 local function empty_chunk(surface, left_top)
     local tiles = {}
     local entities = {}
-    local treasure = {}
     local factories = {}
     local seed = surface.map_gen_settings.seed
 
     for y = 0, 31, 1 do
         for x = 0, 31, 1 do
             local p = {x = left_top.x + x, y = left_top.y + y}
-            process_tile(p, seed, tiles, entities, treasure, factories)
+            process_tile(p, seed, tiles, entities, factories)
         end
     end
     surface.set_tiles(tiles, true)

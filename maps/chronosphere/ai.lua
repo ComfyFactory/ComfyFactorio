@@ -288,7 +288,6 @@ local function set_biter_raffle_table(surface)
 end
 
 local function create_attack_group(surface, size)
-    local objective = Chrono_table.get_table()
     local bitertable = Chrono_table.get_biter_table()
     if get_active_biter_count() > 512 * Difficulty.get().difficulty_vote_value then
         return nil
@@ -315,8 +314,8 @@ end
 local function colonize(group)
     --if _DEBUG then game.print(game.tick ..": colonizing") end
     local surface = group.surface
-    local evo = floor(game.forces['enemy'].evolution_factor * 20)
-    local nests = random(1 + evo, 2 + evo * 2)
+    local evo = group.force.evolution_factor
+    local nests = random(1 + floor(evo * 20), 2 + floor(evo * 20) * 2)
     local commands = {}
     local biters = surface.find_entities_filtered {position = group.position, radius = 30, name = Raffle.biters, force = 'enemy'}
     local goodbiters = {}
@@ -347,7 +346,6 @@ local function colonize(group)
             --game.print("[gps=" .. pos.x .. "," .. pos.y .."," .. surface.name .. "]")
             success = true
             if random(1, 5) == 1 then
-                local evo = group.force.evolution_factor
                 surface.create_entity({name = Raffle.worms[random(1 + floor(evo * 8), floor(1 + evo * 16))], position = pos, force = group.force})
             else
                 surface.create_entity({name = Raffle.spawners[random(1, #Raffle.spawners)], position = pos, force = group.force})
@@ -390,7 +388,7 @@ local function send_near_biters_to_objective()
 end
 
 local function attack_check(group, target, main)
-    local commands = {}
+    local commands
     if pollution_requirement(group.surface, target.position, main) then
         commands = {
             attack_target(target),

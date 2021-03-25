@@ -156,7 +156,7 @@ local function special_world()
     return special
 end
 
-local function modifiers(world_id)
+local function get_modifiers(world_id)
     local modifier = {ores = nil, dayspeed = nil, daytime = nil}
     if Worlds[world_id].modifiers.ores then
         modifier.ores = ore_richness_variants[Worlds[world_id].modifiers.ores]
@@ -226,7 +226,7 @@ function Public.determine_world(optional_choice)
         end
     end
     chosen_variant_id = Rand.raffle(variant_choices.types, variant_choices.weights)
-    local modifiers = modifiers(chosen_id)
+    local modifiers = get_modifiers(chosen_id)
     if modifiers.ores then
         ores = modifiers.ores
     end
