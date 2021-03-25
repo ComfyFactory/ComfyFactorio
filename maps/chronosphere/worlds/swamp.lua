@@ -87,7 +87,7 @@ local function empty_chunk(surface, left_top)
     Functions.replace_water(surface, left_top)
 end
 
-local function swamp(variant, surface, left_top)
+local function swamp(_, surface, left_top)
     if abs(left_top.y) <= 63 and abs(left_top.x) <= 63 then
         empty_chunk(surface, left_top)
     end

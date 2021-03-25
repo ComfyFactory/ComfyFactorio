@@ -93,7 +93,7 @@ local function normal_chunk(surface, left_top)
     Functions.spawn_entities(surface, entities)
 end
 
-local function fishmarket(variant, surface, left_top)
+local function fishmarket(_, surface, left_top)
     if abs(left_top.y) <= 31 and abs(left_top.x - 864) <= 31 then
         market_chunk(surface, left_top)
         return

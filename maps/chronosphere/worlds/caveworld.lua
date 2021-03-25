@@ -143,7 +143,7 @@ local function empty_chunk(surface, left_top)
     Functions.spawn_decoratives(surface, decoratives)
 end
 
-local function caveworld(variant, surface, left_top)
+local function caveworld(_, surface, left_top)
     if abs(left_top.y) <= 31 and abs(left_top.x) <= 31 then
         empty_chunk(surface, left_top)
         return

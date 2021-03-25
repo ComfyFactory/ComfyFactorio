@@ -52,7 +52,6 @@ local function normal_chunk(surface, left_top)
             process_tile(p, seed, entities)
         end
     end
-    Functions.spawn_treasures(surface, treasure)
     Functions.spawn_entities(surface, entities)
 end
 
@@ -69,7 +68,7 @@ local function empty_chunk(surface, left_top)
     Functions.replace_water(surface, left_top)
 end
 
-local function forest(variant, surface, left_top)
+local function forest(_, surface, left_top)
     if abs(left_top.y) <= 31 and abs(left_top.x) <= 31 then
         empty_chunk(surface, left_top)
         return

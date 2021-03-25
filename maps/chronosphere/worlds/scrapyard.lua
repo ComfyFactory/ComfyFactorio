@@ -123,7 +123,6 @@ local function normal_chunk(surface, left_top)
         end
     end
     surface.set_tiles(tiles, true)
-    Functions.spawn_treasures(surface, treasure)
     Functions.spawn_entities(surface, entities)
     for _, pos in pairs(factories) do
         Specials.production_factory(surface, pos)
