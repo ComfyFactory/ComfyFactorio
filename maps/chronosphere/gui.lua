@@ -400,8 +400,6 @@ local function upgrades_gui(player)
     local objective = Chrono_table.get_table()
     local playertable = Chrono_table.get_player_table()
     local production_table = Chrono_table.get_production_table()
-    local v_costs = {}
-    local costs = {}
     local upgrades = Upgrades.upgrades()
     local frame = player.gui.screen.add {type = 'frame', name = 'gui_upgrades', caption = 'ChronoTrain Upgrades', direction = 'vertical'}
     frame.location = {x = 350, y = 45}
@@ -453,8 +451,7 @@ local function upgrades_gui(player)
             }
         )
         for index, item in pairs(upgrades[i].virtual_cost) do
-            v_costs[index] =
-                upg_table.add(
+            upg_table.add(
                 {
                     type = 'sprite-button',
                     name = index .. '-v' .. i,
@@ -468,8 +465,7 @@ local function upgrades_gui(player)
         end
 
         for index, item in pairs(upgrades[i].cost) do
-            costs[index] =
-                upg_table.add(
+            upg_table.add(
                 {
                     type = 'sprite-button',
                     name = index .. '-' .. i,
@@ -485,19 +481,19 @@ local function upgrades_gui(player)
             maxed.visible = true
             jumps.visible = false
             for index, _ in pairs(upgrades[i].virtual_cost) do
-                v_costs[index].visible = false
+                upg_table[index .. '-v' .. i].visible = false
             end
             for index, _ in pairs(upgrades[i].cost) do
-                costs[index].visible = false
+                upg_table[index .. '-' .. i].visible = false
             end
         else
             maxed.visible = false
             jumps.visible = true
             for index, _ in pairs(upgrades[i].cost) do
-                costs[index].visible = true
+                upg_table[index .. '-' .. i].visible = true
             end
             for index, _ in pairs(upgrades[i].virtual_cost) do
-                v_costs[index].visible = true
+                upg_table[index .. '-v' .. i].visible = true
             end
         end
         --if upgrades[i].type == "quest" then upg_table.visible = false end

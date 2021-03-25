@@ -373,11 +373,13 @@ function Public.create_wagon_room()
         local inventory = e.get_inventory(defines.inventory.chest)
         inventory.insert(cargo_boxes[loot_i])
         i = i + 1
-    end
-    local factory = 'assembling-machine-2'
+    end  
     for key = 1, 20, 1 do
+        local factory
         if List[key].kind == 'furnace' then
             factory = 'electric-furnace'
+        else
+            factory = 'assembling-machine-2'
         end
         local position = {x = -32 + key * 3, y = height * 0.5 - 5}
         local e = surface.create_entity({name = factory, force = 'player', position = position})
