@@ -77,7 +77,31 @@ local entity_replacements = {
 local wrecks = {"big-ship-wreck-1", "big-ship-wreck-2", "big-ship-wreck-3"}
 
 local scrap_buildings = {
-	"nuclear-reactor", "centrifuge", "beacon", "chemical-plant", "assembling-machine-1", "assembling-machine-2", "assembling-machine-3",  "oil-refinery", "arithmetic-combinator", "constant-combinator", "decider-combinator", "programmable-speaker", "steam-turbine", "steam-engine", "chemical-plant", "assembling-machine-1", "assembling-machine-2", "assembling-machine-3",  "oil-refinery", "arithmetic-combinator", "constant-combinator", "decider-combinator", "programmable-speaker", "steam-turbine", "steam-engine"
+	"nuclear-reactor", 
+	"centrifuge", 
+	"beacon", 
+	"chemical-plant", 
+	"assembling-machine-1", 
+	"assembling-machine-2", 
+	"assembling-machine-3",  
+	"oil-refinery", 
+	"arithmetic-combinator", 
+	"constant-combinator", 
+	"decider-combinator", 
+	"programmable-speaker", 
+	"steam-turbine", 
+	"steam-engine", 
+	"chemical-plant", 
+	"assembling-machine-1", 
+	"assembling-machine-2", 
+	"assembling-machine-3", 
+	"oil-refinery", 
+	"arithmetic-combinator", 
+	"constant-combinator", 
+	"decider-combinator", 
+	"programmable-speaker", 
+	"steam-turbine", 
+	"steam-engine"
 }
 
 local function shuffle(tbl)
@@ -368,7 +392,7 @@ local function on_chunk_generated(event)
 							create_shipwreck(surface, pos)
 						else
 							if math_random(1,512) == 1 then
-								place_random_scrap_entity(surface, pos)
+								--luacheck: ignore(surface, pos)
 							end
 						end
 					end
@@ -395,10 +419,14 @@ local function on_chunk_generated(event)
 	for _, e in pairs (surface.find_entities_filtered({area = {{-50, -50},{50, 50}}})) do
 		local distance_to_center = math.sqrt(e.position.x^2 + e.position.y^2)
 		if e.valid then
-			if distance_to_center < 8 and scraps[e.name] and math_random(1,5) ~= 1 then e.destroy() end
+			if distance_to_center < 8 and scraps[e.name] and math_random(1,5) ~= 1 then 
+				e.destroy() 
+			end
 		end
 		if e.valid then
-			if distance_to_center < 30 and e.name == "gun-turret" then e.destroy() end
+			if distance_to_center < 30 and e.name == "gun-turret" then 
+				e.destroy() 
+			end
 		end
 	end
 	global.spawn_generated = true
@@ -419,13 +447,19 @@ local function on_chunk_charted(event)
 	end
 	surface.regenerate_decorative(decorative_names, {position})
 
-	if math_random(1, 16) ~= 1 then return end
+	if math_random(1, 16) ~= 1 then 
+		return 
+	end
 	local pos = {x = position.x * 32 + math_random(1,32), y = position.y * 32 + math_random(1,32)}
 	local noise = get_noise(1, pos)
-	if noise > 0.4 or noise < -0.4 then return end
+	if noise > 0.4 or noise < -0.4 then
+		return 
+	end
 	local distance_to_center = math.sqrt(pos.x^2 + pos.y^2)
 	local size = 7 + math.floor(distance_to_center * 0.0075)
-	if size > 20 then size = 20 end
+	if size > 20 then 
+		size = 20 
+	end
 	local amount = 500 + distance_to_center * 2
 	map_functions.draw_rainbow_patch_v2(pos, surface, size, amount)
 end
@@ -500,7 +534,9 @@ local function on_player_mined_entity(event)
 	end
 	positions = shuffle(positions)
 	for i = 1, math.ceil(entity.prototype.max_health / 32), 1 do
-		if not positions[i] then return end
+		if not positions[i] then 
+			return 
+		end
 		if math_random(1,3) ~= 1 then
 			unearthing_biters(entity.surface, positions[i], math_random(5,10))
 		else
