@@ -19,6 +19,10 @@ local Task = require 'utils.task'
 local Score = require 'comfy_panel.score'
 local Token = require 'utils.token'
 local HS = require 'maps.mountain_fortress_v3.highscore'
+local Discord = require 'utils.discord'
+local Core = require "utils.core"
+local Diff = require "modules.difficulty_vote_by_amount"
+local format_number = require 'util'.format_number
 
 -- tables
 local WPT = require 'maps.mountain_fortress_v3.table'
@@ -31,6 +35,15 @@ local floor = math.floor
 local abs = math.abs
 local sqrt = math.sqrt
 local round = math.round
+
+-- Use these settings for live
+local send_ping_to_channel = Discord.channel_names.mtn_channel
+-- Use these settings for testing
+-- bot-lounge
+-- local send_ping_to_channel = Discord.channel_names.bot_quarters
+-- dev
+-- local send_ping_to_channel = Discord.channel_names.bot_quarters
+-- local role_to_mention = Discord.role_mentions.test_role
 
 local chests = {
     'wooden-chest',
@@ -1185,6 +1198,28 @@ local function show_mvps(player)
             table.insert(result, mvp.mined_entities.name .. ' mined a total of ' .. mvp.mined_entities.score .. ' entities!\\n')
             local message = table.concat(result)
             Server.to_discord_embed(message)
+            local wave = WD.get_wave()
+            local threat = WD.get('threat')
+            local collapse_speed = Collapse.get_speed()
+            local collapse_amount = Collapse.get_amount()
+
+            local diff = Diff.get()
+            local time_played = Core.format_time(game.ticks_played)
+            local total_players = #game.players
+            local pickaxe_tiers = WPT.pickaxe_upgrades
+            local tier = WPT.get("pickaxe_tier")
+            local pick_tier = pickaxe_tiers[tier]
+
+            Server.to_discord_named_embed(send_ping_to_channel, '**Statistics!**\\n\\n'
+            .. 'Time played: '..time_played..'\\n'
+            .. 'Game Difficulty: '..diff.name..'\\n'
+            .. 'Highest wave: '..format_number(wave, true)..'\\n'
+            .. 'Total connected players: '..total_players..'\\n'
+            .. 'Threat: '..format_number(threat, true)..'\\n'
+            .. 'Pickaxe Upgrade: '..pick_tier..' (' ..tier.. ')\\n'
+            .. 'Collapse Speed: '..collapse_speed..'\\n'
+            .. 'Collapse Amount: '..collapse_amount..'\\n'
+            )
             WPT.set('sent_to_discord', true)
         end
     end

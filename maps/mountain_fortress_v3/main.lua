@@ -59,8 +59,6 @@ local role_to_mention = Discord.role_mentions.mtn_fortress
 -- Use these settings for testing
 -- bot-lounge
 -- local send_ping_to_channel = Discord.channel_names.bot_quarters
--- dev
--- local send_ping_to_channel = Discord.channel_names.dev
 -- local role_to_mention = Discord.role_mentions.test_role
 
 local Public = {}
@@ -522,4 +520,17 @@ end
 Event.on_nth_tick(10, on_tick)
 Event.on_init(on_init)
 
+local gMeta = getmetatable(_ENV)
+if not gMeta then
+    gMeta = {}
+    setmetatable(_ENV, gMeta)
+end
+
+gMeta.__newindex = function(_, n, v)
+    log('Desync warning: attempt to write to undeclared var ' .. n)
+    global[n] = v
+end
+gMeta.__index = function(_, n)
+    return global[n]
+end
 return Public
