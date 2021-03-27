@@ -14,9 +14,16 @@ local Timers = require 'maps.planet_prison.mod.timers'
 local ClaimsFunctions = require 'maps.planet_prison.mod.claims'
 local MapConfig = require 'maps.planet_prison.config'
 local Token = require 'utils.token'
-require 'modules.thirst'
+local Color = require 'utils.color_presets'
+-- require 'modules.thirst'
 
-local this = {}
+local this = {
+    remove_offline_players = {
+        players = {},
+        time = 18000,
+        enabled = true
+    }
+}
 local floor = math.floor
 local ceil = math.ceil
 local Public = {}
@@ -240,8 +247,7 @@ local industrial_zone_layers = {
         name = 'hostile',
         objects = {
             'character',
-            'gun-turret',
-            'small-biter'
+            'gun-turret'
         },
         elevation = 0.92,
         resolution = 0.99,
@@ -325,8 +331,7 @@ local swampy_rivers_layers = {
         name = 'hostile',
         objects = {
             'character',
-            'gun-turret',
-            'small-biter'
+            'gun-turret'
         },
         elevation = 0.92,
         resolution = 0.99,
@@ -731,7 +736,15 @@ local function on_gui_click(e)
         return
     end
 
-    if elem.name == 'chat_toggle' then
+    if elem.name == 'comfy_panel_top_button' then
+        if not p.admin then
+            if p.gui.left['comfy_panel'] and p.gui.left['comfy_panel'].valid then
+                p.gui.left['comfy_panel'].destroy()
+            end
+            redraw_gui(p)
+            return p.print('Comfy panel is disabled in this scenario.', Color.fail)
+        end
+    elseif elem.name == 'chat_toggle' then
         if perks.chat_global then
             elem.caption = 'NAP chat'
             perks.chat_global = false
@@ -830,8 +843,33 @@ local function init_player(p)
     do_spawn_point(p)
 end
 
+local function player_reconnected(connected)
+    local offline_players = this.remove_offline_players
+    if not offline_players then
+        return
+    end
+    if not offline_players.enabled then
+        return
+    end
+    if #offline_players.players > 0 then
+        for i = 1, #offline_players.players do
+            if offline_players.players[i] then
+                local player = game.get_player(offline_players.players[i].index)
+                if player and player.valid and player.index == connected.index then
+                    offline_players.players[i] = nil
+                end
+            end
+        end
+    end
+end
+
 local function on_player_joined_game(e)
     local p = game.players[e.player_index]
+    player_reconnected(p)
+
+    if this.perks and this.perks[p.name] then
+        return
+    end
     init_player(p)
 end
 
@@ -1050,6 +1088,61 @@ local function populate_raid_event(surf)
     return status
 end
 
+local function on_pre_player_left_game(event)
+    local offline_players = this.remove_offline_players
+    if not offline_players then
+        return
+    end
+    if not offline_players.enabled then
+        return
+    end
+    local player = game.players[event.player_index]
+    local ticker = game.tick
+    if player.character then
+        offline_players.players[#offline_players.players + 1] = {
+            index = event.player_index,
+            name = player.name,
+            tick = ticker
+        }
+    end
+end
+
+local function remove_offline_players()
+    local offline_players = this.remove_offline_players
+    if not offline_players then
+        return
+    end
+    if not offline_players.enabled then
+        return
+    end
+    if #offline_players.players > 0 then
+        for i = 1, #offline_players.players, 1 do
+            if offline_players.players[i] then
+                local player = game.get_player(offline_players.players[i].index)
+                if player and player.valid then
+                    if player.connected then
+                        offline_players.players[i] = nil
+                    else
+                        if offline_players.players[i].tick < game.tick - offline_players.time then
+                            if this.perks and this.perks[player.name] then
+                                this.perks[player.name] = nil
+                            end
+                            ClaimsFunctions.on_player_died(player)
+                            ClaimsFunctions.clear_player_base(player)
+
+                            if game.forces[player.name] then
+                                game.merge_forces(player.name, 'neutral')
+                            end
+                            game.remove_offline_players({player})
+                            offline_players.players[i] = nil
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
 local function raid_event(surf)
     local raid_groups = this.events.raid_groups
     if this.events.raid_init then
@@ -1133,19 +1226,24 @@ local function on_tick()
         return
     end
 
+    local tick = game.tick
+
     local surf = this.surface
-    if game.tick % 4 == 0 then
+    if tick % 4 == 0 then
         AIFunctions.do_job(surf, AIFunctions.command.seek_and_destroy_player)
     end
 
     LayersFunctions.do_job(surf)
     cause_event(s)
 
-    if (game.tick + 1) % 100 == 0 then
+    if (tick + 1) % 60 == 0 then
+        Timers.do_job()
+    end
+    if (tick + 1) % 100 == 0 then
         AfkFunctions.on_inactive_players(90, kill_player)
     end
-    if (game.tick + 1) % 60 == 0 then
-        Timers.do_job()
+    if (tick + 1) % 500 == 0 then
+        remove_offline_players()
     end
 end
 
@@ -1657,9 +1755,9 @@ Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 Event.add(defines.events.on_player_died, on_player_died)
 Event.add(defines.events.on_player_kicked, on_player_died)
 Event.add(defines.events.on_player_banned, on_player_died)
+Event.add(defines.events.on_pre_player_left_game, on_pre_player_left_game)
 Event.add(defines.events.on_player_respawned, on_player_respawned)
 Event.add(defines.events.on_player_dropped_item, on_player_dropped_item)
-Event.add(defines.events.on_pre_player_left_game, on_player_died)
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
