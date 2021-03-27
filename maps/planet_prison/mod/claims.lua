@@ -5,6 +5,8 @@ local Public = {}
 local this = {}
 local insert = table.insert
 local remove = table.remove
+local random = math.random
+local floor = math.floor
 
 Global.register(
     this,
@@ -184,7 +186,10 @@ Public.clear_player_base = function(player)
     for i = 1, #entities do
         local e = entities[i]
         if e and e.valid then
-            e.destroy()
+            e.health = e.health - random(30, 180)
+            if e.health <= 0 then
+                e.die('enemy')
+            end
         end
     end
 end
