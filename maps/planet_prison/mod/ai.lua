@@ -72,6 +72,26 @@ local function _move_to(ent, trgt, min_distance)
     return state.walking
 end
 
+local function refill_ammo(ent)
+    if not ent or not ent.valid then
+        return
+    end
+    local weapon = ent.get_inventory(defines.inventory.character_guns)[ent.selected_gun_index]
+    if weapon and weapon.valid_for_read then
+        local selected_ammo = ent.get_inventory(defines.inventory.character_ammo)[ent.selected_gun_index]
+        if selected_ammo then
+            if not selected_ammo.valid_for_read then
+                if weapon.name == 'shotgun' then
+                    ent.insert({name = 'shotgun-shell', count = 20})
+                end
+                if weapon.name == 'pistol' then
+                    ent.insert({name = 'firearm-magazine', count = 20})
+                end
+            end
+        end
+    end
+end
+
 local function _shoot_at(ent, trgt)
     ent.shooting_state = {
         state = defines.shooting.shooting_enemies,
@@ -88,31 +108,26 @@ end
 
 local function _do_job_seek_and_destroy_player(surf)
     for _, player in pairs(game.players) do
-        if player.character == nil then
-            goto continue
-        end
+        if player and player.valid and player.character then
+            local search_info = {
+                name = 'character',
+                position = player.character.position,
+                radius = 20,
+                force = 'enemy'
+            }
 
-        local search_info = {
-            name = 'character',
-            position = player.character.position,
-            radius = 20,
-            force = 'enemy'
-        }
-
-        local ents = surf.find_entities_filtered(search_info)
-        if not ents or #ents == 0 then
-            goto continue
-        end
-
-        for _, e in pairs(ents) do
-            if not _move_to(e, player.character, CommonFunctions.rand_range(5, 10)) then
-                _shoot_at(e, player.character)
-            else
-                _shoot_stop(e)
+            local ents = surf.find_entities_filtered(search_info)
+            if ents and #ents > 0 then
+                for _, e in pairs(ents) do
+                    refill_ammo(e)
+                    if not _move_to(e, player.character, CommonFunctions.rand_range(5, 10)) then
+                        _shoot_at(e, player.character)
+                    else
+                        _shoot_stop(e)
+                    end
+                end
             end
         end
-
-        ::continue::
     end
 end
 

@@ -29,6 +29,7 @@ local ceil = math.ceil
 local Public = {}
 local insert = table.insert
 local remove = table.remove
+local random = math.random
 
 Global.register(
     this,
@@ -806,6 +807,8 @@ local function init_player(p)
         p.force = pf
     end
     p.force.set_friend('neutral', true)
+    p.force.set_friend('player', false)
+    p.force.share_chart = false
     this.perks[p.name] = {
         flashlight_enable = true,
         minimap = false,
@@ -1339,6 +1342,7 @@ local function on_player_died(e)
     if game.forces[p.name] then
         game.merge_forces(p.name, 'neutral')
     end
+    p.force = 'player'
     if p.connected then
         return
     end
@@ -1389,7 +1393,9 @@ local function on_player_dropped_item(e)
 
         if this.last_friend[peer.name] == p.name then
             p.force.set_cease_fire(peer.name, true)
+            p.force.set_friend(peer.name, true)
             peer.force.set_cease_fire(p.name, true)
+            peer.force.set_friend(p.name, true)
             p.print(string.format('The NAP was formed with %s', peer.name))
             peer.print(string.format('The NAP was formed with %s', p.name))
             this.last_friend[p.name] = ''
@@ -1431,7 +1437,9 @@ local function on_player_dropped_item(e)
         end
 
         p.force.set_cease_fire(peer.name, false)
+        p.force.set_friend(peer.name, false)
         peer.force.set_cease_fire(p.name, false)
+        peer.force.set_friend(p.name, false)
 
         this.last_friend[p.name] = ''
         this.last_friend[peer.name] = ''
@@ -1520,18 +1528,19 @@ local function merchant_death(e)
     return true
 end
 
+local coin_drops = {
+    ['character'] = true,
+    ['gun-turret'] = true
+}
+
 local function hostile_death(e)
     local ent = e.entity
     local loot = e.loot
-    if ent.name ~= 'character' then
+    if not coin_drops[ent.name] then
         return false
     end
 
-    if ent.player then
-        loot.insert({name = 'coin', count = 70})
-    else
-        loot.insert({name = 'coin', count = 10})
-    end
+    loot.insert({name = 'coin', count = random(30, 70)})
 
     return true
 end
