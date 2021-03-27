@@ -6,7 +6,6 @@ local this = {}
 local insert = table.insert
 local remove = table.remove
 local random = math.random
-local floor = math.floor
 
 Global.register(
     this,
