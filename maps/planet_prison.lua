@@ -669,7 +669,7 @@ local function print_merchant_position(player)
         perks = assign_perks(player)
     end
     if perks and perks.minimap then
-        player.print(string.format('>> You received a broadcast with [gps=%d,%d] coordinates', position.x, position.y))
+        player.print(string.format('>> You received a broadcast with [gps=%d,%d,%d] coordinates', position.x, position.y, player.surface))
     else
         player.print(string.format('>> You were able to spot him %s from your location', CommonFunctions.get_readable_direction(player.position, position)))
     end
@@ -749,20 +749,24 @@ local function on_gui_click(e)
         if perks.chat_global then
             elem.caption = 'NAP chat'
             perks.chat_global = false
+            p.print('Global chat is disabled.', Color.success)
         else
             elem.caption = 'Global chat'
             perks.chat_global = true
+            p.print('Global chat is enabled.', Color.success)
         end
     elseif elem.name == 'flashlight_toggle' then
         if perks.flashlight_enable then
             perks.flashlight_enable = false
             if p.character and p.character.valid then
                 p.character.disable_flashlight()
+                p.print('Flashlight is disabled.', Color.success)
             end
         else
             perks.flashlight_enable = true
             if p.character and p.character.valid then
                 p.character.enable_flashlight()
+                p.print('Flashlight is enabled.', Color.success)
             end
         end
     elseif elem.name == 'merchant_find' then
@@ -776,12 +780,19 @@ local function on_gui_click(e)
 
         local text_box = {
             type = 'text-box',
-            text = MapConfig.manual
+            text = MapConfig.manual,
+            name = 'manual_toggle_frame'
         }
         text_box = p.gui.center.add(text_box)
         text_box.style.minimal_width = 512
         text_box.read_only = true
         text_box.word_wrap = true
+    elseif elem.name == 'manual_toggle_frame' then
+        local children = p.gui.center.children
+        if #children >= 1 then
+            p.gui.center.clear()
+            return
+        end
     elseif elem.name == 'annihilate' then
         if this.events.annihilation == true then
             return
@@ -1216,12 +1227,6 @@ local function cause_event(s)
     raid_event(s)
 end
 
-local function kill_player(p)
-    if p.character and p.character.valid then
-        p.character.die()
-    end
-end
-
 local function on_tick()
     local s = this.surface
     if not s then
@@ -1243,7 +1248,7 @@ local function on_tick()
         Timers.do_job()
     end
     if (tick + 1) % 100 == 0 then
-        AfkFunctions.on_inactive_players(90, kill_player)
+        AfkFunctions.on_inactive_players(5)
     end
     if (tick + 1) % 500 == 0 then
         remove_offline_players()
@@ -1777,17 +1782,18 @@ Event.add(defines.events.on_tick, on_tick)
 Event.add(defines.events.on_tick, on_tick_reset)
 Event.add(defines.events.on_rocket_launched, on_rocket_launched)
 
-local gmeta = getmetatable(_ENV)
-if not gmeta then
-    gmeta = {}
-    setmetatable(_ENV, gmeta)
-end
-gmeta.__newindex = function(_, n, v)
-    log('Desync warning: attempt to write to undeclared var ' .. n)
-    global[n] = v
-end
-gmeta.__index = function(_, n)
-    return global[n]
-end
+setmetatable(
+    _G,
+    {
+        __newindex = function(_, n, v)
+            log('Desync warning: attempt to write to undeclared var ' .. n)
+            --game.print ("Attempt to write to undeclared var " .. n)
+            global[n] = v
+        end,
+        __index = function(_, n)
+            return global[n]
+        end
+    }
+)
 
 return Public
