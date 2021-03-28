@@ -87,8 +87,10 @@ Public.do_job = function()
                 local func = Token.get(entry.hook_update)
                 local data = entry.deps
                 data.time_left = entry.time_left
-                if not func(data) then
-                    goto premature_finish
+                if func then
+                    if not func(data) then
+                        goto premature_finish
+                    end
                 end
             end
 
@@ -98,7 +100,9 @@ Public.do_job = function()
         ::premature_finish::
         local func = Token.get(entry.hook_finish)
         local data = entry.deps
-        func(data)
+        if func then
+            func(data)
+        end
         this.timers[id] = nil
 
         ::continue::

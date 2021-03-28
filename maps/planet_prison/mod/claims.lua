@@ -107,11 +107,7 @@ Public.on_built_entity = function(ent)
     if not claims_in_markers(ent.name) then
         return
     end
-
-    local deps = {
-        CommonFunctions = CommonFunctions
-    }
-    claim_on_build_entity(ent, deps)
+    claim_on_build_entity(ent)
 end
 
 local function claim_on_entity_died(ent)
