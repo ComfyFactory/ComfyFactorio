@@ -13,6 +13,7 @@ commands.add_command(
             player.print('Only admins can use this command.')
             return
         end
+
         DebugView.open_debug(player)
     end
 )
