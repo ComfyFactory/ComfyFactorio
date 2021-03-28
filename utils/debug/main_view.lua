@@ -5,15 +5,12 @@ local Public = {}
 
 local pages = {
     require 'utils.debug.public_global_view',
-    require 'utils.debug.global_view'
+    require 'utils.debug.global_view',
+    require 'utils.debug.gui_data_view',
+    require 'utils.debug.package_view',
+    require 'utils.debug._g_view',
+    require 'utils.debug.event_view'
 }
-
-if _DEBUG then
-    pages[#pages + 1] = require 'utils.debug.gui_data_view'
-    pages[#pages + 1] = require 'utils.debug.package_view'
-    pages[#pages + 1] = require 'utils.debug._g_view'
-    pages[#pages + 1] = require 'utils.debug.event_view'
-end
 
 local main_frame_name = Gui.uid_name()
 local close_name = Gui.uid_name()
