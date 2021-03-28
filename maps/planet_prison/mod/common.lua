@@ -1,20 +1,10 @@
-local Global = require 'utils.global'
-
 local Public = {}
-local this = {}
 local insert = table.insert
 local remove = table.remove
 local random = math.random
 local sqrt = math.sqrt
 local floor = math.floor
 local atan2 = math.atan2
-
-Global.register(
-    this,
-    function(tbl)
-        this = tbl
-    end
-)
 
 --[[
 rand_range - Return random integer within the range.

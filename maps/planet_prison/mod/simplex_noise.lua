@@ -7,6 +7,7 @@ local Public = {}
 local this = {}
 local sqrt = math.sqrt
 local floor = math.floor
+local random = math.random
 
 Global.register(
     this,
@@ -300,8 +301,7 @@ local function dot(a, b)
 end
 
 Public.init = function()
-    local rng = game.create_random_generator()
-    this.seed = rng(1, 4294967295)
+    this.seed = random(10000, 99999)
     for i = 0, 511 do
         this.perm[i + 1] = this.p[bit32.band(i, 255) + 1]
     end
