@@ -669,7 +669,7 @@ local function print_merchant_position(player)
         perks = assign_perks(player)
     end
     if perks and perks.minimap then
-        player.print(string.format('>> You received a broadcast with [gps=%d,%d,%d] coordinates', position.x, position.y, player.surface))
+        player.print(string.format('>> You received a broadcast with [gps=%d,%d,%d] coordinates', position.x, position.y, player.surface.name))
     else
         player.print(string.format('>> You were able to spot him %s from your location', CommonFunctions.get_readable_direction(player.position, position)))
     end
