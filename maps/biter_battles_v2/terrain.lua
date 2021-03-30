@@ -247,7 +247,7 @@ local function generate_starting_area(pos, distance_to_center, surface)
     -- if noise_2 > -0.5:
     --      -1.75    0 	    => wall
     -- else:
-    --   	-6      -3 	 	=> 1/16 chance of turrent or turret-remnants
+    --   	-6      -3 	 	=> 1/16 chance of turret or turret-remnants
     --   	-1.95    0 	 	=> wall
     --    	 0       4.5    => chest-remnants with 1/3, chest with 1/(distance_from_spawn_wall+2)
     --
@@ -654,6 +654,15 @@ function Public.generate_silo(surface)
         if entity.type == 'simple-entity' or entity.type == 'tree' or entity.type == 'resource' then
             entity.destroy()
         end
+    end
+
+    if bb_config.spawn_turrets_at_silo then
+        local turret1 = surface.create_entity({name = 'gun-turret', position = {x = pos.x, y = pos.y - 5}, force = 'neutral'})
+        turret1.insert({name = 'firearm-magazine', count = 10})
+        turret1.active = false
+        local turret2 = surface.create_entity({name = 'gun-turret', position = {x = pos.x + 2, y = pos.y - 5}, force = 'neutral'})
+        turret2.insert({name = 'firearm-magazine', count = 10})
+        turret2.active = false
     end
 end
 --[[

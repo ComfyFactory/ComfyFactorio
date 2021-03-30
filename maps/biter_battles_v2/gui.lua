@@ -381,6 +381,9 @@ function join_team(player, force_name, forced_join)
     player.insert {name = 'firearm-magazine', count = 32}
     player.insert {name = 'iron-gear-wheel', count = 8}
     player.insert {name = 'iron-plate', count = 16}
+    if bb_config.additional_starting_resources then
+        player.insert {name = 'burner-mining-drill', count = 10}
+    end
     global.chosen_team[player.name] = force_name
     player.spectator = false
     Public.refresh()
