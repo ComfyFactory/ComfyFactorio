@@ -1,7 +1,7 @@
---luacheck:ignore
 local Public = {}
 
 local Functions = require 'maps.biter_battles_v2.functions'
+local bb_config = require 'maps.biter_battles_v2.config'
 local table_remove = table.remove
 local table_insert = table.insert
 
@@ -40,21 +40,21 @@ local cliff_orientation_translation = {
 }
 
 local entity_copy_functions = {
-    ['tree'] = function(surface, entity, target_position, force_name)
+    ['tree'] = function(surface, entity, target_position)
         if not surface.can_place_entity({name = entity.name, position = target_position}) then
             return
         end
         entity.clone({position = target_position, surface = surface, force = 'neutral'})
     end,
-    ['simple-entity'] = function(surface, entity, target_position, force_name)
+    ['simple-entity'] = function(surface, entity, target_position)
         local mirror_entity = {name = entity.name, position = target_position, direction = direction_translation[entity.direction]}
         if not surface.can_place_entity(mirror_entity) then
             return
         end
-        local mirror_entity = surface.create_entity(mirror_entity)
-        mirror_entity.graphics_variation = entity.graphics_variation
+        local mirror_entity2 = surface.create_entity(mirror_entity)
+        mirror_entity2.graphics_variation = entity.graphics_variation
     end,
-    ['cliff'] = function(surface, entity, target_position, force_name)
+    ['cliff'] = function(surface, entity, target_position)
         local mirror_entity = {name = entity.name, position = target_position, cliff_orientation = cliff_orientation_translation[entity.cliff_orientation]}
         if not surface.can_place_entity(mirror_entity) then
             return
@@ -62,10 +62,10 @@ local entity_copy_functions = {
         surface.create_entity(mirror_entity)
         return
     end,
-    ['resource'] = function(surface, entity, target_position, force_name)
+    ['resource'] = function(surface, entity, target_position)
         surface.create_entity({name = entity.name, position = target_position, amount = entity.amount})
     end,
-    ['corpse'] = function(surface, entity, target_position, force_name)
+    ['corpse'] = function(surface, entity, target_position)
         surface.create_entity({name = entity.name, position = target_position})
     end,
     ['unit-spawner'] = function(surface, entity, target_position, force_name)
@@ -118,12 +118,12 @@ local entity_copy_functions = {
         local e = entity.clone({position = target_position, surface = surface, force = force_name})
         e.active = true
     end,
-    ['fish'] = function(surface, entity, target_position, force_name)
+    ['fish'] = function(surface, entity, target_position)
         local mirror_entity = {name = entity.name, position = target_position}
         if not surface.can_place_entity(mirror_entity) then
             return
         end
-        local e = surface.create_entity(mirror_entity)
+        surface.create_entity(mirror_entity)
     end
 }
 
@@ -135,11 +135,17 @@ local function process_entity(surface, entity, force_name)
         return
     end
 
+    local match_mirror = bb_config.match_mirror
+
     local target_position
     if force_name == 'north' then
         target_position = entity.position
     else
-        target_position = {x = entity.position.x * -1, y = entity.position.y * -1}
+        if match_mirror then
+            target_position = {x = entity.position.x, y = entity.position.y * -1}
+        else
+            target_position = {x = entity.position.x * -1, y = entity.position.y * -1}
+        end
     end
 
     entity_copy_functions[entity.type](surface, entity, target_position, force_name)
@@ -161,6 +167,8 @@ local function copy_chunk(chunk)
         source_surface.request_to_generate_chunks({x = source_left_top.x + 16, y = source_left_top.y + 16}, 0)
         return
     end
+
+    local match_mirror = bb_config.match_mirror
 
     if chunk[2] == 1 then
         source_surface.clone_area(
@@ -190,8 +198,14 @@ local function copy_chunk(chunk)
     end
 
     local decoratives = {}
-    for k, decorative in pairs(source_surface.find_decoratives_filtered {area = source_area}) do
-        decoratives[k] = {name = decorative.decorative.name, position = {decorative.position.x, decorative.position.y}, amount = decorative.amount}
+    if match_mirror then
+        for k, decorative in pairs(source_surface.find_decoratives_filtered {area = source_area}) do
+            decoratives[k] = {name = decorative.decorative.name, position = {decorative.position.x, decorative.position.y}, amount = decorative.amount}
+        end
+    else
+        for k, decorative in pairs(source_surface.find_decoratives_filtered {area = source_area}) do
+            decoratives[k] = {name = decorative.decorative.name, position = {(decorative.position.x * -1) - 1, (decorative.position.y * -1) - 1}, amount = decorative.amount}
+        end
     end
     target_surface.create_decoratives({check_collision = false, decoratives = decoratives})
 
@@ -200,9 +214,15 @@ end
 
 local function mirror_chunk(chunk)
     local target_surface = game.surfaces.biter_battles
-
+    local match_mirror = bb_config.match_mirror
     local source_surface = game.surfaces.bb_source
-    local source_chunk_position = {chunk[1][1] * -1 - 1, chunk[1][2] * -1 - 1}
+    local source_chunk_position
+    if match_mirror then
+        source_chunk_position = {chunk[1][1], chunk[1][2] * -1 - 1}
+    else
+        source_chunk_position = {chunk[1][1] * -1 - 1, chunk[1][2] * -1 - 1}
+    end
+
     local source_left_top = {x = source_chunk_position[1] * 32, y = source_chunk_position[2] * 32}
     local source_area = {{source_left_top.x, source_left_top.y}, {source_left_top.x + 32, source_left_top.y + 32}}
 
@@ -213,8 +233,14 @@ local function mirror_chunk(chunk)
 
     if chunk[2] == 1 then
         local tiles = {}
-        for k, tile in pairs(source_surface.find_tiles_filtered({area = source_area})) do
-            tiles[k] = {name = tile.name, position = {tile.position.x * -1 - 1, tile.position.y * -1 - 1}}
+        if match_mirror then
+            for k, tile in pairs(source_surface.find_tiles_filtered({area = source_area})) do
+                tiles[k] = {name = tile.name, position = {tile.position.x, tile.position.y * -1 - 1}}
+            end
+        else
+            for k, tile in pairs(source_surface.find_tiles_filtered({area = source_area})) do
+                tiles[k] = {name = tile.name, position = {tile.position.x * -1 - 1, tile.position.y * -1 - 1}}
+            end
         end
         target_surface.set_tiles(tiles, true)
         chunk[2] = chunk[2] + 1
@@ -231,7 +257,7 @@ local function mirror_chunk(chunk)
 
     local decoratives = {}
     for k, decorative in pairs(source_surface.find_decoratives_filtered {area = source_area}) do
-        decoratives[k] = {name = decorative.decorative.name, position = {(decorative.position.x * -1) - 1, (decorative.position.y * -1) - 1}, amount = decorative.amount}
+        decoratives[k] = {name = decorative.decorative.name, position = {decorative.position.x, decorative.position.y * -1}, amount = decorative.amount}
     end
     target_surface.create_decoratives({check_collision = false, decoratives = decoratives})
 
@@ -281,6 +307,7 @@ end
 
 local function north_work()
     local terrain_gen = global.terrain_gen
+    --luacheck: ignore 512
     for k, chunk in pairs(terrain_gen.chunk_copy) do
         if copy_chunk(chunk) then
             reveal_chunk(chunk)
@@ -295,6 +322,7 @@ end
 
 local function south_work()
     local terrain_gen = global.terrain_gen
+    --luacheck: ignore 512
     for k, chunk in pairs(terrain_gen.chunk_mirror) do
         if mirror_chunk(chunk) then
             reveal_chunk(chunk)
