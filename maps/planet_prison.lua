@@ -669,7 +669,7 @@ local function print_merchant_position(player)
         perks = assign_perks(player)
     end
     if perks and perks.minimap then
-        player.print(string.format('>> You received a broadcast with [gps=%d,%d,%d] coordinates', position.x, position.y, player.surface.name))
+        player.print(string.format('>> You received a broadcast with [gps=%d,%d,%s] coordinates', position.x, position.y, player.surface.name))
     else
         player.print(string.format('>> You were able to spot him %s from your location', CommonFunctions.get_readable_direction(player.position, position)))
     end
@@ -1237,6 +1237,10 @@ local function on_tick()
     local tick = game.tick
 
     local surf = this.surface
+    if not surf or not surf.valid then
+        return
+    end
+
     if tick % 4 == 0 then
         AIFunctions.do_job(surf, AIFunctions.command.seek_and_destroy_player)
     end
@@ -1248,7 +1252,7 @@ local function on_tick()
         Timers.do_job()
     end
     if (tick + 1) % 100 == 0 then
-        AfkFunctions.on_inactive_players(5)
+        AfkFunctions.on_inactive_players(15)
     end
     if (tick + 1) % 500 == 0 then
         remove_offline_players()
@@ -1787,7 +1791,6 @@ setmetatable(
     {
         __newindex = function(_, n, v)
             log('Desync warning: attempt to write to undeclared var ' .. n)
-            --game.print ("Attempt to write to undeclared var " .. n)
             global[n] = v
         end,
         __index = function(_, n)
