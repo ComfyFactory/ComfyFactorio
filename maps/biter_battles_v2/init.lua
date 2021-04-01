@@ -125,6 +125,7 @@ function Public.source_surface()
     surface.request_to_generate_chunks({x = 0, y = -256}, 8)
     surface.force_generate_chunk_requests()
 
+    Terrain.fill_water_tiles(surface)
     Terrain.draw_spawn_area(surface)
     Terrain.generate_additional_spawn_ore(surface)
     Terrain.generate_additional_rocks(surface)

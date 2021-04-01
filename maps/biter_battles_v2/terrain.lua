@@ -1,4 +1,4 @@
---luacheck:ignore
+--luacheck: ignore
 local Public = {}
 local LootRaffle = require 'functions.loot_raffle'
 local BiterRaffle = require 'functions.biter_raffle'
@@ -562,6 +562,24 @@ function Public.draw_spawn_circle(surface)
             if math_random(1, 48) == 1 then
                 local e = surface.create_entity({name = 'fish', position = tiles[i].position})
                 e.active = false
+            end
+        end
+    end
+end
+
+function Public.fill_water_tiles(surface)
+    local chunk_r = 8
+    local r = chunk_r * 32
+
+    for x = r * -1, r, 1 do
+        for y = r * -1, -4, 1 do
+            local pos = {x = x, y = y}
+            local distance_to_center = math_sqrt(pos.x ^ 2 + pos.y ^ 2)
+            if distance_to_center < 550 and not is_horizontal_border_river(pos) then
+                local tile_name = surface.get_tile(pos).name
+                if tile_name == 'water' or tile_name == 'deepwater' then
+                    surface.set_tiles({{name = get_replacement_tile(surface, pos), position = pos}}, true)
+                end
             end
         end
     end

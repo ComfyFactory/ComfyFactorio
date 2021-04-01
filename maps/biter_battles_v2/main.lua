@@ -1,4 +1,3 @@
---luacheck:ignore
 -- Biter Battles v2 -- by MewMew
 
 local Ai = require 'maps.biter_battles_v2.ai'
@@ -16,7 +15,6 @@ require 'maps.biter_battles_v2.commands'
 require 'modules.spawners_contain_biters'
 
 local function on_player_joined_game(event)
-    local surface = game.surfaces['biter_battles']
     local player = game.players[event.player_index]
     if player.online_time == 0 or player.force.name == 'player' then
         Functions.init_player(player)
@@ -136,11 +134,6 @@ local function on_player_built_tile(event)
     Terrain.restrict_landfill(player.surface, player, event.tiles)
 end
 
-local function on_player_built_tile(event)
-    local player = game.players[event.player_index]
-    Terrain.restrict_landfill(player.surface, player, event.tiles)
-end
-
 local function on_player_mined_entity(event)
     Terrain.minable_wrecks(event)
 end
@@ -170,7 +163,6 @@ Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 Event.add(defines.events.on_research_finished, on_research_finished)
 Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
-Event.add(defines.events.on_robot_built_tile, on_robot_built_tile)
 Event.add(defines.events.on_tick, on_tick)
 Event.on_init(on_init)
 
