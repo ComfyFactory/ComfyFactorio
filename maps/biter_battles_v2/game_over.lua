@@ -1,11 +1,18 @@
---luacheck:ignore
+--luacheck: ignore
 local Functions = require 'maps.biter_battles_v2.functions'
 local Gui = require 'maps.biter_battles_v2.gui'
 local Init = require 'maps.biter_battles_v2.init'
 local Score = require 'comfy_panel.score'
 local Server = require 'utils.server'
+local Discord = require 'utils.discord'
 
-local math_random = math.random
+-- Use these settings for live
+local send_ping_to_channel = Discord.channel_names.bb_channel
+local role_to_mention = Discord.role_mentions.biter_battles
+-- Use these settings for testing
+-- bot-lounge
+-- local send_ping_to_channel = Discord.channel_names.bot_quarters
+-- local role_to_mention = Discord.role_mentions.test_role
 
 local Public = {}
 
@@ -13,15 +20,6 @@ local gui_values = {
     ['north'] = {c1 = 'Team North', color1 = {r = 0.55, g = 0.55, b = 0.99}},
     ['south'] = {c1 = 'Team South', color1 = {r = 0.99, g = 0.33, b = 0.33}}
 }
-
-local function shuffle(tbl)
-    local size = #tbl
-    for i = size, 1, -1 do
-        local rand = math.random(size)
-        tbl[i], tbl[rand] = tbl[rand], tbl[i]
-    end
-    return tbl
-end
 
 function Public.reveal_map()
     for _, f in pairs({'north', 'south', 'player', 'spectator'}) do
@@ -80,7 +78,7 @@ local function silo_kaboom(entity)
 end
 
 local function get_sorted_list(column_name, score_list)
-    for x = 1, #score_list, 1 do
+    for _ = 1, #score_list, 1 do
         for y = 1, #score_list, 1 do
             if not score_list[y + 1] then
                 break
@@ -279,6 +277,8 @@ function Public.server_restart()
         game.print('Map is restarting!', {r = 0.22, g = 0.88, b = 0.22})
         local message = 'Map is restarting! '
         Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
+
+        Server.to_discord_named_raw(send_ping_to_channel, role_to_mention .. ' ** Biter Battles was just reset! **')
 
         Init.tables()
         Init.forces()

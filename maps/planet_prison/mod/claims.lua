@@ -38,15 +38,14 @@ local function claim_new_claim(ent)
         }
     }
 
-    local claims = this._claims_info
-    if claims[ent.force.name] == nil then
-        claims[ent.force.name] = {}
-        claims[ent.force.name].polygons = {}
-        claims[ent.force.name].claims = {}
-        claims[ent.force.name].collections = {}
+    if this._claims_info[ent.force.name] == nil then
+        this._claims_info[ent.force.name] = {}
+        this._claims_info[ent.force.name].polygons = {}
+        this._claims_info[ent.force.name].claims = {}
+        this._claims_info[ent.force.name].collections = {}
     end
 
-    insert(claims[ent.force.name].collections, point)
+    insert(this._claims_info[ent.force.name].collections, point)
 end
 
 local function claim_on_build_entity(ent)
@@ -60,27 +59,27 @@ local function claim_on_build_entity(ent)
     end
 
     local in_range = false
-    local collections = data.collections
-    for i = 1, #collections do
-        local points = collections[i]
+    for i = 1, #data.collections do
+        if data.collections[i] then
+            for _, point in pairs(data.collections[i]) do
+                if point then
+                    local dist = CommonFunctions.get_distance(point, ent.position)
+                    if max_dist < dist then
+                        goto continue
+                    end
 
-        for _, point in pairs(points) do
-            point = point
-            local dist = CommonFunctions.get_distance(point, ent.position)
-            if max_dist < dist then
-                goto continue
+                    in_range = true
+                    point = {
+                        x = CommonFunctions.get_axis(ent.position, 'x'),
+                        y = CommonFunctions.get_axis(ent.position, 'y')
+                    }
+                    insert(data.collections[i], point)
+                    data.claims[i] = CommonFunctions.get_convex_hull(data.collections[i])
+
+                    break
+                    ::continue::
+                end
             end
-
-            in_range = true
-            point = {
-                x = CommonFunctions.get_axis(ent.position, 'x'),
-                y = CommonFunctions.get_axis(ent.position, 'y')
-            }
-            insert(points, point)
-            data.claims[i] = CommonFunctions.get_convex_hull(points)
-
-            break
-            ::continue::
         end
     end
 
@@ -118,19 +117,17 @@ local function claim_on_entity_died(ent)
     end
 
     for i = 1, #data.collections do
-        local points = data.collections[i]
-
-        for j = 1, #points do
-            local point = points[j]
+        for j = 1, #data.collections[i] do
+            local point = data.collections[i][j]
             if CommonFunctions.positions_equal(point, ent.position) then
-                remove(points, j)
+                remove(data.collections[i], j)
 
-                data.claims[i] = CommonFunctions.get_convex_hull(points)
+                data.claims[i] = CommonFunctions.get_convex_hull(data.collections[i])
                 break
             end
         end
 
-        if #points == 0 then
+        if #data.collections[i] == 0 then
             remove(data.claims, i)
             remove(data.collections, i)
             break

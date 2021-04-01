@@ -4,6 +4,7 @@ return {
     -- See features.server.to_discord_named
     channel_names = {
         mtn_channel = 'mount-fortress',
+        bb_channel = 'biter_battles',
         bot_quarters = 'bot-quarters',
         announcements = 'announcements',
         mod_lounge = 'mods-lounge',
