@@ -144,7 +144,17 @@ local set_loco_tiles =
             end
         end
 
-        MapFunctions.draw_noise_tile_circle(position, 'blue-refined-concrete', surface, 15)
+        if random(1, 6) == 1 then
+            MapFunctions.draw_noise_tile_circle(position, 'blue-refined-concrete', surface, 18)
+        elseif random(1, 5) == 1 then
+            MapFunctions.draw_noise_tile_circle(position, 'black-refined-concrete', surface, 18)
+        elseif random(1, 4) == 1 then
+            MapFunctions.draw_noise_tile_circle(position, 'cyan-refined-concrete', surface, 18)
+        elseif random(1, 3) == 1 then
+            MapFunctions.draw_noise_tile_circle(position, 'hazard-concrete-right', surface, 18)
+        else
+            MapFunctions.draw_noise_tile_circle(position, 'blue-refined-concrete', surface, 18)
+        end
 
         for i = 1, #cargo_boxes, 1 do
             if not p[i] then

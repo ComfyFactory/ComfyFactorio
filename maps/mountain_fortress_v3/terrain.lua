@@ -2350,6 +2350,7 @@ end
 local function border_chunk(data)
     local entities = data.entities
     local decoratives = data.decoratives
+    local tiles = data.tiles
 
     local x, y = Public.increment_value(data)
 
@@ -2358,6 +2359,13 @@ local function border_chunk(data)
     if random(1, ceil(pos.y + pos.y) + 64) == 1 then
         entities[#entities + 1] = {name = trees[random(1, #trees)], position = pos}
     end
+
+    if random(1, 10) == 1 then
+        tiles[#tiles + 1] = {name = 'red-desert-' .. random(1, 3), position = pos}
+    else
+        tiles[#tiles + 1] = {name = 'dirt-' .. math.random(1, 6), position = pos}
+    end
+
     local scrap_mineable_entities, scrap_mineable_entities_index = get_scrap_mineable_entities()
 
     if not is_out_of_map(pos) then

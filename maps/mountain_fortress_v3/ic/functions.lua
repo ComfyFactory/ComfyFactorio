@@ -13,6 +13,10 @@ local function validate_entity(entity)
         return false
     end
 
+    if type(entity) == 'boolean' then
+        return false
+    end
+
     return true
 end
 
@@ -893,6 +897,10 @@ function Public.use_door_with_entity(ic, player, door)
         car = cars[door.unit_number]
     end
     if not car then
+        return
+    end
+
+    if not validate_entity(car.entity) then
         return
     end
 
