@@ -45,13 +45,19 @@ local function claim_new_claim(ent)
         this._claims_info[ent.force.name].collections = {}
     end
 
-    insert(this._claims_info[ent.force.name].collections, point)
+    if this._claims_info[ent.force.name].collections then
+        this._claims_info[ent.force.name].collections[#this._claims_info[ent.force.name].collections + 1] = point
+    end
 end
 
 local function claim_on_build_entity(ent)
     local max_dist = this._claim_max_dist
     local force = ent.force.name
     local data = this._claims_info[force]
+
+    if not max_dist then
+        return
+    end
 
     if data == nil then
         claim_new_claim(ent)
@@ -89,6 +95,10 @@ local function claim_on_build_entity(ent)
 end
 
 local function claims_in_markers(name)
+    if not this._claim_markers then
+        return false
+    end
+
     for _, marker in pairs(this._claim_markers) do
         if name == marker then
             return true

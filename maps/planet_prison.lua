@@ -20,7 +20,7 @@ local Color = require 'utils.color_presets'
 local this = {
     remove_offline_players = {
         players = {},
-        time = 18000,
+        time = 216000, -- 1h
         enabled = true
     }
 }
@@ -1325,7 +1325,9 @@ local function mined_wreckage(e)
     end
 
     local cand = candidates[CommonFunctions.rand_range(1, count)]
-    e.buffer.insert(cand)
+    if e.buffer and cand then
+        e.buffer.insert(cand)
+    end
 end
 
 local function on_player_mined_entity(e)
@@ -1335,7 +1337,7 @@ local function on_player_mined_entity(e)
     end
 
     mined_wreckage(e)
-    ClaimsFunctions.on_player_mined_entity(ent)
+    -- ClaimsFunctions.on_player_mined_entity(ent)
 end
 
 local function on_player_died(e)
@@ -1578,7 +1580,7 @@ local function on_entity_died(e)
 
     hostile_death(e)
     character_death(e)
-    ClaimsFunctions.on_entity_died(e.entity)
+    -- ClaimsFunctions.on_entity_died(e.entity)
 
     if valid_ents[e.entity.name] then
         e.entity.destroy()
@@ -1617,7 +1619,7 @@ local function on_built_entity(e)
         return
     end
 
-    ClaimsFunctions.on_built_entity(ent)
+    -- ClaimsFunctions.on_built_entity(ent)
     merchant_exploit_check(ent)
 end
 
@@ -1785,18 +1787,5 @@ Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_tick, on_tick)
 Event.add(defines.events.on_tick, on_tick_reset)
 Event.add(defines.events.on_rocket_launched, on_rocket_launched)
-
-setmetatable(
-    _G,
-    {
-        __newindex = function(_, n, v)
-            log('Desync warning: attempt to write to undeclared var ' .. n)
-            global[n] = v
-        end,
-        __index = function(_, n)
-            return global[n]
-        end
-    }
-)
 
 return Public
