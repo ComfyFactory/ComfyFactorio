@@ -18,7 +18,7 @@ local Alert = require 'utils.alert'
 local Task = require 'utils.task'
 local Score = require 'comfy_panel.score'
 local Token = require 'utils.token'
-local HS = require 'maps.mountain_fortress_v3.highscore'
+-- local HS = require 'maps.mountain_fortress_v3.highscore'
 local Discord = require 'utils.discord'
 local Core = require "utils.core"
 local Diff = require "modules.difficulty_vote_by_amount"
@@ -100,13 +100,13 @@ local reset_game =
         local this = data.this
         local Reset_map = data.reset_map
         if this.soft_reset then
-            HS.set_scores()
+            -- HS.set_scores()
             this.game_reset_tick = nil
             Reset_map()
             return
         end
         if this.restart then
-            HS.set_scores()
+            -- HS.set_scores()
             local message = ({'entity.reset_game'})
             Server.to_discord_bold(message, true)
             Server.start_scenario('Mountain_Fortress_v3')
@@ -114,7 +114,7 @@ local reset_game =
             return
         end
         if this.shutdown then
-            HS.set_scores()
+            -- HS.set_scores()
             local message = ({'entity.shutdown_game'})
             Server.to_discord_bold(message, true)
             Server.stop_scenario()
@@ -1210,17 +1210,20 @@ local function show_mvps(player)
             local tier = WPT.get("pickaxe_tier")
             local pick_tier = pickaxe_tiers[tier]
 
-            Server.to_discord_named_embed(send_ping_to_channel, '**Statistics!**\\n\\n'
-            .. 'Time played: '..time_played..'\\n'
-            .. 'Game Difficulty: '..diff.name..'\\n'
-            .. 'Highest wave: '..format_number(wave, true)..'\\n'
-            .. 'Total connected players: '..total_players..'\\n'
-            .. 'Threat: '..format_number(threat, true)..'\\n'
-            .. 'Pickaxe Upgrade: '..pick_tier..' (' ..tier.. ')\\n'
-            .. 'Collapse Speed: '..collapse_speed..'\\n'
-            .. 'Collapse Amount: '..collapse_amount..'\\n'
-            )
-            WPT.set('sent_to_discord', true)
+            local server_name = Server.check_server_name('Mtn Fortress')
+            if server_name then
+                Server.to_discord_named_embed(send_ping_to_channel, '**Statistics!**\\n\\n'
+                .. 'Time played: '..time_played..'\\n'
+                .. 'Game Difficulty: '..diff.name..'\\n'
+                .. 'Highest wave: '..format_number(wave, true)..'\\n'
+                .. 'Total connected players: '..total_players..'\\n'
+                .. 'Threat: '..format_number(threat, true)..'\\n'
+                .. 'Pickaxe Upgrade: '..pick_tier..' (' ..tier.. ')\\n'
+                .. 'Collapse Speed: '..collapse_speed..'\\n'
+                .. 'Collapse Amount: '..collapse_amount..'\\n'
+                )
+                WPT.set('sent_to_discord', true)
+            end
         end
     end
 end

@@ -94,6 +94,10 @@ local function transfer_player_table(player, new_player)
 end
 
 local function remove_main_frame(main_frame)
+    if not main_frame or not main_frame.valid then
+        return
+    end
+
     Gui.remove_data_recursively(main_frame)
     main_frame.destroy()
 end

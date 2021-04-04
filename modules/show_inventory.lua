@@ -351,7 +351,12 @@ local function update_gui()
         if valid then
             if success then
                 if target and target.valid then
-                    local main = target.get_main_inventory().get_contents()
+                    local main = target.get_main_inventory()
+                    if not main then
+                        return
+                    end
+
+                    main = main.get_contents()
                     local armor = target.get_inventory(defines.inventory.character_armor).get_contents()
                     local guns = target.get_inventory(defines.inventory.character_guns).get_contents()
                     local ammo = target.get_inventory(defines.inventory.character_ammo).get_contents()

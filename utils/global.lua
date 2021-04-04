@@ -1,10 +1,11 @@
 local Event = require 'utils.event_core'
 local Token = require 'utils.token'
 
-local Global = {
-    names = {}
-}
+local Global = {}
 local concat = table.concat
+
+local names = {}
+Global.names = names
 
 function Global.register(tbl, callback)
     if _LIFECYCLE ~= _STAGE.control then
@@ -14,7 +15,7 @@ function Global.register(tbl, callback)
     local filepath = debug.getinfo(2, 'S').source:match('^.+/currently%-playing/(.+)$'):sub(1, -5)
     local token = Token.register_global(tbl)
 
-    Global.names[token] = concat {token, ' - ', filepath}
+    names[token] = concat {token, ' - ', filepath}
 
     Event.on_load(
         function()
@@ -32,7 +33,7 @@ function Global.register_init(tbl, init_handler, callback)
     local filepath = debug.getinfo(2, 'S').source:match('^.+/currently%-playing/(.+)$'):sub(1, -5)
     local token = Token.register_global(tbl)
 
-    Global.names[token] = concat {token, ' - ', filepath}
+    names[token] = concat {token, ' - ', filepath}
 
     Event.on_init(
         function()

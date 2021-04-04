@@ -15,7 +15,6 @@ require 'utils.datastore.jail_data'
 require 'utils.datastore.quickbar_data'
 require 'utils.datastore.message_on_join_data'
 require 'utils.datastore.player_tag_data'
-require 'utils.profiler'
 require 'chatbot'
 require 'commands'
 require 'antigrief'
@@ -88,10 +87,10 @@ require 'modules.autostash'
 --require 'maps.biter_battles.biter_battles'
 
 --![[A map that imitating MF, defending rocket silos instead of trains]]--
--- require 'maps.amap.main'
+--require 'maps.amap.main'
 
 --![[Guide a Train through rough terrain, while defending it from the biters]]--
--- require 'maps.mountain_fortress_v3.main'
+--require 'maps.mountain_fortress_v3.main'
 --require 'maps.mountain_fortress_v2.main'
 --require 'maps.mountain_fortress'
 
@@ -236,6 +235,7 @@ require 'modules.autostash'
 
 if _DUMP_ENV then
     require 'utils.dump_env'
+    require 'utils.profiler'
 end
 
 local function on_player_created(event)

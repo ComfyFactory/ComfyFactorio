@@ -3,7 +3,7 @@ require 'modules.rpg.main'
 local Functions = require 'maps.mountain_fortress_v3.functions'
 local BuriedEnemies = require 'maps.mountain_fortress_v3.buried_enemies'
 
-local HS = require 'maps.mountain_fortress_v3.highscore'
+-- local HS = require 'maps.mountain_fortress_v3.highscore'
 local Discord = require 'utils.discord'
 local IC = require 'maps.mountain_fortress_v3.ic.table'
 local ICMinimap = require 'maps.mountain_fortress_v3.ic.minimap'
@@ -109,6 +109,16 @@ local is_position_near_tbl = function(position, tbl)
 
     return status
 end
+
+local announce_new_map =
+    Token.register(
+    function()
+        local server_name = Server.check_server_name('Mtn Fortress')
+        if server_name then
+            Server.to_discord_named_raw(send_ping_to_channel, role_to_mention .. ' ** Mtn Fortress was just reset! **')
+        end
+    end
+)
 
 function Public.reset_map()
     local Diff = Difficulty.get()
@@ -253,7 +263,7 @@ function Public.reset_map()
     Task.start_queue()
     Task.set_queue_speed(16)
 
-    HS.get_scores()
+    -- HS.get_scores()
 
     if is_game_modded() then
         game.difficulty_settings.technology_price_multiplier = 0.5
@@ -264,7 +274,7 @@ function Public.reset_map()
     this.market_announce = game.tick + 1200
     this.game_lost = false
 
-    Server.to_discord_named_raw(send_ping_to_channel, role_to_mention .. ' ** Mtn Fortress was just reset! **')
+    Task.set_timeout_in_ticks(25, announce_new_map)
 end
 
 local is_locomotive_valid = function()
@@ -314,18 +324,18 @@ local has_the_game_ended = function()
                 game.print(({'main.reset_in', cause_msg, this.game_reset_tick / 60}), {r = 0.22, g = 0.88, b = 0.22})
             end
 
-            local diff_name = Difficulty.get('name')
+            -- local diff_name = Difficulty.get('name')
 
             if this.soft_reset and this.game_reset_tick == 0 then
                 this.game_reset_tick = nil
-                HS.set_scores(diff_name)
+                -- HS.set_scores(diff_name)
                 Public.reset_map()
                 return
             end
 
             if this.restart and this.game_reset_tick == 0 then
                 if not this.announced_message then
-                    HS.set_scores(diff_name)
+                    -- HS.set_scores(diff_name)
                     game.print(({'entity.notify_restart'}), {r = 0.22, g = 0.88, b = 0.22})
                     local message = 'Soft-reset is disabled! Server will restart from scenario to load new changes.'
                     Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
@@ -336,7 +346,7 @@ local has_the_game_ended = function()
             end
             if this.shutdown and this.game_reset_tick == 0 then
                 if not this.announced_message then
-                    HS.set_scores(diff_name)
+                    -- HS.set_scores(diff_name)
                     game.print(({'entity.notify_shutdown'}), {r = 0.22, g = 0.88, b = 0.22})
                     local message = 'Soft-reset is disabled! Server will shutdown. Most likely because of updates.'
                     Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
