@@ -161,12 +161,6 @@ local function acid_line(surface, name, source, target)
 end
 
 local function clean_table()
-    --Perform a table cleanup every 500 boosts
-    this.biter_health_boost_count = this.biter_health_boost_count + 1
-    if this.biter_health_boost_count % 500 ~= 0 then
-        return
-    end
-
     local units_to_delete = {}
 
     --Mark all health boost entries for deletion
@@ -200,6 +194,14 @@ local function clean_table()
     --Remove abandoned health boost entries
     for key, _ in pairs(units_to_delete) do
         this.biter_health_boost_units[key] = nil
+    end
+end
+
+local function check_clear_table()
+    this.biter_health_boost_count = this.biter_health_boost_count + 1
+    if this.biter_health_boost_count >= 500 then
+        clean_table()
+        this.biter_health_boost_count = 0
     end
 end
 
@@ -405,6 +407,8 @@ function Public.add_unit(unit, health_multiplier)
         floor(unit.prototype.max_health * health_multiplier),
         xp_modifier
     }
+
+    check_clear_table()
 end
 
 --- Use this function to add a new boss unit (with healthbar)
@@ -425,6 +429,8 @@ function Public.add_boss_unit(unit, health_multiplier, health_bar_size)
         xp_modifier,
         {max_health = health, healthbar_id = create_boss_healthbar(unit, health_bar_size), last_update = game.tick}
     }
+
+    check_clear_table()
 end
 
 --- This sets the active surface that we check and have the script active.
@@ -499,7 +505,7 @@ Event.on_init(
     end
 )
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
-Event.on_nth_tick(7200, clean_table)
+Event.on_nth_tick(7200, check_clear_table)
 Event.add(defines.events.on_entity_died, on_entity_died)
 
 return Public
