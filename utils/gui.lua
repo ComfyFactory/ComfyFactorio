@@ -5,15 +5,11 @@ local SpamProtection = require 'utils.spam_protection'
 
 local tostring = tostring
 local next = next
-local concat = table.concat
 
 local Gui = {}
 
 local data = {}
 local element_map = {}
-
-local names = {}
-Gui.names = names
 
 Gui.token =
     Global.register(
@@ -28,16 +24,7 @@ local on_visible_handlers = {}
 local on_pre_hidden_handlers = {}
 
 function Gui.uid_name()
-    local info = debug.getinfo(2, 'Sl')
-    local filepath = info.source:match('^.+/currently%-playing/(.+)$'):sub(1, -5)
-    local line = info.currentline
-
-    local token = tostring(Token.uid())
-
-    local name = concat {token, ' - ', filepath, ':line:', line}
-    names[token] = name
-
-    return token
+    return tostring(Token.uid())
 end
 
 function Gui.uid()
@@ -54,9 +41,7 @@ function Gui.set_data(element, value)
             return
         end
 
-        local index = element.index
-        values[index] = nil
-        element_map[index] = nil
+        values[element.index] = nil
 
         if next(values) == nil then
             data[player_index] = nil
@@ -67,9 +52,7 @@ function Gui.set_data(element, value)
             data[player_index] = values
         end
 
-        local index = element.index
-        values[index] = value
-        element_map[index] = element
+        values[element.index] = value
     end
 end
 local set_data = Gui.set_data
@@ -266,11 +249,61 @@ Gui.on_player_show_top = custom_handler_factory(on_visible_handlers)
 -- Adds a player field to the event table.
 Gui.on_pre_player_hide_top = custom_handler_factory(on_pre_hidden_handlers)
 
-function Gui.data()
-    return data
+if _DEBUG then
+    local concat = table.concat
+
+    local names = {}
+    Gui.names = names
+
+    function Gui.uid_name()
+        local info = debug.getinfo(2, 'Sl')
+        local filepath = info.source:match('^.+/currently%-playing/(.+)$'):sub(1, -5)
+        local line = info.currentline
+
+        local token = tostring(Token.uid())
+
+        local name = concat {token, ' - ', filepath, ':line:', line}
+        names[token] = name
+
+        return token
+    end
+
+    function Gui.set_data(element, value)
+        local player_index = element.player_index
+        local values = data[player_index]
+
+        if value == nil then
+            if not values then
+                return
+            end
+
+            local index = element.index
+            values[index] = nil
+            element_map[index] = nil
+
+            if next(values) == nil then
+                data[player_index] = nil
+            end
+        else
+            if not values then
+                values = {}
+                data[player_index] = values
+            end
+
+            local index = element.index
+            values[index] = value
+            element_map[index] = element
+        end
+    end
+    set_data = Gui.set_data
+
+    function Gui.data()
+        return data
+    end
+
+    function Gui.element_map()
+        return element_map
+    end
 end
 
-function Gui.element_map()
-    return element_map
-end
 return Gui

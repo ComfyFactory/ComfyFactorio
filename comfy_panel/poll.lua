@@ -1015,6 +1015,10 @@ Gui.on_click(
     function(event)
         local player = event.player
         local data = Gui.get_data(event.element)
+        if not data or not data.valid then
+            return
+        end
+
         local frame = data.frame
         local poll = data.previous_data
 

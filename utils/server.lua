@@ -741,6 +741,21 @@ function Public.get_server_name()
     return start_data.server_name or ''
 end
 
+--- Gets the server's name and matches it against a string.
+-- This is the current server's name, in the case the save has been loaded on multiple servers.
+-- @param string
+-- @return string
+function Public.check_server_name(string)
+    if start_data.server_name then
+        local server_name = start_data.server_name
+        local str = string.match(server_name, string)
+        if str then
+            return true
+        end
+    end
+    return false
+end
+
 --- Gets the server's start time as a unix epoch timestamp. nil if not known.
 -- @return number?
 function Public.get_start_time()

@@ -123,6 +123,9 @@ Gui.on_click(
     function(event)
         local element = event.element
         local data = Gui.get_data(element)
+        if not data or not data.valid then
+            return
+        end
 
         local input_text_box = data.input_text_box
 

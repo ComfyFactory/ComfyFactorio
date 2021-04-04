@@ -125,6 +125,10 @@ Gui.on_click(
 
         local top_panel = element.parent.parent
         local data = Gui.get_data(top_panel)
+        if not data or not data.valid then
+            return
+        end
+
         local text_box = data.text_box
 
         local variable_type = type(variable)
