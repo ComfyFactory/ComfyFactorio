@@ -3,7 +3,7 @@
 local Chrono_table = require 'maps.chronosphere.table'
 local Chrono = require 'maps.chronosphere.chrono'
 local Token = require 'utils.token'
-local Tabs = require 'comfy_panel.tabs'
+local Tabs = require 'comfy_panel.main'
 
 local module_name = 'ChronoTrain'
 
