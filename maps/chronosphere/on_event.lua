@@ -243,9 +243,9 @@ function Public.on_pre_player_died(event)
     local poisons = surface.count_entities_filtered {position = player.position, radius = 10, name = 'poison-cloud'}
     if poisons > 0 then
         objective.poison_mastery_unlocked = objective.poison_mastery_unlocked + 1
-    end
-    if objective.poison_mastery_unlocked == 10 then
-        game.print({'chronosphere.message_poison_mastery_unlock'}, {r = 0.98, g = 0.66, b = 0.22})
+        if objective.poison_mastery_unlocked == 10 then
+            game.print({'chronosphere.message_poison_mastery_unlock'}, {r = 0.98, g = 0.66, b = 0.22})
+        end
     end
 end
 
