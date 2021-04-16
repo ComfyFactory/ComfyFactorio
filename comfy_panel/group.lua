@@ -183,7 +183,7 @@ local function on_player_joined_game(event)
 end
 
 local function alphanumeric(str)
-    return (string.match(str, '[^%w]') ~= nil)
+    return (string.match(str, '[^%w%s%p]') ~= nil)
 end
 
 local function on_gui_click(event)
