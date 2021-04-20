@@ -1,3 +1,4 @@
+--luacheck: ignore
 local Public = {}
 local LootRaffle = require "functions.loot_raffle"
 local Get_noise = require "utils.get_noise"
@@ -28,8 +29,8 @@ function Public.is_minefield_tile(position, search_cell)
 			end
 		end
 		return
-	end	
-			
+	end
+
 	local tile = game.surfaces.nauvis.get_tile(position)
 	if tile.name == "nuclear-ground" then return true end
 	if tile.hidden_tile == "nuclear-ground" then return true end
@@ -48,17 +49,17 @@ end
 
 function Public.get_terrain_tile(surface, position)
 	local seed = surface.map_gen_settings.seed
-	
+
 	local noise_1 = Get_noise("smol_areas", position, seed)
-	local noise_2 = Get_noise("cave_rivers", position, seed)		
-	
+	local noise_2 = Get_noise("cave_rivers", position, seed)
+
 	local a = 0.08
 	if math.floor((noise_1 * 8) % 5) ~= 0 then
 		if math.abs(noise_2) < a then
 			return "water-shallow"
 		end
-	end	
-			
+	end
+
 	if noise_2 > 0 then return "sand-" .. math.floor((noise_2 * 10) % 3 + 1) end
 	return "grass-" .. math.floor((noise_2 * 10) % 3 + 1)
 end
@@ -66,18 +67,18 @@ end
 function Public.disarm_reward(position)
 	local surface = game.surfaces[1]
 	local distance_to_center = math.sqrt(position.x ^ 2 + position.y ^ 2)
-	
+
 	surface.create_entity({
 		name = "flying-text",
 		position = {position.x + 1, position.y + 1},
 		text = "Mine disarmed!",
 		color = {r=0.98, g=0.66, b=0.22}
 	})
-	
+
 	local tile_name = Public.get_terrain_tile(surface, position)
-	
+
 	if math.random(1, 3) ~= 1 or tile_name == "water-shallow" then return end
-	
+
 	if math.random(1, 8) == 1 then
 		local blacklist = LootRaffle.get_tech_blacklist(0.05 + distance_to_center * 0.00025)	--max loot tier at ~4000 tiles
 		local item_stacks = LootRaffle.roll(math.random(16, 48) + math.floor(distance_to_center * 0.2), 16, blacklist)
@@ -86,7 +87,7 @@ function Public.disarm_reward(position)
 		container.minable = false
 		return
 	end
-	
+
 	local a, b = string.find(tile_name, "grass", 1, true)
 	local ore
 	if a then
@@ -94,7 +95,7 @@ function Public.disarm_reward(position)
 	else
 		ore = ores[2][math.random(1, #ores[2])]
 	end
-	
+
 	if ore == "crude-oil" then
 		surface.create_entity({name = "crude-oil", position = {position.x + 1, position.y + 1}, amount = 301000 + distance_to_center * 600})
 		return
@@ -108,7 +109,7 @@ function Public.disarm_reward(position)
 				surface.create_entity({name = ore, position = p, amount = 1000 + distance_to_center * 2})
 			end
 		end
-	end	
+	end
 end
 
 function Public.uncover_terrain(position)
