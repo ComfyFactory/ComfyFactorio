@@ -113,6 +113,9 @@ require 'modules.autostash'
 --require 'maps.choppy'
 --require 'maps.choppy_dx'
 
+--![[Minesweeper?]]--
+--require 'maps.minesweeper.main'
+
 --![[Infinite random dungeon with RPG]]--
 --require 'maps.dungeons.main'
 --require 'maps.dungeons.tiered_dungeon'
