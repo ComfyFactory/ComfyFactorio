@@ -13,6 +13,21 @@ for _ = 1, 6, 1 do table.insert(ores[2], "copper-ore") end
 for _ = 1, 4, 1 do table.insert(ores[2], "stone") end
 for _ = 1, 1, 1 do table.insert(ores[2], "uranium-ore") end
 
+local function unstuck_players_around_position(surface, position)
+	local area = {{position.x - 2, position.y - 2}, {position.x + 2, position.y + 2}}
+	local characters = surface.find_entities_filtered({name = "character", area = area})
+	for _, character in pairs(characters) do
+		if character.player then
+			local player = character.player
+			local p = surface.find_non_colliding_position('character', player.position, 32, 0.5)
+			if not p then
+				return
+			end
+			player.teleport(p, surface)
+		end
+	end
+end
+
 function Public.kaboom(position)
 	local surface = game.surfaces[1]
 	surface.create_entity({name = "atomic-rocket", position = {position.x + 1, position.y + 1}, target = {position.x + 1, position.y + 1}, speed = 1, force = "minesweeper"})
@@ -82,9 +97,11 @@ function Public.disarm_reward(position)
 	if math.random(1, 8) == 1 then
 		local blacklist = LootRaffle.get_tech_blacklist(0.05 + distance_to_center * 0.00025)	--max loot tier at ~4000 tiles
 		local item_stacks = LootRaffle.roll(math.random(16, 48) + math.floor(distance_to_center * 0.2), 16, blacklist)
-		local container = surface.create_entity({name = "crash-site-chest-" .. math.random(1, 2), position = {position.x + math.random(0, 1), position.y + math.random(0, 1)}, force = "neutral"})
+		local p = {x = position.x + math.random(0, 1), y = position.y + math.random(0, 1)}
+		local container = surface.create_entity({name = "crash-site-chest-" .. math.random(1, 2), position = p, force = "neutral"})
 		for _, item_stack in pairs(item_stacks) do container.insert(item_stack) end
 		container.minable = false
+		unstuck_players_around_position(surface, p)
 		return
 	end
 
