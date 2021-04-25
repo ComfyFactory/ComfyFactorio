@@ -35,7 +35,8 @@ local number_colors = {
 
 local rendering_tile_values = {
     ['nuclear-ground'] = {offset = {0.6, -0.2}, zoom = 3, font = 'scenario-message-dialog'},
-    ['stone-path'] = {offset = {0.54, -0.27}, zoom = 3, font = 'default-large'},
+    --['stone-path'] = {offset = {0.54, -0.27}, zoom = 3, font = 'default-large'},
+	['stone-path'] = {offset = {0.52, -0.28}, zoom = 3, font = 'default-large-bold'},
     ['concrete'] = {offset = {0.52, -0.28}, zoom = 3, font = 'default-large-bold'},
     ['hazard-concrete-left'] = {offset = {0.52, -0.28}, zoom = 3, font = 'default-large-bold'},
     ['hazard-concrete-right'] = {offset = {0.52, -0.28}, zoom = 3, font = 'default-large-bold'},
@@ -90,15 +91,15 @@ end
 local size_of_solving_vector_tables = #solving_vector_tables
 
 local function update_rendering(cell, position)
-    local tile = game.surfaces.nauvis.get_tile(position)
+	local surface = game.surfaces[1]
+    local tile = surface.get_tile(position)
     local tile_values = rendering_tile_values[tile.name]
     if not tile_values then
         tile_values = {offset = {0.6, -0.2}, zoom = 3, font = 'scenario-message-dialog'}
     end
 
-    if cell[2] then
-        rendering.destroy(cell[2])
-    end
+    if cell[2] then rendering.destroy(cell[2]) end
+	if cell[3] then rendering.destroy(cell[3]) end
 
     local cell_value = cell[1]
 
@@ -111,20 +112,34 @@ local function update_rendering(cell, position)
 
     local p = {position.x + tile_values.offset[1], position.y + tile_values.offset[2]}
     local text = cell_value
-    if cell_value == 11 then
-        text = 'X'
-    end
+	if cell_value == 10 or cell_value == 9 then text = ' ' end
+    if cell_value == 11 then text = 'X' end
 
     cell[2] =
         rendering.draw_text {
         text = text,
-        surface = game.surfaces[1],
+        surface = surface,
         target = p,
         color = color,
         scale = tile_values.zoom,
         font = tile_values.font,
         draw_on_ground = true,
         scale_with_zoom = false,
+        only_in_alt_mode = false
+    }
+	
+	if not tile.hidden_tile then return end
+	if tile.hidden_tile ~= "nuclear-ground" then return end
+	
+	cell[3] =
+        rendering.draw_rectangle {
+		width=2,
+		filled=false,
+        surface = surface,
+        left_top = position,
+		right_bottom = {position.x + 2, position.y + 2},
+        color = {0, 0, 0},
+        draw_on_ground = true,
         only_in_alt_mode = false
     }
 end
@@ -145,9 +160,9 @@ end
 local function kill_cell(position)
     local key = Functions.position_to_string(position)
     local cell = minesweeper.cells[key]
-    if cell and cell[2] then
-        rendering.destroy(cell[2])
-    end
+	if not cell then return end
+    if cell[2] then rendering.destroy(cell[2]) end
+	if cell[3] then rendering.destroy(cell[3]) end
     minesweeper.cells[key] = nil
 end
 
@@ -459,10 +474,12 @@ local function update_built_tiles(surface, tiles)
     for _, placed_tile in pairs(tiles) do
         local cell_position = Functions.position_to_cell_position(placed_tile.position)
         local key = Functions.position_to_string(cell_position)
-        local cell = minesweeper.cells[key]
-        if cell and cell[1] ~= 10 then
-            update_rendering(cell, cell_position)
-        end
+        local cell = minesweeper.cells[key]		
+		if not cell and Functions.is_minefield_tile(placed_tile.position) then
+			minesweeper.cells[key] = {9}
+		end	
+		local cell = minesweeper.cells[key]
+        update_rendering(cell, cell_position)
     end
 end
 

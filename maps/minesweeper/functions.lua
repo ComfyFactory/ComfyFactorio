@@ -34,11 +34,12 @@ function Public.kaboom(position)
 end
 
 function Public.is_minefield_tile(position, search_cell)
+	local surface = game.surfaces.nauvis
 	if search_cell then
 		for x = 0, 1, 1 do
 			for y = 0, 1, 1 do
 				local p = {x = position.x + x, y = position.y + y}
-				local tile = game.surfaces.nauvis.get_tile(p)
+				local tile = surface.get_tile(p)
 				if tile.name == "nuclear-ground" then return true end
 				if tile.hidden_tile == "nuclear-ground" then return true end
 			end
@@ -46,7 +47,7 @@ function Public.is_minefield_tile(position, search_cell)
 		return
 	end
 
-	local tile = game.surfaces.nauvis.get_tile(position)
+	local tile = surface.get_tile(position)
 	if tile.name == "nuclear-ground" then return true end
 	if tile.hidden_tile == "nuclear-ground" then return true end
 end
@@ -145,7 +146,7 @@ function Public.uncover_terrain(position)
 				surface.create_entity({name = "fish", position = p})
 			end
 
-			if mineable_tile_name then surface.set_tiles({{name = mineable_tile_name, position = p}}, true) end
+			if mineable_tile_name and tile_name ~= "water-shallow" then surface.set_tiles({{name = mineable_tile_name, position = p}}, true) end
 		end
 	end
 end
