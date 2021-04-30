@@ -1,10 +1,13 @@
---luacheck: ignore
 --[[
 It's a Minesweeper thingy - MewMew
--- 1 to 9 = adjacent mines
--- 10 = mine
--- 11 = marked mine
-]] --
+
+Cell Values:
+	-- 1 to 8 = adjacent mines
+	-- 9 = empty cell with grid
+	-- 10 = mine
+	-- 11 = marked mine
+	
+]]--
 
 require 'modules.satellite_score'
 
@@ -35,7 +38,8 @@ local number_colors = {
 
 local rendering_tile_values = {
     ['nuclear-ground'] = {offset = {0.6, -0.2}, zoom = 3, font = 'scenario-message-dialog'},
-    ['stone-path'] = {offset = {0.54, -0.27}, zoom = 3, font = 'default-large'},
+    --['stone-path'] = {offset = {0.54, -0.27}, zoom = 3, font = 'default-large'},
+	['stone-path'] = {offset = {0.52, -0.28}, zoom = 3, font = 'default-large-bold'},
     ['concrete'] = {offset = {0.52, -0.28}, zoom = 3, font = 'default-large-bold'},
     ['hazard-concrete-left'] = {offset = {0.52, -0.28}, zoom = 3, font = 'default-large-bold'},
     ['hazard-concrete-right'] = {offset = {0.52, -0.28}, zoom = 3, font = 'default-large-bold'},
@@ -90,15 +94,15 @@ end
 local size_of_solving_vector_tables = #solving_vector_tables
 
 local function update_rendering(cell, position)
-    local tile = game.surfaces.nauvis.get_tile(position)
+	local surface = game.surfaces[1]
+    local tile = surface.get_tile(position)
     local tile_values = rendering_tile_values[tile.name]
     if not tile_values then
         tile_values = {offset = {0.6, -0.2}, zoom = 3, font = 'scenario-message-dialog'}
     end
 
-    if cell[2] then
-        rendering.destroy(cell[2])
-    end
+    if cell[2] then rendering.destroy(cell[2]) end
+	if cell[3] then rendering.destroy(cell[3]) end
 
     local cell_value = cell[1]
 
@@ -111,20 +115,34 @@ local function update_rendering(cell, position)
 
     local p = {position.x + tile_values.offset[1], position.y + tile_values.offset[2]}
     local text = cell_value
-    if cell_value == 11 then
-        text = 'X'
-    end
+	if cell_value == 10 or cell_value == 9 then text = ' ' end
+    if cell_value == 11 then text = 'X' end
 
     cell[2] =
         rendering.draw_text {
         text = text,
-        surface = game.surfaces[1],
+        surface = surface,
         target = p,
         color = color,
         scale = tile_values.zoom,
         font = tile_values.font,
         draw_on_ground = true,
         scale_with_zoom = false,
+        only_in_alt_mode = false
+    }
+	
+	if not tile.hidden_tile then return end
+	if tile.hidden_tile ~= "nuclear-ground" then return end
+	
+	cell[3] =
+        rendering.draw_rectangle {
+		width=2,
+		filled=false,
+        surface = surface,
+        left_top = position,
+		right_bottom = {position.x + 2, position.y + 2},
+        color = {0, 0, 0},
+        draw_on_ground = true,
         only_in_alt_mode = false
     }
 end
@@ -145,9 +163,9 @@ end
 local function kill_cell(position)
     local key = Functions.position_to_string(position)
     local cell = minesweeper.cells[key]
-    if cell and cell[2] then
-        rendering.destroy(cell[2])
-    end
+	if not cell then return end
+    if cell[2] then rendering.destroy(cell[2]) end
+	if cell[3] then rendering.destroy(cell[3]) end
     minesweeper.cells[key] = nil
 end
 
@@ -334,8 +352,7 @@ local function mark_mine(entity, player)
     return score_change
 end
 
-local function add_mines_to_chunk(left_top)
-    local distance_to_center = math.sqrt((left_top.x + 16) ^ 2 + (left_top.y + 16) ^ 2)
+local function add_mines_to_chunk(left_top, distance_to_center)    
     local base_mine_count = 40
     local max_mine_count = 128
     local mine_count = distance_to_center * 0.043 + base_mine_count
@@ -349,14 +366,26 @@ local function add_mines_to_chunk(left_top)
     end
     table.shuffle_table(shuffle_index)
 
-    -- place shuffled mines
-    for i = 1, mine_count, 1 do
-        local vector = chunk_divide_vectors[shuffle_index[i]]
-        local position = {x = left_top.x + vector[1], y = left_top.y + vector[2]}
-        local key = Functions.position_to_string(position)
-        minesweeper.cells[key] = {10}
-        minesweeper.active_mines = minesweeper.active_mines + 1
-    end
+	-- place shuffled mines
+	if distance_to_center < 128 then
+		for i = 1, mine_count, 1 do
+			local vector = chunk_divide_vectors[shuffle_index[i]]
+			local position = {x = left_top.x + vector[1], y = left_top.y + vector[2]}			
+			if not Functions.is_spawn(position) then
+				local key = Functions.position_to_string(position)
+				minesweeper.cells[key] = {10}
+				minesweeper.active_mines = minesweeper.active_mines + 1
+			end
+		end
+	else
+		for i = 1, mine_count, 1 do
+			local vector = chunk_divide_vectors[shuffle_index[i]]
+			local position = {x = left_top.x + vector[1], y = left_top.y + vector[2]}
+			local key = Functions.position_to_string(position)
+			minesweeper.cells[key] = {10}
+			minesweeper.active_mines = minesweeper.active_mines + 1
+		end
+	end
 
     -- remove mines that would form a 3x3 block
     for _, chunk_vector in pairs(chunk_vectors) do
@@ -386,18 +415,35 @@ end
 
 local function on_chunk_generated(event)
     local left_top = event.area.left_top
-    if event.surface.index ~= 1 then
+	local surface = event.surface
+    if surface.index ~= 1 then
         return
     end
 
-    local tiles = {}
-    for x = 0, 31, 1 do
-        for y = 0, 31, 1 do
-            table.insert(tiles, {name = 'nuclear-ground', position = {x = left_top.x + x, y = left_top.y + y}})
-            --table.insert(tiles, {name = Functions.get_terrain_tile(event.surface, {x = left_top.x + x, y = left_top.y + y}), position = {x = left_top.x + x, y = left_top.y + y}})
-        end
-    end
-    event.surface.set_tiles(tiles, true)
+	local distance_to_center = math.sqrt((left_top.x + 16) ^ 2 + (left_top.y + 16) ^ 2)
+	local tiles = {}
+	
+	if distance_to_center < 128 then
+		for x = 0, 31, 1 do
+			for y = 0, 31, 1 do
+				local position = {x = left_top.x + x, y = left_top.y + y}			
+				if Functions.is_spawn(position) then
+					table.insert(tiles, {name = Functions.get_terrain_tile(surface, position), position = position})		
+				else
+					table.insert(tiles, {name = 'nuclear-ground', position = position})
+				end
+			end
+		end
+	else
+		for x = 0, 31, 1 do
+			for y = 0, 31, 1 do
+				local position = {x = left_top.x + x, y = left_top.y + y}
+				table.insert(tiles, {name = 'nuclear-ground', position = position})
+				--table.insert(tiles, {name = Functions.get_terrain_tile(surface, position), position = position})
+			end
+		end
+	end	
+    surface.set_tiles(tiles, true)
 
     --surface.clear() will cause to trigger on_chunk_generated twice
     local key = Functions.position_to_string(left_top)
@@ -406,7 +452,7 @@ local function on_chunk_generated(event)
     end
     minesweeper.chunks[key] = true
 
-    add_mines_to_chunk(left_top)
+    add_mines_to_chunk(left_top, distance_to_center)
 end
 
 local function on_player_changed_position(event)
@@ -459,10 +505,12 @@ local function update_built_tiles(surface, tiles)
     for _, placed_tile in pairs(tiles) do
         local cell_position = Functions.position_to_cell_position(placed_tile.position)
         local key = Functions.position_to_string(cell_position)
-        local cell = minesweeper.cells[key]
-        if cell and cell[1] ~= 10 then
-            update_rendering(cell, cell_position)
-        end
+        local cell = minesweeper.cells[key]		
+		if not cell and Functions.is_minefield_tile(placed_tile.position) then
+			minesweeper.cells[key] = {9}
+		end	
+		local cell = minesweeper.cells[key]
+        update_rendering(cell, cell_position)
     end
 end
 
