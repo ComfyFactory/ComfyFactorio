@@ -90,7 +90,7 @@ end
 --- Filters a fancy table for specific words. Entries within will be purged or kept based on the content and the filter mode
 ---@param mode <boolean> - True acts as whitelist, only time data in the filter will be kept. False acts a blacklist
 function Public.filter_time(fancy_array, filter_words, mode)
-	filtered_array = {}
+	local filtered_array = {}
 	for i=1, #fancy_array, 1 do
 		local _subject = fancy_array[i]
         local blacklist_match = false
