@@ -447,22 +447,22 @@ end
 
 local function input_cargo(car, chest)
     if not chest.request_from_buffers then
-        return
+        goto continue
     end
 
     local car_entity = car.entity
     if not validate_entity(car_entity) then
-        return
+        car.transfer_entities = nil
+        goto continue
     end
 
     local car_inventory = car_entity.get_inventory(defines.inventory.car_trunk)
     if car_inventory.is_empty() then
-        return
+        goto continue
     end
 
     local chest_inventory = chest.get_inventory(defines.inventory.chest)
     local free_slots = 0
-
     for i = 1, chest_inventory.get_bar() - 1, 1 do
         if not chest_inventory[i].valid_for_read then
             free_slots = free_slots + 1
@@ -471,12 +471,12 @@ local function input_cargo(car, chest)
 
     if chest.get_request_slot(1) then
         input_filtered(car_inventory, chest, chest_inventory, free_slots)
-        return
+        goto continue
     end
 
     for i = 1, #car_inventory - 1, 1 do
         if free_slots <= 0 then
-            return
+            goto continue
         end
         if car_inventory[i].valid_for_read then
             chest_inventory.insert(car_inventory[i])
@@ -484,25 +484,30 @@ local function input_cargo(car, chest)
             free_slots = free_slots - 1
         end
     end
+
+    ::continue::
 end
 
 local function output_cargo(car, passive_chest)
     if not validate_entity(car.entity) then
-        return
+        goto continue
     end
 
     if not passive_chest.valid then
-        return
+        goto continue
     end
     local chest1 = passive_chest.get_inventory(defines.inventory.chest)
     local chest2 = car.entity.get_inventory(defines.inventory.car_trunk)
-    for k, v in pairs(chest1.get_contents()) do
-        local t = {name = k, count = v}
-        local c = chest2.insert(t)
-        if (c > 0) then
-            chest1.remove({name = k, count = c})
+    for i = 1, #chest1 do
+        local t = chest1[i]
+        if t and t.valid then
+            local c = chest2.insert(t)
+            if (c > 0) then
+                chest1[i].count = chest1[i].count - c
+            end
         end
     end
+    ::continue::
 end
 
 local transfer_functions = {
