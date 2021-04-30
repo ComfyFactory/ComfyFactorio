@@ -1,16 +1,17 @@
 local Public = {}
 
+
 --- Turns seconds into a fancy table, each index being a different modulos (second, minute, etc.)
 ---@param seconds <number>
 ---@param short <boolean> - True if strings should be kept as short as possible
 function Public.seconds_to_fancy(seconds, short)
 	short = short or false
 	local time_left = seconds
-	
+
 	if time_left < 1 then
 		return {"0 seconds"}
 	end
-	
+
 	local names = {
 		{"second", "s"},
 		{"minute", "min"},
@@ -29,10 +30,10 @@ function Public.seconds_to_fancy(seconds, short)
 		3660*24*30,
 		3660*24*365.25
 	}
-	
+
 	local values = {}
 	local pretty = {}
-	
+
 	-- Iterates modulos in reverse
 	-- Adds fitting time to values 
 	-- Subtracts time_left with added time
@@ -41,14 +42,14 @@ function Public.seconds_to_fancy(seconds, short)
         table.insert(values, fit_time)
 		time_left = time_left - fit_time*modulos[i]
     end
-		
+
 	local internal_name_index = nil
 	if not short then
 		internal_name_index = 1
 	else
 		internal_name_index = 2
 	end
-	
+
 	-- Connects name with index value
 	-- #values-i+1 because the values array is flipped upside down and this converts the indices back!
 	for i = #names, 1, -1 do
@@ -69,9 +70,7 @@ end
 ---@param fancy_array <table>
 function Public.fancy_time_formatting(fancy_array)
 	if #fancy_array == 0 then return end
-	
 	local fancy_string = ""
-	
 	if #fancy_array > 1 then
 		for i = 1, #fancy_array, 1 do
 			if i == 1 then 
@@ -93,8 +92,6 @@ function Public.filter_time(fancy_array, filter_words, mode)
 	local filtered_array = {}
 	for i=1, #fancy_array, 1 do
 		local _subject = fancy_array[i]
-        local blacklist_match = false
-        
 		for fi=1, #filter_words, 1 do
 			local result = string.find(_subject, filter_words[fi]) -- nil if not found
 			result = type(result) ~= type(nil) -- true if words contained in string
@@ -108,7 +105,6 @@ function Public.filter_time(fancy_array, filter_words, mode)
 			end
 		end		
 	end
-	
 	return filtered_array
 end
 
@@ -121,8 +117,8 @@ function Public.fancy_time(seconds)
 	fancy = Public.fancy_time_formatting(fancy)
 	return fancy
 end
-	
-	
+
+
 --- Quick function to turn seconds into a shortend string of time, excluding seconds
 --- Example: short_fancy_time(1803) --> "30 min"
 ---@param seconds <number>	
@@ -132,5 +128,6 @@ function Public.short_fancy_time(seconds)
 	fancy = Public.fancy_time_formatting(fancy)
 	return fancy
 end	
-	
+
+
 return Public
