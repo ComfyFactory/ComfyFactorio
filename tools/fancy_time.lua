@@ -35,7 +35,7 @@ function Public.seconds_to_fancy(seconds, short)
 	local pretty = {}
 
 	-- Iterates modulos in reverse
-	-- Adds fitting time to values 
+	-- Adds fitting time to values
 	-- Subtracts time_left with added time
 	for i = #modulos, 1, -1 do
 		local fit_time = math.floor(time_left/modulos[i])
@@ -43,11 +43,11 @@ function Public.seconds_to_fancy(seconds, short)
 		time_left = time_left - fit_time*modulos[i]
     end
 
-	local internal_name_index = nil
+
 	if not short then
-		internal_name_index = 1
+		local internal_name_index = 1
 	else
-		internal_name_index = 2
+		local internal_name_index = 2
 	end
 
 	-- Connects name with index value
@@ -73,8 +73,8 @@ function Public.fancy_time_formatting(fancy_array)
 	local fancy_string = ""
 	if #fancy_array > 1 then
 		for i = 1, #fancy_array, 1 do
-			if i == 1 then 
-				fancy_string = fancy_array[1] 
+			if i == 1 then
+				fancy_string = fancy_array[1]
 			else
 				fancy_string = fancy_string .. ", " .. fancy_array[i]
 			end
@@ -95,7 +95,7 @@ function Public.filter_time(fancy_array, filter_words, mode)
 		for fi=1, #filter_words, 1 do
 			local result = string.find(_subject, filter_words[fi]) -- nil if not found
 			result = type(result) ~= type(nil) -- true if words contained in string
-			if result == true and mode == true then 
+			if result == true and mode == true then
 				table.insert(filtered_array, _subject)
 				break
 			elseif result == true and mode == false then
@@ -103,7 +103,7 @@ function Public.filter_time(fancy_array, filter_words, mode)
 			elseif result == false and mode == false and fi == #filter_words then
 				table.insert(filtered_array, _subject)
 			end
-		end		
+		end
 	end
 	return filtered_array
 end
@@ -121,13 +121,13 @@ end
 
 --- Quick function to turn seconds into a shortend string of time, excluding seconds
 --- Example: short_fancy_time(1803) --> "30 min"
----@param seconds <number>	
+---@param seconds <number>
 function Public.short_fancy_time(seconds)
 	local fancy = Public.seconds_to_fancy(seconds,true)
 	fancy = Public.filter_time(fancy, {"seconds","s"}, false)
 	fancy = Public.fancy_time_formatting(fancy)
 	return fancy
-end	
+end
 
 
 return Public
