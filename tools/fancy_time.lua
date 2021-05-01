@@ -1,5 +1,5 @@
+--luacheck: ignore
 local Public = {}
-
 
 --- Turns seconds into a fancy table, each index being a different modulos (second, minute, etc.)
 ---@param seconds <number>
@@ -43,11 +43,11 @@ function Public.seconds_to_fancy(seconds, short)
 		time_left = time_left - fit_time*modulos[i]
     end
 
-
+        local internal_name_index = 1
 	if not short then
-		local internal_name_index = 1
+		internal_name_index = 1
 	else
-		local internal_name_index = 2
+		internal_name_index = 2
 	end
 
 	-- Connects name with index value
