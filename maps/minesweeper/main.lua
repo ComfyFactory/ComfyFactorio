@@ -201,6 +201,9 @@ local function visit_cell(position)
 
     if cell then
         if cell[1] == 10 then
+	        -- somehow there is a race possible here.
+	        -- cf this -1 screenie https://discord.com/channels/433039858794233858/832822538634526740/838160964175265813
+	        -- this CAN happen if there are 2 checks same tick, but that would mean the event + que? idk but -1 is only here.
             Functions.kaboom(position)
             score_change = -8
             cell[1] = -1
