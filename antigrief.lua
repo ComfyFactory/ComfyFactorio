@@ -9,6 +9,7 @@ local Utils = require 'utils.core'
 local Color = require 'utils.color_presets'
 local Server = require 'utils.server'
 local Jail = require 'utils.datastore.jail_data'
+local FancyTime = require 'tools.fancy_time'
 
 local Public = {}
 local match = string.match
@@ -261,7 +262,8 @@ local function on_player_built_tile(event)
     if #this.landfill_history > 1000 then
         this.landfill_history = {}
     end
-    local t = math.abs(math.floor((game.tick) / 3600))
+    local t = math.abs(math.floor((game.tick) / 60))
+    t = FancyTime.short_fancy_time(t)
     local str = '[' .. t .. '] '
     str = str .. player.name .. ' at X:'
     str = str .. placed_tiles[1].position.x
@@ -365,7 +367,8 @@ local function on_player_used_capsule(event)
             this.capsule_history = {}
         end
 
-        local t = math.abs(math.floor((game.tick) / 3600))
+        local t = math.abs(math.floor((game.tick) / 60))
+        t = FancyTime.short_fancy_time(t)
         local str = '[' .. t .. '] '
         str = str .. msg
         str = str .. ' at X:'
@@ -420,7 +423,8 @@ local function on_entity_died(event)
             chest = '[color=yellow]' .. event.entity.name .. '[/color]'
         end
 
-        local t = math.abs(math.floor((game.tick) / 3600))
+        local t = math.abs(math.floor((game.tick) / 60))
+        t = FancyTime.short_fancy_time(t)
         local str = '[' .. t .. '] '
         str = str .. name .. ' destroyed '
         str = str .. chest
@@ -437,7 +441,8 @@ local function on_entity_died(event)
                 return
             end
         end
-        local t = math.abs(math.floor((game.tick) / 3600))
+        local t = math.abs(math.floor((game.tick) / 60))
+        t = FancyTime.short_fancy_time(t)
         local str = '[' .. t .. '] '
         if cause and cause.name == 'character' and cause.player then
             str = str .. cause.player.name .. ' destroyed '
@@ -482,7 +487,8 @@ local function on_player_mined_entity(event)
         if #this.mining_history > 1000 then
             this.mining_history = {}
         end
-        local t = math.abs(math.floor((game.tick) / 3600))
+        local t = math.abs(math.floor((game.tick) / 60))
+        t = FancyTime.short_fancy_time(t)
         local str = '[' .. t .. '] '
         str = str .. player.name .. ' mined '
         str = str .. '[color=yellow]' .. entity.name .. '[/color]'
@@ -516,7 +522,8 @@ local function on_player_mined_entity(event)
         this.mining_history = {}
     end
 
-    local t = math.abs(math.floor((game.tick) / 3600))
+    local t = math.abs(math.floor((game.tick) / 60))
+    t = FancyTime.short_fancy_time(t)
     local str = '[' .. t .. '] '
     str = str .. player.name .. ' mined '
     str = str .. '[color=yellow]' .. event.entity.name .. '[/color]'
@@ -563,7 +570,8 @@ local function on_gui_opened(event)
             this.corpse_history = {}
         end
 
-        local t = math.abs(math.floor((game.tick) / 3600))
+        local t = math.abs(math.floor((game.tick) / 60))
+        t = FancyTime.short_fancy_time(t)
         local str = '[' .. t .. '] '
         str = str .. player.name .. ' opened '
         str = str .. '[color=yellow]' .. corpse_owner.name .. '[/color] body'
@@ -617,7 +625,8 @@ local function on_pre_player_mined_item(event)
             this.corpse_history = {}
         end
 
-        local t = math.abs(math.floor((game.tick) / 3600))
+        local t = math.abs(math.floor((game.tick) / 60))
+        t = FancyTime.short_fancy_time(t)
         local str = '[' .. t .. '] '
         str = str .. player.name .. ' mined '
         str = str .. '[color=yellow]' .. corpse_owner.name .. '[/color] body'
@@ -709,7 +718,8 @@ local function on_player_cancelled_crafting(event)
             this.cancel_crafting_history = {}
         end
 
-        local t = math.abs(math.floor((game.tick) / 3600))
+        local t = math.abs(math.floor((game.tick) / 60))
+        t = FancyTime.short_fancy_time(t)
         local str = '[' .. t .. '] '
         str = str .. player.name .. ' canceled '
         str = str .. ' item [color=yellow]' .. event.recipe.name .. '[/color]'
@@ -930,7 +940,8 @@ function Public.insert_into_capsule_history(player, position, msg)
     if #this.capsule_history > 1000 then
         this.capsule_history = {}
     end
-    local t = math.abs(math.floor((game.tick) / 3600))
+    local t = math.abs(math.floor((game.tick) / 60))
+    t = FancyTime.short_fancy_time(t)
     local str = '[' .. t .. '] '
     str = str .. '[color=yellow]' .. msg .. '[/color]'
     str = str .. ' at X:'
