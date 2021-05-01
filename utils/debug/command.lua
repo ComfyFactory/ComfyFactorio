@@ -14,9 +14,9 @@ commands.add_command(
             return
         end
 
-        if (player.name ~= 'Gerkiz' and not _DEBUG) then
-            return
-        end
+        -- if (player.name ~= 'Gerkiz' and not _DEBUG) then
+        --     return
+        -- end
 
         DebugView.open_debug(player)
     end
