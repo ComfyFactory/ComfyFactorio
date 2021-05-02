@@ -591,6 +591,17 @@ local function on_entity_died(event)
 end
 
 local function on_nth_tick()
+    -- that part is a shortcut that tryes to fix at least something
+    -- each 2 ticks x 10 per call is *just* 300 ops a sec
+    -- however it lags for me on a full que (K). if it is more than 30 sec of small lags I want to drop the table :>
+    if #minesweeper.visit_queue > 9000
+        -- this should only kill "numbers" render afaics
+        -- all the other states *should* go fine
+        minesweeper.visit_queue = {}
+        -- @XXX: add a better log/message that is more eco friendly.
+        game.print("[dbg] (You should NOT see this. Unless a big event went nuts again) The que is over 9000! Tell devs we've dropped some of it. Pls walk on numbers on the ground in case they were dropped and have not been updated yet.")
+    end
+    
     local threshold = 10 -- 6-10 max on a full que pls; 25 is the frezing max prob.
     for k, position in pairs(minesweeper.visit_queue) do
         visit_cell(position)
