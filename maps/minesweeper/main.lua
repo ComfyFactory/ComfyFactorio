@@ -367,6 +367,7 @@ local function mark_mine(entity, player)
         if minesweeper.cells[key] and minesweeper.cells[key][1] == 10 then
             Functions.kaboom(p)
             score_change = score_change - 8
+            -- this is a second point that might lead to races and score -1. The first one is at the usual kaboom.
             minesweeper.cells[key][1] = -1
             solve_attempt(p)
             table.insert(minesweeper.visit_queue, {x = p.x, y = p.y})
