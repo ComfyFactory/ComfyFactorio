@@ -591,10 +591,14 @@ local function on_entity_died(event)
 end
 
 local function on_nth_tick()
+    local threshold = 10 -- 6-10 max on a full que pls; 25 is the frezing max prob.
     for k, position in pairs(minesweeper.visit_queue) do
         visit_cell(position)
         table.remove(minesweeper.visit_queue, k)
-        break
+        threshold = threshold - 1
+        if threshold == 0 then
+            break
+        end
     end
 end
 
