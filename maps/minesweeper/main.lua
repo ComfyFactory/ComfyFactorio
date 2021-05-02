@@ -211,6 +211,7 @@ local function visit_cell(position)
                 local p = {x = position.x + vector[1], y = position.y + vector[2]}
                 local key = Functions.position_to_string(p)
                 if minesweeper.cells[key] and minesweeper.cells[key][1] < 10 then
+					-- is duplicate insertion possible here? For the one that is in the que already
                     table.insert(minesweeper.visit_queue, {x = p.x, y = p.y})
                 end
             end
@@ -245,6 +246,7 @@ local function visit_cell(position)
                 adjacent_cell[1] = mine_count
                 update_rendering(adjacent_cell, adjacent_position)
                 if mine_count == 0 then
+                    -- is duplicate insertion possible here? For the one that is in the que already
                     table.insert(minesweeper.visit_queue, {x = adjacent_position.x, y = adjacent_position.y})
                 end
             end
@@ -260,6 +262,7 @@ local function visit_cell(position)
             local adjacent_key = Functions.position_to_string(adjacent_position)
             local adjacent_cell = minesweeper.cells[adjacent_key]
             if adjacent_cell and adjacent_cell[1] < 9 then
+                -- is duplicate insertion possible here? For the one that is in the que already
                 table.insert(minesweeper.visit_queue, {x = adjacent_position.x, y = adjacent_position.y})
             end
         end
@@ -370,6 +373,7 @@ local function mark_mine(entity, player)
             -- this is a second point that might lead to races and score -1. The first one is at the usual kaboom.
             minesweeper.cells[key][1] = -1
             solve_attempt(p)
+            -- is duplicate insertion possible here? For the one that is in the que already
             table.insert(minesweeper.visit_queue, {x = p.x, y = p.y})
         end
     end
