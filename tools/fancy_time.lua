@@ -105,6 +105,9 @@ function Public.filter_time(fancy_array, filter_words, mode)
 			end
 		end
 	end
+	if #filtered_array == 0 then
+        	filtered_array = fancy_array
+  	end
 	return filtered_array
 end
 
@@ -124,9 +127,7 @@ end
 ---@param seconds <number>
 function Public.short_fancy_time(seconds)
 	local fancy = Public.seconds_to_fancy(seconds,true)
-	if seconds > 59 then
-		fancy = Public.filter_time(fancy, {"seconds","s"}, false)
-	end
+	fancy = Public.filter_time(fancy, {"seconds","s"}, false)
 	fancy = Public.fancy_time_formatting(fancy)
 	return fancy
 end
