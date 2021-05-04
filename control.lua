@@ -143,8 +143,8 @@ require 'modules.autostash'
 --require 'maps.railway_troopers.main'
 
 --![[You fell in a dark cave, will you survive?]]--
+--require 'maps.cave_choppy.main'
 --require 'maps.cave_miner'
---require 'maps.cave_choppy.cave_miner'
 --require 'maps.cave_miner_v2.main'
 
 --![[Hungry boxes eat your items, but reward you with new territory to build.]]--
