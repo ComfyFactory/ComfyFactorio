@@ -1,22 +1,15 @@
 --luacheck: ignore
--- Cave Miner -- mewmew made this --
--- modified by Gerkiz --
+-- By Gerkiz
 
-require 'choppy'
+require 'forest_world'
 require 'player_elevator'
 require 'modules.rocks_broken_paint_tiles'
 require 'cave_miner_kaboomsticks'
---require "modules.satellite_score"
---require "modules.explosive_biters"
---require "modules.spawners_contain_biters"
---require "modules.teleporting_worms"
---require "modules.splice_double"
---require "modules.biters_double_damage"
 
 local enable_fishbank_terminal = true
 local simplex_noise = require 'utils.simplex_noise'.d2
 local Event = require 'utils.event'
-local Module = require 'modules.infinity_chest'
+local Module = require 'infinity_chest'
 local market_items = require 'cave_miner_market_items'
 local Map = require 'modules.map_info'
 
@@ -1914,6 +1907,14 @@ local function on_market_item_purchased(event)
     end
 end
 
+local function disable_tech()
+    game.forces.player.technologies['spidertron'].enabled = false
+    game.forces.player.technologies['spidertron'].researched = false
+    game.forces.player.technologies['optics'].researched = true
+    game.forces.player.technologies['artillery'].researched = false
+    game.forces.player.technologies['atomic-bomb'].enabled = false
+end
+
 local function on_init()
     local T = Map.Pop_info()
     T.main_caption = 'Cave Choppy'
@@ -1951,6 +1952,8 @@ local function on_init()
 	]])
     T.main_caption_color = {r = 150, g = 150, b = 0}
     T.sub_caption_color = {r = 0, g = 150, b = 0}
+
+    disable_tech()
 end
 
 Event.on_init(on_init)

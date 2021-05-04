@@ -1,18 +1,16 @@
 --luacheck: ignore
---choppy-- mewmew made this --
--- modified by gerkiz
+-- By gerkiz
 
 require 'modules.dynamic_landfill'
 require 'modules.satellite_score'
 require 'modules.spawners_contain_biters'
 require 'functions.create_entity_chain'
 require 'functions.create_tile_chain'
---require "maps.choppy_map_intro"
 
 local unearthing_worm = require 'functions.unearthing_worm'
 local unearthing_biters = require 'functions.unearthing_biters'
 local tick_tack_trap = require 'functions.tick_tack_trap'
-local Module = require 'modules.infinity_chest'
+local Module = require 'infinity_chest'
 local Simplex = require 'utils.simplex_noise'.d2
 local Event = require 'utils.event'
 local table_insert = table.insert

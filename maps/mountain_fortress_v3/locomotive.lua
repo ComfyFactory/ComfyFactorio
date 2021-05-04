@@ -1084,7 +1084,7 @@ local function gui_click(event)
                 player.name .. ' has bought the locomotive health modifier for ' .. format_number(item.price, true) .. ' coins.'
             }
         )
-        this.locomotive_max_health = this.locomotive_max_health + 4000 * item.stack
+        this.locomotive_max_health = this.locomotive_max_health + (this.locomotive_max_health * 0.5 * item.stack)
         local m = this.locomotive_health / this.locomotive_max_health
 
         if this.carriages then
