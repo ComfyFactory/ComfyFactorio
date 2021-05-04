@@ -105,6 +105,9 @@ function Public.filter_time(fancy_array, filter_words, mode)
 			end
 		end
 	end
+	if #filtered_array == 0 then
+        	filtered_array = fancy_array
+  	end
 	return filtered_array
 end
 
