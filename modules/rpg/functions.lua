@@ -4,8 +4,6 @@ local Gui = require 'utils.gui'
 local Color = require 'utils.color_presets'
 local Token = require 'utils.token'
 local Alert = require 'utils.alert'
-local Task = require 'utils.task'
-local Token = require 'utils.token'
 
 local Public = {}
 
