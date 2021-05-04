@@ -64,6 +64,10 @@ function Public.add(surface, position, chest)
         container.insert({name = 'coin', count = random(1, 128)})
     elseif random(1, 128) == 1 then
         container.insert({name = 'coin', count = random(1, 256)})
+    elseif random(1, 256) == 1 then
+        container.insert({name = 'coin', count = random(1, 512)})
+    elseif random(1, 512) == 1 then
+        container.insert({name = 'coin', count = random(1, 1024)})
     end
 
     for _ = 1, 3, 1 do

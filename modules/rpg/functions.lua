@@ -4,6 +4,8 @@ local Gui = require 'utils.gui'
 local Color = require 'utils.color_presets'
 local Token = require 'utils.token'
 local Alert = require 'utils.alert'
+local Task = require 'utils.task'
+local Token = require 'utils.token'
 
 local Public = {}
 
@@ -732,6 +734,35 @@ function Public.global_pool(players, count)
     rpg_extra.global_pool = rpg_extra.leftover_pool or 0
 
     return
+end
+
+local damage_player_over_time_token =
+    Token.register(
+    function(data)
+        local player = data.player
+        local damage = data.damage
+        if not player.character or not player.character.valid then
+            return
+        end
+        player.character.health = player.character.health - damage
+        player.character.surface.create_entity({name = 'water-splash', position = player.position})
+    end
+)
+
+--- Damages a player over time.
+function Public.damage_player_over_time(player, amount, damage)
+    if not player or not player.valid then
+        return
+    end
+
+    amount = amount or 5
+    damage = damage or 10
+    local tick = 20
+    for _ = 1, amount, 1 do
+        Task.set_timeout_in_ticks(tick, damage_player_over_time_token, {player = player, damage = damage})
+        tick = tick + 15
+        damage = damage + 10
+    end
 end
 
 --- Distributes the global xp pool to every connected player.

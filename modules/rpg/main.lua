@@ -1098,8 +1098,8 @@ local function on_player_used_capsule(event)
     elseif object.obj_to_create == 'warp-gate' then
         player.teleport(surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5), surface)
         rpg_t[player.index].mana = 0
-        player.character.health = 10
-        player.character.surface.create_entity({name = 'water-splash', position = player.position})
+        Functions.damage_player_over_time(player, 10)
+        player.play_sound {path = 'utility/armor_insert', volume_modifier = 1}
         p(({'rpg_main.warped_ok'}), Color.info)
         rpg_t[player.index].mana = rpg_t[player.index].mana - object.mana_cost
     elseif projectile_types[obj_name] then -- projectiles

@@ -13,11 +13,13 @@ local fallout_width = 64
 local fallout_debris = {}
 
 for x = fallout_width * -1 - 32, fallout_width + 32, 1 do
-    for y = fallout_width * -1 - 32, fallout_width + 32, 1 do
-        local position = {x = x, y = y}
-        local fallout = sqrt(position.x ^ 2 + position.y ^ 2)
-        if fallout > fallout_width then
-            fallout_debris[#fallout_debris + 1] = {position.x, position.y}
+    if x < -31 or x > 31 then
+        for y = fallout_width * -1 - 32, fallout_width + 32, 1 do
+            local position = {x = x, y = y}
+            local fallout = sqrt(position.x ^ 2 + position.y ^ 2)
+            if fallout > fallout_width then
+                fallout_debris[#fallout_debris + 1] = {position.x, position.y}
+            end
         end
     end
 end
@@ -32,7 +34,7 @@ local reconstruct_all_trains =
 )
 
 local function get_tile_name()
-    local main_tile_name = 'tutorial-grid'
+    local main_tile_name = 'black-refined-concrete'
     local modded = is_game_modded()
     if modded then
         if game.active_mods['Krastorio2'] then
@@ -200,6 +202,50 @@ local function input_filtered(wagon_inventory, chest, chest_inventory, free_slot
     end
 end
 
+local remove_lights_token =
+    Token.register(
+    function(data)
+        local id = data.id
+        if id then
+            rendering.destroy(id)
+        end
+    end
+)
+
+function Public.glimpse_of_lights(icw)
+    local surface = WPT.get('loco_surface')
+    if not surface or not surface.valid then
+        return
+    end
+
+    local hazardous_debris = icw.hazardous_debris
+    if not hazardous_debris then
+        return
+    end
+
+    local text = rendering.draw_text
+    local position = fallout_debris[random(1, size_of_debris)]
+
+    local p = {x = position[1], y = position[2]}
+    local get_tile = surface.get_tile(p)
+    if get_tile.valid and get_tile.name == 'out-of-map' then
+        local id =
+            text {
+            text = '★',
+            surface = surface,
+            target = position,
+            color = {r = 1, g = 1, b = 0},
+            orientation = random(0, 100) * 0.01,
+            scale = 0.4,
+            font = 'heading-1',
+            alignment = 'center',
+            scale_with_zoom = false
+        }
+
+        Task.set_timeout_in_ticks(300, remove_lights_token, {id = id})
+    end
+end
+
 function Public.hazardous_debris(icw)
     local speed = icw.speed
     local surface = WPT.get('loco_surface')
@@ -213,15 +259,6 @@ function Public.hazardous_debris(icw)
     end
 
     local create = surface.create_entity
-
-    for _ = 1, 16 * speed, 1 do
-        local position = fallout_debris[random(1, size_of_debris)]
-        local p = {x = position[1], y = position[2]}
-        local get_tile = surface.get_tile(p)
-        if get_tile.valid and get_tile.name == 'out-of-map' then
-            create({name = 'blue-laser', position = position, force = 'neutral', target = {position[1], position[2] + fallout_width * 2}, speed = speed})
-        end
-    end
 
     for _ = 1, 16 * speed, 1 do
         local position = fallout_debris[random(1, size_of_debris)]
