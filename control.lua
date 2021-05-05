@@ -113,6 +113,9 @@ require 'modules.autostash'
 --require 'maps.choppy'
 --require 'maps.choppy_dx'
 
+--![[Launch rockets in increasingly harder getting worlds.]]--
+--require 'maps.journey.main'
+
 --![[Minesweeper?]]--
 --require 'maps.minesweeper.main'
 
