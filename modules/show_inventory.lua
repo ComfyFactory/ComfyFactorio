@@ -1,5 +1,6 @@
 local Global = require 'utils.global'
 local Color = require 'utils.color_presets'
+local SpamProtection = require 'utils.spam_protection'
 local Event = require 'utils.event'
 
 local this = {
@@ -25,9 +26,11 @@ local function get_player_data(player, remove)
         this.data[player.index] = nil
         return
     end
+
     if not this.data[player.index] then
         this.data[player.index] = {}
     end
+
     return this.data[player.index]
 end
 
@@ -51,6 +54,28 @@ local function validate_object(obj)
     return true
 end
 
+local function get_target_player(index)
+    local viewingPlayer = game.get_player(index)
+    if not viewingPlayer or not viewingPlayer.valid then
+        return false
+    end
+    return viewingPlayer
+end
+
+local function watching_inventory(player)
+    for index, data in pairs(this.data) do
+        if data and data.player_opened == player.index then
+            local sourcePlayer = game.get_player(index)
+            if not sourcePlayer or not sourcePlayer.valid then
+                return false
+            else
+                return sourcePlayer
+            end
+        end
+    end
+    return false
+end
+
 local function player_opened(player)
     local data = get_player_data(player)
 
@@ -60,7 +85,7 @@ local function player_opened(player)
 
     local opened = data.player_opened
 
-    if not validate_object(opened) then
+    if not opened then
         return false
     end
 
@@ -137,7 +162,6 @@ local function redraw_inventory(gui, source, target, caption, panel_type)
     end
 
     local inventory_gui = screen.inventory_gui
-
     inventory_gui.caption = 'Inventory of ' .. target.name
 
     for name, opts in pairs(panel_type) do
@@ -248,7 +272,7 @@ local function open_inventory(source, target)
 
     local data = get_player_data(source)
 
-    data.player_opened = target
+    data.player_opened = target.index
     data.last_tab = 'Main'
 
     local main = target.get_main_inventory().get_contents()
@@ -296,6 +320,11 @@ local function on_gui_click(event)
         return
     end
 
+    local is_spamming = SpamProtection.is_spamming(player, nil, 'Player Inventory')
+    if is_spamming then
+        return
+    end
+
     local data = get_player_data(player)
     if not data then
         return
@@ -304,12 +333,16 @@ local function on_gui_click(event)
     data.last_tab = name
 
     local valid, target = player_opened(player)
-    if valid then
-        local main = target.get_main_inventory().get_contents()
-        local armor = target.get_inventory(defines.inventory.character_armor).get_contents()
-        local guns = target.get_inventory(defines.inventory.character_guns).get_contents()
-        local ammo = target.get_inventory(defines.inventory.character_ammo).get_contents()
-        local trash = target.get_inventory(defines.inventory.character_trash).get_contents()
+    if valid and target then
+        local viewingPlayer = get_target_player(target)
+        if not viewingPlayer then
+            return false
+        end
+        local main = viewingPlayer.get_main_inventory().get_contents()
+        local armor = viewingPlayer.get_inventory(defines.inventory.character_armor).get_contents()
+        local guns = viewingPlayer.get_inventory(defines.inventory.character_guns).get_contents()
+        local ammo = viewingPlayer.get_inventory(defines.inventory.character_ammo).get_contents()
+        local trash = viewingPlayer.get_inventory(defines.inventory.character_trash).get_contents()
 
         local target_types = {
             ['Main'] = main,
@@ -321,7 +354,7 @@ local function on_gui_click(event)
         local frame = Public.get_active_frame(player)
         local panel_type = target_types[name]
 
-        redraw_inventory(frame, player, target, name, panel_type)
+        redraw_inventory(frame, player, viewingPlayer, name, panel_type)
     end
 end
 local function gui_closed(event)
@@ -343,44 +376,43 @@ local function on_pre_player_left_game(event)
     close_player_inventory(player)
 end
 
-local function update_gui()
-    for _, player in pairs(game.connected_players) do
-        local valid, target = player_opened(player)
-        local success, tab = last_tab(player)
+local function update_gui(event)
+    local player = game.get_player(event.player_index)
+    if not player or not player.valid then
+        return
+    end
 
-        if valid then
-            if success then
-                if target and target.valid then
-                    local main = target.get_main_inventory()
-                    if not main then
-                        return
-                    end
+    local sourcePlayer = watching_inventory(player)
+    local success, tab = last_tab(player)
 
-                    main = main.get_contents()
-                    local armor = target.get_inventory(defines.inventory.character_armor).get_contents()
-                    local guns = target.get_inventory(defines.inventory.character_guns).get_contents()
-                    local ammo = target.get_inventory(defines.inventory.character_ammo).get_contents()
-                    local trash = target.get_inventory(defines.inventory.character_trash).get_contents()
+    if sourcePlayer and sourcePlayer.valid then
+        if success then
+            local main = player.get_main_inventory()
+            if not main then
+                return
+            end
 
-                    local types = {
-                        ['Main'] = main,
-                        ['Armor'] = armor,
-                        ['Guns'] = guns,
-                        ['Ammo'] = ammo,
-                        ['Trash'] = trash
-                    }
+            main = main.get_contents()
+            local armor = player.get_inventory(defines.inventory.character_armor).get_contents()
+            local guns = player.get_inventory(defines.inventory.character_guns).get_contents()
+            local ammo = player.get_inventory(defines.inventory.character_ammo).get_contents()
+            local trash = player.get_inventory(defines.inventory.character_trash).get_contents()
 
-                    local frame = Public.get_active_frame(player)
-                    local panel_type = types[tab]
-                    if frame then
-                        if frame.name == tab .. 'tab' then
-                            redraw_inventory(frame, player, target, tab, panel_type)
-                        end
-                    end
+            local types = {
+                ['Main'] = main,
+                ['Armor'] = armor,
+                ['Guns'] = guns,
+                ['Ammo'] = ammo,
+                ['Trash'] = trash
+            }
+
+            local frame = Public.get_active_frame(player)
+            local panel_type = types[tab]
+            if frame then
+                if frame.name == tab .. 'tab' then
+                    redraw_inventory(frame, sourcePlayer, player, tab, panel_type)
                 end
             end
-        else
-            close_player_inventory(player)
         end
     end
 end
