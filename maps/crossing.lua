@@ -19,10 +19,6 @@ local function on_player_joined_game(event)
         pos = player.character.surface.find_non_colliding_position('character', {0, -40}, 50, 1)
         game.forces.player.set_spawn_position(pos, player.character.surface)
         player.teleport(pos, player.character.surface)
-
-        if global.show_floating_killscore then
-            global.show_floating_killscore[player.name] = false
-        end
     end
 end
 

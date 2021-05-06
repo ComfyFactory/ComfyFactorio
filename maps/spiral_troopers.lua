@@ -560,9 +560,6 @@ local function on_player_joined_game(event)
         end
     end
     if player.online_time < 10 then
-        if global.show_floating_killscore then
-            global.show_floating_killscore[player.name] = true
-        end
         player.insert {name = 'iron-plate', count = 32}
         player.insert {name = 'pistol', count = 1}
         player.insert {name = 'firearm-magazine', count = 64}

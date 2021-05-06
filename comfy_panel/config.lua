@@ -1,6 +1,5 @@
--- config tab --
-
 local Antigrief = require 'antigrief'
+local Event = require 'utils.event'
 local Color = require 'utils.color_presets'
 local SessionData = require 'utils.datastore.session_data'
 local Utils = require 'utils.core'
@@ -8,8 +7,23 @@ local Tabs = require 'comfy_panel.main'
 local SpamProtection = require 'utils.spam_protection'
 local BottomFrame = require 'comfy_panel.bottom_frame'
 local Token = require 'utils.token'
+local Global = require 'utils.global'
 
 local module_name = 'Config'
+
+local this = {
+    gui_config = {
+        spaghett = {},
+        poll_trusted = false
+    }
+}
+
+Global.register(
+    this,
+    function(tbl)
+        this = tbl
+    end
+)
 
 local spaghett_entity_blacklist = {
     ['logistic-chest-requester'] = true,
@@ -30,7 +44,7 @@ local function get_actor(event, prefix, msg, admins_only)
 end
 
 local function spaghett_deny_building(event)
-    local spaghett = global.comfy_panel_config.spaghett
+    local spaghett = this.gui_config.spaghett
     if not spaghett.enabled then
         return
     end
@@ -62,7 +76,7 @@ local function spaghett_deny_building(event)
 end
 
 local function spaghett()
-    local spaghetti = global.comfy_panel_config.spaghett
+    local spaghetti = this.gui_config.spaghett
     if spaghetti.enabled then
         for _, f in pairs(game.forces) do
             if f.technologies['logistic-system'].researched then
@@ -139,10 +153,10 @@ local functions = {
     end,
     ['comfy_panel_spaghett_toggle'] = function(event)
         if event.element.switch_state == 'left' then
-            global.comfy_panel_config.spaghett.enabled = true
+            this.gui_config.spaghett.enabled = true
             get_actor(event, '{Spaghett}', 'has enabled spaghett mode!')
         else
-            global.comfy_panel_config.spaghett.enabled = nil
+            this.gui_config.spaghett.enabled = nil
             get_actor(event, '{Spaghett}', 'has disabled spaghett mode!')
         end
         spaghett()
@@ -171,10 +185,10 @@ local functions = {
 local poll_function = {
     ['comfy_panel_poll_trusted_toggle'] = function(event)
         if event.element.switch_state == 'left' then
-            global.comfy_panel_config.poll_trusted = true
+            this.gui_config.poll_trusted = true
             get_actor(event, '{Poll Mode}', 'has disabled non-trusted people to do polls.')
         else
-            global.comfy_panel_config.poll_trusted = false
+            this.gui_config.poll_trusted = false
             get_actor(event, '{Poll Mode}', 'has allowed non-trusted people to do polls.')
         end
     end,
@@ -407,7 +421,7 @@ local function build_config_gui(data)
         scroll_pane.add({type = 'line'})
 
         switch_state = 'right'
-        if global.comfy_panel_config.spaghett.enabled then
+        if this.gui_config.spaghett.enabled then
             switch_state = 'left'
         end
         add_switch(
@@ -421,7 +435,7 @@ local function build_config_gui(data)
         if poll then
             scroll_pane.add({type = 'line'})
             switch_state = 'right'
-            if global.comfy_panel_config.poll_trusted then
+            if this.gui_config.poll_trusted then
                 switch_state = 'left'
             end
             add_switch(scroll_pane, switch_state, 'comfy_panel_poll_trusted_toggle', 'Poll mode', 'Disables non-trusted plebs to create polls.')
@@ -442,7 +456,7 @@ local function build_config_gui(data)
         if AG.enabled then
             switch_state = 'left'
         end
-        add_switch(scroll_pane, switch_state, 'comfy_panel_disable_antigrief', 'Antigrief', 'Left = Enables antigrief / Right = Disables antigrief')
+        add_switch(scroll_pane, switch_state, 'comfy_panel_disable_antigrief', 'Antigrief', 'Toggle antigrief function.')
         scroll_pane.add({type = 'line'})
 
         if is_loaded('maps.biter_battles_v2.main') then
@@ -646,18 +660,8 @@ local function on_robot_built_entity(event)
     spaghett_deny_building(event)
 end
 
-local function on_init()
-    global.comfy_panel_config = {}
-    global.comfy_panel_config.spaghett = {}
-    global.comfy_panel_config.spaghett.undo = {}
-    global.comfy_panel_config.poll_trusted = false
-    global.comfy_panel_disable_antigrief = false
-end
-
 Tabs.add_tab_to_gui({name = module_name, id = build_config_gui_token, admin = false})
 
-local Event = require 'utils.event'
-Event.on_init(on_init)
 Event.add(defines.events.on_gui_switch_state_changed, on_gui_switch_state_changed)
 Event.add(defines.events.on_force_created, on_force_created)
 Event.add(defines.events.on_built_entity, on_built_entity)

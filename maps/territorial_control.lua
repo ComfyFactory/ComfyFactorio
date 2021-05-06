@@ -445,9 +445,6 @@ local function on_player_joined_game(event)
         player.insert({name = 'land-mine', count = 5})
         player.insert({name = 'light-armor', count = 1})
         player.insert({name = 'firearm-magazine', count = 128})
-        if global.show_floating_killscore then
-            global.show_floating_killscore[player.name] = false
-        end
     end
 
     local surface = game.surfaces['territorial_control']

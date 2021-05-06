@@ -684,9 +684,6 @@ local function on_player_joined_game(event)
         player.insert({name = 'firearm-magazine', count = 32})
         player.insert({name = 'iron-plate', count = 64})
         player.insert({name = 'stone', count = 32})
-        if global.show_floating_killscore then
-            global.show_floating_killscore[player.name] = false
-        end
     end
 
     local surface = game.surfaces['nightfall']

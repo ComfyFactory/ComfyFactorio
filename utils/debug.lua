@@ -8,10 +8,10 @@ local debug_getupvalue = debug.getupvalue
 -- this
 local Debug = {}
 
-global.debug_message_count = 0
-
 ---@return number next index
 local function increment()
+    global.debug_message_count = global.debug_message_count or {}
+
     local next = global.debug_message_count + 1
     global.debug_message_count = next
 
