@@ -640,6 +640,28 @@ local function on_pre_player_mined_item(event)
     end
 end
 
+local function on_console_chat(event)
+    if not event.player_index then
+        return
+    end
+    local player = game.get_player(event.player_index)
+
+    if not this.message_history then
+        this.message_history = {}
+    end
+    if #this.message_history > 1000 then
+        this.message_history = {}
+    end
+
+    local t = math.abs(math.floor((game.tick) / 60))
+    t = FancyTime.short_fancy_time(t)
+    local message = event.message
+    local str = '[' .. t .. '] '
+    str = str .. player.name .. ' said: '
+    str = str .. '[color=yellow]' .. message .. '[/color]'
+    increment(this.message_history, str)
+end
+
 local function on_player_cursor_stack_changed(event)
     if not this.enabled then
         return
@@ -980,5 +1002,6 @@ Event.add(de.on_permission_group_added, on_permission_group_added)
 Event.add(de.on_permission_group_deleted, on_permission_group_deleted)
 Event.add(de.on_permission_group_edited, on_permission_group_edited)
 Event.add(de.on_permission_string_imported, on_permission_string_imported)
+Event.add(defines.events.on_console_chat, on_console_chat)
 
 return Public

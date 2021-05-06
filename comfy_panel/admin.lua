@@ -239,6 +239,7 @@ local function draw_events(data)
 
     local history_index = {
         ['Capsule History'] = antigrief.capsule_history,
+        ['Message History'] = antigrief.message_history,
         ['Friendly Fire History'] = antigrief.friendly_fire_history,
         ['Mining History'] = antigrief.mining_history,
         ['Landfill History'] = antigrief.landfill_history,
@@ -264,6 +265,8 @@ local function draw_events(data)
         scroll_pane.style.minimal_width = 790
     end
 
+    local tooltip = 'Click to open mini camera.'
+
     local target_player_name = frame['admin_player_select'].items[frame['admin_player_select'].selected_index]
     if game.players[target_player_name] then
         if not history_index or not history_index[history] or #history_index[history] <= 0 then
@@ -279,11 +282,15 @@ local function draw_events(data)
                     end
                 end
 
+                if history == 'Message History' then
+                    tooltip = nil
+                end
+
                 frame.datalog.add(
                     {
                         type = 'label',
                         caption = history_index[history][i],
-                        tooltip = 'Click to open mini camera.'
+                        tooltip = tooltip
                     }
                 )
                 ::continue::
@@ -476,6 +483,9 @@ local function create_admin_panel(data)
     local histories = {}
     if antigrief.capsule_history then
         table.insert(histories, 'Capsule History')
+    end
+    if antigrief.message_history then
+        table.insert(histories, 'Message History')
     end
     if antigrief.friendly_fire_history then
         table.insert(histories, 'Friendly Fire History')

@@ -9,6 +9,9 @@ local serialize = serpent.serialize
 local concat = table.concat
 local remove = table.remove
 local tostring = tostring
+local len = string.len
+local gmatch = string.gmatch
+local insert = table.insert
 local raw_print = Print.raw_print
 
 local serialize_options = {sparse = true, compact = true}
@@ -983,28 +986,75 @@ Event.add(
             return
         end
         local player = game.players[event.player_index]
-        local reason = event.parameters
-        if not reason then
+        local user = event.parameters
+        if not user then
             return
         end
+
+        if len(user) <= 2 then
+            return
+        end
+
         if not player.admin then
             return
         end
+
+        local userIndex
+        local reason
+        local str = ''
+
+        local t = {}
+        for i in gmatch(user, '%S+') do
+            insert(t, i)
+        end
+
+        userIndex = t[1]
+
+        for i = 2, #t do
+            str = str .. t[i] .. ' '
+            reason = str
+        end
+
+        if not userIndex then
+            return log('Log to Discord when a user is banned failed. userIndex was undefined.')
+        end
+
+        local banishedPlayer
+        if game.players[userIndex] then
+            banishedPlayer = game.players[userIndex]
+        else
+            return
+        end
+
+        if banishedPlayer.index == player.index then
+            return
+        end
+
         if cmd == 'ban' then
             Public.set_data(jailed_data_set, player.name, nil) -- this is added here since we don't want to clutter the jail dataset.
             if player then
-                Public.to_banned_embed(table.concat {player.name .. ' banned ' .. reason})
-                return
+                if not reason then
+                    Public.to_banned_embed(table.concat {player.name .. ' banned ' .. banishedPlayer.name .. '. Reason: Not specified.'})
+                    return
+                else
+                    Public.to_banned_embed(table.concat {player.name .. ' banned ' .. banishedPlayer.name .. '. Reason: ' .. reason})
+                    return
+                end
             else
-                Public.to_banned_embed(table.concat {'Server banned ' .. reason})
-                return
+                if not reason then
+                    Public.to_banned_embed(table.concat {'Server banned ' .. banishedPlayer.name .. '. Reason: Not specified.'})
+                    return
+                else
+                    Public.to_banned_embed(table.concat {'Server banned ' .. banishedPlayer.name .. '. Reason: ' .. reason})
+                    return
+                end
             end
         elseif cmd == 'unban' then
             if player then
-                Public.to_banned_embed(table.concat {player.name .. ' unbanned ' .. reason})
+                Public.to_banned_embed(table.concat {player.name .. ' unbanned ' .. banishedPlayer.name})
                 return
             else
-                Public.to_banned_embed(table.concat {'Server unbanned ' .. reason})
+                Public.to_banned_embed(table.concat {'Server unbanned ' .. banishedPlayer.name})
                 return
             end
         end
