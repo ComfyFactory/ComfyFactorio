@@ -142,6 +142,9 @@ require 'modules.autostash'
 --![[Another simliar version without collapsing terrain]]--
 --require 'maps.railway_troopers.main'
 
+--![[Territorial Control - reveal the map as you walk through the mist]]--
+--require 'maps.territorial_control'
+
 --![[You fell in a dark cave, will you survive?]]--
 --require 'maps.cave_choppy.main'
 --require 'maps.cave_miner'
@@ -152,7 +155,6 @@ require 'modules.autostash'
 
 --![[Crashlanding on Junk Planet]]--
 --require 'maps.junkyard'
---require 'maps.territorial_control'
 --require 'maps.junkyard_pvp.main'
 
 --![[A green maze]]--

@@ -104,6 +104,19 @@ local ore_spawn_raffle = {
 }
 
 local rock_raffle = {'sand-rock-big', 'sand-rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-huge'}
+local rock_raffle_valid = {
+    ['sand-rock-big'] = true,
+    ['sand-rock-big'] = true,
+    ['rock-big'] = true,
+    ['rock-big'] = true,
+    ['rock-big'] = true,
+    ['rock-big'] = true,
+    ['rock-big'] = true,
+    ['rock-big'] = true,
+    ['rock-big'] = true,
+    ['rock-big'] = true,
+    ['rock-huge'] = true
+}
 local tree_raffle = {
     'tree-02-red',
     'tree-09-red',
@@ -221,7 +234,7 @@ local function get_entity(position)
     local entity_name = false
     if noise > 0 then
         if math_random(1, 3) ~= 1 then
-            entity_name = 'mineable-wreckage'
+            entity_name = rock_raffle[math_random(1, #rock_raffle)]
             if noise > 0.59 then
                 entity_name = rock_raffle[math_random(1, #rock_raffle)]
                 if math_random(1, 128) == 1 then
@@ -541,7 +554,7 @@ local function on_player_mined_entity(event)
         return
     end
 
-    if entity.name == 'mineable-wreckage' then
+    if rock_raffle_valid[entity.name] then
         if math_random(1, 40) == 1 then
             unearthing_biters(entity.surface, entity.position, math_random(4, 12))
         end
@@ -593,7 +606,7 @@ local function on_entity_died(event)
         end
     end
 
-    if event.entity.type == 'tree' or event.entity.name == 'mineable-wreckage' or event.entity.type == 'rock' then
+    if event.entity.type == 'tree' or event.entity.type == 'rock' then
         if math_random(1, 32) == 1 then
             spawn_biter(event.entity.surface, event.entity.position)
         end
@@ -609,14 +622,14 @@ local disabled_for_deconstruction = {
     ['tree-02'] = true,
     ['tree-04'] = true,
     ['dead-tree-desert'] = true,
-    ['mineable-wreckage'] = true,
     ['tree-02-red'] = true,
     ['tree-09-red'] = true
 }
 
 local function on_marked_for_deconstruction(event)
+    local name = event.entity.name
     event.research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 300
-    if disabled_for_deconstruction[event.entity.name] then
+    if disabled_for_deconstruction[name] or rock_raffle_valid[name] then
         event.entity.cancel_deconstruction(game.players[event.player_index].force.name)
     end
 end
