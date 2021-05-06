@@ -18,9 +18,6 @@ local duration_slider_max = duration_max / duration_step
 local tick_duration_step = duration_step * 60
 local inv_tick_duration_step = 1 / tick_duration_step
 
---local normal_color = {r = 250, g = 235, b = 215}
---local focus_color = {r = 255, g = 165, b = 0}
-
 local polls = {}
 local polls_counter = {0}
 local no_notify_players = {}
@@ -118,9 +115,9 @@ local function send_poll_result_to_discord(poll)
     local result = {'Poll #', poll.id}
 
     local created_by_player = poll.created_by
-    if created_by_player and created_by_player.valid then
+    if created_by_player then
         insert(result, ' Created by ')
-        insert(result, created_by_player.name)
+        insert(result, created_by_player)
     end
 
     local edited_by_players = poll.edited_by
@@ -172,30 +169,11 @@ local function redraw_poll_viewer_content(data)
     end
 
     local answers = poll.answers
-    local voters = poll.voters
-
-    local tooltips = {}
-    for _, a in pairs(answers) do
-        tooltips[a] = {}
-    end
-
-    for player_index, answer in pairs(voters) do
-        local p = Game.get_player_by_index(player_index)
-        insert(tooltips[answer], p.name)
-    end
-
-    for a, t in pairs(tooltips) do
-        if #t == 0 then
-            tooltips[a] = ''
-        else
-            tooltips[a] = table.concat(t, ', ')
-        end
-    end
 
     local created_by_player = poll.created_by
     local created_by_text
-    if created_by_player and created_by_player.valid then
-        created_by_text = ' Created by ' .. created_by_player.name
+    if created_by_player then
+        created_by_text = ' Created by ' .. created_by_player
     else
         created_by_text = ''
     end
@@ -242,8 +220,6 @@ local function redraw_poll_viewer_content(data)
     local question_label = question_flow.add {type = 'label', caption = poll.question}
     question_label.style.minimal_height = 32
     question_label.style.single_line = false
-    --question_label.style.font_color = focus_color
-    --question_label.style.font = 'default-listbox'
     question_label.style.font = 'heading-2'
     question_label.style.font_color = {r = 0.98, g = 0.66, b = 0.22}
     question_label.style.top_padding = 4
@@ -253,7 +229,6 @@ local function redraw_poll_viewer_content(data)
 
     local grid = poll_viewer_content.add {type = 'table', column_count = 2}
 
-    --local answer = voters[player.index]
     local vote_buttons = {}
     for i, a in pairs(answers) do
         local vote_button_flow = grid.add {type = 'flow'}
@@ -265,11 +240,6 @@ local function redraw_poll_viewer_content(data)
             enabled = poll_enabled
         }
 
-        local tooltip = tooltips[a]
-        if tooltip ~= '' then
-            vote_button.tooltip = tooltip
-        end
-
         local vote_button_style = vote_button.style
         vote_button_style.height = 24
         vote_button_style.width = 26
@@ -279,11 +249,6 @@ local function redraw_poll_viewer_content(data)
         vote_button_style.left_padding = 0
         vote_button_style.right_padding = 0
 
-        --if answer == a then
-        --    vote_button_style.font_color = focus_color
-        --    vote_button_style.disabled_font_color = focus_color
-        --end
-
         Gui.set_data(vote_button, {answer = a, data = data})
         vote_buttons[i] = vote_button
 
@@ -292,7 +257,6 @@ local function redraw_poll_viewer_content(data)
         label.style.minimal_height = 24
         label.style.font = 'heading-3'
         label.style.font_color = {r = 0.95, g = 0.95, b = 0.95}
-        --label.style.top_padding = 2
         label.style.left_padding = 4
         label.style.right_padding = 4
         label.style.bottom_padding = 4
@@ -330,7 +294,6 @@ end
 local function draw_main_frame(left, player)
     local trusted = session.get_trusted_table()
     local frame = left.add {type = 'frame', name = main_frame_name, caption = 'Polls', direction = 'vertical'}
-    --frame.style.maximal_width = 640
 
     local poll_viewer_top_flow = frame.add {type = 'table', column_count = 5}
     poll_viewer_top_flow.style.horizontal_spacing = 0
@@ -352,8 +315,6 @@ local function draw_main_frame(left, player)
     local poll_viewer_content = frame.add {type = 'scroll-pane'}
     poll_viewer_content.style.maximal_height = 480
     poll_viewer_content.style.width = 295
-    --poll_viewer_content.style.minimal_height = 480
-    --poll_viewer_content.style.minimal_width = 480
 
     local poll_index = player_poll_index[player.index] or #polls
 
@@ -371,18 +332,8 @@ local function draw_main_frame(left, player)
     Gui.set_data(forward_button, data)
 
     update_poll_viewer(data)
-    --
 
-    --[[
-    frame.add {
-        type = 'checkbox',
-        name = notify_checkbox_name,
-        caption = 'Notify me about polls.',
-        state = not no_notify_players[player.index],
-        tooltip = 'Receive a message when new polls are created and popup the poll.'
-    }
-    ]] local bottom_flow =
-        frame.add {type = 'flow', direction = 'horizontal'}
+    local bottom_flow = frame.add {type = 'flow', direction = 'horizontal'}
 
     local left_flow = bottom_flow.add {type = 'flow'}
     left_flow.style.horizontal_align = 'left'
@@ -647,7 +598,7 @@ local function draw_create_poll_frame(parent, player, previous_data)
 end
 
 local function show_new_poll(poll_data)
-    local message = table.concat {poll_data.created_by.name, ' has created a new Poll #', poll_data.id, ': ', poll_data.question}
+    local message = table.concat {poll_data.created_by, ' has created a new Poll #', poll_data.id, ': ', poll_data.question}
 
     for _, p in pairs(game.connected_players) do
         local left = p.gui.left
@@ -710,6 +661,11 @@ local function create_poll(event)
         end_tick = tick + duration
     end
 
+    local name = ''
+    if event.player and event.player.valid then
+        name = event.player.name
+    end
+
     local poll_data = {
         id = poll_id(),
         question = question,
@@ -718,7 +674,7 @@ local function create_poll(event)
         start_tick = tick,
         end_tick = end_tick,
         duration = duration,
-        created_by = event.player,
+        created_by = name,
         edited_by = {}
     }
 
@@ -733,19 +689,11 @@ local function create_poll(event)
     frame.destroy()
 end
 
-local function update_vote(voters, answer, direction)
+local function update_vote(answer, direction)
     local count = answer.voted_count + direction
     answer.voted_count = count
 
-    local tooltip = {}
-    for pi, a in pairs(voters) do
-        if a == answer then
-            local player = Game.get_player_by_index(pi)
-            insert(tooltip, player.name)
-        end
-    end
-
-    return tostring(count), table.concat(tooltip, ', ')
+    return tostring(count)
 end
 
 local function vote(event)
@@ -769,14 +717,13 @@ local function vote(event)
     voters[player_index] = answer
 
     local previous_vote_button_count
-    local previous_vote_button_tooltip
     local previous_vote_index
     if previous_vote_answer then
-        previous_vote_button_count, previous_vote_button_tooltip = update_vote(voters, previous_vote_answer, -1)
+        previous_vote_button_count = update_vote(previous_vote_answer, -1)
         previous_vote_index = previous_vote_answer.index
     end
 
-    local vote_button_count, vote_button_tooltip = update_vote(voters, answer, 1)
+    local vote_button_count = update_vote(answer, 1)
 
     for _, p in pairs(game.connected_players) do
         local frame = p.gui.left[main_frame_name]
@@ -788,23 +735,10 @@ local function vote(event)
                 if previous_vote_answer then
                     local vote_button = vote_buttons[previous_vote_index]
                     vote_button.caption = previous_vote_button_count
-                    vote_button.tooltip = previous_vote_button_tooltip
-
-                --if p.index == player_index then
-                --    local vote_button_style = vote_button.style
-                --    vote_button_style.font_color = normal_color
-                --    vote_button_style.disabled_font_color = normal_color
-                --end
                 end
 
                 local vote_button = vote_buttons[vote_index]
                 vote_button.caption = vote_button_count
-                vote_button.tooltip = vote_button_tooltip
-            -- if p.index == player_index then -- block commented to avoid desync risk
-            --     local vote_button_style = vote_button.style
-            --     vote_button_style.font_color = focus_color
-            --     vote_button_style.disabled_font_color = focus_color
-            -- end
             end
         end
     end
@@ -1015,7 +949,7 @@ Gui.on_click(
     function(event)
         local player = event.player
         local data = Gui.get_data(event.element)
-        if not data or not data.valid then
+        if not data then
             return
         end
 
@@ -1318,6 +1252,11 @@ function Class.poll(data)
 
     local id = poll_id()
 
+    local name = ''
+    if game.player and game.player.valid then
+        name = game.player.name
+    end
+
     local poll_data = {
         id = id,
         question = data.question,
@@ -1326,7 +1265,7 @@ function Class.poll(data)
         start_tick = start_tick,
         end_tick = end_tick,
         duration = duration,
-        created_by = game.player or {name = '<server>', valid = true},
+        created_by = name or {name = '<server>', valid = true},
         edited_by = {}
     }
 
