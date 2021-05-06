@@ -143,15 +143,6 @@ local function add_global_stats(frame, player)
     killcount_label.style.font = 'default-listbox'
     killcount_label.style.font_color = {r = 0.9, g = 0.9, b = 0.9}
     killcount_label.style.minimal_width = 145
-
-    local floatingScore_label =
-        t.add {
-        type = 'checkbox',
-        caption = 'Show floating numbers',
-        state = global.show_floating_killscore[player.name],
-        name = 'show_floating_killscore_texts'
-    }
-    floatingScore_label.style.font_color = {r = 0.8, g = 0.8, b = 0.8}
 end
 
 local function show_score(data)
@@ -277,12 +268,6 @@ local function on_player_joined_game(event)
     if not this.sort_by[player.name] then
         this.sort_by[player.name] = {method = 'descending', column = 'killscore'}
     end
-    if not global.show_floating_killscore then
-        global.show_floating_killscore = {}
-    end
-    if not global.show_floating_killscore[player.name] then
-        global.show_floating_killscore[player.name] = false
-    end
 end
 
 local function on_gui_click(event)
@@ -310,12 +295,6 @@ local function on_gui_click(event)
 
     local is_spamming = SpamProtection.is_spamming(player, nil, 'Score Gui Click')
     if is_spamming then
-        return
-    end
-
-    -- Handles click on the checkbox, for floating score
-    if name == 'show_floating_killscore_texts' then
-        global.show_floating_killscore[player.name] = element.state
         return
     end
 
@@ -445,16 +424,6 @@ local function on_entity_died(event)
         Public.init_player_table(player)
         local score = this.score_table[player.force.name].players[player.name]
         score.killscore = score.killscore + entity_score_values[event.entity.name]
-        if global.show_floating_killscore[player.name] then
-            event.entity.surface.create_entity(
-                {
-                    name = 'flying-text',
-                    position = event.entity.position,
-                    text = tostring(entity_score_values[event.entity.name]),
-                    color = player.chat_color
-                }
-            )
-        end
     end
 end
 

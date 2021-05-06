@@ -1158,13 +1158,9 @@ local function on_player_joined_game(event)
 
     if player.online_time < 1 then
         player.insert({name = 'pistol', count = 1})
-        --player.insert({name = "iron-axe", count = 1})
         player.insert({name = 'raw-fish', count = 3})
         player.insert({name = 'firearm-magazine', count = 16})
         player.insert({name = 'iron-plate', count = 32})
-        if global.show_floating_killscore then
-            global.show_floating_killscore[player.name] = false
-        end
     end
 
     local surface = game.surfaces['fish_defender']

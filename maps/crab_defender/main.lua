@@ -1127,10 +1127,6 @@ local on_player_joined_game = function(event)
         for item, amount in pairs(starting_items) do
             player.insert({name = item, count = amount})
         end
-
-        if global.show_floating_killscore then
-            global.show_floating_killscore[player.name] = false
-        end
     end
 
     local spawn = player.force.get_spawn_position(surface)

@@ -994,7 +994,6 @@ end
 
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
-    local show_floating_killscore = FDT.get('show_floating_killscore')
     local active_surface_index = FDT.get('active_surface_index')
 
     if player.online_time == 0 then
@@ -1003,9 +1002,6 @@ local function on_player_joined_game(event)
         player.insert({name = 'raw-fish', count = 3})
         player.insert({name = 'firearm-magazine', count = 16})
         player.insert({name = 'iron-plate', count = 32})
-        if show_floating_killscore then
-            FDT.get().show_floating_killscore[player.name] = false
-        end
     end
 
     local surface = game.surfaces[active_surface_index]

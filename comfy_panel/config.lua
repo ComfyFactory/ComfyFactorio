@@ -1,6 +1,5 @@
--- config tab --
-
 local Antigrief = require 'antigrief'
+local Event = require 'utils.event'
 local Color = require 'utils.color_presets'
 local SessionData = require 'utils.datastore.session_data'
 local Utils = require 'utils.core'
@@ -8,8 +7,23 @@ local Tabs = require 'comfy_panel.main'
 local SpamProtection = require 'utils.spam_protection'
 local BottomFrame = require 'comfy_panel.bottom_frame'
 local Token = require 'utils.token'
+local Global = require 'utils.global'
 
 local module_name = 'Config'
+
+local this = {
+    gui_config = {
+        spaghett = {},
+        poll_trusted = false
+    }
+}
+
+Global.register(
+    this,
+    function(tbl)
+        this = tbl
+    end
+)
 
 local spaghett_entity_blacklist = {
     ['logistic-chest-requester'] = true,
@@ -30,7 +44,7 @@ local function get_actor(event, prefix, msg, admins_only)
 end
 
 local function spaghett_deny_building(event)
-    local spaghett = global.comfy_panel_config.spaghett
+    local spaghett = this.gui_config.spaghett
     if not spaghett.enabled then
         return
     end
@@ -62,7 +76,7 @@ local function spaghett_deny_building(event)
 end
 
 local function spaghett()
-    local spaghetti = global.comfy_panel_config.spaghett
+    local spaghetti = this.gui_config.spaghett
     if spaghetti.enabled then
         for _, f in pairs(game.forces) do
             if f.technologies['logistic-system'].researched then
@@ -139,10 +153,10 @@ local functions = {
     end,
     ['comfy_panel_spaghett_toggle'] = function(event)
         if event.element.switch_state == 'left' then
-            global.comfy_panel_config.spaghett.enabled = true
+            this.gui_config.spaghett.enabled = true
             get_actor(event, '{Spaghett}', 'has enabled spaghett mode!')
         else
-            global.comfy_panel_config.spaghett.enabled = nil
+            this.gui_config.spaghett.enabled = nil
             get_actor(event, '{Spaghett}', 'has disabled spaghett mode!')
         end
         spaghett()
@@ -171,10 +185,10 @@ local functions = {
 local poll_function = {
     ['comfy_panel_poll_trusted_toggle'] = function(event)
         if event.element.switch_state == 'left' then
-            global.comfy_panel_config.poll_trusted = true
+            this.gui_config.poll_trusted = true
             get_actor(event, '{Poll Mode}', 'has disabled non-trusted people to do polls.')
         else
-            global.comfy_panel_config.poll_trusted = false
+            this.gui_config.poll_trusted = false
             get_actor(event, '{Poll Mode}', 'has allowed non-trusted people to do polls.')
         end
     end,
@@ -206,67 +220,67 @@ local antigrief_functions = {
 local fortress_functions = {
     ['comfy_panel_disable_fullness'] = function(event)
         local Fullness = is_loaded('modules.check_fullness')
-        local this = Fullness.get()
+        local Module = Fullness.get()
         if event.element.switch_state == 'left' then
-            this.fullness_enabled = true
+            Module.fullness_enabled = true
             get_actor(event, '{Fullness}', 'has enabled the inventory fullness function.')
         else
-            this.fullness_enabled = false
+            Module.fullness_enabled = false
             get_actor(event, '{Fullness}', 'has disabled the inventory fullness function.')
         end
     end,
     ['comfy_panel_offline_players'] = function(event)
         local WPT = is_loaded('maps.mountain_fortress_v3.table')
-        local this = WPT.get()
+        local Module = WPT.get()
         if event.element.switch_state == 'left' then
-            this.offline_players_enabled = true
+            Module.offline_players_enabled = true
             get_actor(event, '{Offline Players}', 'has enabled the offline player function.')
         else
-            this.offline_players_enabled = false
+            Module.offline_players_enabled = false
             get_actor(event, '{Offline Players}', 'has disabled the offline player function.')
         end
     end,
     ['comfy_panel_collapse_grace'] = function(event)
         local WPT = is_loaded('maps.mountain_fortress_v3.table')
-        local this = WPT.get()
+        local Module = WPT.get()
         if event.element.switch_state == 'left' then
-            this.collapse_grace = true
+            Module.collapse_grace = true
             get_actor(event, '{Collapse}', 'has enabled the collapse function. Collapse will occur after wave 100!')
         else
-            this.collapse_grace = false
+            Module.collapse_grace = false
             get_actor(event, '{Collapse}', 'has disabled the collapse function. You must reach zone 2 for collapse to occur!')
         end
     end,
     ['comfy_panel_spill_items_to_surface'] = function(event)
         local WPT = is_loaded('maps.mountain_fortress_v3.table')
-        local this = WPT.get()
+        local Module = WPT.get()
         if event.element.switch_state == 'left' then
-            this.spill_items_to_surface = true
+            Module.spill_items_to_surface = true
             get_actor(event, '{Item Spill}', 'has enabled the ore spillage function. Ores now drop to surface when mining.')
         else
-            this.spill_items_to_surface = false
+            Module.spill_items_to_surface = false
             get_actor(event, '{Item Spill}', 'has disabled the item spillage function. Ores no longer drop to surface when mining.')
         end
     end,
     ['comfy_panel_void_or_tile'] = function(event)
         local WPT = is_loaded('maps.mountain_fortress_v3.table')
-        local this = WPT.get()
+        local Module = WPT.get()
         if event.element.switch_state == 'left' then
-            this.void_or_tile = 'out-of-map'
+            Module.void_or_tile = 'out-of-map'
             get_actor(event, '{Void}', 'has changes the tiles of the zones to: out-of-map (void)')
         else
-            this.void_or_tile = 'lab-dark-2'
+            Module.void_or_tile = 'lab-dark-2'
             get_actor(event, '{Void}', 'has changes the tiles of the zones to: dark-tiles (flammable tiles)')
         end
     end,
     ['comfy_panel_trusted_only_car_tanks'] = function(event)
         local WPT = is_loaded('maps.mountain_fortress_v3.table')
-        local this = WPT.get()
+        local Module = WPT.get()
         if event.element.switch_state == 'left' then
-            this.trusted_only_car_tanks = true
+            Module.trusted_only_car_tanks = true
             get_actor(event, '{Market}', 'has changed so only trusted people can buy car/tanks.', true)
         else
-            this.trusted_only_car_tanks = false
+            Module.trusted_only_car_tanks = false
             get_actor(event, '{Market}', 'has changed so everybody can buy car/tanks.', true)
         end
     end
@@ -407,7 +421,7 @@ local function build_config_gui(data)
         scroll_pane.add({type = 'line'})
 
         switch_state = 'right'
-        if global.comfy_panel_config.spaghett.enabled then
+        if this.gui_config.spaghett.enabled then
             switch_state = 'left'
         end
         add_switch(
@@ -421,7 +435,7 @@ local function build_config_gui(data)
         if poll then
             scroll_pane.add({type = 'line'})
             switch_state = 'right'
-            if global.comfy_panel_config.poll_trusted then
+            if this.gui_config.poll_trusted then
                 switch_state = 'left'
             end
             add_switch(scroll_pane, switch_state, 'comfy_panel_poll_trusted_toggle', 'Poll mode', 'Disables non-trusted plebs to create polls.')
@@ -442,7 +456,7 @@ local function build_config_gui(data)
         if AG.enabled then
             switch_state = 'left'
         end
-        add_switch(scroll_pane, switch_state, 'comfy_panel_disable_antigrief', 'Antigrief', 'Left = Enables antigrief / Right = Disables antigrief')
+        add_switch(scroll_pane, switch_state, 'comfy_panel_disable_antigrief', 'Antigrief', 'Toggle antigrief function.')
         scroll_pane.add({type = 'line'})
 
         if is_loaded('maps.biter_battles_v2.main') then
@@ -515,9 +529,9 @@ local function build_config_gui(data)
             scroll_pane.add({type = 'line'})
 
             local WPT = is_loaded('maps.mountain_fortress_v3.table')
-            local this = WPT.get()
+            local Module = WPT.get()
             switch_state = 'right'
-            if this.offline_players_enabled then
+            if Module.offline_players_enabled then
                 switch_state = 'left'
             end
             add_switch(
@@ -531,7 +545,7 @@ local function build_config_gui(data)
             scroll_pane.add({type = 'line'})
 
             switch_state = 'right'
-            if this.collapse_grace then
+            if Module.collapse_grace then
                 switch_state = 'left'
             end
             add_switch(
@@ -545,7 +559,7 @@ local function build_config_gui(data)
             scroll_pane.add({type = 'line'})
 
             switch_state = 'right'
-            if this.spill_items_to_surface then
+            if Module.spill_items_to_surface then
                 switch_state = 'left'
             end
             add_switch(
@@ -558,14 +572,14 @@ local function build_config_gui(data)
             scroll_pane.add({type = 'line'})
 
             switch_state = 'right'
-            if this.void_or_tile then
+            if Module.void_or_tile then
                 switch_state = 'left'
             end
             add_switch(scroll_pane, switch_state, 'comfy_panel_void_or_tile', 'Void Tiles', 'Left = Changes the tiles to out-of-map.\nRight = Changes the tiles to lab-dark-2')
             scroll_pane.add({type = 'line'})
 
             switch_state = 'right'
-            if this.trusted_only_car_tanks then
+            if Module.trusted_only_car_tanks then
                 switch_state = 'left'
             end
             add_switch(
@@ -646,18 +660,8 @@ local function on_robot_built_entity(event)
     spaghett_deny_building(event)
 end
 
-local function on_init()
-    global.comfy_panel_config = {}
-    global.comfy_panel_config.spaghett = {}
-    global.comfy_panel_config.spaghett.undo = {}
-    global.comfy_panel_config.poll_trusted = false
-    global.comfy_panel_disable_antigrief = false
-end
-
 Tabs.add_tab_to_gui({name = module_name, id = build_config_gui_token, admin = false})
 
-local Event = require 'utils.event'
-Event.on_init(on_init)
 Event.add(defines.events.on_gui_switch_state_changed, on_gui_switch_state_changed)
 Event.add(defines.events.on_force_created, on_force_created)
 Event.add(defines.events.on_built_entity, on_built_entity)

@@ -1,4 +1,16 @@
 local Event = require 'utils.event'
+local Global = require 'utils.global'
+
+local this = {
+    player_floaty_chat = {}
+}
+
+Global.register(
+    this,
+    function(tbl)
+        this = tbl
+    end
+)
 
 local function on_console_chat(event)
     if not event.message then
@@ -17,9 +29,9 @@ local function on_console_chat(event)
         y_offset = -4.5
     end
 
-    if global.player_floaty_chat[player.index] then
-        rendering.destroy(global.player_floaty_chat[player.index])
-        global.player_floaty_chat[player.index] = nil
+    if this.player_floaty_chat[player.index] then
+        rendering.destroy(this.player_floaty_chat[player.index])
+        this.player_floaty_chat[player.index] = nil
     end
 
     local players = {}
@@ -32,7 +44,7 @@ local function on_console_chat(event)
         return
     end
 
-    global.player_floaty_chat[player.index] =
+    this.player_floaty_chat[player.index] =
         rendering.draw_text {
         text = event.message,
         surface = player.surface,
@@ -53,9 +65,4 @@ local function on_console_chat(event)
     }
 end
 
-local function on_init()
-    global.player_floaty_chat = {}
-end
-
-Event.on_init(on_init)
 Event.add(defines.events.on_console_chat, on_console_chat)
