@@ -3,7 +3,7 @@ local Queue = {}
 function Queue.new()
     local queue = {
         _head = 1,
-        _tail = 0
+        _tail = 1
     }
     return queue
 end

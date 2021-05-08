@@ -11,6 +11,8 @@ local Global = require 'utils.global'
 
 local module_name = 'Config'
 
+local Public = {}
+
 local this = {
     gui_config = {
         spaghett = {},
@@ -666,3 +668,24 @@ Event.add(defines.events.on_gui_switch_state_changed, on_gui_switch_state_change
 Event.add(defines.events.on_force_created, on_force_created)
 Event.add(defines.events.on_built_entity, on_built_entity)
 Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
+
+function Public.get(key)
+    if key then
+        return this[key]
+    else
+        return this
+    end
+end
+
+function Public.set(key, value)
+    if key and (value or value == false) then
+        this[key] = value
+        return this[key]
+    elseif key then
+        return this[key]
+    else
+        return this
+    end
+end
+
+return Public
