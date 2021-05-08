@@ -260,7 +260,6 @@ function Public.reset_map()
 
     game.forces.player.set_spawn_position({-27, 25}, surface)
 
-    Task.start_queue()
     Task.set_queue_speed(16)
 
     -- HS.get_scores()

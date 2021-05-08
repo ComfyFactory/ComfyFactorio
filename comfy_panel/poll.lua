@@ -5,6 +5,7 @@ local Game = require 'utils.game'
 local Server = require 'utils.server'
 local Tabs = require 'comfy_panel.main'
 local session = require 'utils.datastore.session_data'
+local Config = require 'comfy_panel.config'
 
 local Class = {}
 
@@ -345,7 +346,9 @@ local function draw_main_frame(left, player)
     local right_flow = bottom_flow.add {type = 'flow'}
     right_flow.style.horizontal_align = 'right'
 
-    if (trusted[player.name] or player.admin) or global.comfy_panel_config.poll_trusted == false then
+    local comfy_panel_config = Config.get('gui_config')
+
+    if (trusted[player.name] or player.admin) or comfy_panel_config.poll_trusted == false then
         local create_poll_button = right_flow.add {type = 'button', name = create_poll_button_name, caption = 'Create Poll'}
         apply_button_style(create_poll_button)
     else
