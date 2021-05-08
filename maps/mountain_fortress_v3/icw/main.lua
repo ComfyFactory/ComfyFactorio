@@ -97,7 +97,7 @@ local function on_tick()
     if tick % 10 == 0 then
         Functions.item_transfer(icw)
         Functions.hazardous_debris(icw)
-        Functions.glimpse_of_lights(icw)
+    -- Functions.glimpse_of_lights(icw)
     end
     if tick % 240 == 0 then
         Functions.update_minimap(icw)
