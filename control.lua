@@ -95,6 +95,7 @@ require 'modules.autostash'
 --require 'maps.mountain_fortress'
 
 --![[Defend the market against waves of biters]]--
+--require 'maps.pidgeotto.main'
 --require 'maps.fish_defender_v2.main'
 --require 'maps.crab_defender.main'
 --require 'maps.fish_defender_v1.fish_defender'
