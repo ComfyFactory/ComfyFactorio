@@ -12,6 +12,36 @@ local function clear_world_selectors(journey)
 	end
 end
 
+local function place_teleporter(journey, surface, position)
+	local tiles = {}
+	for x = -1, 0, 1 do
+		for y = -1, 0, 1 do
+			local position = {x = position.x + x, y = position.y + y}
+			table.insert(tiles, {name = Constants.teleporter_tile, position = position})
+		end
+	end
+	surface.set_tiles(tiles, false)	
+	surface.create_entity({name = 'electric-beam-no-sound', position = position, source = {x = position.x - 1, y = position.y - 1}, target = {x = position.x + 1, y = position.y - 0.5}})
+	surface.create_entity({name = 'electric-beam-no-sound', position = position, source = {x = position.x + 1, y = position.y - 1}, target = {x = position.x + 1, y = position.y + 1.5}})
+	surface.create_entity({name = 'electric-beam-no-sound', position = position, source = {x = position.x + 1, y = position.y + 1}, target = {x = position.x - 1, y = position.y + 1.5}})
+	surface.create_entity({name = 'electric-beam-no-sound', position = position, source = {x = position.x - 1, y = position.y + 1}, target = {x = position.x - 1, y = position.y - 0.5}})	
+	surface.destroy_decoratives({area = {{position.x - 1, position.y - 1}, {position.x + 1, position.y + 1}}})
+end
+
+local function destroy_teleporter(journey, surface, position)
+	local tiles = {}
+	for x = -1, 0, 1 do
+		for y = -1, 0, 1 do
+			local position = {x = position.x + x, y = position.y + y}
+			table.insert(tiles, {name = "lab-dark-1", position = position})
+		end
+	end
+	surface.set_tiles(tiles, true)
+	for _, e in pairs(surface.find_entities_filtered({name = "electric-beam-no-sound", area = {{position.x - 1, position.y - 1}, {position.x + 1, position.y + 1}}})) do
+		e.destroy()
+	end
+end
+
 local function drop_player_items(player)
 	local character = player.character
 	if not character then return end
@@ -455,11 +485,10 @@ function Public.set_world_selectors(journey)
 end
 
 function Public.mothership_world_selection(journey)
-	if journey.mothership_teleporter and journey.mothership_teleporter.valid then
-		journey.mothership_teleporter.destroy()
-	end
-
-	local surface = game.surfaces.mothership	
+	local surface = game.surfaces.mothership
+	
+	destroy_teleporter(journey, game.surfaces.nauvis, Constants.mothership_teleporter_position)
+	destroy_teleporter(journey, surface, Constants.mothership_teleporter_position)
 	
 	local daytime = surface.daytime
 	daytime = daytime - 0.025	
@@ -468,7 +497,6 @@ function Public.mothership_world_selection(journey)
 	
 	Public.teleport_players_to_mothership(journey)
 	
-	journey.mothership_teleporter_online = false
 	journey.selected_world = false
 	for i = 1, 3, 1 do
 		local activation_level = get_activation_level(surface, Constants.world_selector_areas[i])
@@ -514,11 +542,6 @@ function Public.mothership_arrives_at_world(journey)
 	Public.teleport_players_to_mothership(journey)
 	
 	if journey.mothership_speed == 0.15 then
-		journey.mothership_teleporter = surface.create_entity({name = "player-port", position = Constants.mothership_teleporter_position, force = "player"})
-		table.insert(journey.mothership_messages, "Teleporter deployed. [gps=" .. Constants.mothership_teleporter_position.x .. "," .. Constants.mothership_teleporter_position.y .. ",mothership]")
-		journey.mothership_teleporter.destructible = false
-		journey.mothership_teleporter.minable = false
-		
 		for _ = 1, 16, 1 do table.insert(journey.mothership_messages, "") end
 		table.insert(journey.mothership_messages, "[img=item/uranium-fuel-cell] Fuel cells depleted ;_;")
 		for _ = 1, 16, 1 do table.insert(journey.mothership_messages, "") end
@@ -627,9 +650,7 @@ function Public.place_teleporter_into_world(journey)
 	local surface = game.surfaces.nauvis
 	surface.request_to_generate_chunks({x = 0, y = 0}, 3)
 	surface.force_generate_chunk_requests()
-	journey.nauvis_teleporter = surface.create_entity({name = "player-port", position = Constants.mothership_teleporter_position, force = "player"})
-	journey.nauvis_teleporter.destructible = false
-	journey.nauvis_teleporter.minable = false
+	place_teleporter(journey, surface, Constants.mothership_teleporter_position)
 	journey.game_state = "make_it_night"
 end
 
@@ -640,14 +661,21 @@ function Public.make_it_night(journey)
 	daytime = daytime + 0.02
 	surface.daytime = daytime
 	if daytime > 0.5 then		
-		clear_world_selectors(journey)
+		clear_world_selectors(journey)		
 		game.reset_time_played()
-		game.forces.player.reset()
-		game.forces.player.reset_technologies()
-		game.forces.player.reset_technology_effects()
+		
+		local force = game.forces.player
+		force.reset()
+		force.reset_technologies()
+		force.reset_technology_effects()		
+		for a = 1, 7, 1 do force.technologies['refined-flammables-' .. a].enabled = false end
+		
 		game.forces.enemy.reset_evolution()
 		journey.mothership_cargo["uranium-fuel-cell"] = nil
-		journey.mothership_teleporter_online = true
+		
+		place_teleporter(journey, surface, Constants.mothership_teleporter_position)
+		table.insert(journey.mothership_messages, "Teleporter deployed. [gps=" .. Constants.mothership_teleporter_position.x .. "," .. Constants.mothership_teleporter_position.y .. ",mothership]")
+		
 		journey.game_state = "dispatch_goods" 
 	end
 end
@@ -655,7 +683,6 @@ end
 function Public.dispatch_goods(journey)
 	draw_background(journey, game.surfaces.mothership)
 
-	if math.random(1, 16) ~= 1 then return end
 	if journey.characters_in_mothership == #game.connected_players then return end	
 
 	local goods_to_dispatch = journey.goods_to_dispatch
@@ -678,6 +705,8 @@ function Public.dispatch_goods(journey)
 		journey.dispatch_key = nil
 		return
 	end
+	
+	if math.random(1, 32) ~= 1 then return end
 	
 	local chunk = surface.get_random_chunk()
 	local position = {x = chunk.x * 32 + math.random(0, 31), y = chunk.y * 32 + math.random(0, 31)}
@@ -720,9 +749,11 @@ function Public.mothership_waiting_for_players(journey)
 end
 
 function Public.teleporters(journey, player)
-	local surface = player.surface
+	if not player.character then return end
+	if not player.character.valid then return end
+	local surface = player.surface	
+	if surface.get_tile(player.position).name ~= Constants.teleporter_tile then return end
 	local base_position = {Constants.mothership_teleporter_position.x , Constants.mothership_teleporter_position.y - 5}
-	if surface.count_entities_filtered({position = player.position, name = "player-port"}) == 0 then return end
 	if surface.index == 1 then		
 		drop_player_items(player)
 		local position = game.surfaces.mothership.find_non_colliding_position("character", base_position, 32, 0.5)
@@ -734,7 +765,6 @@ function Public.teleporters(journey, player)
 		journey.characters_in_mothership = journey.characters_in_mothership + 1
 		return
 	end
-	if not journey.mothership_teleporter_online then return end
 	if surface.name == "mothership" then
 		drop_player_items(player)
 		local position = game.surfaces.nauvis.find_non_colliding_position("character", base_position, 32, 0.5)

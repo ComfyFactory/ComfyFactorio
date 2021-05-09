@@ -2,6 +2,7 @@
 local Public = {}
 
 Public.mothership_teleporter_position = {x = 0, y = 12}
+Public.teleporter_tile = "lab-dark-2"
 
 Public.mothership_radius = 28
 
@@ -127,6 +128,8 @@ Public.starter_goods_pool = {
 	{"steel-plate", 32, 64},
 	{"stone-wall", 128, 256},
 	{"substation", 4, 8},
+	{"green-wire", 256, 512},
+	{"red-wire", 256, 512},
 }
 
 Public.build_type_whitelist = {

@@ -121,7 +121,6 @@ local Event = require 'utils.event'
 Event.on_init(on_init)
 Event.on_nth_tick(10, on_nth_tick)
 Event.add(defines.events.on_chunk_generated, on_chunk_generated)
-Event.add(defines.events.on_player_changed_position, on_player_changed_position)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_left_game, on_player_left_game)
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)
