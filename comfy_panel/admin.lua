@@ -242,6 +242,7 @@ local function draw_events(data)
         ['Message History'] = antigrief.message_history,
         ['Friendly Fire History'] = antigrief.friendly_fire_history,
         ['Mining History'] = antigrief.mining_history,
+        ['Mining Override History'] = antigrief.whitelist_mining_history,
         ['Landfill History'] = antigrief.landfill_history,
         ['Corpse Looting History'] = antigrief.corpse_history,
         ['Cancel Crafting History'] = antigrief.cancel_crafting_history
@@ -283,7 +284,7 @@ local function draw_events(data)
                 end
 
                 if history == 'Message History' then
-                    tooltip = nil
+                    tooltip = ''
                 end
 
                 frame.datalog.add(
@@ -492,6 +493,9 @@ local function create_admin_panel(data)
     end
     if antigrief.mining_history then
         table.insert(histories, 'Mining History')
+    end
+    if antigrief.whitelist_mining_history then
+        table.insert(histories, 'Mining Override History')
     end
     if antigrief.landfill_history then
         table.insert(histories, 'Landfill History')
