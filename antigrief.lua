@@ -52,7 +52,8 @@ local blacklisted_types = {
     ['gate'] = true,
     ['lamp'] = true,
     ['mining-drill'] = true,
-    ['splitter'] = true
+    ['splitter'] = true,
+    ['tree'] = true
 }
 
 local ammo_names = {
@@ -511,7 +512,7 @@ local function on_player_mined_entity(event)
     if entity.force.name ~= player.force.name then
         return
     end
-    if blacklisted_types[event.entity.type] then
+    if blacklisted_types[event.entity.type] and not (event.entity.type == 'tree' and log_tree_harvest) then
         return
     end
     if not this.mining_history then
