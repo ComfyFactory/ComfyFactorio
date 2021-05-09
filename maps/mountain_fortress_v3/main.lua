@@ -188,7 +188,6 @@ function Public.reset_map()
 
     Balance.init_enemy_weapon_damage()
 
-    AntiGrief.log_tree_harvest(true)
     AntiGrief.whitelist_types('tree', true)
     AntiGrief.enable_capsule_warning(false)
     AntiGrief.enable_capsule_cursor_warning(false)
