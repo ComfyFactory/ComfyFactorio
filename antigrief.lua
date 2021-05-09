@@ -24,14 +24,15 @@ local this = {
     capsule_history = {},
     friendly_fire_history = {},
     mining_history = {},
+    whitelist_mining_history = {},
     corpse_history = {},
+    message_history = {},
     cancel_crafting_history = {},
     whitelist_types = {},
     permission_group_editing = {},
     players_warned = {},
     damage_history = {},
     punish_cancel_craft = false,
-    log_tree_harvest = false,
     do_not_check_trusted = true,
     enable_autokick = false,
     enable_autoban = false,
@@ -481,11 +482,11 @@ local function on_player_mined_entity(event)
     end
 
     if this.whitelist_types[entity.type] then
-        if not this.mining_history then
-            this.mining_history = {}
+        if not this.whitelist_mining_history then
+            this.whitelist_mining_history = {}
         end
-        if #this.mining_history > 1000 then
-            this.mining_history = {}
+        if #this.whitelist_mining_history > 1000 then
+            this.whitelist_mining_history = {}
         end
         local t = math.abs(math.floor((game.tick) / 60))
         t = FancyTime.short_fancy_time(t)
@@ -498,7 +499,7 @@ local function on_player_mined_entity(event)
         str = str .. math.floor(entity.position.y)
         str = str .. ' '
         str = str .. 'surface:' .. entity.surface.index
-        increment(this.mining_history, str)
+        increment(this.whitelist_mining_history, str)
         return
     end
 
@@ -858,18 +859,10 @@ function Public.reset_tables()
     this.capsule_history = {}
     this.friendly_fire_history = {}
     this.mining_history = {}
+    this.whitelist_mining_history = {}
     this.corpse_history = {}
+    this.message_history = {}
     this.cancel_crafting_history = {}
-end
-
---- Enable this to log when trees are destroyed
----@param value <boolean>
-function Public.log_tree_harvest(value)
-    if value then
-        this.log_tree_harvest = value
-    end
-
-    return this.log_tree_harvest
 end
 
 --- Add entity type to the whitelist so it gets logged.
