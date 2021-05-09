@@ -104,6 +104,9 @@ require 'modules.autostash'
 --![[Comfylatron has seized the Fish Train and turned it into a time machine]]--
 --require 'maps.chronosphere.main'
 
+--![[Launch rockets in increasingly harder getting worlds.]]--
+--require 'maps.journey.main'
+
 --![[East VS West Survival PVP, where you breed biters with science flasks]]--
 --require 'maps.biter_hatchery.main'
 
