@@ -480,15 +480,16 @@ function Public.set_world_selectors(journey)
 			
 			x_modifier = x_modifier + 1.70
 		end
-	end	
+	end
+	
+	destroy_teleporter(journey, game.surfaces.nauvis, Constants.mothership_teleporter_position)
+	destroy_teleporter(journey, surface, Constants.mothership_teleporter_position)
+	
 	journey.game_state = "mothership_world_selection"
 end
 
 function Public.mothership_world_selection(journey)
 	local surface = game.surfaces.mothership
-	
-	destroy_teleporter(journey, game.surfaces.nauvis, Constants.mothership_teleporter_position)
-	destroy_teleporter(journey, surface, Constants.mothership_teleporter_position)
 	
 	local daytime = surface.daytime
 	daytime = daytime - 0.025	
