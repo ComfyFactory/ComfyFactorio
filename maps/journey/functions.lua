@@ -99,7 +99,10 @@ function Public.deny_building(event)
     local entity = event.created_entity
     if not entity.valid then return end	
 	if entity.surface.name ~= "mothership" then return end
-	if Constants.build_type_whitelist[entity.type] then return end
+	if Constants.build_type_whitelist[entity.type] then
+		entity.destructible = false
+		return 
+	end
 	entity.die() 
 end
 
@@ -547,8 +550,6 @@ function Public.mothership_arrives_at_world(journey)
 		table.insert(journey.mothership_messages, "[img=item/uranium-fuel-cell] Fuel cells depleted ;_;")
 		for _ = 1, 16, 1 do table.insert(journey.mothership_messages, "") end
 		table.insert(journey.mothership_messages, "Refuel via supply rocket required!")
-		for _ = 1, 16, 1 do table.insert(journey.mothership_messages, "") end
-		table.insert(journey.mothership_messages, "Good luck on your adventure! ^.^")
 	
 		for i = 1, 3, 1 do
 			journey.world_selectors[i].activation_level = 0
@@ -689,6 +690,10 @@ function Public.dispatch_goods(journey)
 	local goods_to_dispatch = journey.goods_to_dispatch
 	local size_of_goods_to_dispatch = #goods_to_dispatch
 	if size_of_goods_to_dispatch == 0 then
+		for _ = 1, 30, 1 do table.insert(journey.mothership_messages, "") end
+		table.insert(journey.mothership_messages, "Capsule storage depleted.")
+		for _ = 1, 30, 1 do table.insert(journey.mothership_messages, "") end
+		table.insert(journey.mothership_messages, "Good luck on your adventure! ^.^")
 		journey.game_state = "world"
 		return
 	end
@@ -707,9 +712,11 @@ function Public.dispatch_goods(journey)
 		return
 	end
 	
-	if math.random(1, 32) ~= 1 then return end
+	if math.random(1, 12) ~= 1 then return end
 	
 	local chunk = surface.get_random_chunk()
+	if math.abs(chunk.x) > 8 or math.abs(chunk.y) > 8 then return end
+	
 	local position = {x = chunk.x * 32 + math.random(0, 31), y = chunk.y * 32 + math.random(0, 31)}
 	position = surface.find_non_colliding_position("rocket-silo", position, 32, 1)
 	if not position then return end
@@ -728,7 +735,7 @@ end
 function Public.world(journey)
 	if journey.mothership_cargo["uranium-fuel-cell"] then
 		if journey.mothership_cargo["uranium-fuel-cell"] >= 50 then
-			table.insert(journey.mothership_messages, "Refuel operation successful!! =^.^=")
+			table.insert(journey.mothership_messages, "[img=item/uranium-fuel-cell] Refuel operation successful!! =^.^=")
 			journey.game_state = "mothership_waiting_for_players"
 		end
 	end
