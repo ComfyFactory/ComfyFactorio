@@ -34,6 +34,14 @@ local function get_player_data(player, remove)
     return this.data[player.index]
 end
 
+local function unpack_inventory(inventory)
+    local unpacked = {}
+    for i = 1, #inventory do
+        unpacked[i] = inventory[i]
+    end
+    return unpacked
+end
+
 local function addStyle(guiIn, styleIn)
     for k, v in pairs(styleIn) do
         guiIn.style[k] = v
@@ -164,39 +172,43 @@ local function redraw_inventory(gui, source, target, caption, panel_type)
     local inventory_gui = screen.inventory_gui
     inventory_gui.caption = 'Inventory of ' .. target.name
 
-    for name, opts in pairs(panel_type) do
-        local flow = items_table.add({type = 'flow'})
-        flow.style.vertical_align = 'bottom'
+    for i = 1, #panel_type do
+        if panel_type[i] and panel_type[i].valid_for_read then
+            local name = panel_type[i].name
+            local count = panel_type[i].count
+            local flow = items_table.add({type = 'flow'})
+            flow.style.vertical_align = 'bottom'
 
-        local button =
-            flow.add(
-            {
-                type = 'sprite-button',
-                sprite = 'item/' .. name,
-                number = opts,
-                name = name,
-                tooltip = types[name].localised_name,
-                style = 'slot_button'
-            }
-        )
-        button.enabled = false
+            local button =
+                flow.add(
+                {
+                    type = 'sprite-button',
+                    sprite = 'item/' .. name,
+                    number = count,
+                    name = name,
+                    tooltip = types[name].localised_name,
+                    style = 'slot_button'
+                }
+            )
+            button.enabled = false
 
-        if caption == 'Armor' then
-            if target.get_inventory(5)[1].grid then
-                local p_armor = target.get_inventory(5)[1].grid.get_contents()
-                for k, v in pairs(p_armor) do
-                    local armor_gui =
-                        flow.add(
-                        {
-                            type = 'sprite-button',
-                            sprite = 'item/' .. k,
-                            number = v,
-                            name = k,
-                            tooltip = types[name].localised_name,
-                            style = 'slot_button'
-                        }
-                    )
-                    armor_gui.enabled = false
+            if caption == 'Armor' then
+                if target.get_inventory(5)[1].grid then
+                    local p_armor = target.get_inventory(5)[1].grid.get_contents()
+                    for k, v in pairs(p_armor) do
+                        local armor_gui =
+                            flow.add(
+                            {
+                                type = 'sprite-button',
+                                sprite = 'item/' .. k,
+                                number = v,
+                                name = k,
+                                tooltip = types[name].localised_name,
+                                style = 'slot_button'
+                            }
+                        )
+                        armor_gui.enabled = false
+                    end
                 end
             end
         end
@@ -275,11 +287,11 @@ local function open_inventory(source, target)
     data.player_opened = target.index
     data.last_tab = 'Main'
 
-    local main = target.get_main_inventory().get_contents()
-    local armor = target.get_inventory(defines.inventory.character_armor).get_contents()
-    local guns = target.get_inventory(defines.inventory.character_guns).get_contents()
-    local ammo = target.get_inventory(defines.inventory.character_ammo).get_contents()
-    local trash = target.get_inventory(defines.inventory.character_trash).get_contents()
+    local main = unpack_inventory(target.get_main_inventory())
+    local armor = unpack_inventory(target.get_inventory(defines.inventory.character_armor))
+    local guns = unpack_inventory(target.get_inventory(defines.inventory.character_guns))
+    local ammo = unpack_inventory(target.get_inventory(defines.inventory.character_ammo))
+    local trash = unpack_inventory(target.get_inventory(defines.inventory.character_trash))
 
     local types = {
         ['Main'] = main,
@@ -338,11 +350,11 @@ local function on_gui_click(event)
         if not viewingPlayer then
             return false
         end
-        local main = viewingPlayer.get_main_inventory().get_contents()
-        local armor = viewingPlayer.get_inventory(defines.inventory.character_armor).get_contents()
-        local guns = viewingPlayer.get_inventory(defines.inventory.character_guns).get_contents()
-        local ammo = viewingPlayer.get_inventory(defines.inventory.character_ammo).get_contents()
-        local trash = viewingPlayer.get_inventory(defines.inventory.character_trash).get_contents()
+        local main = unpack_inventory(viewingPlayer.get_main_inventory())
+        local armor = unpack_inventory(viewingPlayer.get_inventory(defines.inventory.character_armor))
+        local guns = unpack_inventory(viewingPlayer.get_inventory(defines.inventory.character_guns))
+        local ammo = unpack_inventory(viewingPlayer.get_inventory(defines.inventory.character_ammo))
+        local trash = unpack_inventory(viewingPlayer.get_inventory(defines.inventory.character_trash))
 
         local target_types = {
             ['Main'] = main,
@@ -392,11 +404,11 @@ local function update_gui(event)
                 return
             end
 
-            main = main.get_contents()
-            local armor = player.get_inventory(defines.inventory.character_armor).get_contents()
-            local guns = player.get_inventory(defines.inventory.character_guns).get_contents()
-            local ammo = player.get_inventory(defines.inventory.character_ammo).get_contents()
-            local trash = player.get_inventory(defines.inventory.character_trash).get_contents()
+            main = unpack_inventory(player.get_main_inventory())
+            local armor = unpack_inventory(player.get_inventory(defines.inventory.character_armor))
+            local guns = unpack_inventory(player.get_inventory(defines.inventory.character_guns))
+            local ammo = unpack_inventory(player.get_inventory(defines.inventory.character_ammo))
+            local trash = unpack_inventory(player.get_inventory(defines.inventory.character_trash))
 
             local types = {
                 ['Main'] = main,
