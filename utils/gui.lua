@@ -115,7 +115,8 @@ function Gui.clear(element)
     element.clear()
 end
 
-local function clear_invalid_data()
+--[[
+    local function clear_invalid_data()
     for _, player in pairs(game.connected_players) do
         local player_index = player.index
         local values = data[player_index]
@@ -135,6 +136,7 @@ local function clear_invalid_data()
     end
 end
 Event.on_nth_tick(300, clear_invalid_data)
+]]
 
 local function handler_factory(event_id)
     local handlers
