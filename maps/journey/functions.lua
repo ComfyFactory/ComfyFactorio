@@ -84,6 +84,55 @@ function Public.clear_player(player)
 	player.clear_items_inside()	
 end
 
+local function remove_offline_players(maximum_age_in_hours)
+	local maximum_age_in_ticks = maximum_age_in_hours * 216000
+	local t = game.tick - maximum_age_in_ticks
+	if t < 0 then return end
+	local players_to_remove = {}
+	for _, player in pairs(game.players) do
+		if player.last_online < t then
+			table.insert(players_to_remove, player)
+		end
+	end
+	game.remove_offline_players(players_to_remove)
+end
+
+local function delete_nauvis_chunks(journey)
+	local surface = game.surfaces.nauvis	
+	if not journey.nauvis_chunk_positions then
+		journey.nauvis_chunk_positions = {}
+		for chunk in surface.get_chunks() do table.insert(journey.nauvis_chunk_positions, {chunk.x, chunk.y}) end
+		journey.size_of_nauvis_chunk_positions = #journey.nauvis_chunk_positions
+		for _, e in pairs(surface.find_entities_filtered{type = "radar"}) do e.destroy() end
+		for _, player in pairs(game.players) do				
+			local button = player.gui.top.add({type = "sprite-button", name = "chunk_progress", caption = ""})
+			button.style.font = "heading-1"
+			button.style.font_color = {222, 222, 222}
+			button.style.minimal_height = 38
+			button.style.minimal_width = 240
+			button.style.padding = -2		
+		end		
+	end
+	
+	if journey.size_of_nauvis_chunk_positions == 0 then return end
+	
+	for c = 1, 16, 1 do
+		local chunk_position = journey.nauvis_chunk_positions[journey.size_of_nauvis_chunk_positions]
+		if chunk_position then
+			surface.delete_chunk(chunk_position)
+			journey.size_of_nauvis_chunk_positions = journey.size_of_nauvis_chunk_positions - 1
+		else
+			break
+		end	
+	end	
+
+	local caption = "Deleting Chunks.. " .. journey.size_of_nauvis_chunk_positions
+	for _, player in pairs(game.connected_players) do	
+		player.gui.top.chunk_progress.caption = caption
+	end
+	return true	
+end
+
 function Public.mothership_message_queue(journey)
 	local text = journey.mothership_messages[1]
 	if not text then return end
@@ -217,7 +266,8 @@ function Public.hard_reset(journey)
     }
     surface.map_gen_settings = mgs
     surface.clear(true)
-		
+	surface.daytime = math.random(1, 100) * 0.01
+	
 	if journey.world_selectors and journey.world_selectors[1].border then
 		for k, world_selector in pairs(journey.world_selectors) do
 			for _, ID in pairs(world_selector.rectangles) do
@@ -234,7 +284,7 @@ function Public.hard_reset(journey)
 	journey.mothership_messages = {}
 	journey.mothership_cargo = {}
 	journey.bonus_goods = {}
-	
+	journey.nauvis_chunk_positions = nil	
 	journey.world_number = 0
 	journey.game_state = "create_mothership"
 end
@@ -322,13 +372,36 @@ function Public.draw_mothership(journey)
 		e.destructible = false
 	end
 	
+	for m = -1, 1, 2 do
+		local x = Constants.mothership_radius - 1
+		if m > 0 then x = x - 1 end
+		local y = Constants.mothership_radius * 0.5 - 6		
+		local e = surface.create_entity({name = "artillery-turret", position = {x * m, y}, force = "player"})
+		e.direction = 4
+		e.minable = false
+		e.destructible = false
+		e.operable = false
+		local e = surface.create_entity({name = "burner-inserter", position = {(x - 1) * m, y}, force = "player"})
+		e.direction = 4 + m * 2
+		e.minable = false
+		e.destructible = false
+		e.operable = false
+		local e = surface.create_entity({name = 'infinity-chest', position = {(x - 2) * m, y}, force = 'player'})
+		e.set_infinity_container_filter(1, {name = "solid-fuel", count = 50})
+		e.set_infinity_container_filter(2, {name = "artillery-shell", count = 1})
+		e.minable = false
+		e.destructible = false
+		e.operable = false
+	end
+	
 	for _ = 1, 5, 1 do
 		local e = surface.create_entity({name = "compilatron", position = Constants.mothership_teleporter_position, force = "player"})
 		e.destructible = false
 	end
 
-	Public.draw_gui(journey)
-	
+	Public.draw_gui(journey)	
+	surface.daytime = 0.5
+
 	journey.game_state = "set_world_selectors"
 end
 
@@ -387,6 +460,13 @@ local function draw_background(journey, surface)
 	if math.random(1, 32) == 1 then		
 		local position = Constants.particle_spawn_vectors[math.random(1, Constants.size_of_particle_spawn_vectors)]
 		surface.create_entity({name = "explosive-uranium-cannon-projectile", position = position, target = {position[1], position[2] + Constants.mothership_radius * 3}, speed = speed})	
+	end	
+	if math.random(1, 90) == 1 then		
+		local position_x = math.random(64, 196)
+		local position_y = math.random(64, 196)
+		if math.random(1, 2) == 1 then position_x = position_x * -1 end
+		if math.random(1, 2) == 1 then position_y = position_y * -1 end		
+		surface.create_entity({name = "big-worm-turret", position = {position_x, position_y}, force = "enemy"})
 	end
 end
 
@@ -488,19 +568,27 @@ function Public.set_world_selectors(journey)
 	destroy_teleporter(journey, game.surfaces.nauvis, Constants.mothership_teleporter_position)
 	destroy_teleporter(journey, surface, Constants.mothership_teleporter_position)
 	
+	journey.game_state = "delete_nauvis_chunks"
+end
+
+function Public.delete_nauvis_chunks(journey)
+	local surface = game.surfaces.mothership
+	Public.teleport_players_to_mothership(journey)
+	draw_background(journey, surface)
+	if delete_nauvis_chunks(journey) then return end	
+	for _, player in pairs(game.players) do player.gui.top.chunk_progress.destroy() end
 	journey.game_state = "mothership_world_selection"
 end
 
 function Public.mothership_world_selection(journey)
+	Public.teleport_players_to_mothership(journey)
+
 	local surface = game.surfaces.mothership
-	
 	local daytime = surface.daytime
 	daytime = daytime - 0.025	
 	if daytime < 0 then daytime = 0 end
 	surface.daytime = daytime
-	
-	Public.teleport_players_to_mothership(journey)
-	
+
 	journey.selected_world = false
 	for i = 1, 3, 1 do
 		local activation_level = get_activation_level(surface, Constants.world_selector_areas[i])
@@ -622,6 +710,7 @@ function Public.create_the_world(journey)
 	surface.map_gen_settings = mgs
     surface.clear(false)
 	
+	journey.nauvis_chunk_positions = nil
 	journey.world_number = journey.world_number + 1
 
 	for _, good in pairs(journey.world_selectors[journey.selected_world].bonus_goods) do
@@ -640,6 +729,7 @@ function Public.create_the_world(journey)
 end
 
 function Public.wipe_offline_players(journey)
+	remove_offline_players(24)
 	for _, player in pairs(game.players) do
 		if not player.connected then
 			player.force = game.forces.enemy
@@ -715,7 +805,7 @@ function Public.dispatch_goods(journey)
 	if math.random(1, 12) ~= 1 then return end
 	
 	local chunk = surface.get_random_chunk()
-	if math.abs(chunk.x) > 8 or math.abs(chunk.y) > 8 then return end
+	if math.abs(chunk.x) > 7 or math.abs(chunk.y) > 7 then return end
 	
 	local position = {x = chunk.x * 32 + math.random(0, 31), y = chunk.y * 32 + math.random(0, 31)}
 	position = surface.find_non_colliding_position("rocket-silo", position, 32, 1)
