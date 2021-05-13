@@ -181,8 +181,11 @@ local function do_magic_crafters()
             end
 
             if fcount > 0 then
-                entity.get_output_inventory().insert {name = data.item, count = fcount}
-                data.last_tick = tick - (count - fcount) / rate
+                if entity.get_output_inventory().can_insert({name = data.item, count = fcount}) then
+                    entity.get_output_inventory().insert {name = data.item, count = fcount}
+                    entity.products_finished = entity.products_finished + fcount
+                    data.last_tick = tick - (count - fcount) / rate
+                end
             end
         end
     end
@@ -232,6 +235,8 @@ local function do_magic_fluid_crafters()
                 local fb_data = fb[fluidbox_index] or {name = data.item, amount = 0}
                 fb_data.amount = fb_data.amount + fcount
                 fb[fluidbox_index] = fb_data
+
+                entity.products_finished = entity.products_finished + fcount
 
                 data.last_tick = tick - (count - fcount) / rate
             end
