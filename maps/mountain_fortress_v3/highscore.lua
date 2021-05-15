@@ -367,9 +367,6 @@ function Public.get_scores()
     if not secs then
         return
     else
-        if is_game_modded() then
-            score_key = 'mountain_fortress_v3_scores_modded'
-        end
         try_get_data(score_dataset, score_key, get_scores)
     end
 end
@@ -379,9 +376,6 @@ function Public.set_scores(difficulty)
     if not secs then
         return
     else
-        if is_game_modded() then
-            score_key = 'mountain_fortress_v3_scores_modded'
-        end
         write_additional_stats(score_key, difficulty)
     end
 end

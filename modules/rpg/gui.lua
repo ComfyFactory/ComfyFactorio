@@ -710,6 +710,7 @@ Gui.on_click(
             return
         end
         if frame and frame.valid then
+            Gui.remove_data_recursively(frame)
             frame.destroy()
         end
     end
@@ -731,6 +732,7 @@ Gui.on_click(
         end
 
         if frame and frame.valid then
+            Gui.remove_data_recursively(frame)
             frame.destroy()
         else
             Settings.extra_settings(player)
@@ -754,6 +756,7 @@ Gui.on_click(
         end
 
         if frame and frame.valid then
+            Gui.remove_data_recursively(frame)
             frame.destroy()
         else
             Settings.spell_gui_settings(player)

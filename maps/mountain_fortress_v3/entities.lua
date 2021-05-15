@@ -20,8 +20,8 @@ local Score = require 'comfy_panel.score'
 local Token = require 'utils.token'
 -- local HS = require 'maps.mountain_fortress_v3.highscore'
 local Discord = require 'utils.discord'
-local Core = require "utils.core"
-local Diff = require "modules.difficulty_vote_by_amount"
+local Core = require 'utils.core'
+local Diff = require 'modules.difficulty_vote_by_amount'
 local format_number = require 'util'.format_number
 
 -- tables
@@ -190,10 +190,6 @@ local function check_health()
                 return
             end
             local cargo_health = 600
-            local modded = is_game_modded()
-            if modded then
-                cargo_health = 750
-            end
             if entity.type == 'locomotive' then
                 entity.health = 1000 * m
             else
@@ -292,7 +288,7 @@ local function set_train_final_health(final_damage_amount)
 
     local health_text = WPT.get('health_text')
 
-    rendering.set_text(health_text, 'HP: ' .. locomotive_health .. ' / ' .. locomotive_max_health)
+    rendering.set_text(health_text, 'HP: ' .. round(locomotive_health) .. ' / ' .. round(locomotive_max_health))
 end
 
 local function protect_entities(event)
@@ -656,23 +652,9 @@ local mining_events = {
 
             local ent_to_create = {'biter-spawner', 'spitter-spawner'}
 
-            if is_mod_loaded('bobenemies') then
-                ent_to_create = {'bob-biter-spawner', 'bob-spitter-spawner'}
-            end
-
             local position = entity.position
             local surface = entity.surface
             local e = surface.create_entity({name = ent_to_create[random(1, #ent_to_create)], position = position, force = 'enemy'})
-            if is_mod_loaded('Krastorio2') then
-                local tiles = {}
-                for y = 3 * -2, 3 * 2, 1 do
-                    for x = 3 * -2, 3 * 2, 1 do
-                        local p = {y = position.y + y, x = position.x + x}
-                        tiles[#tiles + 1] = {name = 'kr-creep', position = p}
-                    end
-                end
-                entity.surface.set_tiles(tiles, true)
-            end
 
             e.destructible = false
             Task.set_timeout_in_ticks(300, immunity_spawner, {entity = e})
@@ -690,23 +672,9 @@ local mining_events = {
 
             local ent_to_create = {'biter-spawner', 'spitter-spawner'}
 
-            if is_mod_loaded('bobenemies') then
-                ent_to_create = {'bob-biter-spawner', 'bob-spitter-spawner'}
-            end
-
             local position = entity.position
             local surface = entity.surface
             local e = surface.create_entity({name = ent_to_create[random(1, #ent_to_create)], position = position, force = 'enemy'})
-            if is_mod_loaded('Krastorio2') then
-                local tiles = {}
-                for y = 3 * -2, 3 * 2, 1 do
-                    for x = 3 * -2, 3 * 2, 1 do
-                        local p = {y = position.y + y, x = position.x + x}
-                        tiles[#tiles + 1] = {name = 'kr-creep', position = p}
-                    end
-                end
-                entity.surface.set_tiles(tiles, true)
-            end
 
             e.destructible = false
             Task.set_timeout_in_ticks(300, immunity_spawner, {entity = e})
@@ -1207,20 +1175,37 @@ local function show_mvps(player)
             local time_played = Core.format_time(game.ticks_played)
             local total_players = #game.players
             local pickaxe_tiers = WPT.pickaxe_upgrades
-            local tier = WPT.get("pickaxe_tier")
+            local tier = WPT.get('pickaxe_tier')
             local pick_tier = pickaxe_tiers[tier]
 
             local server_name = Server.check_server_name('Mtn Fortress')
             if server_name then
-                Server.to_discord_named_embed(send_ping_to_channel, '**Statistics!**\\n\\n'
-                .. 'Time played: '..time_played..'\\n'
-                .. 'Game Difficulty: '..diff.name..'\\n'
-                .. 'Highest wave: '..format_number(wave, true)..'\\n'
-                .. 'Total connected players: '..total_players..'\\n'
-                .. 'Threat: '..format_number(threat, true)..'\\n'
-                .. 'Pickaxe Upgrade: '..pick_tier..' (' ..tier.. ')\\n'
-                .. 'Collapse Speed: '..collapse_speed..'\\n'
-                .. 'Collapse Amount: '..collapse_amount..'\\n'
+                Server.to_discord_named_embed(
+                    send_ping_to_channel,
+                    '**Statistics!**\\n\\n' ..
+                        'Time played: ' ..
+                            time_played ..
+                                '\\n' ..
+                                    'Game Difficulty: ' ..
+                                        diff.name ..
+                                            '\\n' ..
+                                                'Highest wave: ' ..
+                                                    format_number(wave, true) ..
+                                                        '\\n' ..
+                                                            'Total connected players: ' ..
+                                                                total_players ..
+                                                                    '\\n' ..
+                                                                        'Threat: ' ..
+                                                                            format_number(threat, true) ..
+                                                                                '\\n' ..
+                                                                                    'Pickaxe Upgrade: ' ..
+                                                                                        pick_tier ..
+                                                                                            ' (' ..
+                                                                                                tier ..
+                                                                                                    ')\\n' ..
+                                                                                                        'Collapse Speed: ' ..
+                                                                                                            collapse_speed ..
+                                                                                                                '\\n' .. 'Collapse Amount: ' .. collapse_amount .. '\\n'
                 )
                 WPT.set('sent_to_discord', true)
             end
@@ -1307,7 +1292,7 @@ function Public.loco_died()
 
     this.locomotive_health = 0
     this.locomotive.color = {0.49, 0, 255, 1}
-    rendering.set_text(this.health_text, 'HP: ' .. this.locomotive_health .. ' / ' .. this.locomotive_max_health)
+    rendering.set_text(this.health_text, 'HP: ' .. round(this.locomotive_health) .. ' / ' .. round(this.locomotive_max_health))
     wave_defense_table.game_lost = true
     wave_defense_table.target = nil
     local msg = defeated_messages[random(1, #defeated_messages)]
