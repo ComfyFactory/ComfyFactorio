@@ -696,7 +696,6 @@ function Public.remove_offline_players()
     local player_inv = {}
     local items = {}
     if #offline_players > 0 then
-        local later = {}
         for i = 1, #offline_players, 1 do
             if offline_players[i] and game.players[offline_players[i].index] and game.players[offline_players[i].index].connected then
                 offline_players[i] = nil
@@ -752,17 +751,8 @@ function Public.remove_offline_players()
                         end
                     end
                     offline_players[i] = nil
-                else
-                    later[#later + 1] = offline_players[i]
+                    break
                 end
-            end
-        end
-        for k, _ in pairs(offline_players) do
-            offline_players[k] = nil
-        end
-        if #later > 0 then
-            for i = 1, #later, 1 do
-                offline_players[#offline_players + 1] = later[i]
             end
         end
     end
@@ -853,11 +843,6 @@ function Public.render_direction(surface)
         text = 'Welcome to Wintery Mountain Fortress v3!'
     end
 
-    local modded = is_game_modded()
-
-    if modded then
-        text = 'Welcome to Modded Mountain Fortress v3!'
-    end
     if counter then
         rendering.draw_text {
             text = text .. '\nRun: ' .. counter,
@@ -989,13 +974,8 @@ function Public.boost_difficulty()
         WPT.set('coin_amount', 1)
         WPT.set('upgrades').flame_turret.limit = 12
         WPT.set('upgrades').landmine.limit = 50
-        if is_game_modded() then
-            WPT.set('locomotive_health', 20000)
-            WPT.set('locomotive_max_health', 20000)
-        else
-            WPT.set('locomotive_health', 10000)
-            WPT.set('locomotive_max_health', 10000)
-        end
+        WPT.set('locomotive_health', 10000)
+        WPT.set('locomotive_max_health', 10000)
         WPT.set('bonus_xp_on_join', 500)
         WD.set('next_wave', game.tick + 3600 * 15)
         WPT.set('spidertron_unlocked_at_zone', 10)
@@ -1010,13 +990,8 @@ function Public.boost_difficulty()
         WPT.set('coin_amount', 2)
         WPT.set('upgrades').flame_turret.limit = 10
         WPT.set('upgrades').landmine.limit = 50
-        if is_game_modded() then
-            WPT.set('locomotive_health', 12000)
-            WPT.set('locomotive_max_health', 12000)
-        else
-            WPT.set('locomotive_health', 7000)
-            WPT.set('locomotive_max_health', 7000)
-        end
+        WPT.set('locomotive_health', 7000)
+        WPT.set('locomotive_max_health', 7000)
         WPT.set('bonus_xp_on_join', 300)
         WD.set('next_wave', game.tick + 3600 * 8)
         WPT.set('spidertron_unlocked_at_zone', 8)
@@ -1030,13 +1005,8 @@ function Public.boost_difficulty()
         WPT.set('coin_amount', 4)
         WPT.set('upgrades').flame_turret.limit = 3
         WPT.set('upgrades').landmine.limit = 10
-        if is_game_modded() then
-            WPT.set('locomotive_health', 8000)
-            WPT.set('locomotive_max_health', 8000)
-        else
-            WPT.set('locomotive_health', 5000)
-            WPT.set('locomotive_max_health', 5000)
-        end
+        WPT.set('locomotive_health', 5000)
+        WPT.set('locomotive_max_health', 5000)
         WPT.set('bonus_xp_on_join', 50)
         WD.set('next_wave', game.tick + 3600 * 5)
         WPT.set('spidertron_unlocked_at_zone', 6)
@@ -1316,9 +1286,6 @@ local disable_recipes = function(force)
     force.recipes['locomotive'].enabled = false
     force.recipes['pistol'].enabled = false
     force.recipes['spidertron-remote'].enabled = false
-    if is_mod_loaded('Krastorio2') then
-        force.recipes['kr-advanced-tank'].enabled = false
-    end
 end
 
 function Public.disable_tech()
@@ -1331,12 +1298,7 @@ function Public.disable_tech()
     force.technologies['optics'].researched = true
     force.technologies['railway'].researched = true
     force.technologies['land-mine'].enabled = false
-    if is_mod_loaded('Krastorio2') then
-        force.technologies['kr-nuclear-locomotive'].enabled = false
-        force.technologies['kr-nuclear-locomotive'].researched = false
-        force.technologies['kr-advanced-tank'].enabled = false
-        force.technologies['kr-advanced-tank'].researched = false
-    end
+
     disable_recipes(force)
 end
 
@@ -1372,16 +1334,9 @@ function Public.on_research_finished(event)
     end
 end
 
--- if is_mod_loaded('Krastorio2') then
--- Public.firearm_magazine_ammo = {name = 'rifle-magazine', count = 200}
--- Public.piercing_rounds_magazine_ammo = {name = 'armor-piercing-rifle-magazine', count = 200}
--- Public.uranium_rounds_magazine_ammo = {name = 'uranium-rifle-magazine', count = 200}
--- else
 Public.firearm_magazine_ammo = {name = 'firearm-magazine', count = 200}
 Public.piercing_rounds_magazine_ammo = {name = 'piercing-rounds-magazine', count = 200}
 Public.uranium_rounds_magazine_ammo = {name = 'uranium-rounds-magazine', count = 200}
--- end
-
 Public.light_oil_ammo = {name = 'light-oil', amount = 100}
 Public.artillery_shell_ammo = {name = 'artillery-shell', count = 15}
 Public.laser_turrent_power_source = {buffer_size = 2400000, power_production = 40000}

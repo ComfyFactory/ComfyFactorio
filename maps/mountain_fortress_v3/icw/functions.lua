@@ -35,12 +35,6 @@ local reconstruct_all_trains =
 
 local function get_tile_name()
     local main_tile_name = 'black-refined-concrete'
-    local modded = is_game_modded()
-    if modded then
-        if game.active_mods['Krastorio2'] then
-            main_tile_name = 'kr-black-reinforced-plate'
-        end
-    end
     return main_tile_name
 end
 
@@ -389,9 +383,11 @@ local function kill_wagon_doors(icw, wagon)
         return
     end
     for k, e in pairs(wagon.doors) do
-        icw.doors[e.unit_number] = nil
-        e.destroy()
-        wagon.doors[k] = nil
+        if e and e.valid then
+            icw.doors[e.unit_number] = nil
+            e.destroy()
+            wagon.doors[k] = nil
+        end
     end
 end
 

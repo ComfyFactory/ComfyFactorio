@@ -263,10 +263,6 @@ function Public.reset_map()
 
     -- HS.get_scores()
 
-    if is_game_modded() then
-        game.difficulty_settings.technology_price_multiplier = 0.5
-    end
-
     this.chunk_load_tick = game.tick + 200
     this.force_chunk = true
     this.market_announce = game.tick + 1200
@@ -482,20 +478,11 @@ local on_init = function()
     game.map_settings.path_finder.general_entity_collision_penalty = 1 -- Recommended value
     game.map_settings.path_finder.general_entity_subsequent_collision_penalty = 1 -- Recommended value
 
-    local tooltip
-    if is_game_modded() then
-        tooltip = {
-            [1] = ({'main.diff_tooltip', '0', '0.5', '0.15', '0.15', '1', '12', '50', '20000', '100%', '15', '10'}),
-            [2] = ({'main.diff_tooltip', '0', '0.25', '0.1', '0.1', '2', '10', '50', '12000', '75%', '8', '8'}),
-            [3] = ({'main.diff_tooltip', '0', '0', '0', '0', '4', '3', '10', '8000', '50%', '5', '6'})
-        }
-    else
-        tooltip = {
-            [1] = ({'main.diff_tooltip', '0', '0.5', '0.15', '0.15', '1', '12', '50', '10000', '100%', '15', '10'}),
-            [2] = ({'main.diff_tooltip', '0', '0.25', '0.1', '0.1', '2', '10', '50', '7000', '75%', '8', '8'}),
-            [3] = ({'main.diff_tooltip', '0', '0', '0', '0', '4', '3', '10', '5000', '50%', '5', '6'})
-        }
-    end
+    local tooltip = {
+        [1] = ({'main.diff_tooltip', '0', '0.5', '0.15', '0.15', '1', '12', '50', '10000', '100%', '15', '10'}),
+        [2] = ({'main.diff_tooltip', '0', '0.25', '0.1', '0.1', '2', '10', '50', '7000', '75%', '8', '8'}),
+        [3] = ({'main.diff_tooltip', '0', '0', '0', '0', '4', '3', '10', '5000', '50%', '5', '6'})
+    }
 
     Difficulty.set_tooltip(tooltip)
 

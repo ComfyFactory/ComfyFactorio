@@ -128,32 +128,9 @@ local function get_scrap_mineable_entities()
         'crash-site-spaceship-wreck-small-6'
     }
 
-    local modded = is_game_modded()
-    if modded then
-        if game.active_mods['MineableWreckage'] then
-            scrap_mineable_entities = {'mineable-wreckages'}
-        end
-    end
-
     local scrap_mineable_entities_index = #scrap_mineable_entities
 
     return scrap_mineable_entities, scrap_mineable_entities_index
-end
-
-local function get_tiberium_trees(entities, p)
-    if is_mod_loaded('Factorio-Tiberium') then
-        if random(1, 512) == 1 then
-            entities[#entities + 1] = {name = 'tibGrowthNode', position = p, amount = 15000}
-        end
-    end
-end
-
-local function get_imersite_ores(entities, p)
-    if is_mod_loaded('Krastorio2') then
-        if random(1, 2048) == 1 then
-            entities[#entities + 1] = {name = 'imersite', position = p, amount = random(300000, 600000)}
-        end
-    end
 end
 
 local function is_position_near(area, table_to_check)
@@ -366,8 +343,6 @@ local function wall(data)
             end
         end
 
-        get_tiberium_trees(entities, p)
-
         if random(1, 40) == 1 then
             if
                 surface.can_place_entity(
@@ -444,8 +419,6 @@ local function process_level_14_position(x, y, data)
         if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
-        get_tiberium_trees(entities, p)
-        get_imersite_ores(entities, p)
     end
 
     if small_caves > -0.21 and small_caves < 0.21 then
@@ -521,8 +494,6 @@ local function process_level_13_position(x, y, data)
         if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
-        get_tiberium_trees(entities, p)
-        get_imersite_ores(entities, p)
     end
 
     if small_caves > -0.22 and small_caves < 0.22 then
@@ -599,8 +570,6 @@ local function process_level_12_position(x, y, data, void_or_lab)
         if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
-        get_tiberium_trees(entities, p)
-        get_imersite_ores(entities, p)
     end
 
     if noise_1 > 0.65 then
@@ -695,8 +664,6 @@ local function process_level_11_position(x, y, data)
         if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
-        get_tiberium_trees(entities, p)
-        get_imersite_ores(entities, p)
     end
 
     if noise_1 < -0.72 then
@@ -795,8 +762,6 @@ local function process_level_10_position(x, y, data)
         if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
-        get_tiberium_trees(entities, p)
-        get_imersite_ores(entities, p)
     end
 
     if abs(scrapyard) > 0.40 and abs(scrapyard) < 0.65 then
@@ -922,8 +887,6 @@ local function process_level_9_position(x, y, data)
         if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
-        get_tiberium_trees(entities, p)
-        get_imersite_ores(entities, p)
     end
 
     if maze_noise < -0.5 or maze_noise > 0.5 then
@@ -1032,8 +995,6 @@ local function process_scrap_zone_1(x, y, data, void_or_lab)
         if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
-        get_tiberium_trees(entities, p)
-        get_imersite_ores(entities, p)
     end
 
     local large_caves = get_perlin('large_caves', p, seed)
@@ -1107,7 +1068,7 @@ local function process_level_7_position(x, y, data, void_or_lab)
         if random(1, 64) == 1 and no_rocks_2 > 0.7 then
             entities[#entities + 1] = {name = 'crude-oil', position = p, amount = get_oil_amount(p)}
         end
-        get_imersite_ores(entities, p)
+
         if random(1, 2048) == 1 then
             treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
         end
@@ -1163,7 +1124,6 @@ local function process_level_7_position(x, y, data, void_or_lab)
         if random(1, 32) == 1 then
             Generate_resources(buildings, p, Public.level_depth)
         end
-        get_tiberium_trees(entities, p)
     end
 
     tiles[#tiles + 1] = {name = 'dirt-7', position = p}
@@ -1225,7 +1185,7 @@ local function process_forest_zone_2(x, y, data, void_or_lab)
                 force = 'enemy'
             }
         end
-        get_imersite_ores(entities, p)
+
         return
     end
     local noise_forest_location = get_perlin('forest_location', p, seed)
@@ -1286,7 +1246,7 @@ local function process_forest_zone_2(x, y, data, void_or_lab)
                         entities[#entities + 1] = {name = 'tree-02-red', position = p}
                     end
                 end
-                get_tiberium_trees(entities, p)
+
                 return
             end
         end
@@ -1354,7 +1314,7 @@ local function process_level_5_position(x, y, data, void_or_lab)
                 force = 'enemy'
             }
         end
-        get_imersite_ores(entities, p)
+
         return
     end
 
@@ -1378,7 +1338,7 @@ local function process_level_5_position(x, y, data, void_or_lab)
             if random(1, 512) == 1 then
                 treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
             end
-            get_tiberium_trees(entities, p)
+
             if random(1, 2) == 1 then
                 entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
             end
@@ -1484,7 +1444,7 @@ local function process_level_4_position(x, y, data, void_or_lab)
                 force = 'enemy'
             }
         end
-        get_imersite_ores(entities, p)
+
         return
     end
 
@@ -1502,7 +1462,7 @@ local function process_level_4_position(x, y, data, void_or_lab)
         if random(1, 2048) == 1 then
             treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
         end
-        get_tiberium_trees(entities, p)
+
         tiles[#tiles + 1] = {name = 'dirt-7', position = p}
         if random(1, 100) > 30 then
             entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
@@ -1630,7 +1590,7 @@ local function process_level_3_position(x, y, data, void_or_lab)
                         force = 'enemy'
                     }
                 end
-                get_imersite_ores(entities, p)
+
                 if random(1, 256) == 1 then
                     spawn_turret(entities, p, 3)
                 end
@@ -1655,7 +1615,7 @@ local function process_level_3_position(x, y, data, void_or_lab)
             if random(1, 512) == 1 then
                 treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
             end
-            get_tiberium_trees(entities, p)
+
             return
         end
 
@@ -1772,7 +1732,7 @@ local function process_level_2_position(x, y, data, void_or_lab)
                         force = 'enemy'
                     }
                 end
-                get_imersite_ores(entities, p)
+
                 if random(1, 256) == 1 then
                     spawn_turret(entities, p, 2)
                 end
@@ -1797,7 +1757,7 @@ local function process_level_2_position(x, y, data, void_or_lab)
             if random(1, 512) == 1 then
                 treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
             end
-            get_tiberium_trees(entities, p)
+
             return
         end
 
@@ -1917,8 +1877,6 @@ local function process_forest_zone_1(x, y, data, void_or_lab)
                     }
                 end
 
-                get_imersite_ores(entities, p)
-
                 if random(1, 1024) == 1 then
                     treasure[#treasure + 1] = {position = p, chest = 'iron-chest'}
                 end
@@ -1941,7 +1899,7 @@ local function process_forest_zone_1(x, y, data, void_or_lab)
         if random(1, 32) == 1 then
             entities[#entities + 1] = {name = 'tree-0' .. random(1, 9), position = p}
         end
-        get_tiberium_trees(entities, p)
+
         if random(1, 512) == 1 then
             treasure[#treasure + 1] = {position = p, chest = 'iron-chest'}
         end
@@ -2098,8 +2056,6 @@ local function process_level_1_position(x, y, data, void_or_lab)
                     }
                 end
 
-                get_imersite_ores(entities, p)
-
                 if random(1, 1024) == 1 then
                     treasure[#treasure + 1] = {position = p, chest = 'iron-chest'}
                 end
@@ -2122,7 +2078,7 @@ local function process_level_1_position(x, y, data, void_or_lab)
         if random(1, 32) == 1 then
             entities[#entities + 1] = {name = 'tree-0' .. random(1, 9), position = p}
         end
-        get_tiberium_trees(entities, p)
+
         if random(1, 512) == 1 then
             treasure[#treasure + 1] = {position = p, chest = 'iron-chest'}
         end
@@ -2283,8 +2239,6 @@ local function process_level_0_position(x, y, data, void_or_lab)
         if random(1, 32) == 1 then
             entities[#entities + 1] = {name = 'tree-0' .. random(1, 9), position = p}
         end
-
-        get_tiberium_trees(entities, p)
 
         if random(1, 512) == 1 then
             treasure[#treasure + 1] = {position = p, chest = 'iron-chest'}

@@ -8,7 +8,6 @@ local Alert = require 'utils.alert'
 local Event = require 'utils.event'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
--- local BM = require 'maps.mountain_fortress_v3.blood_moon'
 
 local raise_event = script.raise_event
 local floor = math.floor
@@ -50,10 +49,7 @@ local spidertron_unlocked =
         Alert.alert_all_players(30, message, nil, 'achievement/tech-maniac', 0.1)
     end
 )
---[[
-local calculate_hp = function(zone)
-    return 2 + 0.2 * zone - 1 * floor(zone / 20)
-end ]]
+
 local first_player_to_zone =
     Token.register(
     function(data)
@@ -179,7 +175,6 @@ local function distance(player)
             WPT.set().breached_wall = breached_wall + 1
             WPT.set().placed_trains_in_zone.placed = 0
             WPT.set().biters.amount = 0
-            WPT.set('blood_moon', false)
             WPT.set().placed_trains_in_zone.randomized = false
             WPT.set().placed_trains_in_zone.positions = {}
             raise_event(Balance.events.breached_wall, {})
@@ -199,25 +194,6 @@ local function distance(player)
                 end
             end
 
-            --[[ if breached_wall % 2 == 0 then
-                local blood_moon = WPT.get('blood_moon')
-                local t = game.tick
-                local surface = player.surface
-                if not blood_moon then
-                    BM.set_daytime(surface, t, true)
-                    WPT.set('blood_moon', true)
-                end
-            else
-                local surface = player.surface
-                surface.brightness_visual_weights = {
-                    a = 1,
-                    b = 0,
-                    g = 0,
-                    r = 0
-                }
-                surface.daytime = 0.7
-                surface.freeze_daytime = false
-            end ]]
             local data = {
                 player = player,
                 breached_wall = breached_wall
@@ -241,8 +217,6 @@ local function distance(player)
         RPG_Settings.set_value_to_player(index, 'bonus', bonus + 1)
 
         Functions.gain_xp(player, bonus_xp_on_join * bonus)
-        local message = ({'breached_wall.wall_breached', bonus})
-        Alert.alert_player_warning(player, 10, message)
         return
     end
 end

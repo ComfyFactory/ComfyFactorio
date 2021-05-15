@@ -441,7 +441,7 @@ end
 
 --- This rebuilds all spells. Make sure to make changes on_init if you don't
 --  want all spells enabled.
-function Public.rebuild_spells()
+function Public.rebuild_spells(rebuild)
     local spells = this.rpg_spells
 
     local new_spells = {}
@@ -454,7 +454,9 @@ function Public.rebuild_spells()
         end
     end
 
-    this.rpg_spells = new_spells
+    if rebuild then
+        this.rpg_spells = new_spells
+    end
 
     return new_spells, spell_names
 end

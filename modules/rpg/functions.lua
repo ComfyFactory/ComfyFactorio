@@ -643,7 +643,7 @@ function Public.gain_xp(player, amount, added_to_pool, text)
         RPG.debug_log('RPG - ' .. player.name .. ' got org xp: ' .. amount)
     end
 
-    rpg_t[player.index].xp = rpg_t[player.index].xp + amount
+    rpg_t[player.index].xp = math.round(rpg_t[player.index].xp + amount, 3)
     rpg_t[player.index].xp_since_last_floaty_text = rpg_t[player.index].xp_since_last_floaty_text + amount
 
     if not experience_levels[rpg_t[player.index].level + 1] then

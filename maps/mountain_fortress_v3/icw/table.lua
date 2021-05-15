@@ -37,21 +37,12 @@ function Public.reset()
         ['locomotive'] = true
     }
 
-    if is_game_modded() then
-        this.wagon_areas = {
-            ['cargo-wagon'] = {left_top = {x = -45, y = 0}, right_bottom = {x = 45, y = 100}},
-            ['artillery-wagon'] = {left_top = {x = -45, y = 0}, right_bottom = {x = 45, y = 100}},
-            ['fluid-wagon'] = {left_top = {x = -45, y = 0}, right_bottom = {x = 45, y = 100}},
-            ['locomotive'] = {left_top = {x = -45, y = 0}, right_bottom = {x = 45, y = 100}}
-        }
-    else
-        this.wagon_areas = {
-            ['cargo-wagon'] = {left_top = {x = -30, y = 0}, right_bottom = {x = 30, y = 80}},
-            ['artillery-wagon'] = {left_top = {x = -30, y = 0}, right_bottom = {x = 30, y = 80}},
-            ['fluid-wagon'] = {left_top = {x = -30, y = 0}, right_bottom = {x = 30, y = 80}},
-            ['locomotive'] = {left_top = {x = -30, y = 0}, right_bottom = {x = 30, y = 80}}
-        }
-    end
+    this.wagon_areas = {
+        ['cargo-wagon'] = {left_top = {x = -30, y = 0}, right_bottom = {x = 30, y = 80}},
+        ['artillery-wagon'] = {left_top = {x = -30, y = 0}, right_bottom = {x = 30, y = 80}},
+        ['fluid-wagon'] = {left_top = {x = -30, y = 0}, right_bottom = {x = 30, y = 80}},
+        ['locomotive'] = {left_top = {x = -30, y = 0}, right_bottom = {x = 30, y = 80}}
+    }
 end
 
 function Public.get(key)
