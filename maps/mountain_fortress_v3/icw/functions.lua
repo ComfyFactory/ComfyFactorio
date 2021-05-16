@@ -206,11 +206,13 @@ local remove_lights_token =
     end
 )
 
-function Public.glimpse_of_lights(icw)
+function Public.glimpse_of_lights()
     local surface = WPT.get('loco_surface')
     if not surface or not surface.valid then
         return
     end
+
+    local icw = ICW.get()
 
     local hazardous_debris = icw.hazardous_debris
     if not hazardous_debris then
@@ -240,12 +242,13 @@ function Public.glimpse_of_lights(icw)
     end
 end
 
-function Public.hazardous_debris(icw)
-    local speed = icw.speed
+function Public.hazardous_debris()
     local surface = WPT.get('loco_surface')
     if not surface or not surface.valid then
         return
     end
+    local icw = ICW.get()
+    local speed = icw.speed
 
     local hazardous_debris = icw.hazardous_debris
     if not hazardous_debris then
@@ -1077,7 +1080,8 @@ function Public.reconstruct_all_trains(icw)
     delete_empty_surfaces(icw)
 end
 
-function Public.item_transfer(icw)
+function Public.item_transfer()
+    local icw = ICW.get()
     local wagon
     icw.current_wagon_index, wagon = next(icw.wagons, icw.current_wagon_index)
     if not wagon then
@@ -1136,7 +1140,8 @@ function Public.draw_minimap(icw, player, surface, position)
     element.position = position
 end
 
-function Public.update_minimap(icw)
+function Public.update_minimap()
+    local icw = ICW.get()
     for k, player in pairs(game.connected_players) do
         local player_data = get_player_data(icw, player)
         if player.character and player.character.valid then

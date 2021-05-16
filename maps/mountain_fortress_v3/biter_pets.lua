@@ -1,3 +1,4 @@
+local Event = require 'utils.event'
 local WPT = require 'maps.mountain_fortress_v3.table'
 
 local nom_msg = {'munch', 'munch', 'yum'}
@@ -193,8 +194,7 @@ local function on_player_dropped_item(event)
     end
 end
 
-local event = require 'utils.event'
-event.add(defines.events.on_player_dropped_item, on_player_dropped_item)
-event.add(defines.events.on_player_changed_position, on_player_changed_position)
+Event.add(defines.events.on_player_dropped_item, on_player_dropped_item)
+Event.add(defines.events.on_player_changed_position, on_player_changed_position)
 
 return Public

@@ -515,17 +515,4 @@ end
 Event.on_nth_tick(10, on_tick)
 Event.on_init(on_init)
 
-local gMeta = getmetatable(_ENV)
-if not gMeta then
-    gMeta = {}
-    setmetatable(_ENV, gMeta)
-end
-
-gMeta.__newindex = function(_, n, v)
-    log('Desync warning: attempt to write to undeclared var ' .. n)
-    global[n] = v
-end
-gMeta.__index = function(_, n)
-    return global[n]
-end
 return Public
