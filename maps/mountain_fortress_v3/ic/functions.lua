@@ -3,7 +3,7 @@ local Color = require 'utils.color_presets'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
 local IC_Gui = require 'maps.mountain_fortress_v3.ic.gui'
-local IC = require 'maps.mountain_fortress.ic.table'
+local IC = require 'maps.mountain_fortress_v3.ic.table'
 local WPT = require 'maps.mountain_fortress_v3.table'
 
 local Public = {}

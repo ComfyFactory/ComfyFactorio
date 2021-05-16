@@ -738,28 +738,25 @@ local damage_player_over_time_token =
     Token.register(
     function(data)
         local player = data.player
-        local damage = data.damage
         if not player.character or not player.character.valid then
             return
         end
-        player.character.health = player.character.health - damage
+        player.character.health = player.character.health - (player.character.health * 0.05)
         player.character.surface.create_entity({name = 'water-splash', position = player.position})
     end
 )
 
 --- Damages a player over time.
-function Public.damage_player_over_time(player, amount, damage)
+function Public.damage_player_over_time(player, amount)
     if not player or not player.valid then
         return
     end
 
-    amount = amount or 5
-    damage = damage or 10
+    amount = amount or 10
     local tick = 20
     for _ = 1, amount, 1 do
-        Task.set_timeout_in_ticks(tick, damage_player_over_time_token, {player = player, damage = damage})
+        Task.set_timeout_in_ticks(tick, damage_player_over_time_token, {player = player})
         tick = tick + 15
-        damage = damage + 10
     end
 end
 
