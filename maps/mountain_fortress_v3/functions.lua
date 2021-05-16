@@ -128,7 +128,7 @@ local function do_refill_turrets()
     end
 end
 
-local function do_turret_energy()
+--[[ local function do_turret_energy()
     local power_sources = this.power_sources
 
     for index = 1, #power_sources do
@@ -140,8 +140,7 @@ local function do_turret_energy()
 
         ps_data.energy = 0xfffff
     end
-end
-
+end ]]
 local function do_magic_crafters()
     local magic_crafters = this.magic_crafters
     local limit = #magic_crafters
@@ -1283,6 +1282,9 @@ local disable_recipes = function(force)
     force.recipes['car'].enabled = false
     force.recipes['tank'].enabled = false
     force.recipes['artillery-wagon'].enabled = false
+    force.recipes['artillery-turret'].enabled = false
+    force.recipes['artillery-shell'].enabled = false
+    force.recipes['artillery-targeting-remote'].enabled = false
     force.recipes['locomotive'].enabled = false
     force.recipes['pistol'].enabled = false
     force.recipes['spidertron-remote'].enabled = false
@@ -1295,6 +1297,12 @@ function Public.disable_tech()
     force.technologies['spidertron'].researched = false
     force.technologies['atomic-bomb'].enabled = false
     force.technologies['atomic-bomb'].researched = false
+    force.technologies['artillery-shell-range-1'].enabled = false
+    force.technologies['artillery-shell-range-1'].researched = false
+    force.technologies['artillery-shell-speed-1'].enabled = false
+    force.technologies['artillery-shell-speed-1'].researched = false
+    force.technologies['artillery'].enabled = false
+    force.technologies['artillery'].researched = false
     force.technologies['optics'].researched = true
     force.technologies['railway'].researched = true
     force.technologies['land-mine'].enabled = false
@@ -1364,6 +1372,6 @@ Event.add(defines.events.on_research_finished, on_research_finished)
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)
 Event.add(defines.events.on_pre_player_left_game, on_pre_player_left_game)
 Event.on_nth_tick(10, tick)
-Event.on_nth_tick(5, do_turret_energy)
+-- Event.on_nth_tick(5, do_turret_energy)
 
 return Public

@@ -145,7 +145,7 @@ local function spawn_worms(data)
     max_biters.amount = max_biters.amount + 1
 end
 
-function Public.buried_biter(surface, position, max)
+function Public.buried_biter(surface, position)
     if not (surface and surface.valid) then
         return
     end
@@ -159,33 +159,21 @@ function Public.buried_biter(surface, position, max)
         return
     end
 
-    local amount = 8
-    local a = 0
-    max = max or random(4, 6)
-
-    local ticks = amount * 30
-    ticks = ticks + 90
-    for t = 1, ticks, 1 do
+    for t = 1, 60, 1 do
         if not traps[game.tick + t] then
             traps[game.tick + t] = {}
         end
 
         traps[game.tick + t][#traps[game.tick + t] + 1] = {
             callback = 'create_particles',
-            data = {surface = surface, position = {x = position.x, y = position.y}, amount = 4}
+            data = {surface = surface, position = {x = position.x, y = position.y}, amount = math.ceil(t * 0.05)}
         }
 
-        if t > 90 then
-            if t % 30 == 29 then
-                a = a + 1
-                traps[game.tick + t][#traps[game.tick + t] + 1] = {
-                    callback = 'spawn_biters',
-                    data = {surface = surface, position = {x = position.x, y = position.y}}
-                }
-                if a >= max then
-                    break
-                end
-            end
+        if t == 60 then
+            traps[game.tick + t][#traps[game.tick + t] + 1] = {
+                callback = 'spawn_biters',
+                data = {surface = surface, position = {x = position.x, y = position.y}}
+            }
         end
     end
 end
@@ -204,27 +192,21 @@ function Public.buried_worm(surface, position)
         return
     end
 
-    local amount = 8
-
-    local ticks = amount * 30
-    ticks = ticks + 90
-    local a = false
-    for t = 1, ticks, 1 do
+    for t = 1, 60, 1 do
         if not traps[game.tick + t] then
             traps[game.tick + t] = {}
         end
 
         traps[game.tick + t][#traps[game.tick + t] + 1] = {
             callback = 'create_particles',
-            data = {surface = surface, position = {x = position.x, y = position.y}, amount = 4}
+            data = {surface = surface, position = {x = position.x, y = position.y}, amount = math.ceil(t * 0.05)}
         }
 
-        if not a then
+        if t == 60 then
             traps[game.tick + t][#traps[game.tick + t] + 1] = {
                 callback = 'spawn_worms',
                 data = {surface = surface, position = {x = position.x, y = position.y}}
             }
-            a = true
         end
     end
 end

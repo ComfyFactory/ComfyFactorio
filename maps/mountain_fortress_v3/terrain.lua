@@ -91,7 +91,6 @@ local trees = {
 local firearm_magazine_ammo = Functions.firearm_magazine_ammo
 local piercing_rounds_magazine_ammo = Functions.piercing_rounds_magazine_ammo
 local uranium_rounds_magazine_ammo = Functions.uranium_rounds_magazine_ammo
-local laser_turrent_power_source = Functions.laser_turrent_power_source
 local light_oil_ammo = Functions.light_oil_ammo
 local artillery_shell_ammo = Functions.artillery_shell_ammo
 
@@ -99,7 +98,7 @@ local callback = {
     [1] = {callback = Functions.refill_turret_callback, data = firearm_magazine_ammo},
     [2] = {callback = Functions.refill_turret_callback, data = piercing_rounds_magazine_ammo},
     [3] = {callback = Functions.refill_turret_callback, data = uranium_rounds_magazine_ammo},
-    [4] = {callback = Functions.power_source_callback, data = laser_turrent_power_source},
+    [4] = {callback = Functions.refill_turret_callback, data = uranium_rounds_magazine_ammo},
     [5] = {callback = Functions.refill_liquid_turret_callback, data = light_oil_ammo},
     [6] = {callback = Functions.refill_artillery_turret_callback, data = artillery_shell_ammo}
 }
@@ -108,7 +107,7 @@ local turret_list = {
     [1] = {name = 'gun-turret', callback = callback[1]},
     [2] = {name = 'gun-turret', callback = callback[2]},
     [3] = {name = 'gun-turret', callback = callback[3]},
-    [4] = {name = 'laser-turret', callback = callback[4]},
+    [4] = {name = 'gun-turret', callback = callback[4]},
     [5] = {name = 'flamethrower-turret', callback = callback[5]},
     [6] = {name = 'artillery-turret', callback = callback[6]}
 }
