@@ -84,11 +84,10 @@ local function on_player_driving_changed_state(event)
 end
 
 local function on_tick()
-    local ic = IC.get()
     local tick = game.tick
 
     if tick % 10 == 1 then
-        Functions.item_transfer(ic)
+        Functions.item_transfer()
     end
 
     if tick % 240 == 0 then
@@ -96,7 +95,7 @@ local function on_tick()
     end
 
     if tick % 400 == 0 then
-        Functions.remove_invalid_cars(ic)
+        Functions.remove_invalid_cars()
     end
 end
 

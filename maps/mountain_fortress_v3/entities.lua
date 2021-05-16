@@ -227,7 +227,12 @@ local function set_train_final_health(final_damage_amount)
     local poison_deployed = WPT.get('poison_deployed')
     local robotics_deployed = WPT.get('robotics_deployed')
 
-    if locomotive_health >= 4000 and locomotive_health <= 6000 then
+    local lower_high = locomotive_max_health * 0.4
+    local higher_high = locomotive_max_health * 0.5
+    local lower_low = locomotive_max_health * 0.2
+    local higher_low = locomotive_max_health * 0.3
+
+    if locomotive_health >= lower_high and locomotive_health <= higher_high then
         if not poison_deployed then
             local carriages = WPT.get('carriages')
 
@@ -245,7 +250,7 @@ local function set_train_final_health(final_damage_amount)
             Alert.alert_all_players_location(p, msg)
             WPT.set().poison_deployed = true
         end
-    elseif locomotive_health >= 1500 and locomotive_health <= 3900 then
+    elseif locomotive_health >= lower_low and locomotive_health <= higher_low then
         if not robotics_deployed then
             local carriages = WPT.get('carriages')
 

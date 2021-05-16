@@ -92,15 +92,14 @@ local function on_gui_click(event)
 end
 
 local function on_tick()
-    local icw = ICW.get()
     local tick = game.tick
     if tick % 10 == 0 then
-        Functions.item_transfer(icw)
-        Functions.hazardous_debris(icw)
-    -- Functions.glimpse_of_lights(icw)
+        Functions.item_transfer()
+        Functions.hazardous_debris()
+    -- Functions.glimpse_of_lights()
     end
     if tick % 240 == 0 then
-        Functions.update_minimap(icw)
+        Functions.update_minimap()
     end
 end
 

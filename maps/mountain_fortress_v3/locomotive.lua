@@ -416,14 +416,16 @@ local function fish_tag()
             locomotive_tag.destroy()
         end
     end
-    WPT.set().locomotive_tag =
+    WPT.set(
+        'locomotive_tag',
         locomotive_cargo.force.add_chart_tag(
-        locomotive_cargo.surface,
-        {
-            icon = {type = 'item', name = 'raw-fish'},
-            position = locomotive_cargo.position,
-            text = ' '
-        }
+            locomotive_cargo.surface,
+            {
+                icon = {type = 'item', name = 'raw-fish'},
+                position = locomotive_cargo.position,
+                text = ' '
+            }
+        )
     )
 end
 
@@ -491,7 +493,6 @@ local function set_locomotive_health()
 end
 
 local function validate_index()
-    local icw_table = ICW.get_table()
     local locomotive = WPT.get('locomotive')
     if not locomotive then
         return
@@ -500,6 +501,7 @@ local function validate_index()
         return
     end
 
+    local icw_table = ICW.get_table()
     local icw_locomotive = WPT.get('icw_locomotive')
     local loco_surface = icw_locomotive.surface
     local unit_surface = locomotive.unit_number
@@ -1390,7 +1392,7 @@ end
 
 local function create_market(data, rebuild)
     local surface = data.surface
-    local this = data.this
+    local this = WPT.get()
 
     if not this.locomotive then
         return
@@ -1666,26 +1668,26 @@ local function divide_contents()
 end
 
 local function place_market()
-    local this = WPT.get()
+    local locomotive = WPT.get('locomotive')
+    if not locomotive then
+        return
+    end
+
+    if not locomotive.valid then
+        return
+    end
+
     local icw_table = ICW.get_table()
-    if not this.locomotive then
-        return
-    end
-
-    if not this.locomotive.valid then
-        return
-    end
-
-    local unit_surface = this.locomotive.unit_number
+    local unit_surface = locomotive.unit_number
     local surface = game.surfaces[icw_table.wagons[unit_surface].surface.index]
+    local market = WPT.get('market')
 
     local data = {
-        this = this,
         surface = surface
     }
-    if not this.market then
+    if not market then
         create_market(data)
-    elseif not this.market.valid then
+    elseif not market.valid then
         create_market(data, true)
     end
 end
@@ -1811,18 +1813,6 @@ local function on_player_driving_changed_state(event)
                 player.character.driving = false
             end
         end
-    end
-end
-
-local function on_player_left_game(event)
-    local player = game.players[event.player_index]
-    if not player or not player.valid then
-        return
-    end
-
-    local trusted = Session.get_trusted_table()
-    if trusted[player.name] then
-        trusted[player.name] = nil
     end
 end
 
@@ -2383,18 +2373,19 @@ end
 
 function Public.transfer_pollution()
     local locomotive = WPT.get('locomotive')
-    local active_surface_index = WPT.get('active_surface_index')
-    local icw_locomotive = WPT.get('icw_locomotive')
-    local surface = icw_locomotive.surface
-    if not surface or not surface.valid then
+    if not locomotive or not locomotive.valid then
         return
     end
+
+    local active_surface_index = WPT.get('active_surface_index')
     local active_surface = game.surfaces[active_surface_index]
     if not active_surface or not active_surface.valid then
         return
     end
 
-    if not locomotive or not locomotive.valid then
+    local icw_locomotive = WPT.get('icw_locomotive')
+    local surface = icw_locomotive.surface
+    if not surface or not surface.valid then
         return
     end
 
@@ -2430,6 +2421,7 @@ function Public.enable_robotic_defense(pos)
     if not locomotive.valid then
         return
     end
+
     pos = pos or locomotive.position
     create_defense_system({x = pos.x, y = pos.y}, 'destroyer-capsule', pos)
     if random(1, 4) == 1 then
@@ -2485,6 +2477,5 @@ Event.add(defines.events.on_robot_mined_entity, on_player_and_robot_mined_entity
 Event.add(defines.events.on_console_chat, on_console_chat)
 Event.add(defines.events.on_player_changed_surface, on_player_changed_surface)
 Event.add(defines.events.on_player_driving_changed_state, on_player_driving_changed_state)
-Event.add(defines.events.on_player_left_game, on_player_left_game)
 
 return Public

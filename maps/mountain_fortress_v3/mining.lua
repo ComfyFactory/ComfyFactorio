@@ -363,7 +363,7 @@ local function randomness_scrap(data)
     local spill_items_to_surface = WPT.get('spill_items_to_surface')
 
     local harvest = scrap_raffle[random(1, size_of_scrap_raffle)]
-    local amount_bonus = (game.forces.enemy.evolution_factor * 2) + (game.forces.player.mining_drill_productivity_bonus * 2)
+    local amount_bonus = game.forces.player.mining_drill_productivity_bonus * 2
     local r1 = math.ceil(scrap_yield_amounts[harvest] * (0.3 + (amount_bonus * 0.3)))
     local r2 = math.ceil(scrap_yield_amounts[harvest] * (1.7 + (amount_bonus * 1.7)))
     local harvest_amount = math.random(r1, r2)

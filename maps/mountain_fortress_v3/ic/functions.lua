@@ -3,6 +3,7 @@ local Color = require 'utils.color_presets'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
 local IC_Gui = require 'maps.mountain_fortress_v3.ic.gui'
+local IC = require 'maps.mountain_fortress.ic.table'
 local WPT = require 'maps.mountain_fortress_v3.table'
 
 local Public = {}
@@ -856,7 +857,8 @@ function Public.create_car(ic, event)
     return car
 end
 
-function Public.remove_invalid_cars(ic)
+function Public.remove_invalid_cars()
+    local ic = IC.get()
     for k, car in pairs(ic.cars) do
         if type(car.entity) ~= 'boolean' then
             if not validate_entity(car.entity) then
@@ -971,7 +973,8 @@ function Public.use_door_with_entity(ic, player, door)
     end
 end
 
-function Public.item_transfer(ic)
+function Public.item_transfer()
+    local ic = IC.get()
     for _, car in pairs(ic.cars) do
         if validate_entity(car.entity) then
             if car.transfer_entities then
