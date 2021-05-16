@@ -137,8 +137,9 @@ function Public.reset_table()
     }
     this.aura_upgrades = 0
     this.pickaxe_tier = 1
-    this.pickaxe_speed_per_purchase = 0.10
-    this.health_upgrades = 0
+    this.pickaxe_speed_per_purchase = 0.07
+    this.health_upgrades = 1
+    this.health_upgrades_limit = 100
     this.breached_wall = 1
     this.left_top = {
         x = 0,

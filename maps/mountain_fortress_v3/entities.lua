@@ -430,8 +430,8 @@ local function angry_tree(entity, cause, player)
     if player then
         local forest_zone = RPG_Settings.get_value_from_player(player.index, 'forest_zone')
         if forest_zone and random(1, 32) == 1 then
-            local cbl = Callbacks.power_source_callback
-            local data = {callback_data = Callbacks.laser_turrent_power_source}
+            local cbl = Callbacks.refill_turret_callback
+            local data = {callback_data = Callbacks.piercing_rounds_magazine_ammo}
             local e =
                 entity.surface.create_entity(
                 {
@@ -516,7 +516,7 @@ local mining_events = {
                 return
             end
 
-            BuriedEnemies.buried_biter(entity.surface, entity.position, 1)
+            BuriedEnemies.buried_biter(entity.surface, entity.position)
             entity.destroy()
         end,
         4096,

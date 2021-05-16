@@ -71,7 +71,7 @@ function Public.add(surface, position, chest)
     end
 
     for _ = 1, 3, 1 do
-        if random(1, 8) == 1 then
+        if random(1, 16) == 1 then
             container.insert({name = 'explosives', count = random(25, 50)})
         else
             break
@@ -110,8 +110,20 @@ function Public.add_rare(surface, position, chest, magic)
     end
     container.minable = false
 
+    if random(1, 8) == 1 then
+        container.insert({name = 'coin', count = random(1, 32)})
+    elseif random(1, 32) == 1 then
+        container.insert({name = 'coin', count = random(1, 128)})
+    elseif random(1, 128) == 1 then
+        container.insert({name = 'coin', count = random(1, 256)})
+    elseif random(1, 256) == 1 then
+        container.insert({name = 'coin', count = random(1, 512)})
+    elseif random(1, 512) == 1 then
+        container.insert({name = 'coin', count = random(1, 2048)})
+    end
+
     for _ = 1, 3, 1 do
-        if random(1, 8) == 1 then
+        if random(1, 16) == 1 then
             container.insert({name = 'explosives', count = random(25, 50)})
         else
             break

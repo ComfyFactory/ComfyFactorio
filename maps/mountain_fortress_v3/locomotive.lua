@@ -1071,6 +1071,14 @@ local function gui_click(event)
         return
     end
     if name == 'locomotive_max_health' then
+        if this.health_upgrades >= this.health_upgrades_limit then
+            local main_market_items = WPT.get('main_market_items')
+            main_market_items['locomotive_max_health'].enabled = false
+            main_market_items['locomotive_max_health'].tooltip = ({'locomotive.limit_reached'})
+            redraw_market_items(data.item_frame, player, data.search_text)
+            return
+        end
+
         player.remove_item({name = item.value, count = item.price})
         local message = ({'locomotive.health_bought_info', shopkeeper, player.name, format_number(item.price, true)})
 
@@ -1080,7 +1088,13 @@ local function gui_click(event)
                 player.name .. ' has bought the locomotive health modifier for ' .. format_number(item.price, true) .. ' coins.'
             }
         )
-        this.locomotive_max_health = this.locomotive_max_health + (this.locomotive_max_health * 0.5 * item.stack)
+
+        this.locomotive_max_health = this.locomotive_max_health + 10000
+
+        --[[
+        this.locomotive_max_health = this.locomotive_max_health + (this.locomotive_max_health * 0.5)
+        This exists as a reminder to never ever screw up health pool ever again.
+       ]]
         local m = this.locomotive_health / this.locomotive_max_health
 
         if this.carriages then
@@ -2072,6 +2086,7 @@ function Public.get_items()
             static = true
         }
     end
+
     if main_market_items['chest_limit_outside'] then
         main_market_items['chest_limit_outside'] = {
             stack = 1,
@@ -2096,16 +2111,30 @@ function Public.get_items()
         }
     end
 
-    main_market_items['locomotive_max_health'] = {
-        stack = 1,
-        value = 'coin',
-        price = health_cost,
-        tooltip = ({'main_market.locomotive_max_health'}),
-        sprite = 'achievement/getting-on-track',
-        enabled = true,
-        upgrade = true,
-        static = true
-    }
+    if main_market_items['locomotive_max_health'] then
+        main_market_items['locomotive_max_health'] = {
+            stack = 1,
+            value = 'coin',
+            price = health_cost,
+            tooltip = main_market_items['locomotive_max_health'].tooltip,
+            sprite = 'achievement/getting-on-track',
+            enabled = main_market_items['locomotive_max_health'].enabled,
+            upgrade = true,
+            static = true
+        }
+    else
+        main_market_items['locomotive_max_health'] = {
+            stack = 1,
+            value = 'coin',
+            price = health_cost,
+            tooltip = ({'main_market.locomotive_max_health'}),
+            sprite = 'achievement/getting-on-track',
+            enabled = true,
+            upgrade = true,
+            static = true
+        }
+    end
+
     main_market_items['locomotive_xp_aura'] = {
         stack = 1,
         value = 'coin',
@@ -2191,15 +2220,14 @@ function Public.get_items()
         }
     end
     if game.forces.player.technologies['logistics-3'].researched then
-
-            main_market_items['express-loader'] = {
-                stack = 1,
-                value = 'coin',
-                price = 512,
-                tooltip = ({'entity-name.express-loader'}),
-                upgrade = false,
-                static = true
-            }
+        main_market_items['express-loader'] = {
+            stack = 1,
+            value = 'coin',
+            price = 512,
+            tooltip = ({'entity-name.express-loader'}),
+            upgrade = false,
+            static = true
+        }
     end
     main_market_items['small-lamp'] = {
         stack = 1,
