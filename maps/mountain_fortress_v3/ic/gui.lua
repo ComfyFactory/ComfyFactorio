@@ -1,4 +1,5 @@
 local ICT = require 'maps.mountain_fortress_v3.ic.table'
+local Functions = require 'maps.mountain_fortress_v3.ic.functions'
 local Color = require 'utils.color_presets'
 local Gui = require 'utils.gui'
 local Tabs = require 'comfy_panel.main'
@@ -65,8 +66,6 @@ local function transfer_player_table(player, new_player)
     end
 
     if not trust_system[new_player.index] then
-        local Functions = is_loaded('maps.mountain_fortress_v3.ic.functions')
-
         trust_system[new_player.index] = trust_system[player.index]
         local name = new_player.name
 
@@ -407,6 +406,17 @@ remove_toolbar = function(player)
     end
 end
 
+local function trigger_on_used_car_door(data)
+    local state = data.state
+    local player = data.player
+
+    if state == 'add' then
+        add_toolbar(player)
+    elseif state == 'remove' then
+        remove_toolbar(player)
+    end
+end
+
 Gui.on_click(
     add_player_name,
     function(event)
@@ -707,5 +717,7 @@ Event.add(
         end
     end
 )
+
+Event.add(ICT.events.used_car_door, trigger_on_used_car_door)
 
 return Public

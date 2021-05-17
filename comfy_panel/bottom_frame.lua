@@ -68,6 +68,15 @@ end
 
 ----! Gui Functions ! ----
 
+local function destroy_frame(player)
+    local gui = player.gui
+    local frame = gui.screen[bottom_guis_frame]
+    if frame and frame.valid then
+        frame.destroy()
+        this.bottom_quickbar_button[player.index] = nil
+    end
+end
+
 local function create_frame(player, rebuild)
     local gui = player.gui
     local frame = gui.screen[bottom_guis_frame]
@@ -237,6 +246,14 @@ Event.add(
         if this.activate_custom_buttons then
             set_location(player)
         end
+    end
+)
+
+Event.add(
+    defines.events.on_pre_player_left_game,
+    function(event)
+        local player = game.get_player(event.player_index)
+        destroy_frame(player)
     end
 )
 

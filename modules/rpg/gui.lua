@@ -434,6 +434,10 @@ function Public.draw_level_text(player)
 
     local rpg_t = RPG.get('rpg_t')
 
+    if not rpg_t[player.index] then
+        return
+    end
+
     if rpg_t[player.index].text then
         rendering.destroy(rpg_t[player.index].text)
         rpg_t[player.index].text = nil

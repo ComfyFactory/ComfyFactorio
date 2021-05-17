@@ -88,19 +88,13 @@ local trees = {
     'dry-tree'
 }
 
-local firearm_magazine_ammo = Functions.firearm_magazine_ammo
-local piercing_rounds_magazine_ammo = Functions.piercing_rounds_magazine_ammo
-local uranium_rounds_magazine_ammo = Functions.uranium_rounds_magazine_ammo
-local light_oil_ammo = Functions.light_oil_ammo
-local artillery_shell_ammo = Functions.artillery_shell_ammo
-
 local callback = {
-    [1] = {callback = Functions.refill_turret_callback, data = firearm_magazine_ammo},
-    [2] = {callback = Functions.refill_turret_callback, data = piercing_rounds_magazine_ammo},
-    [3] = {callback = Functions.refill_turret_callback, data = uranium_rounds_magazine_ammo},
-    [4] = {callback = Functions.refill_turret_callback, data = uranium_rounds_magazine_ammo},
-    [5] = {callback = Functions.refill_liquid_turret_callback, data = light_oil_ammo},
-    [6] = {callback = Functions.refill_artillery_turret_callback, data = artillery_shell_ammo}
+    [1] = {callback = Functions.refill_turret_callback, data = Functions.firearm_magazine_ammo},
+    [2] = {callback = Functions.refill_turret_callback, data = Functions.piercing_rounds_magazine_ammo},
+    [3] = {callback = Functions.refill_turret_callback, data = Functions.uranium_rounds_magazine_ammo},
+    [4] = {callback = Functions.refill_turret_callback, data = Functions.uranium_rounds_magazine_ammo},
+    [5] = {callback = Functions.refill_liquid_turret_callback, data = Functions.light_oil_ammo},
+    [6] = {callback = Functions.refill_artillery_turret_callback, data = Functions.artillery_shell_ammo}
 }
 
 local turret_list = {
