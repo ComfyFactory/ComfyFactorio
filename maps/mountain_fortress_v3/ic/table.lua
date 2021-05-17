@@ -11,13 +11,15 @@ Global.register(
 
 local Public = {
     events = {
-        on_player_kicked_from_surface = Event.generate_event_name('on_player_kicked_from_surface')
+        on_player_kicked_from_surface = Event.generate_event_name('on_player_kicked_from_surface'),
+        used_car_door = Event.generate_event_name('used_car_door')
     }
 }
 
 function Public.reset()
     if this.surfaces then
-        for k, surface in pairs(this.surfaces) do
+        for k, index in pairs(this.surfaces) do
+            local surface = game.surfaces[index]
             if surface and surface.valid then
                 game.delete_surface(surface)
             end
@@ -41,14 +43,12 @@ function Public.reset()
     this.entity_type = {
         ['car'] = true,
         ['tank'] = true,
-        ['kr-advanced-tank'] = true,
         ['spidertron'] = true,
         ['spider-vehicle'] = true
     }
     this.car_areas = {
         ['car'] = {left_top = {x = -20, y = 0}, right_bottom = {x = 20, y = 20}},
         ['tank'] = {left_top = {x = -30, y = 0}, right_bottom = {x = 30, y = 40}},
-        ['kr-advanced-tank'] = {left_top = {x = -40, y = 0}, right_bottom = {x = 40, y = 60}},
         ['spidertron'] = {left_top = {x = -40, y = 0}, right_bottom = {x = 40, y = 60}},
         ['spider-vehicle'] = {left_top = {x = -40, y = 0}, right_bottom = {x = 40, y = 60}}
     }
