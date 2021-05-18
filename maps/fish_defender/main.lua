@@ -15,6 +15,7 @@ require 'modules.launch_fish_to_win'
 local AntiGrief = require 'antigrief'
 local Terrain = require 'maps.fish_defender.terrain'
 local Unit_health_booster = require 'modules.biter_health_booster'
+local Session = require 'utils.datastore.session_data'
 local Difficulty = require 'modules.difficulty_vote'
 local Map = require 'modules.map_info'
 local Event = require 'utils.event'
@@ -1146,6 +1147,12 @@ local function on_init(reset)
 
     Diff.difficulty_poll_closing_timeout = this.wave_grace_period
     get_score.score_table = {}
+
+    local players = game.players
+    for i = 1, #players do
+        local player = players[i]
+        Session.clear_player(player)
+    end
 
     game.remove_offline_players()
 

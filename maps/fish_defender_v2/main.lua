@@ -18,6 +18,7 @@ local Map = require 'modules.map_info'
 local Event = require 'utils.event'
 local Reset = require 'functions.soft_reset'
 local Server = require 'utils.server'
+local Session = require 'utils.datastore.session_data'
 local Poll = require 'comfy_panel.poll'
 local boss_biter = require 'maps.fish_defender_v2.boss_biters'
 local FDT = require 'maps.fish_defender_v2.table'
@@ -1319,6 +1320,12 @@ function Public.reset_game()
         if player.gui.left['fish_in_space'] then
             player.gui.left['fish_in_space'].destroy()
         end
+    end
+
+    local offline_players = game.players
+    for i = 1, #offline_players do
+        local player = offline_players[i]
+        Session.clear_player(player)
     end
 
     local map_gen_settings = {}

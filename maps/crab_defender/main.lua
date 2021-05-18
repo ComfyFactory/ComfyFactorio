@@ -10,6 +10,7 @@ require 'modules.dangerous_goods'
 require 'modules.custom_death_messages'
 
 local Unit_health_booster = require 'modules.biter_health_booster'
+local Session = require 'utils.datastore.session_data'
 local Difficulty = require 'modules.difficulty_vote'
 local Map = require 'modules.map_info'
 local Event = require 'utils.event'
@@ -61,6 +62,12 @@ function Public.reset_game()
         if player.gui.left['crab_defender_game_lost'] then
             player.gui.left['crab_defender_game_lost'].destroy()
         end
+    end
+
+    local offline_players = game.players
+    for i = 1, #offline_players do
+        local player = offline_players[i]
+        Session.clear_player(player)
     end
 
     disable_tech()

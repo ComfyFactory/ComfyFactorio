@@ -133,9 +133,15 @@ local function on_gui_opened(event)
         return
     end
 
+    local surface_index = car.surface
+    local surface = game.surfaces[surface_index]
+    if not surface or not surface.valid then
+        return
+    end
+
     Minimap.minimap(
         game.players[event.player_index],
-        car.surface,
+        surface,
         {
             car.area.left_top.x + (car.area.right_bottom.x - car.area.left_top.x) * 0.5,
             car.area.left_top.y + (car.area.right_bottom.y - car.area.left_top.y) * 0.5

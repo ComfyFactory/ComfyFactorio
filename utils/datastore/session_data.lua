@@ -14,6 +14,7 @@ local trusted = {}
 local settings = {
     -- local trusted_value = 2592000 -- 12h
     trusted_value = 5184000, -- 24h
+    required_only_time_to_save_time = 36000, -- nearest prime to 10 minutes in ticks
     nth_tick = 18000 -- nearest prime to 5 minutes in ticks
 }
 local set_data = Server.set_data
@@ -35,7 +36,11 @@ Global.register(
     end
 )
 
-local Public = {}
+local Public = {
+    events = {
+        on_player_removed = Event.generate_event_name('on_player_removed')
+    }
+}
 
 local try_download_data =
     Token.register(
@@ -48,9 +53,13 @@ local try_download_data =
                 trusted[key] = true
             end
         else
+            local player = game.get_player(key)
             session[key] = 0
             trusted[key] = false
-            set_data(session_data_set, key, session[key])
+            -- we don't want to clutter the database with players less than 10 minutes played.
+            if player.online_time >= settings.required_only_time_to_save_time then
+                set_data(session_data_set, key, session[key])
+            end
         end
     end
 )
@@ -62,10 +71,22 @@ local try_upload_data =
         local value = data.value
         local player = game.get_player(key)
         if value then
+            -- we don't want to clutter the database with players less than 10 minutes played.
+            if player.online_time <= settings.required_only_time_to_save_time then
+                return
+            end
+
             local old_time_ingame = value
 
             if not online_track[key] then
                 online_track[key] = 0
+            end
+
+            if online_track[key] > player.online_time then
+                -- instance has been reset but scenario owner did not clear the player.
+                -- so we clear it here and return.
+                online_track[key] = 0
+                return
             end
 
             local new_time = old_time_ingame + player.online_time - online_track[key]
@@ -78,6 +99,13 @@ local try_upload_data =
             set_data(session_data_set, key, new_time)
             session[key] = new_time
             online_track[key] = player.online_time
+        else
+            if player.online_time >= settings.required_only_time_to_save_time then
+                if not session[key] then
+                    session[key] = 0
+                end
+                set_data(session_data_set, key, session[key])
+            end
         end
     end
 )
@@ -85,7 +113,8 @@ local try_upload_data =
 local nth_tick_token =
     Token.register(
     function(data)
-        local player = data.player
+        local index = data.index
+        local player = game.get_player(index)
         if player and player.valid then
             Public.try_ul_data(player.name)
         end
@@ -97,10 +126,9 @@ local function upload_data()
     local players = game.connected_players
     local count = 0
     for i = 1, #players do
-        count = count + 1
+        count = count + 10
         local player = players[i]
-        local random_timing = count * 5
-        set_timeout_in_ticks(random_timing, nth_tick_token, {player = player})
+        set_timeout_in_ticks(count, nth_tick_token, {index = player.index})
     end
 end
 
@@ -191,17 +219,44 @@ end
 --- Clears a given player from the session tables.
 -- @param LuaPlayer
 function Public.clear_player(player)
-    local name = player.name
-    if session[name] then
-        session[name] = nil
-    end
-    if online_track[name] then
-        online_track[name] = nil
-    end
-    if trusted[name] then
-        trusted[name] = nil
+    if player and player.valid then
+        local name = player.name
+        local connected = player.connected
+
+        if not connected then
+            if session[name] then
+                session[name] = nil
+            end
+            if online_track[name] then
+                online_track[name] = nil
+            end
+            if trusted[name] then
+                trusted[name] = nil
+            end
+        end
     end
 end
+
+--- Resets a given player from the online_track table.
+-- @param LuaPlayer
+function Public.reset_online_track(player)
+    local name = player.name
+    if online_track[name] then
+        online_track[name] = 0
+    end
+end
+
+--- It's vital that we reset the online_track so we
+--- don't calculate the values wrong.
+Event.add(
+    Public.events.on_player_removed,
+    function()
+        for name, _ in pairs(online_track) do
+            local player = game.get_player(name)
+            Public.clear_player(player)
+        end
+    end
+)
 
 Event.add(
     defines.events.on_player_joined_game,
@@ -232,15 +287,20 @@ Event.on_nth_tick(settings.nth_tick, upload_data)
 Server.on_data_set_changed(
     session_data_set,
     function(data)
-        session[data.key] = data.value
-        if data.value > settings.trusted_value then
-            trusted[data.key] = true
-        else
-            if trusted[data.key] then
-                trusted[data.key] = false
+        local player = game.get_player(data.key)
+        if player and player.valid then
+            session[data.key] = data.value
+            if data.value > settings.trusted_value then
+                trusted[data.key] = true
+            else
+                if trusted[data.key] then
+                    trusted[data.key] = false
+                end
             end
         end
     end
 )
+
+Public.upload_data = upload_data
 
 return Public

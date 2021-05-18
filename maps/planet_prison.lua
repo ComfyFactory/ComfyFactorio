@@ -2,6 +2,7 @@
 -- heavily modified by Gerkiz
 
 local Global = require 'utils.global'
+local Session = require 'utils.datastore.session_data'
 local Event = require 'utils.event'
 local Server = require 'utils.server'
 local MapFuntions = require 'tools.map_functions'
@@ -1147,6 +1148,7 @@ local function remove_offline_players()
                             if game.forces[player.name] then
                                 game.merge_forces(player.name, 'neutral')
                             end
+                            Session.clear_player(player)
                             game.remove_offline_players({player})
                             offline_players.players[i] = nil
                         end
@@ -1357,6 +1359,7 @@ local function on_player_died(e)
     if p.connected then
         return
     end
+    Session.clear_player(p)
     game.remove_offline_players({p})
 end
 
