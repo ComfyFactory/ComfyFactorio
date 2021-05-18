@@ -9,6 +9,7 @@ require 'modules.biters_yield_coins'
 require 'modules.custom_death_messages'
 
 local Unit_health_booster = require 'modules.biter_health_booster_v2'
+local Session = require 'utils.datastore.session_data'
 local Difficulty = require 'modules.difficulty_vote'
 local Map = require 'modules.map_info'
 local Event = require 'utils.event'
@@ -1286,6 +1287,12 @@ function Public.reset_game()
         if player.gui.left['fish_in_space'] then
             player.gui.left['fish_in_space'].destroy()
         end
+    end
+
+    local players = game.players
+    for i = 1, #players do
+        local player = players[i]
+        Session.clear_player(player)
     end
 
     local map_gen_settings = {}

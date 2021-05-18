@@ -1,6 +1,7 @@
 --luacheck: ignore
 local Public = {}
 local Constants = require 'maps.journey.constants'
+local Session = require 'utils.datastore.session_data'
 
 local function clear_world_selectors(journey)
 	for k, world_selector in pairs(journey.world_selectors) do
@@ -91,6 +92,7 @@ local function remove_offline_players(maximum_age_in_hours)
 	local players_to_remove = {}
 	for _, player in pairs(game.players) do
 		if player.last_online < t then
+			Session.clear_player(player)
 			table.insert(players_to_remove, player)
 		end
 	end
