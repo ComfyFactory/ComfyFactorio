@@ -1057,8 +1057,43 @@ local function on_player_joined_game(event)
     end
 end
 
+local function deny_building(event)
+    local entity = event.created_entity
+    if not entity.valid then
+        return
+    end
+
+    if entity.position.x >= 254 then
+        if entity.name ~= 'entity-ghost' then
+            if event.player_index then
+                game.players[event.player_index].insert({name = entity.name, count = 1})
+            else
+                local inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
+                inventory.insert({name = entity.name, count = 1})
+            end
+        end
+
+        event.created_entity.surface.create_entity(
+            {
+                name = 'flying-text',
+                position = entity.position,
+                text = 'Can not be built beyond the lightning wall!',
+                color = {r = 0.98, g = 0.66, b = 0.22}
+            }
+        )
+
+        entity.destroy()
+        return true
+    end
+    return false
+end
+
 local function on_built_entity(event)
     local get_score = Score.get_table().score_table
+    if deny_building(event) then
+        return
+    end
+
     local entity = event.created_entity
     if not entity.valid then
         return
@@ -1103,6 +1138,9 @@ end
 
 local function on_robot_built_entity(event)
     local entity = event.created_entity
+    if deny_building(event) then
+        return
+    end
 
     local entity_limits = FDT.get('entity_limits')
 
@@ -1144,7 +1182,7 @@ local function on_player_changed_position(event)
     end
 
     if player.position.x >= 254 then
-        player.teleport({player.position.x - 1, 0}, surface)
+        player.teleport({player.position.x - 2, player.position.y}, surface)
 
         if player.character then
             player.character.health = player.character.health - 25
