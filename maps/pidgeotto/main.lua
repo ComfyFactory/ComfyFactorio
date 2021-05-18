@@ -1289,9 +1289,9 @@ function Public.reset_game()
         end
     end
 
-    local players = game.players
-    for i = 1, #players do
-        local player = players[i]
+    local offline_players = game.players
+    for i = 1, #offline_players do
+        local player = offline_players[i]
         Session.clear_player(player)
     end
 
