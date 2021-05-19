@@ -23,6 +23,9 @@ end
 Event.add(
     defines.events.on_player_joined_game,
     function()
+        if _DEBUG then -- we're debugging, don't do anything.
+            return
+        end
         player_joined()
     end
 )
@@ -30,6 +33,9 @@ Event.add(
 Event.add(
     defines.events.on_player_left_game,
     function()
+        if _DEBUG then -- we're debugging, don't do anything.
+            return
+        end
         player_left()
     end
 )
