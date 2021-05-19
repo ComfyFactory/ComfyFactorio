@@ -6,6 +6,7 @@ _DUMP_ENV = false
 require 'utils.server'
 require 'utils.server_commands'
 require 'utils.utils'
+require 'utils.pause_game'
 require 'utils.table'
 require 'utils.freeplay'
 require 'utils.datastore.server_ups'
