@@ -115,7 +115,8 @@ local noises = {
         {modifier = 0.002, weight = 1},
         {modifier = 0.004, weight = 1},
         {modifier = 0.02, weight = 0.05}
-    }
+    },
+	['journey_swamps'] = {{modifier = 0.02, weight = 1}, {modifier = 0.04, weight = 0.35}, {modifier = 0.1, weight = 0.08}},
 }
 
 --returns a float number between -1 and 1

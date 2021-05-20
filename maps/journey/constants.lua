@@ -4,11 +4,11 @@ local Public = {}
 Public.mothership_teleporter_position = {x = 0, y = 12}
 Public.teleporter_tile = "lab-dark-2"
 
-Public.mothership_radius = 28
+Public.mothership_radius = 48
 
 Public.particle_spawn_vectors = {}
 for x = Public.mothership_radius * -1 - 32, Public.mothership_radius + 32, 1 do
-	for y = Public.mothership_radius * -1 - 32, Public.mothership_radius + 32, 1 do
+	for y = Public.mothership_radius * -1 - 64, Public.mothership_radius + 32, 1 do
 		local position = {x = x, y = y}
 		local distance = math.sqrt(position.x ^ 2 + position.y ^ 2)
 		if distance > Public.mothership_radius then
@@ -28,13 +28,13 @@ local area = {
 
 Public.world_selector_areas = {
 	[1] = {
-		left_top = {x = area.left_top.x - 12, y = area.left_top.y},
-		right_bottom = {x = area.left_top.x - 6, y = area.right_bottom.y},
+		left_top = {x = area.left_top.x - 14, y = area.left_top.y},
+		right_bottom = {x = area.left_top.x - 8, y = area.right_bottom.y},
 	},
 	[2] = area,
 	[3] = {
-		left_top = {x = area.right_bottom.x + 6, y = area.left_top.y},
-		right_bottom = {x = area.right_bottom.x + 12, y = area.right_bottom.y},
+		left_top = {x = area.right_bottom.x + 8, y = area.left_top.y},
+		right_bottom = {x = area.right_bottom.x + 14, y = area.right_bottom.y},
 	},
 }
 
@@ -76,24 +76,26 @@ Public.mothership_gen_settings = {
 }
 
 Public.modifiers = {	
-	["cliff_settings"] = {20, 40, "Cliffs"},
-	["enemy-base"] = {15, 25, "Nests"},
-	["starting_area"] = {-25, -10, "Starting Area"},
+	["trees"] = {-30, -15, "Trees"},
+	["tree_durability"] = {-30, -15, "Tree Durability"},
+	["cliff_settings"] = {20, 40, "Cliffs"},	
 	["water"] = {-30, -15, "Water"},
 	["coal"] = {-20, -10, "Coal"},
 	["stone"] = {-20, -10, "Stone"},
-	["copper-ore"] = {-20, -10, "Copper Ore"},
 	["iron-ore"] = {-20, -10, "Iron Ore"},
-	["uranium-ore"] = {-20, -10, "Uranium Ore"},
+	["copper-ore"] = {-20, -10, "Copper Ore"},
 	["crude-oil"] = {-20, -10, "Oil"},
-	["trees"] = {-35, -15, "Trees"},
+	["uranium-ore"] = {-20, -10, "Uranium Ore"},
+	["enemy-base"] = {20, 40, "Nests"},
+	["expansion_cooldown"] = {-40, -20, "Nest Expansion Cooldown"},
+	["enemy_attack_pollution_consumption_modifier"] = {-30, -15, "Nest Pollution Consumption"},
+	["max_unit_group_size"] = {15, 30, "Biter Group Size Maximum"},	
 	["time_factor"] = {20, 40, "Evolution Time Factor"},
 	["destroy_factor"] = {20, 40, "Evolution Destroy Factor"},
-	["pollution_factor"] = {20, 40, "Evolution Pollution Factor"},
-	["expansion_cooldown"] = {-30, -15, "Nest Expansion Cooldown"},
-	["ageing"] = {-25, -10, "Terrain Pollution Consumption"},
-	["enemy_attack_pollution_consumption_modifier"] = {-25, -10, "Nest Pollution Consumption"},
-	["technology_price_multiplier"] = {5, 10, "Technology Price"},
+	["pollution_factor"] = {20, 40, "Evolution Pollution Factor"},	
+	["ageing"] = {-30, -15, "Terrain Pollution Consumption"},
+	["diffusion_ratio"] = {15, 30, "Pollution Diffusion"},
+	["technology_price_multiplier"] = {10, 20, "Technology Price"},	
 }
 
 Public.starter_goods_pool = {
@@ -146,6 +148,30 @@ Public.build_type_whitelist = {
 	["programmable-speaker"] = true,
 	["transport-belt"] = true,	
 	["wall"] = true,
+}
+
+Public.unique_world_traits = {	
+	["lush"] = {"Lush", "Pure Vanilla."},
+	["matter_anomaly"] = {"Matter Anomaly", "Why can't i hold all these ores."},
+	["mountainous"] = {"Mountainous", "Diggy diggy hole!"},
+	["quantum_anomaly"] = {"Quantum Anomaly", "Research complete."},
+	["pitch_black"] = {"Pitch Black", "No light may reach this realm."},
+	["replicant_fauna"] = {"Replicant Fauna", "The biters feed on your structures."},
+	["tarball"] = {"Tarball", "Door stuck, Door stuck..."},
+	["swamps"] = {"Swamps", "No deep water to be found in this world."},
+	["volcanic"] = {"Volcanic", "The floor is (almost) lava."},
+	["chaotic_resources"] = {"Chaotic Resources", "Something to sort out."},
+	["infested"] = {"Infested", "They lurk inside."},
+	["low_mass"] = {"Low Mass", "You feel light footed and the robots are buzzing."},
+	["eternal_night"] = {"Eternal Night", "This world seems to be missing a sun."},
+	["eternal_day"] = {"Eternal Day", "The sun never moves."},
+	["dense_atmosphere"] = {"Dense Atmosphere", "The roboports seem to malfunction."},
+	["undead_plague"] = {"Undead Plague", "The dead are restless."},
+	
+	--["snowpiercer"] = {"Snowpiercer", "It's cold outside, so very cold."},
+	--["wasteland"] = {"Wasteland", "Smells like sulfur."},
+	--["wetlands"] = {"Wetlands", "Many rivers and many fish."},
+	--["high_mass"] = {"High Mass", "Your feet will need some proper ground to walk well."},
 }
 
 return Public
