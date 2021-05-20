@@ -1,3 +1,4 @@
+--luacheck: ignore
 local Get_noise = require 'utils.get_noise'
 local BiterRaffle = require 'functions.biter_raffle'
 local math_random = math.random
