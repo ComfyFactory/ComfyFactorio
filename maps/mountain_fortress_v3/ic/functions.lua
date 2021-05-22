@@ -347,7 +347,7 @@ local function kick_players_from_surface(ic, car)
     if not car.entity or not car.entity.valid then
         local main_surface = game.surfaces[ic.allowed_surface]
         if validate_entity(main_surface) then
-            for _, e in pairs(car.surface.find_entities_filtered({area = car.area})) do
+            for _, e in pairs(surface.find_entities_filtered({area = car.area})) do
                 if validate_entity(e) and e.name == 'character' and e.player then
                     e.player.teleport(main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0, 5), main_surface)
                 end
@@ -645,6 +645,10 @@ function Public.kill_car(ic, entity)
     end
 
     local car = ic.cars[entity.unit_number]
+    if not car then
+        return
+    end
+
     local surface_index = car.surface
     local surface = game.surfaces[surface_index]
     kick_players_out_of_vehicles(car)
