@@ -706,6 +706,10 @@ function Public.remove_offline_players()
                     player_inv[3] = game.players[offline_players[i].index].get_inventory(defines.inventory.character_guns)
                     player_inv[4] = game.players[offline_players[i].index].get_inventory(defines.inventory.character_ammo)
                     player_inv[5] = game.players[offline_players[i].index].get_inventory(defines.inventory.character_trash)
+                    if not next(player_inv) then
+                        offline_players[i] = nil
+                        break
+                    end
                     local pos = game.forces.player.get_spawn_position(surface)
                     local e =
                         surface.create_entity(
