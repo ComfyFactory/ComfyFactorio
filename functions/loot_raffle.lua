@@ -167,7 +167,7 @@ local item_worths = {
     ['explosive-cannon-shell'] = 16,
     ['uranium-cannon-shell'] = 64,
     ['explosive-uranium-cannon-shell'] = 64,
-    ['artillery-shell'] = 128,
+    ['artillery-shell'] = 512,
     ['rocket'] = 6,
     ['explosive-rocket'] = 8,
     ['atomic-bomb'] = 8192,
@@ -203,7 +203,7 @@ local item_worths = {
     ['gun-turret'] = 64,
     ['laser-turret'] = 1024,
     ['flamethrower-turret'] = 2048,
-    ['artillery-turret'] = 1024,
+    ['artillery-turret'] = 9216,
     ['radar'] = 32,
     ['rocket-silo'] = 65536
 }

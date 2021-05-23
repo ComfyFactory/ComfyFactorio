@@ -1,5 +1,4 @@
 local Event = require 'utils.event'
---local Power = require 'maps.mountain_fortress_v3.power'
 local Market = require 'maps.mountain_fortress_v3.basic_markets'
 local Generate = require 'maps.mountain_fortress_v3.generate'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
@@ -456,6 +455,25 @@ local function refill_fish()
     locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = 'raw-fish', count = random(2, 5)})
 end
 
+local function set_carriages()
+    local locomotive = WPT.get('locomotive')
+    if not locomotive or not locomotive.valid then
+        return
+    end
+
+    local carriages = locomotive.train.carriages
+    local t = {}
+    for i = 1, #carriages do
+        local e = carriages[i]
+        if (e and e.valid) then
+            t[e.unit_number] = true
+        end
+    end
+
+    WPT.set('carriages_numbers', t)
+    WPT.set('carriages', locomotive.train.carriages)
+end
+
 local function set_locomotive_health()
     local locomotive_health = WPT.get('locomotive_health')
     local locomotive_max_health = WPT.get('locomotive_max_health')
@@ -467,7 +485,6 @@ local function set_locomotive_health()
             WPT.set('locomotive_health', locomotive_max_health)
         end
         rendering.set_text(WPT.get('health_text'), 'HP: ' .. round(locomotive_health) .. ' / ' .. round(locomotive_max_health))
-        WPT.set('carriages', locomotive.train.carriages)
         local carriages = WPT.get('carriages')
         if carriages then
             for i = 1, #carriages do
@@ -1692,14 +1709,30 @@ local function place_market()
     end
 end
 
-local function on_research_finished()
-    local market_announce = WPT.get('market_announce')
-    if market_announce > game.tick then
+local function on_research_finished(event)
+    local research = event.research
+    if not research then
         return
+    end
+
+    local name = research.name
+
+    if name == 'discharge-defense-equipment' then
+        local message = ({'locomotive.discharge_unlocked'})
+        Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac', 0.1)
+    end
+    if name == 'artillery' then
+        local message = ({'locomotive.artillery_unlocked'})
+        Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac', 0.1)
     end
 
     local locomotive = WPT.get('locomotive')
     if not locomotive or not locomotive.valid then
+        return
+    end
+
+    local market_announce = WPT.get('market_announce')
+    if market_announce > game.tick then
         return
     end
 
@@ -2227,6 +2260,45 @@ function Public.get_items()
         upgrade = false,
         static = false
     }
+
+    if game.forces.player.technologies['discharge-defense-equipment'].researched then
+        main_market_items['discharge-defense-equipment'] = {
+            stack = 1,
+            value = 'coin',
+            price = 9216,
+            tooltip = ({'equipment-name.discharge-defense-equipment'}),
+            upgrade = false,
+            static = false
+        }
+        main_market_items['discharge-defense-remote'] = {
+            stack = 1,
+            value = 'coin',
+            price = 1024,
+            tooltip = ({'item-name.discharge-defense-remote'}),
+            upgrade = false,
+            static = false
+        }
+    end
+
+    if game.forces.player.technologies['artillery'].researched then
+        main_market_items['artillery-turret'] = {
+            stack = 1,
+            value = 'coin',
+            price = 9216,
+            tooltip = ({'item-name.artillery-turret'}),
+            upgrade = false,
+            static = false
+        }
+        main_market_items['artillery-shell'] = {
+            stack = 1,
+            value = 'coin',
+            price = 1024,
+            tooltip = ({'item-name.artillery-shell'}),
+            upgrade = false,
+            static = false
+        }
+    end
+
     main_market_items['wood'] = {
         stack = 50,
         value = 'coin',
@@ -2477,5 +2549,6 @@ Event.add(defines.events.on_robot_mined_entity, on_player_and_robot_mined_entity
 Event.add(defines.events.on_console_chat, on_console_chat)
 Event.add(defines.events.on_player_changed_surface, on_player_changed_surface)
 Event.add(defines.events.on_player_driving_changed_state, on_player_driving_changed_state)
+Event.add(defines.events.on_train_created, set_carriages)
 
 return Public

@@ -90,7 +90,6 @@ function Public.reset_table()
     this.game_saved = false
     -- @end
     this.icw_locomotive = nil
-    this.debug = false
     this.game_lost = false
     this.fullness_enabled = true
     this.locomotive_health = 10000
@@ -103,7 +102,6 @@ function Public.reset_table()
     }
     this.force_chunk = false
     this.train_upgrades = 0
-    this.biter_pets = {}
     this.flamethrower_damage = {}
     this.mined_scrap = 0
     this.biters_killed = 0

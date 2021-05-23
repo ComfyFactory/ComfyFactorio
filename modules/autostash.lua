@@ -3,7 +3,6 @@
 
 local Global = require 'utils.global'
 local Event = require 'utils.event'
-local BottomFrame = require 'comfy_panel.bottom_frame'
 local floor = math.floor
 local print_color = {r = 120, g = 255, b = 0}
 
@@ -12,7 +11,6 @@ local this = {
     whitelist = {},
     insert_into_furnace = false,
     insert_into_wagon = false,
-    bottom_button = false,
     small_radius = 2
 }
 
@@ -539,38 +537,23 @@ local function create_gui_button(player)
     else
         tooltip = 'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.'
     end
-    if this.bottom_button then
-        local data = BottomFrame.get('bottom_quickbar_button')
-        -- save it for later use
-        data.tooltip = tooltip
-        data.sprite = 'item/wooden-chest'
-
-        if data[player.index] then
-            data = data[player.index]
-            if data.frame and data.frame.valid then
-                data.frame.sprite = 'item/wooden-chest'
-                data.frame.tooltip = tooltip
-            end
-        end
-    else
-        local b =
-            player.gui.top.add(
-            {
-                type = 'sprite-button',
-                sprite = 'item/wooden-chest',
-                name = 'auto_stash',
-                tooltip = tooltip
-            }
-        )
-        b.style.font_color = {r = 0.11, g = 0.8, b = 0.44}
-        b.style.font = 'heading-1'
-        b.style.minimal_height = 40
-        b.style.maximal_width = 40
-        b.style.minimal_width = 38
-        b.style.maximal_height = 38
-        b.style.padding = 1
-        b.style.margin = 0
-    end
+    local b =
+        player.gui.top.add(
+        {
+            type = 'sprite-button',
+            sprite = 'item/wooden-chest',
+            name = 'auto_stash',
+            tooltip = tooltip
+        }
+    )
+    b.style.font_color = {r = 0.11, g = 0.8, b = 0.44}
+    b.style.font = 'heading-1'
+    b.style.minimal_height = 40
+    b.style.maximal_width = 40
+    b.style.minimal_width = 38
+    b.style.maximal_height = 38
+    b.style.padding = 1
+    b.style.margin = 0
 end
 
 local function do_whitelist()
@@ -613,13 +596,6 @@ local function on_gui_click(event)
     end
     local player = game.players[event.player_index]
     local name = 'auto_stash'
-    if this.bottom_button then
-        local data = BottomFrame.get('bottom_quickbar_button')
-        if data[player.index] then
-            data = data[player.index]
-            name = data.name
-        end
-    end
 
     if event.element.name == name then
         auto_stash(player, event)
@@ -639,14 +615,6 @@ function Public.insert_into_wagon(value)
         this.insert_into_wagon = value
     else
         this.insert_into_wagon = false
-    end
-end
-
-function Public.bottom_button(value)
-    if value then
-        this.bottom_button = value
-    else
-        this.bottom_button = false
     end
 end
 

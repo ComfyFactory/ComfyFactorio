@@ -3,7 +3,7 @@ local WPT = require 'maps.mountain_fortress_v3.table'
 
 local random = math.random
 
-local tick_tacks = {'*tick*', '*tick*', '*tack*', '*tak*', '*tik*', '*tok*', 'OOF'}
+local tick_tacks = {'*tick*', '*tick*', '*tack*', '*tak*', '*tik*', '*tok*', '( ͡° ͜ʖ ͡°)'}
 
 local kaboom_weights = {
     {name = 'grenade', chance = 7},
