@@ -383,8 +383,6 @@ local function wall(data)
                     spawn_turret(entities, p, 4)
                 elseif random(1, 2) == 1 then
                     spawn_turret(entities, p, 5)
-                elseif random(1, 12) == 1 then
-                    spawn_turret(entities, p, enable_arties)
                 end
             end
         elseif abs(p.y) > Public.level_depth * 5.5 then

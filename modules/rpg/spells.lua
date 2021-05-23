@@ -10,10 +10,10 @@ function Public.conjure_items()
         type = 'item',
         mana_cost = 60,
         tick = 100,
+        aoe = true,
         enabled = true,
         sprite = 'recipe/stone-wall'
     }
-
     spells[#spells + 1] = {
         name = {'entity-name.wooden-chest'},
         obj_to_create = 'wooden-chest',
@@ -21,6 +21,7 @@ function Public.conjure_items()
         type = 'item',
         mana_cost = 50,
         tick = 100,
+        aoe = true,
         enabled = true,
         sprite = 'recipe/wooden-chest'
     }
@@ -31,6 +32,7 @@ function Public.conjure_items()
         type = 'item',
         mana_cost = 110,
         tick = 200,
+        aoe = true,
         enabled = true,
         sprite = 'recipe/iron-chest'
     }
@@ -41,6 +43,7 @@ function Public.conjure_items()
         type = 'item',
         mana_cost = 150,
         tick = 300,
+        aoe = true,
         enabled = true,
         sprite = 'recipe/steel-chest'
     }
@@ -51,6 +54,7 @@ function Public.conjure_items()
         type = 'item',
         mana_cost = 80,
         tick = 100,
+        aoe = true,
         enabled = true,
         sprite = 'recipe/transport-belt'
     }
@@ -61,6 +65,7 @@ function Public.conjure_items()
         type = 'item',
         mana_cost = 110,
         tick = 200,
+        aoe = true,
         enabled = true,
         sprite = 'recipe/fast-transport-belt'
     }
@@ -71,6 +76,7 @@ function Public.conjure_items()
         type = 'item',
         mana_cost = 150,
         tick = 300,
+        aoe = true,
         enabled = true,
         sprite = 'recipe/express-transport-belt'
     }
@@ -81,6 +87,7 @@ function Public.conjure_items()
         type = 'item',
         mana_cost = 80,
         tick = 100,
+        aoe = true,
         enabled = true,
         sprite = 'recipe/underground-belt'
     }
@@ -91,6 +98,7 @@ function Public.conjure_items()
         type = 'item',
         mana_cost = 110,
         tick = 200,
+        aoe = true,
         enabled = true,
         sprite = 'recipe/fast-underground-belt'
     }
@@ -101,6 +109,7 @@ function Public.conjure_items()
         type = 'item',
         mana_cost = 150,
         tick = 300,
+        aoe = true,
         enabled = true,
         sprite = 'recipe/express-underground-belt'
     }
@@ -111,6 +120,7 @@ function Public.conjure_items()
         type = 'entity',
         mana_cost = 80,
         tick = 350,
+        aoe = true,
         enabled = true,
         sprite = 'entity/sand-rock-big'
     }
@@ -221,6 +231,36 @@ function Public.conjure_items()
         tick = 320,
         enabled = true,
         sprite = 'recipe/rocket'
+    }
+    spells[#spells + 1] = {
+        name = {'spells.pointy_explosives'},
+        obj_to_create = 'pointy_explosives',
+        target = true,
+        amount = 1,
+        range = 0,
+        damage = true,
+        force = 'player',
+        level = 70,
+        type = 'special',
+        mana_cost = 100,
+        tick = 100,
+        enabled = true,
+        sprite = 'recipe/explosives'
+    }
+    spells[#spells + 1] = {
+        name = {'spells.repair_aoe'},
+        obj_to_create = 'repair_aoe',
+        target = true,
+        amount = 1,
+        range = 50,
+        damage = false,
+        force = 'player',
+        level = 50,
+        type = 'special',
+        mana_cost = 200,
+        tick = 100,
+        enabled = true,
+        sprite = 'recipe/repair_pack'
     }
     spells[#spells + 1] = {
         name = {'spells.acid_stream'},
