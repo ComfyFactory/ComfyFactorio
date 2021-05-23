@@ -2,10 +2,8 @@ require 'modules.rocks_broken_paint_tiles'
 
 local Event = require 'utils.event'
 local Server = require 'utils.server'
-local BiterRolls = require 'modules.wave_defense.biter_rolls'
 local BuriedEnemies = require 'maps.mountain_fortress_v3.buried_enemies'
 local Loot = require 'maps.mountain_fortress_v3.loot'
-local Pets = require 'maps.mountain_fortress_v3.biter_pets'
 local RPG_Settings = require 'modules.rpg.table'
 local Functions = require 'modules.rpg.functions'
 local Callbacks = require 'maps.mountain_fortress_v3.functions'
@@ -33,7 +31,6 @@ local Public = {}
 local random = math.random
 local floor = math.floor
 local abs = math.abs
-local sqrt = math.sqrt
 local round = math.round
 
 -- Use these settings for live
@@ -122,18 +119,6 @@ local reset_game =
         end
     end
 )
-
-local function exists()
-    local carriages = WPT.get('carriages')
-    local t = {}
-    for i = 1, #carriages do
-        local e = carriages[i]
-        if (e and e.valid) then
-            t[e.unit_number] = true
-        end
-    end
-    return t
-end
 
 local function get_random_weighted(weighted_table, item_index, weight_index)
     local total_weight = 0
@@ -330,11 +315,11 @@ local function protect_entities(event)
         return false
     end
 
-    local units = exists()
+    local carriages_numbers = WPT.get('carriages_numbers')
     if is_protected(entity) then
         if (event.cause and event.cause.valid) then
             if event.cause.force.index == 2 then
-                if units and units[entity.unit_number] then
+                if carriages_numbers and carriages_numbers[entity.unit_number] then
                     set_train_final_health(dmg, false)
                     return
                 else
@@ -344,7 +329,7 @@ local function protect_entities(event)
             end
         elseif not (event.cause and event.cause.valid) then
             if event.force and event.force.index == 2 then
-                if units and units[entity.unit_number] then
+                if carriages_numbers and carriages_numbers[entity.unit_number] then
                     set_train_final_health(dmg, false)
                     return
                 else
@@ -356,23 +341,6 @@ local function protect_entities(event)
 
         entity.health = entity.health + dmg
     end
-end
-
-local function hidden_biter_pet(player, entity)
-    if random(1, 1024) ~= 1 then
-        return
-    end
-
-    local pos = entity.position
-
-    BiterRolls.wave_defense_set_unit_raffle(sqrt(pos.x ^ 2 + pos.y ^ 2) * 0.25)
-    local unit
-    if random(1, 3) == 1 then
-        unit = entity.surface.create_entity({name = BiterRolls.wave_defense_roll_spitter_name(), position = pos})
-    else
-        unit = entity.surface.create_entity({name = BiterRolls.wave_defense_roll_biter_name(), position = pos})
-    end
-    Pets.biter_pets_tame_unit(game.players[player.index], unit, true)
 end
 
 local function hidden_treasure(player, entity)
@@ -641,15 +609,6 @@ local mining_events = {
         end,
         16,
         'Treasure_Tier_7'
-    },
-    {
-        function(entity, index)
-            local player = game.get_player(index)
-            Public.unstuck_player(index)
-            hidden_biter_pet(player, entity)
-        end,
-        256,
-        'Pet'
     },
     {
         function(entity, index)
@@ -943,9 +902,9 @@ local function on_player_repaired_entity(event)
         return
     end
     local entity = event.entity
-    local units = exists()
+    local carriages_numbers = WPT.get('carriages_numbers')
 
-    if units[entity.unit_number] then
+    if carriages_numbers[entity.unit_number] then
         local player = game.players[event.player_index]
         local repair_speed = Functions.get_magicka(player)
         if repair_speed <= 0 then

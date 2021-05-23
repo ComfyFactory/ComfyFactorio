@@ -7,9 +7,7 @@ local Global = require 'utils.global'
 
 local this = {
     players = {},
-    activate_custom_buttons = false,
-    bottom_right = false,
-    bottom_quickbar_button = {}
+    activate_custom_buttons = false
 }
 
 Global.register(

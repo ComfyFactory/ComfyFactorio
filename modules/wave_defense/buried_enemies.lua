@@ -96,16 +96,41 @@ local function spawn_biters(data)
         unit = surface.create_entity({name = BiterRolls.wave_defense_roll_biter_name(), position = position})
     end
 
-    if random(1, 64) == 1 then
+    if random(1, 45) == 1 then
+        BiterHealthBooster.add_unit(unit, boosted_health)
+    elseif random(1, 64) == 1 then
         BiterHealthBooster.add_boss_unit(unit, boosted_health, 0.38)
     end
 end
 
 local function spawn_worms(data)
+    local wave_number = WD.get('wave_number')
+    local d = Diff.get()
+    local m = 0.0015
+    if d.difficulty_vote_index then
+        if not d.strength_modifier then
+            m = m * 1.05
+        else
+            m = m * d.strength_modifier
+        end
+    end
+
+    local boosted_health = 1 + (wave_number * (m * 2))
+
+    if wave_number >= 100 then
+        boosted_health = boosted_health * 2
+    end
+
     local surface = data.surface
     local position = data.position
     BiterRolls.wave_defense_set_worm_raffle(sqrt(position.x ^ 2 + position.y ^ 2) * 0.20)
-    surface.create_entity({name = BiterRolls.wave_defense_roll_worm_name(), position = position})
+    local unit = surface.create_entity({name = BiterRolls.wave_defense_roll_worm_name(), position = position})
+
+    if random(1, 45) == 1 then
+        BiterHealthBooster.add_unit(unit, boosted_health)
+    elseif random(1, 64) == 1 then
+        BiterHealthBooster.add_boss_unit(unit, boosted_health, 0.38)
+    end
 end
 
 function Public.buried_biter(surface, position, max)

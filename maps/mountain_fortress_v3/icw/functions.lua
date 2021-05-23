@@ -471,6 +471,10 @@ function Public.kill_wagon(icw, entity)
         return
     end
     local wagon = icw.wagons[entity.unit_number]
+    if not wagon then
+        return
+    end
+
     local surface = wagon.surface
     kick_players_from_surface(wagon)
     kick_players_out_of_vehicles(wagon)

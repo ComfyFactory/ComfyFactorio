@@ -32,7 +32,6 @@ local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Alert = require 'utils.alert'
 local AntiGrief = require 'antigrief'
-local BottomFrame = require 'comfy_panel.bottom_frame'
 local Misc = require 'commands.misc'
 local Modifiers = require 'player_modifiers'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
@@ -132,11 +131,7 @@ function Public.reset_map()
 
     Autostash.insert_into_furnace(true)
     Autostash.insert_into_wagon(true)
-    Autostash.bottom_button(true)
     BuriedEnemies.reset()
-    BottomFrame.reset()
-    BottomFrame.activate_custom_buttons(true)
-    BottomFrame.bottom_right(true)
 
     Poll.reset()
     ICW.reset()
@@ -152,7 +147,7 @@ function Public.reset_map()
     RPG_Settings.enable_wave_defense(true)
     RPG_Settings.enable_mana(true)
     RPG_Settings.enable_flame_boots(true)
-    RPG_Settings.personal_tax_rate(0.3)
+    RPG_Settings.personal_tax_rate(0.4)
     RPG_Settings.enable_stone_path(true)
     RPG_Settings.enable_one_punch(true)
     RPG_Settings.enable_one_punch_globally(false)
@@ -179,6 +174,7 @@ function Public.reset_map()
 
     game.forces.player.set_spawn_position({-27, 25}, surface)
     game.forces.player.manual_mining_speed_modifier = 0
+    game.forces.player.set_ammo_damage_modifier('artillery-shell', -0.95)
 
     BiterHealthBooster.set_active_surface(tostring(surface.name))
     BiterHealthBooster.acid_nova(true)
@@ -399,13 +395,8 @@ end
 local compare_collapse_and_train = function()
     local collapse_pos = Collapse.get_position()
     local locomotive = WPT.get('locomotive')
-    local carriages = WPT.get('carriages')
     if not (locomotive and locomotive.valid) then
         return
-    end
-
-    if not carriages then
-        WPT.set().carriages = locomotive.train.carriages
     end
 
     local c_y = collapse_pos.y

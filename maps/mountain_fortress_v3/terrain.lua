@@ -261,15 +261,15 @@ local function wall(data)
     local seed = data.seed
     local p = {x = x + data.top_x, y = y + data.top_y}
 
-    local small_caves = get_perlin('small_caves', p, seed + 300000)
-    local cave_ponds = get_perlin('cave_rivers', p, seed + 150000)
+    local small_caves = get_perlin('small_caves', p, seed + 204000)
+    local cave_ponds = get_perlin('cave_rivers', p, seed + 120400)
     if y > 9 + cave_ponds * 6 and y < 23 + small_caves * 6 then
         if small_caves > 0.02 or cave_ponds > 0.02 then
             if small_caves > 0.005 then
                 tiles[#tiles + 1] = {name = 'water', position = p}
             else
                 tiles[#tiles + 1] = {name = 'water-shallow', position = p}
-                if random(1, 32) == 1 then
+                if random(1, 26) == 1 then
                     entities[#entities + 1] = {
                         name = 'land-mine',
                         position = p,
@@ -285,7 +285,7 @@ local function wall(data)
 
             if random(1, 5) ~= 1 then
                 entities[#entities + 1] = {name = rock_raffle[random(1, #rock_raffle)], position = p}
-                if random(1, 32) == 1 then
+                if random(1, 26) == 1 then
                     entities[#entities + 1] = {
                         name = 'land-mine',
                         position = p,
@@ -383,7 +383,7 @@ local function wall(data)
                     spawn_turret(entities, p, 4)
                 elseif random(1, 2) == 1 then
                     spawn_turret(entities, p, 5)
-                elseif random(1, 8) == 1 then
+                elseif random(1, 12) == 1 then
                     spawn_turret(entities, p, enable_arties)
                 end
             end

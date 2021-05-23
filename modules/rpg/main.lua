@@ -67,10 +67,10 @@ local function on_gui_click(event)
         return
     end
 
-    local rpg_t = RPG.get('rpg_t')
+    local rpg_t = RPG.get_value_from_player(player.index)
 
     local index = element.name
-    if not rpg_t[player.index][index] then
+    if not rpg_t[index] then
         return
     end
     if not player.character then
@@ -78,27 +78,27 @@ local function on_gui_click(event)
     end
 
     if shift then
-        local count = rpg_t[player.index].points_to_distribute
+        local count = rpg_t.points_to_distribute
         if not count then
             return
         end
-        rpg_t[player.index].points_to_distribute = 0
-        rpg_t[player.index][index] = rpg_t[player.index][index] + count
-        if not rpg_t[player.index].reset then
-            rpg_t[player.index].total = rpg_t[player.index].total + count
+        rpg_t.points_to_distribute = 0
+        rpg_t[index] = rpg_t[index] + count
+        if not rpg_t.reset then
+            rpg_t.total = rpg_t.total + count
         end
         RPG_GUI.toggle(player, true)
         RPG_GUI.update_player_stats(player)
     elseif event.button == defines.mouse_button_type.right then
         for _ = 1, points_per_level, 1 do
-            if rpg_t[player.index].points_to_distribute <= 0 then
+            if rpg_t.points_to_distribute <= 0 then
                 RPG_GUI.toggle(player, true)
                 return
             end
-            rpg_t[player.index].points_to_distribute = rpg_t[player.index].points_to_distribute - 1
-            rpg_t[player.index][index] = rpg_t[player.index][index] + 1
-            if not rpg_t[player.index].reset then
-                rpg_t[player.index].total = rpg_t[player.index].total + 1
+            rpg_t.points_to_distribute = rpg_t.points_to_distribute - 1
+            rpg_t[index] = rpg_t[index] + 1
+            if not rpg_t.reset then
+                rpg_t.total = rpg_t.total + 1
             end
             RPG_GUI.update_player_stats(player)
         end
@@ -106,14 +106,14 @@ local function on_gui_click(event)
         return
     end
 
-    if rpg_t[player.index].points_to_distribute <= 0 then
+    if rpg_t.points_to_distribute <= 0 then
         RPG_GUI.toggle(player, true)
         return
     end
-    rpg_t[player.index].points_to_distribute = rpg_t[player.index].points_to_distribute - 1
-    rpg_t[player.index][index] = rpg_t[player.index][index] + 1
-    if not rpg_t[player.index].reset then
-        rpg_t[player.index].total = rpg_t[player.index].total + 1
+    rpg_t.points_to_distribute = rpg_t.points_to_distribute - 1
+    rpg_t[index] = rpg_t[index] + 1
+    if not rpg_t.reset then
+        rpg_t.total = rpg_t.total + 1
     end
     RPG_GUI.update_player_stats(player)
     RPG_GUI.toggle(player, true)
@@ -338,7 +338,7 @@ local function regen_mana_player(players)
         local player = players[i]
         local mana_per_tick = Functions.get_mana_modifier(player)
         local rpg_extra = RPG.get('rpg_extra')
-        local rpg_t = RPG.get('rpg_t')
+        local rpg_t = RPG.get_value_from_player(player.index)
         if mana_per_tick <= 0.1 then
             mana_per_tick = rpg_extra.mana_per_tick
         end
@@ -349,17 +349,17 @@ local function regen_mana_player(players)
 
         if player and player.valid and not player.in_combat then
             if player.character and player.character.valid then
-                if rpg_t[player.index].mana < 0 then
-                    rpg_t[player.index].mana = 0
+                if rpg_t.mana < 0 then
+                    rpg_t.mana = 0
                 end
-                if rpg_t[player.index].mana >= rpg_t[player.index].mana_max then
+                if rpg_t.mana >= rpg_t.mana_max then
                     goto continue
                 end
-                rpg_t[player.index].mana = rpg_t[player.index].mana + mana_per_tick
-                if rpg_t[player.index].mana >= rpg_t[player.index].mana_max then
-                    rpg_t[player.index].mana = rpg_t[player.index].mana_max
+                rpg_t.mana = rpg_t.mana + mana_per_tick
+                if rpg_t.mana >= rpg_t.mana_max then
+                    rpg_t.mana = rpg_t.mana_max
                 end
-                rpg_t[player.index].mana = (math.round(rpg_t[player.index].mana * 10) / 10)
+                rpg_t.mana = (math.round(rpg_t.mana * 10) / 10)
             end
         end
 
@@ -370,6 +370,11 @@ local function regen_mana_player(players)
 end
 
 local function give_player_flameboots(player)
+    local rpg_t = RPG.get_value_from_player(player.index)
+    if not rpg_t.flame_boots then
+        return
+    end
+
     if not player.character then
         return
     end
@@ -377,39 +382,33 @@ local function give_player_flameboots(player)
         return
     end
 
-    local rpg_t = RPG.get('rpg_t')
-
-    if not rpg_t[player.index].mana then
+    if not rpg_t.mana then
         return
     end
 
-    if not rpg_t[player.index].flame_boots then
-        return
-    end
-
-    if rpg_t[player.index].mana <= 0 then
+    if rpg_t.mana <= 0 then
         player.print(({'rpg_main.flame_boots_worn_out'}), {r = 0.22, g = 0.77, b = 0.44})
-        rpg_t[player.index].flame_boots = false
+        rpg_t.flame_boots = false
         return
     end
 
-    if rpg_t[player.index].mana % 500 == 0 then
-        player.print(({'rpg_main.flame_mana_remaining', rpg_t[player.index].mana}), {r = 0.22, g = 0.77, b = 0.44})
+    if rpg_t.mana % 500 == 0 then
+        player.print(({'rpg_main.flame_mana_remaining', rpg_t.mana}), {r = 0.22, g = 0.77, b = 0.44})
     end
 
     local p = player.position
 
     player.surface.create_entity({name = 'fire-flame', position = p})
 
-    rpg_t[player.index].mana = rpg_t[player.index].mana - 5
-    if rpg_t[player.index].mana <= 0 then
-        rpg_t[player.index].mana = 0
+    rpg_t.mana = rpg_t.mana - 5
+    if rpg_t.mana <= 0 then
+        rpg_t.mana = 0
     end
     if player.gui.screen[main_frame_name] then
         local f = player.gui.screen[main_frame_name]
         local data = Gui.get_data(f)
         if data.mana and data.mana.valid then
-            data.mana.caption = rpg_t[player.index].mana
+            data.mana.caption = rpg_t.mana
         end
     end
 end
@@ -590,11 +589,11 @@ local function on_entity_damaged(event)
     end
 
     local enable_one_punch = RPG.get('rpg_extra').enable_one_punch
-    local rpg_t = RPG.get('rpg_t')
+    local rpg_t = RPG.get_value_from_player(cause.player.index)
 
     --Cause a one punch.
     if enable_one_punch then
-        if rpg_t[cause.player.index].one_punch then
+        if rpg_t.one_punch then
             if math.random(0, 999) < Functions.get_one_punch_chance(cause.player) * 10 then
                 one_punch(cause, entity, damage)
                 if entity.valid then
@@ -713,11 +712,11 @@ local function on_player_rotated_entity(event)
         return
     end
 
-    local rpg_t = RPG.get('rpg_t')
-    if rpg_t[player.index].rotated_entity_delay > game.tick then
+    local rpg_t = RPG.get_value_from_player(player.index)
+    if rpg_t.rotated_entity_delay > game.tick then
         return
     end
-    rpg_t[player.index].rotated_entity_delay = game.tick + 20
+    rpg_t.rotated_entity_delay = game.tick + 20
     Functions.gain_xp(player, 0.20)
 end
 
@@ -793,12 +792,12 @@ local function on_pre_player_mined_item(event)
         return
     end
 
-    local rpg_t = RPG.get('rpg_t')
-    if rpg_t[player.index].last_mined_entity_position.x == event.entity.position.x and rpg_t[player.index].last_mined_entity_position.y == event.entity.position.y then
+    local rpg_t = RPG.get_value_from_player(player.index)
+    if rpg_t.last_mined_entity_position.x == event.entity.position.x and rpg_t.last_mined_entity_position.y == event.entity.position.y then
         return
     end
-    rpg_t[player.index].last_mined_entity_position.x = entity.position.x
-    rpg_t[player.index].last_mined_entity_position.y = entity.position.y
+    rpg_t.last_mined_entity_position.x = entity.position.x
+    rpg_t.last_mined_entity_position.y = entity.position.y
 
     local distance_multiplier = math.floor(math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2)) * 0.0005 + 1
 
@@ -813,7 +812,7 @@ local function on_pre_player_mined_item(event)
         local f = player.gui.screen[main_frame_name]
         local data = Gui.get_data(f)
         if data.exp_gui and data.exp_gui.valid then
-            data.exp_gui.caption = math.floor(rpg_t[player.index].xp)
+            data.exp_gui.caption = math.floor(rpg_t.xp)
         end
     end
 
@@ -856,8 +855,8 @@ end
 
 local function on_player_respawned(event)
     local player = game.players[event.player_index]
-    local rpg_t = RPG.get('rpg_t')
-    if not rpg_t[player.index] then
+    local rpg_t = RPG.get_value_from_player(player.index)
+    if not rpg_t then
         Functions.rpg_reset_player(player)
         return
     end
@@ -869,9 +868,9 @@ end
 
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
-    local rpg_t = RPG.get('rpg_t')
+    local rpg_t = RPG.get_value_from_player(player.index)
     local rpg_extra = RPG.get('rpg_extra')
-    if not rpg_t[player.index] then
+    if not rpg_t then
         Functions.rpg_reset_player(player)
         if rpg_extra.reward_new_players > 10 then
             Functions.gain_xp(player, rpg_extra.reward_new_players)
@@ -1019,27 +1018,27 @@ local function on_player_used_capsule(event)
         return
     end
 
-    local rpg_t = RPG.get('rpg_t')
+    local rpg_t = RPG.get_value_from_player(player.index)
 
-    if not rpg_t[player.index].enable_entity_spawn then
+    if not rpg_t.enable_entity_spawn then
         return
     end
 
     local p = player.print
 
-    if rpg_t[player.index].last_spawned >= game.tick then
+    if rpg_t.last_spawned >= game.tick then
         return p(({'rpg_main.mana_casting_too_fast', player.name}), Color.warning)
     end
 
-    local mana = rpg_t[player.index].mana
+    local mana = rpg_t.mana
     local surface = player.surface
 
-    local object = conjure_items[rpg_t[player.index].dropdown_select_index]
+    local object = conjure_items[rpg_t.dropdown_select_index]
     if not object then
         return
     end
 
-    if rpg_t[player.index].level < object.level then
+    if rpg_t.level < object.level then
         return p(({'rpg_main.low_level'}), Color.fail)
     end
 
@@ -1094,14 +1093,14 @@ local function on_player_used_capsule(event)
     if object.obj_to_create == 'suicidal_comfylatron' then
         Functions.suicidal_comfylatron(position, surface)
         p(({'rpg_main.suicidal_comfylatron', 'Suicidal Comfylatron'}), Color.success)
-        rpg_t[player.index].mana = rpg_t[player.index].mana - object.mana_cost
+        rpg_t.mana = rpg_t.mana - object.mana_cost
     elseif object.obj_to_create == 'warp-gate' then
         player.teleport(surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5), surface)
-        rpg_t[player.index].mana = 0
+        rpg_t.mana = 0
         Functions.damage_player_over_time(player, math.random(8, 16))
         player.play_sound {path = 'utility/armor_insert', volume_modifier = 1}
         p(({'rpg_main.warped_ok'}), Color.info)
-        rpg_t[player.index].mana = rpg_t[player.index].mana - object.mana_cost
+        rpg_t.mana = rpg_t.mana - object.mana_cost
     elseif projectile_types[obj_name] then -- projectiles
         for i = 1, object.amount do
             local damage_area = {
@@ -1116,16 +1115,16 @@ local function on_player_used_capsule(event)
             end
         end
         p(({'rpg_main.object_spawned', obj_name}), Color.success)
-        rpg_t[player.index].mana = rpg_t[player.index].mana - object.mana_cost
+        rpg_t.mana = rpg_t.mana - object.mana_cost
     else
         if object.target then -- rockets and such
             surface.create_entity({name = obj_name, position = position, force = force, target = target_pos, speed = 1})
             p(({'rpg_main.object_spawned', obj_name}), Color.success)
-            rpg_t[player.index].mana = rpg_t[player.index].mana - object.mana_cost
+            rpg_t.mana = rpg_t.mana - object.mana_cost
         elseif object.obj_to_create == 'fish' then -- spawn in some fish
             player.insert({name = 'raw-fish', count = object.amount})
             p(({'rpg_main.object_spawned', 'raw-fish'}), Color.success)
-            rpg_t[player.index].mana = rpg_t[player.index].mana - object.mana_cost
+            rpg_t.mana = rpg_t.mana - object.mana_cost
         elseif surface.can_place_entity {name = obj_name, position = position} then
             if object.biter then
                 local e = surface.create_entity({name = obj_name, position = position, force = force})
@@ -1134,7 +1133,7 @@ local function on_player_used_capsule(event)
                 surface.create_entity({name = obj_name, position = position, force = force})
             end
             p(({'rpg_main.object_spawned', obj_name}), Color.success)
-            rpg_t[player.index].mana = rpg_t[player.index].mana - object.mana_cost
+            rpg_t.mana = rpg_t.mana - object.mana_cost
         else
             p(({'rpg_main.out_of_reach'}), Color.fail)
             return
@@ -1143,7 +1142,7 @@ local function on_player_used_capsule(event)
 
     local msg = player.name .. ' casted ' .. object.obj_to_create .. '. '
 
-    rpg_t[player.index].last_spawned = game.tick + object.tick
+    rpg_t.last_spawned = game.tick + object.tick
     Functions.update_mana(player)
 
     local reward_xp = object.mana_cost * 0.085

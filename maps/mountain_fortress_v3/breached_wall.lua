@@ -13,6 +13,7 @@ local raise_event = script.raise_event
 local floor = math.floor
 local abs = math.abs
 local random = math.random
+local sub = string.sub
 local sqrt = math.sqrt
 local level_depth = WPT.level_depth
 
@@ -147,13 +148,13 @@ local function distance(player)
 
     local p = player.position
 
-    local s = WPT.get('validate_spider')
-    if s[index] then
-        local e = s[index]
+    local validate_spider = WPT.get('validate_spider')
+    if validate_spider[index] then
+        local e = validate_spider[index]
         if not (e and e.valid) then
-            s[index] = nil
+            validate_spider[index] = nil
         end
-        compare_player_and_train(player, s[index])
+        compare_player_and_train(player, validate_spider[index])
     end
 
     compare_player_pos(player)
@@ -170,13 +171,15 @@ local function distance(player)
     local max_times = location >= max
     if max_times then
         if breach_max_times then
+            local placed_trains_in_zone = WPT.get('placed_trains_in_zone')
+            local biters = WPT.get('biters')
             rpg_extra.breached_walls = rpg_extra.breached_walls + 1
             rpg_extra.reward_new_players = bonus_xp_on_join * rpg_extra.breached_walls
-            WPT.set().breached_wall = breached_wall + 1
-            WPT.set().placed_trains_in_zone.placed = 0
-            WPT.set().biters.amount = 0
-            WPT.set().placed_trains_in_zone.randomized = false
-            WPT.set().placed_trains_in_zone.positions = {}
+            WPT.set('breached_wall', breached_wall + 1)
+            placed_trains_in_zone.placed = 0
+            biters.amount = 0
+            placed_trains_in_zone.randomized = false
+            placed_trains_in_zone.positions = {}
             raise_event(Balance.events.breached_wall, {})
             if WPT.get('breached_wall') == WPT.get('spidertron_unlocked_at_zone') then
                 local main_market_items = WPT.get('main_market_items')
@@ -223,9 +226,13 @@ end
 
 local function on_player_changed_position(event)
     local player = game.get_player(event.player_index)
+    local surface_name = player.surface.name
     local map_name = 'mountain_fortress_v3'
+    if random(1, 3) ~= 1 then
+        return
+    end
 
-    if string.sub(player.surface.name, 0, #map_name) ~= map_name then
+    if sub(surface_name, 0, #map_name) ~= map_name then
         return
     end
 

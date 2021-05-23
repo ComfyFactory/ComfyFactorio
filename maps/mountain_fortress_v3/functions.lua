@@ -10,7 +10,7 @@ local Collapse = require 'modules.collapse'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 local ICW_Func = require 'maps.mountain_fortress_v3.icw.functions'
 local math2d = require 'math2d'
-local BottomFrame = require 'comfy_panel.bottom_frame'
+local Misc = require 'commands.misc'
 
 local this = {
     power_sources = {index = 1},
@@ -710,6 +710,7 @@ function Public.remove_offline_players()
                         offline_players[i] = nil
                         break
                     end
+
                     local pos = game.forces.player.get_spawn_position(surface)
                     local e =
                         surface.create_entity(
@@ -1179,7 +1180,7 @@ function Public.on_player_left_game()
 end
 
 function Public.is_creativity_mode_on()
-    local creative_enabled = BottomFrame.get('creative_enabled')
+    local creative_enabled = Misc.get('creative_enabled')
     if creative_enabled then
         WD.set('next_wave', 1000)
         Collapse.start_now(true)
@@ -1188,9 +1189,9 @@ function Public.is_creativity_mode_on()
 end
 
 function Public.disable_creative()
-    local creative_enabled = BottomFrame.get('creative_enabled')
+    local creative_enabled = Misc.get('creative_enabled')
     if creative_enabled then
-        BottomFrame.set('creative_enabled', false)
+        Misc.set('creative_enabled', false)
     end
 end
 
@@ -1248,9 +1249,9 @@ function Public.on_player_changed_position(event)
     local surface = game.surfaces[active_surface_index]
 
     local p = {x = player.position.x, y = player.position.y}
-    local get_tile = surface.get_tile(p)
     local config_tile = WPT.get('void_or_tile')
     if config_tile == 'lab-dark-2' then
+        local get_tile = surface.get_tile(p)
         if get_tile.valid and get_tile.name == 'lab-dark-2' then
             if random(1, 2) == 1 then
                 if random(1, 2) == 1 then
@@ -1292,6 +1293,8 @@ local disable_recipes = function(force)
     force.recipes['locomotive'].enabled = false
     force.recipes['pistol'].enabled = false
     force.recipes['spidertron-remote'].enabled = false
+    force.recipes['discharge-defense-equipment'].enabled = false
+    force.recipes['discharge-defense-remote'].enabled = false
 end
 
 function Public.disable_tech()
@@ -1305,8 +1308,6 @@ function Public.disable_tech()
     force.technologies['artillery-shell-range-1'].researched = false
     force.technologies['artillery-shell-speed-1'].enabled = false
     force.technologies['artillery-shell-speed-1'].researched = false
-    force.technologies['artillery'].enabled = false
-    force.technologies['artillery'].researched = false
     force.technologies['optics'].researched = true
     force.technologies['railway'].researched = true
     force.technologies['land-mine'].enabled = false

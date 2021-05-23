@@ -59,6 +59,37 @@ local function create_particles(data)
     end
 end
 
+local function trigger_health()
+    local wave_number = WD.get('wave_number')
+    local d = Diff.get()
+    local m = 0.0015
+    if d.difficulty_vote_index then
+        if not d.strength_modifier then
+            m = m * 1.05
+        else
+            m = m * d.strength_modifier
+        end
+    end
+
+    local boosted_health = 1.25
+
+    if wave_number <= 10 then
+        wave_number = 10
+    end
+
+    boosted_health = boosted_health * (wave_number * 0.02)
+
+    local sum = boosted_health * 5
+
+    sum = sum + m
+
+    if sum >= 100 then
+        sum = 100
+    end
+
+    return sum
+end
+
 local function spawn_biters(data)
     local surface = data.surface
     if not (surface and surface.valid) then
@@ -66,9 +97,8 @@ local function spawn_biters(data)
     end
     local position = data.position
     local h = floor(abs(position.y))
-    local wave_number = WD.get('wave_number')
+
     local max_biters = WPT.get('biters')
-    local d = Diff.get()
 
     if max_biters.amount >= max_biters.limit then
         return
@@ -79,35 +109,6 @@ local function spawn_biters(data)
         if not position then
             return
         end
-    end
-
-    local function trigger_health()
-        local m = 0.0015
-        if d.difficulty_vote_index then
-            if not d.strength_modifier then
-                m = m * 1.05
-            else
-                m = m * d.strength_modifier
-            end
-        end
-
-        local boosted_health = 1.25
-
-        if wave_number <= 10 then
-            wave_number = 10
-        end
-
-        boosted_health = boosted_health * (wave_number * 0.02)
-
-        local sum = boosted_health * 5
-
-        sum = sum + m
-
-        if sum >= 100 then
-            sum = 100
-        end
-
-        return sum
     end
 
     BiterRolls.wave_defense_set_unit_raffle(h * 0.20)
@@ -123,7 +124,9 @@ local function spawn_biters(data)
 
     if random(1, 45) == 1 then
         local sum = trigger_health()
-        max_biters.amount = max_biters.amount + 1
+        BiterHealthBooster.add_unit(unit, sum)
+    elseif random(1, 64) == 1 then
+        local sum = trigger_health()
         BiterHealthBooster.add_boss_unit(unit, sum, 0.38)
     end
 end
@@ -141,8 +144,16 @@ local function spawn_worms(data)
     end
     local position = data.position
     BiterRolls.wave_defense_set_worm_raffle(sqrt(position.x ^ 2 + position.y ^ 2) * 0.20)
-    surface.create_entity({name = BiterRolls.wave_defense_roll_worm_name(), position = position})
+    local unit = surface.create_entity({name = BiterRolls.wave_defense_roll_worm_name(), position = position})
     max_biters.amount = max_biters.amount + 1
+
+    if random(1, 45) == 1 then
+        local sum = trigger_health()
+        BiterHealthBooster.add_unit(unit, sum)
+    elseif random(1, 64) == 1 then
+        local sum = trigger_health()
+        BiterHealthBooster.add_boss_unit(unit, sum, 0.38)
+    end
 end
 
 function Public.buried_biter(surface, position)
