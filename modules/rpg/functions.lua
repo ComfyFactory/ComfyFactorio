@@ -154,6 +154,36 @@ local function add_to_global_pool(amount, personal_tax)
     return amount - fee
 end
 
+local repair_buildings =
+    Token.register(
+    function(data)
+        local entity = data.entity
+        if entity and entity.valid then
+            local rng = 0.1
+            if math.random(1, 5) == 1 then
+                rng = 0.2
+            elseif math.random(1, 8) == 1 then
+                rng = 0.4
+            end
+            local to_heal = entity.prototype.max_health * rng
+            entity.health = entity.health + to_heal
+        end
+    end
+)
+
+function Public.repair_aoe(player, position)
+    local entities = player.surface.find_entities_filtered {force = player.force, area = {{position.x - 5, position.y - 5}, {position.x + 5, position.y + 5}}}
+    local count = 0
+    for i = 1, #entities do
+        local e = entities[i]
+        if e.prototype.max_health ~= e.health then
+            count = count + 1
+            Task.set_timeout_in_ticks(10, repair_buildings, {entity = e})
+        end
+    end
+    return count
+end
+
 function Public.suicidal_comfylatron(pos, surface)
     local str = travelings[math.random(1, #travelings)]
     local symbols = {'', '!', '!', '!!', '..'}

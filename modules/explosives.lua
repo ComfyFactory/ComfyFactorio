@@ -243,6 +243,43 @@ local function on_entity_died(event)
     )
 end
 
+function Public.detonate_chest(entity)
+    if not entity.valid then
+        return false
+    end
+    if not valid_container_types[entity.type] then
+        return false
+    end
+    if explosives.surface_whitelist then
+        if not explosives.surface_whitelist[entity.surface.name] then
+            return false
+        end
+    end
+
+    local inventory = defines.inventory.chest
+    if entity.type == 'car' then
+        inventory = defines.inventory.car_trunk
+    end
+
+    local i = entity.get_inventory(inventory)
+    local amount = i.get_item_count('explosives')
+    if not amount then
+        return false
+    end
+    if amount < 599 then
+        return false
+    end
+
+    cell_birth(
+        entity.surface.index,
+        {x = entity.position.x, y = entity.position.y},
+        game.tick,
+        {x = entity.position.x, y = entity.position.y},
+        amount * explosives.damage_per_explosive
+    )
+    return true
+end
+
 function Public.reset()
     explosives.cells = {}
     explosives.tiles = {}

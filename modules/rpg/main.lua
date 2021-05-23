@@ -4,6 +4,7 @@ local AntiGrief = require 'antigrief'
 local Color = require 'utils.color_presets'
 local SpamProtection = require 'utils.spam_protection'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
+local Explosives = require 'modules.explosives'
 
 local WD = require 'modules.wave_defense.table'
 local Math2D = require 'math2d'
@@ -1038,16 +1039,6 @@ local function on_player_used_capsule(event)
         return
     end
 
-    if rpg_t.level < object.level then
-        return p(({'rpg_main.low_level'}), Color.fail)
-    end
-
-    if not object.enabled then
-        return
-    end
-
-    local obj_name = object.obj_to_create
-
     local position = event.position
     if not position then
         return
@@ -1058,6 +1049,16 @@ local function on_player_used_capsule(event)
         left_top = {x = position.x - radius, y = position.y - radius},
         right_bottom = {x = position.x + radius, y = position.y + radius}
     }
+
+    if rpg_t.level < object.level then
+        return p(({'rpg_main.low_level'}), Color.fail)
+    end
+
+    if not object.enabled then
+        return
+    end
+
+    local obj_name = object.obj_to_create
 
     if not Math2D.bounding_box.contains_point(area, player.position) then
         player.print(({'rpg_main.not_inside_pos'}), Color.fail)
@@ -1090,16 +1091,40 @@ local function on_player_used_capsule(event)
     else
         force = 'player'
     end
-    if object.obj_to_create == 'suicidal_comfylatron' then
+    if obj_name == 'suicidal_comfylatron' then
         Functions.suicidal_comfylatron(position, surface)
         p(({'rpg_main.suicidal_comfylatron', 'Suicidal Comfylatron'}), Color.success)
         rpg_t.mana = rpg_t.mana - object.mana_cost
-    elseif object.obj_to_create == 'warp-gate' then
+    elseif obj_name == 'repair_aoe' then
+        local ents = Functions.repair_aoe(player, position)
+        p(({'rpg_main.repair_aoe', ents}), Color.success)
+        rpg_t.mana = rpg_t.mana - object.mana_cost
+    elseif obj_name == 'pointy_explosives' then
+        local entities =
+            player.surface.find_entities_filtered {force = player.force, type = 'container', area = {{position.x - 5, position.y - 5}, {position.x + 5, position.y + 5}}}
+
+        local detonate_chest
+        for i = 1, #entities do
+            local e = entities[i]
+            detonate_chest = e
+        end
+        local success = Explosives.detonate_chest(detonate_chest)
+        if success then
+            player.print(({'rpg_main.detonate_chest'}), Color.success)
+            rpg_t.mana = rpg_t.mana - object.mana_cost
+        else
+            player.print(({'rpg_main.detonate_chest_failed'}), Color.fail)
+        end
+    elseif obj_name == 'warp-gate' then
         player.teleport(surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5), surface)
         rpg_t.mana = 0
         Functions.damage_player_over_time(player, math.random(8, 16))
         player.play_sound {path = 'utility/armor_insert', volume_modifier = 1}
         p(({'rpg_main.warped_ok'}), Color.info)
+        rpg_t.mana = rpg_t.mana - object.mana_cost
+    elseif obj_name == 'fish' then -- spawn in some fish
+        player.insert({name = 'raw-fish', count = object.amount})
+        p(({'rpg_main.object_spawned', 'raw-fish'}), Color.success)
         rpg_t.mana = rpg_t.mana - object.mana_cost
     elseif projectile_types[obj_name] then -- projectiles
         for i = 1, object.amount do
@@ -1121,16 +1146,27 @@ local function on_player_used_capsule(event)
             surface.create_entity({name = obj_name, position = position, force = force, target = target_pos, speed = 1})
             p(({'rpg_main.object_spawned', obj_name}), Color.success)
             rpg_t.mana = rpg_t.mana - object.mana_cost
-        elseif object.obj_to_create == 'fish' then -- spawn in some fish
-            player.insert({name = 'raw-fish', count = object.amount})
-            p(({'rpg_main.object_spawned', 'raw-fish'}), Color.success)
-            rpg_t.mana = rpg_t.mana - object.mana_cost
         elseif surface.can_place_entity {name = obj_name, position = position} then
             if object.biter then
                 local e = surface.create_entity({name = obj_name, position = position, force = force})
                 tame_unit_effects(player, e)
+            elseif object.aoe then
+                for x = 1, -1, -1 do
+                    for y = 1, -1, -1 do
+                        local pos = {x = position.x + x, y = position.y + y}
+                        if surface.can_place_entity {name = obj_name, position = pos} then
+                            if object.mana_cost > rpg_t.mana then
+                                break
+                            end
+                            local e = surface.create_entity({name = obj_name, position = pos, force = force})
+                            e.direction = player.character.direction
+                            rpg_t.mana = rpg_t.mana - object.mana_cost
+                        end
+                    end
+                end
             else
-                surface.create_entity({name = obj_name, position = position, force = force})
+                local e = surface.create_entity({name = obj_name, position = position, force = force})
+                e.direction = player.character.direction
             end
             p(({'rpg_main.object_spawned', obj_name}), Color.success)
             rpg_t.mana = rpg_t.mana - object.mana_cost
@@ -1140,7 +1176,7 @@ local function on_player_used_capsule(event)
         end
     end
 
-    local msg = player.name .. ' casted ' .. object.obj_to_create .. '. '
+    local msg = player.name .. ' casted ' .. obj_name .. '. '
 
     rpg_t.last_spawned = game.tick + object.tick
     Functions.update_mana(player)

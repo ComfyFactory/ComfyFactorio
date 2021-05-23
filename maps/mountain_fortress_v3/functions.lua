@@ -1,5 +1,6 @@
 local Token = require 'utils.token'
 local Task = require 'utils.task'
+local Color = require 'utils.color_presets'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
 local Event = require 'utils.event'
 local Global = require 'utils.global'
@@ -772,6 +773,56 @@ local function calc_players()
     return total
 end
 
+local retry_final_boost_movement_speed_on_respawn =
+    Token.register(
+    function(data)
+        local player = data.player
+        local old_speed = data.old_speed
+        if not player or not player.valid then
+            return
+        end
+        if not player.character or not player.character.valid then
+            return
+        end
+        player.character.character_running_speed_modifier = old_speed
+        player.print('Movement speed bonus removed!', Color.info)
+    end
+)
+
+local retry_boost_movement_speed_on_respawn =
+    Token.register(
+    function(data)
+        local player = data.player
+        local old_speed = data.old_speed
+        if not player or not player.valid then
+            return
+        end
+        if not player.character or not player.character.valid then
+            Task.set_timeout_in_ticks(10, retry_final_boost_movement_speed_on_respawn, {player = player, old_speed = old_speed})
+            return
+        end
+        player.character.character_running_speed_modifier = old_speed
+        player.print('Movement speed bonus removed!', Color.info)
+    end
+)
+
+local boost_movement_speed_on_respawn =
+    Token.register(
+    function(data)
+        local player = data.player
+        local old_speed = data.old_speed
+        if not player or not player.valid then
+            return
+        end
+        if not player.character or not player.character.valid then
+            Task.set_timeout_in_ticks(10, retry_boost_movement_speed_on_respawn, {player = player, old_speed = old_speed})
+            return
+        end
+        player.character.character_running_speed_modifier = old_speed
+        player.print('Movement speed bonus removed!', Color.info)
+    end
+)
+
 function Public.set_difficulty()
     local game_lost = WPT.get('game_lost')
     if game_lost then
@@ -1205,6 +1256,20 @@ function Public.on_pre_player_left_game(event)
     end
 end
 
+function Public.on_player_respawned(event)
+    local player = game.get_player(event.player_index)
+    if not player or not player.valid then
+        return
+    end
+    local old_speed = player.character_running_speed_modifier
+    local new_speed = player.character_running_speed_modifier + 1
+    if player.character and player.character.valid then
+        player.character.character_running_speed_modifier = new_speed
+        Task.set_timeout_in_ticks(800, boost_movement_speed_on_respawn, {player = player, old_speed = old_speed})
+        player.print('Movement speed bonus applied! Be quick and fetch your corpse!', Color.info)
+    end
+end
+
 function Public.on_player_changed_position(event)
     local active_surface_index = WPT.get('active_surface_index')
     if not active_surface_index then
@@ -1338,12 +1403,14 @@ local on_player_left_game = Public.on_player_left_game
 local on_research_finished = Public.on_research_finished
 local on_player_changed_position = Public.on_player_changed_position
 local on_pre_player_left_game = Public.on_pre_player_left_game
+local on_player_respawned = Public.on_player_respawned
 
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_left_game, on_player_left_game)
 Event.add(defines.events.on_research_finished, on_research_finished)
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)
 Event.add(defines.events.on_pre_player_left_game, on_pre_player_left_game)
+Event.add(defines.events.on_player_respawned, on_player_respawned)
 Event.on_nth_tick(10, tick)
 -- Event.on_nth_tick(5, do_turret_energy)
 
