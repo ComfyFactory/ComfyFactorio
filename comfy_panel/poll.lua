@@ -775,7 +775,7 @@ local function tick()
     if not polls.running then
         return
     end
-    for _, p in pairs(game.connected_players) do
+    for _, p in pairs(game.players) do
         local frame = p.gui.left[main_frame_name]
         if frame and frame.valid then
             local data = Gui.get_data(frame)
@@ -786,6 +786,17 @@ local function tick()
                 if not poll_enabled then
                     for _, v in pairs(data.vote_buttons) do
                         v.enabled = poll_enabled
+                    end
+                end
+            end
+        end
+        local player_index = p.index
+        local tbl = player_create_poll_data[player_index]
+        if tbl then
+            for k, element in pairs(tbl) do
+                if type(element) == 'table' then
+                    if not element.valid then
+                        player_create_poll_data[player_index] = nil
                     end
                 end
             end

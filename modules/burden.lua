@@ -40,14 +40,13 @@ local function compute_fullness(player)
 end
 
 local function check_burden(event)
-    local player_modifiers = Modifier.get_table()
     local player = game.players[event.player_index]
     if not validate_player(player) then
         return
     end
     local fullness = compute_fullness(player)
-    player_modifiers[player.index].character_running_speed_modifier['randomness'] = 0.3 - fullness
-    player_modifiers[player.index].character_mining_speed_modifier['randomess'] = 0.3 - fullness
+    Modifier.update_single_modifier(player, 'character_running_speed_modifier', 'randomness', 0.3 - fullness)
+    Modifier.update_single_modifier(player, 'character_mining_speed_modifier', 'randomness', 0.3 - fullness)
     Modifier.update_player_modifiers(player)
     if fullness >= 0.9 and fullness <= 0.901 then
         player.print('Maybe you should drop some of that inventory to lessen the burden.', Color.red)

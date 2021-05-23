@@ -13,8 +13,6 @@ VITALITY > character_health_bonus
 
 Modified by Gerkiz *-*
 ]]
-require 'player_modifiers'
-
 local math_random = math.random
 local math_sqrt = math.sqrt
 local math_floor = math.floor
@@ -145,7 +143,7 @@ local function update_char_button(player)
     if not player.gui.top.rpg then
         draw_gui_char_button(player)
     end
-    if rpg_t[player.index].points_to_distribute > 0 then
+    if rpg_t[player.index].points_left > 0 then
         player.gui.top.rpg.style.font_color = {245, 0, 0}
     else
         player.gui.top.rpg.style.font_color = {175, 175, 175}
@@ -155,24 +153,22 @@ end
 local function update_player_stats(player)
     local player_modifiers = P.get_table()
     local strength = rpg_t[player.index].strength - 10
-    player_modifiers[player.index].character_inventory_slots_bonus['rpg'] = math.round(strength * 0.2, 3)
-    player_modifiers[player.index].character_mining_speed_modifier['rpg'] = math.round(strength * 0.008, 3)
+    P.update_single_modifier(player, 'character_inventory_slots_bonus', 'rpg', math.round(strength * 0.2, 3))
+    P.update_single_modifier(player, 'character_mining_speed_modifier', 'rpg', math.round(strength * 0.008, 3))
 
     local magic = rpg_t[player.index].magic - 10
     local v = magic * 0.15
-    player_modifiers[player.index].character_build_distance_bonus['rpg'] = math.round(v, 3)
-    player_modifiers[player.index].character_item_drop_distance_bonus['rpg'] = math.round(v, 3)
-    player_modifiers[player.index].character_reach_distance_bonus['rpg'] = math.round(v, 3)
-    player_modifiers[player.index].character_loot_pickup_distance_bonus['rpg'] = math.round(v * 0.5, 3)
-    player_modifiers[player.index].character_item_pickup_distance_bonus['rpg'] = math.round(v * 0.25, 3)
-    player_modifiers[player.index].character_resource_reach_distance_bonus['rpg'] = math.round(v * 0.15, 3)
+    P.update_single_modifier(player, 'character_build_distance_bonus', 'rpg', math.round(v, 3))
+    P.update_single_modifier(player, 'character_item_drop_distance_bonus', 'rpg', math.round(v, 3))
+    P.update_single_modifier(player, 'character_reach_distance_bonus', 'rpg', math.round(v, 3))
+    P.update_single_modifier(player, 'character_loot_pickup_distance_bonus', 'rpg', math.round(v * 0.5, 3))
+    P.update_single_modifier(player, 'character_item_pickup_distance_bonus', 'rpg', math.round(v * 0.25, 3))
+    P.update_single_modifier(player, 'character_resource_reach_distance_bonus', 'rpg', math.round(v * 0.15, 3))
 
     local dexterity = rpg_t[player.index].dexterity - 10
-    player_modifiers[player.index].character_running_speed_modifier['rpg'] = math.round(dexterity * 0.002, 3)
-    player_modifiers[player.index].character_crafting_speed_modifier['rpg'] = math.round(dexterity * 0.015, 3)
-
-    player_modifiers[player.index].character_health_bonus['rpg'] = math.round((rpg_t[player.index].vitality - 10) * 6, 3)
-
+    P.update_single_modifier(player, 'character_running_speed_modifier', 'rpg', math.round(dexterity * 0.002, 3))
+    P.update_single_modifier(player, 'character_crafting_speed_modifier', 'rpg', math.round(dexterity * 0.015, 3))
+    P.update_single_modifier(player, 'character_health_bonus', 'rpg', math.round((rpg_t[player.index].vitality - 10) * 6, 3))
     P.update_player_modifiers(player)
 end
 
@@ -222,7 +218,7 @@ end
 local function add_gui_increase_stat(element, name, player, width)
     local sprite = 'virtual-signal/signal-red'
     local symbol = '✚'
-    if rpg_t[player.index].points_to_distribute <= 0 then
+    if rpg_t[player.index].points_left <= 0 then
         sprite = 'virtual-signal/signal-black'
     end
     local e = element.add({type = 'sprite-button', name = name, caption = symbol, sprite = sprite})
@@ -335,7 +331,7 @@ local function draw_gui(player, forced)
     add_gui_increase_stat(tt, 'vitality', player)
 
     add_gui_description(tt, 'POINTS TO\nDISTRIBUTE', w1)
-    local e = add_gui_stat(tt, rpg_t[player.index].points_to_distribute, w2)
+    local e = add_gui_stat(tt, rpg_t[player.index].points_left, w2)
     e.style.font_color = {200, 0, 0}
     add_gui_description(tt, ' ', w2)
 
@@ -500,7 +496,7 @@ local function level_up(player)
         return
     end
     draw_level_text(player)
-    rpg_t[player.index].points_to_distribute = rpg_t[player.index].points_to_distribute + distribute_points_gain
+    rpg_t[player.index].points_left = rpg_t[player.index].points_left + distribute_points_gain
     update_char_button(player)
     table.shuffle_table(rpg_frame_icons)
     if player.gui.left.rpg then
@@ -552,7 +548,7 @@ function Public.rpg_reset_player(player)
         magic = 10,
         dexterity = 10,
         vitality = 10,
-        points_to_distribute = 0,
+        points_left = 0,
         last_floaty_text = visuals_delay,
         xp_since_last_floaty_text = 0,
         rotated_entity_delay = 0,
@@ -616,11 +612,11 @@ local function on_gui_click(event)
 
     if event.button == defines.mouse_button_type.right then
         for a = 1, 5, 1 do
-            if rpg_t[player.index].points_to_distribute <= 0 then
+            if rpg_t[player.index].points_left <= 0 then
                 draw_gui(player, true)
                 return
             end
-            rpg_t[player.index].points_to_distribute = rpg_t[player.index].points_to_distribute - 1
+            rpg_t[player.index].points_left = rpg_t[player.index].points_left - 1
             rpg_t[player.index][index] = rpg_t[player.index][index] + 1
             update_player_stats(player)
         end
@@ -628,11 +624,11 @@ local function on_gui_click(event)
         return
     end
 
-    if rpg_t[player.index].points_to_distribute <= 0 then
+    if rpg_t[player.index].points_left <= 0 then
         draw_gui(player, true)
         return
     end
-    rpg_t[player.index].points_to_distribute = rpg_t[player.index].points_to_distribute - 1
+    rpg_t[player.index].points_left = rpg_t[player.index].points_left - 1
     rpg_t[player.index][index] = rpg_t[player.index][index] + 1
     update_player_stats(player)
     draw_gui(player, true)

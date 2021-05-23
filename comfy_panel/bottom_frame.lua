@@ -56,14 +56,15 @@ function Public.set(key, value)
     end
 end
 
-Event.on_init(
-    function()
-        this.players = {}
-    end
-)
-
 function Public.reset()
-    this.players = {}
+    local players = game.players
+    for i = 1, #players do
+        local player = players[i]
+        if not player.connected then
+            this.players[player.index] = nil
+            this.bottom_quickbar_button[player.index] = nil
+        end
+    end
 end
 
 ----! Gui Functions ! ----
@@ -73,8 +74,8 @@ local function destroy_frame(player)
     local frame = gui.screen[bottom_guis_frame]
     if frame and frame.valid then
         frame.destroy()
-        this.bottom_quickbar_button[player.index] = nil
     end
+    this.bottom_quickbar_button[player.index] = nil
 end
 
 local function create_frame(player, rebuild)
@@ -149,18 +150,10 @@ local function set_location(player)
             y = (resolution.height - (96 * scale))
         }
     else
-        local experimental = get_game_version()
-        if experimental then
-            frame.location = {
-                x = (resolution.width / 2) - ((54 + 445) * scale),
-                y = (resolution.height - (96 * scale))
-            }
-        else
-            frame.location = {
-                x = (resolution.width / 2) - ((54 + 258) * scale),
-                y = (resolution.height - (96 * scale))
-            }
-        end
+        frame.location = {
+            x = (resolution.width / 2) - ((54 + 445) * scale),
+            y = (resolution.height - (96 * scale))
+        }
     end
 end
 

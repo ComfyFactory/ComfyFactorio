@@ -275,15 +275,14 @@ commands.add_command(
                 end
                 local item = game.item_prototypes
                 local i = 0
-                local p_modifer = Modifiers.get_table()
                 for _k, _v in pairs(item) do
                     i = i + 1
                     if _k and _v.type ~= 'mining-tool' then
-                        p_modifer[player.index].character_inventory_slots_bonus['creative'] = tonumber(i)
-                        p_modifer[player.index].character_mining_speed_modifier['creative'] = 50
-                        p_modifer[player.index].character_health_bonus['creative'] = 2000
-                        p_modifer[player.index].character_crafting_speed_modifier['creative'] = 50
-                        v.character_inventory_slots_bonus = p_modifer[player.index].character_inventory_slots_bonus['creative']
+                        Modifiers.update_single_modifier(player, 'character_inventory_slots_bonus', 'creative', tonumber(i))
+                        Modifiers.update_single_modifier(player, 'character_mining_speed_modifier', 'creative', 50)
+                        Modifiers.update_single_modifier(player, 'character_health_bonus', 'creative', 2000)
+                        Modifiers.update_single_modifier(player, 'character_crafting_speed_modifier', 'creative', 50)
+                        v.character_inventory_slots_bonus = Modifiers.get_single_modifier(player, 'character_inventory_slots_bonus', 'creative')
                         v.insert {name = _k, count = _v.stack_size}
                         v.print('[CREATIVE] Inserted all base items.', Color.success)
                         Modifiers.update_player_modifiers(player)

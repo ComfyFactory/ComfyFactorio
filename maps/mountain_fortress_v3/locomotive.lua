@@ -619,6 +619,10 @@ local function redraw_market_items(gui, player, search_text)
         return
     end
     local players = WPT.get('players')
+    if not players then
+        return
+    end
+
     local trusted = Session.get_trusted_table()
 
     if gui and gui.valid then
@@ -781,6 +785,9 @@ end
 local function slider_changed(event)
     local player = game.players[event.player_index]
     local players = WPT.get('players')
+    if not players then
+        return
+    end
     local slider_value
 
     slider_value = players
@@ -821,6 +828,10 @@ local function text_changed(event)
     end
 
     local players = WPT.get('players')
+    if not players then
+        return
+    end
+
     local player = game.players[event.player_index]
 
     local data = players[player.index].data
@@ -886,6 +897,9 @@ local function gui_opened(event)
     local player_item_count = inventory.get_item_count('coin')
 
     local players = WPT.get('players')
+    if not players then
+        return
+    end
 
     if not players[player.index].data then
         players[player.index].data = {}
@@ -983,6 +997,9 @@ end
 
 local function gui_click(event)
     local players = WPT.get('players')
+    if not players then
+        return
+    end
 
     local element = event.element
     local player = game.players[event.player_index]
@@ -1316,6 +1333,9 @@ end
 local function gui_closed(event)
     local player = game.players[event.player_index]
     local players = WPT.get('players')
+    if not players then
+        return
+    end
 
     local type = event.gui_type
 
@@ -1330,6 +1350,9 @@ end
 
 local function on_player_changed_position(event)
     local players = WPT.get('players')
+    if not players then
+        return
+    end
     local player = game.players[event.player_index]
     if not players[player.index] then
         return
@@ -1868,6 +1891,9 @@ function Public.refresh_gui()
         local screen = gui.screen
 
         local player_data = WPT.get('players')
+        if not players then
+            return
+        end
         local data = player_data[player.index].data
 
         if screen and data and data.frame then

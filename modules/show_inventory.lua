@@ -311,6 +311,9 @@ end
 
 local function on_gui_click(event)
     local player = game.players[event.player_index]
+    if not this.data[player.index] then
+        return
+    end
 
     local element = event.element
 
@@ -371,6 +374,9 @@ local function on_gui_click(event)
 end
 local function gui_closed(event)
     local player = game.players[event.player_index]
+    if not this.data[player.index] then
+        return
+    end
 
     local type = event.gui_type
 
@@ -385,12 +391,20 @@ end
 
 local function on_pre_player_left_game(event)
     local player = game.players[event.player_index]
+    if not this.data[player.index] then
+        return
+    end
+
     close_player_inventory(player)
 end
 
 local function update_gui(event)
     local player = game.get_player(event.player_index)
     if not player or not player.valid then
+        return
+    end
+
+    if not this.data[player.index] then
         return
     end
 

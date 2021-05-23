@@ -4,7 +4,6 @@
 global.offline_loot = true
 local darkness = false
 
-require 'player_modifiers'
 require 'functions.soft_reset'
 require 'functions.basic_markets'
 
@@ -442,7 +441,6 @@ local function on_research_finished(event)
 end
 
 local function on_player_joined_game(event)
-    local player_modifiers = Modifier.get_table()
     local player = game.players[event.player_index]
 
     set_difficulty()
@@ -467,7 +465,7 @@ local function on_player_joined_game(event)
         end
     end
 
-    player_modifiers[player.index].character_mining_speed_modifier['mountain_fortress'] = 0.5
+    Modifier.update_single_modifier(player, 'character_mining_speed_modifier', 'mountain_fortress', 0.5)
     Modifier.update_player_modifiers(player)
 
     local tile = surface.get_tile(player.position)

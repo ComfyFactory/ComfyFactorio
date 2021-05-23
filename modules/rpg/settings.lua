@@ -129,7 +129,6 @@ function Public.spell_gui_settings(player)
 end
 
 function Public.extra_settings(player)
-    local player_modifiers = P.get_table()
     local rpg_extra = RPG.get('rpg_extra')
     local rpg_t = RPG.get('rpg_t')
     local trusted = Session.get_trusted_table()
@@ -263,8 +262,9 @@ function Public.extra_settings(player)
     magic_pickup_input_style.height = 35
     magic_pickup_input_style.vertical_align = 'center'
     local reach_mod
-    if player_modifiers.disabled_modifier[player.index] and player_modifiers.disabled_modifier[player.index].character_item_pickup_distance_bonus then
-        reach_mod = not player_modifiers.disabled_modifier[player.index].character_item_pickup_distance_bonus
+    local character_item_pickup_distance_bonus = P.get_single_disabled_modifier(player, 'character_item_pickup_distance_bonus')
+    if character_item_pickup_distance_bonus then
+        reach_mod = false
     else
         reach_mod = true
     end
@@ -290,8 +290,9 @@ function Public.extra_settings(player)
     movement_speed_input_style.height = 35
     movement_speed_input_style.vertical_align = 'center'
     local speed_mod
-    if player_modifiers.disabled_modifier[player.index] and player_modifiers.disabled_modifier[player.index].character_running_speed_modifier then
-        speed_mod = not player_modifiers.disabled_modifier[player.index].character_running_speed_modifier
+    local character_running_speed_modifier = P.get_single_disabled_modifier(player, 'character_running_speed_modifier')
+    if character_running_speed_modifier then
+        speed_mod = false
     else
         speed_mod = true
     end
