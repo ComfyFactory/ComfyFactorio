@@ -36,7 +36,7 @@ market.ammo = {
     ['explosive-cannon-shell'] = {value = 12, rarity = 5},
     ['uranium-cannon-shell'] = {value = 16, rarity = 7},
     ['explosive-uranium-cannon-shell'] = {value = 20, rarity = 8},
-    ['artillery-shell'] = {value = 64, rarity = 7},
+    ['artillery-shell'] = {value = 1024, rarity = 7},
     ['rocket'] = {value = 45, rarity = 7},
     ['explosive-rocket'] = {value = 50, rarity = 7},
     ['atomic-bomb'] = {value = 11000, rarity = 10},
@@ -52,8 +52,8 @@ market.caspules = {
     ['defender-capsule'] = {value = 18, rarity = 1},
     ['distractor-capsule'] = {value = 68, rarity = 5},
     ['destroyer-capsule'] = {value = 74, rarity = 7},
-    ['discharge-defense-remote'] = {value = 6000, rarity = 8},
-    ['artillery-targeting-remote'] = {value = 32, rarity = 7},
+    ['discharge-defense-remote'] = {value = 9216, rarity = 8},
+    ['artillery-targeting-remote'] = {value = 1024, rarity = 7},
     ['raw-fish'] = {value = 6, rarity = 1}
 }
 
@@ -88,7 +88,7 @@ market.defense = {
     ['gun-turret'] = {value = 64, rarity = 1},
     ['laser-turret'] = {value = 1024, rarity = 6},
     ['flamethrower-turret'] = {value = 2048, rarity = 6},
-    ['artillery-turret'] = {value = 8192, rarity = 8},
+    ['artillery-turret'] = {value = 9216, rarity = 8},
     ['rocket-silo'] = {value = 64000, rarity = 10}
 }
 
@@ -141,7 +141,7 @@ market.vehicles = {
     ['locomotive'] = {value = 400, rarity = 4},
     ['cargo-wagon'] = {value = 200, rarity = 4},
     ['fluid-wagon'] = {value = 300, rarity = 5},
-    ['artillery-wagon'] = {value = 8192, rarity = 8},
+    ['artillery-wagon'] = {value = 9216, rarity = 8},
     ['car'] = {value = 80, rarity = 1},
     ['tank'] = {value = 1800, rarity = 5}
 }
