@@ -10,13 +10,15 @@ local Gui = {}
 
 local data = {}
 local element_map = {}
+local settings = {}
 
 Gui.token =
     Global.register(
-    {data = data, element_map = element_map},
+    {data = data, element_map = element_map, settings = settings},
     function(tbl)
         data = tbl.data
         element_map = tbl.element_map
+        settings = tbl.settings
     end
 )
 
@@ -115,13 +117,16 @@ function Gui.clear(element)
     element.clear()
 end
 
---[[
-    local function clear_invalid_data()
-    for _, player in pairs(game.connected_players) do
+local function clear_invalid_data()
+    if settings.disable_clear_invalid_data then
+        return
+    end
+
+    for _, player in pairs(game.players) do
         local player_index = player.index
         local values = data[player_index]
         if values then
-            for _, element in next, values do
+            for k, element in next, values do
                 if type(element) == 'table' then
                     for key, obj in next, element do
                         if type(obj) == 'table' and obj.valid ~= nil then
@@ -130,13 +135,15 @@ end
                             end
                         end
                     end
+                    if type(element) == 'userdata' and not element.valid then
+                        values[k] = nil
+                    end
                 end
             end
         end
     end
 end
 Event.on_nth_tick(300, clear_invalid_data)
-]]
 
 local function handler_factory(event_id)
     local handlers
@@ -193,6 +200,16 @@ local function custom_raise(handlers, element, player)
     end
 
     handler({element = element, player = player})
+end
+
+-- Disabled the handler so it does not clean then data table of invalid data.
+function Gui.set_disable_clear_invalid_data(value)
+    settings.disable_clear_invalid_data = value or false
+end
+
+-- Gets state if the cleaner handler is active or false
+function Gui.get_disable_clear_invalid_data()
+    return settings.disable_clear_invalid_data
 end
 
 -- Register a handler for the on_gui_checked_state_changed event for LuaGuiElements with element_name.

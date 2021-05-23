@@ -31,6 +31,7 @@ local Difficulty = require 'modules.difficulty_vote_by_amount'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Alert = require 'utils.alert'
+-- local BottomFrame = require 'comfy_panel.bottom_frame'
 local AntiGrief = require 'antigrief'
 local Misc = require 'commands.misc'
 local Modifiers = require 'player_modifiers'
@@ -131,8 +132,11 @@ function Public.reset_map()
 
     Autostash.insert_into_furnace(true)
     Autostash.insert_into_wagon(true)
+    Autostash.bottom_button(false)
     BuriedEnemies.reset()
-
+    --[[ BottomFrame.reset()
+    BottomFrame.activate_custom_buttons(true)
+    BottomFrame.bottom_right(true) ]]
     Poll.reset()
     ICW.reset()
     IC.reset()
@@ -277,15 +281,9 @@ end
 local is_player_valid = function()
     local players = game.connected_players
     for _, player in pairs(players) do
-        if player.connected and not player.character or not player.character.valid then
-            if not player.admin then
-                local player_data = Functions.get_player_data(player)
-                if player_data.died then
-                    return
-                end
-                player.set_controller {type = defines.controllers.god}
-                player.create_character()
-            end
+        if player.connected and player.controller_type == 2 then
+            player.set_controller {type = defines.controllers.god}
+            player.create_character()
         end
     end
 end

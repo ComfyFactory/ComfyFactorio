@@ -21,7 +21,13 @@ local this = {
     surface_cleared = false
 }
 
-local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16, ['wood'] = 16, ['explosives'] = 32}
+local starting_items = {
+    ['pistol'] = 1,
+    ['firearm-magazine'] = 16,
+    ['rail'] = 16,
+    ['wood'] = 16,
+    ['explosives'] = 32
+}
 
 Global.register(
     this,
@@ -58,21 +64,6 @@ local artillery_target_entities = {
     'silo',
     'spidertron'
 }
-
-function Public.get_player_data(player, remove_user_data)
-    local players = WPT.get('players')
-    if remove_user_data then
-        if players[player.index] then
-            players[player.index] = nil
-        end
-    end
-    if not players[player.index] then
-        players[player.index] = {}
-    end
-    return players[player.index]
-end
-
-local get_player_data = Public.get_player_data
 
 local function debug_str(msg)
     local debug = WPT.get('debug')
@@ -1132,6 +1123,7 @@ end
 
 function Public.on_player_joined_game(event)
     local active_surface_index = WPT.get('active_surface_index')
+    local players = WPT.get('players')
     local player = game.players[event.player_index]
     local surface = game.surfaces[active_surface_index]
 
@@ -1139,15 +1131,15 @@ function Public.on_player_joined_game(event)
 
     ICW_Func.is_minimap_valid(player, surface)
 
-    local player_data = get_player_data(player)
-
-    if not player_data.first_join then
+    if player.online_time < 1 then
+        if not players[player.index] then
+            players[player.index] = {}
+        end
         local message = ({'main.greeting', player.name})
         Alert.alert_player(player, 15, message)
         for item, amount in pairs(starting_items) do
             player.insert({name = item, count = amount})
         end
-        player_data.first_join = true
     end
 
     local top = player.gui.top
@@ -1211,26 +1203,6 @@ function Public.on_pre_player_left_game(event)
             tick = ticker
         }
     end
-end
-
-function Public.on_player_respawned(event)
-    local player = game.get_player(event.player_index)
-    if not (player and player.valid) then
-        return
-    end
-    local player_data = get_player_data(player)
-    if player_data.died then
-        player_data.died = nil
-    end
-end
-
-function Public.on_player_died(event)
-    local player = game.get_player(event.player_index)
-    if not (player and player.valid) then
-        return
-    end
-    local player_data = get_player_data(player)
-    player_data.died = true
 end
 
 function Public.on_player_changed_position(event)
@@ -1363,16 +1335,12 @@ end
 
 local on_player_joined_game = Public.on_player_joined_game
 local on_player_left_game = Public.on_player_left_game
-local on_player_respawned = Public.on_player_respawned
-local on_player_died = Public.on_player_died
 local on_research_finished = Public.on_research_finished
 local on_player_changed_position = Public.on_player_changed_position
 local on_pre_player_left_game = Public.on_pre_player_left_game
 
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_left_game, on_player_left_game)
-Event.add(defines.events.on_player_respawned, on_player_respawned)
-Event.add(defines.events.on_player_died, on_player_died)
 Event.add(defines.events.on_research_finished, on_research_finished)
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)
 Event.add(defines.events.on_pre_player_left_game, on_pre_player_left_game)

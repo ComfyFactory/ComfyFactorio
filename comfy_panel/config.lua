@@ -5,8 +5,10 @@ local SessionData = require 'utils.datastore.session_data'
 local Utils = require 'utils.core'
 local Tabs = require 'comfy_panel.main'
 local SpamProtection = require 'utils.spam_protection'
+local BottomFrame = require 'comfy_panel.bottom_frame'
 local Token = require 'utils.token'
 local Global = require 'utils.global'
+local Gui = require 'utils.gui'
 
 local module_name = 'Config'
 
@@ -120,6 +122,20 @@ local functions = {
             game.players[event.player_index].spectator = false
         end
     end,
+    ['comfy_panel_bottom_right_frame'] = function(event)
+        local player = game.get_player(event.player_index)
+        if event.element.switch_state == 'left' then
+            local bottom_frame = BottomFrame.get_player_data(player)
+            if not bottom_frame then
+                return
+            end
+            bottom_frame.bottom_left = true
+            BottomFrame.set_location(player)
+        else
+            BottomFrame.get_player_data(player, true)
+            BottomFrame.set_location(player)
+        end
+    end,
     ['comfy_panel_auto_hotbar_switch'] = function(event)
         if event.element.switch_state == 'left' then
             global.auto_hotbar_enabled[event.player_index] = true
@@ -165,6 +181,13 @@ local functions = {
         else
             global.bb_settings.only_admins_vote = false
             game.print('Admin-only difficulty voting has been disabled!')
+        end
+    end,
+    ['disable_cleaning'] = function(event)
+        if event.element.switch_state == 'left' then
+            Gui.set_disable_clear_invalid_data(true)
+        else
+            Gui.set_disable_clear_invalid_data(false)
         end
     end
 }
@@ -371,6 +394,22 @@ local function build_config_gui(data)
         scroll_pane.add({type = 'line'})
     end
 
+    if BottomFrame.is_custom_buttons_enabled() then
+        switch_state = 'right'
+        local bottom_frame = BottomFrame.get('players')
+        if bottom_frame[player.index] then
+            switch_state = 'left'
+        end
+        add_switch(
+            scroll_pane,
+            switch_state,
+            'comfy_panel_bottom_right_frame',
+            'Button Location',
+            'Toggle to select if you want the bottom button on the right side or the left side.'
+        )
+        scroll_pane.add({type = 'line'})
+    end
+
     if admin then
         label = scroll_pane.add({type = 'label', caption = 'Admin Settings'})
         label.style.font = 'default-bold'
@@ -388,6 +427,14 @@ local function build_config_gui(data)
             switch_state = 'left'
         end
         add_switch(scroll_pane, switch_state, 'comfy_panel_blueprint_toggle', 'Blueprint Library', 'Toggles the usage of blueprint strings and the library.')
+
+        scroll_pane.add({type = 'line'})
+
+        switch_state = 'right'
+        if Gui.get_disable_clear_invalid_data() then
+            switch_state = 'left'
+        end
+        add_switch(scroll_pane, switch_state, 'disable_cleaning', 'Gui Data Cleaning', 'Toggles the Gui data cleaning.')
 
         scroll_pane.add({type = 'line'})
 

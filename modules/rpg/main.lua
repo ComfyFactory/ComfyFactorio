@@ -78,11 +78,11 @@ local function on_gui_click(event)
     end
 
     if shift then
-        local count = rpg_t.points_to_distribute
+        local count = rpg_t.points_left
         if not count then
             return
         end
-        rpg_t.points_to_distribute = 0
+        rpg_t.points_left = 0
         rpg_t[index] = rpg_t[index] + count
         if not rpg_t.reset then
             rpg_t.total = rpg_t.total + count
@@ -91,11 +91,11 @@ local function on_gui_click(event)
         RPG_GUI.update_player_stats(player)
     elseif event.button == defines.mouse_button_type.right then
         for _ = 1, points_per_level, 1 do
-            if rpg_t.points_to_distribute <= 0 then
+            if rpg_t.points_left <= 0 then
                 RPG_GUI.toggle(player, true)
                 return
             end
-            rpg_t.points_to_distribute = rpg_t.points_to_distribute - 1
+            rpg_t.points_left = rpg_t.points_left - 1
             rpg_t[index] = rpg_t[index] + 1
             if not rpg_t.reset then
                 rpg_t.total = rpg_t.total + 1
@@ -106,11 +106,11 @@ local function on_gui_click(event)
         return
     end
 
-    if rpg_t.points_to_distribute <= 0 then
+    if rpg_t.points_left <= 0 then
         RPG_GUI.toggle(player, true)
         return
     end
-    rpg_t.points_to_distribute = rpg_t.points_to_distribute - 1
+    rpg_t.points_left = rpg_t.points_left - 1
     rpg_t[index] = rpg_t[index] + 1
     if not rpg_t.reset then
         rpg_t.total = rpg_t.total + 1

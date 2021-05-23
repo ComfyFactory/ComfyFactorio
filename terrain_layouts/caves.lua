@@ -117,8 +117,7 @@ end
 
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
-    local modifiers = Player_modifiers.get_table()
-    modifiers[player.index].character_mining_speed_modifier['caves'] = 3
+    Player_modifiers.update_single_modifier(player, 'character_mining_speed_modifier', 'caves', 3)
     Player_modifiers.update_player_modifiers(player)
 end
 

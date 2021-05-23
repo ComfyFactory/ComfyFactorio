@@ -48,7 +48,7 @@ function Public.update_char_button(player)
     if not player.gui.top[draw_main_frame_name] then
         Public.draw_gui_char_button(player)
     end
-    if rpg_t[player.index].points_to_distribute > 0 then
+    if rpg_t[player.index].points_left > 0 then
         player.gui.top[draw_main_frame_name].style.font_color = {245, 0, 0}
     else
         player.gui.top[draw_main_frame_name].style.font_color = {175, 175, 175}
@@ -119,7 +119,7 @@ local function add_gui_increase_stat(element, name, player)
     local rpg_t = RPG.get('rpg_t')
     local sprite = 'virtual-signal/signal-red'
     local symbol = '✚'
-    if rpg_t[player.index].points_to_distribute <= 0 then
+    if rpg_t[player.index].points_left <= 0 then
         sprite = 'virtual-signal/signal-black'
     end
     local e = element.add({type = 'sprite-button', name = name, caption = symbol, sprite = sprite})
@@ -275,7 +275,7 @@ local function draw_main_frame(player, location)
     add_gui_increase_stat(left_bottom_table, 'vitality', player)
 
     add_gui_description(left_bottom_table, ({'rpg_gui.points_to_dist'}), w1)
-    add_gui_stat(left_bottom_table, rpg_t[player.index].points_to_distribute, w2, nil, nil, {200, 0, 0})
+    add_gui_stat(left_bottom_table, rpg_t[player.index].points_left, w2, nil, nil, {200, 0, 0})
     add_gui_description(left_bottom_table, ' ', w2)
 
     add_gui_description(left_bottom_table, ' ', 40)
@@ -476,20 +476,19 @@ end
 function Public.update_player_stats(player)
     local rpg_extra = RPG.get('rpg_extra')
     local rpg_t = RPG.get('rpg_t')
-    local player_modifiers = P.get_table()
     local strength = rpg_t[player.index].strength - 10
-    player_modifiers[player.index].character_inventory_slots_bonus['rpg'] = math.round(strength * 0.2, 3)
-    player_modifiers[player.index].character_mining_speed_modifier['rpg'] = math.round(strength * 0.007, 3)
-    player_modifiers[player.index].character_maximum_following_robot_count_bonus['rpg'] = math.round(strength / 2 * 0.03, 3)
+    P.update_single_modifier(player, 'character_inventory_slots_bonus', 'rpg', math.round(strength * 0.2, 3))
+    P.update_single_modifier(player, 'character_mining_speed_modifier', 'rpg', math.round(strength * 0.007, 3))
+    P.update_single_modifier(player, 'character_maximum_following_robot_count_bonus', 'rpg', math.round(strength / 2 * 0.03, 3))
 
     local magic = rpg_t[player.index].magicka - 10
     local v = magic * 0.22
-    player_modifiers[player.index].character_build_distance_bonus['rpg'] = math.min(60, math.round(v * 0.25, 3))
-    player_modifiers[player.index].character_item_drop_distance_bonus['rpg'] = math.min(60, math.round(v * 0.25, 3))
-    player_modifiers[player.index].character_reach_distance_bonus['rpg'] = math.min(60, math.round(v * 0.25, 3))
-    player_modifiers[player.index].character_loot_pickup_distance_bonus['rpg'] = math.min(20, math.round(v * 0.22, 3))
-    player_modifiers[player.index].character_item_pickup_distance_bonus['rpg'] = math.min(20, math.round(v * 0.25, 3))
-    player_modifiers[player.index].character_resource_reach_distance_bonus['rpg'] = math.min(20, math.round(v * 0.15, 3))
+    P.update_single_modifier(player, 'character_build_distance_bonus', 'rpg', math.min(60, math.round(v * 0.25, 3)))
+    P.update_single_modifier(player, 'character_item_drop_distance_bonus', 'rpg', math.min(60, math.round(v * 0.25, 3)))
+    P.update_single_modifier(player, 'character_reach_distance_bonus', 'rpg', math.min(60, math.round(v * 0.25, 3)))
+    P.update_single_modifier(player, 'character_loot_pickup_distance_bonus', 'rpg', math.min(20, math.round(v * 0.22, 3)))
+    P.update_single_modifier(player, 'character_item_pickup_distance_bonus', 'rpg', math.min(20, math.round(v * 0.25, 3)))
+    P.update_single_modifier(player, 'character_resource_reach_distance_bonus', 'rpg', math.min(20, math.round(v * 0.15, 3)))
     if rpg_t[player.index].mana_max >= rpg_extra.mana_limit then
         rpg_t[player.index].mana_max = rpg_extra.mana_limit
     else
@@ -497,11 +496,9 @@ function Public.update_player_stats(player)
     end
 
     local dexterity = rpg_t[player.index].dexterity - 10
-    player_modifiers[player.index].character_running_speed_modifier['rpg'] = math.round(dexterity * 0.0015, 3)
-    player_modifiers[player.index].character_crafting_speed_modifier['rpg'] = math.round(dexterity * 0.015, 3)
-
-    player_modifiers[player.index].character_health_bonus['rpg'] = math.round((rpg_t[player.index].vitality - 10) * 6, 3)
-
+    P.update_single_modifier(player, 'character_running_speed_modifier', 'rpg', math.round(dexterity * 0.0015, 3))
+    P.update_single_modifier(player, 'character_crafting_speed_modifier', 'rpg', math.round(dexterity * 0.015, 3))
+    P.update_single_modifier(player, 'character_health_bonus', 'rpg', math.round((rpg_t[player.index].vitality - 10) * 6, 3))
     P.update_player_modifiers(player)
 end
 
@@ -559,7 +556,6 @@ Gui.on_click(
 
         local screen = player.gui.screen
         local frame = screen[settings_frame_name]
-        local player_modifiers = P.get_table()
         local data = Gui.get_data(event.element)
         local health_bar_gui_input = data.health_bar_gui_input
         local reset_gui_input = data.reset_gui_input
@@ -624,39 +620,31 @@ Gui.on_click(
             end
 
             if movement_speed_gui_input and movement_speed_gui_input.valid then
-                if not player_modifiers.disabled_modifier[player.index] then
-                    player_modifiers.disabled_modifier[player.index] = {}
-                end
                 if not movement_speed_gui_input.state then
-                    player_modifiers.disabled_modifier[player.index].character_running_speed_modifier = true
+                    P.disable_single_modifier(player, 'character_running_speed_modifier', true)
                     P.update_player_modifiers(player)
                 elseif movement_speed_gui_input.state then
-                    player_modifiers.disabled_modifier[player.index].character_running_speed_modifier = false
+                    P.disable_single_modifier(player, 'character_running_speed_modifier', false)
                     P.update_player_modifiers(player)
                 end
             end
 
             if magic_pickup_gui_input and magic_pickup_gui_input.valid then
-                if not player_modifiers.disabled_modifier[player.index] then
-                    player_modifiers.disabled_modifier[player.index] = {}
-                end
                 if not magic_pickup_gui_input.state then
-                    player_modifiers.disabled_modifier[player.index].character_item_pickup_distance_bonus = true
-                    player_modifiers.disabled_modifier[player.index].character_build_distance_bonus = true
-                    player_modifiers.disabled_modifier[player.index].character_item_drop_distance_bonus = true
-                    player_modifiers.disabled_modifier[player.index].character_reach_distance_bonus = true
-                    player_modifiers.disabled_modifier[player.index].character_loot_pickup_distance_bonus = true
-                    player_modifiers.disabled_modifier[player.index].character_item_pickup_distance_bonus = true
-                    player_modifiers.disabled_modifier[player.index].character_resource_reach_distance_bonus = true
+                    P.disable_single_modifier(player, 'character_item_pickup_distance_bonus', true)
+                    P.disable_single_modifier(player, 'character_build_distance_bonus', true)
+                    P.disable_single_modifier(player, 'character_item_drop_distance_bonus', true)
+                    P.disable_single_modifier(player, 'character_reach_distance_bonus', true)
+                    P.disable_single_modifier(player, 'character_loot_pickup_distance_bonus', true)
+                    P.disable_single_modifier(player, 'character_resource_reach_distance_bonus', true)
                     P.update_player_modifiers(player)
                 elseif magic_pickup_gui_input.state then
-                    player_modifiers.disabled_modifier[player.index].character_item_pickup_distance_bonus = false
-                    player_modifiers.disabled_modifier[player.index].character_build_distance_bonus = false
-                    player_modifiers.disabled_modifier[player.index].character_item_drop_distance_bonus = false
-                    player_modifiers.disabled_modifier[player.index].character_reach_distance_bonus = false
-                    player_modifiers.disabled_modifier[player.index].character_loot_pickup_distance_bonus = false
-                    player_modifiers.disabled_modifier[player.index].character_item_pickup_distance_bonus = false
-                    player_modifiers.disabled_modifier[player.index].character_resource_reach_distance_bonus = false
+                    P.disable_single_modifier(player, 'character_item_pickup_distance_bonus', false)
+                    P.disable_single_modifier(player, 'character_build_distance_bonus', false)
+                    P.disable_single_modifier(player, 'character_item_drop_distance_bonus', false)
+                    P.disable_single_modifier(player, 'character_reach_distance_bonus', false)
+                    P.disable_single_modifier(player, 'character_loot_pickup_distance_bonus', false)
+                    P.disable_single_modifier(player, 'character_resource_reach_distance_bonus', false)
                     P.update_player_modifiers(player)
                 end
             end

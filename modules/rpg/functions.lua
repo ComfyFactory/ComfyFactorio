@@ -117,12 +117,12 @@ local function level_up(player)
         return
     end
     RPG_GUI.draw_level_text(player)
-    rpg_t[player.index].points_to_distribute = rpg_t[player.index].points_to_distribute + distribute_points_gain
+    rpg_t[player.index].points_left = rpg_t[player.index].points_left + distribute_points_gain
     if rpg_t[player.index].allocate_index ~= 1 then
         local node = rpg_t[player.index].allocate_index
         local index = names[node]:lower()
         rpg_t[player.index][index] = rpg_t[player.index][index] + distribute_points_gain
-        rpg_t[player.index].points_to_distribute = rpg_t[player.index].points_to_distribute - distribute_points_gain
+        rpg_t[player.index].points_left = rpg_t[player.index].points_left - distribute_points_gain
         if not rpg_t[player.index].reset then
             rpg_t[player.index].total = rpg_t[player.index].total + distribute_points_gain
         end
@@ -517,7 +517,7 @@ function Public.rpg_reset_player(player, one_time_reset)
             total = 0
         end
         local old_level = rpg_t[player.index].level
-        local old_points_to_distribute = rpg_t[player.index].points_to_distribute
+        local old_points_to_distribute = rpg_t[player.index].points_left
         local old_xp = rpg_t[player.index].xp
         rpg_t[player.index] = {
             level = 1,
@@ -539,7 +539,7 @@ function Public.rpg_reset_player(player, one_time_reset)
             enable_entity_spawn = false,
             health_bar = rpg_t[player.index].health_bar,
             mana_bar = rpg_t[player.index].mana_bar,
-            points_to_distribute = 0,
+            points_left = 0,
             last_floaty_text = visuals_delay,
             xp_since_last_floaty_text = 0,
             reset = true,
@@ -551,7 +551,7 @@ function Public.rpg_reset_player(player, one_time_reset)
             stone_path = false,
             one_punch = false
         }
-        rpg_t[player.index].points_to_distribute = old_points_to_distribute + total
+        rpg_t[player.index].points_left = old_points_to_distribute + total
         rpg_t[player.index].xp = old_xp
         rpg_t[player.index].level = old_level
     else
@@ -573,7 +573,7 @@ function Public.rpg_reset_player(player, one_time_reset)
             flame_boots = false,
             explosive_bullets = false,
             enable_entity_spawn = false,
-            points_to_distribute = 0,
+            points_left = 0,
             last_floaty_text = visuals_delay,
             xp_since_last_floaty_text = 0,
             reset = false,

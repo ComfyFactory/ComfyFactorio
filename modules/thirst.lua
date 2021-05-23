@@ -14,10 +14,9 @@ local function update_player_modifiers(player)
     end
 
     local m = ((global.hydration[player.index] - 100) * 0.01) + 0.2
-    local modifiers = Player_modifiers.get_table()
-    modifiers[player.index].character_mining_speed_modifier['thirst'] = m
-    modifiers[player.index].character_running_speed_modifier['thirst'] = m
-    modifiers[player.index].character_crafting_speed_modifier['thirst'] = m
+    Player_modifiers.update_single_modifier(player, 'character_mining_speed_modifier', 'thirst', m)
+    Player_modifiers.update_single_modifier(player, 'character_running_speed_modifier', 'thirst', m)
+    Player_modifiers.update_single_modifier(player, 'character_crafting_speed_modifier', 'thirst', m)
     Player_modifiers.update_player_modifiers(player)
 end
 

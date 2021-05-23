@@ -369,7 +369,7 @@ local function set_enemy_evolution()
     local threat = WD.get('threat')
     local evolution_factor = wave_number * 0.001
     local biter_h_boost = 1
-    --local damage_increase = 0
+    local enemy = game.forces.enemy
 
     if evolution_factor > 1 then
         evolution_factor = 1
@@ -383,12 +383,13 @@ local function set_enemy_evolution()
     if biter_h_boost <= 1 then
         biter_h_boost = 1
     end
-    --damage_increase = math_round(damage_increase + threat * 0.0000025, 3)
 
     BiterHealthBooster.set('biter_health_boost', biter_h_boost)
-    --game.forces.enemy.set_ammo_damage_modifier("melee", damage_increase)
-    --game.forces.enemy.set_ammo_damage_modifier("biological", damage_increase)
-    game.forces.enemy.evolution_factor = evolution_factor
+    if enemy.evolution_factor == 1 and evolution_factor == 1 then
+        return
+    end
+
+    enemy.evolution_factor = evolution_factor
 end
 
 local function can_units_spawn()
