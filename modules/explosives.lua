@@ -266,7 +266,7 @@ function Public.detonate_chest(entity)
     if not amount then
         return false
     end
-    if amount < 599 then
+    if amount < 99 then
         return false
     end
 
