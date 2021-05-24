@@ -163,8 +163,18 @@ local function on_player_respawned(event)
     Public.update_player_modifiers(game.players[event.player_index])
 end
 
+local function on_player_removed(event)
+    if this.modifiers[event.player_index] then
+        this.modifiers[event.player_index] = nil
+    end
+    if this.disabled_modifier[event.player_index] then
+        this.disabled_modifier[event.player_index] = nil
+    end
+end
+
 local Event = require 'utils.event'
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_respawned, on_player_respawned)
+Event.add(defines.events.on_player_removed, on_player_removed)
 
 return Public
