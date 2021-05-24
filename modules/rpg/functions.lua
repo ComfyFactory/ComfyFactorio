@@ -166,7 +166,9 @@ local repair_buildings =
                 rng = 0.4
             end
             local to_heal = entity.prototype.max_health * rng
-            entity.health = entity.health + to_heal
+            if entity.health and to_heal then
+                entity.health = entity.health + to_heal
+            end
         end
     end
 )
