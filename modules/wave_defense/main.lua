@@ -1,5 +1,6 @@
 local Event = require 'utils.event'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
+local Difficulty = require 'modules.difficulty_vote_by_amount'
 local BiterRolls = require 'modules.wave_defense.biter_rolls'
 local SideTargets = require 'modules.wave_defense.side_targets'
 local ThreatEvent = require 'modules.wave_defense.threat_events'
@@ -498,17 +499,6 @@ end
 local function increase_biter_damage()
     local increase_damage_per_wave = WD.get('increase_damage_per_wave')
     if not increase_damage_per_wave then
-        return
-    end
-
-    local Difficulty
-    if is_loaded('modules.difficulty_vote_by_amount') then
-        Difficulty = is_loaded('modules.difficulty_vote_by_amount')
-    elseif is_loaded('modules.difficulty_vote') then
-        Difficulty = is_loaded('modules.difficulty_vote')
-    end
-
-    if not Difficulty then
         return
     end
 

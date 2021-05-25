@@ -6,9 +6,7 @@ require 'modules.charging_station'
 
 local MapInfo = require 'modules.map_info'
 local Room_generator = require 'functions.room_generator'
-require 'modules.rpg.main'
-local RPG_F = require 'modules.rpg.functions'
-local RPG_T = require 'modules.rpg.table'
+local RPG = require 'modules.rpg.main'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local BiterRaffle = require 'functions.biter_raffle'
 local Functions = require 'maps.dungeons.functions'
@@ -263,7 +261,7 @@ local function draw_light(player)
     if not player.character then
         return
     end
-    local rpg = RPG_T.get('rpg_t')
+    local rpg = RPG.get('rpg_t')
     local magicka = rpg[player.index].magicka
     local scale = 1
     if magicka < 50 then
@@ -497,7 +495,7 @@ local function on_player_mined_entity(event)
         if size < math.abs(entity.position.y) or size < math.abs(entity.position.x) then
             entity.surface.create_entity({name = entity.name, position = entity.position})
             entity.destroy()
-            RPG_F.gain_xp(player, -10)
+            RPG.gain_xp(player, -10)
             Alert.alert_player_warning(player, 30, {'dungeons_tiered.too_small'}, {r = 0.98, g = 0.22, b = 0})
             event.buffer.clear()
             return
@@ -514,7 +512,7 @@ local function on_player_mined_entity(event)
 end
 
 local function on_entity_died(event)
-    -- local rpg_extra = RPG_T.get('rpg_extra')
+    -- local rpg_extra = RPG.get('rpg_extra')
     -- local hp_units = BiterHealthBooster.get('biter_health_boost_units')
     local entity = event.entity
     if not entity.valid then
@@ -555,7 +553,7 @@ end
 
 local function get_lowest_safe_floor(player)
     local dungeontable = DungeonsTable.get_dungeontable()
-    local rpg = RPG_T.get('rpg_t')
+    local rpg = RPG.get('rpg_t')
     local level = rpg[player.index].level
     local sizes = dungeontable.surface_size
     local safe = dungeontable.original_surface_index
@@ -574,7 +572,7 @@ end
 
 local function descend(player, button, shift)
     local dungeontable = DungeonsTable.get_dungeontable()
-    local rpg = RPG_T.get('rpg_t')
+    local rpg = RPG.get('rpg_t')
     if player.surface.index >= dungeontable.original_surface_index + 50 then
         player.print({'dungeons_tiered.max_depth'})
         return
@@ -758,7 +756,7 @@ local function transfer_signals(surface_index)
 end
 
 -- local function setup_magic()
--- 	local rpg_spells = RPG_T.get("rpg_spells")
+-- 	local rpg_spells = RPG.get("rpg_spells")
 -- end
 
 local function on_init()
@@ -820,8 +818,8 @@ local function on_init()
     for _, tech in pairs(locked_researches) do
         game.forces.player.technologies[tech].enabled = false
     end
-    RPG_T.set_surface_name('dungeons_floor')
-    local rpg_table = RPG_T.get('rpg_extra')
+    RPG.set_surface_name('dungeons_floor')
+    local rpg_table = RPG.get('rpg_extra')
     rpg_table.personal_tax_rate = 0
     -- rpg_table.enable_mana = true
     -- setup_magic()

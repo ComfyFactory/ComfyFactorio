@@ -1,5 +1,5 @@
 local Event = require 'utils.event'
-local RPG_Settings = require 'modules.rpg.table'
+local RPG = require 'modules.rpg.main'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local IC_Gui = require 'maps.mountain_fortress_v3.ic.gui'
 local IC_Minimap = require 'maps.mountain_fortress_v3.ic.minimap'
@@ -245,9 +245,9 @@ local function on_player_changed_surface(event)
         return
     end
 
-    local rpg_button = RPG_Settings.draw_main_frame_name
-    local rpg_frame = RPG_Settings.main_frame_name
-    local rpg_settings = RPG_Settings.settings_frame_name
+    local rpg_button = RPG.draw_main_frame_name
+    local rpg_frame = RPG.main_frame_name
+    local rpg_settings = RPG.settings_frame_name
     local main = WPT.get('locomotive')
     local icw_locomotive = WPT.get('icw_locomotive')
     local wagon_surface = icw_locomotive.surface
@@ -259,7 +259,7 @@ local function on_player_changed_surface(event)
     local diff = player.gui.top['difficulty_gui']
     local charging = player.gui.top['charging_station']
     local frame = player.gui.top[main_frame_name]
-    local spell_gui_frame_name = RPG_Settings.spell_gui_frame_name
+    local spell_gui_frame_name = RPG.spell_gui_frame_name
     local spell_cast_buttons = player.gui.screen[spell_gui_frame_name]
 
     if info then
@@ -352,7 +352,7 @@ local function enable_guis(event)
         return
     end
 
-    local rpg_button = RPG_Settings.draw_main_frame_name
+    local rpg_button = RPG.draw_main_frame_name
     local info = player.gui.top[main_button_name]
     local wd = player.gui.top['wave_defense']
     local rpg_b = player.gui.top[rpg_button]
@@ -405,7 +405,7 @@ function Public.update_gui(player)
     end
     local gui = player.gui.top[main_frame_name]
 
-    local rpg_extra = RPG_Settings.get('rpg_extra')
+    local rpg_extra = RPG.get('rpg_extra')
     local mined_scrap = WPT.get('mined_scrap')
     local biters_killed = WPT.get('biters_killed')
     local upgrades = WPT.get('upgrades')

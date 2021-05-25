@@ -91,10 +91,6 @@ local removeUnit =
     end
 )
 
-if is_loaded('maps.biter_hatchery.terrain') then
-    entity_types['unit-spawner'] = nil
-end
-
 local function loaded_biters(event)
     local cause = event.cause
     local entity = event.entity

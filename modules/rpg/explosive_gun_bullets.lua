@@ -1,10 +1,8 @@
-local RPG_T = require 'modules.rpg.table'
+local Public = require 'modules.rpg.table'
 local radius = 3
 local random = math.random
 local floor = math.floor
 local sqrt = math.sqrt
-
-local Public = {}
 
 local function splash_damage(surface, position, final_damage_amount)
     local create = surface.create_entity
@@ -26,7 +24,7 @@ local function splash_damage(surface, position, final_damage_amount)
 end
 
 function Public.explosive_bullets(event)
-    local is_explosive_bullets_enabled = RPG_T.get_explosive_bullets()
+    local is_explosive_bullets_enabled = Public.get_explosive_bullets()
     if not is_explosive_bullets_enabled then
         return
     end
@@ -57,8 +55,7 @@ function Public.explosive_bullets(event)
         return
     end
 
-    local player_data = RPG_T.get('rpg_t')
-    local rpg_player = player_data[p.index]
+    local rpg_player = Public.get_value_from_player(p.index)
     if not rpg_player.explosive_bullets then
         return
     end
@@ -88,5 +85,3 @@ function Public.explosive_bullets(event)
         splash_damage(surface, entity.position, event.final_damage_amount)
     end
 end
-
-return Public

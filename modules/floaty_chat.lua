@@ -25,9 +25,6 @@ local function on_console_chat(event)
     end
 
     local y_offset = -4
-    if is_loaded('modules.rpg') then
-        y_offset = -4.5
-    end
 
     if this.player_floaty_chat[player.index] then
         rendering.destroy(this.player_floaty_chat[player.index])

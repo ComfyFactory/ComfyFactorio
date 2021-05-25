@@ -1,3 +1,5 @@
+--RPG Modules
+local Public = require 'modules.rpg.core'
 local Gui = require 'utils.gui'
 local Event = require 'utils.event'
 local AntiGrief = require 'antigrief'
@@ -9,21 +11,14 @@ local Explosives = require 'modules.explosives'
 local WD = require 'modules.wave_defense.table'
 local Math2D = require 'math2d'
 
---RPG Modules
-require 'modules.rpg.commands'
-local ExplosiveBullets = require 'modules.rpg.explosive_gun_bullets'
-local RPG = require 'modules.rpg.table'
-local Functions = require 'modules.rpg.functions'
-local RPG_GUI = require 'modules.rpg.gui'
-
 --RPG Settings
-local enemy_types = RPG.enemy_types
-local die_cause = RPG.die_cause
-local points_per_level = RPG.points_per_level
-local nth_tick = RPG.nth_tick
+local enemy_types = Public.enemy_types
+local die_cause = Public.die_cause
+local points_per_level = Public.points_per_level
+local nth_tick = Public.nth_tick
 
 --RPG Frames
-local main_frame_name = RPG.main_frame_name
+local main_frame_name = Public.main_frame_name
 
 local sub = string.sub
 
@@ -50,7 +45,7 @@ local function on_gui_click(event)
         end
     end
 
-    local surface_name = RPG.get('rpg_extra').surface_name
+    local surface_name = Public.get('rpg_extra').surface_name
     if sub(player.surface.name, 0, #surface_name) ~= surface_name then
         return
     end
@@ -68,7 +63,7 @@ local function on_gui_click(event)
         return
     end
 
-    local rpg_t = RPG.get_value_from_player(player.index)
+    local rpg_t = Public.get_value_from_player(player.index)
 
     local index = element.name
     if not rpg_t[index] then
@@ -88,12 +83,12 @@ local function on_gui_click(event)
         if not rpg_t.reset then
             rpg_t.total = rpg_t.total + count
         end
-        RPG_GUI.toggle(player, true)
-        RPG_GUI.update_player_stats(player)
+        Public.toggle(player, true)
+        Public.update_player_stats(player)
     elseif event.button == defines.mouse_button_type.right then
         for _ = 1, points_per_level, 1 do
             if rpg_t.points_left <= 0 then
-                RPG_GUI.toggle(player, true)
+                Public.toggle(player, true)
                 return
             end
             rpg_t.points_left = rpg_t.points_left - 1
@@ -101,14 +96,14 @@ local function on_gui_click(event)
             if not rpg_t.reset then
                 rpg_t.total = rpg_t.total + 1
             end
-            RPG_GUI.update_player_stats(player)
+            Public.update_player_stats(player)
         end
-        RPG_GUI.toggle(player, true)
+        Public.toggle(player, true)
         return
     end
 
     if rpg_t.points_left <= 0 then
-        RPG_GUI.toggle(player, true)
+        Public.toggle(player, true)
         return
     end
     rpg_t.points_left = rpg_t.points_left - 1
@@ -116,8 +111,8 @@ local function on_gui_click(event)
     if not rpg_t.reset then
         rpg_t.total = rpg_t.total + 1
     end
-    RPG_GUI.update_player_stats(player)
-    RPG_GUI.toggle(player, true)
+    Public.update_player_stats(player)
+    Public.toggle(player, true)
 end
 
 local function train_type_cause(cause)
@@ -201,13 +196,13 @@ local function on_entity_died(event)
                     end
                 end
             end
-            Functions.gain_xp(entity.last_user, 1)
-            Functions.reward_mana(entity.last_user, 1)
+            Public.gain_xp(entity.last_user, 1)
+            Public.reward_mana(entity.last_user, 1)
             return
         end
     end
 
-    local rpg_extra = RPG.get('rpg_extra')
+    local rpg_extra = Public.get('rpg_extra')
 
     if rpg_extra.enable_wave_defense then
         if rpg_extra.rpg_xp_yield['big-biter'] <= 16 then
@@ -245,10 +240,10 @@ local function on_entity_died(event)
                 end
 
                 if rpg_extra.turret_kills_to_global_pool then
-                    Functions.add_to_global_pool(amount, false)
+                    Public.add_to_global_pool(amount, false)
                 end
             else
-                Functions.add_to_global_pool(0.5, false)
+                Public.add_to_global_pool(0.5, false)
             end
             return
         end
@@ -284,13 +279,13 @@ local function on_entity_died(event)
                             amount = rpg_extra.rpg_xp_yield[entity.name]
                         end
                         if rpg_extra.turret_kills_to_global_pool then
-                            local inserted = Functions.add_to_global_pool(amount, true)
-                            Functions.gain_xp(player, inserted, true)
+                            local inserted = Public.add_to_global_pool(amount, true)
+                            Public.gain_xp(player, inserted, true)
                         else
-                            Functions.gain_xp(player, amount)
+                            Public.gain_xp(player, amount)
                         end
                     else
-                        Functions.gain_xp(player, 0.5 * (1 / health_pool[2]))
+                        Public.gain_xp(player, 0.5 * (1 / health_pool[2]))
                     end
                 end
                 return
@@ -303,13 +298,13 @@ local function on_entity_died(event)
         if rpg_extra.rpg_xp_yield[entity.name] then
             local amount = rpg_extra.rpg_xp_yield[entity.name]
             if rpg_extra.turret_kills_to_global_pool then
-                local inserted = Functions.add_to_global_pool(amount, true)
-                Functions.gain_xp(player, inserted, true)
+                local inserted = Public.add_to_global_pool(amount, true)
+                Public.gain_xp(player, inserted, true)
             else
-                Functions.gain_xp(player, amount)
+                Public.gain_xp(player, amount)
             end
         else
-            Functions.gain_xp(player, 0.5)
+            Public.gain_xp(player, 0.5)
         end
     end
 end
@@ -317,7 +312,7 @@ end
 local function regen_health_player(players)
     for i = 1, #players do
         local player = players[i]
-        local heal_per_tick = Functions.get_heal_modifier(player)
+        local heal_per_tick = Public.get_heal_modifier(player)
         if heal_per_tick <= 0 then
             goto continue
         end
@@ -330,16 +325,16 @@ local function regen_health_player(players)
 
         ::continue::
 
-        Functions.update_health(player)
+        Public.update_health(player)
     end
 end
 
 local function regen_mana_player(players)
     for i = 1, #players do
         local player = players[i]
-        local mana_per_tick = Functions.get_mana_modifier(player)
-        local rpg_extra = RPG.get('rpg_extra')
-        local rpg_t = RPG.get_value_from_player(player.index)
+        local mana_per_tick = Public.get_mana_modifier(player)
+        local rpg_extra = Public.get('rpg_extra')
+        local rpg_t = Public.get_value_from_player(player.index)
         if mana_per_tick <= 0.1 then
             mana_per_tick = rpg_extra.mana_per_tick
         end
@@ -366,12 +361,16 @@ local function regen_mana_player(players)
 
         ::continue::
 
-        Functions.update_mana(player)
+        Public.update_mana(player)
     end
 end
 
 local function give_player_flameboots(player)
-    local rpg_t = RPG.get_value_from_player(player.index)
+    local rpg_t = Public.get_value_from_player(player.index)
+    if not rpg_t then
+        return
+    end
+
     if not rpg_t.flame_boots then
         return
     end
@@ -531,9 +530,9 @@ local function on_entity_damaged(event)
         cause.get_inventory(defines.inventory.character_ammo)[cause.selected_gun_index].valid_for_read or
             cause.get_inventory(defines.inventory.character_guns)[cause.selected_gun_index].valid_for_read
      then
-        local is_explosive_bullets_enabled = RPG.get_explosive_bullets()
+        local is_explosive_bullets_enabled = Public.get_explosive_bullets()
         if is_explosive_bullets_enabled then
-            ExplosiveBullets.explosive_bullets(event)
+            Public.explosive_bullets(event)
         end
         return
     end
@@ -543,7 +542,7 @@ local function on_entity_damaged(event)
 
     local p = cause.player
 
-    local surface_name = RPG.get('rpg_extra').surface_name
+    local surface_name = Public.get('rpg_extra').surface_name
     if sub(p.surface.name, 0, #surface_name) ~= surface_name then
         return
     end
@@ -571,13 +570,13 @@ local function on_entity_damaged(event)
         end
     end
 
-    Functions.reward_mana(cause.player, 2)
+    Public.reward_mana(cause.player, 2)
 
     --Grant the player life-on-hit.
-    cause.health = cause.health + Functions.get_life_on_hit(cause.player)
+    cause.health = cause.health + Public.get_life_on_hit(cause.player)
 
     --Calculate modified damage.
-    local damage = event.original_damage_amount + event.original_damage_amount * Functions.get_melee_modifier(cause.player)
+    local damage = event.original_damage_amount + event.original_damage_amount * Public.get_melee_modifier(cause.player)
     if entity.prototype.resistances then
         if entity.prototype.resistances.physical then
             damage = damage - entity.prototype.resistances.physical.decrease
@@ -589,13 +588,13 @@ local function on_entity_damaged(event)
         damage = 1
     end
 
-    local enable_one_punch = RPG.get('rpg_extra').enable_one_punch
-    local rpg_t = RPG.get_value_from_player(cause.player.index)
+    local enable_one_punch = Public.get('rpg_extra').enable_one_punch
+    local rpg_t = Public.get_value_from_player(cause.player.index)
 
     --Cause a one punch.
     if enable_one_punch then
         if rpg_t.one_punch then
-            if math.random(0, 999) < Functions.get_one_punch_chance(cause.player) * 10 then
+            if math.random(0, 999) < Public.get_one_punch_chance(cause.player) * 10 then
                 one_punch(cause, entity, damage)
                 if entity.valid then
                     entity.die(entity.force.name, cause)
@@ -662,9 +661,9 @@ local function on_entity_damaged(event)
         entity.die(cause.force.name, cause)
     end
 
-    local is_explosive_bullets_enabled = RPG.get_explosive_bullets()
+    local is_explosive_bullets_enabled = Public.get_explosive_bullets()
     if is_explosive_bullets_enabled then
-        ExplosiveBullets.explosive_bullets(event)
+        Public.explosive_bullets(event)
     end
 end
 
@@ -693,10 +692,10 @@ local function on_player_repaired_entity(event)
         return
     end
 
-    Functions.gain_xp(player, 0.05)
-    Functions.reward_mana(player, 0.2)
+    Public.gain_xp(player, 0.05)
+    Public.reward_mana(player, 0.2)
 
-    local repair_speed = Functions.get_magicka(player)
+    local repair_speed = Public.get_magicka(player)
     if repair_speed <= 0 then
         return
     end
@@ -713,12 +712,12 @@ local function on_player_rotated_entity(event)
         return
     end
 
-    local rpg_t = RPG.get_value_from_player(player.index)
+    local rpg_t = Public.get_value_from_player(player.index)
     if rpg_t.rotated_entity_delay > game.tick then
         return
     end
     rpg_t.rotated_entity_delay = game.tick + 20
-    Functions.gain_xp(player, 0.20)
+    Public.gain_xp(player, 0.20)
 end
 
 local function on_player_changed_position(event)
@@ -727,7 +726,7 @@ local function on_player_changed_position(event)
         return
     end
 
-    local enable_flame_boots = RPG.get('rpg_extra').enable_flame_boots
+    local enable_flame_boots = Public.get('rpg_extra').enable_flame_boots
 
     if enable_flame_boots then
         give_player_flameboots(player)
@@ -742,7 +741,7 @@ local function on_player_changed_position(event)
     if player.character.driving then
         return
     end
-    Functions.gain_xp(player, 1.0)
+    Public.gain_xp(player, 1.0)
 end
 
 local building_and_mining_blacklist = {
@@ -758,7 +757,7 @@ local function on_player_died(event)
         return
     end
 
-    RPG_GUI.remove_frame(player)
+    Public.remove_frame(player)
 end
 
 local function on_pre_player_left_game(event)
@@ -768,7 +767,7 @@ local function on_pre_player_left_game(event)
         return
     end
 
-    RPG_GUI.remove_frame(player)
+    Public.remove_frame(player)
 end
 
 local function on_pre_player_mined_item(event)
@@ -788,12 +787,12 @@ local function on_pre_player_mined_item(event)
         return
     end
 
-    local surface_name = RPG.get('rpg_extra').surface_name
+    local surface_name = Public.get('rpg_extra').surface_name
     if sub(player.surface.name, 0, #surface_name) ~= surface_name then
         return
     end
 
-    local rpg_t = RPG.get_value_from_player(player.index)
+    local rpg_t = Public.get_value_from_player(player.index)
     if rpg_t.last_mined_entity_position.x == event.entity.position.x and rpg_t.last_mined_entity_position.y == event.entity.position.y then
         return
     end
@@ -817,8 +816,8 @@ local function on_pre_player_mined_item(event)
         end
     end
 
-    Functions.gain_xp(player, xp_amount)
-    Functions.reward_mana(player, 0.5 * distance_multiplier)
+    Public.gain_xp(player, xp_amount)
+    Public.reward_mana(player, 0.5 * distance_multiplier)
 end
 
 local function on_player_crafted_item(event)
@@ -834,7 +833,7 @@ local function on_player_crafted_item(event)
         return
     end
 
-    local rpg_extra = RPG.get('rpg_extra')
+    local rpg_extra = Public.get('rpg_extra')
     local is_blacklisted = rpg_extra.tweaked_crafting_items
     local tweaked_crafting_items_enabled = rpg_extra.tweaked_crafting_items_enabled
 
@@ -850,41 +849,41 @@ local function on_player_crafted_item(event)
         end
     end
 
-    Functions.gain_xp(player, event.recipe.energy * amount)
-    Functions.reward_mana(player, amount)
+    Public.gain_xp(player, event.recipe.energy * amount)
+    Public.reward_mana(player, amount)
 end
 
 local function on_player_respawned(event)
     local player = game.players[event.player_index]
-    local rpg_t = RPG.get_value_from_player(player.index)
+    local rpg_t = Public.get_value_from_player(player.index)
     if not rpg_t then
-        Functions.rpg_reset_player(player)
+        Public.rpg_reset_player(player)
         return
     end
-    RPG_GUI.update_player_stats(player)
-    RPG_GUI.draw_level_text(player)
-    Functions.update_health(player)
-    Functions.update_mana(player)
+    Public.update_player_stats(player)
+    Public.draw_level_text(player)
+    Public.update_health(player)
+    Public.update_mana(player)
 end
 
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
-    local rpg_t = RPG.get_value_from_player(player.index)
-    local rpg_extra = RPG.get('rpg_extra')
+    local rpg_t = Public.get_value_from_player(player.index)
+    local rpg_extra = Public.get('rpg_extra')
     if not rpg_t then
-        Functions.rpg_reset_player(player)
+        Public.rpg_reset_player(player)
         if rpg_extra.reward_new_players > 10 then
-            Functions.gain_xp(player, rpg_extra.reward_new_players)
+            Public.gain_xp(player, rpg_extra.reward_new_players)
         end
     end
     for _, p in pairs(game.connected_players) do
-        RPG_GUI.draw_level_text(p)
+        Public.draw_level_text(p)
     end
-    RPG_GUI.draw_gui_char_button(player)
+    Public.draw_gui_char_button(player)
     if not player.character then
         return
     end
-    RPG_GUI.update_player_stats(player)
+    Public.update_player_stats(player)
 end
 
 local function create_projectile(surface, name, position, force, target, max_range)
@@ -985,14 +984,14 @@ local function tame_unit_effects(player, entity)
 end
 
 local function on_player_used_capsule(event)
-    local enable_mana = RPG.get('rpg_extra').enable_mana
-    local surface_name = RPG.get('rpg_extra').surface_name
+    local enable_mana = Public.get('rpg_extra').enable_mana
+    local surface_name = Public.get('rpg_extra').surface_name
     if not enable_mana then
         return
     end
 
-    local conjure_items = RPG.get_spells()
-    local projectile_types = RPG.get_projectiles
+    local conjure_items = Public.get_spells()
+    local projectile_types = Public.get_projectiles
 
     local player = game.players[event.player_index]
     if not player or not player.valid then
@@ -1019,7 +1018,7 @@ local function on_player_used_capsule(event)
         return
     end
 
-    local rpg_t = RPG.get_value_from_player(player.index)
+    local rpg_t = Public.get_value_from_player(player.index)
 
     if not rpg_t.enable_entity_spawn then
         return
@@ -1092,11 +1091,11 @@ local function on_player_used_capsule(event)
         force = 'player'
     end
     if obj_name == 'suicidal_comfylatron' then
-        Functions.suicidal_comfylatron(position, surface)
+        Public.suicidal_comfylatron(position, surface)
         p(({'rpg_main.suicidal_comfylatron', 'Suicidal Comfylatron'}), Color.success)
         rpg_t.mana = rpg_t.mana - object.mana_cost
     elseif obj_name == 'repair_aoe' then
-        local ents = Functions.repair_aoe(player, position)
+        local ents = Public.repair_aoe(player, position)
         p(({'rpg_main.repair_aoe', ents}), Color.success)
         rpg_t.mana = rpg_t.mana - object.mana_cost
     elseif obj_name == 'pointy_explosives' then
@@ -1118,7 +1117,7 @@ local function on_player_used_capsule(event)
     elseif obj_name == 'warp-gate' then
         player.teleport(surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5), surface)
         rpg_t.mana = 0
-        Functions.damage_player_over_time(player, math.random(8, 16))
+        Public.damage_player_over_time(player, math.random(8, 16))
         player.play_sound {path = 'utility/armor_insert', volume_modifier = 1}
         p(({'rpg_main.warped_ok'}), Color.info)
         rpg_t.mana = rpg_t.mana - object.mana_cost
@@ -1179,14 +1178,14 @@ local function on_player_used_capsule(event)
     local msg = player.name .. ' casted ' .. obj_name .. '. '
 
     rpg_t.last_spawned = game.tick + object.tick
-    Functions.update_mana(player)
+    Public.update_mana(player)
 
     local reward_xp = object.mana_cost * 0.085
     if reward_xp < 1 then
         reward_xp = 1
     end
 
-    Functions.gain_xp(player, reward_xp)
+    Public.gain_xp(player, reward_xp)
 
     AntiGrief.insert_into_capsule_history(player, position, msg)
 
@@ -1195,18 +1194,22 @@ end
 
 local function on_player_changed_surface(event)
     local player = game.get_player(event.player_index)
-    RPG_GUI.draw_level_text(player)
+    Public.draw_level_text(player)
+end
+
+local function on_player_removed(event)
+    Public.remove_player(event.player_index)
 end
 
 local function tick()
     local ticker = game.tick
     local count = #game.connected_players
     local players = game.connected_players
-    local enable_flameboots = RPG.get('rpg_extra').enable_flameboots
-    local enable_mana = RPG.get('rpg_extra').enable_mana
+    local enable_flameboots = Public.get('rpg_extra').enable_flameboots
+    local enable_mana = Public.get('rpg_extra').enable_mana
 
     if ticker % nth_tick == 0 then
-        Functions.global_pool(players, count)
+        Public.global_pool(players, count)
     end
 
     if ticker % 30 == 0 then
@@ -1240,7 +1243,7 @@ if _DEBUG then
                         return
                     end
                     p('Distributed ' .. param .. ' of xp.')
-                    Functions.give_xp(param)
+                    Public.give_xp(param)
                 end
             end
         end
@@ -1255,10 +1258,14 @@ Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)
 Event.add(defines.events.on_player_crafted_item, on_player_crafted_item)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_player_created, on_player_joined_game)
 Event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)
 Event.add(defines.events.on_player_respawned, on_player_respawned)
 Event.add(defines.events.on_player_rotated_entity, on_player_rotated_entity)
 Event.add(defines.events.on_pre_player_mined_item, on_pre_player_mined_item)
 Event.add(defines.events.on_player_used_capsule, on_player_used_capsule)
 Event.add(defines.events.on_player_changed_surface, on_player_changed_surface)
+Event.add(defines.events.on_player_removed, on_player_removed)
 Event.on_nth_tick(10, tick)
+
+return Public

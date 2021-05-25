@@ -22,7 +22,7 @@ local function jail(player, source_player)
     if player.name == source_player.name then
         return player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
     end
-    Jailed.try_ul_data(player.name, true, source_player.name)
+    Jailed.try_ul_data(player.name, true, source_player.name, 'Jailed by script!')
 end
 
 local function free(player, source_player)

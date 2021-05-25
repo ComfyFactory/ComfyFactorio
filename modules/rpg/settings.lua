@@ -1,18 +1,18 @@
-local RPG = require 'modules.rpg.table'
+local Public = require 'modules.rpg.table'
 local Gui = require 'utils.gui'
 local P = require 'player_modifiers'
 local Session = require 'utils.datastore.session_data'
 
-local Public = {}
+local settings_frame_name = Public.settings_frame_name
+local save_button_name = Public.save_button_name
+local discard_button_name = Public.discard_button_name
+local spell_gui_button_name = Public.spell_gui_button_name
+local spell_gui_frame_name = Public.spell_gui_frame_name
+local spell1_button_name = Public.spell1_button_name
+local spell2_button_name = Public.spell2_button_name
+local spell3_button_name = Public.spell3_button_name
 
-local settings_frame_name = RPG.settings_frame_name
-local save_button_name = RPG.save_button_name
-local discard_button_name = RPG.discard_button_name
-local spell_gui_button_name = RPG.spell_gui_button_name
-local spell_gui_frame_name = RPG.spell_gui_frame_name
-local spell1_button_name = RPG.spell1_button_name
-local spell2_button_name = RPG.spell2_button_name
-local spell3_button_name = RPG.spell3_button_name
+local settings_level = Public.gui_settings_levels
 
 local function create_input_element(frame, type, value, items, index)
     if type == 'slider' then
@@ -28,8 +28,8 @@ local function create_input_element(frame, type, value, items, index)
 end
 
 function Public.update_spell_gui(player, spell_index)
-    local rpg_t = RPG.get('rpg_t')
-    local spells, names = RPG.rebuild_spells()
+    local rpg_t = Public.get_value_from_player(player.index)
+    local spells, names = Public.rebuild_spells()
     local main_frame = player.gui.screen[spell_gui_frame_name]
     if not main_frame then
         return
@@ -37,48 +37,48 @@ function Public.update_spell_gui(player, spell_index)
     local spell_table = main_frame['spell_table']
     if spell_index then
         if spell_index == 1 then
-            rpg_t[player.index].dropdown_select_index = rpg_t[player.index].dropdown_select_index1
+            rpg_t.dropdown_select_index = rpg_t.dropdown_select_index1
         elseif spell_index == 2 then
-            rpg_t[player.index].dropdown_select_index = rpg_t[player.index].dropdown_select_index2
+            rpg_t.dropdown_select_index = rpg_t.dropdown_select_index2
         elseif spell_index == 3 then
-            rpg_t[player.index].dropdown_select_index = rpg_t[player.index].dropdown_select_index3
+            rpg_t.dropdown_select_index = rpg_t.dropdown_select_index3
         end
     end
-    spell_table[spell1_button_name].tooltip = names[rpg_t[player.index].dropdown_select_index1] or '---'
-    spell_table[spell1_button_name].sprite = spells[rpg_t[player.index].dropdown_select_index1].sprite
-    spell_table[spell2_button_name].tooltip = names[rpg_t[player.index].dropdown_select_index2] or '---'
-    spell_table[spell2_button_name].sprite = spells[rpg_t[player.index].dropdown_select_index2].sprite
-    spell_table[spell3_button_name].tooltip = names[rpg_t[player.index].dropdown_select_index3] or '---'
-    spell_table[spell3_button_name].sprite = spells[rpg_t[player.index].dropdown_select_index3].sprite
-    if rpg_t[player.index].dropdown_select_index1 == rpg_t[player.index].dropdown_select_index then
+    spell_table[spell1_button_name].tooltip = names[rpg_t.dropdown_select_index1] or '---'
+    spell_table[spell1_button_name].sprite = spells[rpg_t.dropdown_select_index1].sprite
+    spell_table[spell2_button_name].tooltip = names[rpg_t.dropdown_select_index2] or '---'
+    spell_table[spell2_button_name].sprite = spells[rpg_t.dropdown_select_index2].sprite
+    spell_table[spell3_button_name].tooltip = names[rpg_t.dropdown_select_index3] or '---'
+    spell_table[spell3_button_name].sprite = spells[rpg_t.dropdown_select_index3].sprite
+    if rpg_t.dropdown_select_index1 == rpg_t.dropdown_select_index then
         spell_table[spell1_button_name].enabled = false
         spell_table[spell1_button_name].number = 1
     else
         spell_table[spell1_button_name].enabled = true
         spell_table[spell1_button_name].number = nil
     end
-    if rpg_t[player.index].dropdown_select_index2 == rpg_t[player.index].dropdown_select_index then
+    if rpg_t.dropdown_select_index2 == rpg_t.dropdown_select_index then
         spell_table[spell2_button_name].enabled = false
         spell_table[spell2_button_name].number = 1
     else
         spell_table[spell2_button_name].enabled = true
         spell_table[spell2_button_name].number = nil
     end
-    if rpg_t[player.index].dropdown_select_index3 == rpg_t[player.index].dropdown_select_index then
+    if rpg_t.dropdown_select_index3 == rpg_t.dropdown_select_index then
         spell_table[spell3_button_name].enabled = false
         spell_table[spell3_button_name].number = 1
     else
         spell_table[spell3_button_name].enabled = true
         spell_table[spell3_button_name].number = nil
     end
-    spell_table['mana-cost'].caption = spells[rpg_t[player.index].dropdown_select_index].mana_cost
-    spell_table['mana'].caption = math.floor(rpg_t[player.index].mana)
-    spell_table['maxmana'].caption = math.floor(rpg_t[player.index].mana_max)
+    spell_table['mana-cost'].caption = spells[rpg_t.dropdown_select_index].mana_cost
+    spell_table['mana'].caption = math.floor(rpg_t.mana)
+    spell_table['maxmana'].caption = math.floor(rpg_t.mana_max)
 end
 
 function Public.spell_gui_settings(player)
-    local rpg_t = RPG.get('rpg_t')
-    local spells, names = RPG.rebuild_spells()
+    local rpg_t = Public.get_value_from_player(player.index)
+    local spells, names = Public.rebuild_spells()
     local main_frame = player.gui.screen[spell_gui_frame_name]
     if not main_frame or not main_frame.valid then
         main_frame =
@@ -95,25 +95,25 @@ function Public.spell_gui_settings(player)
         table.add(
             {
                 type = 'sprite-button',
-                sprite = spells[rpg_t[player.index].dropdown_select_index1].sprite,
+                sprite = spells[rpg_t.dropdown_select_index1].sprite,
                 name = spell1_button_name,
-                tooltip = names[rpg_t[player.index].dropdown_select_index1] or '---'
+                tooltip = names[rpg_t.dropdown_select_index1] or '---'
             }
         )
         table.add(
             {
                 type = 'sprite-button',
-                sprite = spells[rpg_t[player.index].dropdown_select_index2].sprite,
+                sprite = spells[rpg_t.dropdown_select_index2].sprite,
                 name = spell2_button_name,
-                tooltip = names[rpg_t[player.index].dropdown_select_index2] or '---'
+                tooltip = names[rpg_t.dropdown_select_index2] or '---'
             }
         )
         table.add(
             {
                 type = 'sprite-button',
-                sprite = spells[rpg_t[player.index].dropdown_select_index3].sprite,
+                sprite = spells[rpg_t.dropdown_select_index3].sprite,
                 name = spell3_button_name,
-                tooltip = names[rpg_t[player.index].dropdown_select_index3] or '---'
+                tooltip = names[rpg_t.dropdown_select_index3] or '---'
             }
         )
         local b1 = table.add({type = 'sprite-button', name = 'mana-cost', tooltip = {'rpg_settings.mana_cost'}, caption = 0})
@@ -129,8 +129,8 @@ function Public.spell_gui_settings(player)
 end
 
 function Public.extra_settings(player)
-    local rpg_extra = RPG.get('rpg_extra')
-    local rpg_t = RPG.get('rpg_t')
+    local rpg_extra = Public.get('rpg_extra')
+    local rpg_t = Public.get_value_from_player(player.index)
     local trusted = Session.get_trusted_table()
     local main_frame =
         player.gui.screen.add(
@@ -195,7 +195,7 @@ function Public.extra_settings(player)
         local input_style = health_bar_input.style
         input_style.height = 35
         input_style.vertical_align = 'center'
-        health_bar_gui_input = create_input_element(health_bar_input, 'boolean', rpg_t[player.index].show_bars)
+        health_bar_gui_input = create_input_element(health_bar_input, 'boolean', rpg_t.show_bars)
         health_bar_gui_input.tooltip = ({'rpg_settings.tooltip_check'})
         if not rpg_extra.enable_mana then
             health_bar_label.caption = ({'rpg_settings.health_only_text_label'})
@@ -222,13 +222,13 @@ function Public.extra_settings(player)
     reset_input_style.vertical_align = 'center'
     local reset_gui_input = create_input_element(reset_input, 'boolean', false)
 
-    if not rpg_t[player.index].reset then
+    if not rpg_t.reset then
         if not trusted[player.name] then
             reset_gui_input.enabled = false
             reset_gui_input.tooltip = ({'rpg_settings.not_trusted'})
             goto continue
         end
-        if rpg_t[player.index].level < 50 then
+        if rpg_t.level < settings_level['reset_text_label'] then
             reset_gui_input.enabled = false
             reset_gui_input.tooltip = ({'rpg_settings.low_level', 50})
             reset_label.tooltip = ({'rpg_settings.low_level', 50})
@@ -330,14 +330,14 @@ function Public.extra_settings(player)
         stone_path_input_style.height = 35
         stone_path_input_style.vertical_align = 'center'
         local stone_path
-        if rpg_t[player.index].stone_path then
-            stone_path = rpg_t[player.index].stone_path
+        if rpg_t.stone_path then
+            stone_path = rpg_t.stone_path
         else
             stone_path = false
         end
         stone_path_gui_input = create_input_element(stone_path_input, 'boolean', stone_path)
 
-        if rpg_t[player.index].level < 20 then
+        if rpg_t.level < settings_level['stone_path_label'] then
             stone_path_gui_input.enabled = false
             stone_path_gui_input.tooltip = ({'rpg_settings.low_level', 20})
             stone_path_label.tooltip = ({'rpg_settings.low_level', 20})
@@ -367,8 +367,8 @@ function Public.extra_settings(player)
         one_punch_input_style.height = 35
         one_punch_input_style.vertical_align = 'center'
         local one_punch
-        if rpg_t[player.index].one_punch then
-            one_punch = rpg_t[player.index].one_punch
+        if rpg_t.one_punch then
+            one_punch = rpg_t.one_punch
         else
             one_punch = false
         end
@@ -379,7 +379,7 @@ function Public.extra_settings(player)
             one_punch_gui_input.enabled = false
             one_punch_gui_input.tooltip = ({'rpg_settings.one_punch_globally'})
         else
-            if rpg_t[player.index].level < 30 then
+            if rpg_t.level < settings_level['one_punch_label'] then
                 one_punch_gui_input.enabled = false
                 one_punch_gui_input.tooltip = ({'rpg_settings.low_level', 30})
             else
@@ -409,15 +409,15 @@ function Public.extra_settings(player)
         flame_boots_input_style.height = 35
         flame_boots_input_style.vertical_align = 'center'
         local flame_mod
-        if rpg_t[player.index].flame_boots then
-            flame_mod = rpg_t[player.index].flame_boots
+        if rpg_t.flame_boots then
+            flame_mod = rpg_t.flame_boots
         else
             flame_mod = false
         end
         flame_boots_gui_input = create_input_element(flame_boots_input, 'boolean', flame_mod)
 
-        if rpg_t[player.index].mana > 50 then
-            if rpg_t[player.index].level < 100 then
+        if rpg_t.mana > 50 then
+            if rpg_t.level < settings_level['flameboots_label'] then
                 flame_boots_gui_input.enabled = false
                 flame_boots_gui_input.tooltip = ({'rpg_settings.low_level', 100})
                 flame_boots_label.tooltip = ({'rpg_settings.low_level', 100})
@@ -451,14 +451,14 @@ function Public.extra_settings(player)
         explosive_bullet_input_style.height = 35
         explosive_bullet_input_style.vertical_align = 'center'
         local explosive_bullets
-        if rpg_t[player.index].explosive_bullets then
-            explosive_bullets = rpg_t[player.index].explosive_bullets
+        if rpg_t.explosive_bullets then
+            explosive_bullets = rpg_t.explosive_bullets
         else
             explosive_bullets = false
         end
         explosive_bullets_gui_input = create_input_element(explosive_bullet_input, 'boolean', explosive_bullets)
 
-        if rpg_t[player.index].level < 50 then
+        if rpg_t.level < settings_level['explosive_bullets_label'] then
             explosive_bullets_gui_input.enabled = false
             explosive_bullets_gui_input.tooltip = ({'rpg_settings.low_level', 50})
             explosive_bullets_label.tooltip = ({'rpg_settings.low_level', 50})
@@ -513,8 +513,8 @@ function Public.extra_settings(player)
         entity_input_style.vertical_align = 'center'
         entity_input_style.horizontal_align = 'right'
         local entity_mod
-        if rpg_t[player.index].enable_entity_spawn then
-            entity_mod = rpg_t[player.index].enable_entity_spawn
+        if rpg_t.enable_entity_spawn then
+            entity_mod = rpg_t.enable_entity_spawn
         else
             entity_mod = false
         end
@@ -537,7 +537,7 @@ function Public.extra_settings(player)
             }
         )
 
-        local spells, names = RPG.rebuild_spells()
+        local spells, names = Public.rebuild_spells()
 
         local conjure_label_style = conjure_label.style
         conjure_label_style.horizontally_stretchable = true
@@ -548,7 +548,7 @@ function Public.extra_settings(player)
         local conjure_input_style = conjure_input.style
         conjure_input_style.height = 35
         conjure_input_style.vertical_align = 'center'
-        conjure_gui_input = create_input_element(conjure_input, 'dropdown', false, names, rpg_t[player.index].dropdown_select_index)
+        conjure_gui_input = create_input_element(conjure_input, 'dropdown', false, names, rpg_t.dropdown_select_index)
 
         for _, entity in pairs(spells) do
             if entity.type == 'item' then
@@ -577,23 +577,23 @@ function Public.extra_settings(player)
                 })
             end
         end
-        if not spells[rpg_t[player.index].dropdown_select_index1] then
-            rpg_t[player.index].dropdown_select_index1 = 1
+        if not spells[rpg_t.dropdown_select_index1] then
+            rpg_t.dropdown_select_index1 = 1
         end
-        if not spells[rpg_t[player.index].dropdown_select_index2] then
-            rpg_t[player.index].dropdown_select_index2 = 1
+        if not spells[rpg_t.dropdown_select_index2] then
+            rpg_t.dropdown_select_index2 = 1
         end
-        if not spells[rpg_t[player.index].dropdown_select_index3] then
-            rpg_t[player.index].dropdown_select_index3 = 1
+        if not spells[rpg_t.dropdown_select_index3] then
+            rpg_t.dropdown_select_index3 = 1
         end
 
         mana_frame.add({type = 'label', caption = {'rpg_settings.spell_gui_setup'}, tooltip = {'rpg_settings.spell_gui_tooltip'}})
         local spell_grid = mana_frame.add({type = 'table', column_count = 4, name = 'spell_grid_table'})
-        spell_gui_input1 = create_input_element(spell_grid, 'dropdown', false, names, rpg_t[player.index].dropdown_select_index1)
+        spell_gui_input1 = create_input_element(spell_grid, 'dropdown', false, names, rpg_t.dropdown_select_index1)
         spell_gui_input1.style.maximal_width = 135
-        spell_gui_input2 = create_input_element(spell_grid, 'dropdown', false, names, rpg_t[player.index].dropdown_select_index2)
+        spell_gui_input2 = create_input_element(spell_grid, 'dropdown', false, names, rpg_t.dropdown_select_index2)
         spell_gui_input2.style.maximal_width = 135
-        spell_gui_input3 = create_input_element(spell_grid, 'dropdown', false, names, rpg_t[player.index].dropdown_select_index3)
+        spell_gui_input3 = create_input_element(spell_grid, 'dropdown', false, names, rpg_t.dropdown_select_index3)
         spell_gui_input3.style.maximal_width = 135
         spell_grid.add({type = 'sprite-button', name = spell_gui_button_name, sprite = 'item/raw-fish'})
     end
@@ -631,7 +631,7 @@ function Public.extra_settings(player)
         )
         allocate_label.tooltip = ({'rpg_settings.allocation_tooltip'})
 
-        local names = RPG.auto_allocate_nodes
+        local names = Public.auto_allocate_nodes
 
         local allocate_label_style = allocate_label.style
         allocate_label_style.horizontally_stretchable = true
@@ -642,7 +642,7 @@ function Public.extra_settings(player)
         local name_input_style = name_input.style
         name_input_style.height = 35
         name_input_style.vertical_align = 'center'
-        auto_allocate_gui_input = create_input_element(name_input, 'dropdown', false, names, rpg_t[player.index].allocate_index)
+        auto_allocate_gui_input = create_input_element(name_input, 'dropdown', false, names, rpg_t.allocate_index)
     end
 
     local data = {
@@ -702,5 +702,3 @@ function Public.extra_settings(player)
 
     player.opened = main_frame
 end
-
-return Public

@@ -6,11 +6,13 @@ local Tabs = require 'comfy_panel.main'
 local Event = require 'utils.event'
 
 local Public = {}
+local insert = table.insert
 
 --! Gui Frames
 local save_add_player_button_name = Gui.uid_name()
 local save_transfer_car_button_name = Gui.uid_name()
 local discard_add_player_button_name = Gui.uid_name()
+local transfer_player_select_name = Gui.uid_name()
 local discard_transfer_car_button_name = Gui.uid_name()
 local main_frame_name = Gui.uid_name()
 local draw_add_player_frame_name = Gui.uid_name()
@@ -55,6 +57,28 @@ local function does_player_table_exist(player)
     end
 end
 
+local function get_players(player, frame, all)
+    local tbl = {}
+    local players = game.connected_players
+    local trust_system = create_player_table(player)
+
+    for _, p in pairs(players) do
+        if next(trust_system.players) and not all then
+            if not trust_system.players[p.name] then
+                insert(tbl, tostring(p.name))
+            end
+        else
+            insert(tbl, tostring(p.name))
+        end
+    end
+    insert(tbl, 'Select Player')
+
+    local selected_index = #tbl
+
+    local f = frame.add({type = 'drop-down', name = transfer_player_select_name, items = tbl, selected_index = selected_index})
+    return f
+end
+
 local function transfer_player_table(player, new_player)
     local trust_system = ICT.get('trust_system')
     if not trust_system[player.index] then
@@ -69,8 +93,8 @@ local function transfer_player_table(player, new_player)
         trust_system[new_player.index] = trust_system[player.index]
         local name = new_player.name
 
-        if not trust_system[new_player.index][name] then
-            increment(trust_system[new_player.index], name)
+        if not trust_system[new_player.index].players[name] then
+            increment(trust_system[new_player.index].players, name)
         end
 
         local cars = ICT.get('cars')
@@ -101,7 +125,7 @@ local function remove_main_frame(main_frame)
     main_frame.destroy()
 end
 
-local function draw_add_player(frame)
+local function draw_add_player(player, frame)
     local main_frame =
         frame.add(
         {
@@ -127,8 +151,7 @@ local function draw_add_player(frame)
     inside_table_style.bottom_padding = 10
     inside_table_style.width = 325
 
-    local add_player_frame = main_frame.add({type = 'textfield', text = 'Name of the player.'})
-    add_player_frame.style.width = 140
+    local add_player_frame = get_players(player, main_frame)
 
     local bottom_flow = main_frame.add({type = 'flow', direction = 'horizontal'})
 
@@ -150,7 +173,7 @@ local function draw_add_player(frame)
     Gui.set_data(save_button, add_player_frame)
 end
 
-local function draw_transfer_car(frame)
+local function draw_transfer_car(player, frame)
     local main_frame =
         frame.add(
         {
@@ -178,8 +201,7 @@ local function draw_transfer_car(frame)
 
     local transfer_car_alert_frame = main_frame.add({type = 'label', caption = "Warning, this action can't be undone!"})
     transfer_car_alert_frame.style.font_color = {r = 255, g = 0, b = 0}
-    local transfer_car_frame = main_frame.add({type = 'textfield', text = 'Name of the player.'})
-    transfer_car_frame.style.width = 140
+    local transfer_car_frame = get_players(player, main_frame, true)
 
     local bottom_flow = main_frame.add({type = 'flow', direction = 'horizontal'})
 
@@ -432,7 +454,7 @@ Gui.on_click(
         end
         local player_frame = frame[draw_add_player_frame_name]
         if not player_frame or not player_frame.valid then
-            draw_add_player(frame)
+            draw_add_player(player, frame)
         else
             player_frame.destroy()
         end
@@ -454,7 +476,7 @@ Gui.on_click(
         end
         local player_frame = frame[draw_transfer_car_frame_name]
         if not player_frame or not player_frame.valid then
-            draw_transfer_car(frame)
+            draw_transfer_car(player, frame)
         else
             player_frame.destroy()
         end
@@ -477,10 +499,10 @@ Gui.on_click(
         if frame and frame.valid then
             if player_list.allow_anyone == 'right' then
                 player_list.allow_anyone = 'left'
-                player.print('Everyone is allowed to enter your car!', Color.warning)
+                player.print('[IC] Everyone is allowed to enter your car!', Color.warning)
             else
                 player_list.allow_anyone = 'right'
-                player.print('Everyone is disallowed to enter your car except your trusted list!', Color.warning)
+                player.print('[IC] Everyone is disallowed to enter your car except your trusted list!', Color.warning)
             end
 
             if player.gui.screen[main_frame_name] then
@@ -505,24 +527,26 @@ Gui.on_click(
         local add_player_frame = Gui.get_data(event.element)
 
         if frame and frame.valid then
-            if add_player_frame and add_player_frame.valid and add_player_frame.text then
-                local text = add_player_frame.text
-                if not text then
+            if add_player_frame and add_player_frame.valid and add_player_frame then
+                local player_gui_data = ICT.get('player_gui_data')
+                local fetched_name = player_gui_data[player.name]
+                if not fetched_name then
                     return
                 end
-                local player_to_add = game.get_player(text)
+
+                local player_to_add = game.get_player(fetched_name)
                 if not player_to_add or not player_to_add.valid then
-                    return player.print('Target player was not valid.', Color.warning)
+                    return player.print('[IC] Target player was not valid.', Color.warning)
                 end
 
                 local name = player_to_add.name
 
                 if not player_list.players[name] then
-                    player.print(name .. ' was added to your vehicle.', Color.info)
+                    player.print('[IC] ' .. name .. ' was added to your vehicle.', Color.info)
                     player_to_add.print(player.name .. ' added you to their vehicle. You may now enter it.', Color.info)
                     increment(player_list.players, name)
                 else
-                    return player.print('Target player is already trusted.', Color.warning)
+                    return player.print('[IC] Target player is already trusted.', Color.warning)
                 end
 
                 remove_main_frame(event.element)
@@ -548,33 +572,30 @@ Gui.on_click(
         local transfer_car_frame = Gui.get_data(event.element)
 
         if frame and frame.valid then
-            if transfer_car_frame and transfer_car_frame.valid and transfer_car_frame.text then
-                local text = transfer_car_frame.text
-                if not text then
+            if transfer_car_frame and transfer_car_frame.valid then
+                local player_gui_data = ICT.get('player_gui_data')
+                local fetched_name = player_gui_data[player.name]
+                if not fetched_name then
                     return
                 end
-                local player_to_add = game.get_player(text)
+
+                local player_to_add = game.get_player(fetched_name)
                 if not player_to_add or not player_to_add.valid then
-                    return player.print('Target player was not valid.', Color.warning)
+                    return player.print('[IC] Target player was not valid.', Color.warning)
                 end
-
                 local name = player_to_add.name
-                local does_player_have_a_car = does_player_table_exist(name)
+
+                local does_player_have_a_car = does_player_table_exist(player_to_add)
                 if does_player_have_a_car then
-                    return player.print(name .. ' already has a vehicle.', Color.warning)
+                    return player.print('[IC] ' .. name .. ' already has a vehicle.', Color.warning)
                 end
 
-                local to_add = game.get_player(name)
-                if not (to_add and to_add.valid) then
-                    return player.print(name .. ' does not exist.', Color.warning)
-                end
-
-                local success = transfer_player_table(player, to_add)
+                local success = transfer_player_table(player, player_to_add)
                 if not success then
-                    player.print('Please try again.', Color.warning)
+                    player.print('[IC] Please try again.', Color.warning)
                 else
-                    player.print('You have successfully transferred your car to ' .. name, Color.success)
-                    to_add.print('You have become the rightfully owner of ' .. player.name .. "'s car!", Color.success)
+                    player.print('[IC] You have successfully transferred your car to ' .. name, Color.success)
+                    player_to_add.print('[IC] You have become the rightfully owner of ' .. player.name .. "'s car!", Color.success)
                 end
 
                 remove_main_frame(event.element)
@@ -608,13 +629,13 @@ Gui.on_click(
             end
             local target = game.get_player(player_name)
             if not target or not target.valid then
-                player.print('Target player was not valid.', Color.warning)
+                player.print('[IC] Target player was not valid.', Color.warning)
                 return
             end
             local name = target.name
 
             if player_list.players[name] then
-                player.print(name .. ' was removed from your vehicle.', Color.info)
+                player.print('[IC] ' .. name .. ' was removed from your vehicle.', Color.info)
                 decrement(player_list.players, name)
                 raise_event(
                     ICT.events.on_player_kicked_from_surface,
@@ -693,6 +714,47 @@ Gui.on_click(
         else
             draw_main_frame(player)
         end
+    end
+)
+
+Gui.on_selection_state_changed(
+    transfer_player_select_name,
+    function(event)
+        local player = event.player
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        local screen = player.gui.screen
+        local frame = screen[main_frame_name]
+        if not frame or not frame.valid then
+            return
+        end
+
+        local element = event.element
+        if not element or not element.valid then
+            return
+        end
+
+        local player_gui_data = ICT.get('player_gui_data')
+        local selected = element.items[element.selected_index]
+        if not selected then
+            return
+        end
+
+        if selected == 'Select Player' then
+            player.print('[IC] No target player selected.', Color.warning)
+            player_gui_data[player.name] = nil
+            return
+        end
+
+        if selected == player.name then
+            player.print('[IC] You can´t select yourself.', Color.warning)
+            player_gui_data[player.name] = nil
+            return
+        end
+
+        player_gui_data[player.name] = selected
     end
 )
 

@@ -16,7 +16,9 @@ local Public = {}
 
 local this = {
     gui_config = {
-        spaghett = {},
+        spaghett = {
+            undo = {}
+        },
         poll_trusted = false
     }
 }
@@ -122,19 +124,46 @@ local functions = {
             game.players[event.player_index].spectator = false
         end
     end,
-    ['comfy_panel_bottom_right_frame'] = function(event)
+    ['comfy_panel_bottom_location'] = function(event)
         local player = game.get_player(event.player_index)
         if event.element.switch_state == 'left' then
-            local bottom_frame = BottomFrame.get_player_data(player)
-            if not bottom_frame then
-                return
-            end
-            bottom_frame.bottom_left = true
-            BottomFrame.set_location(player)
+            BottomFrame.set_location(player, 'bottom_left')
         else
-            BottomFrame.get_player_data(player, true)
-            BottomFrame.set_location(player)
+            BottomFrame.set_location(player, 'bottom_right')
         end
+    end,
+    ['comfy_panel_middle_location'] = function(event)
+        local player = game.get_player(event.player_index)
+        local data = BottomFrame.get_player_data(player)
+        if event.element.switch_state == 'left' then
+            data.above = true
+            data.portable = false
+        else
+            data.above = false
+            data.portable = false
+        end
+        if not data.bottom_state then
+            data.bottom_state = 'bottom_right'
+        end
+
+        BottomFrame.set_location(player, data.bottom_state)
+    end,
+    ['comfy_panel_portable_button'] = function(event)
+        local player = game.get_player(event.player_index)
+        local data = BottomFrame.get_player_data(player)
+        if event.element.switch_state == 'left' then
+            data.above = false
+            data.portable = true
+        else
+            data.portable = false
+            data.above = false
+        end
+
+        if not data.bottom_state then
+            data.bottom_state = 'bottom_right'
+        end
+
+        BottomFrame.set_location(player, data.bottom_state)
     end,
     ['comfy_panel_auto_hotbar_switch'] = function(event)
         if event.element.switch_state == 'left' then
@@ -345,6 +374,7 @@ local function build_config_gui(data)
     }
     local scroll_style = scroll_pane.style
     scroll_style.vertically_squashable = true
+    scroll_style.minimal_height = 350
     scroll_style.bottom_padding = 2
     scroll_style.left_padding = 2
     scroll_style.right_padding = 2
@@ -395,18 +425,51 @@ local function build_config_gui(data)
     end
 
     if BottomFrame.is_custom_buttons_enabled() then
+        label = scroll_pane.add({type = 'label', caption = 'Bottom Buttons Settings'})
+        label.style.font = 'default-bold'
+        label.style.padding = 0
+        label.style.left_padding = 10
+        label.style.top_padding = 10
+        label.style.horizontal_align = 'left'
+        label.style.vertical_align = 'bottom'
+        label.style.font_color = Color.white_smoke
+
+        scroll_pane.add({type = 'line'})
+
         switch_state = 'right'
-        local bottom_frame = BottomFrame.get('players')
-        if bottom_frame[player.index] then
+        local bottom_frame = BottomFrame.get_player_data(player)
+        if bottom_frame and bottom_frame.bottom_state == 'bottom_left' then
             switch_state = 'left'
         end
         add_switch(
             scroll_pane,
             switch_state,
-            'comfy_panel_bottom_right_frame',
-            'Button Location',
-            'Toggle to select if you want the bottom button on the right side or the left side.'
+            'comfy_panel_bottom_location',
+            'Position - bottom',
+            'Toggle to select if you want the bottom button on the left side or the right side.'
         )
+
+        scroll_pane.add({type = 'line'})
+
+        switch_state = 'right'
+        if bottom_frame and bottom_frame.above then
+            switch_state = 'left'
+        end
+        add_switch(
+            scroll_pane,
+            switch_state,
+            'comfy_panel_middle_location',
+            'Position - middle',
+            'Toggle to select if you want the bottom button above the quickbar or the side of the quickbar.'
+        )
+
+        scroll_pane.add({type = 'line'})
+
+        switch_state = 'right'
+        if bottom_frame and bottom_frame.portable then
+            switch_state = 'left'
+        end
+        add_switch(scroll_pane, switch_state, 'comfy_panel_portable_button', 'Position - portable', 'Toggle to select if you want the bottom button to be portable or not.')
         scroll_pane.add({type = 'line'})
     end
 

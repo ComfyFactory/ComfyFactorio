@@ -598,9 +598,6 @@ local function do_whitelist()
 end
 
 local function on_player_joined_game(event)
-    if is_loaded('maps.biter_battles_v2.main') then
-        return
-    end
     create_gui_button(game.players[event.player_index])
 end
 

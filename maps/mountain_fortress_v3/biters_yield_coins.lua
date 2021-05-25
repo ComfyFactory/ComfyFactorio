@@ -1,5 +1,5 @@
 local Event = require 'utils.event'
-local RPG_Settings = require 'modules.rpg.table'
+local RPG = require 'modules.rpg.main'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local insert = table.insert
 local floor = math.floor
@@ -111,7 +111,7 @@ local function on_entity_died(event)
             for _, player in pairs(players_to_reward) do
                 local forest_zone
                 if p then
-                    forest_zone = RPG_Settings.get_value_from_player(p.index, 'forest_zone')
+                    forest_zone = RPG.get_value_from_player(p.index, 'forest_zone')
                 end
                 if forest_zone then
                     if random(1, 12) == 1 then
