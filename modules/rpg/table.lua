@@ -39,6 +39,14 @@ for a = 1, 9999, 1 do
     Public.experience_levels[#Public.experience_levels + 1] = Public.experience_levels[#Public.experience_levels] + a * 8
 end
 
+Public.gui_settings_levels = {
+    ['reset_text_label'] = 50,
+    ['stone_path_label'] = 20,
+    ['one_punch_label'] = 30,
+    ['flameboots_label'] = 100,
+    ['explosive_bullets_label'] = 50
+}
+
 Public.die_cause = {
     ['ammo-turret'] = true,
     ['electric-turret'] = true,
@@ -175,6 +183,30 @@ function Public.set_value_to_player(key, value, setter)
             this.rpg_t[key][value] = setter or false
         elseif (this.rpg_t[key] and not this.rpg_t[key][value]) then
             this.rpg_t[key][value] = setter or false
+        end
+    end
+end
+
+--- Sets a new table to rpg_t table
+---@param key <string>
+---@param tbl <string>
+function Public.set_new_player_tbl(key, tbl)
+    if key and tbl then
+        if type(tbl) ~= 'table' then
+            return error('Given parameter is not a table.')
+        end
+
+        this.rpg_t[key] = tbl
+        return this.rpg_t[key]
+    end
+end
+
+--- Removes a player from rpg_t table
+---@param key <LuaPlayerIndex>
+function Public.remove_player(index)
+    if index then
+        if this.rpg_t[index] then
+            this.rpg_t[index] = nil
         end
     end
 end

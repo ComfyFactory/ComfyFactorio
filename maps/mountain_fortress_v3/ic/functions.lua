@@ -649,6 +649,15 @@ function Public.kill_car(ic, entity)
         return
     end
 
+    local trust_system = IC.get('trust_system')
+    local owner = car.owner
+
+    if owner then
+        if trust_system[owner.index] then
+            trust_system[owner.index] = nil
+        end
+    end
+
     local surface_index = car.surface
     local surface = game.surfaces[surface_index]
     kick_players_out_of_vehicles(car)

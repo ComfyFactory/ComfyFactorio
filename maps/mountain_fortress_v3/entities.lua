@@ -4,8 +4,7 @@ local Event = require 'utils.event'
 local Server = require 'utils.server'
 local BuriedEnemies = require 'maps.mountain_fortress_v3.buried_enemies'
 local Loot = require 'maps.mountain_fortress_v3.loot'
-local RPG_Settings = require 'modules.rpg.table'
-local Functions = require 'modules.rpg.functions'
+local RPG = require 'modules.rpg.main'
 local Callbacks = require 'maps.mountain_fortress_v3.functions'
 local Mining = require 'maps.mountain_fortress_v3.mining'
 local Terrain = require 'maps.mountain_fortress_v3.terrain'
@@ -344,7 +343,7 @@ local function protect_entities(event)
 end
 
 local function hidden_treasure(player, entity)
-    local rpg = RPG_Settings.get('rpg_t')
+    local rpg = RPG.get('rpg_t')
     local magic = rpg[player.index].magicka
 
     if magic > 50 then
@@ -404,7 +403,7 @@ local function angry_tree(entity, cause, player)
         position = {entity.position.x + (-20 + random(0, 40)), entity.position.y + (-20 + random(0, 40))}
     end
     if player then
-        local forest_zone = RPG_Settings.get_value_from_player(player.index, 'forest_zone')
+        local forest_zone = RPG.get_value_from_player(player.index, 'forest_zone')
         if forest_zone and random(1, 32) == 1 then
             local cbl = Callbacks.refill_turret_callback
             local data = {callback_data = Callbacks.piercing_rounds_magazine_ammo}
@@ -438,7 +437,7 @@ end
 local function give_coin(player)
     local coin_amount = WPT.get('coin_amount')
     local coin_override = WPT.get('coin_override')
-    local forest_zone = RPG_Settings.get_value_from_player(player.index, 'forest_zone')
+    local forest_zone = RPG.get_value_from_player(player.index, 'forest_zone')
 
     if forest_zone then
         if random(1, 3) ~= 1 then
@@ -697,7 +696,7 @@ local function on_player_mined_entity(event)
     if not entity.valid then
         return
     end
-    local rpg = RPG_Settings.get('rpg_t')
+    local rpg = RPG.get('rpg_t')
     local rpg_char = rpg[player.index]
 
     local map_name = 'mountain_fortress_v3'
@@ -906,8 +905,8 @@ local function on_player_repaired_entity(event)
 
     if carriages_numbers[entity.unit_number] then
         local player = game.players[event.player_index]
-        local repair_speed = Functions.get_magicka(player)
-        if repair_speed <= 0 then
+        local repair_speed = RPG.get_magicka(player)
+        if table <= 0 then
             set_train_final_health(-1, true)
             return
         else

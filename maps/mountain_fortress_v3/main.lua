@@ -1,5 +1,3 @@
-require 'modules.rpg.main'
-
 local Functions = require 'maps.mountain_fortress_v3.functions'
 local BuriedEnemies = require 'maps.mountain_fortress_v3.buried_enemies'
 
@@ -19,8 +17,7 @@ local Gui_mf = require 'maps.mountain_fortress_v3.gui'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
 local WD = require 'modules.wave_defense.table'
 local Map = require 'modules.map_info'
-local RPG_Settings = require 'modules.rpg.table'
-local RPG_Func = require 'modules.rpg.functions'
+local RPG = require 'modules.rpg.main'
 local Event = require 'utils.event'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local Locomotive = require 'maps.mountain_fortress_v3.locomotive'
@@ -31,7 +28,7 @@ local Difficulty = require 'modules.difficulty_vote_by_amount'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Alert = require 'utils.alert'
--- local BottomFrame = require 'comfy_panel.bottom_frame'
+local BottomFrame = require 'comfy_panel.bottom_frame'
 local AntiGrief = require 'antigrief'
 local Misc = require 'commands.misc'
 local Modifiers = require 'player_modifiers'
@@ -132,11 +129,10 @@ function Public.reset_map()
 
     Autostash.insert_into_furnace(true)
     Autostash.insert_into_wagon(true)
-    Autostash.bottom_button(false)
-    BuriedEnemies.reset()
-    --[[ BottomFrame.reset()
+    Autostash.bottom_button(true)
+    BottomFrame.reset()
     BottomFrame.activate_custom_buttons(true)
-    BottomFrame.bottom_right(true) ]]
+    BuriedEnemies.reset()
     Poll.reset()
     ICW.reset()
     IC.reset()
@@ -145,20 +141,20 @@ function Public.reset_map()
     game.reset_time_played()
     WPT.reset_table()
 
-    RPG_Func.rpg_reset_all_players()
-    RPG_Settings.set_surface_name(game.surfaces[this.active_surface_index].name)
-    RPG_Settings.enable_health_and_mana_bars(true)
-    RPG_Settings.enable_wave_defense(true)
-    RPG_Settings.enable_mana(true)
-    RPG_Settings.enable_flame_boots(true)
-    RPG_Settings.personal_tax_rate(0.4)
-    RPG_Settings.enable_stone_path(true)
-    RPG_Settings.enable_one_punch(true)
-    RPG_Settings.enable_one_punch_globally(false)
-    RPG_Settings.enable_auto_allocate(true)
-    RPG_Settings.disable_cooldowns_on_spells()
-    RPG_Settings.enable_explosive_bullets_globally(true)
-    RPG_Settings.enable_explosive_bullets(false)
+    RPG.rpg_reset_all_players()
+    RPG.set_surface_name(game.surfaces[this.active_surface_index].name)
+    RPG.enable_health_and_mana_bars(true)
+    RPG.enable_wave_defense(true)
+    RPG.enable_mana(true)
+    RPG.enable_flame_boots(true)
+    RPG.personal_tax_rate(0.4)
+    RPG.enable_stone_path(true)
+    RPG.enable_one_punch(true)
+    RPG.enable_one_punch_globally(false)
+    RPG.enable_auto_allocate(true)
+    RPG.disable_cooldowns_on_spells()
+    RPG.enable_explosive_bullets_globally(true)
+    RPG.enable_explosive_bullets(false)
 
     Group.reset_groups()
     Group.alphanumeric_only(false)

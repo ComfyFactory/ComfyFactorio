@@ -151,7 +151,6 @@ local function update_char_button(player)
 end
 
 local function update_player_stats(player)
-    local player_modifiers = P.get_table()
     local strength = rpg_t[player.index].strength - 10
     P.update_single_modifier(player, 'character_inventory_slots_bonus', 'rpg', math.round(strength * 0.2, 3))
     P.update_single_modifier(player, 'character_mining_speed_modifier', 'rpg', math.round(strength * 0.008, 3))

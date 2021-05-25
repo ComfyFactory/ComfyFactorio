@@ -247,6 +247,7 @@ local function on_gui_click(event)
 end
 
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_player_created, on_player_joined_game)
 Event.add(defines.events.on_gui_click, on_gui_click)
 
 return Public

@@ -4,7 +4,7 @@ local BiterRaffle = require 'functions.biter_raffle'
 local LootRaffle = require 'functions.loot_raffle'
 local Get_noise = require 'utils.get_noise'
 local DungeonsTable = require 'maps.dungeons.table'
-require 'modules.rpg.table'
+require 'modules.rpg.main'
 
 local table_shuffle_table = table.shuffle_table
 local math_random = math.random

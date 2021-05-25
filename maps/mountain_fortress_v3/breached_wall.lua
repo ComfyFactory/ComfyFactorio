@@ -1,8 +1,7 @@
 local Collapse = require 'modules.collapse'
 local Terrain = require 'maps.mountain_fortress_v3.terrain'
 local Balance = require 'maps.mountain_fortress_v3.balance'
-local RPG_Settings = require 'modules.rpg.table'
-local Functions = require 'modules.rpg.functions'
+local RPG = require 'modules.rpg.main'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local Alert = require 'utils.alert'
 local Event = require 'utils.event'
@@ -86,20 +85,20 @@ local compare_player_pos = function(player)
     local index = player.index
     local zone = floor((abs(p.y / level_depth)) % 22)
     if scrap[zone] then
-        RPG_Settings.set_value_to_player(index, 'scrap_zone', true)
+        RPG.set_value_to_player(index, 'scrap_zone', true)
     else
-        local has_scrap = RPG_Settings.get_value_from_player(index, 'scrap_zone')
+        local has_scrap = RPG.get_value_from_player(index, 'scrap_zone')
         if has_scrap then
-            RPG_Settings.set_value_to_player(index, 'scrap_zone', false)
+            RPG.set_value_to_player(index, 'scrap_zone', false)
         end
     end
 
     if forest[zone] then
-        RPG_Settings.set_value_to_player(index, 'forest_zone', true)
+        RPG.set_value_to_player(index, 'forest_zone', true)
     else
-        local is_in_forest = RPG_Settings.get_value_from_player(index, 'forest_zone')
+        local is_in_forest = RPG.get_value_from_player(index, 'forest_zone')
         if is_in_forest then
-            RPG_Settings.set_value_to_player(index, 'forest_zone', false)
+            RPG.set_value_to_player(index, 'forest_zone', false)
         end
     end
 end
@@ -140,8 +139,8 @@ end
 
 local function distance(player)
     local index = player.index
-    local bonus = RPG_Settings.get_value_from_player(index, 'bonus')
-    local rpg_extra = RPG_Settings.get('rpg_extra')
+    local bonus = RPG.get_value_from_player(index, 'bonus')
+    local rpg_extra = RPG.get('rpg_extra')
     local breached_wall = WPT.get('breached_wall')
     local bonus_xp_on_join = WPT.get('bonus_xp_on_join')
     local enable_arties = WPT.get('enable_arties')
@@ -217,9 +216,9 @@ local function distance(player)
             Task.set_timeout_in_ticks(550, collapse_message, data)
         end
 
-        RPG_Settings.set_value_to_player(index, 'bonus', bonus + 1)
+        RPG.set_value_to_player(index, 'bonus', bonus + 1)
 
-        Functions.gain_xp(player, bonus_xp_on_join * bonus)
+        RPG.gain_xp(player, bonus_xp_on_join * bonus)
         return
     end
 end

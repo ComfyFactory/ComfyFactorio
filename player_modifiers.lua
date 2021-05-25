@@ -1,6 +1,7 @@
 --Central to add all player modifiers together.
 --Will overwrite character stats from other mods.
 
+local Event = require 'utils.event'
 local Global = require 'utils.global'
 
 local this = {
@@ -17,8 +18,23 @@ Global.register(
 
 local Public = {}
 
-function Public.get_table()
-    return this
+function Public.get(key)
+    if key then
+        return this[key]
+    else
+        return this
+    end
+end
+
+function Public.set(key, value)
+    if key and (value or value == false) then
+        this[key] = value
+        return this[key]
+    elseif key then
+        return this[key]
+    else
+        return this
+    end
 end
 
 local modifiers = {
@@ -37,13 +53,23 @@ local modifiers = {
 }
 
 function Public.update_player_modifiers(player)
+    local player_modifiers = this.modifiers[player.index]
+    if not player_modifiers then
+        return
+    end
+
+    local disabled_modifiers = this.disabled_modifier[player.index]
+    if not disabled_modifiers then
+        return
+    end
+
     for k, modifier in pairs(modifiers) do
         local sum_value = 0
-        for _, value in pairs(this.modifiers[player.index][k]) do
+        for _, value in pairs(player_modifiers[k]) do
             sum_value = sum_value + value
         end
         if player.character then
-            if this.disabled_modifier[player.index] and this.disabled_modifier[player.index][k] then
+            if disabled_modifiers and disabled_modifiers[k] then
                 player[modifier] = 0
             else
                 player[modifier] = sum_value
@@ -53,28 +79,30 @@ function Public.update_player_modifiers(player)
 end
 
 function Public.update_single_modifier(player, modifier, category, value)
-    if not this.modifiers[player.index] then
+    local player_modifiers = this.modifiers[player.index]
+    if not player_modifiers then
         return
     end
     if not modifier then
         return
     end
-    for k, _ in pairs(this.modifiers[player.index]) do
-        if modifiers[k] == modifier and this.modifiers[player.index][k] then
+    for k, _ in pairs(player_modifiers) do
+        if modifiers[k] == modifier and player_modifiers[k] then
             if category then
-                if not this.modifiers[player.index][k][category] then
-                    this.modifiers[player.index][k][category] = {}
+                if not player_modifiers[k][category] then
+                    player_modifiers[k][category] = {}
                 end
-                this.modifiers[player.index][k][category] = value
+                player_modifiers[k][category] = value
             else
-                this.modifiers[player.index][k] = value
+                player_modifiers[k] = value
             end
         end
     end
 end
 
 function Public.disable_single_modifier(player, modifier, value)
-    if not this.disabled_modifier[player.index] then
+    local disabled_modifiers = this.disabled_modifier[player.index]
+    if not disabled_modifiers then
         return
     end
     if not modifier then
@@ -83,30 +111,31 @@ function Public.disable_single_modifier(player, modifier, value)
     for k, _ in pairs(modifiers) do
         if modifiers[k] == modifier then
             if value then
-                this.disabled_modifier[player.index][k] = value
+                disabled_modifiers[k] = value
             else
-                this.disabled_modifier[player.index][k] = nil
+                disabled_modifiers[k] = nil
             end
         end
     end
 end
 
 function Public.get_single_modifier(player, modifier, category)
-    if not this.modifiers[player.index] then
+    local player_modifiers = this.modifiers[player.index]
+    if not player_modifiers then
         return
     end
     if not modifier then
         return
     end
-    for k, _ in pairs(this.modifiers[player.index]) do
+    for k, _ in pairs(player_modifiers) do
         if modifiers[k] == modifier then
             if category then
-                if this.modifiers[player.index][k] and this.modifiers[player.index][k][category] then
-                    return this.modifiers[player.index][k][category]
+                if player_modifiers[k] and player_modifiers[k][category] then
+                    return player_modifiers[k][category]
                 end
             else
-                if this.modifiers[player.index][k] then
-                    return this.modifiers[player.index][k]
+                if player_modifiers[k] then
+                    return player_modifiers[k]
                 end
             end
             return false
@@ -116,21 +145,22 @@ function Public.get_single_modifier(player, modifier, category)
 end
 
 function Public.get_single_disabled_modifier(player, modifier, category)
-    if not this.disabled_modifier[player.index] then
+    local disabled_modifiers = this.disabled_modifier[player.index]
+    if not disabled_modifiers then
         return
     end
     if not modifier then
         return
     end
-    for k, _ in pairs(this.disabled_modifier[player.index]) do
+    for k, _ in pairs(disabled_modifiers) do
         if modifiers[k] == modifier then
             if category then
-                if this.disabled_modifier[player.index][k] and this.disabled_modifier[player.index][k][category] then
-                    return this.disabled_modifier[player.index][k][category]
+                if disabled_modifiers[k] and disabled_modifiers[k][category] then
+                    return disabled_modifiers[k][category]
                 end
             else
-                if this.disabled_modifier[player.index][k] then
-                    return this.disabled_modifier[player.index][k]
+                if disabled_modifiers[k] then
+                    return disabled_modifiers[k]
                 end
             end
             return false
@@ -172,7 +202,6 @@ local function on_player_removed(event)
     end
 end
 
-local Event = require 'utils.event'
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_respawned, on_player_respawned)
 Event.add(defines.events.on_player_removed, on_player_removed)

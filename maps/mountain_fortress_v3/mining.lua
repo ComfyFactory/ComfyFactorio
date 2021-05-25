@@ -1,5 +1,5 @@
 local WPT = require 'maps.mountain_fortress_v3.table'
-local RPG_Settings = require 'modules.rpg.table'
+local RPG = require 'modules.rpg.main'
 require 'modules.check_fullness'
 
 local Public = {}
@@ -433,7 +433,7 @@ function Public.on_player_mined_entity(event)
 
         local index = player.index
 
-        local scrap_zone = RPG_Settings.get_value_from_player(index, 'scrap_zone')
+        local scrap_zone = RPG.get_value_from_player(index, 'scrap_zone')
         if scrap_zone or is_scrap then
             randomness_scrap(data)
         else

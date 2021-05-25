@@ -805,6 +805,7 @@ local function tick()
 end
 
 Event.add(defines.events.on_player_joined_game, player_joined)
+Event.add(defines.events.on_player_created, player_joined)
 Event.on_nth_tick(60, tick)
 
 Gui.on_click(main_button_name, toggle)

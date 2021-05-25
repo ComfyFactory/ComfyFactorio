@@ -260,7 +260,7 @@ function Public.conjure_items()
         mana_cost = 200,
         tick = 100,
         enabled = true,
-        sprite = 'recipe/repair_pack'
+        sprite = 'recipe/repair-pack'
     }
     spells[#spells + 1] = {
         name = {'spells.acid_stream'},

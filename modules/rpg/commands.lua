@@ -7,7 +7,7 @@ local round = math.round
 local validate_args = function(data)
     local player = data.player
     local target = data.target
-    local rpg_t = data.rpg_t
+    local rpg_t = RPG.get_value_from_player(target.index)
 
     if not target then
         return false
@@ -54,7 +54,7 @@ local validate_args = function(data)
         return false
     end
 
-    if not rpg_t[target.index] then
+    if not rpg_t then
         Utils.print_to(player, 'Invalid target.')
         return false
     end
@@ -62,20 +62,21 @@ local validate_args = function(data)
     return true
 end
 
-local print_stats = function(target, tbl)
+local print_stats = function(target)
     if not target then
         return
     end
-    if not tbl then
+    local rpg_t = RPG.get_value_from_player(target.index)
+    if not rpg_t then
         return
     end
-    local t = tbl[target.index]
-    local level = t.level
-    local xp = round(t.xp)
-    local strength = t.strength
-    local magicka = t.magicka
-    local dexterity = t.dexterity
-    local vitality = t.vitality
+
+    local level = rpg_t.level
+    local xp = round(rpg_t.xp)
+    local strength = rpg_t.strength
+    local magicka = rpg_t.magicka
+    local dexterity = rpg_t.dexterity
+    local vitality = rpg_t.vitality
     local output = '[color=blue]' .. target.name .. '[/color] has the following stats: \n'
     output = output .. '[color=green]Level:[/color] ' .. level .. '\n'
     output = output .. '[color=green]XP:[/color] ' .. xp .. '\n'
@@ -111,16 +112,13 @@ commands.add_command(
             return
         end
 
-        local rpg_t = RPG.get('rpg_t')
-
         local data = {
             player = player,
-            target = target,
-            rpg_t = rpg_t
+            target = target
         }
 
         if validate_args(data) then
-            local msg = print_stats(target, rpg_t)
+            local msg = print_stats(target)
             player.play_sound {path = 'utility/scenario_message', volume_modifier = 1}
             player.print(msg)
         else

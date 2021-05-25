@@ -1,21 +1,20 @@
+local Public = require 'modules.rpg.table'
 local Task = require 'utils.task'
-local RPG = require 'modules.rpg.table'
 local Gui = require 'utils.gui'
 local Color = require 'utils.color_presets'
 local Token = require 'utils.token'
 local Alert = require 'utils.alert'
 
-local Public = {}
-
 local level_up_floating_text_color = {0, 205, 0}
-local visuals_delay = RPG.visuals_delay
-local xp_floating_text_color = RPG.xp_floating_text_color
-local experience_levels = RPG.experience_levels
-local points_per_level = RPG.points_per_level
+local visuals_delay = Public.visuals_delay
+local xp_floating_text_color = Public.xp_floating_text_color
+local experience_levels = Public.experience_levels
+local points_per_level = Public.points_per_level
+local settings_level = Public.gui_settings_levels
 
 --RPG Frames
-local main_frame_name = RPG.main_frame_name
-local spell_gui_frame_name = RPG.spell_gui_frame_name
+local main_frame_name = Public.main_frame_name
+local spell_gui_frame_name = Public.spell_gui_frame_name
 
 local travelings = {
     'bzzZZrrt',
@@ -100,14 +99,13 @@ local function set_bar(min, max, id, mana)
 end
 
 local function level_up(player)
-    local rpg_t = RPG.get('rpg_t')
-    local RPG_GUI = is_loaded('modules.rpg.gui')
-    local names = RPG.auto_allocate_nodes_func
+    local rpg_t = Public.get_value_from_player(player.index)
+    local names = Public.auto_allocate_nodes_func
 
     local distribute_points_gain = 0
-    for i = rpg_t[player.index].level + 1, #experience_levels, 1 do
-        if rpg_t[player.index].xp > experience_levels[i] then
-            rpg_t[player.index].level = i
+    for i = rpg_t.level + 1, #experience_levels, 1 do
+        if rpg_t.xp > experience_levels[i] then
+            rpg_t.level = i
             distribute_points_gain = distribute_points_gain + points_per_level
         else
             break
@@ -116,29 +114,37 @@ local function level_up(player)
     if distribute_points_gain == 0 then
         return
     end
-    RPG_GUI.draw_level_text(player)
-    rpg_t[player.index].points_left = rpg_t[player.index].points_left + distribute_points_gain
-    if rpg_t[player.index].allocate_index ~= 1 then
-        local node = rpg_t[player.index].allocate_index
+
+    if rpg_t.level >= settings_level['one_punch_label'] then
+        rpg_t.one_punch = true
+    end
+    if rpg_t.level >= settings_level['stone_path_label'] then
+        rpg_t.stone_path = true
+    end
+
+    Public.draw_level_text(player)
+    rpg_t.points_left = rpg_t.points_left + distribute_points_gain
+    if rpg_t.allocate_index ~= 1 then
+        local node = rpg_t.allocate_index
         local index = names[node]:lower()
-        rpg_t[player.index][index] = rpg_t[player.index][index] + distribute_points_gain
-        rpg_t[player.index].points_left = rpg_t[player.index].points_left - distribute_points_gain
-        if not rpg_t[player.index].reset then
-            rpg_t[player.index].total = rpg_t[player.index].total + distribute_points_gain
+        rpg_t[index] = rpg_t[index] + distribute_points_gain
+        rpg_t.points_left = rpg_t.points_left - distribute_points_gain
+        if not rpg_t.reset then
+            rpg_t.total = rpg_t.total + distribute_points_gain
         end
-        RPG_GUI.update_player_stats(player)
+        Public.update_player_stats(player)
     else
-        RPG_GUI.update_char_button(player)
+        Public.update_char_button(player)
     end
     if player.gui.screen[main_frame_name] then
-        RPG_GUI.toggle(player, true)
+        Public.toggle(player, true)
     end
 
     Public.level_up_effects(player)
 end
 
 local function add_to_global_pool(amount, personal_tax)
-    local rpg_extra = RPG.get('rpg_extra')
+    local rpg_extra = Public.get('rpg_extra')
 
     if not rpg_extra.global_pool then
         return
@@ -256,13 +262,13 @@ function Public.validate_player(player)
 end
 
 function Public.update_mana(player)
-    local rpg_extra = RPG.get('rpg_extra')
-    local rpg_t = RPG.get('rpg_t')
+    local rpg_extra = Public.get('rpg_extra')
+    local rpg_t = Public.get_value_from_player(player.index)
     if not rpg_extra.enable_mana then
         return
     end
 
-    if not rpg_t[player.index] then
+    if not rpg_t then
         return
     end
 
@@ -270,38 +276,38 @@ function Public.update_mana(player)
         local f = player.gui.screen[main_frame_name]
         local data = Gui.get_data(f)
         if data.mana and data.mana.valid then
-            data.mana.caption = rpg_t[player.index].mana
+            data.mana.caption = rpg_t.mana
         end
     end
     if player.gui.screen[spell_gui_frame_name] then
         local f = player.gui.screen[spell_gui_frame_name]
         if f['spell_table'] then
             if f['spell_table']['mana'] then
-                f['spell_table']['mana'].caption = math.floor(rpg_t[player.index].mana)
+                f['spell_table']['mana'].caption = math.floor(rpg_t.mana)
             end
             if f['spell_table']['maxmana'] then
-                f['spell_table']['maxmana'].caption = math.floor(rpg_t[player.index].mana_max)
+                f['spell_table']['maxmana'].caption = math.floor(rpg_t.mana_max)
             end
         end
     end
 
-    if rpg_t[player.index].mana < 1 then
+    if rpg_t.mana < 1 then
         return
     end
     if rpg_extra.enable_health_and_mana_bars then
-        if rpg_t[player.index].show_bars then
+        if rpg_t.show_bars then
             if player.character and player.character.valid then
-                if not rpg_t[player.index].mana_bar then
-                    rpg_t[player.index].mana_bar = create_manabar(player, 0.5)
-                elseif not rendering.is_valid(rpg_t[player.index].mana_bar) then
-                    rpg_t[player.index].mana_bar = create_manabar(player, 0.5)
+                if not rpg_t.mana_bar then
+                    rpg_t.mana_bar = create_manabar(player, 0.5)
+                elseif not rendering.is_valid(rpg_t.mana_bar) then
+                    rpg_t.mana_bar = create_manabar(player, 0.5)
                 end
-                set_bar(rpg_t[player.index].mana, rpg_t[player.index].mana_max, rpg_t[player.index].mana_bar, true)
+                set_bar(rpg_t.mana, rpg_t.mana_max, rpg_t.mana_bar, true)
             end
         else
-            if rpg_t[player.index].mana_bar then
-                if rendering.is_valid(rpg_t[player.index].mana_bar) then
-                    rendering.destroy(rpg_t[player.index].mana_bar)
+            if rpg_t.mana_bar then
+                if rendering.is_valid(rpg_t.mana_bar) then
+                    rendering.destroy(rpg_t.mana_bar)
                 end
             end
         end
@@ -309,8 +315,8 @@ function Public.update_mana(player)
 end
 
 function Public.reward_mana(player, mana_to_add)
-    local rpg_extra = RPG.get('rpg_extra')
-    local rpg_t = RPG.get('rpg_t')
+    local rpg_extra = Public.get('rpg_extra')
+    local rpg_t = Public.get_value_from_player(player.index)
     if not rpg_extra.enable_mana then
         return
     end
@@ -319,7 +325,7 @@ function Public.reward_mana(player, mana_to_add)
         return
     end
 
-    if not rpg_t[player.index] then
+    if not rpg_t then
         return
     end
 
@@ -327,36 +333,36 @@ function Public.reward_mana(player, mana_to_add)
         local f = player.gui.screen[main_frame_name]
         local data = Gui.get_data(f)
         if data.mana and data.mana.valid then
-            data.mana.caption = rpg_t[player.index].mana
+            data.mana.caption = rpg_t.mana
         end
     end
     if player.gui.screen[spell_gui_frame_name] then
         local f = player.gui.screen[spell_gui_frame_name]
         if f['spell_table'] then
             if f['spell_table']['mana'] then
-                f['spell_table']['mana'].caption = math.floor(rpg_t[player.index].mana)
+                f['spell_table']['mana'].caption = math.floor(rpg_t.mana)
             end
             if f['spell_table']['maxmana'] then
-                f['spell_table']['maxmana'].caption = math.floor(rpg_t[player.index].mana_max)
+                f['spell_table']['maxmana'].caption = math.floor(rpg_t.mana_max)
             end
         end
     end
 
-    if rpg_t[player.index].mana_max < 1 then
+    if rpg_t.mana_max < 1 then
         return
     end
 
-    if rpg_t[player.index].mana >= rpg_t[player.index].mana_max then
-        rpg_t[player.index].mana = rpg_t[player.index].mana_max
+    if rpg_t.mana >= rpg_t.mana_max then
+        rpg_t.mana = rpg_t.mana_max
         return
     end
 
-    rpg_t[player.index].mana = rpg_t[player.index].mana + mana_to_add
+    rpg_t.mana = rpg_t.mana + mana_to_add
 end
 
 function Public.update_health(player)
-    local rpg_extra = RPG.get('rpg_extra')
-    local rpg_t = RPG.get('rpg_t')
+    local rpg_extra = Public.get('rpg_extra')
+    local rpg_t = Public.get_value_from_player(player.index)
 
     if not player or not player.valid then
         return
@@ -366,7 +372,7 @@ function Public.update_health(player)
         return
     end
 
-    if not rpg_t[player.index] then
+    if not rpg_t then
         return
     end
 
@@ -392,18 +398,18 @@ function Public.update_health(player)
     end
 
     if rpg_extra.enable_health_and_mana_bars then
-        if rpg_t[player.index].show_bars then
+        if rpg_t.show_bars then
             local max_life = math.floor(player.character.prototype.max_health + player.character_health_bonus + player.force.character_health_bonus)
-            if not rpg_t[player.index].health_bar then
-                rpg_t[player.index].health_bar = create_healthbar(player, 0.5)
-            elseif not rendering.is_valid(rpg_t[player.index].health_bar) then
-                rpg_t[player.index].health_bar = create_healthbar(player, 0.5)
+            if not rpg_t.health_bar then
+                rpg_t.health_bar = create_healthbar(player, 0.5)
+            elseif not rendering.is_valid(rpg_t.health_bar) then
+                rpg_t.health_bar = create_healthbar(player, 0.5)
             end
-            set_bar(player.character.health, max_life, rpg_t[player.index].health_bar)
+            set_bar(player.character.health, max_life, rpg_t.health_bar)
         else
-            if rpg_t[player.index].health_bar then
-                if rendering.is_valid(rpg_t[player.index].health_bar) then
-                    rendering.destroy(rpg_t[player.index].health_bar)
+            if rpg_t.health_bar then
+                if rendering.is_valid(rpg_t.health_bar) then
+                    rendering.destroy(rpg_t.health_bar)
                 end
             end
         end
@@ -411,8 +417,8 @@ function Public.update_health(player)
 end
 
 function Public.level_limit_exceeded(player, value)
-    local rpg_extra = RPG.get('rpg_extra')
-    local rpg_t = RPG.get('rpg_t')
+    local rpg_extra = Public.get('rpg_extra')
+    local rpg_t = Public.get_value_from_player(player.index)
     if not rpg_extra.level_limit_enabled then
         return false
     end
@@ -430,7 +436,7 @@ function Public.level_limit_exceeded(player, value)
         [10] = 210
     }
 
-    local level = rpg_t[player.index].level
+    local level = rpg_t.level
     local zone = rpg_extra.breached_walls
     if zone >= 11 then
         zone = 10
@@ -474,37 +480,37 @@ function Public.xp_effects(player)
 end
 
 function Public.get_melee_modifier(player)
-    local rpg_t = RPG.get('rpg_t')
-    return (rpg_t[player.index].strength - 10) * 0.10
+    local rpg_t = Public.get_value_from_player(player.index)
+    return (rpg_t.strength - 10) * 0.10
 end
 
 function Public.get_heal_modifier(player)
-    local rpg_t = RPG.get('rpg_t')
-    return (rpg_t[player.index].vitality - 10) * 0.06
+    local rpg_t = Public.get_value_from_player(player.index)
+    return (rpg_t.vitality - 10) * 0.06
 end
 
 function Public.get_mana_modifier(player)
-    local rpg_t = RPG.get('rpg_t')
-    if rpg_t[player.index].level <= 40 then
-        return (rpg_t[player.index].magicka - 10) * 0.02000
-    elseif rpg_t[player.index].level <= 80 then
-        return (rpg_t[player.index].magicka - 10) * 0.01800
+    local rpg_t = Public.get_value_from_player(player.index)
+    if rpg_t.level <= 40 then
+        return (rpg_t.magicka - 10) * 0.02000
+    elseif rpg_t.level <= 80 then
+        return (rpg_t.magicka - 10) * 0.01800
     else
-        return (rpg_t[player.index].magicka - 10) * 0.01400
+        return (rpg_t.magicka - 10) * 0.01400
     end
 end
 
 function Public.get_life_on_hit(player)
-    local rpg_t = RPG.get('rpg_t')
-    return (rpg_t[player.index].vitality - 10) * 0.4
+    local rpg_t = Public.get_value_from_player(player.index)
+    return (rpg_t.vitality - 10) * 0.4
 end
 
 function Public.get_one_punch_chance(player)
-    local rpg_t = RPG.get('rpg_t')
-    if rpg_t[player.index].strength < 100 then
+    local rpg_t = Public.get_value_from_player(player.index)
+    if rpg_t.strength < 100 then
         return 0
     end
-    local chance = math.round(rpg_t[player.index].strength * 0.01, 1)
+    local chance = math.round(rpg_t.strength * 0.01, 1)
     if chance > 100 then
         chance = 100
     end
@@ -512,20 +518,20 @@ function Public.get_one_punch_chance(player)
 end
 
 function Public.get_extra_following_robots(player)
-    local rpg_t = RPG.get('rpg_t')
-    local strength = rpg_t[player.index].strength
+    local rpg_t = Public.get_value_from_player(player.index)
+    local strength = rpg_t.strength
     local count = math.round(strength / 2 * 0.03, 3)
     return count
 end
 
 function Public.get_magicka(player)
-    local rpg_t = RPG.get('rpg_t')
-    return (rpg_t[player.index].magicka - 10) * 0.10
+    local rpg_t = Public.get_value_from_player(player.index)
+    return (rpg_t.magicka - 10) * 0.10
 end
 
 --- Gives connected player some bonus xp if the map was preemptively shut down.
 -- amount (integer) -- 10 levels
--- local Public = require 'modules.rpg.functions' Public.give_xp(512)
+-- local Public = require 'modules.rpg.table' Public.give_xp(512)
 function Public.give_xp(amount)
     for _, player in pairs(game.connected_players) do
         if not Public.validate_player(player) then
@@ -540,94 +546,104 @@ function Public.rpg_reset_player(player, one_time_reset)
         player.set_controller({type = defines.controllers.god})
         player.create_character()
     end
-    local RPG_GUI = is_loaded('modules.rpg.gui')
-    local rpg_t = RPG.get('rpg_t')
-    local rpg_extra = RPG.get('rpg_extra')
+    local rpg_t = Public.get_value_from_player(player.index)
+    local rpg_extra = Public.get('rpg_extra')
     if one_time_reset then
-        local total = rpg_t[player.index].total
+        local total = rpg_t.total
         if not total then
             total = 0
         end
-        local old_level = rpg_t[player.index].level
-        local old_points_to_distribute = rpg_t[player.index].points_left
-        local old_xp = rpg_t[player.index].xp
-        rpg_t[player.index] = {
-            level = 1,
-            xp = 0,
-            strength = 10,
-            magicka = 10,
-            dexterity = 10,
-            vitality = 10,
-            mana = 0,
-            mana_max = 0,
-            last_spawned = 0,
-            dropdown_select_index = 1,
-            dropdown_select_index1 = 1,
-            dropdown_select_index2 = 1,
-            dropdown_select_index3 = 1,
-            allocate_index = 1,
-            flame_boots = false,
-            explosive_bullets = false,
-            enable_entity_spawn = false,
-            health_bar = rpg_t[player.index].health_bar,
-            mana_bar = rpg_t[player.index].mana_bar,
-            points_left = 0,
-            last_floaty_text = visuals_delay,
-            xp_since_last_floaty_text = 0,
-            reset = true,
-            capped = false,
-            bonus = rpg_extra.breached_walls or 1,
-            rotated_entity_delay = 0,
-            last_mined_entity_position = {x = 0, y = 0},
-            show_bars = false,
-            stone_path = false,
-            one_punch = false
-        }
-        rpg_t[player.index].points_left = old_points_to_distribute + total
-        rpg_t[player.index].xp = old_xp
-        rpg_t[player.index].level = old_level
+        if rpg_t.text then
+            rendering.destroy(rpg_t.text)
+            rpg_t.text = nil
+        end
+        local old_level = rpg_t.level
+        local old_points_left = rpg_t.points_left
+        local old_xp = rpg_t.xp
+        rpg_t =
+            Public.set_new_player_tbl(
+            player.index,
+            {
+                level = 1,
+                xp = 0,
+                strength = 10,
+                magicka = 10,
+                dexterity = 10,
+                vitality = 10,
+                mana = 0,
+                mana_max = 0,
+                last_spawned = 0,
+                dropdown_select_index = 1,
+                dropdown_select_index1 = 1,
+                dropdown_select_index2 = 1,
+                dropdown_select_index3 = 1,
+                allocate_index = 1,
+                flame_boots = false,
+                explosive_bullets = false,
+                enable_entity_spawn = false,
+                health_bar = rpg_t.health_bar,
+                mana_bar = rpg_t.mana_bar,
+                points_left = 0,
+                last_floaty_text = visuals_delay,
+                xp_since_last_floaty_text = 0,
+                reset = true,
+                capped = false,
+                bonus = rpg_extra.breached_walls or 1,
+                rotated_entity_delay = 0,
+                last_mined_entity_position = {x = 0, y = 0},
+                show_bars = false,
+                stone_path = false,
+                one_punch = false
+            }
+        )
+        rpg_t.points_left = old_points_left + total
+        rpg_t.xp = old_xp
+        rpg_t.level = old_level
     else
-        rpg_t[player.index] = {
-            level = 1,
-            xp = 0,
-            strength = 10,
-            magicka = 10,
-            dexterity = 10,
-            vitality = 10,
-            mana = 0,
-            mana_max = 0,
-            last_spawned = 0,
-            dropdown_select_index = 1,
-            dropdown_select_index1 = 1,
-            dropdown_select_index2 = 1,
-            dropdown_select_index3 = 1,
-            allocate_index = 1,
-            flame_boots = false,
-            explosive_bullets = false,
-            enable_entity_spawn = false,
-            points_left = 0,
-            last_floaty_text = visuals_delay,
-            xp_since_last_floaty_text = 0,
-            reset = false,
-            capped = false,
-            total = 0,
-            bonus = 1,
-            rotated_entity_delay = 0,
-            last_mined_entity_position = {x = 0, y = 0},
-            show_bars = false,
-            stone_path = false,
-            one_punch = false
-        }
+        Public.set_new_player_tbl(
+            player.index,
+            {
+                level = 1,
+                xp = 0,
+                strength = 10,
+                magicka = 10,
+                dexterity = 10,
+                vitality = 10,
+                mana = 0,
+                mana_max = 0,
+                last_spawned = 0,
+                dropdown_select_index = 1,
+                dropdown_select_index1 = 1,
+                dropdown_select_index2 = 1,
+                dropdown_select_index3 = 1,
+                allocate_index = 1,
+                flame_boots = false,
+                explosive_bullets = false,
+                enable_entity_spawn = false,
+                points_left = 0,
+                last_floaty_text = visuals_delay,
+                xp_since_last_floaty_text = 0,
+                reset = false,
+                capped = false,
+                total = 0,
+                bonus = 1,
+                rotated_entity_delay = 0,
+                last_mined_entity_position = {x = 0, y = 0},
+                show_bars = false,
+                stone_path = false,
+                one_punch = false
+            }
+        )
     end
-    RPG_GUI.draw_gui_char_button(player)
-    RPG_GUI.draw_level_text(player)
-    RPG_GUI.update_char_button(player)
-    RPG_GUI.update_player_stats(player)
+    Public.draw_gui_char_button(player)
+    Public.draw_level_text(player)
+    Public.update_char_button(player)
+    Public.update_player_stats(player)
 end
 
 function Public.rpg_reset_all_players()
-    local rpg_t = RPG.get('rpg_t')
-    local rpg_extra = RPG.get('rpg_extra')
+    local rpg_t = Public.get('rpg_t')
+    local rpg_extra = Public.get('rpg_extra')
     for k, _ in pairs(rpg_t) do
         rpg_t[k] = nil
     end
@@ -643,13 +659,13 @@ function Public.gain_xp(player, amount, added_to_pool, text)
     if not Public.validate_player(player) then
         return
     end
-    local rpg_extra = RPG.get('rpg_extra')
-    local rpg_t = RPG.get('rpg_t')
+    local rpg_extra = Public.get('rpg_extra')
+    local rpg_t = Public.get_value_from_player(player.index)
 
     if Public.level_limit_exceeded(player) then
         add_to_global_pool(amount, false)
-        if not rpg_t[player.index].capped then
-            rpg_t[player.index].capped = true
+        if not rpg_t.capped then
+            rpg_t.capped = true
             local message = ({'rpg_functions.max_level'})
             Alert.alert_player_warning(player, 10, message)
         end
@@ -658,27 +674,27 @@ function Public.gain_xp(player, amount, added_to_pool, text)
 
     local text_to_draw
 
-    if rpg_t[player.index].capped then
-        rpg_t[player.index].capped = false
+    if rpg_t.capped then
+        rpg_t.capped = false
     end
 
     if not added_to_pool then
-        RPG.debug_log('RPG - ' .. player.name .. ' got org xp: ' .. amount)
+        Public.debug_log('RPG - ' .. player.name .. ' got org xp: ' .. amount)
         local fee = amount - add_to_global_pool(amount, true)
-        RPG.debug_log('RPG - ' .. player.name .. ' got fee: ' .. fee)
+        Public.debug_log('RPG - ' .. player.name .. ' got fee: ' .. fee)
         amount = math.round(amount, 3) - fee
         if rpg_extra.difficulty then
             amount = amount + rpg_extra.difficulty
         end
-        RPG.debug_log('RPG - ' .. player.name .. ' got after fee: ' .. amount)
+        Public.debug_log('RPG - ' .. player.name .. ' got after fee: ' .. amount)
     else
-        RPG.debug_log('RPG - ' .. player.name .. ' got org xp: ' .. amount)
+        Public.debug_log('RPG - ' .. player.name .. ' got org xp: ' .. amount)
     end
 
-    rpg_t[player.index].xp = math.round(rpg_t[player.index].xp + amount, 3)
-    rpg_t[player.index].xp_since_last_floaty_text = rpg_t[player.index].xp_since_last_floaty_text + amount
+    rpg_t.xp = math.round(rpg_t.xp + amount, 3)
+    rpg_t.xp_since_last_floaty_text = rpg_t.xp_since_last_floaty_text + amount
 
-    if not experience_levels[rpg_t[player.index].level + 1] then
+    if not experience_levels[rpg_t.level + 1] then
         return
     end
 
@@ -686,15 +702,15 @@ function Public.gain_xp(player, amount, added_to_pool, text)
     if f and f.valid then
         local d = Gui.get_data(f)
         if d.exp_gui and d.exp_gui.valid then
-            d.exp_gui.caption = math.floor(rpg_t[player.index].xp)
+            d.exp_gui.caption = math.floor(rpg_t.xp)
         end
     end
 
-    if rpg_t[player.index].xp >= experience_levels[rpg_t[player.index].level + 1] then
+    if rpg_t.xp >= experience_levels[rpg_t.level + 1] then
         level_up(player)
     end
 
-    if rpg_t[player.index].last_floaty_text > game.tick then
+    if rpg_t.last_floaty_text > game.tick then
         if not text then
             return
         end
@@ -703,7 +719,7 @@ function Public.gain_xp(player, amount, added_to_pool, text)
     if text then
         text_to_draw = '+' .. math.floor(amount) .. ' xp'
     else
-        text_to_draw = '+' .. math.floor(rpg_t[player.index].xp_since_last_floaty_text) .. ' xp'
+        text_to_draw = '+' .. math.floor(rpg_t.xp_since_last_floaty_text) .. ' xp'
     end
 
     player.create_local_flying_text {
@@ -714,12 +730,12 @@ function Public.gain_xp(player, amount, added_to_pool, text)
         speed = 2
     }
 
-    rpg_t[player.index].xp_since_last_floaty_text = 0
-    rpg_t[player.index].last_floaty_text = game.tick + visuals_delay
+    rpg_t.xp_since_last_floaty_text = 0
+    rpg_t.last_floaty_text = game.tick + visuals_delay
 end
 
 function Public.global_pool(players, count)
-    local rpg_extra = RPG.get('rpg_extra')
+    local rpg_extra = Public.get('rpg_extra')
 
     if not rpg_extra.global_pool then
         return
@@ -739,7 +755,7 @@ function Public.global_pool(players, count)
 
     local share = pool / count
 
-    RPG.debug_log('RPG - Share per player:' .. share)
+    Public.debug_log('RPG - Share per player:' .. share)
 
     for i = 1, #players do
         local p = players[i]
@@ -750,14 +766,14 @@ function Public.global_pool(players, count)
             else
                 share = share / 10
                 rpg_extra.leftover_pool = rpg_extra.leftover_pool + share
-                RPG.debug_log('RPG - player capped: ' .. p.name .. '. Amount to pool:' .. share)
+                Public.debug_log('RPG - player capped: ' .. p.name .. '. Amount to pool:' .. share)
             end
         else
             local message = ({'rpg_functions.pool_reward', p.name})
             Alert.alert_player_warning(p, 10, message)
             share = share / 10
             rpg_extra.leftover_pool = rpg_extra.leftover_pool + share
-            RPG.debug_log('RPG - player AFK: ' .. p.name .. '. Amount to pool:' .. share)
+            Public.debug_log('RPG - player AFK: ' .. p.name .. '. Amount to pool:' .. share)
         end
     end
 
@@ -801,5 +817,3 @@ function Public.distribute_pool()
 end
 
 Public.add_to_global_pool = add_to_global_pool
-
-return Public

@@ -35,6 +35,9 @@ local function get_player_data(player, remove)
 end
 
 local function unpack_inventory(inventory)
+    if not inventory then
+        return
+    end
     local unpacked = {}
     for i = 1, #inventory do
         unpacked[i] = inventory[i]
@@ -288,6 +291,10 @@ local function open_inventory(source, target)
     data.last_tab = 'Main'
 
     local main = unpack_inventory(target.get_main_inventory())
+    if not main then
+        return
+    end
+
     local armor = unpack_inventory(target.get_inventory(defines.inventory.character_armor))
     local guns = unpack_inventory(target.get_inventory(defines.inventory.character_guns))
     local ammo = unpack_inventory(target.get_inventory(defines.inventory.character_ammo))
@@ -354,6 +361,10 @@ local function on_gui_click(event)
             return false
         end
         local main = unpack_inventory(viewingPlayer.get_main_inventory())
+        if not main then
+            return
+        end
+
         local armor = unpack_inventory(viewingPlayer.get_inventory(defines.inventory.character_armor))
         local guns = unpack_inventory(viewingPlayer.get_inventory(defines.inventory.character_guns))
         local ammo = unpack_inventory(viewingPlayer.get_inventory(defines.inventory.character_ammo))
@@ -419,6 +430,10 @@ local function update_gui(event)
             end
 
             main = unpack_inventory(player.get_main_inventory())
+            if not main then
+                return
+            end
+
             local armor = unpack_inventory(player.get_inventory(defines.inventory.character_armor))
             local guns = unpack_inventory(player.get_inventory(defines.inventory.character_guns))
             local ammo = unpack_inventory(player.get_inventory(defines.inventory.character_ammo))

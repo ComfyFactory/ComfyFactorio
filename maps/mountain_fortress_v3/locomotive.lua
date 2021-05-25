@@ -7,8 +7,7 @@ local WD = require 'modules.wave_defense.table'
 local Session = require 'utils.datastore.session_data'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 local Jailed = require 'utils.datastore.jail_data'
-local RPG_Settings = require 'modules.rpg.table'
-local Functions = require 'modules.rpg.functions'
+local RPG = require 'modules.rpg.main'
 local Gui = require 'utils.gui'
 local Server = require 'utils.server'
 local Alert = require 'utils.alert'
@@ -24,7 +23,7 @@ local format_number = require 'util'.format_number
 local Public = {}
 local concat = table.concat
 local main_frame_name = Gui.uid_name()
-local rpg_main_frame = RPG_Settings.main_frame_name
+local rpg_main_frame = RPG.main_frame_name
 local random = math.random
 local floor = math.floor
 local round = math.round
@@ -355,7 +354,7 @@ local function property_boost(data)
             if Math2D.bounding_box.contains_point(area, player.position) or player.surface.index == loco_surface.index then
                 Public.add_player_to_permission_group(player, 'locomotive')
                 local pos = player.position
-                Functions.gain_xp(player, 0.5 * (rpg[player.index].bonus + xp_points))
+                RPG.gain_xp(player, 0.5 * (rpg[player.index].bonus + xp_points))
 
                 player.create_local_flying_text {
                     text = '+' .. '',
@@ -1226,7 +1225,7 @@ local function gui_click(event)
                 player.name .. ' has bought the explosive bullet modifier for ' .. format_number(item.price) .. ' coins.'
             }
         )
-        RPG_Settings.enable_explosive_bullets(true)
+        RPG.enable_explosive_bullets(true)
         this.explosive_bullets = true
 
         redraw_market_items(data.item_frame, player, data.search_text)
@@ -1903,7 +1902,7 @@ function Public.refresh_gui()
 end
 
 function Public.boost_players_around_train()
-    local rpg = RPG_Settings.get('rpg_t')
+    local rpg = RPG.get('rpg_t')
     local active_surface_index = WPT.get('active_surface_index')
     if not active_surface_index then
         return

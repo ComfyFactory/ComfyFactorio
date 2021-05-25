@@ -7,7 +7,6 @@ local Gui = require 'utils.gui'
 local this = {
     players = {},
     activate_custom_buttons = false,
-    bottom_right = false,
     bottom_quickbar_button = {}
 }
 
@@ -56,13 +55,20 @@ function Public.set(key, value)
     end
 end
 
+function Public.clear_data(player)
+    this.players[player.index] = nil
+    this.bottom_quickbar_button[player.index] = nil
+end
+
 function Public.reset()
     local players = game.players
     for i = 1, #players do
         local player = players[i]
-        if not player.connected then
-            this.players[player.index] = nil
-            this.bottom_quickbar_button[player.index] = nil
+        if player and player.valid then
+            if not player.connected then
+                this.players[player.index] = nil
+                this.bottom_quickbar_button[player.index] = nil
+            end
         end
     end
 end
@@ -75,34 +81,41 @@ local function destroy_frame(player)
     if frame and frame.valid then
         frame.destroy()
     end
-    this.bottom_quickbar_button[player.index] = nil
 end
 
-local function create_frame(player, rebuild)
+local function create_frame(player, alignment, location, portable)
     local gui = player.gui
     local frame = gui.screen[bottom_guis_frame]
     if frame and frame.valid then
-        if rebuild then
-            frame.destroy()
-        else
-            return frame
-        end
+        destroy_frame(player)
     end
+
+    alignment = alignment or 'vertical'
 
     frame =
         player.gui.screen.add {
         type = 'frame',
         name = bottom_guis_frame,
-        direction = 'vertical'
+        direction = alignment
     }
+
     frame.style.padding = 3
-    frame.style.minimal_height = 96
     frame.style.top_padding = 4
+
+    if alignment == 'vertical' then
+        frame.style.minimal_height = 96
+    end
+
+    frame.location = location
+    if portable then
+        frame.caption = '•'
+    end
+    global.frame = frame
 
     local inner_frame =
         frame.add {
         type = 'frame',
-        direction = 'vertical'
+        direction = alignment
     }
     inner_frame.style = 'quick_bar_inner_panel'
 
@@ -131,30 +144,51 @@ local function create_frame(player, rebuild)
     return frame
 end
 
-local function set_location(player)
-    local frame = create_frame(player)
+local function set_location(player, state)
+    local data = Public.get_player_data(player)
+    local alignment = 'vertical'
+
+    local location
     local resolution = player.display_resolution
     local scale = player.display_scale
 
-    if this.players[player.index] and this.players[player.index].bottom_left then
-        frame.location = {
-            x = (resolution.width / 2) - ((54 + 445) * scale),
-            y = (resolution.height - (96 * scale))
-        }
-        return
-    end
-
-    if this.bottom_right then
-        frame.location = {
+    if state == 'bottom_left' then
+        if data.above then
+            location = {
+                x = (resolution.width / 2) - ((259) * scale),
+                y = (resolution.height - (150 * scale))
+            }
+            alignment = 'horizontal'
+        else
+            location = {
+                x = (resolution.width / 2) - ((54 + 444) * scale),
+                y = (resolution.height - (96 * scale))
+            }
+        end
+        data.bottom_state = 'bottom_left'
+    elseif state == 'bottom_right' then
+        if data.above then
+            location = {
+                x = (resolution.width / 2) - ((-376) * scale),
+                y = (resolution.height - (150 * scale))
+            }
+            alignment = 'horizontal'
+        else
+            location = {
+                x = (resolution.width / 2) - ((54 + -528) * scale),
+                y = (resolution.height - (96 * scale))
+            }
+        end
+        data.bottom_state = 'bottom_right'
+    else
+        Public.get_player_data(player, true)
+        location = {
             x = (resolution.width / 2) - ((54 + -528) * scale),
             y = (resolution.height - (96 * scale))
         }
-    else
-        frame.location = {
-            x = (resolution.width / 2) - ((54 + 445) * scale),
-            y = (resolution.height - (96 * scale))
-        }
     end
+
+    create_frame(player, alignment, location, data.portable)
 end
 
 --- Activates the custom buttons
@@ -170,16 +204,6 @@ end
 --- Fetches if the custom buttons are activated
 function Public.is_custom_buttons_enabled()
     return this.activate_custom_buttons
-end
-
---- Sets the buttons to be aligned bottom right
----@param boolean
-function Public.bottom_right(value)
-    if value then
-        this.bottom_right = value
-    else
-        this.bottom_right = false
-    end
 end
 
 Gui.on_click(
@@ -220,19 +244,6 @@ Event.add(
 )
 
 Event.add(
-    defines.events.on_player_died,
-    function(event)
-        local player = game.get_player(event.player_index)
-        if this.activate_custom_buttons then
-            local frame = player.gui.screen[bottom_guis_frame]
-            if frame and frame.valid then
-                frame.destroy()
-            end
-        end
-    end
-)
-
-Event.add(
     defines.events.on_player_display_scale_changed,
     function(event)
         local player = game.get_player(event.player_index)
@@ -247,6 +258,7 @@ Event.add(
     function(event)
         local player = game.get_player(event.player_index)
         destroy_frame(player)
+        Public.clear_data(player)
     end
 )
 

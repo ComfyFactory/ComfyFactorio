@@ -1,6 +1,4 @@
-local RPG_F = require 'modules.rpg.functions'
-local RPG_T = require 'modules.rpg.table'
---local RPG_S = require "modules.rpg.settings"
+local RPG = require 'modules.rpg.main'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local Alert = require 'utils.alert'
 local DungeonsTable = require 'maps.dungeons.table'
@@ -167,9 +165,9 @@ local function spawn_boss(arena, biter, level)
 end
 
 local function hide_rpg(player, show)
-    local rpg_button = RPG_T.draw_main_frame_name
-    local rpg_frame = RPG_T.main_frame_name
-    local rpg_settings = RPG_T.settings_frame_name
+    local rpg_button = RPG.draw_main_frame_name
+    local rpg_frame = RPG.main_frame_name
+    local rpg_settings = RPG.settings_frame_name
 
     local rpg_b = player.gui.top[rpg_button]
     local rpg_f = player.gui.screen[rpg_frame]
@@ -196,7 +194,7 @@ local function teleport_player_out(arena, player)
     local arenatable = DungeonsTable.get_arenatable()
     local surface = arenatable.previous_position[arena].surface
     local position = arenatable.previous_position[arena].position
-    local rpg = RPG_T.get('rpg_t')
+    local rpg = RPG.get('rpg_t')
     rpg[player.index].one_punch = true
     hide_rpg(player, true)
     player.teleport(surface.find_non_colliding_position('character', position, 20, 0.5), surface)
@@ -213,7 +211,7 @@ local function teleport_player_in(arena, player)
     arenatable.previous_position[arena].position = player.position
     arenatable.previous_position[arena].surface = player.surface
     arenatable.timer[arena] = game.tick
-    local rpg = RPG_T.get('rpg_t')
+    local rpg = RPG.get('rpg_t')
     rpg[player.index].one_punch = false
     rpg[player.index].enable_entity_spawn = false
     hide_rpg(player, false)
@@ -261,7 +259,7 @@ local function boss_died(arena)
     arenatable.won[arena] = true
     arenatable.timer[arena] = game.tick - 30
     --teleport_player_out(arena, player)
-    RPG_F.gain_xp(player, 4 + level, true)
+    RPG.gain_xp(player, 4 + level, true)
     if level % 10 == 0 and level > 0 then
         Alert.alert_all_players(8, {'dungeons_tiered.player_won', player.name, arenatable.bosses[player.index]}, {r = 0.8, g = 0.2, b = 0}, 'entity/behemoth-biter', 0.7)
     else
@@ -301,7 +299,7 @@ local function enter_arena(player)
         -- player.print({"dungeons_tiered.arena_occupied"})
         return
     end
-    local rpg_t = RPG_T.get('rpg_t')
+    local rpg_t = RPG.get('rpg_t')
     if rpg_t[player.index].level < 5 then
         Alert.alert_player_warning(player, 8, {'dungeons_tiered.arena_level_needed'})
         return
