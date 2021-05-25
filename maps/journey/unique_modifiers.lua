@@ -41,8 +41,10 @@ Public.lush = {}
 
 Public.eternal_night = {
 	on_world_start = function(journey)
-		game.surfaces.nauvis.daytime = 0.5
-		game.surfaces.nauvis.freeze_daytime = true
+		local surface = game.surfaces.nauvis
+		surface.daytime = 0.44
+		surface.freeze_daytime = true
+		surface.solar_power_multiplier = 5
 	end,
 }
 
@@ -76,7 +78,7 @@ Public.mountainous = {
 		local surface = entity.surface
 		event.buffer.clear()
 		local ore = ore_raffle[math_random(1, size_of_ore_raffle)]
-		local count = math_floor(math_sqrt(entity.position.x ^ 2 + entity.position.y ^ 2) * 0.02) + math_random(25, 75)
+		local count = math_floor(math_sqrt(entity.position.x ^ 2 + entity.position.y ^ 2) * 0.05) + math_random(25, 75)
 		local ore_amount = math_floor(count * 0.85)
 		local stone_amount = math_floor(count * 0.15)
 		surface.spill_item_stack(entity.position, {name = ore, count = ore_amount}, true)
@@ -120,10 +122,11 @@ Public.replicant_fauna = {
 Public.pitch_black = {
 	on_world_start = function(journey)
 		local surface = game.surfaces.nauvis
-		surface.daytime = 0.5
+		surface.daytime = 0.44
 		surface.freeze_daytime = true
+		surface.solar_power_multiplier = 3
 		surface.min_brightness = 0
-		surface.brightness_visual_weights = {1, 1, 1, 1}
+		surface.brightness_visual_weights = {0.8, 0.8, 0.8, 1}
 	end,
 }
 
@@ -194,7 +197,7 @@ Public.volcanic = {
 				y_scale = 32,
 				target = event.area.left_top,
 				surface = event.surface,
-				tint = {r = 0.55, g = 0.0, b = 0.0, a = 0.5},
+				tint = {r = 0.55, g = 0.0, b = 0.0, a = 0.25},
 				render_layer = 'ground'
 		}))
 	end,
@@ -211,6 +214,13 @@ Public.volcanic = {
 		surface.request_to_generate_chunks({x = 0, y = 0}, 3)
 		surface.force_generate_chunk_requests()
 		surface.spill_item_stack({0, 0}, {name = "stone-brick", count = 4096}, true)
+		for x = -24, 24, 1 do
+			for y = -24, 24, 1 do
+				if math.sqrt(x ^ 2 + y ^ 2) < 24 then
+					surface.set_tiles({{name = "stone-path", position = {x, y}}}, true)
+				end
+			end
+		end
 	end,
 }
 
@@ -268,13 +278,13 @@ Public.dense_atmosphere = {
 		local entity = event.created_entity
 		if not entity.valid then return end
 		if entity.surface.index ~= 1 then return end
-		if entity.name == "roboport" then entity.die() end
+		if entity.type == "roboport" then entity.die() end
 	end,
 	on_built_entity = function(event)
 		local entity = event.created_entity
 		if not entity.valid then return end
 		if entity.surface.index ~= 1 then return end
-		if entity.name == "roboport" then entity.die() end
+		if entity.type == "roboport" then entity.die() end
 	end,
 }
 

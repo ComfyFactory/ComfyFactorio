@@ -44,6 +44,12 @@ Public.world_selector_colors = {
 	[3] = {r = 200, g = 100, b = 100, a = 255},
 }
 
+Public.reroll_selector_area_color = {r = 220, g = 220, b = 220, a = 255}
+Public.reroll_selector_area = {
+	left_top = {x = -4, y = math.floor(Public.mothership_radius - 6) * -1},
+	right_bottom = {x = 4, y = math.floor(Public.mothership_radius - 6) * -1 + 5},
+}
+
 Public.mothership_messages = {
 	waiting = {
 		"Return to me, so we can continue the journey!",
@@ -76,25 +82,26 @@ Public.mothership_gen_settings = {
 }
 
 Public.modifiers = {	
-	["trees"] = {-30, -15, "Trees"},
+	["trees"] = {-20, -10, "Trees"},
 	["tree_durability"] = {-30, -15, "Tree Durability"},
 	["cliff_settings"] = {20, 40, "Cliffs"},	
-	["water"] = {-30, -15, "Water"},
+	["water"] = {-20, -10, "Water"},
 	["coal"] = {-20, -10, "Coal"},
 	["stone"] = {-20, -10, "Stone"},
 	["iron-ore"] = {-20, -10, "Iron Ore"},
 	["copper-ore"] = {-20, -10, "Copper Ore"},
 	["crude-oil"] = {-20, -10, "Oil"},
 	["uranium-ore"] = {-20, -10, "Uranium Ore"},
-	["enemy-base"] = {20, 40, "Nests"},
-	["expansion_cooldown"] = {-40, -20, "Nest Expansion Cooldown"},
-	["enemy_attack_pollution_consumption_modifier"] = {-30, -15, "Nest Pollution Consumption"},
+	["mixed_ore"] = {-20, -10, "Mixed Ore"},
+	["enemy-base"] = {10, 20, "Nests"},
+	["expansion_cooldown"] = {-30, -15, "Nest Expansion Cooldown"},
+	["enemy_attack_pollution_consumption_modifier"] = {-20, -10, "Nest Pollution Consumption"},
 	["max_unit_group_size"] = {15, 30, "Biter Group Size Maximum"},	
-	["time_factor"] = {20, 40, "Evolution Time Factor"},
-	["destroy_factor"] = {20, 40, "Evolution Destroy Factor"},
-	["pollution_factor"] = {20, 40, "Evolution Pollution Factor"},	
-	["ageing"] = {-30, -15, "Terrain Pollution Consumption"},
-	["diffusion_ratio"] = {15, 30, "Pollution Diffusion"},
+	["time_factor"] = {15, 30, "Evolution Time Factor"},
+	["destroy_factor"] = {15, 30, "Evolution Destroy Factor"},
+	["pollution_factor"] = {15, 30, "Evolution Pollution Factor"},	
+	["ageing"] = {-20, -10, "Terrain Pollution Consumption"},
+	["diffusion_ratio"] = {10, 20, "Pollution Diffusion"},
 	["technology_price_multiplier"] = {10, 20, "Technology Price"},	
 }
 
@@ -151,27 +158,27 @@ Public.build_type_whitelist = {
 }
 
 Public.unique_world_traits = {	
-	["lush"] = {"Lush", "Pure Vanilla."},
+	["lush"] = {"Lush", "Pure Vanilla."},	
+	["eternal_night"] = {"Eternal Night", "This world seems to be missing a sun."},
+	["dense_atmosphere"] = {"Dense Atmosphere", "Your roboport structures seem to malfunction."},
+	["pitch_black"] = {"Pitch Black", "No light may reach this realm."},
+	["volcanic"] = {"Volcanic", "The floor is (almost) lava."},
 	["matter_anomaly"] = {"Matter Anomaly", "Why can't i hold all these ores."},
 	["mountainous"] = {"Mountainous", "Diggy diggy hole!"},
-	["quantum_anomaly"] = {"Quantum Anomaly", "Research complete."},
-	["pitch_black"] = {"Pitch Black", "No light may reach this realm."},
+	["quantum_anomaly"] = {"Quantum Anomaly", "Research complete."},	
 	["replicant_fauna"] = {"Replicant Fauna", "The biters feed on your structures."},
 	["tarball"] = {"Tarball", "Door stuck, Door stuck..."},
-	["swamps"] = {"Swamps", "No deep water to be found in this world."},
-	["volcanic"] = {"Volcanic", "The floor is (almost) lava."},
+	["swamps"] = {"Swamps", "No deep water to be found in this world."},	
 	["chaotic_resources"] = {"Chaotic Resources", "Something to sort out."},
 	["infested"] = {"Infested", "They lurk inside."},
-	["low_mass"] = {"Low Mass", "You feel light footed and the robots are buzzing."},
-	["eternal_night"] = {"Eternal Night", "This world seems to be missing a sun."},
-	["eternal_day"] = {"Eternal Day", "The sun never moves."},
-	["dense_atmosphere"] = {"Dense Atmosphere", "The roboports seem to malfunction."},
+	["low_mass"] = {"Low Mass", "You feel light footed and the robots are buzzing."},	
+	["eternal_day"] = {"Eternal Day", "The sun never moves."},	
 	["undead_plague"] = {"Undead Plague", "The dead are restless."},
+	--[[
+	]]
 	
-	--["snowpiercer"] = {"Snowpiercer", "It's cold outside, so very cold."},
 	--["wasteland"] = {"Wasteland", "Smells like sulfur."},
 	--["wetlands"] = {"Wetlands", "Many rivers and many fish."},
-	--["high_mass"] = {"High Mass", "Your feet will need some proper ground to walk well."},
 }
 
 return Public
