@@ -1,10 +1,18 @@
 --luacheck: ignore
-local Public = {}
+local Map_functions = require 'tools.map_functions'
 local Server = require 'utils.server'
+local Get_noise = require 'utils.get_noise'
 local Constants = require 'maps.journey.constants'
 local Unique_modifiers = require 'maps.journey.unique_modifiers'
+local math_sqrt = math.sqrt
+local math_random = math.random
+local math_floor = math.floor
+local math_abs = math.abs
 
-local function clear_world_selectors(journey)
+local Public = {}
+local mixed_ores = {'copper-ore', 'iron-ore', 'stone', 'coal'}
+
+local function clear_selectors(journey)
 	for k, world_selector in pairs(journey.world_selectors) do
 		for _, ID in pairs(world_selector.texts) do
 			rendering.destroy(ID)
@@ -12,6 +20,21 @@ local function clear_world_selectors(journey)
 		journey.world_selectors[k].texts = {}
 		journey.world_selectors[k].activation_level = 0
 	end
+	for _, ID in pairs(journey.reroll_selector.texts) do
+		rendering.destroy(ID)
+	end
+	journey.reroll_selector.texts = {}
+	journey.reroll_selector.activation_level = 0
+end
+
+function Public.place_mixed_ore(event, journey)
+	if math_random(1, 192) ~= 1 then return end
+	local surface = event.surface	
+	local x = event.area.left_top.x + math_random(0, 31)
+	local y = event.area.left_top.y + math_random(0, 31)
+	local base_amount = 1000 + math_sqrt(x ^ 2 + y ^ 2) * 5
+	local richness = journey.mixed_ore_richness
+	Map_functions.draw_rainbow_patch({x = x, y = y}, surface, math_random(17, 23), base_amount * richness + 100)
 end
 
 local function place_teleporter(journey, surface, position)
@@ -100,10 +123,10 @@ local function remove_offline_players(maximum_age_in_hours)
 	game.remove_offline_players(players_to_remove)
 end
 
-local function get_current_modifier_percentage(name)	
+local function get_current_modifier_percentage(name, journey)	
 	local mgs = game.surfaces.nauvis.map_gen_settings
 	for _, autoplace in pairs({"iron-ore", "copper-ore", "uranium-ore", "coal", "stone", "crude-oil", "stone", "trees", "enemy-base"}) do
-		if name == autoplace then return mgs.autoplace_controls[name].frequency end
+		if name == autoplace then return mgs.autoplace_controls[name].richness end
 	end	
 	if name == "cliff_settings" then return 40 / mgs.cliff_settings.cliff_elevation_interval end
 	if name == "water" then	return mgs.water end	
@@ -116,7 +139,8 @@ local function get_current_modifier_percentage(name)
 	if name == "ageing" then return game.map_settings.pollution.ageing end
 	if name == "diffusion_ratio" then return game.map_settings.pollution.diffusion_ratio * 50 end
 	if name == "tree_durability" then return game.map_settings.pollution.pollution_restored_per_tree_damage * 0.1 end
-	if name == "max_unit_group_size" then return game.map_settings.unit_group.max_unit_group_size * 0.005 end		
+	if name == "max_unit_group_size" then return game.map_settings.unit_group.max_unit_group_size * 0.005 end
+	if name == "mixed_ore" then return journey.mixed_ore_richness end
 end
 
 local function delete_nauvis_chunks(journey)
@@ -184,7 +208,7 @@ function Public.draw_gui(journey)
 	local tooltip = Constants.unique_world_traits[journey.world_trait][2] .. "\n\n"
 	
 	for k, v in pairs(Constants.modifiers) do
-		tooltip = tooltip .. v[3] .. " - " .. math.round(get_current_modifier_percentage(k) * 100, 1) .. "%\n"
+		tooltip = tooltip .. v[3] .. " - " .. math.round(get_current_modifier_percentage(k, journey) * 100, 1) .. "%\n"
 	end
 	
 	tooltip = tooltip .. "\nCapsules:\n"
@@ -197,15 +221,81 @@ function Public.draw_gui(journey)
 	
 	for _, player in pairs(game.connected_players) do	
 		if not player.gui.top.journey_button then
-			local button = player.gui.top.add({type = "sprite-button", name = "journey_button", caption = ""})
-			button.style.font = "heading-1"
-			button.style.font_color = {222, 222, 222}
-			button.style.minimal_height = 38
-			button.style.minimal_width = 250
-			button.style.padding = -2
+			local element = player.gui.top.add({type = "sprite-button", name = "journey_button", caption = ""})
+			element.style.font = "heading-1"
+			element.style.font_color = {222, 222, 222}
+			element.style.minimal_height = 38
+			element.style.minimal_width = 250
+			element.style.padding = -2
 		end
 		local gui = player.gui.top.journey_button
 		gui.caption = caption
+		gui.tooltip = tooltip
+	end
+	
+	local fuel_requirement = journey.mothership_cargo_space["uranium-fuel-cell"]
+	local value
+	if fuel_requirement == 0 then
+		value = 1
+	else
+		value = journey.mothership_cargo["uranium-fuel-cell"] / fuel_requirement
+	end	
+	local tooltip = "Fuel requirement to advance to next world:\n" .. fuel_requirement .. "\n\nNuclear Fuel Cells in Mothership Cargo:\n" .. journey.mothership_cargo["uranium-fuel-cell"]
+	
+	for _, player in pairs(game.connected_players) do	
+		if not player.gui.top.journey_fuel then
+			local frame = player.gui.top.add({type = 'frame', name = 'journey_fuel'})
+			frame.style.padding = 0
+			local element = frame.add({type = 'sprite', sprite = 'item/uranium-fuel-cell', name = "journey_fuel_sprite"})
+			element.style.minimal_width = 32
+			element.style.minimal_height = 32
+			element.style.maximal_width = 32
+			element.style.maximal_height = 32
+			element.style.margin = 0
+			element.style.padding = 0
+			local element = frame.add({type = 'progressbar', name = 'journey_fuel_progressbar', value = 0})		
+			element.style.minimal_width = 100
+			element.style.maximal_width = 100
+			element.style.top_margin = 12
+			element.style.right_margin = 12
+		end
+		local gui = player.gui.top.journey_fuel
+		gui.tooltip = tooltip
+		local gui = player.gui.top.journey_fuel.journey_fuel_sprite
+		gui.tooltip = tooltip
+		local gui = player.gui.top.journey_fuel.journey_fuel_progressbar
+		gui.value = value
+		gui.tooltip = tooltip
+	end
+	
+	local max_sattelites = journey.mothership_cargo_space["satellite"]
+	local value = journey.mothership_cargo["satellite"] / max_sattelites
+	local tooltip = "Room for satellites in Mothership cargo:\n" .. max_sattelites .. "\n\nSatellites stored:\n" .. journey.mothership_cargo["satellite"]
+	
+	for _, player in pairs(game.connected_players) do	
+		if not player.gui.top.journey_satellites then
+			local frame = player.gui.top.add({type = 'frame', name = 'journey_satellites'})
+			frame.style.left_margin = 4
+			frame.style.padding = 0
+			local element = frame.add({type = 'sprite', sprite = 'item/satellite', name = "journey_satellites_sprite"})
+			element.style.minimal_width = 32
+			element.style.minimal_height = 32
+			element.style.maximal_width = 32
+			element.style.maximal_height = 32
+			element.style.margin = 0
+			element.style.padding = 0
+			local element = frame.add({type = 'progressbar', name = 'journey_satellites_progressbar', value = 0})		
+			element.style.minimal_width = 100
+			element.style.maximal_width = 100
+			element.style.top_margin = 12
+			element.style.right_margin = 12
+		end
+		local gui = player.gui.top.journey_satellites
+		gui.tooltip = tooltip
+		local gui = player.gui.top.journey_satellites.journey_satellites_sprite
+		gui.tooltip = tooltip
+		local gui = player.gui.top.journey_satellites.journey_satellites_progressbar
+		gui.value = value
 		gui.tooltip = tooltip
 	end
 end
@@ -298,12 +388,20 @@ function Public.hard_reset(journey)
 	end
 	
 	journey.world_selectors = {}
+	journey.reroll_selector = {activation_level = 0}
 	for i = 1, 3, 1 do journey.world_selectors[i] = {activation_level = 0, texts = {}} end	
 	journey.mothership_speed = 0.5
 	journey.characters_in_mothership = 0
 	journey.world_color_filters = {}
+	journey.mixed_ore_richness = 1
 	journey.mothership_messages = {}
 	journey.mothership_cargo = {}
+	journey.mothership_cargo["uranium-fuel-cell"] = 10
+	journey.mothership_cargo["satellite"] = 1
+	journey.mothership_cargo_space = {
+		["satellite"] = 1,
+		["uranium-fuel-cell"] = 0,
+	}
 	journey.bonus_goods = {}
 	journey.nauvis_chunk_positions = nil	
 	journey.world_number = 0
@@ -348,10 +446,7 @@ function Public.draw_mothership(journey)
 	end
 
 	for k, area in pairs(Constants.world_selector_areas) do
-		journey.world_selectors[k].rectangles = {}
-
-		local center = {x = area.left_top.x + Constants.world_selector_width * 0.5, y = area.left_top.y + Constants.world_selector_height * 0.5}
-				
+		journey.world_selectors[k].rectangles = {}				
 		local position = area.left_top
 		local rectangle = rendering.draw_rectangle {
 			width = 1,
@@ -363,8 +458,7 @@ function Public.draw_mothership(journey)
 			draw_on_ground = true,
 			only_in_alt_mode = false
 		}
-		table.insert(journey.world_selectors[k].rectangles, rectangle)
-		
+		table.insert(journey.world_selectors[k].rectangles, rectangle)		
 		journey.world_selectors[k].border = rendering.draw_rectangle {
 			width = 8,
 			filled=false,
@@ -374,8 +468,29 @@ function Public.draw_mothership(journey)
 			color = {r = 100, g = 100, b = 100, a = 255},
 			draw_on_ground = true,
 			only_in_alt_mode = false
-		}		
+		}
 	end
+
+	journey.reroll_selector.rectangle = rendering.draw_rectangle {
+		width = 8,
+		filled=true,
+		surface = surface,
+		left_top = Constants.reroll_selector_area.left_top,
+		right_bottom = Constants.reroll_selector_area.right_bottom,
+		color = Constants.reroll_selector_area_color,
+		draw_on_ground = true,
+		only_in_alt_mode = false
+	}
+	journey.reroll_selector.border = rendering.draw_rectangle {
+		width = 8,
+		filled=false,
+		surface = surface,
+		left_top = Constants.reroll_selector_area.left_top,
+		right_bottom = Constants.reroll_selector_area.right_bottom,
+		color = {r = 100, g = 100, b = 100, a = 255},
+		draw_on_ground = true,
+		only_in_alt_mode = false
+	}	
 
 	for k, item_name in pairs({"arithmetic-combinator", "constant-combinator", "decider-combinator", "programmable-speaker", "red-wire", "green-wire", "small-lamp", "substation", "pipe", "gate", "stone-wall", "transport-belt"}) do
 		local e = surface.create_entity({name = 'infinity-chest', position = {-7 + k, Constants.mothership_radius - 3}, force = 'player'})
@@ -409,6 +524,7 @@ function Public.draw_mothership(journey)
 		e.operable = false
 		local e = surface.create_entity({name = "burner-inserter", position = {(x - 1) * m, y}, force = "player"})
 		e.direction = 4 + m * 2
+		e.rotatable = false
 		e.minable = false
 		e.destructible = false
 		e.operable = false
@@ -462,6 +578,11 @@ local function animate_selectors(journey)
 			rendering.set_color(rectangle, {r = color.r * activation_level, g = color.g * activation_level, b = color.b * activation_level, a = 255})
 		end
 	end
+	local activation_level = journey.reroll_selector.activation_level
+	if activation_level < 0.2 then activation_level = 0.2 end
+	if activation_level > 1 then activation_level = 1 end	
+	local color = Constants.reroll_selector_area_color
+	rendering.set_color(journey.reroll_selector.rectangle, {r = color.r * activation_level, g = color.g * activation_level, b = color.b * activation_level, a = 255})
 end
 
 local function draw_background(journey, surface)
@@ -498,6 +619,28 @@ end
 
 function Public.set_world_selectors(journey)
 	local surface = game.surfaces.mothership
+	
+	local x = Constants.reroll_selector_area.left_top.x + 3.2
+	journey.reroll_selector.texts = {
+		rendering.draw_text{
+			text = journey.mothership_cargo.satellite .. " x ",
+			surface = surface,
+			target = {x, Constants.reroll_selector_area.left_top.y - 1.5},
+			color = {255, 255, 255, 255},
+			scale = 1.5,
+			font = "default-large-bold",
+			alignment = "center",
+			scale_with_zoom = false,
+		},
+		rendering.draw_sprite{
+			sprite = "item/satellite",
+			surface = surface,
+			y_scale = 1.5,
+			x_scale = 1.5,
+			target = {x + 1.6, Constants.reroll_selector_area.left_top.y - 1},
+		},
+	}	
+	
 	local modifier_names = {}
 	for k, _ in pairs(Constants.modifiers) do
 		table.insert(modifier_names, k)
@@ -520,11 +663,12 @@ function Public.set_world_selectors(journey)
 		world_selector.modifiers = {}
 		world_selector.bonus_goods = {}
 		world_selector.world_trait = unique_world_traits[k]
+		world_selector.fuel_requirement = math.random(25, 50)
 		local position = Constants.world_selector_areas[k].left_top
-		local texts = world_selector.texts				
+		local texts = world_selector.texts
 		local modifiers = world_selector.modifiers				
 		local bonus_goods = world_selector.bonus_goods
-		local y_modifier = - 8.5
+		local y_modifier = -9.7
 		
 		for i = 1, 8, 1 do
 			local modifier = modifier_names[i]
@@ -533,7 +677,7 @@ function Public.set_world_selectors(journey)
 			v = math.floor(v)
 			modifiers[i] = {modifier, v}
 		end
-		
+
 		table.insert(texts, rendering.draw_text{
 			text = Constants.unique_world_traits[world_selector.world_trait][1],
 			surface = surface,
@@ -543,7 +687,7 @@ function Public.set_world_selectors(journey)
 			font = "default-large-bold",
 			alignment = "center",
 			scale_with_zoom = false
-		})
+		})	
 		
 		for k2, modifier in pairs(modifiers) do
 			y_modifier = y_modifier + 0.8
@@ -570,14 +714,31 @@ function Public.set_world_selectors(journey)
 				scale_with_zoom = false
 			})
 		end
-					
+		
+		y_modifier = y_modifier + 0.85
+		table.insert(texts, rendering.draw_text{
+			text = "Fuel requirement +" .. world_selector.fuel_requirement,
+			surface = surface,
+			target = {position.x + Constants.world_selector_width * 0.5, position.y + y_modifier},
+			color = {155, 155, 0, 255},
+			scale = 1.25,
+			font = "default-large",
+			alignment = "center",
+			scale_with_zoom = false
+		})
+		table.insert(texts, rendering.draw_sprite{
+				sprite  = "item/uranium-fuel-cell",
+				surface = surface,
+				target = {position.x + Constants.world_selector_width * 0.5 + 3.7, position.y + y_modifier + 0.5},
+		})			
+		
 		for i = 1, 3, 1 do
 			local key = bonus_goods_keys[i]
 			local bonus_good = Constants.starter_goods_pool[key]
 			bonus_goods[i] = {bonus_good[1], math.random(bonus_good[2], bonus_good[3])}
 		end
 				
-		y_modifier = y_modifier + 1
+		y_modifier = y_modifier + 1.1
 		local x_modifier = -0.5	
 
 		for k2, good in pairs(world_selector.bonus_goods) do
@@ -611,7 +772,7 @@ function Public.set_world_selectors(journey)
 	destroy_teleporter(journey, game.surfaces.nauvis, Constants.mothership_teleporter_position)
 	destroy_teleporter(journey, surface, Constants.mothership_teleporter_position)
 	
-	Server.to_discord_embed("World " .. journey.world_number .. "selection has started!")
+	Server.to_discord_embed("World " .. journey.world_number .. " selection has started!")
 	
 	journey.game_state = "delete_nauvis_chunks"
 end
@@ -628,6 +789,37 @@ function Public.delete_nauvis_chunks(journey)
 	journey.game_state = "mothership_world_selection"
 end
 
+function Public.reroll_worlds(journey)
+	local surface = game.surfaces.mothership
+	Public.teleport_players_to_mothership(journey)
+	draw_background(journey, surface)
+	animate_selectors(journey)	
+	local reroll_selector_activation_level = get_activation_level(surface, Constants.reroll_selector_area)
+	journey.reroll_selector.activation_level = reroll_selector_activation_level
+	for i = 1, 3, 1 do
+		local activation_level = get_activation_level(surface, Constants.world_selector_areas[i])
+		journey.world_selectors[i].activation_level = activation_level
+	end	
+	if reroll_selector_activation_level > 1 then
+		journey.mothership_speed = journey.mothership_speed + 0.025
+		if journey.mothership_speed > 4 then
+			journey.mothership_speed = 4
+			clear_selectors(journey)
+			journey.mothership_cargo.satellite = journey.mothership_cargo.satellite - 1
+			Public.draw_gui(journey)
+			table.insert(journey.mothership_messages, "New lands have been discovered!")
+			journey.game_state = "set_world_selectors"
+		end
+	else	
+		journey.mothership_speed = journey.mothership_speed - 0.25
+		if journey.mothership_speed < 0.35 then
+			table.insert(journey.mothership_messages, "Aborting..")
+			journey.game_state = "mothership_world_selection"
+			journey.mothership_speed = 0.35 
+		end
+	end
+end
+
 function Public.mothership_world_selection(journey)
 	Public.teleport_players_to_mothership(journey)
 
@@ -637,6 +829,9 @@ function Public.mothership_world_selection(journey)
 	if daytime < 0 then daytime = 0 end
 	surface.daytime = daytime
 
+	local reroll_selector_activation_level = get_activation_level(surface, Constants.reroll_selector_area)
+	journey.reroll_selector.activation_level = reroll_selector_activation_level
+	
 	journey.selected_world = false
 	for i = 1, 3, 1 do
 		local activation_level = get_activation_level(surface, Constants.world_selector_areas[i])
@@ -644,6 +839,12 @@ function Public.mothership_world_selection(journey)
 		if activation_level > 1 then
 			journey.selected_world = i 
 		end
+	end
+	
+	if reroll_selector_activation_level > 1 and journey.mothership_speed == 0.35 and journey.mothership_cargo.satellite > 0 then
+		journey.game_state = "reroll_worlds"
+		table.insert(journey.mothership_messages, "Dispatching satellite..")
+		return
 	end
 	
 	if journey.selected_world then
@@ -707,6 +908,7 @@ end
 function Public.clear_unique_modifiers(journey)
 	local surface = game.surfaces.nauvis
 	surface.freeze_daytime = false
+	surface.solar_power_multiplier = 1
 	surface.min_brightness = 0.15
 	surface.brightness_visual_weights = {0, 0, 0, 1}
 	
@@ -724,20 +926,30 @@ function Public.create_the_world(journey)
 	local surface = game.surfaces.nauvis
 	local mgs = surface.map_gen_settings
 	mgs.seed = math.random(1, 4294967295)
+	mgs.terrain_segmentation = math.random(10, 20) * 0.1
 	mgs.peaceful_mode = false
 	
 	local modifiers = journey.world_selectors[journey.selected_world].modifiers
 	for _, modifier in pairs(modifiers) do
 		local m = (100 + modifier[2]) * 0.01
 		local name = modifier[1]
-		for _, autoplace in pairs({"iron-ore", "copper-ore", "uranium-ore", "coal", "stone", "crude-oil", "stone", "trees", "enemy-base"}) do
+		for _, autoplace in pairs({"iron-ore", "copper-ore", "uranium-ore", "coal", "stone", "crude-oil"}) do
+			if name == autoplace then
+				mgs.autoplace_controls[name].richness = mgs.autoplace_controls[name].richness * m
+				break
+			end
+		end
+		if name == "mixed_ore" then
+			journey.mixed_ore_richness = journey.mixed_ore_richness * m
+		end
+		for _, autoplace in pairs({"trees", "enemy-base"}) do
 			if name == autoplace then
 				for k, v in pairs(mgs.autoplace_controls[name]) do
 					mgs.autoplace_controls[name][k] = mgs.autoplace_controls[name][k] * m
 				end
 				break
 			end
-		end	
+		end
 		if name == "cliff_settings" then
 			--smaller value = more cliffs
 			local m2 = (100 - modifier[2]) * 0.01
@@ -783,7 +995,10 @@ function Public.create_the_world(journey)
 	
 	journey.world_trait = journey.world_selectors[journey.selected_world].world_trait
 	journey.nauvis_chunk_positions = nil
+	journey.mothership_cargo["uranium-fuel-cell"] = 0
 	journey.world_number = journey.world_number + 1
+	journey.mothership_cargo_space["satellite"] = journey.world_number
+	journey.mothership_cargo_space["uranium-fuel-cell"] = journey.mothership_cargo_space["uranium-fuel-cell"] + journey.world_selectors[journey.selected_world].fuel_requirement
 	
 	game.forces.enemy.reset_evolution()
 
@@ -803,7 +1018,7 @@ function Public.create_the_world(journey)
 end
 
 function Public.wipe_offline_players(journey)
-	remove_offline_players(24)
+	remove_offline_players(48)
 	for _, player in pairs(game.players) do
 		if not player.connected then
 			player.force = game.forces.enemy
@@ -834,14 +1049,10 @@ function Public.make_it_night(journey)
 	daytime = daytime + 0.02
 	surface.daytime = daytime
 	if daytime > 0.5 then		
-		clear_world_selectors(journey)		
+		clear_selectors(journey)		
 		game.reset_time_played()
-		
-		journey.mothership_cargo["uranium-fuel-cell"] = nil
-		
 		place_teleporter(journey, surface, Constants.mothership_teleporter_position)
-		table.insert(journey.mothership_messages, "Teleporter deployed. [gps=" .. Constants.mothership_teleporter_position.x .. "," .. Constants.mothership_teleporter_position.y .. ",mothership]")
-		
+		table.insert(journey.mothership_messages, "Teleporter deployed. [gps=" .. Constants.mothership_teleporter_position.x .. "," .. Constants.mothership_teleporter_position.y .. ",mothership]")	
 		journey.game_state = "dispatch_goods" 
 	end
 end
@@ -876,10 +1087,10 @@ function Public.dispatch_goods(journey)
 		return
 	end
 	
-	if math.random(1, 12) ~= 1 then return end
+	if math.random(1, 2) ~= 1 then return end
 	
 	local chunk = surface.get_random_chunk()
-	if math.abs(chunk.x) > 6 or math.abs(chunk.y) > 6 then return end
+	if math.abs(chunk.x) > 4 or math.abs(chunk.y) > 4 then return end
 	
 	local position = {x = chunk.x * 32 + math.random(0, 31), y = chunk.y * 32 + math.random(0, 31)}
 	position = surface.find_non_colliding_position("rocket-silo", position, 32, 1)
@@ -898,8 +1109,9 @@ end
 
 function Public.world(journey)
 	if journey.mothership_cargo["uranium-fuel-cell"] then
-		if journey.mothership_cargo["uranium-fuel-cell"] >= 50 then
+		if journey.mothership_cargo["uranium-fuel-cell"] >= journey.mothership_cargo_space["uranium-fuel-cell"] then
 			table.insert(journey.mothership_messages, "[img=item/uranium-fuel-cell] Refuel operation successful!! =^.^=")
+			Server.to_discord_embed("Refuel operation complete!")
 			journey.game_state = "mothership_waiting_for_players"
 		end
 	end

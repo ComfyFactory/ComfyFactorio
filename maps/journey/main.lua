@@ -3,6 +3,9 @@
 Journey, launch a rocket in increasingly harder getting worlds. - MewMew
 ]]--
 
+require 'modules.rocket_launch_always_yields_science'
+
+local Server = require 'utils.server'
 local Constants = require 'maps.journey.constants'
 local Functions = require 'maps.journey.functions'
 local Unique_modifiers = require 'maps.journey.unique_modifiers'
@@ -21,6 +24,7 @@ local function on_chunk_generated(event)
 	local surface = event.surface
 	
 	if surface.index == 1 then
+		Functions.place_mixed_ore(event, journey)
 		local unique_modifier = Unique_modifiers[journey.world_trait]
 		if unique_modifier.on_chunk_generated then unique_modifier.on_chunk_generated(event, journey) end
 		return
@@ -102,7 +106,16 @@ local function on_rocket_launched(event)
 		else
 			journey.mothership_cargo[slot.name] = slot.count
 		end
+		if journey.mothership_cargo_space[slot.name] then
+			if journey.mothership_cargo[slot.name] > journey.mothership_cargo_space[slot.name] then
+				journey.mothership_cargo[slot.name] = journey.mothership_cargo_space[slot.name]
+			end		
+			if slot.name == "uranium-fuel-cell" then
+				Server.to_discord_embed("Refueling progress: " .. journey.mothership_cargo[slot.name] .. "/" .. journey.mothership_cargo_space[slot.name])
+			end
+		end	
 	end
+	Functions.draw_gui(journey)
 end
 
 local function on_nth_tick()
@@ -113,7 +126,7 @@ end
 local function on_init()
     local T = Map.Pop_info()
     T.main_caption = 'The Journey'
-    T.sub_caption = 'v 1.6'
+    T.sub_caption = 'v 1.7'
     T.text =
         table.concat(
         {	
@@ -122,16 +135,20 @@ local function on_init()
 			'A teleporter will be deployed, after reaching the target.\n',
 			'It is however, only capable of transfering the subjects body, anything besides will be left on the ground.\n\n',
 			
-			'Worlds will get more difficult with each jump, adding the chosen modifiers.\n',				
-            'Launch a stack of uranium fuel cells via rocket cargo, to advance to the next world.\n',
-			'The tooltip on the top button has information about the current world.\n',
+			'Worlds will get more difficult with each jump, adding the chosen modifiers.\n',
+			'Worlds can be rerolled by spending a satellite.\n',
+            'Launch uranium fuel cells via rocket cargo, to advance to the next world.\n',
+			'The tooltips on the top buttons yield informations about the current world.\n',
 			'If the journey ends, an admin can fully reset the map via command "/reset-journey".\n\n',
 					
-			'How far will this journey lead?\n\n',
+			'How far will the journey lead?\n\n',
         }
     )
     T.main_caption_color = {r = 100, g = 20, b = 255}
     T.sub_caption_color = {r = 100, g = 100, b = 100}
+	
+	game.permissions.get_group('Default').set_allows_action(defines.input_action.set_auto_launch_rocket, false)
+	
 	Functions.hard_reset(journey)
 end
 
