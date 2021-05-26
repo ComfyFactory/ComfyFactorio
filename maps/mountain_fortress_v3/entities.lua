@@ -343,8 +343,8 @@ local function protect_entities(event)
 end
 
 local function hidden_treasure(player, entity)
-    local rpg = RPG.get('rpg_t')
-    local magic = rpg[player.index].magicka
+    local rpg = RPG.get_value_from_player(player.index)
+    local magic = rpg.magicka
 
     if magic > 50 then
         local msg = rare_treasure_chest_messages[random(1, #rare_treasure_chest_messages)]
@@ -696,8 +696,7 @@ local function on_player_mined_entity(event)
     if not entity.valid then
         return
     end
-    local rpg = RPG.get('rpg_t')
-    local rpg_char = rpg[player.index]
+    local rpg_char = RPG.get_value_from_player(player.index)
 
     local map_name = 'mountain_fortress_v3'
 
@@ -906,7 +905,7 @@ local function on_player_repaired_entity(event)
     if carriages_numbers[entity.unit_number] then
         local player = game.players[event.player_index]
         local repair_speed = RPG.get_magicka(player)
-        if table <= 0 then
+        if repair_speed <= 0 then
             set_train_final_health(-1, true)
             return
         else
