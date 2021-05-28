@@ -806,7 +806,7 @@ local retry_boost_movement_speed_on_respawn =
     end
 )
 
-local boost_movement_speed_on_respawn =
+local remove_boost_movement_speed_on_respawn =
     Token.register(
     function(data)
         local player = data.player
@@ -820,6 +820,26 @@ local boost_movement_speed_on_respawn =
         end
         player.character.character_running_speed_modifier = old_speed
         player.print('Movement speed bonus removed!', Color.info)
+    end
+)
+
+local boost_movement_speed_on_respawn =
+    Token.register(
+    function(data)
+        local player = data.player
+        if not player or not player.valid then
+            return
+        end
+        if not player.character or not player.character.valid then
+            return
+        end
+
+        local old_speed = player.character_running_speed_modifier
+        local new_speed = player.character_running_speed_modifier + 1
+
+        Task.set_timeout_in_ticks(800, remove_boost_movement_speed_on_respawn, {player = player, old_speed = old_speed})
+        player.character.character_running_speed_modifier = new_speed
+        player.print('Movement speed bonus applied! Be quick and fetch your corpse!', Color.info)
     end
 )
 
@@ -1261,12 +1281,8 @@ function Public.on_player_respawned(event)
     if not player or not player.valid then
         return
     end
-    local old_speed = player.character_running_speed_modifier
-    local new_speed = player.character_running_speed_modifier + 1
     if player.character and player.character.valid then
-        player.character.character_running_speed_modifier = new_speed
-        Task.set_timeout_in_ticks(800, boost_movement_speed_on_respawn, {player = player, old_speed = old_speed})
-        player.print('Movement speed bonus applied! Be quick and fetch your corpse!', Color.info)
+        Task.set_timeout_in_ticks(15, boost_movement_speed_on_respawn, {player = player})
     end
 end
 
