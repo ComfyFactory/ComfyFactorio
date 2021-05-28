@@ -34,7 +34,7 @@ function Public.place_mixed_ore(event, journey)
 	local y = event.area.left_top.y + math_random(0, 31)
 	local base_amount = 1000 + math_sqrt(x ^ 2 + y ^ 2) * 5
 	local richness = journey.mixed_ore_richness
-	Map_functions.draw_rainbow_patch({x = x, y = y}, surface, math_random(17, 23), base_amount * richness + 100)
+	Map_functions.draw_rainbow_patch({x = x, y = y}, surface, math_random(17, 22), base_amount * richness + 100)
 end
 
 local function place_teleporter(journey, surface, position)
@@ -116,7 +116,6 @@ local function remove_offline_players(maximum_age_in_hours)
 	local players_to_remove = {}
 	for _, player in pairs(game.players) do
 		if player.last_online < t then
-			Session.clear_player(player)
 			table.insert(players_to_remove, player)
 		end
 	end
@@ -162,7 +161,7 @@ local function delete_nauvis_chunks(journey)
 	
 	if journey.size_of_nauvis_chunk_positions == 0 then return end
 	
-	for c = 1, 16, 1 do
+	for c = 1, 12, 1 do
 		local chunk_position = journey.nauvis_chunk_positions[journey.size_of_nauvis_chunk_positions]
 		if chunk_position then
 			surface.delete_chunk(chunk_position)
@@ -199,6 +198,15 @@ function Public.deny_building(event)
 		return 
 	end
 	entity.die() 
+end
+
+function Public.register_built_silo(event, journey)
+    local entity = event.created_entity
+    if not entity.valid then return end
+	if entity.surface.index ~= 1 then return end
+	if entity.type ~= "rocket-silo" then return end
+	entity.auto_launch = false
+	table.insert(journey.rocket_silos, entity)
 end
 
 function Public.draw_gui(journey)
@@ -893,7 +901,7 @@ function Public.mothership_arrives_at_world(journey)
 		end
 		animate_selectors(journey)
 			
-		journey.game_state = "clear_unique_modifiers"
+		journey.game_state = "clear_modifiers"
 	else
 		journey.mothership_speed = journey.mothership_speed - 0.15
 	end
@@ -905,14 +913,10 @@ function Public.mothership_arrives_at_world(journey)
 	draw_background(journey, surface)
 end
 
-function Public.clear_unique_modifiers(journey)
-	local surface = game.surfaces.nauvis
-	surface.freeze_daytime = false
-	surface.solar_power_multiplier = 1
-	surface.min_brightness = 0.15
-	surface.brightness_visual_weights = {0, 0, 0, 1}
-	
-	for _, id in pairs(journey.world_color_filters) do rendering.destroy(id) end
+function Public.clear_modifiers(journey)
+	local unique_modifier = Unique_modifiers[journey.world_trait]
+	local clear = unique_modifier.clear
+	if clear then clear(journey) end
 	
 	local force = game.forces.player
 	force.reset()
@@ -995,9 +999,10 @@ function Public.create_the_world(journey)
 	
 	journey.world_trait = journey.world_selectors[journey.selected_world].world_trait
 	journey.nauvis_chunk_positions = nil
+	journey.rocket_silos = {}
 	journey.mothership_cargo["uranium-fuel-cell"] = 0
 	journey.world_number = journey.world_number + 1
-	journey.mothership_cargo_space["satellite"] = journey.world_number
+	journey.mothership_cargo_space["satellite"] = math_floor(journey.world_number * 0.334) + 1
 	journey.mothership_cargo_space["uranium-fuel-cell"] = journey.mothership_cargo_space["uranium-fuel-cell"] + journey.world_selectors[journey.selected_world].fuel_requirement
 	
 	game.forces.enemy.reset_evolution()
@@ -1011,14 +1016,13 @@ function Public.create_the_world(journey)
 	end
 	journey.goods_to_dispatch = {}
 	for k, v in pairs(journey.bonus_goods) do table.insert(journey.goods_to_dispatch, {k, v}) end
-	
-	Public.draw_gui(journey)
-	
+	table.shuffle_table(journey.goods_to_dispatch)
+
 	journey.game_state = "wipe_offline_players"
 end
 
 function Public.wipe_offline_players(journey)
-	remove_offline_players(48)
+	remove_offline_players(168)
 	for _, player in pairs(game.players) do
 		if not player.connected then
 			player.force = game.forces.enemy
@@ -1031,6 +1035,7 @@ function Public.set_unique_modifiers(journey)
 	local unique_modifier = Unique_modifiers[journey.world_trait]
 	local on_world_start = unique_modifier.on_world_start
 	if on_world_start then on_world_start(journey) end
+	Public.draw_gui(journey)
 	journey.game_state = "place_teleporter_into_world"
 end
 
@@ -1087,8 +1092,6 @@ function Public.dispatch_goods(journey)
 		return
 	end
 	
-	if math.random(1, 2) ~= 1 then return end
-	
 	local chunk = surface.get_random_chunk()
 	if math.abs(chunk.x) > 4 or math.abs(chunk.y) > 4 then return end
 	
@@ -1116,6 +1119,24 @@ function Public.world(journey)
 		end
 	end
 	draw_background(journey, game.surfaces.mothership)
+	
+	if game.tick % 1800 ~= 0 then return end	
+	for k, silo in pairs(journey.rocket_silos) do
+		if not silo or not silo.valid then
+			table.remove(journey.rocket_silos, k)
+			break
+		end
+		local inventory = silo.get_inventory(defines.inventory.rocket_silo_rocket)
+		if inventory then
+			local fuel_cells_required = journey.mothership_cargo_space["uranium-fuel-cell"] - journey.mothership_cargo["uranium-fuel-cell"]
+			if fuel_cells_required > 50 then fuel_cells_required = 50 end
+			if inventory.get_item_count('satellite') == 1 or inventory.get_item_count('uranium-fuel-cell') >= fuel_cells_required then		
+				if silo.launch_rocket() then
+					table.insert(journey.mothership_messages, "Launching rocket [gps=" .. silo.position.x .. "," .. silo.position.y .. ",nauvis]")
+				end
+			end		
+		end	
+	end
 end 
 
 function Public.mothership_waiting_for_players(journey)
@@ -1137,7 +1158,7 @@ function Public.teleporters(journey, player)
 	if not player.character.valid then return end
 	local surface = player.surface	
 	if surface.get_tile(player.position).name ~= Constants.teleporter_tile then return end
-	local base_position = {Constants.mothership_teleporter_position.x , Constants.mothership_teleporter_position.y - 5}
+	local base_position = {0,0}
 	if surface.index == 1 then		
 		drop_player_items(player)
 		local position = game.surfaces.mothership.find_non_colliding_position("character", base_position, 32, 0.5)

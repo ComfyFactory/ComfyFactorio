@@ -57,6 +57,20 @@ Public.mothership_messages = {
 		"Please return to me.",
 		"Board me, so we can continue this adventure!",
 	},
+	answers = {
+		"Yes, great idea.",
+		"Yes, wonderful.",
+		"Yes, definitely.",
+		"Yes, i love it!",
+		"The calculations say yes.",
+		"I don't know how to feel about this.",
+		"Ask again later, my processors are very busy.",
+		"No, this is certainly wrong.",
+		"No, i don't think so.",
+		"No, you are wrong.",
+		"No, that would be weird.",
+		"The calculations say no.",
+	},
 }
 
 Public.mothership_gen_settings = {
@@ -159,26 +173,28 @@ Public.build_type_whitelist = {
 
 Public.unique_world_traits = {	
 	["lush"] = {"Lush", "Pure Vanilla."},	
-	["eternal_night"] = {"Eternal Night", "This world seems to be missing a sun."},
-	["dense_atmosphere"] = {"Dense Atmosphere", "Your roboport structures seem to malfunction."},
+	["abandoned_library"] = {"Abandoned Library", "No blueprints to be found."},
+	["lazy_bastard"] = {"Lazy Bastard", "The machine does the job."},		
+	["oceanic"] = {"Oceanic", "Arrrr, the flame turrets seem to malfunction in this climate."},
+	["ribbon"] = {"Ribbon", "Go right. (or left)"},
+	["wasteland"] = {"Wasteland", "Rusty treasures."},
+	["infested"] = {"Infested", "They lurk inside."},
 	["pitch_black"] = {"Pitch Black", "No light may reach this realm."},
 	["volcanic"] = {"Volcanic", "The floor is (almost) lava."},
-	["matter_anomaly"] = {"Matter Anomaly", "Why can't i hold all these ores."},
+	["matter_anomaly"] = {"Matter Anomaly", "Why can't i hold all these ores.\nThe laser turret structures seem to malfunction."},
 	["mountainous"] = {"Mountainous", "Diggy diggy hole!"},
-	["quantum_anomaly"] = {"Quantum Anomaly", "Research complete."},	
-	["replicant_fauna"] = {"Replicant Fauna", "The biters feed on your structures."},
-	["tarball"] = {"Tarball", "Door stuck, Door stuck..."},
+	["eternal_night"] = {"Eternal Night", "This world seems to be missing a sun."},
+	["dense_atmosphere"] = {"Dense Atmosphere", "Your roboport structures seem to malfunction."},
+	["undead_plague"] = {"Undead Plague", "The dead are restless."},
 	["swamps"] = {"Swamps", "No deep water to be found in this world."},	
-	["chaotic_resources"] = {"Chaotic Resources", "Something to sort out."},
-	["infested"] = {"Infested", "They lurk inside."},
+	["chaotic_resources"] = {"Chaotic Resources", "Something to sort out."},	
 	["low_mass"] = {"Low Mass", "You feel light footed and the robots are buzzing."},	
 	["eternal_day"] = {"Eternal Day", "The sun never moves."},	
-	["undead_plague"] = {"Undead Plague", "The dead are restless."},
+	["quantum_anomaly"] = {"Quantum Anomaly", "Research complete."},
+	["replicant_fauna"] = {"Replicant Fauna", "The biters feed on your structures."},
+	["tarball"] = {"Tarball", "Door stuck, Door stuck..."},
 	--[[
 	]]
-	
-	--["wasteland"] = {"Wasteland", "Smells like sulfur."},
-	--["wetlands"] = {"Wetlands", "Many rivers and many fish."},
 }
 
 return Public
