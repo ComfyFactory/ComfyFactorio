@@ -1,18 +1,22 @@
 local Event = require 'utils.event'
 
-local function halt_game()
+local function set_pause()
     game.tick_paused = true
 end
 
 local function resume_game()
-    game.tick_paused = false
+    local player_count = #game.connected_players
+
+    if player_count <= 1 then
+        game.tick_paused = false
+    end
 end
 
 local function player_left()
     local player_count = #game.connected_players
 
     if player_count == 0 then
-        halt_game()
+        set_pause()
     end
 end
 
