@@ -34,6 +34,24 @@ local function on_chunk_generated(event)
 	Functions.on_mothership_chunk_generated(event)
 end
 
+local function on_console_chat(event)
+    if not event.player_index then return end
+    local player = game.players[event.player_index]
+    local message = event.message
+    message = string.lower(message)
+	local a, b = string.find(message, "?", 1, true)
+    if not a then return end
+	local a, b = string.find(message, "mother", 1, true)
+    if not a then return end
+	local answer = Constants.mothership_messages.answers[math.random(1, #Constants.mothership_messages.answers)]
+	if math.random(1, 4) == 1 then
+		for _ = 1, math.random(2, 5), 1 do table.insert(journey.mothership_messages, "") end
+		table.insert(journey.mothership_messages, "...")
+	end
+	for _ = 1, math.random(15, 30), 1 do table.insert(journey.mothership_messages, "") end
+	table.insert(journey.mothership_messages, answer)
+end
+
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
 	Functions.draw_gui(journey)
@@ -72,29 +90,31 @@ end
 
 local function on_built_entity(event)
     Functions.deny_building(event)
+	Functions.register_built_silo(event, journey)
 	local unique_modifier = Unique_modifiers[journey.world_trait]
-	if unique_modifier.on_built_entity then unique_modifier.on_built_entity(event) end
+	if unique_modifier.on_built_entity then unique_modifier.on_built_entity(event, journey) end
 end
 
 local function on_robot_built_entity(event)
     Functions.deny_building(event)
+	Functions.register_built_silo(event, journey)
 	local unique_modifier = Unique_modifiers[journey.world_trait]
-	if unique_modifier.on_robot_built_entity then unique_modifier.on_robot_built_entity(event) end
+	if unique_modifier.on_robot_built_entity then unique_modifier.on_robot_built_entity(event, journey) end
 end
 
 local function on_player_mined_entity(event)
     local unique_modifier = Unique_modifiers[journey.world_trait]
-	if unique_modifier.on_player_mined_entity then unique_modifier.on_player_mined_entity(event) end
+	if unique_modifier.on_player_mined_entity then unique_modifier.on_player_mined_entity(event, journey) end
 end
 
 local function on_robot_mined_entity(event)
     local unique_modifier = Unique_modifiers[journey.world_trait]
-	if unique_modifier.on_robot_mined_entity then unique_modifier.on_robot_mined_entity(event) end
+	if unique_modifier.on_robot_mined_entity then unique_modifier.on_robot_mined_entity(event, journey) end
 end
 
 local function on_entity_died(event)
     local unique_modifier = Unique_modifiers[journey.world_trait]
-	if unique_modifier.on_entity_died then unique_modifier.on_entity_died(event) end
+	if unique_modifier.on_entity_died then unique_modifier.on_entity_died(event, journey) end
 end
 
 local function on_rocket_launched(event)
@@ -126,17 +146,18 @@ end
 local function on_init()
     local T = Map.Pop_info()
     T.main_caption = 'The Journey'
-    T.sub_caption = 'v 1.7'
+    T.sub_caption = 'v 1.8'
     T.text =
         table.concat(
         {	
-			'The selectors in the mothership, allow you to select a destination.\n',
-			'Once enough players are on a selector, mothership will start traveling.\n',
-			'A teleporter will be deployed, after reaching the target.\n',
-			'It is however, only capable of transfering the subjects body, anything besides will be left on the ground.\n\n',
+			'The selectors in the mothership, allow you to choose a destination.\n',
+			'Worlds can be rerolled by spending a satellite at the top selector.\n',
+			'Once enough players are on a selector, mothership will start traveling.\n\n',
 			
-			'Worlds will get more difficult with each jump, adding the chosen modifiers.\n',
-			'Worlds can be rerolled by spending a satellite.\n',
+			'A teleporter will be deployed, after reaching the target.\n',
+			'It is however, only capable of transfering the subjects body.\n\n',
+			
+			'Worlds will get more difficult with each jump, stacking the chosen modifiers.\n',		
             'Launch uranium fuel cells via rocket cargo, to advance to the next world.\n',
 			'The tooltips on the top buttons yield informations about the current world.\n',
 			'If the journey ends, an admin can fully reset the map via command "/reset-journey".\n\n',
@@ -199,3 +220,4 @@ Event.add(defines.events.on_built_entity, on_built_entity)
 Event.add(defines.events.on_robot_mined_entity, on_robot_mined_entity)
 Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 Event.add(defines.events.on_entity_died, on_entity_died)
+Event.add(defines.events.on_console_chat, on_console_chat)

@@ -1,6 +1,7 @@
 --luacheck: ignore
 local Get_noise = require 'utils.get_noise'
 local BiterRaffle = require 'functions.biter_raffle'
+local LootRaffle = require 'functions.loot_raffle'
 local math_random = math.random
 local math_abs = math.abs
 local math_floor = math.floor
@@ -34,10 +35,29 @@ local solid_tiles = {
 	["lab-dark-1"] = true,
 	["lab-dark-2"] = true,
 }
+local wrecks = {
+    'crash-site-spaceship-wreck-big-1',
+    'crash-site-spaceship-wreck-big-2',
+    'crash-site-spaceship-wreck-medium-1',
+    'crash-site-spaceship-wreck-medium-2',
+    'crash-site-spaceship-wreck-medium-3',
+}
+local size_of_wrecks = #wrecks
 
 local Public = {}
 
 Public.lush = {}
+
+Public.eternal_day = {
+	on_world_start = function(journey)
+		game.surfaces.nauvis.daytime = 0
+		game.surfaces.nauvis.freeze_daytime = true
+	end,
+	clear = function(journey)
+		local surface = game.surfaces.nauvis
+		surface.freeze_daytime = false
+	end,
+}
 
 Public.eternal_night = {
 	on_world_start = function(journey)
@@ -46,12 +66,28 @@ Public.eternal_night = {
 		surface.freeze_daytime = true
 		surface.solar_power_multiplier = 5
 	end,
+	clear = function(journey)
+		local surface = game.surfaces.nauvis
+		surface.freeze_daytime = false
+		surface.solar_power_multiplier = 1
+	end,
 }
 
-Public.eternal_day = {
+Public.pitch_black = {
 	on_world_start = function(journey)
-		game.surfaces.nauvis.daytime = 0
-		game.surfaces.nauvis.freeze_daytime = true
+		local surface = game.surfaces.nauvis
+		surface.daytime = 0.44
+		surface.freeze_daytime = true
+		surface.solar_power_multiplier = 3
+		surface.min_brightness = 0
+		surface.brightness_visual_weights = {0.8, 0.8, 0.8, 1}
+	end,
+	clear = function(journey)
+		local surface = game.surfaces.nauvis
+		surface.freeze_daytime = false
+		surface.solar_power_multiplier = 1
+		surface.min_brightness = 0.15
+		surface.brightness_visual_weights = {0, 0, 0, 1}
 	end,
 }
 
@@ -61,12 +97,28 @@ Public.matter_anomaly = {
 		for i = 1, 4, 1 do force.technologies['mining-productivity-' .. i].researched = true end
 		for i = 1, 6, 1 do force.technologies['mining-productivity-4'].researched = true end
 	end,
+	on_robot_built_entity = function(event)
+		local entity = event.created_entity
+		if not entity.valid then return end
+		if entity.surface.index ~= 1 then return end
+		if entity.type == "electric-turret" then entity.die() end
+	end,
+	on_built_entity = function(event)
+		local entity = event.created_entity
+		if not entity.valid then return end
+		if entity.surface.index ~= 1 then return end
+		if entity.type == "electric-turret" then entity.die() end
+	end,
 }
 
 Public.quantum_anomaly = {
 	on_world_start = function(journey)
 		local force = game.forces.player
 		for i = 1, 6, 1 do force.technologies['research-speed-' .. i].researched = true end
+		game.difficulty_settings.technology_price_multiplier = game.difficulty_settings.technology_price_multiplier * 0.5
+	end,
+	clear = function(journey)
+		game.difficulty_settings.technology_price_multiplier = game.difficulty_settings.technology_price_multiplier * 2
 	end,
 }
 
@@ -115,18 +167,7 @@ Public.replicant_fauna = {
 		local cause = event.cause
 		if not cause then return end
 		if not cause.valid then return end
-		if cause.force.index == 2 then cause.surface.create_entity({name = cause.name, position = entity.position, force = "enemy"}) end
-	end,
-}
-
-Public.pitch_black = {
-	on_world_start = function(journey)
-		local surface = game.surfaces.nauvis
-		surface.daytime = 0.44
-		surface.freeze_daytime = true
-		surface.solar_power_multiplier = 3
-		surface.min_brightness = 0
-		surface.brightness_visual_weights = {0.8, 0.8, 0.8, 1}
+		if cause.force.index == 2 then cause.surface.create_entity({name = BiterRaffle.roll('mixed', game.forces.enemy.evolution_factor), position = entity.position, force = "enemy"}) end
 	end,
 }
 
@@ -135,12 +176,14 @@ Public.tarball = {
 		local entity = event.created_entity
 		if not entity.valid then return end
 		if entity.surface.index ~= 1 then return end
+		if entity.type == "entity-ghost" or entity.type == "tile-ghost" or entity.type == "container" or entity.type == "wall" or entity.type == "pipe" then return end
 		entity.minable = false
 	end,
 	on_built_entity = function(event)
 		local entity = event.created_entity
 		if not entity.valid then return end
 		if entity.surface.index ~= 1 then return end
+		if entity.type == "entity-ghost" or entity.type == "tile-ghost" or entity.type == "container" or entity.type == "wall" or entity.type == "pipe" then return end
 		entity.minable = false
 	end,
 	on_chunk_generated = function(event, journey)
@@ -151,10 +194,14 @@ Public.tarball = {
 				y_scale = 32,
 				target = event.area.left_top,
 				surface = event.surface,
-				tint = {r = 0.0, g = 0.0, b = 0.0, a = 0.5},
+				tint = {r = 0.0, g = 0.0, b = 0.0, a = 0.45},
 				render_layer = 'ground'
 			}
 		))
+	end,
+	clear = function(journey)
+		for _, id in pairs(journey.world_color_filters) do rendering.destroy(id) end
+		journey.world_color_filters = {}
 	end,
 }
 
@@ -186,6 +233,80 @@ Public.swamps = {
 				surface.create_entity({name = "fish", position = tile.position})
 			end
 		end
+	end,
+}
+
+Public.wasteland = {
+	on_chunk_generated = function(event, journey)	
+		local surface = event.surface
+		local seed = surface.map_gen_settings.seed
+		local left_top_x = event.area.left_top.x
+		local left_top_y = event.area.left_top.y		
+		local tiles = {}
+		for _, tile in pairs(surface.find_tiles_filtered({name = {"water"}, area = event.area})) do
+			table.insert(tiles, {name = "water-green", position = tile.position})
+		end
+		for _, tile in pairs(surface.find_tiles_filtered({name = {"deepwater"}, area = event.area})) do
+			table.insert(tiles, {name = "deepwater-green", position = tile.position})
+		end
+		surface.set_tiles(tiles, true, false, false, false)
+		if math_random(1, 3) ~= 1 then return end
+		for _ = 1, math_random(0, 5), 1 do
+			local name = wrecks[math_random(1, size_of_wrecks)]
+			position = surface.find_non_colliding_position(name, {left_top_x + math_random(0, 31), left_top_y + math_random(0, 31)}, 16, 1)
+			if position then
+				local e = surface.create_entity({name = name, position = position, force = 'neutral'})
+				if math_random(1, 4) == 1 then
+					local slots = game.entity_prototypes[e.name].get_inventory_size(defines.inventory.chest)
+					local blacklist = LootRaffle.get_tech_blacklist(0.2)
+					local item_stacks = LootRaffle.roll(math_random(16, 64), slots, blacklist)
+					for _, item_stack in pairs(item_stacks) do e.insert(item_stack) end
+				end
+			end
+		end	
+	end,
+	on_world_start = function(journey)
+		local surface = game.surfaces.nauvis
+		local mgs = surface.map_gen_settings
+		mgs.terrain_segmentation = 2.7
+		mgs.water = mgs.water + 1
+		surface.map_gen_settings = mgs
+		surface.clear(true)
+	end,
+	clear = function(journey)
+		local surface = game.surfaces.nauvis
+		local mgs = surface.map_gen_settings
+		mgs.water = mgs.water - 1
+		surface.map_gen_settings = mgs
+	end,
+}
+
+Public.oceanic = {
+	on_world_start = function(journey)
+		local surface = game.surfaces.nauvis
+		local mgs = surface.map_gen_settings
+		mgs.terrain_segmentation = 0.5
+		mgs.water = mgs.water + 4
+		surface.map_gen_settings = mgs
+		surface.clear(true)
+	end,
+	on_robot_built_entity = function(event)
+		local entity = event.created_entity
+		if not entity.valid then return end
+		if entity.surface.index ~= 1 then return end
+		if entity.type == "fluid-turret" then entity.die() end
+	end,
+	on_built_entity = function(event)
+		local entity = event.created_entity
+		if not entity.valid then return end
+		if entity.surface.index ~= 1 then return end
+		if entity.type == "fluid-turret" then entity.die() end
+	end,
+	clear = function(journey)
+		local surface = game.surfaces.nauvis
+		local mgs = surface.map_gen_settings
+		mgs.water = mgs.water - 4
+		surface.map_gen_settings = mgs
 	end,
 }
 
@@ -222,6 +343,10 @@ Public.volcanic = {
 			end
 		end
 	end,
+	clear = function(journey)
+		for _, id in pairs(journey.world_color_filters) do rendering.destroy(id) end
+		journey.world_color_filters = {}
+	end,
 }
 
 Public.chaotic_resources = {
@@ -239,18 +364,21 @@ Public.infested = {
 		local entity = event.entity
 		if not entity.valid then	return end
 		if entity.force.index ~= 3 then return end
+		if entity.type ~= "simple-entity" and entity.type ~= "tree" then return end
 		entity.surface.create_entity({name = BiterRaffle.roll('mixed', game.forces.enemy.evolution_factor + 0.1), position = entity.position, force = 'enemy'})
 	end,
 	on_player_mined_entity = function(event)
 		local entity = event.entity
 		if not entity.valid then	return end
 		if entity.force.index ~= 3 then return end
+		if entity.type ~= "simple-entity" and entity.type ~= "tree" then return end
 		entity.surface.create_entity({name = BiterRaffle.roll('mixed', game.forces.enemy.evolution_factor + 0.1), position = entity.position, force = 'enemy'})
 	end,
 	on_robot_mined_entity = function(event)
 		local entity = event.entity
 		if not entity.valid then	return end
 		if entity.force.index ~= 3 then return end
+		if entity.type ~= "simple-entity" and entity.type ~= "tree" then return end
 		entity.surface.create_entity({name = BiterRaffle.roll('mixed', game.forces.enemy.evolution_factor + 0.1), position = entity.position, force = 'enemy'})
 	end,
 }
@@ -261,6 +389,7 @@ Public.undead_plague = {
 		if not entity.valid then	return end
 		if entity.force.index ~= 2 then return end
 		if math_random(1,2) == 1 then return end
+		if entity.type ~= "unit" then return end
 		entity.surface.create_entity({name = entity.name, position = entity.position, force = 'enemy'})
 	end,
 }
@@ -285,6 +414,89 @@ Public.dense_atmosphere = {
 		if not entity.valid then return end
 		if entity.surface.index ~= 1 then return end
 		if entity.type == "roboport" then entity.die() end
+	end,
+}
+
+local function update_lazy_bastard(journey, count)
+	journey.lazy_bastard_machines = journey.lazy_bastard_machines + count
+	local speed = journey.lazy_bastard_machines * -0.1
+	if speed < -1 then speed = -1 end
+	game.forces.player.manual_crafting_speed_modifier = speed
+end
+
+Public.lazy_bastard = {
+	on_robot_built_entity = function(event, journey)
+		local entity = event.created_entity
+		if not entity.valid then return end
+		if entity.surface.index ~= 1 then return end
+		if entity.type == "assembling-machine" then
+			update_lazy_bastard(journey, 1)
+		end
+	end,
+	on_built_entity = function(event, journey)
+		local entity = event.created_entity
+		if not entity.valid then return end
+		if entity.surface.index ~= 1 then return end
+		if entity.type == "assembling-machine" then
+			update_lazy_bastard(journey, 1)
+		end
+	end,
+	on_entity_died = function(event, journey)
+		local entity = event.entity
+		if not entity.valid then	return end
+		if entity.surface.index ~= 1 then return end
+		if entity.type == "assembling-machine" then
+			update_lazy_bastard(journey, -1)
+		end
+	end,
+	on_player_mined_entity = function(event, journey)
+		local entity = event.entity
+		if not entity.valid then	return end
+		if entity.surface.index ~= 1 then return end
+		if entity.type == "assembling-machine" then
+			update_lazy_bastard(journey, -1)
+		end
+	end,
+	on_robot_mined_entity = function(event, journey)
+		local entity = event.entity
+		if not entity.valid then	return end
+		if entity.surface.index ~= 1 then return end
+		if entity.type == "assembling-machine" then
+			update_lazy_bastard(journey, -1)
+		end
+	end,
+	on_world_start = function(journey)
+		journey.lazy_bastard_machines = 0
+	end,
+	clear = function(journey)
+		game.forces.player.manual_crafting_speed_modifier = 0
+	end,
+}
+
+Public.ribbon = {
+	on_world_start = function(journey)
+		local surface = game.surfaces.nauvis
+		local mgs = surface.map_gen_settings
+		mgs.height = 256
+		surface.map_gen_settings = mgs
+		surface.clear(true)
+	end,
+	clear = function(journey)
+		local surface = game.surfaces.nauvis
+		local mgs = surface.map_gen_settings
+		mgs.height = nil
+		surface.map_gen_settings = mgs
+	end,
+}
+
+Public.abandoned_library = {
+	on_world_start = function(journey)
+		game.permissions.get_group('Default').set_allows_action(defines.input_action.open_blueprint_library_gui, false)
+		game.permissions.get_group('Default').set_allows_action(defines.input_action.import_blueprint_string, false)
+	end,
+	clear = function(journey)
+		game.permissions.get_group('Default').set_allows_action(defines.input_action.open_blueprint_library_gui, true)
+		game.permissions.get_group('Default').set_allows_action(defines.input_action.import_blueprint_string, true)
 	end,
 }
 
