@@ -19,6 +19,7 @@ local Jailed = require 'utils.datastore.jail_data'
 local Tabs = require 'comfy_panel.main'
 local Global = require 'utils.global'
 local SpamProtection = require 'utils.spam_protection'
+local RPG = require 'modules.rpg.table'
 local Token = require 'utils.token'
 
 local Public = {}
@@ -31,6 +32,7 @@ local this = {
         pokes = {},
         sorting_method = {}
     },
+    rpg_enabled = false,
     show_roles_in_list = false
 }
 
@@ -349,6 +351,12 @@ local comparators = {
     ['time_played_desc'] = function(a, b)
         return a.played_ticks > b.played_ticks
     end,
+    ['rpg_asc'] = function(a, b)
+        return a.rpg_level < b.rpg_level
+    end,
+    ['rpg_desc'] = function(a, b)
+        return a.rpg_level > b.rpg_level
+    end,
     ['name_asc'] = function(a, b)
         return a.name:lower() < b.name:lower()
     end,
@@ -364,7 +372,8 @@ end
 local function get_sorted_list(sort_by)
     local play_table = Session.get_session_table()
     local player_list = {}
-    for i, player in pairs(game.connected_players) do
+    local players = game.connected_players
+    for i, player in pairs(players) do
         player_list[i] = {}
         player_list[i].rank = get_rank(player)
         player_list[i].name = player.name
@@ -372,6 +381,15 @@ local function get_sorted_list(sort_by)
         local t = 0
         if play_table[player.name] then
             t = play_table[player.name]
+        end
+
+        if this.rpg_enabled then
+            local char = RPG.get_value_from_player(player.index, 'level')
+            if not char then
+                char = 1
+            end
+
+            player_list[i].rpg_level = char
         end
 
         player_list[i].total_played_time = get_formatted_playtime(t)
@@ -401,52 +419,142 @@ local function player_list_show(data)
     local jailed = Jailed.get_jailed_table()
 
     -- Header management
-    local t = frame.add {type = 'table', name = 'player_list_panel_header_table', column_count = 5}
-    local column_widths = {tonumber(40), tonumber(218), tonumber(220), tonumber(222), tonumber(50)}
-    local header_column_widths = {tonumber(40), tonumber(210), tonumber(220), tonumber(226), tonumber(50)}
-    for _, w in ipairs(header_column_widths) do
-        local label = t.add {type = 'label', caption = ''}
-        label.style.minimal_width = w
-        label.style.maximal_width = w
-    end
+    local t
+    local column_widths
+    local header_column_widths
+    local headers
+    local header_modifier
 
-    local headers = {
-        [1] = '[color=0.1,0.7,0.1]' .. -- green
-            tostring(#game.connected_players) .. '[/color]',
-        [2] = 'Online' ..
-            ' / ' ..
-                '[color=0.7,0.1,0.1]' .. -- red
-                    tostring(#game.players - #game.connected_players) .. '[/color]' .. ' Offline',
-        [3] = 'Total Time',
-        [4] = 'Current Time',
-        [5] = 'Poke'
-    }
-    local header_modifier = {
-        ['name_asc'] = function(h)
-            h[2] = symbol_asc .. h[2]
-        end,
-        ['name_desc'] = function(h)
-            h[2] = symbol_desc .. h[2]
-        end,
-        ['total_time_played_asc'] = function(h)
-            h[3] = symbol_asc .. h[3]
-        end,
-        ['total_time_played_desc'] = function(h)
-            h[3] = symbol_desc .. h[3]
-        end,
-        ['time_played_asc'] = function(h)
-            h[4] = symbol_asc .. h[4]
-        end,
-        ['time_played_desc'] = function(h)
-            h[4] = symbol_desc .. h[4]
-        end,
-        ['pokes_asc'] = function(h)
-            h[5] = symbol_asc .. h[5]
-        end,
-        ['pokes_desc'] = function(h)
-            h[5] = symbol_desc .. h[5]
+    if this.rpg_enabled then
+        t = frame.add {type = 'table', name = 'player_list_panel_header_table', column_count = 6}
+        column_widths = {
+            ['first_space'] = tonumber(40),
+            ['name_label'] = tonumber(155),
+            ['rpg_level_label'] = tonumber(138),
+            ['total_label'] = tonumber(145),
+            ['current_label'] = tonumber(165),
+            ['last_space'] = tonumber(50)
+        }
+
+        header_column_widths = {
+            ['first_space'] = tonumber(35),
+            ['name_label'] = tonumber(150),
+            ['rpg_level_label'] = tonumber(135),
+            ['total_label'] = tonumber(150),
+            ['current_label'] = tonumber(168),
+            ['last_space'] = tonumber(50)
+        }
+
+        for _, w in pairs(header_column_widths) do
+            local label = t.add {type = 'label', caption = ''}
+            label.style.minimal_width = w
+            label.style.maximal_width = w
         end
-    }
+
+        headers = {
+            [1] = '[color=0.1,0.7,0.1]' .. -- green
+                tostring(#game.connected_players) .. '[/color]',
+            [2] = 'Online' ..
+                ' / ' ..
+                    '[color=0.7,0.1,0.1]' .. -- red
+                        tostring(#game.players - #game.connected_players) .. '[/color]' .. ' Offline',
+            [3] = 'RPG level',
+            [4] = 'Total Time',
+            [5] = 'Current Time',
+            [6] = 'Poke'
+        }
+        header_modifier = {
+            ['name_asc'] = function(h)
+                h[2] = h[2] .. symbol_asc
+            end,
+            ['name_desc'] = function(h)
+                h[2] = h[2] .. symbol_desc
+            end,
+            ['rpg_asc'] = function(h)
+                h[3] = h[3] .. symbol_asc
+            end,
+            ['rpg_desc'] = function(h)
+                h[3] = h[3] .. symbol_desc
+            end,
+            ['total_time_played_asc'] = function(h)
+                h[4] = h[4] .. symbol_asc
+            end,
+            ['total_time_played_desc'] = function(h)
+                h[4] = h[4] .. symbol_desc
+            end,
+            ['time_played_asc'] = function(h)
+                h[5] = h[5] .. symbol_asc
+            end,
+            ['time_played_desc'] = function(h)
+                h[5] = h[5] .. symbol_desc
+            end,
+            ['pokes_asc'] = function(h)
+                h[6] = h[6] .. symbol_asc
+            end,
+            ['pokes_desc'] = function(h)
+                h[6] = h[6] .. symbol_desc
+            end
+        }
+    else
+        t = frame.add {type = 'table', name = 'player_list_panel_header_table', column_count = 5}
+        column_widths = {
+            ['first_space'] = tonumber(40),
+            ['name_label'] = tonumber(218),
+            ['total_label'] = tonumber(220),
+            ['current_label'] = tonumber(222),
+            ['last_space'] = tonumber(50)
+        }
+        header_column_widths = {
+            ['first_space'] = tonumber(40),
+            ['name_label'] = tonumber(210),
+            ['total_label'] = tonumber(220),
+            ['current_label'] = tonumber(226),
+            ['last_space'] = tonumber(50)
+        }
+        for _, w in pairs(header_column_widths) do
+            local label = t.add {type = 'label', caption = ''}
+            label.style.minimal_width = w
+            label.style.maximal_width = w
+        end
+
+        headers = {
+            [1] = '[color=0.1,0.7,0.1]' .. -- green
+                tostring(#game.connected_players) .. '[/color]',
+            [2] = 'Online' ..
+                ' / ' ..
+                    '[color=0.7,0.1,0.1]' .. -- red
+                        tostring(#game.players - #game.connected_players) .. '[/color]' .. ' Offline',
+            [3] = 'Total Time',
+            [4] = 'Current Time',
+            [5] = 'Poke'
+        }
+        header_modifier = {
+            ['name_asc'] = function(h)
+                h[2] = symbol_asc .. h[2]
+            end,
+            ['name_desc'] = function(h)
+                h[2] = symbol_desc .. h[2]
+            end,
+            ['total_time_played_asc'] = function(h)
+                h[3] = symbol_asc .. h[3]
+            end,
+            ['total_time_played_desc'] = function(h)
+                h[3] = symbol_desc .. h[3]
+            end,
+            ['time_played_asc'] = function(h)
+                h[4] = symbol_asc .. h[4]
+            end,
+            ['time_played_desc'] = function(h)
+                h[4] = symbol_desc .. h[4]
+            end,
+            ['pokes_asc'] = function(h)
+                h[5] = symbol_asc .. h[5]
+            end,
+            ['pokes_desc'] = function(h)
+                h[5] = symbol_desc .. h[5]
+            end
+        }
+    end
 
     if sort_by then
         this.player_list.sorting_method[player.index] = sort_by
@@ -488,7 +596,11 @@ local function player_list_show(data)
     }
     player_list_panel_table.style.maximal_height = 530
 
-    player_list_panel_table = player_list_panel_table.add {type = 'table', name = 'player_list_panel_table', column_count = 5}
+    if this.rpg_enabled then
+        player_list_panel_table = player_list_panel_table.add {type = 'table', name = 'player_list_panel_table', column_count = 6}
+    else
+        player_list_panel_table = player_list_panel_table.add {type = 'table', name = 'player_list_panel_table', column_count = 5}
+    end
 
     local player_list = get_sorted_list(sort_by)
     for i = 1, #player_list, 1 do
@@ -548,8 +660,21 @@ local function player_list_show(data)
             g = .4 + p_color.color.g * 0.6,
             b = .4 + p_color.color.b * 0.6
         }
-        name_label.style.minimal_width = column_widths[2]
-        name_label.style.maximal_width = column_widths[2]
+        name_label.style.minimal_width = column_widths['name_label']
+        name_label.style.maximal_width = column_widths['name_label']
+
+        -- RPG level
+        if this.rpg_enabled then
+            -- RPG level
+            local rpg_level_label =
+                player_list_panel_table.add {
+                type = 'label',
+                name = 'player_list_panel_RPG_level_' .. i,
+                caption = player_list[i].rpg_level
+            }
+            rpg_level_label.style.minimal_width = column_widths['rpg_level_label']
+            rpg_level_label.style.maximal_width = column_widths['rpg_level_label']
+        end
 
         -- Total time
         local total_label =
@@ -558,8 +683,8 @@ local function player_list_show(data)
             name = 'player_list_panel_player_total_time_played_' .. i,
             caption = player_list[i].total_played_time
         }
-        total_label.style.minimal_width = column_widths[3]
-        total_label.style.maximal_width = column_widths[3]
+        total_label.style.minimal_width = column_widths['total_label']
+        total_label.style.maximal_width = column_widths['total_label']
 
         -- Current time
         local current_label =
@@ -568,8 +693,8 @@ local function player_list_show(data)
             name = 'player_list_panel_player_time_played_' .. i,
             caption = player_list[i].played_time
         }
-        current_label.style.minimal_width = column_widths[4]
-        current_label.style.maximal_width = column_widths[4]
+        current_label.style.minimal_width = column_widths['current_label']
+        current_label.style.maximal_width = column_widths['current_label']
 
         -- Poke
         local flow = player_list_panel_table.add {type = 'flow', name = 'button_flow_' .. i, direction = 'horizontal'}
@@ -615,44 +740,95 @@ local function on_gui_click(event)
         return
     end
 
-    local actions = {
-        ['player_list_panel_header_2'] = function()
-            if string.find(element.caption, symbol_desc) then
-                local data = {player = player, frame = frame, sort_by = 'name_asc'}
-                player_list_show(data)
-            else
-                local data = {player = player, frame = frame, sort_by = 'name_desc'}
-                player_list_show(data)
+    local actions
+    if this.rpg_enabled then
+        actions = {
+            ['player_list_panel_header_2'] = function()
+                if string.find(element.caption, symbol_desc) then
+                    local data = {player = player, frame = frame, sort_by = 'name_asc'}
+                    player_list_show(data)
+                else
+                    local data = {player = player, frame = frame, sort_by = 'name_desc'}
+                    player_list_show(data)
+                end
+            end,
+            ['player_list_panel_header_3'] = function()
+                if string.find(event.element.caption, symbol_desc) then
+                    local data = {player = player, frame = frame, sort_by = 'rpg_asc'}
+                    player_list_show(data)
+                else
+                    local data = {player = player, frame = frame, sort_by = 'rpg_desc'}
+                    player_list_show(data)
+                end
+            end,
+            ['player_list_panel_header_4'] = function()
+                if string.find(element.caption, symbol_desc) then
+                    local data = {player = player, frame = frame, sort_by = 'total_time_played_asc'}
+                    player_list_show(data)
+                else
+                    local data = {player = player, frame = frame, sort_by = 'total_time_played_desc'}
+                    player_list_show(data)
+                end
+            end,
+            ['player_list_panel_header_5'] = function()
+                if string.find(element.caption, symbol_desc) then
+                    local data = {player = player, frame = frame, sort_by = 'time_played_asc'}
+                    player_list_show(data)
+                else
+                    local data = {player = player, frame = frame, sort_by = 'time_played_desc'}
+                    player_list_show(data)
+                end
+            end,
+            ['player_list_panel_header_6'] = function()
+                if string.find(element.caption, symbol_desc) then
+                    local data = {player = player, frame = frame, sort_by = 'pokes_asc'}
+                    player_list_show(data)
+                else
+                    local data = {player = player, frame = frame, sort_by = 'pokes_desc'}
+                    player_list_show(data)
+                end
             end
-        end,
-        ['player_list_panel_header_3'] = function()
-            if string.find(element.caption, symbol_desc) then
-                local data = {player = player, frame = frame, sort_by = 'total_time_played_asc'}
-                player_list_show(data)
-            else
-                local data = {player = player, frame = frame, sort_by = 'total_time_played_desc'}
-                player_list_show(data)
+        }
+    else
+        actions = {
+            ['player_list_panel_header_2'] = function()
+                if string.find(element.caption, symbol_desc) then
+                    local data = {player = player, frame = frame, sort_by = 'name_asc'}
+                    player_list_show(data)
+                else
+                    local data = {player = player, frame = frame, sort_by = 'name_desc'}
+                    player_list_show(data)
+                end
+            end,
+            ['player_list_panel_header_3'] = function()
+                if string.find(element.caption, symbol_desc) then
+                    local data = {player = player, frame = frame, sort_by = 'total_time_played_asc'}
+                    player_list_show(data)
+                else
+                    local data = {player = player, frame = frame, sort_by = 'total_time_played_desc'}
+                    player_list_show(data)
+                end
+            end,
+            ['player_list_panel_header_4'] = function()
+                if string.find(element.caption, symbol_desc) then
+                    local data = {player = player, frame = frame, sort_by = 'time_played_asc'}
+                    player_list_show(data)
+                else
+                    local data = {player = player, frame = frame, sort_by = 'time_played_desc'}
+                    player_list_show(data)
+                end
+            end,
+            ['player_list_panel_header_5'] = function()
+                if string.find(element.caption, symbol_desc) then
+                    local data = {player = player, frame = frame, sort_by = 'pokes_asc'}
+                    player_list_show(data)
+                else
+                    local data = {player = player, frame = frame, sort_by = 'pokes_desc'}
+                    player_list_show(data)
+                end
             end
-        end,
-        ['player_list_panel_header_4'] = function()
-            if string.find(element.caption, symbol_desc) then
-                local data = {player = player, frame = frame, sort_by = 'time_played_asc'}
-                player_list_show(data)
-            else
-                local data = {player = player, frame = frame, sort_by = 'time_played_desc'}
-                player_list_show(data)
-            end
-        end,
-        ['player_list_panel_header_5'] = function()
-            if string.find(element.caption, symbol_desc) then
-                local data = {player = player, frame = frame, sort_by = 'pokes_asc'}
-                player_list_show(data)
-            else
-                local data = {player = player, frame = frame, sort_by = 'pokes_desc'}
-                player_list_show(data)
-            end
-        end
-    }
+        }
+    end
 
     if actions[name] then
         local is_spamming = SpamProtection.is_spamming(player, nil, 'PlayerList Gui Click')
@@ -728,11 +904,15 @@ end
 --- If the different roles should be shown in the player_list.
 ---@param value string
 function Public.show_roles_in_list(value)
-    if value then
-        this.show_roles_in_list = value
-    end
-
+    this.show_roles_in_list = value or false
     return this.show_roles_in_list
+end
+
+--- Notifies player_list if RPG is enabled or not.
+---@param value string
+function Public.rpg_enabled(value)
+    this.rpg_enabled = value or false
+    return this.rpg_enabled
 end
 
 Tabs.add_tab_to_gui({name = module_name, id = player_list_show_token, admin = false})

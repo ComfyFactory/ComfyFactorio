@@ -192,6 +192,7 @@ function Public.reset_map()
     AntiGrief.explosive_threshold(32)
 
     PL.show_roles_in_list(true)
+    PL.rpg_enabled(true)
 
     Score.reset_tbl()
 
