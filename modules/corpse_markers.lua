@@ -1,5 +1,8 @@
-local function draw_map_tag(surface, force, position)
-    force.add_chart_tag(surface, {icon = {type = 'item', name = 'heavy-armor'}, position = position, text = '   '})
+local function draw_map_tag(surface, force, position, name)
+    local t = force.add_chart_tag(surface, {icon = {type = 'item', name = 'heavy-armor'}, position = position, text = '   '})
+    if name then
+        t.last_user = name
+    end
 end
 
 local function is_tag_valid(tag)
@@ -42,7 +45,14 @@ end
 local function redraw_all_tags()
     for _, surface in pairs(game.surfaces) do
         for _, corpse in pairs(surface.find_entities_filtered({name = 'character-corpse'})) do
-            draw_map_tag(corpse.surface, get_corpse_force(corpse), corpse.position)
+            if corpse.character_corpse_player_index then
+                local player = game.get_player(corpse.character_corpse_player_index)
+                if player and player.valid then
+                    draw_map_tag(corpse.surface, get_corpse_force(corpse), corpse.position, player.name)
+                end
+            else
+                draw_map_tag(corpse.surface, get_corpse_force(corpse), corpse.position)
+            end
         end
     end
 end
@@ -60,7 +70,7 @@ end
 
 local function on_player_died(event)
     local player = game.players[event.player_index]
-    draw_map_tag(player.surface, player.force, player.position)
+    draw_map_tag(player.surface, player.force, player.position, player.name)
 end
 
 local function on_character_corpse_expired(event)
