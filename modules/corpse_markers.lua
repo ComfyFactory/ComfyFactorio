@@ -47,7 +47,9 @@ local function redraw_all_tags()
         for _, corpse in pairs(surface.find_entities_filtered({name = 'character-corpse'})) do
             if corpse.character_corpse_player_index then
                 local player = game.get_player(corpse.character_corpse_player_index)
-                draw_map_tag(corpse.surface, get_corpse_force(corpse), corpse.position, player.name)
+                if player and player.valid then
+                    draw_map_tag(corpse.surface, get_corpse_force(corpse), corpse.position, player.name)
+                end
             else
                 draw_map_tag(corpse.surface, get_corpse_force(corpse), corpse.position)
             end
