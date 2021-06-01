@@ -1,4 +1,6 @@
 local Global = require 'utils.global'
+local Core = require 'utils.core'
+local Color = require 'utils.color_presets'
 local Game = require 'utils.game'
 local Token = require 'utils.token'
 local Task = require 'utils.task'
@@ -19,6 +21,7 @@ local settings = {
 }
 local set_data = Server.set_data
 local try_get_data = Server.try_get_data
+local try_get_data_and_print = Server.try_get_data_and_print
 local concat = table.concat
 
 Global.register(
@@ -42,7 +45,7 @@ local Public = {
     }
 }
 
-local try_download_data =
+local try_download_data_token =
     Token.register(
     function(data)
         local key = data.key
@@ -64,7 +67,7 @@ local try_download_data =
     end
 )
 
-local try_upload_data =
+local try_upload_data_token =
     Token.register(
     function(data)
         local key = data.key
@@ -110,6 +113,34 @@ local try_upload_data =
     end
 )
 
+local get_total_playtime_token =
+    Token.register(
+    function(data)
+        if not data then
+            return
+        end
+        if not data.to_print then
+            return
+        end
+
+        local key = data.key
+        local value = data.value
+        local to_print = data.to_print
+        local player = game.get_player(to_print)
+        if player and player.valid then
+            if key then
+                if value then
+                    player.play_sound {path = 'utility/scenario_message', volume_modifier = 1}
+                    player.print('[color=blue]' .. key .. '[/color] has a total playtime of: ' .. Core.get_formatted_playtime(value))
+                else
+                    player.play_sound {path = 'utility/cannot_build', volume_modifier = 1}
+                    player.print('[color=red]' .. key .. '[/color] was not found.')
+                end
+            end
+        end
+    end
+)
+
 local nth_tick_token =
     Token.register(
     function(data)
@@ -148,6 +179,34 @@ function Public.format_time(ticks, h, m)
     end
 end
 
+--- Tries to get data from the webpanel and prints it out to the player
+-- @param <LuaPlayer>
+-- @param <TargetPlayer>
+function Public.get_and_print_to_player(player, TargetPlayer)
+    if not (player and player.valid) then
+        return
+    end
+
+    local p = player.print
+
+    if not TargetPlayer then
+        p('[ERROR] No player was provided.', Color.fail)
+        return
+    end
+
+    if not player.admin then
+        p("[ERROR] You're not admin.", Color.fail)
+        return
+    end
+
+    local secs = Server.get_current_time()
+    if secs == nil then
+        return
+    else
+        try_get_data_and_print(session_data_set, TargetPlayer, player.name, get_total_playtime_token)
+    end
+end
+
 --- Tries to get data from the webpanel and updates the local table with values.
 -- @param data_set player token
 function Public.try_dl_data(key)
@@ -157,7 +216,7 @@ function Public.try_dl_data(key)
         session[key] = game.players[key].online_time
         return
     else
-        try_get_data(session_data_set, key, try_download_data)
+        try_get_data(session_data_set, key, try_download_data_token)
     end
 end
 
@@ -169,7 +228,7 @@ function Public.try_ul_data(key)
     if secs == nil then
         return
     else
-        try_get_data(session_data_set, key, try_upload_data)
+        try_get_data(session_data_set, key, try_upload_data_token)
     end
 end
 
@@ -298,6 +357,27 @@ Server.on_data_set_changed(
                 end
             end
         end
+    end
+)
+
+commands.add_command(
+    'playtime',
+    'Fetches a player total playtime or nil.',
+    function(cmd)
+        local player = game.player
+        if not (player and player.valid) then
+            return
+        end
+
+        local p = player.print
+
+        local param = cmd.parameter
+        if not param then
+            p('[ERROR] No player was provided.', Color.fail)
+            return
+        end
+
+        Public.get_and_print_to_player(player, param)
     end
 )
 

@@ -63,6 +63,7 @@ local stop_scenario_tag = '[STOP-SCENARIO]'
 local ping_tag = '[PING]'
 local data_set_tag = '[DATA-SET]'
 local data_get_tag = '[DATA-GET]'
+local data_get_and_print_tag = '[DATA-GET-AND-PRINT]'
 local data_get_all_tag = '[DATA-GET-ALL]'
 local data_tracked_tag = '[DATA-TRACKED]'
 local ban_sync_tag = '[BAN-SYNC]'
@@ -384,6 +385,15 @@ local function send_try_get_data(data_set, key, callback_token)
     raw_print(message)
 end
 
+local function send_try_get_data_and_print(data_set, key, to_print, callback_token)
+    data_set = double_escape(data_set)
+    key = double_escape(key)
+    to_print = double_escape(to_print)
+
+    local message = concat {data_get_and_print_tag, callback_token, ' {', 'data_set:"', data_set, '",key:"', key, '",to_print:"', to_print, '"}'}
+    raw_print(message)
+end
+
 local cancelable_callback_token =
     Token.register(
     function(data)
@@ -434,6 +444,13 @@ function Public.try_get_data(data_set, key, callback_token)
     validate_arguments(data_set, key, callback_token)
 
     send_try_get_data(data_set, key, callback_token)
+end
+
+--- Same as try_get_data but prints the returned value to the given player who ran the command.
+function Public.try_get_data_and_print(data_set, key, to_print, callback_token)
+    validate_arguments(data_set, key, callback_token)
+
+    send_try_get_data_and_print(data_set, key, to_print, callback_token)
 end
 
 local function try_get_data_cancelable(data_set, key, callback_token)

@@ -171,6 +171,67 @@ function Public.format_time(ticks)
     return concat(result, ' ')
 end
 
+--- Takes a time and returns it in days, hours, minutes etc.
+function Public.get_formatted_playtime(ticks)
+    if ticks < 5184000 then
+        local y = ticks / 216000
+        y = tostring(y)
+        local h = ''
+        for i = 1, 10, 1 do
+            local z = string.sub(y, i, i)
+
+            if z == '.' then
+                break
+            else
+                h = h .. z
+            end
+        end
+
+        local m = ticks % 216000
+        m = m / 3600
+        m = math.floor(m)
+        m = tostring(m)
+
+        if h == '0' then
+            local str = m .. ' minutes'
+            return str
+        else
+            local str = h .. ' hours '
+            str = str .. m
+            str = str .. ' minutes'
+            return str
+        end
+    else
+        local y = ticks / 5184000
+        y = tostring(y)
+        local h = ''
+        for i = 1, 10, 1 do
+            local z = string.sub(y, i, i)
+
+            if z == '.' then
+                break
+            else
+                h = h .. z
+            end
+        end
+
+        local m = ticks % 5184000
+        m = m / 216000
+        m = math.floor(m)
+        m = tostring(m)
+
+        if h == '0' then
+            local str = m .. ' days'
+            return str
+        else
+            local str = h .. ' days '
+            str = str .. m
+            str = str .. ' hours'
+            return str
+        end
+    end
+end
+
 --- Prints a message letting the player know they cannot run a command
 -- @param name string name of the command
 function Public.cant_run(name)
