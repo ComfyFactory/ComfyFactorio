@@ -530,6 +530,9 @@ local function construct_doors(ic, car)
     local area = car.area
     local surface_index = car.surface
     local surface = game.surfaces[surface_index]
+    if not surface or not surface.valid then
+        return
+    end
 
     for _, x in pairs({area.left_top.x - 1.5, area.right_bottom.x + 1.5}) do
         local p = {x = x, y = area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5)}
@@ -551,6 +554,9 @@ local function construct_doors(ic, car)
         e.minable = false
         e.operable = false
         e.get_inventory(defines.inventory.fuel).insert({name = 'coal', count = 1})
+        if type(car.entity) == 'boolean' then
+            return
+        end
         ic.doors[e.unit_number] = car.entity.unit_number
         car.doors[#car.doors + 1] = e
     end
@@ -653,8 +659,11 @@ function Public.kill_car(ic, entity)
     local owner = car.owner
 
     if owner then
-        if trust_system[owner.index] then
-            trust_system[owner.index] = nil
+        owner = game.get_player(owner)
+        if owner and owner.valid then
+            if trust_system[owner.index] then
+                trust_system[owner.index] = nil
+            end
         end
     end
 
@@ -848,6 +857,10 @@ function Public.create_car(ic, event)
         upgrade_surface(ic, player, ce)
         render_owner_text(ic.renders, player, ce)
         player.print('Your car-surface has been upgraded!', Color.success)
+        return
+    end
+
+    if type(ce) == 'boolean' then
         return
     end
 

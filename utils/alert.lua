@@ -64,6 +64,10 @@ function Public.close_alert(element)
     end
 
     local data = Gui.get_data(alert)
+    if not data then
+        return
+    end
+
     active_alerts[data.alert_id] = nil
     Gui.destroy(alert)
 end

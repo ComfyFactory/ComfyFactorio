@@ -25,9 +25,15 @@ end
 
 local function teleport_players(surface)
     game.forces.player.set_spawn_position({-27, 25}, surface)
+    local position = game.forces.player.get_spawn_position(surface)
+
+    if not position then
+        game.forces.player.set_spawn_position({-27, 25}, surface)
+        position = game.forces.player.get_spawn_position(surface)
+    end
 
     for _, player in pairs(game.connected_players) do
-        player.teleport(surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5), surface)
+        player.teleport(surface.find_non_colliding_position('character', position, 3, 0, 5), surface)
     end
 end
 
