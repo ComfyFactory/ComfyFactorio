@@ -1100,19 +1100,21 @@ local function on_player_used_capsule(event)
         rpg_t.mana = rpg_t.mana - object.mana_cost
     elseif obj_name == 'pointy_explosives' then
         local entities =
-            player.surface.find_entities_filtered {force = player.force, type = 'container', area = {{position.x - 5, position.y - 5}, {position.x + 5, position.y + 5}}}
+            player.surface.find_entities_filtered {force = player.force, type = 'container', area = {{position.x - 1, position.y - 1}, {position.x + 1, position.y + 1}}}
 
         local detonate_chest
         for i = 1, #entities do
             local e = entities[i]
             detonate_chest = e
         end
-        local success = Explosives.detonate_chest(detonate_chest)
-        if success then
-            player.print(({'rpg_main.detonate_chest'}), Color.success)
-            rpg_t.mana = rpg_t.mana - object.mana_cost
-        else
-            player.print(({'rpg_main.detonate_chest_failed'}), Color.fail)
+        if detonate_chest and detonate_chest.valid then
+            local success = Explosives.detonate_chest(detonate_chest)
+            if success then
+                player.print(({'rpg_main.detonate_chest'}), Color.success)
+                rpg_t.mana = rpg_t.mana - object.mana_cost
+            else
+                player.print(({'rpg_main.detonate_chest_failed'}), Color.fail)
+            end
         end
     elseif obj_name == 'warp-gate' then
         player.teleport(surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5), surface)
