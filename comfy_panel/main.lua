@@ -132,7 +132,11 @@ local function main_frame(player)
     local tabs = main_gui_tabs
     Public.comfy_panel_clear_left_gui(player)
 
-    local frame = player.gui.left.add({type = 'frame', name = 'comfy_panel'})
+    local frame = player.gui.left.comfy_panel
+    if not frame or not frame.valid then
+        frame = player.gui.left.add({type = 'frame', name = 'comfy_panel'})
+    end
+
     frame.style.margin = 6
 
     local tabbed_pane = frame.add({type = 'tabbed-pane', name = 'tabbed_pane'})

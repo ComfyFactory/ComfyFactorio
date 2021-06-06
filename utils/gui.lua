@@ -61,6 +61,10 @@ local set_data = Gui.set_data
 
 -- Gets the Associated data with this LuaGuiElement if any.
 function Gui.get_data(element)
+    if not element then
+        return
+    end
+
     local player_index = element.player_index
 
     local values = data[player_index]

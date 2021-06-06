@@ -941,6 +941,9 @@ Gui.on_click(
     create_poll_clear_name,
     function(event)
         local data = Gui.get_data(event.element)
+        if not data then
+            return
+        end
 
         local slider = data.duration_slider
         slider.slider_value = math.floor(default_poll_duration * inv_tick_duration_step)

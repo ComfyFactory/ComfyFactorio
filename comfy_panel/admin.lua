@@ -193,6 +193,11 @@ local function create_mini_camera_gui(player, caption, position, surface)
     end
     local frame = player.gui.center.add({type = 'frame', name = 'mini_camera', caption = caption})
     surface = tonumber(surface)
+    surface = game.surfaces[surface]
+    if not surface or not surface.valid then
+        return
+    end
+
     local camera =
         frame.add(
         {

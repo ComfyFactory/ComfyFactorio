@@ -460,6 +460,10 @@ local function set_carriages()
         return
     end
 
+    if not locomotive.train then
+        return
+    end
+
     local carriages = locomotive.train.carriages
     local t = {}
     for i = 1, #carriages do

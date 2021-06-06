@@ -244,7 +244,7 @@ local function on_entity_died(event)
 end
 
 function Public.detonate_chest(entity)
-    if not entity.valid then
+    if not entity or not entity.valid then
         return false
     end
     if not valid_container_types[entity.type] then
