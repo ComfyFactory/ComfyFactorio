@@ -212,8 +212,13 @@ local function insert_item_into_chest(player_inventory, chests, filtered_chests,
 
     local to_insert = floor(count / #chests)
     if to_insert <= 0 then
-        return
+        if count > 0 then
+            to_insert = count
+        else
+            return
+        end
     end
+
     local variate = count % #chests
     local chests_available = #chests
     local tries = #chests
