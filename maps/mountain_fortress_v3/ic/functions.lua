@@ -589,11 +589,34 @@ local remove_car =
     end
 )
 
+local find_remove_car =
+    Token.register(
+    function(data)
+        local index = data.index
+        local types = data.types
+        local position = data.position
+
+        local surface = game.get_surface(index)
+        if not surface or not surface.valid then
+            return
+        end
+
+        for _, dropped_ent in pairs(surface.find_entities_filtered {type = 'item-entity', area = {{position.x - 10, position.y - 10}, {position.x + 10, position.y + 10}}}) do
+            if dropped_ent and dropped_ent.valid and dropped_ent.stack then
+                if types[dropped_ent.stack.name] then
+                    dropped_ent.destroy()
+                end
+            end
+        end
+    end
+)
+
 function Public.save_car(ic, event)
     local entity = event.entity
     local player = game.players[event.player_index]
 
     local car = ic.cars[entity.unit_number]
+    local types = ic.entity_type
 
     if not car then
         log_err('Car was not valid.')
@@ -619,6 +642,16 @@ function Public.save_car(ic, event)
             return
         end
 
+        local find_remove_car_args = {
+            index = p.surface.index,
+            types = types,
+            position = p.position
+        }
+
+        Task.set_timeout_in_ticks(1, find_remove_car, find_remove_car_args)
+        Task.set_timeout_in_ticks(2, find_remove_car, find_remove_car_args)
+        Task.set_timeout_in_ticks(3, find_remove_car, find_remove_car_args)
+
         log_err(ic, 'Owner of this vehicle is: ' .. p.name)
         save_surface(ic, entity, p)
         Utils.action_warning('{Car}', player.name .. ' has looted ' .. p.name .. '´s car.')
@@ -632,7 +665,7 @@ function Public.save_car(ic, event)
             local e = player.surface.create_entity({name = car.name, position = position, force = player.force, create_build_effect_smoke = false})
             e.health = health
             restore_surface(ic, p, e)
-        else
+        elseif p.can_insert({name = car.name, count = 1}) then
             p.insert({name = car.name, count = 1, health = health})
             p.print('Your car was stolen from you - the gods foresaw this and granted you a new one.', Color.info)
         end

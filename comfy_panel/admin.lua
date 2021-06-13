@@ -205,7 +205,7 @@ local function create_mini_camera_gui(player, caption, position, surface)
             name = 'mini_cam_element',
             position = position,
             zoom = 0.6,
-            surface_index = game.surfaces[surface].index
+            surface_index = surface.index
         }
     )
     camera.style.minimal_width = 640
