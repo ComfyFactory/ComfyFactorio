@@ -1015,6 +1015,9 @@ local function on_entity_died(event)
         FDT.set('market_age', game.tick - last_reset)
         FDT.set('game_has_ended', true)
         is_game_lost()
+        local name = Server.get_server_name()
+        local date = Server.get_start_time()
+        game.server_save('Final_' .. name .. '_' .. tostring(date))
         return
     end
 
