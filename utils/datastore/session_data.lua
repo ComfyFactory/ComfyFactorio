@@ -273,9 +273,7 @@ end
 -- @param LuaPlayer
 -- @return <table>
 function Public.get_trusted_player(player)
-    if player and player.valid then
-        return trusted[player.name] or false
-    end
+    return trusted and player and player.valid and trusted[player.name] or false
 end
 
 --- Returns the table of settings

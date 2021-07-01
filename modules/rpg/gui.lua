@@ -739,7 +739,9 @@ Gui.on_click(
             return
         end
 
-        if not Session.get_trusted_player(player.name) then
+        log(serpent.block(Session.get_trusted_player(player.name)))
+
+        if not Session.get_trusted_player(player) then
             return player.play_sound({path = 'utility/cannot_build', volume_modifier = 0.75})
         end
 
