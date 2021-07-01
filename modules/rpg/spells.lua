@@ -114,6 +114,17 @@ function Public.conjure_items()
         sprite = 'recipe/express-underground-belt'
     }
     spells[#spells + 1] = {
+        name = {'entity-name.tree'},
+        obj_to_create = 'tree-05',
+        level = 70,
+        type = 'entity',
+        mana_cost = 100,
+        tick = 350,
+        aoe = true,
+        enabled = true,
+        sprite = 'entity/tree-05'
+    }
+    spells[#spells + 1] = {
         name = {'entity-name.sand-rock-big'},
         obj_to_create = 'sand-rock-big',
         level = 80,
