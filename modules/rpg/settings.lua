@@ -8,6 +8,7 @@ local save_button_name = Public.save_button_name
 local discard_button_name = Public.discard_button_name
 local spell_gui_button_name = Public.spell_gui_button_name
 local spell_gui_frame_name = Public.spell_gui_frame_name
+local enable_spawning_frame_name = Public.enable_spawning_frame_name
 local spell1_button_name = Public.spell1_button_name
 local spell2_button_name = Public.spell2_button_name
 local spell3_button_name = Public.spell3_button_name
@@ -91,7 +92,15 @@ function Public.spell_gui_settings(player)
             }
         )
         main_frame.auto_center = true
-        local table = main_frame.add({type = 'table', column_count = 3, name = 'spell_table'})
+        local table = main_frame.add({type = 'table', column_count = 4, name = 'spell_table'})
+        table.add(
+            {
+                type = 'sprite-button',
+                sprite = 'item/raw-fish',
+                name = enable_spawning_frame_name,
+                tooltip = ({'rpg_settings.toggle_cast_spell_label'})
+            }
+        )
         table.add(
             {
                 type = 'sprite-button',
@@ -116,6 +125,7 @@ function Public.spell_gui_settings(player)
                 tooltip = names[rpg_t.dropdown_select_index3] or '---'
             }
         )
+        table.add({type = 'flow'})
         local b1 = table.add({type = 'sprite-button', name = 'mana-cost', tooltip = {'rpg_settings.mana_cost'}, caption = 0})
         local b2 = table.add({type = 'sprite-button', name = 'mana', tooltip = {'rpg_settings.mana'}, caption = 0})
         local b3 = table.add({type = 'sprite-button', name = 'maxmana', tooltip = {'rpg_settings.mana_max'}, caption = 0})
