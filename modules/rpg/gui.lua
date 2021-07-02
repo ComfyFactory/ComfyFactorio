@@ -2,6 +2,7 @@ local ComfyGui = require 'comfy_panel.main'
 local Session = require 'utils.datastore.session_data'
 local P = require 'player_modifiers'
 local Gui = require 'utils.gui'
+local Color = require 'utils.color_presets'
 
 --RPG Modules
 local Public = require 'modules.rpg.table'
@@ -739,18 +740,19 @@ Gui.on_click(
             return
         end
 
-        log(serpent.block(Session.get_trusted_player(player.name)))
-
         if not Session.get_trusted_player(player) then
+            player.print({'rpg_settings.not_trusted'}, Color.fail)
             return player.play_sound({path = 'utility/cannot_build', volume_modifier = 0.75})
         end
 
         if frame and frame.valid then
             local rpg_t = Public.get_value_from_player(player.index)
             if not rpg_t.enable_entity_spawn then
+                player.print({'rpg_settings.cast_spell_enabled_label'}, Color.success)
                 player.play_sound({path = 'utility/armor_insert', volume_modifier = 0.75})
                 rpg_t.enable_entity_spawn = true
             else
+                player.print({'rpg_settings.cast_spell_disabled_label'}, Color.warning)
                 player.play_sound({path = 'utility/cannot_build', volume_modifier = 0.75})
                 rpg_t.enable_entity_spawn = false
             end

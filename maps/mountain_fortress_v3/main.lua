@@ -169,6 +169,7 @@ function Public.reset_map()
     end
 
     JailData.set_valid_surface(tostring(surface.name))
+    JailData.reset_vote_table()
 
     Explosives.set_surface_whitelist({[surface.name] = true})
 
