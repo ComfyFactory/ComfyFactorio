@@ -110,7 +110,7 @@ function Public.reset_table()
     this.rpg_extra.force_mana_per_tick = false
     this.rpg_extra.enable_stone_path = false
     this.rpg_extra.enable_auto_allocate = false
-    this.rpg_extra.enable_one_punch = false
+    this.rpg_extra.enable_one_punch = true
     this.rpg_extra.enable_one_punch_globally = false
     this.rpg_extra.tweaked_crafting_items = {
         ['red-wire'] = true,
