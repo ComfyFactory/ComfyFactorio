@@ -938,8 +938,8 @@ local function command_handler(callback, ...)
     end
 end
 
---- The command 'cc' is only used by the server so it can communicate through the webpanel api to the instances that it starts.
--- Doing this, enables achivements and the webpanel can communicate without any interruptions.
+--- The command 'cc' is only used by the server so it can communicate through the web-panel api to the instances that it starts.
+-- Doing this, enables achievements and the web-panel can communicate without any interruptions.
 commands.add_command(
     'cc',
     'Evaluate command',
