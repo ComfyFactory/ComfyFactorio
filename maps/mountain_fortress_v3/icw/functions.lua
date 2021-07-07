@@ -849,6 +849,10 @@ function Public.use_cargo_wagon_door_with_entity(icw, player, door)
         return
     end
 
+    if not wagon.entity or not wagon.entity.valid then
+        return
+    end
+
     player_data.fallback_surface = wagon.entity.surface.index
     player_data.fallback_position = {wagon.entity.position.x, wagon.entity.position.y}
 

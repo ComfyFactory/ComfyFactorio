@@ -1117,7 +1117,13 @@ local function on_player_used_capsule(event)
             end
         end
     elseif obj_name == 'warp-gate' then
-        player.teleport(surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5), surface)
+        local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
+        if pos then
+            player.teleport(pos, surface)
+        else
+            pos = game.forces.player.get_spawn_position(surface)
+            player.teleport(pos, surface)
+        end
         rpg_t.mana = 0
         Public.damage_player_over_time(player, math.random(8, 16))
         player.play_sound {path = 'utility/armor_insert', volume_modifier = 1}
