@@ -790,6 +790,12 @@ local function command_to_main_target(group, bypass)
 
     debug_print('get_main_command - got commands')
 
+    local surface_index = WD.get('surface_index')
+
+    if group.surface.index ~= surface_index then
+        return
+    end
+
     group.set_command(
         {
             type = defines.command.compound,
