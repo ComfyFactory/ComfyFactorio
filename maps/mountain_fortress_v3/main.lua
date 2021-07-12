@@ -160,6 +160,7 @@ function Public.reset_map()
 
     if WPT.get('prestige_system_enabled') then
         RPG_Progression.restore_xp_on_reset()
+        RPG_Progression.set_dataset('mtn_v3_rpg_prestige')
     end
 
     Group.reset_groups()
