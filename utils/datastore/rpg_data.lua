@@ -12,17 +12,18 @@ local Color = require 'utils.color_presets'
 local Public = {}
 
 local set_timeout_in_ticks = Task.set_timeout_in_ticks
-local rpg_dataset = 'mtn_v3_rpg'
-local reset_key = 'reset_by_this_date'
 
 local this = {
     settings = {
         reset_after = 7, -- 7 days
         required_level_to_progress = 99, -- higher than 99 to be able to save
-        limit = 39600 -- level 100
+        limit = 39600, -- level 100
+        dataset = 'rpg_v2_dataset',
+        reset_key = 'reset_by_this_date'
     },
     data = {}
 }
+
 local set_data = Server.set_data
 local try_get_data = Server.try_get_data
 local try_get_all_data = Server.try_get_all_data
@@ -72,9 +73,9 @@ local clear_all_data_token =
         end
 
         for key, _ in pairs(entries) do
-            if key ~= reset_key then
+            if key ~= this.settings.reset_key then
                 this.data[key] = nil
-                set_data(rpg_dataset, key, nil)
+                set_data(this.settings.dataset, key, nil)
             end
         end
     end
@@ -93,14 +94,20 @@ local try_download_amount_of_resets_token =
             end
 
             if time_to_reset < this.settings.reset_after then
-                this.data[reset_key] = new_value
+                this.data[this.settings.reset_key] = new_value
             else
-                this.data[reset_key] = 0
-                set_data(rpg_dataset, reset_key, tonumber(new_value))
-                try_get_all_data(rpg_dataset, clear_all_data_token)
+                this.data[this.settings.reset_key] = 0
+                set_data(this.settings.dataset, this.settings.reset_key, tonumber(new_value))
+                try_get_all_data(this.settings.dataset, clear_all_data_token)
             end
         else
-            set_data(rpg_dataset, reset_key, 0)
+            local new_value = Core.get_current_date()
+
+            if new_value then
+                set_data(this.settings.dataset, this.settings.reset_key, tonumber(new_value))
+            else
+                set_data(this.settings.dataset, this.settings.reset_key, 0)
+            end
         end
     end
 )
@@ -120,7 +127,7 @@ local try_download_data_token =
                 this.data[player.name] = value
                 RPG.set_value_to_player(player.index, 'xp', value)
             else
-                set_data(rpg_dataset, key, nil)
+                set_data(this.settings.dataset, key, nil)
             end
         end
     end
@@ -146,11 +153,11 @@ local try_upload_data_token =
 
             new_xp = round(new_xp, 0)
 
-            set_data(rpg_dataset, key, new_xp)
+            set_data(this.settings.dataset, key, new_xp)
             this.data[key] = new_xp
         else
             if eligible(player) then
-                set_data(rpg_dataset, key, get_progression(player))
+                set_data(this.settings.dataset, key, get_progression(player))
             end
         end
     end
@@ -162,7 +169,7 @@ function Public.try_dl_resets()
     if secs == nil then
         return
     else
-        try_get_data(rpg_dataset, reset_key, try_download_amount_of_resets_token)
+        try_get_data(this.settings.dataset, this.settings.reset_key, try_download_amount_of_resets_token)
     end
 end
 
@@ -174,7 +181,7 @@ function Public.try_dl_data(key)
     if secs == nil then
         return
     else
-        try_get_data(rpg_dataset, key, try_download_data_token)
+        try_get_data(this.settings.dataset, key, try_download_data_token)
     end
 end
 
@@ -186,7 +193,7 @@ function Public.try_ul_data(key)
     if secs == nil then
         return
     else
-        try_get_data(rpg_dataset, key, try_upload_data_token)
+        try_get_data(this.settings.dataset, key, try_upload_data_token)
     end
 end
 
@@ -260,28 +267,6 @@ Event.add(
     end
 )
 
-Server.on_data_set_changed(
-    rpg_dataset,
-    function(data)
-        if not data then
-            return
-        end
-        if not data.key then
-            return
-        end
-        local player = game.get_player(data.key)
-
-        if not data.value then
-            this.data[player.name] = nil
-            return
-        end
-
-        if player and player.valid then
-            this.data[player.name] = data.value
-        end
-    end
-)
-
 local nth_tick_token =
     Token.register(
     function(data)
@@ -317,6 +302,13 @@ function Public.restore_xp_on_reset()
             RPG.set_value_to_player(player.index, 'xp', value)
             player.print('[RPG] Prestige system has been applied.', Color.success)
         end
+    end
+end
+
+--- Sets a new dataset or use the default one
+function Public.set_dataset(dataset)
+    if dataset then
+        this.settings.dataset = dataset
     end
 end
 
