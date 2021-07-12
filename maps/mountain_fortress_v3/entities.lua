@@ -20,6 +20,7 @@ local Discord = require 'utils.discord'
 local Core = require 'utils.core'
 local Diff = require 'modules.difficulty_vote_by_amount'
 local format_number = require 'util'.format_number
+local RPG_Progression = require 'utils.datastore.rpg_data'
 
 -- tables
 local WPT = require 'maps.mountain_fortress_v3.table'
@@ -31,6 +32,7 @@ local random = math.random
 local floor = math.floor
 local abs = math.abs
 local round = math.round
+local raise_event = script.raise_event
 
 -- Use these settings for live
 local send_ping_to_channel = Discord.channel_names.mtn_channel
@@ -94,11 +96,10 @@ local reset_game =
     Token.register(
     function(data)
         local this = data.this
-        local Reset_map = data.reset_map
         if this.soft_reset then
             -- HS.set_scores()
             this.game_reset_tick = nil
-            Reset_map()
+            raise_event(WPT.events.reset_map, {})
             return
         end
         if this.restart then
@@ -106,7 +107,6 @@ local reset_game =
             local message = ({'entity.reset_game'})
             Server.to_discord_bold(message, true)
             Server.start_scenario('Mountain_Fortress_v3')
-            this.announced_message = true
             return
         end
         if this.shutdown then
@@ -1144,7 +1144,11 @@ local function show_mvps(player)
             local pick_tier = pickaxe_tiers[tier]
 
             local server_name = Server.check_server_name('Mtn Fortress')
+            if WPT.get('prestige_system_enabled') then
+                RPG_Progression.save_all_players()
+            end
             if server_name then
+
                 local name = Server.get_server_name()
                 local date = Server.get_start_time()
                 game.server_save('Final_' .. name .. '_' .. tostring(date))
@@ -1175,10 +1179,14 @@ function Public.unstuck_player(index)
     end
     player.teleport(position, surface)
 end
-
-function Public.loco_died()
+function Public.loco_died(invalid_locomotive)
     local game_lost = WPT.get('game_lost')
     if not game_lost then
+        return
+    end
+
+    local announced_message = WPT.get('announced_message')
+    if announced_message then
         return
     end
 
@@ -1186,16 +1194,18 @@ function Public.loco_died()
     local locomotive = WPT.get('locomotive')
     local surface = game.surfaces[active_surface_index]
     local wave_defense_table = WD.get_table()
-    if wave_defense_table.game_lost then
+    if wave_defense_table.game_lost and not invalid_locomotive then
         return
     end
     Collapse.start_now(false)
 
+    for _, player in pairs(game.connected_players) do
+        player.play_sound {path = 'utility/game_lost', volume_modifier = 0.75}
+        show_mvps(player)
+    end
+
     if not locomotive.valid then
         local this = WPT.get()
-        if this.announced_message then
-            return
-        end
 
         local data = {}
         if this.locomotive and this.locomotive.valid then
@@ -1205,37 +1215,32 @@ function Public.loco_died()
         end
 
         local msg = defeated_messages[random(1, #defeated_messages)]
-        Alert.alert_all_players_location(data, msg, nil, 100)
+        Alert.alert_all_players_location(data, msg, nil, 15)
 
-        local Reset_map = require 'maps.mountain_fortress_v3.main'.reset_map
         wave_defense_table.game_lost = true
         wave_defense_table.target = nil
 
         local params = {
-            this = this,
-            reset_map = Reset_map
+            this = this
         }
 
         if this.soft_reset then
             this.game_reset_tick = nil
             Task.set_timeout_in_ticks(600, reset_game, params)
+            this.announced_message = true
             return
         end
         if this.restart then
-            if not this.announced_message then
-                game.print(({'entity.notify_restart'}), {r = 0.22, g = 0.88, b = 0.22})
-                Task.set_timeout_in_ticks(600, reset_game, params)
-                this.announced_message = true
-                return
-            end
+            game.print(({'entity.notify_restart'}), {r = 0.22, g = 0.88, b = 0.22})
+            Task.set_timeout_in_ticks(600, reset_game, params)
+            this.announced_message = true
+            return
         end
         if this.shutdown then
-            if not this.announced_message then
-                game.print(({'entity.notify_shutdown'}), {r = 0.22, g = 0.88, b = 0.22})
-                Task.set_timeout_in_ticks(600, reset_game, params)
-                this.announced_message = true
-                return
-            end
+            game.print(({'entity.notify_shutdown'}), {r = 0.22, g = 0.88, b = 0.22})
+            Task.set_timeout_in_ticks(600, reset_game, params)
+            this.announced_message = true
+            return
         end
 
         return
@@ -1277,6 +1282,7 @@ function Public.loco_died()
         show_mvps(player)
     end
 end
+
 
 local function on_built_entity(event)
     local entity = event.created_entity

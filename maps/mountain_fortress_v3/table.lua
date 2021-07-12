@@ -8,6 +8,8 @@ local this = {
 }
 local Public = {}
 
+Public.events = {reset_map = Event.generate_event_name('reset_map')}
+
 Global.register(
     this,
     function(tbl)
@@ -201,6 +203,7 @@ function Public.reset_table()
     }
     this.market_announce = game.tick + 1200
     this.check_heavy_damage = true
+    this.prestige_system_enabled = false
     for k, _ in pairs(this.players) do
         this.players[k] = {}
     end

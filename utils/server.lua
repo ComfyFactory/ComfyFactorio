@@ -517,8 +517,8 @@ local function cancel_try_get_data(data_set, key, callback_token)
     end
 end
 
---- Cancels the request. Returns false if the request could not be cnacled, either because there is no request
--- to cancel or it has been completed or cancled already. Otherwise returns true.
+--- Cancels the request. Returns false if the request could not be canceled, either because there is no request
+-- to cancel or it has been completed or canceled already. Otherwise returns true.
 -- If the request is cancelled before it is complete the callback will be called with data.cancelled = true.
 -- It is safe to cancel a non-existent or completed request, in either case the callback will not be called.
 -- @param  data_set<string>
@@ -900,7 +900,7 @@ end
 function Public.get_current_time()
     local secs = server_time.secs
     if secs == nil then
-        return nil
+        return false
     end
 
     local diff = game.tick - server_time.tick
