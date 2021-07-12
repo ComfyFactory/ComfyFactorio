@@ -686,6 +686,15 @@ function Public.required_playtime_for_vote(value)
     return settings.playtime_for_vote
 end
 
+function Public.reset_vote_table()
+    for k, _ in pairs(votejail) do
+        votejail[k] = nil
+    end
+    for k, _ in pairs(votefree) do
+        votefree[k] = nil
+    end
+end
+
 Event.on_init(get_gulag_permission_group)
 
 return Public

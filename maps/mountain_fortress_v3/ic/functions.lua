@@ -332,7 +332,13 @@ local function check_if_players_are_in_nauvis(ic)
     for _, player in pairs(game.connected_players) do
         local main_surface = game.surfaces[ic.allowed_surface]
         if player.surface.name == 'nauvis' then
-            player.teleport(main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0, 5), main_surface)
+            local pos = main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0, 5)
+            if pos then
+                player.teleport(pos, main_surface)
+            else
+                pos = game.forces.player.get_spawn_position(main_surface)
+                player.teleport(pos, main_surface)
+            end
         end
     end
 end

@@ -1128,7 +1128,7 @@ local function gui_click(event)
             }
         )
 
-        this.locomotive_max_health = this.locomotive_max_health + 10000
+        this.locomotive_max_health = this.locomotive_max_health + 20000
 
         --[[
         this.locomotive_max_health = this.locomotive_max_health + (this.locomotive_max_health * 0.5)
@@ -1836,7 +1836,13 @@ local function on_player_changed_surface(event)
         if not surface or not surface.valid then
             return
         end
-        player.teleport(surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5), surface)
+        local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
+        if pos then
+            player.teleport(pos, surface)
+        else
+            pos = game.forces.player.get_spawn_position(surface)
+            player.teleport(pos, surface)
+        end
     end
 
     if string.sub(player.surface.name, 0, #map_name) ~= map_name then

@@ -35,6 +35,7 @@ local Modifiers = require 'player_modifiers'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local Reset = require 'functions.soft_reset'
 local JailData = require 'utils.datastore.jail_data'
+local RPG_Progression = require 'utils.datastore.rpg_data'
 
 require 'maps.mountain_fortress_v3.rocks_yield_ore_veins'
 
@@ -59,6 +60,7 @@ local role_to_mention = Discord.role_mentions.mtn_fortress
 -- local role_to_mention = Discord.role_mentions.test_role
 
 local Public = {}
+
 local raise_event = script.raise_event
 local floor = math.floor
 local remove = table.remove
@@ -156,6 +158,11 @@ function Public.reset_map()
     RPG.enable_explosive_bullets_globally(true)
     RPG.enable_explosive_bullets(false)
 
+    if WPT.get('prestige_system_enabled') then
+        RPG_Progression.restore_xp_on_reset()
+        RPG_Progression.set_dataset('mtn_v3_rpg_prestige')
+    end
+
     Group.reset_groups()
     Group.alphanumeric_only(false)
 
@@ -169,6 +176,7 @@ function Public.reset_map()
     end
 
     JailData.set_valid_surface(tostring(surface.name))
+    JailData.reset_vote_table()
 
     Explosives.set_surface_whitelist({[surface.name] = true})
 
@@ -271,7 +279,8 @@ end
 local is_locomotive_valid = function()
     local locomotive = WPT.get('locomotive')
     if not locomotive.valid then
-        Entities.loco_died()
+        WPT.set('game_lost', true)
+        Entities.loco_died(true)
     end
 end
 
@@ -500,5 +509,6 @@ end
 
 Event.on_nth_tick(10, on_tick)
 Event.on_init(on_init)
+Event.add(WPT.events.reset_map, Public.reset_map)
 
 return Public

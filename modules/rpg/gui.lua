@@ -1,6 +1,8 @@
 local ComfyGui = require 'comfy_panel.main'
+local Session = require 'utils.datastore.session_data'
 local P = require 'player_modifiers'
 local Gui = require 'utils.gui'
+local Color = require 'utils.color_presets'
 
 --RPG Modules
 local Public = require 'modules.rpg.table'
@@ -16,6 +18,7 @@ local settings_button_name = Public.settings_button_name
 local settings_frame_name = Public.settings_frame_name
 local discard_button_name = Public.discard_button_name
 local save_button_name = Public.save_button_name
+local enable_spawning_frame_name = Public.enable_spawning_frame_name
 local spell_gui_button_name = Public.spell_gui_button_name
 local spell_gui_frame_name = Public.spell_gui_frame_name
 local spell1_button_name = Public.spell1_button_name
@@ -723,6 +726,36 @@ Gui.on_click(
             frame.destroy()
         else
             Public.extra_settings(player)
+        end
+    end
+)
+
+Gui.on_click(
+    enable_spawning_frame_name,
+    function(event)
+        local player = event.player
+        local screen = player.gui.screen
+        local frame = screen[spell_gui_frame_name]
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        if not Session.get_trusted_player(player) then
+            player.print({'rpg_settings.not_trusted'}, Color.fail)
+            return player.play_sound({path = 'utility/cannot_build', volume_modifier = 0.75})
+        end
+
+        if frame and frame.valid then
+            local rpg_t = Public.get_value_from_player(player.index)
+            if not rpg_t.enable_entity_spawn then
+                player.print({'rpg_settings.cast_spell_enabled_label'}, Color.success)
+                player.play_sound({path = 'utility/armor_insert', volume_modifier = 0.75})
+                rpg_t.enable_entity_spawn = true
+            else
+                player.print({'rpg_settings.cast_spell_disabled_label'}, Color.warning)
+                player.play_sound({path = 'utility/cannot_build', volume_modifier = 0.75})
+                rpg_t.enable_entity_spawn = false
+            end
         end
     end
 )
