@@ -28,6 +28,16 @@ local function create_input_element(frame, type, value, items, index)
     return frame.add({type = 'text-box', text = value})
 end
 
+function Public.update_spell_gui_indicator(player)
+    local rpg_t = Public.get_value_from_player(player.index)
+    local main_frame = player.gui.screen[spell_gui_frame_name]
+    if not main_frame then
+        return
+    end
+    local indicator = main_frame['spell_table']['indicator']
+    indicator.sprite = 'virtual-signal/signal-' .. (rpg_t.enable_entity_spawn and 'green' or 'red')
+end
+
 function Public.update_spell_gui(player, spell_index)
     local rpg_t = Public.get_value_from_player(player.index)
     local spells, names = Public.rebuild_spells()
@@ -75,6 +85,8 @@ function Public.update_spell_gui(player, spell_index)
     spell_table['mana-cost'].caption = spells[rpg_t.dropdown_select_index].mana_cost
     spell_table['mana'].caption = math.floor(rpg_t.mana)
     spell_table['maxmana'].caption = math.floor(rpg_t.mana_max)
+    
+    Public.update_spell_gui_indicator(player)
 end
 
 function Public.spell_gui_settings(player)
@@ -125,7 +137,8 @@ function Public.spell_gui_settings(player)
                 tooltip = names[rpg_t.dropdown_select_index3] or '---'
             }
         )
-        table.add({type = 'flow'})
+        
+        table.add({type = 'sprite-button', name = 'indicator', enabled = false})
         local b1 = table.add({type = 'sprite-button', name = 'mana-cost', tooltip = {'rpg_settings.mana_cost'}, caption = 0})
         local b2 = table.add({type = 'sprite-button', name = 'mana', tooltip = {'rpg_settings.mana'}, caption = 0})
         local b3 = table.add({type = 'sprite-button', name = 'maxmana', tooltip = {'rpg_settings.mana_max'}, caption = 0})
