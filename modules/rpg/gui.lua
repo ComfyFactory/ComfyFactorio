@@ -756,6 +756,7 @@ Gui.on_click(
                 player.play_sound({path = 'utility/cannot_build', volume_modifier = 0.75})
                 rpg_t.enable_entity_spawn = false
             end
+            Public.update_spell_gui_indicator(player)
         end
     end
 )

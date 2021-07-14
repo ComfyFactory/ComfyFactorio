@@ -1157,6 +1157,7 @@ local function on_player_used_capsule(event)
             if object.biter then
                 local e = surface.create_entity({name = obj_name, position = position, force = force})
                 tame_unit_effects(player, e)
+                rpg_t.mana = rpg_t.mana - object.mana_cost
             elseif object.aoe then
                 for x = 1, -1, -1 do
                     for y = 1, -1, -1 do
@@ -1174,9 +1175,9 @@ local function on_player_used_capsule(event)
             else
                 local e = surface.create_entity({name = obj_name, position = position, force = force})
                 e.direction = player.character.direction
+                rpg_t.mana = rpg_t.mana - object.mana_cost
             end
             p(({'rpg_main.object_spawned', obj_name}), Color.success)
-            rpg_t.mana = rpg_t.mana - object.mana_cost
         else
             p(({'rpg_main.out_of_reach'}), Color.fail)
             return

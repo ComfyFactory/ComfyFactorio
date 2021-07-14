@@ -172,6 +172,7 @@ function Public.conjure_items()
         name = {'entity-name.medium-spitter'},
         obj_to_create = 'medium-spitter',
         level = 70,
+        biter = true,
         type = 'entity',
         mana_cost = 100,
         tick = 300,
