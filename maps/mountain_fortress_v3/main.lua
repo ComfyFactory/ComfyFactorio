@@ -157,10 +157,11 @@ function Public.reset_map()
     RPG.disable_cooldowns_on_spells()
     RPG.enable_explosive_bullets_globally(true)
     RPG.enable_explosive_bullets(false)
+    RPG_Progression.toggle_module(false)
+    RPG_Progression.set_dataset('mtn_v3_rpg_prestige')
 
     if WPT.get('prestige_system_enabled') then
         RPG_Progression.restore_xp_on_reset()
-        RPG_Progression.set_dataset('mtn_v3_rpg_prestige')
     end
 
     Group.reset_groups()
