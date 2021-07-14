@@ -85,7 +85,7 @@ function Public.update_spell_gui(player, spell_index)
     spell_table['mana-cost'].caption = spells[rpg_t.dropdown_select_index].mana_cost
     spell_table['mana'].caption = math.floor(rpg_t.mana)
     spell_table['maxmana'].caption = math.floor(rpg_t.mana_max)
-    
+
     Public.update_spell_gui_indicator(player)
 end
 
@@ -137,7 +137,7 @@ function Public.spell_gui_settings(player)
                 tooltip = names[rpg_t.dropdown_select_index3] or '---'
             }
         )
-        
+
         table.add({type = 'sprite-button', name = 'indicator', enabled = false})
         local b1 = table.add({type = 'sprite-button', name = 'mana-cost', tooltip = {'rpg_settings.mana_cost'}, caption = 0})
         local b2 = table.add({type = 'sprite-button', name = 'mana', tooltip = {'rpg_settings.mana'}, caption = 0})
