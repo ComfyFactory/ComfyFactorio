@@ -166,6 +166,9 @@ local function check_health()
     local locomotive_health = WPT.get('locomotive_health')
     local locomotive_max_health = WPT.get('locomotive_max_health')
     local carriages = WPT.get('carriages')
+    if locomotive_health <= 0 then
+        WPT.set('locomotive_health', 0)
+    end
     local m = locomotive_health / locomotive_max_health
     if carriages then
         for i = 1, #carriages do
@@ -260,6 +263,13 @@ local function set_train_final_health(final_damage_amount, repair)
         end
     end
 
+    if locomotive_health <= 0 or locomotive.health <= 5 then
+        locomotive.destructible = false
+        locomotive.health = 1
+        WPT.set('game_lost', true)
+        Public.loco_died()
+    end
+
     if locomotive_health <= 0 then
         check_health_final_damage(final_damage_amount)
         return
@@ -270,11 +280,6 @@ local function set_train_final_health(final_damage_amount, repair)
         WPT.set('locomotive_health', locomotive_max_health)
     end
     locomotive_health = WPT.get('locomotive_health')
-
-    if locomotive_health <= 0 then
-        WPT.set('game_lost', true)
-        Public.loco_died()
-    end
 
     check_health()
 
@@ -300,7 +305,7 @@ local function protect_entities(event)
 
     if entity.force.index ~= 1 then
         return
-    end --Player Force
+    end
 
     local function is_protected(e)
         local map_name = 'mountain_fortress_v3'
@@ -1148,7 +1153,6 @@ local function show_mvps(player)
                 RPG_Progression.save_all_players()
             end
             if server_name then
-
                 local name = Server.get_server_name()
                 local date = Server.get_start_time()
                 game.server_save('Final_' .. name .. '_' .. tostring(date))
@@ -1282,7 +1286,6 @@ function Public.loco_died(invalid_locomotive)
         show_mvps(player)
     end
 end
-
 
 local function on_built_entity(event)
     local entity = event.created_entity
