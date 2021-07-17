@@ -1,5 +1,4 @@
 local Functions = require 'maps.dungeons.functions'
-require 'functions.biter_raffle'
 local DungeonsTable = require 'maps.dungeons.table'
 
 local table_shuffle_table = table.shuffle_table
