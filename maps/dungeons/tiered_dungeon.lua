@@ -535,8 +535,8 @@ local function on_marked_for_deconstruction(event)
     end
 end
 
-local function map_gen_settings()
-    local map_gen_setting = {
+local function get_map_gen_settings()
+    local settings = {
         ['seed'] = math_random(1, 1000000),
         ['water'] = 0,
         ['starting_area'] = 1,
@@ -548,7 +548,7 @@ local function map_gen_settings()
             ['decorative'] = {treat_missing_as_default = false}
         }
     }
-    return map_gen_setting
+    return settings
 end
 
 local function get_lowest_safe_floor(player)
@@ -591,7 +591,7 @@ local function descend(player, button, shift)
             player.print({'dungeons_tiered.floor_size_required'})
             return
         end
-        surface = game.create_surface('dungeons_floor' .. player.surface.index - dungeontable.original_surface_index + 1, map_gen_settings())
+        surface = game.create_surface('dungeons_floor' .. player.surface.index - dungeontable.original_surface_index + 1, get_map_gen_settings())
         if surface.index % 5 == dungeontable.original_surface_index then
             dungeontable.spawn_size = 60
         else
@@ -766,7 +766,7 @@ local function on_init()
     force.set_friend('enemy', false)
     force.set_friend('player', false)
 
-    local surface = game.create_surface('dungeons_floor0', map_gen_settings())
+    local surface = game.create_surface('dungeons_floor0', get_map_gen_settings())
 
     surface.request_to_generate_chunks({0, 0}, 2)
     surface.force_generate_chunk_requests()
@@ -776,10 +776,10 @@ local function on_init()
     local nauvis = game.surfaces[1]
     nauvis.daytime = 0.25
     nauvis.freeze_daytime = true
-    map_gen_settings = nauvis.map_gen_settings
-    map_gen_settings.height = 3
-    map_gen_settings.width = 3
-    nauvis.map_gen_settings = map_gen_settings
+    local map_settings = nauvis.map_gen_settings
+    map_settings.height = 3
+    map_settings.width = 3
+    nauvis.map_gen_settings = map_settings
     for chunk in nauvis.get_chunks() do
         nauvis.delete_chunk({chunk.x, chunk.y})
     end
