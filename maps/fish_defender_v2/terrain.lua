@@ -10,7 +10,7 @@ local math_sqrt = math.sqrt
 --rock spawning code for stone pile
 local rock_raffle = {'sand-rock-big', 'sand-rock-big', 'rock-big', 'rock-big', 'rock-big', 'rock-huge'}
 local size_of_rock_raffle = #rock_raffle
-local function place_rock(surface, position)	
+local function place_rock(surface, position)
     local a = (math_random(-250, 250)) * 0.05
     local b = (math_random(-250, 250)) * 0.05
     surface.create_entity({name = rock_raffle[math_random(1, size_of_rock_raffle)], position = {position.x + a, position.y + b}})
@@ -204,11 +204,11 @@ local function generate_spawn_area(surface)
     map_functions.draw_smoothed_out_ore_circle(ore_positions[2], 'iron-ore', surface, 16, 3500)
     map_functions.draw_smoothed_out_ore_circle(ore_positions[3], 'coal', surface, 16, 2500)
     map_functions.draw_smoothed_out_ore_circle(ore_positions[4], 'stone', surface, 16, 2500)
-	
-	for ii = 0,10,1 do	
+
+	for ii = 0,10,1 do
 		place_rock(surface, ore_positions[4])	--add rocks to stone area
 	end
-	
+
     map_functions.draw_noise_tile_circle({x = spawn_position_x - 20, y = 0}, 'water', surface, 16)
     map_functions.draw_oil_circle(ore_positions[5], 'crude-oil', surface, 8, 200000)
 
