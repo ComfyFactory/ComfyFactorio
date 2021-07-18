@@ -4,7 +4,6 @@ local BiterRaffle = require 'functions.biter_raffle'
 local LootRaffle = require 'functions.loot_raffle'
 local Get_noise = require 'utils.get_noise'
 local DungeonsTable = require 'maps.dungeons.table'
-require 'modules.rpg.main'
 
 local table_shuffle_table = table.shuffle_table
 local math_random = math.random
@@ -555,14 +554,14 @@ function Public.draw_spawn(surface)
             table.insert(dungeontable.transport_surfaces, surface.index)
             dungeontable.transport_chests_inputs[surface.index] = {}
             for iv = 1, 2, 1 do
-                local chest = surface.create_entity({name = 'blue-chest', position = {-12 + i * 8, -4}, force = 'player'})
+                local chest = surface.create_entity({name = 'blue-chest', position = {-12 + iv * 8, -4}, force = 'player'})
                 dungeontable.transport_chests_inputs[surface.index][iv] = chest
                 chest.destructible = false
                 chest.minable = false
             end
             dungeontable.transport_poles_outputs[surface.index] = {}
             for ix = 1, 2, 1 do
-                local pole = surface.create_entity({name = 'constant-combinator', position = {-15 + i * 10, -5}, force = 'player'})
+                local pole = surface.create_entity({name = 'constant-combinator', position = {-15 + ix * 10, -5}, force = 'player'})
                 dungeontable.transport_poles_outputs[surface.index][ix] = pole
                 pole.destructible = false
                 pole.minable = false
@@ -570,14 +569,14 @@ function Public.draw_spawn(surface)
         end
         dungeontable.transport_chests_outputs[surface.index] = {}
         for ic = 1, 2, 1 do
-            local chest = surface.create_entity({name = 'red-chest', position = {-12 + i * 8, 4}, force = 'player'})
+            local chest = surface.create_entity({name = 'red-chest', position = {-12 + ic * 8, 4}, force = 'player'})
             dungeontable.transport_chests_outputs[surface.index][ic] = chest
             chest.destructible = false
             chest.minable = false
         end
         dungeontable.transport_poles_inputs[surface.index] = {}
         for ib = 1, 2, 1 do
-            local pole = surface.create_entity({name = 'medium-electric-pole', position = {-15 + i * 10, 5}, force = 'player'})
+            local pole = surface.create_entity({name = 'medium-electric-pole', position = {-15 + ib * 10, 5}, force = 'player'})
             dungeontable.transport_poles_inputs[surface.index][ib] = pole
             pole.destructible = false
             pole.minable = false
