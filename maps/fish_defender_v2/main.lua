@@ -1376,12 +1376,12 @@ function Public.reset_game()
 	--	{x = -512, y = 192},
 	--	{x = -512, y = -192}
     --}
-	
+
     local map_gen_settings = {}
     map_gen_settings.seed = math_random(10000, 99999)
 	map_gen_settings.starting_area = 1
 	--map_gen_settings.starting_points = spawn_poses
-	
+
     map_gen_settings.width = 4000
     map_gen_settings.height = 1800
     map_gen_settings.water = 0.10
@@ -1397,11 +1397,9 @@ function Public.reset_game()
         ['trees'] = {frequency = 3, size = 0.15, richness = 0.5},
         ['enemy-base'] = {frequency = 'none', size = 'none', richness = 'none'}
     }
-	
-	map_gen_settings.property_expression_names = {moisture = math_random(4, 7) * 0.1}
-	
 
-	
+    map_gen_settings.property_expression_names = {moisture = math_random(4, 7) * 0.1}
+
     local active_surface_index = FDT.get('active_surface_index')
 
     if not active_surface_index then
