@@ -32,10 +32,10 @@ local Public = {}
 
 local starting_items = {
     ['pistol'] = 1,
-    ['firearm-magazine'] = 16,
-    ['raw-fish'] = 3,
-    ['iron-plate'] = 32,
-    ['stone'] = 12
+    ['firearm-magazine'] = 20,
+    ['raw-fish'] = 5,
+    ['iron-plate'] = 40,
+    ['stone'] = 20
 }
 
 local function shuffle(tbl)
@@ -1369,24 +1369,39 @@ function Public.reset_game()
         Session.clear_player(player)
     end
 
+	--test idea
+	--local spawn_poses = {
+	--	{x = 0, y = 0},
+    --    {x = -512, y = 0},
+	--	{x = -512, y = 192},
+	--	{x = -512, y = -192}
+    --}
+	
     local map_gen_settings = {}
     map_gen_settings.seed = math_random(10000, 99999)
+	map_gen_settings.starting_area = 1
+	--map_gen_settings.starting_points = spawn_poses
+	
     map_gen_settings.width = 4000
     map_gen_settings.height = 1800
     map_gen_settings.water = 0.10
     map_gen_settings.terrain_segmentation = 3
     map_gen_settings.cliff_settings = {cliff_elevation_interval = 32, cliff_elevation_0 = 32}
     map_gen_settings.autoplace_controls = {
-        ['coal'] = {frequency = 4, size = 1.5, richness = 2},
-        ['stone'] = {frequency = 4, size = 1.5, richness = 2},
-        ['copper-ore'] = {frequency = 4, size = 1.5, richness = 2},
-        ['iron-ore'] = {frequency = 4, size = 1.5, richness = 2},
+        ['coal'] = {frequency = 6, size = 1.2, richness = 1.5},
+        ['stone'] = {frequency = 6, size = 1.2, richness = 1.5},
+        ['copper-ore'] = {frequency = 6, size = 1.6, richness = 2},
+        ['iron-ore'] = {frequency = 6, size = 1.6, richness = 2},
         ['uranium-ore'] = {frequency = 0, size = 0, richness = 0},
         ['crude-oil'] = {frequency = 5, size = 1.25, richness = 2},
-        ['trees'] = {frequency = 2, size = 1, richness = 1},
+        ['trees'] = {frequency = 3, size = 0.15, richness = 0.5},
         ['enemy-base'] = {frequency = 'none', size = 'none', richness = 'none'}
     }
+	
+	map_gen_settings.property_expression_names = {moisture = math_random(4, 7) * 0.1}
+	
 
+	
     local active_surface_index = FDT.get('active_surface_index')
 
     if not active_surface_index then
