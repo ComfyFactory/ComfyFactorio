@@ -205,7 +205,7 @@ local function generate_spawn_area(surface)
     map_functions.draw_smoothed_out_ore_circle(ore_positions[3], 'coal', surface, 16, 2500)
     map_functions.draw_smoothed_out_ore_circle(ore_positions[4], 'stone', surface, 16, 2500)
 
-	for ii = 0,10,1 do
+	for _ = 0,10,1 do
 		place_rock(surface, ore_positions[4])	--add rocks to stone area
 	end
 
