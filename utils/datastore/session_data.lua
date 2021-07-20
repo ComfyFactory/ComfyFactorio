@@ -276,6 +276,21 @@ function Public.get_trusted_player(player)
     return trusted and player and player.valid and trusted[player.name] or false
 end
 
+--- Returns the table of trusted
+-- @param LuaPlayer
+function Public.set_trusted_player(player)
+    if trusted and player and player.valid then
+        trusted[player.name] = true
+    end
+end
+
+--- Returns the table of session
+-- @param LuaPlayer
+-- @return <table>
+function Public.get_session_player(player)
+    return session and player and player.valid and session[player.name] or false
+end
+
 --- Returns the table of settings
 -- @return <table>
 function Public.get_settings_table()
