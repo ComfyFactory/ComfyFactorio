@@ -3,7 +3,7 @@
 --as an admin, write either /trust or /untrust and the players name in the chat to grant/revoke immunity from protection
 
 local Event = require 'utils.event'
-local session = require 'utils.datastore.session_data'
+local Session = require 'utils.datastore.session_data'
 local Global = require 'utils.global'
 local Utils = require 'utils.core'
 local Color = require 'utils.color_presets'
@@ -41,7 +41,8 @@ local this = {
     enable_capsule_cursor_warning = false,
     required_playtime = 2592000,
     damage_entity_threshold = 20,
-    explosive_threshold = 16
+    explosive_threshold = 16,
+    limit = 2000
 }
 
 local blacklisted_types = {
@@ -78,11 +79,6 @@ Global.register(
     end
 )
 
---[[
-    local function increment_key(t, k, v)
-    t[k][#t[k] + 1] = (v or 1)
-end
-]]
 local function increment(t, v)
     t[#t + 1] = (v or 1)
 end
@@ -175,22 +171,19 @@ local function on_marked_for_deconstruction(event)
     if not this.enabled then
         return
     end
-    local tracker = session.get_session_table()
-    local trusted = session.get_trusted_table()
+
     if not event.player_index then
         return
     end
+
     local player = game.get_player(event.player_index)
-    if player.admin then
-        return
-    end
-    if trusted[player.name] and this.do_not_check_trusted then
+    if Session.get_trusted_player(player.name) or this.do_not_check_trusted then
         return
     end
 
     local playtime = player.online_time
-    if tracker[player.name] then
-        playtime = player.online_time + tracker[player.name]
+    if Session.get_session_player(player.name) then
+        playtime = player.online_time + Session.get_session_player(player.name)
     end
     if playtime < 2592000 then
         event.entity.cancel_deconstruction(game.get_player(event.player_index).force.name)
@@ -202,19 +195,18 @@ local function on_player_ammo_inventory_changed(event)
     if not this.enabled then
         return
     end
-    local tracker = session.get_session_table()
-    local trusted = session.get_trusted_table()
+
     local player = game.get_player(event.player_index)
     if player.admin then
         return
     end
-    if trusted[player.name] and this.do_not_check_trusted then
+    if Session.get_trusted_player(player.name) or this.do_not_check_trusted then
         return
     end
 
     local playtime = player.online_time
-    if tracker[player.name] then
-        playtime = player.online_time + tracker[player.name]
+    if Session.get_session_player(player.name) then
+        playtime = player.online_time + Session.get_session_player(player.name)
     end
     if playtime < 1296000 then
         if this.enable_capsule_cursor_warning then
@@ -229,10 +221,9 @@ end
 
 local function on_player_joined_game(event)
     local player = game.get_player(event.player_index)
-    local trusted = session.get_trusted_table()
     if not this.enabled then
-        if not trusted[player.name] then
-            trusted[player.name] = true
+        if not Session.get_trusted_player(player.name) then
+            Session.set_trusted_player(player.name)
         end
         return
     end
@@ -260,7 +251,7 @@ local function on_player_built_tile(event)
         this.landfill_history = {}
     end
 
-    if #this.landfill_history > 1000 then
+    if #this.landfill_history > this.limit then
         this.landfill_history = {}
     end
     local t = math.abs(math.floor((game.tick) / 60))
@@ -279,8 +270,7 @@ local function on_built_entity(event)
     if not this.enabled then
         return
     end
-    local tracker = session.get_session_table()
-    local trusted = session.get_trusted_table()
+
     if game.tick < 1296000 then
         return
     end
@@ -291,13 +281,13 @@ local function on_built_entity(event)
         if player.admin then
             return
         end
-        if trusted[player.name] and this.do_not_check_trusted then
+        if Session.get_trusted_player(player.name) or this.do_not_check_trusted then
             return
         end
 
         local playtime = player.online_time
-        if tracker[player.name] then
-            playtime = player.online_time + tracker[player.name]
+        if Session.get_session_player(player.name) then
+            playtime = player.online_time + Session.get_session_player(player.name)
         end
 
         if playtime < 432000 then
@@ -312,10 +302,10 @@ local function on_player_used_capsule(event)
     if not this.enabled then
         return
     end
-    local trusted = session.get_trusted_table()
+
     local player = game.get_player(event.player_index)
 
-    if trusted[player.name] and this.do_not_check_trusted then
+    if Session.get_trusted_player(player.name) or this.do_not_check_trusted then
         return
     end
 
@@ -364,7 +354,7 @@ local function on_player_used_capsule(event)
         if not this.capsule_history then
             this.capsule_history = {}
         end
-        if #this.capsule_history > 1000 then
+        if #this.capsule_history > this.limit then
             this.capsule_history = {}
         end
 
@@ -398,7 +388,7 @@ local function on_entity_died(event)
             this.friendly_fire_history = {}
         end
 
-        if #this.friendly_fire_history > 1000 then
+        if #this.friendly_fire_history > this.limit then
             this.friendly_fire_history = {}
         end
 
@@ -485,7 +475,7 @@ local function on_player_mined_entity(event)
         if not this.whitelist_mining_history then
             this.whitelist_mining_history = {}
         end
-        if #this.whitelist_mining_history > 1000 then
+        if #this.whitelist_mining_history > this.limit then
             this.whitelist_mining_history = {}
         end
         local t = math.abs(math.floor((game.tick) / 60))
@@ -519,7 +509,7 @@ local function on_player_mined_entity(event)
         this.mining_history = {}
     end
 
-    if #this.mining_history > 1000 then
+    if #this.mining_history > this.limit then
         this.mining_history = {}
     end
 
@@ -567,7 +557,7 @@ local function on_gui_opened(event)
         if not this.corpse_history then
             this.corpse_history = {}
         end
-        if #this.corpse_history > 1000 then
+        if #this.corpse_history > this.limit then
             this.corpse_history = {}
         end
 
@@ -622,7 +612,7 @@ local function on_pre_player_mined_item(event)
         if not this.corpse_history then
             this.corpse_history = {}
         end
-        if #this.corpse_history > 1000 then
+        if #this.corpse_history > this.limit then
             this.corpse_history = {}
         end
 
@@ -650,7 +640,7 @@ local function on_console_chat(event)
     if not this.message_history then
         this.message_history = {}
     end
-    if #this.message_history > 1000 then
+    if #this.message_history > this.limit then
         this.message_history = {}
     end
 
@@ -667,13 +657,12 @@ local function on_player_cursor_stack_changed(event)
     if not this.enabled then
         return
     end
-    local tracker = session.get_session_table()
-    local trusted = session.get_trusted_table()
+
     local player = game.get_player(event.player_index)
     if player.admin then
         return
     end
-    if trusted[player.name] and this.do_not_check_trusted then
+    if Session.get_trusted_player(player.name) or this.do_not_check_trusted then
         return
     end
 
@@ -690,8 +679,8 @@ local function on_player_cursor_stack_changed(event)
     local name = item.name
 
     local playtime = player.online_time
-    if tracker[player.name] then
-        playtime = player.online_time + tracker[player.name]
+    if Session.get_session_player(player.name) then
+        playtime = player.online_time + Session.get_session_player(player.name)
     end
 
     if playtime < 1296000 then
@@ -737,7 +726,7 @@ local function on_player_cancelled_crafting(event)
         if not this.cancel_crafting_history then
             this.cancel_crafting_history = {}
         end
-        if #this.cancel_crafting_history > 1000 then
+        if #this.cancel_crafting_history > this.limit then
             this.cancel_crafting_history = {}
         end
 
@@ -853,6 +842,30 @@ local function on_permission_string_imported(event)
     Utils.log_msg('{Permission_Group}', player.name .. ' imported a permission string')
 end
 
+--- This is used for the RPG module, when casting capsules.
+---@param player <LuaPlayer>
+---@param position <EventPosition>
+---@param msg <string>
+function Public.insert_into_capsule_history(player, position, msg)
+    if not this.capsule_history then
+        this.capsule_history = {}
+    end
+    if #this.capsule_history > this.limit then
+        this.capsule_history = {}
+    end
+    local t = math.abs(math.floor((game.tick) / 60))
+    t = FancyTime.short_fancy_time(t)
+    local str = '[' .. t .. '] '
+    str = str .. '[color=yellow]' .. msg .. '[/color]'
+    str = str .. ' at X:'
+    str = str .. math.floor(position.x)
+    str = str .. ' Y:'
+    str = str .. math.floor(position.y)
+    str = str .. ' '
+    str = str .. 'surface:' .. player.surface.index
+    increment(this.capsule_history, str)
+end
+
 --- This will reset the table of antigrief
 function Public.reset_tables()
     this.landfill_history = {}
@@ -879,48 +892,28 @@ end
 --- If the event should also check trusted players.
 ---@param value <string>
 function Public.do_not_check_trusted(value)
-    if value then
-        this.do_not_check_trusted = value
-    else
-        this.do_not_check_trusted = false
-    end
-
+    this.do_not_check_trusted = value or false
     return this.do_not_check_trusted
 end
 
 --- If ANY actions should be performed when a player misbehaves.
 ---@param value <string>
 function Public.enable_capsule_warning(value)
-    if value then
-        this.enable_capsule_warning = value
-    else
-        this.enable_capsule_warning = false
-    end
-
+    this.enable_capsule_warning = value or false
     return this.enable_capsule_warning
 end
 
 --- If ANY actions should be performed when a player misbehaves.
 ---@param value <string>
 function Public.enable_capsule_cursor_warning(value)
-    if value then
-        this.enable_capsule_cursor_warning = value
-    else
-        this.enable_capsule_cursor_warning = false
-    end
-
+    this.enable_capsule_cursor_warning = value or false
     return this.enable_capsule_cursor_warning
 end
 
 --- If the script should jail a person instead of kicking them
 ---@param value <string>
 function Public.enable_jail(value)
-    if value then
-        this.enable_jail = value
-    else
-        this.enable_jail = false
-    end
-
+    this.enable_jail = value or false
     return this.enable_jail
 end
 
@@ -942,30 +935,6 @@ function Public.damage_entity_threshold(value)
     end
 
     return this.damage_entity_threshold
-end
-
---- This is used for the RPG module, when casting capsules.
----@param player <LuaPlayer>
----@param position <EventPosition>
----@param msg <string>
-function Public.insert_into_capsule_history(player, position, msg)
-    if not this.capsule_history then
-        this.capsule_history = {}
-    end
-    if #this.capsule_history > 1000 then
-        this.capsule_history = {}
-    end
-    local t = math.abs(math.floor((game.tick) / 60))
-    t = FancyTime.short_fancy_time(t)
-    local str = '[' .. t .. '] '
-    str = str .. '[color=yellow]' .. msg .. '[/color]'
-    str = str .. ' at X:'
-    str = str .. math.floor(position.x)
-    str = str .. ' Y:'
-    str = str .. math.floor(position.y)
-    str = str .. ' '
-    str = str .. 'surface:' .. player.surface.index
-    increment(this.capsule_history, str)
 end
 
 --- Returns the table.
