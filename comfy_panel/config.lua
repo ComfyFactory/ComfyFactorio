@@ -176,20 +176,20 @@ local functions = {
         if event.element.switch_state == 'left' then
             game.permissions.get_group('Default').set_allows_action(defines.input_action.open_blueprint_library_gui, true)
             game.permissions.get_group('Default').set_allows_action(defines.input_action.import_blueprint_string, true)
-            get_actor(event, '{Blueprints}', 'has enabled blueprints!')
+            get_actor(event, '[Blueprints]', 'has enabled blueprints!')
         else
             game.permissions.get_group('Default').set_allows_action(defines.input_action.open_blueprint_library_gui, false)
             game.permissions.get_group('Default').set_allows_action(defines.input_action.import_blueprint_string, false)
-            get_actor(event, '{Blueprints}', 'has disabled blueprints!')
+            get_actor(event, '[Blueprints]', 'has disabled blueprints!')
         end
     end,
     ['comfy_panel_spaghett_toggle'] = function(event)
         if event.element.switch_state == 'left' then
             this.gui_config.spaghett.enabled = true
-            get_actor(event, '{Spaghett}', 'has enabled spaghett mode!')
+            get_actor(event, '[Spaghett]', 'has enabled spaghett mode!')
         else
             this.gui_config.spaghett.enabled = nil
-            get_actor(event, '{Spaghett}', 'has disabled spaghett mode!')
+            get_actor(event, '[Spaghett]', 'has disabled spaghett mode!')
         end
         spaghett()
     end,
@@ -225,10 +225,10 @@ local poll_function = {
     ['comfy_panel_poll_trusted_toggle'] = function(event)
         if event.element.switch_state == 'left' then
             this.gui_config.poll_trusted = true
-            get_actor(event, '{Poll Mode}', 'has disabled non-trusted people to do polls.')
+            get_actor(event, '[Poll Mode]', 'has disabled non-trusted people to do polls.')
         else
             this.gui_config.poll_trusted = false
-            get_actor(event, '{Poll Mode}', 'has allowed non-trusted people to do polls.')
+            get_actor(event, '[Poll Mode]', 'has allowed non-trusted people to do polls.')
         end
     end,
     ['comfy_panel_poll_no_notify_toggle'] = function(event)
@@ -247,10 +247,10 @@ local antigrief_functions = {
         local AG = Antigrief.get()
         if event.element.switch_state == 'left' then
             AG.enabled = true
-            get_actor(event, '{Antigrief}', 'has enabled the antigrief function.', true)
+            get_actor(event, '[Antigrief]', 'has enabled the antigrief function.', true)
         else
             AG.enabled = false
-            get_actor(event, '{Antigrief}', 'has disabled the antigrief function.', true)
+            get_actor(event, '[Antigrief]', 'has disabled the antigrief function.', true)
         end
         trust_connected_players()
     end
@@ -262,10 +262,10 @@ local fortress_functions = {
         local Module = Fullness.get()
         if event.element.switch_state == 'left' then
             Module.fullness_enabled = true
-            get_actor(event, '{Fullness}', 'has enabled the inventory fullness function.')
+            get_actor(event, '[Fullness]', 'has enabled the inventory fullness function.')
         else
             Module.fullness_enabled = false
-            get_actor(event, '{Fullness}', 'has disabled the inventory fullness function.')
+            get_actor(event, '[Fullness]', 'has disabled the inventory fullness function.')
         end
     end,
     ['comfy_panel_offline_players'] = function(event)
@@ -273,10 +273,10 @@ local fortress_functions = {
         local Module = WPT.get()
         if event.element.switch_state == 'left' then
             Module.offline_players_enabled = true
-            get_actor(event, '{Offline Players}', 'has enabled the offline player function.')
+            get_actor(event, '[Offline Players]', 'has enabled the offline player function.')
         else
             Module.offline_players_enabled = false
-            get_actor(event, '{Offline Players}', 'has disabled the offline player function.')
+            get_actor(event, '[Offline Players]', 'has disabled the offline player function.')
         end
     end,
     ['comfy_panel_collapse_grace'] = function(event)
@@ -284,10 +284,10 @@ local fortress_functions = {
         local Module = WPT.get()
         if event.element.switch_state == 'left' then
             Module.collapse_grace = true
-            get_actor(event, '{Collapse}', 'has enabled the collapse function. Collapse will occur after wave 100!')
+            get_actor(event, '[Collapse]', 'has enabled the collapse function. Collapse will occur after wave 100!')
         else
             Module.collapse_grace = false
-            get_actor(event, '{Collapse}', 'has disabled the collapse function. You must reach zone 2 for collapse to occur!')
+            get_actor(event, '[Collapse]', 'has disabled the collapse function. You must reach zone 2 for collapse to occur!')
         end
     end,
     ['comfy_panel_spill_items_to_surface'] = function(event)
@@ -295,10 +295,10 @@ local fortress_functions = {
         local Module = WPT.get()
         if event.element.switch_state == 'left' then
             Module.spill_items_to_surface = true
-            get_actor(event, '{Item Spill}', 'has enabled the ore spillage function. Ores now drop to surface when mining.')
+            get_actor(event, '[Item Spill]', 'has enabled the ore spillage function. Ores now drop to surface when mining.')
         else
             Module.spill_items_to_surface = false
-            get_actor(event, '{Item Spill}', 'has disabled the item spillage function. Ores no longer drop to surface when mining.')
+            get_actor(event, '[Item Spill]', 'has disabled the item spillage function. Ores no longer drop to surface when mining.')
         end
     end,
     ['comfy_panel_void_or_tile'] = function(event)
@@ -306,10 +306,10 @@ local fortress_functions = {
         local Module = WPT.get()
         if event.element.switch_state == 'left' then
             Module.void_or_tile = 'out-of-map'
-            get_actor(event, '{Void}', 'has changes the tiles of the zones to: out-of-map (void)')
+            get_actor(event, '[Void]', 'has changes the tiles of the zones to: out-of-map (void)')
         else
             Module.void_or_tile = 'lab-dark-2'
-            get_actor(event, '{Void}', 'has changes the tiles of the zones to: dark-tiles (flammable tiles)')
+            get_actor(event, '[Void]', 'has changes the tiles of the zones to: dark-tiles (flammable tiles)')
         end
     end,
     ['comfy_panel_trusted_only_car_tanks'] = function(event)
@@ -317,10 +317,10 @@ local fortress_functions = {
         local Module = WPT.get()
         if event.element.switch_state == 'left' then
             Module.trusted_only_car_tanks = true
-            get_actor(event, '{Market}', 'has changed so only trusted people can buy car/tanks.', true)
+            get_actor(event, '[Market]', 'has changed so only trusted people can buy car/tanks.', true)
         else
             Module.trusted_only_car_tanks = false
-            get_actor(event, '{Market}', 'has changed so everybody can buy car/tanks.', true)
+            get_actor(event, '[Market]', 'has changed so everybody can buy car/tanks.', true)
         end
     end
 }

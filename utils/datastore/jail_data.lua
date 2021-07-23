@@ -460,7 +460,7 @@ local jail = function(player, griefer, msg, raised)
     end
 
     Utils.print_to(nil, message)
-    Utils.action_warning_embed('{Jailed}', message)
+    Utils.action_warning_embed('[Jailed]', message)
 
     if votejail[griefer] then
         votejail[griefer].jailed = true
@@ -489,7 +489,7 @@ local free = function(player, griefer)
     set_data(jailed_data_set, griefer, nil)
 
     Utils.print_to(nil, message)
-    Utils.action_warning_embed('{Jailed}', message)
+    Utils.action_warning_embed('[Jailed]', message)
     return true
 end
 
