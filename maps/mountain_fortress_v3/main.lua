@@ -180,6 +180,7 @@ function Public.reset_map()
     JailData.reset_vote_table()
 
     Explosives.set_surface_whitelist({[surface.name] = true})
+    Explosives.check_growth_below_void(true)
 
     game.forces.player.set_spawn_position({-27, 25}, surface)
     game.forces.player.manual_mining_speed_modifier = 0
@@ -471,8 +472,8 @@ local on_init = function()
     local this = WPT.get()
     Public.reset_map()
 
-    game.map_settings.path_finder.general_entity_collision_penalty = 1 -- Recommended value
-    game.map_settings.path_finder.general_entity_subsequent_collision_penalty = 1 -- Recommended value
+    game.map_settings.path_finder.general_entity_collision_penalty = 10 -- Recommended value
+    game.map_settings.path_finder.general_entity_subsequent_collision_penalty = 3 -- Recommended value
 
     local tooltip = {
         [1] = ({'main.diff_tooltip', '0', '0.5', '0.15', '0.15', '1', '12', '50', '10000', '100%', '15', '10'}),

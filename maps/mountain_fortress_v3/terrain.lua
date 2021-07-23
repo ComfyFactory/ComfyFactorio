@@ -221,22 +221,6 @@ local function get_oil_amount(p)
     return (abs(p.y) * 200 + 10000) * random(75, 125) * 0.01
 end
 
-function Public.increment_value(tbl)
-    tbl.yv = tbl.yv + 1
-
-    if tbl.yv == 32 then
-        if tbl.xv == 32 then
-            tbl.xv = 0
-        end
-        if tbl.yv == 32 then
-            tbl.yv = 0
-        end
-        tbl.xv = tbl.xv + 1
-    end
-
-    return tbl.xv, tbl.yv
-end
-
 local function spawn_turret(entities, p, probability)
     entities[#entities + 1] = {
         name = turret_list[probability].name,
@@ -248,7 +232,7 @@ local function spawn_turret(entities, p, probability)
     }
 end
 
-local function wall(data)
+local function wall(p, data)
     local tiles = data.tiles
     local entities = data.entities
     local surface = data.surface
@@ -256,10 +240,8 @@ local function wall(data)
     local stone_wall = {callback = Functions.disable_minable_callback}
     local enable_arties = WPT.get('enable_arties')
 
-    local x, y = Public.increment_value(data)
-
     local seed = data.seed
-    local p = {x = x + data.top_x, y = y + data.top_y}
+    local y = data.yv
 
     local small_caves = get_perlin('small_caves', p, seed + 204000)
     local cave_ponds = get_perlin('cave_rivers', p, seed + 120400)
@@ -2278,7 +2260,7 @@ local function is_out_of_map(p)
     return true
 end
 
-local function process_bits(x, y, data)
+local function process_bits(p, data)
     local levels = Public.levels
     local left_top_y = data.area.left_top.y
     local index = floor((abs(left_top_y / Public.level_depth)) % 22) + 1
@@ -2289,17 +2271,18 @@ local function process_bits(x, y, data)
 
     local void_or_tile = WPT.get('void_or_tile')
 
+    local x = p.x
+    local y = p.y
+
     process_level(x, y, data, void_or_tile)
 end
 
-local function border_chunk(data)
+local function border_chunk(p, data)
     local entities = data.entities
     local decoratives = data.decoratives
     local tiles = data.tiles
 
-    local x, y = Public.increment_value(data)
-
-    local pos = {x = x + data.top_x, y = y + data.top_y}
+    local pos = p
 
     if random(1, ceil(pos.y + pos.y) + 64) == 1 then
         entities[#entities + 1] = {name = trees[random(1, #trees)], position = pos}
@@ -2317,30 +2300,29 @@ local function border_chunk(data)
         if random(1, ceil(pos.y + pos.y) + 32) == 1 then
             entities[#entities + 1] = {name = scrap_mineable_entities[random(1, scrap_mineable_entities_index)], position = pos, force = 'neutral'}
         end
+
         if random(1, pos.y + 2) == 1 then
             decoratives[#decoratives + 1] = {
                 name = 'rock-small',
                 position = pos,
-                amount = random(1, 1 + ceil(20 - y / 2))
+                amount = random(1, 32)
             }
         end
         if random(1, pos.y + 2) == 1 then
             decoratives[#decoratives + 1] = {
                 name = 'rock-tiny',
                 position = pos,
-                amount = random(1, 1 + ceil(20 - y / 2))
+                amount = random(1, 32)
             }
         end
     end
 end
 
-local function biter_chunk(data)
+local function biter_chunk(p, data)
     local surface = data.surface
     local entities = data.entities
     local tile_positions = {}
-    local x, y = Public.increment_value(data)
 
-    local p = {x = x + data.top_x, y = y + data.top_y}
     tile_positions[#tile_positions + 1] = p
 
     local disable_spawners = {
@@ -2375,18 +2357,15 @@ local function biter_chunk(data)
     end
 end
 
-local function out_of_map(x, y, data)
+local function out_of_map(p, data)
     local tiles = data.tiles
-
-    local p = {x = x, y = y}
-
     tiles[#tiles + 1] = {name = 'out-of-map', position = p}
 end
 
-function Public.heavy_functions(x, y, data)
+function Public.heavy_functions(data)
     local top_y = data.top_y
     local surface = data.surface
-    local p = {x = data.x, y = data.y}
+    local p = data.position
     local get_tile = surface.get_tile(p)
 
     local map_name = 'mountain_fortress_v3'
@@ -2405,28 +2384,23 @@ function Public.heavy_functions(x, y, data)
 
     if top_y % Public.level_depth == 0 and top_y < 0 then
         WPT.set().left_top = data.left_top
-        wall(data)
-        return
+        return wall(p, data)
     end
 
     if top_y < 0 then
-        process_bits(x, y, data)
-        return
+        return process_bits(p, data)
     end
 
     if top_y > 120 then
-        out_of_map(x, y, data)
-        return
+        return out_of_map(p, data)
     end
 
     if top_y > 75 then
-        biter_chunk(data)
-        return
+        return biter_chunk(p, data)
     end
 
     if top_y >= 0 then
-        border_chunk(data)
-        return
+        return border_chunk(p, data)
     end
 end
 
