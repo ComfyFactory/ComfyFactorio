@@ -1,10 +1,16 @@
 local Public = {}
 local Global = require 'utils.global'
-local explosives = {}
+local Collapse = require 'modules.collapse'
+local this = {
+    explosives = {},
+    settings = {
+        check_growth_below_void = false
+    }
+}
 Global.register(
-    explosives,
+    this,
     function(tbl)
-        explosives = tbl
+        this = tbl
     end
 )
 
@@ -28,6 +34,29 @@ local function pos_to_key(position)
     return tostring(position.x .. '_' .. position.y)
 end
 
+local function check_y_pos(position)
+    if not this.settings.check_growth_below_void then
+        return false
+    end
+    if not position or not position.y then
+        return false
+    end
+    local collapse_pos = Collapse.get_position()
+
+    local radius = 50
+
+    local dy = position.y - collapse_pos.y
+    if dy ^ 2 < radius ^ 2 then
+        return true
+    end
+
+    if position.y >= collapse_pos.y then
+        return true
+    else
+        return false
+    end
+end
+
 local function get_explosion_name(health)
     if health < 2500 then
         return 'explosion'
@@ -42,13 +71,13 @@ local function cell_birth(surface_index, origin_position, origin_tick, position,
     local key = pos_to_key(position)
 
     --Merge cells that are overlapping.
-    if explosives.cells[key] then
-        explosives.cells[key].health = explosives.cells[key].health + health
+    if this.explosives.cells[key] then
+        this.explosives.cells[key].health = this.explosives.cells[key].health + health
         return
     end
 
     --Spawn new cell.
-    explosives.cells[key] = {
+    this.explosives.cells[key] = {
         surface_index = surface_index,
         origin_position = origin_position,
         origin_tick = origin_tick,
@@ -59,15 +88,15 @@ local function cell_birth(surface_index, origin_position, origin_tick, position,
 end
 
 local function grow_cell(cell)
-    shuffle_table(explosives.vectors)
+    shuffle_table(this.explosives.vectors)
     local radius = math_floor((game.tick - cell.origin_tick) / 9) + 2
     local positions = {}
     for i = 1, 4, 1 do
         local position = {
-            x = cell.position.x + explosives.vectors[i][1],
-            y = cell.position.y + explosives.vectors[i][2]
+            x = cell.position.x + this.explosives.vectors[i][1],
+            y = cell.position.y + this.explosives.vectors[i][2]
         }
-        if not explosives.cells[pos_to_key(position)] then
+        if not this.explosives.cells[pos_to_key(position)] then
             local distance = math_sqrt((cell.origin_position.x - position.x) ^ 2 + (cell.origin_position.y - position.y) ^ 2)
             if distance < radius then
                 positions[#positions + 1] = position
@@ -77,18 +106,18 @@ local function grow_cell(cell)
 
     if #positions == 0 then
         positions[#positions + 1] = {
-            x = cell.position.x + explosives.vectors[1][1],
-            y = cell.position.y + explosives.vectors[1][2]
+            x = cell.position.x + this.explosives.vectors[1][1],
+            y = cell.position.y + this.explosives.vectors[1][2]
         }
     end
 
-    local new_cell_health = math_round(cell.health / #positions, 3) - explosives.damage_decay
+    local new_cell_health = math_round(cell.health / #positions, 3) - this.explosives.damage_decay
 
     --[[
 	if new_cell_health > 0 then
-		explosives.cells_damage_dealt = explosives.cells_damage_dealt + damage_decay * #positions
+		this.explosives.cells_damage_dealt = this.explosives.cells_damage_dealt + damage_decay * #positions
 	else
-		explosives.cells_damage_dealt = explosives.cells_damage_dealt + (new_cell_health + damage_decay) * #positions
+		this.explosives.cells_damage_dealt = this.explosives.cells_damage_dealt + (new_cell_health + damage_decay) * #positions
 	end
 	]]
     if new_cell_health <= 0 then
@@ -114,7 +143,7 @@ local function damage_entity(entity, cell)
         return true
     end
 
-    if explosives.whitelist_entity[entity.name] then
+    if this.explosives.whitelist_entity[entity.name] then
         return true
     end
 
@@ -166,20 +195,20 @@ local function damage_area(cell)
     end
 
     local tile = surface.get_tile(cell.position)
-    if explosives.destructible_tiles[tile.name] then
+    if this.explosives.destructible_tiles[tile.name] then
         local key = pos_to_key(tile.position)
-        if not explosives.tiles[key] then
-            explosives.tiles[key] = explosives.destructible_tiles[tile.name]
+        if not this.explosives.tiles[key] then
+            this.explosives.tiles[key] = this.explosives.destructible_tiles[tile.name]
         end
 
-        if cell.health > explosives.tiles[key] then
-            cell.health = cell.health - explosives.tiles[key]
-            explosives.tiles[key] = nil
+        if cell.health > this.explosives.tiles[key] then
+            cell.health = cell.health - this.explosives.tiles[key]
+            this.explosives.tiles[key] = nil
             if math_abs(tile.position.y) < surface.map_gen_settings.height * 0.5 and math_abs(tile.position.x) < surface.map_gen_settings.width * 0.5 then
                 surface.set_tiles({{name = 'landfill', position = tile.position}}, true)
             end
         else
-            explosives.tiles[key] = explosives.tiles[key] - cell.health
+            this.explosives.tiles[key] = this.explosives.tiles[key] - cell.health
             return
         end
     end
@@ -195,14 +224,14 @@ local function life_cycle(cell)
 end
 
 local function tick()
-    for key, cell in pairs(explosives.cells) do
+    for key, cell in pairs(this.explosives.cells) do
         if cell.spawn_tick < game.tick then
             life_cycle(cell)
-            explosives.cells[key] = nil
+            this.explosives.cells[key] = nil
         end
     end
     if game.tick % 216000 == 0 then
-        explosives.tiles = {}
+        this.explosives.tiles = {}
     end
 end
 
@@ -214,8 +243,8 @@ local function on_entity_died(event)
     if not valid_container_types[entity.type] then
         return
     end
-    if explosives.surface_whitelist then
-        if not explosives.surface_whitelist[entity.surface.name] then
+    if this.explosives.surface_whitelist then
+        if not this.explosives.surface_whitelist[entity.surface.name] then
             return
         end
     end
@@ -234,12 +263,17 @@ local function on_entity_died(event)
         return
     end
 
+    local below_void = check_y_pos(entity.position)
+    if below_void then
+        return
+    end
+
     cell_birth(
         entity.surface.index,
         {x = entity.position.x, y = entity.position.y},
         game.tick,
         {x = entity.position.x, y = entity.position.y},
-        amount * explosives.damage_per_explosive
+        amount * this.explosives.damage_per_explosive
     )
 end
 
@@ -250,8 +284,8 @@ function Public.detonate_chest(entity)
     if not valid_container_types[entity.type] then
         return false
     end
-    if explosives.surface_whitelist then
-        if not explosives.surface_whitelist[entity.surface.name] then
+    if this.explosives.surface_whitelist then
+        if not this.explosives.surface_whitelist[entity.surface.name] then
             return false
         end
     end
@@ -270,52 +304,61 @@ function Public.detonate_chest(entity)
         return false
     end
 
+    local below_void = check_y_pos(entity.position)
+    if below_void then
+        return
+    end
+
     cell_birth(
         entity.surface.index,
         {x = entity.position.x, y = entity.position.y},
         game.tick,
         {x = entity.position.x, y = entity.position.y},
-        amount * explosives.damage_per_explosive
+        amount * this.explosives.damage_per_explosive
     )
     return true
 end
 
 function Public.reset()
-    explosives.cells = {}
-    explosives.tiles = {}
-    if not explosives.vectors then
-        explosives.vectors = {{density, 0}, {density * -1, 0}, {0, density}, {0, density * -1}}
+    this.explosives.cells = {}
+    this.explosives.tiles = {}
+    if not this.explosives.vectors then
+        this.explosives.vectors = {{density, 0}, {density * -1, 0}, {0, density}, {0, density * -1}}
     end
-    if not explosives.damage_per_explosive then
-        explosives.damage_per_explosive = 500
+    if not this.explosives.damage_per_explosive then
+        this.explosives.damage_per_explosive = 500
     end
-    if not explosives.damage_decay then
-        explosives.damage_decay = 10
+    if not this.explosives.damage_decay then
+        this.explosives.damage_decay = 10
     end
-    if not explosives.destructible_tiles then
-        explosives.destructible_tiles = {}
+    if not this.explosives.destructible_tiles then
+        this.explosives.destructible_tiles = {}
     end
-    if not explosives.whitelist_entity then
-        explosives.whitelist_entity = {}
+    if not this.explosives.whitelist_entity then
+        this.explosives.whitelist_entity = {}
     end
 end
 
 function Public.set_destructible_tile(tile_name, health)
-    explosives.destructible_tiles[tile_name] = health
+    this.explosives.destructible_tiles[tile_name] = health
 end
 
 function Public.set_whitelist_entity(entity)
     if entity then
-        explosives.whitelist_entity[entity] = true
+        this.explosives.whitelist_entity[entity] = true
     end
 end
 
 function Public.set_surface_whitelist(list)
-    explosives.surface_whitelist = list
+    this.explosives.surface_whitelist = list
 end
 
 function Public.get_table()
-    return explosives
+    return this.explosives
+end
+
+function Public.check_growth_below_void(value)
+    this.settings.check_growth_below_void = value or false
 end
 
 local function on_init()

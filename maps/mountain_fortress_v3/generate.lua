@@ -28,17 +28,34 @@ local wintery_type = {
 -- Set to false by modules that want to control the on_chunk_generated event themselves.
 Public.enable_register_events = true
 
+-- Simple "loop" that is UPS friendly.
+local function get_position(data)
+    data.yv = data.yv + 1
+
+    if data.yv == 32 then
+        if data.xv == 32 then
+            data.xv = 0
+        end
+        if data.yv == 32 then
+            data.yv = 0
+        end
+        data.xv = data.xv + 1
+    end
+
+    data.position = {x = data.top_x + data.xv, y = data.top_y + data.yv}
+end
+
 local function do_tile_inner(tiles, tile, pos)
     if type(tile) == 'string' then
         tiles[#tiles + 1] = {name = tile, position = pos}
     end
 end
 
-local function do_tile(y, x, data, shape)
+local function do_tile(x, y, data, shape)
     local pos = {x, y}
 
     -- local coords need to be 'centered' to allow for correct rotation and scaling.
-    local tile = shape(x + 0.5, y + 0.5, data)
+    local tile = shape(data)
 
     if type(tile) == 'table' then
         do_tile_inner(data.tiles, tile.tile, pos)
@@ -110,8 +127,10 @@ local function do_row(row, data, shape)
         data.x = x
         local pos = {data.x, data.y}
 
+        get_position(data)
+
         -- local coords need to be 'centered' to allow for correct rotation and scaling.
-        local tile = shape(x + 0.5, y + 0.5, data)
+        local tile = shape(data)
 
         if type(tile) == 'table' then
             do_tile_inner(tiles, tile.tile, pos)
@@ -419,7 +438,8 @@ local function map_gen_action(data)
 
         repeat
             count = count - 1
-            do_tile(y, x, data, shape)
+            get_position(data)
+            do_tile(x, y, data, shape)
 
             x = x + 1
 
@@ -494,7 +514,7 @@ function Public.schedule_chunk(event)
     local area = event.area
 
     local data = {
-        yv = -1,
+        yv = -0,
         xv = 0,
         y = 0,
         x = area.left_top.x,
