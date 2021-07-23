@@ -110,7 +110,6 @@ local function create_frame(player, alignment, location, portable)
     if portable then
         frame.caption = '•'
     end
-    global.frame = frame
 
     local inner_frame =
         frame.add {
