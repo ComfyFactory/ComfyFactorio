@@ -1,6 +1,6 @@
 local function draw_map_tag(surface, force, position, name)
     local t = force.add_chart_tag(surface, {icon = {type = 'item', name = 'heavy-armor'}, position = position, text = '   '})
-    if name then
+    if t and name then
         t.last_user = name
     end
 end
