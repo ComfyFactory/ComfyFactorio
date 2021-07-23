@@ -481,12 +481,12 @@ function Public.update_player_stats(player)
 
     local magic = rpg_t.magicka - 10
     local v = magic * 0.22
-    P.update_single_modifier(player, 'character_build_distance_bonus', 'rpg', math.min(60, math.round(v * 0.25, 3)))
-    P.update_single_modifier(player, 'character_item_drop_distance_bonus', 'rpg', math.min(60, math.round(v * 0.25, 3)))
-    P.update_single_modifier(player, 'character_reach_distance_bonus', 'rpg', math.min(60, math.round(v * 0.25, 3)))
-    P.update_single_modifier(player, 'character_loot_pickup_distance_bonus', 'rpg', math.min(20, math.round(v * 0.22, 3)))
-    P.update_single_modifier(player, 'character_item_pickup_distance_bonus', 'rpg', math.min(20, math.round(v * 0.25, 3)))
-    P.update_single_modifier(player, 'character_resource_reach_distance_bonus', 'rpg', math.min(20, math.round(v * 0.15, 3)))
+    P.update_single_modifier(player, 'character_build_distance_bonus', 'rpg', math.min(60, math.round(v * 0.12, 3)))
+    P.update_single_modifier(player, 'character_item_drop_distance_bonus', 'rpg', math.min(60, math.round(v * 0.05, 3)))
+    P.update_single_modifier(player, 'character_reach_distance_bonus', 'rpg', math.min(60, math.round(v * 0.12, 3)))
+    P.update_single_modifier(player, 'character_loot_pickup_distance_bonus', 'rpg', math.min(20, math.round(v * 0.12, 3)))
+    P.update_single_modifier(player, 'character_item_pickup_distance_bonus', 'rpg', math.min(20, math.round(v * 0.12, 3)))
+    P.update_single_modifier(player, 'character_resource_reach_distance_bonus', 'rpg', math.min(20, math.round(v * 0.05, 3)))
     if rpg_t.mana_max >= rpg_extra.mana_limit then
         rpg_t.mana_max = rpg_extra.mana_limit
     else
