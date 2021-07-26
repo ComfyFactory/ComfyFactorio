@@ -213,8 +213,10 @@ function Public.add_player_to_permission_group(player, group, forced)
         locomotive_group.set_allows_action(defines.input_action.admin_action, false)
         locomotive_group.set_allows_action(defines.input_action.drop_item, false)
         locomotive_group.set_allows_action(defines.input_action.deconstruct, false)
+        locomotive_group.set_allows_action(defines.input_action.activate_cut, false)
         local default_group = game.permissions.get_group('Default')
         default_group.set_allows_action(defines.input_action.deconstruct, false)
+        default_group.set_allows_action(defines.input_action.activate_cut, false)
     end
 
     if not game.permissions.get_group('plebs') then
@@ -225,6 +227,7 @@ function Public.add_player_to_permission_group(player, group, forced)
         plebs_group.set_allows_action(defines.input_action.add_permission_group, false)
         plebs_group.set_allows_action(defines.input_action.admin_action, false)
         plebs_group.set_allows_action(defines.input_action.deconstruct, false)
+        plebs_group.set_allows_action(defines.input_action.activate_cut, false)
     end
 
     if not game.permissions.get_group('not_trusted') then
@@ -251,6 +254,7 @@ function Public.add_player_to_permission_group(player, group, forced)
         not_trusted.set_allows_action(defines.input_action.set_trains_limit, false)
         not_trusted.set_allows_action(defines.input_action.set_train_stopped, false)
         not_trusted.set_allows_action(defines.input_action.deconstruct, false)
+        not_trusted.set_allows_action(defines.input_action.activate_cut, false)
     end
 
     if not AG.enabled then

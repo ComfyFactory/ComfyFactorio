@@ -212,7 +212,7 @@ local function on_player_ammo_inventory_changed(event)
         if this.enable_capsule_cursor_warning then
             local nukes = player.remove_item({name = 'atomic-bomb', count = 1000})
             if nukes > 0 then
-                Utils.action_warning('{Nuke}', player.name .. ' tried to equip nukes but was not trusted.')
+                Utils.action_warning('[Nuke]', player.name .. ' tried to equip nukes but was not trusted.')
                 damage_player(player)
             end
         end
@@ -342,7 +342,7 @@ local function on_player_used_capsule(event)
                 return
             end
 
-            local prefix = '{Capsule}'
+            local prefix = '[Capsule]'
             msg = format(player.name .. ' damaged: %s with: %s', get_entities(name, entities), name)
             local ban_msg = format('Damaged: %s with: %s. This action was performed automatically. Visit getcomfy.eu/discord for forgiveness', get_entities(name, entities), name)
 
@@ -553,7 +553,7 @@ local function on_gui_opened(event)
     end
 
     if player.name ~= corpse_owner.name then
-        Utils.action_warning('{Corpse}', player.name .. ' is looting ' .. corpse_owner.name .. '´s body.')
+        Utils.action_warning('[Corpse]', player.name .. ' is looting ' .. corpse_owner.name .. '´s body.')
         if not this.corpse_history then
             this.corpse_history = {}
         end
@@ -608,7 +608,7 @@ local function on_pre_player_mined_item(event)
         return
     end
     if player.name ~= corpse_owner.name then
-        Utils.action_warning('{Corpse}', player.name .. ' has looted ' .. corpse_owner.name .. '´s body.')
+        Utils.action_warning('[Corpse]', player.name .. ' has looted ' .. corpse_owner.name .. '´s body.')
         if not this.corpse_history then
             this.corpse_history = {}
         end
@@ -688,7 +688,7 @@ local function on_player_cursor_stack_changed(event)
             if ammo_names[name] then
                 local item_to_remove = player.remove_item({name = name, count = 1000})
                 if item_to_remove > 0 then
-                    Utils.action_warning('{Capsule}', player.name .. ' equipped ' .. name .. ' but was not trusted.')
+                    Utils.action_warning('[Capsule]', player.name .. ' equipped ' .. name .. ' but was not trusted.')
                     damage_player(player)
                 end
             end
@@ -716,7 +716,7 @@ local function on_player_cancelled_crafting(event)
             player.character.die('player')
 
             Utils.action_warning(
-                '{Crafting}',
+                '[Crafting]',
                 player.name ..
                     ' canceled their craft of item ' ..
                         event.recipe.name .. ' of total count ' .. crafting_queue_item_count .. ' in raw items (' .. crafted_items .. ' slots) but had no inventory left.'
@@ -778,7 +778,7 @@ local function on_permission_group_added(event)
     local group = event.group
 
     if group then
-        Utils.log_msg('{Permission_Group}', player.name .. ' added ' .. group.name)
+        Utils.log_msg('[Permission_Group]', player.name .. ' added ' .. group.name)
     end
 end
 
@@ -794,7 +794,7 @@ local function on_permission_group_deleted(event)
     local name = event.group_name
     local id = event.id
     if name then
-        Utils.log_msg('{Permission_Group}', player.name .. ' deleted ' .. name .. ' with ID: ' .. id)
+        Utils.log_msg('[Permission_Group]', player.name .. ' deleted ' .. name .. ' with ID: ' .. id)
     end
 end
 
@@ -815,18 +815,18 @@ local function on_permission_group_edited(event)
                 action = k
             end
         end
-        Utils.log_msg('{Permission_Group}', player.name .. ' edited ' .. group.name .. ' with type: ' .. event.type .. ' with action: ' .. action)
+        Utils.log_msg('[Permission_Group]', player.name .. ' edited ' .. group.name .. ' with type: ' .. event.type .. ' with action: ' .. action)
     end
     if event.other_player_index then
         local other_player = game.get_player(event.other_player_index)
         if other_player and other_player.valid then
-            Utils.log_msg('{Permission_Group}', player.name .. ' moved ' .. other_player.name .. ' with type: ' .. event.type .. ' to group: ' .. group.name)
+            Utils.log_msg('[Permission_Group]', player.name .. ' moved ' .. other_player.name .. ' with type: ' .. event.type .. ' to group: ' .. group.name)
         end
     end
     local old_name = event.old_name
     local new_name = event.new_name
     if old_name and new_name then
-        Utils.log_msg('{Permission_Group}', player.name .. ' renamed ' .. group.name .. '. New name: ' .. new_name .. '. Old Name: ' .. old_name)
+        Utils.log_msg('[Permission_Group]', player.name .. ' renamed ' .. group.name .. '. New name: ' .. new_name .. '. Old Name: ' .. old_name)
     end
 end
 
@@ -839,7 +839,7 @@ local function on_permission_string_imported(event)
         return
     end
 
-    Utils.log_msg('{Permission_Group}', player.name .. ' imported a permission string')
+    Utils.log_msg('[Permission_Group]', player.name .. ' imported a permission string')
 end
 
 --- This is used for the RPG module, when casting capsules.
