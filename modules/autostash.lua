@@ -44,31 +44,7 @@ local function create_floaty_text(surface, position, name, count)
     )
 end
 
-local function chest_is_valid(chest, inventory)
-    if chest.type == 'cargo-wagon' then
-        local t = {}
-        local chest_inventory = chest.get_inventory(defines.inventory.cargo_wagon)
-        inventory = inventory.get_contents()
-        for index = 1, 40 do
-            if chest_inventory.get_filter(index) ~= nil then
-                local n = chest_inventory.get_filter(index)
-                if inventory[n] then
-                    if (t[n] and t[n].valid) then
-                        t[n].count = inventory[n]
-                    else
-                        t[n] = {count = inventory[n], valid = true}
-                    end
-                end
-            end
-        end
-
-        if not next(t) then
-            return false, {}
-        end
-
-        return true, t
-    end
-
+local function chest_is_valid(chest)
     for _, e in pairs(
         chest.surface.find_entities_filtered(
             {
@@ -203,11 +179,7 @@ local function does_inventory_contain_item_type(inventory, item_subgroup)
     return false
 end
 
-local function insert_item_into_chest(player_inventory, chests, filtered_chests, name, count, furnace, wagon)
-    local container = {
-        ['container'] = true,
-        ['logistic-container'] = true
-    }
+local function insert_to_furnace(player_inventory, chests, name, count)
     local try = 0
 
     local to_insert = floor(count / #chests)
@@ -226,47 +198,27 @@ local function insert_item_into_chest(player_inventory, chests, filtered_chests,
     ::retry::
 
     --Attempt to store into furnaces.
-    if furnace then -- items
-        for _, chest in pairs(chests) do
-            local chest_inventory
-            if chest.type == 'assembling-machine' then
-                chest_inventory = chest.get_inventory(defines.inventory.assembling_machine_input)
-            else
-                chest_inventory = chest.get_inventory(defines.inventory.furnace_source)
-            end
-            local amount = to_insert
-            if variate > 0 then
-                amount = amount + 1
-                variate = variate - 1
-            end
-            if amount <= 0 then
-                return
-            end
+    for _, chest in pairs(chests) do
+        local chest_inventory
+        if chest.type == 'assembling-machine' then
+            chest_inventory = chest.get_inventory(defines.inventory.assembling_machine_input)
+        else
+            chest_inventory = chest.get_inventory(defines.inventory.furnace_source)
+        end
+        local amount = to_insert
+        if variate > 0 then
+            amount = amount + 1
+            variate = variate - 1
+        end
+        if amount <= 0 then
+            return
+        end
 
-            if chest_inventory then
-                if (chest.type == 'furnace' or chest.type == 'assembling-machine') then
-                    if name == 'stone' then
-                        local valid_to_insert = (amount % 2 == 0)
-                        if valid_to_insert then
-                            if chest_inventory.can_insert({name = name, count = amount}) then
-                                local inserted_count = chest_inventory.insert({name = name, count = amount})
-                                player_inventory.remove({name = name, count = inserted_count})
-                                create_floaty_text(chest.surface, chest.position, name, inserted_count)
-                                count = count - inserted_count
-                                if count <= 0 then
-                                    return
-                                end
-                            end
-                        else
-                            try = try + 1
-                            if try <= tries then
-                                chests_available = chests_available - 1
-                                to_insert = floor(count / chests_available)
-                                variate = count % chests_available
-                                goto retry
-                            end
-                        end
-                    else
+        if chest_inventory then
+            if (chest.type == 'furnace' or chest.type == 'assembling-machine') then
+                if name == 'stone' then
+                    local valid_to_insert = (amount % 2 == 0)
+                    if valid_to_insert then
                         if chest_inventory.can_insert({name = name, count = amount}) then
                             local inserted_count = chest_inventory.insert({name = name, count = amount})
                             player_inventory.remove({name = name, count = inserted_count})
@@ -276,105 +228,95 @@ local function insert_item_into_chest(player_inventory, chests, filtered_chests,
                                 return
                             end
                         end
+                    else
+                        try = try + 1
+                        if try <= tries then
+                            chests_available = chests_available - 1
+                            to_insert = floor(count / chests_available)
+                            variate = count % chests_available
+                            goto retry
+                        end
                     end
-                end
-            end
-        end
-
-        to_insert = floor(count / #chests)
-        variate = count % #chests
-
-        for _, chest in pairs(chests) do -- fuel
-            if chest.type == 'furnace' or chest.type == 'assembling-machine' then
-                local amount = to_insert
-                if variate > 0 then
-                    amount = amount + 1
-                    variate = variate - 1
-                end
-                if amount <= 0 then
-                    return
-                end
-                local chest_inventory = chest.get_inventory(defines.inventory.chest)
-                if chest_inventory and chest_inventory.can_insert({name = name, count = amount}) then
-                    local inserted_count = chest_inventory.insert({name = name, count = amount})
-                    player_inventory.remove({name = name, count = inserted_count})
-                    create_floaty_text(chest.surface, chest.position, name, inserted_count)
-                    count = count - inserted_count
-                    if count <= 0 then
-                        return
+                else
+                    if chest_inventory.can_insert({name = name, count = amount}) then
+                        local inserted_count = chest_inventory.insert({name = name, count = amount})
+                        player_inventory.remove({name = name, count = inserted_count})
+                        create_floaty_text(chest.surface, chest.position, name, inserted_count)
+                        count = count - inserted_count
+                        if count <= 0 then
+                            return
+                        end
                     end
                 end
             end
         end
     end
 
+    to_insert = floor(count / #chests)
+    variate = count % #chests
+
+    for _, chest in pairs(chests) do -- fuel
+        if chest.type == 'furnace' or chest.type == 'assembling-machine' then
+            local amount = to_insert
+            if variate > 0 then
+                amount = amount + 1
+                variate = variate - 1
+            end
+            if amount <= 0 then
+                return
+            end
+            local chest_inventory = chest.get_inventory(defines.inventory.chest)
+            if chest_inventory and chest_inventory.can_insert({name = name, count = amount}) then
+                local inserted_count = chest_inventory.insert({name = name, count = amount})
+                player_inventory.remove({name = name, count = inserted_count})
+                create_floaty_text(chest.surface, chest.position, name, inserted_count)
+                count = count - inserted_count
+                if count <= 0 then
+                    return
+                end
+            end
+        end
+    end
+end
+
+local function insert_into_wagon(player_inventory, chests, name, count)
     local stack = player_inventory.find_item_stack(name)
 
-    if stack then
-        -- Attempt to load filtered cargo wagon
-        if wagon then
-            for _, chest in pairs(chests) do
-                if chest.type == 'cargo-wagon' then
-                    local chest_inventory = chest.get_inventory(defines.inventory.cargo_wagon)
-                    if chest_inventory and chest_inventory.can_insert(stack) then
-                        local inserted_count = chest_inventory.insert(stack)
-                        player_inventory.remove(stack)
-                        create_floaty_text(chest.surface, chest.position, name, inserted_count)
-                        count = count - inserted_count
-                        if count <= 0 then
-                            return
-                        end
-                    end
+    local data = {
+        name = stack.name,
+        count = count,
+        durability = stack.durability
+    }
+
+    -- Attempt to load filtered cargo wagon
+    for _, chest in pairs(chests) do
+        if chest.type == 'cargo-wagon' then
+            local chest_inventory = chest.get_inventory(defines.inventory.cargo_wagon)
+            if chest_inventory.can_insert(stack) then
+                local inserted_count = chest_inventory.insert(data)
+                player_inventory.remove(data)
+                create_floaty_text(chest.surface, chest.position, name, inserted_count)
+                count = count - inserted_count
+                if count <= 0 then
+                    return
                 end
             end
         end
+    end
+end
 
-        --Attempt to store in chests that already have the same item.
-        for _, chest in pairs(chests) do
-            if container[chest.type] then
-                local chest_inventory = chest.get_inventory(defines.inventory.chest)
+local function insert_into_wagon_filtered(player_inventory, chests, name, count)
+    local stack = player_inventory.find_item_stack(name)
 
-                if chest_inventory and chest_inventory.can_insert(stack) then
-                    if chest_inventory.find_item_stack(name) then
-                        local inserted_count = chest_inventory.insert(stack)
-
-                        player_inventory.remove(stack)
-                        create_floaty_text(chest.surface, chest.position, name, inserted_count)
-                        count = count - inserted_count
-                        if count <= 0 then
-                            return
-                        end
-                    end
-                end
-            end
-        end
-
-        --Attempt to store in empty chests.
-        for _, chest in pairs(filtered_chests) do
-            if container[chest.type] then
-                local chest_inventory = chest.get_inventory(defines.inventory.chest)
-                if chest_inventory and chest_inventory.can_insert(stack) then
-                    if chest_inventory.is_empty() then
-                        local inserted_count = chest_inventory.insert(stack)
-                        player_inventory.remove(stack)
-                        create_floaty_text(chest.surface, chest.position, name, inserted_count)
-                        count = count - inserted_count
-                        if count <= 0 then
-                            return
-                        end
-                    end
-                end
-            end
-        end
-
-        --Attempt to store in chests with same item subgroup.
-        local item_subgroup = game.item_prototypes[name].subgroup.name
-        if item_subgroup then
-            for _, chest in pairs(filtered_chests) do
-                if container[chest.type] then
-                    local chest_inventory = chest.get_inventory(defines.inventory.chest)
-                    if chest_inventory and chest_inventory.can_insert(stack) then
-                        if does_inventory_contain_item_type(chest_inventory, item_subgroup) then
+    -- Attempt to load filtered cargo wagon
+    for _, chest in pairs(chests) do
+        if chest.type == 'cargo-wagon' then
+            local chest_inventory = chest.get_inventory(defines.inventory.cargo_wagon)
+            for index = 1, 40 do
+                if chest_inventory.can_insert(stack) then
+                    if chest_inventory.get_filter(index) ~= nil then
+                        local n = chest_inventory.get_filter(index)
+                        if n == name then
                             local inserted_count = chest_inventory.insert(stack)
                             player_inventory.remove(stack)
                             create_floaty_text(chest.surface, chest.position, name, inserted_count)
@@ -387,19 +329,91 @@ local function insert_item_into_chest(player_inventory, chests, filtered_chests,
                 end
             end
         end
+    end
+end
 
-        --Attempt to store in mixed chests.
-        for _, chest in pairs(filtered_chests) do
-            if container[chest.type] then
-                local chest_inventory = chest.get_inventory(defines.inventory.chest)
-                if chest_inventory.can_insert(stack) then
-                    local inserted_count = chest_inventory.insert(stack)
-                    player_inventory.remove(stack)
+local function insert_item_into_chest(player_inventory, chests, filtered_chests, name, count)
+    local container = {
+        ['container'] = true,
+        ['logistic-container'] = true
+    }
+
+    local stack = player_inventory.find_item_stack(name)
+
+    local data = {
+        name = stack.name,
+        count = count,
+        durability = stack.durability
+    }
+
+    --Attempt to store in chests that already have the same item.
+    for _, chest in pairs(chests) do
+        if container[chest.type] then
+            local chest_inventory = chest.get_inventory(defines.inventory.chest)
+            if chest_inventory and chest_inventory.can_insert(data) then
+                if chest_inventory.find_item_stack(name) then
+                    local inserted_count = chest_inventory.insert(data)
+                    player_inventory.remove(data)
                     create_floaty_text(chest.surface, chest.position, name, inserted_count)
                     count = count - inserted_count
                     if count <= 0 then
                         return
                     end
+                end
+            end
+        end
+    end
+
+    --Attempt to store in empty chests.
+    for _, chest in pairs(filtered_chests) do
+        if container[chest.type] then
+            local chest_inventory = chest.get_inventory(defines.inventory.chest)
+            if chest_inventory and chest_inventory.can_insert(data) then
+                if chest_inventory.is_empty() then
+                    local inserted_count = chest_inventory.insert(data)
+                    player_inventory.remove(data)
+                    create_floaty_text(chest.surface, chest.position, name, inserted_count)
+                    count = count - inserted_count
+                    if count <= 0 then
+                        return
+                    end
+                end
+            end
+        end
+    end
+
+    --Attempt to store in chests with same item subgroup.
+    local item_subgroup = game.item_prototypes[name].subgroup.name
+    if item_subgroup then
+        for _, chest in pairs(filtered_chests) do
+            if container[chest.type] then
+                local chest_inventory = chest.get_inventory(defines.inventory.chest)
+                if chest_inventory and chest_inventory.can_insert(data) then
+                    if does_inventory_contain_item_type(chest_inventory, item_subgroup) then
+                        local inserted_count = chest_inventory.insert(data)
+                        player_inventory.remove(data)
+                        create_floaty_text(chest.surface, chest.position, name, inserted_count)
+                        count = count - inserted_count
+                        if count <= 0 then
+                            return
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    --Attempt to store in mixed chests.
+    for _, chest in pairs(filtered_chests) do
+        if container[chest.type] then
+            local chest_inventory = chest.get_inventory(defines.inventory.chest)
+            if chest_inventory.can_insert(data) then
+                local inserted_count = chest_inventory.insert(data)
+                player_inventory.remove(data)
+                create_floaty_text(chest.surface, chest.position, name, inserted_count)
+                count = count - inserted_count
+                if count <= 0 then
+                    return
                 end
             end
         end
@@ -447,7 +461,7 @@ local function auto_stash(player, event)
         player.print('It seems that you are not in the realm of the living.', print_color)
         return
     end
-    local inventory = player.get_inventory(defines.inventory.character_main)
+    local inventory = player.get_main_inventory()
     if inventory.is_empty() then
         player.print('Inventory is empty.', print_color)
         return
@@ -472,12 +486,10 @@ local function auto_stash(player, event)
         player.print('No valid nearby containers found.', print_color)
         return
     end
+
     local filtered_chests = {}
-    local filtered_allowed
     for _, e in pairs(chests) do
-        local is_valid, t = chest_is_valid(e, inventory)
-        filtered_allowed = t
-        if is_valid then
+        if chest_is_valid(e) then
             filtered_chests[#filtered_chests + 1] = e
         end
     end
@@ -503,20 +515,17 @@ local function auto_stash(player, event)
             if ctrl and this.insert_into_furnace then
                 if button == defines.mouse_button_type.right then
                     if is_resource then
-                        insert_item_into_chest(inventory, chests, filtered_chests, name, count, true, false)
+                        insert_to_furnace(inventory, chests, name, count)
                     end
                 end
             elseif shift and this.insert_into_wagon then
                 if button == defines.mouse_button_type.right then
                     if is_resource then
-                        insert_item_into_chest(inventory, chests, filtered_chests, name, count, false, true)
+                        insert_into_wagon(inventory, chests, name, count)
                     end
                 end
                 if button == defines.mouse_button_type.left then
-                    if filtered_allowed and filtered_allowed[name] and filtered_allowed[name].valid then
-                        local c = filtered_allowed[name].count
-                        insert_item_into_chest(inventory, chests, filtered_chests, name, c, false, true)
-                    end
+                    insert_into_wagon_filtered(inventory, chests, name, count)
                 end
             elseif button == defines.mouse_button_type.right then
                 if is_resource then
