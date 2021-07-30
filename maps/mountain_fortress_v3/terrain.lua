@@ -159,9 +159,8 @@ local function place_wagon(data)
     local surface = data.surface
     local tiles = data.hidden_tiles
     local entities = data.entities
-    local top_x = data.top_x
     local top_y = data.top_y
-    local position = {x = top_x + random(4, 12) * 2, y = top_y + random(4, 12) * 2}
+    local position = {x = data.x, y = top_y + random(4, 12) * 2}
     local wagon_mineable = {
         callback = Functions.disable_minable_and_ICW_callback
     }
