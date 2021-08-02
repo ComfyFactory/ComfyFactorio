@@ -780,7 +780,7 @@ function Public.set_world_selectors(journey)
 	destroy_teleporter(journey, game.surfaces.nauvis, Constants.mothership_teleporter_position)
 	destroy_teleporter(journey, surface, Constants.mothership_teleporter_position)
 	
-	Server.to_discord_embed("World " .. journey.world_number .. " selection has started!")
+	Server.to_discord_embed("World " .. journey.world_number + 1 .. " selection has started!")
 	
 	journey.game_state = "delete_nauvis_chunks"
 end
