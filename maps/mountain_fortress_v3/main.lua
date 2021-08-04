@@ -362,7 +362,7 @@ local chunk_load = function()
         if chunk_load_tick < tick then
             WPT.set('force_chunk', false)
             WPT.remove('chunk_load_tick')
-            Task.set_queue_speed(3)
+            Task.set_queue_speed(8)
         end
     end
 end
