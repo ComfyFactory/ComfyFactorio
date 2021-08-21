@@ -18,7 +18,7 @@ Global.register(
 )
 
 Public.level_depth = 704
-Public.level_width = 524
+Public.level_width = 510
 
 Public.pickaxe_upgrades = {
     'Wood',
