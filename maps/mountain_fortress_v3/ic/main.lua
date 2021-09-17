@@ -18,8 +18,7 @@ local function on_entity_died(event)
     local valid_types = IC.get_types()
 
     if (valid_types[entity.type] or valid_types[entity.name]) then
-        local ic = IC.get()
-        Functions.kill_car(ic, entity)
+        Functions.kill_car(entity)
     end
 end
 
@@ -32,9 +31,8 @@ local function on_player_mined_entity(event)
     local valid_types = IC.get_types()
 
     if (valid_types[entity.type] or valid_types[entity.name]) then
-        local ic = IC.get()
         Minimap.kill_minimap(game.players[event.player_index])
-        Functions.save_car(ic, event)
+        Functions.save_car(event)
     end
 end
 
@@ -48,8 +46,7 @@ local function on_robot_mined_entity(event)
     local valid_types = IC.get_types()
 
     if (valid_types[entity.type] or valid_types[entity.name]) then
-        local ic = IC.get()
-        Functions.kill_car(ic, entity)
+        Functions.kill_car(entity)
     end
 end
 
@@ -71,16 +68,14 @@ local function on_built_entity(event)
         return
     end
 
-    local ic = IC.get()
-    Functions.create_car(ic, event)
+    Functions.create_car(event)
 end
 
 local function on_player_driving_changed_state(event)
-    local ic = IC.get()
     local player = game.players[event.player_index]
 
-    Functions.use_door_with_entity(ic, player, event.entity)
-    Functions.validate_owner(ic, player, event.entity)
+    Functions.use_door_with_entity(player, event.entity)
+    Functions.validate_owner(player, event.entity)
 end
 
 local function on_tick()
@@ -110,8 +105,8 @@ local function on_gui_closed(event)
     if not entity.unit_number then
         return
     end
-    local ic = IC.get()
-    if not ic.cars[entity.unit_number] then
+    local cars = IC.get('cars')
+    if not cars[entity.unit_number] then
         return
     end
 
@@ -127,8 +122,8 @@ local function on_gui_opened(event)
     if not entity.unit_number then
         return
     end
-    local ic = IC.get()
-    local car = ic.cars[entity.unit_number]
+    local cars = IC.get('cars')
+    local car = cars[entity.unit_number]
     if not car then
         return
     end
@@ -172,8 +167,7 @@ end
 local function trigger_on_player_kicked_from_surface(data)
     local player = data.player
     local target = data.target
-    local this = data.this
-    Functions.kick_player_from_surface(this, player, target)
+    Functions.kick_player_from_surface(player, target)
 end
 
 local function on_init()

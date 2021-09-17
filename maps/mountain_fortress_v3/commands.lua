@@ -101,23 +101,21 @@ commands.add_command(
         local player = game.player
         local param = tonumber(cmd.parameter)
 
-        if player then
-            if player ~= nil then
-                p = player.print
-                if not player.admin then
-                    p("[ERROR] You're not admin!", Color.fail)
-                    return
-                end
-                if not param then
-                    return
-                end
-                p('Queue speed set to: ' .. param)
-                Task.set_queue_speed(param)
-            else
-                p = log
-                p('Queue speed set to: ' .. param)
-                Task.set_queue_speed(param)
+        if player and player.valid then
+            p = player.print
+            if not player.admin then
+                p("[ERROR] You're not admin!", Color.fail)
+                return
             end
+            if not param then
+                return
+            end
+            p('Queue speed set to: ' .. param)
+            Task.set_queue_speed(param)
+        else
+            p = log
+            p('Queue speed set to: ' .. param)
+            Task.set_queue_speed(param)
         end
     end
 )
@@ -164,18 +162,16 @@ commands.add_command(
         local p
         local player = game.player
 
-        if player then
-            if player ~= nil then
-                p = player.print
-                if not player.admin then
-                    p("[ERROR] You're not admin!", Color.fail)
-                    return
-                end
-                p(Task.get_queue_speed())
-            else
-                p = log
-                p(Task.get_queue_speed())
+        if player and player.valid then
+            p = player.print
+            if not player.admin then
+                p("[ERROR] You're not admin!", Color.fail)
+                return
             end
+            p(Task.get_queue_speed())
+        else
+            p = log
+            p(Task.get_queue_speed())
         end
     end
 )

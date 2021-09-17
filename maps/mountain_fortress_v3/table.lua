@@ -18,7 +18,7 @@ Global.register(
 )
 
 Public.level_depth = 704
-Public.level_width = 524
+Public.level_width = 510
 
 Public.pickaxe_upgrades = {
     'Wood',
@@ -103,6 +103,7 @@ function Public.reset_table()
         highest_pos = 0
     }
     this.force_chunk = false
+    this.allow_decon = true
     this.train_upgrades = 0
     this.flamethrower_damage = {}
     this.mined_scrap = 0

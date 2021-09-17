@@ -621,7 +621,6 @@ Gui.on_click(
         local screen = player.gui.screen
         local frame = screen[main_frame_name]
         local player_name = Gui.get_data(event.element)
-        local this = ICT.get()
 
         if frame and frame.valid then
             if not player_name then
@@ -641,8 +640,7 @@ Gui.on_click(
                     ICT.events.on_player_kicked_from_surface,
                     {
                         player = player,
-                        target = target,
-                        this = this
+                        target = target
                     }
                 )
             end
