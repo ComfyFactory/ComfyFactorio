@@ -322,6 +322,24 @@ local fortress_functions = {
             Module.trusted_only_car_tanks = false
             get_actor(event, '[Market]', 'has changed so everybody can buy car/tanks.', true)
         end
+    end,
+    ['comfy_panel_allow_decon'] = function(event)
+        local WPT = is_loaded('maps.mountain_fortress_v3.table')
+        if event.element.switch_state == 'left' then
+            local limited_group = game.permissions.get_group('limited')
+            if limited_group then
+                limited_group.set_allows_action(defines.input_action.deconstruct, true)
+            end
+            WPT.set('allow_decon', true)
+            get_actor(event, '[Decon]', 'has allowed decon on car/tanks/trains.', true)
+        else
+            local limited_group = game.permissions.get_group('limited')
+            if limited_group then
+                limited_group.set_allows_action(defines.input_action.deconstruct, false)
+            end
+            WPT.set('allow_decon', false)
+            get_actor(event, '[Decon]', 'has disabled decon on car/tanks/trains.', true)
+        end
     end
 }
 
@@ -670,6 +688,13 @@ local function build_config_gui(data)
                 'Market Purchase',
                 'Left = Allows only trusted people to buy car/tanks.\nRight = Allows everyone to buy car/tanks.'
             )
+            scroll_pane.add({type = 'line'})
+
+            switch_state = 'right'
+            if Module.allow_decon then
+                switch_state = 'left'
+            end
+            add_switch(scroll_pane, switch_state, 'comfy_panel_allow_decon', 'Deconstruct', 'Left = Allows decon on car/tanks/trains.\nRight = Disables decon on car/tanks/trains.')
             scroll_pane.add({type = 'line'})
         end
     end
