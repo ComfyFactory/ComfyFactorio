@@ -103,7 +103,7 @@ function Public.reset_table()
         highest_pos = 0
     }
     this.force_chunk = false
-    this.allow_decon = false
+    this.allow_decon = true
     this.train_upgrades = 0
     this.flamethrower_damage = {}
     this.mined_scrap = 0
