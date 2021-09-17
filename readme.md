@@ -28,4 +28,4 @@ A factorio scenario.
 
 ### Factorio Version
 
-- We always try to use the latest experimental branch, meaning - if you want to play our maps then you need to be on the experimental branch.
+- We always try to use the latest stable branch, meaning - if you want to play our maps then you need to be on the stable branch.
