@@ -101,9 +101,11 @@ local function kill_doors(car)
     end
     local doors = IC.get('doors')
     for k, e in pairs(car.doors) do
-        doors[e.unit_number] = nil
-        e.destroy()
-        car.doors[k] = nil
+        if validate_entity(e) then
+            doors[e.unit_number] = nil
+            e.destroy()
+            car.doors[k] = nil
+        end
     end
 end
 
@@ -283,7 +285,7 @@ local function upgrade_surface(player, entity)
     local ce = entity
     local saved_surfaces = IC.get('saved_surfaces')
     local cars = IC.get('cars')
-    local door = IC.get('door')
+    local doors = IC.get('doors')
     local surfaces = IC.get('surfaces')
     local index = saved_surfaces[player.index]
     if not index then
@@ -301,7 +303,7 @@ local function upgrade_surface(player, entity)
         set_new_area(car)
         remove_logistics(car)
         replace_entity(cars, ce, index)
-        replace_doors(door, ce, index)
+        replace_doors(doors, ce, index)
         replace_surface(surfaces, ce, index)
         replace_surface_entity(cars, ce, index)
         kill_doors(car)
@@ -420,7 +422,7 @@ local function restore_surface(player, entity)
     local ce = entity
     local saved_surfaces = IC.get('saved_surfaces')
     local cars = IC.get('cars')
-    local door = IC.get('doors')
+    local doors = IC.get('doors')
     local renders = IC.get('renders')
     local surfaces = IC.get('surfaces')
     local index = saved_surfaces[player.index]
@@ -435,7 +437,7 @@ local function restore_surface(player, entity)
             return true
         end
         replace_entity(cars, ce, index)
-        replace_doors(door, ce, index)
+        replace_doors(doors, ce, index)
         replace_surface(surfaces, ce, index)
         replace_surface_entity(cars, ce, index)
         saved_surfaces[player.index] = nil
