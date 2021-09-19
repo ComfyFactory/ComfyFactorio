@@ -145,26 +145,7 @@ end
 
 local function on_init()
     local T = Map.Pop_info()
-    T.main_caption = 'The Journey'
-    T.sub_caption = 'v 1.8'
-    T.text =
-        table.concat(
-        {	
-			'The selectors in the mothership allow you to choose a destination.\n',
-			'Worlds can be rerolled by spending a satellite at the top selector.\n',
-			'Once enough players are on a selector, mothership will start travelling.\n\n',
-			
-			'A teleporter will be deployed after reaching the target.\n',
-			'It is however only capable of transferring the subject\'s body.\n\n',
-			
-			'Worlds will get more difficult with each jump, stacking the chosen modifiers.\n',
-            'Launch uranium fuel cells via rocket cargo to advance to the next world.\n',
-			'The tooltips on the top buttons yield information about the current world.\n',
-			'If the journey ends, an admin can fully reset the map via command "/reset-journey".\n\n',
-					
-			'How far will the journey lead?\n\n',
-        }
-    )
+    T.localised_category = 'journey'
     T.main_caption_color = {r = 100, g = 20, b = 255}
     T.sub_caption_color = {r = 100, g = 100, b = 100}
 	
