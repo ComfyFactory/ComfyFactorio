@@ -1130,15 +1130,11 @@ local function gui_click(event)
         return
     end
     if name == 'chest_limit_outside' then
-        if this.chest_limit_outside_upgrades == 8 then
-            local main_market_items = WPT.get('main_market_items')
-
-            main_market_items['chest_limit_outside'].enabled = false
-            main_market_items['chest_limit_outside'].tooltip = ({'locomotive.limit_reached'})
+		if this.chest_limit_outside_upgrades == 7 then
             redraw_market_items(data.item_frame, player, data.search_text)
-            return player.print(({'locomotive.chests_full'}), {r = 0.98, g = 0.66, b = 0.22})
+            player.print(({'locomotive.chests_full'}), {r = 0.98, g = 0.66, b = 0.22})
         end
-        player.remove_item({name = item.value, count = item.price})
+		player.remove_item({name = item.value, count = item.price})
 
         local message = ({'locomotive.chest_bought_info', shopkeeper, player.name, format_number(item.price, true)})
         Alert.alert_all_players(5, message)
@@ -1155,13 +1151,6 @@ local function gui_click(event)
         return
     end
     if name == 'locomotive_max_health' then
-        if this.health_upgrades >= this.health_upgrades_limit then
-            local main_market_items = WPT.get('main_market_items')
-            main_market_items['locomotive_max_health'].enabled = false
-            main_market_items['locomotive_max_health'].tooltip = ({'locomotive.limit_reached'})
-            redraw_market_items(data.item_frame, player, data.search_text)
-            return
-        end
 
         player.remove_item({name = item.value, count = item.price})
         local message = ({'locomotive.health_bought_info', shopkeeper, player.name, format_number(item.price, true)})
@@ -2155,6 +2144,7 @@ function Public.get_items()
     local flame_turret = WPT.get('upgrades').flame_turret.bought
     local landmine = WPT.get('upgrades').landmine.bought
     local fixed_prices = WPT.get('marked_fixed_prices')
+	local health_upgrades_limit = WPT.get('health_upgrades_limit')
 
     local chest_limit_cost = round(fixed_prices.chest_limit_cost * (1 + chest_limit_outside_upgrades))
     local health_cost = round(fixed_prices.health_cost * (1 + health_upgrades))
@@ -2185,7 +2175,7 @@ function Public.get_items()
             stack = 1,
             value = 'coin',
             price = pickaxe_cost,
-            tooltip = ({'main_market.purchase_pickaxe', offer}),
+            tooltip = ({'main_market.purchase_pickaxe', offer, pickaxe_tier-1}),
             sprite = 'achievement/delivery-service',
             enabled = true,
             upgrade = true,
@@ -2193,14 +2183,14 @@ function Public.get_items()
         }
     end
 
-    if main_market_items['chest_limit_outside'] then
+    if chest_limit_outside_upgrades == 8 then
         main_market_items['chest_limit_outside'] = {
             stack = 1,
             value = 'coin',
             price = chest_limit_cost,
-            tooltip = main_market_items['chest_limit_outside'].tooltip,
+            tooltip = ({'locomotive.limit_reached'}),
             sprite = 'achievement/so-long-and-thanks-for-all-the-fish',
-            enabled = main_market_items['chest_limit_outside'].enabled,
+            enabled = false,
             upgrade = true,
             static = true
         }
@@ -2209,22 +2199,22 @@ function Public.get_items()
             stack = 1,
             value = 'coin',
             price = chest_limit_cost,
-            tooltip = ({'main_market.chest'}),
-            sprite = 'achievement/so-long-and-thanks-for-all-the-fish',
+            tooltip = ({'main_market.chest', chest_limit_outside_upgrades-1}),
+            sprite = 'achievement/so-long-and-thanks-for-all-the-fish', 
             enabled = true,
             upgrade = true,
             static = true
         }
     end
 
-    if main_market_items['locomotive_max_health'] then
+    if health_upgrades >= health_upgrades_limit then
         main_market_items['locomotive_max_health'] = {
             stack = 1,
             value = 'coin',
             price = health_cost,
-            tooltip = main_market_items['locomotive_max_health'].tooltip,
+            tooltip = ({'locomotive.limit_reached'}),
             sprite = 'achievement/getting-on-track',
-            enabled = main_market_items['locomotive_max_health'].enabled,
+            enabled = false,
             upgrade = true,
             static = true
         }
@@ -2233,7 +2223,7 @@ function Public.get_items()
             stack = 1,
             value = 'coin',
             price = health_cost,
-            tooltip = ({'main_market.locomotive_max_health'}),
+            tooltip = ({'main_market.locomotive_max_health', health_upgrades-1}),
             sprite = 'achievement/getting-on-track',
             enabled = true,
             upgrade = true,
@@ -2245,7 +2235,7 @@ function Public.get_items()
         stack = 1,
         value = 'coin',
         price = aura_cost,
-        tooltip = ({'main_market.locomotive_xp_aura'}),
+        tooltip = ({'main_market.locomotive_xp_aura', aura_upgrades}),
         sprite = 'achievement/tech-maniac',
         enabled = true,
         upgrade = true,
@@ -2255,7 +2245,7 @@ function Public.get_items()
         stack = 1,
         value = 'coin',
         price = xp_point_boost_cost,
-        tooltip = ({'main_market.xp_points_boost'}),
+        tooltip = ({'main_market.xp_points_boost', xp_points_upgrade}),
         sprite = 'achievement/trans-factorio-express',
         enabled = true,
         upgrade = true,
@@ -2288,7 +2278,7 @@ function Public.get_items()
         stack = 1,
         value = 'coin',
         price = flamethrower_turrets_cost,
-        tooltip = ({'main_market.flamethrower_turret'}),
+        tooltip = ({'main_market.flamethrower_turret', flame_turret}),
         sprite = 'achievement/pyromaniac',
         enabled = true,
         upgrade = true,
@@ -2298,7 +2288,7 @@ function Public.get_items()
         stack = 1,
         value = 'coin',
         price = land_mine_cost,
-        tooltip = ({'main_market.land_mine'}),
+        tooltip = ({'main_market.land_mine', landmine}),
         sprite = 'achievement/watch-your-step',
         enabled = true,
         upgrade = true,
