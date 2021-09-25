@@ -2200,7 +2200,7 @@ function Public.get_items()
             value = 'coin',
             price = chest_limit_cost,
             tooltip = ({'main_market.chest', chest_limit_outside_upgrades-1}),
-            sprite = 'achievement/so-long-and-thanks-for-all-the-fish', 
+            sprite = 'achievement/so-long-and-thanks-for-all-the-fish',
             enabled = true,
             upgrade = true,
             static = true
