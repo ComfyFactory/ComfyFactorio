@@ -782,11 +782,11 @@ local function redraw_market_items(gui, player, search_text)
             if WPT.get('trusted_only_car_tanks') then
                 local trustedPlayer = Session.get_trusted_player(player)
                 if not trustedPlayer then
-                    if item == 'tank' then
+                    if item == 'tank' and game.forces.player.technologies['tank'].researched then
                         button.enabled = false
                         button.tooltip = ({'locomotive.not_trusted'})
                     end
-                    if item == 'car' then
+                    if item == 'car' and game.forces.player.technologies['automobilism'].researched then
                         button.enabled = false
                         button.tooltip = ({'locomotive.not_trusted'})
                     end
@@ -2462,22 +2462,26 @@ function Public.get_items()
         upgrade = false,
         static = false
     }
-    main_market_items['car'] = {
-        stack = 1,
-        value = 'coin',
-        price = 6000,
-        tooltip = ({'main_market.car'}),
-        upgrade = false,
-        static = true
-    }
-    main_market_items['tank'] = {
-        stack = 1,
-        value = 'coin',
-        price = 12000,
-        tooltip = ({'main_market.tank'}),
-        upgrade = false,
-        static = true
-    }
+    if game.forces.player.technologies['automobilism'].researched then
+        main_market_items['car'] = {
+            stack = 1,
+            value = 'coin',
+            price = 6000,
+            tooltip = ({'main_market.car'}),
+            upgrade = false,
+            static = true
+        }
+    end
+    if game.forces.player.technologies['tank'].researched then
+        main_market_items['tank'] = {
+            stack = 1,
+            value = 'coin',
+            price = 12000,
+            tooltip = ({'main_market.tank'}),
+            upgrade = false,
+            static = true
+        }
+    end
     local wave_number = WD.get_wave()
 
     if wave_number >= 650 then
