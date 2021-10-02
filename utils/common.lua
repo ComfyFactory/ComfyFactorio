@@ -542,10 +542,12 @@ Public.get_closest_neighbour = function(position, objects)
     local object, dist
     for i = #objects, 1, -1 do
         object = objects[i]
-        dist = Public.get_distance(position, object)
-        if dist < min_dist then
-            closest = object
-            min_dist = dist
+        if object and not object.player then
+            dist = Public.get_distance(position, object)
+            if dist < min_dist then
+                closest = object
+                min_dist = dist
+            end
         end
     end
 

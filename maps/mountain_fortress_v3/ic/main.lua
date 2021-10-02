@@ -78,6 +78,24 @@ local function on_player_driving_changed_state(event)
     Functions.validate_owner(player, event.entity)
 end
 
+local function on_player_died(event)
+    local player = game.get_player(event.player_index)
+    if not player or not player.valid then
+        return
+    end
+
+    Functions.on_player_died(player)
+end
+
+local function on_player_respawned(event)
+    local player = game.get_player(event.player_index)
+    if not player or not player.valid then
+        return
+    end
+
+    Functions.on_player_respawned(player)
+end
+
 local function on_tick()
     local tick = game.tick
 
@@ -200,6 +218,8 @@ Event.add(defines.events.on_player_driving_changed_state, on_player_driving_chan
 Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_built_entity, on_built_entity)
 Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
+Event.add(defines.events.on_player_died, on_player_died)
+Event.add(defines.events.on_player_respawned, on_player_respawned)
 Event.add(defines.events.on_robot_mined_entity, on_robot_mined_entity)
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_player_changed_surface, changed_surface)

@@ -18,6 +18,7 @@ local Task = require 'utils.task'
 local Token = require 'utils.token'
 local MapFunctions = require 'tools.map_functions'
 local SpamProtection = require 'utils.spam_protection'
+local AI = require 'utils.ai'
 
 local format_number = require 'util'.format_number
 
@@ -32,6 +33,14 @@ local rad = math.rad
 local sin = math.sin
 local cos = math.cos
 local ceil = math.ceil
+
+local clear_items_upon_surface_entry = {
+    ['entity-ghost'] = true,
+    ['small-electric-pole'] = true,
+    ['medium-electric-pole'] = true,
+    ['big-electric-pole'] = true,
+    ['substation'] = true
+}
 
 local shopkeeper = '[color=blue]Shopkeeper:[/color]\n'
 
@@ -1130,13 +1139,9 @@ local function gui_click(event)
         return
     end
     if name == 'chest_limit_outside' then
-        if this.chest_limit_outside_upgrades == 8 then
-            local main_market_items = WPT.get('main_market_items')
-
-            main_market_items['chest_limit_outside'].enabled = false
-            main_market_items['chest_limit_outside'].tooltip = ({'locomotive.limit_reached'})
+		if this.chest_limit_outside_upgrades == 7 then
             redraw_market_items(data.item_frame, player, data.search_text)
-            return player.print(({'locomotive.chests_full'}), {r = 0.98, g = 0.66, b = 0.22})
+            player.print(({'locomotive.chests_full'}), {r = 0.98, g = 0.66, b = 0.22})
         end
         player.remove_item({name = item.value, count = item.price})
 
@@ -1155,13 +1160,6 @@ local function gui_click(event)
         return
     end
     if name == 'locomotive_max_health' then
-        if this.health_upgrades >= this.health_upgrades_limit then
-            local main_market_items = WPT.get('main_market_items')
-            main_market_items['locomotive_max_health'].enabled = false
-            main_market_items['locomotive_max_health'].tooltip = ({'locomotive.limit_reached'})
-            redraw_market_items(data.item_frame, player, data.search_text)
-            return
-        end
 
         player.remove_item({name = item.value, count = item.price})
         local message = ({'locomotive.health_bought_info', shopkeeper, player.name, format_number(item.price, true)})
@@ -1450,10 +1448,18 @@ local function spawn_biter()
 
     local position = loco_surface.find_non_colliding_position('market', center_position, 128, 0.5)
     local biters = {
+        'character',
+        'small-biter',
+        'medium-biter',
         'big-biter',
         'behemoth-biter',
+        'character',
+        'small-spitter',
+        'medium-spitter',
         'big-spitter',
-        'behemoth-spitter'
+        'behemoth-spitter',
+        'compilatron',
+        'character'
     }
 
     local size_of = #biters
@@ -1461,9 +1467,21 @@ local function spawn_biter()
     if not position then
         return
     end
-    this.locomotive_biter = loco_surface.create_entity({name = biters[random(1, size_of)], position = position, force = 'player', create_build_effect_smoke = false})
-    this.locomotive_biter.ai_settings.allow_destroy_when_commands_fail = false
-    this.locomotive_biter.ai_settings.allow_try_return_to_spawner = false
+
+    local chosen_ent = biters[random(1, size_of)]
+
+    if chosen_ent == 'character' then
+        local data = {
+            force = 'player',
+            surface = loco_surface.index,
+            command = 1,
+            tick = 60,
+            repeat_function = true
+        }
+        AI.add_job_to_task(data)
+    end
+
+    this.locomotive_biter = loco_surface.create_entity({name = chosen_ent, position = position, force = 'player', create_build_effect_smoke = false})
 
     rendering.draw_text {
         text = ({'locomotive.shoo'}),
@@ -1476,6 +1494,11 @@ local function spawn_biter()
         alignment = 'center',
         scale_with_zoom = false
     }
+
+    if not chosen_ent == 'character' then
+        this.locomotive_biter.ai_settings.allow_destroy_when_commands_fail = false
+        this.locomotive_biter.ai_settings.allow_try_return_to_spawner = false
+    end
 end
 
 local function create_market(data, rebuild)
@@ -1852,7 +1875,12 @@ local function shoo(event)
                 }
             )
             if locomotive_biter and locomotive_biter.valid then
-                locomotive_biter.die()
+                local explosion = {
+                    name = 'massive-explosion',
+                    position = locomotive_biter.position
+                }
+                surface.create_entity(explosion)
+                locomotive_biter.destroy()
                 WPT.set().locomotive_biter = nil
             end
             return
@@ -1877,6 +1905,14 @@ local function on_player_changed_surface(event)
     local surface = game.surfaces[active_surface]
     if not surface or not surface.valid then
         return
+    end
+
+    local item = player.cursor_stack
+    if item and item.valid_for_read then
+        local name = item.name
+        if clear_items_upon_surface_entry[name] then
+            player.cursor_stack.clear()
+        end
     end
 
     if player.surface.name == 'nauvis' then
@@ -2155,6 +2191,7 @@ function Public.get_items()
     local flame_turret = WPT.get('upgrades').flame_turret.bought
     local landmine = WPT.get('upgrades').landmine.bought
     local fixed_prices = WPT.get('marked_fixed_prices')
+	local health_upgrades_limit = WPT.get('health_upgrades_limit')
 
     local chest_limit_cost = round(fixed_prices.chest_limit_cost * (1 + chest_limit_outside_upgrades))
     local health_cost = round(fixed_prices.health_cost * (1 + health_upgrades))
@@ -2185,7 +2222,7 @@ function Public.get_items()
             stack = 1,
             value = 'coin',
             price = pickaxe_cost,
-            tooltip = ({'main_market.purchase_pickaxe', offer}),
+            tooltip = ({'main_market.purchase_pickaxe', offer, pickaxe_tier-1}),
             sprite = 'achievement/delivery-service',
             enabled = true,
             upgrade = true,
@@ -2193,14 +2230,14 @@ function Public.get_items()
         }
     end
 
-    if main_market_items['chest_limit_outside'] then
+    if chest_limit_outside_upgrades == 8 then
         main_market_items['chest_limit_outside'] = {
             stack = 1,
             value = 'coin',
             price = chest_limit_cost,
-            tooltip = main_market_items['chest_limit_outside'].tooltip,
+            tooltip = ({'locomotive.limit_reached'}),
             sprite = 'achievement/so-long-and-thanks-for-all-the-fish',
-            enabled = main_market_items['chest_limit_outside'].enabled,
+            enabled = false,
             upgrade = true,
             static = true
         }
@@ -2209,7 +2246,7 @@ function Public.get_items()
             stack = 1,
             value = 'coin',
             price = chest_limit_cost,
-            tooltip = ({'main_market.chest'}),
+            tooltip = ({'main_market.chest', chest_limit_outside_upgrades-1}),
             sprite = 'achievement/so-long-and-thanks-for-all-the-fish',
             enabled = true,
             upgrade = true,
@@ -2217,14 +2254,14 @@ function Public.get_items()
         }
     end
 
-    if main_market_items['locomotive_max_health'] then
+    if health_upgrades >= health_upgrades_limit then
         main_market_items['locomotive_max_health'] = {
             stack = 1,
             value = 'coin',
             price = health_cost,
-            tooltip = main_market_items['locomotive_max_health'].tooltip,
+            tooltip = ({'locomotive.limit_reached'}),
             sprite = 'achievement/getting-on-track',
-            enabled = main_market_items['locomotive_max_health'].enabled,
+            enabled = false,
             upgrade = true,
             static = true
         }
@@ -2233,7 +2270,7 @@ function Public.get_items()
             stack = 1,
             value = 'coin',
             price = health_cost,
-            tooltip = ({'main_market.locomotive_max_health'}),
+            tooltip = ({'main_market.locomotive_max_health', health_upgrades-1}),
             sprite = 'achievement/getting-on-track',
             enabled = true,
             upgrade = true,
@@ -2245,7 +2282,7 @@ function Public.get_items()
         stack = 1,
         value = 'coin',
         price = aura_cost,
-        tooltip = ({'main_market.locomotive_xp_aura'}),
+        tooltip = ({'main_market.locomotive_xp_aura', aura_upgrades}),
         sprite = 'achievement/tech-maniac',
         enabled = true,
         upgrade = true,
@@ -2255,7 +2292,7 @@ function Public.get_items()
         stack = 1,
         value = 'coin',
         price = xp_point_boost_cost,
-        tooltip = ({'main_market.xp_points_boost'}),
+        tooltip = ({'main_market.xp_points_boost', xp_points_upgrade}),
         sprite = 'achievement/trans-factorio-express',
         enabled = true,
         upgrade = true,
@@ -2288,7 +2325,7 @@ function Public.get_items()
         stack = 1,
         value = 'coin',
         price = flamethrower_turrets_cost,
-        tooltip = ({'main_market.flamethrower_turret'}),
+        tooltip = ({'main_market.flamethrower_turret', flame_turret}),
         sprite = 'achievement/pyromaniac',
         enabled = true,
         upgrade = true,
@@ -2298,7 +2335,7 @@ function Public.get_items()
         stack = 1,
         value = 'coin',
         price = land_mine_cost,
-        tooltip = ({'main_market.land_mine'}),
+        tooltip = ({'main_market.land_mine', landmine}),
         sprite = 'achievement/watch-your-step',
         enabled = true,
         upgrade = true,
