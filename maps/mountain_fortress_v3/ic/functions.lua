@@ -1107,6 +1107,30 @@ function Public.item_transfer()
     end
 end
 
+function Public.on_player_died(player)
+    local cars = IC.get('cars')
+    for k, car in pairs(cars) do
+        if car.owner == player.index then
+            local entity = car.entity
+            if entity and entity.valid then
+                entity.minable = false
+            end
+        end
+    end
+end
+
+function Public.on_player_respawned(player)
+    local cars = IC.get('cars')
+    for k, car in pairs(cars) do
+        if car.owner == player.index then
+            local entity = car.entity
+            if entity and entity.valid then
+                entity.minable = true
+            end
+        end
+    end
+end
+
 Public.kick_player_from_surface = kick_player_from_surface
 Public.get_player_surface = get_player_surface
 Public.get_entity_from_player_surface = get_entity_from_player_surface

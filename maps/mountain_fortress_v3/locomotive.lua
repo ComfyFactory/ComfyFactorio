@@ -35,6 +35,7 @@ local cos = math.cos
 local ceil = math.ceil
 
 local clear_items_upon_surface_entry = {
+    ['entity-ghost'] = true,
     ['small-electric-pole'] = true,
     ['medium-electric-pole'] = true,
     ['big-electric-pole'] = true,
@@ -1924,7 +1925,6 @@ local function on_player_changed_surface(event)
             player.cursor_stack.clear()
         end
     end
-
 
     if player.surface.name == 'nauvis' then
         local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
