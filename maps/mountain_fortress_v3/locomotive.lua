@@ -18,6 +18,7 @@ local Task = require 'utils.task'
 local Token = require 'utils.token'
 local MapFunctions = require 'tools.map_functions'
 local SpamProtection = require 'utils.spam_protection'
+local AI = require 'utils.ai'
 
 local format_number = require 'util'.format_number
 
@@ -32,6 +33,13 @@ local rad = math.rad
 local sin = math.sin
 local cos = math.cos
 local ceil = math.ceil
+
+local clear_items_upon_surface_entry = {
+    ['small-electric-pole'] = true,
+    ['medium-electric-pole'] = true,
+    ['big-electric-pole'] = true,
+    ['substation'] = true
+}
 
 local shopkeeper = '[color=blue]Shopkeeper:[/color]\n'
 
@@ -1450,10 +1458,18 @@ local function spawn_biter()
 
     local position = loco_surface.find_non_colliding_position('market', center_position, 128, 0.5)
     local biters = {
+        'character',
+        'small-biter',
+        'medium-biter',
         'big-biter',
         'behemoth-biter',
+        'character',
+        'small-spitter',
+        'medium-spitter',
         'big-spitter',
-        'behemoth-spitter'
+        'behemoth-spitter',
+        'compilatron',
+        'character'
     }
 
     local size_of = #biters
@@ -1461,9 +1477,21 @@ local function spawn_biter()
     if not position then
         return
     end
-    this.locomotive_biter = loco_surface.create_entity({name = biters[random(1, size_of)], position = position, force = 'player', create_build_effect_smoke = false})
-    this.locomotive_biter.ai_settings.allow_destroy_when_commands_fail = false
-    this.locomotive_biter.ai_settings.allow_try_return_to_spawner = false
+
+    local chosen_ent = biters[random(1, size_of)]
+
+    if chosen_ent == 'character' then
+        local data = {
+            force = 'player',
+            surface = loco_surface.index,
+            command = 1,
+            tick = 60,
+            repeat_function = true
+        }
+        AI.add_job_to_task(data)
+    end
+
+    this.locomotive_biter = loco_surface.create_entity({name = chosen_ent, position = position, force = 'player', create_build_effect_smoke = false})
 
     rendering.draw_text {
         text = ({'locomotive.shoo'}),
@@ -1476,6 +1504,11 @@ local function spawn_biter()
         alignment = 'center',
         scale_with_zoom = false
     }
+
+    if not chosen_ent == 'character' then
+        this.locomotive_biter.ai_settings.allow_destroy_when_commands_fail = false
+        this.locomotive_biter.ai_settings.allow_try_return_to_spawner = false
+    end
 end
 
 local function create_market(data, rebuild)
@@ -1852,7 +1885,12 @@ local function shoo(event)
                 }
             )
             if locomotive_biter and locomotive_biter.valid then
-                locomotive_biter.die()
+                local explosion = {
+                    name = 'massive-explosion',
+                    position = locomotive_biter.position
+                }
+                surface.create_entity(explosion)
+                locomotive_biter.destroy()
                 WPT.set().locomotive_biter = nil
             end
             return
@@ -1878,6 +1916,15 @@ local function on_player_changed_surface(event)
     if not surface or not surface.valid then
         return
     end
+
+    local item = player.cursor_stack
+    if item and item.valid_for_read then
+        local name = item.name
+        if clear_items_upon_surface_entry[name] then
+            player.cursor_stack.clear()
+        end
+    end
+
 
     if player.surface.name == 'nauvis' then
         local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
