@@ -1139,7 +1139,7 @@ local function gui_click(event)
         return
     end
     if name == 'chest_limit_outside' then
-		if this.chest_limit_outside_upgrades == 7 then
+        if this.chest_limit_outside_upgrades == 7 then
             redraw_market_items(data.item_frame, player, data.search_text)
             player.print(({'locomotive.chests_full'}), {r = 0.98, g = 0.66, b = 0.22})
         end
@@ -1160,7 +1160,6 @@ local function gui_click(event)
         return
     end
     if name == 'locomotive_max_health' then
-
         player.remove_item({name = item.value, count = item.price})
         local message = ({'locomotive.health_bought_info', shopkeeper, player.name, format_number(item.price, true)})
 
@@ -1907,6 +1906,11 @@ local function on_player_changed_surface(event)
         return
     end
 
+    local itemGhost = player.cursor_ghost
+    if itemGhost then
+        player.cursor_ghost = nil
+    end
+
     local item = player.cursor_stack
     if item and item.valid_for_read then
         local name = item.name
@@ -2191,7 +2195,7 @@ function Public.get_items()
     local flame_turret = WPT.get('upgrades').flame_turret.bought
     local landmine = WPT.get('upgrades').landmine.bought
     local fixed_prices = WPT.get('marked_fixed_prices')
-	local health_upgrades_limit = WPT.get('health_upgrades_limit')
+    local health_upgrades_limit = WPT.get('health_upgrades_limit')
 
     local chest_limit_cost = round(fixed_prices.chest_limit_cost * (1 + chest_limit_outside_upgrades))
     local health_cost = round(fixed_prices.health_cost * (1 + health_upgrades))
@@ -2222,7 +2226,7 @@ function Public.get_items()
             stack = 1,
             value = 'coin',
             price = pickaxe_cost,
-            tooltip = ({'main_market.purchase_pickaxe', offer, pickaxe_tier-1}),
+            tooltip = ({'main_market.purchase_pickaxe', offer, pickaxe_tier - 1}),
             sprite = 'achievement/delivery-service',
             enabled = true,
             upgrade = true,
@@ -2246,7 +2250,7 @@ function Public.get_items()
             stack = 1,
             value = 'coin',
             price = chest_limit_cost,
-            tooltip = ({'main_market.chest', chest_limit_outside_upgrades-1}),
+            tooltip = ({'main_market.chest', chest_limit_outside_upgrades - 1}),
             sprite = 'achievement/so-long-and-thanks-for-all-the-fish',
             enabled = true,
             upgrade = true,
@@ -2270,7 +2274,7 @@ function Public.get_items()
             stack = 1,
             value = 'coin',
             price = health_cost,
-            tooltip = ({'main_market.locomotive_max_health', health_upgrades-1}),
+            tooltip = ({'main_market.locomotive_max_health', health_upgrades - 1}),
             sprite = 'achievement/getting-on-track',
             enabled = true,
             upgrade = true,
