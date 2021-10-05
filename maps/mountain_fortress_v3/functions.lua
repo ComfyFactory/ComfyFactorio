@@ -1370,6 +1370,8 @@ function Public.disable_tech()
     force.technologies['optics'].researched = true
     force.technologies['railway'].researched = true
     force.technologies['land-mine'].enabled = false
+    force.technologies['fluid-wagon'].enabled = false
+    force.technologies['cliff-explosives'].enabled = false
 
     disable_recipes(force)
 end
