@@ -476,9 +476,9 @@ local on_init = function()
     game.map_settings.path_finder.general_entity_subsequent_collision_penalty = 3 -- Recommended value
 
     local tooltip = {
-        [1] = ({'main.diff_tooltip', '0', '0.5', '0.15', '0.15', '1', '12', '50', '10000', '100%', '15', '10'}),
-        [2] = ({'main.diff_tooltip', '0', '0.25', '0.1', '0.1', '2', '10', '50', '7000', '75%', '8', '8'}),
-        [3] = ({'main.diff_tooltip', '0', '0', '0', '0', '4', '3', '10', '5000', '50%', '5', '6'})
+        [1] = ({'main.diff_tooltip', '500', '50%', '15%', '15%', '1', '12', '50', '10000', '100%', '15', '10'}),
+        [2] = ({'main.diff_tooltip', '300', '25%', '10%', '10%', '2', '10', '50', '7000', '75%', '8', '8'}),
+        [3] = ({'main.diff_tooltip', '50', '0%', '0%', '0%', '4', '3', '10', '5000', '50%', '5', '6'})
     }
 
     Difficulty.set_tooltip(tooltip)
