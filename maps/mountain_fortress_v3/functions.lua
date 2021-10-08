@@ -41,6 +41,7 @@ local Public = {}
 
 local random = math.random
 local floor = math.floor
+local round = math.round
 local remove = table.remove
 local sqrt = math.sqrt
 local magic_crafters_per_tick = 3
@@ -853,6 +854,10 @@ function Public.set_difficulty()
     local collapse_amount = WPT.get('collapse_amount')
     local collapse_speed = WPT.get('collapse_speed')
     local difficulty = WPT.get('difficulty')
+    local mining_bonus = WPT.get('mining_bonus')
+    local mining_bonus_till_wave = WPT.get('mining_bonus_till_wave')
+    local player_balance = WPT.get('player_balance')
+    local wave_number = WD.get_wave()
     local player_count = calc_players()
 
     if not Diff.difficulty_vote_value then
@@ -871,8 +876,10 @@ function Public.set_difficulty()
     -- local amount = player_count * 0.40 + 2 -- too high?
     local amount = player_count * difficulty.multiply + 2
     amount = floor(amount)
-    if amount > difficulty.highest then
-        amount = difficulty.highest -- lowered from 20 to 15
+    if amount < difficulty.lowest then
+        amount = difficulty.lowest
+    elseif amount > difficulty.highest then
+        amount = difficulty.highest -- lowered from 20 to 10
     end
 
     wave_defense_table.wave_interval = 3600 - player_count * 60
@@ -890,14 +897,31 @@ function Public.set_difficulty()
         Collapse.set_speed(collapse_speed)
     else
         if player_count >= 1 and player_count <= 8 then
-            Collapse.set_speed(9)
-        elseif player_count > 8 and player_count <= 20 then
             Collapse.set_speed(8)
+        elseif player_count > 8 and player_count <= 20 then
+            Collapse.set_speed(7)
         elseif player_count > 20 and player_count <= 35 then
             Collapse.set_speed(6)
         elseif player_count > 35 then
             Collapse.set_speed(5)
         end
+    end
+
+    if player_count >= 1 then
+        local force = game.forces.player
+        force.manual_mining_speed_modifier = force.manual_mining_speed_modifier - mining_bonus
+        if wave_number < mining_bonus_till_wave then
+            if player_count < player_balance then
+                mining_bonus = (((player_balance * 100) / player_count) - 100) / 100
+                mining_bonus = round(mining_bonus, 2)
+                force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + mining_bonus
+            else
+                mining_bonus = 0
+            end
+        else
+            mining_bonus = 0
+        end
+    WPT.set('mining_bonus', mining_bonus)
     end
 end
 
