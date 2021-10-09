@@ -16,6 +16,7 @@ local Event = require 'utils.event'
 local Where = require 'commands.where'
 local Session = require 'utils.datastore.session_data'
 local Jailed = require 'utils.datastore.jail_data'
+local Supporters = require 'utils.datastore.supporters'
 local Tabs = require 'comfy_panel.main'
 local Global = require 'utils.global'
 local SpamProtection = require 'utils.spam_protection'
@@ -604,6 +605,9 @@ local function player_list_show(data)
 
     local player_list = get_sorted_list(sort_by)
     for i = 1, #player_list, 1 do
+        -- fetch the supporter list
+        local supporter, supportertbl = Supporters.is_supporter(player_list[i].name)
+
         -- Icon
         local sprite =
             player_list_panel_table.add {
@@ -615,21 +619,32 @@ local function player_list_show(data)
         sprite.style.width = 32
         sprite.style.stretch_image_to_widget_size = true
 
-        local trusted
-        local tooltip
+        local trusted = ''
+        local tooltip = ''
+        local minimap = '\nLeft-click to show this person on map! '
+
+        if supporter then
+            if supportertbl.monthly then
+                trusted = '[color=yellow][DM][/color]'
+                tooltip = '\nThis player is a monthly supporter.'
+            else
+                trusted = '[color=yellow][D][/color]'
+                tooltip = '\nThis player has supported us.'
+            end
+        end
 
         if game.players[player_list[i].name].admin then
-            trusted = '[color=red][A][/color]'
-            tooltip = 'This player is an admin of this server.\nLeft-click to show this person on map!'
+            trusted = '[color=red][A][/color]' .. trusted
+            tooltip = 'This player is an admin of this server.' .. minimap .. tooltip
         elseif jailed[player_list[i].name] then
-            trusted = '[color=orange][J][/color]'
-            tooltip = 'This player is currently jailed.\nLeft-click to show this person on map!'
+            trusted = '[color=orange][J][/color]' .. trusted
+            tooltip = 'This player is currently jailed.' .. minimap .. tooltip
         elseif play_table[player_list[i].name] then
-            trusted = '[color=green][T][/color]'
-            tooltip = 'This player is trusted.\nLeft-click to show this person on map!'
+            trusted = '[color=green][T][/color]' .. trusted
+            tooltip = 'This player is trusted.' .. minimap .. tooltip
         else
-            trusted = '[color=yellow][U][/color]'
-            tooltip = 'This player is not trusted.\nLeft-click to show this person on map!'
+            trusted = '[color=black][U][/color]' .. trusted
+            tooltip = 'This player is not trusted.' .. minimap .. tooltip
         end
 
         local caption
