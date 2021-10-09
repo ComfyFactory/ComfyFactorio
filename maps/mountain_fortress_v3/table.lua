@@ -200,8 +200,12 @@ function Public.reset_table()
     this.sent_to_discord = false
     this.difficulty = {
         multiply = 0.25,
-        highest = 10
+        highest = 10,
+        lowest = 4
     }
+    this.player_balance = 20 -- game balance based on X players
+    this.mining_bonus = 0
+    this.mining_bonus_till_wave = 300
     this.market_announce = game.tick + 1200
     this.check_heavy_damage = true
     this.prestige_system_enabled = false
