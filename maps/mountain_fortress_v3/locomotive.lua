@@ -215,7 +215,7 @@ function Public.add_player_to_permission_group(player, group, forced)
     local allow_decon = WPT.get('allow_decon')
 
     local default_group = game.permissions.get_group('Default')
-    default_group.set_allows_action(defines.input_action.deconstruct, false)
+    default_group.set_allows_action(defines.input_action.deconstruct, true)
     default_group.set_allows_action(defines.input_action.activate_cut, false)
 
     if not game.permissions.get_group('limited') then
