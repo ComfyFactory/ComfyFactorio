@@ -919,7 +919,6 @@ function Public.set_difficulty()
                 mining_bonus = 1 -- set a static 100% bonus if there are <= 10 players.
                 mining_bonus = round(mining_bonus, 2)
                 force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + mining_bonus -- we're at 200% bonus!
-                mining_bonus = 0
             end
         else
             mining_bonus = 0
