@@ -215,17 +215,12 @@ function Public.add_player_to_permission_group(player, group, forced)
     local allow_decon = WPT.get('allow_decon')
 
     local default_group = game.permissions.get_group('Default')
-    default_group.set_allows_action(defines.input_action.deconstruct, true)
+    default_group.set_allows_action(defines.input_action.deconstruct, false)
     default_group.set_allows_action(defines.input_action.activate_cut, false)
 
     if not game.permissions.get_group('limited') then
         local limited_group = game.permissions.create_group('limited')
         limited_group.set_allows_action(defines.input_action.cancel_craft, false)
-        limited_group.set_allows_action(defines.input_action.edit_permission_group, false)
-        limited_group.set_allows_action(defines.input_action.import_permissions_string, false)
-        limited_group.set_allows_action(defines.input_action.delete_permission_group, false)
-        limited_group.set_allows_action(defines.input_action.add_permission_group, false)
-        limited_group.set_allows_action(defines.input_action.admin_action, false)
         limited_group.set_allows_action(defines.input_action.drop_item, false)
         if allow_decon then
             limited_group.set_allows_action(defines.input_action.deconstruct, true)
@@ -238,11 +233,6 @@ function Public.add_player_to_permission_group(player, group, forced)
     if not game.permissions.get_group('near_locomotive') then
         local near_locomotive_group = game.permissions.create_group('near_locomotive')
         near_locomotive_group.set_allows_action(defines.input_action.cancel_craft, false)
-        near_locomotive_group.set_allows_action(defines.input_action.edit_permission_group, false)
-        near_locomotive_group.set_allows_action(defines.input_action.import_permissions_string, false)
-        near_locomotive_group.set_allows_action(defines.input_action.delete_permission_group, false)
-        near_locomotive_group.set_allows_action(defines.input_action.add_permission_group, false)
-        near_locomotive_group.set_allows_action(defines.input_action.admin_action, false)
         near_locomotive_group.set_allows_action(defines.input_action.drop_item, false)
         near_locomotive_group.set_allows_action(defines.input_action.deconstruct, false)
         near_locomotive_group.set_allows_action(defines.input_action.activate_cut, false)
@@ -250,11 +240,6 @@ function Public.add_player_to_permission_group(player, group, forced)
 
     if not game.permissions.get_group('main_surface') then
         local main_surface_group = game.permissions.create_group('main_surface')
-        main_surface_group.set_allows_action(defines.input_action.edit_permission_group, false)
-        main_surface_group.set_allows_action(defines.input_action.import_permissions_string, false)
-        main_surface_group.set_allows_action(defines.input_action.delete_permission_group, false)
-        main_surface_group.set_allows_action(defines.input_action.add_permission_group, false)
-        main_surface_group.set_allows_action(defines.input_action.admin_action, false)
         main_surface_group.set_allows_action(defines.input_action.deconstruct, false)
         main_surface_group.set_allows_action(defines.input_action.activate_cut, false)
     end
@@ -297,10 +282,6 @@ function Public.add_player_to_permission_group(player, group, forced)
         if tbl[i].index == player.index then
             return
         end
-    end
-
-    if player.admin then
-        return
     end
 
     if forced then
@@ -353,7 +334,9 @@ function Public.add_player_to_permission_group(player, group, forced)
 
     if playtime < 5184000 then -- 24 hours
         local not_trusted = game.permissions.get_group('not_trusted')
-        not_trusted.add_player(player)
+        if not player.admin then
+            not_trusted.add_player(player)
+        end
     else
         if group == 'limited' then
             local limited_group = game.permissions.get_group('limited')
