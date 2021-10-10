@@ -227,10 +227,6 @@ local function on_player_joined_game(event)
         end
         return
     end
-
-    if match(player.name, '^[Ili1|]+$') then
-        Server.ban_sync(player.name, '', '<script>') -- No reason given, to not give them any hints to change their name
-    end
 end
 
 local function on_player_built_tile(event)
