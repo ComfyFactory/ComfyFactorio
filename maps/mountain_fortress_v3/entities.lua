@@ -288,9 +288,12 @@ local function set_train_final_health(final_damage_amount, repair)
     rendering.set_text(health_text, 'HP: ' .. round(locomotive_health) .. ' / ' .. round(locomotive_max_health))
 end
 
-local function protect_entities(event)
-    local entity = event.entity
-    local dmg = event.final_damage_amount
+local function protect_entities(data)
+    local cause = data.cause
+    local entity = data.entity
+    local force = data.force
+    local dmg = data.final_damage_amount
+
     if not dmg then
         return
     end
@@ -321,8 +324,8 @@ local function protect_entities(event)
 
     local carriages_numbers = WPT.get('carriages_numbers')
     if is_protected(entity) then
-        if (event.cause and event.cause.valid) then
-            if event.cause.force.index == 2 then
+        if (cause and cause.valid) then
+            if cause.force.index == 2 then
                 if carriages_numbers and carriages_numbers[entity.unit_number] then
                     set_train_final_health(dmg, false)
                     return
@@ -331,8 +334,8 @@ local function protect_entities(event)
                     return
                 end
             end
-        elseif not (event.cause and event.cause.valid) then
-            if event.force and event.force.index == 2 then
+        elseif not (cause and cause.valid) then
+            if force and force.index == 2 then
                 if carriages_numbers and carriages_numbers[entity.unit_number] then
                     set_train_final_health(dmg, false)
                     return
@@ -362,21 +365,25 @@ local function hidden_treasure(player, entity)
     Loot.add(entity.surface, entity.position, chests[random(1, size_chests)])
 end
 
-local function biters_chew_rocks_faster(event)
-    if event.entity.force.index ~= 3 then
+local function biters_chew_rocks_faster(data)
+    local cause = data.cause
+    local entity = data.entity
+    local final_damage_amount = data.final_damage_amount
+
+    if entity.force.index ~= 3 then
         return
     end --Neutral Force
-    if not event.cause then
+    if not cause then
         return
     end
-    if not event.cause.valid then
+    if not cause.valid then
         return
     end
-    if event.cause.force.index ~= 2 then
+    if cause.force.index ~= 2 then
         return
     end --Enemy Force
 
-    event.entity.health = event.entity.health - event.final_damage_amount * 7
+    entity.health = entity.health - final_damage_amount * 7
 end
 
 local projectiles = {'grenade', 'explosive-rocket', 'grenade', 'explosive-rocket', 'explosive-cannon-projectile'}
@@ -760,9 +767,11 @@ local function on_robot_mined_entity(event)
     on_entity_removed(d)
 end
 
-local function get_damage(event)
-    local entity = event.entity
-    local damage = event.original_damage_amount + event.original_damage_amount * random(1, 100)
+local function get_damage(data)
+    local entity = data.entity
+    local original_damage_amount = data.original_damage_amount
+
+    local damage = original_damage_amount + original_damage_amount * random(1, 100)
     if entity.prototype.resistances then
         if entity.prototype.resistances.physical then
             damage = damage - entity.prototype.resistances.physical.decrease
@@ -841,8 +850,10 @@ local function kaboom(entity, target, damage)
     end
 end
 
-local function boss_puncher(event)
-    local cause = event.cause
+local function boss_puncher(data)
+    local cause = data.cause
+    local entity = data.entity
+
     if not cause then
         return
     end
@@ -853,8 +864,6 @@ local function boss_puncher(event)
     if cause.force.index ~= 2 then
         return
     end
-
-    local entity = event.entity
 
     if entity.force.index ~= 1 then
         return
@@ -867,7 +876,7 @@ local function boss_puncher(event)
     end
 
     if random(1, 10) == 1 then
-        kaboom(cause, entity, get_damage(event))
+        kaboom(cause, entity, get_damage(data))
     end
 end
 
@@ -878,17 +887,30 @@ local function on_entity_damaged(event)
         return
     end
 
+    local cause = event.cause
+    local force = event.force
+    local final_damage_amount = event.final_damage_amount
+    local original_damage_amount = event.original_damage_amount
+
     local wave_number = WD.get_wave()
     local boss_wave_warning = WD.get_alert_boss_wave()
     local munch_time = WPT.get('munch_time')
 
-    protect_entities(event)
-    biters_chew_rocks_faster(event)
+    local data = {
+        cause = cause,
+        entity = entity,
+        final_damage_amount = final_damage_amount,
+        original_damage_amount = original_damage_amount,
+        force = force
+    }
+
+    protect_entities(data)
+    biters_chew_rocks_faster(data)
 
     if munch_time then
         if boss_wave_warning or wave_number >= 1000 then
             if random(0, 512) == 1 then
-                boss_puncher(event)
+                boss_puncher(data)
             end
         end
     end
@@ -1157,15 +1179,30 @@ local function show_mvps(player)
                 local date = Server.get_start_time()
                 game.server_save('Final_' .. name .. '_' .. tostring(date))
                 --ignore
-                local text = '**Statistics!**\\n\\n' ..
-                'Time played: ' .. time_played ..
-                '\\n' .. 'Game Difficulty: ' .. diff.name ..
-                '\\n' .. 'Highest wave: ' .. format_number(wave, true) ..
-                '\\n' .. 'Total connected players: ' .. total_players ..
-                '\\n' .. 'Threat: ' .. format_number(threat, true) ..
-                '\\n' .. 'Pickaxe Upgrade: ' .. pick_tier .. ' (' .. tier ..
-                ')\\n' .. 'Collapse Speed: ' .. collapse_speed ..
-                '\\n' .. 'Collapse Amount: ' .. collapse_amount .. '\\n'
+                local text =
+                    '**Statistics!**\\n\\n' ..
+                    'Time played: ' ..
+                        time_played ..
+                            '\\n' ..
+                                'Game Difficulty: ' ..
+                                    diff.name ..
+                                        '\\n' ..
+                                            'Highest wave: ' ..
+                                                format_number(wave, true) ..
+                                                    '\\n' ..
+                                                        'Total connected players: ' ..
+                                                            total_players ..
+                                                                '\\n' ..
+                                                                    'Threat: ' ..
+                                                                        format_number(threat, true) ..
+                                                                            '\\n' ..
+                                                                                'Pickaxe Upgrade: ' ..
+                                                                                    pick_tier ..
+                                                                                        ' (' ..
+                                                                                            tier ..
+                                                                                                ')\\n' ..
+                                                                                                    'Collapse Speed: ' ..
+                                                                                                        collapse_speed .. '\\n' .. 'Collapse Amount: ' .. collapse_amount .. '\\n'
                 --ignore
                 Server.to_discord_named_embed(send_ping_to_channel, text)
                 WPT.set('sent_to_discord', true)
