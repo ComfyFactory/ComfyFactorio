@@ -911,17 +911,18 @@ function Public.set_difficulty()
         local force = game.forces.player
         force.manual_mining_speed_modifier = force.manual_mining_speed_modifier - mining_bonus
         if wave_number < mining_bonus_till_wave then
-            if player_count < player_balance then
-                mining_bonus = (((player_balance * 100) / player_count) - 100) / 100
+            if player_count <= 5 then
+                -- the mining speed of the players will increase drastically since RPG is also loaded.
+                mining_bonus = 4 -- set a static 400% bonus if there are <= 5 players.
                 mining_bonus = round(mining_bonus, 2)
-                force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + mining_bonus
+                force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + mining_bonus -- we're at 500% bonus!
             else
                 mining_bonus = 0
             end
         else
             mining_bonus = 0
         end
-    WPT.set('mining_bonus', mining_bonus)
+        WPT.set('mining_bonus', mining_bonus)
     end
 end
 
