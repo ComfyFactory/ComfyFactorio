@@ -41,7 +41,6 @@ local Public = {}
 
 local random = math.random
 local floor = math.floor
-local round = math.round
 local remove = table.remove
 local sqrt = math.sqrt
 local magic_crafters_per_tick = 3
@@ -854,8 +853,8 @@ function Public.set_difficulty()
     local collapse_amount = WPT.get('collapse_amount')
     local collapse_speed = WPT.get('collapse_speed')
     local difficulty = WPT.get('difficulty')
-    local mining_bonus = WPT.get('mining_bonus')
     local mining_bonus_till_wave = WPT.get('mining_bonus_till_wave')
+    local disable_mining_boost = WPT.get('disable_mining_boost')
     local wave_number = WD.get_wave()
     local player_count = calc_players()
 
@@ -906,24 +905,22 @@ function Public.set_difficulty()
         end
     end
 
-    if player_count >= 1 then
+    if player_count >= 1 and not disable_mining_boost then
         local force = game.forces.player
-        force.manual_mining_speed_modifier = force.manual_mining_speed_modifier - mining_bonus
         if wave_number < mining_bonus_till_wave then
             -- the mining speed of the players will increase drastically since RPG is also loaded.
             if player_count <= 5 then
-                mining_bonus = 4 -- set a static 400% bonus if there are <= 5 players.
-                mining_bonus = round(mining_bonus, 2)
-                force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + mining_bonus -- we're at 500% bonus!
+                force.manual_mining_speed_modifier = 3 -- set a static 400% bonus if there are <= 5 players.
+                if force.technologies['steel-axe'].researched then
+                    force.manual_mining_speed_modifier = 4
+                end
             elseif player_count >= 6 and player_count <= 10 then
-                mining_bonus = 1 -- set a static 100% bonus if there are <= 10 players.
-                mining_bonus = round(mining_bonus, 2)
-                force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + mining_bonus -- we're at 200% bonus!
+                force.manual_mining_speed_modifier = 1 -- set a static 100% bonus if there are <= 10 players.
+                if force.technologies['steel-axe'].researched then
+                    force.manual_mining_speed_modifier = 2
+                end
             end
-        else
-            mining_bonus = 0
         end
-        WPT.set('mining_bonus', mining_bonus)
     end
 end
 
@@ -1414,7 +1411,7 @@ function Public.on_research_finished(event)
     if research.name == 'steel-axe' then
         local msg = 'Steel-axe technology has been researched, 100% has been applied.\nBuy Pickaxe-upgrades in the market to boost it even more!'
         Alert.alert_all_players(30, msg, nil, 'achievement/tech-maniac', 0.6)
-    end -- +50% speed for steel-axe research
+    end
 
     local force_name = research.force.name
     if not force_name then
