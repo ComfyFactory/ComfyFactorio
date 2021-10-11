@@ -203,7 +203,6 @@ function Public.reset_table()
         highest = 10,
         lowest = 4
     }
-    this.mining_bonus = 0
     this.mining_bonus_till_wave = 300
     this.market_announce = game.tick + 1200
     this.check_heavy_damage = true
