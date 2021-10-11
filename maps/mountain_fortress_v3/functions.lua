@@ -41,7 +41,6 @@ local Public = {}
 
 local random = math.random
 local floor = math.floor
-local round = math.round
 local remove = table.remove
 local sqrt = math.sqrt
 local magic_crafters_per_tick = 3
