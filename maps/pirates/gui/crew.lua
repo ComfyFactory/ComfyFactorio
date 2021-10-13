@@ -518,7 +518,10 @@ function Public.click(event)
 	if eventname == 'capn_plank' then
 		local other_id = tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])
 
-		Common.notify_force(player.force, string.format("%s has planked %s!", player.name, game.players[other_id].name))
+		local message = "%s has planked %s!"
+		Server.to_discord_embed_raw(CoreData.comfy_emojis.monkas .. message)
+
+		Common.notify_force(player.force, string.format(message, player.name, game.players[other_id].name))
 
 		Crew.join_spectators(game.players[other_id], memory.id)
 		memory.tempbanned_from_joining_data[other_id] = game.tick + 60 * 120

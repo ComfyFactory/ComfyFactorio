@@ -330,7 +330,6 @@ local function create_gui(player)
 
 
 
-	-- spontaneous inside view of the hold:
 	flow1 = player.gui.left
 	
 	
@@ -355,6 +354,7 @@ local function create_gui(player)
 
 
 	
+	-- spontaneous inside view of the hold:
 	flow2 =
 	flow1.add(
 		{
@@ -460,153 +460,158 @@ function Public.update_gui(player)
 	--== Update Gui ==--
 
 	flow1 = pirates_flow.cost_frame
-
-	if cost_bool then
-		flow1.visible = true
-
-		local tooltip, caption
-		if atsea_loading_bool then
-			caption = 'Next escape cost:'
-			tooltip = {'pirates.resources_needed_tooltip_1'}
-		elseif (not eta_bool) then
-			caption = 'For escape:'
-			tooltip = {'pirates.resources_needed_tooltip_3'}
-		else
-			caption = 'For early escape:'
-			tooltip = {'pirates.resources_needed_tooltip_2'}
-		end
-		
-		flow1.cost_label_1.caption = caption
-		flow1.tooltip = tooltip
-		flow1.cost_label_1.tooltip = tooltip
-		flow1.cost_table.tooltip = tooltip
-
-		local costs = destination.static_params.cost_to_leave
-
-		for i = 1, #CoreData.cost_items do
-			local item_name = CoreData.cost_items[i].name
-
-			if costs[item_name] then
-				local stored = (memory.boat.stored_resources and memory.boat.stored_resources[item_name]) or 0
-				flow1.cost_table['cost_' .. i].sprite = CoreData.cost_items[i].sprite_name
-				flow1.cost_table['cost_' .. i].number = Math.max(costs[item_name] - stored, 0)
-				flow1.cost_table['cost_' .. i].tooltip = CoreData.cost_items[i].display_name
-				flow1.cost_table['cost_' .. i].visible = true
+	if flow1 then
+		if cost_bool then
+			flow1.visible = true
+	
+			local tooltip, caption
+			if atsea_loading_bool then
+				caption = 'Next escape cost:'
+				tooltip = {'pirates.resources_needed_tooltip_1'}
+			elseif (not eta_bool) then
+				caption = 'For escape:'
+				tooltip = {'pirates.resources_needed_tooltip_3'}
 			else
-				flow1.cost_table['cost_' .. i].visible = false
+				caption = 'For early escape:'
+				tooltip = {'pirates.resources_needed_tooltip_2'}
 			end
+			
+			flow1.cost_label_1.caption = caption
+			flow1.tooltip = tooltip
+			flow1.cost_label_1.tooltip = tooltip
+			flow1.cost_table.tooltip = tooltip
+	
+			local costs = destination.static_params.cost_to_leave
+	
+			for i = 1, #CoreData.cost_items do
+				local item_name = CoreData.cost_items[i].name
+	
+				if costs[item_name] then
+					local stored = (memory.boat.stored_resources and memory.boat.stored_resources[item_name]) or 0
+					flow1.cost_table['cost_' .. i].sprite = CoreData.cost_items[i].sprite_name
+					flow1.cost_table['cost_' .. i].number = Math.max(costs[item_name] - stored, 0)
+					flow1.cost_table['cost_' .. i].tooltip = CoreData.cost_items[i].display_name
+					flow1.cost_table['cost_' .. i].visible = true
+				else
+					flow1.cost_table['cost_' .. i].visible = false
+				end
+			end
+	
+			flow1.cost_label_2.visible = false
+	
+			-- local total_rage = time_rage + silo_rage
+	
+			-- flow1.rage_label_2.caption = total_rage .. '/10'
+			-- if total_rage <= 4 then
+			-- 	flow1.rage_label_2.style.font_color = GuiCommon.rage_font_color_1
+			-- 	flow1.rage_label_2.style.font = 'default-large'
+			-- elseif total_rage <= 7 then
+			-- 	flow1.rage_label_2.style.font_color = GuiCommon.rage_font_color_2
+			-- 	flow1.rage_label_2.style.font = 'default-large-semibold'
+			-- else
+			-- 	flow1.rage_label_2.style.font_color = GuiCommon.rage_font_color_3
+			-- 	flow1.rage_label_2.style.font = 'default-dialog-button'
+			-- end
+	
+			-- -- flow1.rage_table.bar_1.value = time_rage >= 1 and 1 or 0
+			-- -- flow1.rage_table.bar_2.value = time_rage >= 2 and 1 or 0
+			-- -- flow1.rage_table.bar_3.value = time_rage >= 3 and 1 or 0
+			-- -- flow1.rage_table.bar_4.value = time_rage >= 4 and 1 or 0
+			-- -- flow1.rage_table.bar_5.value = silo_rage >= 1 and 1 or 0
+			-- -- flow1.rage_table.bar_6.value = silo_rage >= 2 and 1 or 0
+		else
+			flow1.visible = false
 		end
-
-		flow1.cost_label_2.visible = false
-
-		-- local total_rage = time_rage + silo_rage
-
-		-- flow1.rage_label_2.caption = total_rage .. '/10'
-		-- if total_rage <= 4 then
-		-- 	flow1.rage_label_2.style.font_color = GuiCommon.rage_font_color_1
-		-- 	flow1.rage_label_2.style.font = 'default-large'
-		-- elseif total_rage <= 7 then
-		-- 	flow1.rage_label_2.style.font_color = GuiCommon.rage_font_color_2
-		-- 	flow1.rage_label_2.style.font = 'default-large-semibold'
-		-- else
-		-- 	flow1.rage_label_2.style.font_color = GuiCommon.rage_font_color_3
-		-- 	flow1.rage_label_2.style.font = 'default-dialog-button'
-		-- end
-
-		-- -- flow1.rage_table.bar_1.value = time_rage >= 1 and 1 or 0
-		-- -- flow1.rage_table.bar_2.value = time_rage >= 2 and 1 or 0
-		-- -- flow1.rage_table.bar_3.value = time_rage >= 3 and 1 or 0
-		-- -- flow1.rage_table.bar_4.value = time_rage >= 4 and 1 or 0
-		-- -- flow1.rage_table.bar_5.value = silo_rage >= 1 and 1 or 0
-		-- -- flow1.rage_table.bar_6.value = silo_rage >= 2 and 1 or 0
-	else
-		flow1.visible = false
 	end
 
 
 	flow1 = player.gui.left.undock_shortcut_button
 
-	if captain_bool and landed_bool and (not memory.captain_acceptance_timer) then
-		flow1.visible = true
-		local enabled = Common.query_sufficient_resources_to_leave()
-		flow1.enabled = enabled
-		if enabled then
+	if flow1 then
+		if captain_bool and landed_bool and (not memory.captain_acceptance_timer) then
+			flow1.visible = true
+			local enabled = Common.query_sufficient_resources_to_leave()
+			flow1.enabled = enabled
+			if enabled then
+				flow1.tooltip = ''
+			else
+				flow1.tooltip = 'Store more resources in the captain\'s cabin before leaving.'
+			end
+		elseif captain_bool and destination and destination.type and destination.type == Surfaces.enum.DOCK and (not (memory.boat.state and memory.boat.state == Boats.enum_state.LEAVING_DOCK)) then
+			flow1.visible = true
+			flow1.enabled = memory.boat and memory.boat.state and memory.boat.state == Boats.enum_state.DOCKED
 			flow1.tooltip = ''
 		else
-			flow1.tooltip = 'Store more resources in the captain\'s cabin before leaving.'
+			flow1.visible = false
 		end
-	elseif captain_bool and destination and destination.type and destination.type == Surfaces.enum.DOCK and (not (memory.boat.state and memory.boat.state == Boats.enum_state.LEAVING_DOCK)) then
-		flow1.visible = true
-		flow1.enabled = memory.boat and memory.boat.state and memory.boat.state == Boats.enum_state.DOCKED
-		flow1.tooltip = ''
-	else
-		flow1.visible = false
-	end
-
-	if flow1.visible then
-		if (not memory.undock_shortcut_are_you_sure_data) then memory.undock_shortcut_are_you_sure_data = {} end
-		if memory.undock_shortcut_are_you_sure_data[player.index] and memory.undock_shortcut_are_you_sure_data[player.index] > game.tick - 60 * 4 then
-			flow1.caption = 'Are you sure?'
-		else
-			flow1.caption = 'Undock'
+	
+		if flow1.visible then
+			if (not memory.undock_shortcut_are_you_sure_data) then memory.undock_shortcut_are_you_sure_data = {} end
+			if memory.undock_shortcut_are_you_sure_data[player.index] and memory.undock_shortcut_are_you_sure_data[player.index] > game.tick - 60 * 4 then
+				flow1.caption = 'Are you sure?'
+			else
+				flow1.caption = 'Undock'
+			end
 		end
 	end
 
 
 	flow1 = pirates_flow.time_remaining_frame
 
-	if atsea_loading_bool or eta_bool or retreating_bool or leave_anytime_bool then
-		flow1.visible = true
-		flow1.time_remaining_label_1.visible = true
-
-		if retreating_bool then
-			flow1.time_remaining_label_2.visible = false
+	if flow1 then
+		if atsea_loading_bool or eta_bool or retreating_bool or leave_anytime_bool then
+			flow1.visible = true
+			flow1.time_remaining_label_1.visible = true
 	
-			local tooltip = 'Probably time to board...'
-			flow1.tooltip = tooltip
-			flow1.time_remaining_label_1.tooltip = tooltip
-			flow1.time_remaining_label_2.tooltip = tooltip
-
-			flow1.time_remaining_label_1.caption = 'RETURN TO SHIP'
-
-		elseif eta_bool then
-			flow1.time_remaining_label_2.visible = true
+			if retreating_bool then
+				flow1.time_remaining_label_2.visible = false
+		
+				local tooltip = 'Probably time to board...'
+				flow1.tooltip = tooltip
+				flow1.time_remaining_label_1.tooltip = tooltip
+				flow1.time_remaining_label_2.tooltip = tooltip
 	
-			local tooltip = {'pirates.auto_undock_tooltip'}
-			flow1.tooltip = tooltip
-			flow1.time_remaining_label_1.tooltip = tooltip
-			flow1.time_remaining_label_2.tooltip = tooltip
+				flow1.time_remaining_label_1.caption = 'RETURN TO SHIP'
 	
-			local passive_eta = destination.dynamic_data.time_remaining
+			elseif eta_bool then
+				flow1.time_remaining_label_2.visible = true
+		
+				local tooltip = {'pirates.auto_undock_tooltip'}
+				flow1.tooltip = tooltip
+				flow1.time_remaining_label_1.tooltip = tooltip
+				flow1.time_remaining_label_2.tooltip = tooltip
+		
+				local passive_eta = destination.dynamic_data.time_remaining
+		
+				flow1.time_remaining_label_1.caption = 'Auto-undock:'
+				flow1.time_remaining_label_2.caption = Utils.standard_string_form_of_time_in_seconds(passive_eta)
 	
-			flow1.time_remaining_label_1.caption = 'Auto-undock:'
-			flow1.time_remaining_label_2.caption = Utils.standard_string_form_of_time_in_seconds(passive_eta)
-
-		elseif atsea_loading_bool then
-			flow1.time_remaining_label_2.visible = true
-	
-			local tooltip = {'pirates.atsea_loading_tooltip'}
-			flow1.tooltip = tooltip
-			flow1.time_remaining_label_1.tooltip = tooltip
-			flow1.time_remaining_label_2.tooltip = tooltip
-	
-			local eta_ticks = Common.map_loading_ticks_atsea + (memory.extra_time_at_sea or 0) - memory.loadingticks
-	
-			flow1.time_remaining_label_1.caption = 'Arriving in'
-			flow1.time_remaining_label_2.caption = Utils.standard_string_form_of_time_in_seconds(eta_ticks / 60)
-		elseif leave_anytime_bool then
-			flow1.time_remaining_label_2.visible = true
-	
-			local tooltip = {'pirates.leave_anytime_tooltip'}
-			flow1.tooltip = tooltip
-			flow1.time_remaining_label_1.tooltip = tooltip
-			flow1.time_remaining_label_2.tooltip = tooltip
-	
-			flow1.time_remaining_label_1.caption = 'Undock:'
-			flow1.time_remaining_label_2.caption = 'Anytime'
+			elseif atsea_loading_bool then
+				flow1.time_remaining_label_2.visible = true
+		
+				local tooltip = {'pirates.atsea_loading_tooltip'}
+				flow1.tooltip = tooltip
+				flow1.time_remaining_label_1.tooltip = tooltip
+				flow1.time_remaining_label_2.tooltip = tooltip
+		
+				local eta_ticks = Common.map_loading_ticks_atsea + (memory.extra_time_at_sea or 0) - memory.loadingticks
+		
+				flow1.time_remaining_label_1.caption = 'Arriving in'
+				flow1.time_remaining_label_2.caption = Utils.standard_string_form_of_time_in_seconds(eta_ticks / 60)
+			elseif leave_anytime_bool then
+				flow1.time_remaining_label_2.visible = true
+		
+				local tooltip = {'pirates.leave_anytime_tooltip'}
+				flow1.tooltip = tooltip
+				flow1.time_remaining_label_1.tooltip = tooltip
+				flow1.time_remaining_label_2.tooltip = tooltip
+		
+				flow1.time_remaining_label_1.caption = 'Undock:'
+				flow1.time_remaining_label_2.caption = 'Anytime'
+			end
+		else
+			flow1.visible = false
 		end
-	else
-		flow1.visible = false
 	end
 
 
@@ -614,229 +619,240 @@ function Public.update_gui(player)
 	flow1 = pirates_flow.silo_frame
 
 	local active_eta
-
-	if silo_bool then
-		flow1.visible = true
-
-		if charged_bool then
-
-			if launched_bool then
-				local tooltip = 'The rocket has launched, and this is the reward.'
-				flow1.tooltip = tooltip
-				flow1.silo_label_1.tooltip = tooltip
-
-				flow1.silo_label_2.visible = false
-				flow1.silo_progressbar.visible = false
-
-				-- flow1.silo_label_1.caption = string.format('[achievement=there-is-no-spoon]: +%.0f[item=sulfur]', destination.dynamic_data.rocketgoldreward)
-				flow1.silo_label_1.caption = string.format('Launch: %.0f[item=sulfur] , ' .. Balance.rocket_launch_coin_reward .. '[item=coin]', destination.dynamic_data.rocketgoldreward)
-				flow1.silo_label_1.style.font_color = GuiCommon.achieved_font_color
+	if flow1 then
+	
+		if silo_bool then
+			flow1.visible = true
+	
+			if charged_bool then
+	
+				if launched_bool then
+					local tooltip = 'The rocket has launched, and this is the reward.'
+					flow1.tooltip = tooltip
+					flow1.silo_label_1.tooltip = tooltip
+	
+					flow1.silo_label_2.visible = false
+					flow1.silo_progressbar.visible = false
+	
+					-- flow1.silo_label_1.caption = string.format('[achievement=there-is-no-spoon]: +%.0f[item=sulfur]', destination.dynamic_data.rocketgoldreward)
+					flow1.silo_label_1.caption = string.format('Launch: %.0f[item=sulfur] , ' .. Balance.rocket_launch_coin_reward .. '[item=coin]', destination.dynamic_data.rocketgoldreward)
+					flow1.silo_label_1.style.font_color = GuiCommon.achieved_font_color
+				else
+					local tooltip = 'The rocket is launching...'
+					flow1.tooltip = tooltip
+					flow1.silo_label_1.tooltip = tooltip
+					flow1.silo_progressbar.tooltip = tooltip
+	
+					flow1.silo_label_1.caption = 'Charge:'
+					flow1.silo_label_1.style.font_color = Common.bold_font_color
+					flow1.silo_label_2.visible = false
+					flow1.silo_progressbar.visible = true
+		
+					flow1.silo_progressbar.value = 1
+				end
+	
 			else
-				local tooltip = 'The rocket is launching...'
-				flow1.tooltip = tooltip
-				flow1.silo_label_1.tooltip = tooltip
-				flow1.silo_progressbar.tooltip = tooltip
-
 				flow1.silo_label_1.caption = 'Charge:'
 				flow1.silo_label_1.style.font_color = Common.bold_font_color
-				flow1.silo_label_2.visible = false
+				flow1.silo_label_2.visible = true
 				flow1.silo_progressbar.visible = true
 	
-				flow1.silo_progressbar.value = 1
-			end
-
-		else
-			flow1.silo_label_1.caption = 'Charge:'
-			flow1.silo_label_1.style.font_color = Common.bold_font_color
-			flow1.silo_label_2.visible = true
-			flow1.silo_progressbar.visible = true
-
-			local consumed = destination.dynamic_data.rocketsiloenergyconsumed
-			local needed = destination.dynamic_data.rocketsiloenergyneeded
-			local recent = (destination.dynamic_data.rocketsiloenergyconsumedwithinlasthalfsecond * 2)
-	
-			flow1.silo_progressbar.value = consumed/needed
-	
-			local tooltip = string.format('Rocket silo charge\n\nCharge the silo to launch a rocket, gaining both gold and coins.\n\nCurrent charge: %.1f', consumed / 1000000000) .. '/' .. Math.floor(needed / 100000000)/10 .. ' GJ'
-			flow1.tooltip = tooltip
-			flow1.silo_label_1.tooltip = tooltip
-			flow1.silo_label_2.tooltip = tooltip
-			flow1.silo_progressbar.tooltip = tooltip
-	
-			if recent ~= 0 then
-				active_eta = (needed - consumed) / recent
-				flow1.silo_label_2.caption = Utils.standard_string_form_of_time_in_seconds(active_eta)
-				if active_eta >= destination.dynamic_data.time_remaining then
-					flow1.silo_label_2.style.font_color = GuiCommon.insufficient_font_color
+				local consumed = destination.dynamic_data.rocketsiloenergyconsumed
+				local needed = destination.dynamic_data.rocketsiloenergyneeded
+				local recent = (destination.dynamic_data.rocketsiloenergyconsumedwithinlasthalfsecond * 2)
+		
+				flow1.silo_progressbar.value = consumed/needed
+		
+				local tooltip = string.format('Rocket silo charge\n\nCharge the silo to launch a rocket, gaining both gold and coins.\n\nCurrent charge: %.1f', consumed / 1000000000) .. '/' .. Math.floor(needed / 100000000)/10 .. ' GJ'
+				flow1.tooltip = tooltip
+				flow1.silo_label_1.tooltip = tooltip
+				flow1.silo_label_2.tooltip = tooltip
+				flow1.silo_progressbar.tooltip = tooltip
+		
+				if recent ~= 0 then
+					active_eta = (needed - consumed) / recent
+					flow1.silo_label_2.caption = Utils.standard_string_form_of_time_in_seconds(active_eta)
+					if active_eta >= destination.dynamic_data.time_remaining then
+						flow1.silo_label_2.style.font_color = GuiCommon.insufficient_font_color
+					else
+						flow1.silo_label_2.style.font_color = GuiCommon.sufficient_font_color
+					end
 				else
-					flow1.silo_label_2.style.font_color = GuiCommon.sufficient_font_color
+					flow1.silo_label_2.caption = '∞'
+					flow1.silo_label_2.style.font_color = GuiCommon.insufficient_font_color
 				end
-			else
-				flow1.silo_label_2.caption = '∞'
-				flow1.silo_label_2.style.font_color = GuiCommon.insufficient_font_color
 			end
+		else
+			flow1.visible = false    
 		end
-	else
-		flow1.visible = false    
 	end
 
 
 	flow1 = pirates_flow.quest_frame
 
-	if quest_bool then
-		flow1.visible = true
-
-		local quest_type = destination.dynamic_data.quest_type or nil
-		local quest_params = destination.dynamic_data.quest_params or {}
-		local quest_reward = destination.dynamic_data.quest_reward or nil
-		local quest_progress = destination.dynamic_data.quest_progress or 0
-		local quest_progressneeded = destination.dynamic_data.quest_progressneeded or 0
-		local quest_complete =  destination.dynamic_data.quest_complete or false
-
-		if quest_type then
-
-			local tooltip = ''
-
-			if quest_complete then
-				tooltip = 'The quest is complete, and this is the reward.'
-				flow1.quest_label_1.caption = 'Quest: ' .. quest_reward.display_amount .. ' ' .. quest_reward.display_sprite
-				flow1.quest_label_2.visible = false
-				flow1.quest_label_3.visible = false
-				flow1.quest_label_4.visible = false
-			elseif quest_progress < quest_progressneeded then
-				flow1.quest_label_1.caption = 'Quest:'
-				flow1.quest_label_2.visible = true
-				flow1.quest_label_3.visible = true
-				flow1.quest_label_4.visible = true
-				-- defaults, to be overwritten:
-				flow1.quest_label_2.caption = string.format('%s ', Quest.quest_icons[quest_type])
-				flow1.quest_label_3.caption = string.format('%.0f/%.0f', quest_progress, quest_progressneeded)
-				flow1.quest_label_3.style.font_color = GuiCommon.insufficient_font_color
-				flow1.quest_label_4.caption = string.format(' for %s', quest_reward.display_sprite)
-				flow1.quest_label_4.style.font_color = Common.default_font_color
-			end
-
-			if quest_type == Quest.enum.TIME then
-				if tooltip == '' then tooltip = 'Quest: Time\n\nLaunch a rocket before the countdown completes for a bonus.' end
-
-				if quest_progress >= 0 then
-					flow1.quest_label_3.caption = string.format('%.0fm%.0fs', Math.floor(quest_progress / 60), quest_progress % 60)
-					if active_eta then
-						if active_eta < quest_progress - 35 then --35 is roughly the number of seconds between charge and launch
-							flow1.quest_label_3.style.font_color = GuiCommon.sufficient_font_color
+	if flow1 then
+		if quest_bool then
+			flow1.visible = true
+	
+			local quest_type = destination.dynamic_data.quest_type or nil
+			local quest_params = destination.dynamic_data.quest_params or {}
+			local quest_reward = destination.dynamic_data.quest_reward or nil
+			local quest_progress = destination.dynamic_data.quest_progress or 0
+			local quest_progressneeded = destination.dynamic_data.quest_progressneeded or 0
+			local quest_complete =  destination.dynamic_data.quest_complete or false
+	
+			if quest_type then
+	
+				local tooltip = ''
+	
+				if quest_complete then
+					tooltip = 'The quest is complete, and this is the reward.'
+					flow1.quest_label_1.caption = 'Quest: ' .. quest_reward.display_amount .. ' ' .. quest_reward.display_sprite
+					flow1.quest_label_2.visible = false
+					flow1.quest_label_3.visible = false
+					flow1.quest_label_4.visible = false
+				elseif quest_progress < quest_progressneeded then
+					flow1.quest_label_1.caption = 'Quest:'
+					flow1.quest_label_2.visible = true
+					flow1.quest_label_3.visible = true
+					flow1.quest_label_4.visible = true
+					-- defaults, to be overwritten:
+					flow1.quest_label_2.caption = string.format('%s ', Quest.quest_icons[quest_type])
+					flow1.quest_label_3.caption = string.format('%.0f/%.0f', quest_progress, quest_progressneeded)
+					flow1.quest_label_3.style.font_color = GuiCommon.insufficient_font_color
+					flow1.quest_label_4.caption = string.format(' for %s', quest_reward.display_sprite)
+					flow1.quest_label_4.style.font_color = Common.default_font_color
+				end
+	
+				if quest_type == Quest.enum.TIME then
+					if tooltip == '' then tooltip = 'Quest: Time\n\nLaunch a rocket before the countdown completes for a bonus.' end
+	
+					if quest_progress >= 0 then
+						flow1.quest_label_3.caption = string.format('%.0fm%.0fs', Math.floor(quest_progress / 60), quest_progress % 60)
+						if active_eta then
+							if active_eta < quest_progress - 35 then --35 is roughly the number of seconds between charge and launch
+								flow1.quest_label_3.style.font_color = GuiCommon.sufficient_font_color
+							else
+								flow1.quest_label_3.style.font_color = GuiCommon.insufficient_font_color
+							end
 						else
-							flow1.quest_label_3.style.font_color = GuiCommon.insufficient_font_color
+							if charged_bool and quest_progress > 35 then
+								flow1.quest_label_3.style.font_color = GuiCommon.sufficient_font_color
+							else
+								flow1.quest_label_3.style.font_color = GuiCommon.insufficient_font_color
+							end
 						end
 					else
-						if charged_bool and quest_progress > 35 then
-							flow1.quest_label_3.style.font_color = GuiCommon.sufficient_font_color
-						else
-							flow1.quest_label_3.style.font_color = GuiCommon.insufficient_font_color
-						end
+						flow1.quest_label_3.caption = string.format('Fail')
+						flow1.quest_label_3.style.font_color = GuiCommon.insufficient_font_color
 					end
-				else
-					flow1.quest_label_3.caption = string.format('Fail')
-					flow1.quest_label_3.style.font_color = GuiCommon.insufficient_font_color
+	
+				elseif quest_type == Quest.enum.WORMS then
+					if tooltip == '' then tooltip = 'Quest: Worms\n\nKill enough worms for a bonus.' end
+	
+				elseif quest_type == Quest.enum.FIND then
+					if tooltip == '' then tooltip = 'Quest: Find\n\nFind the ghosts for a bonus.' end
+	
+				elseif quest_type == Quest.enum.RESOURCEFLOW then
+					if tooltip == '' then tooltip = 'Quest: Resource Flow\n\nAchieve a production rate of a particular item for a bonus.' end
+	
+					-- out of date:
+					if quest_progressneeded/60 % 1 == 0 then
+						flow1.quest_label_2.caption = string.format('%s %.1f/%.0f /s', '[item=' .. quest_params.item .. ']', quest_progress/60, quest_progressneeded/60)
+						flow1.quest_label_3.caption = string.format(' for %s', quest_reward.display_sprite)
+					else
+						flow1.quest_label_2.caption = string.format('%s %.1f/%.1f /s', '[item=' .. quest_params.item .. ']', quest_progress/60, quest_progressneeded/60)
+						flow1.quest_label_3.caption = string.format(' for %s', quest_reward.display_sprite)
+					end
+	
+				elseif quest_type == Quest.enum.RESOURCECOUNT then
+					if tooltip == '' then tooltip = 'Quest: Item Production\n\nProduce a particular number of items for a bonus.' end
+					
+					flow1.quest_label_2.caption = string.format('%s ', '[item=' .. quest_params.item .. ']')
+	
+				elseif quest_type == Quest.enum.NODAMAGE then
+					if tooltip == '' then tooltip = 'Quest: No Damage\n\nLaunch a rocket without the silo taking damage.' end
+					
+					if (memory.boat and memory.boat.state == Boats.enum_state.APPROACHING) or (destination.dynamic_data.rocketsilo and destination.dynamic_data.rocketsilo.valid and destination.dynamic_data.rocketsilohp == destination.dynamic_data.rocketsilomaxhp) then
+						flow1.quest_label_3.caption = string.format('OK')
+						flow1.quest_label_3.style.font_color = GuiCommon.sufficient_font_color
+					else
+						flow1.quest_label_3.caption = string.format('Fail')
+						flow1.quest_label_3.style.font_color = GuiCommon.insufficient_font_color
+					end
 				end
-
-			elseif quest_type == Quest.enum.WORMS then
-				if tooltip == '' then tooltip = 'Quest: Worms\n\nKill enough worms for a bonus.' end
-
-			elseif quest_type == Quest.enum.FIND then
-				if tooltip == '' then tooltip = 'Quest: Find\n\nFind the ghosts for a bonus.' end
-
-			elseif quest_type == Quest.enum.RESOURCEFLOW then
-				if tooltip == '' then tooltip = 'Quest: Resource Flow\n\nAchieve a production rate of a particular item for a bonus.' end
-
-				-- out of date:
-				if quest_progressneeded/60 % 1 == 0 then
-					flow1.quest_label_2.caption = string.format('%s %.1f/%.0f /s', '[item=' .. quest_params.item .. ']', quest_progress/60, quest_progressneeded/60)
-					flow1.quest_label_3.caption = string.format(' for %s', quest_reward.display_sprite)
-				else
-					flow1.quest_label_2.caption = string.format('%s %.1f/%.1f /s', '[item=' .. quest_params.item .. ']', quest_progress/60, quest_progressneeded/60)
-					flow1.quest_label_3.caption = string.format(' for %s', quest_reward.display_sprite)
-				end
-
-			elseif quest_type == Quest.enum.RESOURCECOUNT then
-				if tooltip == '' then tooltip = 'Quest: Item Production\n\nProduce a particular number of items for a bonus.' end
-				
-				flow1.quest_label_2.caption = string.format('%s ', '[item=' .. quest_params.item .. ']')
-
-			elseif quest_type == Quest.enum.NODAMAGE then
-				if tooltip == '' then tooltip = 'Quest: No Damage\n\nLaunch a rocket without the silo taking damage.' end
-				
-				if (memory.boat and memory.boat.state == Boats.enum_state.APPROACHING) or (destination.dynamic_data.rocketsilo and destination.dynamic_data.rocketsilo.valid and destination.dynamic_data.rocketsilohp == destination.dynamic_data.rocketsilomaxhp) then
-					flow1.quest_label_3.caption = string.format('OK')
-					flow1.quest_label_3.style.font_color = GuiCommon.sufficient_font_color
-				else
-					flow1.quest_label_3.caption = string.format('Fail')
-					flow1.quest_label_3.style.font_color = GuiCommon.insufficient_font_color
-				end
+	
+				flow1.tooltip = tooltip
+				flow1.quest_label_1.tooltip = tooltip
+				flow1.quest_label_2.tooltip = tooltip
+				flow1.quest_label_3.tooltip = tooltip
 			end
-
-			flow1.tooltip = tooltip
-			flow1.quest_label_1.tooltip = tooltip
-			flow1.quest_label_2.tooltip = tooltip
-			flow1.quest_label_3.tooltip = tooltip
+		else
+			flow1.visible = false
 		end
-	else
-		flow1.visible = false
 	end
 
 
 	flow1 = pirates_flow.covering_line_frame
 
-	if not eta_bool and not retreating_bool and not quest_bool and not silo_bool and not atsea_loading_bool and not cost_bool and not leave_anytime_bool then
-		flow1.visible = true
-	else
-		flow1.visible = false
+	if flow1 then
+		if not eta_bool and not retreating_bool and not quest_bool and not silo_bool and not atsea_loading_bool and not cost_bool and not leave_anytime_bool then
+			flow1.visible = true
+		else
+			flow1.visible = false
+		end
+	end
+
+	flow1 = pirates_flow.minimap_piratebutton_frame
+
+	if flow1 then
+		if in_hold_bool then
+			flow1.visible = true
+		else
+			flow1.visible = false
+		end
 	end
 
 
-
-    if in_hold_bool then
-        pirates_flow.minimap_piratebutton_frame.visible = true
-    else
-		pirates_flow.minimap_piratebutton_frame.visible = false
-    end
-
-
 	flow1 = player.gui.left.spontaneous_camera
-	flow1.visible = false
-	if on_deck_standing_near_loco_bool then
-		flow1.visible = true
-		flow1.surface_index = Hold.get_hold_surface(1).index
-		flow1.zoom = 0.18
-		flow1.style.minimal_height = 268
-		flow1.style.minimal_width = 532
-		flow1.position = {x=0,y=0}
-	elseif on_deck_standing_near_cabin_bool then
-		flow1.visible = true
-		flow1.surface_index = Cabin.get_cabin_surface().index
-		flow1.zoom = 0.468
-		flow1.style.minimal_height = 416
-		flow1.style.minimal_width = 260
-		flow1.position = {x=0,y=-1.3}
-	elseif on_deck_standing_near_crowsnest_bool then
-		flow1.visible = true
-		flow1.surface_index = Crowsnest.get_crowsnest_surface().index
-		flow1.zoom = 0.21
-		flow1.style.minimal_height = 384
-		flow1.style.minimal_width = 384
-		flow1.position = {x=memory.overworldx,y=memory.overworldy}
-	elseif in_cabin_bool or in_crowsnest_bool then
-		flow1.visible = true
-		flow1.surface_index = game.surfaces[memory.boat.surface_name].index
-		flow1.zoom = 0.09
-		flow1.style.minimal_height = 312
-		flow1.style.minimal_width = 312
 
-		local position = memory.boat.position
-		if (destination and destination.type and destination.type == Surfaces.enum.ISLAND and memory.boat.surface_name and memory.boat.surface_name == destination.surface_name and destination.static_params and destination.static_params.boat_starting_xposition) then
-			-- nicer viewing position:
-			position = {x = destination.static_params.boat_starting_xposition + 50, y = destination.static_params.boat_starting_yposition or 0}
+	if flow1 then
+		flow1.visible = false
+		if on_deck_standing_near_loco_bool then
+			flow1.visible = true
+			flow1.surface_index = Hold.get_hold_surface(1).index
+			flow1.zoom = 0.18
+			flow1.style.minimal_height = 268
+			flow1.style.minimal_width = 532
+			flow1.position = {x=0,y=0}
+		elseif on_deck_standing_near_cabin_bool then
+			flow1.visible = true
+			flow1.surface_index = Cabin.get_cabin_surface().index
+			flow1.zoom = 0.468
+			flow1.style.minimal_height = 416
+			flow1.style.minimal_width = 260
+			flow1.position = {x=0,y=-1.3}
+		elseif on_deck_standing_near_crowsnest_bool then
+			flow1.visible = true
+			flow1.surface_index = Crowsnest.get_crowsnest_surface().index
+			flow1.zoom = 0.21
+			flow1.style.minimal_height = 384
+			flow1.style.minimal_width = 384
+			flow1.position = {x=memory.overworldx,y=memory.overworldy}
+		elseif in_cabin_bool or in_crowsnest_bool then
+			flow1.visible = true
+			flow1.surface_index = game.surfaces[memory.boat.surface_name].index
+			flow1.zoom = 0.09
+			flow1.style.minimal_height = 312
+			flow1.style.minimal_width = 312
+	
+			local position = memory.boat.position
+			if (destination and destination.type and destination.type == Surfaces.enum.ISLAND and memory.boat.surface_name and memory.boat.surface_name == destination.surface_name and destination.static_params and destination.static_params.boat_starting_xposition) then
+				-- nicer viewing position:
+				position = {x = destination.static_params.boat_starting_xposition + 50, y = destination.static_params.boat_starting_yposition or 0}
+			end
+			flow1.position = position
 		end
-		flow1.position = position
 	end
 end
 

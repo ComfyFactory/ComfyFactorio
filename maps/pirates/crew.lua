@@ -211,7 +211,7 @@ function Public.join_spectators(player, crewid)
 			memory.spectatorplayerindices[#memory.spectatorplayerindices + 1] = player.index
 			memory.tempbanned_from_joining_data[player.index] = game.tick
 			if #Common.crew_get_crew_members() == 0 then
-				memory.crew_disband_tick = game.tick + 10
+				memory.crew_disband_tick = game.tick + 60*60*2 --give players time to log back in after a crash or save
 			end
 			if not (memory.difficulty_votes) then memory.difficulty_votes = {} end
 			memory.difficulty_votes[player.index] = nil
