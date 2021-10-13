@@ -704,6 +704,7 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.recipes['centrifuge'].enabled = false
 	crew_force.recipes['flamethrower-turret'].enabled = true
 	crew_force.recipes['locomotive'].enabled = false
+	crew_force.technologies['automobilism'].enabled = false
 	crew_force.recipes['car'].enabled = false
 	crew_force.recipes['cargo-wagon'].enabled = false
 

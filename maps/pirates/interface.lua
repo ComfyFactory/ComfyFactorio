@@ -1272,15 +1272,17 @@ local function event_on_built_entity(event)
         entity.time_to_live = entity.force.ghost_time_to_live
 	end
 
-	if memory.boat and memory.boat.surface_name and player.surface == game.surfaces[memory.boat.surface_name] then
+	if memory.boat and memory.boat.surface_name and player.surface == game.surfaces[memory.boat.surface_name] and entity.position then
 		if (entity.type and (entity.type == 'underground-belt')) or (entity.name == 'entity-ghost' and entity.ghost_type and (entity.ghost_type == 'underground-belt')) then
-		-- if (entity.type and (entity.type == 'underground-belt' or entity.type == 'pipe-to-ground')) or (entity.name == 'entity-ghost' and entity.ghost_type and (entity.ghost_type == 'underground-belt' or entity.ghost_type == 'pipe-to-ground')) then
-			if not (entity.name and entity.name == 'entity-ghost') then
-				player.insert{name = entity.name, count = 1}
+			if Boats.on_boat(memory.boat, entity.position) then
+				-- if (entity.type and (entity.type == 'underground-belt' or entity.type == 'pipe-to-ground')) or (entity.name == 'entity-ghost' and entity.ghost_type and (entity.ghost_type == 'underground-belt' or entity.ghost_type == 'pipe-to-ground')) then
+					if not (entity.name and entity.name == 'entity-ghost') then
+						player.insert{name = entity.name, count = 1}
+					end
+					entity.destroy()
+					Common.notify_player(player, 'Undergrounds can\'t be built on the boat, due to conflicts with the boat movement code.')
+					return
 			end
-			entity.destroy()
-			Common.notify_player(player, 'Undergrounds can\'t be built on the overworld, due to conflicts with the boat movement code.')
-			return
 		end
 	end
 

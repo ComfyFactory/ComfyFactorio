@@ -164,6 +164,7 @@ function Public.draw_noisy_ore_patch(surface, position, name, budget, radius_squ
 		end
 	end
 
+	--@FIXME: Hardcode positions instead, ordered by distance from origin
 	local spiral_layer = 0
 	local outwards_spiral_x = 0
 	local outwards_spiral_y = 0

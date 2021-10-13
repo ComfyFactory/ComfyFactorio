@@ -191,14 +191,16 @@ function Public.click(event)
         event.element.zoom = zoom
     end
     if event.button == defines.mouse_button_type.middle then
-		if size == 320 then
-			size = 420
-		elseif size == 420 then
-			size = 520
-		elseif size == 520 then
-			size = 250
+		if size == 340 then
+			size = 440
+		elseif size == 440 then
+			size = 560
+		elseif size == 560 then
+			size = 700
+		elseif size == 700 then
+			size = 280
 		else
-			size = 320
+			size = 340
 		end
         event.element.style.minimal_height = size
         event.element.style.minimal_width = size

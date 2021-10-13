@@ -126,16 +126,16 @@ local function saved_scores_trim(scores)
 	table.sort(leagues_travelled_latestv)
 
 	local completion_times_cutoff = #completion_times > 8 and completion_times[8] or 9999999
-	local completion_times_mediump_latestv_cutoff = #completion_times_mediump_latestv > 5 and completion_times_mediump_latestv[5] or 9999999
-	local completion_times_hard_cutoff = #completion_times_hard > 5 and completion_times_hard[5] or 9999999
-	local completion_times_nightmare_cutoff = #completion_times_hard > 3 and completion_times_hard[3] or 9999999
+	local completion_times_mediump_latestv_cutoff = #completion_times_mediump_latestv > 4 and completion_times_mediump_latestv[4] or 9999999
+	local completion_times_hard_cutoff = #completion_times_hard > 4 and completion_times_hard[4] or 9999999
+	local completion_times_nightmare_cutoff = #completion_times_hard > 2 and completion_times_hard[2] or 9999999
 	local completion_times_latestv_cutoff = #completion_times_latestv > 8 and completion_times_latestv[8] or 9999999
 
 	local leagues_travelled_cutoff = #leagues_travelled > 8 and leagues_travelled[-8] or 0
-	local leagues_travelled_mediump_latestv_cutoff = #leagues_travelled_mediump_latestv > 5 and leagues_travelled_mediump_latestv[-5] or 0
-	local leagues_travelled_hard_cutoff = #leagues_travelled_hard > 5 and leagues_travelled_hard[-5] or 0
-	local leagues_travelled_nightmare_cutoff = #leagues_travelled_hard > 3 and leagues_travelled_hard[-3] or 0
-	local leagues_travelled_latestv_cutoff = #leagues_travelled_latestv > 8 and leagues_travelled_latestv[-8] or 0
+	local leagues_travelled_mediump_latestv_cutoff = #leagues_travelled_mediump_latestv > 4 and leagues_travelled_mediump_latestv[-4] or 0
+	local leagues_travelled_hard_cutoff = #leagues_travelled_hard > 4 and leagues_travelled_hard[-4] or 0
+	local leagues_travelled_nightmare_cutoff = #leagues_travelled_hard > 2 and leagues_travelled_hard[-2] or 0
+	local leagues_travelled_latestv_cutoff = #leagues_travelled_latestv > 86 and leagues_travelled_latestv[-8] or 0
 
 	-- log(inspect{completion_times_cutoff,completion_times_mediump_latestv_cutoff,completion_times_hard_cutoff,completion_times_latestv_cutoff,leagues_travelled_cutoff,leagues_travelled_mediump_latestv_cutoff,leagues_travelled_hard_cutoff,leagues_travelled_latestv_cutoff})
 
@@ -350,7 +350,7 @@ local function score_gui(data)
     for _, header in ipairs(headers) do
         local cap = header.caption
 
-		log(header.caption)
+		-- log(header.caption)
 
         -- Add sorting symbol if any
         if header.column and sorting_pref[1] and sorting_pref[1].column == header.column then
@@ -483,30 +483,30 @@ local function on_gui_click(event)
         ['_difficulty'] = 'difficulty',
         ['_capacity'] = 'capacity',
     }
-    local column = element_to_column[name]
-    if column then
+    if element_to_column[name] then
 		--@TODO: Extend
         local sorting_pref = this.sort_by[player.index]
-		local found = false
+		local found_index = nil
 		local new_method = 'descending'
+
 		for i, sort in ipairs(sorting_pref) do
-			if sort.column == column.column then
-				found = true
-				if sort.method == 'descending' then new_method = 'ascending' end
+			if sort.column == element_to_column[name] then
+				found_index = i
+				if sort.method == 'descending' and i==1 then new_method = 'ascending' end
 			end
 		end
-		if found then
+		if found_index then
 			--remove this and shuffle everything before it up by 1:
-			for j = i, 2, -1 do
+			for j = found_index, 2, -1 do
 				sorting_pref[j] = Utils.deepcopy(sorting_pref[j-1]) --deepcopy just as I'm slightly unsure about refernces here
 			end
 		else
 			--prepend:
 			for j = #sorting_pref + 1, 2, -1 do
-				sorting_pref[j] = Utils.deepcopy(sorting_pref[j-1]) --deepcopy just as I'm slightly unsure about refernces here
+				sorting_pref[j] = Utils.deepcopy(sorting_pref[j-1]) --deepcopy just as I'm slightly unsure about references here
 			end
 		end
-		sorting_pref[1] = {column = column, method = new_method}
+		sorting_pref[1] = {column = element_to_column[name], method = new_method}
 
         score_gui({player = player, frame = frame})
         return

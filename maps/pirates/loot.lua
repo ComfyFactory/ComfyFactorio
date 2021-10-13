@@ -13,8 +13,10 @@ function Public.buried_treasure_loot()
 	local ret
 	
 	local rng = Math.random(1000)
-	if rng <= 150 then
+	if rng <= 100 then
 		ret = {name = 'steel-plate', count = 150}
+	elseif rng <= 150 then
+		ret = {name = 'flying-robot-frame', count = 30}
 	elseif rng <= 200 then
 		ret = {name = 'construction-robot', count = 15}
 	elseif rng <= 330 then

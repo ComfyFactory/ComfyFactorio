@@ -46,7 +46,7 @@ function Public.prevent_unbarreling_off_ship(tickinterval)
 			local r = a.get_recipe()
 			if r and r.subgroup and r.subgroup.name and r.subgroup.name == 'fill-barrel' and (not (r.name and r.name == 'fill-water-barrel')) then
 				if not Boats.on_boat(boat, a.position) then
-					Common.notify_force(game.forces[memory.force_name], 'Nope: Can\'t barrel fluids offboard.')
+					Common.notify_force(game.forces[memory.force_name], 'Barrelling recipe removed; barrels are too heavy to carry back to the ship.')
 					a.set_recipe('fill-water-barrel')
 				end
 			end

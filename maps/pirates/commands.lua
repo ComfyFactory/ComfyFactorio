@@ -57,6 +57,7 @@ function(cmd)
 		if player and player.valid then
 			if PlayerColors[param] then
 				player.color = PlayerColors[param]
+				player.chat_color = PlayerColors[param]
 				game.print(player.name .. '\'s color is now ' .. param .. ' (via /ccolor).', PlayerColors[param])
 			else
 				player.print('Color not found.')

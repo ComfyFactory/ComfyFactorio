@@ -60,7 +60,7 @@ local function on_init()
     Autostash.bottom_button(true)
     BottomFrame.reset()
     BottomFrame.activate_custom_buttons(true)
-    BottomFrame.bottom_right(true)
+    -- BottomFrame.bottom_right(true)
 
 	local mgs = game.surfaces['nauvis'].map_gen_settings
 	mgs.width = 16
@@ -208,8 +208,11 @@ local function crew_tick()
 		end
 
 		if memory.captain_accrued_time_data and memory.playerindex_captain then
-			if (not memory.captain_accrued_time_data[memory.playerindex_captain]) then memory.captain_accrued_time_data[memory.playerindex_captain] = 0 end
-			memory.captain_accrued_time_data[memory.playerindex_captain] = memory.captain_accrued_time_data[memory.playerindex_captain] + 1
+			local player = game.players[memory.playerindex_captain]
+			if player and player.name then
+				if (not memory.captain_accrued_time_data[player.name]) then memory.captain_accrued_time_data[player.name] = 0 end
+				memory.captain_accrued_time_data[player.name] = memory.captain_accrued_time_data[player.name] + 1
+			end
 		end
 
 		if destination.dynamic_data.time_remaining and destination.dynamic_data.time_remaining > 0 then

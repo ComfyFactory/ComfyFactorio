@@ -125,6 +125,7 @@ function Public.generate_overworld_destination(p)
 	if type == Surfaces.enum.ISLAND then
 
 		local scope = Surfaces[Surfaces.enum.ISLAND][subtype]
+		--@FIXME: Common.activecrewcount() shouldn't be used here, it should be sensitive to the playercount when you arrive on the island
 		local playercount = Common.activecrewcount()
 
 		local static_params = Utils.deepcopy(scope.Data.static_params_default)
@@ -562,10 +563,10 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 		if memory.overworldx % 40 == 0 then
 			local modal_captain = nil
 			local modal_captain_time = 0
-			for player, time in pairs(memory.captain_accrued_time_data) do
+			for name, time in pairs(memory.captain_accrued_time_data) do
 				if time > modal_captain_time then
 					modal_captain_time = time
-					modal_captain = player
+					modal_captain = name
 				end
 			end
 			Highscore.write_score(memory.secs_id, memory.name, modal_captain, memory.completion_time or 0, memory.overworldx, CoreData.version_float, memory.difficulty, memory.capacity)

@@ -52,9 +52,9 @@ Public[enum.INITIAL].Data.hold_whitebelts_lrtp_order = {
 	{x = -18.5, y = 21.5, direction = defines.direction.south, type = 'input'},
 	{x = -17.5, y = 21.5, direction = defines.direction.south, type = 'input'},
 
-	{x = 17.5, y = 21.5, direction = defines.direction.south, type = 'output'},
-	{x = 18.5, y = 21.5, direction = defines.direction.south, type = 'output'},
-	{x = 19.5, y = 21.5, direction = defines.direction.south, type = 'output'},
+	{x = 17.5, y = 21.5, direction = defines.direction.south, type = 'input'},
+	{x = 18.5, y = 21.5, direction = defines.direction.south, type = 'input'},
+	{x = 19.5, y = 21.5, direction = defines.direction.south, type = 'input'},
 }
 
 Public[enum.SECONDARY] = {}

@@ -3,6 +3,7 @@ _LIFECYCLE = _STAGE.control -- Control stage
 _DEBUG = false
 _DUMP_ENV = false
 
+
 require 'utils.server'
 require 'utils.server_commands'
 require 'utils.utils'
@@ -29,12 +30,12 @@ require 'utils.debug.command'
 require 'comfy_panel.main'
 require 'comfy_panel.player_list'
 require 'comfy_panel.admin'
-require 'comfy_panel.group'
-require 'comfy_panel.poll'
-require 'comfy_panel.score'
+-- require 'comfy_panel.group'
+-- require 'comfy_panel.poll'
+-- require 'comfy_panel.score'
 require 'comfy_panel.config'
 
-require 'modules.autostash'
+-- require 'modules.autostash'
 
 ---------------- !ENABLE MODULES HERE ----------------
 --require 'modules.admins_operate_biters'
@@ -106,6 +107,10 @@ require 'modules.autostash'
 
 --![[Comfylatron has seized the Fish Train and turned it into a time machine]]--
 --require 'maps.chronosphere.main'
+
+--![[Adventure as a crew of pirates!]]--
+require 'maps.pirates.main'
+-- Note: should disable comfy_panel.group, comfy_panel.poll, comfy_panel.score
 
 --![[Launch rockets in increasingly harder getting worlds.]]--
 --require 'maps.journey.main'
