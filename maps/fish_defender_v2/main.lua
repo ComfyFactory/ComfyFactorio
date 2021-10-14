@@ -24,6 +24,8 @@ local boss_biter = require 'maps.fish_defender_v2.boss_biters'
 local FDT = require 'maps.fish_defender_v2.table'
 local Score = require 'comfy_panel.score'
 local AntiGrief = require 'antigrief'
+local Core = require 'utils.core'
+local format_number = require 'util'.format_number
 local math_random = math.random
 local insert = table.insert
 local enable_start_grace_period = true
@@ -811,6 +813,9 @@ local function is_game_lost()
 
         local mvp = get_mvps()
         if mvp then
+            local time_played = Core.format_time(game.ticks_played)
+            local wave = FDT.get('wave_count')
+
             local mvp_defender_label = t.add({type = 'label', caption = 'MVP Defender >> '})
             mvp_defender_label.style.font = 'default-listbox'
             mvp_defender_label.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
@@ -841,6 +846,14 @@ local function is_game_lost()
             mvp_deaths_name_label.style.font = 'default-bold'
             mvp_deaths_name_label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 
+            local wave_lasted_label = t.add({type = 'label', caption = 'Wave reached >> '})
+            wave_lasted_label.style.font = 'default-listbox'
+            wave_lasted_label.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
+
+            local wave_lasted_name_label = t.add({type = 'label', caption = tonumber(format_number(wave, true))})
+            wave_lasted_name_label.style.font = 'default-bold'
+            wave_lasted_name_label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+
             local results_sent = FDT.get('results_sent')
             if not results_sent then
                 local result = {}
@@ -852,6 +865,12 @@ local function is_game_lost()
                 insert(result, '\\n')
                 insert(result, 'MVP Deaths: \\n')
                 insert(result, mvp.deaths.name .. ' died ' .. mvp.deaths.score .. ' times')
+                insert(result, '\\n')
+                insert(result, 'Time Played: \\n')
+                insert(result, time_played)
+                insert(result, '\\n')
+                insert(result, 'Wave reached: \\n')
+                insert(result, tonumber(format_number(wave, true)))
                 local message = table.concat(result)
                 Server.to_discord_embed(message)
                 FDT.set('results_sent', true)
@@ -1369,18 +1388,18 @@ function Public.reset_game()
         Session.clear_player(player)
     end
 
-	--test idea
-	--local spawn_poses = {
-	--	{x = 0, y = 0},
+    --test idea
+    --local spawn_poses = {
+    --	{x = 0, y = 0},
     --    {x = -512, y = 0},
-	--	{x = -512, y = 192},
-	--	{x = -512, y = -192}
+    --	{x = -512, y = 192},
+    --	{x = -512, y = -192}
     --}
 
     local map_gen_settings = {}
     map_gen_settings.seed = math_random(10000, 99999)
-	map_gen_settings.starting_area = 1
-	--map_gen_settings.starting_points = spawn_poses
+    map_gen_settings.starting_area = 1
+    --map_gen_settings.starting_points = spawn_poses
 
     map_gen_settings.width = 4000
     map_gen_settings.height = 1800
