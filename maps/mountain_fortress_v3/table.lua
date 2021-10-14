@@ -204,6 +204,8 @@ function Public.reset_table()
         lowest = 4
     }
     this.mining_bonus_till_wave = 300
+    this.mining_bonus = 0
+    this.disable_mining_boost = false
     this.market_announce = game.tick + 1200
     this.check_heavy_damage = true
     this.prestige_system_enabled = false

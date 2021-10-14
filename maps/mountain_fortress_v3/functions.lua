@@ -854,6 +854,7 @@ function Public.set_difficulty()
     local collapse_speed = WPT.get('collapse_speed')
     local difficulty = WPT.get('difficulty')
     local mining_bonus_till_wave = WPT.get('mining_bonus_till_wave')
+    local mining_bonus = WPT.get('mining_bonus')
     local disable_mining_boost = WPT.get('disable_mining_boost')
     local wave_number = WD.get_wave()
     local player_count = calc_players()
@@ -909,17 +910,18 @@ function Public.set_difficulty()
         local force = game.forces.player
         if wave_number < mining_bonus_till_wave then
             -- the mining speed of the players will increase drastically since RPG is also loaded.
+            -- additional mining speed comes from steel axe research: 100%, and difficulty settings: too young to die 50%, hurt me plenty 25%
+            force.manual_mining_speed_modifier = force.manual_mining_speed_modifier - mining_bonus
             if player_count <= 5 then
-                force.manual_mining_speed_modifier = 3 -- set a static 400% bonus if there are <= 5 players.
-                if force.technologies['steel-axe'].researched then
-                    force.manual_mining_speed_modifier = 4
-                end
+                mining_bonus = 3 -- set a static 300% bonus if there are <= 5 players.
             elseif player_count >= 6 and player_count <= 10 then
-                force.manual_mining_speed_modifier = 1 -- set a static 100% bonus if there are <= 10 players.
-                if force.technologies['steel-axe'].researched then
-                    force.manual_mining_speed_modifier = 2
-                end
+                mining_bonus = 1 -- set a static 100% bonus if there are <= 10 players.
             end
+            force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + mining_bonus
+            WPT.set('mining_bonus', mining_bonus) -- Setting mining_bonus globally so it remembers how much to reduce
+        else
+            force.manual_mining_speed_modifier = force.manual_mining_speed_modifier - mining_bonus
+            WPT.set('disable_mining_boost', true)
         end
     end
 end
