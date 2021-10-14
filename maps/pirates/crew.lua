@@ -784,7 +784,7 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['refined-flammables-7'].enabled = false
 	crew_force.technologies['stronger-explosives-7'].enabled = false
 	crew_force.technologies['logistics-3'].enabled = false
-	crew_force.technologies['coal-liquefaction'].enabled = false
+	crew_force.technologies['coal-liquefaction'].enabled = true
 	crew_force.technologies['nuclear-fuel-reprocessing'].enabled = false
 
 	crew_force.technologies['railway'].enabled = false

@@ -559,6 +559,7 @@ return {
 	["orange-yellow"] = {r = 0.96, g = 0.74, b = 0.12},
 	["orchid"] = {r = 0.85, g = 0.44, b = 0.84},
 	["orchid pink"] = {r = 0.95, g = 0.74, b = 0.8},
+	["space"] = {r = 0.18, g = 0.22, b = 0.23},
 	["outer space"] = {r = 0.18, g = 0.22, b = 0.23},
 	["outrageous orange"] = {r = 1., g = 0.43, b = 0.29},
 	["oxblood"] = {r = 0.29, g = 0., b = 0.},

@@ -85,7 +85,7 @@ end
 
 
 function Public.draw_noisy_ore_patch(surface, position, name, budget, radius_squared, density, forced, flat)
-	flat = flat or true
+	flat = flat or false
 	budget = budget or 999999999
 	forced = forced or false
 	local amountplaced = 0

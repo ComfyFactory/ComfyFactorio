@@ -128,6 +128,77 @@ function Public.on_surface_generation(destination)
 end
 
 
+function Public.destination_on_collide(destination)
+	local memory = Memory.get_crew_memory()
+
+	local name = destination.static_params.name and destination.static_params.name or 'NameNotFound'
+	local message = '[' .. memory.name .. '] Loading destination ' .. (memory.destinationsvisited_indices and (#memory.destinationsvisited_indices + 1) or 0) .. ', ' .. name .. '.'
+	Common.notify_game(message)
+
+	if destination.type ~= Public.enum.DOCK then
+		local index = destination.destination_index
+		Crowsnest.paint_around_destination(index, CoreData.overworld_loading_tile)
+	end
+
+	if destination and destination.static_params and destination.static_params.cost_to_leave then
+		local replace = {}
+		for item, count in pairs(destination.static_params.cost_to_leave) do
+			if item == 'uranium-235' then
+				replace[item] = count
+			else
+				replace[item] = Math.ceil(count * Public.cost_to_leave_multiplier())
+			end
+		end
+		destination.static_params.cost_to_leave = replace
+	end
+
+	if destination.type == Public.enum.ISLAND then
+		local index = destination.destination_index
+		Crowsnest.paint_around_destination(index, CoreData.overworld_loading_tile)
+
+		local scheduled_raft_raids
+		local playercount = Common.activecrewcount()
+		local max_evo = 0.85
+		if Common.difficulty() < 1 then max_evo = 0.68 end
+		if memory.overworldx > 200 then
+			scheduled_raft_raids = {}
+			local times = {600, 360, 215, 210, 120, 30, 10, 5}
+			for i = 1, #times do
+				local t = times[i]
+				if Math.random(7) == 1 and #scheduled_raft_raids < 6 then
+					scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_evo = max_evo}
+					-- scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_bonus_evolution = 0.52}
+				end
+			end
+		elseif memory.overworldx == 200 then
+			local times
+			if playercount <= 2 then
+				times = {1, 5, 10, 15}
+			elseif playercount <= 7 then
+				times = {1, 5, 10, 15, 20}
+			elseif playercount <= 15 then
+				times = {1, 5, 10, 15, 20, 25}
+			else
+				times = {1, 5, 10, 15, 20, 25, 30, 35}
+			end
+			scheduled_raft_raids = {}
+			for _, t in pairs(times) do
+				-- scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_bonus_evolution = 0.62}
+				scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_evo = max_evo}
+			end
+		end
+		destination.static_params.scheduled_raft_raids = scheduled_raft_raids
+	end
+
+	if memory.overworldx == 40*5 then Parrot.parrot_boats_warning() end
+	if memory.overworldx == 600 then
+		Parrot.parrot_radioactive_tip_1()
+	elseif memory.overworldx == 800 then
+		Parrot.parrot_800_tip()
+	end
+end
+
+
 
 function Public.destination_on_arrival(destination)
 	local memory = Memory.get_crew_memory()

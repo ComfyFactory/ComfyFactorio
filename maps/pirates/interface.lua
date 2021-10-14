@@ -210,10 +210,10 @@ local function extra_player_damage(event)
 	if not event.cause.valid then return end
 	if not event.cause.name then return end
 
-	if not (event.cause.name == 'small-biter') or (event.cause.name == 'small-spitter') or (event.cause.name == 'medium-biter') or (event.cause.name == 'medium-spitter') or (event.cause.name == 'big-biter') or (event.cause.name == 'big-spitter') or (event.cause.name == 'behemoth-biter') or (event.cause.name == 'behemoth-spitter') then return end
+	-- if not (event.cause.name == 'small-biter') or (event.cause.name == 'small-spitter') or (event.cause.name == 'medium-biter') or (event.cause.name == 'medium-spitter') or (event.cause.name == 'big-biter') or (event.cause.name == 'big-spitter') or (event.cause.name == 'behemoth-biter') or (event.cause.name == 'behemoth-spitter') then return end
+	-- if string.sub(event.cause.force.name, 1, 5) ~= 'enemy' then return end --Enemy Forces
 
-	if string.sub(event.cause.force.name, 1, 5) ~= 'enemy' then return end --Enemy Forces
-	event.entity.health = event.entity.health - event.final_damage_amount * Balance.bonus_enemy_unit_damage_to_humans()
+	event.entity.health = event.entity.health - event.final_damage_amount * Balance.bonus_damage_to_humans()
 
 	local player_index = event.entity.player.index
 	if memory.classes_table and memory.classes_table[player_index] then
@@ -248,7 +248,7 @@ local function samurai_damage_changes(event)
 	if memory.classes_table and memory.classes_table[player_index] and memory.classes_table[player_index] == Classes.enum.SAMURAI then
 
 		if event.damage_type.name == 'physical' and (not character.get_inventory(defines.inventory.character_guns)[character.selected_gun_index].valid_for_read) then
-			event.entity.health = event.entity.health - 10
+			event.entity.health = event.entity.health - 15
 		else
 			event.entity.health = event.entity.health + 0.8 * event.final_damage_amount
 		end
@@ -438,8 +438,8 @@ local function event_on_player_mined_entity(event)
 			local give = {}
 
 			if memory.overworldx > 0 then
-				if Math.random(22) == 1 then
-					give[#give + 1] = {name = 'coin', count = 10}
+				if Math.random(6) == 1 then
+					give[#give + 1] = {name = 'coin', count = 4}
 				end
 			end
 
@@ -466,9 +466,10 @@ local function event_on_player_mined_entity(event)
 		local give = {}
 
 		if memory.overworldx > 0 then
-			if Math.random(7) == 1 then
+			-- if Math.random(2) == 1 then
+			-- 	give[#give + 1] = {name = 'coin', count = 1}
+			-- end
 				give[#give + 1] = {name = 'coin', count = 1}
-			end
 		end
 
 		give[#give + 1] = {name = entity.name, count = 2}
@@ -492,7 +493,7 @@ local function event_on_player_mined_entity(event)
 				if entity.name == 'rock-huge' then
 					c2[#c2 + 1] = {name = 'coin', count = 30, color = CoreData.colors.coin}
 				else
-					c2[#c2 + 1] = {name = 'coin', count = 15, color = CoreData.colors.coin}
+					c2[#c2 + 1] = {name = 'coin', count = 20, color = CoreData.colors.coin}
 				end
 			end
 
@@ -504,8 +505,9 @@ local function event_on_player_mined_entity(event)
 					color = CoreData.colors.stone
 				end
 
-				local amount = Math.max(Math.min(available,Math.ceil(v * available/starting)),1) --minimum 1
-				available = available - amount/2 --a hack
+				local amount = Math.max(Math.min(available,Math.ceil(v * available/starting)),1)
+				--override, decided to remove this effect:
+				amount = v
 
 				c2[#c2 + 1] = {name = k, count = amount, color = color}
 			end
@@ -548,7 +550,7 @@ local function base_kill_rewards(event)
 			coin_amount = 50
 		elseif entity.name == 'medium-worm-turret' then
 			iron_amount = 20
-			coin_amount = 100
+			coin_amount = 90
 		elseif entity.name == 'biter-spawner' or entity.name == 'spitter-spawner'
 		then
 			iron_amount = 25
@@ -556,11 +558,11 @@ local function base_kill_rewards(event)
 		elseif entity.name == 'big-worm-turret'
 		then
 			iron_amount = 30
-			coin_amount = 200
+			coin_amount = 160
 		elseif entity.name == 'behemoth-worm-turret'
 		then
 			iron_amount = 50
-			coin_amount = 400
+			coin_amount = 350
 		end
 	end
 
@@ -736,7 +738,7 @@ local function event_on_research_finished(event)
 	-- p_force.recipes['express-underground-belt'].enabled = false
 	p_force.recipes['pistol'].enabled = false
 	p_force.recipes['centrifuge'].enabled = false
-	p_force.recipes['flamethrower-turret'].enabled = false
+	p_force.recipes['flamethrower-turret'].enabled = true
 	p_force.recipes['locomotive'].enabled = false
 	p_force.recipes['car'].enabled = false
 	p_force.recipes['cargo-wagon'].enabled = false
@@ -939,7 +941,7 @@ function Public.add_player_to_permission_group(player, group)
 			plebs_group.set_allows_action(defines.input_action.add_permission_group, false)
 			plebs_group.set_allows_action(defines.input_action.admin_action, false)
 	
-			-- plebs_group.set_allows_action(defines.input_action.grab_blueprint_record, false)
+			plebs_group.set_allows_action(defines.input_action.grab_blueprint_record, false)
 			-- plebs_group.set_allows_action(defines.input_action.import_blueprint_string, false)
 			-- plebs_group.set_allows_action(defines.input_action.import_blueprint, false)
 		end
@@ -969,7 +971,7 @@ function Public.add_player_to_permission_group(player, group)
         not_trusted.set_allows_action(defines.input_action.set_trains_limit, false)
         not_trusted.set_allows_action(defines.input_action.set_train_stopped, false)
 
-		-- not_trusted.set_allows_action(defines.input_action.grab_blueprint_record, false)
+		not_trusted.set_allows_action(defines.input_action.grab_blueprint_record, false)
 		-- not_trusted.set_allows_action(defines.input_action.import_blueprint_string, false)
 		-- not_trusted.set_allows_action(defines.input_action.import_blueprint, false)
     end

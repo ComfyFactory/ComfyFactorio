@@ -16,15 +16,17 @@ function Public.buried_treasure_loot()
 	if rng <= 100 then
 		ret = {name = 'steel-plate', count = 150}
 	elseif rng <= 150 then
+		ret = {name = 'defender-capsule', count = 20}
+	elseif rng <= 170 then
 		ret = {name = 'flying-robot-frame', count = 30}
-	elseif rng <= 200 then
+	elseif rng <= 230 then
 		ret = {name = 'construction-robot', count = 15}
 	elseif rng <= 330 then
-		ret = {name = 'electronic-circuit', count = 150}
+		ret = {name = 'electronic-circuit', count = 200}
 	elseif rng <= 400 then
-		ret = {name = 'advanced-circuit', count = 40}
+		ret = {name = 'advanced-circuit', count = 38}
 	elseif rng <= 530 then
-		ret = {name = 'crude-oil-barrel', count = 10}
+		ret = {name = 'crude-oil-barrel', count = 15}
 	elseif rng <= 600 then
 		ret = {name = 'effectivity-module-3', count = 3}
 	elseif rng <= 730 then

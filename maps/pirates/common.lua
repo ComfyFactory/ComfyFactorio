@@ -47,10 +47,10 @@ function Public.ore_abstract_to_real(amount)
 end
 
 function Public.oil_real_to_abstract(amount)
-	return amount/(8000)
+	return amount/(9000)
 end
 function Public.oil_abstract_to_real(amount)
-	return Math.ceil(amount*8000)
+	return Math.ceil(amount*9000)
 end
 
 function Public.difficulty() return Memory.get_crew_memory().difficulty end

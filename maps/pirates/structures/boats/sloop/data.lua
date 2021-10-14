@@ -157,9 +157,9 @@ Public.deck_whitebelts_lrtp_order = {
 	{x = -52.5, y = 11.5, direction = defines.direction.south, type = 'output'},
 	{x = -51.5, y = 11.5, direction = defines.direction.south, type = 'output'},
 	{x = -50.5, y = 11.5, direction = defines.direction.south, type = 'output'},
-	{x = -17.5, y = 11.5, direction = defines.direction.north, type = 'output'},
-	{x = -16.5, y = 11.5, direction = defines.direction.north, type = 'output'},
-	{x = -15.5, y = 11.5, direction = defines.direction.north, type = 'output'},
+	{x = -17.5, y = 11.5, direction = defines.direction.south, type = 'output'},
+	{x = -16.5, y = 11.5, direction = defines.direction.south, type = 'output'},
+	{x = -15.5, y = 11.5, direction = defines.direction.south, type = 'output'},
 }
 
 Public.crewname_rendering_position = {x = -67, y = -18.5}

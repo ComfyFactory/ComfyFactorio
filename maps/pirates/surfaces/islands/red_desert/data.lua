@@ -24,9 +24,9 @@ Public.static_params_default = {
 
 function Public.base_ores() --here, just for the gui:
 	return {
-		['copper-ore'] = 5,
-		['iron-ore'] = 5,
-		['stone'] = 7,
+		['copper-ore'] = 7,
+		['iron-ore'] = 7,
+		['stone'] = 9,
 	}
 end
 

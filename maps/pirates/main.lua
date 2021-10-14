@@ -207,7 +207,7 @@ local function crew_tick()
 			end
 		end
 
-		if memory.captain_accrued_time_data and memory.playerindex_captain then
+		if memory.captain_accrued_time_data and memory.playerindex_captain and memory.overworldx and memory.overworldx > 0 then --don't count time on first island
 			local player = game.players[memory.playerindex_captain]
 			if player and player.name then
 				if (not memory.captain_accrued_time_data[player.name]) then memory.captain_accrued_time_data[player.name] = 0 end

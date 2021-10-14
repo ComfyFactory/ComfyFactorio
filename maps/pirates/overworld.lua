@@ -98,9 +98,10 @@ function Public.generate_overworld_destination(p)
 	elseif macrop.x == 15 or macrop.x == 23 or (macrop.x > 25 and macrop.x % 10 == 0) then
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.RADIOACTIVE
-	elseif macrop.x == 20 then --electric engines needed here
+		 --electric engines needed at 20
+	elseif macrop.x == 22 then
 		type = Surfaces.enum.ISLAND
-		subtype = Surfaces.Island.enum.WALKWAYS
+		subtype = Surfaces.Island.enum.WALKWAYS --moved from 20 to 22, let's not force a no-fight island right after the merchant dock
 	elseif macrop.x == 24 then
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.SWAMP
@@ -125,33 +126,31 @@ function Public.generate_overworld_destination(p)
 	if type == Surfaces.enum.ISLAND then
 
 		local scope = Surfaces[Surfaces.enum.ISLAND][subtype]
-		--@FIXME: Common.activecrewcount() shouldn't be used here, it should be sensitive to the playercount when you arrive on the island
-		local playercount = Common.activecrewcount()
 
 		local static_params = Utils.deepcopy(scope.Data.static_params_default)
 		local cost_to_leave, scheduled_raft_raids, class_for_sale
 
 		local normal_costitems = {'small-lamp', 'engine-unit', 'advanced-circuit', 'electric-engine-unit'}
 		local base_cost_0 = {
-			['small-lamp'] = (macrop.x-3)*25,
+			['small-lamp'] = (macrop.x)*20,
 		}
 		local base_cost_1 = {
-			['small-lamp'] = (macrop.x-3)*25,
+			['small-lamp'] = (macrop.x)*20,
 			['engine-unit'] = (macrop.x-7)*15,
 		}
 		local base_cost_2 = {
-			['small-lamp'] = (macrop.x-3)*25,
+			['small-lamp'] = (macrop.x)*20,
 			['engine-unit'] = (macrop.x-7)*15,
 			['advanced-circuit'] = (macrop.x-10)*10,
 		}
 		local base_cost_3 = {
-			['small-lamp'] = (macrop.x-3)*25,
+			['small-lamp'] = (macrop.x)*20,
 			['engine-unit'] = (macrop.x-7)*15,
 			['advanced-circuit'] = (macrop.x-10)*10,
 			['electric-engine-unit'] = (macrop.x-16)*10,
 		}
 		local base_cost_4 = {
-			['small-lamp'] = (macrop.x-3)*25,
+			['small-lamp'] = (macrop.x)*20,
 			['engine-unit'] = (macrop.x-7)*15,
 			['advanced-circuit'] = (macrop.x-10)*10,
 			['electric-engine-unit'] = (macrop.x-16)*10,
@@ -164,7 +163,7 @@ function Public.generate_overworld_destination(p)
 			cost_to_leave = base_cost_1
 		elseif macrop.x == 18 then --a super small amount of electric-engine-unit on a relatively early level so that they see they need lubricant
 			cost_to_leave = {
-				['small-lamp'] = (macrop.x-3)*25,
+				['small-lamp'] = (macrop.x)*20,
 				['engine-unit'] = (macrop.x-7)*15,
 				['electric-engine-unit'] = 2,
 			}
@@ -185,40 +184,12 @@ function Public.generate_overworld_destination(p)
 		end
 
 		static_params.cost_to_leave = cost_to_leave
+		-- Multiplication by Balance.cost_to_leave_multiplier() happens later.
 
 		class_for_sale = Classes.Class_List[Math.random(#Classes.Class_List)]
 		static_params.class_for_sale = class_for_sale
 
-		local max_evo = 0.85
-		if Common.difficulty() < 1 then max_evo = 0.68 end
-		if p.x > 200 then
-			scheduled_raft_raids = {}
-			local times = {600, 360, 215, 210, 120, 30, 10, 5}
-			for i = 1, #times do
-				local t = times[i]
-				if Math.random(7) == 1 and #scheduled_raft_raids < 6 then
-					scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_evo = max_evo}
-					-- scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_bonus_evolution = 0.52}
-				end
-			end
-		elseif p.x == 200 then
-			local times
-			if playercount <= 2 then
-				times = {1, 5, 10, 15}
-			elseif playercount <= 7 then
-				times = {1, 5, 10, 15, 20}
-			elseif playercount <= 15 then
-				times = {1, 5, 10, 15, 20, 25}
-			else
-				times = {1, 5, 10, 15, 20, 25, 30, 35}
-			end
-			scheduled_raft_raids = {}
-			for _, t in pairs(times) do
-				-- scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_bonus_evolution = 0.62}
-				scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_evo = max_evo}
-			end
-		end
-		static_params.scheduled_raft_raids = scheduled_raft_raids
+		--scheduled raft raids moved to destination_on_arrival
 
 		local ores_multiplier = Balance.island_richness_avg_multiplier()
 		if macrop.x == 0 then ores_multiplier = 1 end
@@ -459,34 +430,19 @@ function Public.check_for_destination_collisions()
 
 		if (relativex == 4 and relativey + destination_data.iconized_map_height/2 >= -3.5 and relativey - destination_data.iconized_map_height/2 <= 3.5) then
 			--or (relativey - destination_data.iconized_map.height/2 == 5 and (relativex >= -3.5 or relativex <= 4.5)) or (relativey + destination_data.iconized_map.height/2 == -4 and (relativex >= -3.5 or relativex <= 4.5))
+			
+			Surfaces.clean_up(Common.current_destination())
 
 			Surfaces.create_surface(destination_data)
 
 			local index = destination_data.destination_index
-
-			if destination_data.type == Surfaces.enum.ISLAND then
-				Crowsnest.paint_around_destination(index, CoreData.overworld_loading_tile)
-			end
-
-			if memory.overworldx == 600 then
-				Parrot.parrot_radioactive_tip_1()
-			elseif memory.overworldx == 800 then
-				Parrot.parrot_800_tip()
-			end
-			
-			Surfaces.clean_up(Common.current_destination())
-
 			memory.loadingticks = 0
 			memory.mapbeingloadeddestination_index = index
 			memory.currentdestination_index = index
 			memory.boat.state = Boats.enum_state.ATSEA_LOADING_MAP
 
 			local destination = Common.current_destination()
-			local name = destination.static_params.name and destination.static_params.name or 'NameNotFound'
-			local message = '[' .. memory.name .. '] Loading destination ' .. (memory.destinationsvisited_indices and (#memory.destinationsvisited_indices + 1) or 0) .. ', ' .. name .. '.'
-			Common.notify_game(message)
-
-			if memory.overworldx == 40*5 then Parrot.parrot_boats_warning() end
+			Surfaces.destination_on_collide(destination)
 
 			return true
 		end

@@ -29,6 +29,10 @@ function Public.scripted_biters_pollution_cost_multiplier()
 	return 1.33
 end
 
+function Public.cost_to_leave_multiplier()
+	return Common.difficulty()
+end
+
 Public.rocket_launch_coin_reward = 5000
 
 function Public.onthefly_scaling_with_players_rule()
@@ -61,7 +65,7 @@ end
 
 function Public.silo_total_pollution()
 	return (
-		280 * (Common.difficulty()^(1.5)) * Public.onthefly_scaling_with_players_rule()^(4/5) * (1 + 1 * (Common.overworldx()/40)^(1.75))
+		260 * (Common.difficulty()^(1.2)) * Public.onthefly_scaling_with_players_rule()^(4/5) * (1 + 1 * (Common.overworldx()/40)^(1.6))
 )
 end
 
@@ -88,15 +92,15 @@ end
 function Public.boat_passive_pollution_per_minute(time)
 	local boost = 1
 	local T = Public.max_time_on_island_formula()
-	if time and time >= 19/20 * T then
+	if time and time >= 90/100 * T then
 		boost = 15
-	elseif time and time >= 9/10 * T then
+	elseif time and time >= 85/100 * T then
 		boost = 8
-	elseif time and time >= 8/10 * T then
+	elseif time and time >= 75/100 * T then
 		boost = 5
-	elseif time and time >= 6/10 * T then
+	elseif time and time >= 55/100 * T then
 		boost = 3
-	elseif time and time >= 4/10 * T then
+	elseif time and time >= 40/100 * T then
 		boost = 2
 	end
 
@@ -107,7 +111,7 @@ end
 
 
 function Public.base_evolution()
-	local evo = (0.03 + 0.02 * (Common.overworldx()/40)) * Math.sloped(Common.difficulty(), 1/5)
+	local evo = (0.019 * (Common.overworldx()/40)) * Math.sloped(Common.difficulty(), 1/5)
 	if Common.overworldx()/40 == 0 then evo = 0 end
 	return evo
 end
@@ -162,11 +166,12 @@ function Public.evolution_per_full_silo_charge()
 	return 0.09
 end
 
-function Public.bonus_enemy_unit_damage_to_humans()
-	local ret = 0.5
+function Public.bonus_damage_to_humans()
+	local ret = 0.35
 	local diff = Common.difficulty()
 	if diff <= 0.5 then ret = 0.25 end
-	if diff > 1.5 then ret = 0.75 end
+	if diff >= 1.5 then ret = 0.5 end
+	if diff >= 3 then ret = 0.65 end
 	return ret
 end
 
@@ -213,7 +218,7 @@ function Public.island_richness_avg_multiplier()
 end
 
 function Public.resource_quest_multiplier()
-	return (1.0 + 0.1 * (Common.overworldx()/40)^(4/3)) * Math.sloped(Common.difficulty(), 1/2) * (Public.onthefly_scaling_with_players_rule())^(1/3)
+	return (1.0 + 0.1 * (Common.overworldx()/40)^(1)) * Math.sloped(Common.difficulty(), 1/2) * (Public.onthefly_scaling_with_players_rule())^(1/3)
 end
 
 
