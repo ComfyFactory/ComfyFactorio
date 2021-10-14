@@ -882,6 +882,7 @@ local function process_scrap_zone_1(x, y, data, void_or_lab)
     local tiles = data.tiles
     local entities = data.entities
     local buildings = data.buildings
+    local treasure = data.treasure
 
     local scrapyard = get_perlin('scrapyard', p, seed)
     local smol_areas = get_perlin('smol_areas', p, seed + 35000)
@@ -907,6 +908,9 @@ local function process_scrap_zone_1(x, y, data, void_or_lab)
                 spawn_turret(entities, p, 3)
             else
                 spawn_turret(entities, p, 4)
+            end
+            if random(1, 2048) == 1 then
+                treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
             end
         end
         tiles[#tiles + 1] = {name = 'dirt-7', position = p}
@@ -945,6 +949,7 @@ local function process_scrap_zone_1(x, y, data, void_or_lab)
             if random(1, 5) > 1 then
                 entities[#entities + 1] = {name = scrap_mineable_entities[random(1, scrap_mineable_entities_index)], position = p, force = 'neutral'}
             end
+
             if random(1, 256) == 1 then
                 entities[#entities + 1] = {name = 'land-mine', position = p, force = 'enemy'}
             end
@@ -975,6 +980,9 @@ local function process_scrap_zone_1(x, y, data, void_or_lab)
             tiles[#tiles + 1] = {name = 'dirt-7', position = p}
             if random(1, 2) == 1 then
                 entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
+            end
+            if random(1, 2048) == 1 then
+                treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
             end
             return
         end
