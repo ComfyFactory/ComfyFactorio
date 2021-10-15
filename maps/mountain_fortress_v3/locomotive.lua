@@ -19,11 +19,13 @@ local Token = require 'utils.token'
 local MapFunctions = require 'tools.map_functions'
 local SpamProtection = require 'utils.spam_protection'
 local AI = require 'utils.ai'
+local MysticalChest = require 'maps.mountain_fortress_v3.mystical_chest'
 
 local format_number = require 'util'.format_number
 
 local Public = {}
 local concat = table.concat
+local insert = table.insert
 local main_frame_name = Gui.uid_name()
 local rpg_main_frame = RPG.main_frame_name
 local random = math.random
@@ -32,6 +34,7 @@ local round = math.round
 local rad = math.rad
 local sin = math.sin
 local cos = math.cos
+local abs = math.abs
 local ceil = math.ceil
 
 local clear_items_upon_surface_entry = {
@@ -1263,6 +1266,30 @@ local function gui_click(event)
         return
     end
 
+    if name == 'car_health_upgrade_pool' then
+        player.remove_item({name = item.value, count = item.price})
+        local message = ({
+            'locomotive.car_health_upgrade_pool_bought_info',
+            shopkeeper,
+            player.name,
+            format_number(item.price, true)
+        })
+
+        Alert.alert_all_players(5, message)
+        Server.to_discord_bold(
+            table.concat {
+                player.name .. ' has bought the global car health modifier for ' .. format_number(item.price) .. ' coins.'
+            }
+        )
+        this.has_upgraded_health_pool = true
+        this.explosive_bullets = true
+
+        redraw_market_items(data.item_frame, player, data.search_text)
+        redraw_coins_left(data.coins_left, player)
+
+        return
+    end
+
     if name == 'flamethrower_turrets' then
         player.remove_item({name = item.value, count = item.price})
         if item.stack >= 1 then
@@ -1529,6 +1556,27 @@ local function create_market(data, rebuild)
 
     this.market = surface.create_entity {name = 'market', position = center_position, force = 'player'}
 
+    if this.mystical_chest_enabled then
+        this.mystical_chest = {
+            entity = surface.create_entity {name = 'logistic-chest-requester', position = {x = center_position.x, y = center_position.y + 2}, force = 'neutral'},
+            price = false
+        }
+        this.mystical_chest.entity.minable = false
+        this.mystical_chest.entity.destructible = false
+        if not this.mystical_chest.price then
+            Public.add_mystical_chest()
+        end
+        rendering.draw_text {
+            text = 'Mystical chest',
+            surface = surface,
+            target = this.mystical_chest.entity,
+            scale = 1.2,
+            target_offset = {0, 0},
+            color = {r = 0.98, g = 0.66, b = 0.22},
+            alignment = 'center'
+        }
+    end
+
     Generate.wintery(this.market, 5.5)
 
     rendering.draw_text {
@@ -1760,6 +1808,34 @@ local function divide_contents()
     ::final::
 end
 
+local function mystical_chest_reward()
+    -- something fancy to reward players
+end
+
+local function init_price_check(locomotive, mystical_chest)
+    local roll = 48 + abs(locomotive.position.y) * 1.75
+    roll = roll * random(25, 2455) * 0.01
+
+    local item_stacks = {}
+    local roll_count = 2
+    for _ = 1, roll_count, 1 do
+        for _, stack in pairs(MysticalChest.roll(floor(roll / roll_count), 2)) do
+            if not item_stacks[stack.name] then
+                item_stacks[stack.name] = stack.count
+            else
+                item_stacks[stack.name] = item_stacks[stack.name] + stack.count
+            end
+        end
+    end
+
+    local price = {}
+    for k, v in pairs(item_stacks) do
+        insert(price, {name = k, count = v})
+    end
+
+    mystical_chest.price = price
+end
+
 local function place_market()
     local locomotive = WPT.get('locomotive')
     if not locomotive then
@@ -1950,6 +2026,47 @@ local function on_player_driving_changed_state(event)
             end
         end
     end
+end
+
+local function container_opened(event)
+    local entity = event.entity
+    if not entity then
+        return
+    end
+    if not entity.valid then
+        return
+    end
+    if not entity.unit_number then
+        return
+    end
+
+    local mystical_chest = WPT.get('mystical_chest')
+    if not mystical_chest then
+        return
+    end
+    if not (mystical_chest.entity and mystical_chest.entity.valid) then
+        return
+    end
+
+    if entity.unit_number ~= mystical_chest.entity.unit_number then
+        return
+    end
+
+    local has_succeeded = Public.add_mystical_chest()
+    if has_succeeded then
+        local player = game.players[event.player_index]
+        local colored_player_name =
+            table.concat({'[color=', player.color.r * 0.6 + 0.35, ',', player.color.g * 0.6 + 0.35, ',', player.color.b * 0.6 + 0.35, ']', player.name, '[/color]'})
+        game.print(colored_player_name .. ' unlocked the last missing piece for the mystical chest!')
+    end
+end
+
+local function on_gui_opened(event)
+    container_opened(event)
+end
+
+local function on_gui_closed(event)
+    container_opened(event)
 end
 
 function Public.close_gui_player(frame)
@@ -2179,6 +2296,7 @@ function Public.get_items()
     local landmine = WPT.get('upgrades').landmine.bought
     local fixed_prices = WPT.get('marked_fixed_prices')
     local health_upgrades_limit = WPT.get('health_upgrades_limit')
+    local has_upgraded_health_pool = WPT.get('has_upgraded_health_pool')
 
     local chest_limit_cost = round(fixed_prices.chest_limit_cost * (1 + chest_limit_outside_upgrades))
     local health_cost = round(fixed_prices.health_cost * (1 + health_upgrades))
@@ -2188,6 +2306,7 @@ function Public.get_items()
     local explosive_bullets_cost = round(fixed_prices.explosive_bullets_cost)
     local flamethrower_turrets_cost = round(fixed_prices.flamethrower_turrets_cost * (1 + flame_turret))
     local land_mine_cost = round(fixed_prices.land_mine_cost * (1 + landmine))
+    local car_health_upgrade_pool = fixed_prices.car_health_upgrade_pool_cost
 
     local pickaxe_tiers = WPT.pickaxe_upgrades
     local tier = WPT.get('pickaxe_tier')
@@ -2275,6 +2394,30 @@ function Public.get_items()
         upgrade = true,
         static = true
     }
+
+    if has_upgraded_health_pool then
+        main_market_items['car_health_upgrade_pool'] = {
+            stack = 1,
+            value = 'coin',
+            price = car_health_upgrade_pool,
+            tooltip = ({'main_market.sold_out'}),
+            sprite = 'achievement/iron-throne-1',
+            enabled = false,
+            upgrade = true,
+            static = true
+        }
+    else
+        main_market_items['car_health_upgrade_pool'] = {
+            stack = 1,
+            value = 'coin',
+            price = car_health_upgrade_pool,
+            tooltip = ({'main_market.global_car_health_modifier'}),
+            sprite = 'achievement/iron-throne-1',
+            enabled = true,
+            upgrade = true,
+            static = true
+        }
+    end
     main_market_items['xp_points_boost'] = {
         stack = 1,
         value = 'coin',
@@ -2609,6 +2752,51 @@ function Public.enable_robotic_defense(pos)
     end
 end
 
+function Public.add_mystical_chest()
+    local locomotive = WPT.get('locomotive')
+    if not locomotive then
+        return
+    end
+    if not locomotive.valid then
+        return
+    end
+
+    local mystical_chest = WPT.get('mystical_chest')
+    if not (mystical_chest.entity and mystical_chest.entity.valid) then
+        return
+    end
+
+    if not mystical_chest.price then
+        init_price_check(locomotive, mystical_chest)
+    end
+
+    local entity = mystical_chest.entity
+
+    local inventory = mystical_chest.entity.get_inventory(defines.inventory.chest)
+
+    for key, item_stack in pairs(mystical_chest.price) do
+        local count_removed = inventory.remove(item_stack)
+        mystical_chest.price[key].count = mystical_chest.price[key].count - count_removed
+        if mystical_chest.price[key].count <= 0 then
+            table.remove(mystical_chest.price, key)
+        end
+    end
+
+    if #mystical_chest.price == 0 then
+        init_price_check(locomotive, mystical_chest)
+        mystical_chest_reward()
+        return true
+    end
+
+    for slot = 1, 30, 1 do
+        entity.clear_request_slot(slot)
+    end
+
+    for slot, item_stack in pairs(mystical_chest.price) do
+        mystical_chest.entity.set_request_slot(item_stack, slot)
+    end
+end
+
 local boost_players = Public.boost_players_around_train
 local pollute_area = Public.transfer_pollution
 
@@ -2639,6 +2827,7 @@ local function tick()
 end
 
 Public.place_market = place_market
+Public.init_price_check = init_price_check
 
 Event.on_nth_tick(5, tick)
 Event.add(defines.events.on_gui_click, gui_click)
@@ -2657,5 +2846,7 @@ Event.add(defines.events.on_console_chat, on_console_chat)
 Event.add(defines.events.on_player_changed_surface, on_player_changed_surface)
 Event.add(defines.events.on_player_driving_changed_state, on_player_driving_changed_state)
 Event.add(defines.events.on_train_created, set_carriages)
+Event.add(defines.events.on_gui_opened, on_gui_opened)
+Event.add(defines.events.on_gui_closed, on_gui_closed)
 
 return Public

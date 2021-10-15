@@ -469,8 +469,8 @@ function Public.get(key)
 end
 
 function Public.set(key, value)
-    if key and (value or value == false) then
-        this[key] = value
+    if key then
+        this[key] = value or false
         return this[key]
     elseif key then
         return this[key]

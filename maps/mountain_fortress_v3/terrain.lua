@@ -238,6 +238,7 @@ local function wall(p, data)
     local treasure = data.treasure
     local stone_wall = {callback = Functions.disable_minable_callback}
     local enable_arties = WPT.get('enable_arties')
+    local alert_zone_1 = WPT.get('alert_zone_1')
 
     local seed = data.seed
     local y = data.yv
@@ -303,6 +304,23 @@ local function wall(p, data)
                             force = 'player',
                             callback = stone_wall
                         }
+                        if not alert_zone_1 then
+                            local x_min = -WPT.level_width / 2
+                            local x_max = WPT.level_width / 2
+                            surface.create_entity({name = 'electric-beam', position = {x_min, p.y}, source = {x_min, p.y}, target = {x_max, p.y}})
+                            surface.create_entity({name = 'electric-beam', position = {x_min, p.y}, source = {x_min, p.y}, target = {x_max, p.y}})
+                            WPT.set('alert_zone_1', true)
+                            rendering.draw_text {
+                                text = 'Breaching this wall will start collapse.',
+                                surface = surface,
+                                target = {0, p.y - 10},
+                                color = {r = 0.98, g = 0.66, b = 0.22},
+                                scale = 8,
+                                font = 'heading-1',
+                                alignment = 'center',
+                                scale_with_zoom = false
+                            }
+                        end
                     end
                 else
                     if random(1, 32 - y) == 1 then
