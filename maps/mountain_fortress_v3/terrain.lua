@@ -311,9 +311,9 @@ local function wall(p, data)
                             surface.create_entity({name = 'electric-beam', position = {x_min, p.y}, source = {x_min, p.y}, target = {x_max, p.y}})
                             WPT.set('alert_zone_1', true)
                             rendering.draw_text {
-                                text = 'Breaching this wall will start collapse.',
+                                text = 'Breaching the far side wall will start collapse.',
                                 surface = surface,
-                                target = {0, p.y - 10},
+                                target = {0, p.y + 35},
                                 color = {r = 0.98, g = 0.66, b = 0.22},
                                 scale = 8,
                                 font = 'heading-1',
@@ -321,9 +321,9 @@ local function wall(p, data)
                                 scale_with_zoom = false
                             }
                             rendering.draw_text {
-                                text = 'Breaching this wall will start collapse.',
+                                text = 'Breaching the far side wall will start collapse',
                                 surface = surface,
-                                target = {-180, p.y - 10},
+                                target = {-180, p.y + 35},
                                 color = {r = 0.98, g = 0.66, b = 0.22},
                                 scale = 8,
                                 font = 'heading-1',
@@ -331,9 +331,9 @@ local function wall(p, data)
                                 scale_with_zoom = false
                             }
                             rendering.draw_text {
-                                text = 'Breaching this wall will start collapse.',
+                                text = 'Breaching the far side wall will start collapse',
                                 surface = surface,
-                                target = {180, p.y - 10},
+                                target = {180, p.y + 35},
                                 color = {r = 0.98, g = 0.66, b = 0.22},
                                 scale = 8,
                                 font = 'heading-1',
