@@ -933,7 +933,7 @@ local function on_player_repaired_entity(event)
         local player = game.players[event.player_index]
         local repair_speed = RPG.get_magicka(player)
         if repair_speed <= 0 then
-            set_train_final_health(2, true)
+            set_train_final_health(-1, true)
             return
         else
             set_train_final_health(-repair_speed, true)
