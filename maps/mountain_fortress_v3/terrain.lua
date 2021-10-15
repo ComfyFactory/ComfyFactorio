@@ -320,6 +320,26 @@ local function wall(p, data)
                                 alignment = 'center',
                                 scale_with_zoom = false
                             }
+                            rendering.draw_text {
+                                text = 'Breaching this wall will start collapse.',
+                                surface = surface,
+                                target = {-180, p.y - 10},
+                                color = {r = 0.98, g = 0.66, b = 0.22},
+                                scale = 8,
+                                font = 'heading-1',
+                                alignment = 'center',
+                                scale_with_zoom = false
+                            }
+                            rendering.draw_text {
+                                text = 'Breaching this wall will start collapse.',
+                                surface = surface,
+                                target = {180, p.y - 10},
+                                color = {r = 0.98, g = 0.66, b = 0.22},
+                                scale = 8,
+                                font = 'heading-1',
+                                alignment = 'center',
+                                scale_with_zoom = false
+                            }
                         end
                     end
                 else
