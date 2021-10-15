@@ -24,6 +24,13 @@ local function remove_unit(entity)
     local active_biter_count = WD.get('active_biter_count')
     WD.set('active_biter_count', active_biter_count - 1)
     active_biters[unit_number] = nil
+
+    if active_biter_count <= 0 then
+        WD.set('active_biter_count', 0)
+    end
+    if active_biter_threat <= 0 then
+        WD.set('active_biter_threat', 0)
+    end
 end
 
 local function place_nest_near_unit_group()
@@ -243,7 +250,8 @@ local function on_entity_died(event)
             local threat = WD.get('threat')
             if threat <= 0 then
                 WD.set('threat', 0)
-                threat = WD.get('threat')
+                remove_unit(entity)
+                return
             end
             WD.set('threat', math.round(threat - threat_values[entity.name] * biter_health_boost, 2))
             remove_unit(entity)

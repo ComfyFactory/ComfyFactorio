@@ -4,6 +4,7 @@ local Event = require 'utils.event'
 local Functions = require 'maps.mountain_fortress_v3.ic.functions'
 local IC = require 'maps.mountain_fortress_v3.ic.table'
 local Minimap = require 'maps.mountain_fortress_v3.ic.minimap'
+local WPT = require 'maps.mountain_fortress_v3.table'
 local Public = {}
 
 Public.reset = IC.reset
@@ -101,6 +102,10 @@ local function on_tick()
 
     if tick % 20 == 1 then
         Functions.item_transfer()
+        local has_upgraded_health_pool = WPT.get('has_upgraded_health_pool')
+        if not has_upgraded_health_pool then
+            Functions.check_entity_healths()
+        end
     end
 
     if tick % 240 == 0 then
@@ -208,6 +213,77 @@ local function on_gui_switch_state_changed(event)
     end
 end
 
+local function on_entity_damaged(event)
+    local has_upgraded_health_pool = WPT.get('has_upgraded_health_pool')
+    if not has_upgraded_health_pool then
+        return
+    end
+
+    local entity = event.entity
+
+    if not (entity and entity.valid) then
+        return
+    end
+
+    if not entity.unit_number then
+        return
+    end
+
+    local cars = IC.get('cars')
+    local car = cars[entity.unit_number]
+    if not car then
+        return
+    end
+
+    local final_damage_amount = event.final_damage_amount
+    local force = event.force
+
+    if force.index == 1 then
+        return
+    end
+
+    local data = {
+        entity = entity,
+        final_damage_amount = final_damage_amount,
+        car = car
+    }
+
+    Functions.set_damage_health(data)
+end
+
+local function on_player_repaired_entity(event)
+    local has_upgraded_health_pool = WPT.get('has_upgraded_health_pool')
+    if not has_upgraded_health_pool then
+        return
+    end
+
+    local entity = event.entity
+
+    if not (entity and entity.valid) then
+        return
+    end
+
+    if not entity.unit_number then
+        return
+    end
+
+    local player = game.get_player(event.player_index)
+
+    local cars = IC.get('cars')
+    local car = cars[entity.unit_number]
+    if not car then
+        return
+    end
+
+    local data = {
+        entity = entity,
+        car = car,
+        player = player
+    }
+
+    Functions.set_repair_health(data)
+end
+
 local changed_surface = Minimap.changed_surface
 
 Event.on_init(on_init)
@@ -225,5 +301,7 @@ Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_player_changed_surface, changed_surface)
 Event.add(IC.events.on_player_kicked_from_surface, trigger_on_player_kicked_from_surface)
 Event.add(defines.events.on_gui_switch_state_changed, on_gui_switch_state_changed)
+Event.add(defines.events.on_entity_damaged, on_entity_damaged)
+Event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)
 
 return Public
