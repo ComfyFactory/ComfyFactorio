@@ -5,8 +5,8 @@ local inspect = require 'utils.inspect'.inspect
 local Public = {}
 
 Public.scenario_id_name = 'pirates'
-Public.version_string = '1.0.1.7'
-Public.version_float = 1.017
+Public.version_string = '1.0.1.7.1'
+Public.version_float = 1.0171
 
 
 Public.victory_x = 1000

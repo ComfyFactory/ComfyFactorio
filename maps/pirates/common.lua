@@ -40,17 +40,17 @@ Public.afk_warning_time = 60 * 60 * 4
 
 
 function Public.ore_real_to_abstract(amount)
-	return amount/1500
+	return amount/1750
 end
 function Public.ore_abstract_to_real(amount)
-	return Math.ceil(amount*1500)
+	return Math.ceil(amount*1750)
 end
 
 function Public.oil_real_to_abstract(amount)
-	return amount/(9000)
+	return amount/(9800)
 end
 function Public.oil_abstract_to_real(amount)
-	return Math.ceil(amount*9000)
+	return Math.ceil(amount*9800)
 end
 
 function Public.difficulty() return Memory.get_crew_memory().difficulty end
