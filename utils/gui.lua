@@ -2,6 +2,7 @@ local Token = require 'utils.token'
 local Event = require 'utils.event'
 local Global = require 'utils.global'
 local SpamProtection = require 'utils.spam_protection'
+local mod_gui = require('__core__/lualib/mod-gui')
 
 local tostring = tostring
 local next = next
@@ -328,5 +329,8 @@ if _DEBUG then
         return element_map
     end
 end
+
+Gui.get_button_flow = mod_gui.get_button_flow
+Gui.mod_button = mod_gui.get_button_flow
 
 return Gui

@@ -30,6 +30,16 @@ local starting_items = {
     ['explosives'] = 32
 }
 
+local random_respawn_messages = {
+    'The doctors stitched you up as best they could.',
+    'Ow! Your right leg hurts.',
+    'Ow! Your left leg hurts.',
+    'You can feel your whole body aching.',
+    "You still have some bullet wounds that aren't patched up.",
+    'You feel dizzy but adrenalin is granting you speed.',
+    'Adrenalin is kicking in, but your body is damaged.'
+}
+
 Global.register(
     this,
     function(t)
@@ -41,6 +51,7 @@ local Public = {}
 
 local random = math.random
 local floor = math.floor
+local round = math.round
 local remove = table.remove
 local sqrt = math.sqrt
 local magic_crafters_per_tick = 3
@@ -1339,6 +1350,8 @@ function Public.on_player_respawned(event)
     end
     if player.character and player.character.valid then
         Task.set_timeout_in_ticks(15, boost_movement_speed_on_respawn, {player = player})
+        player.character.health = round(player.character.health * 0.25)
+        player.print(random_respawn_messages[random(1, #random_respawn_messages)])
     end
 end
 
