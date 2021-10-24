@@ -739,6 +739,28 @@ function Public.kill_car(entity)
         end
     end
 
+    local renders = IC.get('renders')
+
+    if renders[owner.index] then
+        rendering.destroy(renders[owner.index])
+        renders[owner.index] = nil
+    end
+
+    local player_gui_data = IC.get('player_gui_data')
+    if player_gui_data[owner.name] then
+        player_gui_data[owner.name] = nil
+    end
+
+    local players = IC.get('players')
+    if players[owner.index] then
+        players[owner.index] = nil
+    end
+
+    local misc_settings = IC.get('misc_settings')
+    if misc_settings[owner.index] then
+        misc_settings[owner.index] = nil
+    end
+
     local surface_index = car.surface
     local surface = game.surfaces[surface_index]
     kill_doors(car)
@@ -752,6 +774,79 @@ function Public.kill_car(entity)
     end
     car.entity.force.chart(surface, car.area)
     game.delete_surface(surface)
+    surfaces[entity.unit_number] = nil
+    cars[entity.unit_number] = nil
+end
+
+function Public.kill_car_but_save_surface(entity)
+    if not validate_entity(entity) then
+        return
+    end
+
+    local entity_type = IC.get('entity_type')
+
+    if not entity_type[entity.type] then
+        return
+    end
+
+    local surfaces = IC.get('surfaces')
+    local surfaces_deleted_by_button = IC.get('surfaces_deleted_by_button')
+    local cars = IC.get('cars')
+    local car = cars[entity.unit_number]
+    if not car then
+        return
+    end
+
+    kick_players_out_of_vehicles(car)
+    kick_players_from_surface(car)
+
+    car.entity.minable = true
+
+    local trust_system = IC.get('trust_system')
+    local owner = car.owner
+
+    if owner then
+        owner = game.get_player(owner)
+        if owner and owner.valid then
+            if trust_system[owner.index] then
+                trust_system[owner.index] = nil
+            end
+        end
+    end
+
+    local renders = IC.get('renders')
+
+    if renders[owner.index] then
+        rendering.destroy(renders[owner.index])
+        renders[owner.index] = nil
+    end
+
+    local player_gui_data = IC.get('player_gui_data')
+    if player_gui_data[owner.name] then
+        player_gui_data[owner.name] = nil
+    end
+
+    local players = IC.get('players')
+    if players[owner.index] then
+        players[owner.index] = nil
+    end
+
+    local misc_settings = IC.get('misc_settings')
+    if misc_settings[owner.index] then
+        misc_settings[owner.index] = nil
+    end
+
+    local surface_index = car.surface
+    local surface = game.surfaces[surface_index]
+
+    if not surfaces_deleted_by_button[owner.name] then
+        surfaces_deleted_by_button[owner.name] = {}
+    end
+
+    surfaces_deleted_by_button[owner.name][#surfaces_deleted_by_button[owner.name] + 1] = surface.name
+
+    kill_doors(car)
+    car.entity.force.chart(surface, car.area)
     surfaces[entity.unit_number] = nil
     cars[entity.unit_number] = nil
 end

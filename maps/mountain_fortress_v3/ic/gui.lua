@@ -4,6 +4,8 @@ local Color = require 'utils.color_presets'
 local Gui = require 'utils.gui'
 local Tabs = require 'comfy_panel.main'
 local Event = require 'utils.event'
+local Token = require 'utils.token'
+local Task = require 'utils.task'
 
 local Public = {}
 local insert = table.insert
@@ -11,17 +13,21 @@ local insert = table.insert
 --! Gui Frames
 local save_add_player_button_name = Gui.uid_name()
 local save_transfer_car_button_name = Gui.uid_name()
-local discard_add_player_button_name = Gui.uid_name()
+local save_destroy_surface_button_name = Gui.uid_name()
+local discard_add_player_name = Gui.uid_name()
+local discard_transfer_car_name = Gui.uid_name()
+local discard_destroy_surface_name = Gui.uid_name()
 local transfer_player_select_name = Gui.uid_name()
-local discard_transfer_car_button_name = Gui.uid_name()
 local main_frame_name = Gui.uid_name()
 local draw_add_player_frame_name = Gui.uid_name()
 local draw_transfer_car_frame_name = Gui.uid_name()
+local draw_destroy_surface_frame_name = Gui.uid_name()
 local main_toolbar_name = Gui.uid_name()
 local add_player_name = Gui.uid_name()
 local transfer_car_name = Gui.uid_name()
 local allow_anyone_to_enter_name = Gui.uid_name()
 local kick_player_name = Gui.uid_name()
+local destroy_surface_name = Gui.uid_name()
 
 local raise_event = script.raise_event
 local add_toolbar
@@ -71,7 +77,7 @@ local function get_players(player, frame, all)
             insert(tbl, tostring(p.name))
         end
     end
-    insert(tbl, 'Select Player')
+    insert(tbl, ({'ic.select_player'}))
 
     local selected_index = #tbl
 
@@ -131,7 +137,7 @@ local function draw_add_player(player, frame)
         {
             type = 'frame',
             name = draw_add_player_frame_name,
-            caption = 'Add Player',
+            caption = ({'ic.add_player'}),
             direction = 'vertical'
         }
     )
@@ -159,14 +165,14 @@ local function draw_add_player(player, frame)
     left_flow.style.horizontal_align = 'left'
     left_flow.style.horizontally_stretchable = true
 
-    local close_button = left_flow.add({type = 'button', name = discard_add_player_button_name, caption = 'Discard'})
+    local close_button = left_flow.add({type = 'button', name = discard_add_player_name, caption = ({'ic.discard'})})
     close_button.style = 'back_button'
     close_button.style.maximal_width = 100
 
     local right_flow = bottom_flow.add({type = 'flow'})
     right_flow.style.horizontal_align = 'right'
 
-    local save_button = right_flow.add({type = 'button', name = save_add_player_button_name, caption = 'Save'})
+    local save_button = right_flow.add({type = 'button', name = save_add_player_button_name, caption = ({'ic.save'})})
     save_button.style = 'confirm_button'
     save_button.style.maximal_width = 100
 
@@ -179,7 +185,7 @@ local function draw_transfer_car(player, frame)
         {
             type = 'frame',
             name = draw_transfer_car_frame_name,
-            caption = 'Transfer Car',
+            caption = ({'ic.transfer_car'}),
             direction = 'vertical'
         }
     )
@@ -199,8 +205,9 @@ local function draw_transfer_car(player, frame)
     inside_table_style.bottom_padding = 10
     inside_table_style.width = 325
 
-    local transfer_car_alert_frame = main_frame.add({type = 'label', caption = "Warning, this action can't be undone!"})
+    local transfer_car_alert_frame = main_frame.add({type = 'label', caption = ({'ic.warning'})})
     transfer_car_alert_frame.style.font_color = {r = 255, g = 0, b = 0}
+    transfer_car_alert_frame.style.font = 'heading-1'
     local transfer_car_frame = get_players(player, main_frame, true)
 
     local bottom_flow = main_frame.add({type = 'flow', direction = 'horizontal'})
@@ -209,18 +216,72 @@ local function draw_transfer_car(player, frame)
     left_flow.style.horizontal_align = 'left'
     left_flow.style.horizontally_stretchable = true
 
-    local close_button = left_flow.add({type = 'button', name = discard_transfer_car_button_name, caption = 'Discard'})
+    local close_button = left_flow.add({type = 'button', name = discard_transfer_car_name, caption = ({'ic.discard'})})
     close_button.style = 'back_button'
     close_button.style.maximal_width = 100
 
     local right_flow = bottom_flow.add({type = 'flow'})
     right_flow.style.horizontal_align = 'right'
 
-    local save_button = right_flow.add({type = 'button', name = save_transfer_car_button_name, caption = 'Save'})
+    local save_button = right_flow.add({type = 'button', name = save_transfer_car_button_name, caption = ({'ic.save'})})
     save_button.style = 'confirm_button'
     save_button.style.maximal_width = 100
 
     Gui.set_data(save_button, transfer_car_frame)
+end
+
+local function draw_destroy_surface_name(frame)
+    local main_frame =
+        frame.add(
+        {
+            type = 'frame',
+            name = draw_destroy_surface_frame_name,
+            caption = ({'ic.destroy_surface'}),
+            direction = 'vertical'
+        }
+    )
+    local main_frame_style = main_frame.style
+    main_frame_style.width = 370
+    main_frame_style.use_header_filler = true
+
+    local inside_frame = main_frame.add {type = 'frame', style = 'inside_shallow_frame'}
+    local inside_frame_style = inside_frame.style
+    inside_frame_style.padding = 0
+    local inside_table = inside_frame.add {type = 'table', column_count = 1}
+    local inside_table_style = inside_table.style
+    inside_table_style.vertical_spacing = 5
+    inside_table_style.top_padding = 10
+    inside_table_style.left_padding = 10
+    inside_table_style.right_padding = 0
+    inside_table_style.bottom_padding = 10
+    inside_table_style.width = 325
+
+    local destroy_car_frame = main_frame.add({type = 'label', caption = ({'ic.warning'})})
+    destroy_car_frame.style.font_color = {r = 255, g = 0, b = 0}
+    destroy_car_frame.style.font = 'heading-1'
+
+    local warn_again_frame = main_frame.add({type = 'label', caption = ({'ic.warning_2'})})
+    warn_again_frame.style.font_color = {r = 255, g = 0, b = 0}
+    warn_again_frame.style.font = 'heading-1'
+
+    local bottom_flow = main_frame.add({type = 'flow', direction = 'horizontal'})
+
+    local left_flow = bottom_flow.add({type = 'flow'})
+    left_flow.style.horizontal_align = 'left'
+    left_flow.style.horizontally_stretchable = true
+
+    local close_button = left_flow.add({type = 'button', name = discard_destroy_surface_name, caption = ({'ic.discard'})})
+    close_button.style = 'back_button'
+    close_button.style.maximal_width = 100
+
+    local right_flow = bottom_flow.add({type = 'flow'})
+    right_flow.style.horizontal_align = 'right'
+
+    local save_button = right_flow.add({type = 'button', name = save_destroy_surface_button_name, caption = ({'ic.save'})})
+    save_button.style = 'confirm_button'
+    save_button.style.maximal_width = 100
+
+    Gui.set_data(save_button, save_destroy_surface_button_name)
 end
 
 local function draw_players(data)
@@ -257,7 +318,7 @@ local function draw_players(data)
             kick_flow.add(
             {
                 type = 'button',
-                caption = 'Kick ' .. p,
+                caption = ({'ic.kick', p}),
                 name = kick_player_name
             }
         )
@@ -275,7 +336,7 @@ local function draw_main_frame(player)
         {
             type = 'frame',
             name = main_frame_name,
-            caption = 'Car Settings',
+            caption = ({'ic.car_settings'}),
             direction = 'vertical',
             style = 'inner_frame_in_outer_frame'
         }
@@ -301,8 +362,9 @@ local function draw_main_frame(player)
 
     local player_list = create_player_table(player)
 
-    local add_player_frame = inside_table.add({type = 'button', caption = 'Add Player', name = add_player_name})
-    local transfer_car_frame = inside_table.add({type = 'button', caption = 'Transfer Car', name = transfer_car_name})
+    local add_player_frame = inside_table.add({type = 'button', caption = ({'ic.add_player'}), name = add_player_name})
+    local transfer_car_frame = inside_table.add({type = 'button', caption = ({'ic.car_settings'}), name = transfer_car_name})
+    local destroy_surface_frame = inside_table.add({type = 'button', caption = ({'ic.destroy_surface'}), name = destroy_surface_name})
     local allow_anyone_to_enter =
         inside_table.add(
         {
@@ -310,8 +372,8 @@ local function draw_main_frame(player)
             name = allow_anyone_to_enter_name,
             switch_state = player_list.allow_anyone,
             allow_none_state = false,
-            left_label_caption = 'Allow everyone to enter: ON',
-            right_label_caption = 'OFF'
+            left_label_caption = ({'ic.allow_anyone'}),
+            right_label_caption = ({'ic.off'})
         }
     )
 
@@ -332,7 +394,7 @@ local function draw_main_frame(player)
         player_table.add(
         {
             type = 'label',
-            caption = 'Name',
+            caption = ({'ic.name'}),
             tooltip = ''
         }
     )
@@ -343,7 +405,7 @@ local function draw_main_frame(player)
         player_table.add(
         {
             type = 'label',
-            caption = 'Allowed',
+            caption = ({'ic.allowed'}),
             tooltip = ''
         }
     )
@@ -354,7 +416,7 @@ local function draw_main_frame(player)
         player_table.add(
         {
             type = 'label',
-            caption = 'Operations',
+            caption = ({'ic.operations'}),
             tooltip = ''
         }
     )
@@ -365,6 +427,7 @@ local function draw_main_frame(player)
         player_table = player_table,
         add_player_frame = add_player_frame,
         transfer_car_frame = transfer_car_frame,
+        destroy_surface_frame = destroy_surface_frame,
         allow_anyone_to_enter = allow_anyone_to_enter,
         player = player
     }
@@ -403,7 +466,7 @@ add_toolbar = function(player, remove)
         return
     end
 
-    local tooltip = 'Control who may enter your vehicle.'
+    local tooltip = ({'ic.control'})
     player.gui.top.add(
         {
             type = 'sprite-button',
@@ -477,6 +540,28 @@ Gui.on_click(
         local player_frame = frame[draw_transfer_car_frame_name]
         if not player_frame or not player_frame.valid then
             draw_transfer_car(player, frame)
+        else
+            player_frame.destroy()
+        end
+    end
+)
+
+Gui.on_click(
+    destroy_surface_name,
+    function(event)
+        local player = event.player
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        local screen = player.gui.screen
+        local frame = screen[main_frame_name]
+        if not frame or not frame.valid then
+            return
+        end
+        local player_frame = frame[draw_destroy_surface_frame_name]
+        if not player_frame or not player_frame.valid then
+            draw_destroy_surface_name(frame)
         else
             player_frame.destroy()
         end
@@ -578,6 +663,9 @@ Gui.on_click(
                 if not fetched_name then
                     return
                 end
+                if type(fetched_name) == 'table' and fetched_name[1] == 'ic.select_player' then
+                    return player.print('[IC] Target player was not valid.', Color.warning)
+                end
 
                 local player_to_add = game.get_player(fetched_name)
                 if not player_to_add or not player_to_add.valid then
@@ -603,6 +691,72 @@ Gui.on_click(
                 if player.gui.screen[main_frame_name] then
                     player.gui.screen[main_frame_name].destroy()
                 end
+            end
+        end
+    end
+)
+
+local clear_misc_settings =
+    Token.register(
+    function(data)
+        local player_index = data.player_index
+        local misc_settings = ICT.get('misc_settings')
+        if not misc_settings[player_index] then
+            return
+        end
+
+        misc_settings[player_index] = nil
+    end
+)
+
+Gui.on_click(
+    save_destroy_surface_button_name,
+    function(event)
+        local player = event.player
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        local screen = player.gui.screen
+        local frame = screen[main_frame_name]
+
+        local element = event.element
+        if not (element and element.valid) then
+            return
+        end
+
+        local misc_settings = ICT.get('misc_settings')
+        if not misc_settings[player.index] then
+            misc_settings[player.index] = {
+                first_warning = true
+            }
+
+            player.print('[IC] ARE YOU SURE? This action is irreversible!', Color.warning)
+            Task.set_timeout_in_ticks(600, clear_misc_settings, {player_index = player.index})
+            return
+        end
+
+        if not misc_settings[player.index].final_warning then
+            misc_settings[player.index].final_warning = true
+            player.print('[IC] WARNING! WARNING WARNING! Pressing the save button ONE MORE TIME will DELETE your surface. This action is irreversible!', Color.red)
+            Task.set_timeout_in_ticks(600, clear_misc_settings, {player_index = player.index})
+            return
+        end
+
+        if frame and frame.valid then
+            local cars = ICT.get('cars')
+            local c = Functions.get_owner_car_object(cars, player)
+            local car = cars[c]
+            local entity = car.entity
+            if entity and entity.valid then
+                Functions.kill_car_but_save_surface(entity)
+                game.print('[IC] ' .. player.name .. ' has destroyed their surface!', Color.warning)
+            end
+
+            remove_main_frame(event.element)
+
+            if player.gui.screen[main_frame_name] then
+                player.gui.screen[main_frame_name].destroy()
             end
         end
     end
@@ -655,7 +809,7 @@ Gui.on_click(
 )
 
 Gui.on_click(
-    discard_add_player_button_name,
+    discard_add_player_name,
     function(event)
         local player = event.player
         if not player or not player.valid or not player.character then
@@ -676,7 +830,7 @@ Gui.on_click(
 )
 
 Gui.on_click(
-    discard_transfer_car_button_name,
+    discard_transfer_car_name,
     function(event)
         local player = event.player
         if not player or not player.valid or not player.character then
@@ -689,6 +843,27 @@ Gui.on_click(
             return
         end
         local player_frame = frame[draw_transfer_car_frame_name]
+
+        if player_frame and player_frame.valid then
+            player_frame.destroy()
+        end
+    end
+)
+
+Gui.on_click(
+    discard_destroy_surface_name,
+    function(event)
+        local player = event.player
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        local screen = player.gui.screen
+        local frame = screen[main_frame_name]
+        if not frame or not frame.valid then
+            return
+        end
+        local player_frame = frame[draw_destroy_surface_frame_name]
 
         if player_frame and player_frame.valid then
             player_frame.destroy()
@@ -735,24 +910,28 @@ Gui.on_selection_state_changed(
         end
 
         local player_gui_data = ICT.get('player_gui_data')
-        local selected = element.items[element.selected_index]
-        if not selected then
+        local fetched_name = element.items[element.selected_index]
+        if not fetched_name then
             return
         end
 
-        if selected == 'Select Player' then
+        if type(fetched_name) == 'table' and fetched_name[1] == 'ic.select_player' then
+            return player.print('[IC] Target player was not valid.', Color.warning)
+        end
+
+        if fetched_name == 'Select Player' then
             player.print('[IC] No target player selected.', Color.warning)
             player_gui_data[player.name] = nil
             return
         end
 
-        if selected == player.name then
+        if fetched_name == player.name then
             player.print('[IC] You can´t select yourself.', Color.warning)
             player_gui_data[player.name] = nil
             return
         end
 
-        player_gui_data[player.name] = selected
+        player_gui_data[player.name] = fetched_name
     end
 )
 

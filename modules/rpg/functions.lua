@@ -10,7 +10,7 @@ local visuals_delay = Public.visuals_delay
 local xp_floating_text_color = Public.xp_floating_text_color
 local experience_levels = Public.experience_levels
 local points_per_level = Public.points_per_level
-local settings_level = Public.gui_settings_levels
+-- local settings_level = Public.gui_settings_levels
 local floor = math.floor
 
 --RPG Frames
@@ -116,12 +116,13 @@ local function level_up(player)
         return
     end
 
-    if rpg_t.level >= settings_level['one_punch_label'] then
-        rpg_t.one_punch = true
-    end
-    if rpg_t.level >= settings_level['stone_path_label'] then
-        rpg_t.stone_path = true
-    end
+    -- player suggested to disable these
+    -- if rpg_t.level >= settings_level['one_punch_label'] then
+    --     rpg_t.one_punch = true
+    -- end
+    -- if rpg_t.level >= settings_level['stone_path_label'] then
+    --     rpg_t.stone_path = true
+    -- end
 
     Public.draw_level_text(player)
     rpg_t.points_left = rpg_t.points_left + distribute_points_gain
@@ -181,7 +182,7 @@ local repair_buildings =
 )
 
 function Public.repair_aoe(player, position)
-    local entities = player.surface.find_entities_filtered {force = player.force, area = {{position.x - 5, position.y - 5}, {position.x + 5, position.y + 5}}}
+    local entities = player.surface.find_entities_filtered {force = player.force, area = {{position.x - 8, position.y - 8}, {position.x + 8, position.y + 8}}}
     local count = 0
     for i = 1, #entities do
         local e = entities[i]
@@ -325,6 +326,8 @@ function Public.reward_mana(player, mana_to_add)
     if not mana_to_add then
         return
     end
+
+    mana_to_add = floor(mana_to_add)
 
     if not rpg_t then
         return

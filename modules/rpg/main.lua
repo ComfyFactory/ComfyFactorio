@@ -273,6 +273,12 @@ local function on_entity_died(event)
             local health_pool = biter_health_boost_units[entity.unit_number]
             if health_pool then
                 for _, player in pairs(players) do
+                    if entity.unit_number then
+                        local mana_to_reward = entity.prototype.max_health * 0.1
+                        if mana_to_reward > 1 then
+                            Public.reward_mana(player, mana_to_reward)
+                        end
+                    end
                     if rpg_extra.rpg_xp_yield[entity.name] then
                         local amount = rpg_extra.rpg_xp_yield[entity.name] * (1 / health_pool[2])
                         if amount < rpg_extra.rpg_xp_yield[entity.name] then
@@ -295,6 +301,12 @@ local function on_entity_died(event)
 
     --Grant normal XP
     for _, player in pairs(players) do
+        if entity.unit_number then
+            local mana_to_reward = entity.prototype.max_health * 0.1
+            if mana_to_reward > 1 then
+                Public.reward_mana(player, mana_to_reward)
+            end
+        end
         if rpg_extra.rpg_xp_yield[entity.name] then
             local amount = rpg_extra.rpg_xp_yield[entity.name]
             if rpg_extra.turret_kills_to_global_pool then
