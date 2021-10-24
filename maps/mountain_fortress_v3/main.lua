@@ -1,3 +1,10 @@
+--[[
+
+Mountain Fortress v3 is maintained by Gerkiz and hosted by Comfy.
+
+Want to host it? Ask Gerkiz#0001 at discord!
+
+]]
 local Functions = require 'maps.mountain_fortress_v3.functions'
 local BuriedEnemies = require 'maps.mountain_fortress_v3.buried_enemies'
 
