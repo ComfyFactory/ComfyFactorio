@@ -1018,6 +1018,8 @@ local function on_player_used_capsule(event)
         return
     end
 
+    Public.get_heal_modifier_from_using_fish(player)
+
     local rpg_t = Public.get_value_from_player(player.index)
 
     if not rpg_t.enable_entity_spawn then
