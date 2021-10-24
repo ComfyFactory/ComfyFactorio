@@ -700,13 +700,16 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['inserter-capacity-bonus-1'].researched = true
 	crew_force.technologies['inserter-capacity-bonus-2'].researched = true
 
+	crew_force.technologies['automobilism'].enabled = false
+
 	-- note: some of these are overwritten after tech researched!!!!!!! like pistol
 
 	crew_force.recipes['pistol'].enabled = false
+
+	-- these are redundant I think...?:
 	crew_force.recipes['centrifuge'].enabled = false
-	crew_force.recipes['flamethrower-turret'].enabled = true
+	crew_force.recipes['flamethrower-turret'].enabled = false
 	crew_force.recipes['locomotive'].enabled = false
-	crew_force.technologies['automobilism'].enabled = false
 	crew_force.recipes['car'].enabled = false
 	crew_force.recipes['cargo-wagon'].enabled = false
 

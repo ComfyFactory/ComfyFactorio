@@ -869,4 +869,6 @@ return {
 	["yinmn blue"] = {r = 0.18, g = 0.31, b = 0.56},
 	["zaffre"] = {r = 0., g = 0.08, b = 0.66},
 	["zomp"] = {r = 0.22, g = 0.65, b = 0.56},
+	-- manually added extras:
+	["bright blue"] = {r = 0.5, g = 0.75, b = 1},
 }

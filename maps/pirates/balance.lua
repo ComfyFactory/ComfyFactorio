@@ -65,7 +65,7 @@ end
 
 function Public.silo_total_pollution()
 	return (
-		260 * (Common.difficulty()^(1.2)) * Public.onthefly_scaling_with_players_rule()^(4/5) * (1 + 1 * (Common.overworldx()/40)^(1.6))
+		260 * (Common.difficulty()^(1.2)) * Public.onthefly_scaling_with_players_rule()^(4/5) * (1.25 + 0.75 * (Common.overworldx()/40)^(1.6))
 )
 end
 
@@ -186,8 +186,8 @@ end
 
 function Public.periodic_free_resources_per_destination_5_seconds(x)
 	return {
-		{name = 'iron-ore', count = Math.ceil(5 * (Common.overworldx()/40)^(2/3))},
-		{name = 'copper-ore', count = Math.ceil(2 * (Common.overworldx()/40)^(2/3))},
+		{name = 'iron-ore', count = Math.ceil(7 * (Common.overworldx()/40)^(0.6))},
+		{name = 'copper-ore', count = Math.ceil(3 * (Common.overworldx()/40)^(0.6))},
 	}
 end
 
@@ -368,11 +368,11 @@ end
 function Public.starting_items_crew_downstairs()
 	return {
 		{['transport-belt'] = Math.random(500,600)},
-		{['inserter'] = Math.random(100,120)},
+		{['underground-belt'] = 80},
 		{['splitter'] = Math.random(40,48)},
+		{['inserter'] = Math.random(100,120)},
 		{['storage-tank'] = 4},
 		{['medium-electric-pole'] = Math.random(15,21)},
-		{['loader'] = 5},
 		{['coin'] = 3000},
 	}
 end

@@ -132,25 +132,25 @@ function Public.generate_overworld_destination(p)
 
 		local normal_costitems = {'small-lamp', 'engine-unit', 'advanced-circuit', 'electric-engine-unit'}
 		local base_cost_0 = {
-			['small-lamp'] = (macrop.x)*20,
+			['small-lamp'] = (macrop.x-2)*20,
 		}
 		local base_cost_1 = {
-			['small-lamp'] = (macrop.x)*20,
+			['small-lamp'] = (macrop.x-2)*20,
 			['engine-unit'] = (macrop.x-7)*15,
 		}
 		local base_cost_2 = {
-			['small-lamp'] = (macrop.x)*20,
+			['small-lamp'] = (macrop.x-2)*20,
 			['engine-unit'] = (macrop.x-7)*15,
 			['advanced-circuit'] = (macrop.x-10)*10,
 		}
 		local base_cost_3 = {
-			['small-lamp'] = (macrop.x)*20,
+			['small-lamp'] = (macrop.x-2)*20,
 			['engine-unit'] = (macrop.x-7)*15,
 			['advanced-circuit'] = (macrop.x-10)*10,
 			['electric-engine-unit'] = (macrop.x-16)*10,
 		}
 		local base_cost_4 = {
-			['small-lamp'] = (macrop.x)*20,
+			['small-lamp'] = (macrop.x-2)*20,
 			['engine-unit'] = (macrop.x-7)*15,
 			['advanced-circuit'] = (macrop.x-10)*10,
 			['electric-engine-unit'] = (macrop.x-16)*10,
@@ -163,7 +163,7 @@ function Public.generate_overworld_destination(p)
 			cost_to_leave = base_cost_1
 		elseif macrop.x == 18 then --a super small amount of electric-engine-unit on a relatively early level so that they see they need lubricant
 			cost_to_leave = {
-				['small-lamp'] = (macrop.x)*20,
+				['small-lamp'] = (macrop.x-2)*20,
 				['engine-unit'] = (macrop.x-7)*15,
 				['electric-engine-unit'] = 2,
 			}

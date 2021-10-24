@@ -229,6 +229,8 @@ function Public.position_away_from_players_1(args, radius)
 
 		tries = tries + 1
 	end
+	
+	--@TODO: Fallthrough
 
 	if _DEBUG then
 		if p_ret == nil then

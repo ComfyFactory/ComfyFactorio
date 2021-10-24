@@ -30,7 +30,7 @@ Public.market_barters = {
 	{price = {{'raw-fish', 50}}, offer = {type = 'give-item', item = 'copper-plate', count = 600}},
 	{price = {{'raw-fish', 50}}, offer = {type = 'give-item', item = 'steel-plate', count = 100}},
 
-	{price = {{'wood', 200}}, offer = {type = 'give-item', item = 'coin', count = 25}},
+	{price = {{'wood', 200}}, offer = {type = 'give-item', item = 'coin', count = 250}},
 	--TODO: add more complex trades
 }
 

@@ -738,7 +738,7 @@ local function event_on_research_finished(event)
 	-- p_force.recipes['express-underground-belt'].enabled = false
 	p_force.recipes['pistol'].enabled = false
 	p_force.recipes['centrifuge'].enabled = false
-	p_force.recipes['flamethrower-turret'].enabled = true
+	-- p_force.recipes['flamethrower-turret'].enabled = false
 	p_force.recipes['locomotive'].enabled = false
 	p_force.recipes['car'].enabled = false
 	p_force.recipes['cargo-wagon'].enabled = false

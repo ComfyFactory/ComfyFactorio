@@ -68,7 +68,7 @@ function Public.Tick_actions(tickinterval)
         [6] = Public.poke_script_groups,
         [12] = Public.try_main_attack,
         [16] = Public.poke_script_groups,
-        -- [18] = Public.try_secondary_attack, --commenting out: less attacks per minute, but stronger
+        -- [18] = Public.try_secondary_attack, --commenting out: less attacks per minute, but stronger. @TODO need to do more here
         [20] = Public.tell_biters_near_silo_to_attack_it,
         [26] = Public.poke_script_groups,
         [28] = Public.eat_up_fraction_of_all_pollution_wrapped,
@@ -365,7 +365,7 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 				-- end
 				-- base_pollution_cost_multiplier = (initial_spawner_count/spawnerscount)^(1/2)
 				-- Now directly proportional:
-				base_pollution_cost_multiplier = Math.min(1, initial_spawner_count/spawnerscount)
+				base_pollution_cost_multiplier = Math.max(1, initial_spawner_count/spawnerscount) -- Can't be less than 1. (The first map not being fully loaded when you get there commonly means it records too few initial spawners, which this helps fix)
 			else
 				base_pollution_cost_multiplier = 1000000
 			end
@@ -373,8 +373,8 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 	end
 
 	if memory.overworldx == 0 then
-		-- @check this is right:
-		base_pollution_cost_multiplier = base_pollution_cost_multiplier * 3
+		-- less biters:
+		base_pollution_cost_multiplier = base_pollution_cost_multiplier * 2.5
 	end
 	
 	base_pollution_cost_multiplier = base_pollution_cost_multiplier * Balance.scripted_biters_pollution_cost_multiplier()

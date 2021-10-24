@@ -44,9 +44,9 @@ function Public.terrain(args)
 	
 	if noises.height(p) < 0.1 then
 		args.tiles[#args.tiles + 1] = {name = 'sand-1', position = args.p}
-		if args.specials and noises.farness(p) > 0.0001 and noises.farness(p) < 0.6 and Math.random(150) == 1 then
-			args.specials[#args.specials + 1] = {name = 'buried-treasure', position = args.p}
-		end
+		-- if args.specials and noises.farness(p) > 0.0001 and noises.farness(p) < 0.6 and Math.random(150) == 1 then
+		-- 	args.specials[#args.specials + 1] = {name = 'buried-treasure', position = args.p}
+		-- end
 	elseif noises.height(p) < 0.16 then
 		args.tiles[#args.tiles + 1] = {name = 'grass-4', position = args.p}
 	else
@@ -106,7 +106,7 @@ end
 
 
 function Public.break_rock(surface, p, entity_name)
-	return Ores.try_ore_spawn(surface, p, entity_name, 6)
+	return Ores.try_ore_spawn(surface, p, entity_name, 8)
 end
 
 

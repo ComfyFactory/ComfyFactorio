@@ -108,7 +108,7 @@ function Public.update_character_properties(tickinterval)
 	end
 end
 
-function Public.Builder_and_Shoreman_rewards_tick(tickinterval)
+function Public.class_rewards_tick(tickinterval)
 	local memory = Memory.get_crew_memory()
 
 	local crew = Common.crew_get_crew_members()
@@ -126,18 +126,18 @@ function Public.Builder_and_Shoreman_rewards_tick(tickinterval)
 
 					if class == Classes.enum.DECKHAND and on_ship_bool and (not hold_bool) then
 						Common.flying_text_small(player.surface, player.position, '[color=0.7,0.8,0.8]+[/color]')
-							Common.give_reward_items{{name = 'iron-ore', count = Math.ceil(10 * Balance.class_resource_scale())}}
+							Common.give_reward_items{{name = 'iron-ore', count = Math.ceil(20 * Balance.class_resource_scale())}}
 					elseif class == Classes.enum.BOATSWAIN and hold_bool then
 						if Math.random(2) == 2 then
 							Common.flying_text_small(player.surface, player.position, '[color=0.85,0.58,0.37]+[/color]')
-								Common.give_reward_items{{name = 'copper-ore', count = Math.ceil(20 * Balance.class_resource_scale())}}
+								Common.give_reward_items{{name = 'copper-ore', count = Math.ceil(30 * Balance.class_resource_scale())}}
 						else
 							Common.flying_text_small(player.surface, player.position, '[color=0.7,0.8,0.8]+[/color]')
-								Common.give_reward_items{{name = 'iron-ore', count = Math.ceil(20 * Balance.class_resource_scale())}}
+								Common.give_reward_items{{name = 'iron-ore', count = Math.ceil(30 * Balance.class_resource_scale())}}
 						end
 					elseif class == Classes.enum.SHORESMAN and (not on_ship_bool) then
 						Common.flying_text_small(player.surface, player.position, '[color=0.7,0.8,0.8]+[/color]')
-							Common.give_reward_items{{name = 'iron-ore', count = Math.ceil(10 * Balance.class_resource_scale())}}
+							Common.give_reward_items{{name = 'iron-ore', count = Math.ceil(20 * Balance.class_resource_scale())}}
 					end
 				end
 			end

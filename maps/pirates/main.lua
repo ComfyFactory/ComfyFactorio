@@ -241,7 +241,7 @@ local function crew_tick()
 	end
 	
 	if tick % 360 == 0 then
-		ClassTickFunctions.Builder_and_Shoreman_rewards_tick(360)
+		ClassTickFunctions.class_rewards_tick(360)
 	end
 
 	if tick % 120 == 0 then
