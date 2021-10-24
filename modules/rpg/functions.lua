@@ -10,7 +10,7 @@ local visuals_delay = Public.visuals_delay
 local xp_floating_text_color = Public.xp_floating_text_color
 local experience_levels = Public.experience_levels
 local points_per_level = Public.points_per_level
-local settings_level = Public.gui_settings_levels
+-- local settings_level = Public.gui_settings_levels
 local floor = math.floor
 
 --RPG Frames
