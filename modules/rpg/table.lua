@@ -112,6 +112,7 @@ function Public.reset_table()
     this.rpg_extra.enable_auto_allocate = false
     this.rpg_extra.enable_one_punch = true
     this.rpg_extra.enable_one_punch_globally = false
+    this.rpg_extra.disable_get_heal_modifier_from_using_fish = false
     this.rpg_extra.tweaked_crafting_items = {
         ['red-wire'] = true,
         ['green-wire'] = true,
