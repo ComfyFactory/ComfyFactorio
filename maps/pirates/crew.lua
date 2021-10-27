@@ -67,7 +67,11 @@ function Public.update_difficulty()
 	end
 
 	if modal_id ~= memory.difficulty_option then
-		Common.notify_force(game.forces[memory.force_name], 'Difficulty changed to ' .. CoreData.difficulty_options[modal_id].text .. '.')
+		local message = 'Difficulty changed to ' .. CoreData.difficulty_options[modal_id].text .. '.'
+
+		Common.notify_force(game.forces[memory.force_name], message)
+		Server.to_discord_embed_raw(CoreData.comfy_emojis.kewl .. '[' .. memory.name .. '] ' .. message)
+
 		memory.difficulty_option = modal_id
 		memory.difficulty = CoreData.difficulty_options[modal_id].value
 	end

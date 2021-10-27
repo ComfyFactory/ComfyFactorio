@@ -71,6 +71,11 @@ Public.chest_loot_data_raw = {
 	{4, 0, 2, true, 'rocket-launcher', 1, 1},
 	{8, 0, 2, true, 'rocket', 16, 32},
 
+	{3, 0, 0.5, false, 'stack-inserter', 1, 3},
+	{1, 0, 0.5, false, 'stack-filter-inserter', 1, 3},
+	{3, 0.5, 1, false, 'stack-inserter', 5, 16},
+	{1, 0.5, 1, false, 'stack-filter-inserter', 5, 16},
+
 	-- copying over most of those i made for chronotrain:
 	--always there (or normally always there):
 	{4, 0, 1, false, 'pistol', 1, 2},
@@ -83,7 +88,6 @@ Public.chest_loot_data_raw = {
 	{2, 0, 1, false, 'electric-mining-drill', 2, 4},
 	{3, 0, 1, false, 'long-handed-inserter', 4, 16},
 	{0.5, 0, 1, false, 'filter-inserter', 2, 12},
-	{0.2, 0, 1, false, 'stack-filter-inserter', 2, 6},
 	{0.2, 0, 1, false, 'slowdown-capsule', 2, 4},
 	{0.2, 0, 1, false, 'destroyer-capsule', 2, 4},
 	{0.2, 0, 1, false, 'defender-capsule', 2, 4},
@@ -172,7 +176,6 @@ Public.chest_loot_data_raw = {
 	{1, 0.2, 1.2, true, 'battery', 10, 50},
 	{5, 0.2, 1.8, true, 'explosive-rocket', 16, 32},
 	{4, 0.2, 1.4, true, 'advanced-circuit', 15, 100},
-	{3, 0.2, 1.8, true, 'stack-inserter', 4, 8},
 	{3, 0.2, 1.4, true, 'big-electric-pole', 4, 8},
 	{2, 0.3, 1, true, 'rocket-fuel', 4, 10},
 	{5, 0.4, 0.7, true, 'cannon-shell', 16, 32},

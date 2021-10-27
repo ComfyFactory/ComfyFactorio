@@ -5,8 +5,8 @@ local inspect = require 'utils.inspect'.inspect
 local Public = {}
 
 Public.scenario_id_name = 'pirates'
-Public.version_string = '1.0.1.8'
-Public.version_float = 1.018
+Public.version_string = '1.0.1.9'
+Public.version_float = 1.019
 
 
 Public.victory_x = 1000
@@ -86,6 +86,7 @@ Public.comfy_emojis = {
 	doge = '<:doge:491152224681066496>',
 	yum1 = '<:yum1:740341272451219517>',
 	feel = '<:feel:491147760553164800>',
+	kewl = '<:kewl:837016976937189418>',
 }
 
 Public.capacity_options = {
