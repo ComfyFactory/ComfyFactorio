@@ -148,7 +148,7 @@ local function do_refill_turrets()
     end
 end
 
-local function do_turret_energy()
+--[[ local function do_turret_energy()
     local power_sources = this.power_sources
 
     for index = 1, #power_sources do
@@ -160,8 +160,7 @@ local function do_turret_energy()
 
         ps_data.energy = 0xfffff
     end
-end
-
+end ]]
 local function do_magic_crafters()
     local magic_crafters = this.magic_crafters
     local limit = #magic_crafters
@@ -1517,6 +1516,6 @@ Event.add(defines.events.on_player_changed_position, on_player_changed_position)
 Event.add(defines.events.on_pre_player_left_game, on_pre_player_left_game)
 Event.add(defines.events.on_player_respawned, on_player_respawned)
 Event.on_nth_tick(10, tick)
-Event.on_nth_tick(5, do_turret_energy)
+-- Event.on_nth_tick(5, do_turret_energy)
 
 return Public
