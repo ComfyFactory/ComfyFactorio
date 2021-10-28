@@ -2963,7 +2963,7 @@ function Public.get_items()
         main_market_items['vehicle-machine-gun'] = {
             stack = 1,
             value = 'coin',
-            price = 2000,
+            price = 500,
             tooltip = ({'main_market.vehicle_machine_gun_na', 100}),
             upgrade = false,
             static = true,
