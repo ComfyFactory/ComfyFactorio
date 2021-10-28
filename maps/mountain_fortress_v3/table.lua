@@ -212,7 +212,7 @@ function Public.reset_table()
     this.check_heavy_damage = true
     this.prestige_system_enabled = false
     this.has_upgraded_health_pool = false
-    this.mystical_chest_enabled = true -- needs rewards before enabling
+    this.mystical_chest_enabled = true
     this.mc_rewards = {
         current = {},
         temp_boosts = {}
