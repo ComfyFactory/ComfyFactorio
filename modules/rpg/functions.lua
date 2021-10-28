@@ -506,7 +506,7 @@ function Public.get_heal_modifier_from_using_fish(player)
     local position = player.position
     if char and char.valid then
         local health = player.character_health_bonus + 250
-        local multiplier = (vit - 10) * 0.018
+        local multiplier = (vit - 10) * 0.011
         local final = multiplier * base_amount / 2
         if final < 80 then
             final = base_amount
