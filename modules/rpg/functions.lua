@@ -10,7 +10,7 @@ local visuals_delay = Public.visuals_delay
 local xp_floating_text_color = Public.xp_floating_text_color
 local experience_levels = Public.experience_levels
 local points_per_level = Public.points_per_level
--- local settings_level = Public.gui_settings_levels
+local settings_level = Public.gui_settings_levels
 local floor = math.floor
 
 --RPG Frames
@@ -116,13 +116,20 @@ local function level_up(player)
         return
     end
 
-    -- player suggested to disable these
-    -- if rpg_t.level >= settings_level['one_punch_label'] then
-    --     rpg_t.one_punch = true
-    -- end
-    -- if rpg_t.level >= settings_level['stone_path_label'] then
-    --     rpg_t.stone_path = true
-    -- end
+    -- automatically enable one_punch and stone_path,
+    -- but do so only once.
+    if rpg_t.level >= settings_level['one_punch_label'] then
+        if not rpg_t.auto_toggle_features.one_punch then
+            rpg_t.auto_toggle_features.one_punch = true
+            rpg_t.one_punch = true
+        end
+    end
+    if rpg_t.level >= settings_level['stone_path_label'] then
+        if not rpg_t.auto_toggle_features.stone_path then
+            rpg_t.auto_toggle_features.stone_path = true
+            rpg_t.stone_path = true
+        end
+    end
 
     Public.draw_level_text(player)
     rpg_t.points_left = rpg_t.points_left + distribute_points_gain
@@ -636,7 +643,11 @@ function Public.rpg_reset_player(player, one_time_reset)
                 last_mined_entity_position = {x = 0, y = 0},
                 show_bars = false,
                 stone_path = false,
-                one_punch = false
+                one_punch = false,
+                auto_toggle_features = {
+                    stone_path = false,
+                    one_punch = false
+                }
             }
         )
         rpg_t.points_left = old_points_left + total
@@ -674,7 +685,11 @@ function Public.rpg_reset_player(player, one_time_reset)
                 last_mined_entity_position = {x = 0, y = 0},
                 show_bars = false,
                 stone_path = false,
-                one_punch = false
+                one_punch = false,
+                auto_toggle_features = {
+                    stone_path = false,
+                    one_punch = false
+                }
             }
         )
     end
