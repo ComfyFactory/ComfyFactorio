@@ -386,7 +386,7 @@ local function biters_chew_rocks_faster(data)
     entity.health = entity.health - final_damage_amount * 7
 end
 
-local projectiles = {'grenade', 'explosive-rocket', 'grenade', 'explosive-rocket', 'explosive-cannon-projectile'}
+local projectiles = {'grenade', 'explosive-rocket'}
 
 local function angry_tree(entity, cause, player)
     if entity.type ~= 'tree' then
@@ -432,18 +432,31 @@ local function angry_tree(entity, cause, player)
             return
         end
     end
-
-    entity.surface.create_entity(
-        {
-            name = projectiles[random(1, 5)],
-            position = entity.position,
-            force = 'neutral',
-            source = entity.position,
-            target = position,
-            max_range = 16,
-            speed = 0.01
-        }
-    )
+    if random(1, 5) == 1 then
+        entity.surface.create_entity(
+            {
+                name = 'explosive-cannon-projectile',
+                position = entity.position,
+                force = 'neutral',
+                source = entity.position,
+                target = position,
+                max_range = 16,
+                speed = 0.1
+            }
+        )
+    else
+        entity.surface.create_entity(
+            {
+                name = projectiles[random(1, 2)],
+                position = entity.position,
+                force = 'neutral',
+                source = entity.position,
+                target = position,
+                max_range = 16,
+                speed = 0.01
+            }
+        )
+    end
 end
 
 local function give_coin(player)
