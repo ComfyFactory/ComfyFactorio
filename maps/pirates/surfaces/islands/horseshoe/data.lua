@@ -23,7 +23,7 @@ function Public.base_ores()
 	return {
 		['copper-ore'] = 2.8,
 		['iron-ore'] = 3.1,
-		['coal'] = 1.8,
+		['coal'] = 2.4,
 		['stone'] = 1.0,
 	}
 end

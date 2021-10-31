@@ -58,9 +58,10 @@ end
 function Public.silo_energy_needed_MJ()
 	local est_secs = Public.silo_base_est_time()
 
-	local est_base_power = 2*Public.starting_boatEEIpower_production_MW() * (1 + 0.05 * (Common.overworldx()/40)^(7/3))
+	local est_base_power = 2*Public.starting_boatEEIpower_production_MW() * (1 + 0.05 * (Common.overworldx()/40)^(5/3))
 
-	return est_secs * est_base_power * Math.sloped(Common.difficulty(), 1/3)
+	return est_secs * est_base_power
+	-- return est_secs * est_base_power * Math.sloped(Common.difficulty(), 1/3)
 end
 
 function Public.silo_total_pollution()
@@ -167,11 +168,11 @@ function Public.evolution_per_full_silo_charge()
 end
 
 function Public.bonus_damage_to_humans()
-	local ret = 0.35
+	local ret = 0.25
 	local diff = Common.difficulty()
-	if diff <= 0.5 then ret = 0.25 end
-	if diff >= 1.5 then ret = 0.5 end
-	if diff >= 3 then ret = 0.65 end
+	if diff <= 0.5 then ret = 0.2 end
+	if diff >= 1.5 then ret = 0.3 end
+	if diff >= 3 then ret = 0.4 end
 	return ret
 end
 
@@ -210,7 +211,7 @@ function Public.launch_gold_reward()
 end
 
 function Public.quest_reward_multiplier()
-	return 0.3 + 0.7 * Common.overworldx()/400
+	return (0.4 + 0.08 * Common.overworldx()/40) * Math.sloped(Common.difficulty(), 1/3) * (Public.onthefly_scaling_with_players_rule())^(1/4)
 end
 
 function Public.island_richness_avg_multiplier()
@@ -218,7 +219,7 @@ function Public.island_richness_avg_multiplier()
 end
 
 function Public.resource_quest_multiplier()
-	return (1.0 + 0.1 * (Common.overworldx()/40)^(1)) * Math.sloped(Common.difficulty(), 1/2) * (Public.onthefly_scaling_with_players_rule())^(1/3)
+	return (1.0 + 0.075 * (Common.overworldx()/40)^(1)) * Math.sloped(Common.difficulty(), 1/3) * (Public.onthefly_scaling_with_players_rule())^(1/4)
 end
 
 
@@ -266,9 +267,13 @@ end
 
 function Public.krakens_per_free_slot(overworldx)
 	local rng = Math.random()
-	if rng < 0.075 then
+	local multiplier = 1
+	if overworldx and overworldx > 600 then
+		multiplier = 1 + (overworldx-600)/600
+	end
+	if rng < 0.075 * multiplier then
 		return 2
-	elseif rng < 0.5 then
+	elseif rng < 0.5 * multiplier then
 		return 1
 	else
 		return 0

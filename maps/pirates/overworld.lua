@@ -130,6 +130,40 @@ function Public.generate_overworld_destination(p)
 		local static_params = Utils.deepcopy(scope.Data.static_params_default)
 		local cost_to_leave, scheduled_raft_raids, class_for_sale
 
+		-- temporarily placed this back here, as moving it to shorehit broke things:
+		local playercount = Common.activecrewcount()
+		local max_evo = 0.85
+		if Common.difficulty() < 1 then max_evo = 0.68 end
+		if macrop.x > 5 then
+			scheduled_raft_raids = {}
+			local times = {600, 360, 215, 210, 120, 30, 10, 5}
+			for i = 1, #times do
+				local t = times[i]
+				if Math.random(7) == 1 and #scheduled_raft_raids < 6 then
+					scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_evo = max_evo}
+					-- scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_bonus_evolution = 0.52}
+				end
+			end
+		elseif macrop.x == 5 then
+			local times
+			if playercount <= 2 then
+				times = {1, 5, 10, 15}
+			elseif playercount <= 7 then
+				times = {1, 5, 10, 15, 20}
+			elseif playercount <= 15 then
+				times = {1, 5, 10, 15, 20, 25}
+			else
+				times = {1, 5, 10, 15, 20, 25, 30, 35}
+			end
+			scheduled_raft_raids = {}
+			for _, t in pairs(times) do
+				-- scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_bonus_evolution = 0.62}
+				scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_evo = max_evo}
+			end
+		end
+
+		static_params.scheduled_raft_raids = scheduled_raft_raids
+
 		local normal_costitems = {'small-lamp', 'engine-unit', 'advanced-circuit', 'electric-engine-unit'}
 		local base_cost_0 = {
 			['small-lamp'] = (macrop.x-2)*20,
@@ -179,11 +213,10 @@ function Public.generate_overworld_destination(p)
 		-- override:
 		if subtype == Surfaces.Island.enum.RADIOACTIVE then
 			cost_to_leave = {
-				['uranium-235'] = Math.ceil(80 + macrop.x),
+				['uranium-235'] = Math.ceil(80 + (macrop.x)/2),
 			}
 		end
 
-		static_params.cost_to_leave = cost_to_leave
 		-- Multiplication by Balance.cost_to_leave_multiplier() happens later.
 
 		class_for_sale = Classes.Class_List[Math.random(#Classes.Class_List)]

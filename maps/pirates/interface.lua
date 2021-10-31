@@ -248,7 +248,7 @@ local function samurai_damage_changes(event)
 	if memory.classes_table and memory.classes_table[player_index] and memory.classes_table[player_index] == Classes.enum.SAMURAI then
 
 		if event.damage_type.name == 'physical' and (not character.get_inventory(defines.inventory.character_guns)[character.selected_gun_index].valid_for_read) then
-			event.entity.health = event.entity.health - 15
+			event.entity.health = event.entity.health - 25
 		else
 			event.entity.health = event.entity.health + 0.8 * event.final_damage_amount
 		end
@@ -742,6 +742,7 @@ local function event_on_research_finished(event)
 	p_force.recipes['locomotive'].enabled = false
 	p_force.recipes['car'].enabled = false
 	p_force.recipes['cargo-wagon'].enabled = false
+	p_force.recipes['rail'].enabled = true
 end
 
 local function event_on_player_joined_game(event)

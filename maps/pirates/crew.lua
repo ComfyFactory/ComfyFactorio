@@ -716,6 +716,7 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.recipes['locomotive'].enabled = false
 	crew_force.recipes['car'].enabled = false
 	crew_force.recipes['cargo-wagon'].enabled = false
+	crew_force.recipes['rail'].enabled = true
 
 	-- crew_force.recipes['underground-belt'].enabled = false
 	-- crew_force.recipes['fast-underground-belt'].enabled = false
@@ -807,7 +808,7 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['braking-force-7'].enabled = false
 	crew_force.technologies['fluid-wagon'].enabled = false
 
-	crew_force.technologies['production-science-pack'].enabled = false
+	crew_force.technologies['production-science-pack'].enabled = true
 	crew_force.technologies['utility-science-pack'].enabled = false
 
 	crew_force.technologies['modular-armor'].enabled = false

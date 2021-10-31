@@ -23,7 +23,7 @@ Public.deepwater_distance_from_leftmost_shore = 32
 Public.lobby_spawnpoint = {x = -72, y = -8}
 
 Public.fraction_of_map_loaded_atsea = 1
-Public.map_loading_ticks_atsea = 90 * 60
+Public.map_loading_ticks_atsea = 70 * 60
 Public.map_loading_ticks_onisland = 2 * 60 * 60
 Public.loading_interval = 5
 
@@ -46,11 +46,12 @@ function Public.ore_abstract_to_real(amount)
 	return Math.ceil(amount*1750)
 end
 
+-- big buff, to crush recurring problem. hopefully rebalance down from here?:
 function Public.oil_real_to_abstract(amount)
-	return amount/(9800)
+	return amount/(50000)
 end
 function Public.oil_abstract_to_real(amount)
-	return Math.ceil(amount*9800)
+	return Math.ceil(amount*50000)
 end
 
 function Public.difficulty() return Memory.get_crew_memory().difficulty end
