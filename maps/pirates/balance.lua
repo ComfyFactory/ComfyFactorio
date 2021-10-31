@@ -74,7 +74,7 @@ end
 function Public.max_time_on_island_formula()
 	return 60 * (
 			(31 + 2 * (Common.overworldx()/40)^(1/3))
-	) / Public.onthefly_scaling_with_players_rule()^(1/2) / Math.sloped(Common.difficulty(), 1/4)
+	) / Public.onthefly_scaling_with_players_rule()^(2/3) / Math.sloped(Common.difficulty(), 1/4)
 end
 
 

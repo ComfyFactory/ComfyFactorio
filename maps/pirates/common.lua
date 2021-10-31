@@ -40,18 +40,18 @@ Public.afk_warning_time = 60 * 60 * 4
 
 
 function Public.ore_real_to_abstract(amount)
-	return amount/1750
+	return amount/1800
 end
 function Public.ore_abstract_to_real(amount)
-	return Math.ceil(amount*1750)
+	return Math.ceil(amount*1800)
 end
 
 -- big buff, to crush recurring problem. hopefully rebalance down from here?:
 function Public.oil_real_to_abstract(amount)
-	return amount/(50000)
+	return amount/(75000)
 end
 function Public.oil_abstract_to_real(amount)
-	return Math.ceil(amount*50000)
+	return Math.ceil(amount*75000)
 end
 
 function Public.difficulty() return Memory.get_crew_memory().difficulty end
