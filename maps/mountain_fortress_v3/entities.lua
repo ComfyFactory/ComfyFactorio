@@ -422,7 +422,7 @@ local function angry_tree(entity, cause, player)
             local e =
                 entity.surface.create_entity(
                 {
-                    name = 'laser-turret',
+                    name = 'gun-turret',
                     position = entity.position,
                     force = 'enemy'
                 }
