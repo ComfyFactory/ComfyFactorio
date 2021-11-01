@@ -427,6 +427,9 @@ local function angry_tree(entity, cause, player)
                     force = 'enemy'
                 }
             )
+            if e.can_insert(data) then
+                e.insert(data)
+            end
             local callback = Token.get(cbl)
             callback(e, data)
             return
