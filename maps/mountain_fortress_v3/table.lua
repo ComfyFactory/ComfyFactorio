@@ -175,7 +175,8 @@ function Public.reset_table()
         explosive_bullets_cost = 10000,
         flamethrower_turrets_cost = 3000,
         land_mine_cost = 2,
-        car_health_upgrade_pool_cost = 100000
+        car_health_upgrade_pool_cost = 100000,
+        redraw_mystical_chest_cost = 3000
     }
     this.collapse_grace = true
     this.explosive_bullets = false
@@ -211,7 +212,11 @@ function Public.reset_table()
     this.check_heavy_damage = true
     this.prestige_system_enabled = false
     this.has_upgraded_health_pool = false
-    this.mystical_chest_enabled = false -- needs rewards before enabling
+    this.mystical_chest_enabled = true
+    this.mc_rewards = {
+        current = {},
+        temp_boosts = {}
+    }
     this.alert_zone_1 = false -- alert the players
 
     for k, _ in pairs(this.players) do

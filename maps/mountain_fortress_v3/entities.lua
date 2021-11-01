@@ -699,6 +699,27 @@ local mining_events = {
     },
     {
         function(entity, index)
+            local chest = 'crash-site-chest-' .. random(1, 2)
+            if entity.surface.can_place_entity({name = chest, position = entity.position, force = 'neutral'}) then
+                local container = entity.surface.create_entity({name = chest, position = entity.position, force = 'neutral'})
+                if container and container.health then
+                    container.insert({name = 'vehicle-machine-gun', count = 1})
+                    container.health = random(1, container.health)
+                end
+            end
+            local position = entity.position
+            local surface = entity.surface
+            surface.create_entity({name = 'car', position = position, force = 'player'})
+            Public.unstuck_player(index)
+            local player = game.players[index]
+            local msg = ({'entity.found_car', player.name})
+            Alert.alert_player(player, 15, msg)
+        end,
+        64,
+        'VSMG'
+    },
+    {
+        function(entity, index)
             local position = entity.position
             local surface = entity.surface
             surface.create_entity({name = 'car', position = position, force = 'player'})
@@ -1489,6 +1510,8 @@ local on_player_or_robot_built_tile = function(event)
         end
     end
 end
+
+Public.get_random_weighted = get_random_weighted
 
 Event.add_event_filter(defines.events.on_entity_damaged, {filter = 'final-damage-amount', comparison = '>', value = 0})
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)

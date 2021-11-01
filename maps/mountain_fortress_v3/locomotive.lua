@@ -20,6 +20,7 @@ local MapFunctions = require 'tools.map_functions'
 local SpamProtection = require 'utils.spam_protection'
 local AI = require 'utils.ai'
 local MysticalChest = require 'maps.mountain_fortress_v3.mystical_chest'
+local Color = require 'utils.color_presets'
 
 local format_number = require 'util'.format_number
 
@@ -52,6 +53,24 @@ local space = {
     top_padding = 0,
     bottom_padding = 0
 }
+
+local function get_random_weighted(weighted_table, weight_index)
+    local total_weight = 0
+    weight_index = weight_index or 1
+
+    for _, w in pairs(weighted_table) do
+        total_weight = total_weight + w[weight_index]
+    end
+
+    local index = random() * total_weight
+    local weight_sum = 0
+    for k, w in pairs(weighted_table) do
+        weight_sum = weight_sum + w[weight_index]
+        if weight_sum >= index then
+            return w, k
+        end
+    end
+end
 
 local function initial_cargo_boxes()
     return {
@@ -1038,6 +1057,30 @@ local function gui_opened(event)
     redraw_market_items(pane, player, search_text)
 end
 
+local function init_price_check(locomotive, mystical_chest)
+    local roll = 48 + abs(locomotive.position.y) * 1.75
+    roll = roll * random(25, 1337) * 0.01
+
+    local item_stacks = {}
+    local roll_count = 2
+    for _ = 1, roll_count, 1 do
+        for _, stack in pairs(MysticalChest.roll(floor(roll / roll_count), 2)) do
+            if not item_stacks[stack.name] then
+                item_stacks[stack.name] = stack.count
+            else
+                item_stacks[stack.name] = item_stacks[stack.name] + stack.count
+            end
+        end
+    end
+
+    local price = {}
+    for k, v in pairs(item_stacks) do
+        insert(price, {name = k, count = v})
+    end
+
+    mystical_chest.price = price
+end
+
 local function gui_click(event)
     local players = WPT.get('players')
     if not players then
@@ -1235,6 +1278,25 @@ local function gui_click(event)
         this.xp_points = this.xp_points + 0.5
         this.xp_points_upgrade = this.xp_points_upgrade + item.stack
         this.train_upgrades = this.train_upgrades + item.stack
+
+        redraw_market_items(data.item_frame, player, data.search_text)
+        redraw_coins_left(data.coins_left, player)
+
+        return
+    end
+
+    if name == 'redraw_mystical_chest' then
+        player.remove_item({name = item.value, count = item.price})
+        local message = ({'locomotive.mystical_bought_info', shopkeeper, player.name, format_number(item.price, true)})
+
+        Alert.alert_all_players(5, message)
+        Server.to_discord_bold(
+            table.concat {
+                player.name .. ' has rerolled the mystical chest for ' .. format_number(item.price) .. ' coins.'
+            }
+        )
+
+        init_price_check(this.locomotive, this.mystical_chest)
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
@@ -1808,32 +1870,203 @@ local function divide_contents()
     ::final::
 end
 
-local function mystical_chest_reward()
-    -- something fancy to reward players
-end
+local pause_wd_token =
+    Token.register(
+    function()
+        WD.pause(false)
+        local mc_rewards = WPT.get('mc_rewards')
+        mc_rewards.temp_boosts.wave_defense = nil
+    end
+)
 
-local function init_price_check(locomotive, mystical_chest)
-    local roll = 48 + abs(locomotive.position.y) * 1.75
-    roll = roll * random(25, 2455) * 0.01
-
-    local item_stacks = {}
-    local roll_count = 2
-    for _ = 1, roll_count, 1 do
-        for _, stack in pairs(MysticalChest.roll(floor(roll / roll_count), 2)) do
-            if not item_stacks[stack.name] then
-                item_stacks[stack.name] = stack.count
-            else
-                item_stacks[stack.name] = item_stacks[stack.name] + stack.count
-            end
+local restore_mining_speed_token =
+    Token.register(
+    function()
+        local mc_rewards = WPT.get('mc_rewards')
+        local force = game.forces.player
+        if mc_rewards.temp_boosts.mining then
+            force.manual_mining_speed_modifier = force.manual_mining_speed_modifier - 1
+            mc_rewards.temp_boosts.mining = nil
         end
     end
+)
 
-    local price = {}
-    for k, v in pairs(item_stacks) do
-        insert(price, {name = k, count = v})
+local restore_movement_speed_token =
+    Token.register(
+    function()
+        local mc_rewards = WPT.get('mc_rewards')
+        local force = game.forces.player
+        if mc_rewards.temp_boosts.movement then
+            force.character_running_speed_modifier = force.character_running_speed_modifier - 1
+            mc_rewards.temp_boosts.movement = nil
+        end
+    end
+)
+
+local mc_random_rewards = {
+    {
+        name = 'XP',
+        color = {r = 0.00, g = 0.45, b = 0.00},
+        tooltip = 'Selecting this will insert random XP onto the global xp pool!',
+        func = (function(player)
+            local rng = random(1024, 10240)
+            RPG.add_to_global_pool(rng)
+            local message = ({'locomotive.xp_bonus', player.name})
+            Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
+            return true
+        end),
+        512
+    },
+    {
+        name = 'Coins',
+        color = {r = 0.00, g = 0.35, b = 0.00},
+        tooltip = 'Selecting this will grant each player some coins!',
+        func = (function(p)
+            local rng = random(256, 512)
+            local players = game.connected_players
+            for i = 1, #players do
+                local player = players[i]
+                if player and player.valid then
+                    if player.can_insert({name = 'coin', count = rng}) then
+                        player.insert({name = 'coin', count = rng})
+                    end
+                end
+            end
+            local message = ({'locomotive.coin_bonus', p.name})
+            Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
+            return true
+        end),
+        512
+    },
+    {
+        name = 'Movement bonus',
+        str = 'movement',
+        color = {r = 0.00, g = 0.25, b = 0.00},
+        tooltip = 'Selecting this will grant the team a bonus movement speed for 15 minutes!',
+        func = (function(player)
+            local mc_rewards = WPT.get('mc_rewards')
+            local force = game.forces.player
+            if mc_rewards.temp_boosts.movement then
+                return false, '[Rewards] Movement bonus is already applied. Please choose another reward.'
+            end
+
+            mc_rewards.temp_boosts.movement = true
+
+            Task.set_timeout_in_ticks(54000, restore_movement_speed_token)
+            force.character_running_speed_modifier = force.character_running_speed_modifier + 1
+            local message = ({'locomotive.movement_bonus', player.name})
+            Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
+            return true
+        end),
+        512
+    },
+    {
+        name = 'Mining bonus',
+        str = 'mining',
+        color = {r = 0.00, g = 0.00, b = 0.25},
+        tooltip = 'Selecting this will grant the team a bonus mining speed for 15 minutes!',
+        func = (function(player)
+            local mc_rewards = WPT.get('mc_rewards')
+            local force = game.forces.player
+            if mc_rewards.temp_boosts.mining then
+                return false, '[Rewards] Mining bonus is already applied. Please choose another reward.'
+            end
+
+            mc_rewards.temp_boosts.mining = true
+
+            Task.set_timeout_in_ticks(54000, restore_mining_speed_token)
+            force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 1
+            local message = ({'locomotive.mining_bonus', player.name})
+            Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
+            return true
+        end),
+        512
+    },
+    {
+        name = 'Inventory Bonus',
+        color = {r = 0.00, g = 0.00, b = 0.25},
+        tooltip = 'Selecting this will grant the team permanent inventory bonus!',
+        func = (function(player)
+            local force = game.forces.player
+            force.character_inventory_slots_bonus = force.character_inventory_slots_bonus + 1
+            local message = ({'locomotive.inventory_bonus', player.name})
+            Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
+            return true
+        end),
+        512
+    },
+    {
+        name = 'Heal Locomotive',
+        color = {r = 0.00, g = 0.00, b = 0.25},
+        tooltip = 'Selecting this will heal the main locomotive to full health!',
+        func = (function(player)
+            local locomotive_max_health = WPT.get('locomotive_max_health')
+            WPT.set('locomotive_health', locomotive_max_health)
+            local message = ({'locomotive.locomotive_health', player.name})
+            Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
+            return true
+        end),
+        256
+    },
+    {
+        name = 'Wave Defense',
+        str = 'wave_defense',
+        color = {r = 0.35, g = 0.00, b = 0.00},
+        tooltip = 'Selecting this will pause the wave defense for 15 minutes. Ideal if you want to take a break!',
+        func = (function(player)
+            local mc_rewards = WPT.get('mc_rewards')
+            if mc_rewards.temp_boosts.wave_defense then
+                return false, '[Rewards] Wave Defense break is already applied. Please choose another reward.'
+            end
+            mc_rewards.temp_boosts.wave_defense = true
+
+            WD.pause(true)
+            Task.set_timeout_in_ticks(54000, pause_wd_token)
+            local message = ({'locomotive.wd_paused', player.name})
+            Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
+            return true
+        end),
+        64
+    }
+}
+
+local function mystical_chest_reward(player)
+    if player.gui.screen['reward_system'] then
+        player.gui.screen['reward_system'].destroy()
+        return
     end
 
-    mystical_chest.price = price
+    local frame = player.gui.screen.add {type = 'frame', caption = 'Mystical Reward:', name = 'reward_system', direction = 'vertical'}
+    frame.auto_center = true
+    frame = frame.add {type = 'frame', name = 'reward_system_1', direction = 'vertical', style = 'inside_shallow_frame'}
+    frame.style.padding = 4
+
+    local mc_rewards = WPT.get('mc_rewards')
+    mc_rewards.current = {}
+
+    for i = 1, 3 do
+        local d, key = get_random_weighted(mc_random_rewards)
+        if not mc_rewards.current[key] and not mc_rewards.temp_boosts[d.str] then
+            mc_rewards.current[key] = {
+                id = i,
+                name = d.name
+            }
+            local b = frame.add({type = 'button', name = tostring(i), caption = d.name})
+            b.style.font_color = d.color
+            b.style.font = 'heading-2'
+            b.style.minimal_width = 180
+            b.style.horizontal_align = 'center'
+            b.tooltip = d.tooltip
+        end
+    end
+    if not next(mc_rewards.current) then
+        if player.gui.screen['reward_system'] then
+            player.gui.screen['reward_system'].destroy()
+        end
+        return player.print('[Rewards] No rewards are available.', Color.fail)
+    end
+
+    -- something fancy to reward players
 end
 
 local function place_market()
@@ -2052,13 +2285,12 @@ local function container_opened(event)
         return
     end
 
-    local has_succeeded = Public.add_mystical_chest()
-    if has_succeeded then
-        local player = game.players[event.player_index]
-        local colored_player_name =
-            table.concat({'[color=', player.color.r * 0.6 + 0.35, ',', player.color.g * 0.6 + 0.35, ',', player.color.b * 0.6 + 0.35, ']', player.name, '[/color]'})
-        game.print(colored_player_name .. ' unlocked the last missing piece for the mystical chest!')
+    local player = game.get_player(event.player_index)
+    if not (player and player.valid) then
+        return
     end
+
+    Public.add_mystical_chest(player)
 end
 
 local function on_gui_opened(event)
@@ -2067,6 +2299,42 @@ end
 
 local function on_gui_closed(event)
     container_opened(event)
+end
+
+local function on_gui_click(event)
+    local element = event.element
+    if not (element and element.valid) then
+        return
+    end
+
+    if element.type ~= 'button' then
+        return
+    end
+
+    if element.parent.name ~= 'reward_system_1' then
+        return
+    end
+    local i = tonumber(element.name)
+
+    local mc_rewards = WPT.get('mc_rewards')
+    local current = mc_rewards.current
+
+    local player = game.get_player(element.player_index)
+    if not (player and player.valid) then
+        return
+    end
+
+    for id, data in pairs(current) do
+        if data.id == i then
+            local success, msg = mc_random_rewards[id].func(player)
+            if not success then
+                return player.print(msg, Color.fail)
+            end
+            break
+        end
+    end
+
+    element.parent.parent.destroy()
 end
 
 function Public.close_gui_player(frame)
@@ -2304,6 +2572,7 @@ function Public.get_items()
     local aura_cost = round(fixed_prices.aura_cost * (1 + aura_upgrades))
     local xp_point_boost_cost = round(fixed_prices.xp_point_boost_cost * (1 + xp_points_upgrade))
     local explosive_bullets_cost = round(fixed_prices.explosive_bullets_cost)
+    local redraw_mystical_chest_cost = round(fixed_prices.redraw_mystical_chest_cost)
     local flamethrower_turrets_cost = round(fixed_prices.flamethrower_turrets_cost * (1 + flame_turret))
     local land_mine_cost = round(fixed_prices.land_mine_cost * (1 + landmine))
     local car_health_upgrade_pool = fixed_prices.car_health_upgrade_pool_cost
@@ -2428,6 +2697,18 @@ function Public.get_items()
         upgrade = true,
         static = true
     }
+
+    main_market_items['redraw_mystical_chest'] = {
+        stack = 1,
+        value = 'coin',
+        price = redraw_mystical_chest_cost,
+        tooltip = ({'main_market.mystical_chest'}),
+        sprite = 'achievement/logistic-network-embargo',
+        enabled = true,
+        upgrade = true,
+        static = true
+    }
+
     if WPT.get('explosive_bullets') then
         main_market_items['explosive_bullets'] = {
             stack = 1,
@@ -2672,7 +2953,7 @@ function Public.get_items()
         main_market_items['vehicle-machine-gun'] = {
             stack = 1,
             value = 'coin',
-            price = 2000,
+            price = 500,
             tooltip = ({'item-name.vehicle-machine-gun'}),
             upgrade = false,
             static = true,
@@ -2682,7 +2963,7 @@ function Public.get_items()
         main_market_items['vehicle-machine-gun'] = {
             stack = 1,
             value = 'coin',
-            price = 2000,
+            price = 500,
             tooltip = ({'main_market.vehicle_machine_gun_na', 100}),
             upgrade = false,
             static = true,
@@ -2752,7 +3033,7 @@ function Public.enable_robotic_defense(pos)
     end
 end
 
-function Public.add_mystical_chest()
+function Public.add_mystical_chest(player)
     local locomotive = WPT.get('locomotive')
     if not locomotive then
         return
@@ -2784,7 +3065,9 @@ function Public.add_mystical_chest()
 
     if #mystical_chest.price == 0 then
         init_price_check(locomotive, mystical_chest)
-        mystical_chest_reward()
+        if player and player.valid then
+            mystical_chest_reward(player)
+        end
         return true
     end
 
@@ -2831,10 +3114,8 @@ Public.init_price_check = init_price_check
 
 Event.on_nth_tick(5, tick)
 Event.add(defines.events.on_gui_click, gui_click)
-Event.add(defines.events.on_gui_opened, gui_opened)
 Event.add(defines.events.on_gui_value_changed, slider_changed)
 Event.add(defines.events.on_gui_text_changed, text_changed)
-Event.add(defines.events.on_gui_closed, gui_closed)
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)
 Event.add(defines.events.on_research_finished, on_research_finished)
 Event.add(defines.events.on_built_entity, on_built_entity)
@@ -2846,7 +3127,10 @@ Event.add(defines.events.on_console_chat, on_console_chat)
 Event.add(defines.events.on_player_changed_surface, on_player_changed_surface)
 Event.add(defines.events.on_player_driving_changed_state, on_player_driving_changed_state)
 Event.add(defines.events.on_train_created, set_carriages)
+Event.add(defines.events.on_gui_opened, gui_opened)
 Event.add(defines.events.on_gui_opened, on_gui_opened)
+Event.add(defines.events.on_gui_closed, gui_closed)
 Event.add(defines.events.on_gui_closed, on_gui_closed)
+Event.add(defines.events.on_gui_click, on_gui_click)
 
 return Public

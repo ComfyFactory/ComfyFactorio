@@ -1044,6 +1044,11 @@ local function on_tick()
         return
     end
 
+    local paused = WD.get('paused')
+    if paused then
+        return
+    end
+
     local next_wave = WD.get('next_wave')
     if tick > next_wave then
         set_next_wave()
