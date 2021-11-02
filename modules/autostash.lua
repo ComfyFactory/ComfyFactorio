@@ -196,7 +196,7 @@ end
 local function insert_to_furnace(player_inventory, chests, name, count, floaty_text_list)
     local try = 0
 
-    local to_insert = floor(count / #chests)
+    local to_insert = floor(count / #chests.chest)
     if to_insert <= 0 then
         if count > 0 then
             to_insert = count
@@ -205,9 +205,9 @@ local function insert_to_furnace(player_inventory, chests, name, count, floaty_t
         end
     end
 
-    local variate = count % #chests
-    local chests_available = #chests
-    local tries = #chests
+    local variate = count % #chests.chest
+    local chests_available = #chests.chest
+    local tries = #chests.chest
 
     ::retry::
 
@@ -261,8 +261,8 @@ local function insert_to_furnace(player_inventory, chests, name, count, floaty_t
         end
     end
 
-    to_insert = floor(count / #chests)
-    variate = count % #chests
+    to_insert = floor(count / #chests.chest)
+    variate = count % #chests.chest
 
     for _, chest in pairs(chests.chest) do -- fuel
         if chest.type == 'furnace' or chest.type == 'assembling-machine' then
@@ -291,7 +291,7 @@ end
 local function insert_into_wagon(stack, chests, name, floaty_text_list)
 
     -- Attempt to load filtered cargo wagon
-    for chestnr, chest in pairs(chests) do
+    for chestnr, chest in pairs(chests.chest) do
         if chest.type == 'cargo-wagon' then
             local chest_inventory = chests.inventory[chestnr]
             if chest_inventory.can_insert(stack) then
@@ -439,7 +439,7 @@ local function auto_stash(player, event)
     end
 
     local floaty_text_list = {}
-    local chests
+    local chests = {chest = {}, inventory = {}}
     local r = this.small_radius
     local area = {{player.position.x - r, player.position.y - r}, {player.position.x + r, player.position.y + r}}
     if ctrl then
@@ -502,10 +502,11 @@ local function auto_stash(player, event)
             elseif shift and this.insert_into_wagon then
                 if button == defines.mouse_button_type.right then
                     if is_resource then
-                        full_insert = {full = insert_into_wagon(inventory[i], chests, name, floaty_text_list, full_insert), name = name}
+                        full_insert = {full = insert_into_wagon(inventory[i], chests, name, floaty_text_list), name = name}
                     end
-                elseif button == defines.mouse_button_type.left then
-                    full_insert = {full = insert_into_wagon_filtered(inventory[i], chests, name, floaty_text_list, full_insert), name = name}
+                end
+                if button == defines.mouse_button_type.left then
+                    full_insert = {full = insert_into_wagon_filtered(inventory[i], chests, name, floaty_text_list), name = name}
                 end
             elseif button == defines.mouse_button_type.right then
                 if is_resource then
