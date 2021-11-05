@@ -462,8 +462,8 @@ local function auto_stash(player, event)
     local filtered_chests = {chest = {}, inventory = {}}
     for index, e in pairs(chests.chest) do
         if chest_is_valid(e) then
-            filtered_chests.chest[#filtered_chests.chest + 1] = e
-            filtered_chests.inventory[#filtered_chests.inventory + 1] = chests.inventory[index]
+            filtered_chests.chest[index] = e
+            filtered_chests.inventory[index] = chests.inventory[index]
         end
     end
 
