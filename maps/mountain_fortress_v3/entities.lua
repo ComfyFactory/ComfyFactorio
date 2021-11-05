@@ -427,8 +427,8 @@ local function angry_tree(entity, cause, player)
                     force = 'enemy'
                 }
             )
-            if e.can_insert(data) then
-                e.insert(data)
+            if e.can_insert(Callbacks.piercing_rounds_magazine_ammo) then
+                e.insert(Callbacks.piercing_rounds_magazine_ammo)
             end
             local callback = Token.get(cbl)
             callback(e, data)
