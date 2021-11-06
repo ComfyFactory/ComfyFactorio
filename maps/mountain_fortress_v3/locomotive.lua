@@ -1885,7 +1885,7 @@ local restore_mining_speed_token =
         local mc_rewards = WPT.get('mc_rewards')
         local force = game.forces.player
         if mc_rewards.temp_boosts.mining then
-            force.manual_mining_speed_modifier = force.manual_mining_speed_modifier - 1
+            force.manual_mining_speed_modifier = force.manual_mining_speed_modifier - 0.5
             mc_rewards.temp_boosts.mining = nil
         end
     end
@@ -1897,7 +1897,7 @@ local restore_movement_speed_token =
         local mc_rewards = WPT.get('mc_rewards')
         local force = game.forces.player
         if mc_rewards.temp_boosts.movement then
-            force.character_running_speed_modifier = force.character_running_speed_modifier - 1
+            force.character_running_speed_modifier = force.character_running_speed_modifier - 0.2
             mc_rewards.temp_boosts.movement = nil
         end
     end
@@ -1953,7 +1953,7 @@ local mc_random_rewards = {
             mc_rewards.temp_boosts.movement = true
 
             Task.set_timeout_in_ticks(54000, restore_movement_speed_token)
-            force.character_running_speed_modifier = force.character_running_speed_modifier + 1
+            force.character_running_speed_modifier = force.character_running_speed_modifier + 0.2
             local message = ({'locomotive.movement_bonus', player.name})
             Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
             return true
@@ -1975,7 +1975,7 @@ local mc_random_rewards = {
             mc_rewards.temp_boosts.mining = true
 
             Task.set_timeout_in_ticks(54000, restore_mining_speed_token)
-            force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 1
+            force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 0.5
             local message = ({'locomotive.mining_bonus', player.name})
             Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
             return true
