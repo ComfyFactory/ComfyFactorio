@@ -210,7 +210,7 @@ function Public.conjure_items()
         force = 'player',
         level = 30,
         type = 'special',
-        mana_cost = 110,
+        mana_cost = 150,
         tick = 150,
         enabled = true,
         sprite = 'recipe/grenade'
@@ -224,7 +224,7 @@ function Public.conjure_items()
         force = 'player',
         level = 50,
         type = 'special',
-        mana_cost = 150,
+        mana_cost = 250,
         tick = 200,
         enabled = true,
         sprite = 'recipe/cluster-grenade'
