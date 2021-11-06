@@ -114,6 +114,28 @@ function Public.conjure_items()
         sprite = 'recipe/express-underground-belt'
     }
     spells[#spells + 1] = {
+        name = {'entity-name.pipe'},
+        obj_to_create = 'pipe',
+        level = 1,
+        type = 'item',
+        mana_cost = 50,
+        tick = 100,
+        aoe = true,
+        enabled = true,
+        sprite = 'recipe/pipe'
+    }
+    spells[#spells + 1] = {
+        name = {'entity-name.pipe-to-ground'},
+        obj_to_create = 'pipe-to-ground',
+        level = 1,
+        type = 'item',
+        mana_cost = 100,
+        tick = 100,
+        aoe = true,
+        enabled = true,
+        sprite = 'recipe/pipe-to-ground'
+    }
+    spells[#spells + 1] = {
         name = {'entity-name.tree'},
         obj_to_create = 'tree-05',
         level = 70,
