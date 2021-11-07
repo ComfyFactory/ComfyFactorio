@@ -12,6 +12,7 @@ local experience_levels = Public.experience_levels
 local points_per_level = Public.points_per_level
 local settings_level = Public.gui_settings_levels
 local floor = math.floor
+local random = math.random
 
 --RPG Frames
 local main_frame_name = Public.main_frame_name
@@ -507,18 +508,11 @@ function Public.get_heal_modifier_from_using_fish(player)
     end
 
     local base_amount = 80
-    local rpg_t = Public.get_value_from_player(player.index)
+    local rng = random(base_amount, base_amount * 4)
     local char = player.character
-    local vit = rpg_t.vitality
     local position = player.position
     if char and char.valid then
         local health = player.character_health_bonus + 250
-        local multiplier = (vit - 10) * 0.011
-        local final = multiplier * base_amount / 2
-        if final < 80 then
-            final = base_amount
-        end
-        final = floor(final)
         local color
         if char.health > (health * 0.50) then
             color = {b = 0.2, r = 0.1, g = 1, a = 0.8}
@@ -531,11 +525,11 @@ function Public.get_heal_modifier_from_using_fish(player)
             {
                 name = 'flying-text',
                 position = {position.x, position.y + 0.6},
-                text = '+' .. final,
+                text = '+' .. rng,
                 color = color
             }
         )
-        char.health = char.health + final
+        char.health = char.health + rng
     end
 end
 

@@ -21,6 +21,7 @@ local nth_tick = Public.nth_tick
 local main_frame_name = Public.main_frame_name
 
 local sub = string.sub
+local random = math.random
 
 local function on_gui_click(event)
     if not event then
@@ -274,7 +275,7 @@ local function on_entity_died(event)
             if health_pool then
                 for _, player in pairs(players) do
                     if entity.unit_number then
-                        local mana_to_reward = entity.prototype.max_health * 0.1
+                        local mana_to_reward = random(1, 5)
                         if mana_to_reward > 1 then
                             Public.reward_mana(player, mana_to_reward)
                         end
@@ -302,7 +303,7 @@ local function on_entity_died(event)
     --Grant normal XP
     for _, player in pairs(players) do
         if entity.unit_number then
-            local mana_to_reward = entity.prototype.max_health * 0.1
+            local mana_to_reward = random(1, 5)
             if mana_to_reward > 1 then
                 Public.reward_mana(player, mana_to_reward)
             end
