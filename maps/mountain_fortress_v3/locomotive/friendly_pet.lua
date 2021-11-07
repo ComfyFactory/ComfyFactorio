@@ -1,6 +1,5 @@
 local Event = require 'utils.event'
 local WPT = require 'maps.mountain_fortress_v3.table'
-local AI = require 'utils.ai'
 
 local random = math.random
 
@@ -78,18 +77,15 @@ function Public.spawn_biter()
 
     local position = loco_surface.find_non_colliding_position('market', center_position, 128, 0.5)
     local biters = {
-        'character',
         'small-biter',
         'medium-biter',
         'big-biter',
         'behemoth-biter',
-        'character',
         'small-spitter',
         'medium-spitter',
         'big-spitter',
         'behemoth-spitter',
-        'compilatron',
-        'character'
+        'compilatron'
     }
 
     local size_of = #biters
@@ -99,17 +95,6 @@ function Public.spawn_biter()
     end
 
     local chosen_ent = biters[random(1, size_of)]
-
-    if chosen_ent == 'character' then
-        local data = {
-            force = 'player',
-            surface = loco_surface.index,
-            command = 1,
-            tick = 60,
-            repeat_function = true
-        }
-        AI.add_job_to_task(data)
-    end
 
     this.locomotive_biter = loco_surface.create_entity({name = chosen_ent, position = position, force = 'player', create_build_effect_smoke = false})
 
@@ -125,10 +110,8 @@ function Public.spawn_biter()
         scale_with_zoom = false
     }
 
-    if not chosen_ent == 'character' then
-        this.locomotive_biter.ai_settings.allow_destroy_when_commands_fail = false
-        this.locomotive_biter.ai_settings.allow_try_return_to_spawner = false
-    end
+    this.locomotive_biter.ai_settings.allow_destroy_when_commands_fail = false
+    this.locomotive_biter.ai_settings.allow_try_return_to_spawner = false
 end
 
 local function on_console_chat(event)
