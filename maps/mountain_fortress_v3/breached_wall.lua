@@ -7,6 +7,7 @@ local Alert = require 'utils.alert'
 local Event = require 'utils.event'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
+local Color = require 'utils.color_presets'
 
 local raise_event = script.raise_event
 local floor = math.floor
@@ -79,6 +80,39 @@ local spidertron_too_far =
         Alert.alert_all_players(30, message)
     end
 )
+
+local check_distance_between_player_and_locomotive = function(player)
+    local surface = player.surface
+    local position = player.position
+    local locomotive = WPT.get('locomotive')
+    if not locomotive or not locomotive.valid then
+        return
+    end
+
+    local gap_between_locomotive = WPT.get('gap_between_locomotive')
+
+    if not gap_between_locomotive.highest_pos then
+        gap_between_locomotive.highest_pos = locomotive.position
+    end
+
+    gap_between_locomotive.highest_pos = locomotive.position
+    gap_between_locomotive = WPT.get('gap_between_locomotive')
+
+    local c_y = position.y
+    local t_y = gap_between_locomotive.highest_pos.y
+
+    if c_y - t_y <= gap_between_locomotive.neg_gap then
+        player.teleport({position.x, locomotive.position.y + gap_between_locomotive.neg_gap}, surface)
+        player.print(({'breached_wall.hinder'}), Color.warning)
+        if player.character then
+            player.character.health = player.character.health - 5
+            player.character.surface.create_entity({name = 'water-splash', position = position})
+            if player.character.health <= 0 then
+                player.character.die('enemy')
+            end
+        end
+    end
+end
 
 local compare_player_pos = function(player)
     local p = player.position
@@ -227,17 +261,19 @@ local function on_player_changed_position(event)
     local player = game.get_player(event.player_index)
     local surface_name = player.surface.name
     local map_name = 'mountain_fortress_v3'
-    if random(1, 3) ~= 1 then
-        return
-    end
 
     if sub(surface_name, 0, #map_name) ~= map_name then
         return
     end
 
+    check_distance_between_player_and_locomotive(player)
+
+    if random(1, 3) ~= 1 then
+        return
+    end
+
     distance(player)
 end
-
 local function on_player_driving_changed_state(event)
     local player = game.players[event.player_index]
     if not (player and player.valid) then
