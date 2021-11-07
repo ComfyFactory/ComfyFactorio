@@ -1,0 +1,113 @@
+local WPT = require 'maps.mountain_fortress_v3.table'
+
+local random = math.random
+local rad = math.rad
+local sin = math.sin
+local cos = math.cos
+
+local Public = {}
+
+local function create_defense_system(position, name, target)
+    local active_surface_index = WPT.get('active_surface_index')
+    local surface = game.surfaces[active_surface_index]
+
+    local random_angles = {
+        rad(random(359)),
+        rad(random(359)),
+        rad(random(359)),
+        rad(random(359))
+    }
+
+    surface.create_entity(
+        {
+            name = name,
+            position = {x = position.x, y = position.y},
+            target = target,
+            speed = 1.5,
+            force = 'player'
+        }
+    )
+    surface.create_entity(
+        {
+            name = name,
+            position = {
+                x = position.x + 12 * cos(random_angles[1]),
+                y = position.y + 12 * sin(random_angles[1])
+            },
+            target = target,
+            speed = 1.5,
+            force = 'player'
+        }
+    )
+    surface.create_entity(
+        {
+            name = name,
+            position = {
+                x = position.x + 12 * cos(random_angles[2]),
+                y = position.y + 12 * sin(random_angles[2])
+            },
+            target = target,
+            speed = 1.5,
+            force = 'player'
+        }
+    )
+    surface.create_entity(
+        {
+            name = name,
+            position = {
+                x = position.x + 12 * cos(random_angles[3]),
+                y = position.y + 12 * sin(random_angles[3])
+            },
+            target = target,
+            speed = 1.5,
+            force = 'player'
+        }
+    )
+    surface.create_entity(
+        {
+            name = name,
+            position = {
+                x = position.x + 12 * cos(random_angles[4]),
+                y = position.y + 12 * sin(random_angles[4])
+            },
+            target = target,
+            speed = 1.5,
+            force = 'player'
+        }
+    )
+end
+
+function Public.enable_poison_defense(pos)
+    local locomotive = WPT.get('locomotive')
+    if not locomotive then
+        return
+    end
+    if not locomotive.valid then
+        return
+    end
+    pos = pos or locomotive.position
+    create_defense_system({x = pos.x, y = pos.y}, 'poison-cloud', pos)
+    if random(1, 4) == 1 then
+        local random_angles = {rad(random(344))}
+        create_defense_system({x = pos.x + 24 * cos(random_angles[1]), y = pos.y + -24 * sin(random_angles[1])}, 'poison-cloud', pos)
+    end
+end
+
+function Public.enable_robotic_defense(pos)
+    local locomotive = WPT.get('locomotive')
+    if not locomotive then
+        return
+    end
+    if not locomotive.valid then
+        return
+    end
+
+    pos = pos or locomotive.position
+    create_defense_system({x = pos.x, y = pos.y}, 'destroyer-capsule', pos)
+    if random(1, 4) == 1 then
+        local random_angles = {rad(random(324))}
+        create_defense_system({x = pos.x + 24 * cos(random_angles[1]), y = pos.y + -24 * sin(random_angles[1])}, 'destroyer-capsule', pos)
+    end
+end
+
+return Public
