@@ -39,6 +39,7 @@ function Public.reset()
     this.allowed_surface = 'nauvis'
     this.trust_system = {}
     this.players = {}
+    this.players_persistent = {}
     this.player_gui_data = {}
     this.surfaces = {}
     this.minimap = {}

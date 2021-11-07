@@ -10,6 +10,7 @@ local Mining = require 'maps.mountain_fortress_v3.mining'
 local Terrain = require 'maps.mountain_fortress_v3.terrain'
 local Traps = require 'maps.mountain_fortress_v3.traps'
 local Locomotive = require 'maps.mountain_fortress_v3.locomotive'
+local DefenseSystem = require 'maps.mountain_fortress_v3.locomotive.defense_system'
 local Collapse = require 'modules.collapse'
 local Alert = require 'utils.alert'
 local Task = require 'utils.task'
@@ -228,7 +229,7 @@ local function set_train_final_health(final_damage_amount, repair)
                 if carriages then
                     for i = 1, #carriages do
                         local entity = carriages[i]
-                        Locomotive.enable_poison_defense(entity.position)
+                        DefenseSystem.enable_poison_defense(entity.position)
                     end
                 end
 
@@ -247,7 +248,7 @@ local function set_train_final_health(final_damage_amount, repair)
                     for _ = 1, 10 do
                         for i = 1, #carriages do
                             local entity = carriages[i]
-                            Locomotive.enable_robotic_defense(entity.position)
+                            DefenseSystem.enable_robotic_defense(entity.position)
                         end
                     end
                 end
