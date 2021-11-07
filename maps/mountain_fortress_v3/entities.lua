@@ -1204,30 +1204,15 @@ local function show_mvps(player)
                 local date = Server.get_start_time()
                 game.server_save('Final_' .. name .. '_' .. tostring(date))
                 --ignore
-                local text =
-                    '**Statistics!**\\n\\n' ..
-                    'Time played: ' ..
-                        time_played ..
-                            '\\n' ..
-                                'Game Difficulty: ' ..
-                                    diff.name ..
-                                        '\\n' ..
-                                            'Highest wave: ' ..
-                                                format_number(wave, true) ..
-                                                    '\\n' ..
-                                                        'Total connected players: ' ..
-                                                            total_players ..
-                                                                '\\n' ..
-                                                                    'Threat: ' ..
-                                                                        format_number(threat, true) ..
-                                                                            '\\n' ..
-                                                                                'Pickaxe Upgrade: ' ..
-                                                                                    pick_tier ..
-                                                                                        ' (' ..
-                                                                                            tier ..
-                                                                                                ')\\n' ..
-                                                                                                    'Collapse Speed: ' ..
-                                                                                                        collapse_speed .. '\\n' .. 'Collapse Amount: ' .. collapse_amount .. '\\n'
+                local text = '**Statistics!**\\n\\n' ..
+                'Time played: ' .. time_played ..
+                '\\n' .. 'Game Difficulty: ' .. diff.name ..
+                '\\n' .. 'Highest wave: ' .. format_number(wave, true) ..
+                '\\n' .. 'Total connected players: ' .. total_players ..
+                '\\n' .. 'Threat: ' .. format_number(threat, true) ..
+                '\\n' .. 'Pickaxe Upgrade: ' .. pick_tier .. ' (' .. tier ..
+                ')\\n' .. 'Collapse Speed: ' .. collapse_speed ..
+                '\\n' .. 'Collapse Amount: ' .. collapse_amount .. '\\n'
                 Server.to_discord_named_embed(send_ping_to_channel, text)
                 WPT.set('sent_to_discord', true)
             end
