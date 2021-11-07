@@ -610,6 +610,17 @@ local function get_player_data(player)
     return players[player.index]
 end
 
+local function get_persistent_player_data(player)
+    local players = IC.get('players_persistent')
+    local player_data = players[player.index]
+    if players[player.index] then
+        return player_data
+    end
+
+    players[player.index] = {}
+    return players[player.index]
+end
+
 local remove_car =
     Token.register(
     function(data)
@@ -936,18 +947,30 @@ function Public.create_car_room(car)
         end
     end
 
-    local fishes = {}
-
     for x = area.left_top.x, area.right_bottom.x - 1, 1 do
         for y = -0, 1, 1 do
             tiles[#tiles + 1] = {name = 'water', position = {x, y}}
-            fishes[#fishes + 1] = {name = 'fish', position = {x, y}}
         end
     end
 
     surface.set_tiles(tiles, true)
-    for _, fish in pairs(fishes) do
-        surface.create_entity(fish)
+
+    local p = game.get_player(car.owner)
+    if p and p.valid then
+        local player_data = get_persistent_player_data(p)
+        if not player_data.placed_fish then
+            local fishes = {}
+            for x = area.left_top.x, area.right_bottom.x - 1, 1 do
+                for y = -0, 1, 1 do
+                    fishes[#fishes + 1] = {name = 'fish', position = {x, y}}
+                end
+            end
+
+            for _, fish in pairs(fishes) do
+                surface.create_entity(fish)
+            end
+            player_data.placed_fish = true
+        end
     end
 
     construct_doors(car)

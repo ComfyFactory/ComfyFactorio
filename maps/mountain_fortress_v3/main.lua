@@ -28,6 +28,7 @@ local RPG = require 'modules.rpg.main'
 local Event = require 'utils.event'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local Locomotive = require 'maps.mountain_fortress_v3.locomotive'
+local SpawnLocomotive = require 'maps.mountain_fortress_v3.locomotive.spawn_locomotive'
 local Score = require 'comfy_panel.score'
 local Poll = require 'comfy_panel.poll'
 local Collapse = require 'modules.collapse'
@@ -44,6 +45,8 @@ local Reset = require 'functions.soft_reset'
 local JailData = require 'utils.datastore.jail_data'
 local RPG_Progression = require 'utils.datastore.rpg_data'
 
+require 'maps.mountain_fortress_v3.locomotive.market'
+require 'maps.mountain_fortress_v3.locomotive.linked_chests'
 require 'maps.mountain_fortress_v3.rocks_yield_ore_veins'
 
 require 'maps.mountain_fortress_v3.generate'
@@ -245,7 +248,7 @@ function Public.reset_map()
     this.locomotive_health = 10000
     this.locomotive_max_health = 10000
 
-    Locomotive.locomotive_spawn(surface, {x = -18, y = 25})
+    SpawnLocomotive.locomotive_spawn(surface, {x = -18, y = 25})
     Locomotive.render_train_hp()
     Functions.render_direction(surface)
 
