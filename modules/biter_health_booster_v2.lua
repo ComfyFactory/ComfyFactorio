@@ -269,6 +269,19 @@ local function on_entity_damaged(event)
         return
     end
 
+    local damage_type = event.damage_type
+    if damage_type and damage_type.name == 'electric' then
+        local stickers = event.entity.stickers
+        if stickers and #stickers > 0 then
+            for i = 1, #stickers, 1 do
+                if stickers[i].sticked_to == event.entity and stickers[i].name == 'stun-sticker' then
+                    stickers[i].destroy()
+                    break
+                end
+            end
+        end
+    end
+
     if not health_pool and this.make_normal_unit_mini_bosses then
         if this.biter_health_boost_forces[biter.force.index] then
             Public.add_unit(biter, this.biter_health_boost_forces[biter.force.index])
