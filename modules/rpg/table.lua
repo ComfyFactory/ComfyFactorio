@@ -94,6 +94,7 @@ function Public.reset_table()
     this.rpg_extra.reward_new_players = 0
     this.rpg_extra.level_limit_enabled = false
     this.rpg_extra.global_pool = 0
+    this.rpg_extra.heal_modifier = 2
     this.rpg_extra.personal_tax_rate = 0.3
     this.rpg_extra.leftover_pool = 0
     this.rpg_extra.turret_kills_to_global_pool = true
