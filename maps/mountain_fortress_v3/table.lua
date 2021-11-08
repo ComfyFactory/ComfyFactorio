@@ -102,6 +102,12 @@ function Public.reset_table()
         neg_gap = -500,
         highest_pos = 0
     }
+    this.gap_between_locomotive = {
+        hinders = {},
+        gap = 900,
+        neg_gap = -2112,
+        highest_pos = nil
+    }
     this.force_chunk = false
     this.allow_decon = true
     this.train_upgrades = 0

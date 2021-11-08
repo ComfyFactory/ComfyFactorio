@@ -272,6 +272,8 @@ local pause_wd_token =
         WD.pause(false)
         local mc_rewards = WPT.get('mc_rewards')
         mc_rewards.temp_boosts.wave_defense = nil
+        local message = ({'locomotive.wd_resumed'})
+        Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
     end
 )
 
@@ -408,7 +410,7 @@ local mc_random_rewards = {
         name = 'Wave Defense',
         str = 'wave_defense',
         color = {r = 0.35, g = 0.00, b = 0.00},
-        tooltip = 'Selecting this will pause the wave defense for 15 minutes. Ideal if you want to take a break!',
+        tooltip = 'Selecting this will pause the wave defense for 5 minutes. Ideal if you want to take a break!',
         func = (function(player)
             local mc_rewards = WPT.get('mc_rewards')
             if mc_rewards.temp_boosts.wave_defense then
@@ -417,7 +419,7 @@ local mc_random_rewards = {
             mc_rewards.temp_boosts.wave_defense = true
 
             WD.pause(true)
-            Task.set_timeout_in_ticks(54000, pause_wd_token)
+            Task.set_timeout_in_ticks(18000, pause_wd_token)
             local message = ({'locomotive.wd_paused', player.name})
             Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
             return true
