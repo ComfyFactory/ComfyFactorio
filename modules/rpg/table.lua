@@ -94,6 +94,7 @@ function Public.reset_table()
     this.rpg_extra.reward_new_players = 0
     this.rpg_extra.level_limit_enabled = false
     this.rpg_extra.global_pool = 0
+    this.rpg_extra.heal_modifier = 2
     this.rpg_extra.personal_tax_rate = 0.3
     this.rpg_extra.leftover_pool = 0
     this.rpg_extra.turret_kills_to_global_pool = true
@@ -112,6 +113,7 @@ function Public.reset_table()
     this.rpg_extra.enable_auto_allocate = false
     this.rpg_extra.enable_one_punch = true
     this.rpg_extra.enable_one_punch_globally = false
+    this.rpg_extra.disable_get_heal_modifier_from_using_fish = false
     this.rpg_extra.tweaked_crafting_items = {
         ['red-wire'] = true,
         ['green-wire'] = true,

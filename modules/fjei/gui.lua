@@ -1,12 +1,13 @@
 --luacheck: ignore
 local Functions = require 'modules.fjei.functions'
+local Gui = require 'utils.gui'
 local math_ceil = math.ceil
 local math_abs = math.abs
 local table_remove = table.remove
 local table_insert = table.insert
 local main_window_width = 228
 local recipe_window_width = 480
-local recipe_window_amount_width = 38
+local recipe_window_amount_width = 40
 local recipe_window_item_name_width = 128
 local recipe_window_position = 'screen'
 local column_count = 5
@@ -25,7 +26,7 @@ local function save_window_location(player, frame)
 end
 
 local function get_total_page_count(player)
-    if not global.fjei.player_data[player.index].filtered_list then
+    if not global.fjei.player_data[player.index].size_of_filtered_list then
         Functions.set_filtered_list(player)
     end
     local count = math_ceil(global.fjei.player_data[player.index].size_of_filtered_list / items_per_page)
@@ -53,7 +54,7 @@ end
 
 local function get_formatted_amount(amount)
     if amount < 1000 then
-        amount = amount .. ' x '
+        amount = amount .. ' x '
         return amount
     end
     if amount >= 1000000 then
@@ -138,7 +139,7 @@ local function add_choose_elem_button(element, name, is_recipe)
     choose_elem_button.style.padding = 2
 end
 
-local function add_sprite_icon(element, name, is_recipe, use_localised_name)
+local function add_sprite_icon(element, name, is_recipe)
     local sprite_type
     if is_recipe then
         sprite_type = 'recipe'
@@ -150,13 +151,7 @@ local function add_sprite_icon(element, name, is_recipe, use_localised_name)
         return
     end
 
-    local sprite
-    if use_localised_name then
-        sprite = element.add({type = 'sprite', name = name, sprite = sprite_type .. '/' .. name, tooltip = get_localised_name(name)})
-    else
-        sprite = element.add({type = 'sprite', name = name, sprite = sprite_type .. '/' .. name, tooltip = name})
-    end
-
+    local sprite = element.add({type = 'sprite', name = name, sprite = sprite_type .. '/' .. name, tooltip = get_localised_name(name)})
     sprite.style.minimal_width = 32
     sprite.style.minimal_height = 32
     sprite.style.maximal_width = 32
@@ -184,7 +179,7 @@ local function display_item_list(player)
         if not filtered_list[i] then
             return
         end
-        add_sprite_icon(item_list_table, sorted_item_list[filtered_list[i]], false)
+        add_sprite_icon(item_list_table, sorted_item_list[filtered_list[i]])
     end
 end
 
@@ -203,7 +198,7 @@ local function display_history(player)
     for i = player_data.size_of_history - column_count, player_data.size_of_history, 1 do
         local name = history[i]
         if name then
-            add_sprite_icon(history_table, name, false)
+            add_sprite_icon(history_table, name)
         end
     end
 end
@@ -275,14 +270,14 @@ local function refresh_recipe_bar(player, selected_recipe)
 
     local container = fjei_recipe_window_select_table[old_recipe_name]
     container.clear()
-    add_sprite_icon(container, old_recipe_name, true)
+    add_sprite_icon(container, old_recipe_name)
 
     local container = fjei_recipe_window_select_table[selected_recipe]
     container.clear()
     local element = container.add({type = 'frame', name = 'fjei_recipe_window_selected_recipe'})
     element.style.margin = 0
     element.style.padding = -4
-    add_sprite_icon(element, selected_recipe, true)
+    add_sprite_icon(element, selected_recipe)
 end
 
 local function draw_recipe_window_header(player, container, item_name, recipes, mode, recipe_name)
@@ -311,9 +306,9 @@ local function draw_recipe_window_header(player, container, item_name, recipes, 
                 local element = ttt.add({type = 'frame', name = 'fjei_recipe_window_selected_recipe'})
                 element.style.margin = 0
                 element.style.padding = -4
-                add_sprite_icon(element, name, true)
+                add_sprite_icon(element, name)
             else
-                add_sprite_icon(ttt, name, true)
+                add_sprite_icon(ttt, name)
             end
         end
     end
@@ -362,7 +357,7 @@ local function draw_recipe(player, container, recipe_name)
 
         local amount = product.amount
         if not amount then
-            amount = 1
+            amount = math.round((product.amount_min + product.amount_max) * 0.5, 2)
         end
         amount = amount * product.probability
 
@@ -388,6 +383,10 @@ local function draw_recipe(player, container, recipe_name)
             element.style.maximal_width = recipe_window_item_name_width
             element.style.single_line = false
             element.style.font = 'default'
+        end
+        if not product.amount or not product.probability or product.probability ~= 1 then
+            element.tooltip = 'This number is an approximate value.'
+            element.style.font_color = {255, 255, 0}
         end
     end
 
@@ -624,6 +623,7 @@ local function toggle_main_window(element, player, button)
             player.gui[recipe_window_position].fjei_recipe_window.destroy()
         end
     else
+        Functions.handle_translations_fetch(player)
         draw_main_window(player)
     end
     return true
@@ -717,15 +717,15 @@ function Public.gui_click_actions(element, player, button)
 end
 
 function Public.draw_top_toggle_button(player)
-    if player.gui.top['fjei_toggle_button'] then
+    local button_flow = Gui.mod_button(player)
+    if button_flow.fjei_toggle_button then
         return
     end
-    local button = player.gui.top.add({type = 'sprite-button', name = 'fjei_toggle_button', caption = 'FJEI'})
-    button.style.font = 'heading-1'
-    button.style.font_color = {222, 222, 222}
-    button.style.minimal_height = 38
-    button.style.minimal_width = 50
-    button.style.padding = -2
+    button_flow.add {type = 'sprite-button', name = 'fjei_toggle_button', caption = 'FJEI'}
+    button_flow.style.minimal_height = 38
+    button_flow.style.maximal_height = 38
+    button_flow.style.minimal_width = 40
+    button_flow.style.padding = -2
 end
 
 function Public.open_recipe(element, player, button)

@@ -30,6 +30,33 @@ local starting_items = {
     ['explosives'] = 32
 }
 
+local random_respawn_messages = {
+    'The doctors stitched you up as best they could.',
+    'Ow! Your right leg hurts.',
+    'Ow! Your left leg hurts.',
+    'You can feel your whole body aching.',
+    "You still have some bullet wounds that aren't patched up.",
+    'You feel dizzy but adrenalin is granting you speed.',
+    'Adrenalin is kicking in, but your body is damaged.'
+}
+
+local health_values = {
+    '0.35',
+    '0.40',
+    '0.45',
+    '0.50',
+    '0.55',
+    '0.60',
+    '0.65',
+    '0.70',
+    '0.75',
+    '0.80',
+    '0.85',
+    '0.90',
+    '0.95',
+    '1'
+}
+
 Global.register(
     this,
     function(t)
@@ -41,6 +68,7 @@ local Public = {}
 
 local random = math.random
 local floor = math.floor
+local round = math.round
 local remove = table.remove
 local sqrt = math.sqrt
 local magic_crafters_per_tick = 3
@@ -853,32 +881,61 @@ function Public.set_difficulty()
     local collapse_amount = WPT.get('collapse_amount')
     local collapse_speed = WPT.get('collapse_speed')
     local difficulty = WPT.get('difficulty')
+    local mining_bonus_till_wave = WPT.get('mining_bonus_till_wave')
+    local mining_bonus = WPT.get('mining_bonus')
+    local disable_mining_boost = WPT.get('disable_mining_boost')
+    local wave_number = WD.get_wave()
     local player_count = calc_players()
 
     if not Diff.difficulty_vote_value then
         Diff.difficulty_vote_value = 0.1
     end
 
-    wave_defense_table.max_active_biters = 768 + player_count * (90 * Diff.difficulty_vote_value)
+    if Diff.name == "I'm too young to die" then
+        wave_defense_table.max_active_biters = 768 + player_count * (90 * Diff.difficulty_vote_value)
+    elseif Diff.name == 'Hurt me plenty' then
+        wave_defense_table.max_active_biters = 845 + player_count * (90 * Diff.difficulty_vote_value)
+    elseif Diff.name == 'Ultra-violence' then
+        wave_defense_table.max_active_biters = 1000 + player_count * (90 * Diff.difficulty_vote_value)
+    end
 
     if wave_defense_table.max_active_biters >= 4000 then
         wave_defense_table.max_active_biters = 4000
     end
 
     -- threat gain / wave
-    wave_defense_table.threat_gain_multiplier = 1.2 + player_count * Diff.difficulty_vote_value * 0.1
+    if Diff.name == "I'm too young to die" then
+        wave_defense_table.threat_gain_multiplier = 1.2 + player_count * Diff.difficulty_vote_value * 0.1
+    elseif Diff.name == 'Hurt me plenty' then
+        wave_defense_table.threat_gain_multiplier = 2 + player_count * Diff.difficulty_vote_value * 0.1
+    elseif Diff.name == 'Ultra-violence' then
+        wave_defense_table.threat_gain_multiplier = 4 + player_count * Diff.difficulty_vote_value * 0.1
+    end
 
     -- local amount = player_count * 0.40 + 2 -- too high?
     local amount = player_count * difficulty.multiply + 2
     amount = floor(amount)
-    if amount > difficulty.highest then
-        amount = difficulty.highest -- lowered from 20 to 15
+    if amount < difficulty.lowest then
+        amount = difficulty.lowest
+    elseif amount > difficulty.highest then
+        amount = difficulty.highest -- lowered from 20 to 10
     end
 
-    wave_defense_table.wave_interval = 3600 - player_count * 60
-
-    if wave_defense_table.wave_interval < 1800 or wave_defense_table.threat <= 0 then
-        wave_defense_table.wave_interval = 1800
+    if Diff.name == "I'm too young to die" then
+        wave_defense_table.wave_interval = 3600 - player_count * 60
+        if wave_defense_table.wave_interval < 1800 or wave_defense_table.threat <= 0 then
+            wave_defense_table.wave_interval = 1800
+        end
+    elseif Diff.name == 'Hurt me plenty' then
+        wave_defense_table.wave_interval = 2600 - player_count * 60
+        if wave_defense_table.wave_interval < 1500 or wave_defense_table.threat <= 0 then
+            wave_defense_table.wave_interval = 1500
+        end
+    elseif Diff.name == 'Ultra-violence' then
+        wave_defense_table.wave_interval = 1600 - player_count * 60
+        if wave_defense_table.wave_interval < 1100 or wave_defense_table.threat <= 0 then
+            wave_defense_table.wave_interval = 1100
+        end
     end
 
     if collapse_amount then
@@ -890,13 +947,34 @@ function Public.set_difficulty()
         Collapse.set_speed(collapse_speed)
     else
         if player_count >= 1 and player_count <= 8 then
-            Collapse.set_speed(9)
-        elseif player_count > 8 and player_count <= 20 then
             Collapse.set_speed(8)
+        elseif player_count > 8 and player_count <= 20 then
+            Collapse.set_speed(7)
         elseif player_count > 20 and player_count <= 35 then
             Collapse.set_speed(6)
         elseif player_count > 35 then
             Collapse.set_speed(5)
+        end
+    end
+
+    if player_count >= 1 and not disable_mining_boost then
+        local force = game.forces.player
+        if wave_number < mining_bonus_till_wave then
+            -- the mining speed of the players will increase drastically since RPG is also loaded.
+            -- additional mining speed comes from steel axe research: 100%, and difficulty settings: too young to die 50%, hurt me plenty 25%
+            force.manual_mining_speed_modifier = force.manual_mining_speed_modifier - mining_bonus
+            if player_count <= 5 then
+                mining_bonus = 3 -- set a static 300% bonus if there are <= 5 players.
+            elseif player_count >= 6 and player_count <= 10 then
+                mining_bonus = 1 -- set a static 100% bonus if there are <= 10 players.
+            elseif player_count >= 11 then
+                mining_bonus = 0 -- back to 0% with more than 11 players
+            end
+            force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + mining_bonus
+            WPT.set('mining_bonus', mining_bonus) -- Setting mining_bonus globally so it remembers how much to reduce
+        else
+            force.manual_mining_speed_modifier = force.manual_mining_speed_modifier - mining_bonus
+            WPT.set('disable_mining_boost', true)
         end
     end
 end
@@ -1289,6 +1367,8 @@ function Public.on_player_respawned(event)
     end
     if player.character and player.character.valid then
         Task.set_timeout_in_ticks(15, boost_movement_speed_on_respawn, {player = player})
+        player.character.health = round(player.character.health * health_values[random(1, #health_values)])
+        player.print(random_respawn_messages[random(1, #random_respawn_messages)])
     end
 end
 
@@ -1388,7 +1468,7 @@ function Public.on_research_finished(event)
     if research.name == 'steel-axe' then
         local msg = 'Steel-axe technology has been researched, 100% has been applied.\nBuy Pickaxe-upgrades in the market to boost it even more!'
         Alert.alert_all_players(30, msg, nil, 'achievement/tech-maniac', 0.6)
-    end -- +50% speed for steel-axe research
+    end
 
     local force_name = research.force.name
     if not force_name then

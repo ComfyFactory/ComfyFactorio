@@ -16,6 +16,7 @@ Global.register(
 local Public = {}
 local random = math.random
 local ceil = math.ceil
+local floor = math.floor
 
 local function is_player_warned(player, reset)
     if reset and this.warned[player.index] then
@@ -31,12 +32,13 @@ local function is_player_warned(player, reset)
     return this.warned[player.index]
 end
 
-local function compute_fullness(player)
+local function compute_fullness(player, position)
     if not player.mining_state.mining then
         return false
     end
     local warn_player = is_player_warned(player)
     local free_slots = player.get_main_inventory().count_empty_stacks()
+    local inventory_size = #player.get_main_inventory()
     if free_slots == 0 or free_slots == 1 then
         if player.character and player.character.valid then
             local damage = ceil((warn_player.count / 2) * warn_player.count)
@@ -48,7 +50,14 @@ local function compute_fullness(player)
                     'Just a fleshwound.',
                     'Better keep those hands to yourself or you might loose them.'
                 }
-                player.print(messages[random(1, #messages)], {r = 0.75, g = 0.0, b = 0.0})
+                player.surface.create_entity(
+                    {
+                        name = 'flying-text',
+                        position = {position.x, position.y + 0.6},
+                        text = messages[random(1, #messages)],
+                        color = {r = 0.75, g = 0.0, b = 0.0}
+                    }
+                )
             else
                 player.character.die('enemy')
                 is_player_warned(player, true)
@@ -59,12 +68,24 @@ local function compute_fullness(player)
     else
         is_player_warned(player, true)
     end
+    if free_slots > 1 then
+        if floor(inventory_size / free_slots) == 10 then -- When player has 10% free slots
+            player.surface.create_entity(
+                {
+                    name = 'flying-text',
+                    position = {position.x, position.y + 0.6},
+                    text = 'You are feeling heavy',
+                    color = {r = 1.0, g = 0.5, b = 0.0}
+                }
+            )
+        end
+    end
     return free_slots
 end
 
-function Public.check_fullness(player)
+function Public.check_fullness(player, position)
     if this.fullness_enabled then
-        local fullness = compute_fullness(player)
+        local fullness = compute_fullness(player, position)
         if fullness == 0 then
             return
         end
@@ -107,7 +128,8 @@ Event.add(
             return
         end
 
-        check_fullness(player)
+        local position = event.entity.position
+        check_fullness(player, position)
     end
 )
 

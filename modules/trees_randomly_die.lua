@@ -41,9 +41,11 @@ local function create_particles(surface, name, position, amount)
 
     surface.create_entity(
         {
-            name = 'railgun-beam',
+            name = 'electric-beam',
             position = {x = position.x, y = position.y},
-            target = {x = (position.x - 6) + math.random(0, 12), y = position.y - math.random(12, 24)}
+            source = {x = (position.x - 3) + math.random(0, 6), y = position.y - math.random(2, 4)},
+            target = {x = position.x, y = position.y},
+            duration = 30
         }
     )
     surface.create_entity(

@@ -35,12 +35,15 @@ function Public.reset()
     this.current_car_index = nil
     this.renders = {}
     this.saved_surfaces = {}
+    this.surfaces_deleted_by_button = {}
     this.allowed_surface = 'nauvis'
     this.trust_system = {}
     this.players = {}
+    this.players_persistent = {}
     this.player_gui_data = {}
     this.surfaces = {}
     this.minimap = {}
+    this.misc_settings = {}
     this.entity_type = {
         ['car'] = true,
         ['tank'] = true,
