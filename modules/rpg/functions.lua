@@ -11,6 +11,8 @@ local xp_floating_text_color = Public.xp_floating_text_color
 local experience_levels = Public.experience_levels
 local points_per_level = Public.points_per_level
 local settings_level = Public.gui_settings_levels
+local floor = math.floor
+local random = math.random
 
 --RPG Frames
 local main_frame_name = Public.main_frame_name
@@ -115,11 +117,19 @@ local function level_up(player)
         return
     end
 
+    -- automatically enable one_punch and stone_path,
+    -- but do so only once.
     if rpg_t.level >= settings_level['one_punch_label'] then
-        rpg_t.one_punch = true
+        if not rpg_t.auto_toggle_features.one_punch then
+            rpg_t.auto_toggle_features.one_punch = true
+            rpg_t.one_punch = true
+        end
     end
     if rpg_t.level >= settings_level['stone_path_label'] then
-        rpg_t.stone_path = true
+        if not rpg_t.auto_toggle_features.stone_path then
+            rpg_t.auto_toggle_features.stone_path = true
+            rpg_t.stone_path = true
+        end
     end
 
     Public.draw_level_text(player)
@@ -180,7 +190,7 @@ local repair_buildings =
 )
 
 function Public.repair_aoe(player, position)
-    local entities = player.surface.find_entities_filtered {force = player.force, area = {{position.x - 5, position.y - 5}, {position.x + 5, position.y + 5}}}
+    local entities = player.surface.find_entities_filtered {force = player.force, area = {{position.x - 8, position.y - 8}, {position.x + 8, position.y + 8}}}
     local count = 0
     for i = 1, #entities do
         local e = entities[i]
@@ -324,6 +334,8 @@ function Public.reward_mana(player, mana_to_add)
     if not mana_to_add then
         return
     end
+
+    mana_to_add = floor(mana_to_add)
 
     if not rpg_t then
         return
@@ -489,6 +501,38 @@ function Public.get_heal_modifier(player)
     return (rpg_t.vitality - 10) * 0.06
 end
 
+function Public.get_heal_modifier_from_using_fish(player)
+    local rpg_extra = Public.get('rpg_extra')
+    if rpg_extra.disable_get_heal_modifier_from_using_fish then
+        return
+    end
+
+    local base_amount = 80
+    local rng = random(base_amount, base_amount * rpg_extra.heal_modifier)
+    local char = player.character
+    local position = player.position
+    if char and char.valid then
+        local health = player.character_health_bonus + 250
+        local color
+        if char.health > (health * 0.50) then
+            color = {b = 0.2, r = 0.1, g = 1, a = 0.8}
+        elseif char.health > (health * 0.25) then
+            color = {r = 1, g = 1, b = 0}
+        else
+            color = {b = 0.1, r = 1, g = 0, a = 0.8}
+        end
+        player.surface.create_entity(
+            {
+                name = 'flying-text',
+                position = {position.x, position.y + 0.6},
+                text = '+' .. rng,
+                color = color
+            }
+        )
+        char.health = char.health + rng
+    end
+end
+
 function Public.get_mana_modifier(player)
     local rpg_t = Public.get_value_from_player(player.index)
     if rpg_t.level <= 40 then
@@ -593,7 +637,11 @@ function Public.rpg_reset_player(player, one_time_reset)
                 last_mined_entity_position = {x = 0, y = 0},
                 show_bars = false,
                 stone_path = false,
-                one_punch = false
+                one_punch = false,
+                auto_toggle_features = {
+                    stone_path = false,
+                    one_punch = false
+                }
             }
         )
         rpg_t.points_left = old_points_left + total
@@ -631,7 +679,11 @@ function Public.rpg_reset_player(player, one_time_reset)
                 last_mined_entity_position = {x = 0, y = 0},
                 show_bars = false,
                 stone_path = false,
-                one_punch = false
+                one_punch = false,
+                auto_toggle_features = {
+                    stone_path = false,
+                    one_punch = false
+                }
             }
         )
     end

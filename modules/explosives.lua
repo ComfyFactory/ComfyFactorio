@@ -43,7 +43,7 @@ local function check_y_pos(position)
     end
     local collapse_pos = Collapse.get_position()
 
-    local radius = 50
+    local radius = 10
 
     local dy = position.y - collapse_pos.y
     if dy ^ 2 < radius ^ 2 then
@@ -205,7 +205,9 @@ local function damage_area(cell)
             cell.health = cell.health - this.explosives.tiles[key]
             this.explosives.tiles[key] = nil
             if math_abs(tile.position.y) < surface.map_gen_settings.height * 0.5 and math_abs(tile.position.x) < surface.map_gen_settings.width * 0.5 then
-                surface.set_tiles({{name = 'landfill', position = tile.position}}, true)
+                if not check_y_pos(tile.position) then
+                    surface.set_tiles({{name = 'landfill', position = tile.position}}, true)
+                end
             end
         else
             this.explosives.tiles[key] = this.explosives.tiles[key] - cell.health
@@ -263,11 +265,6 @@ local function on_entity_died(event)
         return
     end
 
-    local below_void = check_y_pos(entity.position)
-    if below_void then
-        return
-    end
-
     cell_birth(
         entity.surface.index,
         {x = entity.position.x, y = entity.position.y},
@@ -302,11 +299,6 @@ function Public.detonate_chest(entity)
     end
     if amount < 99 then
         return false
-    end
-
-    local below_void = check_y_pos(entity.position)
-    if below_void then
-        return
     end
 
     cell_birth(

@@ -4,10 +4,13 @@ local Task = require 'utils.task'
 local Token = require 'utils.token'
 local IC = require 'maps.mountain_fortress_v3.ic.table'
 local WPT = require 'maps.mountain_fortress_v3.table'
+local RPG = require 'modules.rpg.main'
 
 local Public = {}
 local main_tile_name = 'black-refined-concrete'
 local raise_event = script.raise_event
+local round = math.round
+local floor = math.floor
 
 local function validate_entity(entity)
     if not (entity and entity.valid) then
@@ -207,7 +210,9 @@ local function get_saved_entity(entity, index)
 end
 
 local function replace_entity(cars, entity, index)
+    local has_upgraded_health_pool = WPT.get('has_upgraded_health_pool')
     local unit_number = entity.unit_number
+    local health = floor(2000 * entity.health * 0.002)
     for k, car in pairs(cars) do
         if car.saved_entity == index.saved_entity then
             local c = car
@@ -215,6 +220,11 @@ local function replace_entity(cars, entity, index)
             cars[unit_number].entity = entity
             cars[unit_number].saved_entity = nil
             cars[unit_number].transfer_entities = car.transfer_entities
+            cars[unit_number].health_pool = {
+                enabled = has_upgraded_health_pool or false,
+                health = health,
+                max = health
+            }
             cars[k] = nil
         end
     end
@@ -600,6 +610,17 @@ local function get_player_data(player)
     return players[player.index]
 end
 
+local function get_persistent_player_data(player)
+    local players = IC.get('players_persistent')
+    local player_data = players[player.index]
+    if players[player.index] then
+        return player_data
+    end
+
+    players[player.index] = {}
+    return players[player.index]
+end
+
 local remove_car =
     Token.register(
     function(data)
@@ -714,6 +735,9 @@ function Public.kill_car(entity)
         return
     end
 
+    kick_players_out_of_vehicles(car)
+    kick_players_from_surface(car)
+
     local trust_system = IC.get('trust_system')
     local owner = car.owner
 
@@ -726,11 +750,31 @@ function Public.kill_car(entity)
         end
     end
 
+    local renders = IC.get('renders')
+
+    if renders[owner.index] then
+        rendering.destroy(renders[owner.index])
+        renders[owner.index] = nil
+    end
+
+    local player_gui_data = IC.get('player_gui_data')
+    if player_gui_data[owner.name] then
+        player_gui_data[owner.name] = nil
+    end
+
+    local players = IC.get('players')
+    if players[owner.index] then
+        players[owner.index] = nil
+    end
+
+    local misc_settings = IC.get('misc_settings')
+    if misc_settings[owner.index] then
+        misc_settings[owner.index] = nil
+    end
+
     local surface_index = car.surface
     local surface = game.surfaces[surface_index]
-    kick_players_out_of_vehicles(car)
     kill_doors(car)
-    kick_players_from_surface(car)
     for _, tile in pairs(surface.find_tiles_filtered({area = car.area})) do
         surface.set_tiles({{name = 'out-of-map', position = tile.position}}, true)
     end
@@ -741,6 +785,79 @@ function Public.kill_car(entity)
     end
     car.entity.force.chart(surface, car.area)
     game.delete_surface(surface)
+    surfaces[entity.unit_number] = nil
+    cars[entity.unit_number] = nil
+end
+
+function Public.kill_car_but_save_surface(entity)
+    if not validate_entity(entity) then
+        return
+    end
+
+    local entity_type = IC.get('entity_type')
+
+    if not entity_type[entity.type] then
+        return
+    end
+
+    local surfaces = IC.get('surfaces')
+    local surfaces_deleted_by_button = IC.get('surfaces_deleted_by_button')
+    local cars = IC.get('cars')
+    local car = cars[entity.unit_number]
+    if not car then
+        return
+    end
+
+    kick_players_out_of_vehicles(car)
+    kick_players_from_surface(car)
+
+    car.entity.minable = true
+
+    local trust_system = IC.get('trust_system')
+    local owner = car.owner
+
+    if owner then
+        owner = game.get_player(owner)
+        if owner and owner.valid then
+            if trust_system[owner.index] then
+                trust_system[owner.index] = nil
+            end
+        end
+    end
+
+    local renders = IC.get('renders')
+
+    if renders[owner.index] then
+        rendering.destroy(renders[owner.index])
+        renders[owner.index] = nil
+    end
+
+    local player_gui_data = IC.get('player_gui_data')
+    if player_gui_data[owner.name] then
+        player_gui_data[owner.name] = nil
+    end
+
+    local players = IC.get('players')
+    if players[owner.index] then
+        players[owner.index] = nil
+    end
+
+    local misc_settings = IC.get('misc_settings')
+    if misc_settings[owner.index] then
+        misc_settings[owner.index] = nil
+    end
+
+    local surface_index = car.surface
+    local surface = game.surfaces[surface_index]
+
+    if not surfaces_deleted_by_button[owner.name] then
+        surfaces_deleted_by_button[owner.name] = {}
+    end
+
+    surfaces_deleted_by_button[owner.name][#surfaces_deleted_by_button[owner.name] + 1] = surface.name
+
+    kill_doors(car)
+    car.entity.force.chart(surface, car.area)
     surfaces[entity.unit_number] = nil
     cars[entity.unit_number] = nil
 end
@@ -830,18 +947,30 @@ function Public.create_car_room(car)
         end
     end
 
-    local fishes = {}
-
     for x = area.left_top.x, area.right_bottom.x - 1, 1 do
         for y = -0, 1, 1 do
             tiles[#tiles + 1] = {name = 'water', position = {x, y}}
-            fishes[#fishes + 1] = {name = 'fish', position = {x, y}}
         end
     end
 
     surface.set_tiles(tiles, true)
-    for _, fish in pairs(fishes) do
-        surface.create_entity(fish)
+
+    local p = game.get_player(car.owner)
+    if p and p.valid then
+        local player_data = get_persistent_player_data(p)
+        if not player_data.placed_fish then
+            local fishes = {}
+            for x = area.left_top.x, area.right_bottom.x - 1, 1 do
+                for y = -0, 1, 1 do
+                    fishes[#fishes + 1] = {name = 'fish', position = {x, y}}
+                end
+            end
+
+            for _, fish in pairs(fishes) do
+                surface.create_entity(fish)
+            end
+            player_data.placed_fish = true
+        end
     end
 
     construct_doors(car)
@@ -902,6 +1031,7 @@ function Public.create_car(event)
     end
 
     local renders = IC.get('renders')
+    local has_upgraded_health_pool = WPT.get('has_upgraded_health_pool')
 
     local name, mined = get_player_entity(player)
 
@@ -939,6 +1069,8 @@ function Public.create_car(event)
         car_area = car_areas[ce.type]
     end
 
+    local health = floor(2000 * ce.health * 0.002)
+
     cars[un] = {
         entity = ce,
         area = {
@@ -946,6 +1078,11 @@ function Public.create_car(event)
             right_bottom = {x = car_area.right_bottom.x, y = car_area.right_bottom.y}
         },
         doors = {},
+        health_pool = {
+            enabled = has_upgraded_health_pool or false,
+            health = health,
+            max = health
+        },
         owner = player.index,
         name = ce.name,
         type = ce.type
@@ -1129,6 +1266,85 @@ function Public.on_player_respawned(player)
             end
         end
     end
+end
+
+function Public.check_entity_healths()
+    local cars = IC.get('cars')
+    if not next(cars) then
+        return
+    end
+
+    local health_types = {
+        ['car'] = 450,
+        ['tank'] = 2000,
+        ['spidertron'] = 3000
+    }
+
+    for k, car in pairs(cars) do
+        local m = car.health_pool.health / car.health_pool.max
+
+        if car.health_pool.health > car.health_pool.max then
+            car.health_pool.health = car.health_pool.max
+        end
+
+        if (car.entity and car.entity.valid) then
+            car.entity.health = health_types[car.entity.name] * m
+        end
+    end
+end
+
+function Public.set_damage_health(data)
+    local entity = data.entity
+    local final_damage_amount = data.final_damage_amount
+    local car = data.car
+
+    if final_damage_amount == 0 then
+        return
+    end
+
+    local health_types = {
+        ['car'] = 450,
+        ['tank'] = 2000,
+        ['spidertron'] = 3000
+    }
+
+    car.health_pool.health = round(car.health_pool.health - final_damage_amount)
+
+    if car.health_pool.health <= 0 then
+        entity.die()
+        return
+    end
+
+    local m = car.health_pool.health / car.health_pool.max
+
+    entity.health = health_types[entity.name] * m
+end
+
+function Public.set_repair_health(data)
+    local entity = data.entity
+    local car = data.car
+    local player = data.player
+
+    local repair_speed = RPG.get_magicka(player)
+    if repair_speed <= 0 then
+        repair_speed = 5
+    end
+
+    local health_types = {
+        ['car'] = 450,
+        ['tank'] = 2000,
+        ['spidertron'] = 3000
+    }
+
+    car.health_pool.health = round(car.health_pool.health + repair_speed)
+
+    local m = car.health_pool.health / car.health_pool.max
+
+    if car.health_pool.health > car.health_pool.max then
+        car.health_pool.health = car.health_pool.max
+    end
+
+    entity.health = health_types[entity.name] * m
 end
 
 Public.kick_player_from_surface = kick_player_from_surface

@@ -238,6 +238,7 @@ local function wall(p, data)
     local treasure = data.treasure
     local stone_wall = {callback = Functions.disable_minable_callback}
     local enable_arties = WPT.get('enable_arties')
+    local alert_zone_1 = WPT.get('alert_zone_1')
 
     local seed = data.seed
     local y = data.yv
@@ -303,6 +304,43 @@ local function wall(p, data)
                             force = 'player',
                             callback = stone_wall
                         }
+                        if not alert_zone_1 then
+                            local x_min = -WPT.level_width / 2
+                            local x_max = WPT.level_width / 2
+                            surface.create_entity({name = 'electric-beam', position = {x_min, p.y}, source = {x_min, p.y}, target = {x_max, p.y}})
+                            surface.create_entity({name = 'electric-beam', position = {x_min, p.y}, source = {x_min, p.y}, target = {x_max, p.y}})
+                            WPT.set('alert_zone_1', true)
+                            rendering.draw_text {
+                                text = 'Breaching the far side wall will start collapse.',
+                                surface = surface,
+                                target = {0, p.y + 35},
+                                color = {r = 0.98, g = 0.66, b = 0.22},
+                                scale = 8,
+                                font = 'heading-1',
+                                alignment = 'center',
+                                scale_with_zoom = false
+                            }
+                            rendering.draw_text {
+                                text = 'Breaching the far side wall will start collapse',
+                                surface = surface,
+                                target = {-180, p.y + 35},
+                                color = {r = 0.98, g = 0.66, b = 0.22},
+                                scale = 8,
+                                font = 'heading-1',
+                                alignment = 'center',
+                                scale_with_zoom = false
+                            }
+                            rendering.draw_text {
+                                text = 'Breaching the far side wall will start collapse',
+                                surface = surface,
+                                target = {180, p.y + 35},
+                                color = {r = 0.98, g = 0.66, b = 0.22},
+                                scale = 8,
+                                font = 'heading-1',
+                                alignment = 'center',
+                                scale_with_zoom = false
+                            }
+                        end
                     end
                 else
                     if random(1, 32 - y) == 1 then
@@ -882,6 +920,7 @@ local function process_scrap_zone_1(x, y, data, void_or_lab)
     local tiles = data.tiles
     local entities = data.entities
     local buildings = data.buildings
+    local treasure = data.treasure
 
     local scrapyard = get_perlin('scrapyard', p, seed)
     local smol_areas = get_perlin('smol_areas', p, seed + 35000)
@@ -907,6 +946,9 @@ local function process_scrap_zone_1(x, y, data, void_or_lab)
                 spawn_turret(entities, p, 3)
             else
                 spawn_turret(entities, p, 4)
+            end
+            if random(1, 2048) == 1 then
+                treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
             end
         end
         tiles[#tiles + 1] = {name = 'dirt-7', position = p}
@@ -945,6 +987,7 @@ local function process_scrap_zone_1(x, y, data, void_or_lab)
             if random(1, 5) > 1 then
                 entities[#entities + 1] = {name = scrap_mineable_entities[random(1, scrap_mineable_entities_index)], position = p, force = 'neutral'}
             end
+
             if random(1, 256) == 1 then
                 entities[#entities + 1] = {name = 'land-mine', position = p, force = 'enemy'}
             end
@@ -975,6 +1018,9 @@ local function process_scrap_zone_1(x, y, data, void_or_lab)
             tiles[#tiles + 1] = {name = 'dirt-7', position = p}
             if random(1, 2) == 1 then
                 entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
+            end
+            if random(1, 2048) == 1 then
+                treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
             end
             return
         end

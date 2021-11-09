@@ -1,3 +1,10 @@
+--[[
+
+Mountain Fortress v3 is maintained by Gerkiz and hosted by Comfy.
+
+Want to host it? Ask Gerkiz#0001 at discord!
+
+]]
 local Functions = require 'maps.mountain_fortress_v3.functions'
 local BuriedEnemies = require 'maps.mountain_fortress_v3.buried_enemies'
 
@@ -21,6 +28,7 @@ local RPG = require 'modules.rpg.main'
 local Event = require 'utils.event'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local Locomotive = require 'maps.mountain_fortress_v3.locomotive'
+local SpawnLocomotive = require 'maps.mountain_fortress_v3.locomotive.spawn_locomotive'
 local Score = require 'comfy_panel.score'
 local Poll = require 'comfy_panel.poll'
 local Collapse = require 'modules.collapse'
@@ -37,6 +45,8 @@ local Reset = require 'functions.soft_reset'
 local JailData = require 'utils.datastore.jail_data'
 local RPG_Progression = require 'utils.datastore.rpg_data'
 
+require 'maps.mountain_fortress_v3.locomotive.market'
+require 'maps.mountain_fortress_v3.locomotive.linked_chests'
 require 'maps.mountain_fortress_v3.rocks_yield_ore_veins'
 
 require 'maps.mountain_fortress_v3.generate'
@@ -123,6 +133,8 @@ function Public.reset_map()
     local Diff = Difficulty.get()
     local this = WPT.get()
     local wave_defense_table = WD.get_table()
+    Misc.set('creative_are_you_sure', false)
+    Misc.set('creative_enabled', false)
 
     Reset.enable_mapkeeper(true)
 
@@ -236,7 +248,7 @@ function Public.reset_map()
     this.locomotive_health = 10000
     this.locomotive_max_health = 10000
 
-    Locomotive.locomotive_spawn(surface, {x = -18, y = 25})
+    SpawnLocomotive.locomotive_spawn(surface, {x = -18, y = 25})
     Locomotive.render_train_hp()
     Functions.render_direction(surface)
 
@@ -476,9 +488,9 @@ local on_init = function()
     game.map_settings.path_finder.general_entity_subsequent_collision_penalty = 3 -- Recommended value
 
     local tooltip = {
-        [1] = ({'main.diff_tooltip', '0', '0.5', '0.15', '0.15', '1', '12', '50', '10000', '100%', '15', '10'}),
-        [2] = ({'main.diff_tooltip', '0', '0.25', '0.1', '0.1', '2', '10', '50', '7000', '75%', '8', '8'}),
-        [3] = ({'main.diff_tooltip', '0', '0', '0', '0', '4', '3', '10', '5000', '50%', '5', '6'})
+        [1] = ({'main.diff_tooltip', '500', '50%', '15%', '15%', '1', '12', '50', '10000', '100%', '15', '10'}),
+        [2] = ({'main.diff_tooltip', '300', '25%', '10%', '10%', '2', '10', '50', '7000', '75%', '8', '8'}),
+        [3] = ({'main.diff_tooltip', '50', '0%', '0%', '0%', '4', '3', '10', '5000', '50%', '5', '6'})
     }
 
     Difficulty.set_tooltip(tooltip)

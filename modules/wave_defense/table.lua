@@ -28,6 +28,7 @@ function Public.reset_wave_defense()
     this.average_unit_group_size = 35
     this.biter_raffle = {}
     this.debug = false
+    this.paused = false
     this.game_lost = false
     this.get_random_close_spawner_attempts = 5
     this.group_size = 2
@@ -220,6 +221,10 @@ function Public.set_biter_health_boost(number)
         this.biter_health_boost = 1
     end
     return this.biter_health_boost
+end
+
+function Public.pause(boolean)
+    this.paused = boolean or false
 end
 
 local on_init = function()

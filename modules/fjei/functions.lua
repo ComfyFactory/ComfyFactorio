@@ -1,6 +1,9 @@
 --luacheck: ignore
+local Scheduler = require 'utils.scheduler'
+
 local table_insert = table.insert
 local string_find = string.find
+local len = string.len
 
 local Public = {}
 
@@ -37,7 +40,7 @@ local function set_crafting_machines()
     end
 end
 
-local uncommon_recipes = {'barrel', 'void', 'blackhole'}
+local uncommon_recipes = {'compressing', 'barrel', 'canister', 'void', 'blackhole'}
 local function is_uncommon_recipe(recipe_name)
     for _, name in pairs(uncommon_recipes) do
         local a, b = string_find(recipe_name, name, 1, true)
@@ -223,20 +226,58 @@ local function set_item_whitelists_for_all_forces()
     end
 end
 
+local function get_localised_name(name)
+    local item = game.item_prototypes[name]
+    if item then
+        return item.localised_name
+    end
+    local fluid = game.fluid_prototypes[name]
+    if fluid then
+        return fluid.localised_name
+    end
+    local recipe = game.recipe_prototypes[name]
+    if recipe then
+        return recipe.localised_name
+    end
+    return name
+end
+
+local on_nth_translation_handler =
+    Scheduler.set(
+    function(data)
+        for i = 1, #data do
+            local player_index = data[i].player_index
+            local name = data[i].name
+            local player = game.get_player(player_index)
+
+            local localized = get_localised_name(name)
+            player.request_translation(localized)
+        end
+    end
+)
+
 function Public.set_filtered_list(player)
     local player_data = global.fjei.player_data[player.index]
     player_data.filtered_list = {}
     player_data.active_page = 1
     local filtered_list = player_data.filtered_list
-    local active_filter = player_data.active_filter
+    local active_filter = player_data.active_filter and player_data.active_filter:lower() or false
     local sorted_item_list = global.fjei.sorted_item_list
     local item_whitelist = global.fjei.item_whitelist[player.force.name]
+    local locale_data = player_data.translated_data
 
     local i = 1
     for key, name in pairs(sorted_item_list) do
         if item_whitelist[name] then
-            if active_filter then
-                local a, b = string_find(name, active_filter, 1, true)
+            local translated = locale_data and locale_data[name] and locale_data[name]:lower() or false
+            if translated and active_filter then
+                local r = translated:find(active_filter)
+                if r then
+                    filtered_list[i] = key
+                    i = i + 1
+                end
+            elseif active_filter then
+                local a = name:find(active_filter, 1, true)
                 if a then
                     filtered_list[i] = key
                     i = i + 1
@@ -250,9 +291,43 @@ function Public.set_filtered_list(player)
     player_data.size_of_filtered_list = #player_data.filtered_list
 end
 
+-- this is the only way of providing the translated strings to the gui
+-- or you could use the translated event to provide directly to the function
+function Public.set_translated_data(player, result, localised_string)
+    local player_data = global.fjei.player_data[player.index]
+    if not player_data.translated_data then
+        player_data.translated_data = {}
+    end
+
+    local data = player_data.translated_data
+
+    if not data[localised_string] and len(result) > 0 then
+        data[localised_string] = result
+    end
+end
+
+function Public.handle_translations_fetch(player)
+    local sorted_item_list = global.fjei.sorted_item_list
+    local tick = game.tick
+    local item_whitelist = global.fjei.item_whitelist[player.force.name]
+    local player_data = global.fjei.player_data[player.index]
+    if not player_data.translated_data then
+        player_data.translated_data = {}
+    end
+
+    local data = player_data.translated_data
+
+    for key, name in pairs(sorted_item_list) do
+        if item_whitelist[name] and not data[name] then
+            Scheduler.timer(tick, on_nth_translation_handler, {name = name, player_index = player.index})
+        end
+    end
+end
+
 function Public.build_tables()
     global.fjei = {}
     global.fjei.player_data = {}
+    global.fjei.item_whitelist_translated = {}
     set_item_list() --creates list of all items as key and two tables for each key containing [1] product recipes and [2] ingredient recipes
     set_sorted_item_list() --creates sorted list of all items in the game for faster searching
     set_crafting_machines() --creates list of available crafting entities

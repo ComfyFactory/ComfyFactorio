@@ -856,6 +856,9 @@ Gui.on_click(
     create_poll_delete_answer_name,
     function(event)
         local button_data = Gui.get_data(event.element)
+        if not button_data then
+            return
+        end
         local data = button_data.data
 
         if not data then

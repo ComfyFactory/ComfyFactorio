@@ -180,17 +180,19 @@ local function input_filtered(wagon_inventory, chest, chest_inventory, free_slot
             request_stacks[stack.name] = 10 * prototypes[stack.name].stack_size
         end
     end
-    for i = 1, wagon_inventory.get_bar() - 1, 1 do
-        if free_slots <= 0 then
-            return
-        end
-        local stack = wagon_inventory[i]
-        if stack.valid_for_read then
-            local request_stack = request_stacks[stack.name]
-            if request_stack and request_stack > chest_inventory.get_item_count(stack.name) then
-                chest_inventory.insert(stack)
-                stack.clear()
-                free_slots = free_slots - 1
+    if wagon_inventory.supports_bar() then
+        for i = 1, wagon_inventory.get_bar() - 1, 1 do
+            if free_slots <= 0 then
+                return
+            end
+            local stack = wagon_inventory[i]
+            if stack.valid_for_read then
+                local request_stack = request_stacks[stack.name]
+                if request_stack and request_stack > chest_inventory.get_item_count(stack.name) then
+                    chest_inventory.insert(stack)
+                    stack.clear()
+                    free_slots = free_slots - 1
+                end
             end
         end
     end
@@ -303,9 +305,11 @@ local function input_cargo(wagon, chest)
 
     local chest_inventory = chest.get_inventory(defines.inventory.chest)
     local free_slots = 0
-    for i = 1, chest_inventory.get_bar() - 1, 1 do
-        if not chest_inventory[i].valid_for_read then
-            free_slots = free_slots + 1
+    if chest_inventory.supports_bar() then
+        for i = 1, chest_inventory.get_bar() - 1, 1 do
+            if not chest_inventory[i].valid_for_read then
+                free_slots = free_slots + 1
+            end
         end
     end
 
@@ -314,14 +318,16 @@ local function input_cargo(wagon, chest)
         goto continue
     end
 
-    for i = 1, wagon_inventory.get_bar() - 1, 1 do
-        if free_slots <= 0 then
-            goto continue
-        end
-        if wagon_inventory[i].valid_for_read then
-            chest_inventory.insert(wagon_inventory[i])
-            wagon_inventory[i].clear()
-            free_slots = free_slots - 1
+    if wagon_inventory.supports_bar() then
+        for i = 1, wagon_inventory.get_bar() - 1, 1 do
+            if free_slots <= 0 then
+                goto continue
+            end
+            if wagon_inventory[i].valid_for_read then
+                chest_inventory.insert(wagon_inventory[i])
+                wagon_inventory[i].clear()
+                free_slots = free_slots - 1
+            end
         end
     end
 
