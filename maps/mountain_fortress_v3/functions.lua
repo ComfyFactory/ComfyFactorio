@@ -1189,6 +1189,7 @@ function Public.set_spawn_position()
 
     ::retry::
 
+    local y_value_position = WPT.get('y_value_position')
     local locomotive_positions = WPT.get('locomotive_pos')
     local total_pos = #locomotive_positions.tbl
 
@@ -1206,7 +1207,7 @@ function Public.set_spawn_position()
             collapse_position = surface.find_non_colliding_position('solar-panel', collapse_pos, 32, 2)
         end
         if not collapse_position then
-            collapse_position = surface.find_non_colliding_position('small-biter', collapse_pos, 32, 2)
+            collapse_position = surface.find_non_colliding_position('steel-chest', collapse_pos, 32, 2)
         end
         local sizeof = locomotive_positions.tbl[total_pos - total_pos + 1]
         if not sizeof then
@@ -1221,7 +1222,7 @@ function Public.set_spawn_position()
             goto retry
         end
 
-        local locomotive_position = surface.find_non_colliding_position('small-biter', sizeof, 128, 1)
+        local locomotive_position = surface.find_non_colliding_position('steel-chest', sizeof, 128, 1)
         local distance_from = floor(math2d.position.distance(locomotive_position, locomotive.position))
         local l_y = l.y
         local t_y = locomotive_position.y
@@ -1248,20 +1249,22 @@ function Public.set_spawn_position()
                         return
                     end
                     debug_str('distance_from was higher - spawning at locomotive_position')
-                    WD.set_spawn_position({x = locomotive_position.x, y = collapse_pos.y - 20})
+                    WD.set_spawn_position({x = locomotive_position.x, y = collapse_pos.y - y_value_position})
                 else
                     debug_str('distance_from was lower - spawning at locomotive_position')
-                    WD.set_spawn_position({x = locomotive_position.x, y = collapse_pos.y - 20})
+                    WD.set_spawn_position({x = locomotive_position.x, y = collapse_pos.y - y_value_position})
                 end
             else
                 if collapse_position then
                     debug_str('total_pos was higher - spawning at collapse_position')
+                    collapse_position = {x = collapse_position.x, y = collapse_position.y - y_value_position}
                     WD.set_spawn_position(collapse_position)
                 end
             end
         else
             if collapse_position then
                 debug_str('total_pos was lower - spawning at collapse_position')
+                collapse_position = {x = collapse_position.x, y = collapse_position.y - y_value_position}
                 WD.set_spawn_position(collapse_position)
             end
         end
