@@ -30,7 +30,8 @@ local this = {
     acid_lines_delay = {},
     acid_nova = false,
     boss_spawns_projectiles = false,
-    enable_boss_loot = false
+    enable_boss_loot = false,
+    randomize_discharge_stun = false
 }
 
 local radius = 6
@@ -40,6 +41,8 @@ local acid_splashes = {
     ['behemoth-biter'] = 'acid-stream-worm-big'
 }
 local acid_lines = {
+    ['small-spitter'] = 'acid-stream-spitter-small',
+    ['medium-spitter'] = 'acid-stream-spitter-medium',
     ['big-spitter'] = 'acid-stream-spitter-big',
     ['behemoth-spitter'] = 'acid-stream-spitter-big'
 }
@@ -71,9 +74,19 @@ Global.register(
     end
 )
 
+local filters = {
+    {filter = 'name', name = 'unit'},
+    {filter = 'name', name = 'turret'},
+    {filter = 'name', name = 'ammo-turret'},
+    {filter = 'name', name = 'electric-turret'},
+    {filter = 'name', name = 'unit-spawner'}
+}
+
 local entity_types = {
     ['unit'] = true,
     ['turret'] = true,
+    ['ammo-turret'] = true,
+    ['electric-turret'] = true,
     ['unit-spawner'] = true
 }
 
@@ -112,7 +125,7 @@ local function loaded_biters(event)
         {
             name = projectiles[random(1, 10)],
             position = entity.position,
-            force = 'neutral',
+            force = 'enemy',
             source = entity.position,
             target = position,
             max_range = 16,
@@ -137,7 +150,8 @@ local function acid_nova(event)
         )
     end
 end
-local function acid_line(surface, name, source, target)
+
+local function create_entity_radius(surface, name, source, target)
     local distance = sqrt((source.x - target.x) ^ 2 + (source.y - target.y) ^ 2)
     local modifier = {(target.x - source.x) / distance, (target.y - source.y) / distance}
 
@@ -228,7 +242,7 @@ local function set_boss_healthbar(health, max_health, healthbar_id)
     rendering.set_color(healthbar_id, {floor(255 - 255 * m), floor(200 * m), 0})
 end
 
-local function try_acid(cause, target)
+local function extra_projectiles(cause, target)
     if not cause or not cause.valid then
         return
     end
@@ -242,7 +256,7 @@ local function try_acid(cause, target)
                     this.acid_lines_delay[cause_unit_number] = 0
                 end
                 if this.acid_lines_delay[cause_unit_number] < game.tick then
-                    acid_line(cause.surface, acid_lines[cause.name], cause.position, target.position)
+                    create_entity_radius(cause.surface, acid_lines[cause.name], cause.position, target.position)
                     this.acid_lines_delay[cause_unit_number] = game.tick + 180
                 end
             end
@@ -255,28 +269,37 @@ local function on_entity_damaged(event)
     if not (biter and biter.valid) then
         return
     end
+    local surface = biter.surface
     local cause = event.cause
 
     local biter_health_boost_units = this.biter_health_boost_units
 
     local unit_number = biter.unit_number
 
+    local damage = event.final_damage_amount
+
     --Create new health pool
     local health_pool = biter_health_boost_units[unit_number]
-    try_acid(cause, biter)
+    extra_projectiles(cause, biter)
 
     if not entity_types[biter.type] then
         return
     end
 
-    local damage_type = event.damage_type
-    if damage_type and damage_type.name == 'electric' then
-        local stickers = event.entity.stickers
-        if stickers and #stickers > 0 then
-            for i = 1, #stickers, 1 do
-                if stickers[i].sticked_to == event.entity and stickers[i].name == 'stun-sticker' then
-                    stickers[i].destroy()
-                    break
+    if this.randomize_discharge_stun then
+        local damage_type = event.damage_type
+        if damage_type and damage_type.name == 'electric' then
+            local stickers = biter.stickers
+            if stickers and #stickers > 0 then
+                for i = 1, #stickers, 1 do
+                    if random(1, 4) == 1 then -- there's a % that biters can recover from stun and get slowed instead.
+                        if stickers[i].sticked_to == biter and stickers[i].name == 'stun-sticker' then
+                            stickers[i].destroy()
+                            local slow = surface.create_entity {name = 'slowdown-sticker', position = biter.position, target = biter}
+                            slow.time_to_live = 200
+                            break
+                        end
+                    end
                 end
             end
         end
@@ -305,7 +328,7 @@ local function on_entity_damaged(event)
     end
 
     --Reduce health pool
-    health_pool[1] = health_pool[1] - event.final_damage_amount
+    health_pool[1] = health_pool[1] - damage
 
     --Set entity health relative to health pool
     biter.health = health_pool[1] * health_pool[2]
@@ -352,7 +375,7 @@ local function on_entity_died(event)
                 end
             end
             if this.boss_spawns_projectiles then
-                if random(1, 96) == 1 then
+                if random(1, 32) == 1 then
                     loaded_biters(event)
                 end
             end
@@ -513,13 +536,22 @@ function Public.enable_make_normal_unit_mini_bosses(boolean)
     return this.make_normal_unit_mini_bosses
 end
 
+--- Enables that enemies can recover from stun randomly.
+---@param boolean
+function Public.enable_randomize_discharge_stun(boolean)
+    this.randomize_discharge_stun = boolean or false
+
+    return this.randomize_discharge_stun
+end
+
 Event.on_init(
     function()
         Public.reset_table()
     end
 )
-Event.add(defines.events.on_entity_damaged, on_entity_damaged)
+
+Event.add(defines.events.on_entity_damaged, on_entity_damaged, filters)
 Event.on_nth_tick(7200, check_clear_table)
-Event.add(defines.events.on_entity_died, on_entity_died)
+Event.add(defines.events.on_entity_died, on_entity_died, filters)
 
 return Public
