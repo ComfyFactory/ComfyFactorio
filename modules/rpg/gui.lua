@@ -26,6 +26,8 @@ local spell2_button_name = Public.spell2_button_name
 local spell3_button_name = Public.spell3_button_name
 
 local sub = string.sub
+local round = math.round
+local floor = math.floor
 
 function Public.draw_gui_char_button(player)
     if player.gui.top[draw_main_frame_name] then
@@ -236,7 +238,7 @@ local function draw_main_frame(player, location)
     end
 
     add_gui_description(scroll_table, ({'rpg_gui.experience_name'}), 100)
-    local exp_gui = add_gui_stat(scroll_table, math.floor(rpg_t.xp), 125, ({'rpg_gui.gain_info_tooltip'}))
+    local exp_gui = add_gui_stat(scroll_table, floor(rpg_t.xp), 125, ({'rpg_gui.gain_info_tooltip'}))
     data.exp_gui = exp_gui
 
     add_gui_description(scroll_table, ' ', 75)
@@ -281,11 +283,11 @@ local function draw_main_frame(player, location)
     add_gui_description(left_bottom_table, ' ', 40)
 
     add_gui_description(left_bottom_table, ({'rpg_gui.life_name'}), w1, ({'rpg_gui.life_tooltip'}))
-    local health_gui = add_gui_stat(left_bottom_table, math.floor(player.character.health), w2, ({'rpg_gui.life_increase'}))
+    local health_gui = add_gui_stat(left_bottom_table, floor(player.character.health), w2, ({'rpg_gui.life_increase'}))
     data.health = health_gui
     add_gui_stat(
         left_bottom_table,
-        math.floor(player.character.prototype.max_health + player.character_health_bonus + player.force.character_health_bonus),
+        floor(player.character.prototype.max_health + player.character_health_bonus + player.force.character_health_bonus),
         w2,
         ({'rpg_gui.life_maximum'})
     )
@@ -299,8 +301,8 @@ local function draw_main_frame(player, location)
     local i = player.character.get_inventory(defines.inventory.character_armor)
     if not i.is_empty() then
         if i[1].grid then
-            shield = math.floor(i[1].grid.shield)
-            shield_max = math.floor(i[1].grid.max_shield)
+            shield = floor(i[1].grid.shield)
+            shield_max = floor(i[1].grid.max_shield)
             shield_desc_tip = ({'rpg_gui.shield_tooltip'})
             shield_tip = ({'rpg_gui.shield_current'})
             shield_max_tip = ({'rpg_gui.shield_max'})
@@ -341,17 +343,17 @@ local function draw_main_frame(player, location)
 
     add_gui_description(right_bottom_table, ' ', w0)
     add_gui_description(right_bottom_table, ({'rpg_gui.mining_name'}), w1)
-    local mining_speed_value = math.round((player.force.manual_mining_speed_modifier + player.character_mining_speed_modifier + 1) * 100) .. '%'
+    local mining_speed_value = round((player.force.manual_mining_speed_modifier + player.character_mining_speed_modifier + 1) * 100) .. '%'
     add_gui_stat(right_bottom_table, mining_speed_value, w2)
 
     add_gui_description(right_bottom_table, ' ', w0)
     add_gui_description(right_bottom_table, ({'rpg_gui.slot_name'}), w1)
-    local slot_bonus_value = '+ ' .. math.round(player.force.character_inventory_slots_bonus + player.character_inventory_slots_bonus)
+    local slot_bonus_value = '+ ' .. round(player.force.character_inventory_slots_bonus + player.character_inventory_slots_bonus)
     add_gui_stat(right_bottom_table, slot_bonus_value, w2)
 
     add_gui_description(right_bottom_table, ' ', w0)
     add_gui_description(right_bottom_table, ({'rpg_gui.melee_name'}), w1)
-    local melee_damage_value = math.round(100 * (1 + Public.get_melee_modifier(player))) .. '%'
+    local melee_damage_value = round(100 * (1 + Public.get_melee_modifier(player))) .. '%'
     local melee_damage_tooltip
     if rpg_extra.enable_one_punch then
         melee_damage_tooltip = ({
@@ -391,17 +393,17 @@ local function draw_main_frame(player, location)
 
     add_gui_description(right_bottom_table, ' ', w0)
     add_gui_description(right_bottom_table, ({'rpg_gui.crafting_speed'}), w1)
-    local crafting_speed_value = math.round((player.force.manual_crafting_speed_modifier + player.character_crafting_speed_modifier + 1) * 100) .. '%'
+    local crafting_speed_value = round((player.force.manual_crafting_speed_modifier + player.character_crafting_speed_modifier + 1) * 100) .. '%'
     add_gui_stat(right_bottom_table, crafting_speed_value, w2)
 
     add_gui_description(right_bottom_table, ' ', w0)
     add_gui_description(right_bottom_table, ({'rpg_gui.running_speed'}), w1)
-    local running_speed_value = math.round((player.force.character_running_speed_modifier + player.character_running_speed_modifier + 1) * 100) .. '%'
+    local running_speed_value = round((player.force.character_running_speed_modifier + player.character_running_speed_modifier + 1) * 100) .. '%'
     add_gui_stat(right_bottom_table, running_speed_value, w2)
 
     add_gui_description(right_bottom_table, ' ', w0)
     add_gui_description(right_bottom_table, ({'rpg_gui.health_bonus_name'}), w1)
-    local health_bonus_value = '+ ' .. math.round((player.force.character_health_bonus + player.character_health_bonus))
+    local health_bonus_value = '+ ' .. round((player.force.character_health_bonus + player.character_health_bonus))
     local health_tooltip = ({'rpg_gui.health_tooltip', Public.get_heal_modifier(player)})
     add_gui_stat(right_bottom_table, health_bonus_value, w2, health_tooltip)
 
@@ -409,10 +411,10 @@ local function draw_main_frame(player, location)
 
     if rpg_extra.enable_mana then
         add_gui_description(right_bottom_table, ({'rpg_gui.mana_bonus'}), w1)
-        local mana_bonus_value = '+ ' .. (math.floor(Public.get_mana_modifier(player) * 10) / 10)
+        local mana_bonus_value = '+ ' .. (floor(Public.get_mana_modifier(player) * 10) / 10)
         local mana_bonus_tooltip = ({
             'rpg_gui.mana_regen_bonus',
-            (math.floor(Public.get_mana_modifier(player) * 10) / 10)
+            (floor(Public.get_mana_modifier(player) * 10) / 10)
         })
         add_gui_stat(right_bottom_table, mana_bonus_value, w2, mana_bonus_tooltip)
     end
@@ -475,28 +477,28 @@ function Public.update_player_stats(player)
     local rpg_extra = Public.get('rpg_extra')
     local rpg_t = Public.get_value_from_player(player.index)
     local strength = rpg_t.strength - 10
-    P.update_single_modifier(player, 'character_inventory_slots_bonus', 'rpg', math.round(strength * 0.2, 3))
-    P.update_single_modifier(player, 'character_mining_speed_modifier', 'rpg', math.round(strength * 0.007, 3))
-    P.update_single_modifier(player, 'character_maximum_following_robot_count_bonus', 'rpg', math.round(strength / 2 * 0.03, 3))
+    P.update_single_modifier(player, 'character_inventory_slots_bonus', 'rpg', round(strength * 0.2, 3))
+    P.update_single_modifier(player, 'character_mining_speed_modifier', 'rpg', round(strength * 0.007, 3))
+    P.update_single_modifier(player, 'character_maximum_following_robot_count_bonus', 'rpg', round(strength / 2 * 0.03, 3))
 
     local magic = rpg_t.magicka - 10
     local v = magic * 0.22
-    P.update_single_modifier(player, 'character_build_distance_bonus', 'rpg', math.min(60, math.round(v * 0.12, 3)))
-    P.update_single_modifier(player, 'character_item_drop_distance_bonus', 'rpg', math.min(60, math.round(v * 0.05, 3)))
-    P.update_single_modifier(player, 'character_reach_distance_bonus', 'rpg', math.min(60, math.round(v * 0.12, 3)))
-    P.update_single_modifier(player, 'character_loot_pickup_distance_bonus', 'rpg', math.min(20, math.round(v * 0.12, 3)))
-    P.update_single_modifier(player, 'character_item_pickup_distance_bonus', 'rpg', math.min(20, math.round(v * 0.12, 3)))
-    P.update_single_modifier(player, 'character_resource_reach_distance_bonus', 'rpg', math.min(20, math.round(v * 0.05, 3)))
+    P.update_single_modifier(player, 'character_build_distance_bonus', 'rpg', math.min(60, round(v * 0.12, 3)))
+    P.update_single_modifier(player, 'character_item_drop_distance_bonus', 'rpg', math.min(60, round(v * 0.05, 3)))
+    P.update_single_modifier(player, 'character_reach_distance_bonus', 'rpg', math.min(60, round(v * 0.12, 3)))
+    P.update_single_modifier(player, 'character_loot_pickup_distance_bonus', 'rpg', math.min(20, round(v * 0.12, 3)))
+    P.update_single_modifier(player, 'character_item_pickup_distance_bonus', 'rpg', math.min(20, round(v * 0.12, 3)))
+    P.update_single_modifier(player, 'character_resource_reach_distance_bonus', 'rpg', math.min(20, round(v * 0.05, 3)))
     if rpg_t.mana_max >= rpg_extra.mana_limit then
         rpg_t.mana_max = rpg_extra.mana_limit
     else
-        rpg_t.mana_max = math.round((magic) * 2, 3)
+        rpg_t.mana_max = round((magic) * 2, 3)
     end
 
     local dexterity = rpg_t.dexterity - 10
-    P.update_single_modifier(player, 'character_running_speed_modifier', 'rpg', math.round(dexterity * 0.0015, 3))
-    P.update_single_modifier(player, 'character_crafting_speed_modifier', 'rpg', math.round(dexterity * 0.015, 3))
-    P.update_single_modifier(player, 'character_health_bonus', 'rpg', math.round((rpg_t.vitality - 10) * 6, 3))
+    P.update_single_modifier(player, 'character_running_speed_modifier', 'rpg', round(dexterity * 0.0010, 3)) -- reduced since too high speed kills UPS.
+    P.update_single_modifier(player, 'character_crafting_speed_modifier', 'rpg', round(dexterity * 0.015, 3))
+    P.update_single_modifier(player, 'character_health_bonus', 'rpg', round((rpg_t.vitality - 10) * 6, 3))
     P.update_player_modifiers(player)
 end
 

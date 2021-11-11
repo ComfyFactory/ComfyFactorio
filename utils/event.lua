@@ -161,12 +161,13 @@ end
 -- See documentation at top of file for details on using events.
 -- @param event_name<number>
 -- @param handler<function>
-function Event.add(event_name, handler)
+-- @optional param filters<table>
+function Event.add(event_name, handler, filters)
     if _LIFECYCLE == 8 then
         error('Calling Event.add after on_init() or on_load() has run is a desync risk.', 2)
     end
 
-    core_add(event_name, handler)
+    core_add(event_name, handler, filters)
 end
 
 --- Register a handler for the script.on_init event.

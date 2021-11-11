@@ -203,6 +203,7 @@ function Public.reset_map()
     BiterHealthBooster.check_on_entity_died(true)
     BiterHealthBooster.boss_spawns_projectiles(true)
     BiterHealthBooster.enable_boss_loot(false)
+    BiterHealthBooster.enable_randomize_discharge_stun(true)
 
     Balance.init_enemy_weapon_damage()
 

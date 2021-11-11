@@ -2,7 +2,9 @@ local Color = require 'utils.color_presets'
 local Task = require 'utils.task'
 local Server = require 'utils.server'
 local WPT = require 'maps.mountain_fortress_v3.table'
+local Collapse = require 'modules.collapse'
 local WD = require 'modules.wave_defense.table'
+local WDM = require 'modules.wave_defense.main'
 
 local mapkeeper = '[color=blue]Mapkeeper:[/color]'
 
@@ -175,3 +177,57 @@ commands.add_command(
         end
     end
 )
+
+if _DEBUG then
+    commands.add_command(
+        'start_collapse',
+        'Enabled only on SP',
+        function()
+            local p
+            local player = game.player
+
+            if game.is_multiplayer() then
+                return
+            end
+
+            if player and player.valid then
+                p = player.print
+                if not player.admin then
+                    p("[ERROR] You're not admin!", Color.fail)
+                    return
+                end
+                if not Collapse.start_now() then
+                    Collapse.start_now(true)
+                    p('Collapse started!')
+                else
+                    Collapse.start_now(false)
+                    p('Collapse stopped!')
+                end
+            end
+        end
+    )
+
+    commands.add_command(
+        'spawn_wave',
+        'Enabled only on SP',
+        function()
+            local p
+            local player = game.player
+
+            if game.is_multiplayer() then
+                return
+            end
+
+            if player and player.valid then
+                p = player.print
+                if not player.admin then
+                    p("[ERROR] You're not admin!", Color.fail)
+                    return
+                end
+                WD.enable_debug()
+                WDM.spawn_unit_group(true)
+                p('Spawning wave!')
+            end
+        end
+    )
+end
