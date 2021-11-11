@@ -36,7 +36,10 @@ end
 local function place_nest_near_unit_group()
     local unit_groups = WD.get('unit_groups')
     local random_group = WD.get('random_group')
-    local group = unit_groups[random_group]
+    if not (random_group and random_group.valid) then
+        return
+    end
+    local group = unit_groups[random_group.group_number]
     if not group then
         return
     end
@@ -74,6 +77,7 @@ local function place_nest_near_unit_group()
         return
     end
     local spawner = unit.surface.create_entity({name = name, position = position, force = unit.force})
+    BiterHealthBooster.add_boss_unit(spawner, 4)
     local nests = WD.get('nests')
     nests[#nests + 1] = spawner
     unit.surface.create_entity({name = 'blood-explosion-huge', position = position})
@@ -90,8 +94,8 @@ function Public.build_nest()
     if threat < 1024 then
         return
     end
-    local index = WD.get('index')
-    if index == 0 then
+    local unit_groups_size = WD.get('unit_groups_size')
+    if unit_groups_size == 0 then
         return
     end
     for _ = 1, 2, 1 do
@@ -111,14 +115,17 @@ function Public.build_worm()
         return
     end
 
-    local index = WD.get('index')
-    if index == 0 then
+    local unit_groups_size = WD.get('unit_groups_size')
+    if unit_groups_size == 0 then
         return
     end
 
     local random_group = WD.get('random_group')
+    if not (random_group and random_group.valid) then
+        return
+    end
     local unit_groups = WD.get('unit_groups')
-    local group = unit_groups[random_group]
+    local group = unit_groups[random_group.group_number]
     if not group then
         return
     end
@@ -157,7 +164,8 @@ function Public.build_worm()
      then
         return
     end
-    unit.surface.create_entity({name = worm, position = position, force = unit.force})
+    local u = unit.surface.create_entity({name = worm, position = position, force = unit.force})
+    BiterHealthBooster.add_boss_unit(u, 4)
     unit.surface.create_entity({name = 'blood-explosion-huge', position = position})
     unit.surface.create_entity({name = 'blood-explosion-huge', position = unit.position})
     remove_unit(unit)
