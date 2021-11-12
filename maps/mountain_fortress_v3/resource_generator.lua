@@ -161,6 +161,18 @@ local oil_prod_loot = {
             }
         },
         weight = 0.25
+    },
+    {
+        stack = {
+            recipe = 'explosives',
+            tech = 'explosives',
+            output = {
+                item = 'explosives',
+                min_rate = 0.8 / 60,
+                distance_factor = 1 / 25 / 60 / 512
+            }
+        },
+        weight = 0.20
     }
 }
 

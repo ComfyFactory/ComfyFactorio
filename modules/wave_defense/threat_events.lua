@@ -76,8 +76,10 @@ local function place_nest_near_unit_group()
      then
         return
     end
+    local modified_boss_unit_health = WD.get('modified_boss_unit_health')
+
     local spawner = unit.surface.create_entity({name = name, position = position, force = unit.force})
-    BiterHealthBooster.add_boss_unit(spawner, 4)
+    BiterHealthBooster.add_boss_unit(spawner, modified_boss_unit_health)
     local nests = WD.get('nests')
     nests[#nests + 1] = spawner
     unit.surface.create_entity({name = 'blood-explosion-huge', position = position})
@@ -164,8 +166,10 @@ function Public.build_worm()
      then
         return
     end
+    local modified_boss_unit_health = WD.get('modified_boss_unit_health')
+
     local u = unit.surface.create_entity({name = worm, position = position, force = unit.force})
-    BiterHealthBooster.add_boss_unit(u, 4)
+    BiterHealthBooster.add_boss_unit(u, modified_boss_unit_health)
     unit.surface.create_entity({name = 'blood-explosion-huge', position = position})
     unit.surface.create_entity({name = 'blood-explosion-huge', position = unit.position})
     remove_unit(unit)

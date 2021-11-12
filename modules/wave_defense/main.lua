@@ -324,9 +324,11 @@ local function get_random_close_spawner()
         end
         if not spawner or (center.x - spawner_2.position.x) ^ 2 + (center.y - spawner_2.position.y) ^ 2 < (center.x - spawner.position.x) ^ 2 + (center.y - spawner.position.y) ^ 2 then
             spawner = spawner_2
+            if spawner and spawner.position then
+                debug_print('get_random_close_spawner - Found at x' .. spawner.position.x .. ' y' .. spawner.position.y)
+            end
         end
     end
-    debug_print('get_random_close_spawner - Found at x' .. spawner.position.x .. ' y' .. spawner.position.y)
     return spawner
 end
 
