@@ -1002,7 +1002,7 @@ local function spawn_unit_group(fs)
     end
 
     local boss_wave = WD.get('boss_wave')
-    if not boss_wave then
+    if boss_wave then
         local count = math_random(1, math_floor(wave_number * 0.01) + 2)
         if count > 16 then
             count = 16
