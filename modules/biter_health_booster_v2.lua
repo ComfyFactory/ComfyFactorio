@@ -31,7 +31,7 @@ local this = {
     acid_nova = false,
     boss_spawns_projectiles = false,
     enable_boss_loot = false,
-    randomize_discharge_stun = false
+    randomize_stun_and_slowdown_sticker = false
 }
 
 local radius = 6
@@ -286,18 +286,24 @@ local function on_entity_damaged(event)
         return
     end
 
-    if this.randomize_discharge_stun then
+    if this.randomize_stun_and_slowdown_sticker then
         local damage_type = event.damage_type
         if damage_type and damage_type.name == 'electric' then
             local stickers = biter.stickers
             if stickers and #stickers > 0 then
                 for i = 1, #stickers, 1 do
                     if random(1, 4) == 1 then -- there's a % that biters can recover from stun and get slowed instead.
-                        if stickers[i].sticked_to == biter and stickers[i].name == 'stun-sticker' then
-                            stickers[i].destroy()
-                            local slow = surface.create_entity {name = 'slowdown-sticker', position = biter.position, target = biter}
-                            slow.time_to_live = 200
-                            break
+                        if stickers[i].sticked_to == biter then
+                            if stickers[i].name == 'stun-sticker' then
+                                stickers[i].destroy()
+                                if random(1, 2) == 1 then
+                                    local slow = surface.create_entity {name = 'slowdown-sticker', position = biter.position, target = biter}
+                                    slow.time_to_live = 200
+                                end
+                                break
+                            elseif stickers[i].name == 'slowdown-sticker' then
+                                stickers[i].destroy()
+                            end
                         end
                     end
                 end
@@ -538,10 +544,10 @@ end
 
 --- Enables that enemies can recover from stun randomly.
 ---@param boolean
-function Public.enable_randomize_discharge_stun(boolean)
-    this.randomize_discharge_stun = boolean or false
+function Public.enable_randomize_stun_and_slowdown_sticker(boolean)
+    this.randomize_stun_and_slowdown_sticker = boolean or false
 
-    return this.randomize_discharge_stun
+    return this.randomize_stun_and_slowdown_sticker
 end
 
 Event.on_init(

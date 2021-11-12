@@ -271,7 +271,7 @@ local function do_place_buildings(data)
                 } == 0
              then
                 entity = surface.create_entity(e)
-                if entity then
+                if entity and entity.valid then
                     if e.direction then
                         entity.direction = e.direction
                     end
@@ -280,17 +280,16 @@ local function do_place_buildings(data)
                     end
                     if e.callback then
                         local c = e.callback.callback
-                        if not c then
-                            return
+                        if c then
+                            local d = {callback_data = e.callback.data}
+                            if not d then
+                                callback = Token.get(c)
+                                callback(entity)
+                            else
+                                callback = Token.get(c)
+                                callback(entity, d)
+                            end
                         end
-                        local d = {callback_data = e.callback.data}
-                        if not d then
-                            callback = Token.get(c)
-                            callback(entity)
-                            return
-                        end
-                        callback = Token.get(c)
-                        callback(entity, d)
                     end
                 end
             end
