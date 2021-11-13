@@ -94,6 +94,9 @@ Gui.on_click(
 
         local id = Token.get_global(token_id)
         local content = dump(id) or 'Could not load data.'
+        if content:find('function_handlers') then
+            content = '{}' -- desync handler
+        end
         right_panel.text = content
     end
 )

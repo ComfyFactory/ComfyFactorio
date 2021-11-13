@@ -69,12 +69,15 @@ end
 local function find_initial_spot(surface, position)
     local spot = WD.get('spot')
     if not spot then
-        local pos = surface.find_non_colliding_position('stone-furnace', position, 128, 1)
+        local pos = surface.find_non_colliding_position('rocket-silo', position, 128, 1)
         if not pos then
-            pos = surface.find_non_colliding_position('stone-furnace', position, 148, 1)
+            pos = surface.find_non_colliding_position('rocket-silo', position, 148, 1)
         end
         if not pos then
-            pos = surface.find_non_colliding_position('stone-furnace', position, 164, 1)
+            pos = surface.find_non_colliding_position('rocket-silo', position, 164, 1)
+        end
+        if not pos then
+            pos = surface.find_non_colliding_position('rocket-silo', position, 200, 1)
         end
         if not pos then
             pos = position
@@ -200,7 +203,7 @@ local function get_spawn_pos()
     local initial_position = WD.get('spawn_position')
 
     local located_position = find_initial_spot(surface, initial_position)
-    local valid_position = surface.find_non_colliding_position('steel-chest', located_position, 32, 1)
+    local valid_position = surface.find_non_colliding_position('stone-furnace', located_position, 32, 1)
     local debug = WD.get('debug')
     if debug then
         if valid_position then
@@ -413,6 +416,8 @@ local function set_enemy_evolution()
     end
 
     BiterHealthBooster.set('biter_health_boost', biter_h_boost)
+    WD.set('biter_health_boost', biter_h_boost)
+
     if enemy.evolution_factor == 1 and evolution_factor == 1 then
         return
     end
@@ -499,7 +504,7 @@ local function spawn_biter(surface, position, forceSpawn, is_boss_biter)
 
     local old_position = position
 
-    position = surface.find_non_colliding_position('steel-chest', position, 10, 1)
+    position = surface.find_non_colliding_position('steel-chest', position, 2, 1)
     if not position then
         position = old_position
     end

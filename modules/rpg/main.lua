@@ -21,7 +21,9 @@ local nth_tick = Public.nth_tick
 local main_frame_name = Public.main_frame_name
 
 local sub = string.sub
+local round = math.round
 local random = math.random
+local abs = math.abs
 
 local function on_gui_click(event)
     if not event then
@@ -329,7 +331,7 @@ local function regen_health_player(players)
         if heal_per_tick <= 0 then
             goto continue
         end
-        heal_per_tick = math.round(heal_per_tick)
+        heal_per_tick = round(heal_per_tick)
         if player and player.valid and not player.in_combat then
             if player.character and player.character.valid then
                 player.character.health = player.character.health + heal_per_tick
@@ -368,7 +370,7 @@ local function regen_mana_player(players)
                 if rpg_t.mana >= rpg_t.mana_max then
                     rpg_t.mana = rpg_t.mana_max
                 end
-                rpg_t.mana = (math.round(rpg_t.mana * 10) / 10)
+                rpg_t.mana = (round(rpg_t.mana * 10) / 10)
             end
         end
 
@@ -450,20 +452,20 @@ local function one_punch(character, target, damage)
         }
     )
 
-    if math.abs(vector[1]) > math.abs(vector[2]) then
-        local d = math.abs(vector[1])
-        if math.abs(vector[1]) > 0 then
+    if abs(vector[1]) > abs(vector[2]) then
+        local d = abs(vector[1])
+        if abs(vector[1]) > 0 then
             vector[1] = vector[1] / d
         end
-        if math.abs(vector[2]) > 0 then
+        if abs(vector[2]) > 0 then
             vector[2] = vector[2] / d
         end
     else
-        local d = math.abs(vector[2])
-        if math.abs(vector[2]) > 0 then
+        local d = abs(vector[2])
+        if abs(vector[2]) > 0 then
             vector[2] = vector[2] / d
         end
-        if math.abs(vector[1]) > 0 and d > 0 then
+        if abs(vector[1]) > 0 and d > 0 then
             vector[1] = vector[1] / d
         end
     end
@@ -473,12 +475,15 @@ local function one_punch(character, target, damage)
 
     local a = 0.25
 
+    local cs = character.surface
+    local cp = character.position
+
     for i = 1, 16, 1 do
         for x = i * -1 * a, i * a, 1 do
             for y = i * -1 * a, i * a, 1 do
-                local p = {character.position.x + x + vector[1] * i, character.position.y + y + vector[2] * i}
-                character.surface.create_trivial_smoke({name = 'train-smoke', position = p})
-                for _, e in pairs(character.surface.find_entities({{p[1] - a, p[2] - a}, {p[1] + a, p[2] + a}})) do
+                local p = {cp.x + x + vector[1] * i, cp.y + y + vector[2] * i}
+                cs.create_trivial_smoke({name = 'train-smoke', position = p})
+                for _, e in pairs(cs.find_entities({{p[1] - a, p[2] - a}, {p[1] + a, p[2] + a}})) do
                     if e.valid then
                         if e.health then
                             if e.destructible and e.minable and e.force.index ~= 3 then
@@ -596,7 +601,7 @@ local function on_entity_damaged(event)
             damage = damage - damage * entity.prototype.resistances.physical.percent
         end
     end
-    damage = math.round(damage, 3)
+    damage = round(damage, 3)
     if damage < 1 then
         damage = 1
     end
@@ -607,19 +612,16 @@ local function on_entity_damaged(event)
     --Cause a one punch.
     if enable_one_punch then
         if rpg_t.one_punch then
-            if math.random(0, 999) < Public.get_one_punch_chance(cause.player) * 10 then
-                one_punch(cause, entity, damage)
-                if entity.valid then
-                    entity.die(entity.force.name, cause)
-                end
+            if random(0, 999) < Public.get_one_punch_chance(cause.player) * 10 then
+                one_punch(cause, entity, damage) -- only kill the biters if their health is below or equal to zero
                 return
             end
         end
     end
 
     --Floating messages and particle effects.
-    if math.random(1, 7) == 1 then
-        damage = damage * math.random(250, 350) * 0.01
+    if random(1, 7) == 1 then
+        damage = damage * random(250, 350) * 0.01
         cause.surface.create_entity(
             {
                 name = 'flying-text',
@@ -630,7 +632,7 @@ local function on_entity_damaged(event)
         )
         cause.surface.create_entity({name = 'blood-explosion-huge', position = entity.position})
     else
-        damage = damage * math.random(100, 125) * 0.01
+        damage = damage * random(100, 125) * 0.01
         cause.player.create_local_flying_text(
             {
                 text = math.floor(damage),
@@ -681,7 +683,7 @@ local function on_entity_damaged(event)
 end
 
 local function on_player_repaired_entity(event)
-    if math.random(1, 4) ~= 1 then
+    if random(1, 4) ~= 1 then
         return
     end
 
@@ -745,7 +747,7 @@ local function on_player_changed_position(event)
         give_player_flameboots(player)
     end
 
-    if math.random(1, 64) ~= 1 then
+    if random(1, 64) ~= 1 then
         return
     end
     if not player.character then
@@ -852,7 +854,7 @@ local function on_player_crafted_item(event)
 
     local item = event.item_stack
 
-    local amount = 0.30 * math.random(1, 2)
+    local amount = 0.30 * random(1, 2)
 
     if tweaked_crafting_items_enabled then
         if item and item.valid then
@@ -927,9 +929,9 @@ local function create_projectile(surface, name, position, force, target, max_ran
 end
 
 local function get_near_coord_modifier(range)
-    local coord = {x = (range * -1) + math.random(0, range * 2), y = (range * -1) + math.random(0, range * 2)}
+    local coord = {x = (range * -1) + random(0, range * 2), y = (range * -1) + random(0, range * 2)}
     for i = 1, 5, 1 do
-        local new_coord = {x = (range * -1) + math.random(0, range * 2), y = (range * -1) + math.random(0, range * 2)}
+        local new_coord = {x = (range * -1) + random(0, range * 2), y = (range * -1) + random(0, range * 2)}
         if new_coord.x ^ 2 + new_coord.y ^ 2 < coord.x ^ 2 + coord.y ^ 2 then
             coord = new_coord
         end
@@ -957,7 +959,7 @@ local function damage_entity(e)
         return
     end
 
-    e.health = e.health - math.random(30, 90)
+    e.health = e.health - random(30, 90)
     if e.health <= 0 then
         e.die('enemy')
     end
@@ -968,10 +970,10 @@ local function floaty_hearts(entity, c)
     local b = 1.35
     for _ = 1, c, 1 do
         local p = {
-            (position.x + 0.4) + (b * -1 + math.random(0, b * 20) * 0.1),
-            position.y + (b * -1 + math.random(0, b * 20) * 0.1)
+            (position.x + 0.4) + (b * -1 + random(0, b * 20) * 0.1),
+            position.y + (b * -1 + random(0, b * 20) * 0.1)
         }
-        entity.surface.create_entity({name = 'flying-text', position = p, text = '♥', color = {math.random(150, 255), 0, 255}})
+        entity.surface.create_entity({name = 'flying-text', position = p, text = '♥', color = {random(150, 255), 0, 255}})
     end
 end
 
@@ -1140,7 +1142,7 @@ local function on_player_used_capsule(event)
             player.teleport(pos, surface)
         end
         rpg_t.mana = 0
-        Public.damage_player_over_time(player, math.random(8, 16))
+        Public.damage_player_over_time(player, random(8, 16))
         player.play_sound {path = 'utility/armor_insert', volume_modifier = 1}
         p(({'rpg_main.warped_ok'}), Color.info)
         rpg_t.mana = rpg_t.mana - object.mana_cost
@@ -1227,8 +1229,8 @@ end
 
 local function tick()
     local ticker = game.tick
-    local count = #game.connected_players
     local players = game.connected_players
+    local count = #players
     local enable_flameboots = Public.get('rpg_extra').enable_flameboots
     local enable_mana = Public.get('rpg_extra').enable_mana
 

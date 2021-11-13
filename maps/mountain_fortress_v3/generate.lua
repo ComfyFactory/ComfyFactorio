@@ -344,9 +344,9 @@ local function do_place_entities(data)
             if surface.can_place_entity(e) then
                 entity = surface.create_entity(e)
                 if entity then
-                    if e.note and e.note == 'wall' then
-                        local wall_defenders_health_modifier = WD.get('biter_health_boost')
-                        BiterHealthBooster.add_unit(entity, wall_defenders_health_modifier)
+                    if e.note then
+                        local modified_unit_health = WD.get('modified_unit_health')
+                        BiterHealthBooster.add_unit(entity, modified_unit_health.current_value)
                     end
                     wintery(entity)
                     if e.direction then
@@ -377,9 +377,9 @@ local function do_place_entities(data)
         else
             entity = surface.create_entity(e)
             if entity then
-                if e.note and e.note == 'wall' then
-                    local wall_defenders_health_modifier = WD.get('biter_health_boost')
-                    BiterHealthBooster.add_unit(entity, wall_defenders_health_modifier)
+                if e.note then
+                    local modified_unit_health = WD.get('modified_unit_health')
+                    BiterHealthBooster.add_unit(entity, modified_unit_health.current_value)
                 end
                 wintery(entity)
                 if e.direction then
