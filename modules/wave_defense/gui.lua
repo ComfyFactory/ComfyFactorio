@@ -1,4 +1,4 @@
-local WD = require 'modules.wave_defense.table'
+local Public = require 'modules.wave_defense.table'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 
 local function create_gui(player)
@@ -53,8 +53,8 @@ end
 
 --display threat gain/loss per minute during last 15 minutes
 local function get_threat_gain()
-    local threat_log_index = WD.get('threat_log_index')
-    local threat_log = WD.get('threat_log')
+    local threat_log_index = Public.get('threat_log_index')
+    local threat_log = Public.get('threat_log')
     local past_index = threat_log_index - 900
     if past_index < 1 then
         past_index = 1
@@ -63,7 +63,7 @@ local function get_threat_gain()
     return gain
 end
 
-local function update_gui(player)
+function Public.update_gui(player)
     if not player.gui.top.wave_defense then
         create_gui(player)
     end
@@ -74,12 +74,12 @@ local function update_gui(player)
         biter_health_boost = biter_health_boosts
     end
 
-    local wave_number = WD.get('wave_number')
-    local next_wave = WD.get('next_wave')
-    local last_wave = WD.get('last_wave')
-    local max_active_biters = WD.get('max_active_biters')
-    local threat = WD.get('threat')
-    local enable_threat_log = WD.get('enable_threat_log')
+    local wave_number = Public.get('wave_number')
+    local next_wave = Public.get('next_wave')
+    local last_wave = Public.get('last_wave')
+    local max_active_biters = Public.get('max_active_biters')
+    local threat = Public.get('threat')
+    local enable_threat_log = Public.get('enable_threat_log')
 
     gui.label.caption = {'wave_defense.gui_2'}
     gui.wave_number.caption = wave_number
@@ -125,4 +125,4 @@ local function update_gui(player)
     end
 end
 
-return update_gui
+return Public

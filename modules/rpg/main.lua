@@ -22,6 +22,7 @@ local main_frame_name = Public.main_frame_name
 
 local sub = string.sub
 local round = math.round
+local floor = math.floor
 local random = math.random
 local abs = math.abs
 
@@ -436,8 +437,96 @@ local function give_player_flameboots(player)
     end
 end
 
+local function has_health_boost(entity, damage, final_damage_amount, cause)
+    local biter_health_boost = BiterHealthBooster.get('biter_health_boost')
+    local biter_health_boost_units = BiterHealthBooster.get('biter_health_boost_units')
+
+    local get_health_pool
+
+    --Handle the custom health pool of the biter health booster, if it is used in the map.
+    if biter_health_boost then
+        local health_pool = biter_health_boost_units[entity.unit_number]
+        if health_pool then
+            get_health_pool = health_pool[1]
+            --Set entity health relative to health pool
+            local max_health = health_pool[3].max_health
+            local m = health_pool[1] / max_health
+            local final_health = round(entity.prototype.max_health * m)
+
+            health_pool[1] = round(health_pool[1] + final_damage_amount)
+            health_pool[1] = round(health_pool[1] - damage)
+
+            --Set entity health relative to health pool
+            entity.health = final_health
+
+            if health_pool[1] <= 0 then
+                local entity_number = entity.unit_number
+                entity.die(entity.force.name, cause)
+
+                if biter_health_boost_units[entity_number] then
+                    biter_health_boost_units[entity_number] = nil
+                end
+            end
+        else
+            entity.health = entity.health + final_damage_amount
+            entity.health = entity.health - damage
+            if entity.health <= 0 then
+                entity.die(cause.force.name, cause)
+            end
+        end
+    else
+        --Handle vanilla damage.
+        entity.health = entity.health + final_damage_amount
+        entity.health = entity.health - damage
+        if entity.health <= 0 then
+            entity.die(cause.force.name, cause)
+        end
+    end
+
+    return get_health_pool
+end
+
+local function set_health_boost(entity, damage, cause)
+    local biter_health_boost = BiterHealthBooster.get('biter_health_boost')
+    local biter_health_boost_units = BiterHealthBooster.get('biter_health_boost_units')
+
+    local get_health_pool
+
+    --Handle the custom health pool of the biter health booster, if it is used in the map.
+    if biter_health_boost then
+        local health_pool = biter_health_boost_units[entity.unit_number]
+        if health_pool then
+            get_health_pool = health_pool[1]
+            --Set entity health relative to health pool
+            local max_health = health_pool[3].max_health
+            local m = health_pool[1] / max_health
+            local final_health = round(entity.prototype.max_health * m)
+
+            health_pool[1] = round(health_pool[1] - damage)
+
+            --Set entity health relative to health pool
+            entity.health = final_health
+
+            if health_pool[1] <= 0 then
+                local entity_number = entity.unit_number
+                entity.die(entity.force.name, cause)
+
+                if biter_health_boost_units[entity_number] then
+                    biter_health_boost_units[entity_number] = nil
+                end
+            end
+        end
+    end
+
+    return get_health_pool
+end
+
 --Melee damage modifier
-local function one_punch(character, target, damage)
+local function one_punch(character, target, damage, get_health_pool)
+    if not (target and target.valid) then
+        return
+    end
+
     local base_vector = {target.position.x - character.position.x, target.position.y - character.position.y}
 
     local vector = {base_vector[1], base_vector[2]}
@@ -481,7 +570,7 @@ local function one_punch(character, target, damage)
     vector[1] = vector[1] * 1.5
     vector[2] = vector[2] * 1.5
 
-    local a = 0.25
+    local a = 0.45
 
     local cs = character.surface
     local cp = character.position
@@ -496,9 +585,35 @@ local function one_punch(character, target, damage)
                         if e.health then
                             if e.destructible and e.minable and e.force.index ~= 3 then
                                 if e.force.index ~= character.force.index then
-                                    e.health = e.health - damage * 0.05
-                                    if e.health <= 0 then
-                                        e.die(e.force.name, character)
+                                    if get_health_pool then
+                                        local max_unit_health = floor(get_health_pool * 0.00015)
+                                        if max_unit_health <= 0 then
+                                            max_unit_health = 4
+                                        end
+                                        if max_unit_health >= 15 then
+                                            max_unit_health = 15
+                                        end
+                                        local final = floor(damage * max_unit_health)
+                                        character.surface.create_entity(
+                                            {
+                                                name = 'flying-text',
+                                                position = character.position,
+                                                text = '‼' .. final,
+                                                color = {255, 0, 0}
+                                            }
+                                        )
+                                        character.surface.create_entity({name = 'blood-explosion-huge', position = character.position})
+                                        set_health_boost(e, final, character)
+                                        if e.valid and e.health <= 0 and get_health_pool <= 0 then
+                                            e.die(e.force.name, character)
+                                        end
+                                    else
+                                        if e.valid then
+                                            e.health = e.health - damage * 0.05
+                                            if e.health <= 0 then
+                                                e.die(e.force.name, character)
+                                            end
+                                        end
                                     end
                                 end
                             end
@@ -552,6 +667,7 @@ local function on_entity_damaged(event)
     local entity = event.entity
     local cause = event.cause
     local original_damage_amount = event.original_damage_amount
+    local final_damage_amount = event.final_damage_amount
 
     if
         cause.get_inventory(defines.inventory.character_ammo)[cause.selected_gun_index].valid_for_read or
@@ -607,28 +723,6 @@ local function on_entity_damaged(event)
     local enable_one_punch = Public.get('rpg_extra').enable_one_punch
     local rpg_t = Public.get_value_from_player(cause.player.index)
 
-    --Cause a one punch.
-    if enable_one_punch then
-        if rpg_t.one_punch then
-            local chance = Public.get_one_punch_chance(cause.player) * 10
-            local chance_to_hit = random(0, 999)
-            local success = chance_to_hit < chance
-            log_one_punch(
-                function()
-                    if success then
-                        log('[OnePunch]: Chance: ' .. chance .. ' Chance to hit:  ' .. chance_to_hit .. ' Success: true' .. ' Damage: ' .. damage)
-                    else
-                        log('[OnePunch]: Chance: ' .. chance .. ' Chance to hit:  ' .. chance_to_hit .. ' Success: false' .. ' Damage: ' .. damage)
-                    end
-                end
-            )
-            if success then
-                one_punch(cause, entity, damage) -- only kill the biters if their health is below or equal to zero
-                return
-            end
-        end
-    end
-
     --Floating messages and particle effects.
     if random(1, 7) == 1 then
         damage = damage * random(250, 350) * 0.01
@@ -654,36 +748,28 @@ local function on_entity_damaged(event)
         )
     end
 
-    local biter_health_boost = BiterHealthBooster.get('biter_health_boost')
-    local biter_health_boost_units = BiterHealthBooster.get('biter_health_boost_units')
+    local get_health_pool = has_health_boost(entity, damage, final_damage_amount, cause)
 
-    --Handle the custom health pool of the biter health booster, if it is used in the map.
-    if biter_health_boost then
-        local health_pool = biter_health_boost_units[entity.unit_number]
-        if health_pool then
-            health_pool[1] = health_pool[1] + event.final_damage_amount
-            health_pool[1] = health_pool[1] - damage
-
-            --Set entity health relative to health pool
-            entity.health = health_pool[1] * health_pool[2]
-
-            if health_pool[1] <= 0 then
-                local entity_number = entity.unit_number
-                entity.die(entity.force.name, cause)
-
-                if biter_health_boost_units[entity_number] then
-                    biter_health_boost_units[entity_number] = nil
+    --Cause a one punch.
+    if enable_one_punch then
+        if rpg_t.one_punch then
+            local chance = Public.get_one_punch_chance(cause.player) * 10
+            local chance_to_hit = random(0, 999)
+            local success = chance_to_hit < chance
+            log_one_punch(
+                function()
+                    if success then
+                        print('[OnePunch]: Chance: ' .. chance .. ' Chance to hit:  ' .. chance_to_hit .. ' Success: true' .. ' Damage: ' .. damage)
+                    else
+                        print('[OnePunch]: Chance: ' .. chance .. ' Chance to hit:  ' .. chance_to_hit .. ' Success: false' .. ' Damage: ' .. damage)
+                    end
                 end
+            )
+            if success then
+                one_punch(cause, entity, damage, get_health_pool) -- only kill the biters if their health is below or equal to zero
+                return
             end
-            return
         end
-    end
-
-    --Handle vanilla damage.
-    entity.health = entity.health + event.final_damage_amount
-    entity.health = entity.health - damage
-    if entity.health <= 0 then
-        entity.die(cause.force.name, cause)
     end
 
     local is_explosive_bullets_enabled = Public.get_explosive_bullets()

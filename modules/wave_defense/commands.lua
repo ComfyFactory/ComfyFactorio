@@ -1,11 +1,15 @@
+local Public = require 'modules.wave_defense.table'
+
 if _DEBUG then
-    local Public = require 'modules.wave_defense.table'
-
     commands.add_command(
-        'debug_wd_module',
+        'wd_debug_module',
         '',
-        function()
+        function(cmd)
             local player = game.player
+            local param = tostring(cmd.parameter)
+            if param == nil then
+                return
+            end
 
             if not (player and player.valid) then
                 return
@@ -15,43 +19,26 @@ if _DEBUG then
                 return
             end
 
-            Public.toggle_debug()
-        end
-    )
-
-    commands.add_command(
-        'debug_wd_health',
-        '',
-        function()
-            local player = game.player
-
-            if not (player and player.valid) then
-                return
+            if param == 'spawn_wave' then
+                return Public.spawn_unit_group(true, true)
             end
 
-            if not player.admin then
-                return
+            if param == 'log_all' then
+                return Public.toggle_debug()
             end
 
-            Public.toggle_debug_health()
-        end
-    )
+            if param == 'debug_health' then
+                local this = Public.get()
 
-    commands.add_command(
-        'debug_wd_spawn_wave',
-        '',
-        function()
-            local player = game.player
+                Public.toggle_debug_health()
 
-            if not (player and player.valid) then
-                return
+                this.next_wave = 1000
+                this.wave_interval = 200
+                this.wave_enforced = true
+                this.debug_only_on_wave_500 = true
             end
-
-            if not player.admin then
-                return
-            end
-
-            WDM.spawn_unit_group(true)
         end
     )
 end
+
+return Public

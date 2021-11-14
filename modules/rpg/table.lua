@@ -36,7 +36,7 @@ local Public = {}
 Public.points_per_level = 5
 
 Public.experience_levels = {0}
-for a = 1, 9999, 1 do
+for a = 1, 4999, 1 do -- max level
     Public.experience_levels[#Public.experience_levels + 1] = Public.experience_levels[#Public.experience_levels] + a * 8
 end
 

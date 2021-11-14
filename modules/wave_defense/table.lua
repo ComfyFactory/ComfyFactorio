@@ -11,17 +11,6 @@ Global.register(
     end
 )
 
-function Public.debug_module()
-    this.next_wave = 1000
-    this.wave_interval = 500
-    this.wave_enforced = true
-    this.debug = true
-end
-
-function Public.enable_debug()
-    this.debug = true
-end
-
 function Public.reset_wave_defense()
     this.boss_wave = false
     this.boss_wave_warning = false

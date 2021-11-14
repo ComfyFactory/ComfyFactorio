@@ -129,7 +129,7 @@ commands.add_command(
 
 if _DEBUG then
     commands.add_command(
-        'debug_rpg_module',
+        'rpg_debug_module',
         '',
         function()
             local player = game.player
@@ -147,7 +147,7 @@ if _DEBUG then
     )
 
     commands.add_command(
-        'debug_rpg_one_punch',
+        'rpg_debug_one_punch',
         '',
         function()
             local player = game.player
@@ -165,7 +165,7 @@ if _DEBUG then
     )
 
     commands.add_command(
-        'debug_rpg_creative',
+        'rpg_cheat_stats',
         '',
         function()
             local player = game.player

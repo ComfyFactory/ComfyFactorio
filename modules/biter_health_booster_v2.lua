@@ -326,21 +326,21 @@ local function on_entity_damaged(event)
 
     --Process boss unit health bars
     local boss = health_pool[3]
-    if boss then
-        if boss.last_update + 10 < game.tick then
-            set_boss_healthbar(health_pool[1], boss.max_health, boss.healthbar_id)
-            boss.last_update = game.tick
-        end
+    if boss and boss.healthbar_id then
+        set_boss_healthbar(health_pool[1], boss.max_health, boss.healthbar_id)
     end
 
     --Reduce health pool
-    health_pool[1] = health_pool[1] - damage
+    health_pool[1] = round(health_pool[1] - damage)
 
     --Set entity health relative to health pool
-    biter.health = health_pool[1] * health_pool[2]
+    local max_health = health_pool[3].max_health
+    local m = health_pool[1] / max_health
+    local final_health = round(biter.prototype.max_health * m)
+    biter.health = final_health
 
     --Proceed to kill entity if health is 0
-    if biter.health > 0 then
+    if biter.health > 0 and health_pool[1] > 0 then
         return
     end
 
@@ -374,7 +374,7 @@ local function on_entity_died(event)
 
     if health_pool then
         Task.set_timeout_in_ticks(30, removeUnit, {unit_number = unit_number})
-        if health_pool[3] then
+        if health_pool[3] and health_pool[3].healthbar_id then
             if this.enable_boss_loot then
                 if random(1, 128) == 1 then
                     LootDrop.drop_loot(biter, wave_count)
@@ -445,10 +445,12 @@ function Public.add_unit(unit, health_multiplier)
     if not health_multiplier then
         health_multiplier = this.biter_health_boost
     end
+    local health = floor(unit.prototype.max_health * health_multiplier)
     local xp_modifier = round(1 / health_multiplier, 5)
     this.biter_health_boost_units[unit.unit_number] = {
-        floor(unit.prototype.max_health * health_multiplier),
-        xp_modifier
+        health,
+        xp_modifier,
+        {max_health = health}
     }
 
     check_clear_table()
@@ -470,7 +472,7 @@ function Public.add_boss_unit(unit, health_multiplier, health_bar_size)
     this.biter_health_boost_units[unit.unit_number] = {
         health,
         xp_modifier,
-        {max_health = health, healthbar_id = create_boss_healthbar(unit, health_bar_size), last_update = game.tick}
+        {max_health = health, healthbar_id = create_boss_healthbar(unit, health_bar_size)}
     }
 
     check_clear_table()

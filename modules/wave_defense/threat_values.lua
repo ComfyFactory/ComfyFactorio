@@ -1,4 +1,6 @@
-local t = {
+local Public = require 'modules.wave_defense.table'
+
+Public.threat_values = {
     ['biter-spawner'] = 128,
     ['spitter-spawner'] = 128,
     ['behemoth-biter'] = 64,
@@ -15,4 +17,4 @@ local t = {
     ['behemoth-worm-turret'] = 128
 }
 
-return t
+return Public
