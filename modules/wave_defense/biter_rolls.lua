@@ -1,9 +1,7 @@
-local WD = require 'modules.wave_defense.table'
-
-local Public = {}
+local Public = require 'modules.wave_defense.table'
 
 function Public.wave_defense_roll_biter_name()
-    local biter_raffle = WD.get('biter_raffle')
+    local biter_raffle = Public.get('biter_raffle')
     local max_chance = 0
     for k, v in pairs(biter_raffle) do
         max_chance = max_chance + v
@@ -19,7 +17,7 @@ function Public.wave_defense_roll_biter_name()
 end
 
 function Public.wave_defense_roll_spitter_name()
-    local spitter_raffle = WD.get('spitter_raffle')
+    local spitter_raffle = Public.get('spitter_raffle')
     local max_chance = 0
     for k, v in pairs(spitter_raffle) do
         max_chance = max_chance + v
@@ -35,7 +33,7 @@ function Public.wave_defense_roll_spitter_name()
 end
 
 function Public.wave_defense_set_unit_raffle(level)
-    WD.set(
+    Public.set(
         'biter_raffle',
         {
             ['small-biter'] = 1000 - level * 1.75,
@@ -45,7 +43,7 @@ function Public.wave_defense_set_unit_raffle(level)
         }
     )
 
-    WD.set(
+    Public.set(
         'spitter_raffle',
         {
             ['small-spitter'] = 1000 - level * 1.75,
@@ -55,8 +53,8 @@ function Public.wave_defense_set_unit_raffle(level)
         }
     )
 
-    local biter_raffle = WD.get('biter_raffle')
-    local spitter_raffle = WD.get('spitter_raffle')
+    local biter_raffle = Public.get('biter_raffle')
+    local spitter_raffle = Public.get('spitter_raffle')
     if level > 500 then
         biter_raffle['medium-biter'] = 500 - (level - 500)
         spitter_raffle['medium-spitter'] = 500 - (level - 500)
@@ -80,7 +78,7 @@ function Public.wave_defense_set_unit_raffle(level)
 end
 
 function Public.wave_defense_roll_worm_name()
-    local worm_raffle = WD.get('worm_raffle')
+    local worm_raffle = Public.get('worm_raffle')
     local max_chance = 0
     for k, v in pairs(worm_raffle) do
         max_chance = max_chance + v
@@ -96,7 +94,7 @@ function Public.wave_defense_roll_worm_name()
 end
 
 function Public.wave_defense_set_worm_raffle(level)
-    WD.set(
+    Public.set(
         'worm_raffle',
         {
             ['small-worm-turret'] = 1000 - level * 1.75,
@@ -105,7 +103,7 @@ function Public.wave_defense_set_worm_raffle(level)
             ['behemoth-worm-turret'] = 0
         }
     )
-    local worm_raffle = WD.get('worm_raffle')
+    local worm_raffle = Public.get('worm_raffle')
 
     if level > 500 then
         worm_raffle['medium-worm-turret'] = 500 - (level - 500)

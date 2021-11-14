@@ -36,7 +36,7 @@ local Public = {}
 Public.points_per_level = 5
 
 Public.experience_levels = {0}
-for a = 1, 9999, 1 do
+for a = 1, 4999, 1 do -- max level
     Public.experience_levels[#Public.experience_levels + 1] = Public.experience_levels[#Public.experience_levels] + a * 8
 end
 
@@ -233,6 +233,17 @@ function Public.toggle_debug()
     end
 
     return this.rpg_extra.debug
+end
+
+--- Toggle debug - when you need to troubleshoot.
+function Public.toggle_debug_one_punch()
+    if this.rpg_extra.debug_one_punch then
+        this.rpg_extra.debug_one_punch = false
+    else
+        this.rpg_extra.debug_one_punch = true
+    end
+
+    return this.rpg_extra.debug_one_punch
 end
 
 --- Debug only - when you need to troubleshoot.

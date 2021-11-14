@@ -13,6 +13,7 @@ local points_per_level = Public.points_per_level
 local settings_level = Public.gui_settings_levels
 local floor = math.floor
 local random = math.random
+local round = math.round
 
 --RPG Frames
 local main_frame_name = Public.main_frame_name
@@ -392,7 +393,7 @@ function Public.update_health(player)
         local f = player.gui.screen[main_frame_name]
         local data = Gui.get_data(f)
         if data.health and data.health.valid then
-            data.health.caption = (math.round(player.character.health * 10) / 10)
+            data.health.caption = (round(player.character.health * 10) / 10)
         end
         local shield_gui = player.character.get_inventory(defines.inventory.character_armor)
         if not shield_gui.is_empty() then
@@ -496,6 +497,28 @@ function Public.get_melee_modifier(player)
     return (rpg_t.strength - 10) * 0.10
 end
 
+function Public.get_final_damage_modifier(player)
+    local rpg_t = Public.get_value_from_player(player.index)
+    local rng = random(10, 35) * 0.01
+    return (rpg_t.strength - 10) * rng
+end
+
+function Public.get_final_damage(player, entity, original_damage_amount)
+    local modifier = Public.get_final_damage_modifier(player)
+    local damage = original_damage_amount + original_damage_amount * modifier
+    if entity.prototype.resistances then
+        if entity.prototype.resistances.physical then
+            damage = damage - entity.prototype.resistances.physical.decrease
+            damage = damage - damage * entity.prototype.resistances.physical.percent
+        end
+    end
+    damage = round(damage, 3)
+    if damage < 1 then
+        damage = 1
+    end
+    return damage
+end
+
 function Public.get_heal_modifier(player)
     local rpg_t = Public.get_value_from_player(player.index)
     return (rpg_t.vitality - 10) * 0.06
@@ -554,7 +577,7 @@ function Public.get_one_punch_chance(player)
     if rpg_t.strength < 100 then
         return 0
     end
-    local chance = math.round(rpg_t.strength * 0.01, 1)
+    local chance = round(rpg_t.strength * 0.012, 1)
     if chance > 100 then
         chance = 100
     end
@@ -564,7 +587,7 @@ end
 function Public.get_extra_following_robots(player)
     local rpg_t = Public.get_value_from_player(player.index)
     local strength = rpg_t.strength
-    local count = math.round(strength / 2 * 0.03, 3)
+    local count = round(strength / 2 * 0.03, 3)
     return count
 end
 
@@ -734,7 +757,7 @@ function Public.gain_xp(player, amount, added_to_pool, text)
         Public.debug_log('RPG - ' .. player.name .. ' got org xp: ' .. amount)
         local fee = amount - add_to_global_pool(amount, true)
         Public.debug_log('RPG - ' .. player.name .. ' got fee: ' .. fee)
-        amount = math.round(amount, 3) - fee
+        amount = round(amount, 3) - fee
         if rpg_extra.difficulty then
             amount = amount + rpg_extra.difficulty
         end
@@ -743,7 +766,7 @@ function Public.gain_xp(player, amount, added_to_pool, text)
         Public.debug_log('RPG - ' .. player.name .. ' got org xp: ' .. amount)
     end
 
-    rpg_t.xp = math.round(rpg_t.xp + amount, 3)
+    rpg_t.xp = round(rpg_t.xp + amount, 3)
     rpg_t.xp_since_last_floaty_text = rpg_t.xp_since_last_floaty_text + amount
 
     if not experience_levels[rpg_t.level + 1] then
