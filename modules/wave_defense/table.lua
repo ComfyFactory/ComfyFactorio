@@ -11,17 +11,6 @@ Global.register(
     end
 )
 
-function Public.debug_module()
-    this.next_wave = 1000
-    this.wave_interval = 500
-    this.wave_enforced = true
-    this.debug = true
-end
-
-function Public.enable_debug()
-    this.debug = true
-end
-
 function Public.reset_wave_defense()
     this.boss_wave = false
     this.boss_wave_warning = false
@@ -32,6 +21,7 @@ function Public.reset_wave_defense()
     this.average_unit_group_size = 35
     this.biter_raffle = {}
     this.debug = false
+    this.debug_health = false
     this.paused = false
     this.game_lost = false
     this.get_random_close_spawner_attempts = 5
@@ -230,6 +220,28 @@ end
 
 function Public.pause(boolean)
     this.paused = boolean or false
+end
+
+--- Toggle debug - when you need to troubleshoot.
+function Public.toggle_debug()
+    if this.debug then
+        this.debug = false
+    else
+        this.debug = true
+    end
+
+    return this.debug
+end
+
+--- Toggle debug - when you need to troubleshoot.
+function Public.toggle_debug_health()
+    if this.debug_health then
+        this.debug_health = false
+    else
+        this.debug_health = true
+    end
+
+    return this.debug_health
 end
 
 local on_init = function()

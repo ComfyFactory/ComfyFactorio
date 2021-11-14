@@ -1,8 +1,7 @@
+local Public = require 'modules.wave_defense.table'
 local Event = require 'utils.event'
 local Global = require 'utils.global'
-local BiterRolls = require 'modules.wave_defense.biter_rolls'
-local BiterHealthBooster = require 'modules.biter_health_booster'
-local WD = require 'modules.wave_defense.table'
+local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local Diff = require 'modules.difficulty_vote_by_amount'
 
 local traps = {}
@@ -14,7 +13,6 @@ Global.register(
     end
 )
 
-local Public = {}
 local floor = math.floor
 local random = math.random
 local abs = math.abs
@@ -62,7 +60,7 @@ local function spawn_biters(data)
     local surface = data.surface
     local position = data.position
     local h = floor(abs(position.y))
-    local wave_number = WD.get('wave_number')
+    local wave_number = Public.get('wave_number')
     local d = Diff.get()
 
     if not position then
@@ -87,13 +85,13 @@ local function spawn_biters(data)
         boosted_health = boosted_health * 2
     end
 
-    BiterRolls.wave_defense_set_unit_raffle(h * 0.20)
+    Public.wave_defense_set_unit_raffle(h * 0.20)
 
     local unit
     if random(1, 3) == 1 then
-        unit = surface.create_entity({name = BiterRolls.wave_defense_roll_spitter_name(), position = position})
+        unit = surface.create_entity({name = Public.wave_defense_roll_spitter_name(), position = position})
     else
-        unit = surface.create_entity({name = BiterRolls.wave_defense_roll_biter_name(), position = position})
+        unit = surface.create_entity({name = Public.wave_defense_roll_biter_name(), position = position})
     end
 
     if random(1, 45) == 1 then
@@ -104,7 +102,7 @@ local function spawn_biters(data)
 end
 
 local function spawn_worms(data)
-    local wave_number = WD.get('wave_number')
+    local wave_number = Public.get('wave_number')
     local d = Diff.get()
     local m = 0.0015
     if d.difficulty_vote_index then
@@ -123,8 +121,8 @@ local function spawn_worms(data)
 
     local surface = data.surface
     local position = data.position
-    BiterRolls.wave_defense_set_worm_raffle(sqrt(position.x ^ 2 + position.y ^ 2) * 0.20)
-    local unit = surface.create_entity({name = BiterRolls.wave_defense_roll_worm_name(), position = position})
+    Public.wave_defense_set_worm_raffle(sqrt(position.x ^ 2 + position.y ^ 2) * 0.20)
+    local unit = surface.create_entity({name = Public.wave_defense_roll_worm_name(), position = position})
 
     if random(1, 45) == 1 then
         BiterHealthBooster.add_unit(unit, boosted_health)

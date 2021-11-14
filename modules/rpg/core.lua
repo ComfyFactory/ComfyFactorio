@@ -15,6 +15,7 @@ Public.settings = Settings
 local Spells = require 'modules.rpg.spells'
 Public.spells = Spells
 
-require 'modules.rpg.commands'
+local Commands = require 'modules.rpg.commands'
+Public.commands = Commands
 
 return Public
