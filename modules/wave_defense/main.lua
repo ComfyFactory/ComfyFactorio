@@ -8,6 +8,7 @@ local update_gui = require 'modules.wave_defense.gui'
 local threat_values = require 'modules.wave_defense.threat_values'
 local WD = require 'modules.wave_defense.table'
 local Alert = require 'utils.alert'
+require 'modules.wave_defense.commands'
 
 local Public = {}
 local math_random = math.random
@@ -48,6 +49,14 @@ local function debug_print(msg)
         return
     end
     print('WaveDefense: ' .. msg)
+end
+
+local function debug_print_health(msg)
+    local debug = WD.get('debug_health')
+    if not debug then
+        return
+    end
+    print('[HEALTHBOOSTER]: ' .. msg)
 end
 
 local function valid(userdata)
@@ -575,16 +584,18 @@ local function increase_biters_health()
     if modified_unit_health.current_value > modified_unit_health.limit_value then
         modified_unit_health.current_value = modified_unit_health.limit_value
     end
-    debug_print('[HEALTHBOOSTER] > Normal Units Health Boosted: ' .. modified_unit_health.current_value)
+    debug_print_health('modified_unit_health.current_value: ' .. modified_unit_health.current_value)
     WD.set('modified_unit_health').current_value = modified_unit_health.current_value + modified_unit_health.health_increase_per_boss_wave
 
     -- this sets boss units health
     if boosted_health == 1 then
         boosted_health = 1.25
     end
+
     boosted_health = boosted_health * (wave_number * 0.04)
+    debug_print_health('boosted_health: ' .. boosted_health)
     local sum = boosted_health * 5
-    debug_print('[HEALTHBOOSTER] > Boss Health Boosted: ' .. sum)
+    debug_print_health('sum: ' .. sum)
     if sum >= 300 then
         sum = 300
     end

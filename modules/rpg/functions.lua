@@ -13,6 +13,7 @@ local points_per_level = Public.points_per_level
 local settings_level = Public.gui_settings_levels
 local floor = math.floor
 local random = math.random
+local round = math.round
 
 --RPG Frames
 local main_frame_name = Public.main_frame_name
@@ -494,6 +495,21 @@ end
 function Public.get_melee_modifier(player)
     local rpg_t = Public.get_value_from_player(player.index)
     return (rpg_t.strength - 10) * 0.10
+end
+
+function Public.get_final_damage(player, entity, original_damage_amount)
+    local damage = original_damage_amount + original_damage_amount * Public.get_melee_modifier(player)
+    if entity.prototype.resistances then
+        if entity.prototype.resistances.physical then
+            damage = damage - entity.prototype.resistances.physical.decrease
+            damage = damage - damage * entity.prototype.resistances.physical.percent
+        end
+    end
+    damage = round(damage, 3)
+    if damage < 1 then
+        damage = 1
+    end
+    return damage
 end
 
 function Public.get_heal_modifier(player)

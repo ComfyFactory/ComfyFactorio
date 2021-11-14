@@ -235,6 +235,17 @@ function Public.toggle_debug()
     return this.rpg_extra.debug
 end
 
+--- Toggle debug - when you need to troubleshoot.
+function Public.toggle_debug_one_punch()
+    if this.rpg_extra.debug_one_punch then
+        this.rpg_extra.debug_one_punch = false
+    else
+        this.rpg_extra.debug_one_punch = true
+    end
+
+    return this.rpg_extra.debug_one_punch
+end
+
 --- Debug only - when you need to troubleshoot.
 ---@param str <string>
 function Public.debug_log(str)

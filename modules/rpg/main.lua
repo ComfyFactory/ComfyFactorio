@@ -25,6 +25,14 @@ local round = math.round
 local random = math.random
 local abs = math.abs
 
+local function log_one_punch(callback)
+    local debug = Public.get('rpg_extra').debug_one_punch
+    if not debug then
+        return
+    end
+    callback()
+end
+
 local function on_gui_click(event)
     if not event then
         return
@@ -543,6 +551,7 @@ local function on_entity_damaged(event)
 
     local entity = event.entity
     local cause = event.cause
+    local original_damage_amount = event.original_damage_amount
 
     if
         cause.get_inventory(defines.inventory.character_ammo)[cause.selected_gun_index].valid_for_read or
@@ -594,25 +603,26 @@ local function on_entity_damaged(event)
     cause.health = cause.health + Public.get_life_on_hit(cause.player)
 
     --Calculate modified damage.
-    local damage = event.original_damage_amount + event.original_damage_amount * Public.get_melee_modifier(cause.player)
-    if entity.prototype.resistances then
-        if entity.prototype.resistances.physical then
-            damage = damage - entity.prototype.resistances.physical.decrease
-            damage = damage - damage * entity.prototype.resistances.physical.percent
-        end
-    end
-    damage = round(damage, 3)
-    if damage < 1 then
-        damage = 1
-    end
-
+    local damage = Public.get_final_damage(cause.player, entity, original_damage_amount)
     local enable_one_punch = Public.get('rpg_extra').enable_one_punch
     local rpg_t = Public.get_value_from_player(cause.player.index)
 
     --Cause a one punch.
     if enable_one_punch then
         if rpg_t.one_punch then
-            if random(0, 999) < Public.get_one_punch_chance(cause.player) * 10 then
+            local chance = Public.get_one_punch_chance(cause.player) * 10
+            local chance_to_hit = random(0, 999)
+            local success = chance_to_hit < chance
+            log_one_punch(
+                function()
+                    if success then
+                        log('[OnePunch]: Chance: ' .. chance .. ' Chance to hit:  ' .. chance_to_hit .. ' Success: true' .. ' Damage: ' .. damage)
+                    else
+                        log('[OnePunch]: Chance: ' .. chance .. ' Chance to hit:  ' .. chance_to_hit .. ' Success: false' .. ' Damage: ' .. damage)
+                    end
+                end
+            )
+            if success then
                 one_punch(cause, entity, damage) -- only kill the biters if their health is below or equal to zero
                 return
             end
