@@ -249,7 +249,7 @@ local function extra_projectiles(cause, target)
     local biter_health_boost_units = this.biter_health_boost_units
     local cause_unit_number = cause.unit_number
     local cause_health_pool = biter_health_boost_units[cause_unit_number]
-    if cause_health_pool and cause_health_pool[3] and entity_types[cause.type] then
+    if cause_health_pool and cause_health_pool[3] and cause_health_pool[3].healthbar_id and entity_types[cause.type] then
         if this.acid_nova then
             if acid_lines[cause.name] then
                 if not this.acid_lines_delay[cause_unit_number] then
