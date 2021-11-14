@@ -57,6 +57,15 @@ local function valid(userdata)
     return true
 end
 
+local function shuffle(tbl)
+    local size = #tbl
+    for i = size, 1, -1 do
+        local rand = math.random(size)
+        tbl[i], tbl[rand] = tbl[rand], tbl[i]
+    end
+    return tbl
+end
+
 local function find_initial_spot(surface, position)
     local spot = WD.get('spot')
     if not spot then
@@ -67,6 +76,19 @@ local function find_initial_spot(surface, position)
         if not pos then
             pos = surface.find_non_colliding_position('rocket-silo', position, 164, 1)
         end
+        if not pos then
+            pos = surface.find_non_colliding_position('rocket-silo', position, 200, 1)
+        end
+        if not pos then
+            pos = position
+        end
+
+        if math_random(1, 2) == 1 then
+            local random_pos = {{x = pos.x - 10, y = pos.y - 5}, {x = pos.x + 10, y = pos.y + 5}, {x = pos.x - 10, y = pos.y + 5}, {x = pos.x + 10, y = pos.y - 5}}
+            local actual_pos = shuffle(random_pos)
+            pos = {x = actual_pos[1].x, y = actual_pos[1].y}
+        end
+
         if not pos then
             pos = position
         end
@@ -181,7 +203,7 @@ local function get_spawn_pos()
     local initial_position = WD.get('spawn_position')
 
     local located_position = find_initial_spot(surface, initial_position)
-    local valid_position = surface.find_non_colliding_position('behemoth-biter', located_position, 32, 1)
+    local valid_position = surface.find_non_colliding_position('stone-furnace', located_position, 32, 1)
     local debug = WD.get('debug')
     if debug then
         if valid_position then
@@ -305,9 +327,11 @@ local function get_random_close_spawner()
         end
         if not spawner or (center.x - spawner_2.position.x) ^ 2 + (center.y - spawner_2.position.y) ^ 2 < (center.x - spawner.position.x) ^ 2 + (center.y - spawner.position.y) ^ 2 then
             spawner = spawner_2
+            if spawner and spawner.position then
+                debug_print('get_random_close_spawner - Found at x' .. spawner.position.x .. ' y' .. spawner.position.y)
+            end
         end
     end
-    debug_print('get_random_close_spawner - Found at x' .. spawner.position.x .. ' y' .. spawner.position.y)
     return spawner
 end
 
@@ -337,6 +361,12 @@ local function set_main_target()
             return
         end
     end
+
+    local unit_groups_size = WD.get('unit_groups_size')
+    if unit_groups_size < 0 then
+        unit_groups_size = 0
+    end
+    WD.set('unit_groups_size', unit_groups_size)
 
     local sec_target = SideTargets.get_side_target()
     if not sec_target then
@@ -386,6 +416,8 @@ local function set_enemy_evolution()
     end
 
     BiterHealthBooster.set('biter_health_boost', biter_h_boost)
+    WD.set('biter_health_boost', biter_h_boost)
+
     if enemy.evolution_factor == 1 and evolution_factor == 1 then
         return
     end
@@ -429,9 +461,14 @@ local function get_active_unit_groups_count()
                 count = count + 1
             else
                 g.destroy()
+                unit_groups[k] = nil
+                local unit_groups_size = WD.get('unit_groups_size')
+                WD.set('unit_groups_size', unit_groups_size - 1)
             end
         else
             unit_groups[k] = nil
+            local unit_groups_size = WD.get('unit_groups_size')
+            WD.set('unit_groups_size', unit_groups_size - 1)
             local unit_group_last_command = WD.get('unit_group_last_command')
             if unit_group_last_command[k] then
                 unit_group_last_command[k] = nil
@@ -447,10 +484,12 @@ local function get_active_unit_groups_count()
     return count
 end
 
-local function spawn_biter(surface, is_boss_biter)
-    if not is_boss_biter then
-        if not can_units_spawn() then
-            return
+local function spawn_biter(surface, position, forceSpawn, is_boss_biter)
+    if not forceSpawn then
+        if not is_boss_biter then
+            if not can_units_spawn() then
+                return
+            end
         end
     end
 
@@ -462,11 +501,17 @@ local function spawn_biter(surface, is_boss_biter)
     else
         name = BiterRolls.wave_defense_roll_biter_name()
     end
-    local position = get_spawn_pos()
+
+    local old_position = position
+
+    position = surface.find_non_colliding_position('steel-chest', position, 2, 1)
+    if not position then
+        position = old_position
+    end
 
     local biter = surface.create_entity({name = name, position = position, force = 'enemy'})
     biter.ai_settings.allow_destroy_when_commands_fail = true
-    biter.ai_settings.allow_try_return_to_spawner = true
+    biter.ai_settings.allow_try_return_to_spawner = false
     biter.ai_settings.do_separation = true
 
     local increase_health_per_wave = WD.get('increase_health_per_wave')
@@ -615,6 +660,8 @@ local function reform_group(group)
         debug_print('Creating new unit group, because old one was stuck.')
         local unit_groups = WD.get('unit_groups')
         unit_groups[new_group.group_number] = new_group
+        local unit_groups_size = WD.get('unit_groups_size')
+        WD.set('unit_groups_size', unit_groups_size + 1)
 
         return new_group
     else
@@ -631,6 +678,8 @@ local function reform_group(group)
                 positions[group.group_number] = nil
             end
             table.remove(unit_groups, group.group_number)
+            local unit_groups_size = WD.get('unit_groups_size')
+            WD.set('unit_groups_size', unit_groups_size - 1)
         end
         group.destroy()
     end
@@ -883,10 +932,14 @@ local function give_main_command_to_group()
     end
 end
 
-local function spawn_unit_group()
-    if not can_units_spawn() then
-        debug_print('spawn_unit_group - Cant spawn units?')
-        return
+local function spawn_unit_group(fs)
+    if fs then
+        debug_print('spawn_unit_group - forcing new biters')
+    else
+        if not can_units_spawn() then
+            debug_print('spawn_unit_group - Cant spawn units?')
+            return
+        end
     end
     local target = WD.get('target')
     if not valid(target) then
@@ -895,9 +948,13 @@ local function spawn_unit_group()
     end
 
     local max_active_unit_groups = WD.get('max_active_unit_groups')
-    if get_active_unit_groups_count() >= max_active_unit_groups then
-        debug_print('spawn_unit_group - unit_groups at max')
-        return
+    if fs then
+        debug_print('spawn_unit_group - forcing new biters')
+    else
+        if get_active_unit_groups_count() >= max_active_unit_groups then
+            debug_print('spawn_unit_group - unit_groups at max')
+            return
+        end
     end
     local surface_index = WD.get('surface_index')
     local remove_entities = WD.get('remove_entities')
@@ -932,15 +989,14 @@ local function spawn_unit_group()
     BiterRolls.wave_defense_set_unit_raffle(wave_number)
 
     debug_print('Spawning unit group at x' .. spawn_position.x .. ' y' .. spawn_position.y)
-    local position = spawn_position
 
     local unit_group_pos = WD.get('unit_group_pos')
-    local unit_group = surface.create_unit_group({position = position, force = 'enemy'})
+    local unit_group = surface.create_unit_group({position = spawn_position, force = 'enemy'})
     unit_group_pos.positions[unit_group.group_number] = {position = unit_group.position, index = 0}
     local average_unit_group_size = WD.get('average_unit_group_size')
     local group_size = math_floor(average_unit_group_size * group_size_modifier_raffle[math_random(1, group_size_modifier_raffle_size)])
     for _ = 1, group_size, 1 do
-        local biter = spawn_biter(surface)
+        local biter = spawn_biter(surface, spawn_position, fs)
         if not biter then
             debug_print('spawn_unit_group - No biters were found?')
             break
@@ -960,7 +1016,7 @@ local function spawn_unit_group()
             count = 4
         end
         for _ = 1, count, 1 do
-            local biter = spawn_biter(surface, true)
+            local biter = spawn_biter(surface, spawn_position, fs, true)
             if not biter then
                 debug_print('spawn_unit_group - No biters were found?')
                 break
@@ -972,8 +1028,10 @@ local function spawn_unit_group()
 
     local unit_groups = WD.get('unit_groups')
     unit_groups[unit_group.group_number] = unit_group
+    local unit_groups_size = WD.get('unit_groups_size')
+    WD.set('unit_groups_size', unit_groups_size + 1)
     if math_random(1, 2) == 1 then
-        WD.set('random_group', unit_group.group_number)
+        WD.set('random_group', unit_group)
     end
     WD.set('spot', 'nil')
     return true
@@ -1028,7 +1086,6 @@ end
 local tick_tasks = {
     [30] = set_main_target,
     [60] = set_enemy_evolution,
-    [90] = spawn_unit_group,
     [120] = give_main_command_to_group,
     [150] = ThreatEvent.build_nest,
     [180] = ThreatEvent.build_worm,
@@ -1037,7 +1094,7 @@ local tick_tasks = {
     [7200] = refresh_active_unit_threat
 }
 
-local function on_tick()
+local function t1()
     local tick = game.tick
     local game_lost = WD.get('game_lost')
     if game_lost then
@@ -1058,10 +1115,10 @@ local function on_tick()
     local t2 = tick % 18000
 
     if tick_tasks[t] then
-        tick_tasks[t]()
+        tick_tasks[t](true)
     end
     if tick_tasks[t2] then
-        tick_tasks[t2]()
+        tick_tasks[t2](true)
     end
 
     local resolve_pathing = WD.get('resolve_pathing')
@@ -1083,6 +1140,23 @@ local function on_tick()
     end
 end
 
-Event.on_nth_tick(30, on_tick)
+local function t2()
+    local game_lost = WD.get('game_lost')
+    if game_lost then
+        return
+    end
+
+    local paused = WD.get('paused')
+    if paused then
+        return
+    end
+
+    spawn_unit_group()
+end
+
+Public.spawn_unit_group = spawn_unit_group
+
+Event.on_nth_tick(30, t1)
+Event.on_nth_tick(130, t2)
 
 return Public

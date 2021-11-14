@@ -5,6 +5,8 @@ local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Event = require 'utils.event'
 local Terrain = require 'maps.mountain_fortress_v3.terrain'
+local WD = require 'modules.wave_defense.table'
+local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 
 local Public = {}
 
@@ -269,25 +271,26 @@ local function do_place_buildings(data)
                 } == 0
              then
                 entity = surface.create_entity(e)
-                if entity and e.direction then
-                    entity.direction = e.direction
-                end
-                if entity and e.force then
-                    entity.force = e.force
-                end
-                if entity and e.callback then
-                    local c = e.callback.callback
-                    if not c then
-                        return
+                if entity and entity.valid then
+                    if e.direction then
+                        entity.direction = e.direction
                     end
-                    local d = {callback_data = e.callback.data}
-                    if not d then
-                        callback = Token.get(c)
-                        callback(entity)
-                        return
+                    if e.force then
+                        entity.force = e.force
                     end
-                    callback = Token.get(c)
-                    callback(entity, d)
+                    if e.callback then
+                        local c = e.callback.callback
+                        if c then
+                            local d = {callback_data = e.callback.data}
+                            if not d then
+                                callback = Token.get(c)
+                                callback(entity)
+                            else
+                                callback = Token.get(c)
+                                callback(entity, d)
+                            end
+                        end
+                    end
                 end
             end
         end
@@ -340,56 +343,67 @@ local function do_place_entities(data)
         if e.collision then
             if surface.can_place_entity(e) then
                 entity = surface.create_entity(e)
-                wintery(entity)
-                if entity and e.direction then
-                    entity.direction = e.direction
-                end
-                if entity and e.force then
-                    entity.force = e.force
-                end
-                if entity and e.amount then
-                    entity.amount = e.amount
-                end
-                if entity and e.callback then
-                    local c = e.callback.callback
-                    if not c then
-                        return
+                if entity then
+                    if e.note then
+                        local modified_unit_health = WD.get('modified_unit_health')
+                        BiterHealthBooster.add_unit(entity, modified_unit_health.current_value)
                     end
-                    local d = {callback_data = e.callback.data}
-                    if not d then
-                        callback = Token.get(c)
-                        callback(entity)
-                        return
+                    wintery(entity)
+                    if e.direction then
+                        entity.direction = e.direction
                     end
-                    callback = Token.get(c)
-                    callback(entity, d)
+                    if e.force then
+                        entity.force = e.force
+                    end
+                    if e.amount then
+                        entity.amount = e.amount
+                    end
+                    if e.callback then
+                        local c = e.callback.callback
+                        if not c then
+                            return
+                        end
+                        local d = {callback_data = e.callback.data}
+                        if not d then
+                            callback = Token.get(c)
+                            callback(entity)
+                        else
+                            callback = Token.get(c)
+                            callback(entity, d)
+                        end
+                    end
                 end
             end
         else
             entity = surface.create_entity(e)
-            wintery(entity)
-            if entity and e.direction then
-                entity.direction = e.direction
-            end
-            if entity and e.force then
-                entity.force = e.force
-            end
-            if entity and e.amount then
-                entity.amount = e.amount
-            end
-            if entity and e.callback then
-                local c = e.callback.callback
-                if not c then
-                    return
+            if entity then
+                if e.note then
+                    local modified_unit_health = WD.get('modified_unit_health')
+                    BiterHealthBooster.add_unit(entity, modified_unit_health.current_value)
                 end
-                local d = {callback_data = e.callback.data}
-                if not d then
-                    callback = Token.get(c)
-                    callback(entity)
-                    return
+                wintery(entity)
+                if e.direction then
+                    entity.direction = e.direction
                 end
-                callback = Token.get(c)
-                callback(entity, d)
+                if e.force then
+                    entity.force = e.force
+                end
+                if e.amount then
+                    entity.amount = e.amount
+                end
+                if e.callback then
+                    local c = e.callback.callback
+                    if c then
+                        local d = {callback_data = e.callback.data}
+                        if not d then
+                            callback = Token.get(c)
+                            callback(entity)
+                        else
+                            callback = Token.get(c)
+                            callback(entity, d)
+                        end
+                    end
+                end
             end
         end
     end

@@ -206,6 +206,7 @@ local function on_console_command(event)
 
     local commands = {
         ['editor'] = true,
+        ['command'] = true,
         ['silent-command'] = true,
         ['sc'] = true,
         ['debug'] = true
@@ -216,28 +217,19 @@ local function on_console_command(event)
     end
 
     if player then
-        for _, p in pairs(game.connected_players) do
-            if p.admin == true and p.name ~= player.name then
-                if param then
-                    p.print(player.name .. ' ran: ' .. cmd .. ' "' .. param .. '" ' .. server_time, {r = 0.22, g = 0.99, b = 0.99})
-                else
-                    p.print(player.name .. ' ran: ' .. cmd .. server_time, {r = 0.22, g = 0.99, b = 0.99})
-                end
-            end
-        end
         if param then
-            print(player.name .. ' ran: ' .. cmd .. ' "' .. param .. '" ' .. server_time)
+            print('[COMMAND HANDLER] ' .. player.name .. ' ran: ' .. cmd .. ' "' .. param .. '" ' .. server_time)
             return
         else
-            print(player.name .. ' ran: ' .. cmd .. server_time)
+            print('[COMMAND HANDLER] ' .. player.name .. ' ran: ' .. cmd .. server_time)
             return
         end
     else
         if param then
-            print('ran: ' .. cmd .. ' "' .. param .. '" ' .. server_time)
+            print('[COMMAND HANDLER] ran: ' .. cmd .. ' "' .. param .. '" ' .. server_time)
             return
         else
-            print('ran: ' .. cmd .. server_time)
+            print('[COMMAND HANDLER] ran: ' .. cmd .. server_time)
             return
         end
     end

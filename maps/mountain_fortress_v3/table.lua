@@ -192,6 +192,7 @@ function Public.reset_table()
     this.offline_players = {}
     this.collapse_amount = false
     this.collapse_speed = false
+    this.y_value_position = 20
     this.spawn_near_collapse = {
         active = true,
         total_pos = 35,

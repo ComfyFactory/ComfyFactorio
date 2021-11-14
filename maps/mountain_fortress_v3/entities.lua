@@ -689,7 +689,7 @@ local mining_events = {
         'Enemy Compilatron'
     },
     {
-        function(entity, index)
+        function(entity)
             local chest = 'crash-site-chest-' .. random(1, 2)
             if entity.surface.can_place_entity({name = chest, position = entity.position, force = 'neutral'}) then
                 local container = entity.surface.create_entity({name = chest, position = entity.position, force = 'neutral'})
@@ -698,13 +698,6 @@ local mining_events = {
                     container.health = random(1, container.health)
                 end
             end
-            local position = entity.position
-            local surface = entity.surface
-            surface.create_entity({name = 'car', position = position, force = 'player'})
-            Public.unstuck_player(index)
-            local player = game.players[index]
-            local msg = ({'entity.found_car', player.name})
-            Alert.alert_player(player, 15, msg)
         end,
         64,
         'VSMG'

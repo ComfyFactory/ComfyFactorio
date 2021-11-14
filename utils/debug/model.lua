@@ -141,7 +141,12 @@ function Public.dump_text(text, player)
         return false
     end
 
-    return true, dump(var)
+    local dvar = dump(var)
+    if dvar:find('function_handlers') then
+        dvar = '{}' -- desync handler
+    end
+
+    return true, dvar
 end
 
 return Public

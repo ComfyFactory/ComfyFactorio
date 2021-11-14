@@ -18,6 +18,10 @@ function Public.debug_module()
     this.debug = true
 end
 
+function Public.enable_debug()
+    this.debug = true
+end
+
 function Public.reset_wave_defense()
     this.boss_wave = false
     this.boss_wave_warning = false
@@ -50,6 +54,7 @@ function Public.reset_wave_defense()
     this.threat_log = {}
     this.threat_log_index = 0
     this.unit_groups = {}
+    this.unit_groups_size = 0
     this.unit_group_pos = {
         positions = {}
     }

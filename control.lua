@@ -24,6 +24,7 @@ require 'antigrief'
 require 'modules.corpse_markers'
 require 'modules.floaty_chat'
 require 'modules.show_inventory'
+require 'modules.inserter_drops_pickup'
 require 'utils.debug.command'
 
 require 'comfy_panel.main'

@@ -268,7 +268,7 @@ function Public.hazardous_debris()
         end
     end
 
-    for _ = 1, 2 * speed, 1 do
+    for _ = 1, 6 * speed, 1 do
         local position = fallout_debris[random(1, size_of_debris)]
         local p = {x = position[1], y = position[2]}
         local get_tile = surface.get_tile(p)
@@ -277,7 +277,24 @@ function Public.hazardous_debris()
         end
     end
 
-    for _ = 1, 1 * speed, 1 do
+    for _ = 1, 4 * speed, 1 do
+        local position = fallout_debris[random(1, size_of_debris)]
+        local p = {x = position[1], y = position[2]}
+        local get_tile = surface.get_tile(p)
+        if get_tile.valid and get_tile.name == 'out-of-map' then
+            create(
+                {
+                    name = 'atomic-bomb-wave-spawns-nuke-shockwave-explosion',
+                    position = position,
+                    force = 'neutral',
+                    target = {position[1], position[2] + fallout_width * 2},
+                    speed = speed
+                }
+            )
+        end
+    end
+
+    for _ = 1, 6 * speed, 1 do
         local position = fallout_debris[random(1, size_of_debris)]
         local p = {x = position[1], y = position[2]}
         local get_tile = surface.get_tile(p)

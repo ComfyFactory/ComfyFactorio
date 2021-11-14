@@ -508,7 +508,7 @@ function Public.get_heal_modifier_from_using_fish(player)
     end
 
     local base_amount = 80
-    local rng = random(base_amount, base_amount * 4)
+    local rng = random(base_amount, base_amount * rpg_extra.heal_modifier)
     local char = player.character
     local position = player.position
     if char and char.valid then
