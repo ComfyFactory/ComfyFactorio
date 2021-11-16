@@ -1193,9 +1193,8 @@ local function show_mvps(player)
                 RPG_Progression.save_all_players()
             end
             if server_name then
-                local name = Server.get_server_name()
                 local date = Server.get_start_time()
-                game.server_save('Final_' .. name .. '_' .. tostring(date))
+                game.server_save('Final_Mtn_Fortress_v3_' .. tostring(date))
                 --ignore
                 local text = '**Statistics!**\\n\\n' ..
                 'Time played: ' .. time_played ..
