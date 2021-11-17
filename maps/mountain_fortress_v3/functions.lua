@@ -1465,8 +1465,14 @@ function Public.on_research_finished(event)
     disable_tech()
 
     local research = event.research
+    local bonus_drill = game.forces.bonus_drill
+    local player = game.forces.player
 
-    research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 50 -- +5 Slots /
+    research.force.character_inventory_slots_bonus = player.mining_drill_productivity_bonus * 50 -- +5 Slots /
+    bonus_drill.mining_drill_productivity_bonus = bonus_drill.mining_drill_productivity_bonus + 0.1
+    if bonus_drill.mining_drill_productivity_bonus >= 3 then
+        bonus_drill.mining_drill_productivity_bonus = 3
+    end
 
     if research.name == 'steel-axe' then
         local msg = 'Steel-axe technology has been researched, 100% has been applied.\nBuy Pickaxe-upgrades in the market to boost it even more!'

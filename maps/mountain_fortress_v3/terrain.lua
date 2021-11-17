@@ -15,6 +15,11 @@ Public.level_depth = WPT.level_depth
 Public.level_width = WPT.level_width
 local worm_level_modifier = 0.19
 
+local start_ground_tiles = {
+    'black-refined-concrete',
+    'nuclear-ground'
+}
+
 local wagon_raffle = {
     'cargo-wagon',
     'cargo-wagon',
@@ -2400,22 +2405,9 @@ local function border_chunk(p, data)
         entities[#entities + 1] = {name = trees[random(1, #trees)], position = pos}
     end
 
-    local seed = data.seed
-    local small_caves = get_perlin('dungeons', p, seed + 34883)
-    local noise_cave_ponds = get_perlin('cave_ponds', p, seed + 28939)
-    local cave_rivers = get_perlin('cave_rivers', p, seed)
-
-    if small_caves > 0.64 then
-        tiles[#tiles + 1] = {name = 'nuclear-ground', position = pos}
-    end
-    if noise_cave_ponds > 0.33 then
-        tiles[#tiles + 1] = {name = 'red-desert-' .. random(1, 3), position = pos}
-    end
-    if cave_rivers > 0.54 then
-        tiles[#tiles + 1] = {name = 'grass-' .. random(1, 4), position = pos}
-    end
-
-    -- tiles[#tiles + 1] = {name = 'dirt-' .. random(1, 6), position = pos}
+    local noise = get_perlin('dungeons', pos, 14882)
+    local index = floor(noise * 32) % 2 + 1
+    tiles[#tiles + 1] = {name = start_ground_tiles[index], position = pos}
 
     local scrap_mineable_entities, scrap_mineable_entities_index = get_scrap_mineable_entities()
 
@@ -2549,7 +2541,15 @@ Event.add(
         local winter_mode = WPT.get('winter_mode')
         if winter_mode then
             rendering.draw_sprite(
-                {sprite = 'tile/lab-white', x_scale = 32, y_scale = 32, target = left_top, surface = surface, tint = {r = 0.6, g = 0.6, b = 0.6, a = 0.6}, render_layer = 'ground'}
+                {
+                    sprite = 'tile/lab-white',
+                    x_scale = 32,
+                    y_scale = 32,
+                    target = left_top,
+                    surface = surface,
+                    tint = {r = 0.6, g = 0.6, b = 0.6, a = 0.6},
+                    render_layer = 'ground'
+                }
             )
         end
 
@@ -2557,7 +2557,9 @@ Event.add(
             local locomotive = WPT.get('locomotive')
             if locomotive and locomotive.valid then
                 local position = locomotive.position
-                for _, entity in pairs(surface.find_entities_filtered({area = {{position.x - 5, position.y - 6}, {position.x + 5, position.y + 10}}, type = 'simple-entity'})) do
+                for _, entity in pairs(
+                    surface.find_entities_filtered({area = {{position.x - 5, position.y - 6}, {position.x + 5, position.y + 10}}, type = 'simple-entity'})
+                ) do
                     entity.destroy()
                 end
             end
