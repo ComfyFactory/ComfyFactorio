@@ -1203,17 +1203,22 @@ local function on_player_used_capsule(event)
     else
         force = 'player'
     end
+
     if obj_name == 'suicidal_comfylatron' then
         Public.suicidal_comfylatron(position, surface)
         p(({'rpg_main.suicidal_comfylatron', 'Suicidal Comfylatron'}), Color.success)
-        rpg_t.mana = rpg_t.mana - object.mana_cost
+        Public.remove_mana(player, object.mana_cost)
     elseif obj_name == 'repair_aoe' then
         local ents = Public.repair_aoe(player, position)
         p(({'rpg_main.repair_aoe', ents}), Color.success)
-        rpg_t.mana = rpg_t.mana - object.mana_cost
+        Public.remove_mana(player, object.mana_cost)
     elseif obj_name == 'pointy_explosives' then
         local entities =
-            player.surface.find_entities_filtered {force = player.force, type = 'container', area = {{position.x - 1, position.y - 1}, {position.x + 1, position.y + 1}}}
+            player.surface.find_entities_filtered {
+            force = player.force,
+            type = 'container',
+            area = {{position.x - 1, position.y - 1}, {position.x + 1, position.y + 1}}
+        }
 
         local detonate_chest
         for i = 1, #entities do
@@ -1224,7 +1229,7 @@ local function on_player_used_capsule(event)
             local success = Explosives.detonate_chest(detonate_chest)
             if success then
                 player.print(({'rpg_main.detonate_chest'}), Color.success)
-                rpg_t.mana = rpg_t.mana - object.mana_cost
+                Public.remove_mana(player, object.mana_cost)
             else
                 player.print(({'rpg_main.detonate_chest_failed'}), Color.fail)
             end
@@ -1237,15 +1242,14 @@ local function on_player_used_capsule(event)
             pos = game.forces.player.get_spawn_position(surface)
             player.teleport(pos, surface)
         end
-        rpg_t.mana = 0
+        Public.remove_mana(player, 999999)
         Public.damage_player_over_time(player, random(8, 16))
         player.play_sound {path = 'utility/armor_insert', volume_modifier = 1}
         p(({'rpg_main.warped_ok'}), Color.info)
-        rpg_t.mana = rpg_t.mana - object.mana_cost
     elseif obj_name == 'fish' then -- spawn in some fish
         player.insert({name = 'raw-fish', count = object.amount})
         p(({'rpg_main.object_spawned', 'raw-fish'}), Color.success)
-        rpg_t.mana = rpg_t.mana - object.mana_cost
+        Public.remove_mana(player, object.mana_cost)
     elseif projectile_types[obj_name] then -- projectiles
         for i = 1, object.amount do
             local damage_area = {
@@ -1260,17 +1264,17 @@ local function on_player_used_capsule(event)
             end
         end
         p(({'rpg_main.object_spawned', obj_name}), Color.success)
-        rpg_t.mana = rpg_t.mana - object.mana_cost
+        Public.remove_mana(player, object.mana_cost)
     else
         if object.target then -- rockets and such
             surface.create_entity({name = obj_name, position = position, force = force, target = target_pos, speed = 1})
             p(({'rpg_main.object_spawned', obj_name}), Color.success)
-            rpg_t.mana = rpg_t.mana - object.mana_cost
+            Public.remove_mana(player, object.mana_cost)
         elseif surface.can_place_entity {name = obj_name, position = position} then
             if object.biter then
                 local e = surface.create_entity({name = obj_name, position = position, force = force})
                 tame_unit_effects(player, e)
-                rpg_t.mana = rpg_t.mana - object.mana_cost
+                Public.remove_mana(player, object.mana_cost)
             elseif object.aoe then
                 for x = 1, -1, -1 do
                     for y = 1, -1, -1 do
@@ -1281,14 +1285,14 @@ local function on_player_used_capsule(event)
                             end
                             local e = surface.create_entity({name = obj_name, position = pos, force = force})
                             e.direction = player.character.direction
-                            rpg_t.mana = rpg_t.mana - object.mana_cost
+                            Public.remove_mana(player, object.mana_cost)
                         end
                     end
                 end
             else
                 local e = surface.create_entity({name = obj_name, position = position, force = force})
                 e.direction = player.character.direction
-                rpg_t.mana = rpg_t.mana - object.mana_cost
+                Public.remove_mana(player, object.mana_cost)
             end
             p(({'rpg_main.object_spawned', obj_name}), Color.success)
         else

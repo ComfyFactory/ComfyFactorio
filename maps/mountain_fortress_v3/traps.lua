@@ -51,12 +51,10 @@ local function create_kaboom(surface, position, name)
         local rng = random(1, 512)
         local chest = 'crash-site-chest-' .. random(1, 2)
 
-        if surface.can_place_entity({name = chest, position = position, force = 'neutral'}) then
-            local container = surface.create_entity({name = chest, position = position, force = 'neutral'})
-            if container and container.health then
-                container.insert({name = 'coin', count = rng})
-                container.health = random(1, container.health)
-            end
+        local container = surface.create_entity({name = chest, position = position, force = 'neutral'})
+        if container and container.health then
+            container.insert({name = 'coin', count = rng})
+            container.health = random(1, container.health)
         end
         return
     end

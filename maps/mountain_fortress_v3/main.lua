@@ -94,14 +94,25 @@ local collapse_kill = {
     enabled = true
 }
 
-local init_new_force = function()
-    local new_force = game.forces.protectors
+local init_protectors_force = function()
+    local protectors = game.forces.protectors
     local enemy = game.forces.enemy
-    if not new_force then
-        new_force = game.create_force('protectors')
+    if not protectors then
+        protectors = game.create_force('protectors')
     end
-    new_force.set_friend('enemy', true)
+    protectors.set_friend('enemy', true)
     enemy.set_friend('protectors', true)
+end
+
+local init_bonus_drill_force = function()
+    local bonus_drill = game.forces.bonus_drill
+    local player = game.forces.player
+    if not bonus_drill then
+        bonus_drill = game.create_force('bonus_drill')
+    end
+    bonus_drill.set_friend('player', true)
+    player.set_friend('bonus_drill', true)
+    bonus_drill.mining_drill_productivity_bonus = 1
 end
 
 local is_position_near_tbl = function(position, tbl)
@@ -180,7 +191,8 @@ function Public.reset_map()
     Group.alphanumeric_only(false)
 
     Functions.disable_tech()
-    init_new_force()
+    init_protectors_force()
+    init_bonus_drill_force()
 
     local surface = game.surfaces[this.active_surface_index]
 

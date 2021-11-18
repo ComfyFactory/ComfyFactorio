@@ -272,6 +272,56 @@ function Public.validate_player(player)
     return true
 end
 
+function Public.remove_mana(player, mana_to_remove)
+    local rpg_extra = Public.get('rpg_extra')
+    local rpg_t = Public.get_value_from_player(player.index)
+    if not rpg_extra.enable_mana then
+        return
+    end
+
+    if not mana_to_remove then
+        return
+    end
+
+    mana_to_remove = floor(mana_to_remove)
+
+    if not rpg_t then
+        return
+    end
+
+    if rpg_t.debug_mode then
+        rpg_t.mana = 9999
+        return
+    end
+
+    if player.gui.screen[main_frame_name] then
+        local f = player.gui.screen[main_frame_name]
+        local data = Gui.get_data(f)
+        if data.mana and data.mana.valid then
+            data.mana.caption = rpg_t.mana
+        end
+    end
+
+    rpg_t.mana = rpg_t.mana - mana_to_remove
+
+    if rpg_t.mana < 0 then
+        rpg_t.mana = 0
+        return
+    end
+
+    if player.gui.screen[spell_gui_frame_name] then
+        local f = player.gui.screen[spell_gui_frame_name]
+        if f['spell_table'] then
+            if f['spell_table']['mana'] then
+                f['spell_table']['mana'].caption = math.floor(rpg_t.mana)
+            end
+            if f['spell_table']['maxmana'] then
+                f['spell_table']['maxmana'].caption = math.floor(rpg_t.mana_max)
+            end
+        end
+    end
+end
+
 function Public.update_mana(player)
     local rpg_extra = Public.get('rpg_extra')
     local rpg_t = Public.get_value_from_player(player.index)

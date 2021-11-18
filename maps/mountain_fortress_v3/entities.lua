@@ -691,12 +691,10 @@ local mining_events = {
     {
         function(entity)
             local chest = 'crash-site-chest-' .. random(1, 2)
-            if entity.surface.can_place_entity({name = chest, position = entity.position, force = 'neutral'}) then
-                local container = entity.surface.create_entity({name = chest, position = entity.position, force = 'neutral'})
-                if container and container.health then
-                    container.insert({name = 'vehicle-machine-gun', count = 1})
-                    container.health = random(1, container.health)
-                end
+            local container = entity.surface.create_entity({name = chest, position = entity.position, force = 'neutral'})
+            if container and container.health then
+                container.insert({name = 'vehicle-machine-gun', count = 1})
+                container.health = random(1, container.health)
             end
         end,
         64,
@@ -1337,6 +1335,11 @@ local function on_built_entity(event)
         return
     end
 
+    if entity.type == 'mining-drill' then
+        entity.force = 'bonus_drill'
+        return
+    end
+
     local upgrades = WPT.get('upgrades')
 
     local upg = upgrades
@@ -1402,6 +1405,11 @@ local function on_robot_built_entity(event)
     local map_name = 'mountain_fortress_v3'
 
     if string.sub(entity.surface.name, 0, #map_name) ~= map_name then
+        return
+    end
+
+    if entity.type == 'mining-drill' then
+        entity.force = 'bonus_drill'
         return
     end
 

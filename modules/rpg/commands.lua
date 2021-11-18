@@ -183,14 +183,15 @@ if _DEBUG then
                 data[k].dexterity = 999
                 data[k].enable_entity_spawn = true
                 data[k].explosive_bullets = true
-                data[k].level = 500
+                data[k].level = 1000
                 data[k].magicka = 999
                 data[k].mana = 50000
                 data[k].mana_max = 50000
+                data[k].debug_mode = true
                 data[k].one_punch = true
                 data[k].stone_path = true
-                data[k].strength = 999
-                data[k].vitality = 999
+                data[k].strength = 3000
+                data[k].vitality = 3000
                 data[k].xp = 456456
                 local p = game.get_player(k)
                 if p and p.valid then
