@@ -86,7 +86,12 @@ local function find_initial_spot(surface, position)
         end
 
         if math_random(1, 2) == 1 then
-            local random_pos = {{x = pos.x - 10, y = pos.y - 5}, {x = pos.x + 10, y = pos.y + 5}, {x = pos.x - 10, y = pos.y + 5}, {x = pos.x + 10, y = pos.y - 5}}
+            local random_pos = {
+                {x = pos.x - 10, y = pos.y - 5},
+                {x = pos.x + 10, y = pos.y + 5},
+                {x = pos.x - 10, y = pos.y + 5},
+                {x = pos.x + 10, y = pos.y - 5}
+            }
             local actual_pos = shuffle(random_pos)
             pos = {x = actual_pos[1].x, y = actual_pos[1].y}
         end
@@ -261,6 +266,7 @@ local function is_unit_valid(biter)
 end
 
 local function refresh_active_unit_threat()
+    local unit_group_pos = Public.get('unit_group_pos')
     local active_biter_threat = Public.get('active_biter_threat')
     local active_biters = Public.get('active_biters')
     debug_print('refresh_active_unit_threat - current value ' .. active_biter_threat)
@@ -275,6 +281,10 @@ local function refresh_active_unit_threat()
     local biter_health_boost = BiterHealthBooster.get('biter_health_boost')
     Public.set('active_biter_threat', math_round(biter_threat * biter_health_boost, 2))
     debug_print('refresh_active_unit_threat - new value ' .. active_biter_threat)
+    if unit_group_pos.index > 500 then
+        unit_group_pos.positions = {}
+        unit_group_pos.index = 0
+    end
 end
 
 local function time_out_biters()
@@ -327,7 +337,11 @@ local function get_random_close_spawner()
             end
             goto retry
         end
-        if not spawner or (center.x - spawner_2.position.x) ^ 2 + (center.y - spawner_2.position.y) ^ 2 < (center.x - spawner.position.x) ^ 2 + (center.y - spawner.position.y) ^ 2 then
+        if
+            not spawner or
+                (center.x - spawner_2.position.x) ^ 2 + (center.y - spawner_2.position.y) ^ 2 <
+                    (center.x - spawner.position.x) ^ 2 + (center.y - spawner.position.y) ^ 2
+         then
             spawner = spawner_2
             if spawner and spawner.position then
                 debug_print('get_random_close_spawner - Found at x' .. spawner.position.x .. ' y' .. spawner.position.y)
@@ -379,7 +393,9 @@ local function set_main_target()
     end
 
     Public.set('target', sec_target)
-    debug_print('set_main_target -- New main target ' .. sec_target.name .. ' at position x' .. sec_target.position.x .. ' y' .. sec_target.position.y .. ' selected.')
+    debug_print(
+        'set_main_target -- New main target ' .. sec_target.name .. ' at position x' .. sec_target.position.x .. ' y' .. sec_target.position.y .. ' selected.'
+    )
 end
 
 local function set_group_spawn_position(surface)
@@ -398,27 +414,25 @@ end
 
 local function set_enemy_evolution()
     local wave_number = Public.get('wave_number')
-    local biter_health_boost = Public.get('biter_health_boost')
+    local active_biters = Public.get('active_biters')
     local threat = Public.get('threat')
     local evolution_factor = wave_number * 0.001
-    local biter_h_boost = 1
     local enemy = game.forces.enemy
+    local biter_health_boost = 1
 
     if evolution_factor > 1 then
         evolution_factor = 1
     end
 
-    if biter_health_boost then
-        biter_h_boost = math_round(biter_health_boost + (threat - 5000) * 0.000044, 3)
-    else
-        biter_h_boost = math_round(biter_h_boost + (threat - 5000) * 0.000044, 3)
-    end
-    if biter_h_boost <= 1 then
-        biter_h_boost = 1
+    if not next(active_biters) then
+        Public.set('active_biter_count', 0)
     end
 
-    BiterHealthBooster.set('biter_health_boost', biter_h_boost)
-    Public.set('biter_health_boost', biter_h_boost)
+    if threat > 50000 then
+        biter_health_boost = math_round(biter_health_boost + (threat - 50000) * 0.000033, 3)
+    end
+
+    BiterHealthBooster.set('biter_health_boost', biter_health_boost)
 
     if enemy.evolution_factor == 1 and evolution_factor == 1 then
         return
@@ -455,6 +469,7 @@ end
 
 local function get_active_unit_groups_count()
     local unit_groups = Public.get('unit_groups')
+    local unit_group_pos = Public.get('unit_group_pos')
     local count = 0
 
     for k, g in pairs(unit_groups) do
@@ -469,16 +484,12 @@ local function get_active_unit_groups_count()
             end
         else
             unit_groups[k] = nil
+            unit_group_pos.positions[k] = nil
             local unit_groups_size = Public.get('unit_groups_size')
             Public.set('unit_groups_size', unit_groups_size - 1)
             local unit_group_last_command = Public.get('unit_group_last_command')
             if unit_group_last_command[k] then
                 unit_group_last_command[k] = nil
-            end
-            local unit_group_pos = Public.get('unit_group_pos')
-            local positions = unit_group_pos.positions
-            if positions[k] then
-                positions[k] = nil
             end
         end
     end
@@ -527,7 +538,7 @@ local function spawn_biter(surface, position, forceSpawn, is_boss_biter)
         local increase_boss_health_per_wave = Public.get('increase_boss_health_per_wave')
         if increase_boss_health_per_wave then
             local modified_boss_unit_health = Public.get('modified_boss_unit_health')
-            BiterHealthBooster.add_boss_unit(biter, modified_boss_unit_health, 0.55)
+            BiterHealthBooster.add_boss_unit(biter, modified_boss_unit_health.current_value, 0.55)
         else
             local sum = boosted_health * 5
             debug_print('Boss Health Boosted: ' .. sum)
@@ -569,8 +580,8 @@ local function increase_biters_health()
         return
     end
 
-    local boosted_health = BiterHealthBooster.get('biter_health_boost')
-    local wave_number = Public.get('wave_number')
+    -- local boosted_health = BiterHealthBooster.get('biter_health_boost')
+    -- local wave_number = Public.get('wave_number')
 
     -- this sets normal units health
     local modified_unit_health = Public.get('modified_unit_health')
@@ -581,17 +592,24 @@ local function increase_biters_health()
     Public.set('modified_unit_health').current_value = modified_unit_health.current_value + modified_unit_health.health_increase_per_boss_wave
 
     -- this sets boss units health
-    if boosted_health == 1 then
-        boosted_health = 1.25
-    end
+    -- if boosted_health == 1 then
+    --     boosted_health = 1.25
+    -- end
 
-    boosted_health = math_round(boosted_health * (wave_number * 0.04), 3)
-    debug_print_health('boosted_health: ' .. boosted_health)
-    if boosted_health >= 300 then
-        boosted_health = 300
-    end
+    -- boosted_health = math_round(boosted_health * (wave_number * 0.04), 3)
+    -- debug_print_health('boosted_health: ' .. boosted_health)
+    -- if boosted_health >= 300 then
+    --     boosted_health = 300
+    -- end
+    -- Public.set('modified_boss_unit_health', boosted_health)
 
-    Public.set('modified_boss_unit_health', boosted_health)
+    -- this sets boss units health
+    local modified_boss_unit_health = Public.get('modified_boss_unit_health')
+    if modified_boss_unit_health.current_value > modified_boss_unit_health.limit_value then
+        modified_boss_unit_health.current_value = modified_boss_unit_health.limit_value
+    end
+    debug_print_health('modified_boss_unit_health.current_value: ' .. modified_boss_unit_health.current_value)
+    Public.set('modified_boss_unit_health').current_value = modified_boss_unit_health.current_value + modified_boss_unit_health.health_increase_per_boss_wave
 end
 
 local function set_next_wave()
@@ -994,6 +1012,7 @@ local function spawn_unit_group(fs, only_bosses)
 
     local unit_group_pos = Public.get('unit_group_pos')
     local unit_group = surface.create_unit_group({position = spawn_position, force = 'enemy'})
+    unit_group_pos.index = unit_group_pos.index + 1
     unit_group_pos.positions[unit_group.group_number] = {position = unit_group.position, index = 0}
     local average_unit_group_size = Public.get('average_unit_group_size')
     local group_size = math_floor(average_unit_group_size * group_size_modifier_raffle[math_random(1, group_size_modifier_raffle_size)])
