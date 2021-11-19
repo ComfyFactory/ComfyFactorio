@@ -2,6 +2,7 @@
 -- modified by gerkiz
 
 local Global = require 'utils.global'
+local SpamProtection = require 'utils.spam_protection'
 local Event = require 'utils.event'
 local BottomFrame = require 'comfy_panel.bottom_frame'
 local floor = math.floor
@@ -289,7 +290,6 @@ local function insert_to_furnace(player_inventory, chests, name, count, floaty_t
 end
 
 local function insert_into_wagon(stack, chests, name, floaty_text_list)
-
     -- Attempt to load filtered cargo wagon
     for chestnr, chest in pairs(chests.chest) do
         if chest.type == 'cargo-wagon' then
@@ -307,7 +307,6 @@ local function insert_into_wagon(stack, chests, name, floaty_text_list)
 end
 
 local function insert_into_wagon_filtered(stack, chests, name, floaty_text_list)
-
     -- Attempt to load filtered cargo wagon
     for chestnr, chest in pairs(chests.chest) do
         if chest.type == 'cargo-wagon' then
@@ -552,7 +551,8 @@ local function create_gui_button(player)
         tooltip =
             'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.\nSHIFT+LMB: Everything onto filtered slots to wagon.\nSHIFT+RMB: Only ores to wagon'
     else
-        tooltip = 'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.'
+        tooltip =
+            'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.'
     end
     if this.bottom_button then
         local data = BottomFrame.get('bottom_quickbar_button')
@@ -634,6 +634,10 @@ local function on_gui_click(event)
     end
 
     if event.element.name == name then
+        local is_spamming = SpamProtection.is_spamming(player, nil, 'Autostash Click')
+        if is_spamming then
+            return
+        end
         auto_stash(player, event)
     end
 end
