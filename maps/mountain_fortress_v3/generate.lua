@@ -346,7 +346,7 @@ local function do_place_entities(data)
                 if entity then
                     if e.note then
                         local modified_unit_health = WD.get('modified_unit_health')
-                        BiterHealthBooster.add_unit(entity, modified_unit_health.current_value)
+                        BiterHealthBooster.add_unit(entity, modified_unit_health.current_value + 1)
                     end
                     wintery(entity)
                     if e.direction then
@@ -379,7 +379,7 @@ local function do_place_entities(data)
             if entity then
                 if e.note then
                     local modified_unit_health = WD.get('modified_unit_health')
-                    BiterHealthBooster.add_unit(entity, modified_unit_health.current_value)
+                    BiterHealthBooster.add_unit(entity, modified_unit_health.current_value + 1)
                 end
                 wintery(entity)
                 if e.direction then

@@ -50,6 +50,9 @@ local function get_coin_count(entity)
     if not biter_health_boost_units[unit_number][3] then
         return coin_count
     end
+    if not biter_health_boost_units[unit_number][3].healthbar_id then -- only bosses
+        return coin_count
+    end
     local m = 1 / biter_health_boost_units[unit_number][2]
     coin_count = floor(coin_count * m)
     if coin_count < 1 then

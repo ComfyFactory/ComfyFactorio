@@ -91,7 +91,7 @@ local function place_nest_near_unit_group()
 
     local spawner = unit.surface.create_entity({name = name, position = position, force = unit.force})
     if boss then
-        BiterHealthBooster.add_boss_unit(spawner, modified_boss_unit_health)
+        BiterHealthBooster.add_boss_unit(spawner, modified_boss_unit_health.current_value)
     else
         BiterHealthBooster.add_unit(spawner, modified_unit_health.current_value)
     end
@@ -188,7 +188,7 @@ function Public.build_worm()
     local modified_boss_unit_health = Public.get('modified_boss_unit_health')
 
     if boss then
-        BiterHealthBooster.add_boss_unit(u, modified_boss_unit_health)
+        BiterHealthBooster.add_boss_unit(u, modified_boss_unit_health.current_value)
     else
         BiterHealthBooster.add_unit(u, modified_unit_health.current_value)
     end

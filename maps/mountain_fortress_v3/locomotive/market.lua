@@ -1342,9 +1342,13 @@ local function create_market(data, rebuild)
     this.market = surface.create_entity {name = 'market', position = center_position, force = 'player'}
 
     if this.mystical_chest_enabled then
+        if this.mystical_chest and this.mystical_chest.entity then
+            this.mystical_chest.entity.destroy()
+            this.mystical_chest.entity = nil
+        end
+
         this.mystical_chest = {
-            entity = surface.create_entity {name = 'logistic-chest-requester', position = {x = center_position.x, y = center_position.y + 2}, force = 'neutral'},
-            price = false
+            entity = surface.create_entity {name = 'logistic-chest-requester', position = {x = center_position.x, y = center_position.y + 2}, force = 'neutral'}
         }
         this.mystical_chest.entity.minable = false
         this.mystical_chest.entity.destructible = false

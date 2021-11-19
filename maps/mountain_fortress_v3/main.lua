@@ -112,7 +112,7 @@ local init_bonus_drill_force = function()
     end
     bonus_drill.set_friend('player', true)
     player.set_friend('bonus_drill', true)
-    bonus_drill.mining_drill_productivity_bonus = 1
+    bonus_drill.mining_drill_productivity_bonus = 0.5
 end
 
 local is_position_near_tbl = function(position, tbl)
@@ -274,7 +274,7 @@ function Public.reset_map()
     WD.alert_boss_wave(true)
     WD.clear_corpses(false)
     WD.remove_entities(true)
-    WD.enable_threat_log(true)
+    WD.enable_threat_log(false) -- creates waaaay to many entries in the global table
     WD.check_collapse_position(true)
     WD.set_disable_threat_below_zero(true)
     WD.increase_boss_health_per_wave(true)
