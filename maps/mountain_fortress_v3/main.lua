@@ -112,7 +112,7 @@ local init_bonus_drill_force = function()
     end
     bonus_drill.set_friend('player', true)
     player.set_friend('bonus_drill', true)
-    bonus_drill.mining_drill_productivity_bonus = 1
+    bonus_drill.mining_drill_productivity_bonus = 0.5
 end
 
 local is_position_near_tbl = function(position, tbl)
