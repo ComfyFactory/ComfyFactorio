@@ -86,17 +86,36 @@ local function on_gui_click(event)
     end
 
     if shift then
-        local count = rpg_t.points_left
-        if not count then
-            return
+        if event.button == defines.mouse_button_type.left then
+            local count = rpg_t.points_left
+            if not count then
+                return
+            end
+            rpg_t.points_left = 0
+            rpg_t[index] = rpg_t[index] + count
+            if not rpg_t.reset then
+                rpg_t.total = rpg_t.total + count
+            end
+            Public.toggle(player, true)
+            Public.update_player_stats(player)
+        elseif event.button == defines.mouse_button_type.right then
+            local left = rpg_t.points_left / 2
+            if left > 2 then
+                for _ = 1, left, 1 do
+                    if rpg_t.points_left <= 0 then
+                        Public.toggle(player, true)
+                        return
+                    end
+                    rpg_t.points_left = rpg_t.points_left - 1
+                    rpg_t[index] = rpg_t[index] + 1
+                    if not rpg_t.reset then
+                        rpg_t.total = rpg_t.total + 1
+                    end
+                    Public.update_player_stats(player)
+                end
+            end
+            Public.toggle(player, true)
         end
-        rpg_t.points_left = 0
-        rpg_t[index] = rpg_t[index] + count
-        if not rpg_t.reset then
-            rpg_t.total = rpg_t.total + count
-        end
-        Public.toggle(player, true)
-        Public.update_player_stats(player)
     elseif event.button == defines.mouse_button_type.right then
         for _ = 1, points_per_level, 1 do
             if rpg_t.points_left <= 0 then
@@ -590,8 +609,8 @@ local function one_punch(character, target, damage, get_health_pool)
                                         if max_unit_health <= 0 then
                                             max_unit_health = 4
                                         end
-                                        if max_unit_health >= 15 then
-                                            max_unit_health = 15
+                                        if max_unit_health >= 10 then
+                                            max_unit_health = 10
                                         end
                                         local final = floor(damage * max_unit_health)
                                         character.surface.create_entity(
