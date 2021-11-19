@@ -1123,7 +1123,6 @@ function Public.boost_difficulty()
         WPT.set('bonus_xp_on_join', 500)
         WD.set('next_wave', game.tick + 3600 * 15)
         WPT.set('spidertron_unlocked_at_zone', 10)
-        WD.set_biter_health_boost(1.50)
         unit_modifiers.limit_value = 30
         unit_modifiers.health_increase_per_boss_wave = 0.04
         WPT.set('difficulty_set', true)
@@ -1141,7 +1140,6 @@ function Public.boost_difficulty()
         WPT.set('spidertron_unlocked_at_zone', 8)
         unit_modifiers.limit_value = 40
         unit_modifiers.health_increase_per_boss_wave = 0.06
-        WD.set_biter_health_boost(2)
         WPT.set('difficulty_set', true)
     elseif name == 'Ultra-violence' then
         force.character_running_speed_modifier = 0
@@ -1156,7 +1154,6 @@ function Public.boost_difficulty()
         WPT.set('spidertron_unlocked_at_zone', 6)
         unit_modifiers.limit_value = 50
         unit_modifiers.health_increase_per_boss_wave = 0.08
-        WD.set_biter_health_boost(4)
         WPT.set('difficulty_set', true)
     end
 end
