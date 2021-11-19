@@ -274,7 +274,7 @@ function Public.reset_map()
     WD.alert_boss_wave(true)
     WD.clear_corpses(false)
     WD.remove_entities(true)
-    WD.enable_threat_log(true)
+    WD.enable_threat_log(false) -- creates waaaay to many entries in the global table
     WD.check_collapse_position(true)
     WD.set_disable_threat_below_zero(true)
     WD.increase_boss_health_per_wave(true)
