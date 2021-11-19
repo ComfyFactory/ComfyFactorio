@@ -46,6 +46,7 @@ function Public.reset_wave_defense()
     this.unit_groups = {}
     this.unit_groups_size = 0
     this.unit_group_pos = {
+        index = 0,
         positions = {}
     }
     this.index = 0
@@ -60,7 +61,6 @@ function Public.reset_wave_defense()
     this.worm_building_density = 16
     this.worm_raffle = {}
     this.clear_corpses = false
-    this.biter_health_boost = 1
     this.alert_boss_wave = false
     this.remove_entities = false
     this.enable_side_target = false
@@ -74,8 +74,13 @@ function Public.reset_wave_defense()
     this.fill_tiles_so_biter_can_path = true
     this.modified_unit_health = {
         current_value = 1.02,
-        limit_value = 30,
-        health_increase_per_boss_wave = 0.04
+        limit_value = 60,
+        health_increase_per_boss_wave = 0.08
+    }
+    this.modified_boss_unit_health = {
+        current_value = 2.00,
+        limit_value = 500,
+        health_increase_per_boss_wave = 0.15
     }
 end
 
@@ -207,15 +212,6 @@ function Public.increase_damage_per_wave(boolean)
         this.increase_damage_per_wave = boolean
     end
     return this.increase_damage_per_wave
-end
-
-function Public.set_biter_health_boost(number)
-    if number and type(number) == 'number' then
-        this.biter_health_boost = number
-    else
-        this.biter_health_boost = 1
-    end
-    return this.biter_health_boost
 end
 
 function Public.pause(boolean)
