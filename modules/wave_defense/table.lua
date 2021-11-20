@@ -73,8 +73,8 @@ function Public.reset_wave_defense()
     this.increase_health_per_wave = false
     this.fill_tiles_so_biter_can_path = true
     this.modified_unit_health = {
-        current_value = 1.02,
-        limit_value = 60,
+        current_value = 1.2,
+        limit_value = 90,
         health_increase_per_boss_wave = 0.08
     }
     this.modified_boss_unit_health = {
@@ -212,6 +212,22 @@ function Public.increase_damage_per_wave(boolean)
         this.increase_damage_per_wave = boolean
     end
     return this.increase_damage_per_wave
+end
+
+function Public.set_normal_unit_current_health(int)
+    this.modified_unit_health.current_value = int or 1.2
+end
+
+function Public.set_boss_unit_current_health(int)
+    this.modified_boss_unit_health.current_value = int or 2
+end
+
+function Public.set_normal_unit_current_per_wave(int)
+    this.modified_unit_health.health_increase_per_boss_wave = int or 0.08
+end
+
+function Public.set_boss_unit_current_per_wave(int)
+    this.modified_boss_unit_health.health_increase_per_boss_wave = int or 0.15
 end
 
 function Public.pause(boolean)

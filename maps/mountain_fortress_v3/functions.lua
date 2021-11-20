@@ -1123,6 +1123,10 @@ function Public.boost_difficulty()
         WPT.set('bonus_xp_on_join', 500)
         WD.set('next_wave', game.tick + 3600 * 15)
         WPT.set('spidertron_unlocked_at_zone', 10)
+        WD.set_normal_unit_current_health(1.2)
+        WD.set_normal_unit_current_per_wave(0.08)
+        WD.set_boss_unit_current_health(2)
+        WD.set_boss_unit_current_per_wave(0.15)
         unit_modifiers.limit_value = 30
         unit_modifiers.health_increase_per_boss_wave = 0.04
         WPT.set('difficulty_set', true)
@@ -1138,6 +1142,10 @@ function Public.boost_difficulty()
         WPT.set('bonus_xp_on_join', 300)
         WD.set('next_wave', game.tick + 3600 * 8)
         WPT.set('spidertron_unlocked_at_zone', 8)
+        WD.set_normal_unit_current_health(1.6)
+        WD.set_normal_unit_current_per_wave(0.12)
+        WD.set_boss_unit_current_health(3)
+        WD.set_boss_unit_current_per_wave(0.20)
         unit_modifiers.limit_value = 40
         unit_modifiers.health_increase_per_boss_wave = 0.06
         WPT.set('difficulty_set', true)
@@ -1151,6 +1159,10 @@ function Public.boost_difficulty()
         WPT.set('locomotive_max_health', 5000)
         WPT.set('bonus_xp_on_join', 50)
         WD.set('next_wave', game.tick + 3600 * 5)
+        WD.set_normal_unit_current_health(2)
+        WD.set_normal_unit_current_per_wave(0.2)
+        WD.set_boss_unit_current_health(4)
+        WD.set_boss_unit_current_per_wave(0.4)
         WPT.set('spidertron_unlocked_at_zone', 6)
         unit_modifiers.limit_value = 50
         unit_modifiers.health_increase_per_boss_wave = 0.08

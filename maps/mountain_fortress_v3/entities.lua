@@ -1153,7 +1153,8 @@ local function show_mvps(player)
         local miners_label = t.add({type = 'label', caption = 'Miners >> '})
         miners_label.style.font = 'default-listbox'
         miners_label.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-        local miners_label_text = t.add({type = 'label', caption = mvp.mined_entities.name .. ' mined a total of  ' .. mvp.mined_entities.score .. ' entities!'})
+        local miners_label_text =
+            t.add({type = 'label', caption = mvp.mined_entities.name .. ' mined a total of  ' .. mvp.mined_entities.score .. ' entities!'})
         miners_label_text.style.font = 'default-bold'
         miners_label_text.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 
@@ -1335,7 +1336,12 @@ local function on_built_entity(event)
         return
     end
 
-    if entity.type == 'mining-drill' then
+    local valid_drills = {
+        ['burner-mining-drill'] = true,
+        ['electric-mining-drill'] = true
+    }
+
+    if valid_drills[entity.name] then
         entity.force = 'bonus_drill'
         return
     end
@@ -1408,7 +1414,12 @@ local function on_robot_built_entity(event)
         return
     end
 
-    if entity.type == 'mining-drill' then
+    local valid_drills = {
+        ['burner-mining-drill'] = true,
+        ['electric-mining-drill'] = true
+    }
+
+    if valid_drills[entity.name] then
         entity.force = 'bonus_drill'
         return
     end
