@@ -96,8 +96,13 @@ local set_loco_tiles =
             if not p[i] then
                 break
             end
-            if surface.can_place_entity({name = 'wooden-chest', position = p[i]}) then
-                local e = surface.create_entity({name = 'wooden-chest', position = p[i], force = 'player', create_build_effect_smoke = false})
+            local name = 'wooden-chest'
+
+            if random(1, 3) == 1 then
+                name = 'iron-chest'
+            end
+            if surface.can_place_entity({name = name, position = p[i]}) then
+                local e = surface.create_entity({name = name, position = p[i], force = 'player', create_build_effect_smoke = false})
                 e.minable = false
                 local inventory = e.get_inventory(defines.inventory.chest)
                 inventory.insert(cargo_boxes[i])
