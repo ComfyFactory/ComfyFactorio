@@ -738,7 +738,10 @@ Gui.on_click(
 
         if not misc_settings[player.index].final_warning then
             misc_settings[player.index].final_warning = true
-            player.print('[IC] WARNING! WARNING WARNING! Pressing the save button ONE MORE TIME will DELETE your surface. This action is irreversible!', Color.red)
+            player.print(
+                '[IC] WARNING! WARNING WARNING! Pressing the save button ONE MORE TIME will DELETE your surface. This action is irreversible!',
+                Color.red
+            )
             Task.set_timeout_in_ticks(600, clear_misc_settings, {player_index = player.index})
             return
         end

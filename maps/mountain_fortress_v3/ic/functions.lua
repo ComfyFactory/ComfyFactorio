@@ -375,7 +375,10 @@ local function kick_players_from_surface(car)
         if validate_entity(main_surface) then
             for _, e in pairs(surface.find_entities_filtered({area = car.area})) do
                 if validate_entity(e) and e.name == 'character' and e.player then
-                    e.player.teleport(main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0, 5), main_surface)
+                    e.player.teleport(
+                        main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0, 5),
+                        main_surface
+                    )
                 end
             end
             check_if_players_are_in_nauvis()
@@ -420,7 +423,10 @@ local function kick_player_from_surface(player, target)
                 if p then
                     target.teleport(p, car.entity.surface)
                 else
-                    target.teleport(main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0, 5), main_surface)
+                    target.teleport(
+                        main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0, 5),
+                        main_surface
+                    )
                 end
                 target.print('You were kicked out of ' .. player.name .. ' vehicle.', Color.warning)
             end
@@ -642,7 +648,9 @@ local find_remove_car =
             return
         end
 
-        for _, dropped_ent in pairs(surface.find_entities_filtered {type = 'item-entity', area = {{position.x - 10, position.y - 10}, {position.x + 10, position.y + 10}}}) do
+        for _, dropped_ent in pairs(
+            surface.find_entities_filtered {type = 'item-entity', area = {{position.x - 10, position.y - 10}, {position.x + 10, position.y + 10}}}
+        ) do
             if dropped_ent and dropped_ent.valid and dropped_ent.stack then
                 if types[dropped_ent.stack.name] then
                     dropped_ent.destroy()

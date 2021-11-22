@@ -33,6 +33,10 @@ function Public.reset_wave_defense()
     this.nests = {}
     this.nest_building_density = 48
     this.next_wave = game.tick + 3600 * 15
+    this.enable_grace_time = {
+        enabled = true,
+        set = nil
+    }
     this.side_targets = {}
     this.simple_entity_shredding_cost_modifier = 0.009
     this.spawn_position = {x = 0, y = 64}
@@ -75,15 +79,17 @@ function Public.reset_wave_defense()
     this.modified_unit_health = {
         current_value = 1.2,
         limit_value = 90,
-        health_increase_per_boss_wave = 0.08
+        health_increase_per_boss_wave = 0.5 -- wave % 25 == 0 at wave 2k boost is at 41.2
     }
     this.modified_boss_unit_health = {
-        current_value = 2.00,
+        current_value = 2,
         limit_value = 500,
-        health_increase_per_boss_wave = 0.15
+        health_increase_per_boss_wave = 4 -- wave % 25 == 0 at wave 2k boost is at 322
     }
 end
 
+--- This gets values from our table
+-- @param key <string>
 function Public.get(key)
     if key then
         return this[key]
@@ -92,6 +98,10 @@ function Public.get(key)
     end
 end
 
+--- This sets values to our table
+-- use with caution.
+-- @param key <string>
+-- @param value <string/boolean/int>
 function Public.set(key, value)
     if key and (value or value == false or value == 'nil') then
         if value == 'nil' then
@@ -107,23 +117,31 @@ function Public.set(key, value)
     end
 end
 
+--- Legacy, to be removed
 Public.get_table = Public.get
 
-function Public.clear_corpses(value)
-    if (value or value == false) then
-        this.clear_corpses = value
-    end
+--- This sets if we should clear dead corpses on ground
+-- on each wave we spawn
+-- @param <boolean>
+function Public.clear_corpses(boolean)
+    this.clear_corpses = boolean or false
     return this.clear_corpses
 end
 
+--- This gets the status of the current wave
+-- @param <null>
 function Public.get_wave()
     return this.wave_number
 end
 
+--- This gets the status of disable_threat_below_zero
+-- @param <null>
 function Public.get_disable_threat_below_zero()
     return this.disable_threat_below_zero
 end
 
+--- This sets if we should disable threat below zero
+-- @param <boolean>
 function Public.set_disable_threat_below_zero(boolean)
     if (boolean or boolean == false) then
         this.disable_threat_below_zero = boolean
@@ -131,10 +149,15 @@ function Public.set_disable_threat_below_zero(boolean)
     return this.disable_threat_below_zero
 end
 
+--- This gets the status of alert_boss_wave
+-- @param <null>
 function Public.get_alert_boss_wave()
     return this.get_alert_boss_wave
 end
 
+--- This sets if we should alert the players
+-- when we spawn a boss wave
+-- @param <boolean>
 function Public.alert_boss_wave(boolean)
     if (boolean or boolean == false) then
         this.alert_boss_wave = boolean
@@ -142,6 +165,9 @@ function Public.alert_boss_wave(boolean)
     return this.alert_boss_wave
 end
 
+--- This sets the spawning position of where
+-- we will spawn the entities.
+-- @param <tbl>
 function Public.set_spawn_position(tbl)
     if type(tbl) == 'table' then
         this.spawn_position = tbl
@@ -151,6 +177,9 @@ function Public.set_spawn_position(tbl)
     return this.spawn_position
 end
 
+--- This sets if we should remove colliding entities
+-- when we spawn entities.
+-- @param <boolean>
 function Public.remove_entities(boolean)
     if (boolean or boolean == false) then
         this.remove_entities = boolean
@@ -158,13 +187,10 @@ function Public.remove_entities(boolean)
     return this.remove_entities
 end
 
-function Public.increase_health_per_wave(boolean)
-    if (boolean or boolean == false) then
-        this.increase_health_per_wave = boolean
-    end
-    return this.increase_health_per_wave
-end
-
+--- This sets if the threat gui should be present for the players
+-- Warning - this creates a lot of entries in the global table
+-- and makes save/load heavy.
+-- @param <boolean>
 function Public.enable_threat_log(boolean)
     if (boolean or boolean == false) then
         this.enable_threat_log = boolean
@@ -172,6 +198,9 @@ function Public.enable_threat_log(boolean)
     return this.enable_threat_log
 end
 
+--- This sets if we should spawn the unit near collapse
+-- That is, if collapse module is enabled
+-- @param <boolean>
 function Public.check_collapse_position(boolean)
     if (boolean or boolean == false) then
         this.check_collapse_position = boolean
@@ -179,6 +208,8 @@ function Public.check_collapse_position(boolean)
     return this.check_collapse_position
 end
 
+--- This sets if the units/bosses should try to pick side-targets.
+-- @param <boolean>
 function Public.enable_side_target(boolean)
     if (boolean or boolean == false) then
         this.enable_side_target = boolean
@@ -186,6 +217,17 @@ function Public.enable_side_target(boolean)
     return this.enable_side_target
 end
 
+--- This sets if the units health should increase.
+-- @param <boolean>
+function Public.increase_health_per_wave(boolean)
+    if (boolean or boolean == false) then
+        this.increase_health_per_wave = boolean
+    end
+    return this.increase_health_per_wave
+end
+
+--- This sets if the bosses health should increase.
+-- @param <boolean>
 function Public.increase_boss_health_per_wave(boolean)
     if (boolean or boolean == false) then
         this.increase_boss_health_per_wave = boolean
@@ -193,6 +235,8 @@ function Public.increase_boss_health_per_wave(boolean)
     return this.increase_boss_health_per_wave
 end
 
+--- This checks if units are stuck, if they are - act.
+-- @param <boolean>
 function Public.resolve_pathing(boolean)
     if (boolean or boolean == false) then
         this.resolve_pathing = boolean
@@ -200,6 +244,8 @@ function Public.resolve_pathing(boolean)
     return this.resolve_pathing
 end
 
+--- Enables non-placeable tiles to be switched to placable-tiles.
+-- @param <boolean>
 function Public.fill_tiles_so_biter_can_path(boolean)
     if (boolean or boolean == false) then
         this.fill_tiles_so_biter_can_path = boolean
@@ -207,6 +253,8 @@ function Public.fill_tiles_so_biter_can_path(boolean)
     return this.fill_tiles_so_biter_can_path
 end
 
+--- Sets the wave defense units damage increase.
+-- @param <boolean>
 function Public.increase_damage_per_wave(boolean)
     if (boolean or boolean == false) then
         this.increase_damage_per_wave = boolean
@@ -214,27 +262,38 @@ function Public.increase_damage_per_wave(boolean)
     return this.increase_damage_per_wave
 end
 
+--- Sets the wave defense units health at start current.
+-- @param <int>
 function Public.set_normal_unit_current_health(int)
     this.modified_unit_health.current_value = int or 1.2
 end
 
+--- Sets the wave defense boss health increment.
+-- @param <int>
 function Public.set_boss_unit_current_health(int)
     this.modified_boss_unit_health.current_value = int or 2
 end
 
+--- Sets the wave defense units health at start current.
+-- @param <int>
 function Public.set_normal_unit_current_per_wave(int)
-    this.modified_unit_health.health_increase_per_boss_wave = int or 0.08
+    this.modified_unit_health.health_increase_per_boss_wave = int or 0.5
 end
 
+--- Sets the wave defense boss health increment.
+-- @param <int>
 function Public.set_boss_unit_current_per_wave(int)
-    this.modified_boss_unit_health.health_increase_per_boss_wave = int or 0.15
+    this.modified_boss_unit_health.health_increase_per_boss_wave = int or 4
 end
 
+--- Pauses the wave defense module
+-- @param null
 function Public.pause(boolean)
     this.paused = boolean or false
 end
 
 --- Toggle debug - when you need to troubleshoot.
+-- @param <null>
 function Public.toggle_debug()
     if this.debug then
         this.debug = false
@@ -246,6 +305,7 @@ function Public.toggle_debug()
 end
 
 --- Toggle debug - when you need to troubleshoot.
+-- @param <null>
 function Public.toggle_debug_health()
     if this.debug_health then
         this.debug_health = false
@@ -256,12 +316,20 @@ function Public.toggle_debug_health()
     return this.debug_health
 end
 
-local on_init = function()
-    Public.reset_wave_defense()
+--- Toggle grace time, for when you want to waves to start instantly
+-- @param <boolean>
+function Public.enable_grace_time(boolean)
+    this.enable_grace_time.enabled = boolean or false
+
+    return this.debug_health
 end
 
 -- Event.on_nth_tick(30, Public.debug_module)
 
-Event.on_init(on_init)
+Event.on_init(
+    function()
+        Public.reset_wave_defense()
+    end
+)
 
 return Public

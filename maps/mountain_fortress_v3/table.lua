@@ -220,6 +220,7 @@ function Public.reset_table()
     this.prestige_system_enabled = false
     this.has_upgraded_health_pool = false
     this.mystical_chest_enabled = true
+    this.check_if_threat_below_zero = false
     this.mc_rewards = {
         current = {},
         temp_boosts = {}

@@ -16,8 +16,10 @@ Public.level_width = WPT.level_width
 local worm_level_modifier = 0.19
 
 local start_ground_tiles = {
-    'black-refined-concrete',
-    'nuclear-ground'
+    'hazard-concrete-left',
+    'hazard-concrete-right',
+    'brown-refined-concrete',
+    'concrete'
 }
 
 local wagon_raffle = {
@@ -2406,7 +2408,7 @@ local function border_chunk(p, data)
     end
 
     local noise = get_perlin('dungeons', pos, 14882)
-    local index = floor(noise * 32) % 2 + 1
+    local index = floor(noise * 32) % 4 + 1
     tiles[#tiles + 1] = {name = start_ground_tiles[index], position = pos}
 
     local scrap_mineable_entities, scrap_mineable_entities_index = get_scrap_mineable_entities()

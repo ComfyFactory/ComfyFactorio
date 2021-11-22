@@ -878,6 +878,7 @@ function Public.set_difficulty()
     end
     local Diff = Difficulty.get()
     local wave_defense_table = WD.get_table()
+    local check_if_threat_below_zero = WPT.get('check_if_threat_below_zero')
     local collapse_amount = WPT.get('collapse_amount')
     local collapse_speed = WPT.get('collapse_speed')
     local difficulty = WPT.get('difficulty')
@@ -921,19 +922,25 @@ function Public.set_difficulty()
         amount = difficulty.highest -- lowered from 20 to 10
     end
 
+    local threat_check = nil
+
+    if check_if_threat_below_zero then
+        threat_check = wave_defense_table.threat <= 0
+    end
+
     if Diff.name == "I'm too young to die" then
         wave_defense_table.wave_interval = 3600 - player_count * 60
-        if wave_defense_table.wave_interval < 1800 or wave_defense_table.threat <= 0 then
+        if wave_defense_table.wave_interval < 1800 or threat_check then
             wave_defense_table.wave_interval = 1800
         end
     elseif Diff.name == 'Hurt me plenty' then
         wave_defense_table.wave_interval = 2600 - player_count * 60
-        if wave_defense_table.wave_interval < 1500 or wave_defense_table.threat <= 0 then
+        if wave_defense_table.wave_interval < 1500 or threat_check then
             wave_defense_table.wave_interval = 1500
         end
     elseif Diff.name == 'Ultra-violence' then
         wave_defense_table.wave_interval = 1600 - player_count * 60
-        if wave_defense_table.wave_interval < 1100 or wave_defense_table.threat <= 0 then
+        if wave_defense_table.wave_interval < 1100 or threat_check then
             wave_defense_table.wave_interval = 1100
         end
     end
@@ -1109,8 +1116,6 @@ function Public.boost_difficulty()
 
     local force = game.forces.player
 
-    local unit_modifiers = WD.get('modified_unit_health')
-
     if name == "I'm too young to die" then
         force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 0.5
         force.character_running_speed_modifier = 0.15
@@ -1127,8 +1132,6 @@ function Public.boost_difficulty()
         WD.set_normal_unit_current_per_wave(0.08)
         WD.set_boss_unit_current_health(2)
         WD.set_boss_unit_current_per_wave(0.15)
-        unit_modifiers.limit_value = 30
-        unit_modifiers.health_increase_per_boss_wave = 0.04
         WPT.set('difficulty_set', true)
     elseif name == 'Hurt me plenty' then
         force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 0.25
@@ -1146,8 +1149,6 @@ function Public.boost_difficulty()
         WD.set_normal_unit_current_per_wave(0.12)
         WD.set_boss_unit_current_health(3)
         WD.set_boss_unit_current_per_wave(0.20)
-        unit_modifiers.limit_value = 40
-        unit_modifiers.health_increase_per_boss_wave = 0.06
         WPT.set('difficulty_set', true)
     elseif name == 'Ultra-violence' then
         force.character_running_speed_modifier = 0
@@ -1159,13 +1160,11 @@ function Public.boost_difficulty()
         WPT.set('locomotive_max_health', 5000)
         WPT.set('bonus_xp_on_join', 50)
         WD.set('next_wave', game.tick + 3600 * 5)
+        WPT.set('spidertron_unlocked_at_zone', 6)
         WD.set_normal_unit_current_health(2)
         WD.set_normal_unit_current_per_wave(0.2)
         WD.set_boss_unit_current_health(4)
         WD.set_boss_unit_current_per_wave(0.4)
-        WPT.set('spidertron_unlocked_at_zone', 6)
-        unit_modifiers.limit_value = 50
-        unit_modifiers.health_increase_per_boss_wave = 0.08
         WPT.set('difficulty_set', true)
     end
 end

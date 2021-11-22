@@ -519,7 +519,10 @@ local function spawn_biter(surface, position, forceSpawn, is_boss_biter)
 
     position = surface.find_non_colliding_position('steel-chest', position, 2, 1)
     if not position then
-        position = old_position
+        position = surface.find_non_colliding_position('steel-chest', old_position, 4, 1)
+        if not position then
+            position = old_position
+        end
     end
 
     local biter = surface.create_entity({name = name, position = position, force = 'enemy'})
@@ -1127,6 +1130,13 @@ local function t1()
     local paused = Public.get('paused')
     if paused then
         return
+    end
+    local enable_grace_time = Public.get('enable_grace_time')
+    if enable_grace_time and (not enable_grace_time.enabled) then
+        if not enable_grace_time.set then
+            Public.set('next_wave', game.tick + 100)
+            enable_grace_time.set = true
+        end
     end
 
     local next_wave = Public.get('next_wave')

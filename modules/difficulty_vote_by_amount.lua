@@ -183,7 +183,7 @@ local function set_difficulty()
     end
 
     if this.difficulty_vote_index ~= index then
-        local message = table.concat({'>> Map difficulty has changed to ', this.difficulties[index].name, ' difficulty!'})
+        local message = table.concat({'*** Map difficulty has changed to ', this.difficulties[index].name, ' difficulty! ***'})
         game.print(message, this.difficulties[index].print_color)
         Server.to_discord_embed(message)
     end
@@ -321,7 +321,9 @@ local function on_gui_click(event)
     set_difficulty()
     Public.difficulty_gui()
     event.element.parent.destroy()
-    game.print(player.name .. ' has voted for ' .. this.difficulties[i].name .. ' difficulty!', this.difficulties[i].print_color)
+    local message = '*** ' .. player.name .. ' has voted for ' .. this.difficulties[i].name .. ' difficulty! ***'
+    game.print(message, this.difficulties[i].print_color)
+    Server.to_discord_embed(message)
 end
 
 function Public.set_tooltip(...)

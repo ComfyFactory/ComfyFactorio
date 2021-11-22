@@ -2,6 +2,19 @@ local Public = require 'modules.wave_defense.table'
 local Event = require 'utils.event'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local math_random = math.random
+local Token = require 'utils.token'
+local Task = require 'utils.task'
+
+local immunity_spawner =
+    Token.register(
+    function(data)
+        local entity = data.entity
+        if not entity or not entity.valid then
+            return
+        end
+        entity.destructible = true
+    end
+)
 
 local function is_boss(entity)
     local unit_number = entity.unit_number
@@ -90,6 +103,9 @@ local function place_nest_near_unit_group()
     local modified_boss_unit_health = Public.get('modified_boss_unit_health')
 
     local spawner = unit.surface.create_entity({name = name, position = position, force = unit.force})
+    spawner.destructible = false
+    Task.set_timeout_in_ticks(100, immunity_spawner, {entity = spawner})
+
     if boss then
         BiterHealthBooster.add_boss_unit(spawner, modified_boss_unit_health.current_value)
     else

@@ -578,7 +578,7 @@ function Public.extra_settings(player)
                 conjure_label.tooltip = ({
                     'rpg_settings.magic_item_requirement',
                     conjure_label.tooltip,
-                    entity.obj_to_create,
+                    entity.entityName,
                     entity.mana_cost,
                     entity.level
                 })
@@ -586,7 +586,7 @@ function Public.extra_settings(player)
                 conjure_label.tooltip = ({
                     'rpg_settings.magic_entity_requirement',
                     conjure_label.tooltip,
-                    entity.obj_to_create,
+                    entity.entityName,
                     entity.mana_cost,
                     entity.level
                 })
