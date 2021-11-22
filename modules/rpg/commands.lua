@@ -129,6 +129,30 @@ commands.add_command(
 
 if _DEBUG then
     commands.add_command(
+        'give_xp',
+        'DEBUG ONLY - if you are seeing this then this map is running on debug-mode.',
+        function(cmd)
+            local p
+            local player = game.player
+            local param = tonumber(cmd.parameter)
+
+            if player then
+                if player ~= nil then
+                    p = player.print
+                    if not player.admin then
+                        p("[ERROR] You're not admin!", Color.fail)
+                        return
+                    end
+                    if not param then
+                        return
+                    end
+                    p('Distributed ' .. param .. ' of xp.')
+                    Public.give_xp(param)
+                end
+            end
+        end
+    )
+    commands.add_command(
         'rpg_debug_module',
         '',
         function()

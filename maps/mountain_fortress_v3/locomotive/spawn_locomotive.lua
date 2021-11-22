@@ -11,7 +11,7 @@ local random = math.random
 
 local function initial_cargo_boxes()
     return {
-        {name = 'loader', count = 1},
+        {name = 'loader', count = 2},
         {name = 'coal', count = random(32, 64)},
         {name = 'coal', count = random(32, 64)},
         {name = 'iron-ore', count = random(32, 128)},
@@ -22,15 +22,22 @@ local function initial_cargo_boxes()
         {name = 'submachine-gun', count = 1},
         {name = 'submachine-gun', count = 1},
         {name = 'submachine-gun', count = 1},
+        {name = 'submachine-gun', count = 1},
+        {name = 'submachine-gun', count = 1},
         {name = 'shotgun', count = 1},
         {name = 'shotgun', count = 1},
         {name = 'shotgun', count = 1},
+        {name = 'gun-turret', count = 1},
+        {name = 'gun-turret', count = 1},
+        {name = 'gun-turret', count = 1},
+        {name = 'shotgun-shell', count = random(4, 5)},
         {name = 'shotgun-shell', count = random(4, 5)},
         {name = 'shotgun-shell', count = random(4, 5)},
         {name = 'land-mine', count = random(6, 18)},
-        {name = 'grenade', count = random(2, 3)},
-        {name = 'grenade', count = random(2, 3)},
-        {name = 'grenade', count = random(2, 3)},
+        {name = 'grenade', count = random(2, 7)},
+        {name = 'grenade', count = random(2, 8)},
+        {name = 'grenade', count = random(2, 7)},
+        {name = 'light-armor', count = random(2, 4)},
         {name = 'iron-gear-wheel', count = random(7, 15)},
         {name = 'iron-gear-wheel', count = random(7, 15)},
         {name = 'iron-gear-wheel', count = random(7, 15)},
@@ -43,9 +50,10 @@ local function initial_cargo_boxes()
         {name = 'copper-plate', count = random(15, 23)},
         {name = 'copper-plate', count = random(15, 23)},
         {name = 'copper-plate', count = random(15, 23)},
-        {name = 'firearm-magazine', count = random(10, 30)},
-        {name = 'firearm-magazine', count = random(10, 30)},
-        {name = 'firearm-magazine', count = random(10, 30)},
+        {name = 'firearm-magazine', count = random(10, 56)},
+        {name = 'firearm-magazine', count = random(10, 56)},
+        {name = 'firearm-magazine', count = random(10, 56)},
+        {name = 'firearm-magazine', count = random(10, 56)},
         {name = 'rail', count = random(16, 24)},
         {name = 'rail', count = random(16, 24)}
     }
@@ -88,8 +96,13 @@ local set_loco_tiles =
             if not p[i] then
                 break
             end
-            if surface.can_place_entity({name = 'wooden-chest', position = p[i]}) then
-                local e = surface.create_entity({name = 'wooden-chest', position = p[i], force = 'player', create_build_effect_smoke = false})
+            local name = 'wooden-chest'
+
+            if random(1, 3) == 1 then
+                name = 'iron-chest'
+            end
+            if surface.can_place_entity({name = name, position = p[i]}) then
+                local e = surface.create_entity({name = name, position = p[i], force = 'player', create_build_effect_smoke = false})
                 e.minable = false
                 local inventory = e.get_inventory(defines.inventory.chest)
                 inventory.insert(cargo_boxes[i])
