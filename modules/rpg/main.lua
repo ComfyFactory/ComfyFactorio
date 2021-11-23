@@ -24,6 +24,7 @@ local sub = string.sub
 local round = math.round
 local floor = math.floor
 local random = math.random
+local sqrt = math.sqrt
 local abs = math.abs
 
 local function log_one_punch(callback)
@@ -749,7 +750,7 @@ local function on_entity_damaged(event)
             {
                 name = 'flying-text',
                 position = entity.position,
-                text = '‼' .. math.floor(damage),
+                text = '‼' .. floor(damage),
                 color = {255, 0, 0}
             }
         )
@@ -758,7 +759,7 @@ local function on_entity_damaged(event)
         damage = damage * random(100, 125) * 0.01
         cause.player.create_local_flying_text(
             {
-                text = math.floor(damage),
+                text = floor(damage),
                 position = entity.position,
                 color = {150, 150, 150},
                 time_to_live = 90,
@@ -923,26 +924,28 @@ local function on_pre_player_mined_item(event)
     end
 
     local rpg_t = Public.get_value_from_player(player.index)
-    if rpg_t.last_mined_entity_position.x == event.entity.position.x and rpg_t.last_mined_entity_position.y == event.entity.position.y then
+    if rpg_t.last_mined_entity_position.x == entity.position.x and rpg_t.last_mined_entity_position.y == entity.position.y then
         return
     end
     rpg_t.last_mined_entity_position.x = entity.position.x
     rpg_t.last_mined_entity_position.y = entity.position.y
 
-    local distance_multiplier = math.floor(math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2)) * 0.0005 + 1
+    local distance_multiplier = floor(sqrt(entity.position.x ^ 2 + entity.position.y ^ 2)) * 0.0005 + 1
+
+    local xp_modifier_when_mining = Public.get('rpg_extra').xp_modifier_when_mining
 
     local xp_amount
     if entity.type == 'resource' then
-        xp_amount = 0.5 * distance_multiplier
+        xp_amount = 0.9 * distance_multiplier
     else
-        xp_amount = (1.5 + event.entity.prototype.max_health * 0.0035) * distance_multiplier
+        xp_amount = (1.5 + entity.prototype.max_health * xp_modifier_when_mining) * distance_multiplier
     end
 
     if player.gui.screen[main_frame_name] then
         local f = player.gui.screen[main_frame_name]
         local data = Gui.get_data(f)
         if data.exp_gui and data.exp_gui.valid then
-            data.exp_gui.caption = math.floor(rpg_t.xp)
+            data.exp_gui.caption = floor(rpg_t.xp)
         end
     end
 
@@ -969,7 +972,8 @@ local function on_player_crafted_item(event)
 
     local item = event.item_stack
 
-    local amount = 0.30 * random(1, 2)
+    local amount = 0.40 * random(1, 2)
+    local recipe = event.recipe
 
     if tweaked_crafting_items_enabled then
         if item and item.valid then
@@ -979,7 +983,9 @@ local function on_player_crafted_item(event)
         end
     end
 
-    Public.gain_xp(player, event.recipe.energy * amount)
+    local final_xp = recipe.energy * amount
+
+    Public.gain_xp(player, final_xp)
     Public.reward_mana(player, amount)
 end
 
@@ -1067,7 +1073,11 @@ local function damage_entity(e)
         return
     end
 
-    e.surface.create_entity({name = 'water-splash', position = e.position})
+    if not e.destructible then
+        return
+    end
+
+    e.surface.create_entity({name = 'ground-explosion', position = e.position})
 
     if e.type == 'entity-ghost' then
         e.destroy()
@@ -1203,8 +1213,7 @@ local function on_player_used_capsule(event)
         target_pos = {position.x, position.y}
     elseif projectile_types[object.entityName] then
         local coord_modifier = get_near_coord_modifier(projectile_types[object.entityName].max_range)
-        local proj_pos = {position.x + coord_modifier.x, position.y + coord_modifier.y}
-        target_pos = proj_pos
+        target_pos = {position.x + coord_modifier.x, position.y + coord_modifier.y}
     end
 
     local range
@@ -1273,7 +1282,7 @@ local function on_player_used_capsule(event)
                 left_top = {x = position.x - 2, y = position.y - 2},
                 right_bottom = {x = position.x + 2, y = position.y + 2}
             }
-            create_projectile(surface, object.entityName, position, force, target_pos, range)
+            create_projectile(surface, projectile_types[object.entityName].name, position, force, target_pos, range)
             if object.damage then
                 for _, e in pairs(surface.find_entities_filtered({area = damage_area})) do
                     damage_entity(e)

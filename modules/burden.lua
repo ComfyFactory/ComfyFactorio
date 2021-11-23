@@ -57,9 +57,4 @@ local function on_init()
     script.on_event(defines.events.on_player_main_inventory_changed, check_burden)
 end
 
-local function on_load()
-    script.on_event(defines.events.on_player_main_inventory_changed, check_burden)
-end
-
 Event.on_init(on_init)
-Event.on_load(on_load)

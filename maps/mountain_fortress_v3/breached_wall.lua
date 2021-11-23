@@ -31,6 +31,29 @@ local scrap = {
     [15] = true
 }
 
+local clear_breach_text_and_render = function()
+    local beam1 = WPT.get('zone1_beam1')
+    if beam1 and beam1.valid then
+        beam1.destroy()
+    end
+    local beam2 = WPT.get('zone1_beam2')
+    if beam2 and beam2.valid then
+        beam2.destroy()
+    end
+    local zone1_text1 = WPT.get('zone1_text1')
+    if zone1_text1 then
+        rendering.set_text(zone1_text1, 'Collapse has started!')
+    end
+    local zone1_text2 = WPT.get('zone1_text2')
+    if zone1_text2 then
+        rendering.set_text(zone1_text2, 'Collapse has started!')
+    end
+    local zone1_text3 = WPT.get('zone1_text3')
+    if zone1_text3 then
+        rendering.set_text(zone1_text3, 'Collapse has started!')
+    end
+end
+
 local collapse_message =
     Token.register(
     function(data)
@@ -243,6 +266,7 @@ local function distance(player)
         end
 
         if not Collapse.start_now() then
+            clear_breach_text_and_render()
             Collapse.start_now(true)
             local data = {
                 position = Collapse.get_position()

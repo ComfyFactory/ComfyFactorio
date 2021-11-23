@@ -16,10 +16,10 @@ Public.level_width = WPT.level_width
 local worm_level_modifier = 0.19
 
 local start_ground_tiles = {
-    'hazard-concrete-left',
-    'hazard-concrete-right',
-    'brown-refined-concrete',
-    'concrete'
+    'dirt-1',
+    'grass-1',
+    'grass-2',
+    'dirt-2'
 }
 
 local wagon_raffle = {
@@ -315,39 +315,54 @@ local function wall(p, data)
                         if not alert_zone_1 then
                             local x_min = -WPT.level_width / 2
                             local x_max = WPT.level_width / 2
-                            surface.create_entity({name = 'electric-beam', position = {x_min, p.y}, source = {x_min, p.y}, target = {x_max, p.y}})
-                            surface.create_entity({name = 'electric-beam', position = {x_min, p.y}, source = {x_min, p.y}, target = {x_max, p.y}})
+                            WPT.set(
+                                'zone1_beam1',
+                                surface.create_entity({name = 'electric-beam', position = {x_min, p.y}, source = {x_min, p.y}, target = {x_max, p.y}})
+                            )
+                            WPT.set(
+                                'zone1_beam2',
+                                surface.create_entity({name = 'electric-beam', position = {x_min, p.y}, source = {x_min, p.y}, target = {x_max, p.y}})
+                            )
                             WPT.set('alert_zone_1', true)
-                            rendering.draw_text {
-                                text = 'Breaching the far side wall will start collapse.',
-                                surface = surface,
-                                target = {0, p.y + 35},
-                                color = {r = 0.98, g = 0.66, b = 0.22},
-                                scale = 8,
-                                font = 'heading-1',
-                                alignment = 'center',
-                                scale_with_zoom = false
-                            }
-                            rendering.draw_text {
-                                text = 'Breaching the far side wall will start collapse',
-                                surface = surface,
-                                target = {-180, p.y + 35},
-                                color = {r = 0.98, g = 0.66, b = 0.22},
-                                scale = 8,
-                                font = 'heading-1',
-                                alignment = 'center',
-                                scale_with_zoom = false
-                            }
-                            rendering.draw_text {
-                                text = 'Breaching the far side wall will start collapse',
-                                surface = surface,
-                                target = {180, p.y + 35},
-                                color = {r = 0.98, g = 0.66, b = 0.22},
-                                scale = 8,
-                                font = 'heading-1',
-                                alignment = 'center',
-                                scale_with_zoom = false
-                            }
+                            WPT.set(
+                                'zone1_text1',
+                                rendering.draw_text {
+                                    text = 'Breaching the far side wall will start collapse.',
+                                    surface = surface,
+                                    target = {0, p.y + 35},
+                                    color = {r = 0.98, g = 0.66, b = 0.22},
+                                    scale = 8,
+                                    font = 'heading-1',
+                                    alignment = 'center',
+                                    scale_with_zoom = false
+                                }
+                            )
+                            WPT.set(
+                                'zone1_text2',
+                                rendering.draw_text {
+                                    text = 'Breaching the far side wall will start collapse',
+                                    surface = surface,
+                                    target = {-180, p.y + 35},
+                                    color = {r = 0.98, g = 0.66, b = 0.22},
+                                    scale = 8,
+                                    font = 'heading-1',
+                                    alignment = 'center',
+                                    scale_with_zoom = false
+                                }
+                            )
+                            WPT.set(
+                                'zone1_text3',
+                                rendering.draw_text {
+                                    text = 'Breaching the far side wall will start collapse',
+                                    surface = surface,
+                                    target = {180, p.y + 35},
+                                    color = {r = 0.98, g = 0.66, b = 0.22},
+                                    scale = 8,
+                                    font = 'heading-1',
+                                    alignment = 'center',
+                                    scale_with_zoom = false
+                                }
+                            )
                         end
                     end
                 else
@@ -2407,7 +2422,7 @@ local function border_chunk(p, data)
         entities[#entities + 1] = {name = trees[random(1, #trees)], position = pos}
     end
 
-    local noise = get_perlin('dungeons', pos, 14882)
+    local noise = get_perlin('dungeons', pos, data.seed)
     local index = floor(noise * 32) % 4 + 1
     tiles[#tiles + 1] = {name = start_ground_tiles[index], position = pos}
 

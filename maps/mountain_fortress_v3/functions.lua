@@ -203,7 +203,7 @@ local function do_magic_crafters()
                 if entity.get_output_inventory().can_insert({name = data.item, count = fcount}) then
                     entity.get_output_inventory().insert {name = data.item, count = fcount}
                     entity.products_finished = entity.products_finished + fcount
-                    data.last_tick = tick - (count - fcount) / rate
+                    data.last_tick = round(tick - (count - fcount) / rate)
                 end
             end
         end
@@ -366,9 +366,9 @@ local function add_magic_crafter_output(entity, output, distance)
     local fluidbox_index = output.fluidbox_index
     local data = {
         entity = entity,
-        last_tick = game.tick,
-        base_rate = rate,
-        rate = rate,
+        last_tick = round(game.tick),
+        base_rate = round(rate, 8),
+        rate = round(rate, 8),
         item = output.item,
         fluidbox_index = fluidbox_index
     }
@@ -929,17 +929,17 @@ function Public.set_difficulty()
     end
 
     if Diff.name == "I'm too young to die" then
-        wave_defense_table.wave_interval = 3600 - player_count * 60
+        wave_defense_table.wave_interval = 4600 - player_count * 60
         if wave_defense_table.wave_interval < 1800 or threat_check then
             wave_defense_table.wave_interval = 1800
         end
     elseif Diff.name == 'Hurt me plenty' then
-        wave_defense_table.wave_interval = 2600 - player_count * 60
+        wave_defense_table.wave_interval = 3600 - player_count * 60
         if wave_defense_table.wave_interval < 1500 or threat_check then
             wave_defense_table.wave_interval = 1500
         end
     elseif Diff.name == 'Ultra-violence' then
-        wave_defense_table.wave_interval = 1600 - player_count * 60
+        wave_defense_table.wave_interval = 2600 - player_count * 60
         if wave_defense_table.wave_interval < 1100 or threat_check then
             wave_defense_table.wave_interval = 1100
         end
@@ -1128,8 +1128,8 @@ function Public.boost_difficulty()
         WPT.set('bonus_xp_on_join', 500)
         WD.set('next_wave', game.tick + 3600 * 15)
         WPT.set('spidertron_unlocked_at_zone', 10)
-        WD.set_normal_unit_current_health(1.2)
-        WD.set_normal_unit_current_per_wave(0.5)
+        WD.set_normal_unit_current_health(1.0)
+        WD.set_normal_unit_current_per_wave(0.3)
         WD.set_boss_unit_current_health(2)
         WD.set_boss_unit_current_per_wave(3)
         WPT.set('difficulty_set', true)
@@ -1146,7 +1146,7 @@ function Public.boost_difficulty()
         WD.set('next_wave', game.tick + 3600 * 8)
         WPT.set('spidertron_unlocked_at_zone', 8)
         WD.set_normal_unit_current_health(1.6)
-        WD.set_normal_unit_current_per_wave(0.8)
+        WD.set_normal_unit_current_per_wave(0.5)
         WD.set_boss_unit_current_health(3)
         WD.set_boss_unit_current_per_wave(5)
         WPT.set('difficulty_set', true)

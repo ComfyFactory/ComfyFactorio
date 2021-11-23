@@ -32,7 +32,7 @@ function Public.reset_wave_defense()
     this.max_biter_age = 3600 * 60
     this.nests = {}
     this.nest_building_density = 48
-    this.next_wave = game.tick + 3600 * 15
+    this.next_wave = game.tick + 3600 * 20
     this.enable_grace_time = {
         enabled = true,
         set = nil

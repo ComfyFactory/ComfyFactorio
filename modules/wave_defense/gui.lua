@@ -1,6 +1,8 @@
 local Public = require 'modules.wave_defense.table'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 
+local floor = math.floor
+
 local function create_gui(player)
     local frame = player.gui.top.add({type = 'frame', name = 'wave_defense'})
     frame.style.maximal_height = 37
@@ -59,7 +61,7 @@ local function get_threat_gain()
     if past_index < 1 then
         past_index = 1
     end
-    local gain = math.floor((threat_log[threat_log_index] - threat_log[past_index]) / 15)
+    local gain = floor((threat_log[threat_log_index] - threat_log[past_index]) / 15)
     return gain
 end
 
@@ -85,14 +87,14 @@ function Public.update_gui(player)
     gui.wave_number.caption = wave_number
     if wave_number == 0 then
         gui.label.caption = {'wave_defense.gui_1'}
-        gui.wave_number.caption = math.floor((next_wave - game.tick) / 60) + 1
+        gui.wave_number.caption = floor((next_wave - game.tick) / 60) + 1
     end
     local interval = next_wave - last_wave
     gui.progressbar.value = 1 - (next_wave - game.tick) / interval
 
     gui.threat.caption = {'wave_defense.gui_3'}
     gui.threat.tooltip = {'wave_defense.tooltip_1', biter_health_boost * 100, max_active_biters}
-    gui.threat_value.caption = math.floor(threat)
+    gui.threat_value.caption = floor(threat)
     gui.threat_value.tooltip = {
         'wave_defense.tooltip_1',
         biter_health_boost * 100,
@@ -109,14 +111,14 @@ function Public.update_gui(player)
 
         if gain >= 0 then
             gui.threat_gains.caption = ' (+' .. gain .. ')'
-            local g = 255 - math.floor(gain / d)
+            local g = 255 - floor(gain / d)
             if g < 0 then
                 g = 0
             end
             gui.threat_gains.style.font_color = {255, g, 0}
         else
             gui.threat_gains.caption = ' (' .. gain .. ')'
-            local r = 255 - math.floor(math.abs(gain) / d)
+            local r = 255 - floor(math.abs(gain) / d)
             if r < 0 then
                 r = 0
             end
