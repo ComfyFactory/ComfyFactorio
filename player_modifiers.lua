@@ -4,6 +4,8 @@
 local Event = require 'utils.event'
 local Global = require 'utils.global'
 
+local round = math.round
+
 local this = {
     modifiers = {},
     disabled_modifier = {}
@@ -72,7 +74,7 @@ function Public.update_player_modifiers(player)
             if disabled_modifiers and disabled_modifiers[k] then
                 player[modifier] = 0
             else
-                player[modifier] = sum_value
+                player[modifier] = round(sum_value, 8)
             end
         end
     end

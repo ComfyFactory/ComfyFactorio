@@ -108,6 +108,7 @@ function Public.reset_table()
     this.rpg_extra.enable_explosive_bullets = false
     this.rpg_extra.enable_explosive_bullets_globally = false
     this.rpg_extra.mana_per_tick = 0.1
+    this.rpg_extra.xp_modifier_when_mining = 0.0045
     this.rpg_extra.force_mana_per_tick = false
     this.rpg_extra.enable_stone_path = false
     this.rpg_extra.enable_auto_allocate = false

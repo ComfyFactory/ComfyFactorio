@@ -4,6 +4,8 @@ local ICT = require 'maps.mountain_fortress_v3.ic.table'
 local Functions = require 'maps.mountain_fortress_v3.ic.functions'
 local Gui = require 'maps.mountain_fortress_v3.ic.gui'
 
+local round = math.round
+
 local function validate_player(player)
     if not player then
         return false
@@ -142,7 +144,7 @@ local function draw_minimap(player, surface, position)
                 name = 'minimap_frame',
                 position = position,
                 surface_index = surface.index,
-                zoom = player_data.zoom,
+                zoom = round(player_data.zoom),
                 tooltip = 'LMB: Increase zoom level.\nRMB: Decrease zoom level.\nMMB: Toggle camera size.'
             }
         )
@@ -197,7 +199,7 @@ function Public.toggle_minimap(event)
         if player_data.zoom < 0.07 then
             player_data.zoom = 0.07
         end
-        element.zoom = player_data.zoom
+        element.zoom = round(player_data.zoom)
         return
     end
     if event.button == defines.mouse_button_type.left then
@@ -205,7 +207,7 @@ function Public.toggle_minimap(event)
         if player_data.zoom > 2 then
             player_data.zoom = 2
         end
-        element.zoom = player_data.zoom
+        element.zoom = round(player_data.zoom)
         return
     end
     if event.button == defines.mouse_button_type.middle then

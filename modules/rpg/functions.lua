@@ -167,7 +167,7 @@ local function add_to_global_pool(amount, personal_tax)
         fee = amount * 0.3
     end
 
-    rpg_extra.global_pool = rpg_extra.global_pool + fee
+    rpg_extra.global_pool = round(rpg_extra.global_pool + fee, 8)
     return amount - fee
 end
 
@@ -718,7 +718,7 @@ function Public.rpg_reset_player(player, one_time_reset)
             }
         )
         rpg_t.points_left = old_points_left + total
-        rpg_t.xp = old_xp
+        rpg_t.xp = round(old_xp)
         rpg_t.level = old_level
     else
         Public.set_new_player_tbl(
@@ -817,7 +817,7 @@ function Public.gain_xp(player, amount, added_to_pool, text)
     end
 
     rpg_t.xp = round(rpg_t.xp + amount, 3)
-    rpg_t.xp_since_last_floaty_text = rpg_t.xp_since_last_floaty_text + amount
+    rpg_t.xp_since_last_floaty_text = round(rpg_t.xp_since_last_floaty_text + amount)
 
     if not experience_levels[rpg_t.level + 1] then
         return

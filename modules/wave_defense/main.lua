@@ -517,12 +517,9 @@ local function spawn_biter(surface, position, forceSpawn, is_boss_biter)
 
     local old_position = position
 
-    position = surface.find_non_colliding_position('steel-chest', position, 2, 1)
+    position = surface.find_non_colliding_position('steel-chest', position, 3, 1)
     if not position then
-        position = surface.find_non_colliding_position('steel-chest', old_position, 4, 1)
-        if not position then
-            position = old_position
-        end
+        position = old_position
     end
 
     local biter = surface.create_entity({name = name, position = position, force = 'enemy'})

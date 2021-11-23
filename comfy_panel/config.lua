@@ -287,7 +287,7 @@ local fortress_functions = {
             get_actor(event, '[Collapse]', 'has enabled the collapse function. Collapse will occur after wave 100!')
         else
             Module.collapse_grace = false
-            get_actor(event, '[Collapse]', 'has disabled the collapse function. You must reach zone 2 for collapse to occur!')
+            get_actor(event, '[Collapse]', 'has disabled the collapse function. You must breach the first zone for collapse to occur!')
         end
     end,
     ['comfy_panel_spill_items_to_surface'] = function(event)
@@ -438,7 +438,13 @@ local function build_config_gui(data)
         if not poll_table[player.index] then
             switch_state = 'left'
         end
-        add_switch(scroll_pane, switch_state, 'comfy_panel_poll_no_notify_toggle', 'Notify on polls', 'Receive a message when new polls are created and popup the poll.')
+        add_switch(
+            scroll_pane,
+            switch_state,
+            'comfy_panel_poll_no_notify_toggle',
+            'Notify on polls',
+            'Receive a message when new polls are created and popup the poll.'
+        )
         scroll_pane.add({type = 'line'})
     end
 
@@ -487,7 +493,13 @@ local function build_config_gui(data)
         if bottom_frame and bottom_frame.portable then
             switch_state = 'left'
         end
-        add_switch(scroll_pane, switch_state, 'comfy_panel_portable_button', 'Position - portable', 'Toggle to select if you want the bottom button to be portable or not.')
+        add_switch(
+            scroll_pane,
+            switch_state,
+            'comfy_panel_portable_button',
+            'Position - portable',
+            'Toggle to select if you want the bottom button to be portable or not.'
+        )
         scroll_pane.add({type = 'line'})
     end
 
@@ -623,7 +635,13 @@ local function build_config_gui(data)
             if full.fullness_enabled then
                 switch_state = 'left'
             end
-            add_switch(scroll_pane, switch_state, 'comfy_panel_disable_fullness', 'Inventory Fullness', 'Left = Enables inventory fullness.\nRight = Disables inventory fullness.')
+            add_switch(
+                scroll_pane,
+                switch_state,
+                'comfy_panel_disable_fullness',
+                'Inventory Fullness',
+                'On = Enables inventory fullness.\nOff = Disables inventory fullness.'
+            )
 
             scroll_pane.add({type = 'line'})
 
@@ -638,7 +656,7 @@ local function build_config_gui(data)
                 switch_state,
                 'comfy_panel_offline_players',
                 'Offline Players',
-                'Left = Enables offline player inventory drop.\nRight = Disables offline player inventory drop.'
+                'On = Enables offline player inventory drop.\nOff = Disables offline player inventory drop.'
             )
 
             scroll_pane.add({type = 'line'})
@@ -652,7 +670,7 @@ local function build_config_gui(data)
                 switch_state,
                 'comfy_panel_collapse_grace',
                 'Collapse',
-                'Left = Enables collapse after wave 100.\nRight = Disables collapse - you must reach zone 2 for collapse to occur.'
+                'On = Enables collapse after wave 100.\nOff = Disables collapse - you must breach the first zone for collapse to occur.'
             )
 
             scroll_pane.add({type = 'line'})
@@ -666,7 +684,7 @@ local function build_config_gui(data)
                 switch_state,
                 'comfy_panel_spill_items_to_surface',
                 'Spill Ores',
-                'Left = Enables ore spillage to surface when mining.\nRight = Disables ore spillage to surface when mining.'
+                'On = Enables ore spillage to surface when mining.\nOff = Disables ore spillage to surface when mining.'
             )
             scroll_pane.add({type = 'line'})
 
@@ -674,7 +692,13 @@ local function build_config_gui(data)
             if Module.void_or_tile then
                 switch_state = 'left'
             end
-            add_switch(scroll_pane, switch_state, 'comfy_panel_void_or_tile', 'Void Tiles', 'Left = Changes the tiles to out-of-map.\nRight = Changes the tiles to lab-dark-2')
+            add_switch(
+                scroll_pane,
+                switch_state,
+                'comfy_panel_void_or_tile',
+                'Void Tiles',
+                'On = Changes the tiles to out-of-map.\nOff = Changes the tiles to lab-dark-2'
+            )
             scroll_pane.add({type = 'line'})
 
             switch_state = 'right'
@@ -686,7 +710,7 @@ local function build_config_gui(data)
                 switch_state,
                 'comfy_panel_trusted_only_car_tanks',
                 'Market Purchase',
-                'Left = Allows only trusted people to buy car/tanks.\nRight = Allows everyone to buy car/tanks.'
+                'On = Allows only trusted people to buy car/tanks.\nOff = Allows everyone to buy car/tanks.'
             )
             scroll_pane.add({type = 'line'})
 
@@ -694,7 +718,13 @@ local function build_config_gui(data)
             if Module.allow_decon then
                 switch_state = 'left'
             end
-            add_switch(scroll_pane, switch_state, 'comfy_panel_allow_decon', 'Deconstruct', 'Left = Allows decon on car/tanks/trains.\nRight = Disables decon on car/tanks/trains.')
+            add_switch(
+                scroll_pane,
+                switch_state,
+                'comfy_panel_allow_decon',
+                'Deconstruct',
+                'On = Allows decon on car/tanks/trains.\nOff = Disables decon on car/tanks/trains.'
+            )
             scroll_pane.add({type = 'line'})
         end
     end
