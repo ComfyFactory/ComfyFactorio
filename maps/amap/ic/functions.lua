@@ -4,12 +4,10 @@ local Task = require 'utils.task'
 local Token = require 'utils.token'
 local IC = require 'maps.amap.ic.table'
 local WPT = require 'maps.amap.table'
-local RPG = require 'modules.rpg.main'
 
 local Public = {}
 local main_tile_name = 'black-refined-concrete'
 local raise_event = script.raise_event
-local round = math.round
 local floor = math.floor
 
 local function validate_entity(entity)
@@ -947,7 +945,6 @@ function Public.create_car(event)
         car_area = car_areas[ce.type]
     end
 
-    local health = floor(2000 * ce.health * 0.002)
 
     cars[un] = {
         entity = ce,
@@ -956,11 +953,6 @@ function Public.create_car(event)
             right_bottom = {x = car_area.right_bottom.x, y = car_area.right_bottom.y}
         },
         doors = {},
-      --  health_pool = {
-        --    enabled = has_upgraded_health_pool or false,
-        --    health = health,
-      --      max = health
-    --    },
         owner = player.index,
         name = ce.name,
         type = ce.type

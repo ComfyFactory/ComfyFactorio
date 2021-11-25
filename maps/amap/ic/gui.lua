@@ -72,7 +72,7 @@ local k =1
      end
    end
  end
- local k =2
+k =2
   for a=1,20 do
     for b=1,20 do
     local p = {position.x - a-dist, position.y + b+dist}
@@ -82,7 +82,7 @@ local k =1
       end
     end
   end
-  local k =3
+ k =3
    for a=1,20 do
      for b=1,20 do
      local p = {position.x + a+dist, position.y - b-dist}
@@ -92,7 +92,7 @@ local k =1
        end
      end
    end
-   local k =4
+ k =4
     for a=1,20 do
       for b=1,20 do
       local p = {position.x - a-dist, position.y - b-dist}
@@ -688,7 +688,7 @@ Gui.on_click(
         if can_buy then
           local rpg_t = rpgtable.get('rpg_t')
           local msg = {'amap.buyover'}
-   		    Alert.alert_player(player, 5, msg)
+   		    Alert.alert_player(player,5,msg)
           rpg_t[player.index].xp = rpg_t[player.index].xp +1000
           player.remove_item{name='coin', count = need_coin}
         else

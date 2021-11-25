@@ -4,7 +4,6 @@ local Event = require 'utils.event'
 local Functions = require 'maps.amap.ic.functions'
 local IC = require 'maps.amap.ic.table'
 local Minimap = require 'maps.amap.ic.minimap'
-local WPT = require 'maps.amap.table'
 local Public = {}
 
 Public.reset = IC.reset
@@ -72,10 +71,7 @@ local function on_tick()
 
     if tick % 20 == 1 then
         Functions.item_transfer()
-      --  local has_upgraded_health_pool = WPT.get('has_upgraded_health_pool')
-    --    if has_upgraded_health_pool then
-    --        Functions.check_entity_healths()
---end
+
     end
 
     if tick % 240 == 0 then
