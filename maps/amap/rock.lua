@@ -6,7 +6,6 @@ local WD = require 'maps.amap.modules.wave_defense.table'
 local HealthBooster = require 'maps.amap.modules.biter_health_booster_v2'
 local RPG = require 'maps.amap.modules.rpg.table'
 --local HS = require 'maps.amap.highscore'
-local wave_defense_table = WD.get_table()
 local Server = require 'utils.server'
 ------自动化工厂
 local Factories = require 'maps.amap.production'--核心程序
@@ -148,7 +147,7 @@ end
 
 
 
-local function on_rocket_launched(Event)
+local function on_rocket_launched()
   local this = WPT.get()
   --game.print({'amap.times',this.times})
   local rpg_t = RPG.get('rpg_t')
@@ -167,9 +166,7 @@ money=money+this.times*1000
     this.goal=2
     game.print {'amap.goal_1'}
   end
-  for k, p in pairs(game.connected_players) do
-    local player = game.connected_players[k]
-
+  for k, player in pairs(game.connected_players) do
     rpg_t[player.index].points_to_distribute = rpg_t[player.index].points_to_distribute+point
     player.insert{name='coin', count = money}
     player.print({'amap.reward',this.times,point,money}, {r = 0.22, g = 0.88, b = 0.22})
@@ -178,8 +175,7 @@ money=money+this.times*1000
   if not this.pass then
     local wave_number = WD.get('wave_number')
     local msg = {'amap.pass',wave_number}
-    for k, p in pairs(game.connected_players) do
-      local player = game.connected_players[k]
+    for k, player in pairs(game.connected_players) do
       Alert.alert_player(player, 25, msg)
     end
     Server.to_discord_embed(table.concat({'** we win the game ! Record is ', wave_number}))
@@ -200,11 +196,9 @@ local function on_market_item_purchased(event)
   local player = game.players[event.player_index]
 
   local offer_index = event.offer_index
-  local count = event.count
   local offers = market.get_market_items()
   local bought_offer = offers[offer_index].offer
 
-  local index = game.forces.player.index
 
   if bought_offer.type ~= "nothing" then return end
   local health_boost =HealthBooster.get()
@@ -231,12 +225,10 @@ local function on_market_item_purchased(event)
   end
 
   if offer_index == 2 then
-
-    local wave_number = WD.get('wave_number')
     local times = math.floor(wave_number/100)+this.cap
     if this.spider_health >= times then
       player.print({'amap.cap_upgrad'})
-      local spider_health=this.spider_health*1000 + 10000
+      local spider_health=this.spider_health*1000 + 7000
       if spider_health >= 50000 then
         spider_health = 50000
       end
@@ -259,7 +251,6 @@ local function on_market_item_purchased(event)
     game.print({'amap.buy_arty_over',player.name,this.arty*0.1+1})
   end
   if offer_index == 4 then
-    local wave_number = WD.get('wave_number')
     local times = math.floor(wave_number/50)+this.cap
   if times >= 100 then
       times = 100
@@ -281,7 +272,6 @@ if this.biter_health >= times then
   end
 
   if offer_index == 5 then
-    local wave_number = WD.get('wave_number')
     local times = math.floor(wave_number/100)+this.cap+1
     if times >= 100 then
       times = 100
@@ -304,7 +294,6 @@ if this.biter_health >= times then
 
   if offer_index == 6 then
     this.urgrad_rock_dam=this.urgrad_rock_dam+1
-    local damage_increase =this.urgrad_rock_dam*0.1
     local old_dam = game.forces.player.get_ammo_damage_modifier("rocket")
    game.forces.player.set_ammo_damage_modifier("rocket", old_dam+0.1)
     game.print({'amap.urgrad_rock_dam_over',player.name,this.urgrad_rock_dam*0.1})

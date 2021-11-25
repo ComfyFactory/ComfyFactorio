@@ -40,7 +40,7 @@ local function unstuck_player(index)
 end
 
 local function loaded_biters(event)
-    local cause = event.cause
+
     local entity = event.entity
     if not entity or not entity.valid then
         return
@@ -65,7 +65,7 @@ local abc = {
   projectiles[math.random(1, #projectiles)],
   aoe[math.random(1, #aoe)]
 }
-k=math.random(1, #aoe+#wepeon+#projectiles)
+local k=math.random(1, #aoe+#wepeon+#projectiles)
 
 if k>1 and k <=#wepeon then
   k=1
@@ -81,7 +81,7 @@ if k~=2 then
   position=entity.position
 end
 local name = abc[k]
-  e =  entity.surface.create_entity(
+local  e =  entity.surface.create_entity(
         {
             name =name ,
             position = entity.position,
@@ -106,11 +106,11 @@ local name = abc[k]
       e.destructible = false
       this.biter_wudi[#this.biter_wudi+1]=e
 
-      for k, p in pairs(game.connected_players) do
-        local player = game.connected_players[k]
 
+      for k, player in pairs(game.connected_players) do
 unstuck_player(player.index)
       end
+
     end
 end
 

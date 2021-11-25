@@ -1,4 +1,5 @@
 require 'modules.rpg.main'
+local config = require 'comfy_panel.config'.get()
 local RPG_Settings = require 'maps.amap.modules.rpg.table'
 local PL = require 'comfy_panel.player_list'
 local RPG_Func = require 'maps.amap.modules.rpg.functions'
@@ -31,7 +32,6 @@ local player_build = {
 -----波波头代码区块------
 require 'maps.amap.auto_put_turret'
 ----自动化工厂-------
-local List = require 'maps.amap.production_list'
 --------------
 local Functions = require 'maps.amap.functions'
 local IC = require 'maps.amap.ic.table'
@@ -49,8 +49,6 @@ local Autostash = require 'modules.autostash'
 
 local BottomFrame = require 'comfy_panel.bottom_frame'
 
-local Token = require 'utils.token'
-
 local rock = require 'maps.amap.rock'
 local Loot = require'maps.amap.loot'
 local Modifiers = require 'player_modifiers'
@@ -66,7 +64,6 @@ require 'maps.amap.biters_yield_coins'
 
 local Public = {}
 local floor = math.floor
-local remove = table.remove
 --require 'modules.flamethrower_nerf'
 --加载地形r
 --require 'modules.surrounded_by_worms'
@@ -88,11 +85,9 @@ local init_new_force = function()
   enemy.set_friend('protectors', true)
 end
 local setting = function()
+
+  config.gui_config.spaghett.enabled=false
   game.map_settings.enemy_evolution.destroy_factor = 0.002
-  --	game.map_settings.enemy_evolution.pollution_factor = 0.000003
-  --game.map_settings.enemy_evolution.time_factor = 0.00004
-  local this = WPT.get()
-  local surface = game.surfaces[this.active_surface_index]
 
 game.forces.enemy.technologies['construction-robotics'].researched = true
 game.forces.enemy.worker_robots_speed_modifier=3
@@ -212,13 +207,6 @@ function Public.reset_map()
   BiterHealthBooster.set_active_surface(tostring(surface.name))
   Balance.init_enemy_weapon_damage()
 
-  this.chunk_load_tick = game.tick + 1200
-  this.game_lost = false
-  this.last = 0
-
-  global.worm_distance = 210
-  global.average_worm_amount_per_chunk = 5
-  --HS.get_scores()
   setting()
 local world_number=require 'maps.amap.diff'.get("world")
   if world_number == 3 then
@@ -398,8 +386,7 @@ local timereward = function()
     if wave_number % 25 == 0 then
       game.print({'amap.roll'},{r = 0.22, g = 0.88, b = 0.22})
       --biterbuff()
-      for k, p in pairs(game.connected_players) do
-        local player = game.connected_players[k]
+      for k, player in pairs(game.connected_players) do
         rondom(player,wave_number)
         k=k+1
       end
@@ -420,8 +407,7 @@ local getrawrad = function()
   if wave_number > this.number then
 
     local rpg_t = RPG.get('rpg_t')
-    for k, p in pairs(game.connected_players) do
-      local player = game.connected_players[k]
+    for k, player in pairs(game.connected_players) do
       rpg_t[player.index].xp = rpg_t[player.index].xp + 15
     end
     this.number = wave_number

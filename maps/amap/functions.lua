@@ -1,7 +1,5 @@
-local Token = require 'utils.token'
-local Task = require 'utils.task'
+
 local Event = require 'utils.event'
-local Global = require 'utils.global'
 local WPT = require 'maps.amap.table'
 local Rand = require 'maps.amap.random'
 local WD = require 'maps.amap.modules.wave_defense.table'
@@ -14,22 +12,12 @@ local starting_items = {
   ['firearm-magazine'] = 30,
   ['wood'] = 16,
   ['car']=1,
-
 }
 
-Global.register(
-this,
-function(t)
-  this = t
-end
-)
+
 
 local Public = {}
 
-local random = math.random
-local floor = math.floor
-local remove = table.remove
-local sqrt = math.sqrt
 
 function Public.get_player_data(player, remove_user_data)
   local players = WPT.get('players')
@@ -47,16 +35,6 @@ end
 local get_player_data = Public.get_player_data
 
 
-local function fast_remove(tbl, index)
-  local count = #tbl
-  if index > count then
-    return
-  elseif index < count then
-    tbl[index] = tbl[count]
-  end
-
-  tbl[count] = nil
-end
 local function get_car_number()
   local this=WPT.get()
   local car_number=0
@@ -113,24 +91,6 @@ for k, player in pairs(game.connected_players) do
 end
 end
 
-local function calc_players()
-  local players = game.connected_players
-  local check_afk_players = WPT.get('check_afk_players')
-  if not check_afk_players then
-    return #players
-  end
-  local total = 0
-  for i = 1, #players do
-    local player = players[i]
-    if player.afk_time < 36000 then
-      total = total + 1
-    end
-  end
-  if total <= 0 then
-    total = 1
-  end
-  return total
-end
 
 
 local world_name ={
@@ -154,9 +114,8 @@ local function out_info(player)
   end
 end
 
-function Public.game_info(event)
-  for k, p in pairs(game.connected_players) do
-    local player = game.connected_players[k]
+function Public.game_info()
+  for k, player in pairs(game.connected_players) do
     out_info(player)
   end
 end
@@ -202,15 +161,7 @@ for k, player in pairs(game.connected_players) do
         time_weight=150
       end
 
-
-  --  game.print("时间权重为: " .. time_weight .. '')
-      local enemy = game.forces.enemy
-      local rpg_weight = 0
-    --  if enemy.evolution_factor < 0.5 then
-        local lv =rpg_t[player.index].level
-        rpg_weight=lv
---game.print("RPG权重为: " .. rpg_weight .. '')
-      --end
+      local rpg_weight = rpg_t[player.index].level
 
       local all_weight = base_weight+time_weight+rpg_weight
     --   game.print("总权重为: " .. all_weight .. '')
@@ -279,7 +230,6 @@ function Public.on_player_joined_game(event)
   local active_surface_index = WPT.get('active_surface_index')
   local player = game.players[event.player_index]
   local surface = game.surfaces[active_surface_index]
-  local reward = require 'maps.amap.main'.reward
   local player_data = get_player_data(player)
   if not player_data.first_join then
 
@@ -348,7 +298,6 @@ local function on_player_mined_entity(event)
   if not event.entity.valid then return end
   local name = event.entity.name
   local force = event.entity.force
-  local entity = event.entity
 
   local this = WPT.get()
   if force.index == game.forces.player.index then
@@ -482,8 +431,7 @@ if event.research.force.index==game.forces.enemy.index then return end
 local this = WPT.get()
 this.science=this.science+1
 local rpg_t = RPG.get('rpg_t')
-for k, p in pairs(game.connected_players) do
-  local player = game.connected_players[k]
+for k, player in pairs(game.connected_players) do
   local point = math.floor(math.random(1,5))
   local money = math.floor(math.random(1,100))
   rpg_t[player.index].points_to_distribute = rpg_t[player.index].points_to_distribute+point

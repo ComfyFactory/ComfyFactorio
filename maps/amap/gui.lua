@@ -1,7 +1,6 @@
 local Event = require 'utils.event'
 local WPT = require 'maps.amap.table'
 local Gui = require 'utils.gui'
-local SpamProtection = require 'utils.spam_protection'
 local diff=require 'maps.amap.diff'
 local format_number = require 'util'.format_number
 local WD = require 'maps.amap.modules.wave_defense.table'
@@ -10,15 +9,7 @@ local Public = {}
 
 local main_button_name = Gui.uid_name()
 local main_frame_name = Gui.uid_name()
-local floor = math.floor
 
-local function validate_entity(entity)
-    if not (entity and entity.valid) then
-        return false
-    end
-
-    return true
-end
 
 local function validate_player(player)
     if not player then

@@ -59,8 +59,6 @@ end
 end
 
 local final_wave = function()
-local this = WPT.get()
-local wave_number = WD.get('wave_number')
   local wave_defense_table = WD.get_table()
 game.map_settings.enemy_expansion.settler_group_min_size = 50
 game.map_settings.enemy_expansion.min_expansion_cooldown=3600
@@ -115,13 +113,7 @@ goal()
     if wave_defense_table.wave_interval < 1800/diff_k or wave_defense_table.threat <= 0 then
       wave_defense_table.wave_interval = 1800/diff_k
     end
-    local mintime = 7500/diff_k - player_count * 200*diff_k
-    if mintime <= 6900/diff_k then
-      mintime = 6900/diff_k
-    end
-    --game.map_settings.enemy_expansion.min_expansion_cooldown = mintime
-    --game.map_settings.enemy_expansion.max_expansion_cooldown =mintime*4
-    --  game.map_settings.enemy_expansion.max_expansion_cooldown = 104000
+
     local enemy = game.forces.enemy
     if  enemy.evolution_factor >= 0.5 and this.max_flame == 28 then
       this.max_flame=24
@@ -138,12 +130,6 @@ goal()
     game.forces.enemy.set_ammo_damage_modifier("biological", damage_increase)
     if  map.final_wave and wave_number>2000 then final_wave() end
   end
-
-local player_record={}
-player_record.name="ace"
-player_record.wave_number=299
-player_record.pass_number=299
-
 
 function Public.reset_table()
   map.sum=0
@@ -178,7 +164,7 @@ end
 commands.add_command(
     'off_final_wave',
     'off_final_wave,if you affid biter',
-    function(cmd)
+    function()
       local player = game.player
       if player then
           if player ~= nil then
@@ -200,7 +186,7 @@ commands.add_command(
 commands.add_command(
     'off_rocket_diff',
     'off_rocket_diff,to adoive the game too hard',
-    function(cmd)
+    function()
       local player = game.player
       if player then
           if player ~= nil then

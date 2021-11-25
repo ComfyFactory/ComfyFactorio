@@ -16,15 +16,8 @@ local auto_put_turret = function(event)
   if not this.tank[index] then return end
   if not(event.item == nil) then
     if (event.created_entity.name == "gun-turret") then
-      local position = event.created_entity.position
-      --player.print(position)
-      local player_inventory = player.get_inventory(defines.inventory.character_ammo)
-      --player.print(player_inventory)
-
-
       for i=1,#ammo do
         local ammoInYourBag = player.get_item_count(ammo[#ammo-i+1].name)
-        --player.print(ammoInYourBag)
         if ammoInYourBag ~= 0 then
         if ammoInYourBag >= magzine_count then
           event.created_entity.insert{name = ammo[#ammo-i+1].name,count = magzine_count}

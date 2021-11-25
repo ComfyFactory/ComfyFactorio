@@ -80,7 +80,7 @@ function Public.add(surface, position, chest)
 end
 
 function Public.add_rare(surface, position, chest, magic)
-    local budget = magic * 48 
+    local budget = magic * 48
     budget = budget * random(25, 175) * 0.01
 
     if random(1, 128) == 1 then

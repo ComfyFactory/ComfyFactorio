@@ -133,8 +133,6 @@ local function on_player_mined_entity(event)
 	event.buffer.clear()
 
 	local ore = global.rocks_yield_ore["raffle"][math_random(1, global.rocks_yield_ore["size_of_raffle"])]
-	local player = game.players[event.player_index]
-
 	local count = get_amount(entity)
 	count = math_floor(count * (1 + player.force.mining_drill_productivity_bonus))
 
@@ -144,7 +142,6 @@ local function on_player_mined_entity(event)
 	local position = {x = entity.position.x, y = entity.position.y}
 
 	local ore_amount = math_floor(count * 0.85) + 1
-	local stone_amount = math_floor(count * 0.15) + 1
 
 	player.surface.create_entity({name = "flying-text", position = position, text = "+" .. ore_amount .. " [img=item/" .. ore .. "]", color = {r = 200, g = 160, b = 30}})
 if  no_tree[entity.name]~=1 then

@@ -85,14 +85,14 @@ local function is_valid_player(player, unit)
     return true
 end
 
-function Public.biter_pets_tame_unit(player, unit, forced)
+function Public.biter_pets_tame_unit(player, unit)
   local this=WPT.get()
   local index=player.index
   if not this.biter_pets[index] then
      this.biter_pets[index]={}
   end
     local biter_pets = this.biter_pets[index]
-    local index=player.index
+
 
     if not this.biter_number[index] then
         this.biter_number[index]=0
@@ -144,10 +144,6 @@ local function can_move(entity, player)
 end
 
 local function command_unit(entity, player)
-
-    --Pet will follow, if the player is between a distance of 8 to 160 tiles away from it.
-
-
         entity.set_command(
             {
                 type = defines.command.go_to_location,
@@ -156,7 +152,7 @@ local function command_unit(entity, player)
                 distraction = defines.distraction.by_damage
             }
         )
-  
+
 end
 
 local function on_player_changed_position(event)
@@ -212,23 +208,6 @@ end
 
 end
 
-local function on_player_dropped_item(event)
-    local player = game.players[event.player_index]
-    if event.entity.stack.name ~= 'raw-fish' then
-        return
-    end
-    local unit = find_unit(player, event.entity)
-    if not unit then
-        return
-    end
-    if Public.biter_pets_tame_unit(player, unit, false) then
-        event.entity.destroy()
-        return
-    end
-    if unit.force.index == player.force.index then
-        feed_pet(unit)
-    end
-end
 
 local event = require 'utils.event'
 --event.add(defines.events.on_player_dropped_item, on_player_dropped_item)

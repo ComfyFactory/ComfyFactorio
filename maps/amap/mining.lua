@@ -7,7 +7,6 @@ local Pets = require 'maps.amap.biter_pets'
 local WPT = require 'maps.amap.table'
 
 local random = math.random
-local math_random = math.random
 
 local ent_to_create = {'biter-spawner', 'spitter-spawner'}
 if is_mod_loaded('bobenemies') then
@@ -24,7 +23,7 @@ local function unstuck_player(index)
   player.teleport(position, surface)
 end
 
-local function hidden_biter(player, entity)
+local function hidden_biter(entity)
   local pos = entity.position
 
   local roll = math.random(1, 3)
@@ -33,30 +32,30 @@ local function hidden_biter(player, entity)
   if roll == 1 then
     name = BiterRolls.wave_defense_roll_spitter_name()
   elseif roll == 2 then
-  name = BiterRolls.wave_defense_roll_biter_name()
+    name = BiterRolls.wave_defense_roll_biter_name()
   else
-  name = BiterRolls.wave_defense_roll_worm_name()
+    name = BiterRolls.wave_defense_roll_worm_name()
   end
   if name then
-  unit = entity.surface.create_entity({name = name, position = pos,force=game.forces.enemy})
-end
+    unit = entity.surface.create_entity({name = name, position = pos,force=game.forces.enemy})
+  end
 end
 
 local function hidden_biter_pet(player, entity)
 
-	local pos = entity.position
-local name
-	local unit
-	if random(1, 3) == 1 then
-		name =BiterRolls.wave_defense_roll_spitter_name()
-	else
-		name = BiterRolls.wave_defense_roll_biter_name()
-	end
+  local pos = entity.position
+  local name
+  local unit
+  if random(1, 3) == 1 then
+    name =BiterRolls.wave_defense_roll_spitter_name()
+  else
+    name = BiterRolls.wave_defense_roll_biter_name()
+  end
 
   if name then
-  unit = entity.surface.create_entity({name = name, position = pos,force=game.forces.player})
-  	Pets.biter_pets_tame_unit(game.players[player.index], unit)
-end
+    unit = entity.surface.create_entity({name = name, position = pos,force=game.forces.player})
+    Pets.biter_pets_tame_unit(game.players[player.index], unit)
+  end
 
 end
 local function hidden_treasure(player, entity)
@@ -71,81 +70,71 @@ end
 
 
 local function on_player_mined_entity(event)
-	local entity = event.entity
-	if not entity.valid then return end
-	if entity.type ~= "simple-entity" and entity.type ~= "tree" then return end
-	local surface = entity.surface
-local this = WPT.get()
-	if event.player_index then game.players[event.player_index].insert({name = "coin", count = 1}) end
-	local player = game.players[event.player_index]
-	--修复挖矿石路
-	local rpg = RPGtable.get('rpg_t')
-	local rpg_char = rpg[player.index]
-	if rpg_char.stone_path then
-
-		entity.surface.set_tiles({{name = 'stone-path', position = entity.position}}, true)
-	end
-
-	--挖出汽车
-	if random(1,1024) < 2 then
-		local position = {entity.position.x , entity.position.y }
-		--local player = game.players[event.player_index]
-		surface.create_entity({name = 'car', position = position, force = 'player'})
-		unstuck_player(player.index)
-		local msg = ('you find a car!')
-		Alert.alert_player(player, 15, msg)
-	end
-	--挖出虫巢
-
-	if random(1,200) < 2 then
-
-		local position = {entity.position.x , entity.position.y }
-		local player = game.players[event.player_index]
-		local e = surface.create_entity({name = ent_to_create[random(1, #ent_to_create)], position = position, force = 'enemy'})
-    e.destructible = false
-		this.biter_wudi[#this.biter_wudi+1]=e
-	  unstuck_player(player.index)
-	end
-	--挖出宝藏
-	if random(1,150)  < 2 then
-
-		local player = game.players[event.player_index]
-
-		hidden_treasure(player,entity)
-
-	end
-	--挖出宠物
-	if random(1,170)  < 3 then
- 	local player = game.players[event.player_index]
-	 	hidden_biter_pet(player,entity)
-	 end
-	--来挖个虫子
-	if random(1,100)  < 3 then
-		local player = game.players[event.player_index]
-		hidden_biter(player,entity)
-	end
-end
-local function on_entity_died(event)
-    local entity = event.entity
-  local name = event.entity.name
-local force = event.entity.force
-
+  local entity = event.entity
+  if not entity.valid then return end
+  if entity.type ~= "simple-entity" and entity.type ~= "tree" then return end
+  local surface = entity.surface
   local this = WPT.get()
-  if force.index == game.forces.player.index then
-    if name == 'flamethrower-turret' then
-    this.flame = this.flame - 1
-    if this.flame <= 0 then
-      this.flame = 0
-    end
+  if event.player_index then game.players[event.player_index].insert({name = "coin", count = 1}) end
+  local player = game.players[event.player_index]
+  --修复挖矿石路
+  local rpg = RPGtable.get('rpg_t')
+  local rpg_char = rpg[player.index]
+  if rpg_char.stone_path then
+
+    entity.surface.set_tiles({{name = 'stone-path', position = entity.position}}, true)
   end
 
-if name == 'land-mine' then
-this.now_mine = this.now_mine - 1
-if this.now_mine <= 0 then
-  this.now_mine = 0
+  --挖出汽车
+  if random(1,1024) < 2 then
+    local position = {entity.position.x , entity.position.y }
+    --local player = game.players[event.player_index]
+    surface.create_entity({name = 'car', position = position, force = 'player'})
+    unstuck_player(player.index)
+    local msg = ('you find a car!')
+    Alert.alert_player(player, 15, msg)
+  end
+  --挖出虫巢
+
+  if random(1,200) < 2 then
+    local position = {entity.position.x , entity.position.y }
+    local e = surface.create_entity({name = ent_to_create[random(1, #ent_to_create)], position = position, force = 'enemy'})
+    e.destructible = false
+    this.biter_wudi[#this.biter_wudi+1]=e
+    unstuck_player(player.index)
+  end
+  --挖出宝藏
+  if random(1,150)  < 2 then
+    hidden_treasure(player,entity)
+  end
+  --挖出宠物
+  if random(1,170)  < 3 then
+    hidden_biter_pet(player,entity)
+  end
+  --来挖个虫子
+  if random(1,100)  < 3 then
+    hidden_biter(entity)
+  end
 end
-end
-end
+local function on_entity_died(event)
+  local name = event.entity.name
+  local force = event.entity.force
+  if force.index == game.forces.player.index then
+      local this = WPT.get()
+    if name == 'flamethrower-turret' then
+      this.flame = this.flame - 1
+      if this.flame <= 0 then
+        this.flame = 0
+      end
+    end
+
+    if name == 'land-mine' then
+      this.now_mine = this.now_mine - 1
+      if this.now_mine <= 0 then
+        this.now_mine = 0
+      end
+    end
+  end
 
 end
 local Event = require 'utils.event'

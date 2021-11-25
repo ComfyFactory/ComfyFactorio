@@ -1,9 +1,8 @@
 local Event = require 'utils.event'
-local RPG_Settings = require 'maps.amap.modules.rpg.table'
 local BiterHealthBooster = require 'maps.amap.modules.biter_health_booster_v2'
 local insert = table.insert
 local floor = math.floor
-local random = math.random
+
 
 local coin_yield = {
     ['behemoth-biter'] = 5,
@@ -109,9 +108,9 @@ local function on_entity_died(event)
                 end
             end
             for _, player in pairs(players_to_reward) do
-            
+
                     player.insert({name = 'coin', count = coin_count})
-        
+
             end
         end
         if entities_that_earn_coins[cause.name] then

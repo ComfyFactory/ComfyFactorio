@@ -17,7 +17,7 @@ local world_time = {
   [5]=7200* 15*3,
   [6]=7200* 15*2,
 }
-local car={
+local car_name={
   ["car"]=true,
   ["tank"]=true,
   ["spidertron"]=true,
@@ -125,7 +125,7 @@ local function on_player_build_entity(event)
 
   --如果放的是坦克，并且没有放过坦克
 
-  if  car[entity.name]  then
+  if  car_name[entity.name]  then
     if entity.name=="spidertron" then this.had_sipder[index] = true end
     this.player_position[index]=nil
     if this.have_been_put_tank[index]==false then
@@ -165,7 +165,7 @@ local function on_player_build_entity(event)
     end
     --如果没有放过坦克
   end
-    if entity.name~=car[entity.name]  and this.have_been_put_tank[index]==false then
+    if entity.name~=car_name[entity.name]  and this.have_been_put_tank[index]==false then
 
       if entity.name == 'flamethrower-turret' then
         this.flame = this.flame - 1
@@ -315,7 +315,7 @@ local function on_player_mined_entity(event)
 
   if not entity then return end
   if not entity.valid then return end
-  if not car[entity.name] then return end
+  if not car_name[entity.name] then return end
 
   local this=WPT.get()
   local player = game.players[event.player_index]
@@ -338,7 +338,7 @@ local function on_entity_died(event)
   if not (entity and entity.valid) then
     return
   end
-  if car[entity.name] then
+  if car_name[entity.name] then
     local unit_number=entity.unit_number
 
     local this=WPT.get()
@@ -400,16 +400,15 @@ local choois_target = function()
 -- end
 
   if   this.start_game==1 then
-    for k, p in pairs(game.connected_players) do
-      local player = game.connected_players[k]
+    for k, player in pairs(game.connected_players) do
       local rpg_t = RPG.get('rpg_t')
       rpg_t[player.index].xp = 0
 
       local something = player.get_inventory(defines.inventory.chest)
       if something ~= nil then
-      for k, v in pairs(something.get_contents()) do
-        if not car[k] then
-          player.remove_item{name=k, count = v}
+      for n, v in pairs(something.get_contents()) do
+        if not car_name[n] then
+          player.remove_item{name=n, count = v}
         end
       end
     end
@@ -498,7 +497,7 @@ local function on_entity_damaged(event)
 
 
 
-  if car[entity.name]~=true then return end
+  if car_name[entity.name]~=true then return end
   local cause = event.cause
   if cause then
     if cause.valid then
@@ -558,8 +557,6 @@ local function on_player_changed_position(event)
   local wave_number = WD.get('wave_number')
   if wave_number>= 300 then return end
 
-
-  local this = WPT.get()
   local main_surface = game.surfaces[this.active_surface_index]
 
   if player.surface~=main_surface then return  end

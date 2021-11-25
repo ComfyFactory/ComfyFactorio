@@ -1,5 +1,4 @@
 local Event = require 'utils.event'
-local Modifier = require 'player_modifiers'
 local Color = require 'utils.color_presets'
 
 local function validate_player(player)
@@ -46,7 +45,7 @@ local function check_burden(event)
         return
     end
     local fullness = compute_fullness(player)
- 
+
     if fullness >= 0.9 and fullness <= 0.901 then
         player.print('Maybe you should drop some of that inventory to lessen the burden.', Color.red)
     end

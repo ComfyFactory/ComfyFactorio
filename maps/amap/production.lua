@@ -3,7 +3,6 @@ local Rand = require 'maps.amap.random'
 
 local Public = {}
 local List = require 'maps.amap.production_list'
-local WD = require 'maps.amap.modules.wave_defense.table'
 
 local function roll_assembler(maxs)
   local giao = maxs/45
@@ -74,14 +73,7 @@ local function levelup_train_factory(id)
   production.train_assemblers[id].tier = level
 end
 
-local function flying_text(surface, position, text, color)
-	surface.create_entity({
-		name = "flying-text",
-		position = {position.x, position.y - 0.5},
-		text = text,
-		color = color
-	})
-end
+
 
 function Public.produce_assemblers()
   local production = Chrono_table.get_production_table()

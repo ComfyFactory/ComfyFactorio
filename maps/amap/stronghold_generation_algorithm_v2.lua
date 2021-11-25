@@ -126,7 +126,6 @@ function Public.find_available_stronghold_position(car_pos, sh_dis,surface)
         end
     end
 
-
-return find_available_stronghold_position
+return nil
 end
 return Public

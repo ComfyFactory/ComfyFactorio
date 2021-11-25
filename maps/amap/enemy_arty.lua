@@ -20,19 +20,6 @@ ammo={
 
 
 
-local enemy_build_name = {
-    ['biter-spawner'] = true,
-    ['laser-turret'] = true,
-    ['gun-turret'] = true,
-    ['medium-worm-turret'] = true,
-    ['flamethrower-turret'] = true,
-    ['big-worm-turret'] = true,
-    ['behemoth-worm-turret'] = true,
-    ['artillery-turret'] = true,
-
-}
-
-
 local artillery_target_entities = {
   'character',
   --  'tank',
@@ -146,14 +133,13 @@ turret.energy = 99999999
 end
 
 local function baolei_base(surface,position,robot_number,fix_number,out_wall,something,wave_number,baolei_id)
-  local this = WPT.get()
   local k = 30
 local area = {left_top = {position.x-k, position.y-k}, right_bottom = {position.x+k, position.y+k}}
   for _, e in pairs(surface.find_entities_filtered({type = {"unit-spawner",  "unit", "tree","simple-entity","cliff"}, area = area})) do
     if e.type =="unit-spawner" then
       local pos = surface.find_non_colliding_position(e.name, e.position, 128, 4)
       if position then
-        local entity = surface.create_entity({name = e.name, position = pos, force = "enemy"})
+        surface.create_entity({name = e.name, position = pos, force = "enemy"})
       end
     end
     e.destroy()
@@ -306,7 +292,7 @@ local enemy_turret={
 
 
 local function get_new_arty()
-  local this = WPT.get()
+
   local wave_number = WD.get('wave_number')
   if wave_number <100 then return end
     local wave_defense_table = WD.get_table()
@@ -317,8 +303,7 @@ local function get_new_arty()
 
 local position=get_baolei_pos(target.position,65,surface)
 if position == nil then return end
-local a = position.x
-local b = position.y
+
   game.print({'amap.biter_build',position.x,position.y,surface.name})
   urgrade_ammo(wave_number)
   local map=diff.get()
@@ -398,7 +383,6 @@ something[7]={name='artillery-turret',worth=500,wave_number=1300,index=7,number=
 
   while fix_worth > 0 do
     local index = math.random(1,#something)
-    local name = something[index].name
     local worth=something[index].worth
     fix_worth=fix_worth-worth
     something[index].number=something[index].number+1
@@ -408,7 +392,7 @@ something[7]={name='artillery-turret',worth=500,wave_number=1300,index=7,number=
      baolei_base(surface,position,robot_number,fix_number,out_wall,something,wave_number,baolei_id)
 
   if wave_number>=2000 and map.final_wave then
-    local e = surface.create_entity{name = 'artillery-turret', position = {x=pos.x,y=pos.y},
+    local e = surface.create_entity{name = 'artillery-turret', position = {x=position.x,y=position.y},
     force=game.forces.enemy,
     direction= math.random(1,7)}
     arty_count.all[#arty_count.all+1]=e
@@ -540,14 +524,6 @@ local function do_artillery_turrets_targets()
   end
 end
 
-local function is_roboport_hear(surface,position,area)
-local roboport=false
-roboports=surface.find_entities_filtered({type = {"roboport"}, area = area,force=game.forces.enemy})
-if #roboports-1~=0 then
-roboport=true
-end
-return roboport
-end
 
 local function kill_wall(baolei_id)
 
@@ -666,7 +642,6 @@ local function on_robot_built_entity(event)
     end
 
     if  e.name~="land-mine" then
-    local position=e.position
     for i,v in pairs(arty_count.arty) do
       if v.roboport and v.roboport.valid then
       local pos=v.roboport.position

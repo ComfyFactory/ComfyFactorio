@@ -1,6 +1,5 @@
 local Global = require 'utils.global'
 local surface_name = 'amap'
-local WPT = require 'maps.amap.table'
 local Reset = require 'maps.amap.soft_reset'
 local diff=require 'maps.amap.diff'
 
@@ -75,27 +74,27 @@ function Public.create_surface()
 
 
   }
-  local all_biter_autoplace_controls={
-    ["coal"] = {frequency = "10", size = "10", richness = "5"},
-    ["stone"] = {frequency = "10", size = "10", richness = "5"},
-    ["copper-ore"] = {frequency = "10", size = "10", richness = "5"},
-    ["iron-ore"] ={frequency = "10", size = "10", richness = "5"},
-    ["uranium-ore"] = {frequency = "10", size = "10", richness = "5"},
-    ["crude-oil"] ={frequency = "10", size = "10", richness = "5"},
-    ["trees"] = {frequency = "1", size = "1", richness = "1"},
-    ["enemy-base"] = {frequency = "10", size = "10", richness = "2"},
-
-  }
-  local winter_autoplace_controls={
-    ["coal"] = {frequency = "6", size = "1", richness = "1"},
-    ["stone"] = {frequency = "6", size = "1", richness = "1"},
-    ["copper-ore"] = {frequency = "6", size = "2",richness = "1"},
-    ["iron-ore"] = {frequency ="6", size = "2", richness = "1"},
-    ["uranium-ore"] = {frequency ="1.7", size = "2", richness = "0.7"},
-    ["crude-oil"] = {frequency = "2", size = "2", richness = "1.2"},
-    ["trees"] = {frequency = "1", size = "0.7", richness = "0.7"},
-  	["enemy-base"] = {frequency = "3", size = "2", richness = "1"},
-  }
+  -- local all_biter_autoplace_controls={
+  --   ["coal"] = {frequency = "10", size = "10", richness = "5"},
+  --   ["stone"] = {frequency = "10", size = "10", richness = "5"},
+  --   ["copper-ore"] = {frequency = "10", size = "10", richness = "5"},
+  --   ["iron-ore"] ={frequency = "10", size = "10", richness = "5"},
+  --   ["uranium-ore"] = {frequency = "10", size = "10", richness = "5"},
+  --   ["crude-oil"] ={frequency = "10", size = "10", richness = "5"},
+  --   ["trees"] = {frequency = "1", size = "1", richness = "1"},
+  --   ["enemy-base"] = {frequency = "10", size = "10", richness = "2"},
+  --
+  -- }
+  -- local winter_autoplace_controls={
+  --   ["coal"] = {frequency = "6", size = "1", richness = "1"},
+  --   ["stone"] = {frequency = "6", size = "1", richness = "1"},
+  --   ["copper-ore"] = {frequency = "6", size = "2",richness = "1"},
+  --   ["iron-ore"] = {frequency ="6", size = "2", richness = "1"},
+  --   ["uranium-ore"] = {frequency ="1.7", size = "2", richness = "0.7"},
+  --   ["crude-oil"] = {frequency = "2", size = "2", richness = "1.2"},
+  --   ["trees"] = {frequency = "1", size = "0.7", richness = "0.7"},
+  -- 	["enemy-base"] = {frequency = "3", size = "2", richness = "1"},
+  -- }
 
   local no_ore_autoplace_controls={
     ["coal"] = {frequency = "0", size = "0", richness = "1"},
