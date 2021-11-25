@@ -90,7 +90,7 @@ require 'modules.autostash'
 --require 'maps.biter_battles_v2.main'
 --require 'maps.biter_battles.biter_battles'
 
---![[A map that imitating MF, defending rocket silos instead of trains]]--
+--![[Drive your car to a death race with biter]]--
 --require 'maps.amap.main'
 
 --![[Guide a Train through rough terrain, while defending it from the biters]]--
