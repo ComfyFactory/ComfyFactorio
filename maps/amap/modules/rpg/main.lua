@@ -517,11 +517,9 @@ local function on_entity_damaged(event)
     end
 
 
-
 	    if event.cause.force.index == 2 then
         return
     end
-
 
 
     if not event.entity.valid then
@@ -531,6 +529,16 @@ local function on_entity_damaged(event)
     local entity = event.entity
     local cause = event.cause
 
+    if
+        cause.get_inventory(defines.inventory.character_ammo)[cause.selected_gun_index].valid_for_read or
+            cause.get_inventory(defines.inventory.character_guns)[cause.selected_gun_index].valid_for_read
+     then
+        local is_explosive_bullets_enabled = Public.get_explosive_bullets()
+        if is_explosive_bullets_enabled then
+            Public.explosive_bullets(event)
+        end
+        return
+    end
 
     if not cause.player then
         return
