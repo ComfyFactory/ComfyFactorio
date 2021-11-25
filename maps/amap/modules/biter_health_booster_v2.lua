@@ -5,16 +5,10 @@
 -- do not use values below 1
 
 local Event = require 'utils.event'
-local LootDrop = require 'modules.mobs_drop_loot'
-local WD = require 'maps.amap.modules.wave_defense.table'
 local Global = require 'utils.global'
-local Task = require 'utils.task'
 local Token = require 'utils.token'
 
 local floor = math.floor
-local insert = table.insert
-local random = math.random
-local sqrt = math.sqrt
 local round = math.round
 local Public = {}
 
@@ -87,14 +81,6 @@ local function clear_unit_from_tbl(unit_number)
         this.biter_health_boost_units[unit_number] = nil
     end
 end
-
-local removeUnit =
-    Token.register(
-    function(data)
-        local unit_number = data.unit_number
-        clear_unit_from_tbl(unit_number)
-    end
-)
 
 
 local function clean_table()
