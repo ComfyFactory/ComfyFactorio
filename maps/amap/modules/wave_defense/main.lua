@@ -1050,17 +1050,6 @@ local function check_group_positions()
     end
 end
 
-local function log_threat()
-    local threat_log_index = WD.get('threat_log_index')
-    WD.set('threat_log_index', threat_log_index + 1)
-    local threat_log = WD.get('threat_log')
-    local threat = WD.get('threat')
-    threat_log_index = WD.get('threat_log_index')
-    threat_log[threat_log_index] = threat
-    if threat_log_index > 900 then
-        threat_log[threat_log_index - 901] = nil
-    end
-end
 
 local tick_tasks = {
     [30] = set_main_target,
