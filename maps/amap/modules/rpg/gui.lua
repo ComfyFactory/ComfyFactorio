@@ -29,7 +29,6 @@ local spell3_button_name = RPG.spell3_button_name
 
 local sub = string.sub
 local round = math.round
-local floor = math.floor
 
 function Public.draw_gui_char_button(player)
     if player.gui.top[draw_main_frame_name] then

@@ -533,10 +533,6 @@ local function on_entity_damaged(event)
         cause.get_inventory(defines.inventory.character_ammo)[cause.selected_gun_index].valid_for_read or
             cause.get_inventory(defines.inventory.character_guns)[cause.selected_gun_index].valid_for_read
      then
-        local is_explosive_bullets_enabled = Public.get_explosive_bullets()
-        if is_explosive_bullets_enabled then
-            Public.explosive_bullets(event)
-        end
         return
     end
 
@@ -962,26 +958,6 @@ local function floaty_hearts(entity, c)
     end
 end
 
-local function tame_unit_effects(player, entity)
-    floaty_hearts(entity, 7)
-
-    rendering.draw_text {
-        text = '~' .. player.name .. "'s pet~",
-        surface = player.surface,
-        target = entity,
-        target_offset = {0, -2.6},
-        color = {
-            r = player.color.r * 0.6 + 0.25,
-            g = player.color.g * 0.6 + 0.25,
-            b = player.color.b * 0.6 + 0.25,
-            a = 1
-        },
-        scale = 1.05,
-        font = 'default-large-semibold',
-        alignment = 'center',
-        scale_with_zoom = false
-    }
-end
 
 local function get_base_biter()
   local this=WPT.get()
@@ -996,22 +972,6 @@ local function get_base_biter()
   end
 end
 
-
-local function get_random_car()
-  local this=WPT.get()
-  local index_all={}
-  for k, player in pairs(game.connected_players) do
-  if  this.tank[player.index] then
-    index_all[#index_all + 1]=player.index
-  end
-  end
-  local k = math.random(1,#index_all)
-  local index = index_all[k]
-  local wave_defense_table = WD.get_table()
-  if this.tank[index] and this.tank[index].destructible then
-    return this.tank[index]
-  end
-end
 
 local function on_player_used_capsule(event)
     local enable_mana = RPG.get('rpg_extra').enable_mana
@@ -1131,20 +1091,8 @@ local function on_player_used_capsule(event)
         if this.tank[index] and this.tank[index].valid then
 
           player.teleport(main_surface.find_non_colliding_position('character', this.tank[player.index].position, 20, 1, false) or {x=0,y=0}, main_surface)
-        else
-
-        if get_base_biter() then
-
-          local car=get_random_car()
-          if car then
-            local pos = car.position
-            player.teleport(main_surface.find_non_colliding_position('character',pos, 20, 1, false) or {x=0,y=0}, main_surface)
-          end
-        else
-
-          player.teleport(surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5), surface)
         end
-      end
+      
         rpg_t[player.index].mana = 0
         player.character.health = 10
         player.character.surface.create_entity({name = 'water-splash', position = player.position})
