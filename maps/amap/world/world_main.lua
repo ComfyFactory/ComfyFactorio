@@ -1,14 +1,13 @@
 local WPT = require 'maps.amap.table'
 
-local RPGtable = require 'maps.amap.modules.rpg.table'
 local Loot = require "maps.amap.loot"
 local BiterRolls = require 'maps.amap.modules.wave_defense.biter_rolls'
 
 local MT = require "maps.amap.basic_markets"
 
-local random = math.random
+
 local math_random = math.random
-local math_floor = math.floor
+
 local math_abs = math.abs
 
 local Factories = require 'maps.amap.production'
@@ -16,7 +15,7 @@ local Factories = require 'maps.amap.production'
 local diff = require 'maps.amap.diff'
 local world_cave=require 'maps.amap.world.world_function'.world_cave
 local world_quarter=require 'maps.amap.world.world_function'.quarter
-local world_crossing=require 'maps.amap.world.world_function'.crossing
+--local world_crossing=require 'maps.amap.world.world_function'.crossing
 local world_winter=require 'maps.amap.world.world_function'.winter
 local world_water=require 'maps.amap.world.world_function'.water
 local world_water_dungle=require 'maps.amap.world.world_function'.water_dungle
@@ -32,18 +31,12 @@ require "modules.rocks_heal_over_time"
 require "modules.rocks_yield_ore_veins"
 require "modules.no_deconstruction_of_neutral_entities"
 
-local ent_to_create = {'biter-spawner', 'spitter-spawner'}
-if is_mod_loaded('bobenemies') then
-  ent_to_create = {'bob-biter-spawner', 'bob-spitter-spawner'}
-end
-
-
 
 local function move_away_things(surface, area)
   for _, e in pairs(surface.find_entities_filtered({type = {"unit-spawner",  "unit", "tree"}, area = area})) do
     local position = surface.find_non_colliding_position(e.name, e.position, 128, 4)
     if position then
-      local entity = surface.create_entity({name = e.name, position = position, force = "enemy"})
+      surface.create_entity({name = e.name, position = position, force = "enemy"})
       e.destroy()
     end
   end
@@ -52,7 +45,6 @@ end
 
 
 local function build_base(surface,maxs,event,position)
-  local this = WPT.get()
   if position.x>-4 and position.x<4 then
     if position.y>1 and position.y<5 then
       surface.set_tiles({{name = "water", position = position}})
@@ -65,18 +57,6 @@ local function build_base(surface,maxs,event,position)
         surface.create_entity{name = "stone-wall", position = {x=position.x,y=position.y}, force=game.forces.player}
       end
     end
-
-    -- local h = math_abs(position.x)
-    -- local k = math_abs(position.y)
-    -- if maxs < 50 and maxs > 46  then
-    --   if (h%7==1) or (k%7==1) then
-    --     if surface.can_place_entity{name = "gun-turret", position = position, force=game.forces.player} then
-    --
-    --       local e = surface.create_entity{name = "gun-turret", position = position, force=game.forces.player}
-    --       e.insert{name='firearm-magazine', count = 35}
-    --     end
-    --   end
-    -- end
   end
 end
 
@@ -86,8 +66,6 @@ local function rand_box(surface, position)
 end
 
 local function rand_building(surface,maxs,position)
-
-  local production = WPT.get_production_table()
   local factory = Factories.roll_random_assembler(maxs)
   local entity = surface.create_entity({name = factory.entity, force = "neutral", position = position})
   entity.destructible = false
@@ -109,19 +87,12 @@ local function rand_worm(surface,position)
   surface.create_entity({name = BiterRolls.wave_defense_roll_worm_name(), position = position, force = 'enemy'})
 end
 
-local function remove_resouces(event)
-  local entities = event.surface.find_entities_filtered({area = event.area, name = {"iron-ore", "copper-ore", "coal", "stone"}})
-  for _, entity in pairs(entities) do
-    entity.destroy()
-  end
-end
 local function on_chunk_generated(event)
 
   local surface = event.surface
   local this = WPT.get()
   if	not(surface.index == game.surfaces[this.active_surface_index].index) then return end
 
-  local left_top = event.area.left_top
   local left_top_x = event.area.left_top.x
   local left_top_y = event.area.left_top.y
 
@@ -130,8 +101,7 @@ local function on_chunk_generated(event)
   local set_tiles = surface.set_tiles
   local get_tile = surface.get_tile
   local position
-  local noise
-  local tem_pos
+
   local map=diff.get()
   for x = 0, 31, 1 do
     for y = 0, 31, 1 do
@@ -181,9 +151,9 @@ local function on_chunk_generated(event)
 
         world_water_dungle(surface,position,seed)
         end
-        if map.world == 5 then
-
-        end
+        -- if map.world == 5 then
+        --
+        -- end
         if map.world ~= 4 then
         world_cave(surface,position,seed,get_tile,set_tiles,event)
       end
@@ -192,7 +162,7 @@ local function on_chunk_generated(event)
     end
   end
   if map.world == 6 then
-    world_winter(surface,area,event,seed)
+    world_winter(surface,event,seed)
   end
 end
 
@@ -219,4 +189,3 @@ Event.on_init(on_init)
 
 --Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 Event.add(defines.events.on_chunk_generated, on_chunk_generated)
-return Public

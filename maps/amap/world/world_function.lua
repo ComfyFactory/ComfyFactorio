@@ -1,19 +1,13 @@
-local Global = require 'utils.global'
-
 local Public = {}
 local simplex_noise = require 'utils.simplex_noise'.d2
 
 local get_noise = require "utils.get_noise"
-local random = math.random
+
 
 local rock_raffle = {"sand-rock-big","sand-rock-big", "rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-big","rock-huge"}
 local size_of_rock_raffle = #rock_raffle
 
-local colors = {{255, 0, 0}, {0, 255, 0}, {0, 0, 255}}
-local function add_light(e)
-	local color = colors[math.random(1, 3)]
-	local light_nr = rendering.draw_light({sprite="utility/light_small", orientation=1, scale=1, intensity=1, minimum_darkness=0, oriented=false, color=color, target=e, target_offset={0, -0.5}, surface=e.surface})
-end
+
 local ore_raffle = {
 	"iron-ore", "iron-ore", "iron-ore", "copper-ore", "copper-ore", "coal", "stone"
 }
@@ -32,20 +26,11 @@ local function place_entity(surface, position)
 end
 
 
-local function move_away_things(surface, area)
-	for _, e in pairs(surface.find_entities_filtered({type = {"unit-spawner",  "unit", "tree"}, area = area})) do
-		local position = surface.find_non_colliding_position(e.name, e.position, 128, 4)
-		if position then
-			local entity = surface.create_entity({name = e.name, position = position, force = "enemy"})
-			e.destroy()
-		end
-	end
-end
 
-function Public.world_cave(surface,position,seed,get_tile,set_tiles,event)
+function Public.world_cave(surface,position,seed,get_tile)
 	if math.random(1, 2)==2 then
 		if not get_tile(position).collides_with("resource-layer") then
-			noise = get_noise("scrapyard", position, seed)
+		local noise = get_noise("scrapyard", position, seed)
 			if is_scrap_area(noise) then
 				--set_tiles({{name = "dirt-" .. math.floor(math.abs(noise) * 12) % 4 + 3, position = position}}, true)
 				place_entity(surface, position)
@@ -55,22 +40,22 @@ function Public.world_cave(surface,position,seed,get_tile,set_tiles,event)
 	end
 end
 
-local spawn_size = 96
+local base_size = 96
 local wall_thickness = 3
 
 local function is_spawn_wall(p)
 	--if p.y < -32 and p.x < -32 then return false end
 	--if p.y > 32 and p.x > 32 then return false end
-	if p.x >= spawn_size - wall_thickness then return true end
-	if p.x < spawn_size * -1 + wall_thickness then return true end
-	if p.y >= spawn_size - wall_thickness then return true end
-	if p.y < spawn_size * -1 + wall_thickness then return true end
+	if p.x >= base_size - wall_thickness then return true end
+	if p.x < base_size * -1 + wall_thickness then return true end
+	if p.y >= base_size - wall_thickness then return true end
+	if p.y < base_size * -1 + wall_thickness then return true end
 	return false
 end
 
 function Public.quarter(event,x,y)
 	local left_top = event.area.left_top
-	if left_top.x < spawn_size and left_top.y < spawn_size and left_top.x >= spawn_size * -1 and left_top.y >= spawn_size * -1 then
+	if left_top.x < base_size and left_top.y < base_size and left_top.x >= base_size * -1 and left_top.y >= base_size * -1 then
 		--摧毁水
 		for _, entity in pairs(event.surface.find_entities_filtered({area = event.area, name = "water"})) do
 			entity.destroy()
@@ -90,27 +75,27 @@ function Public.quarter(event,x,y)
 
 
 		if not ore then return end
-		local p = {x = left_top.x + x, y = left_top.y + y}
+	local p = {x = left_top.x + x, y = left_top.y + y}
 		event.surface.create_entity({name = ore, position = p, amount = 1000})
 	end
 
 	--切割水域
-	local p = {left_top.x + x, left_top.y + y}
+		local pos = {left_top.x + x, left_top.y + y}
 	local area=event.area
 	local surface=event.surface
 	if left_top.x == 0 or left_top.x == -32 then
-		surface.set_tiles({{name = "deepwater", position = p}})
+		surface.set_tiles({{name = "deepwater", position = pos}})
 		surface.destroy_decoratives({area = area})
 
 	end
 	if left_top.y == 0 or left_top.y == -32 then
-		surface.set_tiles({{name = "deepwater", position = p}})
+		surface.set_tiles({{name = "deepwater", position = pos}})
 		surface.destroy_decoratives({area = area})
 	end
 end
 
 
-function Public.crossing(surface,maxs,position,area,left_top)
+function Public.crossing(surface,position,left_top)
 
 local noise_1 =1
 if left_top.x < 64 and left_top.x > -64 then
@@ -226,7 +211,7 @@ function Public.water_dungle(surface,position,seed)
 
 end
 
-function Public.winter(surface,area,event,seed)
+function Public.winter(surface,event,seed)
 
 	local ores = surface.find_entities_filtered({area = event.area, name = {"iron-ore", "copper-ore", "coal", "stone"}})
 	for _, ore in pairs(ores) do
