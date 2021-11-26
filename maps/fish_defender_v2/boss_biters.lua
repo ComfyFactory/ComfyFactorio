@@ -1,7 +1,8 @@
-local FDT = require 'maps.fish_defender_v2.table'
+local Public = require 'maps.fish_defender_v2.table'
 
-local boss_biter = {}
-local math_random = math.random
+local random = math.random
+local sqrt = math.sqrt
+
 local radius = 6
 local targets = {}
 local acid_splashes = {
@@ -16,15 +17,15 @@ local acid_lines = {
 }
 for x = radius * -1, radius, 1 do
     for y = radius * -1, radius, 1 do
-        if math.sqrt(x ^ 2 + y ^ 2) <= radius then
+        if sqrt(x ^ 2 + y ^ 2) <= radius then
             targets[#targets + 1] = {x = x, y = y}
         end
     end
 end
 
 local function acid_nova(event)
-    for _ = 1, math.random(16, 32) do
-        local i = math.random(1, #targets)
+    for _ = 1, random(16, 32) do
+        local i = random(1, #targets)
         event.entity.surface.create_entity(
             {
                 name = acid_splashes[event.entity.name],
@@ -39,19 +40,19 @@ local function acid_nova(event)
     end
 end
 
-boss_biter.died = function(event)
-    local acid_lines_delay = FDT.get('acid_lines_delay')
+function Public.died(event)
+    local acid_lines_delay = Public.get('acid_lines_delay')
     if acid_splashes[event.entity.name] then
         acid_nova(event)
     end
     if acid_lines_delay[event.entity.unit_number] then
-        FDT.get('acid_lines_delay')[event.entity.unit_number] = nil
+        Public.get('acid_lines_delay')[event.entity.unit_number] = nil
     end
-    FDT.get('boss_biters')[event.entity.unit_number] = nil
+    Public.get('boss_biters')[event.entity.unit_number] = nil
 end
 
 local function acid_line(surface, name, source, target)
-    local distance = math.sqrt((source.x - target.x) ^ 2 + (source.y - target.y) ^ 2)
+    local distance = sqrt((source.x - target.x) ^ 2 + (source.y - target.y) ^ 2)
 
     if distance > 16 then
         return false
@@ -62,7 +63,7 @@ local function acid_line(surface, name, source, target)
     local position = {source.x, source.y}
 
     for i = 1, distance + 4, 1 do
-        if math_random(1, 3) == 1 then
+        if random(1, 3) == 1 then
             surface.create_entity(
                 {
                     name = name,
@@ -81,19 +82,22 @@ local function acid_line(surface, name, source, target)
     return true
 end
 
-boss_biter.damaged_entity = function(event)
-    if acid_lines[event.cause.name] then
-        local acid_lines_delay = FDT.get('acid_lines_delay')
-        if not acid_lines_delay[event.cause.unit_number] then
-            FDT.set('acid_lines_delay')[event.cause.unit_number] = 0
+function Public.damaged_entity(event)
+    local entity = event.entity
+    local cause = event.cause
+
+    if acid_lines[cause.name] then
+        local acid_lines_delay = Public.get('acid_lines_delay')
+        if not acid_lines_delay[cause.unit_number] then
+            Public.set('acid_lines_delay')[cause.unit_number] = 0
         end
 
-        if acid_lines_delay[event.cause.unit_number] < game.tick then
-            if acid_line(event.cause.surface, acid_lines[event.cause.name], event.cause.position, event.entity.position) then
-                FDT.set('acid_lines_delay')[event.cause.unit_number] = game.tick + 180
+        if acid_lines_delay[cause.unit_number] < game.tick then
+            if acid_line(cause.surface, acid_lines[cause.name], cause.position, entity.position) then
+                Public.set('acid_lines_delay')[cause.unit_number] = game.tick + 180
             end
         end
     end
 end
 
-return boss_biter
+return Public

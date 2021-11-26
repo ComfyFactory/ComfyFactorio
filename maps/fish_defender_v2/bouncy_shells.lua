@@ -1,5 +1,7 @@
+local Public = require 'maps.fish_defender_v2.table'
+
 local radius = 9
-local math_random = math.random
+local random = math.random
 
 local ammo_to_projectile_translation = {
     ['shotgun-shell'] = 'shotgun-pellet',
@@ -21,7 +23,7 @@ local function create_projectile(surface, position, target, name)
 end
 
 local function bounce(surface, position, ammo)
-    if math_random(1, 3) ~= 1 then
+    if random(1, 3) ~= 1 then
         return
     end
     local valid_entities = {}
@@ -40,25 +42,26 @@ local function bounce(surface, position, ammo)
         return
     end
 
-    for _ = 1, math_random(3, 6), 1 do
-        create_projectile(surface, position, valid_entities[math_random(1, #valid_entities)].position, ammo)
+    for _ = 1, random(3, 6), 1 do
+        create_projectile(surface, position, valid_entities[random(1, #valid_entities)].position, ammo)
     end
 end
 
-local function bouncy_shells(event)
-    if event.damage_type.name ~= 'physical' then
+function Public.bouncy_shells(event)
+    local damage_type = event.damage_type
+    if damage_type.name ~= 'physical' then
         return false
     end
-    local player = event.cause
-    if player.shooting_state.state == defines.shooting.not_shooting then
+    local cause = event.cause
+    if cause.shooting_state.state == defines.shooting.not_shooting then
         return false
     end
-    local selected_weapon = player.get_inventory(defines.inventory.character_guns)[player.selected_gun_index]
+    local selected_weapon = cause.get_inventory(defines.inventory.character_guns)[cause.selected_gun_index]
     if selected_weapon.name ~= 'combat-shotgun' and selected_weapon.name ~= 'shotgun' then
         return false
     end
 
-    local selected_ammo = player.get_inventory(defines.inventory.character_ammo)[player.selected_gun_index]
+    local selected_ammo = cause.get_inventory(defines.inventory.character_ammo)[cause.selected_gun_index]
     if not selected_ammo then
         return
     end
@@ -66,7 +69,7 @@ local function bouncy_shells(event)
         return
     end
 
-    bounce(player.surface, event.entity.position, ammo_to_projectile_translation[selected_ammo.name])
+    bounce(cause.surface, event.entity.position, ammo_to_projectile_translation[selected_ammo.name])
 end
 
-return bouncy_shells
+return Public

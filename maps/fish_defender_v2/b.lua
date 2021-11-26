@@ -1,13 +1,12 @@
 local simplex_noise = require 'utils.simplex_noise'.d2
 -- local map_data = require 'maps.fish_defender_v2.fish_defender_layout'
 local map_data = require 'maps.fish_defender_v2.map'
+local Public = require 'maps.fish_defender_v2.table'
 
 local random = math.random
 local abs = math.abs
 local floor = math.floor
 local scale = 1
-
-local Public = {}
 
 local tile_map = {
     [1] = false,
@@ -171,11 +170,12 @@ function Public.make_chunk(event)
     end
 
     local surface = event.surface
+    local area = event.area
 
-    local x1 = event.area.left_top.x
-    local y1 = event.area.left_top.y
-    local x2 = event.area.right_bottom.x
-    local y2 = event.area.right_bottom.y
+    local x1 = area.left_top.x
+    local y1 = area.left_top.y
+    local x2 = area.right_bottom.x
+    local y2 = area.right_bottom.y
 
     local seed = game.surfaces[1].map_gen_settings.seed
 

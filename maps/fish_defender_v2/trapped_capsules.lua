@@ -1,5 +1,5 @@
 local Event = require 'utils.event'
-local FDT = require 'maps.fish_defender_v2.table'
+local Public = require 'maps.fish_defender_v2.table'
 
 local radius = 20
 
@@ -10,23 +10,25 @@ local whitelist = {
 }
 
 local function on_entity_died(event)
-    local trapped_capsules_unlocked = FDT.get('trapped_capsules_unlocked')
+    local trapped_capsules_unlocked = Public.get('trapped_capsules_unlocked')
     if not trapped_capsules_unlocked then
         return
     end
 
-    if not event.entity.valid then
+    local entity = event.entity
+    if not entity.valid then
         return
     end
-    if not whitelist[event.entity.name] then
+
+    if not whitelist[entity.name] then
         return
     end
 
     local valid_targets = {}
-    local position = event.entity.position
+    local position = entity.position
 
     for _, e in pairs(
-        event.entity.surface.find_entities_filtered(
+        entity.surface.find_entities_filtered(
             {
                 area = {{position.x - radius, position.y - radius}, {position.x + radius, position.y + radius}},
                 force = 'enemy'
@@ -45,9 +47,9 @@ local function on_entity_died(event)
         return
     end
 
-    event.entity.surface.create_entity(
+    entity.surface.create_entity(
         {
-            name = whitelist[event.entity.name],
+            name = whitelist[entity.name],
             position = position,
             force = 'player',
             source = position,
@@ -59,3 +61,5 @@ local function on_entity_died(event)
 end
 
 Event.add(defines.events.on_entity_died, on_entity_died)
+
+return Public

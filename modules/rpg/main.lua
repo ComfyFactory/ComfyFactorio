@@ -590,7 +590,7 @@ local function one_punch(character, target, damage, get_health_pool)
     vector[1] = vector[1] * 1.5
     vector[2] = vector[2] * 1.5
 
-    local a = 0.45
+    local a = 0.20
 
     local cs = character.surface
     local cp = character.position
@@ -614,15 +614,6 @@ local function one_punch(character, target, damage, get_health_pool)
                                             max_unit_health = 10
                                         end
                                         local final = floor(damage * max_unit_health)
-                                        character.surface.create_entity(
-                                            {
-                                                name = 'flying-text',
-                                                position = character.position,
-                                                text = '‼' .. final,
-                                                color = {255, 0, 0}
-                                            }
-                                        )
-                                        character.surface.create_entity({name = 'blood-explosion-huge', position = character.position})
                                         set_health_boost(e, final, character)
                                         if e.valid and e.health <= 0 and get_health_pool <= 0 then
                                             e.die(e.force.name, character)
