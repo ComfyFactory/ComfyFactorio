@@ -1,5 +1,5 @@
 local Server = require 'utils.server'
-local FDT = require 'maps.fish_defender_v2.table'
+local Public = require 'maps.fish_defender_v2.table'
 
 local mapkeeper = '[color=blue]Mapkeeper:[/color]'
 
@@ -30,7 +30,7 @@ commands.add_command(
 
         ::continue::
 
-        local this = FDT.get()
+        local this = Public.get()
         local reset_map = require 'maps.fish_defender_v2.main'.reset_game
 
         if not this.reset_are_you_sure then
@@ -103,13 +103,15 @@ commands.add_command(
             end
         end
 
-        local stop_generating_map = FDT.get('stop_generating_map')
+        local stop_generating_map = Public.get('stop_generating_map')
         if not stop_generating_map then
-            FDT.set('stop_generating_map', true)
+            Public.set('stop_generating_map', true)
             player.print('Stopped generating the map!')
         else
-            FDT.set('stop_generating_map', false)
+            Public.set('stop_generating_map', false)
             player.print('Resumed the generation of map!')
         end
     end
 )
+
+return Public

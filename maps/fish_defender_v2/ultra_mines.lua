@@ -1,5 +1,5 @@
 local Event = require 'utils.event'
-local FDT = require 'maps.fish_defender_v2.table'
+local Public = require 'maps.fish_defender_v2.table'
 local radius = 8
 
 local function damage_entities_around_target(entity, damage)
@@ -25,27 +25,31 @@ local function damage_entities_around_target(entity, damage)
 end
 
 local function on_entity_died(event)
-    local ultra_mines_unlocked = FDT.get('ultra_mines_unlocked')
+    local ultra_mines_unlocked = Public.get('ultra_mines_unlocked')
     if not ultra_mines_unlocked then
         return
     end
-    if not event.entity.valid then
-        return
-    end
-    if event.entity.name ~= 'land-mine' then
+    local entity = event.entity
+    if not entity.valid then
         return
     end
 
-    event.entity.surface.create_entity(
+    if entity.name ~= 'land-mine' then
+        return
+    end
+
+    entity.surface.create_entity(
         {
             name = 'big-artillery-explosion',
-            position = event.entity.position
+            position = entity.position
         }
     )
 
-    local damage = (1 + event.entity.force.get_ammo_damage_modifier('grenade')) * 250
+    local damage = (1 + entity.force.get_ammo_damage_modifier('grenade')) * 250
 
-    damage_entities_around_target(event.entity, damage)
+    damage_entities_around_target(entity, damage)
 end
 
 Event.add(defines.events.on_entity_died, on_entity_died)
+
+return Public

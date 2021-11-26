@@ -1,12 +1,5 @@
-require 'maps.fish_defender_v2.flame_boots'
-require 'maps.fish_defender_v2.trapped_capsules'
-require 'maps.fish_defender_v2.ultra_mines'
-require 'maps.fish_defender_v2.crumbly_walls'
-require 'maps.fish_defender_v2.vehicle_nanobots'
-require 'maps.fish_defender_v2.laser_pointer'
-
 local Event = require 'utils.event'
-local FDT = require 'maps.fish_defender_v2.table'
+local Public = require 'maps.fish_defender_v2.table'
 
 local slot_upgrade_offers = {
     [1] = {'gun-turret', 'gun turret'},
@@ -27,7 +20,7 @@ local special_descriptions = {
 }
 
 local function refresh_market_offers()
-    local market = FDT.get('market')
+    local market = Public.get('market')
     if not market or not market.valid then
         return
     end
@@ -38,7 +31,7 @@ local function refresh_market_offers()
         end
     end
 
-    local entity_limits = FDT.get('entity_limits')
+    local entity_limits = Public.get('entity_limits')
 
     local str1 = 'Gun Turret Slot for ' .. tostring(entity_limits['gun-turret'].limit * entity_limits['gun-turret'].slot_price)
     str1 = str1 .. ' Coins.'
@@ -115,7 +108,7 @@ local function refresh_market_offers()
         market.add_market_item(item)
     end
 
-    if not FDT.get('trapped_capsules_unlocked') then
+    if not Public.get('trapped_capsules_unlocked') then
         market.add_market_item(
             {
                 price = {{'coin', 3500}},
@@ -123,7 +116,7 @@ local function refresh_market_offers()
             }
         )
     end
-    if not FDT.get('explosive_bullets_unlocked') then
+    if not Public.get('explosive_bullets_unlocked') then
         market.add_market_item(
             {
                 price = {{'coin', 4500}},
@@ -131,7 +124,7 @@ local function refresh_market_offers()
             }
         )
     end
-    if not FDT.get('bouncy_shells_unlocked') then
+    if not Public.get('bouncy_shells_unlocked') then
         market.add_market_item(
             {
                 price = {{'coin', 10000}},
@@ -139,7 +132,7 @@ local function refresh_market_offers()
             }
         )
     end
-    if not FDT.get('vehicle_nanobots_unlocked') then
+    if not Public.get('vehicle_nanobots_unlocked') then
         market.add_market_item(
             {
                 price = {{'coin', 15000}},
@@ -155,7 +148,7 @@ local function refresh_market_offers()
 		market.add_market_item({price = {{"coin", 45000}}, offer = {type = 'nothing', effect_description = special_descriptions["ultra-mines"]}})
 	end
 	]]
-    if not FDT.get('laser_pointer_unlocked') then
+    if not Public.get('laser_pointer_unlocked') then
         market.add_market_item(
             {
                 price = {{'coin', 65000}},
@@ -166,7 +159,7 @@ local function refresh_market_offers()
 end
 
 local function slot_upgrade(player, offer_index)
-    local entity_limits = FDT.get('entity_limits')
+    local entity_limits = Public.get('entity_limits')
     local price = entity_limits[slot_upgrade_offers[offer_index][1]].limit * entity_limits[slot_upgrade_offers[offer_index][1]].slot_price
 
     local gain = 1
@@ -195,7 +188,7 @@ local function slot_upgrade(player, offer_index)
 end
 
 local function on_market_item_purchased(event)
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
     local market = event.market
     local offer_index = event.offer_index
     local offers = market.get_market_items()
@@ -216,62 +209,62 @@ local function on_market_item_purchased(event)
 
     if bought_offer.effect_description == special_descriptions['explosive-bullets'] then
         game.print(player.name .. ' has unlocked explosive bullets.', {r = 0.22, g = 0.77, b = 0.44})
-        FDT.set('explosive_bullets_unlocked', true)
+        Public.set('explosive_bullets_unlocked', true)
         refresh_market_offers()
         return
     end
 
     if bought_offer.effect_description == special_descriptions['bouncy-shells'] then
         game.print(player.name .. ' has unlocked bouncy shells.', {r = 0.22, g = 0.77, b = 0.44})
-        FDT.set('bouncy_shells_unlocked', true)
+        Public.set('bouncy_shells_unlocked', true)
         refresh_market_offers()
         return
     end
 
     if bought_offer.effect_description == special_descriptions['trapped-capsules'] then
         game.print(player.name .. ' has unlocked trapped capsules!', {r = 0.22, g = 0.77, b = 0.44})
-        FDT.set('trapped_capsules_unlocked', true)
+        Public.set('trapped_capsules_unlocked', true)
         refresh_market_offers()
         return
     end
 
     if bought_offer.effect_description == special_descriptions['ultra-mines'] then
         game.print(player.name .. ' has unlocked ultra mines!', {r = 0.22, g = 0.77, b = 0.44})
-        FDT.set('ultra_mines_unlocked', true)
+        Public.set('ultra_mines_unlocked', true)
         refresh_market_offers()
         return
     end
 
     if bought_offer.effect_description == special_descriptions['laser-pointer'] then
         game.print(player.name .. ' has unleashed the quest to slay the red dot!', {r = 0.22, g = 0.77, b = 0.44})
-        FDT.set('laser_pointer_unlocked', true)
+        Public.set('laser_pointer_unlocked', true)
         refresh_market_offers()
         return
     end
 
     if bought_offer.effect_description == special_descriptions['crumbly-walls'] then
         game.print(player.name .. ' has unlocked crumbly walls!', {r = 0.22, g = 0.77, b = 0.44})
-        FDT.set('crumbly_walls_unlocked', true)
+        Public.set('crumbly_walls_unlocked', true)
         refresh_market_offers()
         return
     end
 
     if bought_offer.effect_description == special_descriptions['vehicle-nanobots'] then
         game.print(player.name .. ' has unlocked vehicle nanobots!', {r = 0.22, g = 0.77, b = 0.44})
-        FDT.set('vehicle_nanobots_unlocked', true)
+        Public.set('vehicle_nanobots_unlocked', true)
         refresh_market_offers()
         return
     end
 end
 
 local function on_gui_opened(event)
-    if not event.entity then
+    local entity = event.entity
+
+    if not (entity and entity.valid) then
         return
     end
-    if not event.entity.valid then
-        return
-    end
-    if event.entity.name == 'market' then
+
+    if entity.name == 'market' then
         refresh_market_offers()
         return
     end

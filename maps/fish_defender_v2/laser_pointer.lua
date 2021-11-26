@@ -1,14 +1,14 @@
 local Event = require 'utils.event'
-local FDT = require 'maps.fish_defender_v2.table'
+local Public = require 'maps.fish_defender_v2.table'
 local radius = 32
 
 local function on_player_used_capsule(event)
-    local laser_pointer_unlocked = FDT.get('laser_pointer_unlocked')
+    local laser_pointer_unlocked = Public.get('laser_pointer_unlocked')
     if not laser_pointer_unlocked then
         return
     end
 
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
     local position = event.position
     local used_item = event.item
     if used_item.name ~= 'artillery-targeting-remote' then
@@ -35,3 +35,5 @@ local function on_player_used_capsule(event)
 end
 
 Event.add(defines.events.on_player_used_capsule, on_player_used_capsule)
+
+return Public
