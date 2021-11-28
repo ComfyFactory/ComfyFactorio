@@ -32,7 +32,7 @@ function Public.reset_wave_defense()
     this.nest_building_density = 48
     this.next_wave = game.tick + 3600 * 20
     this.enable_grace_time = {
-        enabled = false,
+        enabled = true,
         set = nil
     }
     this.side_targets = {}
