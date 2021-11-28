@@ -15,7 +15,6 @@ function Public.reset_wave_defense()
     this.boss_wave = false
     this.boss_wave_warning = false
     this.side_target_count = 0
-    this.active_biters = {}
     this.active_biter_count = 0
     this.active_biter_threat = 0
     this.average_unit_group_size = 35
@@ -30,11 +29,10 @@ function Public.reset_wave_defense()
     this.max_active_biters = 1280
     this.max_active_unit_groups = 32
     this.max_biter_age = 3600 * 60
-    this.nests = {}
     this.nest_building_density = 48
     this.next_wave = game.tick + 3600 * 20
     this.enable_grace_time = {
-        enabled = true,
+        enabled = false,
         set = nil
     }
     this.side_targets = {}
@@ -47,17 +45,12 @@ function Public.reset_wave_defense()
     this.threat_gain_multiplier = 2
     this.threat_log = {}
     this.threat_log_index = 0
-    this.unit_groups = {}
+    this.tick_to_spawn_unit_groups = 200 -- this defines how often we spawn a unit group
     this.unit_groups_size = 0
-    this.unit_group_pos = {
-        index = 0,
-        positions = {}
-    }
     this.index = 0
     this.random_group = nil
     this.unit_group_command_delay = 3600 * 20
     this.unit_group_command_step_length = 15
-    this.unit_group_last_command = {}
     this.wave_interval = 3600
     this.wave_enforced = false
     this.wave_number = 0
@@ -85,6 +78,28 @@ function Public.reset_wave_defense()
         current_value = 2,
         limit_value = 500,
         health_increase_per_boss_wave = 4 -- wave % 25 == 0 at wave 2k boost is at 322
+    }
+    this.generated_units = {
+        active_biters = {},
+        unit_groups = {},
+        unit_group_last_command = {},
+        unit_group_pos = {
+            index = 0,
+            positions = {}
+        },
+        nests = {}
+    }
+    this.unit_settings = {
+        scale_units_by_health = {
+            ['small-biter'] = 1,
+            ['medium-biter'] = 1,
+            ['big-biter'] = 0.3,
+            ['behemoth-biter'] = 0.15,
+            ['small-spitter'] = 1,
+            ['medium-spitter'] = 1,
+            ['big-spitter'] = 0.3,
+            ['behemoth-spitter'] = 0.15
+        }
     }
 end
 
@@ -284,6 +299,12 @@ end
 -- @param <int>
 function Public.set_boss_unit_current_per_wave(int)
     this.modified_boss_unit_health.health_increase_per_boss_wave = int or 4
+end
+
+--- Sets when we should spawn a unit_group.
+-- @param <int> in ticks
+function Public.set_tick_to_spawn_unit_groups(int)
+    this.tick_to_spawn_unit_groups = int or 200
 end
 
 --- Pauses the wave defense module
