@@ -930,18 +930,18 @@ function Public.set_difficulty()
 
     if Diff.name == "I'm too young to die" then
         wave_defense_table.wave_interval = 3600 - player_count * 60
-        if wave_defense_table.wave_interval < 1800 or threat_check then
-            wave_defense_table.wave_interval = 1800
+        if wave_defense_table.wave_interval < 2200 or threat_check then
+            wave_defense_table.wave_interval = 2200
         end
     elseif Diff.name == 'Hurt me plenty' then
         wave_defense_table.wave_interval = 2600 - player_count * 60
-        if wave_defense_table.wave_interval < 1500 or threat_check then
-            wave_defense_table.wave_interval = 1500
+        if wave_defense_table.wave_interval < 1900 or threat_check then
+            wave_defense_table.wave_interval = 1900
         end
     elseif Diff.name == 'Ultra-violence' then
         wave_defense_table.wave_interval = 1600 - player_count * 60
-        if wave_defense_table.wave_interval < 1100 or threat_check then
-            wave_defense_table.wave_interval = 1100
+        if wave_defense_table.wave_interval < 1600 or threat_check then
+            wave_defense_table.wave_interval = 1600
         end
     end
 
@@ -1129,9 +1129,9 @@ function Public.boost_difficulty()
         WD.set('next_wave', game.tick + 3600 * 15)
         WPT.set('spidertron_unlocked_at_zone', 10)
         WD.set_normal_unit_current_health(1.0)
-        WD.set_normal_unit_current_per_wave(0.2)
+        WD.set_normal_unit_current_per_wave(0.15)
         WD.set_boss_unit_current_health(2)
-        WD.set_boss_unit_current_per_wave(3)
+        WD.set_boss_unit_current_per_wave(1.5)
         WPT.set('difficulty_set', true)
     elseif name == 'Hurt me plenty' then
         force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 0.25

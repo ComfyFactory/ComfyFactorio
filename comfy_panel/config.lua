@@ -340,6 +340,16 @@ local fortress_functions = {
             WPT.set('allow_decon', false)
             get_actor(event, '[Decon]', 'has disabled decon on car/tanks/trains.', true)
         end
+    end,
+    ['comfy_panel_christmas_mode'] = function(event)
+        local WPT = is_loaded('maps.mountain_fortress_v3.table')
+        if event.element.switch_state == 'left' then
+            WPT.set('winter_mode', true)
+            get_actor(event, '[WinteryMode]', 'has enabled wintery mode.', true)
+        else
+            WPT.set('winter_mode', false)
+            get_actor(event, '[WinteryMode]', 'has disabled wintery mode.', true)
+        end
     end
 }
 
@@ -725,6 +735,11 @@ local function build_config_gui(data)
                 'Deconstruct',
                 'On = Allows decon on car/tanks/trains.\nOff = Disables decon on car/tanks/trains.'
             )
+            scroll_pane.add({type = 'line'})
+            if Module.christmas_mode then
+                switch_state = 'left'
+            end
+            add_switch(scroll_pane, switch_state, 'comfy_panel_christmas_mode', 'Wintery Mode', 'On = Enables wintery mode.\nOff = Disables wintery mode.')
             scroll_pane.add({type = 'line'})
         end
     end
