@@ -61,6 +61,12 @@ function Public.comfy_panel_clear_left_gui(player)
     end
 end
 
+function Public.comfy_panel_clear_screen_gui(player)
+    for _, child in pairs(player.gui.screen.children) do
+        child.destroy()
+    end
+end
+
 function Public.comfy_panel_get_active_frame(player)
     local main_frame = player.gui.left.comfy_panel
     if not main_frame then
@@ -116,6 +122,7 @@ end
 local function main_frame(player)
     local tabs = main_gui_tabs
     Public.comfy_panel_clear_left_gui(player)
+    Public.comfy_panel_clear_screen_gui(player)
 
     local frame = player.gui.left.comfy_panel
     if not frame or not frame.valid then
