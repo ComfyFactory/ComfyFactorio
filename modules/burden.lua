@@ -1,5 +1,5 @@
 local Event = require 'utils.event'
-local Modifier = require 'player_modifiers'
+local Modifier = require 'utils.player_modifiers'
 local Color = require 'utils.color_presets'
 
 local function validate_player(player)

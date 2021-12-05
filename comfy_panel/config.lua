@@ -1,4 +1,4 @@
-local Antigrief = require 'antigrief'
+local Antigrief = require 'utils.antigrief'
 local Event = require 'utils.event'
 local Color = require 'utils.color_presets'
 local SessionData = require 'utils.datastore.session_data'

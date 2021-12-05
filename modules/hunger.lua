@@ -1,10 +1,15 @@
 -- hunger module by mewmew --
 
-local P = require 'player_modifiers'
+local P = require 'utils.player_modifiers'
 
 local starve_messages = {' ran out of foodstamps.', ' starved.', ' should not have skipped breakfast today.'}
 
-local overfeed_messages = {' ate too much and exploded.', ' needs to work on their bad eating habbits.', ' should have skipped dinner today.', ' forgot to count them calories.'}
+local overfeed_messages = {
+    ' ate too much and exploded.',
+    ' needs to work on their bad eating habbits.',
+    ' should have skipped dinner today.',
+    ' forgot to count them calories.'
+}
 
 local player_hunger_fish_food_value = 10
 local player_hunger_spawn_value = 80

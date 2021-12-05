@@ -2,7 +2,7 @@
 local Public = require 'modules.rpg.core'
 local Gui = require 'utils.gui'
 local Event = require 'utils.event'
-local AntiGrief = require 'antigrief'
+local AntiGrief = require 'utils.antigrief'
 local Color = require 'utils.color_presets'
 local SpamProtection = require 'utils.spam_protection'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'

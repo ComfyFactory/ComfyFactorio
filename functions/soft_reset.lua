@@ -1,5 +1,5 @@
 local Server = require 'utils.server'
-local Modifiers = require 'player_modifiers'
+local Modifiers = require 'utils.player_modifiers'
 local Global = require 'utils.global'
 local Event = require 'utils.event'
 

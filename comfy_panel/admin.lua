@@ -3,7 +3,7 @@
 local Event = require 'utils.event'
 local Jailed = require 'utils.datastore.jail_data'
 local Tabs = require 'comfy_panel.main'
-local AntiGrief = require 'antigrief'
+local AntiGrief = require 'utils.antigrief'
 local SpamProtection = require 'utils.spam_protection'
 local Token = require 'utils.token'
 

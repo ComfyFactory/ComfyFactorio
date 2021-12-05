@@ -13,7 +13,7 @@ to your scenario control.lua.
 Minor changes by ~~~Gerkiz~~~
 --]]
 local Event = require 'utils.event'
-local Where = require 'commands.where'
+local Where = require 'utils.commands.where'
 local Session = require 'utils.datastore.session_data'
 local Jailed = require 'utils.datastore.jail_data'
 local Supporters = require 'utils.datastore.supporters'

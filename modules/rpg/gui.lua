@@ -1,6 +1,6 @@
 local ComfyGui = require 'comfy_panel.main'
 local Session = require 'utils.datastore.session_data'
-local P = require 'player_modifiers'
+local P = require 'utils.player_modifiers'
 local Gui = require 'utils.gui'
 local Color = require 'utils.color_presets'
 
