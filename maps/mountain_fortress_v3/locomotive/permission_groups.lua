@@ -2,7 +2,9 @@ local WPT = require 'maps.mountain_fortress_v3.table'
 local Session = require 'utils.datastore.session_data'
 local Jailed = require 'utils.datastore.jail_data'
 
-local Antigrief = require 'antigrief'
+local Antigrief = require 'utils.antigrief'
+
+local required_playtime = 5184000 -- 24 hours
 
 local Public = {}
 
@@ -131,7 +133,7 @@ function Public.add_player_to_permission_group(player, group, forced)
         end
     end
 
-    if playtime < 5184000 then -- 24 hours
+    if playtime < required_playtime then
         local not_trusted = game.permissions.get_group('not_trusted')
         if not player.admin then
             not_trusted.add_player(player)

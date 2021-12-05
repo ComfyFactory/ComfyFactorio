@@ -1,4 +1,4 @@
-local Misc = require 'commands.misc'
+local Misc = require 'utils.commands.misc'
 local Event = require 'utils.event'
 local Global = require 'utils.global'
 local ComfyGui = require 'comfy_panel.main'

@@ -57,40 +57,31 @@ end
 
 function Public.comfy_panel_clear_left_gui(player)
     for _, child in pairs(player.gui.left.children) do
-        child.visible = false
-    end
-end
-
-function Public.comfy_panel_restore_left_gui(player)
-    for _, child in pairs(player.gui.left.children) do
-        child.visible = true
+        child.destroy()
     end
 end
 
 function Public.comfy_panel_clear_screen_gui(player)
     for _, child in pairs(player.gui.screen.children) do
-        if not screen_elements[child.name] then
-            child.visible = false
-        end
-    end
-end
-
-function Public.comfy_panel_restore_screen_gui(player)
-    for _, child in pairs(player.gui.screen.children) do
-        if not screen_elements[child.name] then
-            child.visible = true
-        end
+        child.destroy()
     end
 end
 
 function Public.comfy_panel_get_active_frame(player)
-    if not player.gui.left.comfy_panel then
+    local main_frame = player.gui.left.comfy_panel
+    if not main_frame then
         return false
     end
-    if not player.gui.left.comfy_panel.tabbed_pane.selected_tab_index then
-        return player.gui.left.comfy_panel.tabbed_pane.tabs[1].content
+
+    local panel = main_frame.tabbed_pane
+    if not panel then
+        return
     end
-    return player.gui.left.comfy_panel.tabbed_pane.tabs[player.gui.left.comfy_panel.tabbed_pane.selected_tab_index].content
+    local index = panel.selected_tab_index
+    if not index then
+        return panel.tabs[1].content
+    end
+    return panel.tabs[index].content
 end
 
 function Public.comfy_panel_refresh_active_tab(player)
@@ -131,6 +122,7 @@ end
 local function main_frame(player)
     local tabs = main_gui_tabs
     Public.comfy_panel_clear_left_gui(player)
+    Public.comfy_panel_clear_screen_gui(player)
 
     local frame = player.gui.left.comfy_panel
     if not frame or not frame.valid then
@@ -200,7 +192,8 @@ function Public.comfy_panel_call_tab(player, name)
 end
 
 local function on_player_joined_game(event)
-    top_button(game.players[event.player_index])
+    local player = game.get_player(event.player_index)
+    top_button(player)
 end
 
 local function on_gui_click(event)
@@ -209,7 +202,7 @@ local function on_gui_click(event)
         return
     end
 
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
 
     local name = element.name
 
@@ -220,11 +213,8 @@ local function on_gui_click(event)
         end
         if player.gui.left.comfy_panel then
             player.gui.left.comfy_panel.destroy()
-            Public.comfy_panel_restore_left_gui(player)
-            Public.comfy_panel_restore_screen_gui(player)
             return
         else
-            Public.comfy_panel_clear_screen_gui(player)
             main_frame(player)
             return
         end
@@ -236,7 +226,6 @@ local function on_gui_click(event)
             return
         end
         player.gui.left.comfy_panel.destroy()
-        Public.comfy_panel_restore_left_gui(player)
         return
     end
 

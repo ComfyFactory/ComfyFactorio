@@ -1,6 +1,6 @@
 local ComfyGui = require 'comfy_panel.main'
 local Session = require 'utils.datastore.session_data'
-local P = require 'player_modifiers'
+local P = require 'utils.player_modifiers'
 local Gui = require 'utils.gui'
 local Color = require 'utils.color_presets'
 
@@ -514,7 +514,6 @@ function Public.toggle(player, recreate)
     end
     if main_frame then
         remove_main_frame(main_frame, screen)
-        ComfyGui.comfy_panel_restore_left_gui(player)
     else
         ComfyGui.comfy_panel_clear_left_gui(player)
         draw_main_frame(player)
@@ -527,7 +526,6 @@ function Public.remove_frame(player)
 
     if main_frame then
         remove_main_frame(main_frame, screen)
-        ComfyGui.comfy_panel_restore_left_gui(player)
     end
 end
 

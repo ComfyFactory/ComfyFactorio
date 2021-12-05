@@ -276,11 +276,19 @@ function Public.get_trusted_player(player)
     return trusted and player and player.valid and trusted[player.name] or false
 end
 
---- Returns the table of trusted
+--- Set a player as trusted
 -- @param LuaPlayer
 function Public.set_trusted_player(player)
     if trusted and player and player.valid then
         trusted[player.name] = true
+    end
+end
+
+--- Set a player as untrusted
+-- @param LuaPlayer
+function Public.set_untrusted_player(player)
+    if trusted and player and player.valid then
+        trusted[player.name] = nil
     end
 end
 

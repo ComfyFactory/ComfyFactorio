@@ -448,7 +448,6 @@ local function toggle(player, recreate)
     end
     if main_frame then
         remove_main_frame(main_frame)
-        Tabs.comfy_panel_restore_left_gui(player)
     else
         Tabs.comfy_panel_clear_left_gui(player)
         draw_main_frame(player)
