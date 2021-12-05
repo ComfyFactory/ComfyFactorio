@@ -515,7 +515,7 @@ function Public.toggle(player, recreate)
     if main_frame then
         remove_main_frame(main_frame, screen)
     else
-        ComfyGui.comfy_panel_clear_left_gui(player)
+        ComfyGui.comfy_panel_clear_gui(player)
         draw_main_frame(player)
     end
 end
