@@ -1341,6 +1341,23 @@ local function create_market(data, rebuild)
 
     this.market = surface.create_entity {name = 'market', position = center_position, force = 'player'}
 
+    for y = -1, 0, 0.05 do
+        local scale = random(50, 100) * 0.01
+        rendering.draw_sprite(
+            {
+                sprite = 'item/coin',
+                orientation = random(0, 100) * 0.01,
+                x_scale = scale,
+                y_scale = scale,
+                tint = {random(60, 255), random(60, 255), random(60, 255)},
+                render_layer = 'selection-box',
+                target = this.market,
+                target_offset = {-0.7 + random(0, 140) * 0.01, y},
+                surface = surface
+            }
+        )
+    end
+
     if this.mystical_chest_enabled then
         if this.mystical_chest and this.mystical_chest.entity then
             this.mystical_chest.entity.destroy()

@@ -28,9 +28,9 @@ local function is_boss(entity)
 end
 
 local function remove_unit(entity)
-    local active_biters = Public.get('active_biters')
+    local generated_units = Public.get('generated_units')
     local unit_number = entity.unit_number
-    if not active_biters[unit_number] then
+    if not generated_units.active_biters[unit_number] then
         return
     end
     local m = 1
@@ -43,7 +43,7 @@ local function remove_unit(entity)
     Public.set('active_biter_threat', active_biter_threat - active_threat_loss)
     local active_biter_count = Public.get('active_biter_count')
     Public.set('active_biter_count', active_biter_count - 1)
-    active_biters[unit_number] = nil
+    generated_units.active_biters[unit_number] = nil
 
     if active_biter_count <= 0 then
         Public.set('active_biter_count', 0)
@@ -54,12 +54,13 @@ local function remove_unit(entity)
 end
 
 local function place_nest_near_unit_group()
-    local unit_groups = Public.get('unit_groups')
     local random_group = Public.get('random_group')
     if not (random_group and random_group.valid) then
         return
     end
-    local group = unit_groups[random_group.group_number]
+
+    local generated_units = Public.get('generated_units')
+    local group = generated_units.unit_groups[random_group.group_number]
     if not group then
         return
     end
@@ -104,15 +105,14 @@ local function place_nest_near_unit_group()
 
     local spawner = unit.surface.create_entity({name = name, position = position, force = unit.force})
     spawner.destructible = false
-    Task.set_timeout_in_ticks(100, immunity_spawner, {entity = spawner})
+    Task.set_timeout_in_ticks(200, immunity_spawner, {entity = spawner})
 
     if boss then
         BiterHealthBooster.add_boss_unit(spawner, modified_boss_unit_health.current_value)
     else
         BiterHealthBooster.add_unit(spawner, modified_unit_health.current_value)
     end
-    local nests = Public.get('nests')
-    nests[#nests + 1] = spawner
+    generated_units.nests[#generated_units.nests + 1] = spawner
     unit.surface.create_entity({name = 'blood-explosion-huge', position = position})
     unit.surface.create_entity({name = 'blood-explosion-huge', position = unit.position})
     remove_unit(unit)
@@ -157,8 +157,8 @@ function Public.build_worm()
     if not (random_group and random_group.valid) then
         return
     end
-    local unit_groups = Public.get('unit_groups')
-    local group = unit_groups[random_group.group_number]
+    local generated_units = Public.get('generated_units')
+    local group = generated_units.unit_groups[random_group.group_number]
     if not group then
         return
     end

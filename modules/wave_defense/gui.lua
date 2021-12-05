@@ -90,7 +90,13 @@ function Public.update_gui(player)
         gui.wave_number.caption = floor((next_wave - game.tick) / 60) + 1
     end
     local interval = next_wave - last_wave
-    gui.progressbar.value = 1 - (next_wave - game.tick) / interval
+    local value = 1 - (next_wave - game.tick) / interval
+    if value < 0 then
+        value = 0
+    elseif value > 1 then
+        value = 1
+    end
+    gui.progressbar.value = value
 
     gui.threat.caption = {'wave_defense.gui_3'}
     gui.threat.tooltip = {'wave_defense.tooltip_1', biter_health_boost * 100, max_active_biters}

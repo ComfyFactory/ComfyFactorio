@@ -326,11 +326,14 @@ local function wintery(ent, extra_lights)
     end
     if wintery_type[ent.type] then
         if ent.type == 'simple-entity' then
-            if random(1, 8) ~= 1 then
-                return
+            if random(1, 64) == 1 then
+                return add_light(ent)
+            end
+        else
+            if random(1, 4) == 1 then
+                return add_light(ent)
             end
         end
-        add_light(ent)
     end
     return true
 end
