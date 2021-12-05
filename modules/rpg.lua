@@ -251,7 +251,7 @@ local function draw_gui(player, forced)
         end
     end
 
-    Tabs.comfy_panel_clear_left_gui(player)
+    Tabs.comfy_panel_clear_gui(player)
 
     if player.gui.left.rpg then
         player.gui.left.rpg.destroy()
