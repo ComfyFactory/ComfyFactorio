@@ -92,13 +92,21 @@ function Public.reset_wave_defense()
     this.unit_settings = {
         scale_units_by_health = {
             ['small-biter'] = 1,
-            ['medium-biter'] = 1,
-            ['big-biter'] = 0.3,
-            ['behemoth-biter'] = 0.15,
+            ['medium-biter'] = 0.75,
+            ['big-biter'] = 0.5,
+            ['behemoth-biter'] = 0.25,
             ['small-spitter'] = 1,
-            ['medium-spitter'] = 1,
-            ['big-spitter'] = 0.3,
-            ['behemoth-spitter'] = 0.15
+            ['medium-spitter'] = 0.75,
+            ['big-spitter'] = 0.5,
+            ['behemoth-spitter'] = 0.25
+        }
+    }
+    this.worm_unit_settings = { -- note that final health modifier isn't lower than 1
+        scale_units_by_health = {
+            ['small-worm-turret'] = 0.8,
+            ['medium-worm-turret'] = 0.6,
+            ['big-worm-turret'] = 0.4,
+            ['behemoth-worm-turret'] = 0.2,
         }
     }
 end
