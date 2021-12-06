@@ -31,7 +31,7 @@ local Map = require 'modules.map_info'
 local WD = require 'modules.wave_defense.table'
 local Treasure = require 'maps.mountain_fortress_v2.treasure'
 local Locomotive = require 'maps.mountain_fortress_v2.locomotive'
-local Modifier = require 'player_modifiers'
+local Modifier = require 'utils.player_modifiers'
 
 local math_random = math.random
 local math_abs = math.abs

@@ -11,7 +11,7 @@ local Collapse = require 'modules.collapse'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 local ICW_Func = require 'maps.mountain_fortress_v3.icw.functions'
 local math2d = require 'math2d'
-local Misc = require 'commands.misc'
+local Misc = require 'utils.commands.misc'
 
 local this = {
     power_sources = {index = 1},

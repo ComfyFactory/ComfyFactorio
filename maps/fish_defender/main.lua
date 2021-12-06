@@ -12,7 +12,7 @@ require 'modules.dangerous_goods'
 require 'modules.custom_death_messages'
 require 'modules.launch_fish_to_win'
 
-local AntiGrief = require 'antigrief'
+local AntiGrief = require 'utils.antigrief'
 local Terrain = require 'maps.fish_defender.terrain'
 local Unit_health_booster = require 'modules.biter_health_booster'
 local Session = require 'utils.datastore.session_data'

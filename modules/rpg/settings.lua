@@ -1,6 +1,6 @@
 local Public = require 'modules.rpg.table'
 local Gui = require 'utils.gui'
-local P = require 'player_modifiers'
+local P = require 'utils.player_modifiers'
 local Session = require 'utils.datastore.session_data'
 
 local settings_frame_name = Public.settings_frame_name
