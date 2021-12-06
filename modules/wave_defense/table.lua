@@ -92,13 +92,13 @@ function Public.reset_wave_defense()
     this.unit_settings = {
         scale_units_by_health = {
             ['small-biter'] = 1,
-            ['medium-biter'] = 1,
-            ['big-biter'] = 0.3,
-            ['behemoth-biter'] = 0.15,
+            ['medium-biter'] = 0.75,
+            ['big-biter'] = 0.5,
+            ['behemoth-biter'] = 0.25,
             ['small-spitter'] = 1,
-            ['medium-spitter'] = 1,
-            ['big-spitter'] = 0.3,
-            ['behemoth-spitter'] = 0.15
+            ['medium-spitter'] = 0.75,
+            ['big-spitter'] = 0.5,
+            ['behemoth-spitter'] = 0.25
         }
     }
 end

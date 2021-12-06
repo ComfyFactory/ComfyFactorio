@@ -502,6 +502,9 @@ local function spawn_biter(surface, position, forceSpawn, is_boss_biter, unit_se
     if increase_health_per_wave and not is_boss_biter then
         local modified_unit_health = Public.get('modified_unit_health')
         local final_health = round(modified_unit_health.current_value * unit_settings.scale_units_by_health[biter.name], 3)
+        if final_health < 1 then
+            final_health = 1
+        end
         debug_print_health('final_health - unit: ' .. biter.name .. ' with h-m: ' .. final_health)
         BiterHealthBooster.add_unit(biter, final_health)
     end
