@@ -60,7 +60,9 @@ function Public.comfy_panel_clear_gui(player)
         child.destroy()
     end
     for _, child in pairs(player.gui.screen.children) do
-        child.destroy()
+        if not screen_elements[child.name] then
+            child.destroy()
+        end
     end
 end
 
