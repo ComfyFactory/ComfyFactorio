@@ -101,6 +101,14 @@ function Public.reset_wave_defense()
             ['behemoth-spitter'] = 0.25
         }
     }
+    this.worm_unit_settings = { -- note that final health modifier isn't lower than 1
+        scale_units_by_health = {
+            ['small-worm-turret'] = 0.8,
+            ['medium-worm-turret'] = 0.6,
+            ['big-worm-turret'] = 0.4,
+            ['behemoth-worm-turret'] = 0.2,
+        }
+    }
 end
 
 --- This gets values from our table
