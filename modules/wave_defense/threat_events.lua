@@ -208,7 +208,7 @@ function Public.build_worm()
     if boss then
         BiterHealthBooster.add_boss_unit(u, modified_boss_unit_health.current_value)
     else
-        local final_health = round(modified_unit_health.current_value * worm_unit_settings.scale_units_by_health[worm.name], 3)
+        local final_health = round(modified_unit_health.current_value * worm_unit_settings.scale_units_by_health[worm], 3)
         if final_health < 1 then
             final_health = 1
         end
