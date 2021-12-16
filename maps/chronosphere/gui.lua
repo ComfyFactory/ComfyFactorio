@@ -578,19 +578,19 @@ function Public_gui.on_gui_click(event)
     end
 end
 
-function Public_gui.update_all_player_gui(event)
+function Public_gui.update_all_player_gui()
     for _, player in pairs(game.connected_players) do
         Public_gui.update_gui(player)
     end
 end
 
-function Public_gui.update_all_player_world_gui(event)
+function Public_gui.update_all_player_world_gui()
     for _, player in pairs(game.connected_players) do
         update_world_gui(player)
     end
 end
 
-function Public_gui.update_all_player_upgrades_gui(event)
+function Public_gui.update_all_player_upgrades_gui()
     for _, player in pairs(game.connected_players) do
         update_upgrades_gui(player)
     end

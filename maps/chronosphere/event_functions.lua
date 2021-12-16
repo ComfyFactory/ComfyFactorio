@@ -166,9 +166,9 @@ function Public.shred_simple_entities(entity)
         entity.surface.find_entities_filtered(
         {type = {'simple-entity', 'tree'}, area = {{entity.position.x - 3, entity.position.y - 3}, {entity.position.x + 3, entity.position.y + 3}}}
     )
-    for _, entity in pairs(simple_entities) do
-        if entity.valid then
-            entity.destroy()
+    for _, simple_entity in pairs(simple_entities) do
+        if simple_entity.valid then
+            simple_entity.destroy()
         end
     end
 end

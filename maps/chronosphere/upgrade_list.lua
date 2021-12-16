@@ -318,7 +318,7 @@ function Public.upgrade10(coin_scaling)
     return upgrade
 end
 
-function Public.upgrade11(coin_scaling)
+function Public.upgrade11()
     local upgrade = {
         name = {'chronosphere.upgrade_fusion'},
         sprite = 'recipe/fusion-reactor-equipment',
@@ -340,7 +340,7 @@ function Public.upgrade11(coin_scaling)
     return upgrade
 end
 
-function Public.upgrade12(coin_scaling)
+function Public.upgrade12()
     local upgrade = {
         name = {'chronosphere.upgrade_mk2'},
         sprite = 'recipe/power-armor-mk2',
@@ -430,7 +430,7 @@ function Public.upgrade15(coin_scaling)
     return upgrade
 end
 
-function Public.upgrade16(coin_scaling)
+function Public.upgrade16()
     local objective = Chrono_table.get_table()
     local upgrade = {
         name = {'chronosphere.upgrade_computer4'},
@@ -476,7 +476,7 @@ function Public.upgrade17(coin_scaling)
     return upgrade
 end
 
-function Public.upgrade18(coin_scaling)
+function Public.upgrade18()
     local objective = Chrono_table.get_table()
     local upgrade = {
         name = {'chronosphere.upgrade_researchspeed'},
@@ -562,7 +562,7 @@ function Public.upgrade20(coin_scaling)
     return upgrade
 end
 
-function Public.upgrade21(coin_scaling)
+function Public.upgrade21()
     local objective = Chrono_table.get_table()
     local difficulty = Difficulty.get().difficulty_vote_value
     local upgrade = {
@@ -644,7 +644,7 @@ function Public.upgrade23(coin_scaling)
     return upgrade
 end
 
-function Public.upgrade24(coin_scaling)
+function Public.upgrade24()
     local objective = Chrono_table.get_table()
     local upgrade = {
         name = {'chronosphere.upgrade_nuclear_artillery_ammo'},
@@ -665,7 +665,7 @@ function Public.upgrade24(coin_scaling)
     return upgrade
 end
 
-function Public.upgrade25(coin_scaling)
+function Public.upgrade25()
     local objective = Chrono_table.get_table()
     local upgrade = {
         name = {'chronosphere.upgrade_poison_mastery'},
@@ -712,7 +712,6 @@ function Public.upgrade26(coin_scaling)
 end
 
 function Public.upgrade27(coin_scaling)
-    local objective = Chrono_table.get_table()
     local upgrade = {
         name = {'chronosphere.upgrade_radar'},
         sprite = 'entity/radar',

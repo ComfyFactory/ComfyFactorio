@@ -130,9 +130,9 @@ local function generate_side_attack_target(surface, position, area)
         [3] = central_sector
     }
     local tries = 1
-    local entities = {}
+    local entities
     ::retry::
-    entities = search_area_for_targets(surface, areas[tries])
+    entities = search_area_for_targets(surface, areas[tries]) or {}
     if #entities < 1 then
         tries = tries + 1
         if tries > #areas then
@@ -481,7 +481,7 @@ end
 function Public.perform_main_attack()
     local objective = Chrono_table.get_table()
     local surface = game.surfaces[objective.active_surface_index]
-    local group, area = create_attack_group(surface, 1)
+    local group = (create_attack_group(surface, 1))
     local target = generate_main_attack_target()
     if not group or not group.valid or not target or not target.valid then
         return
