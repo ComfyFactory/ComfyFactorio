@@ -101,23 +101,24 @@ local function tick_tack_trap(surface, position)
     end
     local tick_tack_count = math.random(5, 9)
     for t = 60, tick_tack_count * 60, 60 do
-        if not traps[game.tick + t] then
-            traps[game.tick + t] = {}
+        local tick = game.tick - (game.tick % 10) + t
+        if not traps[tick] then
+            traps[tick] = {}
         end
 
         if t < tick_tack_count * 60 then
-            traps[game.tick + t][#traps[game.tick + t] + 1] = {
+            traps[tick][#traps[tick] + 1] = {
                 callback = 'create_flying_text',
                 params = {surface, {x = position.x, y = position.y}, tick_tacks[math.random(1, #tick_tacks)]}
             }
         else
             if math.random(1, 10) == 1 then
-                traps[game.tick + t][#traps[game.tick + t] + 1] = {
+                traps[tick][#traps[tick] + 1] = {
                     callback = 'create_flying_text',
                     params = {surface, {x = position.x, y = position.y}, '...'}
                 }
             else
-                traps[game.tick + t][#traps[game.tick + t] + 1] = {
+                traps[tick][#traps[tick] + 1] = {
                     callback = 'create_kaboom',
                     params = {surface, {x = position.x, y = position.y}, kabooms[math.random(1, #kabooms)]}
                 }
@@ -142,6 +143,6 @@ local function on_tick()
     traps[game.tick] = nil
 end
 
-Event.add(defines.events.on_tick, on_tick)
+Event.on_nth_tick(10, on_tick)
 
 return tick_tack_trap
