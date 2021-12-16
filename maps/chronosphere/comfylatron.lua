@@ -4,6 +4,7 @@ local math_random = math.random
 local Rand = require 'maps.chronosphere.random'
 local Balance = require 'maps.chronosphere.balance'
 local Difficulty = require 'modules.difficulty_vote'
+local Public = {}
 
 local texts = {
     ['approach_player'] = {
@@ -754,7 +755,7 @@ local function heartbeat()
     end
 end
 
-local function on_entity_damaged(event)
+function Public.comfylatron_damaged(event)
     local objective = Chrono_table.get_table()
     if not objective.comfylatron then
         return
@@ -774,5 +775,6 @@ local function on_tick()
     end
 end
 
-Event.add(defines.events.on_entity_damaged, on_entity_damaged)
-Event.add(defines.events.on_tick, on_tick)
+Event.on_nth_tick(100, on_tick)
+
+return Public

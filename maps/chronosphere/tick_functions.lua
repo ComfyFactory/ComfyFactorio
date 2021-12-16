@@ -1,6 +1,7 @@
 local Chrono_table = require 'maps.chronosphere.table'
 local Balance = require 'maps.chronosphere.balance'
 local Difficulty = require 'modules.difficulty_vote'
+local MFunctions = require 'maps.chronosphere.world_functions'
 local Server = require 'utils.server'
 local Public = {}
 
@@ -51,6 +52,9 @@ end
 function Public.train_pollution(source, interior_pollution)
     local objective = Chrono_table.get_table()
     local difficulty = Difficulty.get().difficulty_vote_value
+    if not objective.locomotive.valid then
+        return
+    end
     local pos = objective.locomotive.position or {x = 0, y = 0}
     local pollution = 0
     local stat_target = 'locomotive'
@@ -108,33 +112,33 @@ end
 
 function Public.move_items()
     local objective = Chrono_table.get_table()
-    if not objective.comfychests then
+    if not objective.comfychests or not objective.comfychest_invs then
         return
     end
-    if not objective.comfychests2 then
+    if not objective.comfychests2 or not objective.comfychest_invs2 then
         return
     end
     if objective.game_lost == true then
         return
     end
-    local input = objective.comfychests
-    local output = objective.comfychests2
+    local input, input_inventory = objective.comfychests, objective.comfychest_invs
+    local output, output_inventory = objective.comfychests2, objective.comfychest_invs2
     for i = 1, 24, 1 do
-        if not input[i].valid then
+        if not input[i].valid or not input_inventory[i].valid then
             return
         end
-        if not output[i].valid then
+        if not output[i].valid or not output_inventory[i].valid then
             return
         end
 
-        local input_inventory = input[i].get_inventory(defines.inventory.chest)
-        local output_inventory = output[i].get_inventory(defines.inventory.chest)
-        input_inventory.sort_and_merge()
-        output_inventory.sort_and_merge()
-        for ii = 1, #input_inventory, 1 do
-            if input_inventory[ii].valid_for_read then
-                local count = output_inventory.insert(input_inventory[ii])
-                input_inventory[ii].count = input_inventory[ii].count - count
+        input_inventory[i].sort_and_merge()
+        output_inventory[i].sort_and_merge()
+        for ii = 1, #input_inventory[i], 1 do
+            if input_inventory[i][ii].valid_for_read then
+                local count = output_inventory[i].insert(input_inventory[i][ii])
+                input_inventory[i][ii].count = input_inventory[i][ii].count - count
+            else
+                break
             end
         end
     end
@@ -142,10 +146,10 @@ end
 
 local function transfer_signals(index, inventory)
     local objective = Chrono_table.get_table()
-    local counts = inventory.get_contents()
     if not objective.outcombinators then
         return
     end
+    local counts = inventory.get_contents()
     local combi = objective.outcombinators[index].get_or_create_control_behavior()
     local i = 1
     for name, count in pairs(counts) do
@@ -193,6 +197,8 @@ function Public.output_items()
             if inv[ii].valid_for_read then
                 local count = wagon[math_ceil(i / 2)].insert(inv[ii])
                 inv[ii].count = inv[ii].count - count
+            else
+                break
             end
         end
         if objective.upgrades[8] == 2 then
@@ -261,27 +267,30 @@ local function launch_nukes()
     local objective = Chrono_table.get_table()
     local surface = game.surfaces[objective.active_surface_index]
     if objective.dangers and #objective.dangers > 1 then
+        local max_range = 800
+        if objective.upgrades[17] == 1 then
+            objective.upgrades[17] = 0
+            max_range = 100
+        end
         for i = 1, #objective.dangers, 1 do
             if objective.dangers[i].destroyed == false then
-                if objective.upgrades[17] == 1 then
-                    game.print({'chronosphere.message_nuke_intercepted'}, {r = 0, g = 0.98, b = 0})
-                    objective.upgrades[17] = 0
-                else
-                    local fake_shooter = surface.create_entity({name = 'character', position = objective.dangers[i].silo.position, force = 'enemy'})
-                    surface.create_entity(
-                        {
-                            name = 'atomic-rocket',
-                            position = objective.dangers[i].silo.position,
-                            force = 'enemy',
-                            speed = 1,
-                            max_range = 800,
-                            target = objective.locomotive,
-                            source = fake_shooter
-                        }
-                    )
-                    game.print({'chronosphere.message_nuke'}, {r = 0.98, g = 0, b = 0})
-                end
+                local fake_shooter = surface.create_entity({name = 'character', position = objective.dangers[i].silo.position, force = 'enemy'})
+                surface.create_entity(
+                    {
+                        name = 'atomic-rocket',
+                        position = objective.dangers[i].silo.position,
+                        force = 'enemy',
+                        speed = 1,
+                        max_range = max_range,
+                        target = objective.locomotive,
+                        source = fake_shooter
+                    }
+                )
+                game.print({'chronosphere.message_nuke'}, {r = 0.98, g = 0, b = 0})
             end
+        end
+        if max_range == 100 then
+            game.print({'chronosphere.message_nuke_intercepted'}, {r = 0, g = 0.98, b = 0})
         end
     end
 end
@@ -391,17 +400,29 @@ end
 
 function Public.request_chunks()
     local objective = Chrono_table.get_table()
+    local schedule = Chrono_table.get_schedule_table()
     local surface = game.surfaces[objective.active_surface_index]
     if objective.world.id == 7 then
         surface.request_to_generate_chunks({-800, 0}, 1 + math_floor(objective.passivetimer / 5))
     else
-        surface.request_to_generate_chunks({0, 0}, 1 + math_floor(objective.passivetimer / 5))
+        if table_size(schedule.chunks_to_generate) > 0 then
+            local amount = 0
+            for index, chunk in pairs(schedule.chunks_to_generate) do
+                surface.request_to_generate_chunks(chunk.pos, 0)
+                schedule.chunks_to_generate[index] = nil
+                amount = amount + 1
+                if amount >= objective.gen_speed then
+                    break
+                end
+            end
+        end
     end
     --surface.force_generate_chunk_requests()
 end
 
 function Public.update_charges()
     local objective = Chrono_table.get_table()
+    if objective.warmup then return end
     if objective.chronocharges < objective.chronochargesneeded and objective.world.id ~= 7 then -- < 2000
         objective.chronocharges = objective.chronocharges + objective.passive_chronocharge_rate
     -- local chronotimer_ticks_between_increase = math_floor(objective.passive_chronocharge_rate / 10) * 10 --- 60 / (1800 / 2000)
@@ -439,7 +460,7 @@ function Public.laser_defense()
                 {
                     name = 'flying-text',
                     position = objective.locomotive.position,
-                    text = 'Low Power',
+                    text = 'Laser: Low Power',
                     color = {r = 0.98, g = 0, b = 0}
                 }
             )
@@ -459,6 +480,58 @@ function Public.message_game_won()
     objective.game_lost = true
     game.print({'chronosphere.message_game_won2', objective.mainscore}, {r = 0.98, g = 0.66, b = 0.22})
     Server.to_discord_embed({'chronosphere.message_game_won2', objective.mainscore}, true)
+end
+
+function Public.giftmas_lights()
+    local objective = Chrono_table.get_table()
+    local lights = objective.giftmas_lamps
+    local nr = #lights
+    if nr < 1 then return end
+    local colors = {
+        --[1] = {r = 255, g = 77, b = 55, a = 1}, --červená
+        [1] = {r = 255, g = 33, b = 11, a = 1}, --červená
+        [2] = {r = 86, g = 241, b = 59, a = 1}, --zelená
+        [3] = {r = 243, g = 189, b = 45, a = 1}, --žlutá
+        [4] = {r = 63, g = 49, b = 255, a = 1}, --modrá
+    }
+    for _ = 1, 5, 1 do
+        rendering.set_color(lights[math_random(1, nr)], colors[math_random(1, 4)])
+    end
+end
+
+function Public.giftmas_spawn()
+    local objective = Chrono_table.get_table()
+    if objective.upgrades[26] <= objective.giftmas_delivered  or objective.world.id == 7 then
+        return
+    end
+    if  objective.passivetimer + 60 * objective.upgrades[26] >= 400 * (1 + objective.giftmas_delivered) then
+        local random_pos = {x = math_random(-160, 160), y = math_random(-160, 160)}
+        local surface = game.surfaces[objective.active_surface_index]
+        local pos = surface.find_non_colliding_position('rocket-silo', random_pos, 64, 1)
+        if not pos then
+            return
+        end
+        local treasures = {
+            {pos.x, pos.y},
+            {pos.x - 2, pos.y - 2},
+            {pos.x - 2, pos.y + 2},
+            {pos.x + 2, pos.y - 2},
+            {pos.x + 2, pos.y + 2}
+        }
+        MFunctions.spawn_treasures(surface, treasures)
+        objective.giftmas_delivered = objective.giftmas_delivered + 1
+        game.print({'chronosphere.message_giftmas_spawned', pos.x, pos.y, surface.name}, {r = 0.98, g = 0.66, b = 0.22})
+    end
+end
+
+function Public.chart_wagons()
+    if not game.surfaces['cargo_wagon'] then
+        return
+    end
+    local objective = Chrono_table.get_table()
+    if objective.upgrades[27] == 1 then
+        game.forces.player.chart_all(game.surfaces['cargo_wagon'])
+    end
 end
 
 -- function Public.player_spit()

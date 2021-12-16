@@ -86,8 +86,10 @@ function Public.locomotive_spawn(surface, position, wagons)
         comfychest.minable = false
         if not objective.comfychests[i] then
             table.insert(objective.comfychests, comfychest)
+            table.insert(objective.comfychest_invs, comfychest.get_inventory(defines.inventory.chest))
         else
             objective.comfychests[i] = comfychest
+            objective.comfychest_invs[i] = comfychest.get_inventory(defines.inventory.chest)
         end
     end
     draw_light(objective.locomotive)

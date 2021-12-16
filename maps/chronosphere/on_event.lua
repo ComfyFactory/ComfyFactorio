@@ -19,22 +19,22 @@ function Public.on_research_finished(event)
     Event_functions.research_loot(event)
     Event_functions.flamer_nerfs()
     Event_functions.mining_buffs(event)
+    Event_functions.jump_timers(event)
 end
 
 function Public.on_player_mined_entity(event)
-    local objective = Chrono_table.get_table()
     local entity = event.entity
     if not entity.valid then
         return
     end
+    local objective = Chrono_table.get_table()
     if entity.type == 'tree' then
         Event_functions.tree_loot()
         if objective.world.id == 4 then --choppy planet
             Event_functions.trap(entity, false)
             Event_functions.choppy_loot(event)
         end
-    end
-    if entity.name == 'rock-huge' or entity.name == 'rock-big' or entity.name == 'sand-rock-big' then
+    elseif entity.name == 'rock-huge' or entity.name == 'rock-big' or entity.name == 'sand-rock-big' then
         if objective.world.id == 3 then --rocky worlds
             event.buffer.clear()
         -- elseif objective.world.id == 5 then --maze worlds
@@ -61,7 +61,7 @@ end
 
 function Public.on_pre_player_left_game(event)
     local playertable = Chrono_table.get_player_table()
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
     if player.controller_type == defines.controllers.editor then
         player.toggle_map_editor()
     end
@@ -73,7 +73,7 @@ end
 function Public.on_player_joined_game(event)
     local objective = Chrono_table.get_table()
     local playertable = Chrono_table.get_player_table()
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
     if not playertable.flame_boots[event.player_index] then
         playertable.flame_boots[event.player_index] = {}
     end
@@ -108,40 +108,37 @@ function Public.on_player_joined_game(event)
         end
     end
     Minimap.update_surface(player)
+    Minimap.toggle_button(player)
+end
+
+function Public.on_player_changed_surface(event)
+    local player = game.get_player(event.player_index)
+    Minimap.toggle_button(player)
 end
 
 function Public.on_entity_died(event)
     local objective = Chrono_table.get_table()
-    if event.entity.type == 'tree' and objective.world.id == 4 then --choppy planet
+    local entity = event.entity
+    if entity.type == 'tree' and objective.world.id == 4 then --choppy planet
         if event.cause then
             if event.cause.valid then
                 if event.cause.force.name ~= 'enemy' then
                     Event_functions.trap(event.entity, false)
                 end
             end
+        elseif event.damage_type == 'poison' then
+            Event_functions.trap(event.entity, false)
         end
-    -- if not event.entity.valid then return end
-    -- for _, entity in pairs (event.entity.surface.find_entities_filtered({area = {{event.entity.position.x - 4, event.entity.position.y - 4},{event.entity.position.x + 4, event.entity.position.y + 4}}, name = "fire-flame-on-tree"})) do
-    -- 	if entity.valid then entity.destroy() end
-    -- end
-    --return
     end
-    local entity = event.entity
     if not entity.valid then
         return
     end
-    if entity.type == 'unit' and entity.force == 'enemy' then
-        objective.active_biters[entity.unit_number] = nil
-    end
-    if entity.type == 'rocket-silo' and entity.force.name == 'enemy' then
-        Event_functions.danger_silo(entity)
-    end
-    if entity.force.name == 'scrapyard' and entity.name == 'gun-turret' then
+    local fname = entity.force.name
+    if fname == 'scrapyard' and entity.name == 'gun-turret' then
         if (objective.world.id == 2 and objective.world.variant.id == 2) or objective.world.id == 5 then --danger + hedge maze
             Event_functions.trap(entity, true)
         end
-    end
-    if entity.force.name == 'enemy' then
+    elseif fname == 'enemy' then
         if entity.type == 'unit-spawner' then
             Event_functions.spawner_loot(entity.surface, entity.position)
             if objective.world.id == 8 then
@@ -150,14 +147,22 @@ function Public.on_entity_died(event)
             if event.cause and (event.cause.name == 'artillery-turret' or event.cause.name == 'artillery-wagon') then
                 Event_functions.nuclear_artillery(entity, event.cause)
             end
-        else
+        elseif entity.type == 'unit' then
+            Event_functions.biter_loot(event)
+            local bitertable = Chrono_table.get_biter_table()
+            bitertable.active_biters[entity.unit_number] = nil
+            if objective.world.id == 8 then
+                Event_functions.swamp_loot(event)
+            end
+        elseif entity.type == 'rocket-silo' then
+            Event_functions.danger_silo(entity)
+        elseif entity.type == 'turret' then
             Event_functions.biter_loot(event)
             if objective.world.id == 8 then
                 Event_functions.swamp_loot(event)
             end
         end
-    end
-    if entity.force.index == 3 then
+    elseif fname == 'neutral' then
         event.loot.clear()
         if objective.world.id == 2 and objective.world.variant.id == 3 and entity.type == 'container' then --RUR robot spawns
             Event_functions.trap(entity, true)
@@ -174,9 +179,6 @@ end
 
 local function protect_entity(event)
     local objective = Chrono_table.get_table()
-    if event.entity.force.index ~= 1 then
-        return
-    end --Player Force
     if Event_functions.isprotected(event.entity) then
         if event.cause then
             if event.cause == objective.comfylatron or event.entity == objective.comfylatron then
@@ -192,6 +194,7 @@ local function protect_entity(event)
             return
         end
         event.entity.health = event.entity.health + event.final_damage_amount
+        return
     end
     if event.entity.name == 'character' then
         if objective.upgrades[25] > 0 and event.damage_type.name == 'poison' then
@@ -204,16 +207,21 @@ function Public.on_entity_damaged(event)
     if not event.entity.valid then
         return
     end
-    protect_entity(event)
-    if not event.entity.valid then
-        return
-    end
     if not event.entity.health then
         return
     end
-    Event_functions.biters_chew_rocks_faster(event)
-    if event.entity.force.name == 'enemy' then
+    local force = event.entity.force.name
+    if force == 'neutral' then
+        Event_functions.biters_chew_rocks_faster(event)
+    elseif force == 'enemy' then
         Event_functions.biter_immunities(event)
+    elseif force == 'player' then
+        if event.entity.name == 'compilatron' then
+            local objective = Chrono_table.get_table()
+            script.raise_event(objective.events['comfylatron_damaged'], event)
+            return
+        end
+        protect_entity(event)
     end
 end
 
@@ -237,11 +245,11 @@ function Public.on_built_entity(event)
 end
 
 function Public.on_pre_player_died(event)
-    local objective = Chrono_table.get_table()
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
     local surface = player.surface
     local poisons = surface.count_entities_filtered {position = player.position, radius = 10, name = 'poison-cloud'}
     if poisons > 0 then
+        local objective = Chrono_table.get_table()
         objective.poison_mastery_unlocked = objective.poison_mastery_unlocked + 1
         if objective.poison_mastery_unlocked == 10 then
             game.print({'chronosphere.message_poison_mastery_unlock'}, {r = 0.98, g = 0.66, b = 0.22})
@@ -255,7 +263,12 @@ function Public.script_raised_revive(event)
 	if entity.force.name == "player" then return end
 	if entity.force.name == "scrapyard" then
 		if entity.name == "gun-turret" then
-			entity.insert({name = "uranium-rounds-magazine", count = 128})
+            local objective = Chrono_table.get_table()
+            if objective.chronojumps > 2 then
+                entity.insert({name = "uranium-rounds-magazine", count = 128})
+            else
+                entity.insert({name = "firearm-magazine", count = 12})
+            end
 		elseif entity.name == "artillery-turret" then
 			entity.insert({name = "artillery-shell", count = 30})
 		elseif entity.name == "accumulator" then

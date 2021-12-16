@@ -18,7 +18,7 @@ local function create_gui(player)
     local label
     local button
 
-    label = frame.add({type = 'label', caption = ' ', name = 'label'})
+    label = frame.add({type = 'label', caption = {'chronosphere.gui_1'}, name = 'label'})
     label.style.font_color = {r = 0.88, g = 0.88, b = 0.88}
     label.style.font = 'default-bold'
     label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
@@ -29,7 +29,7 @@ local function create_gui(player)
     label.style.right_padding = 4
     label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 
-    label = frame.add({type = 'label', caption = ' ', name = 'charger'})
+    label = frame.add({type = 'label', caption = {'chronosphere.gui_2'}, name = 'charger'})
     label.style.font = 'default-bold'
     label.style.left_padding = 4
     label.style.font_color = {r = 255, g = 200, b = 200} --255 200 200 --150 0 255
@@ -74,12 +74,12 @@ local function create_gui(player)
     -- line.style.left_padding = 4
     -- line.style.right_padding = 8
 
-    button = frame.add({type = 'button', caption = ' ', name = 'world_button'})
+    button = frame.add({type = 'button', caption = {'chronosphere.gui_world_button'}, name = 'world_button'})
     button.style.font = 'default-bold'
     button.style.font_color = {r = 0.99, g = 0.99, b = 0.99}
     button.style.minimal_width = 75
 
-    button = frame.add({type = 'button', caption = ' ', name = 'upgrades_button'})
+    button = frame.add({type = 'button', caption = {'chronosphere.gui_upgrades_button'}, name = 'upgrades_button'})
     button.style.font = 'default-bold'
     button.style.font_color = {r = 0.99, g = 0.99, b = 0.99}
     button.style.minimal_width = 75
@@ -300,17 +300,13 @@ function Public_gui.update_gui(player)
     local objective = Chrono_table.get_table()
     local difficulty = Difficulty.get().difficulty_vote_value
 
-    update_world_gui(player)
-    update_upgrades_gui(player)
     if not player.gui.top.chronosphere then
         create_gui(player)
     end
     local gui = player.gui.top.chronosphere
+    local guimode = objective.guimode
 
-    gui.label.caption = {'chronosphere.gui_1'}
     gui.jump_number.caption = objective.chronojumps
-
-    gui.charger.caption = {'chronosphere.gui_2'}
 
     if (objective.chronochargesneeded < 100000) then
         gui.charger_value.caption = string.format('%.2f', objective.chronocharges / 1000) .. ' / ' .. math_floor(objective.chronochargesneeded) / 1000 .. ' GJ'
@@ -321,43 +317,47 @@ function Public_gui.update_gui(player)
     local interval = objective.chronochargesneeded
     gui.progressbar.value = 1 - (objective.chronochargesneeded - objective.chronocharges) / interval
 
-    --[[
-	if (objective.chronochargesneeded<1000) then
-		gui.charger_value.caption =  objective.chronocharges .. "/" .. objective.chronochargesneeded .. " MJ"
-	elseif (objective.chronochargesneeded<10000) then
-		gui.charger_value.caption =  math_floor(objective.chronocharges/10)/100 .. " / " .. math_floor(objective.chronochargesneeded/10)/100 .. " GJ"
-	elseif (objective.chronochargesneeded<1000000) then
-		gui.charger_value.caption =  math_floor(objective.chronocharges/100)/10 .. " / " .. math_floor(objective.chronochargesneeded/100)/10 .. " GJ"
-	elseif (objective.chronochargesneeded<10000000) then
-		gui.charger_value.caption =  math_floor(objective.chronocharges/10000)/100 .. " / " .. math_floor(objective.chronochargesneeded/10000)/100 .. " TJ"
-	else
-		gui.charger_value.caption =  math_floor(objective.chronocharges/100000)/10 .. " / " .. math_floor(objective.chronochargesneeded/100000)/10 .. " TJ"
-	end
-	]]
-    if objective.jump_countdown_start_time == -1 then
+    if objective.warmup then
+        if guimode ~= 'warmup' then
+            gui.timer.caption = {'chronosphere.gui_3_4'}
+            gui.timer_value.caption = ''
+            gui.timer.tooltip = {'chronosphere.gui_3_5'}
+            gui.timer_value.tooltip = ''
+            gui.timer2.caption = ''
+            gui.timer_value2.caption = ''
+            objective.guimode = 'warmup'
+        end
+    elseif objective.jump_countdown_start_time == -1 then
         local powerobserved, storedbattery = 0, 0
         local seconds_ETA = ETA_seconds_until_full(powerobserved, storedbattery)
-
-        gui.timer.caption = {'chronosphere.gui_3'}
         gui.timer_value.caption = math_floor(seconds_ETA / 60) .. 'm' .. seconds_ETA % 60 .. 's'
-        gui.timer_value.style.font_color = {r = 0, g = 0.98, b = 0}
 
         if objective.world.id == 2 and objective.world.variant.id == 2 and objective.passivetimer > 31 then
+            if guimode ~= 'nuclear' then
+                gui.timer.caption = {'chronosphere.gui_3'}
+                gui.timer_value.style.font_color = {r = 0, g = 0.98, b = 0}
+                gui.timer2.caption = {'chronosphere.gui_3_2'}
+                gui.timer2.style.font_color = {r = 0.98, g = 0, b = 0}
+                gui.timer_value2.style.font_color = {r = 0.98, g = 0, b = 0}
+                objective.guimode = 'nuclear'
+            end
             local nukecase = objective.dangertimer
-            gui.timer2.caption = {'chronosphere.gui_3_2'}
             gui.timer_value2.caption = math_floor(nukecase / 60) .. 'm' .. nukecase % 60 .. 's'
-            gui.timer2.style.font_color = {r = 0.98, g = 0, b = 0}
-            gui.timer_value2.style.font_color = {r = 0.98, g = 0, b = 0}
+
         else
             if objective.accumulators then
+                if guimode ~= 'accumulators' then
+                    gui.timer.caption = {'chronosphere.gui_3'}
+                    gui.timer_value.style.font_color = {r = 0, g = 0.98, b = 0}
+                    gui.timer2.caption = {'chronosphere.gui_3_1'}
+                    gui.timer2.style.font_color = {r = 0, g = 200, b = 0}
+                    gui.timer_value2.style.font_color = {r = 0, g = 200, b = 0}
+                    objective.guimode = 'accumulators'
+                end
                 local bestcase = math_floor(ETA_seconds_until_full(#objective.accumulators * 300000, storedbattery))
-                gui.timer2.caption = {'chronosphere.gui_3_1'}
                 gui.timer_value2.caption = math_floor(bestcase / 60) .. 'm' .. bestcase % 60 .. 's (drawing ' .. #objective.accumulators * 0.3 .. 'MW)'
-                gui.timer2.style.font_color = {r = 0, g = 200, b = 0}
-                gui.timer_value2.style.font_color = {r = 0, g = 200, b = 0}
             end
         end
-        --end
         if objective.chronojumps >= Balance.jumps_until_overstay_is_on(difficulty) then
             local time_until_overstay = (objective.chronochargesneeded * 0.75 / objective.passive_chronocharge_rate - objective.passivetimer)
             local time_until_evo = (objective.chronochargesneeded * 0.5 / objective.passive_chronocharge_rate - objective.passivetimer)
@@ -380,16 +380,16 @@ function Public_gui.update_gui(player)
             gui.timer_value.tooltip = ''
         end
     else
-        gui.timer.caption = {'chronosphere.gui_3_3'}
         gui.timer_value.caption = 180 - (objective.passivetimer - objective.jump_countdown_start_time) .. 's'
-        gui.timer.tooltip = ''
-        gui.timer_value.tooltip = ''
-        gui.timer2.caption = ''
-        gui.timer_value2.caption = ''
+        if guimode ~= 'countdown' then
+            gui.timer.caption = {'chronosphere.gui_3_3'}
+            gui.timer.tooltip = ''
+            gui.timer_value.tooltip = ''
+            gui.timer2.caption = ''
+            gui.timer_value2.caption = ''
+            objective.guimode = 'countdown'
+        end
     end
-
-    gui.world_button.caption = {'chronosphere.gui_world_button'}
-    gui.upgrades_button.caption = {'chronosphere.gui_upgrades_button'}
 end
 
 local function upgrades_gui(player)
@@ -575,6 +575,24 @@ function Public_gui.on_gui_click(event)
     if name == 'token_ammo' then
         Upgrades.add_ammo_tokens(player)
         return
+    end
+end
+
+function Public_gui.update_all_player_gui(event)
+    for _, player in pairs(game.connected_players) do
+        Public_gui.update_gui(player)
+    end
+end
+
+function Public_gui.update_all_player_world_gui(event)
+    for _, player in pairs(game.connected_players) do
+        update_world_gui(player)
+    end
+end
+
+function Public_gui.update_all_player_upgrades_gui(event)
+    for _, player in pairs(game.connected_players) do
+        update_upgrades_gui(player)
     end
 end
 
