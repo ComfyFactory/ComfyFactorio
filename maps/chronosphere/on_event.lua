@@ -114,6 +114,24 @@ end
 function Public.on_player_changed_surface(event)
     local player = game.get_player(event.player_index)
     Minimap.toggle_button(player)
+    if not player.is_cursor_empty() then
+        if player.cursor_stack and player.cursor_stack.valid_for_read then
+            local blacklisted = {
+                ['small-electric-pole'] = true,
+                ['medium-electric-pole'] = true,
+                ['big-electric-pole'] = true,
+                ['substation'] = true
+            }
+            if blacklisted[player.cursor_stack.name] then
+                player.get_main_inventory().insert(player.cursor_stack)
+                player.cursor_stack.clear()
+            end
+        end
+        if player.cursor_ghost then
+            player.cursor_ghost = nil
+        end
+    end
+
 end
 
 function Public.on_entity_died(event)

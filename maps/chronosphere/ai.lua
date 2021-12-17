@@ -514,6 +514,9 @@ function Public.Tick_actions(tick)
     if objective.passivetimer < 60 then
         return
     end
+    if objective.world.id == 2 and objective.world.variant.id == 2 then
+        return --nuke map, has no biters
+    end
     local tick_minute_functions = {
         [100] = destroy_inactive_biters,
         [200] = prepare_biters, -- setup for main_attack
