@@ -196,6 +196,7 @@ function Public.create_wagon_room()
             protect(e, true)
             --e.link_id = 1000 + i + 12 * (k - 1)
             table.insert(objective.comfychests2, e)
+            table.insert(objective.comfychest_invs2, e.get_inventory(defines.inventory.chest))
         end
     end
 
