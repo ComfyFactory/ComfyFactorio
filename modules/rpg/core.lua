@@ -3,6 +3,9 @@ local Public = require 'modules.rpg.table'
 local Bullets = require 'modules.rpg.explosive_gun_bullets'
 Public.explosive_bullet = Bullets
 
+local RangeBuffs = require 'modules.rpg.range_buffs'
+Public.range_buffs = RangeBuffs
+
 local Functions = require 'modules.rpg.functions'
 Public.functions = Functions
 

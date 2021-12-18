@@ -2,6 +2,7 @@ local Public = require 'modules.rpg.table'
 local Task = require 'utils.task'
 local Gui = require 'utils.gui'
 local Color = require 'utils.color_presets'
+local P = require 'utils.player_modifiers'
 local Token = require 'utils.token'
 local Alert = require 'utils.alert'
 
@@ -514,6 +515,35 @@ function Public.level_limit_exceeded(player, value)
     return false
 end
 
+function Public.update_player_stats(player)
+    local rpg_extra = Public.get('rpg_extra')
+    local rpg_t = Public.get_value_from_player(player.index)
+    local strength = rpg_t.strength - 10
+    P.update_single_modifier(player, 'character_inventory_slots_bonus', 'rpg', round(strength * 0.2, 3))
+    P.update_single_modifier(player, 'character_mining_speed_modifier', 'rpg', round(strength * 0.007, 3))
+    P.update_single_modifier(player, 'character_maximum_following_robot_count_bonus', 'rpg', round(strength / 2 * 0.03, 3))
+
+    local magic = rpg_t.magicka - 10
+    local v = magic * 0.22
+    P.update_single_modifier(player, 'character_build_distance_bonus', 'rpg', math.min(60, round(v * 0.12, 3)))
+    P.update_single_modifier(player, 'character_item_drop_distance_bonus', 'rpg', math.min(60, round(v * 0.05, 3)))
+    P.update_single_modifier(player, 'character_reach_distance_bonus', 'rpg', math.min(60, round(v * 0.12, 3)))
+    P.update_single_modifier(player, 'character_loot_pickup_distance_bonus', 'rpg', math.min(20, round(v * 0.12, 3)))
+    P.update_single_modifier(player, 'character_item_pickup_distance_bonus', 'rpg', math.min(20, round(v * 0.12, 3)))
+    P.update_single_modifier(player, 'character_resource_reach_distance_bonus', 'rpg', math.min(20, round(v * 0.05, 3)))
+    if rpg_t.mana_max >= rpg_extra.mana_limit then
+        rpg_t.mana_max = rpg_extra.mana_limit
+    else
+        rpg_t.mana_max = round((magic) * 2, 3)
+    end
+
+    local dexterity = rpg_t.dexterity - 10
+    P.update_single_modifier(player, 'character_running_speed_modifier', 'rpg', round(dexterity * 0.0010, 3)) -- reduced since too high speed kills UPS.
+    P.update_single_modifier(player, 'character_crafting_speed_modifier', 'rpg', round(dexterity * 0.015, 3))
+    P.update_single_modifier(player, 'character_health_bonus', 'rpg', round((rpg_t.vitality - 10) * 6, 3))
+    P.update_player_modifiers(player)
+end
+
 function Public.level_up_effects(player)
     local position = {x = player.position.x - 0.75, y = player.position.y - 1}
     player.surface.create_entity({name = 'flying-text', position = position, text = '+LVL ', color = level_up_floating_text_color})
@@ -542,19 +572,41 @@ function Public.xp_effects(player)
     player.play_sound {path = 'utility/achievement_unlocked', volume_modifier = 0.40}
 end
 
+function Public.get_range_modifier(player)
+    local rpg_t = Public.get_value_from_player(player.index)
+    if not rpg_t then
+        return false
+    end
+    local total = (rpg_t.strength - 10) * 0.010
+    if total > 5 then -- limit it to 5 for now, until we've tested it enough
+        total = 5
+    end
+    return round(total, 3)
+end
+
 function Public.get_melee_modifier(player)
     local rpg_t = Public.get_value_from_player(player.index)
-    return (rpg_t.strength - 10) * 0.10
+    if not rpg_t then
+        return false
+    end
+    local total = (rpg_t.strength - 10) * 0.10
+    return total
 end
 
 function Public.get_final_damage_modifier(player)
     local rpg_t = Public.get_value_from_player(player.index)
+    if not rpg_t then
+        return false
+    end
     local rng = random(10, 35) * 0.01
     return (rpg_t.strength - 10) * rng
 end
 
 function Public.get_final_damage(player, entity, original_damage_amount)
     local modifier = Public.get_final_damage_modifier(player)
+    if not modifier then
+        return false
+    end
     local damage = original_damage_amount + original_damage_amount * modifier
     if entity.prototype.resistances then
         if entity.prototype.resistances.physical then
@@ -571,6 +623,9 @@ end
 
 function Public.get_heal_modifier(player)
     local rpg_t = Public.get_value_from_player(player.index)
+    if not rpg_t then
+        return false
+    end
     return (rpg_t.vitality - 10) * 0.06
 end
 

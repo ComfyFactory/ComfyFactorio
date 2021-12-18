@@ -107,6 +107,7 @@ function Public.reset_table()
     this.rpg_extra.enable_flame_boots = false
     this.rpg_extra.enable_explosive_bullets = false
     this.rpg_extra.enable_explosive_bullets_globally = false
+    this.rpg_extra.enable_range_buffs = false
     this.rpg_extra.mana_per_tick = 0.1
     this.rpg_extra.xp_modifier_when_mining = 0.0045
     this.rpg_extra.force_mana_per_tick = false
@@ -272,11 +273,7 @@ end
 --- If you disable mana but enable <enable_health_and_mana_bars> then only health will be shown
 ---@param value <boolean>
 function Public.enable_health_and_mana_bars(value)
-    if value then
-        this.rpg_extra.enable_health_and_mana_bars = value
-    else
-        this.rpg_extra.enable_health_and_mana_bars = false
-    end
+    this.rpg_extra.enable_health_and_mana_bars = value or false
 
     return this.rpg_extra.enable_health_and_mana_bars
 end
@@ -284,11 +281,7 @@ end
 --- Enables the mana feature that allows players to spawn entities.
 ---@param value <boolean>
 function Public.enable_mana(value)
-    if value then
-        this.rpg_extra.enable_mana = value
-    else
-        this.rpg_extra.enable_mana = false
-    end
+    this.rpg_extra.enable_mana = value or false
 
     return this.rpg_extra.enable_mana
 end
@@ -297,11 +290,7 @@ end
 --- It boosts the amount of xp the players get after x amount of waves.
 ---@param value <boolean>
 function Public.enable_wave_defense(value)
-    if value then
-        this.rpg_extra.enable_wave_defense = value
-    else
-        this.rpg_extra.enable_wave_defense = false
-    end
+    this.rpg_extra.enable_wave_defense = value or false
 
     return this.rpg_extra.enable_wave_defense
 end
@@ -309,11 +298,7 @@ end
 --- Enables/disabled flame boots.
 ---@param value <boolean>
 function Public.enable_flame_boots(value)
-    if value then
-        this.rpg_extra.enable_flame_boots = value
-    else
-        this.rpg_extra.enable_flame_boots = false
-    end
+    this.rpg_extra.enable_flame_boots = value or false
 
     return this.rpg_extra.enable_flame_boots
 end
@@ -321,30 +306,14 @@ end
 --- Enables/disabled explosive bullets globally.
 ---@param value <boolean>
 function Public.enable_explosive_bullets_globally(value)
-    if value then
-        this.rpg_extra.enable_explosive_bullets_globally = value
-    else
-        this.rpg_extra.enable_explosive_bullets_globally = false
-    end
+    this.rpg_extra.enable_explosive_bullets_globally = value or false
 
     return this.rpg_extra.enable_explosive_bullets_globally
 end
 
 --- Fetches if the explosive bullets module is activated globally.
-function Public.get_explosive_bullets()
+function Public.get_explosive_bullets_globally()
     return this.rpg_extra.enable_explosive_bullets_globally
-end
-
---- Enables/disabled explosive bullets.
----@param value <boolean>
-function Public.enable_explosive_bullets(value)
-    if value then
-        this.rpg_extra.enable_explosive_bullets = value
-    else
-        this.rpg_extra.enable_explosive_bullets = false
-    end
-
-    return this.rpg_extra.enable_explosive_bullets
 end
 
 --- Fetches if the explosive bullets module is activated.
@@ -352,14 +321,31 @@ function Public.get_explosive_bullets()
     return this.rpg_extra.enable_explosive_bullets
 end
 
+--- Enables/disabled explosive bullets.
+---@param value <boolean>
+function Public.enable_explosive_bullets(value)
+    this.rpg_extra.enable_explosive_bullets = value or false
+
+    return this.rpg_extra.enable_explosive_bullets
+end
+
+--- Fetches if the range buffs module is activated.
+function Public.get_range_buffs()
+    return this.rpg_extra.enable_range_buffs
+end
+
+--- Enables/disabled range buffs.
+---@param value <boolean>
+function Public.enable_range_buffs(value)
+    this.rpg_extra.enable_range_buffs = value or false
+
+    return this.rpg_extra.enable_range_buffs
+end
+
 --- Enables/disabled personal tax.
 ---@param value <boolean>
 function Public.personal_tax_rate(value)
-    if value then
-        this.rpg_extra.personal_tax_rate = value
-    else
-        this.rpg_extra.personal_tax_rate = false
-    end
+    this.rpg_extra.personal_tax_rate = value or false
 
     return this.rpg_extra.personal_tax_rate
 end
@@ -367,11 +353,7 @@ end
 --- Enables/disabled stone-path-tile creation on mined.
 ---@param value <boolean>
 function Public.enable_stone_path(value)
-    if value then
-        this.rpg_extra.enable_stone_path = value
-    else
-        this.rpg_extra.enable_stone_path = false
-    end
+    this.rpg_extra.enable_stone_path = value or false
 
     return this.rpg_extra.enable_stone_path
 end
@@ -379,11 +361,7 @@ end
 --- Enables/disabled auto-allocations of skill-points.
 ---@param value <boolean>
 function Public.enable_auto_allocate(value)
-    if value then
-        this.rpg_extra.enable_auto_allocate = value
-    else
-        this.rpg_extra.enable_auto_allocate = false
-    end
+    this.rpg_extra.enable_auto_allocate = value or false
 
     return this.rpg_extra.enable_auto_allocate
 end
@@ -391,11 +369,7 @@ end
 --- Enables/disabled stone-path-tile creation on mined.
 ---@param value <boolean>
 function Public.enable_one_punch(value)
-    if value then
-        this.rpg_extra.enable_one_punch = value
-    else
-        this.rpg_extra.enable_one_punch = false
-    end
+    this.rpg_extra.enable_one_punch = value or false
 
     return this.rpg_extra.enable_one_punch
 end
@@ -403,11 +377,7 @@ end
 --- Enables/disabled stone-path-tile creation on mined.
 ---@param value <boolean>
 function Public.enable_one_punch_globally(value)
-    if value then
-        this.rpg_extra.enable_one_punch_globally = value
-    else
-        this.rpg_extra.enable_one_punch_globally = false
-    end
+    this.rpg_extra.enable_one_punch_globally = value or false
 
     return this.rpg_extra.enable_one_punch_globally
 end
