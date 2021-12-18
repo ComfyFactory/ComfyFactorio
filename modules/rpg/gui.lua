@@ -473,35 +473,6 @@ function Public.draw_level_text(player)
     }
 end
 
-function Public.update_player_stats(player)
-    local rpg_extra = Public.get('rpg_extra')
-    local rpg_t = Public.get_value_from_player(player.index)
-    local strength = rpg_t.strength - 10
-    P.update_single_modifier(player, 'character_inventory_slots_bonus', 'rpg', round(strength * 0.2, 3))
-    P.update_single_modifier(player, 'character_mining_speed_modifier', 'rpg', round(strength * 0.007, 3))
-    P.update_single_modifier(player, 'character_maximum_following_robot_count_bonus', 'rpg', round(strength / 2 * 0.03, 3))
-
-    local magic = rpg_t.magicka - 10
-    local v = magic * 0.22
-    P.update_single_modifier(player, 'character_build_distance_bonus', 'rpg', math.min(60, round(v * 0.12, 3)))
-    P.update_single_modifier(player, 'character_item_drop_distance_bonus', 'rpg', math.min(60, round(v * 0.05, 3)))
-    P.update_single_modifier(player, 'character_reach_distance_bonus', 'rpg', math.min(60, round(v * 0.12, 3)))
-    P.update_single_modifier(player, 'character_loot_pickup_distance_bonus', 'rpg', math.min(20, round(v * 0.12, 3)))
-    P.update_single_modifier(player, 'character_item_pickup_distance_bonus', 'rpg', math.min(20, round(v * 0.12, 3)))
-    P.update_single_modifier(player, 'character_resource_reach_distance_bonus', 'rpg', math.min(20, round(v * 0.05, 3)))
-    if rpg_t.mana_max >= rpg_extra.mana_limit then
-        rpg_t.mana_max = rpg_extra.mana_limit
-    else
-        rpg_t.mana_max = round((magic) * 2, 3)
-    end
-
-    local dexterity = rpg_t.dexterity - 10
-    P.update_single_modifier(player, 'character_running_speed_modifier', 'rpg', round(dexterity * 0.0010, 3)) -- reduced since too high speed kills UPS.
-    P.update_single_modifier(player, 'character_crafting_speed_modifier', 'rpg', round(dexterity * 0.015, 3))
-    P.update_single_modifier(player, 'character_health_bonus', 'rpg', round((rpg_t.vitality - 10) * 6, 3))
-    P.update_player_modifiers(player)
-end
-
 function Public.toggle(player, recreate)
     local screen = player.gui.screen
     local main_frame = screen[main_frame_name]

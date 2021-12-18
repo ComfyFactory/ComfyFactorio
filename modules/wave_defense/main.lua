@@ -498,8 +498,11 @@ local function spawn_biter(surface, position, forceSpawn, is_boss_biter, unit_se
     biter.ai_settings.do_separation = true
 
     local increase_health_per_wave = Public.get('increase_health_per_wave')
+    local boost_units_when_wave_is_above = Public.get('boost_units_when_wave_is_above')
+    local boost_bosses_when_wave_is_above = Public.get('boost_bosses_when_wave_is_above')
+    local wave_number = Public.get('wave_number')
 
-    if increase_health_per_wave and not is_boss_biter then
+    if (increase_health_per_wave and (wave_number >= boost_units_when_wave_is_above)) and not is_boss_biter then
         local modified_unit_health = Public.get('modified_unit_health')
         local final_health = round(modified_unit_health.current_value * unit_settings.scale_units_by_health[biter.name], 3)
         if final_health < 1 then
@@ -509,7 +512,7 @@ local function spawn_biter(surface, position, forceSpawn, is_boss_biter, unit_se
         BiterHealthBooster.add_unit(biter, final_health)
     end
 
-    if is_boss_biter then
+    if is_boss_biter and (wave_number >= boost_bosses_when_wave_is_above) then
         local increase_boss_health_per_wave = Public.get('increase_boss_health_per_wave')
         if increase_boss_health_per_wave then
             local modified_boss_unit_health = Public.get('modified_boss_unit_health')
@@ -630,17 +633,6 @@ local function set_next_wave()
     if not wave_enforced then
         Public.set('last_wave', next_wave)
         Public.set('next_wave', game.tick + wave_interval)
-    end
-
-    local clear_corpses = Public.get('clear_corpses')
-    if clear_corpses then
-        local surface_index = Public.get('surface_index')
-        local surface = game.surfaces[surface_index]
-        for _, entity in pairs(surface.find_entities_filtered {type = 'corpse'}) do
-            if random(1, 2) == 1 then
-                entity.destroy()
-            end
-        end
     end
 end
 
@@ -990,8 +982,9 @@ local function spawn_unit_group(fs, only_bosses)
     generated_units.unit_group_pos.positions[unit_group.group_number] = {position = unit_group.position, index = 0}
     local average_unit_group_size = Public.get('average_unit_group_size')
     local unit_settings = Public.get('unit_settings')
+    local group_size = floor(average_unit_group_size * Public.group_size_modifier_raffle[random(1, Public.group_size_modifier_raffle_size)])
     if not only_bosses then
-        for _ = 1, average_unit_group_size, 1 do
+        for _ = 1, group_size, 1 do
             local biter = spawn_biter(surface, spawn_position, fs, false, unit_settings)
             if not biter then
                 debug_print('spawn_unit_group - No biters were found?')
@@ -1151,7 +1144,8 @@ Event.on_nth_tick(
     50,
     function()
         local tick_to_spawn_unit_groups = Public.get('tick_to_spawn_unit_groups')
-        local will_not_spawn = game.tick % tick_to_spawn_unit_groups ~= 0
+        local tick = game.tick
+        local will_not_spawn = tick % tick_to_spawn_unit_groups ~= 0
         if will_not_spawn then
             return
         end
