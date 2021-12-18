@@ -3,6 +3,7 @@
 local Tabs = require 'comfy_panel.main'
 local Global = require 'utils.global'
 local SpamProtection = require 'utils.spam_protection'
+local Event = require 'utils.event'
 local Token = require 'utils.token'
 
 local module_name = 'Groups'
@@ -159,6 +160,14 @@ local function refresh_gui()
                 local new_group_name = frame.frame2.group_table.new_group_name.text
                 local new_group_description = frame.frame2.group_table.new_group_description.text
 
+                if new_group_name:len() > 30 then
+                    new_group_name = ''
+                end
+
+                if new_group_description:len() > 60 then
+                    new_group_description = ''
+                end
+
                 local data = {player = p, frame = frame}
                 build_group_gui(data)
 
@@ -179,6 +188,37 @@ local function on_player_joined_game(event)
 
     if not this.join_spam_protection[player.name] then
         this.join_spam_protection[player.name] = game.tick
+    end
+end
+
+local function on_gui_text_changed(event)
+    local element = event.element
+    if not element or not element.valid then
+        return
+    end
+
+    local player = game.get_player(event.player_index)
+
+    local name = element.name
+    local text = element.text
+
+    if name == 'new_group_name' then
+        local is_spamming = SpamProtection.is_spamming(player, nil, 'Groups new_group_name')
+        if is_spamming then
+            return
+        end
+        if text:len() > 30 then
+            element.text = ''
+        end
+    end
+    if name == 'new_group_description' then
+        local is_spamming = SpamProtection.is_spamming(player, nil, 'Groups new_group_desc')
+        if is_spamming then
+            return
+        end
+        if text:len() > 60 then
+            element.text = ''
+        end
     end
 end
 
@@ -340,8 +380,8 @@ end
 
 Tabs.add_tab_to_gui({name = module_name, id = build_group_gui_token, admin = false})
 
-local event = require 'utils.event'
-event.add(defines.events.on_gui_click, on_gui_click)
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_gui_click, on_gui_click)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_gui_text_changed, on_gui_text_changed)
 
 return Public
