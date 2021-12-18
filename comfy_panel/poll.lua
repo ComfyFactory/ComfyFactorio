@@ -924,6 +924,10 @@ Gui.on_click(
             return
         end
 
+        if data and #data.answers > 10 then
+            return
+        end
+
         insert(data.answers, {text = ''})
         redraw_create_poll_content(data)
     end
