@@ -36,7 +36,6 @@ local function on_entity_damaged(event)
         return
     end
     local modifier = Public.get_range_modifier(p)
-    log(serpent.block(modifier))
     if ammo.name ~= 'firearm-magazine' and ammo.name ~= 'piercing-rounds-magazine' and ammo.name ~= 'uranium-rounds-magazine' then
         return
     end
