@@ -176,6 +176,7 @@ function Public.reset_map()
     RPG.enable_stone_path(true)
     RPG.enable_one_punch(true)
     RPG.enable_one_punch_globally(false)
+    RPG.enable_range_buffs(true)
     RPG.enable_auto_allocate(true)
     RPG.disable_cooldowns_on_spells()
     RPG.enable_explosive_bullets_globally(true)
@@ -272,7 +273,6 @@ function Public.reset_map()
     wave_defense_table.game_lost = false
     wave_defense_table.spawn_position = {x = 0, y = 84}
     WD.alert_boss_wave(true)
-    WD.clear_corpses(false)
     WD.remove_entities(true)
     WD.enable_threat_log(false) -- creates waaaay to many entries in the global table
     WD.check_collapse_position(true)
@@ -443,7 +443,7 @@ local compare_collapse_and_train = function()
     end
 end
 
-local collapse_after_wave_100 = function()
+local collapse_after_wave_200 = function()
     local collapse_grace = WPT.get('collapse_grace')
     if not collapse_grace then
         return
@@ -454,7 +454,7 @@ local collapse_after_wave_100 = function()
 
     local wave_number = WD.get_wave()
 
-    if wave_number >= 100 then
+    if wave_number >= 200 then
         Collapse.start_now(true)
         local data = {
             position = Collapse.get_position()
@@ -486,7 +486,7 @@ local on_tick = function()
     end
 
     if tick % 1000 == 0 then
-        collapse_after_wave_100()
+        collapse_after_wave_200()
         Functions.remove_offline_players()
         Functions.set_difficulty()
         Functions.is_creativity_mode_on()
