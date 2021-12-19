@@ -2,6 +2,7 @@ local Public = require 'modules.wave_defense.table'
 local Event = require 'utils.event'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local math_random = math.random
+local round = math.round
 local Token = require 'utils.token'
 local Task = require 'utils.task'
 
@@ -200,13 +201,18 @@ function Public.build_worm()
         return
     end
     local u = unit.surface.create_entity({name = worm, position = position, force = unit.force})
+    local worm_unit_settings = Public.get('worm_unit_settings')
     local modified_unit_health = Public.get('modified_unit_health')
     local modified_boss_unit_health = Public.get('modified_boss_unit_health')
 
     if boss then
         BiterHealthBooster.add_boss_unit(u, modified_boss_unit_health.current_value)
     else
-        BiterHealthBooster.add_unit(u, modified_unit_health.current_value)
+        local final_health = round(modified_unit_health.current_value * worm_unit_settings.scale_units_by_health[worm], 3)
+        if final_health < 1 then
+            final_health = 1
+        end
+        BiterHealthBooster.add_unit(u, final_health)
     end
 
     unit.surface.create_entity({name = 'blood-explosion-huge', position = position})

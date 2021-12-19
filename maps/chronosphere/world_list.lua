@@ -213,8 +213,8 @@ function Public.determine_world(optional_choice)
         end
         table.insert(choices.weights, weight)
     end
-    if Worlds[optional_choice] then
-        chosen_id = optional_choice
+    if Worlds[tonumber(optional_choice)] then
+        chosen_id = tonumber(optional_choice)
     else
         chosen_id = Rand.raffle(choices.types, choices.weights)
     end
@@ -259,6 +259,9 @@ local function process_chunk(surface, left_top)
     end
     if not surface.valid then
         return
+    end
+    if objective.upgrades[27] == 1 then
+        game.forces.player.chart(surface, {{left_top.x + 16, left_top.y + 16}, {left_top.x + 16, left_top.y + 16}})
     end
     local world = objective.world
     local level_depth = 960

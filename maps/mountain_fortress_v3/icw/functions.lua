@@ -34,7 +34,7 @@ local reconstruct_all_trains =
 )
 
 local function get_tile_name()
-    local main_tile_name = 'black-refined-concrete'
+    local main_tile_name = 'tutorial-grid'
     return main_tile_name
 end
 

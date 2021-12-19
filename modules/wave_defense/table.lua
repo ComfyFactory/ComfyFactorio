@@ -3,6 +3,7 @@ local Event = require 'utils.event'
 
 local this = {}
 local Public = {}
+local insert = table.insert
 
 Global.register(
     this,
@@ -11,13 +12,41 @@ Global.register(
     end
 )
 
+Public.group_size_modifier_raffle = {}
+local group_size_chances = {
+    {4, 0.4},
+    {5, 0.5},
+    {6, 0.6},
+    {7, 0.7},
+    {8, 0.8},
+    {9, 0.9},
+    {10, 1},
+    {9, 1.1},
+    {8, 1.2},
+    {7, 1.3},
+    {6, 1.4},
+    {5, 1.5},
+    {4, 1.6},
+    {3, 1.7},
+    {2, 1.8}
+}
+
+for _, v in pairs(group_size_chances) do
+    for _ = 1, v[1], 1 do
+        insert(Public.group_size_modifier_raffle, v[2])
+    end
+end
+Public.group_size_modifier_raffle_size = #Public.group_size_modifier_raffle
+
 function Public.reset_wave_defense()
     this.boss_wave = false
     this.boss_wave_warning = false
+    this.boost_units_when_wave_is_above = 200
+    this.boost_bosses_when_wave_is_above = 50
     this.side_target_count = 0
     this.active_biter_count = 0
     this.active_biter_threat = 0
-    this.average_unit_group_size = 35
+    this.average_unit_group_size = 24
     this.biter_raffle = {}
     this.debug = false
     this.debug_health = false
@@ -57,7 +86,6 @@ function Public.reset_wave_defense()
     this.worm_building_chance = 3
     this.worm_building_density = 16
     this.worm_raffle = {}
-    this.clear_corpses = false
     this.alert_boss_wave = false
     this.remove_entities = false
     this.enable_side_target = false
@@ -92,13 +120,22 @@ function Public.reset_wave_defense()
     this.unit_settings = {
         scale_units_by_health = {
             ['small-biter'] = 1,
-            ['medium-biter'] = 1,
-            ['big-biter'] = 0.3,
-            ['behemoth-biter'] = 0.15,
+            ['medium-biter'] = 0.75,
+            ['big-biter'] = 0.5,
+            ['behemoth-biter'] = 0.25,
             ['small-spitter'] = 1,
-            ['medium-spitter'] = 1,
-            ['big-spitter'] = 0.3,
-            ['behemoth-spitter'] = 0.15
+            ['medium-spitter'] = 0.75,
+            ['big-spitter'] = 0.5,
+            ['behemoth-spitter'] = 0.25
+        }
+    }
+    this.worm_unit_settings = {
+        -- note that final health modifier isn't lower than 1
+        scale_units_by_health = {
+            ['small-worm-turret'] = 0.8,
+            ['medium-worm-turret'] = 0.6,
+            ['big-worm-turret'] = 0.4,
+            ['behemoth-worm-turret'] = 0.2
         }
     }
 end
@@ -134,14 +171,6 @@ end
 
 --- Legacy, to be removed
 Public.get_table = Public.get
-
---- This sets if we should clear dead corpses on ground
--- on each wave we spawn
--- @param <boolean>
-function Public.clear_corpses(boolean)
-    this.clear_corpses = boolean or false
-    return this.clear_corpses
-end
 
 --- This gets the status of the current wave
 -- @param <null>
@@ -291,13 +320,13 @@ end
 
 --- Sets the wave defense units health at start current.
 -- @param <int>
-function Public.set_normal_unit_current_per_wave(int)
+function Public.set_unit_health_increment_per_wave(int)
     this.modified_unit_health.health_increase_per_boss_wave = int or 0.5
 end
 
 --- Sets the wave defense boss health increment.
 -- @param <int>
-function Public.set_boss_unit_current_per_wave(int)
+function Public.set_boss_health_increment_per_wave(int)
     this.modified_boss_unit_health.health_increase_per_boss_wave = int or 4
 end
 

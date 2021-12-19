@@ -13,6 +13,7 @@ local Public = {}
 local random = math.random
 local abs = math.abs
 local ceil = math.ceil
+local round = math.round
 local queue_task = Task.queue_task
 local tiles_per_call = 8
 local total_calls = ceil(1024 / tiles_per_call)
@@ -347,9 +348,13 @@ local function do_place_entities(data)
             if surface.can_place_entity(e) then
                 entity = surface.create_entity(e)
                 if entity then
-                    if e.note then
+                    if e.note then -- flamethrower-turret and artillery-turret are at default health, only gun-turret is modified
                         local modified_unit_health = WD.get('modified_unit_health')
-                        BiterHealthBooster.add_unit(entity, modified_unit_health.current_value + 1)
+                        local final_health = round(modified_unit_health.current_value * 0.5, 3)
+                        if final_health < 1 then
+                            final_health = 1
+                        end
+                        BiterHealthBooster.add_unit(entity, final_health)
                     end
                     wintery(entity)
                     if e.direction then
@@ -380,9 +385,14 @@ local function do_place_entities(data)
         else
             entity = surface.create_entity(e)
             if entity then
-                if e.note then
+                if e.note then -- small-worm-turret, medium-worm-turret, big-worm-turret, behemoth-worm-turret
                     local modified_unit_health = WD.get('modified_unit_health')
-                    BiterHealthBooster.add_unit(entity, modified_unit_health.current_value + 1)
+                    local worm_unit_settings = WD.get('worm_unit_settings')
+                    local final_health = round(modified_unit_health.current_value * worm_unit_settings.scale_units_by_health[entity.name], 3)
+                    if final_health < 1 then
+                        final_health = 1
+                    end
+                    BiterHealthBooster.add_unit(entity, final_health)
                 end
                 wintery(entity)
                 if e.direction then

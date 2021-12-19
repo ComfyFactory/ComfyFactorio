@@ -201,6 +201,9 @@ local function clean_table()
     end
 
     local surface = game.surfaces[this.active_surface]
+    if not (surface and surface.valid) then
+        return
+    end
 
     for _, unit in pairs(surface.find_entities_filtered({type = validTypes})) do
         units_to_delete[unit.unit_number] = nil
@@ -484,7 +487,7 @@ end
 function Public.set_active_surface(str)
     if str and type(str) == 'string' then
         this.active_surfaces = {}
-        this.active_surface = str
+        this.active_surface = str or 'nauvis'
     end
     return this.active_surface
 end

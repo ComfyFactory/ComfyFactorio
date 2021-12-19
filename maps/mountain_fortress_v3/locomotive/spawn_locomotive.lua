@@ -81,15 +81,15 @@ local set_loco_tiles =
         end
 
         if random(1, 6) == 1 then
-            MapFunctions.draw_noise_tile_circle(position, 'blue-refined-concrete', surface, 18)
+            MapFunctions.draw_noise_tile_circle(position, 'blue-refined-concrete', surface, 12)
         elseif random(1, 5) == 1 then
-            MapFunctions.draw_noise_tile_circle(position, 'black-refined-concrete', surface, 18)
+            MapFunctions.draw_noise_tile_circle(position, 'black-refined-concrete', surface, 12)
         elseif random(1, 4) == 1 then
-            MapFunctions.draw_noise_tile_circle(position, 'cyan-refined-concrete', surface, 18)
+            MapFunctions.draw_noise_tile_circle(position, 'cyan-refined-concrete', surface, 12)
         elseif random(1, 3) == 1 then
-            MapFunctions.draw_noise_tile_circle(position, 'hazard-concrete-right', surface, 18)
+            MapFunctions.draw_noise_tile_circle(position, 'hazard-concrete-right', surface, 12)
         else
-            MapFunctions.draw_noise_tile_circle(position, 'blue-refined-concrete', surface, 18)
+            MapFunctions.draw_noise_tile_circle(position, 'blue-refined-concrete', surface, 12)
         end
 
         for i = 1, #cargo_boxes, 1 do
@@ -164,7 +164,7 @@ function Public.locomotive_spawn(surface, position)
         position = position
     }
 
-    Task.set_timeout_in_ticks(400, set_loco_tiles, data)
+    Task.set_timeout_in_ticks(100, set_loco_tiles, data)
 
     for y = -1, 0, 0.05 do
         local scale = random(50, 100) * 0.01

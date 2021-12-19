@@ -731,39 +731,44 @@ local function get_sorted_list(column_name, score_list)
 end
 
 local function get_mvps()
-    local get_score = Score.get_table().score_table
-    if not get_score['player'] then
+    local get_score = Score.get_table()
+    local score_table = get_score.score_table
+    if not score_table['player'] then
         return false
     end
-    local score = get_score['player']
+    local score = score_table['player']
     local score_list = {}
     for _, p in pairs(game.players) do
-        local killscore = 0
-        if score.players[p.name].killscore then
-            killscore = score.players[p.name].killscore
+        if p and p.valid then
+            local killscore = 0
+            if score and score.players[p.name] then
+                if score.players[p.name].killscore then
+                    killscore = score.players[p.name].killscore
+                end
+                local deaths = 0
+                if score.players[p.name].deaths then
+                    deaths = score.players[p.name].deaths
+                end
+                local built_entities = 0
+                if score.players[p.name].built_entities then
+                    built_entities = score.players[p.name].built_entities
+                end
+                local mined_entities = 0
+                if score.players[p.name].mined_entities then
+                    mined_entities = score.players[p.name].mined_entities
+                end
+                table.insert(
+                    score_list,
+                    {
+                        name = p.name,
+                        killscore = killscore,
+                        deaths = deaths,
+                        built_entities = built_entities,
+                        mined_entities = mined_entities
+                    }
+                )
+            end
         end
-        local deaths = 0
-        if score.players[p.name].deaths then
-            deaths = score.players[p.name].deaths
-        end
-        local built_entities = 0
-        if score.players[p.name].built_entities then
-            built_entities = score.players[p.name].built_entities
-        end
-        local mined_entities = 0
-        if score.players[p.name].mined_entities then
-            mined_entities = score.players[p.name].mined_entities
-        end
-        table.insert(
-            score_list,
-            {
-                name = p.name,
-                killscore = killscore,
-                deaths = deaths,
-                built_entities = built_entities,
-                mined_entities = mined_entities
-            }
-        )
     end
     local mvp = {}
     score_list = get_sorted_list('killscore', score_list)

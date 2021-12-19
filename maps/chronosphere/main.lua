@@ -3,10 +3,11 @@
 require 'modules.biter_noms_you'
 require 'modules.biters_yield_coins'
 require 'modules.no_deconstruction_of_neutral_entities'
-require 'maps.chronosphere.comfylatron'
+local Comfylatron = require 'maps.chronosphere.comfylatron'
 local Ai = require 'maps.chronosphere.ai'
 local Balance = require 'maps.chronosphere.balance'
 local Difficulty = require 'modules.difficulty_vote'
+local Event = require 'utils.event'
 local Event_functions = require 'maps.chronosphere.event_functions'
 local Factories = require 'maps.chronosphere.production'
 local Gui = require 'maps.chronosphere.gui'
@@ -125,6 +126,9 @@ local function drain_accumulators()
     if objective.passivetimer < 10 then
         return
     end
+    if objective.warmup then
+        return
+    end
     if not objective.chronocharges then
         return
     end
@@ -165,7 +169,7 @@ local function do_tick()
     local objective = Chrono_table.get_table()
     local tick = game.tick
     Ai.Tick_actions(tick)
-    if tick % 60 == 30 and objective.passivetimer < 64 then
+    if  objective.passivetimer < 80 then
         Tick_functions.request_chunks()
     end
     if tick % 30 == 20 then
@@ -176,6 +180,9 @@ local function do_tick()
     end
     if tick % 60 == 0 then
         objective.passivetimer = objective.passivetimer + 1
+        if objective.giftmas_enabled then
+            Tick_functions.giftmas_lights()
+        end
         if objective.world.id ~= 7 then
             Tick_functions.update_charges()
             drain_accumulators()
@@ -196,46 +203,57 @@ local function do_tick()
                 Tick_functions.train_pollution('countdown')
             end
         end
-    end
-    if tick % 120 == 0 then
-        Tick_functions.move_items()
-        Tick_functions.output_items()
-    end
-    if tick % 600 == 0 then
-        Tick_functions.ramp_evolution()
-        Factories.check_activity()
-        Upgrades.check_upgrades()
-        Tick_functions.transfer_pollution()
-        if objective.poisontimeout > 0 then
-            objective.poisontimeout = objective.poisontimeout - 1
-        end
-        if tick % 1800 == 0 then
-            Locomotive.set_player_spawn_and_refill_fish()
-            Event_functions.set_objective_health(Tick_functions.repair_train())
-            if objective.config.offline_loot then
-                Tick_functions.offline_players()
+        script.raise_event(objective.events['update_world_gui'], {})
+        if tick % 120 == 0 then
+            Tick_functions.move_items()
+            Tick_functions.output_items()
+            if tick % 360 == 0 then
+                Tick_functions.chart_wagons()
             end
-        end
-        if tick % 1800 == 900 and objective.jump_countdown_start_time ~= -1 then
-            Ai.perform_main_attack()
-        end
-
-        if objective.game_reset_tick then
-            if objective.game_reset_tick < tick then
-                objective.game_reset_tick = nil
-                if objective.game_won then
-                    Tick_functions.message_game_won()
+            if tick % 600 == 0 then
+                Tick_functions.ramp_evolution()
+                Factories.check_activity()
+                Upgrades.check_upgrades()
+                Tick_functions.transfer_pollution()
+                if objective.poisontimeout > 0 then
+                    objective.poisontimeout = objective.poisontimeout - 1
                 end
-                reset_map()
+                if tick % 1800 == 0 then
+                    Locomotive.set_player_spawn_and_refill_fish()
+                    Event_functions.set_objective_health(Tick_functions.repair_train())
+                    if objective.config.offline_loot then
+                        Tick_functions.offline_players()
+                    end
+                    Tick_functions.giftmas_spawn()
+                end
+                if tick % 1800 == 900 and objective.jump_countdown_start_time ~= -1 then
+                    Ai.perform_main_attack()
+                end
+
+                if objective.game_reset_tick then
+                    if objective.game_reset_tick < tick then
+                        objective.game_reset_tick = nil
+                        if objective.game_won then
+                            Tick_functions.message_game_won()
+                        end
+                        reset_map()
+                    end
+                    return
+                end
+                Locomotive.fish_tag()
             end
-            return
         end
-        Locomotive.fish_tag()
     end
     for _, player in pairs(game.connected_players) do
-        Minimap.toggle_button(player)
         Gui.update_gui(player)
     end
+end
+
+local function custom_event(name)
+    local objective = Chrono_table.get_table()
+    local id = script.generate_event_name()
+    objective.events[name] = id
+    return id
 end
 
 local function on_init()
@@ -259,6 +277,10 @@ local function on_init()
     mgs.height = 16
     game.surfaces['nauvis'].map_gen_settings = mgs
     game.surfaces['nauvis'].clear()
+    Event.add(custom_event('update_gui'), Gui.update_all_player_gui)
+    Event.add(custom_event('update_world_gui'), Gui.update_all_player_world_gui)
+    Event.add(custom_event('update_upgrades_gui'), Gui.update_all_player_upgrades_gui)
+    Event.add(custom_event('comfylatron_damaged'), Comfylatron.comfylatron_damaged)
     reset_map()
 end
 
@@ -269,7 +291,6 @@ local function on_player_driving_changed_state(event)
     Minimap.minimap(player, true)
 end
 
-local Event = require 'utils.event'
 Event.on_init(on_init)
 Event.on_nth_tick(10, do_tick)
 Event.add(defines.events.on_entity_damaged, On_Event.on_entity_damaged)
@@ -286,6 +307,7 @@ Event.add(defines.events.on_technology_effects_reset, Event_functions.on_technol
 Event.add(defines.events.on_gui_click, Gui.on_gui_click)
 Event.add(defines.events.on_pre_player_died, On_Event.on_pre_player_died)
 Event.add(defines.events.script_raised_revive, On_Event.script_raised_revive)
+Event.add(defines.events.on_player_changed_surface, On_Event.on_player_changed_surface)
 
 if _DEBUG then
     local Session = require 'utils.datastore.session_data'
