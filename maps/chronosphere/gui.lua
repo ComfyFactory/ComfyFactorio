@@ -180,7 +180,7 @@ local function update_upgrades_gui(player)
     end
     local t2 = frame['production_table']
     for key, _ in pairs(Production) do
-        t2['product' .. key].number = math.floor((production_table.experience[key] / 1000) ^ (1 / 2))
+        t2['product' .. key].number = ProdFunctions.calculate_factory_level(production_table.experience[key], true)
         t2['product_bar' .. key].value = calculate_xp(key)
         t2['product_bar' .. key].tooltip = math.floor(calculate_xp(key) * 1000) / 10 .. '%'
     end
@@ -217,7 +217,7 @@ local function world_gui(player)
     frame.add({type = 'label', name = 'world_biters2', caption = {'chronosphere.gui_world_4'}})
     frame.add({type = 'label', name = 'world_biters3', caption = {'chronosphere.gui_world_4_1', objective.overstaycount * 2.5, objective.overstaycount * 10}})
     frame.add({type = 'line'})
-    frame.add({type = 'label', name = 'overstay_time', caption = {'chronosphere.gui_world_7', '', ''}})
+    frame.add({type = 'label', name = 'overstay_time', caption = {'chronosphere.gui_world_7', 3}})
 
     frame.add({type = 'line'})
 
@@ -225,13 +225,56 @@ local function world_gui(player)
     close.style.horizontal_align = 'center'
 end
 
-local function update_world_gui(player)
+local function ETA_seconds_until_full(power, storedbattery) -- in watts and joules
     local objective = Chrono_table.get_table()
-    local difficulty = Difficulty.get().difficulty_vote_value
 
+    local n = objective.chronochargesneeded - objective.chronocharges
+
+    if n <= 0 then
+        return 0
+    else
+        local eta = math_max(0, n - storedbattery / 1000000) / (power / 1000000 + objective.passive_chronocharge_rate)
+        if eta < 1 then
+            return 1
+        end
+        return math_floor(eta)
+    end
+end
+
+local function overstay_timers(gui_element, seconds_ETA, min_jump_passed)
+    local objective = Chrono_table.get_table()
+    local overstay, evolution = false, false
+    local time_until_overstay = (objective.chronochargesneeded * 0.75 / objective.passive_chronocharge_rate - objective.passivetimer)
+    local time_until_evo = (objective.chronochargesneeded * 0.5 / objective.passive_chronocharge_rate - objective.passivetimer)
+    local color = {r = 0, g = 0.98, b = 0}
+    if min_jump_passed then
+        if time_until_overstay <= seconds_ETA then
+            color = {r = 0.98, g = 0, b = 0}
+        elseif time_until_evo <= seconds_ETA then
+            color = {r = 0.98, g = 0.5, b = 0}
+        end
+    end
+    gui_element.style.font_color = color
+
+    local evo_timer = {math_floor(time_until_overstay / 60), math_floor(time_until_overstay) % 60, math_floor(time_until_evo / 60), math_floor(time_until_evo) % 60}
+    if time_until_overstay < 0 then
+        evo_timer[2] = 59 - evo_timer[2]
+        overstay = true
+    end
+    if time_until_evo < 0 then
+        evo_timer[4] = 59 - evo_timer[4]
+        evolution = true
+    end
+    return evo_timer, overstay, evolution
+end
+
+local function update_world_gui(player)
     if not player.gui.screen['gui_world'] then
         return
     end
+    local objective = Chrono_table.get_table()
+    local difficulty = Difficulty.get().difficulty_vote_value
+    local overstay_jump = Balance.jumps_until_overstay_is_on(difficulty) or 3
     local world = objective.world
     local evolution = game.forces['enemy'].evolution_factor
     local evo_color = {
@@ -255,44 +298,27 @@ local function update_world_gui(player)
     frame['world_biters3'].caption = {'chronosphere.gui_world_4_1', objective.overstaycount * 2.5, objective.overstaycount * 10}
     frame['world_time'].caption = {'chronosphere.gui_world_5', world.dayspeed.name}
 
+    local timers, overstayed, _ = overstay_timers(frame['overstay_time'], ETA_seconds_until_full(0, 0), objective.chronojumps >= overstay_jump)
     if objective.jump_countdown_start_time == -1 then
-        if objective.chronojumps >= Balance.jumps_until_overstay_is_on(difficulty) then
-            local time_until_overstay = (objective.chronochargesneeded * 0.75 / objective.passive_chronocharge_rate - objective.passivetimer)
-            if time_until_overstay < 0 then
+        if objective.chronojumps >= overstay_jump then
+            if overstayed then
                 frame['overstay_time'].caption = {'chronosphere.gui_overstayed'}
             else
-                frame['overstay_time'].caption = {'chronosphere.gui_world_6', math_floor(time_until_overstay / 60), math_floor(time_until_overstay % 60)}
+                frame['overstay_time'].caption = {'chronosphere.gui_world_6', timers[1], timers[2]}
             end
         else
-            frame['overstay_time'].caption = {'chronosphere.gui_world_7', Balance.jumps_until_overstay_is_on(difficulty)}
+            frame['overstay_time'].caption = {'chronosphere.gui_world_7', overstay_jump}
         end
     else
-        if objective.chronojumps >= Balance.jumps_until_overstay_is_on(difficulty) then
-            local overstayed = (objective.chronochargesneeded * 0.75 / objective.passive_chronocharge_rate < objective.jump_countdown_start_time)
+        if objective.chronojumps >= overstay_jump then
             if overstayed then
                 frame['overstay_time'].caption = {'chronosphere.gui_overstayed'}
             else
                 frame['overstay_time'].caption = {'chronosphere.gui_not_overstayed'}
             end
         else
-            frame['overstay_time'].caption = {'chronosphere.gui_world_7', Balance.jumps_until_overstay_is_on(difficulty)}
+            frame['overstay_time'].caption = {'chronosphere.gui_world_7', overstay_jump}
         end
-    end
-end
-
-local function ETA_seconds_until_full(power, storedbattery) -- in watts and joules
-    local objective = Chrono_table.get_table()
-
-    local n = objective.chronochargesneeded - objective.chronocharges
-
-    if n <= 0 then
-        return 0
-    else
-        local eta = math_max(0, n - storedbattery / 1000000) / (power / 1000000 + objective.passive_chronocharge_rate)
-        if eta < 1 then
-            return 1
-        end
-        return math_floor(eta)
     end
 end
 
@@ -359,23 +385,8 @@ function Public_gui.update_gui(player)
             end
         end
         if objective.chronojumps >= Balance.jumps_until_overstay_is_on(difficulty) then
-            local time_until_overstay = (objective.chronochargesneeded * 0.75 / objective.passive_chronocharge_rate - objective.passivetimer)
-            local time_until_evo = (objective.chronochargesneeded * 0.5 / objective.passive_chronocharge_rate - objective.passivetimer)
-            if time_until_evo <= seconds_ETA then
-                gui.timer_value.style.font_color = {r = 0.98, g = 0.5, b = 0}
-            end
-            if time_until_overstay <= seconds_ETA then
-                gui.timer_value.style.font_color = {r = 0.98, g = 0, b = 0}
-            end
-
-            local evo_timer = {math_floor(time_until_overstay / 60), math_floor(time_until_overstay) % 60, math_floor(time_until_evo / 60), math_floor(time_until_evo) % 60}
-            if time_until_overstay < 0 then
-                evo_timer[2] = 59 - evo_timer[2]
-            end
-            if time_until_evo < 0 then
-                evo_timer[4] = 59 - evo_timer[4]
-            end
-            gui.timer_value.tooltip = {'chronosphere.gui_biters_evolve', evo_timer[1], evo_timer[2], evo_timer[3], evo_timer[4]}
+            local timers = (overstay_timers(gui.timer_value, seconds_ETA, true))
+            gui.timer_value.tooltip = {'chronosphere.gui_biters_evolve', timers[1], timers[2], timers[3], timers[4]}
         else
             gui.timer_value.tooltip = ''
         end
@@ -507,10 +518,11 @@ local function upgrades_gui(player)
                 name = 'product' .. key,
                 enabled = false,
                 sprite = 'recipe/' .. recipe,
-                number = math.floor((production_table.experience[key] / 1000) ^ (1 / 2))
+                number = ProdFunctions.calculate_factory_level(production_table.experience[key], true)
+
             }
         )
-        local xp_bar = prod_table.add({type = 'progressbar', name = 'product_bar' .. key, value = calculate_xp(key)})
+        local xp_bar = prod_table.add({type = 'progressbar', name = 'product_bar' .. key, value = calculate_xp(key), tooltip = math.floor(calculate_xp(key) * 1000) / 10 .. '%'})
         xp_bar.style = 'achievement_progressbar'
     end
     switch_upgrades(player, playertable.active_upgrades_gui[player.index])

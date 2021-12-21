@@ -110,12 +110,26 @@ function Public.ramp_evolution()
     end
 end
 
-function Public.move_items()
+local function revalidate_inventories()
     local objective = Chrono_table.get_table()
-    if not objective.comfychests or not objective.comfychest_invs then
+    if not objective.comfychests or not objective.comfychests2 then
         return
     end
-    if not objective.comfychests2 or not objective.comfychest_invs2 then
+    if not objective.comfychest_invs or not objective.comfychest_invs2 then
+        return
+    end
+    for i = 1, 24, 1 do
+        objective.comfychest_invs[i] = objective.comfychests[i].get_inventory(defines.inventory.chest)
+        objective.comfychest_invs2[i] = objective.comfychests2[i].get_inventory(defines.inventory.chest)
+    end
+end
+
+function Public.move_items()
+    local objective = Chrono_table.get_table()
+    if not objective.comfychests or not objective.comfychests2 then
+        return
+    end
+    if not objective.comfychest_invs or not objective.comfychest_invs2 then
         return
     end
     if objective.game_lost == true then
@@ -124,10 +138,11 @@ function Public.move_items()
     local input, input_inventory = objective.comfychests, objective.comfychest_invs
     local output, output_inventory = objective.comfychests2, objective.comfychest_invs2
     for i = 1, 24, 1 do
-        if not input[i].valid or not input_inventory[i].valid then
+        if not input[i].valid or not output[i].valid then
             return
         end
-        if not output[i].valid or not output_inventory[i].valid then
+        if not input_inventory[i].valid or not output_inventory[i].valid then
+            revalidate_inventories()
             return
         end
 
@@ -268,8 +283,8 @@ local function launch_nukes()
     local surface = game.surfaces[objective.active_surface_index]
     if objective.dangers and #objective.dangers > 1 then
         local max_range = 800
+        local nukes_launched = 0
         if objective.upgrades[17] == 1 then
-            objective.upgrades[17] = 0
             max_range = 100
         end
         for i = 1, #objective.dangers, 1 do
@@ -287,10 +302,12 @@ local function launch_nukes()
                     }
                 )
                 game.print({'chronosphere.message_nuke'}, {r = 0.98, g = 0, b = 0})
+                nukes_launched = nukes_launched + 1
             end
         end
-        if max_range == 100 then
+        if max_range == 100 and nukes_launched > 0 then
             game.print({'chronosphere.message_nuke_intercepted'}, {r = 0, g = 0.98, b = 0})
+            objective.upgrades[17] = 0
         end
     end
 end
