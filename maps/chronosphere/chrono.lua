@@ -355,6 +355,11 @@ function Public.post_jump()
             objective.upgrades[17] = 1
         end
     end
+    if objective.world.id >= 2 and objective.world.id <= 5 then
+        objective.gen_speed = 1
+    else
+        objective.gen_speed = 2
+    end
     for _, player in pairs(game.connected_players) do
         playertable.flame_boots[player.index] = {fuel = 1, steps = {}}
     end

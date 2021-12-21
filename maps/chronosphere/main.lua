@@ -169,7 +169,7 @@ local function do_tick()
     local objective = Chrono_table.get_table()
     local tick = game.tick
     Ai.Tick_actions(tick)
-    if  objective.passivetimer < 80 then
+    if  objective.passivetimer < 160 then
         Tick_functions.request_chunks()
     end
     if tick % 30 == 20 then
