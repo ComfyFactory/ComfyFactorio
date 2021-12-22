@@ -9,6 +9,15 @@ local playersphere = {}
 local productionsphere = {}
 local Public = {}
 
+Public.events = {
+    comfylatron_damaged = Event.generate_event_name('comfylatron_damaged'),
+    update_gui = Event.generate_event_name('update_gui'),
+    update_upgrades_gui = Event.generate_event_name('update_upgrades_gui'),
+    update_world_gui = Event.generate_event_name('update_world_gui'),
+    reset_map = Event.generate_event_name('reset_map'),
+    chronojump = Event.generate_event_name('chronojump'),
+}
+
 Global.register(
     chronosphere,
     function(tbl)
@@ -58,6 +67,7 @@ function Public.reset_player_table()
     playersphere.flame_boots = {}
     playersphere.offline_players = {}
     playersphere.active_upgrades_gui = {}
+    playersphere.guimode = {}
 end
 
 function Public.reset_schedule_table()
@@ -126,11 +136,11 @@ function Public.reset_table()
     chronosphere.last_artillery_event = 0
     chronosphere.poison_mastery_unlocked = 0
     chronosphere.gen_speed = 2
-    chronosphere.events = {}
-    chronosphere.guimode = nil
     chronosphere.giftmas_enabled = true
     chronosphere.giftmas_lamps = {}
     chronosphere.giftmas_delivered = 0
+    chronosphere.restart_confirm = nil
+    chronosphere.restart_hard = false
 end
 
 function Public.get_table()

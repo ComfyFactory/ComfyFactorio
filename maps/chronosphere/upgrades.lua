@@ -324,7 +324,7 @@ local function process_upgrade(index)
             upgrade_giftmas()
         end
     end
-    script.raise_event(objective.events['update_upgrades_gui'], {})
+    script.raise_event(Chrono_table.events['update_upgrades_gui'], {})
 end
 
 local function check_single_upgrade(index, coin_scaling)
@@ -411,7 +411,7 @@ function Public.trigger_poison()
             surface.create_entity({name = 'poison-capsule', position = objective.comfychests[i].position, force = 'player', target = objective.comfychests[i], speed = 1})
         end
     end
-    script.raise_event(objective.events['update_upgrades_gui'], {})
+    script.raise_event(Chrono_table.events['update_upgrades_gui'], {})
 end
 
 return Public
