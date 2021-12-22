@@ -187,44 +187,6 @@ local function update_upgrades_gui(player)
     switch_upgrades(player, playertable.active_upgrades_gui[player.index])
 end
 
-local function world_gui(player)
-    local objective = Chrono_table.get_table()
-    if player.gui.screen['gui_world'] then
-        player.gui.screen['gui_world'].destroy()
-        return
-    end
-    local world = objective.world
-    local evolution = game.forces['enemy'].evolution_factor
-    local frame = player.gui.screen.add {type = 'frame', name = 'gui_world', caption = {'chronosphere.gui_world_button'}, direction = 'vertical'}
-    frame.location = {x = 650, y = 45}
-    frame.style.minimal_height = 300
-    frame.style.maximal_height = 500
-    frame.style.minimal_width = 200
-    frame.style.maximal_width = 400
-    frame.add({type = 'label', name = 'world_name', caption = {'chronosphere.gui_world_0', world.variant.name}})
-    frame.add({type = 'label', caption = {'chronosphere.gui_world_1'}})
-    local table0 = frame.add({type = 'table', name = 'world_ores', column_count = 3})
-    table0.add({type = 'sprite-button', name = 'iron-ore', sprite = 'item/iron-ore', enabled = false, number = world.variant.fe})
-    table0.add({type = 'sprite-button', name = 'copper-ore', sprite = 'item/copper-ore', enabled = false, number = world.variant.cu})
-    table0.add({type = 'sprite-button', name = 'coal', sprite = 'item/coal', enabled = false, number = world.variant.c})
-    table0.add({type = 'sprite-button', name = 'stone', sprite = 'item/stone', enabled = false, number = world.variant.s})
-    table0.add({type = 'sprite-button', name = 'uranium-ore', sprite = 'item/uranium-ore', enabled = false, number = world.variant.u})
-    table0.add({type = 'sprite-button', name = 'oil', sprite = 'fluid/crude-oil', enabled = false, number = world.variant.o})
-    frame.add({type = 'label', name = 'richness', caption = {'chronosphere.gui_world_2', world.ores.name}})
-    frame.add({type = 'label', name = 'world_time', caption = {'chronosphere.gui_world_5', world.dayspeed.name}})
-    frame.add({type = 'line'})
-    frame.add({type = 'label', name = 'world_biters', caption = {'chronosphere.gui_world_3', math_floor(evolution * 100, 1)}})
-    frame.add({type = 'label', name = 'world_biters2', caption = {'chronosphere.gui_world_4'}})
-    frame.add({type = 'label', name = 'world_biters3', caption = {'chronosphere.gui_world_4_1', objective.overstaycount * 2.5, objective.overstaycount * 10}})
-    frame.add({type = 'line'})
-    frame.add({type = 'label', name = 'overstay_time', caption = {'chronosphere.gui_world_7', 3}})
-
-    frame.add({type = 'line'})
-
-    local close = frame.add({type = 'button', name = 'close_world', caption = 'Close'})
-    close.style.horizontal_align = 'center'
-end
-
 local function ETA_seconds_until_full(power, storedbattery) -- in watts and joules
     local objective = Chrono_table.get_table()
 
@@ -322,15 +284,55 @@ local function update_world_gui(player)
     end
 end
 
+local function world_gui(player)
+    if player.gui.screen['gui_world'] then
+        player.gui.screen['gui_world'].destroy()
+        return
+    end
+    local objective = Chrono_table.get_table()
+    local world = objective.world
+    local evolution = game.forces['enemy'].evolution_factor
+    local frame = player.gui.screen.add {type = 'frame', name = 'gui_world', caption = {'chronosphere.gui_world_button'}, direction = 'vertical'}
+    frame.location = {x = 650, y = 45}
+    frame.style.minimal_height = 300
+    frame.style.maximal_height = 500
+    frame.style.minimal_width = 200
+    frame.style.maximal_width = 400
+    frame.add({type = 'label', name = 'world_name', caption = {'chronosphere.gui_world_0', world.variant.name}})
+    frame.add({type = 'label', caption = {'chronosphere.gui_world_1'}})
+    local table0 = frame.add({type = 'table', name = 'world_ores', column_count = 3})
+    table0.add({type = 'sprite-button', name = 'iron-ore', sprite = 'item/iron-ore', enabled = false, number = world.variant.fe})
+    table0.add({type = 'sprite-button', name = 'copper-ore', sprite = 'item/copper-ore', enabled = false, number = world.variant.cu})
+    table0.add({type = 'sprite-button', name = 'coal', sprite = 'item/coal', enabled = false, number = world.variant.c})
+    table0.add({type = 'sprite-button', name = 'stone', sprite = 'item/stone', enabled = false, number = world.variant.s})
+    table0.add({type = 'sprite-button', name = 'uranium-ore', sprite = 'item/uranium-ore', enabled = false, number = world.variant.u})
+    table0.add({type = 'sprite-button', name = 'oil', sprite = 'fluid/crude-oil', enabled = false, number = world.variant.o})
+    frame.add({type = 'label', name = 'richness', caption = {'chronosphere.gui_world_2', world.ores.name}})
+    frame.add({type = 'label', name = 'world_time', caption = {'chronosphere.gui_world_5', world.dayspeed.name}})
+    frame.add({type = 'line'})
+    frame.add({type = 'label', name = 'world_biters', caption = {'chronosphere.gui_world_3', math_floor(evolution * 100, 1)}})
+    frame.add({type = 'label', name = 'world_biters2', caption = {'chronosphere.gui_world_4'}})
+    frame.add({type = 'label', name = 'world_biters3', caption = {'chronosphere.gui_world_4_1', objective.overstaycount * 2.5, objective.overstaycount * 10}})
+    frame.add({type = 'line'})
+    frame.add({type = 'label', name = 'overstay_time', caption = {'chronosphere.gui_world_7', 3}})
+
+    frame.add({type = 'line'})
+
+    local close = frame.add({type = 'button', name = 'close_world', caption = 'Close'})
+    close.style.horizontal_align = 'center'
+    update_world_gui(player)
+end
+
 function Public_gui.update_gui(player)
     local objective = Chrono_table.get_table()
     local difficulty = Difficulty.get().difficulty_vote_value
+    local playertable = Chrono_table.get_player_table()
 
     if not player.gui.top.chronosphere then
         create_gui(player)
     end
     local gui = player.gui.top.chronosphere
-    local guimode = objective.guimode
+    local guimode = playertable.guimode[player.index]
 
     gui.jump_number.caption = objective.chronojumps
 
@@ -351,7 +353,7 @@ function Public_gui.update_gui(player)
             gui.timer_value.tooltip = ''
             gui.timer2.caption = ''
             gui.timer_value2.caption = ''
-            objective.guimode = 'warmup'
+            playertable.guimode[player.index] = 'warmup'
         end
     elseif objective.jump_countdown_start_time == -1 then
         local powerobserved, storedbattery = 0, 0
@@ -365,7 +367,7 @@ function Public_gui.update_gui(player)
                 gui.timer2.caption = {'chronosphere.gui_3_2'}
                 gui.timer2.style.font_color = {r = 0.98, g = 0, b = 0}
                 gui.timer_value2.style.font_color = {r = 0.98, g = 0, b = 0}
-                objective.guimode = 'nuclear'
+                playertable.guimode[player.index] = 'nuclear'
             end
             local nukecase = objective.dangertimer
             gui.timer_value2.caption = math_floor(nukecase / 60) .. 'm' .. nukecase % 60 .. 's'
@@ -378,7 +380,7 @@ function Public_gui.update_gui(player)
                     gui.timer2.caption = {'chronosphere.gui_3_1'}
                     gui.timer2.style.font_color = {r = 0, g = 200, b = 0}
                     gui.timer_value2.style.font_color = {r = 0, g = 200, b = 0}
-                    objective.guimode = 'accumulators'
+                    playertable.guimode[player.index] = 'accumulators'
                 end
                 local bestcase = math_floor(ETA_seconds_until_full(#objective.accumulators * 300000, storedbattery))
                 gui.timer_value2.caption = math_floor(bestcase / 60) .. 'm' .. bestcase % 60 .. 's (drawing ' .. #objective.accumulators * 0.3 .. 'MW)'
@@ -398,7 +400,7 @@ function Public_gui.update_gui(player)
             gui.timer_value.tooltip = ''
             gui.timer2.caption = ''
             gui.timer_value2.caption = ''
-            objective.guimode = 'countdown'
+            playertable.guimode[player.index] = 'countdown'
         end
     end
 end

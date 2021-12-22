@@ -3,6 +3,7 @@
 require 'modules.biter_noms_you'
 require 'modules.biters_yield_coins'
 require 'modules.no_deconstruction_of_neutral_entities'
+local Server = require 'utils.server'
 local Comfylatron = require 'maps.chronosphere.comfylatron'
 local Ai = require 'maps.chronosphere.ai'
 local Balance = require 'maps.chronosphere.balance'
@@ -22,6 +23,7 @@ local Tick_functions = require 'maps.chronosphere.tick_functions'
 local Upgrades = require 'maps.chronosphere.upgrades'
 local Worlds = require 'maps.chronosphere.world_list'
 require 'maps.chronosphere.config_tab'
+require 'maps.chronosphere.commands'
 
 local function generate_overworld(surface, optworld)
     Worlds.determine_world(optworld)
@@ -31,6 +33,11 @@ end
 
 local function reset_map()
     local objective = Chrono_table.get_table()
+    if objective.restart_hard then
+        game.print({'chronosphere.cmd_server_restarting'}, {r = 255, g = 255, b = 0})
+        Server.start_scenario('Chronosphere')
+        return
+    end
     Chrono.reset_surfaces()
     Worlds.determine_world(nil)
     local world = objective.world
@@ -78,6 +85,9 @@ local function chronojump(choice)
 
     if objective.game_lost then
         goto continue
+    end
+    if type(choice) == 'table' then
+        choice = choice[1]
     end
 
     if objective.chronojumps <= 24 then
@@ -203,7 +213,7 @@ local function do_tick()
                 Tick_functions.train_pollution('countdown')
             end
         end
-        script.raise_event(objective.events['update_world_gui'], {})
+        script.raise_event(Chrono_table.events['update_world_gui'], {})
         if tick % 120 == 0 then
             Tick_functions.move_items()
             Tick_functions.output_items()
@@ -249,13 +259,6 @@ local function do_tick()
     end
 end
 
-local function custom_event(name)
-    local objective = Chrono_table.get_table()
-    local id = script.generate_event_name()
-    objective.events[name] = id
-    return id
-end
-
 local function on_init()
     local objective = Chrono_table.get_table()
     local T = Map.Pop_info()
@@ -277,10 +280,6 @@ local function on_init()
     mgs.height = 16
     game.surfaces['nauvis'].map_gen_settings = mgs
     game.surfaces['nauvis'].clear()
-    Event.add(custom_event('update_gui'), Gui.update_all_player_gui)
-    Event.add(custom_event('update_world_gui'), Gui.update_all_player_world_gui)
-    Event.add(custom_event('update_upgrades_gui'), Gui.update_all_player_upgrades_gui)
-    Event.add(custom_event('comfylatron_damaged'), Comfylatron.comfylatron_damaged)
     reset_map()
 end
 
@@ -308,29 +307,9 @@ Event.add(defines.events.on_gui_click, Gui.on_gui_click)
 Event.add(defines.events.on_pre_player_died, On_Event.on_pre_player_died)
 Event.add(defines.events.script_raised_revive, On_Event.script_raised_revive)
 Event.add(defines.events.on_player_changed_surface, On_Event.on_player_changed_surface)
-
-if _DEBUG then
-    local Session = require 'utils.datastore.session_data'
-    local Color = require 'utils.color_presets'
-
-    commands.add_command(
-        'chronojump',
-        'Weeeeee!',
-        function(cmd)
-            local player = game.player
-            local trusted = Session.get_trusted_table()
-            local param = tostring(cmd.parameter)
-            if player then
-                if player ~= nil then
-                    if not trusted[player.name] then
-                        if not player.admin then
-                            player.print('[ERROR] Only admins and trusted weebs are allowed to run this command!', Color.fail)
-                            return
-                        end
-                    end
-                end
-            end
-            chronojump(param)
-        end
-    )
-end
+Event.add(Chrono_table.events['comfylatron_damaged'], Comfylatron.comfylatron_damaged)
+Event.add(Chrono_table.events['update_gui'], Gui.update_all_player_gui)
+Event.add(Chrono_table.events['update_upgrades_gui'], Gui.update_all_player_upgrades_gui)
+Event.add(Chrono_table.events['update_world_gui'], Gui.update_all_player_world_gui)
+Event.add(Chrono_table.events['reset_map'], reset_map)
+Event.add(Chrono_table.events['chronojump'], chronojump)

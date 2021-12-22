@@ -25,7 +25,7 @@ function Public.add_ammo_tokens(player)
     end
     local count = inventory.remove({name = 'pistol', count = 5})
     objective.research_tokens.ammo = objective.research_tokens.ammo + count
-    script.raise_event(objective.events['update_upgrades_gui'], {})
+    script.raise_event(Chrono_table.events['update_upgrades_gui'], {})
 end
 
 function Public.coin_scaling()

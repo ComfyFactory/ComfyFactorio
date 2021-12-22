@@ -179,7 +179,7 @@ function Public.spawner_loot(surface, position)
         local count = math_random(1, 1 + objective.chronojumps)
         objective.research_tokens.weapons = objective.research_tokens.weapons + count
         flying_text(surface, position, {'chronosphere.token_weapons_add', count}, {r = 0.8, g = 0.8, b = 0.8})
-        script.raise_event(objective.events['update_upgrades_gui'], {})
+        script.raise_event(Chrono_table.events['update_upgrades_gui'], {})
     end
 end
 
@@ -190,13 +190,13 @@ function Public.research_loot(event)
         bonus = 2
     end
     objective.research_tokens.tech = objective.research_tokens.tech + 5 * #event.research.research_unit_ingredients * bonus
-    script.raise_event(objective.events['update_upgrades_gui'], {})
+    script.raise_event(Chrono_table.events['update_upgrades_gui'], {})
 end
 
 function Public.tree_loot()
     local objective = Chrono_table.get_table()
     objective.research_tokens.ecology = objective.research_tokens.ecology + 1
-    script.raise_event(objective.events['update_upgrades_gui'], {})
+    script.raise_event(Chrono_table.events['update_upgrades_gui'], {})
 end
 
 function Public.choppy_loot(event)

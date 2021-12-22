@@ -235,8 +235,7 @@ function Public.on_entity_damaged(event)
         Event_functions.biter_immunities(event)
     elseif force == 'player' then
         if event.entity.name == 'compilatron' then
-            local objective = Chrono_table.get_table()
-            script.raise_event(objective.events['comfylatron_damaged'], event)
+            script.raise_event(Chrono_table.events['comfylatron_damaged'], event)
             return
         end
         protect_entity(event)

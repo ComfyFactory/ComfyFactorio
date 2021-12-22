@@ -379,8 +379,8 @@ function Public.post_jump()
             game.forces.player.technologies['power-armor-mk2'].enabled = true
         end
     end
-    script.raise_event(objective.events['update_upgrades_gui'], {})
-    script.raise_event(objective.events['update_world_gui'], {})
+    script.raise_event(Chrono_table.events['update_upgrades_gui'], {})
+    script.raise_event(Chrono_table.events['update_world_gui'], {})
 end
 
 function Public.message_on_arrival()

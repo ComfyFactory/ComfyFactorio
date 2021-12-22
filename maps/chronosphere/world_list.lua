@@ -213,6 +213,7 @@ function Public.determine_world(optional_choice)
         end
         table.insert(choices.weights, weight)
     end
+    ::retry::
     if Worlds[tonumber(optional_choice)] then
         chosen_id = tonumber(optional_choice)
     else
@@ -224,6 +225,10 @@ function Public.determine_world(optional_choice)
             table.insert(variant_choices.types, variant.id)
             table.insert(variant_choices.weights, variant.weight)
         end
+    end
+    if #variant_choices.types < 1 then
+        optional_choice = nil
+        goto retry
     end
     chosen_variant_id = Rand.raffle(variant_choices.types, variant_choices.weights)
     local modifiers = get_modifiers(chosen_id)
