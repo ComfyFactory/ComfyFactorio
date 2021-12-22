@@ -42,18 +42,22 @@ local function scenario(p, parameter)
 end
 
 local function cmd_handler(cmd)
-    local command_name = cmd.name
-    local player = game.get_player(cmd.player_index)
     local p
-    if not player or not player.valid then
+    if not cmd.player_index then
         p = log
     else
-        p = player.print
-        if not player.admin then
-            p({'chronosphere.cmd_not_admin'}, Color.fail)
-            return
+        local player = game.get_player(cmd.player_index)
+        if not player or not player.valid then
+            p = log
+        else
+            p = player.print
+            if not player.admin then
+                p({'chronosphere.cmd_not_admin'}, Color.fail)
+                return
+            end
         end
     end
+    local command_name = cmd.name
     if command_name == 'scenario' then
         scenario(p, cmd.parameter)
     elseif command_name == 'chronojump' then
