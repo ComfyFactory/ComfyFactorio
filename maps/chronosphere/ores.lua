@@ -155,6 +155,8 @@ function Public.prospect_ores(entity, surface, pos)
         end
         if world.id == 1 and (world.variant.id == 10 or world.variant.id == 11) then
             chance = chance + 30
+        elseif world.id == 5 then
+            chance = chance - 15
         end
         if math_random(chance + math_floor(20 * world.ores.factor), 100 + chance) >= 100 then
             spawn_ore_vein(surface, pos, world, extrasize)

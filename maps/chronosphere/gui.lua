@@ -319,7 +319,7 @@ local function world_gui(player)
     frame.add({type = 'line'})
 
     local close = frame.add({type = 'button', name = 'close_world', caption = 'Close'})
-    close.style.horizontal_align = 'center'
+    close.style.horizontally_stretchable = true
     update_world_gui(player)
 end
 
