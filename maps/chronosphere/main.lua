@@ -3,6 +3,7 @@
 require 'modules.biter_noms_you'
 require 'modules.biters_yield_coins'
 require 'modules.no_deconstruction_of_neutral_entities'
+require 'modules.turret_filler'
 local Server = require 'utils.server'
 local Comfylatron = require 'maps.chronosphere.comfylatron'
 local Ai = require 'maps.chronosphere.ai'
