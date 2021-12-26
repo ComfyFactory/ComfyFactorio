@@ -1,5 +1,6 @@
 ### All Submissions:
 
+- [ ] Have you checked to ensure there aren't any other modules that are alike or similar to the PR?
 - [ ] Have you checked to ensure there aren't other open [Pull Requests](../../../pulls) for the same update/change?
 
 ### Tested Changes:
