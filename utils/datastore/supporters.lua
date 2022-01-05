@@ -30,6 +30,12 @@ end
 local sync_supporters_callback =
     Token.register(
     function(data)
+        if not data then
+            return
+        end
+        if not data.entries then
+            return
+        end
         table.clear_table(this.supporters)
         for k, v in pairs(data.entries) do
             this.supporters[k] = v

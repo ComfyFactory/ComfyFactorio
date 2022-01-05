@@ -1,6 +1,5 @@
 local Global = require 'utils.global'
 local Game = require 'utils.game'
-local Core = require 'utils.core'
 local Token = require 'utils.token'
 local Task = require 'utils.task'
 local Server = require 'utils.server'
@@ -88,7 +87,7 @@ local try_download_amount_of_resets_token =
         local old_value = data.value
         if old_value then
             old_value = tonumber(old_value)
-            local new_value = Core.get_current_date()
+            local new_value = Server.get_current_date()
             local time_to_reset = (new_value - old_value)
             if not time_to_reset then
                 return
@@ -102,7 +101,7 @@ local try_download_amount_of_resets_token =
                 try_get_all_data(this.settings.dataset, clear_all_data_token)
             end
         else
-            local new_value = Core.get_current_date()
+            local new_value = Server.get_current_date()
 
             if new_value then
                 set_data(this.settings.dataset, this.settings.reset_key, tonumber(new_value))
