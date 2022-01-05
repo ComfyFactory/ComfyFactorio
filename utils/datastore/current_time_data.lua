@@ -28,7 +28,7 @@ local function set_location(player)
 end
 
 local function create_label(player)
-    local date = Core.get_current_date_with_time()
+    local date = Server.get_current_date_with_time()
     if not date then
         date = '1970-01-01'
     end
@@ -65,7 +65,7 @@ Event.add(
 Event.on_nth_tick(
     60,
     function()
-        local date = Core.get_current_date_with_time()
+        local date = Server.get_current_date_with_time()
         if not date then
             date = '1969-01-01 00:00'
         end
