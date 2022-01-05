@@ -7,7 +7,6 @@ local Server = require 'utils.server'
 local random = math.random
 local sqrt = math.sqrt
 local floor = math.floor
-local ceil = math.ceil
 local format = string.format
 local match = string.match
 local insert = table.insert

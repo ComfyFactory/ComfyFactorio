@@ -1,5 +1,4 @@
 local Server = require 'utils.server'
-local Core = require 'utils.core'
 local Event = require 'utils.event'
 local ComfyGui = require 'comfy_panel.main'
 local Color = require 'utils.color_presets'

@@ -1,6 +1,5 @@
 local Global = require 'utils.global'
 local Game = require 'utils.game'
-local Core = require 'utils.core'
 local Token = require 'utils.token'
 local Task = require 'utils.task'
 local Server = require 'utils.server'

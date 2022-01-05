@@ -363,7 +363,7 @@ function Public.to_unjailed_embed(message, locale)
         return
     end
     if locale then
-        print(message, discord_jailed_embed_tag)
+        print(message, discord_unjailed_embed_tag)
     else
         if not message.username then
             return
@@ -371,7 +371,7 @@ function Public.to_unjailed_embed(message, locale)
         if not message.admin then
             return
         end
-        raw_print(discord_jailed_embed_tag .. table_to_json(message))
+        raw_print(discord_unjailed_embed_tag .. table_to_json(message))
     end
 end
 
