@@ -338,6 +338,7 @@ function Public.to_jailed_embed(message, locale)
     if not type(message) == 'table' then
         return
     end
+
     if locale then
         print(message, discord_jailed_embed_tag)
     else
