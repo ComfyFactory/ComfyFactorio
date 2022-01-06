@@ -469,6 +469,7 @@ local jail = function(player, griefer, msg, raised)
     local data = Server.build_embed_data()
     data.username = griefer
     data.admin = player
+    data.reason = msg
     Server.to_jailed_embed(data)
 
     if votejail[griefer] then
