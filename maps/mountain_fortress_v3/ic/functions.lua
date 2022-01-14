@@ -169,18 +169,6 @@ local function get_player_surface(player)
     return false
 end
 
-local function get_player_entity_upgrade_surface(player)
-    local cars = IC.get('cars')
-    for k, car in pairs(cars) do
-        if car.owner == player.index and type(car.entity) == 'boolean' then
-            return car.name, true
-        elseif car.owner == player.index then
-            return car.name, false
-        end
-    end
-    return false, false
-end
-
 local function get_player_entity(player)
     local cars = IC.get('cars')
     for k, car in pairs(cars) do
