@@ -8,8 +8,18 @@ local Server = require 'utils.server'
 local main_frame_name = Gui.uid_name()
 local save_button_name = Gui.uid_name()
 local discard_button_name = Gui.uid_name()
+local random = math.random
 
-function Public.main_gui(player)
+local random_greetings = {
+    'Dear defender',
+    'Defenders',
+    'Dear players',
+    'Fellow players'
+}
+
+local random_greetings_size = #random_greetings
+
+function Public.main_gui(player, text)
     local main_frame = player.gui.screen[main_frame_name]
     if main_frame and main_frame.valid then
         main_frame.destroy()
@@ -40,7 +50,7 @@ function Public.main_gui(player)
         inside_table.add(
         {
             type = 'label',
-            caption = '[color=yellow]Dear defender,[/color]'
+            caption = '[color=yellow]' .. text .. ',[/color]'
         }
     )
     local info_main_style = info_main.style
@@ -90,19 +100,22 @@ function Public.main_gui(player)
     player.opened = main_frame
 end
 
-function Public.display_pause_wave(player)
+function Public.display_pause_wave(player, text)
     if not player then
         return
     end
-    return Public.main_gui(player)
+    if not text then
+        return
+    end
+    return Public.main_gui(player, text)
 end
 
 local function pause_waves_state(state)
     if state then
-        game.print('[color=blue][Wave Defense][/color] new waves will not spawn for 5 minutes!', {r = 0.98, g = 0.66, b = 0.22})
+        game.print('[color=blue][Wave Defense][/color] New waves will not spawn for 5 minutes!', {r = 0.98, g = 0.66, b = 0.22})
         Public.set('paused', true)
     else
-        game.print('[color=blue][Wave Defense][/color] waves will spawn normally again.', {r = 0.98, g = 0.66, b = 0.22})
+        game.print('[color=blue][Wave Defense][/color] Waves will spawn normally again.', {r = 0.98, g = 0.66, b = 0.22})
         Public.set('paused', false)
     end
 end
@@ -124,13 +137,16 @@ Gui.on_click(
             pause_waves.index = pause_waves.index + 1
         end
 
-        if total_players % pause_waves.index >= 0 then
-            Public.set('pause_waves', {})
+        local divided = total_players / 2
+
+        if pause_waves.index >= divided then
+            Public.set('pause_waves', {index = 0})
             local players = game.connected_players
             for i = 1, #players do
                 local p = players[i]
                 local screen = p.gui.screen
                 local frame = screen[main_frame_name]
+                p.surface.play_sound({path = 'utility/new_objective', position = p.position, volume_modifier = 0.75})
 
                 if frame and frame.valid then
                     Gui.remove_data_recursively(frame)
@@ -171,14 +187,16 @@ Gui.on_click(
 Event.on_nth_tick(
     216000, -- 1 hour
     function()
-        if game.ticks_played < 10000 then
+        if game.ticks_played < 100 then
             return
         end
+
+        local greeting = random_greetings[random(1, random_greetings_size)]
 
         local players = game.connected_players
         for i = 1, #players do
             local player = players[i]
-            Public.display_pause_wave(player)
+            Public.display_pause_wave(player, greeting)
         end
     end
 )
