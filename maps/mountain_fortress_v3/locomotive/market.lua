@@ -402,7 +402,7 @@ local function get_items()
     main_market_items['car'] = {
         stack = 1,
         value = 'coin',
-        price = 6000,
+        price = 4500,
         tooltip = ({'main_market.car'}),
         upgrade = false,
         static = true
