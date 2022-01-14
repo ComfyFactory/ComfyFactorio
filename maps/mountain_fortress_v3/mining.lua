@@ -199,10 +199,10 @@ end
 
 local function mining_chances_ores()
     local data = {
-        {name = 'iron-ore', chance = 25},
-        {name = 'copper-ore', chance = 17},
-        {name = 'coal', chance = 15},
-        {name = 'stone', chance = 13},
+        {name = 'iron-ore', chance = 26},
+        {name = 'copper-ore', chance = 21},
+        {name = 'coal', chance = 17},
+        {name = 'stone', chance = 6},
         {name = 'uranium-ore', chance = 2}
     }
 
