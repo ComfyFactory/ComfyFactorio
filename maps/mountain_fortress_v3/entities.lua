@@ -1161,20 +1161,32 @@ local function show_mvps(player)
         local sent_to_discord = WPT.get('sent_to_discord')
 
         if not sent_to_discord then
-            local result = {}
-            table.insert(result, 'HIGHEST WAVE: \\n')
-            table.insert(result, wave_defense_table.wave_number .. '\\n')
-            table.insert(result, '\\n')
-            table.insert(result, 'MVP Fighter: \\n')
-            table.insert(result, mvp.killscore.name .. ' with a killing score of ' .. mvp.killscore.score .. ' kills!\\n')
-            table.insert(result, '\\n')
-            table.insert(result, 'MVP Builder: \\n')
-            table.insert(result, mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things!\\n')
-            table.insert(result, '\\n')
-            table.insert(result, 'MVP Miners: \\n')
-            table.insert(result, mvp.mined_entities.name .. ' mined a total of ' .. mvp.mined_entities.score .. ' entities!\\n')
-            local message = table.concat(result)
-            Server.to_discord_embed(message)
+            local message = {
+                title = 'Game over',
+                description = 'Player statistics is below',
+                color = 'failure',
+                field1 = {
+                    text1 = 'Highest Wave:',
+                    text2 = wave_defense_table.wave_number,
+                    inline = 'false'
+                },
+                field2 = {
+                    text1 = 'MVP Fighter:',
+                    text2 = mvp.killscore.name .. ' with a killing score of ' .. mvp.killscore.score .. ' kills!',
+                    inline = 'false'
+                },
+                field3 = {
+                    text1 = 'MVP Builder:',
+                    text2 = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things!',
+                    inline = 'false'
+                },
+                field4 = {
+                    text1 = 'MVP Miners:',
+                    text2 = mvp.mined_entities.name .. ' mined a total of ' .. mvp.mined_entities.score .. ' entities!',
+                    inline = 'false'
+                }
+            }
+            Server.to_discord_embed_parsed(message)
             local wave = WD.get_wave()
             local threat = WD.get('threat')
             local collapse_speed = Collapse.get_speed()
@@ -1187,26 +1199,72 @@ local function show_mvps(player)
             local tier = WPT.get('pickaxe_tier')
             local pick_tier = pickaxe_tiers[tier]
 
-            local server_name = Server.check_server_name('Mtn Fortress')
+            local server_name_matches = Server.check_server_name('Mtn Fortress')
             if WPT.get('prestige_system_enabled') then
                 RPG_Progression.save_all_players()
             end
-            if server_name then
-                local date = Server.get_start_time()
-                game.server_save('Final_Mtn_Fortress_v3_' .. tostring(date))
-                --ignore
-                local text = '**Statistics!**\\n\\n' ..
-                'Time played: ' .. time_played ..
-                '\\n' .. 'Game Difficulty: ' .. diff.name ..
-                '\\n' .. 'Highest wave: ' .. format_number(wave, true) ..
-                '\\n' .. 'Total connected players: ' .. total_players ..
-                '\\n' .. 'Threat: ' .. format_number(threat, true) ..
-                '\\n' .. 'Pickaxe Upgrade: ' .. pick_tier .. ' (' .. tier ..
-                ')\\n' .. 'Collapse Speed: ' .. collapse_speed ..
-                '\\n' .. 'Collapse Amount: ' .. collapse_amount .. '\\n'
-                Server.to_discord_named_embed(send_ping_to_channel, text)
-                WPT.set('sent_to_discord', true)
+            local date = Server.get_start_time()
+            game.server_save('Final_Mtn_Fortress_v3_' .. tostring(date))
+            local text = {
+                title = 'Game over <:helper:627426785918713877>',
+                description = 'Game statistics from the game is below',
+                color = 'failure',
+                field1 = {
+                    text1 = 'Time played:',
+                    text2 = time_played,
+                    inline = 'true'
+                },
+                field2 = {
+                    text1 = 'Game Difficulty:',
+                    text2 = diff.name,
+                    inline = 'true',
+                    emptyField = 'true',
+                    emptyInline = 'true'
+                },
+                field3 = {
+                    text1 = 'Highest wave:',
+                    text2 = format_number(wave, true),
+                    inline = 'true'
+                },
+                field4 = {
+                    text1 = 'Total connected players:',
+                    text2 = total_players,
+                    inline = 'true',
+                    emptyField = 'true',
+                    emptyInline = 'true'
+                },
+                field5 = {
+                    text1 = 'Threat:',
+                    text2 = format_number(threat, true),
+                    inline = 'true'
+                },
+                field6 = {
+                    text1 = 'Pickaxe Upgrade:',
+                    text2 = pick_tier .. ' (' .. tier .. ')',
+                    inline = 'true',
+                    emptyField = 'true',
+                    emptyInline = 'true'
+                },
+                field7 = {
+                    text1 = 'Collapse Speed:',
+                    text2 = collapse_speed,
+                    inline = 'true'
+                },
+                field8 = {
+                    text1 = 'Collapse Amount:',
+                    text2 = collapse_amount,
+                    inline = 'true',
+                    emptyField = 'true',
+                    emptyInline = 'true'
+                }
+            }
+            if server_name_matches then
+                Server.to_discord_named_parsed_embed(send_ping_to_channel, text)
+            else
+                Server.to_discord_embed_parsed(text)
             end
+
+            WPT.set('sent_to_discord', true)
         end
     end
 end
