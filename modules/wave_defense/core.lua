@@ -9,6 +9,9 @@ Public.buried_enemies = Buried_enemies
 local Commands = require 'modules.wave_defense.commands'
 Public.commands = Commands
 
+local Pause_Waves = require 'modules.wave_defense.pause_waves'
+Public.pause_waves = Pause_Waves
+
 local Gui = require 'modules.wave_defense.gui'
 Public.gui = Gui
 

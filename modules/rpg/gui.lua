@@ -445,7 +445,7 @@ function Public.draw_level_text(player)
 
     local players = {}
     for _, p in pairs(game.players) do
-        if p.index ~= player.index then
+        if p.index ~= player.index then -- todo maybe remove this so the player also sees their level?
             players[#players + 1] = p.index
         end
     end

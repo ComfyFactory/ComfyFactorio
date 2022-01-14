@@ -52,7 +52,7 @@ market.caspules = {
     ['defender-capsule'] = {value = 18, rarity = 1},
     ['distractor-capsule'] = {value = 68, rarity = 5},
     ['destroyer-capsule'] = {value = 74, rarity = 7},
-    ['discharge-defense-remote'] = {value = 9216, rarity = 8},
+    ['discharge-defense-remote'] = {value = 8222, rarity = 8},
     ['artillery-targeting-remote'] = {value = 1024, rarity = 7},
     ['raw-fish'] = {value = 6, rarity = 1}
 }
@@ -73,7 +73,7 @@ market.equipment = {
     ['battery-equipment'] = {value = 160, rarity = 2},
     ['battery-mk2-equipment'] = {value = 2000, rarity = 8},
     ['personal-laser-defense-equipment'] = {value = 2500, rarity = 7},
-    ['discharge-defense-equipment'] = {value = 15000, rarity = 7},
+    ['discharge-defense-equipment'] = {value = 8444, rarity = 8},
     ['belt-immunity-equipment'] = {value = 200, rarity = 1},
     ['exoskeleton-equipment'] = {value = 800, rarity = 3},
     ['personal-roboport-equipment'] = {value = 500, rarity = 3},

@@ -88,6 +88,9 @@ function Public.reset_wave_defense()
     this.worm_raffle = {}
     this.alert_boss_wave = false
     this.remove_entities = false
+    this.pause_waves = {
+        index = 0
+    }
     this.enable_side_target = false
     this.enable_threat_log = true
     this.disable_threat_below_zero = false
