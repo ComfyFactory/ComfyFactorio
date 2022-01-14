@@ -62,6 +62,7 @@ local discord_jailed_embed_tag = '[DISCORD-JAILED-EMBED]'
 local discord_unjailed_tag = '[DISCORD-UNJAILED]'
 local discord_unjailed_embed_tag = '[DISCORD-UNJAILED-EMBED]'
 local discord_admin_raw_tag = '[DISCORD-ADMIN-RAW]'
+local discord_embed_parsed_tag = '[DISCORD-EMBED-PARSED]'
 local discord_embed_tag = '[DISCORD-EMBED]'
 local discord_embed_raw_tag = '[DISCORD-EMBED-RAW]'
 local discord_admin_embed_tag = '[DISCORD-ADMIN-EMBED]'
@@ -70,6 +71,7 @@ local discord_named_tag = '[DISCORD-NAMED]'
 local discord_named_raw_tag = '[DISCORD-NAMED-RAW]'
 local discord_named_bold_tag = '[DISCORD-NAMED-BOLD]'
 local discord_named_embed_tag = '[DISCORD-NAMED-EMBED]'
+local discord_named_embed_parsed_tag = '[DISCORD-NAMED-EMBED-PARSED]'
 local discord_named_embed_raw_tag = '[DISCORD-NAMED-EMBED-RAW]'
 local start_scenario_tag = '[START-SCENARIO]'
 local stop_scenario_tag = '[STOP-SCENARIO]'
@@ -101,6 +103,27 @@ local function assert_non_empty_string_and_no_spaces(str, argument_name)
     if str:match(' ') then
         error(argument_name .. " must not contain space ' ' character.", 3)
     end
+end
+
+local function getOnlineAdmins()
+    local online = game.connected_players
+    local i = 0
+    for _, p in pairs(online) do
+        if p.admin then
+            i = i + 1
+        end
+    end
+    return i
+end
+
+local function build_embed_data()
+    local d = {
+        time = Public.format_time(game.ticks_played),
+        onlinePlayers = #game.connected_players,
+        totalPlayers = #game.players,
+        onlineAdmins = getOnlineAdmins()
+    }
+    return d
 end
 
 --- The event id for the on_server_started event.
@@ -181,6 +204,28 @@ function Public.to_discord_named_embed(channel_name, message)
     raw_print(concat({discord_named_embed_tag, channel_name, ' ', message}))
 end
 
+--- Sends an embed message that is parsed to the named discord channel. The message is sanitized of markdown server side.
+-- @param  message<string> the content of the embed.
+function Public.to_discord_named_parsed_embed(channel_name, message)
+    assert_non_empty_string_and_no_spaces(channel_name, 'channel_name')
+    local table_to_json = game.table_to_json
+
+    if not type(message) == 'table' then
+        return
+    end
+
+    if not message.title then
+        return
+    end
+    if not message.description then
+        return
+    end
+
+    message.channelName = channel_name
+
+    raw_print(discord_named_embed_parsed_tag, table_to_json(message))
+end
+
 --- Sends an embed message to the named discord channel. The message is not sanitized of markdown.
 -- @param  message<string> the content of the embed.
 function Public.to_discord_named_embed_raw(channel_name, message)
@@ -250,6 +295,23 @@ function Public.to_admin_raw(message, locale)
     else
         raw_print(discord_admin_raw_tag .. message)
     end
+end
+
+--- Sends a embed message to the linked discord channel. The message is sanitized/parsed of markdown server side.
+-- @param  message<table> the content of the embed.
+function Public.to_discord_embed_parsed(message)
+    local table_to_json = game.table_to_json
+    if not type(message) == 'table' then
+        return
+    end
+
+    if not message.title then
+        return
+    end
+    if not message.description then
+        return
+    end
+    raw_print(discord_embed_parsed_tag .. table_to_json(message))
 end
 
 --- Sends a embed message to the linked discord channel. The message is sanitized of markdown server side.
@@ -499,27 +561,6 @@ local function validate_arguments(data_set, key, callback_token)
     if type(callback_token) ~= 'number' then
         error('callback_token must be a number', 3)
     end
-end
-
-local function getOnlineAdmins()
-    local online = game.connected_players
-    local i = 0
-    for _, p in pairs(online) do
-        if p.admin then
-            i = i + 1
-        end
-    end
-    return i
-end
-
-local function build_embed_data()
-    local d = {
-        time = Public.format_time(game.ticks_played),
-        onlinePlayers = #game.connected_players,
-        totalPlayers = #game.players,
-        onlineAdmins = getOnlineAdmins()
-    }
-    return d
 end
 
 local function send_try_get_data(data_set, key, callback_token)
