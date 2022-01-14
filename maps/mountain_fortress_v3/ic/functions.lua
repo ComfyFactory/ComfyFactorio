@@ -40,7 +40,8 @@ local function get_trusted_system(player)
             players = {
                 [player.name] = true
             },
-            allow_anyone = 'right'
+            allow_anyone = 'right',
+            auto_upgrade = 'left'
         }
     end
 
@@ -166,6 +167,18 @@ local function get_player_surface(player)
         end
     end
     return false
+end
+
+local function get_player_entity_upgrade_surface(player)
+    local cars = IC.get('cars')
+    for k, car in pairs(cars) do
+        if car.owner == player.index and type(car.entity) == 'boolean' then
+            return car.name, true
+        elseif car.owner == player.index then
+            return car.name, false
+        end
+    end
+    return false, false
 end
 
 local function get_player_entity(player)
@@ -1051,10 +1064,15 @@ function Public.create_car(event)
         return player.print('Multi-surface is not supported at the moment.', Color.warning)
     end
 
+    local storage = get_trusted_system(player)
+
     if
         get_owner_car_name(player) == 'car' and ce.name == 'tank' or get_owner_car_name(player) == 'car' and ce.name == 'spidertron' or
             get_owner_car_name(player) == 'tank' and ce.name == 'spidertron'
      then
+        if storage.auto_upgrade and storage.auto_upgrade == 'right' then
+            return
+        end
         upgrade_surface(player, ce)
         render_owner_text(renders, player, ce)
         player.print('Your car-surface has been upgraded!', Color.success)

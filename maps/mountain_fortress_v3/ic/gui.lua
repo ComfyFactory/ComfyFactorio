@@ -26,6 +26,7 @@ local main_toolbar_name = Gui.uid_name()
 local add_player_name = Gui.uid_name()
 local transfer_car_name = Gui.uid_name()
 local allow_anyone_to_enter_name = Gui.uid_name()
+local auto_upgrade_name = Gui.uid_name()
 local kick_player_name = Gui.uid_name()
 local destroy_surface_name = Gui.uid_name()
 
@@ -48,7 +49,8 @@ local function create_player_table(player)
             players = {
                 [player.name] = true
             },
-            allow_anyone = 'right'
+            allow_anyone = 'right',
+            auto_upgrade = 'left'
         }
     end
     return trust_system[player.index]
@@ -376,6 +378,17 @@ local function draw_main_frame(player)
             right_label_caption = ({'ic.off'})
         }
     )
+    local auto_upgrade =
+        inside_table.add(
+        {
+            type = 'switch',
+            name = auto_upgrade_name,
+            switch_state = player_list.auto_upgrade,
+            allow_none_state = false,
+            left_label_caption = ({'ic.auto_upgrade'}),
+            right_label_caption = ({'ic.off'})
+        }
+    )
 
     local player_table =
         inside_table.add {
@@ -429,6 +442,7 @@ local function draw_main_frame(player)
         transfer_car_frame = transfer_car_frame,
         destroy_surface_frame = destroy_surface_frame,
         allow_anyone_to_enter = allow_anyone_to_enter,
+        auto_upgrade = auto_upgrade,
         player = player
     }
     draw_players(data)
@@ -587,6 +601,35 @@ Gui.on_click(
             else
                 player_list.allow_anyone = 'right'
                 player.print('[IC] Everyone is disallowed to enter your car except your trusted list!', Color.warning)
+            end
+
+            if player.gui.screen[main_frame_name] then
+                toggle(player, true)
+            end
+        end
+    end
+)
+
+Gui.on_click(
+    auto_upgrade_name,
+    function(event)
+        local player = event.player
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        local player_list = create_player_table(player)
+
+        local screen = player.gui.screen
+        local frame = screen[main_frame_name]
+
+        if frame and frame.valid then
+            if player_list.auto_upgrade == 'right' then
+                player_list.auto_upgrade = 'left'
+                player.print('[IC] Auto upgrade is now enabled!', Color.success)
+            else
+                player_list.auto_upgrade = 'right'
+                player.print('[IC] Auto upgrade is now disabled!', Color.warning)
             end
 
             if player.gui.screen[main_frame_name] then
