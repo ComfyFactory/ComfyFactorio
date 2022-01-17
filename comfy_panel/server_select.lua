@@ -1,13 +1,6 @@
 local Event = require 'utils.event'
-local Global = require 'utils.global'
 local Gui = require 'utils.gui'
 local Server = require 'utils.server'
-
-local this = {
-    server_select = {
-        instances = {}
-    }
-}
 
 local main_frame_name = Gui.uid_name()
 local main_button_name = Gui.uid_name()
@@ -15,13 +8,6 @@ local discard_button_name = Gui.uid_name()
 local instance_id_name = Gui.uid_name()
 local insert = table.insert
 local sort = table.sort
-
-Global.register(
-    this,
-    function(t)
-        this = t
-    end
-)
 
 local function get_instance()
     local server_instances = Server.get_instances()
