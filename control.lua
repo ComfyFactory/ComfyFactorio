@@ -36,6 +36,7 @@ require 'comfy_panel.group'
 require 'comfy_panel.poll'
 require 'comfy_panel.score'
 require 'comfy_panel.config'
+require 'comfy_panel.server_select'
 
 ---------------- !ENABLE MODULES HERE ----------------
 --require 'modules.admins_operate_biters'

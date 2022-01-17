@@ -28,6 +28,9 @@ local Public = {}
 local server_time = {secs = nil, tick = 0}
 local server_ups = {ups = 60}
 local start_data = {server_id = nil, server_name = nil, start_time = nil}
+local instances = {
+    data = {}
+}
 local requests = {}
 
 Global.register(
@@ -35,13 +38,15 @@ Global.register(
         server_time = server_time,
         server_ups = server_ups,
         start_data = start_data,
-        requests = requests
+        requests = requests,
+        instances = instances
     },
     function(tbl)
         server_time = tbl.server_time
         server_ups = tbl.server_ups
         start_data = tbl.start_data
         requests = tbl.requests
+        instances = tbl.instances
     end
 )
 
@@ -492,6 +497,26 @@ local default_ping_token =
 function Public.ping(func_token)
     local message = concat({ping_tag, func_token or default_ping_token, ' ', game.tick})
     raw_print(message)
+end
+
+--- The backend sets instances with data so a player
+-- can easily connect to another one via in-game.
+-- @param  data<table>
+function Public.set_instances(data)
+    if not data then
+        return
+    end
+    if not type(data) == 'table' then
+        return
+    end
+    for id, tbl in pairs(data) do
+        instances.data[id] = tbl
+    end
+end
+
+--- Gets each available/non-available instance
+function Public.get_instances()
+    return instances.data
 end
 
 local function double_escape(str)
