@@ -151,7 +151,7 @@ local function create_main_button(event)
                 name = main_button_name
             }
         )
-        b.style.font_color = {r = 0.11, g = 0.8, b = 0.44}
+        main_button.style.font_color = {r = 0.11, g = 0.8, b = 0.44}
         main_button.style.font = 'heading-1'
         main_button.style.minimal_height = 40
         main_button.style.maximal_width = 40
