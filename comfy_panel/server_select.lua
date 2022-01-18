@@ -45,13 +45,6 @@ local function draw_main_frame(player)
     inside_frame_style.padding = 0
     inside_frame_style.maximal_height = 800
 
-    local viewer_top_flow = inside_frame.add {type = 'table', column_count = 5}
-    viewer_top_flow.style.horizontal_spacing = 0
-
-    local viewer_content = inside_frame.add {type = 'scroll-pane'}
-    viewer_content.style.maximal_height = 480
-    viewer_content.style.width = 250
-
     player.opened = frame
 
     local instances = {}
@@ -60,7 +53,7 @@ local function draw_main_frame(player)
         insert(instances, i)
     end
 
-    local viewer_table = viewer_content.add {type = 'table', column_count = 3}
+    local viewer_table = inside_frame.add {type = 'table', column_count = 3}
     viewer_table.style.cell_padding = 4
 
     sort(
@@ -80,6 +73,7 @@ local function draw_main_frame(player)
             viewer_table.add {
                 type = 'label',
                 caption = 'Name: ' .. i.name,
+                tooltip = i.connected .. '\nVersion: ' .. i.version,
                 style = 'caption_label'
             }
             local flow = viewer_table.add {type = 'flow'}
@@ -90,7 +84,7 @@ local function draw_main_frame(player)
                 empty_flow.add {
                 type = 'button',
                 caption = 'Connect',
-                tooltip = 'Click to connect to this server.',
+                tooltip = 'Click to connect to this server.\n' .. i.connected .. '\nVersion: ' .. i.version,
                 name = instance_id_name
             }
             Gui.set_data(button, i.id)
@@ -146,22 +140,26 @@ end
 
 local function create_main_button(event)
     local player = game.get_player(event.player_index)
-    local b =
-        player.gui.top.add(
-        {
-            type = 'sprite-button',
-            sprite = 'utility/surface_editor_icon',
-            name = main_button_name
-        }
-    )
-    b.style.font_color = {r = 0.11, g = 0.8, b = 0.44}
-    b.style.font = 'heading-1'
-    b.style.minimal_height = 40
-    b.style.maximal_width = 40
-    b.style.minimal_width = 38
-    b.style.maximal_height = 38
-    b.style.padding = 1
-    b.style.margin = 0
+    local main_button = player.gui.top[main_button_name]
+    if not main_button or not main_button.valid then
+        main_button =
+            player.gui.top.add(
+            {
+                type = 'sprite-button',
+                sprite = 'utility/surface_editor_icon',
+                tooltip = 'Connect to another Comfy server!',
+                name = main_button_name
+            }
+        )
+        main_button.style.font_color = {r = 0.11, g = 0.8, b = 0.44}
+        main_button.style.font = 'heading-1'
+        main_button.style.minimal_height = 40
+        main_button.style.maximal_width = 40
+        main_button.style.minimal_width = 38
+        main_button.style.maximal_height = 38
+        main_button.style.padding = 1
+        main_button.style.margin = 0
+    end
 end
 
 Gui.on_click(
