@@ -105,8 +105,7 @@ local function draw_main_frame(player)
                 button.tooltip = 'This server is offline'
             elseif i.version ~= instance.version then
                 button.enabled = false
-                button.style = 'red_button'
-                button.tooltip = 'On Factorio version ' .. i.version
+                button.tooltip = "We're on version: " .. instance.version .. '\nDestination server is on version: ' .. i.version
             end
         end
     end
