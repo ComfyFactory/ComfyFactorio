@@ -509,6 +509,7 @@ function Public.set_instances(data)
     if not type(data) == 'table' then
         return
     end
+    instances.data = {}
     for id, tbl in pairs(data) do
         instances.data[id] = tbl
     end
