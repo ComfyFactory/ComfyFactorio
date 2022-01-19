@@ -181,6 +181,19 @@ local compare_player_and_train = function(player, entity)
 
     local c_y = position.y
     local t_y = gap_between_zones.highest_pos.y
+    local spidertron_warning_position = gap_between_zones.neg_gap + 50
+
+    if c_y - t_y <= spidertron_warning_position then
+        local surface = player.surface
+        surface.create_entity(
+        {
+            name = 'flying-text',
+            position = position,
+            text = 'Warning!!! You are too far from the train!!!',
+            color = {r = 0.9, g = 0.0, b = 0.0}
+        }
+    )
+    end
 
     if c_y - t_y <= gap_between_zones.neg_gap then
         if entity.health then
