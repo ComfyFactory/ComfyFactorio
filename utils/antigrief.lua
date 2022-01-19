@@ -86,6 +86,10 @@ local function increment(t, v)
     t[#t + 1] = (v or 1)
 end
 
+local function overflow(t)
+    table.remove(t, 1)
+end
+
 local function get_entities(item_name, entities)
     local set = {}
     for i = 1, #entities do
@@ -255,7 +259,7 @@ local function on_player_built_tile(event)
     end
 
     if #this.landfill_history > this.limit then
-        this.landfill_history = {}
+        overflow(this.landfill_history)
     end
     local t = abs(floor((game.tick) / 60))
     t = FancyTime.short_fancy_time(t)
@@ -361,7 +365,7 @@ local function on_player_used_capsule(event)
             this.capsule_history = {}
         end
         if #this.capsule_history > this.limit then
-            this.capsule_history = {}
+            overflow(this.capsule_history)
         end
 
         local t = abs(floor((game.tick) / 60))
@@ -396,7 +400,7 @@ local function on_entity_died(event)
         end
 
         if #this.friendly_fire_history > this.limit then
-            this.friendly_fire_history = {}
+            overflow(this.friendly_fire_history)
         end
 
         local chest
@@ -483,7 +487,7 @@ local function on_player_mined_entity(event)
             this.whitelist_mining_history = {}
         end
         if #this.whitelist_mining_history > this.limit then
-            this.whitelist_mining_history = {}
+            overflow(this.whitelist_mining_history)
         end
         local t = abs(floor((game.tick) / 60))
         t = FancyTime.short_fancy_time(t)
@@ -517,7 +521,7 @@ local function on_player_mined_entity(event)
     end
 
     if #this.mining_history > this.limit then
-        this.mining_history = {}
+        overflow(this.mining_history)
     end
 
     local t = abs(floor((game.tick) / 60))
@@ -565,7 +569,7 @@ local function on_gui_opened(event)
             this.corpse_history = {}
         end
         if #this.corpse_history > this.limit then
-            this.corpse_history = {}
+            overflow(this.corpse_history)
         end
 
         local t = abs(floor((game.tick) / 60))
@@ -620,7 +624,7 @@ local function on_pre_player_mined_item(event)
             this.corpse_history = {}
         end
         if #this.corpse_history > this.limit then
-            this.corpse_history = {}
+            overflow(this.corpse_history)
         end
 
         local t = abs(floor((game.tick) / 60))
@@ -648,7 +652,7 @@ local function on_console_chat(event)
         this.message_history = {}
     end
     if #this.message_history > this.limit then
-        this.message_history = {}
+        overflow(this.message_history)
     end
 
     local t = abs(floor((game.tick) / 60))
@@ -735,7 +739,7 @@ local function on_player_cancelled_crafting(event)
             this.cancel_crafting_history = {}
         end
         if #this.cancel_crafting_history > this.limit then
-            this.cancel_crafting_history = {}
+            overflow(this.cancel_crafting_history)
         end
 
         local t = abs(floor((game.tick) / 60))
