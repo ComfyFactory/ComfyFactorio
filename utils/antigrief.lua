@@ -89,7 +89,7 @@ end
 -- Removes the first 100 entries of a table
 local function overflow(t)
     for _=1,100,1 do
-        table.remove(t, 1) 
+        table.remove(t, 1)
     end
 end
 
@@ -446,7 +446,6 @@ local function on_entity_died(event)
                 return
             end
         end
-        
         if not this.friendly_fire_history then
             this.friendly_fire_history = {}
         end
@@ -454,7 +453,6 @@ local function on_entity_died(event)
         if #this.friendly_fire_history > this.limit then
             overflow(this.friendly_fire_history)
         end
-        
         local t = abs(floor((game.tick) / 60))
         t = FancyTime.short_fancy_time(t)
         local str = '[' .. t .. '] '
