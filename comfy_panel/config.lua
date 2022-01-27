@@ -537,7 +537,7 @@ local function build_config_gui(data)
         if Gui.get_disable_clear_invalid_data() then
             switch_state = 'left'
         end
-        add_switch(scroll_pane, switch_state, 'disable_cleaning', 'Gui Data Cleaning', 'Toggles the Gui data cleaning.')
+        add_switch(scroll_pane, switch_state, 'disable_cleaning', {'gui.gui_data_cleaning'}, {'gui-description.gui_data_cleaning'})
 
         scroll_pane.add({type = 'line'})
 
@@ -549,8 +549,8 @@ local function build_config_gui(data)
             scroll_pane,
             switch_state,
             'comfy_panel_spaghett_toggle',
-            'Spaghett Mode',
-            'Disables the Logistic System research.\nRequester, buffer or active-provider containers can not be built.'
+                {'gui.spaghett_mode'},
+                {'gui-description.spaghett_mode'}
         )
 
         if poll then
