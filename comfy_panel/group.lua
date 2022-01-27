@@ -6,7 +6,7 @@ local SpamProtection = require 'utils.spam_protection'
 local Event = require 'utils.event'
 local Token = require 'utils.token'
 
-local module_name = {'gui.groups'}
+local module_name = 'Groups'
 
 local this = {
     player_group = {},
