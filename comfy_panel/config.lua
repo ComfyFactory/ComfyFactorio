@@ -426,8 +426,8 @@ local function build_config_gui(data)
         scroll_pane,
         switch_state,
         'comfy_panel_spectator_switch',
-        'SpectatorMode',
-        'Toggles zoom-to-world view noise effect.\nEnvironmental sounds will be based on map view.'
+        {'gui.spectator_mode'},
+            {'gui-description.spectator_mode'}
     )
 
     scroll_pane.add({type = 'line'})
@@ -452,8 +452,8 @@ local function build_config_gui(data)
             scroll_pane,
             switch_state,
             'comfy_panel_poll_no_notify_toggle',
-            'Notify on polls',
-            'Receive a message when new polls are created and popup the poll.'
+                {'gui.notify_on_polls'},
+                {'gui-description.notify_on_polls'}
         )
         scroll_pane.add({type = 'line'})
     end
