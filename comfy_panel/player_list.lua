@@ -740,7 +740,7 @@ local function on_gui_click(event)
     local name = element.name
     local player = game.get_player(event.player_index)
 
-    if name == 'tab_Players' then
+    if name == 'tab_' .. module_name then
         local is_spamming = SpamProtection.is_spamming(player, nil, 'PlayerList tab_Players')
         if is_spamming then
             return
@@ -861,6 +861,10 @@ local function on_gui_click(event)
     --Locate other players
     local index = tonumber(element.name)
     if index and game.players[index] and index == game.players[index].index then
+        local is_spamming = SpamProtection.is_spamming(player, nil, 'PlayerList Locate Player')
+        if is_spamming then
+            return
+        end
         local target = game.players[index]
         if not target or not target.valid then
             return
@@ -869,6 +873,10 @@ local function on_gui_click(event)
     end
     --Poke other players
     if string.sub(element.name, 1, 11) == 'poke_player' then
+        local is_spamming = SpamProtection.is_spamming(player, nil, 'PlayerList Poke Player')
+        if is_spamming then
+            return
+        end
         local poked_player = string.sub(element.name, 13, string.len(element.name))
         if player.name == poked_player then
             return

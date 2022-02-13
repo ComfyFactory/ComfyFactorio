@@ -108,7 +108,7 @@ local function on_gui_click(event)
     if not event then
         return
     end
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
     if not (player and player.valid) then
         return
     end
@@ -120,12 +120,25 @@ local function on_gui_click(event)
         return
     end
 
-    if event.element.name == 'close_map_intro' then
-        local is_spamming = SpamProtection.is_spamming(player, nil, 'Map Info Gui Click')
+    local name = event.element.name
+
+    if not name then
+        return
+    end
+
+    if name == 'tab_' .. module_name then
+        local is_spamming = SpamProtection.is_spamming(player, nil, 'Map Info Main Button')
         if is_spamming then
             return
         end
-        game.players[event.player_index].gui.left.comfy_panel.destroy()
+    end
+
+    if name == 'close_map_intro' then
+        local is_spamming = SpamProtection.is_spamming(player, nil, 'Map Info Close Button')
+        if is_spamming then
+            return
+        end
+        player.gui.left.comfy_panel.destroy()
         return
     end
 end

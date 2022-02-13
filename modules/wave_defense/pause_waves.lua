@@ -4,6 +4,7 @@ local Public = require 'modules.wave_defense.table'
 local Token = require 'utils.token'
 local Task = require 'utils.task'
 local Server = require 'utils.server'
+local SpamProtection = require 'utils.spam_protection'
 
 local main_frame_name = Gui.uid_name()
 local save_button_name = Gui.uid_name()
@@ -125,6 +126,10 @@ local pause_waves_state_token = Token.register(pause_waves_state)
 Gui.on_click(
     save_button_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'WD Save Button')
+        if is_spamming then
+            return
+        end
         local player = event.player
         if not player or not player.valid or not player.character then
             return
@@ -171,6 +176,10 @@ Gui.on_click(
 Gui.on_click(
     discard_button_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'WD Discard Button')
+        if is_spamming then
+            return
+        end
         local player = event.player
         local screen = player.gui.screen
         local frame = screen[main_frame_name]

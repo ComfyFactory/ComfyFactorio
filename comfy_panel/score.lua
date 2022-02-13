@@ -278,7 +278,7 @@ local function on_gui_click(event)
     local player = game.get_player(event.player_index)
     local name = event.element.name
 
-    if name == 'tab_Scoreboard' then
+    if name == 'tab_' .. module_name then
         local is_spamming = SpamProtection.is_spamming(player, nil, 'Scoreboard tab_Scoreboard')
         if is_spamming then
             return
@@ -293,11 +293,6 @@ local function on_gui_click(event)
         return
     end
 
-    local is_spamming = SpamProtection.is_spamming(player, nil, 'Score Gui Click')
-    if is_spamming then
-        return
-    end
-
     -- Handles click on a score header
     local element_to_column = {
         ['score_killscore'] = 'killscore',
@@ -307,6 +302,10 @@ local function on_gui_click(event)
     }
     local column = element_to_column[name]
     if column then
+        local is_spamming = SpamProtection.is_spamming(player, nil, 'Score Gui Column Click')
+        if is_spamming then
+            return
+        end
         local sorting_pref = this.sort_by[player.name]
         if sorting_pref.column == column and sorting_pref.method == 'descending' then
             sorting_pref.method = 'ascending'
