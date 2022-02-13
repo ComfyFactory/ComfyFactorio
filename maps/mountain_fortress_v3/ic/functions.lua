@@ -116,7 +116,7 @@ end
 local function get_owner_car_object(cars, player)
     for k, car in pairs(cars) do
         if car.owner == player.index then
-            return k
+            return k, car
         end
     end
     return false
@@ -724,6 +724,71 @@ function Public.save_car(event)
             p.print('Your car was stolen from you - the gods foresaw this and granted you a new one.', Color.info)
         end
     end
+end
+
+function Public.remove_surface(player)
+    local surfaces = IC.get('surfaces')
+    local cars = IC.get('cars')
+    local _, car = get_owner_car_object(cars, player)
+    if not car then
+        return
+    end
+
+    if not car.saved_entity then
+        return
+    end
+
+    kick_players_out_of_vehicles(car)
+    kick_players_from_surface(car)
+
+    local trust_system = IC.get('trust_system')
+    local owner = car.owner
+
+    if owner then
+        owner = game.get_player(owner)
+        if owner and owner.valid then
+            if trust_system[owner.index] then
+                trust_system[owner.index] = nil
+            end
+        end
+    end
+
+    local renders = IC.get('renders')
+
+    if renders[owner.index] then
+        rendering.destroy(renders[owner.index])
+        renders[owner.index] = nil
+    end
+
+    local player_gui_data = IC.get('player_gui_data')
+    if player_gui_data[owner.name] then
+        player_gui_data[owner.name] = nil
+    end
+
+    local players = IC.get('players')
+    if players[owner.index] then
+        players[owner.index] = nil
+    end
+
+    local misc_settings = IC.get('misc_settings')
+    if misc_settings[owner.index] then
+        misc_settings[owner.index] = nil
+    end
+
+    local surface_index = car.surface
+    local surface = game.surfaces[surface_index]
+    kill_doors(car)
+    for _, tile in pairs(surface.find_tiles_filtered({area = car.area})) do
+        surface.set_tiles({{name = 'out-of-map', position = tile.position}}, true)
+    end
+    for _, x in pairs({car.area.left_top.x - 1.5, car.area.right_bottom.x + 1.5}) do
+        local p = {x = x, y = car.area.left_top.y + ((car.area.right_bottom.y - car.area.left_top.y) * 0.5)}
+        surface.set_tiles({{name = 'out-of-map', position = {x = p.x + 0.5, y = p.y}}}, true)
+        surface.set_tiles({{name = 'out-of-map', position = {x = p.x - 1, y = p.y}}}, true)
+    end
+    game.delete_surface(surface)
+    surfaces[car.saved_entity] = nil
+    cars[car.saved_entity] = nil
 end
 
 function Public.kill_car(entity)
