@@ -3,6 +3,7 @@ local Global = require 'utils.global'
 local Gui = require 'utils.gui'
 local Token = require 'utils.token'
 local Color = require 'utils.color_presets'
+local SpamProtection = require 'utils.spam_protection'
 
 local pairs = pairs
 local next = next
@@ -123,6 +124,10 @@ local function alert_to(player, duration, sound, volume)
 end
 
 local function zoom_to_pos(event)
+    local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Alert Zoom to Pos')
+    if is_spamming then
+        return
+    end
     local player = event.player
     local element = event.element
     local position = Gui.get_data(element)
@@ -132,6 +137,10 @@ end
 
 local close_alert = Public.close_alert
 local function on_click_close_alert(event)
+    local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Alert Close')
+    if is_spamming then
+        return
+    end
     close_alert(event.element)
 end
 

@@ -6,6 +6,7 @@ local Tabs = require 'comfy_panel.main'
 local Event = require 'utils.event'
 local Token = require 'utils.token'
 local Task = require 'utils.task'
+local SpamProtection = require 'utils.spam_protection'
 
 local Public = {}
 local insert = table.insert
@@ -518,6 +519,10 @@ end
 Gui.on_click(
     add_player_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Add Player')
+        if is_spamming then
+            return
+        end
         local player = event.player
         if not player or not player.valid or not player.character then
             return
@@ -540,6 +545,10 @@ Gui.on_click(
 Gui.on_click(
     transfer_car_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Transfer Car')
+        if is_spamming then
+            return
+        end
         local player = event.player
         if not player or not player.valid or not player.character then
             return
@@ -562,6 +571,10 @@ Gui.on_click(
 Gui.on_click(
     destroy_surface_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Destroy Surface')
+        if is_spamming then
+            return
+        end
         local player = event.player
         if not player or not player.valid or not player.character then
             return
@@ -584,6 +597,10 @@ Gui.on_click(
 Gui.on_click(
     allow_anyone_to_enter_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Allow Anyone To Enter')
+        if is_spamming then
+            return
+        end
         local player = event.player
         if not player or not player.valid or not player.character then
             return
@@ -613,6 +630,10 @@ Gui.on_click(
 Gui.on_click(
     auto_upgrade_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Auto Upgrade')
+        if is_spamming then
+            return
+        end
         local player = event.player
         if not player or not player.valid or not player.character then
             return
@@ -642,6 +663,10 @@ Gui.on_click(
 Gui.on_click(
     save_add_player_button_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Save Add Player')
+        if is_spamming then
+            return
+        end
         local player = event.player
         if not player or not player.valid or not player.character then
             return
@@ -689,6 +714,10 @@ Gui.on_click(
 Gui.on_click(
     save_transfer_car_button_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Save Transfer Car')
+        if is_spamming then
+            return
+        end
         local player = event.player
         if not player or not player.valid or not player.character then
             return
@@ -754,6 +783,10 @@ local clear_misc_settings =
 Gui.on_click(
     save_destroy_surface_button_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Save Destroy Car')
+        if is_spamming then
+            return
+        end
         local player = event.player
         if not player or not player.valid or not player.character then
             return
@@ -810,6 +843,10 @@ Gui.on_click(
 Gui.on_click(
     kick_player_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Kick Player')
+        if is_spamming then
+            return
+        end
         local player = event.player
         if not player or not player.valid or not player.character then
             return
@@ -856,6 +893,10 @@ Gui.on_click(
 Gui.on_click(
     discard_add_player_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Discard Add Player')
+        if is_spamming then
+            return
+        end
         local player = event.player
         if not player or not player.valid or not player.character then
             return
@@ -877,6 +918,10 @@ Gui.on_click(
 Gui.on_click(
     discard_transfer_car_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Discard Transfer Car')
+        if is_spamming then
+            return
+        end
         local player = event.player
         if not player or not player.valid or not player.character then
             return
@@ -898,6 +943,10 @@ Gui.on_click(
 Gui.on_click(
     discard_destroy_surface_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Discard Destroy Surface')
+        if is_spamming then
+            return
+        end
         local player = event.player
         if not player or not player.valid or not player.character then
             return
@@ -919,6 +968,10 @@ Gui.on_click(
 Gui.on_click(
     main_toolbar_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Main Toolbar')
+        if is_spamming then
+            return
+        end
         local player = event.player
         if not player or not player.valid or not player.character then
             return

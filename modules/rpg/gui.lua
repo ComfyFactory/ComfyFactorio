@@ -3,6 +3,7 @@ local Session = require 'utils.datastore.session_data'
 local P = require 'utils.player_modifiers'
 local Gui = require 'utils.gui'
 local Color = require 'utils.color_presets'
+local SpamProtection = require 'utils.spam_protection'
 
 --RPG Modules
 local Public = require 'modules.rpg.table'
@@ -506,6 +507,10 @@ Public.remove_main_frame = remove_main_frame
 Gui.on_click(
     draw_main_frame_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'RPG Main Frame')
+        if is_spamming then
+            return
+        end
         local player = event.player
         if not player or not player.valid or not player.character then
             return
@@ -518,6 +523,10 @@ Gui.on_click(
 Gui.on_click(
     save_button_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'RPG Save Button')
+        if is_spamming then
+            return
+        end
         local player = event.player
         if not player or not player.valid or not player.character then
             return
@@ -664,6 +673,10 @@ Gui.on_click(
 Gui.on_click(
     discard_button_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'RPG Discard Button')
+        if is_spamming then
+            return
+        end
         local player = event.player
         local screen = player.gui.screen
         local frame = screen[settings_frame_name]
@@ -680,6 +693,10 @@ Gui.on_click(
 Gui.on_click(
     settings_button_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'RPG Settings Button')
+        if is_spamming then
+            return
+        end
         local player = event.player
         local screen = player.gui.screen
         local frame = screen[settings_frame_name]
@@ -704,6 +721,10 @@ Gui.on_click(
 Gui.on_click(
     enable_spawning_frame_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'RPG Enable Spawning')
+        if is_spamming then
+            return
+        end
         local player = event.player
         local screen = player.gui.screen
         local frame = screen[spell_gui_frame_name]
@@ -735,6 +756,10 @@ Gui.on_click(
 Gui.on_click(
     spell_gui_button_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'RPG Spell Gui')
+        if is_spamming then
+            return
+        end
         local player = event.player
         local screen = player.gui.screen
         local frame = screen[spell_gui_frame_name]
@@ -759,6 +784,10 @@ Gui.on_click(
 Gui.on_click(
     spell1_button_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'RPG Spell_1 Button')
+        if is_spamming then
+            return
+        end
         local player = event.player
         local screen = player.gui.screen
         local frame = screen[spell_gui_frame_name]
@@ -780,6 +809,10 @@ Gui.on_click(
 Gui.on_click(
     spell2_button_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'RPG Spell_2 Button')
+        if is_spamming then
+            return
+        end
         local player = event.player
         local screen = player.gui.screen
         local frame = screen[spell_gui_frame_name]
@@ -801,6 +834,10 @@ Gui.on_click(
 Gui.on_click(
     spell3_button_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'RPG Spell_3 Button')
+        if is_spamming then
+            return
+        end
         local player = event.player
         local screen = player.gui.screen
         local frame = screen[spell_gui_frame_name]

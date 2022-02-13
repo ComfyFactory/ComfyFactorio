@@ -4,6 +4,7 @@ local Color = require 'utils.color_presets'
 local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Gui = require 'utils.gui'
+local SpamProtection = require 'utils.spam_protection'
 
 local this = {
     players = {}
@@ -175,6 +176,10 @@ end
 Gui.on_click(
     locate_player_frame_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Where Locate Player')
+        if is_spamming then
+            return
+        end
         remove_camera_frame(event.player)
     end
 )
@@ -182,6 +187,10 @@ Gui.on_click(
 Gui.on_click(
     player_frame_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Where Player Frame')
+        if is_spamming then
+            return
+        end
         remove_camera_frame(event.player)
     end
 )
