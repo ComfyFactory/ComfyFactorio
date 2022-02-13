@@ -1,7 +1,6 @@
 local Token = require 'utils.token'
 local Event = require 'utils.event'
 local Global = require 'utils.global'
-local SpamProtection = require 'utils.spam_protection'
 local mod_gui = require('__core__/lualib/mod-gui')
 
 local tostring = tostring
