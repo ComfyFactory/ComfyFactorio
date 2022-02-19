@@ -128,7 +128,7 @@ require 'comfy_panel.server_select'
 
 --![[Infinite random dungeon with RPG]]--
 --require 'maps.dungeons.main'
---require 'maps.dungeons.tiered_dungeon'
+require 'maps.dungeons.tiered_dungeon'
 
 --![[Randomly generating Islands that have to be beaten in levels to gain credits]]--
 --require 'maps.island_troopers.main'

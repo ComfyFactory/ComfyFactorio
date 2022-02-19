@@ -217,6 +217,7 @@ function Public.laboratory(surface, position)
     lab.minable = false
     local evo = Public.get_dungeon_evolution_factor(surface.index)
     local amount = math.min(200, math_floor(evo * 100))
+    amount = math.max(amount, 1)
     lab.insert({name = 'automation-science-pack', count = math.min(200, math_floor(amount * 5))})
     if evo >= 0.1 then
         lab.insert({name = 'logistic-science-pack', count = math.min(200, math_floor(amount * 4))})

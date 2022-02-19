@@ -12,6 +12,7 @@ local BiterRaffle = require 'functions.biter_raffle'
 local Functions = require 'maps.dungeons.functions'
 local Get_noise = require 'utils.get_noise'
 local Alert = require 'utils.alert'
+local Research = require 'maps.dungeons.research'
 local DungeonsTable = require 'maps.dungeons.table'
 require 'maps.dungeons.boss_arena'
 
@@ -95,34 +96,6 @@ local function get_biome(position, surface_index)
     return 'dirtlands'
 end
 
-local locked_researches = {
-    [0] = 'steel-axe',
-    [1] = 'heavy-armor',
-    [2] = 'military-2',
-    [3] = 'physical-projectile-damage-2',
-    [4] = 'oil-processing',
-    [5] = 'stronger-explosives-2',
-    [6] = 'military-science-pack',
-    [7] = 'rocketry',
-    [8] = 'chemical-science-pack',
-    [9] = 'military-3',
-    [10] = 'flamethrower',
-    [11] = 'distractor',
-    [12] = 'laser',
-    [13] = 'laser-shooting-speed-3',
-    [14] = 'power-armor',
-    [15] = 'nuclear-power',
-    [16] = 'production-science-pack',
-    [17] = 'energy-weapons-damage-3',
-    [18] = 'utility-science-pack',
-    [19] = 'kovarex-enrichment-process',
-    [20] = 'power-armor-mk2',
-    [22] = 'fusion-reactor-equipment',
-    [24] = 'discharge-defense-equipment',
-    [30] = 'atomic-bomb',
-    [35] = 'spidertron'
-}
-
 local function draw_arrows_gui()
     for _, player in pairs(game.connected_players) do
         if not player.gui.top.dungeon_down then
@@ -134,20 +107,12 @@ local function draw_arrows_gui()
     end
 end
 
-local function get_surface_research(index)
-    local dungeontable = DungeonsTable.get_dungeontable()
-    return locked_researches[index - dungeontable.original_surface_index]
-end
-
 local function draw_depth_gui()
     local dungeontable = DungeonsTable.get_dungeontable()
     local forceshp = BiterHealthBooster.get('biter_health_boost_forces')
     for _, player in pairs(game.connected_players) do
         local surface = player.surface
-        local techs = 0
-        if get_surface_research(surface.index) and game.forces.player.technologies[get_surface_research(surface.index)].enabled == false then
-            techs = 1
-        end
+        local techs = Research.techs_remain(surface.index)
         local enemy_force = dungeontable.enemy_forces[surface.index]
         if player.gui.top.dungeon_depth then
             player.gui.top.dungeon_depth.destroy()
@@ -180,15 +145,6 @@ local function draw_depth_gui()
     end
 end
 
-local function unlock_researches(surface_index)
-    local dungeontable = DungeonsTable.get_dungeontable()
-    local tech = game.forces.player.technologies
-    if get_surface_research(surface_index) and tech[get_surface_research(surface_index)].enabled == false then
-        tech[get_surface_research(surface_index)].enabled = true
-        game.print({'dungeons_tiered.tech_unlock', '[technology=' .. get_surface_research(surface_index) .. ']', surface_index - dungeontable.original_surface_index})
-    end
-end
-
 local function expand(surface, position)
     local dungeontable = DungeonsTable.get_dungeontable()
     local forceshp = BiterHealthBooster.get('biter_health_boost_forces')
@@ -214,13 +170,10 @@ local function expand(surface, position)
             dungeontable.treasures[surface.index] = dungeontable.treasures[surface.index] + 1
             game.print({'dungeons_tiered.treasure_room', surface.index - dungeontable.original_surface_index}, {r = 0.88, g = 0.22, b = 0})
         end
-    elseif
-        dungeontable.surface_size[surface.index] >= 225 and math.random(1, 50) == 1 and get_surface_research(surface.index) and
-            game.forces.player.technologies[get_surface_research(surface.index)].enabled == false
-     then
+    elseif Research.room_is_lab(surface.index) then
         Biomes['laboratory'](surface, room)
         if room.room_tiles[1] then
-            unlock_researches(surface.index)
+            Research.unlock_research(surface.index)
         end
     elseif math_random(1, 256) == 1 then
         Biomes['market'](surface, room)
@@ -814,10 +767,7 @@ local function on_init()
     game.forces.player.technologies['land-mine'].enabled = false
     game.forces.player.technologies['landfill'].enabled = false
     game.forces.player.technologies['cliff-explosives'].enabled = false
-    --recipes to be unlocked through playing--
-    for _, tech in pairs(locked_researches) do
-        game.forces.player.technologies[tech].enabled = false
-    end
+    Research.Init(dungeontable)
     RPG.set_surface_name('dungeons_floor')
     local rpg_table = RPG.get('rpg_extra')
     rpg_table.personal_tax_rate = 0
