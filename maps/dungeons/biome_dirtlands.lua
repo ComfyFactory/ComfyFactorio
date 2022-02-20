@@ -53,6 +53,8 @@ end
 
 local function dirtlands(surface, room)
     local dungeontable = DungeonsTable.get_dungeontable()
+    max_spawn = math.floor(dungeontable.depth[surface.index] / 8)
+    max_worm = max_spawn + 1
     local path_tile = 'dirt-' .. math_random(1, 3)
     for _, tile in pairs(room.path_tiles) do
         surface.set_tiles({{name = path_tile, position = tile.position}}, true)
@@ -76,14 +78,16 @@ local function dirtlands(surface, room)
                 surface.create_entity({name = trees[math_random(1, size_of_trees)], position = tile.position})
             end
         end
-        if key % 128 == 1 and math_random(1, 2) == 1 and dungeontable.depth[surface.index] > 8 then
+        if key % 128 == 1 and math_random(1, 2) == 1 and max_spawn > 0 then
             Functions.set_spawner_tier(
                 surface.create_entity({name = Functions.roll_spawner_name(), position = tile.position, force = dungeontable.enemy_forces[surface.index]}),
                 surface.index
             )
+	    max_spawn = max_spawn - 1
         end
-        if math_random(1, 320) == 1 and dungeontable.depth[surface.index] > 8 then
-            surface.create_entity({name = Functions.roll_worm_name(surface.index), position = tile.position, force = dungeontable.enemy_forces[surface.index]})
+        if math_random(1, 320) == 1 and max_worm > 0 then
+	    surface.create_entity({name = Functions.roll_worm_name(surface.index), position = tile.position, force = dungeontable.enemy_forces[surface.index]})
+	    max_worm = max_worm - 1
         end
         if math_random(1, 512) == 1 then
             Functions.create_scrap(surface, tile.position)
