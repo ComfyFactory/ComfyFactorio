@@ -734,7 +734,7 @@ function Public.remove_surface(player)
         return
     end
 
-    if not car.saved_entity then
+    if car.saved_entity then
         return
     end
 
