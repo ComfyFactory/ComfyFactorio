@@ -47,6 +47,16 @@ local disabled_for_deconstruction = {
     ['crash-site-spaceship-wreck-small-6'] = true
 }
 
+local function enable_hard_rooms(position, surface_index)
+    dungeon_table = DungeonsTable.get_dungeontable()
+    floor = surface_index - dungeon_table.original_surface_index
+    floor_mindist = 200 - floor * 10
+    if floor_mindist < 80 then -- all dirtlands within this
+       return true
+    end
+    return position.x ^ 2 + position.y ^ 2 > floor_mindist^2
+end
+
 local function get_biome(position, surface_index)
     --if not a then return "concrete" end
     if position.x ^ 2 + position.y ^ 2 < 6400 then
@@ -64,13 +74,17 @@ local function get_biome(position, surface_index)
     if Get_noise('dungeons', position, seed + seed_addition * a) > 0.60 then
         return 'doom'
     end
-    a = a + 1
-    if Get_noise('dungeons', position, seed + seed_addition * a) > 0.62 then
-        return 'acid_zone'
-    end
-    a = a + 1
-    if Get_noise('dungeons', position, seed + seed_addition * a) > 0.60 then
-        return 'concrete'
+    if enable_hard_rooms(position, surface_index) then
+       a = a + 1
+       if Get_noise('dungeons', position, seed + seed_addition * a) > 0.62 then
+	  return 'acid_zone'
+       end
+       a = a + 1
+       if Get_noise('dungeons', position, seed + seed_addition * a) > 0.60 then
+	  return 'concrete'
+       end
+    else
+       a = a + 2
     end
     a = a + 1
     if Get_noise('dungeons', position, seed + seed_addition * a) > 0.71 then
