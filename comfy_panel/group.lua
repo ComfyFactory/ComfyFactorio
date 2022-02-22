@@ -38,9 +38,9 @@ local function build_group_gui(data)
 
     local t = frame.add({type = 'table', column_count = 5})
     local headings = {
-        {'Title', group_name_width},
-        {'Description', description_width},
-        {'Members', members_width * member_columns},
+        {{'gui.title'}, group_name_width},
+        {{'gui.description'}, description_width},
+        {{'gui.members'}, members_width * member_columns},
         {'', actions_width}
     }
     for _, h in pairs(headings) do
@@ -116,7 +116,7 @@ local function build_group_gui(data)
 
             tt = t.add({type = 'table', name = group.name, column_count = 1})
             if group.name ~= this.player_group[player.name] then
-                local b = tt.add({type = 'button', caption = 'Join'})
+                local b = tt.add({type = 'button', caption = {'gui.join'}})
                 b.style.font = 'default-bold'
                 b.style.minimal_width = actions_width
                 b.style.maximal_width = actions_width
@@ -145,7 +145,7 @@ local function build_group_gui(data)
     textfield.style.minimal_width = 200
     textfield = t.add({type = 'textfield', name = 'new_group_description', text = 'Description'})
     textfield.style.minimal_width = 400
-    local b = t.add({type = 'button', name = 'create_new_group', caption = 'Create'})
+    local b = t.add({type = 'button', name = 'create_new_group', caption = {'gui.create'}})
     b.style.minimal_width = 150
     b.style.font = 'default-bold'
 end
