@@ -213,7 +213,7 @@ function Public.generate_overworld_destination(p)
 		-- override:
 		if subtype == Surfaces.Island.enum.RADIOACTIVE then
 			cost_to_leave = {
-				['uranium-235'] = Math.ceil(80 + (macrop.x)/2),
+				['uranium-235'] = Math.ceil(80 + (macrop.x)),
 			}
 		end
 

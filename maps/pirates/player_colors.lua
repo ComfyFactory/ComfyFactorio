@@ -559,7 +559,6 @@ return {
 	["orange-yellow"] = {r = 0.96, g = 0.74, b = 0.12},
 	["orchid"] = {r = 0.85, g = 0.44, b = 0.84},
 	["orchid pink"] = {r = 0.95, g = 0.74, b = 0.8},
-	["space"] = {r = 0.18, g = 0.22, b = 0.23},
 	["outer space"] = {r = 0.18, g = 0.22, b = 0.23},
 	["outrageous orange"] = {r = 1., g = 0.43, b = 0.29},
 	["oxblood"] = {r = 0.29, g = 0., b = 0.},
@@ -870,5 +869,6 @@ return {
 	["zaffre"] = {r = 0., g = 0.08, b = 0.66},
 	["zomp"] = {r = 0.22, g = 0.65, b = 0.56},
 	-- manually added extras:
+	["space"] = {r = 0.18, g = 0.22, b = 0.23},
 	["bright blue"] = {r = 0.5, g = 0.75, b = 1},
 }

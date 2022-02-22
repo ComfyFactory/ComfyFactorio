@@ -276,7 +276,6 @@ local function resist_poison(event)
 end
 
 
-
 local function event_on_entity_damaged(event)
 
 	-- figure out which crew this is about:
