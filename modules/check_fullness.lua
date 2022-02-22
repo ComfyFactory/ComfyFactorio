@@ -124,6 +124,10 @@ Event.add(
             return
         end
 
+        if entity.name == 'entity-ghost' then
+            return
+        end
+
         if not this.fullness_enabled then
             return
         end

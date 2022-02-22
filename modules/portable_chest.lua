@@ -4,6 +4,7 @@ local Color = require 'utils.color_presets'
 local Gui = require 'utils.gui'
 local m_gui = require 'mod-gui'
 local mod = m_gui.get_button_flow
+local SpamProtection = require 'utils.spam_protection'
 
 local this = {
     inf_chests = {},
@@ -568,6 +569,10 @@ end
 Gui.on_click(
     main_button_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Portable Chest Main Button')
+        if is_spamming then
+            return
+        end
         local player = game.get_player(event.player_index)
         if not player or not player.valid or not player.character then
             return

@@ -811,8 +811,35 @@ local function on_robot_built_entity(event)
     spaghett_deny_building(event)
 end
 
+local function on_gui_click(event)
+    if not event then
+        return
+    end
+    local player = game.get_player(event.player_index)
+    if not (player and player.valid) then
+        return
+    end
+
+    if not event.element then
+        return
+    end
+    if not event.element.valid then
+        return
+    end
+
+    local name = event.element.name
+
+    if name == 'tab_' .. module_name then
+        local is_spamming = SpamProtection.is_spamming(player, nil, 'Config Main Button')
+        if is_spamming then
+            return
+        end
+    end
+end
+
 Tabs.add_tab_to_gui({name = module_name, id = build_config_gui_token, admin = false})
 
+Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_gui_switch_state_changed, on_gui_switch_state_changed)
 Event.add(defines.events.on_force_created, on_force_created)
 Event.add(defines.events.on_built_entity, on_built_entity)

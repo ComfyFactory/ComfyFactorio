@@ -1,7 +1,6 @@
 local Token = require 'utils.token'
 local Event = require 'utils.event'
 local Global = require 'utils.global'
-local SpamProtection = require 'utils.spam_protection'
 local mod_gui = require('__core__/lualib/mod-gui')
 
 local tostring = tostring
@@ -167,13 +166,6 @@ local function handler_factory(event_id)
         local player = game.get_player(event.player_index)
         if not (player and player.valid) then
             return
-        end
-
-        if not event.text then
-            local is_spamming = SpamProtection.is_spamming(player, nil, 'UtilsGUI Handler')
-            if is_spamming then
-                return
-            end
         end
 
         event.player = player

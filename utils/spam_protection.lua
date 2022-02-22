@@ -4,9 +4,12 @@ local Public = {}
 
 local this = {
     prevent_spam = {}, -- the default table where all player indexes will be stored
-    default_tick = 7, -- this defines the default tick to check whether or not a user is spamming a button.
-    _DEBUG = false
+    default_tick = 10, -- this defines the default tick to check whether or not a user is spamming a button.
+    debug_text = false,
+    debug_spam = true
 }
+
+local main_text = '[Spam Info] '
 
 Global.register(
     this,
@@ -15,11 +18,18 @@ Global.register(
     end
 )
 
-local function debug_str(str)
-    if not this._DEBUG then
+local function debug_text(str)
+    if not this.debug_text then
         return
     end
-    print(str)
+    print(main_text .. str)
+end
+
+local function debug_spam(str)
+    if not this.debug_spam then
+        return
+    end
+    print(main_text .. str)
 end
 
 function Public.reset_spam_table()
@@ -34,18 +44,20 @@ end
 function Public.set_new_value(player)
     if this.prevent_spam[player.index] then
         this.prevent_spam[player.index] = game.tick
-        return this.prevent_spam[player.index]
     end
-    return false
 end
 
 function Public.is_spamming(player, value_to_compare, text)
+    if not player or not player.valid then
+        player = game.get_player(player)
+    end
+
     if not this.prevent_spam[player.index] then
         return false
     end
 
     if text then
-        debug_str('Frame: ' .. text)
+        debug_text('Frame: ' .. text)
     end
 
     if game.tick_paused then
@@ -59,7 +71,11 @@ function Public.is_spamming(player, value_to_compare, text)
             Public.set_new_value(player)
             return false -- is not spamming
         else
-            debug_str(player.name .. ' is spamming.')
+            if text then
+                debug_spam(player.name .. ' is spamming: ' .. text)
+            else
+                debug_spam(player.name .. ' is spamming.')
+            end
             return true -- is spamming
         end
     end

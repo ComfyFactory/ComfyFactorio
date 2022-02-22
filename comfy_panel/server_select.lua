@@ -1,6 +1,7 @@
 local Event = require 'utils.event'
 local Gui = require 'utils.gui'
 local Server = require 'utils.server'
+local SpamProtection = require 'utils.spam_protection'
 
 local main_frame_name = Gui.uid_name()
 local main_button_name = Gui.uid_name()
@@ -164,6 +165,10 @@ end
 Gui.on_click(
     main_button_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Server Select Main')
+        if is_spamming then
+            return
+        end
         local player = event.player
         if not player or not player.valid or not player.character then
             return
@@ -175,6 +180,10 @@ Gui.on_click(
 Gui.on_click(
     discard_button_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Server Select Discard')
+        if is_spamming then
+            return
+        end
         local player = event.player
         if not player or not player.valid or not player.character then
             return
@@ -186,6 +195,10 @@ Gui.on_click(
 Gui.on_click(
     instance_id_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Server Select Connect')
+        if is_spamming then
+            return
+        end
         local player = event.player
         if not player or not player.valid or not player.character then
             return
