@@ -1,17 +1,37 @@
---luacheck: ignore
 --labyrinth-- mewmew made this --
+-- modified by gerkiz
 require 'maps.labyrinth_map_intro'
 require 'modules.teleporters'
 require 'modules.satellite_score'
 --require "modules.landfill_reveals_nauvis"
 
+local Event = require 'utils.event'
+local Server = require 'utils.server'
+local Global = require 'utils.global'
 local map_functions = require 'tools.map_functions'
 local simplex_noise = require 'utils.simplex_noise'.d2
-local event = require 'utils.event'
-local unique_rooms = require 'maps.labyrinth_unique_rooms'
 local Score = require 'comfy_panel.score'
+local unique_rooms = require 'maps.labyrinth_unique_rooms'
+local SoftReset = require 'functions.soft_reset'
+local Autostash = require 'modules.autostash'
+local BottomFrame = require 'comfy_panel.bottom_frame'
+local this = {
+    settings = {
+        labyrinth_size = 1,
+        surface_index = nil,
+        check_landfill = true
+    }
+}
+
+Global.register(
+    this,
+    function(tbl)
+        this = tbl
+    end
+)
 
 local labyrinth_difficulty_curve = 333 --- How much size the labyrinth needs to have the highest difficulty.
+local mapkeeper = '[color=blue]Mapkeeper:[/color]'
 
 local threat_values = {
     ['small-biter'] = 1,
@@ -28,10 +48,10 @@ local function create_labyrinth_difficulty_gui(player)
     if player.gui.top['labyrinth_difficulty'] then
         player.gui.top['labyrinth_difficulty'].destroy()
     end
-    if not global.labyrinth_size then
+    if not this.settings.labyrinth_size then
         return
     end
-    local str = tostring(math.ceil((global.labyrinth_size / labyrinth_difficulty_curve) * 100, 0)) .. '%'
+    local str = tostring(math.ceil((this.settings.labyrinth_size / labyrinth_difficulty_curve) * 100, 0)) .. '%'
     local b = player.gui.top.add({type = 'button', name = 'labyrinth_difficulty', caption = 'Difficulty: ' .. str})
     b.style.minimal_height = 38
     b.style.minimal_width = 38
@@ -119,6 +139,51 @@ local function is_canditate_chunk_valid(chunk, surface)
     end
 end
 
+local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 64, ['raw-fish'] = 3}
+
+local function init_map()
+    local seed = game.surfaces[1].map_gen_settings.seed
+    local map_gen_settings = {}
+    map_gen_settings.water = '0.01'
+    map_gen_settings.cliff_settings = {cliff_elevation_interval = 50, cliff_elevation_0 = 50}
+    map_gen_settings.autoplace_controls = {
+        ['coal'] = {frequency = 'none', size = 'none', richness = 'none'},
+        ['stone'] = {frequency = 'none', size = 'none', richness = 'none'},
+        ['copper-ore'] = {frequency = 'none', size = 'none', richness = 'none'},
+        ['iron-ore'] = {frequency = 'none', size = 'none', richness = 'none'},
+        ['crude-oil'] = {frequency = 'none', size = 'none', richness = 'none'},
+        ['trees'] = {frequency = 'none', size = 'none', richness = 'none'},
+        ['enemy-base'] = {frequency = 'none', size = 'none', richness = 'none'}
+    }
+    if not this.settings.surface_index then
+        this.settings.surface_index = game.create_surface('labyrinth', map_gen_settings).index
+    else
+        this.settings.surface_index = SoftReset.soft_reset_map(game.surfaces[this.settings.surface_index], map_gen_settings, starting_items, true).index
+    end
+
+    this.settings.labyrinth_size = 1
+
+    local surface = game.get_surface(this.settings.surface_index)
+
+    game.map_settings.pollution.pollution_restored_per_tree_damage = 0
+    game.forces['player'].set_spawn_position({16, 0}, surface)
+    surface.create_entity {name = 'rock-big', position = {16, -16}}
+    this.settings.seed = seed
+
+    game.forces['player'].technologies['artillery'].enabled = false
+    game.forces['player'].technologies['artillery-shell-range-1'].enabled = false
+    game.forces['player'].technologies['artillery-shell-speed-1'].enabled = false
+    game.forces['player'].technologies['atomic-bomb'].enabled = false
+
+    global.satellites_in_space = 0
+
+    Autostash.insert_into_furnace(true)
+    Autostash.insert_into_wagon(true)
+    Autostash.bottom_button(true)
+    BottomFrame.reset()
+    BottomFrame.activate_custom_buttons(true)
+end
+
 local worm_raffle = {}
 worm_raffle[1] = {'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'small-worm-turret'}
 worm_raffle[2] = {'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'small-worm-turret', 'medium-worm-turret'}
@@ -133,26 +198,11 @@ worm_raffle[10] = {'medium-worm-turret', 'medium-worm-turret', 'medium-worm-turr
 local rock_weights = {{'sand-rock-big', 9}, {'rock-big', 32}, {'rock-huge', 1}}
 local rock_raffle = {}
 for _, t in pairs(rock_weights) do
-    for x = 1, t[2], 1 do
+    for _ = 1, t[2], 1 do
         table.insert(rock_raffle, t[1])
     end
 end
-local ore_spawn_raffle = {
-    'iron-ore',
-    'iron-ore',
-    'iron-ore',
-    'iron-ore',
-    'iron-ore',
-    'copper-ore',
-    'copper-ore',
-    'copper-ore',
-    'coal',
-    'coal',
-    'stone',
-    'stone',
-    'uranium-ore',
-    'crude-oil'
-}
+
 local room_layouts = {'quad_rocks', 'single_center_rock', 'three_horizontal_rocks', 'three_vertical_rocks', 'tree_and_lake', 'forest', 'forest_fence'}
 local biter_raffle = {
     {'small-biter'},
@@ -193,12 +243,12 @@ local room_enemy_weights = {
 local unique_room_raffle = {'forgotten_place', 'flamethrower_cross', 'railway_roundabout', 'big_worm_crossing', 'deadly_crossing', 'mini_labyrinth'}
 
 for _, t in pairs(room_enemy_weights) do
-    for x = 1, t[2], 1 do
+    for _ = 1, t[2], 1 do
         table.insert(room_enemies, t[1])
     end
 end
 
-local function grow_cell(chunk_position, surface)
+local function grow_cell(chunk_position, surface) -- luacheck: ignore
     local math_random = math.random
     local modifier_raffle = {{0, -1}, {-1, 0}, {1, 0}, {0, 1}}
     modifier_raffle = shuffle(modifier_raffle)
@@ -252,9 +302,9 @@ local function grow_cell(chunk_position, surface)
     end
 
     if #valid_chunks > 0 then
-        global.labyrinth_size = global.labyrinth_size + 1
+        this.settings.labyrinth_size = this.settings.labyrinth_size + 1
     end
-    local evolution = global.labyrinth_size / labyrinth_difficulty_curve
+    local evolution = this.settings.labyrinth_size / labyrinth_difficulty_curve
     if evolution > 1 then
         evolution = 1
     end
@@ -264,10 +314,10 @@ local function grow_cell(chunk_position, surface)
     end
 
     for x = 1, math_random(1, #valid_chunks), 1 do
-        local chunk_position = valid_chunks[x]
+        local chunk_position = valid_chunks[x] --luacheck: ignore
         local left_top_x = chunk_position.x * 32
         local left_top_y = chunk_position.y * 32
-        local tile_to_insert = false
+        local tile_to_insert
         local tiles = {}
         local entities_to_place = {
             rocks = {},
@@ -287,8 +337,8 @@ local function grow_cell(chunk_position, surface)
         local layout = room_layouts[math_random(1, #room_layouts)]
         local enemies = room_enemies[math_random(1, #room_enemies)]
 
-        local unique_room = true
-        if global.labyrinth_size > 12 and math_random(1, 50) == 1 then
+        local unique_room
+        if this.settings.labyrinth_size > 12 and math_random(1, 50) == 1 then
             layout = nil
             enemies = nil
             unique_room = unique_room_raffle[math_random(1, #unique_room_raffle)]
@@ -382,29 +432,29 @@ local function grow_cell(chunk_position, surface)
             allied_entity = allied_entity_raffle[math_random(1, #allied_entity_raffle)]
         end
 
-        if global.labyrinth_size < 16 then
+        if this.settings.labyrinth_size < 16 then
             while enemies == 'gun_turrets' or enemies == 'only_worms' or enemies == 'worms_and_spawners' do
                 enemies = room_enemies[math_random(1, #room_enemies)]
             end
         end
 
         local placed_enemies = 0
-        local enemy_counter = global.labyrinth_size
+        local enemy_counter = this.settings.labyrinth_size
         if enemy_counter > 2000 then
             enemy_counter = 2000
         end
         local random_max = 400
-        if global.labyrinth_size > 50 then
+        if this.settings.labyrinth_size > 50 then
             random_max = 200
         end
-        if global.labyrinth_size > 100 then
+        if this.settings.labyrinth_size > 100 then
             random_max = 100
         end
         while placed_enemies < enemy_counter do
             if not enemies then
                 break
             end
-            for x = 0, 31, 1 do
+            for x = 0, 31, 1 do --luacheck: ignore
                 for y = 0, 31, 1 do
                     local pos = {x = left_top_x + x, y = left_top_y + y}
                     if enemies == 'spawners' then
@@ -473,7 +523,7 @@ local function grow_cell(chunk_position, surface)
                 #entities_to_place.allied_entities
         end
 
-        for x = 0, 31, 1 do
+        for x = 0, 31, 1 do --luacheck: ignore
             for y = 0, 31, 1 do
                 local pos = {x = left_top_x + x, y = left_top_y + y}
                 tile_to_insert = 'dirt-5'
@@ -557,10 +607,10 @@ local function grow_cell(chunk_position, surface)
             local entity = surface.create_entity {name = e.name, position = e.position, force = e.force, direction = e.direction}
             if entity.name == 'gun-turret' then
                 local ammo = 'firearm-magazine'
-                if global.labyrinth_size > 100 then
+                if this.settings.labyrinth_size > 100 then
                     ammo = 'piercing-rounds-magazine'
                 end
-                if global.labyrinth_size > 300 then
+                if this.settings.labyrinth_size > 300 then
                     ammo = 'uranium-rounds-magazine'
                 end
                 entity.insert({name = ammo, count = math.random(50, 150)})
@@ -583,19 +633,19 @@ local function grow_cell(chunk_position, surface)
         end
 
         for _, p in pairs(entities_to_place.worms) do
-            local evolution = math.ceil(game.forces.enemy.evolution_factor * 10, 0)
-            local raffle = worm_raffle[evolution]
+            local ev = math.ceil(game.forces.enemy.evolution_factor * 10, 0)
+            local raffle = worm_raffle[ev]
             local n = raffle[math.random(1, #raffle)]
             if surface.can_place_entity({name = n, position = p}) then
                 surface.create_entity {name = n, position = p}
             end
         end
 
-        local threat_amount = global.labyrinth_size * 4
+        local threat_amount = this.settings.labyrinth_size * 4
 
         for _, p in pairs(entities_to_place.biters) do
-            local evolution = math.ceil(game.forces.enemy.evolution_factor * 10, 0)
-            local raffle = biter_raffle[evolution]
+            local ev = math.ceil(game.forces.enemy.evolution_factor * 10, 0)
+            local raffle = biter_raffle[ev]
             local n = raffle[math.random(1, #raffle)]
             if threat_values[n] then
                 threat_amount = threat_amount - threat_values[n]
@@ -609,8 +659,8 @@ local function grow_cell(chunk_position, surface)
         end
 
         for _, p in pairs(entities_to_place.spitters) do
-            local evolution = math.ceil(game.forces.enemy.evolution_factor * 10, 0)
-            local raffle = spitter_raffle[evolution]
+            local ev = math.ceil(game.forces.enemy.evolution_factor * 10, 0)
+            local raffle = spitter_raffle[ev]
             local n = raffle[math.random(1, #raffle)]
             if threat_values[n] then
                 threat_amount = threat_amount - threat_values[n]
@@ -626,10 +676,10 @@ local function grow_cell(chunk_position, surface)
         for _, p in pairs(entities_to_place.gun_turrets) do
             local e = surface.create_entity {name = 'gun-turret', position = p, force = 'enemy'}
             local ammo = 'firearm-magazine'
-            if global.labyrinth_size > 100 then
+            if this.settings.labyrinth_size > 100 then
                 ammo = 'piercing-rounds-magazine'
             end
-            if global.labyrinth_size > 300 then
+            if this.settings.labyrinth_size > 300 then
                 ammo = 'uranium-rounds-magazine'
             end
             e.insert({name = ammo, count = math.random(50, 150)})
@@ -716,6 +766,7 @@ local function treasure_chest(position, surface)
         {{name = 'explosives', count = math_random(25, 50)}, weight = 1, evolution_min = 0.2, evolution_max = 0.6},
         {{name = 'lubricant-barrel', count = math_random(4, 10)}, weight = 1, evolution_min = 0.3, evolution_max = 0.5},
         {{name = 'rocket-fuel', count = math_random(4, 10)}, weight = 2, evolution_min = 0.3, evolution_max = 0.7},
+        {{name = 'player-port', count = 1}, weight = 1, evolution_min = 0.2, evolution_max = 1},
         {{name = 'steel-plate', count = math_random(50, 100)}, weight = 2, evolution_min = 0.1, evolution_max = 0.3},
         {{name = 'nuclear-fuel', count = 1}, weight = 2, evolution_min = 0.7, evolution_max = 1},
         {{name = 'burner-inserter', count = math_random(8, 16)}, weight = 3, evolution_min = 0.0, evolution_max = 0.1},
@@ -792,7 +843,7 @@ local function treasure_chest(position, surface)
         {{name = 'gun-turret', count = math_random(2, 4)}, weight = 3, evolution_min = 0.2, evolution_max = 0.9}
     }
     for _, t in pairs(chest_loot) do
-        for x = 1, t.weight, 1 do
+        for _ = 1, t.weight, 1 do
             if t.evolution_min <= game.forces.enemy.evolution_factor and t.evolution_max >= game.forces.enemy.evolution_factor then
                 table.insert(chest_raffle, t[1])
             end
@@ -801,11 +852,96 @@ local function treasure_chest(position, surface)
     local chest_type_raffle = {'steel-chest', 'iron-chest', 'wooden-chest'}
     local e = surface.create_entity {name = chest_type_raffle[math_random(1, #chest_type_raffle)], position = position, force = 'player'}
     local i = e.get_inventory(defines.inventory.chest)
-    for x = 1, math_random(3, 4), 1 do
+    for _ = 1, math_random(3, 4), 1 do
         local loot = chest_raffle[math_random(1, #chest_raffle)]
         i.insert(loot)
     end
 end
+
+commands.add_command(
+    'scenario',
+    'Usable only for admins - controls the scenario!',
+    function(cmd)
+        local p
+        local player = game.player
+
+        if not player or not player.valid then
+            p = log
+        else
+            p = player.print
+            if not player.admin then
+                return
+            end
+        end
+
+        local param = cmd.parameter
+
+        if param == 'restart' or param == 'shutdown' or param == 'reset' or param == 'restartnow' then
+            goto continue
+        else
+            p('[ERROR] Arguments are:\nrestart\nshutdown\nreset\nrestartnow')
+            return
+        end
+
+        ::continue::
+
+        if not this.settings.reset_are_you_sure then
+            this.settings.reset_are_you_sure = true
+            p('[WARNING] This command will disable the soft-reset feature, run this command again if you really want to do this!')
+            return
+        end
+
+        if param == 'restart' then
+            if this.settings.restart then
+                this.settings.reset_are_you_sure = nil
+                this.settings.restart = false
+                this.settings.soft_reset = true
+                p('[SUCCESS] Soft-reset is enabled.')
+                return
+            else
+                this.settings.reset_are_you_sure = nil
+                this.settings.restart = true
+                this.settings.soft_reset = false
+                if this.settings.shutdown then
+                    this.settings.shutdown = false
+                end
+                p('[WARNING] Soft-reset is disabled! Server will restart from scenario to load new changes.')
+                return
+            end
+        elseif param == 'restartnow' then
+            this.settings.reset_are_you_sure = nil
+            Server.start_scenario('Labyrinth')
+            return
+        elseif param == 'shutdown' then
+            if this.settings.shutdown then
+                this.settings.reset_are_you_sure = nil
+                this.settings.shutdown = false
+                this.settings.soft_reset = true
+                p('[SUCCESS] Soft-reset is enabled.')
+                return
+            else
+                this.settings.reset_are_you_sure = nil
+                this.settings.shutdown = true
+                this.settings.soft_reset = false
+                if this.settings.restart then
+                    this.settings.restart = false
+                end
+                p('[WARNING] Soft-reset is disabled! Server will shutdown. Most likely because of updates.')
+                return
+            end
+        elseif param == 'reset' then
+            this.settings.reset_are_you_sure = nil
+            if player and player.valid then
+                game.print(mapkeeper .. ' ' .. player.name .. ', has reset the game!', {r = 0.98, g = 0.66, b = 0.22})
+            else
+                game.print(mapkeeper .. ' server, has reset the game!', {r = 0.98, g = 0.66, b = 0.22})
+            end
+            init_map()
+            p('[WARNING] Game has been reset!')
+            return
+        end
+    end
+)
 
 local function spawn_infinity_chest(pos, surface)
     local math_random = math.random
@@ -856,17 +992,48 @@ local entity_drop_amount = {
     ['spitter-spawner'] = {low = 50, high = 100}
 }
 local ore_spill_raffle = {'iron-ore', 'iron-ore', 'iron-ore', 'copper-ore', 'copper-ore', 'coal', 'coal', 'stone', 'landfill'}
-local ore_spawn_raffle = {'iron-ore', 'iron-ore', 'iron-ore', 'iron-ore', 'copper-ore', 'copper-ore', 'copper-ore', 'coal', 'coal', 'stone', 'uranium-ore', 'crude-oil'}
+local ore_spawn_raffle = {
+    'iron-ore',
+    'iron-ore',
+    'iron-ore',
+    'iron-ore',
+    'copper-ore',
+    'copper-ore',
+    'copper-ore',
+    'coal',
+    'coal',
+    'stone',
+    'uranium-ore',
+    'crude-oil'
+}
+
+local function restrict_landfill(surface, tiles)
+    for _, t in pairs(tiles) do
+        local check_position = t.position
+        if check_position.y > 100 then
+            surface.set_tiles({{name = t.old_tile.name, position = t.position}}, true)
+        end
+    end
+end
+
+local function on_player_built_tile(event)
+    if not this.settings.check_landfill then
+        return
+    end
+
+    local player = game.get_player(event.player_index)
+    local tiles = event.tiles
+    restrict_landfill(player.surface, tiles)
+end
 
 local function on_entity_died(event)
     for _, fragment in pairs(biter_fragmentation) do
         if event.entity.name == fragment[1] then
-            for x = 1, math.random(fragment[3], fragment[4]), 1 do
+            for _ = 1, math.random(fragment[3], fragment[4]), 1 do
                 local p = event.entity.surface.find_non_colliding_position(fragment[2], event.entity.position, 2, 1)
                 if p then
                     event.entity.surface.create_entity {name = fragment[2], position = p}
                 end
-                p = nil
             end
             return
         end
@@ -875,7 +1042,7 @@ local function on_entity_died(event)
     if event.entity.name == 'biter-spawner' or event.entity.name == 'spitter-spawner' then
         local e = math.ceil(game.forces.enemy.evolution_factor * 10, 0)
         for _, t in pairs(biter_building_inhabitants[e]) do
-            for x = 1, math.random(t[2], t[3]), 1 do
+            for _ = 1, math.random(t[2], t[3]), 1 do
                 local p = event.entity.surface.find_non_colliding_position(t[1], event.entity.position, 6, 1)
                 if p then
                     event.entity.surface.create_entity {name = t[1], position = p}
@@ -888,7 +1055,8 @@ local function on_entity_died(event)
         if game.forces.enemy.evolution_factor < 0.5 then
             local evolution_drop_modifier = (0.1 - game.forces.enemy.evolution_factor) * 10
             if evolution_drop_modifier > 0 then
-                local amount = math.ceil(math.random(entity_drop_amount[event.entity.name].low, entity_drop_amount[event.entity.name].high) * evolution_drop_modifier)
+                local amount =
+                    math.ceil(math.random(entity_drop_amount[event.entity.name].low, entity_drop_amount[event.entity.name].high) * evolution_drop_modifier)
                 event.entity.surface.spill_item_stack(event.entity.position, {name = ore_spill_raffle[math.random(1, #ore_spill_raffle)], count = amount}, true)
             end
         end
@@ -906,7 +1074,7 @@ local function on_entity_died(event)
         end
         if event.entity.name == 'sand-rock-big' then
             local n = ore_spawn_raffle[math.random(1, #ore_spawn_raffle)]
-            --local amount_modifier = 1 + ((global.labyrinth_size / labyrinth_difficulty_curve) * 10)
+            --local amount_modifier = 1 + ((this.settings.labyrinth_size / labyrinth_difficulty_curve) * 10)
             local amount_modifier = math.ceil(1 + game.forces.enemy.evolution_factor * 5)
 
             if n == 'crude-oil' then
@@ -936,21 +1104,23 @@ local function get_noise(name, pos)
     local noise_seed_add = 25000
     if name == 'ocean' then
         noise[1] = simplex_noise(pos.x * 0.01, pos.y * 0.01, seed)
-        seed = seed + noise_seed_add
-        local noise = noise[1]
+        noise = noise[1]
         return noise
     end
     seed = seed + noise_seed_add
     if name == 'island' then
         noise[1] = simplex_noise(pos.x * 0.002, pos.y * 0.002, seed)
-        seed = seed + noise_seed_add
-        local noise = noise[1]
+        noise = noise[1]
         return noise
     end
 end
 
 local function on_chunk_generated(event)
-    local surface = game.surfaces['labyrinth']
+    local index = this.settings.surface_index
+    local surface = game.get_surface(index)
+    if not surface or not surface.valid then
+        return
+    end
     if event.surface.name ~= surface.name then
         return
     end
@@ -963,18 +1133,10 @@ local function on_chunk_generated(event)
         fish = {},
         shipwrecks = {}
     }
-    local decoratives = {}
     local tiles = {}
-    local tile_to_insert = false
+    local tile_to_insert
     local chunk_position_x = event.area.left_top.x / 32
     local chunk_position_y = event.area.left_top.y / 32
-
-    --if not global.spawn_ores_generated then
-    --	if event.area.left_top.x > 96 then
-    --		map_functions.draw_rainbow_patch({x = 16, y = 16}, surface, 9, 1000)
-    --		global.spawn_ores_generated = true
-    --	end
-    --end
 
     for x = 0, 31, 1 do
         for y = 0, 31, 1 do
@@ -988,7 +1150,7 @@ local function on_chunk_generated(event)
                 end
 
                 if pos.y >= 196 + noise * 20 then
-                    local noise = get_noise('island', pos)
+                    noise = get_noise('island', pos)
                     if noise > 0.85 then
                         tile_to_insert = 'grass-1'
                     end
@@ -1039,53 +1201,17 @@ end
 
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
-    if not global.map_init_done then
-        local map_gen_settings = {}
-        map_gen_settings.water = '0.01'
-        map_gen_settings.cliff_settings = {cliff_elevation_interval = 50, cliff_elevation_0 = 50}
-        map_gen_settings.autoplace_controls = {
-            ['coal'] = {frequency = 'none', size = 'none', richness = 'none'},
-            ['stone'] = {frequency = 'none', size = 'none', richness = 'none'},
-            ['copper-ore'] = {frequency = 'none', size = 'none', richness = 'none'},
-            ['iron-ore'] = {frequency = 'none', size = 'none', richness = 'none'},
-            ['crude-oil'] = {frequency = 'none', size = 'none', richness = 'none'},
-            ['trees'] = {frequency = 'none', size = 'none', richness = 'none'},
-            ['enemy-base'] = {frequency = 'none', size = 'none', richness = 'none'}
-        }
-        game.map_settings.pollution.pollution_restored_per_tree_damage = 0
-        game.create_surface('labyrinth', map_gen_settings)
-        game.forces['player'].set_spawn_position({16, 0}, game.surfaces['labyrinth'])
-        local surface = game.surfaces['labyrinth']
-        surface.create_entity {name = 'rock-big', position = {16, -16}}
-
-        --game.forces["player"].technologies["gun-turret-damage-1"].enabled = false
-        --game.forces["player"].technologies["gun-turret-damage-2"].enabled = false
-        --game.forces["player"].technologies["gun-turret-damage-3"].enabled = false
-        --game.forces["player"].technologies["gun-turret-damage-4"].enabled = false
-        --game.forces["player"].technologies["gun-turret-damage-5"].enabled = false
-        --game.forces["player"].technologies["gun-turret-damage-6"].enabled = false
-        --game.forces["player"].technologies["gun-turret-damage-7"].enabled = false
-        game.forces['player'].technologies['artillery'].enabled = false
-        game.forces['player'].technologies['artillery-shell-range-1'].enabled = false
-        game.forces['player'].technologies['artillery-shell-speed-1'].enabled = false
-        game.forces['player'].technologies['atomic-bomb'].enabled = false
-
-        --game.forces["player"].set_ammo_damage_modifier("flamethrower", -0.95)
-        --game.forces["player"].set_turret_attack_modifier("flamethrower-turret", -0.95)
-        --game.forces["player"].set_turret_attack_modifier("gun-turret", -0.25)
-        --game.forces["player"].set_turret_attack_modifier("laser-turret", -0.75)
-
-        if not global.labyrinth_size then
-            global.labyrinth_size = 1
-        end
-        global.map_init_done = true
+    local index = this.settings.surface_index
+    local surface = game.get_surface(index)
+    if not surface or not surface.valid then
+        return
     end
-    local surface = game.surfaces['labyrinth']
+
     if player.online_time < 5 and surface.is_chunk_generated({0, 0}) then
-        player.teleport(surface.find_non_colliding_position('character', {16, 0}, 2, 1), 'labyrinth')
+        player.teleport(surface.find_non_colliding_position('character', {16, 0}, 2, 1), surface.name)
     else
         if player.online_time < 5 then
-            player.teleport({16, 0}, 'labyrinth')
+            player.teleport({16, 0}, surface.name)
         end
     end
     if player.online_time < 10 then
@@ -1112,7 +1238,7 @@ local function on_built_entity(event)
             if not chest[1] then
                 return
             end
-            local a = {
+            local _ = {
                 left_top = {x = chest[1].position.x - 2, y = chest[1].position.y - 2},
                 right_bottom = {x = chest[1].position.x + 2, y = chest[1].position.y + 2}
             }
@@ -1165,7 +1291,8 @@ local function on_built_entity(event)
                 if get_score then
                     if get_score[player.force.name] then
                         if get_score[player.force.name].players[player.name] then
-                            get_score[player.force.name].players[player.name].built_entities = get_score[player.force.name].players[player.name].built_entities - 1
+                            get_score[player.force.name].players[player.name].built_entities =
+                                get_score[player.force.name].players[player.name].built_entities - 1
                         end
                     end
                 end
@@ -1186,7 +1313,10 @@ local function on_built_entity(event)
             surface.count_entities_filtered(
             {
                 name = {'spitter-spawner', 'biter-spawner'},
-                area = {{event.created_entity.position.x - 18, event.created_entity.position.y - 18}, {event.created_entity.position.x + 18, event.created_entity.position.y + 18}},
+                area = {
+                    {event.created_entity.position.x - 18, event.created_entity.position.y - 18},
+                    {event.created_entity.position.x + 18, event.created_entity.position.y + 18}
+                },
                 force = 'enemy',
                 limit = 1
             }
@@ -1220,12 +1350,8 @@ end
 
 local function on_entity_damaged(event)
     if event.entity.name == 'rock-huge' or event.entity.name == 'rock-big' or event.entity.name == 'sand-rock-big' then
-        local rock_is_alive = true
         if event.force.name == 'enemy' then
             event.entity.health = event.entity.health + event.final_damage_amount
-            if event.entity.health <= event.final_damage_amount then
-                rock_is_alive = false
-            end
         end
     end
 end
@@ -1238,12 +1364,16 @@ local attack_messages = {
     'These noises, this can´t be good..'
 }
 
-local function on_tick(event)
+local function on_tick()
     if game.tick % 4600 == 0 then
         if math.random(1, 6) ~= 1 then
             return
         end
-        local surface = game.surfaces['labyrinth']
+        local index = this.settings.surface_index
+        local surface = game.get_surface(index)
+        if not surface or not surface.valid then
+            return
+        end
         local area = {{-10000, -10000}, {10000, 0}}
         local biters = surface.find_entities_filtered({type = 'unit', force = 'enemy', area = area})
         for _, biter in pairs(biters) do
@@ -1255,12 +1385,14 @@ local function on_tick(event)
     end
 end
 
-event.add(defines.events.on_tick, on_tick)
-event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
-event.add(defines.events.on_entity_damaged, on_entity_damaged)
-event.add(defines.events.on_built_entity, on_built_entity)
-event.add(defines.events.on_entity_died, on_entity_died)
-event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
-event.add(defines.events.on_robot_mined_entity, on_player_mined_entity)
-event.add(defines.events.on_chunk_generated, on_chunk_generated)
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.on_init(init_map)
+Event.add(defines.events.on_tick, on_tick)
+Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
+Event.add(defines.events.on_entity_damaged, on_entity_damaged)
+Event.add(defines.events.on_built_entity, on_built_entity)
+Event.add(defines.events.on_entity_died, on_entity_died)
+Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
+Event.add(defines.events.on_player_built_tile, on_player_built_tile)
+Event.add(defines.events.on_robot_mined_entity, on_player_mined_entity)
+Event.add(defines.events.on_chunk_generated, on_chunk_generated)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)
