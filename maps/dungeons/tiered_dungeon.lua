@@ -14,6 +14,8 @@ local Get_noise = require 'utils.get_noise'
 local Alert = require 'utils.alert'
 local Research = require 'maps.dungeons.research'
 local DungeonsTable = require 'maps.dungeons.table'
+local BottomFrame = require 'comfy_panel.bottom_frame'
+local Autostash = require 'modules.autostash'
 require 'maps.dungeons.boss_arena'
 
 local Biomes = {}
@@ -782,6 +784,11 @@ local function on_init()
     game.forces.player.technologies['landfill'].enabled = false
     game.forces.player.technologies['cliff-explosives'].enabled = false
     Research.Init(dungeontable)
+    Autostash.insert_into_furnace(true)
+    Autostash.insert_into_wagon(false)
+    Autostash.bottom_button(true)
+    BottomFrame.reset()
+    BottomFrame.activate_custom_buttons(true)
     RPG.set_surface_name('dungeons_floor')
     local rpg_table = RPG.get('rpg_extra')
     rpg_table.personal_tax_rate = 0
