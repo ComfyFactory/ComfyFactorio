@@ -17,6 +17,7 @@ local DungeonsTable = require 'maps.dungeons.table'
 local BottomFrame = require 'comfy_panel.bottom_frame'
 local Autostash = require 'modules.autostash'
 require 'maps.dungeons.boss_arena'
+require 'modules.melee_mode'
 
 local Biomes = {}
 Biomes.dirtlands = require 'maps.dungeons.biome_dirtlands'
@@ -72,11 +73,11 @@ local function get_biome(position, surface_index)
     if Get_noise('dungeons', position, seed + seed_addition * a) > 0.66 then
         return 'glitch'
     end
-    a = a + 1
-    if Get_noise('dungeons', position, seed + seed_addition * a) > 0.60 then
-        return 'doom'
-    end
     if enable_hard_rooms(position, surface_index) then
+       a = a + 1
+       if Get_noise('dungeons', position, seed + seed_addition * a) > 0.60 then
+	  return 'doom'
+       end
        a = a + 1
        if Get_noise('dungeons', position, seed + seed_addition * a) > 0.62 then
 	  return 'acid_zone'
@@ -86,7 +87,7 @@ local function get_biome(position, surface_index)
 	  return 'concrete'
        end
     else
-       a = a + 2
+       a = a + 3
     end
     a = a + 1
     if Get_noise('dungeons', position, seed + seed_addition * a) > 0.71 then
