@@ -385,6 +385,9 @@ function Variable.techs_remain(index)
    end
    floor = floorNum(index)
 
+   if state.research_by_floor[floor] == nil then
+      return 0
+   end
    return #state.research_by_floor[floor]
 end
 
