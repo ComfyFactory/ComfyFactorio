@@ -104,7 +104,9 @@ local function cross(surface, room)
     for x = 0, a, 1 do
         for y = 0, a, 1 do
             local p = {x = left_top.x + x, y = left_top.y + y}
-            if math_abs(p.x - center_position.x) > room.radius * 0.33 and math_abs(p.y - center_position.y) > room.radius * 0.33 then
+	    local ok_x = math_abs(p.x - center_position.x) > (room.radius * 0.33)
+	    local ok_y = math_abs(p.y - center_position.y) > (room.radius * 0.33)
+            if ok_x and ok_y then
                 surface.set_tiles({{name = 'water', position = p}})
                 if math_random(1, 16) == 1 then
                     surface.create_entity({name = 'fish', position = p})
@@ -201,7 +203,6 @@ local function biome(surface, room)
     end
 
     water_shapes[math_random(1, #water_shapes)](surface, room)
-
     for key, tile in pairs(room.room_tiles) do
         tile = surface.get_tile(tile.position)
         if not tile.collides_with('resource-layer') then
