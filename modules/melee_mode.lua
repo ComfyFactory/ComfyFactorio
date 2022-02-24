@@ -29,12 +29,12 @@ local function on_player_joined_game(event)
 end
 
 local function move_to_main(player, from, to)
-   ret = {}
+   local ret = {}
    for i = 1, #from do
-      c = from[i]
+      local c = from[i]
       if c.valid_for_read then
 	 if to.can_insert(c) then
-	    amt = to.insert(c)
+	    local amt = to.insert(c)
 	    ret[#ret + 1] = { name=c.name, count=amt }
 	    c.count = c.count - amt
 	 else
@@ -46,11 +46,11 @@ local function move_to_main(player, from, to)
 end
 
 local function change_to_melee(player)
-   main_inv = player.get_main_inventory()
-   gun_inv = player.get_inventory(defines.inventory.character_guns)
-   gun_moved = move_to_main(player, gun_inv, main_inv)
-   ammo_inv = player.get_inventory(defines.inventory.character_ammo)
-   ammo_moved = move_to_main(player, ammo_inv, main_inv)
+   local main_inv = player.get_main_inventory()
+   local gun_inv = player.get_inventory(defines.inventory.character_guns)
+   local gun_moved = move_to_main(player, gun_inv, main_inv)
+   local ammo_inv = player.get_inventory(defines.inventory.character_ammo)
+   local ammo_moved = move_to_main(player, ammo_inv, main_inv)
 
    state[player.index] = { gun = gun_moved, ammo = ammo_moved }
 end
@@ -60,9 +60,9 @@ local function try_move_from_main(main, to, what)
       return
    end
    for i = 1, #what do
-      amt_out = main.remove(what[i])
+      local amt_out = main.remove(what[i])
       if amt_out > 0 then
-	 amt_in = to.insert({name = what[i].name, count = amt_out})
+	 local amt_in = to.insert({name = what[i].name, count = amt_out})
 	 if amt_in < amt_out then
 	    main.insert({name = what[i].name, count = amt_out - amt_in})
 	 end
@@ -71,15 +71,15 @@ local function try_move_from_main(main, to, what)
 end
 
 local function change_to_ranged(player)
-   moved = state[player.index]
+   local moved = state[player.index]
    if moved == nil then
       moved = {}
    end
-   main_inv = player.get_main_inventory()
-   gun_inv = player.get_inventory(defines.inventory.character_guns)
-   gun_moved = try_move_from_main(main_inv, gun_inv, moved.gun)
-   ammo_inv = player.get_inventory(defines.inventory.character_ammo)
-   ammo_moved = try_move_from_main(main_inv, ammo_inv, moved.ammo)
+   local main_inv = player.get_main_inventory()
+   local gun_inv = player.get_inventory(defines.inventory.character_guns)
+   local gun_moved = try_move_from_main(main_inv, gun_inv, moved.gun)
+   local ammo_inv = player.get_inventory(defines.inventory.character_ammo)
+   local ammo_moved = try_move_from_main(main_inv, ammo_inv, moved.ammo)
    state[player.index] = {}
 end
    
@@ -107,17 +107,15 @@ local function on_gui_click(event)
       change_to_ranged(player)
       mm.sprite = 'item/pistol'
    end
-   
-
 end
 
 local function moved_to_string(tbl)
-   ret = ""
+   local ret = ''
    for i = 1, #tbl do
-      if ret ~= "" then
-	 ret = ret .. ", "
+      if ret ~= '' then
+	 ret = ret .. ', '
       end
-      ret = ret .. tbl[i].count .. " " .. tbl[i].name
+      ret = ret .. tbl[i].count .. ' ' .. tbl[i].name
    end
    return ret
 end
@@ -127,13 +125,13 @@ local function player_inventory_changed(player_index, inv_id, name)
    if player.gui.top.melee_mode.sprite == 'item/pistol' then
       return
    end
-   inv = player.get_inventory(inv_id)
-   moved = move_to_main(player, inv, player.get_main_inventory())
+   local inv = player.get_inventory(inv_id)
+   local moved = move_to_main(player, inv, player.get_main_inventory())
    if #moved > 0 then
       player.print('In melee mode, moved ' .. moved_to_string(moved) .. ' to main inventory')
    end
    if not inv.is_empty() then
-      player.print('WARNING: in melee mode, unable to empty " .. name .. " to main inventory')
+      player.print('WARNING: in melee mode, unable to empty ' .. name .. ' to main inventory')
    end
 end
 
