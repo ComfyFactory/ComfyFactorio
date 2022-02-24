@@ -24,7 +24,10 @@ function Public.tag_text(player)
 		tags[#tags + 1] = "Cap'n"
 	elseif player.controller_type == defines.controllers.spectator then
 		tags[#tags + 1] = 'Spectating'
+	elseif memory.officers_table and memory.classes_table[player.index] then
+		tags[#tags + 1] = "Officer"
 	end
+
 
 	if memory.classes_table and memory.classes_table[player.index] then
 
@@ -251,6 +254,37 @@ function Public.assign_captain_based_on_priorities(excluded_player_index)
 		memory.captain_acceptance_timer = 72 --tuned
 	end
 end
+
+
+function Public.captain_requisition_coins(captain_index)
+	local memory = Memory.get_crew_memory()
+	local print = true
+	if print then 
+		Common.notify_force(game.forces[memory.force_name], 'Coins requisitioned by captain.')
+	end
+
+	local crew_members = memory.crewplayerindices
+	local captain = game.players[captain_index]
+	if not (captain and crew_members and #crew_members > 2) then return end
+	
+	local captain_inv = captain.get_inventory(defines.inventory.character_main)
+
+	for _, player_index in pairs(crew_members) do
+		if player_index == captain_index then return end
+
+		local player = game.players[player_index]
+		if player then
+			local inv = player.get_inventory(defines.inventory.character_main)
+			if not inv then return end
+			local coin_amount = inv.get_item_count('coin')
+			if coin_amount and coin_amount > 0 then
+				inv.remove{name='coin', count=coin_amount}
+				captain_inv.insert{name='coin', count=coin_amount}
+			end
+		end
+	end
+end
+
 
 
 

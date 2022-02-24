@@ -118,20 +118,24 @@ function Public.terrain(args)
 
 	if noises.forest_abs_suppressed(p) < 0.8 and noises.mood(p) > -0.3 then
 		if noises.height(p) > 0.27 then
-			if noises.ore(p) > 1.5 then
-				args.entities[#args.entities + 1] = {name = 'copper-ore', position = args.p, amount = 20}
-			elseif noises.ore(p) < -1.5 then
-				args.entities[#args.entities + 1] = {name = 'iron-ore', position = args.p, amount = 20}
+			if noises.ore(p) > 1.6 then
+				local name = 'iron-ore'
+				if (args.p.x + args.p.y) % 2 < 1 then
+					name = 'copper-ore'
+				end
+				args.entities[#args.entities + 1] = {name = name, position = args.p, amount = 24}
+			elseif noises.ore(p) < -1.6 then
+				args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = 24}
 			elseif noises.ore(p) < 0.041 and noises.ore(p) > -0.041 then
 				args.entities[#args.entities + 1] = {name = 'stone', position = args.p, amount = 10}
 			end
-		else
-			if noises.ore(p) > 2.2 then
+		elseif noises.height(p) < 0.19 then
+			if noises.ore(p) > 2.1 then
 				args.entities[#args.entities + 1] = {name = 'copper-ore', position = args.p, amount = 10}
-			elseif noises.ore(p) < -2.2 then
+			elseif noises.ore(p) < -2.1 then
 				args.entities[#args.entities + 1] = {name = 'iron-ore', position = args.p, amount = 10}
-			elseif noises.ore(p) < 0.010 and noises.ore(p) > -0.010 then
-				args.entities[#args.entities + 1] = {name = 'stone', position = args.p, amount = 5}
+			-- elseif noises.ore(p) < 0.010 and noises.ore(p) > -0.010 then
+			-- 	args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = 5}
 			end
 		end
 	end
@@ -209,8 +213,8 @@ function Public.break_rock(surface, p, entity_name)
 end
 
 
-function Public.generate_silo_position()
-	return Hunt.free_position_1()
+function Public.generate_silo_setup_position()
+	return Hunt.silo_setup_position()
 end
 
 local function red_desert_tick()

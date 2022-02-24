@@ -224,7 +224,7 @@ end
 function Public.wooden_chest_loot()
 	local memory = Memory.get_crew_memory()
 	local overworldx = memory.overworldx or 0
-	local num = Math.random(1,3)
+	local num = Math.random(1,2)
 
 	return Public.chest_loot(num, 40/100 * Math.sloped(Common.difficulty(),1/2) * Common.game_completion_progress())
 end
@@ -232,7 +232,7 @@ end
 function Public.iron_chest_loot()
 	local memory = Memory.get_crew_memory()
 	local overworldx = memory.overworldx or 0
-	local num = Math.random(3,4)
+	local num = Math.random(2,3)
 
 	local loot = Public.chest_loot(num, 5/100 + 40/100 * Math.sloped(Common.difficulty(),1/2) * Common.game_completion_progress())
 	loot[#loot + 1] = {name = 'coin', count = Math.random(1,1500)}
@@ -338,6 +338,15 @@ function Public.chest_loot(number_of_items, game_completion_progress)
         end
         ret[#ret + 1] = {name = loot.name, count = _count}
     end
+
+	local platesrng = Math.random(5)
+	if platesrng <= 2 then
+		ret[#ret + 1] = {name = 'iron-plate', count = 120}
+	elseif platesrng <= 4 then
+		ret[#ret + 1] = {name = 'copper-plate', count = 120}
+	else
+		ret[#ret + 1] = {name = 'steel-plate', count = 40}
+	end
 
 	return ret
 end

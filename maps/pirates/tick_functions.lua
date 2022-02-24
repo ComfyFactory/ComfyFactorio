@@ -103,6 +103,7 @@ end
 
 function Public.raft_raids(tickinterval)
 	local memory = Memory.get_crew_memory()
+	if memory.game_lost then return end
 	local destination = Common.current_destination()
 	if not destination then return end
 	if (not destination.static_params) or (not destination.static_params.scheduled_raft_raids) or (not destination.dynamic_data.timer) then return end
@@ -116,6 +117,31 @@ function Public.raft_raids(tickinterval)
 				Ai.spawn_boat_biters(boat, raid.max_evo)
 			end
 		end
+	end
+end
+
+function Public.ship_deplete_fuel(tickinterval)
+	local memory = Memory.get_crew_memory()
+	if memory.game_lost then return end
+	if not (memory.stored_fuel and memory.boat.input_chests and memory.boat.input_chests[1])then return end
+
+	local rate = Progression.fuel_depletion_rate()
+
+	local boat = memory.boat
+
+	local input_chests = boat.input_chests
+	local inv = input_chests[1].get_inventory(defines.inventory.chest)
+	local contents = inv.get_contents()
+	local item_type = 'coal'
+	local count = contents[item_type] or 0
+	if count > 0 then
+		inv.remove{name = 'coal', count = count}
+	end
+
+	memory.stored_fuel = memory.stored_fuel + count + rate*tickinterval/60
+
+	if memory.stored_fuel < 0 then
+		Crew.try_lose('out of fuel')
 	end
 end
 
@@ -145,6 +171,7 @@ end
 
 function Public.captain_warn_afk(tickinterval)
 	local memory = Memory.get_crew_memory()
+	if memory.game_lost then return end
 
 	if memory.playerindex_captain then
 		for _, player in pairs(game.connected_players) do
@@ -158,6 +185,7 @@ end
 
 function Public.periodic_free_resources(tickinterval)
 	local memory = Memory.get_crew_memory()
+	if memory.game_lost then return end
 	local destination = Common.current_destination()
 	local boat = memory.boat
 	if not (destination and destination.type and destination.type == Surfaces.enum.ISLAND and boat and boat.surface_name and boat.surface_name == destination.surface_name) then return end
@@ -484,6 +512,7 @@ end
 
 function Public.covered_requirement_check(tickinterval)
 	local memory = Memory.get_crew_memory()
+	if memory.game_lost then return end
 	local destination = Common.current_destination()
 	if not (destination and destination.dynamic_data) then return end
 
@@ -728,6 +757,7 @@ end
 
 function Public.loading_update(tickinterval)
 	local memory = Memory.get_crew_memory()
+	if memory.game_lost then return end
 	local currentdestination = Common.current_destination()
 
 	if not memory.loadingticks then return end
@@ -855,6 +885,7 @@ end
 
 function Public.crowsnest_steer(tickinterval)
 	local memory = Memory.get_crew_memory()
+	if memory.game_lost then return end
 	
 	if memory.boat and memory.boat.state == Structures.Boats.enum_state.ATSEA_SAILING and memory.game_lost == false and memory.boat.crowsneststeeringchests then
 		local leftchest, rightchest = memory.boat.crowsneststeeringchests.left, memory.boat.crowsneststeeringchests.right
@@ -888,9 +919,10 @@ function Public.silo_update(tickinterval)
 	local destination = Common.current_destination()
 
 	if destination.type == Surfaces.enum.ISLAND then
-		local silo = destination.dynamic_data.rocketsilo
+		local silos = destination.dynamic_data.rocketsilos
 
-		if silo and silo.valid then
+		if silos and silos[1] and silos[1].valid then
+			local silo = silos[1]
 			if destination.dynamic_data.silocharged == false then
 
 				local p = silo.position
@@ -935,6 +967,7 @@ end
 
 function Public.slower_boat_tick(tickinterval)
 	local memory = Memory.get_crew_memory()
+	if memory.game_lost then return end
 	local destination = Common.current_destination()
 
 	if memory.boat.state == Boats.enum_state.LEAVING_DOCK then
@@ -975,9 +1008,9 @@ function Public.LOS_tick(tickinterval)
 		force.chart(surface, {{p.x - BoatData.width/2 - 70, p.y - 80},{p.x - BoatData.width/2 + 70, p.y + 80}})
 	end
 
-	local silo = destination.dynamic_data.rocketsilo
-	if silo and silo.valid then
-		local p = silo.position
+	local silos = destination.dynamic_data.rocketsilos
+	if silos and silos[1] and silos[1].valid then
+		local p = silos[1].position
 		force.chart(surface, {{p.x - 4, p.y - 4},{p.x + 4, p.y + 4}})
 	end
 end
@@ -1004,6 +1037,7 @@ end
 
 function Public.quest_progress_tick(tickinterval)
 	local memory = Memory.get_crew_memory()
+	if memory.game_lost then return end
 	local destination = Common.current_destination()
 
 	if destination.dynamic_data.quest_type == Quest.enum.TIME and (not destination.dynamic_data.quest_complete) and destination.dynamic_data.quest_progress > 0 and destination.dynamic_data.quest_progressneeded ~= 1 then
@@ -1031,29 +1065,34 @@ end
 function Public.silo_insta_update()
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
+	if memory.game_lost then return end
 
-	local silo = destination.dynamic_data.rocketsilo
+	local silos = destination.dynamic_data.rocketsilos
 	
-	if silo and silo.valid then
+	if silos and silos[1] and silos[1].valid then
 		if destination.dynamic_data.silocharged then
-			silo.energy = silo.electric_buffer_size
+			for i, silo in ipairs(silos) do
+				silo.energy = silo.electric_buffer_size
+			end
 		else
-			local e = silo.energy - 1
-			local e2 = destination.dynamic_data.rocketsiloenergyneeded - destination.dynamic_data.rocketsiloenergyconsumed
-			if e > 0 and e2 > 0 then
-				local absorb = Math.min(e, e2)
-				destination.dynamic_data.energychargedinsilosincelastcheck = destination.dynamic_data.energychargedinsilosincelastcheck + absorb
-				silo.energy = silo.energy - absorb
-	
-				if destination.dynamic_data.rocketsilonevercharged then
-					destination.dynamic_data.rocketsilonevercharged = false
-					local inv = silo.get_inventory(defines.inventory.assembling_machine_input)
-					inv.insert{name = 'rocket-control-unit', count = 10}
-					inv.insert{name = 'low-density-structure', count = 10}
-					inv.insert{name = 'rocket-fuel', count = 10}
+			for i, silo in ipairs(silos) do
+				local e = silo.energy - 1
+				local e2 = destination.dynamic_data.rocketsiloenergyneeded - destination.dynamic_data.rocketsiloenergyconsumed
+				if e > 0 and e2 > 0 then
+					local absorb = Math.min(e, e2)
+					destination.dynamic_data.energychargedinsilosincelastcheck = destination.dynamic_data.energychargedinsilosincelastcheck + absorb
+					silo.energy = silo.energy - absorb
+		
+					if destination.dynamic_data.rocketsilochargedbools and (not destination.dynamic_data.rocketsilochargedbools[i]) then
+						destination.dynamic_data.rocketsilochargedbools[i] = true
+						local inv = silo.get_inventory(defines.inventory.assembling_machine_input)
+						inv.insert{name = 'rocket-control-unit', count = 10}
+						inv.insert{name = 'low-density-structure', count = 10}
+						inv.insert{name = 'rocket-fuel', count = 10}
+					end
+				else
+					silo.energy = 0
 				end
-			else
-				silo.energy = 0
 			end
 		end
 	end

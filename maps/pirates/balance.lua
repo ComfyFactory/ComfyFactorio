@@ -52,7 +52,7 @@ function Public.silo_base_est_time()
 end
 
 function Public.time_quest_seconds()
-	return 3 * Public.silo_base_est_time()
+	return 2.8 * Public.silo_base_est_time()
 end
 
 function Public.silo_energy_needed_MJ()
@@ -62,6 +62,11 @@ function Public.silo_energy_needed_MJ()
 
 	return est_secs * est_base_power
 	-- return est_secs * est_base_power * Math.sloped(Common.difficulty(), 1/3)
+end
+
+function Public.silo_count()
+	local E = Public.silo_energy_needed_MJ()
+	return Math.ceil(E/(16.8*120)) --no more than 2 minutes to charge it
 end
 
 function Public.silo_total_pollution()
@@ -88,6 +93,20 @@ end
 
 function Public.expected_time_on_island()
 	return 3/5 * Public.max_time_on_island_formula()
+end
+
+function Public.fuel_depletion_rate_static()
+	if (not Common.overworldx()) then return 0 end
+
+	local T = Public.expected_time_on_island() --always >0
+
+	return - 1000 * (Common.overworldx()/40)^(2/5) / T
+end
+
+function Public.fuel_depletion_rate_sailing()
+	if (not Common.overworldx()) then return 0 end
+
+	return - 10 * (1 + (Common.overworldx()/40)^(1/5))
 end
 
 function Public.boat_passive_pollution_per_minute(time)
@@ -206,7 +225,7 @@ function Public.biter_base_density_scale()
 end
 
 
-function Public.launch_gold_reward()
+function Public.launch_fuel_reward()
 	return Math.ceil(1000 * (1 + 0.5 * Common.overworldx()/400) / Math.sloped(Common.difficulty(), 1/4))
 end
 

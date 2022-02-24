@@ -98,6 +98,12 @@ function Public.terrain(args)
 			end
 		end
 	end
+
+	if noises.height(p) > 0.18 and noises.mood(p) > 0.2 then
+		if noises.forest_abs(p) < 0.2 and noises.rock_abs(p) > 1.5 then
+			args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = 10}
+		end
+	end
 end
 
 
@@ -133,8 +139,8 @@ function Public.break_rock(surface, p, entity_name)
 end
 
 
-function Public.generate_silo_position()
-	return Hunt.free_position_1(0, 30)
+function Public.generate_silo_setup_position()
+	return Hunt.silo_setup_position(0, 30)
 end
 
 

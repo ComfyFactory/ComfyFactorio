@@ -27,7 +27,7 @@ local Public = {}
 Public.progress = require 'maps.pirates.gui.progress'
 Public.runs = require 'maps.pirates.gui.runs'
 Public.crew = require 'maps.pirates.gui.crew'
-Public.shop = require 'maps.pirates.gui.shop'
+Public.fuel = require 'maps.pirates.gui.shop'
 Public.minimap = require 'maps.pirates.gui.minimap'
 Public.info = require 'maps.pirates.gui.info'
 
@@ -83,10 +83,6 @@ local function create_gui(player)
 	flow2.tooltip = 'Progress\n\nTravel ' .. CoreData.victory_x .. ' leagues = victory.'
 	flow2.sprite = 'item/rail'
 
-	flow2 = GuiCommon.flow_add_floating_sprite_button(flow1, 'shop_piratebutton')
-	flow2.tooltip = 'Gold/Shop\n\nGold is a shared crew resource, spent by the captain in the shop to obtain useful items and upgrades.'
-	flow2.sprite = 'item/sulfur'
-
 	flow2 = GuiCommon.flow_add_floating_sprite_button(flow1, 'evo_piratebutton')
 	flow2.sprite = 'entity/small-biter'
 	flow2.mouse_button_filter = {'middle'}
@@ -96,34 +92,47 @@ local function create_gui(player)
 	flow2.tooltip = 'View the outside world.'
 	flow2.sprite = 'utility/map'
 
-	flow2 = flow1.add({
-		name = 'covering_line_frame',
-		type = 'frame',
+	-- flow2 = GuiCommon.flow_add_floating_sprite_button(flow1, 'shop_piratebutton')
+	-- flow2.tooltip = "Coal/Officer's Shop\n\nThe captain and their officers are authorised to spend coal in the shop."
+	-- flow2.sprite = 'item/coal'
+
+	flow2 = GuiCommon.flow_add_floating_button(flow1, 'fuel_piratebutton')
+	-- flow2.style.right_padding = -100
+
+	flow3 = flow2.parent.add({
+		name = 'fuel_flow',
+		type = 'flow',
 	})
-	flow2.style.minimal_width = 40
-	flow2.style.natural_width = 40
-	flow2.style.minimal_height = 40
-	flow2.style.maximal_height = 40
-	flow2.style.left_padding = 3
-	flow2.style.right_padding = 3
+	flow3.style.natural_width = 20
+	flow3.style.top_margin = -37
+	flow3.style.left_margin = 2
+	flow3.ignored_by_interaction=true
 
-	flow3 = flow2.add({
-		name = 'covering_line',
-		type = 'line',
-		direction = 'horizontal',
+	flow4 = flow3.add({
+		name = 'fuel_label_1',
+		type = 'label',
+		caption = ''
 	})
-	flow3.style.top_margin = 9
-	flow3.style.minimal_width = 320
-	flow3.style.maximal_width = 320
+	flow4.style.font = 'default-large-semibold'
+	-- flow3.style.font_color = GuiCommon.bold_font_color
+	-- flow4.style.top_margin = -36
+	flow4.style.left_margin = 4
+	-- flow4.style.left_margin = -100
+	-- flow3.style.horizontal_align = 'center'
+	-- flow4.style.left_padding = -5
+	flow4.ignored_by_interaction=true
 
-
-
-
-
-
-
-
-
+	flow4 = flow3.add({
+		name = 'fuel_label_2',
+		type = 'label',
+		caption = ''
+	})
+	flow4.style.font = 'default-large'
+	flow4.style.font_color = GuiCommon.bold_font_color
+	flow4.style.left_margin = 6
+	flow4.style.right_padding = 6
+	flow4.style.right_margin = 2
+	flow4.ignored_by_interaction=true
 
 
 	
@@ -330,6 +339,31 @@ local function create_gui(player)
 
 
 
+	flow2 = flow1.add({
+		name = 'covering_line_frame',
+		type = 'frame',
+	})
+	flow2.style.minimal_width = 40
+	flow2.style.natural_width = 40
+	flow2.style.minimal_height = 40
+	flow2.style.maximal_height = 40
+	flow2.style.left_padding = 3
+	flow2.style.right_padding = 3
+
+	flow3 = flow2.add({
+		name = 'covering_line',
+		type = 'line',
+		direction = 'horizontal',
+	})
+	flow3.style.top_margin = 9
+	flow3.style.minimal_width = 320
+	flow3.style.maximal_width = 320
+
+
+
+
+
+
 	flow1 = player.gui.left
 	
 	
@@ -415,7 +449,11 @@ function Public.update_gui(player)
 	-- 	button.number = 3
 	-- end
 
-	pirates_flow.shop_piratebutton_frame.shop_piratebutton.number = (memory.gold or 0)
+	pirates_flow.fuel_piratebutton_flow.fuel_flow.fuel_label_1.caption = '[item=coal] ' .. Utils.bignumber_abbrevform(memory.stored_fuel or 0)
+	pirates_flow.fuel_piratebutton_flow.fuel_flow.fuel_label_2.caption = Utils.negative_rate_abbrevform(Progression.fuel_depletion_rate() or 0)
+
+	pirates_flow.fuel_piratebutton_flow.fuel_piratebutton.tooltip = {'pirates.fuel_tooltip', Math.floor(memory.stored_fuel or 0)}
+
 	pirates_flow.progress_piratebutton_frame.progress_piratebutton.number = (memory.overworldx or 0)
 	-- pirates_flow.destination_piratebutton_frame.destination_piratebutton.number = memory.destinationsvisited_indices and #memory.destinationsvisited_indices or 0
 
@@ -436,7 +474,7 @@ function Public.update_gui(player)
 	local atsea_sailing_bool = memory.boat and memory.boat.state and memory.boat.state == Boats.enum_state.ATSEA_SAILING
 	local landed_bool = memory.boat and memory.boat.state and memory.boat.state == Boats.enum_state.LANDED
 	local quest_bool = (destination.dynamic_data.quest_type ~= nil) and onmap_bool
-	local silo_bool = destination.dynamic_data.rocketsilo and destination.dynamic_data.rocketsilo.valid and onmap_bool
+	local silo_bool = destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid and onmap_bool
 	local charged_bool = destination.dynamic_data.silocharged
 	local launched_bool = destination.dynamic_data.rocketlaunched
 
@@ -458,6 +496,14 @@ function Public.update_gui(player)
 	local leave_anytime_bool = (landed_bool and not (eta_bool or cost_bool)) 
 
 	--== Update Gui ==--
+
+	flow1 = pirates_flow.fuel_piratebutton_flow
+
+	if memory.crewstatus == nil then
+		flow1.visible = false
+	else
+		flow1.visible = true
+	end
 
 	flow1 = pirates_flow.cost_frame
 	if flow1 then
@@ -634,8 +680,8 @@ function Public.update_gui(player)
 					flow1.silo_label_2.visible = false
 					flow1.silo_progressbar.visible = false
 	
-					-- flow1.silo_label_1.caption = string.format('[achievement=there-is-no-spoon]: +%.0f[item=sulfur]', destination.dynamic_data.rocketgoldreward)
-					flow1.silo_label_1.caption = string.format('Launch: %.0f[item=sulfur] , ' .. Balance.rocket_launch_coin_reward .. '[item=coin]', destination.dynamic_data.rocketgoldreward)
+					-- flow1.silo_label_1.caption = string.format('[achievement=there-is-no-spoon]: +%.0f[item=sulfur]', destination.dynamic_data.rocketcoalreward)
+					flow1.silo_label_1.caption = string.format('Launch: %.0f[item=sulfur] , ' .. Balance.rocket_launch_coin_reward .. '[item=coin]', destination.dynamic_data.rocketcoalreward)
 					flow1.silo_label_1.style.font_color = GuiCommon.achieved_font_color
 				else
 					local tooltip = 'The rocket is launching...'
@@ -773,7 +819,7 @@ function Public.update_gui(player)
 				elseif quest_type == Quest.enum.NODAMAGE then
 					if tooltip == '' then tooltip = 'Quest: No Damage\n\nLaunch a rocket without the silo taking damage.' end
 					
-					if (memory.boat and memory.boat.state == Boats.enum_state.APPROACHING) or (destination.dynamic_data.rocketsilo and destination.dynamic_data.rocketsilo.valid and destination.dynamic_data.rocketsilohp == destination.dynamic_data.rocketsilomaxhp) then
+					if (memory.boat and memory.boat.state == Boats.enum_state.APPROACHING) or (destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid and destination.dynamic_data.rocketsilohp == destination.dynamic_data.rocketsilomaxhp) then
 						flow1.quest_label_3.caption = string.format('OK')
 						flow1.quest_label_3.style.font_color = GuiCommon.sufficient_font_color
 					else
@@ -871,11 +917,13 @@ local function on_gui_click(event)
 
 	if string.sub(event.element.name, -13, -1) and string.sub(event.element.name, -13, -1) == '_piratebutton' then
 		local name = string.sub(event.element.name, 1, -14)
-		local player = game.players[event.element.player_index]
 		if Public[name] then
 			Public[name].toggle_window(player)
 			Public[name].update(player)
 		end
+	-- elseif event.element.name == 'fuel_flow' or event.element.name == 'fuel_label_1' or event.element.name == 'fuel_label_2' then
+	-- 	Public.fuel.toggle_window(player)
+	-- 	Public.fuel.update(player)
 	elseif event.element.name and event.element.name == 'undock_shortcut_button' then
 		local memory = Memory.get_crew_memory()
 		--double check:

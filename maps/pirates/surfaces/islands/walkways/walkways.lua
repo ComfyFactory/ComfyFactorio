@@ -22,6 +22,7 @@ function Public.noises(args)
 	ret.height = IslandsCommon.island_height_1(args)
 	ret.walkways = function (p) return Math.abs(args.noise_generator.walkways(p)) end
 	ret.rock = args.noise_generator.rock
+	ret.rock_abs = function (p) return Math.abs(ret.rock(p)) end
 	ret.mood = args.noise_generator.mood
 	ret.farness = IslandsCommon.island_farness_1(args)
 	return ret
@@ -71,6 +72,10 @@ function Public.terrain(args)
 				args.decoratives[#args.decoratives + 1] = {name = 'red-croton', position = p, amount = 1}
 			end
 
+			if noises.height(p) > 0.12 and noises.walkways(p) < 0.1 and noises.rock_abs(p) < 0.07 then
+				args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = 20}
+			end
+
 		else
 			args.tiles[#args.tiles + 1] = {name = 'water-shallow', position = p}
 		end
@@ -102,12 +107,12 @@ function Public.chunk_structures(args)
 end
 
 
-function Public.generate_silo_position()
+function Public.generate_silo_setup_position()
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 	local surface = game.surfaces[destination.surface_name]
 
-	local p_silo = Hunt.free_position_1(0.2)
+	local p_silo = Hunt.silo_setup_position(0.2)
 
 	local tiles = {}
 	for x = -6.5, 6.5, 1 do

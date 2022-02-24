@@ -26,7 +26,7 @@ function Public.base_ores() --here, just for the gui:
 	return {
 		['copper-ore'] = 7,
 		['iron-ore'] = 7,
-		['stone'] = 9,
+		['coal'] = 5,
 	}
 end
 

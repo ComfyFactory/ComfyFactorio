@@ -107,7 +107,11 @@ function Public.initialise_find_quest()
 		destination.dynamic_data.quest_type = enum.FIND
 		destination.dynamic_data.quest_reward = Public.quest_reward()
 		destination.dynamic_data.quest_progress = 0
-		destination.dynamic_data.quest_progressneeded = 1
+		if #Common.crew_get_crew_members() > 15 then
+			destination.dynamic_data.quest_progressneeded = 2
+		else
+			destination.dynamic_data.quest_progressneeded = 1
+		end
 		return true
 	else
 		Public.initialise_random_quest() --@FIXME: mild danger of loop

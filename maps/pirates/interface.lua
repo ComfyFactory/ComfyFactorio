@@ -45,8 +45,8 @@ function Public.silo_died()
 	if memory.game_lost == true then return end
 
 	destination.dynamic_data.rocketsilohp = 0
-	if destination.dynamic_data.rocketsilo and destination.dynamic_data.rocketsilo.valid then
-		local surface = destination.dynamic_data.rocketsilo.surface
+	if destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid then
+		local surface = destination.dynamic_data.rocketsilos[1].surface
 		surface.create_entity({name = 'big-artillery-explosion', position = destination.dynamic_data.rocketsilo.position})
 
 		if memory.boat and memory.boat.surface_name and surface.name == memory.boat.surface_name then
@@ -54,8 +54,8 @@ function Public.silo_died()
 			Crew.try_lose('silo destroyed')
 		end
 
-		destination.dynamic_data.rocketsilo.destroy()
-		destination.dynamic_data.rocketsilo = nil
+		destination.dynamic_data.rocketsilos[1].destroy()
+		destination.dynamic_data.rocketsilos = nil
 	end
 end
 
@@ -87,15 +87,19 @@ function Public.damage_silo(final_damage_amount)
 end
 
 
-local function biters_chew_rocks_faster(event)
+local function biters_chew_stuff_faster(event)
 	local memory = Memory.get_crew_memory()
 
-	if not (event.entity.force.index == 3 or event.entity.force.name == 'environment') then return end
-	if not event.cause then return end
-	if not event.cause.valid then return end
+	if not (event.cause and event.cause.valid and event.cause.force and event.cause.force.name and event.entity and event.entity.valid and event.entity.force and event.entity.force.name) then return end
+	if string.sub(event.cause.force.name, 1, 5) ~= 'enemy' then return end --Enemy Forces only
 
-	if string.sub(event.cause.force.name, 1, 5) ~= 'enemy' then return end --Enemy Forces
-	event.entity.health = event.entity.health - event.final_damage_amount * 5
+	if (event.entity.force.index == 3 or event.entity.force.name == 'environment') then
+		event.entity.health = event.entity.health - event.final_damage_amount * 5
+	elseif event.entity.name == 'stone-furnace' then
+		event.entity.health = event.entity.health - event.final_damage_amount * 1
+	elseif event.entity.name == 'wooden-chest' or event.entity.name == 'stone-chest' or event.entity.name == 'steel-chest' then
+		event.entity.health = event.entity.health - event.final_damage_amount * 0.25
+	end
 end
 
 
@@ -115,9 +119,10 @@ local function silo_damage(event)
 	if event.cause and event.cause.valid and event.entity and event.entity.valid then
 		if event.entity.force.name == memory.force_name then
 			local surfacedata = Surfaces.SurfacesCommon.decode_surface_name(event.entity.surface.name)
+			local dest = Common.current_destination()
 			if surfacedata.type == Surfaces.enum.CROWSNEST or surfacedata.type == Surfaces.enum.LOBBY then
 				event.entity.health = event.entity.health + event.final_damage_amount
-			elseif event.entity == Common.current_destination().dynamic_data.rocketsilo then
+			elseif dest.dynamic_data.rocketsilos and dest.dynamic_data.rocketsilos[1] and dest.dynamic_data.rocketsilos[1].valid and event.entity == Common.current_destination().dynamic_data.rocketsilos[1] then
 				event.entity.health = event.entity.health + event.final_damage_amount
 				if string.sub(event.cause.force.name, 1, 4) ~= 'crew' then
 					Public.damage_silo(event.original_damage_amount)
@@ -248,9 +253,9 @@ local function samurai_damage_changes(event)
 	if memory.classes_table and memory.classes_table[player_index] and memory.classes_table[player_index] == Classes.enum.SAMURAI then
 
 		if event.damage_type.name == 'physical' and (not character.get_inventory(defines.inventory.character_guns)[character.selected_gun_index].valid_for_read) then
-			event.entity.health = event.entity.health - 25
+			event.entity.health = event.entity.health - 30
 		else
-			event.entity.health = event.entity.health + 0.8 * event.final_damage_amount
+			event.entity.health = event.entity.health + 0.66 * event.final_damage_amount
 		end
 	end
 end
@@ -294,7 +299,7 @@ local function event_on_entity_damaged(event)
 	if not event.entity.health then return end
 	
 	enemyboat_spawners_invulnerable(event)
-	biters_chew_rocks_faster(event)
+	biters_chew_stuff_faster(event)
 	extra_player_damage(event)
 	artillery_damage(event)
 	resist_poison(event)
@@ -436,9 +441,9 @@ local function event_on_player_mined_entity(event)
 
 			local give = {}
 
-			if memory.overworldx > 0 then
+			if memory.overworldx >= 0 then
 				if Math.random(6) == 1 then
-					give[#give + 1] = {name = 'coin', count = 4}
+					give[#give + 1] = {name = 'coin', count = 8}
 				end
 			end
 
@@ -464,6 +469,21 @@ local function event_on_player_mined_entity(event)
 
 		local give = {}
 
+		if memory.classes_table and memory.classes_table[event.player_index] then
+			local class = memory.classes_table[event.player_index]
+			if class == Classes.enum.PROSPECTOR then	
+				if memory.overworldx > 0 then
+					give[#give + 1] = {name = 'coin', count = 5}
+				end
+				give[#give + 1] = {name = entity.name, count = 5}
+			else
+				if memory.overworldx > 0 then
+						give[#give + 1] = {name = 'coin', count = 1}
+				end
+				give[#give + 1] = {name = entity.name, count = 2}
+			end
+		end
+
 		if memory.overworldx > 0 then
 			-- if Math.random(2) == 1 then
 			-- 	give[#give + 1] = {name = 'coin', count = 1}
@@ -488,11 +508,11 @@ local function event_on_player_mined_entity(event)
 			table.sort(c, function(a,b) return a.name < b.name end)
 			local c2 = {}
 
-			if memory.overworldx > 0 then
+			if memory.overworldx >= 0 then --used to be only later levels
 				if entity.name == 'rock-huge' then
-					c2[#c2 + 1] = {name = 'coin', count = 30, color = CoreData.colors.coin}
+					c2[#c2 + 1] = {name = 'coin', count = 45, color = CoreData.colors.coin}
 				else
-					c2[#c2 + 1] = {name = 'coin', count = 20, color = CoreData.colors.coin}
+					c2[#c2 + 1] = {name = 'coin', count = 30, color = CoreData.colors.coin}
 				end
 			end
 
@@ -1238,8 +1258,8 @@ local function event_on_rocket_launched(event)
 	local destination = Common.current_destination()
 
 	destination.dynamic_data.rocketlaunched = true
-	if memory.gold and destination.dynamic_data and destination.dynamic_data.rocketgoldreward then
-		memory.gold = memory.gold + destination.dynamic_data.rocketgoldreward
+	if memory.stored_fuel and destination.dynamic_data and destination.dynamic_data.rocketcoalreward then
+		memory.stored_fuel = memory.stored_fuel + destination.dynamic_data.rocketcoalreward
 		Common.give_reward_items{{name = 'coin', count = Balance.rocket_launch_coin_reward}}
 	end
 
@@ -1339,6 +1359,33 @@ local function event_on_market_item_purchased(event)
 	Shop.event_on_market_item_purchased(event)
 end
 
+local function event_on_player_used_capsule(event)
+
+    local player = game.players[event.player_index]
+    if not player or not player.valid then
+        return
+    end
+	local player_index = player.index
+
+	local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+	Memory.set_working_id(crew_id)
+	local memory = Memory.get_crew_memory()
+
+    if not (player.character and player.character.valid) then
+        return
+    end
+
+    local item = event.item
+    if not (item and item.name and item.name == 'raw-fish') then return end
+
+	if memory.classes_table and memory.classes_table[player_index] then
+		local class = memory.classes_table[player_index]
+		if class == Classes.enum.SAMURAI then
+			player.entity.health = player.entity.health + 20
+		end
+	end
+end
+
 
 
 local remove_boost_movement_speed_on_respawn =
@@ -1429,6 +1476,7 @@ event.add(defines.events.on_rocket_launched, event_on_rocket_launched)
 event.add(defines.events.on_console_chat, event_on_console_chat)
 event.add(defines.events.on_market_item_purchased, event_on_market_item_purchased)
 event.add(defines.events.on_player_respawned, event_on_player_respawned)
+event.add(defines.events.on_player_used_capsule, event_on_player_used_capsule)
 
 
 return Public

@@ -205,7 +205,18 @@ function Public.standard_string_form_of_time_in_seconds(time)
 		time2 = - time
 		str1 = '-'
 	end
-	local str2 = string.format('%.0fm%.0fs', Math.floor(Math.ceil(time2) / 60), Math.ceil(time2) % 60)
+	local str2 = ''
+	local hours = Math.floor(Math.ceil(time2) / 3600)
+	local minutes = Math.floor(Math.ceil(time2) / 60)
+	local seconds = Math.ceil(time2) % 60
+	-- if hours >= 1 then
+	-- 	str2 = string.format('%.0fh%.0fm%.0fs', hours, minutes, seconds)
+	-- elseif minutes >= 1 then
+	if minutes >= 1 then
+		str2 = string.format('%.0fm%.0fs', minutes, seconds)
+	else
+		str2 = string.format('%.0fs', seconds)
+	end
 	return str1 .. str2
 end
 
@@ -260,6 +271,68 @@ function Public.deepcopy(obj) --doesn't copy metatables
 	return res
 end
 
+
+function Public.bignumber_abbrevform(number)
+	local str1, str2, number2
+	if number >= 0 then
+		number2 = number
+		str1 = ''
+	else
+		number2 = - number
+		str1 = '-'
+	end
+
+	if number2 == 0 then
+		str2 = '0'
+	elseif number2 < 1000 then
+		str2 = string.format('%.0d', Math.floor(number2))
+	else
+		str2 = string.format('%.1fk', Math.floor(number2/100)/10)
+	end
+
+	return str1 .. str2
+end
+function Public.bignumber_abbrevform2(number)
+	local str1, str2, number2
+	if number >= 0 then
+		number2 = number
+		str1 = ''
+	else
+		number2 = - number
+		str1 = '-'
+	end
+
+	if number2 == 0 then
+		str2 = '0'
+	elseif number2 < 1000 then
+		str2 = string.format('%.0d', Math.floor(number2))
+	elseif number2 < 10000 then
+		str2 = string.format('%.1fk', Math.floor(number2/100)/10)
+	else
+		str2 = string.format('%.0dk', Math.floor(number2/1000))
+	end
+
+	return str1 .. str2
+end
+function Public.negative_rate_abbrevform(number)
+	local str1, str2, number2
+	if number > 0 then
+		number2 = number
+		str1 = ''
+	else
+		number2 = - number
+		str1 = '-'
+	end
+	if number2 == 0 then
+		str2 = '0'
+	elseif number2 < 10 then
+		str2 = string.format('%.1f', Math.ceil(number2*10)/10)
+	else
+		str2 = string.format('%.0d', Math.ceil(number2))
+	end
+
+	return str1 .. str2 .. '/s'
+end
 
 
 function Public.noise_field_simplex_2d(noise_data, seed, normalised)

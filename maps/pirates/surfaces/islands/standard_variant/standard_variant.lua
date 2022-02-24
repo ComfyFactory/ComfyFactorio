@@ -43,13 +43,17 @@ function Public.terrain(args)
 		return
 	end
 	
-	if noises.height(p) < 0.05 then
+	if noises.height(p) < 0.04 then
 		args.tiles[#args.tiles + 1] = {name = 'sand-1', position = args.p}
 		if args.specials and noises.farness(p) > 0.02 and noises.farness(p) < 0.6 and Math.random(400) == 1 then
 			args.specials[#args.specials + 1] = {name = 'buried-treasure', position = args.p}
 		end
-	elseif noises.height(p) < 0.12 then
+	elseif noises.height(p) < 0.05 then
 		args.tiles[#args.tiles + 1] = {name = 'sand-2', position = args.p}
+	elseif noises.height(p) < 0.11 then
+		args.tiles[#args.tiles + 1] = {name = 'dry-dirt', position = args.p}
+	elseif noises.height(p) < 0.12 then
+		args.tiles[#args.tiles + 1] = {name = 'grass-4', position = args.p}
 	else
 		if noises.forest_abs_suppressed(p) > 0.3 and noises.rock(p) < 0.3 then
 			args.tiles[#args.tiles + 1] = {name = 'dirt-7', position = args.p}
@@ -60,13 +64,13 @@ function Public.terrain(args)
 		end
 	end
 
-	if noises.height(p) > 0.06 then
+	if noises.height(p) > 0.11 then
 		if noises.forest_abs_suppressed(p) > 0.7 then
             if args.specials and noises.forest_abs_suppressed(p) < 1 and Math.random(750) == 1 then -- high amounts of this
                 args.specials[#args.specials + 1] = {name = 'chest', position = args.p}
 			else
 				local forest_noise = noises.forest(p)
-				local treedensity = 0.7 * Math.slopefromto(noises.forest_abs_suppressed(p), 0.7, 0.75)
+				local treedensity = 0.7 * Math.slopefromto(noises.forest_abs_suppressed(p), 0.61, 0.76)
 				if forest_noise > 0 then
 					if noises.rock(p) > 0.05 then
 						if Math.random(1,100) < treedensity*100 then args.entities[#args.entities + 1] = {name = 'tree-08-red', position = args.p, visible_on_overworld = true} end
@@ -98,6 +102,12 @@ function Public.terrain(args)
 					args.decoratives[#args.decoratives + 1] = {name = 'rock-tiny', position = args.p}
 				end
 			end
+		end
+	end
+
+	if noises.height(p) > 0.18 and noises.mood(p) > 0.3 then
+		if noises.forest_abs(p) < 0.2 and noises.rock_abs(p) > 1.5 then
+			args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = 10}
 		end
 	end
 end
@@ -135,8 +145,8 @@ function Public.break_rock(surface, p, entity_name)
 end
 
 
-function Public.generate_silo_position()
-	return Hunt.free_position_1()
+function Public.generate_silo_setup_position()
+	return Hunt.silo_setup_position()
 end
 
 

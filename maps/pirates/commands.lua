@@ -55,12 +55,17 @@ function(cmd)
 	if player_index then
 		local player = game.players[player_index]
 		if player and player.valid then
-			if PlayerColors[param] then
-				player.color = PlayerColors[param]
-				player.chat_color = PlayerColors[param]
-				game.print(player.name .. '\'s color is now ' .. param .. ' (via /ccolor).', PlayerColors[param])
+			game.print(param)
+			if cmd.parameter then
+				if PlayerColors[param] then
+					player.color = PlayerColors[param]
+					player.chat_color = PlayerColors[param]
+					game.print(player.name .. '\'s color is now ' .. param .. ' (via /ccolor).', PlayerColors[param])
+				else
+					player.print('Color not found.')
+				end
 			else
-				player.print('Color not found.')
+				player.print('Try going to https://github.com/danielmartin0/ComfyFactorio-Pirates/blob/develop/maps/pirates/player_colors.lua')
 			end
 		end
 	end
@@ -344,7 +349,7 @@ if _DEBUG then
 		if allowed(param) then
 			Memory.set_working_id(1)
 			local memory = Memory.get_crew_memory()
-			memory.gold = memory.gold + 20000
+			memory.stored_fuel = memory.stored_fuel + 20000
 		end
 	end)
 

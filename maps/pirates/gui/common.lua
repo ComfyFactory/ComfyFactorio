@@ -34,7 +34,7 @@ Public.default_window_positions = {
 	runs = {x = 10, y = 48},
 	crew = {x = 40, y = 48},
 	progress = {x = 250, y = 48},
-	shop = {x = 468, y = 48},
+	fuel = {x = 468, y = 48},
 	minimap = {x = 10, y = 48},
 }
 
@@ -93,7 +93,9 @@ function Public.flow_add_floating_sprite_button(flow1, button_name, width)
 	})
 	flow2.style.height = 40
 	flow2.style.margin = 0
-	flow2.style.padding = -3
+	flow2.style.left_padding = -4
+	flow2.style.top_padding = -4
+	flow2.style.right_margin = -2
 	flow2.style.width = width
 
 	flow3 = flow2.add({
@@ -103,6 +105,40 @@ function Public.flow_add_floating_sprite_button(flow1, button_name, width)
 	flow3.style.height = 40
 	flow3.style.width = width
 	-- flow3.style.padding = -4
+
+    return flow3
+end
+
+
+function Public.flow_add_floating_button(flow1, button_name)
+	local flow2, flow3
+    
+    flow2 = flow1.add({
+		name = button_name .. '_flow',
+		type = 'flow',
+		direction = 'vertical',
+	})
+	flow2.style.height = 40
+	-- flow2.style.left_padding = 4
+	-- flow2.style.top_padding = 0
+	-- flow2.style.right_margin = -2
+	flow2.style.natural_width = 40
+
+	flow3 = flow2.add({
+		name = button_name,
+		type = 'button',
+	})
+	flow3.style = 'dark_rounded_button'
+	-- flow3.style.minimal_width = 60
+	-- flow3.style.natural_width = 60
+	flow3.style.minimal_height = 40
+	flow3.style.maximal_height = 40
+	flow3.style.left_padding = 10
+	flow3.style.right_padding = 4
+	flow3.style.top_padding = 3
+	-- flow3.style.padding = -4
+	flow3.style.natural_width = 40
+	flow3.style.horizontally_stretchable = true
 
     return flow3
 end
@@ -163,8 +199,10 @@ function Public.flow_add_shop_item(flow, name)
 		flow3.style.minimal_height = 40
 		flow3.style.maximal_height = 40
 		flow3.tooltip = trade_data.tooltip
-		if k == 'gold' then
-			flow3.sprite = 'item/sulfur'
+		if k == 'fuel' then
+			flow3.sprite = 'item/coal'
+		elseif k == 'coins' then
+			flow3.sprite = 'item/coin'
 		elseif k == 'iron_plates' then
 			flow3.sprite = 'item/iron-plate'
 		elseif k == 'copper_plates' then

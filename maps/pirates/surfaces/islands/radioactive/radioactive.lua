@@ -100,7 +100,7 @@ function Public.terrain(args)
 			args.entities[#args.entities + 1] = {name = 'stone', position = args.p, amount = 1000}
 		elseif noises.ore(p) < 0.005 and noises.ore(p) > -0.005 then
 			if noises.ore(p) > 0 then
-				args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = 100}
+				args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = 10}
 			else
 				args.entities[#args.entities + 1] = {name = 'copper-ore', position = args.p, amount = 100}
 			end

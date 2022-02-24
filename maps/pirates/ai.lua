@@ -127,13 +127,16 @@ function Public.eat_up_fraction_of_all_pollution(surface, fraction_of_global_pol
 end
 
 function Public.try_main_attack()
-    if Math.random(2) == 2 then return end
+	local wave_size_multiplier = 1
+    if Math.random(2) == 2 then return end --variance in attack sizes
+    if Math.random(9) == 1 then wave_size_multiplier = 2 return end --variance in attack sizes
+    if Math.random(50) == 1 then wave_size_multiplier = 3 return end --variance in attack sizes
 
 	local memory = Memory.get_crew_memory()
     local surface = game.surfaces[Common.current_destination().surface_name]
 
 
-    local group = Public.spawn_group_of_scripted_biters(2/3, 6, 128)
+    local group = Public.spawn_group_of_scripted_biters(2/3, 6, 128, wave_size_multiplier)
     local target = Public.generate_main_attack_target()
     if not group or not group.valid or not target or not target.valid then return end
 
@@ -145,13 +148,16 @@ function Public.try_main_attack()
 end
 
 function Public.try_secondary_attack()
-    if Math.random(2) == 2 then return end
+	local wave_size_multiplier = 1
+    if Math.random(2) == 2 then return end --variance in attack sizes
+    if Math.random(9) == 1 then wave_size_multiplier = 2 return end --variance in attack sizes
+    if Math.random(50) == 1 then wave_size_multiplier = 3 return end --variance in attack sizes
 
 	local memory = Memory.get_crew_memory()
     local surface = game.surfaces[Common.current_destination().surface_name]
 
 
-    local group = Public.spawn_group_of_scripted_biters(2/3, 12, 128)
+    local group = Public.spawn_group_of_scripted_biters(2/3, 12, 128, wave_size_multiplier)
 	if not (group and group.valid) then return end
 	
 	local target
@@ -170,12 +176,15 @@ function Public.try_secondary_attack()
 end
 
 function Public.try_rogue_attack()
-    if Math.random(2) == 2 then return end
+	local wave_size_multiplier = 1
+    if Math.random(2) == 2 then return end --variance in attack sizes
+    if Math.random(9) == 1 then wave_size_multiplier = 2 return end --variance in attack sizes
+    if Math.random(50) == 1 then wave_size_multiplier = 3 return end --variance in attack sizes
 
 	local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[Common.current_destination().surface_name]
 
-	local group = Public.spawn_group_of_scripted_biters(1/2, 6, 128)
+	local group = Public.spawn_group_of_scripted_biters(1/2, 6, 128, wave_size_multiplier)
 	if not (group and group.valid) then return end
 	local target = Public.generate_side_attack_target(surface, group.position)
 	if not (target and target.valid) then return end
@@ -197,9 +206,9 @@ function Public.tell_biters_near_silo_to_attack_it()
 
     -- don't do this too early
     if destination.dynamic_data.timer < destination.dynamic_data.timeratlandingtime + Common.seconds_after_landing_to_enable_AI * 4 then return end
-    if not (destination.dynamic_data.rocketsilo and destination.dynamic_data.rocketsilo.valid and destination.dynamic_data.rocketsilo.destructible) then return end
+    if not (destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid and destination.dynamic_data.rocketsilos[1].destructible) then return end
 
-    local attackcommand = Public.attack_target_entity(destination.dynamic_data.rocketsilo)
+    local attackcommand = Public.attack_target_entity(destination.dynamic_data.rocketsilos[1])
 
     if attackcommand then
         surface.set_multi_command(
@@ -277,7 +286,7 @@ function Public.create_mail_delivery_biters()
                 local s2 = far_spawners[Math.random(#far_spawners)]
 
                 memory.floating_pollution = memory.floating_pollution + 64
-                local units = Public.try_spawner_spend_fraction_of_available_pollution_on_biters(s1, 1/4, 4, 32, 'small-biter')
+                local units = Public.try_spawner_spend_fraction_of_available_pollution_on_biters(s1, 1/4, 4, 32, 1, 'small-biter')
                 memory.floating_pollution = memory.floating_pollution - 64
                 
                 if (not units) or (not #units) or (#units == 0) then return end
@@ -305,7 +314,7 @@ end
 --=== Spawn scripted biters
 
 
-function Public.spawn_group_of_scripted_biters(fraction_of_floating_pollution, minimum_avg_units, maximum_units)
+function Public.spawn_group_of_scripted_biters(fraction_of_floating_pollution, minimum_avg_units, maximum_units, wave_size_multiplier)
 	local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[Common.current_destination().surface_name]
 	local enemy_force_name = memory.enemy_force_name
@@ -317,7 +326,7 @@ function Public.spawn_group_of_scripted_biters(fraction_of_floating_pollution, m
     local spawner = Public.get_random_spawner(surface)
     if not spawner then return end
 
-    local units = Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spawner, fraction_of_floating_pollution, minimum_avg_units, maximum_units)
+    local units = Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spawner, fraction_of_floating_pollution, minimum_avg_units, maximum_units, 1/wave_size_multiplier)
 
     if (not units) or (not #units) or (#units == 0) then return end
 
@@ -332,7 +341,7 @@ function Public.spawn_group_of_scripted_biters(fraction_of_floating_pollution, m
 end
 
 
-function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spawner, fraction_of_floating_pollution, minimum_avg_units, maximum_units, enforce_type)
+function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spawner, fraction_of_floating_pollution, minimum_avg_units, maximum_units, unit_pollutioncost_multiplier, enforce_type)
     maximum_units = maximum_units or 256
 	
 	local memory = Memory.get_crew_memory()
@@ -345,8 +354,8 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 	local units_created_count = 0
 	local units_created = {}
 
-    local pollution_available = memory.floating_pollution
-    local budget = fraction_of_floating_pollution * pollution_available
+    local temp_floating_pollution = memory.floating_pollution
+    local budget = fraction_of_floating_pollution * temp_floating_pollution
     local initialbudget = budget
 
 	local base_pollution_cost_multiplier = 1
@@ -376,6 +385,8 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 		-- less biters:
 		base_pollution_cost_multiplier = base_pollution_cost_multiplier * 2.5
 	end
+
+	base_pollution_cost_multiplier = base_pollution_cost_multiplier * unit_pollutioncost_multiplier
 	
 	base_pollution_cost_multiplier = base_pollution_cost_multiplier * Balance.scripted_biters_pollution_cost_multiplier()
 
@@ -394,7 +405,7 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
             units_created[#units_created + 1] = biter
             memory.scripted_biters[biter.unit_number] = {entity = biter, created_at = game.tick}
 
-			pollution_available = pollution_available - unittype_pollutioncost
+			temp_floating_pollution = temp_floating_pollution - unittype_pollutioncost
 			budget = budget - unittype_pollutioncost
 			-- flow statistics should count the number of biters generated, without factors for extra expenditure:
 			game.pollution_statistics.on_flow(name2, - CoreData.biterPollutionValues[name2] * Balance.scripted_biters_pollution_cost_multiplier())
@@ -423,7 +434,7 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 			end
 		end
 
-        memory.floating_pollution = pollution_available
+        memory.floating_pollution = temp_floating_pollution
     end
 	
     return units_created
@@ -437,13 +448,13 @@ function Public.generate_main_attack_target()
     local destination = Common.current_destination()
     local target = nil
     local fractioncharged = 0
-    if (not destination.dynamic_data.rocketlaunched) and destination.dynamic_data.rocketsilo and destination.dynamic_data.rocketsilo.valid and destination.dynamic_data.rocketsilo.destructible and destination.dynamic_data.rocketsiloenergyconsumed and destination.dynamic_data.rocketsiloenergyneeded and destination.dynamic_data.rocketsiloenergyneeded > 0 then
+    if (not destination.dynamic_data.rocketlaunched) and destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid and destination.dynamic_data.rocketsilos[1].destructible and destination.dynamic_data.rocketsiloenergyconsumed and destination.dynamic_data.rocketsiloenergyneeded and destination.dynamic_data.rocketsiloenergyneeded > 0 then
         fractioncharged = destination.dynamic_data.rocketsiloenergyconsumed / destination.dynamic_data.rocketsiloenergyneeded
     end
     
     local rng = Math.random()
 	if rng <= fractioncharged^(1/2) then
-		target = destination.dynamic_data.rocketsilo
+		target = destination.dynamic_data.rocketsilos[1]
 	else
 		target = fake_boat_target()
 	end

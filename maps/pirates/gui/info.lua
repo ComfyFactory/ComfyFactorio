@@ -15,6 +15,7 @@ local Public = {}
 local window_name = 'info'
 
 
+local width = 430
 
 
 
@@ -32,7 +33,7 @@ function Public.toggle_window(player)
 	flow.selected_tab_index = 1
 
 	flow.style = 'frame_tabbed_pane'
-	flow.style.width = 410
+	flow.style.width = width
 	flow.style.height = 420
 
 	flow2 = Public.flow_add_info_tab(flow, 'Info')
@@ -94,7 +95,7 @@ function Public.flow_add_info_tab(flow, tab_name)
 		direction = 'vertical',
 	})
 	contents.style.vertically_stretchable = true
-	contents.style.width = 410
+	contents.style.width = width
 	contents.style.natural_height = 2000
 	contents.style.top_margin = -8
 	contents.style.bottom_margin = -12
@@ -195,11 +196,11 @@ function Public.update(player)
 	local flow2 = flow
 	-- warning, if you make these too small, it loses 'Click to dismiss.'
 	if flow2.selected_tab_index == 1 then
-		flow2.style.height = 390
+		flow2.style.height = 400
 	elseif flow2.selected_tab_index == 2 then
 		flow2.style.height = 320
 	elseif flow2.selected_tab_index == 3 then
-		flow2.style.height = 680
+		flow2.style.height = 630
 	elseif flow2.selected_tab_index == 4 then
 		flow2.style.height = 280
 	end

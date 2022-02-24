@@ -18,92 +18,92 @@ local Public = {}
 
 Public.main_shop_data_1 = {
 	new_boat_cutter = {
-		tooltip = 'Purchase a cutter for 3000 gold.',
+		tooltip = 'Purchase a cutter for 3000 stored fuel.',
 		what_you_get_sprite_buttons = {['utility/spawn_flag'] = false},
-		base_cost = {gold = 3000},
+		base_cost = {fuel = 3000},
 	},
 	new_boat_sloop_with_hold = {
-		tooltip = 'Purchase a sloop (with hold) for 3500 gold.',
+		tooltip = 'Purchase a sloop (with hold) for 3500 stored fuel.',
 		what_you_get_sprite_buttons = {['utility/spawn_flag'] = false},
-		base_cost = {gold = 3500},
+		base_cost = {fuel = 3500},
 	},
 	new_boat_cutter_with_hold = {
-		tooltip = 'Purchase a cutter (with hold) for 5000 gold.',
+		tooltip = 'Purchase a cutter (with hold) for 5000 stored fuel.',
 		what_you_get_sprite_buttons = {['utility/spawn_flag'] = false},
-		base_cost = {gold = 5000},
+		base_cost = {fuel = 5000},
 	},
-	buy_iron = {
-		tooltip = 'Purchase 500 iron plates for 250 gold.',
-		what_you_get_sprite_buttons = {['item/iron-plate'] = 250},
-		base_cost = {gold = 300},
-	},
-	buy_copper = {
-		tooltip = 'Purchase 500 copper plates for 250 gold.',
-		what_you_get_sprite_buttons = {['item/copper-plate'] = 250},
-		base_cost = {gold = 300},
-	},
+	-- buy_iron = {
+	-- 	tooltip = 'Purchase 250 iron plates for 300 stored fuel.',
+	-- 	what_you_get_sprite_buttons = {['item/iron-plate'] = 250},
+	-- 	base_cost = {fuel = 300},
+	-- },
+	-- buy_copper = {
+	-- 	tooltip = 'Purchase 250 copper plates for 300 stored fuel.',
+	-- 	what_you_get_sprite_buttons = {['item/copper-plate'] = 250},
+	-- 	base_cost = {fuel = 300},
+	-- },
 	-- sell_iron = {
-	-- 	tooltip = 'Purchase 200 gold for 2000 iron plates.',
+	-- 	tooltip = 'Purchase 200 stored fuel for 2000 iron plates.',
 	-- 	what_you_get_sprite_buttons = {['item/sulfur'] = 200},
 	-- 	base_cost = {iron_plates = 2000},
 	-- },
 	-- sell_copper = {
-	-- 	tooltip = 'Purchase 100 gold for 2500 copper plates',
+	-- 	tooltip = 'Purchase 100 stored fuel for 2500 copper plates',
 	-- 	what_you_get_sprite_buttons = {['item/sulfur'] = 100},
 	-- 	base_cost = {copper_plates = 2500},
 	-- },
 	[Upgrades.enum.MORE_POWER] = {
-		tooltip = 'Upgrade the ship\'s power for 2000 gold.',
+		tooltip = 'Upgrade the ship\'s power for 2000 stored fuel.',
 		what_you_get_sprite_buttons = {['utility/status_working'] = false},
-		base_cost = {gold = 2000},
+		base_cost = {fuel = 2000},
 	},
 	[Upgrades.enum.EXTRA_HOLD] = {
-		tooltip = 'Upgrade the ship\'s hold for 4000 gold.',
+		tooltip = 'Upgrade the ship\'s hold for 4000 stored fuel.',
 		what_you_get_sprite_buttons = {['item/steel-chest'] = false},
-		base_cost = {gold = 4000},
+		base_cost = {fuel = 4000},
 	},
 	[Upgrades.enum.ROCKETS_FOR_SALE] = {
-		tooltip = 'Unlock rockets for sale at covered-up markets, for 4000 gold.',
+		tooltip = 'Unlock rockets for sale at covered-up markets, for 4000 stored fuel.',
 		what_you_get_sprite_buttons = {['item/rocket-launcher'] = false},
-		base_cost = {gold = 4000},
+		base_cost = {fuel = 4000},
 	},
 	[Upgrades.enum.UNLOCK_MERCHANTS] = {
-		tooltip = 'Unlock merchant ships for 5000 gold.',
+		tooltip = 'Unlock merchant ships for 5000 stored fuel.',
 		what_you_get_sprite_buttons = {['entity/market'] = false},
-		base_cost = {gold = 5000},
+		base_cost = {fuel = 5000},
 	},
 }
 
 Public.main_shop_data_2 = {
 	rail_signal = {
-		tooltip = '100 signals to steer the boat for 159 gold.',
+		tooltip = "100 signals, used to steer the boat once space in the Crow's Nest View.",
 		what_you_get_sprite_buttons = {['item/rail-signal'] = 100},
-		base_cost = {gold = 150},
+		base_cost = {coins = 200},
 	},
 	artillery_shell = {
-		tooltip = '10 cannon shells for 1500 gold.',
+		tooltip = '10 cannon shells.',
 		what_you_get_sprite_buttons = {['item/artillery-shell'] = 10},
-		base_cost = {gold = 1500},
+		base_cost = {coins = 1500, fuel = 500},
 	},
 	artillery_remote = {
-		tooltip = 'An artillery targeting remote for 2000 gold.',
+		tooltip = 'An artillery targeting remote.',
 		what_you_get_sprite_buttons = {['item/artillery-targeting-remote'] = 1},
-		base_cost = {gold = 2000},
+		base_cost = {coins = 15000, fuel = 2000},
 	},
-	extra_time = {
-		tooltip = 'Relax at sea for an extra minute for 50 gold. (Increases the next destination\'s loading time.)',
-		what_you_get_sprite_buttons = {['utility/time_editor_icon'] = 60},
-		base_cost = {gold = 50},
-	},
+	-- extra_time = {
+	-- 	tooltip = 'Relax at sea for an extra minute for 50 stored fuel. (Increases the next destination\'s loading time.)',
+	-- 	what_you_get_sprite_buttons = {['utility/time_editor_icon'] = 60},
+	-- 	base_cost = {fuel = 50},
+	-- },
 	-- buy_fast_loader = {
-	-- 	tooltip = 'A fast loader for 500 gold.',
+	-- 	tooltip = 'A fast loader for 500 stored fuel.',
 	-- 	what_you_get_sprite_buttons = {['item/fast-loader'] = 1},
-	-- 	base_cost = {gold = 500},
+	-- 	base_cost = {fuel = 500},
 	-- },
 	uranium_ore = {
-		tooltip = '10 green rocks for 800 gold.',
+		tooltip = '10 green rocks of unknown origin.',
 		what_you_get_sprite_buttons = {['item/uranium-238'] = 10},
-		base_cost = {gold = 800},
+		base_cost = {coins = 200, fuel = 800},
 	},
 }
 
@@ -117,7 +117,7 @@ function Public.initialise_main_shop()
 		rail_signal = true,
 		artillery_shell = true,
 		artillery_remote = true,
-		extra_time = true,
+		-- extra_time = true,
 		new_boat_sloop_with_hold = false,
 		new_boat_cutter_with_hold = false,
 		new_boat_cutter = false,
@@ -135,9 +135,9 @@ function Public.main_shop_try_purchase(name)
 	local trade_data = shop_data_1[name] or shop_data_2[name]
 	if not trade_data then return end
 
-	local gold = memory.gold
+	local stored_fuel = memory.stored_fuel
 	local captain_index = memory.playerindex_captain
-	if not (gold and captain_index) then return end
+	if not (stored_fuel and captain_index) then return end
 	local captain = game.players[captain_index]
 	if not Common.validate_player_and_character(captain) then return end
 	local captain_inv = captain.get_inventory(defines.inventory.character_main)
@@ -148,9 +148,11 @@ function Public.main_shop_try_purchase(name)
 	local can_buy = true
 	-- local rate_limit_ok = not (memory.mainshop_rate_limit_ticker and memory.mainshop_rate_limit_ticker > 0)
 	local rate_limit_ok = true
-	local enough_gold = true
+	local enough_fuel = true
 	local enough_iron_plates = true
+	local enough_coins = true
 	local enough_copper_plates = true
+	local coins_got = nil
 	local iron_plates_got = nil
 	local copper_plates_got = nil
 	-- local able_to_buy_boats = memory.boat.state == Boats.enum_state.DOCKED --disabled for now
@@ -158,8 +160,11 @@ function Public.main_shop_try_purchase(name)
 	-- local able_to_buy_boats = (memory.boat.state == Boats.enum_state.DOCKED or memory.boat.state == Boats.enum_state.APPROACHING) --problem with this if you buy whilst approaching, the original one no longer moves
 	
 	for k, v in pairs(trade_data.base_cost) do
-		if k == 'gold' then
-			enough_gold = (gold >= v * multiplier)
+		if k == 'fuel' then
+			enough_fuel = (stored_fuel >= v * multiplier)
+		elseif k == 'coins' then
+			coins_got = captain_inv.get_item_count('coin')
+			enough_coins = coins_got >= v * multiplier
 		elseif k == 'iron_plates' then
 			iron_plates_got = captain_inv.get_item_count('iron-plate')
 			enough_iron_plates = iron_plates_got >= v * multiplier
@@ -169,7 +174,7 @@ function Public.main_shop_try_purchase(name)
 		end
 	end
 
-	can_buy = rate_limit_ok and enough_gold and enough_iron_plates and enough_copper_plates
+	can_buy = rate_limit_ok and enough_coins and enough_fuel and enough_iron_plates and enough_copper_plates
 
 	if name == 'new_boat_sloop_with_hold' or name == 'new_boat_cutter_with_hold' or name == 'new_boat_cutter' then can_buy = can_buy and able_to_buy_boats end
 
@@ -178,15 +183,16 @@ function Public.main_shop_try_purchase(name)
 
 	if can_buy then
 		for k, v in pairs(trade_data.base_cost) do
-			if k == 'gold' then
-				memory.gold = memory.gold - v * multiplier
+			if k == 'fuel' then
+				memory.stored_fuel = memory.stored_fuel - v * multiplier
+			elseif k == 'coins' then
+				captain_inv.remove{name="coin", count=v * multiplier}
 			elseif k == 'iron_plates' then
 				captain_inv.remove{name="iron-plate", count=v * multiplier}
 			elseif k == 'copper_plates' then
 				captain_inv.remove{name="copper-plate", count=v * multiplier}
 			end
 		end
-
 
 		local force = game.forces[memory.force_name]
 		if not (force and force.valid) then return end
@@ -204,7 +210,7 @@ function Public.main_shop_try_purchase(name)
 			else
 				Common.notify_player(captain, string.format('Can\'t buy more time than this.', captain.name))
 				-- refund:
-				memory.gold = memory.gold + trade_data.base_cost.gold * multiplier
+				memory.stored_fuel = memory.stored_fuel + trade_data.base_cost.fuel * multiplier
 			end
 
 		elseif name == 'rail_signal' then
@@ -248,7 +254,7 @@ function Public.main_shop_try_purchase(name)
 
 		elseif name == 'sell_iron' then
 			gotamount = trade_data.what_you_get_sprite_buttons['item/sulfur']
-			Common.give(captain, {{name = 'gold', count = gotamount}})
+			Common.give(captain, {{name = 'fuel', count = gotamount}})
 			Common.notify_force_light(force,string.format('%s is selling iron...', captain.name))
 
 		elseif name == 'buy_iron' then
@@ -268,7 +274,7 @@ function Public.main_shop_try_purchase(name)
 
 		elseif name == 'sell_copper' then
 			gotamount = trade_data.what_you_get_sprite_buttons['item/sulfur']
-			Common.give(captain, {{name = 'gold', count = gotamount}})
+			Common.give(captain, {{name = 'fuel', count = gotamount}})
 			Common.notify_force_light(force,string.format('%s is selling copper...', captain.name))
 
 		end
@@ -280,8 +286,11 @@ function Public.main_shop_try_purchase(name)
 		if rate_limit_ok == false then
 			Common.notify_player(captain, 'Shop rate limit exceeded.')
 		end
-		if enough_gold == false then
-			Common.notify_player(captain, 'Not enough gold.')
+		if enough_fuel == false then
+			Common.notify_player(captain, 'Not enough stored fuel.')
+		end
+		if enough_coins == false then
+			Common.notify_player(captain, 'Not enough coins.')
 		end
 		if enough_iron_plates == false then
 			Common.notify_player(captain, 'Not enough iron plates.')
@@ -318,7 +327,7 @@ function Public.event_on_market_item_purchased(event)
 
 	-- Here - check for BARTER vs CLASS PURCHASE vs STATIC
 	-- Class purchase is purchase for 'nothing'
-	-- Static is purchase via gold
+	-- Static is purchase via fuel
 	-- Barter is otherwise
 	if type == 'nothing' then
 		local force = player.force
@@ -368,9 +377,9 @@ function Public.event_on_market_item_purchased(event)
 			if price[2] then
 				local fish = price[2].name
 				if fish == 'raw-fish' then fish = 'fish' end
-				Common.notify_force_light(player.force, player.name .. ' is trading away ' .. price[1].name .. ' and ' .. fish .. ' to get ' .. this_offer.offer.item .. '...')
+				Common.notify_force_light(player.force, player.name .. ' is trading away ' .. price[1].count .. ' ' .. price[1].name .. ' and ' .. fish .. ' to get ' .. this_offer.offer.item .. '...')
 			else
-				Common.notify_force_light(player.force, player.name .. ' is trading away ' .. price[1].name .. ' to get ' .. this_offer.offer.item .. '...')
+				Common.notify_force_light(player.force, player.name .. ' is trading away ' .. price[1].count .. ' ' .. price[1].name .. ' to get ' .. this_offer.offer.item .. '...')
 			end
 		end
 	end

@@ -33,6 +33,19 @@ local ShopMini = require 'maps.pirates.shop.minimarket'
 
 
 
+function Public.fuel_depletion_rate()
+	local memory = Memory.get_crew_memory()
+	local state = memory.boat.state
+
+	if state == Boats.enum_state.ATSEA_SAILING or state == Boats.enum_state.RETREATING or state == Boats.enum_state.APPROACHING or state == Boats.enum_state.LEAVING_DOCK then
+		return Balance.fuel_depletion_rate_sailing()
+	elseif state == Boats.enum_state.LANDED then
+		return Balance.fuel_depletion_rate_static()
+	else
+		return 0
+	end
+end
+
 
 
 function Public.set_off_from_starting_dock()
@@ -472,6 +485,8 @@ function Public.undock_from_dock()
 	memory.mainshop_availability_bools.new_boat_cutter = false
 	memory.mainshop_availability_bools.new_boat_cutter_with_hold = false
 	memory.mainshop_availability_bools.new_boat_sloop_with_hold = false
+
+	Crew.summon_crew()
 
 	local force = game.forces[memory.force_name]
 	if not (force and force.valid) then return end

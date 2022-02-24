@@ -19,7 +19,7 @@ local Public = {}
 
 
 
-function Public.free_position_1(x_fractional_offset, x_absolute_offset)
+function Public.silo_setup_position(x_fractional_offset, x_absolute_offset)
 	x_absolute_offset = x_absolute_offset or 0
 	x_fractional_offset = x_fractional_offset or 0
 	local memory = Memory.get_crew_memory()
@@ -28,6 +28,8 @@ function Public.free_position_1(x_fractional_offset, x_absolute_offset)
 	local boatposition = memory.boat.position
 	local island_center = destination.static_params.islandcenter_position
 	local difficulty_offset = (1 - Common.difficulty()) * 20 or 0
+
+	local silo_count = Balance.silo_count()
 
 	local p = {
 		x = Math.min(
@@ -42,17 +44,17 @@ function Public.free_position_1(x_fractional_offset, x_absolute_offset)
 	local p2 = nil
 	while p_ret == nil and tries < 80 do
 		p2 = {x = p.x + Math.random(-30, 0), y = p.y + Math.random(-70, 70)}
-		if p2.x >= boatposition.x+5 and Common.can_place_silo_setup(surface, p2) then p_ret = p2 end
+		if p2.x >= boatposition.x+5 and Common.can_place_silo_setup(surface, p2, silo_count) then p_ret = p2 end
 		tries = tries + 1
 	end
 	while p_ret == nil and tries < 240 do
 		p2 = {x = p.x + Math.random(-60, 10), y = p.y + Math.random(-90, 90)}
-		if p2.x >= boatposition.x+5 and Common.can_place_silo_setup(surface, p2) then p_ret = p2 end
+		if p2.x >= boatposition.x+5 and Common.can_place_silo_setup(surface, p2, silo_count) then p_ret = p2 end
 		tries = tries + 1
 	end
 	while p_ret == nil and tries < 560 do
 		p2 = {x = p.x + Math.random(-90, 20), y = p.y + Math.random(-130, 130)}
-		if p2.x >= boatposition.x+5 and Common.can_place_silo_setup(surface, p2) then p_ret = p2 end
+		if p2.x >= boatposition.x+5 and Common.can_place_silo_setup(surface, p2, silo_count) then p_ret = p2 end
 		tries = tries + 1
 	end
 	if _DEBUG then
@@ -60,7 +62,7 @@ function Public.free_position_1(x_fractional_offset, x_absolute_offset)
 			log("No good position found after 500 tries")
 			p_ret = p
 		else
-			log(string.format("Position found after %f tries: %f, %f", tries, p_ret.x, p_ret.y))
+			log(string.format("Silo position generated after %f tries: %f, %f", tries, p_ret.x, p_ret.y))
 		end
 	end
 

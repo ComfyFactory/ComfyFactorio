@@ -267,6 +267,15 @@ function Public.toggle_window(player)
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
 
+	flow3 = flow2.add({
+		name = 'capn_take_coins',
+		type = 'button',
+		caption = 'Requisition Coins',
+	})
+	flow3.style.minimal_width = 95
+	flow3.style.font = 'default-bold'
+	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
+
 	--
 
 	GuiCommon.flow_add_close_button(flow, window_name .. '_piratebutton')
@@ -299,10 +308,17 @@ function Public.update(player)
 		if memory.spare_classes and Utils.contains(memory.spare_classes, c) and (not (player.controller_type == defines.controllers.spectator)) then
 			if (memory.playerindex_captain and player.index == memory.playerindex_captain) and memory.crewplayerindices and #memory.crewplayerindices > 1 then
 				if flow.members.body.members_listbox.selected_index ~= 0 and (not (memory.classes_table[tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])])) then
+					flow.spare_classes.body.assign_flow['selfassign_class_' .. c].visible = false
 					flow.spare_classes.body.assign_flow['assign_class_' .. c].visible = true
 					any_button = true
 				else
 					flow.spare_classes.body.assign_flow['assign_class_' .. c].visible = false
+					if (not memory.classes_table[player.index]) then
+						flow.spare_classes.body.assign_flow['selfassign_class_' .. c].visible = true
+						any_button = true
+					else
+						flow.spare_classes.body.assign_flow['selfassign_class_' .. c].visible = false
+					end
 				end
 			else
 				flow.spare_classes.body.assign_flow['assign_class_' .. c].visible = false
@@ -328,6 +344,7 @@ function Public.update(player)
 	flow.captain.body.capn_undock_normal.visible = memory.boat and memory.boat.state and ((memory.boat.state == Boats.enum_state.LANDED) or (memory.boat.state == Boats.enum_state.APPROACHING) or (memory.boat.state == Boats.enum_state.DOCKED))
 
 	flow.captain.body.capn_summon_crew.visible = false
+	flow.captain.body.capn_take_coins.visible = true
 	-- flow.captain.body.capn_summon_crew.visible = memory.boat and memory.boat.state and (memory.boat.state == Boats.enum_state.RETREATING or memory.boat.state == Boats.enum_state.LEAVING_DOCK)
 
 	flow.captain.body.capn_disband_are_you_sure.visible = memory.disband_are_you_sure_ticks and memory.disband_are_you_sure_ticks[player.index] and memory.disband_are_you_sure_ticks[player.index] > game.tick - 60*2
@@ -472,6 +489,14 @@ function Public.click(event)
 		--double check:
 		if (memory.playerindex_captain and player.index == memory.playerindex_captain) then
 			Crew.summon_crew()
+		end
+		return
+	end
+
+	if eventname == 'capn_take_coins' then
+		--double check:
+		if (memory.playerindex_captain and player.index == memory.playerindex_captain) then
+			Roles.captain_requisition_coins(memory.playerindex_captain)
 		end
 		return
 	end

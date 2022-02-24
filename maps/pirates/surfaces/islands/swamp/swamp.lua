@@ -175,8 +175,8 @@ function Public.break_rock(surface, p, entity_name)
 end
 
 
-function Public.generate_silo_position()
-	return Hunt.free_position_1()
+function Public.generate_silo_setup_position()
+	return Hunt.silo_setup_position()
 end
 
 

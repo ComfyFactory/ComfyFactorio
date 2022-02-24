@@ -289,13 +289,15 @@ function Public.update_boat_stored_resources()
 	if not input_chests then return end
 	
 	for i, chest in ipairs(input_chests) do
-		local inv = chest.get_inventory(defines.inventory.chest)
-		local contents = inv.get_contents()
-
-		local item_type = CoreData.cost_items[i].name
-		local count = contents[item_type] or 0
-
-		memory.boat.stored_resources[item_type] = count
+		if i>1 and CoreData.cost_items[i-1] then
+			local inv = chest.get_inventory(defines.inventory.chest)
+			local contents = inv.get_contents()
+	
+			local item_type = CoreData.cost_items[i-1].name
+			local count = contents[item_type] or 0
+	
+			memory.boat.stored_resources[item_type] = count
+		end
 	end
 end
 
@@ -311,12 +313,14 @@ function Public.spend_stored_resources(to_spend)
 	if not input_chests then return end
 	
 	for i, chest in ipairs(input_chests) do
-		local inv = chest.get_inventory(defines.inventory.chest)
-		local item_type = CoreData.cost_items[i].name
-		local to_spend_i = to_spend[item_type] or 0
-
-		if to_spend_i > 0 then
-			inv.remove{name = item_type, count = to_spend_i}
+		if i>1 then
+			local inv = chest.get_inventory(defines.inventory.chest)
+			local item_type = CoreData.cost_items[i-1].name
+			local to_spend_i = to_spend[item_type] or 0
+	
+			if to_spend_i > 0 then
+				inv.remove{name = item_type, count = to_spend_i}
+			end
 		end
 	end
 
@@ -470,13 +474,16 @@ function Public.destroy_decoratives_in_area(surface, area, offset)
 	surface.destroy_decoratives{area = area2}
 end
 
-function Public.can_place_silo_setup(surface, p, build_check_type_name)
+function Public.can_place_silo_setup(surface, p, silo_count, build_check_type_name)
 
 	Public.ensure_chunks_at(surface, p, 0.2)
 
 	build_check_type_name = build_check_type_name or 'manual'
 	local build_check_type = defines.build_check_type[build_check_type_name]
-	local s = surface.can_place_entity{name = 'rocket-silo', position = p, build_check_type = build_check_type}
+	local s = true
+	for i=1,silo_count do
+		s = surface.can_place_entity{name = 'rocket-silo', position = {p.x + 9 * (i-1), p.y}, build_check_type = build_check_type} and s
+	end
 
 	return s
 end

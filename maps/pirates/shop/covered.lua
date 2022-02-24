@@ -29,9 +29,9 @@ Public.offers_loaders = {
 }
 
 Public.offers_default = {
-	{price = {{'coin', 1000}}, offer = {type = 'give-item', item = 'copper-plate', count = 200}},
-	{price = {{'coin', 1000}}, offer = {type = 'give-item', item = 'iron-plate', count = 200}},
-	{price = {{'coin', 1000}}, offer = {type = 'give-item', item = 'crude-oil-barrel', count = 8}},
+	{price = {{'coin', 1000}}, offer = {type = 'give-item', item = 'copper-plate', count = 250}},
+	{price = {{'coin', 1000}}, offer = {type = 'give-item', item = 'iron-plate', count = 250}},
+	{price = {{'coin', 1000}}, offer = {type = 'give-item', item = 'crude-oil-barrel', count = 10}},
 }
 
 Public.offers_rockets = {

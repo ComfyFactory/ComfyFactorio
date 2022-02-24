@@ -97,7 +97,7 @@ function Public.reset_crew_memory(id) --also serves as a dev reference of memory
 	memory.overworldy = nil
 	memory.mapbeingloadeddestination_index = nil
 	memory.loadingticks = nil
-	memory.gold = nil
+	memory.stored_fuel = nil
 	memory.spawnpoint = nil
 
 	memory.scripted_biters = nil

@@ -54,7 +54,7 @@ Public.noiseparams = {
 		type = 'forest1',
 		normalised = true,
 		params = {
-			{upperscale = 90, amplitude = 1},
+			{upperscale = 75, amplitude = 1},
 			-- {upperscale = 0, amplitude = 0.15},
 		},
 	},

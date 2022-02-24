@@ -17,6 +17,7 @@ local enum = {
 	MERCHANT = 5,
 	SHORESMAN = 6,
 	BOATSWAIN = 7,
+	PROSPECTOR = 8,
 }
 Public.enum = enum
 
@@ -28,6 +29,7 @@ Public.Class_List = {
 	enum.MERCHANT,
 	enum.SHORESMAN,
 	enum.BOATSWAIN,
+	enum.PROSPECTOR,
 }
 
 Public.display_form = {
@@ -38,6 +40,7 @@ Public.display_form = {
 	[enum.MERCHANT] = 'Merchant',
 	[enum.SHORESMAN] = 'Shoresman',
 	[enum.BOATSWAIN] = 'Boatswain',
+	[enum.PROSPECTOR] = 'Prospector',
 }
 Public.explanation = {
 	[enum.DECKHAND] = 'They move faster and generate iron ore for the ship whilst onboard above deck, but move slower offboard.',
@@ -47,6 +50,7 @@ Public.explanation = {
 	[enum.MERCHANT] = 'They generate 40 coins per league, but they are frail.',
 	[enum.SHORESMAN] = 'They move slightly faster and generate iron ore for the ship whilst offboard, but move slower onboard.',
 	[enum.BOATSWAIN] = 'They move faster and generate lots of ore for the ship whilst onboard below deck, but move slower offboard.',
+	[enum.PROSPECTOR] = 'They find more resources when handmining ore.',
 }
 
 return Public

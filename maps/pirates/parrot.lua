@@ -41,7 +41,7 @@ Public.framecounts = {
 -- 	"Resources granted to the ship appear in the captain's cabin!",
 -- 	"On each island after the first, the ship generates ore!",
 -- 	"Charge the silo to launch a rocket!",
--- 	"Launching rockets makes gold and coin!",
+-- 	"Launching rockets makes fuel and coin!",
 -- 	"Charging silos makes pollution and evo!",
 -- 	"The number of non-afk crewmembers affects pollution, evo and maximum stay time!",
 -- 	"Once a silo has launched a rocket, biters will ignore it!",
@@ -57,13 +57,9 @@ function Public.parrot_0()
 	local memory = Memory.get_crew_memory()
 	Common.parrot_speak(game.forces[memory.force_name], 'We can wait here for as long as we like.')
 end
-function Public.parrot_40()
-	local memory = Memory.get_crew_memory()
-	Common.parrot_speak(game.forces[memory.force_name], 'Market! Market!')
-end
 function Public.parrot_80()
 	local memory = Memory.get_crew_memory()
-	Common.parrot_speak(game.forces[memory.force_name], 'Let\'s build out the ship!')
+	Common.parrot_speak(game.forces[memory.force_name], 'Let\'s build out the ship?')
 end
 function Public.parrot_boats_warning()
 	local memory = Memory.get_crew_memory()

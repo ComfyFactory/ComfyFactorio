@@ -35,10 +35,11 @@ local function render_silo_hp()
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 	local surface = game.surfaces[destination.surface_name]
+	if not (destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid) then return end
 	destination.dynamic_data.rocketsilohptext = rendering.draw_text{
 		text = 'HP: ' .. destination.dynamic_data.rocketsilohp .. ' / ' .. destination.dynamic_data.rocketsilomaxhp,
 		surface = surface,
-		target = destination.dynamic_data.rocketsilo,
+		target = destination.dynamic_data.rocketsilos[1],
 		target_offset = {0, 4.5},
 		color = {0, 255, 0},
 		scale = 1.20,
@@ -276,18 +277,32 @@ function Public.spawn_silo_setup()
 	local subtype = destination.subtype
 	local force = game.forces[memory.force_name]
 
-	local p_silo = Public[subtype].generate_silo_position()
+	local p_silo = Public[subtype].generate_silo_setup_position()
 	-- log(string.format("placing silo at x=%f, y = %f", p_silo.x, p_silo.y))
 
-	local silo = surface.create_entity({name = 'rocket-silo', position = p_silo, force = force, create_build_effect_smoke = false})
-	if silo and silo.valid then
-		destination.dynamic_data.rocketsilo = silo
-		silo.minable = false
-		silo.rotatable = false
-		silo.operable = false
-		silo.auto_launch = true
-		local modulesinv = silo.get_module_inventory()
-		modulesinv.insert{name = 'productivity-module-3', count = 4}
+	local silo_count = Balance.silo_count()
+	if not (silo_count and silo_count >= 1) then return end
+
+	if _DEBUG then
+		if silo_count >= 2 then game.print('silo count: ' .. silo_count) end
+	end
+
+	for i=1,silo_count do
+		local silo = surface.create_entity({name = 'rocket-silo', position = {p_silo.x + 9*(i-1), p_silo.y}, force = force, create_build_effect_smoke = false})
+		if silo and silo.valid then
+			if not destination.dynamic_data.rocketsilos then destination.dynamic_data.rocketsilos = {} end
+			destination.dynamic_data.rocketsilos[#destination.dynamic_data.rocketsilos + 1]= silo
+			silo.minable = false
+			silo.rotatable = false
+			silo.operable = false
+			if i == 1 then
+				silo.auto_launch = true
+			else
+				silo.destructible = false
+			end
+			local modulesinv = silo.get_module_inventory()
+			modulesinv.insert{name = 'productivity-module-3', count = 4}
+		end
 	end
 
 	-- local substation = surface.create_entity({name = 'substation', position = {x = p_silo.x - 8.5, y = p_silo.y - 0.5}, force = force, create_build_effect_smoke = false})

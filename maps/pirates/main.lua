@@ -144,6 +144,10 @@ local function crew_tick()
 		TickFunctions.silo_update(30)
 	end
 
+	if tick % 60 == 0 then
+		TickFunctions.ship_deplete_fuel(60)
+	end
+
 	if tick % 10 == 0 then
 		TickFunctions.pick_up_tick(10)
 	end

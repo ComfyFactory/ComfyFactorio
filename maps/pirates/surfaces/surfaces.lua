@@ -105,7 +105,7 @@ function Public.on_surface_generation(destination)
 
 		destination.dynamic_data.rocketsilomaxhp = Balance.silo_max_hp
 		destination.dynamic_data.rocketsilohp = Balance.silo_max_hp
-		destination.dynamic_data.rocketsilonevercharged = true
+		destination.dynamic_data.rocketsilochargedbools = {}
 		destination.dynamic_data.rocketsiloenergyconsumed = 0
 		destination.dynamic_data.rocketsiloenergyconsumedwithinlasthalfsecond = 0
 		destination.dynamic_data.energychargedinsilosincelastcheck = 0
@@ -211,7 +211,7 @@ function Public.destination_on_arrival(destination)
 	if destination.type == enum.ISLAND then
 
 		destination.dynamic_data.rocketsiloenergyneeded = Balance.silo_energy_needed_MJ() * 1000000
-		destination.dynamic_data.rocketgoldreward = Balance.launch_gold_reward()
+		destination.dynamic_data.rocketcoalreward = Balance.launch_fuel_reward()
 
 		if destination.subtype == Islands.enum.RADIOACTIVE then
 			destination.dynamic_data.time_remaining = -1
@@ -317,8 +317,6 @@ function Public.destination_on_crewboat_hits_shore(destination)
 
 		if memory.overworldx == 0 then
 			Parrot.parrot_0()
-		elseif memory.overworldx == 40 then
-			Parrot.parrot_40()
 		elseif memory.overworldx == 80 then
 			Parrot.parrot_80()
 		end

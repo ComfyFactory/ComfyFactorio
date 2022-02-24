@@ -16,7 +16,7 @@ local Boats = require 'maps.pirates.structures.boats.boats'
 local GuiCommon = require 'maps.pirates.gui.common'
 local Public = {}
 
-local window_name = 'shop'
+local window_name = 'fuel'
 
 function Public.toggle_window(player)
 	local flow, flow2, flow3, flow4, flow5, flow6
@@ -27,7 +27,7 @@ function Public.toggle_window(player)
 	if player.gui.screen[window_name .. '_piratewindow'] then player.gui.screen[window_name .. '_piratewindow'].destroy() return end
 	
 	flow = GuiCommon.new_window(player, window_name)
-	flow.caption = 'Shop'
+	flow.caption = 'Main Store'
 
 	
 	flow2 = flow.add({
@@ -60,7 +60,7 @@ function Public.toggle_window(player)
 	flow3 = flow2.add({
 		name = 'tospend',
 		type = 'sprite-button',
-		sprite = 'item/sulfur',
+		sprite = 'item/coin',
 		index = 1,
 		enabled = false,
 	})
@@ -86,13 +86,27 @@ function Public.update(player)
 
 	--*** WHAT TO SHOW ***--
 
-	if memory.gold then
-		flow.close_button_flow.hflow.tospend.number = memory.gold
-		flow.close_button_flow.hflow.tospend.tooltip = string.format('The crew has %01d gold.', memory.gold)
+	-- if memory.stored_fuel then
+	-- 	flow.close_button_flow.hflow.tospend.number = memory.stored_fuel
+	-- 	flow.close_button_flow.hflow.tospend.tooltip = string.format('The crew has %01d stored coal.', memory.stored_fuel)
+	-- else
+	-- 	flow.close_button_flow.hflow.tospend.number = 0
+	-- 	flow.close_button_flow.hflow.tospend.tooltip = string.format('The crew has %01d stored coal.', 0)
+	-- end
+
+	if (memory.playerindex_captain and player.index == memory.playerindex_captain) then
+		flow.close_button_flow.hflow.tospend.visible = true
+
+		local inv = player.get_inventory(defines.inventory.character_main)
+		local coin_amount = inv.get_item_count('coin') or 0
+
+		flow.close_button_flow.hflow.tospend.number = coin_amount
+		flow.close_button_flow.hflow.tospend.tooltip = string.format("You're holding " .. Utils.bignumber_abbrevform2(coin_amount) .. " coins.")
 	else
-		flow.close_button_flow.hflow.tospend.number = 0
-		flow.close_button_flow.hflow.tospend.tooltip = string.format('The crew has %01d gold.', 0)
+		flow.close_button_flow.hflow.tospend.visible = false
 	end
+
+
 
 	if memory.crewstatus == Crew.enum.ADVENTURING then
 		flow.trades.visible = true

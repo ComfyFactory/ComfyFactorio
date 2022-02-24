@@ -65,10 +65,10 @@ function Public.generate_overworld_destination(p)
 			type = Surfaces.enum.ISLAND
 			subtype = Surfaces.Island.enum.FIRST
 			if _DEBUG then
-				-- Edit this to force a type/subtype in debug:
+				-- Edit these to force a type/subtype in debug:
 
-				-- subtype = Surfaces.Island.enum.WALKWAYS
-				-- type = Surfaces.enum.DOCK
+				subtype = Surfaces.Island.enum.RED_DESERT
+				-- type = Surfaces.enum.ISLAND
 				-- subtype = nil
 			end
 		elseif macrop.y == 1 then
@@ -164,7 +164,7 @@ function Public.generate_overworld_destination(p)
 
 		static_params.scheduled_raft_raids = scheduled_raft_raids
 
-		local normal_costitems = {'small-lamp', 'engine-unit', 'advanced-circuit', 'electric-engine-unit'}
+		local normal_costitems = {'small-lamp', 'engine-unit', 'advanced-circuit'}
 		local base_cost_0 = {
 			['small-lamp'] = (macrop.x-2)*20,
 		}
@@ -181,13 +181,13 @@ function Public.generate_overworld_destination(p)
 			['small-lamp'] = (macrop.x-2)*20,
 			['engine-unit'] = (macrop.x-7)*15,
 			['advanced-circuit'] = (macrop.x-10)*10,
-			['electric-engine-unit'] = (macrop.x-16)*10,
+			-- ['electric-engine-unit'] = (macrop.x-16)*10,
 		}
 		local base_cost_4 = {
 			['small-lamp'] = (macrop.x-2)*20,
 			['engine-unit'] = (macrop.x-7)*15,
 			['advanced-circuit'] = (macrop.x-10)*10,
-			['electric-engine-unit'] = (macrop.x-16)*10,
+			-- ['electric-engine-unit'] = (macrop.x-16)*10,
 		}
 		if macrop.x <= 4 then
 			cost_to_leave = nil
@@ -199,7 +199,7 @@ function Public.generate_overworld_destination(p)
 			cost_to_leave = {
 				['small-lamp'] = (macrop.x-2)*20,
 				['engine-unit'] = (macrop.x-7)*15,
-				['electric-engine-unit'] = 2,
+				-- ['electric-engine-unit'] = 2,
 			}
 		elseif macrop.x <= 19 then
 			cost_to_leave = base_cost_2
@@ -233,17 +233,21 @@ function Public.generate_overworld_destination(p)
 		local rngsum = 0
 		local rngcount = 0
 		for k, _ in pairs(base_ores) do
-			local rng = 2*Math.random()
-			-- local rng = 1 + ((2*Math.random() - 1)^3) --lower variances
-			rngs[k] = rng
-			rngsum = rngsum + rng
-			rngcount = rngcount + 1
+			if k ~= 'coal' then
+				local rng = 2*Math.random()
+				-- local rng = 1 + ((2*Math.random() - 1)^3) --lower variances
+				rngs[k] = rng
+				rngsum = rngsum + rng
+				rngcount = rngcount + 1
+			end
 		end
 
 		local abstract_ore_amounts = {}
 		for k, v in pairs(base_ores) do
-			local rng = rngs[k] / (rngsum/rngcount) --average of 1
-			if macrop.x == 0 then rng = 1 end
+			local rng = 1
+			if not (k == 'coal' or macrop.x == 0) then
+				rng = rngs[k] / (rngsum/rngcount) --average of 1
+			end
 			abstract_ore_amounts[k] = ores_multiplier * v * rng
 		end
 		static_params.abstract_ore_amounts = abstract_ore_amounts
@@ -318,7 +322,7 @@ function Public.generate_overworld_destination(p)
 		local y = dest.overworld_position.y
 		if dest.static_params.upgrade_for_sale then
 			local display_form = Upgrades.crowsnest_display_form[dest.static_params.upgrade_for_sale]
-			local price = Shop.main_shop_data_1[dest.static_params.upgrade_for_sale].base_cost.gold
+			local price = Shop.main_shop_data_1[dest.static_params.upgrade_for_sale].base_cost.fuel
 			dest.dynamic_data.crowsnest_rendering_1 = rendering.draw_text{
 				text = display_form .. ': ' .. price,
 				surface = surface,
@@ -402,7 +406,7 @@ function Public.ensure_lane_generated_up_to(lane_yvalue, x)
 				if dest.static_params.upgrade_for_sale then
 					if dest.dynamic_data.crowsnest_rendering_1 and rendering.is_valid(dest.dynamic_data.crowsnest_rendering_1) then
 						local display_form = Upgrades.crowsnest_display_form[dest.static_params.upgrade_for_sale]
-						local price = Shop.main_shop_data_1[dest.static_params.upgrade_for_sale].base_cost.gold
+						local price = Shop.main_shop_data_1[dest.static_params.upgrade_for_sale].base_cost.fuel
 						rendering.set_text(dest.dynamic_data.crowsnest_rendering_1, display_form .. ': ' .. price)
 					end
 				end
@@ -540,7 +544,7 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 			local speedrun_time_str = Utils.time_longform(speedrun_time)
 			memory.game_won = true
 			-- memory.crew_disband_tick = game.tick + 1200
-			local message = '[' .. memory.name .. '] Victory, on v' .. CoreData.version_string .. ', ' .. CoreData.difficulty_options[memory.difficulty_option].text .. ', cap ' .. CoreData.capacity_options[memory.capacity_option].text3 .. '. Playtime: '
+			local message = '[' .. memory.name .. '] Victory, on v' .. CoreData.version_string .. ', ' .. CoreData.difficulty_options[memory.difficulty_option].text .. ', cap ' .. CoreData.capacity_options[memory.capacity_option].text3 .. '. Playtime after 1st island: '
 			Server.to_discord_embed_raw(CoreData.comfy_emojis.goldenobese .. message .. speedrun_time_str)
 			game.play_sound{path='utility/game_won', volume_modifier=0.9}
 			Common.notify_game(message .. '[font=default-large-semibold]' .. speedrun_time_str .. '[/font]', CoreData.colors.notify_victory)

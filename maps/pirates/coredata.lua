@@ -5,8 +5,8 @@ local inspect = require 'utils.inspect'.inspect
 local Public = {}
 
 Public.scenario_id_name = 'pirates'
-Public.version_string = '1.0.2.1'
-Public.version_float = 1.021
+Public.version_string = '1.0.3.0'
+Public.version_float = 1.030
 
 
 Public.victory_x = 1000
@@ -126,7 +126,7 @@ Public.cost_items = {
 	{name = 'small-lamp', display_name = 'Small lamp', sprite_name = 'item/small-lamp', color={r=255,g=0,b=0}},
 	{name = 'engine-unit', display_name = 'Engine unit', sprite_name = 'item/engine-unit', color={r=255,g=255,b=0}},
 	{name = 'advanced-circuit', display_name = 'Advanced circuit', sprite_name = 'item/advanced-circuit', color={r=0,g=0,b=255}},
-	{name = 'electric-engine-unit', display_name = 'Electric engine unit', sprite_name = 'item/electric-engine-unit', color={r=0,g=255,b=255}},
+	-- {name = 'electric-engine-unit', display_name = 'Electric engine unit', sprite_name = 'item/electric-engine-unit', color={r=0,g=255,b=255}},
 	{name = 'uranium-235', display_name = 'Uranium-235', sprite_name = 'item/uranium-235', color={r=0,g=255,b=0}},
 }
 

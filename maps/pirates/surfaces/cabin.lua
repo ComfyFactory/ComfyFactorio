@@ -123,9 +123,12 @@ function Public.create_cabin_surface()
 			local name = 'express-splitter'
 			local p = {x = splitter.x, y = splitter.y}
 			local priority, filter
-			if splitter.type <= 5 then
+			if splitter.type == 1 then
 				priority = 'right'
-				filter = game.item_prototypes[CoreData.cost_items[splitter.type].name]
+				filter = 'coal'
+			elseif splitter.type <= 5 then
+				priority = 'right'
+				filter = game.item_prototypes[CoreData.cost_items[splitter.type - 1].name]
 			elseif splitter.type == 6 then
 				priority = 'left'
 			elseif splitter.type == 7 then
