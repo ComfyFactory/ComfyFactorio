@@ -53,7 +53,9 @@ local disabled_for_deconstruction = {
 local function enable_hard_rooms(position, surface_index)
     dungeon_table = DungeonsTable.get_dungeontable()
     floor = surface_index - dungeon_table.original_surface_index
-    floor_mindist = 200 - floor * 10
+    -- can make it out to ~200 before hitting the "must explore more" limit
+    -- 140 puts hard rooms halfway between the only dirtlands and the edge
+    floor_mindist = 140 - floor * 10
     if floor_mindist < 80 then -- all dirtlands within this
        return true
     end
@@ -459,12 +461,12 @@ local function on_player_mined_entity(event)
     if not entity.valid then
         return
     end
-    local player = game.players[event.player_index]
     if entity.name == 'rock-big' then
         local size = dungeontable.surface_size[entity.surface.index]
         if size < math.abs(entity.position.y) or size < math.abs(entity.position.x) then
             entity.surface.create_entity({name = entity.name, position = entity.position})
             entity.destroy()
+	    local player = game.players[event.player_index]
             RPG.gain_xp(player, -10)
             Alert.alert_player_warning(player, 30, {'dungeons_tiered.too_small'}, {r = 0.98, g = 0.22, b = 0})
             event.buffer.clear()
@@ -766,7 +768,6 @@ local function on_init()
     game.map_settings.enemy_expansion.settler_group_min_size = 16
     game.map_settings.enemy_expansion.max_expansion_distance = 16
     game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 0.50
-    game.difficulty_settings.technology_price_multiplier = 3
 
     dungeontable.tiered = true
     dungeontable.depth[surface.index] = 0
