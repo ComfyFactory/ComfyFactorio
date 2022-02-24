@@ -1,8 +1,9 @@
-local Misc = require 'commands.misc'
+local Misc = require 'utils.commands.misc'
 local Event = require 'utils.event'
 local Global = require 'utils.global'
 local ComfyGui = require 'comfy_panel.main'
 local Gui = require 'utils.gui'
+local SpamProtection = require 'utils.spam_protection'
 
 local this = {
     players = {},
@@ -208,6 +209,10 @@ end
 Gui.on_click(
     clear_corpse_button_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Clear Corpse')
+        if is_spamming then
+            return
+        end
         Misc.clear_corpses(event)
     end
 )

@@ -148,18 +148,19 @@ local function unearthing_worm(surface, position)
         evolution_index = 1
     end
 
-    for t = 1, 330, 1 do
-        if not traps[game.tick + t] then
-            traps[game.tick + t] = {}
+    for t = 4, 340, 4 do
+        local tick = game.tick - (game.tick % 4) + t
+        if not traps[tick] then
+            traps[tick] = {}
         end
 
-        traps[game.tick + t][#traps[game.tick + t] + 1] = {
+        traps[tick][#traps[tick] + 1] = {
             callback = 'create_particles',
             params = {surface, {x = position.x, y = position.y}, math.ceil(t * 0.05)}
         }
 
-        if t == 330 then
-            traps[game.tick + t][#traps[game.tick + t] + 1] = {
+        if t == 340 then
+            traps[tick][#traps[tick] + 1] = {
                 callback = 'spawn_worm',
                 params = {surface, {x = position.x, y = position.y}, evolution_index}
             }
@@ -183,6 +184,6 @@ local function on_tick()
     traps[game.tick] = nil
 end
 
-Event.add(defines.events.on_tick, on_tick)
+Event.on_nth_tick(4, on_tick)
 
 return unearthing_worm

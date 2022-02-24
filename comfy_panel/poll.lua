@@ -6,6 +6,7 @@ local Server = require 'utils.server'
 local Tabs = require 'comfy_panel.main'
 local session = require 'utils.datastore.session_data'
 local Config = require 'comfy_panel.config'
+local SpamProtection = require 'utils.spam_protection'
 
 local Class = {}
 
@@ -391,14 +392,18 @@ local function remove_main_frame(main_frame, left, player)
 end
 
 local function toggle(event)
+    local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Toggle Poll')
+    if is_spamming then
+        return
+    end
+
     local left = event.player.gui.left
     local main_frame = left[main_frame_name]
 
     if main_frame then
         remove_main_frame(main_frame, left, event.player)
-        Tabs.comfy_panel_restore_left_gui(event.player)
     else
-        Tabs.comfy_panel_clear_left_gui(event.player)
+        Tabs.comfy_panel_clear_gui(event.player)
         draw_main_frame(left, event.player)
     end
 end
@@ -627,6 +632,10 @@ local function show_new_poll(poll_data)
 end
 
 local function create_poll(event)
+    local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Create Poll Confirm')
+    if is_spamming then
+        return
+    end
     local player = event.player
     local data = Gui.get_data(event.element)
 
@@ -700,6 +709,10 @@ local function update_vote(answer, direction)
 end
 
 local function vote(event)
+    local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Poll Vote')
+    if is_spamming then
+        return
+    end
     local player_index = event.player_index
     local voted_button = event.element
     local button_data = Gui.get_data(voted_button)
@@ -813,6 +826,10 @@ Gui.on_click(main_button_name, toggle)
 Gui.on_click(
     create_poll_button_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Create Poll')
+        if is_spamming then
+            return
+        end
         local player = event.player
         local left = player.gui.left
         local frame = left[create_poll_frame_name]
@@ -827,6 +844,10 @@ Gui.on_click(
 Gui.on_click(
     poll_view_edit_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Poll View Edit')
+        if is_spamming then
+            return
+        end
         local player = event.player
         local left = player.gui.left
         local frame = left[create_poll_frame_name]
@@ -855,7 +876,14 @@ Gui.on_value_changed(
 Gui.on_click(
     create_poll_delete_answer_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Create Poll Delete Answer')
+        if is_spamming then
+            return
+        end
         local button_data = Gui.get_data(event.element)
+        if not button_data then
+            return
+        end
         local data = button_data.data
 
         if not data then
@@ -870,6 +898,10 @@ Gui.on_click(
 Gui.on_click(
     create_poll_label_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Create Poll Label Name')
+        if is_spamming then
+            return
+        end
         local textfield = Gui.get_data(event.element)
         if not textfield then
             return
@@ -916,9 +948,17 @@ Gui.on_text_changed(
 Gui.on_click(
     create_poll_add_answer_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Create Poll Add Answer')
+        if is_spamming then
+            return
+        end
         local data = Gui.get_data(event.element)
 
         if not data then
+            return
+        end
+
+        if data and #data.answers > 10 then
             return
         end
 
@@ -930,6 +970,10 @@ Gui.on_click(
 Gui.on_click(
     create_poll_close_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Create Poll Close')
+        if is_spamming then
+            return
+        end
         local frame = Gui.get_data(event.element)
         if frame and frame.valid then
             remove_create_poll_frame(frame, event.player_index)
@@ -940,6 +984,10 @@ Gui.on_click(
 Gui.on_click(
     create_poll_clear_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Create Poll Clear')
+        if is_spamming then
+            return
+        end
         local data = Gui.get_data(event.element)
         if not data then
             return
@@ -965,6 +1013,10 @@ Gui.on_click(create_poll_confirm_name, create_poll)
 Gui.on_click(
     create_poll_delete_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Create Poll Delete')
+        if is_spamming then
+            return
+        end
         local player = event.player
         local data = Gui.get_data(event.element)
         if not data then
@@ -1018,6 +1070,10 @@ Gui.on_click(
 Gui.on_click(
     create_poll_edit_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Create Poll Edit')
+        if is_spamming then
+            return
+        end
         local player = event.player
         local data = Gui.get_data(event.element)
         if not data then
@@ -1169,6 +1225,10 @@ end
 Gui.on_click(
     poll_view_back_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Poll View Back')
+        if is_spamming then
+            return
+        end
         do_direction(event, -1)
     end
 )
@@ -1176,6 +1236,10 @@ Gui.on_click(
 Gui.on_click(
     poll_view_forward_name,
     function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Poll View Forward')
+        if is_spamming then
+            return
+        end
         do_direction(event, 1)
     end
 )

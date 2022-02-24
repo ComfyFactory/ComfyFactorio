@@ -15,14 +15,14 @@ M0JwPPnzLV+EcxobVOmRrEX45fZ5NCQz6S4h3qIRV18Vpu32sQNs
 8kwoXSdIr1kvNPjEJXfhPwM3fGG70zbN7n+hUH+/4j8HgVljp7wD
 VXdsJuZ76VsGvWeHyfNjW7REoyhvvvAetn9CzJb1cQ=<<<
 ]]
-require 'player_modifiers'
+require 'utils.player_modifiers'
 require 'modules.rocks_broken_paint_tiles'
 require 'modules.rocks_heal_over_time'
 require 'modules.rocks_yield_ore_veins'
 require 'modules.no_deconstruction_of_neutral_entities'
 
 local get_noise = require 'utils.get_noise'
-local Player_modifiers = require 'player_modifiers'
+local Player_modifiers = require 'utils.player_modifiers'
 local math_random = math.random
 local math_floor = math.floor
 local math_abs = math.abs

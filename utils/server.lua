@@ -5,14 +5,21 @@ local Event = require 'utils.event'
 local Game = require 'utils.game'
 local Print = require('utils.print_override')
 
-local serialize = serpent.serialize
+-- local constants
+local floor = math.floor
+local ceil = math.ceil
+local insert = table.insert
 local concat = table.concat
+local serialize = serpent.serialize
 local remove = table.remove
 local tostring = tostring
 local len = string.len
 local gmatch = string.gmatch
-local insert = table.insert
 local raw_print = Print.raw_print
+local minutes_to_ticks = 60 * 60
+local hours_to_ticks = 60 * 60 * 60
+local ticks_to_minutes = 1 / minutes_to_ticks
+local ticks_to_hours = 1 / hours_to_ticks
 
 local serialize_options = {sparse = true, compact = true}
 
@@ -21,6 +28,9 @@ local Public = {}
 local server_time = {secs = nil, tick = 0}
 local server_ups = {ups = 60}
 local start_data = {server_id = nil, server_name = nil, start_time = nil}
+local instances = {
+    data = {}
+}
 local requests = {}
 
 Global.register(
@@ -28,13 +38,15 @@ Global.register(
         server_time = server_time,
         server_ups = server_ups,
         start_data = start_data,
-        requests = requests
+        requests = requests,
+        instances = instances
     },
     function(tbl)
         server_time = tbl.server_time
         server_ups = tbl.server_ups
         start_data = tbl.start_data
         requests = tbl.requests
+        instances = tbl.instances
     end
 )
 
@@ -48,7 +60,14 @@ local discord_bold_tag = '[DISCORD-BOLD]'
 local discord_admin_tag = '[DISCORD-ADMIN]'
 local discord_banned_tag = '[DISCORD-BANNED]'
 local discord_banned_embed_tag = '[DISCORD-BANNED-EMBED]'
+local discord_unbanned_tag = '[DISCORD-UNBANNED]'
+local discord_unbanned_embed_tag = '[DISCORD-UNBANNED-EMBED]'
+local discord_jailed_tag = '[DISCORD-JAILED]'
+local discord_jailed_embed_tag = '[DISCORD-JAILED-EMBED]'
+local discord_unjailed_tag = '[DISCORD-UNJAILED]'
+local discord_unjailed_embed_tag = '[DISCORD-UNJAILED-EMBED]'
 local discord_admin_raw_tag = '[DISCORD-ADMIN-RAW]'
+local discord_embed_parsed_tag = '[DISCORD-EMBED-PARSED]'
 local discord_embed_tag = '[DISCORD-EMBED]'
 local discord_embed_raw_tag = '[DISCORD-EMBED-RAW]'
 local discord_admin_embed_tag = '[DISCORD-ADMIN-EMBED]'
@@ -57,6 +76,7 @@ local discord_named_tag = '[DISCORD-NAMED]'
 local discord_named_raw_tag = '[DISCORD-NAMED-RAW]'
 local discord_named_bold_tag = '[DISCORD-NAMED-BOLD]'
 local discord_named_embed_tag = '[DISCORD-NAMED-EMBED]'
+local discord_named_embed_parsed_tag = '[DISCORD-NAMED-EMBED-PARSED]'
 local discord_named_embed_raw_tag = '[DISCORD-NAMED-EMBED-RAW]'
 local start_scenario_tag = '[START-SCENARIO]'
 local stop_scenario_tag = '[STOP-SCENARIO]'
@@ -88,6 +108,27 @@ local function assert_non_empty_string_and_no_spaces(str, argument_name)
     if str:match(' ') then
         error(argument_name .. " must not contain space ' ' character.", 3)
     end
+end
+
+local function getOnlineAdmins()
+    local online = game.connected_players
+    local i = 0
+    for _, p in pairs(online) do
+        if p.admin then
+            i = i + 1
+        end
+    end
+    return i
+end
+
+local function build_embed_data()
+    local d = {
+        time = Public.format_time(game.ticks_played),
+        onlinePlayers = #game.connected_players,
+        totalPlayers = #game.players,
+        onlineAdmins = getOnlineAdmins()
+    }
+    return d
 end
 
 --- The event id for the on_server_started event.
@@ -168,6 +209,28 @@ function Public.to_discord_named_embed(channel_name, message)
     raw_print(concat({discord_named_embed_tag, channel_name, ' ', message}))
 end
 
+--- Sends an embed message that is parsed to the named discord channel. The message is sanitized of markdown server side.
+-- @param  message<string> the content of the embed.
+function Public.to_discord_named_parsed_embed(channel_name, message)
+    assert_non_empty_string_and_no_spaces(channel_name, 'channel_name')
+    local table_to_json = game.table_to_json
+
+    if not type(message) == 'table' then
+        return
+    end
+
+    if not message.title then
+        return
+    end
+    if not message.description then
+        return
+    end
+
+    message.channelName = channel_name
+
+    raw_print(discord_named_embed_parsed_tag, table_to_json(message))
+end
+
 --- Sends an embed message to the named discord channel. The message is not sanitized of markdown.
 -- @param  message<string> the content of the embed.
 function Public.to_discord_named_embed_raw(channel_name, message)
@@ -186,7 +249,7 @@ function Public.to_admin(message, locale)
     end
 end
 
---- Sends a message to the linked banend discord channel. The message is sanitized of markdown server side.
+--- Sends a message to the linked banned discord channel. The message is sanitized of markdown server side.
 -- @param  message<string> message to send.
 -- @param  locale<boolean> if the message should be handled as localized.
 function Public.to_banned(message, locale)
@@ -194,6 +257,37 @@ function Public.to_banned(message, locale)
         print(message, discord_banned_tag)
     else
         raw_print(discord_banned_tag .. message)
+    end
+end
+--- Sends a message to the linked banned discord channel. The message is sanitized of markdown server side.
+-- @param  message<string> message to send.
+-- @param  locale<boolean> if the message should be handled as localized.
+function Public.to_unbanned(message, locale)
+    if locale then
+        print(message, discord_unbanned_tag)
+    else
+        raw_print(discord_unbanned_tag .. message)
+    end
+end
+
+--- Sends a message to the linked connected discord channel. The message is sanitized of markdown server side.
+-- @param  message<string> message to send.
+-- @param  locale<boolean> if the message should be handled as localized.
+function Public.to_jailed(message, locale)
+    if locale then
+        print(message, discord_jailed_tag)
+    else
+        raw_print(discord_jailed_tag .. message)
+    end
+end
+--- Sends a message to the linked connected discord channel. The message is sanitized of markdown server side.
+-- @param  message<string> message to send.
+-- @param  locale<boolean> if the message should be handled as localized.
+function Public.to_unjailed(message, locale)
+    if locale then
+        print(message, discord_unjailed_tag)
+    else
+        raw_print(discord_unjailed_tag .. message)
     end
 end
 
@@ -206,6 +300,23 @@ function Public.to_admin_raw(message, locale)
     else
         raw_print(discord_admin_raw_tag .. message)
     end
+end
+
+--- Sends a embed message to the linked discord channel. The message is sanitized/parsed of markdown server side.
+-- @param  message<table> the content of the embed.
+function Public.to_discord_embed_parsed(message)
+    local table_to_json = game.table_to_json
+    if not type(message) == 'table' then
+        return
+    end
+
+    if not message.title then
+        return
+    end
+    if not message.description then
+        return
+    end
+    raw_print(discord_embed_parsed_tag .. table_to_json(message))
 end
 
 --- Sends a embed message to the linked discord channel. The message is sanitized of markdown server side.
@@ -242,13 +353,93 @@ function Public.to_admin_embed(message, locale)
 end
 
 --- Sends a embed message to the linked banned discord channel. The message is sanitized of markdown server side.
--- @param  message<string> the content of the embed.
+-- @param  message<tbl> the content of the embed.
 -- @param  locale<boolean> if the message should be handled as localized.
 function Public.to_banned_embed(message, locale)
+    local table_to_json = game.table_to_json
+    if not type(message) == 'table' then
+        return
+    end
     if locale then
         print(message, discord_banned_embed_tag)
     else
-        raw_print(discord_banned_embed_tag .. message)
+        if not message.username then
+            return
+        end
+        if not message.reason then
+            return
+        end
+        if not message.admin then
+            return
+        end
+        raw_print(discord_banned_embed_tag .. table_to_json(message))
+    end
+end
+
+--- Sends a embed message to the linked banned discord channel. The message is sanitized of markdown server side.
+-- @param  message<tbl> the content of the embed.
+-- @param  locale<boolean> if the message should be handled as localized.
+function Public.to_unbanned_embed(message, locale)
+    local table_to_json = game.table_to_json
+    if not type(message) == 'table' then
+        return
+    end
+    if locale then
+        print(message, discord_unbanned_embed_tag)
+    else
+        if not message.username then
+            return
+        end
+        if not message.admin then
+            return
+        end
+        raw_print(discord_unbanned_embed_tag .. table_to_json(message))
+    end
+end
+
+--- Sends a embed message to the linked connected discord channel. The message is sanitized of markdown server side.
+-- @param  message<tbl> the content of the embed.
+-- @param  locale<boolean> if the message should be handled as localized.
+function Public.to_jailed_embed(message, locale)
+    local table_to_json = game.table_to_json
+    if not type(message) == 'table' then
+        return
+    end
+
+    if locale then
+        print(message, discord_jailed_embed_tag)
+    else
+        if not message.username then
+            return
+        end
+        if not message.reason then
+            return
+        end
+        if not message.admin then
+            return
+        end
+        raw_print(discord_jailed_embed_tag .. table_to_json(message))
+    end
+end
+
+--- Sends a embed message to the linked connected discord channel. The message is sanitized of markdown server side.
+-- @param  message<tbl> the content of the embed.
+-- @param  locale<boolean> if the message should be handled as localized.
+function Public.to_unjailed_embed(message, locale)
+    local table_to_json = game.table_to_json
+    if not type(message) == 'table' then
+        return
+    end
+    if locale then
+        print(message, discord_unjailed_embed_tag)
+    else
+        if not message.username then
+            return
+        end
+        if not message.admin then
+            return
+        end
+        raw_print(discord_unjailed_embed_tag .. table_to_json(message))
     end
 end
 
@@ -306,6 +497,27 @@ local default_ping_token =
 function Public.ping(func_token)
     local message = concat({ping_tag, func_token or default_ping_token, ' ', game.tick})
     raw_print(message)
+end
+
+--- The backend sets instances with data so a player
+-- can easily connect to another one via in-game.
+-- @param  data<table>
+function Public.set_instances(data)
+    if not data then
+        return
+    end
+    if not type(data) == 'table' then
+        return
+    end
+    instances.data = {}
+    for id, tbl in pairs(data) do
+        instances.data[id] = tbl
+    end
+end
+
+--- Gets each available/non-available instance
+function Public.get_instances()
+    return instances.data
 end
 
 local function double_escape(str)
@@ -907,7 +1119,109 @@ function Public.get_current_time()
     return math.floor(secs + diff / game.speed / 60)
 end
 
---- Called be the web server to re sync which players are online.
+--- Converts from epoch to yymmddhhmm.
+-- @param epoch<number>
+-- @return date?
+function Public.convertFromEpoch(epoch)
+    if not epoch then
+        return
+    end
+
+    local function date(z)
+        z = floor(z / 86400) + 719468
+        local era = floor(z / 146097)
+        local doe = floor(z - era * 146097)
+        local yoe = floor((doe - doe / 1460 + doe / 36524 - doe / 146096) / 365)
+        local y = floor(yoe + era * 400)
+        local doy = doe - floor((365 * yoe + yoe / 4 - yoe / 100))
+        local mp = floor((5 * doy + 2) / 153)
+        local d = ceil(doy - (153 * mp + 2) / 5 + 1)
+        local m = floor(mp + (mp < 10 and 3 or -9))
+        return y + (m <= 2 and 1 or 0), m, d
+    end
+
+    local unixTime = floor(epoch) - (60 * 60 * (-2))
+
+    local hours = floor(unixTime / 3600 % 12)
+    local minutes = floor(unixTime / 60 % 60)
+    local seconds = floor(unixTime % 60)
+
+    local year, month, day = date(unixTime)
+
+    month = tonumber(month)
+    month = 0 .. month
+
+    day = tonumber(day)
+    if day < 10 then
+        day = 0 .. day
+    end
+
+    return {
+        year = year,
+        month = month,
+        day = day,
+        hours = hours,
+        minutes = minutes < 10 and '0' .. minutes or minutes,
+        seconds = seconds < 10 and '0' .. seconds or seconds
+    }
+end
+
+-- Returns the current date.
+-- @param pretty<boolean>
+-- @return date?
+function Public.get_current_date(pretty)
+    local s = Public.get_current_time()
+    if not s then
+        return false
+    end
+
+    local date = Public.convertFromEpoch(s)
+    if pretty then
+        return tonumber(date.year .. '-' .. date.month .. '-' .. date.day)
+    else
+        return tonumber(date.year .. date.month .. date.day)
+    end
+end
+
+-- Returns the total played time in yymmddhhmm.
+-- @return date?
+function Public.get_current_date_with_time()
+    local s = Public.get_current_time()
+    if not s then
+        return false
+    end
+
+    local date = Public.convertFromEpoch(s)
+    return date.year .. '-' .. date.month .. '-' .. date.day .. ' ' .. date.hours .. ':' .. date.minutes
+end
+
+--- Takes a time in ticks and returns a string with the time in format "x hour(s) x minute(s)"
+function Public.format_time(ticks)
+    local result = {}
+
+    local hours = floor(ticks * ticks_to_hours)
+    if hours > 0 then
+        ticks = ticks - hours * hours_to_ticks
+        insert(result, hours)
+        if hours == 1 then
+            insert(result, 'hour')
+        else
+            insert(result, 'hours')
+        end
+    end
+
+    local minutes = floor(ticks * ticks_to_minutes)
+    insert(result, minutes)
+    if minutes == 1 then
+        insert(result, 'minute')
+    else
+        insert(result, 'minutes')
+    end
+
+    return concat(result, ' ')
+end
+
+--- Called by the web server to re sync which players are online.
 function Public.query_online_players()
     local message = {query_players_tag, '['}
 
@@ -1014,20 +1328,13 @@ Event.add(
     defines.events.on_console_command,
     function(event)
         local cmd = event.command
-        if not event.player_index then
-            return
-        end
-        local player = game.players[event.player_index]
+
         local user = event.parameters
         if not user then
             return
         end
 
         if len(user) <= 2 then
-            return
-        end
-
-        if not player.admin then
             return
         end
 
@@ -1052,41 +1359,56 @@ Event.add(
         end
 
         local banishedPlayer
-        if game.players[userIndex] then
-            banishedPlayer = game.players[userIndex]
+        if game.get_player(userIndex) then
+            banishedPlayer = game.get_player(userIndex)
         else
             return
         end
 
-        if banishedPlayer.index == player.index then
-            return
-        end
-
-        if cmd == 'ban' then
-            Public.set_data(jailed_data_set, player.name, nil) -- this is added here since we don't want to clutter the jail dataset.
-            if player then
-                if not reason then
-                    Public.to_banned_embed(table.concat {player.name .. ' banned ' .. banishedPlayer.name .. '. Reason: Not specified.'})
-                    return
-                else
-                    Public.to_banned_embed(table.concat {player.name .. ' banned ' .. banishedPlayer.name .. '. Reason: ' .. reason})
+        if event.player_index then
+            local player = game.get_player(event.player_index)
+            if player and player.valid and player.admin then
+                if banishedPlayer.index == player.index then
                     return
                 end
-            else
-                if not reason then
-                    Public.to_banned_embed(table.concat {'Server banned ' .. banishedPlayer.name .. '. Reason: Not specified.'})
-                    return
-                else
-                    Public.to_banned_embed(table.concat {'Server banned ' .. banishedPlayer.name .. '. Reason: ' .. reason})
+
+                local data = build_embed_data()
+                data.username = banishedPlayer.name
+                data.admin = player.name
+
+                if cmd == 'ban' then
+                    Public.set_data(jailed_data_set, banishedPlayer.name, nil) -- this is added here since we don't want to clutter the jail dataset.
+                    if not reason then
+                        data.reason = 'Not specified.'
+                        Public.to_banned_embed(data)
+                        return
+                    else
+                        data.reason = reason
+                        Public.to_banned_embed(data)
+                        return
+                    end
+                elseif cmd == 'unban' then
+                    Public.to_unbanned_embed(data)
                     return
                 end
             end
-        elseif cmd == 'unban' then
-            if player then
-                Public.to_banned_embed(table.concat {player.name .. ' unbanned ' .. banishedPlayer.name})
-                return
-            else
-                Public.to_banned_embed(table.concat {'Server unbanned ' .. banishedPlayer.name})
+        else
+            local data = build_embed_data()
+            data.username = banishedPlayer.name
+            data.admin = '<Server>'
+
+            if cmd == 'ban' then
+                if not reason then
+                    data.reason = 'Not specified.'
+                    Public.to_banned_embed(data)
+                    return
+                else
+                    data.reason = reason
+                    Public.to_banned_embed(data)
+                    return
+                end
+            elseif cmd == 'unban' then
+                Public.to_unbanned_embed(data)
                 return
             end
         end
@@ -1123,5 +1445,7 @@ Event.add(
         raw_print(message)
     end
 )
+
+Public.build_embed_data = build_embed_data
 
 return Public

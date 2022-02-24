@@ -5,12 +5,15 @@ local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Event = require 'utils.event'
 local Terrain = require 'maps.mountain_fortress_v3.terrain'
+local WD = require 'modules.wave_defense.table'
+local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 
 local Public = {}
 
 local random = math.random
 local abs = math.abs
 local ceil = math.ceil
+local round = math.round
 local queue_task = Task.queue_task
 local tiles_per_call = 8
 local total_calls = ceil(1024 / tiles_per_call)
@@ -269,25 +272,26 @@ local function do_place_buildings(data)
                 } == 0
              then
                 entity = surface.create_entity(e)
-                if entity and e.direction then
-                    entity.direction = e.direction
-                end
-                if entity and e.force then
-                    entity.force = e.force
-                end
-                if entity and e.callback then
-                    local c = e.callback.callback
-                    if not c then
-                        return
+                if entity and entity.valid then
+                    if e.direction then
+                        entity.direction = e.direction
                     end
-                    local d = {callback_data = e.callback.data}
-                    if not d then
-                        callback = Token.get(c)
-                        callback(entity)
-                        return
+                    if e.force then
+                        entity.force = e.force
                     end
-                    callback = Token.get(c)
-                    callback(entity, d)
+                    if e.callback then
+                        local c = e.callback.callback
+                        if c then
+                            local d = {callback_data = e.callback.data}
+                            if not d then
+                                callback = Token.get(c)
+                                callback(entity)
+                            else
+                                callback = Token.get(c)
+                                callback(entity, d)
+                            end
+                        end
+                    end
                 end
             end
         end
@@ -323,11 +327,14 @@ local function wintery(ent, extra_lights)
     end
     if wintery_type[ent.type] then
         if ent.type == 'simple-entity' then
-            if random(1, 8) ~= 1 then
-                return
+            if random(1, 64) == 1 then
+                return add_light(ent)
+            end
+        else
+            if random(1, 4) == 1 then
+                return add_light(ent)
             end
         end
-        add_light(ent)
     end
     return true
 end
@@ -340,56 +347,76 @@ local function do_place_entities(data)
         if e.collision then
             if surface.can_place_entity(e) then
                 entity = surface.create_entity(e)
-                wintery(entity)
-                if entity and e.direction then
-                    entity.direction = e.direction
-                end
-                if entity and e.force then
-                    entity.force = e.force
-                end
-                if entity and e.amount then
-                    entity.amount = e.amount
-                end
-                if entity and e.callback then
-                    local c = e.callback.callback
-                    if not c then
-                        return
+                if entity then
+                    if e.note then -- flamethrower-turret and artillery-turret are at default health, only gun-turret is modified
+                        local modified_unit_health = WD.get('modified_unit_health')
+                        local final_health = round(modified_unit_health.current_value * 0.5, 3)
+                        if final_health < 1 then
+                            final_health = 1
+                        end
+                        BiterHealthBooster.add_unit(entity, final_health)
                     end
-                    local d = {callback_data = e.callback.data}
-                    if not d then
-                        callback = Token.get(c)
-                        callback(entity)
-                        return
+                    wintery(entity)
+                    if e.direction then
+                        entity.direction = e.direction
                     end
-                    callback = Token.get(c)
-                    callback(entity, d)
+                    if e.force then
+                        entity.force = e.force
+                    end
+                    if e.amount then
+                        entity.amount = e.amount
+                    end
+                    if e.callback then
+                        local c = e.callback.callback
+                        if not c then
+                            return
+                        end
+                        local d = {callback_data = e.callback.data}
+                        if not d then
+                            callback = Token.get(c)
+                            callback(entity)
+                        else
+                            callback = Token.get(c)
+                            callback(entity, d)
+                        end
+                    end
                 end
             end
         else
             entity = surface.create_entity(e)
-            wintery(entity)
-            if entity and e.direction then
-                entity.direction = e.direction
-            end
-            if entity and e.force then
-                entity.force = e.force
-            end
-            if entity and e.amount then
-                entity.amount = e.amount
-            end
-            if entity and e.callback then
-                local c = e.callback.callback
-                if not c then
-                    return
+            if entity then
+                if e.note then -- small-worm-turret, medium-worm-turret, big-worm-turret, behemoth-worm-turret
+                    local modified_unit_health = WD.get('modified_unit_health')
+                    local worm_unit_settings = WD.get('worm_unit_settings')
+                    local final_health = round(modified_unit_health.current_value * worm_unit_settings.scale_units_by_health[entity.name], 3)
+                    if final_health < 1 then
+                        final_health = 1
+                    end
+                    BiterHealthBooster.add_unit(entity, final_health)
                 end
-                local d = {callback_data = e.callback.data}
-                if not d then
-                    callback = Token.get(c)
-                    callback(entity)
-                    return
+                wintery(entity)
+                if e.direction then
+                    entity.direction = e.direction
                 end
-                callback = Token.get(c)
-                callback(entity, d)
+                if e.force then
+                    entity.force = e.force
+                end
+                if e.amount then
+                    entity.amount = e.amount
+                end
+                if e.callback then
+                    local c = e.callback.callback
+                    if c then
+                        local d = {callback_data = e.callback.data}
+                        if not d then
+                            callback = Token.get(c)
+                            callback(entity)
+                        else
+                            callback = Token.get(c)
+                            callback(entity, d)
+                        end
+                    end
+                end
             end
         end
     end

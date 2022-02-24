@@ -1,5 +1,4 @@
-local WD = require 'modules.wave_defense.table'
-local Public = {}
+local Public = require 'modules.wave_defense.table'
 local side_target_types = {
     ['accumulator'] = true,
     ['assembling-machine'] = true,
@@ -18,29 +17,29 @@ local side_target_types = {
 }
 
 local function get_random_target()
-    local side_target_count = WD.get('side_target_count')
-    local side_targets = WD.get('side_targets')
+    local side_target_count = Public.get('side_target_count')
+    local side_targets = Public.get('side_targets')
     local r = math.random(1, side_target_count)
     if not side_targets[r] then
         table.remove(side_targets, r)
-        WD.set('side_target_count', side_target_count - 1)
+        Public.set('side_target_count', side_target_count - 1)
         return
     end
     if not side_targets[r].valid then
         table.remove(side_targets, r)
-        WD.set('side_target_count', side_target_count - 1)
+        Public.set('side_target_count', side_target_count - 1)
         return
     end
-    side_targets = WD.get('side_targets')
+    side_targets = Public.get('side_targets')
     return side_targets[r]
 end
 
 function Public.get_side_target()
-    local enable_side_target = WD.get('enable_side_target')
+    local enable_side_target = Public.get('enable_side_target')
     if not enable_side_target then
         return
     end
-    local side_target_count = WD.get('side_target_count')
+    local side_target_count = Public.get('side_target_count')
     for _ = 1, 512, 1 do
         if side_target_count == 0 then
             return
@@ -53,27 +52,27 @@ function Public.get_side_target()
 end
 
 local function add_entity(entity)
-    local enable_side_target = WD.get('enable_side_target')
+    local enable_side_target = Public.get('enable_side_target')
 
     if not enable_side_target then
         return
     end
 
-    local surface_index = WD.get('surface_index')
+    local surface_index = Public.get('surface_index')
     --skip entities that are on another surface
     if entity.surface.index ~= surface_index then
         return
     end
 
-    local side_target_count = WD.get('side_target_count')
+    local side_target_count = Public.get('side_target_count')
     if side_target_count >= 512 then
         return
     end
 
-    local side_targets = WD.get('side_targets')
+    local side_targets = Public.get('side_targets')
     --add entity to the side target list
     table.insert(side_targets, entity)
-    WD.set('side_target_count', side_target_count + 1)
+    Public.set('side_target_count', side_target_count + 1)
 end
 
 local function on_built_entity(event)

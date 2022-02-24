@@ -2,6 +2,7 @@ local Token = require 'utils.token'
 local Task = require 'utils.task'
 local Color = require 'utils.color_presets'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
+local ICT_Functions = require 'maps.mountain_fortress_v3.ic.functions'
 local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Alert = require 'utils.alert'
@@ -11,7 +12,7 @@ local Collapse = require 'modules.collapse'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 local ICW_Func = require 'maps.mountain_fortress_v3.icw.functions'
 local math2d = require 'math2d'
-local Misc = require 'commands.misc'
+local Misc = require 'utils.commands.misc'
 
 local this = {
     power_sources = {index = 1},
@@ -30,6 +31,33 @@ local starting_items = {
     ['explosives'] = 32
 }
 
+local random_respawn_messages = {
+    'The doctors stitched you up as best they could.',
+    'Ow! Your right leg hurts.',
+    'Ow! Your left leg hurts.',
+    'You can feel your whole body aching.',
+    "You still have some bullet wounds that aren't patched up.",
+    'You feel dizzy but adrenalin is granting you speed.',
+    'Adrenalin is kicking in, but your body is damaged.'
+}
+
+local health_values = {
+    '0.35',
+    '0.40',
+    '0.45',
+    '0.50',
+    '0.55',
+    '0.60',
+    '0.65',
+    '0.70',
+    '0.75',
+    '0.80',
+    '0.85',
+    '0.90',
+    '0.95',
+    '1'
+}
+
 Global.register(
     this,
     function(t)
@@ -41,6 +69,7 @@ local Public = {}
 
 local random = math.random
 local floor = math.floor
+local round = math.round
 local remove = table.remove
 local sqrt = math.sqrt
 local magic_crafters_per_tick = 3
@@ -175,7 +204,7 @@ local function do_magic_crafters()
                 if entity.get_output_inventory().can_insert({name = data.item, count = fcount}) then
                     entity.get_output_inventory().insert {name = data.item, count = fcount}
                     entity.products_finished = entity.products_finished + fcount
-                    data.last_tick = tick - (count - fcount) / rate
+                    data.last_tick = round(tick - (count - fcount) / rate)
                 end
             end
         end
@@ -338,9 +367,9 @@ local function add_magic_crafter_output(entity, output, distance)
     local fluidbox_index = output.fluidbox_index
     local data = {
         entity = entity,
-        last_tick = game.tick,
-        base_rate = rate,
-        rate = rate,
+        last_tick = round(game.tick),
+        base_rate = round(rate, 8),
+        rate = round(rate, 8),
         item = output.item,
         fluidbox_index = fluidbox_index
     }
@@ -688,66 +717,72 @@ function Public.remove_offline_players()
     local items = {}
     if #offline_players > 0 then
         for i = 1, #offline_players, 1 do
-            if offline_players[i] and game.players[offline_players[i].index] and game.players[offline_players[i].index].connected then
-                offline_players[i] = nil
-            else
-                if offline_players[i] and game.players[offline_players[i].index] and offline_players[i].tick < game.tick - 108000 then
-                    local name = offline_players[i].name
-                    player_inv[1] = game.players[offline_players[i].index].get_inventory(defines.inventory.character_main)
-                    player_inv[2] = game.players[offline_players[i].index].get_inventory(defines.inventory.character_armor)
-                    player_inv[3] = game.players[offline_players[i].index].get_inventory(defines.inventory.character_guns)
-                    player_inv[4] = game.players[offline_players[i].index].get_inventory(defines.inventory.character_ammo)
-                    player_inv[5] = game.players[offline_players[i].index].get_inventory(defines.inventory.character_trash)
-                    if not next(player_inv) then
-                        offline_players[i] = nil
-                        break
-                    end
+            if offline_players[i] and offline_players[i].index then
+                local target = game.players[offline_players[i].index]
+                if target and target.connected then
+                    offline_players[i] = nil
+                else
+                    if target and offline_players[i].tick < game.tick - 108000 then
+                        local name = offline_players[i].name
+                        player_inv[1] = target.get_inventory(defines.inventory.character_main)
+                        player_inv[2] = target.get_inventory(defines.inventory.character_armor)
+                        player_inv[3] = target.get_inventory(defines.inventory.character_guns)
+                        player_inv[4] = target.get_inventory(defines.inventory.character_ammo)
+                        player_inv[5] = target.get_inventory(defines.inventory.character_trash)
+                        ICT_Functions.remove_surface(target) -- remove empty surface
 
-                    local pos = game.forces.player.get_spawn_position(surface)
-                    local e =
-                        surface.create_entity(
-                        {
-                            name = 'character',
-                            position = pos,
-                            force = 'neutral'
-                        }
-                    )
-                    local inv = e.get_inventory(defines.inventory.character_main)
-                    e.character_inventory_slots_bonus = #player_inv[1]
-                    for ii = 1, 5, 1 do
-                        if player_inv[ii].valid then
-                            for iii = 1, #player_inv[ii], 1 do
-                                if player_inv[ii][iii].valid then
-                                    items[#items + 1] = player_inv[ii][iii]
+                        if target.get_item_count() == 0 then -- if the player has zero items, don't do anything
+                            offline_players[i] = nil
+                            goto final
+                        end
+
+                        local pos = game.forces.player.get_spawn_position(surface)
+                        local e =
+                            surface.create_entity(
+                            {
+                                name = 'character',
+                                position = pos,
+                                force = 'neutral'
+                            }
+                        )
+                        local inv = e.get_inventory(defines.inventory.character_main)
+                        e.character_inventory_slots_bonus = #player_inv[1]
+                        for ii = 1, 5, 1 do
+                            if player_inv[ii].valid then
+                                for iii = 1, #player_inv[ii], 1 do
+                                    if player_inv[ii][iii].valid then
+                                        items[#items + 1] = player_inv[ii][iii]
+                                    end
                                 end
                             end
                         end
-                    end
-                    if #items > 0 then
-                        for item = 1, #items, 1 do
-                            if items[item].valid then
-                                inv.insert(items[item])
+                        if #items > 0 then
+                            for item = 1, #items, 1 do
+                                if items[item].valid then
+                                    inv.insert(items[item])
+                                end
+                            end
+
+                            local message = ({'main.cleaner', name})
+                            local data = {
+                                position = pos
+                            }
+                            Alert.alert_all_players_location(data, message)
+
+                            e.die('neutral')
+                        else
+                            e.destroy()
+                        end
+
+                        for ii = 1, 5, 1 do
+                            if player_inv[ii].valid then
+                                player_inv[ii].clear()
                             end
                         end
-
-                        local message = ({'main.cleaner', name})
-                        local data = {
-                            position = pos
-                        }
-                        Alert.alert_all_players_location(data, message)
-
-                        e.die('neutral')
-                    else
-                        e.destroy()
+                        offline_players[i] = nil
+                        break
                     end
-
-                    for ii = 1, 5, 1 do
-                        if player_inv[ii].valid then
-                            player_inv[ii].clear()
-                        end
-                    end
-                    offline_players[i] = nil
-                    break
+                    ::final::
                 end
             end
         end
@@ -850,10 +885,12 @@ function Public.set_difficulty()
     end
     local Diff = Difficulty.get()
     local wave_defense_table = WD.get_table()
+    local check_if_threat_below_zero = WPT.get('check_if_threat_below_zero')
     local collapse_amount = WPT.get('collapse_amount')
     local collapse_speed = WPT.get('collapse_speed')
     local difficulty = WPT.get('difficulty')
     local mining_bonus_till_wave = WPT.get('mining_bonus_till_wave')
+    local mining_bonus = WPT.get('mining_bonus')
     local disable_mining_boost = WPT.get('disable_mining_boost')
     local wave_number = WD.get_wave()
     local player_count = calc_players()
@@ -862,14 +899,26 @@ function Public.set_difficulty()
         Diff.difficulty_vote_value = 0.1
     end
 
-    wave_defense_table.max_active_biters = 768 + player_count * (90 * Diff.difficulty_vote_value)
+    if Diff.name == "I'm too young to die" then
+        wave_defense_table.max_active_biters = 768 + player_count * (90 * Diff.difficulty_vote_value)
+    elseif Diff.name == 'Hurt me plenty' then
+        wave_defense_table.max_active_biters = 845 + player_count * (90 * Diff.difficulty_vote_value)
+    elseif Diff.name == 'Ultra-violence' then
+        wave_defense_table.max_active_biters = 1000 + player_count * (90 * Diff.difficulty_vote_value)
+    end
 
     if wave_defense_table.max_active_biters >= 4000 then
         wave_defense_table.max_active_biters = 4000
     end
 
     -- threat gain / wave
-    wave_defense_table.threat_gain_multiplier = 1.2 + player_count * Diff.difficulty_vote_value * 0.1
+    if Diff.name == "I'm too young to die" then
+        wave_defense_table.threat_gain_multiplier = 1.2 + player_count * Diff.difficulty_vote_value * 0.1
+    elseif Diff.name == 'Hurt me plenty' then
+        wave_defense_table.threat_gain_multiplier = 2 + player_count * Diff.difficulty_vote_value * 0.1
+    elseif Diff.name == 'Ultra-violence' then
+        wave_defense_table.threat_gain_multiplier = 4 + player_count * Diff.difficulty_vote_value * 0.1
+    end
 
     -- local amount = player_count * 0.40 + 2 -- too high?
     local amount = player_count * difficulty.multiply + 2
@@ -880,10 +929,40 @@ function Public.set_difficulty()
         amount = difficulty.highest -- lowered from 20 to 10
     end
 
-    wave_defense_table.wave_interval = 3600 - player_count * 60
+    local threat_check = nil
 
-    if wave_defense_table.wave_interval < 1800 or wave_defense_table.threat <= 0 then
-        wave_defense_table.wave_interval = 1800
+    if check_if_threat_below_zero then
+        threat_check = wave_defense_table.threat <= 0
+    end
+
+    if Diff.name == "I'm too young to die" then
+        if player_count < 10 then
+            wave_defense_table.wave_interval = 4500
+        else
+            wave_defense_table.wave_interval = 3600 - player_count * 60
+        end
+        if wave_defense_table.wave_interval < 2200 or threat_check then
+            wave_defense_table.wave_interval = 2200
+        end
+    elseif Diff.name == 'Hurt me plenty' then
+        if player_count < 10 then
+            wave_defense_table.wave_interval = 3000
+        else
+            wave_defense_table.wave_interval = 2600 - player_count * 60
+        end
+        if wave_defense_table.wave_interval < 1900 or threat_check then
+            wave_defense_table.wave_interval = 1900
+        end
+    elseif Diff.name == 'Ultra-violence' then
+        if player_count < 10 then
+            wave_defense_table.wave_interval = 2000
+        else
+            wave_defense_table.wave_interval = 1600 - player_count * 60
+        end
+        wave_defense_table.wave_interval = 1600 - player_count * 60
+        if wave_defense_table.wave_interval < 1600 or threat_check then
+            wave_defense_table.wave_interval = 1600
+        end
     end
 
     if collapse_amount then
@@ -909,17 +988,20 @@ function Public.set_difficulty()
         local force = game.forces.player
         if wave_number < mining_bonus_till_wave then
             -- the mining speed of the players will increase drastically since RPG is also loaded.
+            -- additional mining speed comes from steel axe research: 100%, and difficulty settings: too young to die 50%, hurt me plenty 25%
+            force.manual_mining_speed_modifier = force.manual_mining_speed_modifier - mining_bonus
             if player_count <= 5 then
-                force.manual_mining_speed_modifier = 3 -- set a static 400% bonus if there are <= 5 players.
-                if force.technologies['steel-axe'].researched then
-                    force.manual_mining_speed_modifier = 4
-                end
+                mining_bonus = 3 -- set a static 300% bonus if there are <= 5 players.
             elseif player_count >= 6 and player_count <= 10 then
-                force.manual_mining_speed_modifier = 1 -- set a static 100% bonus if there are <= 10 players.
-                if force.technologies['steel-axe'].researched then
-                    force.manual_mining_speed_modifier = 2
-                end
+                mining_bonus = 1 -- set a static 100% bonus if there are <= 10 players.
+            elseif player_count >= 11 then
+                mining_bonus = 0 -- back to 0% with more than 11 players
             end
+            force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + mining_bonus
+            WPT.set('mining_bonus', mining_bonus) -- Setting mining_bonus globally so it remembers how much to reduce
+        else
+            force.manual_mining_speed_modifier = force.manual_mining_speed_modifier - mining_bonus
+            WPT.set('disable_mining_boost', true)
         end
     end
 end
@@ -1054,8 +1136,6 @@ function Public.boost_difficulty()
 
     local force = game.forces.player
 
-    local unit_modifiers = WD.get('modified_unit_health')
-
     if name == "I'm too young to die" then
         force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 0.5
         force.character_running_speed_modifier = 0.15
@@ -1068,9 +1148,10 @@ function Public.boost_difficulty()
         WPT.set('bonus_xp_on_join', 500)
         WD.set('next_wave', game.tick + 3600 * 15)
         WPT.set('spidertron_unlocked_at_zone', 10)
-        WD.set_biter_health_boost(1.50)
-        unit_modifiers.limit_value = 30
-        unit_modifiers.health_increase_per_boss_wave = 0.04
+        WD.set_normal_unit_current_health(1.0)
+        WD.set_unit_health_increment_per_wave(0.15)
+        WD.set_boss_unit_current_health(2)
+        WD.set_boss_health_increment_per_wave(1.5)
         WPT.set('difficulty_set', true)
     elseif name == 'Hurt me plenty' then
         force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 0.25
@@ -1084,9 +1165,10 @@ function Public.boost_difficulty()
         WPT.set('bonus_xp_on_join', 300)
         WD.set('next_wave', game.tick + 3600 * 8)
         WPT.set('spidertron_unlocked_at_zone', 8)
-        unit_modifiers.limit_value = 40
-        unit_modifiers.health_increase_per_boss_wave = 0.06
-        WD.set_biter_health_boost(2)
+        WD.set_normal_unit_current_health(1.6)
+        WD.set_unit_health_increment_per_wave(0.5)
+        WD.set_boss_unit_current_health(3)
+        WD.set_boss_health_increment_per_wave(5)
         WPT.set('difficulty_set', true)
     elseif name == 'Ultra-violence' then
         force.character_running_speed_modifier = 0
@@ -1099,9 +1181,10 @@ function Public.boost_difficulty()
         WPT.set('bonus_xp_on_join', 50)
         WD.set('next_wave', game.tick + 3600 * 5)
         WPT.set('spidertron_unlocked_at_zone', 6)
-        unit_modifiers.limit_value = 50
-        unit_modifiers.health_increase_per_boss_wave = 0.08
-        WD.set_biter_health_boost(4)
+        WD.set_normal_unit_current_health(2)
+        WD.set_unit_health_increment_per_wave(1)
+        WD.set_boss_unit_current_health(4)
+        WD.set_boss_health_increment_per_wave(10)
         WPT.set('difficulty_set', true)
     end
 end
@@ -1134,6 +1217,7 @@ function Public.set_spawn_position()
 
     ::retry::
 
+    local y_value_position = WPT.get('y_value_position')
     local locomotive_positions = WPT.get('locomotive_pos')
     local total_pos = #locomotive_positions.tbl
 
@@ -1151,7 +1235,7 @@ function Public.set_spawn_position()
             collapse_position = surface.find_non_colliding_position('solar-panel', collapse_pos, 32, 2)
         end
         if not collapse_position then
-            collapse_position = surface.find_non_colliding_position('small-biter', collapse_pos, 32, 2)
+            collapse_position = surface.find_non_colliding_position('steel-chest', collapse_pos, 32, 2)
         end
         local sizeof = locomotive_positions.tbl[total_pos - total_pos + 1]
         if not sizeof then
@@ -1166,7 +1250,7 @@ function Public.set_spawn_position()
             goto retry
         end
 
-        local locomotive_position = surface.find_non_colliding_position('small-biter', sizeof, 128, 1)
+        local locomotive_position = surface.find_non_colliding_position('steel-chest', sizeof, 128, 1)
         local distance_from = floor(math2d.position.distance(locomotive_position, locomotive.position))
         local l_y = l.y
         local t_y = locomotive_position.y
@@ -1193,20 +1277,22 @@ function Public.set_spawn_position()
                         return
                     end
                     debug_str('distance_from was higher - spawning at locomotive_position')
-                    WD.set_spawn_position({x = locomotive_position.x, y = collapse_pos.y - 20})
+                    WD.set_spawn_position({x = locomotive_position.x, y = collapse_pos.y - y_value_position})
                 else
                     debug_str('distance_from was lower - spawning at locomotive_position')
-                    WD.set_spawn_position({x = locomotive_position.x, y = collapse_pos.y - 20})
+                    WD.set_spawn_position({x = locomotive_position.x, y = collapse_pos.y - y_value_position})
                 end
             else
                 if collapse_position then
                     debug_str('total_pos was higher - spawning at collapse_position')
+                    collapse_position = {x = collapse_position.x, y = collapse_position.y - y_value_position}
                     WD.set_spawn_position(collapse_position)
                 end
             end
         else
             if collapse_position then
                 debug_str('total_pos was lower - spawning at collapse_position')
+                collapse_position = {x = collapse_position.x, y = collapse_position.y - y_value_position}
                 WD.set_spawn_position(collapse_position)
             end
         end
@@ -1312,6 +1398,8 @@ function Public.on_player_respawned(event)
     end
     if player.character and player.character.valid then
         Task.set_timeout_in_ticks(15, boost_movement_speed_on_respawn, {player = player})
+        player.character.health = round(player.character.health * health_values[random(1, #health_values)])
+        player.print(random_respawn_messages[random(1, #random_respawn_messages)])
     end
 end
 
@@ -1405,8 +1493,14 @@ function Public.on_research_finished(event)
     disable_tech()
 
     local research = event.research
+    local bonus_drill = game.forces.bonus_drill
+    local player = game.forces.player
 
-    research.force.character_inventory_slots_bonus = game.forces.player.mining_drill_productivity_bonus * 50 -- +5 Slots /
+    research.force.character_inventory_slots_bonus = player.mining_drill_productivity_bonus * 50 -- +5 Slots /
+    bonus_drill.mining_drill_productivity_bonus = bonus_drill.mining_drill_productivity_bonus + 0.03
+    if bonus_drill.mining_drill_productivity_bonus >= 3 then
+        bonus_drill.mining_drill_productivity_bonus = 3
+    end
 
     if research.name == 'steel-axe' then
         local msg = 'Steel-axe technology has been researched, 100% has been applied.\nBuy Pickaxe-upgrades in the market to boost it even more!'

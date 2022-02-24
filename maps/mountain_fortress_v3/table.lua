@@ -102,6 +102,12 @@ function Public.reset_table()
         neg_gap = -500,
         highest_pos = 0
     }
+    this.gap_between_locomotive = {
+        hinders = {},
+        gap = 900,
+        neg_gap = -2112,
+        highest_pos = nil
+    }
     this.force_chunk = false
     this.allow_decon = true
     this.train_upgrades = 0
@@ -174,7 +180,9 @@ function Public.reset_table()
         xp_point_boost_cost = 5000,
         explosive_bullets_cost = 10000,
         flamethrower_turrets_cost = 3000,
-        land_mine_cost = 2
+        land_mine_cost = 2,
+        car_health_upgrade_pool_cost = 100000,
+        redraw_mystical_chest_cost = 3000
     }
     this.collapse_grace = true
     this.explosive_bullets = false
@@ -184,6 +192,7 @@ function Public.reset_table()
     this.offline_players = {}
     this.collapse_amount = false
     this.collapse_speed = false
+    this.y_value_position = 20
     this.spawn_near_collapse = {
         active = true,
         total_pos = 35,
@@ -204,9 +213,20 @@ function Public.reset_table()
         lowest = 4
     }
     this.mining_bonus_till_wave = 300
+    this.mining_bonus = 0
+    this.disable_mining_boost = false
     this.market_announce = game.tick + 1200
     this.check_heavy_damage = true
     this.prestige_system_enabled = false
+    this.has_upgraded_health_pool = false
+    this.mystical_chest_enabled = true
+    this.check_if_threat_below_zero = true
+    this.mc_rewards = {
+        current = {},
+        temp_boosts = {}
+    }
+    this.alert_zone_1 = false -- alert the players
+
     for k, _ in pairs(this.players) do
         this.players[k] = {}
     end

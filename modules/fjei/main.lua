@@ -11,8 +11,9 @@ local function on_player_joined_game(event)
     local player = game.players[event.player_index]
 
     if not global.fjei then
-        Public.build_tables()
+        Functions.build_tables()
     end
+
     if not global.fjei.player_data[player.index] then
         global.fjei.player_data[player.index] = {}
     end
@@ -23,6 +24,18 @@ end
 
 local function on_player_left_game(event)
     local player = game.players[event.player_index]
+    if player.gui.left['fjei_main_window'] then
+        player.gui.left['fjei_main_window'].destroy()
+    end
+    if player.gui.screen['fjei_recipe_window'] then
+        player.gui.screen['fjei_recipe_window'].destroy()
+    end
+    if player.gui[recipe_window_position]['fjei_recipe_window'] then
+        player.gui[recipe_window_position]['fjei_recipe_window'].destroy()
+    end
+    if not global.fjei.player_data[player.index] then
+        return
+    end
     global.fjei.player_data[player.index].history = nil
     global.fjei.player_data[player.index].filtered_list = nil
     global.fjei.player_data[player.index] = nil
@@ -95,6 +108,7 @@ local function on_gui_text_changed(event)
     else
         global.fjei.player_data[player.index].active_filter = element.text
     end
+
     Functions.set_filtered_list(player)
     Gui.refresh_main_window(player)
 end
@@ -109,6 +123,24 @@ local function on_configuration_changed()
             player.gui[recipe_window_position]['fjei_recipe_window'].destroy()
         end
     end
+end
+
+local function on_string_translated(event)
+    local player = game.get_player(event.player_index)
+    local result = event.result
+    if not result then
+        return
+    end
+
+    local localised_string = event.localised_string
+    if not localised_string then
+        return
+    end
+
+    localised_string = localised_string[1]
+    localised_string = string.match(localised_string, '[^.]*$')
+
+    Functions.set_translated_data(player, result, localised_string)
 end
 
 local function on_init()
@@ -127,6 +159,7 @@ event.add(defines.events.on_player_left_game, on_player_left_game)
 event.add(defines.events.on_research_finished, on_research_finished)
 event.add(defines.events.on_gui_click, on_gui_click)
 event.add(defines.events.on_gui_text_changed, on_gui_text_changed)
+event.add(defines.events.on_string_translated, on_string_translated)
 script.on_configuration_changed(on_configuration_changed)
 event.on_init(on_init)
 event.on_init(on_load)

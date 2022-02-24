@@ -2,6 +2,7 @@ local Public = require 'modules.rpg.table'
 local Task = require 'utils.task'
 local Gui = require 'utils.gui'
 local Color = require 'utils.color_presets'
+local P = require 'utils.player_modifiers'
 local Token = require 'utils.token'
 local Alert = require 'utils.alert'
 
@@ -11,6 +12,9 @@ local xp_floating_text_color = Public.xp_floating_text_color
 local experience_levels = Public.experience_levels
 local points_per_level = Public.points_per_level
 local settings_level = Public.gui_settings_levels
+local floor = math.floor
+local random = math.random
+local round = math.round
 
 --RPG Frames
 local main_frame_name = Public.main_frame_name
@@ -115,11 +119,19 @@ local function level_up(player)
         return
     end
 
+    -- automatically enable one_punch and stone_path,
+    -- but do so only once.
     if rpg_t.level >= settings_level['one_punch_label'] then
-        rpg_t.one_punch = true
+        if not rpg_t.auto_toggle_features.one_punch then
+            rpg_t.auto_toggle_features.one_punch = true
+            rpg_t.one_punch = true
+        end
     end
     if rpg_t.level >= settings_level['stone_path_label'] then
-        rpg_t.stone_path = true
+        if not rpg_t.auto_toggle_features.stone_path then
+            rpg_t.auto_toggle_features.stone_path = true
+            rpg_t.stone_path = true
+        end
     end
 
     Public.draw_level_text(player)
@@ -156,7 +168,7 @@ local function add_to_global_pool(amount, personal_tax)
         fee = amount * 0.3
     end
 
-    rpg_extra.global_pool = rpg_extra.global_pool + fee
+    rpg_extra.global_pool = round(rpg_extra.global_pool + fee, 8)
     return amount - fee
 end
 
@@ -180,7 +192,7 @@ local repair_buildings =
 )
 
 function Public.repair_aoe(player, position)
-    local entities = player.surface.find_entities_filtered {force = player.force, area = {{position.x - 5, position.y - 5}, {position.x + 5, position.y + 5}}}
+    local entities = player.surface.find_entities_filtered {force = player.force, area = {{position.x - 8, position.y - 8}, {position.x + 8, position.y + 8}}}
     local count = 0
     for i = 1, #entities do
         local e = entities[i]
@@ -261,6 +273,56 @@ function Public.validate_player(player)
     return true
 end
 
+function Public.remove_mana(player, mana_to_remove)
+    local rpg_extra = Public.get('rpg_extra')
+    local rpg_t = Public.get_value_from_player(player.index)
+    if not rpg_extra.enable_mana then
+        return
+    end
+
+    if not mana_to_remove then
+        return
+    end
+
+    mana_to_remove = floor(mana_to_remove)
+
+    if not rpg_t then
+        return
+    end
+
+    if rpg_t.debug_mode then
+        rpg_t.mana = 9999
+        return
+    end
+
+    if player.gui.screen[main_frame_name] then
+        local f = player.gui.screen[main_frame_name]
+        local data = Gui.get_data(f)
+        if data.mana and data.mana.valid then
+            data.mana.caption = rpg_t.mana
+        end
+    end
+
+    rpg_t.mana = rpg_t.mana - mana_to_remove
+
+    if rpg_t.mana < 0 then
+        rpg_t.mana = 0
+        return
+    end
+
+    if player.gui.screen[spell_gui_frame_name] then
+        local f = player.gui.screen[spell_gui_frame_name]
+        if f['spell_table'] then
+            if f['spell_table']['mana'] then
+                f['spell_table']['mana'].caption = math.floor(rpg_t.mana)
+            end
+            if f['spell_table']['maxmana'] then
+                f['spell_table']['maxmana'].caption = math.floor(rpg_t.mana_max)
+            end
+        end
+    end
+end
+
 function Public.update_mana(player)
     local rpg_extra = Public.get('rpg_extra')
     local rpg_t = Public.get_value_from_player(player.index)
@@ -325,6 +387,8 @@ function Public.reward_mana(player, mana_to_add)
         return
     end
 
+    mana_to_add = floor(mana_to_add)
+
     if not rpg_t then
         return
     end
@@ -380,7 +444,7 @@ function Public.update_health(player)
         local f = player.gui.screen[main_frame_name]
         local data = Gui.get_data(f)
         if data.health and data.health.valid then
-            data.health.caption = (math.round(player.character.health * 10) / 10)
+            data.health.caption = (round(player.character.health * 10) / 10)
         end
         local shield_gui = player.character.get_inventory(defines.inventory.character_armor)
         if not shield_gui.is_empty() then
@@ -451,6 +515,35 @@ function Public.level_limit_exceeded(player, value)
     return false
 end
 
+function Public.update_player_stats(player)
+    local rpg_extra = Public.get('rpg_extra')
+    local rpg_t = Public.get_value_from_player(player.index)
+    local strength = rpg_t.strength - 10
+    P.update_single_modifier(player, 'character_inventory_slots_bonus', 'rpg', round(strength * 0.2, 3))
+    P.update_single_modifier(player, 'character_mining_speed_modifier', 'rpg', round(strength * 0.007, 3))
+    P.update_single_modifier(player, 'character_maximum_following_robot_count_bonus', 'rpg', round(strength / 2 * 0.03, 3))
+
+    local magic = rpg_t.magicka - 10
+    local v = magic * 0.22
+    P.update_single_modifier(player, 'character_build_distance_bonus', 'rpg', math.min(60, round(v * 0.12, 3)))
+    P.update_single_modifier(player, 'character_item_drop_distance_bonus', 'rpg', math.min(60, round(v * 0.05, 3)))
+    P.update_single_modifier(player, 'character_reach_distance_bonus', 'rpg', math.min(60, round(v * 0.12, 3)))
+    P.update_single_modifier(player, 'character_loot_pickup_distance_bonus', 'rpg', math.min(20, round(v * 0.12, 3)))
+    P.update_single_modifier(player, 'character_item_pickup_distance_bonus', 'rpg', math.min(20, round(v * 0.12, 3)))
+    P.update_single_modifier(player, 'character_resource_reach_distance_bonus', 'rpg', math.min(20, round(v * 0.05, 3)))
+    if rpg_t.mana_max >= rpg_extra.mana_limit then
+        rpg_t.mana_max = rpg_extra.mana_limit
+    else
+        rpg_t.mana_max = round((magic) * 2, 3)
+    end
+
+    local dexterity = rpg_t.dexterity - 10
+    P.update_single_modifier(player, 'character_running_speed_modifier', 'rpg', round(dexterity * 0.0010, 3)) -- reduced since too high speed kills UPS.
+    P.update_single_modifier(player, 'character_crafting_speed_modifier', 'rpg', round(dexterity * 0.015, 3))
+    P.update_single_modifier(player, 'character_health_bonus', 'rpg', round((rpg_t.vitality - 10) * 6, 3))
+    P.update_player_modifiers(player)
+end
+
 function Public.level_up_effects(player)
     local position = {x = player.position.x - 0.75, y = player.position.y - 1}
     player.surface.create_entity({name = 'flying-text', position = position, text = '+LVL ', color = level_up_floating_text_color})
@@ -479,14 +572,93 @@ function Public.xp_effects(player)
     player.play_sound {path = 'utility/achievement_unlocked', volume_modifier = 0.40}
 end
 
+function Public.get_range_modifier(player)
+    local rpg_t = Public.get_value_from_player(player.index)
+    if not rpg_t then
+        return false
+    end
+    local total = (rpg_t.strength - 10) * 0.010
+    if total > 5 then -- limit it to 5 for now, until we've tested it enough
+        total = 5
+    end
+    return round(total, 3)
+end
+
 function Public.get_melee_modifier(player)
     local rpg_t = Public.get_value_from_player(player.index)
-    return (rpg_t.strength - 10) * 0.10
+    if not rpg_t then
+        return false
+    end
+    local total = (rpg_t.strength - 10) * 0.10
+    return total
+end
+
+function Public.get_final_damage_modifier(player)
+    local rpg_t = Public.get_value_from_player(player.index)
+    if not rpg_t then
+        return false
+    end
+    local rng = random(10, 35) * 0.01
+    return (rpg_t.strength - 10) * rng
+end
+
+function Public.get_final_damage(player, entity, original_damage_amount)
+    local modifier = Public.get_final_damage_modifier(player)
+    if not modifier then
+        return false
+    end
+    local damage = original_damage_amount + original_damage_amount * modifier
+    if entity.prototype.resistances then
+        if entity.prototype.resistances.physical then
+            damage = damage - entity.prototype.resistances.physical.decrease
+            damage = damage - damage * entity.prototype.resistances.physical.percent
+        end
+    end
+    damage = round(damage, 3)
+    if damage < 1 then
+        damage = 1
+    end
+    return damage
 end
 
 function Public.get_heal_modifier(player)
     local rpg_t = Public.get_value_from_player(player.index)
+    if not rpg_t then
+        return false
+    end
     return (rpg_t.vitality - 10) * 0.06
+end
+
+function Public.get_heal_modifier_from_using_fish(player)
+    local rpg_extra = Public.get('rpg_extra')
+    if rpg_extra.disable_get_heal_modifier_from_using_fish then
+        return
+    end
+
+    local base_amount = 80
+    local rng = random(base_amount, base_amount * rpg_extra.heal_modifier)
+    local char = player.character
+    local position = player.position
+    if char and char.valid then
+        local health = player.character_health_bonus + 250
+        local color
+        if char.health > (health * 0.50) then
+            color = {b = 0.2, r = 0.1, g = 1, a = 0.8}
+        elseif char.health > (health * 0.25) then
+            color = {r = 1, g = 1, b = 0}
+        else
+            color = {b = 0.1, r = 1, g = 0, a = 0.8}
+        end
+        player.surface.create_entity(
+            {
+                name = 'flying-text',
+                position = {position.x, position.y + 0.6},
+                text = '+' .. rng,
+                color = color
+            }
+        )
+        char.health = char.health + rng
+    end
 end
 
 function Public.get_mana_modifier(player)
@@ -510,7 +682,7 @@ function Public.get_one_punch_chance(player)
     if rpg_t.strength < 100 then
         return 0
     end
-    local chance = math.round(rpg_t.strength * 0.01, 1)
+    local chance = round(rpg_t.strength * 0.012, 1)
     if chance > 100 then
         chance = 100
     end
@@ -520,7 +692,7 @@ end
 function Public.get_extra_following_robots(player)
     local rpg_t = Public.get_value_from_player(player.index)
     local strength = rpg_t.strength
-    local count = math.round(strength / 2 * 0.03, 3)
+    local count = round(strength / 2 * 0.03, 3)
     return count
 end
 
@@ -593,11 +765,15 @@ function Public.rpg_reset_player(player, one_time_reset)
                 last_mined_entity_position = {x = 0, y = 0},
                 show_bars = false,
                 stone_path = false,
-                one_punch = false
+                one_punch = false,
+                auto_toggle_features = {
+                    stone_path = false,
+                    one_punch = false
+                }
             }
         )
         rpg_t.points_left = old_points_left + total
-        rpg_t.xp = old_xp
+        rpg_t.xp = round(old_xp)
         rpg_t.level = old_level
     else
         Public.set_new_player_tbl(
@@ -631,7 +807,11 @@ function Public.rpg_reset_player(player, one_time_reset)
                 last_mined_entity_position = {x = 0, y = 0},
                 show_bars = false,
                 stone_path = false,
-                one_punch = false
+                one_punch = false,
+                auto_toggle_features = {
+                    stone_path = false,
+                    one_punch = false
+                }
             }
         )
     end
@@ -682,7 +862,7 @@ function Public.gain_xp(player, amount, added_to_pool, text)
         Public.debug_log('RPG - ' .. player.name .. ' got org xp: ' .. amount)
         local fee = amount - add_to_global_pool(amount, true)
         Public.debug_log('RPG - ' .. player.name .. ' got fee: ' .. fee)
-        amount = math.round(amount, 3) - fee
+        amount = round(amount, 3) - fee
         if rpg_extra.difficulty then
             amount = amount + rpg_extra.difficulty
         end
@@ -691,8 +871,8 @@ function Public.gain_xp(player, amount, added_to_pool, text)
         Public.debug_log('RPG - ' .. player.name .. ' got org xp: ' .. amount)
     end
 
-    rpg_t.xp = math.round(rpg_t.xp + amount, 3)
-    rpg_t.xp_since_last_floaty_text = rpg_t.xp_since_last_floaty_text + amount
+    rpg_t.xp = round(rpg_t.xp + amount, 3)
+    rpg_t.xp_since_last_floaty_text = round(rpg_t.xp_since_last_floaty_text + amount)
 
     if not experience_levels[rpg_t.level + 1] then
         return

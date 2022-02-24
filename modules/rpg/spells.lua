@@ -5,8 +5,8 @@ function Public.conjure_items()
 
     spells[#spells + 1] = {
         name = {'entity-name.stone-wall'},
-        obj_to_create = 'stone-wall',
-        level = 10,
+        entityName = 'stone-wall',
+        level = 1,
         type = 'item',
         mana_cost = 60,
         tick = 100,
@@ -16,8 +16,8 @@ function Public.conjure_items()
     }
     spells[#spells + 1] = {
         name = {'entity-name.wooden-chest'},
-        obj_to_create = 'wooden-chest',
-        level = 2,
+        entityName = 'wooden-chest',
+        level = 1,
         type = 'item',
         mana_cost = 50,
         tick = 100,
@@ -27,7 +27,7 @@ function Public.conjure_items()
     }
     spells[#spells + 1] = {
         name = {'entity-name.iron-chest'},
-        obj_to_create = 'iron-chest',
+        entityName = 'iron-chest',
         level = 10,
         type = 'item',
         mana_cost = 110,
@@ -38,8 +38,8 @@ function Public.conjure_items()
     }
     spells[#spells + 1] = {
         name = {'entity-name.steel-chest'},
-        obj_to_create = 'steel-chest',
-        level = 15,
+        entityName = 'steel-chest',
+        level = 30,
         type = 'item',
         mana_cost = 150,
         tick = 300,
@@ -49,8 +49,8 @@ function Public.conjure_items()
     }
     spells[#spells + 1] = {
         name = {'entity-name.transport-belt'},
-        obj_to_create = 'transport-belt',
-        level = 3,
+        entityName = 'transport-belt',
+        level = 1,
         type = 'item',
         mana_cost = 80,
         tick = 100,
@@ -60,8 +60,8 @@ function Public.conjure_items()
     }
     spells[#spells + 1] = {
         name = {'entity-name.fast-transport-belt'},
-        obj_to_create = 'fast-transport-belt',
-        level = 20,
+        entityName = 'fast-transport-belt',
+        level = 10,
         type = 'item',
         mana_cost = 110,
         tick = 200,
@@ -71,8 +71,8 @@ function Public.conjure_items()
     }
     spells[#spells + 1] = {
         name = {'entity-name.express-transport-belt'},
-        obj_to_create = 'express-transport-belt',
-        level = 60,
+        entityName = 'express-transport-belt',
+        level = 30,
         type = 'item',
         mana_cost = 150,
         tick = 300,
@@ -82,8 +82,8 @@ function Public.conjure_items()
     }
     spells[#spells + 1] = {
         name = {'entity-name.underground-belt'},
-        obj_to_create = 'underground-belt',
-        level = 3,
+        entityName = 'underground-belt',
+        level = 1,
         type = 'item',
         mana_cost = 80,
         tick = 100,
@@ -93,8 +93,8 @@ function Public.conjure_items()
     }
     spells[#spells + 1] = {
         name = {'entity-name.fast-underground-belt'},
-        obj_to_create = 'fast-underground-belt',
-        level = 20,
+        entityName = 'fast-underground-belt',
+        level = 10,
         type = 'item',
         mana_cost = 110,
         tick = 200,
@@ -104,8 +104,8 @@ function Public.conjure_items()
     }
     spells[#spells + 1] = {
         name = {'entity-name.express-underground-belt'},
-        obj_to_create = 'express-underground-belt',
-        level = 60,
+        entityName = 'express-underground-belt',
+        level = 30,
         type = 'item',
         mana_cost = 150,
         tick = 300,
@@ -114,9 +114,31 @@ function Public.conjure_items()
         sprite = 'recipe/express-underground-belt'
     }
     spells[#spells + 1] = {
+        name = {'entity-name.pipe'},
+        entityName = 'pipe',
+        level = 1,
+        type = 'item',
+        mana_cost = 50,
+        tick = 100,
+        aoe = true,
+        enabled = true,
+        sprite = 'recipe/pipe'
+    }
+    spells[#spells + 1] = {
+        name = {'entity-name.pipe-to-ground'},
+        entityName = 'pipe-to-ground',
+        level = 1,
+        type = 'item',
+        mana_cost = 100,
+        tick = 100,
+        aoe = true,
+        enabled = true,
+        sprite = 'recipe/pipe-to-ground'
+    }
+    spells[#spells + 1] = {
         name = {'entity-name.tree'},
-        obj_to_create = 'tree-05',
-        level = 70,
+        entityName = 'tree-05',
+        level = 30,
         type = 'entity',
         mana_cost = 100,
         tick = 350,
@@ -126,8 +148,8 @@ function Public.conjure_items()
     }
     spells[#spells + 1] = {
         name = {'entity-name.sand-rock-big'},
-        obj_to_create = 'sand-rock-big',
-        level = 80,
+        entityName = 'sand-rock-big',
+        level = 60,
         type = 'entity',
         mana_cost = 80,
         tick = 350,
@@ -137,8 +159,8 @@ function Public.conjure_items()
     }
     spells[#spells + 1] = {
         name = {'entity-name.small-biter'},
-        obj_to_create = 'small-biter',
-        level = 50,
+        entityName = 'small-biter',
+        level = 30,
         biter = true,
         type = 'entity',
         mana_cost = 55,
@@ -148,8 +170,8 @@ function Public.conjure_items()
     }
     spells[#spells + 1] = {
         name = {'entity-name.small-spitter'},
-        obj_to_create = 'small-spitter',
-        level = 50,
+        entityName = 'small-spitter',
+        level = 30,
         biter = true,
         type = 'entity',
         mana_cost = 55,
@@ -159,8 +181,8 @@ function Public.conjure_items()
     }
     spells[#spells + 1] = {
         name = {'entity-name.medium-biter'},
-        obj_to_create = 'medium-biter',
-        level = 70,
+        entityName = 'medium-biter',
+        level = 60,
         biter = true,
         type = 'entity',
         mana_cost = 100,
@@ -170,8 +192,8 @@ function Public.conjure_items()
     }
     spells[#spells + 1] = {
         name = {'entity-name.medium-spitter'},
-        obj_to_create = 'medium-spitter',
-        level = 70,
+        entityName = 'medium-spitter',
+        level = 60,
         biter = true,
         type = 'entity',
         mana_cost = 100,
@@ -181,7 +203,7 @@ function Public.conjure_items()
     }
     spells[#spells + 1] = {
         name = {'entity-name.biter-spawner'},
-        obj_to_create = 'biter-spawner',
+        entityName = 'biter-spawner',
         level = 100,
         biter = true,
         type = 'entity',
@@ -192,7 +214,7 @@ function Public.conjure_items()
     }
     spells[#spells + 1] = {
         name = {'entity-name.spitter-spawner'},
-        obj_to_create = 'spitter-spawner',
+        entityName = 'spitter-spawner',
         level = 100,
         biter = true,
         type = 'entity',
@@ -201,44 +223,101 @@ function Public.conjure_items()
         enabled = false,
         sprite = 'entity/spitter-spawner'
     }
+
+    spells[#spells + 1] = {
+        name = {'item-name.shotgun-shell'},
+        entityName = 'shotgun-shell',
+        target = true,
+        amount = 1,
+        damage = true,
+        force = 'player',
+        level = 10,
+        type = 'item',
+        mana_cost = 40,
+        tick = 150,
+        enabled = true,
+        sprite = 'recipe/shotgun-shell'
+    }
     spells[#spells + 1] = {
         name = {'item-name.grenade'},
-        obj_to_create = 'grenade',
+        entityName = 'grenade',
         target = true,
         amount = 1,
         damage = true,
         force = 'player',
         level = 30,
-        type = 'special',
-        mana_cost = 110,
+        type = 'item',
+        mana_cost = 100,
         tick = 150,
         enabled = true,
         sprite = 'recipe/grenade'
     }
     spells[#spells + 1] = {
         name = {'item-name.cluster-grenade'},
-        obj_to_create = 'cluster-grenade',
+        entityName = 'cluster-grenade',
         target = true,
         amount = 2,
         damage = true,
         force = 'player',
         level = 50,
-        type = 'special',
-        mana_cost = 150,
+        type = 'item',
+        mana_cost = 225,
         tick = 200,
         enabled = true,
         sprite = 'recipe/cluster-grenade'
     }
     spells[#spells + 1] = {
+        name = {'item-name.cannon-shell'},
+        entityName = 'cannon-shell',
+        target = true,
+        amount = 1,
+        damage = true,
+        force = 'player',
+        level = 30,
+        type = 'item',
+        mana_cost = 125,
+        tick = 150,
+        enabled = true,
+        sprite = 'recipe/cannon-shell'
+    }
+    spells[#spells + 1] = {
+        name = {'item-name.explosive-cannon-shell'},
+        entityName = 'explosive-cannon-shell',
+        target = true,
+        amount = 2,
+        damage = true,
+        force = 'player',
+        level = 50,
+        type = 'item',
+        mana_cost = 250,
+        tick = 200,
+        enabled = true,
+        sprite = 'recipe/explosive-cannon-shell'
+    }
+    spells[#spells + 1] = {
+        name = {'item-name.uranium-cannon-shell'},
+        entityName = 'uranium-cannon-shell',
+        target = true,
+        amount = 2,
+        damage = true,
+        force = 'player',
+        level = 70,
+        type = 'item',
+        mana_cost = 400,
+        tick = 200,
+        enabled = true,
+        sprite = 'recipe/uranium-cannon-shell'
+    }
+    spells[#spells + 1] = {
         name = {'item-name.rocket'},
-        obj_to_create = 'rocket',
+        entityName = 'rocket',
         range = 240,
         target = true,
         amount = 4,
         damage = true,
         force = 'enemy',
         level = 40,
-        type = 'special',
+        type = 'item',
         mana_cost = 60,
         tick = 320,
         enabled = true,
@@ -246,7 +325,7 @@ function Public.conjure_items()
     }
     spells[#spells + 1] = {
         name = {'spells.pointy_explosives'},
-        obj_to_create = 'pointy_explosives',
+        entityName = 'pointy_explosives',
         target = true,
         amount = 1,
         range = 0,
@@ -261,39 +340,66 @@ function Public.conjure_items()
     }
     spells[#spells + 1] = {
         name = {'spells.repair_aoe'},
-        obj_to_create = 'repair_aoe',
+        entityName = 'repair_aoe',
         target = true,
         amount = 1,
         range = 50,
         damage = false,
         force = 'player',
-        level = 50,
+        level = 45,
         type = 'special',
-        mana_cost = 200,
+        mana_cost = 150,
         tick = 100,
         enabled = true,
         sprite = 'recipe/repair-pack'
     }
     spells[#spells + 1] = {
         name = {'spells.acid_stream'},
-        obj_to_create = 'acid-stream-spitter-big',
+        entityName = 'acid-stream-spitter-big',
         target = true,
         amount = 2,
         range = 0,
         damage = true,
         force = 'player',
-        level = 70,
+        level = 50,
         type = 'special',
-        mana_cost = 90,
+        mana_cost = 70,
         tick = 100,
         enabled = true,
         sprite = 'virtual-signal/signal-S'
     }
     spells[#spells + 1] = {
+        name = {'spells.tank'},
+        entityName = 'tank',
+        amount = 1,
+        capsule = true,
+        force = 'player',
+        level = 1000,
+        type = 'special',
+        mana_cost = 10000, -- they who know, will know
+        tick = 320,
+        enabled = false,
+        sprite = 'entity/tank'
+    }
+    spells[#spells + 1] = {
+        name = {'spells.spidertron'},
+        entityName = 'spidertron',
+        amount = 1,
+        capsule = true,
+        force = 'player',
+        level = 2000,
+        type = 'special',
+        mana_cost = 19500, -- they who know, will know
+        tick = 320,
+        enabled = false,
+        sprite = 'entity/spidertron'
+    }
+    spells[#spells + 1] = {
         name = {'spells.raw_fish'},
-        obj_to_create = 'fish',
+        entityName = 'raw-fish',
         target = false,
         amount = 4,
+        capsule = true,
         damage = false,
         range = 30,
         force = 'player',
@@ -305,8 +411,24 @@ function Public.conjure_items()
         sprite = 'item/raw-fish'
     }
     spells[#spells + 1] = {
+        name = {'spells.dynamites'},
+        entityName = 'explosives',
+        target = false,
+        amount = 3,
+        capsule = true,
+        damage = false,
+        range = 30,
+        force = 'player',
+        level = 25,
+        type = 'special',
+        mana_cost = 140,
+        tick = 320,
+        enabled = true,
+        sprite = 'item/explosives'
+    }
+    spells[#spells + 1] = {
         name = {'spells.comfylatron'},
-        obj_to_create = 'suicidal_comfylatron',
+        entityName = 'suicidal_comfylatron',
         target = false,
         amount = 4,
         damage = false,
@@ -314,14 +436,14 @@ function Public.conjure_items()
         force = 'player',
         level = 60,
         type = 'special',
-        mana_cost = 250,
+        mana_cost = 150,
         tick = 320,
         enabled = true,
         sprite = 'entity/compilatron'
     }
     spells[#spells + 1] = {
         name = {'spells.distractor'},
-        obj_to_create = 'distractor-capsule',
+        entityName = 'distractor-capsule',
         target = true,
         amount = 1,
         damage = false,
@@ -329,14 +451,14 @@ function Public.conjure_items()
         force = 'player',
         level = 50,
         type = 'special',
-        mana_cost = 340,
+        mana_cost = 220,
         tick = 320,
         enabled = true,
         sprite = 'recipe/distractor-capsule'
     }
     spells[#spells + 1] = {
         name = {'spells.warp'},
-        obj_to_create = 'warp-gate',
+        entityName = 'warp-gate',
         target = true,
         force = 'player',
         level = 60,

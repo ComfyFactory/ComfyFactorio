@@ -199,10 +199,10 @@ end
 
 local function mining_chances_ores()
     local data = {
-        {name = 'iron-ore', chance = 25},
-        {name = 'copper-ore', chance = 17},
-        {name = 'coal', chance = 15},
-        {name = 'stone', chance = 13},
+        {name = 'iron-ore', chance = 26},
+        {name = 'copper-ore', chance = 21},
+        {name = 'coal', chance = 17},
+        {name = 'stone', chance = 6},
         {name = 'uranium-ore', chance = 2}
     }
 
@@ -330,6 +330,10 @@ local function randomness(data)
         }
     )
 
+    if data.debug_mode then -- we're debugging - don't insert items
+        return
+    end
+
     if harvest_amount > max_spill then
         if spill_items_to_surface then
             player.surface.spill_item_stack(position, {name = harvest, count = max_spill}, true)
@@ -378,6 +382,10 @@ local function randomness_scrap(data)
             color = {r = 200, g = 160, b = 30}
         }
     )
+
+    if data.debug_mode then -- we're debugging - don't insert items
+        return
+    end
 
     if harvest_amount > max_spill then
         if spill_items_to_surface then
@@ -434,6 +442,8 @@ function Public.on_player_mined_entity(event)
         local index = player.index
 
         local scrap_zone = RPG.get_value_from_player(index, 'scrap_zone')
+        local debug_mode = RPG.get_value_from_player(index, 'debug_mode')
+        data.debug_mode = debug_mode or false
         if scrap_zone or is_scrap then
             randomness_scrap(data)
         else

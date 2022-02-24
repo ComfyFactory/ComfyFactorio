@@ -3,7 +3,7 @@
 local Event = require 'utils.event'
 local Jailed = require 'utils.datastore.jail_data'
 local Tabs = require 'comfy_panel.main'
-local AntiGrief = require 'antigrief'
+local AntiGrief = require 'utils.antigrief'
 local SpamProtection = require 'utils.spam_protection'
 local Token = require 'utils.token'
 
@@ -67,7 +67,10 @@ local function go_to_player(player, source_player)
     local pos = player.surface.find_non_colliding_position('character', player.position, 50, 1)
     if pos then
         source_player.teleport(pos, player.surface)
-        game.print(source_player.name .. ' is visiting ' .. player.name .. '. ' .. go_to_player_messages[math.random(1, #go_to_player_messages)], {r = 0.98, g = 0.66, b = 0.22})
+        game.print(
+            source_player.name .. ' is visiting ' .. player.name .. '. ' .. go_to_player_messages[math.random(1, #go_to_player_messages)],
+            {r = 0.98, g = 0.66, b = 0.22}
+        )
     end
 end
 
@@ -333,7 +336,7 @@ local function text_changed(event)
     end
 
     local antigrief = AntiGrief.get()
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
 
     local frame = Tabs.comfy_panel_get_active_frame(player)
     if not frame then
@@ -641,7 +644,7 @@ local function on_gui_click(event)
 
     local name = event.element.name
 
-    if name == 'tab_Admin' then
+    if name == 'tab_' .. module_name then
         local is_spamming = SpamProtection.is_spamming(player, nil, 'Admin tab_Admin')
         if is_spamming then
             return
@@ -715,7 +718,7 @@ local function on_gui_click(event)
 end
 
 local function on_gui_selection_state_changed(event)
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
     local name = event.element.name
 
     if name == 'admin_history_select' then

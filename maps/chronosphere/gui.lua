@@ -18,7 +18,7 @@ local function create_gui(player)
     local label
     local button
 
-    label = frame.add({type = 'label', caption = ' ', name = 'label'})
+    label = frame.add({type = 'label', caption = {'chronosphere.gui_1'}, name = 'label'})
     label.style.font_color = {r = 0.88, g = 0.88, b = 0.88}
     label.style.font = 'default-bold'
     label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
@@ -29,7 +29,7 @@ local function create_gui(player)
     label.style.right_padding = 4
     label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 
-    label = frame.add({type = 'label', caption = ' ', name = 'charger'})
+    label = frame.add({type = 'label', caption = {'chronosphere.gui_2'}, name = 'charger'})
     label.style.font = 'default-bold'
     label.style.left_padding = 4
     label.style.font_color = {r = 255, g = 200, b = 200} --255 200 200 --150 0 255
@@ -74,12 +74,12 @@ local function create_gui(player)
     -- line.style.left_padding = 4
     -- line.style.right_padding = 8
 
-    button = frame.add({type = 'button', caption = ' ', name = 'world_button'})
+    button = frame.add({type = 'button', caption = {'chronosphere.gui_world_button'}, name = 'world_button'})
     button.style.font = 'default-bold'
     button.style.font_color = {r = 0.99, g = 0.99, b = 0.99}
     button.style.minimal_width = 75
 
-    button = frame.add({type = 'button', caption = ' ', name = 'upgrades_button'})
+    button = frame.add({type = 'button', caption = {'chronosphere.gui_upgrades_button'}, name = 'upgrades_button'})
     button.style.font = 'default-bold'
     button.style.font_color = {r = 0.99, g = 0.99, b = 0.99}
     button.style.minimal_width = 75
@@ -180,19 +180,116 @@ local function update_upgrades_gui(player)
     end
     local t2 = frame['production_table']
     for key, _ in pairs(Production) do
-        t2['product' .. key].number = math.floor((production_table.experience[key] / 1000) ^ (1 / 2))
+        t2['product' .. key].number = ProdFunctions.calculate_factory_level(production_table.experience[key], true)
         t2['product_bar' .. key].value = calculate_xp(key)
         t2['product_bar' .. key].tooltip = math.floor(calculate_xp(key) * 1000) / 10 .. '%'
     end
     switch_upgrades(player, playertable.active_upgrades_gui[player.index])
 end
 
-local function world_gui(player)
+local function ETA_seconds_until_full(power, storedbattery) -- in watts and joules
     local objective = Chrono_table.get_table()
+
+    local n = objective.chronochargesneeded - objective.chronocharges
+
+    if n <= 0 then
+        return 0
+    else
+        local eta = math_max(0, n - storedbattery / 1000000) / (power / 1000000 + objective.passive_chronocharge_rate)
+        if eta < 1 then
+            return 1
+        end
+        return math_floor(eta)
+    end
+end
+
+local function overstay_timers(gui_element, seconds_ETA, min_jump_passed)
+    local objective = Chrono_table.get_table()
+    local overstay, evolution = false, false
+    local time_until_overstay = (objective.chronochargesneeded * 0.75 / objective.passive_chronocharge_rate - objective.passivetimer)
+    local time_until_evo = (objective.chronochargesneeded * 0.5 / objective.passive_chronocharge_rate - objective.passivetimer)
+    local color = {r = 0, g = 0.98, b = 0}
+    if min_jump_passed then
+        if time_until_overstay <= seconds_ETA then
+            color = {r = 0.98, g = 0, b = 0}
+        elseif time_until_evo <= seconds_ETA then
+            color = {r = 0.98, g = 0.5, b = 0}
+        end
+    end
+    gui_element.style.font_color = color
+
+    local evo_timer = {math_floor(time_until_overstay / 60), math_floor(time_until_overstay) % 60, math_floor(time_until_evo / 60), math_floor(time_until_evo) % 60}
+    if time_until_overstay < 0 then
+        evo_timer[2] = 59 - evo_timer[2]
+        overstay = true
+    end
+    if time_until_evo < 0 then
+        evo_timer[4] = 59 - evo_timer[4]
+        evolution = true
+    end
+    return evo_timer, overstay, evolution
+end
+
+local function update_world_gui(player)
+    if not player.gui.screen['gui_world'] then
+        return
+    end
+    local objective = Chrono_table.get_table()
+    local difficulty = Difficulty.get().difficulty_vote_value
+    local overstay_jump = Balance.jumps_until_overstay_is_on(difficulty) or 3
+    local world = objective.world
+    local evolution = game.forces['enemy'].evolution_factor
+    local evo_color = {
+        r = math_floor(255 * 1 * math_max(0, math_min(1, 1.2 - evolution * 2))),
+        g = math_floor(255 * 1 * math_max(math_abs(0.5 - evolution * 1.5), 1 - evolution * 4)),
+        b = math_floor(255 * 4 * math_max(0, 0.25 - math_abs(0.5 - evolution)))
+    }
+    local frame = player.gui.screen['gui_world']
+
+    frame['world_name'].caption = {'chronosphere.gui_world_0', world.variant.name}
+    frame['world_ores']['iron-ore'].number = world.variant.fe
+    frame['world_ores']['copper-ore'].number = world.variant.cu
+    frame['world_ores']['coal'].number = world.variant.c
+    frame['world_ores']['stone'].number = world.variant.s
+    frame['world_ores']['uranium-ore'].number = world.variant.u
+    frame['world_ores']['oil'].number = world.variant.o
+    frame['richness'].caption = {'chronosphere.gui_world_2', world.ores.name}
+    frame['world_biters'].caption = {'chronosphere.gui_world_3', math_floor(evolution * 100, 1)}
+    frame['world_biters'].style.font_color = evo_color
+
+    frame['world_biters3'].caption = {'chronosphere.gui_world_4_1', objective.overstaycount * 2.5, objective.overstaycount * 10}
+    frame['world_time'].caption = {'chronosphere.gui_world_5', world.dayspeed.name}
+
+    local timers, overstayed, _ = overstay_timers(frame['overstay_time'], ETA_seconds_until_full(0, 0), objective.chronojumps >= overstay_jump)
+    if objective.jump_countdown_start_time == -1 then
+        if objective.chronojumps >= overstay_jump then
+            if overstayed then
+                frame['overstay_time'].caption = {'chronosphere.gui_overstayed'}
+            else
+                frame['overstay_time'].caption = {'chronosphere.gui_world_6', timers[1], timers[2]}
+            end
+        else
+            frame['overstay_time'].caption = {'chronosphere.gui_world_7', overstay_jump}
+        end
+    else
+        if objective.chronojumps >= overstay_jump then
+            if overstayed then
+                frame['overstay_time'].caption = {'chronosphere.gui_overstayed'}
+            else
+                frame['overstay_time'].caption = {'chronosphere.gui_not_overstayed'}
+            end
+        else
+            frame['overstay_time'].caption = {'chronosphere.gui_world_7', overstay_jump}
+        end
+    end
+end
+
+local function world_gui(player)
     if player.gui.screen['gui_world'] then
         player.gui.screen['gui_world'].destroy()
         return
     end
+    local objective = Chrono_table.get_table()
     local world = objective.world
     local evolution = game.forces['enemy'].evolution_factor
     local frame = player.gui.screen.add {type = 'frame', name = 'gui_world', caption = {'chronosphere.gui_world_button'}, direction = 'vertical'}
@@ -217,100 +314,27 @@ local function world_gui(player)
     frame.add({type = 'label', name = 'world_biters2', caption = {'chronosphere.gui_world_4'}})
     frame.add({type = 'label', name = 'world_biters3', caption = {'chronosphere.gui_world_4_1', objective.overstaycount * 2.5, objective.overstaycount * 10}})
     frame.add({type = 'line'})
-    frame.add({type = 'label', name = 'overstay_time', caption = {'chronosphere.gui_world_7', '', ''}})
+    frame.add({type = 'label', name = 'overstay_time', caption = {'chronosphere.gui_world_7', 3}})
 
     frame.add({type = 'line'})
 
     local close = frame.add({type = 'button', name = 'close_world', caption = 'Close'})
-    close.style.horizontal_align = 'center'
-end
-
-local function update_world_gui(player)
-    local objective = Chrono_table.get_table()
-    local difficulty = Difficulty.get().difficulty_vote_value
-
-    if not player.gui.screen['gui_world'] then
-        return
-    end
-    local world = objective.world
-    local evolution = game.forces['enemy'].evolution_factor
-    local evo_color = {
-        r = math_floor(255 * 1 * math_max(0, math_min(1, 1.2 - evolution * 2))),
-        g = math_floor(255 * 1 * math_max(math_abs(0.5 - evolution * 1.5), 1 - evolution * 4)),
-        b = math_floor(255 * 4 * math_max(0, 0.25 - math_abs(0.5 - evolution)))
-    }
-    local frame = player.gui.screen['gui_world']
-
-    frame['world_name'].caption = {'chronosphere.gui_world_0', world.variant.name}
-    frame['world_ores']['iron-ore'].number = world.variant.fe
-    frame['world_ores']['copper-ore'].number = world.variant.cu
-    frame['world_ores']['coal'].number = world.variant.c
-    frame['world_ores']['stone'].number = world.variant.s
-    frame['world_ores']['uranium-ore'].number = world.variant.u
-    frame['world_ores']['oil'].number = world.variant.o
-    frame['richness'].caption = {'chronosphere.gui_world_2', world.ores.name}
-    frame['world_biters'].caption = {'chronosphere.gui_world_3', math_floor(evolution * 100, 1)}
-    frame['world_biters'].style.font_color = evo_color
-
-    frame['world_biters3'].caption = {'chronosphere.gui_world_4_1', objective.overstaycount * 2.5, objective.overstaycount * 10}
-    frame['world_time'].caption = {'chronosphere.gui_world_5', world.dayspeed.name}
-
-    if objective.jump_countdown_start_time == -1 then
-        if objective.chronojumps >= Balance.jumps_until_overstay_is_on(difficulty) then
-            local time_until_overstay = (objective.chronochargesneeded * 0.75 / objective.passive_chronocharge_rate - objective.passivetimer)
-            if time_until_overstay < 0 then
-                frame['overstay_time'].caption = {'chronosphere.gui_overstayed'}
-            else
-                frame['overstay_time'].caption = {'chronosphere.gui_world_6', math_floor(time_until_overstay / 60), math_floor(time_until_overstay % 60)}
-            end
-        else
-            frame['overstay_time'].caption = {'chronosphere.gui_world_7', Balance.jumps_until_overstay_is_on(difficulty)}
-        end
-    else
-        if objective.chronojumps >= Balance.jumps_until_overstay_is_on(difficulty) then
-            local overstayed = (objective.chronochargesneeded * 0.75 / objective.passive_chronocharge_rate < objective.jump_countdown_start_time)
-            if overstayed then
-                frame['overstay_time'].caption = {'chronosphere.gui_overstayed'}
-            else
-                frame['overstay_time'].caption = {'chronosphere.gui_not_overstayed'}
-            end
-        else
-            frame['overstay_time'].caption = {'chronosphere.gui_world_7', Balance.jumps_until_overstay_is_on(difficulty)}
-        end
-    end
-end
-
-local function ETA_seconds_until_full(power, storedbattery) -- in watts and joules
-    local objective = Chrono_table.get_table()
-
-    local n = objective.chronochargesneeded - objective.chronocharges
-
-    if n <= 0 then
-        return 0
-    else
-        local eta = math_max(0, n - storedbattery / 1000000) / (power / 1000000 + objective.passive_chronocharge_rate)
-        if eta < 1 then
-            return 1
-        end
-        return math_floor(eta)
-    end
+    close.style.horizontally_stretchable = true
+    update_world_gui(player)
 end
 
 function Public_gui.update_gui(player)
     local objective = Chrono_table.get_table()
     local difficulty = Difficulty.get().difficulty_vote_value
+    local playertable = Chrono_table.get_player_table()
 
-    update_world_gui(player)
-    update_upgrades_gui(player)
     if not player.gui.top.chronosphere then
         create_gui(player)
     end
     local gui = player.gui.top.chronosphere
+    local guimode = playertable.guimode[player.index]
 
-    gui.label.caption = {'chronosphere.gui_1'}
     gui.jump_number.caption = objective.chronojumps
-
-    gui.charger.caption = {'chronosphere.gui_2'}
 
     if (objective.chronochargesneeded < 100000) then
         gui.charger_value.caption = string.format('%.2f', objective.chronocharges / 1000) .. ' / ' .. math_floor(objective.chronochargesneeded) / 1000 .. ' GJ'
@@ -321,75 +345,64 @@ function Public_gui.update_gui(player)
     local interval = objective.chronochargesneeded
     gui.progressbar.value = 1 - (objective.chronochargesneeded - objective.chronocharges) / interval
 
-    --[[
-	if (objective.chronochargesneeded<1000) then
-		gui.charger_value.caption =  objective.chronocharges .. "/" .. objective.chronochargesneeded .. " MJ"
-	elseif (objective.chronochargesneeded<10000) then
-		gui.charger_value.caption =  math_floor(objective.chronocharges/10)/100 .. " / " .. math_floor(objective.chronochargesneeded/10)/100 .. " GJ"
-	elseif (objective.chronochargesneeded<1000000) then
-		gui.charger_value.caption =  math_floor(objective.chronocharges/100)/10 .. " / " .. math_floor(objective.chronochargesneeded/100)/10 .. " GJ"
-	elseif (objective.chronochargesneeded<10000000) then
-		gui.charger_value.caption =  math_floor(objective.chronocharges/10000)/100 .. " / " .. math_floor(objective.chronochargesneeded/10000)/100 .. " TJ"
-	else
-		gui.charger_value.caption =  math_floor(objective.chronocharges/100000)/10 .. " / " .. math_floor(objective.chronochargesneeded/100000)/10 .. " TJ"
-	end
-	]]
-    if objective.jump_countdown_start_time == -1 then
+    if objective.warmup then
+        if guimode ~= 'warmup' then
+            gui.timer.caption = {'chronosphere.gui_3_4'}
+            gui.timer_value.caption = ''
+            gui.timer.tooltip = {'chronosphere.gui_3_5'}
+            gui.timer_value.tooltip = ''
+            gui.timer2.caption = ''
+            gui.timer_value2.caption = ''
+            playertable.guimode[player.index] = 'warmup'
+        end
+    elseif objective.jump_countdown_start_time == -1 then
         local powerobserved, storedbattery = 0, 0
         local seconds_ETA = ETA_seconds_until_full(powerobserved, storedbattery)
-
-        gui.timer.caption = {'chronosphere.gui_3'}
         gui.timer_value.caption = math_floor(seconds_ETA / 60) .. 'm' .. seconds_ETA % 60 .. 's'
-        gui.timer_value.style.font_color = {r = 0, g = 0.98, b = 0}
 
         if objective.world.id == 2 and objective.world.variant.id == 2 and objective.passivetimer > 31 then
+            if guimode ~= 'nuclear' then
+                gui.timer.caption = {'chronosphere.gui_3'}
+                gui.timer_value.style.font_color = {r = 0, g = 0.98, b = 0}
+                gui.timer2.caption = {'chronosphere.gui_3_2'}
+                gui.timer2.style.font_color = {r = 0.98, g = 0, b = 0}
+                gui.timer_value2.style.font_color = {r = 0.98, g = 0, b = 0}
+                playertable.guimode[player.index] = 'nuclear'
+            end
             local nukecase = objective.dangertimer
-            gui.timer2.caption = {'chronosphere.gui_3_2'}
             gui.timer_value2.caption = math_floor(nukecase / 60) .. 'm' .. nukecase % 60 .. 's'
-            gui.timer2.style.font_color = {r = 0.98, g = 0, b = 0}
-            gui.timer_value2.style.font_color = {r = 0.98, g = 0, b = 0}
+
         else
             if objective.accumulators then
+                if guimode ~= 'accumulators' then
+                    gui.timer.caption = {'chronosphere.gui_3'}
+                    gui.timer_value.style.font_color = {r = 0, g = 0.98, b = 0}
+                    gui.timer2.caption = {'chronosphere.gui_3_1'}
+                    gui.timer2.style.font_color = {r = 0, g = 200, b = 0}
+                    gui.timer_value2.style.font_color = {r = 0, g = 200, b = 0}
+                    playertable.guimode[player.index] = 'accumulators'
+                end
                 local bestcase = math_floor(ETA_seconds_until_full(#objective.accumulators * 300000, storedbattery))
-                gui.timer2.caption = {'chronosphere.gui_3_1'}
                 gui.timer_value2.caption = math_floor(bestcase / 60) .. 'm' .. bestcase % 60 .. 's (drawing ' .. #objective.accumulators * 0.3 .. 'MW)'
-                gui.timer2.style.font_color = {r = 0, g = 200, b = 0}
-                gui.timer_value2.style.font_color = {r = 0, g = 200, b = 0}
             end
         end
-        --end
         if objective.chronojumps >= Balance.jumps_until_overstay_is_on(difficulty) then
-            local time_until_overstay = (objective.chronochargesneeded * 0.75 / objective.passive_chronocharge_rate - objective.passivetimer)
-            local time_until_evo = (objective.chronochargesneeded * 0.5 / objective.passive_chronocharge_rate - objective.passivetimer)
-            if time_until_evo <= seconds_ETA then
-                gui.timer_value.style.font_color = {r = 0.98, g = 0.5, b = 0}
-            end
-            if time_until_overstay <= seconds_ETA then
-                gui.timer_value.style.font_color = {r = 0.98, g = 0, b = 0}
-            end
-
-            local evo_timer = {math_floor(time_until_overstay / 60), math_floor(time_until_overstay) % 60, math_floor(time_until_evo / 60), math_floor(time_until_evo) % 60}
-            if time_until_overstay < 0 then
-                evo_timer[2] = 59 - evo_timer[2]
-            end
-            if time_until_evo < 0 then
-                evo_timer[4] = 59 - evo_timer[4]
-            end
-            gui.timer_value.tooltip = {'chronosphere.gui_biters_evolve', evo_timer[1], evo_timer[2], evo_timer[3], evo_timer[4]}
+            local timers = (overstay_timers(gui.timer_value, seconds_ETA, true))
+            gui.timer_value.tooltip = {'chronosphere.gui_biters_evolve', timers[1], timers[2], timers[3], timers[4]}
         else
             gui.timer_value.tooltip = ''
         end
     else
-        gui.timer.caption = {'chronosphere.gui_3_3'}
         gui.timer_value.caption = 180 - (objective.passivetimer - objective.jump_countdown_start_time) .. 's'
-        gui.timer.tooltip = ''
-        gui.timer_value.tooltip = ''
-        gui.timer2.caption = ''
-        gui.timer_value2.caption = ''
+        if guimode ~= 'countdown' then
+            gui.timer.caption = {'chronosphere.gui_3_3'}
+            gui.timer.tooltip = ''
+            gui.timer_value.tooltip = ''
+            gui.timer2.caption = ''
+            gui.timer_value2.caption = ''
+            playertable.guimode[player.index] = 'countdown'
+        end
     end
-
-    gui.world_button.caption = {'chronosphere.gui_world_button'}
-    gui.upgrades_button.caption = {'chronosphere.gui_upgrades_button'}
 end
 
 local function upgrades_gui(player)
@@ -507,10 +520,11 @@ local function upgrades_gui(player)
                 name = 'product' .. key,
                 enabled = false,
                 sprite = 'recipe/' .. recipe,
-                number = math.floor((production_table.experience[key] / 1000) ^ (1 / 2))
+                number = ProdFunctions.calculate_factory_level(production_table.experience[key], true)
+
             }
         )
-        local xp_bar = prod_table.add({type = 'progressbar', name = 'product_bar' .. key, value = calculate_xp(key)})
+        local xp_bar = prod_table.add({type = 'progressbar', name = 'product_bar' .. key, value = calculate_xp(key), tooltip = math.floor(calculate_xp(key) * 1000) / 10 .. '%'})
         xp_bar.style = 'achievement_progressbar'
     end
     switch_upgrades(player, playertable.active_upgrades_gui[player.index])
@@ -575,6 +589,24 @@ function Public_gui.on_gui_click(event)
     if name == 'token_ammo' then
         Upgrades.add_ammo_tokens(player)
         return
+    end
+end
+
+function Public_gui.update_all_player_gui()
+    for _, player in pairs(game.connected_players) do
+        Public_gui.update_gui(player)
+    end
+end
+
+function Public_gui.update_all_player_world_gui()
+    for _, player in pairs(game.connected_players) do
+        update_world_gui(player)
+    end
+end
+
+function Public_gui.update_all_player_upgrades_gui()
+    for _, player in pairs(game.connected_players) do
+        update_upgrades_gui(player)
     end
 end
 

@@ -7,7 +7,6 @@ local Server = require 'utils.server'
 local random = math.random
 local sqrt = math.sqrt
 local floor = math.floor
-local ceil = math.ceil
 local format = string.format
 local match = string.match
 local insert = table.insert
@@ -144,76 +143,6 @@ function Public.ternary(c, t, f)
     else
         return f
     end
-end
-
-local function CurrentDate(z)
-    z = floor(z / 86400) + 719468
-    local era = floor(z / 146097)
-    local doe = floor(z - era * 146097)
-    local yoe = floor((doe - doe / 1460 + doe / 36524 - doe / 146096) / 365)
-    local y = floor(yoe + era * 400)
-    local doy = doe - floor((365 * yoe + yoe / 4 - yoe / 100))
-    local mp = floor((5 * doy + 2) / 153)
-    local d = ceil(doy - (153 * mp + 2) / 5 + 1)
-    local m = floor(mp + (mp < 10 and 3 or -9))
-    return y + (m <= 2 and 1 or 0), m, d
-end
-
-function Public.CurrentTime(epoch)
-    if not epoch then
-        return
-    end
-
-    local unixTime = floor(epoch) - (60 * 60 * (-2))
-
-    local hours = floor(unixTime / 3600 % 12)
-    local minutes = floor(unixTime / 60 % 60)
-    local seconds = floor(unixTime % 60)
-
-    local year, month, day = CurrentDate(unixTime)
-
-    month = tonumber(month)
-    month = 0 .. month
-
-    day = tonumber(day)
-    if day < 10 then
-        day = 0 .. day
-    end
-
-    return {
-        year = year,
-        month = month,
-        day = day,
-        hours = hours,
-        minutes = minutes < 10 and '0' .. minutes or minutes,
-        seconds = seconds < 10 and '0' .. seconds or seconds
-    }
-end
-
-local CurrentTime = Public.CurrentTime
-
-function Public.get_current_date(pretty)
-    local server_time = Server.get_current_time()
-    if not server_time then
-        return false
-    end
-
-    local date = CurrentTime(server_time)
-    if pretty then
-        return tonumber(date.year .. '-' .. date.month .. '-' .. date.day)
-    else
-        return tonumber(date.year .. date.month .. date.day)
-    end
-end
-
-function Public.get_current_date_with_time()
-    local server_time = Server.get_current_time()
-    if not server_time then
-        return false
-    end
-
-    local date = CurrentTime(server_time)
-    return date.year .. '-' .. date.month .. '-' .. date.day .. ' ' .. date.hours .. ':' .. date.minutes
 end
 
 --- Takes a time in ticks and returns a string with the time in format "x hour(s) x minute(s)"

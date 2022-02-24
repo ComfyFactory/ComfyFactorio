@@ -7,6 +7,7 @@ local Alert = require 'utils.alert'
 local Event = require 'utils.event'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
+local Color = require 'utils.color_presets'
 
 local raise_event = script.raise_event
 local floor = math.floor
@@ -29,6 +30,29 @@ local scrap = {
     [5] = true,
     [15] = true
 }
+
+local clear_breach_text_and_render = function()
+    local beam1 = WPT.get('zone1_beam1')
+    if beam1 and beam1.valid then
+        beam1.destroy()
+    end
+    local beam2 = WPT.get('zone1_beam2')
+    if beam2 and beam2.valid then
+        beam2.destroy()
+    end
+    local zone1_text1 = WPT.get('zone1_text1')
+    if zone1_text1 then
+        rendering.set_text(zone1_text1, 'Collapse has started!')
+    end
+    local zone1_text2 = WPT.get('zone1_text2')
+    if zone1_text2 then
+        rendering.set_text(zone1_text2, 'Collapse has started!')
+    end
+    local zone1_text3 = WPT.get('zone1_text3')
+    if zone1_text3 then
+        rendering.set_text(zone1_text3, 'Collapse has started!')
+    end
+end
 
 local collapse_message =
     Token.register(
@@ -80,6 +104,39 @@ local spidertron_too_far =
     end
 )
 
+local check_distance_between_player_and_locomotive = function(player)
+    local surface = player.surface
+    local position = player.position
+    local locomotive = WPT.get('locomotive')
+    if not locomotive or not locomotive.valid then
+        return
+    end
+
+    local gap_between_locomotive = WPT.get('gap_between_locomotive')
+
+    if not gap_between_locomotive.highest_pos then
+        gap_between_locomotive.highest_pos = locomotive.position
+    end
+
+    gap_between_locomotive.highest_pos = locomotive.position
+    gap_between_locomotive = WPT.get('gap_between_locomotive')
+
+    local c_y = position.y
+    local t_y = gap_between_locomotive.highest_pos.y
+
+    if c_y - t_y <= gap_between_locomotive.neg_gap then
+        player.teleport({position.x, locomotive.position.y + gap_between_locomotive.neg_gap}, surface)
+        player.print(({'breached_wall.hinder'}), Color.warning)
+        if player.character then
+            player.character.health = player.character.health - 5
+            player.character.surface.create_entity({name = 'water-splash', position = position})
+            if player.character.health <= 0 then
+                player.character.die('enemy')
+            end
+        end
+    end
+end
+
 local compare_player_pos = function(player)
     local p = player.position
     local index = player.index
@@ -124,6 +181,19 @@ local compare_player_and_train = function(player, entity)
 
     local c_y = position.y
     local t_y = gap_between_zones.highest_pos.y
+    local spidertron_warning_position = gap_between_zones.neg_gap + 50
+
+    if c_y - t_y <= spidertron_warning_position then
+        local surface = player.surface
+        surface.create_entity(
+        {
+            name = 'flying-text',
+            position = position,
+            text = 'Warning!!! You are too far from the train!!!',
+            color = {r = 0.9, g = 0.0, b = 0.0}
+        }
+    )
+    end
 
     if c_y - t_y <= gap_between_zones.neg_gap then
         if entity.health then
@@ -209,6 +279,7 @@ local function distance(player)
         end
 
         if not Collapse.start_now() then
+            clear_breach_text_and_render()
             Collapse.start_now(true)
             local data = {
                 position = Collapse.get_position()
@@ -227,17 +298,19 @@ local function on_player_changed_position(event)
     local player = game.get_player(event.player_index)
     local surface_name = player.surface.name
     local map_name = 'mountain_fortress_v3'
-    if random(1, 3) ~= 1 then
-        return
-    end
 
     if sub(surface_name, 0, #map_name) ~= map_name then
         return
     end
 
+    check_distance_between_player_and_locomotive(player)
+
+    if random(1, 3) ~= 1 then
+        return
+    end
+
     distance(player)
 end
-
 local function on_player_driving_changed_state(event)
     local player = game.players[event.player_index]
     if not (player and player.valid) then

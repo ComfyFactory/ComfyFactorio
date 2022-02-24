@@ -3,7 +3,7 @@ local Biters = require 'modules.wave_defense.biter_rolls'
 local Functions = require 'maps.mountain_fortress_v3.functions'
 local Generate_resources = require 'maps.mountain_fortress_v3.resource_generator'
 local WPT = require 'maps.mountain_fortress_v3.table'
-local get_perlin = require 'utils.get_perlin'
+local get_perlin = require 'maps.mountain_fortress_v3.get_perlin'
 
 local Public = {}
 local random = math.random
@@ -14,6 +14,13 @@ local ceil = math.ceil
 Public.level_depth = WPT.level_depth
 Public.level_width = WPT.level_width
 local worm_level_modifier = 0.19
+
+-- local start_ground_tiles = {
+--     'dirt-1',
+--     'grass-1',
+--     'grass-2',
+--     'dirt-2'
+-- }
 
 local wagon_raffle = {
     'cargo-wagon',
@@ -227,7 +234,8 @@ local function spawn_turret(entities, p, probability)
         force = 'enemy',
         callback = turret_list[probability].callback,
         direction = 4,
-        collision = true
+        collision = true,
+        note = true
     }
 end
 
@@ -238,6 +246,7 @@ local function wall(p, data)
     local treasure = data.treasure
     local stone_wall = {callback = Functions.disable_minable_callback}
     local enable_arties = WPT.get('enable_arties')
+    local alert_zone_1 = WPT.get('alert_zone_1')
 
     local seed = data.seed
     local y = data.yv
@@ -303,6 +312,58 @@ local function wall(p, data)
                             force = 'player',
                             callback = stone_wall
                         }
+                        if not alert_zone_1 then
+                            local x_min = -WPT.level_width / 2
+                            local x_max = WPT.level_width / 2
+                            WPT.set(
+                                'zone1_beam1',
+                                surface.create_entity({name = 'electric-beam', position = {x_min, p.y}, source = {x_min, p.y}, target = {x_max, p.y}})
+                            )
+                            WPT.set(
+                                'zone1_beam2',
+                                surface.create_entity({name = 'electric-beam', position = {x_min, p.y}, source = {x_min, p.y}, target = {x_max, p.y}})
+                            )
+                            WPT.set('alert_zone_1', true)
+                            WPT.set(
+                                'zone1_text1',
+                                rendering.draw_text {
+                                    text = 'Breaching the far side wall will start collapse.',
+                                    surface = surface,
+                                    target = {0, p.y + 35},
+                                    color = {r = 0.98, g = 0.66, b = 0.22},
+                                    scale = 8,
+                                    font = 'heading-1',
+                                    alignment = 'center',
+                                    scale_with_zoom = false
+                                }
+                            )
+                            WPT.set(
+                                'zone1_text2',
+                                rendering.draw_text {
+                                    text = 'Breaching the far side wall will start collapse',
+                                    surface = surface,
+                                    target = {-180, p.y + 35},
+                                    color = {r = 0.98, g = 0.66, b = 0.22},
+                                    scale = 8,
+                                    font = 'heading-1',
+                                    alignment = 'center',
+                                    scale_with_zoom = false
+                                }
+                            )
+                            WPT.set(
+                                'zone1_text3',
+                                rendering.draw_text {
+                                    text = 'Breaching the far side wall will start collapse',
+                                    surface = surface,
+                                    target = {180, p.y + 35},
+                                    color = {r = 0.98, g = 0.66, b = 0.22},
+                                    scale = 8,
+                                    font = 'heading-1',
+                                    alignment = 'center',
+                                    scale_with_zoom = false
+                                }
+                            )
+                        end
                     end
                 else
                     if random(1, 32 - y) == 1 then
@@ -331,7 +392,8 @@ local function wall(p, data)
                 entities[#entities + 1] = {
                     name = Biters.wave_defense_roll_worm_name(),
                     position = p,
-                    force = 'enemy'
+                    force = 'enemy',
+                    note = true
                 }
             end
         end
@@ -411,7 +473,12 @@ local function process_level_14_position(x, y, data)
         end
         if random(1, 128) == 1 then
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
-            entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = 'enemy'}
+            entities[#entities + 1] = {
+                name = Biters.wave_defense_roll_worm_name(),
+                position = p,
+                force = 'enemy',
+                note = true
+            }
         end
         if random(1, 256) == 1 then
             spawn_turret(entities, p, 4)
@@ -486,7 +553,12 @@ local function process_level_13_position(x, y, data)
         end
         if random(1, 128) == 1 then
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
-            entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = 'enemy'}
+            entities[#entities + 1] = {
+                name = Biters.wave_defense_roll_worm_name(),
+                position = p,
+                force = 'enemy',
+                note = true
+            }
         end
         if random(1, 256) == 1 then
             spawn_turret(entities, p, 4)
@@ -739,7 +811,12 @@ local function process_level_10_position(x, y, data)
     if abs(scrapyard) > 0.40 and abs(scrapyard) < 0.65 then
         if random(1, 64) == 1 then
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
-            entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = 'enemy'}
+            entities[#entities + 1] = {
+                name = Biters.wave_defense_roll_worm_name(),
+                position = p,
+                force = 'enemy',
+                note = true
+            }
         end
         tiles[#tiles + 1] = {name = 'water-mud', position = p}
         return
@@ -751,7 +828,12 @@ local function process_level_10_position(x, y, data)
         end
         if random(1, 128) == 1 then
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
-            entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = 'enemy'}
+            entities[#entities + 1] = {
+                name = Biters.wave_defense_roll_worm_name(),
+                position = p,
+                force = 'enemy',
+                note = true
+            }
         end
         if random(1, 256) == 1 then
             spawn_turret(entities, p, 4)
@@ -767,7 +849,8 @@ local function process_level_10_position(x, y, data)
                 entities[#entities + 1] = {
                     name = Biters.wave_defense_roll_worm_name(),
                     position = p,
-                    force = 'enemy'
+                    force = 'enemy',
+                    note = true
                 }
             end
             if noise_forest_location > 0.6 then
@@ -788,7 +871,8 @@ local function process_level_10_position(x, y, data)
                 entities[#entities + 1] = {
                     name = Biters.wave_defense_roll_worm_name(),
                     position = p,
-                    force = 'enemy'
+                    force = 'enemy',
+                    note = true
                 }
             end
             if noise_forest_location < -0.6 then
@@ -832,7 +916,12 @@ local function process_level_9_position(x, y, data)
         end
         if random(1, 256) == 1 then
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
-            entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = 'enemy'}
+            entities[#entities + 1] = {
+                name = Biters.wave_defense_roll_worm_name(),
+                position = p,
+                force = 'enemy',
+                note = true
+            }
         end
         return
     end
@@ -882,6 +971,7 @@ local function process_scrap_zone_1(x, y, data, void_or_lab)
     local tiles = data.tiles
     local entities = data.entities
     local buildings = data.buildings
+    local treasure = data.treasure
 
     local scrapyard = get_perlin('scrapyard', p, seed)
     local smol_areas = get_perlin('smol_areas', p, seed + 35000)
@@ -908,6 +998,9 @@ local function process_scrap_zone_1(x, y, data, void_or_lab)
             else
                 spawn_turret(entities, p, 4)
             end
+            if random(1, 2048) == 1 then
+                treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
+            end
         end
         tiles[#tiles + 1] = {name = 'dirt-7', position = p}
         if scrapyard < -0.55 or scrapyard > 0.55 then
@@ -923,7 +1016,12 @@ local function process_scrap_zone_1(x, y, data, void_or_lab)
             end
             if random(1, 128) == 1 then
                 Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
-                entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = 'enemy'}
+                entities[#entities + 1] = {
+                    name = Biters.wave_defense_roll_worm_name(),
+                    position = p,
+                    force = 'enemy',
+                    note = true
+                }
             end
             if random(1, 96) == 1 then
                 entities[#entities + 1] = {
@@ -945,6 +1043,7 @@ local function process_scrap_zone_1(x, y, data, void_or_lab)
             if random(1, 5) > 1 then
                 entities[#entities + 1] = {name = scrap_mineable_entities[random(1, scrap_mineable_entities_index)], position = p, force = 'neutral'}
             end
+
             if random(1, 256) == 1 then
                 entities[#entities + 1] = {name = 'land-mine', position = p, force = 'enemy'}
             end
@@ -975,6 +1074,9 @@ local function process_scrap_zone_1(x, y, data, void_or_lab)
             tiles[#tiles + 1] = {name = 'dirt-7', position = p}
             if random(1, 2) == 1 then
                 entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
+            end
+            if random(1, 2048) == 1 then
+                treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
             end
             return
         end
@@ -1154,7 +1256,8 @@ local function process_forest_zone_2(x, y, data, void_or_lab)
             entities[#entities + 1] = {
                 name = Biters.wave_defense_roll_worm_name(),
                 position = p,
-                force = 'enemy'
+                force = 'enemy',
+                note = true
             }
         end
 
@@ -1171,7 +1274,12 @@ local function process_forest_zone_2(x, y, data, void_or_lab)
         end
         if random(1, 128) == 1 then
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
-            entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = 'enemy'}
+            entities[#entities + 1] = {
+                name = Biters.wave_defense_roll_worm_name(),
+                position = p,
+                force = 'enemy',
+                note = true
+            }
         end
         if random(1, 256) == 1 then
             spawn_turret(entities, p, 4)
@@ -1185,7 +1293,8 @@ local function process_forest_zone_2(x, y, data, void_or_lab)
                     entities[#entities + 1] = {
                         name = Biters.wave_defense_roll_worm_name(),
                         position = p,
-                        force = 'enemy'
+                        force = 'enemy',
+                        note = true
                     }
                 end
                 if noise_forest_location > 0.6 then
@@ -1206,7 +1315,8 @@ local function process_forest_zone_2(x, y, data, void_or_lab)
                     entities[#entities + 1] = {
                         name = Biters.wave_defense_roll_worm_name(),
                         position = p,
-                        force = 'enemy'
+                        force = 'enemy',
+                        note = true
                     }
                 end
                 if noise_forest_location < -0.6 then
@@ -1264,7 +1374,12 @@ local function process_level_5_position(x, y, data, void_or_lab)
         end
         if random(1, 128) == 1 then
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
-            entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = 'enemy'}
+            entities[#entities + 1] = {
+                name = Biters.wave_defense_roll_worm_name(),
+                position = p,
+                force = 'enemy',
+                note = true
+            }
         end
         if random(1, 256) == 1 then
             spawn_turret(entities, p, 4)
@@ -1283,7 +1398,8 @@ local function process_level_5_position(x, y, data, void_or_lab)
             entities[#entities + 1] = {
                 name = Biters.wave_defense_roll_worm_name(),
                 position = p,
-                force = 'enemy'
+                force = 'enemy',
+                note = true
             }
         end
 
@@ -1356,7 +1472,12 @@ local function process_level_4_position(x, y, data, void_or_lab)
         end
         if random(1, 384) == 1 then
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
-            entities[#entities + 1] = {name = Biters.wave_defense_roll_worm_name(), position = p, force = 'enemy'}
+            entities[#entities + 1] = {
+                name = Biters.wave_defense_roll_worm_name(),
+                position = p,
+                force = 'enemy',
+                note = true
+            }
         end
         local success = place_wagon(data)
         if success then
@@ -1413,7 +1534,8 @@ local function process_level_4_position(x, y, data, void_or_lab)
             entities[#entities + 1] = {
                 name = Biters.wave_defense_roll_worm_name(),
                 position = p,
-                force = 'enemy'
+                force = 'enemy',
+                note = true
             }
         end
 
@@ -1458,6 +1580,7 @@ local function process_level_3_position(x, y, data, void_or_lab)
     local small_caves_2 = get_perlin('small_caves_2', p, seed + 70000)
     local noise_large_caves = get_perlin('large_caves', p, seed + 60000)
     local noise_cave_ponds = get_perlin('cave_ponds', p, seed)
+    local cave_miner = get_perlin('cave_miner_01', p, seed)
     local smol_areas = get_perlin('smol_areas', p, seed + 60000)
 
     --Resource Spots
@@ -1471,7 +1594,8 @@ local function process_level_3_position(x, y, data, void_or_lab)
             entities[#entities + 1] = {
                 name = Biters.wave_defense_roll_worm_name(),
                 position = p,
-                force = 'enemy'
+                force = 'enemy',
+                note = true
             }
         end
         return
@@ -1559,7 +1683,8 @@ local function process_level_3_position(x, y, data, void_or_lab)
                     entities[#entities + 1] = {
                         name = Biters.wave_defense_roll_worm_name(),
                         position = p,
-                        force = 'enemy'
+                        force = 'enemy',
+                        note = true
                     }
                 end
 
@@ -1601,7 +1726,11 @@ local function process_level_3_position(x, y, data, void_or_lab)
         return
     end
 
-    tiles[#tiles + 1] = {name = void_or_lab, position = p}
+    if cave_miner < 0.32 and cave_miner > -0.32 then
+        tiles[#tiles + 1] = {name = void_or_lab, position = p}
+    else
+        tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
+    end
 end
 
 local function process_level_2_position(x, y, data, void_or_lab)
@@ -1628,7 +1757,8 @@ local function process_level_2_position(x, y, data, void_or_lab)
             entities[#entities + 1] = {
                 name = Biters.wave_defense_roll_worm_name(),
                 position = p,
-                force = 'enemy'
+                force = 'enemy',
+                note = true
             }
         end
         return
@@ -1701,7 +1831,8 @@ local function process_level_2_position(x, y, data, void_or_lab)
                     entities[#entities + 1] = {
                         name = Biters.wave_defense_roll_worm_name(),
                         position = p,
-                        force = 'enemy'
+                        force = 'enemy',
+                        note = true
                     }
                 end
 
@@ -1770,7 +1901,8 @@ local function process_forest_zone_1(x, y, data, void_or_lab)
             entities[#entities + 1] = {
                 name = Biters.wave_defense_roll_worm_name(),
                 position = p,
-                force = 'enemy'
+                force = 'enemy',
+                note = true
             }
         end
         return
@@ -1791,7 +1923,7 @@ local function process_forest_zone_1(x, y, data, void_or_lab)
     --Water Ponds
     if noise_cave_ponds > 0.670 then
         if noise_cave_ponds > 0.750 then
-            tiles[#tiles + 1] = {name = 'grass-' .. floor(noise_cave_ponds * 32) % 3 + 1, position = p}
+            tiles[#tiles + 1] = {name = 'landfill', position = p}
             if random(1, 4) == 1 then
                 markets[#markets + 1] = p
             end
@@ -1820,8 +1952,7 @@ local function process_forest_zone_1(x, y, data, void_or_lab)
     end
 
     if noise_cave_ponds > 0.74 then
-        tiles[#tiles + 1] = {name = 'grass-' .. random(1, 4), position = p}
-        tiles[#tiles + 1] = {name = 'grass-1', position = p}
+        tiles[#tiles + 1] = {name = 'landfill', position = p}
         if cave_rivers < -0.502 then
             tiles[#tiles + 1] = {name = 'refined-hazard-concrete-right', position = p}
         end
@@ -1836,7 +1967,7 @@ local function process_forest_zone_1(x, y, data, void_or_lab)
     if p.y < -64 + noise_cave_ponds * 10 then
         if no_rocks < 0.11 and no_rocks > -0.11 then
             if small_caves > 0.31 then
-                tiles[#tiles + 1] = {name = 'grass-' .. floor(noise_cave_ponds * 32) % 3 + 1, position = p}
+                tiles[#tiles + 1] = {name = 'brown-refined-concrete', position = p}
                 if random(1, 450) == 1 then
                     entities[#entities + 1] = {name = 'crude-oil', position = p, amount = get_oil_amount(p)}
                 end
@@ -1845,7 +1976,8 @@ local function process_forest_zone_1(x, y, data, void_or_lab)
                     entities[#entities + 1] = {
                         name = Biters.wave_defense_roll_worm_name(),
                         position = p,
-                        force = 'enemy'
+                        force = 'enemy',
+                        note = true
                     }
                 end
 
@@ -1867,7 +1999,7 @@ local function process_forest_zone_1(x, y, data, void_or_lab)
         if success then
             return
         end
-        tiles[#tiles + 1] = {name = 'dirt-' .. floor(no_rocks_2 * 8) % 2 + 5, position = p}
+        tiles[#tiles + 1] = {name = 'nuclear-ground', position = p}
         if random(1, 32) == 1 then
             entities[#entities + 1] = {name = 'tree-0' .. random(1, 9), position = p}
         end
@@ -1881,7 +2013,7 @@ local function process_forest_zone_1(x, y, data, void_or_lab)
     if random(1, 2048) == 1 then
         treasure[#treasure + 1] = {position = p, chest = 'iron-chest'}
     end
-    tiles[#tiles + 1] = {name = 'grass-' .. floor(noise_cave_ponds * 32) % 3 + 1, position = p}
+    tiles[#tiles + 1] = {name = 'landfill', position = p}
     local noise_forest_location = get_perlin('forest_location', p, seed)
     if noise_forest_location > 0.095 then
         if random(1, 256) == 1 then
@@ -1889,7 +2021,8 @@ local function process_forest_zone_1(x, y, data, void_or_lab)
             entities[#entities + 1] = {
                 name = Biters.wave_defense_roll_worm_name(),
                 position = p,
-                force = 'enemy'
+                force = 'enemy',
+                note = true
             }
         end
         if noise_forest_location > 0.6 then
@@ -1910,7 +2043,8 @@ local function process_forest_zone_1(x, y, data, void_or_lab)
             entities[#entities + 1] = {
                 name = Biters.wave_defense_roll_worm_name(),
                 position = p,
-                force = 'enemy'
+                force = 'enemy',
+                note = true
             }
         end
         if noise_forest_location < -0.6 then
@@ -1949,19 +2083,20 @@ local function process_level_1_position(x, y, data, void_or_lab)
             entities[#entities + 1] = {
                 name = Biters.wave_defense_roll_worm_name(),
                 position = p,
-                force = 'enemy'
+                force = 'enemy',
+                note = true
             }
         end
         return
     end
 
     --Chasms
-    if noise_cave_ponds < 0.111 and noise_cave_ponds > -0.112 then
-        if small_caves > 0.53 then
+    if noise_cave_ponds < 0.110 and noise_cave_ponds > -0.112 then
+        if small_caves > 0.5 then
             tiles[#tiles + 1] = {name = void_or_lab, position = p}
             return
         end
-        if small_caves < -0.53 then
+        if small_caves < -0.5 then
             tiles[#tiles + 1] = {name = void_or_lab, position = p}
             return
         end
@@ -1999,8 +2134,7 @@ local function process_level_1_position(x, y, data, void_or_lab)
     end
 
     if noise_cave_ponds > 0.74 then
-        tiles[#tiles + 1] = {name = 'dirt-' .. random(4, 6), position = p}
-        tiles[#tiles + 1] = {name = 'grass-1', position = p}
+        tiles[#tiles + 1] = {name = 'acid-refined-concrete', position = p}
         if cave_rivers < -0.502 then
             tiles[#tiles + 1] = {name = 'refined-hazard-concrete-right', position = p}
         end
@@ -2015,7 +2149,7 @@ local function process_level_1_position(x, y, data, void_or_lab)
     if p.y < -64 + noise_cave_ponds * 10 then
         if no_rocks < 0.12 and no_rocks > -0.12 then
             if small_caves > 0.30 then
-                tiles[#tiles + 1] = {name = 'dirt-' .. floor(noise_cave_ponds * 32) % 7 + 1, position = p}
+                tiles[#tiles + 1] = {name = 'brown-refined-concrete', position = p}
                 if random(1, 450) == 1 then
                     entities[#entities + 1] = {name = 'crude-oil', position = p, amount = get_oil_amount(p)}
                 end
@@ -2024,7 +2158,8 @@ local function process_level_1_position(x, y, data, void_or_lab)
                     entities[#entities + 1] = {
                         name = Biters.wave_defense_roll_worm_name(),
                         position = p,
-                        force = 'enemy'
+                        force = 'enemy',
+                        note = true
                     }
                 end
 
@@ -2046,7 +2181,7 @@ local function process_level_1_position(x, y, data, void_or_lab)
         if success then
             return
         end
-        tiles[#tiles + 1] = {name = 'dirt-' .. floor(no_rocks_2 * 8) % 2 + 5, position = p}
+        tiles[#tiles + 1] = {name = 'nuclear-ground', position = p}
         if random(1, 32) == 1 then
             entities[#entities + 1] = {name = 'tree-0' .. random(1, 9), position = p}
         end
@@ -2064,7 +2199,7 @@ local function process_level_1_position(x, y, data, void_or_lab)
     if random_tiles > 0.095 then
         if random_tiles > 0.6 then
             if random(1, 100) > 42 then
-                tiles[#tiles + 1] = {name = 'sand-1', position = p}
+                tiles[#tiles + 1] = {name = 'nuclear-ground', position = p}
             end
         else
             if random(1, 100) > 42 then
@@ -2076,7 +2211,7 @@ local function process_level_1_position(x, y, data, void_or_lab)
     if random_tiles < -0.095 then
         if random_tiles < -0.6 then
             if random(1, 100) > 42 then
-                tiles[#tiles + 1] = {name = 'sand-1', position = p}
+                tiles[#tiles + 1] = {name = 'nuclear-ground', position = p}
             end
         else
             if random(1, 100) > 42 then
@@ -2098,10 +2233,10 @@ local function process_level_0_position(x, y, data, void_or_lab)
     local markets = data.markets
     local treasure = data.treasure
 
-    local small_caves = get_perlin('dungeons', p, seed)
-    local noise_cave_ponds = get_perlin('cave_ponds', p, seed)
-    local smol_areas = get_perlin('smol_areas', p, seed)
-    local no_rocks_2 = get_perlin('no_rocks_2', p, seed)
+    local small_caves = get_perlin('dungeons', p, seed + 34883)
+    local noise_cave_ponds = get_perlin('cave_ponds', p, seed + 28939)
+    local smol_areas = get_perlin('smol_areas', p, seed + 3992)
+    local no_rocks_2 = get_perlin('no_rocks_2', p, seed + 1922)
     local cave_rivers = get_perlin('cave_rivers', p, seed)
     local no_rocks = get_perlin('no_rocks', p, seed)
 
@@ -2122,21 +2257,21 @@ local function process_level_0_position(x, y, data, void_or_lab)
     end
 
     --Chasms
-    if noise_cave_ponds < 0.111 and noise_cave_ponds > -0.112 then
-        if small_caves > 0.53 then
+    if noise_cave_ponds < 0.105 and noise_cave_ponds > -0.112 then
+        if small_caves > 0.52 then
             tiles[#tiles + 1] = {name = void_or_lab, position = p}
             return
         end
-        if small_caves < -0.53 then
+        if small_caves < -0.52 then
             tiles[#tiles + 1] = {name = void_or_lab, position = p}
             return
         end
     end
 
     --Water Ponds
-    if noise_cave_ponds > 0.670 then
-        if noise_cave_ponds > 0.750 then
-            tiles[#tiles + 1] = {name = 'grass-' .. floor(noise_cave_ponds * 32) % 3 + 1, position = p}
+    if noise_cave_ponds > 0.64 then
+        if noise_cave_ponds > 0.74 then
+            tiles[#tiles + 1] = {name = 'acid-refined-concrete', position = p}
             if random(1, 4) == 1 then
                 markets[#markets + 1] = p
             end
@@ -2153,7 +2288,7 @@ local function process_level_0_position(x, y, data, void_or_lab)
     end
 
     --Rivers
-    if cave_rivers < 0.044 and cave_rivers > -0.062 then
+    if cave_rivers < 0.042 and cave_rivers > -0.062 then
         if noise_cave_ponds > 0.1 then
             tiles[#tiles + 1] = {name = 'water-shallow', position = p}
             if random(1, 64) == 1 then
@@ -2163,7 +2298,7 @@ local function process_level_0_position(x, y, data, void_or_lab)
         end
     end
 
-    if noise_cave_ponds > 0.632 then
+    if noise_cave_ponds > 0.622 then
         if noise_cave_ponds > 0.542 then
             if cave_rivers > -0.302 then
                 tiles[#tiles + 1] = {name = 'refined-hazard-concrete-right', position = p}
@@ -2176,9 +2311,9 @@ local function process_level_0_position(x, y, data, void_or_lab)
     end
 
     --Worm oil Zones
-    if no_rocks < 0.031 and no_rocks > -0.141 then
+    if no_rocks < 0.035 and no_rocks > -0.145 then
         if small_caves > 0.081 then
-            tiles[#tiles + 1] = {name = 'grass-' .. floor(noise_cave_ponds * 32) % 3 + 1, position = p}
+            tiles[#tiles + 1] = {name = 'brown-refined-concrete', position = p}
             if random(1, 250) == 1 then
                 entities[#entities + 1] = {name = 'crude-oil', position = p, amount = get_oil_amount(p)}
             end
@@ -2207,8 +2342,8 @@ local function process_level_0_position(x, y, data, void_or_lab)
         if success then
             return
         end
-        tiles[#tiles + 1] = {name = 'dirt-' .. floor(no_rocks_2 * 8) % 2 + 5, position = p}
-        if random(1, 32) == 1 then
+        tiles[#tiles + 1] = {name = 'nuclear-ground', position = p}
+        if random(1, 18) == 1 then
             entities[#entities + 1] = {name = 'tree-0' .. random(1, 9), position = p}
         end
 
@@ -2221,7 +2356,7 @@ local function process_level_0_position(x, y, data, void_or_lab)
     if random(1, 2048) == 1 then
         treasure[#treasure + 1] = {position = p, chest = 'iron-chest'}
     end
-    tiles[#tiles + 1] = {name = 'dirt-7', position = p}
+    tiles[#tiles + 1] = {name = 'nuclear-ground', position = p}
     if random(1, 100) > 25 then
         entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
     end
@@ -2279,7 +2414,7 @@ end
 local function border_chunk(p, data)
     local entities = data.entities
     local decoratives = data.decoratives
-    local tiles = data.tiles
+    -- local tiles = data.tiles
 
     local pos = p
 
@@ -2287,11 +2422,9 @@ local function border_chunk(p, data)
         entities[#entities + 1] = {name = trees[random(1, #trees)], position = pos}
     end
 
-    if random(1, 10) == 1 then
-        tiles[#tiles + 1] = {name = 'red-desert-' .. random(1, 3), position = pos}
-    else
-        tiles[#tiles + 1] = {name = 'dirt-' .. math.random(1, 6), position = pos}
-    end
+    -- local noise = get_perlin('dungeons', pos, data.seed)
+    -- local index = floor(noise * 32) % 4 + 1
+    -- tiles[#tiles + 1] = {name = start_ground_tiles[index], position = pos}
 
     local scrap_mineable_entities, scrap_mineable_entities_index = get_scrap_mineable_entities()
 
@@ -2425,7 +2558,15 @@ Event.add(
         local winter_mode = WPT.get('winter_mode')
         if winter_mode then
             rendering.draw_sprite(
-                {sprite = 'tile/lab-white', x_scale = 32, y_scale = 32, target = left_top, surface = surface, tint = {r = 0.6, g = 0.6, b = 0.6, a = 0.6}, render_layer = 'ground'}
+                {
+                    sprite = 'tile/lab-white',
+                    x_scale = 32,
+                    y_scale = 32,
+                    target = left_top,
+                    surface = surface,
+                    tint = {r = 0.6, g = 0.6, b = 0.6, a = 0.6},
+                    render_layer = 'ground'
+                }
             )
         end
 
@@ -2433,7 +2574,9 @@ Event.add(
             local locomotive = WPT.get('locomotive')
             if locomotive and locomotive.valid then
                 local position = locomotive.position
-                for _, entity in pairs(surface.find_entities_filtered({area = {{position.x - 5, position.y - 6}, {position.x + 5, position.y + 10}}, type = 'simple-entity'})) do
+                for _, entity in pairs(
+                    surface.find_entities_filtered({area = {{position.x - 5, position.y - 6}, {position.x + 5, position.y + 10}}, type = 'simple-entity'})
+                ) do
                     entity.destroy()
                 end
             end

@@ -6,6 +6,7 @@ _DUMP_ENV = false
 
 require 'utils.server'
 require 'utils.server_commands'
+require 'utils.command_handler'
 require 'utils.utils'
 require 'utils.pause_game'
 require 'utils.table'
@@ -19,13 +20,15 @@ require 'utils.datastore.quickbar_data'
 require 'utils.datastore.message_on_join_data'
 require 'utils.datastore.player_tag_data'
 require 'utils.datastore.supporters'
-require 'chatbot'
-require 'commands'
-require 'antigrief'
+require 'utils.chatbot'
+require 'utils.commands'
+require 'utils.antigrief'
+require 'utils.debug.command'
 require 'modules.corpse_markers'
 require 'modules.floaty_chat'
 require 'modules.show_inventory'
-require 'utils.debug.command'
+require 'modules.inserter_drops_pickup'
+require 'modules.autostash'
 
 require 'comfy_panel.main'
 require 'comfy_panel.player_list'
@@ -34,8 +37,7 @@ require 'comfy_panel.admin'
 -- require 'comfy_panel.poll'
 -- require 'comfy_panel.score'
 require 'comfy_panel.config'
-
--- require 'modules.autostash'
+require 'comfy_panel.server_select'
 
 ---------------- !ENABLE MODULES HERE ----------------
 --require 'modules.admins_operate_biters'
@@ -79,6 +81,7 @@ require 'comfy_panel.config'
 --require 'modules.crawl_into_pipes'
 --require 'modules.no_acid_puddles'
 --require 'modules.simple_tags'
+--require 'modules.turret_filler'
 ---------------------------------------------------------------
 
 ---------------- ENABLE MAPS HERE ----------------

@@ -1,4 +1,4 @@
-local Antigrief = require 'antigrief'
+local Antigrief = require 'utils.antigrief'
 local Event = require 'utils.event'
 local Color = require 'utils.color_presets'
 local SessionData = require 'utils.datastore.session_data'
@@ -62,7 +62,7 @@ local function spaghett_deny_building(event)
     end
 
     if event.player_index then
-        game.players[event.player_index].insert({name = entity.name, count = 1})
+        game.get_player(event.player_index).insert({name = entity.name, count = 1})
     else
         local inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
         inventory.insert({name = entity.name, count = 1})
@@ -119,9 +119,9 @@ end
 local functions = {
     ['comfy_panel_spectator_switch'] = function(event)
         if event.element.switch_state == 'left' then
-            game.players[event.player_index].spectator = true
+            game.get_player(event.player_index).spectator = true
         else
-            game.players[event.player_index].spectator = false
+            game.get_player(event.player_index).spectator = false
         end
     end,
     ['comfy_panel_bottom_location'] = function(event)
@@ -287,7 +287,7 @@ local fortress_functions = {
             get_actor(event, '[Collapse]', 'has enabled the collapse function. Collapse will occur after wave 100!')
         else
             Module.collapse_grace = false
-            get_actor(event, '[Collapse]', 'has disabled the collapse function. You must reach zone 2 for collapse to occur!')
+            get_actor(event, '[Collapse]', 'has disabled the collapse function. You must breach the first zone for collapse to occur!')
         end
     end,
     ['comfy_panel_spill_items_to_surface'] = function(event)
@@ -339,6 +339,16 @@ local fortress_functions = {
             end
             WPT.set('allow_decon', false)
             get_actor(event, '[Decon]', 'has disabled decon on car/tanks/trains.', true)
+        end
+    end,
+    ['comfy_panel_christmas_mode'] = function(event)
+        local WPT = is_loaded('maps.mountain_fortress_v3.table')
+        if event.element.switch_state == 'left' then
+            WPT.set('winter_mode', true)
+            get_actor(event, '[WinteryMode]', 'has enabled wintery mode.', true)
+        else
+            WPT.set('winter_mode', false)
+            get_actor(event, '[WinteryMode]', 'has disabled wintery mode.', true)
         end
     end
 }
@@ -416,8 +426,8 @@ local function build_config_gui(data)
         scroll_pane,
         switch_state,
         'comfy_panel_spectator_switch',
-        'SpectatorMode',
-        'Toggles zoom-to-world view noise effect.\nEnvironmental sounds will be based on map view.'
+        {'gui.spectator_mode'},
+            {'gui-description.spectator_mode'}
     )
 
     scroll_pane.add({type = 'line'})
@@ -438,7 +448,13 @@ local function build_config_gui(data)
         if not poll_table[player.index] then
             switch_state = 'left'
         end
-        add_switch(scroll_pane, switch_state, 'comfy_panel_poll_no_notify_toggle', 'Notify on polls', 'Receive a message when new polls are created and popup the poll.')
+        add_switch(
+            scroll_pane,
+            switch_state,
+            'comfy_panel_poll_no_notify_toggle',
+                {'gui.notify_on_polls'},
+                {'gui-description.notify_on_polls'}
+        )
         scroll_pane.add({type = 'line'})
     end
 
@@ -487,7 +503,13 @@ local function build_config_gui(data)
         if bottom_frame and bottom_frame.portable then
             switch_state = 'left'
         end
-        add_switch(scroll_pane, switch_state, 'comfy_panel_portable_button', 'Position - portable', 'Toggle to select if you want the bottom button to be portable or not.')
+        add_switch(
+            scroll_pane,
+            switch_state,
+            'comfy_panel_portable_button',
+            'Position - portable',
+            'Toggle to select if you want the bottom button to be portable or not.'
+        )
         scroll_pane.add({type = 'line'})
     end
 
@@ -515,7 +537,7 @@ local function build_config_gui(data)
         if Gui.get_disable_clear_invalid_data() then
             switch_state = 'left'
         end
-        add_switch(scroll_pane, switch_state, 'disable_cleaning', 'Gui Data Cleaning', 'Toggles the Gui data cleaning.')
+        add_switch(scroll_pane, switch_state, 'disable_cleaning', {'gui.gui_data_cleaning'}, {'gui-description.gui_data_cleaning'})
 
         scroll_pane.add({type = 'line'})
 
@@ -527,8 +549,8 @@ local function build_config_gui(data)
             scroll_pane,
             switch_state,
             'comfy_panel_spaghett_toggle',
-            'Spaghett Mode',
-            'Disables the Logistic System research.\nRequester, buffer or active-provider containers can not be built.'
+                {'gui.spaghett_mode'},
+                {'gui-description.spaghett_mode'}
         )
 
         if poll then
@@ -623,7 +645,13 @@ local function build_config_gui(data)
             if full.fullness_enabled then
                 switch_state = 'left'
             end
-            add_switch(scroll_pane, switch_state, 'comfy_panel_disable_fullness', 'Inventory Fullness', 'Left = Enables inventory fullness.\nRight = Disables inventory fullness.')
+            add_switch(
+                scroll_pane,
+                switch_state,
+                'comfy_panel_disable_fullness',
+                'Inventory Fullness',
+                'On = Enables inventory fullness.\nOff = Disables inventory fullness.'
+            )
 
             scroll_pane.add({type = 'line'})
 
@@ -638,7 +666,7 @@ local function build_config_gui(data)
                 switch_state,
                 'comfy_panel_offline_players',
                 'Offline Players',
-                'Left = Enables offline player inventory drop.\nRight = Disables offline player inventory drop.'
+                'On = Enables offline player inventory drop.\nOff = Disables offline player inventory drop.'
             )
 
             scroll_pane.add({type = 'line'})
@@ -652,7 +680,7 @@ local function build_config_gui(data)
                 switch_state,
                 'comfy_panel_collapse_grace',
                 'Collapse',
-                'Left = Enables collapse after wave 100.\nRight = Disables collapse - you must reach zone 2 for collapse to occur.'
+                'On = Enables collapse after wave 100.\nOff = Disables collapse - you must breach the first zone for collapse to occur.'
             )
 
             scroll_pane.add({type = 'line'})
@@ -666,7 +694,7 @@ local function build_config_gui(data)
                 switch_state,
                 'comfy_panel_spill_items_to_surface',
                 'Spill Ores',
-                'Left = Enables ore spillage to surface when mining.\nRight = Disables ore spillage to surface when mining.'
+                'On = Enables ore spillage to surface when mining.\nOff = Disables ore spillage to surface when mining.'
             )
             scroll_pane.add({type = 'line'})
 
@@ -674,7 +702,13 @@ local function build_config_gui(data)
             if Module.void_or_tile then
                 switch_state = 'left'
             end
-            add_switch(scroll_pane, switch_state, 'comfy_panel_void_or_tile', 'Void Tiles', 'Left = Changes the tiles to out-of-map.\nRight = Changes the tiles to lab-dark-2')
+            add_switch(
+                scroll_pane,
+                switch_state,
+                'comfy_panel_void_or_tile',
+                'Void Tiles',
+                'On = Changes the tiles to out-of-map.\nOff = Changes the tiles to lab-dark-2'
+            )
             scroll_pane.add({type = 'line'})
 
             switch_state = 'right'
@@ -686,7 +720,7 @@ local function build_config_gui(data)
                 switch_state,
                 'comfy_panel_trusted_only_car_tanks',
                 'Market Purchase',
-                'Left = Allows only trusted people to buy car/tanks.\nRight = Allows everyone to buy car/tanks.'
+                'On = Allows only trusted people to buy car/tanks.\nOff = Allows everyone to buy car/tanks.'
             )
             scroll_pane.add({type = 'line'})
 
@@ -694,7 +728,18 @@ local function build_config_gui(data)
             if Module.allow_decon then
                 switch_state = 'left'
             end
-            add_switch(scroll_pane, switch_state, 'comfy_panel_allow_decon', 'Deconstruct', 'Left = Allows decon on car/tanks/trains.\nRight = Disables decon on car/tanks/trains.')
+            add_switch(
+                scroll_pane,
+                switch_state,
+                'comfy_panel_allow_decon',
+                'Deconstruct',
+                'On = Allows decon on car/tanks/trains.\nOff = Disables decon on car/tanks/trains.'
+            )
+            scroll_pane.add({type = 'line'})
+            if Module.christmas_mode then
+                switch_state = 'left'
+            end
+            add_switch(scroll_pane, switch_state, 'comfy_panel_christmas_mode', 'Wintery Mode', 'On = Enables wintery mode.\nOff = Disables wintery mode.')
             scroll_pane.add({type = 'line'})
         end
     end
@@ -709,7 +754,7 @@ end
 local build_config_gui_token = Token.register(build_config_gui)
 
 local function on_gui_switch_state_changed(event)
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
     if not (player and player.valid) then
         return
     end
@@ -766,8 +811,35 @@ local function on_robot_built_entity(event)
     spaghett_deny_building(event)
 end
 
+local function on_gui_click(event)
+    if not event then
+        return
+    end
+    local player = game.get_player(event.player_index)
+    if not (player and player.valid) then
+        return
+    end
+
+    if not event.element then
+        return
+    end
+    if not event.element.valid then
+        return
+    end
+
+    local name = event.element.name
+
+    if name == 'tab_' .. module_name then
+        local is_spamming = SpamProtection.is_spamming(player, nil, 'Config Main Button')
+        if is_spamming then
+            return
+        end
+    end
+end
+
 Tabs.add_tab_to_gui({name = module_name, id = build_config_gui_token, admin = false})
 
+Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_gui_switch_state_changed, on_gui_switch_state_changed)
 Event.add(defines.events.on_force_created, on_force_created)
 Event.add(defines.events.on_built_entity, on_built_entity)

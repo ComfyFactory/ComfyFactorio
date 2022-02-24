@@ -34,6 +34,7 @@ local reconstruct_all_trains =
 )
 
 local function get_tile_name()
+    -- local main_tile_name = 'tutorial-grid'
     local main_tile_name = 'black-refined-concrete'
     return main_tile_name
 end
@@ -70,7 +71,10 @@ local function kick_players_from_surface(wagon)
         if validate_entity(main_surface) then
             for _, e in pairs(wagon.surface.find_entities_filtered({area = wagon.area})) do
                 if validate_entity(e) and e.name == 'character' and e.player then
-                    e.player.teleport(main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0, 5), main_surface)
+                    e.player.teleport(
+                        main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0, 5),
+                        main_surface
+                    )
                 end
             end
         end
@@ -180,17 +184,19 @@ local function input_filtered(wagon_inventory, chest, chest_inventory, free_slot
             request_stacks[stack.name] = 10 * prototypes[stack.name].stack_size
         end
     end
-    for i = 1, wagon_inventory.get_bar() - 1, 1 do
-        if free_slots <= 0 then
-            return
-        end
-        local stack = wagon_inventory[i]
-        if stack.valid_for_read then
-            local request_stack = request_stacks[stack.name]
-            if request_stack and request_stack > chest_inventory.get_item_count(stack.name) then
-                chest_inventory.insert(stack)
-                stack.clear()
-                free_slots = free_slots - 1
+    if wagon_inventory.supports_bar() then
+        for i = 1, wagon_inventory.get_bar() - 1, 1 do
+            if free_slots <= 0 then
+                return
+            end
+            local stack = wagon_inventory[i]
+            if stack.valid_for_read then
+                local request_stack = request_stacks[stack.name]
+                if request_stack and request_stack > chest_inventory.get_item_count(stack.name) then
+                    chest_inventory.insert(stack)
+                    stack.clear()
+                    free_slots = free_slots - 1
+                end
             end
         end
     end
@@ -266,7 +272,7 @@ function Public.hazardous_debris()
         end
     end
 
-    for _ = 1, 2 * speed, 1 do
+    for _ = 1, 6 * speed, 1 do
         local position = fallout_debris[random(1, size_of_debris)]
         local p = {x = position[1], y = position[2]}
         local get_tile = surface.get_tile(p)
@@ -275,12 +281,37 @@ function Public.hazardous_debris()
         end
     end
 
-    for _ = 1, 1 * speed, 1 do
+    for _ = 1, 4 * speed, 1 do
         local position = fallout_debris[random(1, size_of_debris)]
         local p = {x = position[1], y = position[2]}
         local get_tile = surface.get_tile(p)
         if get_tile.valid and get_tile.name == 'out-of-map' then
-            create({name = 'uranium-cannon-projectile', position = position, force = 'neutral', target = {position[1], position[2] + fallout_width * 2}, speed = speed})
+            create(
+                {
+                    name = 'atomic-bomb-wave-spawns-nuke-shockwave-explosion',
+                    position = position,
+                    force = 'neutral',
+                    target = {position[1], position[2] + fallout_width * 2},
+                    speed = speed
+                }
+            )
+        end
+    end
+
+    for _ = 1, 6 * speed, 1 do
+        local position = fallout_debris[random(1, size_of_debris)]
+        local p = {x = position[1], y = position[2]}
+        local get_tile = surface.get_tile(p)
+        if get_tile.valid and get_tile.name == 'out-of-map' then
+            create(
+                {
+                    name = 'uranium-cannon-projectile',
+                    position = position,
+                    force = 'neutral',
+                    target = {position[1], position[2] + fallout_width * 2},
+                    speed = speed
+                }
+            )
         end
     end
 end
@@ -303,9 +334,11 @@ local function input_cargo(wagon, chest)
 
     local chest_inventory = chest.get_inventory(defines.inventory.chest)
     local free_slots = 0
-    for i = 1, chest_inventory.get_bar() - 1, 1 do
-        if not chest_inventory[i].valid_for_read then
-            free_slots = free_slots + 1
+    if chest_inventory.supports_bar() then
+        for i = 1, chest_inventory.get_bar() - 1, 1 do
+            if not chest_inventory[i].valid_for_read then
+                free_slots = free_slots + 1
+            end
         end
     end
 
@@ -314,14 +347,16 @@ local function input_cargo(wagon, chest)
         goto continue
     end
 
-    for i = 1, wagon_inventory.get_bar() - 1, 1 do
-        if free_slots <= 0 then
-            goto continue
-        end
-        if wagon_inventory[i].valid_for_read then
-            chest_inventory.insert(wagon_inventory[i])
-            wagon_inventory[i].clear()
-            free_slots = free_slots - 1
+    if wagon_inventory.supports_bar() then
+        for i = 1, wagon_inventory.get_bar() - 1, 1 do
+            if free_slots <= 0 then
+                goto continue
+            end
+            if wagon_inventory[i].valid_for_read then
+                chest_inventory.insert(wagon_inventory[i])
+                wagon_inventory[i].clear()
+                free_slots = free_slots - 1
+            end
         end
     end
 
@@ -925,7 +960,10 @@ local function move_room_to_train(icw, train, wagon)
 
     train.top_y = destination_area.right_bottom.y
 
-    if destination_area.left_top.x == wagon.area.left_top.x and destination_area.left_top.y == wagon.area.left_top.y and wagon.surface.name == train.surface.name then
+    if
+        destination_area.left_top.x == wagon.area.left_top.x and destination_area.left_top.y == wagon.area.left_top.y and
+            wagon.surface.name == train.surface.name
+     then
         return
     end
     kick_players_from_surface(wagon)
@@ -1011,7 +1049,9 @@ local function get_connected_rolling_stock(entity, direction, carriages)
         return nil
     end
 
-    angle = math.atan2(-(connected_stock.position.x - entity.position.x), connected_stock.position.y - entity.position.y) / (2 * math.pi) - connected_stock.orientation
+    angle =
+        math.atan2(-(connected_stock.position.x - entity.position.x), connected_stock.position.y - entity.position.y) / (2 * math.pi) -
+        connected_stock.orientation
     while angle < -0.5 do
         angle = angle + 1
     end
@@ -1125,7 +1165,9 @@ function Public.draw_minimap(icw, player, surface, position)
     end
     local element = frame['icw_sub_frame']
     if not frame.icw_auto_switch then
-        frame.add({type = 'switch', name = 'icw_auto_switch', allow_none_state = false, left_label_caption = {'gui.map_on'}, right_label_caption = {'gui.map_off'}})
+        frame.add(
+            {type = 'switch', name = 'icw_auto_switch', allow_none_state = false, left_label_caption = {'gui.map_on'}, right_label_caption = {'gui.map_off'}}
+        )
     end
     if not element then
         element =

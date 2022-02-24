@@ -91,15 +91,23 @@ local function on_nth_tick_event(event)
 end
 
 --- Do not use this function, use Event.add instead as it has safety checks.
-function Public.add(event_name, handler)
+function Public.add(event_name, handler, filters)
     local handlers = event_handlers[event_name]
     if not handlers then
         event_handlers[event_name] = {handler}
-        script_on_event(event_name, on_event)
+        if filters then
+            script_on_event(event_name, on_event, filters)
+        else
+            script_on_event(event_name, on_event)
+        end
     else
         table.insert(handlers, handler)
         if #handlers == 1 then
-            script_on_event(event_name, on_event)
+            if filters then
+                script_on_event(event_name, on_event, filters)
+            else
+                script_on_event(event_name, on_event)
+            end
         end
     end
 end

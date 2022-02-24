@@ -9,6 +9,15 @@ local playersphere = {}
 local productionsphere = {}
 local Public = {}
 
+Public.events = {
+    comfylatron_damaged = Event.generate_event_name('comfylatron_damaged'),
+    update_gui = Event.generate_event_name('update_gui'),
+    update_upgrades_gui = Event.generate_event_name('update_upgrades_gui'),
+    update_world_gui = Event.generate_event_name('update_world_gui'),
+    reset_map = Event.generate_event_name('reset_map'),
+    chronojump = Event.generate_event_name('chronojump'),
+}
+
 Global.register(
     chronosphere,
     function(tbl)
@@ -58,6 +67,7 @@ function Public.reset_player_table()
     playersphere.flame_boots = {}
     playersphere.offline_players = {}
     playersphere.active_upgrades_gui = {}
+    playersphere.guimode = {}
 end
 
 function Public.reset_schedule_table()
@@ -65,6 +75,7 @@ function Public.reset_schedule_table()
         schedulesphere[k] = nil
     end
     schedulesphere.lab_cells = {}
+    schedulesphere.chunks_to_generate = {}
 end
 
 function Public.reset_biter_table()
@@ -86,6 +97,7 @@ function Public.reset_table()
     chronosphere.chronojumps = 0
     chronosphere.game_lost = true
     chronosphere.game_won = false
+    chronosphere.warmup = true
     chronosphere.max_health = 0
     chronosphere.health = 0
     chronosphere.poisontimeout = 0
@@ -110,6 +122,8 @@ function Public.reset_table()
     chronosphere.accumulators = {}
     chronosphere.comfychests = {}
     chronosphere.comfychests2 = {}
+    chronosphere.comfychest_invs = {}
+    chronosphere.comfychest_invs2 = {}
     chronosphere.locomotive_cargo = {}
     chronosphere.world = {}
     chronosphere.research_tokens = {}
@@ -121,6 +135,12 @@ function Public.reset_table()
     chronosphere.laser_battery = 0
     chronosphere.last_artillery_event = 0
     chronosphere.poison_mastery_unlocked = 0
+    chronosphere.gen_speed = 2
+    chronosphere.giftmas_enabled = true
+    chronosphere.giftmas_lamps = {}
+    chronosphere.giftmas_delivered = 0
+    chronosphere.restart_confirm = nil
+    chronosphere.restart_hard = false
 end
 
 function Public.get_table()

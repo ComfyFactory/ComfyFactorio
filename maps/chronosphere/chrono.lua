@@ -4,6 +4,7 @@ local Score = require 'comfy_panel.score'
 local Difficulty = require 'modules.difficulty_vote'
 local Upgrades = require 'maps.chronosphere.upgrade_list'
 local List = require 'maps.chronosphere.production_list'
+local Rand = require 'maps.chronosphere.random'
 local Public = {}
 
 local Server = require 'utils.server'
@@ -62,7 +63,7 @@ function Public.restart_settings()
     local bitertable = Chrono_table.get_biter_table()
     local production = Chrono_table.get_production_table()
     Difficulty.reset_difficulty_poll()
-    Difficulty.set_poll_closing_timeout(game.tick + 35 * 60 * 60)
+    Difficulty.set_poll_closing_timeout(game.tick + 120 * 60 * 60)
     objective.max_health = Balance.Chronotrain_max_HP
     objective.health = Balance.Chronotrain_max_HP
     objective.poisontimeout = 0
@@ -74,6 +75,7 @@ function Public.restart_settings()
     objective.overstaycount = 0
     objective.jump_countdown_start_time = -1
     objective.mainscore = 0
+    objective.warmup = true
     bitertable.active_biters = {}
     bitertable.unit_groups = {}
     bitertable.biter_raffle = {}
@@ -93,10 +95,14 @@ function Public.restart_settings()
     objective.accumulators = {}
     objective.comfychests = {}
     objective.comfychests2 = {}
+    objective.comfychest_invs = {}
+    objective.comfychest_invs2 = {}
     objective.locomotive_cargo = {}
     objective.laser_battery = {}
     objective.last_artillery_event = 0
     objective.poison_mastery_unlocked = 0
+    objective.giftmas_lamps = {}
+    objective.giftmas_delivered = 0
     for token, _ in pairs(objective.research_tokens) do
         objective.research_tokens[token] = 0
     end
@@ -245,6 +251,7 @@ function Public.process_jump()
     bitertable.biter_raffle = {}
     bitertable.free_biters = 0
     objective.chronocharges = 0
+    objective.giftmas_delivered = 0
     objective.jump_countdown_start_time = -1
     objective.dangertimer = 1200
     game.print({'chronosphere.message_jump', objective.chronojumps}, {r = 0.98, g = 0.66, b = 0.22})
@@ -343,6 +350,15 @@ function Public.post_jump()
     elseif objective.world.id == 2 and objective.world.variant.id == 2 then
         objective.chronocharges = objective.chronochargesneeded - 1500
         objective.passive_chronocharge_rate = 1
+        if objective.chronojumps == 19 then
+            --first encounter gives one free rocket defense
+            objective.upgrades[17] = 1
+        end
+    end
+    if objective.world.id >= 2 and objective.world.id <= 5 then
+        objective.gen_speed = 1
+    else
+        objective.gen_speed = 2
     end
     for _, player in pairs(game.connected_players) do
         playertable.flame_boots[player.index] = {fuel = 1, steps = {}}
@@ -363,6 +379,8 @@ function Public.post_jump()
             game.forces.player.technologies['power-armor-mk2'].enabled = true
         end
     end
+    script.raise_event(Chrono_table.events['update_upgrades_gui'], {})
+    script.raise_event(Chrono_table.events['update_world_gui'], {})
 end
 
 function Public.message_on_arrival()
@@ -377,6 +395,22 @@ function Public.message_on_arrival()
     elseif world.id == 7 then
         game.print({'chronosphere.message_fishmarket1'}, {r = 0.98, g = 0.66, b = 0.22})
         game.print({'chronosphere.message_fishmarket2'}, {r = 0.98, g = 0.66, b = 0.22})
+    end
+end
+
+local function create_chunk_list(surface)
+    local schedule = Chrono_table.get_schedule_table()
+    schedule.chunks_to_generate = {}
+    local chunks = {}
+    for x = -464, 464, 32 do
+        for y = -464, 464, 32 do
+            chunks[#chunks + 1] = {pos = {x, y}, generated = surface.is_chunk_generated({x, y}), distance = math.sqrt(x * x + y * y)}
+        end
+    end
+    for k, v in Rand.spairs(chunks, function(t, a, b) return t[b].distance > t[a].distance end) do
+        if v.generated == false then
+            schedule.chunks_to_generate[#schedule.chunks_to_generate + 1] = v
+        end
     end
 end
 
@@ -422,6 +456,8 @@ function Public.setup_world(surface)
         surface.map_gen_settings = mgs
         surface.request_to_generate_chunks({-960, -64}, 0.5)
         surface.force_generate_chunk_requests()
+    else
+        create_chunk_list(surface)
     end
 end
 

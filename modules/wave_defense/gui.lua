@@ -1,5 +1,7 @@
-local WD = require 'modules.wave_defense.table'
+local Public = require 'modules.wave_defense.table'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
+
+local floor = math.floor
 
 local function create_gui(player)
     local frame = player.gui.top.add({type = 'frame', name = 'wave_defense'})
@@ -53,17 +55,17 @@ end
 
 --display threat gain/loss per minute during last 15 minutes
 local function get_threat_gain()
-    local threat_log_index = WD.get('threat_log_index')
-    local threat_log = WD.get('threat_log')
+    local threat_log_index = Public.get('threat_log_index')
+    local threat_log = Public.get('threat_log')
     local past_index = threat_log_index - 900
     if past_index < 1 then
         past_index = 1
     end
-    local gain = math.floor((threat_log[threat_log_index] - threat_log[past_index]) / 15)
+    local gain = floor((threat_log[threat_log_index] - threat_log[past_index]) / 15)
     return gain
 end
 
-local function update_gui(player)
+function Public.update_gui(player)
     if not player.gui.top.wave_defense then
         create_gui(player)
     end
@@ -74,25 +76,31 @@ local function update_gui(player)
         biter_health_boost = biter_health_boosts
     end
 
-    local wave_number = WD.get('wave_number')
-    local next_wave = WD.get('next_wave')
-    local last_wave = WD.get('last_wave')
-    local max_active_biters = WD.get('max_active_biters')
-    local threat = WD.get('threat')
-    local enable_threat_log = WD.get('enable_threat_log')
+    local wave_number = Public.get('wave_number')
+    local next_wave = Public.get('next_wave')
+    local last_wave = Public.get('last_wave')
+    local max_active_biters = Public.get('max_active_biters')
+    local threat = Public.get('threat')
+    local enable_threat_log = Public.get('enable_threat_log')
 
     gui.label.caption = {'wave_defense.gui_2'}
     gui.wave_number.caption = wave_number
     if wave_number == 0 then
         gui.label.caption = {'wave_defense.gui_1'}
-        gui.wave_number.caption = math.floor((next_wave - game.tick) / 60) + 1
+        gui.wave_number.caption = floor((next_wave - game.tick) / 60) + 1
     end
     local interval = next_wave - last_wave
-    gui.progressbar.value = 1 - (next_wave - game.tick) / interval
+    local value = 1 - (next_wave - game.tick) / interval
+    if value < 0 then
+        value = 0
+    elseif value > 1 then
+        value = 1
+    end
+    gui.progressbar.value = value
 
     gui.threat.caption = {'wave_defense.gui_3'}
     gui.threat.tooltip = {'wave_defense.tooltip_1', biter_health_boost * 100, max_active_biters}
-    gui.threat_value.caption = math.floor(threat)
+    gui.threat_value.caption = floor(threat)
     gui.threat_value.tooltip = {
         'wave_defense.tooltip_1',
         biter_health_boost * 100,
@@ -109,14 +117,14 @@ local function update_gui(player)
 
         if gain >= 0 then
             gui.threat_gains.caption = ' (+' .. gain .. ')'
-            local g = 255 - math.floor(gain / d)
+            local g = 255 - floor(gain / d)
             if g < 0 then
                 g = 0
             end
             gui.threat_gains.style.font_color = {255, g, 0}
         else
             gui.threat_gains.caption = ' (' .. gain .. ')'
-            local r = 255 - math.floor(math.abs(gain) / d)
+            local r = 255 - floor(math.abs(gain) / d)
             if r < 0 then
                 r = 0
             end
@@ -125,4 +133,4 @@ local function update_gui(player)
     end
 end
 
-return update_gui
+return Public

@@ -1,7 +1,7 @@
 local Token = require 'utils.token'
 local Event = require 'utils.event'
 local Global = require 'utils.global'
-local SpamProtection = require 'utils.spam_protection'
+local mod_gui = require('__core__/lualib/mod-gui')
 
 local tostring = tostring
 local next = next
@@ -168,13 +168,6 @@ local function handler_factory(event_id)
             return
         end
 
-        if not event.text then
-            local is_spamming = SpamProtection.is_spamming(player, nil, 'UtilsGUI Handler')
-            if is_spamming then
-                return
-            end
-        end
-
         event.player = player
 
         handler(event)
@@ -328,5 +321,8 @@ if _DEBUG then
         return element_map
     end
 end
+
+Gui.get_button_flow = mod_gui.get_button_flow
+Gui.mod_button = mod_gui.get_button_flow
 
 return Gui

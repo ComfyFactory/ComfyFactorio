@@ -17,6 +17,9 @@ local capsule_bomb_threshold = 8
 local de = defines.events
 
 local format = string.format
+local floor = math.floor
+local random = math.random
+local abs = math.abs
 
 local this = {
     enabled = true,
@@ -83,6 +86,13 @@ local function increment(t, v)
     t[#t + 1] = (v or 1)
 end
 
+-- Removes the first 100 entries of a table
+local function overflow(t)
+    for _=1,100,1 do
+        table.remove(t, 1)
+    end
+end
+
 local function get_entities(item_name, entities)
     local set = {}
     for i = 1, #entities do
@@ -126,14 +136,14 @@ local function damage_player(player, kill, print_to_all)
             end
             return
         end
-        player.character.health = player.character.health - math.random(50, 100)
+        player.character.health = player.character.health - random(50, 100)
         player.character.surface.create_entity({name = 'water-splash', position = player.position})
         local messages = {
             'Ouch.. That hurt! Better be careful now.',
             'Just a fleshwound.',
             'Better keep those hands to yourself or you might loose them.'
         }
-        player.print(messages[math.random(1, #messages)], Color.yellow)
+        player.print(messages[random(1, #messages)], Color.yellow)
         if player.character.health <= 0 then
             player.character.die('enemy')
             game.print(player.name .. msg, Color.yellow)
@@ -185,7 +195,7 @@ local function on_marked_for_deconstruction(event)
     if Session.get_session_player(player.name) then
         playtime = player.online_time + Session.get_session_player(player.name)
     end
-    if playtime < 2592000 then
+    if playtime < this.required_playtime then
         event.entity.cancel_deconstruction(game.get_player(event.player_index).force.name)
         player.print('You have not grown accustomed to this technology yet.', {r = 0.22, g = 0.99, b = 0.99})
     end
@@ -208,7 +218,7 @@ local function on_player_ammo_inventory_changed(event)
     if Session.get_session_player(player.name) then
         playtime = player.online_time + Session.get_session_player(player.name)
     end
-    if playtime < 1296000 then
+    if playtime < this.required_playtime then
         if this.enable_capsule_cursor_warning then
             local nukes = player.remove_item({name = 'atomic-bomb', count = 1000})
             if nukes > 0 then
@@ -252,9 +262,9 @@ local function on_player_built_tile(event)
     end
 
     if #this.landfill_history > this.limit then
-        this.landfill_history = {}
+        overflow(this.landfill_history)
     end
-    local t = math.abs(math.floor((game.tick) / 60))
+    local t = abs(floor((game.tick) / 60))
     t = FancyTime.short_fancy_time(t)
     local str = '[' .. t .. '] '
     str = str .. player.name .. ' at X:'
@@ -271,11 +281,9 @@ local function on_built_entity(event)
         return
     end
 
-    if game.tick < 1296000 then
-        return
-    end
+    local created_entity = event.created_entity
 
-    if event.created_entity.type == 'entity-ghost' then
+    if created_entity.type == 'entity-ghost' then
         local player = game.get_player(event.player_index)
 
         if player.admin then
@@ -290,8 +298,8 @@ local function on_built_entity(event)
             playtime = player.online_time + Session.get_session_player(player.name)
         end
 
-        if playtime < 432000 then
-            event.created_entity.destroy()
+        if playtime < this.required_playtime then
+            created_entity.destroy()
             player.print('You have not grown accustomed to this technology yet.', {r = 0.22, g = 0.99, b = 0.99})
         end
     end
@@ -344,7 +352,12 @@ local function on_player_used_capsule(event)
 
             local prefix = '[Capsule]'
             msg = format(player.name .. ' damaged: %s with: %s', get_entities(name, entities), name)
-            local ban_msg = format('Damaged: %s with: %s. This action was performed automatically. Visit getcomfy.eu/discord for forgiveness', get_entities(name, entities), name)
+            local ban_msg =
+                format(
+                'Damaged: %s with: %s. This action was performed automatically. Visit getcomfy.eu/discord for forgiveness',
+                get_entities(name, entities),
+                name
+            )
 
             do_action(player, prefix, msg, ban_msg, true)
         else
@@ -355,17 +368,17 @@ local function on_player_used_capsule(event)
             this.capsule_history = {}
         end
         if #this.capsule_history > this.limit then
-            this.capsule_history = {}
+            overflow(this.capsule_history)
         end
 
-        local t = math.abs(math.floor((game.tick) / 60))
+        local t = abs(floor((game.tick) / 60))
         t = FancyTime.short_fancy_time(t)
         local str = '[' .. t .. '] '
         str = str .. msg
         str = str .. ' at X:'
-        str = str .. math.floor(position.x)
+        str = str .. floor(position.x)
         str = str .. ' Y:'
-        str = str .. math.floor(position.y)
+        str = str .. floor(position.y)
         str = str .. ' '
         str = str .. 'surface:' .. player.surface.index
         increment(this.capsule_history, str)
@@ -377,6 +390,7 @@ local function on_entity_died(event)
     if not this.enabled then
         return
     end
+
     local cause = event.cause
     local name
 
@@ -389,7 +403,7 @@ local function on_entity_died(event)
         end
 
         if #this.friendly_fire_history > this.limit then
-            this.friendly_fire_history = {}
+            overflow(this.friendly_fire_history)
         end
 
         local chest
@@ -414,15 +428,15 @@ local function on_entity_died(event)
             chest = '[color=yellow]' .. event.entity.name .. '[/color]'
         end
 
-        local t = math.abs(math.floor((game.tick) / 60))
+        local t = abs(floor((game.tick) / 60))
         t = FancyTime.short_fancy_time(t)
         local str = '[' .. t .. '] '
         str = str .. name .. ' destroyed '
         str = str .. chest
         str = str .. ' at X:'
-        str = str .. math.floor(event.entity.position.x)
+        str = str .. floor(event.entity.position.x)
         str = str .. ' Y:'
-        str = str .. math.floor(event.entity.position.y)
+        str = str .. floor(event.entity.position.y)
         str = str .. ' '
         str = str .. 'surface:' .. event.entity.surface.index
         increment(this.friendly_fire_history, str)
@@ -432,7 +446,14 @@ local function on_entity_died(event)
                 return
             end
         end
-        local t = math.abs(math.floor((game.tick) / 60))
+        if not this.friendly_fire_history then
+            this.friendly_fire_history = {}
+        end
+
+        if #this.friendly_fire_history > this.limit then
+            overflow(this.friendly_fire_history)
+        end
+        local t = abs(floor((game.tick) / 60))
         t = FancyTime.short_fancy_time(t)
         local str = '[' .. t .. '] '
         if cause and cause.name == 'character' and cause.player then
@@ -442,9 +463,9 @@ local function on_entity_died(event)
         end
         str = str .. '[color=yellow]' .. event.entity.name .. '[/color]'
         str = str .. ' at X:'
-        str = str .. math.floor(event.entity.position.x)
+        str = str .. floor(event.entity.position.x)
         str = str .. ' Y:'
-        str = str .. math.floor(event.entity.position.y)
+        str = str .. floor(event.entity.position.y)
         str = str .. ' '
         str = str .. 'surface:' .. event.entity.surface.index
 
@@ -476,17 +497,17 @@ local function on_player_mined_entity(event)
             this.whitelist_mining_history = {}
         end
         if #this.whitelist_mining_history > this.limit then
-            this.whitelist_mining_history = {}
+            overflow(this.whitelist_mining_history)
         end
-        local t = math.abs(math.floor((game.tick) / 60))
+        local t = abs(floor((game.tick) / 60))
         t = FancyTime.short_fancy_time(t)
         local str = '[' .. t .. '] '
         str = str .. player.name .. ' mined '
         str = str .. '[color=yellow]' .. entity.name .. '[/color]'
         str = str .. ' at X:'
-        str = str .. math.floor(entity.position.x)
+        str = str .. floor(entity.position.x)
         str = str .. ' Y:'
-        str = str .. math.floor(entity.position.y)
+        str = str .. floor(entity.position.y)
         str = str .. ' '
         str = str .. 'surface:' .. entity.surface.index
         increment(this.whitelist_mining_history, str)
@@ -510,18 +531,18 @@ local function on_player_mined_entity(event)
     end
 
     if #this.mining_history > this.limit then
-        this.mining_history = {}
+        overflow(this.mining_history)
     end
 
-    local t = math.abs(math.floor((game.tick) / 60))
+    local t = abs(floor((game.tick) / 60))
     t = FancyTime.short_fancy_time(t)
     local str = '[' .. t .. '] '
     str = str .. player.name .. ' mined '
     str = str .. '[color=yellow]' .. event.entity.name .. '[/color]'
     str = str .. ' at X:'
-    str = str .. math.floor(event.entity.position.x)
+    str = str .. floor(event.entity.position.x)
     str = str .. ' Y:'
-    str = str .. math.floor(event.entity.position.y)
+    str = str .. floor(event.entity.position.y)
     str = str .. ' '
     str = str .. 'surface:' .. event.entity.surface.index
     increment(this.mining_history, str)
@@ -558,18 +579,18 @@ local function on_gui_opened(event)
             this.corpse_history = {}
         end
         if #this.corpse_history > this.limit then
-            this.corpse_history = {}
+            overflow(this.corpse_history)
         end
 
-        local t = math.abs(math.floor((game.tick) / 60))
+        local t = abs(floor((game.tick) / 60))
         t = FancyTime.short_fancy_time(t)
         local str = '[' .. t .. '] '
         str = str .. player.name .. ' opened '
         str = str .. '[color=yellow]' .. corpse_owner.name .. '[/color] body'
         str = str .. ' at X:'
-        str = str .. math.floor(event.entity.position.x)
+        str = str .. floor(event.entity.position.x)
         str = str .. ' Y:'
-        str = str .. math.floor(event.entity.position.y)
+        str = str .. floor(event.entity.position.y)
         str = str .. ' '
         str = str .. 'surface:' .. event.entity.surface.index
         increment(this.corpse_history, str)
@@ -613,18 +634,18 @@ local function on_pre_player_mined_item(event)
             this.corpse_history = {}
         end
         if #this.corpse_history > this.limit then
-            this.corpse_history = {}
+            overflow(this.corpse_history)
         end
 
-        local t = math.abs(math.floor((game.tick) / 60))
+        local t = abs(floor((game.tick) / 60))
         t = FancyTime.short_fancy_time(t)
         local str = '[' .. t .. '] '
         str = str .. player.name .. ' mined '
         str = str .. '[color=yellow]' .. corpse_owner.name .. '[/color] body'
         str = str .. ' at X:'
-        str = str .. math.floor(entity.position.x)
+        str = str .. floor(entity.position.x)
         str = str .. ' Y:'
-        str = str .. math.floor(entity.position.y)
+        str = str .. floor(entity.position.y)
         str = str .. ' '
         str = str .. 'surface:' .. entity.surface.index
         increment(this.corpse_history, str)
@@ -641,10 +662,10 @@ local function on_console_chat(event)
         this.message_history = {}
     end
     if #this.message_history > this.limit then
-        this.message_history = {}
+        overflow(this.message_history)
     end
 
-    local t = math.abs(math.floor((game.tick) / 60))
+    local t = abs(floor((game.tick) / 60))
     t = FancyTime.short_fancy_time(t)
     local message = event.message
     local str = '[' .. t .. '] '
@@ -683,7 +704,7 @@ local function on_player_cursor_stack_changed(event)
         playtime = player.online_time + Session.get_session_player(player.name)
     end
 
-    if playtime < 1296000 then
+    if playtime < this.required_playtime then
         if this.enable_capsule_cursor_warning then
             if ammo_names[name] then
                 local item_to_remove = player.remove_item({name = name, count = 1000})
@@ -719,7 +740,8 @@ local function on_player_cancelled_crafting(event)
                 '[Crafting]',
                 player.name ..
                     ' canceled their craft of item ' ..
-                        event.recipe.name .. ' of total count ' .. crafting_queue_item_count .. ' in raw items (' .. crafted_items .. ' slots) but had no inventory left.'
+                        event.recipe.name ..
+                            ' of total count ' .. crafting_queue_item_count .. ' in raw items (' .. crafted_items .. ' slots) but had no inventory left.'
             )
         end
 
@@ -727,19 +749,19 @@ local function on_player_cancelled_crafting(event)
             this.cancel_crafting_history = {}
         end
         if #this.cancel_crafting_history > this.limit then
-            this.cancel_crafting_history = {}
+            overflow(this.cancel_crafting_history)
         end
 
-        local t = math.abs(math.floor((game.tick) / 60))
+        local t = abs(floor((game.tick) / 60))
         t = FancyTime.short_fancy_time(t)
         local str = '[' .. t .. '] '
         str = str .. player.name .. ' canceled '
         str = str .. ' item [color=yellow]' .. event.recipe.name .. '[/color]'
         str = str .. ' count was a total of: ' .. crafting_queue_item_count
         str = str .. ' at X:'
-        str = str .. math.floor(player.position.x)
+        str = str .. floor(player.position.x)
         str = str .. ' Y:'
-        str = str .. math.floor(player.position.y)
+        str = str .. floor(player.position.y)
         str = str .. ' '
         str = str .. 'surface:' .. player.surface.index
         increment(this.cancel_crafting_history, str)
@@ -853,14 +875,14 @@ function Public.insert_into_capsule_history(player, position, msg)
     if #this.capsule_history > this.limit then
         this.capsule_history = {}
     end
-    local t = math.abs(math.floor((game.tick) / 60))
+    local t = abs(floor((game.tick) / 60))
     t = FancyTime.short_fancy_time(t)
     local str = '[' .. t .. '] '
     str = str .. '[color=yellow]' .. msg .. '[/color]'
     str = str .. ' at X:'
-    str = str .. math.floor(position.x)
+    str = str .. floor(position.x)
     str = str .. ' Y:'
-    str = str .. math.floor(position.y)
+    str = str .. floor(position.y)
     str = str .. ' '
     str = str .. 'surface:' .. player.surface.index
     increment(this.capsule_history, str)
@@ -964,6 +986,6 @@ Event.add(de.on_permission_group_added, on_permission_group_added)
 Event.add(de.on_permission_group_deleted, on_permission_group_deleted)
 Event.add(de.on_permission_group_edited, on_permission_group_edited)
 Event.add(de.on_permission_string_imported, on_permission_string_imported)
-Event.add(defines.events.on_console_chat, on_console_chat)
+Event.add(de.on_console_chat, on_console_chat)
 
 return Public

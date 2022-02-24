@@ -1,16 +1,37 @@
-local WD = require 'modules.wave_defense.table'
-local threat_values = require 'modules.wave_defense.threat_values'
+local Public = require 'modules.wave_defense.table'
 local Event = require 'utils.event'
-local BiterRolls = require 'modules.wave_defense.biter_rolls'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local math_random = math.random
+local round = math.round
+local Token = require 'utils.token'
+local Task = require 'utils.task'
 
-local Public = {}
+local immunity_spawner =
+    Token.register(
+    function(data)
+        local entity = data.entity
+        if not entity or not entity.valid then
+            return
+        end
+        entity.destructible = true
+    end
+)
+
+local function is_boss(entity)
+    local unit_number = entity.unit_number
+    local biter_health_boost_units = BiterHealthBooster.get('biter_health_boost_units')
+    local unit = biter_health_boost_units[unit_number]
+    if unit and unit[3] and unit[3].healthbar_id then
+        return true
+    else
+        return false
+    end
+end
 
 local function remove_unit(entity)
-    local active_biters = WD.get('active_biters')
+    local generated_units = Public.get('generated_units')
     local unit_number = entity.unit_number
-    if not active_biters[unit_number] then
+    if not generated_units.active_biters[unit_number] then
         return
     end
     local m = 1
@@ -18,18 +39,29 @@ local function remove_unit(entity)
     if biter_health_boost_units[unit_number] then
         m = 1 / biter_health_boost_units[unit_number][2]
     end
-    local active_threat_loss = math.round(threat_values[entity.name] * m, 2)
-    local active_biter_threat = WD.get('active_biter_threat')
-    WD.set('active_biter_threat', active_biter_threat - active_threat_loss)
-    local active_biter_count = WD.get('active_biter_count')
-    WD.set('active_biter_count', active_biter_count - 1)
-    active_biters[unit_number] = nil
+    local active_threat_loss = math.round(Public.threat_values[entity.name] * m, 2)
+    local active_biter_threat = Public.get('active_biter_threat')
+    Public.set('active_biter_threat', active_biter_threat - active_threat_loss)
+    local active_biter_count = Public.get('active_biter_count')
+    Public.set('active_biter_count', active_biter_count - 1)
+    generated_units.active_biters[unit_number] = nil
+
+    if active_biter_count <= 0 then
+        Public.set('active_biter_count', 0)
+    end
+    if active_biter_threat <= 0 then
+        Public.set('active_biter_threat', 0)
+    end
 end
 
 local function place_nest_near_unit_group()
-    local unit_groups = WD.get('unit_groups')
-    local random_group = WD.get('random_group')
-    local group = unit_groups[random_group]
+    local random_group = Public.get('random_group')
+    if not (random_group and random_group.valid) then
+        return
+    end
+
+    local generated_units = Public.get('generated_units')
+    local group = generated_units.unit_groups[random_group.group_number]
     if not group then
         return
     end
@@ -54,7 +86,7 @@ local function place_nest_near_unit_group()
     if not position then
         return
     end
-    local r = WD.get('nest_building_density')
+    local r = Public.get('nest_building_density')
     if
         unit.surface.count_entities_filtered(
             {
@@ -66,25 +98,38 @@ local function place_nest_near_unit_group()
      then
         return
     end
+
+    local boss = is_boss(unit)
+
+    local modified_unit_health = Public.get('modified_unit_health')
+    local modified_boss_unit_health = Public.get('modified_boss_unit_health')
+
     local spawner = unit.surface.create_entity({name = name, position = position, force = unit.force})
-    local nests = WD.get('nests')
-    nests[#nests + 1] = spawner
+    spawner.destructible = false
+    Task.set_timeout_in_ticks(200, immunity_spawner, {entity = spawner})
+
+    if boss then
+        BiterHealthBooster.add_boss_unit(spawner, modified_boss_unit_health.current_value)
+    else
+        BiterHealthBooster.add_unit(spawner, modified_unit_health.current_value)
+    end
+    generated_units.nests[#generated_units.nests + 1] = spawner
     unit.surface.create_entity({name = 'blood-explosion-huge', position = position})
     unit.surface.create_entity({name = 'blood-explosion-huge', position = unit.position})
     remove_unit(unit)
     unit.destroy()
-    local threat = WD.get('threat')
-    WD.set('threat', threat - threat_values[name])
+    local threat = Public.get('threat')
+    Public.set('threat', threat - Public.threat_values[name])
     return true
 end
 
 function Public.build_nest()
-    local threat = WD.get('threat')
+    local threat = Public.get('threat')
     if threat < 1024 then
         return
     end
-    local index = WD.get('index')
-    if index == 0 then
+    local unit_groups_size = Public.get('unit_groups_size')
+    if unit_groups_size == 0 then
         return
     end
     for _ = 1, 2, 1 do
@@ -95,23 +140,26 @@ function Public.build_nest()
 end
 
 function Public.build_worm()
-    local threat = WD.get('threat')
+    local threat = Public.get('threat')
     if threat < 512 then
         return
     end
-    local worm_building_chance = WD.get('worm_building_chance')
+    local worm_building_chance = Public.get('worm_building_chance')
     if math_random(1, worm_building_chance) ~= 1 then
         return
     end
 
-    local index = WD.get('index')
-    if index == 0 then
+    local unit_groups_size = Public.get('unit_groups_size')
+    if unit_groups_size == 0 then
         return
     end
 
-    local random_group = WD.get('random_group')
-    local unit_groups = WD.get('unit_groups')
-    local group = unit_groups[random_group]
+    local random_group = Public.get('random_group')
+    if not (random_group and random_group.valid) then
+        return
+    end
+    local generated_units = Public.get('generated_units')
+    local group = generated_units.unit_groups[random_group.group_number]
     if not group then
         return
     end
@@ -129,15 +177,17 @@ function Public.build_worm()
         return
     end
 
-    local wave_number = WD.get('wave_number')
+    local boss = is_boss(unit)
+
+    local wave_number = Public.get('wave_number')
     local position = unit.surface.find_non_colliding_position('assembling-machine-1', unit.position, 8, 1)
-    BiterRolls.wave_defense_set_worm_raffle(wave_number)
-    local worm = BiterRolls.wave_defense_roll_worm_name()
+    Public.wave_defense_set_worm_raffle(wave_number)
+    local worm = Public.wave_defense_roll_worm_name()
     if not position then
         return
     end
 
-    local worm_building_density = WD.get('worm_building_density')
+    local worm_building_density = Public.get('worm_building_density')
     local r = worm_building_density
     if
         unit.surface.count_entities_filtered(
@@ -150,16 +200,30 @@ function Public.build_worm()
      then
         return
     end
-    unit.surface.create_entity({name = worm, position = position, force = unit.force})
+    local u = unit.surface.create_entity({name = worm, position = position, force = unit.force})
+    local worm_unit_settings = Public.get('worm_unit_settings')
+    local modified_unit_health = Public.get('modified_unit_health')
+    local modified_boss_unit_health = Public.get('modified_boss_unit_health')
+
+    if boss then
+        BiterHealthBooster.add_boss_unit(u, modified_boss_unit_health.current_value)
+    else
+        local final_health = round(modified_unit_health.current_value * worm_unit_settings.scale_units_by_health[worm], 3)
+        if final_health < 1 then
+            final_health = 1
+        end
+        BiterHealthBooster.add_unit(u, final_health)
+    end
+
     unit.surface.create_entity({name = 'blood-explosion-huge', position = position})
     unit.surface.create_entity({name = 'blood-explosion-huge', position = unit.position})
     remove_unit(unit)
     unit.destroy()
-    WD.set('threat', threat - threat_values[worm])
+    Public.set('threat', threat - Public.threat_values[worm])
 end
 
 local function shred_simple_entities(entity)
-    local threat = WD.get('threat')
+    local threat = Public.get('threat')
     if threat < 25000 then
         return
     end
@@ -197,30 +261,30 @@ local function shred_simple_entities(entity)
     if damage_dealt == 0 then
         return
     end
-    local simple_entity_shredding_cost_modifier = WD.get('simple_entity_shredding_cost_modifier')
+    local simple_entity_shredding_cost_modifier = Public.get('simple_entity_shredding_cost_modifier')
     local threat_cost = math.floor(damage_dealt * simple_entity_shredding_cost_modifier)
     if threat_cost < 1 then
         threat_cost = 1
     end
-    WD.set('threat', threat - threat_cost)
+    Public.set('threat', threat - threat_cost)
 end
 
 local function spawn_unit_spawner_inhabitants(entity)
     if entity.type ~= 'unit-spawner' then
         return
     end
-    local wave_number = WD.get('wave_number')
+    local wave_number = Public.get('wave_number')
     local count = 8 + math.floor(wave_number * 0.02)
     if count > 128 then
         count = 128
     end
-    BiterRolls.wave_defense_set_unit_raffle(wave_number)
+    Public.wave_defense_set_unit_raffle(wave_number)
     for _ = 1, count, 1 do
         local position = {entity.position.x + (-4 + math.random(0, 8)), entity.position.y + (-4 + math.random(0, 8))}
         if math.random(1, 4) == 1 then
-            entity.surface.create_entity({name = BiterRolls.wave_defense_roll_spitter_name(), position = position, force = 'enemy'})
+            entity.surface.create_entity({name = Public.wave_defense_roll_spitter_name(), position = position, force = 'enemy'})
         else
-            entity.surface.create_entity({name = BiterRolls.wave_defense_roll_biter_name(), position = position, force = 'enemy'})
+            entity.surface.create_entity({name = Public.wave_defense_roll_biter_name(), position = position, force = 'enemy'})
         end
     end
 end
@@ -231,33 +295,34 @@ local function on_entity_died(event)
         return
     end
 
-    local disable_threat_below_zero = WD.get('disable_threat_below_zero')
+    local disable_threat_below_zero = Public.get('disable_threat_below_zero')
     local biter_health_boost = BiterHealthBooster.get('biter_health_boost')
 
     if entity.type == 'unit' then
         --acid_nova(entity)
-        if not threat_values[entity.name] then
+        if not Public.threat_values[entity.name] then
             return
         end
         if disable_threat_below_zero then
-            local threat = WD.get('threat')
+            local threat = Public.get('threat')
             if threat <= 0 then
-                WD.set('threat', 0)
-                threat = WD.get('threat')
+                Public.set('threat', 0)
+                remove_unit(entity)
+                return
             end
-            WD.set('threat', math.round(threat - threat_values[entity.name] * biter_health_boost, 2))
+            Public.set('threat', math.round(threat - Public.threat_values[entity.name] * biter_health_boost, 2))
             remove_unit(entity)
         else
-            local threat = WD.get('threat')
-            WD.set('threat', math.round(threat - threat_values[entity.name] * biter_health_boost, 2))
+            local threat = Public.get('threat')
+            Public.set('threat', math.round(threat - Public.threat_values[entity.name] * biter_health_boost, 2))
             remove_unit(entity)
         end
     else
         if entity.force.index == 2 then
             if entity.health then
-                if threat_values[entity.name] then
-                    local threat = WD.get('threat')
-                    WD.set('threat', math.round(threat - threat_values[entity.name] * biter_health_boost, 2))
+                if Public.threat_values[entity.name] then
+                    local threat = Public.get('threat')
+                    Public.set('threat', math.round(threat - Public.threat_values[entity.name] * biter_health_boost, 2))
                 end
                 spawn_unit_spawner_inhabitants(entity)
             end

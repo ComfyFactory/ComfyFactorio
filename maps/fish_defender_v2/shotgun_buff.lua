@@ -1,11 +1,11 @@
 local Event = require 'utils.event'
-local FDT = require 'maps.fish_defender_v2.table'
+local Public = require 'maps.fish_defender_v2.table'
 local gain_multiplier = 4
 
 local function on_research_finished(event)
     local research = event.research
     local force_name = research.force.name
-    local shotgun_shell_damage_modifier_old = FDT.get('shotgun_shell_damage_modifier_old')
+    local shotgun_shell_damage_modifier_old = Public.get('shotgun_shell_damage_modifier_old')
 
     if not shotgun_shell_damage_modifier_old[force_name] then
         shotgun_shell_damage_modifier_old[force_name] = game.forces[force_name].get_ammo_damage_modifier('shotgun-shell') - 0.1
@@ -27,3 +27,5 @@ end
 
 Event.on_init(on_init)
 Event.add(defines.events.on_research_finished, on_research_finished)
+
+return Public

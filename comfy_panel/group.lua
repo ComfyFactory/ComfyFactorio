@@ -3,6 +3,7 @@
 local Tabs = require 'comfy_panel.main'
 local Global = require 'utils.global'
 local SpamProtection = require 'utils.spam_protection'
+local Event = require 'utils.event'
 local Token = require 'utils.token'
 
 local module_name = 'Groups'
@@ -37,9 +38,9 @@ local function build_group_gui(data)
 
     local t = frame.add({type = 'table', column_count = 5})
     local headings = {
-        {'Title', group_name_width},
-        {'Description', description_width},
-        {'Members', members_width * member_columns},
+        {{'gui.title'}, group_name_width},
+        {{'gui.description'}, description_width},
+        {{'gui.members'}, members_width * member_columns},
         {'', actions_width}
     }
     for _, h in pairs(headings) do
@@ -115,7 +116,7 @@ local function build_group_gui(data)
 
             tt = t.add({type = 'table', name = group.name, column_count = 1})
             if group.name ~= this.player_group[player.name] then
-                local b = tt.add({type = 'button', caption = 'Join'})
+                local b = tt.add({type = 'button', caption = {'gui.join'}})
                 b.style.font = 'default-bold'
                 b.style.minimal_width = actions_width
                 b.style.maximal_width = actions_width
@@ -144,7 +145,7 @@ local function build_group_gui(data)
     textfield.style.minimal_width = 200
     textfield = t.add({type = 'textfield', name = 'new_group_description', text = 'Description'})
     textfield.style.minimal_width = 400
-    local b = t.add({type = 'button', name = 'create_new_group', caption = 'Create'})
+    local b = t.add({type = 'button', name = 'create_new_group', caption = {'gui.create'}})
     b.style.minimal_width = 150
     b.style.font = 'default-bold'
 end
@@ -158,6 +159,14 @@ local function refresh_gui()
             if frame.name == module_name then
                 local new_group_name = frame.frame2.group_table.new_group_name.text
                 local new_group_description = frame.frame2.group_table.new_group_description.text
+
+                if new_group_name:len() > 30 then
+                    new_group_name = ''
+                end
+
+                if new_group_description:len() > 60 then
+                    new_group_description = ''
+                end
 
                 local data = {player = p, frame = frame}
                 build_group_gui(data)
@@ -182,6 +191,37 @@ local function on_player_joined_game(event)
     end
 end
 
+local function on_gui_text_changed(event)
+    local element = event.element
+    if not element or not element.valid then
+        return
+    end
+
+    local player = game.get_player(event.player_index)
+
+    local name = element.name
+    local text = element.text
+
+    if name == 'new_group_name' then
+        local is_spamming = SpamProtection.is_spamming(player, nil, 'Groups new_group_name')
+        if is_spamming then
+            return
+        end
+        if text:len() > 30 then
+            element.text = ''
+        end
+    end
+    if name == 'new_group_description' then
+        local is_spamming = SpamProtection.is_spamming(player, nil, 'Groups new_group_desc')
+        if is_spamming then
+            return
+        end
+        if text:len() > 60 then
+            element.text = ''
+        end
+    end
+end
+
 local function alphanumeric(str)
     return (string.match(str, '[^%w%s%p]') ~= nil)
 end
@@ -195,7 +235,11 @@ local function on_gui_click(event)
 
     local name = event.element.name
 
-    if name == 'tab_Groups' then
+    if not name then
+        return
+    end
+
+    if name == 'tab_' .. module_name then
         local is_spamming = SpamProtection.is_spamming(player, nil, 'Groups tab_Groups')
         if is_spamming then
             return
@@ -340,8 +384,8 @@ end
 
 Tabs.add_tab_to_gui({name = module_name, id = build_group_gui_token, admin = false})
 
-local event = require 'utils.event'
-event.add(defines.events.on_gui_click, on_gui_click)
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_gui_click, on_gui_click)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_gui_text_changed, on_gui_text_changed)
 
 return Public

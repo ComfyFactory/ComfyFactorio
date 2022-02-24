@@ -44,14 +44,14 @@ local this = {
         [2] = '',
         [3] = ''
     },
-    difficulty_vote_value = 1,
-    difficulty_vote_index = 2,
+    difficulty_vote_value = 0.75,
+    difficulty_vote_index = 1,
     fair_vote = false,
     difficulty_poll_closing_timeout = 54000,
     difficulty_player_votes = {},
     gui_width = 108,
-    name = 'Hurt me plenty',
-    strength_modifier = 1.25,
+    name = "I'm too young to die",
+    strength_modifier = 1.00,
     button_tooltip = nil
 }
 
@@ -183,7 +183,7 @@ local function set_difficulty()
     end
 
     if this.difficulty_vote_index ~= index then
-        local message = table.concat({'>> Map difficulty has changed to ', this.difficulties[index].name, ' difficulty!'})
+        local message = table.concat({'*** Map difficulty has changed to ', this.difficulties[index].name, ' difficulty! ***'})
         game.print(message, this.difficulties[index].print_color)
         Server.to_discord_embed(message)
     end
@@ -195,8 +195,8 @@ end
 
 function Public.reset_difficulty_poll(tbl)
     if tbl then
-        this.difficulty_vote_value = tbl.difficulty_vote_value or 1
-        this.difficulty_vote_index = tbl.difficulty_vote_index or 2
+        this.difficulty_vote_value = tbl.difficulty_vote_value or 0.75
+        this.difficulty_vote_index = tbl.difficulty_vote_index or 1
         this.difficulty_player_votes = {}
         this.difficulty_poll_closing_timeout = tbl.difficulty_poll_closing_timeout or game.tick + 54000
         for _, p in pairs(game.connected_players) do
@@ -210,8 +210,8 @@ function Public.reset_difficulty_poll(tbl)
         end
         Public.difficulty_gui()
     else
-        this.difficulty_vote_value = 1
-        this.difficulty_vote_index = 2
+        this.difficulty_vote_value = 0.75
+        this.difficulty_vote_index = 1
         this.difficulty_player_votes = {}
         this.difficulty_poll_closing_timeout = game.tick + 54000
         for _, p in pairs(game.connected_players) do
@@ -321,7 +321,9 @@ local function on_gui_click(event)
     set_difficulty()
     Public.difficulty_gui()
     event.element.parent.destroy()
-    game.print(player.name .. ' has voted for ' .. this.difficulties[i].name .. ' difficulty!', this.difficulties[i].print_color)
+    local message = '*** ' .. player.name .. ' has voted for ' .. this.difficulties[i].name .. ' difficulty! ***'
+    game.print(message, this.difficulties[i].print_color)
+    Server.to_discord_embed(message)
 end
 
 function Public.set_tooltip(...)

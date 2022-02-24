@@ -18,7 +18,7 @@ local math_sqrt = math.sqrt
 local math_floor = math.floor
 local Global = require 'utils.global'
 local Tabs = require 'comfy_panel.main'
-local P = require 'player_modifiers'
+local P = require 'utils.player_modifiers'
 local visuals_delay = 1800
 local level_up_floating_text_color = {0, 205, 0}
 local xp_floating_text_color = {157, 157, 157}
@@ -251,7 +251,7 @@ local function draw_gui(player, forced)
         end
     end
 
-    Tabs.comfy_panel_clear_left_gui(player)
+    Tabs.comfy_panel_clear_gui(player)
 
     if player.gui.left.rpg then
         player.gui.left.rpg.destroy()
@@ -755,7 +755,12 @@ local function one_punch(character, target, damage)
     vector[2] = vector[2] * 1000
 
     character.surface.create_entity(
-        {name = 'flying-text', position = {character.position.x + base_vector[1] * 0.5, character.position.y + base_vector[2] * 0.5}, text = 'ONE PUNCH', color = {255, 0, 0}}
+        {
+            name = 'flying-text',
+            position = {character.position.x + base_vector[1] * 0.5, character.position.y + base_vector[2] * 0.5},
+            text = 'ONE PUNCH',
+            color = {255, 0, 0}
+        }
     )
     character.surface.create_entity({name = 'blood-explosion-huge', position = target.position})
     character.surface.create_entity({name = 'big-artillery-explosion', position = {target.position.x + vector[1] * 0.5, target.position.y + vector[2] * 0.5}})
@@ -868,7 +873,9 @@ local function on_entity_damaged(event)
         event.cause.surface.create_entity({name = 'blood-explosion-huge', position = event.entity.position})
     else
         damage = damage * math_random(100, 125) * 0.01
-        event.cause.player.create_local_flying_text({text = math.floor(damage), position = event.entity.position, color = {150, 150, 150}, time_to_live = 90, speed = 2})
+        event.cause.player.create_local_flying_text(
+            {text = math.floor(damage), position = event.entity.position, color = {150, 150, 150}, time_to_live = 90, speed = 2}
+        )
     end
 
     --Handle the custom health pool of the biter health booster, if it is used in the map.
@@ -953,7 +960,10 @@ local function on_pre_player_mined_item(event)
     end
     local player = game.players[event.player_index]
 
-    if rpg_t[player.index].last_mined_entity_position.x == event.entity.position.x and rpg_t[player.index].last_mined_entity_position.y == event.entity.position.y then
+    if
+        rpg_t[player.index].last_mined_entity_position.x == event.entity.position.x and
+            rpg_t[player.index].last_mined_entity_position.y == event.entity.position.y
+     then
         return
     end
     rpg_t[player.index].last_mined_entity_position.x = entity.position.x

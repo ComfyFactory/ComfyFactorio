@@ -1,3 +1,10 @@
+--[[
+
+Mountain Fortress v3 is maintained by Gerkiz and hosted by Comfy.
+
+Want to host it? Ask Gerkiz#0001 at discord!
+
+]]
 local Functions = require 'maps.mountain_fortress_v3.functions'
 local BuriedEnemies = require 'maps.mountain_fortress_v3.buried_enemies'
 
@@ -21,6 +28,7 @@ local RPG = require 'modules.rpg.main'
 local Event = require 'utils.event'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local Locomotive = require 'maps.mountain_fortress_v3.locomotive'
+local SpawnLocomotive = require 'maps.mountain_fortress_v3.locomotive.spawn_locomotive'
 local Score = require 'comfy_panel.score'
 local Poll = require 'comfy_panel.poll'
 local Collapse = require 'modules.collapse'
@@ -29,14 +37,16 @@ local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Alert = require 'utils.alert'
 local BottomFrame = require 'comfy_panel.bottom_frame'
-local AntiGrief = require 'antigrief'
-local Misc = require 'commands.misc'
-local Modifiers = require 'player_modifiers'
+local AntiGrief = require 'utils.antigrief'
+local Misc = require 'utils.commands.misc'
+local Modifiers = require 'utils.player_modifiers'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local Reset = require 'functions.soft_reset'
 local JailData = require 'utils.datastore.jail_data'
 local RPG_Progression = require 'utils.datastore.rpg_data'
 
+require 'maps.mountain_fortress_v3.locomotive.market'
+require 'maps.mountain_fortress_v3.locomotive.linked_chests'
 require 'maps.mountain_fortress_v3.rocks_yield_ore_veins'
 
 require 'maps.mountain_fortress_v3.generate'
@@ -84,14 +94,25 @@ local collapse_kill = {
     enabled = true
 }
 
-local init_new_force = function()
-    local new_force = game.forces.protectors
+local init_protectors_force = function()
+    local protectors = game.forces.protectors
     local enemy = game.forces.enemy
-    if not new_force then
-        new_force = game.create_force('protectors')
+    if not protectors then
+        protectors = game.create_force('protectors')
     end
-    new_force.set_friend('enemy', true)
+    protectors.set_friend('enemy', true)
     enemy.set_friend('protectors', true)
+end
+
+local init_bonus_drill_force = function()
+    local bonus_drill = game.forces.bonus_drill
+    local player = game.forces.player
+    if not bonus_drill then
+        bonus_drill = game.create_force('bonus_drill')
+    end
+    bonus_drill.set_friend('player', true)
+    player.set_friend('bonus_drill', true)
+    bonus_drill.mining_drill_productivity_bonus = 0.5
 end
 
 local is_position_near_tbl = function(position, tbl)
@@ -123,6 +144,8 @@ function Public.reset_map()
     local Diff = Difficulty.get()
     local this = WPT.get()
     local wave_defense_table = WD.get_table()
+    Misc.set('creative_are_you_sure', false)
+    Misc.set('creative_enabled', false)
 
     Reset.enable_mapkeeper(true)
 
@@ -153,6 +176,7 @@ function Public.reset_map()
     RPG.enable_stone_path(true)
     RPG.enable_one_punch(true)
     RPG.enable_one_punch_globally(false)
+    RPG.enable_range_buffs(true)
     RPG.enable_auto_allocate(true)
     RPG.disable_cooldowns_on_spells()
     RPG.enable_explosive_bullets_globally(true)
@@ -168,7 +192,8 @@ function Public.reset_map()
     Group.alphanumeric_only(false)
 
     Functions.disable_tech()
-    init_new_force()
+    init_protectors_force()
+    init_bonus_drill_force()
 
     local surface = game.surfaces[this.active_surface_index]
 
@@ -191,6 +216,7 @@ function Public.reset_map()
     BiterHealthBooster.check_on_entity_died(true)
     BiterHealthBooster.boss_spawns_projectiles(true)
     BiterHealthBooster.enable_boss_loot(false)
+    BiterHealthBooster.enable_randomize_stun_and_slowdown_sticker(true)
 
     Balance.init_enemy_weapon_damage()
 
@@ -236,7 +262,7 @@ function Public.reset_map()
     this.locomotive_health = 10000
     this.locomotive_max_health = 10000
 
-    Locomotive.locomotive_spawn(surface, {x = -18, y = 25})
+    SpawnLocomotive.locomotive_spawn(surface, {x = -18, y = 25})
     Locomotive.render_train_hp()
     Functions.render_direction(surface)
 
@@ -247,9 +273,8 @@ function Public.reset_map()
     wave_defense_table.game_lost = false
     wave_defense_table.spawn_position = {x = 0, y = 84}
     WD.alert_boss_wave(true)
-    WD.clear_corpses(false)
     WD.remove_entities(true)
-    WD.enable_threat_log(true)
+    WD.enable_threat_log(false) -- creates waaaay to many entries in the global table
     WD.check_collapse_position(true)
     WD.set_disable_threat_below_zero(true)
     WD.increase_boss_health_per_wave(true)
@@ -418,7 +443,7 @@ local compare_collapse_and_train = function()
     end
 end
 
-local collapse_after_wave_100 = function()
+local collapse_after_wave_200 = function()
     local collapse_grace = WPT.get('collapse_grace')
     if not collapse_grace then
         return
@@ -429,7 +454,7 @@ local collapse_after_wave_100 = function()
 
     local wave_number = WD.get_wave()
 
-    if wave_number >= 100 then
+    if wave_number >= 200 then
         Collapse.start_now(true)
         local data = {
             position = Collapse.get_position()
@@ -461,7 +486,7 @@ local on_tick = function()
     end
 
     if tick % 1000 == 0 then
-        collapse_after_wave_100()
+        collapse_after_wave_200()
         Functions.remove_offline_players()
         Functions.set_difficulty()
         Functions.is_creativity_mode_on()

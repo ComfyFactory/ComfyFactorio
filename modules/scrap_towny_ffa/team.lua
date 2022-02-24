@@ -43,27 +43,30 @@ local function is_towny(force)
 end
 
 function Public.has_key(player)
-    local ffatable = Table.get_table()
-    if player == nil then
-        return false
+    if not (player and player.valid) then
+        return
     end
-    return ffatable.key[player]
+    local ffatable = Table.get_table()
+
+    return ffatable.key[player.index]
 end
 
 function Public.give_key(player)
-    local ffatable = Table.get_table()
-    if player == nil then
+    if not (player and player.valid) then
         return
     end
-    ffatable.key[player] = true
+    local ffatable = Table.get_table()
+
+    ffatable.key[player.index] = true
 end
 
 function Public.remove_key(player)
-    local ffatable = Table.get_table()
-    if player == nil then
+    if not (player and player.valid) then
         return
     end
-    ffatable.key[player] = false
+    local ffatable = Table.get_table()
+
+    ffatable.key[player.index] = false
 end
 
 function Public.set_player_color(player)

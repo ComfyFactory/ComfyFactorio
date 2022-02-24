@@ -22,7 +22,7 @@ function Public.reset_table()
     this.announced_message = false
     this.force_chunk = false
     this.fish_eye = false
-    this.chunk_load_tick = game.tick + 600
+    this.chunk_load_tick = game.tick + 500
     -- @end
     this.game_has_ended = false
     this.game_reset = false

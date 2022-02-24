@@ -4,7 +4,11 @@ local Collapse = require 'modules.collapse'
 local this = {
     explosives = {},
     settings = {
-        check_growth_below_void = false
+        check_growth_below_void = false,
+        valid_items = {
+            ['explosives'] = 500,
+            ['cliff-explosives'] = 750
+        }
     }
 }
 Global.register(
@@ -43,7 +47,7 @@ local function check_y_pos(position)
     end
     local collapse_pos = Collapse.get_position()
 
-    local radius = 50
+    local radius = 10
 
     local dy = position.y - collapse_pos.y
     if dy ^ 2 < radius ^ 2 then
@@ -113,13 +117,6 @@ local function grow_cell(cell)
 
     local new_cell_health = math_round(cell.health / #positions, 3) - this.explosives.damage_decay
 
-    --[[
-	if new_cell_health > 0 then
-		this.explosives.cells_damage_dealt = this.explosives.cells_damage_dealt + damage_decay * #positions
-	else
-		this.explosives.cells_damage_dealt = this.explosives.cells_damage_dealt + (new_cell_health + damage_decay) * #positions
-	end
-	]]
     if new_cell_health <= 0 then
         return
     end
@@ -205,7 +202,9 @@ local function damage_area(cell)
             cell.health = cell.health - this.explosives.tiles[key]
             this.explosives.tiles[key] = nil
             if math_abs(tile.position.y) < surface.map_gen_settings.height * 0.5 and math_abs(tile.position.x) < surface.map_gen_settings.width * 0.5 then
-                surface.set_tiles({{name = 'landfill', position = tile.position}}, true)
+                if not check_y_pos(tile.position) then
+                    surface.set_tiles({{name = 'landfill', position = tile.position}}, true)
+                end
             end
         else
             this.explosives.tiles[key] = this.explosives.tiles[key] - cell.health
@@ -235,6 +234,17 @@ local function tick()
     end
 end
 
+local function check_entity_for_items(item)
+    local items = this.settings.valid_items
+    for name, damage in pairs(items) do
+        local amount = item.get_item_count(name)
+        if amount and amount > 1 then
+            return amount, damage
+        end
+    end
+    return false
+end
+
 local function on_entity_died(event)
     local entity = event.entity
     if not entity.valid then
@@ -254,27 +264,13 @@ local function on_entity_died(event)
         inventory = defines.inventory.car_trunk
     end
 
-    local i = entity.get_inventory(inventory)
-    local amount = i.get_item_count('explosives')
+    local item = entity.get_inventory(inventory)
+    local amount, damage = check_entity_for_items(item)
     if not amount then
         return
     end
-    if amount < 1 then
-        return
-    end
 
-    local below_void = check_y_pos(entity.position)
-    if below_void then
-        return
-    end
-
-    cell_birth(
-        entity.surface.index,
-        {x = entity.position.x, y = entity.position.y},
-        game.tick,
-        {x = entity.position.x, y = entity.position.y},
-        amount * this.explosives.damage_per_explosive
-    )
+    cell_birth(entity.surface.index, {x = entity.position.x, y = entity.position.y}, game.tick, {x = entity.position.x, y = entity.position.y}, amount * damage)
 end
 
 function Public.detonate_chest(entity)
@@ -295,8 +291,8 @@ function Public.detonate_chest(entity)
         inventory = defines.inventory.car_trunk
     end
 
-    local i = entity.get_inventory(inventory)
-    local amount = i.get_item_count('explosives')
+    local item = entity.get_inventory(inventory)
+    local amount, damage = check_entity_for_items(item)
     if not amount then
         return false
     end
@@ -304,18 +300,7 @@ function Public.detonate_chest(entity)
         return false
     end
 
-    local below_void = check_y_pos(entity.position)
-    if below_void then
-        return
-    end
-
-    cell_birth(
-        entity.surface.index,
-        {x = entity.position.x, y = entity.position.y},
-        game.tick,
-        {x = entity.position.x, y = entity.position.y},
-        amount * this.explosives.damage_per_explosive
-    )
+    cell_birth(entity.surface.index, {x = entity.position.x, y = entity.position.y}, game.tick, {x = entity.position.x, y = entity.position.y}, amount * damage)
     return true
 end
 
@@ -324,9 +309,6 @@ function Public.reset()
     this.explosives.tiles = {}
     if not this.explosives.vectors then
         this.explosives.vectors = {{density, 0}, {density * -1, 0}, {0, density}, {0, density * -1}}
-    end
-    if not this.explosives.damage_per_explosive then
-        this.explosives.damage_per_explosive = 500
     end
     if not this.explosives.damage_decay then
         this.explosives.damage_decay = 10

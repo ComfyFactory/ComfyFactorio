@@ -1,6 +1,6 @@
 local Public = require 'modules.rpg.table'
 local Gui = require 'utils.gui'
-local P = require 'player_modifiers'
+local P = require 'utils.player_modifiers'
 local Session = require 'utils.datastore.session_data'
 
 local settings_frame_name = Public.settings_frame_name
@@ -578,7 +578,7 @@ function Public.extra_settings(player)
                 conjure_label.tooltip = ({
                     'rpg_settings.magic_item_requirement',
                     conjure_label.tooltip,
-                    entity.obj_to_create,
+                    entity.entityName,
                     entity.mana_cost,
                     entity.level
                 })
@@ -586,7 +586,7 @@ function Public.extra_settings(player)
                 conjure_label.tooltip = ({
                     'rpg_settings.magic_entity_requirement',
                     conjure_label.tooltip,
-                    entity.obj_to_create,
+                    entity.entityName,
                     entity.mana_cost,
                     entity.level
                 })

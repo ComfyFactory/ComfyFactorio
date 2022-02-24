@@ -1,4 +1,4 @@
-local RPG = require 'modules.rpg.table'
+local Public = require 'modules.rpg.table'
 local Utils = require 'utils.core'
 local Color = require 'utils.color_presets'
 
@@ -7,7 +7,7 @@ local round = math.round
 local validate_args = function(data)
     local player = data.player
     local target = data.target
-    local rpg_t = RPG.get_value_from_player(target.index)
+    local rpg_t = Public.get_value_from_player(target.index)
 
     if not target then
         return false
@@ -66,7 +66,7 @@ local print_stats = function(target)
     if not target then
         return
     end
-    local rpg_t = RPG.get_value_from_player(target.index)
+    local rpg_t = Public.get_value_from_player(target.index)
     if not rpg_t then
         return
     end
@@ -126,3 +126,104 @@ commands.add_command(
         end
     end
 )
+
+if _DEBUG then
+    commands.add_command(
+        'give_xp',
+        'DEBUG ONLY - if you are seeing this then this map is running on debug-mode.',
+        function(cmd)
+            local p
+            local player = game.player
+            local param = tonumber(cmd.parameter)
+
+            if player then
+                if player ~= nil then
+                    p = player.print
+                    if not player.admin then
+                        p("[ERROR] You're not admin!", Color.fail)
+                        return
+                    end
+                    if not param then
+                        return
+                    end
+                    p('Distributed ' .. param .. ' of xp.')
+                    Public.give_xp(param)
+                end
+            end
+        end
+    )
+    commands.add_command(
+        'rpg_debug_module',
+        '',
+        function()
+            local player = game.player
+
+            if not (player and player.valid) then
+                return
+            end
+
+            if not player.admin then
+                return
+            end
+
+            Public.toggle_debug()
+        end
+    )
+
+    commands.add_command(
+        'rpg_debug_one_punch',
+        '',
+        function()
+            local player = game.player
+
+            if not (player and player.valid) then
+                return
+            end
+
+            if not player.admin then
+                return
+            end
+
+            Public.toggle_debug_one_punch()
+        end
+    )
+
+    commands.add_command(
+        'rpg_cheat_stats',
+        '',
+        function()
+            local player = game.player
+
+            if not (player and player.valid) then
+                return
+            end
+
+            if not player.admin then
+                return
+            end
+
+            local data = Public.get('rpg_t')
+            for k, _ in pairs(data) do
+                data[k].dexterity = 999
+                data[k].enable_entity_spawn = true
+                data[k].explosive_bullets = true
+                data[k].level = 1000
+                data[k].magicka = 999
+                data[k].mana = 50000
+                data[k].mana_max = 50000
+                data[k].debug_mode = true
+                data[k].one_punch = true
+                data[k].stone_path = true
+                data[k].strength = 3000
+                data[k].vitality = 3000
+                data[k].xp = 456456
+                local p = game.get_player(k)
+                if p and p.valid then
+                    Public.update_player_stats(p)
+                end
+            end
+        end
+    )
+end
+
+return Public

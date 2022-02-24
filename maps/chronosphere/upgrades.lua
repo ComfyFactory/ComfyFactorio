@@ -240,6 +240,37 @@ local function upgrade_nuclear_artillery_add_ammo(amount)
     objective.upgrades[24] = objective.upgrades[24] + amount
 end
 
+local function add_light(pos)
+    local light = rendering.draw_sprite{
+            sprite = 'tile/lab-white',
+            x_scale = 4,
+            y_scale = 4,
+            target = pos,
+            surface = game.surfaces['cargo_wagon'],
+            tint = {r = 86, g = 241, b = 59, a = 0.8},
+            render_layer = 'ground'
+        }
+    return light
+end
+
+local function upgrade_giftmas()
+    if not game.surfaces['cargo_wagon'] then
+        return
+    end
+    local objective = Chrono_table.get_table()
+    if objective.giftmas_enabled then
+        local positions = {x = {-34, 34}, y = {-190, -62, 66}}
+        local lamps = {}
+        for ii = 1, 3, 1 do
+            for i = 1, 30, 1 do  --1 to 30 is size of wagon
+                lamps[#lamps + 1] = add_light({x = positions.x[1], y = positions.y[ii] + 4 * i})
+                lamps[#lamps + 1] = add_light({x = positions.x[2], y = positions.y[ii] + 4 * i})
+            end
+        end
+        objective.giftmas_lamps = lamps
+    end
+end
+
 local function process_upgrade(index)
     local objective = Chrono_table.get_table()
     if index == 1 then
@@ -288,12 +319,17 @@ local function process_upgrade(index)
         upgrade_nuclear_artillery_add_ammo(10)
     elseif index == 24 then
         upgrade_nuclear_artillery_add_ammo(9)
+    elseif index == 26 then
+        if objective.upgrades[26] == 1 then
+            upgrade_giftmas()
+        end
     end
+    script.raise_event(Chrono_table.events['update_upgrades_gui'], {})
 end
 
-local function check_single_upgrade(index)
+local function check_single_upgrade(index, coin_scaling)
     local objective = Chrono_table.get_table()
-    local upgrades = Upgrades.upgrades()
+    local upgrade = Upgrades['upgrade' .. index](coin_scaling)
     if objective.upgradechest[index] and objective.upgradechest[index].valid then
         if index == 14 and (objective.upgrades[13] ~= 1 or objective.computermessage ~= 3) then
             return
@@ -303,13 +339,13 @@ local function check_single_upgrade(index)
             return
         end
         local inv = objective.upgradechest[index].get_inventory(defines.inventory.chest)
-        if objective.upgrades[index] < upgrades[index].max_level and objective.chronojumps >= upgrades[index].jump_limit then
-            for _, item in pairs(upgrades[index].cost) do
+        if objective.upgrades[index] < upgrade.max_level and objective.chronojumps >= upgrade.jump_limit then
+            for _, item in pairs(upgrade.cost) do
                 if inv.get_item_count(item.name) < item.count then
                     return
                 end
             end
-            for _, token in pairs(upgrades[index].virtual_cost) do
+            for _, token in pairs(upgrade.virtual_cost) do
                 if objective.research_tokens[token.type] < token.count then
                     return
                 end
@@ -318,24 +354,25 @@ local function check_single_upgrade(index)
             return
         end
 
-        for _, item in pairs(upgrades[index].cost) do
+        for _, item in pairs(upgrade.cost) do
             if item.count > 0 then
                 inv.remove({name = item.name, count = item.count})
             end
         end
-        for _, token in pairs(upgrades[index].virtual_cost) do
+        for _, token in pairs(upgrade.virtual_cost) do
             objective.research_tokens[token.type] = objective.research_tokens[token.type] - token.count
         end
         objective.upgrades[index] = objective.upgrades[index] + 1
-        game.print(upgrades[index].message, {r = 0.98, g = 0.66, b = 0.22})
+        game.print(upgrade.message, {r = 0.98, g = 0.66, b = 0.22})
         process_upgrade(index)
     end
 end
 
 local function check_all_upgrades()
     local upgrades = Upgrades.upgrades()
+    local coin_scaling = Upgrades.coin_scaling()
     for i = 1, #upgrades, 1 do
-        check_single_upgrade(i)
+        check_single_upgrade(i, coin_scaling)
     end
 end
 
@@ -374,6 +411,7 @@ function Public.trigger_poison()
             surface.create_entity({name = 'poison-capsule', position = objective.comfychests[i].position, force = 'player', target = objective.comfychests[i], speed = 1})
         end
     end
+    script.raise_event(Chrono_table.events['update_upgrades_gui'], {})
 end
 
 return Public

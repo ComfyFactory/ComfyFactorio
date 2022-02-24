@@ -1,5 +1,5 @@
 local Event = require 'utils.event'
-local Modifier = require 'player_modifiers'
+local Modifier = require 'utils.player_modifiers'
 local Color = require 'utils.color_presets'
 
 local function validate_player(player)
@@ -57,9 +57,4 @@ local function on_init()
     script.on_event(defines.events.on_player_main_inventory_changed, check_burden)
 end
 
-local function on_load()
-    script.on_event(defines.events.on_player_main_inventory_changed, check_burden)
-end
-
 Event.on_init(on_init)
-Event.on_load(on_load)

@@ -94,21 +94,22 @@ local function unearthing_biters(surface, position, amount)
 
     local evolution = game.forces.enemy.evolution_factor
 
-    local ticks = amount * 30
-    ticks = ticks + 90
-    for t = 1, ticks, 1 do
-        if not traps[game.tick + t] then
-            traps[game.tick + t] = {}
+    local ticks = amount * 40
+    ticks = ticks + 80
+    for t = 4, ticks, 4 do
+        local tick = game.tick - (game.tick % 4) + t
+        if not traps[tick] then
+            traps[tick] = {}
         end
 
-        traps[game.tick + t][#traps[game.tick + t] + 1] = {
+        traps[tick][#traps[tick] + 1] = {
             callback = 'create_particles',
             params = {surface, {x = position.x, y = position.y}, 4}
         }
 
         if t > 90 then
-            if t % 30 == 29 then
-                traps[game.tick + t][#traps[game.tick + t] + 1] = {
+            if t % 40 == 36 then
+                traps[tick][#traps[tick] + 1] = {
                     callback = 'spawn_biter',
                     params = {surface, {x = position.x, y = position.y}, evolution}
                 }
@@ -133,6 +134,6 @@ local function on_tick()
     traps[game.tick] = nil
 end
 
-Event.add(defines.events.on_tick, on_tick)
+Event.on_nth_tick(4, on_tick)
 
 return unearthing_biters
