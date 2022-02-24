@@ -1,6 +1,14 @@
 --- Tuning factors
-local target_room_min = 100
-local target_room_floor_scale = 5
+local first_research_room_min = 50
+local last_research_room_max = 150
+local last_research_floor_scale = 2.5
+
+-- Early technologies are cheap and we have lots of excess resources for them. Slow down the early part of the
+-- game and lower the technology price as people explore the dungeon to speed up the latter part of the game
+
+local tech_scale_start_price = 20
+local tech_scale_end_price = 5
+local tech_scale_end_level = 25
 ---
 
 local Global = require 'utils.global'
@@ -57,6 +65,7 @@ local locked_researches = {
 }
 
 function Fixed.Init()
+    game.difficulty_settings.technology_price_multiplier = 3
     for _, tech in pairs(locked_researches) do
         game.forces.player.technologies[tech].enabled = false
     end
@@ -323,8 +332,8 @@ local all_research = {
 function Variable.calculate_distribution()
    state.research_by_floor = {}
    for k, v in pairs(all_research) do
-      floor = math.random(v.min, v.max)
-      res = state.research_by_floor[floor]
+      local floor = math.random(v.min, v.max)
+      local res = state.research_by_floor[floor]
       if res == nil then
 	 res = {}
 	 state.research_by_floor[floor] = res
@@ -336,12 +345,12 @@ function Variable.calculate_distribution()
    -- previous code did rooms_opened > 100 & 2% chance, ~150 mean to find the one tech
    -- this is on average a bit easier, but overall probably harder because of the lack of tech
    for f = 0, #state.research_by_floor do
-      res = state.research_by_floor[f]
+      local res = state.research_by_floor[f]
       if res ~= nil and #res > 0 then
 	 table.shuffle_table(res)
-	 target_rooms = target_room_min + f * target_room_floor_scale
-	 min_room = math.ceil(target_rooms/3)
-	 rooms_per_res = math.ceil(target_rooms - min_room) / #res
+	 local room_max = last_research_room_max + math.ceil(f * last_research_floor_scale)
+	 local min_room = first_research_room_min
+	 local rooms_per_res = math.ceil(room_max - first_research_room_min) / #res
 
 	 for i = 1,#res do
 	    local range_min = min_room + rooms_per_res * (i - 1)
@@ -354,7 +363,7 @@ function Variable.calculate_distribution()
 end
 
 local function res_to_string(res)
-   ret = {}
+   local ret = {}
    for f = 1, #res do
       ret[f] = res[f].name .. "@" .. res[f].room
    end
@@ -366,7 +375,7 @@ function Variable.dump_techs(max_floor)
       max_floor = #state.research_by_floor
    end
    for f = 0, max_floor do
-      res = state.research_by_floor[f]
+      local res = state.research_by_floor[f]
       if res == nil then
 	 game.print('Floor ' .. f .. ': nothing remains')
       else
@@ -376,6 +385,7 @@ function Variable.dump_techs(max_floor)
 end
 
 function Variable.Init()
+   game.difficulty_settings.technology_price_multiplier = tech_scale_start_price
    Variable.calculate_distribution()
 end
 
@@ -383,7 +393,7 @@ function Variable.techs_remain(index)
    if state.research_by_floor == nil then
       return -999
    end
-   floor = floorNum(index)
+   local floor = floorNum(index)
 
    if state.research_by_floor[floor] == nil then
       return 0
@@ -392,13 +402,13 @@ function Variable.techs_remain(index)
 end
 
 function Variable.unlock_research(index)
-   floor = floorNum(index)
-   res = state.research_by_floor[floor]
+   local floor = floorNum(index)
+   local res = state.research_by_floor[floor]
    if res == nil or #res == 0 then
       game.print('BUG: tried to unlock research on ' .. index .. ' but none remain')
       return
    end
-   tech = res[1]
+   local tech = res[1]
    table.remove(res, 1)
    if game.forces.player.technologies[tech.name].enabled then
       game.print('BUG: attempt to duplicate-unlock technology ' .. tech.name)
@@ -406,10 +416,20 @@ function Variable.unlock_research(index)
    end
    game.forces.player.technologies[tech.name].enabled = true
    game.print({'dungeons_tiered.tech_unlock', '[technology=' .. tech.name .. ']', floor})
+   local floor_fraction = (tech_scale_end_level - floor) / tech_scale_end_level
+   if floor_fraction < 0 then
+      floor_fraction = 0
+   end
+   local tech_multiplier = tech_scale_end_price +
+      (tech_scale_start_price - tech_scale_end_price) * floor_fraction
+   if tech_multiplier < game.difficulty_settings.technology_price_multiplier then
+      game.difficulty_settings.technology_price_multiplier = tech_multiplier
+      game.print('Finding technology on floor ' .. floor .. ' made research easier')
+   end
 end
 
 function Variable.room_is_lab(index)
-   res = state.research_by_floor[floorNum(index)]
+   local res = state.research_by_floor[floorNum(index)]
 
    if #res == 0 then
       return false
