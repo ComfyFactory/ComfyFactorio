@@ -72,7 +72,9 @@ end
 local function scan_direction_full(surface, position, vector, room_max, room_min)
     local best = {x = room_min, y = room_min}
 
-    local a = room_min + room_spacing + 1
+    -- make the center of the room a steps in the direction of vector.
+    -- +2 because with only +1 the calculation would end up overlapping quite often with the current position
+    local a = room_min + room_spacing + 2
     local room_center_pos = {x = position.x + vector[1] * a, y = position.y + vector[2] * a}
 
     local search_area = {
