@@ -19,6 +19,7 @@ function Public.generate_merchant_trades(market)
 	if market and market.valid then
 
 		market.add_market_item{price={{'pistol', 1}}, offer={type = 'give-item', item = 'coin', count = 500}}
+		market.add_market_item{price={{'burner-mining-drill', 1}}, offer={type = 'give-item', item = 'iron-plate', count = 9}}
 	
 		local game_completion_progress = Common.game_completion_progress()
 		if game_completion_progress <= 1 then

@@ -36,6 +36,7 @@ Public.default_window_positions = {
 	progress = {x = 250, y = 48},
 	fuel = {x = 468, y = 48},
 	minimap = {x = 10, y = 48},
+	color = {x = 160, y = 96},
 }
 
 

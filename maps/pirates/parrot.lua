@@ -63,7 +63,7 @@ function Public.parrot_80()
 end
 function Public.parrot_boats_warning()
 	local memory = Memory.get_crew_memory()
-	Common.parrot_speak(game.forces[memory.force_name], '200 leagues? I think we\'re being chased...')
+	Common.parrot_speak(game.forces[memory.force_name], '160 leagues? I think we\'re being chased...')
 end
 function Public.parrot_kraken_warning()
 	local memory = Memory.get_crew_memory()

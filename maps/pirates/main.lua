@@ -7,7 +7,8 @@ local Server = require 'utils.server'
 local inspect = require 'utils.inspect'.inspect
 -- local Modifers = require 'player_modifiers'
 local BottomFrame = require 'comfy_panel.bottom_frame'
-local Autostash = require 'maps.pirates.from_comfy.autostash'
+local Autostash = require 'modules.autostash'
+-- local Autostash = require 'maps.pirates.from_comfy.autostash'
 
 local TickFunctions = require 'maps.pirates.tick_functions'
 local ClassTickFunctions = require 'maps.pirates.tick_functions_classes'

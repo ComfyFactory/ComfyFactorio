@@ -78,7 +78,7 @@ end
 
 function Public.max_time_on_island_formula()
 	return 60 * (
-			(31 + 2 * (Common.overworldx()/40)^(1/3))
+			(33 + 2 * (Common.overworldx()/40)^(1/3))
 	) / Public.onthefly_scaling_with_players_rule()^(2/3) / Math.sloped(Common.difficulty(), 1/4)
 end
 
@@ -100,13 +100,13 @@ function Public.fuel_depletion_rate_static()
 
 	local T = Public.expected_time_on_island() --always >0
 
-	return - 1000 * (Common.overworldx()/40)^(2/5) / T
+	return - 1200 * (Common.overworldx()/40)^(1/2) / T * Public.onthefly_scaling_with_players_rule()^(1/3) --the extra player dependency accounts for the fact that even in compressed time, more players get more resources...
 end
 
 function Public.fuel_depletion_rate_sailing()
 	if (not Common.overworldx()) then return 0 end
 
-	return - 10 * (1 + (Common.overworldx()/40)^(1/5))
+	return - 10 * (1 + (Common.overworldx()/40)^(4/5))
 end
 
 function Public.boat_passive_pollution_per_minute(time)
@@ -197,18 +197,19 @@ end
 
 
 function Public.periodic_free_resources_per_x(x)
-	-- return {
-	-- 	{name = 'iron-plate', count = Math.ceil(6 * (Common.overworldx()/40)^(2/3) * Math.sloped(Common.capacity_scale(), 1/2))},
-	-- 	{name = 'copper-plate', count = Math.ceil(1 * (Common.overworldx()/40)^(2/3) * Math.sloped(Common.capacity_scale(), 1/2))},
-	-- }
-	return {}
+	return {
+		{name = 'iron-plate', count = Math.ceil(5 * (Common.overworldx()/40)^(2/3))},
+		{name = 'copper-plate', count = Math.ceil(1 * (Common.overworldx()/40)^(2/3))},
+	}
 end
 
 function Public.periodic_free_resources_per_destination_5_seconds(x)
 	return {
-		{name = 'iron-ore', count = Math.ceil(7 * (Common.overworldx()/40)^(0.6))},
-		{name = 'copper-ore', count = Math.ceil(3 * (Common.overworldx()/40)^(0.6))},
 	}
+	-- return {
+	-- 	{name = 'iron-ore', count = Math.ceil(7 * (Common.overworldx()/40)^(0.6))},
+	-- 	{name = 'copper-ore', count = Math.ceil(3 * (Common.overworldx()/40)^(0.6))},
+	-- }
 end
 
 function Public.class_resource_scale()

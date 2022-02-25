@@ -456,6 +456,17 @@ function Public.click(event)
 	end
 
 
+	-- if eventname == 'promote_officer' then
+	-- 	Roles.promote_to_officer(player)
+	-- 	return
+	-- end
+
+	-- if eventname == 'demote_officer' then
+	-- 	Roles.demote_to_officer(player)
+	-- 	return
+	-- end
+
+
 	if string.sub(eventname, 1, 13) and string.sub(eventname, 1, 13) == 'assign_class_' then
 		local other_id = tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])
 		Roles.assign_class(other_id, tonumber(string.sub(eventname, 14, -1)))

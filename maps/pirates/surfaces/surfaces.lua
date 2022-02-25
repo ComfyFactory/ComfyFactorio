@@ -190,7 +190,7 @@ function Public.destination_on_collide(destination)
 		-- destination.static_params.scheduled_raft_raids = scheduled_raft_raids
 	end
 
-	if memory.overworldx == 40*5 then Parrot.parrot_boats_warning() end
+	if memory.overworldx == 40*4 then Parrot.parrot_boats_warning() end
 	if memory.overworldx == 600 then
 		Parrot.parrot_radioactive_tip_1()
 	elseif memory.overworldx == 800 then
@@ -267,6 +267,12 @@ function Public.destination_on_arrival(destination)
 		-- 		Public.player_exit_crows_nest(player, {x = 5, y = 0})
 		-- 	end
 		-- end
+
+		-- heal all cannons:
+		local cannons = game.surfaces[destination.surface_name].find_entities_filtered({type = 'artillery-turret'})
+		for _, c in pairs(cannons) do
+			c.health = c.prototype.max_health
+		end
 	end
 
 	local name = destination.static_params.name and destination.static_params.name or 'NameNotFound'

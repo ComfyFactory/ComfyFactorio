@@ -18,17 +18,17 @@ local Public = {}
 
 Public.main_shop_data_1 = {
 	new_boat_cutter = {
-		tooltip = 'Purchase a cutter for 3000 stored fuel.',
+		tooltip = 'Purchase a cutter.',
 		what_you_get_sprite_buttons = {['utility/spawn_flag'] = false},
 		base_cost = {fuel = 3000},
 	},
 	new_boat_sloop_with_hold = {
-		tooltip = 'Purchase a sloop (with hold) for 3500 stored fuel.',
+		tooltip = 'Purchase a sloop (with hold).',
 		what_you_get_sprite_buttons = {['utility/spawn_flag'] = false},
 		base_cost = {fuel = 3500},
 	},
 	new_boat_cutter_with_hold = {
-		tooltip = 'Purchase a cutter (with hold) for 5000 stored fuel.',
+		tooltip = 'Purchase a cutter (with hold).',
 		what_you_get_sprite_buttons = {['utility/spawn_flag'] = false},
 		base_cost = {fuel = 5000},
 	},
@@ -52,25 +52,26 @@ Public.main_shop_data_1 = {
 	-- 	what_you_get_sprite_buttons = {['item/sulfur'] = 100},
 	-- 	base_cost = {copper_plates = 2500},
 	-- },
+	-- as as initial pass let's try making the fuel values half of the old gold values...
 	[Upgrades.enum.MORE_POWER] = {
-		tooltip = 'Upgrade the ship\'s power for 2000 stored fuel.',
+		tooltip = 'Upgrade the ship\'s power.',
 		what_you_get_sprite_buttons = {['utility/status_working'] = false},
-		base_cost = {fuel = 2000},
+		base_cost = {coins = 5000, fuel = 1000},
 	},
 	[Upgrades.enum.EXTRA_HOLD] = {
-		tooltip = 'Upgrade the ship\'s hold for 4000 stored fuel.',
+		tooltip = 'Upgrade the ship\'s hold.',
 		what_you_get_sprite_buttons = {['item/steel-chest'] = false},
-		base_cost = {fuel = 4000},
+		base_cost = {coins = 10000, fuel = 2000},
 	},
 	[Upgrades.enum.ROCKETS_FOR_SALE] = {
-		tooltip = 'Unlock rockets for sale at covered-up markets, for 4000 stored fuel.',
+		tooltip = 'Unlock rockets for sale at covered-up markets.',
 		what_you_get_sprite_buttons = {['item/rocket-launcher'] = false},
-		base_cost = {fuel = 4000},
+		base_cost = {coins = 10000, fuel = 2000},
 	},
 	[Upgrades.enum.UNLOCK_MERCHANTS] = {
-		tooltip = 'Unlock merchant ships for 5000 stored fuel.',
+		tooltip = 'Unlock merchant ships.',
 		what_you_get_sprite_buttons = {['entity/market'] = false},
-		base_cost = {fuel = 5000},
+		base_cost = {coins = 10000, fuel = 2500},
 	},
 }
 
@@ -78,7 +79,7 @@ Public.main_shop_data_2 = {
 	rail_signal = {
 		tooltip = "100 signals, used to steer the boat once space in the Crow's Nest View.",
 		what_you_get_sprite_buttons = {['item/rail-signal'] = 100},
-		base_cost = {coins = 200},
+		base_cost = {coins = 500},
 	},
 	artillery_shell = {
 		tooltip = '10 cannon shells.',
@@ -253,7 +254,7 @@ function Public.main_shop_try_purchase(name)
 			memory.mainshop_availability_bools[name] = false
 
 		elseif name == 'sell_iron' then
-			gotamount = trade_data.what_you_get_sprite_buttons['item/sulfur']
+			gotamount = trade_data.what_you_get_sprite_buttons['item/coal']
 			Common.give(captain, {{name = 'fuel', count = gotamount}})
 			Common.notify_force_light(force,string.format('%s is selling iron...', captain.name))
 
@@ -273,7 +274,7 @@ function Public.main_shop_try_purchase(name)
 		-- 	Common.notify_force_light(force,string.format('%s bought a fast loader...', captain.name))
 
 		elseif name == 'sell_copper' then
-			gotamount = trade_data.what_you_get_sprite_buttons['item/sulfur']
+			gotamount = trade_data.what_you_get_sprite_buttons['item/coal']
 			Common.give(captain, {{name = 'fuel', count = gotamount}})
 			Common.notify_force_light(force,string.format('%s is selling copper...', captain.name))
 
@@ -377,9 +378,9 @@ function Public.event_on_market_item_purchased(event)
 			if price[2] then
 				local fish = price[2].name
 				if fish == 'raw-fish' then fish = 'fish' end
-				Common.notify_force_light(player.force, player.name .. ' is trading away ' .. price[1].count .. ' ' .. price[1].name .. ' and ' .. fish .. ' to get ' .. this_offer.offer.item .. '...')
+				Common.notify_force_light(player.force, player.name .. ' is trading away ' .. price[1].amount .. ' ' .. price[1].name .. ' and ' .. fish .. ' to get ' .. this_offer.offer.item .. '...')
 			else
-				Common.notify_force_light(player.force, player.name .. ' is trading away ' .. price[1].count .. ' ' .. price[1].name .. ' to get ' .. this_offer.offer.item .. '...')
+				Common.notify_force_light(player.force, player.name .. ' is trading away ' .. price[1].amount .. ' ' .. price[1].name .. ' to get ' .. this_offer.offer.item .. '...')
 			end
 		end
 	end

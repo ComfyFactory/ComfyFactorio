@@ -84,9 +84,12 @@ function Public.generate_overworld_destination(p)
 		subtype = Surfaces.Island.enum.STANDARD_VARIANT
 	elseif macrop.y == 1 and (((macrop.x % 4) == 3 and macrop.x ~= 15) or macrop.x == 14) then --avoid x=15 because radioactive is there
 		type = Surfaces.enum.DOCK
-	elseif macrop.x == 5 then --biter boats appear
+	elseif macrop.x == 4 then --biter boats appear
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.STANDARD
+	elseif macrop.x == 5 then
+		type = Surfaces.enum.ISLAND
+		subtype = Surfaces.Island.enum.RED_DESERT
 	elseif macrop.x == 9 then --just before krakens
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.HORSESHOE
@@ -134,7 +137,7 @@ function Public.generate_overworld_destination(p)
 		local playercount = Common.activecrewcount()
 		local max_evo = 0.85
 		if Common.difficulty() < 1 then max_evo = 0.68 end
-		if macrop.x > 5 then
+		if macrop.x > 4 then
 			scheduled_raft_raids = {}
 			local times = {600, 360, 215, 210, 120, 30, 10, 5}
 			for i = 1, #times do
@@ -144,7 +147,7 @@ function Public.generate_overworld_destination(p)
 					-- scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_bonus_evolution = 0.52}
 				end
 			end
-		elseif macrop.x == 5 then
+		elseif macrop.x == 4 then
 			local times
 			if playercount <= 2 then
 				times = {1, 5, 10, 15}
@@ -333,8 +336,9 @@ function Public.generate_overworld_destination(p)
 				alignment = 'right',
 				visible = false,
 			}
+			--@TODO add coin cost here as well
 			dest.dynamic_data.crowsnest_rendering_2 = rendering.draw_sprite{
-				sprite = 'item/sulfur',
+				sprite = 'item/coal',
 				surface = surface,
 				target = {x = x + 7, y = y - 1.75},
 				x_scale = 6,

@@ -29,7 +29,7 @@ local Crew = require 'maps.pirates.crew'
 local Quest = require 'maps.pirates.quest'
 local Shop = require 'maps.pirates.shop.shop'
 local Loot = require 'maps.pirates.loot'
-local Antigrief = require 'antigrief'
+local Antigrief = require 'utils.antigrief'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Classes = require 'maps.pirates.roles.classes'
@@ -47,7 +47,7 @@ function Public.silo_died()
 	destination.dynamic_data.rocketsilohp = 0
 	if destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid then
 		local surface = destination.dynamic_data.rocketsilos[1].surface
-		surface.create_entity({name = 'big-artillery-explosion', position = destination.dynamic_data.rocketsilo.position})
+		surface.create_entity({name = 'big-artillery-explosion', position = destination.dynamic_data.rocketsilos[1].position})
 
 		if memory.boat and memory.boat.surface_name and surface.name == memory.boat.surface_name then
 			-- Crew.lose_life()
@@ -96,9 +96,9 @@ local function biters_chew_stuff_faster(event)
 	if (event.entity.force.index == 3 or event.entity.force.name == 'environment') then
 		event.entity.health = event.entity.health - event.final_damage_amount * 5
 	elseif event.entity.name == 'stone-furnace' then
-		event.entity.health = event.entity.health - event.final_damage_amount * 1
+		event.entity.health = event.entity.health - event.final_damage_amount * 0.75
 	elseif event.entity.name == 'wooden-chest' or event.entity.name == 'stone-chest' or event.entity.name == 'steel-chest' then
-		event.entity.health = event.entity.health - event.final_damage_amount * 0.25
+		event.entity.health = event.entity.health - event.final_damage_amount * 0.75
 	end
 end
 
@@ -443,7 +443,7 @@ local function event_on_player_mined_entity(event)
 
 			if memory.overworldx >= 0 then
 				if Math.random(6) == 1 then
-					give[#give + 1] = {name = 'coin', count = 8}
+					give[#give + 1] = {name = 'coin', count = 5}
 				end
 			end
 

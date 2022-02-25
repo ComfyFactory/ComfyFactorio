@@ -265,7 +265,7 @@ function Public.captain_requisition_coins(captain_index)
 
 	local crew_members = memory.crewplayerindices
 	local captain = game.players[captain_index]
-	if not (captain and crew_members and #crew_members > 2) then return end
+	if not (captain and crew_members and #crew_members > 1) then return end
 	
 	local captain_inv = captain.get_inventory(defines.inventory.character_main)
 

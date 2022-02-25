@@ -32,7 +32,7 @@ local Token = require 'utils.token'
 local Task = require 'utils.task'
 local Highscore = require 'maps.pirates.highscore'
 
-
+local GUIcolor = require 'maps.pirates.gui.color'
 
 commands.add_command(
 'ok',
@@ -55,17 +55,17 @@ function(cmd)
 	if player_index then
 		local player = game.players[player_index]
 		if player and player.valid then
-			game.print(param)
 			if cmd.parameter then
-				if PlayerColors[param] then
-					player.color = PlayerColors[param]
-					player.chat_color = PlayerColors[param]
-					game.print(player.name .. '\'s color is now ' .. param .. ' (via /ccolor).', PlayerColors[param])
+				if PlayerColors.colors[param] then
+					player.color = PlayerColors.colors[param]
+					player.chat_color = PlayerColors.colors[param]
+					game.print(player.name .. '\'s color is now ' .. param .. ' (via /ccolor).', PlayerColors.colors[param])
 				else
 					player.print('Color not found.')
 				end
 			else
-				player.print('Try going to https://github.com/danielmartin0/ComfyFactorio-Pirates/blob/develop/maps/pirates/player_colors.lua')
+				-- disabled due to lag:
+				-- GUIcolor.toggle_window(player)
 			end
 		end
 	end
