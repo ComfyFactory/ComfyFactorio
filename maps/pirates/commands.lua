@@ -57,13 +57,19 @@ function(cmd)
 		if player and player.valid then
 			if cmd.parameter then
 				if PlayerColors.colors[param] then
-					player.color = PlayerColors.colors[param]
-					player.chat_color = PlayerColors.colors[param]
-					game.print(player.name .. '\'s color is now ' .. param .. ' (via /ccolor).', PlayerColors.colors[param])
+					local rgb = PlayerColors.colors[param]
+					player.color = rgb
+					player.chat_color = rgb
+					game.print(player.name .. '\'s color is now ' .. param .. ' (via /ccolor).', rgb)
 				else
 					player.print('Color not found.')
 				end
 			else
+				local color = PlayerColors.names[Math.random(#PlayerColors.names)]
+				local rgb = PlayerColors.colors[color]
+				player.color = rgb
+				player.chat_color = rgb
+				game.print(player.name .. '\'s color was randomized to ' .. color .. ' (via /ccolor).', rgb)
 				-- disabled due to lag:
 				-- GUIcolor.toggle_window(player)
 			end
