@@ -30,6 +30,9 @@ end
 
 local function move_to_main(player, from, to)
    local ret = {}
+   if from == nil or to == nil then
+      return {}
+   end
    for i = 1, #from do
       local c = from[i]
       if c.valid_for_read then
@@ -48,15 +51,19 @@ end
 local function change_to_melee(player)
    local main_inv = player.get_main_inventory()
    local gun_inv = player.get_inventory(defines.inventory.character_guns)
-   local gun_moved = move_to_main(player, gun_inv, main_inv)
    local ammo_inv = player.get_inventory(defines.inventory.character_ammo)
+   if main_inv == nil or gun_inv == nil or ammo_inv == nil then
+      return false
+   end
+   local gun_moved = move_to_main(player, gun_inv, main_inv)
    local ammo_moved = move_to_main(player, ammo_inv, main_inv)
 
    state[player.index] = { gun = gun_moved, ammo = ammo_moved }
+   return true
 end
 
 local function try_move_from_main(main, to, what)
-   if what == nil then
+   if what == nil or main == nil or to == nil then
       return
    end
    for i = 1, #what do
@@ -77,15 +84,16 @@ local function change_to_ranged(player)
    end
    local main_inv = player.get_main_inventory()
    local gun_inv = player.get_inventory(defines.inventory.character_guns)
-   local gun_moved = try_move_from_main(main_inv, gun_inv, moved.gun)
    local ammo_inv = player.get_inventory(defines.inventory.character_ammo)
+   if main_inv == nil or gun_inv == nil or ammo_inv == nil then
+      return false
+   end
+   local gun_moved = try_move_from_main(main_inv, gun_inv, moved.gun)
    local ammo_moved = try_move_from_main(main_inv, ammo_inv, moved.ammo)
    state[player.index] = {}
+   return true
 end
-   
 
--- on_player_ammo_inventory_changed
--- on_player_gun_inventory_changed 
 local function on_gui_click(event)
    if not event.element then
       return
@@ -99,13 +107,19 @@ local function on_gui_click(event)
    local player = game.players[event.player_index]
    local mm = player.gui.top.melee_mode
    if mm.sprite == 'item/pistol' then
-      player.print('Switching to melee mode, ammo and weapons will stay in main inventory')
-      change_to_melee(player)
-      mm.sprite = 'item/dummy-steel-axe'
+      if change_to_melee(player) then
+	 player.print('Switching to melee mode, ammo and weapons will stay in main inventory')
+	 mm.sprite = 'item/dummy-steel-axe'
+      else
+	 player.print('Unable to switch to melee mode. Are you dead?')
+      end
    else
-      player.print('Switching to ranged mode, trying to restore previous guns and ammo')
-      change_to_ranged(player)
-      mm.sprite = 'item/pistol'
+      if change_to_ranged(player) then
+	 player.print('Switching to ranged mode, trying to restore previous guns and ammo')
+	 mm.sprite = 'item/pistol'
+      else
+	 player.print('Unable to switch to ranged mode. Are you dead?')
+      end
    end
 end
 
