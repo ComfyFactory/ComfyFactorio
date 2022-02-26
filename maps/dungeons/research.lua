@@ -401,7 +401,22 @@ function Variable.techs_remain(index)
    return #state.research_by_floor[floor]
 end
 
+function Variable.relock_research()
+   for f = 0, #state.research_by_floor do
+      local res = state.research_by_floor[f]
+      if res ~= nil then
+	 for r = 1, #res do
+	    if game.forces.player.technologies[res[r].name].enabled then
+	       game.print('BUGFIX: ' .. res[r].name .. ' was incorrectly enabled')
+	       game.forces.player.technologies[res[r].name].enabled = false
+	    end
+	 end
+      end
+   end
+end
+
 function Variable.unlock_research(index)
+   Variable.relock_research()
    local floor = floorNum(index)
    local res = state.research_by_floor[floor]
    if res == nil or #res == 0 then
@@ -426,6 +441,7 @@ function Variable.unlock_research(index)
       game.difficulty_settings.technology_price_multiplier = tech_multiplier
       game.print('Finding technology on floor ' .. floor .. ' made research easier')
    end
+   Variable.relock_research()
 end
 
 function Variable.room_is_lab(index)
