@@ -79,7 +79,7 @@ function Public.update(player)
 			local evolution_silo
 			local evolution_nests
 			if memory.boat and memory.boat.state and (memory.boat.state == Boats.enum_state.ATSEA_SAILING or memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP) then
-				evolution_base = evo
+				evolution_base = evo - (memory.kraken_evo or 0)
 				-- here Kraken.kraken_slots
 				local krakens = false
 				if memory.active_sea_enemies and memory.active_sea_enemies.krakens then
@@ -88,7 +88,7 @@ function Public.update(player)
 					end
 				end
 				if krakens then --@FIXME: somehow this isn't triggering?
-					button.tooltip = string.format('Local biter evolution\n\nBase: %.2f\nKraken: %.2f\nTotal: %.2f', evolution_base, Balance.kraken_spawns_base_extra_evo, Balance.kraken_spawns_base_extra_evo + evo)
+					button.tooltip = string.format('Local biter evolution\n\nBase: %.2f\nKraken: %.2f\nTotal: %.2f', evolution_base, Balance.kraken_spawns_base_extra_evo + (memory.kraken_evo or 0), Balance.kraken_spawns_base_extra_evo + evo)
 					button.number = Balance.kraken_spawns_base_extra_evo + evo
 				else
 					button.tooltip = string.format('Local biter evolution\n\nBase: %.2f\nTotal: %.2f', evolution_base, evo)

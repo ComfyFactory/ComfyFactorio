@@ -157,7 +157,7 @@ function Public.create_hold_surface(nth)
 	Common.build_small_loco(surface, Public.Data.loco_offset, game.forces[memory.force_name], {255, 106, 52})
 
 	local items = subtype == enum.INITIAL and Balance.starting_items_crew_downstairs() or {}
-	Public.place_random_obstacle_boxes(nth, 0, items, 14)
+	Public.place_random_obstacle_boxes(nth, 0, items, 15)
 
 	if subtype == enum.SECONDARY then
 		if Common.difficulty() == 1 then

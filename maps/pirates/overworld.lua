@@ -169,32 +169,35 @@ function Public.generate_overworld_destination(p)
 
 		static_params.scheduled_raft_raids = scheduled_raft_raids
 
+		-- halved all of them for now, whilst testing...
+		
 		local normal_costitems = {'small-lamp', 'engine-unit', 'advanced-circuit'}
 		local base_cost_0 = {
-			['small-lamp'] = (macrop.x-2)*20,
+			['small-lamp'] = (macrop.x-2)*10,
 		}
 		local base_cost_1 = {
-			['small-lamp'] = (macrop.x-2)*20,
-			['engine-unit'] = (macrop.x-7)*15,
+			['small-lamp'] = (macrop.x-2)*10,
+			['engine-unit'] = (macrop.x-7)*8,
 		}
 		local base_cost_2 = {
-			['small-lamp'] = (macrop.x-2)*20,
-			['engine-unit'] = (macrop.x-7)*15,
-			['advanced-circuit'] = (macrop.x-10)*10,
+			['small-lamp'] = (macrop.x-2)*10,
+			['engine-unit'] = (macrop.x-7)*8,
+			['advanced-circuit'] = (macrop.x-10)*5,
 		}
 		local base_cost_3 = {
-			['small-lamp'] = (macrop.x-2)*20,
-			['engine-unit'] = (macrop.x-7)*15,
-			['advanced-circuit'] = (macrop.x-10)*10,
+			['small-lamp'] = (macrop.x-2)*10,
+			['engine-unit'] = (macrop.x-7)*8,
+			['advanced-circuit'] = (macrop.x-10)*5,
 			-- ['electric-engine-unit'] = (macrop.x-16)*10,
 		}
 		local base_cost_4 = {
-			['small-lamp'] = (macrop.x-2)*20,
-			['engine-unit'] = (macrop.x-7)*15,
-			['advanced-circuit'] = (macrop.x-10)*10,
+			['small-lamp'] = (macrop.x-2)*10,
+			['engine-unit'] = (macrop.x-7)*8,
+			['advanced-circuit'] = (macrop.x-10)*5,
 			-- ['electric-engine-unit'] = (macrop.x-16)*10,
 		}
-		if macrop.x <= 4 then
+		if macrop.x <= 5 then
+			-- cost_to_leave = {['small-lamp'] = 5}
 			cost_to_leave = nil
 		elseif macrop.x <= 8 then
 			cost_to_leave = base_cost_0
@@ -222,7 +225,7 @@ function Public.generate_overworld_destination(p)
 			}
 		end
 
-		-- Multiplication by Balance.cost_to_leave_multiplier() happens later.
+		static_params.cost_to_leave = cost_to_leave -- Multiplication by Balance.cost_to_leave_multiplier() happens later.
 
 		class_for_sale = Classes.Class_List[Math.random(#Classes.Class_List)]
 		static_params.class_for_sale = class_for_sale

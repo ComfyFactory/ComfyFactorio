@@ -24,6 +24,7 @@ Public.lobby_spawnpoint = {x = -72, y = -8}
 
 Public.fraction_of_map_loaded_atsea = 1
 Public.map_loading_ticks_atsea = 70 * 60
+Public.map_loading_ticks_atsea_dock = 30 * 60
 Public.map_loading_ticks_onisland = 2 * 60 * 60
 Public.loading_interval = 5
 

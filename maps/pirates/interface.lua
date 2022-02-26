@@ -620,6 +620,7 @@ local function event_on_entity_died(event)
 	if not crew_id and entity.valid then crew_id = tonumber(string.sub(entity.force.name, -3, -1)) or nil end
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
+	if memory.id == 0 then return end
 
 	base_kill_rewards(event)
 	

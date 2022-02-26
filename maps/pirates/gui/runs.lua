@@ -611,7 +611,7 @@ function Public.click(event)
 
 		global_memory.crewproposals[#global_memory.crewproposals + 1] = proposal
 
-		local message = player.name .. ' proposed the run ' .. proposal_name .. ' (capacity ' .. CoreData.capacity_options[capacity_option].text3 .. ').'
+		local message = player.name .. ' proposed the run ' .. proposal_name .. ' [capacity ' .. CoreData.capacity_options[capacity_option].text3 .. '].'
 		-- local message = player.name .. ' proposed the run ' .. proposal_name .. ' (difficulty ' .. CoreData.difficulty_options[difficulty_option].text .. ', capacity ' .. CoreData.capacity_options[capacity_option].text3 .. ').'
 		Common.notify_lobby(message)
 		return

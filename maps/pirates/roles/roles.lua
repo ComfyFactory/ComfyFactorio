@@ -12,38 +12,65 @@ local Server = require 'utils.server'
 local Classes = require 'maps.pirates.roles.classes'
 
 local Public = {}
-local privilege = {
+local privilege_levels = {
 	NORMAL = 1,
 	OFFICER = 2,
 	CAPTAIN = 3
 }
-Public.privilege = privilege
+Public.privilege_levels = privilege_levels
 
 
 --== Roles — General ==--
+
+function Public.reset_officers()
+	local memory = Memory.get_crew_memory()
+	memory.officers_table = {}
+end
+
+function Public.make_officer(captain, player)
+	local memory = Memory.get_crew_memory()
+	local force = game.forces[memory.force_name]
+
+	if Common.validate_player(player) and (not (captain.index == player.index)) then
+		memory.officers_table[player.index] = true
+	end
+
+	local message = (captain.name .. ' made ' .. player.name .. ' an officer.')
+	Common.notify_force(force, message)
+end
+
+function Public.unmake_officer(captain, player)
+	local memory = Memory.get_crew_memory()
+	local force = game.forces[memory.force_name]
+
+	if Common.validate_player(player) and (not (captain.index == player.index)) then
+		memory.officers_table[player.index] = nil
+	end
+
+	local message = (captain.name .. ' unmade ' .. player.name .. ' an officer.')
+	Common.notify_force(force, message)
+end
 
 function Public.tag_text(player)
 	local memory = Memory.get_crew_memory()
 
 
+	local str = ''
 	local tags = {}
 
 	if memory.id ~= 0 and memory.playerindex_captain and player.index == memory.playerindex_captain then
-		tags[#tags + 1] = "Cap'n"
+		tags[#tags + 1] = 'Cap\'n'
 	elseif player.controller_type == defines.controllers.spectator then
 		tags[#tags + 1] = 'Spectating'
 	elseif memory.officers_table and memory.officers_table[player.index] then
-		tags[#tags + 1] = "Officer"
+		tags[#tags + 1] = 'Officer'
 	end
-
 
 	if memory.classes_table and memory.classes_table[player.index] then
 
-		if not str == '' then str = str .. ' ' end
 		tags[#tags + 1] = Classes.display_form[memory.classes_table[player.index]]
 	end
 
-	local str = ''
 	for i, t in ipairs(tags) do
 		if i>1 then str = str .. ', ' end
 		str = str .. t
@@ -64,11 +91,11 @@ function Public.player_privilege_level(player)
 	local memory = Memory.get_crew_memory()
 
 	if memory.id ~= 0 and memory.playerindex_captain and player.index == memory.playerindex_captain then
-		return Public.privilege.CAPTAIN
+		return Public.privilege_levels.CAPTAIN
 	elseif memory.officers_table and memory.officers_table[player.index] then
-		return Public.privilege.OFFICER
+		return Public.privilege_levels.OFFICER
 	else
-		return Public.privilege.NORMAL
+		return Public.privilege_levels.NORMAL
 	end
 end
 
@@ -96,9 +123,15 @@ end
 
 function Public.player_left_so_redestribute_roles(player)
 	local memory = Memory.get_crew_memory()
-	
-	if player and player.index and player.index == memory.playerindex_captain then
-		Public.assign_captain_based_on_priorities()
+
+	if player and player.index then
+		if player.index == memory.playerindex_captain then
+			Public.assign_captain_based_on_priorities()
+		end
+		
+		if memory.officers_table and memory.officers_table[player.index] then
+			memory.officers_table[player.index] = nil
+		end
 	end
 	
 	Public.try_renounce_class(player, "A %s class is now spare.")
@@ -178,6 +211,8 @@ function Public.make_captain(player)
 	memory.playerindex_captain = player.index
 	global_memory.playerindex_to_priority[player.index] = nil
 	memory.captain_acceptance_timer = nil
+
+	Public.reset_officers()
 end
 
 function Public.pass_captainhood(player, player_to_pass_to)
@@ -467,7 +502,7 @@ function Public.update_privileges(player)
     end
 
     if string.sub(player.surface.name, 9, 17) == 'Crowsnest' or string.sub(player.surface.name, 9, 13) == 'Cabin' then
-		if Public.player_privilege_level(player) >= Public.privilege.OFFICER then
+		if Public.player_privilege_level(player) >= Public.privilege_levels.OFFICER then
 			return Public.add_player_to_permission_group(player, 'restricted_area_privileged')
 		else
 			return Public.add_player_to_permission_group(player, 'restricted_area')

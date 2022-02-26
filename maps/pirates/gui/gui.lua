@@ -89,7 +89,7 @@ local function create_gui(player)
 
 	flow2 = GuiCommon.flow_add_floating_sprite_button(flow1, 'evo_piratebutton')
 	flow2.sprite = 'entity/small-biter'
-	flow2.mouse_button_filter = {'middle'}
+	flow2.mouse_button_filter = {'middle'} --hack to avoid press visual
 	flow2.show_percent_for_small_numbers = true
 
 	flow2 = GuiCommon.flow_add_floating_sprite_button(flow1, 'minimap_piratebutton')
@@ -105,82 +105,72 @@ local function create_gui(player)
 	flow2 = GuiCommon.flow_add_floating_button(flow1, 'fuel_piratebutton')
 	-- flow2.style.right_padding = -100
 
-	flow3 = flow2.parent.add({
-		name = 'fuel_flow',
-		type = 'flow',
-	})
-	flow3.style.natural_width = 20
-	flow3.style.top_margin = -37
-	flow3.style.left_margin = 2
-	flow3.ignored_by_interaction=true
-
-	flow4 = flow3.add({
+	flow3 = flow2.add({
 		name = 'fuel_label_1',
 		type = 'label',
 		caption = ''
 	})
-	flow4.style.font = 'default-large-semibold'
+	flow3.style.font = 'default-large-semibold'
+	flow3.style.font_color = GuiCommon.bold_font_color
 	-- flow3.style.font_color = GuiCommon.bold_font_color
 	-- flow4.style.top_margin = -36
-	flow4.style.left_margin = 4
 	-- flow4.style.left_margin = -100
 	-- flow3.style.horizontal_align = 'center'
 	-- flow4.style.left_padding = -5
-	flow4.ignored_by_interaction=true
+	flow3.style.left_margin = -1
 
-	flow4 = flow3.add({
+	flow3 = flow2.add({
 		name = 'fuel_label_2',
 		type = 'label',
 		caption = ''
 	})
-	flow4.style.font = 'default-large'
-	flow4.style.font_color = GuiCommon.bold_font_color
-	flow4.style.left_margin = 6
-	flow4.style.right_padding = 6
-	flow4.style.right_margin = 2
-	flow4.ignored_by_interaction=true
+	flow3.style.font = 'default-large'
+	
+	flow3.style.left_margin = 6
 
 
 
 
-
-
-	tooltip = {'pirates.auto_undock_tooltip'}
 
 	flow2 = GuiCommon.flow_add_floating_button(flow1, 'etaframe_piratebutton')
 	-- flow2.style.right_padding = -100
 	-- flow2.enabled = false
 
-	flow3 = flow2.parent.add({
-		name = 'etaframe_flow',
-		type = 'flow',
-	})
-	flow3.style.natural_width = 20
-	flow3.style.top_margin = -37
-	flow3.style.left_margin = 2
-	flow3.ignored_by_interaction=true
-
-	flow4 = flow3.add({
+	flow3 = flow2.add({
 		name = 'etaframe_label_1',
 		type = 'label',
-		caption = 'Max Time:'
 	})
-	flow4.style.font = 'default-large-semibold'
-	flow4.style.font_color = GuiCommon.bold_font_color
-	flow4.tooltip = tooltip
-	flow4.style.left_margin = 4
+	flow3.style.font = 'default-large-semibold'
+	flow3.style.font_color = GuiCommon.bold_font_color
 
-	flow4 = flow3.add({
+	flow3 = flow2.add({
 		name = 'etaframe_label_2',
 		type = 'label',
 	})
-	flow4.style.left_margin = 2
-	flow4.style.right_padding = 6
-	flow4.style.right_margin = 2
-	flow4.style.font = 'default-large'
-	flow4.style.font_color = GuiCommon.default_font_color
-	flow4.tooltip = tooltip
+	flow3.style.left_margin = 1
+	flow3.style.font = 'default-large'
+	flow3.style.font_color = GuiCommon.default_font_color
 
+	flow3 = flow2.add({
+		name = 'etaframe_label_3',
+		type = 'label',
+	})
+	flow3.style.left_margin = 3
+	flow3.style.font = 'default-large-semibold'
+	flow3.style.font_color = GuiCommon.bold_font_color
+
+	flow3 = flow2.add({type = 'table', name = 'cost_table', column_count = 5})
+	for i = 1, 5 do
+		flow4 = flow3.add({type = 'sprite-button', name = 'cost_' .. i, number = 0})
+		-- flow4.mouse_button_filter = {'middle'}
+		flow4.enabled = false
+		flow4.style.top_margin = -6
+		flow4.style.right_margin = -6
+		flow4.style.maximal_height = 38
+		flow4.visible = false
+	end
+	flow3.style.left_margin = -1
+	flow3.style.right_margin = -2 --to get to the end of the button frame
 	
 
 	-- flow2 = flow1.add({
@@ -238,43 +228,43 @@ local function create_gui(player)
 
 	
 
-	flow2 = flow1.add({
-		name = 'cost_frame',
-		type = 'frame',
-	})
-	flow2.style.minimal_width = 100
-	flow2.style.natural_width = 100
-	flow2.style.minimal_height = 40
-	flow2.style.maximal_height = 40
-	flow2.style.left_padding = 4
-	flow2.style.right_padding = 4
-	flow2.style.top_padding = 3
+	-- flow2 = flow1.add({
+	-- 	name = 'cost_frame',
+	-- 	type = 'frame',
+	-- })
+	-- flow2.style.minimal_width = 100
+	-- flow2.style.natural_width = 100
+	-- flow2.style.minimal_height = 40
+	-- flow2.style.maximal_height = 40
+	-- flow2.style.left_padding = 4
+	-- flow2.style.right_padding = 4
+	-- flow2.style.top_padding = 3
 
-	flow3 = flow2.add({
-		name = 'cost_label_1',
-		type = 'label',
-	})
-	flow3.style.font = 'default-large-semibold'
-	flow3.style.font_color = GuiCommon.bold_font_color
+	-- -- flow3 = flow2.add({
+	-- -- 	name = 'cost_label_1',
+	-- -- 	type = 'label',
+	-- -- })
+	-- -- flow3.style.font = 'default-large-semibold'
+	-- -- flow3.style.font_color = GuiCommon.bold_font_color
 
-	flow3 = flow2.add({
-		name = 'cost_label_2',
-		type = 'label',
-	})
-	flow3.style.font = 'default-large'
-	flow3.style.font_color = GuiCommon.default_font_color
+	-- -- flow3 = flow2.add({
+	-- -- 	name = 'cost_label_2',
+	-- -- 	type = 'label',
+	-- -- })
+	-- -- flow3.style.font = 'default-large'
+	-- -- flow3.style.font_color = GuiCommon.default_font_color
 	
-	flow3 = flow2.add({type = 'table', name = 'cost_table', column_count = 5})
-	for i = 1, 5 do
-		flow4 = flow3.add({type = 'sprite-button', name = 'cost_' .. i, number = 0})
-		-- flow4.mouse_button_filter = {'middle'}
-		flow4.enabled = false
-		flow4.style.top_margin = -6
-		flow4.style.right_margin = -6
-		flow4.style.maximal_height = 38
-		flow4.visible = false
-	end
-	flow3.style.right_margin = -3
+	-- flow3 = flow2.add({type = 'table', name = 'cost_table', column_count = 5})
+	-- for i = 1, 5 do
+	-- 	flow4 = flow3.add({type = 'sprite-button', name = 'cost_' .. i, number = 0})
+	-- 	-- flow4.mouse_button_filter = {'middle'}
+	-- 	flow4.enabled = false
+	-- 	flow4.style.top_margin = -6
+	-- 	flow4.style.right_margin = -6
+	-- 	flow4.style.maximal_height = 38
+	-- 	flow4.visible = false
+	-- end
+	-- flow3.style.right_margin = -3
 
 
 
@@ -300,7 +290,7 @@ local function create_gui(player)
 		type = 'label',
 	})
 	flow3.style.font = 'default-large-semibold'
-	flow3.style.font_color = Common.bold_font_color
+	flow3.style.font_color = GuiCommon.bold_font_color
 	flow3.style.right_margin = 2
 
 	flow3 = flow2.add({
@@ -411,27 +401,30 @@ local function create_gui(player)
 
 
 
+	--== SCREEN STUFF
 
 	flow1 = player.gui.screen
 	
-	flow2 = flow1.add({
-		name = 'pirates_undock_shortcut_button',
-		type = 'sprite-button',
-		enabled = false,
-	})
-	flow2.style.minimal_width = 80
-	flow2.style.natural_width = 80
-	flow2.style.maximal_width = 150
-	flow2.style.minimal_height = 40
-	flow2.style.maximal_height = 40
-	flow2.style.left_margin = 1
-	flow2.style.top_margin = 1
-	flow2.style.left_padding = 4
-	flow2.style.right_padding = 4
-	flow2.style.top_padding = 3
-	flow2.style.font = 'default-large-semibold'
-	flow2.style.font_color = GuiCommon.default_font_color
-	ComfyPanel.screen_to_bypass('pirates_undock_shortcut_button')
+
+
+	-- flow2 = flow1.add({
+	-- 	name = 'pirates_undock_shortcut_button',
+	-- 	type = 'sprite-button',
+	-- 	enabled = false,
+	-- })
+	-- flow2.style.minimal_width = 80
+	-- flow2.style.natural_width = 80
+	-- flow2.style.maximal_width = 150
+	-- flow2.style.minimal_height = 40
+	-- flow2.style.maximal_height = 40
+	-- flow2.style.left_margin = 1
+	-- flow2.style.top_margin = 1
+	-- flow2.style.left_padding = 4
+	-- flow2.style.right_padding = 4
+	-- flow2.style.top_padding = 3
+	-- flow2.style.font = 'default-large-semibold'
+	-- flow2.style.font_color = GuiCommon.default_font_color
+	-- ComfyPanel.screen_to_bypass('pirates_undock_shortcut_button')
 
 
 	
@@ -470,7 +463,7 @@ function Public.update_gui(player)
 		pirates_flow.crew_piratebutton_frame.crew_piratebutton.mouse_button_filter = {'left','right'}
 	else
 		pirates_flow.crew_piratebutton_frame.crew_piratebutton.tooltip = 'Crew\n\nYou\'re a free agent, so there\'s nothing to do here.'
-		pirates_flow.crew_piratebutton_frame.crew_piratebutton.mouse_button_filter = {'middle'}
+		pirates_flow.crew_piratebutton_frame.crew_piratebutton.mouse_button_filter = {'middle'} --hack to avoid press visual
 		if player.gui.screen['crew_piratewindow'] then
 			player.gui.screen['crew_piratewindow'].destroy()
 		end
@@ -497,10 +490,18 @@ function Public.update_gui(player)
 	-- 	button.number = 3
 	-- end
 
-	pirates_flow.fuel_piratebutton_flow.fuel_flow.fuel_label_1.caption = '[item=coal] ' .. Utils.bignumber_abbrevform(memory.stored_fuel or 0)
-	pirates_flow.fuel_piratebutton_flow.fuel_flow.fuel_label_2.caption = Utils.negative_rate_abbrevform(Progression.fuel_depletion_rate() or 0)
+	pirates_flow.fuel_piratebutton_flow_1.fuel_piratebutton_flow_2.fuel_label_1.caption = '[item=coal] ' .. Utils.bignumber_abbrevform(memory.stored_fuel or 0)
+	pirates_flow.fuel_piratebutton_flow_1.fuel_piratebutton_flow_2.fuel_label_2.caption = Utils.negative_rate_abbrevform(Progression.fuel_depletion_rate() or 0)
+	local color_scale = Math.max(Math.min((- (Progression.fuel_depletion_rate() or 0))/35, 1),0)
+	pirates_flow.fuel_piratebutton_flow_1.fuel_piratebutton_flow_2.fuel_label_2.style.font_color = {
+		r = GuiCommon.fuel_color_1.r * (1-color_scale) + GuiCommon.fuel_color_2.r * color_scale,
+		g = GuiCommon.fuel_color_1.g * (1-color_scale) + GuiCommon.fuel_color_2.g * color_scale,
+		b = GuiCommon.fuel_color_1.b * (1-color_scale) + GuiCommon.fuel_color_2.b * color_scale,
+	}
 
-	pirates_flow.fuel_piratebutton_flow.fuel_piratebutton.tooltip = {'pirates.fuel_tooltip', Math.floor(memory.stored_fuel or 0)}
+
+
+	pirates_flow.fuel_piratebutton_flow_1.fuel_piratebutton.tooltip = {'pirates.fuel_tooltip', Math.floor(memory.stored_fuel or 0)}
 
 	pirates_flow.progress_piratebutton_frame.progress_piratebutton.number = (memory.overworldx or 0)
 	-- pirates_flow.destination_piratebutton_frame.destination_piratebutton.number = memory.destinationsvisited_indices and #memory.destinationsvisited_indices or 0
@@ -538,176 +539,222 @@ function Public.update_gui(player)
 
 	local cost_bool = destination.static_params.cost_to_leave and (not atsea_sailing_bool) and (not retreating_bool)
 
-	local approaching_dock = destination.type == Surfaces.enum.DOCK and memory.boat.state == Boats.enum_state.APPROACHING
-	local leaving_dock = destination.type == Surfaces.enum.DOCK and memory.boat.state == Boats.enum_state.LEAVING_DOCK
+	local approaching_dock_bool = destination.type == Surfaces.enum.DOCK and memory.boat.state == Boats.enum_state.APPROACHING
+	local leaving_dock_bool = destination.type == Surfaces.enum.DOCK and memory.boat.state == Boats.enum_state.LEAVING_DOCK
 
 	local leave_anytime_bool = (landed_bool and not (eta_bool or cost_bool)) 
 
 	--== Update Gui ==--
 
-	flow1 = pirates_flow.fuel_piratebutton_flow
-
+	flow1 = pirates_flow.fuel_piratebutton_flow_1
 	if memory.crewstatus == nil then
 		flow1.visible = false
 	else
 		flow1.visible = true
 	end
 
-	flow1 = pirates_flow.cost_frame
-	if flow1 then
-		if cost_bool then
-			flow1.visible = true
-	
-			local tooltip, caption
-			if atsea_loading_bool then
-				caption = 'Next escape cost:'
-				tooltip = {'pirates.resources_needed_tooltip_1'}
-			elseif (not eta_bool) then
-				caption = 'For escape:'
-				tooltip = {'pirates.resources_needed_tooltip_3'}
-			else
-				caption = 'For early escape:'
-				tooltip = {'pirates.resources_needed_tooltip_2'}
-			end
-			
-			flow1.cost_label_1.caption = caption
-			flow1.tooltip = tooltip
-			flow1.cost_label_1.tooltip = tooltip
-			flow1.cost_table.tooltip = tooltip
-	
-			local costs = destination.static_params.cost_to_leave
-	
-			for i = 1, #CoreData.cost_items do
-				local item_name = CoreData.cost_items[i].name
-	
-				if costs[item_name] then
-					local stored = (memory.boat.stored_resources and memory.boat.stored_resources[item_name]) or 0
-					flow1.cost_table['cost_' .. i].sprite = CoreData.cost_items[i].sprite_name
-					flow1.cost_table['cost_' .. i].number = Math.max(costs[item_name] - stored, 0)
-					flow1.cost_table['cost_' .. i].tooltip = CoreData.cost_items[i].display_name
-					flow1.cost_table['cost_' .. i].visible = true
-				else
-					flow1.cost_table['cost_' .. i].visible = false
-				end
-			end
-	
-			flow1.cost_label_2.visible = false
-	
-			-- local total_rage = time_rage + silo_rage
-	
-			-- flow1.rage_label_2.caption = total_rage .. '/10'
-			-- if total_rage <= 4 then
-			-- 	flow1.rage_label_2.style.font_color = GuiCommon.rage_font_color_1
-			-- 	flow1.rage_label_2.style.font = 'default-large'
-			-- elseif total_rage <= 7 then
-			-- 	flow1.rage_label_2.style.font_color = GuiCommon.rage_font_color_2
-			-- 	flow1.rage_label_2.style.font = 'default-large-semibold'
-			-- else
-			-- 	flow1.rage_label_2.style.font_color = GuiCommon.rage_font_color_3
-			-- 	flow1.rage_label_2.style.font = 'default-dialog-button'
-			-- end
-	
-			-- -- flow1.rage_table.bar_1.value = time_rage >= 1 and 1 or 0
-			-- -- flow1.rage_table.bar_2.value = time_rage >= 2 and 1 or 0
-			-- -- flow1.rage_table.bar_3.value = time_rage >= 3 and 1 or 0
-			-- -- flow1.rage_table.bar_4.value = time_rage >= 4 and 1 or 0
-			-- -- flow1.rage_table.bar_5.value = silo_rage >= 1 and 1 or 0
-			-- -- flow1.rage_table.bar_6.value = silo_rage >= 2 and 1 or 0
-		else
-			flow1.visible = false
-		end
-	end
 
-
-	flow1 = player.gui.screen.pirates_undock_shortcut_button
+	flow1 = pirates_flow.etaframe_piratebutton_flow_1
 
 	if flow1 then
-		flow1.location = GuiCommon.default_window_positions.undock_shortcut_button
-		if captain_bool and landed_bool and (not memory.captain_acceptance_timer) then
+		if cost_bool or atsea_loading_bool or eta_bool or retreating_bool or leave_anytime_bool then
 			flow1.visible = true
-			local enabled = Common.query_sufficient_resources_to_leave()
-			flow1.enabled = enabled
-			if enabled then
-				flow1.tooltip = ''
-			else
-				flow1.tooltip = 'Store more resources in the captain\'s cabin before leaving.'
-			end
-		elseif captain_bool and destination and destination.type and destination.type == Surfaces.enum.DOCK and (not (memory.boat.state and memory.boat.state == Boats.enum_state.LEAVING_DOCK)) then
-			flow1.visible = true
-			flow1.enabled = memory.boat and memory.boat.state and memory.boat.state == Boats.enum_state.DOCKED
-			flow1.tooltip = ''
-		else
-			flow1.visible = false
-		end
-	
-		if flow1.visible then
-			if (not memory.undock_shortcut_are_you_sure_data) then memory.undock_shortcut_are_you_sure_data = {} end
-			if memory.undock_shortcut_are_you_sure_data[player.index] and memory.undock_shortcut_are_you_sure_data[player.index] > game.tick - 60 * 4.5 then
-				flow1.caption = 'Are you sure?'
-			else
-				flow1.caption = 'Undock'
-			end
-		end
-	end
+			local tooltip = ''
 
+			flow2 = flow1.etaframe_piratebutton_flow_2
 
-	flow1 = pirates_flow.etaframe_piratebutton_flow
+			flow2.etaframe_label_1.visible = false --start off
+			flow2.etaframe_label_2.visible = false --start off
+			flow2.etaframe_label_3.visible = false --start off
+			flow2.cost_table.visible = false --start off
 
-	if flow1 then
-		if atsea_loading_bool or eta_bool or retreating_bool or leave_anytime_bool then
-			flow1.visible = true
-			flow1.etaframe_flow.etaframe_label_1.visible = true
-	
 			if retreating_bool then
-				flow1.etaframe_flow.etaframe_label_2.visible = false
+				flow2.etaframe_label_1.visible = true
+				flow2.etaframe_label_2.visible = false
 		
-				local tooltip = 'Probably time to board...'
-				flow1.tooltip = tooltip
-				flow1.etaframe_flow.etaframe_label_1.tooltip = tooltip
-				flow1.etaframe_flow.etaframe_label_2.tooltip = tooltip
+				tooltip = 'Probably time to board...'
 	
-				flow1.etaframe_flow.etaframe_label_1.caption = 'RETURN TO SHIP'
+				flow2.etaframe_label_1.caption = 'RETURN TO SHIP'
 	
 			elseif eta_bool then
-				flow1.etaframe_flow.etaframe_label_2.visible = true
+				flow2.etaframe_label_1.visible = true
+				flow2.etaframe_label_2.visible = true
 		
-				local tooltip = {'pirates.auto_undock_tooltip'}
-				flow1.tooltip = tooltip
-				flow1.etaframe_flow.etaframe_label_1.tooltip = tooltip
-				flow1.etaframe_flow.etaframe_label_2.tooltip = tooltip
+				tooltip = {'pirates.auto_undock_tooltip'}
 		
 				local passive_eta = destination.dynamic_data.time_remaining
 		
-				flow1.etaframe_flow.etaframe_label_1.caption = 'Auto-undock:'
-				flow1.etaframe_flow.etaframe_label_2.caption = Utils.standard_string_form_of_time_in_seconds(passive_eta)
+				flow2.etaframe_label_1.caption = 'Auto-undock:'
+				flow2.etaframe_label_2.caption = Utils.standard_string_form_of_time_in_seconds(passive_eta)
 	
 			elseif atsea_loading_bool then
-				flow1.etaframe_flow.etaframe_label_2.visible = true
+				flow2.etaframe_label_1.visible = true
+				flow2.etaframe_label_2.visible = true
 		
-				local tooltip = {'pirates.atsea_loading_tooltip'}
-				flow1.tooltip = tooltip
-				flow1.etaframe_flow.etaframe_label_1.tooltip = tooltip
-				flow1.etaframe_flow.etaframe_label_2.tooltip = tooltip
+				tooltip = {'pirates.atsea_loading_tooltip'}
+
+				local total = Common.map_loading_ticks_atsea
+				if destination.type == Surfaces.enum.DOCK then
+					total = Common.map_loading_ticks_atsea_dock
+				end
 		
-				local eta_ticks = Common.map_loading_ticks_atsea + (memory.extra_time_at_sea or 0) - memory.loadingticks
+				local eta_ticks = total + (memory.extra_time_at_sea or 0) - memory.loadingticks
 		
-				flow1.etaframe_flow.etaframe_label_1.caption = 'Arriving in'
-				flow1.etaframe_flow.etaframe_label_2.caption = Utils.standard_string_form_of_time_in_seconds(eta_ticks / 60)
+				flow2.etaframe_label_1.caption = 'Arriving in'
+				flow2.etaframe_label_2.caption = Utils.standard_string_form_of_time_in_seconds(eta_ticks / 60)
 			elseif leave_anytime_bool then
-				flow1.etaframe_flow.etaframe_label_2.visible = true
+				flow2.etaframe_label_1.visible = true
+				flow2.etaframe_label_2.visible = true
 		
-				local tooltip = {'pirates.leave_anytime_tooltip'}
-				flow1.tooltip = tooltip
-				flow1.etaframe_flow.etaframe_label_1.tooltip = tooltip
-				flow1.etaframe_flow.etaframe_label_2.tooltip = tooltip
+				tooltip = {'pirates.leave_anytime_tooltip'}
 		
-				flow1.etaframe_flow.etaframe_label_1.caption = 'Undock:'
-				flow1.etaframe_flow.etaframe_label_2.caption = 'Anytime'
+				flow2.etaframe_label_1.caption = 'Undock:'
+				flow2.etaframe_label_2.caption = 'Anytime'
+			end
+
+			if cost_bool then
+				flow2.etaframe_label_3.visible = true
+				flow2.cost_table.visible = true
+
+				if flow2.etaframe_label_2.visible then
+				flow2.etaframe_label_2.caption = flow2.etaframe_label_2.caption .. '.'
+				end
+				
+				local caption
+				if atsea_loading_bool then
+					flow2.etaframe_label_3.caption = 'Next escape cost:'
+					tooltip = {'pirates.resources_needed_tooltip_1'}
+				elseif (not eta_bool) then
+					flow2.etaframe_label_3.visible = false
+					flow2.etaframe_label_1.visible = true
+					flow2.etaframe_label_1.caption = 'To escape, store'
+					tooltip = {'pirates.resources_needed_tooltip_3'}
+				else
+					flow2.etaframe_label_3.caption = 'Or store'
+					tooltip = {'pirates.resources_needed_tooltip_2'}
+				end
+
+				flow2.cost_table.visible = true
+				local costs = destination.static_params.cost_to_leave
+	
+				for i = 1, #CoreData.cost_items do
+					local item_name = CoreData.cost_items[i].name
+		
+					if costs[item_name] then
+						local stored = (memory.boat.stored_resources and memory.boat.stored_resources[item_name]) or 0
+						flow2.cost_table['cost_' .. i].sprite = CoreData.cost_items[i].sprite_name
+						if atsea_loading_bool then
+							flow2.cost_table['cost_' .. i].number = costs[item_name]
+						else --subtract off the amount we've stored
+							flow2.cost_table['cost_' .. i].number = Math.max(costs[item_name] - stored, 0)
+						end
+						flow2.cost_table['cost_' .. i].tooltip = CoreData.cost_items[i].display_name
+						flow2.cost_table['cost_' .. i].visible = true
+					else
+						flow2.cost_table['cost_' .. i].visible = false
+					end
+				end
+			end
+
+			flow1.etaframe_piratebutton.tooltip = tooltip
+			flow2.tooltip = tooltip
+
+			if captain_bool and (not retreating_bool) and (leave_anytime_bool or eta_bool or (cost_bool and (not atsea_loading_bool))) then
+				flow1.etaframe_piratebutton.mouse_button_filter = {'left'}
+				if memory.undock_shortcut_are_you_sure_data and memory.undock_shortcut_are_you_sure_data[player.index] and memory.undock_shortcut_are_you_sure_data[player.index] > game.tick - 60 * 4 then
+					flow2.etaframe_label_1.visible = true
+					flow2.etaframe_label_1.caption = 'Undock — Are you sure?'
+					flow2.etaframe_label_2.visible = false
+					flow2.etaframe_label_3.visible = false
+				end
+			else
+				flow1.etaframe_piratebutton.mouse_button_filter = {'middle'} --hack to avoid press visual
 			end
 		else
 			flow1.visible = false
 		end
 	end
+
+
+
+
+	-- flow1 = pirates_flow.cost_frame
+	-- if flow1 then
+	-- 	if cost_bool then
+	-- 		flow1.visible = true
+	
+	-- 		-- local costs = destination.static_params.cost_to_leave
+	
+	-- 		-- for i = 1, #CoreData.cost_items do
+	-- 		-- 	local item_name = CoreData.cost_items[i].name
+	
+	-- 		-- 	if costs[item_name] then
+	-- 		-- 		local stored = (memory.boat.stored_resources and memory.boat.stored_resources[item_name]) or 0
+	-- 		-- 		flow1.cost_table['cost_' .. i].sprite = CoreData.cost_items[i].sprite_name
+	-- 		-- 		flow1.cost_table['cost_' .. i].number = Math.max(costs[item_name] - stored, 0)
+	-- 		-- 		flow1.cost_table['cost_' .. i].tooltip = CoreData.cost_items[i].display_name
+	-- 		-- 		flow1.cost_table['cost_' .. i].visible = true
+	-- 		-- 	else
+	-- 		-- 		flow1.cost_table['cost_' .. i].visible = false
+	-- 		-- 	end
+	-- 		-- end
+	
+	-- 		-- local total_rage = time_rage + silo_rage
+	
+	-- 		-- flow1.rage_label_2.caption = total_rage .. '/10'
+	-- 		-- if total_rage <= 4 then
+	-- 		-- 	flow1.rage_label_2.style.font_color = GuiCommon.rage_font_color_1
+	-- 		-- 	flow1.rage_label_2.style.font = 'default-large'
+	-- 		-- elseif total_rage <= 7 then
+	-- 		-- 	flow1.rage_label_2.style.font_color = GuiCommon.rage_font_color_2
+	-- 		-- 	flow1.rage_label_2.style.font = 'default-large-semibold'
+	-- 		-- else
+	-- 		-- 	flow1.rage_label_2.style.font_color = GuiCommon.rage_font_color_3
+	-- 		-- 	flow1.rage_label_2.style.font = 'default-dialog-button'
+	-- 		-- end
+	
+	-- 		-- -- flow1.rage_table.bar_1.value = time_rage >= 1 and 1 or 0
+	-- 		-- -- flow1.rage_table.bar_2.value = time_rage >= 2 and 1 or 0
+	-- 		-- -- flow1.rage_table.bar_3.value = time_rage >= 3 and 1 or 0
+	-- 		-- -- flow1.rage_table.bar_4.value = time_rage >= 4 and 1 or 0
+	-- 		-- -- flow1.rage_table.bar_5.value = silo_rage >= 1 and 1 or 0
+	-- 		-- -- flow1.rage_table.bar_6.value = silo_rage >= 2 and 1 or 0
+	-- 	else
+	-- 		flow1.visible = false
+	-- 	end
+	-- end
+
+
+	-- flow1 = player.gui.screen.pirates_undock_shortcut_button
+
+	-- if flow1 then
+	-- 	flow1.location = GuiCommon.default_window_positions.undock_shortcut_button
+	-- 	if captain_bool and landed_bool and (not memory.captain_acceptance_timer) then
+	-- 		flow1.visible = true
+	-- 		local enabled = Common.query_sufficient_resources_to_leave()
+	-- 		flow1.enabled = enabled
+	-- 		if enabled then
+	-- 			flow1.tooltip = ''
+	-- 		else
+	-- 			flow1.tooltip = 'Store more resources in the captain\'s cabin before leaving.'
+	-- 		end
+	-- 	elseif captain_bool and destination and destination.type and destination.type == Surfaces.enum.DOCK and (not (memory.boat.state and memory.boat.state == Boats.enum_state.LEAVING_DOCK)) then
+	-- 		flow1.visible = true
+	-- 		flow1.enabled = memory.boat and memory.boat.state and memory.boat.state == Boats.enum_state.DOCKED
+	-- 		flow1.tooltip = ''
+	-- 	else
+	-- 		flow1.visible = false
+	-- 	end
+	
+	-- 	if flow1.visible then
+	-- 		if (not memory.undock_shortcut_are_you_sure_data) then memory.undock_shortcut_are_you_sure_data = {} end
+	-- 		if memory.undock_shortcut_are_you_sure_data[player.index] and memory.undock_shortcut_are_you_sure_data[player.index] > game.tick - 60 * 4 then
+	-- 			flow1.caption = 'Are you sure?'
+	-- 		else
+	-- 			flow1.caption = 'Undock'
+	-- 		end
+	-- 	end
+	-- end
 
 
 
@@ -739,7 +786,7 @@ function Public.update_gui(player)
 					flow1.silo_progressbar.tooltip = tooltip
 	
 					flow1.silo_label_1.caption = 'Charge:'
-					flow1.silo_label_1.style.font_color = Common.bold_font_color
+					flow1.silo_label_1.style.font_color = GuiCommon.bold_font_color
 					flow1.silo_label_2.visible = false
 					flow1.silo_progressbar.visible = true
 		
@@ -748,7 +795,7 @@ function Public.update_gui(player)
 	
 			else
 				flow1.silo_label_1.caption = 'Charge:'
-				flow1.silo_label_1.style.font_color = Common.bold_font_color
+				flow1.silo_label_1.style.font_color = GuiCommon.bold_font_color
 				flow1.silo_label_2.visible = true
 				flow1.silo_progressbar.visible = true
 	
@@ -891,7 +938,7 @@ function Public.update_gui(player)
 	flow1 = pirates_flow.covering_line_frame
 
 	if flow1 then
-		if not eta_bool and not retreating_bool and not quest_bool and not silo_bool and not atsea_loading_bool and not cost_bool and not leave_anytime_bool then
+		if not eta_bool and not retreating_bool and not quest_bool and not silo_bool and not atsea_loading_bool and not cost_bool and not leave_anytime_bool and not approaching_dock_bool and not leaving_dock_bool then
 			flow1.visible = true
 		else
 			flow1.visible = false
@@ -912,8 +959,8 @@ function Public.update_gui(player)
 	flow1 = player.gui.screen.pirates_spontaneous_camera
 
 	if flow1 then
-		flow1.location = GuiCommon.default_window_positions.spontaneous_camera
 		flow1.visible = false
+		flow1.location = {x = 8, y = 48}
 		if on_deck_standing_near_loco_bool then
 			flow1.visible = true
 			flow1.surface_index = Hold.get_hold_surface(1).index
@@ -964,46 +1011,34 @@ local function on_gui_click(event)
 
 	local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
 	Memory.set_working_id(crew_id)
+	local memory = Memory.get_crew_memory()
 
-	if string.sub(event.element.name, -13, -1) and string.sub(event.element.name, -13, -1) == '_piratebutton' then
-		local name = string.sub(event.element.name, 1, -14)
-		if Public[name] then
-			Public[name].toggle_window(player)
-			Public[name].update(player)
-		end
-	-- elseif event.element.name == 'fuel_flow' or event.element.name == 'fuel_label_1' or event.element.name == 'fuel_label_2' then
-	-- 	Public.fuel.toggle_window(player)
-	-- 	Public.fuel.update(player)
-	elseif event.element.name and event.element.name == 'pirates_undock_shortcut_button' then
-		local memory = Memory.get_crew_memory()
-		--double check:
-		if Roles.player_privilege_level(player) >= Roles.privilege.OFFICER then
+	if event.element.name and event.element.name == 'etaframe_piratebutton' and (memory.boat.state == Boats.enum_state.DOCKED or memory.boat.state == Boats.enum_state.LANDED) then
+		if Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN then
 			if (not memory.undock_shortcut_are_you_sure_data) then memory.undock_shortcut_are_you_sure_data = {} end
 			if memory.undock_shortcut_are_you_sure_data[player.index] and memory.undock_shortcut_are_you_sure_data[player.index] > game.tick - 60 * 4 then
 				if memory.boat.state == Boats.enum_state.DOCKED then
 					Progression.undock_from_dock()
-				else
-					Progression.try_retreat_from_island()
+				elseif memory.boat.state == Boats.enum_state.LANDED then
+					if Common.query_sufficient_resources_to_leave() then
+						Progression.try_retreat_from_island()
+					else
+						Common.notify_player(player, 'Not enough stored resources.')
+					end
 				end
 			else
 				memory.undock_shortcut_are_you_sure_data[player.index] = game.tick
 			end
 		end
-	-- elseif event.element.name and event.element.name == 'etaframe_piratebutton' then
-	-- 	local memory = Memory.get_crew_memory()
-	-- 	--double check:
-	-- 	if Roles.player_privilege_level(player) >= Roles.privilege.OFFICER then
-	-- 		if (not memory.undock_shortcut_are_you_sure_data) then memory.undock_shortcut_are_you_sure_data = {} end
-	-- 		if memory.undock_shortcut_are_you_sure_data[player.index] and memory.undock_shortcut_are_you_sure_data[player.index] > game.tick - 60 * 4 then
-	-- 			if memory.boat.state == Boats.enum_state.DOCKED then
-	-- 				Progression.undock_from_dock()
-	-- 			else
-	-- 				Progression.try_retreat_from_island()
-	-- 			end
-	-- 		else
-	-- 			memory.undock_shortcut_are_you_sure_data[player.index] = game.tick
-	-- 		end
-	-- 	end
+	elseif string.sub(event.element.name, -13, -1) and string.sub(event.element.name, -13, -1) == '_piratebutton' then
+			local name = string.sub(event.element.name, 1, -14)
+			if Public[name] then
+				Public[name].toggle_window(player)
+				Public[name].update(player)
+			end
+		-- elseif event.element.name == 'fuel_label_1' or event.element.name == 'fuel_label_2' then
+		-- 	Public.fuel.toggle_window(player)
+		-- 	Public.fuel.update(player)
 	else
 		GuiRuns.click(event)
 		GuiCrew.click(event)

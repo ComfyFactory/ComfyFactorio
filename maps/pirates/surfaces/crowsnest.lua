@@ -8,6 +8,7 @@ local Math = require 'maps.pirates.math'
 
 local inspect = require 'utils.inspect'.inspect
 local Token = require 'utils.token'
+local Task = require 'utils.task'
 
 local SurfacesCommon = require 'maps.pirates.surfaces.common'
 
@@ -298,13 +299,23 @@ function Public.upgrade_chests(new_chest) --the fast replace doesn't work well o
 	end
 end
 
+-- just for debug purposes, might need to fire this again
+local crowsnest_delayed = Token.register(
+	function(data)
+		Public.crowsnest_surface_delayed_init()
+	end
+)
 
 function Public.crowsnest_surface_delayed_init()
 	local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[Public.crowsnest_surface_name()]
 	local force = game.forces[memory.force_name]
 
-	if not (surface and surface.valid) then log('crowsnest_surface_delayed_init called when crowsnest surface wasn\'t valid...') end
+	if _DEBUG and (not (surface and surface.valid)) then
+		game.print('debug issue: crowsnest_surface_delayed_init called when crowsnest surface wasn\'t valid...')
+		Task.set_timeout_in_ticks(5, crowsnest_delayed, {})
+		return
+	end
 	
 	surface.destroy_decoratives{area = {{-3, -4},{4, 4}}}
 

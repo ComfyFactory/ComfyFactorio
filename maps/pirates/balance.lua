@@ -250,7 +250,7 @@ function Public.apply_crew_buffs_per_x(force)
 end
 
 function Public.class_cost()
-	return 10000
+	return 8000
 	-- return Math.ceil(10000 / (Common.activecrewcount()/4)^(1/6))
 end
 
@@ -264,8 +264,7 @@ function Public.pistol_damage_multiplier() return 1.95 end
 Public.kraken_spawns_base_extra_evo = 0.2
 
 function Public.kraken_evo_increase_per_shot()
-	return 0
-	-- return 1/100 * 0.2
+	return 1/100 * 0.02
 end
 
 function Public.kraken_kill_reward()
@@ -275,6 +274,8 @@ end
 function Public.kraken_health()
 	return Math.ceil(2500 * Math.max(1, 1 + 0.1 * ((Common.overworldx()/40)^(13/10)-6)) * (Public.onthefly_scaling_with_players_rule()^(3/4)) * Math.sloped(Common.difficulty(), 1/2))
 end
+
+Public.kraken_regen_scale = 0.5
 
 function Public.krakens_per_slot(overworldx)
 	local rng = Math.random()

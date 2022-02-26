@@ -47,6 +47,7 @@ function Public.kraken_tick(crew_id, kraken_id, step, substep)
 	local surface = game.surfaces[memory.sea_name]
 	local kraken_data = memory.active_sea_enemies.krakens[kraken_id]
 	if not kraken_data then return end --check if kraken died
+	local kraken_spawner_entity = kraken_data.spawner_entity
 
 	if step == 1 then
 		if substep == 1 then
@@ -83,6 +84,14 @@ function Public.kraken_tick(crew_id, kraken_id, step, substep)
 		end
 	elseif step == 3 then
 		Public.kraken_move(kraken_id, kraken_data.position, substep % 4 + 1)
+
+		-- regen:
+		local healthbar = memory.healthbars and memory.healthbars[kraken_spawner_entity.unit_number]
+		if healthbar then
+			local new_health = Math.min(healthbar.health + Balance.kraken_regen_scale, kraken_data.max_health)
+			healthbar.health = new_health
+			Common.update_healthbar_rendering(healthbar, new_health)
+		end
 
 		if substep % 4 == 0 then
 			local crewmembers = Common.crew_get_crew_members()
@@ -154,15 +163,17 @@ local function on_entity_destroyed(event)
 			end
 		end
 
-		local p2 = surface.find_non_colliding_position('small-biter', p, 10, 0.2)
+		local p2 = surface.find_non_colliding_position('medium-biter', p, 10, 0.2)
 		if not p2 then return end
 		local name = Common.get_random_unit_type(game.forces[memory.enemy_force_name].evolution_factor + Balance.kraken_spawns_base_extra_evo)
 		surface.create_entity{name = name, position = p2, force = memory.enemy_force_name}
 		Effects.kraken_effect_2(surface, p2)
 
-		-- local evo_increase = Balance.kraken_evo_increase_per_shot()
-		-- memory.kraken_evo = memory.kraken_evo + evo_increase
-		-- game.forces[memory.enemy_force_name].evolution_factor = game.forces[memory.enemy_force_name].evolution_factor + evo_increase
+		local evo_increase = Balance.kraken_evo_increase_per_shot()
+
+		if not memory.kraken_evo then memory.kraken_evo = 0 end
+		memory.kraken_evo = memory.kraken_evo + evo_increase
+		game.forces[memory.enemy_force_name].evolution_factor = game.forces[memory.enemy_force_name].evolution_factor + evo_increase
 	end
 end
 
@@ -234,7 +245,7 @@ function Public.kraken_move(kraken_id, new_p, new_frame)
 		kraken_data.spawner_entity = surface.create_entity{name = 'biter-spawner', position = new_p_2, force = memory.enemy_force_name}
 		Common.new_healthbar(kraken_id, true, kraken_data.spawner_entity, kraken_data.max_health)
 	end
-
+	
 	if old_frame then --cleanup old tiles
 		local old_tile_positions2 = Utils.exclude_position_arrays(old_tile_positions, new_tile_positions)
 		local tiles2 = {}

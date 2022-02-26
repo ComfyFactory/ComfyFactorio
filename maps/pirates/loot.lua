@@ -224,7 +224,7 @@ end
 function Public.wooden_chest_loot()
 	local memory = Memory.get_crew_memory()
 	local overworldx = memory.overworldx or 0
-	local num = Math.random(1,2)
+	local num = 1
 
 	return Public.chest_loot(num, 40/100 * Math.sloped(Common.difficulty(),1/2) * Common.game_completion_progress())
 end

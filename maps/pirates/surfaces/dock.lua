@@ -21,7 +21,7 @@ Public.Data.width = 296
 Public.Data.height = 98
 Public.Data.top_boat_bottom = -7
 Public.Data.bottom_boat_top = 5
-Public.Data.playerboat_starting_xcoord = 35
+Public.Data.playerboat_starting_xcoord = 41
 
 Public.Data.static_params_default = {
 	starting_time_of_day = 0,
@@ -140,7 +140,6 @@ function Public.terrain(args)
 	if fishrng == 1 then
 		args.entities[#args.entities + 1] = {name = 'fish', position = args.p}
 	end
-	return
 end
 
 function Public.chunk_structures(args)

@@ -24,9 +24,12 @@ Public.sufficient_font_color = {66, 220, 124}
 Public.insufficient_font_color = {1, 0.62, 0.19}
 Public.achieved_font_color = {255, 230, 192}
 
-Public.rage_font_color_1 = {1, 1, 1}
-Public.rage_font_color_2 = {1, 0.5, 0.1}
-Public.rage_font_color_3 = {1, 0.1, 0.05}
+Public.fuel_color_1 = {r=255, g=255, b=255}
+Public.fuel_color_2 = {r=255, g=0, b=60}
+
+Public.rage_font_color_1 = {r=1, g=1, b=1}
+Public.rage_font_color_2 = {r=1, g=0.5, b=0.1}
+Public.rage_font_color_3 = {r=1, g=0.1, b=0.05}
 
 
 
@@ -37,8 +40,6 @@ Public.default_window_positions = {
 	fuel = {x = 468, y = 48},
 	minimap = {x = 10, y = 48},
 	color = {x = 160, y = 96},
-	spontaneous_camera = {x = 8, y = 48},
-	undock_shortcut_button = {x = 8, y = 48},
 }
 
 
@@ -117,7 +118,7 @@ function Public.flow_add_floating_button(flow1, button_name)
 	local flow2, flow3
     
     flow2 = flow1.add({
-		name = button_name .. '_flow',
+		name = button_name .. '_flow_1',
 		type = 'flow',
 		direction = 'vertical',
 	})
@@ -142,6 +143,16 @@ function Public.flow_add_floating_button(flow1, button_name)
 	-- flow3.style.padding = -4
 	flow3.style.natural_width = 40
 	flow3.style.horizontally_stretchable = true
+
+	flow3 = flow2.add({
+		name = button_name .. '_flow_2',
+		type = 'flow',
+	})
+	flow3.style.natural_width = 20
+	flow3.style.top_margin = -37
+	flow3.style.left_margin = 10
+	flow3.style.right_margin = 9
+	flow3.ignored_by_interaction=true
 
     return flow3
 end

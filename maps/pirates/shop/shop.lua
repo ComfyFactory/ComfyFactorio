@@ -10,6 +10,7 @@ local Common = require 'maps.pirates.common'
 local Utils = require 'maps.pirates.utils_local'
 local Math = require 'maps.pirates.math'
 local inspect = require 'utils.inspect'.inspect
+local SurfacesCommon = require 'maps.pirates.surfaces.common'
 
 local Upgrades = require 'maps.pirates.boat_upgrades'
 
@@ -317,6 +318,7 @@ function Public.event_on_market_item_purchased(event)
 	local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
+	local destination = Common.current_destination()
 
 	local alloffers = market.get_market_items()
 	local this_offer = alloffers[offer_index]
@@ -345,31 +347,48 @@ function Public.event_on_market_item_purchased(event)
 	end
 
 
-	-- Here - check for BARTER vs CLASS PURCHASE vs STATIC
-	-- Class purchase is purchase for 'nothing'
-	-- Static is purchase via fuel
-	-- Barter is otherwise
+	-- Here - check for BARTER vs STATIC vs ONE-oFF
+	-- One-off becomes unavailable after purchase, such as class purchase
+	-- Static doesn't decay
+	-- Barter decays
+	local decay_type
 	if offer_type == 'nothing' then
+		decay_type = 'one-off'
+	elseif destination.type == SurfacesCommon.enum.DOCK and (price and price[1] and price[1].name and (price[1].name == 'coin')) and (offer_giveitem_name and not (offer_giveitem_name == 'stone' or offer_giveitem_name == 'iron-ore' or offer_giveitem_name == 'crude-oil-barrel' or offer_giveitem_name == 'copper-ore')) then
+		decay_type = 'one-off'
+	elseif (price and price[1] and price[1].name and (price[1].name == 'pistol' or price[1].name == 'burner-mining-drill')) or (offer_giveitem_name and (offer_giveitem_name == 'defender-capsule' or offer_giveitem_name == 'gun-turret')) then
+		decay_type = 'static'
+	else
+		decay_type = 'decay'
+	end
+
+	if decay_type == 'one-off' then
 		local force = player.force
 		local destination = Common.current_destination()
-		-- check if they have a role already - renounce it if so
-		if memory.classes_table and memory.classes_table[player.index] then
-			Roles.try_renounce_class(player)
-		end
-		
-		memory.classes_table[player.index] = destination.static_params.class_for_sale
 
-		if force and force.valid then
-			Common.notify_force_light(force,string.format('%s is now a %s. ([font=scenario-message-dialog]%s[/font])', player.name, Classes.display_form[memory.classes_table[player.index]], Classes.explanation[memory.classes_table[player.index]]))
-		end
+		if offer_type == 'nothing' then
+			-- check if they have a role already - renounce it if so
+			if memory.classes_table and memory.classes_table[player.index] then
+				Roles.try_renounce_class(player)
+			end
+			
+			memory.classes_table[player.index] = destination.static_params.class_for_sale
 	
-		if destination.dynamic_data and destination.dynamic_data.market_class_offer_rendering then
-			rendering.destroy(destination.dynamic_data.market_class_offer_rendering)
+			if force and force.valid then
+				Common.notify_force_light(force,string.format('%s is now a %s. ([font=scenario-message-dialog]%s[/font])', player.name, Classes.display_form[memory.classes_table[player.index]], Classes.explanation[memory.classes_table[player.index]]))
+			end
+		
+			if destination.dynamic_data and destination.dynamic_data.market_class_offer_rendering then
+				rendering.destroy(destination.dynamic_data.market_class_offer_rendering)
+			end
+		else
+			Common.notify_force_light(player.force, player.name .. ' bought ' .. this_offer.offer.count .. ' ' .. this_offer.offer.item .. ' for ' .. price[1].amount .. ' ' .. price[1].name .. '.')
 		end
 
 		market.remove_market_item(offer_index)
 
 	else
+		-- print:
 		if (price and price[1]) then
 		-- if (price and price[1] and price[1].name and ((price[1].name ~= 'coin' and price[1].name ~= 'pistol') or price[2])) then
 			if price[2] then
@@ -380,7 +399,8 @@ function Public.event_on_market_item_purchased(event)
 				Common.notify_force_light(player.force, player.name .. ' is trading away ' .. price[1].amount .. ' ' .. price[1].name .. ' for ' .. this_offer.offer.count .. ' ' .. this_offer.offer.item .. '...')
 			end
 		end
-		if (price and price[1] and price[1].name and (price[1].name == 'pistol' or price[1].name == 'burner-mining-drill')) then
+
+		if decay_type == 'static' then
 			if not inv then return end
 			local flying_text_color = {r = 255, g = 255, b = 255}
 			local text1 = '[color=1,1,1]+' .. this_offer.offer.count .. '[/color] [item=' .. alloffers[offer_index].offer.item .. ']'

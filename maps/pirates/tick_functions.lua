@@ -869,12 +869,17 @@ function Public.loading_update(tickinterval)
 
 		elseif memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP then
 
-			local eta_ticks = Common.map_loading_ticks_atsea + (memory.extra_time_at_sea or 0) - memory.loadingticks
+			local total = Common.map_loading_ticks_atsea
+			if currentdestination.type == Surfaces.enum.DOCK then
+				total = Common.map_loading_ticks_atsea_dock
+			end
 
-			if eta_ticks < 60*30 and memory.active_sea_enemies and (memory.active_sea_enemies.krakens and #memory.active_sea_enemies.krakens > 0) then
+			local eta_ticks = total + (memory.extra_time_at_sea or 0) - memory.loadingticks
+
+			if eta_ticks < 60*20 and memory.active_sea_enemies and (memory.active_sea_enemies.krakens and #memory.active_sea_enemies.krakens > 0) then
 				memory.loadingticks = memory.loadingticks - tickinterval
 			else
-				local fraction = memory.loadingticks / (Common.map_loading_ticks_atsea + (memory.extra_time_at_sea or 0))
+				local fraction = memory.loadingticks / (total + (memory.extra_time_at_sea or 0))
 		
 				if fraction > Common.fraction_of_map_loaded_atsea then
 					Progression.progress_to_destination(destination_index)

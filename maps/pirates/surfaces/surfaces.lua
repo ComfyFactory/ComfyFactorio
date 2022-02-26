@@ -146,7 +146,7 @@ function Public.destination_on_collide(destination)
 			if item == 'uranium-235' then
 				replace[item] = count
 			else
-				replace[item] = Math.ceil(count * Public.cost_to_leave_multiplier())
+				replace[item] = Math.ceil(count * Balance.cost_to_leave_multiplier())
 			end
 		end
 		destination.static_params.cost_to_leave = replace
@@ -281,7 +281,7 @@ function Public.destination_on_arrival(destination)
 		Server.to_discord_embed_raw((destination.static_params.discord_emoji or CoreData.comfy_emojis.wut) .. '[' .. memory.name .. '] ' .. message)
 	end
 	if destination.static_params.name == 'Dock' then
-		message = message .. ' ' .. 'Extra trades are available in the shop.'
+		message = message .. ' ' .. 'A special trade is available for the captain in the Main Store.'
 	end
 	Common.notify_force(game.forces[memory.force_name], message)
 

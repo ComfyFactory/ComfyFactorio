@@ -342,19 +342,19 @@ event.on_nth_tick(1, instatick)
 -- to help debug, comment this out, and instead use the command /chnk to generate some chunks manually
 event.add(defines.events.on_chunk_generated, Interface.event_on_chunk_generated)
 
+----- FOR DESYNC BUGFIXING -----
+-- local gMeta = getmetatable(_ENV)
+-- if not gMeta then
+--     gMeta = {}
+--     setmetatable(_ENV, gMeta)
+-- end
 
-local gMeta = getmetatable(_ENV)
-if not gMeta then
-    gMeta = {}
-    setmetatable(_ENV, gMeta)
-end
-
-gMeta.__newindex = function(_, n, v)
-    log('Desync warning: attempt to write to undeclared var ' .. n)
-    global[n] = v
-end
-gMeta.__index = function(_, n)
-    return global[n]
-end
+-- gMeta.__newindex = function(_, n, v)
+--     log('Desync warning: attempt to write to undeclared var ' .. n)
+--     global[n] = v
+-- end
+-- gMeta.__index = function(_, n)
+--     return global[n]
+-- end
 
 return Public

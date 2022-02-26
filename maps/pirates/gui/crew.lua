@@ -112,7 +112,7 @@ function Public.toggle_window(player)
 		type = 'list-box',
 	})
 	flow3.style.margin = 2
-	flow3.style.maximal_height = 400
+	flow3.style.maximal_height = 350
 
 	flow3 = flow2.add({
 		name = 'class_renounce',
@@ -225,7 +225,7 @@ function Public.toggle_window(player)
 	flow3 = flow2.add({
 		name = 'capn_pass',
 		type = 'button',
-		caption = 'Pass Title To',
+		caption = 'Pass Captain To',
 	})
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
@@ -249,10 +249,28 @@ function Public.toggle_window(player)
     flow3.style.top_margin = 4
     flow3.style.bottom_margin = 4
 
+	-- flow3 = flow2.add({
+	-- 	name = 'capn_undock_normal',
+	-- 	type = 'button',
+	-- 	caption = 'Undock Boat',
+	-- })
+	-- flow3.style.minimal_width = 95
+	-- flow3.style.font = 'default-bold'
+	-- flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
+
 	flow3 = flow2.add({
-		name = 'capn_undock_normal',
+		name = 'make_officer',
 		type = 'button',
-		caption = 'Undock Boat',
+		caption = 'Make Officer',
+	})
+	flow3.style.minimal_width = 95
+	flow3.style.font = 'default-bold'
+	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
+
+	flow3 = flow2.add({
+		name = 'unmake_officer',
+		type = 'button',
+		caption = 'Unamake Officer',
 	})
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
@@ -275,6 +293,19 @@ function Public.toggle_window(player)
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
+
+
+	flow2 = flow.add({
+		name = 'undock_tip',
+		type = 'label',
+	})
+	flow2.style.left_margin = 5
+	flow2.style.top_margin = -8
+	flow2.style.bottom_margin = 7
+	flow2.style.single_line = false
+	flow2.style.maximal_width = 190
+	flow2.style.font = 'default'
+	flow2.caption = 'To undock, use the top toolbar.'
 
 	--
 
@@ -303,19 +334,21 @@ function Public.update(player)
 
 	flow.spare_classes.visible = memory.spare_classes and #memory.spare_classes > 0
 
-	local any_button = false
+	local other_player_selected = flow.members.body.members_listbox.selected_index ~= 0 and tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2]) ~= player.index
+
+	local any_class_button = false
 	for _, c in pairs(Classes.Class_List) do
 		if memory.spare_classes and Utils.contains(memory.spare_classes, c) and (not (player.controller_type == defines.controllers.spectator)) then
 			if (memory.playerindex_captain and player.index == memory.playerindex_captain) and memory.crewplayerindices and #memory.crewplayerindices > 1 then
-				if flow.members.body.members_listbox.selected_index ~= 0 and (not (memory.classes_table[tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])])) then
+				if other_player_selected and (not (memory.classes_table[tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])])) then
 					flow.spare_classes.body.assign_flow['selfassign_class_' .. c].visible = false
 					flow.spare_classes.body.assign_flow['assign_class_' .. c].visible = true
-					any_button = true
+					any_class_button = true
 				else
 					flow.spare_classes.body.assign_flow['assign_class_' .. c].visible = false
 					if (not memory.classes_table[player.index]) then
 						flow.spare_classes.body.assign_flow['selfassign_class_' .. c].visible = true
-						any_button = true
+						any_class_button = true
 					else
 						flow.spare_classes.body.assign_flow['selfassign_class_' .. c].visible = false
 					end
@@ -324,7 +357,7 @@ function Public.update(player)
 				flow.spare_classes.body.assign_flow['assign_class_' .. c].visible = false
 				if (not memory.classes_table[player.index]) then
 					flow.spare_classes.body.assign_flow['selfassign_class_' .. c].visible = true
-					any_button = true
+					any_class_button = true
 				else
 					flow.spare_classes.body.assign_flow['selfassign_class_' .. c].visible = false
 				end
@@ -334,14 +367,17 @@ function Public.update(player)
 			flow.spare_classes.body.assign_flow['selfassign_class_' .. c].visible = false
 		end
 	end
-	flow.spare_classes.body.assign_flow.visible = any_button
+	flow.spare_classes.body.assign_flow.visible = any_class_button
 
 
 	flow.captain.visible = (memory.playerindex_captain and player.index == memory.playerindex_captain)
-	flow.captain.body.capn_pass.visible = flow.members.body.members_listbox.selected_index ~= 0 and tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2]) ~= player.index
+	flow.captain.body.capn_pass.visible = other_player_selected
 	flow.captain.body.capn_plank.visible = flow.captain.body.capn_pass.visible
 
-	flow.captain.body.capn_undock_normal.visible = memory.boat and memory.boat.state and ((memory.boat.state == Boats.enum_state.LANDED) or (memory.boat.state == Boats.enum_state.APPROACHING) or (memory.boat.state == Boats.enum_state.DOCKED))
+	flow.captain.body.make_officer.visible = other_player_selected and (not (memory.officers_table and memory.officers_table[tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])]))
+	flow.captain.body.unmake_officer.visible = other_player_selected and ((memory.officers_table and memory.officers_table[tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])]))
+
+	-- flow.captain.body.capn_undock_normal.visible = memory.boat and memory.boat.state and ((memory.boat.state == Boats.enum_state.LANDED) or (memory.boat.state == Boats.enum_state.APPROACHING) or (memory.boat.state == Boats.enum_state.DOCKED))
 
 	flow.captain.body.capn_summon_crew.visible = false
 	flow.captain.body.capn_take_coins.visible = true
@@ -417,9 +453,9 @@ function Public.update(player)
 		GuiCommon.update_listbox(flow.spectators.body.spectators_listbox, wrappedspectators)
 	end
 
-	if flow.captain.body.capn_undock_normal.visible then
-		flow.captain.body.capn_undock_normal.enabled = ((memory.boat.state == Boats.enum_state.LANDED) and Common.query_sufficient_resources_to_leave()) or (memory.boat.state == Boats.enum_state.DOCKED)
-	end
+	-- if flow.captain.body.capn_undock_normal.visible then
+	-- 	flow.captain.body.capn_undock_normal.enabled = ((memory.boat.state == Boats.enum_state.LANDED) and Common.query_sufficient_resources_to_leave()) or (memory.boat.state == Boats.enum_state.DOCKED)
+	-- end
 end
 
 
@@ -484,21 +520,21 @@ function Public.click(event)
 	end
 
 
-	if eventname == 'capn_undock_normal' then
-		--double check:
-		if Roles.player_privilege_level(player) >= Roles.privilege.CAPTAIN then
-			if memory.boat.state == Boats.enum_state.DOCKED then
-				Progression.undock_from_dock()
-			else
-				Progression.try_retreat_from_island()
-			end
-		end
-		return
-	end
+	-- if eventname == 'capn_undock_normal' then
+	-- 	--double check:
+	-- 	if Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN then
+	-- 		if memory.boat.state == Boats.enum_state.DOCKED then
+	-- 			Progression.undock_from_dock()
+	-- 		else
+	-- 			Progression.try_retreat_from_island()
+	-- 		end
+	-- 	end
+	-- 	return
+	-- end
 
 	if eventname == 'capn_summon_crew' then
 		--double check:
-		if Roles.player_privilege_level(player) >= Roles.privilege.CAPTAIN then
+		if Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN then
 			Crew.summon_crew()
 		end
 		return
@@ -506,7 +542,7 @@ function Public.click(event)
 
 	if eventname == 'capn_take_coins' then
 		--double check:
-		if Roles.player_privilege_level(player) >= Roles.privilege.CAPTAIN then
+		if Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN then
 			Roles.captain_requisition_coins(memory.playerindex_captain)
 		end
 		return
@@ -524,7 +560,7 @@ function Public.click(event)
 
 	if eventname == 'capn_disband_crew' then
 		--double check:
-		if Roles.player_privilege_level(player) >= Roles.privilege.CAPTAIN then
+		if Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN then
 			if not memory.disband_are_you_sure_ticks then memory.disband_are_you_sure_ticks = {} end
 			memory.disband_are_you_sure_ticks[player.index] = game.tick
 		end
@@ -533,7 +569,7 @@ function Public.click(event)
 
 	if eventname == 'capn_disband_are_you_sure' then
 		--double check:
-		if Roles.player_privilege_level(player) >= Roles.privilege.CAPTAIN then
+		if Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN then
 			local force = game.forces[memory.force_name]
 			if force and force.valid then
 				local message = player.name .. ' disbanded ' .. memory.name .. ', after ' .. Utils.time_longform((memory.real_age or 0)/60) .. '.'
@@ -548,6 +584,18 @@ function Public.click(event)
 	if eventname == 'capn_pass' then
 		local other_id = tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])
 		Roles.pass_captainhood(player, game.players[other_id])
+		return
+	end
+
+	if eventname == 'make_officer' then
+		local other_id = tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])
+		Roles.make_officer(player, game.players[other_id])
+		return
+	end
+
+	if eventname == 'unmake_officer' then
+		local other_id = tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])
+		Roles.unmake_officer(player, game.players[other_id])
 		return
 	end
 
