@@ -270,14 +270,20 @@ end
 local function init_player(player, surface)
     if surface == game.surfaces['dungeons_floor0'] then
         if player.character then
-            player.disassociate_character(player.character)
+	    player.disassociate_character(player.character)
             player.character.destroy()
         end
 
-        player.set_controller({type = defines.controllers.god})
-        player.create_character()
+	if not player.connected then
+	   log('BUG Player ' .. player.name .. ' is not connected; how did we get here?')
+	end
 
+        player.set_controller({type = defines.controllers.god})
         player.teleport(surface.find_non_colliding_position('character', {0, 0}, 50, 0.5), surface)
+        if not player.create_character() then
+	   log('BUG: create_character for ' .. player.name .. ' failed')
+	end
+
         player.insert({name = 'raw-fish', count = 8})
         player.set_quick_bar_slot(1, 'raw-fish')
         player.insert({name = 'pistol', count = 1})
@@ -396,6 +402,10 @@ local function on_player_joined_game(event)
     end
     local player = game.players[event.player_index]
     if player.online_time == 0 then
+       init_player(player, game.surfaces['dungeons_floor0'])
+    end
+    if player.character == nil and player.ticks_to_respawn == nil then
+       log('BUG: ' .. player.name .. ' is missing associated character and is not waiting to respawn')
        init_player(player, game.surfaces['dungeons_floor0'])
     end
     draw_light(player)
