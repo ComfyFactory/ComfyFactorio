@@ -1,4 +1,6 @@
 
+local Session = require 'utils.datastore.session_data'
+local Antigrief = require 'utils.antigrief'
 local Balance = require 'maps.pirates.balance'
 local inspect = require 'utils.inspect'.inspect
 local Memory = require 'maps.pirates.memory'
@@ -8,8 +10,14 @@ local Utils = require 'maps.pirates.utils_local'
 local CoreData = require 'maps.pirates.coredata'
 local Server = require 'utils.server'
 local Classes = require 'maps.pirates.roles.classes'
-local Public = {}
 
+local Public = {}
+local privilege = {
+	NORMAL = 1,
+	OFFICER = 2,
+	CAPTAIN = 3
+}
+Public.privilege = privilege
 
 
 --== Roles — General ==--
@@ -50,6 +58,18 @@ function Public.update_tags(player)
 	local str = Public.tag_text(player)
 
 	player.tag = str
+end
+
+function Public.player_privilege_level(player)
+	local memory = Memory.get_crew_memory()
+
+	if memory.id ~= 0 and memory.playerindex_captain and player.index == memory.playerindex_captain then
+		return Public.privilege.CAPTAIN
+	elseif memory.officers_table and memory.officers_table[player.index] then
+		return Public.privilege.OFFICER
+	else
+		return Public.privilege.NORMAL
+	end
 end
 
 function Public.try_accept_captainhood(player)
@@ -151,19 +171,26 @@ function Public.try_renounce_class(player, override_message)
 	end
 end
 
-function Public.pass_captainhood(player, player_to_pass_to)
+function Public.make_captain(player)
 	local global_memory = Memory.get_global_memory()
 	local memory = Memory.get_crew_memory()
 
-	memory.playerindex_captain = player_to_pass_to.index
-	global_memory.playerindex_to_priority[player_to_pass_to.index] = nil
+	memory.playerindex_captain = player.index
+	global_memory.playerindex_to_priority[player.index] = nil
 	memory.captain_acceptance_timer = nil
+end
+
+function Public.pass_captainhood(player, player_to_pass_to)
+	local global_memory = Memory.get_global_memory()
+	local memory = Memory.get_crew_memory()
 
 	local force = game.forces[memory.force_name]
 	if not (force and force.valid) then return end
 	local message = string.format("%s has passed their captainhood to %s.", player.name, player_to_pass_to.name)
 	Common.notify_force(force, message)
 	Server.to_discord_embed_raw(CoreData.comfy_emojis.spurdo .. '[' .. memory.name .. '] ' .. message)
+
+	Public.make_captain(player_to_pass_to)
 end
 
 function Public.afk_player_tick(player)
@@ -180,9 +207,7 @@ function Public.afk_player_tick(player)
 		end
 
 		if #Common.crew_get_nonafk_crew_members() == 1 then --don't need to bounce it around
-			local new_cap_index = Common.crew_get_nonafk_crew_members()[1].index
-			global_memory.playerindex_to_priority[new_cap_index] = nil
-			memory.playerindex_captain = new_cap_index
+			Public.make_captain(Common.crew_get_nonafk_crew_members()[1])
 		else
 			Public.assign_captain_based_on_priorities()
 		end
@@ -235,10 +260,13 @@ function Public.assign_captain_based_on_priorities(excluded_player_index)
 		Common.notify_force(force,'Looking for a suitable captain...')
 	end
 
-	global_memory.playerindex_to_priority[captain_index] = nil
-	memory.playerindex_captain = captain_index
-
-
+	if captain_index then
+		local player = game.players[captain_index]
+		if player and Common.validate_player(player) then
+			Public.make_captain(player)
+			-- this sets memory.captain_acceptance_timer = nil so now we must reset that after this function
+		end
+	end
 
 	if #Common.crew_get_crew_members() > 1 then
 		local messages = {
@@ -288,6 +316,166 @@ end
 
 
 
+
+
+
+function Public.add_player_to_permission_group(player, group_override)
+    -- local jailed = Jailed.get_jailed_table()
+    -- local enable_permission_group_disconnect = WPT.get('disconnect_wagon')
+    local session = Session.get_session_table()
+    local AG = Antigrief.get()
+
+    local gulag = game.permissions.get_group('gulag')
+    local tbl = gulag and gulag.players
+    for i = 1, #tbl do
+        if tbl[i].index == player.index then
+            return
+        end
+    end
+
+    -- if player.admin then
+    --     return
+    -- end
+
+    local playtime = player.online_time
+    if session and session[player.name] then
+        playtime = player.online_time + session[player.name]
+    end
+
+    -- if jailed[player.name] then
+    --     return
+    -- end
+
+    if not game.permissions.get_group('restricted_area') then
+		local group = game.permissions.create_group('restricted_area')
+        group.set_allows_action(defines.input_action.edit_permission_group, false)
+        group.set_allows_action(defines.input_action.import_permissions_string, false)
+        group.set_allows_action(defines.input_action.delete_permission_group, false)
+        group.set_allows_action(defines.input_action.add_permission_group, false)
+        group.set_allows_action(defines.input_action.admin_action, false)
+
+        group.set_allows_action(defines.input_action.cancel_craft, false)
+        group.set_allows_action(defines.input_action.drop_item, false)
+        group.set_allows_action(defines.input_action.drop_blueprint_record, false)
+        group.set_allows_action(defines.input_action.build, false)
+        group.set_allows_action(defines.input_action.build_rail, false)
+        group.set_allows_action(defines.input_action.build_terrain, false)
+        group.set_allows_action(defines.input_action.begin_mining, false)
+        group.set_allows_action(defines.input_action.begin_mining_terrain, false)
+        group.set_allows_action(defines.input_action.deconstruct, false)
+        group.set_allows_action(defines.input_action.activate_copy, false)
+        group.set_allows_action(defines.input_action.activate_cut, false)
+        group.set_allows_action(defines.input_action.activate_paste, false)
+        group.set_allows_action(defines.input_action.upgrade, false)
+
+		group.set_allows_action(defines.input_action.grab_blueprint_record, false)
+		group.set_allows_action(defines.input_action.import_blueprint_string, false)
+		group.set_allows_action(defines.input_action.import_blueprint, false)
+
+        group.set_allows_action(defines.input_action.open_gui, false)
+        group.set_allows_action(defines.input_action.fast_entity_transfer, false)
+        group.set_allows_action(defines.input_action.fast_entity_split, false)
+    end
+
+    if not game.permissions.get_group('restricted_area_privileged') then
+		local group = game.permissions.create_group('restricted_area_privileged')
+        group.set_allows_action(defines.input_action.edit_permission_group, false)
+        group.set_allows_action(defines.input_action.import_permissions_string, false)
+        group.set_allows_action(defines.input_action.delete_permission_group, false)
+        group.set_allows_action(defines.input_action.add_permission_group, false)
+        group.set_allows_action(defines.input_action.admin_action, false)
+
+        group.set_allows_action(defines.input_action.cancel_craft, false)
+        group.set_allows_action(defines.input_action.drop_item, false)
+        group.set_allows_action(defines.input_action.drop_blueprint_record, false)
+        group.set_allows_action(defines.input_action.build, false)
+        group.set_allows_action(defines.input_action.build_rail, false)
+        group.set_allows_action(defines.input_action.build_terrain, false)
+        group.set_allows_action(defines.input_action.begin_mining, false)
+        group.set_allows_action(defines.input_action.begin_mining_terrain, false)
+        group.set_allows_action(defines.input_action.deconstruct, false)
+        group.set_allows_action(defines.input_action.activate_copy, false)
+        group.set_allows_action(defines.input_action.activate_cut, false)
+        group.set_allows_action(defines.input_action.activate_paste, false)
+        group.set_allows_action(defines.input_action.upgrade, false)
+
+		group.set_allows_action(defines.input_action.grab_blueprint_record, false)
+		group.set_allows_action(defines.input_action.import_blueprint_string, false)
+		group.set_allows_action(defines.input_action.import_blueprint, false)
+    end
+
+    if not game.permissions.get_group('plebs') then
+        local plebs_group = game.permissions.create_group('plebs')
+		if not _DEBUG then
+			plebs_group.set_allows_action(defines.input_action.edit_permission_group, false)
+			plebs_group.set_allows_action(defines.input_action.import_permissions_string, false)
+			plebs_group.set_allows_action(defines.input_action.delete_permission_group, false)
+			plebs_group.set_allows_action(defines.input_action.add_permission_group, false)
+			plebs_group.set_allows_action(defines.input_action.admin_action, false)
+	
+			plebs_group.set_allows_action(defines.input_action.grab_blueprint_record, false)
+			-- plebs_group.set_allows_action(defines.input_action.import_blueprint_string, false)
+			-- plebs_group.set_allows_action(defines.input_action.import_blueprint, false)
+		end
+    end
+
+    if not game.permissions.get_group('not_trusted') then
+        local not_trusted = game.permissions.create_group('not_trusted')
+        -- not_trusted.set_allows_action(defines.input_action.cancel_craft, false)
+        not_trusted.set_allows_action(defines.input_action.edit_permission_group, false)
+        not_trusted.set_allows_action(defines.input_action.import_permissions_string, false)
+        not_trusted.set_allows_action(defines.input_action.delete_permission_group, false)
+        not_trusted.set_allows_action(defines.input_action.add_permission_group, false)
+        not_trusted.set_allows_action(defines.input_action.admin_action, false)
+        -- not_trusted.set_allows_action(defines.input_action.drop_item, false)
+        not_trusted.set_allows_action(defines.input_action.disconnect_rolling_stock, false)
+        not_trusted.set_allows_action(defines.input_action.connect_rolling_stock, false)
+        not_trusted.set_allows_action(defines.input_action.open_train_gui, false)
+        not_trusted.set_allows_action(defines.input_action.open_train_station_gui, false)
+        not_trusted.set_allows_action(defines.input_action.open_trains_gui, false)
+        not_trusted.set_allows_action(defines.input_action.change_train_stop_station, false)
+        not_trusted.set_allows_action(defines.input_action.change_train_wait_condition, false)
+        not_trusted.set_allows_action(defines.input_action.change_train_wait_condition_data, false)
+        not_trusted.set_allows_action(defines.input_action.drag_train_schedule, false)
+        not_trusted.set_allows_action(defines.input_action.drag_train_wait_condition, false)
+        not_trusted.set_allows_action(defines.input_action.go_to_train_station, false)
+        not_trusted.set_allows_action(defines.input_action.remove_train_station, false)
+        not_trusted.set_allows_action(defines.input_action.set_trains_limit, false)
+        not_trusted.set_allows_action(defines.input_action.set_train_stopped, false)
+
+		not_trusted.set_allows_action(defines.input_action.grab_blueprint_record, false)
+		-- not_trusted.set_allows_action(defines.input_action.import_blueprint_string, false)
+		-- not_trusted.set_allows_action(defines.input_action.import_blueprint, false)
+    end
+
+	local group
+	if group_override then
+		group = game.permissions.get_group(group_override)
+	else
+		if AG.enabled and not player.admin and playtime < 5184000 then -- 24 hours
+			group = game.permissions.get_group('not_trusted')
+		else
+			group = game.permissions.get_group('plebs')
+		end
+	end
+	group.add_player(player)
+end
+
+function Public.update_privileges(player)
+    if not Common.validate_player_and_character(player) then
+        return
+    end
+
+    if string.sub(player.surface.name, 9, 17) == 'Crowsnest' or string.sub(player.surface.name, 9, 13) == 'Cabin' then
+		if Public.player_privilege_level(player) >= Public.privilege.OFFICER then
+			return Public.add_player_to_permission_group(player, 'restricted_area_privileged')
+		else
+			return Public.add_player_to_permission_group(player, 'restricted_area')
+		end
+    else
+        return Public.add_player_to_permission_group(player)
+    end
+end
 
 
 return Public

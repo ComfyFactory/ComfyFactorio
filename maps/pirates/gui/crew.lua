@@ -486,7 +486,7 @@ function Public.click(event)
 
 	if eventname == 'capn_undock_normal' then
 		--double check:
-		if (memory.playerindex_captain and player.index == memory.playerindex_captain) then
+		if Roles.player_privilege_level(player) >= Roles.privilege.CAPTAIN then
 			if memory.boat.state == Boats.enum_state.DOCKED then
 				Progression.undock_from_dock()
 			else
@@ -498,7 +498,7 @@ function Public.click(event)
 
 	if eventname == 'capn_summon_crew' then
 		--double check:
-		if (memory.playerindex_captain and player.index == memory.playerindex_captain) then
+		if Roles.player_privilege_level(player) >= Roles.privilege.CAPTAIN then
 			Crew.summon_crew()
 		end
 		return
@@ -506,7 +506,7 @@ function Public.click(event)
 
 	if eventname == 'capn_take_coins' then
 		--double check:
-		if (memory.playerindex_captain and player.index == memory.playerindex_captain) then
+		if Roles.player_privilege_level(player) >= Roles.privilege.CAPTAIN then
 			Roles.captain_requisition_coins(memory.playerindex_captain)
 		end
 		return
@@ -524,7 +524,7 @@ function Public.click(event)
 
 	if eventname == 'capn_disband_crew' then
 		--double check:
-		if (memory.playerindex_captain and player.index == memory.playerindex_captain) then
+		if Roles.player_privilege_level(player) >= Roles.privilege.CAPTAIN then
 			if not memory.disband_are_you_sure_ticks then memory.disband_are_you_sure_ticks = {} end
 			memory.disband_are_you_sure_ticks[player.index] = game.tick
 		end
@@ -533,7 +533,7 @@ function Public.click(event)
 
 	if eventname == 'capn_disband_are_you_sure' then
 		--double check:
-		if (memory.playerindex_captain and player.index == memory.playerindex_captain) then
+		if Roles.player_privilege_level(player) >= Roles.privilege.CAPTAIN then
 			local force = game.forces[memory.force_name]
 			if force and force.valid then
 				local message = player.name .. ' disbanded ' .. memory.name .. ', after ' .. Utils.time_longform((memory.real_age or 0)/60) .. '.'

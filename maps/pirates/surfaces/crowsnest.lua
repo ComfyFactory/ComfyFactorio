@@ -381,11 +381,11 @@ function Public.paint_around_destination(id, tile_name)
 end
 
 function Public.terrain(args) --blank since we do this manually
-	return
+	--
 end
 
 function Public.chunk_structures(args)
-	return
+	--
 end
 
 return Public

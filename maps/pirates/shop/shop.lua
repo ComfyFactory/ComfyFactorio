@@ -310,7 +310,7 @@ end
 
 
 function Public.event_on_market_item_purchased(event)
-    local player_index, market, offer_index = event.player_index, event.market, event.offer_index
+    local player_index, market, offer_index, trade_count = event.player_index, event.market, event.offer_index, event.count
 	local player = game.players[player_index]
 	if not (market and market.valid and offer_index and Common.validate_player(player)) then return end
 
@@ -320,17 +320,36 @@ function Public.event_on_market_item_purchased(event)
 
 	local alloffers = market.get_market_items()
 	local this_offer = alloffers[offer_index]
-	local type = this_offer.offer.type
+
 	local price = this_offer.price
 
+	local offer_type = this_offer.offer.type
+	local offer_giveitem_name, offer_giveitem_count
+	if offer_type == 'give-item' then
+		offer_giveitem_name = this_offer.offer.item
+		offer_giveitem_count = this_offer.offer.count
+	end
+
 	local inv = player.get_inventory(defines.inventory.character_main)
+
+	-- We want to disallow multi-purchases in this game, so we need to refund any additional purchases:
+	if player and trade_count and trade_count > 1 then
+		inv = player.get_inventory(defines.inventory.character_main)
+		if not inv then return end
+		for _, p in pairs(price) do
+			inv.insert{name = p.name, count = p.amount * (trade_count - 1)}
+		end
+		if offer_type == 'give-item' then
+			inv.remove{name = offer_giveitem_name, count = offer_giveitem_count * (trade_count - 1)}
+		end
+	end
 
 
 	-- Here - check for BARTER vs CLASS PURCHASE vs STATIC
 	-- Class purchase is purchase for 'nothing'
 	-- Static is purchase via fuel
 	-- Barter is otherwise
-	if type == 'nothing' then
+	if offer_type == 'nothing' then
 		local force = player.force
 		local destination = Common.current_destination()
 		-- check if they have a role already - renounce it if so
@@ -361,7 +380,7 @@ function Public.event_on_market_item_purchased(event)
 				Common.notify_force_light(player.force, player.name .. ' is trading away ' .. price[1].amount .. ' ' .. price[1].name .. ' for ' .. this_offer.offer.count .. ' ' .. this_offer.offer.item .. '...')
 			end
 		end
-		if (price and price[1] and price[1].name and (price[1].name == 'pistol')) then
+		if (price and price[1] and price[1].name and (price[1].name == 'pistol' or price[1].name == 'burner-mining-drill')) then
 			if not inv then return end
 			local flying_text_color = {r = 255, g = 255, b = 255}
 			local text1 = '[color=1,1,1]+' .. this_offer.offer.count .. '[/color] [item=' .. alloffers[offer_index].offer.item .. ']'
@@ -376,6 +395,7 @@ function Public.event_on_market_item_purchased(event)
 		
 			Common.flying_text(player.surface, player.position, text1 .. '  [font=count-font]' .. text2 .. '[/font]')
 
+			--update market trades:
 			alloffers[offer_index].offer.count = Math.max(Math.floor(alloffers[offer_index].offer.count * Balance.barter_decay_parameter()),1)
 		
 			market.clear_market_items()

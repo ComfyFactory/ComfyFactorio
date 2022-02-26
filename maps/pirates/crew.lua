@@ -209,7 +209,7 @@ function Public.join_spectators(player, crewid)
 				player.force = force
 				player.associate_character(c)
 
-				Common.notify_force(force, player.name .. ' has joined as a spectator.')
+				Common.notify_force(force, player.name .. ' joined as a spectator.')
 				Common.notify_lobby(player.name .. ' left the lobby to spectate ' .. memory.name .. '.')
 			end
 			memory.spectatorplayerindices[#memory.spectatorplayerindices + 1] = player.index
@@ -225,13 +225,16 @@ function Public.join_spectators(player, crewid)
 end
 
 
-function Public.leave_spectators(player)
+function Public.leave_spectators(player, quiet)
+	quiet = quiet or false
 	local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[CoreData.lobby_surface_name]
 	
 	if not Common.validate_player(player) then return end
 
-	Common.notify_force(player.force, player.name .. ' stopped spectating and returned to the lobby.')
+	if not quiet then
+		Common.notify_force(player.force, player.name .. ' stopped spectating and returned to the lobby.')
+	end
 
 	local chars = player.get_associated_characters()
 	if #chars > 0 then
@@ -299,7 +302,7 @@ function Public.join_crew(player, crewid)
 			player.teleport(surface.find_non_colliding_position('character', memory.spawnpoint, 32, 0.5) or memory.spawnpoint, surface)
 		end
 
-		local message = player.name .. ' has joined the crew.'
+		local message = player.name .. ' joined the crew.'
 		Common.notify_force(player.force, message)
 		-- Server.to_discord_embed_raw(CoreData.comfy_emojis.yum1 .. '[' .. memory.name .. '] ' .. message)
 		Common.notify_lobby(player.name .. ' left the lobby to join ' .. memory.name .. '.')
@@ -319,7 +322,8 @@ function Public.join_crew(player, crewid)
 	end
 end
 
-function Public.leave_crew(player)
+function Public.leave_crew(player, quiet)
+	quiet = quiet or false
 	local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[CoreData.lobby_surface_name]
 	
@@ -330,16 +334,22 @@ function Public.leave_crew(player)
 	if char and char.valid then
 		local p = char.position
 		local surface_name = char.surface.name
-		local message = player.name .. ' left the crew.'
+		local message
+		if quiet then
+			message = player.name .. ' left.'
+		else
+			message = player.name .. ' left the crew.'
+		end
 		if p then
 			Common.notify_force(player.force, message .. ' [gps=' .. Math.ceil(p.x) .. ',' .. Math.ceil(p.y) .. ',' .. surface_name ..']')
 			-- Server.to_discord_embed_raw(CoreData.comfy_emojis.feel .. '[' .. memory.name .. '] ' .. message)
 		end
 		char.die(memory.force_name)
 	else
-		local message = player.name .. ' left the crew.'
-		Common.notify_force(player.force, message)
-		-- Server.to_discord_embed_raw(CoreData.comfy_emojis.feel .. '[' .. memory.name .. '] ' .. message)
+		if not quiet then
+			local message = player.name .. ' left the crew.'
+			Common.notify_force(player.force, message)
+		end
 	end
 
 	player.teleport(surface.find_non_colliding_position('character', Common.lobby_spawnpoint, 32, 0.5) or Common.lobby_spawnpoint, surface)

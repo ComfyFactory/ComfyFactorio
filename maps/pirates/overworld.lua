@@ -230,7 +230,7 @@ function Public.generate_overworld_destination(p)
 		--scheduled raft raids moved to destination_on_arrival
 
 		local ores_multiplier = Balance.island_richness_avg_multiplier()
-		if macrop.x == 0 then ores_multiplier = 1 end
+		if macrop.x == 0 then ores_multiplier = 0.9 end
 		
 		local base_ores = scope.Data.base_ores()
 

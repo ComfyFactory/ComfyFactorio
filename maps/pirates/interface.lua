@@ -2,7 +2,6 @@
 local boats = require "maps.pirates.structures.boats.boats"
 local simplex_noise = require "utils.simplex_noise"
 
-local Session = require 'utils.datastore.session_data'
 local Memory = require 'maps.pirates.memory'
 local Balance = require 'maps.pirates.balance'
 local Math = require 'maps.pirates.math'
@@ -16,6 +15,7 @@ local Boats = require 'maps.pirates.structures.boats.boats'
 local Surfaces = require 'maps.pirates.surfaces.surfaces'
 local Progression = require 'maps.pirates.progression'
 local Islands = require 'maps.pirates.surfaces.islands.islands'
+local Roles = require 'maps.pirates.roles.roles'
 local Gui = require 'maps.pirates.gui.gui'
 local Sea = require 'maps.pirates.surfaces.sea.sea'
 local Hold = require 'maps.pirates.surfaces.hold'
@@ -29,7 +29,6 @@ local Crew = require 'maps.pirates.crew'
 local Quest = require 'maps.pirates.quest'
 local Shop = require 'maps.pirates.shop.shop'
 local Loot = require 'maps.pirates.loot'
-local Antigrief = require 'utils.antigrief'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Classes = require 'maps.pirates.roles.classes'
@@ -42,6 +41,7 @@ local Public = {}
 function Public.silo_died()
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
+	local force = game.forces[memory.force_name]
 	if memory.game_lost == true then return end
 
 	destination.dynamic_data.rocketsilohp = 0
@@ -51,7 +51,10 @@ function Public.silo_died()
 
 		if memory.boat and memory.boat.surface_name and surface.name == memory.boat.surface_name then
 			-- Crew.lose_life()
-			Crew.try_lose('silo destroyed')
+			-- Crew.try_lose('silo destroyed')
+
+			--@TEMPORARY:
+			Common.notify_force(force, 'The silo was destroyed. Until recently, this would lose you the game, but not anymore :)')
 		end
 
 		destination.dynamic_data.rocketsilos[1].destroy()
@@ -442,7 +445,7 @@ local function event_on_player_mined_entity(event)
 			local give = {}
 
 			if memory.overworldx >= 0 then
-				if Math.random(8) == 1 then
+				if Math.random(7) == 1 then --tuned
 					give[#give + 1] = {name = 'coin', count = 5}
 				end
 			end
@@ -658,12 +661,11 @@ function Public.research_apply_buffs(event)
 	local memory = Memory.get_crew_memory()
 	local force = game.forces[memory.force_name]
 
-	if Balance.research_buffs[event.research.name] == nil then return end
-	
-	local tech = Balance.research_buffs[event.research.name]
-
-	for k, v in pairs(tech) do
-		force[k] = force[k] + v
+	if Balance.research_buffs[event.research.name] then
+		local tech = Balance.research_buffs[event.research.name]
+		for k, v in pairs(tech) do
+			force[k] = force[k] + v
+		end
 	end
 end
 
@@ -775,7 +777,7 @@ local function event_on_player_joined_game(event)
 	local surface = game.surfaces[CoreData.lobby_surface_name]
 
 	player.teleport(surface.find_non_colliding_position('character', spawnpoint, 32, 0.5) or spawnpoint, surface)
-	Public.add_player_to_permission_group(player)
+	Roles.add_player_to_permission_group(player)
 
 	if not player.name then return end
 
@@ -871,13 +873,13 @@ local function event_on_pre_player_left_game(event)
 
 	for _, id in pairs(memory.crewplayerindices) do
 		if player.index == id then
-			Crew.leave_crew(player)
+			Crew.leave_crew(player, true)
 			break
 		end
 	end
 	for _, id in pairs(memory.spectatorplayerindices) do
 		if player.index == id then
-			Crew.leave_spectators(player)
+			Crew.leave_spectators(player, true)
 			break
 		end
 	end
@@ -895,126 +897,9 @@ end
 -- 	end
 -- end
 
-function Public.add_player_to_permission_group(player, group)
-    -- local jailed = Jailed.get_jailed_table()
-    -- local enable_permission_group_disconnect = WPT.get('disconnect_wagon')
-    local session = Session.get_session_table()
-    local AG = Antigrief.get()
-
-    local gulag = game.permissions.get_group('gulag')
-    local tbl = gulag and gulag.players
-    for i = 1, #tbl do
-        if tbl[i].index == player.index then
-            return
-        end
-    end
-
-    -- if player.admin then
-    --     return
-    -- end
-
-    local playtime = player.online_time
-    if session and session[player.name] then
-        playtime = player.online_time + session[player.name]
-    end
-
-    -- if jailed[player.name] then
-    --     return
-    -- end
-
-    if not game.permissions.get_group('restricted_area') then
-		local crowsnest_group = game.permissions.create_group('restricted_area')
-        crowsnest_group.set_allows_action(defines.input_action.edit_permission_group, false)
-        crowsnest_group.set_allows_action(defines.input_action.import_permissions_string, false)
-        crowsnest_group.set_allows_action(defines.input_action.delete_permission_group, false)
-        crowsnest_group.set_allows_action(defines.input_action.add_permission_group, false)
-        crowsnest_group.set_allows_action(defines.input_action.admin_action, false)
-
-        crowsnest_group.set_allows_action(defines.input_action.cancel_craft, false)
-        crowsnest_group.set_allows_action(defines.input_action.drop_item, false)
-        crowsnest_group.set_allows_action(defines.input_action.build, false)
-        crowsnest_group.set_allows_action(defines.input_action.build_rail, false)
-        crowsnest_group.set_allows_action(defines.input_action.build_terrain, false)
-        crowsnest_group.set_allows_action(defines.input_action.begin_mining, false)
-        crowsnest_group.set_allows_action(defines.input_action.begin_mining_terrain, false)
-        crowsnest_group.set_allows_action(defines.input_action.activate_copy, false)
-        crowsnest_group.set_allows_action(defines.input_action.activate_cut, false)
-        crowsnest_group.set_allows_action(defines.input_action.activate_paste, false)
-        crowsnest_group.set_allows_action(defines.input_action.upgrade, false)
-
-		crowsnest_group.set_allows_action(defines.input_action.grab_blueprint_record, false)
-		crowsnest_group.set_allows_action(defines.input_action.import_blueprint_string, false)
-		crowsnest_group.set_allows_action(defines.input_action.import_blueprint, false)
-    end
-
-    if not game.permissions.get_group('plebs') then
-        local plebs_group = game.permissions.create_group('plebs')
-		if not _DEBUG then
-			plebs_group.set_allows_action(defines.input_action.edit_permission_group, false)
-			plebs_group.set_allows_action(defines.input_action.import_permissions_string, false)
-			plebs_group.set_allows_action(defines.input_action.delete_permission_group, false)
-			plebs_group.set_allows_action(defines.input_action.add_permission_group, false)
-			plebs_group.set_allows_action(defines.input_action.admin_action, false)
-	
-			plebs_group.set_allows_action(defines.input_action.grab_blueprint_record, false)
-			-- plebs_group.set_allows_action(defines.input_action.import_blueprint_string, false)
-			-- plebs_group.set_allows_action(defines.input_action.import_blueprint, false)
-		end
-    end
-
-    if not game.permissions.get_group('not_trusted') then
-        local not_trusted = game.permissions.create_group('not_trusted')
-        -- not_trusted.set_allows_action(defines.input_action.cancel_craft, false)
-        not_trusted.set_allows_action(defines.input_action.edit_permission_group, false)
-        not_trusted.set_allows_action(defines.input_action.import_permissions_string, false)
-        not_trusted.set_allows_action(defines.input_action.delete_permission_group, false)
-        not_trusted.set_allows_action(defines.input_action.add_permission_group, false)
-        not_trusted.set_allows_action(defines.input_action.admin_action, false)
-        -- not_trusted.set_allows_action(defines.input_action.drop_item, false)
-        not_trusted.set_allows_action(defines.input_action.disconnect_rolling_stock, false)
-        not_trusted.set_allows_action(defines.input_action.connect_rolling_stock, false)
-        not_trusted.set_allows_action(defines.input_action.open_train_gui, false)
-        not_trusted.set_allows_action(defines.input_action.open_train_station_gui, false)
-        not_trusted.set_allows_action(defines.input_action.open_trains_gui, false)
-        not_trusted.set_allows_action(defines.input_action.change_train_stop_station, false)
-        not_trusted.set_allows_action(defines.input_action.change_train_wait_condition, false)
-        not_trusted.set_allows_action(defines.input_action.change_train_wait_condition_data, false)
-        not_trusted.set_allows_action(defines.input_action.drag_train_schedule, false)
-        not_trusted.set_allows_action(defines.input_action.drag_train_wait_condition, false)
-        not_trusted.set_allows_action(defines.input_action.go_to_train_station, false)
-        not_trusted.set_allows_action(defines.input_action.remove_train_station, false)
-        not_trusted.set_allows_action(defines.input_action.set_trains_limit, false)
-        not_trusted.set_allows_action(defines.input_action.set_train_stopped, false)
-
-		not_trusted.set_allows_action(defines.input_action.grab_blueprint_record, false)
-		-- not_trusted.set_allows_action(defines.input_action.import_blueprint_string, false)
-		-- not_trusted.set_allows_action(defines.input_action.import_blueprint, false)
-    end
-
-	local group2
-	if group then
-		group2 = game.permissions.get_group(group)
-	else
-		if AG.enabled and not player.admin and playtime < 5184000 then -- 24 hours
-			group2 = game.permissions.get_group('not_trusted')
-		else
-			group2 = game.permissions.get_group('plebs')
-		end
-	end
-	group2.add_player(player)
-end
-
 local function on_player_changed_surface(event)
     local player = game.players[event.player_index]
-    if not Common.validate_player_and_character(player) then
-        return
-    end
-
-    if string.sub(player.surface.name, 9, 17) == 'Crowsnest' or string.sub(player.surface.name, 9, 13) == 'Cabin' then
-        return Public.add_player_to_permission_group(player, 'restricted_area')
-    else
-        return Public.add_player_to_permission_group(player)
-    end
+    Roles.update_privileges(player)
 end
 
 function Public.player_entered_vehicle(player, vehicle)
@@ -1397,6 +1282,9 @@ local remove_boost_movement_speed_on_respawn =
 		if not (memory.id and memory.id > 0) then return end --check if crew disbanded
 		if memory.game_lost then return end
 		memory.speed_boost_characters[player.index] = false
+
+		-- their color was strobing, so reset it to their chat color:
+		player.color = player.chat_color
 
 		Common.notify_player(player, 'Respawn speed bonus removed.')
     end

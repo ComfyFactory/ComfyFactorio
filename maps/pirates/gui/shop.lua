@@ -94,7 +94,7 @@ function Public.update(player)
 	-- 	flow.close_button_flow.hflow.tospend.tooltip = string.format('The crew has %01d stored coal.', 0)
 	-- end
 
-	if (memory.playerindex_captain and player.index == memory.playerindex_captain) then
+	if Roles.player_privilege_level(player) >= Roles.privilege.OFFICER then
 		flow.close_button_flow.hflow.tospend.visible = true
 
 		local inv = player.get_inventory(defines.inventory.character_main)
@@ -119,7 +119,7 @@ function Public.update(player)
 		if availability_data and availability_data[k] == true then
 			flow.trades[k].visible = true
 			anything_in_shop_1 = true
-			if player.index == memory.playerindex_captain then
+			if Roles.player_privilege_level(player) >= Roles.privilege.OFFICER then
 				flow.trades[k].buy_button.visible = true
 			else
 				flow.trades[k].buy_button.visible = false
@@ -132,7 +132,7 @@ function Public.update(player)
 	for k, _ in pairs(shop_data_2) do
 		if availability_data and availability_data[k] == true then
 			flow.trades[k].visible = true
-			if player.index == memory.playerindex_captain then
+			if Roles.player_privilege_level(player) >= Roles.privilege.OFFICER then
 				flow.trades[k].buy_button.visible = true
 			else
 				flow.trades[k].buy_button.visible = false

@@ -76,7 +76,7 @@ function Public.silo_total_pollution()
 end
 
 
-function Public.max_time_on_island_formula()
+function Public.max_time_on_island_formula() --always >0  --tuned
 	return 60 * (
 			(32 + 2 * (Common.overworldx()/40)^(1/3))
 	) / Public.onthefly_scaling_with_players_rule()^(2/3) / Math.sloped(Common.difficulty(), 1/4)
@@ -91,22 +91,22 @@ function Public.max_time_on_island()
 	end
 end
 
-function Public.expected_time_on_island()
+function Public.expected_time_on_island() --always >0
 	return 3/5 * Public.max_time_on_island_formula()
 end
 
 function Public.fuel_depletion_rate_static()
 	if (not Common.overworldx()) then return 0 end
 
-	local T = Public.expected_time_on_island() --always >0
+	local T = Public.expected_time_on_island()
 
-	return - 1750 * (Common.overworldx()/40)^(8/10) * Public.onthefly_scaling_with_players_rule()^(1/2) * Math.sloped(Common.difficulty(), 2/3) / T --the extra player dependency accounts for the fact that even in compressed time, more players get more resources...
+	return - 1100 * (Common.overworldx()/40)^(7/10) * Public.onthefly_scaling_with_players_rule()^(1/3) * Math.sloped(Common.difficulty(), 2/3) / T --the extra player dependency accounts for the fact that even in compressed time, more players get more resources...
 end
 
 function Public.fuel_depletion_rate_sailing()
 	if (not Common.overworldx()) then return 0 end
 
-	return - 10 * (1 + 0.5 * (Common.overworldx()/40)^(7/10))
+	return - 10 * (1 + 0.5 * (Common.overworldx()/40)^(6/10))
 end
 
 function Public.boat_passive_pollution_per_minute(time)
@@ -237,7 +237,7 @@ function Public.quest_reward_multiplier()
 end
 
 function Public.island_richness_avg_multiplier()
-	return (0.8 + 0.07 * Common.overworldx()/40)
+	return (0.75 + 0.07 * Common.overworldx()/40)
 end
 
 function Public.resource_quest_multiplier()
@@ -259,7 +259,7 @@ Public.covered_first_appears_at = 40
 
 Public.silo_max_hp = 10000
 
-function Public.pistol_damage_multiplier() return 1.7 end
+function Public.pistol_damage_multiplier() return 1.95 end
 
 Public.kraken_spawns_base_extra_evo = 0.2
 
@@ -321,10 +321,10 @@ end
 
 Public.research_buffs = {
 	-- these already give .1 productivity so we're adding .1 to get to 20%
-	-- ['mining-productivity-1'] = {['mining-drill-productivity-bonus'] = .1, ['character-mining-speed'] = .2, ['character-inventory-slots-bonus'] = 10},
-	-- ['mining-productivity-2'] = {['mining-drill-productivity-bonus'] = .1, ['character-mining-speed'] = .2, ['character-inventory-slots-bonus'] = 10},
-	-- ['mining-productivity-3'] = {['mining-drill-productivity-bonus'] = .1, ['character-mining-speed'] = .2, ['character-inventory-slots-bonus'] = 10},
-	-- ['mining-productivity-4'] = {['mining-drill-productivity-bonus'] = .1, ['character-mining-speed'] = .2, ['character-inventory-slots-bonus'] = 10},
+	['mining-productivity-1'] = {['mining-drill-productivity-bonus'] = .1, ['character-inventory-slots-bonus'] = 5},
+	['mining-productivity-2'] = {['mining-drill-productivity-bonus'] = .1, ['character-inventory-slots-bonus'] = 5},
+	['mining-productivity-3'] = {['mining-drill-productivity-bonus'] = .1, ['character-inventory-slots-bonus'] = 5},
+	['mining-productivity-4'] = {['mining-drill-productivity-bonus'] = .1, ['character-inventory-slots-bonus'] = 5},
 }
 
 

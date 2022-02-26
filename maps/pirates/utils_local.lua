@@ -13,6 +13,40 @@ local Public = {}
 -- local unpack = unpack or table.unpack
 
 
+function Public.rgb_from_hsv(h, s, v)
+	-- 0 ≤ H < 360, 0 ≤ S ≤ 1 and 0 ≤ V ≤ 1
+	local r, g, b
+	local c = v * s
+	local x = c * (1 - Math.abs(((h/60) % 2) - 1))
+	local m = v - c
+	if h < 60 then
+		r=c
+		g=x
+		b=0
+	elseif h < 120 then
+		r=x
+		g=c
+		b=0
+	elseif h < 180 then
+		r=0
+		g=c
+		b=x
+	elseif h < 240 then
+		r=0
+		g=x
+		b=c
+	elseif h < 300 then
+		r=x
+		g=0
+		b=c
+	else
+		r=c
+		g=0
+		b=x
+	end
+	return {r = r, g = g, b = b}
+end
+
 function Public.stable_sort(list, comp) --sorts but preserves ordering of equals
 	comp = comp or function (a, b) return a < b end
 

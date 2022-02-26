@@ -31,6 +31,25 @@ local ShopCovered = require 'maps.pirates.shop.covered'
 local Public = {}
 
 
+function Public.strobe_player_colors(tickinterval)
+	local memory = Memory.get_crew_memory()
+
+	local strobing_players = memory.speed_boost_characters
+
+	if strobing_players and #strobing_players > 0 then
+		local col = Utils.rgb_from_hsv((game.tick*6) % 360, 1, 1)
+		for index, val in pairs(strobing_players) do
+			if val then
+				local player = game.players[index]
+				if Common.validate_player_and_character(player) then
+					player.color = col
+				end
+			end
+		end
+	end
+end
+
+
 function Public.prevent_unbarreling_off_ship(tickinterval)
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()

@@ -1,4 +1,11 @@
 
+--[[
+ Mountain Fortress v3 is maintained by thesixthroc and hosted by Comfy.
+ Want to host it? Ask us at getcomfy.eu/discord!
+ ]]
+
+ --[[personal note for thesixthroc in XX years: my design notes are all in obsidian]]
+
 -- require 'modules.biters_yield_coins'
 require 'modules.biter_noms_you'
 require 'modules.no_deconstruction_of_neutral_entities'
@@ -8,7 +15,9 @@ local inspect = require 'utils.inspect'.inspect
 -- local Modifers = require 'player_modifiers'
 local BottomFrame = require 'comfy_panel.bottom_frame'
 local Autostash = require 'modules.autostash'
+local Pickup = require 'modules.inserter_drops_pickup'
 -- local Autostash = require 'maps.pirates.from_comfy.autostash'
+
 
 local TickFunctions = require 'maps.pirates.tick_functions'
 local ClassTickFunctions = require 'maps.pirates.tick_functions_classes'
@@ -39,7 +48,7 @@ local Task = require 'utils.task'
 
 local Public = {}
 
--- parrot from https://elthen.itch.io/2d-pixel-art-parrot-sprites
+-- parrot sprites from https://elthen.itch.io/2d-pixel-art-parrot-sprites, licensed appropriately
 
 local jetty_delayed = Token.register(
 	function(data)
@@ -96,6 +105,10 @@ local function on_init()
 
 	-- Delay.global_add(Delay.global_enum.PLACE_LOBBY_JETTY_AND_BOATS)
 	Task.set_timeout_in_ticks(2, jetty_delayed, {})
+
+	if _DEBUG then
+		game.print('Debug mode on. Use /go to get started (sometimes crashes)')
+	end
 	
 end
 
@@ -135,6 +148,10 @@ local function crew_tick()
 
 	if tick % 5 == 0 then
 		TickFunctions.quest_progress_tick(5)
+	end
+
+	if tick % 10 == 0 then
+		TickFunctions.strobe_player_colors(10)
 	end
 
 	if tick % 10 == 0 then

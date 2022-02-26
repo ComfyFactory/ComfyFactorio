@@ -37,6 +37,8 @@ Public.default_window_positions = {
 	fuel = {x = 468, y = 48},
 	minimap = {x = 10, y = 48},
 	color = {x = 160, y = 96},
+	spontaneous_camera = {x = 8, y = 48},
+	undock_shortcut_button = {x = 8, y = 48},
 }
 
 
