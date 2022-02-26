@@ -5,8 +5,8 @@ local inspect = require 'utils.inspect'.inspect
 local Public = {}
 
 Public.scenario_id_name = 'pirates'
-Public.version_string = '1.0.3.2'
-Public.version_float = 1.032
+Public.version_string = '1.0.3.5'
+Public.version_float = 1.035
 
 
 Public.victory_x = 1000
@@ -96,9 +96,9 @@ Public.capacity_options = {
 	-- {value = 64, icon = 'item/storage-tank', text = '64'},
 }
 Public.difficulty_options = {
-	{value = 0.5, icon = 'item/firearm-magazine', text = 'Easy', associated_color = {50, 255, 50}},
+	{value = 0.6, icon = 'item/firearm-magazine', text = 'Easy', associated_color = {50, 255, 50}},
 	{value = 1, icon = 'item/piercing-rounds-magazine', text = 'Normal', associated_color = {255, 255, 50}},
-	{value = 1.5, icon = 'item/uranium-rounds-magazine', text = 'Hard', associated_color = {255, 50, 50}},
+	{value = 1.4, icon = 'item/uranium-rounds-magazine', text = 'Hard', associated_color = {255, 50, 50}},
 	{value = 3, icon = 'item/atomic-bomb', text = 'Nightmare', associated_color = {50, 10, 10}},
 }
 -- Public.mode_options = {

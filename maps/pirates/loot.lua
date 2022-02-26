@@ -345,7 +345,7 @@ function Public.chest_loot(number_of_items, game_completion_progress)
 	elseif platesrng <= 4 then
 		ret[#ret + 1] = {name = 'copper-plate', count = 120}
 	else
-		ret[#ret + 1] = {name = 'steel-plate', count = 40}
+		ret[#ret + 1] = {name = 'steel-plate', count = 20}
 	end
 
 	return ret

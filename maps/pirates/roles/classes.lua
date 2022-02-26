@@ -47,9 +47,9 @@ Public.explanation = {
 	[enum.FISHERMAN] = 'They fish at greater distance.',
 	[enum.SCOUT] = 'They are faster, but frail and deal much less damage.',
 	[enum.SAMURAI] = 'They are tough, and when they have no weapon equipped they fight well by melee, but poorly otherwise.',
-	[enum.MERCHANT] = 'They generate 40 coins per league, but they are frail.',
+	[enum.MERCHANT] = 'They generate 40 coins per league, but are frail.',
 	[enum.SHORESMAN] = 'They move slightly faster and generate iron ore for the ship whilst offboard, but move slower onboard.',
-	[enum.BOATSWAIN] = 'They move faster and generate lots of ore for the ship whilst onboard below deck, but move slower offboard.',
+	[enum.BOATSWAIN] = 'They move faster and generate lots of ore for the ship whilst below deck, but move slower offboard.',
 	[enum.PROSPECTOR] = 'They find more resources when handmining ore.',
 }
 

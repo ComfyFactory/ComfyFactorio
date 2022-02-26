@@ -850,6 +850,8 @@ end
 
 
 function Public.init_game_settings(technology_price_multiplier)
+
+	--== Tuned for Pirate Ship ==--
 	
 	global.friendly_fire_history = {}
 	global.landfill_history = {}
@@ -861,7 +863,6 @@ function Public.init_game_settings(technology_price_multiplier)
 	game.map_settings.enemy_evolution.time_factor = 0
 	game.map_settings.enemy_evolution.destroy_factor = 0
 
-	game.map_settings.max_expansion_distance = 4
 	game.map_settings.unit_group.min_group_gathering_time = 60 * 5
 	game.map_settings.unit_group.max_group_gathering_time = 60 * 210
 	game.map_settings.unit_group.max_wait_time_for_late_members = 60 * 15
@@ -871,7 +872,7 @@ function Public.init_game_settings(technology_price_multiplier)
 
 	-- (0,2) for a symmetric search:
 	game.map_settings.path_finder.goal_pressure_ratio = -0.1 --small pressure for stupid paths
-	game.map_settings.path_finder.fwd2bwd_ratio = 2
+	game.map_settings.path_finder.fwd2bwd_ratio = 2 -- on experiments I found that only this value was symmetric...
 	game.map_settings.max_failed_behavior_count = 2
 	game.map_settings.path_finder.max_work_done_per_tick = 20000
 	game.map_settings.path_finder.short_cache_min_algo_steps_to_cache = 100
@@ -879,11 +880,14 @@ function Public.init_game_settings(technology_price_multiplier)
 
 
 	game.map_settings.enemy_expansion.enabled = true
-	-- game.map_settings.enemy_expansion.max_expansion_cooldown = 3600
-	-- game.map_settings.enemy_expansion.min_expansion_cooldown = 3600
-	-- game.map_settings.enemy_expansion.settler_group_max_size = 8
-	-- game.map_settings.enemy_expansion.settler_group_min_size = 16
-	-- game.map_settings.enemy_expansion.max_expansion_distance = 9
+	-- faster expansion:
+	game.map_settings.enemy_expansion.min_expansion_cooldown = 1.2 * 3600
+	game.map_settings.enemy_expansion.max_expansion_cooldown = 20 * 3600
+	game.map_settings.enemy_expansion.settler_group_max_size = 24
+	game.map_settings.enemy_expansion.settler_group_min_size = 6
+	-- maybe should be 3.5 if possible:
+	game.map_settings.enemy_expansion.max_expansion_distance = 4
+
 	-- could turn off default AI attacks:
 	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 1
 	-- 

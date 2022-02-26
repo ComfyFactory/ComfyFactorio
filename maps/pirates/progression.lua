@@ -37,8 +37,10 @@ function Public.fuel_depletion_rate()
 	local memory = Memory.get_crew_memory()
 	local state = memory.boat.state
 
-	if state == Boats.enum_state.ATSEA_SAILING or state == Boats.enum_state.RETREATING or state == Boats.enum_state.APPROACHING or state == Boats.enum_state.LEAVING_DOCK then
+	if state == Boats.enum_state.ATSEA_SAILING or state == Boats.enum_state.APPROACHING or state == Boats.enum_state.LEAVING_DOCK then
 		return Balance.fuel_depletion_rate_sailing()
+	elseif state == Boats.enum_state.RETREATING then
+		return Balance.fuel_depletion_rate_sailing() / 10
 	elseif state == Boats.enum_state.LANDED then
 		return Balance.fuel_depletion_rate_static()
 	else
@@ -458,7 +460,7 @@ function Public.retreat_from_island()
 	if boat.state and boat.state == Boats.enum_state.RETREATING then return end
 	
 	boat.state = Boats.enum_state.RETREATING
-	boat.speed = 1
+	boat.speed = 1.2
 
 	Boats.place_boat(boat, CoreData.moving_boat_floor, false, false)
 

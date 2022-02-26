@@ -129,8 +129,8 @@ end
 function Public.try_main_attack()
 	local wave_size_multiplier = 1
     if Math.random(2) == 2 then return end --variance in attack sizes
-    if Math.random(9) == 1 then wave_size_multiplier = 2 return end --variance in attack sizes
-    if Math.random(50) == 1 then wave_size_multiplier = 3 return end --variance in attack sizes
+    if Math.random(10) == 1 then wave_size_multiplier = 2 end --variance in attack sizes
+    if Math.random(45) == 1 then wave_size_multiplier = 3.2 end --variance in attack sizes
 
 	local memory = Memory.get_crew_memory()
     local surface = game.surfaces[Common.current_destination().surface_name]
@@ -150,8 +150,8 @@ end
 function Public.try_secondary_attack()
 	local wave_size_multiplier = 1
     if Math.random(2) == 2 then return end --variance in attack sizes
-    if Math.random(9) == 1 then wave_size_multiplier = 2 return end --variance in attack sizes
-    if Math.random(50) == 1 then wave_size_multiplier = 3 return end --variance in attack sizes
+    if Math.random(10) == 1 then wave_size_multiplier = 2 end --variance in attack sizes
+    if Math.random(45) == 1 then wave_size_multiplier = 3.2 end --variance in attack sizes
 
 	local memory = Memory.get_crew_memory()
     local surface = game.surfaces[Common.current_destination().surface_name]
@@ -178,8 +178,8 @@ end
 function Public.try_rogue_attack()
 	local wave_size_multiplier = 1
     if Math.random(2) == 2 then return end --variance in attack sizes
-    if Math.random(9) == 1 then wave_size_multiplier = 2 return end --variance in attack sizes
-    if Math.random(50) == 1 then wave_size_multiplier = 3 return end --variance in attack sizes
+    if Math.random(10) == 1 then wave_size_multiplier = 2 end --variance in attack sizes
+    if Math.random(45) == 1 then wave_size_multiplier = 3.2 end --variance in attack sizes
 
 	local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[Common.current_destination().surface_name]
@@ -407,7 +407,7 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 
 			temp_floating_pollution = temp_floating_pollution - unittype_pollutioncost
 			budget = budget - unittype_pollutioncost
-			-- flow statistics should count the number of biters generated, without factors for extra expenditure:
+			-- flow statistics should reflect the number of biters generated, without factors for extra expenditure:
 			game.pollution_statistics.on_flow(name2, - CoreData.biterPollutionValues[name2] * Balance.scripted_biters_pollution_cost_multiplier())
 
             return biter.unit_number

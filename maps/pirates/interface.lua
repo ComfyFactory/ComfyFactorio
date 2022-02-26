@@ -442,7 +442,7 @@ local function event_on_player_mined_entity(event)
 			local give = {}
 
 			if memory.overworldx >= 0 then
-				if Math.random(6) == 1 then
+				if Math.random(8) == 1 then
 					give[#give + 1] = {name = 'coin', count = 5}
 				end
 			end
@@ -459,7 +459,7 @@ local function event_on_player_mined_entity(event)
 	elseif entity.type == 'fish' then
         if not event.buffer then return end
 
-		local amount = 3
+		local amount = 4
 
 		Common.give(player, {{name = 'raw-fish', count = amount}}, entity.position)
 		event.buffer.clear()
@@ -469,29 +469,19 @@ local function event_on_player_mined_entity(event)
 
 		local give = {}
 
-		if memory.classes_table and memory.classes_table[event.player_index] then
-			local class = memory.classes_table[event.player_index]
-			if class == Classes.enum.PROSPECTOR then	
-				if memory.overworldx > 0 then
-					give[#give + 1] = {name = 'coin', count = 5}
-				end
+		if memory.overworldx > 0 then
+			if memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.PROSPECTOR then
+				give[#give + 1] = {name = 'coin', count = 5}
 				give[#give + 1] = {name = entity.name, count = 5}
 			else
 				if memory.overworldx > 0 then
-						give[#give + 1] = {name = 'coin', count = 1}
+					give[#give + 1] = {name = 'coin', count = 1}
 				end
 				give[#give + 1] = {name = entity.name, count = 2}
 			end
+		else
+			give[#give + 1] = {name = entity.name, count = 2}
 		end
-
-		if memory.overworldx > 0 then
-			-- if Math.random(2) == 1 then
-			-- 	give[#give + 1] = {name = 'coin', count = 1}
-			-- end
-				give[#give + 1] = {name = 'coin', count = 1}
-		end
-
-		give[#give + 1] = {name = entity.name, count = 2}
 
 		Common.give(player, give, entity.position)
 		event.buffer.clear()
@@ -811,6 +801,11 @@ local function event_on_player_joined_game(event)
     )
 	if ages[1] then
 		Crew.join_crew(player, ages[1].id)
+	end
+
+	--check if they are the only crew member, and make them the captain if so:
+	if #Common.crew_get_crew_members() == 1 then
+		Public.assign_captain_based_on_priorities()
 	end
 
 	if not _DEBUG then

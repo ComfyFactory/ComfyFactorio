@@ -56,40 +56,40 @@ Public.main_shop_data_1 = {
 	[Upgrades.enum.MORE_POWER] = {
 		tooltip = 'Upgrade the ship\'s power.',
 		what_you_get_sprite_buttons = {['utility/status_working'] = false},
-		base_cost = {coins = 5000, fuel = 1000},
+		base_cost = {coins = 5000, fuel = 700},
 	},
 	[Upgrades.enum.EXTRA_HOLD] = {
 		tooltip = 'Upgrade the ship\'s hold.',
 		what_you_get_sprite_buttons = {['item/steel-chest'] = false},
-		base_cost = {coins = 10000, fuel = 2000},
+		base_cost = {coins = 10000, fuel = 2500},
 	},
 	[Upgrades.enum.ROCKETS_FOR_SALE] = {
 		tooltip = 'Unlock rockets for sale at covered-up markets.',
 		what_you_get_sprite_buttons = {['item/rocket-launcher'] = false},
-		base_cost = {coins = 10000, fuel = 2000},
+		base_cost = {coins = 10000, fuel = 3000},
 	},
 	[Upgrades.enum.UNLOCK_MERCHANTS] = {
 		tooltip = 'Unlock merchant ships.',
 		what_you_get_sprite_buttons = {['entity/market'] = false},
-		base_cost = {coins = 10000, fuel = 2500},
+		base_cost = {coins = 10000, fuel = 4000},
 	},
 }
 
 Public.main_shop_data_2 = {
 	rail_signal = {
-		tooltip = "100 signals, used to steer the boat once space in the Crow's Nest View.",
+		tooltip = "100 signals, used to steer the boat one space in the Crow's Nest View.",
 		what_you_get_sprite_buttons = {['item/rail-signal'] = 100},
-		base_cost = {coins = 500},
+		base_cost = {coins = 600},
 	},
 	artillery_shell = {
 		tooltip = '10 cannon shells.',
 		what_you_get_sprite_buttons = {['item/artillery-shell'] = 10},
-		base_cost = {coins = 1500, fuel = 500},
+		base_cost = {coins = 2000, fuel = 300},
 	},
 	artillery_remote = {
 		tooltip = 'An artillery targeting remote.',
 		what_you_get_sprite_buttons = {['item/artillery-targeting-remote'] = 1},
-		base_cost = {coins = 15000, fuel = 2000},
+		base_cost = {coins = 12000, fuel = 2500},
 	},
 	-- extra_time = {
 	-- 	tooltip = 'Relax at sea for an extra minute for 50 stored fuel. (Increases the next destination\'s loading time.)',
@@ -104,7 +104,7 @@ Public.main_shop_data_2 = {
 	uranium_ore = {
 		tooltip = '10 green rocks of unknown origin.',
 		what_you_get_sprite_buttons = {['item/uranium-238'] = 10},
-		base_cost = {coins = 200, fuel = 800},
+		base_cost = {coins = 1000, fuel = 800},
 	},
 }
 
@@ -351,6 +351,16 @@ function Public.event_on_market_item_purchased(event)
 		market.remove_market_item(offer_index)
 
 	else
+		if (price and price[1]) then
+		-- if (price and price[1] and price[1].name and ((price[1].name ~= 'coin' and price[1].name ~= 'pistol') or price[2])) then
+			if price[2] then
+				local fish = price[2].name
+				if fish == 'raw-fish' then fish = 'fish' end
+				Common.notify_force_light(player.force, player.name .. ' is trading away ' .. price[1].amount .. ' ' .. price[1].name .. ' and ' .. fish .. ' for ' .. this_offer.offer.count .. ' ' .. this_offer.offer.item .. '...')
+			else
+				Common.notify_force_light(player.force, player.name .. ' is trading away ' .. price[1].amount .. ' ' .. price[1].name .. ' for ' .. this_offer.offer.count .. ' ' .. this_offer.offer.item .. '...')
+			end
+		end
 		if (price and price[1] and price[1].name and (price[1].name == 'pistol')) then
 			if not inv then return end
 			local flying_text_color = {r = 255, g = 255, b = 255}
@@ -371,16 +381,6 @@ function Public.event_on_market_item_purchased(event)
 			market.clear_market_items()
 			for _, offer in pairs(alloffers) do
 				market.add_market_item(offer)
-			end
-		end
-		if (price and price[1]) then
-		-- if (price and price[1] and price[1].name and ((price[1].name ~= 'coin' and price[1].name ~= 'pistol') or price[2])) then
-			if price[2] then
-				local fish = price[2].name
-				if fish == 'raw-fish' then fish = 'fish' end
-				Common.notify_force_light(player.force, player.name .. ' is trading away ' .. price[1].amount .. ' ' .. price[1].name .. ' and ' .. fish .. ' to get ' .. this_offer.offer.item .. '...')
-			else
-				Common.notify_force_light(player.force, player.name .. ' is trading away ' .. price[1].amount .. ' ' .. price[1].name .. ' to get ' .. this_offer.offer.item .. '...')
 			end
 		end
 	end

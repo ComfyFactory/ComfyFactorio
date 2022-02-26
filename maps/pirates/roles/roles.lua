@@ -24,7 +24,7 @@ function Public.tag_text(player)
 		tags[#tags + 1] = "Cap'n"
 	elseif player.controller_type == defines.controllers.spectator then
 		tags[#tags + 1] = 'Spectating'
-	elseif memory.officers_table and memory.classes_table[player.index] then
+	elseif memory.officers_table and memory.officers_table[player.index] then
 		tags[#tags + 1] = "Officer"
 	end
 
@@ -76,7 +76,6 @@ end
 
 function Public.player_left_so_redestribute_roles(player)
 	local memory = Memory.get_crew_memory()
-	-- we can assume #Common.crew_get_crew_members() > 0
 	
 	if player and player.index and player.index == memory.playerindex_captain then
 		Public.assign_captain_based_on_priorities()
@@ -252,6 +251,8 @@ function Public.assign_captain_based_on_priorities(excluded_player_index)
 		Common.notify_force_light(force, message .. ' If yes say /ok')
 		-- Server.to_discord_embed_raw('[' .. memory.name .. ']' .. CoreData.comfy_emojis.spurdo .. ' ' .. message)
 		memory.captain_acceptance_timer = 72 --tuned
+	else
+		memory.captain_acceptance_timer = nil
 	end
 end
 
@@ -270,16 +271,16 @@ function Public.captain_requisition_coins(captain_index)
 	local captain_inv = captain.get_inventory(defines.inventory.character_main)
 
 	for _, player_index in pairs(crew_members) do
-		if player_index == captain_index then return end
-
-		local player = game.players[player_index]
-		if player then
-			local inv = player.get_inventory(defines.inventory.character_main)
-			if not inv then return end
-			local coin_amount = inv.get_item_count('coin')
-			if coin_amount and coin_amount > 0 then
-				inv.remove{name='coin', count=coin_amount}
-				captain_inv.insert{name='coin', count=coin_amount}
+		if player_index ~= captain_index then
+			local player = game.players[player_index]
+			if player then
+				local inv = player.get_inventory(defines.inventory.character_main)
+				if not inv then return end
+				local coin_amount = inv.get_item_count('coin')
+				if coin_amount and coin_amount > 0 then
+					inv.remove{name='coin', count=coin_amount}
+					captain_inv.insert{name='coin', count=coin_amount}
+				end
 			end
 		end
 	end

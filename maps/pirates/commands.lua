@@ -67,6 +67,7 @@ function(cmd)
 			else
 				local color = PlayerColors.names[Math.random(#PlayerColors.names)]
 				local rgb = PlayerColors.colors[color]
+				if not rgb then return end
 				player.color = rgb
 				player.chat_color = rgb
 				game.print(player.name .. '\'s color was randomized to ' .. color .. ' (via /ccolor).', rgb)

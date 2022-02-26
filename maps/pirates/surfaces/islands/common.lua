@@ -28,8 +28,8 @@ function Public.place_water_tile(args)
 	then
 		args.tiles[#args.tiles + 1] = {name = 'deepwater', position = args.p}
 
-		local fishrng = Math.random(400)
-		if fishrng == 400 then
+		local fishrng = Math.random(350)
+		if fishrng == 350 then
 			args.entities[#args.entities + 1] = {name = 'fish', position = args.p}
 		end
 		return true
@@ -41,8 +41,8 @@ function Public.place_water_tile(args)
 	if height_noise < 0 then
 		args.tiles[#args.tiles + 1] = {name = 'water', position = args.p}
 
-		local fishrng = Math.random(400)
-		if fishrng == 400 then
+		local fishrng = Math.random(350)
+		if fishrng == 350 then
 			args.entities[#args.entities + 1] = {name = 'fish', position = args.p}
 		end
 		return true

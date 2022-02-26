@@ -594,7 +594,7 @@ function Public.update_gui(player)
 	
 		if flow1.visible then
 			if (not memory.undock_shortcut_are_you_sure_data) then memory.undock_shortcut_are_you_sure_data = {} end
-			if memory.undock_shortcut_are_you_sure_data[player.index] and memory.undock_shortcut_are_you_sure_data[player.index] > game.tick - 60 * 4 then
+			if memory.undock_shortcut_are_you_sure_data[player.index] and memory.undock_shortcut_are_you_sure_data[player.index] > game.tick - 60 * 4.5 then
 				flow1.caption = 'Are you sure?'
 			else
 				flow1.caption = 'Undock'

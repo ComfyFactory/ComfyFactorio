@@ -71,14 +71,14 @@ end
 
 function Public.silo_total_pollution()
 	return (
-		260 * (Common.difficulty()^(1.2)) * Public.onthefly_scaling_with_players_rule()^(4/5) * (1.25 + 0.75 * (Common.overworldx()/40)^(1.6))
+		280 * (Common.difficulty()^(1.2)) * Public.onthefly_scaling_with_players_rule()^(4/5) * (1.25 + 0.75 * (Common.overworldx()/40)^(1.6))
 )
 end
 
 
 function Public.max_time_on_island_formula()
 	return 60 * (
-			(33 + 2 * (Common.overworldx()/40)^(1/3))
+			(32 + 2 * (Common.overworldx()/40)^(1/3))
 	) / Public.onthefly_scaling_with_players_rule()^(2/3) / Math.sloped(Common.difficulty(), 1/4)
 end
 
@@ -100,13 +100,13 @@ function Public.fuel_depletion_rate_static()
 
 	local T = Public.expected_time_on_island() --always >0
 
-	return - 1200 * (Common.overworldx()/40)^(1/2) / T * Public.onthefly_scaling_with_players_rule()^(1/3) --the extra player dependency accounts for the fact that even in compressed time, more players get more resources...
+	return - 1750 * (Common.overworldx()/40)^(8/10) * Public.onthefly_scaling_with_players_rule()^(1/2) * Math.sloped(Common.difficulty(), 2/3) / T --the extra player dependency accounts for the fact that even in compressed time, more players get more resources...
 end
 
 function Public.fuel_depletion_rate_sailing()
 	if (not Common.overworldx()) then return 0 end
 
-	return - 10 * (1 + (Common.overworldx()/40)^(4/5))
+	return - 10 * (1 + 0.5 * (Common.overworldx()/40)^(7/10))
 end
 
 function Public.boat_passive_pollution_per_minute(time)
@@ -131,7 +131,7 @@ end
 
 
 function Public.base_evolution()
-	local evo = (0.019 * (Common.overworldx()/40)) * Math.sloped(Common.difficulty(), 1/5)
+	local evo = (0.0201 * (Common.overworldx()/40)) * Math.sloped(Common.difficulty(), 1/5)
 	if Common.overworldx()/40 == 0 then evo = 0 end
 	return evo
 end
@@ -183,24 +183,26 @@ function Public.evolution_per_biter_base_kill()
 end
 
 function Public.evolution_per_full_silo_charge()
-	return 0.09
+	return 0.08
 end
 
 function Public.bonus_damage_to_humans()
-	local ret = 0.25
+	local ret = 0.15
 	local diff = Common.difficulty()
-	if diff <= 0.5 then ret = 0.2 end
-	if diff >= 1.5 then ret = 0.3 end
-	if diff >= 3 then ret = 0.4 end
+	if diff <= 0.7 then ret = 0.1 end
+	if diff >= 1.3 then ret = 0.2 end
+	if diff >= 2.5 then ret = 0.3 end
 	return ret
 end
 
 
 function Public.periodic_free_resources_per_x(x)
 	return {
-		{name = 'iron-plate', count = Math.ceil(5 * (Common.overworldx()/40)^(2/3))},
-		{name = 'copper-plate', count = Math.ceil(1 * (Common.overworldx()/40)^(2/3))},
 	}
+	-- return {
+	-- 	{name = 'iron-plate', count = Math.ceil(5 * (Common.overworldx()/40)^(2/3))},
+	-- 	{name = 'copper-plate', count = Math.ceil(1 * (Common.overworldx()/40)^(2/3))},
+	-- }
 end
 
 function Public.periodic_free_resources_per_destination_5_seconds(x)
@@ -235,7 +237,7 @@ function Public.quest_reward_multiplier()
 end
 
 function Public.island_richness_avg_multiplier()
-	return (1.0 + 0.08 * Common.overworldx()/40)
+	return (0.8 + 0.07 * Common.overworldx()/40)
 end
 
 function Public.resource_quest_multiplier()

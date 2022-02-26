@@ -100,8 +100,8 @@ function Public.try_lose(reason)
 
 		local playtimetext = Utils.time_longform((memory.age or 0)/60)
 		
-		Server.to_discord_embed_raw(CoreData.comfy_emojis.trashbin .. '[' .. memory.name .. '] Game over — ' .. reason ..'. Playtime: ' .. playtimetext .. '.')
-		Common.notify_game('[' .. memory.name .. '] Game over — ' .. reason ..'. Playtime: [font=default-large-semibold]' .. playtimetext .. '[/font].', CoreData.colors.notify_gameover)
+		Server.to_discord_embed_raw(CoreData.comfy_emojis.trashbin .. '[' .. memory.name .. '] Game over — ' .. reason ..'. Playtime: ' .. playtimetext .. ' since 1st island.')
+		Common.notify_game('[' .. memory.name .. '] Game over — ' .. reason ..'. Playtime: [font=default-large-semibold]' .. playtimetext .. ' since 1st island[/font].', CoreData.colors.notify_gameover)
 	
 		local force = game.forces[memory.force_name]
 		if not (force and force.valid) then return end
@@ -705,6 +705,10 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['inserter-capacity-bonus-1'].researched = true
 	crew_force.technologies['inserter-capacity-bonus-2'].researched = true
 
+	--@TRYING this out:
+	crew_force.technologies['coal-liquefaction'].enabled = true
+	crew_force.technologies['coal-liquefaction'].researched = true
+
 	crew_force.technologies['automobilism'].enabled = false
 
 	-- note: some of these are overwritten after tech researched!!!!!!! like pistol
@@ -772,7 +776,7 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['concrete'].enabled = false
 	crew_force.technologies['nuclear-power'].enabled = false
 
-	crew_force.technologies['effect-transmission'].enabled = false
+	crew_force.technologies['effect-transmission'].enabled = true
 
 	crew_force.technologies['gate'].enabled = false
 
@@ -784,7 +788,7 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['effectivity-module'].enabled = false
 	crew_force.technologies['effectivity-module-2'].enabled = false
 	crew_force.technologies['effectivity-module-3'].enabled = false
-	crew_force.technologies['automation-3'].enabled = false
+	crew_force.technologies['automation-3'].enabled = true
 	crew_force.technologies['rocket-control-unit'].enabled = false
 	crew_force.technologies['rocket-silo'].enabled = false
 	crew_force.technologies['space-science-pack'].enabled = false
@@ -794,8 +798,7 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['physical-projectile-damage-7'].enabled = false
 	crew_force.technologies['refined-flammables-7'].enabled = false
 	crew_force.technologies['stronger-explosives-7'].enabled = false
-	crew_force.technologies['logistics-3'].enabled = false
-	crew_force.technologies['coal-liquefaction'].enabled = true
+	crew_force.technologies['logistics-3'].enabled = true
 	crew_force.technologies['nuclear-fuel-reprocessing'].enabled = false
 
 	crew_force.technologies['railway'].enabled = false

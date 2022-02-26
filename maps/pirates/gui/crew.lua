@@ -418,7 +418,7 @@ function Public.update(player)
 	end
 
 	if flow.captain.body.capn_undock_normal.visible then
-		flow.captain.body.capn_undock_normal.enabled = (memory.boat.state == Boats.enum_state.LANDED) and Common.query_sufficient_resources_to_leave()
+		flow.captain.body.capn_undock_normal.enabled = ((memory.boat.state == Boats.enum_state.LANDED) and Common.query_sufficient_resources_to_leave()) or (memory.boat.state == Boats.enum_state.DOCKED)
 	end
 end
 

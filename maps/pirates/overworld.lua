@@ -102,6 +102,8 @@ function Public.generate_overworld_destination(p)
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.RADIOACTIVE
 		 --electric engines needed at 20
+	elseif macrop.x == 21 then
+		type = nil
 	elseif macrop.x == 22 then
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.WALKWAYS --moved from 20 to 22, let's not force a no-fight island right after the merchant dock
@@ -136,7 +138,7 @@ function Public.generate_overworld_destination(p)
 		-- temporarily placed this back here, as moving it to shorehit broke things:
 		local playercount = Common.activecrewcount()
 		local max_evo = 0.85
-		if Common.difficulty() < 1 then max_evo = 0.68 end
+		if Common.difficulty() < 1 then max_evo = 0.72 end
 		if macrop.x > 4 then
 			scheduled_raft_raids = {}
 			local times = {600, 360, 215, 210, 120, 30, 10, 5}

@@ -73,7 +73,7 @@ function Public.terrain(args)
 			end
 
 			if noises.height(p) > 0.12 and noises.walkways(p) < 0.1 and noises.rock_abs(p) < 0.07 then
-				args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = 20}
+				args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = 14}
 			end
 
 		else

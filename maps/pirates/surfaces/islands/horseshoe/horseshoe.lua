@@ -55,7 +55,7 @@ function Public.terrain(args)
 			args.tiles[#args.tiles + 1] = {name = 'dirt-1', position = args.p}
 		else
 			if noises.mood(p) > 0.66 then
-				args.tiles[#args.tiles + 1] = {name = 'water-shallow', position = args.p}
+				args.tiles[#args.tiles + 1] = {name = 'water', position = args.p}
 			else
 				args.tiles[#args.tiles + 1] = {name = 'sand-3', position = args.p}
 			end
@@ -100,7 +100,7 @@ function Public.terrain(args)
 	end
 
 	if noises.height(p) > 0.18 and noises.mood(p) > 0.2 then
-		if noises.forest_abs(p) < 0.2 and noises.rock_abs(p) > 1.5 then
+		if noises.forest_abs(p) < 0.2 and noises.rock_abs(p) > 1.8 then
 			args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = 10}
 		end
 	end
