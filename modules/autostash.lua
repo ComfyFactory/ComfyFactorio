@@ -57,6 +57,20 @@ local function prepare_floaty_text(list, surface, position, name, count)
 end
 
 local function chest_is_valid(chest)
+   if this.dungeons_initial_level ~= nil then
+      -- game.print('ERIC cpos ' .. serpent.line(chest.position))
+      if chest.position.x == -3.5 or chest.position.x == 4.5 then
+	  if chest.surface.index == this.dungeons_initial_level then
+	     if chest.position.y == 4.5 then
+		return true
+	     end
+	  else
+	     if chest.position.y == 4.5 or chest.position.y == -3.5 then
+		return true
+	     end
+	  end
+       end
+    end
     for _, e in pairs(
         chest.surface.find_entities_filtered(
             {
@@ -666,6 +680,9 @@ function Public.bottom_button(value)
     end
 end
 
+function Public.set_dungeons_initial_level(value)
+   this.dungeons_initial_level = value
+end
 Event.on_configuration_changed(do_whitelist)
 
 Event.on_init(do_whitelist)
