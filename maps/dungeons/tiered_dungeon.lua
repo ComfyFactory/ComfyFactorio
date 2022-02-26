@@ -396,7 +396,7 @@ local function on_player_joined_game(event)
     end
     local player = game.players[event.player_index]
     if player.online_time == 0 then
-        init_player(player, game.surfaces['dungeons_floor0'])
+       init_player(player, game.surfaces['dungeons_floor0'])
     end
     draw_light(player)
 end
@@ -789,6 +789,7 @@ local function on_init()
     Autostash.insert_into_furnace(true)
     Autostash.insert_into_wagon(false)
     Autostash.bottom_button(true)
+    Autostash.set_dungeons_initial_level(surface.index)
     BottomFrame.reset()
     BottomFrame.activate_custom_buttons(true)
     RPG.set_surface_name('dungeons_floor')
@@ -796,6 +797,8 @@ local function on_init()
     rpg_table.personal_tax_rate = 0
     -- rpg_table.enable_mana = true
     -- setup_magic()
+    local misc = require 'utils.commands.misc'
+    misc.set_always_allow_clear_corpses(true)
 
     local T = MapInfo.Pop_info()
     T.localised_category = 'dungeons_tiered'
