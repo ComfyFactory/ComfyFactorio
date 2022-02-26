@@ -359,7 +359,7 @@ local function clear_corpses(cmd)
         return
     end
     local p = player.print
-    if not trusted[player.name] then
+    if not trusted[player.name] and not this.always_allow_clear_corpses then
         if not player.admin then
             p('[ERROR] Only admins and trusted weebs are allowed to run this command!', Color.fail)
             return
@@ -497,6 +497,10 @@ function Public.reset()
     this.spaghetti_are_you_sure = false
     this.spaghetti_enabled = false
     this.players = {}
+end
+
+function Public.set_always_allow_clear_corpses(val)
+   this.always_allow_clear_corpses = val
 end
 
 Event.add(
