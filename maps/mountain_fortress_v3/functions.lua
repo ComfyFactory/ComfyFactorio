@@ -711,6 +711,7 @@ function Public.remove_offline_players()
         return
     end
     local offline_players = WPT.get('offline_players')
+    local offline_players_surface_removal = WPT.get('offline_players_surface_removal')
     local active_surface_index = WPT.get('active_surface_index')
     local surface = game.surfaces[active_surface_index]
     local player_inv = {}
@@ -729,7 +730,9 @@ function Public.remove_offline_players()
                         player_inv[3] = target.get_inventory(defines.inventory.character_guns)
                         player_inv[4] = target.get_inventory(defines.inventory.character_ammo)
                         player_inv[5] = target.get_inventory(defines.inventory.character_trash)
-                        ICT_Functions.remove_surface(target) -- remove empty surface
+                        if offline_players_surface_removal then
+                            ICT_Functions.remove_surface(target) -- remove empty surface
+                        end
 
                         if target.get_item_count() == 0 then -- if the player has zero items, don't do anything
                             offline_players[i] = nil
