@@ -727,7 +727,6 @@ function Public.save_car(event)
 end
 
 function Public.remove_surface(player)
-    
     local surfaces = IC.get('surfaces')
     local cars = IC.get('cars')
     local _, car = get_owner_car_object(cars, player)
