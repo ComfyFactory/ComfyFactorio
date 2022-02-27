@@ -458,7 +458,7 @@ function Public.place_cached_structures(tickinterval)
 					covered_data.market.destructible = false
 					-- @TODO: Add trades here
 
-					covered_data.market.add_market_item{price={{'pistol', 1}}, offer={type = 'give-item', item = 'coin', count = 500}}
+					covered_data.market.add_market_item{price={{'pistol', 1}}, offer={type = 'give-item', item = 'coin', count = 400}}
 					covered_data.market.add_market_item{price={{'burner-mining-drill', 1}}, offer={type = 'give-item', item = 'iron-plate', count = 9}}
 
 					local coin_offers = ShopCovered.market_generate_coin_offers(4)

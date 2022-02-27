@@ -98,10 +98,12 @@ function Public.update(player)
 		flow.close_button_flow.hflow.tospend.visible = true
 
 		local inv = player.get_inventory(defines.inventory.character_main)
-		local coin_amount = inv.get_item_count('coin') or 0
+		if inv and inv.valid then
+			local coin_amount = inv.get_item_count('coin') or 0
 
-		flow.close_button_flow.hflow.tospend.number = coin_amount
-		flow.close_button_flow.hflow.tospend.tooltip = string.format("You're holding " .. Utils.bignumber_abbrevform2(coin_amount) .. " coins.")
+			flow.close_button_flow.hflow.tospend.number = coin_amount
+			flow.close_button_flow.hflow.tospend.tooltip = string.format("You're holding " .. Utils.bignumber_abbrevform2(coin_amount) .. " coins.")
+		end
 	else
 		flow.close_button_flow.hflow.tospend.visible = false
 	end

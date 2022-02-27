@@ -102,6 +102,14 @@ function Public.get_class_print_string(class)
 		end
 	end
 
+	if class:lower() == 'officer' then
+		return 'Officer: Assigned by the captain, officers can use the Captain\'s shop and access privileged chests.'
+	end
+
+	if class:lower() == 'captain' then
+		return 'Captain: Has executive power to undock the ship, purchase items, and various other special actions. When the game assigns a captain, it gives priority to those who have been playing the longest as a non-captain.'
+	end
+
 	return nil
 end
 
@@ -373,34 +381,37 @@ function Public.captain_requisition_coins(captain_index)
 	if not (captain and crew_members and #crew_members > 1) then return end
 	
 	local captain_inv = captain.get_inventory(defines.inventory.character_main)
+	if captain_inv and captain_inv.valid then
+		for _, player_index in pairs(crew_members) do
+			if player_index ~= captain_index then
+				local player = game.players[player_index]
+				if player then
+					local inv = player.get_inventory(defines.inventory.character_main)
+					if inv and inv.valid then
+						local coin_amount = inv.get_item_count('coin')
+						if coin_amount and coin_amount > 0 then
+							inv.remove{name='coin', count=coin_amount}
+							captain_inv.insert{name='coin', count=coin_amount}
+							total = total + coin_amount
+						end
+					end
 
-	for _, player_index in pairs(crew_members) do
-		if player_index ~= captain_index then
-			local player = game.players[player_index]
-			if player then
-				local inv = player.get_inventory(defines.inventory.character_main)
-				if not inv then return end
-				local coin_amount = inv.get_item_count('coin')
-				if coin_amount and coin_amount > 0 then
-					inv.remove{name='coin', count=coin_amount}
-					captain_inv.insert{name='coin', count=coin_amount}
-					total = total + coin_amount
-				end
-				local cursor_stack = player.cursor_stack
-				if cursor_stack.valid_for_read and cursor_stack.name == 'coin' then
-					local cursor_stack_count = cursor_stack.count
-					if cursor_stack_count > 0 then
-						cursor_stack.count = 0
-						captain_inv.insert{name='coin', count = cursor_stack_count}
-						total = total + cursor_stack_count
+					local cursor_stack = player.cursor_stack
+					if cursor_stack and cursor_stack.valid_for_read and cursor_stack.name == 'coin' then
+						local cursor_stack_count = cursor_stack.count
+						if cursor_stack_count > 0 then
+							cursor_stack.count = 0
+							captain_inv.insert{name='coin', count = cursor_stack_count}
+							total = total + cursor_stack_count
+						end
 					end
 				end
 			end
 		end
-	end
-
-	if total > 0 then 
-		Common.notify_force(game.forces[memory.force_name], 'The captain requisitions ' .. total .. ' coins.')
+	
+		if total > 0 then 
+			Common.notify_force(game.forces[memory.force_name], 'The captain requisitioned ' .. total .. ' coins.')
+		end
 	end
 end
 

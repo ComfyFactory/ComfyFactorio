@@ -102,14 +102,16 @@ function Public.generate_overworld_destination(p)
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.RADIOACTIVE
 		 --electric engines needed at 20
-	elseif macrop.x == 21 then
+	elseif macrop.x == 16 then --space because we need to add more content to the game around here, it's too long otherwise
 		type = nil
-	elseif macrop.x == 22 then
-		type = Surfaces.enum.ISLAND
-		subtype = Surfaces.Island.enum.WALKWAYS --moved from 20 to 22, let's not force a no-fight island right after the merchant dock
-	elseif macrop.x == 24 then
+	elseif macrop.x == 20 then --space because we need to add more content to the game around here, it's too long otherwise
+		type = nil
+	elseif macrop.x == 23 then
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.SWAMP
+	elseif macrop.x == 24 then
+		type = Surfaces.enum.ISLAND
+		subtype = Surfaces.Island.enum.WALKWAYS --moved from 20 to 22, let's not force a no-fight island right after the merchant dock
 	elseif macrop.x == 25 then
 		type = nil --finish line
 	else
@@ -440,7 +442,7 @@ function Public.ensure_lane_generated_up_to(lane_yvalue, x)
 			Crowsnest.paint_water_between_overworld_positions(highest_x + 32 + 7 + 1, highest_x + 32 + 7 + 1 + 40)
 			-- a little hack that we're updating this here rather than Crowsnest, due to the dependency on Shop to avoid a loop... almost finished 1.0, so too late to figure out how to restructure things for now!
 			for _, dest in pairs(memory.destinations) do
-				if dest.static_params.upgrade_for_sale then
+				if dest.static_params.upgrade_for_sale and dest.dynamic_data.crowsnest_renderings then
 					for rendering_name, r in pairs(dest.dynamic_data.crowsnest_renderings) do
 						if type(r) == 'table' and r.text_rendering and rendering.is_valid(r.text_rendering) then
 							rendering.set_text(r.text_rendering, Utils.bignumber_abbrevform(Shop.main_shop_data_1[dest.static_params.upgrade_for_sale].base_cost[rendering_name]))

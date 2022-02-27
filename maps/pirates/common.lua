@@ -174,7 +174,7 @@ function Public.give(player, stacks, spill_position, spill_surface)
 
 	if player then
 		inv = player.get_inventory(defines.inventory.character_main)
-		if not inv then return end
+		if not (inv and inv.valid) then return end
 	end
 
 	for j = 1, #stacks2 do

@@ -257,7 +257,7 @@ local function samurai_damage_changes(event)
 	local player_index = player.index
 	if memory.classes_table and memory.classes_table[player_index] and memory.classes_table[player_index] == Classes.enum.SAMURAI then
 
-		if event.damage_type.name == 'physical' and (not character.get_inventory(defines.inventory.character_guns)[character.selected_gun_index].valid_for_read) then
+		if event.damage_type.name == 'physical' and (not (character.get_inventory(defines.inventory.character_guns) and character.get_inventory(defines.inventory.character_guns)[character.selected_gun_index] and character.get_inventory(defines.inventory.character_guns)[character.selected_gun_index].valid_for_read)) then
 			event.entity.health = event.entity.health - 30
 		else
 			event.entity.health = event.entity.health + 0.66 * event.final_damage_amount
@@ -324,6 +324,7 @@ local function event_on_entity_damaged(event)
 	
 	local character = event.cause
 	if character.shooting_state.state == defines.shooting.not_shooting then return end
+	--@TODO: These might fail to be valid if player is dead or something
 	local weapon = character.get_inventory(defines.inventory.character_guns)[character.selected_gun_index]
 	local ammo = character.get_inventory(defines.inventory.character_ammo)[character.selected_gun_index]
 	if not weapon.valid_for_read or not ammo.valid_for_read then return end
@@ -476,7 +477,7 @@ local function event_on_player_mined_entity(event)
 
 		if memory.overworldx > 0 then
 			if memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.PROSPECTOR then
-				give[#give + 1] = {name = 'coin', count = 5}
+				give[#give + 1] = {name = 'coin', count = 4}
 				give[#give + 1] = {name = entity.name, count = 5}
 			else
 				if memory.overworldx > 0 then

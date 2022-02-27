@@ -26,7 +26,7 @@ Public.EEI_stages = { --multipliers
 
 
 function Public.scripted_biters_pollution_cost_multiplier()
-	return 1.33
+	return 1.33 --tuned
 end
 
 function Public.cost_to_leave_multiplier()
@@ -71,7 +71,7 @@ end
 
 function Public.silo_total_pollution()
 	return (
-		280 * (Common.difficulty()^(1.2)) * Public.onthefly_scaling_with_players_rule()^(4/5) * (1.25 + 0.75 * (Common.overworldx()/40)^(1.6))
+		280 * (Common.difficulty()^(1.2)) * Public.onthefly_scaling_with_players_rule()^(4/5) * (3 + 0.7 * (Common.overworldx()/40)^(1.5)) --shape of the curve with x is tuned
 )
 end
 

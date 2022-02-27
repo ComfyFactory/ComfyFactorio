@@ -85,7 +85,7 @@ Public.main_shop_data_2 = {
 	artillery_shell = {
 		tooltip = '10 cannon shells.',
 		what_you_get_sprite_buttons = {['item/artillery-shell'] = 10},
-		base_cost = {coins = 2000, fuel = 300},
+		base_cost = {coins = 2200, fuel = 200},
 	},
 	artillery_remote = {
 		tooltip = 'An artillery targeting remote.',
@@ -145,7 +145,7 @@ function Public.main_shop_try_purchase(player, purchase_name)
 	if not Common.validate_player_and_character(player) then return end
 
 	local inv = player.get_inventory(defines.inventory.character_main)
-	if not inv then return end
+	if not (inv and inv.valid) then return end
 
 	local multiplier = Balance.main_shop_cost_multiplier()
 
@@ -376,7 +376,7 @@ function Public.event_on_market_item_purchased(event)
 			memory.classes_table[player.index] = destination.static_params.class_for_sale
 	
 			if force and force.valid then
-				Common.notify_force_light(force,string.format('%s is now a %s. ([font=scenario-message-dialog]%s[/font])', player.name, Classes.display_form[memory.classes_table[player.index]], Classes.explanation[memory.classes_table[player.index]]))
+				Common.notify_force_light(force,string.format('%s bought the class %s. ([font=scenario-message-dialog]%s[/font])', player.name, Classes.display_form[memory.classes_table[player.index]], Classes.explanation[memory.classes_table[player.index]]))
 			end
 		
 			if destination.dynamic_data and destination.dynamic_data.market_class_offer_rendering then

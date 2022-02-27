@@ -98,7 +98,7 @@ function Public.update_character_properties(tickinterval)
 							if on_ship_bool then
 								speed_boost = speed_boost - 0.25
 							else
-								speed_boost = speed_boost + 0.05
+								speed_boost = speed_boost + 0.065
 							end
 						end
 					end
@@ -110,6 +110,7 @@ function Public.update_character_properties(tickinterval)
 end
 
 function Public.class_rewards_tick(tickinterval)
+	--assuming tickinterval = 6 seconds for now
 	local memory = Memory.get_crew_memory()
 
 	local crew = Common.crew_get_crew_members()
@@ -138,7 +139,7 @@ function Public.class_rewards_tick(tickinterval)
 						end
 					elseif class == Classes.enum.SHORESMAN and (not on_ship_bool) then
 						Common.flying_text_small(player.surface, player.position, '[color=0.7,0.8,0.8]+[/color]')
-							Common.give_reward_items{{name = 'iron-ore', count = Math.ceil(20 * Balance.class_resource_scale())}}
+							Common.give_reward_items{{name = 'iron-ore', count = Math.ceil(15 * Balance.class_resource_scale())}}
 					end
 				end
 			end

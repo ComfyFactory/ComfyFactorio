@@ -129,8 +129,8 @@ end
 function Public.try_main_attack()
 	local wave_size_multiplier = 1
     if Math.random(2) == 2 then return end --variance in attack sizes
-    if Math.random(10) == 1 then wave_size_multiplier = 2 end --variance in attack sizes
-    if Math.random(45) == 1 then wave_size_multiplier = 3.2 end --variance in attack sizes
+    if Math.random(12) == 1 then wave_size_multiplier = 1.8 end --variance in attack sizes
+    if Math.random(65) == 1 then wave_size_multiplier = 3.2 end --variance in attack sizes
 
 	local memory = Memory.get_crew_memory()
     local surface = game.surfaces[Common.current_destination().surface_name]
@@ -150,8 +150,8 @@ end
 function Public.try_secondary_attack()
 	local wave_size_multiplier = 1
     if Math.random(2) == 2 then return end --variance in attack sizes
-    if Math.random(10) == 1 then wave_size_multiplier = 2 end --variance in attack sizes
-    if Math.random(45) == 1 then wave_size_multiplier = 3.2 end --variance in attack sizes
+    if Math.random(12) == 1 then wave_size_multiplier = 1.8 end --variance in attack sizes
+    if Math.random(65) == 1 then wave_size_multiplier = 3.2 end --variance in attack sizes
 
 	local memory = Memory.get_crew_memory()
     local surface = game.surfaces[Common.current_destination().surface_name]
@@ -178,8 +178,8 @@ end
 function Public.try_rogue_attack()
 	local wave_size_multiplier = 1
     if Math.random(2) == 2 then return end --variance in attack sizes
-    if Math.random(10) == 1 then wave_size_multiplier = 2 end --variance in attack sizes
-    if Math.random(45) == 1 then wave_size_multiplier = 3.2 end --variance in attack sizes
+    if Math.random(12) == 1 then wave_size_multiplier = 1.8 end --variance in attack sizes
+    if Math.random(65) == 1 then wave_size_multiplier = 3.2 end --variance in attack sizes
 
 	local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[Common.current_destination().surface_name]
@@ -387,7 +387,7 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 
 	if memory.overworldx == 0 then
 		-- less biters:
-		base_pollution_cost_multiplier = base_pollution_cost_multiplier * 2.5
+		base_pollution_cost_multiplier = base_pollution_cost_multiplier * 2.25
 	end
 
 	base_pollution_cost_multiplier = base_pollution_cost_multiplier * unit_pollutioncost_multiplier
