@@ -67,7 +67,7 @@ function Public.generate_overworld_destination(p)
 			if _DEBUG then
 				-- Edit these to force a type/subtype in debug:
 
-				subtype = Surfaces.Island.enum.RED_DESERT
+				-- subtype = Surfaces.Island.enum.RED_DESERT
 				-- type = Surfaces.enum.ISLAND
 				-- subtype = nil
 			end
@@ -139,6 +139,8 @@ function Public.generate_overworld_destination(p)
 		local playercount = Common.activecrewcount()
 		local max_evo = 0.85
 		if Common.difficulty() < 1 then max_evo = 0.72 end
+		if Common.difficulty() > 1 then max_evo = 0.90 end
+
 		if macrop.x > 4 then
 			scheduled_raft_raids = {}
 			local times = {600, 360, 215, 210, 120, 30, 10, 5}
@@ -330,26 +332,52 @@ function Public.generate_overworld_destination(p)
 		local y = dest.overworld_position.y
 		if dest.static_params.upgrade_for_sale then
 			local display_form = Upgrades.crowsnest_display_form[dest.static_params.upgrade_for_sale]
-			local price = Shop.main_shop_data_1[dest.static_params.upgrade_for_sale].base_cost.fuel
-			dest.dynamic_data.crowsnest_rendering_1 = rendering.draw_text{
-				text = display_form .. ': ' .. price,
+
+			if not dest.dynamic_data.crowsnest_renderings then
+				dest.dynamic_data.crowsnest_renderings = {}
+			end
+			
+			dest.dynamic_data.crowsnest_renderings.base_text_rendering = rendering.draw_text{
+				text = display_form .. ':',
 				surface = surface,
-				target = {x = x + 4, y = y - 4.55},
+				target = {x = x, y = y - 7.05},
 				color = CoreData.colors.renderingtext_green,
 				scale = 7,
 				font = 'default-game',
 				alignment = 'right',
 				visible = false,
 			}
-			--@TODO add coin cost here as well
-			dest.dynamic_data.crowsnest_rendering_2 = rendering.draw_sprite{
-				sprite = 'item/coal',
-				surface = surface,
-				target = {x = x + 7, y = y - 1.75},
-				x_scale = 6,
-				y_scale = 6,
-				visible = false,
-			}
+
+			local i = 1
+			for price_name, price_count in pairs(Shop.main_shop_data_1[dest.static_params.upgrade_for_sale].base_cost) do
+				local sprite
+				if price_name == 'fuel' then
+					sprite = 'item/coal'
+				else
+					sprite = 'item/coin'
+				end
+				dest.dynamic_data.crowsnest_renderings[price_name] = {
+					text_rendering = rendering.draw_text{
+						text = Utils.bignumber_abbrevform(price_count),
+						surface = surface,
+						target = {x = x + 0.5, y = y - 1.25 - i * 3.5},
+						color = CoreData.colors.renderingtext_green,
+						scale = 5.2,
+						font = 'default-game',
+						alignment = 'left',
+						visible = false,
+					},
+					sprite_rendering = rendering.draw_sprite{
+						sprite = sprite,
+						surface = surface,
+						target = {x = x + 8.6, y = y + 1.25 - i * 3.5},
+						x_scale = 4.5,
+						y_scale = 4.5,
+						visible = false,
+					}
+				}
+				i = i + 1
+			end
 		end
 	end
 
@@ -410,13 +438,13 @@ function Public.ensure_lane_generated_up_to(lane_yvalue, x)
 
 		if lane_yvalue == 0 then
 			Crowsnest.paint_water_between_overworld_positions(highest_x + 32 + 7 + 1, highest_x + 32 + 7 + 1 + 40)
-			-- a little hack that we're updating this here rather than Crowsnest, due to the dependency on Shop to avoid a loop... almost finished 1.0, so too late to need to figure out how to restructure things!
+			-- a little hack that we're updating this here rather than Crowsnest, due to the dependency on Shop to avoid a loop... almost finished 1.0, so too late to figure out how to restructure things for now!
 			for _, dest in pairs(memory.destinations) do
 				if dest.static_params.upgrade_for_sale then
-					if dest.dynamic_data.crowsnest_rendering_1 and rendering.is_valid(dest.dynamic_data.crowsnest_rendering_1) then
-						local display_form = Upgrades.crowsnest_display_form[dest.static_params.upgrade_for_sale]
-						local price = Shop.main_shop_data_1[dest.static_params.upgrade_for_sale].base_cost.fuel
-						rendering.set_text(dest.dynamic_data.crowsnest_rendering_1, display_form .. ': ' .. price)
+					for rendering_name, r in pairs(dest.dynamic_data.crowsnest_renderings) do
+						if type(r) == 'table' and r.text_rendering and rendering.is_valid(r.text_rendering) then
+							rendering.set_text(r.text_rendering, Utils.bignumber_abbrevform(Shop.main_shop_data_1[dest.static_params.upgrade_for_sale].base_cost[rendering_name]))
+						end
 					end
 				end
 			end

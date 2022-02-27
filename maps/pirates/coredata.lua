@@ -5,8 +5,8 @@ local inspect = require 'utils.inspect'.inspect
 local Public = {}
 
 Public.scenario_id_name = 'pirates'
-Public.version_string = '1.0.3.7'
-Public.version_float = 1.037
+Public.version_string = '1.0.3.8.2'
+Public.version_float = 1.0382
 
 
 Public.victory_x = 1000
@@ -23,7 +23,8 @@ Public.colors = {
 	['iron-ore'] = {r=170, g=180, b=190},
 	['copper-plate'] = {r=219, g=149, b=96},
 	['copper-ore'] = {r=219, g=149, b=96},
-	notify_player = {r=255, g=231, b=46},
+	notify_player_error = {r=196, g=196, b=196},
+	notify_player_expected = {r=255, g=231, b=46},
 	notify_game = {r=249, g=103, b=56},
 	notify_lobby = {r=249, g=153, b=56},
 	notify_force = {r=249, g=153, b=56},
@@ -62,7 +63,7 @@ Public.edgemost_tile_names = {'sand-1'}
 
 Public.tiles_that_conflict_with_resource_layer = {'water', 'deepwater', 'water-green', 'deepwater-green', 'water-shallow', 'water-mud', 'out-of-map'}
 
-Public.tiles_that_conflict_with_resource_layer_extended = {'water', 'deepwater', 'water-green', 'deepwater-green', 'water-shallow', 'water-mud', 'out-of-map', 'red-refined-concrete', 'brown-refined-concrete'}
+Public.tiles_that_conflict_with_resource_layer_extended = {'water', 'deepwater', 'water-green', 'deepwater-green', 'water-shallow', 'water-mud', 'out-of-map', 'red-refined-concrete', 'brown-refined-concrete', 'orange-refined-concrete'}
 
 Public.noworm_tile_names = {'red-refined-concrete', 'purple-refined-concrete', 'green-refined-concrete', 'orange-refined-concrete', 'brown-refined-concrete', 'lab-dark-2', 'sand-1', 'red-desert-3'}
 

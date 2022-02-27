@@ -107,7 +107,7 @@ function Public.terrain(args)
 
 	if noises.height(p) > 0.18 and noises.mood(p) > 0.3 then
 		if noises.forest_abs(p) < 0.2 and noises.rock_abs(p) > 1.5 then
-			args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = 10}
+			args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = 8}
 		end
 	end
 end

@@ -143,7 +143,7 @@ function Public.terrain(args)
 end
 
 function Public.chunk_structures(args)
-	return
+	return nil
 end
 
 Public.Data.jetty_offset = {x = -40, y = -6}

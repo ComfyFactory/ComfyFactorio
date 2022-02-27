@@ -37,6 +37,7 @@ function Public.make_officer(captain, player)
 
 	local message = (captain.name .. ' made ' .. player.name .. ' an officer.')
 	Common.notify_force(force, message)
+    Public.update_privileges(player)
 end
 
 function Public.unmake_officer(captain, player)
@@ -49,6 +50,7 @@ function Public.unmake_officer(captain, player)
 
 	local message = (captain.name .. ' unmade ' .. player.name .. ' an officer.')
 	Common.notify_force(force, message)
+    Public.update_privileges(player)
 end
 
 function Public.tag_text(player)
@@ -81,6 +83,28 @@ function Public.tag_text(player)
 	return str
 end
 
+
+function Public.get_classes_print_string()
+	local str = 'Current class Descriptions:'
+
+	for i, class in ipairs(Classes.Class_List) do
+		str = str .. '\n' .. Classes.display_form[class] .. ': ' .. Classes.explanation[class] .. ''
+	end
+
+	return str
+end
+
+function Public.get_class_print_string(class)
+
+	for _, class2 in ipairs(Classes.Class_List) do
+		if Classes.display_form[class2]:lower() == class:lower() then
+			return Classes.display_form[class2] .. ': ' .. Classes.explanation[class2] .. ''
+		end
+	end
+
+	return nil
+end
+
 function Public.update_tags(player)
 	local str = Public.tag_text(player)
 
@@ -104,7 +128,7 @@ function Public.try_accept_captainhood(player)
 	local captain_index = memory.playerindex_captain
 
 	if not (player.index == captain_index) then
-		Common.notify_player(player, 'You\'re not the captain.')
+		Common.notify_player_error(player, 'You\'re not the captain.')
 	else
 		if memory.captain_acceptance_timer then
 			memory.captain_acceptance_timer = nil
@@ -116,7 +140,7 @@ function Public.try_accept_captainhood(player)
 				Server.to_discord_embed_raw(CoreData.comfy_emojis.derp .. '[' .. memory.name .. '] ' .. message)
 			end
 		else
-			Common.notify_player(player, 'You\'re not temporary, so you don\'t need to accept.')
+			Common.notify_player_expected(player, 'You\'re not temporary, so you don\'t need to accept.')
 		end
 	end
 end
@@ -143,7 +167,7 @@ function Public.renounce_captainhood(player)
 	local memory = Memory.get_crew_memory()
 
 	if #Common.crew_get_crew_members() == 1 then
-		Common.notify_player(player, 'But you\'re the only crew member...')
+		Common.notify_player_error(player, 'But you\'re the only crew member...')
 	else
 
 		local force = game.forces[memory.force_name]
@@ -155,6 +179,21 @@ function Public.renounce_captainhood(player)
 		end
 		
 		Public.assign_captain_based_on_priorities(player.index)
+	end
+end
+
+function Public.resign_as_officer(player)
+	local memory = Memory.get_crew_memory()
+	local force = game.forces[memory.force_name]
+
+	if memory.officers_table and memory.officers_table[player.index] then
+		memory.officers_table[player.index] = nil
+
+		local message = (player.name .. ' resigns as an officer.')
+		Common.notify_force(force, message)
+		Server.to_discord_embed_raw(CoreData.comfy_emojis.ree1 .. '[' .. memory.name .. '] ' .. message)
+	else
+		log('Error: player tried to resign as officer despite not being one.')
 	end
 end
 
@@ -208,11 +247,16 @@ function Public.make_captain(player)
 	local global_memory = Memory.get_global_memory()
 	local memory = Memory.get_crew_memory()
 
+	if memory.playerindex_captain then
+		Public.update_privileges(game.players[memory.playerindex_captain])
+	end
+
 	memory.playerindex_captain = player.index
 	global_memory.playerindex_to_priority[player.index] = nil
 	memory.captain_acceptance_timer = nil
 
 	Public.reset_officers()
+    Public.update_privileges(player)
 end
 
 function Public.pass_captainhood(player, player_to_pass_to)
@@ -322,10 +366,7 @@ end
 
 function Public.captain_requisition_coins(captain_index)
 	local memory = Memory.get_crew_memory()
-	local print = true
-	if print then 
-		Common.notify_force(game.forces[memory.force_name], 'Coins requisitioned by captain.')
-	end
+	local total = 0
 
 	local crew_members = memory.crewplayerindices
 	local captain = game.players[captain_index]
@@ -343,9 +384,23 @@ function Public.captain_requisition_coins(captain_index)
 				if coin_amount and coin_amount > 0 then
 					inv.remove{name='coin', count=coin_amount}
 					captain_inv.insert{name='coin', count=coin_amount}
+					total = total + coin_amount
+				end
+				local cursor_stack = player.cursor_stack
+				if cursor_stack.valid_for_read and cursor_stack.name == 'coin' then
+					local cursor_stack_count = cursor_stack.count
+					if cursor_stack_count > 0 then
+						cursor_stack.count = 0
+						captain_inv.insert{name='coin', count = cursor_stack_count}
+						total = total + cursor_stack_count
+					end
 				end
 			end
 		end
+	end
+
+	if total > 0 then 
+		Common.notify_force(game.forces[memory.force_name], 'The captain requisitions ' .. total .. ' coins.')
 	end
 end
 

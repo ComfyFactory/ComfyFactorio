@@ -37,7 +37,7 @@ function Public.strobe_player_colors(tickinterval)
 	local strobing_players = memory.speed_boost_characters
 
 	if strobing_players and #strobing_players > 0 then
-		local col = Utils.rgb_from_hsv((game.tick*6) % 360, 1, 1)
+		local col = Utils.rgb_from_hsv((game.tick*6) % 360, 0.7, 0.9)
 		for index, val in pairs(strobing_players) do
 			if val then
 				local player = game.players[index]
@@ -92,7 +92,7 @@ function Public.prevent_disembark(tickinterval)
 
 		for _, player in pairs(game.connected_players) do
 			if player.surface and player.surface.valid and boat.surface_name and player.surface.name == boat.surface_name and ps[player.index] and (not Boats.on_boat(boat, player.position)) then
-				Common.notify_player(player, 'Now is no time to disembark.')
+				Common.notify_player_error(player, 'Now is no time to disembark.')
 				player.teleport(memory.spawnpoint)
 			end
 		end
@@ -195,7 +195,7 @@ function Public.captain_warn_afk(tickinterval)
 	if memory.playerindex_captain then
 		for _, player in pairs(game.connected_players) do
 			if player.index == memory.playerindex_captain and #Common.crew_get_nonafk_crew_members() > 1 and player.afk_time >= Common.afk_time - 20*60 - 60 - tickinterval and player.afk_time < Common.afk_time - 20*60 then
-				Common.notify_player(player, 'Note: If you go idle as captain for too long, the role passes to another crewmember.')
+				Common.notify_player_expected(player, 'Note: If you go idle as captain for too long, the role passes to another crewmember.')
 				player.play_sound{path = 'utility/scenario_message'}
 			end
 		end
@@ -458,14 +458,15 @@ function Public.place_cached_structures(tickinterval)
 					covered_data.market.destructible = false
 					-- @TODO: Add trades here
 
-					covered_data.market.add_market_item{price={{'coin', Balance.class_cost()}}, offer={type="nothing"}}
 					covered_data.market.add_market_item{price={{'pistol', 1}}, offer={type = 'give-item', item = 'coin', count = 500}}
 					covered_data.market.add_market_item{price={{'burner-mining-drill', 1}}, offer={type = 'give-item', item = 'iron-plate', count = 9}}
 
-					local coin_offers = ShopCovered.market_generate_coin_offers(2)
+					local coin_offers = ShopCovered.market_generate_coin_offers(4)
 					for _, o in pairs(coin_offers) do
 						covered_data.market.add_market_item(o)
 					end
+
+					covered_data.market.add_market_item{price={{'coin', Balance.class_cost()}}, offer={type="nothing"}}
 
 					destination.dynamic_data.market_class_offer_rendering = rendering.draw_text{
 						text = 'Class available: ' .. Classes.display_form[destination.static_params.class_for_sale],

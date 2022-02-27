@@ -36,7 +36,7 @@ local GUIcolor = require 'maps.pirates.gui.color'
 
 commands.add_command(
 'ok',
-'ok',
+'Used to accept captainhood.',
 function(cmd)
 			local player = game.players[cmd.player_index]
 	if not Common.validate_player(player) then return end
@@ -44,6 +44,36 @@ function(cmd)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
 	Roles.try_accept_captainhood(player)
+end)
+
+-- Disabled for information-flow reasons:
+-- commands.add_command(
+-- 'classes',
+-- 'Prints the available classes in the game.',
+-- function(cmd)
+-- 	local player = game.players[cmd.player_index]
+-- 	if not Common.validate_player(player) then return end
+-- 	player.print('[color=gray]' .. Roles.get_classes_print_string() .. '[/color]')
+-- end)
+
+commands.add_command(
+'class',
+'/class [classname] returns the definition of the named class.',
+function(cmd)
+	local param = tostring(cmd.parameter)
+	local player = game.players[cmd.player_index]
+	if not Common.validate_player(player) then return end
+
+	if param and param ~= 'nil' then
+		local string = Roles.get_class_print_string(param)
+		if string then
+			Common.notify_player_expected(player, 'Class definition for ' .. string)
+		else
+			Common.notify_player_error(player, 'Class \'' .. param .. '\' not found.')
+		end
+	else
+		Common.notify_player_expected(player, '/class {classname} returns the definition of the named class.')
+	end
 end)
 
 commands.add_command(
@@ -60,9 +90,10 @@ function(cmd)
 					local rgb = PlayerColors.colors[param]
 					player.color = rgb
 					player.chat_color = rgb
-					game.print(player.name .. '\'s color is now ' .. param .. ' (via /ccolor).', rgb)
+					local message = '[color=' .. rgb.r .. ',' .. rgb.g .. ',' .. rgb.b .. ']' .. player.name .. '\'s color is now ' .. param .. '[/color] (via /ccolor).'
+					Common.notify_game(message)
 				else
-					player.print('Color not found.')
+					Common.notify_player_error(player, 'Color \'' .. param .. '\' not found.')
 				end
 			else
 				local color = PlayerColors.names[Math.random(#PlayerColors.names)]
@@ -70,7 +101,8 @@ function(cmd)
 				if not rgb then return end
 				player.color = rgb
 				player.chat_color = rgb
-				game.print(player.name .. '\'s color was randomized to ' .. color .. ' (via /ccolor).', rgb)
+				local message = '[color=' .. rgb.r .. ',' .. rgb.g .. ',' .. rgb.b .. ']' .. player.name .. '\'s color was randomized to ' .. color .. '[/color] (via /ccolor).'
+				Common.notify_game(message)
 				-- disabled due to lag:
 				-- GUIcolor.toggle_window(player)
 			end

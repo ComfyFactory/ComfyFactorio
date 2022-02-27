@@ -114,8 +114,13 @@ function Public.notify_lobby(message, color_override)
 	game.forces['player'].print('>> ' .. message, color_override)
 end
 
-function Public.notify_player(player, message, color_override)
-	color_override = color_override or CoreData.colors.notify_player
+function Public.notify_player_error(player, message, color_override)
+	color_override = color_override or CoreData.colors.notify_player_error
+	player.print('>> ' .. message, color_override)
+end
+
+function Public.notify_player_expected(player, message, color_override)
+	color_override = color_override or CoreData.colors.notify_player_expected
 	player.print('>> ' .. message, color_override)
 end
 
@@ -739,15 +744,15 @@ function Public.averageUnitPollutionCost(evolution)
 	sum_biters = sum_biters + 400 * (1 - f3)
 
 	local sum_spitters = 0
-	local f1 = Math.slopefromto(1 - 1/0.15*(evolution - 0.25), 0, 1)
-	local f2 = Math.slopefromto(1 - 1/0.3*(evolution - 0.4), 0, 1)
-	local f3 = Math.slopefromto(1 - 0.85/0.5*(evolution - 0.5), 0, 1)
-	local f4 = Math.slopefromto(1 - 0.4/0.1*(evolution - 0.9), 0, 1)
-	sum_spitters = sum_spitters + 4 * f1
-	sum_spitters = sum_spitters + 4 * (f2 - f1)
-	sum_spitters = sum_spitters + 12 * (f3 - f2)
-	sum_spitters = sum_spitters + 30 * (f4 - f3)
-	sum_spitters = sum_spitters + 200 * (1 - f4)
+	local g1 = Math.slopefromto(1 - 1/0.15*(evolution - 0.25), 0, 1)
+	local g2 = Math.slopefromto(1 - 1/0.3*(evolution - 0.4), 0, 1)
+	local g3 = Math.slopefromto(1 - 0.85/0.5*(evolution - 0.5), 0, 1)
+	local g4 = Math.slopefromto(1 - 0.4/0.1*(evolution - 0.9), 0, 1)
+	sum_spitters = sum_spitters + 4 * g1
+	sum_spitters = sum_spitters + 4 * (g2 - g1)
+	sum_spitters = sum_spitters + 12 * (g3 - g2)
+	sum_spitters = sum_spitters + 30 * (g4 - g3)
+	sum_spitters = sum_spitters + 200 * (1 - g4)
 
 	return (5 * sum_biters + sum_spitters)/6
 end
@@ -882,8 +887,8 @@ function Public.init_game_settings(technology_price_multiplier)
 
 	game.map_settings.enemy_expansion.enabled = true
 	-- faster expansion:
-	game.map_settings.enemy_expansion.min_expansion_cooldown = 1.2 * 3600
-	game.map_settings.enemy_expansion.max_expansion_cooldown = 20 * 3600
+	game.map_settings.enemy_expansion.min_expansion_cooldown = 4 * 3600
+	game.map_settings.enemy_expansion.max_expansion_cooldown = 30 * 3600
 	game.map_settings.enemy_expansion.settler_group_max_size = 24
 	game.map_settings.enemy_expansion.settler_group_min_size = 6
 	-- maybe should be 3.5 if possible:

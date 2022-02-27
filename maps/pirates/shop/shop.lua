@@ -130,20 +130,22 @@ function Public.initialise_main_shop()
 	}
 end
 
-function Public.main_shop_try_purchase(name)
+function Public.main_shop_try_purchase(player, purchase_name)
 	local memory = Memory.get_crew_memory()
 	local shop_data_1 = Public.main_shop_data_1
 	local shop_data_2 = Public.main_shop_data_2
-	local trade_data = shop_data_1[name] or shop_data_2[name]
+	local trade_data = shop_data_1[purchase_name] or shop_data_2[purchase_name]
 	if not trade_data then return end
 
 	local stored_fuel = memory.stored_fuel
-	local captain_index = memory.playerindex_captain
-	if not (stored_fuel and captain_index) then return end
-	local captain = game.players[captain_index]
-	if not Common.validate_player_and_character(captain) then return end
-	local captain_inv = captain.get_inventory(defines.inventory.character_main)
-	if not captain_inv then return end
+	if not stored_fuel then return end
+	-- local captain_index = memory.playerindex_captain
+	-- if not (stored_fuel and captain_index) then return end
+	-- local captain = game.players[captain_index]
+	if not Common.validate_player_and_character(player) then return end
+
+	local inv = player.get_inventory(defines.inventory.character_main)
+	if not inv then return end
 
 	local multiplier = Balance.main_shop_cost_multiplier()
 
@@ -165,34 +167,33 @@ function Public.main_shop_try_purchase(name)
 		if k == 'fuel' then
 			enough_fuel = (stored_fuel >= v * multiplier)
 		elseif k == 'coins' then
-			coins_got = captain_inv.get_item_count('coin')
+			coins_got = inv.get_item_count('coin')
 			enough_coins = coins_got >= v * multiplier
 		elseif k == 'iron_plates' then
-			iron_plates_got = captain_inv.get_item_count('iron-plate')
+			iron_plates_got = inv.get_item_count('iron-plate')
 			enough_iron_plates = iron_plates_got >= v * multiplier
 		elseif k == 'copper_plates' then
-			copper_plates_got = captain_inv.get_item_count('copper-plate')
+			copper_plates_got = inv.get_item_count('copper-plate')
 			enough_copper_plates = copper_plates_got >= v * multiplier
 		end
 	end
 
 	can_buy = rate_limit_ok and enough_coins and enough_fuel and enough_iron_plates and enough_copper_plates
 
-	if name == 'new_boat_sloop_with_hold' or name == 'new_boat_cutter_with_hold' or name == 'new_boat_cutter' then can_buy = can_buy and able_to_buy_boats end
+	if purchase_name == 'new_boat_sloop_with_hold' or purchase_name == 'new_boat_cutter_with_hold' or purchase_name == 'new_boat_cutter' then can_buy = can_buy and able_to_buy_boats end
 
-	-- potential TODO: prevent the captain from buying things whilst marooned?
-
+	-- @TODO: prevent people from buying things whilst marooned
 
 	if can_buy then
 		for k, v in pairs(trade_data.base_cost) do
 			if k == 'fuel' then
 				memory.stored_fuel = memory.stored_fuel - v * multiplier
 			elseif k == 'coins' then
-				captain_inv.remove{name="coin", count=v * multiplier}
+				inv.remove{name="coin", count=v * multiplier}
 			elseif k == 'iron_plates' then
-				captain_inv.remove{name="iron-plate", count=v * multiplier}
+				inv.remove{name="iron-plate", count=v * multiplier}
 			elseif k == 'copper_plates' then
-				captain_inv.remove{name="copper-plate", count=v * multiplier}
+				inv.remove{name="copper-plate", count=v * multiplier}
 			end
 		end
 
@@ -200,84 +201,84 @@ function Public.main_shop_try_purchase(name)
 		if not (force and force.valid) then return end
 
 		local gotamount
-		if name == 'uranium_ore' then
+		if purchase_name == 'uranium_ore' then
 			gotamount = trade_data.what_you_get_sprite_buttons['item/uranium-238']
-			Common.give(captain, {{name = 'uranium-238', count = gotamount}})
-			Common.notify_force_light(force,string.format('%s is buying green rocks...', captain.name))
+			Common.give(player, {{name = 'uranium-238', count = gotamount}})
+			Common.notify_force_light(force,string.format('%s is buying green rocks...', player.name))
 
-		elseif name == 'extra_time' then
+		elseif purchase_name == 'extra_time' then
 			local success = Crew.try_add_extra_time_at_sea(60 * 60)
 			if success then
-				Common.notify_force_light(force,string.format('%s is buying extra time at sea...', captain.name))
+				Common.notify_force_light(force,string.format('%s is buying extra time at sea...', player.name))
 			else
-				Common.notify_player(captain, string.format('Can\'t buy more time than this.', captain.name))
+				Common.notify_player_error(player, string.format('Can\'t buy more time than this.', player.name))
 				-- refund:
 				memory.stored_fuel = memory.stored_fuel + trade_data.base_cost.fuel * multiplier
 			end
 
-		elseif name == 'rail_signal' then
+		elseif purchase_name == 'rail_signal' then
 			gotamount = trade_data.what_you_get_sprite_buttons['item/rail-signal']
-			Common.give(captain, {{name = 'rail-signal', count = gotamount}})
-			Common.notify_force_light(force,string.format('%s is buying signals...', captain.name))
+			Common.give(player, {{name = 'rail-signal', count = gotamount}})
+			Common.notify_force_light(force,string.format('%s is buying signals...', player.name))
 
-		elseif name == 'artillery_shell' then
+		elseif purchase_name == 'artillery_shell' then
 			gotamount = trade_data.what_you_get_sprite_buttons['item/artillery-shell']
-			Common.give(captain, {{name = 'artillery-shell', count = gotamount}})
-			Common.notify_force_light(force,string.format('%s is buying cannon shells...', captain.name))
+			Common.give(player, {{name = 'artillery-shell', count = gotamount}})
+			Common.notify_force_light(force,string.format('%s is buying cannon shells...', player.name))
 
-		elseif name == 'artillery_remote' then
+		elseif purchase_name == 'artillery_remote' then
 			gotamount = trade_data.what_you_get_sprite_buttons['item/artillery-targeting-remote']
-			Common.give(captain, {{name = 'artillery-targeting-remote', count = gotamount}})
-			Common.notify_force_light(force,string.format('%s is buying an artillery targeting remote...', captain.name))
+			Common.give(player, {{name = 'artillery-targeting-remote', count = gotamount}})
+			Common.notify_force_light(force,string.format('%s is buying an artillery targeting remote...', player.name))
 
-		elseif name == 'new_boat_cutter' or name == 'new_boat_cutter_with_hold' or name == 'new_boat_sloop_with_hold' then
+		elseif purchase_name == 'new_boat_cutter' or purchase_name == 'new_boat_cutter_with_hold' or purchase_name == 'new_boat_sloop_with_hold' then
 			Dock.execute_boat_purchase()
-			Common.notify_force_light(force,string.format('[font=heading-1]%s bought a %s.[/font]', captain.name, Boats[Common.current_destination().static_params.boat_for_sale_type].Data.display_name))
+			Common.notify_force_light(force,string.format('[font=heading-1]%s bought a %s.[/font]', player.name, Boats[Common.current_destination().static_params.boat_for_sale_type].Data.display_name))
 
-		elseif name == Upgrades.enum.MORE_POWER then
+		elseif purchase_name == Upgrades.enum.MORE_POWER then
 			Upgrades.execute_upgade(Upgrades.enum.MORE_POWER)
-			Common.notify_force_light(force,string.format('[font=heading-1]%s upgraded the ship\'s power.[/font]', captain.name))
-			memory.mainshop_availability_bools[name] = false
+			Common.notify_force_light(force,string.format('[font=heading-1]%s upgraded the ship\'s power.[/font]', player.name))
+			memory.mainshop_availability_bools[purchase_name] = false
 
-		elseif name == Upgrades.enum.EXTRA_HOLD then
+		elseif purchase_name == Upgrades.enum.EXTRA_HOLD then
 			Upgrades.execute_upgade(Upgrades.enum.EXTRA_HOLD)
-			Common.notify_force_light(force,string.format('[font=heading-1]%s upgraded the ship\'s hold.[/font]', captain.name))
-			memory.mainshop_availability_bools[name] = false
+			Common.notify_force_light(force,string.format('[font=heading-1]%s upgraded the ship\'s hold.[/font]', player.name))
+			memory.mainshop_availability_bools[purchase_name] = false
 
-		elseif name == Upgrades.enum.UNLOCK_MERCHANTS then
+		elseif purchase_name == Upgrades.enum.UNLOCK_MERCHANTS then
 			Upgrades.execute_upgade(Upgrades.enum.UNLOCK_MERCHANTS)
-			Common.notify_force_light(force,string.format('[font=heading-1]%s unlocked merchant ships.[/font]', captain.name))
-			memory.mainshop_availability_bools[name] = false
+			Common.notify_force_light(force,string.format('[font=heading-1]%s unlocked merchant ships.[/font]', player.name))
+			memory.mainshop_availability_bools[purchase_name] = false
 
-		elseif name == Upgrades.enum.ROCKETS_FOR_SALE then
+		elseif purchase_name == Upgrades.enum.ROCKETS_FOR_SALE then
 			Upgrades.execute_upgade(Upgrades.enum.ROCKETS_FOR_SALE)
-			Common.notify_force_light(force,string.format('[font=heading-1]%s unlocked the sale of rockets at covered-up markets.[/font]', captain.name))
-			memory.mainshop_availability_bools[name] = false
+			Common.notify_force_light(force,string.format('[font=heading-1]%s unlocked the sale of rockets at covered-up markets.[/font]', player.name))
+			memory.mainshop_availability_bools[purchase_name] = false
 
-		elseif name == 'sell_iron' then
+		elseif purchase_name == 'sell_iron' then
 			gotamount = trade_data.what_you_get_sprite_buttons['item/coal']
-			Common.give(captain, {{name = 'fuel', count = gotamount}})
-			Common.notify_force_light(force,string.format('%s is selling iron...', captain.name))
+			Common.give(player, {{name = 'fuel', count = gotamount}})
+			Common.notify_force_light(force,string.format('%s is selling iron...', player.name))
 
-		elseif name == 'buy_iron' then
+		elseif purchase_name == 'buy_iron' then
 			gotamount = trade_data.what_you_get_sprite_buttons['item/iron-plate']
 			Common.give_reward_items{{name = 'iron-plate', count = gotamount}}
-			Common.notify_force_light(force,string.format('%s is buying iron...', captain.name))
+			Common.notify_force_light(force,string.format('%s is buying iron...', player.name))
 
-		elseif name == 'buy_copper' then
+		elseif purchase_name == 'buy_copper' then
 			gotamount = trade_data.what_you_get_sprite_buttons['item/copper-plate']
 			Common.give_reward_items{{name = 'copper-plate', count = gotamount}}
-			Common.notify_force_light(force,string.format('%s is buying copper...', captain.name))
+			Common.notify_force_light(force,string.format('%s is buying copper...', player.name))
 
 		-- elseif name == 'buy_fast_loader' then
 		-- 	gotamount = trade_data.what_you_get_sprite_buttons['item/fast-loader']
-		-- 	Common.give(captain, {{name = 'fast-loader', count = gotamount}})
-		-- 	Common.notify_force_light(force,string.format('%s bought a fast loader...', captain.name))
+		-- 	Common.give(player, {{name = 'fast-loader', count = gotamount}})
+		-- 	Common.notify_force_light(force,string.format('%s bought a fast loader...', player.name))
 
-		elseif name == 'sell_copper' then
+		elseif purchase_name == 'sell_copper' then
 			gotamount = trade_data.what_you_get_sprite_buttons['item/coal']
-			Common.give(captain, {{name = 'fuel', count = gotamount}})
-			Common.notify_force_light(force,string.format('%s is selling copper...', captain.name))
+			Common.give(player, {{name = 'fuel', count = gotamount}})
+			Common.notify_force_light(force,string.format('%s is selling copper...', player.name))
 
 		end
 
@@ -286,23 +287,23 @@ function Public.main_shop_try_purchase(name)
 	else
 		-- play sound?
 		if rate_limit_ok == false then
-			Common.notify_player(captain, 'Shop rate limit exceeded.')
+			Common.notify_player_error(player, 'Shop rate limit exceeded.')
 		end
 		if enough_fuel == false then
-			Common.notify_player(captain, 'Not enough stored fuel.')
+			Common.notify_player_error(player, 'Not enough stored fuel.')
 		end
 		if enough_coins == false then
-			Common.notify_player(captain, 'Not enough coins.')
+			Common.notify_player_error(player, 'Not enough coins.')
 		end
 		if enough_iron_plates == false then
-			Common.notify_player(captain, 'Not enough iron plates.')
+			Common.notify_player_error(player, 'Not enough iron plates.')
 		end
 		if enough_copper_plates == false then
-			Common.notify_player(captain, 'Not enough copper plates.')
+			Common.notify_player_error(player, 'Not enough copper plates.')
 		end
 
-		if (name == 'new_boat_cutter' or name == 'new_boat_sloop_with_hold' or name == 'new_boat_cutter_with_hold') and (not able_to_buy_boats) then
-			Common.notify_player(captain, 'Not able to purchase ships right now.')
+		if (purchase_name == 'new_boat_cutter' or purchase_name == 'new_boat_sloop_with_hold' or purchase_name == 'new_boat_cutter_with_hold') and (not able_to_buy_boats) then
+			Common.notify_player_error(player, 'Not able to purchase ships right now.')
 		end
 	end
 end
@@ -390,13 +391,14 @@ function Public.event_on_market_item_purchased(event)
 	else
 		-- print:
 		if (price and price[1]) then
-		-- if (price and price[1] and price[1].name and ((price[1].name ~= 'coin' and price[1].name ~= 'pistol') or price[2])) then
-			if price[2] then
-				local fish = price[2].name
-				if fish == 'raw-fish' then fish = 'fish' end
-				Common.notify_force_light(player.force, player.name .. ' is trading away ' .. price[1].amount .. ' ' .. price[1].name .. ' and ' .. fish .. ' for ' .. this_offer.offer.count .. ' ' .. this_offer.offer.item .. '...')
-			else
-				Common.notify_force_light(player.force, player.name .. ' is trading away ' .. price[1].amount .. ' ' .. price[1].name .. ' for ' .. this_offer.offer.count .. ' ' .. this_offer.offer.item .. '...')
+			if not (price[1].name and price[1].name == 'burner-mining-drill') then --this one is too boring to announce
+				if price[2] then
+					local fish = price[2].name
+					if fish == 'raw-fish' then fish = 'fish' end
+					Common.notify_force_light(player.force, player.name .. ' is trading away ' .. price[1].amount .. ' ' .. price[1].name .. ' and ' .. fish .. ' for ' .. this_offer.offer.count .. ' ' .. this_offer.offer.item .. '...')
+				else
+					Common.notify_force_light(player.force, player.name .. ' is trading away ' .. price[1].amount .. ' ' .. price[1].name .. ' for ' .. this_offer.offer.count .. ' ' .. this_offer.offer.item .. '...')
+				end
 			end
 		end
 

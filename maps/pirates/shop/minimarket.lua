@@ -39,7 +39,7 @@ Public.market_permanent_offers = {
 	{price = {{'coin', 4000}}, offer = {type = 'give-item', item = 'iron-ore', count = 750}},
 	{price = {{'coin', 4000}}, offer = {type = 'give-item', item = 'copper-ore', count = 750}},
 	{price = {{'coin', 4000}}, offer = {type = 'give-item', item = 'stone', count = 750}},
-	{price = {{'coin', 4000}}, offer = {type = 'give-item', item = 'crude-oil-barrel', count = 750}},
+	{price = {{'coin', 4000}}, offer = {type = 'give-item', item = 'crude-oil-barrel', count = 150}},
 }
 
 -- cheap but one-off

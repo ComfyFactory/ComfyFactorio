@@ -98,10 +98,12 @@ local function biters_chew_stuff_faster(event)
 
 	if (event.entity.force.index == 3 or event.entity.force.name == 'environment') then
 		event.entity.health = event.entity.health - event.final_damage_amount * 5
+	elseif event.entity.name == 'pipe' then
+		event.entity.health = event.entity.health - event.final_damage_amount * 0.5
 	elseif event.entity.name == 'stone-furnace' then
-		event.entity.health = event.entity.health - event.final_damage_amount * 0.75
+		event.entity.health = event.entity.health - event.final_damage_amount * 0.5
 	elseif event.entity.name == 'wooden-chest' or event.entity.name == 'stone-chest' or event.entity.name == 'steel-chest' then
-		event.entity.health = event.entity.health - event.final_damage_amount * 0.75
+		event.entity.health = event.entity.health - event.final_damage_amount * 0.5
 	end
 end
 
@@ -1183,7 +1185,7 @@ local function event_on_built_entity(event)
 						player.insert{name = entity.name, count = 1}
 					end
 					entity.destroy()
-					Common.notify_player(player, 'Undergrounds can\'t be built on the boat, due to conflicts with the boat movement code.')
+					Common.notify_player_error(player, 'Undergrounds can\'t be built on the boat, due to conflicts with the boat movement code.')
 					return
 			end
 		end
@@ -1262,7 +1264,8 @@ local function event_on_player_used_capsule(event)
 	if memory.classes_table and memory.classes_table[player_index] then
 		local class = memory.classes_table[player_index]
 		if class == Classes.enum.SAMURAI then
-			player.entity.health = player.entity.health + 20
+			-- vanilla heal is 80HP
+			player.character.health = player.character.health + 160
 		end
 	end
 end
@@ -1282,12 +1285,12 @@ local remove_boost_movement_speed_on_respawn =
 		local memory = Memory.get_crew_memory()
 		if not (memory.id and memory.id > 0) then return end --check if crew disbanded
 		if memory.game_lost then return end
-		memory.speed_boost_characters[player.index] = false
+		memory.speed_boost_characters[player.index] = nil
 
-		-- their color was strobing, so reset it to their chat color:
+		-- their color was strobing, so now reset it to their chat color:
 		player.color = player.chat_color
 
-		Common.notify_player(player, 'Respawn speed bonus removed.')
+		Common.notify_player_expected(player, 'Respawn speed bonus removed.')
     end
 )
 
@@ -1311,7 +1314,7 @@ local boost_movement_speed_on_respawn =
 		memory.speed_boost_characters[player.index] = true
 
         Task.set_timeout_in_ticks(1050, remove_boost_movement_speed_on_respawn, {player = player, crew_id = crew_id})
-		Common.notify_player(player, 'Respawn speed bonus applied.')
+		Common.notify_player_expected(player, 'Respawn speed bonus applied.')
     end
 )
 

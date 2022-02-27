@@ -56,14 +56,15 @@ function Public.update_character_properties(tickinterval)
 			end
 
 			local health_boost = 0
+			-- base health is 250
 			if memory.classes_table and memory.classes_table[player_index] then
 				local class = memory.classes_table[player_index]
 				if class == Classes.enum.SAMURAI then
-					health_boost = health_boost + 225
+					health_boost = health_boost + 500
 				end
 			end
 			if memory.playerindex_captain and memory.playerindex_captain == player_index then
-				health_boost = health_boost + 25
+				health_boost = health_boost + 50
 			end
 			character.character_health_bonus = health_boost
 
@@ -74,7 +75,7 @@ function Public.update_character_properties(tickinterval)
 				if memory.classes_table and memory.classes_table[player_index] then
 					local class = memory.classes_table[player_index]
 					if class == Classes.enum.SCOUT then
-						speed_boost = speed_boost + 0.4
+						speed_boost = speed_boost + 0.3
 					elseif class == Classes.enum.DECKHAND or class == Classes.enum.BOATSWAIN or class == Classes.enum.SHORESMAN then
 						local surfacedata = Surfaces.SurfacesCommon.decode_surface_name(player.surface.name)
 						local type = surfacedata.type

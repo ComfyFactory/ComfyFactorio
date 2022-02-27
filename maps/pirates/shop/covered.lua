@@ -23,15 +23,15 @@ Public.enum = enum
 
 
 Public.offers_loaders = {
-	{price = {{'coin', 1000}}, offer = {type = 'give-item', item = 'loader', count = 1}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'fast-loader', count = 1}},
-	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'express-loader', count = 1}},
+	{price = {{'coin', 1500}}, offer = {type = 'give-item', item = 'loader', count = 1}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'fast-loader', count = 1}},
+	{price = {{'coin', 3500}}, offer = {type = 'give-item', item = 'express-loader', count = 1}},
 }
 
 Public.offers_default = {
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'copper-plate', count = 150}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'iron-plate', count = 150}},
-	{price = {{'coin', 1000}}, offer = {type = 'give-item', item = 'gun-turret', count = 1}},
+	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'copper-plate', count = 200}},
+	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'iron-plate', count = 200}},
+	{price = {{'coin', 800}}, offer = {type = 'give-item', item = 'gun-turret', count = 1}},
 	{price = {{'coin', 1250}}, offer = {type = 'give-item', item = 'defender-capsule', count = 1}},
 }
 

@@ -20,31 +20,31 @@ function Public.rgb_from_hsv(h, s, v)
 	local x = c * (1 - Math.abs(((h/60) % 2) - 1))
 	local m = v - c
 	if h < 60 then
-		r=c
-		g=x
-		b=0
+		r=c+m
+		g=x+m
+		b=m
 	elseif h < 120 then
-		r=x
-		g=c
-		b=0
+		r=x+m
+		g=c+m
+		b=m
 	elseif h < 180 then
-		r=0
-		g=c
-		b=x
+		r=m
+		g=c+m
+		b=x+m
 	elseif h < 240 then
-		r=0
-		g=x
-		b=c
+		r=m
+		g=x+m
+		b=c+m
 	elseif h < 300 then
-		r=x
-		g=0
-		b=c
+		r=x+m
+		g=m
+		b=c+m
 	else
-		r=c
-		g=0
-		b=x
+		r=c+m
+		g=m
+		b=x+m
 	end
-	return {r = r, g = g, b = b}
+	return {r = 255*r, g = 255*g, b = 255*b}
 end
 
 function Public.stable_sort(list, comp) --sorts but preserves ordering of equals

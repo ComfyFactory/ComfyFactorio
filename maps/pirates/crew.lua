@@ -613,7 +613,8 @@ function Public.initialise_crew(accepted_proposal)
 				
 	local message = '[' .. accepted_proposal.name .. '] Launched.'
 	Common.notify_game(message)
-	Server.to_discord_embed_raw(CoreData.comfy_emojis.pogkot .. message .. ' Difficulty: ' .. CoreData.difficulty_options[memory.difficulty_option].text .. ', Capacity: ' .. CoreData.capacity_options[memory.capacity_option].text3 .. '.')
+	-- Server.to_discord_embed_raw(CoreData.comfy_emojis.pogkot .. message .. ' Difficulty: ' .. CoreData.difficulty_options[memory.difficulty_option].text .. ', Capacity: ' .. CoreData.capacity_options[memory.capacity_option].text3 .. '.')
+	Server.to_discord_embed_raw(CoreData.comfy_emojis.pogkot .. message .. ' Capacity: ' .. CoreData.capacity_options[memory.capacity_option].text3 .. '.')
 	game.surfaces[CoreData.lobby_surface_name].play_sound{path='utility/new_objective', volume_modifier=0.75}
 
 	memory.boat = global_memory.lobby_boats[new_id]

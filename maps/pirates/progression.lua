@@ -37,8 +37,10 @@ function Public.fuel_depletion_rate()
 	local memory = Memory.get_crew_memory()
 	local state = memory.boat.state
 
-	if state == Boats.enum_state.ATSEA_SAILING or state == Boats.enum_state.APPROACHING or state == Boats.enum_state.LEAVING_DOCK then
+	if state == Boats.enum_state.ATSEA_SAILING or state == Boats.enum_state.APPROACHING then
 		return Balance.fuel_depletion_rate_sailing()
+	elseif state == Boats.enum_state.LEAVING_DOCK then
+		return Balance.fuel_depletion_rate_sailing() * 2
 	elseif state == Boats.enum_state.RETREATING then
 		return Balance.fuel_depletion_rate_sailing() / 10
 	elseif state == Boats.enum_state.LANDED then
@@ -411,7 +413,7 @@ function Public.try_retreat_from_island() -- Assumes the cost can be paid
 	local captain = game.players[captain_index]
 
 	if captain and Common.validate_player(captain) and destination.dynamic_data.timeratlandingtime and destination.dynamic_data.timer < destination.dynamic_data.timeratlandingtime + 10 then
-		Common.notify_player(captain, 'Can\'t depart in the first 10 seconds.')
+		Common.notify_player_error(captain, 'Can\'t depart in the first 10 seconds.')
 	else
 		local cost = destination.static_params.cost_to_leave
 		-- if cost and (not destination.dynamic_data.rocketlaunched) then

@@ -281,7 +281,7 @@ function Public.destination_on_arrival(destination)
 		Server.to_discord_embed_raw((destination.static_params.discord_emoji or CoreData.comfy_emojis.wut) .. '[' .. memory.name .. '] ' .. message)
 	end
 	if destination.static_params.name == 'Dock' then
-		message = message .. ' ' .. 'A special trade is available for the captain in the Main Store.'
+		message = message .. ' ' .. 'A special offer is available in the Captain\'s Store.'
 	end
 	Common.notify_force(game.forces[memory.force_name], message)
 

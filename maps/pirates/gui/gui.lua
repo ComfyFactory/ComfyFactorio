@@ -403,11 +403,24 @@ local function create_gui(player)
 
 	--== SCREEN STUFF
 
-	flow1 = player.gui.screen
-	
+	-- spontaneous inside view of the hold:
+	flow1 =
+	player.gui.screen.add(
+		{
+			type = 'camera',
+			name = 'pirates_spontaneous_camera',
+			position = {x=0,y=0},
+		}
+	)
+	flow1.visible = false
+	flow1.style.margin = 8
+	-- flow2.style.minimal_height = 64
+	-- flow2.style.minimal_width = 64
+	-- flow2.style.maximal_height = 640
+	-- flow2.style.maximal_width = 640
 
 
-	-- flow2 = flow1.add({
+	-- flow2 = player.gui.screen.add({
 	-- 	name = 'pirates_undock_shortcut_button',
 	-- 	type = 'sprite-button',
 	-- 	enabled = false,
@@ -424,26 +437,6 @@ local function create_gui(player)
 	-- flow2.style.top_padding = 3
 	-- flow2.style.font = 'default-large-semibold'
 	-- flow2.style.font_color = GuiCommon.default_font_color
-	-- ComfyPanel.screen_to_bypass('pirates_undock_shortcut_button')
-
-
-	
-	-- spontaneous inside view of the hold:
-	flow2 =
-	flow1.add(
-		{
-			type = 'camera',
-			name = 'pirates_spontaneous_camera',
-			position = {x=0,y=0},
-		}
-	)
-	flow2.visible = false
-	flow2.style.margin = 8
-	ComfyPanel.screen_to_bypass('pirates_spontaneous_camera')
-	-- flow2.style.minimal_height = 64
-	-- flow2.style.minimal_width = 64
-	-- flow2.style.maximal_height = 640
-	-- flow2.style.maximal_width = 640
 end
 
 
@@ -805,7 +798,7 @@ function Public.update_gui(player)
 		
 				flow1.silo_progressbar.value = consumed/needed
 		
-				local tooltip = string.format('Rocket silo charge\n\nCharge the silo to launch a rocket, gaining both gold and coins.\n\nCurrent charge: %.1f', consumed / 1000000000) .. '/' .. Math.floor(needed / 100000000)/10 .. ' GJ'
+				local tooltip = string.format('Rocket silo charge\n\nCharge the silo to launch a rocket, gaining both coins and fuel.\n\nCurrent charge: %.1f', consumed / 1000000000) .. '/' .. Math.floor(needed / 100000000)/10 .. ' GJ'
 				flow1.tooltip = tooltip
 				flow1.silo_label_1.tooltip = tooltip
 				flow1.silo_label_2.tooltip = tooltip
@@ -958,6 +951,19 @@ function Public.update_gui(player)
 
 	flow1 = player.gui.screen.pirates_spontaneous_camera
 
+	if not flow1 then --comfy panel might possibly destroy this, so this puts it back
+		flow1 =
+		player.gui.screen.add(
+			{
+				type = 'camera',
+				name = 'pirates_spontaneous_camera',
+				position = {x=0,y=0},
+			}
+		)
+		flow1.visible = false
+		flow1.style.margin = 8
+	end
+
 	if flow1 then
 		flow1.visible = false
 		flow1.location = {x = 8, y = 48}
@@ -1023,7 +1029,7 @@ local function on_gui_click(event)
 					if Common.query_sufficient_resources_to_leave() then
 						Progression.try_retreat_from_island()
 					else
-						Common.notify_player(player, 'Not enough stored resources.')
+						Common.notify_player_error(player, 'Not enough stored resources.')
 					end
 				end
 			else

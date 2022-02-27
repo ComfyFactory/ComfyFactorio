@@ -124,15 +124,37 @@ end
 function Public.update_destination_renderings()
 	local memory = Memory.get_crew_memory()
 	for _, dest in pairs(memory.destinations) do
-		local r1 = dest.dynamic_data.crowsnest_rendering_1
-		local r2 = dest.dynamic_data.crowsnest_rendering_2
-		if r1 and rendering.is_valid(r1) and r2 and rendering.is_valid(r2) then
+		if dest.dynamic_data.crowsnest_renderings then
 			if dest.overworld_position.x <= memory.overworldx+Public.Data.chartingdistance and dest.overworld_position.x >= memory.overworldx-Public.Data.chartingdistance then
-				rendering.set_visible(r1, true)
-				rendering.set_visible(r2, true)
+				for _, r in pairs(dest.dynamic_data.crowsnest_renderings) do
+					if type(r) == 'table' then
+						if rendering.is_valid(r.text_rendering) then
+							rendering.set_visible(r.text_rendering, true)
+						end
+						if rendering.is_valid(r.sprite_rendering) then
+							rendering.set_visible(r.sprite_rendering, true)
+						end
+					else
+						if rendering.is_valid(r) then
+							rendering.set_visible(r, true)
+						end
+					end
+				end
 			else
-				rendering.set_visible(r1, false)
-				rendering.set_visible(r2, false)
+				for _, r in pairs(dest.dynamic_data.crowsnest_renderings) do
+					if type(r) == 'table' then
+						if rendering.is_valid(r.text_rendering) then
+							rendering.set_visible(r.text_rendering, false)
+						end
+						if rendering.is_valid(r.sprite_rendering) then
+							rendering.set_visible(r.sprite_rendering, false)
+						end
+					else
+						if rendering.is_valid(r) then
+							rendering.set_visible(r, false)
+						end
+					end
+				end
 			end
 		end
 	end
@@ -312,7 +334,7 @@ function Public.crowsnest_surface_delayed_init()
 	local force = game.forces[memory.force_name]
 
 	if _DEBUG and (not (surface and surface.valid)) then
-		game.print('debug issue: crowsnest_surface_delayed_init called when crowsnest surface wasn\'t valid...')
+		game.print('debug issue: crowsnest_surface_delayed_init called when crowsnest surface wasn\'t valid. This happens due to a difficult-to-handle race condition in concurrent delayed events in the /go shortcut. Firing event again...')
 		Task.set_timeout_in_ticks(5, crowsnest_delayed, {})
 		return
 	end

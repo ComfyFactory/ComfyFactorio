@@ -343,6 +343,8 @@ end
 
 function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spawner, fraction_of_floating_pollution, minimum_avg_units, maximum_units, unit_pollutioncost_multiplier, enforce_type)
     maximum_units = maximum_units or 256
+
+	log('ai spawning attempt params: ' .. (fraction_of_floating_pollution or '') .. ' ' .. (minimum_avg_units or '') .. ' ' .. (maximum_units or '') .. ' ' .. (unit_pollutioncost_multiplier or '') .. ' ' .. (enforce_type or ''))
 	
 	local memory = Memory.get_crew_memory()
 	local surface = spawner.surface
@@ -356,6 +358,8 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 
     local temp_floating_pollution = memory.floating_pollution
     local budget = fraction_of_floating_pollution * temp_floating_pollution
+
+    local initialpollution = memory.floating_pollution
     local initialbudget = budget
 
 	local base_pollution_cost_multiplier = 1
@@ -413,7 +417,7 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
             return biter.unit_number
         end
 
-		local mixed = (Math.random(2) == 1)
+		local mixed = (Math.random(3) <= 2)
 		if mixed then
 
 			local whilesafety = 1000
@@ -436,6 +440,11 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 
         memory.floating_pollution = temp_floating_pollution
     end
+
+	if units_created_count > 0 then
+		--@TEMP: Logging attack spending
+		log('Spent ' .. 100 * (initialpollution - temp_floating_pollution) / initialpollution .. '% of ' .. (initialpollution - temp_floating_pollution) .. ' pollution budget on biters, at ' .. base_pollution_cost_multiplier .. 'x price.')
+	end
 	
     return units_created
 end

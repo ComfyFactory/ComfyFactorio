@@ -75,6 +75,7 @@ function Public.toggle_window(player)
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
+	flow3.tooltip = 'Return to the lobby.'
 
 	flow3 = flow2.add({
 		name = 'leave_spectators',
@@ -102,6 +103,7 @@ function Public.toggle_window(player)
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
+	flow3.tooltip = 'You won\t be able to rejoin the crew for a short while after you do this.'
 
 	--*** MEMBERS AND SPECTATORS ***--
 
@@ -122,6 +124,17 @@ function Public.toggle_window(player)
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
+	flow3.tooltip = 'Give up this class. The class will then be available for other crewmembers to take.'
+
+	flow3 = flow2.add({
+		name = 'officer_resign',
+		type = 'button',
+		caption = 'Resign as Officer',
+	})
+	flow3.style.minimal_width = 95
+	flow3.style.font = 'default-bold'
+	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
+	flow3.tooltip = 'Give up the officer role.'
 
 	flow2 = GuiCommon.flow_add_section(flow, 'spectators', 'Spectators')
 
@@ -178,6 +191,7 @@ function Public.toggle_window(player)
 		flow4.style.minimal_width = 95
 		flow4.style.font = 'default-bold'
 		flow4.style.font_color = {r=0.10, g=0.10, b=0.10}
+		flow4.tooltip = 'Give this class to the selected player.'
 	end
 
 	for _, c in ipairs(Classes.Class_List) do
@@ -189,6 +203,7 @@ function Public.toggle_window(player)
 		flow4.style.minimal_width = 95
 		flow4.style.font = 'default-bold'
 		flow4.style.font_color = {r=0.10, g=0.10, b=0.10}
+		flow4.tooltip = 'Take the spare class for yourself.'
 	end
 
 	--*** CAPTAIN's ACTIONS ***--
@@ -203,15 +218,17 @@ function Public.toggle_window(player)
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
+	flow3.tooltip = 'End the run. You will be prompted again after clicking.'
 
 	flow3 = flow2.add({
 		name = 'capn_disband_are_you_sure',
 		type = 'button',
-		caption = 'Are you sure?',
+		caption = 'ARE YOU SURE?',
 	})
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
+	flow3.tooltip = 'Click to disband the crew.'
 
 	flow3 = flow2.add({
 		name = 'capn_renounce',
@@ -221,6 +238,7 @@ function Public.toggle_window(player)
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
+	flow3.tooltip = 'You will no longer be captain, and the role will be passed around until a crewmember takes it.'
 
 	flow3 = flow2.add({
 		name = 'capn_pass',
@@ -230,6 +248,7 @@ function Public.toggle_window(player)
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
+	flow3.tooltip = 'Make the selected crewmember into the Captain.'
 
 	flow3 = flow2.add({
 		name = 'capn_plank',
@@ -239,6 +258,7 @@ function Public.toggle_window(player)
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
+	flow3.tooltip = 'The player will be returned to the lobby and can\'t join your crew for a while.'
 
 	flow3 = flow2.add({
 		name = 'line',
@@ -266,6 +286,7 @@ function Public.toggle_window(player)
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
+	flow3.tooltip = 'Make this player an Officer.'
 
 	flow3 = flow2.add({
 		name = 'unmake_officer',
@@ -275,6 +296,7 @@ function Public.toggle_window(player)
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
+	flow3.tooltip = 'Remove this player as an Officer.'
 
 	flow3 = flow2.add({
 		name = 'capn_summon_crew',
@@ -284,6 +306,7 @@ function Public.toggle_window(player)
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
+	flow3.tooltip = 'Teleport crewmembers to the ship.'
 
 	flow3 = flow2.add({
 		name = 'capn_take_coins',
@@ -293,6 +316,7 @@ function Public.toggle_window(player)
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
+	flow3.tooltip = 'Take coins from each crewmembers.'
 
 
 	flow2 = flow.add({
@@ -332,6 +356,8 @@ function Public.update(player)
 
 	flow.members.body.class_renounce.visible = memory.classes_table and memory.classes_table[player.index]
 
+	flow.members.body.officer_resign.visible = memory.officers_table and memory.officers_table[player.index]
+
 	flow.spare_classes.visible = memory.spare_classes and #memory.spare_classes > 0
 
 	local other_player_selected = flow.members.body.members_listbox.selected_index ~= 0 and tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2]) ~= player.index
@@ -369,8 +395,9 @@ function Public.update(player)
 	end
 	flow.spare_classes.body.assign_flow.visible = any_class_button
 
-
 	flow.captain.visible = (memory.playerindex_captain and player.index == memory.playerindex_captain)
+	flow.undock_tip.visible = (memory.playerindex_captain and player.index == memory.playerindex_captain)
+
 	flow.captain.body.capn_pass.visible = other_player_selected
 	flow.captain.body.capn_plank.visible = flow.captain.body.capn_pass.visible
 
@@ -558,6 +585,11 @@ function Public.click(event)
 		return
 	end
 
+	if eventname == 'officer_resign' then
+		Roles.resign_as_officer(player)
+		return
+	end
+
 	if eventname == 'capn_disband_crew' then
 		--double check:
 		if Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN then
@@ -602,7 +634,7 @@ function Public.click(event)
 	if eventname == 'capn_plank' then
 		local other_id = tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])
 
-		local message = "%s has planked %s!"
+		local message = "%s planked %s!"
 		Server.to_discord_embed_raw(CoreData.comfy_emojis.monkas .. message)
 
 		Common.notify_force(player.force, string.format(message, player.name, game.players[other_id].name))

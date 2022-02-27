@@ -390,11 +390,11 @@ function Public.terrain(args)
 	else
 		args.tiles[#args.tiles + 1] = {name = CoreData.static_boat_floor, position = args.p}
 	end
-	return
+	return nil
 end
 
 function Public.chunk_structures(args)
-	return
+	return nil
 end
 
 return Public

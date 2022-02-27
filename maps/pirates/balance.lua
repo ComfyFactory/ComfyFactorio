@@ -100,13 +100,13 @@ function Public.fuel_depletion_rate_static()
 
 	local T = Public.expected_time_on_island()
 
-	return - 1100 * (Common.overworldx()/40)^(7/10) * Public.onthefly_scaling_with_players_rule()^(1/3) * Math.sloped(Common.difficulty(), 2/3) / T --the extra player dependency accounts for the fact that even in compressed time, more players get more resources...
+	return - 1300 * (Common.overworldx()/40)^(7/10) * Public.onthefly_scaling_with_players_rule()^(1/3) * Math.sloped(Common.difficulty(), 3/4) / T --the extra player dependency accounts for the fact that even in compressed time, more players get more resources...
 end
 
 function Public.fuel_depletion_rate_sailing()
 	if (not Common.overworldx()) then return 0 end
 
-	return - 10 * (1 + 0.5 * (Common.overworldx()/40)^(6/10))
+	return - 10 * (1 + 0.5 * (Common.overworldx()/40)^(5/10))
 end
 
 function Public.boat_passive_pollution_per_minute(time)
@@ -187,11 +187,10 @@ function Public.evolution_per_full_silo_charge()
 end
 
 function Public.bonus_damage_to_humans()
-	local ret = 0.15
+	local ret = 0.125
 	local diff = Common.difficulty()
 	if diff <= 0.7 then ret = 0.1 end
-	if diff >= 1.3 then ret = 0.2 end
-	if diff >= 2.5 then ret = 0.3 end
+	if diff >= 1.3 then ret = 0.15 end
 	return ret
 end
 
@@ -229,19 +228,19 @@ end
 
 
 function Public.launch_fuel_reward()
-	return Math.ceil(1000 * (1 + 0.5 * Common.overworldx()/400) / Math.sloped(Common.difficulty(), 1/4))
+	return Math.ceil(1000 * (1 + 0.1 * (Common.overworldx()/40)^(8/10)) / Math.sloped(Common.difficulty(), 1/4))
 end
 
 function Public.quest_reward_multiplier()
-	return (0.4 + 0.08 * Common.overworldx()/40) * Math.sloped(Common.difficulty(), 1/3) * (Public.onthefly_scaling_with_players_rule())^(1/4)
+	return (0.4 + 0.08 * (Common.overworldx()/40)^(8/10)) * Math.sloped(Common.difficulty(), 1/3) * (Public.onthefly_scaling_with_players_rule())^(1/4)
 end
 
 function Public.island_richness_avg_multiplier()
-	return (0.75 + 0.07 * Common.overworldx()/40)
+	return 0.7 + 0.1 * (Common.overworldx()/40)^(7/10)
 end
 
 function Public.resource_quest_multiplier()
-	return (1.0 + 0.075 * (Common.overworldx()/40)^(1)) * Math.sloped(Common.difficulty(), 1/3) * (Public.onthefly_scaling_with_players_rule())^(1/4)
+	return (1.0 + 0.075 * (Common.overworldx()/40)^(8/10)) * Math.sloped(Common.difficulty(), 1/3) * (Public.onthefly_scaling_with_players_rule())^(1/4)
 end
 
 
@@ -250,7 +249,7 @@ function Public.apply_crew_buffs_per_x(force)
 end
 
 function Public.class_cost()
-	return 8000
+	return 9000
 	-- return Math.ceil(10000 / (Common.activecrewcount()/4)^(1/6))
 end
 

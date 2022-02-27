@@ -27,7 +27,7 @@ function Public.toggle_window(player)
 	if player.gui.screen[window_name .. '_piratewindow'] then player.gui.screen[window_name .. '_piratewindow'].destroy() return end
 	
 	flow = GuiCommon.new_window(player, window_name)
-	flow.caption = 'Main Store'
+	flow.caption = 'Captain\'s Store'
 
 	
 	flow2 = flow.add({
@@ -173,7 +173,7 @@ function Public.click(event)
 	local memory = Memory.get_crew_memory()
 
 	if eventname == 'buy_button' then
-		Shop.main_shop_try_purchase(event.element.parent.name)
+		Shop.main_shop_try_purchase(player, event.element.parent.name)
 	end
 
 end

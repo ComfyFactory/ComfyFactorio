@@ -23,7 +23,7 @@ Public.static_params_default = {
 function Public.base_ores() 
 	return {
 		['copper-ore'] = 2.0,
-		['iron-ore'] = 4.2,
+		['iron-ore'] = 4.1,
 		['coal'] = 1.8,
 		['stone'] = 0.4,
 	}

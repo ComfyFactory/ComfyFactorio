@@ -150,8 +150,8 @@ local function crew_tick()
 		TickFunctions.quest_progress_tick(5)
 	end
 
-	if tick % 10 == 0 then
-		TickFunctions.strobe_player_colors(10)
+	if tick % 5 == 0 then
+		TickFunctions.strobe_player_colors(5)
 	end
 
 	if tick % 10 == 0 then

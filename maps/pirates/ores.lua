@@ -63,7 +63,7 @@ function Public.try_ore_spawn(surface, realp, source_name, density_bonus)
 
 				local density = (density_bonus + 17 + 4 * Math.random()) -- not too big, and not too much variation; it makes players have to stay longer
 				
-				local radius_squared = (destination.static_params and destination.static_params.radius_squared_modifier or 1) * (9 + 39 * Math.slopefromto(Common.ore_abstract_to_real(choices[choice]), 800, 20000)) * (0.6 + Math.random())
+				local radius_squared = (destination.static_params and destination.static_params.radius_squared_modifier or 1) * (11 + 45 * Math.slopefromto(Common.ore_abstract_to_real(choices[choice]), 800, 20000)) * (0.6 + Math.random()) --tuned
 	
 				if source_name == 'rock-huge' then
 					radius_squared = radius_squared * 1.5
@@ -168,49 +168,32 @@ function Public.draw_noisy_ore_patch(surface, position, name, budget, radius_squ
 		end
 	end
 
-	--@FIXME: Hardcode positions instead, ordered by distance from origin
-	local spiral_layer = 0
-	local outwards_spiral_x = 0
-	local outwards_spiral_y = 0
-
-	local whilesafety = 0
-	while whilesafety < 10000 and spiral_layer < radius * 2 do
-		whilesafety = whilesafety + 1
-
-		local distance_to_center = Math.sqrt(outwards_spiral_x^2 + outwards_spiral_y^2)
+	for _, p in ipairs(Math.points_in_m20t20_squared_sorted_by_distance_to_origin) do
+		local x, y = p[1], p[2]
+		local distance_to_center = Math.sqrt(x^2 + y^2)
 		local noise
-		if distance_to_center > 0 then
-			noise = 0.99 * simplex_noise((position.x + outwards_spiral_x/distance_to_center) * 1/3, (position.y + outwards_spiral_y/distance_to_center) * 1/3, seed) * simplex_noise((position.x + outwards_spiral_x/distance_to_center) * 1/9, (position.y + outwards_spiral_y/distance_to_center) * 1/9, seed+100)
-		else
-			noise = 0.99 * simplex_noise((position.x) * 1/3, (position.y) * 1/3, seed) * simplex_noise((position.x) * 1/9, (position.y) * 1/9, seed+100)
+		if flat then
+			noise = 0.99 * simplex_noise((position.x + x) * 1/3, (position.y + y) * 1/3, seed) * simplex_noise((position.x + x) * 1/9, (position.y + y) * 1/9, seed+100)
+		else --put noise on the unit circle
+			if distance_to_center > 0 then
+				noise = 0.99 * simplex_noise((position.x + x/distance_to_center) * 1/3, (position.y + y/distance_to_center) * 1/3, seed) * simplex_noise((position.x + x/distance_to_center) * 1/9, (position.y + y/distance_to_center) * 1/9, seed+100)
+			else
+				noise = 0.99 * simplex_noise((position.x) * 1/3, (position.y) * 1/3, seed) * simplex_noise((position.x) * 1/9, (position.y) * 1/9, seed+100)
+			end
 		end
 		local radius_noisy = radius * (1 + noise)
 		if distance_to_center < radius_noisy then
 			local strength
 			if flat then
+				-- if noise > -0.5 then strength = 1 else strength = 0 end
+				-- its hard to make it both noncircular and flat in per-tile count
 				strength = 1
 			else
 				strength = (3/2) * (1 - (distance_to_center/radius_noisy)^2)
 			end
-			try_draw_at_relative_position(outwards_spiral_x, outwards_spiral_y, strength)
+			try_draw_at_relative_position(x, y, strength)
 		end
-
-		if outwards_spiral_x == 0 and outwards_spiral_y >= spiral_layer then
-			outwards_spiral_x = outwards_spiral_x + 1
-			spiral_layer = spiral_layer + 1
-		elseif outwards_spiral_x > 0 and outwards_spiral_y > 0 then
-			outwards_spiral_x = outwards_spiral_x + 1
-			outwards_spiral_y = outwards_spiral_y - 1
-		elseif outwards_spiral_x > 0 and outwards_spiral_y <= 0 then
-			outwards_spiral_x = outwards_spiral_x - 1
-			outwards_spiral_y = outwards_spiral_y - 1
-		elseif outwards_spiral_x <= 0 and outwards_spiral_y < 0 then
-			outwards_spiral_x = outwards_spiral_x - 1
-			outwards_spiral_y = outwards_spiral_y + 1
-		elseif outwards_spiral_x < 0 and outwards_spiral_y >= 0 then
-			outwards_spiral_x = outwards_spiral_x + 1
-			outwards_spiral_y = outwards_spiral_y + 1
-		end
+		if amountplaced >= budget then break end
 	end
 
 	return amountplaced
