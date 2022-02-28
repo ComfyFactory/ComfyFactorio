@@ -53,6 +53,9 @@ function Public.bouncy_shells(event)
         return false
     end
     local cause = event.cause
+    if not cause and not cause.valid then
+        return
+    end
     if cause.shooting_state.state == defines.shooting.not_shooting then
         return false
     end
