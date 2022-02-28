@@ -4,6 +4,8 @@
 local Global = require 'utils.global'
 local Session = require 'utils.datastore.session_data'
 local Event = require 'utils.event'
+local ComfyGui = require 'comfy_panel.main'
+local Freeplay = require 'utils.freeplay'
 local Server = require 'utils.server'
 local MapFuntions = require 'tools.map_functions'
 local CommonFunctions = require 'utils.common'
@@ -19,6 +21,9 @@ local Color = require 'utils.color_presets'
 -- require 'modules.thirst'
 
 local this = {
+    entities_cache = nil,
+    active_surface = nil,
+    last_friend = nil,
     remove_offline_players = {
         players = {},
         time = 216000, -- 1h
@@ -270,6 +275,88 @@ local industrial_zone_layers = {
     }
 }
 
+local industrial_zone_layers_modded = {
+    {
+        type = 'LuaTile',
+        name = 'concrete',
+        objects = {
+            'concrete'
+        },
+        elevation = 0.3,
+        resolution = 0.2,
+        hook = nil,
+        deps = nil
+    },
+    {
+        type = 'LuaTile',
+        name = 'stones',
+        objects = {
+            'stone-path'
+        },
+        elevation = 0.2,
+        resolution = 0.4,
+        hook = nil,
+        deps = nil
+    },
+    {
+        type = 'LuaTile',
+        name = 'shallows',
+        objects = {
+            'water-shallow'
+        },
+        elevation = 0.7,
+        resolution = 0.01,
+        hook = nil,
+        deps = nil
+    },
+    {
+        type = 'LuaEntity',
+        name = 'scrap',
+        objects = {
+            'mineable-wreckage'
+        },
+        elevation = 0.5,
+        resolution = 0.1,
+        hook = set_neutral_to_entity,
+        deps = nil
+    },
+    {
+        type = 'LuaEntity',
+        name = 'walls',
+        objects = {
+            'stone-wall'
+        },
+        elevation = 0.5,
+        resolution = 0.09,
+        hook = set_neutral_to_entity,
+        deps = nil
+    },
+    {
+        type = 'LuaEntity',
+        name = 'hostile',
+        objects = {
+            'character',
+            'gun-turret'
+        },
+        elevation = 0.92,
+        resolution = 0.99,
+        hook = set_noise_hostile_hook,
+        deps = fetch_common
+    },
+    {
+        type = 'LuaEntity',
+        name = 'structures',
+        objects = {
+            'big-electric-pole',
+            'medium-electric-pole'
+        },
+        elevation = 0.9,
+        resolution = 0.9,
+        hook = set_neutral_to_entity,
+        deps = nil
+    }
+}
+
 local swampy_rivers_layers = {
     {
         type = 'LuaTile',
@@ -359,9 +446,11 @@ this.presets = {
     ['swampy-rivers'] = swampy_rivers_layers
 }
 
-this.entities_cache = nil
-this.surface = nil
-this.last_friend = nil
+this.presets_modded = {
+    ['flooded-metropolia'] = industrial_zone_layers_modded,
+    ['swampy-rivers'] = swampy_rivers_layers
+}
+
 local function pick_map()
     return this.maps[CommonFunctions.rand_range(1, #this.maps)]
 end
@@ -430,18 +519,26 @@ this.bp = {
     merchant = require('planet_prison.bp.merchant')
 }
 local function init_game()
+    Freeplay.set('disabled', true)
+    ComfyGui.modify_gui('Players', true)
     LayersFunctions.init()
     ClaimsFunctions.init(MapConfig.claim_markers, MapConfig.claim_max_distance)
 
     local map = pick_map()
-    local preset = this.presets[map.name]
-    this.surface = game.create_surface('arena', map)
-    this.surface.brightness_visual_weights = {
+    local preset
+    if is_game_modded() then
+        preset = this.presets_modded[map.name]
+    else
+        preset = this.presets[map.name]
+    end
+    local surface = game.create_surface('arena', map)
+    surface.brightness_visual_weights = {
         1 / 0.85,
         1 / 0.85,
         1 / 0.85
     }
-    this.surface.ticks_per_day = 25000 * 4
+    surface.ticks_per_day = 25000 * 4
+    this.active_surface = surface.index
     this.perks = {}
     this.events.merchant.spawn_tick = game.tick + 5000
     this.events.raid_groups = {}
@@ -507,7 +604,12 @@ local explode_ship =
     function(data)
         local ship = data.ship
         local id = data.id
-        local surface = data.surface
+        local active_surface = data.active_surface
+        local surface = game.get_surface(active_surface)
+        if not surface or not surface.valid then
+            return
+        end
+
         for _, ent in pairs(Blueprints.reference_get_entities(ship)) do
             if not ent.valid then
                 goto continue
@@ -554,7 +656,7 @@ local function do_spawn_point(player)
     }
 
     local id = rendering.draw_text(object)
-    local data = {id = id, time_left = time_left, ship = instance, surface = player.surface}
+    local data = {id = id, time_left = time_left, ship = instance, active_surface = player.surface.index}
 
     local timer = Timers.set_timer(time_left, explode_ship)
     Timers.set_timer_on_update(timer, explode_ship_update)
@@ -986,7 +1088,6 @@ local function _calculate_attack_costs(surf, bb)
     }
     local objects = surf.find_entities_filtered(query)
     if next(objects) == nil then
-        log('B')
         return 0
     end
 
@@ -1230,7 +1331,7 @@ local function cause_event(s)
 end
 
 local function on_tick()
-    local s = this.surface
+    local s = this.active_surface
     if not s then
         log('on_tick: surface empty!')
         return
@@ -1238,7 +1339,7 @@ local function on_tick()
 
     local tick = game.tick
 
-    local surf = this.surface
+    local surf = game.get_surface(this.active_surface)
     if not surf or not surf.valid then
         return
     end
@@ -1248,7 +1349,7 @@ local function on_tick()
     end
 
     LayersFunctions.do_job(surf)
-    cause_event(s)
+    cause_event(surf)
 
     if (tick + 1) % 60 == 0 then
         Timers.do_job()
@@ -1291,6 +1392,7 @@ local valid_ents = {
     ['crash-site-spaceship-wreck-small-4'] = true,
     ['crash-site-spaceship-wreck-small-5'] = true,
     ['crash-site-spaceship-wreck-small-6'] = true,
+    ['mineable-wreckage'] = true,
     ['sand-rock-big'] = true,
     ['rock-big'] = true,
     ['rock-huge'] = true
@@ -1753,8 +1855,20 @@ local function move_to_orbit(player)
     orbit_perms.add_player(player)
 end
 
+local function on_marked_for_deconstruction(event)
+    local entity = event.entity
+    local player = game.get_player(event.player_index)
+    if entity and entity.valid and player and player.valid then
+        entity.cancel_deconstruction(player.force.name)
+    end
+end
+
 local function on_rocket_launched(e)
-    local surf = this.surface
+    local surf = game.get_surface(this.active_surface)
+    if not surf or not surf.valid then
+        return
+    end
+
     local pid = e.player_index
     surf.print('>> The rocket was launched')
     if pid == nil then
@@ -1781,6 +1895,7 @@ Event.add(defines.events.on_player_banned, on_player_died)
 Event.add(defines.events.on_pre_player_left_game, on_pre_player_left_game)
 Event.add(defines.events.on_player_respawned, on_player_respawned)
 Event.add(defines.events.on_player_dropped_item, on_player_dropped_item)
+Event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_market_item_purchased, on_market_item_purchased)

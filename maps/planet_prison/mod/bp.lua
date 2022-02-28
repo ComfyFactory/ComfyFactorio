@@ -1,4 +1,4 @@
-local CommonFunctions = require 'maps.planet_prison.mod.common'
+local CommonFunctions = require 'utils.common'
 local Global = require 'utils.global'
 local Token = require 'utils.token'
 

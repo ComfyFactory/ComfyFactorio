@@ -1,9 +1,12 @@
 local Global = require 'utils.global'
 local Event = require 'utils.event'
 
+local Public = {}
+
 local this = {
     created_items = {},
     respawn_items = {},
+    disabled = false,
     skip_intro = true,
     chart_distance = 0,
     disable_crashsite = true,
@@ -74,6 +77,9 @@ local on_player_created = function(event)
     if not this.modded then
         return
     end
+    if this.disabled then
+        return
+    end
     local player = game.get_player(event.player_index)
     util.insert_safe(player, this.created_items)
 
@@ -103,12 +109,18 @@ local on_player_respawned = function(event)
     if not this.modded then
         return
     end
+    if this.disabled then
+        return
+    end
     local player = game.players[event.player_index]
     util.insert_safe(player, this.respawn_items)
 end
 
 local on_cutscene_waypoint_reached = function(event)
     if not this.modded then
+        return
+    end
+    if this.disabled then
         return
     end
     if not crash_site.is_crash_site_cutscene(event) then
@@ -128,6 +140,10 @@ end
 
 local skip_crash_site_cutscene = function(event)
     if not this.modded then
+        return
+    end
+
+    if this.disabled then
         return
     end
 
@@ -151,6 +167,10 @@ end
 
 local on_cutscene_cancelled = function(event)
     if not this.modded then
+        return
+    end
+
+    if this.disabled then
         return
     end
 
@@ -208,6 +228,25 @@ if not remote.interfaces['freeplay'] then
     remote.add_interface('freeplay', freeplay_interface)
 end
 
+function Public.get(key)
+    if key then
+        return this[key]
+    else
+        return this
+    end
+end
+
+function Public.set(key, value)
+    if key and (value or value == false) then
+        this[key] = value
+        return this[key]
+    elseif key then
+        return this[key]
+    else
+        return this
+    end
+end
+
 Event.on_init(
     function()
         local game_has_mods = is_game_modded()
@@ -240,3 +279,5 @@ Event.add(defines.events.on_player_respawned, on_player_respawned)
 Event.add(defines.events.on_cutscene_waypoint_reached, on_cutscene_waypoint_reached)
 Event.add('crash-site-skip-cutscene', skip_crash_site_cutscene)
 Event.add(defines.events.on_cutscene_cancelled, on_cutscene_cancelled)
+
+return Public
