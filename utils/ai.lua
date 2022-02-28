@@ -109,7 +109,7 @@ end
 
 local function _shoot_at(ent, trgt)
     ent.shooting_state = {
-        state = defines.shooting.shooting_selected,
+        state = defines.shooting.shooting_enemies,
         position = trgt.position
     }
 end
@@ -137,7 +137,11 @@ local function set_noise_hostile_hook(ent)
 end
 
 local function _do_job_seek_and_destroy_player(data)
-    local surf = data.surface
+    local active_surface = data.active_surface
+    local surf = game.get_surface(active_surface)
+    if not surf or not surf.valid then
+        return
+    end
     local force = data.force
     local players = game.connected_players
 
@@ -188,8 +192,13 @@ local function _do_job_seek_and_destroy_player(data)
 end
 
 local function _do_job_attack_objects(data)
-    local surf = data.surface
+    local active_surface = data.active_surface
+    local surf = game.get_surface(active_surface)
+    if not surf or not surf.valid then
+        return
+    end
     local force = data.force
+    local args = data.args
     local position = data.position
 
     if type(surf) == 'number' then
@@ -241,7 +250,16 @@ local function _do_job_attack_objects(data)
             if #closest ~= 0 then
                 target = CommonFunctions.get_closest_neighbour(agent.position, closest)
             else
-                goto continue
+                if not args or not args.objects then
+                    goto continue
+                end
+
+                if #args.objects == 0 then
+                    _shoot_stop(agent)
+                    goto continue
+                end
+
+                target = CommonFunctions.get_closest_neighbour(agent.position, args.objects)
             end
 
             if target == nil or not target.valid then
@@ -311,10 +329,22 @@ Public.do_job = function(surf, command, args, force)
         args = {}
     end
 
+    if not surf and not surf.valid then
+        return
+    end
+
     if command == Public.command.seek_and_destroy_player then
-        _do_job_seek_and_destroy_player(surf, force)
+        local data = {
+            active_surface = surf.index,
+            force = force
+        }
+        _do_job_seek_and_destroy_player(data)
     elseif command == Public.command.attack_objects then
-        _do_job_attack_objects(surf, args)
+        local data = {
+            active_surface = surf.index,
+            args = args
+        }
+        _do_job_attack_objects(data)
     end
 end
 

@@ -1,4 +1,4 @@
-local CommonFunctions = require 'maps.planet_prison.mod.common'
+local CommonFunctions = require 'utils.common'
 local SimplexFunctions = require 'maps.planet_prison.mod.simplex_noise'
 local Token = require 'utils.token'
 local Global = require 'utils.global'
