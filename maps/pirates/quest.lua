@@ -42,9 +42,9 @@ function Public.quest_reward()
 	elseif rng <= 0.5 then
 		ret = {name = 'copper-plate', count = Math.ceil(2000 * multiplier), display_sprite = '[item=copper-plate]', display_amount = string.format('%.0fk', 2 * multiplier)}
 	elseif rng <= 0.7 then
-		ret = {name = 'solid-fuel', count = Math.ceil(500 * multiplier), display_sprite = '[item=solid-fuel]', display_amount = string.format('%.0f', Math.ceil(350 * multiplier))}
+		ret = {name = 'solid-fuel', count = Math.ceil(450 * multiplier), display_sprite = '[item=solid-fuel]', display_amount = string.format('%.0f', Math.ceil(350 * multiplier))}
 	elseif rng <= 0.9 then
-		ret = {name = 'coin', count = Math.ceil(10000 * multiplier), display_sprite = '[item=coin]', display_amount = string.format('%.0f', Math.ceil(10000 * multiplier))}
+		ret = {name = 'coin', count = Math.ceil(8000 * multiplier), display_sprite = '[item=coin]', display_amount = string.format('%.0f', Math.ceil(8000 * multiplier))}
 	else
 		ret = {name = 'piercing-rounds-magazine', count = Math.ceil(250 * multiplier), display_sprite = '[item=piercing-rounds-magazine]', display_amount = string.format('%.0f', Math.ceil(200 * (multiplier^(3/2))))}
 	end
@@ -227,7 +227,7 @@ function Public.try_resolve_quest()
 
 		local force = game.forces[memory.force_name]
 		if not (force and force.valid) then return end
-		Common.notify_force(force,'Quest complete! Granted ' .. destination.dynamic_data.quest_reward.display_amount .. ' ' .. destination.dynamic_data.quest_reward.display_sprite)
+		Common.notify_force(force,'Granted ' .. destination.dynamic_data.quest_reward.display_amount .. ' ' .. destination.dynamic_data.quest_reward.display_sprite)
 
 		local name = destination.dynamic_data.quest_reward.name
 		local count = destination.dynamic_data.quest_reward.count
@@ -320,14 +320,14 @@ end
 
 
 Public.resourcecount_quest_data_raw = {
-	{0.8, 0, 1, false, 'iron-gear-wheel', 2400},
-	{1, 0, 1, false, 'electronic-circuit', 1200},
-	{1, 0, 1, false, 'transport-belt', 900},
+	{0.8, 0, 999, false, 'iron-gear-wheel', 2400},
+	{1, 0, 999, false, 'electronic-circuit', 1200},
+	{1, 0, 999, false, 'transport-belt', 900},
 	-- {0.1, 0, 1, false, 'red-wire', 500},
-	{0.4, 0, 1, false, 'empty-barrel', 600},
+	{0.4, 0, 999, false, 'empty-barrel', 600},
 	{0.3, 0, 0.2, false, 'splitter', 500},
-	{0.3, 0.2, 1, false, 'fast-splitter', 250},
-	{0.4, 0.3, 1, false, 'big-electric-pole', 250},
+	{0.3, 0.2, 999, false, 'fast-splitter', 250},
+	{0.4, 0.3, 999, false, 'big-electric-pole', 250},
 	-- {1, 0.5, 1, false, 'advanced-circuit', 1 * 10},
 	-- {0.3, 0.8, 1, false, 'electric-engine-unit', 1 * 6},
 }

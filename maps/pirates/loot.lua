@@ -8,98 +8,91 @@ local inspect = require 'utils.inspect'.inspect
 
 local Public = {}
 
--- @TODO: rewrite in terms of more sensible raffle
-function Public.buried_treasure_loot()
-	local ret
-	
-	local rng = Math.random(1000)
-	if rng <= 100 then
-		ret = {name = 'steel-plate', count = 150}
-	elseif rng <= 150 then
-		ret = {name = 'defender-capsule', count = 20}
-	elseif rng <= 170 then
-		ret = {name = 'flying-robot-frame', count = 30}
-	elseif rng <= 230 then
-		ret = {name = 'construction-robot', count = 15}
-	elseif rng <= 330 then
-		ret = {name = 'electronic-circuit', count = 200}
-	elseif rng <= 400 then
-		ret = {name = 'advanced-circuit', count = 38}
-	elseif rng <= 530 then
-		ret = {name = 'crude-oil-barrel', count = 15}
-	elseif rng <= 600 then
-		ret = {name = 'effectivity-module-3', count = 3}
-	elseif rng <= 730 then
-		ret = {name = 'effectivity-module-2', count = 6}
-	elseif rng <= 800 then
-		ret = {name = 'plastic-bar', count = 60}
-	elseif rng <= 860 then
-		ret = {name = 'chemical-science-pack', count = 15}
-	elseif rng <= 930 then
-		ret = {name = 'assembling-machine-3', count = 2}
-	elseif rng <= 995 then
-		ret = {name = 'solar-panel', count = 7}
-	else
-		ret = {name = 'modular-armor', count = 1}
-	end
-	return ret
-end
+Public.buried_treasure_loot_data_raw = {
+	{100, 0, 999, false, 'coin', 10, 20},
+	{100, 0, 999, false, 'steel-plate', 140, 180},
+	{50, 0, 999, false, 'defender-capsule', 5, 18},
+	{25, 0, 999, false, 'distractor-capsule', 5, 18},
+	{10, 0, 999, false, 'destroyer-capsule', 5, 18},
+	{20, 0, 999, false, 'flying-robot-frame', 20, 35},
+	{40, 0, 999, false, 'construction-robot', 15, 25},
+	{100, 0, 999, false, 'electronic-circuit', 150, 250},
+	{70, 0, 999, false, 'advanced-circuit', 20, 40},
+	{150, 0, 999, false, 'crude-oil-barrel', 25, 45},
+	{70, 0, 999, false, 'effectivity-module-3', 3, 4},
+	{70, 0, 999, false, 'speed-module-3', 3, 4},
+	{10, 0, 999, false, 'productivity-module-3', 3, 4},
+	{70, 0, 999, false, 'plastic-bar', 40, 70},
+	{60, 0, 999, false, 'chemical-science-pack', 12, 24},
+	{70, 0, 999, false, 'assembling-machine-3', 2, 2},
+	{65, 0, 999, false, 'solar-panel', 7, 8},
+	{20, 0, 999, false, 'radar', 10, 20},
+	{10, 0, 999, false, 'production-science-pack', 12, 24},
+	{5, 0, 999, false, 'modular-armor', 1, 1},
+	{5, 0, 999, false, 'laser-turret', 1, 1},
+	{5, 0, 999, false, 'cannon-shell', 5, 10},
+	{50, 0, 999, false, 'artillery-shell', 4, 8},
+	{50, 0, 999, false, 'express-transport-belt', 8, 20},
+	{35, 0, 999, false, 'express-underground-belt', 4, 4},
+	{35, 0, 999, false, 'express-splitter', 4, 11},
+	{50, 0, 999, false, 'stack-inserter', 4, 12},
+}
 
 Public.chest_loot_data_raw = {
 	-- pirate-ship specific loot, which dominates:
 	{20, -1, 0.5, true, 'splitter', 4, 12},
 	-- {20, -1, 0.5, true, 'underground-belt', 4, 12},
 	{40, -0.5, 0.5, true, 'firearm-magazine', 10, 48},
-	{60, -1, 1, true, 'piercing-rounds-magazine', 4, 16},
-	{20, 0, 1, false, 'assembling-machine-2', 1, 3},
-	{20, 0, 1, false, 'solar-panel', 2, 5},
-	{40, -1, 1, true, 'speed-module', 1, 3},
-	{40, 0, 1, true, 'speed-module-2', 1, 3},
+	{60, -1, 1, true, 'piercing-rounds-magazine', 8, 18},
+	{20, 0, 999, false, 'assembling-machine-2', 1, 3},
+	{20, 0, 999, false, 'solar-panel', 2, 5},
+	{40, -1, 999, true, 'speed-module', 1, 3},
+	{40, 0, 999, true, 'speed-module-2', 1, 3},
 	{40, 0, 2, true, 'speed-module-3', 1, 3},
 	{4, -1, 1, true, 'effectivity-module', 1, 3},
 	{4, 0, 1, true, 'effectivity-module-2', 1, 3},
 	{4, 0, 2, true, 'effectivity-module-3', 1, 3},
-	{10, 0, 1, false, 'uranium-rounds-magazine', 3, 6},
-	{10, 0, 1, false, 'fast-transport-belt', 6, 24},
-	-- {10, 0, 1, false, 'fast-underground-belt', 2, 5},
-	{10, 0, 1, false, 'fast-splitter', 2, 5},
-	{12, 0, 1, false, 'artillery-shell', 1, 1},
-	{40, 0, 1, false, 'rail-signal', 10, 30},
-	{40, 0, 1, false, 'medium-electric-pole', 2, 5},
-	{2, 0.2, 1, false, 'electric-engine-unit', 1, 1},
+	{10, 0, 999, false, 'uranium-rounds-magazine', 3, 6},
+	{10, 0, 999, false, 'fast-transport-belt', 6, 24},
+	-- {10, 0, 999, false, 'fast-underground-belt', 2, 5},
+	{10, 0, 999, false, 'fast-splitter', 2, 5},
+	{12, 0, 999, false, 'artillery-shell', 1, 1},
+	{40, 0, 999, false, 'rail-signal', 10, 30},
+	{40, 0, 999, false, 'medium-electric-pole', 2, 5},
+	{2, 0.2, 999, false, 'electric-engine-unit', 1, 1},
 
 	{4, 0, 2, true, 'rocket-launcher', 1, 1},
 	{8, 0, 2, true, 'rocket', 16, 32},
 
 	{3, 0, 0.5, false, 'stack-inserter', 1, 3},
 	{1, 0, 0.5, false, 'stack-filter-inserter', 1, 3},
-	{3, 0.5, 1, false, 'stack-inserter', 5, 16},
-	{1, 0.5, 1, false, 'stack-filter-inserter', 5, 16},
+	{3, 0.5, 999, false, 'stack-inserter', 5, 16},
+	{1, 0.5, 999, false, 'stack-filter-inserter', 5, 16},
 
 	-- copying over most of those i made for chronotrain:
 	--always there (or normally always there):
-	{4, 0, 1, false, 'pistol', 1, 2},
-	{1, 0, 1, false, 'gun-turret', 2, 4},
-	{6, 0, 1, false, 'grenade', 2, 12},
-	{4, 0, 1, false, 'stone-wall', 12, 50},
-	-- {4, 0, 1, false, 'gate', 14, 32}, --can beat biters with them
-	{1, 0, 1, false, 'radar', 1, 2},
-	{3, 0, 1, false, 'small-lamp', 8, 32},
-	{2, 0, 1, false, 'electric-mining-drill', 2, 4},
-	{3, 0, 1, false, 'long-handed-inserter', 4, 16},
-	{0.5, 0, 1, false, 'filter-inserter', 2, 12},
-	{0.2, 0, 1, false, 'slowdown-capsule', 2, 4},
-	{0.2, 0, 1, false, 'destroyer-capsule', 2, 4},
-	{0.2, 0, 1, false, 'defender-capsule', 2, 4},
-	{0.2, 0, 1, false, 'distractor-capsule', 2, 4},
-	-- {0.25, 0, 1, false, 'rail', 50, 100},
-	-- {0.25, 0, 1, false, 'uranium-rounds-magazine', 1, 4},
-	{1, 0.15, 1, false, 'pump', 1, 2},
-	{2, 0.15, 1, false, 'pumpjack', 1, 3},
-	{0.02, 0.15, 1, false, 'oil-refinery', 1, 2},
-	{3, 0, 1, false, 'effectivity-module', 1, 4},
-	{3, 0, 1, false, 'speed-module', 1, 4},
-	{3, 0, 1, false, 'productivity-module', 1, 4},
+	{4, 0, 999, false, 'pistol', 1, 2},
+	{1, 0, 999, false, 'gun-turret', 2, 4},
+	{6, 0, 999, false, 'grenade', 2, 12},
+	{4, 0, 999, false, 'stone-wall', 12, 50},
+	-- {4, 0, 999, false, 'gate', 14, 32}, --can beat biters with them
+	{1, 0, 999, false, 'radar', 1, 2},
+	{3, 0, 999, false, 'small-lamp', 8, 32},
+	{2, 0, 999, false, 'electric-mining-drill', 2, 4},
+	{3, 0, 999, false, 'long-handed-inserter', 4, 16},
+	{0.5, 0, 999, false, 'filter-inserter', 2, 12},
+	{0.2, 0, 999, false, 'slowdown-capsule', 2, 4},
+	{0.2, 0, 999, false, 'destroyer-capsule', 2, 4},
+	{0.2, 0, 999, false, 'defender-capsule', 2, 4},
+	{0.2, 0, 999, false, 'distractor-capsule', 2, 4},
+	-- {0.25, 0, 999, false, 'rail', 50, 100},
+	-- {0.25, 0, 999, false, 'uranium-rounds-magazine', 1, 4},
+	{1, 0.15, 999, false, 'pump', 1, 2},
+	{2, 0.15, 999, false, 'pumpjack', 1, 3},
+	{0.02, 0.15, 999, false, 'oil-refinery', 1, 2},
+	{3, 0, 999, false, 'effectivity-module', 1, 4},
+	{3, 0, 999, false, 'speed-module', 1, 4},
+	{3, 0, 999, false, 'productivity-module', 1, 4},
 	--shotgun meta:
 	{10, -0.2, 0.4, true, 'shotgun-shell', 12, 24},
 	{5, 0, 0.4, true, 'shotgun', 1, 1},
@@ -117,7 +110,7 @@ Public.chest_loot_data_raw = {
 	--loader meta:
 	{0.25, 0, 0.2, false, 'loader', 1, 2},
 	{0.25, 0.2, 0.6, false, 'fast-loader', 1, 2},
-	{0.25, 0.6, 1, false, 'express-loader', 1, 2},
+	{0.25, 0.6, 999, false, 'express-loader', 1, 2},
 	--science meta:
 	{8, -0.5, 0.5, true, 'automation-science-pack', 4, 32},
 	{8, -0.6, 0.6, true, 'logistic-science-pack', 4, 32},
@@ -185,11 +178,11 @@ Public.chest_loot_data_raw = {
 	-- {2, 0.25, 1.75, true, 'logistic-robot', 5, 25},
 	{2, 0.25, 1.75, true, 'substation', 2, 4},
 	{3, 0.25, 1.75, true, 'assembling-machine-3', 2, 4},
-	{3, 0.25, 1.75, true, 'express-transport-belt', 10, 60},
+	{3, 0.25, 1.75, true, 'express-transport-belt', 2, 20},
 	-- {3, 0.25, 1.75, true, 'express-underground-belt', 2, 6},
 	{3, 0.25, 1.75, true, 'express-splitter', 1, 3},
 	{3, 0.25, 1.75, true, 'electric-furnace', 2, 4},
-	{3, 0.25, 1.75, true, 'laser-turret', 1, 4},
+	-- {1, 0.25, 1.75, true, 'laser-turret', 1, 1},
 	-- {4, 0.4, 1.6, true, 'processing-unit', 30, 200},
 	{2, 0.6, 1.4, true, 'roboport', 1, 1},
 	-- super late-game:
@@ -202,31 +195,12 @@ Public.chest_loot_data_raw = {
 	--{1, 0.9, 1, , "personal-roboport-mk2-equipment", 1, 1},
 }
 
-function Public.chest_loot_data()
-	local ret = {}
-	local loot_data = Public.chest_loot_data_raw
-	for i = 1, #loot_data do
-		local loot_data_item = loot_data[i]
-		ret[#ret + 1] = {
-            weight = loot_data_item[1],
-            game_completion_progress_min = loot_data_item[2],
-            game_completion_progress_max = loot_data_item[3],
-            scaling = loot_data_item[4],
-            name = loot_data_item[5],
-            min_count = loot_data_item[6],
-            max_count = loot_data_item[7],
-            map_subtype = loot_data_item[8]
-        }
-	end
-	return ret
-end
-
 function Public.wooden_chest_loot()
 	local memory = Memory.get_crew_memory()
 	local overworldx = memory.overworldx or 0
 	local num = 1
 
-	return Public.chest_loot(num, 40/100 * Math.sloped(Common.difficulty(),1/2) * Common.game_completion_progress())
+	return Public.chest_loot(num, Math.sloped(Common.difficulty(),1/2) * Common.game_completion_progress())
 end
 
 function Public.iron_chest_loot()
@@ -234,7 +208,7 @@ function Public.iron_chest_loot()
 	local overworldx = memory.overworldx or 0
 	local num = Math.random(2,3)
 
-	local loot = Public.chest_loot(num, 5/100 + 40/100 * Math.sloped(Common.difficulty(),1/2) * Common.game_completion_progress())
+	local loot = Public.chest_loot(num, 5/100 + Math.sloped(Common.difficulty(),1/2) * Common.game_completion_progress()) --reward higher difficulties with better loot
 	loot[#loot + 1] = {name = 'coin', count = Math.random(1,1500)}
 
     return loot
@@ -245,7 +219,7 @@ function Public.covered_wooden_chest_loot()
 	local overworldx = memory.overworldx or 0
 	local num = 2
 
-	local loot = Public.chest_loot(num, 20/100 + 40/100 * Math.sloped(Common.difficulty(),1/2) * Common.game_completion_progress())
+	local loot = Public.chest_loot(num, 10/100 + Math.sloped(Common.difficulty(),1/2) * Common.game_completion_progress()) --reward higher difficulties with better loot
 
     return loot
 end
@@ -286,58 +260,7 @@ function Public.roboport_bots_loot()
 end
 
 function Public.chest_loot(number_of_items, game_completion_progress)
-	local ret = {}
-	local rng = Math.random()
-	local memory = Memory.get_crew_memory()
-
-	-- if rng < 20/100 then
-	-- 	ret = {
-	-- 		{name = 'iron-plate', count = 50},
-	-- 	}
-	-- elseif rng < 40/100 then
-	-- 	ret = {
-	-- 		{name = 'copper-plate', count = 50},
-	-- 	}
-	-- else
-	-- 	ret = {
-	-- 		{name = 'coal', count = 50},
-	-- 	}
-	-- end
-
-	local loot_data = Public.chest_loot_data()
-    local loot_types, loot_weights = {}, {}
-    for i = 1, #loot_data, 1 do
-        table.insert(loot_types, {['name'] = loot_data[i].name, ['min_count'] = loot_data[i].min_count, ['max_count'] = loot_data[i].max_count})
-
-		local destination = Common.current_destination()
-		if not (destination and destination.subtype and loot_data[i].map_subtype and loot_data[i].map_subtype == destination.subtype) then
-			if loot_data[i].scaling then -- scale down weights away from the midpoint 'peak' (without changing the mean)
-				local midpoint = (loot_data[i].game_completion_progress_max + loot_data[i].game_completion_progress_min) / 2
-				local difference = (loot_data[i].game_completion_progress_max - loot_data[i].game_completion_progress_min)
-				table.insert(loot_weights, loot_data[i].weight * Math.max(0, 1 - (Math.abs(game_completion_progress - midpoint) / (difference / 2))))
-			else -- no scaling
-				if loot_data[i].game_completion_progress_min <= game_completion_progress and loot_data[i].game_completion_progress_max >= game_completion_progress then
-					table.insert(loot_weights, loot_data[i].weight)
-				else
-					table.insert(loot_weights, 0)
-				end
-			end
-		end
-    end
-
-	for _ = 1, number_of_items do
-        local loot = Math.raffle(loot_types, loot_weights)
-        local low = Math.max(1, Math.ceil(loot.min_count))
-        local high = Math.max(1, Math.ceil(loot.max_count))
-        local _count = Math.random(low, high)
-        local lucky = Math.random(1, 180)
-        if lucky == 1 then --lucky
-            _count = _count * 3
-        elseif lucky <= 10 then
-            _count = _count * 2
-        end
-        ret[#ret + 1] = {name = loot.name, count = _count}
-    end
+	local ret = Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.chest_loot_data_raw), number_of_items, game_completion_progress)
 
 	local platesrng = Math.random(5)
 	if platesrng <= 2 then
@@ -349,6 +272,12 @@ function Public.chest_loot(number_of_items, game_completion_progress)
 	end
 
 	return ret
+end
+
+function Public.buried_treasure_loot()
+	local ret = Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.buried_treasure_loot_data_raw), 1, Math.sloped(Common.difficulty(),1/2) * Common.game_completion_progress())
+
+	if ret and ret[1] then return ret[1] end
 end
 
 return Public

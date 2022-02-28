@@ -16,10 +16,12 @@ local Public = {}
 local enum = {
 		SLOOP = 'Sloop',
 		RAFT = 'Raft',
+		RAFTLARGE = 'Large Raft',
 		MERCHANT = 'Merchant',
 }
 Public[enum.SLOOP] = require 'maps.pirates.structures.boats.sloop.sloop'
 Public[enum.RAFT] = require 'maps.pirates.structures.boats.raft.raft'
+Public[enum.RAFTLARGE] = require 'maps.pirates.structures.boats.raft_large.raft_large'
 Public[enum.MERCHANT] = require 'maps.pirates.structures.boats.merchant_1.merchant_1'
 Public.enum = enum
 local enum_state = {

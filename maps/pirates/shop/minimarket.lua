@@ -26,20 +26,20 @@ Public.market_barters = {
 	{price = {{'copper-plate', 300}}, offer = {type = 'give-item', item = 'iron-plate', count = 500}},
 	{price = {{'steel-plate', 50}}, offer = {type = 'give-item', item = 'copper-plate', count = 500}},
 	{price = {{'steel-plate', 50}}, offer = {type = 'give-item', item = 'iron-plate', count = 500}},
-	{price = {{'raw-fish', 50}}, offer = {type = 'give-item', item = 'coal', count = 600}},
-	{price = {{'raw-fish', 50}}, offer = {type = 'give-item', item = 'iron-plate', count = 600}},
-	{price = {{'raw-fish', 50}}, offer = {type = 'give-item', item = 'copper-plate', count = 600}},
-	{price = {{'raw-fish', 50}}, offer = {type = 'give-item', item = 'steel-plate', count = 100}},
+	{price = {{'raw-fish', 50}}, offer = {type = 'give-item', item = 'coal', count = 500}},
+	{price = {{'raw-fish', 50}}, offer = {type = 'give-item', item = 'iron-plate', count = 750}},
+	{price = {{'raw-fish', 50}}, offer = {type = 'give-item', item = 'copper-plate', count = 750}},
+	{price = {{'raw-fish', 50}}, offer = {type = 'give-item', item = 'steel-plate', count = 125}},
 
 	{price = {{'wood', 200}}, offer = {type = 'give-item', item = 'coin', count = 250}},
 	--TODO: add more complex trades
 }
 
 Public.market_permanent_offers = {
-	{price = {{'coin', 4000}}, offer = {type = 'give-item', item = 'iron-ore', count = 750}},
-	{price = {{'coin', 4000}}, offer = {type = 'give-item', item = 'copper-ore', count = 750}},
-	{price = {{'coin', 4000}}, offer = {type = 'give-item', item = 'stone', count = 750}},
-	{price = {{'coin', 4000}}, offer = {type = 'give-item', item = 'crude-oil-barrel', count = 150}},
+	{price = {{'coin', 5000}}, offer = {type = 'give-item', item = 'iron-ore', count = 900}},
+	{price = {{'coin', 5000}}, offer = {type = 'give-item', item = 'copper-ore', count = 900}},
+	{price = {{'coin', 5000}}, offer = {type = 'give-item', item = 'crude-oil-barrel', count = 150}},
+	{price = {{'coin', 5000}}, offer = {type = 'give-item', item = 'beacon', count = 2}},
 }
 
 -- cheap but one-off

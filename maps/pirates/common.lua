@@ -23,8 +23,8 @@ Public.deepwater_distance_from_leftmost_shore = 32
 Public.lobby_spawnpoint = {x = -72, y = -8}
 
 Public.fraction_of_map_loaded_atsea = 1
-Public.map_loading_ticks_atsea = 70 * 60
-Public.map_loading_ticks_atsea_dock = 30 * 60
+Public.map_loading_ticks_atsea = 68 * 60
+Public.map_loading_ticks_atsea_dock = 20 * 60
 Public.map_loading_ticks_onisland = 2 * 60 * 60
 Public.loading_interval = 5
 
@@ -47,19 +47,20 @@ function Public.ore_abstract_to_real(amount)
 	return Math.ceil(amount*1800)
 end
 
--- big buff, to crush recurring problem. hopefully rebalance down from here?:
+-- 3000 oil resource is '1% yield'
 function Public.oil_real_to_abstract(amount)
-	return amount/(75000)
+	return amount/(3000)
 end
 function Public.oil_abstract_to_real(amount)
-	return Math.ceil(amount*75000)
+	return Math.ceil(amount*3000)
 end
 
 function Public.difficulty() return Memory.get_crew_memory().difficulty end
 function Public.capacity() return Memory.get_crew_memory().capacity end
 -- function Public.mode() return Memory.get_crew_memory().mode end
 function Public.overworldx() return Memory.get_crew_memory().overworldx end
-function Public.game_completion_progress() return Public.overworldx()/CoreData.victory_x end
+function Public.game_completion_progress() return 0.9 end
+-- function Public.game_completion_progress() return Public.overworldx()/CoreData.victory_x end
 function Public.capacity_scale()
 	local capacity = Public.capacity()
 	if not capacity then --e.g. for EE wattage on boats not owned by a crew
@@ -153,6 +154,76 @@ function Public.flying_text_small(surface, position, text)
 		}
 	)
 end
+
+
+
+function Public.processed_loot_data(raw_data)
+	local ret = {}
+	for i = 1, #raw_data do
+		local loot_data_item = raw_data[i]
+		ret[#ret + 1] = {
+            weight = loot_data_item[1],
+            game_completion_progress_min = loot_data_item[2],
+            game_completion_progress_max = loot_data_item[3],
+            scaling = loot_data_item[4],
+            name = loot_data_item[5],
+            min_count = loot_data_item[6],
+            max_count = loot_data_item[7],
+            map_subtype = loot_data_item[8]
+        }
+	end
+	return ret
+end
+
+--=='raw' data is in the form e.g.
+--  {
+-- 	{100, 0, 1, false, 'steel-plate', 140, 180},
+-- 	{50, 0, 1, false, 'defender-capsule', 15, 25},
+-- 	{20, 0, 1, false, 'flying-robot-frame', 20, 35},
+-- }
+
+function Public.raffle_from_processed_loot_data(processed_loot_data, how_many, game_completion_progress)
+	local ret = {}
+
+    local loot_types, loot_weights = {}, {}
+    for i = 1, #processed_loot_data, 1 do
+		local data = processed_loot_data[i]
+        table.insert(loot_types, {['name'] = data.name, ['min_count'] = data.min_count, ['max_count'] = data.max_count})
+
+		local destination = Public.current_destination()
+		if not (destination and destination.subtype and data.map_subtype and data.map_subtype == destination.subtype) then
+			if data.scaling then -- scale down weights away from the midpoint 'peak' (without changing the mean)
+				local midpoint = (data.game_completion_progress_max + data.game_completion_progress_min) / 2
+				local difference = (data.game_completion_progress_max - data.game_completion_progress_min)
+				local w = 2 * data.weight * Math.max(0, 1 - (Math.abs(game_completion_progress - midpoint) / (difference / 2)))
+				table.insert(loot_weights, w)
+			else -- no scaling
+				if data.game_completion_progress_min <= game_completion_progress and data.game_completion_progress_max >= game_completion_progress then
+					table.insert(loot_weights, data.weight)
+				else
+					table.insert(loot_weights, 0)
+				end
+			end
+		end
+    end
+
+	for _ = 1, how_many do
+        local loot = Math.raffle(loot_types, loot_weights)
+        local low = Math.max(1, Math.ceil(loot.min_count))
+        local high = Math.max(1, Math.ceil(loot.max_count))
+        local _count = Math.random(low, high)
+        local lucky = Math.random(1, 180)
+        if lucky == 1 then --lucky
+            _count = _count * 3
+        elseif lucky <= 10 then
+            _count = _count * 2
+        end
+        ret[#ret + 1] = {name = loot.name, count = _count}
+    end
+
+	return ret
+end
+
 
 
 

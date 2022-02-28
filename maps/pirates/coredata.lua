@@ -5,8 +5,11 @@ local inspect = require 'utils.inspect'.inspect
 local Public = {}
 
 Public.scenario_id_name = 'pirates'
-Public.version_string = '1.0.3.8.3'
-Public.version_float = 1.0383
+Public.version_string = '1.0.3.9.1'
+Public.version_float = 1.0391
+
+Public.blueprint_library_allowed = false
+Public.blueprint_importing_allowed = true
 
 
 Public.victory_x = 1000
@@ -93,14 +96,15 @@ Public.comfy_emojis = {
 Public.capacity_options = {
 	{value = 4, icon = 'virtual-signal/signal-4', text = '4', text2 = '/4', text3 = '4'},
 	{value = 8, icon = 'virtual-signal/signal-8', text = '8', text2 = '/8', text3 = '8'},
-	{value = 999, icon = 'virtual-signal/signal-blue', text = 'Inf.', text2 = '', text3 = 'Inf'},
+	{value = 24, icon = 'virtual-signal/signal-blue', text = '24', text2 = '/24', text3 = '24'},
+	{value = 999, icon = 'virtual-signal/signal-white', text = 'Inf.', text2 = '', text3 = 'Inf'},
 	-- {value = 64, icon = 'item/storage-tank', text = '64'},
 }
 Public.difficulty_options = {
-	{value = 0.6, icon = 'item/firearm-magazine', text = 'Easy', associated_color = {50, 255, 50}},
-	{value = 1, icon = 'item/piercing-rounds-magazine', text = 'Normal', associated_color = {255, 255, 50}},
-	{value = 1.4, icon = 'item/uranium-rounds-magazine', text = 'Hard', associated_color = {255, 50, 50}},
-	{value = 3, icon = 'item/atomic-bomb', text = 'Nightmare', associated_color = {50, 10, 10}},
+	{value = 0.6, icon = 'item/firearm-magazine', text = 'Easy', associated_color = {r = 50, g = 255, b = 50}},
+	{value = 1, icon = 'item/piercing-rounds-magazine', text = 'Normal', associated_color = {r = 255, g = 255, b = 50}},
+	{value = 1.4, icon = 'item/uranium-rounds-magazine', text = 'Hard', associated_color = {r = 255, g = 50, b = 50}},
+	{value = 3, icon = 'item/atomic-bomb', text = 'Nightmare', associated_color = {r = 50, g = 10, b = 10}},
 }
 -- Public.mode_options = {
 -- 	left = {value = 'speedrun', icon = 'achievement/watch-your-step', text = 'Speedrun'},
@@ -127,7 +131,7 @@ Public.cost_items = {
 	{name = 'small-lamp', display_name = 'Small lamp', sprite_name = 'item/small-lamp', color={r=255,g=0,b=0}},
 	{name = 'engine-unit', display_name = 'Engine unit', sprite_name = 'item/engine-unit', color={r=255,g=255,b=0}},
 	{name = 'advanced-circuit', display_name = 'Advanced circuit', sprite_name = 'item/advanced-circuit', color={r=0,g=0,b=255}},
-	-- {name = 'electric-engine-unit', display_name = 'Electric engine unit', sprite_name = 'item/electric-engine-unit', color={r=0,g=255,b=255}},
+	{name = 'electric-engine-unit', display_name = 'Electric engine unit', sprite_name = 'item/electric-engine-unit', color={r=0,g=255,b=255}},
 	{name = 'uranium-235', display_name = 'Uranium-235', sprite_name = 'item/uranium-235', color={r=0,g=255,b=0}},
 }
 

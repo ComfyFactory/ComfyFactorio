@@ -253,6 +253,15 @@ local function crew_tick()
 			end
 		end
 	end
+
+	if tick % 240 == 0 then
+		if memory.max_players_recorded then
+			local count_now = #Common.crew_get_crew_members()
+			if count_now and count_now > memory.max_players_recorded then
+				memory.max_players_recorded = count_now
+			end
+		end
+	end
 	
 	if tick % 300 == 0 then
 		TickFunctions.periodic_free_resources(300)

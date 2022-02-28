@@ -77,6 +77,7 @@ function Public.reset_crew_memory(id) --also serves as a dev reference of memory
 	memory.tempbanned_from_joining_data = nil
 	memory.playerindex_captain = nil
 	memory.captain_accrued_time_data = nil
+	memory.max_players_recorded = nil
 
 	memory.speed_boost_characters = nil
 

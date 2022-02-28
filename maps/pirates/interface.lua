@@ -556,6 +556,11 @@ local function base_kill_rewards(event)
 	if not (entity and entity.valid) then return end
 	if not (event.force and event.force.valid) then return end
 
+	local revenge_target
+	if event.cause and event.cause.valid and event.cause.name == 'character' then
+		revenge_target = event.cause
+	end
+
 	local iron_amount = 0
 	local coin_amount = 0
 
@@ -582,23 +587,33 @@ local function base_kill_rewards(event)
 	end
 
 	if iron_amount > 0 then
-
 		local stack = {{name = 'iron-plate', count = iron_amount}, {name = 'coin', count = coin_amount}}
-		local revenge_target
 
-		if event.cause and event.cause.valid and event.cause.name == 'character' then
+		if revenge_target then
 			Common.give(event.cause.player, stack)
-			revenge_target = event.cause
 		else
 			Common.give(nil, stack, entity.position, entity.surface)
 		end
+	end
 	
-		if (entity.name == 'biter-spawner' or entity.name == 'spitter-spawner') and entity.position and entity.surface and entity.surface.valid then
-			if entity.name == 'biter-spawner' then
-				Ai.revenge_group(entity.surface, entity.position, revenge_target, 'biter')
-			else
-				Ai.revenge_group(entity.surface, entity.position, revenge_target, 'spitter')
+	if (entity.name == 'biter-spawner' or entity.name == 'spitter-spawner') and entity.position and entity.surface and entity.surface.valid then
+		--check if its a boat biter entity
+		local boat_spawner = false
+		if memory.enemyboats then
+			for i = 1, #memory.enemyboats do
+				local eb = memory.enemyboats[i]
+				if eb.spawner and eb.spawner.valid and event.entity == eb.spawner then
+					boat_spawner = true
+					break
+				end
 			end
+		end
+		if boat_spawner then
+			Ai.revenge_group(entity.surface, entity.position, revenge_target, 'biter', 0.3, 2)
+		elseif entity.name == 'biter-spawner' then
+			Ai.revenge_group(entity.surface, entity.position, revenge_target, 'biter')
+		else
+			Ai.revenge_group(entity.surface, entity.position, revenge_target, 'spitter')
 		end
 	end
 end
@@ -809,10 +824,7 @@ local function event_on_player_joined_game(event)
 		Crew.join_crew(player, ages[1].id)
 	end
 
-	--check if they are the only crew member, and make them the captain if so:
-	if #Common.crew_get_crew_members() == 1 then
-		Public.assign_captain_based_on_priorities()
-	end
+	Roles.confirm_captain_exists(player)
 
 	if not _DEBUG then
 		Gui.info.toggle_window(player)
@@ -1146,6 +1158,9 @@ local function event_on_rocket_launched(event)
 		memory.stored_fuel = memory.stored_fuel + destination.dynamic_data.rocketcoalreward
 		Common.give_reward_items{{name = 'coin', count = Balance.rocket_launch_coin_reward}}
 	end
+	
+	local force = game.forces[memory.force_name]
+	Common.notify_force_light(force,'Granted ' .. Balance.rocket_launch_coin_reward .. ' [item=coin] and ' .. destination.dynamic_data.rocketcoalreward .. ' fuel.')
 
 	if destination.dynamic_data.quest_type == Quest.enum.TIME and (not destination.dynamic_data.quest_complete) then
 		destination.dynamic_data.quest_progressneeded = 1
@@ -1266,7 +1281,7 @@ local function event_on_player_used_capsule(event)
 		local class = memory.classes_table[player_index]
 		if class == Classes.enum.SAMURAI then
 			-- vanilla heal is 80HP
-			player.character.health = player.character.health + 160
+			player.character.health = player.character.health + 200
 		end
 	end
 end

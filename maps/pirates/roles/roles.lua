@@ -267,6 +267,21 @@ function Public.make_captain(player)
     Public.update_privileges(player)
 end
 
+
+function Public.confirm_captain_exists(player_to_make_captain_otherwise)
+	local memory = Memory.get_crew_memory()
+	-- Currently this catches an issue where someone starts a crew and leaves it, and more players join later.
+
+	if not (memory.playerindex_captain and game.players[memory.playerindex_captain] and Common.validate_player(game.players[memory.playerindex_captain])) then
+		if player_to_make_captain_otherwise then
+			Public.make_captain(player_to_make_captain_otherwise)
+			game.print('Reassigning captain.')
+		else
+			log('Error: Couldn\'t make a captain.')
+		end
+	end
+end
+
 function Public.pass_captainhood(player, player_to_pass_to)
 	local global_memory = Memory.get_global_memory()
 	local memory = Memory.get_crew_memory()
@@ -410,7 +425,7 @@ function Public.captain_requisition_coins(captain_index)
 		end
 	
 		if total > 0 then 
-			Common.notify_force(game.forces[memory.force_name], 'The captain requisitioned ' .. total .. ' coins.')
+			Common.notify_force(game.forces[memory.force_name], 'The captain requisitioned ' .. Utils.bignumber_abbrevform2(total) .. ' coins.')
 		end
 	end
 end
@@ -463,15 +478,20 @@ function Public.add_player_to_permission_group(player, group_override)
         group.set_allows_action(defines.input_action.build_terrain, false)
         group.set_allows_action(defines.input_action.begin_mining, false)
         group.set_allows_action(defines.input_action.begin_mining_terrain, false)
-        group.set_allows_action(defines.input_action.deconstruct, false)
+        -- group.set_allows_action(defines.input_action.deconstruct, false) --pick up dead players
         group.set_allows_action(defines.input_action.activate_copy, false)
         group.set_allows_action(defines.input_action.activate_cut, false)
         group.set_allows_action(defines.input_action.activate_paste, false)
         group.set_allows_action(defines.input_action.upgrade, false)
 
 		group.set_allows_action(defines.input_action.grab_blueprint_record, false)
-		group.set_allows_action(defines.input_action.import_blueprint_string, false)
-		group.set_allows_action(defines.input_action.import_blueprint, false)
+		if not CoreData.blueprint_library_allowed then
+			group.set_allows_action(defines.input_action.open_blueprint_library_gui, false)
+		end
+		if not CoreData.blueprint_importing_allowed then
+			group.set_allows_action(defines.input_action.import_blueprint_string, false)
+			group.set_allows_action(defines.input_action.import_blueprint, false)
+		end
 
         group.set_allows_action(defines.input_action.open_gui, false)
         group.set_allows_action(defines.input_action.fast_entity_transfer, false)
@@ -494,15 +514,20 @@ function Public.add_player_to_permission_group(player, group_override)
         group.set_allows_action(defines.input_action.build_terrain, false)
         group.set_allows_action(defines.input_action.begin_mining, false)
         group.set_allows_action(defines.input_action.begin_mining_terrain, false)
-        group.set_allows_action(defines.input_action.deconstruct, false)
+        -- group.set_allows_action(defines.input_action.deconstruct, false) --pick up dead players
         group.set_allows_action(defines.input_action.activate_copy, false)
         group.set_allows_action(defines.input_action.activate_cut, false)
         group.set_allows_action(defines.input_action.activate_paste, false)
         group.set_allows_action(defines.input_action.upgrade, false)
 
 		group.set_allows_action(defines.input_action.grab_blueprint_record, false)
-		group.set_allows_action(defines.input_action.import_blueprint_string, false)
-		group.set_allows_action(defines.input_action.import_blueprint, false)
+		if not CoreData.blueprint_library_allowed then
+			group.set_allows_action(defines.input_action.open_blueprint_library_gui, false)
+		end
+		if not CoreData.blueprint_importing_allowed then
+			group.set_allows_action(defines.input_action.import_blueprint_string, false)
+			group.set_allows_action(defines.input_action.import_blueprint, false)
+		end
     end
 
     if not game.permissions.get_group('plebs') then
@@ -513,10 +538,15 @@ function Public.add_player_to_permission_group(player, group_override)
 			plebs_group.set_allows_action(defines.input_action.delete_permission_group, false)
 			plebs_group.set_allows_action(defines.input_action.add_permission_group, false)
 			plebs_group.set_allows_action(defines.input_action.admin_action, false)
-	
+
 			plebs_group.set_allows_action(defines.input_action.grab_blueprint_record, false)
-			-- plebs_group.set_allows_action(defines.input_action.import_blueprint_string, false)
-			-- plebs_group.set_allows_action(defines.input_action.import_blueprint, false)
+			if not CoreData.blueprint_library_allowed then
+				plebs_group.set_allows_action(defines.input_action.open_blueprint_library_gui, false)
+			end
+			if not CoreData.blueprint_importing_allowed then
+				plebs_group.set_allows_action(defines.input_action.import_blueprint_string, false)
+				plebs_group.set_allows_action(defines.input_action.import_blueprint, false)
+			end
 		end
     end
 
@@ -545,8 +575,13 @@ function Public.add_player_to_permission_group(player, group_override)
         not_trusted.set_allows_action(defines.input_action.set_train_stopped, false)
 
 		not_trusted.set_allows_action(defines.input_action.grab_blueprint_record, false)
-		-- not_trusted.set_allows_action(defines.input_action.import_blueprint_string, false)
-		-- not_trusted.set_allows_action(defines.input_action.import_blueprint, false)
+		if not CoreData.blueprint_library_allowed then
+			not_trusted.set_allows_action(defines.input_action.open_blueprint_library_gui, false)
+		end
+		if not CoreData.blueprint_importing_allowed then
+			not_trusted.set_allows_action(defines.input_action.import_blueprint_string, false)
+			not_trusted.set_allows_action(defines.input_action.import_blueprint, false)
+		end
     end
 
 	local group

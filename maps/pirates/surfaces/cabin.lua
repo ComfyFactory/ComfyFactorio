@@ -30,11 +30,14 @@ Public.Data.cabin_whitebelts_lrtp_order = {
 
 Public.Data.car_pos = {x = 7, y = 0}
 
-Public.Data.static_entities_bp = [[0eNqlmutu2kAQhd9lf5vIu94rr1JFFQlWaonYyDZtooh3L5c2ShOOd8/0JwI+ZmfP3Dy8qYfdod2PXT+r9Zua+s1+NQ+rp7Hbnl+/qLX2lXpVa2OPleoeh35S62+nD3ZP/WZ3/sj8um/VWnVz+6wq1W+ez69+DcO27VePP9ppVucv9tv2zDpW2a+2L/uxnabVPG76aT+M8+qh3X2EmON9pdp+7uauvRpzefH6vT88P7Tj6Vdum1Gp/TCdvjT0f0925y5Hq+/c8WzYJ4wpxNTLmKYQ0yxjbCHGLGNcIcYtY3whxi5jQiEmLGNiIcYvY1IhJi1jdF3IiRlOsY4zQtalStYZKetSLeuMmHWpmnVGzrpUzzqjRO3JaNeAE0iOAZyYS4gw1hAxsa4CIFOzIOAro0lfNYDDZmoLOA3tc5MhWjERndXRxCZjo/9C3A2b7emtG/nhHVSpbTe2j9c3T4Q/pXw4zPvDuVh//ZnAqgbZG1kQcmUiZeNAga9JjgccLRYLIhoxEZ21EcsPEa2YiE7txKkT2ejFRGRjoIkuYyNfMMIH4r/xfIufaL5n+LZm05CTpCGr2ewBbtAaFgQuzjZk+giAY0lOBBx5hUGWeXEaQsQgJqJTR3FAxs86NLf4SZxCgA9cecAEYOd7vHQ9CBdHhwvwr6PDBR2bDZcEOGy4aDRRO7EWIdKLxXhBZtXoAqmdG9gC8RR3ai7nEHp2QSRPDy9AP54dXjSYgjw7vWgwl3n5+AKRVi5EUyJE71ghGoEQPT3cg5HBs9O9BkOMj/K7QsgkvytbcleBLTg3sPm7CppOGuCyAl1ykGtDQ5OQTXTVAV1jcCwI9LFB3pxBpHy4uSDzSoysEr1EiXzRAQ6J/BMzcO2RrjqgjYp01QGNXfyPqoOQlnYXItGPh6G/6BIC+oZIPyBGS48ontMgMonvEiFTLZ57kAeTlj8aR1bSpQKS+FKBjsmWCgMazMSWCgO6weTlikO2yQd5iPyPzQlC8qsTtISp6VKAjNI1u+c2DSKxxQCT2G03JrELb0xid96YxK69MYndfGMSu/zGJHb/DUn0BhyT6B04RtFbcIyi9+AYRW/CMYpudq6o++r6D5z1h78CVepnO07XTjlqG5IJtvE2mXg8/gYLUs8x]]
+Public.Data.static_entities_bp = [[0eNqlmutu2kAQhd9lf5vIu94rr1JFFQmr1BKxLdu0iSLevRjaKE043j3bnwj4mJ05OxcPb+LhcIzD2Haz2L6JqdsNm7nfPI3tfnn9IrbSVuJVbJU+VaJ97LtJbL+dP9g+dbvD8pH5dYhiK9o5PotKdLvn5dWvvt/HbvP4I06zWL7Y7ePCOlXJr8aXYYzTtJnHXTcN/ThvHuLhI0Sd7isRu7md23g15vLi9Xt3fH6I4/lXbptRiaGfzl/qu78nuzOXo9V35rQY9gmjMjH1OqbJxDTrGJ2JUesYk4kx6xibidHrGJeJcesYn4mx65iQiQnrGFlncnyCk63jhJBlrpJlQsoyV8syIWaZq2aZkLPM1bNMKFFa8rZLwHEkRwGOTyVEeNcQMbCuAiBVsyDgKyVJXzWAw2ZqDTgN7XOVIOpiIjqroYlNwkb7hXjod/vzWzfywzuoEvt2jI/XN8+EP6W8P87DcSnWX3/GsapB9noWhFwZSNkYUOBrkmMBRxaLBRFVMRGdtSmWHyLqYiI6tSlOnchGW0xENjqaaBI28gXDfSD+e59v8QPNtwxf12waMiVpSEs2e4AIasWCQOB0Q6YPBzia5HjAKa8wyDJbnIYQ0RUT0al98YX0n3WobvFDcQoBPjD5F8YBO9/vS9uB62Lo6wL8a+jrgo7NXpcAOOx1kWiiNsVahEhbLMYLMqlG40jt3MBmiCe7UzMph9CzCyJZengB+rHs8CLBFGTZ6UWCucyWjy8QqcuFqHKEaA0rRFUgREsP92BksOx0L8EQY315rBAylMdK58TKsQXnBjYdKyfppAGC5eiSg1zrGpqEbKKrDuganWFBoI915c0ZRJYPNxdkWomeVaItUSJfdIBDPP/EDITd01UHtFGerjqgsfP/UXUQ8j+qTlYz7umqU9I7e0tHHTmEfnYGw+7ZsIP2x7MPzxRautTF+oFIemiBJL6EAH8FdmxRoF0MbAVRoLcL5Y/JoG204qFxtOKhTZ7cBitQugOt+AbtB2tyJYxJktwKY5IiF8OY1JC7YUzS5HoYkwy5IcYkSy6JMcmRa2JM8uyiGKMCuyqGqOw1uEzKPH8TntS5pDP6FXVfXf+msv3wf5lK/IzjdG0HvNQuKGekkY2tT6ff71SGKw==]]
 
 Public.Data.operable_entities_bp = [[0eNqV1NtqxCAQBuB3mWtTVnP2VUopyWbYCskY1G0bFt+9MUthKW4a7xzw/xyN5gb9eMXZKHIgb2CpmzOns4tRQ6i/QfKKwQJSFJ6BOmuyIF/XiepC3RimuGVGkKAcTsCAuilUX1oPSNn5A62DEKQBg+XZv1FnOrKzNi7rcXwMC//GAMkpp/DexFYs73SdejSrHl+ewaztGtL0u6PTS7ntKQx8aOkPJFKhNu7kRx2+7xRHHbHvlEedfN+pkg+ax6E6GRJxqEmGijjUJkN5HOKn1I/2rCXOU6/RU0mkXoC7tL677Y3Kh58Fg080douIhhd1K+pC5HlTVt7/AARAZgM=]]
 
 Public.Data.cabin_splitters = {
+	{x = -5, y = 9.5, direction = defines.direction.north, type = 0},
+	{x = -4, y = 8.5, direction = defines.direction.north, type = 0},
+	{x = -3, y = 7.5, direction = defines.direction.north, type = 0},
 	{x = -5, y = 7.5, direction = defines.direction.north, type = 1},
 	{x = -4, y = 6.5, direction = defines.direction.north, type = 1},
 	{x = -3, y = 5.5, direction = defines.direction.north, type = 1},
@@ -62,6 +65,7 @@ Public.Data.output_chest = {x = 3.5, y = -6.5}
 Public.Data.backup_output_chest = {x = 3.5, y = -7.5}
 
 Public.Data.input_chests = {
+	{x = 0.5, y = 6.5},
 	{x = 0.5, y = 4.5},
 	{x = 0.5, y = 2.5},
 	{x = 0.5, y = 0.5},
@@ -123,12 +127,12 @@ function Public.create_cabin_surface()
 			local name = 'express-splitter'
 			local p = {x = splitter.x, y = splitter.y}
 			local priority, filter
-			if splitter.type == 1 then
+			if splitter.type == 0 then
 				priority = 'right'
 				filter = 'coal'
 			elseif splitter.type <= 5 then
 				priority = 'right'
-				filter = game.item_prototypes[CoreData.cost_items[splitter.type - 1].name]
+				filter = game.item_prototypes[CoreData.cost_items[splitter.type].name]
 			elseif splitter.type == 6 then
 				priority = 'left'
 			elseif splitter.type == 7 then
@@ -197,7 +201,7 @@ function Public.create_cabin_surface()
 				e2.rotatable = false
 			end
 		end
-		local e = surface.create_entity({name = 'car', position = Public.Data.car_pos, force = boat.force_name, create_build_effect_smoke = false})
+		e = surface.create_entity({name = 'car', position = Public.Data.car_pos, force = boat.force_name, create_build_effect_smoke = false})
 		if e and e.valid then
 			e.get_inventory(defines.inventory.fuel).insert({name = 'wood', count = 16})
 			e.color = {148, 106, 52}

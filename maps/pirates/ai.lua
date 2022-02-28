@@ -128,9 +128,13 @@ end
 
 function Public.try_main_attack()
 	local wave_size_multiplier = 1
-    if Math.random(2) == 2 then return end --variance in attack sizes
-    if Math.random(12) == 1 then wave_size_multiplier = 1.8 end --variance in attack sizes
-    if Math.random(65) == 1 then wave_size_multiplier = 3.2 end --variance in attack sizes
+	local memory = Memory.get_crew_memory()
+	if memory.overworldx > 0 then
+		if Math.random(2) == 2 then return end --variance in attack sizes
+		if Math.random(10) == 1 then wave_size_multiplier = 1.8 end --variance in attack sizes
+		if Math.random(60) == 1 then wave_size_multiplier = 3.2 end --variance in attack sizes
+		if Math.random(500) == 1 then wave_size_multiplier = 5 end --variance in attack sizes
+	end
 
 	local memory = Memory.get_crew_memory()
     local surface = game.surfaces[Common.current_destination().surface_name]
@@ -149,9 +153,13 @@ end
 
 function Public.try_secondary_attack()
 	local wave_size_multiplier = 1
-    if Math.random(2) == 2 then return end --variance in attack sizes
-    if Math.random(12) == 1 then wave_size_multiplier = 1.8 end --variance in attack sizes
-    if Math.random(65) == 1 then wave_size_multiplier = 3.2 end --variance in attack sizes
+	local memory = Memory.get_crew_memory()
+	if memory.overworldx > 0 then
+		if Math.random(2) == 2 then return end --variance in attack sizes
+		if Math.random(10) == 1 then wave_size_multiplier = 1.8 end --variance in attack sizes
+		if Math.random(60) == 1 then wave_size_multiplier = 3.2 end --variance in attack sizes
+		if Math.random(500) == 1 then wave_size_multiplier = 5 end --variance in attack sizes
+	end
 
 	local memory = Memory.get_crew_memory()
     local surface = game.surfaces[Common.current_destination().surface_name]
@@ -177,9 +185,13 @@ end
 
 function Public.try_rogue_attack()
 	local wave_size_multiplier = 1
-    if Math.random(2) == 2 then return end --variance in attack sizes
-    if Math.random(12) == 1 then wave_size_multiplier = 1.8 end --variance in attack sizes
-    if Math.random(65) == 1 then wave_size_multiplier = 3.2 end --variance in attack sizes
+	local memory = Memory.get_crew_memory()
+	if memory.overworldx > 0 then
+		if Math.random(2) == 2 then return end --variance in attack sizes
+		if Math.random(10) == 1 then wave_size_multiplier = 1.8 end --variance in attack sizes
+		if Math.random(60) == 1 then wave_size_multiplier = 3.2 end --variance in attack sizes
+		if Math.random(500) == 1 then wave_size_multiplier = 5 end --variance in attack sizes
+	end
 
 	local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[Common.current_destination().surface_name]
@@ -261,7 +273,7 @@ function Public.poke_inactive_scripted_biters()
     end
 end
 
-function Public.create_mail_delivery_biters()
+function Public.create_mail_delivery_biters() --these travel cross-map between bases to add a little life and spookyness
 	local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[Common.current_destination().surface_name]
 	local enemy_force_name = memory.enemy_force_name
@@ -344,7 +356,7 @@ end
 function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spawner, fraction_of_floating_pollution, minimum_avg_units, maximum_units, unit_pollutioncost_multiplier, enforce_type)
     maximum_units = maximum_units or 256
 
-	log('ai spawning attempt params: ' .. (fraction_of_floating_pollution or '') .. ' ' .. (minimum_avg_units or '') .. ' ' .. (maximum_units or '') .. ' ' .. (unit_pollutioncost_multiplier or '') .. ' ' .. (enforce_type or ''))
+	-- log('ai spawning attempt params: ' .. (fraction_of_floating_pollution or '') .. ' ' .. (minimum_avg_units or '') .. ' ' .. (maximum_units or '') .. ' ' .. (unit_pollutioncost_multiplier or '') .. ' ' .. (enforce_type or ''))
 	
 	local memory = Memory.get_crew_memory()
 	local surface = spawner.surface
@@ -387,7 +399,7 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 
 	if memory.overworldx == 0 then
 		-- less biters:
-		base_pollution_cost_multiplier = base_pollution_cost_multiplier * 2.25
+		base_pollution_cost_multiplier = base_pollution_cost_multiplier * 2.30 --tuned to teach players to defend, but then to feel relaxing once they do
 	end
 
 	base_pollution_cost_multiplier = base_pollution_cost_multiplier * unit_pollutioncost_multiplier
@@ -669,14 +681,16 @@ end
 --- small group of revenge biters ---
 
 
-function Public.revenge_group(surface, p, target, type)
+function Public.revenge_group(surface, p, target, type, bonus_evo, amount_multiplier)
+	amount_multiplier = amount_multiplier or 1
+	bonus_evo = bonus_evo or 0
 	type = type or 'biter'
 	local memory = Memory.get_crew_memory()
 	local enemy_force_name = memory.enemy_force_name
 
 	local name, count
 	if type == 'biter' then
-		name = Common.get_random_biter_type(game.forces[memory.enemy_force_name].evolution_factor)
+		name = Common.get_random_biter_type(game.forces[memory.enemy_force_name].evolution_factor + bonus_evo)
 
 		if name == 'small-biter' then
 			count = 6
@@ -688,7 +702,7 @@ function Public.revenge_group(surface, p, target, type)
 			count = 1
 		end
 	elseif type == 'spitter' then
-		name = Common.get_random_spitter_type(game.forces[memory.enemy_force_name].evolution_factor)
+		name = Common.get_random_spitter_type(game.forces[memory.enemy_force_name].evolution_factor + bonus_evo)
 
 		if name == 'small-spitter' then
 			count = 10
@@ -704,7 +718,7 @@ function Public.revenge_group(surface, p, target, type)
 	if (not (name and count and count>0)) then return end
 
     local units = {}
-	for i = 1, count do
+	for i = 1, Math.floor(count * amount_multiplier) do
 		local p2 = surface.find_non_colliding_position('wooden-chest', p, 5, 0.5)
 		if p2 then
             local biter = surface.create_entity({name = name, force = enemy_force_name, position = p})
@@ -733,7 +747,7 @@ end
 ----------- biter raiding parties -----------
 
 
-function Public.spawn_boat_biters(boat, max_evo)
+function Public.spawn_boat_biters(boat, max_evo, count, width)
 	-- max_evolution_bonus = max_evolution_bonus or 0.3
 	local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[boat.surface_name]
@@ -741,15 +755,15 @@ function Public.spawn_boat_biters(boat, max_evo)
 	local enemy_force_name = boat.force_name
 	-- local evolution = game.forces[enemy_force_name].evolution_factor
 
-    local p = {boat.position.x - 4.5, boat.position.y}
+    local p = {boat.position.x - width/2, boat.position.y}
 
     local units = {}
-	for i = 1, 12 do
+	for i = 1, count do
         local name = Common.get_random_unit_type(max_evo - i * 0.04)
         -- local name = Common.get_random_unit_type(evolution + i/15 * max_evolution_bonus)
         -- local name = Common.get_random_unit_type(evolution + 3 * i/100)
 
-		local p2 = surface.find_non_colliding_position('wooden-chest', p, 5, 0.5)
+		local p2 = surface.find_non_colliding_position('wooden-chest', p, 8, 0.5) --needs to be wooden-chest for collisions to work properly
 		if p2 then
             local biter = surface.create_entity({name = name, force = enemy_force_name, position = p2})
     

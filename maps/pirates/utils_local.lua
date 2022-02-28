@@ -286,14 +286,15 @@ function Public.time_mediumform(seconds)
 		str1 = '-'
 	end
 	local str2
-	if seconds2 < 60 - 1 then
-		str2 = string.format('%.0fs', Math.ceil(seconds2))
-	elseif seconds2 < 60 * 60 - 1 then
-		str2 = string.format('%.0fm%.0fs', Math.floor(Math.ceil(seconds2) / 60), Math.ceil(seconds2) % 60)
-	elseif seconds2 < 60 * 60 * 24 - 1 then
-		str2 = string.format('%.0fh%.0fm%.0fs', Math.floor(Math.ceil(seconds2) / (60*60)), Math.floor(Math.ceil(seconds2) / 60) % 60, Math.ceil(seconds2) % 60)
+	local seconds3 = Math.floor(seconds2)
+	if seconds3 < 60 - 1 then
+		str2 = string.format('%.0fs', seconds3)
+	elseif seconds3 < 60 * 60 - 1 then
+		str2 = string.format('%.0fm%.0fs', Math.floor(seconds3 / 60), seconds3 % 60)
+	elseif seconds3 < 60 * 60 * 24 - 1 then
+		str2 = string.format('%.0fh%.0fm%.0fs', Math.floor(seconds3 / (60*60)), Math.floor(seconds3 / 60) % 60, seconds3 % 60)
 	else
-		str2 = string.format('%.0fd%.0fh%.0fm%.0fs', Math.floor(Math.ceil(seconds2) / (24*60*60)), Math.floor(Math.ceil(seconds2) / (60*60)) % 24, Math.floor(Math.ceil(seconds2) / 60) % 60, Math.ceil(seconds2) % 60)
+		str2 = string.format('%.0fd%.0fh%.0fm%.0fs', Math.floor(seconds3 / (24*60*60)), Math.floor(seconds3 / (60*60)) % 24, Math.floor(seconds3 / 60) % 60, seconds3 % 60)
 	end
 	return str1 .. str2
 end
@@ -306,7 +307,7 @@ function Public.deepcopy(obj) --doesn't copy metatables
 end
 
 
-function Public.bignumber_abbrevform(number)
+function Public.bignumber_abbrevform(number) --e.g. 516, 1.2k, 21.4k, 137k
 	local str1, str2, number2
 	if number >= 0 then
 		number2 = number
@@ -320,13 +321,15 @@ function Public.bignumber_abbrevform(number)
 		str2 = '0'
 	elseif number2 < 1000 then
 		str2 = string.format('%.0d', Math.floor(number2))
-	else
+	elseif number2 < 100000 then
 		str2 = string.format('%.1fk', Math.floor(number2/100)/10)
+	else
+		str2 = string.format('%.0dk', Math.floor(number2/1000))
 	end
 
 	return str1 .. str2
 end
-function Public.bignumber_abbrevform2(number)
+function Public.bignumber_abbrevform2(number) --e.g. 516, 1.2k, 21k, 136k
 	local str1, str2, number2
 	if number >= 0 then
 		number2 = number

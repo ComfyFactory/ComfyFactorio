@@ -485,7 +485,7 @@ function Public.update_gui(player)
 
 	pirates_flow.fuel_piratebutton_flow_1.fuel_piratebutton_flow_2.fuel_label_1.caption = '[item=coal] ' .. Utils.bignumber_abbrevform(memory.stored_fuel or 0)
 	pirates_flow.fuel_piratebutton_flow_1.fuel_piratebutton_flow_2.fuel_label_2.caption = Utils.negative_rate_abbrevform(Progression.fuel_depletion_rate() or 0)
-	local color_scale = Math.max(Math.min((- (Progression.fuel_depletion_rate() or 0))/35, 1),0)
+	local color_scale = Math.max(Math.min((- (Progression.fuel_depletion_rate() or 0))/50, 1),0)
 	pirates_flow.fuel_piratebutton_flow_1.fuel_piratebutton_flow_2.fuel_label_2.style.font_color = {
 		r = GuiCommon.fuel_color_1.r * (1-color_scale) + GuiCommon.fuel_color_2.r * color_scale,
 		g = GuiCommon.fuel_color_1.g * (1-color_scale) + GuiCommon.fuel_color_2.g * color_scale,

@@ -179,9 +179,8 @@ function Public.spawn_covered(destination, points_to_avoid)
 			rendering1 = rendering1,
 			rendering2 = rendering2,
 		}
-		if _DEBUG then
-			log('covered position: ' .. p.x .. ', ' .. p.y)
-		end
+
+		log('covered market position: ' .. p.x .. ', ' .. p.y)
 	end
 
 	return p
@@ -348,7 +347,7 @@ function Public.spawn_enemy_boat(type)
 			state = Boats.enum_state.APPROACHING,
 			type = type,
 			speed = 4.5,
-			position = {x = - surface.map_gen_settings.width/2 + 8.5, y = (memory.boat.dockedposition or memory.boat.position).y + offsets[Math.random(4)]},
+			position = {x = - surface.map_gen_settings.width/2 + 17.5, y = (memory.boat.dockedposition or memory.boat.position).y + offsets[Math.random(4)]},
 			force_name = memory.enemy_force_name,
 			surface_name = surface.name,
 			unit_group = nil,
@@ -358,15 +357,12 @@ function Public.spawn_enemy_boat(type)
 
 		Boats.place_boat(boat, CoreData.static_boat_floor, true, true)
 	
-		local e = surface.create_entity({name = 'biter-spawner', force = boat.force_name, position = {boat.position.x - 3, boat.position.y}})
+		local e = surface.create_entity({name = 'biter-spawner', force = boat.force_name, position = {boat.position.x + Boats.get_scope(boat).Data.spawn_point.x, boat.position.y + Boats.get_scope(boat).Data.spawn_point.y}})
 		boat.spawner = e
 
 		return enemyboats[#enemyboats]
 	end
 end
-
-
-
 
 
 return Public

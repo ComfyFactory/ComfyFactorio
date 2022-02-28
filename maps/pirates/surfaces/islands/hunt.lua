@@ -119,10 +119,10 @@ function Public.mid_farness_position_1(args, points_to_avoid)
 
 	if _DEBUG then
 		if p_ret == nil then
-			log("No good position found after 500 tries")
+			log("No good mid_farness_position_1 position found after 500 tries")
 			-- p_ret = {x = 0, y = 0}
 		else
-			log(string.format("Position found after %f tries: %f, %f", tries, p_ret.x, p_ret.y))
+			log(string.format("mid_farness_position_1 Position found after %f tries: %f, %f", tries, p_ret.x, p_ret.y))
 		end
 	end
 

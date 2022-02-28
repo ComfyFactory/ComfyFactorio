@@ -56,9 +56,11 @@ function Public.generate_overworld_destination(p)
 	local island_subtype_raffle = {'none', 'none', Surfaces.Island.enum.STANDARD, Surfaces.Island.enum.STANDARD_VARIANT, Surfaces.Island.enum.RED_DESERT, Surfaces.Island.enum.HORSESHOE}
 
 	if macrop.x >= 6 then island_subtype_raffle[#island_subtype_raffle + 1] = Surfaces.Island.enum.WALKWAYS end
+	if macrop.x >= 6 then island_subtype_raffle[#island_subtype_raffle + 1] = 'none' end
 	if macrop.x >= 16 then island_subtype_raffle[#island_subtype_raffle + 1] = Surfaces.Island.enum.SWAMP end
 	if macrop.x >= 16 then island_subtype_raffle[#island_subtype_raffle + 1] = 'none' end
 	if macrop.x >= 26 then island_subtype_raffle[#island_subtype_raffle + 1] = Surfaces.Island.enum.RADIOACTIVE end
+	if macrop.x >= 26 then island_subtype_raffle[#island_subtype_raffle + 1] = 'none' end
 
 	if macrop.x == 0 then
 		if macrop.y == 0 then
@@ -98,17 +100,14 @@ function Public.generate_overworld_destination(p)
 	elseif macrop.x == 12 then --just after krakens, but dock is here too, so there's a choice
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.SWAMP
-	elseif macrop.x == 15 or macrop.x == 23 or (macrop.x > 25 and macrop.x % 10 == 0) then
+	elseif macrop.x == 15 or (macrop.x > 25 and macrop.x % 12 == 3) then
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.RADIOACTIVE
 		 --electric engines needed at 20
-	elseif macrop.x == 16 then --space because we need to add more content to the game around here, it's too long otherwise
-		type = nil
 	elseif macrop.x == 20 then --space because we need to add more content to the game around here, it's too long otherwise
 		type = nil
-	elseif macrop.x == 23 then
-		type = Surfaces.enum.ISLAND
-		subtype = Surfaces.Island.enum.SWAMP
+	elseif macrop.x == 21 then --space because we need to add more content to the game around here, it's too long otherwise
+		type = nil
 	elseif macrop.x == 24 then
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.WALKWAYS --moved from 20 to 22, let's not force a no-fight island right after the merchant dock
@@ -177,30 +176,40 @@ function Public.generate_overworld_destination(p)
 		
 		local normal_costitems = {'small-lamp', 'engine-unit', 'advanced-circuit'}
 		local base_cost_0 = {
-			['small-lamp'] = (macrop.x-2)*10,
+			['small-lamp'] = (macrop.x-2)*20,
 		}
 		local base_cost_1 = {
-			['small-lamp'] = (macrop.x-2)*10,
-			['engine-unit'] = (macrop.x-7)*8,
+			['small-lamp'] = (macrop.x-2)*20,
+			['engine-unit'] = (macrop.x-7)*15,
 		}
 		local base_cost_2 = {
-			['small-lamp'] = (macrop.x-2)*10,
-			['engine-unit'] = (macrop.x-7)*8,
-			['advanced-circuit'] = (macrop.x-10)*5,
+			['small-lamp'] = (macrop.x-2)*20,
+			['engine-unit'] = (macrop.x-7)*15,
+			['advanced-circuit'] = (macrop.x-10)*10,
 		}
 		local base_cost_3 = {
-			['small-lamp'] = (macrop.x-2)*10,
-			['engine-unit'] = (macrop.x-7)*8,
-			['advanced-circuit'] = (macrop.x-10)*5,
-			-- ['electric-engine-unit'] = (macrop.x-16)*10,
+			['small-lamp'] = (macrop.x-2)*20,
+			['engine-unit'] = (macrop.x-7)*15,
+			['advanced-circuit'] = (macrop.x-15)*10,
+			['electric-engine-unit'] = (macrop.x-20)*10,
 		}
 		local base_cost_4 = {
-			['small-lamp'] = (macrop.x-2)*10,
-			['engine-unit'] = (macrop.x-7)*8,
-			['advanced-circuit'] = (macrop.x-10)*5,
-			-- ['electric-engine-unit'] = (macrop.x-16)*10,
+			['small-lamp'] = (macrop.x-2)*20,
+			['engine-unit'] = (macrop.x-7)*15,
+			['advanced-circuit'] = (macrop.x-15)*10,
+			['electric-engine-unit'] = (macrop.x-20)*10,
 		}
-		if macrop.x <= 5 then
+		if macrop.x == 0 then
+			-- if _DEBUG then
+			-- 	cost_to_leave = {
+			-- 		['small-lamp'] = 5,
+			-- 		['engine-unit'] = 5,
+			-- 		['advanced-circuit'] = 5,
+			-- 		['electric-engine-unit'] = 5,
+			-- 	}
+			-- end
+			-- cost_to_leave = nil
+		elseif macrop.x <= 5 then
 			-- cost_to_leave = {['small-lamp'] = 5}
 			cost_to_leave = nil
 		elseif macrop.x <= 8 then
@@ -211,21 +220,22 @@ function Public.generate_overworld_destination(p)
 			cost_to_leave = {
 				['small-lamp'] = (macrop.x-2)*20,
 				['engine-unit'] = (macrop.x-7)*15,
-				-- ['electric-engine-unit'] = 2,
+				['electric-engine-unit'] = 2,
 			}
-		elseif macrop.x <= 19 then
+		elseif macrop.x <= 22 then
 			cost_to_leave = base_cost_2
 		elseif macrop.x < 25 then
 			cost_to_leave = base_cost_3
 		else
-			cost_to_leave = base_cost_4
+			cost_to_leave = Utils.deepcopy(base_cost_4)
 			local delete = normal_costitems[Math.random(#normal_costitems)]
 			cost_to_leave[delete] = nil
 		end
 		-- override:
 		if subtype == Surfaces.Island.enum.RADIOACTIVE then
 			cost_to_leave = {
-				['uranium-235'] = Math.ceil(80 + (macrop.x)),
+				['uranium-235'] = Math.ceil(Math.ceil(80 + (macrop.x))), --this simply takes too long with 4 centrifuges and no beacons. so lets add beacons!
+				-- ['uranium-235'] = Math.ceil(Math.ceil(80 + (macrop.x)/2)),
 			}
 		end
 
@@ -311,6 +321,7 @@ function Public.generate_overworld_destination(p)
 		else
 			upgrade_for_sale = Upgrades.enum.EXTRA_HOLD
 		end --upgrades like UNLOCK_MERCHANTS will slot themselves in when necessary, due to .overwrite_a_dock_upgrade()
+		-- one day it's worth making this system more readable
 
 		local static_params = Utils.deepcopy(Dock.Data.static_params_default)
 		static_params.upgrade_for_sale = upgrade_for_sale
@@ -360,7 +371,7 @@ function Public.generate_overworld_destination(p)
 				end
 				dest.dynamic_data.crowsnest_renderings[price_name] = {
 					text_rendering = rendering.draw_text{
-						text = Utils.bignumber_abbrevform(price_count),
+						text = Utils.bignumber_abbrevform2(price_count),
 						surface = surface,
 						target = {x = x + 0.5, y = y - 1.25 - i * 3.5},
 						color = CoreData.colors.renderingtext_green,
@@ -443,9 +454,12 @@ function Public.ensure_lane_generated_up_to(lane_yvalue, x)
 			-- a little hack that we're updating this here rather than Crowsnest, due to the dependency on Shop to avoid a loop... almost finished 1.0, so too late to figure out how to restructure things for now!
 			for _, dest in pairs(memory.destinations) do
 				if dest.static_params.upgrade_for_sale and dest.dynamic_data.crowsnest_renderings then
+					if rendering.is_valid(dest.dynamic_data.crowsnest_renderings.base_text_rendering) then
+						rendering.set_text(dest.dynamic_data.crowsnest_renderings.base_text_rendering, Upgrades.crowsnest_display_form[dest.static_params.upgrade_for_sale])
+					end
 					for rendering_name, r in pairs(dest.dynamic_data.crowsnest_renderings) do
 						if type(r) == 'table' and r.text_rendering and rendering.is_valid(r.text_rendering) then
-							rendering.set_text(r.text_rendering, Utils.bignumber_abbrevform(Shop.main_shop_data_1[dest.static_params.upgrade_for_sale].base_cost[rendering_name]))
+							rendering.set_text(r.text_rendering, Utils.bignumber_abbrevform2(Shop.main_shop_data_1[dest.static_params.upgrade_for_sale].base_cost[rendering_name]))
 						end
 					end
 				end
@@ -583,10 +597,10 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 			local speedrun_time_str = Utils.time_longform(speedrun_time)
 			memory.game_won = true
 			-- memory.crew_disband_tick = game.tick + 1200
-			local message = '[' .. memory.name .. '] Victory, on v' .. CoreData.version_string .. ', ' .. CoreData.difficulty_options[memory.difficulty_option].text .. ', cap ' .. CoreData.capacity_options[memory.capacity_option].text3 .. '. Playtime after 1st island: '
+			local message = '[' .. memory.name .. '] Victory, on v' .. CoreData.version_string .. ', ' .. CoreData.difficulty_options[memory.difficulty_option].text .. ', cap ' .. CoreData.capacity_options[memory.capacity_option].text3 .. '. Playtime: '
 			Server.to_discord_embed_raw(CoreData.comfy_emojis.goldenobese .. message .. speedrun_time_str)
 			game.play_sound{path='utility/game_won', volume_modifier=0.9}
-			Common.notify_game(message .. '[font=default-large-semibold]' .. speedrun_time_str .. '[/font]', CoreData.colors.notify_victory)
+			Common.notify_game(message .. '[font=default-large-semibold]' .. speedrun_time_str .. '[/font] since 1st island.', CoreData.colors.notify_victory)
 
 			memory.victory_pause_until_tick = game.tick + 60*5
 			memory.victory_continue_message = true
@@ -601,7 +615,7 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 					modal_captain = name
 				end
 			end
-			Highscore.write_score(memory.secs_id, memory.name, modal_captain, memory.completion_time or 0, memory.overworldx, CoreData.version_float, memory.difficulty, memory.capacity)
+			Highscore.write_score(memory.secs_id, memory.name, modal_captain, memory.completion_time or 0, memory.overworldx, CoreData.version_float, memory.difficulty, memory.max_players_recorded or 0)
 		end
 
 		return true

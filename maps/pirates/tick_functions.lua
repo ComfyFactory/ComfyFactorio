@@ -3,8 +3,9 @@ local Memory = require 'maps.pirates.memory'
 local Gui = require 'maps.pirates.gui.gui'
 local Ai = require 'maps.pirates.ai'
 local Structures = require 'maps.pirates.structures.structures'
-local Islands = require 'maps.pirates.surfaces.islands.islands'
 local Boats = require 'maps.pirates.structures.boats.boats'
+local Islands = require 'maps.pirates.surfaces.islands.islands'
+local IslandsCommon = require 'maps.pirates.surfaces.islands.common'
 local Surfaces = require 'maps.pirates.surfaces.surfaces'
 local Interface = require 'maps.pirates.interface'
 local Roles = require 'maps.pirates.roles.roles'
@@ -93,7 +94,13 @@ function Public.prevent_disembark(tickinterval)
 		for _, player in pairs(game.connected_players) do
 			if player.surface and player.surface.valid and boat.surface_name and player.surface.name == boat.surface_name and ps[player.index] and (not Boats.on_boat(boat, player.position)) then
 				Common.notify_player_error(player, 'Now is no time to disembark.')
-				player.teleport(memory.spawnpoint)
+				-- player.teleport(memory.spawnpoint)
+				local p = player.surface.find_non_colliding_position('character', memory.spawnpoint, 5, 0.1)
+				if p then
+					player.teleport(p)
+				else
+					player.teleport(memory.spawnpoint)
+				end
 			end
 		end
 	end
@@ -131,9 +138,15 @@ function Public.raft_raids(tickinterval)
 
 	for _, raid in pairs(scheduled_raft_raids) do
 		if timer == raid.timeinseconds then
-			local boat = Islands.spawn_enemy_boat(Boats.enum.RAFT)
+			local type
+			if memory.overworldx >= 40*18 then
+				type = Boats.enum.RAFTLARGE
+			else
+				type = Boats.enum.RAFT
+			end
+			local boat = Islands.spawn_enemy_boat(type)
 			if boat then
-				Ai.spawn_boat_biters(boat, raid.max_evo)
+				Ai.spawn_boat_biters(boat, raid.max_evo, Boats.get_scope(boat).Data.capacity, Boats.get_scope(boat).Data.width)
 			end
 		end
 	end
@@ -1001,7 +1014,7 @@ function Public.slower_boat_tick(tickinterval)
 	end
 
 	local p = memory.boat.position
-	if p and destination.surface_name and game.surfaces[destination.surface_name] and game.surfaces[destination.surface_name].valid then
+	if p and (not (destination.subtype and destination.subtype == IslandsCommon.enum.RADIOACTIVE)) and destination.surface_name and game.surfaces[destination.surface_name] and game.surfaces[destination.surface_name].valid then --no locomotive pollute on radioactive islands
 		local pollution = Balance.boat_passive_pollution_per_minute(destination.dynamic_data.timer) / 3600 * tickinterval
 	
 		game.surfaces[destination.surface_name].pollute(p, pollution)
@@ -1072,14 +1085,14 @@ function Public.quest_progress_tick(tickinterval)
 
 	if destination.dynamic_data.quest_type == Quest.enum.RESOURCEFLOW and (not destination.dynamic_data.quest_complete) then
 		local force = game.forces[memory.force_name]
-		if not force and force.valid then return end
+		if not (force and force.valid and destination.dynamic_data.quest_params) then return end
 		destination.dynamic_data.quest_progress = force.item_production_statistics.get_flow_count{name = destination.dynamic_data.quest_params.item, input = true, precision_index = defines.flow_precision_index.five_seconds, count = false}
 		Quest.try_resolve_quest()
 	end
 
 	if destination.dynamic_data.quest_type == Quest.enum.RESOURCECOUNT and (not destination.dynamic_data.quest_complete) then
 		local force = game.forces[memory.force_name]
-		if not force and force.valid then return end
+		if not (force and force.valid and destination.dynamic_data.quest_params) then return end
 		destination.dynamic_data.quest_progress = force.item_production_statistics.get_flow_count{name = destination.dynamic_data.quest_params.item, input = true, precision_index = defines.flow_precision_index.one_thousand_hours, count = true} - destination.dynamic_data.quest_params.initial_count
 		Quest.try_resolve_quest()
 	end

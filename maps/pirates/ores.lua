@@ -43,7 +43,7 @@ function Public.try_ore_spawn(surface, realp, source_name, density_bonus)
 			local placed
 			if choice == 'crude-oil' then
 
-				placed = (3000 * (3 + 15 * Math.slopefromto(choices[choice], 1, 8))) * (0.6 + Math.random()) --3000 is 1%
+				placed = Common.oil_abstract_to_real(choices[choice]/2 + 10) * (0.6 + Math.random())
 
 				placed = Math.min(placed, Common.oil_abstract_to_real(choices[choice]))
 
@@ -54,12 +54,19 @@ function Public.try_ore_spawn(surface, realp, source_name, density_bonus)
 					placed = 0
 				end
 
+				if placed then
+					choices[choice] = Math.max(0, choices[choice] - Common.oil_real_to_abstract(placed))
+					if placed > 0 and not destination.dynamic_data.ore_types_spawned[choice] then
+						destination.dynamic_data.ore_types_spawned[choice] = true
+					end
+					return true
+				end
 			else
 				local real_amount = Math.max(Common.minimum_ore_placed_per_tile, Common.ore_abstract_to_real(choices[choice]))
 
-				if choice == 'coal' then --hack for now
-					real_amount = real_amount * 2
-				end
+				-- if choice == 'coal' then --@TOFIX: hack for now --Whyy???
+				-- 	real_amount = real_amount * 1.5
+				-- end --this was 2x but we moved to improving coal yields in each file instead...
 
 				local density = (density_bonus + 17 + 4 * Math.random()) -- not too big, and not too much variation; it makes players have to stay longer
 				
@@ -70,14 +77,14 @@ function Public.try_ore_spawn(surface, realp, source_name, density_bonus)
 				end
 			
 				placed = Public.draw_noisy_ore_patch(surface, realp, choice, real_amount, radius_squared, density)
-			end
-
-			if placed then
-				choices[choice] = Math.max(0, choices[choice] - Common.ore_real_to_abstract(placed))
-				if placed > 0 and not destination.dynamic_data.ore_types_spawned[choice] then
-					destination.dynamic_data.ore_types_spawned[choice] = true
+				
+				if placed then
+					choices[choice] = Math.max(0, choices[choice] - Common.ore_real_to_abstract(placed))
+					if placed > 0 and not destination.dynamic_data.ore_types_spawned[choice] then
+						destination.dynamic_data.ore_types_spawned[choice] = true
+					end
+					return true
 				end
-				return true
 			end
 		end
 	end

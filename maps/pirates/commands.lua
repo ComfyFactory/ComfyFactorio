@@ -78,7 +78,7 @@ end)
 
 commands.add_command(
 'ccolor',
-'ccolor is an extension to the built-in /color command, with more colors.',
+'/ccolor is an extension to the built-in /color command, with more colors.',
 function(cmd)
 	local param = tostring(cmd.parameter)
 	local player_index = cmd.player_index
@@ -177,6 +177,37 @@ local function check_trusted(cmd)
 	end
 	return true
 end
+
+
+commands.add_command(
+'dump_highscores',
+'dump_highscores',
+function(cmd)
+	if check_admin(cmd) then
+		local player = game.players[cmd.player_index]
+		if not Common.validate_player(player) then return end
+		local crew_id = tonumber(string.sub(game.players[cmd.player_index].force.name, -3, -1)) or nil
+		Memory.set_working_id(crew_id)
+		local memory = Memory.get_crew_memory()
+		Highscore.dump_highscores()
+		player.print('Highscores dumped.')
+	end
+end)
+
+
+commands.add_command(
+'overwrite_scores_specific',
+'overwrite_scores_specific',
+function(cmd)
+	if check_admin(cmd) then
+		local player = game.players[cmd.player_index]
+		if not Common.validate_player(player) then return end
+		local crew_id = tonumber(string.sub(game.players[cmd.player_index].force.name, -3, -1)) or nil
+		Memory.set_working_id(crew_id)
+		local memory = Memory.get_crew_memory()
+		if Highscore.overwrite_scores_specific() then player.print('Highscores overwritten.') end
+	end
+end)
 
 
 commands.add_command(
@@ -536,7 +567,7 @@ function(cmd)
 		local memory = Memory.get_crew_memory()
 		
 		game.print('faking a highscore...')
-		Highscore.write_score(memory.secs_id, 'fakers', 0, 40, CoreData.version_float, 1, 8)
+		Highscore.write_score(memory.secs_id, 'fakers', 0, 40, CoreData.version_float, 1, 1)
 	end
 end)
 
@@ -611,8 +642,24 @@ if _DEBUG then
 			local memory = Memory.get_crew_memory()
 			Islands.spawn_enemy_boat(Boats.enum.RAFT)
 			local boat = memory.enemyboats[1]
-			Ai.spawn_boat_biters(boat, 0.89)
+			Ai.spawn_boat_biters(boat, 0.89, Boats.get_scope(boat).Data.capacity, Boats.get_scope(boat).Data.width)
 			game.print('enemy boat spawned')
+		end
+	end)
+	
+	commands.add_command(
+	'rad2',
+	'rad2',
+	function(cmd)
+		local param = tostring(cmd.parameter)
+		if check_admin(cmd) then
+		local player = game.players[cmd.player_index]
+			Memory.set_working_id(1)
+			local memory = Memory.get_crew_memory()
+			Islands.spawn_enemy_boat(Boats.enum.RAFTLARGE)
+			local boat = memory.enemyboats[1]
+			Ai.spawn_boat_biters(boat, 0.89, Boats.get_scope(boat).Data.capacity, Boats.get_scope(boat).Data.width)
+			game.print('large enemy boat spawned')
 		end
 	end)
 

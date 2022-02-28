@@ -97,7 +97,7 @@ function Public.raffle(values, weights) --arguments of the form {[a] = A, [b] = 
 		end
 		-- negative weights treated as zero
 	end
-	assert(total_weight > 0)
+	if (not (total_weight > 0)) then return nil end
 
 	local cumulative_probability = 0
 	local rng = Public.random()

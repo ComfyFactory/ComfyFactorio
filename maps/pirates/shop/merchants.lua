@@ -23,19 +23,19 @@ function Public.generate_merchant_trades(market)
 	
 		local game_completion_progress = Common.game_completion_progress()
 		if game_completion_progress <= 1 then
-			market.add_market_item{price = {{'coin', 12000}, {'raw-fish', 100}}, offer = {type = 'give-item', item = 'modular-armor', count = 1}}
-			market.add_market_item{price = {{'coin', 6000}, {'raw-fish', 10}}, offer = {type = 'give-item', item = 'battery-equipment', count = 1}}
+			market.add_market_item{price = {{'coin', 8000}, {'raw-fish', 100}}, offer = {type = 'give-item', item = 'modular-armor', count = 1}}
+			market.add_market_item{price = {{'coin', 5000}, {'raw-fish', 10}}, offer = {type = 'give-item', item = 'battery-equipment', count = 1}}
 			market.add_market_item{price = {{'coin', 400}, {'raw-fish', 10}}, offer = {type = 'give-item', item = 'solar-panel-equipment', count = 1}}
 			market.add_market_item{price = {{'coin', 1000}, {'raw-fish', 10}}, offer = {type = 'give-item', item = 'night-vision-equipment', count = 1}}
 			market.add_market_item{price = {{'coin', 2000}, {'raw-fish', 10}}, offer = {type = 'give-item', item = 'energy-shield-equipment', count = 1}}
 			market.add_market_item{price = {{'coin', 1000}, {'raw-fish', 10}}, offer = {type = 'give-item', item = 'personal-roboport-equipment', count = 1}}
 		else
-			market.add_market_item{price = {{'coin', 18000}, {'raw-fish', 100}}, offer = {type = 'give-item', item = 'modular-armor', count = 1}}
+			market.add_market_item{price = {{'coin', 8000}, {'raw-fish', 100}}, offer = {type = 'give-item', item = 'modular-armor', count = 1}}
 			market.add_market_item{price = {{'coin', 12000}, {'raw-fish', 100}}, offer = {type = 'give-item', item = 'power-armor', count = 1}}
-			market.add_market_item{price = {{'coin', 6000}, {'raw-fish', 10}}, offer = {type = 'give-item', item = 'battery-equipment', count = 1}}
+			market.add_market_item{price = {{'coin', 5000}, {'raw-fish', 10}}, offer = {type = 'give-item', item = 'battery-equipment', count = 1}}
 			market.add_market_item{price = {{'coin', 2000}, {'raw-fish', 10}}, offer = {type = 'give-item', item = 'energy-shield-equipment', count = 1}}
 			market.add_market_item{price = {{'coin', 1000}, {'raw-fish', 10}}, offer = {type = 'give-item', item = 'personal-roboport-equipment', count = 1}}
-			market.add_market_item{price = {{'coin', 10000}, {'raw-fish', 10}}, offer = {type = 'give-item', item = 'battery-mk2-equipment', count = 1}}
+			market.add_market_item{price = {{'coin', 8000}, {'raw-fish', 10}}, offer = {type = 'give-item', item = 'battery-mk2-equipment', count = 1}}
 			market.add_market_item{price = {{'coin', 400}, {'raw-fish', 10}}, offer = {type = 'give-item', item = 'solar-panel-equipment', count = 1}}
 			market.add_market_item{price = {{'coin', 6000}, {'raw-fish', 10}}, offer = {type = 'give-item', item = 'fusion-reactor-equipment', count = 1}}
 			market.add_market_item{price = {{'coin', 1000}, {'raw-fish', 10}}, offer = {type = 'give-item', item = 'night-vision-equipment', count = 1}}

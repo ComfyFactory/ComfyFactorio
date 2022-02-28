@@ -66,12 +66,12 @@ end
 
 function Public.silo_count()
 	local E = Public.silo_energy_needed_MJ()
-	return Math.ceil(E/(16.8*120)) --no more than 2 minutes to charge it
+	return Math.ceil(E/(16.8*150)) --no more than 2.5 minutes to charge it
 end
 
 function Public.silo_total_pollution()
 	return (
-		280 * (Common.difficulty()^(1.2)) * Public.onthefly_scaling_with_players_rule()^(4/5) * (3 + 0.7 * (Common.overworldx()/40)^(1.5)) --shape of the curve with x is tuned
+		300 * (Common.difficulty()^(1.2)) * Public.onthefly_scaling_with_players_rule()^(4/5) * (3.2 + 0.7 * (Common.overworldx()/40)^(1.5)) --shape of the curve with x is tuned
 )
 end
 
@@ -100,13 +100,20 @@ function Public.fuel_depletion_rate_static()
 
 	local T = Public.expected_time_on_island()
 
-	return - 1300 * (Common.overworldx()/40)^(7/10) * Public.onthefly_scaling_with_players_rule()^(1/3) * Math.sloped(Common.difficulty(), 3/4) / T --the extra player dependency accounts for the fact that even in compressed time, more players get more resources...
+	local rate
+	if Common.overworldx() > 0 then
+		rate = 380 * (2.5 + (Common.overworldx()/40)^(10/10)) * Public.onthefly_scaling_with_players_rule()^(1/3) * Math.sloped(Common.difficulty(), 3/4) / T --the extra player dependency accounts for the fact that even in compressed time, more players get more resources...
+	else
+		rate = 0
+	end
+
+	return -rate
 end
 
 function Public.fuel_depletion_rate_sailing()
 	if (not Common.overworldx()) then return 0 end
 
-	return - 10 * (1 + 0.5 * (Common.overworldx()/40)^(5/10))
+	return - 8 * (1 + 0.13 * (Common.overworldx()/40)^(10/10))
 end
 
 function Public.boat_passive_pollution_per_minute(time)
@@ -183,7 +190,7 @@ function Public.evolution_per_biter_base_kill()
 end
 
 function Public.evolution_per_full_silo_charge()
-	return 0.08
+	return 0.07
 end
 
 function Public.bonus_damage_to_humans()
@@ -256,7 +263,7 @@ end
 
 Public.covered_first_appears_at = 40
 
-Public.silo_max_hp = 10000
+Public.silo_max_hp = 8000
 
 function Public.pistol_damage_multiplier() return 1.95 end
 
@@ -342,7 +349,7 @@ function Public.player_ammo_damage_modifiers() -- modifiers are fractional. bull
 		['capsule'] = 0,
 		['electric'] = 0,
 		['flamethrower'] = 0, --these nerfs are elsewhere for finer control
-		['grenade'] = 0,
+		['grenade'] = -0.05,
 		['landmine'] = 0,
 		['melee'] = 0, -- doesn't do anything apparently
 		['rocket'] = 0,
@@ -410,17 +417,17 @@ end
 
 Public.covered1_entry_price_data_raw = { --watch out that the raw_materials chest can only hold e.g. 4.8 iron-plates
 	-- choose things that are easy to make at outposts
-	{1, 0, 1, false, {
+	{1, 0, 999, false, {
 		price = {name = 'iron-stick', count = 1500},
 		raw_materials = {{name = 'iron-plate', count = 750}}}, {}},
-	{0.8, 0, 1, false, {
+	{0.8, 0, 999, false, {
 		price = {name = 'copper-cable', count = 1500},
 		raw_materials = {{name = 'copper-plate', count = 750}}}, {}},
 
 	{1, 0, 0.3, true, {
 		price = {name = 'small-electric-pole', count = 800},
 		raw_materials = {{name = 'copper-plate', count = 400}}}, {}},
-	{1, 0.1, 1, false, {
+	{1, 0.1, 999, false, {
 		price = {name = 'assembling-machine-1', count = 80},
 		raw_materials = {{name = 'iron-plate', count = 1760}, {name = 'copper-plate', count = 360}}}, {}},
 	{1, 0, 0.2, false, {
@@ -436,10 +443,10 @@ Public.covered1_entry_price_data_raw = { --watch out that the raw_materials ches
 	-- 	price = {name = 'piercing-rounds-magazine', count = 100},
 	-- 	raw_materials = {{name = 'iron-plate', count = 400}, {name = 'copper-plate', count = 500}, {name = 'steel-plate', count = 100}}}, {}},
 
-	{1, 0.1, 1, false, {
+	{1, 0.1, 999, false, {
 		price = {name = 'stone-furnace', count = 400},
 		raw_materials = {}}, {}},
-	{1, 0.5, 1, false, {
+	{1, 0.5, 999, false, {
 		price = {name = 'advanced-circuit', count = 100},
 		raw_materials = {{name = 'iron-plate', count = 200}, {name = 'copper-plate', count = 500}, {name = 'plastic-bar', count = 200}}}, {}},
 

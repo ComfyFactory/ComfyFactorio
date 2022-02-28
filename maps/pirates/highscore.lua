@@ -35,10 +35,18 @@ Global.register(
 local function sort_list(method, column_name, score_list)
     local comparators = {
         ['ascending'] = function(a, b)
-            return a[column_name] < b[column_name]
+			if column_name == 'completion_time' then
+				return (a[column_name] < b[column_name]) and not (a[column_name] == 0 and b[column_name] ~= 0)
+			else
+				return a[column_name] < b[column_name]
+			end
         end,
         ['descending'] = function(a, b)
-            return a[column_name] > b[column_name]
+			if column_name == 'completion_time' then
+				return (a[column_name] > b[column_name])
+			else
+				return a[column_name] > b[column_name]
+			end
         end
     }
 	Utils.stable_sort(score_list, comparators[method])
@@ -170,7 +178,7 @@ end
 
 
 
-local function local_highscores_write_stats(crew_secs_id, name, captain_name, completion_time, leagues_travelled, version, difficulty, capacity)
+local function local_highscores_write_stats(crew_secs_id, name, captain_name, completion_time, leagues_travelled, version, difficulty, max_players)
 
 	if not this.score_table['player'] then this.score_table['player'] = {} end
 	if not this.score_table['player'].runs then this.score_table['player'].runs = {} end
@@ -193,12 +201,12 @@ local function local_highscores_write_stats(crew_secs_id, name, captain_name, co
         -- if difficulty then
         --     t.difficulty = difficulty
         -- end
-        -- if capacity then
-        --     t.capacity = capacity
+        -- if max_players then
+        --     t.max_players = max_players
         -- end
 		
 		if crew_secs_id then
-			t.runs[crew_secs_id] = {name = name, captain_name = captain_name, version = version, completion_time = completion_time, leagues_travelled = leagues_travelled, difficulty = difficulty, capacity = capacity}
+			t.runs[crew_secs_id] = {name = name, captain_name = captain_name, version = version, completion_time = completion_time, leagues_travelled = leagues_travelled, difficulty = difficulty, max_players = max_players}
 
 			-- log(inspect(t))
 
@@ -241,13 +249,23 @@ function Public.load_in_scores()
     end
 end
 
-function Public.write_score(crew_secs_id, name, captain_name, completion_time, leagues_travelled, version, difficulty, capacity)
+function Public.dump_highscores()
+	log(inspect(this.score_table['player']))
+end
+
+function Public.overwrite_scores_specific()
+	return nil
+	-- the correct format is to put _everything_ from a dump into the third argument:
+	-- Server.set_data(score_dataset, score_key, {})
+end
+
+function Public.write_score(crew_secs_id, name, captain_name, completion_time, leagues_travelled, version, difficulty, max_players)
     local secs = Server.get_current_time()
 	-- if secs then game.print('secs1: ' .. secs) else game.print('secs: false') end
     if not secs then
         return
     else
-        local_highscores_write_stats(crew_secs_id, name, captain_name, completion_time, leagues_travelled, version, difficulty, capacity)
+        local_highscores_write_stats(crew_secs_id, name, captain_name, completion_time, leagues_travelled, version, difficulty, max_players)
 
         if is_game_modded() then
 			Server.set_data(score_dataset, score_key_modded, this.score_table['player'])
@@ -285,7 +303,7 @@ local function get_saved_scores_for_displaying()
 					leagues_travelled = score and score.leagues_travelled or 0,
 					version = score and score.version or 0,
 					difficulty = score and score.difficulty or 0,
-					capacity = score and score.capacity or 0,
+					max_players = score and score.max_players or 0,
 				}
 			)
 		end
@@ -297,7 +315,7 @@ local function get_saved_scores_for_displaying()
 			leagues_travelled = 0,
 			version = 0,
 			difficulty = 0,
-			capacity = 0,
+			max_players = 0,
 		}
 	end
 
@@ -343,7 +361,7 @@ local function score_gui(data)
         {column = 'leagues_travelled', name = '_leagues_travelled', caption = 'Leagues'},
         {column = 'version', name = '_version', caption = 'Version'},
         {column = 'difficulty', name = '_difficulty', caption = 'Difficulty'},
-        {column = 'capacity', name = '_capacity', caption = 'Capacity'},
+        {column = 'max_players', name = '_max_players', caption = 'PeakPlayers'},
     }
 
     local sorting_pref = this.sort_by[player.index] or {}
@@ -416,10 +434,10 @@ local function score_gui(data)
         }
 
         local n = entry.completion_time > 0 and Utils.time_mediumform(entry.completion_time or 0) or 'N/A'
-        local l = entry.leagues_travelled > 0 and entry.leagues_travelled or 'N/A'
-        local v = entry.version > 0 and entry.version or 'N/A'
-        local d = entry.difficulty > 0 and entry.difficulty or 'N/A'
-        local c = entry.capacity > 0 and entry.capacity or 'N/A'
+        local l = entry.leagues_travelled > 0 and entry.leagues_travelled or '?'
+        local v = entry.version > 0 and entry.version or '?'
+        local d = entry.difficulty > 0 and entry.difficulty or '?'
+        local c = entry.max_players > 0 and entry.max_players or '?'
         local line = {
             {caption = entry.name, color = special_color},
             {caption = entry.captain_name or '?'},
@@ -481,7 +499,7 @@ local function on_gui_click(event)
         ['_completion_time'] = 'completion_time',
         ['_leagues_travelled'] = 'leagues_travelled',
         ['_difficulty'] = 'difficulty',
-        ['_capacity'] = 'capacity',
+        ['_max_players'] = 'max_players',
     }
     if element_to_column[name] then
 		--@TODO: Extend

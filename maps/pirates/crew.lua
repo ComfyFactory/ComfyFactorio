@@ -36,7 +36,8 @@ function Public.difficulty_vote(player_index, difficulty_id)
 	local option = CoreData.difficulty_options[difficulty_id]
 	if not option then return end
 
-	Common.notify_force(game.forces[memory.force_name], player.name .. ' voted for difficulty ' .. option.text, option.associated_color)
+	local color = option.associated_color
+	Common.notify_force(game.forces[memory.force_name], player.name .. ' voted [color=' .. color.r .. ',' .. color.g .. ',' .. color.b .. ']for difficulty ' .. option.text .. '[/color]')
 
 	if not (memory.difficulty_votes) then memory.difficulty_votes = {} end
 	memory.difficulty_votes[player_index] = difficulty_id
@@ -67,7 +68,8 @@ function Public.update_difficulty()
 	end
 
 	if modal_id ~= memory.difficulty_option then
-		local message = 'Difficulty changed to ' .. CoreData.difficulty_options[modal_id].text .. '.'
+		local color = CoreData.difficulty_options[modal_id].associated_color
+		local message = 'Difficulty [color=' .. color.r .. ',' .. color.g .. ',' .. color.b .. ']changed to ' .. CoreData.difficulty_options[modal_id].text .. '[/color].'
 
 		Common.notify_force(game.forces[memory.force_name], message)
 		Server.to_discord_embed_raw(CoreData.comfy_emojis.kewl .. '[' .. memory.name .. '] ' .. message)
@@ -101,7 +103,7 @@ function Public.try_lose(reason)
 		local playtimetext = Utils.time_longform((memory.age or 0)/60)
 		
 		Server.to_discord_embed_raw(CoreData.comfy_emojis.trashbin .. '[' .. memory.name .. '] Game over — ' .. reason ..'. Playtime: ' .. playtimetext .. ' since 1st island.')
-		Common.notify_game('[' .. memory.name .. '] Game over — ' .. reason ..'. Playtime: [font=default-large-semibold]' .. playtimetext .. ' since 1st island[/font].', CoreData.colors.notify_gameover)
+		Common.notify_game('[' .. memory.name .. '] Game over — ' .. reason ..'. Playtime: [font=default-large-semibold]' .. playtimetext .. '[/font] since 1st island.', CoreData.colors.notify_gameover)
 	
 		local force = game.forces[memory.force_name]
 		if not (force and force.valid) then return end
@@ -591,6 +593,7 @@ function Public.initialise_crew(accepted_proposal)
 	memory.stored_fuel = 8000
 
 	memory.captain_accrued_time_data = {}
+	memory.max_players_recorded = 0
 
 	memory.classes_table = {}
 	memory.officers_table = {}
@@ -633,7 +636,12 @@ function Public.summon_crew(tickinterval)
 	local print = false
 	for _, player in pairs(game.connected_players) do
 		if player.surface and player.surface.valid and boat.surface_name and player.surface.name == boat.surface_name and (not Boats.on_boat(boat, player.position)) then
-			player.teleport(memory.spawnpoint)
+			local p = player.surface.find_non_colliding_position('character', memory.spawnpoint, 5, 0.1)
+			if p then
+				player.teleport(p)
+			else
+				player.teleport(memory.spawnpoint)
+			end
 			print = true
 		end
 	end
@@ -732,7 +740,7 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.recipes['locomotive'].enabled = false
 	crew_force.recipes['car'].enabled = false
 	crew_force.recipes['cargo-wagon'].enabled = false
-	crew_force.recipes['rail'].enabled = true
+	crew_force.recipes['rail'].enabled = true --needed for purple sci
 
 	-- crew_force.recipes['underground-belt'].enabled = false
 	-- crew_force.recipes['fast-underground-belt'].enabled = false

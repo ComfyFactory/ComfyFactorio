@@ -60,7 +60,7 @@ function Public.update_character_properties(tickinterval)
 			if memory.classes_table and memory.classes_table[player_index] then
 				local class = memory.classes_table[player_index]
 				if class == Classes.enum.SAMURAI then
-					health_boost = health_boost + 500
+					health_boost = health_boost + 800
 				end
 			end
 			if memory.playerindex_captain and memory.playerindex_captain == player_index then

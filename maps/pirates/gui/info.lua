@@ -43,7 +43,9 @@ function Public.toggle_window(player)
 	flow5.style.font_color = GuiCommon.friendly_font_color
 	flow5.style.single_line = false
 	flow5.style.font = 'debug'
-	flow5.style.bottom_margin = 16
+	flow5.style.top_margin = -2
+	flow5.style.bottom_margin = 0
+	-- flow5.style.bottom_margin = 16
 
 	Public.flow_add_info_sections(flow2, {'game_description'})
 
