@@ -101,7 +101,7 @@ function Public.get_replacement_tile(surface, position)
         shuffle(vectors)
         for k, v in pairs(vectors) do
             local tile = surface.get_tile(position.x + v[1], position.y + v[2])
-            if tile and not tile.collides_with('resource-layer') then
+            if tile and tile.valid and not tile.collides_with('resource-layer') then
                 return tile.name
             end
         end
