@@ -273,7 +273,7 @@ function Public.confirm_captain_exists(player_to_make_captain_otherwise)
 	local memory = Memory.get_crew_memory()
 	-- Currently this catches an issue where someone starts a crew and leaves it, and more players join later.
 
-	if not (memory.playerindex_captain and game.players[memory.playerindex_captain] and Common.validate_player(game.players[memory.playerindex_captain])) then
+	if (memory.id and memory.id > 0 and memory.crewstatus and memory.crewstatus == 'adventuring') and (not (memory.playerindex_captain and game.players[memory.playerindex_captain] and Common.validate_player(game.players[memory.playerindex_captain]))) then --fixme: enum hacked
 		if player_to_make_captain_otherwise then
 			Public.make_captain(player_to_make_captain_otherwise)
 			game.print('Reassigning captain.')
