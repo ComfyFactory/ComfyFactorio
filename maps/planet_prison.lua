@@ -1855,6 +1855,14 @@ local function move_to_orbit(player)
     orbit_perms.add_player(player)
 end
 
+local function on_marked_for_deconstruction(event)
+    local entity = event.entity
+    local player = game.get_player(event.player_index)
+    if entity and entity.valid and player and player.valid then
+        entity.cancel_deconstruction(player.force.name)
+    end
+end
+
 local function on_rocket_launched(e)
     local surf = game.get_surface(this.active_surface)
     if not surf or not surf.valid then
@@ -1887,6 +1895,7 @@ Event.add(defines.events.on_player_banned, on_player_died)
 Event.add(defines.events.on_pre_player_left_game, on_pre_player_left_game)
 Event.add(defines.events.on_player_respawned, on_player_respawned)
 Event.add(defines.events.on_player_dropped_item, on_player_dropped_item)
+Event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
