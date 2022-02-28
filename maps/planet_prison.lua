@@ -4,7 +4,6 @@
 local Global = require 'utils.global'
 local Session = require 'utils.datastore.session_data'
 local Event = require 'utils.event'
-local ComfyGui = require 'comfy_panel.main'
 local Freeplay = require 'utils.freeplay'
 local Server = require 'utils.server'
 local MapFuntions = require 'tools.map_functions'
@@ -520,7 +519,6 @@ this.bp = {
 }
 local function init_game()
     Freeplay.set('disabled', true)
-    ComfyGui.modify_gui('Players', true)
     LayersFunctions.init()
     ClaimsFunctions.init(MapConfig.claim_markers, MapConfig.claim_max_distance)
 
@@ -926,7 +924,8 @@ local function init_player(p)
     this.perks[p.name] = {
         flashlight_enable = true,
         minimap = false,
-        chat_global = true
+        chat_global = true,
+        init = true
     }
 
     for i = 1, 7 do
@@ -983,8 +982,9 @@ end
 local function on_player_joined_game(e)
     local p = game.players[e.player_index]
     player_reconnected(p)
+    redraw_gui(p)
 
-    if this.perks and this.perks[p.name] then
+    if this.perks and this.perks[p.name] and this.perks[p.name].init then
         return
     end
     init_player(p)
