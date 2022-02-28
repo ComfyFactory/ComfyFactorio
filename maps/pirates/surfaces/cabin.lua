@@ -30,7 +30,7 @@ Public.Data.cabin_whitebelts_lrtp_order = {
 
 Public.Data.car_pos = {x = 7, y = 0}
 
-Public.Data.static_entities_bp = [[0eNqlmutu2kAQhd9lf5vIu94rr1JFFQmr1BKxLdu0iSLevRjaKE043j3bnwj4mJ05OxcPb+LhcIzD2Haz2L6JqdsNm7nfPI3tfnn9IrbSVuJVbJU+VaJ97LtJbL+dP9g+dbvD8pH5dYhiK9o5PotKdLvn5dWvvt/HbvP4I06zWL7Y7ePCOlXJr8aXYYzTtJnHXTcN/ThvHuLhI0Sd7isRu7md23g15vLi9Xt3fH6I4/lXbptRiaGfzl/qu78nuzOXo9V35rQY9gmjMjH1OqbJxDTrGJ2JUesYk4kx6xibidHrGJeJcesYn4mx65iQiQnrGFlncnyCk63jhJBlrpJlQsoyV8syIWaZq2aZkLPM1bNMKFFa8rZLwHEkRwGOTyVEeNcQMbCuAiBVsyDgKyVJXzWAw2ZqDTgN7XOVIOpiIjqroYlNwkb7hXjod/vzWzfywzuoEvt2jI/XN8+EP6W8P87DcSnWX3/GsapB9noWhFwZSNkYUOBrkmMBRxaLBRFVMRGdtSmWHyLqYiI6tSlOnchGW0xENjqaaBI28gXDfSD+e59v8QPNtwxf12waMiVpSEs2e4AIasWCQOB0Q6YPBzia5HjAKa8wyDJbnIYQ0RUT0al98YX0n3WobvFDcQoBPjD5F8YBO9/vS9uB62Lo6wL8a+jrgo7NXpcAOOx1kWiiNsVahEhbLMYLMqlG40jt3MBmiCe7UzMph9CzCyJZengB+rHs8CLBFGTZ6UWCucyWjy8QqcuFqHKEaA0rRFUgREsP92BksOx0L8EQY315rBAylMdK58TKsQXnBjYdKyfppAGC5eiSg1zrGpqEbKKrDuganWFBoI915c0ZRJYPNxdkWomeVaItUSJfdIBDPP/EDITd01UHtFGerjqgsfP/UXUQ8j+qTlYz7umqU9I7e0tHHTmEfnYGw+7ZsIP2x7MPzxRautTF+oFIemiBJL6EAH8FdmxRoF0MbAVRoLcL5Y/JoG204qFxtOKhTZ7cBitQugOt+AbtB2tyJYxJktwKY5IiF8OY1JC7YUzS5HoYkwy5IcYkSy6JMcmRa2JM8uyiGKMCuyqGqOw1uEzKPH8TntS5pDP6FXVfXf+msv3wf5lK/IzjdG0HvNQuKGekkY2tT6ff71SGKw==]]
+Public.Data.static_entities_bp = [[0eNqlmt1u4jAQhd/F16HKOP4Lr1JVK1qsbiSaoCTstqp49yWwW9EtJ/FxLyPIx9g+4zP28K4ed4e475t2VOt3NbSb/WrsVs99s52eX9VaXKHe1FqbY6Gap64d1Pr+9MXmud3spq+Mb/uo1qoZ44sqVLt5mZ5+d902tqunn3EY1fRiu40T61gsvhpf930chtXYb9ph3/Xj6jHuriH6+FCo2I7N2MRLMOeHtx/t4eUx9qdfuR1GofbdcHqpa/+N7M6eh1be2eMU2H8YnYgp5zFVIqaax5hEjJ7H2ESMnce4RIyZx/hEjJ/HhESMm8fUiZh6HiNlIicscJJ1vCBkSVWyLEhZUrUsC2KWVDXLgpwlVc+yoERxZLYL4HiSowEnLG2IMNcQsWanCoB0yYLAXGkh56oCHHanNoBT0XOuF4gmm4jGamlitRCj+0LcdZvt6aMb+8MHqFDbpo9Plw9PhL9W3h3G/WEy668/41nVoHgDC0JTWZOyscDgS5LjAEeyxYKIOpuIxlplyw8R+RSxV6P+pEN9i2+zN1IUscuOGBF9cgp6MPKPDGxakIAV7yj+KuzPCX+LX9N8x/BNye5TNmefMsJuLyD5jGZBQB2mIvcXDziG5ATAsdm7CiLmZ1RI2QMMm18hI78M7UtoNuhCDSy4ZY2pBhy2ThN0+Mz3I4issqVzRi5qxxpSOzewy+KxyecYuzQhjq7OEYmu2JB+AqsfcGCwbMUm4AjjynwhIqTkC1GnCNFpVog6Q4iONRsB1bVj3UZAve/y7QYi8/1GTNJasYZzA5uwVoHeNNBi0ZaDptbzlwMgJk+7DqifPHs9IKCi8/n3AxCZf/qRpOOPt6wSc84WnjcdNCG06cBlp10HlFGedh1Q2IVvuA5CfsN1kkrnQLtOTu0cKnrV0YQYmgSWPVh22UH5E9irZY3aHD5bPxBJH1ogibcQMF81e2zRoFysWQfRoLardf5lPIqNVjwMjlY8jMmSjVMNrLumFY9AnmyeQlAg26cQVJMNVASSsiR7qJgkZBsVkzTZScWkimymYpIh26mYZNmGKkY5tqWKUZ5tqmJUYNuqGMV3C8+oh+Lyd4711f9KCvUr9sOlFghifK29FSuVK4/HPzs+Pbo=]]
 
 Public.Data.operable_entities_bp = [[0eNqV1NtqxCAQBuB3mWtTVnP2VUopyWbYCskY1G0bFt+9MUthKW4a7xzw/xyN5gb9eMXZKHIgb2CpmzOns4tRQ6i/QfKKwQJSFJ6BOmuyIF/XiepC3RimuGVGkKAcTsCAuilUX1oPSNn5A62DEKQBg+XZv1FnOrKzNi7rcXwMC//GAMkpp/DexFYs73SdejSrHl+ewaztGtL0u6PTS7ntKQx8aOkPJFKhNu7kRx2+7xRHHbHvlEedfN+pkg+ax6E6GRJxqEmGijjUJkN5HOKn1I/2rCXOU6/RU0mkXoC7tL677Y3Kh58Fg080douIhhd1K+pC5HlTVt7/AARAZgM=]]
 
@@ -53,12 +53,15 @@ Public.Data.cabin_splitters = {
 	{x = -5, y = -0.5, direction = defines.direction.north, type = 5},
 	{x = -4, y = -1.5, direction = defines.direction.north, type = 5},
 	{x = -3, y = -2.5, direction = defines.direction.north, type = 5},
-	{x = -5, y = -2.5, direction = defines.direction.north, type = 6},
-	{x = -4, y = -3.5, direction = defines.direction.north, type = 6},
-	{x = -4, y = -8.5, direction = defines.direction.north, type = 6},
-	{x = -5, y = -9.5, direction = defines.direction.north, type = 6},
-	{x = -3, y = -7.5, direction = defines.direction.north, type = 7},
-	{x = 0.5, y = -7, direction = defines.direction.west, type = 7},
+	{x = -5, y = 1.5, direction = defines.direction.north, type = 6},
+	{x = -4, y = 0.5, direction = defines.direction.north, type = 6},
+	{x = -3, y = -0.5, direction = defines.direction.north, type = 6},
+	{x = -5, y = -0.5, direction = defines.direction.north, type = 7},
+	{x = -4, y = -1.5, direction = defines.direction.north, type = 7},
+	{x = -4, y = -8.5, direction = defines.direction.north, type = 7},
+	{x = -5, y = -9.5, direction = defines.direction.north, type = 7},
+	{x = -3, y = -7.5, direction = defines.direction.north, type = 8},
+	{x = 0.5, y = -7, direction = defines.direction.west, type = 9},
 }
 
 Public.Data.output_chest = {x = 3.5, y = -6.5}
@@ -71,6 +74,7 @@ Public.Data.input_chests = {
 	{x = 0.5, y = 0.5},
 	{x = 0.5, y = -1.5},
 	{x = 0.5, y = -3.5},
+	{x = 0.5, y = -5.5},
 }
 
 Public.Data.surfacename_rendering_pos = {x = -0.5, y = -15}
@@ -130,12 +134,12 @@ function Public.create_cabin_surface()
 			if splitter.type == 0 then
 				priority = 'right'
 				filter = 'coal'
-			elseif splitter.type <= 5 then
+			elseif splitter.type <= 6 then
 				priority = 'right'
 				filter = game.item_prototypes[CoreData.cost_items[splitter.type].name]
-			elseif splitter.type == 6 then
-				priority = 'left'
 			elseif splitter.type == 7 then
+				priority = 'left'
+			elseif splitter.type == 8 then
 				priority = 'right'
 				filter = 'landfill'
 			end

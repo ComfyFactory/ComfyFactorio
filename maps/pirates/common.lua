@@ -59,8 +59,8 @@ function Public.difficulty() return Memory.get_crew_memory().difficulty end
 function Public.capacity() return Memory.get_crew_memory().capacity end
 -- function Public.mode() return Memory.get_crew_memory().mode end
 function Public.overworldx() return Memory.get_crew_memory().overworldx end
-function Public.game_completion_progress() return 0.9 end
--- function Public.game_completion_progress() return Public.overworldx()/CoreData.victory_x end
+function Public.game_completion_progress() return Public.overworldx()/CoreData.victory_x end
+function Public.game_completion_progress_capped() return Math.min(Public.overworldx()/CoreData.victory_x, 1) end
 function Public.capacity_scale()
 	local capacity = Public.capacity()
 	if not capacity then --e.g. for EE wattage on boats not owned by a crew
@@ -786,7 +786,7 @@ function Public.get_random_worm_type(evolution)
 
 	if r < 1 - 1/0.7*(evolution + 0.1) then
 		return 'small-worm-turret'
-	elseif r < 1 - 0.8/0.8*(evolution - 0.2) then
+	elseif r < 1 - 0.75/0.75*(evolution - 0.25) then
 		return 'medium-worm-turret'
 	elseif r < 1 - 0.4/0.4*(evolution - 0.6) then
 		return 'big-worm-turret'

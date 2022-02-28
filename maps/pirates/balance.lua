@@ -35,12 +35,12 @@ end
 
 Public.rocket_launch_coin_reward = 5000
 
-function Public.onthefly_scaling_with_players_rule()
-	return (Common.activecrewcount()/10)^(1/2)
+function Public.crew_scale()
+	return Common.activecrewcount()/10
 end
 
 function Public.silo_base_est_time()
-	local T = Public.expected_time_on_island() * Public.onthefly_scaling_with_players_rule()^(1/3) --to undo some of the time scaling
+	local T = Public.expected_time_on_island() * Public.crew_scale()^(2/10) --to undo some of the time scaling
 	local est_secs
 	if T > 0 then
 		est_secs = T/6
@@ -71,7 +71,7 @@ end
 
 function Public.silo_total_pollution()
 	return (
-		300 * (Common.difficulty()^(1.2)) * Public.onthefly_scaling_with_players_rule()^(4/5) * (3.2 + 0.7 * (Common.overworldx()/40)^(1.5)) --shape of the curve with x is tuned
+		300 * (Common.difficulty()^(1.2)) * Public.crew_scale()^(2/5) * (3.2 + 0.7 * (Common.overworldx()/40)^(1.5)) --shape of the curve with x is tuned
 )
 end
 
@@ -79,7 +79,7 @@ end
 function Public.max_time_on_island_formula() --always >0  --tuned
 	return 60 * (
 			(32 + 2 * (Common.overworldx()/40)^(1/3))
-	) / Public.onthefly_scaling_with_players_rule()^(2/3) / Math.sloped(Common.difficulty(), 1/4)
+	) / Public.crew_scale()^(3/5) / Math.sloped(Common.difficulty(), 1/4) --changed crew_scale factor significantly to help smaller crews
 end
 
 
@@ -102,7 +102,7 @@ function Public.fuel_depletion_rate_static()
 
 	local rate
 	if Common.overworldx() > 0 then
-		rate = 380 * (2.5 + (Common.overworldx()/40)^(10/10)) * Public.onthefly_scaling_with_players_rule()^(1/3) * Math.sloped(Common.difficulty(), 3/4) / T --the extra player dependency accounts for the fact that even in compressed time, more players get more resources...
+		rate = 380 * (2.5 + (Common.overworldx()/40)^(10/10)) * Public.crew_scale()^(1/6) * Math.sloped(Common.difficulty(), 3/4) / T --the extra player dependency accounts for the fact that even in compressed time, more players get more resources...
 	else
 		rate = 0
 	end
@@ -132,8 +132,8 @@ function Public.boat_passive_pollution_per_minute(time)
 	end
 
 	return boost * (
-			6 * Common.difficulty() * (Common.overworldx()/40)^(16/10) * (Public.onthefly_scaling_with_players_rule())^(1/2)
-	 )
+			6 * Common.difficulty() * (Common.overworldx()/40)^(16/10) * (Public.crew_scale())^(1/2)
+	 ) -- No T dependence! Is that the right idea? I wrote it this way earlier, and it can make sense, but I'm not 100% sure.
 end
 
 
@@ -221,7 +221,7 @@ function Public.periodic_free_resources_per_destination_5_seconds(x)
 end
 
 function Public.class_resource_scale()
-	return 1 / Public.onthefly_scaling_with_players_rule()
+	return 1 / (Public.crew_scale()^(3/5))
 end
 
 function Public.biter_base_density_scale()
@@ -239,7 +239,7 @@ function Public.launch_fuel_reward()
 end
 
 function Public.quest_reward_multiplier()
-	return (0.4 + 0.08 * (Common.overworldx()/40)^(8/10)) * Math.sloped(Common.difficulty(), 1/3) * (Public.onthefly_scaling_with_players_rule())^(1/4)
+	return (0.4 + 0.08 * (Common.overworldx()/40)^(8/10)) * Math.sloped(Common.difficulty(), 1/3) * (Public.crew_scale())^(1/8)
 end
 
 function Public.island_richness_avg_multiplier()
@@ -247,7 +247,7 @@ function Public.island_richness_avg_multiplier()
 end
 
 function Public.resource_quest_multiplier()
-	return (1.0 + 0.075 * (Common.overworldx()/40)^(8/10)) * Math.sloped(Common.difficulty(), 1/3) * (Public.onthefly_scaling_with_players_rule())^(1/4)
+	return (1.0 + 0.075 * (Common.overworldx()/40)^(8/10)) * Math.sloped(Common.difficulty(), 1/3) * (Public.crew_scale())^(1/8)
 end
 
 
@@ -278,7 +278,7 @@ function Public.kraken_kill_reward()
 end
 
 function Public.kraken_health()
-	return Math.ceil(2500 * Math.max(1, 1 + 0.1 * ((Common.overworldx()/40)^(13/10)-6)) * (Public.onthefly_scaling_with_players_rule()^(3/4)) * Math.sloped(Common.difficulty(), 1/2))
+	return Math.ceil(2500 * Math.max(1, 1 + 0.1 * ((Common.overworldx()/40)^(13/10)-6)) * (Public.crew_scale()^(5/8)) * Math.sloped(Common.difficulty(), 1/2))
 end
 
 Public.kraken_regen_scale = 0.5
@@ -417,17 +417,17 @@ end
 
 Public.covered1_entry_price_data_raw = { --watch out that the raw_materials chest can only hold e.g. 4.8 iron-plates
 	-- choose things that are easy to make at outposts
-	{1, 0, 999, false, {
+	{1, 0, 1, false, {
 		price = {name = 'iron-stick', count = 1500},
 		raw_materials = {{name = 'iron-plate', count = 750}}}, {}},
-	{0.8, 0, 999, false, {
+	{0.8, 0, 1, false, {
 		price = {name = 'copper-cable', count = 1500},
 		raw_materials = {{name = 'copper-plate', count = 750}}}, {}},
 
 	{1, 0, 0.3, true, {
 		price = {name = 'small-electric-pole', count = 800},
 		raw_materials = {{name = 'copper-plate', count = 400}}}, {}},
-	{1, 0.1, 999, false, {
+	{1, 0.1, 1, false, {
 		price = {name = 'assembling-machine-1', count = 80},
 		raw_materials = {{name = 'iron-plate', count = 1760}, {name = 'copper-plate', count = 360}}}, {}},
 	{1, 0, 0.2, false, {
@@ -443,10 +443,10 @@ Public.covered1_entry_price_data_raw = { --watch out that the raw_materials ches
 	-- 	price = {name = 'piercing-rounds-magazine', count = 100},
 	-- 	raw_materials = {{name = 'iron-plate', count = 400}, {name = 'copper-plate', count = 500}, {name = 'steel-plate', count = 100}}}, {}},
 
-	{1, 0.1, 999, false, {
+	{1, 0.1, 1, false, {
 		price = {name = 'stone-furnace', count = 400},
 		raw_materials = {}}, {}},
-	{1, 0.5, 999, false, {
+	{1, 0.4, 1, false, {
 		price = {name = 'advanced-circuit', count = 100},
 		raw_materials = {{name = 'iron-plate', count = 200}, {name = 'copper-plate', count = 500}, {name = 'plastic-bar', count = 200}}}, {}},
 

@@ -161,9 +161,10 @@ function Public.player_left_so_redestribute_roles(player)
 			Public.assign_captain_based_on_priorities()
 		end
 		
-		if memory.officers_table and memory.officers_table[player.index] then
-			memory.officers_table[player.index] = nil
-		end
+		-- no need to do this, as long as officers get reset when the captainhood changes hands
+		-- if memory.officers_table and memory.officers_table[player.index] then
+		-- 	memory.officers_table[player.index] = nil
+		-- end
 	end
 	
 	Public.try_renounce_class(player, "A %s class is now spare.")

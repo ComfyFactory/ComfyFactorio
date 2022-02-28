@@ -101,7 +101,7 @@ function Public.chunk_structures(args)
 		}
 	end
 
-	IslandsCommon.enemies_1(args, spec, false, 0.3)
+	IslandsCommon.enemies_1(args, spec, false, 0.4)
 end
 
 

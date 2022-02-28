@@ -9,33 +9,33 @@ local inspect = require 'utils.inspect'.inspect
 local Public = {}
 
 Public.buried_treasure_loot_data_raw = {
-	{100, 0, 999, false, 'coin', 10, 20},
-	{100, 0, 999, false, 'steel-plate', 140, 180},
-	{50, 0, 999, false, 'defender-capsule', 5, 18},
-	{25, 0, 999, false, 'distractor-capsule', 5, 18},
-	{10, 0, 999, false, 'destroyer-capsule', 5, 18},
-	{20, 0, 999, false, 'flying-robot-frame', 20, 35},
-	{40, 0, 999, false, 'construction-robot', 15, 25},
-	{100, 0, 999, false, 'electronic-circuit', 150, 250},
-	{70, 0, 999, false, 'advanced-circuit', 20, 40},
-	{150, 0, 999, false, 'crude-oil-barrel', 25, 45},
-	{70, 0, 999, false, 'effectivity-module-3', 3, 4},
-	{70, 0, 999, false, 'speed-module-3', 3, 4},
-	{10, 0, 999, false, 'productivity-module-3', 3, 4},
-	{70, 0, 999, false, 'plastic-bar', 40, 70},
-	{60, 0, 999, false, 'chemical-science-pack', 12, 24},
-	{70, 0, 999, false, 'assembling-machine-3', 2, 2},
-	{65, 0, 999, false, 'solar-panel', 7, 8},
-	{20, 0, 999, false, 'radar', 10, 20},
-	{10, 0, 999, false, 'production-science-pack', 12, 24},
-	{5, 0, 999, false, 'modular-armor', 1, 1},
-	{5, 0, 999, false, 'laser-turret', 1, 1},
-	{5, 0, 999, false, 'cannon-shell', 5, 10},
-	{50, 0, 999, false, 'artillery-shell', 4, 8},
-	{50, 0, 999, false, 'express-transport-belt', 8, 20},
-	{35, 0, 999, false, 'express-underground-belt', 4, 4},
-	{35, 0, 999, false, 'express-splitter', 4, 11},
-	{50, 0, 999, false, 'stack-inserter', 4, 12},
+	{100, 0, 1, false, 'coin', 10, 20},
+	{100, 0, 1, false, 'steel-plate', 140, 180},
+	{50, 0, 1, false, 'defender-capsule', 5, 18},
+	{25, 0, 1, false, 'distractor-capsule', 5, 18},
+	{10, 0, 1, false, 'destroyer-capsule', 5, 18},
+	{20, 0, 1, false, 'flying-robot-frame', 20, 35},
+	{40, 0, 1, false, 'construction-robot', 15, 25},
+	{100, 0, 1, false, 'electronic-circuit', 150, 250},
+	{70, 0, 1, false, 'advanced-circuit', 20, 40},
+	{150, 0, 1, false, 'crude-oil-barrel', 25, 45},
+	{70, 0, 1, false, 'effectivity-module-3', 3, 4},
+	{70, 0, 1, false, 'speed-module-3', 3, 4},
+	{10, 0, 1, false, 'productivity-module-3', 3, 4},
+	{70, 0, 1, false, 'plastic-bar', 40, 70},
+	{60, 0, 1, false, 'chemical-science-pack', 12, 24},
+	{70, 0, 1, false, 'assembling-machine-3', 2, 2},
+	{65, 0, 1, false, 'solar-panel', 7, 8},
+	{20, 0, 1, false, 'radar', 10, 20},
+	{10, 0, 1, false, 'production-science-pack', 12, 24},
+	{5, 0, 1, false, 'modular-armor', 1, 1},
+	{5, 0, 1, false, 'laser-turret', 1, 1},
+	{5, 0, 1, false, 'cannon-shell', 5, 10},
+	{50, 0, 1, false, 'artillery-shell', 4, 8},
+	{50, 0, 1, false, 'express-transport-belt', 8, 20},
+	{35, 0, 1, false, 'express-underground-belt', 4, 4},
+	{35, 0, 1, false, 'express-splitter', 4, 11},
+	{50, 0, 1, false, 'stack-inserter', 4, 12},
 }
 
 Public.chest_loot_data_raw = {
@@ -44,55 +44,55 @@ Public.chest_loot_data_raw = {
 	-- {20, -1, 0.5, true, 'underground-belt', 4, 12},
 	{40, -0.5, 0.5, true, 'firearm-magazine', 10, 48},
 	{60, -1, 1, true, 'piercing-rounds-magazine', 8, 18},
-	{20, 0, 999, false, 'assembling-machine-2', 1, 3},
-	{20, 0, 999, false, 'solar-panel', 2, 5},
-	{40, -1, 999, true, 'speed-module', 1, 3},
-	{40, 0, 999, true, 'speed-module-2', 1, 3},
+	{20, 0, 1, false, 'assembling-machine-2', 1, 3},
+	{20, 0, 1, false, 'solar-panel', 2, 5},
+	{40, -1, 1, true, 'speed-module', 1, 3},
+	{40, 0, 1, true, 'speed-module-2', 1, 3},
 	{40, 0, 2, true, 'speed-module-3', 1, 3},
 	{4, -1, 1, true, 'effectivity-module', 1, 3},
 	{4, 0, 1, true, 'effectivity-module-2', 1, 3},
 	{4, 0, 2, true, 'effectivity-module-3', 1, 3},
-	{10, 0, 999, false, 'uranium-rounds-magazine', 3, 6},
-	{10, 0, 999, false, 'fast-transport-belt', 6, 24},
-	-- {10, 0, 999, false, 'fast-underground-belt', 2, 5},
-	{10, 0, 999, false, 'fast-splitter', 2, 5},
-	{12, 0, 999, false, 'artillery-shell', 1, 1},
-	{40, 0, 999, false, 'rail-signal', 10, 30},
-	{40, 0, 999, false, 'medium-electric-pole', 2, 5},
-	{2, 0.2, 999, false, 'electric-engine-unit', 1, 1},
+	{10, 0, 1, false, 'uranium-rounds-magazine', 3, 6},
+	{10, 0, 1, false, 'fast-transport-belt', 6, 24},
+	-- {10, 0, 1, false, 'fast-underground-belt', 2, 5},
+	{10, 0, 1, false, 'fast-splitter', 2, 5},
+	{12, 0, 1, false, 'artillery-shell', 1, 1},
+	{40, 0, 1, false, 'rail-signal', 10, 30},
+	{40, 0, 1, false, 'medium-electric-pole', 2, 5},
+	{2, 0.2, 1, false, 'electric-engine-unit', 1, 1},
 
 	{4, 0, 2, true, 'rocket-launcher', 1, 1},
 	{8, 0, 2, true, 'rocket', 16, 32},
 
 	{3, 0, 0.5, false, 'stack-inserter', 1, 3},
 	{1, 0, 0.5, false, 'stack-filter-inserter', 1, 3},
-	{3, 0.5, 999, false, 'stack-inserter', 5, 16},
-	{1, 0.5, 999, false, 'stack-filter-inserter', 5, 16},
+	{3, 0.5, 1, false, 'stack-inserter', 5, 16},
+	{1, 0.5, 1, false, 'stack-filter-inserter', 5, 16},
 
 	-- copying over most of those i made for chronotrain:
 	--always there (or normally always there):
-	{4, 0, 999, false, 'pistol', 1, 2},
-	{1, 0, 999, false, 'gun-turret', 2, 4},
-	{6, 0, 999, false, 'grenade', 2, 12},
-	{4, 0, 999, false, 'stone-wall', 12, 50},
-	-- {4, 0, 999, false, 'gate', 14, 32}, --can beat biters with them
-	{1, 0, 999, false, 'radar', 1, 2},
-	{3, 0, 999, false, 'small-lamp', 8, 32},
-	{2, 0, 999, false, 'electric-mining-drill', 2, 4},
-	{3, 0, 999, false, 'long-handed-inserter', 4, 16},
-	{0.5, 0, 999, false, 'filter-inserter', 2, 12},
-	{0.2, 0, 999, false, 'slowdown-capsule', 2, 4},
-	{0.2, 0, 999, false, 'destroyer-capsule', 2, 4},
-	{0.2, 0, 999, false, 'defender-capsule', 2, 4},
-	{0.2, 0, 999, false, 'distractor-capsule', 2, 4},
-	-- {0.25, 0, 999, false, 'rail', 50, 100},
-	-- {0.25, 0, 999, false, 'uranium-rounds-magazine', 1, 4},
-	{1, 0.15, 999, false, 'pump', 1, 2},
-	{2, 0.15, 999, false, 'pumpjack', 1, 3},
-	{0.02, 0.15, 999, false, 'oil-refinery', 1, 2},
-	{3, 0, 999, false, 'effectivity-module', 1, 4},
-	{3, 0, 999, false, 'speed-module', 1, 4},
-	{3, 0, 999, false, 'productivity-module', 1, 4},
+	{4, 0, 1, false, 'pistol', 1, 2},
+	{1, 0, 1, false, 'gun-turret', 2, 4},
+	{6, 0, 1, false, 'grenade', 2, 12},
+	{4, 0, 1, false, 'stone-wall', 12, 50},
+	-- {4, 0, 1, false, 'gate', 14, 32}, --can beat biters with them
+	{1, 0, 1, false, 'radar', 1, 2},
+	{3, 0, 1, false, 'small-lamp', 8, 32},
+	{2, 0, 1, false, 'electric-mining-drill', 2, 4},
+	{3, 0, 1, false, 'long-handed-inserter', 4, 16},
+	{0.5, 0, 1, false, 'filter-inserter', 2, 12},
+	{0.2, 0, 1, false, 'slowdown-capsule', 2, 4},
+	{0.2, 0, 1, false, 'destroyer-capsule', 2, 4},
+	{0.2, 0, 1, false, 'defender-capsule', 2, 4},
+	{0.2, 0, 1, false, 'distractor-capsule', 2, 4},
+	-- {0.25, 0, 1, false, 'rail', 50, 100},
+	-- {0.25, 0, 1, false, 'uranium-rounds-magazine', 1, 4},
+	{1, 0.15, 1, false, 'pump', 1, 2},
+	{2, 0.15, 1, false, 'pumpjack', 1, 3},
+	{0.02, 0.15, 1, false, 'oil-refinery', 1, 2},
+	{3, 0, 1, false, 'effectivity-module', 1, 4},
+	{3, 0, 1, false, 'speed-module', 1, 4},
+	{3, 0, 1, false, 'productivity-module', 1, 4},
 	--shotgun meta:
 	{10, -0.2, 0.4, true, 'shotgun-shell', 12, 24},
 	{5, 0, 0.4, true, 'shotgun', 1, 1},
@@ -110,7 +110,7 @@ Public.chest_loot_data_raw = {
 	--loader meta:
 	{0.25, 0, 0.2, false, 'loader', 1, 2},
 	{0.25, 0.2, 0.6, false, 'fast-loader', 1, 2},
-	{0.25, 0.6, 999, false, 'express-loader', 1, 2},
+	{0.25, 0.6, 1, false, 'express-loader', 1, 2},
 	--science meta:
 	{8, -0.5, 0.5, true, 'automation-science-pack', 4, 32},
 	{8, -0.6, 0.6, true, 'logistic-science-pack', 4, 32},
@@ -200,7 +200,9 @@ function Public.wooden_chest_loot()
 	local overworldx = memory.overworldx or 0
 	local num = 1
 
-	return Public.chest_loot(num, Math.sloped(Common.difficulty(),1/2) * Common.game_completion_progress())
+	return Public.chest_loot(num,
+	Math.max(0,Math.min(1, Math.sloped(Common.difficulty(),1/2) * Common.game_completion_progress())) --enforce 0 to 1
+)
 end
 
 function Public.iron_chest_loot()
@@ -208,7 +210,9 @@ function Public.iron_chest_loot()
 	local overworldx = memory.overworldx or 0
 	local num = Math.random(2,3)
 
-	local loot = Public.chest_loot(num, 5/100 + Math.sloped(Common.difficulty(),1/2) * Common.game_completion_progress()) --reward higher difficulties with better loot
+	local loot = Public.chest_loot(num,
+	Math.max(0,Math.min(1, 5/100 + Math.sloped(Common.difficulty(),1/2) * Common.game_completion_progress())) --enforce 0 to 1
+) --reward higher difficulties with better loot
 	loot[#loot + 1] = {name = 'coin', count = Math.random(1,1500)}
 
     return loot
@@ -219,7 +223,9 @@ function Public.covered_wooden_chest_loot()
 	local overworldx = memory.overworldx or 0
 	local num = 2
 
-	local loot = Public.chest_loot(num, 10/100 + Math.sloped(Common.difficulty(),1/2) * Common.game_completion_progress()) --reward higher difficulties with better loot
+	local loot = Public.chest_loot(num,
+	Math.max(0,Math.min(1, 10/100 + Math.sloped(Common.difficulty(),1/2) * Common.game_completion_progress())) --enforce 0 to 1
+) --reward higher difficulties with better loot
 
     return loot
 end
@@ -275,7 +281,7 @@ function Public.chest_loot(number_of_items, game_completion_progress)
 end
 
 function Public.buried_treasure_loot()
-	local ret = Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.buried_treasure_loot_data_raw), 1, Math.sloped(Common.difficulty(),1/2) * Common.game_completion_progress())
+	local ret = Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.buried_treasure_loot_data_raw), 1, Math.sloped(Common.difficulty(),1/2) * Common.game_completion_progress_capped())
 
 	if ret and ret[1] then return ret[1] end
 end
