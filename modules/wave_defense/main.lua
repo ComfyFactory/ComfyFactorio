@@ -1048,7 +1048,7 @@ local function check_group_positions()
                         fill_tiles(group, 30)
                         remove_rocks(group)
                         remove_trees(group)
-                        if ugp[group.group_number].index >= 4 then
+                        if valid(group) and ugp[group.group_number].index >= 4 then
                             generated_units.unit_group_pos.positions[group.group_number] = nil
                             reform_group(group)
                         end
