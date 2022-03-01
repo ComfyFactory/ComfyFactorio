@@ -189,7 +189,7 @@ function Public.enemies_1(args, spec, no_worms, worm_evo_bonus)
 				elseif rng >= 3 then
 					args.entities[#args.entities + 1] = {name = 'spitter-spawner', position = p, force = enemy_force_name, indestructible = spec2.spawners_indestructible or false}
 				elseif not no_worms then
-					local evolution = game.forces[enemy_force_name].evolution_factor + worm_evo_bonus
+					local evolution = memory.evolution_factor + worm_evo_bonus
 
 					args.entities[#args.entities + 1] = {name = Common.get_random_worm_type(evolution + 0.05), position = p, force = enemy_force_name}
 				end

@@ -230,6 +230,34 @@ end)
 
 
 commands.add_command(
+'summoncrew',
+'summoncrew',
+function(cmd)
+	local param = tostring(cmd.parameter)
+	if check_admin(cmd) then
+		local player = game.players[cmd.player_index]
+		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+		Memory.set_working_id(crew_id)
+		Crew.summon_crew()
+	end
+end)
+
+
+commands.add_command(
+'setevo',
+'setevo',
+function(cmd)
+	local param = tostring(cmd.parameter)
+	if check_admin(cmd) then
+		local player = game.players[cmd.player_index]
+		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+		Memory.set_working_id(crew_id)
+		Common.set_evo(tonumber(param))
+	end
+end)
+
+
+commands.add_command(
 'chnk',
 'genchunk',
 function(cmd)

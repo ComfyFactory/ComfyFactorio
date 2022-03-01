@@ -16,8 +16,14 @@ local Upgrades = require 'maps.pirates.boat_upgrades'
 
 local Public = {}
 
+--== Warning: If something only costs fuel, then we need to check the player can't buy it whilst they're dead
 
 Public.main_shop_data_1 = {
+	repair_cannons = {
+		tooltip = 'Repair the cannons.',
+		what_you_get_sprite_buttons = {['item/artillery-turret'] = false},
+		base_cost = {coins = 800},
+	},
 	new_boat_cutter = {
 		tooltip = 'Purchase a cutter.',
 		what_you_get_sprite_buttons = {['utility/spawn_flag'] = false},
@@ -124,6 +130,7 @@ function Public.initialise_main_shop()
 		new_boat_cutter_with_hold = false,
 		new_boat_cutter = false,
 		buy_iron = false,
+		repair_cannons = false,
 		-- sell_iron = false,
 		-- buy_fast_loader = true,
 		-- sell_copper = false,
@@ -132,6 +139,7 @@ end
 
 function Public.main_shop_try_purchase(player, purchase_name)
 	local memory = Memory.get_crew_memory()
+	local destination = Common.current_destination()
 	local shop_data_1 = Public.main_shop_data_1
 	local shop_data_2 = Public.main_shop_data_2
 	local trade_data = shop_data_1[purchase_name] or shop_data_2[purchase_name]
@@ -234,6 +242,15 @@ function Public.main_shop_try_purchase(player, purchase_name)
 		elseif purchase_name == 'new_boat_cutter' or purchase_name == 'new_boat_cutter_with_hold' or purchase_name == 'new_boat_sloop_with_hold' then
 			Dock.execute_boat_purchase()
 			Common.notify_force_light(force,string.format('[font=heading-1]%s bought a %s.[/font]', player.name, Boats[Common.current_destination().static_params.boat_for_sale_type].Data.display_name))
+
+		elseif purchase_name == 'repair_cannons' then
+			-- heal all cannons:
+			local cannons = game.surfaces[destination.surface_name].find_entities_filtered({type = 'artillery-turret'})
+			for _, c in pairs(cannons) do
+				c.health = c.prototype.max_health
+			end
+			Common.notify_force_light(force,string.format('%s repaired the ship\'s cannons.', player.name))
+			memory.mainshop_availability_bools[purchase_name] = false
 
 		elseif purchase_name == Upgrades.enum.MORE_POWER then
 			Upgrades.execute_upgade(Upgrades.enum.MORE_POWER)

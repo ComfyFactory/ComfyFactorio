@@ -221,6 +221,8 @@ function Public.progress_to_destination(destination_index)
 			end
 		end
 
+		memory.mainshop_availability_bools.repair_cannons = true
+
 		-- Delay.add(Delay.enum.PLACE_DOCK_JETTY_AND_BOATS)
 		Task.set_timeout_in_ticks(2, place_dock_jetty_and_boats, {})
 	else
@@ -378,6 +380,7 @@ function Public.check_for_end_of_boat_movement(boat)
 			memory.mainshop_availability_bools.buy_copper = false
 			-- memory.mainshop_availability_bools.buy_fast_loader = false
 			-- memory.mainshop_availability_bools.sell_copper = false
+			memory.mainshop_availability_bools.repair_cannons = false
 
 			memory.mainshop_availability_bools.extra_hold = false
 			memory.mainshop_availability_bools.upgrade_power = false

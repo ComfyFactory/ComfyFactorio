@@ -60,7 +60,7 @@ function Public.tag_text(player)
 	local str = ''
 	local tags = {}
 
-	if memory.id ~= 0 and memory.playerindex_captain and player.index == memory.playerindex_captain then
+	if memory.id ~= 0 and Common.is_captain(player) then
 		tags[#tags + 1] = 'Cap\'n'
 	elseif player.controller_type == defines.controllers.spectator then
 		tags[#tags + 1] = 'Spectating'
@@ -122,7 +122,7 @@ end
 function Public.player_privilege_level(player)
 	local memory = Memory.get_crew_memory()
 
-	if memory.id ~= 0 and memory.playerindex_captain and player.index == memory.playerindex_captain then
+	if memory.id ~= 0 and Common.is_captain(player) then
 		return Public.privilege_levels.CAPTAIN
 	elseif memory.officers_table and memory.officers_table[player.index] then
 		return Public.privilege_levels.OFFICER
@@ -173,7 +173,7 @@ function Public.player_left_so_redestribute_roles(player)
 	local memory = Memory.get_crew_memory()
 
 	if player and player.index then
-		if player.index == memory.playerindex_captain then
+		if Common.is_captain(player) then
 			Public.assign_captain_based_on_priorities()
 		end
 		
@@ -300,7 +300,7 @@ function Public.afk_player_tick(player)
 	local global_memory = Memory.get_global_memory()
 	local memory = Memory.get_crew_memory()
 	
-	if player.index == memory.playerindex_captain and #Common.crew_get_nonafk_crew_members() > 0 then
+	if Common.is_captain(player) and #Common.crew_get_nonafk_crew_members() > 0 then
 
 		local force = game.forces[memory.force_name]
 		if force and force.valid then

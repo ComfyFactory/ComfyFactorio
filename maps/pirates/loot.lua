@@ -57,7 +57,7 @@ Public.chest_loot_data_raw = {
 	-- {10, 0, 1, false, 'fast-underground-belt', 2, 5},
 	{10, 0, 1, false, 'fast-splitter', 2, 5},
 	{12, 0, 1, false, 'artillery-shell', 1, 1},
-	{40, 0, 1, false, 'rail-signal', 20, 70},
+	{40, 0, 1, false, 'rail-signal', 25, 100},
 	{40, 0, 1, false, 'medium-electric-pole', 2, 5},
 	{2, 0.2, 1, false, 'electric-engine-unit', 1, 1},
 

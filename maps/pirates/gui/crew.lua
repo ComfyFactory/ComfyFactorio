@@ -365,7 +365,7 @@ function Public.update(player)
 	local any_class_button = false
 	for _, c in pairs(Classes.Class_List) do
 		if memory.spare_classes and Utils.contains(memory.spare_classes, c) and (not (player.controller_type == defines.controllers.spectator)) then
-			if (memory.playerindex_captain and player.index == memory.playerindex_captain) and memory.crewplayerindices and #memory.crewplayerindices > 1 then
+			if Common.is_captain(player) and memory.crewplayerindices and #memory.crewplayerindices > 1 then
 				if other_player_selected and (not (memory.classes_table[tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])])) then
 					flow.spare_classes.body.assign_flow['selfassign_class_' .. c].visible = false
 					flow.spare_classes.body.assign_flow['assign_class_' .. c].visible = true
@@ -395,8 +395,8 @@ function Public.update(player)
 	end
 	flow.spare_classes.body.assign_flow.visible = any_class_button
 
-	flow.captain.visible = (memory.playerindex_captain and player.index == memory.playerindex_captain)
-	flow.undock_tip.visible = (memory.playerindex_captain and player.index == memory.playerindex_captain)
+	flow.captain.visible = Common.is_captain(player)
+	flow.undock_tip.visible = Common.is_captain(player)
 
 	flow.captain.body.capn_pass.visible = other_player_selected
 	flow.captain.body.capn_plank.visible = flow.captain.body.capn_pass.visible

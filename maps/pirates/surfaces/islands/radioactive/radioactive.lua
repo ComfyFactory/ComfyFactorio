@@ -266,7 +266,7 @@ local function radioactive_tick()
 			local ef = game.forces[memory.enemy_force_name]
 			-- faster evo (doesn't need difficulty scaling as higher difficulties have higher base evo):
 			local extra_evo = 0.22 * tickinterval/60 / Balance.expected_time_on_island()
-			ef.evolution_factor = ef.evolution_factor + extra_evo
+			Common.increment_evo(extra_evo)
 			if (not destination.dynamic_data.evolution_accrued_time) then
 				destination.dynamic_data.evolution_accrued_time = 0
 			end

@@ -101,6 +101,7 @@ function Public.reset_crew_memory(id) --also serves as a dev reference of memory
 	memory.stored_fuel = nil
 	memory.spawnpoint = nil
 
+	memory.evolution_factor = nil
 	memory.scripted_biters = nil
 	memory.scripted_unit_groups = nil
 	memory.floating_pollution = nil

@@ -165,7 +165,7 @@ local function on_entity_destroyed(event)
 
 		local p2 = surface.find_non_colliding_position('medium-biter', p, 10, 0.2)
 		if not p2 then return end
-		local name = Common.get_random_unit_type(game.forces[memory.enemy_force_name].evolution_factor + Balance.kraken_spawns_base_extra_evo)
+		local name = Common.get_random_unit_type(memory.evolution_factor + Balance.kraken_spawns_base_extra_evo)
 		surface.create_entity{name = name, position = p2, force = memory.enemy_force_name}
 		Effects.kraken_effect_2(surface, p2)
 
@@ -173,7 +173,7 @@ local function on_entity_destroyed(event)
 
 		if not memory.kraken_evo then memory.kraken_evo = 0 end
 		memory.kraken_evo = memory.kraken_evo + evo_increase
-		game.forces[memory.enemy_force_name].evolution_factor = game.forces[memory.enemy_force_name].evolution_factor + evo_increase
+		Common.increment_evo(evo_increase)
 	end
 end
 

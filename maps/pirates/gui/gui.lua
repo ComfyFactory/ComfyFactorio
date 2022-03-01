@@ -520,7 +520,7 @@ function Public.update_gui(player)
 	local charged_bool = destination.dynamic_data.silocharged
 	local launched_bool = destination.dynamic_data.rocketlaunched
 
-	local captain_bool = (memory.playerindex_captain and player.index == memory.playerindex_captain)
+	local captain_bool = Common.is_captain(player)
 
 	local atsea_loading_bool = memory.boat and memory.boat.state and memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP and memory.loadingticks
 
@@ -798,7 +798,7 @@ function Public.update_gui(player)
 		
 				flow1.silo_progressbar.value = consumed/needed
 		
-				local tooltip = string.format('Rocket silo charge\n\nCharge the silo to launch a rocket, gaining both coins and fuel.\n\nCurrent charge: %.1f', consumed / 1000000000) .. '/' .. Math.floor(needed / 100000000)/10 .. ' GJ'
+				local tooltip = string.format('Rocket silo charge\n\nCharge the silo to launch a rocket, gaining both coins and fuel.\n\nCurrent charge: %.1f/%.1f GJ', Math.floor(consumed / 100000000)/10, Math.floor(needed / 100000000)/10)
 				flow1.tooltip = tooltip
 				flow1.silo_label_1.tooltip = tooltip
 				flow1.silo_label_2.tooltip = tooltip
@@ -931,7 +931,7 @@ function Public.update_gui(player)
 	flow1 = pirates_flow.covering_line_frame
 
 	if flow1 then
-		if not eta_bool and not retreating_bool and not quest_bool and not silo_bool and not atsea_loading_bool and not leave_anytime_bool and not approaching_dock_bool and not leaving_dock_bool then
+		if not eta_bool and not retreating_bool and not quest_bool and not silo_bool and not atsea_loading_bool and not leave_anytime_bool and not cost_bool and not approaching_dock_bool and not leaving_dock_bool then
 			flow1.visible = true
 		else
 			flow1.visible = false

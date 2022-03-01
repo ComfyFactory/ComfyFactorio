@@ -250,7 +250,7 @@ function Public.underground_worms_ai()
 	local surface = game.surfaces[destination.surface_name]
 	local player_force = game.forces[memory.force_name]
 	local enemy_force_name = memory.enemy_force_name
-	local evolution = game.forces[enemy_force_name].evolution_factor
+	local evolution = memory.evolution_factor
 
 	if not destination.dynamic_data.worms_table then destination.dynamic_data.worms_table = {} end
 
@@ -359,7 +359,7 @@ function Public.custom_biter_ai()
 	local surface = game.surfaces[destination.surface_name]
 	local difficulty = memory.difficulty
 	local enemy_force_name = memory.enemy_force_name
-	local evolution = game.forces[enemy_force_name].evolution_factor
+	local evolution = memory.evolution_factor
 
 	local fraction_of_floating_pollution = 1/2
 	local minimum_avg_units = 30

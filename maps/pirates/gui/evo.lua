@@ -24,14 +24,8 @@ local GuiCommon = require 'maps.pirates.gui.common'
 
 local function get_evolution_percentage()
 	local memory = Memory.get_crew_memory()
-	
-	if (not memory.enemy_force_name) then return 0 end
 
-	local value = Math.floor(game.forces[memory.enemy_force_name].evolution_factor * 1000) * 0.001
-	-- if value < 0.001 then
-	--		 -- 0.00 won't be shown on the button as value
-	--		 return 0.001
-	-- end
+	local value = Math.floor((memory.evolution_factor or 0) * 1000) * 0.001
 
 	return value
 end

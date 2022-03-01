@@ -51,9 +51,8 @@ function Public.Tick_actions(tickinterval)
     if (memory.gamelost or memory.gamewon) or (not destination.dynamic_data.timeratlandingtime) or destination.dynamic_data.timer < destination.dynamic_data.timeratlandingtime + Common.seconds_after_landing_to_enable_AI then return end
 
 	if memory.boat.state == Boats.enum_state.LANDED then
-		local ef = game.forces[memory.enemy_force_name]
 		local extra_evo = tickinterval/60 * Balance.evolution_per_second()
-		ef.evolution_factor = ef.evolution_factor + extra_evo
+		Common.increment_evo(extra_evo)
 		destination.dynamic_data.evolution_accrued_time = destination.dynamic_data.evolution_accrued_time + extra_evo
 	end
     
@@ -220,7 +219,7 @@ function Public.tell_biters_near_silo_to_attack_it()
         surface.set_multi_command(
             {
                 command = attackcommand,
-                unit_count = Math.random(1, Math.floor(1 + game.forces[enemy_force_name].evolution_factor * 100)),
+                unit_count = Math.random(1, Math.floor(1 + memory.evolution_factor * 100)),
                 force = enemy_force_name,
                 unit_search_distance = 10
             }
@@ -357,7 +356,7 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 	local spawnerposition = spawner.position
     local difficulty = memory.difficulty
 	local enemy_force_name = memory.enemy_force_name
-	local evolution = game.forces[enemy_force_name].evolution_factor
+	local evolution = memory.evolution_factor
 
 	local units_created_count = 0
 	local units_created = {}
@@ -449,7 +448,7 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 
 	if units_created_count > 0 then
 		--@TEMP: Logging attack spending
-		log('Spent ' .. 100 * (initialpollution - temp_floating_pollution) / initialpollution .. '% of ' .. (initialpollution - temp_floating_pollution) .. ' pollution budget on biters, at ' .. base_pollution_cost_multiplier .. 'x price.')
+		log('Spent ' .. Math.floor(100 * (initialpollution - temp_floating_pollution) / initialpollution) .. '% of ' .. Math.ceil(initialpollution - temp_floating_pollution) .. ' pollution budget on biters, at ' .. Math.ceil(base_pollution_cost_multiplier*100)/100 .. 'x price.')
 	end
 	
     return units_created
@@ -684,7 +683,7 @@ function Public.revenge_group(surface, p, target, type, bonus_evo, amount_multip
 
 	local name, count
 	if type == 'biter' then
-		name = Common.get_random_biter_type(game.forces[memory.enemy_force_name].evolution_factor + bonus_evo)
+		name = Common.get_random_biter_type(memory.evolution_factor + bonus_evo)
 
 		if name == 'small-biter' then
 			count = 6
@@ -696,7 +695,7 @@ function Public.revenge_group(surface, p, target, type, bonus_evo, amount_multip
 			count = 1
 		end
 	elseif type == 'spitter' then
-		name = Common.get_random_spitter_type(game.forces[memory.enemy_force_name].evolution_factor + bonus_evo)
+		name = Common.get_random_spitter_type(memory.evolution_factor + bonus_evo)
 
 		if name == 'small-spitter' then
 			count = 10
@@ -747,7 +746,7 @@ function Public.spawn_boat_biters(boat, max_evo, count, width)
 	local surface = game.surfaces[boat.surface_name]
     local difficulty = memory.difficulty
 	local enemy_force_name = boat.force_name
-	-- local evolution = game.forces[enemy_force_name].evolution_factor
+	-- local evolution = memory.evolution_factor
 
     local p = {boat.position.x - width/2, boat.position.y}
 

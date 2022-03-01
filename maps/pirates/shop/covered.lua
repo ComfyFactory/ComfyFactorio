@@ -29,14 +29,14 @@ Public.offers_loaders = {
 }
 
 Public.offers_default = {
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'copper-plate', count = 200}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'iron-plate', count = 200}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'copper-plate', count = 200}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'iron-plate', count = 200}},
 	{price = {{'coin', 800}}, offer = {type = 'give-item', item = 'gun-turret', count = 1}},
 	{price = {{'coin', 1250}}, offer = {type = 'give-item', item = 'defender-capsule', count = 1}},
 }
 
 Public.offers_rockets = {
-	{price = {{'coin', 200}, {'electronic-circuit', 50}}, offer = {type = 'give-item', item = 'rocket-launcher', count = 1}},
+	{price = {{'coin', 200}, {'electronic-circuit', 80}}, offer = {type = 'give-item', item = 'rocket-launcher', count = 1}},
 	{price = {{'coin', 1000}, {'explosives', 20}, {'electronic-circuit', 20}}, offer = {type = 'give-item', item = 'rocket', count = 20}},
 }
 

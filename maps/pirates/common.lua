@@ -6,6 +6,7 @@ local Memory = require 'maps.pirates.memory'
 local inspect = require 'utils.inspect'.inspect
 local simplex_noise = require 'utils.simplex_noise'.d2
 local perlin_noise = require 'utils.perlin_noise'
+local Force_health_booster = require 'modules.force_health_booster'
 
 local Public = {}
 
@@ -295,15 +296,23 @@ function Public.give(player, stacks, spill_position, spill_surface)
 			text1 = text1 .. -itemcount_remember .. '[/color] [item=' .. itemname .. ']'
 		end
 
-		if inv then
-			if #stacks2 > 1 then
-				text2 = text2 .. '[color=' .. flying_text_color.r .. ',' .. flying_text_color.g .. ',' .. flying_text_color.b .. ']' .. inv.get_item_count(itemname) .. '[/color]'
-			else
-				text2 = '[color=' .. flying_text_color.r .. ',' .. flying_text_color.g .. ',' .. flying_text_color.b .. '](' .. inv.get_item_count(itemname) .. ')[/color]'
-			end
-			if j < #stacks2 then
-				text2 = text2 .. ', '
-			end
+		-- count total of that item they have:
+		local new_total_count = 0
+		local cursor_stack = player.cursor_stack
+		if cursor_stack and cursor_stack.valid_for_read and cursor_stack.name == itemname and cursor_stack.count and cursor_stack.count > 0 then
+			new_total_count = new_total_count + cursor_stack.count
+		end
+		if inv and inv.get_item_count(itemname) and inv.get_item_count(itemname) > 0 then
+			new_total_count = new_total_count + inv.get_item_count(itemname)
+		end
+
+		if #stacks2 > 1 then
+			text2 = text2 .. '[color=' .. flying_text_color.r .. ',' .. flying_text_color.g .. ',' .. flying_text_color.b .. ']' .. new_total_count .. '[/color]'
+		else
+			text2 = '[color=' .. flying_text_color.r .. ',' .. flying_text_color.g .. ',' .. flying_text_color.b .. '](' .. new_total_count .. ')[/color]'
+		end
+		if j < #stacks2 then
+			text2 = text2 .. ', '
 		end
 
 		if j < #stacks2 then
@@ -318,6 +327,69 @@ function Public.give(player, stacks, spill_position, spill_surface)
 		Public.flying_text(spill_surface, spill_position, text1 .. ' [font=count-font]' .. text2 .. '[/font]')
 	else
 		Public.flying_text(spill_surface, spill_position, text1)
+	end
+end
+
+
+
+function Public.is_captain(player)
+	local memory = Memory.get_crew_memory()
+
+	if memory.playerindex_captain and memory.playerindex_captain == player.index then
+		return true
+	else
+		return false
+	end
+end
+
+function Public.endgame_biter_damage_modifier(surplus_evo)
+	return Math.floor(surplus_evo/2*1000)/1000
+end
+function Public.endgame_biter_health_modifier(surplus_evo)
+	return Math.floor(surplus_evo*3*1000)/1000 + 1
+end
+
+function Public.set_biter_endgame_modifiers()
+	local memory = Memory.get_crew_memory()
+	local enemy_force = game.forces[memory.enemy_force_name]
+
+    if not (memory.evolution_factor and memory.evolution_factor > 1 and enemy_force and enemy_force.valid) then
+        return nil
+    end
+	local surplus = memory.evolution_factor - 1
+
+    local damage_mod = Public.endgame_biter_damage_modifier(surplus)
+    enemy_force.set_ammo_damage_modifier('melee', damage_mod)
+    enemy_force.set_ammo_damage_modifier('biological', damage_mod)
+    enemy_force.set_ammo_damage_modifier('artillery-shell', damage_mod)
+    enemy_force.set_ammo_damage_modifier('flamethrower', damage_mod)
+
+	local health_mod = Public.endgame_biter_health_modifier(surplus)
+
+    Force_health_booster.set_health_modifier(enemy_force.index, health_mod)
+end
+
+function Public.set_evo(evolution)
+	local memory = Memory.get_crew_memory()
+	memory.evolution_factor = evolution
+	if memory.enemy_force_name then
+		local ef = game.forces[memory.enemy_force_name]
+		if ef and ef.valid then
+			ef.evolution_factor = memory.evolution_factor
+			Public.set_biter_endgame_modifiers()
+		end
+	end
+end
+
+function Public.increment_evo(evolution)
+	local memory = Memory.get_crew_memory()
+	memory.evolution_factor = memory.evolution_factor + evolution
+	if memory.enemy_force_name then
+		local ef = game.forces[memory.enemy_force_name]
+		if ef and ef.valid then
+			ef.evolution_factor = memory.evolution_factor
+			Public.set_biter_endgame_modifiers()
+		end
 	end
 end
 

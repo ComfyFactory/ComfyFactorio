@@ -229,7 +229,7 @@ function Public.destination_on_arrival(destination)
 
 		game.forces[memory.enemy_force_name].reset_evolution()
 		local base_evo = Balance.base_evolution()
-		game.forces[memory.enemy_force_name].evolution_factor = base_evo
+		Common.set_evo(base_evo)
 		destination.dynamic_data.evolution_accrued_leagues = base_evo
 		destination.dynamic_data.evolution_accrued_time = 0
 		destination.dynamic_data.evolution_accrued_nests = 0
@@ -268,11 +268,6 @@ function Public.destination_on_arrival(destination)
 		-- 	end
 		-- end
 
-		-- heal all cannons:
-		local cannons = game.surfaces[destination.surface_name].find_entities_filtered({type = 'artillery-turret'})
-		for _, c in pairs(cannons) do
-			c.health = c.prototype.max_health
-		end
 	end
 
 	local name = destination.static_params.name and destination.static_params.name or 'NameNotFound'
@@ -281,7 +276,7 @@ function Public.destination_on_arrival(destination)
 		Server.to_discord_embed_raw((destination.static_params.discord_emoji or CoreData.comfy_emojis.wut) .. '[' .. memory.name .. '] ' .. message)
 	end
 	if destination.static_params.name == 'Dock' then
-		message = message .. ' ' .. 'A special offer is available in the Captain\'s Store.'
+		message = message .. ' ' .. 'New trades are in the Captain\'s Store.'
 	end
 	Common.notify_force(game.forces[memory.force_name], message)
 
@@ -462,10 +457,11 @@ function Public.generate_detailed_island_data(destination)
 	if #positions_free_to_hold_resources > 0 then
 		local orestoadd = {}
 		for k, v in pairs(destination.static_params.abstract_ore_amounts) do
-			local count = Math.ceil(v^(1/2))
 			if k == 'crude-oil' then
+				local count = Math.ceil((v/20)^(1/2)) --assuming the abstract values are about 20 times as big as for other ores
 				orestoadd[k] = {count = count, sizing_each = Common.oil_abstract_to_real(v)/count}
 			else
+				local count = Math.ceil(v^(1/2))
 				orestoadd[k] = {count = count, sizing_each = Common.ore_abstract_to_real(v)/count}
 			end
 		end
@@ -633,7 +629,7 @@ function Public.clean_up(destination)
 		if ef and ef.valid then
 			game.forces[memory.enemy_force_name].reset_evolution()
 			local base_evo = Balance.base_evolution()
-			game.forces[memory.enemy_force_name].evolution_factor = base_evo
+			Common.set_evo(base_evo)
 		end
 	end
 	

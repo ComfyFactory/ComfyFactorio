@@ -31,18 +31,23 @@ Public.enum = enum
 function Public.difficulty_vote(player_index, difficulty_id)
 	local memory = Memory.get_crew_memory()
 
+	if not (memory.difficulty_votes) then memory.difficulty_votes = {} end
 	local player = game.players[player_index]
 	if not (player and player.valid) then return end
-	local option = CoreData.difficulty_options[difficulty_id]
-	if not option then return end
 
-	local color = option.associated_color
-	Common.notify_force(game.forces[memory.force_name], player.name .. ' voted [color=' .. color.r .. ',' .. color.g .. ',' .. color.b .. ']for difficulty ' .. option.text .. '[/color]')
-
-	if not (memory.difficulty_votes) then memory.difficulty_votes = {} end
-	memory.difficulty_votes[player_index] = difficulty_id
-
-	Public.update_difficulty()
+	if memory.difficulty_votes[player_index] and memory.difficulty_votes[player_index] == difficulty_id then
+		return nil
+	else
+		local option = CoreData.difficulty_options[difficulty_id]
+		if not option then return end
+		
+		local color = option.associated_color
+		Common.notify_force(game.forces[memory.force_name], player.name .. ' voted [color=' .. color.r .. ',' .. color.g .. ',' .. color.b .. ']for difficulty ' .. option.text .. '[/color]')
+	
+		memory.difficulty_votes[player_index] = difficulty_id
+	
+		Public.update_difficulty()
+	end
 end
 
 
@@ -93,21 +98,58 @@ function Public.try_add_extra_time_at_sea(ticks)
 	return true
 end
 
+function Public.get_crewmembers_printable_string()
+	local crewmembers_string = ''
+	for _, player in pairs(Common.crew_get_crew_members()) do
+		if player.valid then
+			if crewmembers_string ~= '' then crewmembers_string = crewmembers_string .. ', ' end
+			crewmembers_string = crewmembers_string .. player.name
+		end
+	end
+	if crewmembers_string ~= '' then crewmembers_string = crewmembers_string .. '.' end
+
+	return crewmembers_string
+end
+
 function Public.try_lose(reason)
 	local memory = Memory.get_crew_memory()
 	
-	if (not memory.game_lost) then
+	if (not memory.game_lost) and (not memory.game_won) then
 		memory.game_lost = true
 		memory.crew_disband_tick = game.tick + 360
 
 		local playtimetext = Utils.time_longform((memory.age or 0)/60)
 		
-		Server.to_discord_embed_raw(CoreData.comfy_emojis.trashbin .. '[' .. memory.name .. '] Game over — ' .. reason ..'. Playtime: ' .. playtimetext .. ' since 1st island.')
+		Server.to_discord_embed_raw(CoreData.comfy_emojis.trashbin .. '[' .. memory.name .. '] Game over — ' .. reason ..'. Playtime: ' .. playtimetext .. ' since 1st island. Crewmembers: ' .. Public.get_crewmembers_printable_string())
+
 		Common.notify_game('[' .. memory.name .. '] Game over — ' .. reason ..'. Playtime: [font=default-large-semibold]' .. playtimetext .. '[/font] since 1st island.', CoreData.colors.notify_gameover)
 	
 		local force = game.forces[memory.force_name]
 		if not (force and force.valid) then return end
-		force.play_sound{path='utility/game_lost', volume_modifier=0.75}
+		
+		force.play_sound{path='utility/game_lost', volume_modifier=0.75} --playing to the whole game might scare ppl
+	end
+end
+
+function Public.try_win()
+	local memory = Memory.get_crew_memory()
+	
+	if (not memory.game_lost) and (not memory.game_won) then
+		memory.completion_time = Math.floor((memory.age or 0)/60)
+
+		local speedrun_time = (memory.age or 0)/60
+		local speedrun_time_str = Utils.time_longform(speedrun_time)
+		memory.game_won = true
+		-- memory.crew_disband_tick = game.tick + 1200
+
+		Server.to_discord_embed_raw(CoreData.comfy_emojis.goldenobese .. '[' .. memory.name .. '] Victory, on v' .. CoreData.version_string .. ', ' .. CoreData.difficulty_options[memory.difficulty_option].text .. ', cap ' .. CoreData.capacity_options[memory.capacity_option].text3 .. '. Playtime: ' .. speedrun_time_str .. '[/font] since 1st island. Crewmembers: ' .. Public.get_crewmembers_printable_string())
+
+		Common.notify_game('[' .. memory.name .. '] Victory, on v' .. CoreData.version_string .. ', ' .. CoreData.difficulty_options[memory.difficulty_option].text .. ', cap ' .. CoreData.capacity_options[memory.capacity_option].text3 .. '. Playtime: [font=default-large-semibold]' .. speedrun_time_str .. '[/font] since 1st island. Crewmembers: ' .. Public.get_crewmembers_printable_string(), CoreData.colors.notify_victory)
+
+		game.play_sound{path='utility/game_won', volume_modifier=0.9}
+
+		memory.victory_pause_until_tick = game.tick + 60*5
+		memory.victory_continue_message = true
 	end
 end
 
@@ -548,7 +590,6 @@ function Public.initialise_crowsnest_2()
 	Crowsnest.crowsnest_surface_delayed_init()
 end
 
-
 function Public.initialise_crew(accepted_proposal)
 	local global_memory = Memory.get_global_memory()
 
@@ -568,6 +609,7 @@ function Public.initialise_crew(accepted_proposal)
 	memory.id = new_id
 	memory.force_name = string.format('crew-%03d', new_id)
 	memory.enemy_force_name = string.format('enemy-%03d', new_id)
+	memory.evolution_factor = 0
 
 	memory.delayed_tasks = {}
 	memory.buffered_tasks = {}

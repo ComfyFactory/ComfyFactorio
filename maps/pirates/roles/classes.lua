@@ -18,6 +18,7 @@ local enum = {
 	SHORESMAN = 6,
 	BOATSWAIN = 7,
 	PROSPECTOR = 8,
+	LUMBERJACK = 9,
 }
 Public.enum = enum
 
@@ -30,6 +31,7 @@ Public.Class_List = {
 	enum.SHORESMAN,
 	enum.BOATSWAIN,
 	enum.PROSPECTOR,
+	enum.LUMBERJACK,
 }
 
 Public.display_form = {
@@ -41,6 +43,7 @@ Public.display_form = {
 	[enum.SHORESMAN] = 'Shoresman',
 	[enum.BOATSWAIN] = 'Boatswain',
 	[enum.PROSPECTOR] = 'Prospector',
+	[enum.LUMBERJACK] = 'Lumberjack',
 }
 Public.explanation = {
 	[enum.DECKHAND] = 'They move faster and generate iron ore for the ship whilst onboard above deck, but move slower offboard.',
@@ -51,6 +54,7 @@ Public.explanation = {
 	[enum.SHORESMAN] = 'They move slightly faster and generate iron ore for the ship whilst offboard, but move slower onboard.',
 	[enum.BOATSWAIN] = 'They move faster and generate lots of ore for the ship whilst below deck, but move slower offboard.',
 	[enum.PROSPECTOR] = 'They find more resources when handmining ore.',
+	[enum.LUMBERJACK] = 'They find more resources when chopping trees.',
 }
 
 return Public

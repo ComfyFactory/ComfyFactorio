@@ -63,7 +63,7 @@ function Public.update_character_properties(tickinterval)
 					health_boost = health_boost + 800
 				end
 			end
-			if memory.playerindex_captain and memory.playerindex_captain == player_index then
+			if Common.is_captain(player) then
 				health_boost = health_boost + 50
 			end
 			character.character_health_bonus = health_boost

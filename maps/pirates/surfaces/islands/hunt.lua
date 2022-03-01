@@ -42,29 +42,29 @@ function Public.silo_setup_position(x_fractional_offset, x_absolute_offset)
 	local tries = 0
 	local p_ret = nil
 	local p2 = nil
-	while p_ret == nil and tries < 80 do
+	while p_ret == nil and tries < 200 do
 		p2 = {x = p.x + Math.random(-30, 0), y = p.y + Math.random(-70, 70)}
 		if p2.x >= boatposition.x+5 and Common.can_place_silo_setup(surface, p2, silo_count) then p_ret = p2 end
 		tries = tries + 1
 	end
-	while p_ret == nil and tries < 240 do
+	while p_ret == nil and tries < 400 do
 		p2 = {x = p.x + Math.random(-60, 10), y = p.y + Math.random(-90, 90)}
 		if p2.x >= boatposition.x+5 and Common.can_place_silo_setup(surface, p2, silo_count) then p_ret = p2 end
 		tries = tries + 1
 	end
-	while p_ret == nil and tries < 560 do
+	while p_ret == nil and tries < 1200 do
 		p2 = {x = p.x + Math.random(-90, 20), y = p.y + Math.random(-130, 130)}
 		if p2.x >= boatposition.x+5 and Common.can_place_silo_setup(surface, p2, silo_count) then p_ret = p2 end
 		tries = tries + 1
 	end
-	if _DEBUG then
+	-- if _DEBUG then
 		if p_ret == nil then
-			log("No good position found after 500 tries")
+			log("No good position found after 1200 tries")
 			p_ret = p
 		else
 			log(string.format("Silo position generated after %f tries: %f, %f", tries, p_ret.x, p_ret.y))
 		end
-	end
+	-- end
 
 	Common.ensure_chunks_at(surface, p_ret, 1)
 	return p_ret

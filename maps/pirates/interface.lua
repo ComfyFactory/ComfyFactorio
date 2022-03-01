@@ -447,16 +447,22 @@ local function event_on_player_mined_entity(event)
 
 			local give = {}
 
-			if memory.overworldx >= 0 then
+			local baseamount = 4
+			--minimum 1 wood
+			local amount = Math.max(Math.ceil(Math.min(available, baseamount * available/starting)),1)
+			destination.dynamic_data.wood_remaining = destination.dynamic_data.wood_remaining - amount
+
+			if memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.LUMBERJACK then
+				give[#give + 1] = {name = 'wood', count = amount + 3}
+				if Math.random(7) == 1 then
+					give[#give + 1] = {name = 'coin', count = 20}
+				end
+			else
+				give[#give + 1] = {name = 'wood', count = amount}
 				if Math.random(7) == 1 then --tuned
 					give[#give + 1] = {name = 'coin', count = 5}
 				end
 			end
-
-			local baseamount = 4
-			local amount = Math.max(Math.ceil(Math.min(available, baseamount * available/starting)),1) --minimum 1 wood
-			give[#give + 1] = {name = 'wood', count = amount}
-			destination.dynamic_data.wood_remaining = destination.dynamic_data.wood_remaining - amount
 
 			Common.give(player, give, entity.position)
 		end
@@ -478,7 +484,7 @@ local function event_on_player_mined_entity(event)
 		if memory.overworldx > 0 then
 			if memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.PROSPECTOR then
 				give[#give + 1] = {name = 'coin', count = 4}
-				give[#give + 1] = {name = entity.name, count = 5}
+				give[#give + 1] = {name = entity.name, count = 6}
 			else
 				if memory.overworldx > 0 then
 					give[#give + 1] = {name = 'coin', count = 1}
@@ -539,7 +545,7 @@ end
 
 local function shred_nearby_simple_entities(entity)
 	local memory = Memory.get_crew_memory()
-	if game.forces[memory.enemy_force_name].evolution_factor < 0.25 then return end
+	if memory.evolution_factor < 0.25 then return end
 	local simple_entities = entity.surface.find_entities_filtered({type = {'simple-entity', 'tree'}, area = {{entity.position.x - 3, entity.position.y - 3},{entity.position.x + 3, entity.position.y + 3}}})
 	if #simple_entities == 0 then return end
 	for i = 1, #simple_entities, 1 do
@@ -573,8 +579,8 @@ local function base_kill_rewards(event)
 			coin_amount = 90
 		elseif entity.name == 'biter-spawner' or entity.name == 'spitter-spawner'
 		then
-			iron_amount = 25
-			coin_amount = 50
+			iron_amount = 30
+			coin_amount = 75
 		elseif entity.name == 'big-worm-turret'
 		then
 			iron_amount = 30
@@ -623,7 +629,7 @@ local function spawner_died(event)
 	local destination = Common.current_destination()
 
 	local extra_evo = Balance.evolution_per_biter_base_kill()
-	game.forces[memory.enemy_force_name].evolution_factor = game.forces[memory.enemy_force_name].evolution_factor + extra_evo
+	Common.increment_evo(extra_evo)
 
 	destination.dynamic_data.evolution_accrued_nests = destination.dynamic_data.evolution_accrued_nests + extra_evo
 end
@@ -682,9 +688,10 @@ function Public.research_apply_buffs(event)
 
 	if Balance.research_buffs[event.research.name] then
 		local tech = Balance.research_buffs[event.research.name]
-		for k, v in pairs(tech) do
-			force[k] = force[k] + v
-		end
+		-- @FIXME: This code is from another scenario but doesn't work
+		-- for k, v in pairs(tech) do
+		-- 	force[k] = force[k] + v
+		-- end
 	end
 end
 

@@ -69,12 +69,6 @@ function Public.silo_count()
 	return Math.ceil(E/(16.8*150)) --no more than 2.5 minutes to charge it
 end
 
-function Public.silo_total_pollution()
-	return (
-		400 * (Common.difficulty()^(1.2)) * Public.crew_scale()^(2/5) * (3.2 + 0.7 * (Common.overworldx()/40)^(1.5)) --shape of the curve with x is tuned
-)
-end
-
 
 function Public.max_time_on_island_formula() --always >0  --tuned
 	return 60 * (
@@ -116,6 +110,12 @@ function Public.fuel_depletion_rate_sailing()
 	return - 8 * (1 + 0.13 * (Common.overworldx()/40)^(10/10))
 end
 
+function Public.silo_total_pollution()
+	return (
+		400 * (Common.difficulty()^(1.2)) * Public.crew_scale()^(2/5) * (3.2 + 0.7 * (Common.overworldx()/40)^(1.6)) --shape of the curve with x is tuned
+)
+end
+
 function Public.boat_passive_pollution_per_minute(time)
 	local boost = 1
 	local T = Public.max_time_on_island_formula()
@@ -138,7 +138,7 @@ function Public.boat_passive_pollution_per_minute(time)
 	end
 
 	return boost * (
-			6 * Common.difficulty() * (Common.overworldx()/40)^(16/10) * (Public.crew_scale())^(60/100)
+			6 * Common.difficulty() * (Common.overworldx()/40)^(1.6) * (Public.crew_scale())^(60/100)
 	 ) -- No T dependence! Is that the right idea? I wrote it this way earlier, and it can make sense, but I'm not 100% sure.
 end
 
@@ -334,10 +334,15 @@ end
 
 Public.research_buffs = {
 	-- these already give .1 productivity so we're adding .1 to get to 20%
-	['mining-productivity-1'] = {['mining-drill-productivity-bonus'] = .1, ['character-inventory-slots-bonus'] = 5},
-	['mining-productivity-2'] = {['mining-drill-productivity-bonus'] = .1, ['character-inventory-slots-bonus'] = 5},
-	['mining-productivity-3'] = {['mining-drill-productivity-bonus'] = .1, ['character-inventory-slots-bonus'] = 5},
-	['mining-productivity-4'] = {['mining-drill-productivity-bonus'] = .1, ['character-inventory-slots-bonus'] = 5},
+	['mining-productivity-1'] = {['mining-drill-productivity-bonus'] = .1},
+	['mining-productivity-2'] = {['mining-drill-productivity-bonus'] = .1},
+	['mining-productivity-3'] = {['mining-drill-productivity-bonus'] = .1},
+	['mining-productivity-4'] = {['mining-drill-productivity-bonus'] = .1},
+	-- -- these already give .1 productivity so we're adding .1 to get to 20%
+	-- ['mining-productivity-1'] = {['mining-drill-productivity-bonus'] = .1, ['character-inventory-slots-bonus'] = 5},
+	-- ['mining-productivity-2'] = {['mining-drill-productivity-bonus'] = .1, ['character-inventory-slots-bonus'] = 5},
+	-- ['mining-productivity-3'] = {['mining-drill-productivity-bonus'] = .1, ['character-inventory-slots-bonus'] = 5},
+	-- ['mining-productivity-4'] = {['mining-drill-productivity-bonus'] = .1, ['character-inventory-slots-bonus'] = 5},
 }
 
 
@@ -399,21 +404,22 @@ function Public.starting_items_crew_upstairs()
 		{['steel-plate'] = 38},
 		{['stone-brick'] = 60},
 		{['grenade'] = 3},
-		{['solar-panel'] = 4},
 		{['shotgun'] = 2, ['shotgun-shell'] = 36},
 		{['raw-fish'] = 5},
+		{['coin'] = 1000},
 	}
 end
 
 function Public.starting_items_crew_downstairs()
 	return {
-		{['transport-belt'] = Math.random(500,600)},
+		{['transport-belt'] = Math.random(600,650)},
 		{['underground-belt'] = 80},
-		{['splitter'] = Math.random(40,48)},
-		{['inserter'] = Math.random(100,120)},
+		{['splitter'] = Math.random(50,56)},
+		{['inserter'] = Math.random(120,140)},
 		{['storage-tank'] = 4},
 		{['medium-electric-pole'] = Math.random(15,21)},
-		{['coin'] = 3000},
+		{['coin'] = 2000},
+		{['solar-panel'] = 4},
 	}
 end
 

@@ -173,28 +173,28 @@ function Public.generate_overworld_destination(p)
 		
 		local normal_costitems = {'small-lamp', 'engine-unit', 'advanced-circuit'}
 		local base_cost_0 = {
-			['small-lamp'] = (macrop.x-2)*20,
+			['small-lamp'] = (macrop.x-2)*15,
 		}
 		local base_cost_1 = {
-			['small-lamp'] = (macrop.x-2)*20,
-			['engine-unit'] = (macrop.x-7)*15,
+			['small-lamp'] = (macrop.x-2)*15,
+			['engine-unit'] = (macrop.x-7)*10,
 		}
 		local base_cost_2 = {
-			['small-lamp'] = (macrop.x-2)*20,
-			['engine-unit'] = (macrop.x-7)*15,
-			['advanced-circuit'] = (macrop.x-10)*10,
+			['small-lamp'] = (macrop.x-2)*15,
+			['engine-unit'] = (macrop.x-7)*10,
+			['advanced-circuit'] = (macrop.x-10)*5,
 		}
 		local base_cost_3 = {
-			['small-lamp'] = (macrop.x-2)*20,
-			['engine-unit'] = (macrop.x-7)*15,
-			['advanced-circuit'] = (macrop.x-15)*10,
-			['electric-engine-unit'] = (macrop.x-20)*10,
+			['small-lamp'] = (macrop.x-2)*15,
+			['engine-unit'] = (macrop.x-7)*10,
+			['advanced-circuit'] = (macrop.x-15)*5,
+			['electric-engine-unit'] = (macrop.x-20)*5,
 		}
 		local base_cost_4 = {
-			['small-lamp'] = (macrop.x-2)*20,
-			['engine-unit'] = (macrop.x-7)*15,
-			['advanced-circuit'] = (macrop.x-15)*10,
-			['electric-engine-unit'] = (macrop.x-20)*10,
+			['small-lamp'] = (macrop.x-2)*15,
+			['engine-unit'] = (macrop.x-7)*10,
+			['advanced-circuit'] = (macrop.x-15)*5,
+			['electric-engine-unit'] = (macrop.x-20)*5,
 		}
 		if macrop.x == 0 then
 			-- if _DEBUG then
@@ -215,8 +215,8 @@ function Public.generate_overworld_destination(p)
 			cost_to_leave = base_cost_1
 		elseif macrop.x == 18 then --a super small amount of electric-engine-unit on a relatively early level so that they see they need lubricant
 			cost_to_leave = {
-				['small-lamp'] = (macrop.x-2)*20,
-				['engine-unit'] = (macrop.x-7)*15,
+				['small-lamp'] = (macrop.x-2)*15,
+				['engine-unit'] = (macrop.x-7)*10,
 				['electric-engine-unit'] = 2,
 			}
 		elseif macrop.x <= 22 then
@@ -586,21 +586,8 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 
 		end
 
-		if memory.overworldx >= CoreData.victory_x and (not (memory.game_lost or memory.game_won)) then
-
-			memory.completion_time = Math.ceil((memory.age or 0)/60)
-
-			local speedrun_time = (memory.age or 0)/60
-			local speedrun_time_str = Utils.time_longform(speedrun_time)
-			memory.game_won = true
-			-- memory.crew_disband_tick = game.tick + 1200
-			local message = '[' .. memory.name .. '] Victory, on v' .. CoreData.version_string .. ', ' .. CoreData.difficulty_options[memory.difficulty_option].text .. ', cap ' .. CoreData.capacity_options[memory.capacity_option].text3 .. '. Playtime: '
-			Server.to_discord_embed_raw(CoreData.comfy_emojis.goldenobese .. message .. speedrun_time_str)
-			game.play_sound{path='utility/game_won', volume_modifier=0.9}
-			Common.notify_game(message .. '[font=default-large-semibold]' .. speedrun_time_str .. '[/font] since 1st island.', CoreData.colors.notify_victory)
-
-			memory.victory_pause_until_tick = game.tick + 60*5
-			memory.victory_continue_message = true
+		if memory.overworldx >= CoreData.victory_x then
+			Crew.try_win()
 		end
 
 		if memory.overworldx % 40 == 0 then

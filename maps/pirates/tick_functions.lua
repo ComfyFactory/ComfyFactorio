@@ -92,7 +92,7 @@ function Public.prevent_disembark(tickinterval)
 		end
 
 		for _, player in pairs(game.connected_players) do
-			if player.surface and player.surface.valid and boat.surface_name and player.surface.name == boat.surface_name and ps[player.index] and (not Boats.on_boat(boat, player.position)) then
+			if player.surface and player.surface.valid and boat.surface_name and player.surface.name == boat.surface_name and ps[player.index] and (not Boats.on_boat(boat, player.position)) and (not (player.controller_type == defines.controllers.spectator)) then
 				Common.notify_player_error(player, 'Now is no time to disembark.')
 				-- player.teleport(memory.spawnpoint)
 				local p = player.surface.find_non_colliding_position('character', memory.spawnpoint, 5, 0.1)
@@ -207,7 +207,7 @@ function Public.captain_warn_afk(tickinterval)
 
 	if memory.playerindex_captain then
 		for _, player in pairs(game.connected_players) do
-			if player.index == memory.playerindex_captain and #Common.crew_get_nonafk_crew_members() > 1 and player.afk_time >= Common.afk_time - 20*60 - 60 - tickinterval and player.afk_time < Common.afk_time - 20*60 then
+			if Common.is_captain(player) and #Common.crew_get_nonafk_crew_members() > 1 and player.afk_time >= Common.afk_time - 20*60 - 60 - tickinterval and player.afk_time < Common.afk_time - 20*60 then
 				Common.notify_player_expected(player, 'Note: If you go idle as captain for too long, the role passes to another crewmember.')
 				player.play_sound{path = 'utility/scenario_message'}
 			end
@@ -981,7 +981,7 @@ function Public.silo_update(tickinterval)
 					local ef = game.forces[memory.enemy_force_name]
 					if ef and ef.valid then
 						local extra_evo = Balance.evolution_per_full_silo_charge() * e/destination.dynamic_data.rocketsiloenergyneeded
-						ef.evolution_factor = ef.evolution_factor + extra_evo
+						Common.increment_evo(extra_evo)
 						destination.dynamic_data.evolution_accrued_silo = destination.dynamic_data.evolution_accrued_silo + extra_evo
 					end
 				end
@@ -1237,17 +1237,23 @@ function Public.update_players_second()
 	end
 
 	for _, player in pairs(connected_players) do
+		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+		Memory.set_working_id(crew_id)
+
 		if player.afk_time < Common.afk_time then
 			playerindex_to_time_played_continuously[player.index] = playerindex_to_time_played_continuously[player.index] or 0
 
 			playerindex_to_time_played_continuously[player.index] = playerindex_to_time_played_continuously[player.index] + 1
-
-			playerindex_to_captainhood_priority[player.index] = playerindex_to_captainhood_priority[player.index] or 0
-
-			playerindex_to_captainhood_priority[player.index] = playerindex_to_captainhood_priority[player.index] + 1
+			if Common.is_captain(player) then
+				playerindex_to_captainhood_priority[player.index] = 0
+			else
+				playerindex_to_captainhood_priority[player.index] = playerindex_to_captainhood_priority[player.index] or 0
+	
+				playerindex_to_captainhood_priority[player.index] = playerindex_to_captainhood_priority[player.index] + 1
+			end
 		else
-			playerindex_to_time_played_continuously[player.index] = nil
-			playerindex_to_captainhood_priority[player.index] = nil
+			playerindex_to_time_played_continuously[player.index] = 0
+			playerindex_to_captainhood_priority[player.index] = 0
 		end
 	end
 	global_memory.playerindex_to_captainhood_priority = playerindex_to_captainhood_priority
@@ -1267,8 +1273,8 @@ function Public.update_players_second()
 	for _, index in pairs(afk_player_indices) do
 		local player = game.players[index]
 		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-			Memory.set_working_id(crew_id)
-			Roles.afk_player_tick(player)
+		Memory.set_working_id(crew_id)
+		Roles.afk_player_tick(player)
 	end
 end
 
