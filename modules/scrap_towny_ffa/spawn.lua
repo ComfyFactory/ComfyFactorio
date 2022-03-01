@@ -69,11 +69,19 @@ end
 
 -- is the position empty
 local function is_empty(position, surface)
-    local entity_radius = 1
-    local tile_radius = 1
-    local entities = surface.count_entities_filtered({position = position, radius = entity_radius, collision_mask = {'object-layer', 'player-layer'}})
-    --log("entities = " .. entities)
-    if entities > 0 then
+    local chunk_position = {}
+    chunk_position.x = math_floor(position.x / 32)
+    chunk_position.y = math_floor(position.y / 32)
+    if not surface.is_chunk_generated(chunk_position) then
+        -- force load the chunk
+        surface.request_to_generate_chunks(position, 0)
+        surface.force_generate_chunk_requests()
+    end
+    local entity_radius = 3
+    local tile_radius = 2
+    local entities = surface.find_entities_filtered({position = position, radius = entity_radius})
+    --log("entities = " .. #entities)
+    if #entities > 0 then
         return false
     end
     local tiles = surface.count_tiles_filtered({position = position, radius = tile_radius, collision_mask = 'water-tile'})
@@ -87,14 +95,17 @@ local function is_empty(position, surface)
 end
 
 -- finds a valid spawn point that is not near a town and not in a polluted area
-local function find_valid_spawn_point(surface)
+local function find_valid_spawn_point(force_name, surface)
     local ffatable = Table.get_table()
+
     -- check center of map first if valid
     local position = {x = 0, y = 0}
     --log("testing {" .. position.x .. "," .. position.y .. "}")
     force_load(position, surface, 1)
+
+    -- is the point near any buildings
     if in_use(position) == false then
-        if Building.near_town(position, surface, spawn_point_town_buffer) == false then
+        if Building.near_another_town(force_name, position, surface, spawn_point_town_buffer) == false then
             -- force load the position
             if is_empty(position, surface) == true then
                 --log("found valid spawn point at {" .. position.x .. "," .. position.y .. "}")
@@ -133,7 +144,7 @@ local function find_valid_spawn_point(surface)
             force_load(position, surface, 1)
             if in_use(target) == false then
                 if has_pollution(target, surface) == false then
-                    if Building.near_town(target, surface, spawn_point_town_buffer) == false then
+                    if Building.near_another_town(force_name, target, surface, spawn_point_town_buffer) == false then
                         if is_empty(target, surface) == true then
                             --log("found valid spawn point at {" .. target.x .. "," .. target.y .. "}")
                             position = target
@@ -154,7 +165,14 @@ end
 function Public.get_new_spawn_point(player, surface)
     local ffatable = Table.get_table()
     -- get a new spawn point
-    local position = find_valid_spawn_point(surface)
+    local position = {0,0}
+    if player ~= nil then
+        local force = player.force
+        if force ~= nil then
+            local force_name = force.name
+            position = find_valid_spawn_point(force_name, surface)
+        end
+    end
     -- should never be invalid or blocked
     ffatable.spawn_point[player.name] = position
     --log("player " .. player.name .. " assigned new spawn point at {" .. position.x .. "," .. position.y .. "}")
@@ -164,21 +182,16 @@ end
 -- gets a new or existing spawn point for the player
 function Public.get_spawn_point(player, surface)
     local ffatable = Table.get_table()
-    if ffatable.spawn_point == nil then
-        ffatable.spawn_point = {}
-    end
-    -- test the existing spawn point
     local position = ffatable.spawn_point[player.name]
-    if position ~= nil then
+    -- if there is a spawn point and less than three strikes
+    if position ~= nil and ffatable.strikes[player.name] < 3 then
         -- check that the spawn point is not blocked
         if surface.can_place_entity({name = 'character', position = position}) then
             --log("player " .. player.name .. "using existing spawn point at {" .. position.x .. "," .. position.y .. "}")
             return position
         else
-            position = surface.find_non_colliding_position('character', position, 16, 0.25)
-            if (position ~= nil) then
-                return position
-            end
+            position = surface.find_non_colliding_position('character', position, 0, 0.25)
+            return position
         end
     end
     -- otherwise get a new spawn point

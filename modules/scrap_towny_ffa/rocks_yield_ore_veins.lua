@@ -4,7 +4,6 @@ local table_insert = table.insert
 local table_shuffle = table.shuffle_table
 
 local Table = require 'modules.scrap_towny_ffa.table'
-local Evolution = require 'modules.scrap_towny_ffa.evolution'
 
 local valid_entities = {
     ['rock-big'] = true,
@@ -13,21 +12,21 @@ local valid_entities = {
 }
 
 local size_raffle = {
-    {'giant', 128, 256},
-    {'huge', 64, 128},
-    {'big', 32, 64},
-    {'small', 16, 32},
-    {'tiny', 8, 16}
+    {'giant', 1024, 2048},
+    {'huge', 512, 1024},
+    {'big', 256, 510},
+    {'small', 126, 256},
+    {'tiny', 64, 128}
 }
 
 local function get_chances()
     local chances = {}
-    table_insert(chances, {'iron-ore', 25})
+    table_insert(chances, {'iron-ore', 24})
     table_insert(chances, {'copper-ore', 18})
-    table_insert(chances, {'mixed', 15})
+    table_insert(chances, {'mixed', 12})
     table_insert(chances, {'coal', 14})
-    table_insert(chances, {'stone', 8})
-    table_insert(chances, {'uranium-ore', 3})
+    table_insert(chances, {'stone', 12})
+    table_insert(chances, {'uranium-ore', 8})
     return chances
 end
 
@@ -42,42 +41,52 @@ local function set_raffle()
     ffatable.rocks_yield_ore_veins.mixed_ores = {'iron-ore', 'copper-ore', 'stone', 'coal'}
 end
 
-local function get_amount(position)
-    local base = 256
-    local relative_evolution = Evolution.get_evolution(position)
-    local tier = 4 + math_floor(relative_evolution * 16)
-    return (math_random(1, base) + math_random(1, 2 ^ tier))
+local function get_amount()
+    local base = 256 + 2 ^ 8
+    local max = 2 ^ 12
+    return math_random(math_random(256, base), math_random(base, max))
 end
 
 local function draw_chain(surface, count, ore, ore_entities, ore_positions)
     local ffatable = Table.get_table()
-    local vectors = {{0, -1}, {-1, 0}, {1, 0}, {0, 1}}
+    local vectors = {{0, -0.75}, {-0.75, 0}, {0.75, 0}, {0, 0.75}}
     local r = math_random(1, #ore_entities)
-    local position = {x = ore_entities[r].position.x, y = ore_entities[r].position.y}
+    local position = {x = ore_entities[r].ore.position.x, y = ore_entities[r].ore.position.y}
     for _ = 1, count, 1 do
         table_shuffle(vectors)
         for i = 1, 4, 1 do
             local p = {x = position.x + vectors[i][1], y = position.y + vectors[i][2]}
+            -- dispersion will make patches more round
+            local dx = (math_random(0, 100) - 50) / 100
+            local dy = (math_random(0, 100) - 50) / 100
+            local dp = {x = p.x + dx, y = p.y + dy}
+
             local name = ore
             if ore == 'mixed' then
                 name = ffatable.rocks_yield_ore_veins.mixed_ores[math_random(1, #ffatable.rocks_yield_ore_veins.mixed_ores)]
             end
-            if surface.can_place_entity({name = name, position = p, amount = 1}) then
-                if not ore_positions[p.x .. '_' .. p.y] then
-                    position.x = p.x
-                    position.y = p.y
-                    ore_positions[p.x .. '_' .. p.y] = true
-                    ore_entities[#ore_entities + 1] = {name = name, position = p, amount = get_amount(p)}
-                    break
+            if surface.can_place_entity({name = name, position = p, force = 'neutral'}) then
+                if math_random(1, 2) == 1 then
+                    if not ore_positions[p.x .. '_' .. p.y] then
+                        position.x = p.x
+                        position.y = p.y
+                        ore_positions[p.x .. '_' .. p.y] = true
+                        ore_entities[#ore_entities + 1] = {ore = {name = name, position = dp}, amount = get_amount()}
+                        break
+                    end
                 end
             else
-                if surface.can_fast_replace({name = name, position = p}) then
-                    if math_random(1, 2) == 1 then
+                -- existing ore of same name
+                if surface.can_fast_replace({name = name, position = p, force = 'neutral'}) then
+                    local amount = get_amount()
+                    local deposit = surface.find_entity(name, p)
+                    if deposit ~= nil then
+                        amount = amount + deposit
                         if not ore_positions[p.x .. '_' .. p.y] then
                             position.x = p.x
                             position.y = p.y
                             ore_positions[p.x .. '_' .. p.y] = true
-                            ore_entities[#ore_entities + 1] = {name = name, position = p, amount = get_amount(p), fast_replace = true}
+                            ore_entities[#ore_entities + 1] = {ore = {name = name, position = dp}, amount = amount, fast_replace = true}
                             break
                         end
                     end
@@ -129,13 +138,15 @@ local function ore_vein(event)
     end
 
     local position = event.entity.position
-    local ore_entities = {{name = ore, position = {x = position.x, y = position.y}, amount = get_amount(position)}}
+    local ore_entities = {{ore = {name = ore, position = {x = position.x, y = position.y}}, amount = get_amount()}}
     if ore == 'mixed' then
         ore_entities = {
             {
-                name = ffatable.rocks_yield_ore_veins.mixed_ores[math_random(1, #ffatable.rocks_yield_ore_veins.mixed_ores)],
-                position = {x = position.x, y = position.y},
-                amount = get_amount(position)
+                ore = {
+                    name = ffatable.rocks_yield_ore_veins.mixed_ores[math_random(1, #ffatable.rocks_yield_ore_veins.mixed_ores)],
+                    position = {x = position.x, y = position.y}
+                },
+                amount = get_amount()
             }
         }
     end
@@ -148,32 +159,43 @@ local function ore_vein(event)
         if count < c then
             c = count
         end
-
         local placed_ore_count = #ore_entities
-
         draw_chain(surface, c, ore, ore_entities, ore_positions)
-
         count = count - (#ore_entities - placed_ore_count)
-
         if count <= 0 then
             break
         end
     end
 
-    for _, e in pairs(ore_entities) do
-        surface.create_entity(e)
+    -- place the ore
+    for _, ore_entity in pairs(ore_entities) do
+        if ore_entity.fast_replace then
+            local e = surface.find_entity(ore_entity.ore.name, ore_entity.ore.position)
+            e.amount = ore_entity.amount
+        else
+            local e = surface.create_entity(ore_entity.ore)
+            e.amount = ore_entity.amount
+        end
     end
 end
 
 local function on_player_mined_entity(event)
-    local ffatable = Table.get_table()
+    local rocks_yield_ore_veins = Table.get('rocks_yield_ore_veins')
+    if not rocks_yield_ore_veins then
+        return
+    end
+
+    local player = game.players[event.player_index]
+    if player.force.technologies['steel-processing'].researched == false then
+        return
+    end
     if not event.entity.valid then
         return
     end
     if not valid_entities[event.entity.name] then
         return
     end
-    if math_random(1, ffatable.rocks_yield_ore_veins.chance) ~= 1 then
+    if math_random(1, rocks_yield_ore_veins.chance) ~= 1 then
         return
     end
     ore_vein(event)
@@ -184,7 +206,7 @@ local function on_init()
     ffatable.rocks_yield_ore_veins = {}
     ffatable.rocks_yield_ore_veins.raffle = {}
     ffatable.rocks_yield_ore_veins.mixed_ores = {}
-    ffatable.rocks_yield_ore_veins.chance = 4
+    ffatable.rocks_yield_ore_veins.chance = 10
     set_raffle()
 end
 
