@@ -10,17 +10,17 @@ The local inhabitants are indifferent to you at first, so long as you don't buil
 by foreign technology.  In fact, they get quite aggressive at the scent of it. If you were to hurt any of the natives you will be
 brandished a rogue until your untimely death or until you find better digs.
 
-To create a new town or outpost simply place a furnace down in a suitable spot that is not near any other towns or obstructed.
+To create a new town simply place a furnace down in a suitable spot that is not near any other towns or obstructed.
 The world seems to be limited in size with uninhabitable zones on four sides.  News towns can only be built within these
-borders and you must leave room for the town's size (radius of 27) when placing a new town.
+borders and you must leave room for the town's size (radius of 27) when placing a new town.  Each town costs 100 coins.
 TIP: It's best to find a spot far from existing towns and pollution, as enemies will become aggressive once you form a town.
 
-Once a town is formed, members may invite other players and teams using a raw fish. To invite another player, drop a fish
-on that player (with the Z key). To accept an invite, offer a fish in return to the member. To leave a town, simply drop coal
+Once a town is formed, members may invite other players and teams using a coin. To invite another player, drop a coin
+on that player (with the Z key). To accept an invite, offer a coin in return to the member. To leave a town, simply drop coal
 on the market. As a member of a town, your respawn point will change to that of the town.
 
-To form any alliance with another town, drop a fish on a member or their market. If they agree they can reciprocate with a
-fish offering.
+To form any alliance with another town, drop a coin on a member or their market. If they agree they can reciprocate with a
+coin offering.
 
 The town market is the heart of your town.  If it is destroyed, your town is destroyed and you will lose all research. So
 protect it well, repair it whenever possible, and if you can afford, increase its health by purchasing upgrades. If your
@@ -67,14 +67,14 @@ function Public.show(player)
 
     t = t.add {type = 'table', column_count = 4}
 
-    local label2 = t.add {type = 'label', caption = 'Outlander' .. '(' .. #game.forces.player.connected_players .. ')'}
+    local label2 = t.add {type = 'label', caption = 'Outlander' .. ':' .. #game.forces.player.connected_players .. ' '}
     label2.style.font_color = {170, 170, 170}
     label2.style.font = 'heading-3'
     label2.style.minimal_width = 80
 
     for _, town_center in pairs(ffatable.town_centers) do
         local force = town_center.market.force
-        local label3 = t.add {type = 'label', caption = force.name .. '(' .. #force.connected_players .. ')'}
+        local label3 = t.add {type = 'label', caption = force.name .. ':' .. #force.connected_players .. ' '}
         label3.style.font = 'heading-3'
         label3.style.minimal_width = 80
         label3.style.font_color = town_center.color

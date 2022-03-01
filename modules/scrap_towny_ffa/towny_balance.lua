@@ -1,7 +1,6 @@
---luacheck: ignore
 --Towny balance things by Gerkiz --
 
-local player_ammo_starting_modifiers = {
+--[[ local player_ammo_starting_modifiers = {
     ['artillery-shell'] = -0.75,
     ['biological'] = -0.5,
     ['bullet'] = -0.25,
@@ -18,8 +17,7 @@ local player_ammo_starting_modifiers = {
     ['railgun'] = 1,
     ['rocket'] = -0.75,
     ['shotgun-shell'] = -0.20
-}
-
+} ]]
 local player_gun_speed_modifiers = {
     ['artillery-shell'] = -0.75,
     ['biological'] = -0.5,
@@ -101,7 +99,7 @@ local enemy_ammo_evolution_modifiers = {
     --['rocket'] = 1,
     --['shotgun-shell'] = 1
 }
-
+--[[
 function init_player_weapon_damage(force)
     for k, v in pairs(player_ammo_starting_modifiers) do
         force.set_ammo_damage_modifier(k, v)
@@ -111,8 +109,8 @@ function init_player_weapon_damage(force)
         force.set_gun_speed_modifier(k, v)
     end
 end
-
-function init_enemy_weapon_damage()
+]]
+local function init_enemy_weapon_damage()
     local e_force = game.forces['enemy']
 
     for k, v in pairs(enemy_ammo_starting_modifiers) do

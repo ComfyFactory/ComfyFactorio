@@ -13,7 +13,7 @@ function Public.reproduce()
         if #fishes == 0 then
             return
         end
-        if #fishes >= 100 then
+        if #fishes >= 128 then
             return
         end
         -- pick a random fish
@@ -52,15 +52,18 @@ local function on_player_used_capsule(event)
     end
 
     -- if using fish on water
-    if tile.name == 'water' and tile.name == 'water-green' and tile.name == 'deepwater' and tile.name == 'deepwater-green' then
+    if tile.name == 'water'
+        or tile.name == 'water-green'
+        or tile.name == 'water-mud'
+        or tile.name == 'water-shallow'
+        or tile.name == 'deepwater'
+        or tile.name == 'deepwater-green'
+    then
         -- get the count of fish in the water nearby and test if can be repopulated
-        local fishes = surface.find_entities_filtered({name = 'fish', position = position, radius = 27})
-        if #fishes < 12 then
-            surface.create_entity({name = 'water-splash', position = position})
-            surface.create_entity({name = 'fish', position = position})
-            surface.play_sound({path = 'utility/achievement_unlocked', position = player.position, volume_modifier = 1})
-            return
-        end
+        surface.create_entity({name = 'water-splash', position = position})
+        surface.create_entity({name = 'fish', position = position})
+        surface.play_sound({path = 'utility/achievement_unlocked', position = player.position, volume_modifier = 1})
+        return
     end
     -- otherwise return the fish and make no sound
     player.insert({name = 'raw-fish', count = 1})
