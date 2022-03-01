@@ -1,4 +1,3 @@
---luacheck: ignore
 local Table = require 'modules.scrap_towny_ffa.table'
 
 -- called whenever a player places an item
