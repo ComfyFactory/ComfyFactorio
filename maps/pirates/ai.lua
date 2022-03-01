@@ -136,10 +136,6 @@ function Public.try_main_attack()
 		if Math.random(500) == 1 then wave_size_multiplier = 5 end --variance in attack sizes
 	end
 
-	local memory = Memory.get_crew_memory()
-    local surface = game.surfaces[Common.current_destination().surface_name]
-
-
     local group = Public.spawn_group_of_scripted_biters(2/3, 6, 128, wave_size_multiplier)
     local target = Public.generate_main_attack_target()
     if not group or not group.valid or not target or not target.valid then return end
@@ -161,7 +157,6 @@ function Public.try_secondary_attack()
 		if Math.random(500) == 1 then wave_size_multiplier = 5 end --variance in attack sizes
 	end
 
-	local memory = Memory.get_crew_memory()
     local surface = game.surfaces[Common.current_destination().surface_name]
 
 
@@ -193,7 +188,6 @@ function Public.try_rogue_attack()
 		if Math.random(500) == 1 then wave_size_multiplier = 5 end --variance in attack sizes
 	end
 
-	local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[Common.current_destination().surface_name]
 
 	local group = Public.spawn_group_of_scripted_biters(1/2, 6, 128, wave_size_multiplier)

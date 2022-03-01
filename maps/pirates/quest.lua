@@ -227,7 +227,7 @@ function Public.try_resolve_quest()
 
 		local force = game.forces[memory.force_name]
 		if not (force and force.valid) then return end
-		Common.notify_force(force,'Granted ' .. destination.dynamic_data.quest_reward.display_amount .. ' ' .. destination.dynamic_data.quest_reward.display_sprite)
+		Common.notify_force_light(force,'Granted ' .. destination.dynamic_data.quest_reward.display_amount .. ' ' .. destination.dynamic_data.quest_reward.display_sprite)
 
 		local name = destination.dynamic_data.quest_reward.name
 		local count = destination.dynamic_data.quest_reward.count

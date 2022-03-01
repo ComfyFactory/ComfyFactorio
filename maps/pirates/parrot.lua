@@ -63,7 +63,7 @@ function Public.parrot_80()
 end
 function Public.parrot_boats_warning()
 	local memory = Memory.get_crew_memory()
-	Common.parrot_speak(game.forces[memory.force_name], '160 leagues? I think we\'re being chased...')
+	Common.parrot_speak(game.forces[memory.force_name], '200 leagues? I think we\'re being chased...')
 end
 function Public.parrot_kraken_warning()
 	local memory = Memory.get_crew_memory()
@@ -75,7 +75,7 @@ function Public.parrot_radioactive_tip_1()
 end
 function Public.parrot_radioactive_tip_2()
 	local memory = Memory.get_crew_memory()
-	Common.parrot_speak(game.forces[memory.force_name], 'Oo, our ship is making sulfuric acid...')
+	Common.parrot_speak(game.forces[memory.force_name], 'The biters don\'t care if we pollute here, they only care how long we stay...')
 end
 function Public.parrot_800_tip()
 	local memory = Memory.get_crew_memory()

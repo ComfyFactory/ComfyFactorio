@@ -71,7 +71,7 @@ end
 
 function Public.silo_total_pollution()
 	return (
-		300 * (Common.difficulty()^(1.2)) * Public.crew_scale()^(2/5) * (3.2 + 0.7 * (Common.overworldx()/40)^(1.5)) --shape of the curve with x is tuned
+		400 * (Common.difficulty()^(1.2)) * Public.crew_scale()^(2/5) * (3.2 + 0.7 * (Common.overworldx()/40)^(1.5)) --shape of the curve with x is tuned
 )
 end
 
@@ -79,7 +79,7 @@ end
 function Public.max_time_on_island_formula() --always >0  --tuned
 	return 60 * (
 			(32 + 2 * (Common.overworldx()/40)^(1/3))
-	) / Public.crew_scale()^(3/5) / Math.sloped(Common.difficulty(), 1/4) --changed crew_scale factor significantly to help smaller crews
+	) / Public.crew_scale()^(65/100) / Math.sloped(Common.difficulty(), 1/4) --changed crew_scale factor significantly to help smaller crews
 end
 
 
@@ -102,7 +102,7 @@ function Public.fuel_depletion_rate_static()
 
 	local rate
 	if Common.overworldx() > 0 then
-		rate = 380 * (2.5 + (Common.overworldx()/40)^(10/10)) * Public.crew_scale()^(1/6) * Math.sloped(Common.difficulty(), 3/4) / T --the extra player dependency accounts for the fact that even in compressed time, more players get more resources...
+		rate = 380 * (0 + (Common.overworldx()/40)^(10/10)) * Public.crew_scale()^(1/6) * Math.sloped(Common.difficulty(), 3/5) / T --the extra player dependency accounts for the fact that even in compressed time, more players get more resources...
 	else
 		rate = 0
 	end
@@ -119,20 +119,26 @@ end
 function Public.boat_passive_pollution_per_minute(time)
 	local boost = 1
 	local T = Public.max_time_on_island_formula()
-	if time and time >= 90/100 * T then
-		boost = 15
-	elseif time and time >= 85/100 * T then
-		boost = 8
-	elseif time and time >= 75/100 * T then
-		boost = 5
-	elseif time and time >= 55/100 * T then
-		boost = 3
-	elseif time and time >= 40/100 * T then
-		boost = 2
+	if time then
+		if time >= 90/100 * T then
+			boost = 15
+		elseif time >= 85/100 * T then
+			boost = 8
+		elseif time >= 80/100 * T then
+			boost = 6
+		elseif time >= 70/100 * T then
+			boost = 4
+		elseif time >= 55/100 * T then
+			boost = 3
+		elseif time >= 40/100 * T then
+			boost = 2
+		elseif time >= 25/100 * T then
+			boost = 1.5
+		end
 	end
 
 	return boost * (
-			6 * Common.difficulty() * (Common.overworldx()/40)^(16/10) * (Public.crew_scale())^(1/2)
+			6 * Common.difficulty() * (Common.overworldx()/40)^(16/10) * (Public.crew_scale())^(60/100)
 	 ) -- No T dependence! Is that the right idea? I wrote it this way earlier, and it can make sense, but I'm not 100% sure.
 end
 
@@ -168,7 +174,7 @@ function Public.evolution_per_second()
 	return rate
 end
 
-function Public.evolution_per_biter_base_kill()
+function Public.evolution_per_biter_base_kill() --it's important to have evo go up with biter base kills, to provide resistance if you try to plow through all the bases
 	local destination = Common.current_destination()
 	if Common.overworldx() == 0 then return 0 end
 
@@ -190,7 +196,7 @@ function Public.evolution_per_biter_base_kill()
 end
 
 function Public.evolution_per_full_silo_charge()
-	return 0.07
+	return 0.06 --too low and you always charge immediately, too high and you always charge late
 end
 
 function Public.bonus_damage_to_humans()
@@ -270,7 +276,7 @@ function Public.pistol_damage_multiplier() return 1.95 end
 Public.kraken_spawns_base_extra_evo = 0.2
 
 function Public.kraken_evo_increase_per_shot()
-	return 1/100 * 0.02
+	return 1/100 * 0.04 --started off low, currently slowly upping to see
 end
 
 function Public.kraken_kill_reward()
@@ -281,7 +287,7 @@ function Public.kraken_health()
 	return Math.ceil(2500 * Math.max(1, 1 + 0.1 * ((Common.overworldx()/40)^(13/10)-6)) * (Public.crew_scale()^(5/8)) * Math.sloped(Common.difficulty(), 1/2))
 end
 
-Public.kraken_regen_scale = 0.5
+Public.kraken_regen_scale = 0.1 --starting off low
 
 function Public.krakens_per_slot(overworldx)
 	local rng = Math.random()

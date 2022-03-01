@@ -70,7 +70,7 @@ function Public.try_ore_spawn(surface, realp, source_name, density_bonus)
 
 				local density = (density_bonus + 17 + 4 * Math.random()) -- not too big, and not too much variation; it makes players have to stay longer
 				
-				local radius_squared = (destination.static_params and destination.static_params.radius_squared_modifier or 1) * (11 + 45 * Math.slopefromto(Common.ore_abstract_to_real(choices[choice]), 800, 20000)) * (0.6 + Math.random()) --tuned
+				local radius_squared = (destination.static_params and destination.static_params.radius_squared_modifier or 1) * (12 + 45 * Math.slopefromto(Common.ore_abstract_to_real(choices[choice]), 800, 20000)) * (0.6 + Math.random()) --tuned
 	
 				if source_name == 'rock-huge' then
 					radius_squared = radius_squared * 1.5

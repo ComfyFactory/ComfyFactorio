@@ -62,17 +62,17 @@ Public.main_shop_data_1 = {
 	[Upgrades.enum.EXTRA_HOLD] = {
 		tooltip = 'Upgrade the ship\'s hold.',
 		what_you_get_sprite_buttons = {['item/steel-chest'] = false},
-		base_cost = {coins = 10000, fuel = 2500},
+		base_cost = {coins = 10000, fuel = 2000},
 	},
 	[Upgrades.enum.ROCKETS_FOR_SALE] = {
 		tooltip = 'Unlock rockets for sale at covered-up markets.',
 		what_you_get_sprite_buttons = {['item/rocket-launcher'] = false},
-		base_cost = {coins = 10000, fuel = 3000},
+		base_cost = {coins = 10000, fuel = 2500},
 	},
 	[Upgrades.enum.UNLOCK_MERCHANTS] = {
 		tooltip = 'Unlock merchant ships.',
 		what_you_get_sprite_buttons = {['entity/market'] = false},
-		base_cost = {coins = 10000, fuel = 4000},
+		base_cost = {coins = 10000, fuel = 2500},
 	},
 }
 

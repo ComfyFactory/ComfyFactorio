@@ -190,7 +190,7 @@ function Public.destination_on_collide(destination)
 		-- destination.static_params.scheduled_raft_raids = scheduled_raft_raids
 	end
 
-	if memory.overworldx == 40*4 then Parrot.parrot_boats_warning() end
+	if memory.overworldx == 40*5 then Parrot.parrot_boats_warning() end
 	if memory.overworldx == 600 then
 		Parrot.parrot_radioactive_tip_1()
 	elseif memory.overworldx == 800 then

@@ -131,7 +131,23 @@ function Public.player_privilege_level(player)
 	end
 end
 
-function Public.try_accept_captainhood(player)
+function Public.make_captain(player)
+	local global_memory = Memory.get_global_memory()
+	local memory = Memory.get_crew_memory()
+
+	if memory.playerindex_captain then
+		Public.update_privileges(game.players[memory.playerindex_captain])
+	end
+
+	memory.playerindex_captain = player.index
+	global_memory.playerindex_to_captainhood_priority[player.index] = nil
+	memory.captain_acceptance_timer = nil
+
+	Public.reset_officers()
+    Public.update_privileges(player)
+end
+
+function Public.player_confirm_captainhood(player)
 	local memory = Memory.get_crew_memory()
 	local captain_index = memory.playerindex_captain
 
@@ -180,7 +196,7 @@ function Public.renounce_captainhood(player)
 	else
 
 		local force = game.forces[memory.force_name]
-		global_memory.playerindex_to_priority[player.index] = nil
+		global_memory.playerindex_to_captainhood_priority[player.index] = nil
 		if force and force.valid then
 			local message = (player.name .. ' renounces their title of captain.')
 			Common.notify_force(force, message)
@@ -250,22 +266,6 @@ function Public.try_renounce_class(player, override_message)
 			memory.classes_table[player.index] = nil
 		end
 	end
-end
-
-function Public.make_captain(player)
-	local global_memory = Memory.get_global_memory()
-	local memory = Memory.get_crew_memory()
-
-	if memory.playerindex_captain then
-		Public.update_privileges(game.players[memory.playerindex_captain])
-	end
-
-	memory.playerindex_captain = player.index
-	global_memory.playerindex_to_priority[player.index] = nil
-	memory.captain_acceptance_timer = nil
-
-	Public.reset_officers()
-    Public.update_privileges(player)
 end
 
 
@@ -344,7 +344,7 @@ function Public.assign_captain_based_on_priorities(excluded_player_index)
 			if only_found_afk_players or player_active then
 				only_found_afk_players = player_active
 	
-				local player_priority = global_memory.playerindex_to_priority[player_index]
+				local player_priority = global_memory.playerindex_to_captainhood_priority[player_index]
 				if player_priority and player_priority > best_priority_so_far then
 					best_priority_so_far = player_priority
 					captain_index = player_index
@@ -401,7 +401,7 @@ function Public.captain_requisition_coins(captain_index)
 		for _, player_index in pairs(crew_members) do
 			if player_index ~= captain_index then
 				local player = game.players[player_index]
-				if player then
+				if player and not (memory.officers_table and memory.officers_table[player.index]) then
 					local inv = player.get_inventory(defines.inventory.character_main)
 					if inv and inv.valid then
 						local coin_amount = inv.get_item_count('coin')

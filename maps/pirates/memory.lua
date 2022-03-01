@@ -20,7 +20,7 @@ function Public.global_reset_memory()
 	pirates_global_memory.config = {}
 	pirates_global_memory.afk_player_indices = {}
 	pirates_global_memory.playerindex_to_time_played_continuously = {}
-	pirates_global_memory.playerindex_to_priority = {}
+	pirates_global_memory.playerindex_to_captainhood_priority = {}
 	pirates_global_memory.player_gui_memories = {}
 	pirates_global_memory.offline_players = {}
 	pirates_global_memory.crew_memories = {}

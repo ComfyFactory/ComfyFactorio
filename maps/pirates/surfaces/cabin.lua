@@ -53,11 +53,11 @@ Public.Data.cabin_splitters = {
 	{x = -5, y = -0.5, direction = defines.direction.north, type = 5},
 	{x = -4, y = -1.5, direction = defines.direction.north, type = 5},
 	{x = -3, y = -2.5, direction = defines.direction.north, type = 5},
-	{x = -5, y = 1.5, direction = defines.direction.north, type = 6},
-	{x = -4, y = 0.5, direction = defines.direction.north, type = 6},
-	{x = -3, y = -0.5, direction = defines.direction.north, type = 6},
-	{x = -5, y = -0.5, direction = defines.direction.north, type = 7},
-	{x = -4, y = -1.5, direction = defines.direction.north, type = 7},
+	{x = -5, y = -2.5, direction = defines.direction.north, type = 6},
+	{x = -4, y = -3.5, direction = defines.direction.north, type = 6},
+	{x = -3, y = -4.5, direction = defines.direction.north, type = 6},
+	{x = -5, y = -4.5, direction = defines.direction.north, type = 7},
+	{x = -4, y = -5.5, direction = defines.direction.north, type = 7},
 	{x = -4, y = -8.5, direction = defines.direction.north, type = 7},
 	{x = -5, y = -9.5, direction = defines.direction.north, type = 7},
 	{x = -3, y = -7.5, direction = defines.direction.north, type = 8},
@@ -86,7 +86,7 @@ end
 
 function Public.get_cabin_surface()
 	local name = Public.get_cabin_surface_name()
-	if name then return game.surfaces[Public.get_cabin_surface_name()] end
+	if name and game.surfaces[name] and game.surfaces[name].valid then return game.surfaces[Public.get_cabin_surface_name()] end
 end
 
 function Public.create_cabin_surface()

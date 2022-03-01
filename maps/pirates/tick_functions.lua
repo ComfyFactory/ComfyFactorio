@@ -224,9 +224,13 @@ function Public.periodic_free_resources(tickinterval)
 
 	Common.give_reward_items(Balance.periodic_free_resources_per_destination_5_seconds())
 
-	if game.tick % 300*5 == 0 and (destination and destination.subtype and destination.subtype == Islands.enum.RADIOACTIVE) then
-		-- every 30 seconds
-		Common.give_reward_items{{name = 'sulfuric-acid-barrel', count = 1}}
+	if game.tick % (300*12) == 0 and (destination and destination.subtype and destination.subtype == Islands.enum.RADIOACTIVE) then
+		-- every 60 seconds
+		local count = 2
+		Common.give_reward_items{{name = 'sulfuric-acid-barrel', count = count}}
+		local force = game.forces[memory.force_name]
+		if not (force and force.valid) then return end
+		Common.notify_force_light(force, 'Granted ' .. count .. ' [item=sulfuric-acid-barrel]')
 	end
 end
 
@@ -1214,7 +1218,7 @@ function Public.update_players_second()
     local connected_players = game.connected_players
 
 	local playerindex_to_time_played_continuously = {}
-	local playerindex_to_priority = {}
+	local playerindex_to_captainhood_priority = {}
 	for playerindex, time in pairs(global_memory.playerindex_to_time_played_continuously) do
 		local player = game.players[playerindex]
 
@@ -1223,12 +1227,12 @@ function Public.update_players_second()
 			playerindex_to_time_played_continuously[playerindex] = time
 		end
 	end
-	for playerindex, time in pairs(global_memory.playerindex_to_priority) do
+	for playerindex, time in pairs(global_memory.playerindex_to_captainhood_priority) do
 		local player = game.players[playerindex]
 
 		if player and Common.validate_player(player) then
 			-- port over
-			playerindex_to_priority[playerindex] = time
+			playerindex_to_captainhood_priority[playerindex] = time
 		end
 	end
 
@@ -1238,15 +1242,15 @@ function Public.update_players_second()
 
 			playerindex_to_time_played_continuously[player.index] = playerindex_to_time_played_continuously[player.index] + 1
 
-			playerindex_to_priority[player.index] = playerindex_to_priority[player.index] or 0
+			playerindex_to_captainhood_priority[player.index] = playerindex_to_captainhood_priority[player.index] or 0
 
-			playerindex_to_priority[player.index] = playerindex_to_priority[player.index] + 1
+			playerindex_to_captainhood_priority[player.index] = playerindex_to_captainhood_priority[player.index] + 1
 		else
 			playerindex_to_time_played_continuously[player.index] = nil
-			playerindex_to_priority[player.index] = nil
+			playerindex_to_captainhood_priority[player.index] = nil
 		end
 	end
-	global_memory.playerindex_to_priority = playerindex_to_priority
+	global_memory.playerindex_to_captainhood_priority = playerindex_to_captainhood_priority
 	global_memory.playerindex_to_time_played_continuously = playerindex_to_time_played_continuously
 
 	local afk_player_indices = {}

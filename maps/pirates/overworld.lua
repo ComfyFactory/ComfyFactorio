@@ -86,15 +86,12 @@ function Public.generate_overworld_destination(p)
 		subtype = Surfaces.Island.enum.STANDARD_VARIANT
 	elseif macrop.y == 1 and (((macrop.x % 4) == 3 and macrop.x ~= 15) or macrop.x == 14) then --avoid x=15 because radioactive is there
 		type = Surfaces.enum.DOCK
-	elseif macrop.x == 4 then --biter boats appear
+	elseif macrop.x == 5 then --biter boats appear
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.STANDARD
-	elseif macrop.x == 5 then
-		type = Surfaces.enum.ISLAND
-		subtype = Surfaces.Island.enum.RED_DESERT
 	elseif macrop.x == 9 then --just before krakens
 		type = Surfaces.enum.ISLAND
-		subtype = Surfaces.Island.enum.HORSESHOE
+		subtype = Surfaces.Island.enum.RED_DESERT
 	elseif macrop.x == 10 then --krakens appear
 		type = nil
 	elseif macrop.x == 12 then --just after krakens, but dock is here too, so there's a choice
@@ -142,7 +139,7 @@ function Public.generate_overworld_destination(p)
 		if Common.difficulty() < 1 then max_evo = 0.72 end
 		if Common.difficulty() > 1 then max_evo = 0.90 end
 
-		if macrop.x > 4 then
+		if macrop.x > 5 then
 			scheduled_raft_raids = {}
 			local times = {600, 360, 215, 210, 120, 30, 10, 5}
 			for i = 1, #times do
@@ -152,7 +149,7 @@ function Public.generate_overworld_destination(p)
 					-- scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_bonus_evolution = 0.52}
 				end
 			end
-		elseif macrop.x == 4 then
+		elseif macrop.x == 5 then
 			local times
 			if playercount <= 2 then
 				times = {1, 5, 10, 15}

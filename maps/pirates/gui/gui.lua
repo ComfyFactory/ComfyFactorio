@@ -159,8 +159,8 @@ local function create_gui(player)
 	flow3.style.font = 'default-large-semibold'
 	flow3.style.font_color = GuiCommon.bold_font_color
 
-	flow3 = flow2.add({type = 'table', name = 'cost_table', column_count = 5})
-	for i = 1, 5 do
+	flow3 = flow2.add({type = 'table', name = 'cost_table', column_count = #CoreData.cost_items})
+	for i = 1, #CoreData.cost_items do
 		flow4 = flow3.add({type = 'sprite-button', name = 'cost_' .. i, number = 0})
 		-- flow4.mouse_button_filter = {'middle'}
 		flow4.enabled = false
@@ -633,7 +633,7 @@ function Public.update_gui(player)
 				for i = 1, #CoreData.cost_items do
 					local item_name = CoreData.cost_items[i].name
 		
-					if costs[item_name] then
+					if costs[item_name] and flow2.cost_table['cost_' .. i] then
 						local stored = (memory.boat.stored_resources and memory.boat.stored_resources[item_name]) or 0
 						flow2.cost_table['cost_' .. i].sprite = CoreData.cost_items[i].sprite_name
 						if atsea_loading_bool then
@@ -931,7 +931,7 @@ function Public.update_gui(player)
 	flow1 = pirates_flow.covering_line_frame
 
 	if flow1 then
-		if not eta_bool and not retreating_bool and not quest_bool and not silo_bool and not atsea_loading_bool and not cost_bool and not leave_anytime_bool and not approaching_dock_bool and not leaving_dock_bool then
+		if not eta_bool and not retreating_bool and not quest_bool and not silo_bool and not atsea_loading_bool and not leave_anytime_bool and not approaching_dock_bool and not leaving_dock_bool then
 			flow1.visible = true
 		else
 			flow1.visible = false

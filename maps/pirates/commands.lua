@@ -43,7 +43,7 @@ function(cmd)
 	local crew_id = tonumber(string.sub(game.players[cmd.player_index].force.name, -3, -1)) or nil
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
-	Roles.try_accept_captainhood(player)
+	Roles.player_confirm_captainhood(player)
 end)
 
 -- Disabled for information-flow reasons:

@@ -85,7 +85,7 @@ end
 function Public.get_hold_surface(nth)
 	nth = nth or 1
 	local name = Public.get_hold_surface_name(nth)
-	if name then return game.surfaces[name] end
+	if name and game.surfaces[name] and game.surfaces[name].valid then return game.surfaces[name] end
 end
 
 function Public.create_hold_surface(nth)

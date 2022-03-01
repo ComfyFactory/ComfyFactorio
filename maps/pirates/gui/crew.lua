@@ -119,12 +119,12 @@ function Public.toggle_window(player)
 	flow3 = flow2.add({
 		name = 'class_renounce',
 		type = 'button',
-		caption = 'Renounce Class',
+		caption = 'Give Up Class',
 	})
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
-	flow3.tooltip = 'Give up this class. The class will then be available for other crewmembers to take.'
+	flow3.tooltip = 'The class will become available for other crewmembers to take.'
 
 	flow3 = flow2.add({
 		name = 'officer_resign',
@@ -316,7 +316,7 @@ function Public.toggle_window(player)
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
-	flow3.tooltip = 'Take coins from each crewmembers.'
+	flow3.tooltip = 'Take all the coins from each non-officer.'
 
 
 	flow2 = flow.add({

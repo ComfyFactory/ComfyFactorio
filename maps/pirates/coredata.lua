@@ -5,8 +5,8 @@ local inspect = require 'utils.inspect'.inspect
 local Public = {}
 
 Public.scenario_id_name = 'pirates'
-Public.version_string = '1.0.3.9.2'
-Public.version_float = 1.0392
+Public.version_string = '1.0.3.9.4'
+Public.version_float = 1.0394
 
 Public.blueprint_library_allowed = false
 Public.blueprint_importing_allowed = true
@@ -133,7 +133,7 @@ Public.cost_items = {
 	{name = 'advanced-circuit', display_name = 'Advanced circuit', sprite_name = 'item/advanced-circuit', color={r=0,g=0,b=255}},
 	{name = 'electric-engine-unit', display_name = 'Electric engine unit', sprite_name = 'item/electric-engine-unit', color={r=0,g=255,b=255}},
 	{name = 'uranium-235', display_name = 'Uranium-235', sprite_name = 'item/uranium-235', color={r=0,g=255,b=0}},
-	{name = 'satellite', display_name = 'Satellite', sprite_name = 'item/satellite', color={r=255,g=255,b=255}},
+	{name = 'fluid-wagon', display_name = 'Fluid Wagon', sprite_name = 'item/fluid-wagon', color={r=255,g=255,b=255}},
 }
 
 Public.fallthrough_destination = {
