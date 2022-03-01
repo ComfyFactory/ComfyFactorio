@@ -1,7 +1,6 @@
 local Public = {}
 
 --local Server = require 'utils.server'
-local Table = require 'modules.scrap_towny_ffa.table'
 
 local function create_limbo()
     game.create_surface('limbo')
