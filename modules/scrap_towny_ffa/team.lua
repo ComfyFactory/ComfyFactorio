@@ -92,31 +92,31 @@ local function is_towny(force)
     return true
 end
 
-function Public.has_key(player_index)
+function Public.has_key(index)
     local ffatable = Table.get_table()
     if ffatable.key == nil then
         ffatable.key = {}
     end
-    if ffatable.key[player_index] ~= nil then
-        return ffatable.key[player_index]
+    if ffatable.key[index] ~= nil then
+        return ffatable.key[index]
     end
     return false
 end
 
-function Public.give_key(player_index)
+function Public.give_key(index)
     local ffatable = Table.get_table()
     if ffatable.key == nil then
         ffatable.key = {}
     end
-    ffatable.key[player_index] = true
+    ffatable.key[index] = true
 end
 
-function Public.remove_key(player_index)
+function Public.remove_key(index)
     local ffatable = Table.get_table()
     if ffatable.key == nil then
         ffatable.key = {}
     end
-    ffatable.key[player_index] = false
+    ffatable.key[index] = false
 end
 
 function Public.set_player_color(player)
@@ -206,7 +206,7 @@ function Public.set_player_to_outlander(player)
     player.tag = '[Outlander]'
     Map.disable_world_map(player)
     Public.set_player_color(player)
-    Public.give_key(player)
+    Public.give_key(player.index)
 end
 
 local function set_player_to_rogue(player)

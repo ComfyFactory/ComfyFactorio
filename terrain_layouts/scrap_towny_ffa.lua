@@ -188,7 +188,9 @@ local size_of_scrap_raffle = #scrap_raffle
 
 local function place_scrap(surface, position)
     local ffatable = Table.get_table()
-    if ffatable.spaceships == nil then ffatable.spaceships = {} end
+    if ffatable.spaceships == nil then
+        ffatable.spaceships = {}
+    end
     -- place turrets
     if math_random(1, 700) == 1 then
         if position.x ^ 2 + position.x ^ 2 > 4096 then
@@ -203,13 +205,17 @@ local function place_scrap(surface, position)
     -- place market spaceship
     if math_random(1, 4096) == 1 then
         local spaceship = {}
-        spaceship.market = surface.create_entity({name = 'crash-site-spaceship-market', position = position, force = 'neutral'})
-        spaceship.market.minable = false
-        spaceship.max_health = 300
-        spaceship.health = spaceship.max_health
-        if spaceship.market ~= nil then
-            if ffatable.spaceships[position.x] == nil then ffatable.spaceships[position.x] = {} end
-            ffatable.spaceships[position.x][position.y] = spaceship
+        if surface.can_place_entity({name = 'crash-site-spaceship-market', position = position, force = 'neutral'}) then
+            spaceship.market = surface.create_entity({name = 'crash-site-spaceship-market', position = position, force = 'neutral'})
+            spaceship.market.minable = false
+            spaceship.max_health = 300
+            spaceship.health = spaceship.max_health
+            if spaceship.market and spaceship.market.valid then
+                if ffatable.spaceships[position.x] == nil then
+                    ffatable.spaceships[position.x] = {}
+                end
+                ffatable.spaceships[position.x][position.y] = spaceship
+            end
         end
         return
     end
@@ -311,7 +317,7 @@ local function on_chunk_generated(event)
     --log('chunk_position = {' .. chunk_position.x .. ',' .. chunk_position.y .. '}')
     if chunk_position.x >= -33 and chunk_position.x <= 32 and chunk_position.y >= -33 and chunk_position.y <= 32 then
         if chunk_position.x == -33 or chunk_position.x == 32 or chunk_position.y == -33 or chunk_position.y == 32 then
-            local area = {{x = left_top_x, y = left_top_y},{x = left_top_x + 31, y = left_top_y + 31}}
+            local area = {{x = left_top_x, y = left_top_y}, {x = left_top_x + 31, y = left_top_y + 31}}
             local entities = surface.find_entities(area)
             for _, e in pairs(entities) do
                 e.destroy()
@@ -328,7 +334,7 @@ local function on_chunk_generated(event)
         end
     end
     if chunk_position.x < -33 or chunk_position.x > 32 or chunk_position.y < -33 or chunk_position.y > 32 then
-        local area = {{x = left_top_x, y = left_top_y},{x = left_top_x + 31, y = left_top_y + 31}}
+        local area = {{x = left_top_x, y = left_top_y}, {x = left_top_x + 31, y = left_top_y + 31}}
         local entities = surface.find_entities(area)
         for _, e in pairs(entities) do
             e.destroy()

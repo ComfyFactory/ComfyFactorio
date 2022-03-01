@@ -15,7 +15,7 @@ local Color = require 'utils.color_presets'
 
 local town_radius = 27
 local radius_between_towns = 64
-local ore_amount = 1000 * (200/168.5)
+local ore_amount = 1000 * (200 / 168.5)
 
 local colors = {}
 local c1 = 250
@@ -136,7 +136,9 @@ local starter_supplies = {
 local function count_nearby_ore(surface, position, ore_name)
     local count = 0
     local r = town_radius + 8
-    for _, e in pairs(surface.find_entities_filtered({area = {{position.x - r, position.y - r}, {position.x + r, position.y + r}}, force = 'neutral', name = ore_name})) do
+    for _, e in pairs(
+        surface.find_entities_filtered({area = {{position.x - r, position.y - r}, {position.x + r, position.y + r}}, force = 'neutral', name = ore_name})
+    ) do
         count = count + e.amount
     end
     return count
@@ -277,12 +279,12 @@ local function is_valid_location(force_name, surface, position)
     local ffatable = Table.get_table()
     if not surface.can_place_entity({name = 'market', position = position}) then
         surface.create_entity(
-                {
-                    name = 'flying-text',
-                    position = position,
-                    text = 'Position is obstructed - no room for market!',
-                    color = {r = 0.77, g = 0.0, b = 0.0}
-                }
+            {
+                name = 'flying-text',
+                position = position,
+                text = 'Position is obstructed - no room for market!',
+                color = {r = 0.77, g = 0.0, b = 0.0}
+            }
         )
         return false
     end
@@ -370,13 +372,17 @@ end
 local function found_town(event)
     local entity = event.created_entity
     -- is a valid entity placed?
-    if entity == nil or not entity.valid then return end
+    if entity == nil or not entity.valid then
+        return
+    end
 
     local player = game.players[event.player_index]
 
     -- is player not a character?
     local character = player.character
-    if character == nil then return end
+    if character == nil then
+        return
+    end
 
     -- is it a stone-furnace?
     if entity.name ~= 'stone-furnace' then
@@ -421,12 +427,12 @@ local function found_town(event)
     if ffatable.cooldowns_town_placement[player.index] then
         if game.tick < ffatable.cooldowns_town_placement[player.index] then
             surface.create_entity(
-                    {
-                        name = 'flying-text',
-                        position = position,
-                        text = 'Town founding is on cooldown for ' .. math.ceil((ffatable.cooldowns_town_placement[player.index] - game.tick) / 3600) .. ' minutes.',
-                        color = {r = 0.77, g = 0.0, b = 0.0}
-                    }
+                {
+                    name = 'flying-text',
+                    position = position,
+                    text = 'Town founding is on cooldown for ' .. math.ceil((ffatable.cooldowns_town_placement[player.index] - game.tick) / 3600) .. ' minutes.',
+                    color = {r = 0.77, g = 0.0, b = 0.0}
+                }
             )
             player.insert({name = 'stone-furnace', count = 1})
             return
@@ -446,7 +452,7 @@ local function found_town(event)
         player.insert({name = 'stone-furnace', count = 1})
         return
     else
-        inventory.remove({name='coin',count=100})
+        inventory.remove({name = 'coin', count = 100})
     end
 
     local force = Team.add_new_force(force_name)
@@ -478,7 +484,7 @@ local function found_town(event)
     town_center.creation_tick = game.tick
 
     town_center.town_caption =
-    rendering.draw_text {
+        rendering.draw_text {
         text = town_center.town_name,
         surface = surface,
         forces = {force_name},
@@ -492,7 +498,7 @@ local function found_town(event)
     }
 
     town_center.health_text =
-    rendering.draw_text {
+        rendering.draw_text {
         text = 'HP: ' .. town_center.health .. ' / ' .. town_center.max_health,
         surface = surface,
         forces = {force_name},
@@ -506,7 +512,7 @@ local function found_town(event)
     }
 
     town_center.coins_text =
-    rendering.draw_text {
+        rendering.draw_text {
         text = 'Coins: ' .. town_center.coin_balance,
         surface = surface,
         forces = {force_name},
@@ -530,7 +536,7 @@ local function found_town(event)
     force.set_spawn_position(pos, surface)
 
     Team.add_player_to_town(player, town_center)
-    Team.remove_key(player)
+    Team.remove_key(player.index)
     Team.add_chart_tag(town_center)
 
     game.print('>> ' .. player.name .. ' has founded a new town!', {255, 255, 0})
@@ -603,16 +609,16 @@ local function rename_town(cmd)
         Team.set_player_color(p)
     end
 
-    game.print('>> ' .. old_name .. " is now known as " .. '"' .. name .. '"', {255, 255, 0})
+    game.print('>> ' .. old_name .. ' is now known as ' .. '"' .. name .. '"', {255, 255, 0})
     Server.to_discord_embed(old_name .. ' is now known as ' .. '"' .. name .. '"')
 end
 
 commands.add_command(
-        'rename-town',
-        'Renames your town..',
-        function(cmd)
-            rename_town(cmd)
-        end
+    'rename-town',
+    'Renames your town..',
+    function(cmd)
+        rename_town(cmd)
+    end
 )
 
 local Event = require 'utils.event'
