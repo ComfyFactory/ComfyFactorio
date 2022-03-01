@@ -129,7 +129,9 @@ function Public.try_main_attack()
 	local wave_size_multiplier = 1
 	local memory = Memory.get_crew_memory()
 	if memory.overworldx > 0 then
-		if Math.random(2) == 2 then return end --variance in attack sizes
+		if Math.random(2) == 2 then
+			log('attack aborted by chance')
+		end --variance in attack sizes
 		if Math.random(10) == 1 then wave_size_multiplier = 1.8 end --variance in attack sizes
 		if Math.random(60) == 1 then wave_size_multiplier = 3.2 end --variance in attack sizes
 		if Math.random(500) == 1 then wave_size_multiplier = 5 end --variance in attack sizes
@@ -150,7 +152,9 @@ function Public.try_secondary_attack()
 	local wave_size_multiplier = 1
 	local memory = Memory.get_crew_memory()
 	if memory.overworldx > 0 then
-		if Math.random(2) == 2 then return end --variance in attack sizes
+		if Math.random(2) == 2 then
+			log('attack aborted by chance')
+		end --variance in attack sizes
 		if Math.random(10) == 1 then wave_size_multiplier = 1.8 end --variance in attack sizes
 		if Math.random(60) == 1 then wave_size_multiplier = 3.2 end --variance in attack sizes
 		if Math.random(500) == 1 then wave_size_multiplier = 5 end --variance in attack sizes
@@ -181,7 +185,9 @@ function Public.try_rogue_attack()
 	local wave_size_multiplier = 1
 	local memory = Memory.get_crew_memory()
 	if memory.overworldx > 0 then
-		if Math.random(2) == 2 then return end --variance in attack sizes
+		if Math.random(2) == 2 then
+			log('attack aborted by chance')
+		end --variance in attack sizes
 		if Math.random(10) == 1 then wave_size_multiplier = 1.8 end --variance in attack sizes
 		if Math.random(60) == 1 then wave_size_multiplier = 3.2 end --variance in attack sizes
 		if Math.random(500) == 1 then wave_size_multiplier = 5 end --variance in attack sizes
@@ -448,7 +454,7 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 
 	if units_created_count > 0 then
 		--@TEMP: Logging attack spending
-		log('Spent ' .. Math.floor(100 * (initialpollution - temp_floating_pollution) / initialpollution) .. '% of ' .. Math.ceil(initialpollution - temp_floating_pollution) .. ' pollution budget on biters, at ' .. Math.ceil(base_pollution_cost_multiplier*100)/100 .. 'x price.')
+		log('Spent ' .. Math.floor(100 * (initialpollution - temp_floating_pollution) / initialpollution) .. '% of ' .. Math.ceil(initialpollution) .. ' pollution budget on biters, at ' .. Math.ceil(base_pollution_cost_multiplier*100)/100 .. 'x price.')
 	end
 	
     return units_created
