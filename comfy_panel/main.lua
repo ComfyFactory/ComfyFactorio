@@ -40,17 +40,6 @@ function Public.add_tab_to_gui(tbl)
     end
 end
 
---- This modifies a given gui
---@param name <string>
---@param state <boolean>
-function Public.modify_gui(name, state)
-    if not main_gui_tabs[name] then
-        return
-    end
-
-    main_gui_tabs[name].disabled = state or false
-end
-
 function Public.screen_to_bypass(elem)
     screen_elements[elem] = true
     return screen_elements
@@ -165,23 +154,13 @@ local function main_frame(player)
                 tabbed_pane.add_tab(tab, name_frame)
             end
         else
-            if not func.disabled then
-                local tab = tabbed_pane.add({type = 'tab', caption = name, name = 'tab_' .. name})
-                local name_frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
-                name_frame.style.minimal_height = 480
-                name_frame.style.maximal_height = 480
-                name_frame.style.minimal_width = 800
-                name_frame.style.maximal_width = 800
-                tabbed_pane.add_tab(tab, name_frame)
-            elseif player.admin then
-                local tab = tabbed_pane.add({type = 'tab', caption = name, name = 'tab_' .. name})
-                local name_frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
-                name_frame.style.minimal_height = 480
-                name_frame.style.maximal_height = 480
-                name_frame.style.minimal_width = 800
-                name_frame.style.maximal_width = 800
-                tabbed_pane.add_tab(tab, name_frame)
-            end
+            local tab = tabbed_pane.add({type = 'tab', caption = name, name = 'tab_' .. name})
+            local name_frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
+            name_frame.style.minimal_height = 480
+            name_frame.style.maximal_height = 480
+            name_frame.style.minimal_width = 800
+            name_frame.style.maximal_width = 800
+            tabbed_pane.add_tab(tab, name_frame)
         end
     end
 
