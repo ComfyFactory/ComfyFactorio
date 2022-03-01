@@ -9,7 +9,6 @@ end
 
 local function initialize_nauvis()
     local surface = game.surfaces['nauvis']
-    local map_seed = Table.get('map_seed')
 
     -- this overrides what is in the map_gen_settings.json file
     local mgs = surface.map_gen_settings
@@ -119,7 +118,7 @@ local function initialize_nauvis()
         -- this will make and average base radius around 12 tiles
         ['enemy-base-radius'] = 12
     }
-    mgs.seed = map_seed
+    mgs.seed = game.surfaces[1].map_gen_settings.seed
     surface.map_gen_settings = mgs
     surface.peaceful_mode = false
     surface.always_day = false
