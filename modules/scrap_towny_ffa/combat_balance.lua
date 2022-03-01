@@ -1,4 +1,3 @@
---luacheck: ignore
 local string_sub = string.sub
 local string_len = string.len
 
@@ -36,9 +35,8 @@ local balance_functions = {
 local function on_research_finished(event)
     local research_name = event.research.name
     local force_name = event.research.force.name
-    local key = ''
     for b = 1, string_len(research_name), 1 do
-        key = string_sub(research_name, 0, b)
+        local key = string_sub(research_name, 0, b)
         if balance_functions[key] then
             balance_functions[key](force_name)
             return

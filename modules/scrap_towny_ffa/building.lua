@@ -1,4 +1,3 @@
---luacheck: ignore
 local Public = {}
 
 local math_floor = math.floor
@@ -450,12 +449,10 @@ local function prevent_entities_near_towns(event)
             end
         end
     end
-    local error = false
     if Public.near_another_town(force_name, position, surface, 32) == true then
         if neutral_whitelist[name] then
             entity.force = game.forces['neutral']
         else
-            error = true
             entity.destroy()
             if player_index ~= nil then
                 local player = game.players[player_index]

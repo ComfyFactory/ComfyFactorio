@@ -1,4 +1,3 @@
---luacheck: ignore
 local Public = {}
 local math_random = math.random
 local math_floor = math.floor
@@ -61,7 +60,7 @@ local function get_commmands(target, group)
     commands[#commands + 1] = {
         type = defines.command.build_base,
         destination = target.position,
-        distraction = defines.by_damage
+        distraction = defines.distraction.by_damage
     }
 
     return commands
@@ -118,7 +117,9 @@ end
 
 function Public.validate_swarms()
     local ffatable = Table.get_table()
-    if ffatable.testing_mode then return end
+    if ffatable.testing_mode then
+        return
+    end
     for k, swarm in pairs(ffatable.swarms) do
         if not is_swarm_valid(swarm) then
             table_remove(ffatable.swarms, k)
@@ -128,7 +129,9 @@ end
 
 function Public.unit_groups_start_moving()
     local ffatable = Table.get_table()
-    if ffatable.testing_mode then return end
+    if ffatable.testing_mode then
+        return
+    end
     for _, swarm in pairs(ffatable.swarms) do
         if swarm.group then
             if swarm.group.valid then
@@ -154,7 +157,9 @@ function Public.swarm(town_center, radius)
         return
     end
     local ffatable = Table.get_table()
-    if ffatable.testing_mode then return end
+    if ffatable.testing_mode then
+        return
+    end
     local r = radius or 32
     local tc = town_center or roll_market()
     if not tc or r > 512 then
@@ -191,7 +196,7 @@ function Public.swarm(town_center, radius)
     end
 
     -- get our evolution at the spawner location
-    local evolution = 0
+    local evolution
     if spawner.name == 'spitter-spawner' then
         evolution = Evolution.get_biter_evolution(spawner)
     else
@@ -225,7 +230,7 @@ function Public.swarm(town_center, radius)
     -- evolution = 100%, chances 10 in 10
     local health_multiplier = 40 * market_evolution + 10
     for _ = 1, math_floor(market_evolution * 10), 1 do
-        if math_random(1,2) == 1 then
+        if math_random(1, 2) == 1 then
             BiterHealthBooster.add_boss_unit(units[1], health_multiplier)
         end
     end
@@ -268,11 +273,11 @@ local function on_unit_group_finished_gathering(event)
             return
         end
         unit_group.set_command(
-                {
-                    type = defines.command.compound,
-                    structure_type = defines.compound_command.return_last,
-                    commands = get_commmands(target, unit_group)
-                }
+            {
+                type = defines.command.compound,
+                structure_type = defines.compound_command.return_last,
+                commands = get_commmands(target, unit_group)
+            }
         )
     end
 end

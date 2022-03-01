@@ -1,4 +1,3 @@
---luacheck: ignore
 local Public = {}
 
 local math_random = math.random
@@ -39,13 +38,15 @@ local destroy_military_types = {
 local destroy_robot_types = {
     ['combat-robot'] = true,
     ['construction-robot'] = true,
-    ['logistic-robot'] = true,
+    ['logistic-robot'] = true
 }
 
 local function min_slots(slots)
     local min = 0
     for i = 1, 3, 1 do
-        if slots[i] > min then min = slots[i] end
+        if slots[i] > min then
+            min = slots[i]
+        end
     end
     return min
 end
@@ -53,7 +54,9 @@ end
 local function can_force_accept_member(force)
     local ffatable = Table.get_table()
     local town_centers = ffatable.town_centers
-    if ffatable.member_limit == nil then ffatable.member_limit = 1 end
+    if ffatable.member_limit == nil then
+        ffatable.member_limit = 1
+    end
 
     -- get the members of each force name into a table
     local slots = {0, 0, 0}
@@ -91,7 +94,9 @@ end
 
 function Public.has_key(player_index)
     local ffatable = Table.get_table()
-    if ffatable.key == nil then ffatable.key = {} end
+    if ffatable.key == nil then
+        ffatable.key = {}
+    end
     if ffatable.key[player_index] ~= nil then
         return ffatable.key[player_index]
     end
@@ -100,13 +105,17 @@ end
 
 function Public.give_key(player_index)
     local ffatable = Table.get_table()
-    if ffatable.key == nil then ffatable.key = {} end
+    if ffatable.key == nil then
+        ffatable.key = {}
+    end
     ffatable.key[player_index] = true
 end
 
 function Public.remove_key(player_index)
     local ffatable = Table.get_table()
-    if ffatable.key == nil then ffatable.key = {} end
+    if ffatable.key == nil then
+        ffatable.key = {}
+    end
     ffatable.key[player_index] = false
 end
 
@@ -186,7 +195,9 @@ function Public.give_player_items(player)
 end
 
 function Public.set_player_to_outlander(player)
-    if player == nil then return end
+    if player == nil then
+        return
+    end
     player.force = game.forces.player
     if game.permissions.get_group('outlander') == nil then
         game.permissions.create_group('outlander')
@@ -199,7 +210,9 @@ function Public.set_player_to_outlander(player)
 end
 
 local function set_player_to_rogue(player)
-    if player == nil then return end
+    if player == nil then
+        return
+    end
     player.force = 'rogue'
     if game.permissions.get_group('rogue') == nil then
         game.permissions.create_group('rogue')
@@ -234,7 +247,7 @@ local function ally_outlander(player, target)
     if not is_towny(requesting_force) and is_towny(target_force) then
         ffatable.requests[player.index] = target_force.name
 
-        local target_player = false
+        local target_player
         if target.type == 'character' then
             target_player = target.player
         else
@@ -386,7 +399,10 @@ local function declare_war(player, item)
     requesting_force.set_friend(target_force, false)
     target_force.set_friend(requesting_force, false)
 
-    game.print('>> ' .. player.name .. ' has dropped the coal! Town ' .. target_force.name .. ' and ' .. requesting_force.name .. ' are now at war!', {255, 255, 0})
+    game.print(
+        '>> ' .. player.name .. ' has dropped the coal! Town ' .. target_force.name .. ' and ' .. requesting_force.name .. ' are now at war!',
+        {255, 255, 0}
+    )
 end
 
 local function delete_chart_tag_for_all_forces(market)
@@ -465,7 +481,7 @@ local function enable_blueprints(permission_group)
         defines.input_action.select_blueprint_entities,
         defines.input_action.setup_blueprint,
         defines.input_action.setup_single_blueprint_record,
-        defines.input_action.upgrade_open_blueprint,
+        defines.input_action.upgrade_open_blueprint
     }
     for _, d in pairs(defs) do
         permission_group.set_allows_action(d, true)
@@ -494,7 +510,7 @@ local function disable_blueprints(permission_group)
         defines.input_action.select_blueprint_entities,
         defines.input_action.setup_blueprint,
         defines.input_action.setup_single_blueprint_record,
-        defines.input_action.upgrade_open_blueprint,
+        defines.input_action.upgrade_open_blueprint
     }
     for _, d in pairs(defs) do
         permission_group.set_allows_action(d, false)
@@ -685,7 +701,9 @@ local function kill_force(force_name, cause)
         end
     end
     local r = 27
-    for _, e in pairs(surface.find_entities_filtered({area = {{position.x - r, position.y - r}, {position.x + r, position.y + r}}, force = 'neutral', type = 'resource'})) do
+    for _, e in pairs(
+        surface.find_entities_filtered({area = {{position.x - r, position.y - r}, {position.x + r, position.y + r}}, force = 'neutral', type = 'resource'})
+    ) do
         if e.name ~= 'crude-oil' then
             e.destroy()
         end
@@ -870,9 +888,9 @@ local function setup_enemy_force()
         e_force.set_friend(game.forces['rogue'], true) -- rogue force (rogue) should not be attacked by turrets
         e_force.set_cease_fire(game.forces['rogue'], true) -- rogue force (rogue) should not be attacked by units
     else
+        -- note, these don't prevent an outlander or rogue from attacking a unit or spawner, we need to handle separately
         e_force.set_friend(game.forces['rogue'], false) -- rogue force (rogue) should be attacked by turrets
         e_force.set_cease_fire(game.forces['rogue'], false) -- rogue force (rogue) should be attacked by units
-        -- note, these don't prevent an outlander or rogue from attacking a unit or spawner, we need to handle separately
     end
 end
 

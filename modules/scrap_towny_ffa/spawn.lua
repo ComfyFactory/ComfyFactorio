@@ -1,4 +1,3 @@
---luacheck: ignore
 local Public = {}
 
 local table_size = table.size
@@ -156,7 +155,6 @@ local function find_valid_spawn_point(force_name, surface)
         end
         -- near a town, increment the radius and select another angle
         radius = radius + math_random(1, spawn_point_incremental_distance)
-        angle = math_random(0, 360)
         tries = tries + 1
     end
     return {x = 0, y = 0}
@@ -165,7 +163,7 @@ end
 function Public.get_new_spawn_point(player, surface)
     local ffatable = Table.get_table()
     -- get a new spawn point
-    local position = {0,0}
+    local position = {0, 0}
     if player ~= nil then
         local force = player.force
         if force ~= nil then

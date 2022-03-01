@@ -2,7 +2,9 @@ local Public = {}
 
 -- one table to rule them all!
 local Global = require 'utils.global'
-local ffatable = {}
+local ffatable = {
+    map_seed = 3747269588
+}
 Global.register(
     ffatable,
     function(tbl)

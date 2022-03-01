@@ -1,7 +1,7 @@
---luacheck: ignore
 local Public = {}
 
 --local Server = require 'utils.server'
+local Table = require 'modules.scrap_towny_ffa.table'
 
 local function create_limbo()
     game.create_surface('limbo')
@@ -9,6 +9,7 @@ end
 
 local function initialize_nauvis()
     local surface = game.surfaces['nauvis']
+    local map_seed = Table.get('map_seed')
 
     -- this overrides what is in the map_gen_settings.json file
     local mgs = surface.map_gen_settings
@@ -118,7 +119,7 @@ local function initialize_nauvis()
         -- this will make and average base radius around 12 tiles
         ['enemy-base-radius'] = 12
     }
-    mgs.seed = _SEED
+    mgs.seed = map_seed
     surface.map_gen_settings = mgs
     surface.peaceful_mode = false
     surface.always_day = false
