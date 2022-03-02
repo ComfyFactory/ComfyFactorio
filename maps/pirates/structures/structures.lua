@@ -99,6 +99,9 @@ function Public.post_creation_process(special_name, components)
 				elseif e.name == 'gun-turret' and special_name == 'small_radioactive_centrifuge' then
 					local memory = Memory.get_crew_memory()
 					e.force = game.forces[memory.force_name]
+				elseif e.name == 'fast-splitter' and special_name == 'small_radioactive_centrifuge' then
+					e.splitter_output_priority = 'left'
+					e.splitter_filter = 'uranium-235'
 				elseif e.name == 'storage-tank' and special_name == 'lonely_storage_tank' then
 					e.insert_fluid(Loot.storage_tank_fluid_loot())
 				elseif e.name == 'storage-tank' and special_name == 'swamp_lonely_storage_tank' then

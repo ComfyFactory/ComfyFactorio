@@ -69,7 +69,7 @@ function Public.generate_overworld_destination(p)
 			if _DEBUG then
 				-- Edit these to force a type/subtype in debug:
 
-				-- subtype = Surfaces.Island.enum.RED_DESERT
+				subtype = Surfaces.Island.enum.RADIOACTIVE
 				-- type = Surfaces.enum.ISLAND
 				-- subtype = nil
 			end
@@ -173,29 +173,29 @@ function Public.generate_overworld_destination(p)
 		
 		local normal_costitems = {'small-lamp', 'engine-unit', 'advanced-circuit'}
 		local base_cost_0 = {
-			['small-lamp'] = (macrop.x-2)*15,
+			['small-lamp'] = Math.ceil(((macrop.x-2)^(1/2))*30),
 		}
 		local base_cost_1 = {
-			['small-lamp'] = (macrop.x-2)*15,
-			['engine-unit'] = (macrop.x-7)*10,
+			['small-lamp'] = Math.ceil(((macrop.x-2)^(1/2))*30),
+			['engine-unit'] = Math.ceil(((macrop.x-7)^(1/2))*20),
 		}
 		local base_cost_2 = {
-			['small-lamp'] = (macrop.x-2)*15,
-			['engine-unit'] = (macrop.x-7)*10,
-			['advanced-circuit'] = (macrop.x-10)*5,
+			['small-lamp'] = Math.ceil(((macrop.x-2)^(1/2))*30),
+			['engine-unit'] = Math.ceil(((macrop.x-7)^(1/2))*20),
+			['advanced-circuit'] = Math.ceil(((macrop.x-15)^(1/2))*10),
 		}
 		local base_cost_3 = {
-			['small-lamp'] = (macrop.x-2)*15,
-			['engine-unit'] = (macrop.x-7)*10,
-			['advanced-circuit'] = (macrop.x-15)*5,
-			['electric-engine-unit'] = (macrop.x-20)*5,
+			['small-lamp'] = Math.ceil(((macrop.x-2)^(1/2))*30),
+			['engine-unit'] = Math.ceil(((macrop.x-7)^(1/2))*20),
+			['advanced-circuit'] = Math.ceil(((macrop.x-15)^(1/2))*10),
+			['electric-engine-unit'] = Math.ceil(((macrop.x-20)^(1/2))*5),
 		}
-		local base_cost_4 = {
-			['small-lamp'] = (macrop.x-2)*15,
-			['engine-unit'] = (macrop.x-7)*10,
-			['advanced-circuit'] = (macrop.x-15)*5,
-			['electric-engine-unit'] = (macrop.x-20)*5,
-		}
+		-- local base_cost_4 = {
+		-- 	['small-lamp'] = Math.ceil(((macrop.x-2)^(1/2))*30),
+		-- 	['engine-unit'] = Math.ceil(((macrop.x-7)^(1/2))*20),
+		-- 	['advanced-circuit'] = Math.ceil(((macrop.x-15)^(1/2))*10),
+		-- 	['electric-engine-unit'] = Math.ceil(((macrop.x-20)^(1/2))*5),
+		-- }
 		if macrop.x == 0 then
 			-- if _DEBUG then
 			-- 	cost_to_leave = {
@@ -212,19 +212,27 @@ function Public.generate_overworld_destination(p)
 		elseif macrop.x <= 8 then
 			cost_to_leave = base_cost_0
 		elseif macrop.x <= 15 then
-			cost_to_leave = base_cost_1
+			if macrop.x % 3 > 0 then
+				cost_to_leave = base_cost_1
+			else
+				cost_to_leave = nil
+			end
 		elseif macrop.x == 18 then --a super small amount of electric-engine-unit on a relatively early level so that they see they need lubricant
 			cost_to_leave = {
-				['small-lamp'] = (macrop.x-2)*15,
-				['engine-unit'] = (macrop.x-7)*10,
+				['small-lamp'] = Math.ceil(((macrop.x-2)^(1/2))*30),
+				['engine-unit'] = Math.ceil(((macrop.x-7)^(1/2))*20),
 				['electric-engine-unit'] = 2,
 			}
 		elseif macrop.x <= 22 then
-			cost_to_leave = base_cost_2
+			if macrop.x % 3 > 0 then
+				cost_to_leave = base_cost_2
+			else
+				cost_to_leave = nil
+			end
 		elseif macrop.x < 25 then
 			cost_to_leave = base_cost_3
 		else
-			cost_to_leave = Utils.deepcopy(base_cost_4)
+			cost_to_leave = Utils.deepcopy(base_cost_3)
 			local delete = normal_costitems[Math.random(#normal_costitems)]
 			cost_to_leave[delete] = nil
 		end

@@ -5,8 +5,8 @@ local inspect = require 'utils.inspect'.inspect
 local Public = {}
 
 Public.scenario_id_name = 'pirates'
-Public.version_string = '1.0.3.9.6'
-Public.version_float = 1.0396
+Public.version_string = '1.0.3.9.7'
+Public.version_float = 1.0397
 
 Public.blueprint_library_allowed = false
 Public.blueprint_importing_allowed = true
