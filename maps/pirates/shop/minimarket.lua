@@ -36,10 +36,11 @@ Public.market_barters = {
 }
 
 Public.market_permanent_offers = {
-	{price = {{'coin', 4999}}, offer = {type = 'give-item', item = 'iron-ore', count = 900}},
-	{price = {{'coin', 4999}}, offer = {type = 'give-item', item = 'copper-ore', count = 900}},
-	{price = {{'coin', 4999}}, offer = {type = 'give-item', item = 'crude-oil-barrel', count = 150}},
+	{price = {{'coin', 3999}}, offer = {type = 'give-item', item = 'iron-ore', count = 800}},
+	{price = {{'coin', 3999}}, offer = {type = 'give-item', item = 'copper-ore', count = 800}},
+	{price = {{'coin', 3999}}, offer = {type = 'give-item', item = 'crude-oil-barrel', count = 120}},
 	{price = {{'coin', 4999}}, offer = {type = 'give-item', item = 'beacon', count = 2}},
+	{price = {{'coin', 2799}}, offer = {type = 'give-item', item = 'speed-module', count = 2}},
 }
 
 -- cheap but one-off

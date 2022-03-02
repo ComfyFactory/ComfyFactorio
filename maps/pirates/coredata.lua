@@ -5,8 +5,8 @@ local inspect = require 'utils.inspect'.inspect
 local Public = {}
 
 Public.scenario_id_name = 'pirates'
-Public.version_string = '1.0.3.9.7'
-Public.version_float = 1.0397
+Public.version_string = '1.0.3.9.8'
+Public.version_float = 1.0398
 
 Public.blueprint_library_allowed = false
 Public.blueprint_importing_allowed = true
@@ -165,6 +165,8 @@ Public.biterPollutionValues = {
 --     ['small-biter'] = 4,
 --     ['small-spitter'] = 4
 -- }
+
+Public.max_extra_seconds_at_sea = 8 * 60
 
 Public.loco_bp_1 = [[0eNqV0ttqwzAMBuB30bVTVufsVxljpKloBYkcbLdrCH73Oi6UMrxDLm3zf7KEFjgMF5wMsQO1APWaLaj3BSyduBvWOzdPCArI4QgCuBvX06B7PWpHVwQvgPiIN1B7L/4Mmo6Gl4j0HwKQHTnCR+F4mD/5Mh7QBDNVUsCkbYhoXusEJmsFzKCqAGtDgegej2/rj76J8il+aX1EzvozWpcwm10ZVbkrfcLJ/+u0vzvF07EuTOd0dlkc0k9NJpFyI1KnkGrrZJp0R/XWyUQnLEJcFfWykgKuaGxMyGZf1K2sC5nnTVl5fwdTR+VL]]
 

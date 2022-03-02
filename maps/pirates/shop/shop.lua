@@ -88,6 +88,11 @@ Public.main_shop_data_2 = {
 		what_you_get_sprite_buttons = {['item/rail-signal'] = 100},
 		base_cost = {coins = 600},
 	},
+	extra_time = {
+		tooltip = 'Relax at sea for an extra minute. (Increases the next destination\'s loading time.)',
+		what_you_get_sprite_buttons = {['utility/time_editor_icon'] = 60},
+		base_cost = {coins = 10},
+	},
 	artillery_shell = {
 		tooltip = '10 cannon shells.',
 		what_you_get_sprite_buttons = {['item/artillery-shell'] = 10},
@@ -98,11 +103,6 @@ Public.main_shop_data_2 = {
 		what_you_get_sprite_buttons = {['item/artillery-targeting-remote'] = 1},
 		base_cost = {coins = 12000, fuel = 2500},
 	},
-	-- extra_time = {
-	-- 	tooltip = 'Relax at sea for an extra minute for 50 stored fuel. (Increases the next destination\'s loading time.)',
-	-- 	what_you_get_sprite_buttons = {['utility/time_editor_icon'] = 60},
-	-- 	base_cost = {fuel = 50},
-	-- },
 	-- buy_fast_loader = {
 	-- 	tooltip = 'A fast loader for 500 stored fuel.',
 	-- 	what_you_get_sprite_buttons = {['item/fast-loader'] = 1},
@@ -125,7 +125,7 @@ function Public.initialise_main_shop()
 		rail_signal = true,
 		artillery_shell = true,
 		artillery_remote = true,
-		-- extra_time = true,
+		extra_time = true,
 		new_boat_sloop_with_hold = false,
 		new_boat_cutter_with_hold = false,
 		new_boat_cutter = false,
