@@ -131,7 +131,8 @@ function Public.try_main_attack()
 	local memory = Memory.get_crew_memory()
 	if memory.overworldx > 0 then
 		if Math.random(2) == 2 then
-			log('attack aborted by chance')
+			-- log('attack aborted by chance')
+			return nil
 		end --variance in attack sizes
 		if Math.random(10) == 1 then wave_size_multiplier = 1.8 end --variance in attack sizes
 		if Math.random(60) == 1 then wave_size_multiplier = 3.2 end --variance in attack sizes

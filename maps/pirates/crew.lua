@@ -114,7 +114,8 @@ end
 function Public.try_lose(reason)
 	local memory = Memory.get_crew_memory()
 	
-	if (not memory.game_lost) and (not memory.game_won) then
+	if (not memory.game_lost) then
+	-- if (not memory.game_lost) and (not memory.game_won) then
 		memory.game_lost = true
 		memory.crew_disband_tick = game.tick + 360
 
@@ -134,7 +135,8 @@ end
 function Public.try_win()
 	local memory = Memory.get_crew_memory()
 	
-	if (not memory.game_lost) and (not memory.game_won) then
+	if (not memory.game_lost) then
+	-- if (not memory.game_lost) and (not memory.game_won) then
 		memory.completion_time = Math.floor((memory.age or 0)/60)
 
 		local speedrun_time = (memory.age or 0)/60
