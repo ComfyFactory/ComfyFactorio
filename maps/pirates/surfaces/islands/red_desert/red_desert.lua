@@ -331,10 +331,10 @@ function Public.underground_worms_ai()
 		worms[#worms] = nil
 	end
 
-	local max_worms = 35
+	local max_worms = Math.ceil(45 * Math.sloped(Common.difficulty(), 1/2))
 
 	-- spawn worms
-	if game.tick % 210 == 0 then
+	if game.tick % 90 == 0 then
 		if #worms < max_worms then
 			local island_center = destination.static_params.islandcenter_position
 			local r = Math.max(destination.static_params.width, destination.static_params.height)/2

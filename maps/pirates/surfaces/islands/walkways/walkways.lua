@@ -138,10 +138,10 @@ local function walkways_tick()
 		local memory = Memory.get_crew_memory()
 		local destination = Common.current_destination()
 		
-		if destination.subtype == IslandsCommon.enum.WALKWAYS then
+		if destination.subtype and destination.subtype == IslandsCommon.enum.WALKWAYS then
 			for _, player in pairs(game.connected_players) do
 				if player.force.name == memory.force_name and player.surface == game.surfaces[destination.surface_name] and player.character and player.character.valid and game.surfaces[destination.surface_name].get_tile(player.position).name == 'water-shallow' then
-					player.character.damage(50, game.forces['environment'], 'fire')
+					player.character.damage(12, game.forces['environment'], 'fire')
 					if not (player.character and player.character.valid) then
 						Common.notify_force(player.force, player.name .. ' froze to death.')
 					end
@@ -152,7 +152,7 @@ local function walkways_tick()
 end
 
 local event = require 'utils.event'
-event.on_nth_tick(90, walkways_tick)
+event.on_nth_tick(20, walkways_tick)
 
 
 return Public

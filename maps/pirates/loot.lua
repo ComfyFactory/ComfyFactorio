@@ -46,9 +46,9 @@ Public.chest_loot_data_raw = {
 	{60, -1, 1, true, 'piercing-rounds-magazine', 8, 18},
 	{20, 0, 1, false, 'assembling-machine-2', 1, 3},
 	{20, 0, 1, false, 'solar-panel', 2, 5},
-	{40, -1, 1, true, 'speed-module', 1, 3},
-	{40, 0, 1, true, 'speed-module-2', 1, 3},
-	{40, 0, 2, true, 'speed-module-3', 1, 3},
+	{40, -1, 0.5, true, 'speed-module', 1, 3},
+	{40, 0, 1.5, true, 'speed-module-2', 1, 2},
+	{40, 0, 2, true, 'speed-module-3', 1, 1},
 	{4, -1, 1, true, 'effectivity-module', 1, 3},
 	{4, 0, 1, true, 'effectivity-module-2', 1, 3},
 	{4, 0, 2, true, 'effectivity-module-3', 1, 3},
@@ -62,7 +62,7 @@ Public.chest_loot_data_raw = {
 	{2, 0.2, 1, false, 'electric-engine-unit', 1, 1},
 
 	{4, 0, 2, true, 'rocket-launcher', 1, 1},
-	{8, 0, 2, true, 'rocket', 16, 32},
+	{8, 0, 2, true, 'rocket', 4, 24},
 
 	{3, 0, 0.5, false, 'stack-inserter', 1, 3},
 	{1, 0, 0.5, false, 'stack-filter-inserter', 1, 3},
@@ -115,9 +115,9 @@ Public.chest_loot_data_raw = {
 	{8, -0.5, 0.5, true, 'automation-science-pack', 4, 32},
 	{8, -0.6, 0.6, true, 'logistic-science-pack', 4, 32},
 	{6, -0.1, 1, true, 'military-science-pack', 8, 32},
-	{6, 0.2, 1.4, true, 'chemical-science-pack', 16, 32},
-	-- {6, 0.3, 1.5, true, 'production-science-pack', 16, 32},
-	{4, 0.4, 1.5, true, 'utility-science-pack', 16, 32},
+	{6, -0.5, 1.5, true, 'chemical-science-pack', 8, 24},
+	{6, 0, 1.5, true, 'production-science-pack', 8, 24},
+	-- {4, 0.4, 1.5, true, 'utility-science-pack', 16, 32},
 	-- {10, 0.5, 1.5, true, 'space-science-pack', 16, 32},
 
 	--early-game:
@@ -270,11 +270,14 @@ function Public.chest_loot(number_of_items, game_completion_progress)
 
 	local platesrng = Math.random(5)
 	if platesrng <= 2 then
-		ret[#ret + 1] = {name = 'iron-plate', count = 120}
+		ret[#ret + 1] = ret[1]
+		ret[1] = {name = 'iron-plate', count = 120}
 	elseif platesrng <= 4 then
-		ret[#ret + 1] = {name = 'copper-plate', count = 120}
+		ret[#ret + 1] = ret[1]
+		ret[1] = {name = 'copper-plate', count = 120}
 	else
-		ret[#ret + 1] = {name = 'steel-plate', count = 20}
+		ret[#ret + 1] = ret[1]
+		ret[1] = {name = 'steel-plate', count = 120}
 	end
 
 	return ret

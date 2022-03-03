@@ -298,9 +298,11 @@ function Public.give(player, stacks, spill_position, spill_surface)
 
 		-- count total of that item they have:
 		local new_total_count = 0
-		local cursor_stack = player.cursor_stack
-		if cursor_stack and cursor_stack.valid_for_read and cursor_stack.name == itemname and cursor_stack.count and cursor_stack.count > 0 then
-			new_total_count = new_total_count + cursor_stack.count
+		if player then
+			local cursor_stack = player.cursor_stack
+			if cursor_stack and cursor_stack.valid_for_read and cursor_stack.name == itemname and cursor_stack.count and cursor_stack.count > 0 then
+				new_total_count = new_total_count + cursor_stack.count
+			end
 		end
 		if inv and inv.get_item_count(itemname) and inv.get_item_count(itemname) > 0 then
 			new_total_count = new_total_count + inv.get_item_count(itemname)

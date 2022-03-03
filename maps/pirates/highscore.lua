@@ -11,6 +11,7 @@ local inspect = require 'utils.inspect'.inspect
 local SpamProtection = require 'utils.spam_protection'
 local Memory = require 'maps.pirates.memory'
 local Utils = require 'maps.pirates.utils_local'
+local CoreData = require 'maps.pirates.coredata'
 
 local module_name = 'Highscore'
 local score_dataset = 'highscores'
@@ -433,10 +434,11 @@ local function score_gui(data)
             a = 1,
         }
 
+		-- displayforms:
         local n = entry.completion_time > 0 and Utils.time_mediumform(entry.completion_time or 0) or 'N/A'
         local l = entry.leagues_travelled > 0 and entry.leagues_travelled or '?'
         local v = entry.version > 0 and entry.version or '?'
-        local d = entry.difficulty > 0 and entry.difficulty or '?'
+        local d = entry.difficulty > 0 and CoreData.highscore_difficulty_displayform(entry.difficulty) or '?'
         local c = entry.max_players > 0 and entry.max_players or '?'
         local line = {
             {caption = entry.name, color = special_color},

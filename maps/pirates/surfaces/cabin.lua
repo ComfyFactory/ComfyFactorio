@@ -61,7 +61,7 @@ Public.Data.cabin_splitters = {
 	{x = -4, y = -8.5, direction = defines.direction.north, type = 7},
 	{x = -5, y = -9.5, direction = defines.direction.north, type = 7},
 	{x = -3, y = -7.5, direction = defines.direction.north, type = 8},
-	{x = 0.5, y = -7, direction = defines.direction.west, type = 9},
+	{x = 0.5, y = -7, direction = defines.direction.west, type = 8},
 }
 
 Public.Data.output_chest = {x = 3.5, y = -6.5}

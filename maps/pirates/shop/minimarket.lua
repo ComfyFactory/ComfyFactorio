@@ -36,28 +36,28 @@ Public.market_barters = {
 }
 
 Public.market_permanent_offers = {
-	{price = {{'coin', 3999}}, offer = {type = 'give-item', item = 'iron-ore', count = 800}},
-	{price = {{'coin', 3999}}, offer = {type = 'give-item', item = 'copper-ore', count = 800}},
-	{price = {{'coin', 3999}}, offer = {type = 'give-item', item = 'crude-oil-barrel', count = 120}},
-	{price = {{'coin', 4999}}, offer = {type = 'give-item', item = 'beacon', count = 2}},
-	{price = {{'coin', 2799}}, offer = {type = 'give-item', item = 'speed-module', count = 2}},
+	{price = {{'coin', 4000}}, offer = {type = 'give-item', item = 'iron-ore', count = 800}},
+	{price = {{'coin', 4000}}, offer = {type = 'give-item', item = 'copper-ore', count = 800}},
+	{price = {{'coin', 4000}}, offer = {type = 'give-item', item = 'crude-oil-barrel', count = 120}},
+	{price = {{'coin', 5000}}, offer = {type = 'give-item', item = 'beacon', count = 2}},
+	{price = {{'coin', 2800}}, offer = {type = 'give-item', item = 'speed-module', count = 2}},
 }
 
 -- cheap but one-off
 Public.market_sales = {
-	{price = {{'coin', 2499}}, offer = {type = 'give-item', item = 'coal', count = 900}},
-	{price = {{'coin', 2499}}, offer = {type = 'give-item', item = 'firearm-magazine', count = 500}},
-	{price = {{'coin', 2499}}, offer = {type = 'give-item', item = 'piercing-rounds-magazine', count = 75}},
-	{price = {{'coin', 2499}}, offer = {type = 'give-item', item = 'uranium-rounds-magazine', count = 25}},
-	{price = {{'coin', 2499}}, offer = {type = 'give-item', item = 'piercing-shotgun-shell', count = 60}},
-	{price = {{'coin', 2499}}, offer = {type = 'give-item', item = 'raw-fish', count = 300}},
-	{price = {{'coin', 2499}}, offer = {type = 'give-item', item = 'laser-turret', count = 1}},
-	{price = {{'coin', 2499}}, offer = {type = 'give-item', item = 'vehicle-machine-gun', count = 2}},
-	{price = {{'coin', 2499}}, offer = {type = 'give-item', item = 'substation', count = 6}},
-	{price = {{'coin', 2499}}, offer = {type = 'give-item', item = 'modular-armor', count = 1}},
-	{price = {{'coin', 2499}}, offer = {type = 'give-item', item = 'distractor-capsule', count = 10}},
-	{price = {{'coin', 2499}}, offer = {type = 'give-item', item = 'destroyer-capsule', count = 5}},
-	{price = {{'coin', 2499}}, offer = {type = 'give-item', item = 'coin', count = 4000}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'coal', count = 900}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'firearm-magazine', count = 500}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'piercing-rounds-magazine', count = 75}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'uranium-rounds-magazine', count = 25}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'piercing-shotgun-shell', count = 60}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'raw-fish', count = 300}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'laser-turret', count = 1}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'vehicle-machine-gun', count = 2}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'substation', count = 6}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'modular-armor', count = 1}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'distractor-capsule', count = 10}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'destroyer-capsule', count = 5}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'coin', count = 4000}},
 }
 
 

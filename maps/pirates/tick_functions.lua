@@ -282,7 +282,7 @@ function Public.pick_up_tick(tickinterval)
 					map.state = 'picked_up'
 					rendering.destroy(map.mapobject_rendering)
 	
-					Common.notify_force(player.force, player.name .. ' found a map. Treasure location revealed.')
+					Common.notify_force_light(player.force, player.name .. ' found a map. Treasure location revealed.')
 		
 					map.x_renderings = {
 						rendering.draw_line{
@@ -519,7 +519,7 @@ function Public.place_cached_structures(tickinterval)
 				end
 
 				covered_data.wooden_chests = {}
-				for i, p in ipairs(hardcoded_data.wooden_chests) do
+				for k, p in ipairs(hardcoded_data.wooden_chests) do
 					local e = surface.create_entity{name = 'wooden-chest', position = Math.vector_sum(special.position, p), force = string.format('ancient-friendly-%03d', memory.id)}
 					if e and e.valid then
 						e.minable = false
@@ -528,7 +528,7 @@ function Public.place_cached_structures(tickinterval)
 
 						local inv = e.get_inventory(defines.inventory.chest)
 						local loot = Loot.covered_wooden_chest_loot()
-						if i==1 then loot[#loot + 1] = {name = 'coin', count = 1500} end
+						if k==1 then loot[1] = {name = 'coin', count = 1500} end
 						for j = 1, #loot do
 							local l = loot[j]
 							inv.insert(l)
@@ -989,13 +989,18 @@ function Public.silo_update(tickinterval)
 				local pollution = e/1000000 * Balance.silo_total_pollution() / Balance.silo_energy_needed_MJ()
 
 				if p and pollution then
-					game.surfaces[destination.surface_name].pollute(p, pollution)
 					game.pollution_statistics.on_flow('rocket-silo', pollution)
+					if not memory.floating_pollution then memory.floating_pollution = 0 end
+
+					-- Eventually I want to reformulate pollution not to pull from the map directly, but to pull from pollution_statistics. Previously all the silo pollution went to the map, but this causes a lag ~1-2 minutes. So as a compromise, let's send half to floating_pollution directly, and half to the map:
+					memory.floating_pollution = memory.floating_pollution + pollution/2
+					game.surfaces[destination.surface_name].pollute(p, pollution/2)
 	
 					if destination.dynamic_data.rocketsiloenergyconsumed >= destination.dynamic_data.rocketsiloenergyneeded and (not (silo.rocket_parts == 100)) and (destination.dynamic_data.silocharged == false) and memory.game_lost == false then
 						-- silo.energy = 0
 						silo.rocket_parts = 100
-						silo.destructible = false
+						-- No longer destructible since no longer a lose con:
+						-- silo.destructible = false
 						destination.dynamic_data.silocharged = true
 					end
 				end
@@ -1112,7 +1117,7 @@ function Public.silo_insta_update()
 
 	local silos = destination.dynamic_data.rocketsilos
 	
-	if silos and silos[1] and silos[1].valid then
+	if silos and silos[1] and silos[1].valid then --need the first silo to be alive in order to charge any others
 		if destination.dynamic_data.silocharged then
 			for i, silo in ipairs(silos) do
 				silo.energy = silo.electric_buffer_size

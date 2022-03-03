@@ -465,7 +465,7 @@ function Public.retreat_from_island()
 	if boat.state and boat.state == Boats.enum_state.RETREATING then return end
 	
 	boat.state = Boats.enum_state.RETREATING
-	boat.speed = 1.2
+	boat.speed = 1.25
 
 	Boats.place_boat(boat, CoreData.moving_boat_floor, false, false)
 

@@ -66,7 +66,7 @@ end
 
 function Public.silo_count()
 	local E = Public.silo_energy_needed_MJ()
-	return Math.ceil(E/(16.8*150)) --no more than 2.5 minutes to charge it
+	return Math.ceil(E/(16.8 * 160)) --no more than this many seconds to charge it
 end
 
 
@@ -96,7 +96,7 @@ function Public.fuel_depletion_rate_static()
 
 	local rate
 	if Common.overworldx() > 0 then
-		rate = 380 * (0 + (Common.overworldx()/40)^(10/10)) * Public.crew_scale()^(1/6) * Math.sloped(Common.difficulty(), 3/5) / T --the extra player dependency accounts for the fact that even in compressed time, more players get more resources...
+		rate = 380 * (0 + (Common.overworldx()/40)^(10/10)) * Public.crew_scale()^(1/6) * Math.sloped(Common.difficulty(), 3/5) / T --most of the crewsize dependence is through T, i.e. the coal cost per island stays the same... but the extra player dependency accounts for the fact that even in compressed time, more players seem to get more resources per island
 	else
 		rate = 0
 	end
@@ -107,7 +107,7 @@ end
 function Public.fuel_depletion_rate_sailing()
 	if (not Common.overworldx()) then return 0 end
 
-	return - 8 * (1 + 0.13 * (Common.overworldx()/40)^(10/10))
+	return - 7.5 * (1 + 0.13 * (Common.overworldx()/40)^(10/10)) * Math.sloped(Common.difficulty(), 4/5)
 end
 
 function Public.silo_total_pollution()
@@ -250,7 +250,7 @@ end
 
 function Public.island_richness_avg_multiplier()
 	return 0.7 + 0.1 * (Common.overworldx()/40)^(7/10)
-end
+end --tuned tbh
 
 function Public.resource_quest_multiplier()
 	return (1.0 + 0.075 * (Common.overworldx()/40)^(8/10)) * Math.sloped(Common.difficulty(), 1/3) * (Public.crew_scale())^(1/8)
@@ -258,7 +258,7 @@ end
 
 
 function Public.apply_crew_buffs_per_x(force)
-	force.laboratory_productivity_bonus = force.laboratory_productivity_bonus + 10/100 * 1/40
+	force.laboratory_productivity_bonus = Math.max(0, 10/100 * (Common.overworldx()/40) - (10*(Common.difficulty()) - 5)) --difficulty causes lab productivity boosts to start later
 end
 
 function Public.class_cost()
@@ -273,7 +273,7 @@ Public.silo_max_hp = 8000
 
 function Public.pistol_damage_multiplier() return 1.95 end
 
-Public.kraken_spawns_base_extra_evo = 0.2
+Public.kraken_spawns_base_extra_evo = 0.3
 
 function Public.kraken_evo_increase_per_shot()
 	return 1/100 * 0.04 --started off low, currently slowly upping to see
@@ -284,7 +284,7 @@ function Public.kraken_kill_reward()
 end
 
 function Public.kraken_health()
-	return Math.ceil(2500 * Math.max(1, 1 + 0.1 * ((Common.overworldx()/40)^(13/10)-6)) * (Public.crew_scale()^(5/8)) * Math.sloped(Common.difficulty(), 1/2))
+	return Math.ceil(3000 * Math.max(1, 1 + 0.1 * ((Common.overworldx()/40)^(13/10)-6)) * (Public.crew_scale()^(5/8)) * Math.sloped(Common.difficulty(), 3/4))
 end
 
 Public.kraken_regen_scale = 0.1 --starting off low
@@ -321,7 +321,7 @@ function Public.main_shop_cost_multiplier()
 end
 
 function Public.covered_entry_price_scale()
-	return (1 + 0.025 * (Common.overworldx()/40 - 1))
+	return 0.9 * (1 + 0.025 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty(), 1/2) --whilst resource scales tend to be held fixed with crew size, we account slightly for the fact that more players tend to handcraft more
 end
 
 function Public.barter_decay_parameter()
@@ -496,7 +496,7 @@ function Public.covered1_entry_price()
 
 	local overworldx = memory.overworldx or 0
 
-	local game_completion_progress = Math.sloped(Common.difficulty(),1/2) * Common.game_completion_progress()
+	local game_completion_progress = Math.min(Math.sloped(Common.difficulty(),1/2) * Common.game_completion_progress(), 1)
 
 	local data = Public.covered1_entry_price_data()
     local types, weights = {}, {}
@@ -522,6 +522,7 @@ function Public.covered1_entry_price()
 	local res = Utils.deepcopy(Math.raffle(types, weights))
 
 	res.price.count = Math.ceil(res.price.count * Public.covered_entry_price_scale())
+
 	for i, _ in pairs(res.raw_materials) do
 		res.raw_materials[i].count = Math.ceil(res.raw_materials[i].count * Public.covered_entry_price_scale())
 	end

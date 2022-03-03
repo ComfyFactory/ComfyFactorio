@@ -770,7 +770,8 @@ function Public.update_gui(player)
 					flow1.silo_progressbar.visible = false
 	
 					-- flow1.silo_label_1.caption = string.format('[achievement=there-is-no-spoon]: +%.0f[item=sulfur]', destination.dynamic_data.rocketcoalreward)
-					flow1.silo_label_1.caption = string.format('Launch: %.0f[item=coal] , ' .. Balance.rocket_launch_coin_reward .. '[item=coin]', destination.dynamic_data.rocketcoalreward)
+					flow1.silo_label_1.caption = string.format('Launched for %.0f[item=coal] , ' .. Balance.rocket_launch_coin_reward .. '[item=coin]', destination.dynamic_data.rocketcoalreward)
+					--@TODO: Make the items non-bold, check that the font color works
 					flow1.silo_label_1.style.font_color = GuiCommon.achieved_font_color
 				else
 					local tooltip = 'The rocket is launching...'

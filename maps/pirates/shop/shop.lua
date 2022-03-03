@@ -78,7 +78,7 @@ Public.main_shop_data_1 = {
 	[Upgrades.enum.UNLOCK_MERCHANTS] = {
 		tooltip = 'Unlock merchant ships.',
 		what_you_get_sprite_buttons = {['entity/market'] = false},
-		base_cost = {coins = 10000, fuel = 2500},
+		base_cost = {coins = 10000, fuel = 2000},
 	},
 }
 
@@ -370,11 +370,17 @@ function Public.event_on_market_item_purchased(event)
 	-- Static doesn't decay
 	-- Barter decays
 	local decay_type
+	local dock_bool = destination.type == SurfacesCommon.enum.DOCK
+	local purchase_bool = (price and price[1] and price[1].name and (price[1].name == 'coin'))
+	local simple_efficiency_trade_bool = (price and price[1] and price[1].name and (price[1].name == 'pistol' or price[1].name == 'burner-mining-drill'))
+
 	if offer_type == 'nothing' then
 		decay_type = 'one-off'
-	elseif destination.type == SurfacesCommon.enum.DOCK and (price and price[1] and price[1].name and (price[1].name == 'coin')) and (offer_giveitem_name and not (offer_giveitem_name == 'stone' or offer_giveitem_name == 'iron-ore' or offer_giveitem_name == 'crude-oil-barrel' or offer_giveitem_name == 'copper-ore')) then
+	elseif dock_bool and purchase_bool and (offer_giveitem_name) and not (offer_giveitem_name == 'stone' or offer_giveitem_name == 'iron-ore' or offer_giveitem_name == 'copper-ore') then
 		decay_type = 'one-off'
-	elseif (price and price[1] and price[1].name and (price[1].name == 'pistol' or price[1].name == 'burner-mining-drill')) or (offer_giveitem_name and (offer_giveitem_name == 'defender-capsule' or offer_giveitem_name == 'gun-turret')) then
+	elseif dock_bool and purchase_bool and (offer_giveitem_name) and (offer_giveitem_name == 'stone' or offer_giveitem_name == 'iron-ore' or offer_giveitem_name == 'copper-ore' or offer_giveitem_name == 'crude-oil-barrel') then
+		decay_type = 'double_decay'
+	elseif simple_efficiency_trade_bool or (offer_giveitem_name and (offer_giveitem_name == 'defender-capsule' or offer_giveitem_name == 'gun-turret')) then
 		decay_type = 'static'
 	else
 		decay_type = 'decay'
@@ -433,6 +439,9 @@ function Public.event_on_market_item_purchased(event)
 		
 			Common.flying_text(player.surface, player.position, text1 .. '  [font=count-font]' .. text2 .. '[/font]')
 		else
+			local decay_param =  Balance.barter_decay_parameter()
+			if decay_type == 'double_decay' then decay_param =  Balance.barter_decay_parameter()^2 end
+
 			if not inv then return end
 			local flying_text_color = {r = 255, g = 255, b = 255}
 			local text1 = '[color=1,1,1]+' .. this_offer.offer.count .. '[/color] [item=' .. alloffers[offer_index].offer.item .. ']'
@@ -441,7 +450,7 @@ function Public.event_on_market_item_purchased(event)
 			Common.flying_text(player.surface, player.position, text1 .. '  [font=count-font]' .. text2 .. '[/font]')
 
 			--update market trades:
-			alloffers[offer_index].offer.count = Math.max(Math.floor(alloffers[offer_index].offer.count * Balance.barter_decay_parameter()),1)
+			alloffers[offer_index].offer.count = Math.max(Math.floor(alloffers[offer_index].offer.count * decay_param),1)
 		
 			market.clear_market_items()
 			for _, offer in pairs(alloffers) do

@@ -75,7 +75,7 @@ function Public.update_character_properties(tickinterval)
 				if memory.classes_table and memory.classes_table[player_index] then
 					local class = memory.classes_table[player_index]
 					if class == Classes.enum.SCOUT then
-						speed_boost = speed_boost + 0.3
+						speed_boost = speed_boost + 0.35
 					elseif class == Classes.enum.DECKHAND or class == Classes.enum.BOATSWAIN or class == Classes.enum.SHORESMAN then
 						local surfacedata = Surfaces.SurfacesCommon.decode_surface_name(player.surface.name)
 						local type = surfacedata.type

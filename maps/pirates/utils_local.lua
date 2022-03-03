@@ -242,12 +242,11 @@ function Public.standard_string_form_of_time_in_seconds(time)
 	local str2 = ''
 	local hours = Math.floor(Math.ceil(time2) / 3600)
 	local minutes = Math.floor(Math.ceil(time2) / 60)
-	local seconds = Math.ceil(time2) % 60
-	-- if hours >= 1 then
-	-- 	str2 = string.format('%.0fh%.0fm%.0fs', hours, minutes, seconds)
-	-- elseif minutes >= 1 then
-	if minutes >= 1 then
-		str2 = string.format('%.0fm%.0fs', minutes, seconds)
+	local seconds = Math.ceil(time2)
+	if hours >= 1 then
+		str2 = string.format('%.0fh%.0fm%.0fs', hours, minutes % 60, seconds % 60)
+	elseif minutes >= 1 then
+		str2 = string.format('%.0fm%.0fs', minutes, seconds % 60)
 	else
 		str2 = string.format('%.0fs', seconds)
 	end

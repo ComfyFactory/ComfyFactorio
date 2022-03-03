@@ -69,7 +69,7 @@ function Public.generate_overworld_destination(p)
 			if _DEBUG then
 				-- Edit these to force a type/subtype in debug:
 
-				subtype = Surfaces.Island.enum.RADIOACTIVE
+				-- subtype = Surfaces.Island.enum.RADIOACTIVE
 				-- type = Surfaces.enum.ISLAND
 				-- subtype = nil
 			end
@@ -89,6 +89,8 @@ function Public.generate_overworld_destination(p)
 	elseif macrop.x == 5 then --biter boats appear
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.STANDARD
+	elseif macrop.x == 8 then --game length decrease, pending more content
+		type = nil
 	elseif macrop.x == 9 then --just before krakens
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.RED_DESERT
@@ -101,9 +103,11 @@ function Public.generate_overworld_destination(p)
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.RADIOACTIVE
 		 --electric engines needed at 20
-	elseif macrop.x == 20 then --space because we need to add more content to the game around here, it's too long otherwise
+	elseif macrop.x == 17 then --game length decrease, pending more content
 		type = nil
-	elseif macrop.x == 21 then --space because we need to add more content to the game around here, it's too long otherwise
+	elseif macrop.x == 20 then --game length decrease, pending more content
+		type = nil
+	elseif macrop.x == 21 then --game length decrease, pending more content. also kinda fun to have to steer in realtime due to double space
 		type = nil
 	elseif macrop.x == 24 then
 		type = Surfaces.enum.ISLAND
@@ -173,28 +177,28 @@ function Public.generate_overworld_destination(p)
 		
 		local normal_costitems = {'small-lamp', 'engine-unit', 'advanced-circuit'}
 		local base_cost_0 = {
-			['small-lamp'] = Math.ceil(((macrop.x-2)^(1/2))*30),
+			['small-lamp'] = Math.ceil(((macrop.x-2)^(2/3))*25),
 		}
 		local base_cost_1 = {
-			['small-lamp'] = Math.ceil(((macrop.x-2)^(1/2))*30),
-			['engine-unit'] = Math.ceil(((macrop.x-7)^(1/2))*20),
+			['small-lamp'] = Math.ceil(((macrop.x-2)^(2/3))*25),
+			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*18),
 		}
 		local base_cost_2 = {
-			['small-lamp'] = Math.ceil(((macrop.x-2)^(1/2))*30),
-			['engine-unit'] = Math.ceil(((macrop.x-7)^(1/2))*20),
-			['advanced-circuit'] = Math.ceil(((macrop.x-15)^(1/2))*10),
+			['small-lamp'] = Math.ceil(((macrop.x-2)^(2/3))*25),
+			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*18),
+			['advanced-circuit'] = Math.ceil(((macrop.x-15)^(2/3))*8),
 		}
 		local base_cost_3 = {
-			['small-lamp'] = Math.ceil(((macrop.x-2)^(1/2))*30),
-			['engine-unit'] = Math.ceil(((macrop.x-7)^(1/2))*20),
-			['advanced-circuit'] = Math.ceil(((macrop.x-15)^(1/2))*10),
-			['electric-engine-unit'] = Math.ceil(((macrop.x-20)^(1/2))*5),
+			['small-lamp'] = Math.ceil(((macrop.x-2)^(2/3))*25),
+			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*18),
+			['advanced-circuit'] = Math.ceil(((macrop.x-15)^(2/3))*8),
+			['electric-engine-unit'] = Math.ceil(((macrop.x-18)^(2/3))*5),
 		}
 		-- local base_cost_4 = {
-		-- 	['small-lamp'] = Math.ceil(((macrop.x-2)^(1/2))*30),
-		-- 	['engine-unit'] = Math.ceil(((macrop.x-7)^(1/2))*20),
-		-- 	['advanced-circuit'] = Math.ceil(((macrop.x-15)^(1/2))*10),
-		-- 	['electric-engine-unit'] = Math.ceil(((macrop.x-20)^(1/2))*5),
+		-- 	['small-lamp'] = Math.ceil(((macrop.x-2)^(2/3))*25),
+		-- 	['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*20),
+		-- 	['advanced-circuit'] = Math.ceil(((macrop.x-15)^(2/3))*8),
+		-- 	['electric-engine-unit'] = Math.ceil(((macrop.x-20)^(2/3))*5),
 		-- }
 		if macrop.x == 0 then
 			-- if _DEBUG then
@@ -219,11 +223,11 @@ function Public.generate_overworld_destination(p)
 			end
 		elseif macrop.x == 18 then --a super small amount of electric-engine-unit on a relatively early level so that they see they need lubricant
 			cost_to_leave = {
-				['small-lamp'] = Math.ceil(((macrop.x-2)^(1/2))*30),
-				['engine-unit'] = Math.ceil(((macrop.x-7)^(1/2))*20),
+				['small-lamp'] = Math.ceil(((macrop.x-2)^(2/3))*25),
+				['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*18),
 				['electric-engine-unit'] = 2,
 			}
-		elseif macrop.x <= 22 then
+		elseif macrop.x <= 23 then
 			if macrop.x % 3 > 0 then
 				cost_to_leave = base_cost_2
 			else

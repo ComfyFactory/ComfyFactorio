@@ -5,8 +5,8 @@ local inspect = require 'utils.inspect'.inspect
 local Public = {}
 
 Public.scenario_id_name = 'pirates'
-Public.version_string = '1.0.3.9.8'
-Public.version_float = 1.0398
+Public.version_string = '1.0.3.9.9'
+Public.version_float = 1.0399
 
 Public.blueprint_library_allowed = false
 Public.blueprint_importing_allowed = true
@@ -110,6 +110,18 @@ Public.difficulty_options = {
 -- 	left = {value = 'speedrun', icon = 'achievement/watch-your-step', text = 'Speedrun'},
 -- 	right = {value = 'infinity', icon = 'achievement/mass-production-1', text = 'Infinity'},
 -- }
+
+function Public.highscore_difficulty_displayform(difficulty_value)
+	if difficulty_value < 1 then
+		return 'Easy'
+	elseif difficulty_value == 1 then
+		return 'Normal'
+	elseif difficulty_value <= 1.5 then
+		return 'Hard'
+	else
+		return 'Nightmare'
+	end
+end
 
 Public.daynightcycle_types = {
 	{displayname = 'Static', 0},

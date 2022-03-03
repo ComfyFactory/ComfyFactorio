@@ -11,6 +11,7 @@ local Structures = require 'maps.pirates.structures.structures'
 local Boats = require 'maps.pirates.structures.boats.boats'
 local Surfaces = require 'maps.pirates.surfaces.surfaces'
 local Islands = require 'maps.pirates.surfaces.islands.islands'
+local IslandsCommon = require 'maps.pirates.surfaces.islands.common'
 local Sea = require 'maps.pirates.surfaces.sea.sea'
 local Crew = require 'maps.pirates.crew'
 local Quest = require 'maps.pirates.quest'
@@ -137,7 +138,7 @@ function Public.try_main_attack()
 		if Math.random(500) == 1 then wave_size_multiplier = 5 end --variance in attack sizes
 	end
 
-    local group = Public.spawn_group_of_scripted_biters(2/3, 6, 128, wave_size_multiplier)
+    local group = Public.spawn_group_of_scripted_biters(2/3, 6, 180, wave_size_multiplier)
     local target = Public.generate_main_attack_target()
     if not group or not group.valid or not target or not target.valid then return end
 
@@ -163,7 +164,7 @@ function Public.try_secondary_attack()
     local surface = game.surfaces[Common.current_destination().surface_name]
 
 
-    local group = Public.spawn_group_of_scripted_biters(2/3, 12, 128, wave_size_multiplier)
+    local group = Public.spawn_group_of_scripted_biters(2/3, 12, 180, wave_size_multiplier)
 	if not (group and group.valid) then return end
 	
 	local target
@@ -195,7 +196,7 @@ function Public.try_rogue_attack()
 
 	local surface = game.surfaces[Common.current_destination().surface_name]
 
-	local group = Public.spawn_group_of_scripted_biters(1/2, 6, 128, wave_size_multiplier)
+	local group = Public.spawn_group_of_scripted_biters(1/2, 6, 180, wave_size_multiplier)
 	if not (group and group.valid) then return end
 	local target = Public.generate_side_attack_target(surface, group.position)
 	if not (target and target.valid) then return end
@@ -405,6 +406,10 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 	
 	base_pollution_cost_multiplier = base_pollution_cost_multiplier * Balance.scripted_biters_pollution_cost_multiplier()
 
+	if destination.subtype and destination.subtype == IslandsCommon.enum.SWAMP then
+		base_pollution_cost_multiplier = base_pollution_cost_multiplier * 0.85 --biters 15% more aggressive
+	end
+
     if budget >= minimum_avg_units * Common.averageUnitPollutionCost(evolution) * base_pollution_cost_multiplier then
 
         local function spawn(name2)
@@ -422,7 +427,7 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 
 			temp_floating_pollution = temp_floating_pollution - unittype_pollutioncost
 			budget = budget - unittype_pollutioncost
-			-- flow statistics should reflect the number of biters generated, without factors for extra expenditure:
+			-- flow statistics should reflect the number of biters generated. Therefore it should mismatch the actual pollution spent, because it should miss all the factors that can vary:
 			game.pollution_statistics.on_flow(name2, - CoreData.biterPollutionValues[name2] * Balance.scripted_biters_pollution_cost_multiplier())
 
             return biter.unit_number

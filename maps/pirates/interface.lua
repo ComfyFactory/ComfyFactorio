@@ -54,7 +54,7 @@ function Public.silo_died()
 			-- Crew.try_lose('silo destroyed')
 
 			--@TEMPORARY:
-			Common.notify_force(force, 'The silo was destroyed. Until recently, this would lose you the game, but not anymore :)')
+			Common.notify_force(force, 'The silo was destroyed.')
 		end
 
 		destination.dynamic_data.rocketsilos[1].destroy()
@@ -78,7 +78,8 @@ function Public.damage_silo(final_damage_amount)
 	destination.dynamic_data.rocketsilohp = Math.max(0, Math.floor(destination.dynamic_data.rocketsilohp - final_damage_amount2))
 	if destination.dynamic_data.rocketsilohp > destination.dynamic_data.rocketsilomaxhp then destination.dynamic_data.rocketsilohp = destination.dynamic_data.rocketsilomaxhp end
 
-	if destination.dynamic_data.rocketsilohp <= 0 and (not destination.dynamic_data.rocketlaunched) then
+	if destination.dynamic_data.rocketsilohp <= 0 then
+	-- if destination.dynamic_data.rocketsilohp <= 0 and (not destination.dynamic_data.rocketlaunched) then
 		Public.silo_died()
 		rendering.destroy(destination.dynamic_data.rocketsilohptext)
 	else
@@ -194,6 +195,10 @@ local function kraken_damage(event)
 	-- and additionally:
 	if event.cause.name == 'artillery-turret' then
 		adjusted_damage = adjusted_damage / 1.5
+	end
+
+	if event.damage_type.name and (event.damage_type.name == 'laser') then
+		adjusted_damage = adjusted_damage / 10 --laser turrets are in range
 	end
 
 	local healthbar = memory.healthbars[unit_number]
@@ -453,7 +458,7 @@ local function event_on_player_mined_entity(event)
 			destination.dynamic_data.wood_remaining = destination.dynamic_data.wood_remaining - amount
 
 			if memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.LUMBERJACK then
-				give[#give + 1] = {name = 'wood', count = amount + 3}
+				give[#give + 1] = {name = 'wood', count = amount + 4}
 				if Math.random(7) == 1 then
 					give[#give + 1] = {name = 'coin', count = 20}
 				end
@@ -471,7 +476,7 @@ local function event_on_player_mined_entity(event)
 	elseif entity.type == 'fish' then
         if not event.buffer then return end
 
-		local amount = 4
+		local amount = 3 --4 feels good but 3 encourages more fishing
 
 		Common.give(player, {{name = 'raw-fish', count = amount}}, entity.position)
 		event.buffer.clear()
@@ -484,7 +489,7 @@ local function event_on_player_mined_entity(event)
 		if memory.overworldx > 0 then
 			if memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.PROSPECTOR then
 				give[#give + 1] = {name = 'coin', count = 4}
-				give[#give + 1] = {name = entity.name, count = 6}
+				give[#give + 1] = {name = entity.name, count = 7}
 			else
 				if memory.overworldx > 0 then
 					give[#give + 1] = {name = 'coin', count = 1}

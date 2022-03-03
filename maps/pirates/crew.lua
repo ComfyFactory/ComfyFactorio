@@ -148,7 +148,7 @@ function Public.try_win()
 
 		game.play_sound{path='utility/game_won', volume_modifier=0.9}
 
-		memory.victory_pause_until_tick = game.tick + 60*5
+		memory.victory_pause_until_tick = game.tick + 60*20
 		memory.victory_continue_message = true
 	end
 end
@@ -779,10 +779,12 @@ function Public.reset_crew_and_enemy_force(id)
 	-- these are redundant I think...?:
 	crew_force.recipes['centrifuge'].enabled = false
 	crew_force.recipes['flamethrower-turret'].enabled = false
+
+	crew_force.technologies['railway'].researched = true --needed for purple sci
+	crew_force.recipes['rail'].enabled = true --needed for purple sci
 	crew_force.recipes['locomotive'].enabled = false
 	crew_force.recipes['car'].enabled = false
 	crew_force.recipes['cargo-wagon'].enabled = false
-	crew_force.recipes['rail'].enabled = true --needed for purple sci
 
 	-- crew_force.recipes['underground-belt'].enabled = false
 	-- crew_force.recipes['fast-underground-belt'].enabled = false
@@ -862,7 +864,7 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['logistics-3'].enabled = true
 	crew_force.technologies['nuclear-fuel-reprocessing'].enabled = false
 
-	crew_force.technologies['railway'].enabled = false
+	-- crew_force.technologies['railway'].enabled = false
 	crew_force.technologies['automated-rail-transportation'].enabled = false
 	crew_force.technologies['braking-force-1'].enabled = false
 	crew_force.technologies['braking-force-2'].enabled = false
