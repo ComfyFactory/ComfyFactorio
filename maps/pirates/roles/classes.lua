@@ -59,7 +59,7 @@ Public.display_form = {
 	[enum.MASTER_ANGLER] = 'Master Angler',
 	[enum.WOOD_LORD] = 'Lord of the Woods',
 	[enum.CHIEF_EXCAVATOR] = 'Chief Excavator',
-	[enum.RONIN_SENSEI] = 'Ronin Sensei',
+	[enum.RONIN_SENSEI] = 'Ronin',
 	[enum.IRON_LEG] = 'Iron Leg',
 	[enum.QUARTERMASTER] = 'Quartermaster',
 }

@@ -428,7 +428,8 @@ function Public.update(player)
 	flow.membership_buttons.spectator_join_crew.visible = playercrew_status.spectating and (not (count >= memory.capacity))
 
 	flow.membership_buttons.leave_crew.visible = playercrew_status.adventuring
-	flow.membership_buttons.crewmember_join_spectators.visible = playercrew_status.adventuring
+	-- flow.membership_buttons.crewmember_join_spectators.visible = playercrew_status.adventuring
+	flow.membership_buttons.crewmember_join_spectators.visible = false --disabled spectators for now... might not play well with maze world
 	flow.membership_buttons.leave_spectators.visible = playercrew_status.spectating
 
 	flow.membership_buttons.spectator_join_crew.visible = flow.membership_buttons.spectator_join_crew.visible and (not (memory.tempbanned_from_joining_data[player.index] and game.tick < memory.tempbanned_from_joining_data[player.index] + Common.ban_from_rejoining_crew_ticks))
