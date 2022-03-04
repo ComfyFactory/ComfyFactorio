@@ -335,6 +335,10 @@ function Public.barter_decay_parameter()
 	return 0.95
 end
 
+function Public.sandworm_speed()
+	return 6.4 * Math.sloped(Common.difficulty(), 1/5)
+end
+
 -- function Public.island_otherresources_prospect_decay_parameter()
 -- 	return 0.95
 -- end

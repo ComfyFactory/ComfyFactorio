@@ -118,7 +118,7 @@ function Public.terrain(args)
 
 	if noises.forest_abs_suppressed(p) < 0.8 and noises.mood(p) > -0.3 then
 		if noises.height(p) > 0.27 then
-			if noises.ore(p) > 1.6 then
+			if noises.ore(p) > 1.55 then
 				local name = 'iron-ore'
 				if (args.p.x + args.p.y) % 2 < 1 then
 					name = 'copper-ore'
@@ -244,8 +244,6 @@ event.on_nth_tick(30, red_desert_tick)
 
 
 
-local worm_speed = 6.3 * 30/60
-
 function Public.underground_worms_ai()
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
@@ -269,7 +267,7 @@ function Public.underground_worms_ai()
 			indices_to_remove[#indices_to_remove + 1] = i
 		else
 			-- move
-			w.position = {x = w.position.x + worm_speed * w.direction.x, y = w.position.y + worm_speed * w.direction.y}
+			w.position = {x = w.position.x + Balance.sandworm_speed() * 30/60 * w.direction.x, y = w.position.y + Balance.sandworm_speed() * 30/60 * w.direction.y}
 
 			if w.chart_tag then w.chart_tag.destroy() end
 
@@ -347,7 +345,7 @@ function Public.underground_worms_ai()
 			local theta2 = Math.random()*1.4-0.7
 			local d = {x = -Math.sin(theta+theta2), y = -Math.cos(theta+theta2)}
 
-			worms[#worms + 1] = {position = p, direction = d, age = 0, max_age = 2*r/worm_speed * Math.cos(theta2/2)}
+			worms[#worms + 1] = {position = p, direction = d, age = 0, max_age = 2*r/(Balance.sandworm_speed() * 30/60) * Math.cos(theta2/2)}
 		end
 	end
 end
