@@ -269,7 +269,7 @@ function Public.destination_on_arrival(destination)
 	local name = destination.static_params.name and destination.static_params.name or 'NameNotFound'
 	local message = 'Approaching destination ' .. (memory.destinationsvisited_indices and #memory.destinationsvisited_indices or 0) .. ', ' .. name .. '.'
 	if not (#memory.destinationsvisited_indices and #memory.destinationsvisited_indices == 1) then --don't need to notify for the first island
-		Server.to_discord_embed_raw((destination.static_params.discord_emoji or CoreData.comfy_emojis.wut) .. '[' .. memory.name .. '] ' .. message)
+		Server.to_discord_embed_raw((destination.static_params.discord_emoji or CoreData.comfy_emojis.wut) .. '[' .. memory.name .. '] Approaching ' .. name .. ', ' .. memory.overworldx .. ' leagues.')
 	end
 	if destination.static_params.name == 'Dock' then
 		message = message .. ' ' .. 'New trades are in the Captain\'s Store.'

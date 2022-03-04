@@ -63,8 +63,6 @@ function Public.generate_overworld_destination(p)
 	end
 	if macrop.x >= 16 then island_subtype_raffle[#island_subtype_raffle + 1] = Surfaces.Island.enum.SWAMP end
 	if macrop.x >= 16 then island_subtype_raffle[#island_subtype_raffle + 1] = 'none' end
-	if macrop.x >= 26 then island_subtype_raffle[#island_subtype_raffle + 1] = Surfaces.Island.enum.RADIOACTIVE end
-	if macrop.x >= 26 then island_subtype_raffle[#island_subtype_raffle + 1] = 'none' end
 
 	if macrop.x == 0 then
 		if macrop.y == 0 then

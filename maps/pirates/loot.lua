@@ -36,6 +36,7 @@ Public.buried_treasure_loot_data_raw = {
 	{35, 0, 1, false, 'express-underground-belt', 4, 4},
 	{35, 0, 1, false, 'express-splitter', 4, 11},
 	{50, 0, 1, false, 'stack-inserter', 4, 12},
+	{0.1, 0, 1, false, 'atomic-bomb', 1, 1},
 }
 
 Public.chest_loot_data_raw = {
@@ -374,6 +375,8 @@ Public.maze_treasure_data_raw = {
 	{2, 0, 0.5, false, 'laser-turret', 1, 2},
 	{2, 0.6, 1, false, 'laser-turret', 4, 5},
 	{1, 0, 0.5, false, 'roboport', 1, 1},
+
+	{1, 0, 1, false, 'atomic-bomb', 1, 1},
 }
 
 function Public.maze_treasure_loot()

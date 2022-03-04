@@ -130,7 +130,7 @@ function Public.try_main_attack()
 	local wave_size_multiplier = 1
 	local memory = Memory.get_crew_memory()
 	if memory.overworldx > 0 then
-		if Math.random(2) == 2 then
+		if Math.random(3) == 1 then
 			-- log('attack aborted by chance')
 			return nil
 		end --variance in attack sizes
@@ -141,7 +141,7 @@ function Public.try_main_attack()
 
     local group = Public.spawn_group_of_scripted_biters(2/3, 6, 180, wave_size_multiplier)
     local target = Public.generate_main_attack_target()
-    if not group or not group.valid or not target or not target.valid then return end
+    if not group or not group.valid or not target or not target.valid then log('target or group invalid') return end
 
 	-- group.set_command(Public.attack_target(target))
 
@@ -154,7 +154,7 @@ function Public.try_secondary_attack()
 	local wave_size_multiplier = 1
 	local memory = Memory.get_crew_memory()
 	if memory.overworldx > 0 then
-		if Math.random(2) == 2 then
+		if Math.random(3) == 1 then
 			log('attack aborted by chance')
 		end --variance in attack sizes
 		if Math.random(10) == 1 then wave_size_multiplier = 1.8 end --variance in attack sizes
@@ -166,7 +166,7 @@ function Public.try_secondary_attack()
 
 
     local group = Public.spawn_group_of_scripted_biters(2/3, 12, 180, wave_size_multiplier)
-	if not (group and group.valid) then return end
+	if not (group and group.valid) then log('group invalid') return end
 	
 	local target
 	if Math.random(2) == 1 then
@@ -174,7 +174,7 @@ function Public.try_secondary_attack()
 	else
 		target = Public.generate_side_attack_target(surface, group.position)
 	end
-    if not group or not group.valid or not target or not target.valid then return end
+    if not group or not group.valid or not target or not target.valid then log('target invalid') return end
 
 	-- group.set_command(Public.attack_target(target))
 
@@ -187,7 +187,7 @@ function Public.try_rogue_attack()
 	local wave_size_multiplier = 1
 	local memory = Memory.get_crew_memory()
 	if memory.overworldx > 0 then
-		if Math.random(2) == 2 then
+		if Math.random(3) == 1 then
 			log('attack aborted by chance')
 		end --variance in attack sizes
 		if Math.random(10) == 1 then wave_size_multiplier = 1.8 end --variance in attack sizes
@@ -198,9 +198,9 @@ function Public.try_rogue_attack()
 	local surface = game.surfaces[Common.current_destination().surface_name]
 
 	local group = Public.spawn_group_of_scripted_biters(1/2, 6, 180, wave_size_multiplier)
-	if not (group and group.valid) then return end
+	if not (group and group.valid) then log('group invalid') return end
 	local target = Public.generate_side_attack_target(surface, group.position)
-	if not (target and target.valid) then return end
+	if not (target and target.valid) then log('target invalid') return end
 
 	-- group.set_command(Public.attack_target(target))
 
@@ -337,11 +337,11 @@ function Public.spawn_group_of_scripted_biters(fraction_of_floating_pollution, m
         return nil
     end
     local spawner = Public.get_random_spawner(surface)
-    if not spawner then return end
+    if not spawner then log('no spawner found') return end
 
     local units = Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spawner, fraction_of_floating_pollution, minimum_avg_units, maximum_units, 1/wave_size_multiplier)
 
-    if (not units) or (not #units) or (#units == 0) then return end
+    if (not units) or (not #units) or (#units == 0) then log('no units found') return end
 
     local position = surface.find_non_colliding_position('rocket-silo', spawner.position, 256, 2) or spawner.position
 
@@ -418,8 +418,11 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 
 			local unittype_pollutioncost = CoreData.biterPollutionValues[name2] * base_pollution_cost_multiplier
 
-            local p = surface.find_non_colliding_position(name2, spawnerposition, 50, 2)
-            if not p then return end
+            local p = surface.find_non_colliding_position(name2, spawnerposition, 60, 1)
+            if not p then
+				p = spawnerposition
+				log('no position found, using spawnerposition')
+			end
 
             local biter = surface.create_entity({name = name2, force = enemy_force_name, position = p})
 
@@ -440,7 +443,7 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 			local whilesafety = 1000
 			local next_name = enforce_type or Common.get_random_unit_type(evolution)
 
-			while units_created_count < maximum_units and budget >= CoreData.biterPollutionValues[next_name] * base_pollution_cost_multiplier and #memory.scripted_biters < Common.total_max_biters and whilesafety > 0 do
+			while units_created_count < maximum_units and budget >= CoreData.biterPollutionValues[next_name] * base_pollution_cost_multiplier and #memory.scripted_biters < CoreData.total_max_biters and whilesafety > 0 do
 				whilesafety = whilesafety - 1
 				spawn(next_name)
 				next_name = enforce_type or Common.get_random_unit_type(evolution)
@@ -449,7 +452,7 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 			local name = enforce_type or Common.get_random_unit_type(evolution)
 
 			local whilesafety = 1000
-			while units_created_count < maximum_units and budget >= CoreData.biterPollutionValues[name] * base_pollution_cost_multiplier and #memory.scripted_biters < Common.total_max_biters and whilesafety > 0 do
+			while units_created_count < maximum_units and budget >= CoreData.biterPollutionValues[name] * base_pollution_cost_multiplier and #memory.scripted_biters < CoreData.total_max_biters and whilesafety > 0 do
 				whilesafety = whilesafety - 1
 				spawn(name)
 			end

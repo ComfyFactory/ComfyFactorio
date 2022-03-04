@@ -394,7 +394,7 @@ function Public.custom_biter_ai()
 		end
 
 		local whilesafety = 1000
-		while units_created_count < maximum_units and budget >= unittype_pollutioncost and #memory.scripted_biters < Common.total_max_biters and whilesafety > 0 do
+		while units_created_count < maximum_units and budget >= unittype_pollutioncost and #memory.scripted_biters < CoreData.total_max_biters and whilesafety > 0 do
 			whilesafety = whilesafety - 1
 			pollution_available = pollution_available - unittype_pollutioncost
 			budget = budget - unittype_pollutioncost

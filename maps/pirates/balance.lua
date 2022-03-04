@@ -536,7 +536,7 @@ function Public.covered1_entry_price()
 	res.price.count = Math.ceil(res.price.count * Public.covered_entry_price_scale())
 
 	for i, _ in pairs(res.raw_materials) do
-		res.raw_materials[i].count = Math.ceil(res.raw_materials[i].count * Public.covered_entry_price_scale())
+		res.raw_materials[i].count = Math.ceil(res.raw_materials[i].count * Public.covered_entry_price_scale() * (0.9 + 0.2 * Math.random()))
 	end
 
 	return res

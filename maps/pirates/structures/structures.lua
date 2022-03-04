@@ -105,7 +105,6 @@ function Public.post_creation_process(special_name, components)
 					e.set_recipe('kovarex-enrichment-process')
 					inv.insert{name = 'uranium-235', count = 20}
 				elseif e.name == 'gun-turret' and special_name == 'small_radioactive_centrifuge' then
-					local memory = Memory.get_crew_memory()
 					e.force = memory.force
 				elseif e.name == 'fast-splitter' and special_name == 'small_radioactive_centrifuge' then
 					e.splitter_output_priority = 'left'

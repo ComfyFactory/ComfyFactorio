@@ -15,6 +15,8 @@ Public.rocket_silo_death_causes_loss = false
 
 Public.victory_x = 1000
 
+Public.total_max_biters = 4000
+
 Public.lobby_surface_name = '000-000-Lobby'
 
 Public.colors = {
