@@ -16,6 +16,7 @@ local Hold = require 'maps.pirates.surfaces.hold'
 local Lobby = require 'maps.pirates.surfaces.lobby'
 local Cabin = require 'maps.pirates.surfaces.cabin'
 local Roles = require 'maps.pirates.roles.roles'
+local Classes = require 'maps.pirates.roles.classes'
 local Token = require 'utils.token'
 local Task = require 'utils.task'
 local SurfacesCommon = require 'maps.pirates.surfaces.common'
@@ -42,7 +43,7 @@ function Public.difficulty_vote(player_index, difficulty_id)
 		if not option then return end
 		
 		local color = option.associated_color
-		Common.notify_force(game.forces[memory.force_name], player.name .. ' voted [color=' .. color.r .. ',' .. color.g .. ',' .. color.b .. ']for difficulty ' .. option.text .. '[/color]')
+		Common.notify_force(memory.force, player.name .. ' voted [color=' .. color.r .. ',' .. color.g .. ',' .. color.b .. ']for difficulty ' .. option.text .. '[/color]')
 	
 		memory.difficulty_votes[player_index] = difficulty_id
 	
@@ -76,7 +77,7 @@ function Public.update_difficulty()
 		local color = CoreData.difficulty_options[modal_id].associated_color
 		local message = 'Difficulty [color=' .. color.r .. ',' .. color.g .. ',' .. color.b .. ']changed to ' .. CoreData.difficulty_options[modal_id].text .. '[/color].'
 
-		Common.notify_force(game.forces[memory.force_name], message)
+		Common.notify_force(memory.force, message)
 		Server.to_discord_embed_raw(CoreData.comfy_emojis.kewl .. '[' .. memory.name .. '] ' .. message)
 
 		memory.difficulty_option = modal_id
@@ -125,7 +126,7 @@ function Public.try_lose(reason)
 
 		Common.notify_game('[' .. memory.name .. '] Game over — ' .. reason ..'. Playtime: [font=default-large-semibold]' .. playtimetext .. '[/font] since 1st island.', CoreData.colors.notify_gameover)
 	
-		local force = game.forces[memory.force_name]
+		local force = memory.force
 		if not (force and force.valid) then return end
 		
 		force.play_sound{path='utility/game_lost', volume_modifier=0.75} --playing to the whole game might scare ppl
@@ -189,7 +190,7 @@ function Public.choose_crew_members()
 	end
 
 	for _, player in pairs(crew_members) do
-		player.force = game.forces[memory.force_name]
+		player.force = memory.force
 		memory.crewplayerindices[#memory.crewplayerindices + 1] = player.index
 	end
 
@@ -609,8 +610,17 @@ function Public.initialise_crew(accepted_proposal)
 	memory.secs_id = secs
 	
 	memory.id = new_id
+	
 	memory.force_name = string.format('crew-%03d', new_id)
 	memory.enemy_force_name = string.format('enemy-%03d', new_id)
+	memory.ancient_enemy_force_name = string.format('ancient-hostile-%03d', new_id)
+	memory.ancient_friendly_force_name = string.format('ancient-friendly-%03d', new_id)
+	
+	memory.force = game.forces[string.format('crew-%03d', new_id)]
+	memory.enemy_force = game.forces[string.format('enemy-%03d', new_id)]
+	memory.ancient_enemy_force = game.forces[string.format('ancient-hostile-%03d', new_id)]
+	memory.ancient_friendly_force = game.forces[string.format('ancient-friendly-%03d', new_id)]
+
 	memory.evolution_factor = 0
 
 	memory.delayed_tasks = {}
@@ -635,6 +645,7 @@ function Public.initialise_crew(accepted_proposal)
 
 	memory.destinationsvisited_indices = {}
 	memory.stored_fuel = 8000
+	memory.available_classes_pool = Classes.initial_class_pool()
 
 	memory.captain_accrued_time_data = {}
 	memory.max_players_recorded = 0
@@ -690,7 +701,7 @@ function Public.summon_crew(tickinterval)
 		end
 	end
 	if print then 
-		Common.notify_force(game.forces[memory.force_name], 'Crew summoned.')
+		Common.notify_force(memory.force, 'Crew summoned.')
 	end
 end
 
@@ -845,7 +856,7 @@ function Public.reset_crew_and_enemy_force(id)
 
 	crew_force.technologies['gate'].enabled = false
 
-	crew_force.technologies['productivity-module-2'].enabled = false
+	crew_force.technologies['productivity-module-2'].enabled = true
 	crew_force.technologies['productivity-module-3'].enabled = false
 	crew_force.technologies['speed-module'].enabled = false
 	crew_force.technologies['speed-module-2'].enabled = false

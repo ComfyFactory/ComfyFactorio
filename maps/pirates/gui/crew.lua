@@ -481,7 +481,7 @@ function Public.update(player)
 	end
 
 	-- if flow.captain.body.capn_undock_normal.visible then
-	-- 	flow.captain.body.capn_undock_normal.enabled = ((memory.boat.state == Boats.enum_state.LANDED) and Common.query_sufficient_resources_to_leave()) or (memory.boat.state == Boats.enum_state.DOCKED)
+	-- 	flow.captain.body.capn_undock_normal.enabled = ((memory.boat.state == Boats.enum_state.LANDED) and Common.query_can_pay_cost_to_leave()) or (memory.boat.state == Boats.enum_state.DOCKED)
 	-- end
 end
 
@@ -532,12 +532,12 @@ function Public.click(event)
 
 	if string.sub(eventname, 1, 13) and string.sub(eventname, 1, 13) == 'assign_class_' then
 		local other_id = tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])
-		Roles.assign_class(other_id, tonumber(string.sub(eventname, 14, -1)))
+		Classes.assign_class(other_id, tonumber(string.sub(eventname, 14, -1)))
 		return
 	end
 
 	if string.sub(eventname, 1, 17) and string.sub(eventname, 1, 17) == 'selfassign_class_' then
-		Roles.assign_class(player.index, tonumber(string.sub(eventname, 18, -1)), true)
+		Classes.assign_class(player.index, tonumber(string.sub(eventname, 18, -1)), true)
 		return
 	end
 
@@ -576,7 +576,7 @@ function Public.click(event)
 	end
 
 	if eventname == 'class_renounce' then
-		Roles.try_renounce_class(player)
+		Classes.try_renounce_class(player)
 		return
 	end
 
@@ -602,7 +602,7 @@ function Public.click(event)
 	if eventname == 'capn_disband_are_you_sure' then
 		--double check:
 		if Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN then
-			local force = game.forces[memory.force_name]
+			local force = memory.force
 			if force and force.valid then
 				local message = player.name .. ' disbanded ' .. memory.name .. ', after ' .. Utils.time_longform((memory.real_age or 0)/60) .. '.'
 				Common.notify_game(message)

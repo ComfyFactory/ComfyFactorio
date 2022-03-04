@@ -27,7 +27,7 @@ function Public.terrain(args)
 end
 
 function Public.chunk_structures(args)
-	return
+	return nil
 end
 
 return Public

@@ -28,7 +28,7 @@ function Public.noises(args)
 	ret.rock = args.noise_generator.rock
 	ret.ore = args.noise_generator.ore
 	ret.rock_abs = function (p) return Math.abs(ret.rock(p)) end
-	ret.farness = IslandsCommon.island_farness_1(args)
+	ret.farness = IslandsCommon.island_farness_1(args) --isn't available on the iconized pass, only on actual generation; check args.iconized_generation before you use this
 	return ret
 end
 
@@ -47,18 +47,25 @@ function Public.terrain(args)
 	
 	if noises.height(p) < 0.05 then
 		args.tiles[#args.tiles + 1] = {name = 'sand-1', position = args.p}
-		if args.specials and noises.farness(p) > 0.02 and noises.farness(p) < 0.6 and Math.random(500) == 1 then
+		if (not args.iconized_generation) and noises.farness(p) > 0.02 and noises.farness(p) < 0.6 and Math.random(500) == 1 then
 			args.specials[#args.specials + 1] = {name = 'buried-treasure', position = args.p}
 		end
-	elseif noises.height(p) < 0.33 then
-		args.tiles[#args.tiles + 1] = {name = 'sand-2', position = args.p}
-	elseif noises.height(p) < 0.35 then
-		args.tiles[#args.tiles + 1] = {name = 'dirt-5', position = args.p}
 	else
-		if noises.height_background(p) > 0.4 then
-			args.tiles[#args.tiles + 1] = {name = 'nuclear-ground', position = args.p}
+		if Math.random() < Math.min(0.4,noises.height(p)) then
+			args.decoratives[#args.decoratives + 1] = {name = 'white-desert-bush', position = p, amount = 1}
+		elseif Math.random() > Math.max(0.8,1.2-noises.height(p)) then
+			args.decoratives[#args.decoratives + 1] = {name = 'green-bush-mini', position = p, amount = 1}
+		end
+		if noises.height(p) < 0.33 then
+			args.tiles[#args.tiles + 1] = {name = 'sand-2', position = args.p}
+		elseif noises.height(p) < 0.35 then
+			args.tiles[#args.tiles + 1] = {name = 'dirt-5', position = args.p}
 		else
-			args.tiles[#args.tiles + 1] = {name = 'dirt-4', position = args.p}
+			if noises.height_background(p) > 0.4 then
+				args.tiles[#args.tiles + 1] = {name = 'nuclear-ground', position = args.p}
+			else
+				args.tiles[#args.tiles + 1] = {name = 'dirt-4', position = args.p}
+			end
 		end
 	end
 
@@ -135,7 +142,7 @@ function Public.spawn_structures()
 	local destination = Common.current_destination()
 	local surface = game.surfaces[destination.surface_name]
 	local subtype = destination.subtype
-	local force = game.forces[memory.force_name]
+	local force = memory.force
 	local ancient_force = string.format('ancient-friendly-%03d', memory.id)
 
 	local ps = Public.structure_positions()
@@ -263,7 +270,7 @@ local function radioactive_tick()
 		local tickinterval = 60
 		
 		if destination.subtype == IslandsCommon.enum.RADIOACTIVE then
-			local ef = game.forces[memory.enemy_force_name]
+			local ef = memory.enemy_force
 			-- faster evo (doesn't need difficulty scaling as higher difficulties have higher base evo):
 			local extra_evo = 0.22 * tickinterval/60 / Balance.expected_time_on_island()
 			Common.increment_evo(extra_evo)

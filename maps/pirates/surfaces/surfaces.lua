@@ -18,6 +18,8 @@ local Quest = require 'maps.pirates.quest'
 local Parrot = require 'maps.pirates.parrot'
 local ShopMerchants = require 'maps.pirates.shop.merchants'
 local SurfacesCommon = require 'maps.pirates.surfaces.common'
+local Roles = require 'maps.pirates.roles.roles'
+local Classes = require 'maps.pirates.roles.classes'
 
 local Server = require 'utils.server'
 
@@ -57,7 +59,7 @@ function Public.initialise_destination(o)
 	o.boat_extra_distance_from_shore = o.boat_extra_distance_from_shore or 0
 	o.surface_name = o.surface_name or SurfacesCommon.encode_surface_name(memory.id, o.destination_index, o.type, o.subtype)
 
-	o.dynamic_data.chunks_loaded = o.dynamic_data.chunks_loaded or {}
+	o.dynamic_data.other_map_generation_data = o.dynamic_data.other_map_generation_data or {}
 
 	if o.type == enum.ISLAND then
 	
@@ -143,7 +145,7 @@ function Public.destination_on_collide(destination)
 	if destination and destination.static_params and destination.static_params.cost_to_leave then
 		local replace = {}
 		for item, count in pairs(destination.static_params.cost_to_leave) do
-			if item == 'uranium-235' then
+			if item == 'uranium-235' or item == 'launch_rocket' then
 				replace[item] = count
 			else
 				replace[item] = Math.ceil(count * Balance.cost_to_leave_multiplier())
@@ -227,7 +229,7 @@ function Public.destination_on_arrival(destination)
 			-- end
 		end
 
-		game.forces[memory.enemy_force_name].reset_evolution()
+		memory.enemy_force.reset_evolution()
 		local base_evo = Balance.base_evolution()
 		Common.set_evo(base_evo)
 		destination.dynamic_data.evolution_accrued_leagues = base_evo
@@ -242,12 +244,6 @@ function Public.destination_on_arrival(destination)
 		if destination.subtype == Islands.enum.RADIOACTIVE then
 			Islands[Islands.enum.RADIOACTIVE].spawn_structures()
 		end
-
-		if destination and destination.surface_name and game.surfaces[destination.surface_name] and game.surfaces[destination.surface_name].valid and (not (destination.dynamic_data and destination.dynamic_data.initial_spawner_count)) then
-			--Note: This gives the wrong answer on the first island. Because the terrain hasn't finished generating yet.
-			destination.dynamic_data.initial_spawner_count = Common.spawner_count(game.surfaces[destination.surface_name])
-		end
-
 		-- -- invulnerable bases on islands 21-25
 		-- if memory.overworldx >= 21 and memory.overworldx < 25 then
 		-- 	local surface = game.surfaces[destination.surface_name]
@@ -278,7 +274,7 @@ function Public.destination_on_arrival(destination)
 	if destination.static_params.name == 'Dock' then
 		message = message .. ' ' .. 'New trades are in the Captain\'s Store.'
 	end
-	Common.notify_force(game.forces[memory.force_name], message)
+	Common.notify_force(memory.force, message)
 
 	if destination.type == enum.ISLAND then
 
@@ -286,18 +282,39 @@ function Public.destination_on_arrival(destination)
 
 		if destination.subtype ~= Islands.enum.RADIOACTIVE then
 			local silo_position = Islands.spawn_silo_setup()
-			points_to_avoid[#points_to_avoid + 1] = {x = silo_position.x, y = silo_position.y, r = 22}
+			if silo_position then
+				points_to_avoid[#points_to_avoid + 1] = {x = silo_position.x, y = silo_position.y, r = 22}
+			end
 		end
 
-		Islands.spawn_ores_on_shorehit(destination, points_to_avoid)
+		Islands.spawn_ores_on_arrival(destination, points_to_avoid)
 
-		if memory.overworldx >= Balance.covered_first_appears_at or _DEBUG then
+		if memory.overworldx >= Balance.covered_first_appears_at then
+			local class_for_sale = Classes.generate_class_for_sale()
+			destination.static_params.class_for_sale = class_for_sale
+
 			local covered = Islands.spawn_covered(destination, points_to_avoid)
 			points_to_avoid[#points_to_avoid + 1] = {x = covered.x, y = covered.y, r = 25}
 		end
 		
 		Islands.spawn_treasure_maps(destination, points_to_avoid)
 		Islands.spawn_ghosts(destination, points_to_avoid)
+
+		if destination.subtype and destination.subtype == Islands.enum.MAZE then
+			local force = memory.force
+			force.manual_mining_speed_modifier = 0
+		end
+	end
+end
+
+function Public.destination_on_departure(destination)
+	local memory = Memory.get_crew_memory()
+
+	if memory.overworldx == 40*9 then Parrot.parrot_kraken_warning() end
+
+	if destination.subtype and destination.subtype == Islands.enum.MAZE then
+		local force = memory.force
+		force.manual_mining_speed_modifier = 3 --put back to normal
 	end
 end
 
@@ -334,6 +351,8 @@ function Public.destination_on_crewboat_hits_shore(destination)
 			end
 			
 			Parrot.parrot_radioactive_tip_2()
+		elseif destination.subtype == Islands.enum.MAZE then
+			Parrot.parrot_maze_tip_1()
 		end
 
 		if memory.merchant_ships_unlocked or _DEBUG then
@@ -342,6 +361,12 @@ function Public.destination_on_crewboat_hits_shore(destination)
 			ShopMerchants.generate_merchant_trades(destination.dynamic_data.merchant_market)
 		end
 	end
+
+	if destination and destination.surface_name and game.surfaces[destination.surface_name] and game.surfaces[destination.surface_name].valid and (not (destination.dynamic_data and destination.dynamic_data.initial_spawner_count)) then
+		--Note: This gives the wrong answer on the first island. Because the terrain hasn't finished generating yet.
+		destination.dynamic_data.initial_spawner_count = Common.spawner_count(game.surfaces[destination.surface_name])
+	end
+
 end
 
 
@@ -386,7 +411,7 @@ function Public.generate_detailed_island_data(destination)
 					local p2 = {x = chunk_frameposition_topleft.x + x2, y = chunk_frameposition_topleft.y + y2}
 
 					local tiles3, entities3 = {}, {}
-					terrain_fn{p = p2, noise_generator = noise_generator, static_params = destination.static_params, tiles = tiles3, entities = entities3, decoratives = {}, seed = destination.seed}
+					terrain_fn{p = p2, noise_generator = noise_generator, static_params = destination.static_params, tiles = tiles3, entities = entities3, decoratives = {}, seed = destination.seed, iconized_generation = true}
 					local tile = tiles3[1]
 					if modalcounts[tile.name] then
 						modalcounts[tile.name] = modalcounts[tile.name] + 1
@@ -489,7 +514,7 @@ function Public.generate_detailed_island_data(destination)
 			local x = leftboundary * 32 + 16 + xstep
 			local y = (topboundary*32 + bottomboundary*32)/2 + ystep
 			local tiles3 = {}
-			terrain_fn{p = {x = x, y = y}, noise_generator = noise_generator, static_params = destination.static_params, tiles = tiles3, entities = {}, decoratives = {}, seed = destination.seed}
+			terrain_fn{p = {x = x, y = y}, noise_generator = noise_generator, static_params = destination.static_params, tiles = tiles3, entities = {}, decoratives = {}, seed = destination.seed, iconized_generation = true}
 			local tile = tiles3[1]
 			if (not Utils.contains(CoreData.water_tile_names, tile.name)) then
 				xcorrection = Math.max(xcorrection, xstep + Math.abs(ystep))
@@ -613,7 +638,7 @@ function Public.clean_up(destination)
 	-- if there is more than one crew on a surface, this will need to be generalised
 	for _, player in pairs(game.connected_players) do
 		if (player.surface == oldsurface) then
-			if player.character and player.character.valid then player.character.die(game.forces[memory.force_name]) end
+			if player.character and player.character.valid then player.character.die(memory.force) end
 			player.teleport(memory.spawnpoint, seasurface)
 		end
 	end
@@ -625,9 +650,9 @@ function Public.clean_up(destination)
 	memory.floating_pollution = nil
 
 	if memory.enemy_force_name then
-		local ef = game.forces[memory.enemy_force_name]
+		local ef = memory.enemy_force
 		if ef and ef.valid then
-			game.forces[memory.enemy_force_name].reset_evolution()
+			memory.enemy_force.reset_evolution()
 			local base_evo = Balance.base_evolution()
 			Common.set_evo(base_evo)
 		end

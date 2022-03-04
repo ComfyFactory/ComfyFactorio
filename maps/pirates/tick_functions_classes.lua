@@ -27,6 +27,43 @@ local Quest = require 'maps.pirates.quest'
 local Public = {}
 
 
+function Public.class_renderings(tickinterval)
+	local memory = Memory.get_crew_memory()
+	if not memory.classes_table then return end
+
+	local crew = Common.crew_get_crew_members()
+
+	for _, player in pairs(crew) do
+		local player_index = player.index
+		if memory.classes_table[player_index] == Classes.enum.QUARTERMASTER then
+			if not memory.quartermaster_renderings then
+				memory.quartermaster_renderings = {}
+			end
+			local r = memory.quartermaster_renderings[player_index]
+			if Common.validate_player_and_character(player) then
+				if r then
+					rendering.set_target(r, player.character)
+				else
+					memory.quartermaster_renderings[player_index] = rendering.draw_circle{
+						surface = player.surface,
+						target = player.character,
+						color = CoreData.colors.quartermaster_rendering,
+						filled = false,
+						radius = CoreData.quartermaster_range,
+						only_in_alt_mode = true,
+						draw_on_ground = true,
+					}
+				end
+			else
+				if r then
+					rendering.destroy(r)
+				end
+			end
+		end
+	end
+end
+
+
 function Public.update_character_properties(tickinterval)
 	local memory = Memory.get_crew_memory()
 
@@ -48,6 +85,9 @@ function Public.update_character_properties(tickinterval)
 				if memory.classes_table[player_index] == Classes.enum.FISHERMAN then
 					max_reach_bonus = Math.max(max_reach_bonus, 10)
 					character.character_resource_reach_distance_bonus = 10
+				elseif memory.classes_table[player_index] == Classes.enum.MASTER_ANGLER then
+					max_reach_bonus = Math.max(max_reach_bonus, 14)
+					character.character_resource_reach_distance_bonus = 18
 				else
 					character.character_resource_reach_distance_bonus = 0
 				end
@@ -61,6 +101,8 @@ function Public.update_character_properties(tickinterval)
 				local class = memory.classes_table[player_index]
 				if class == Classes.enum.SAMURAI then
 					health_boost = health_boost + 800
+				elseif class == Classes.enum.RONIN_SENSEI then
+					health_boost = health_boost + 1600
 				end
 			end
 			if Common.is_captain(player) then
@@ -109,37 +151,52 @@ function Public.update_character_properties(tickinterval)
 	end
 end
 
+local function class_ore_grant(player, how_much)
+	if Math.random(2) == 2 then
+		Common.flying_text_small(player.surface, player.position, '[color=0.85,0.58,0.37]+[/color]')
+		Common.give_reward_items{{name = 'copper-ore', count = Math.ceil(how_much * Balance.class_resource_scale())}}
+	else
+		Common.flying_text_small(player.surface, player.position, '[color=0.7,0.8,0.8]+[/color]')
+		Common.give_reward_items{{name = 'iron-ore', count = Math.ceil(how_much * Balance.class_resource_scale())}}
+	end
+end
+
 function Public.class_rewards_tick(tickinterval)
 	--assuming tickinterval = 6 seconds for now
 	local memory = Memory.get_crew_memory()
 
-	local crew = Common.crew_get_crew_members()
+	if memory.boat and memory.boat.state ~= Structures.Boats.enum_state.ATSEA_LOADING_MAP then --it is possible to spend extra time here, so don't give out freebies
 
-	for _, player in pairs(crew) do
-		if Common.validate_player_and_character(player) then
-			local player_index = player.index
-			if memory.classes_table and memory.classes_table[player_index] then
-				local class = memory.classes_table[player_index]
-				if class == Classes.enum.DECKHAND or class == Classes.enum.SHORESMAN or class == Classes.enum.BOATSWAIN then
-					local surfacedata = Surfaces.SurfacesCommon.decode_surface_name(player.surface.name)
-					local type = surfacedata.type
-					local on_ship_bool = type == Surfaces.enum.HOLD or type == Surfaces.enum.CABIN or type == Surfaces.enum.CROWSNEST or (player.surface.name == memory.boat.surface_name and Boats.on_boat(memory.boat, player.position))
-					local hold_bool = surfacedata.type == Surfaces.enum.HOLD
-
-					if class == Classes.enum.DECKHAND and on_ship_bool and (not hold_bool) then
-						Common.flying_text_small(player.surface, player.position, '[color=0.7,0.8,0.8]+[/color]')
-							Common.give_reward_items{{name = 'iron-ore', count = Math.ceil(20 * Balance.class_resource_scale())}}
-					elseif class == Classes.enum.BOATSWAIN and hold_bool then
-						if Math.random(2) == 2 then
-							Common.flying_text_small(player.surface, player.position, '[color=0.85,0.58,0.37]+[/color]')
-								Common.give_reward_items{{name = 'copper-ore', count = Math.ceil(30 * Balance.class_resource_scale())}}
-						else
-							Common.flying_text_small(player.surface, player.position, '[color=0.7,0.8,0.8]+[/color]')
-								Common.give_reward_items{{name = 'iron-ore', count = Math.ceil(30 * Balance.class_resource_scale())}}
+		local crew = Common.crew_get_crew_members()
+		for _, player in pairs(crew) do
+			if Common.validate_player_and_character(player) then
+				local player_index = player.index
+				if memory.classes_table and memory.classes_table[player_index] then
+					local class = memory.classes_table[player_index]
+					if class == Classes.enum.DECKHAND or class == Classes.enum.SHORESMAN or class == Classes.enum.BOATSWAIN then
+						local surfacedata = Surfaces.SurfacesCommon.decode_surface_name(player.surface.name)
+						local type = surfacedata.type
+						local on_ship_bool = type == Surfaces.enum.HOLD or type == Surfaces.enum.CABIN or type == Surfaces.enum.CROWSNEST or (player.surface.name == memory.boat.surface_name and Boats.on_boat(memory.boat, player.position))
+						local hold_bool = surfacedata.type == Surfaces.enum.HOLD
+	
+						if class == Classes.enum.DECKHAND and on_ship_bool and (not hold_bool) then
+							class_ore_grant(player, 8)
+						elseif class == Classes.enum.BOATSWAIN and hold_bool then
+							class_ore_grant(player, 15)
+						elseif class == Classes.enum.SHORESMAN and (not on_ship_bool) then
+							class_ore_grant(player, 5)
 						end
-					elseif class == Classes.enum.SHORESMAN and (not on_ship_bool) then
-						Common.flying_text_small(player.surface, player.position, '[color=0.7,0.8,0.8]+[/color]')
-							Common.give_reward_items{{name = 'iron-ore', count = Math.ceil(15 * Balance.class_resource_scale())}}
+					end
+				end
+	
+				if game.tick % (360*2) == 0 then
+					local nearby_players = player.surface.find_entities_filtered{position = player.position, radius = CoreData.quartermaster_range, type = {'character'}}
+		
+					for _, p2 in pairs(nearby_players) do
+						local p2_index = p2.player.index
+						if p2_index ~= player_index and memory.classes_table[p2_index] and memory.classes_table[p2_index] == Classes.enum.QUARTERMASTER then
+							class_ore_grant(p2, 3)
+						end
 					end
 				end
 			end

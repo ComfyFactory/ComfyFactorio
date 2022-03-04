@@ -52,7 +52,6 @@ function Public.decode_surface_name(name)
 	return {crewid = crewid, destination_index = destination_index, type = type, subtype = subtype}
 end
 
-
 function Public.fetch_iconized_map(destination)
 	local type = destination.type
 

@@ -24,7 +24,7 @@ function Public.noises(args)
 	ret.rock = args.noise_generator.rock
 	ret.rock_abs = function (p) return Math.abs(ret.rock(p)) end
 	ret.mood = args.noise_generator.mood
-	ret.farness = IslandsCommon.island_farness_1(args)
+	ret.farness = IslandsCommon.island_farness_1(args) --isn't available on the iconized pass, only on actual generation; check args.iconized_generation before you use this
 	return ret
 end
 

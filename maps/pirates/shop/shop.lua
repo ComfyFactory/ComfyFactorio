@@ -205,7 +205,7 @@ function Public.main_shop_try_purchase(player, purchase_name)
 			end
 		end
 
-		local force = game.forces[memory.force_name]
+		local force = memory.force
 		if not (force and force.valid) then return end
 
 		local gotamount
@@ -388,28 +388,65 @@ function Public.event_on_market_item_purchased(event)
 
 	if decay_type == 'one-off' then
 		local force = player.force
-		local destination = Common.current_destination()
 
 		if offer_type == 'nothing' then
-			-- check if they have a role already - renounce it if so
-			if memory.classes_table and memory.classes_table[player.index] then
-				Roles.try_renounce_class(player)
+
+			local class_for_sale = destination.static_params.class_for_sale
+			-- if not class_for_sale then return end
+			local required_class = Classes.class_purchase_requirement[class_for_sale]
+
+			local ok = true
+			-- check if they have the required class to buy it
+			if required_class then
+				if not (memory.classes_table and memory.classes_table[player.index] and memory.classes_table[player.index] == required_class) then
+					ok = false
+					Common.notify_player_error(force,string.format('You need to be a %s to buy this.', Classes.display_form[required_class]))
+				end
 			end
+
+			if ok then
+				if required_class then
+					if force and force.valid then
+						Common.notify_force_light(force,string.format('%s upgraded their class from %s to %s. ([font=scenario-message-dialog]%s[/font])', player.name, Classes.display_form[required_class], Classes.display_form[class_for_sale], Classes.explanation[class_for_sale]))
+					end
+				else
+					-- check if they have a role already - renounce it if so
+					if memory.classes_table and memory.classes_table[player.index] then
+						Classes.try_renounce_class(player)
+					end
+
+					if force and force.valid then
+						Common.notify_force_light(force,string.format('%s bought the class %s. ([font=scenario-message-dialog]%s[/font])', player.name, Classes.display_form[class_for_sale], Classes.explanation[class_for_sale]))
+					end
+				end
+
+				memory.classes_table[player.index] = class_for_sale
 			
-			memory.classes_table[player.index] = destination.static_params.class_for_sale
-	
-			if force and force.valid then
-				Common.notify_force_light(force,string.format('%s bought the class %s. ([font=scenario-message-dialog]%s[/font])', player.name, Classes.display_form[memory.classes_table[player.index]], Classes.explanation[memory.classes_table[player.index]]))
-			end
-		
-			if destination.dynamic_data and destination.dynamic_data.market_class_offer_rendering then
-				rendering.destroy(destination.dynamic_data.market_class_offer_rendering)
+				if destination.dynamic_data and destination.dynamic_data.market_class_offer_rendering then
+					rendering.destroy(destination.dynamic_data.market_class_offer_rendering)
+				end
+
+				market.remove_market_item(offer_index)
+
+				if Classes.class_unlocks[class_for_sale] then
+					for _, upgrade in pairs(Classes.class_unlocks[class_for_sale]) do
+						memory.available_classes_pool[#memory.available_classes_pool + 1] = upgrade
+					end
+				end
+			else
+				--refund
+				inv = player.get_inventory(defines.inventory.character_main)
+				if not inv then return end
+				for _, p in pairs(price) do
+					inv.insert{name = p.name, count = p.amount}
+				end
 			end
 		else
 			Common.notify_force_light(player.force, player.name .. ' bought ' .. this_offer.offer.count .. ' ' .. this_offer.offer.item .. ' for ' .. price[1].amount .. ' ' .. price[1].name .. '.')
+
+			market.remove_market_item(offer_index)
 		end
 
-		market.remove_market_item(offer_index)
 
 	else
 		-- print:
@@ -423,7 +460,9 @@ function Public.event_on_market_item_purchased(event)
 					if price[1].name == 'coin' then
 						Common.notify_force_light(player.force, player.name .. ' bought ' ..this_offer.offer.count .. ' ' .. this_offer.offer.item  .. ' for ' .. price[1].amount .. ' ' .. price[1].name .. '...')
 					elseif this_offer.offer.item == 'coin' then
-						Common.notify_force_light(player.force, player.name .. ' sold ' .. price[1].amount .. ' ' .. price[1].name .. ' for ' .. this_offer.offer.count .. ' ' .. this_offer.offer.item .. '...')
+						local sold_amount = price[1].amount
+						if sold_amount == 1 then sold_amount = 'a' end
+						Common.notify_force_light(player.force, player.name .. ' sold ' .. sold_amount .. ' ' .. price[1].name .. ' for ' .. this_offer.offer.count .. ' ' .. this_offer.offer.item .. '...')
 					else
 						Common.notify_force_light(player.force, player.name .. ' is trading away ' .. price[1].amount .. ' ' .. price[1].name .. ' for ' .. this_offer.offer.count .. ' ' .. this_offer.offer.item .. '...')
 					end

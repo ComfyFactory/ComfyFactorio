@@ -112,7 +112,7 @@ function Public.move_crowsnest(vectorx, vectory)
 	end
 
 	if vectorx ~= 0 then
-		local crew_force = game.forces[memory.force_name]
+		local crew_force = memory.force
 		local area = {{memory.overworldx,-Public.Data.height/2},{memory.overworldx+Public.Data.chartingdistance,Public.Data.height/2}}
 		-- crew_force.clear_chart(surface)
 		crew_force.chart(surface, area)
@@ -331,10 +331,10 @@ local crowsnest_delayed = Token.register(
 function Public.crowsnest_surface_delayed_init()
 	local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[Public.crowsnest_surface_name()]
-	local force = game.forces[memory.force_name]
+	local force = memory.force
 
 	if _DEBUG and (not (surface and surface.valid)) then
-		game.print('debug issue: crowsnest_surface_delayed_init called when crowsnest surface wasn\'t valid. This happens due to a difficult-to-handle race condition in concurrent delayed events in the /go shortcut. Firing event again...')
+		game.print('/go issue: crowsnest_surface_delayed_init called when crowsnest surface wasn\'t valid. This happens due to a difficult-to-handle race condition in concurrent delayed events in the /go shortcut. Firing event again...')
 		Task.set_timeout_in_ticks(5, crowsnest_delayed, {})
 		return
 	end

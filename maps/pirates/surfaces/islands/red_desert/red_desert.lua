@@ -30,7 +30,7 @@ function Public.noises(args)
 	ret.ore = args.noise_generator.ore
 	ret.rock_abs = function (p) return Math.abs(ret.rock(p)) end
 	ret.mood = args.noise_generator.mood
-	ret.farness = IslandsCommon.island_farness_1(args)
+	ret.farness = IslandsCommon.island_farness_1(args) --isn't available on the iconized pass, only on actual generation; check args.iconized_generation before you use this
 	return ret
 end
 
@@ -166,7 +166,9 @@ function Public.chunk_structures(args)
 		{x = left_top.x + (bool1 and 32 or -32), y = left_top.y + (bool2 and 32 or -32)},
 	}
 
-	local chunks_loaded = args.chunks_loaded
+	if not args.other_map_generation_data.chunks_loaded then args.other_map_generation_data.chunks_loaded = {} end
+	local chunks_loaded = args.other_map_generation_data.chunks_loaded
+
 	if not chunks_loaded[args.left_top.x] then chunks_loaded[args.left_top.x] = {} end
 	chunks_loaded[args.left_top.x][args.left_top.y] = true
 
@@ -248,7 +250,7 @@ function Public.underground_worms_ai()
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 	local surface = game.surfaces[destination.surface_name]
-	local player_force = game.forces[memory.force_name]
+	local player_force = memory.force
 	local enemy_force_name = memory.enemy_force_name
 	local evolution = memory.evolution_factor
 

@@ -18,7 +18,7 @@ Public[enum.ISLANDSTRUCTURES] = require 'maps.pirates.structures.island_structur
 
 
 function Public.post_creation_process(special_name, components)
-	local destination = Common.current_destination()
+	local memory = Memory.get_crew_memory()
 
 	for _, c in pairs(components) do
 		local type = c.type
@@ -54,7 +54,15 @@ function Public.post_creation_process(special_name, components)
 					e.operable = false
 				end
 			end
-		elseif type == 'entities' then
+		elseif type == 'entities' or type == 'entities_grid' then
+			for _, e in pairs(c.built_entities) do
+				if e and e.valid then
+					e.minable = false
+					e.rotatable = false
+					e.destructible = false
+				end
+			end
+		elseif type == 'entities_randomlyplaced' or type == 'entities_randomlyplaced_border' then
 			for _, e in pairs(c.built_entities) do
 				if e and e.valid then
 					e.minable = false
@@ -98,22 +106,48 @@ function Public.post_creation_process(special_name, components)
 					inv.insert{name = 'uranium-235', count = 20}
 				elseif e.name == 'gun-turret' and special_name == 'small_radioactive_centrifuge' then
 					local memory = Memory.get_crew_memory()
-					e.force = game.forces[memory.force_name]
+					e.force = memory.force
 				elseif e.name == 'fast-splitter' and special_name == 'small_radioactive_centrifuge' then
 					e.splitter_output_priority = 'left'
 					e.splitter_filter = 'uranium-235'
-				elseif e.name == 'storage-tank' and special_name == 'lonely_storage_tank' then
-					e.insert_fluid(Loot.storage_tank_fluid_loot())
 				elseif e.name == 'storage-tank' and special_name == 'swamp_lonely_storage_tank' then
 					e.insert_fluid(Loot.swamp_storage_tank_fluid_loot())
 				elseif e.name == 'storage-tank' and special_name == 'small_oilrig_base' then
-					e.insert_fluid(Loot.storage_tank_fluid_loot(true))
+					e.insert_fluid(Loot.storage_tank_fluid_loot('crude-oil'))
+				elseif e.name == 'storage-tank' and special_name == 'small_abandoned_refinery' then
+					e.insert_fluid(Loot.storage_tank_fluid_loot('petroleum-gas'))
+				elseif e.name == 'storage-tank' then
+					e.insert_fluid(Loot.storage_tank_fluid_loot())
+				elseif (special_name == 'maze_labs') and e.name == 'lab' then
+					local inv = e.get_inventory(defines.inventory.lab_input)
+					local loot = Loot.maze_lab_loot()
+					for i = 1, #loot do
+						local l = loot[i]
+						inv.insert(l)
+					end
+				elseif (special_name == 'maze_treasure') and e.name == 'steel-chest' then
+					local inv = e.get_inventory(defines.inventory.chest)
+					local loot = Loot.maze_treasure_loot()
+					for i = 1, #loot do
+						local l = loot[i]
+						inv.insert(l)
+					end
+				elseif (special_name == 'maze_defended_camp' or special_name == 'maze_undefended_camp') and e.name == 'wooden-chest' then
+					local inv = e.get_inventory(defines.inventory.chest)
+					local loot = Loot.maze_camp_loot()
+					for i = 1, #loot do
+						local l = loot[i]
+						inv.insert(l)
+					end
 				end
 
 				if force_name and string.sub(force_name, 1, 15) and string.sub(force_name, 1, 15) == 'ancient-hostile' then
 					if e.name == 'gun-turret' then
-						-- TODO: make ammo type depend on x-coord
-						e.insert({name = "piercing-rounds-magazine", count = 64})
+						if memory.overworldx < 500 then
+							e.insert({name = "firearm-magazine", count = 64})
+						else
+							e.insert({name = "piercing-rounds-magazine", count = 64})
+						end
 					end
 				elseif force_name and string.sub(force_name, 1, 16) and string.sub(force_name, 1, 16) == 'ancient-friendly' then
 					if e.name == 'oil-refinery' then
@@ -173,6 +207,26 @@ function Public.try_place(structureScope, specialsTable, left_top, areawidth, ar
 			-- 	log('structure_no: ' .. structureData.name .. ' at ' .. structure_center.x .. ', ' .. structure_center.y)
 			-- end
 		end
+	end
+end
+
+
+function Public.tryAddStructureByName(specialsTable, name, p)
+	local structureScope = Public[enum.ISLANDSTRUCTURES][Public[enum.ISLANDSTRUCTURES].enum.ROC][name] or Public[enum.ISLANDSTRUCTURES][Public[enum.ISLANDSTRUCTURES].enum.MATTISSO][name]
+
+	if not structureScope then
+		log('Couldn\'t find structure data for ' .. name)
+		return {}
+	else
+		local structureData = structureScope.Data
+	
+		specialsTable[#specialsTable + 1] = {
+			position = p,
+			components = structureData.components,
+			width = structureData.width,
+			height = structureData.height,
+			name = structureData.name,
+		}
 	end
 end
 

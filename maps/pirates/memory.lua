@@ -71,6 +71,8 @@ function Public.reset_crew_memory(id) --also serves as a dev reference of memory
 	memory.merchant_ships_unlocked = nil
 
 	memory.boat = nil
+
+	memory.available_classes_pool = nil
 	
 	memory.crewplayerindices = nil
 	memory.spectatorplayerindices = nil

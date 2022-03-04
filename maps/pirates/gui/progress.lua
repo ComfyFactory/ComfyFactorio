@@ -48,7 +48,7 @@ function Public.toggle_window(player)
 	-- flow3.style.maximal_width = 160
 	-- flow3.style.font = 'default-dropdown'
 	
-	flow3 = flow2.add({type = 'label', name = 'hidden_ores_yes', caption = 'Hidden ores detected:'})
+	flow3 = flow2.add({type = 'label', name = 'hidden_ores_yes', caption = 'Ores detected:'})
 	
 	flow3 = flow2.add({type = 'table', name = 'hidden_ores_yes_table', column_count = 3})
 	flow3.style.left_margin = 5
@@ -58,7 +58,7 @@ function Public.toggle_window(player)
 		flow3.add({type = 'sprite-button', name = ore.name, sprite = ore.sprite_name, enabled = false, number = 0})
 	end
 	
-	flow3 = flow2.add({type = 'label', name = 'hidden_ores_no', caption = 'Hidden ores detected: None'})
+	flow3 = flow2.add({type = 'label', name = 'hidden_ores_no', caption = 'Ores detected: None'})
 
 	-- flow3 = flow2.add({type = 'label', name = 'daynight', caption = ''})
 
@@ -79,7 +79,7 @@ function Public.toggle_window(player)
 	-- end
 
 	GuiCommon.flow_add_close_button(flow, window_name .. '_piratebutton')
-	return
+	return nil
 end
 
 

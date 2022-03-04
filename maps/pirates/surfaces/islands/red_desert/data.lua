@@ -22,11 +22,11 @@ Public.static_params_default = {
 	base_starting_wood = 600,
 }
 
-function Public.base_ores() --here, just for the gui:
+function Public.base_ores() --here, just for the visualisation:
 	return {
-		['copper-ore'] = 6,
-		['iron-ore'] = 6,
-		['coal'] = 6,
+		['copper-ore'] = 5,
+		['iron-ore'] = 5,
+		['coal'] = 5,
 	}
 end
 

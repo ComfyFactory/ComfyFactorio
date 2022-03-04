@@ -326,15 +326,11 @@ function Public.check_for_end_of_boat_movement(boat)
 				boat.landing_time = destination.dynamic_data.timer
 	
 				Boats.place_landingtrack(boat, CoreData.enemy_landing_tile)
-	
-				if boat.unit_group and boat.unit_group.ref and boat.unit_group.ref.valid then boat.unit_group.ref.set_command({
-					type = defines.command.attack_area,
-					destination = ({memory.boat.position.x - 32, memory.boat.position.y} or {0,0}),
-					radius = 32,
-					distraction = defines.distraction.by_enemy
-				}) end
+
+				return true
 
 			elseif boat.spawner and boat.spawner.valid and boat.spawner.destructible then
+				-- This code seems to make the spawner destructible a little earlier than when it hits the shore
 				local boat2 = Utils.deepcopy(boat)
 				boat2.position = {x = boat.position.x + 5, y = boat.position.y}
 				if Boats.collision_infront(boat2) then
@@ -469,12 +465,11 @@ function Public.retreat_from_island()
 
 	Boats.place_boat(boat, CoreData.moving_boat_floor, false, false)
 
-
-	local force = game.forces[memory.force_name]
+	local force = memory.force
 	if not (force and force.valid) then return end
 	Common.notify_force_light(force,'[font=heading-1]Boat undocked.[/font]')
 
-	if memory.overworldx == 40*9 then Parrot.parrot_kraken_warning() end
+	Surfaces.destination_on_departure(Common.current_destination())
 end
 
 
@@ -495,7 +490,7 @@ function Public.undock_from_dock()
 
 	Crew.summon_crew()
 
-	local force = game.forces[memory.force_name]
+	local force = memory.force
 	if not (force and force.valid) then return end
 	Common.notify_force_light(force,'Leaving the dock.')
 end

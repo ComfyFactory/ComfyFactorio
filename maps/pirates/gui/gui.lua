@@ -163,12 +163,23 @@ local function create_gui(player)
 	for i = 1, #CoreData.cost_items do
 		flow4 = flow3.add({type = 'sprite-button', name = 'cost_' .. i, number = 0})
 		-- flow4.mouse_button_filter = {'middle'}
+		flow4.sprite = CoreData.cost_items[i].sprite_name
 		flow4.enabled = false
 		flow4.style.top_margin = -6
 		flow4.style.right_margin = -6
 		flow4.style.maximal_height = 38
 		flow4.visible = false
 	end
+	-- and
+		flow4 = flow3.add({type = 'sprite-button', name = 'cost_launch_rocket'})
+		-- flow4.mouse_button_filter = {'middle'}
+		flow4.sprite = 'item/rocket-silo'
+		flow4.enabled = false
+		flow4.style.top_margin = -6
+		flow4.style.right_margin = -6
+		flow4.style.maximal_height = 38
+		flow4.visible = false
+
 	flow3.style.left_margin = -1
 	flow3.style.right_margin = -2 --to get to the end of the button frame
 	
@@ -531,6 +542,7 @@ function Public.update_gui(player)
 	local on_deck_standing_near_crowsnest_bool = character_on_deck_bool and Boats.get_scope(memory.boat) and Math.distance(player.character.position, Math.vector_sum(memory.boat.position, Boats.get_scope(memory.boat).Data.crowsnest_center)) < 2.7
 
 	local cost_bool = destination.static_params.cost_to_leave and (not atsea_sailing_bool) and (not retreating_bool)
+	local cost_includes_rocket_launch = cost_bool and destination.static_params.cost_to_leave['launch_rocket']
 
 	local approaching_dock_bool = destination.type == Surfaces.enum.DOCK and memory.boat.state == Boats.enum_state.APPROACHING
 	local leaving_dock_bool = destination.type == Surfaces.enum.DOCK and memory.boat.state == Boats.enum_state.LEAVING_DOCK
@@ -589,6 +601,8 @@ function Public.update_gui(player)
 				local total = Common.map_loading_ticks_atsea
 				if destination.type == Surfaces.enum.DOCK then
 					total = Common.map_loading_ticks_atsea_dock
+				elseif destination.type == Surfaces.enum.ISLAND and destination.subtype == Surfaces.Island.enum.MAZE then
+					total = Common.map_loading_ticks_atsea_maze
 				end
 		
 				local eta_ticks = total + (memory.extra_time_at_sea or 0) - memory.loadingticks
@@ -616,15 +630,27 @@ function Public.update_gui(player)
 				local caption
 				if atsea_loading_bool then
 					flow2.etaframe_label_3.caption = 'Next escape cost:'
-					tooltip = {'pirates.resources_needed_tooltip_1'}
+					if cost_includes_rocket_launch then
+						tooltip = {'pirates.resources_needed_tooltip_1_rocketvariant'}
+					else
+						tooltip = {'pirates.resources_needed_tooltip_1'}
+					end
 				elseif (not eta_bool) then
 					flow2.etaframe_label_3.visible = false
 					flow2.etaframe_label_1.visible = true
 					flow2.etaframe_label_1.caption = 'To escape, store'
-					tooltip = {'pirates.resources_needed_tooltip_3'}
+					if cost_includes_rocket_launch then
+						tooltip = {'pirates.resources_needed_tooltip_3_rocketvariant'}
+					else
+						tooltip = {'pirates.resources_needed_tooltip_3'}
+					end
 				else
 					flow2.etaframe_label_3.caption = 'Or store'
-					tooltip = {'pirates.resources_needed_tooltip_2'}
+					if cost_includes_rocket_launch then
+						tooltip = {'pirates.resources_needed_tooltip_2_rocketvariant'}
+					else
+						tooltip = {'pirates.resources_needed_tooltip_2'}
+					end
 				end
 
 				flow2.cost_table.visible = true
@@ -635,7 +661,6 @@ function Public.update_gui(player)
 		
 					if costs[item_name] and flow2.cost_table['cost_' .. i] then
 						local stored = (memory.boat.stored_resources and memory.boat.stored_resources[item_name]) or 0
-						flow2.cost_table['cost_' .. i].sprite = CoreData.cost_items[i].sprite_name
 						if atsea_loading_bool then
 							flow2.cost_table['cost_' .. i].number = costs[item_name]
 						else --subtract off the amount we've stored
@@ -646,6 +671,18 @@ function Public.update_gui(player)
 					else
 						flow2.cost_table['cost_' .. i].visible = false
 					end
+				end
+
+				if costs['launch_rocket'] and flow2.cost_table['cost_launch_rocket'] then
+					if atsea_loading_bool or (not destination.dynamic_data.rocketlaunched) then
+						flow2.cost_table['cost_launch_rocket'].number = 1
+					else
+						flow2.cost_table['cost_launch_rocket'].number = 0
+					end
+					flow2.cost_table['cost_launch_rocket'].tooltip = 'Launch a rocket'
+					flow2.cost_table['cost_launch_rocket'].visible = true
+				else
+					flow2.cost_table['cost_launch_rocket'].visible = false
 				end
 			end
 
@@ -724,7 +761,7 @@ function Public.update_gui(player)
 	-- 	flow1.location = GuiCommon.default_window_positions.undock_shortcut_button
 	-- 	if captain_bool and landed_bool and (not memory.captain_acceptance_timer) then
 	-- 		flow1.visible = true
-	-- 		local enabled = Common.query_sufficient_resources_to_leave()
+	-- 		local enabled = Common.query_can_pay_cost_to_leave()
 	-- 		flow1.enabled = enabled
 	-- 		if enabled then
 	-- 			flow1.tooltip = ''
@@ -1027,7 +1064,7 @@ local function on_gui_click(event)
 				if memory.boat.state == Boats.enum_state.DOCKED then
 					Progression.undock_from_dock()
 				elseif memory.boat.state == Boats.enum_state.LANDED then
-					if Common.query_sufficient_resources_to_leave() then
+					if Common.query_can_pay_cost_to_leave() then
 						Progression.try_retreat_from_island()
 					else
 						Common.notify_player_error(player, 'Not enough stored resources.')

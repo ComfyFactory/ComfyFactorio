@@ -78,9 +78,9 @@ function Public.kraken_tick(crew_id, kraken_id, step, substep)
 			elseif substep <= 30 then
 				Public.kraken_move(kraken_id, Utils.interpolate(p3, p4, (substep-25) / 5), substep % 4 + 1)
 			end
-			Task.set_timeout_in_ticks(25, kraken_tick_token, {crew_id = crew_id, kraken_id = kraken_id, step = 2, substep = substep + 1})
+			Task.set_timeout_in_ticks(15, kraken_tick_token, {crew_id = crew_id, kraken_id = kraken_id, step = 2, substep = substep + 1})
 		else
-			Task.set_timeout_in_ticks(10, kraken_tick_token, {crew_id = crew_id, kraken_id = kraken_id, step = 3, substep = 1})
+			Task.set_timeout_in_ticks(6, kraken_tick_token, {crew_id = crew_id, kraken_id = kraken_id, step = 3, substep = 1})
 		end
 	elseif step == 3 then
 		Public.kraken_move(kraken_id, kraken_data.position, substep % 4 + 1)
@@ -285,7 +285,7 @@ function Public.kraken_die(kraken_id, unit_number)
 	local reward = Balance.kraken_kill_reward()
 	Common.give_reward_items(reward)
 
-	local force = game.forces[memory.force_name]
+	local force = memory.force
 	if not (force and force.valid) then return end
 	Common.notify_force_light(force,'Granted ' .. reward[1].count .. ' [item=sulfuric-acid-barrel]')
 end

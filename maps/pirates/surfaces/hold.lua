@@ -154,7 +154,7 @@ function Public.create_hold_surface(nth)
 		end
 	end
 
-	Common.build_small_loco(surface, Public.Data.loco_offset, game.forces[memory.force_name], {255, 106, 52})
+	Common.build_small_loco(surface, Public.Data.loco_offset, memory.force, {255, 106, 52})
 
 	local items = subtype == enum.INITIAL and Balance.starting_items_crew_downstairs() or {}
 	Public.place_random_obstacle_boxes(nth, 0, items, 15)

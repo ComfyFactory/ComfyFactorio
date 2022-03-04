@@ -25,6 +25,7 @@ Public.lobby_spawnpoint = {x = -72, y = -8}
 
 Public.fraction_of_map_loaded_atsea = 1
 Public.map_loading_ticks_atsea = 68 * 60
+Public.map_loading_ticks_atsea_maze = 80 * 60
 Public.map_loading_ticks_atsea_dock = 20 * 60
 Public.map_loading_ticks_onisland = 2 * 60 * 60
 Public.loading_interval = 5
@@ -344,41 +345,48 @@ function Public.is_captain(player)
 	end
 end
 
-function Public.endgame_biter_damage_modifier(surplus_evo)
+function Public.surplus_evo_biter_damage_modifier(surplus_evo)
 	return Math.floor(surplus_evo/2*1000)/1000
 end
-function Public.endgame_biter_health_modifier(surplus_evo)
-	return Math.floor(surplus_evo*3*1000)/1000 + 1
+function Public.surplus_evo_biter_health_fractional_modifier(surplus_evo)
+	return Math.floor(surplus_evo*3*1000)/1000
 end
 
-function Public.set_biter_endgame_modifiers()
+function Public.set_biter_surplus_evo_modifiers()
 	local memory = Memory.get_crew_memory()
-	local enemy_force = game.forces[memory.enemy_force_name]
+	local enemy_force = memory.enemy_force
 
-    if not (memory.evolution_factor and memory.evolution_factor > 1 and enemy_force and enemy_force.valid) then
+    if not (memory.evolution_factor and enemy_force and enemy_force.valid) then
         return nil
     end
 	local surplus = memory.evolution_factor - 1
 
-    local damage_mod = Public.endgame_biter_damage_modifier(surplus)
-    enemy_force.set_ammo_damage_modifier('melee', damage_mod)
-    enemy_force.set_ammo_damage_modifier('biological', damage_mod)
-    enemy_force.set_ammo_damage_modifier('artillery-shell', damage_mod)
-    enemy_force.set_ammo_damage_modifier('flamethrower', damage_mod)
+	local damage_fractional_mod
+	local health_fractional_mod
 
-	local health_mod = Public.endgame_biter_health_modifier(surplus)
-
-    Force_health_booster.set_health_modifier(enemy_force.index, health_mod)
+	if surplus > 1 then
+		damage_fractional_mod = Public.surplus_evo_biter_damage_modifier(surplus)
+		health_fractional_mod = Public.surplus_evo_biter_health_fractional_modifier(surplus)
+	else
+		damage_fractional_mod = 0
+		health_fractional_mod = 0
+	end
+	enemy_force.set_ammo_damage_modifier('melee', damage_fractional_mod)
+	enemy_force.set_ammo_damage_modifier('biological', damage_fractional_mod)
+	enemy_force.set_ammo_damage_modifier('artillery-shell', damage_fractional_mod)
+	enemy_force.set_ammo_damage_modifier('flamethrower', damage_fractional_mod)
+	
+	Force_health_booster.set_health_modifier(enemy_force.index, 1 + health_fractional_mod)
 end
 
 function Public.set_evo(evolution)
 	local memory = Memory.get_crew_memory()
 	memory.evolution_factor = evolution
 	if memory.enemy_force_name then
-		local ef = game.forces[memory.enemy_force_name]
+		local ef = memory.enemy_force
 		if ef and ef.valid then
 			ef.evolution_factor = memory.evolution_factor
-			Public.set_biter_endgame_modifiers()
+			Public.set_biter_surplus_evo_modifiers()
 		end
 	end
 end
@@ -387,10 +395,10 @@ function Public.increment_evo(evolution)
 	local memory = Memory.get_crew_memory()
 	memory.evolution_factor = memory.evolution_factor + evolution
 	if memory.enemy_force_name then
-		local ef = game.forces[memory.enemy_force_name]
+		local ef = memory.enemy_force
 		if ef and ef.valid then
 			ef.evolution_factor = memory.evolution_factor
-			Public.set_biter_endgame_modifiers()
+			Public.set_biter_surplus_evo_modifiers()
 		end
 	end
 end
@@ -408,7 +416,7 @@ function Public.current_destination()
 end
 
 
-function Public.query_sufficient_resources_to_leave()
+function Public.query_can_pay_cost_to_leave()
 	local memory = Memory.get_crew_memory()
 	local boat = memory.boat
 	local destination = Public.current_destination()
@@ -417,15 +425,21 @@ function Public.query_sufficient_resources_to_leave()
 	local cost = destination.static_params.cost_to_leave
 	if not cost then return true end
 
-	local sufficient = true
+	local can_leave = true
 	for name, count in pairs(cost) do
-		local stored = (memory.boat.stored_resources and memory.boat.stored_resources[name]) or 0
-		if stored < count then
-			sufficient = false
+		if name == 'launch_rocket' then
+			if not destination.dynamic_data.rocketlaunched then
+				can_leave = false
+			end
+		else
+			local stored = (memory.boat.stored_resources and memory.boat.stored_resources[name]) or 0
+			if stored < count then
+				can_leave = false
+			end
 		end
 	end
 
-	return sufficient
+	return can_leave
 end
 
 
@@ -990,7 +1004,7 @@ function Public.give_reward_items(items)
 			local inventory2 = chest2.get_inventory(defines.inventory.chest)
 			local inserted2 = inventory2.insert{name = i.name, count = Math.ceil(i.count - inserted)}
 			if i.count - inserted - inserted2 > 0 then
-				local force = game.forces[memory.force_name]
+				local force = memory.force
 				if not (force and force.valid) then return end
 				Public.notify_force(force, 'Warning: captain\'s cabin chests are full!')
 			end
@@ -1023,7 +1037,7 @@ function Public.init_game_settings(technology_price_multiplier)
 
 	-- (0,2) for a symmetric search:
 	game.map_settings.path_finder.goal_pressure_ratio = -0.1 --small pressure for stupid paths
-	game.map_settings.path_finder.fwd2bwd_ratio = 2 -- on experiments I found that only this value was symmetric...
+	game.map_settings.path_finder.fwd2bwd_ratio = 2 -- on experiments I found that this value was symmetric, despite the vanilla game comments saying it is 1...
 	game.map_settings.max_failed_behavior_count = 2
 	game.map_settings.path_finder.max_work_done_per_tick = 20000
 	game.map_settings.path_finder.short_cache_min_algo_steps_to_cache = 100

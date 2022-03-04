@@ -149,4 +149,190 @@ Public.covered1b.wooden_chests = {
 	{x = -5, y = 5},
 }
 
+
+Public.maze_defended_camp = {
+	name = 'maze_defended_camp',
+	width = 20,
+	height = 20,
+	doNotDestroyExistingEntities = true,
+	components = {
+		{
+			type = 'static_destructible',
+			force = 'ancient-hostile',
+			offset = {x = 0, y = 0},
+			bp_string = [[0eNqVkl0KgzAQhO+yzxHqT9TmKqUUrYsEdJUYS0Vy9yZKodAI5ikMzHxMllmh7mYclSQNYoWJqjHSQ9Qq2Tj9BhHnDBb3GAbyOdAE4maNsqWqcxa9jAgCpMYeGFDVO9XOFOlZKdTgYtSgI5k7AyQttcSdsonlQXNfo7IGX57BOEw2MtC30N7HGPYHSE4BymNAeq4BPyZkAX8ofQAeUsFLyEPOyH2EIuSOXkIZdEiLsNPYJiR+BsnghWra7EkZZ8U1KXjM4zS/GPMBseflYg==]],
+		},
+		{
+			type = 'entities_randomlyplaced_border',
+			name = 'land-mine',
+			force = 'ancient-hostile',
+			offset = {x = 0, y = 0},
+			count = 30,
+			large_r = 10,
+			small_r = 8,
+		},
+		{
+			type = 'entities_randomlyplaced',
+			name = 'wooden-chest',
+			force = 'ancient-friendly',
+			offset = {x = 0, y = 0},
+			count = 8,
+			r = 5,
+		},
+	},
+}
+
+Public.maze_undefended_camp = {
+	name = 'maze_undefended_camp',
+	width = 20,
+	height = 20,
+	doNotDestroyExistingEntities = true,
+	components = {
+		{
+			type = 'entities_randomlyplaced_border',
+			name = 'land-mine',
+			force = 'ancient-hostile',
+			offset = {x = 0, y = 0},
+			count = 15,
+			large_r = 10,
+			small_r = 8,
+		},
+		{
+			type = 'entities_randomlyplaced',
+			name = 'wooden-chest',
+			force = 'ancient-friendly',
+			offset = {x = 0, y = 0},
+			count = 4,
+			r = 5,
+		},
+	},
+}
+
+Public.maze_labs = {
+	name = 'maze_labs',
+	width = 12,
+	height = 12,
+	doNotDestroyExistingEntities = true,
+	components = {
+		{
+			type = 'entities_randomlyplaced',
+			name = 'lab',
+			force = 'ancient-friendly',
+			offset = {x = 0, y = 0},
+			count = 4,
+			r = 6,
+		},
+	},
+}
+
+Public.maze_worms = {
+	name = 'maze_worms',
+	width = 20,
+	height = 20,
+	doNotDestroyExistingEntities = true,
+	components = {
+		{
+			type = 'entities_randomlyplaced',
+			name = 'random-worm',
+			force = 'enemy',
+			offset = {x = 0, y = 0},
+			count = 20,
+			r = 10,
+		},
+	},
+}
+
+
+Public.maze_belts_1 = {
+	name = 'maze_belts_1',
+	width = 23,
+	height = 23,
+	doNotDestroyExistingEntities = true,
+	components = {
+		{
+			type = 'entities_grid',
+			force = 'ancient-friendly',
+			name = 'express-transport-belt',
+			direction = defines.direction.east,
+			offset = {x = 0, y = 0},
+			width = 23,
+			height = 23,
+		},
+	},
+}
+Public.maze_belts_2 = {
+	name = 'maze_belts_2',
+	width = 23,
+	height = 23,
+	doNotDestroyExistingEntities = true,
+	components = {
+		{
+			type = 'entities_grid',
+			force = 'ancient-friendly',
+			name = 'express-transport-belt',
+			direction = defines.direction.west,
+			offset = {x = 0, y = 0},
+			width = 23,
+			height = 23,
+		},
+	},
+}
+Public.maze_belts_3 = {
+	name = 'maze_belts_3',
+	width = 23,
+	height = 23,
+	doNotDestroyExistingEntities = true,
+	components = {
+		{
+			type = 'entities_grid',
+			force = 'ancient-friendly',
+			name = 'express-transport-belt',
+			direction = defines.direction.south,
+			offset = {x = 0, y = 0},
+			width = 23,
+			height = 23,
+		},
+	},
+}
+Public.maze_belts_4 = {
+	name = 'maze_belts_4',
+	width = 23,
+	height = 23,
+	doNotDestroyExistingEntities = true,
+	components = {
+		{
+			type = 'entities_grid',
+			force = 'ancient-friendly',
+			name = 'express-transport-belt',
+			direction = defines.direction.north,
+			offset = {x = 0, y = 0},
+			width = 23,
+			height = 23,
+		},
+	},
+}
+
+Public.maze_treasure = {
+	name = 'maze_treasure',
+	width = 3,
+	height = 3,
+	components = {
+		{
+			type = 'tiles',
+			tile_name = 'cyan-refined-concrete',
+			offset = {x = -1, y = -1},
+			bp_string = [[0eNqVksEKgzAMht8l5wqmzrn1VcYOToMEtC21GxPpu691O+wwYb0EAl/+fJCscBvvZB1rD2qFWbe28KYYHPepf4KqBCyxBgHcGT2DukSMB92OCfCLJVDAniYQoNspdZHrHHmCNKR7iikYrgI8j/QOsGZmz0Z/dpTbjjL8StiBMQeW/8GYo4E5GpijIXM0ZI6G3NeI59mOqL4eQsCD3LyNyxMemrNsaqyxOpYhvAAnDLaS]],
+		},
+		{
+			type = 'entities',
+			name = 'steel-chest',
+			force = 'ancient-friendly',
+			offset = {x = 0, y = 0},
+			instances = {
+				{position = {x = 0, y = 0}},
+			}
+		}
+	},
+}
+
 return Public

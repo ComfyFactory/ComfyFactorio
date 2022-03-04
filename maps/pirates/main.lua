@@ -208,8 +208,8 @@ local function crew_tick()
 		TickFunctions.raft_raids(60)
 	end
 
-	if tick % 30 == 0 then
-		TickFunctions.place_cached_structures(30)
+	if tick % 60 == 0 then
+		TickFunctions.place_cached_structures(60)
 	end
 
 	if tick % 240 == 0 then
@@ -262,6 +262,8 @@ local function crew_tick()
 			end
 		end
 	end
+
+
 	
 	if tick % 300 == 0 then
 		TickFunctions.periodic_free_resources(300)
@@ -269,6 +271,10 @@ local function crew_tick()
 	
 	if tick % 30 == 0 then
 		ClassTickFunctions.update_character_properties(30)
+	end
+	
+	if tick % 10 == 0 then
+		ClassTickFunctions.class_renderings(10)
 	end
 	
 	if tick % 360 == 0 then
@@ -332,6 +338,17 @@ local function global_tick()
 end
 
 event.on_nth_tick(5, global_tick)
+
+
+local function fasttick()
+	local global_memory = Memory.get_global_memory()
+	for _, id in pairs(global_memory.crew_active_ids) do
+		Memory.set_working_id(id)
+		TickFunctions.LOS_tick_fast(1)
+	end
+end
+
+event.on_nth_tick(1, fasttick)
 
 
 local function instatick()

@@ -55,40 +55,44 @@ Public.framecounts = {
 
 function Public.parrot_0()
 	local memory = Memory.get_crew_memory()
-	Common.parrot_speak(game.forces[memory.force_name], 'We can wait here for as long as we like.')
+	Common.parrot_speak(memory.force, 'We can wait here for as long as we like.')
 end
 function Public.parrot_80()
 	local memory = Memory.get_crew_memory()
-	Common.parrot_speak(game.forces[memory.force_name], 'Let\'s build out the ship?')
+	Common.parrot_speak(memory.force, 'Let\'s build out the ship?')
 end
 function Public.parrot_boats_warning()
 	local memory = Memory.get_crew_memory()
-	Common.parrot_speak(game.forces[memory.force_name], '200 leagues? I think we\'re being chased...')
+	Common.parrot_speak(memory.force, '200 leagues? I think we\'re being chased...')
 end
 function Public.parrot_kraken_warning()
 	local memory = Memory.get_crew_memory()
-	Common.parrot_speak(game.forces[memory.force_name], '400 leagues? What are those pink things I see up ahead...')
+	Common.parrot_speak(memory.force, '400 leagues? What are those pink things I see up ahead...')
 end
 function Public.parrot_radioactive_tip_1()
 	local memory = Memory.get_crew_memory()
-	Common.parrot_speak(game.forces[memory.force_name], '600 leagues? We\'ll need uranium-235 to push away from this island...')
+	Common.parrot_speak(memory.force, '600 leagues? We\'ll need uranium-235 to push away from this island...')
 end
 function Public.parrot_radioactive_tip_2()
 	local memory = Memory.get_crew_memory()
-	Common.parrot_speak(game.forces[memory.force_name], 'The biters don\'t care if we pollute here, they only care how long we stay...')
+	Common.parrot_speak(memory.force, 'The biters don\'t care if we pollute here, they only care how long we stay...')
+end
+function Public.parrot_maze_tip_1()
+	local memory = Memory.get_crew_memory()
+	Common.parrot_speak(memory.force, 'Something seems wrong with our minimap.')
 end
 function Public.parrot_800_tip()
 	local memory = Memory.get_crew_memory()
-	Common.parrot_speak(game.forces[memory.force_name], '800 leagues? The resources needed to leave will get a bit harder now...')
+	Common.parrot_speak(memory.force, '800 leagues? The resources needed to leave will get a bit harder now...')
 end
 function Public.parrot_overstay_tip()
 	local memory = Memory.get_crew_memory()
-	Common.parrot_speak(game.forces[memory.force_name], 'We\'ve been here quite a while! Check the evo...')
+	Common.parrot_speak(memory.force, 'We\'ve been here quite a while! Check the evo...')
 end
 
 -- function Public.parrot_say_tip()
 -- 	local memory = Memory.get_crew_memory()
--- 	local crew_force = game.forces[memory.force_name]
+-- 	local crew_force = memory.force
 
 -- 	local tip = parrot_tips[Math.random(#parrot_tips)]
 -- 	Common.parrot_speak(crew_force, tip)
@@ -152,7 +156,7 @@ end
 -- 		state_counter = state_counter + 1
 
 -- 		if ate_fish then
--- 			Common.parrot_speak(game.forces[memory.force_name], 'Tasty...')
+-- 			Common.parrot_speak(memory.force, 'Tasty...')
 
 -- 			local p1 = {x = boat.position.x - 15 - Math.random(35), y = boat.position.y - 8 + Math.random(15)}
 -- 			local p2 = surface.find_non_colliding_position('stone-furnace', p1, 6, 0.5)

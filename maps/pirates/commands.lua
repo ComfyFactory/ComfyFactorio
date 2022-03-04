@@ -179,6 +179,20 @@ local function check_trusted(cmd)
 end
 
 
+
+commands.add_command(
+'set_max_crews',
+'Sets the maximum number of concurrent crews allowed on the server.',
+function(cmd)
+	local param = tostring(cmd.parameter)
+	if check_admin(cmd) then
+		local player = game.players[cmd.player_index]
+		local global_memory = Memory.get_global_memory()
+
+		global_memory.active_crews_cap = tonumber(param)
+	end
+end)
+
 commands.add_command(
 'dump_highscores',
 'dump_highscores',
@@ -243,6 +257,24 @@ function(cmd)
 end)
 
 
+
+commands.add_command(
+'setclass',
+'setclass',
+function(cmd)
+	local param = tostring(cmd.parameter)
+	if check_admin(cmd) then
+		local player = game.players[cmd.player_index]
+		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+		Memory.set_working_id(crew_id)
+		local memory = Memory.get_crew_memory()
+		if not Common.validate_player(player) then return end
+		if not memory.classes_table then memory.classes_table = {} end
+		memory.classes_table[player.index] = tonumber(param)
+		player.print('Set own class to ' .. param .. '.')
+	end
+end)
+
 commands.add_command(
 'setevo',
 'setevo',
@@ -291,7 +323,7 @@ function(cmd)
 		local entities = surface.find_entities_filtered{position = player.position, radius = 500}
 		for _, e in pairs(entities) do
 			if e and e.valid then
-				-- e.force = game.forces[memory.force_name]
+				-- e.force = memory.force
 				e.minable = true
 				e.destructible = true
 				e.rotatable = true
@@ -351,7 +383,7 @@ function(cmd)
 		local player = game.players[cmd.player_index]
 		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
 		Memory.set_working_id(crew_id)
-		Overworld.try_overworld_move_v2({x = 40*10, y = 0})
+		Overworld.try_overworld_move_v2({x = 40, y = 0})
 	end
 end)
 
@@ -423,47 +455,6 @@ function(cmd)
 end)
 
 commands.add_command(
-'go',
-'go',
-function(cmd)
-	local param = tostring(cmd.parameter)
-	if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-
-		local proposal = {
-			capacity_option = 3,
-			difficulty_option = 2,
-			-- mode_option = 'left',
-			endorserindices = { 1 },
-			name = "AdminRun"
-		}
-
-		Memory.set_working_id(1)
-
-		Crew.initialise_crew(proposal)
-		Crew.initialise_crowsnest() --contains a Task
-
-		local memory = Memory.get_crew_memory()
-		local boat = Utils.deepcopy(Surfaces.Lobby.StartingBoats[memory.id])
-		
-		for _, p in pairs(game.connected_players) do
-			p.teleport({x = -30, y = boat.position.y}, game.surfaces[boat.surface_name])
-		end
-
-		Progression.set_off_from_starting_dock()
-
-		-- local memory = Memory.get_crew_memory()
-		-- local boat = Utils.deepcopy(Surfaces.Lobby.StartingBoats[memory.id])
-		-- memory.boat = boat
-		-- boat.dockedposition = boat.position
-		-- boat.decksteeringchests = {}
-		-- boat.crowsneststeeringchests = {}
-
-		Task.set_timeout_in_ticks(120, go_1, {})
-	end
-end)
-
-commands.add_command(
 'lev',
 'lev',
 function(cmd)
@@ -503,46 +494,6 @@ function(cmd)
 end)
 
 
-
-
-commands.add_command(
-'maxcrews3',
-'maxcrews3',
-function(cmd)
-	local param = tostring(cmd.parameter)
-	if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-		local global_memory = Memory.get_global_memory()
-
-		global_memory.active_crews_cap = 3
-	end
-end)
-
-commands.add_command(
-'maxcrews2',
-'maxcrews2',
-function(cmd)
-	local param = tostring(cmd.parameter)
-	if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-		local global_memory = Memory.get_global_memory()
-
-		global_memory.active_crews_cap = 2
-	end
-end)
-
-commands.add_command(
-'maxcrews1',
-'maxcrews1',
-function(cmd)
-	local param = tostring(cmd.parameter)
-	if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-		local global_memory = Memory.get_global_memory()
-
-		global_memory.active_crews_cap = 1
-	end
-end)
 
 commands.add_command(
 'mincapacitysetting3',
@@ -618,6 +569,47 @@ end)
 
 
 if _DEBUG then
+
+	commands.add_command(
+	'go',
+	'go',
+	function(cmd)
+		local param = tostring(cmd.parameter)
+		if check_admin(cmd) then
+			local player = game.players[cmd.player_index]
+	
+			local proposal = {
+				capacity_option = 3,
+				difficulty_option = 2,
+				-- mode_option = 'left',
+				endorserindices = { 1 },
+				name = "AdminRun"
+			}
+	
+			Memory.set_working_id(1)
+	
+			Crew.initialise_crew(proposal)
+			Crew.initialise_crowsnest() --contains a Task
+	
+			local memory = Memory.get_crew_memory()
+			local boat = Utils.deepcopy(Surfaces.Lobby.StartingBoats[memory.id])
+			
+			for _, p in pairs(game.connected_players) do
+				p.teleport({x = -30, y = boat.position.y}, game.surfaces[boat.surface_name])
+			end
+	
+			Progression.set_off_from_starting_dock()
+	
+			-- local memory = Memory.get_crew_memory()
+			-- local boat = Utils.deepcopy(Surfaces.Lobby.StartingBoats[memory.id])
+			-- memory.boat = boat
+			-- boat.dockedposition = boat.position
+			-- boat.decksteeringchests = {}
+			-- boat.crowsneststeeringchests = {}
+	
+			Task.set_timeout_in_ticks(120, go_1, {})
+		end
+	end)
 
 	commands.add_command(
 	'tim',
@@ -712,6 +704,17 @@ if _DEBUG then
 		if check_admin(cmd) then
 		local player = game.players[cmd.player_index]
 			game.speed = 1
+		end
+	end)
+	
+	commands.add_command(
+	'2',
+	'2',
+	function(cmd)
+		local param = tostring(cmd.parameter)
+		if check_admin(cmd) then
+		local player = game.players[cmd.player_index]
+			game.speed = 2
 		end
 	end)
 	

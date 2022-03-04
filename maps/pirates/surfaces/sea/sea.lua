@@ -48,11 +48,11 @@ function Public.terrain(args)
 	if fishrng == 1 then
 		args.entities[#args.entities + 1] = {name = 'fish', position = args.p}
 	end
-	return
+	return nil
 end
 
 function Public.chunk_structures(args)
-	return
+	return nil
 end
 
 

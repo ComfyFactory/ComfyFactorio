@@ -5,12 +5,13 @@ local inspect = require 'utils.inspect'.inspect
 local Public = {}
 
 Public.scenario_id_name = 'pirates'
-Public.version_string = '1.0.3.9.9.1'
-Public.version_float = 1.03991
+Public.version_string = '1.0.4.0.1'
+Public.version_float = 1.0401
 
 Public.blueprint_library_allowed = false
 Public.blueprint_importing_allowed = true
 
+Public.rocket_silo_death_causes_loss = false
 
 Public.victory_x = 1000
 
@@ -37,6 +38,7 @@ Public.colors = {
 	notify_gameover = {r=249, g=84, b=84},
 	renderingtext_green = {r=88, g=219, b=88},
 	renderingtext_yellow = {r=79, g=136, b=209},
+	quartermaster_rendering = {r=237, g=157, b=45},
 }
 
 Public.static_boat_floor = 'brown-refined-concrete'
@@ -123,6 +125,8 @@ function Public.highscore_difficulty_displayform(difficulty_value)
 	end
 end
 
+Public.quartermaster_range = 14
+
 Public.daynightcycle_types = {
 	{displayname = 'Static', 0},
 	{displayname = 'Slow Cyclic', ticksperday = 100000},
@@ -186,20 +190,20 @@ function Public.Dock_iconized_map()
 	local tiles = {}
 
 	for x = -15.5, 3.5 do
-		for y = -19.5, -0.5 do
-			if (y >-7 and y<-2 and x == -2.5)
-			or (y == -6.5 and x<2 and x>-6)
+		for y = 19.5, 0.5, -1 do
+			if (y <7 and y>2 and x == -2.5)
+			or (y == 6.5 and x<2 and x>-6)
 			then
 				tiles[#tiles + 1] = {name = Public.walkway_tile, position = {x = x, y = y}}
-			elseif y > -3 + Math.abs(x+5)^2/20 then --'island'
-				if y > -0.5 and x<-3 and x>-7 then
+			elseif y < 3 - Math.abs(x+5)^2/20 then --'island'
+				if y < 0.5 and x<-3 and x>-7 then
 					tiles[#tiles + 1] = {name = 'grass-1', position = {x = x, y = y}}
-				elseif y > -3 + Math.abs(x+5)^2/10 then
+				elseif y < 3 + Math.abs(x+5)^2/10 then
 					tiles[#tiles + 1] = {name = 'dirt-3', position = {x = x, y = y}}
 				else
 					tiles[#tiles + 1] = {name = 'dry-dirt', position = {x = x, y = y}}
 				end
-			elseif y>-7 then
+			elseif y<7 then
 				tiles[#tiles + 1] = {name = 'water', position = {x = x, y = y}}
 			end
 		end
@@ -209,6 +213,33 @@ function Public.Dock_iconized_map()
 		entities = {},
 	}
 end
+-- function Public.Dock_iconized_map()
+-- 	local tiles = {}
+
+-- 	for x = -15.5, 3.5 do
+-- 		for y = -19.5, -0.5 do
+-- 			if (y >-7 and y<-2 and x == -2.5)
+-- 			or (y == -6.5 and x<2 and x>-6)
+-- 			then
+-- 				tiles[#tiles + 1] = {name = Public.walkway_tile, position = {x = x, y = y}}
+-- 			elseif y > -3 + Math.abs(x+5)^2/20 then --'island'
+-- 				if y > -0.5 and x<-3 and x>-7 then
+-- 					tiles[#tiles + 1] = {name = 'grass-1', position = {x = x, y = y}}
+-- 				elseif y > -3 + Math.abs(x+5)^2/10 then
+-- 					tiles[#tiles + 1] = {name = 'dirt-3', position = {x = x, y = y}}
+-- 				else
+-- 					tiles[#tiles + 1] = {name = 'dry-dirt', position = {x = x, y = y}}
+-- 				end
+-- 			elseif y>-7 then
+-- 				tiles[#tiles + 1] = {name = 'water', position = {x = x, y = y}}
+-- 			end
+-- 		end
+-- 	end
+-- 	return {
+-- 		tiles = tiles,
+-- 		entities = {},
+-- 	}
+-- end
 
 
 

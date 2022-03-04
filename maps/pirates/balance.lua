@@ -36,7 +36,9 @@ end
 Public.rocket_launch_coin_reward = 5000
 
 function Public.crew_scale()
-	return Common.activecrewcount()/10
+	local ret = Common.activecrewcount()/10
+	if ret == 0 then ret = 1/10 end --if all players are afk
+	return ret
 end
 
 function Public.silo_base_est_time()
@@ -66,7 +68,7 @@ end
 
 function Public.silo_count()
 	local E = Public.silo_energy_needed_MJ()
-	return Math.ceil(E/(16.8 * 160)) --no more than this many seconds to charge it
+	return Math.ceil(E/(16.8 * 210)) --no more than this many seconds to charge it. Players can in fact go even faster using beacons
 end
 
 
@@ -96,7 +98,7 @@ function Public.fuel_depletion_rate_static()
 
 	local rate
 	if Common.overworldx() > 0 then
-		rate = 380 * (0 + (Common.overworldx()/40)^(10/10)) * Public.crew_scale()^(1/6) * Math.sloped(Common.difficulty(), 3/5) / T --most of the crewsize dependence is through T, i.e. the coal cost per island stays the same... but the extra player dependency accounts for the fact that even in compressed time, more players seem to get more resources per island
+		rate = 410 * (0 + (Common.overworldx()/40)^(9/10)) * Public.crew_scale()^(1/6) * Math.sloped(Common.difficulty(), 1) / T --most of the crewsize dependence is through T, i.e. the coal cost per island stays the same... but the extra player dependency accounts for the fact that even in compressed time, more players seem to get more resources per island
 	else
 		rate = 0
 	end
@@ -107,7 +109,7 @@ end
 function Public.fuel_depletion_rate_sailing()
 	if (not Common.overworldx()) then return 0 end
 
-	return - 7.5 * (1 + 0.13 * (Common.overworldx()/40)^(10/10)) * Math.sloped(Common.difficulty(), 4/5)
+	return - 8 * (1 + 0.13 * (Common.overworldx()/40)^(9/10)) * Math.sloped(Common.difficulty(), 3/5)
 end
 
 function Public.silo_total_pollution()
@@ -171,6 +173,11 @@ function Public.evolution_per_second()
 		end
 	end
 
+	if _DEBUG then
+		local surface = game.surfaces[destination.surface_name]
+		game.print(Common.spawner_count(surface) .. '  ' .. destination.dynamic_data.initial_spawner_count)
+	end
+
 	return rate
 end
 
@@ -231,11 +238,11 @@ function Public.class_resource_scale()
 end
 
 function Public.biter_base_density_scale()
-	local p = Common.activecrewcount()
-	if p >= 10 then
-		return (Common.activecrewcount()/10)^(1/2)
+	local p = Public.crew_scale()
+	if p >= 1 then
+		return p^(1/2)
 	else
-		return Math.max((Common.activecrewcount()/6)^(1/2), 0.6)
+		return Math.max((p*10/6)^(1/2), 0.6)
 	end
 end
 
@@ -263,7 +270,7 @@ end
 
 function Public.class_cost()
 	return 9000
-	-- return Math.ceil(10000 / (Common.activecrewcount()/4)^(1/6))
+	-- return Math.ceil(10000 / (Public.crew_scale()*10/4)^(1/6))
 end
 
 
@@ -271,12 +278,12 @@ Public.covered_first_appears_at = 40
 
 Public.silo_max_hp = 8000
 
-function Public.pistol_damage_multiplier() return 1.95 end
+function Public.pistol_damage_multiplier() return 2.05 end
 
-Public.kraken_spawns_base_extra_evo = 0.3
+Public.kraken_spawns_base_extra_evo = 0.30
 
 function Public.kraken_evo_increase_per_shot()
-	return 1/100 * 0.04 --started off low, currently slowly upping to see
+	return 1/100 * 0.05 --started off low, currently slowly upping to see
 end
 
 function Public.kraken_kill_reward()
@@ -437,28 +444,28 @@ Public.covered1_entry_price_data_raw = { --watch out that the raw_materials ches
 		raw_materials = {{name = 'copper-plate', count = 750}}}, {}},
 
 	{1, 0, 0.3, true, {
-		price = {name = 'small-electric-pole', count = 800},
-		raw_materials = {{name = 'copper-plate', count = 400}}}, {}},
+		price = {name = 'small-electric-pole', count = 450},
+		raw_materials = {{name = 'copper-plate', count = 900}}}, {}},
 	{1, 0.1, 1, false, {
 		price = {name = 'assembling-machine-1', count = 80},
 		raw_materials = {{name = 'iron-plate', count = 1760}, {name = 'copper-plate', count = 360}}}, {}},
 	{1, 0, 0.2, false, {
-		price = {name = 'burner-mining-drill', count = 200},
-		raw_materials = {{name = 'iron-plate', count = 1800}}}, {}},
+		price = {name = 'burner-mining-drill', count = 150},
+		raw_materials = {{name = 'iron-plate', count = 1350}}}, {}},
 	{0.5, 0, 0.6, false, {
 		price = {name = 'burner-inserter', count = 300},
 		raw_materials = {{name = 'iron-plate', count = 900}}}, {}},
-	-- {1, 0, 1, false, {
-	-- 	price = {name = 'electronic-circuit', count = 800},
-	-- 	raw_materials = {{name = 'iron-plate', count = 800}, {name = 'copper-plate', count = 1200}}}, {}},
-	-- {1, 0, 1, false, {
-	-- 	price = {name = 'piercing-rounds-magazine', count = 100},
-	-- 	raw_materials = {{name = 'iron-plate', count = 400}, {name = 'copper-plate', count = 500}, {name = 'steel-plate', count = 100}}}, {}},
+	{1, 0.1, 0.7, false, {
+		price = {name = 'electronic-circuit', count = 800},
+		raw_materials = {{name = 'iron-plate', count = 800}, {name = 'copper-plate', count = 1200}}}, {}},
+	{1, 0, 1, false, {
+		price = {name = 'firearm-magazine', count = 500},
+		raw_materials = {{name = 'iron-plate', count = 2000}}}, {}},
 
 	{1, 0.1, 1, false, {
 		price = {name = 'stone-furnace', count = 400},
 		raw_materials = {}}, {}},
-	{1, 0.4, 1, false, {
+	{1, 0.5, 1, false, {
 		price = {name = 'advanced-circuit', count = 100},
 		raw_materials = {{name = 'iron-plate', count = 200}, {name = 'copper-plate', count = 500}, {name = 'plastic-bar', count = 200}}}, {}},
 
@@ -468,10 +475,11 @@ Public.covered1_entry_price_data_raw = { --watch out that the raw_materials ches
 	{1, 0, 1, true, {
 		price = {name = 'iron-chest', count = 300},
 		raw_materials = {{name = 'iron-plate', count = 2400}}}, {}},
-	{1, 0, 2, true, {
-		price = {name = 'steel-chest', count = 200},
-		raw_materials = {{name = 'steel-plate', count = 1600}}}, {}},
+	{1, 0.2, 1.8, true, {
+		price = {name = 'steel-chest', count = 150},
+		raw_materials = {{name = 'steel-plate', count = 1200}}}, {}},
 }
+
 function Public.covered1_entry_price_data()
 	local ret = {}
 	local data = Public.covered1_entry_price_data_raw

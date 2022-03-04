@@ -22,7 +22,7 @@ local GuiCommon = require 'maps.pirates.gui.common'
 -- 	['behemoth-biter'] = 0.901
 -- }
 
-local function get_evolution_percentage()
+local function get_evolution_rounded()
 	local memory = Memory.get_crew_memory()
 
 	local value = Math.floor((memory.evolution_factor or 0) * 1000) * 0.001
@@ -57,7 +57,7 @@ function Public.update(player)
 
 	local button = pirates_flow.evo_piratebutton_frame.evo_piratebutton
 	if button and button.valid then
-		local evolution_factor = get_evolution_percentage()
+		local evolution_factor = get_evolution_rounded()
 		local evo = evolution_factor
 		-- local current_alien = get_alien_name(evolution_factor)
 		-- local sprite = 'entity/' .. current_alien

@@ -24,7 +24,7 @@ Public.small_crashed_ship = {
 			type = 'static_destructible',
 			force = 'ancient-friendly',
 			offset = {x = 0, y = 0},
-			bp_string = [[0eNqdmdtum0AQQP9lnyGCXfbmX6miyolRgmSDZUhbK+Lfawy2qtZb5uTJQpo5nj07awbzqV72H/Xx1LSD2nyqvt0e86HL307Nbrr+pTa6yNR5+hgz1bx2ba823y6BzVu73U8hw/lYq41qhvqgMtVuD9PVz67b1W3++l73g5oS2119YZXjc6bqdmiGpp4514vz9/bj8FKfLgGPCZk6dv0lqWuXovL4ZK9l5fbJjmP2D0hLQWEFZKQguwKqpKBqBWSFoOLGqR5znJBTrnA83jP9GBTuoObUpTH+hjGPMVFYj1nhlIUQ5FbWVfKuLhMkcVvfJRUJkriv3RqpwickRbL4iKRI0t4Oa8K9qCdXbQdhPXENFOHhT3B0AQ9/iiNt7ZuhhGetoaBUPQae2cSR1dKm1gsn8duoLT1mLgGSdvTtkIWJc7nbDs1+udX+/Y3lfGPP3XhH90PX1vlxO7yrqYZUhsUZFc4wOEPjjFKcEamqSE1FKipST5FqitRSoJYCtRSopUAtBWopUEueWvLUkqeWPLXkqSX/NUv0C+RSHd0FR3fB0V1wdBcc3QVHd2FOkFdkqVVLrVpq1VKrllq11Gq1JBQ0w9EESxMqmmBogtyrwZoM1WSoJk33ek4AExMesfCEhQcsPF9RSXMCXYLYER1b6dBKR1Y6sNJxdY4XHxvacrTjaMPRfqPtVjI9Gi5Xw+VquFz6E6S/slzxag20Y6AdA+0YaMcwO/QmVsFyllnCs3iID9LwZV6k8R7GGxivYXzJ4gsWDumweOg+SsPpExx9gPNMpWcq6VM6fUgPrPrAqqd/rMT/VfOcze/eNn+8ycvUj/rUXwE6lJWP2hvvbVlU4/gb/D3pyQ==]],
+			bp_string = [[0eNqdmdGOmzAQRf/Fz2TF2Bjj/Eq1qrIbtIuUhSiwbaMV/94QSFS1QOb0KUG6vpo5HuMb5cu8HD7L46mqO7P9Mm29O266ZvN2qvbD8y+ztWlizsNHn5jqtalbs/12EVZv9e4wSLrzsTRbU3Xlh0lMvfsYnn42zb6sN6/vZduZYWG9Ly9e0j8npqy7qqvK0ef6cP5ef368lKeLYN4hMcemvSxq6qmo9Mlfq8qefN8n/9hYpY2s2zilTbZukylt/LqN1zZ1g+PnfXKtj6z7BLhXYd6muNtUp2bRxE4m+bxJ1Pbk1n0k1Rrl610JneRiwUc7yjdAccFHO8vugU8Gz8SSj4eHYslHPc3FA9BBNYcSHtRTaOuJD4wiPe7Dl9mXYUoP/KKTdqjvlAbLWSdLMS3W5OiJFbvgpB1tuZ01Wbp+PDxssvA6surpvh0TuY735ZbtqsN0xf79whnvmP7u3HZNXW6Ou+7dDCXMyj2T50wemLxg8qiVCyMjjIwwMsLICCMjjIxlZCwjYxkZy8hYRsYyMo6RcYyMY2QcI+MYGfc/ZMRCvbrZjJHPGPmMkc8Y+YyRzxj5US5Oq/eMpGckPSPpGUnPSHpGMr/KUybPmNwzec7kgcnVIAMjExiZwMgUbFdHuajtI6smsn2KbJ8i26fI0MQp10K9PgTBOCkwTwoMlAITpdBImU4/XtQLaKqksZLmShosYbKc9AAQTIsC46LAvCgwME563LD+TApMjQJjo8DcKDA4TnpACMYpgXlKxtTgoF6ELtB3MN7WFuod1Aeop/VHqAcjkdMtyOHPldsC2rPomw4QaoBQA4UaKNQCdgCD3KQHHRS0A5ifJv1SRc/J+D/Z9o9/3RLzozy1VwtbSBaiDV68uDzt+99fs91j]],
 		},
 		-- {
 		-- 	type = 'static_destructible',
@@ -101,7 +101,8 @@ Public.small_abandoned_refinery = {
 			type = 'static_destructible',
 			force = 'crew',
 			offset = {x = 0, y = 0},
-			bp_string = [[0eNqlmO2OojAUhu+lv2FCv07BW5lsDErXaRYLAZysMd77gu4Co0XOmf0nhvfp+W7phe3Kk60b5zu2uTC3r3zLNu8X1rqDz8vhv+5cW7ZhrrNHFjGfH4enypVxY386b5szu0bM+cL+Zht+jValbVc1+cHGXe5/zaTi+iNi1neuc/Zuwu3hvPWn4842PXsk1K7u5VV8aKqTL3pyXbW9rPLDmj1KZ286Yme2iTmHN92vUbjG7u9viMHEB7SY0Kdj/QwEvoiDAE6GfX3GyslO3YMDKIV3Wk0w9WilCqA1Hq0ntMQEAL6gX9sqw44bAkKEEemIcE3l4/2HbbsAyKzakn0rCTwM40m4iV5VcZI+JTRi/W93a6+8+Mz93hbxwKubam/b1vkDCy3O18Karjsg0OGAh3Cs1iSXK/bNicmCffiegamwkwxT2Fzj7bslLcQAAiNbYBjkiNF8YsECC9cn81gtkQiNMo2+RGMiLxI8G16wg+N/tSvMV2KIIdayOsuEWmBIAmPJDoXdfGY+SVSUCBvGjC1QbMCz0xfsYOWsbSXzyl7YAURKYCxsRyL7ztwMxa8/KHWu/HtKegxPMo6O67wSvI3rvPu4bQqLkpQuAbSE0w0bJYYuwRsm6IYJesQE3RfxH75otETS3Zd0XyTdF0n3RY3HabpEoCXTORstAXqQgV5jQM+LGU9TZMk3VkkkWpLS85LSa2yU4FOZjd+CWAn8m5bc0CWCLMG7P33XGrpE0CWcLMH3Cwhy7wN9jIOkR0ySxwUo+iqKXpaK3PujhJAXRe590PQa0+RGBkPeX4A+xyClr5KurNKf/25XapvZ5V3Eynxny+HNY16W23yX+6KXFNvZDcOnbdr7GTLlymTCSGP0ELLrH2p3Tk8=]],
+			bp_string = [[0eNqdmN2OozAMhd8l1zDCIeGnrzJaVSlkO9HSgICOthrx7guFYdk2KfZetajHHyeO7Qa+2Km66qY1tmeHL9ZZ1YR9HZ5bU07Xv9kB8oDdxg85BMwUte3Y4X0UmrNV1STpb41mB2Z6fWEBs+oyXdWmClv901jd3tgUaEs9sYZgN7Tr61adddgr+2sTyocfAdO2N73Rs4X7xe1or5eTbkf2SmhMo+dF1FdbjuSm7saw2i4ryt/kfUnR27Sm0rS6mH/lk70HLP+LvV6aZxiAm5U4WDHaolgs8kescGAFGisXbIxxK//B+j1OMEd4ggwX7vB0DTdtbcPiQ3f9MyR97SEjJ1y6Qbm7sr2llT3tW8DG7+Ze76r8VLbQZTixmrYudNcZe2aO+0K0k8XstW/AdwVsU7Bbc8B3jK24xOMM3wzwXbYppmxBYJ1lHmcSC0g9gMQ9zJ5BCwciDwjXBGt+vBx8H8TfKEDlOkeDEy/YOXX36j7d4lwA2NvENfncQ+Bogs8DvsTX5QhUdvATP/OCXfvJd0t/LTXPxOUJmuAZ/DyljyxX2sbjQm+q5azwEBjN/T9s+9TqsFH9x30KO+U5TQ6A1QPNDSy9TtSj7XCaHU5LDie65//lHjhWH9NWGxPtx0T7MdG+mI+JNLnEypfDFVae0HKZ0ConIaY+nf+jaXIqHgRWn9FSnxELZ9Gj92p5qkMPkXmoRUS9JOoJQxOIhoBoaNYnRD1+inNa5wJxzkJMzE9M63UQRL4gFpygte+iz6h+0P0LklhAktiRkBJnP1BHEGTUO2Qv7zAese7vbg6bl0gBq9RJV5PyoqrqqE7KlmNIedw8NX/qtpuPaRmINOepBAlxEg3DH+GY9BQ=]],
+			-- bp_string = [[0eNqlmO2OojAUhu+lv2FCv07BW5lsDErXaRYLAZysMd77gu4Co0XOmf0nhvfp+W7phe3Kk60b5zu2uTC3r3zLNu8X1rqDz8vhv+5cW7ZhrrNHFjGfH4enypVxY386b5szu0bM+cL+Zht+jValbVc1+cHGXe5/zaTi+iNi1neuc/Zuwu3hvPWn4842PXsk1K7u5VV8aKqTL3pyXbW9rPLDmj1KZ286Yme2iTmHN92vUbjG7u9viMHEB7SY0Kdj/QwEvoiDAE6GfX3GyslO3YMDKIV3Wk0w9WilCqA1Hq0ntMQEAL6gX9sqw44bAkKEEemIcE3l4/2HbbsAyKzakn0rCTwM40m4iV5VcZI+JTRi/W93a6+8+Mz93hbxwKubam/b1vkDCy3O18Karjsg0OGAh3Cs1iSXK/bNicmCffiegamwkwxT2Fzj7bslLcQAAiNbYBjkiNF8YsECC9cn81gtkQiNMo2+RGMiLxI8G16wg+N/tSvMV2KIIdayOsuEWmBIAmPJDoXdfGY+SVSUCBvGjC1QbMCz0xfsYOWsbSXzyl7YAURKYCxsRyL7ztwMxa8/KHWu/HtKegxPMo6O67wSvI3rvPu4bQqLkpQuAbSE0w0bJYYuwRsm6IYJesQE3RfxH75otETS3Zd0XyTdF0n3RY3HabpEoCXTORstAXqQgV5jQM+LGU9TZMk3VkkkWpLS85LSa2yU4FOZjd+CWAn8m5bc0CWCLMG7P33XGrpE0CWcLMH3Cwhy7wN9jIOkR0ySxwUo+iqKXpaK3PujhJAXRe590PQa0+RGBkPeX4A+xyClr5KurNKf/25XapvZ5V3Eynxny+HNY16W23yX+6KXFNvZDcOnbdr7GTLlymTCSGP0ELLrH2p3Tk8=]],
 		},
 	},
 }
@@ -115,13 +116,13 @@ Public.small_roboport_base = {
 			type = 'static_destructible',
 			force = 'ancient-friendly',
 			offset = {x = 0, y = 0},
-			bp_string = [[0eNqtmN2OmzAQhd/F17jCf3GWV1lVFUlcYonYyJiq6Yp3L4RsUjVhIx+4SpB8Po/PzFgDH2RXd6YJ1kVSfJDWlQ2NnlbBHsbn36Rgm4ychx/RZ6Tctb7uoqHjusa6ihQxdCYjdu9dS4r3gWArV9ajNp4bQwpiozmRjLjyND4Fv/OND5EMNOsOZtyg/54R46KN1kyMy8P5h+tOOxOGBTd17SvbRrun+6NpI22jD2VlBnrj20Hu3TVm9U1dgqbDn77PHog8mShfEMXjCR8Y+URgz/Typj+Zg+1O1NRmH8MQWOPrJ/GIz3jY83hU8gn1C+ImmUg/TcufEzVOpDPIbTpSvUC+3ZA2eDfhvsjHDIXlcMmJGWJ6W1B+Rc4UMUvvi7Fa7sihkaOtr138/8rtZNCmv7eK+WmdOdDh8tgHEw0ZY5qRKUwmMZmAZNhmqSfTmI/TNU45JmOQLE9UKWwztWCz1L0k5r6EUj2pUvcSWIgCazSBNZqADBGQIRwzhGOG8Nkr5Fj+KcNdTYOtjvErBl+BwZYz8uUIDpmIWZ+aZ4aVB1shz2yFPLMV8syW55lB1ymDqoMhec6X5ytfnq58ebbyxclaoXRXqNwVCnd53XJo4OPQMMWh8WZSJQaIzQACOpaAjiXwYyXOGtjIJiEvJOSFRAZYiRgoEQMVZKCCxieFXO0bZFrQUOdrqCw0VBYaybBGMqxfGzi8218+5RX/fDHMyC8T2guGb5nUb1wLrRXLZd//BX8UtTY=]],
+			bp_string = [[0eNqlmOGOmzAQhN/Fv+EUA4shr1JVFSEusQQ2Mk51uRPvXiAk1zYkqse/IiTPx3rGa234ZIf2LHurtGP7Tzboqo+diRurjvPzO9vzPGKX6ScdI6Zqowe2/zYtVI2u2nmJu/SS7ZlysmMR01U3P1lzML2xjs0ifZQzZ/weMamdckpeGcvD5Yc+dwdppwV3dWsaNThVx/VJDi4enLFVIyd6b4ZJbvSttPSNluJ2bzSO0QMx8Scmr4np4w4fGMUC2JRnd3knj+rcxbKVtbNTXb1pt8rhaznZdjnkv0F6Tcy9ibcM8m2ggIG0DSy8gclrYHkHKmv0FfYiiicUvsMPW/kE6d8Rt3TnajeR/i2R/4Wcetipdm3gf1burp0zfvWI/Km0PMbTrVFb6SSbK9oUcUSUIKIUKg/blOeuOOJfcu1mRESIKPcTpcibUvxNwk+UIZZnULqryvPQElIgIT1FSE8RZAVBVuSIFTliRf7spjhVH5X90sZWNSf3nJAFEyiYkAcTCshxyHLfIyGQIyGC0xXB6YrgdEVwugK5MAVyJAQUbhGcUxGcUxGcUxGcUxnsQxnsQxnsQxnsA4cGuFWVQSqCVKWnCpr7VlUGqQhSYfvynZ15AtkBzcEcGoQ5NAmvqhJSeZuYQiamyLR0U3le7xwbozlBtwBBx4Og40FQ0IQF/T8T+PSnffk8t//jY1/Efkk7LKCk4JkoE0GceJrvxvE3mqSlIg==]],
 		},
 		{
 			type = 'static_destructible',
 			force = 'ancient-hostile',
-			offset = {x = 0, y = 0},
-			bp_string = [[0eNpNj+8KwjAMxN8ln1tw88+0ryIim4YR2NKSpuKQvrvtFPFTOLj73eUFw5QwCLGCe0HkPlj1dhS6V/0E1xwMLOVss4F+iH5Kirb6AvEITiWhAbp5juDOhUAj91PN6hIQHJDiDAa4n6sSP/jgRaHQiO9YC/LFALKSEn4Yq1iunOYBpRh+6TGx1SSCWojBxxLx/N1p23Wn3efKW1vd33MGHihxtbfHZted2m7bdftms8v5Df+gVeQ=]],
+			offset = {x = -7, y = -6},
+			bp_string = [[0eNpNj9EKgzAMRf8lzxVWnbr1V8YYOoMUNC0xHRPpv69VNvYULpx7kmzQTwE9WxIwGyzU+UJcMbIdcn6D0Y2CNY0qKrBPRwuYWwLtSN2UEVk9ggErOIMC6uac2PXOOxbIJRowe+JdAZJYsXg49rA+KMw9cgJ+7TFQIYEZJRm9W1LF0fec45qYbftO8/eBghfyssPlRZ/ba9nWutZVc4rxA5klTCk=]],
 		},
 	},
 }
@@ -135,7 +136,7 @@ Public.small_solar_base = {
 			type = 'static_destructible',
 			force = 'crew',
 			offset = {x = 0, y = 0},
-			bp_string = [[0eNqVmO+uojAQxd+ln+GmLYWCr3JjDLCNkvAvUDZrjO++4Cp1r0XnfPTm/s6caTszLRdW1JPph6q1bHdhVdm1I9t9X9hYHdu8Xv5mz71hO1ZZ07CAtXmz/Bq7Oh/CPm9Nza4Bq9pf5g/bies+YKa1la3MP5nbj/OhnZrCDPM/rAJFdQxNbUo7VGXYd7WZtftunMmuXaLOapEO2JntQiGjOURrquOp6KZhEZZ6fw1e1KXX3qtu/BXflYX+iq8epYiolDql1K+kaEpKfPQUr0p5WU7NVOe2GzyeoodO4lNJiCrpWxXtsmryug7rvOk9IplLKvEnlaJJKZ9Khm+88vsRHF0fryEhiNvOPzsinmr5tNhiQ4p6rAlSCqpkucr9rGQR+ypZuMM+TsVo85vYq67a1lVeXXf8q6Frw/JkRuvRTT4vgCZui2sRfKNFCGoRiIdQ5pWhVkH00ZGkVkHy1pEkVoHUzlG84UiSOs5TEfCNjiMjdLW1V0bhq72VW4yutt9RQnTkeg7f6DlSI9Ut73M6y16KcL9cCGxV328DP8Gn47MGnG8g5WCsYYuvTSBFAY0CCQrEKMAdMNquNfOG2dM7JMvIhP6vMRJcrQAHAa5QgKNZAHmvY1kSXaVoGtkjQgQC1AgRByM4QIIA2ZJAIwg0gkQjSPCErwC1dziAmsN6SdUoIFGAmvR6QUpRQKNAjAIKBDgagbxx62UvQ4EYBKhjxQHUCI+xIhW1WTokghHySiXoeUrQpU3Q85SAoy5CLxEReolwXzrom6fxzVsRDtoiTyINXugcQO1PKWopQ5NGB7ziYASFDnglUECCZeoAjQIJCsQo4K3r+V1x+yK5e/qAGbA6L+Ynz/2NeLg9gw5FPi6Plt9mGG/qMhVKZ1JHWsfLiLj+BTlvnzs=]],
+			bp_string = [[0eNqVmFuOozAQRffi79DCxo+QrYyiCGgrQSIGgRlN1Mreh2fS6phO3U+ky+GWq8pl88XyqrdNWzrPDl+sc1kT+To6t+Xn+PyPHbjZsRs7CH3fsbKoXccOfwZheXZZNUr8rbHswEpvr2zHXHYdn7q6ytqoyZyt2Pie+7Qj6n7cMet86Us7Y6aH28n119y2g+AByMtzZCtb+LYsoqau7MBu6m54s3arMT4Z4wPf2fJ8yeu+HanCHO+7F7QIenuBph9qouoPdQ9QEhqFiwWjwhhJxKjf3agHJiuK/tpXma/bV8ycwH2IoGkELrYR5hnLNauqqMquTYCQLKGYcCh7JBQehxApluE0bITH0JKErXBOTLB8Y4ZYtevijnUX5FDr9i1IIh2qZ1bys0O5CnUof5Zz1+edzybSC3S/BZVB6LPCy7Z2UXGxnQ8EHr8L3NBWcG18vtH5nFjoKyXIIFa6eeNFUEs9/sWMoJb6ama/YUaQ9pFHgW7sIyKB1tcEGRJc362QFLa+YTOaZmbdSfjGViIMNFvnma9emuw4jnBfVsv8/vHao1Ae3xoODEVrvWWjpbBaQ2oDqfeQOkXUQj7Vna+dHTLjL7/oFVXPv+1w790saomoRQypJeacHukyQwXNjYC8JzObI2oqW0JsCUUpIScKYiuIrSG2hqpWQ72vId/zIdEgYmqQBgpyPqpoRGwQcYqIeQypITY1M+l8KULEKSKm7vcpFOMyn2PyLhg/L6aAXkFuDKTGIqWWyiqXmByzTs3p8juAniUOZmnWS8gNdUSscoXJiVvLelelmkmgSLFByyUExyYtV5hcQ42nocbTyy8TRJ1C6nCbDufz6V/c4dufvR2rsny4NSx3q9N0kzjlWTce/f/atpvYYs+lSYVRXPFEx/f7f4rDdmk=]],
 		},
 	},
 }
@@ -149,7 +150,7 @@ Public.small_mining_base = {
 			type = 'plain',
 			force = 'ancient-friendly',
 			offset = {x = 0, y = 0},
-			bp_string = [[0eNqdmdtuozAQht/F11D5CEleZVVVJPGmlohBxqy2qvLuCzk0q9RO5+cqoh1/9tjzz4zhk23b0fbB+cg2n2zwTV/GrjwEt5+f/7KNMAX7mH7UqWBu1/mBbX5Nhu7gm3Y2iR+9ZRvmoj2ygvnmOD/Z1u5icLvy6Lzzh3IfXNuymeD3doaeih8ZMTR+6LsQy61t43+D5em1YNZHF529rOb88PHmx+PWhomeYxSs74ZpWOevzvGXi3eleTHTBHsXpnWf/63nFT5wJZkrstwqwVVkroS4msxVENeQuRriVmSugbg1mVtB3BWZW0PcNZlbfh2cegTLBFhwOllgZLrmSomR76obJ/2HQ+im35/0rL/pufjKMr4f53TyfSaF5w2aC3QhliDZ4KlDUVKdqPBcR1vxXYzODzbE6Y/5dKQochF3HQ6x87b8PQbf7GwibVyD45SirAkLq7LxlVqY5HiCmMEplMBRKoOSC9KLzLDUApbIsO4qGY5N25ZfTUTftfZZHpHnw/DWHd633RjmnsDI19QUC+QiSJ1BhYMlCVyDsS2SW7vCttY829k6ubOQegSpK1qgnkyYqgXqyUSpWqIenmEtUE8OpeHaxSnxp8yS6svz1bcbY6b8KlxDNBdqXJs08AopZZwU82s8UDMRoXH55EgCD9OMevQC9WQ0re/icaHz5e7dDk9iMkfRhDPkPziFVxVS7te4IEjFSiMtmCRdNMEOTCa3ESkhpApicAlkjtjgBSQTcEaCXc7tCq2+l2KpU6XYLKgqmVbRaByVaWANLhJNCWaDi4R0ATI1dk7PjmmVPCZQM+ldRTRDurNUuGYywVPhmsnETrWgapgMCn/XRno1WGkgpyZeAr1ODZJrr68zH32qb9fWh4jpm/h+7qQyAxQ4gIP2Fdm+urbn4AAB2qN8Q7Y3qAMGnEChZ3wZQLeX6AQSdVnebqDYAA7aowuiq0CA6xEYn4MnwDF3OabJy+JL1N6A9hq0V5g9eTkSdBeNfgXyUb0rLCEqbHc0eLga3B0NpgaNhb7GcqEB996AqzfYWRnMWbCyPC+9U99x/uq6+e87cMHaZmqJbp3v2+Ub7tu2Gebm9I8Nw+Xt/kroei1rVddGcH06/QOxRNQf]],
+			bp_string = [[0eNqdmd1u4jAQhd/F10mF/xNepaqqAF5qKTiRE1ZbVbz7JkChonY7J1eI9vAxtufMTMwH27RH10cfRrb+YENo+nLsyn30u/n9P7bmumDv04s8FcxvuzCw9fMk9PvQtLNkfO8dWzM/ugMrWGgO8zvXuu0Y/bY8+ODDvtxF37ZsJoSdm6Gn4lfGGJsw9F0cy41rxy8fFqeXgrkw+tG7SzTnN++v4XjYuDjRc4yC9d0wfawL18XZp8vqVk964u98nMI+/1fNAT5gBRlb5bAmgZVkbI1gFRnLVwhX07kc4Ro6VyBcS+dKhFvRuQrh1mTuZ7jiESsSWL4iczXEpZtNQdy7246T7eM+dtPrLzbm32xc3GpL6I9zEfn+RRKuFrQF0A1oIK6G64WgVDdu4PJGi/duQB8GF8fpj/kSJCgW4XfvDWMXXPnnGEOzdalScaGeUpSaEpjMpVYqMLHCi8IMTqE4jhIZlIBLisyQJExSGdLdHcOhadvyNjH0XevytUOejyE4v3/bdMc4t38tXlJfgNtEkYYAA3MliWvBnE5va4Vt662VpvbVJvcVco0iDUALXJNJULnANZkMlbhrdIaEu8ZkSAruVYaSfFIvaLY632y745jpthK3D20FFuZqErdCupcmpXuN52gms9QC52RSS3E4SW2GhBunypDuxvGxC+X2zQ0/JGSOoghHaH9ZE95NKkp6KdwOlsSFhq6K9DyJDl1VciOh9mFJD6QLTJA5Zr2gfWSyTgusE3824vp7IxYq1Yg13lXqTKgKJs2pk0ThPuGkuxeNG6UmcS04MPEfzqlKnhPqG86TO4s9rdCuXBY4J5NDZoFzcklk8AbCM09RBr9c45ySN0YhBZYnnh5fpmnJt9cLzIcPrq5PrQ+Z0zfj23moSsolJjeYnJOj4ZepGpNbTF5h8slSRL3AghcgXmEHq64+oeo1htfYYq+jKCY3mLzC5DVVbrBgDEa32L5bbKkWNGB1uWzG5ByTg8FIMBhyNDW21hqsTSsMz8HCfdVbUE/fHs6xw+Vo8eZYTeBo+eZgBbxd+GJ6DeotqK9APXDC8qcTm4aM84+q6y8/8xasbaYR6HPifb38RPu6aYZ5Jv3r4nC5y6+4srWwmmsuzep0+g/Rks/m]],
 		},
 		{
 			type = 'entities_minable',
@@ -170,13 +171,13 @@ Public.small_primitive_mining_base = {
 			type = 'plain',
 			force = 'ancient-friendly',
 			offset = {x = 0, y = 0},
-			bp_string = [[0eNqdld2OgyAQhd9lrmGjCLX1VTYbg8q2JIgGabNN47svVLvpj+1CrxQ983EGZuAEldqL3khtoTjBoHmPbYe3RjZ+/ANFmiI4+seIQNadHqD4dEK51Vx5iT32AgqQVrSAQPPWj6q90cLgVmqpt7gxUinw8boRHjmifwmD7bTA347Da3EVS8YvBEJbaaWYrJwHx1Lv20oYB3+CQNB3g4vq9JwYpufEMB29nTsKeZnKI4tcWAgaaUQ9/VstkLNI8uySLLmkfyxpOo3rnRjsIyL9YBPDvSxRWJyjZKqH20zpAncVx2Wh3PytvcluwWQBvA4tnWQmLjA2oQz2nJEm76yc21vXGlaquS/ul2EuAjbeOey53YF38SSABgfQ2Blo7AzTWUQi9VmoPpn7JE5P4uTBbtJL5wfqSaSexrmnce5ZHJ29oru6Pt8OxdVthUDxSiivbLlSpfvaOuBBlFOzlBUffNsdhBmmjl+nNN+QPMtzlibu1P8F5nhJ4Q==]],
+			bp_string = [[0eNqdle1ugyAUhu/l/MZG/NZbWRaDetaSIBqkzZrGex8Ut/TDbrJfBnl48h45J16gEUccFZcaqgtMko2BHoK94p1df0JFKYGzfcwEeDvICao3A/K9ZMIi+jwiVMA19kBAst6umqOSqIKeSy73Qae4EGDPyw6tciZ/GiY9SAw+jIe1eHM2mt8JoNRcc3RRrotzLY99g8rIXygIjMNkTg3yuzBX12zDPDiiXwt5MsWLiUDHFbZuJ1vxxn5elzBeS5j8mLgaZNAecNLPgmyXOsUuXZOkfnGcK7svM1nxZp5lhlvF+X/upbj3RiveYmvPpItxxVFu7rvwtcTu/ePT0XC2Y6G5WGbiAXNUOD9EHJk+gE2xitOtOPWzUz97csVzP7zYirsLTfzw3A/fHCZb5n0jnvvhpV/20i/70om5J//Cb5r5+juobn5PBARrUFiyZ0LU5m1vjCes3YzUDZvsuJ1QTW7SC5rkZZSnNKVxZkbkC/PPR4k=]],
 		},
 		{
 			type = 'entities_minable',
 			name = 'burner-mining-drill',
 			force = 'ancient-friendly',
-			offset = {x = 0, y = 0},
+			offset = {x = -1, y = -1},
 			instances = {{position = {x = -4, y = -6}, direction = defines.direction.south}, {position = {x = -6, y = -4}, direction = defines.direction.east},{position = {x = 0, y = 1}, direction = defines.direction.south}, {position = {x = -2, y = 3}, direction = defines.direction.east},{position = {x = 5, y = 1}, direction = defines.direction.south}, {position = {x = 5, y = 5}, direction = defines.direction.north}}
 		},
 	},
@@ -191,14 +192,14 @@ Public.small_oilrig_base = {
 			type = 'static_destructible',
 			force = 'ancient-friendly',
 			offset = {x = 0, y = 0},
-			bp_string = [[0eNqdl2GPoyAQhv8Ln3UjINj6VzaXhraky62iUXq5ZuN/P6ztrr3CMrOfWuO8j+8wA6MfZN+cdT8Y60j9QUar+tx1+Wkwx/n6L6mpzMjF/9ApI+bQ2ZHUrz7QnKxq5hB36TWpiXG6JRmxqp2v+nPb/1aHdzKL7FHPnOlXRrR1xhm9MK4Xl509t3s9+IBP9ei6QZ107pR998y+G72oszdDuXgRV0s5exGefzSDPiz32ZQ9YdmXKeOdPuP4Hef/TAEAf8jqOwALycvE84u7moYfLxJ6mtBLcP5FGFA9AJbu6M72GECxNeqhMjIA3kBXJmJsCzZ2J0VAtICnWERTDDUf/WpqM3Q2P7zp0T1TecJfqodlQs/B+cloemUIXILB1cpisjOoQJeWgvxKYMuxyELC9wJdkdL5bsBcEeMG228LbJzI2cEKoD6yXoymDp97W0TOXsbgO1OuUMkVZxzYCTFjJf7I4M8l8yPRmeY2D//XbZbSTOu5aHXeK/dGZkvheAaOr5adXmIFHCkokPHwDCQ2A4nNQCIzkMiafb45QAUlNgOOdERvbxNIAdhQgeQXuJ642RfI+BIZD/bDkH4Y0g//WTzHxYM3wNKeYDcCV1zxEzp46ZF7HbnV5Xdm/By4fkDVq8+xjDRqr5s5slVNs+tMM5jTbq/GeVz90cO4DJENLastq3hVCVqU0/QPomtrlQ==]],
+			bp_string = [[0eNqdl9tuozAQht/F11BhY3N6laqKnMRK3YJB4Kw2qnj3mkC3ZLHLTK+QlX8+/jnYDh/kWF9V12tjSfVBBiO72Lbxpdfnaf2XVDSLyM096BgRfWrNQKpnJ9QXI+tJYm+dIhXRVjUkIkY206q7Nt2bPL2TKcic1cQZXyKijNVWq5lxX9wO5tocVe8E/6IH2/byomIrzbtjdu3gglqzGGJP4u7IPR39rHt1mn9lY7SBsm9L2vncwPgCow7mCU8fMgqHp75gvvPu4ivY/26xE17+HJ4BM+f+8PwhfJ6J9mrOW5BYgR76kXmwBbAmAVcl2NUXSPhBNAGT8lB+vnmj31Os+9bEp1c12C2T0h17e3NL+Q4gBedHeShB7gNzOFisPO5OBhXo3mYgwxlw5PJAJeE7oVyR9vMt4IVMQ2DvCJbQ2cn8GbMECgiUjNEdQLLEF4F4Bi/NirRbcpYCRyHki6MPjWLbMXcNWl0vd+D/hZn7Mq6vQqPiTtpXMhnyynOonM5XHU7OcHKBk4O9M5x3hvPOcN4Zrk3p8h8BKOc47wJnJp/Pepy8gMoLHL3ADUF5lyc4OcXJwW2iCc7NoodvP/orPUPq4Rt2nvoSrE+Rp1P6Kz6FN4AjE+a4nbXoQ4bcuX//SKpWn1wRqeVR1ZOykXV9aHXd68vhKIfpdvqj+mG+NArK85LlggqaZsk4fgLDu2eb]],
 		},
 		{
 			type = 'entities',
 			name = 'pumpjack',
 			force = 'ancient-friendly',
 			offset = {x = 0, y = 0},
-			instances = {{position = {x = 2, y = -4}, direction = defines.direction.south}, {position = {x = -7, y = 1}, direction = defines.direction.south}, {position = {x = 4, y = 4}, direction = defines.direction.north}}
+			instances = {{position = {x = 3, y = -4}, direction = defines.direction.south}, {position = {x = -6, y = 1}, direction = defines.direction.south}, {position = {x = 6, y = 4}, direction = defines.direction.north}}
 		},
 	},
 }
@@ -212,13 +213,13 @@ Public.small_radioactive_lab = {
 			type = 'static_destructible',
 			force = 'crew',
 			offset = {x = 0, y = 0},
-			bp_string = [[0eNqdl22PoyAQx78Lr2UDgw+tX+VyaehKeiQKBnFzzcbvfthut+2e1MFXhsj8nIf/MPhJju2oeqeNJ/UnGYzsqbf05HQzr/+SmrOMnMMDpozod2sGUv8KG/XJyHbe4s+9IjXRXnUkI0Z286qVRzLvN42aEVO2ajE6afTYUevUgyVMvzOijNdeq+uHL4vzwYzdUbmA/gYMnWxb2squD9DeDsHEmq8YaP5WXKKgxVsxzd78wMCT5y/sxbK9uNtbc6J/ZHC/odoMyvnw/n8g3ICBHMJttFPv1/ewgM/vaQpgd3I2POlRtX4BzZ7RX9m2o+9HTxbgBSqFsJLB8puCiVpgoq5SoubP6NWod5tSCo9wbSLsfaIaWDQt5QJ9bsjVVP/weA3JX+sfHmlL9tj+YRH77f3DMEri+SYpMVS1+b2BfDjEht46vyqkWCLKDSweYVW4osZc2aV0NK4M+/ToIt4Bw6P4CoqnoyIpB9jY+RzTpSASGp+hiHna+Iy0PyR0wE0wqAkAZXppcOAqXYmR0Q+7LWcL4KYU7BPgLJaBEvElwZKuARElCJ7gr1j3N3roCkiXXIFRhhDpkotcicSmqZOjho7YMHQKzJEg8C33ghtu7Zfrff3we5HNY0i1N4EdnGy0lcHkQx2uA+pDueFamB3Pqz1UoqoKzvJp+gecSRog]],
+			bp_string = [[0eNqdl29vgyAQxr8Lr3UREPzzVZaloZN0JAoGcVmz+N2H7bq2q9TDV8bI/bzneI7Tb7RvR9lbpR2qv9GgRZ86kx6saub7L1TjLEFHfyFTgtS70QOqX/1CddCinZe4Yy9RjZSTHUqQFt1814o9mtfrRs6IKVmNGK3QauxSY+VNJJneEiS1U07J84tPN8edHru9tB79Bxg60bZpK7reQ3sz+BCjLxpe2ElE9sKmOZd/EHKXdzCaLEfTa7TRh/RD+NSbVOlBWuefP+DoL85jvdBGWfl+fkoW4Pm1QB5rD9b4a7qXrXsEszvwb5XN6PrRoQU0A5WufF46/gdZF0wggosIwfkdeFVwuaGW9BatdIBcRVqAhyrCF+BzA67WmN/lu0bEzw1f3sCWwoH9wgPhWxuGQfyD8w0GYqBdxteOcf60Gnpj3Yp9WKAEPJqUB0gFbCtDe1FG9C8H1b+KlhbIjWRgUr5CwtGkIkAiGzu9gPQloRGdzkHEPGo+lgHVcONfvFJBvEJ49L7AuEW0B6uA8nLDaVLCxhGpItg8pJ8D3kSzqFEfcAHFEflW6/kGz1lKou2GQR9TlEb77QReQm0ZMzgDzRkaP2ce9S+dBhTeb/wJ2H+Sn77d65t/h2QeP7K9OGxnRaOM8CGfcnceTJ/SDuedKXFeVKRgmGHKs2n6AYf9FMs=]],
 		},
 		{
 			type = 'tiles',
 			tile_name = 'tutorial-grid',
-			offset = {x = 0, y = 0},
-			bp_string = [[0eNqdl8FuwjAQRP/F50SK1wTa3Huo1Ft7qypkwKJWEydKDCpC+fdi4ICqqs3rCUXawbvjWe/OUa3qnet6H6KqjmoItstjm297v0nfn6rSkqlD+hkz5ddtGFT1egr022DrFBIPnVOV8tE1KlPBNulriG1w+ar36w+VcGHj0l+N2Z/I2q5uEDIBsett8Lsmb3t3gzTjW6air90l364dfPRtuBaVz89F5bPxW8qdje8qHfozYHp8eTmgpAB8gqEAgYACxmsYT/OhBU9ndHYhaE4BJQXglAwFCARoGE8Tmk6RoZwaqFIDCzZQpQYSZKBKDSRUqISESkggowIZFcioQEYFMqqpRDVte03v7ArQEDC5awpYcgELKP6Tjmbhk5PXsAEgl5olr5n6BQ4xgTdLXweByhRGJnxL4NNAh5GBjW5gmxhIvoHkw9kIRyOcjOY/dzX5quiyR3c9urnRxQ3uYXANo26EmpESChNaC+gsoLH41VecbOfZn1Y3zjpLttadLKx6eXx6eF4Oja3rZW83vrXr6PdumWxvpvauH87HyJ2eLe5lYRaLUhezcfwC7SoAxg==]],
+			offset = {x = -5, y = -5},
+			bp_string = [[0eNqdl8Fq4zAURf9FawciS7Yk72dR6K6zG4agJKIjxpGNrZQpxf/eKOkihWHGp6tgOM9+7+o+O/dN7PtzGKeYsujexJz8uMnD5nmKx3L9R3SyrsRr+VkqEQ9DmkX34wLG5+T7guTXMYhOxBxOohLJn8rVnIcUNvspHn6LUpeOodxqqf5b2fv9XUW9ouI8+RTPp80whbtKtfysRI59uPU7DnPMcUgfQ22vM5WRPjU8+vxLlEf+FZfbtby88QyvGa4YrhneMtww3DLcQd1Xn9PN2hCXDK8ZrhiuGW4Y7qAyq6VRTEnFPKnYrIp5UjFpFPSkglJqZhvNbKOZlJpJqZmUGkqpoZQNc2XD9rthB3XDG4avXpGWjdqy3tuvNGNg76ubN8zyhjVvWPOGWd6yL5Rlx2qZMpZZ0jIhLXt3WPgycEwax5bbsQVxTHjHhHfMko4J75iD3dfOaf2f5y1bkQ+e3l9BXkPe0f7XD0DjBc0XkrlT0shAMwMNDf9ODZcYec2b3V1SrkpMDZdIKr4/PH572s0n3/e7yR/j4A85voRdibGVeAnTfH1QbaU2rjaNbKRqt8vyDtor+Uc=]],
 		},
 	},
 }
@@ -253,13 +254,13 @@ Public.small_radioactive_reactor = {
 			type = 'static_destructible',
 			force = 'crew',
 			offset = {x = 0, y = 0},
-			bp_string = [[0eNqdWO1uozAQfBf/xhX+JnmVU1WRxJdaRwwypmpV5d2PNBegF2+89FdFg4fZ8c6uvZ9k1wy2C85Hsv0kva87Glt6DO5weX4nW7YpyMf4x5wL4vat78n21/iiO/q6ubwSPzpLtsRFeyIF8fXp8tRHW59oHMLOeUsuK/3BXsDORXatH/aNrQMNtt7HNixWc8TqIdTeDSfahuV3xfm5INZHF529BvD18PHih9POhpHYBNC5EbUgXduPL7f+nwq0elJfOlDzpM4XHv8BcCD2eyS1RCrIwQW7v/7OE7giR4xniMkMAMusV9jA5Kq4NFqvSXmRJmjQW6fTANWCShvqo6Wx9n8SQOIGJDERbr7xurqqHfwhAcyWDL8B6wQwK9E5AUTM5nSPo1/6rg2R7mwT77HKG5RCUeNoYAojyxSyQMtZgmqmtonNBum7xsU4/hM2CUYDhdaArxNXY60MbbtBMxPrmFVoYLkOeJNLdZWpDjxrFp1DYGgECSBwfClQYI1J6cPFD/wmMX7jsy1+132kI1sbrqyzHxB3HyimZu27IZLU92bXON/b8NiG0FZptNB8VS3nBsFOrhN42Xasbej+1faPDAPFnLOIyACIEgsApLdgyAaqwQRJnnw42ncMIDa749XWkdr3/Wvtj6m9o5PMPIkkwePpAx+UAC2FpiUes8o1BJUTyPygMJWYwiQq9OZBKm2wCACALNfvPsv7VrLvsAA5mQlPchSMyMGI1bmEiVFiyPEcN4XOLgkmV6oySI2hl5XOYK8g5h8SB4AqpA0hIhusjQEAVWJvMMtIsjIrhutQU2kA9FHZQi4zAHOSN60/0jHDD/ZA4U48XYAgQIlo51Md55h2rhRyD27UUD1Q5Sp8TjmDTC1ofYURSkEhJYWasx1xprxB35+GpyNlO0TgTKlLbOIBRyPN8P1RQCKk2qPma0TgeRHAc7UWPz7HPzjGP9Bcri76KCdohcxkaCv16gEdanygzfoxD+rqqyvslEcBEW+wAMC4wJSrRy4KI5lhyDkGxIsj1wPCGLF2pInKBJObtJpMWAq5/ius5+I6+N4uBvgFaerR05e4TnXTvIT64NrxluLe7Mt8XXmzob8GUTFpNtwIYxQr5fn8FwKOuUc=]],
+			bp_string = [[0eNqdWO1u4yAQfBd+25XBfNh5lVNV0YRL0TnYwrhqVeXdz2la272wYblfkRMzmZ3dWRY+yHM3mcFbF8jug4xOD2Xoy6O3h8vzG9nRtiDv84c6F8TuezeS3a/5RXt0uru8Et4HQ3bEBnMiBXH6dHkag9GnMkz+2TpDLivdwVzAzkVyrZv2ndG+9EbvQ+83qxli9eS1s9Op7P32f+vzY0GMCzZYcw3g8+H9yU2nZ+NnYgvAYGfUggz9OL/cu28VHsRVhgdxvrD4ZzkDIr/B4RucghysN/vrryyCWidIqfukeCqmRFACGxTNikqiYb9QRZyeQqaMxZc3Gxq910dTBu3+3MLILxiOia39wenqpH5yh1vYZsPuB6yMwNIKWQlArHQt7zD7Yxx6H8pn04WIatUXVI0ixtDALYTLY7g1WsiFMMMkiK6mGIfOhjB/CRuDIxQQeGlZlrQSa18o6QrPrM5i1uCBeRZwmwiZ3+8ILGWTOrGeItdzYD1DVy2HukpMF1Znu4xjXMZWM/zWYyhnpsZfGSfgxQ18sWzHbpgCif3b6hTrRuPvWw9KkcQ3BpbTuZnCsONZ8m63GGO6cv9ixnsmgWJO2YIm6rqusABAYdcUuVlSCRVIdL5hSL8pgNbqixejQ2ne9i/aHWOZE99IURwODp+gAxqAkkBTWkSPc0q2f5EQR2U3owbTjOoGmTRIoRa5vgWm2io76bRKm5XTn7BxbuJ+bJxhQGQCpM4vIVSEHENu6ZoQO4FvwGBdxZoBlyh6ieriCn26WE5P0PGpwToQqtQWCwAEIypk22XbUJJKC4rbl3hCIJFq3yIFsFZ617tjOZf5wRxKeP9NpUxwxCbegmLFXCMEdutbkoA6iIhkf0/Kr7DlBSI0CLk4GFZUrrXm09PkAn17OljGyX4KwDwpK2z5AQckSdGtTIIixLZIyTJEUAgRwJla1v87wUfSidGc53d/nB+kQFczlE6ZfQmHmlKlyr7UoahjnWyw93vAWC5bLAB0hVblX7NQ1HFKUfTlI8SNoREAeVSdf4GJqgiVvFlNCi/QCJ/BPRbXa+7d5rq+IJ2ePX6J7qS77snrg+3nU4t9NU/r8eXV+PEaSEO5apkSVNBaVufzX66Zt4A=]],
 		},
 		{
 			type = 'tiles',
 			tile_name = 'tutorial-grid',
-			offset = {x = 0, y = 0},
-			bp_string = [[0eNqdmUuL2zAUhf+L1jZYVw8n2Xcx0F1nNwxBccRU1JGN7QwdBv/3xuMWQqGtv65Cgk4k3XPuU+/q1F5jP6Q8qcO7GnPoy6krX4Z0Xr5/Vwe9K9Tb7aOeC5WaLo/q8HRbmF5yaJcl01sf1UGlKV5UoXK4LN/GqcuxPA2p+aYWXD7H5a/m4p/IfG3aGIZyiKGZuuEOLRvQ1yHkdL2U3RDvkGZ+LtSU2rieve/GNKUu/7xgqauPG5Z2/u38fZi+qmXXPyEMRshmxJ5usf/PHTQEVHA9vcF2GlZlljsKqCnAU4CjAHxpQwECAfRE9MrbbVqvF9hTwI4CagpwFGAoQChAQ4CF6+mVt9PsKWueOqenrHlKgqckeGgkR43kqLQdtaqjVnXUqo5a1cHE46ArWBqRLKXNUtosZcHSiGQpbZbSZmF9sa6nB6I3prKgFGzn2FAVGVpcGCoKQ0VhqChWAF1PD+Tg+u2kCSVNqOsLjdhCY4VQHQnVkVAdCZSFQFkIjBUCZSQw8QuUnaai0LgJppRpSIGGFGgYrjWkTEPKNKOsgoGigl5MpxwV87CKsVsxcivGVcVMr6HpNTS9huGQupaGSVWzQkszJUA/h24OvRY6rcDKnmZ3mtxp5qWJl+ZdgUoTpjSYRWESNZBcWm/T6pkWz4YZE1bOsHA2LNvCMtswZmlDTvtx2o5bWH3R7t3CsECbfdq6w87dMmXCvh227bBrt0yZDiqTzuvouI5O6xxUDh3uOSYFx4KUY2R5aHw6gaYDaDp/puNnz9zWMz/0zA9rGNPok0r9N6U9F+tL8uHuPbxQbTjF9vbb48PnT1+O4yW07XEI59SFZkqv8fjrkbpQr3EYP7aSnbb1XmpT105Xdp5/AHeIA5c=]],
+			offset = {x = -9, y = -7},
+			bp_string = [[0eNqdmV2Lm0AYhf/LXBvw1fnMfS8WetfelSVMkmE71GhQs3RZ/O+NiQuhlNanV8HwjJk55zia47vaN5d07nM7qu27Gtp43ozd5qXPx/n4p9qKL9Tb9cNNhcqHrh3U9tsVzC9tbGZkfDsntVV5TCdVqDae5qNh7Nq02ff58EPN49pjmk81Ff8c2V4OTYr9pk/xMHb9w+hqxehLH9t8OW26Pj2MrKfnQo25Sfe5n7shj7lrlwWWt/WZ6bfJn+P4Xc0/+UfcMtytxYWdXf7n7J7hgeFSQb5ey1d3nuEVw+FkNMMNwy3DHRSSCg8XK6tXW9/4kuHC8IrhmuGW4Y7hHipTQx4udr2xmjml2SWomVOaSa+Z9BpKY5g0hoXYMCUNU9IwJQ1T0sDbiIGht2y3scwoy4yyTHnLdhvLjLLMKMseDxYhoZICpaQ5EKi9rBbfseA49oTgWBIcS4JjSViWWkIearPeKget8swqz65xzzZjz7YEz3LjWW48y42HQfAwCB7uCR4Gx8O7uIdBCywKgXkbmFkBih+g+AFuyAGaFaBZAZolJdsWFl5D3tD5lHQAXQH4C19Czz4GrDdBoAkCTaCNC61caOdCSxehoRAaCtzrCA2FwCtZKvYML7A6EtgdCax3BPY7AguehfeQD1RPTQesVwh2QgJLIYG9jcDiZuEDnT9eMF3x+tux0HZIaD0kGpoM+6SFryBfQ15DnupjIe8hH6j+2DDqgFALhHoAQmpgSGFVJ7CrE1jWLbyFvIO8UIHAzmWoZbCEW/ga8hryDvIe8gHyQgUClyVsswTWWfL3xum5uL8X3j683S5UE/epuX739enzpy+74RSbZtfHY+7iYcyvaffxyrlQr6kfbj9WedEuVM6IkdqW0/QLDVP83g==]],
 		},
 	},
 }
@@ -273,19 +274,19 @@ Public.uranium_miners = {
 			type = 'static_destructible',
 			force = 'crew',
 			offset = {x = 0, y = 0},
-			bp_string = [[0eNqlmNtuozAQQP/Fz1DhG7dfqaqIBDeyBAYZU21U8e9rQtqkXWY9Vh5JPGfuHtuf5NjNarTaOFJ/ksk0Y+qG9Gx1u37/ITWjCbmQmmZLQvRpMBOpX/1CfTZNty5xl1GRmminepIQ0/Trl+rUyVl9SntttDmnrdVdR1aCaZWH0iUJMkbtf7yLMITIbBuj5z4d7KMkX94SoozTTqvN+uvH5WDm/qist+anzoSMw+QXD+YWgrR4kdcgpOJFLqsdvwAsBMgDAP4DsGVgmE37PxTfRwk8Sj5alZBWW5+16//5DliiwVkUNw8FLwsErwgAWCBiJVYe0F+hA8OjAkMzNLgEwWwPHCz478pg+y5TfMVDBB4i0BDhodLnfvyXQO/i4ZBIdBVC5uTYMoIAoTrmIUCokMsQoAoAigCA3SvW+a14Ggfr0qPq3E48qy9W9js/Yo98L9n3ZnKp7wJlt26AFJSgAp+p2/gYZjfOjuwpZHhXOKxpj8yjXREIV7SBPBHR+thzoZOxCp/zL0dnSsYlqoj1I38ubmWsPpo9Fbgqvlsppll5Fn+cYSgwxY4dCpyzGHbyQQD02IIA926c5uPkmqssMLv4LkGi5h7FlDhHH74gdwp0qtlDpvdI2GMYZEmFHJ+AvMiQww+Sp8jpC8lHDJwvUzjmaCM4HlxGgQW2G4GDs5BYAHTXyeMvO6ijtyjwMRNRMSuj+4VjdkZRIbsHSIXEb9kUCuSev5JGX45wl1GG5hawvW/J9oBQP7yCJKRrfKbX/blvuu5gm1YPjRf5UIfb+8Jhe9XwSz+UnTZWSUVRsYIXhaSZWJa/2sGVNQ==]],
+			bp_string = [[0eNqlWNuO4yAM/Reek1EgQC6/MlpVacNWSAmJCBltNcq/L0mn285sXIz6mJZzsI9tbPgkx25Wo9XGkfqTTKYZUzekZ6vb9fsPqRlNyIXUNFsSok+DmUj97hfqs2m6dYm7jIrURDvVk4SYpl+/VKdOzupT2mujzTltre46sjKYVnlSuiRBjlH7H+8QhoDMtjF67tPBPiLz5VdClHHaaXW1fvu4HMzcH5X11nzfMyHjMPnFg7lJ8CY2DbI3saxW/ICzADx/Ds+/wa/qD7NpYSK6T8TRRPzBooS02vpobf/KHVqBpqVZDK8MyFY9l60IwCl7rlaJxQP7V3hZ8hhZaIYnLiFitkccSvNbVrB9hyk2zyF8HsCXAfxDfs/9uCMH/QcPiyGQ2QcZI7HpAxEE8zckZzCBQ3pWIYLiOQG7Z6rzB+80DtalR9W5/6luBwP/GRu+x3tP1N/N5FKf+8peawCgpxC9j9JXoxhmN86O7G3H0G5IcJ893jzWDRF2QxvICx67W/GSaCI6RvwV7yQ6RlREBamI9kO+pFsZux/LXtGtii5RiSnRPIseWgoUL0X2GAnMUgzZ4yA8tkdB+HsVTvNxcs0GhTpVuUshcG1OYtI7xw5ZkD8FfhhhD4Heo0IPXJAtFbZjAgQ8wzY8iIBiWy5EgG81NzFKzDTDc/zxGMXLkeVYAf4KJL4E8DL6SlNhyoIXaL1ElF5lfLmUmHORV9jiASIhIm4VFJJyz2VB4+9BqBgJhicuYIv91X97I6gfHjoS0jU+2ush3Tddd7BNq4fGQz7U4esJ4XB9uPBLP5Sdrlwl5UXFCkEFzWW2LH8B5NSQ4w==]],
 		},
 		{
 			type = 'tiles',
 			tile_name = 'tutorial-grid',
-			offset = {x = 0, y = 0},
-			bp_string = [[0eNqdmE1vozAQhv+LzyBhm4DDvYdKe9veqipyEitr1RgETtSq4r8XSg/RSrvLs0eieccz78xkPj7EMVxdP/iYRPMhxmj7PHX5ZfDn5ftNNEpm4l00Uk6Z8KcujqJ5ngX9JdqwiKT33olG+ORakYlo2+VrTF10+XHwp1ex4OLZzapmFf9EuuBOacblrY8+XvLz4EO406E26LgONvprm3eDu0Pq6SUTyQe3etB3o0++i99u5rL48jPX029e9Db9Esurf0IoisCA7TbtV5NKCsAvSAgooDzVr6D8docNpdRQSg3NI0NjYGAMDIxBDWNQwxis8ttDUEF7Kqh/R3OiXAE7CsAvSAgooDzVr6C8hvLbCdI0BBoSpCFBGhKkqAOK5pCiOaRgzBSMmaQuS+qypC5LFrUCGlRAe+BEQfmR/6N+cz7QjKYJrVgFK1bAinEDa4X+XWnIjWalSBsY7V8lHJpg94LNYse0V5CcCjpbsdSB00wNralZmcDZEI6Gq/hm5ukwDwdnODcbRo1h1BiWBnuYxHTV3MMthy6acM+EayPcGiXt438/Dbxk64mjuTvXZCLYowvzb0+PPx5+HsbWhnAY7Nl39pT8zR2+7yCH9ZQyA25uGL+eVEaW9V7Vuq53siin6RN6AsVA]],
+			offset = {x = -10, y = -5},
+			bp_string = [[0eNqdmMGOmzAQht/FZ5CwMdhw72Gl3tpbtYpIYqVWwSBwVl2t8u6FhEMqVa2/HkHfDDP/jPQbf4hjf3XT7EMU7YdYQjflccwvsz9vzz9Fq2Qm3kUr5S0T/jSGRbTfVtBfQtdvSHyfnGiFj24QmQjdsD0tcQwuP87+9ENsceHs1lRrin9Gut6d4hqXDz74cMnPs+/7pxwqIcd17oK/Dvk4u6fI8vaaieh79+hgGhcf/Rj2Not7l2v231uYuvhdbJ/8I14y3DDcpuL7hBiuGK4ZXjG8ZrhheLKQigmpmJCK7Yxiuiumu2K6l0z3kun+wJtUXLNiNMtesSWo73jBcJhdM7xieM1ww3DL8OQxGaa7YcoYpoxhylhWu2U7Y9nOWDYmy8bUsFYb1mrDWm2gexTQWAtolfBYIKnRy//Kn37uUGy4EvqrhJ4moantvIF8uj4l1KeE+kDflBrWo2E9Gp4sNZwvdHJZwfzQy3deQd5CPr1fA+uBLiehze28hbxMHwB0xp2vIF9D3kDeQj59IaD7Smi/O19CXkO+gryBfPr/ITR49VeDf80e9xbt0x1MJvru6Pr13deXz5++HJah6/vD3J392J2if3OH/XLj8LgfWQPe3LzcP6ms1KZRppKVLOvidvsF+s6+8A==]],
 		},
 		{
 			type = 'entities',
 			name = 'electric-mining-drill',
 			force = 'crew',
-			offset = {x = 0, y = 0},
+			offset = {x = 0, y = 1},
 			instances = {
 				{position = {x = 2, y = -1}, direction = defines.direction.east},
 				{position = {x = 8, y = -1}, direction = defines.direction.west},
@@ -301,7 +302,7 @@ Public.uranium_miners = {
 			type = 'entities',
 			name = 'uranium-ore',
 			amount = 1000,
-			offset = {x = 0, y = 0},
+			offset = {x = 0, y = 1},
 			instances = {
 				{position = {x = 2, y = -1}},
 				{position = {x = 8, y = -1}},

@@ -49,10 +49,10 @@ function Public.Tick_actions(tickinterval)
 	if (not destination.type) or (not destination.type == Surfaces.enum.ISLAND) then return end
 	if (not memory.boat.state) or (not (memory.boat.state == Boats.enum_state.LANDED or memory.boat.state == Boats.enum_state.RETREATING)) then return end
 	
-    if (memory.gamelost or memory.gamewon) or (not destination.dynamic_data.timeratlandingtime) or destination.dynamic_data.timer < destination.dynamic_data.timeratlandingtime + Common.seconds_after_landing_to_enable_AI then return end
+    if (memory.game_lost) or (destination.dynamic_data.timeratlandingtime and destination.dynamic_data.timer < destination.dynamic_data.timeratlandingtime + Common.seconds_after_landing_to_enable_AI) then return end
 
-	if memory.boat.state == Boats.enum_state.LANDED then
-		local extra_evo = tickinterval/60 * Balance.evolution_per_second()
+	if game.tick % (tickinterval * 2) == 0 and memory.boat.state == Boats.enum_state.LANDED then
+		local extra_evo = 2 * tickinterval/60 * Balance.evolution_per_second()
 		Common.increment_evo(extra_evo)
 		destination.dynamic_data.evolution_accrued_time = destination.dynamic_data.evolution_accrued_time + extra_evo
 	end
@@ -778,9 +778,7 @@ function Public.spawn_boat_biters(boat, max_evo, count, width)
         end
     end
 
-    local target = Public.generate_main_attack_target()
-
-    if #units > 0 and target and target.valid then
+    if #units > 0 then
         local unit_group = surface.create_unit_group({position = p, force = enemy_force_name})
         for _, unit in pairs(units) do
             unit_group.add_member(unit)
@@ -815,9 +813,9 @@ function Public.update_landing_party_unit_groups(boat, step_distance)
 		new_group.add_member(b)
 	end
 
-	if boat.spawner and boat.spawner.valid then
-		new_group.set_command(Public.move_to(boat.spawner.position))
-	end
+	-- if boat.spawner and boat.spawner.valid then
+	-- 	new_group.set_command(Public.move_to(boat.spawner.position))
+	-- end
 end
 
 

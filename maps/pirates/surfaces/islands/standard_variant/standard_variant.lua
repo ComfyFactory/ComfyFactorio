@@ -26,7 +26,7 @@ function Public.noises(args)
 	ret.rock = args.noise_generator.rock
 	ret.rock_abs = function (p) return Math.abs(ret.rock(p)) end
 	ret.mood = args.noise_generator.mood
-	ret.farness = IslandsCommon.island_farness_1(args)
+	ret.farness = IslandsCommon.island_farness_1(args) --isn't available on the iconized pass, only on actual generation; check args.iconized_generation before you use this
 	return ret
 end
 
@@ -45,7 +45,7 @@ function Public.terrain(args)
 	
 	if noises.height(p) < 0.04 then
 		args.tiles[#args.tiles + 1] = {name = 'sand-1', position = args.p}
-		if args.specials and noises.farness(p) > 0.02 and noises.farness(p) < 0.6 and Math.random(400) == 1 then
+		if (not args.iconized_generation) and noises.farness(p) > 0.02 and noises.farness(p) < 0.6 and Math.random(500) == 1 then
 			args.specials[#args.specials + 1] = {name = 'buried-treasure', position = args.p}
 		end
 	elseif noises.height(p) < 0.05 then
@@ -66,7 +66,7 @@ function Public.terrain(args)
 
 	if noises.height(p) > 0.11 then
 		if noises.forest_abs_suppressed(p) > 0.7 then
-            if args.specials and noises.forest_abs_suppressed(p) < 1 and Math.random(750) == 1 then -- high amounts of this
+            if (not args.iconized_generation) and noises.forest_abs_suppressed(p) < 1 and Math.random(750) == 1 then -- high amounts of this
                 args.specials[#args.specials + 1] = {name = 'chest', position = args.p}
 			else
 				local forest_noise = noises.forest(p)

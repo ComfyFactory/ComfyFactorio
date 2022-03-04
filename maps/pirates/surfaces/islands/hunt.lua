@@ -134,7 +134,10 @@ end
 
 
 
-function Public.close_position_1(args, points_to_avoid)
+
+function Public.close_position_try_avoiding_entities(args, points_to_avoid, farness_boost_low, farness_boost_high)
+	farness_boost_low = farness_boost_low or 0
+	farness_boost_high = farness_boost_high or 0
 	points_to_avoid = points_to_avoid or {}
 
 	local memory = Memory.get_crew_memory()
@@ -149,7 +152,7 @@ function Public.close_position_1(args, points_to_avoid)
 	local p_ret = nil
 
     local p2 = nil
-	while p_ret == nil and tries < 1000 do
+	while p_ret == nil and tries < 700 do
 		p2 = {x = island_center.x + Math.random(Math.ceil(-width/2), 0), y = island_center.y + Math.random(Math.ceil(-height/3), Math.ceil(height/3))}
 
         Common.ensure_chunks_at(surface, p2, 0.01)
@@ -159,10 +162,19 @@ function Public.close_position_1(args, points_to_avoid)
             if (not Utils.contains(CoreData.tiles_that_conflict_with_resource_layer, tile.name)) and (not Utils.contains(CoreData.edgemost_tile_names, tile.name)) then
                 local p3 = {x = p2.x + args.static_params.terraingen_coordinates_offset.x, y = p2.y + args.static_params.terraingen_coordinates_offset.y}
 
-				if IslandsCommon.island_farness_1(args)(p3) > 0.06 and IslandsCommon.island_farness_1(args)(p3) < 0.19 then
+				if IslandsCommon.island_farness_1(args)(p3) > 0.06 + farness_boost_low and IslandsCommon.island_farness_1(args)(p3) < 0.19 + farness_boost_high then
 					local allowed = true
+					if tries < 40 and #surface.find_entities({{p2.x - 8, p2.y - 8}, {p2.x + 8, p2.y + 8}}) > 0 then
+						allowed = false
+					end
+					if tries >= 40 and tries < 100 and #surface.find_entities({{p2.x - 6, p2.y - 6}, {p2.x + 6, p2.y + 6}}) > 0 then
+						allowed = false
+					end
+					if tries >= 100 and tries < 200 and #surface.find_entities({{p2.x - 3, p2.y - 3}, {p2.x + 3, p2.y + 3}}) > 0 then
+						allowed = false
+					end
 					for _, pa in pairs(points_to_avoid) do
-						if Math.distance({x = pa.x, y = pa.y}, p2) < pa.r then
+						if allowed and Math.distance({x = pa.x, y = pa.y}, p2) < pa.r then
 							allowed = false
 						end
 					end
@@ -178,10 +190,10 @@ function Public.close_position_1(args, points_to_avoid)
 
 	if _DEBUG then
 		if p_ret == nil then
-			log("No good position found after 500 tries")
+			log("No good close_position_try_avoiding_entities found after 500 tries")
 			-- p_ret = {x = 0, y = 0}
 		else
-			log(string.format("Position found after %f tries: %f, %f", tries, p_ret.x, p_ret.y))
+			log(string.format("close_position_try_avoiding_entities found after %f tries: %f, %f", tries, p_ret.x, p_ret.y))
 		end
 	end
 

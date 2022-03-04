@@ -29,7 +29,7 @@ end
 
 function Public.make_officer(captain, player)
 	local memory = Memory.get_crew_memory()
-	local force = game.forces[memory.force_name]
+	local force = memory.force
 
 	if Common.validate_player(player) and (not (captain.index == player.index)) then
 		memory.officers_table[player.index] = true
@@ -42,7 +42,7 @@ end
 
 function Public.unmake_officer(captain, player)
 	local memory = Memory.get_crew_memory()
-	local force = game.forces[memory.force_name]
+	local force = memory.force
 
 	if Common.validate_player(player) and (not (captain.index == player.index)) then
 		memory.officers_table[player.index] = nil
@@ -69,7 +69,6 @@ function Public.tag_text(player)
 	end
 
 	if memory.classes_table and memory.classes_table[player.index] then
-
 		tags[#tags + 1] = Classes.display_form[memory.classes_table[player.index]]
 	end
 
@@ -114,9 +113,22 @@ function Public.get_class_print_string(class)
 end
 
 function Public.update_tags(player)
+	
 	local str = Public.tag_text(player)
-
 	player.tag = str
+
+	if game.tick % 300 == 0 and Common.validate_player_and_character(player) then
+		local memory = Memory.get_crew_memory()
+		if memory.classes_table and memory.classes_table[player.index] and memory.classes_table[player.index] == Classes.enum.IRON_LEG then
+			local inv = player.get_inventory(defines.inventory.character_main)
+			if not (inv and inv.valid) then return end
+			local count = inv.get_item_count('iron-ore')
+			if count and count < 2500 then
+				local rgb = CoreData.colors.notify_player_error
+				Common.flying_text_small(player.surface, player.position, '[color=' .. rgb.r .. ',' .. rgb.g .. ',' .. rgb.b .. ']missing iron ore[/color]')
+			end
+		end
+	end
 end
 
 function Public.player_privilege_level(player)
@@ -183,7 +195,7 @@ function Public.player_left_so_redestribute_roles(player)
 		-- end
 	end
 	
-	Public.try_renounce_class(player, "A %s class is now spare.")
+	Classes.try_renounce_class(player, "A %s class is now spare.")
 end
 
 
@@ -195,7 +207,7 @@ function Public.renounce_captainhood(player)
 		Common.notify_player_error(player, 'But you\'re the only crew member...')
 	else
 
-		local force = game.forces[memory.force_name]
+		local force = memory.force
 		global_memory.playerindex_to_captainhood_priority[player.index] = nil
 		if force and force.valid then
 			local message = (player.name .. ' renounces their title of captain.')
@@ -209,7 +221,7 @@ end
 
 function Public.resign_as_officer(player)
 	local memory = Memory.get_crew_memory()
-	local force = game.forces[memory.force_name]
+	local force = memory.force
 
 	if memory.officers_table and memory.officers_table[player.index] then
 		memory.officers_table[player.index] = nil
@@ -222,51 +234,6 @@ function Public.resign_as_officer(player)
 	end
 end
 
-
-function Public.assign_class(player_index, class, self_assigned)
-	local memory = Memory.get_crew_memory()
-
-	if not memory.classes_table then memory.classes_table = {} end
-
-	if Utils.contains(memory.spare_classes, class) then -- verify that one is spare
-	
-		memory.classes_table[player_index] = class
-	
-		local force = game.forces[memory.force_name]
-		if force and force.valid then
-			local message
-			if self_assigned then
-				message = '%s took the spare class %s. ([font=scenario-message-dialog]%s[/font])'
-				Common.notify_force_light(force,string.format(message, game.players[player_index].name, Classes.display_form[memory.classes_table[player_index]], Classes.explanation[memory.classes_table[player_index]]))
-			else
-				message = 'A spare %s class was given to %s. [font=scenario-message-dialog](%s)[/font]'
-				Common.notify_force_light(force,string.format(message, Classes.display_form[memory.classes_table[player_index]], game.players[player_index].name, Classes.explanation[memory.classes_table[player_index]]))
-			end
-		end
-	
-		memory.spare_classes = Utils.ordered_table_with_single_value_removed(memory.spare_classes, class)
-	end
-end
-
-function Public.try_renounce_class(player, override_message)
-	local memory = Memory.get_crew_memory()
-
-	local force = game.forces[memory.force_name]
-	if force and force.valid then
-		if player and player.index and memory.classes_table and memory.classes_table[player.index] then
-			if force and force.valid then
-				if override_message then
-					Common.notify_force_light(force,string.format(override_message, Classes.display_form[memory.classes_table[player.index]]))
-				else
-					Common.notify_force_light(force,string.format('%s gave up the class %s.', player.name, Classes.display_form[memory.classes_table[player.index]]))
-				end
-			end
-
-			memory.spare_classes[#memory.spare_classes + 1] = memory.classes_table[player.index]
-			memory.classes_table[player.index] = nil
-		end
-	end
-end
 
 
 function Public.confirm_captain_exists(player_to_make_captain_otherwise)
@@ -287,7 +254,7 @@ function Public.pass_captainhood(player, player_to_pass_to)
 	local global_memory = Memory.get_global_memory()
 	local memory = Memory.get_crew_memory()
 
-	local force = game.forces[memory.force_name]
+	local force = memory.force
 	if not (force and force.valid) then return end
 	local message = string.format("%s has passed their captainhood to %s.", player.name, player_to_pass_to.name)
 	Common.notify_force(force, message)
@@ -302,7 +269,7 @@ function Public.afk_player_tick(player)
 	
 	if Common.is_captain(player) and #Common.crew_get_nonafk_crew_members() > 0 then
 
-		local force = game.forces[memory.force_name]
+		local force = memory.force
 		if force and force.valid then
 			local message = string.format(player.name .. ' was afk.')
 			Common.notify_force(force, message)
@@ -354,7 +321,7 @@ function Public.assign_captain_based_on_priorities(excluded_player_index)
 		end
 	end
 
-	local force = game.forces[memory.force_name]
+	local force = memory.force
 	if not (force and force.valid) then return end
 
 	if not captain_index then
@@ -426,13 +393,10 @@ function Public.captain_requisition_coins(captain_index)
 		end
 	
 		if total > 0 then 
-			Common.notify_force(game.forces[memory.force_name], 'The captain requisitioned ' .. Utils.bignumber_abbrevform2(total) .. ' coins.')
+			Common.notify_force(memory.force, 'The captain requisitioned ' .. Utils.bignumber_abbrevform2(total) .. ' coins.')
 		end
 	end
 end
-
-
-
 
 
 

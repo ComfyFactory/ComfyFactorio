@@ -953,7 +953,7 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 										local name = char.player.name
 										char.die(char.force)
 
-										local force = game.forces[memory.force_name]
+										local force = memory.force
 										if not (force and force.valid) then return end
 										Common.notify_force(force,string.format('%s was pushed into water by a cannon.', name), {r = 0.98, g = 0.66, b = 0.22})
 									end

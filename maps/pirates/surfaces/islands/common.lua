@@ -19,6 +19,7 @@ local enum = {
 	STANDARD_VARIANT = '6',
 	HORSESHOE = '7',
 	SWAMP = '8',
+	MAZE = '9',
 }
 Public.enum = enum
 
@@ -73,6 +74,35 @@ function Public.island_height_1(args)
 			local height_noise = (
 				1 - r/(args.noise_generator.radius{x = p.x/r, y = p.y/r})
 			) + args.noise_generator.height_background(p)
+
+			return height_noise
+		end)
+	end
+	return args.noise_generator[noise_name]
+end
+
+
+function Public.island_height_mostly_circular(args)
+	local noise_name = 'height'
+
+	if not args.noise_generator[noise_name] then
+		args.noise_generator:addNoise(noise_name,
+		function(p)
+			local r2 = (p.x)^2 + (p.y)^2
+			local r = Math.sqrt(r2)
+
+			-- 'noise testing suite':
+			-- local height_noise
+			-- if args.noise_generator.forest then
+			-- 	height_noise = args.noise_generator.forest(p)
+			-- else return 0 end
+			-- local height_noise = args.noise_generator.height_background(p)
+			-- local height_noise = (
+			-- 	1 - r/(args.noise_generator.radius{x = p.x/r, y = p.y/r})
+			-- )
+			local height_noise = (
+				1 - r/(args.noise_generator.radius{x = p.x/r, y = p.y/r})
+			)
 
 			return height_noise
 		end)
@@ -243,7 +273,9 @@ function Public.assorted_structures_1(args, spec)
 		{x = left_top.x + (bool1 and 32 or -32), y = left_top.y + (bool2 and 32 or -32)},
 	}
 
-	local chunks_loaded = args.chunks_loaded
+	if not args.other_map_generation_data.chunks_loaded then args.other_map_generation_data.chunks_loaded = {} end
+	local chunks_loaded = args.other_map_generation_data.chunks_loaded
+
 	if not chunks_loaded[args.left_top.x] then chunks_loaded[args.left_top.x] = {} end
 	chunks_loaded[args.left_top.x][args.left_top.y] = true
 
@@ -331,6 +363,29 @@ function Public.random_rock_1(p)
 	local s_rock_raffle = #rock_raffle
 
 	return {name = rock_raffle[Math.random(1, s_rock_raffle)], position = p}
+end
+
+function Public.random_tree_1(p)
+	local tree_raffle = {
+		'tree-01',
+		'tree-02',
+		'tree-02-red',
+		'tree-03',
+		'tree-04',
+		'tree-05',
+		'tree-06',
+		'tree-06-brown',
+		'tree-07',
+		'tree-08',
+		'tree-08-brown',
+		'tree-08-red',
+		'tree-09',
+		'tree-09-brown',
+		'tree-09-red'
+	}
+	local s_tree_raffle = #tree_raffle
+
+	return {name = tree_raffle[Math.random(1, s_tree_raffle)], position = p}
 end
 
 return Public

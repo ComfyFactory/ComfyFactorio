@@ -27,6 +27,7 @@ Public[enum.RADIOACTIVE] = require 'maps.pirates.surfaces.islands.radioactive.ra
 Public[enum.RED_DESERT] = require 'maps.pirates.surfaces.islands.red_desert.red_desert'
 Public[enum.HORSESHOE] = require 'maps.pirates.surfaces.islands.horseshoe.horseshoe'
 Public[enum.SWAMP] = require 'maps.pirates.surfaces.islands.swamp.swamp'
+Public[enum.MAZE] = require 'maps.pirates.surfaces.islands.maze.maze'
 Public['IslandsCommon'] = require 'maps.pirates.surfaces.islands.common'
 
 
@@ -188,31 +189,48 @@ end
 
 
 
-function Public.spawn_ores_on_shorehit(destination, points_to_avoid)
+function Public.spawn_ores_on_arrival(destination, points_to_avoid)
 	points_to_avoid = points_to_avoid or {}
 	local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[destination.surface_name]
 	if not surface and surface.valid then return end
 
-	if not (destination.subtype and (destination.subtype == enum.STANDARD or destination.subtype == enum.STANDARD_VARIANT)) then return end
+	if (destination.subtype and (destination.subtype == enum.STANDARD or destination.subtype == enum.STANDARD_VARIANT or destination.subtype == enum.MAZE)) then
+		local ores = {'iron-ore', 'copper-ore', 'stone', 'coal', 'crude-oil'}
+	
+		local args = {
+			static_params = destination.static_params,
+			noise_generator = Utils.noise_generator({}, 0),
+		}
+			
+		local farness_boost_low, farness_boost_high = 0, 0
+		if destination.subtype == enum.MAZE then
+			farness_boost_low = 0.1
+			farness_boost_high = 0.4
+		end
+	
+		for _, ore in pairs(ores) do
+			if destination.static_params.abstract_ore_amounts[ore] then
+				local p = Hunt.close_position_try_avoiding_entities(args, points_to_avoid, farness_boost_low, farness_boost_high)
+				if p then points_to_avoid[#points_to_avoid + 1] = {x=p.x, y=p.y, r=11} end
 
-	local ores = {'iron-ore', 'copper-ore', 'stone', 'coal'}
+				if ore == 'crude-oil' then
+					local amount = Common.oil_abstract_to_real(destination.static_params.abstract_ore_amounts[ore])
 
-	local args = {
-		static_params = destination.static_params,
-		noise_generator = Utils.noise_generator({}, 0),
-	}
-
-	for _, ore in pairs(ores) do
-		local p = Hunt.close_position_1(args, points_to_avoid)
-		if p then points_to_avoid[#points_to_avoid + 1] = {x=p.x, y=p.y, r=8} end
-
-		local amount = Common.ore_abstract_to_real(destination.static_params.abstract_ore_amounts[ore])
-
-		local placed = Ores.draw_noisy_ore_patch(surface, p, ore, amount, 10000, 30, true, true)
-
-		if placed > 0 and not destination.dynamic_data.ore_types_spawned[ore] then
-			destination.dynamic_data.ore_types_spawned[ore] = true
+					surface.create_entity{name = 'crude-oil', amount = amount, position = p}
+					--@TODO: Make this into a collection of multiple oil patches
+			
+					destination.dynamic_data.ore_types_spawned[ore] = true
+				else
+					local amount = Common.ore_abstract_to_real(destination.static_params.abstract_ore_amounts[ore])
+			
+					local placed = Ores.draw_noisy_ore_patch(surface, p, ore, amount, 10000, 30, true, true)
+			
+					if placed > 0 then
+						destination.dynamic_data.ore_types_spawned[ore] = true
+					end
+				end
+			end
 		end
 	end
 end
@@ -264,7 +282,7 @@ local silo_chart_tag = Token.register(
 		local memory = Memory.get_crew_memory()
 		if memory.game_lost then return end
 		local destination = Common.current_destination()
-		local force = game.forces[memory.force_name]
+		local force = memory.force
 
 		destination.dynamic_data.silo_chart_tag = force.add_chart_tag(surface, {icon = {type = 'item', name = 'rocket-silo'}, position = p_silo})
 	end
@@ -274,16 +292,17 @@ function Public.spawn_silo_setup()
 	local destination = Common.current_destination()
 	local surface = game.surfaces[destination.surface_name]
 	local subtype = destination.subtype
-	local force = game.forces[memory.force_name]
+	local force = memory.force
 
 	local p_silo = Public[subtype].generate_silo_setup_position()
+	if not p_silo then return end
 	-- log(string.format("placing silo at x=%f, y = %f", p_silo.x, p_silo.y))
 
 	local silo_count = Balance.silo_count()
 	if not (silo_count and silo_count >= 1) then return end
 
 	if _DEBUG then
-		if silo_count >= 2 then game.print('silo count: ' .. silo_count) end
+		if silo_count >= 2 then game.print('debug - silo count: ' .. silo_count) end
 	end
 
 	for i=1,silo_count do
@@ -323,8 +342,11 @@ function Public.spawn_silo_setup()
 	-- 	eei.power_usage = 0
 	-- end
 
-	force.chart(surface, {{p_silo.x - 4, p_silo.y - 4},{p_silo.x + 4, p_silo.y + 4}})
-	Task.set_timeout_in_ticks(2, silo_chart_tag, {p_silo = p_silo, surface_name = destination.surface_name})
+	if CoreData.rocket_silo_death_causes_loss or (destination.static_params and destination.static_params.cost_to_leave and destination.static_params.cost_to_leave['launch_rocket'] and destination.static_params.cost_to_leave['launch_rocket'] == true) then
+		-- we need to know where it is
+		force.chart(surface, {{p_silo.x - 4, p_silo.y - 4},{p_silo.x + 4, p_silo.y + 4}})
+		Task.set_timeout_in_ticks(2, silo_chart_tag, {p_silo = p_silo, surface_name = destination.surface_name})
+	end
 
 	render_silo_hp()
 

@@ -169,7 +169,7 @@ function Public.initialise_resourcecount_quest()
 	local generated_production_quest = Public.generate_resourcecount_quest()
 	destination.dynamic_data.quest_params = {item = generated_production_quest.item}
 
-	local force = game.forces[memory.force_name]
+	local force = memory.force
 	if force and force.valid then
 		destination.dynamic_data.quest_params.initial_count = force.item_production_statistics.get_flow_count{name = generated_production_quest.item, input = true, precision_index = defines.flow_precision_index.one_thousand_hours, count = true}
 	end
@@ -225,7 +225,7 @@ function Public.try_resolve_quest()
 
 	if destination.dynamic_data.quest_type and destination.dynamic_data.quest_progress and destination.dynamic_data.quest_progressneeded and destination.dynamic_data.quest_progress >= destination.dynamic_data.quest_progressneeded and (not destination.dynamic_data.quest_complete) then
 
-		local force = game.forces[memory.force_name]
+		local force = memory.force
 		if not (force and force.valid) then return end
 		Common.notify_force_light(force,'Granted ' .. destination.dynamic_data.quest_reward.display_amount .. ' ' .. destination.dynamic_data.quest_reward.display_sprite)
 
