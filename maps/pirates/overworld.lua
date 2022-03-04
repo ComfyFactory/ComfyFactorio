@@ -141,10 +141,10 @@ function Public.generate_overworld_destination(p)
 
 	-- debug override to test islands:
 
-	-- if _DEBUG and type == Surfaces.enum.ISLAND then
-	-- 	-- warning: the first map is unique in that it isn't all loaded by the time you arrive, which can cause issues. For example, structures might get placed after ore, thereby deleting the ore underneath them.
-	-- 	subtype = Surfaces.Island.enum.MAZE
-	-- end
+	if _DEBUG and type == Surfaces.enum.ISLAND then
+		-- warning: the first map is unique in that it isn't all loaded by the time you arrive, which can cause issues. For example, structures might get placed after ore, thereby deleting the ore underneath them.
+		subtype = Surfaces.Island.enum.MAZE
+	end
 
 	-- if _DEBUG and ((macrop.x > 0 and macrop.x < 25)) and type ~= Surfaces.enum.DOCK then
 	-- 	type = nil

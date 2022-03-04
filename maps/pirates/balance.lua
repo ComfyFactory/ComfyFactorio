@@ -173,10 +173,10 @@ function Public.evolution_per_second()
 		end
 	end
 
-	if _DEBUG then
-		local surface = game.surfaces[destination.surface_name]
-		game.print(Common.spawner_count(surface) .. '  ' .. destination.dynamic_data.initial_spawner_count)
-	end
+	-- if _DEBUG then
+	-- 	local surface = game.surfaces[destination.surface_name]
+	-- 	game.print(Common.spawner_count(surface) .. '  ' .. destination.dynamic_data.initial_spawner_count)
+	-- end
 
 	return rate
 end

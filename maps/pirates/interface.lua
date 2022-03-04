@@ -36,7 +36,7 @@ local Classes = require 'maps.pirates.roles.classes'
 local Server = require 'utils.server'
 -- local Modifers = require 'player_modifiers'
 
-local tick_tack_trap = require 'functions.tick_tack_trap' --'enemy' force, but that's okay
+local tick_tack_trap = require 'maps.pirates.from_comfy.tick_tack_trap' --'enemy' force, but that's okay
 
 local Public = {}
 
@@ -314,7 +314,7 @@ local function quartermaster_damage_dealt_changes(event)
 end
 
 
-local function resist_poison(event)
+local function swamp_resist_poison(event)
 	local memory = Memory.get_crew_memory()
 
 	local entity = event.entity
@@ -328,6 +328,26 @@ local function resist_poison(event)
 	if not (destination.surface_name == entity.surface.name) then return end
 
 	if not ((entity.type and entity.type == 'tree') or (event.entity.force and string.sub(event.entity.force.name, 1, 5) == 'enemy')) then return end
+
+	local damage = event.final_damage_amount
+	event.entity.health = event.entity.health + damage
+end
+
+
+local function maze_walls_resistance(event)
+	local memory = Memory.get_crew_memory()
+
+	local entity = event.entity
+	if not entity.valid then return end
+
+	if not (event.damage_type.name and (event.damage_type.name == 'explosion' or event.damage_type.name == 'poison')) then return end
+
+	local destination = Common.current_destination()
+	if not (destination and destination.subtype and destination.subtype == Islands.enum.MAZE) then return end
+	
+	if not (destination.surface_name == entity.surface.name) then return end
+
+	if not ((entity.type and entity.type == 'tree') or entity.name == 'rock-huge' or entity.name == 'rock-big' or entity.name == 'sand-rock-big') then return end
 
 	local damage = event.final_damage_amount
 	event.entity.health = event.entity.health + damage
@@ -355,7 +375,9 @@ local function event_on_entity_damaged(event)
 	biters_chew_stuff_faster(event)
 	extra_player_damage(event)
 	artillery_damage(event)
-	resist_poison(event)
+	swamp_resist_poison(event)
+	maze_walls_resistance(event)
+
 	if string.sub(event.entity.force.name, 1, 5) == 'enemy' then
 		kraken_damage(event)
 		-- Balance.biter_immunities(event)
@@ -542,8 +564,8 @@ local function event_on_player_mined_entity(event)
 		if available and destination.type == Surfaces.enum.ISLAND then
 
 			if destination and destination.subtype and destination.subtype == Islands.enum.MAZE then
-				if Math.random(1, 300) == 1 then
-					tick_tack_trap(entity.surface, entity.position)
+				if Math.random(1, 30) == 1 then
+					tick_tack_trap(memory.enemy_force_name, entity.surface, entity.position)
 					return
 				end
 			else
@@ -622,8 +644,8 @@ local function event_on_player_mined_entity(event)
 		if available and destination.type == Surfaces.enum.ISLAND then
 
 			if destination and destination.subtype and destination.subtype == Islands.enum.MAZE then
-				if Math.random(1, 300) == 1 then
-					tick_tack_trap(entity.surface, entity.position)
+				if Math.random(1, 30) == 1 then
+					tick_tack_trap(memory.enemy_force_name, entity.surface, entity.position)
 					return
 				end
 			else
