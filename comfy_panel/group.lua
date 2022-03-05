@@ -235,11 +235,7 @@ local function on_gui_click(event)
 
     local name = event.element.name
 
-    if not name then
-        return
-    end
-
-    if name == 'tab_' .. module_name then
+    if name and name == 'tab_' .. module_name then
         local is_spamming = SpamProtection.is_spamming(player, nil, 'Groups tab_Groups')
         if is_spamming then
             return
@@ -254,7 +250,7 @@ local function on_gui_click(event)
         return
     end
 
-    if name == 'create_new_group' then
+    if name and name == 'create_new_group' then
         local is_spamming = SpamProtection.is_spamming(player, nil, 'Group Click')
 
         if is_spamming then
