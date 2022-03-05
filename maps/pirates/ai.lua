@@ -339,17 +339,22 @@ function Public.spawn_group_of_scripted_biters(fraction_of_floating_pollution, m
     local spawner = Public.get_random_spawner(surface)
     if not spawner then log('no spawner found') return end
 
-	-- pick up nearby units that might be idle:e
-	local nearby_units = surface.find_entities_filtered{area = {{spawner.position.x - 6, spawner.position.y - 6}, {spawner.position.x + 6, spawner.position.y + 6}}, force = enemy_force_name, type = 'unit'}
+	local nearby_units_to_bring
+	if #memory.scripted_biters >= 9/10 * CoreData.total_max_biters then
+		-- pick up nearby units that might be idle:
+		nearby_units_to_bring = surface.find_entities_filtered{area = {{spawner.position.x - 8, spawner.position.y - 8}, {spawner.position.x + 8, spawner.position.y + 8}}, force = enemy_force_name, type = 'unit'}
+	else
+		nearby_units_to_bring = {}
+	end
 
     local new_units = Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spawner.position, fraction_of_floating_pollution, minimum_avg_units, maximum_units, 1/wave_size_multiplier)
 
-    if (new_units and nearby_units and (#new_units + #nearby_units) == 0) then log('no units found') return end
+    if (new_units and nearby_units_to_bring and (#new_units + #nearby_units_to_bring) == 0) then log('no units found') return end
 
     local position = surface.find_non_colliding_position('rocket-silo', spawner.position, 256, 2) or spawner.position
 
     local unit_group = surface.create_unit_group({position = position, force = enemy_force_name})
-    for _, unit in pairs(nearby_units) do
+    for _, unit in pairs(nearby_units_to_bring) do
         unit_group.add_member(unit)
     end
     for _, unit in pairs(new_units) do
