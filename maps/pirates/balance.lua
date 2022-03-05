@@ -135,7 +135,7 @@ function Public.boat_passive_pollution_per_minute(time)
 		elseif time >= 60/100 * T then
 			boost = 2
 		elseif time >= 50/100 * T then
-			boost = 1
+			boost = 1.5
 		end
 	end
 

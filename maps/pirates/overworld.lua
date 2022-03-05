@@ -96,12 +96,8 @@ function Public.generate_overworld_destination(p)
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.STANDARD
 	elseif macrop.x == 6 then
-		if macrop.y == 1 then
-			type = Surfaces.enum.ISLAND
-			subtype = Surfaces.Island.enum.MAZE
-		else
-			type = nil
-		end
+		type = Surfaces.enum.ISLAND
+		subtype = Surfaces.Island.enum.MAZE
 	elseif macrop.x == 8 then --game length decrease, pending more content
 		type = nil
 	-- elseif macrop.x == 9 then --just before krakens
@@ -327,7 +323,7 @@ function Public.generate_overworld_destination(p)
 		end
 		static_params.abstract_ore_amounts = abstract_ore_amounts
 
-		static_params.radius_squared_modifier = (Math.sqrt(0.5) + 1 * Math.random())^2
+		static_params.radius_squared_modifier = (1 + 1 * Math.random())^2
 
 		if macrop.x == 0 then static_params.radius_squared_modifier = 1 end
 

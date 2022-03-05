@@ -160,7 +160,7 @@ Public.maze_defended_camp = {
 			type = 'static_destructible',
 			force = 'ancient-hostile',
 			offset = {x = 0, y = 0},
-			bp_string = [[0eNqVkl0KgzAQhO+yzxHqT9TmKqUUrYsEdJUYS0Vy9yZKodAI5ikMzHxMllmh7mYclSQNYoWJqjHSQ9Qq2Tj9BhHnDBb3GAbyOdAE4maNsqWqcxa9jAgCpMYeGFDVO9XOFOlZKdTgYtSgI5k7AyQttcSdsonlQXNfo7IGX57BOEw2MtC30N7HGPYHSE4BymNAeq4BPyZkAX8ofQAeUsFLyEPOyH2EIuSOXkIZdEiLsNPYJiR+BsnghWra7EkZZ8U1KXjM4zS/GPMBseflYg==]],
+			bp_string = [[0eNqVkVEKgzAQRO+y3xEaa7TNVUopWhcJ6CbEpFQkd2+iFAq1UL+WgZnHMDtD03s0VpEDOcNItcmczjqr2qSfIHnJYEonMFB3TSPISzSqjuo+WdxkECQohwMwoHpIqvOUOW8tOkgxajGRwpUBklNO4UpZxHQjPzRoo2Erz8DoMUY0vQutfUJgX4D8P4D4TTjuqSC2CMWuDhERR1nGkx+vYPBAOy72/MSL6pxXggt+LA8hvAD1/I5u]],
 		},
 		{
 			type = 'entities_randomlyplaced_border',
@@ -193,7 +193,7 @@ Public.maze_undefended_camp = {
 			name = 'land-mine',
 			force = 'ancient-hostile',
 			offset = {x = 0, y = 0},
-			count = 15,
+			count = 10,
 			large_r = 10,
 			small_r = 8,
 		},

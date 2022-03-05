@@ -132,15 +132,15 @@ function Public.go_from_starting_dock_to_first_destination()
 		boat.EEI_stage = 1
 		Boats.update_EEIs(boat)
 
-		if Common.difficulty() == 1 then
-			Boats.upgrade_chests(boat, 'iron-chest')
-			Hold.upgrade_chests(1, 'iron-chest')
-			Crowsnest.upgrade_chests('iron-chest')
-		elseif Common.difficulty() > 1 then
-			Boats.upgrade_chests(boat, 'steel-chest')
-			Hold.upgrade_chests(1, 'steel-chest')
-			Crowsnest.upgrade_chests('steel-chest')
-		end
+		-- if Common.difficulty() == 1 then
+		-- 	Boats.upgrade_chests(boat, 'iron-chest')
+		-- 	Hold.upgrade_chests(1, 'iron-chest')
+		-- 	Crowsnest.upgrade_chests('iron-chest')
+		-- elseif Common.difficulty() > 1 then
+		-- 	Boats.upgrade_chests(boat, 'steel-chest')
+		-- 	Hold.upgrade_chests(1, 'steel-chest')
+		-- 	Crowsnest.upgrade_chests('steel-chest')
+		-- end
 
 		memory.age = 0
 		memory.real_age = 0
@@ -512,6 +512,21 @@ function Public.go_from_currentdestination_to_sea()
 	local new_boatposition = Utils.snap_coordinates_for_rails({x = Boats.get_scope(memory.boat).Data.width / 2, y = 0})
 	
 	Boats.teleport_boat(boat, seaname, new_boatposition, CoreData.static_boat_floor, 'water')
+
+	if memory.overworldx == 0 and memory.boat then
+		if Common.difficulty() >= 1 then
+			Boats.upgrade_chests(boat, 'iron-chest')
+			Hold.upgrade_chests(1, 'iron-chest')
+			Crowsnest.upgrade_chests('iron-chest')
+
+			Common.notify_force(memory.force, 'Difficulty at Normal or above: Boat chests upgraded.')
+		-- elseif Common.difficulty() > 1 then
+		-- 	Boats.upgrade_chests(boat, 'steel-chest')
+		-- 	Hold.upgrade_chests(1, 'steel-chest')
+		-- 	Crowsnest.upgrade_chests('steel-chest')
+		end
+	end
+	
 	memory.boat.state = Boats.enum_state.ATSEA_SAILING
 	memory.boat.speed = 0
 	memory.boat.position = new_boatposition

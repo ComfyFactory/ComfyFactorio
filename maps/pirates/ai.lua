@@ -717,7 +717,7 @@ function Public.revenge_group(surface, p, target, type, bonus_evo, amount_multip
 		name = Common.get_random_biter_type(memory.evolution_factor + bonus_evo)
 
 		if name == 'small-biter' then
-			count = 6
+			count = 5
 		elseif name == 'medium-biter' then
 			count = 3
 		elseif name == 'big-biter' then
@@ -729,11 +729,11 @@ function Public.revenge_group(surface, p, target, type, bonus_evo, amount_multip
 		name = Common.get_random_spitter_type(memory.evolution_factor + bonus_evo)
 
 		if name == 'small-spitter' then
-			count = 10
+			count = 7
 		elseif name == 'medium-spitter' then
-			count = 6
+			count = 5
 		elseif name == 'big-spitter' then
-			count = 4
+			count = 3
 		elseif name == 'behemoth-spitter' then
 			count = 2
 		end

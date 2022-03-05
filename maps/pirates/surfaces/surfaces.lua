@@ -311,8 +311,11 @@ end
 
 function Public.destination_on_departure(destination)
 	local memory = Memory.get_crew_memory()
+	local boat = memory.boat
 
-	if memory.overworldx == 40*9 then Parrot.parrot_kraken_warning() end
+	if memory.overworldx == 40*9 then
+		Parrot.parrot_kraken_warning()
+	end
 
 	if destination.subtype and destination.subtype == Islands.enum.MAZE then
 		local force = memory.force

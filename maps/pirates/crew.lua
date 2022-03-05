@@ -75,10 +75,11 @@ function Public.update_difficulty()
 
 	if modal_id ~= memory.difficulty_option then
 		local color = CoreData.difficulty_options[modal_id].associated_color
-		local message = 'Difficulty [color=' .. color.r .. ',' .. color.g .. ',' .. color.b .. ']changed to ' .. CoreData.difficulty_options[modal_id].text .. '[/color].'
+		local message1 = 'Difficulty [color=' .. color.r .. ',' .. color.g .. ',' .. color.b .. ']changed to ' .. CoreData.difficulty_options[modal_id].text .. '[/color].'
+		local message2 = 'Difficulty changed to ' .. CoreData.difficulty_options[modal_id].text .. '.'
 
-		Common.notify_force(memory.force, message)
-		Server.to_discord_embed_raw(CoreData.comfy_emojis.kewl .. '[' .. memory.name .. '] ' .. message)
+		Common.notify_force(memory.force, message1)
+		Server.to_discord_embed_raw(CoreData.comfy_emojis.kewl .. '[' .. memory.name .. '] ' .. message2)
 
 		memory.difficulty_option = modal_id
 		memory.difficulty = CoreData.difficulty_options[modal_id].value

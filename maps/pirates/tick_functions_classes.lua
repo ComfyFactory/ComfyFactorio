@@ -152,7 +152,7 @@ function Public.update_character_properties(tickinterval)
 end
 
 local function class_ore_grant(player, how_much)
-	if Math.random(2) == 2 then
+	if Math.random(3) == 1 then
 		Common.flying_text_small(player.surface, player.position, '[color=0.85,0.58,0.37]+[/color]')
 		Common.give_reward_items{{name = 'copper-ore', count = Math.ceil(how_much * Balance.class_resource_scale())}}
 	else

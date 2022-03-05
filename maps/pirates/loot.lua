@@ -308,11 +308,11 @@ function Public.maze_camp_loot()
 end
 
 Public.maze_lab_loot_data_raw = {
-	{8, -0.5, 0.5, true, 'automation-science-pack', 8, 20},
-	{8, -0.6, 0.6, true, 'logistic-science-pack', 8, 20},
-	{6, -0.1, 1, true, 'military-science-pack', 8, 20},
-	{6, -0.5, 1.5, true, 'chemical-science-pack', 8, 20},
-	{6, 0, 1.5, true, 'production-science-pack', 8, 20},
+	{8, -0.5, 0.5, true, 'automation-science-pack', 5, 20},
+	{8, -0.6, 0.6, true, 'logistic-science-pack', 5, 20},
+	{6, -0.1, 1, true, 'military-science-pack', 5, 20},
+	{6, -0.5, 1.5, true, 'chemical-science-pack', 5, 20},
+	{6, 0, 1.5, true, 'production-science-pack', 5, 20},
 	-- {4, 0.4, 1.5, true, 'utility-science-pack', 16, 32},
 	-- {10, 0.5, 1.5, true, 'space-science-pack', 16, 32},
 }
@@ -339,7 +339,7 @@ Public.maze_treasure_data_raw = {
 	{0.5, 0, 1, false, 'productivity-module-3', 2, 2},
 
 	{2, 0, 1.5, true, 'production-science-pack', 20, 25},
-	{2, 0, 1.5, true, 'coin', 5000, 10000},
+	{2, 0, 1.5, true, 'coin', 3000, 6500},
 
 	{1, 0.2, 1.8, true, 'explosive-rocket', 6, 8},
 

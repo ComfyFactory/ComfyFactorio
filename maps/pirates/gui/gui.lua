@@ -924,7 +924,7 @@ function Public.update_gui(player)
 					if tooltip == '' then tooltip = 'Quest: Worms\n\nKill enough worms for a bonus.' end
 	
 				elseif quest_type == Quest.enum.FIND then
-					if tooltip == '' then tooltip = 'Quest: Find\n\nFind the ghosts for a bonus.' end
+					if tooltip == '' then tooltip = 'Quest: Ghosts\n\nFind the ghosts for a bonus.' end
 	
 				elseif quest_type == Quest.enum.RESOURCEFLOW then
 					if tooltip == '' then tooltip = 'Quest: Resource Flow\n\nAchieve a production rate of a particular item for a bonus.' end
