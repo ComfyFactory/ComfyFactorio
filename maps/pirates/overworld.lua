@@ -170,7 +170,7 @@ function Public.generate_overworld_destination(p)
 		-- temporarily placed this back here, as moving it to shorehit broke things:
 		local playercount = Common.activecrewcount()
 		local max_evo = 0.85
-		if Common.difficulty() < 1 then max_evo = 0.75 end
+		if Common.difficulty() < 1 then max_evo = 0.70 end
 		if Common.difficulty() > 1 then max_evo = 0.90 end
 
 		if macrop.x > 5 then
@@ -187,12 +187,12 @@ function Public.generate_overworld_destination(p)
 			local times
 			if playercount <= 2 then
 				times = {1, 5, 10, 15, 20}
-			elseif playercount <= 7 then
+			elseif playercount <= 8 then
 				times = {1, 5, 10, 15, 20, 25}
 			elseif playercount <= 15 then
-				times = {1, 5, 10, 15, 20, 25, 30, 35}
+				times = {1, 5, 10, 15, 20, 25, 30}
 			else
-				times = {1, 5, 10, 15, 20, 25, 30, 35, 40, 45}
+				times = {1, 5, 10, 15, 20, 25, 30, 35, 40}
 			end
 			scheduled_raft_raids = {}
 			for _, t in pairs(times) do

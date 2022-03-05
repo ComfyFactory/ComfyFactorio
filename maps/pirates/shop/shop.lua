@@ -63,7 +63,7 @@ Public.main_shop_data_1 = {
 	[Upgrades.enum.MORE_POWER] = {
 		tooltip = 'Upgrade the ship\'s power.',
 		what_you_get_sprite_buttons = {['utility/status_working'] = false},
-		base_cost = {coins = 5000, fuel = 700},
+		base_cost = {coins = 5000, fuel = 800},
 	},
 	[Upgrades.enum.EXTRA_HOLD] = {
 		tooltip = 'Upgrade the ship\'s hold.',
@@ -352,20 +352,8 @@ function Public.event_on_market_item_purchased(event)
 
 	local inv = player.get_inventory(defines.inventory.character_main)
 
-	-- We want to disallow multi-purchases in this game, so we need to refund any additional purchases:
-	if player and trade_count and trade_count > 1 then
-		inv = player.get_inventory(defines.inventory.character_main)
-		if not inv then return end
-		for _, p in pairs(price) do
-			inv.insert{name = p.name, count = p.amount * (trade_count - 1)}
-		end
-		if offer_type == 'give-item' then
-			inv.remove{name = offer_giveitem_name, count = offer_giveitem_count * (trade_count - 1)}
-		end
-	end
 
-
-	-- Here - check for BARTER vs STATIC vs ONE-oFF
+	-- check for BARTER vs STATIC vs ONE-oFF
 	-- One-off becomes unavailable after purchase, such as class purchase
 	-- Static doesn't decay
 	-- Barter decays
@@ -384,6 +372,18 @@ function Public.event_on_market_item_purchased(event)
 		decay_type = 'static'
 	else
 		decay_type = 'decay'
+	end
+
+	-- For everything but static, we want to disallow multi-purchases in this game, so refund any additional purchases:
+	if decay_type ~= 'static' and player and trade_count and trade_count > 1 then
+		inv = player.get_inventory(defines.inventory.character_main)
+		if not inv then return end
+		for _, p in pairs(price) do
+			inv.insert{name = p.name, count = p.amount * (trade_count - 1)}
+		end
+		if offer_type == 'give-item' then
+			inv.remove{name = offer_giveitem_name, count = offer_giveitem_count * (trade_count - 1)}
+		end
 	end
 
 	if decay_type == 'one-off' then
@@ -421,6 +421,8 @@ function Public.event_on_market_item_purchased(event)
 				end
 
 				memory.classes_table[player.index] = class_for_sale
+
+				memory.available_classes_pool = Utils.ordered_table_with_single_value_removed(memory.available_classes_pool, class_for_sale)
 			
 				if destination.dynamic_data and destination.dynamic_data.market_class_offer_rendering then
 					rendering.destroy(destination.dynamic_data.market_class_offer_rendering)

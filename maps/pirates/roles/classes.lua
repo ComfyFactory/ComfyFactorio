@@ -174,8 +174,6 @@ function Public.generate_class_for_sale()
 
 		local class = memory.available_classes_pool[Math.random(#memory.available_classes_pool)]
 	
-		memory.available_classes_pool = Utils.ordered_table_with_single_value_removed(memory.available_classes_pool, class)
-	
 		return class
 	else
 		return nil

@@ -75,7 +75,7 @@ end
 function Public.max_time_on_island_formula() --always >0  --tuned
 	return 60 * (
 			(32 + 2 * (Common.overworldx()/40)^(1/3))
-	) / Public.crew_scale()^(65/100) / Math.sloped(Common.difficulty(), 1/4) --changed crew_scale factor significantly to help smaller crews
+	) / Public.crew_scale()^(60/100) / Math.sloped(Common.difficulty(), 1/4) --changed crew_scale factor significantly to help smaller crews
 end
 
 
@@ -140,8 +140,8 @@ function Public.boat_passive_pollution_per_minute(time)
 	end
 
 	return boost * (
-			6 * Common.difficulty() * (Common.overworldx()/40)^(1.6) * (Public.crew_scale())^(60/100)
-	 ) -- No T dependence! Is that the right idea? I wrote it this way earlier, and it can make sense, but I'm not 100% sure.
+			6 * Common.difficulty() * (Common.overworldx()/40)^(1.6) * (Public.crew_scale())^(55/100)
+	 ) -- There is no _explicit_ T dependence, but it depends almost the same way on the crew_scale as T does.
 end
 
 
@@ -265,7 +265,7 @@ end
 
 
 function Public.apply_crew_buffs_per_x(force)
-	force.laboratory_productivity_bonus = Math.max(0, 10/100 * (Common.overworldx()/40) - (10*(Common.difficulty()) - 5)) --difficulty causes lab productivity boosts to start later
+	force.laboratory_productivity_bonus = Math.max(0, 7/100 * (Common.overworldx()/40) - (10*(Common.difficulty()) - 5)) --difficulty causes lab productivity boosts to start later
 end
 
 function Public.class_cost()
