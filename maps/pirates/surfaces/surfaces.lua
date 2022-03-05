@@ -217,6 +217,8 @@ function Public.destination_on_arrival(destination)
 
 		if destination.subtype == Islands.enum.RADIOACTIVE then
 			destination.dynamic_data.time_remaining = -1
+		elseif destination.subtype == Islands.enum.MAZE then --more time
+			destination.dynamic_data.time_remaining = Math.ceil(1.1 * Balance.max_time_on_island())
 		else
 			destination.dynamic_data.time_remaining = Math.ceil(Balance.max_time_on_island())
 		end
@@ -302,7 +304,7 @@ function Public.destination_on_arrival(destination)
 
 		if destination.subtype and destination.subtype == Islands.enum.MAZE then
 			local force = memory.force
-			force.manual_mining_speed_modifier = 0
+			force.manual_mining_speed_modifier = 0.25
 		end
 	end
 end
@@ -351,7 +353,7 @@ function Public.destination_on_crewboat_hits_shore(destination)
 			end
 			
 			Parrot.parrot_radioactive_tip_2()
-		elseif destination.subtype == Islands.enum.MAZE then
+		elseif destination.subtype == Islands.enum.MAZE and memory.overworldx >= Common.maze_minimap_jam_start_league then
 			Parrot.parrot_maze_tip_1()
 		end
 

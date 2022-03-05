@@ -46,7 +46,7 @@ end
 
 
 function Public.generate_overworld_destination(p)
-	-- be careful not to call any Balance functions that depend on overworldx, as this is called earlier
+	-- be careful when calling any Balance functions that depend on overworldx — they will be evaluated when the island is chosen, not on arrival
 	local memory = Memory.get_crew_memory()
 
 	local macrop = {x = p.x/40, y = p.y/24}
@@ -63,6 +63,17 @@ function Public.generate_overworld_destination(p)
 	end
 	if macrop.x >= 16 then island_subtype_raffle[#island_subtype_raffle + 1] = Surfaces.Island.enum.SWAMP end
 	if macrop.x >= 16 then island_subtype_raffle[#island_subtype_raffle + 1] = 'none' end
+
+	--avoid duplicate subtype twice in a row in the same lane
+	for _, d in pairs(memory.destinations) do
+		if d.subtype and d.overworld_position.x == p.x - 40 and d.overworld_position.y == p.y then
+			local new_island_subtype_raffle = Utils.ordered_table_with_values_removed(island_subtype_raffle, d.subtype)
+			-- if _DEBUG and #new_island_subtype_raffle ~= #island_subtype_raffle then
+			-- 	game.print('Removed ' .. d.subtype .. ' from raffle at ' .. p.x .. ',' .. p.y)
+			-- end
+			island_subtype_raffle = new_island_subtype_raffle
+		end
+	end
 
 	if macrop.x == 0 then
 		if macrop.y == 0 then
@@ -98,13 +109,13 @@ function Public.generate_overworld_destination(p)
 		subtype = Surfaces.Island.enum.RED_DESERT
 	elseif macrop.x == 10 then --krakens appear
 		type = nil
-	elseif macrop.x == 11 then
-		if macrop.y == -1 then
-			type = Surfaces.enum.ISLAND
-			subtype = Surfaces.Island.enum.MAZE
-		else
-			type = nil
-		end
+	-- elseif macrop.x == 11 then
+	-- 	if macrop.y == -1 then
+	-- 		type = Surfaces.enum.ISLAND
+	-- 		subtype = Surfaces.Island.enum.MAZE
+	-- 	else
+	-- 		type = nil
+	-- 	end
 	elseif macrop.x == 12 then --just after krakens, but dock is here too, so there's a choice
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.SWAMP
@@ -120,7 +131,7 @@ function Public.generate_overworld_destination(p)
 		type = nil
 	elseif macrop.x == 23 then --rocket launch cost
 		type = Surfaces.enum.ISLAND
-		subtype = Surfaces.Island.enum.SWAMP
+		subtype = Surfaces.Island.enum.MAZE
 	elseif macrop.x == 24 then --rocket launch cost
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.WALKWAYS
@@ -139,10 +150,10 @@ function Public.generate_overworld_destination(p)
 
 	-- debug override to test islands:
 
-	if _DEBUG and type == Surfaces.enum.ISLAND then
-		-- warning: the first map is unique in that it isn't all loaded by the time you arrive, which can cause issues. For example, structures might get placed after ore, thereby deleting the ore underneath them.
-		subtype = Surfaces.Island.enum.MAZE
-	end
+	-- if _DEBUG and type == Surfaces.enum.ISLAND then
+	-- 	-- warning: the first map is unique in that it isn't all loaded by the time you arrive, which can cause issues. For example, structures might get placed after ore, thereby deleting the ore underneath them.
+	-- 	subtype = Surfaces.Island.enum.MAZE
+	-- end
 
 	-- if _DEBUG and ((macrop.x > 0 and macrop.x < 25)) and type ~= Surfaces.enum.DOCK then
 	-- 	type = nil
@@ -212,6 +223,12 @@ function Public.generate_overworld_destination(p)
 			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*18),
 			['electric-engine-unit'] = 2,
 		}
+		local base_cost_2c = {
+			['small-lamp'] = Math.ceil(((macrop.x-2)^(2/3))*25),
+			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*18),
+			['advanced-circuit'] = Math.ceil(((macrop.x-15)^(2/3))*8),
+			['launch_rocket'] = true,
+		}
 		local base_cost_3 = {
 			['small-lamp'] = Math.ceil(((macrop.x-2)^(2/3))*25),
 			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*18),
@@ -254,7 +271,9 @@ function Public.generate_overworld_destination(p)
 			else
 				cost_to_leave = nil
 			end
-		elseif macrop.x <= 24 then
+		elseif macrop.x == 23 then
+			cost_to_leave = base_cost_2c
+		elseif macrop.x == 24 then
 			cost_to_leave = base_cost_3
 		else
 			cost_to_leave = Utils.deepcopy(base_cost_4)

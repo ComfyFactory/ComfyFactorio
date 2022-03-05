@@ -117,6 +117,7 @@ function Public.initial_class_pool()
 		enum.LUMBERJACK,
 		enum.IRON_LEG,
 		enum.QUARTERMASTER,
+		enum.QUARTERMASTER,
 	}
 end
 

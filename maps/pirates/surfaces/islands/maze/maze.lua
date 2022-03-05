@@ -145,7 +145,7 @@ local free_labyrinth_cell_raffle = {
 	maze_belts_2 = 0.2,
 	maze_belts_3 = 0.2,
 	maze_belts_4 = 0.2,
-	maze_treasure = 0.5,
+	maze_treasure = 0.7,
 }
 
 local function free_labyrinth_cell_type(args)

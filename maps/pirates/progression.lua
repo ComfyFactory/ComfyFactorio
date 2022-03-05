@@ -191,8 +191,8 @@ function Public.progress_to_destination(destination_index)
 
 	if type == Surfaces.enum.DOCK then
 		local BoatData = Boats.get_scope(boat).Data
-		starting_boatposition = Utils.snap_coordinates_for_rails({x = Dock.Data.playerboat_starting_xcoord, y = Dock.Data.top_boat_bottom - BoatData.height/2})
-		-- starting_boatposition = {x = -destination_data.static_params.width/2 + BoatData.width + 10, y = Dock.Data.top_boat_bottom - BoatData.height/2}
+		starting_boatposition = Utils.snap_coordinates_for_rails({x = Dock.Data.playerboat_starting_xcoord, y = Dock.Data.bottom_boat_top + BoatData.height/2})
+		-- starting_boatposition = {x = -destination_data.static_params.width/2 + BoatData.width + 10, y = Dock.Data.bottom_boat_top - BoatData.height/2}
 		Common.current_destination().dynamic_data.time_remaining = 180
 
 		-- memory.mainshop_availability_bools.sell_iron = true

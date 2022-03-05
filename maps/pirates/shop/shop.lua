@@ -96,7 +96,7 @@ Public.main_shop_data_2 = {
 	artillery_shell = {
 		tooltip = '10 cannon shells.',
 		what_you_get_sprite_buttons = {['item/artillery-shell'] = 10},
-		base_cost = {coins = 2200, fuel = 200},
+		base_cost = {coins = 2000, fuel = 50},
 	},
 	artillery_remote = {
 		tooltip = 'An artillery targeting remote.',

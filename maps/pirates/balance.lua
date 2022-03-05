@@ -203,7 +203,7 @@ function Public.evolution_per_biter_base_kill() --it's important to have evo go 
 end
 
 function Public.evolution_per_full_silo_charge()
-	return 0.06 --too low and you always charge immediately, too high and you always charge late
+	return 0.05 --too low and you always charge immediately, too high and you always charge late
 end
 
 function Public.bonus_damage_to_humans()

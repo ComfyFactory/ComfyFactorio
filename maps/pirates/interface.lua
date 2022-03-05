@@ -58,7 +58,7 @@ function Public.silo_died()
 				Crew.try_lose('silo destroyed')
 			elseif (not destination.dynamic_data.rocketlaunched) and destination.static_params and destination.static_params.cost_to_leave and destination.static_params.cost_to_leave['launch_rocket'] and destination.static_params.cost_to_leave['launch_rocket'] == true then
 				Crew.try_lose('silo destroyed before a necessary launch')
-			else
+			elseif (not destination.dynamic_data.rocketlaunched) then
 				Common.notify_force(force, 'The silo was destroyed.')
 			end
 		end
@@ -564,7 +564,7 @@ local function event_on_player_mined_entity(event)
 		if available and destination.type == Surfaces.enum.ISLAND then
 
 			if destination and destination.subtype and destination.subtype == Islands.enum.MAZE then
-				if Math.random(1, 30) == 1 then
+				if Math.random(1, 50) == 1 then
 					tick_tack_trap(memory.enemy_force_name, entity.surface, entity.position)
 					return
 				end
@@ -644,7 +644,7 @@ local function event_on_player_mined_entity(event)
 		if available and destination.type == Surfaces.enum.ISLAND then
 
 			if destination and destination.subtype and destination.subtype == Islands.enum.MAZE then
-				if Math.random(1, 30) == 1 then
+				if Math.random(1, 50) == 1 then
 					tick_tack_trap(memory.enemy_force_name, entity.surface, entity.position)
 					return
 				end

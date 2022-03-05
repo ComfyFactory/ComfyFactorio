@@ -161,7 +161,7 @@ Public.chest_loot_data_raw = {
 	{5, 0, 1, true, 'steel-furnace', 4, 8},
 	{5, 0, 1, true, 'assembling-machine-2', 2, 4},
 	{5, 0, 1, true, 'medium-electric-pole', 6, 20},
-	{5, 0, 1, true, 'accumulator', 4, 8},
+	{5, 0, 1, true, 'accumulator', 3, 6},
 	{5, 0, 1, true, 'solar-panel', 3, 6},
 	{8, 0, 1, true, 'steel-chest', 8, 16},
 	{3, 0.2, 1, true, 'chemical-plant', 1, 3},
@@ -380,7 +380,11 @@ Public.maze_treasure_data_raw = {
 }
 
 function Public.maze_treasure_loot()
-	return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.maze_treasure_data_raw), 1, Math.max(0,Math.min(1, Math.sloped(Common.difficulty(),1/2) * (70/100 + Common.game_completion_progress()))))
+	if Math.random(5) == 1 then
+		return {Public.random_plates(8)}
+	else
+		return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.maze_treasure_data_raw), 1, Math.max(0,Math.min(1, Math.sloped(Common.difficulty(),1/2) * (70/100 + Common.game_completion_progress()))))
+	end
 end
 
 return Public

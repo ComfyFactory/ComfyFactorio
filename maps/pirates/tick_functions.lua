@@ -1178,7 +1178,7 @@ function Public.LOS_tick_fast(tickinterval)
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 
-	if destination.type == Surfaces.enum.ISLAND and destination.subtype == Surfaces.Island.enum.MAZE and memory.boat and memory.boat.state == Boats.enum_state.LANDED then
+	if destination.type == Surfaces.enum.ISLAND and destination.subtype == Surfaces.Island.enum.MAZE and memory.overworldx >= Common.maze_minimap_jam_start_league and memory.boat and memory.boat.state == Boats.enum_state.LANDED then
 		if not destination.surface_name then return end
 		local surface = game.surfaces[destination.surface_name]
 		local force = memory.force

@@ -411,6 +411,10 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 		base_pollution_cost_multiplier = base_pollution_cost_multiplier * 0.85 --biters 15% more aggressive
 	end
 
+	if destination.subtype and destination.subtype == IslandsCommon.enum.MAZE then
+		base_pollution_cost_multiplier = base_pollution_cost_multiplier * 1.2 --biters 20% less aggressive
+	end
+
     if budget >= minimum_avg_units * Common.averageUnitPollutionCost(evolution) * base_pollution_cost_multiplier then
 
         local function spawn(name2)
