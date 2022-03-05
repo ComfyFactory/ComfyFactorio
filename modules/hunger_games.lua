@@ -41,7 +41,12 @@ local function anarchy_gui(player)
     frame.style.minimal_height = total_height
 
     local t = frame.add({type = 'table', column_count = 5})
-    local headings = {{'Title', group_name_width}, {'Description', description_width}, {'Members', members_width * member_columns}, {'', actions_width * 2 - 30}}
+    local headings = {
+        {'Title', group_name_width},
+        {'Description', description_width},
+        {'Members', members_width * member_columns},
+        {'', actions_width * 2 - 30}
+    }
     for _, h in pairs(headings) do
         local l = t.add({type = 'label', caption = h[1]})
         l.style.font_color = {r = 0.98, g = 0.66, b = 0.22}
@@ -60,7 +65,8 @@ local function anarchy_gui(player)
     b.style.right_padding = 4
     b.style.bottom_padding = 2
 
-    local scroll_pane = frame.add({type = 'scroll-pane', name = 'scroll_pane', direction = 'vertical', horizontal_scroll_policy = 'never', vertical_scroll_policy = 'auto'})
+    local scroll_pane =
+        frame.add({type = 'scroll-pane', name = 'scroll_pane', direction = 'vertical', horizontal_scroll_policy = 'never', vertical_scroll_policy = 'auto'})
     scroll_pane.style.maximal_height = total_height - 50
     scroll_pane.style.minimal_height = total_height - 50
 
@@ -268,7 +274,12 @@ local function new_group(frame, player)
         local color = player.color
         color = {r = color.r * 0.6 + 0.4, g = color.g * 0.6 + 0.4, b = color.b * 0.6 + 0.4, a = 1}
 
-        global.alliance_groups[new_group_name] = {name = new_group_name, color = color, description = new_group_description, members = {[tostring(player.name)] = player.index}}
+        global.alliance_groups[new_group_name] = {
+            name = new_group_name,
+            color = color,
+            description = new_group_description,
+            members = {[tostring(player.name)] = player.index}
+        }
         color = {r = player.color.r * 0.7 + 0.3, g = player.color.g * 0.7 + 0.3, b = player.color.b * 0.7 + 0.3, a = 1}
         game.print(tostring(player.name) .. ' has founded a new group!', color)
         game.print('>> ' .. new_group_name, {r = 0.98, g = 0.66, b = 0.22})
@@ -368,7 +379,8 @@ local function on_gui_click(event)
             if event.element.type == 'button' and event.element.caption == 'Join' then
                 if global.spam_protection[tostring(player.name)] > game.tick then
                     player.print(
-                        'Please wait ' .. math.ceil((global.spam_protection[tostring(player.name)] - game.tick) / 60) .. ' seconds before sending another request.',
+                        'Please wait ' ..
+                            math.ceil((global.spam_protection[tostring(player.name)] - game.tick) / 60) .. ' seconds before sending another request.',
                         message_color
                     )
                     return
@@ -429,7 +441,6 @@ local function on_player_joined_game(event)
         permission_group.set_allows_action(defines.input_action.gui_value_changed, true)
         permission_group.set_allows_action(defines.input_action.gui_click, true)
         permission_group.set_allows_action(defines.input_action.gui_selection_state_changed, true)
-        permission_group.set_allows_action(defines.input_action.open_kills_gui, true)
         permission_group.set_allows_action(defines.input_action.open_character_gui, true)
         permission_group.set_allows_action(defines.input_action.edit_permission_group, true)
         permission_group.set_allows_action(defines.input_action.toggle_show_entity_info, true)
