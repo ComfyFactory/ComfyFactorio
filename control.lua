@@ -26,7 +26,7 @@ require 'utils.debug.command'
 require 'modules.corpse_markers'
 require 'modules.floaty_chat'
 require 'modules.show_inventory'
-require 'modules.inserter_drops_pickup'
+-- require 'modules.inserter_drops_pickup' -- is currently causing desyncs
 require 'modules.autostash'
 
 require 'comfy_panel.main'
