@@ -280,7 +280,7 @@ local function radioactive_tick()
 			destination.dynamic_data.evolution_accrued_time = destination.dynamic_data.evolution_accrued_time + extra_evo
 			-- faster pollute:
 			-- local pollution = 1000 * Common.difficulty() * tickinterval / 60
-			local pollution = 4 * (6 * Common.difficulty()^(1.1) * (Common.overworldx()/40)^(16/10) * (Balance.crew_scale())^(0.6)) / 3600 * tickinterval * (1 + 0.001 * (destination.dynamic_data.timer or 0))
+			local pollution = 5 * (6 * Common.difficulty()^(1.1) * (Common.overworldx()/40)^(14/10) * (Balance.crew_scale())^(0.6)) / 3600 * tickinterval * (1 + 0.001 * (destination.dynamic_data.timer or 0))
 			if not memory.floating_pollution then memory.floating_pollution = 0 end
 			memory.floating_pollution = memory.floating_pollution + pollution
 		

@@ -9,8 +9,8 @@ local inspect = require 'utils.inspect'.inspect
 local Public = {}
 
 Public.buried_treasure_loot_data_raw = {
-	{100, 0, 1, false, 'coin', 10, 20},
-	{100, 0, 1, false, 'steel-plate', 100, 150},
+	{100, 0, 1, false, 'coin', 1, 600},
+	{50, 0, 1, false, 'steel-plate', 100, 150},
 	{50, 0, 1, false, 'defender-capsule', 5, 18},
 	{25, 0, 1, false, 'distractor-capsule', 5, 18},
 	{10, 0, 1, false, 'destroyer-capsule', 5, 18},
@@ -300,7 +300,7 @@ end
 --@TODO: Perhaps add more modular armor chance here?
 
 function Public.maze_camp_loot()
-	if Math.random(2) == 1 then
+	if Math.random(10) <= 7 then
 		return {Public.random_plates()}
 	else
 		return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.chest_loot_data_raw), 1, Math.max(0,Math.min(1, Math.sloped(Common.difficulty(),1/2) * (15/100 + Common.game_completion_progress()))))

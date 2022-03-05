@@ -264,7 +264,7 @@ local function scout_damage_dealt_changes(event)
 	local player_index = event.cause.player.index
 	if memory.classes_table and memory.classes_table[player_index] and memory.classes_table[player_index] == Classes.enum.SCOUT then
 		if event.final_health > 0 then --lethal damage is unaffected, as otherwise they can never kill
-			event.entity.health = event.entity.health + 0.5 * event.final_damage_amount
+			event.entity.health = event.entity.health + 0.4 * event.final_damage_amount
 		end
 	end
 end
@@ -340,8 +340,6 @@ local function maze_walls_resistance(event)
 	local entity = event.entity
 	if not entity.valid then return end
 
-	if not (event.damage_type.name and (event.damage_type.name == 'explosion' or event.damage_type.name == 'poison')) then return end
-
 	local destination = Common.current_destination()
 	if not (destination and destination.subtype and destination.subtype == Islands.enum.MAZE) then return end
 	
@@ -349,8 +347,15 @@ local function maze_walls_resistance(event)
 
 	if not ((entity.type and entity.type == 'tree') or entity.name == 'rock-huge' or entity.name == 'rock-big' or entity.name == 'sand-rock-big') then return end
 
+
 	local damage = event.final_damage_amount
-	event.entity.health = event.entity.health + damage
+
+	if (event.damage_type.name and (event.damage_type.name == 'explosion' or event.damage_type.name == 'poison')) then
+		event.entity.health = event.entity.health + damage
+	else
+		if string.sub(event.cause.force.name, 1, 4) ~= 'crew' then return end --player damage only
+		event.entity.health = event.entity.health + damage * 0.9
+	end
 end
 
 
@@ -564,7 +569,7 @@ local function event_on_player_mined_entity(event)
 		if available and destination.type == Surfaces.enum.ISLAND then
 
 			if destination and destination.subtype and destination.subtype == Islands.enum.MAZE then
-				if Math.random(1, 50) == 1 then
+				if Math.random(1, 45) == 1 then
 					tick_tack_trap(memory.enemy_force_name, entity.surface, entity.position)
 					return
 				end
@@ -603,7 +608,7 @@ local function event_on_player_mined_entity(event)
 
 
 		if memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.MASTER_ANGLER then
-			Common.give(player, {{name = 'raw-fish', count = 5}, {name = 'coin', count = 5}}, entity.position)
+			Common.give(player, {{name = 'raw-fish', count = 5}, {name = 'coin', count = 10}}, entity.position)
 		else
 			Common.give(player, {{name = 'raw-fish', count = 3}}, entity.position)
 		end
@@ -644,7 +649,7 @@ local function event_on_player_mined_entity(event)
 		if available and destination.type == Surfaces.enum.ISLAND then
 
 			if destination and destination.subtype and destination.subtype == Islands.enum.MAZE then
-				if Math.random(1, 50) == 1 then
+				if Math.random(1, 45) == 1 then
 					tick_tack_trap(memory.enemy_force_name, entity.surface, entity.position)
 					return
 				end

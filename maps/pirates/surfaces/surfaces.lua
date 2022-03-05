@@ -304,7 +304,7 @@ function Public.destination_on_arrival(destination)
 
 		if destination.subtype and destination.subtype == Islands.enum.MAZE then
 			local force = memory.force
-			force.manual_mining_speed_modifier = 0.25
+			force.manual_mining_speed_modifier = 0.5
 		end
 	end
 end

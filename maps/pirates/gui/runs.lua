@@ -564,7 +564,7 @@ function Public.click(event)
 		-- local proposal_name = string.sub(flow.proposals.body.proposal_maker.body.namefield.text, 1, 30)
 
 		local capacity_option = flow.proposals.body.proposal_maker.body.options.capacity.capacity.slider.slider_value
-		local difficulty_option = 2
+		local difficulty_option = 1
 		-- local difficulty_option = flow.proposals.body.proposal_maker.body.options.difficulty.difficulty.slider.slider_value
 		-- local mode_option = flow.proposals.body.proposal_maker.body.options.mode.mode.switch.switch_state
 

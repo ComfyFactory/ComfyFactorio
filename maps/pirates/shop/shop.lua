@@ -96,7 +96,7 @@ Public.main_shop_data_2 = {
 	artillery_shell = {
 		tooltip = '10 cannon shells.',
 		what_you_get_sprite_buttons = {['item/artillery-shell'] = 10},
-		base_cost = {coins = 2000, fuel = 50},
+		base_cost = {coins = 1000, fuel = 50},
 	},
 	artillery_remote = {
 		tooltip = 'An artillery targeting remote.',
@@ -111,7 +111,7 @@ Public.main_shop_data_2 = {
 	uranium_ore = {
 		tooltip = '10 green rocks of unknown origin.',
 		what_you_get_sprite_buttons = {['item/uranium-238'] = 10},
-		base_cost = {coins = 1000, fuel = 800},
+		base_cost = {coins = 1000, fuel = 100},
 	},
 }
 
@@ -364,10 +364,10 @@ function Public.event_on_market_item_purchased(event)
 
 	if offer_type == 'nothing' then
 		decay_type = 'one-off'
-	elseif dock_bool and purchase_bool and (offer_giveitem_name) and not (offer_giveitem_name == 'stone' or offer_giveitem_name == 'iron-ore' or offer_giveitem_name == 'copper-ore') then
-		decay_type = 'one-off'
 	elseif dock_bool and purchase_bool and (offer_giveitem_name) and (offer_giveitem_name == 'stone' or offer_giveitem_name == 'iron-ore' or offer_giveitem_name == 'copper-ore' or offer_giveitem_name == 'crude-oil-barrel') then
 		decay_type = 'double_decay'
+	elseif dock_bool and purchase_bool and (offer_giveitem_name) then
+		decay_type = 'one-off'
 	elseif simple_efficiency_trade_bool or (offer_giveitem_name and (offer_giveitem_name == 'defender-capsule' or offer_giveitem_name == 'gun-turret')) then
 		decay_type = 'static'
 	else

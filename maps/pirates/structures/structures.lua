@@ -142,10 +142,10 @@ function Public.post_creation_process(special_name, components)
 
 				if force_name and string.sub(force_name, 1, 15) and string.sub(force_name, 1, 15) == 'ancient-hostile' then
 					if e.name == 'gun-turret' then
-						if memory.overworldx < 500 then
-							e.insert({name = "firearm-magazine", count = 64})
-						else
+						if memory.overworldx < 800 then
 							e.insert({name = "piercing-rounds-magazine", count = 64})
+						else
+							e.insert({name = "uranium-rounds-magazine", count = 64})
 						end
 					end
 				elseif force_name and string.sub(force_name, 1, 16) and string.sub(force_name, 1, 16) == 'ancient-friendly' then

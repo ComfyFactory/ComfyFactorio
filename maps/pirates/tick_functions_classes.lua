@@ -140,7 +140,7 @@ function Public.update_character_properties(tickinterval)
 							if on_ship_bool then
 								speed_boost = speed_boost - 0.25
 							else
-								speed_boost = speed_boost + 0.065
+								speed_boost = speed_boost + 0.07
 							end
 						end
 					end
@@ -180,11 +180,11 @@ function Public.class_rewards_tick(tickinterval)
 						local hold_bool = surfacedata.type == Surfaces.enum.HOLD
 	
 						if class == Classes.enum.DECKHAND and on_ship_bool and (not hold_bool) then
-							class_ore_grant(player, 8)
+							class_ore_grant(player, 4)
 						elseif class == Classes.enum.BOATSWAIN and hold_bool then
-							class_ore_grant(player, 15)
+							class_ore_grant(player, 7)
 						elseif class == Classes.enum.SHORESMAN and (not on_ship_bool) then
-							class_ore_grant(player, 5)
+							class_ore_grant(player, 2)
 						end
 					end
 				end
@@ -195,7 +195,7 @@ function Public.class_rewards_tick(tickinterval)
 					for _, p2 in pairs(nearby_players) do
 						local p2_index = p2.player.index
 						if p2_index ~= player_index and memory.classes_table[p2_index] and memory.classes_table[p2_index] == Classes.enum.QUARTERMASTER then
-							class_ore_grant(p2, 3)
+							class_ore_grant(p2, 2)
 						end
 					end
 				end

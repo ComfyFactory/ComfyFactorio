@@ -492,7 +492,7 @@ function Public.undock_from_dock()
 
 	local force = memory.force
 	if not (force and force.valid) then return end
-	Common.notify_force_light(force,'Leaving the dock.')
+	Common.notify_force(force,'Leaving the dock.')
 end
 
 

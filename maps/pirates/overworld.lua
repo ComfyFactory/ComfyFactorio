@@ -104,9 +104,9 @@ function Public.generate_overworld_destination(p)
 		end
 	elseif macrop.x == 8 then --game length decrease, pending more content
 		type = nil
-	elseif macrop.x == 9 then --just before krakens
-		type = Surfaces.enum.ISLAND
-		subtype = Surfaces.Island.enum.RED_DESERT
+	-- elseif macrop.x == 9 then --just before krakens
+	-- 	type = Surfaces.enum.ISLAND
+	-- 	subtype = Surfaces.Island.enum.RED_DESERT
 	elseif macrop.x == 10 then --krakens appear
 		type = nil
 	-- elseif macrop.x == 11 then
@@ -252,7 +252,7 @@ function Public.generate_overworld_destination(p)
 			-- 	}
 			-- end
 			-- cost_to_leave = nil
-		elseif macrop.x <= 5 then
+		elseif macrop.x <= 6 then
 			-- cost_to_leave = {['small-lamp'] = 5}
 			cost_to_leave = nil
 		elseif macrop.x <= 8 then

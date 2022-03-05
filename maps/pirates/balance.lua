@@ -109,12 +109,12 @@ end
 function Public.fuel_depletion_rate_sailing()
 	if (not Common.overworldx()) then return 0 end
 
-	return - 8 * (1 + 0.13 * (Common.overworldx()/40)^(9/10)) * Math.sloped(Common.difficulty(), 3/5)
+	return - 7.5 * (1 + 0.13 * (Common.overworldx()/40)^(9/10)) * Math.sloped(Common.difficulty(), 1/5) --shouldn't depend on difficulty much, as available resources don't depend much on difficulty
 end
 
 function Public.silo_total_pollution()
 	return (
-		400 * (Common.difficulty()^(1.2)) * Public.crew_scale()^(2/5) * (3.2 + 0.7 * (Common.overworldx()/40)^(1.6)) --shape of the curve with x is tuned
+		380 * (Common.difficulty()^(1.2)) * Public.crew_scale()^(2/5) * (3.2 + 0.7 * (Common.overworldx()/40)^(1.6)) --shape of the curve with x is tuned
 )
 end
 
@@ -122,20 +122,20 @@ function Public.boat_passive_pollution_per_minute(time)
 	local boost = 1
 	local T = Public.max_time_on_island_formula()
 	if time then
-		if time >= 90/100 * T then
-			boost = 15
+		if time >= 95/100 * T then
+			boost = 16
+		elseif time >= 90/100 * T then
+			boost = 12
 		elseif time >= 85/100 * T then
 			boost = 8
 		elseif time >= 80/100 * T then
-			boost = 6
+			boost = 5
 		elseif time >= 70/100 * T then
-			boost = 4
-		elseif time >= 55/100 * T then
 			boost = 3
-		elseif time >= 40/100 * T then
+		elseif time >= 60/100 * T then
 			boost = 2
-		elseif time >= 25/100 * T then
-			boost = 1.5
+		elseif time >= 50/100 * T then
+			boost = 1
 		end
 	end
 
@@ -234,7 +234,7 @@ function Public.periodic_free_resources_per_destination_5_seconds(x)
 end
 
 function Public.class_resource_scale()
-	return 1 / (Public.crew_scale()^(3/5))
+	return 1 / (Public.crew_scale()^(2/5)) --already helped by longer timescales
 end
 
 function Public.biter_base_density_scale()
@@ -269,7 +269,7 @@ function Public.apply_crew_buffs_per_x(force)
 end
 
 function Public.class_cost()
-	return 9000
+	return 8000
 	-- return Math.ceil(10000 / (Public.crew_scale()*10/4)^(1/6))
 end
 
@@ -291,7 +291,7 @@ function Public.kraken_kill_reward()
 end
 
 function Public.kraken_health()
-	return Math.ceil(3000 * Math.max(1, 1 + 0.1 * ((Common.overworldx()/40)^(13/10)-6)) * (Public.crew_scale()^(5/8)) * Math.sloped(Common.difficulty(), 3/4))
+	return Math.ceil(3500 * Math.max(1, 1 + 0.08 * ((Common.overworldx()/40)^(13/10)-6)) * (Public.crew_scale()^(5/8)) * Math.sloped(Common.difficulty(), 3/4))
 end
 
 Public.kraken_regen_scale = 0.1 --starting off low
@@ -325,10 +325,6 @@ end
 
 function Public.main_shop_cost_multiplier()
 	return 1
-end
-
-function Public.covered_entry_price_scale()
-	return 0.9 * (1 + 0.025 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty(), 1/2) --whilst resource scales tend to be held fixed with crew size, we account slightly for the fact that more players tend to handcraft more
 end
 
 function Public.barter_decay_parameter()
@@ -437,6 +433,11 @@ end
 
 
 
+function Public.covered_entry_price_scale()
+	return 0.9 * (1 + 0.025 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty(), 1/2) --whilst resource scales tend to be held fixed with crew size, we account slightly for the fact that more players tend to handcraft more
+end
+
+-- if the prices are too high, players will accidentally throw too much in when they can't do it
 
 Public.covered1_entry_price_data_raw = { --watch out that the raw_materials chest can only hold e.g. 4.8 iron-plates
 	-- choose things that are easy to make at outposts
@@ -463,8 +464,8 @@ Public.covered1_entry_price_data_raw = { --watch out that the raw_materials ches
 		price = {name = 'electronic-circuit', count = 800},
 		raw_materials = {{name = 'iron-plate', count = 800}, {name = 'copper-plate', count = 1200}}}, {}},
 	{1, 0, 1, false, {
-		price = {name = 'firearm-magazine', count = 500},
-		raw_materials = {{name = 'iron-plate', count = 2000}}}, {}},
+		price = {name = 'firearm-magazine', count = 800},
+		raw_materials = {{name = 'iron-plate', count = 3200}}}, {}},
 
 	{1, 0.1, 1, false, {
 		price = {name = 'stone-furnace', count = 400},
@@ -473,13 +474,13 @@ Public.covered1_entry_price_data_raw = { --watch out that the raw_materials ches
 		price = {name = 'advanced-circuit', count = 100},
 		raw_materials = {{name = 'iron-plate', count = 200}, {name = 'copper-plate', count = 500}, {name = 'plastic-bar', count = 200}}}, {}},
 
-	{1, -1, 1, true, {
+	{0.5, 0, 0.5, true, {
 		price = {name = 'wooden-chest', count = 400},
 		raw_materials = {}}, {}},
-	{1, 0, 1, true, {
+	{0.5, 0, 1, true, {
 		price = {name = 'iron-chest', count = 300},
 		raw_materials = {{name = 'iron-plate', count = 2400}}}, {}},
-	{1, 0.2, 1.8, true, {
+	{0.5, 0.2, 1.8, true, {
 		price = {name = 'steel-chest', count = 150},
 		raw_materials = {{name = 'steel-plate', count = 1200}}}, {}},
 }

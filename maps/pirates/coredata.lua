@@ -5,8 +5,8 @@ local inspect = require 'utils.inspect'.inspect
 local Public = {}
 
 Public.scenario_id_name = 'pirates'
-Public.version_string = '1.0.4.0.4'
-Public.version_float = 1.0404
+Public.version_string = '1.0.4.1'
+Public.version_float = 1.041
 
 Public.blueprint_library_allowed = false
 Public.blueprint_importing_allowed = true
@@ -15,7 +15,7 @@ Public.rocket_silo_death_causes_loss = false
 
 Public.victory_x = 1000
 
-Public.total_max_biters = 4000
+Public.total_max_biters = 3000
 
 Public.lobby_surface_name = '000-000-Lobby'
 

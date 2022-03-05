@@ -205,8 +205,8 @@ function Public.spawn_ores_on_arrival(destination, points_to_avoid)
 			
 		local farness_boost_low, farness_boost_high = 0, 0
 		if destination.subtype == enum.MAZE then
-			farness_boost_low = 0.1
-			farness_boost_high = 0.3
+			farness_boost_low = 0.08
+			farness_boost_high = 0.25
 		end
 	
 		for _, ore in pairs(ores) do
