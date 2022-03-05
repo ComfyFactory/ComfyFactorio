@@ -156,7 +156,7 @@ require 'comfy_panel.server_select'
 --require 'maps.territorial_control'
 
 --![[Deep Jungle - dangerous map]]--
-require 'maps.deep_jungle.main'
+--require 'maps.deep_jungle.main'
 
 --![[You fell in a dark cave, will you survive?]]--
 -- require 'maps.cave_choppy.main'
