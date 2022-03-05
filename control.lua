@@ -26,7 +26,7 @@ require 'utils.debug.command'
 require 'modules.corpse_markers'
 require 'modules.floaty_chat'
 require 'modules.show_inventory'
--- require 'modules.inserter_drops_pickup' -- is currently causing desyncs
+require 'modules.inserter_drops_pickup'
 require 'modules.autostash'
 
 require 'comfy_panel.main'
@@ -155,8 +155,11 @@ require 'comfy_panel.server_select'
 --![[Territorial Control - reveal the map as you walk through the mist]]--
 --require 'maps.territorial_control'
 
+--![[Deep Jungle - dangerous map]]--
+require 'maps.deep_jungle.main'
+
 --![[You fell in a dark cave, will you survive?]]--
---require 'maps.cave_choppy.main'
+-- require 'maps.cave_choppy.main'
 --require 'maps.cave_miner'
 --require 'maps.cave_miner_v2.main'
 
@@ -210,7 +213,6 @@ require 'comfy_panel.server_select'
 
 --![[Misc / WIP]]--
 --require 'maps.rainbow_road'
---require 'maps.deep_jungle'
 --require 'maps.cratewood_forest'
 --require 'maps.maze_challenge'
 --require 'maps.lost_desert'
