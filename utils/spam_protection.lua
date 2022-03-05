@@ -6,7 +6,7 @@ local this = {
     prevent_spam = {}, -- the default table where all player indexes will be stored
     default_tick = 10, -- this defines the default tick to check whether or not a user is spamming a button.
     debug_text = false,
-    debug_spam = true
+    debug_spam = false
 }
 
 local main_text = '[Spam Info] '
