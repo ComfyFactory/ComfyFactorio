@@ -121,13 +121,13 @@ local function build_group_gui(data)
                 b.style.minimal_width = actions_width
                 b.style.maximal_width = actions_width
             else
-                local b = tt.add({type = 'button', caption = 'Leave'})
+                local b = tt.add({type = 'button', caption = {'gui.leave'}})
                 b.style.font = 'default-bold'
                 b.style.minimal_width = actions_width
                 b.style.maximal_width = actions_width
             end
             if player.admin == true or group.founder == player.name then
-                local b = tt.add({type = 'button', caption = 'Delete'})
+                local b = tt.add({type = 'button', caption = {'gui.delete'}})
                 b.style.font = 'default-bold'
                 b.style.minimal_width = actions_width
                 b.style.maximal_width = actions_width
@@ -233,7 +233,7 @@ local function on_gui_click(event)
     end
     local player = game.get_player(event.player_index)
 
-    local name = event.element.name
+    local name = element.name
 
     if name and name == 'tab_' .. module_name then
         local is_spamming = SpamProtection.is_spamming(player, nil, 'Groups tab_Groups')
@@ -250,7 +250,7 @@ local function on_gui_click(event)
         return
     end
 
-    if name and name == 'create_new_group' then
+    if name == 'create_new_group' then
         local is_spamming = SpamProtection.is_spamming(player, nil, 'Group Click')
 
         if is_spamming then
@@ -316,7 +316,9 @@ local function on_gui_click(event)
                 return
             end
 
-            if element.type == 'button' and element.caption == 'Join' then
+            local caption = element.caption and element.caption[1]
+
+            if element.type == 'button' and caption == 'gui.join' then
                 this.player_group[player.name] = element.parent.name
                 local str = '[' .. element.parent.name
                 str = str .. ']'
@@ -335,7 +337,7 @@ local function on_gui_click(event)
                 return
             end
 
-            if element.type == 'button' and element.caption == 'Delete' then
+            if element.type == 'button' and caption == 'gui.delete' then
                 for _, players in pairs(game.players) do
                     if this.player_group[players.name] then
                         if this.player_group[players.name] == element.parent.name then
@@ -350,7 +352,7 @@ local function on_gui_click(event)
                 return
             end
 
-            if element.type == 'button' and element.caption == 'Leave' then
+            if element.type == 'button' and caption == 'gui.leave' then
                 this.player_group[player.name] = '[Group]'
                 player.tag = ''
                 refresh_gui()
