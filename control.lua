@@ -159,7 +159,7 @@ require 'comfy_panel.server_select'
 --require 'maps.deep_jungle.main'
 
 --![[You fell in a dark cave, will you survive?]]--
--- require 'maps.cave_choppy.main'
+--require 'maps.cave_choppy.main'
 --require 'maps.cave_miner'
 --require 'maps.cave_miner_v2.main'
 
