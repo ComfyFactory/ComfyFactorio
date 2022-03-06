@@ -25,6 +25,7 @@ local enum = {
 	RONIN_SENSEI = 13,
 	IRON_LEG = 14,
 	QUARTERMASTER = 15,
+	DREDGER = 16,
 }
 Public.enum = enum
 
@@ -44,6 +45,7 @@ Public.Class_List = {
 	enum.RONIN_SENSEI,
 	enum.IRON_LEG,
 	enum.QUARTERMASTER,
+	enum.DREDGER,
 }
 
 Public.display_form = {
@@ -62,6 +64,7 @@ Public.display_form = {
 	[enum.RONIN_SENSEI] = 'Ronin',
 	[enum.IRON_LEG] = 'Iron Leg',
 	[enum.QUARTERMASTER] = 'Quartermaster',
+	[enum.DREDGER] = 'Dredger',
 }
 Public.explanation = {
 	[enum.DECKHAND] = 'They move faster and generate ore for the captain\'s cabin whilst onboard above deck, but move slower offboard.',
@@ -79,6 +82,7 @@ Public.explanation = {
 	[enum.RONIN_SENSEI] = 'They are very tough, and *with no weapon equipped* fight well by melee.',
 	[enum.IRON_LEG] = 'They are resistant to damage when carrying 2500 iron ore.',
 	[enum.QUARTERMASTER] = 'Nearby crew generate a little ore for the captain\'s cabin, and have extra physical attack.',
+	[enum.DREDGER] = 'They fish at a distance and find surprising items.',
 }
 
 Public.class_unlocks = {
@@ -86,6 +90,7 @@ Public.class_unlocks = {
 	[enum.LUMBERJACK] = {enum.WOOD_LORD},
 	[enum.PROSPECTOR] = {enum.CHIEF_EXCAVATOR},
 	[enum.SAMURAI] = {enum.RONIN_SENSEI},
+	[enum.MASTER_ANGLER] = {enum.DREDGER},
 }
 
 Public.class_purchase_requirement = {
@@ -93,6 +98,7 @@ Public.class_purchase_requirement = {
 	[enum.WOOD_LORD] = enum.LUMBERJACK,
 	[enum.CHIEF_EXCAVATOR] = enum.PROSPECTOR,
 	[enum.RONIN_SENSEI] = enum.SAMURAI,
+	[enum.DREDGER] = enum.MASTER_ANGLER,
 }
 
 function Public.initial_class_pool()
@@ -103,15 +109,12 @@ function Public.initial_class_pool()
 	-- end
 	return {
 		enum.DECKHAND,
-		enum.DECKHAND,
 		enum.FISHERMAN,
-		enum.SCOUT,
 		enum.SCOUT,
 		enum.SAMURAI,
 		enum.MERCHANT,
 		enum.SHORESMAN,
 		enum.SHORESMAN,
-		enum.BOATSWAIN,
 		enum.BOATSWAIN,
 		enum.PROSPECTOR,
 		enum.LUMBERJACK,

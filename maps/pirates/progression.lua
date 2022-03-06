@@ -167,7 +167,6 @@ local place_dock_jetty_and_boats = Token.register(
 
 function Public.progress_to_destination(destination_index)
 	local memory = Memory.get_crew_memory()
-	local global_memory = Memory.get_global_memory()
 	if memory.game_lost then return end
 
 	local boat = memory.boat

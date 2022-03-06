@@ -349,7 +349,7 @@ function Public.spawn_group_of_scripted_biters(fraction_of_floating_pollution, m
 
     local new_units = Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spawner.position, fraction_of_floating_pollution, minimum_avg_units, maximum_units, 1/wave_size_multiplier)
 
-    if (new_units and nearby_units_to_bring and (#new_units + #nearby_units_to_bring) == 0) then log('no units found') return end
+    if (new_units and nearby_units_to_bring and (#new_units + #nearby_units_to_bring) == 0) then return end
 
     local position = surface.find_non_colliding_position('rocket-silo', spawner.position, 256, 2) or spawner.position
 

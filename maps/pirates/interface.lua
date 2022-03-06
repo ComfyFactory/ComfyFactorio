@@ -608,7 +608,11 @@ local function event_on_player_mined_entity(event)
 
 
 		if memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.MASTER_ANGLER then
-			Common.give(player, {{name = 'raw-fish', count = 5}, {name = 'coin', count = 10}}, entity.position)
+			Common.give(player, {{name = 'raw-fish', count = 5}, {name = 'coin', count = 8}}, entity.position)
+		elseif memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.SEA_DREDGER then
+			local to_give = {{name = 'raw-fish', count = 5}, {name = 'coin', count = 12}}
+			to_give[#to_give + 1] = Loot.dredger_loot()[1]
+			Common.give(player, to_give, entity.position)
 		else
 			Common.give(player, {{name = 'raw-fish', count = 3}}, entity.position)
 		end

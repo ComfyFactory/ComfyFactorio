@@ -10,7 +10,8 @@ local Force_health_booster = require 'modules.force_health_booster'
 
 local Public = {}
 
-Public.active_crews_cap = 2
+Public.active_crews_cap = 1
+-- Public.active_crews_cap = 2
 Public.minimum_capacity_slider_value = 1
 
 Public.boat_steps_at_a_time = 1

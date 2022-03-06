@@ -318,7 +318,7 @@ Public.maze_lab_loot_data_raw = {
 }
 
 function Public.maze_lab_loot()
-	return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.maze_lab_loot_data_raw), 1, Math.max(0,Math.min(1, Math.sloped(Common.difficulty(),1/2) * (10/100 + Common.game_completion_progress()))))
+	return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.maze_lab_loot_data_raw), 1, Math.max(0,Math.min(1, Math.sloped(Common.difficulty(),1/2) * (Common.game_completion_progress()))))
 end
 
 Public.maze_treasure_data_raw = {
@@ -383,8 +383,50 @@ function Public.maze_treasure_loot()
 	if Math.random(5) == 1 then
 		return {Public.random_plates(8)}
 	else
-		return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.maze_treasure_data_raw), 1, Math.max(0,Math.min(1, Math.sloped(Common.difficulty(),1/2) * (70/100 + Common.game_completion_progress()))))
+		return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.maze_treasure_data_raw), 1, Math.max(0,Math.min(1, Math.sloped(Common.difficulty(),1/2) * (Common.game_completion_progress()))))
 	end
+end
+
+Public.dredger_loot_raw = {
+	{20, 0, 1, false, 'iron-plate', 1, 1},
+	{20, 0, 1, false, 'copper-plate', 1, 1},
+	{20, 0, 1, false, 'coal', 1, 1},
+
+	{2, 0, 1, false, 'small-electric-pole', 1, 1},
+	{1, 0, 1, false, 'medium-electric-pole', 1, 1},
+	{0.1, 0, 1, false, 'big-electric-pole', 1, 1},
+
+	{0.2, 0, 1, false, 'slowdown-capsule', 1, 1},
+	{0.2, 0, 1, false, 'destroyer-capsule', 1, 1},
+	{0.2, 0, 1, false, 'defender-capsule', 1, 1},
+	{0.2, 0, 1, false, 'distractor-capsule', 1, 1},
+
+	{10, 0, 1, false, 'automation-science-pack', 1, 1},
+	{10, 0, 1, false, 'logistic-science-pack', 1, 1},
+	{4, 0, 1, false, 'military-science-pack', 1, 1},
+	{4, 0, 1, false, 'chemical-science-pack', 1, 1},
+	{4, 0, 1, false, 'production-science-pack', 1, 1},
+
+	{0.0001, 0, 0.8, false, 'modular-armor', 1, 1},
+	{0.0001, 0, 2, true, 'power-armor', 1, 1},
+	{0.00008, 0, 2, true, "power-armor-mk2", 1, 1},
+
+	{0.002, -1, 1, true, 'solar-panel-equipment', 1, 1},
+	{0.002, -1, 1, true, 'battery-equipment', 1, 1},
+	{0.001, 0, 2, true, 'battery-mk2-equipment', 1, 1},
+	{0.002, -1, 1, true, 'energy-shield-equipment', 1, 1},
+	{0.001, 0, 2, true, 'energy-shield-mk2-equipment', 1, 1},
+	{0.001, -1, 1, true, 'personal-roboport-equipment', 1, 1},
+	{0.005, 0, 2, true, 'personal-roboport-mk2-equipment', 1, 1},
+	{0.005, 0, 0.8, false, 'night-vision-equipment', 1, 1},
+	{0.001, 0, 1, false, 'personal-laser-defense-equipment', 1, 1},
+	{0.005, 0, 1, false, 'fusion-reactor-equipment', 1, 1},
+	{0.002, 0, 1, false, 'exoskeleton-equipment', 1, 1},
+	{0.005, 0, 1, false, 'personal-laser-defense', 1, 1},
+}
+
+function Public.dredger_loot()
+	return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.dredger_loot_raw), 1, Math.max(0,Math.min(1, Common.game_completion_progress())))
 end
 
 return Public
