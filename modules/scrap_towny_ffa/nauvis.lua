@@ -1,5 +1,6 @@
 local Public = {}
-local math_random = math.random
+
+--local Server = require 'utils.server'
 
 local function create_limbo()
     game.create_surface('limbo')
@@ -17,14 +18,14 @@ local function initialize_nauvis()
         ['copper-ore'] = {frequency = 'none', size = 1, richness = 'normal'},
         ['iron-ore'] = {frequency = 'none', size = 1, richness = 'normal'},
         ['uranium-ore'] = {frequency = 'none', size = 1, richness = 'normal'},
-        ['crude-oil'] = {frequency = 'none', size = 1, richness = 'normal'},
+        ['crude-oil'] = {frequency = 'very-low', size = 'very-small', richness = 'normal'},
         trees = {frequency = 2, size = 'normal', richness = 'normal'},
-        ['enemy-base'] = {frequency = 8, size = 1, richness = 'normal'}
+        ['enemy-base'] = {frequency = 'very-high', size = 2, richness = 'normal'}
     }
     mgs.autoplace_settings = {
         entity = {
             settings = {
-                ['rock-huge'] = {frequency = 3, size = 12, richness = 'very-high'},
+                ['rock-huge'] = {frequency = 2, size = 12, richness = 'very-high'},
                 ['rock-big'] = {frequency = 3, size = 12, richness = 'very-high'},
                 ['sand-rock-big'] = {frequency = 3, size = 12, richness = 1, 'very-high'}
             }
@@ -53,8 +54,9 @@ local function initialize_nauvis()
     mgs.peaceful_mode = false
     mgs.starting_area = 'none'
     mgs.terrain_segmentation = 8
-    mgs.width = 2048
-    mgs.height = 2048
+    -- terrain size is 64 x 64 chunks, water size is 80 x 80
+    mgs.width = 2560
+    mgs.height = 2560
     --mgs.starting_points = {
     --	{x = 0, y = 0}
     --}
@@ -67,7 +69,7 @@ local function initialize_nauvis()
         --moisture = 0,
 
         -- here we are overriding the aux noise-layer with a fixed value to keep aux consistent across the map
-        -- it allows to free up the aux  noise expression
+        -- it allows to free up the aux noise expression
         -- aux should be not sand, nor red sand
         --aux = 0.5,
 
@@ -111,11 +113,11 @@ local function initialize_nauvis()
         -- a constant intensity means base distribution will be consistent with regard to distance
         ['enemy-base-intensity'] = 1,
         -- adjust this value to set how many nests spawn per tile
-        ['enemy-base-frequency'] = 0.2,
+        ['enemy-base-frequency'] = 0.4,
         -- this will make and average base radius around 12 tiles
         ['enemy-base-radius'] = 12
     }
-    mgs.seed = math_random(10000, 99999)
+    mgs.seed = game.surfaces[1].map_gen_settings.seed
     surface.map_gen_settings = mgs
     surface.peaceful_mode = false
     surface.always_day = false
@@ -123,6 +125,20 @@ local function initialize_nauvis()
     surface.clear(true)
     surface.regenerate_entity({'rock-huge', 'rock-big', 'sand-rock-big'})
     surface.regenerate_decorative()
+    -- this will force generate the entire map
+    --Server.to_discord_embed('ScrapTownyFFA Map Regeneration in Progress')
+    --surface.request_to_generate_chunks({x=0,y=0},64)
+    --surface.force_generate_chunk_requests()
+    --Server.to_discord_embed('Regeneration Complete')
+end
+
+local function initialize_limbo()
+    local surface = game.surfaces['limbo']
+    surface.generate_with_lab_tiles = true
+    surface.peaceful_mode = true
+    surface.always_day = true
+    surface.freeze_daytime = true
+    surface.clear(true)
 end
 
 function Public.initialize()
@@ -167,8 +183,8 @@ function Public.initialize()
     game.map_settings.enemy_expansion.max_expansion_cooldown = 3600 -- maximum time before next expansion
 
     -- unit group settings
-    game.map_settings.unit_group.min_group_gathering_time = 600
-    game.map_settings.unit_group.max_group_gathering_time = 3600
+    game.map_settings.unit_group.min_group_gathering_time = 400
+    game.map_settings.unit_group.max_group_gathering_time = 2400
     game.map_settings.unit_group.max_wait_time_for_late_members = 3600
     game.map_settings.unit_group.max_group_radius = 30.0
     game.map_settings.unit_group.min_group_radius = 5.0
@@ -192,6 +208,7 @@ function Public.initialize()
     --game.map_settings.steering.moving.force_unit_fuzzy_goto_behavior = false
 
     create_limbo()
+    initialize_limbo()
     initialize_nauvis()
 end
 

@@ -47,15 +47,21 @@ local pollution_index = {
 
 function Public.market_scent()
     local ffatable = Table.get_table()
+    if ffatable.testing_mode then
+        return
+    end
     local town_centers = ffatable.town_centers
     if town_centers == nil then
         return
     end
     for _, town_center in pairs(town_centers) do
         local market = town_center.market
-        local pollution = pollution_index['market']
-        local amount = math_random(pollution.min, pollution.max)
-        market.surface.pollute(market.position, amount)
+        if market ~= nil and market.valid then
+            local pollution = pollution_index['market']
+            local amount = math_random(pollution.min, pollution.max)
+            local evolution = town_center.evolution.biters
+            market.surface.pollute(market.position, amount + evolution * 500)
+        end
     end
 end
 

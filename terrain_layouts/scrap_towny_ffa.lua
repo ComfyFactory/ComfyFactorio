@@ -4,6 +4,7 @@ local math_floor = math.floor
 local math_abs = math.abs
 
 local get_noise = require 'utils.get_noise'
+local Table = require 'modules.scrap_towny_ffa.table'
 local Scrap = require 'modules.scrap_towny_ffa.scrap'
 require 'modules.no_deconstruction_of_neutral_entities'
 
@@ -75,6 +76,7 @@ local container_loot_chance = {
     {name = 'cannon-shell', chance = 2},
     {name = 'cliff-explosives', chance = 5},
     --{name = "cluster-grenade", chance = 2},
+    {name = 'coin', chance = 1},
     {name = 'construction-robot', chance = 1},
     {name = 'copper-cable', chance = 250},
     {name = 'copper-plate', chance = 500},
@@ -128,6 +130,7 @@ local container_loot_amounts = {
     ['cannon-shell'] = 2,
     ['cliff-explosives'] = 2,
     --["cluster-grenade"] = 0.3,
+    ['coin'] = 2,
     ['construction-robot'] = 0.3,
     ['copper-cable'] = 24,
     ['copper-plate'] = 16,
@@ -184,6 +187,10 @@ end
 local size_of_scrap_raffle = #scrap_raffle
 
 local function place_scrap(surface, position)
+    local ffatable = Table.get_table()
+    if ffatable.spaceships == nil then
+        ffatable.spaceships = {}
+    end
     -- place turrets
     if math_random(1, 700) == 1 then
         if position.x ^ 2 + position.x ^ 2 > 4096 then
@@ -195,17 +202,19 @@ local function place_scrap(surface, position)
         end
     end
 
-    -- place spaceship with loot
-    if math_random(1, 8192) == 1 then
-        local e = surface.create_entity({name = 'crash-site-spaceship', position = position, force = 'neutral'})
-        e.minable = true
-        local i = e.get_inventory(defines.inventory.chest)
-        if i then
-            for _ = 1, math_random(1, 5), 1 do
-                local loot = scrap_raffle[math_random(1, size_of_scrap_raffle)]
-                local amount = container_loot_amounts[loot]
-                local count = math_floor(amount * math_random(5, 35) * 0.1) + 1
-                i.insert({name = loot, count = count})
+    -- place market spaceship
+    if math_random(1, 4096) == 1 then
+        local spaceship = {}
+        if surface.can_place_entity({name = 'crash-site-spaceship-market', position = position, force = 'neutral'}) then
+            spaceship.market = surface.create_entity({name = 'crash-site-spaceship-market', position = position, force = 'neutral'})
+            spaceship.market.minable = false
+            spaceship.max_health = 300
+            spaceship.health = spaceship.max_health
+            if spaceship.market and spaceship.market.valid then
+                if ffatable.spaceships[position.x] == nil then
+                    ffatable.spaceships[position.x] = {}
+                end
+                ffatable.spaceships[position.x][position.y] = spaceship
             end
         end
         return
@@ -294,12 +303,51 @@ end
 local function on_chunk_generated(event)
     --log("scrap_towny_ffa::on_chunk_generated")
     local surface = event.surface
+    if (surface.name ~= 'nauvis') then
+        return
+    end
     local seed = surface.map_gen_settings.seed
     local left_top_x = event.area.left_top.x
     local left_top_y = event.area.left_top.y
-    --log("  chunk = {" .. left_top_x/32 .. ", " .. left_top_y/32 .. "}")
+
     local position
     local noise
+
+    local chunk_position = event.position
+    --log('chunk_position = {' .. chunk_position.x .. ',' .. chunk_position.y .. '}')
+    if chunk_position.x >= -33 and chunk_position.x <= 32 and chunk_position.y >= -33 and chunk_position.y <= 32 then
+        if chunk_position.x == -33 or chunk_position.x == 32 or chunk_position.y == -33 or chunk_position.y == 32 then
+            local area = {{x = left_top_x, y = left_top_y}, {x = left_top_x + 31, y = left_top_y + 31}}
+            local entities = surface.find_entities(area)
+            for _, e in pairs(entities) do
+                e.destroy()
+            end
+            for x = 0, 31, 1 do
+                for y = 0, 31, 1 do
+                    position = {x = left_top_x + x, y = left_top_y + y}
+                    if not surface.get_tile(position).collides_with('water-tile') then
+                        surface.set_tiles({{name = 'water-shallow', position = position}}, true)
+                    end
+                end
+            end
+            return
+        end
+    end
+    if chunk_position.x < -33 or chunk_position.x > 32 or chunk_position.y < -33 or chunk_position.y > 32 then
+        local area = {{x = left_top_x, y = left_top_y}, {x = left_top_x + 31, y = left_top_y + 31}}
+        local entities = surface.find_entities(area)
+        for _, e in pairs(entities) do
+            e.destroy()
+        end
+        for x = 0, 31, 1 do
+            for y = 0, 31, 1 do
+                position = {x = left_top_x + x, y = left_top_y + y}
+                surface.set_tiles({{name = 'deepwater', position = position}}, true)
+            end
+        end
+        return
+    end
+
     for x = 0, 31, 1 do
         for y = 0, 31, 1 do
             if math_random(1, 3) > 1 then

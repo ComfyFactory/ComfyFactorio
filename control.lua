@@ -160,6 +160,9 @@ require 'maps.pirates.main'
 --![[Territorial Control - reveal the map as you walk through the mist]]--
 --require 'maps.territorial_control'
 
+--![[Deep Jungle - dangerous map]]--
+--require 'maps.deep_jungle.main'
+
 --![[You fell in a dark cave, will you survive?]]--
 --require 'maps.cave_choppy.main'
 --require 'maps.cave_miner'
@@ -215,7 +218,6 @@ require 'maps.pirates.main'
 
 --![[Misc / WIP]]--
 --require 'maps.rainbow_road'
---require 'maps.deep_jungle'
 --require 'maps.cratewood_forest'
 --require 'maps.maze_challenge'
 --require 'maps.lost_desert'

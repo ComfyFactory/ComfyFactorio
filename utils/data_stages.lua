@@ -25,7 +25,7 @@ function get_game_version()
 end
 
 function is_loaded(module)
-    local res = package.loaded[module]
+    local res = _G.package.loaded[module]
     if res then
         return res
     else
