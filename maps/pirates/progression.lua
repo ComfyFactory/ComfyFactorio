@@ -29,7 +29,7 @@ local Cabin = require 'maps.pirates.surfaces.cabin'
 local Upgrades = require 'maps.pirates.boat_upgrades'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
-local ShopMini = require 'maps.pirates.shop.minimarket'
+local ShopDock = require 'maps.pirates.shop.dock'
 
 
 
@@ -118,7 +118,7 @@ function Public.go_from_starting_dock_to_first_destination()
 
 		boat.stored_resources = {}
 
-		Shop.initialise_main_shop()
+		Shop.Captains.initialise_captains_shop()
 
 		Hold.create_hold_surface(1)
 		Cabin.create_cabin_surface()
@@ -159,7 +159,7 @@ local place_dock_jetty_and_boats = Token.register(
 		Surfaces.Dock.place_dock_jetty_and_boats()
 	
 		local destination = Common.current_destination()
-		ShopMini.create_minimarket(game.surfaces[destination.surface_name], Surfaces.Dock.Data.market_position)
+		ShopDock.create_dock_markets(game.surfaces[destination.surface_name], Surfaces.Dock.Data.markets_position)
 	end
 )
 
@@ -190,8 +190,8 @@ function Public.progress_to_destination(destination_index)
 
 	if type == Surfaces.enum.DOCK then
 		local BoatData = Boats.get_scope(boat).Data
-		starting_boatposition = Utils.snap_coordinates_for_rails({x = Dock.Data.playerboat_starting_xcoord, y = Dock.Data.bottom_boat_top + BoatData.height/2})
-		-- starting_boatposition = {x = -destination_data.static_params.width/2 + BoatData.width + 10, y = Dock.Data.bottom_boat_top - BoatData.height/2}
+		starting_boatposition = Utils.snap_coordinates_for_rails({x = Dock.Data.playerboat_starting_xcoord, y = Dock.Data.player_boat_top + BoatData.height/2})
+		-- starting_boatposition = {x = -destination_data.static_params.width/2 + BoatData.width + 10, y = Dock.Data.player_boat_top - BoatData.height/2}
 		Common.current_destination().dynamic_data.time_remaining = 180
 
 		-- memory.mainshop_availability_bools.sell_iron = true
@@ -365,7 +365,7 @@ function Public.check_for_end_of_boat_movement(boat)
 			return true
 
 
-		elseif leaving_dock and boat.position.x >= game.surfaces[boat.surface_name].map_gen_settings.width/2 - 2 then
+		elseif leaving_dock and boat.position.x >= game.surfaces[boat.surface_name].map_gen_settings.width/2 - 60 then
 
 			memory.mainshop_availability_bools.new_boat_cutter = false
 			memory.mainshop_availability_bools.new_boat_cutter_with_hold = false

@@ -40,8 +40,8 @@ Public.List = {
 Public.crowsnest_display_form = {
 	[enum.EXTRA_HOLD] = 'Extra Hold',
 	[enum.MORE_POWER] = 'Power',
-	[enum.UNLOCK_MERCHANTS] = 'Merchants',
-	[enum.ROCKETS_FOR_SALE] = 'Rockets for Sale',
+	[enum.UNLOCK_MERCHANTS] = 'Unlock Merchants',
+	[enum.ROCKETS_FOR_SALE] = 'Unlock Rockets',
 }
 
 function Public.execute_upgade(upgrade_type)

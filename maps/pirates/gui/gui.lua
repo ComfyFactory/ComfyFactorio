@@ -54,13 +54,13 @@ local function create_gui(player)
 	flow2.parent.style.left_padding = -6
 
 	flow2 = GuiCommon.flow_add_floating_sprite_button(flow1, 'runs_piratebutton', 70)
-	flow2.caption = 'Play'
-	flow2.tooltip = 'Play\n\nView the ongoing runs, and make proposals.'
+	flow2.caption = 'Crews'
+	flow2.tooltip = 'View the ongoing runs, and make proposals.'
 	flow2.style.font = 'debug'
 	flow2.style.font_color = {r=1, g=1, b=1}
 	flow2.style.hovered_font_color = {r=1, g=1, b=1}
 	flow2.style.clicked_font_color = {r=1, g=1, b=1}
-	flow2.parent.style.width = 73
+	flow2.parent.style.width = 67
 	flow2.parent.style.left_padding = -6
 
 	-- optional use of left gui:
@@ -463,10 +463,10 @@ function Public.update_gui(player)
 	if not pirates_flow.info_piratebutton_frame then create_gui(player) end
 	
 	if memory.id and memory.id ~= 0 then
-		pirates_flow.crew_piratebutton_frame.crew_piratebutton.tooltip = 'Crew\n\nPerform crew actions.'
+		pirates_flow.crew_piratebutton_frame.crew_piratebutton.tooltip = 'Your Crew\n\nPerform crew actions.'
 		pirates_flow.crew_piratebutton_frame.crew_piratebutton.mouse_button_filter = {'left','right'}
 	else
-		pirates_flow.crew_piratebutton_frame.crew_piratebutton.tooltip = 'Crew\n\nYou\'re a free agent, so there\'s nothing to do here.'
+		pirates_flow.crew_piratebutton_frame.crew_piratebutton.tooltip = 'Your Crew\n\nYou\'re a free agent, so there\'s nothing to do here.'
 		pirates_flow.crew_piratebutton_frame.crew_piratebutton.mouse_button_filter = {'middle'} --hack to avoid press visual
 		if player.gui.screen['crew_piratewindow'] then
 			player.gui.screen['crew_piratewindow'].destroy()

@@ -120,6 +120,10 @@ local go_2 = Token.register(
 		
 		memory.mapbeingloadeddestination_index = 1
 		memory.loadingticks = 0
+
+		local surface = game.surfaces[Common.current_destination().surface_name]
+		-- surface.request_to_generate_chunks({x = 0, y = 0}, 10)
+		-- surface.force_generate_chunk_requests()
 		Progression.go_from_starting_dock_to_first_destination()
 	end
 )

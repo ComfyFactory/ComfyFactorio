@@ -162,8 +162,8 @@ end
 function Public.flow_add_shop_item(flow, name)
 	local flow2, flow3, flow4
 
-	local shop_data_1 = Shop.main_shop_data_1
-	local shop_data_2 = Shop.main_shop_data_2
+	local shop_data_1 = Shop.Captains.main_shop_data_1
+	local shop_data_2 = Shop.Captains.main_shop_data_2
 	local trade_data = shop_data_1[name] or shop_data_2[name]
 	if not trade_data then return end
 	

@@ -45,7 +45,7 @@ function Public.class_renderings(tickinterval)
 			local r = memory.quartermaster_renderings[player_index]
 			processed_renderings[#processed_renderings + 1] = player_index
 			if Common.validate_player_and_character(player) then
-				if r then
+				if r and rendering.is_valid(r) then
 					rendering.set_target(r, player.character)
 				else
 					memory.quartermaster_renderings[player_index] = rendering.draw_circle{
@@ -202,14 +202,14 @@ function Public.class_rewards_tick(tickinterval)
 					end
 				end
 	
-				if game.tick % (tickinterval*2) == 0 then
+				if game.tick % (tickinterval*3) == 0 then
 					local nearby_players = player.surface.find_entities_filtered{position = player.position, radius = Common.quartermaster_range, name = 'character'}
 		
 					for _, p2 in pairs(nearby_players) do
 						if p2.player and p2.player.valid then
 							local p2_index = p2.player.index
 							if p2_index ~= player_index and memory.classes_table[p2_index] and memory.classes_table[p2_index] == Classes.enum.QUARTERMASTER then
-								class_ore_grant(p2, 1)
+								class_ore_grant(p2, 2)
 							end
 						end
 					end

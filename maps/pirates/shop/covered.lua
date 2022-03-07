@@ -28,20 +28,22 @@ Public.offers_loaders = {
 	{price = {{'coin', 3500}}, offer = {type = 'give-item', item = 'express-loader', count = 1}},
 }
 
-Public.offers_default = {
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'copper-plate', count = 200}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'iron-plate', count = 200}},
-	{price = {{'coin', 2400}}, offer = {type = 'give-item', item = 'piercing-rounds-magazine', count = 20}},
-	{price = {{'coin', 3500}}, offer = {type = 'give-item', item = 'heavy-armor', count = 1}},
-	{price = {{'coin', 350}}, offer = {type = 'give-item', item = 'gun-turret', count = 1}},
-	{price = {{'coin', 1000}}, offer = {type = 'give-item', item = 'defender-capsule', count = 1}},
-}
-
 Public.offers_rockets = {
 	{price = {{'coin', 200}, {'electronic-circuit', 80}}, offer = {type = 'give-item', item = 'rocket-launcher', count = 1}},
 	{price = {{'coin', 1000}, {'explosives', 20}, {'electronic-circuit', 20}}, offer = {type = 'give-item', item = 'rocket', count = 20}},
 }
 
+Public.offers_default = {
+	{price = {{'coin', 750}}, offer = {type = 'give-item', item = 'copper-plate', count = 150}},
+	{price = {{'coin', 750}}, offer = {type = 'give-item', item = 'iron-plate', count = 150}},
+	{price = {{'coin', 800}}, offer = {type = 'give-item', item = 'piercing-rounds-magazine', count = 20}},
+	{price = {{'coin', 1000}}, offer = {type = 'give-item', item = 'heavy-armor', count = 1}},
+	{price = {{'coin', 400}}, offer = {type = 'give-item', item = 'gun-turret', count = 2}},
+	{price = {{'coin', 600}}, offer = {type = 'give-item', item = 'defender-capsule', count = 2}},
+	{price = {{'coin', 750}}, offer = {type = 'give-item', item = 'gate', count = 20}},
+	{price = {{'coin', 200}}, offer = {type = 'give-item', item = 'storage-tank', count = 4}},
+	{price = {{'coin', 250}}, offer = {type = 'give-item', item = 'big-electric-pole', count = 8}},
+}
 
 
 

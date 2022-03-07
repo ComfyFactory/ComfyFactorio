@@ -146,10 +146,12 @@ function Public.generate_overworld_destination(p)
 
 	-- debug override to test islands:
 
-	-- if _DEBUG and type == Surfaces.enum.ISLAND then
-	-- 	-- warning: the first map is unique in that it isn't all loaded by the time you arrive, which can cause issues. For example, structures might get placed after ore, thereby deleting the ore underneath them.
-	-- 	subtype = Surfaces.Island.enum.MAZE
-	-- end
+	if _DEBUG and type == Surfaces.enum.ISLAND then
+		-- warning: the first map is unique in that it isn't all loaded by the time you arrive, which can cause issues. For example, structures might get placed after ore, thereby deleting the ore underneath them.
+		-- subtype = Surfaces.Island.enum.MAZE
+		-- subtype = nil
+		-- type = Surfaces.enum.DOCK
+	end
 
 	-- if _DEBUG and ((macrop.x > 0 and macrop.x < 25)) and type ~= Surfaces.enum.DOCK then
 	-- 	type = nil
@@ -415,7 +417,7 @@ function Public.generate_overworld_destination(p)
 			}
 
 			local i = 1
-			for price_name, price_count in pairs(Shop.main_shop_data_1[dest.static_params.upgrade_for_sale].base_cost) do
+			for price_name, price_count in pairs(Shop.Captains.main_shop_data_1[dest.static_params.upgrade_for_sale].base_cost) do
 				local sprite
 				if price_name == 'fuel' then
 					sprite = 'item/coal'
@@ -516,7 +518,7 @@ function Public.ensure_lane_generated_up_to(lane_yvalue, x)
 					end
 					for rendering_name, r in pairs(dest.dynamic_data.crowsnest_renderings) do
 						if type(r) == 'table' and r.text_rendering and rendering.is_valid(r.text_rendering) then
-							rendering.set_text(r.text_rendering, Utils.bignumber_abbrevform2(Shop.main_shop_data_1[dest.static_params.upgrade_for_sale].base_cost[rendering_name]))
+							rendering.set_text(r.text_rendering, Utils.bignumber_abbrevform2(Shop.Captains.main_shop_data_1[dest.static_params.upgrade_for_sale].base_cost[rendering_name]))
 						end
 					end
 				end

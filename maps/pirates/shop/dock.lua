@@ -37,11 +37,11 @@ Public.market_barters = {
 }
 
 Public.market_permanent_offers = {
-	{price = {{'coin', 4000}}, offer = {type = 'give-item', item = 'iron-ore', count = 800}},
-	{price = {{'coin', 4000}}, offer = {type = 'give-item', item = 'copper-ore', count = 800}},
-	{price = {{'coin', 4000}}, offer = {type = 'give-item', item = 'crude-oil-barrel', count = 120}},
+	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'iron-ore', count = 800}},
+	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'copper-ore', count = 800}},
+	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'crude-oil-barrel', count = 120}},
 	{price = {{'coin', 5000}}, offer = {type = 'give-item', item = 'beacon', count = 2}},
-	{price = {{'coin', 2800}}, offer = {type = 'give-item', item = 'speed-module', count = 2}},
+	{price = {{'coin', 2800}}, offer = {type = 'give-item', item = 'speed-module-2', count = 2}},
 }
 
 -- cheap but one-off
@@ -63,7 +63,7 @@ Public.market_sales = {
 
 
 
-function Public.minimarket_generate_offers(how_many_barters, how_many_sales)
+function Public.dock_generate_offers(how_many_barters, how_many_sales)
 	local ret = {}
 
 	local toaddcount
@@ -103,40 +103,81 @@ function Public.minimarket_generate_offers(how_many_barters, how_many_sales)
 end
 
 
-function Public.create_minimarket(surface, p)
+function Public.create_dock_markets(surface, p)
 	local memory = Memory.get_crew_memory()
 
 	if not (surface and p) then return end
 
-	local entity = {name = 'market', position = p}
-	if surface.can_place_entity(entity) then
-		local e = surface.create_entity(entity)
-		if e and e.valid then
-			e.minable = false
-			e.rotatable = false
-			e.destructible = false
+	local e
 	
-			local offers = Public.minimarket_generate_offers(2,2)
+	e = surface.create_entity{name = 'market', position = {x = p.x - 7, y = p.y}}
+	if e and e.valid then
+		e.minable = false
+		e.rotatable = false
+		e.destructible = false
+	
+		for _, offer in pairs(Public.market_permanent_offers) do
+			e.add_market_item(offer)
+		end
+	end
+	
+	e = surface.create_entity{name = 'market', position = {x = p.x, y = p.y - 1}}
+	if e and e.valid then
+		e.minable = false
+		e.rotatable = false
+		e.destructible = false
 
-			for _, offer in pairs(offers) do
-				e.add_market_item(offer)
+		local toaddcount
+	
+		local salescopy = Utils.deepcopy(Public.market_sales)
+		toaddcount = 3
+		while toaddcount>0 and #salescopy > 0 do
+			local index = Math.random(#salescopy)
+			local offer = salescopy[index]
+			e.add_market_item(offer)
+			for i = index, #salescopy - 1 do
+				salescopy[i] = salescopy[i+1]
 			end
+			salescopy[#salescopy] = nil
+			toaddcount = toaddcount - 1
+		end
 
-			-- new class offerings:
-			local destination = Common.current_destination()
-			if destination.static_params.class_for_sale then
-				e.add_market_item{price={{'coin', Balance.class_cost()}}, offer={type="nothing"}}
+		-- new class offerings:
+		local destination = Common.current_destination()
+		if destination.static_params.class_for_sale then
+			e.add_market_item{price={{'coin', Balance.class_cost()}}, offer={type="nothing"}}
 
-				destination.dynamic_data.market_class_offer_rendering = rendering.draw_text{
-					text = 'Class available: ' .. Classes.display_form[destination.static_params.class_for_sale],
-					surface = surface,
-					target = Utils.psum{e.position, {x = 1, y = -3}},
-					color = CoreData.colors.renderingtext_green,
-					scale = 3,
-					font = 'default-game',
-					alignment = 'center'
-				}
+			destination.dynamic_data.market_class_offer_rendering = rendering.draw_text{
+				text = 'Class available: ' .. Classes.display_form[destination.static_params.class_for_sale],
+				surface = surface,
+				target = Utils.psum{e.position, {x = 0, y = -4}},
+				color = CoreData.colors.renderingtext_green,
+				scale = 2.5,
+				font = 'default-game',
+				alignment = 'center'
+			}
+		end
+	end
+	
+	e = surface.create_entity{name = 'market', position = {x = p.x + 7, y = p.y}}
+	if e and e.valid then
+		e.minable = false
+		e.rotatable = false
+		e.destructible = false
+
+		local toaddcount
+	
+		local barterscopy = Utils.deepcopy(Public.market_barters)
+		toaddcount = 2
+		while toaddcount>0 and #barterscopy>0 do
+			local index = Math.random(#barterscopy)
+			local offer = barterscopy[index]
+			e.add_market_item(offer)
+			for i = index, #barterscopy - 1 do
+				barterscopy[i] = barterscopy[i+1]
 			end
+			barterscopy[#barterscopy] = nil
+			toaddcount = toaddcount - 1
 		end
 	end
 end

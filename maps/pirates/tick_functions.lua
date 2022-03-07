@@ -27,7 +27,7 @@ local Kraken = require 'maps.pirates.surfaces.sea.kraken'
 
 local Quest = require 'maps.pirates.quest'
 local Loot = require 'maps.pirates.loot'
-local ShopMini = require 'maps.pirates.shop.minimarket'
+local ShopDock = require 'maps.pirates.shop.dock'
 local ShopCovered = require 'maps.pirates.shop.covered'
 
 local Public = {}
@@ -67,7 +67,7 @@ function Public.prevent_unbarreling_off_ship(tickinterval)
 			local r = a.get_recipe()
 			if r and r.subgroup and r.subgroup.name and r.subgroup.name == 'fill-barrel' and (not (r.name and r.name == 'fill-water-barrel')) then
 				if not Boats.on_boat(boat, a.position) then
-					Common.notify_force(memory.force, 'Barrelling recipe removed; barrels are too heavy to carry back to the ship.')
+					Common.notify_error(memory.force, 'Barrelling recipe removed; barrels are too heavy to carry back to the ship.')
 					a.set_recipe('fill-water-barrel')
 				end
 			end
@@ -568,9 +568,9 @@ function Public.place_cached_structures(tickinterval)
 						destination.dynamic_data.market_class_offer_rendering = rendering.draw_text{
 							text = 'Class available: ' .. Classes.display_form[destination.static_params.class_for_sale],
 							surface = surface,
-							target = Utils.psum{special.position, hardcoded_data.market, {x = 1, y = -3}},
+							target = Utils.psum{special.position, hardcoded_data.market, {x = 1, y = -3.9}},
 							color = CoreData.colors.renderingtext_green,
-							scale = 3,
+							scale = 2.5,
 							font = 'default-game',
 							alignment = 'center'
 						}
@@ -1199,7 +1199,7 @@ end
 -- 				Surfaces.Dock.place_dock_jetty_and_boats()
 	
 -- 				local destination = Common.current_destination()
--- 				ShopMini.create_minimarket(game.surfaces[destination.surface_name], Surfaces.Dock.Data.market_position)
+-- 				ShopDock.create_dock_markets(game.surfaces[destination.surface_name], Surfaces.Dock.Data.markets_position)
 -- 			end
 -- 		end
 -- 	end

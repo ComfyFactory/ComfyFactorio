@@ -21,8 +21,8 @@ local window_name = 'fuel'
 function Public.toggle_window(player)
 	local flow, flow2, flow3, flow4, flow5, flow6
 
-	local shop_data_1 = Shop.main_shop_data_1
-	local shop_data_2 = Shop.main_shop_data_2
+	local shop_data_1 = Shop.Captains.main_shop_data_1
+	local shop_data_2 = Shop.Captains.main_shop_data_2
 
 	if player.gui.screen[window_name .. '_piratewindow'] then player.gui.screen[window_name .. '_piratewindow'].destroy() return end
 	
@@ -74,9 +74,9 @@ function Public.update(player)
 	local flow, flow2, flow3, flow4, flow5, flow6
 
 	local memory = Memory.get_crew_memory()
-	local shop_data = Utils.nonrepeating_join_dict(Shop.main_shop_data_1, Shop.main_shop_data_2)
-	local shop_data_1 = Shop.main_shop_data_1
-	local shop_data_2 = Shop.main_shop_data_2
+	local shop_data = Utils.nonrepeating_join_dict(Shop.Captains.main_shop_data_1, Shop.Captains.main_shop_data_2)
+	local shop_data_1 = Shop.Captains.main_shop_data_1
+	local shop_data_2 = Shop.Captains.main_shop_data_2
 	
 	local availability_data = memory.mainshop_availability_bools
 

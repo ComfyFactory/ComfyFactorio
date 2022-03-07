@@ -40,7 +40,7 @@ Public.ban_from_rejoining_crew_ticks = 45 * 60 --to prevent observing map and re
 Public.afk_time = 60 * 60 * 4.5
 Public.afk_warning_time = 60 * 60 * 4
 
-Public.quartermaster_range = 14
+Public.quartermaster_range = 16
 
 -- Public.mainshop_rate_limit_ticks = 11
 
@@ -751,6 +751,24 @@ function Public.build_small_loco(surface, pos, force, color)
 		es[4].color = color
 		es[4].get_inventory(defines.inventory.fuel).insert({name = 'wood', count = 16})
 	end
+end
+
+function Public.add_tiles_from_blueprint(tilesTable, bp_string, tile_name, offset)
+
+	local bp_entity = game.surfaces['nauvis'].create_entity{name = 'item-on-ground', position = {x = 158.5, y = 158.5}, stack = 'blueprint'}
+	bp_entity.stack.import_stack(bp_string)
+
+	local bp_tiles = bp_entity.stack.get_blueprint_tiles()
+
+	if bp_tiles then
+		for _, tile in pairs(bp_tiles) do
+			tilesTable[#tilesTable + 1] = {name = tile_name, position = {x = tile.position.x + offset.x, y = tile.position.y + offset.y}}
+		end
+	end
+	
+	bp_entity.destroy()
+	
+	return tilesTable
 end
 
 function Public.tile_positions_from_blueprint(bp_string, offset)
