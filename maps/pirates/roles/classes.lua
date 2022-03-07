@@ -26,6 +26,8 @@ local enum = {
 	IRON_LEG = 14,
 	QUARTERMASTER = 15,
 	DREDGER = 16,
+	SMOLDERING = 17,
+	GOURMET = 18,
 }
 Public.enum = enum
 
@@ -46,6 +48,8 @@ Public.Class_List = {
 	enum.IRON_LEG,
 	enum.QUARTERMASTER,
 	enum.DREDGER,
+	enum.SMOLDERING,
+	enum.GOURMET,
 }
 
 Public.display_form = {
@@ -65,6 +69,8 @@ Public.display_form = {
 	[enum.IRON_LEG] = 'Iron Leg',
 	[enum.QUARTERMASTER] = 'Quartermaster',
 	[enum.DREDGER] = 'Dredger',
+	[enum.SMOLDERING] = 'Smoldering',
+	[enum.GOURMET] = 'Gourmet',
 }
 Public.explanation = {
 	[enum.DECKHAND] = 'They move faster and generate ore for the captain\'s cabin whilst onboard above deck, but move slower offboard.',
@@ -81,14 +87,16 @@ Public.explanation = {
 	[enum.CHIEF_EXCAVATOR] = 'They find many more resources when handmining ore.',
 	[enum.HATAMOTO] = 'They are very tough, and *with no weapon equipped* fight well by melee.',
 	[enum.IRON_LEG] = 'They are very resistant to damage when carrying 2500 iron ore.',
-	[enum.QUARTERMASTER] = 'Nearby crew generate a little ore for the captain\'s cabin, and have extra physical attack.',
+	[enum.QUARTERMASTER] = 'Nearby crewmates generate a little ore for the captain\'s cabin, and have extra physical attack.',
 	[enum.DREDGER] = 'They find surprising items when they fish.',
+	[enum.SMOLDERING] = 'They periodically convert wood into coal, if they have less than 25 coal.',
+	[enum.GOURMET] = 'They generate ore for the captain\'s cabin by eating fish in fancy locations on an empty stomach.',
 }
 
 Public.class_unlocks = {
 	[enum.FISHERMAN] = {enum.MASTER_ANGLER},
 	[enum.LUMBERJACK] = {enum.WOOD_LORD},
-	[enum.PROSPECTOR] = {enum.CHIEF_EXCAVATOR},
+	-- [enum.PROSPECTOR] = {enum.CHIEF_EXCAVATOR}, --breaks the resource pressure in the game too strongly I think
 	[enum.SAMURAI] = {enum.HATAMOTO},
 	[enum.MASTER_ANGLER] = {enum.DREDGER},
 }
@@ -96,31 +104,29 @@ Public.class_unlocks = {
 Public.class_purchase_requirement = {
 	[enum.MASTER_ANGLER] = enum.FISHERMAN,
 	[enum.WOOD_LORD] = enum.LUMBERJACK,
-	[enum.CHIEF_EXCAVATOR] = enum.PROSPECTOR,
+	-- [enum.CHIEF_EXCAVATOR] = enum.PROSPECTOR,
 	[enum.HATAMOTO] = enum.SAMURAI,
 	[enum.DREDGER] = enum.MASTER_ANGLER,
 }
 
 function Public.initial_class_pool()
-	-- if _DEBUG then
-	-- 	return {
-	-- 		enum.QUARTERMASTER,
-	-- 	}
-	-- end
 	return {
 		enum.DECKHAND,
+		enum.DECKHAND, --good for afk players
+		enum.SHORESMAN,
+		enum.SHORESMAN,
+		enum.QUARTERMASTER,
+		enum.QUARTERMASTER,
 		enum.FISHERMAN,
 		enum.SCOUT,
 		enum.SAMURAI,
 		enum.MERCHANT,
-		enum.SHORESMAN,
-		enum.SHORESMAN,
 		enum.BOATSWAIN,
 		enum.PROSPECTOR,
 		enum.LUMBERJACK,
 		enum.IRON_LEG,
-		enum.QUARTERMASTER,
-		enum.QUARTERMASTER,
+		enum.SMOLDERING,
+		enum.GOURMET,
 	}
 end
 
@@ -173,14 +179,89 @@ end
 function Public.generate_class_for_sale()
 	local memory = Memory.get_crew_memory()
 
-	if #memory.available_classes_pool > 0 then
+	if #memory.available_classes_pool == 0 then
+		memory.available_classes_pool = Public.initial_class_pool() --reset to initial state
+	end
 
-		local class = memory.available_classes_pool[Math.random(#memory.available_classes_pool)]
+	local class = memory.available_classes_pool[Math.random(#memory.available_classes_pool)]
 	
-		return class
+	return class
+end
+
+
+
+function Public.class_ore_grant(player, how_much, disable_scaling)
+	local count
+	if disable_scaling then
+		count = Math.ceil(how_much)
 	else
-		return nil
+		count = Math.ceil(how_much * Balance.class_resource_scale())
+	end
+	if Math.random(3) == 1 then
+		Common.flying_text_small(player.surface, player.position, '[color=0.85,0.58,0.37]+' .. count .. '[/color]')
+		Common.give_reward_items{{name = 'copper-ore', count = count}}
+	else
+		Common.flying_text_small(player.surface, player.position, '[color=0.7,0.8,0.8]+' .. count .. '[/color]')
+		Common.give_reward_items{{name = 'iron-ore', count = count}}
 	end
 end
+
+
+local function class_on_player_used_capsule(event)
+
+    local player = game.players[event.player_index]
+    if not player or not player.valid then
+        return
+    end
+	local player_index = player.index
+
+	local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+	Memory.set_working_id(crew_id)
+	local memory = Memory.get_crew_memory()
+
+    if not (player.character and player.character.valid) then
+        return
+    end
+
+    local item = event.item
+    if not (item and item.name and item.name == 'raw-fish') then return end
+
+	if memory.classes_table and memory.classes_table[player_index] then
+		local class = memory.classes_table[player_index]
+		if class == Public.enum.SAMURAI then
+			-- vanilla heal is 80HP
+			player.character.health = player.character.health + 200
+		elseif class == Public.enum.HATAMOTO then
+			player.character.health = player.character.health + 350
+		elseif class == Public.enum.GOURMET then
+			local tile = player.surface.get_tile(player.position)
+			if tile.valid then
+				local multiplier = 0
+				if tile.name == CoreData.world_concrete_tile then
+					multiplier = 1.5
+				elseif tile.name == 'cyan-refined-concrete' then
+					multiplier = 1.5
+				elseif tile.name == CoreData.walkway_tile then
+					multiplier = 1
+				elseif tile.name == 'orange-refined-concrete' then
+					multiplier = 1
+				end
+				if multiplier > 0 then
+					if memory.gourmet_recency_tick then
+						multiplier = multiplier * Math.max(0.2, Math.min(5, (1/5)^((memory.gourmet_recency_tick - game.tick)/(60*300))))
+						memory.gourmet_recency_tick = Math.max(memory.gourmet_recency_tick, game.tick - 60*300) + 60*30
+					else
+						multiplier = multiplier * 5
+						memory.gourmet_recency_tick = game.tick - 60*300 + 60*30
+					end
+					Public.class_ore_grant(player, 12 * multiplier, true)
+				end
+			end
+		end
+	end
+end
+
+local event = require 'utils.event'
+event.add(defines.events.on_player_used_capsule, class_on_player_used_capsule)
 
 return Public

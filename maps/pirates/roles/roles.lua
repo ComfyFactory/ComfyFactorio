@@ -128,19 +128,6 @@ function Public.update_tags(player)
 	
 	local str = Public.tag_text(player)
 	player.tag = str
-
-	if game.tick % 1200 == 0 and Common.validate_player_and_character(player) then
-		local memory = Memory.get_crew_memory()
-		if memory.classes_table and memory.classes_table[player.index] and memory.classes_table[player.index] == Classes.enum.IRON_LEG then
-			local inv = player.get_inventory(defines.inventory.character_main)
-			if not (inv and inv.valid) then return end
-			local count = inv.get_item_count('iron-ore')
-			if count and count < 2500 then
-				local rgb = CoreData.colors.notify_error
-				Common.flying_text(player.surface, player.position, '[color=' .. rgb.r .. ',' .. rgb.g .. ',' .. rgb.b .. ']missing iron ore[/color]')
-			end
-		end
-	end
 end
 
 function Public.player_privilege_level(player)

@@ -154,7 +154,8 @@ function Public.flying_text_small(surface, position, text) --differs just in the
 	surface.create_entity(
 		{
 			name = 'flying-text',
-			position = {position.x - 0.06, position.y - 1.5},
+			position = {position.x - 0.08, position.y - 1.5},
+			-- position = {position.x - 0.06, position.y - 1.5},
 			text = text,
 		}
 	)

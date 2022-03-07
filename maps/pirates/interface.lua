@@ -666,8 +666,8 @@ local function event_on_player_mined_entity(event)
 				give[#give + 1] = {name = 'coin', count = 3}
 				give[#give + 1] = {name = entity.name, count = 7}
 			elseif memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.CHIEF_EXCAVATOR then
-				give[#give + 1] = {name = 'coin', count = 5}
-				give[#give + 1] = {name = entity.name, count = 14}
+				give[#give + 1] = {name = 'coin', count = 4}
+				give[#give + 1] = {name = entity.name, count = 12}
 			else
 				if memory.overworldx > 0 then
 					give[#give + 1] = {name = 'coin', count = 1}
@@ -1461,36 +1461,6 @@ local function event_on_market_item_purchased(event)
 	Shop.event_on_market_item_purchased(event)
 end
 
-local function event_on_player_used_capsule(event)
-
-    local player = game.players[event.player_index]
-    if not player or not player.valid then
-        return
-    end
-	local player_index = player.index
-
-	local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-	Memory.set_working_id(crew_id)
-	local memory = Memory.get_crew_memory()
-
-    if not (player.character and player.character.valid) then
-        return
-    end
-
-    local item = event.item
-    if not (item and item.name and item.name == 'raw-fish') then return end
-
-	if memory.classes_table and memory.classes_table[player_index] then
-		local class = memory.classes_table[player_index]
-		if class == Classes.enum.SAMURAI then
-			-- vanilla heal is 80HP
-			player.character.health = player.character.health + 200
-		elseif class == Classes.enum.HATAMOTO then
-			player.character.health = player.character.health + 350
-		end
-	end
-end
-
 
 
 local remove_boost_movement_speed_on_respawn =
@@ -1584,7 +1554,6 @@ event.add(defines.events.on_rocket_launched, event_on_rocket_launched)
 event.add(defines.events.on_console_chat, event_on_console_chat)
 event.add(defines.events.on_market_item_purchased, event_on_market_item_purchased)
 event.add(defines.events.on_player_respawned, event_on_player_respawned)
-event.add(defines.events.on_player_used_capsule, event_on_player_used_capsule)
 
 
 return Public

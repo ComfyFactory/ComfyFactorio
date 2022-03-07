@@ -18,7 +18,6 @@ local CoreData = require 'maps.pirates.coredata'
 local Overworld = require 'maps.pirates.overworld'
 local Utils = require 'maps.pirates.utils_local'
 local Crew = require 'maps.pirates.crew'
-local Overworld = require 'maps.pirates.overworld'
 local Math = require 'maps.pirates.math'
 local inspect = require 'utils.inspect'.inspect
 
@@ -74,6 +73,8 @@ function Public.class_renderings(tickinterval)
 		end
 	end
 end
+
+
 
 
 function Public.update_character_properties(tickinterval)
@@ -163,26 +164,37 @@ function Public.update_character_properties(tickinterval)
 	end
 end
 
-local function class_ore_grant(player, how_much)
-	if Math.random(3) == 1 then
-		Common.flying_text_small(player.surface, player.position, '[color=0.85,0.58,0.37]+[/color]')
-		Common.give_reward_items{{name = 'copper-ore', count = Math.ceil(how_much * Balance.class_resource_scale())}}
-	else
-		Common.flying_text_small(player.surface, player.position, '[color=0.7,0.8,0.8]+[/color]')
-		Common.give_reward_items{{name = 'iron-ore', count = Math.ceil(how_much * Balance.class_resource_scale())}}
-	end
-end
-
 function Public.class_rewards_tick(tickinterval)
 	--assuming tickinterval = 6 seconds for now
 	local memory = Memory.get_crew_memory()
 
-	if not (memory.boat and memory.boat.state and memory.boat.state == Structures.Boats.enum_state.ATSEA_LOADING_MAP) then --it is possible to spend extra time here, so don't give out freebies
+	local crew = Common.crew_get_crew_members()
+	for _, player in pairs(crew) do
+		if Common.validate_player_and_character(player) then
+			local player_index = player.index
 
-		local crew = Common.crew_get_crew_members()
-		for _, player in pairs(crew) do
-			if Common.validate_player_and_character(player) then
-				local player_index = player.index
+			if memory.classes_table and memory.classes_table[player_index] then
+				if game.tick % (60*6) == 0 and Common.validate_player_and_character(player) then
+					if memory.classes_table[player.index] == Classes.enum.SMOLDERING then
+						local inv = player.get_inventory(defines.inventory.character_main)
+						if not (inv and inv.valid) then return end
+						local max_coal = 25
+						-- local max_transfer = 1
+						local wood_count = inv.get_item_count('wood')
+						local coal_count = inv.get_item_count('coal')
+						if wood_count >= 1 and coal_count < max_coal then
+							-- local count = Math.min(wood_count, max_coal-coal_count, max_transfer)
+							local count = 1
+							inv.remove({name = 'wood', count = count})
+							inv.insert({name = 'coal', count = count})
+							Common.flying_text_small(player.surface, player.position, '[item=coal]')
+						end
+					end
+				end
+			end
+
+
+			if game.tick % (60*6) == 0 and (not (memory.boat and memory.boat.state and memory.boat.state == Structures.Boats.enum_state.ATSEA_LOADING_MAP)) then --it is possible to spend extra time here, so don't give out freebies
 
 				if memory.classes_table and memory.classes_table[player_index] then
 					local class = memory.classes_table[player_index]
@@ -193,11 +205,11 @@ function Public.class_rewards_tick(tickinterval)
 						local hold_bool = surfacedata.type == Surfaces.enum.HOLD
 	
 						if class == Classes.enum.DECKHAND and on_ship_bool and (not hold_bool) then
-							class_ore_grant(player, 5)
+							Classes.class_ore_grant(player, 5)
 						elseif class == Classes.enum.BOATSWAIN and hold_bool then
-							class_ore_grant(player, 8)
+							Classes.class_ore_grant(player, 7)
 						elseif class == Classes.enum.SHORESMAN and (not on_ship_bool) then
-							class_ore_grant(player, 3)
+							Classes.class_ore_grant(player, 3)
 						end
 					end
 				end
@@ -209,7 +221,7 @@ function Public.class_rewards_tick(tickinterval)
 						if p2.player and p2.player.valid then
 							local p2_index = p2.player.index
 							if p2_index ~= player_index and memory.classes_table[p2_index] and memory.classes_table[p2_index] == Classes.enum.QUARTERMASTER then
-								class_ore_grant(p2, 2)
+								Classes.class_ore_grant(p2, 2)
 							end
 						end
 					end
