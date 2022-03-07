@@ -16,6 +16,10 @@ local Research = require 'maps.dungeons.research'
 local DungeonsTable = require 'maps.dungeons.table'
 local BottomFrame = require 'comfy_panel.bottom_frame'
 local Autostash = require 'modules.autostash'
+local Panel = require 'comfy_panel.config'
+local Collapse = require 'modules.collapse'
+Collapse.disable()
+Panel.get('gui_config').spaghett.noop = true
 require 'maps.dungeons.boss_arena'
 require 'modules.melee_mode'
 
