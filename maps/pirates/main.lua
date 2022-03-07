@@ -277,8 +277,8 @@ local function crew_tick()
 		ClassTickFunctions.update_character_properties(30)
 	end
 	
-	if tick % 20 == 0 then
-		ClassTickFunctions.class_renderings(20)
+	if tick % 30 == 0 then
+		ClassTickFunctions.class_renderings(30)
 	end
 
 	if tick % 120 == 0 then

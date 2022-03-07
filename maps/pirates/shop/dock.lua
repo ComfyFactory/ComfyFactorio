@@ -56,8 +56,9 @@ Public.market_sales = {
 	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'vehicle-machine-gun', count = 2}},
 	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'substation', count = 6}},
 	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'modular-armor', count = 1}},
-	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'distractor-capsule', count = 10}},
-	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'destroyer-capsule', count = 5}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'distractor-capsule', count = 15}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'destroyer-capsule', count = 10}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'slowdown-capsule', count = 10}},
 	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'coin', count = 4000}},
 }
 

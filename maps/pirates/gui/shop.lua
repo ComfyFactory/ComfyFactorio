@@ -175,7 +175,7 @@ function Public.click(event)
 	local memory = Memory.get_crew_memory()
 
 	if eventname == 'buy_button' then
-		Shop.main_shop_try_purchase(player, event.element.parent.name)
+		Shop.Captains.main_shop_try_purchase(player, event.element.parent.name)
 	end
 
 end

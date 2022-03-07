@@ -81,11 +81,11 @@ function Public.update(player)
 						if memory.active_sea_enemies.krakens[i] then krakens = true break end
 					end
 				end
-				if krakens then --@FIXME: somehow this isn't triggering?
-					button.tooltip = string.format('Local biter evolution\n\nBase: %.2f\nKraken: %.2f\nTotal: %.2f', evolution_base, Balance.kraken_spawns_base_extra_evo + (memory.kraken_evo or 0), Balance.kraken_spawns_base_extra_evo + evo)
+				if krakens then
+					button.tooltip = string.format('Local biter evolution\n\nLeagues: %.2f\nKraken: %.2f\nTotal: %.2f', evolution_base, Balance.kraken_spawns_base_extra_evo + (memory.kraken_evo or 0), Balance.kraken_spawns_base_extra_evo + evo)
 					button.number = Balance.kraken_spawns_base_extra_evo + evo
 				else
-					button.tooltip = string.format('Local biter evolution\n\nBase: %.2f\nTotal: %.2f', evolution_base, evo)
+					button.tooltip = string.format('Local biter evolution\n\nLeagues: %.2f\nTotal: %.2f', evolution_base, evo)
 					button.number = evo
 				end
 			else

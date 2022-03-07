@@ -326,8 +326,9 @@ Public.maze_treasure_data_raw = {
 	{2, -1, 1, true, 'rocket', 18, 24},
 	{2, -1, 1, false, 'stack-inserter', 8, 10},
 	{2, -1, 1, false, 'stack-filter-inserter', 5, 6},
-	{2, -1, 1, false, 'poison-capsule', 10, 12},
-	{2, -1, 1, false, 'slowdown-capsule', 8, 10},
+	{2, 0, 1, false, 'poison-capsule', 10, 12},
+	{2, 0, 1, false, 'destroyer-capsule', 6, 6},
+	{2, 0, 1, false, 'slowdown-capsule', 8, 8},
 
 	{2, 0, 1, false, 'uranium-rounds-magazine', 15, 25},
 	{2, 0, 1, false, 'artillery-shell', 5, 7},
@@ -353,11 +354,10 @@ Public.maze_treasure_data_raw = {
 	{0.5, 0, 0.8, false, 'assembling-machine-3', 3, 3},
 	{1, 0, 0.7, false, 'electric-furnace', 4, 6},
 
-	{1, 0, 0.9, false, 'destroyer-capsule', 6, 6},
 	
 	{1, 0, 0.8, false, 'modular-armor', 1, 1},
 	{1, 0, 2, true, 'power-armor', 1, 1},
-	{0.08, 0, 2, true, "power-armor-mk2", 1, 1},
+	{0.1, 0, 2, true, 'power-armor-mk2', 1, 1},
 
 	{2, -1, 1, true, 'solar-panel-equipment', 3, 4},
 	{2, -1, 1, true, 'battery-equipment', 1, 1},
@@ -390,41 +390,42 @@ function Public.maze_treasure_loot()
 end
 
 Public.dredger_loot_raw = {
-	{20, 0, 1, false, 'iron-plate', 1, 1},
-	{20, 0, 1, false, 'copper-plate', 1, 1},
-	{20, 0, 1, false, 'coal', 1, 1},
+	{10, 0, 1, false, 'iron-plate', 1, 1},
+	{10, 0, 1, false, 'copper-plate', 1, 1},
+	{10, 0, 1, false, 'coal', 1, 1},
 
 	{2, 0, 1, false, 'small-electric-pole', 1, 1},
 	{1, 0, 1, false, 'medium-electric-pole', 1, 1},
 	{0.1, 0, 1, false, 'big-electric-pole', 1, 1},
 
+	{0.2, 0, 1, false, 'poison-capsule', 1, 1},
 	{0.2, 0, 1, false, 'slowdown-capsule', 1, 1},
 	{0.2, 0, 1, false, 'destroyer-capsule', 1, 1},
 	{0.2, 0, 1, false, 'defender-capsule', 1, 1},
 	{0.2, 0, 1, false, 'distractor-capsule', 1, 1},
 
-	{10, 0, 1, false, 'automation-science-pack', 1, 1},
-	{10, 0, 1, false, 'logistic-science-pack', 1, 1},
-	{4, 0, 1, false, 'military-science-pack', 1, 1},
-	{4, 0, 1, false, 'chemical-science-pack', 1, 1},
-	{4, 0, 1, false, 'production-science-pack', 1, 1},
+	{5, 0, 1, false, 'automation-science-pack', 1, 1},
+	{5, 0, 1, false, 'logistic-science-pack', 1, 1},
+	{2, 0, 1, false, 'military-science-pack', 1, 1},
+	{2, 0, 1, false, 'chemical-science-pack', 1, 1},
+	{2, 0, 1, false, 'production-science-pack', 1, 1},
 
-	{0.0001, 0, 0.8, false, 'modular-armor', 1, 1},
-	{0.0001, 0, 2, true, 'power-armor', 1, 1},
-	{0.00008, 0, 2, true, "power-armor-mk2", 1, 1},
+	{0.0003, 0, 0.75, false, 'modular-armor', 1, 1},
+	{0.0003, 0, 2, true, 'power-armor', 1, 1},
+	{0.0001, 0, 2, true, 'power-armor-mk2', 1, 1},
 
-	{0.002, -1, 1, true, 'solar-panel-equipment', 1, 1},
-	{0.002, -1, 1, true, 'battery-equipment', 1, 1},
-	{0.001, 0, 2, true, 'battery-mk2-equipment', 1, 1},
-	{0.002, -1, 1, true, 'energy-shield-equipment', 1, 1},
-	{0.001, 0, 2, true, 'energy-shield-mk2-equipment', 1, 1},
-	{0.001, -1, 1, true, 'personal-roboport-equipment', 1, 1},
-	{0.005, 0, 2, true, 'personal-roboport-mk2-equipment', 1, 1},
-	{0.005, 0, 0.8, false, 'night-vision-equipment', 1, 1},
-	{0.001, 0, 1, false, 'personal-laser-defense-equipment', 1, 1},
-	{0.005, 0, 1, false, 'fusion-reactor-equipment', 1, 1},
-	{0.002, 0, 1, false, 'exoskeleton-equipment', 1, 1},
-	{0.005, 0, 1, false, 'personal-laser-defense', 1, 1},
+	{0.006, -1, 1, true, 'solar-panel-equipment', 1, 1},
+	{0.006, -1, 1, true, 'battery-equipment', 1, 1},
+	{0.003, 0, 2, true, 'battery-mk2-equipment', 1, 1},
+	{0.006, -1, 1, true, 'energy-shield-equipment', 1, 1},
+	{0.003, 0, 2, true, 'energy-shield-mk2-equipment', 1, 1},
+	{0.003, -1, 1, true, 'personal-roboport-equipment', 1, 1},
+	{0.015, 0, 2, true, 'personal-roboport-mk2-equipment', 1, 1},
+	{0.015, 0, 0.8, false, 'night-vision-equipment', 1, 1},
+	{0.003, 0, 1, false, 'personal-laser-defense-equipment', 1, 1},
+	{0.015, 0, 1, false, 'fusion-reactor-equipment', 1, 1},
+	{0.006, 0, 1, false, 'exoskeleton-equipment', 1, 1},
+	{0.015, 0, 1, false, 'personal-laser-defense', 1, 1},
 }
 
 function Public.dredger_loot()

@@ -42,7 +42,7 @@ function Public.class_renderings(tickinterval)
 		local player_index = player.index
 		if memory.classes_table[player_index] == Classes.enum.QUARTERMASTER then
 			local r = memory.quartermaster_renderings[player_index]
-			processed_renderings[#processed_renderings + 1] = player_index
+			processed_renderings[player_index] = true
 			if Common.validate_player_and_character(player) then
 				if r and rendering.is_valid(r) then
 					rendering.set_target(r, player.character)
@@ -198,7 +198,7 @@ function Public.class_rewards_tick(tickinterval)
 
 				if memory.classes_table and memory.classes_table[player_index] then
 					local class = memory.classes_table[player_index]
-					if class == Classes.enum.DECKHAND or class == Classes.enum.SHORESMAN or class == Classes.enum.BOATSWAIN then
+					if class == Classes.enum.DECKHAND or class == Classes.enum.SHORESMAN or class == Classes.enum.BOATSWAIN or class == Classes.enum.QUARTERMASTER then --watch out for this line!
 						local surfacedata = Surfaces.SurfacesCommon.decode_surface_name(player.surface.name)
 						local type = surfacedata.type
 						local on_ship_bool = type == Surfaces.enum.HOLD or type == Surfaces.enum.CABIN or type == Surfaces.enum.CROWSNEST or (player.surface.name == memory.boat.surface_name and Boats.on_boat(memory.boat, player.position))
@@ -210,18 +210,11 @@ function Public.class_rewards_tick(tickinterval)
 							Classes.class_ore_grant(player, 7)
 						elseif class == Classes.enum.SHORESMAN and (not on_ship_bool) then
 							Classes.class_ore_grant(player, 3)
-						end
-					end
-				end
-	
-				if game.tick % (tickinterval*3) == 0 then
-					local nearby_players = player.surface.find_entities_filtered{position = player.position, radius = Common.quartermaster_range, name = 'character'}
-		
-					for _, p2 in pairs(nearby_players) do
-						if p2.player and p2.player.valid then
-							local p2_index = p2.player.index
-							if p2_index ~= player_index and memory.classes_table[p2_index] and memory.classes_table[p2_index] == Classes.enum.QUARTERMASTER then
-								Classes.class_ore_grant(p2, 2)
+						elseif class == Classes.enum.QUARTERMASTER then
+							local nearby_players = #player.surface.find_entities_filtered{position = player.position, radius = Common.quartermaster_range, name = 'character'}
+				
+							if nearby_players > 1 then
+								Classes.class_ore_grant(player, nearby_players - 1)
 							end
 						end
 					end

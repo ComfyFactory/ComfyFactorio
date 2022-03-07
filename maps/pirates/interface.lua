@@ -976,7 +976,8 @@ local function event_on_research_finished(event)
 	p_force.recipes['locomotive'].enabled = false
 	p_force.recipes['car'].enabled = false
 	p_force.recipes['cargo-wagon'].enabled = false
-	p_force.recipes['rail'].enabled = true
+	p_force.recipes['slowdown-capsule'].enabled = false
+	-- p_force.recipes['rail'].enabled = false
 end
 
 local function event_on_player_joined_game(event)

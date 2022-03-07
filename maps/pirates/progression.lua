@@ -531,6 +531,8 @@ function Public.go_from_currentdestination_to_sea()
 	memory.boat.position = new_boatposition
 	memory.boat.surface_name = seaname
 
+	memory.kraken_evo = 0 --reset
+
 	memory.loadingticks = nil
 	memory.mapbeingloadeddestination_index = nil
 

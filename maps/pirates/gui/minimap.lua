@@ -154,7 +154,7 @@ function Public.click(event)
 	-- local shop_data = Shop.main_shop_data
 
 	-- if eventname == 'buy_button' then
-	-- 	Shop.main_shop_try_purchase(event.element.parent.name)
+	-- 	Shop.Captains.main_shop_try_purchase(event.element.parent.name)
 	-- end
 
     if eventname ~= 'camera' then return end
