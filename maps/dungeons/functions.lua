@@ -333,7 +333,12 @@ function Public.create_scrap(surface, position)
     surface.create_entity({name = scraps[math_random(1, #scraps)], position = position, force = 'neutral'})
 end
 
-local function get_ore_amount(surface_index)
+-- old function 0 - 250 floor 0; 250-500 floor 1; 500 floor 2+
+-- new function 25 - 75 floor 0; 50-100 floor 1; 75-125 floor 2; ...; 500 floor 19
+--
+-- 1000 science (all types) = 9822 coal, 13492 stone, 48736 copper, 63018 iron
+--                            20         27           98            127 max-stones
+local function get_ore_amount_old(surface_index)
     local scaling = game.forces.player.mining_drill_productivity_bonus
     local amount = 5000 * Public.get_dungeon_evolution_factor(surface_index) * (1 + scaling)
     if amount > 500 then
@@ -344,6 +349,16 @@ local function get_ore_amount(surface_index)
         amount = 1
     end
     return amount
+end
+
+local function get_ore_amount(surface_index)
+   local d = DungeonsTable.get_dungeontable()
+   local floor = surface_index - d.original_surface_index
+   local rooms = d.depth[surface_index] - floor * 100
+
+   local min = 25 * (floor + 1)
+   local amount = min + math.min(50, rooms / 4) -- 200 rooms = 50
+   return math_random(math_floor(amount * 0.7), math_floor(amount * 1.3))
 end
 
 local function reward_ores(amount, mined_loot, surface, player, entity)
@@ -400,7 +415,16 @@ function Public.rocky_loot(event)
     end
     local player = game.players[event.player_index]
     local amount = math.ceil(get_ore_amount(player.surface.index))
-    local rock_mining = {'iron-ore', 'iron-ore', 'iron-ore', 'iron-ore', 'copper-ore', 'copper-ore', 'copper-ore', 'stone', 'stone', 'coal', 'coal'}
+    local rock_mining = {}
+    local floor = player.surface.index - DungeonsTable.get_dungeontable().original_surface_index;
+    if floor < 10 then
+       -- early game science uses less copper and more iron/stone
+       rock_mining = {'iron-ore', 'iron-ore', 'iron-ore', 'iron-ore', 'copper-ore', 'copper-ore', 'stone', 'stone', 'coal', 'coal'}
+    else
+       -- end game prod 3 base uses (for all-sciences) 1 stone : 2 coal : 3.5 copper : 4.5 iron
+       -- this is a decent approximation which will still require some modest amount of mining setup
+       rock_mining = {'iron-ore', 'iron-ore', 'iron-ore', 'iron-ore', 'copper-ore', 'copper-ore', 'copper-ore', 'stone', 'coal', 'coal'}
+    end
     local mined_loot = rock_mining[math_random(1, #rock_mining)]
     local text = '+' .. amount .. ' [item=' .. mined_loot .. ']'
     flying_text(player.surface, player.position, text, {r = 0.98, g = 0.66, b = 0.22})
