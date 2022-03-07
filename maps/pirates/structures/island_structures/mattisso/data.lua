@@ -286,7 +286,7 @@ Public.uranium_miners = {
 			type = 'entities',
 			name = 'electric-mining-drill',
 			force = 'crew',
-			offset = {x = 0, y = 1},
+			offset = {x = 0, y = 0}, --this was at y=1 but was one too low. If observed to be in the wrong position again, needs to be a half-integer
 			instances = {
 				{position = {x = 2, y = -1}, direction = defines.direction.east},
 				{position = {x = 8, y = -1}, direction = defines.direction.west},

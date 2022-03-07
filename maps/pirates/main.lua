@@ -264,6 +264,10 @@ local function crew_tick()
 	end
 
 
+
+	if tick % 240 == 0 then
+		TickFunctions.Kraken_Destroyed_Backup_check(240)
+	end
 	
 	if tick % 300 == 0 then
 		TickFunctions.periodic_free_resources(300)
@@ -273,12 +277,8 @@ local function crew_tick()
 		ClassTickFunctions.update_character_properties(30)
 	end
 	
-	if tick % 10 == 0 then
-		ClassTickFunctions.class_renderings(10)
-	end
-	
-	if tick % 360 == 0 then
-		ClassTickFunctions.class_rewards_tick(360)
+	if tick % 20 == 0 then
+		ClassTickFunctions.class_renderings(20)
 	end
 
 	if tick % 120 == 0 then
@@ -287,6 +287,10 @@ local function crew_tick()
 
 	if tick % 240 == 0 then
 		TickFunctions.LOS_tick(240)
+	end
+	
+	if tick % 360 == 0 then
+		ClassTickFunctions.class_rewards_tick(360)
 	end
 
 	if tick % 300 == 0 then

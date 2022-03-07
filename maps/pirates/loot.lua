@@ -40,6 +40,8 @@ Public.buried_treasure_loot_data_raw = {
 }
 
 Public.chest_loot_data_raw = {
+	{80, 0, 1, false, 'coin', 250, 400},
+
 	{20, -1, 0.5, true, 'splitter', 4, 12},
 	-- {20, -1, 0.5, true, 'underground-belt', 4, 12},
 	{40, -0.4, 0.4, true, 'firearm-magazine', 10, 40},
@@ -61,7 +63,6 @@ Public.chest_loot_data_raw = {
 	{40, 0, 1, false, 'medium-electric-pole', 2, 5},
 	{2, 0.2, 1, false, 'electric-engine-unit', 1, 1},
 
-	{40, 0, 1, false, 'coin', 200, 400},
 	{10, 0, 1, false, 'coal', 60, 100},
 
 	{2, 0, 2, true, 'rocket-launcher', 1, 1},
@@ -169,7 +170,7 @@ Public.chest_loot_data_raw = {
 	--{9, 0.5, 0.8, false, "railgun-dart", 8, 16},
 	-- {5, 0, 1.2, true, 'land-mine', 16, 32},
 	{4, 0.2, 1.2, true, 'lubricant-barrel', 4, 10},
-	{1, 0.2, 1.2, true, 'battery', 10, 50},
+	{1, 0.2, 1.2, true, 'battery', 10, 30},
 	{5, 0.2, 1.8, true, 'explosive-rocket', 2, 8},
 	{4, 0.2, 1.4, true, 'advanced-circuit', 20, 60},
 	{3, 0.2, 1.4, true, 'big-electric-pole', 4, 8},
@@ -340,6 +341,7 @@ Public.maze_treasure_data_raw = {
 
 	{2, 0, 1.5, true, 'production-science-pack', 20, 25},
 	{2, 0, 1.5, true, 'coin', 3000, 6500},
+	{3, 0, 0.9, false, 'beacon', 1, 1},
 
 	{1, 0.2, 1.8, true, 'explosive-rocket', 6, 8},
 

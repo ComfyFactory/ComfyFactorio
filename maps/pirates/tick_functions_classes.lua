@@ -33,13 +33,17 @@ function Public.class_renderings(tickinterval)
 
 	local crew = Common.crew_get_crew_members()
 
+	if not memory.quartermaster_renderings then
+		memory.quartermaster_renderings = {}
+	end
+
+	local processed_renderings = {}
+
 	for _, player in pairs(crew) do
 		local player_index = player.index
 		if memory.classes_table[player_index] == Classes.enum.QUARTERMASTER then
-			if not memory.quartermaster_renderings then
-				memory.quartermaster_renderings = {}
-			end
 			local r = memory.quartermaster_renderings[player_index]
+			processed_renderings[#processed_renderings + 1] = player_index
 			if Common.validate_player_and_character(player) then
 				if r then
 					rendering.set_target(r, player.character)
@@ -49,7 +53,7 @@ function Public.class_renderings(tickinterval)
 						target = player.character,
 						color = CoreData.colors.quartermaster_rendering,
 						filled = false,
-						radius = CoreData.quartermaster_range,
+						radius = Common.quartermaster_range,
 						only_in_alt_mode = true,
 						draw_on_ground = true,
 					}
@@ -57,8 +61,16 @@ function Public.class_renderings(tickinterval)
 			else
 				if r then
 					rendering.destroy(r)
+					memory.quartermaster_renderings[player_index] = nil
 				end
 			end
+		end
+	end
+
+	for _, r in pairs(memory.quartermaster_renderings) do
+		if not processed_renderings[r] then
+			rendering.destroy(r)
+			memory.quartermaster_renderings[r] = nil
 		end
 	end
 end
@@ -82,10 +94,10 @@ function Public.update_character_properties(tickinterval)
 				-- 	character.character_build_distance_bonus = 0
 				-- end
 
-				if memory.classes_table[player_index] == Classes.enum.FISHERMAN then
+				if memory.classes_table[player_index] == Classes.enum.FISHERMAN or memory.classes_table[player_index] == Classes.enum.DREDGER then
 					max_reach_bonus = Math.max(max_reach_bonus, 10)
 					character.character_resource_reach_distance_bonus = 10
-				elseif memory.classes_table[player_index] == Classes.enum.MASTER_ANGLER or memory.classes_table[player_index] == Classes.enum.SEA_DREDGER then
+				elseif memory.classes_table[player_index] == Classes.enum.MASTER_ANGLER then
 					max_reach_bonus = Math.max(max_reach_bonus, 16)
 					character.character_resource_reach_distance_bonus = 16
 				else
@@ -101,7 +113,7 @@ function Public.update_character_properties(tickinterval)
 				local class = memory.classes_table[player_index]
 				if class == Classes.enum.SAMURAI then
 					health_boost = health_boost + 800
-				elseif class == Classes.enum.RONIN_SENSEI then
+				elseif class == Classes.enum.HATAMOTO then
 					health_boost = health_boost + 1600
 				end
 			end
@@ -180,22 +192,24 @@ function Public.class_rewards_tick(tickinterval)
 						local hold_bool = surfacedata.type == Surfaces.enum.HOLD
 	
 						if class == Classes.enum.DECKHAND and on_ship_bool and (not hold_bool) then
-							class_ore_grant(player, 4)
+							class_ore_grant(player, 5)
 						elseif class == Classes.enum.BOATSWAIN and hold_bool then
-							class_ore_grant(player, 7)
+							class_ore_grant(player, 8)
 						elseif class == Classes.enum.SHORESMAN and (not on_ship_bool) then
-							class_ore_grant(player, 2)
+							class_ore_grant(player, 3)
 						end
 					end
 				end
 	
-				if game.tick % (360*2) == 0 then
-					local nearby_players = player.surface.find_entities_filtered{position = player.position, radius = CoreData.quartermaster_range, type = {'character'}}
+				if game.tick % (tickinterval*2) == 0 then
+					local nearby_players = player.surface.find_entities_filtered{position = player.position, radius = Common.quartermaster_range, type = {'character'}}
 		
 					for _, p2 in pairs(nearby_players) do
-						local p2_index = p2.player.index
-						if p2_index ~= player_index and memory.classes_table[p2_index] and memory.classes_table[p2_index] == Classes.enum.QUARTERMASTER then
-							class_ore_grant(p2, 2)
+						if p2.player and p2.player.valid then
+							local p2_index = p2.player.index
+							if p2_index ~= player_index and memory.classes_table[p2_index] and memory.classes_table[p2_index] == Classes.enum.QUARTERMASTER then
+								class_ore_grant(p2, 2)
+							end
 						end
 					end
 				end

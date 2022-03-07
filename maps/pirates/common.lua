@@ -6,7 +6,7 @@ local Memory = require 'maps.pirates.memory'
 local inspect = require 'utils.inspect'.inspect
 local simplex_noise = require 'utils.simplex_noise'.d2
 local perlin_noise = require 'utils.perlin_noise'
-local Force_health_booster = require 'modules.force_health_booster'
+-- local Force_health_booster = require 'modules.force_health_booster'
 
 local Public = {}
 
@@ -39,6 +39,8 @@ Public.ban_from_rejoining_crew_ticks = 45 * 60 --to prevent observing map and re
 
 Public.afk_time = 60 * 60 * 4.5
 Public.afk_warning_time = 60 * 60 * 4
+
+Public.quartermaster_range = 14
 
 -- Public.mainshop_rate_limit_ticks = 11
 
@@ -148,7 +150,7 @@ function Public.flying_text(surface, position, text)
 end
 
 
-function Public.flying_text_small(surface, position, text)
+function Public.flying_text_small(surface, position, text) --differs just in the location of the text, more suitable for small things like '+'
 	surface.create_entity(
 		{
 			name = 'flying-text',
@@ -365,7 +367,7 @@ function Public.set_biter_surplus_evo_modifiers()
 	local damage_fractional_mod
 	local health_fractional_mod
 
-	if surplus > 1 then
+	if surplus > 0 then
 		damage_fractional_mod = Public.surplus_evo_biter_damage_modifier(surplus)
 		health_fractional_mod = Public.surplus_evo_biter_health_fractional_modifier(surplus)
 	else
@@ -377,7 +379,8 @@ function Public.set_biter_surplus_evo_modifiers()
 	enemy_force.set_ammo_damage_modifier('artillery-shell', damage_fractional_mod)
 	enemy_force.set_ammo_damage_modifier('flamethrower', damage_fractional_mod)
 	
-	Force_health_booster.set_health_modifier(enemy_force.index, 1 + health_fractional_mod)
+	-- this event is behaving really weirdly, e.g. messing up samurai damage:
+	-- Force_health_booster.set_health_modifier(enemy_force.index, 1 + health_fractional_mod)
 end
 
 function Public.set_evo(evolution)

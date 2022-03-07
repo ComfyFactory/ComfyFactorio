@@ -342,7 +342,7 @@ function Public.spawn_group_of_scripted_biters(fraction_of_floating_pollution, m
 	local nearby_units_to_bring
 	if #memory.scripted_biters >= 9/10 * CoreData.total_max_biters then
 		-- pick up nearby units that might be idle:
-		nearby_units_to_bring = surface.find_entities_filtered{area = {{spawner.position.x - 8, spawner.position.y - 8}, {spawner.position.x + 8, spawner.position.y + 8}}, force = enemy_force_name, type = 'unit'}
+		nearby_units_to_bring = surface.find_units{area = {{spawner.position.x - 8, spawner.position.y - 8}, {spawner.position.x + 8, spawner.position.y + 8}}, force = enemy_force_name}
 	else
 		nearby_units_to_bring = {}
 	end

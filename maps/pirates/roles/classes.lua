@@ -22,7 +22,7 @@ local enum = {
 	MASTER_ANGLER = 10,
 	WOOD_LORD = 11,
 	CHIEF_EXCAVATOR = 12,
-	RONIN_SENSEI = 13,
+	HATAMOTO = 13,
 	IRON_LEG = 14,
 	QUARTERMASTER = 15,
 	DREDGER = 16,
@@ -42,7 +42,7 @@ Public.Class_List = {
 	enum.MASTER_ANGLER,
 	enum.WOOD_LORD,
 	enum.CHIEF_EXCAVATOR,
-	enum.RONIN_SENSEI,
+	enum.HATAMOTO,
 	enum.IRON_LEG,
 	enum.QUARTERMASTER,
 	enum.DREDGER,
@@ -61,7 +61,7 @@ Public.display_form = {
 	[enum.MASTER_ANGLER] = 'Master Angler',
 	[enum.WOOD_LORD] = 'Lord of the Woods',
 	[enum.CHIEF_EXCAVATOR] = 'Chief Excavator',
-	[enum.RONIN_SENSEI] = 'Ronin',
+	[enum.HATAMOTO] = 'Hatamoto',
 	[enum.IRON_LEG] = 'Iron Leg',
 	[enum.QUARTERMASTER] = 'Quartermaster',
 	[enum.DREDGER] = 'Dredger',
@@ -79,17 +79,17 @@ Public.explanation = {
 	[enum.MASTER_ANGLER] = 'They fish at much greater distance, and catch more.',
 	[enum.WOOD_LORD] = 'They find many more resources when chopping trees.',
 	[enum.CHIEF_EXCAVATOR] = 'They find many more resources when handmining ore.',
-	[enum.RONIN_SENSEI] = 'They are very tough, and *with no weapon equipped* fight well by melee.',
-	[enum.IRON_LEG] = 'They are resistant to damage when carrying 2500 iron ore.',
+	[enum.HATAMOTO] = 'They are very tough, and *with no weapon equipped* fight well by melee.',
+	[enum.IRON_LEG] = 'They are very resistant to damage when carrying 2500 iron ore.',
 	[enum.QUARTERMASTER] = 'Nearby crew generate a little ore for the captain\'s cabin, and have extra physical attack.',
-	[enum.DREDGER] = 'They fish at a distance and find surprising items.',
+	[enum.DREDGER] = 'They find surprising items when they fish.',
 }
 
 Public.class_unlocks = {
 	[enum.FISHERMAN] = {enum.MASTER_ANGLER},
 	[enum.LUMBERJACK] = {enum.WOOD_LORD},
 	[enum.PROSPECTOR] = {enum.CHIEF_EXCAVATOR},
-	[enum.SAMURAI] = {enum.RONIN_SENSEI},
+	[enum.SAMURAI] = {enum.HATAMOTO},
 	[enum.MASTER_ANGLER] = {enum.DREDGER},
 }
 
@@ -97,7 +97,7 @@ Public.class_purchase_requirement = {
 	[enum.MASTER_ANGLER] = enum.FISHERMAN,
 	[enum.WOOD_LORD] = enum.LUMBERJACK,
 	[enum.CHIEF_EXCAVATOR] = enum.PROSPECTOR,
-	[enum.RONIN_SENSEI] = enum.SAMURAI,
+	[enum.HATAMOTO] = enum.SAMURAI,
 	[enum.DREDGER] = enum.MASTER_ANGLER,
 }
 

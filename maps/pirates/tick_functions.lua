@@ -23,6 +23,7 @@ local Crew = require 'maps.pirates.crew'
 local Parrot = require 'maps.pirates.parrot'
 local Math = require 'maps.pirates.math'
 local inspect = require 'utils.inspect'.inspect
+local Kraken = require 'maps.pirates.surfaces.sea.kraken'
 
 local Quest = require 'maps.pirates.quest'
 local Loot = require 'maps.pirates.loot'
@@ -139,7 +140,7 @@ function Public.raft_raids(tickinterval)
 	for _, raid in pairs(scheduled_raft_raids) do
 		if timer == raid.timeinseconds then
 			local type
-			if memory.overworldx >= 40*18 then
+			if memory.overworldx >= 40*16 then
 				type = Boats.enum.RAFTLARGE
 			else
 				type = Boats.enum.RAFT
@@ -837,7 +838,7 @@ function Public.boat_movement_tick(tickinterval)
 								-- 	distraction = defines.distraction.by_enemy
 								-- }) end
 
-								local units = game.surfaces[eboat.surface_name].find_entities_filtered{area = {{eboat.position.x - 12, eboat.position.y - 12}, {eboat.position.x + 12, eboat.position.y + 12}}, type = 'unit', force = enemy_force_name}
+								local units = game.surfaces[eboat.surface_name].find_units{area = {{eboat.position.x - 12, eboat.position.y - 12}, {eboat.position.x + 12, eboat.position.y + 12}}, force = enemy_force_name}
 
 								if #units > 0 then
 									local unit_group = game.surfaces[eboat.surface_name].create_unit_group({position = eboat.position, force = enemy_force_name})
@@ -1205,6 +1206,38 @@ end
 -- 	Delay.clear_buffer()
 -- 	Delay.move_tasks_to_buffer()
 -- end
+
+function Public.Kraken_Destroyed_Backup_check(tickinterval) -- a server became bugged when the kraken spawner entity disappeared but the kraken_die had not fired, and I'm not sure why, so this is a backup checker for that case
+	local memory = Memory.get_crew_memory()
+	local boat = memory.boat
+	
+	if boat and boat.surface_name and boat.state and boat.state == Boats.enum_state.ATSEA_LOADING_MAP then
+		if (memory.active_sea_enemies and memory.active_sea_enemies.krakens and #memory.active_sea_enemies.krakens > 0) then
+
+			local surface = game.surfaces[boat.surface_name]
+
+			local some_spawners_should_be_alive = false
+			for i = 1, Public.kraken_slots do
+				if memory.active_sea_enemies.krakens[i] then
+					local kraken_data = memory.active_sea_enemies.krakens[i]
+					if kraken_data.step >= 3 then
+						some_spawners_should_be_alive = true
+					end
+				end
+			end
+
+			local but_none_are = some_spawners_should_be_alive and #surface.find_entities_flitered{name = 'biter-spawner', force = memory.enemy_force_name} == 0
+			if but_none_are then
+				for i = 1, Public.kraken_slots do
+					if memory.active_sea_enemies.krakens[i] then
+						Kraken.kraken_die(i)
+					end
+				end
+			end
+
+		end
+	end
+end
 
 function Public.quest_progress_tick(tickinterval)
 	local memory = Memory.get_crew_memory()

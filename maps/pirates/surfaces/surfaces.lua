@@ -266,6 +266,10 @@ function Public.destination_on_arrival(destination)
 		-- 	end
 		-- end
 
+		-- New dock class sales:
+		local class_for_sale = Classes.generate_class_for_sale()
+		destination.static_params.class_for_sale = class_for_sale
+
 	end
 
 	local name = destination.static_params.name and destination.static_params.name or 'NameNotFound'

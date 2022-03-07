@@ -36,7 +36,7 @@ function Public.make_officer(captain, player)
 	end
 
 	local message = (captain.name .. ' made ' .. player.name .. ' an officer.')
-	Common.notify_force(force, message)
+	Common.notify_force_light(force, message)
     Public.update_privileges(player)
 end
 
@@ -49,8 +49,20 @@ function Public.unmake_officer(captain, player)
 	end
 
 	local message = (captain.name .. ' unmade ' .. player.name .. ' an officer.')
-	Common.notify_force(force, message)
+	Common.notify_force_light(force, message)
     Public.update_privileges(player)
+end
+
+function Public.revoke_class(captain, player)
+	local memory = Memory.get_crew_memory()
+	local force = memory.force
+
+	if force and force.valid and player.index and memory.classes_table[player.index] then
+		Common.notify_force_light(force, string.format('%s revoked %s from %s.', captain.name, Public.display_form[memory.classes_table[player.index]]), player.name)
+
+		memory.spare_classes[#memory.spare_classes + 1] = memory.classes_table[player.index]
+		memory.classes_table[player.index] = nil
+	end
 end
 
 function Public.tag_text(player)
@@ -117,7 +129,7 @@ function Public.update_tags(player)
 	local str = Public.tag_text(player)
 	player.tag = str
 
-	if game.tick % 300 == 0 and Common.validate_player_and_character(player) then
+	if game.tick % 1200 == 0 and Common.validate_player_and_character(player) then
 		local memory = Memory.get_crew_memory()
 		if memory.classes_table and memory.classes_table[player.index] and memory.classes_table[player.index] == Classes.enum.IRON_LEG then
 			local inv = player.get_inventory(defines.inventory.character_main)
@@ -125,7 +137,7 @@ function Public.update_tags(player)
 			local count = inv.get_item_count('iron-ore')
 			if count and count < 2500 then
 				local rgb = CoreData.colors.notify_player_error
-				Common.flying_text_small(player.surface, player.position, '[color=' .. rgb.r .. ',' .. rgb.g .. ',' .. rgb.b .. ']missing iron ore[/color]')
+				Common.flying_text(player.surface, player.position, '[color=' .. rgb.r .. ',' .. rgb.g .. ',' .. rgb.b .. ']missing iron ore[/color]')
 			end
 		end
 	end

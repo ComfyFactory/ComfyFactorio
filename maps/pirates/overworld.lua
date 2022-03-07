@@ -127,7 +127,7 @@ function Public.generate_overworld_destination(p)
 		type = nil
 	elseif macrop.x == 23 then --rocket launch cost
 		type = Surfaces.enum.ISLAND
-		subtype = Surfaces.Island.enum.MAZE
+		subtype = Surfaces.Island.enum.SWAMP
 	elseif macrop.x == 24 then --rocket launch cost
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.WALKWAYS
@@ -166,7 +166,7 @@ function Public.generate_overworld_destination(p)
 		-- temporarily placed this back here, as moving it to shorehit broke things:
 		local playercount = Common.activecrewcount()
 		local max_evo = 0.85
-		if Common.difficulty() < 1 then max_evo = 0.70 end
+		if Common.difficulty() < 1 then max_evo = 0.72 end
 		if Common.difficulty() > 1 then max_evo = 0.90 end
 
 		if macrop.x > 5 then

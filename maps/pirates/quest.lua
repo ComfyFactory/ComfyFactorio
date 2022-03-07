@@ -42,11 +42,11 @@ function Public.quest_reward()
 	elseif rng <= 0.5 then
 		ret = {name = 'copper-plate', count = Math.ceil(2000 * multiplier), display_sprite = '[item=copper-plate]', display_amount = string.format('%.0fk', 2 * multiplier)}
 	elseif rng <= 0.7 then
-		ret = {name = 'solid-fuel', count = Math.ceil(450 * multiplier), display_sprite = '[item=solid-fuel]', display_amount = string.format('%.0f', Math.ceil(350 * multiplier))}
+		ret = {name = 'solid-fuel', count = Math.ceil(450 * multiplier), display_sprite = '[item=solid-fuel]', display_amount = string.format('%.0f', Math.ceil(450 * multiplier))}
 	elseif rng <= 0.9 then
-		ret = {name = 'coin', count = Math.ceil(8000 * multiplier), display_sprite = '[item=coin]', display_amount = string.format('%.0f', Math.ceil(8000 * multiplier))}
+		ret = {name = 'coin', count = Math.ceil(6000 * (multiplier^(1/2))), display_sprite = '[item=coin]', display_amount = string.format('%.0fk', Math.ceil(6 * (multiplier^(1/2))))}
 	else
-		ret = {name = 'piercing-rounds-magazine', count = Math.ceil(250 * multiplier), display_sprite = '[item=piercing-rounds-magazine]', display_amount = string.format('%.0f', Math.ceil(200 * (multiplier^(3/2))))}
+		ret = {name = 'piercing-rounds-magazine', count = Math.ceil(250 * multiplier), display_sprite = '[item=piercing-rounds-magazine]', display_amount = string.format('%.0f', Math.ceil(250 * multiplier))}
 	end
 
 	return ret

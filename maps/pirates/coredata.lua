@@ -5,10 +5,10 @@ local inspect = require 'utils.inspect'.inspect
 local Public = {}
 
 Public.scenario_id_name = 'pirates'
-Public.version_string = '1.0.4.3'
-Public.version_float = 1.043
+Public.version_string = '1.0.4.5'
+Public.version_float = 1.045
 
-Public.blueprint_library_allowed = false
+Public.blueprint_library_allowed = true
 Public.blueprint_importing_allowed = true
 
 Public.rocket_silo_death_causes_loss = false
@@ -126,8 +126,6 @@ function Public.highscore_difficulty_displayform(difficulty_value)
 		return 'Nightmare'
 	end
 end
-
-Public.quartermaster_range = 14
 
 Public.daynightcycle_types = {
 	{displayname = 'Static', 0},

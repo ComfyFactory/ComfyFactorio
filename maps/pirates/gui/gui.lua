@@ -53,7 +53,7 @@ local function create_gui(player)
 	flow2.style.clicked_font_color = {r=1, g=1, b=1}
 	flow2.parent.style.left_padding = -6
 
-	flow2 = GuiCommon.flow_add_floating_sprite_button(flow1, 'runs_piratebutton', 80)
+	flow2 = GuiCommon.flow_add_floating_sprite_button(flow1, 'runs_piratebutton', 70)
 	flow2.caption = 'Play'
 	flow2.tooltip = 'Play\n\nView the ongoing runs, and make proposals.'
 	flow2.style.font = 'debug'
@@ -645,7 +645,7 @@ function Public.update_gui(player)
 						tooltip = {'pirates.resources_needed_tooltip_3'}
 					end
 				else
-					flow2.etaframe_label_3.caption = 'Or store'
+					flow2.etaframe_label_3.caption = 'Or pay'
 					if cost_includes_rocket_launch then
 						tooltip = {'pirates.resources_needed_tooltip_2_rocketvariant'}
 					else

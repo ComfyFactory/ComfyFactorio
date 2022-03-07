@@ -261,7 +261,7 @@ function Public.kraken_move(kraken_id, new_p, new_frame)
 	kraken_data.frame = new_frame
 end
 
-function Public.kraken_die(kraken_id, unit_number)
+function Public.kraken_die(kraken_id)
 	local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[memory.sea_name]
 	if not surface and surface.valid then return end -- check sea still exists

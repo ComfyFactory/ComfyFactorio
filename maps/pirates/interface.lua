@@ -204,7 +204,7 @@ local function kraken_damage(event)
 	end
 	-- and additionally:
 	if event.cause.name == 'artillery-turret' then
-		adjusted_damage = adjusted_damage / 1.5
+		adjusted_damage = adjusted_damage / 1.2
 	end
 
 	if event.damage_type.name and (event.damage_type.name == 'laser') then
@@ -214,20 +214,20 @@ local function kraken_damage(event)
 	local healthbar = memory.healthbars[unit_number]
 	if not healthbar then return end
 
-	event.entity.health = event.entity.health + damage
+	event.entity.health = 350 --set to full hp
 	local new_health = healthbar.health - adjusted_damage
 	healthbar.health = new_health
 	Common.update_healthbar_rendering(healthbar, new_health)
 
 	if new_health < 0 then
-		Kraken.kraken_die(healthbar.id, unit_number)
+		Kraken.kraken_die(healthbar.id)
 	end
 end
 
 
 
 
-local function extra_player_damage(event)
+local function extra_damage_to_players(event)
 	local memory = Memory.get_crew_memory()
 
 	if not (event.entity and event.entity.valid and event.entity.name and event.entity.name == 'character') then return end
@@ -249,7 +249,7 @@ local function extra_player_damage(event)
 			if not (inv and inv.valid) then return end
 			local count = inv.get_item_count('iron-ore')
 			if count and count >= 2500 then
-				event.entity.health = event.entity.health + event.final_damage_amount * 0.5
+				event.entity.health = event.entity.health + event.final_damage_amount * 0.75
 			end
 		end --samurai health buff is elsewhere
 	end
@@ -277,17 +277,46 @@ local function samurai_damage_dealt_changes(event)
 	local player = character.player
 
 	local player_index = player.index
-	if memory.classes_table and memory.classes_table[player_index] and memory.classes_table[player_index] == Classes.enum.SAMURAI then
 
-		if event.damage_type.name == 'physical' and (not (character.get_inventory(defines.inventory.character_guns) and character.get_inventory(defines.inventory.character_guns)[character.selected_gun_index] and character.get_inventory(defines.inventory.character_guns)[character.selected_gun_index].valid_for_read)) then
-			event.entity.health = event.entity.health - 30
-		else
-			event.entity.health = event.entity.health + 0.66 * event.final_damage_amount
+	if memory.classes_table and memory.classes_table[player_index] then
+		local samurai = memory.classes_table[player_index] == Classes.enum.SAMURAI
+		local hatamoto = memory.classes_table[player_index] == Classes.enum.HATAMOTO
+
+		if not (samurai or hatamoto) then return end
+
+		local physical = event.damage_type.name == 'physical'
+		local acid = event.damage_type.name == 'acid'
+		local no_weapon = (not (character.get_inventory(defines.inventory.character_guns) and character.get_inventory(defines.inventory.character_guns)[character.selected_gun_index] and character.get_inventory(defines.inventory.character_guns)[character.selected_gun_index].valid_for_read))
+
+		local melee = (physical or acid) and no_weapon
+
+		local extra_damage_to_deal = 0
+
+		local big_number = 1000
+
+		if melee and event.final_health > 0 then
+			if physical then
+				if samurai then
+					extra_damage_to_deal = 25
+				elseif hatamoto then
+					extra_damage_to_deal = 40
+				end
+			elseif acid then --this hacky stuff is to implement repeated spillover splash damage, whilst getting around the fact that if ovekill damage takes something to zero health, we can't tell in that event how much double-overkill damage should be dealt by reading off its HP. it assumes that characters only deal acid damage via this function.
+				extra_damage_to_deal = event.original_damage_amount * big_number
+			end
 		end
-	elseif memory.classes_table and memory.classes_table[player_index] and memory.classes_table[player_index] == Classes.enum.RONIN_SENSEI then
 
-		if event.damage_type.name == 'physical' and (not (character.get_inventory(defines.inventory.character_guns) and character.get_inventory(defines.inventory.character_guns)[character.selected_gun_index] and character.get_inventory(defines.inventory.character_guns)[character.selected_gun_index].valid_for_read)) then
-			event.entity.health = event.entity.health - 40
+		if extra_damage_to_deal > 0 then
+			if event.entity.health > extra_damage_to_deal then
+				event.entity.health = event.entity.health - extra_damage_to_deal
+			else
+				local surplus = (extra_damage_to_deal - event.entity.health)*0.8
+				event.entity.die(character.force, character)
+				local nearest = player.surface.find_nearest_enemy{position = {x = player.position.x, y = player.position.y}, max_distance = 2, force = character.force}
+				if nearest then
+					nearest.damage(surplus/big_number, character.force, 'acid', character)
+				end
+			end
 		end
 	end
 end
@@ -297,17 +326,22 @@ local function quartermaster_damage_dealt_changes(event)
 	local memory = Memory.get_crew_memory()
 	if not memory.classes_table then return end
 
+	if event.damage_type.name ~= 'physical' then return end
+
 	local character = event.cause
+	if not character.valid then return end
 	local player = character.player
 	local player_index = player.index
 
-    local nearby_players = player.surface.find_entities_filtered{position = player.position, radius = CoreData.quartermaster_range, type = {'character'}}
+    local nearby_players = player.surface.find_entities_filtered{position = player.position, radius = Common.quartermaster_range, type = {'character'}}
 
 	for _, p2 in pairs(nearby_players) do
-		local p2_index = p2.player.index
-		if player_index ~= p2_index and memory.classes_table[p2_index] and memory.classes_table[p2_index] == Classes.enum.QUARTERMASTER then
-			if event.damage_type.name == 'physical' then
-				event.entity.health = event.entity.health - 0.1 * event.final_damage_amount
+		if p2.player and p2.player.valid then
+			local p2_index = p2.player.index
+			if player_index ~= p2_index and memory.classes_table[p2_index] and memory.classes_table[p2_index] == Classes.enum.QUARTERMASTER then
+				if event.damage_type.name == 'physical' then
+					event.entity.damage(0.1 * event.original_damage_amount, character.force, 'impact', character) --triggers this function again, but not physical this time
+				end
 			end
 		end
 	end
@@ -378,7 +412,7 @@ local function event_on_entity_damaged(event)
 	
 	enemyboat_spawners_invulnerable(event)
 	biters_chew_stuff_faster(event)
-	extra_player_damage(event)
+	extra_damage_to_players(event)
 	artillery_damage(event)
 	swamp_resist_poison(event)
 	maze_walls_resistance(event)
@@ -582,14 +616,17 @@ local function event_on_player_mined_entity(event)
 				destination.dynamic_data.wood_remaining = destination.dynamic_data.wood_remaining - amount
 	
 				if memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.LUMBERJACK then
-					give[#give + 1] = {name = 'wood', count = amount + 4}
+					give[#give + 1] = {name = 'wood', count = amount + 3}
 					if Math.random(7) == 1 then
-						give[#give + 1] = {name = 'coin', count = 20}
+						give[#give + 1] = {name = 'coin', count = 15}
 					end
 				elseif memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.WOOD_LORD then
-					give[#give + 1] = {name = 'wood', count = amount + 8}
+					give[#give + 1] = {name = 'wood', count = amount + 3}
+					give[#give + 1] = {name = 'iron-ore', count = 1}
+					give[#give + 1] = {name = 'copper-ore', count = 1}
+					give[#give + 1] = {name = 'coal', count = 1}
 					if Math.random(7) == 1 then
-						give[#give + 1] = {name = 'coin', count = 40}
+						give[#give + 1] = {name = 'coin', count = 15}
 					end
 				else
 					give[#give + 1] = {name = 'wood', count = amount}
@@ -609,8 +646,8 @@ local function event_on_player_mined_entity(event)
 
 		if memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.MASTER_ANGLER then
 			Common.give(player, {{name = 'raw-fish', count = 5}, {name = 'coin', count = 8}}, entity.position)
-		elseif memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.SEA_DREDGER then
-			local to_give = {{name = 'raw-fish', count = 5}, {name = 'coin', count = 12}}
+		elseif memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.DREDGER then
+			local to_give = {{name = 'raw-fish', count = 5}, {name = 'coin', count = 10}}
 			to_give[#to_give + 1] = Loot.dredger_loot()[1]
 			Common.give(player, to_give, entity.position)
 		else
@@ -626,10 +663,10 @@ local function event_on_player_mined_entity(event)
 
 		if memory.overworldx > 0 then
 			if memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.PROSPECTOR then
-				give[#give + 1] = {name = 'coin', count = 4}
+				give[#give + 1] = {name = 'coin', count = 3}
 				give[#give + 1] = {name = entity.name, count = 7}
 			elseif memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.CHIEF_EXCAVATOR then
-				give[#give + 1] = {name = 'coin', count = 8}
+				give[#give + 1] = {name = 'coin', count = 5}
 				give[#give + 1] = {name = entity.name, count = 14}
 			else
 				if memory.overworldx > 0 then
@@ -731,22 +768,22 @@ local function base_kill_rewards(event)
 	if memory.overworldx > 0 then
 		if entity.name == 'small-worm-turret' then
 			iron_amount = 5
-			coin_amount = 50
+			coin_amount = 40
 		elseif entity.name == 'medium-worm-turret' then
 			iron_amount = 20
-			coin_amount = 90
+			coin_amount = 70
 		elseif entity.name == 'biter-spawner' or entity.name == 'spitter-spawner'
 		then
 			iron_amount = 30
-			coin_amount = 75
+			coin_amount = 70
 		elseif entity.name == 'big-worm-turret'
 		then
 			iron_amount = 30
-			coin_amount = 160
+			coin_amount = 100
 		elseif entity.name == 'behemoth-worm-turret'
 		then
 			iron_amount = 50
-			coin_amount = 350
+			coin_amount = 200
 		end
 	end
 
@@ -789,7 +826,9 @@ local function spawner_died(event)
 	local extra_evo = Balance.evolution_per_biter_base_kill()
 	Common.increment_evo(extra_evo)
 
-	destination.dynamic_data.evolution_accrued_nests = destination.dynamic_data.evolution_accrued_nests + extra_evo
+	if destination.dynamic_data then
+		destination.dynamic_data.evolution_accrued_nests = destination.dynamic_data.evolution_accrued_nests + extra_evo
+	end
 end
 
 local function event_on_entity_died(event)
@@ -1340,8 +1379,6 @@ local function event_on_rocket_launched(event)
 end
 
 
-local event = require 'utils.event'
-
 
 local function event_on_built_entity(event)
     local entity = event.created_entity
@@ -1448,8 +1485,8 @@ local function event_on_player_used_capsule(event)
 		if class == Classes.enum.SAMURAI then
 			-- vanilla heal is 80HP
 			player.character.health = player.character.health + 200
-		elseif class == Classes.enum.RONIN_SENSEI then
-			player.character.health = player.character.health + 300
+		elseif class == Classes.enum.HATAMOTO then
+			player.character.health = player.character.health + 350
 		end
 	end
 end

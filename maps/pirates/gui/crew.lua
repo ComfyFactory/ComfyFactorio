@@ -299,6 +299,16 @@ function Public.toggle_window(player)
 	flow3.tooltip = 'Remove this player as an Officer.'
 
 	flow3 = flow2.add({
+		name = 'revoke_class',
+		type = 'button',
+		caption = 'Revoke Class',
+	})
+	flow3.style.minimal_width = 95
+	flow3.style.font = 'default-bold'
+	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
+	flow3.tooltip = 'Put this player\'s class back in the Spare Classes pool.'
+
+	flow3 = flow2.add({
 		name = 'capn_summon_crew',
 		type = 'button',
 		caption = 'Summon Crew to Ship',
@@ -403,6 +413,8 @@ function Public.update(player)
 
 	flow.captain.body.make_officer.visible = other_player_selected and (not (memory.officers_table and memory.officers_table[tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])]))
 	flow.captain.body.unmake_officer.visible = other_player_selected and ((memory.officers_table and memory.officers_table[tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])]))
+
+	flow.captain.body.revoke_class.visible = other_player_selected and (memory.classes_table[tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])])
 
 	-- flow.captain.body.capn_undock_normal.visible = memory.boat and memory.boat.state and ((memory.boat.state == Boats.enum_state.LANDED) or (memory.boat.state == Boats.enum_state.APPROACHING) or (memory.boat.state == Boats.enum_state.DOCKED))
 
@@ -629,6 +641,12 @@ function Public.click(event)
 	if eventname == 'unmake_officer' then
 		local other_id = tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])
 		Roles.unmake_officer(player, game.players[other_id])
+		return
+	end
+
+	if eventname == 'revoke_class' then
+		local other_id = tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])
+		Roles.revoke_class(player, game.players[other_id])
 		return
 	end
 

@@ -1,6 +1,7 @@
 
 local Memory = require 'maps.pirates.memory'
 local Roles = require 'maps.pirates.roles.roles'
+local CoreData = require 'maps.pirates.coredata'
 local Classes = require 'maps.pirates.roles.classes'
 local Crew = require 'maps.pirates.crew'
 local Boats = require 'maps.pirates.structures.boats.boats'
@@ -65,24 +66,7 @@ Public.market_sales = {
 function Public.minimarket_generate_offers(how_many_barters, how_many_sales)
 	local ret = {}
 
-	for _, offer in pairs(Public.market_permanent_offers) do
-		ret[#ret + 1] = offer
-	end
-
 	local toaddcount
-
-	local salescopy = Utils.deepcopy(Public.market_sales)
-	toaddcount = how_many_sales
-	while toaddcount>0 and #salescopy > 0 do
-		local index = Math.random(#salescopy)
-		local toadd = salescopy[index]
-		ret[#ret + 1] = toadd
-		for i = index, #salescopy - 1 do
-			salescopy[i] = salescopy[i+1]
-		end
-		salescopy[#salescopy] = nil
-		toaddcount = toaddcount - 1
-	end
 
 	local barterscopy = Utils.deepcopy(Public.market_barters)
 	toaddcount = how_many_barters
@@ -94,6 +78,23 @@ function Public.minimarket_generate_offers(how_many_barters, how_many_sales)
 			barterscopy[i] = barterscopy[i+1]
 		end
 		barterscopy[#barterscopy] = nil
+		toaddcount = toaddcount - 1
+	end
+
+	for _, offer in pairs(Public.market_permanent_offers) do
+		ret[#ret + 1] = offer
+	end
+
+	local salescopy = Utils.deepcopy(Public.market_sales)
+	toaddcount = how_many_sales
+	while toaddcount>0 and #salescopy > 0 do
+		local index = Math.random(#salescopy)
+		local toadd = salescopy[index]
+		ret[#ret + 1] = toadd
+		for i = index, #salescopy - 1 do
+			salescopy[i] = salescopy[i+1]
+		end
+		salescopy[#salescopy] = nil
 		toaddcount = toaddcount - 1
 	end
 	
@@ -119,6 +120,22 @@ function Public.create_minimarket(surface, p)
 
 			for _, offer in pairs(offers) do
 				e.add_market_item(offer)
+			end
+
+			-- new class offerings:
+			local destination = Common.current_destination()
+			if destination.static_params.class_for_sale then
+				e.add_market_item{price={{'coin', Balance.class_cost()}}, offer={type="nothing"}}
+
+				destination.dynamic_data.market_class_offer_rendering = rendering.draw_text{
+					text = 'Class available: ' .. Classes.display_form[destination.static_params.class_for_sale],
+					surface = surface,
+					target = Utils.psum{e.position, {x = 1, y = -3}},
+					color = CoreData.colors.renderingtext_green,
+					scale = 3,
+					font = 'default-game',
+					alignment = 'center'
+				}
 			end
 		end
 	end

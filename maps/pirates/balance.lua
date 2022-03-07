@@ -98,7 +98,7 @@ function Public.fuel_depletion_rate_static()
 
 	local rate
 	if Common.overworldx() > 0 then
-		rate = 410 * (0 + (Common.overworldx()/40)^(9/10)) * Public.crew_scale()^(1/6) * Math.sloped(Common.difficulty(), 1) / T --most of the crewsize dependence is through T, i.e. the coal cost per island stays the same... but the extra player dependency accounts for the fact that even in compressed time, more players seem to get more resources per island
+		rate = 500 * (0 + (Common.overworldx()/40)^(9/10)) * Public.crew_scale()^(1/6) * Math.sloped(Common.difficulty(), 4/5) / T --most of the crewsize dependence is through T, i.e. the coal cost per island stays the same... but the extra player dependency accounts for the fact that even in compressed time, more players seem to get more resources per island
 	else
 		rate = 0
 	end
@@ -283,7 +283,7 @@ function Public.pistol_damage_multiplier() return 2.05 end
 Public.kraken_spawns_base_extra_evo = 0.30
 
 function Public.kraken_evo_increase_per_shot()
-	return 1/100 * 0.05 --started off low, currently slowly upping to see
+	return 1/100 * 0.07 --started off low, currently slowly upping to see
 end
 
 function Public.kraken_kill_reward()
@@ -394,7 +394,7 @@ function Public.player_gun_speed_modifiers()
 		['flamethrower'] = 0, --these nerfs are elsewhere for finer control
 		['grenade'] = -0.25,
 		['landmine'] = 0,
-		['melee'] = 0, -- doesn't do anything
+		['melee'] = 0, -- doesn't do anything apparently
 		['rocket'] = 0,
 		['shotgun-shell'] = 0.1
 	}
@@ -454,7 +454,7 @@ Public.covered1_entry_price_data_raw = { --watch out that the raw_materials ches
 	{1, 0.1, 1, false, {
 		price = {name = 'assembling-machine-1', count = 80},
 		raw_materials = {{name = 'iron-plate', count = 1760}, {name = 'copper-plate', count = 360}}}, {}},
-	{1, 0, 0.2, false, {
+	{1, 0, 0.15, false, {
 		price = {name = 'burner-mining-drill', count = 150},
 		raw_materials = {{name = 'iron-plate', count = 1350}}}, {}},
 	{0.5, 0, 0.6, false, {
@@ -464,23 +464,23 @@ Public.covered1_entry_price_data_raw = { --watch out that the raw_materials ches
 		price = {name = 'electronic-circuit', count = 800},
 		raw_materials = {{name = 'iron-plate', count = 800}, {name = 'copper-plate', count = 1200}}}, {}},
 	{1, 0, 1, false, {
-		price = {name = 'firearm-magazine', count = 800},
-		raw_materials = {{name = 'iron-plate', count = 3200}}}, {}},
+		price = {name = 'firearm-magazine', count = 700},
+		raw_materials = {{name = 'iron-plate', count = 2800}}}, {}},
 
 	{1, 0.1, 1, false, {
-		price = {name = 'stone-furnace', count = 400},
+		price = {name = 'stone-furnace', count = 350},
 		raw_materials = {}}, {}},
 	{1, 0.5, 1, false, {
 		price = {name = 'advanced-circuit', count = 100},
 		raw_materials = {{name = 'iron-plate', count = 200}, {name = 'copper-plate', count = 500}, {name = 'plastic-bar', count = 200}}}, {}},
 
-	{0.5, 0, 0.5, true, {
+	{0.5, -0.5, 0.5, true, {
 		price = {name = 'wooden-chest', count = 400},
 		raw_materials = {}}, {}},
 	{0.5, 0, 1, true, {
 		price = {name = 'iron-chest', count = 300},
 		raw_materials = {{name = 'iron-plate', count = 2400}}}, {}},
-	{0.5, 0.2, 1.8, true, {
+	{0.5, 0.25, 1.75, true, {
 		price = {name = 'steel-chest', count = 150},
 		raw_materials = {{name = 'steel-plate', count = 1200}}}, {}},
 }
