@@ -5,8 +5,10 @@ local math_floor = math.floor
 local table_shuffle_table = table.shuffle_table
 
 local collapse = {
-    debug = false
+    debug = false,
+    disabled = false,
 }
+
 Global.register(
     collapse,
     function(tbl)
@@ -270,10 +272,14 @@ local function on_init()
 end
 
 local function on_tick()
-    if game.tick % collapse.speed ~= 0 then
+    if game.tick % collapse.speed ~= 0 or collapse.disabled then
         return
     end
     progress()
+end
+
+function Public.disable()
+   collapse.disabled = true
 end
 
 local Event = require 'utils.event'
