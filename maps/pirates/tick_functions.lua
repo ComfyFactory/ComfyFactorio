@@ -1217,7 +1217,7 @@ function Public.Kraken_Destroyed_Backup_check(tickinterval) -- a server became b
 			local surface = game.surfaces[boat.surface_name]
 
 			local some_spawners_should_be_alive = false
-			for i = 1, Public.kraken_slots do
+			for i = 1, Kraken.kraken_slots do
 				if memory.active_sea_enemies.krakens[i] then
 					local kraken_data = memory.active_sea_enemies.krakens[i]
 					if kraken_data.step >= 3 then
@@ -1228,7 +1228,7 @@ function Public.Kraken_Destroyed_Backup_check(tickinterval) -- a server became b
 
 			local but_none_are = some_spawners_should_be_alive and #surface.find_entities_flitered{name = 'biter-spawner', force = memory.enemy_force_name} == 0
 			if but_none_are then
-				for i = 1, Public.kraken_slots do
+				for i = 1, Kraken.kraken_slots do
 					if memory.active_sea_enemies.krakens[i] then
 						Kraken.kraken_die(i)
 					end
