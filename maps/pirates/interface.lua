@@ -1404,7 +1404,7 @@ local function event_on_built_entity(event)
 						player.insert{name = entity.name, count = 1}
 					end
 					entity.destroy()
-					Common.notify_player_error(player, 'Undergrounds can\'t be built on the boat, due to conflicts with the boat movement code.')
+					Common.notify_error(player, 'Undergrounds can\'t be built on the boat, due to conflicts with the boat movement code.')
 					return
 			end
 		end

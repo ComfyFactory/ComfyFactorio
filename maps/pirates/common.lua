@@ -120,9 +120,9 @@ function Public.notify_lobby(message, color_override)
 	game.forces['player'].print('>> ' .. message, color_override)
 end
 
-function Public.notify_player_error(player, message, color_override)
-	color_override = color_override or CoreData.colors.notify_player_error
-	player.print('>> ' .. message, color_override)
+function Public.notify_error(target, message, color_override)
+	color_override = color_override or CoreData.colors.notify_error
+	target.print('>> ' .. message, color_override)
 end
 
 function Public.notify_player_expected(player, message, color_override)

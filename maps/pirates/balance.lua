@@ -87,8 +87,10 @@ function Public.max_time_on_island()
 	end
 end
 
+Public.expected_time_fraction = 3/5
+
 function Public.expected_time_on_island() --always >0
-	return 3/5 * Public.max_time_on_island_formula()
+	return Public.expected_time_fraction * Public.max_time_on_island_formula()
 end
 
 function Public.fuel_depletion_rate_static()
@@ -189,11 +191,11 @@ function Public.evolution_per_biter_base_kill() --it's important to have evo go 
 
 		local initial_spawner_count = destination.dynamic_data.initial_spawner_count
 		local time = destination.dynamic_data.timer
-		local expected_time = Public.expected_time_on_island()
-		if time > expected_time then return 0
+		local time_to_jump_to = Public.expected_time_on_island() * (1/Public.expected_time_fraction)^(1/2)
+		if time > time_to_jump_to then return 0
 		else
 			-- evo it 'would have' contributed:
-			return 1/initial_spawner_count * Public.expected_time_evo() * (expected_time - time)/expected_time
+			return 1/initial_spawner_count * Public.expected_time_evo() * (time_to_jump_to - time)/time_to_jump_to
 		end
 	else
 		return 0

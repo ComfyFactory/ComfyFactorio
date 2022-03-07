@@ -67,10 +67,10 @@ function Public.class_renderings(tickinterval)
 		end
 	end
 
-	for _, r in pairs(memory.quartermaster_renderings) do
-		if not processed_renderings[r] then
+	for k, r in pairs(memory.quartermaster_renderings) do
+		if not processed_renderings[k] then
 			rendering.destroy(r)
-			memory.quartermaster_renderings[r] = nil
+			memory.quartermaster_renderings[k] = nil
 		end
 	end
 end
@@ -177,12 +177,13 @@ function Public.class_rewards_tick(tickinterval)
 	--assuming tickinterval = 6 seconds for now
 	local memory = Memory.get_crew_memory()
 
-	if memory.boat and memory.boat.state ~= Structures.Boats.enum_state.ATSEA_LOADING_MAP then --it is possible to spend extra time here, so don't give out freebies
+	if not (memory.boat and memory.boat.state and memory.boat.state == Structures.Boats.enum_state.ATSEA_LOADING_MAP) then --it is possible to spend extra time here, so don't give out freebies
 
 		local crew = Common.crew_get_crew_members()
 		for _, player in pairs(crew) do
 			if Common.validate_player_and_character(player) then
 				local player_index = player.index
+
 				if memory.classes_table and memory.classes_table[player_index] then
 					local class = memory.classes_table[player_index]
 					if class == Classes.enum.DECKHAND or class == Classes.enum.SHORESMAN or class == Classes.enum.BOATSWAIN then
@@ -202,13 +203,13 @@ function Public.class_rewards_tick(tickinterval)
 				end
 	
 				if game.tick % (tickinterval*2) == 0 then
-					local nearby_players = player.surface.find_entities_filtered{position = player.position, radius = Common.quartermaster_range, type = {'character'}}
+					local nearby_players = player.surface.find_entities_filtered{position = player.position, radius = Common.quartermaster_range, name = 'character'}
 		
 					for _, p2 in pairs(nearby_players) do
 						if p2.player and p2.player.valid then
 							local p2_index = p2.player.index
 							if p2_index ~= player_index and memory.classes_table[p2_index] and memory.classes_table[p2_index] == Classes.enum.QUARTERMASTER then
-								class_ore_grant(p2, 2)
+								class_ore_grant(p2, 1)
 							end
 						end
 					end

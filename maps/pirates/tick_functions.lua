@@ -94,7 +94,7 @@ function Public.prevent_disembark(tickinterval)
 
 		for _, player in pairs(game.connected_players) do
 			if player.surface and player.surface.valid and boat.surface_name and player.surface.name == boat.surface_name and ps[player.index] and (not Boats.on_boat(boat, player.position)) and (not (player.controller_type == defines.controllers.spectator)) then
-				Common.notify_player_error(player, 'Now is no time to disembark.')
+				Common.notify_error(player, 'Now is no time to disembark.')
 				-- player.teleport(memory.spawnpoint)
 				local p = player.surface.find_non_colliding_position('character', memory.spawnpoint, 5, 0.1)
 				if p then

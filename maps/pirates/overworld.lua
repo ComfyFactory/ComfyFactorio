@@ -275,6 +275,9 @@ function Public.generate_overworld_destination(p)
 			cost_to_leave = Utils.deepcopy(base_cost_4)
 			local delete = normal_costitems[Math.random(#normal_costitems)]
 			cost_to_leave[delete] = nil
+			if Math.random(5) <= 2 then
+				cost_to_leave['launch_rocket'] = true
+			end
 		end
 		-- override:
 		if subtype == Surfaces.Island.enum.RADIOACTIVE then

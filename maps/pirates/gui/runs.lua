@@ -656,7 +656,7 @@ function Public.click(event)
 					return
 				end
 			else
-				Common.notify_player_error(player, 'The number of concurrent runs on the server is currently capped at ' .. global_memory.active_crews_cap .. '.')
+				Common.notify_error(player, 'The number of concurrent runs on the server is currently capped at ' .. global_memory.active_crews_cap .. '.')
 			end
 		end
 	end

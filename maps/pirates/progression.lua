@@ -411,7 +411,7 @@ function Public.try_retreat_from_island() -- Assumes the cost can be paid
 	local captain = game.players[captain_index]
 
 	if captain and Common.validate_player(captain) and destination.dynamic_data.timeratlandingtime and destination.dynamic_data.timer < destination.dynamic_data.timeratlandingtime + 10 then
-		Common.notify_player_error(captain, 'Can\'t depart in the first 10 seconds.')
+		Common.notify_error(captain, 'Can\'t depart in the first 10 seconds.')
 	else
 		local cost = destination.static_params.cost_to_leave
 		-- if cost and (not destination.dynamic_data.rocketlaunched) then

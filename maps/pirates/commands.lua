@@ -69,7 +69,7 @@ function(cmd)
 		if string then
 			Common.notify_player_expected(player, 'Class definition for ' .. string)
 		else
-			Common.notify_player_error(player, 'Class \'' .. param .. '\' not found.')
+			Common.notify_error(player, 'Class \'' .. param .. '\' not found.')
 		end
 	else
 		Common.notify_player_expected(player, '/class {classname} returns the definition of the named class.')
@@ -93,7 +93,7 @@ function(cmd)
 					local message = '[color=' .. rgb.r .. ',' .. rgb.g .. ',' .. rgb.b .. ']' .. player.name .. '\'s color is now ' .. param .. '[/color] (via /ccolor).'
 					Common.notify_game(message)
 				else
-					Common.notify_player_error(player, 'Color \'' .. param .. '\' not found.')
+					Common.notify_error(player, 'Color \'' .. param .. '\' not found.')
 				end
 			else
 				local color = PlayerColors.names[Math.random(#PlayerColors.names)]

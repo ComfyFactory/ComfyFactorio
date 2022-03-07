@@ -389,11 +389,12 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 
 	local base_pollution_cost_multiplier = 1
 	local destination = Common.current_destination()
-	if destination.dynamic_data then
-		local spawnerscount = Common.spawner_count(surface)
 
+	if destination.dynamic_data and destination.dynamic_data.initial_spawner_count then
 		local initial_spawner_count = destination.dynamic_data.initial_spawner_count
-		if initial_spawner_count and initial_spawner_count > 0 then
+
+		if initial_spawner_count > 0 then
+			local spawnerscount = Common.spawner_count(surface)
 			if spawnerscount > 0 then
 				-- if Common.current_destination().subtype and Common.current_destination().subtype == Islands.enum.RADIOACTIVE then
 				-- 	-- destroying spawners doesn't do quite as much here:
@@ -403,7 +404,11 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 				-- end
 				-- base_pollution_cost_multiplier = (initial_spawner_count/spawnerscount)^(1/2)
 				-- Now directly proportional:
-				base_pollution_cost_multiplier = Math.max(1, initial_spawner_count/spawnerscount) -- Can't be less than 1. (The first map not being fully loaded when you get there commonly means it records too few initial spawners, which this helps fix)
+				base_pollution_cost_multiplier = initial_spawner_count/spawnerscount
+				
+				if memory.overworldx == 0 then
+					base_pollution_cost_multiplier = Math.max(1, base_pollution_cost_multiplier)
+				end -- The first map not being fully loaded when you get there commonly means it records too few initial spawners, which this helps fix
 			else
 				base_pollution_cost_multiplier = 1000000
 			end

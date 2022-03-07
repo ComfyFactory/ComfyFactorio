@@ -136,7 +136,7 @@ function Public.update_tags(player)
 			if not (inv and inv.valid) then return end
 			local count = inv.get_item_count('iron-ore')
 			if count and count < 2500 then
-				local rgb = CoreData.colors.notify_player_error
+				local rgb = CoreData.colors.notify_error
 				Common.flying_text(player.surface, player.position, '[color=' .. rgb.r .. ',' .. rgb.g .. ',' .. rgb.b .. ']missing iron ore[/color]')
 			end
 		end
@@ -176,7 +176,7 @@ function Public.player_confirm_captainhood(player)
 	local captain_index = memory.playerindex_captain
 
 	if not (player.index == captain_index) then
-		Common.notify_player_error(player, 'You\'re not the captain.')
+		Common.notify_error(player, 'You\'re not the captain.')
 	else
 		if memory.captain_acceptance_timer then
 			memory.captain_acceptance_timer = nil
@@ -216,7 +216,7 @@ function Public.renounce_captainhood(player)
 	local memory = Memory.get_crew_memory()
 
 	if #Common.crew_get_crew_members() == 1 then
-		Common.notify_player_error(player, 'But you\'re the only crew member...')
+		Common.notify_error(player, 'But you\'re the only crew member...')
 	else
 
 		local force = memory.force

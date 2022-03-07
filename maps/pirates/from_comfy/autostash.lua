@@ -431,16 +431,16 @@ local function auto_stash(player, event)
     local ctrl = event.control
     local shift = event.shift
     if not player.character then
-        Common.notify_player_error(player, 'It seems that you are not in the realm of the living.', print_color)
+        Common.notify_error(player, 'It seems that you are not in the realm of the living.', print_color)
         return
     end
     if not player.character.valid then
-        Common.notify_player_error(player, 'It seems that you are not in the realm of the living.', print_color)
+        Common.notify_error(player, 'It seems that you are not in the realm of the living.', print_color)
         return
     end
     local inventory = player.get_inventory(defines.inventory.character_main)
     if inventory.is_empty() then
-        Common.notify_player_error(player, 'Inventory is empty.', print_color)
+        Common.notify_error(player, 'Inventory is empty.', print_color)
         return
     end
 
@@ -460,7 +460,7 @@ local function auto_stash(player, event)
     end
 
     if not chests or not chests[1] then
-        Common.notify_player_error(player, 'No valid nearby containers found.', print_color)
+        Common.notify_error(player, 'No valid nearby containers found.', print_color)
         return
     end
     local filtered_chests = {}

@@ -5,8 +5,8 @@ local inspect = require 'utils.inspect'.inspect
 local Public = {}
 
 Public.scenario_id_name = 'pirates'
-Public.version_string = '1.0.4.5'
-Public.version_float = 1.045
+Public.version_string = '1.0.4.51'
+Public.version_float = 1.0451
 
 Public.blueprint_library_allowed = true
 Public.blueprint_importing_allowed = true
@@ -29,7 +29,7 @@ Public.colors = {
 	['iron-ore'] = {r=170, g=180, b=190},
 	['copper-plate'] = {r=219, g=149, b=96},
 	['copper-ore'] = {r=219, g=149, b=96},
-	notify_player_error = {r=196, g=196, b=196},
+	notify_error = {r=196, g=196, b=196},
 	notify_player_expected = {r=255, g=231, b=46},
 	notify_game = {r=249, g=103, b=56},
 	notify_lobby = {r=249, g=153, b=56},
