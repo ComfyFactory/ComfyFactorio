@@ -24,6 +24,8 @@ Public.mapedge_distance_from_boat_starting_position = 272 -- to accommodate hors
 Public.deepwater_distance_from_leftmost_shore = 32
 Public.lobby_spawnpoint = {x = -72, y = -8}
 
+Public.quartermaster_range = 16
+
 Public.fraction_of_map_loaded_atsea = 1
 Public.map_loading_ticks_atsea = 68 * 60
 Public.map_loading_ticks_atsea_maze = 80 * 60
@@ -39,8 +41,10 @@ Public.ban_from_rejoining_crew_ticks = 45 * 60 --to prevent observing map and re
 
 Public.afk_time = 60 * 60 * 4.5
 Public.afk_warning_time = 60 * 60 * 4
-
-Public.quartermaster_range = 16
+Public.logged_off_items_preserved_seconds = 60 * 5
+Public.important_items = {'coin', 'uranium-235', 'uranium-238', 'fluid-wagon', 'coal', 'electric-engine-unit', 'advanced-circuit', 'beacon', 'speed-module-3', 'speed-module-2'}
+Public.autodisband_ticks = 30*60*60
+-- Public.autodisband_ticks = 30 --the reason this is low is because the comfy server runs very slowly when no-one is on it
 
 -- Public.mainshop_rate_limit_ticks = 11
 
@@ -218,10 +222,10 @@ function Public.raffle_from_processed_loot_data(processed_loot_data, how_many, g
         local low = Math.max(1, Math.ceil(loot.min_count))
         local high = Math.max(1, Math.ceil(loot.max_count))
         local _count = Math.random(low, high)
-        local lucky = Math.random(1, 180)
+        local lucky = Math.random(1, 220)
         if lucky == 1 then --lucky
             _count = _count * 3
-        elseif lucky <= 10 then
+        elseif lucky <= 12 then
             _count = _count * 2
         end
         ret[#ret + 1] = {name = loot.name, count = _count}
@@ -644,7 +648,7 @@ function Public.destroy_decoratives_in_area(surface, area, offset)
 	surface.destroy_decoratives{area = area2}
 end
 
-function Public.can_place_silo_setup(surface, p, silo_count, build_check_type_name)
+function Public.can_place_silo_setup(surface, p, silo_count, generous, build_check_type_name)
 
 	Public.ensure_chunks_at(surface, p, 0.2)
 
@@ -652,7 +656,7 @@ function Public.can_place_silo_setup(surface, p, silo_count, build_check_type_na
 	local build_check_type = defines.build_check_type[build_check_type_name]
 	local s = true
 	for i=1,silo_count do
-		s = surface.can_place_entity{name = 'rocket-silo', position = {p.x + 9 * (i-1), p.y}, build_check_type = build_check_type} and s
+		s = (surface.can_place_entity{name = 'rocket-silo', position = {p.x + 9 * (i-1), p.y}, build_check_type = build_check_type} or (generous and i>2)) and s
 	end
 
 	return s
@@ -1005,7 +1009,49 @@ function Public.validate_player_and_character(player)
 end
 
 
-function Public.give_reward_items(items)
+function Public.send_important_items_from_player_to_crew(player, all_items)
+	local player_inv = {}
+	player_inv[1] = game.players[player.index].get_inventory(defines.inventory.character_main)
+	player_inv[2] = game.players[player.index].get_inventory(defines.inventory.character_armor)
+	player_inv[3] = game.players[player.index].get_inventory(defines.inventory.character_guns)
+	player_inv[4] = game.players[player.index].get_inventory(defines.inventory.character_ammo)
+	player_inv[5] = game.players[player.index].get_inventory(defines.inventory.character_trash)
+
+	local any = false
+
+	for ii = 1, 5, 1 do
+		if player_inv[ii].valid then
+			-- local to_keep = {}
+			local to_remove = {}
+			for iii = 1, #player_inv[ii], 1 do
+				-- local item_stack = player_inv[ii][iii] --don't do this as LuaItemStack is a reference!
+				if player_inv[ii][iii].valid and player_inv[ii][iii].valid_for_read then
+					if all_items or (player_inv[ii][iii].name and Utils.contains(Public.important_items, player_inv[ii][iii].name)) then
+						to_remove[#to_remove + 1] = player_inv[ii][iii]
+						any = true
+					-- else
+					-- 	to_keep[#to_keep + 1] = Utils.deepcopy(player_inv[ii][iii])
+					end
+				end
+			end
+
+			if #to_remove > 0 then
+				for iii = 1, #to_remove, 1 do
+					if to_remove[iii].valid_for_read then
+						Public.give_items_to_crew{{name = to_remove[iii].name, count = to_remove[iii].count}}
+						to_remove[iii].clear()
+					end
+				end
+				-- clear and move over from to_keep if necessary?
+			end
+		end
+	end
+
+	return any
+end
+
+
+function Public.give_items_to_crew(items)
 	local memory = Memory.get_crew_memory()
 
 	local boat = memory.boat
@@ -1018,18 +1064,39 @@ function Public.give_reward_items(items)
 	if not (chest and chest.valid) then return end
 
 	local inventory = chest.get_inventory(defines.inventory.chest)
-	for _, i in pairs(items) do
-		if not (i.count and i.count>0) then return end
-		local inserted = inventory.insert{name = i.name, count = Math.ceil(i.count)}
-		if i.count - inserted > 0 then
+
+	if items.name then --1 item
+		if not (items.count and items.count>0) then return end
+		local inserted = inventory.insert(items)
+		if items.count - inserted > 0 then
 			local chest2 = boat.backup_output_chest
 			if not (chest2 and chest2.valid) then return end
 			local inventory2 = chest2.get_inventory(defines.inventory.chest)
-			local inserted2 = inventory2.insert{name = i.name, count = Math.ceil(i.count - inserted)}
-			if i.count - inserted - inserted2 > 0 then
+			local i2 = Utils.deepcopy(items)
+			i2.count = items.count - inserted
+			local inserted2 = inventory2.insert(i2)
+			if items.count - inserted - inserted2 > 0 then
 				local force = memory.force
 				if not (force and force.valid) then return end
 				Public.notify_force(force, 'Warning: captain\'s cabin chests are full!')
+			end
+		end
+	else
+		for _, i in pairs(items) do
+			if not (i.count and i.count>0) then return end
+			local inserted = inventory.insert(i)
+			if i.count - inserted > 0 then
+				local chest2 = boat.backup_output_chest
+				if not (chest2 and chest2.valid) then return end
+				local inventory2 = chest2.get_inventory(defines.inventory.chest)
+				local i2 = Utils.deepcopy(i)
+				i2.count = i.count - inserted
+				local inserted2 = inventory2.insert(i2)
+				if i.count - inserted - inserted2 > 0 then
+					local force = memory.force
+					if not (force and force.valid) then return end
+					Public.notify_force(force, 'Warning: captain\'s cabin chests are full!')
+				end
 			end
 		end
 	end

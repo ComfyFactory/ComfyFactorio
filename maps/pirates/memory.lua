@@ -22,7 +22,6 @@ function Public.global_reset_memory()
 	pirates_global_memory.playerindex_to_time_played_continuously = {}
 	pirates_global_memory.playerindex_to_captainhood_priority = {}
 	pirates_global_memory.player_gui_memories = {}
-	pirates_global_memory.offline_players = {}
 	pirates_global_memory.crew_memories = {}
 	pirates_global_memory.crew_active_ids = {}
 	pirates_global_memory.working_id = nil --should only ever be nil, 1, 2 or 3
@@ -80,6 +79,7 @@ function Public.reset_crew_memory(id) --also serves as a dev reference of memory
 	memory.playerindex_captain = nil
 	memory.captain_accrued_time_data = nil
 	memory.max_players_recorded = nil
+	memory.temporarily_logged_off_characters = nil
 
 	memory.speed_boost_characters = nil
 

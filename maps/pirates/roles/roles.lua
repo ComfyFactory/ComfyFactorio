@@ -30,27 +30,49 @@ end
 function Public.make_officer(captain, player)
 	local memory = Memory.get_crew_memory()
 	local force = memory.force
-
-	if Common.validate_player(player) and (not (captain.index == player.index)) then
-		memory.officers_table[player.index] = true
+	
+	if Utils.contains(Common.crew_get_crew_members(), player) then
+		if (not (captain.index == player.index)) then
+			if Common.validate_player(player) then
+				memory.officers_table[player.index] = true
+		
+				local message = (captain.name .. ' made ' .. player.name .. ' an officer.')
+				Common.notify_force_light(force, message)
+				Public.update_privileges(player)
+			else
+				Common.notify_error(captain, 'Player is invalid.')
+				return false
+			end
+		else
+			Common.notify_error(captain, 'Can\'t promote yourself to officer.')
+			return false
+		end
+	else
+		Common.notify_error(captain, 'Player is not a crewmember.')
+		return false
 	end
-
-	local message = (captain.name .. ' made ' .. player.name .. ' an officer.')
-	Common.notify_force_light(force, message)
-    Public.update_privileges(player)
 end
 
 function Public.unmake_officer(captain, player)
 	local memory = Memory.get_crew_memory()
 	local force = memory.force
-
-	if Common.validate_player(player) and (not (captain.index == player.index)) then
-		memory.officers_table[player.index] = nil
+	
+	if Utils.contains(Common.crew_get_crew_members(), player) then
+		if memory.officers_table[player.index] then
+			memory.officers_table[player.index] = nil
+	
+			local message = (captain.name .. ' unmade ' .. player.name .. ' an officer.')
+			Common.notify_force_light(force, message)
+			Public.update_privileges(player)
+			return true
+		else
+			Common.notify_error(captain, 'Player isn\'t an officer.')
+			return false
+		end
+	else
+		Common.notify_error(captain, 'Player is not a crewmember.')
+		return false
 	end
-
-	local message = (captain.name .. ' unmade ' .. player.name .. ' an officer.')
-	Common.notify_force_light(force, message)
-    Public.update_privileges(player)
 end
 
 function Public.revoke_class(captain, player)
@@ -95,21 +117,26 @@ function Public.tag_text(player)
 end
 
 
-function Public.get_classes_print_string()
-	local str = 'Current class Descriptions:'
+-- function Public.get_classes_print_string()
+-- 	local str = 'Current class Descriptions:'
 
-	for i, class in ipairs(Classes.Class_List) do
-		str = str .. '\n' .. Classes.display_form[class] .. ': ' .. Classes.explanation[class] .. ''
-	end
+-- 	for i, class in ipairs(Classes.Class_List) do
+-- 		str = str .. '\n' .. Classes.display_form[class] .. ': ' .. Classes.explanation[class] .. ''
+-- 	end
 
-	return str
-end
+-- 	return str
+-- end
 
 function Public.get_class_print_string(class)
 
 	for _, class2 in ipairs(Classes.Class_List) do
 		if Classes.display_form[class2]:lower() == class:lower() then
-			return Classes.display_form[class2] .. ': ' .. Classes.explanation[class2] .. ''
+			local str = ''
+			if Classes.class_purchase_requirement[class2] then
+				str = str .. 'An upgrade of ' .. Classes.display_form[Classes.class_purchase_requirement[class2]] .. '. '
+			end
+			str = str .. Classes.display_form[class2] .. ': ' .. Classes.explanation[class2]
+			return str
 		end
 	end
 

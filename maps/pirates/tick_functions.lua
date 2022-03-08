@@ -67,7 +67,7 @@ function Public.prevent_unbarreling_off_ship(tickinterval)
 			local r = a.get_recipe()
 			if r and r.subgroup and r.subgroup.name and r.subgroup.name == 'fill-barrel' and (not (r.name and r.name == 'fill-water-barrel')) then
 				if not Boats.on_boat(boat, a.position) then
-					Common.notify_error(memory.force, 'Barrelling recipe removed; barrels are too heavy to carry back to the ship.')
+					Common.notify_error(memory.force, 'Recipe error: barrels are too heavy to carry back to the ship. Try another way.')
 					a.set_recipe('fill-water-barrel')
 				end
 			end
@@ -216,6 +216,51 @@ function Public.captain_warn_afk(tickinterval)
 	end
 end
 
+function Public.prune_offline_characters_list(tickinterval)
+	local memory = Memory.get_crew_memory()
+
+    if memory.game_lost then return end
+	
+	for player_index, tick in pairs(memory.temporarily_logged_off_characters) do
+		if player_index and game.players[player_index] and game.players[player_index].connected then
+			--game.print("deleting already online character from list")
+			memory.temporarily_logged_off_characters[player_index] = nil
+		else
+			if player_index and tick < game.tick - 60 * Common.logged_off_items_preserved_seconds then
+				local player_inv = {}
+				player_inv[1] = game.players[player_index].get_inventory(defines.inventory.character_main)
+				player_inv[2] = game.players[player_index].get_inventory(defines.inventory.character_armor)
+				player_inv[3] = game.players[player_index].get_inventory(defines.inventory.character_ammo)
+				player_inv[4] = game.players[player_index].get_inventory(defines.inventory.character_guns)
+				player_inv[5] = game.players[player_index].get_inventory(defines.inventory.character_trash)
+
+				local any = false
+				for ii = 1, 5, 1 do
+					if player_inv[ii].valid then
+						for iii = 1, #player_inv[ii], 1 do
+							if player_inv[ii][iii].valid and player_inv[ii][iii].valid_for_read then
+								-- items[#items + 1] = player_inv[ii][iii]
+								Common.give_items_to_crew(player_inv[ii][iii])
+								any = true
+							end
+						end
+					end
+				end
+				if any then
+					Common.notify_force_light(memory.force, 'Offline player\'s items sent to captain\'s cabin.')
+				end
+				for ii = 1, 5, 1 do
+					if player_inv[ii].valid then
+						player_inv[ii].clear()
+					end
+				end
+				memory.temporarily_logged_off_characters[player_index] = nil
+			end
+		end
+	end
+end
+
+
 function Public.periodic_free_resources(tickinterval)
 	local memory = Memory.get_crew_memory()
 	if memory.game_lost then return end
@@ -223,12 +268,12 @@ function Public.periodic_free_resources(tickinterval)
 	local boat = memory.boat
 	if not (destination and destination.type and destination.type == Surfaces.enum.ISLAND and boat and boat.surface_name and boat.surface_name == destination.surface_name) then return end
 
-	Common.give_reward_items(Balance.periodic_free_resources_per_destination_5_seconds())
+	Common.give_items_to_crew(Balance.periodic_free_resources_per_destination_5_seconds())
 
 	if game.tick % (300*18) == 0 and (destination and destination.subtype and destination.subtype == Islands.enum.RADIOACTIVE) then
 		-- every 90 seconds
 		local count = 2
-		Common.give_reward_items{{name = 'sulfuric-acid-barrel', count = count}}
+		Common.give_items_to_crew{{name = 'sulfuric-acid-barrel', count = count}}
 		local force = memory.force
 		if not (force and force.valid) then return end
 		Common.notify_force_light(force, 'Granted ' .. count .. ' [item=sulfuric-acid-barrel]')

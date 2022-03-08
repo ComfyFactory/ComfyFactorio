@@ -191,7 +191,8 @@ function Public.toggle_window(player)
 		flow4.style.minimal_width = 95
 		flow4.style.font = 'default-bold'
 		flow4.style.font_color = {r=0.10, g=0.10, b=0.10}
-		flow4.tooltip = 'Give this class to the selected player.'
+		flow4.tooltip = 'Give the selected player the class ' .. Classes.display_form[c] .. '.\n\n Class description: ' .. Classes.explanation[c]
+		-- flow4.tooltip = 'Give this class to the selected player.'
 	end
 
 	for _, c in ipairs(Classes.Class_List) do
@@ -203,7 +204,7 @@ function Public.toggle_window(player)
 		flow4.style.minimal_width = 95
 		flow4.style.font = 'default-bold'
 		flow4.style.font_color = {r=0.10, g=0.10, b=0.10}
-		flow4.tooltip = 'Take the spare class for yourself.'
+		flow4.tooltip = 'Give yourself the spare class ' .. Classes.display_form[c] .. '.\n\nClass description: ' .. Classes.explanation[c]
 	end
 
 	--*** CAPTAIN's ACTIONS ***--
@@ -527,7 +528,7 @@ function Public.click(event)
 	end
 
 	if eventname == 'leave_crew' then
-		Crew.leave_crew(player)
+		Crew.leave_crew(player, true)
 		return
 	end
 
@@ -653,13 +654,7 @@ function Public.click(event)
 	if eventname == 'capn_plank' then
 		local other_id = tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])
 
-		local message = "%s planked %s!"
-		Server.to_discord_embed_raw(CoreData.comfy_emojis.monkas .. message)
-
-		Common.notify_force(player.force, string.format(message, player.name, game.players[other_id].name))
-
-		Crew.join_spectators(game.players[other_id], memory.id)
-		memory.tempbanned_from_joining_data[other_id] = game.tick + 60 * 120
+		Crew.plank(player, game.players[other_id])
 		return
 	end
 

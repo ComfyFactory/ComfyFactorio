@@ -49,12 +49,12 @@ function Public.silo_setup_position(x_fractional_offset, x_absolute_offset)
 	end
 	while p_ret == nil and tries < 400 do
 		p2 = {x = p.x + Math.random(-60, 10), y = p.y + Math.random(-90, 90)}
-		if p2.x >= boatposition.x+5 and Common.can_place_silo_setup(surface, p2, silo_count) then p_ret = p2 end
+		if p2.x >= boatposition.x+5 and Common.can_place_silo_setup(surface, p2, silo_count, true) then p_ret = p2 end
 		tries = tries + 1
 	end
 	while p_ret == nil and tries < 1200 do
 		p2 = {x = p.x + Math.random(-90, 20), y = p.y + Math.random(-130, 130)}
-		if p2.x >= boatposition.x+5 and Common.can_place_silo_setup(surface, p2, silo_count) then p_ret = p2 end
+		if p2.x >= boatposition.x+5 and Common.can_place_silo_setup(surface, p2, silo_count, true) then p_ret = p2 end
 		tries = tries + 1
 	end
 	-- if _DEBUG then

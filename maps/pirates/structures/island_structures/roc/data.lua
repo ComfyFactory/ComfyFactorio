@@ -168,8 +168,8 @@ Public.maze_defended_camp = {
 			force = 'ancient-hostile',
 			offset = {x = 0, y = 0},
 			count = 30,
-			large_r = 10,
-			small_r = 8,
+			large_r = 9,
+			small_r = 6,
 		},
 		{
 			type = 'entities_randomlyplaced',
@@ -194,8 +194,8 @@ Public.maze_undefended_camp = {
 			force = 'ancient-hostile',
 			offset = {x = 0, y = 0},
 			count = 10,
-			large_r = 10,
-			small_r = 8,
+			large_r = 9,
+			small_r = 6,
 		},
 		{
 			type = 'entities_randomlyplaced',

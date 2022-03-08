@@ -22,7 +22,7 @@ Public.subsection_header_font_color = {229, 255, 242}
 Public.friendly_font_color = {240, 200, 255}
 Public.sufficient_font_color = {66, 220, 124}
 Public.insufficient_font_color = {1, 0.62, 0.19}
-Public.achieved_font_color = {255, 230, 192}
+Public.achieved_font_color = {227, 250, 192}
 
 Public.fuel_color_1 = {r=255, g=255, b=255}
 Public.fuel_color_2 = {r=255, g=0, b=60}
@@ -67,7 +67,7 @@ function Public.new_window(player, name)
 	flow.style.maximal_width = 270
 	flow.style.minimal_height = 80
 	flow.style.natural_height = 80
-	flow.style.maximal_height = 680
+	flow.style.maximal_height = 700
 	flow.style.padding = 10
 
 	return flow

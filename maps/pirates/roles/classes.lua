@@ -85,12 +85,12 @@ Public.explanation = {
 	[enum.MASTER_ANGLER] = 'They fish at much greater distance, and catch more.',
 	[enum.WOOD_LORD] = 'They find many more resources when chopping trees.',
 	[enum.CHIEF_EXCAVATOR] = 'They find many more resources when handmining ore.',
-	[enum.HATAMOTO] = 'They are very tough, and *with no weapon equipped* fight well by melee.',
+	[enum.HATAMOTO] = 'They are very tough, and *with no weapon equipped* fight well by melee, but poorly otherwise.',
 	[enum.IRON_LEG] = 'They are very resistant to damage when carrying 2500 iron ore.',
 	[enum.QUARTERMASTER] = 'They give nearby crewmates extra physical attack, and generate ore for the captain\'s cabin for each one.',
 	[enum.DREDGER] = 'They find surprising items when they fish.',
 	[enum.SMOLDERING] = 'They periodically convert wood into coal, if they have less than 25 coal.',
-	[enum.GOURMET] = 'They generate ore for the captain\'s cabin by eating fish in fancy locations on an empty stomach.',
+	[enum.GOURMET] = 'They generate ore for the captain\'s cabin by eating fish in fancy locations.',
 }
 
 Public.class_unlocks = {
@@ -120,7 +120,7 @@ function Public.initial_class_pool()
 		enum.FISHERMAN,
 		enum.SCOUT,
 		enum.SAMURAI,
-		enum.MERCHANT,
+		-- enum.MERCHANT, --not interesting, breaks coin economy
 		enum.BOATSWAIN,
 		enum.PROSPECTOR,
 		enum.LUMBERJACK,
@@ -166,7 +166,8 @@ function Public.try_renounce_class(player, override_message)
 				if override_message then
 					Common.notify_force_light(force,string.format(override_message, Public.display_form[memory.classes_table[player.index]]))
 				else
-					Common.notify_force_light(force,string.format('%s gave up the class %s.', player.name, Public.display_form[memory.classes_table[player.index]]))
+					Common.notify_force_light(force,string.format('%s gave up %s.', player.name, Public.display_form[memory.classes_table[player.index]])) --shorter for less spam
+					-- Common.notify_force_light(force,string.format('%s gave up the class %s.', player.name, Public.display_form[memory.classes_table[player.index]]))
 				end
 			end
 
@@ -180,11 +181,15 @@ function Public.generate_class_for_sale()
 	local memory = Memory.get_crew_memory()
 
 	if #memory.available_classes_pool == 0 then
-		memory.available_classes_pool = Public.initial_class_pool() --reset to initial state
+		-- memory.available_classes_pool = Public.initial_class_pool() --reset to initial state
+		-- turned off as this makes too many classes
 	end
 
-	local class = memory.available_classes_pool[Math.random(#memory.available_classes_pool)]
-	
+	local class
+	if #memory.available_classes_pool > 0 then
+		class = memory.available_classes_pool[Math.random(#memory.available_classes_pool)]
+	end
+
 	return class
 end
 
@@ -199,10 +204,10 @@ function Public.class_ore_grant(player, how_much, disable_scaling)
 	end
 	if Math.random(3) == 1 then
 		Common.flying_text_small(player.surface, player.position, '[color=0.85,0.58,0.37]+' .. count .. '[/color]')
-		Common.give_reward_items{{name = 'copper-ore', count = count}}
+		Common.give_items_to_crew{{name = 'copper-ore', count = count}}
 	else
 		Common.flying_text_small(player.surface, player.position, '[color=0.7,0.8,0.8]+' .. count .. '[/color]')
-		Common.give_reward_items{{name = 'iron-ore', count = count}}
+		Common.give_items_to_crew{{name = 'iron-ore', count = count}}
 	end
 end
 
@@ -230,9 +235,9 @@ local function class_on_player_used_capsule(event)
 		local class = memory.classes_table[player_index]
 		if class == Public.enum.SAMURAI then
 			-- vanilla heal is 80HP
-			player.character.health = player.character.health + 200
+			player.character.health = player.character.health + 175
 		elseif class == Public.enum.HATAMOTO then
-			player.character.health = player.character.health + 350
+			player.character.health = player.character.health + 250
 		elseif class == Public.enum.GOURMET then
 			local tile = player.surface.get_tile(player.position)
 			if tile.valid then
@@ -240,21 +245,26 @@ local function class_on_player_used_capsule(event)
 				if tile.name == CoreData.world_concrete_tile then
 					multiplier = 1.5
 				elseif tile.name == 'cyan-refined-concrete' then
-					multiplier = 1.5
+					multiplier = 1.6
 				elseif tile.name == CoreData.walkway_tile then
 					multiplier = 1
 				elseif tile.name == 'orange-refined-concrete' then
-					multiplier = 1
+					multiplier = 0.8
+				elseif tile.name == CoreData.enemy_landing_tile then
+					multiplier = 0.33
+				elseif tile.name == CoreData.static_boat_floor then
+					multiplier = 0.1
 				end
 				if multiplier > 0 then
+					local timescale = 60*30 * Math.max((Balance.game_slowness_scale())^(2/3),0.8)
 					if memory.gourmet_recency_tick then
 						multiplier = multiplier * Math.max(0.2, Math.min(5, (1/5)^((memory.gourmet_recency_tick - game.tick)/(60*300))))
-						memory.gourmet_recency_tick = Math.max(memory.gourmet_recency_tick, game.tick - 60*300) + 60*30
+						memory.gourmet_recency_tick = Math.max(memory.gourmet_recency_tick, game.tick - timescale*10) + timescale
 					else
 						multiplier = multiplier * 5
-						memory.gourmet_recency_tick = game.tick - 60*300 + 60*30
+						memory.gourmet_recency_tick = game.tick - timescale*10 + timescale
 					end
-					Public.class_ore_grant(player, 12 * multiplier, true)
+					Public.class_ore_grant(player, 10 * multiplier, true)
 				end
 			end
 		end

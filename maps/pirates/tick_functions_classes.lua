@@ -95,10 +95,10 @@ function Public.update_character_properties(tickinterval)
 				-- 	character.character_build_distance_bonus = 0
 				-- end
 
-				if memory.classes_table[player_index] == Classes.enum.FISHERMAN or memory.classes_table[player_index] == Classes.enum.DREDGER then
+				if memory.classes_table[player_index] == Classes.enum.FISHERMAN then
 					max_reach_bonus = Math.max(max_reach_bonus, 10)
 					character.character_resource_reach_distance_bonus = 10
-				elseif memory.classes_table[player_index] == Classes.enum.MASTER_ANGLER then
+				elseif memory.classes_table[player_index] == Classes.enum.MASTER_ANGLER or memory.classes_table[player_index] == Classes.enum.DREDGER then
 					max_reach_bonus = Math.max(max_reach_bonus, 16)
 					character.character_resource_reach_distance_bonus = 16
 				else
@@ -115,7 +115,7 @@ function Public.update_character_properties(tickinterval)
 				if class == Classes.enum.SAMURAI then
 					health_boost = health_boost + 800
 				elseif class == Classes.enum.HATAMOTO then
-					health_boost = health_boost + 1600
+					health_boost = health_boost + 1300
 				end
 			end
 			if Common.is_captain(player) then

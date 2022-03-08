@@ -84,7 +84,6 @@ local function create_gui(player)
 	-- flow2.sprite = 'item/landfill'
 
 	flow2 = GuiCommon.flow_add_floating_sprite_button(flow1, 'progress_piratebutton')
-	flow2.tooltip = 'Progress\n\nTravel ' .. CoreData.victory_x .. ' leagues = victory.'
 	flow2.sprite = 'item/rail'
 
 	flow2 = GuiCommon.flow_add_floating_sprite_button(flow1, 'evo_piratebutton')
@@ -319,6 +318,13 @@ local function create_gui(player)
 		type = 'label',
 	})
 	flow3.style.font = 'default-large-semibold'
+	flow3.style.right_margin = 2
+
+	flow3 = flow2.add({
+		name = 'silo_label_3',
+		type = 'label',
+	})
+	flow3.style.font = 'default-large'
 	flow3.style.font_color = GuiCommon.default_font_color
 	flow3.style.right_margin = 2
 
@@ -508,6 +514,7 @@ function Public.update_gui(player)
 	pirates_flow.fuel_piratebutton_flow_1.fuel_piratebutton.tooltip = {'pirates.fuel_tooltip', Math.floor(memory.stored_fuel or 0)}
 
 	pirates_flow.progress_piratebutton_frame.progress_piratebutton.number = (memory.overworldx or 0)
+	pirates_flow.progress_piratebutton_frame.progress_piratebutton.caption = string.format('Progress: %d leagues.\n\nTravel %d leagues to win the game.', memory.overworldx or 0, CoreData.victory_x)
 	-- pirates_flow.destination_piratebutton_frame.destination_piratebutton.number = memory.destinationsvisited_indices and #memory.destinationsvisited_indices or 0
 
 
@@ -799,17 +806,23 @@ function Public.update_gui(player)
 			if charged_bool then
 	
 				if launched_bool then
+	
+					flow1.silo_progressbar.visible = false
+
+					flow1.silo_label_2.visible = false
+					flow1.silo_label_3.visible = true
+	
+					-- flow1.silo_label_1.caption = string.format('[achievement=there-is-no-spoon]: +%.0f[item=sulfur]', destination.dynamic_data.rocketcoalreward)
+					flow1.silo_label_1.caption = string.format('Launched')
+					-- flow1.silo_label_1.caption = string.format('Launched for %.0f[item=coal] , ' .. Balance.rocket_launch_coin_reward .. '[item=coin]', destination.dynamic_data.rocketcoalreward)
+					flow1.silo_label_1.style.font_color = GuiCommon.achieved_font_color
+
+					flow1.silo_label_3.caption = string.format('for %.0f[item=coal] , ' .. Balance.rocket_launch_coin_reward .. '[item=coin]', destination.dynamic_data.rocketcoalreward)
+
 					local tooltip = 'The rocket has launched, and this is the reward.'
 					flow1.tooltip = tooltip
 					flow1.silo_label_1.tooltip = tooltip
-	
-					flow1.silo_label_2.visible = false
-					flow1.silo_progressbar.visible = false
-	
-					-- flow1.silo_label_1.caption = string.format('[achievement=there-is-no-spoon]: +%.0f[item=sulfur]', destination.dynamic_data.rocketcoalreward)
-					flow1.silo_label_1.caption = string.format('Launched for %.0f[item=coal] , ' .. Balance.rocket_launch_coin_reward .. '[item=coin]', destination.dynamic_data.rocketcoalreward)
-					--@TODO: Make the items non-bold, check that the font color works
-					flow1.silo_label_1.style.font_color = GuiCommon.achieved_font_color
+					flow1.silo_label_3.tooltip = tooltip
 				else
 					local tooltip = 'The rocket is launching...'
 					flow1.tooltip = tooltip
@@ -819,6 +832,7 @@ function Public.update_gui(player)
 					flow1.silo_label_1.caption = 'Charge:'
 					flow1.silo_label_1.style.font_color = GuiCommon.bold_font_color
 					flow1.silo_label_2.visible = false
+					flow1.silo_label_3.visible = false
 					flow1.silo_progressbar.visible = true
 		
 					flow1.silo_progressbar.value = 1
@@ -829,6 +843,7 @@ function Public.update_gui(player)
 				flow1.silo_label_1.style.font_color = GuiCommon.bold_font_color
 				flow1.silo_label_2.visible = true
 				flow1.silo_progressbar.visible = true
+				flow1.silo_label_3.visible = false
 	
 				local consumed = destination.dynamic_data.rocketsiloenergyconsumed
 				local needed = destination.dynamic_data.rocketsiloenergyneeded
@@ -845,10 +860,10 @@ function Public.update_gui(player)
 				if recent ~= 0 then
 					active_eta = (needed - consumed) / recent
 					flow1.silo_label_2.caption = Utils.standard_string_form_of_time_in_seconds(active_eta)
-					if active_eta >= destination.dynamic_data.time_remaining then
-						flow1.silo_label_2.style.font_color = GuiCommon.insufficient_font_color
-					else
+					if active_eta < destination.dynamic_data.time_remaining or (not eta_bool) then
 						flow1.silo_label_2.style.font_color = GuiCommon.sufficient_font_color
+					else
+						flow1.silo_label_2.style.font_color = GuiCommon.insufficient_font_color
 					end
 				else
 					flow1.silo_label_2.caption = '∞'
@@ -856,7 +871,7 @@ function Public.update_gui(player)
 				end
 			end
 		else
-			flow1.visible = false    
+			flow1.visible = false
 		end
 	end
 

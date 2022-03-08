@@ -6,6 +6,8 @@ local Common = require 'maps.pirates.common'
 local Utils = require 'maps.pirates.utils_local'
 local inspect = require 'utils.inspect'.inspect
 
+-- this file is an API to all the balance tuning knobs
+
 
 Public.base_extra_character_speed = 0.20
 
@@ -72,15 +74,21 @@ function Public.silo_count()
 end
 
 
+function Public.game_slowness_scale()
+	return 1 / Public.crew_scale()^(55/100) / Math.sloped(Common.difficulty(), 1/4) --changed crew_scale factor significantly to help smaller crews
+end
+
+
 function Public.max_time_on_island_formula() --always >0  --tuned
 	return 60 * (
 			(32 + 2 * (Common.overworldx()/40)^(1/3))
-	) / Public.crew_scale()^(60/100) / Math.sloped(Common.difficulty(), 1/4) --changed crew_scale factor significantly to help smaller crews
+	) * Public.game_slowness_scale()
 end
 
 
 function Public.max_time_on_island()
-	if Common.overworldx() == 0 or ((Common.overworldx()/40) > 20 and (Common.overworldx()/40) < 25) then
+	if Common.overworldx() == 0 or ((Common.overworldx()/40) > 20) then
+	-- if Common.overworldx() == 0 or ((Common.overworldx()/40) > 20 and (Common.overworldx()/40) < 25) then
 		return -1
 	else
 		return Math.ceil(Public.max_time_on_island_formula())
@@ -111,7 +119,7 @@ end
 function Public.fuel_depletion_rate_sailing()
 	if (not Common.overworldx()) then return 0 end
 
-	return - 7.5 * (1 + 0.13 * (Common.overworldx()/40)^(9/10)) * Math.sloped(Common.difficulty(), 1/5) --shouldn't depend on difficulty much, as available resources don't depend much on difficulty
+	return - 7.5 * (1 + 0.13 * (Common.overworldx()/40)^(100/100)) * Math.sloped(Common.difficulty(), 1/5) --shouldn't depend on difficulty much, as available resources don't depend much on difficulty
 end
 
 function Public.silo_total_pollution()
@@ -123,6 +131,8 @@ end
 function Public.boat_passive_pollution_per_minute(time)
 	local boost = 1
 	local T = Public.max_time_on_island_formula()
+	if (Common.overworldx()/40) > 25 then T = T * 0.9 end
+
 	if time then
 		if time >= 95/100 * T then
 			boost = 16
@@ -183,7 +193,7 @@ function Public.evolution_per_second()
 	return rate
 end
 
-function Public.evolution_per_biter_base_kill() --it's important to have evo go up with biter base kills, to provide resistance if you try to plow through all the bases
+function Public.evolution_per_nest_kill() --it's important to have evo go up with biter base kills, to provide resistance if you try to plow through all the bases
 	local destination = Common.current_destination()
 	if Common.overworldx() == 0 then return 0 end
 
@@ -191,11 +201,12 @@ function Public.evolution_per_biter_base_kill() --it's important to have evo go 
 
 		local initial_spawner_count = destination.dynamic_data.initial_spawner_count
 		local time = destination.dynamic_data.timer
-		local time_to_jump_to = Public.expected_time_on_island() * (1/Public.expected_time_fraction)^(1/2)
+		-- local time_to_jump_to = Public.expected_time_on_island() * ((1/Public.expected_time_fraction)^(2/3))
+		local time_to_jump_to = Public.max_time_on_island_formula()
 		if time > time_to_jump_to then return 0
 		else
 			-- evo it 'would have' contributed:
-			return 1/initial_spawner_count * Public.expected_time_evo() * (time_to_jump_to - time)/time_to_jump_to
+			return (1/initial_spawner_count) * Public.expected_time_evo() * (time_to_jump_to - time)/time_to_jump_to
 		end
 	else
 		return 0
@@ -250,7 +261,8 @@ end
 
 
 function Public.launch_fuel_reward()
-	return Math.ceil(1000 * (1 + 0.1 * (Common.overworldx()/40)^(8/10)) / Math.sloped(Common.difficulty(), 1/4))
+	return Math.ceil(1000 * (1 + 0.1 * (Common.overworldx()/40)^(9/10)))
+	-- return Math.ceil(1000 * (1 + 0.1 * (Common.overworldx()/40)^(8/10)) / Math.sloped(Common.difficulty(), 1/4))
 end
 
 function Public.quest_reward_multiplier()
@@ -315,8 +327,10 @@ function Public.krakens_per_free_slot(overworldx)
 	if overworldx and overworldx > 600 then
 		multiplier = 1 + (overworldx-600)/600
 	end
-	if rng < 0.075 * multiplier then
-		return 2
+	if rng < 0.0025 * multiplier then
+		return 3
+	elseif rng < 0.075 * multiplier then
+		return 1
 	elseif rng < 0.5 * multiplier then
 		return 1
 	else
@@ -341,7 +355,7 @@ end
 -- 	return 0.95
 -- end
 
-Public.research_buffs = {
+Public.research_buffs = { --currently disabled anyway
 	-- these already give .1 productivity so we're adding .1 to get to 20%
 	['mining-productivity-1'] = {['mining-drill-productivity-bonus'] = .1},
 	['mining-productivity-2'] = {['mining-drill-productivity-bonus'] = .1},
@@ -355,7 +369,9 @@ Public.research_buffs = {
 }
 
 
--- function Public.flamers_nerfs_size(jumps) return 0.02 * jumps * difficulty_sloped(1/2) end
+function Public.flamers_tech_multipliers()
+	return 1/2
+end
 
 
 
@@ -398,7 +414,7 @@ function Public.player_gun_speed_modifiers()
 		['landmine'] = 0,
 		['melee'] = 0, -- doesn't do anything apparently
 		['rocket'] = 0,
-		['shotgun-shell'] = 0.1
+		['shotgun-shell'] = 0
 	}
 	return data
 end

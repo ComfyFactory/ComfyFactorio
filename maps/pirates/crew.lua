@@ -152,7 +152,7 @@ function Public.try_win()
 
 		game.play_sound{path='utility/game_won', volume_modifier=0.9}
 
-		memory.victory_pause_until_tick = game.tick + 60*20
+		memory.victory_pause_until_tick = game.tick + 60*18
 		memory.victory_continue_message = true
 	end
 end
@@ -228,11 +228,18 @@ function Public.join_spectators(player, crewid)
 					local surface_name = char.surface.name
 					local message = player.name .. ' left the crew'
 					if p then
-						Common.notify_force(force, message .. ' to become a spectator.' .. ' [gps=' .. Math.ceil(p.x) .. ',' .. Math.ceil(p.y) .. ',' .. surface_name ..']')
+						Common.notify_force(force, message .. ' to become a spectator.')
 						-- Server.to_discord_embed_raw(CoreData.comfy_emojis.feel .. '[' .. memory.name .. '] ' .. message)
 					end
+					-- if p then
+					-- 	Common.notify_force(force, message .. ' to become a spectator.' .. ' [gps=' .. Math.ceil(p.x) .. ',' .. Math.ceil(p.y) .. ',' .. surface_name ..']')
+					-- 	-- Server.to_discord_embed_raw(CoreData.comfy_emojis.feel .. '[' .. memory.name .. '] ' .. message)
+					-- end
+
+					-- char.die(memory.force_name)
+					Common.send_important_items_from_player_to_crew(player, true)
+
 					player.set_controller{type = defines.controllers.spectator}
-					char.die(memory.force_name)
 				else
 					local message = player.name .. ' left the crew'
 					Common.notify_force(force, message .. ' to become a spectator.')
@@ -370,7 +377,7 @@ function Public.join_crew(player, crewid)
 	end
 end
 
-function Public.leave_crew(player, quiet)
+function Public.leave_crew(player, to_lobby, quiet)
 	quiet = quiet or false
 	local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[CoreData.lobby_surface_name]
@@ -378,31 +385,40 @@ function Public.leave_crew(player, quiet)
 	if not Common.validate_player(player) then return end
 
 	local char = player.character
-	player.set_controller{type = defines.controllers.god}
 	if char and char.valid then
 		local p = char.position
 		local surface_name = char.surface.name
 		local message
 		if quiet then
-			message = player.name .. ' left.'
+			-- message = player.name .. ' left.'
 		else
 			message = player.name .. ' left the crew.'
+			Common.notify_force(player.force, message)
 		end
-		if p then
-			Common.notify_force(player.force, message .. ' [gps=' .. Math.ceil(p.x) .. ',' .. Math.ceil(p.y) .. ',' .. surface_name ..']')
-			-- Server.to_discord_embed_raw(CoreData.comfy_emojis.feel .. '[' .. memory.name .. '] ' .. message)
+		-- if p then
+		-- 	Common.notify_force(player.force, message .. ' [gps=' .. Math.ceil(p.x) .. ',' .. Math.ceil(p.y) .. ',' .. surface_name ..']')
+		-- 	-- Server.to_discord_embed_raw(CoreData.comfy_emojis.feel .. '[' .. memory.name .. '] ' .. message)
+		-- end
+		-- char.die(memory.force_name)
+
+		if (not to_lobby) then
+			Common.send_important_items_from_player_to_crew(player)
+			memory.temporarily_logged_off_characters[player.index] = game.tick
 		end
-		char.die(memory.force_name)
 	else
 		if not quiet then
-			local message = player.name .. ' left the crew.'
-			Common.notify_force(player.force, message)
+			-- local message = player.name .. ' left the crew.'
+			-- Common.notify_force(player.force, message)
 		end
 	end
 
-	player.teleport(surface.find_non_colliding_position('character', Common.lobby_spawnpoint, 32, 0.5) or Common.lobby_spawnpoint, surface)
-	player.force = 'player'
-	player.create_character()
+	if to_lobby then
+		player.set_controller{type = defines.controllers.god}
+	
+		player.teleport(surface.find_non_colliding_position('character', Common.lobby_spawnpoint, 32, 0.5) or Common.lobby_spawnpoint, surface)
+		player.force = 'player'
+		player.create_character()
+	end
 
 	memory.crewplayerindices = Utils.ordered_table_with_values_removed(memory.crewplayerindices, player.index)
 
@@ -413,7 +429,7 @@ function Public.leave_crew(player, quiet)
 	memory.difficulty_votes[player.index] = nil
 
 	if #Common.crew_get_crew_members() == 0 then
-		memory.crew_disband_tick = game.tick + 30
+		memory.crew_disband_tick = game.tick + Common.autodisband_ticks
 		-- memory.crew_disband_tick = game.tick + 60*60*2 --give players time to log back in after a crash or save
 	else
 		Roles.player_left_so_redestribute_roles(player)
@@ -439,6 +455,29 @@ function Public.get_unaffiliated_players()
 	return playerlist
 end
 
+
+function Public.plank(captain, player)
+	local memory = Memory.get_crew_memory()
+
+	if Utils.contains(Common.crew_get_crew_members(), player) then
+		if (not (captain.index == player.index)) then
+			local message = "%s planked %s!"
+			Server.to_discord_embed_raw(CoreData.comfy_emojis.monkas .. message)
+		
+			Common.notify_force(player.force, string.format(message, captain.name, player.name))
+		
+			Public.join_spectators(player, memory.id)
+			memory.tempbanned_from_joining_data[player.index] = game.tick + 60 * 120
+			return true
+		else
+			Common.notify_error(captain, 'Can\'t plank yourself.')
+			return false
+		end
+	else
+		Common.notify_error(captain, 'Player is not a crewmember.')
+		return false
+	end
+end
 
 
 
@@ -630,6 +669,7 @@ function Public.initialise_crew(accepted_proposal)
 	memory.spectatorplayerindices = {}
 	memory.tempbanned_from_joining_data = {}
 	memory.destinations = {}
+	memory.temporarily_logged_off_characters = {}
 
 	memory.hold_surface_count = 1
 

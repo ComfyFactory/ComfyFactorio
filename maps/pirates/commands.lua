@@ -36,7 +36,7 @@ local GUIcolor = require 'maps.pirates.gui.color'
 
 commands.add_command(
 'ok',
-'Used to accept captainhood.',
+'is used to accept captainhood.',
 function(cmd)
 			local player = game.players[cmd.player_index]
 	if not Common.validate_player(player) then return end
@@ -58,7 +58,7 @@ end)
 
 commands.add_command(
 'class',
-'/class [classname] returns the definition of the named class.',
+'{classname} returns the definition of the named class.',
 function(cmd)
 	local param = tostring(cmd.parameter)
 	local player = game.players[cmd.player_index]
@@ -78,7 +78,7 @@ end)
 
 commands.add_command(
 'ccolor',
-'/ccolor is an extension to the built-in /color command, with more colors.',
+'is an extension to the built-in /color command, with more colors.',
 function(cmd)
 	local param = tostring(cmd.parameter)
 	local player_index = cmd.player_index
@@ -145,14 +145,37 @@ local go_1 = Token.register(
 
 local function check_admin(cmd)
 	local Session = require 'utils.datastore.session_data'
-			local player = game.players[cmd.player_index]
+	local player = game.players[cmd.player_index]
 	local trusted = Session.get_trusted_table()
 	local p
 	if player then
 		if player ~= nil then
 			p = player.print
 			if not player.admin then
-				p('[ERROR] Only admins and trusted weebs are allowed to run this command!', Color.fail)
+				p('[ERROR] Only admins are allowed to run this command!', Color.fail)
+				return false
+			end
+		else
+			p = log
+		end
+	end
+	return true
+end
+
+
+
+local function check_captain(cmd)
+	local player = game.players[cmd.player_index]
+	local p
+	if player then
+		if player ~= nil then
+			p = player.print
+			if not Common.validate_player(player) then return end
+			local crew_id = tonumber(string.sub(game.players[cmd.player_index].force.name, -3, -1)) or nil
+			Memory.set_working_id(crew_id)
+			local memory = Memory.get_crew_memory()
+			if not (player.admin or Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN) then
+				p('[ERROR] Only captains are allowed to run this command!', Color.fail)
 				return false
 			end
 		else
@@ -165,7 +188,7 @@ end
 
 local function check_trusted(cmd)
 	local Session = require 'utils.datastore.session_data'
-			local player = game.players[cmd.player_index]
+	local player = game.players[cmd.player_index]
 	local trusted = Session.get_trusted_table()
 	local p
 	if player then
@@ -186,7 +209,7 @@ end
 
 commands.add_command(
 'set_max_crews',
-'Sets the maximum number of concurrent crews allowed on the server.',
+'is an admin command to set the maximum number of concurrent crews allowed on the server.',
 function(cmd)
 	local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
@@ -197,9 +220,45 @@ function(cmd)
 	end
 end)
 
+
+commands.add_command(
+'plank',
+'is a captain command to remove a player by making them a spectator.',
+function(cmd)
+	local player = game.players[cmd.player_index]
+	local param = tostring(cmd.parameter)
+	if check_captain(cmd) then
+		if param and game.players[param] and game.players[param].index then
+			Crew.plank(player, game.players[param])
+		else
+			Common.notify_error(player, 'Invalid player name.')
+		end
+	end
+end)
+
+commands.add_command(
+'officer',
+'is a captain command to make a player into an officer for your crew, or remove them as one.',
+function(cmd)
+	local player = game.players[cmd.player_index]
+	local param = tostring(cmd.parameter)
+	if check_captain(cmd) then
+		local memory = Memory.get_crew_memory()
+		if param and game.players[param] and game.players[param].index then
+			if memory.officers_table and memory.officers_table[game.players[param].index] then
+				Roles.unmake_officer(player, game.players[param])
+			else
+				Roles.make_officer(player, game.players[param])
+			end
+		else
+			Common.notify_error(player, 'Invalid player name.')
+		end
+	end
+end)
+
 commands.add_command(
 'dump_highscores',
-'dump_highscores',
+'is a dev command.',
 function(cmd)
 	if check_admin(cmd) then
 		local player = game.players[cmd.player_index]
@@ -212,25 +271,9 @@ function(cmd)
 	end
 end)
 
-
-commands.add_command(
-'overwrite_scores_specific',
-'overwrite_scores_specific',
-function(cmd)
-	if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-		if not Common.validate_player(player) then return end
-		local crew_id = tonumber(string.sub(game.players[cmd.player_index].force.name, -3, -1)) or nil
-		Memory.set_working_id(crew_id)
-		local memory = Memory.get_crew_memory()
-		if Highscore.overwrite_scores_specific() then player.print('Highscores overwritten.') end
-	end
-end)
-
-
 commands.add_command(
 'setcaptain',
-'setcaptain',
+'{player} is an admin command to set the crew\'s captain to {player}.',
 function(cmd)
 	local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
@@ -241,15 +284,14 @@ function(cmd)
 		if param and game.players[param] and game.players[param].index then
 			Roles.make_captain(game.players[param])
 		else
-			player.print('Invalid player name.')
+			Common.notify_error(player, 'Invalid player name.')
 		end
 	end
 end)
 
-
 commands.add_command(
 'summoncrew',
-'summoncrew',
+'is an admin command to summon the crew to the ship.',
 function(cmd)
 	local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
@@ -260,11 +302,9 @@ function(cmd)
 	end
 end)
 
-
-
 commands.add_command(
 'setclass',
-'setclass',
+'is a dev command.',
 function(cmd)
 	local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
@@ -281,7 +321,7 @@ end)
 
 commands.add_command(
 'setevo',
-'setevo',
+'is a dev command.',
 function(cmd)
 	local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
@@ -292,30 +332,9 @@ function(cmd)
 	end
 end)
 
-
-commands.add_command(
-'chnk',
-'genchunk',
-function(cmd)
-	local param = tostring(cmd.parameter)
-	if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-		Memory.set_working_id(crew_id)
-		local memory = Memory.get_crew_memory()
-
-		for i = 0, 13 do
-			for j = 0, 13 do
-				Interface.event_on_chunk_generated({surface = player.surface, area = {left_top = {x = -7 * 32 + i * 32, y = -7 * 32 + j * 32}}})
-			end
-		end
-		game.print('chunks generated')
-	end
-end)
-
 commands.add_command(
 'modi',
-'setmodifiable',
+'is a dev command.',
 function(cmd)
 	local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
@@ -338,36 +357,8 @@ function(cmd)
 end)
 
 commands.add_command(
-'spd',
-'speed',
-function(cmd)
-	local param = tostring(cmd.parameter)
-	if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-		Memory.set_working_id(crew_id)
-		local memory = Memory.get_crew_memory()
-		memory.boat.speed = 60
-	end
-end)
-
-commands.add_command(
-'stp',
-'stop',
-function(cmd)
-	local param = tostring(cmd.parameter)
-	if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-		Memory.set_working_id(crew_id)
-		local memory = Memory.get_crew_memory()
-		memory.boat.speed = 0
-	end
-end)
-
-commands.add_command(
 'ret',
-'retreat',
+'is a dev command.',
 function(cmd)
 	local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
@@ -378,197 +369,6 @@ function(cmd)
 	end
 end)
 
-commands.add_command(
-'jump',
-'jump',
-function(cmd)
-	local param = tostring(cmd.parameter)
-	if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-		Memory.set_working_id(crew_id)
-		Overworld.try_overworld_move_v2({x = 40, y = 0})
-	end
-end)
-
-commands.add_command(
-'advu',
-'advanceup',
-function(cmd)
-	local param = tostring(cmd.parameter)
-	if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-		Memory.set_working_id(crew_id)
-		Overworld.try_overworld_move_v2{x = 0, y = -24}
-	end
-end)
-
-commands.add_command(
-'advd',
-'advancedown',
-function(cmd)
-	local param = tostring(cmd.parameter)
-	if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-		Memory.set_working_id(crew_id)
-		Overworld.try_overworld_move_v2{x = 0, y = 24}
-	end
-end)
-
-commands.add_command(
-'rms',
-'rms',
-function(cmd)
-	local param = tostring(cmd.parameter)
-	if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-		local rms = 0
-		local n = 100000
-		local seed = Math.random(n^2)
-		for i = 1,n do
-			local noise = simplex_noise(i, 7.11, seed)
-			rms = rms + noise^2
-		end
-		rms = rms/n
-		game.print(rms)
-	end
-end)
-
-commands.add_command(
-'pro',
-'pro',
-function(cmd)
-	local param = tostring(cmd.parameter)
-	if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-		local global_memory = Memory.get_global_memory()
-
-		local proposal = {
-			capacity_option = 3,
-			difficulty_option = 2,
-			-- mode_option = 'left',
-			endorserindices = { 2 },
-			name = "TestRun"
-		}
-
-		global_memory.crewproposals[#global_memory.crewproposals + 1] = proposal
-
-	end
-end)
-
-commands.add_command(
-'lev',
-'lev',
-function(cmd)
-	local param = tostring(cmd.parameter)
-	if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-		Memory.set_working_id(1)
-		local memory = Memory.get_crew_memory()
-		Progression.go_from_currentdestination_to_sea()
-	end
-end)
-
-commands.add_command(
-'hld',
-'hld',
-function(cmd)
-	local param = tostring(cmd.parameter)
-	if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-		Memory.set_working_id(1)
-		local memory = Memory.get_crew_memory()
-		Upgrades.execute_upgade(Upgrades.enum.EXTRA_HOLD)
-	end
-end)
-
-commands.add_command(
-'pwr',
-'pwr',
-function(cmd)
-	local param = tostring(cmd.parameter)
-	if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-		Memory.set_working_id(1)
-		local memory = Memory.get_crew_memory()
-		Upgrades.execute_upgade(Upgrades.enum.MORE_POWER)
-	end
-end)
-
-
-
-commands.add_command(
-'mincapacitysetting3',
-'mincapacitysetting3',
-function(cmd)
-	local param = tostring(cmd.parameter)
-	if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-		local global_memory = Memory.get_global_memory()
-
-		global_memory.minimum_capacity_slider_value = 3
-	end
-end)
-
-commands.add_command(
-'mincapacitysetting2',
-'mincapacitysetting2',
-function(cmd)
-	local param = tostring(cmd.parameter)
-	if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-		local global_memory = Memory.get_global_memory()
-
-		global_memory.minimum_capacity_slider_value = 2
-	end
-end)
-
-commands.add_command(
-'mincapacitysetting1',
-'mincapacitysetting1',
-function(cmd)
-	local param = tostring(cmd.parameter)
-	if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-		local global_memory = Memory.get_global_memory()
-
-		global_memory.minimum_capacity_slider_value = 1
-	end
-end)
-
-commands.add_command(
-'score',
-'score',
-function(cmd)
-	local param = tostring(cmd.parameter)
-	if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-		Memory.set_working_id(crew_id)
-		local memory = Memory.get_crew_memory()
-		
-		game.print('faking a highscore...')
-		Highscore.write_score(memory.secs_id, 'fakers', 0, 40, CoreData.version_float, 1, 1)
-	end
-end)
-
-commands.add_command(
-'scrget',
-'scrget',
-function(cmd)
-	local param = tostring(cmd.parameter)
-	if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-		game.print('running Highscore.load_in_scores()')
-		Highscore.load_in_scores()
-	end
-end)
-
-
-
-
 
 
 
@@ -576,7 +376,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'go',
-	'go',
+	'is a dev command.',
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -616,8 +416,218 @@ if _DEBUG then
 	end)
 
 	commands.add_command(
+	'overwrite_scores_specific',
+	'is a dev command.',
+	function(cmd)
+		if check_admin(cmd) then
+			local player = game.players[cmd.player_index]
+			if not Common.validate_player(player) then return end
+			local crew_id = tonumber(string.sub(game.players[cmd.player_index].force.name, -3, -1)) or nil
+			Memory.set_working_id(crew_id)
+			local memory = Memory.get_crew_memory()
+			if Highscore.overwrite_scores_specific() then player.print('Highscores overwritten.') end
+		end
+	end)
+	
+	commands.add_command(
+	'chnk',
+	'is a dev command.',
+	function(cmd)
+		local param = tostring(cmd.parameter)
+		if check_admin(cmd) then
+			local player = game.players[cmd.player_index]
+			local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+			Memory.set_working_id(crew_id)
+			local memory = Memory.get_crew_memory()
+	
+			for i = 0, 13 do
+				for j = 0, 13 do
+					Interface.event_on_chunk_generated({surface = player.surface, area = {left_top = {x = -7 * 32 + i * 32, y = -7 * 32 + j * 32}}})
+				end
+			end
+			game.print('chunks generated')
+		end
+	end)
+	
+	commands.add_command(
+	'spd',
+	'is a dev command.',
+	function(cmd)
+		local param = tostring(cmd.parameter)
+		if check_admin(cmd) then
+			local player = game.players[cmd.player_index]
+			local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+			Memory.set_working_id(crew_id)
+			local memory = Memory.get_crew_memory()
+			memory.boat.speed = 60
+		end
+	end)
+	
+	commands.add_command(
+	'stp',
+	'is a dev command.',
+	function(cmd)
+		local param = tostring(cmd.parameter)
+		if check_admin(cmd) then
+			local player = game.players[cmd.player_index]
+			local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+			Memory.set_working_id(crew_id)
+			local memory = Memory.get_crew_memory()
+			memory.boat.speed = 0
+		end
+	end)
+	
+	commands.add_command(
+	'jump',
+	'is a dev command.',
+	function(cmd)
+		local param = tostring(cmd.parameter)
+		if check_admin(cmd) then
+			local player = game.players[cmd.player_index]
+			local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+			Memory.set_working_id(crew_id)
+			Overworld.try_overworld_move_v2({x = 40, y = 0})
+		end
+	end)
+	
+	commands.add_command(
+	'advu',
+	'is a dev command.',
+	function(cmd)
+		local param = tostring(cmd.parameter)
+		if check_admin(cmd) then
+			local player = game.players[cmd.player_index]
+			local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+			Memory.set_working_id(crew_id)
+			Overworld.try_overworld_move_v2{x = 0, y = -24}
+		end
+	end)
+	
+	commands.add_command(
+	'advd',
+	'is a dev command.',
+	function(cmd)
+		local param = tostring(cmd.parameter)
+		if check_admin(cmd) then
+			local player = game.players[cmd.player_index]
+			local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+			Memory.set_working_id(crew_id)
+			Overworld.try_overworld_move_v2{x = 0, y = 24}
+		end
+	end)
+	
+	commands.add_command(
+	'rms',
+	'is a dev command.',
+	function(cmd)
+		local param = tostring(cmd.parameter)
+		if check_admin(cmd) then
+			local player = game.players[cmd.player_index]
+			local rms = 0
+			local n = 100000
+			local seed = Math.random(n^2)
+			for i = 1,n do
+				local noise = simplex_noise(i, 7.11, seed)
+				rms = rms + noise^2
+			end
+			rms = rms/n
+			game.print(rms)
+		end
+	end)
+	
+	commands.add_command(
+	'pro',
+	'is a dev command.',
+	function(cmd)
+		local param = tostring(cmd.parameter)
+		if check_admin(cmd) then
+			local player = game.players[cmd.player_index]
+			local global_memory = Memory.get_global_memory()
+	
+			local proposal = {
+				capacity_option = 3,
+				difficulty_option = 2,
+				-- mode_option = 'left',
+				endorserindices = { 2 },
+				name = "TestRun"
+			}
+	
+			global_memory.crewproposals[#global_memory.crewproposals + 1] = proposal
+	
+		end
+	end)
+	
+	commands.add_command(
+	'lev',
+	'is a dev command.',
+	function(cmd)
+		local param = tostring(cmd.parameter)
+		if check_admin(cmd) then
+			local player = game.players[cmd.player_index]
+			Memory.set_working_id(1)
+			local memory = Memory.get_crew_memory()
+			Progression.go_from_currentdestination_to_sea()
+		end
+	end)
+	
+	commands.add_command(
+	'hld',
+	'is a dev command.',
+	function(cmd)
+		local param = tostring(cmd.parameter)
+		if check_admin(cmd) then
+			local player = game.players[cmd.player_index]
+			Memory.set_working_id(1)
+			local memory = Memory.get_crew_memory()
+			Upgrades.execute_upgade(Upgrades.enum.EXTRA_HOLD)
+		end
+	end)
+	
+	commands.add_command(
+	'pwr',
+	'is a dev command.',
+	function(cmd)
+		local param = tostring(cmd.parameter)
+		if check_admin(cmd) then
+			local player = game.players[cmd.player_index]
+			Memory.set_working_id(1)
+			local memory = Memory.get_crew_memory()
+			Upgrades.execute_upgade(Upgrades.enum.MORE_POWER)
+		end
+	end)
+	
+	
+	commands.add_command(
+	'score',
+	'is a dev command.',
+	function(cmd)
+		local param = tostring(cmd.parameter)
+		if check_admin(cmd) then
+			local player = game.players[cmd.player_index]
+			local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+			Memory.set_working_id(crew_id)
+			local memory = Memory.get_crew_memory()
+			
+			game.print('faking a highscore...')
+			Highscore.write_score(memory.secs_id, 'fakers', 0, 40, CoreData.version_float, 1, 1)
+		end
+	end)
+	
+	commands.add_command(
+	'scrget',
+	'is a dev command.',
+	function(cmd)
+		local param = tostring(cmd.parameter)
+		if check_admin(cmd) then
+			local player = game.players[cmd.player_index]
+			game.print('running Highscore.load_in_scores()')
+			Highscore.load_in_scores()
+		end
+	end)
+
+	commands.add_command(
 	'tim',
-	'tim',
+	'is a dev command.',
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -631,7 +641,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'gld',
-	'gld',
+	'is a dev command.',
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -644,7 +654,7 @@ if _DEBUG then
 	
 	commands.add_command(
 	'bld',
-	'bld',
+	'is a dev command.',
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -657,7 +667,7 @@ if _DEBUG then
 	
 	commands.add_command(
 	'rad',
-	'rad',
+	'is a dev command.',
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -673,7 +683,7 @@ if _DEBUG then
 	
 	commands.add_command(
 	'rad2',
-	'rad2',
+	'is a dev command.',
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -689,7 +699,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'krk',
-	'krk',
+	'is a dev command.',
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -702,7 +712,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'1',
-	'1',
+	'is a dev command.',
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -713,7 +723,7 @@ if _DEBUG then
 	
 	commands.add_command(
 	'2',
-	'2',
+	'is a dev command.',
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -724,7 +734,7 @@ if _DEBUG then
 	
 	commands.add_command(
 	'4',
-	'4',
+	'is a dev command.',
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -735,7 +745,7 @@ if _DEBUG then
 	
 	commands.add_command(
 	'8',
-	'8',
+	'is a dev command.',
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -746,7 +756,7 @@ if _DEBUG then
 	
 	commands.add_command(
 	'16',
-	'16',
+	'is a dev command.',
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -757,7 +767,7 @@ if _DEBUG then
 	
 	commands.add_command(
 	'32',
-	'32',
+	'is a dev command.',
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -768,7 +778,7 @@ if _DEBUG then
 	
 	commands.add_command(
 	'64',
-	'64',
+	'is a dev command.',
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -779,7 +789,7 @@ if _DEBUG then
 	
 	commands.add_command(
 	'ef1',
-	'ef1',
+	'is a dev command.',
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -794,7 +804,7 @@ if _DEBUG then
 	
 	commands.add_command(
 	'ef2',
-	'ef2',
+	'is a dev command.',
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -809,7 +819,7 @@ if _DEBUG then
 	
 	commands.add_command(
 	'ef3',
-	'ef3',
+	'is a dev command.',
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -824,7 +834,7 @@ if _DEBUG then
 	
 	commands.add_command(
 	'ef4',
-	'ef4',
+	'is a dev command.',
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -839,7 +849,7 @@ if _DEBUG then
 	
 	commands.add_command(
 	'ef5',
-	'ef5',
+	'is a dev command.',
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -854,7 +864,7 @@ if _DEBUG then
 	
 	commands.add_command(
 	'emoji',
-	'emoji',
+	'is a dev command.',
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then

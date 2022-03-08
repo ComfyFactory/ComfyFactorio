@@ -53,7 +53,7 @@ function Public.event_on_market_item_purchased(event)
 	local island_bool = destination.type == SurfacesCommon.enum.ISLAND
 	local purchase_bool = (price and price[1] and price[1].name and (price[1].name == 'coin'))
 	local simple_efficiency_trade_bool = (price and price[1] and price[1].name and (price[1].name == 'pistol' or price[1].name == 'burner-mining-drill'))
-	local loader_purchase_bool = (offer_giveitem_name and (offer_giveitem_name == 'loader' or offer_giveitem_name == 'fast-loader' or offer_giveitem_name == 'express-loader'))
+	local special_purchase_bool = (offer_giveitem_name and (offer_giveitem_name == 'loader' or offer_giveitem_name == 'fast-loader' or offer_giveitem_name == 'express-loader' or offer_giveitem_name == 'rocket-launcher'))
 
 	if offer_type == 'nothing' then
 		decay_type = 'one-off'
@@ -61,9 +61,9 @@ function Public.event_on_market_item_purchased(event)
 		decay_type = 'double_decay'
 	elseif dock_bool and purchase_bool and (offer_giveitem_name) then
 		decay_type = 'one-off'
-	elseif simple_efficiency_trade_bool or loader_purchase_bool then
+	elseif simple_efficiency_trade_bool or special_purchase_bool then
 		decay_type = 'static'
-	elseif island_bool then
+	elseif island_bool and (not (offer_giveitem_name and offer_giveitem_name == 'rocket')) then
 		decay_type = 'one-off'
 	else
 		decay_type = 'decay'
@@ -84,7 +84,7 @@ function Public.event_on_market_item_purchased(event)
 	if decay_type == 'one-off' then
 		local force = player.force
 
-		if offer_type == 'nothing' then
+		if offer_type == 'nothing' and destination.static_params.class_for_sale then
 
 			local class_for_sale = destination.static_params.class_for_sale
 			-- if not class_for_sale then return end
@@ -95,7 +95,7 @@ function Public.event_on_market_item_purchased(event)
 			if required_class then
 				if not (memory.classes_table and memory.classes_table[player.index] and memory.classes_table[player.index] == required_class) then
 					ok = false
-					Common.notify_error(force,string.format('You need to be a %s to buy this.', Classes.display_form[required_class]))
+					Common.notify_error(force,string.format('Class purchase error: you need to be a %s to buy this.', Classes.display_form[required_class]))
 				end
 			end
 

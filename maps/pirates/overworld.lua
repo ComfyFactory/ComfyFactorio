@@ -90,6 +90,9 @@ function Public.generate_overworld_destination(p)
 	elseif macrop.x == 2 then
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.STANDARD_VARIANT --aesthetically different to first map
+	elseif (macrop.x > 25 and (macrop.x - 22) % 18 == 0) then --we want this to happen before dock
+		type = Surfaces.enum.ISLAND
+		subtype = Surfaces.Island.enum.RADIOACTIVE
 	elseif macrop.y == -1 and (((macrop.x % 4) == 3 and macrop.x ~= 15) or macrop.x == 14) then --avoid x=15 because radioactive is there
 		type = Surfaces.enum.DOCK
 	elseif macrop.x == 5 then --biter boats appear. large island works well so players run off
@@ -112,10 +115,10 @@ function Public.generate_overworld_destination(p)
 	-- 	else
 	-- 		type = nil
 	-- 	end
-	elseif macrop.x == 12 then --just after krakens, but dock is here too, so there's a choice
+	elseif macrop.x == 11 then --just after krakens, but dock is here too, so there's a choice
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.SWAMP
-	elseif macrop.x == 15 or (macrop.x > 25 and macrop.x % 12 == 3) then
+	elseif macrop.x == 15 then
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.RADIOACTIVE
 		 --electric engines needed at 20
@@ -123,11 +126,14 @@ function Public.generate_overworld_destination(p)
 	-- 	type = nil
 	elseif macrop.x == 20 then --game length decrease, pending more content
 		type = nil
-	elseif macrop.x == 21 then --game length decrease, pending more content. also kinda fun to have to steer in realtime due to double space
+	elseif macrop.x == 21 then --rocket launch cost
+		type = Surfaces.enum.ISLAND
+		subtype = Surfaces.Island.enum.SWAMP
+	elseif macrop.x == 22 then --game length decrease, pending more content. also kinda fun to have to steer in realtime due to double space
 		type = nil
 	elseif macrop.x == 23 then --rocket launch cost
 		type = Surfaces.enum.ISLAND
-		subtype = Surfaces.Island.enum.SWAMP
+		subtype = Surfaces.Island.enum.MAZE
 	elseif macrop.x == 24 then --rocket launch cost
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.WALKWAYS
@@ -201,43 +207,43 @@ function Public.generate_overworld_destination(p)
 
 		static_params.scheduled_raft_raids = scheduled_raft_raids
 
-		-- halved all of them for now, whilst testing...
-		
+
+		-- These need to scale up slower than the static fuel depletion rate:
 		local normal_costitems = {'small-lamp', 'engine-unit', 'advanced-circuit'}
 		local base_cost_0 = {
 			['small-lamp'] = Math.ceil(((macrop.x-2)^(2/3))*25),
 		}
 		local base_cost_1 = {
 			['small-lamp'] = Math.ceil(((macrop.x-2)^(2/3))*25),
-			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*18),
+			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*16),
 		}
 		local base_cost_2 = {
 			['small-lamp'] = Math.ceil(((macrop.x-2)^(2/3))*25),
-			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*18),
-			['advanced-circuit'] = Math.ceil(((macrop.x-15)^(2/3))*8),
+			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*16),
+			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*10),
 		}
 		local base_cost_2b = {
 			['small-lamp'] = Math.ceil(((macrop.x-2)^(2/3))*25),
-			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*18),
+			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*16),
 			['electric-engine-unit'] = 2,
 		}
 		local base_cost_2c = {
 			['small-lamp'] = Math.ceil(((macrop.x-2)^(2/3))*25),
-			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*18),
-			['advanced-circuit'] = Math.ceil(((macrop.x-15)^(2/3))*8),
+			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*16),
+			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*10),
 			['launch_rocket'] = true,
 		}
 		local base_cost_3 = {
 			['small-lamp'] = Math.ceil(((macrop.x-2)^(2/3))*25),
-			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*18),
-			['advanced-circuit'] = Math.ceil(((macrop.x-15)^(2/3))*8),
+			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*16),
+			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*10),
 			['electric-engine-unit'] = Math.ceil(((macrop.x-18)^(2/3))*5),
 			['launch_rocket'] = true,
 		}
 		local base_cost_4 = {
 			['small-lamp'] = Math.ceil(((macrop.x-2)^(2/3))*25),
-			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*18),
-			['advanced-circuit'] = Math.ceil(((macrop.x-15)^(2/3))*8),
+			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*16),
+			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*10),
 			['electric-engine-unit'] = Math.ceil(((macrop.x-18)^(2/3))*5),
 		}
 		if macrop.x == 0 then
@@ -263,21 +269,21 @@ function Public.generate_overworld_destination(p)
 			end
 		elseif macrop.x == 18 then --a super small amount of electric-engine-unit on a relatively early level so that they see they need lubricant
 			cost_to_leave = base_cost_2b
-		elseif macrop.x <= 22 then
+		elseif macrop.x <= 20 then
 			if macrop.x % 3 > 0 then
 				cost_to_leave = base_cost_2
 			else
 				cost_to_leave = nil
 			end
-		elseif macrop.x == 23 then
+		elseif macrop.x <= 22 then
 			cost_to_leave = base_cost_2c
-		elseif macrop.x == 24 then
+		elseif macrop.x <= 24 then
 			cost_to_leave = base_cost_3
 		else
 			cost_to_leave = Utils.deepcopy(base_cost_4)
 			local delete = normal_costitems[Math.random(#normal_costitems)]
 			cost_to_leave[delete] = nil
-			if Math.random(5) <= 2 then
+			if macrop.x % 2 == 0 then
 				cost_to_leave['launch_rocket'] = true
 			end
 		end
@@ -454,10 +460,10 @@ function Public.generate_overworld_destination(p)
 	local kraken_count = 0
 	local position_candidates
 	if type == nil then
-		kraken_count = Balance.krakens_per_free_slot(macrop.x)
+		kraken_count = Balance.krakens_per_free_slot(p.x)
 		position_candidates = interior_positions
 	elseif type ~= Surfaces.enum.DOCK then
-		kraken_count = Balance.krakens_per_slot(macrop.x)
+		kraken_count = Balance.krakens_per_slot(p.x)
 		position_candidates = infront_positions
 	end
 
@@ -635,14 +641,14 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 					local player_index = player.index
 					if memory.classes_table and memory.classes_table[player_index] and memory.classes_table[player_index] == Classes.enum.MERCHANT then
 						Common.flying_text_small(player.surface, player.position, '[color=0.97,0.9,0.2]+[/color]')
-						Common.give_reward_items{{name = 'coin', count = 40 * vector.x}}
+						Common.give_items_to_crew{{name = 'coin', count = 40 * vector.x}}
 					end
 				end
 			end
 
 			-- other freebies:
 			for i=1,vector.x do
-				Common.give_reward_items(Balance.periodic_free_resources_per_x())
+				Common.give_items_to_crew(Balance.periodic_free_resources_per_x())
 				Balance.apply_crew_buffs_per_x(memory.force)
 			end
 

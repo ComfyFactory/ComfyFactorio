@@ -24,7 +24,7 @@ Public.main_shop_data_1 = {
 	repair_cannons = {
 		tooltip = 'Repair the cannons.',
 		what_you_get_sprite_buttons = {['item/artillery-turret'] = false},
-		base_cost = {coins = 800},
+		base_cost = {coins = 1000},
 	},
 	new_boat_cutter = {
 		tooltip = 'Purchase a cutter.',
@@ -281,12 +281,12 @@ function Public.main_shop_try_purchase(player, purchase_name)
 
 		elseif purchase_name == 'buy_iron' then
 			gotamount = trade_data.what_you_get_sprite_buttons['item/iron-plate']
-			Common.give_reward_items{{name = 'iron-plate', count = gotamount}}
+			Common.give_items_to_crew{{name = 'iron-plate', count = gotamount}}
 			Common.notify_force_light(force,string.format('%s is buying iron...', player.name))
 
 		elseif purchase_name == 'buy_copper' then
 			gotamount = trade_data.what_you_get_sprite_buttons['item/copper-plate']
-			Common.give_reward_items{{name = 'copper-plate', count = gotamount}}
+			Common.give_items_to_crew{{name = 'copper-plate', count = gotamount}}
 			Common.notify_force_light(force,string.format('%s is buying copper...', player.name))
 
 		-- elseif name == 'buy_fast_loader' then

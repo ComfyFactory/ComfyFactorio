@@ -244,9 +244,9 @@ function Public.standard_string_form_of_time_in_seconds(time)
 	local minutes = Math.floor(Math.ceil(time2) / 60)
 	local seconds = Math.ceil(time2)
 	if hours >= 1 then
-		str2 = string.format('%.0fh%.0fm%.0fs', hours, minutes % 60, seconds % 60)
+		str2 = string.format('%.0fh %.0fm %.0fs', hours, minutes % 60, seconds % 60)
 	elseif minutes >= 1 then
-		str2 = string.format('%.0fm%.0fs', minutes, seconds % 60)
+		str2 = string.format('%.0fm %.0fs', minutes, seconds % 60)
 	else
 		str2 = string.format('%.0fs', seconds)
 	end
@@ -328,7 +328,7 @@ function Public.bignumber_abbrevform(number) --e.g. 516, 1.2k, 21.4k, 137k
 
 	return str1 .. str2
 end
-function Public.bignumber_abbrevform2(number) --e.g. 516, 1.2k, 21k, 136k
+function Public.bignumber_abbrevform2(number) --e.g. 516, 1.2k, 21k, 137k
 	local str1, str2, number2
 	if number >= 0 then
 		number2 = number

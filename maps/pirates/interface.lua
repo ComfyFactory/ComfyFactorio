@@ -126,6 +126,7 @@ local function event_on_player_repaired_entity(event)
 	if entity and entity.valid and entity.name and entity.name == 'artillery-turret' then
 		entity.health = entity.health - 2 --prevents repairing
 	end
+	--@TODO: somehow fix the fact that drones can repair the turret
 end
 
 
@@ -201,6 +202,8 @@ local function kraken_damage(event)
 	if event.damage_type.name and (event.damage_type.name == 'explosion' or event.damage_type.name == 'poison') then
 	-- if event.cause.name == 'artillery-turret' then
 		adjusted_damage = adjusted_damage / 3
+	elseif event.damage_type.name and (event.damage_type.name == 'fire') then
+		adjusted_damage = adjusted_damage / 2
 	end
 	-- and additionally:
 	if event.cause.name == 'artillery-turret' then
@@ -254,7 +257,13 @@ local function extra_damage_to_players(event)
 		end --samurai health buff is elsewhere
 	end
 
-	event.entity.health = event.entity.health - event.final_damage_amount * Balance.bonus_damage_to_humans()
+	if event.final_health > 0 then
+		if event.damage_type.name == 'poison' then --make all poison damage stronger
+			event.entity.health = event.entity.health - event.final_damage_amount * 0.25
+		end
+	
+		event.entity.health = event.entity.health - event.final_damage_amount * Balance.bonus_damage_to_humans()
+	end
 end
 
 
@@ -282,6 +291,7 @@ local function samurai_damage_dealt_changes(event)
 		local samurai = memory.classes_table[player_index] == Classes.enum.SAMURAI
 		local hatamoto = memory.classes_table[player_index] == Classes.enum.HATAMOTO
 
+		--==Note this!
 		if not (samurai or hatamoto) then return end
 
 		local physical = event.damage_type.name == 'physical'
@@ -297,12 +307,16 @@ local function samurai_damage_dealt_changes(event)
 		if melee and event.final_health > 0 then
 			if physical then
 				if samurai then
-					extra_damage_to_deal = 25
+					extra_damage_to_deal = 30
 				elseif hatamoto then
-					extra_damage_to_deal = 40
+					extra_damage_to_deal = 50
 				end
 			elseif acid then --this hacky stuff is to implement repeated spillover splash damage, whilst getting around the fact that if ovekill damage takes something to zero health, we can't tell in that event how much double-overkill damage should be dealt by reading off its HP. it assumes that characters only deal acid damage via this function.
 				extra_damage_to_deal = event.original_damage_amount * big_number
+			end
+		elseif (not melee) and event.final_health > 0 then
+			if samurai or hatamoto then
+				event.entity.health = event.entity.health + 0.25 * event.final_damage_amount
 			end
 		end
 
@@ -645,9 +659,9 @@ local function event_on_player_mined_entity(event)
 
 
 		if memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.MASTER_ANGLER then
-			Common.give(player, {{name = 'raw-fish', count = 5}, {name = 'coin', count = 8}}, entity.position)
+			Common.give(player, {{name = 'raw-fish', count = 4}, {name = 'coin', count = 8}}, entity.position)
 		elseif memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.DREDGER then
-			local to_give = {{name = 'raw-fish', count = 5}, {name = 'coin', count = 10}}
+			local to_give = {{name = 'raw-fish', count = 4}}
 			to_give[#to_give + 1] = Loot.dredger_loot()[1]
 			Common.give(player, to_give, entity.position)
 		else
@@ -664,7 +678,7 @@ local function event_on_player_mined_entity(event)
 		if memory.overworldx > 0 then
 			if memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.PROSPECTOR then
 				give[#give + 1] = {name = 'coin', count = 3}
-				give[#give + 1] = {name = entity.name, count = 7}
+				give[#give + 1] = {name = entity.name, count = 6}
 			elseif memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.CHIEF_EXCAVATOR then
 				give[#give + 1] = {name = 'coin', count = 4}
 				give[#give + 1] = {name = entity.name, count = 12}
@@ -823,7 +837,7 @@ local function spawner_died(event)
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 
-	local extra_evo = Balance.evolution_per_biter_base_kill()
+	local extra_evo = Balance.evolution_per_nest_kill()
 	Common.increment_evo(extra_evo)
 
 	if destination.dynamic_data then
@@ -897,7 +911,8 @@ function Public.flamer_nerfs()
 	local memory = Memory.get_crew_memory()
 	local difficulty = memory.difficulty
 	local force = memory.force
-	
+
+	-- This code matches the vanilla game. Written by Hanakocz I think.
 	local flame_researches = {
 		[1] = {name = 'refined-flammables-1', bonus = 0.2},
 		[2] = {name = 'refined-flammables-2', bonus = 0.2},
@@ -907,7 +922,6 @@ function Public.flamer_nerfs()
 		[6] = {name = 'refined-flammables-6', bonus = 0.4},
 		[7] = {name = 'refined-flammables-7', bonus = 0.2}
 	}
-
 	local flamer_power = 0
 	for i = 1, 6, 1 do
 		if force.technologies[flame_researches[i].name].researched then
@@ -916,8 +930,8 @@ function Public.flamer_nerfs()
 	end
 	flamer_power = flamer_power + (force.technologies[flame_researches[7].name].level - 7) * 0.2
 
-	-- force.set_ammo_damage_modifier('flamethrower', flamer_power - Balance.flamers_nerfs_size(memory.chronojumps, difficulty))
-	-- force.set_turret_attack_modifier('flamethrower-turret', flamer_power - Balance.flamers_nerfs_size(memory.chronojumps, difficulty))
+	force.set_ammo_damage_modifier('flamethrower', flamer_power * Balance.flamers_tech_multipliers())
+	force.set_turret_attack_modifier('flamethrower-turret', flamer_power * Balance.flamers_tech_multipliers())
 end
 
 local function event_on_research_finished(event)
@@ -985,48 +999,56 @@ local function event_on_player_joined_game(event)
 
 	local player = game.players[event.player_index]
 
-	-- if not memory.flame_boots[event.player_index] then
-	-- 	memory.flame_boots[event.player_index] = {}
-	-- end
-	-- memory.flame_boots[event.player_index] = {fuel = 1}
-	-- if not memory.flame_boots[event.player_index].steps then memory.flame_boots[event.player_index].steps = {} end
+	--figure out if we should drop them back into a crew:
 
-	if player.character and player.character.valid then
-		player.character.destroy()
-	end
-	player.set_controller({type=defines.controllers.god})
-	player.create_character()
-
-	local spawnpoint = Common.lobby_spawnpoint
-	local surface = game.surfaces[CoreData.lobby_surface_name]
-
-	player.teleport(surface.find_non_colliding_position('character', spawnpoint, 32, 0.5) or spawnpoint, surface)
-	Roles.add_player_to_permission_group(player)
-
-	if not player.name then return end
-
-	-- start at Common.starting_island_spawnpoint or not?
-
-	-- if player.online_time == 0 then
-	Common.ensure_chunks_at(surface, spawnpoint, 5)
-
-	
-
-	-- Auto-join the oldest crew:
-	local ages = {}
+	local crew_to_put_back_in = nil
 	for _, mem in pairs(global_memory.crew_memories) do
-		if mem.id and mem.crewstatus and mem.crewstatus == Crew.enum.ADVENTURING and mem.capacity and mem.crewplayerindices and #mem.crewplayerindices < mem.capacity and (not (mem.tempbanned_from_joining_data and mem.tempbanned_from_joining_data[player.index] and game.tick < mem.tempbanned_from_joining_data[player.index] + Common.ban_from_rejoining_crew_ticks)) then
-			ages[#ages+1] = {id = mem.id, age = mem.age}
+		if mem.id and mem.crewstatus and mem.crewstatus == Crew.enum.ADVENTURING and mem.temporarily_logged_off_characters[player.index] then
+			crew_to_put_back_in = mem.id
+			break
 		end
 	end
-	table.sort(
-        ages,
-        function(a, b) --true if a should be to the left of b
-            return a.age > b.age
-        end
-    )
-	if ages[1] then
-		Crew.join_crew(player, ages[1].id)
+
+	if crew_to_put_back_in then
+		Crew.join_crew(player, crew_to_put_back_in)
+
+		if _DEBUG then log('putting player back in their old crew') end
+	else
+		if player.character and player.character.valid then
+			player.character.destroy()
+		end
+		player.set_controller({type=defines.controllers.god})
+		player.create_character()
+	
+		local spawnpoint = Common.lobby_spawnpoint
+		local surface = game.surfaces[CoreData.lobby_surface_name]
+	
+		player.teleport(surface.find_non_colliding_position('character', spawnpoint, 32, 0.5) or spawnpoint, surface)
+		Roles.add_player_to_permission_group(player)
+	
+		if not player.name then return end
+	
+		-- start at Common.starting_island_spawnpoint or not?
+	
+		-- if player.online_time == 0 then
+		Common.ensure_chunks_at(surface, spawnpoint, 5)
+	
+		-- Auto-join the oldest crew:
+		local ages = {}
+		for _, mem in pairs(global_memory.crew_memories) do
+			if mem.id and mem.crewstatus and mem.crewstatus == Crew.enum.ADVENTURING and mem.capacity and mem.crewplayerindices and #mem.crewplayerindices < mem.capacity and (not (mem.tempbanned_from_joining_data and mem.tempbanned_from_joining_data[player.index] and game.tick < mem.tempbanned_from_joining_data[player.index] + Common.ban_from_rejoining_crew_ticks)) then
+				ages[#ages+1] = {id = mem.id, age = mem.age}
+			end
+		end
+		table.sort(
+			ages,
+			function(a, b) --true if a should be to the left of b
+				return a.age > b.age
+			end
+		)
+		if ages[1] then
+			Crew.join_crew(player, ages[1].id)
+		end
 	end
 
 	Roles.confirm_captain_exists(player)
@@ -1094,7 +1116,7 @@ local function event_on_pre_player_left_game(event)
 
 	for _, id in pairs(memory.crewplayerindices) do
 		if player.index == id then
-			Crew.leave_crew(player, true)
+			Crew.leave_crew(player, false, true)
 			break
 		end
 	end
@@ -1362,7 +1384,7 @@ local function event_on_rocket_launched(event)
 	destination.dynamic_data.rocketlaunched = true
 	if memory.stored_fuel and destination.dynamic_data and destination.dynamic_data.rocketcoalreward then
 		memory.stored_fuel = memory.stored_fuel + destination.dynamic_data.rocketcoalreward
-		Common.give_reward_items{{name = 'coin', count = Balance.rocket_launch_coin_reward}}
+		Common.give_items_to_crew{{name = 'coin', count = Balance.rocket_launch_coin_reward}}
 	end
 	
 	local force = memory.force

@@ -229,7 +229,7 @@ local function crew_tick()
 			end
 		end
 
-		if memory.captain_accrued_time_data and memory.playerindex_captain and memory.overworldx and memory.overworldx > 0 then --don't count time on first island
+		if memory.captain_accrued_time_data and memory.playerindex_captain and memory.overworldx and memory.overworldx > 0 and memory.overworldx < CoreData.victory_x then --only count time in the 'main game'
 			local player = game.players[memory.playerindex_captain]
 			if player and player.name then
 				if (not memory.captain_accrued_time_data[player.name]) then memory.captain_accrued_time_data[player.name] = 0 end
@@ -301,6 +301,10 @@ local function crew_tick()
 		TickFunctions.transfer_pollution(1800)
 	end
 
+	if tick % 1800 == 0 then
+		TickFunctions.prune_offline_characters_list(1800)
+	end
+
 	-- if tick % (60*60*60) == 0 then
 	-- 	Parrot.parrot_say_tip()
 	-- end
@@ -368,23 +372,23 @@ event.on_nth_tick(1, instatick)
 
 
 ----- FOR BUGFIXING HARD CRASHES (segfaults) ------
--- often, segfaults are due to an error during chunk generation
+-- often, segfaults are due to an error during chunk generation (as of 1.1.0 or so, anyway.)
 -- to help debug, comment this out, and instead use the command /chnk to generate some chunks manually
 event.add(defines.events.on_chunk_generated, Interface.event_on_chunk_generated)
 
 ----- FOR DESYNC BUGFIXING -----
--- local gMeta = getmetatable(_ENV)
--- if not gMeta then
---     gMeta = {}
---     setmetatable(_ENV, gMeta)
--- end
+local gMeta = getmetatable(_ENV)
+if not gMeta then
+    gMeta = {}
+    setmetatable(_ENV, gMeta)
+end
 
--- gMeta.__newindex = function(_, n, v)
---     log('Desync warning: attempt to write to undeclared var ' .. n)
---     global[n] = v
--- end
--- gMeta.__index = function(_, n)
---     return global[n]
--- end
+gMeta.__newindex = function(_, n, v)
+    log('Desync warning: attempt to write to undeclared var ' .. n)
+    global[n] = v
+end
+gMeta.__index = function(_, n)
+    return global[n]
+end
 
 return Public

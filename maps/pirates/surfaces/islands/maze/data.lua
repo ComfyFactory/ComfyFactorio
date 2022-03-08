@@ -29,7 +29,7 @@ function Public.base_ores()
 	}
 end
 
-local rscale = 230
+local rscale = 240
 local hscale = 0.1
 Public.noiseparams = {
 	radius = {

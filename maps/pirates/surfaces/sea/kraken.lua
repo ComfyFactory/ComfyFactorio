@@ -283,7 +283,7 @@ function Public.kraken_die(kraken_id)
 	memory.active_sea_enemies.krakens[kraken_id] = nil
 
 	local reward = Balance.kraken_kill_reward()
-	Common.give_reward_items(reward)
+	Common.give_items_to_crew(reward)
 
 	local force = memory.force
 	if not (force and force.valid) then return end
