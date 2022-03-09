@@ -817,7 +817,7 @@ function Public.update_gui(player)
 					-- flow1.silo_label_1.caption = string.format('Launched for %.0f[item=coal] , ' .. Balance.rocket_launch_coin_reward .. '[item=coin]', destination.dynamic_data.rocketcoalreward)
 					flow1.silo_label_1.style.font_color = GuiCommon.achieved_font_color
 
-					flow1.silo_label_3.caption = string.format('for %.0f[item=coal] , ' .. Balance.rocket_launch_coin_reward .. '[item=coin]', destination.dynamic_data.rocketcoalreward)
+					flow1.silo_label_3.caption = 'for ' .. Math.floor(destination.dynamic_data.rocketcoalreward/100)/10 .. 'k[item=coal], ' .. Math.floor(Balance.rocket_launch_coin_reward/100)/10 .. 'k[item=coin]'
 
 					local tooltip = 'The rocket has launched, and this is the reward.'
 					flow1.tooltip = tooltip
@@ -895,10 +895,11 @@ function Public.update_gui(player)
 	
 				if quest_complete then
 					tooltip = 'The quest is complete, and this is the reward.'
-					flow1.quest_label_1.caption = 'Quest: ' .. quest_reward.display_amount .. ' ' .. quest_reward.display_sprite
-					flow1.quest_label_2.visible = false
+					flow1.quest_label_1.caption = 'Quest:'
+					flow1.quest_label_2.visible = true
 					flow1.quest_label_3.visible = false
 					flow1.quest_label_4.visible = false
+					flow1.quest_label_2.caption = quest_reward.display_amount .. ' ' .. quest_reward.display_sprite
 				elseif quest_progress < quest_progressneeded then
 					flow1.quest_label_1.caption = 'Quest:'
 					flow1.quest_label_2.visible = true

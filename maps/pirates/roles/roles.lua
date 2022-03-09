@@ -132,10 +132,11 @@ function Public.get_class_print_string(class)
 	for _, class2 in ipairs(Classes.Class_List) do
 		if Classes.display_form[class2]:lower() == class:lower() then
 			local str = ''
+			str = str .. Classes.display_form[class2] .. ': '
 			if Classes.class_purchase_requirement[class2] then
 				str = str .. 'An upgrade of ' .. Classes.display_form[Classes.class_purchase_requirement[class2]] .. '. '
 			end
-			str = str .. Classes.display_form[class2] .. ': ' .. Classes.explanation[class2]
+			str = str .. Classes.explanation[class2]
 			return str
 		end
 	end

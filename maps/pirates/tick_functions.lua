@@ -226,7 +226,7 @@ function Public.prune_offline_characters_list(tickinterval)
 			--game.print("deleting already online character from list")
 			memory.temporarily_logged_off_characters[player_index] = nil
 		else
-			if player_index and tick < game.tick - 60 * Common.logged_off_items_preserved_seconds then
+			if player_index and tick < game.tick - 60 * 60 * Common.logged_off_items_preserved_minutes then
 				local player_inv = {}
 				player_inv[1] = game.players[player_index].get_inventory(defines.inventory.character_main)
 				player_inv[2] = game.players[player_index].get_inventory(defines.inventory.character_armor)

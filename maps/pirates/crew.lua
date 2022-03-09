@@ -236,8 +236,8 @@ function Public.join_spectators(player, crewid)
 					-- 	-- Server.to_discord_embed_raw(CoreData.comfy_emojis.feel .. '[' .. memory.name .. '] ' .. message)
 					-- end
 
-					-- char.die(memory.force_name)
 					Common.send_important_items_from_player_to_crew(player, true)
+					char.die(memory.force_name)
 
 					player.set_controller{type = defines.controllers.spectator}
 				else
@@ -269,10 +269,10 @@ function Public.join_spectators(player, crewid)
 			end
 			memory.spectatorplayerindices[#memory.spectatorplayerindices + 1] = player.index
 			memory.tempbanned_from_joining_data[player.index] = game.tick
-			if #Common.crew_get_crew_members() == 0 then
-				memory.crew_disband_tick = game.tick + 30
-				-- memory.crew_disband_tick = game.tick + 60*60*2 --give players time to log back in after a crash or save
-			end
+			-- if #Common.crew_get_crew_members() == 0 then
+			-- 	memory.crew_disband_tick = game.tick + 30
+			-- 	-- memory.crew_disband_tick = game.tick + 60*60*2 --give players time to log back in after a crash or save
+			-- end
 			if not (memory.difficulty_votes) then memory.difficulty_votes = {} end
 			memory.difficulty_votes[player.index] = nil
 		end
@@ -293,6 +293,7 @@ function Public.leave_spectators(player, quiet)
 
 	local chars = player.get_associated_characters()
 	if #chars > 0 then
+		game.print('hi')
 		player.teleport(chars[1].position, surface)
 		player.set_controller{type = defines.controllers.character, character = chars[1]}
 	else
@@ -304,14 +305,14 @@ function Public.leave_spectators(player, quiet)
 	memory.spectatorplayerindices = Utils.ordered_table_with_values_removed(memory.spectatorplayerindices, player.index)
 
 	if #Common.crew_get_crew_members() == 0 then
-		Public.disband_crew()
+		memory.crew_disband_tick = game.tick + Common.autodisband_ticks
 	end
 
 	player.force = 'player'
 end
 
 
-function Public.join_crew(player, crewid)
+function Public.join_crew(player, crewid, rejoin)
 	if crewid then
 		Memory.set_working_id(crewid)
 		local memory = Memory.get_crew_memory()
@@ -355,17 +356,18 @@ function Public.join_crew(player, crewid)
 			Public.player_abandon_endorsements(player)
 			player.force = game.forces[string.format('crew-%03d', memory.id)]
 			player.teleport(surface.find_non_colliding_position('character', memory.spawnpoint, 32, 0.5) or memory.spawnpoint, surface)
+
+		Common.notify_lobby(player.name .. ' left the lobby to join ' .. memory.name .. '.')
 		end
 
 		local message = player.name .. ' joined the crew.'
 		Common.notify_force(player.force, message)
 		-- Server.to_discord_embed_raw(CoreData.comfy_emojis.yum1 .. '[' .. memory.name .. '] ' .. message)
-		Common.notify_lobby(player.name .. ' left the lobby to join ' .. memory.name .. '.')
 
 		memory.crewplayerindices[#memory.crewplayerindices + 1] = player.index
 
 		-- don't give them items if they've been in the crew recently:
-		if not (memory.tempbanned_from_joining_data and memory.tempbanned_from_joining_data[player.index] and game.tick < memory.tempbanned_from_joining_data[player.index] + 8 * Common.ban_from_rejoining_crew_ticks) then
+		if not (memory.tempbanned_from_joining_data and memory.tempbanned_from_joining_data[player.index] and game.tick < memory.tempbanned_from_joining_data[player.index] + 8 * Common.ban_from_rejoining_crew_ticks) and (not rejoin) then
 			for item, amount in pairs(Balance.starting_items_player_late) do
 				player.insert({name = item, count = amount})
 			end
@@ -399,9 +401,11 @@ function Public.leave_crew(player, to_lobby, quiet)
 		-- 	Common.notify_force(player.force, message .. ' [gps=' .. Math.ceil(p.x) .. ',' .. Math.ceil(p.y) .. ',' .. surface_name ..']')
 		-- 	-- Server.to_discord_embed_raw(CoreData.comfy_emojis.feel .. '[' .. memory.name .. '] ' .. message)
 		-- end
-		-- char.die(memory.force_name)
 
-		if (not to_lobby) then
+		if to_lobby then
+			Common.send_important_items_from_player_to_crew(player, true)
+			char.die(memory.force_name)
+		else
 			Common.send_important_items_from_player_to_crew(player)
 			memory.temporarily_logged_off_characters[player.index] = game.tick
 		end

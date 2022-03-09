@@ -36,7 +36,7 @@ Public.Data.static_params_default = {
 Public.PurchaseableBoats = {
 	[Boats.enum.SLOOP] = {
 		type = Boats.enum.SLOOP,
-		position = Utils.snap_coordinates_for_rails({x = -24 - Boats[Boats.enum.SLOOP].Data.leftmost_gate_position, y = Public.Data.static_boat_bottom - Boats[Boats.enum.SLOOP].Data.height/2}),
+		position = Utils.snap_coordinates_for_rails({x = -23 - Boats[Boats.enum.SLOOP].Data.leftmost_gate_position, y = Public.Data.static_boat_bottom - Boats[Boats.enum.SLOOP].Data.height/2}),
 	},
 	-- [Boats.enum.CUTTER] = {
 	-- 	type = Boats.enum.CUTTER,

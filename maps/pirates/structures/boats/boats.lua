@@ -872,14 +872,15 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 			-- 	log(inspect{'hi', name, e.position})
 			-- end
 
-			if name == 'character' then
+			if name == 'character' and e.player then -- associated player required to teleport it across surfaces
 				if oldsurface_name == newsurface_name then
 					e.teleport(vector.x, vector.y)
 				else
 					local p = {e.position.x + vector.x, e.position.y + vector.y}
-					e.player.teleport(newsurface.find_non_colliding_position('character', p, 1.2, 0.2) or p, newsurface)
+					if e.player then --e.player being nil caused a bug once!
+						e.player.teleport(newsurface.find_non_colliding_position('character', p, 1.2, 0.2) or p, newsurface)
+					end
 				end
-
 
 			elseif Utils.contains(CoreData.unteleportable_names, name) or (name == 'entity-ghost' and Utils.contains(CoreData.unteleportable_names, e.ghost_name)) then
 
@@ -950,12 +951,12 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 										if Utils.contains(CoreData.water_tile_names, t.name) then watercount = watercount + 1 end
 									end
 									if watercount > 5 then
-										local name = char.player.name
+										local name2 = char.player and char.player.name or 'unknown-character'
 										char.die(char.force)
 
 										local force = memory.force
 										if not (force and force.valid) then return end
-										Common.notify_force(force,string.format('%s was pushed into water by a cannon.', name), {r = 0.98, g = 0.66, b = 0.22})
+										Common.notify_force(force,string.format('%s was pushed into water by a cannon.', name2), {r = 0.98, g = 0.66, b = 0.22})
 									end
 								end
 							end
@@ -1038,6 +1039,11 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 
 					local ee = e.clone{position = p2, surface = newsurface, create_build_effect_smoke = false}
 					e.destroy()
+
+					-- Right now in the game we don't expect any non-player characters, so let's kill them to make a point:
+					if ee and ee.valid and ee.name and ee.name == 'character' and (not ee.player) then
+						ee.die()
+					end
 
 					if ee and ee.valid and ee.name then
 						if ee.name == 'blue-chest' then

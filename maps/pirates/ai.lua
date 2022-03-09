@@ -134,8 +134,8 @@ function Public.try_main_attack()
 			-- log('attack aborted by chance')
 			return nil
 		end --variance in attack sizes
-		if Math.random(10) == 1 then wave_size_multiplier = 1.8 end --variance in attack sizes
-		if Math.random(60) == 1 then wave_size_multiplier = 3.2 end --variance in attack sizes
+		if Math.random(10) == 1 then wave_size_multiplier = 1.7 end --variance in attack sizes
+		if Math.random(70) == 1 then wave_size_multiplier = 3.2 end --variance in attack sizes
 		if Math.random(500) == 1 then wave_size_multiplier = 5 end --variance in attack sizes
 	end
 
@@ -157,8 +157,8 @@ function Public.try_secondary_attack()
 		if Math.random(2) == 1 then
 			log('attack aborted by chance')
 		end --variance in attack sizes
-		if Math.random(10) == 1 then wave_size_multiplier = 1.8 end --variance in attack sizes
-		if Math.random(60) == 1 then wave_size_multiplier = 3.2 end --variance in attack sizes
+		if Math.random(10) == 1 then wave_size_multiplier = 1.7 end --variance in attack sizes
+		if Math.random(70) == 1 then wave_size_multiplier = 3.2 end --variance in attack sizes
 		if Math.random(500) == 1 then wave_size_multiplier = 5 end --variance in attack sizes
 	end
 
@@ -190,8 +190,8 @@ function Public.try_rogue_attack()
 		if Math.random(2) == 1 then
 			log('attack aborted by chance')
 		end --variance in attack sizes
-		if Math.random(10) == 1 then wave_size_multiplier = 1.8 end --variance in attack sizes
-		if Math.random(60) == 1 then wave_size_multiplier = 3.2 end --variance in attack sizes
+		if Math.random(10) == 1 then wave_size_multiplier = 1.7 end --variance in attack sizes
+		if Math.random(70) == 1 then wave_size_multiplier = 3.2 end --variance in attack sizes
 		if Math.random(500) == 1 then wave_size_multiplier = 5 end --variance in attack sizes
 	end
 

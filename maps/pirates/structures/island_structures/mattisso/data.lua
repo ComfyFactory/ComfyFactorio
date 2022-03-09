@@ -198,7 +198,7 @@ Public.small_oilrig_base = {
 			type = 'entities',
 			name = 'pumpjack',
 			force = 'ancient-friendly',
-			offset = {x = 0, y = 0},
+			offset = {x = -0.5, y = 0},
 			instances = {{position = {x = 3, y = -4}, direction = defines.direction.south}, {position = {x = -6, y = 1}, direction = defines.direction.south}, {position = {x = 6, y = 4}, direction = defines.direction.north}}
 		},
 	},

@@ -116,7 +116,6 @@ function Public.initial_class_pool()
 		enum.SHORESMAN,
 		enum.SHORESMAN,
 		enum.QUARTERMASTER,
-		enum.QUARTERMASTER,
 		enum.FISHERMAN,
 		enum.SCOUT,
 		enum.SAMURAI,

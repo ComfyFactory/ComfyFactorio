@@ -5,8 +5,8 @@ local inspect = require 'utils.inspect'.inspect
 local Public = {}
 
 Public.scenario_id_name = 'pirates'
-Public.version_string = '1.0.4.7'
-Public.version_float = 1.047
+Public.version_string = '1.0.4.7.2'
+Public.version_float = 1.0472
 
 Public.blueprint_library_allowed = true
 Public.blueprint_importing_allowed = true
@@ -40,7 +40,7 @@ Public.colors = {
 	notify_gameover = {r=249, g=84, b=84},
 	renderingtext_green = {r=88, g=219, b=88},
 	renderingtext_yellow = {r=79, g=136, b=209},
-	quartermaster_rendering = {r=237, g=157, b=45, a=0.3},
+	quartermaster_rendering = {r=237, g=157, b=45, a=0.15},
 }
 
 Public.static_boat_floor = 'brown-refined-concrete'

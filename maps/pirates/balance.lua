@@ -108,7 +108,7 @@ function Public.fuel_depletion_rate_static()
 
 	local rate
 	if Common.overworldx() > 0 then
-		rate = 500 * (0 + (Common.overworldx()/40)^(9/10)) * Public.crew_scale()^(1/6) * Math.sloped(Common.difficulty(), 4/5) / T --most of the crewsize dependence is through T, i.e. the coal cost per island stays the same... but the extra player dependency accounts for the fact that even in compressed time, more players seem to get more resources per island
+		rate = 550 * (0 + (Common.overworldx()/40)^(9/10)) * Public.crew_scale()^(1/6) * Math.sloped(Common.difficulty(), 4/5) / T --most of the crewsize dependence is through T, i.e. the coal cost per island stays the same... but the extra player dependency accounts for the fact that even in compressed time, more players seem to get more resources per island
 	else
 		rate = 0
 	end
@@ -452,7 +452,7 @@ end
 
 
 function Public.covered_entry_price_scale()
-	return 0.9 * (1 + 0.025 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty(), 1/2) --whilst resource scales tend to be held fixed with crew size, we account slightly for the fact that more players tend to handcraft more
+	return 0.85 * (1 + 0.033 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty(), 1/2) --whilst resource scales tend to be held fixed with crew size, we account slightly for the fact that more players tend to handcraft more
 end
 
 -- if the prices are too high, players will accidentally throw too much in when they can't do it
@@ -462,11 +462,11 @@ Public.covered1_entry_price_data_raw = { --watch out that the raw_materials ches
 	{1, 0, 1, false, {
 		price = {name = 'iron-stick', count = 1500},
 		raw_materials = {{name = 'iron-plate', count = 750}}}, {}},
-	{0.8, 0, 1, false, {
+	{0.85, 0, 1, false, {
 		price = {name = 'copper-cable', count = 1500},
 		raw_materials = {{name = 'copper-plate', count = 750}}}, {}},
 
-	{1, 0, 0.3, true, {
+	{1, 0, 0.3, false, {
 		price = {name = 'small-electric-pole', count = 450},
 		raw_materials = {{name = 'copper-plate', count = 900}}}, {}},
 	{1, 0.1, 1, false, {
@@ -475,22 +475,25 @@ Public.covered1_entry_price_data_raw = { --watch out that the raw_materials ches
 	{1, 0, 0.15, false, {
 		price = {name = 'burner-mining-drill', count = 150},
 		raw_materials = {{name = 'iron-plate', count = 1350}}}, {}},
-	{0.5, 0, 0.6, false, {
+	{0.75, 0, 0.6, false, {
 		price = {name = 'burner-inserter', count = 300},
 		raw_materials = {{name = 'iron-plate', count = 900}}}, {}},
-	{1, 0.1, 0.7, false, {
+	{1.15, 0.05, 0.7, false, {
 		price = {name = 'electronic-circuit', count = 800},
 		raw_materials = {{name = 'iron-plate', count = 800}, {name = 'copper-plate', count = 1200}}}, {}},
 	{1, 0, 1, false, {
 		price = {name = 'firearm-magazine', count = 700},
 		raw_materials = {{name = 'iron-plate', count = 2800}}}, {}},
+	{1.15, 0, 1, false, {
+		price = {name = 'constant-combinator', count = 300},
+		raw_materials = {{name = 'iron-plate', count = 600}, {name = 'copper-plate', count = 1550}}}, {}},
 
-	{1, 0.1, 1, false, {
+	{1, 0.05, 1, false, {
 		price = {name = 'stone-furnace', count = 350},
 		raw_materials = {}}, {}},
-	{1, 0.5, 1, false, {
-		price = {name = 'advanced-circuit', count = 100},
-		raw_materials = {{name = 'iron-plate', count = 200}, {name = 'copper-plate', count = 500}, {name = 'plastic-bar', count = 200}}}, {}},
+	{1, 0.4, 1.6, true, {
+		price = {name = 'advanced-circuit', count = 180},
+		raw_materials = {{name = 'iron-plate', count = 360}, {name = 'copper-plate', count = 900}, {name = 'plastic-bar', count = 360}}}, {}},
 
 	{0.5, -0.5, 0.5, true, {
 		price = {name = 'wooden-chest', count = 400},
@@ -527,7 +530,7 @@ function Public.covered1_entry_price()
 
 	local overworldx = memory.overworldx or 0
 
-	local game_completion_progress = Math.min(Math.sloped(Common.difficulty(),1/2) * Common.game_completion_progress(), 1)
+	local game_completion_progress = Math.max(Math.min(Math.sloped(Common.difficulty(),1/2) * Common.game_completion_progress(), 1), 0)
 
 	local data = Public.covered1_entry_price_data()
     local types, weights = {}, {}

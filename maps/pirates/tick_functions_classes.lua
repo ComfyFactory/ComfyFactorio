@@ -214,7 +214,7 @@ function Public.class_rewards_tick(tickinterval)
 							local nearby_players = #player.surface.find_entities_filtered{position = player.position, radius = Common.quartermaster_range, name = 'character'}
 				
 							if nearby_players > 1 then
-								Classes.class_ore_grant(player, nearby_players - 1)
+								Classes.class_ore_grant(player, nearby_players - 1, true)
 							end
 						end
 					end

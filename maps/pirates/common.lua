@@ -24,7 +24,7 @@ Public.mapedge_distance_from_boat_starting_position = 272 -- to accommodate hors
 Public.deepwater_distance_from_leftmost_shore = 32
 Public.lobby_spawnpoint = {x = -72, y = -8}
 
-Public.quartermaster_range = 16
+Public.quartermaster_range = 17
 
 Public.fraction_of_map_loaded_atsea = 1
 Public.map_loading_ticks_atsea = 68 * 60
@@ -39,10 +39,10 @@ Public.maze_minimap_jam_start_league = 280
 
 Public.ban_from_rejoining_crew_ticks = 45 * 60 --to prevent observing map and rejoining
 
-Public.afk_time = 60 * 60 * 4.5
-Public.afk_warning_time = 60 * 60 * 4
-Public.logged_off_items_preserved_seconds = 60 * 5
-Public.important_items = {'coin', 'uranium-235', 'uranium-238', 'fluid-wagon', 'coal', 'electric-engine-unit', 'advanced-circuit', 'beacon', 'speed-module-3', 'speed-module-2'}
+Public.afk_time = 60 * 60 * 5.5
+Public.afk_warning_time = 60 * 60 * 5
+Public.logged_off_items_preserved_minutes = 5
+Public.important_items = {'coin', 'uranium-235', 'uranium-238', 'fluid-wagon', 'coal', 'electric-engine-unit', 'advanced-circuit', 'beacon', 'speed-module-3', 'speed-module-2'} --internal inventories of these will not be preserved
 Public.autodisband_ticks = 30*60*60
 -- Public.autodisband_ticks = 30 --the reason this is low is because the comfy server runs very slowly when no-one is on it
 

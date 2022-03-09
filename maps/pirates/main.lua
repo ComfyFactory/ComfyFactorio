@@ -301,8 +301,8 @@ local function crew_tick()
 		TickFunctions.transfer_pollution(1800)
 	end
 
-	if tick % 1800 == 0 then
-		TickFunctions.prune_offline_characters_list(1800)
+	if tick % 3600 == 0 then
+		TickFunctions.prune_offline_characters_list(3600)
 	end
 
 	-- if tick % (60*60*60) == 0 then

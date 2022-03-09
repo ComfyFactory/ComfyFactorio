@@ -203,7 +203,7 @@ local function kraken_damage(event)
 	-- if event.cause.name == 'artillery-turret' then
 		adjusted_damage = adjusted_damage / 3
 	elseif event.damage_type.name and (event.damage_type.name == 'fire') then
-		adjusted_damage = adjusted_damage / 2
+		adjusted_damage = adjusted_damage / 1.5
 	end
 	-- and additionally:
 	if event.cause.name == 'artillery-turret' then
@@ -252,7 +252,7 @@ local function extra_damage_to_players(event)
 			if not (inv and inv.valid) then return end
 			local count = inv.get_item_count('iron-ore')
 			if count and count >= 2500 then
-				event.entity.health = event.entity.health + event.final_damage_amount * 0.75
+				event.entity.health = event.entity.health + event.final_damage_amount * 0.8
 			end
 		end --samurai health buff is elsewhere
 	end
@@ -287,7 +287,7 @@ local function samurai_damage_dealt_changes(event)
 
 	local player_index = player.index
 
-	if memory.classes_table and memory.classes_table[player_index] then
+	if player and memory.classes_table and memory.classes_table[player_index] then
 		local samurai = memory.classes_table[player_index] == Classes.enum.SAMURAI
 		local hatamoto = memory.classes_table[player_index] == Classes.enum.HATAMOTO
 
@@ -354,7 +354,7 @@ local function quartermaster_damage_dealt_changes(event)
 			local p2_index = p2.player.index
 			if player_index ~= p2_index and memory.classes_table[p2_index] and memory.classes_table[p2_index] == Classes.enum.QUARTERMASTER then
 				if event.damage_type.name == 'physical' then
-					event.entity.damage(0.1 * event.original_damage_amount, character.force, 'impact', character) --triggers this function again, but not physical this time
+					event.entity.damage(0.1 * event.final_damage_amount, character.force, 'impact', character) --triggers this function again, but not physical this time
 				end
 			end
 		end
@@ -1010,7 +1010,7 @@ local function event_on_player_joined_game(event)
 	end
 
 	if crew_to_put_back_in then
-		Crew.join_crew(player, crew_to_put_back_in)
+		Crew.join_crew(player, crew_to_put_back_in, true)
 
 		if _DEBUG then log('putting player back in their old crew') end
 	else

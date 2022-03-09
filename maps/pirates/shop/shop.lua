@@ -53,7 +53,8 @@ function Public.event_on_market_item_purchased(event)
 	local island_bool = destination.type == SurfacesCommon.enum.ISLAND
 	local purchase_bool = (price and price[1] and price[1].name and (price[1].name == 'coin'))
 	local simple_efficiency_trade_bool = (price and price[1] and price[1].name and (price[1].name == 'pistol' or price[1].name == 'burner-mining-drill'))
-	local special_purchase_bool = (offer_giveitem_name and (offer_giveitem_name == 'loader' or offer_giveitem_name == 'fast-loader' or offer_giveitem_name == 'express-loader' or offer_giveitem_name == 'rocket-launcher'))
+	local special_purchase_bool = (offer_giveitem_name == 'rocket-launcher')
+	-- local special_purchase_bool = (offer_giveitem_name and (offer_giveitem_name == 'loader' or offer_giveitem_name == 'fast-loader' or offer_giveitem_name == 'express-loader' or offer_giveitem_name == 'rocket-launcher'))
 
 	if offer_type == 'nothing' then
 		decay_type = 'one-off'

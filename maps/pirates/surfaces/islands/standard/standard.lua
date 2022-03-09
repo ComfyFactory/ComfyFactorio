@@ -62,7 +62,7 @@ function Public.terrain(args)
 
 	if noises.height(p) > 0.06 then
 		if noises.forest_abs_suppressed(p) > 0.5 then
-            if (not args.iconized_generation) and noises.forest_abs_suppressed(p) < 0.75 and Math.random(2500) == 1 then
+            if (not args.iconized_generation) and noises.forest_abs_suppressed(p) < 0.75 and Math.random(2000) == 1 then
                 args.specials[#args.specials + 1] = {name = 'chest', position = args.p}
 			else
 				local forest_noise = noises.forest(p)
@@ -103,7 +103,7 @@ function Public.terrain(args)
 
 	if noises.height(p) > 0.18 and noises.mood(p) > 0.6 then
 		if noises.forest_abs(p) < 0.2 and noises.rock_abs(p) > 1.5 then
-			args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = 8}
+			args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = 7}
 		end
 	end
 end
