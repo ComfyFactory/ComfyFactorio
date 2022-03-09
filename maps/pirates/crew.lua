@@ -293,7 +293,6 @@ function Public.leave_spectators(player, quiet)
 
 	local chars = player.get_associated_characters()
 	if #chars > 0 then
-		game.print('hi')
 		player.teleport(chars[1].position, surface)
 		player.set_controller{type = defines.controllers.character, character = chars[1]}
 	else
