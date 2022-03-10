@@ -1051,9 +1051,12 @@ local function event_on_player_joined_game(event)
 		)
 		if ages[1] then
 			Crew.join_crew(player, ages[1].id)
-		end
-		if ages[2] then
-			Common.notify_player_expected(player, 'NOTE: There are multiple crews on this server. You have been placed in the oldest crew.')
+			if ages[2] then
+				Common.notify_player_expected(player, 'There are multiple crews on this server. You have been placed in the oldest.')
+			end
+			if global_memory.crew_memories[ages[1].id] and global_memory.crew_memories[ages[1].id].id == ages[1].id and global_memory.crew_memories[ages[1].id].capacity and global_memory.crew_memories[ages[1].id].capacity < Common.minimum_run_capacity_to_enforce_space_for then
+				Common.notify_player_expected(player, 'NOTE: Your crew has a reduced capacity of ' .. global_memory.crew_memories[ages[1].id].capacity .. ' maximum players.')
+			end
 		end
 	end
 

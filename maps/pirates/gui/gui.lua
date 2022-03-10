@@ -55,7 +55,7 @@ local function create_gui(player)
 
 	flow2 = GuiCommon.flow_add_floating_sprite_button(flow1, 'runs_piratebutton', 70)
 	flow2.caption = 'Crews'
-	flow2.tooltip = 'View the ongoing runs, and make proposals.'
+	flow2.tooltip = 'View the ongoing runs, and make proposals for new ones.'
 	flow2.style.font = 'debug'
 	flow2.style.font_color = {r=1, g=1, b=1}
 	flow2.style.hovered_font_color = {r=1, g=1, b=1}
