@@ -324,6 +324,7 @@ end
 -- just for debug purposes, might need to fire this again
 local crowsnest_delayed = Token.register(
 	function(data)
+		Memory.set_working_id(data.crew_id)
 		Public.crowsnest_surface_delayed_init()
 	end
 )
@@ -335,7 +336,7 @@ function Public.crowsnest_surface_delayed_init()
 
 	if _DEBUG and (not (surface and surface.valid)) then
 		game.print('/go issue: crowsnest_surface_delayed_init called when crowsnest surface wasn\'t valid. This happens due to a difficult-to-handle race condition in concurrent delayed events in the /go shortcut. Firing event again...')
-		Task.set_timeout_in_ticks(5, crowsnest_delayed, {})
+		Task.set_timeout_in_ticks(5, crowsnest_delayed, {crew_id = memory.id})
 		return
 	end
 	

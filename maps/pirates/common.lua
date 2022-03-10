@@ -10,9 +10,14 @@ local perlin_noise = require 'utils.perlin_noise'
 
 local Public = {}
 
-Public.active_crews_cap = 1
--- Public.active_crews_cap = 2
+-- Public.active_crews_cap = 1
+Public.active_crews_cap = 2
 Public.minimum_capacity_slider_value = 1
+Public.minimum_run_capacity_to_enforce_space_for = 32
+-- auto-disbanding when there are no players left in the crew:
+-- Public.autodisband_ticks = nil
+-- Public.autodisband_ticks = 30*60*60
+Public.autodisband_ticks = 30 --the reason this is low is because the comfy server runs very slowly when no-one is on it
 
 Public.boat_steps_at_a_time = 1
 
@@ -43,8 +48,6 @@ Public.afk_time = 60 * 60 * 5.5
 Public.afk_warning_time = 60 * 60 * 5
 Public.logged_off_items_preserved_minutes = 5
 Public.important_items = {'coin', 'uranium-235', 'uranium-238', 'fluid-wagon', 'coal', 'electric-engine-unit', 'advanced-circuit', 'beacon', 'speed-module-3', 'speed-module-2'} --internal inventories of these will not be preserved
-Public.autodisband_ticks = 30*60*60
--- Public.autodisband_ticks = 30 --the reason this is low is because the comfy server runs very slowly when no-one is on it
 
 -- Public.mainshop_rate_limit_ticks = 11
 
@@ -109,6 +112,11 @@ function Public.notify_game(message, color_override)
 	game.print('>> ' .. message, color_override)
 end
 
+function Public.notify_lobby(message, color_override)
+	color_override = color_override or CoreData.colors.notify_lobby
+	game.forces['player'].print('>> ' .. message, color_override)
+end
+
 function Public.notify_force(force, message, color_override)
 	color_override = color_override or CoreData.colors.notify_force
 	force.print('>> ' .. message, color_override)
@@ -119,27 +127,23 @@ function Public.notify_force_light(force, message, color_override)
 	force.print('>> ' .. message, color_override)
 end
 
-function Public.notify_lobby(message, color_override)
-	color_override = color_override or CoreData.colors.notify_lobby
-	game.forces['player'].print('>> ' .. message, color_override)
+function Public.notify_force_error(force, message, color_override)
+	color_override = color_override or CoreData.colors.notify_error
+	force.print('>> ' .. message, color_override)
 end
 
-function Public.notify_error(target, message, color_override)
+function Public.notify_player_error(player, message, color_override)
 	color_override = color_override or CoreData.colors.notify_error
-	target.print('>> ' .. message, color_override)
+	player.print('>> [Whispher] ' .. message, color_override)
 end
 
 function Public.notify_player_expected(player, message, color_override)
 	color_override = color_override or CoreData.colors.notify_player_expected
-	player.print('>> ' .. message, color_override)
+	player.print('>> [Whispher] ' .. message, color_override)
 end
 
 function Public.parrot_speak(force, message)
 	force.print('Parrot: ' .. message, CoreData.colors.parrot)
-end
-
-function Public.parrot_whisper(player, message)
-	player.print('Parrot (whisper): ' .. message, CoreData.colors.parrot)
 end
 
 

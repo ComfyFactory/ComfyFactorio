@@ -363,18 +363,28 @@ function Public.toggle_window(player)
 		type = 'label',
 		caption = 'Gather support from more pirates.',
 	})
+	flow4.style.single_line = false
+
+	flow4 = flow3.add({
+		name = 'proposal_crew_count_capped',
+		type = 'label',
+		caption = 'The number of concurrent runs on the server has reached the cap set by the admins.',
+	})
+	flow4.style.single_line = false
 
 	flow4 = flow3.add({
 		name = 'proposal_insufficient_player_capacity',
 		type = 'label',
 		caption = "Can't launch; at least one run needs high player capacity.",
 	})
+	flow4.style.single_line = false
 
 	flow4 = flow3.add({
 		name = 'proposal_insufficient_sloops',
 		type = 'label',
 		caption = 'No sloops available. Join an existing run instead.',
 	})
+	flow4.style.single_line = false
 
 	flow4 = flow3.add({
 		name = 'launch_crew',
@@ -454,6 +464,8 @@ function Public.update(player)
 
 		flow.proposals.body.flow_proposal_launch.proposal_insufficient_player_capacity.visible = playercrew_status.needs_more_capacity
 
+		flow.proposals.body.flow_proposal_launch.proposal_crew_count_capped.visible = playercrew_status.crew_count_capped
+
 		flow.proposals.body.flow_proposal_launch.proposal_insufficient_endorsers.visible = playercrew_status.needs_more_endorsers
 
 		-- flow.proposals.body.proposal_maker.body.proposal_cant_do_infinity_mode.visible = (flow.proposals.body.proposal_maker.body.options.mode.mode.switch.switch_state == 'right')
@@ -464,7 +476,7 @@ function Public.update(player)
 		flow.proposals.body.proposal_maker.body.propose_crew.visible = (flow.proposals.body.proposal_maker.body.proposal_disabled_low_crew_caps.visible == false)
 		-- flow.proposals.body.proposal_maker.body.propose_crew.visible = (flow.proposals.body.proposal_maker.body.proposal_cant_do_infinity_mode.visible == false) and (flow.proposals.body.proposal_maker.body.proposal_disabled_low_crew_caps.visible == false)
 
-		flow.proposals.body.flow_proposal_launch.launch_crew.visible = (playercrew_status.proposing and not (playercrew_status.sloops_full or playercrew_status.needs_more_capacity or playercrew_status.needs_more_endorsers))
+		flow.proposals.body.flow_proposal_launch.launch_crew.visible = playercrew_status.proposal_can_launch
 
 	end
 
@@ -646,8 +658,8 @@ function Public.click(event)
 	end
 
 	if eventname == 'launch_crew' then
-		for k, proposal in pairs(global_memory.crewproposals) do
-			if #global_memory.crew_active_ids < global_memory.active_crews_cap then
+		if GuiCommon.playercrew_status_table(player.index).proposal_can_launch then --double check
+			for k, proposal in pairs(global_memory.crewproposals) do
 				if #proposal.endorserindices > 0 and proposal.endorserindices[1] == player.index then
 					Crew.initialise_crew(proposal)
 					global_memory.crewproposals[k] = nil
@@ -655,8 +667,6 @@ function Public.click(event)
 
 					return
 				end
-			else
-				Common.notify_error(player, 'The number of concurrent runs on the server is currently capped at ' .. global_memory.active_crews_cap .. '.')
 			end
 		end
 	end

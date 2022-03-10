@@ -9,7 +9,6 @@ local Crew = require 'maps.pirates.crew'
 local Progression = require 'maps.pirates.progression'
 local Structures = require 'maps.pirates.structures.structures'
 local Shop = require 'maps.pirates.shop.shop'
-local memory = require 'maps.pirates.memory'
 
 
 local Public = {}
@@ -343,8 +342,10 @@ function Public.playercrew_status_table(player_index)
 		proposing = false,
 		sloops_full = false,
 		needs_more_capacity = false,
+		crew_count_capped = false,
 		needs_more_endorsers = false,
 		leaving = false,
+		proposal_can_launch = false,
 	}
 	if memory.crewstatus == Crew.enum.ADVENTURING then
 		for _, playerindex in pairs(memory.crewplayerindices) do
@@ -367,14 +368,15 @@ function Public.playercrew_status_table(player_index)
 				ret.proposing = true
 				if #global_memory.crew_active_ids >= 3 then
 					ret.sloops_full = true
-				else
-					if global_memory.active_crews_cap > 1 and #global_memory.crew_active_ids == (global_memory.active_crews_cap - 1) and not ((global_memory.crew_memories[1] and global_memory.crew_memories[1].capacity >= 16) or (global_memory.crew_memories[2] and global_memory.crew_memories[2].capacity >= 16) or (global_memory.crew_memories[3] and global_memory.crew_memories[3].capacity >= 16)) and not (CoreData.capacity_options[proposal.capacity_option].value >= 16) then
-						ret.needs_more_capacity = true
-					else
-						if proposal.endorserindices and #global_memory.crew_active_ids > 0 and #proposal.endorserindices < Math.min(4, Math.ceil((#game.connected_players or 0)/5)) then
-							ret.needs_more_endorsers = true
-						end
-					end
+				elseif #global_memory.crew_active_ids >= global_memory.active_crews_cap then
+					ret.crew_count_capped = true
+				elseif global_memory.active_crews_cap > 1 and #global_memory.crew_active_ids == (global_memory.active_crews_cap - 1) and not ((global_memory.crew_memories[1] and global_memory.crew_memories[1].capacity >= Common.minimum_run_capacity_to_enforce_space_for) or (global_memory.crew_memories[2] and global_memory.crew_memories[2].capacity >= Common.minimum_run_capacity_to_enforce_space_for) or (global_memory.crew_memories[3] and global_memory.crew_memories[3].capacity >= Common.minimum_run_capacity_to_enforce_space_for)) and not (CoreData.capacity_options[proposal.capacity_option].value >= Common.minimum_run_capacity_to_enforce_space_for) then
+					ret.needs_more_capacity = true
+				elseif proposal.endorserindices and #global_memory.crew_active_ids > 0 and #proposal.endorserindices < Math.min(4, Math.ceil((#game.connected_players or 0)/5)) then
+					ret.needs_more_endorsers = true
+				end
+				if (not (ret.sloops_full or ret.needs_more_capacity or ret.needs_more_endorsers or ret.crew_count_capped)) then
+					ret.proposal_can_launch = true
 				end
 			end
 			for _, i in pairs(proposal.endorserindices) do

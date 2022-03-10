@@ -154,6 +154,7 @@ end
 
 local place_dock_jetty_and_boats = Token.register(
 	function(data)
+		Memory.set_working_id(data.crew_id)
 		local memory = Memory.get_crew_memory()
 		if memory.game_lost then return end
 		Surfaces.Dock.place_dock_jetty_and_boats()
@@ -223,7 +224,7 @@ function Public.progress_to_destination(destination_index)
 		memory.mainshop_availability_bools.repair_cannons = true
 
 		-- Delay.add(Delay.enum.PLACE_DOCK_JETTY_AND_BOATS)
-		Task.set_timeout_in_ticks(2, place_dock_jetty_and_boats, {})
+		Task.set_timeout_in_ticks(2, place_dock_jetty_and_boats, {crew_id = memory.id})
 	else
 		starting_boatposition = {x = static_params.boat_starting_xposition, y = static_params.boat_starting_yposition or 0}
 	end
@@ -411,7 +412,7 @@ function Public.try_retreat_from_island() -- Assumes the cost can be paid
 	local captain = game.players[captain_index]
 
 	if captain and Common.validate_player(captain) and destination.dynamic_data.timeratlandingtime and destination.dynamic_data.timer < destination.dynamic_data.timeratlandingtime + 10 then
-		Common.notify_error(captain, 'Can\'t depart in the first 10 seconds.')
+		Common.notify_player_error(captain, 'Can\'t depart in the first 10 seconds.')
 	else
 		local cost = destination.static_params.cost_to_leave
 		-- if cost and (not destination.dynamic_data.rocketlaunched) then

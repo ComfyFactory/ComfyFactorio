@@ -1083,7 +1083,7 @@ local function on_gui_click(event)
 					if Common.query_can_pay_cost_to_leave() then
 						Progression.try_retreat_from_island()
 					else
-						Common.notify_error(player, 'Not enough stored resources.')
+						Common.notify_player_error(player, 'Not enough stored resources.')
 					end
 				end
 			else

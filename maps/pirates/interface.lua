@@ -1032,8 +1032,9 @@ local function event_on_player_joined_game(event)
 	
 		-- start at Common.starting_island_spawnpoint or not?
 	
-		-- if player.online_time == 0 then
-		Common.ensure_chunks_at(surface, spawnpoint, 5)
+		if game.tick == 0 then
+			Common.ensure_chunks_at(surface, spawnpoint, 5)
+		end
 	
 		-- Auto-join the oldest crew:
 		local ages = {}
@@ -1050,6 +1051,9 @@ local function event_on_player_joined_game(event)
 		)
 		if ages[1] then
 			Crew.join_crew(player, ages[1].id)
+		end
+		if ages[2] then
+			Common.notify_player_expected(player, 'NOTE: There are multiple crews on this server. You have been placed in the oldest crew.')
 		end
 	end
 
@@ -1438,7 +1442,7 @@ local function event_on_built_entity(event)
 						player.insert{name = entity.name, count = 1}
 					end
 					entity.destroy()
-					Common.notify_error(player, 'Undergrounds can\'t be built on the boat, due to conflicts with the boat movement code.')
+					Common.notify_force_error(player, 'Build error: Undergrounds can\'t be built on the boat, due to conflicts with the boat movement code.')
 					return
 			end
 		end

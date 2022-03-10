@@ -96,7 +96,7 @@ function Public.event_on_market_item_purchased(event)
 			if required_class then
 				if not (memory.classes_table and memory.classes_table[player.index] and memory.classes_table[player.index] == required_class) then
 					ok = false
-					Common.notify_error(force,string.format('Class purchase error: you need to be a %s to buy this.', Classes.display_form[required_class]))
+					Common.notify_force_error(force, string.format('Class purchase error: you need to be a %s to buy this.', Classes.display_form[required_class]))
 				end
 			end
 

@@ -69,7 +69,7 @@ function(cmd)
 		if string then
 			Common.notify_player_expected(player, 'Class definition for ' .. string)
 		else
-			Common.notify_error(player, 'Class \'' .. param .. '\' not found.')
+			Common.notify_player_error(player, 'Class \'' .. param .. '\' not found.')
 		end
 	else
 		Common.notify_player_expected(player, '/class {classname} returns the definition of the named class.')
@@ -93,7 +93,7 @@ function(cmd)
 					local message = '[color=' .. rgb.r .. ',' .. rgb.g .. ',' .. rgb.b .. ']' .. player.name .. '\'s color is now ' .. param .. '[/color] (via /ccolor).'
 					Common.notify_game(message)
 				else
-					Common.notify_error(player, 'Color \'' .. param .. '\' not found.')
+					Common.notify_player_error(player, 'Color \'' .. param .. '\' not found.')
 				end
 			else
 				local color = PlayerColors.names[Math.random(#PlayerColors.names)]
@@ -216,7 +216,10 @@ function(cmd)
 		local player = game.players[cmd.player_index]
 		local global_memory = Memory.get_global_memory()
 
-		global_memory.active_crews_cap = tonumber(param)
+		if tonumber(param) then
+			global_memory.active_crews_cap = tonumber(param)
+			Common.notify_player_expected(player, 'The maximum number of concurrent crews has been set to ' .. param .. '.')
+		end
 	end
 end)
 
@@ -231,7 +234,7 @@ function(cmd)
 		if param and game.players[param] and game.players[param].index then
 			Crew.plank(player, game.players[param])
 		else
-			Common.notify_error(player, 'Invalid player name.')
+			Common.notify_player_error(player, 'Invalid player name.')
 		end
 	end
 end)
@@ -251,7 +254,7 @@ function(cmd)
 				Roles.make_officer(player, game.players[param])
 			end
 		else
-			Common.notify_error(player, 'Invalid player name.')
+			Common.notify_player_error(player, 'Invalid player name.')
 		end
 	end
 end)
@@ -284,7 +287,7 @@ function(cmd)
 		if param and game.players[param] and game.players[param].index then
 			Roles.make_captain(game.players[param])
 		else
-			Common.notify_error(player, 'Invalid player name.')
+			Common.notify_player_error(player, 'Invalid player name.')
 		end
 	end
 end)
@@ -369,6 +372,44 @@ function(cmd)
 	end
 end)
 
+commands.add_command(
+'jump',
+'is a dev command.',
+function(cmd)
+	local param = tostring(cmd.parameter)
+	if check_admin(cmd) then
+		local player = game.players[cmd.player_index]
+		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+		Memory.set_working_id(crew_id)
+		Overworld.try_overworld_move_v2({x = 40, y = 0})
+	end
+end)
+
+commands.add_command(
+'advu',
+'is a dev command.',
+function(cmd)
+	local param = tostring(cmd.parameter)
+	if check_admin(cmd) then
+		local player = game.players[cmd.player_index]
+		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+		Memory.set_working_id(crew_id)
+		Overworld.try_overworld_move_v2{x = 0, y = -24}
+	end
+end)
+
+commands.add_command(
+'advd',
+'is a dev command.',
+function(cmd)
+	local param = tostring(cmd.parameter)
+	if check_admin(cmd) then
+		local player = game.players[cmd.player_index]
+		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+		Memory.set_working_id(crew_id)
+		Overworld.try_overworld_move_v2{x = 0, y = 24}
+	end
+end)
 
 
 
@@ -474,45 +515,6 @@ if _DEBUG then
 			Memory.set_working_id(crew_id)
 			local memory = Memory.get_crew_memory()
 			memory.boat.speed = 0
-		end
-	end)
-	
-	commands.add_command(
-	'jump',
-	'is a dev command.',
-	function(cmd)
-		local param = tostring(cmd.parameter)
-		if check_admin(cmd) then
-			local player = game.players[cmd.player_index]
-			local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-			Memory.set_working_id(crew_id)
-			Overworld.try_overworld_move_v2({x = 40, y = 0})
-		end
-	end)
-	
-	commands.add_command(
-	'advu',
-	'is a dev command.',
-	function(cmd)
-		local param = tostring(cmd.parameter)
-		if check_admin(cmd) then
-			local player = game.players[cmd.player_index]
-			local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-			Memory.set_working_id(crew_id)
-			Overworld.try_overworld_move_v2{x = 0, y = -24}
-		end
-	end)
-	
-	commands.add_command(
-	'advd',
-	'is a dev command.',
-	function(cmd)
-		local param = tostring(cmd.parameter)
-		if check_admin(cmd) then
-			local player = game.players[cmd.player_index]
-			local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-			Memory.set_working_id(crew_id)
-			Overworld.try_overworld_move_v2{x = 0, y = 24}
 		end
 	end)
 	

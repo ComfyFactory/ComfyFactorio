@@ -221,7 +221,7 @@ function Public.main_shop_try_purchase(player, purchase_name)
 			if success then
 				Common.notify_force_light(force,string.format('%s is buying extra time at sea...', player.name))
 			else
-				Common.notify_error(player, string.format('Can\'t buy more time than this.', player.name))
+				Common.notify_player_error(player, string.format('Can\'t buy more time than this.', player.name))
 				-- refund:
 				memory.stored_fuel = memory.stored_fuel + trade_data.base_cost.fuel * multiplier
 			end
@@ -306,23 +306,23 @@ function Public.main_shop_try_purchase(player, purchase_name)
 	else
 		-- play sound?
 		if rate_limit_ok == false then
-			Common.notify_error(player, 'Shop rate limit exceeded.')
+			Common.notify_player_error(player, 'Shop rate limit exceeded.')
 		end
 		if enough_fuel == false then
-			Common.notify_error(player, 'Not enough stored fuel.')
+			Common.notify_player_error(player, 'Not enough stored fuel.')
 		end
 		if enough_coins == false then
-			Common.notify_error(player, 'Not enough coins.')
+			Common.notify_player_error(player, 'Not enough coins.')
 		end
 		if enough_iron_plates == false then
-			Common.notify_error(player, 'Not enough iron plates.')
+			Common.notify_player_error(player, 'Not enough iron plates.')
 		end
 		if enough_copper_plates == false then
-			Common.notify_error(player, 'Not enough copper plates.')
+			Common.notify_player_error(player, 'Not enough copper plates.')
 		end
 
 		if (purchase_name == 'new_boat_cutter' or purchase_name == 'new_boat_sloop_with_hold' or purchase_name == 'new_boat_cutter_with_hold') and (not able_to_buy_boats) then
-			Common.notify_error(player, 'Not able to purchase ships right now.')
+			Common.notify_player_error(player, 'Not able to purchase ships right now.')
 		end
 	end
 end

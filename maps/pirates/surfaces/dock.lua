@@ -72,7 +72,6 @@ function Public.execute_boat_purchase()
 	memory.mainshop_availability_bools.new_boat_cutter_with_hold = false
 	memory.mainshop_availability_bools.new_boat_sloop_with_hold = false
 	memory.mainshop_availability_bools.new_boat_cutter = false
-	
 end
 
 

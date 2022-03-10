@@ -304,7 +304,10 @@ function Public.leave_spectators(player, quiet)
 	memory.spectatorplayerindices = Utils.ordered_table_with_values_removed(memory.spectatorplayerindices, player.index)
 
 	if #Common.crew_get_crew_members() == 0 then
-		memory.crew_disband_tick = game.tick + Common.autodisband_ticks
+		if Common.autodisband_ticks then
+			memory.crew_disband_tick = game.tick + Common.autodisband_ticks
+		end
+		if _DEBUG then memory.crew_disband_tick = game.tick + 30*60*60 end
 	end
 
 	player.force = 'player'
@@ -432,8 +435,11 @@ function Public.leave_crew(player, to_lobby, quiet)
 	memory.difficulty_votes[player.index] = nil
 
 	if #Common.crew_get_crew_members() == 0 then
-		memory.crew_disband_tick = game.tick + Common.autodisband_ticks
+		if Common.autodisband_ticks then
+			memory.crew_disband_tick = game.tick + Common.autodisband_ticks
+		end
 		-- memory.crew_disband_tick = game.tick + 60*60*2 --give players time to log back in after a crash or save
+		if _DEBUG then memory.crew_disband_tick = game.tick + 30*60*60 end
 	else
 		Roles.player_left_so_redestribute_roles(player)
 	end
@@ -473,11 +479,11 @@ function Public.plank(captain, player)
 			memory.tempbanned_from_joining_data[player.index] = game.tick + 60 * 120
 			return true
 		else
-			Common.notify_error(captain, 'Can\'t plank yourself.')
+			Common.notify_player_error(captain, 'Can\'t plank yourself.')
 			return false
 		end
 	else
-		Common.notify_error(captain, 'Player is not a crewmember.')
+		Common.notify_player_error(captain, 'Player is not a crewmember.')
 		return false
 	end
 end
@@ -621,12 +627,14 @@ end
 
 local crowsnest_delayed = Token.register(
 	function(data)
+		Memory.set_working_id(data.crew_id)
 		Crowsnest.crowsnest_surface_delayed_init()
 	end
 )
 function Public.initialise_crowsnest()
+	local memory = Memory.get_crew_memory()
 	Crowsnest.create_crowsnest_surface()
-	Task.set_timeout_in_ticks(5, crowsnest_delayed, {})
+	Task.set_timeout_in_ticks(5, crowsnest_delayed, {crew_id = memory.id})
 end
 
 function Public.initialise_crowsnest_1()

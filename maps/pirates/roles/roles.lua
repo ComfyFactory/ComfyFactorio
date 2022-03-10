@@ -40,15 +40,15 @@ function Public.make_officer(captain, player)
 				Common.notify_force_light(force, message)
 				Public.update_privileges(player)
 			else
-				Common.notify_error(captain, 'Player is invalid.')
+				Common.notify_player_error(captain, 'Player is invalid.')
 				return false
 			end
 		else
-			Common.notify_error(captain, 'Can\'t promote yourself to officer.')
+			Common.notify_player_error(captain, 'Can\'t promote yourself to officer.')
 			return false
 		end
 	else
-		Common.notify_error(captain, 'Player is not a crewmember.')
+		Common.notify_player_error(captain, 'Player is not a crewmember.')
 		return false
 	end
 end
@@ -66,11 +66,11 @@ function Public.unmake_officer(captain, player)
 			Public.update_privileges(player)
 			return true
 		else
-			Common.notify_error(captain, 'Player isn\'t an officer.')
+			Common.notify_player_error(captain, 'Player isn\'t an officer.')
 			return false
 		end
 	else
-		Common.notify_error(captain, 'Player is not a crewmember.')
+		Common.notify_player_error(captain, 'Player is not a crewmember.')
 		return false
 	end
 end
@@ -191,7 +191,7 @@ function Public.player_confirm_captainhood(player)
 	local captain_index = memory.playerindex_captain
 
 	if not (player.index == captain_index) then
-		Common.notify_error(player, 'You\'re not the captain.')
+		Common.notify_player_error(player, 'You\'re not the captain.')
 	else
 		if memory.captain_acceptance_timer then
 			memory.captain_acceptance_timer = nil
@@ -231,7 +231,7 @@ function Public.renounce_captainhood(player)
 	local memory = Memory.get_crew_memory()
 
 	if #Common.crew_get_crew_members() == 1 then
-		Common.notify_error(player, 'But you\'re the only crew member...')
+		Common.notify_player_error(player, 'But you\'re the only crew member...')
 	else
 
 		local force = memory.force

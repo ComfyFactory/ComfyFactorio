@@ -67,7 +67,7 @@ function Public.prevent_unbarreling_off_ship(tickinterval)
 			local r = a.get_recipe()
 			if r and r.subgroup and r.subgroup.name and r.subgroup.name == 'fill-barrel' and (not (r.name and r.name == 'fill-water-barrel')) then
 				if not Boats.on_boat(boat, a.position) then
-					Common.notify_error(memory.force, 'Recipe error: barrels are too heavy to carry back to the ship. Try another way.')
+					Common.notify_force_error(memory.force, 'Recipe error: barrels are too heavy to carry back to the ship. Try another way.')
 					a.set_recipe('fill-water-barrel')
 				end
 			end
@@ -94,7 +94,7 @@ function Public.prevent_disembark(tickinterval)
 
 		for _, player in pairs(game.connected_players) do
 			if player.surface and player.surface.valid and boat.surface_name and player.surface.name == boat.surface_name and ps[player.index] and (not Boats.on_boat(boat, player.position)) and (not (player.controller_type == defines.controllers.spectator)) then
-				Common.notify_error(player, 'Now is no time to disembark.')
+				Common.notify_player_error(player, 'Now is no time to disembark.')
 				-- player.teleport(memory.spawnpoint)
 				local p = player.surface.find_non_colliding_position('character', memory.spawnpoint, 5, 0.1)
 				if p then
@@ -884,7 +884,7 @@ function Public.boat_movement_tick(tickinterval)
 								-- 	distraction = defines.distraction.by_enemy
 								-- }) end
 
-								local units = game.surfaces[eboat.surface_name].find_units{area = {{eboat.position.x - 12, eboat.position.y - 12}, {eboat.position.x + 12, eboat.position.y + 12}}, force = enemy_force_name}
+								local units = game.surfaces[eboat.surface_name].find_units{area = {{eboat.position.x - 12, eboat.position.y - 12}, {eboat.position.x + 12, eboat.position.y + 12}}, force = enemy_force_name, condition = 'same'}
 
 								if #units > 0 then
 									local unit_group = game.surfaces[eboat.surface_name].create_unit_group({position = eboat.position, force = enemy_force_name})

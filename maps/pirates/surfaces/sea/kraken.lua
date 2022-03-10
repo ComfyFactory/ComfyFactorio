@@ -39,7 +39,6 @@ local kraken_tick_token =
 	end
 )
 function Public.kraken_tick(crew_id, kraken_id, step, substep)
-	
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
 	if not (memory.id and memory.id > 0) then return end --check if crew disbanded
