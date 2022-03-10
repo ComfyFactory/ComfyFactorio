@@ -158,38 +158,63 @@ function Public.destination_on_collide(destination)
 		local index = destination.destination_index
 		Crowsnest.paint_around_destination(index, CoreData.overworld_loading_tile)
 
-		-- local scheduled_raft_raids
-		-- local playercount = Common.activecrewcount()
-		-- local max_evo = 0.85
-		-- if Common.difficulty() < 1 then max_evo = 0.68 end
-		-- if memory.overworldx > 200 then
-		-- 	scheduled_raft_raids = {}
-		-- 	local times = {600, 360, 215, 210, 120, 30, 10, 5}
-		-- 	for i = 1, #times do
-		-- 		local t = times[i]
-		-- 		if Math.random(7) == 1 and #scheduled_raft_raids < 6 then
-		-- 			scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_evo = max_evo}
-		-- 			-- scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_bonus_evolution = 0.52}
-		-- 		end
-		-- 	end
-		-- elseif memory.overworldx == 200 then
-		-- 	local times
-		-- 	if playercount <= 2 then
-		-- 		times = {1, 5, 10, 15}
-		-- 	elseif playercount <= 7 then
-		-- 		times = {1, 5, 10, 15, 20}
-		-- 	elseif playercount <= 15 then
-		-- 		times = {1, 5, 10, 15, 20, 25}
-		-- 	else
-		-- 		times = {1, 5, 10, 15, 20, 25, 30, 35}
-		-- 	end
-		-- 	scheduled_raft_raids = {}
-		-- 	for _, t in pairs(times) do
-		-- 		-- scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_bonus_evolution = 0.62}
-		-- 		scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_evo = max_evo}
-		-- 	end
-		-- end
-		-- destination.static_params.scheduled_raft_raids = scheduled_raft_raids
+
+
+
+		local scheduled_raft_raids
+		-- temporarily placed this back here, as moving it to shorehit broke things:
+		local playercount = Common.activecrewcount()
+		local max_evo
+		if Common.difficulty() < 1 then
+			if memory.overworldx/40 < 20 then
+				max_evo = 0.9 - (20 - memory.overworldx/40) * 1/100
+			else
+				max_evo = 0.91 + (memory.overworldx/40 - 20) * 0.5/100
+			end
+		elseif Common.difficulty() == 1 then
+			if memory.overworldx/40 < 15 then
+				max_evo = 0.9 - (15 - memory.overworldx/40) * 0.5/100
+			else
+				max_evo = 0.91 + (memory.overworldx/40 - 15) * 0.5/100
+			end
+		elseif Common.difficulty() > 1 then
+			if memory.overworldx/40 < 10 then
+				max_evo = 0.9
+			else
+				max_evo = 0.91 + (memory.overworldx/40 - 10) * 0.5/100
+			end
+		end
+
+		if memory.overworldx > 200 then
+			scheduled_raft_raids = {}
+			local times = {600, 360, 215, 210, 120, 30, 10, 5}
+			for i = 1, #times do
+				local t = times[i]
+				if Math.random(6) == 1 and #scheduled_raft_raids < 6 then
+					scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_evo = max_evo}
+					-- scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_bonus_evolution = 0.52}
+				end
+			end
+		elseif memory.overworldx == 200 or _DEBUG then
+			local times
+			if playercount <= 2 then
+				times = {1, 5, 10, 15, 20}
+			elseif playercount <= 8 then
+				times = {1, 5, 10, 15, 20, 25}
+			elseif playercount <= 15 then
+				times = {1, 5, 10, 15, 20, 25, 30}
+			else
+				times = {1, 5, 10, 15, 20, 25, 30, 35, 40}
+			end
+			scheduled_raft_raids = {}
+			for _, t in pairs(times) do
+				-- scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_bonus_evolution = 0.62}
+				scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_evo = max_evo}
+			end
+		end
+
+		destination.static_params.scheduled_raft_raids = scheduled_raft_raids
+
 	end
 
 	if memory.overworldx == 40*5 then Parrot.parrot_boats_warning() end
@@ -308,7 +333,7 @@ function Public.destination_on_arrival(destination)
 
 		if destination.subtype and destination.subtype == Islands.enum.MAZE then
 			local force = memory.force
-			force.manual_mining_speed_modifier = 0.5
+			force.manual_mining_speed_modifier = 0.66
 		end
 	end
 end

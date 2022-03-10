@@ -391,7 +391,7 @@ function Public.leave_crew(player, to_lobby, quiet)
 		local surface_name = char.surface.name
 		local message
 		if quiet then
-			-- message = player.name .. ' left.'
+			message = player.name .. ' left.'
 		else
 			message = player.name .. ' left the crew.'
 			Common.notify_force(player.force, message)
@@ -820,8 +820,8 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['advanced-material-processing'].researched = true
 	crew_force.technologies['advanced-material-processing-2'].researched = true
 	crew_force.technologies['solar-energy'].researched = true
-	crew_force.technologies['inserter-capacity-bonus-1'].researched = true
-	crew_force.technologies['inserter-capacity-bonus-2'].researched = true
+	-- crew_force.technologies['inserter-capacity-bonus-1'].researched = true
+	-- crew_force.technologies['inserter-capacity-bonus-2'].researched = true
 
 	--@TRYING this out:
 	crew_force.technologies['coal-liquefaction'].enabled = true
@@ -874,19 +874,19 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['research-speed-4'].enabled = false
 	crew_force.technologies['research-speed-5'].enabled = false
 	crew_force.technologies['research-speed-6'].enabled = false
-	crew_force.technologies['follower-robot-count-1'].enabled = false
-	crew_force.technologies['follower-robot-count-2'].enabled = false
-	crew_force.technologies['follower-robot-count-3'].enabled = false
-	crew_force.technologies['follower-robot-count-4'].enabled = false
+	-- crew_force.technologies['follower-robot-count-1'].enabled = false
+	-- crew_force.technologies['follower-robot-count-2'].enabled = false
+	-- crew_force.technologies['follower-robot-count-3'].enabled = false
+	-- crew_force.technologies['follower-robot-count-4'].enabled = false
 	crew_force.technologies['follower-robot-count-5'].enabled = false
 	crew_force.technologies['follower-robot-count-6'].enabled = false
 	crew_force.technologies['follower-robot-count-7'].enabled = false
-	crew_force.technologies['inserter-capacity-bonus-3'].enabled = false
-	crew_force.technologies['inserter-capacity-bonus-4'].enabled = false
-	crew_force.technologies['inserter-capacity-bonus-5'].enabled = false
-	crew_force.technologies['inserter-capacity-bonus-6'].enabled = false
+	-- crew_force.technologies['inserter-capacity-bonus-3'].enabled = false
+	-- crew_force.technologies['inserter-capacity-bonus-4'].enabled = false
+	-- crew_force.technologies['inserter-capacity-bonus-5'].enabled = false
+	-- crew_force.technologies['inserter-capacity-bonus-6'].enabled = false
 	crew_force.technologies['inserter-capacity-bonus-7'].enabled = false
-	crew_force.technologies['refined-flammables-3'].enabled = false
+	-- crew_force.technologies['refined-flammables-3'].enabled = false
 	crew_force.technologies['refined-flammables-4'].enabled = false
 	crew_force.technologies['refined-flammables-5'].enabled = false
 	crew_force.technologies['refined-flammables-6'].enabled = false

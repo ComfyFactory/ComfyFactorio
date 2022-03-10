@@ -137,8 +137,8 @@ function Public.raft_raids(tickinterval)
 	local scheduled_raft_raids = destination.static_params.scheduled_raft_raids
 	local timer = destination.dynamic_data.timer
 
-	for _, raid in pairs(scheduled_raft_raids) do
-		if timer == raid.timeinseconds then
+	for k, raid in pairs(scheduled_raft_raids) do
+		if timer >= raid.timeinseconds and (not scheduled_raft_raids[k].fired) then
 			local type
 			if memory.overworldx >= 40*16 then
 				type = Boats.enum.RAFTLARGE
@@ -149,6 +149,7 @@ function Public.raft_raids(tickinterval)
 			if boat then
 				Ai.spawn_boat_biters(boat, raid.max_evo, Boats.get_scope(boat).Data.capacity, Boats.get_scope(boat).Data.width)
 			end
+			scheduled_raft_raids[k].fired = true
 		end
 	end
 end

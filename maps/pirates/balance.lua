@@ -373,6 +373,10 @@ function Public.flamers_tech_multipliers()
 	return 1/2
 end
 
+function Public.flamers_base_nerf()
+	return -0.2
+end
+
 
 
 

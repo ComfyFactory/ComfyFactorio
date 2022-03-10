@@ -62,12 +62,9 @@ function Public.market_generate_coin_offers(how_many)
 
 	if game_completion_progress < 0.2 then
 		ret[#ret + 1] = loaderoffers[1]
-		ret[#ret + 1] = loaderoffers[1]
 	elseif game_completion_progress < 0.6 then
 		ret[#ret + 1] = loaderoffers[2]
-		ret[#ret + 1] = loaderoffers[2]
 	else
-		ret[#ret + 1] = loaderoffers[3]
 		ret[#ret + 1] = loaderoffers[3]
 	end
 

@@ -25,6 +25,8 @@ local Ores = require 'maps.pirates.ores'
 local Parrot = require 'maps.pirates.parrot'
 local Kraken = require 'maps.pirates.surfaces.sea.kraken'
 
+local Jailed = require 'utils.datastore.jail_data'
+
 local Crew = require 'maps.pirates.crew'
 local Quest = require 'maps.pirates.quest'
 local Shop = require 'maps.pirates.shop.shop'
@@ -201,13 +203,13 @@ local function kraken_damage(event)
 
 	if event.damage_type.name and (event.damage_type.name == 'explosion' or event.damage_type.name == 'poison') then
 	-- if event.cause.name == 'artillery-turret' then
-		adjusted_damage = adjusted_damage / 3
+		adjusted_damage = adjusted_damage / 2.5
 	elseif event.damage_type.name and (event.damage_type.name == 'fire') then
-		adjusted_damage = adjusted_damage / 1.5
+		adjusted_damage = adjusted_damage / 1.1
 	end
 	-- and additionally:
 	if event.cause.name == 'artillery-turret' then
-		adjusted_damage = adjusted_damage / 1.2
+		adjusted_damage = adjusted_damage / 1.1
 	end
 
 	if event.damage_type.name and (event.damage_type.name == 'laser') then
@@ -321,13 +323,13 @@ local function samurai_damage_dealt_changes(event)
 		end
 
 		if extra_damage_to_deal > 0 then
-			if event.entity.health > extra_damage_to_deal then
+			if event.entity.health >= extra_damage_to_deal then
 				event.entity.health = event.entity.health - extra_damage_to_deal
 			else
 				local surplus = (extra_damage_to_deal - event.entity.health)*0.8
 				event.entity.die(character.force, character)
-				local nearest = player.surface.find_nearest_enemy{position = {x = player.position.x, y = player.position.y}, max_distance = 2, force = character.force}
-				if nearest then
+				local nearest = player.surface.find_nearest_enemy{position = player.position, max_distance = 2, force = player.force}
+				if nearest and nearest.valid then
 					nearest.damage(surplus/big_number, character.force, 'acid', character)
 				end
 			end
@@ -907,7 +909,7 @@ function Public.research_apply_buffs(event)
 end
 
 
-function Public.flamer_nerfs()
+function Public.apply_flamer_nerfs()
 	local memory = Memory.get_crew_memory()
 	local difficulty = memory.difficulty
 	local force = memory.force
@@ -930,8 +932,8 @@ function Public.flamer_nerfs()
 	end
 	flamer_power = flamer_power + (force.technologies[flame_researches[7].name].level - 7) * 0.2
 
-	force.set_ammo_damage_modifier('flamethrower', flamer_power * Balance.flamers_tech_multipliers())
-	force.set_turret_attack_modifier('flamethrower-turret', flamer_power * Balance.flamers_tech_multipliers())
+	force.set_ammo_damage_modifier('flamethrower', flamer_power * Balance.flamers_tech_multipliers() + Balance.flamers_base_nerf())
+	force.set_turret_attack_modifier('flamethrower-turret', flamer_power * Balance.flamers_tech_multipliers() + Balance.flamers_base_nerf())
 end
 
 local function event_on_research_finished(event)
@@ -945,7 +947,7 @@ local function event_on_research_finished(event)
 	-- using a localised string means we have to write this out (recall that "" signals concatenation)
 	memory.force.print({"", '>> ', event.research.localised_name, ' researched.'}, CoreData.colors.notify_force_light)
 
-	Public.flamer_nerfs()
+	Public.apply_flamer_nerfs()
 	Public.research_apply_buffs(event)
 	
 	for _, e in ipairs(research.effects) do
@@ -1140,8 +1142,17 @@ end
 -- 	end
 -- end
 
+
 local function on_player_changed_surface(event)
     local player = game.players[event.player_index]
+    local jailed = Jailed.get_jailed_table()
+
+    if player.name and jailed and jailed[player.name] then
+		-- not quite sure this is necessary, but let's send their items to the crew:
+		Common.send_important_items_from_player_to_crew(player, true)
+        return
+    end
+
     Roles.update_privileges(player)
 end
 

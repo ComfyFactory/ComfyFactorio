@@ -205,11 +205,11 @@ function Public.class_rewards_tick(tickinterval)
 						local hold_bool = surfacedata.type == Surfaces.enum.HOLD
 	
 						if class == Classes.enum.DECKHAND and on_ship_bool and (not hold_bool) then
-							Classes.class_ore_grant(player, 5)
+							Classes.class_ore_grant(player, 4)
 						elseif class == Classes.enum.BOATSWAIN and hold_bool then
-							Classes.class_ore_grant(player, 7)
+							Classes.class_ore_grant(player, 6)
 						elseif class == Classes.enum.SHORESMAN and (not on_ship_bool) then
-							Classes.class_ore_grant(player, 3)
+							Classes.class_ore_grant(player, 2)
 						elseif class == Classes.enum.QUARTERMASTER then
 							local nearby_players = #player.surface.find_entities_filtered{position = player.position, radius = Common.quartermaster_range, name = 'character'}
 				
