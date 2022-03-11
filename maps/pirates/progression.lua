@@ -126,7 +126,11 @@ function Public.go_from_starting_dock_to_first_destination()
 		Cabin.create_cabin_surface()
 
 		local items = Balance.starting_items_crew_upstairs()
-		Boats.place_random_obstacle_boxes(boat, 6, items, 0)
+		-- Boats.deck_place_random_obstacle_boxes(boat, 6, items, 0)
+
+		local scope = Boats.get_scope(boat)
+		local boatwidth, boatheight = scope.Data.width, scope.Data.height
+		Common.surface_place_random_obstacle_boxes(game.surfaces[boat.surface_name], {x = boat.position.x - boatwidth*0.575, y = boat.position.y}, boatwidth*0.85, boatheight*0.8, 'oil-refinery', {[1] = 3, [2] = 2, [3] = 0, [4] = 0}, items)
 
 		-- go:
 		Public.progress_to_destination(1) --index of first destination
@@ -202,6 +206,8 @@ function Public.progress_to_destination(destination_index)
 		memory.mainshop_availability_bools.buy_copper = true
 		-- memory.mainshop_availability_bools.buy_fast_loader = true
 		-- memory.mainshop_availability_bools.sell_copper = true
+
+		memory.mainshop_availability_bools.repair_cannons = true
 		
 		local boat_for_sale_type = Common.current_destination().static_params.boat_for_sale_type
 		if boat_for_sale_type then
@@ -222,8 +228,6 @@ function Public.progress_to_destination(destination_index)
 				end
 			end
 		end
-
-		memory.mainshop_availability_bools.repair_cannons = true
 
 		-- Delay.add(Delay.enum.PLACE_DOCK_JETTY_AND_BOATS)
 		Task.set_timeout_in_ticks(2, place_dock_jetty_and_boats, {crew_id = memory.id})
@@ -414,7 +418,7 @@ function Public.try_retreat_from_island() -- Assumes the cost can be paid
 	local captain = game.players[captain_index]
 
 	if captain and Common.validate_player(captain) and destination.dynamic_data.timeratlandingtime and destination.dynamic_data.timer < destination.dynamic_data.timeratlandingtime + 10 then
-		Common.notify_player_error(captain, 'Can\'t depart in the first 10 seconds.')
+		Common.notify_player_error(captain, 'Can\'t undock in the first 10 seconds.')
 	else
 		local cost = destination.static_params.cost_to_leave
 		-- if cost and (not destination.dynamic_data.rocketlaunched) then
@@ -469,7 +473,7 @@ function Public.retreat_from_island()
 
 	local force = memory.force
 	if not (force and force.valid) then return end
-	Common.notify_force_light(force,'[font=heading-1]Boat undocked.[/font]')
+	Common.notify_force(force,'[font=heading-1]Boat undocked[/font].')
 
 	Surfaces.destination_on_departure(Common.current_destination())
 end
@@ -521,7 +525,7 @@ function Public.go_from_currentdestination_to_sea()
 			Hold.upgrade_chests(1, 'iron-chest')
 			Crowsnest.upgrade_chests('iron-chest')
 
-			Common.notify_force(memory.force, 'Difficulty at Normal or above: Boat chests upgraded.')
+			Common.parrot_speak(memory.force, 'The harbor upgraded our ship\'s chests, due to our choice of difficulty.')
 		-- elseif Common.difficulty() > 1 then
 		-- 	Boats.upgrade_chests(boat, 'steel-chest')
 		-- 	Hold.upgrade_chests(1, 'steel-chest')

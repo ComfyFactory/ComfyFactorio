@@ -941,7 +941,7 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['fluid-wagon'].enabled = false
 
 	crew_force.technologies['production-science-pack'].enabled = true
-	crew_force.technologies['utility-science-pack'].enabled = false
+	crew_force.technologies['utility-science-pack'].enabled = true
 
 	crew_force.technologies['modular-armor'].enabled = false
 	crew_force.technologies['power-armor'].enabled = false
@@ -961,8 +961,8 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['discharge-defense-equipment'].enabled = false
 
 	crew_force.technologies['distractor'].enabled = false
-	crew_force.technologies['military-4'].enabled = false
-	crew_force.technologies['uranium-ammo'].enabled = false
+	crew_force.technologies['military-4'].enabled = true
+	crew_force.technologies['uranium-ammo'].enabled = true
 end
 
 

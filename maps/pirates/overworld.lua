@@ -61,8 +61,8 @@ function Public.generate_overworld_destination(p)
 		island_subtype_raffle[#island_subtype_raffle + 1] = Surfaces.Island.enum.MAZE
 		island_subtype_raffle[#island_subtype_raffle + 1] = Surfaces.Island.enum.MAZE
 	end
-	if macrop.x >= 16 then island_subtype_raffle[#island_subtype_raffle + 1] = Surfaces.Island.enum.SWAMP end
-	if macrop.x >= 16 then island_subtype_raffle[#island_subtype_raffle + 1] = 'none' end
+	if macrop.x >= 21 then island_subtype_raffle[#island_subtype_raffle + 1] = Surfaces.Island.enum.SWAMP end
+	if macrop.x >= 21 then island_subtype_raffle[#island_subtype_raffle + 1] = 'none' end
 
 	--avoid duplicate subtype twice in a row in the same lane
 	for _, d in pairs(memory.destinations) do
@@ -74,7 +74,6 @@ function Public.generate_overworld_destination(p)
 			island_subtype_raffle = new_island_subtype_raffle
 		end
 	end
-
 	-- some other raffle removals for smoothness:
 	if macrop.x == 4 then
 		island_subtype_raffle = Utils.ordered_table_with_values_removed(island_subtype_raffle, Surfaces.Island.enum.STANDARD)
@@ -98,9 +97,15 @@ function Public.generate_overworld_destination(p)
 	elseif macrop.x == 2 then
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.STANDARD_VARIANT --aesthetically different to first map
-	elseif (macrop.x > 25 and (macrop.x - 22) % 18 == 0) then --we want this to happen before dock
+	elseif (macrop.x > 25 and (macrop.x - 22) % 18 == 0) then --we want this to overwrite dock, so putting it here
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.RADIOACTIVE
+	elseif (macrop.x > 25 and (macrop.x - 22) % 18 == 10) then --we want this to overwrite dock, so putting it here
+		type = Surfaces.enum.ISLAND
+		subtype = Surfaces.Island.enum.MAZE
+	elseif (macrop.x > 25 and (macrop.x - 22) % 18 == 14) then --we want this to overwrite dock, so putting it here
+		type = Surfaces.enum.ISLAND
+		subtype = Surfaces.Island.enum.WALKWAYS
 	elseif macrop.y == -1 and (((macrop.x % 4) == 3 and macrop.x ~= 15) or macrop.x == 14) then --avoid x=15 because radioactive is there
 		type = Surfaces.enum.DOCK
 	elseif macrop.x == 5 then --biter boats appear. large island works well so players run off
@@ -162,7 +167,7 @@ function Public.generate_overworld_destination(p)
 
 	if _DEBUG and type == Surfaces.enum.ISLAND then
 		-- warning: the first map is unique in that it isn't all loaded by the time you arrive, which can cause issues. For example, structures might get placed after ore, thereby deleting the ore underneath them.
-		-- subtype = Surfaces.Island.enum.MAZE
+		subtype = Surfaces.Island.enum.STANDARD_VARIANT
 		-- subtype = nil
 		-- type = Surfaces.enum.DOCK
 	end

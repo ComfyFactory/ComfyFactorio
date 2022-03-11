@@ -10,13 +10,15 @@ Public.display_names = {'Secluded Dells'}
 Public.terraingen_frame_width = 896
 Public.terraingen_frame_height = 896
 Public.static_params_default = {
-	starting_time_of_day = 0,
-	daynightcycletype = 1,
 	default_decoratives = true,
 	base_starting_treasure = 1000,
 	base_starting_rock_material = 800,
 	base_starting_wood = 1200,
 	base_starting_treasure_maps = 1,
+	starting_time_of_day = 0,
+	daynightcycletype = 3,
+	brightness_visual_weights = {0.12, 0.12, 0.12}, --light night, but still workable without lights
+	min_brightness = 0.2,
 }
 
 function Public.base_ores() 

@@ -41,14 +41,14 @@ Public.loading_interval = 5
 
 Public.minimum_ore_placed_per_tile = 10
 
-Public.maze_minimap_jam_start_league = 280
+Public.maze_minimap_jam_start_league = 920
 
 Public.ban_from_rejoining_crew_ticks = 45 * 60 --to prevent observing map and rejoining
 
 Public.afk_time = 60 * 60 * 5.5
 Public.afk_warning_time = 60 * 60 * 5
 Public.logged_off_items_preserved_minutes = 5
-Public.important_items = {'coin', 'uranium-235', 'uranium-238', 'fluid-wagon', 'coal', 'electric-engine-unit', 'advanced-circuit', 'beacon', 'speed-module-3', 'speed-module-2'} --internal inventories of these will not be preserved
+Public.important_items = {'coin', 'uranium-235', 'uranium-238', 'fluid-wagon', 'coal', 'electric-engine-unit', 'advanced-circuit', 'beacon', 'speed-module-3', 'speed-module-2', 'roboport', 'construction-robot'} --internal inventories of these will not be preserved
 
 -- Public.mainshop_rate_limit_ticks = 11
 
@@ -135,7 +135,7 @@ end
 
 function Public.notify_player_error(player, message, color_override)
 	color_override = color_override or CoreData.colors.notify_error
-	player.print('>> [Whisper] ' .. message, color_override)
+	player.print('## [Whisper] ' .. message, color_override)
 end
 
 function Public.notify_player_expected(player, message, color_override)
@@ -456,6 +456,44 @@ function Public.query_can_pay_cost_to_leave()
 	return can_leave
 end
 
+
+
+
+function Public.surface_place_random_obstacle_boxes(surface, center, width, height, spacing_entity, box_size_table, contents)
+	contents = contents or {}
+
+	local memory = Memory.get_crew_memory()
+	if not surface then return end
+
+	local function boxposition()
+		local p1 = {x = center.x - width/2 + Math.random(Math.ceil(width)), y = center.y - height/2 + Math.random(Math.ceil(height))}
+		local p2 = surface.find_non_colliding_position(spacing_entity, p1, 32, 2, true) or p1
+		return {x = p2.x, y = p2.y}
+	end
+
+	local placed = 0
+	for size, count in pairs(box_size_table) do
+		if count >= 1 then
+			for i = 1, count do
+				placed = placed + 1
+				local p = boxposition()
+				for j = 1, size^2 do
+					local p2 = surface.find_non_colliding_position('wooden-chest', p, 5, 0.1, true)
+					local e = surface.create_entity{name = 'wooden-chest', position = p2, force = memory.force_name, create_build_effect_smoke = false}
+					e.destructible = false
+					e.minable = false
+					e.rotatable = false
+					if contents[placed] and j==1 then
+						local inventory = e.get_inventory(defines.inventory.chest)
+						for name, count2 in pairs(contents[i]) do
+							inventory.insert{name = name, count = count2}
+						end
+					end
+				end
+			end
+		end
+	end
+end
 
 
 

@@ -157,13 +157,14 @@ function Public.create_hold_surface(nth)
 	Common.build_small_loco(surface, Public.Data.loco_offset, memory.force, {255, 106, 52})
 
 	local items = subtype == enum.INITIAL and Balance.starting_items_crew_downstairs() or {}
-	Public.place_random_obstacle_boxes(nth, 0, items, 15)
+	Common.surface_place_random_obstacle_boxes(Public.get_hold_surface(nth), {x=0,y=0}, Public.Data.width, Public.Data.height, 'rocket-silo', {[1] = 0, [2] = 8, [3] = 4, [4] = 1}, items)
+	-- Public.hold_place_random_obstacle_boxes(nth, {[1] = 0, [2] = 9, [3] = 3, [4] = 1}, items)
 
 	if subtype == enum.SECONDARY then
-		if Common.difficulty() == 1 then
+		if Common.difficulty() >= 1 then
 			Public.upgrade_chests(nth, 'iron-chest')
-		elseif Common.difficulty() > 1 then
-			Public.upgrade_chests(nth, 'steel-chest')
+		-- elseif Common.difficulty() > 1 then
+		-- 	Public.upgrade_chests(nth, 'steel-chest')
 		end
 
 		Public.nth_hold_connect_linked_belts(nth)
@@ -331,54 +332,6 @@ function Public.nth_hold_connect_linked_belts(nth) --assumes both are in standar
 				local b2 = boat.hold_whitebelts[1][c[2]]
 				b1.connect_linked_belts(b2)
 			end
-		end
-	end
-end
-
-
-function Public.place_random_obstacle_boxes(nth, smallcount, contents, largecount)
-	contents = contents or {}
-	largecount = largecount or 0
-
-	local memory = Memory.get_crew_memory()
-	local surface = Public.get_hold_surface(nth)
-	if not surface then return end
-
-	local function boxposition()
-		local p1 = {x = -Public.Data.width/2 + Math.random(Public.Data.width), y = -Public.Data.height/2 + Math.random(Public.Data.height)}
-		local p2 = surface.find_non_colliding_position('rocket-silo', p1, 32, 4, true) or p1
-		return {x = p2.x, y = p2.y}
-	end
-
-	for i = 1, largecount do
-		local p = boxposition()
-		for j=1,4 do
-			local p2 = surface.find_non_colliding_position('wooden-chest', p, 5, 0.1, true)
-			local e = surface.create_entity{name = 'wooden-chest', position = p2, force = memory.force_name, create_build_effect_smoke = false}
-			e.destructible = false
-			e.minable = false
-			e.rotatable = false
-			if contents[i] and j==1 then
-				local inventory = e.get_inventory(defines.inventory.chest)
-				for name, count in pairs(contents[i]) do
-					inventory.insert{name = name, count = count}
-				end
-			end
-		end
-	end
-
-	local smallpositions = {}
-	for i = 1, smallcount do
-		smallpositions[i] = boxposition()
-	end
-
-	for i = 1, smallcount do
-		local p = smallpositions[i]
-		if p then
-			local e = surface.create_entity{name = 'wooden-chest', position = p, force = memory.force_name, create_build_effect_smoke = false}
-			e.destructible = false
-			e.minable = false
-			e.rotatable = false
 		end
 	end
 end

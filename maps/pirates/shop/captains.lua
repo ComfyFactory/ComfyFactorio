@@ -88,12 +88,7 @@ Public.main_shop_data_2 = {
 	rail_signal = {
 		tooltip = "100 signals, used to steer the boat one space in the Crow's Nest View.",
 		what_you_get_sprite_buttons = {['item/rail-signal'] = 100},
-		base_cost = {coins = 650},
-	},
-	extra_time = {
-		tooltip = 'Relax at sea for an extra minute. (Increases the next destination\'s loading time.)',
-		what_you_get_sprite_buttons = {['utility/time_editor_icon'] = 60},
-		base_cost = {coins = 10},
+		base_cost = {coins = 600, fuel = 50},
 	},
 	artillery_shell = {
 		tooltip = '8 cannon shells.',
@@ -113,7 +108,12 @@ Public.main_shop_data_2 = {
 	uranium_ore = {
 		tooltip = '10 green rocks of unknown origin.',
 		what_you_get_sprite_buttons = {['item/uranium-238'] = 10},
-		base_cost = {coins = 1000, fuel = 100},
+		base_cost = {coins = 1000, fuel = 80},
+	},
+	extra_time = {
+		tooltip = 'Relax at sea for an extra minute. (Increases the next destination\'s loading time.)',
+		what_you_get_sprite_buttons = {['utility/time_editor_icon'] = 60},
+		base_cost = {coins = 10},
 	},
 }
 
@@ -126,7 +126,7 @@ function Public.initialise_captains_shop()
 		uranium_ore = true,
 		rail_signal = true,
 		artillery_shell = true,
-		artillery_remote = true,
+		artillery_remote = false, --good way to get trolled by crew and remove skill
 		extra_time = true,
 		new_boat_sloop_with_hold = false,
 		new_boat_cutter_with_hold = false,
@@ -243,7 +243,7 @@ function Public.main_shop_try_purchase(player, purchase_name)
 
 		elseif purchase_name == 'new_boat_cutter' or purchase_name == 'new_boat_cutter_with_hold' or purchase_name == 'new_boat_sloop_with_hold' then
 			Dock.execute_boat_purchase()
-			Common.notify_force_light(force,string.format('[font=heading-1]%s bought a %s.[/font]', player.name, Boats[Common.current_destination().static_params.boat_for_sale_type].Data.display_name))
+			Common.notify_force(force,string.format('[font=heading-1]%s bought a %s.[/font]', player.name, Boats[Common.current_destination().static_params.boat_for_sale_type].Data.display_name))
 
 		elseif purchase_name == 'repair_cannons' then
 			-- heal all cannons:
@@ -256,22 +256,22 @@ function Public.main_shop_try_purchase(player, purchase_name)
 
 		elseif purchase_name == Upgrades.enum.MORE_POWER then
 			Upgrades.execute_upgade(Upgrades.enum.MORE_POWER)
-			Common.notify_force_light(force,string.format('[font=heading-1]%s upgraded the ship\'s power.[/font]', player.name))
+			Common.notify_force(force,string.format('[font=heading-1]%s upgraded the ship\'s power.[/font]', player.name))
 			memory.mainshop_availability_bools[purchase_name] = false
 
 		elseif purchase_name == Upgrades.enum.EXTRA_HOLD then
 			Upgrades.execute_upgade(Upgrades.enum.EXTRA_HOLD)
-			Common.notify_force_light(force,string.format('[font=heading-1]%s upgraded the ship\'s hold.[/font]', player.name))
+			Common.notify_force(force,string.format('[font=heading-1]%s upgraded the ship\'s hold.[/font]', player.name))
 			memory.mainshop_availability_bools[purchase_name] = false
 
 		elseif purchase_name == Upgrades.enum.UNLOCK_MERCHANTS then
 			Upgrades.execute_upgade(Upgrades.enum.UNLOCK_MERCHANTS)
-			Common.notify_force_light(force,string.format('[font=heading-1]%s unlocked merchant ships.[/font]', player.name))
+			Common.notify_force(force,string.format('[font=heading-1]%s unlocked merchant ships.[/font]', player.name))
 			memory.mainshop_availability_bools[purchase_name] = false
 
 		elseif purchase_name == Upgrades.enum.ROCKETS_FOR_SALE then
 			Upgrades.execute_upgade(Upgrades.enum.ROCKETS_FOR_SALE)
-			Common.notify_force_light(force,string.format('[font=heading-1]%s unlocked the sale of rockets at covered-up markets.[/font]', player.name))
+			Common.notify_force(force,string.format('[font=heading-1]%s unlocked the sale of rockets at covered-up markets.[/font]', player.name))
 			memory.mainshop_availability_bools[purchase_name] = false
 
 		elseif purchase_name == 'sell_iron' then

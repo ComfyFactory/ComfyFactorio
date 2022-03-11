@@ -5,8 +5,8 @@ local inspect = require 'utils.inspect'.inspect
 local Public = {}
 
 Public.scenario_id_name = 'pirates'
-Public.version_string = '1.0.4.8.2'
-Public.version_float = 1.0482
+Public.version_string = '1.1.0.0'
+Public.version_float = 1.1
 
 Public.blueprint_library_allowed = true
 Public.blueprint_importing_allowed = true
@@ -15,7 +15,7 @@ Public.rocket_silo_death_causes_loss = false
 
 Public.victory_x = 1000
 
-Public.total_max_biters = 3000
+Public.total_max_biters = 2000
 
 Public.lobby_surface_name = '000-000-Lobby'
 
@@ -130,8 +130,9 @@ end
 Public.daynightcycle_types = {
 	{displayname = 'Static', 0},
 	{displayname = 'Slow Cyclic', ticksperday = 100000},
-	{displayname = 'Cyclic', ticksperday = 60000},
-	{displayname = 'Fast Cyclic', ticksperday = 30000},
+	{displayname = 'Cyclic', ticksperday = 80000},
+	{displayname = 'Fast Cyclic', ticksperday = 60000},
+	{displayname = 'Rapid Cyclic', ticksperday = 30000},
 }
 
 Public.ore_types = {

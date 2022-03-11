@@ -64,10 +64,6 @@ function Public.try_ore_spawn(surface, realp, source_name, density_bonus)
 			else
 				local real_amount = Math.max(Common.minimum_ore_placed_per_tile, Common.ore_abstract_to_real(choices[choice]))
 
-				-- if choice == 'coal' then --@TOFIX: hack for now --Whyy???
-				-- 	real_amount = real_amount * 1.5
-				-- end --this was 2x but we moved to improving coal yields in each file instead...
-
 				local density = (density_bonus + 17 + 4 * Math.random()) -- not too big, and not too much variation; it makes players have to stay longer
 				
 				local radius_squared = (destination.static_params and destination.static_params.radius_squared_modifier or 1) * (12 + 45 * Math.slopefromto(Common.ore_abstract_to_real(choices[choice]), 800, 20000)) * (0.6 + Math.random()) --tuned

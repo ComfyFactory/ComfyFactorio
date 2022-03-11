@@ -243,7 +243,7 @@ function Public.destination_on_arrival(destination)
 		if destination.subtype == Islands.enum.RADIOACTIVE then
 			destination.dynamic_data.time_remaining = -1
 		elseif destination.subtype == Islands.enum.MAZE then --more time
-			destination.dynamic_data.time_remaining = Math.ceil(1.1 * Balance.max_time_on_island())
+			destination.dynamic_data.time_remaining = Math.ceil(1.08 * Balance.max_time_on_island())
 		else
 			destination.dynamic_data.time_remaining = Math.ceil(Balance.max_time_on_island())
 		end
@@ -320,7 +320,7 @@ function Public.destination_on_arrival(destination)
 
 		Islands.spawn_ores_on_arrival(destination, points_to_avoid)
 
-		if memory.overworldx >= Balance.covered_first_appears_at then
+		if memory.overworldx >= Balance.covered_first_appears_at and destination.subtype ~= Islands.enum.RADIOACTIVE then
 			local class_for_sale = Classes.generate_class_for_sale()
 			destination.static_params.class_for_sale = class_for_sale
 
@@ -627,7 +627,7 @@ function Public.create_surface(destination)
 	surface.min_brightness = destination.static_params.min_brightness or 0
 	surface.brightness_visual_weights = destination.static_params.brightness_visual_weights or {1, 1, 1}
 	surface.daytime = destination.static_params.starting_time_of_day or 0
-	
+
 	local daynightcycletype = destination.static_params.daynightcycletype or 1
 
 	local ticksperday = CoreData.daynightcycle_types[daynightcycletype].ticksperday or 0

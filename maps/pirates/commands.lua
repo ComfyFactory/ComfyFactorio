@@ -90,18 +90,18 @@ function(cmd)
 					local rgb = PlayerColors.colors[param]
 					player.color = rgb
 					player.chat_color = rgb
-					local message = '[color=' .. rgb.r .. ',' .. rgb.g .. ',' .. rgb.b .. ']' .. player.name .. '\'s color is now ' .. param .. '[/color] (via /ccolor).'
+					local message = '[color=' .. rgb.r .. ',' .. rgb.g .. ',' .. rgb.b .. ']' .. player.name .. ' chose the color ' .. param .. '[/color] (via /ccolor).'
 					Common.notify_game(message)
 				else
 					Common.notify_player_error(player, 'Color \'' .. param .. '\' not found.')
 				end
 			else
-				local color = PlayerColors.names[Math.random(#PlayerColors.names)]
+				local color = PlayerColors.bright_color_names[Math.random(#PlayerColors.bright_color_names)]
 				local rgb = PlayerColors.colors[color]
 				if not rgb then return end
 				player.color = rgb
 				player.chat_color = rgb
-				local message = '[color=' .. rgb.r .. ',' .. rgb.g .. ',' .. rgb.b .. ']' .. player.name .. '\'s color was randomized to ' .. color .. '[/color] (via /ccolor).'
+				local message = '[color=' .. rgb.r .. ',' .. rgb.g .. ',' .. rgb.b .. ']' .. player.name .. '\'s color became ' .. color .. '[/color] (via /ccolor).'
 				Common.notify_game(message)
 				-- disabled due to lag:
 				-- GUIcolor.toggle_window(player)
@@ -241,7 +241,7 @@ end)
 
 commands.add_command(
 'officer',
-'is a captain command to make a player into an officer for your crew, or remove them as one.',
+'is a captain command to make a player into an officer, or remove them as one.',
 function(cmd)
 	local player = game.players[cmd.player_index]
 	local param = tostring(cmd.parameter)
@@ -255,6 +255,28 @@ function(cmd)
 			end
 		else
 			Common.notify_player_error(player, 'Invalid player name.')
+		end
+	end
+end)
+
+commands.add_command(
+'undock',
+'is a captain command to undock the ship.',
+function(cmd)
+	local param = tostring(cmd.parameter)
+	if check_admin(cmd) then
+		local player = game.players[cmd.player_index]
+		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+		Memory.set_working_id(crew_id)
+		local memory = Memory.get_crew_memory()
+		if memory.boat.state == Boats.enum_state.DOCKED then
+			Progression.undock_from_dock()
+		elseif memory.boat.state == Boats.enum_state.LANDED then
+			if Common.query_can_pay_cost_to_leave() then
+				Progression.try_retreat_from_island()
+			else
+				Common.notify_player_error(player, 'Not enough stored resources.')
+			end
 		end
 	end
 end)

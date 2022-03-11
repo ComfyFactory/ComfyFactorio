@@ -28,6 +28,7 @@ Public.buried_treasure_loot_data_raw = {
 	{65, 0, 1, false, 'solar-panel', 7, 8},
 	{20, 0, 1, false, 'radar', 10, 20},
 	{10, 0, 1, false, 'production-science-pack', 12, 24},
+	{10, 0, 1, false, 'utility-science-pack', 4, 4},
 	{5, 0, 1, false, 'modular-armor', 1, 1},
 	{5, 0, 1, false, 'laser-turret', 1, 1},
 	{5, 0, 1, false, 'cannon-shell', 5, 10},
@@ -124,7 +125,7 @@ Public.chest_loot_data_raw = {
 	{0.2, 0, 1, false, 'defender-capsule', 2, 4},
 	{0.15, 0, 1, false, 'distractor-capsule', 2, 4},
 	{0.1, 0, 1, false, 'destroyer-capsule', 2, 2},
-	{3, 0.2, 1.2, true, 'piercing-shotgun-shell', 4, 9},
+	{10, 0.2, 1.2, true, 'piercing-shotgun-shell', 4, 9},
 	{2, 0.3, 1.2, true, 'combat-shotgun', 1, 1},
 	{5, 0.2, 1.8, true, 'cluster-grenade', 8, 16},
 
@@ -141,6 +142,7 @@ Public.chest_loot_data_raw = {
 	{6, -0.1, 1, true, 'military-science-pack', 8, 20},
 	{6, -0.5, 1.5, true, 'chemical-science-pack', 8, 16},
 	{6, 0, 1.5, true, 'production-science-pack', 8, 16},
+	{6, 0, 2, true, 'utility-science-pack', 3, 3},
 
 	{0.5, 0.2, 1.4, true, 'construction-robot', 5, 15},
 	{2, 0.6, 1.4, true, 'roboport', 1, 1},
@@ -246,7 +248,7 @@ function Public.storage_tank_fluid_loot(force_type)
 	local ret
 	local rng = Math.random(10)
 	if force_type == 'crude-oil' then
-		ret = {name = 'crude-oil', amount = Math.random(3000, 15000)}
+		ret = {name = 'crude-oil', amount = Math.random(3000, 12500)}
 	elseif force_type == 'petroleum-gas' then
 		ret = {name = 'petroleum-gas', amount = Math.random(1500, 7500)}
 	elseif rng < 6 then
@@ -303,8 +305,6 @@ function Public.buried_treasure_loot()
 	if ret and ret[1] then return ret[1] end
 end
 
---@TODO: Perhaps add more modular armor chance here?
-
 function Public.maze_camp_loot()
 	if Math.random(10) <= 7 then
 		return {Public.random_plates()}
@@ -317,8 +317,9 @@ Public.maze_lab_loot_data_raw = {
 	{8, -0.5, 0.5, true, 'automation-science-pack', 5, 18},
 	{8, -0.6, 0.6, true, 'logistic-science-pack', 5, 18},
 	{6, -0.1, 1, true, 'military-science-pack', 5, 15},
-	{6, -0.5, 1.5, true, 'chemical-science-pack', 5, 12},
-	{6, 0, 1.5, true, 'production-science-pack', 5, 12},
+	{6, -0.5, 1.5, true, 'chemical-science-pack', 4, 10},
+	{6, 0, 1.5, true, 'production-science-pack', 3, 9},
+	{2, 0, 2, true, 'utility-science-pack', 2, 2},
 	-- {4, 0.4, 1.5, true, 'utility-science-pack', 16, 32},
 	-- {10, 0.5, 1.5, true, 'space-science-pack', 16, 32},
 }
@@ -346,8 +347,11 @@ Public.maze_treasure_data_raw = {
 	{0.5, 0, 1, false, 'productivity-module-3', 2, 2},
 
 	{2, 0, 1.5, true, 'production-science-pack', 20, 25},
+	{2, 0, 2, true, 'utility-science-pack', 7, 8},
 	{2, 0, 1.5, true, 'coin', 3000, 6500},
 	{3, 0, 0.9, false, 'beacon', 1, 1},
+
+	{3, 0, 1, false, 'construction-robot', 30, 40},
 
 	{1, 0.2, 1.8, true, 'explosive-rocket', 6, 8},
 
@@ -421,6 +425,7 @@ Public.dredger_loot_raw = {
 	{2, 0, 1, false, 'military-science-pack', 1, 1},
 	{2, 0, 1, false, 'chemical-science-pack', 1, 1},
 	{2, 0, 1, false, 'production-science-pack', 1, 1},
+	{1, 0, 1, false, 'utility-science-pack', 1, 1},
 
 	{0.012, 0, 0.8, false, 'night-vision-equipment', 1, 1},
 	{0.01, 0, 1, false, 'exoskeleton-equipment', 1, 1},

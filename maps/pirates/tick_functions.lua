@@ -273,8 +273,7 @@ function Public.periodic_free_resources(tickinterval)
 
 	Common.give_items_to_crew(Balance.periodic_free_resources_per_destination_5_seconds())
 
-	if game.tick % (300*18) == 0 and (destination and destination.subtype and destination.subtype == Islands.enum.RADIOACTIVE) then
-		-- every 90 seconds
+	if game.tick % (300*28) == 0 and (destination and destination.subtype and destination.subtype == Islands.enum.RADIOACTIVE) then -- every 140 seconds
 		local count = 2
 		Common.give_items_to_crew{{name = 'sulfuric-acid-barrel', count = count}}
 		local force = memory.force
@@ -586,7 +585,6 @@ function Public.place_cached_structures(tickinterval)
 						e.destructible = false
 					end
 					covered_data.door_walls[#covered_data.door_walls + 1] = e
-					-- @TODO: Add loot here
 				end
 
 			elseif special.name == 'covered1b' then
@@ -600,7 +598,6 @@ function Public.place_cached_structures(tickinterval)
 					covered_data.market.minable = false
 					covered_data.market.rotatable = false
 					covered_data.market.destructible = false
-					-- @TODO: Add trades here
 
 					covered_data.market.add_market_item{price={{'pistol', 1}}, offer={type = 'give-item', item = 'coin', count = 400}}
 					covered_data.market.add_market_item{price={{'burner-mining-drill', 1}}, offer={type = 'give-item', item = 'iron-plate', count = 9}}
@@ -663,7 +660,6 @@ function Public.place_cached_structures(tickinterval)
 						end
 					end
 					covered_data.wooden_chests[#covered_data.wooden_chests + 1] = e
-					-- @TODO: Add loot here
 				end
 			end
 
@@ -700,7 +696,7 @@ function Public.covered_requirement_check(tickinterval)
 		if covered_data.state == 'covered' and k == requirement.name then
 			got = v
 		else
-			-- @FIX: power armor loses components, items lose health
+			-- @FIX: power armor loses components, items lose health!
 			red_inv.insert({name = k, count = v});
 			blue_inv.remove({name = k, count = v});
 		end
@@ -1216,7 +1212,7 @@ function Public.LOS_tick(tickinterval)
 		force.chart(surface, {{p.x - BoatData.width/2 - 70, p.y - 80},{p.x - BoatData.width/2 + 70, p.y + 80}})
 	end
 
-	if CoreData.rocket_silo_death_causes_loss then
+	if CoreData.rocket_silo_death_causes_loss or (destination.static_params and destination.static_params.cost_to_leave and destination.static_params.cost_to_leave['launch_rocket'] and destination.static_params.cost_to_leave['launch_rocket'] == true) then
 		local silos = destination.dynamic_data.rocketsilos
 		if silos and silos[1] and silos[1].valid then
 			local p = silos[1].position
@@ -1225,7 +1221,7 @@ function Public.LOS_tick(tickinterval)
 	end
 end
 
-function Public.LOS_tick_fast(tickinterval)
+function Public.minimap_jam(tickinterval)
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 

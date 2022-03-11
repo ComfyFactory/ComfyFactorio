@@ -114,6 +114,7 @@ function Public.initialise_find_quest()
 		end
 		return true
 	else
+		log('Find quest not appropriate, rerolling')
 		Public.initialise_random_quest() --@FIXME: mild danger of loop
 		return false
 	end
@@ -212,6 +213,7 @@ function Public.initialise_worms_quest()
 		destination.dynamic_data.quest_progressneeded = needed
 		return true
 	else
+		log('Worms quest not appropriate, rerolling')
 		Public.initialise_random_quest() --@FIXME: mild danger of loop
 		return false
 	end

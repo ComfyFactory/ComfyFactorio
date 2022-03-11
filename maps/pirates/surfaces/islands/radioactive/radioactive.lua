@@ -3,6 +3,7 @@ local ores = require "maps.pirates.ores"
 
 local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
+local CoreData = require 'maps.pirates.coredata'
 local Balance = require 'maps.pirates.balance'
 local Structures = require 'maps.pirates.structures.structures'
 local Common = require 'maps.pirates.common'
@@ -270,7 +271,6 @@ local function radioactive_tick()
 		local tickinterval = 60
 		
 		if destination.subtype == IslandsCommon.enum.RADIOACTIVE then
-			local ef = memory.enemy_force
 			-- faster evo (doesn't need difficulty scaling as higher difficulties have higher base evo):
 			local extra_evo = 0.22 * tickinterval/60 / Balance.expected_time_on_island()
 			Common.increment_evo(extra_evo)
@@ -286,6 +286,11 @@ local function radioactive_tick()
 			memory.floating_pollution = memory.floating_pollution + pollution
 		
 			game.pollution_statistics.on_flow('uranium-ore', pollution)
+
+			local surface = game.surfaces[destination.surface_name]
+			if surface and surface.valid and (not surface.freeze_daytime) and destination.dynamic_data.timer and destination.dynamic_data.timer >= CoreData.daynightcycle_types[3].ticksperday/60/2 then --once daytime, never go back to night
+				surface.freeze_daytime = true
+			end
 		end
 	end
 end

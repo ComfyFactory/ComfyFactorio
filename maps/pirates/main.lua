@@ -360,7 +360,7 @@ local function fasttick()
 	local global_memory = Memory.get_global_memory()
 	for _, id in pairs(global_memory.crew_active_ids) do
 		Memory.set_working_id(id)
-		TickFunctions.LOS_tick_fast(1)
+		TickFunctions.minimap_jam(1)
 	end
 end
 

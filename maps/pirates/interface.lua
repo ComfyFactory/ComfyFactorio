@@ -450,7 +450,7 @@ local function event_on_entity_damaged(event)
 	
 	local character = event.cause
 	if character.shooting_state.state == defines.shooting.not_shooting then return end
-	--@TODO: These might fail to be valid if player is dead or something
+	
 	local weapon = character.get_inventory(defines.inventory.character_guns)[character.selected_gun_index]
 	local ammo = character.get_inventory(defines.inventory.character_ammo)[character.selected_gun_index]
 	if not weapon.valid_for_read or not ammo.valid_for_read then return end
@@ -1161,6 +1161,25 @@ local function on_player_changed_surface(event)
 		Common.send_important_items_from_player_to_crew(player, true)
         return
     end
+
+	-- prevent connecting power between surfaces:
+	if not player.is_cursor_empty() then
+		if player.cursor_stack and player.cursor_stack.valid_for_read then
+			local blacklisted = {
+				['small-electric-pole'] = true,
+				['medium-electric-pole'] = true,
+				['big-electric-pole'] = true,
+				['substation'] = true,
+			}
+			if blacklisted[player.cursor_stack.name] then
+				player.get_main_inventory().insert(player.cursor_stack)
+				player.cursor_stack.clear()
+			end
+		end
+		if player.cursor_ghost then
+			player.cursor_ghost = nil
+		end
+	end
 
     Roles.update_privileges(player)
 end

@@ -113,7 +113,7 @@ function Public.place_dock_jetty_and_boats()
 		boat2.surface_name = boat.surface_name
 		Boats.place_boat(boat2, CoreData.static_boat_floor, true, true)
 
-		Boats.place_random_obstacle_boxes(boat2, 10, {}, 2)
+		-- Boats.deck_place_random_obstacle_boxes(boat2, 6, {}, 2)
 
 		destination.dynamic_data.boat_for_sale = boat2
 	end

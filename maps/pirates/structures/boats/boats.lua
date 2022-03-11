@@ -576,68 +576,68 @@ end
 
 
 
-function Public.place_random_obstacle_boxes(boat, smallcount, contents, largecount)
-	contents = contents or {}
-	largecount = largecount or 0
+-- function Public.deck_place_random_obstacle_boxes(boat, smallcount, contents, largecount)
+-- 	contents = contents or {}
+-- 	largecount = largecount or 0
 
-	local scope = Public.get_scope(boat)
+-- 	local scope = Public.get_scope(boat)
 
-	local memory = Memory.get_crew_memory()
-	local surface = game.surfaces[boat.surface_name]
-	if not surface then return end
+-- 	local memory = Memory.get_crew_memory()
+-- 	local surface = game.surfaces[boat.surface_name]
+-- 	if not surface then return end
 
-	local boatwidth, boatheight = scope.Data.width, scope.Data.height
-	local smallpositions = {}
+-- 	local boatwidth, boatheight = scope.Data.width, scope.Data.height
+-- 	local smallpositions = {}
 
-	local function boxposition()
-		local p1 = {x = boat.position.x - boatwidth*1 + Math.random(boatwidth)*0.85, y = boat.position.y - boatheight/2*0.8 + Math.random(boatheight)*0.8}
+-- 	local function boxposition()
+-- 		local p1 = {x = boat.position.x - boatwidth*1 + Math.random(boatwidth)*0.85, y = boat.position.y - boatheight/2*0.8 + Math.random(boatheight)*0.8}
 		
-		local whilesafety = 50
-		local p2
-        while whilesafety>0 and ((not p2) or Utils.contains(smallpositions, p2)) do
-			whilesafety = whilesafety - 1
-            p2 = surface.find_non_colliding_position('electric-furnace', p1, 6, 0.5, true)
-        end
-		if _DEBUG and (not p2) then game.print('obstacle box placement fail. placing at ' .. p1.x .. ', ' .. p1.y) end
+-- 		local whilesafety = 50
+-- 		local p2
+--         while whilesafety>0 and ((not p2) or Utils.contains(smallpositions, p2)) do
+-- 			whilesafety = whilesafety - 1
+--             p2 = surface.find_non_colliding_position('electric-furnace', p1, 6, 0.5, true)
+--         end
+-- 		if _DEBUG and (not p2) then game.print('obstacle box placement fail. placing at ' .. p1.x .. ', ' .. p1.y) end
 
-		local res = p2 or p1
+-- 		local res = p2 or p1
 
-		return {x = res.x, y = res.y}
-	end
+-- 		return {x = res.x, y = res.y}
+-- 	end
 
-	for i = 1, smallcount do
-		smallpositions[i] = boxposition()
-	end
-
-
-	-- for i = 1, largecount do
-	-- 	local p = boxposition()
-	-- 	for j=1,4 do
-	-- 		local p2 = surface.find_non_colliding_position('assembling-machine-1', p, 2, 0.1, true)
-	-- 		local e = surface.create_entity{name = 'wooden-chest', position = p2, force = memory.force_name, create_build_effect_smoke = false}
-	-- 		e.destructible = false
-	-- 		e.minable = false
-	-- 		e.rotatable = false
-	-- 	end
-	-- end
+-- 	for i = 1, smallcount do
+-- 		smallpositions[i] = boxposition()
+-- 	end
 
 
-	for i = 1, smallcount do
-		local p = smallpositions[i]
-		if p then
-			local e = surface.create_entity{name = 'wooden-chest', position = p, force = memory.force_name, create_build_effect_smoke = false}
-			e.destructible = false
-			e.minable = false
-			e.rotatable = false
-			if contents[i] then
-				local inventory = e.get_inventory(defines.inventory.chest)
-				for name, count in pairs(contents[i]) do
-					inventory.insert{name = name, count = count}
-				end
-			end
-		end
-	end
-end
+-- 	-- for i = 1, largecount do
+-- 	-- 	local p = boxposition()
+-- 	-- 	for j=1,4 do
+-- 	-- 		local p2 = surface.find_non_colliding_position('assembling-machine-1', p, 2, 0.1, true)
+-- 	-- 		local e = surface.create_entity{name = 'wooden-chest', position = p2, force = memory.force_name, create_build_effect_smoke = false}
+-- 	-- 		e.destructible = false
+-- 	-- 		e.minable = false
+-- 	-- 		e.rotatable = false
+-- 	-- 	end
+-- 	-- end
+
+
+-- 	for i = 1, smallcount do
+-- 		local p = smallpositions[i]
+-- 		if p then
+-- 			local e = surface.create_entity{name = 'wooden-chest', position = p, force = memory.force_name, create_build_effect_smoke = false}
+-- 			e.destructible = false
+-- 			e.minable = false
+-- 			e.rotatable = false
+-- 			if contents[i] then
+-- 				local inventory = e.get_inventory(defines.inventory.chest)
+-- 				for name, count in pairs(contents[i]) do
+-- 					inventory.insert{name = name, count = count}
+-- 				end
+-- 			end
+-- 		end
+-- 	end
+-- end
 
 
 
@@ -1020,21 +1020,21 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 						end
 					end
 
-					for k, v in pairs(e.circuit_connected_entities or {}) do
-						if not circuit_neighbours_matrix[k] then circuit_neighbours_matrix[k] = {} end
-						for _, v2 in pairs(v) do
-							if v2 and v2.valid and v2.position then
-								local v2p = v2.position
-								if not circuit_neighbours_matrix[k][v2p.x] then
-									circuit_neighbours_matrix[k][v2p.x] = {}
-								end
-								if not circuit_neighbours_matrix[k][v2p.x][v2p.y] then
-									circuit_neighbours_matrix[k][v2p.x][v2p.y] = {}
-								end
-								circuit_neighbours_matrix[k][v2p.x][v2p.y][#circuit_neighbours_matrix[k][v2p.x][v2p.y] + 1] = {name = e.name, pos = p}
+					for _, v in pairs(e.circuit_connection_definitions or {}) do
+						local e2 = v.target_entity
+						local wire = v.wire
+						local source_circuit_id = v.source_circuit_id
+						local target_circuit_id = v.target_circuit_id
+						if e2 and e2.valid and e2.position then
+							local e2p = e2.position
+							if not circuit_neighbours_matrix[e2p.x] then
+								circuit_neighbours_matrix[e2p.x] = {}
 							end
+							if not circuit_neighbours_matrix[e2p.x][e2p.y] then
+								circuit_neighbours_matrix[e2p.x][e2p.y] = {}
+							end
+							circuit_neighbours_matrix[e2p.x][e2p.y][#circuit_neighbours_matrix[e2p.x][e2p.y] + 1] = {name = e.name, pos = p, wire = wire, source_circuit_id = target_circuit_id, target_circuit_id = source_circuit_id} --flip since we will read these backwards
 						end
-						-- TODO: circuit_connection_definitions?
 					end
 
 					local ee = e.clone{position = p2, surface = newsurface, create_build_effect_smoke = false}
@@ -1079,25 +1079,18 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 							end
 						end
 
-						for k, v in pairs(circuit_neighbours_matrix or {}) do
-							if v[p.x] and v[p.x][p.y] then
-								for _, v2 in pairs(v[p.x][p.y]) do
-									local p3 = {x = v2.pos.x + vector.x, y = v2.pos.y + vector.y}
-									local e3s = newsurface.find_entities_filtered{
-										name = v2.name,
-										position = p3,
-										radius = 0.01,
-									}
-									if e3s and #e3s>0 then
-										local e3 = e3s[1]
-										if e3 and e3.valid then
-											-- if k == 'red' then
-											-- 	-- @TODO: Address "source_circuit_id :: uint (optional): Mandatory if the source entity has more than one circuit connector." on connect_neighbour definition. Indeed, this throws an error, 'Expected target_circuit_id for entities with more than one circuit connector.'
-											-- 	ee.connect_neighbour{wire = defines.wire_type.red, target_entity = e3}
-											-- elseif k == 'green' then
-											-- 	ee.connect_neighbour{wire = defines.wire_type.green, target_entity = e3}
-											-- end
-										end
+						if circuit_neighbours_matrix[p.x] and circuit_neighbours_matrix[p.x][p.y] then
+							for _, v2 in pairs(circuit_neighbours_matrix[p.x][p.y]) do
+								local p3 = {x = v2.pos.x + vector.x, y = v2.pos.y + vector.y}
+								local e3s = newsurface.find_entities_filtered{
+									name = v2.name,
+									position = p3,
+									radius = 0.01,
+								}
+								if e3s and #e3s>0 then
+									local e3 = e3s[1]
+									if e3 and e3.valid then
+										ee.connect_neighbour{wire = v2.wire, target_entity = e3, source_circuit_id = v2.source_circuit_id, target_circuit_id = v2.target_circuit_id}
 									end
 								end
 							end
@@ -1118,10 +1111,10 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 											if e3 and e3.valid then
 												if k == 'copper' then
 													ee.connect_neighbour(e3)
-												elseif k == 'red' then
-													ee.connect_neighbour{wire = defines.wire_type.red, target_entity = e3}
-												elseif k == 'green' then
-													ee.connect_neighbour{wire = defines.wire_type.green, target_entity = e3}
+												-- elseif k == 'red' then
+												-- 	ee.connect_neighbour{wire = defines.wire_type.red, target_entity = e3}
+												-- elseif k == 'green' then
+												-- 	ee.connect_neighbour{wire = defines.wire_type.green, target_entity = e3}
 												end
 											end
 										end

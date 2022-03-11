@@ -11,8 +11,8 @@ Public.terraingen_frame_width = 896
 Public.terraingen_frame_height = 896
 Public.static_params_default = {
 	starting_time_of_day = 0,
-	daynightcycletype = 3,
-	min_brightness = 0.3,
+	daynightcycletype = 4,
+	min_brightness = 0.1,
 	default_decoratives = false,
 	base_starting_rock_material = 800,
 }

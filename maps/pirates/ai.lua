@@ -66,11 +66,10 @@ function Public.Tick_actions(tickinterval)
         [2] = Public.eat_up_fraction_of_all_pollution_wrapped,
         [4] = Public.try_rogue_attack,
         [6] = Public.poke_script_groups,
-        [12] = Public.try_main_attack,
-        [16] = Public.poke_script_groups,
+        [16] = Public.try_main_attack,
+        [20] = Public.poke_script_groups,
         -- [18] = Public.try_secondary_attack, --commenting out: less attacks per minute, but stronger. @TODO need to do more here
-        [20] = Public.tell_biters_near_silo_to_attack_it,
-        [26] = Public.poke_script_groups,
+        [24] = Public.tell_biters_near_silo_to_attack_it,
         [28] = Public.eat_up_fraction_of_all_pollution_wrapped,
         [30] = Public.try_secondary_attack,
         [36] = Public.poke_script_groups,
@@ -332,15 +331,11 @@ function Public.spawn_group_of_scripted_biters(fraction_of_floating_pollution, m
 	local surface = game.surfaces[Common.current_destination().surface_name]
 	local enemy_force_name = memory.enemy_force_name
 	
-	-- @TODO: bring this 512 constant out into a variable somewhere
-    if Public.get_scripted_biter_count() > 512 * memory.difficulty then
-        return nil
-    end
     local spawner = Public.get_random_spawner(surface)
     if not spawner then log('no spawner found') return end
 
 	local nearby_units_to_bring
-	if #memory.scripted_biters >= 9/10 * CoreData.total_max_biters then
+	if Public.get_scripted_biter_count() >= 9/10 * CoreData.total_max_biters then
 		-- pick up nearby units that might be idle:
 		nearby_units_to_bring = surface.find_units{area = {{spawner.position.x - 8, spawner.position.y - 8}, {spawner.position.x + 8, spawner.position.y + 8}}, force = enemy_force_name, condition = 'same'}
 	else
@@ -483,7 +478,6 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
     end
 
 	if units_created_count > 0 then
-		--@TEMP: Logging attack spending
 		log('Spent ' .. Math.floor(100 * (initialpollution - temp_floating_pollution) / initialpollution) .. '% of ' .. Math.ceil(initialpollution) .. ' pollution budget on biters, at ' .. Math.ceil(base_pollution_cost_multiplier*100)/100 .. 'x price.')
 	end
 	

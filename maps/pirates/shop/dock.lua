@@ -50,7 +50,7 @@ Public.market_sales = {
 	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'firearm-magazine', count = 500}},
 	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'piercing-rounds-magazine', count = 75}},
 	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'uranium-rounds-magazine', count = 30}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'piercing-shotgun-shell', count = 60}},
+	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'piercing-shotgun-shell', count = 50}},
 	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'raw-fish', count = 300}},
 	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'laser-turret', count = 2}},
 	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'vehicle-machine-gun', count = 3}},
@@ -60,6 +60,7 @@ Public.market_sales = {
 	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'poison-capsule', count = 20}},
 	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'slowdown-capsule', count = 20}},
 	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'coin', count = 4000}},
+	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'roboport', count = 1}},
 }
 
 

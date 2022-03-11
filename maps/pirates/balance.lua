@@ -436,7 +436,7 @@ function Public.starting_items_crew_upstairs()
 		{['stone-brick'] = 60},
 		{['grenade'] = 3},
 		{['shotgun'] = 2, ['shotgun-shell'] = 36},
-		{['raw-fish'] = 5},
+		-- {['raw-fish'] = 5},
 		{['coin'] = 1000},
 	}
 end
@@ -484,15 +484,15 @@ Public.covered1_entry_price_data_raw = { --watch out that the raw_materials ches
 	{0.75, 0, 0.6, false, {
 		price = {name = 'burner-inserter', count = 300},
 		raw_materials = {{name = 'iron-plate', count = 900}}}, {}},
-	{1.15, 0.05, 0.7, false, {
+	{1.1, 0.05, 0.7, false, {
 		price = {name = 'electronic-circuit', count = 800},
 		raw_materials = {{name = 'iron-plate', count = 800}, {name = 'copper-plate', count = 1200}}}, {}},
 	{1, 0, 1, false, {
 		price = {name = 'firearm-magazine', count = 700},
 		raw_materials = {{name = 'iron-plate', count = 2800}}}, {}},
-	{1.15, 0, 1, false, {
-		price = {name = 'constant-combinator', count = 300},
-		raw_materials = {{name = 'iron-plate', count = 600}, {name = 'copper-plate', count = 1550}}}, {}},
+	{1, 0, 1, false, {
+		price = {name = 'constant-combinator', count = 276},
+		raw_materials = {{name = 'iron-plate', count = 552}, {name = 'copper-plate', count = 1518}}}, {}},
 
 	{1, 0.05, 1, false, {
 		price = {name = 'stone-furnace', count = 350},
@@ -505,11 +505,11 @@ Public.covered1_entry_price_data_raw = { --watch out that the raw_materials ches
 		price = {name = 'wooden-chest', count = 400},
 		raw_materials = {}}, {}},
 	{0.5, 0, 1, true, {
-		price = {name = 'iron-chest', count = 300},
-		raw_materials = {{name = 'iron-plate', count = 2400}}}, {}},
+		price = {name = 'iron-chest', count = 250},
+		raw_materials = {{name = 'iron-plate', count = 2000}}}, {}},
 	{0.5, 0.25, 1.75, true, {
-		price = {name = 'steel-chest', count = 150},
-		raw_materials = {{name = 'steel-plate', count = 1200}}}, {}},
+		price = {name = 'steel-chest', count = 125},
+		raw_materials = {{name = 'steel-plate', count = 1000}}}, {}},
 }
 
 function Public.covered1_entry_price_data()
