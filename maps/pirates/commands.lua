@@ -264,10 +264,8 @@ commands.add_command(
 'is a captain command to undock the ship.',
 function(cmd)
 	local param = tostring(cmd.parameter)
-	if check_admin(cmd) then
+	if check_captain(cmd) then
 		local player = game.players[cmd.player_index]
-		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-		Memory.set_working_id(crew_id)
 		local memory = Memory.get_crew_memory()
 		if memory.boat.state == Boats.enum_state.DOCKED then
 			Progression.undock_from_dock()
