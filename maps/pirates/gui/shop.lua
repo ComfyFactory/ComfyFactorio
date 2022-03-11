@@ -102,7 +102,7 @@ function Public.update(player)
 			local coin_amount = inv.get_item_count('coin') or 0
 
 			flow.close_button_flow.hflow.tospend.number = coin_amount
-			flow.close_button_flow.hflow.tospend.tooltip = string.format("You're holding " .. Utils.bignumber_abbrevform2(coin_amount) .. " coins.")
+			flow.close_button_flow.hflow.tospend.tooltip = string.format("You're holding " .. Utils.bignumber_abbrevform2(coin_amount) .. " doubloons.")
 		end
 	else
 		flow.close_button_flow.hflow.tospend.visible = false

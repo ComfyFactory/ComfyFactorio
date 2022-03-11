@@ -108,7 +108,7 @@ function Public.fuel_depletion_rate_static()
 
 	local rate
 	if Common.overworldx() > 0 then
-		rate = 550 * (0 + (Common.overworldx()/40)^(9/10)) * Public.crew_scale()^(1/6) * Math.sloped(Common.difficulty(), 4/5) / T --most of the crewsize dependence is through T, i.e. the coal cost per island stays the same... but the extra player dependency accounts for the fact that even in compressed time, more players seem to get more resources per island
+		rate = 560 * (0 + (Common.overworldx()/40)^(9/10)) * Public.crew_scale()^(1/6) * Math.sloped(Common.difficulty(), 4/5) / T --most of the crewsize dependence is through T, i.e. the coal cost per island stays the same... but the extra player dependency accounts for the fact that even in compressed time, more players seem to get more resources per island
 	else
 		rate = 0
 	end

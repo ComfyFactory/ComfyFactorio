@@ -248,7 +248,7 @@ function Public.prune_offline_characters_list(tickinterval)
 					end
 				end
 				if any then
-					Common.notify_force_light(memory.force, 'Offline player\'s items sent to captain\'s cabin.')
+					Common.notify_force_light(memory.force, 'Offline player\'s items recovered.')
 				end
 				for ii = 1, 5, 1 do
 					if player_inv[ii].valid then

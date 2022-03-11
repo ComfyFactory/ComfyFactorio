@@ -1077,12 +1077,18 @@ function Public.give_items_to_crew(items)
 			if not (chest2 and chest2.valid) then return end
 			local inventory2 = chest2.get_inventory(defines.inventory.chest)
 			local i2 = Utils.deepcopy(items)
-			i2.count = items.count - inserted
-			local inserted2 = inventory2.insert(i2)
-			if items.count - inserted - inserted2 > 0 then
-				local force = memory.force
-				if not (force and force.valid) then return end
-				Public.notify_force(force, 'Warning: captain\'s cabin chests are full!')
+			if i2.name then
+				i2.count = items.count - inserted
+				local inserted2 = inventory2.insert(i2)
+				if items.count - inserted - inserted2 > 0 then
+					local force = memory.force
+					if not (force and force.valid) then return end
+					Public.notify_force(force, 'Warning: captain\'s cabin chests are full!')
+				end
+			else
+				log('give_items_to_crew: i2.name is nil. inspect:')
+				log(inspect(items))
+				log(inspect(i2))
 			end
 		end
 	else

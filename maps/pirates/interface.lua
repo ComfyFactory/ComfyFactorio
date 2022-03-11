@@ -1572,7 +1572,7 @@ local function event_on_player_respawned(event)
 			end
 		end
 	end
-end	
+end
 
 
 local event = require 'utils.event'

@@ -75,6 +75,14 @@ function Public.generate_overworld_destination(p)
 		end
 	end
 
+	-- some other raffle removals for smoothness:
+	if macrop.x == 4 then
+		island_subtype_raffle = Utils.ordered_table_with_values_removed(island_subtype_raffle, Surfaces.Island.enum.STANDARD)
+	end
+	if macrop.x == 19 then
+		island_subtype_raffle = Utils.ordered_table_with_values_removed(island_subtype_raffle, Surfaces.Island.enum.SWAMP)
+	end
+
 	if macrop.x == 0 then
 		if macrop.y == 0 then
 			type = Surfaces.enum.ISLAND

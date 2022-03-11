@@ -312,7 +312,7 @@ function Public.main_shop_try_purchase(player, purchase_name)
 			Common.notify_player_error(player, 'Not enough stored fuel.')
 		end
 		if enough_coins == false then
-			Common.notify_player_error(player, 'Not enough coins.')
+			Common.notify_player_error(player, 'Not enough doubloons.')
 		end
 		if enough_iron_plates == false then
 			Common.notify_player_error(player, 'Not enough iron plates.')

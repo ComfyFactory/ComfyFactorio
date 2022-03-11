@@ -103,8 +103,8 @@ Public.chest_loot_data_raw = {
 	{3, 0.2, 1, true, 'chemical-plant', 1, 3},
 
 	{40, -1, 0.5, true, 'speed-module', 1, 3},
-	{40, 0, 1.5, true, 'speed-module-2', 1, 2},
-	{40, 0, 2, true, 'speed-module-3', 1, 1},
+	{20, 0, 1.5, true, 'speed-module-2', 1, 2},
+	{10, 0, 2, true, 'speed-module-3', 1, 1},
 	{4, -1, 1, true, 'effectivity-module', 1, 3},
 	-- {4, 0, 1, true, 'effectivity-module-2', 1, 3}, --disabled to reduce 'avalanche of crap' effect
 	{4, 0, 2, true, 'effectivity-module-3', 1, 1},

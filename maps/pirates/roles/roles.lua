@@ -420,7 +420,7 @@ function Public.captain_requisition_coins(captain_index)
 		end
 	
 		if total > 0 then 
-			Common.notify_force(memory.force, 'The captain requisitioned ' .. Utils.bignumber_abbrevform2(total) .. ' coins.')
+			Common.notify_force(memory.force, 'The captain requisitioned ' .. Utils.bignumber_abbrevform2(total) .. ' doubloons.')
 		end
 	end
 end

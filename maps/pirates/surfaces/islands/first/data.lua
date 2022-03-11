@@ -20,7 +20,7 @@ Public.static_params_default = {
 	base_starting_wood = 2400,
 }
 
-function Public.base_ores() 
+function Public.base_ores()
 	return {
 		['copper-ore'] = 1.9,
 		['iron-ore'] = 4.2,

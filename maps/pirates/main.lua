@@ -6,6 +6,14 @@
 
  --[[personal note for thesixthroc in XX years: my design notes are all in obsidian]]
 
+
+--[[
+== Tips for Developers! ==
+
+The scenario is quite complex, but there are ways to get started, even if you don't know any Lua:
+• Go to pirates/surfaces/islands/first and 
+]]
+
 -- require 'modules.biters_yield_coins'
 require 'modules.biter_noms_you'
 require 'modules.no_deconstruction_of_neutral_entities'

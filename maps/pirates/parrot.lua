@@ -41,7 +41,7 @@ Public.framecounts = {
 -- 	"Resources granted to the ship appear in the captain's cabin!",
 -- 	"On each island after the first, the ship generates ore!",
 -- 	"Charge the silo to launch a rocket!",
--- 	"Launching rockets makes fuel and coin!",
+-- 	"Launching rockets makes fuel and doubloon!",
 -- 	"Charging silos makes pollution and evo!",
 -- 	"The number of non-afk crewmembers affects pollution, evo and maximum stay time!",
 -- 	"Once a silo has launched a rocket, biters will ignore it!",

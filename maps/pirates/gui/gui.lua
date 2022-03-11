@@ -851,7 +851,7 @@ function Public.update_gui(player)
 		
 				flow1.silo_progressbar.value = consumed/needed
 		
-				local tooltip = string.format('Rocket silo charge\n\nCharge the silo to launch a rocket, gaining both coins and fuel.\n\nCurrent charge: %.1f/%.1f GJ', Math.floor(consumed / 100000000)/10, Math.floor(needed / 100000000)/10)
+				local tooltip = string.format('Rocket silo charge\n\nCharge the silo to launch a rocket, gaining both doubloons and fuel.\n\nCurrent charge: %.1f/%.1f GJ', Math.floor(consumed / 100000000)/10, Math.floor(needed / 100000000)/10)
 				flow1.tooltip = tooltip
 				flow1.silo_label_1.tooltip = tooltip
 				flow1.silo_label_2.tooltip = tooltip

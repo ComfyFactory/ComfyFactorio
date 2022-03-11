@@ -38,7 +38,7 @@ function Public.toggle_window(player)
 
 	flow2 = Public.flow_add_info_tab(flow, 'Info')
 
-	flow4 = flow2.parent.header_flow_1.header_flow_2
+	flow4 = flow2.parent.last_info_flow_1.last_info_flow_2
 	flow5 = flow4.add{type = "label", caption = {"pirates.softmod_info_body_1"}}
 	flow5.style.font_color = GuiCommon.friendly_font_color
 	flow5.style.single_line = false
@@ -141,6 +141,22 @@ function Public.flow_add_info_tab(flow, tab_name)
 
 	flow3 = contents.add({
 		type = 'flow',
+		name = 'last_info_flow_1',
+		direction = 'horizontal',
+	})
+	flow3.style.horizontally_stretchable = true
+    flow3.style.horizontal_align = 'center'
+
+	flow4 = flow3.add({
+		type = 'flow',
+		name = 'last_info_flow_2',
+		direction = 'vertical',
+	})
+	flow4.style.horizontally_stretchable = true
+    flow4.style.horizontal_align = 'center'
+
+	flow3 = contents.add({
+		type = 'flow',
 		direction = 'vertical',
 	})
 	flow3.style.vertically_stretchable = true
@@ -202,7 +218,7 @@ function Public.update(player)
 	elseif flow2.selected_tab_index == 2 then
 		flow2.style.height = 350
 	elseif flow2.selected_tab_index == 3 then
-		flow2.style.height = 670
+		flow2.style.height = 680
 	elseif flow2.selected_tab_index == 4 then
 		flow2.style.height = 330
 	end
