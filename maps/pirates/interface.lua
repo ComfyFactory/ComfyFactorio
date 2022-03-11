@@ -839,11 +839,13 @@ local function spawner_died(event)
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 
-	local extra_evo = Balance.evolution_per_nest_kill()
-	Common.increment_evo(extra_evo)
-
-	if destination.dynamic_data then
-		destination.dynamic_data.evolution_accrued_nests = destination.dynamic_data.evolution_accrued_nests + extra_evo
+	if (destination and destination.type and destination.type == Surfaces.enum.ISLAND) then
+		local extra_evo = Balance.evolution_per_nest_kill()
+		Common.increment_evo(extra_evo)
+	
+		if destination.dynamic_data then
+			destination.dynamic_data.evolution_accrued_nests = destination.dynamic_data.evolution_accrued_nests + extra_evo
+		end
 	end
 end
 

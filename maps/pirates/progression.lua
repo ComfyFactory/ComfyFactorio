@@ -42,9 +42,11 @@ function Public.fuel_depletion_rate()
 	elseif state == Boats.enum_state.LEAVING_DOCK then
 		return Balance.fuel_depletion_rate_sailing() * 2
 	elseif state == Boats.enum_state.RETREATING then
-		return Balance.fuel_depletion_rate_sailing() / 10
+		return Balance.fuel_depletion_rate_sailing() / 4
 	elseif state == Boats.enum_state.LANDED then
 		return Balance.fuel_depletion_rate_static()
+	elseif state == Boats.enum_state.DOCKED then
+		return 0.1
 	else
 		return 0
 	end
@@ -532,7 +534,14 @@ function Public.go_from_currentdestination_to_sea()
 	memory.boat.position = new_boatposition
 	memory.boat.surface_name = seaname
 
-	memory.kraken_evo = 0 --reset
+	memory.enemy_force.reset_evolution()
+	local base_evo = Balance.base_evolution()
+	Common.set_evo(base_evo)
+	destination.dynamic_data.evolution_accrued_leagues = base_evo
+	destination.dynamic_data.evolution_accrued_time = 0
+	destination.dynamic_data.evolution_accrued_nests = 0
+	destination.dynamic_data.evolution_accrued_silo = 0
+	memory.kraken_evo = 0
 
 	memory.loadingticks = nil
 	memory.mapbeingloadeddestination_index = nil

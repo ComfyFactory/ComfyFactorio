@@ -297,8 +297,8 @@ local function crew_tick()
 		TickFunctions.LOS_tick(240)
 	end
 	
-	if tick % 360 == 0 then
-		ClassTickFunctions.class_rewards_tick(360)
+	if tick % 420 == 0 then
+		ClassTickFunctions.class_rewards_tick(420)
 	end
 
 	if tick % 300 == 0 then

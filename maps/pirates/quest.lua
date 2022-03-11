@@ -321,14 +321,17 @@ end
 
 Public.resourcecount_quest_data_raw = {
 	{0.8, 0, 1, false, 'iron-gear-wheel', 2400},
-	{1, 0, 1, false, 'electronic-circuit', 1200},
-	{1, 0, 1, false, 'transport-belt', 900},
+	{1, 0, 1, false, 'electronic-circuit', 1400},
+	{1, 0, 1, false, 'transport-belt', 1600},
 	-- {0.1, 0, 1, false, 'red-wire', 500},
 	{0.4, 0, 1, false, 'empty-barrel', 600},
-	{0.3, 0, 0.2, false, 'splitter', 500},
-	{0.3, 0.2, 1, false, 'fast-splitter', 250},
-	{0.4, 0.3, 1, false, 'big-electric-pole', 250},
-	-- {1, 0.5, 1, false, 'advanced-circuit', 1 * 10},
+	{0.2, 0, 0.2, false, 'underground-belt', 200},
+	{0.2, 0, 0.2, false, 'splitter', 150},
+	{0.3, 0.2, 1, false, 'fast-splitter', 60},
+	{0.3, 0.2, 1, false, 'fast-underground-belt', 75},
+	{0.4, 0.3, 1, false, 'big-electric-pole', 160},
+	{1, 0.61, 1, false, 'advanced-circuit', 350},
+	{3, 0, 1, false, 'shotgun-shell', 600},
 	-- {0.3, 0.8, 1, false, 'electric-engine-unit', 1 * 6},
 }
 

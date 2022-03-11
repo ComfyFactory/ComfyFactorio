@@ -900,81 +900,84 @@ function Public.update_gui(player)
 					flow1.quest_label_3.visible = false
 					flow1.quest_label_4.visible = false
 					flow1.quest_label_2.caption = quest_reward.display_amount .. ' ' .. quest_reward.display_sprite
-				elseif quest_progress < quest_progressneeded then
-					flow1.quest_label_1.caption = 'Quest:'
-					flow1.quest_label_2.visible = true
-					flow1.quest_label_3.visible = true
-					flow1.quest_label_4.visible = true
-					-- defaults, to be overwritten:
-					flow1.quest_label_2.caption = string.format('%s ', Quest.quest_icons[quest_type])
-					flow1.quest_label_3.caption = string.format('%.0f/%.0f', quest_progress, quest_progressneeded)
-					flow1.quest_label_3.style.font_color = GuiCommon.insufficient_font_color
-					flow1.quest_label_4.caption = string.format(' for %s', quest_reward.display_sprite)
-					flow1.quest_label_4.style.font_color = Common.default_font_color
-				end
-	
-				if quest_type == Quest.enum.TIME then
-					if tooltip == '' then tooltip = 'Quest: Time\n\nLaunch a rocket before the countdown completes for a bonus.' end
-	
-					if quest_progress >= 0 then
-						flow1.quest_label_3.caption = string.format('%.0fm%.0fs', Math.floor(quest_progress / 60), quest_progress % 60)
-						if active_eta then
-							if active_eta < quest_progress - 35 then --35 is roughly the number of seconds between charge and launch
-								flow1.quest_label_3.style.font_color = GuiCommon.sufficient_font_color
+				else
+					if quest_progress < quest_progressneeded then
+						flow1.quest_label_1.caption = 'Quest:'
+						flow1.quest_label_2.visible = true
+						flow1.quest_label_3.visible = true
+						flow1.quest_label_4.visible = true
+						-- defaults, to be overwritten:
+						flow1.quest_label_2.caption = string.format('%s ', Quest.quest_icons[quest_type])
+						flow1.quest_label_3.caption = string.format('%.0f/%.0f', quest_progress, quest_progressneeded)
+						flow1.quest_label_3.style.font_color = GuiCommon.insufficient_font_color
+						flow1.quest_label_4.caption = string.format(' for %s', quest_reward.display_sprite)
+						flow1.quest_label_4.style.font_color = Common.default_font_color
+					end
+
+					if quest_type == Quest.enum.TIME then
+						if tooltip == '' then tooltip = 'Quest: Time\n\nLaunch a rocket before the countdown completes for a bonus.' end
+		
+						if quest_progress >= 0 then
+							flow1.quest_label_3.caption = string.format('%.0fm%.0fs', Math.floor(quest_progress / 60), quest_progress % 60)
+							if active_eta then
+								if active_eta < quest_progress - 35 then --35 is roughly the number of seconds between charge and launch
+									flow1.quest_label_3.style.font_color = GuiCommon.sufficient_font_color
+								else
+									flow1.quest_label_3.style.font_color = GuiCommon.insufficient_font_color
+								end
 							else
-								flow1.quest_label_3.style.font_color = GuiCommon.insufficient_font_color
+								if charged_bool and quest_progress > 35 then
+									flow1.quest_label_3.style.font_color = GuiCommon.sufficient_font_color
+								else
+									flow1.quest_label_3.style.font_color = GuiCommon.insufficient_font_color
+								end
 							end
 						else
-							if charged_bool and quest_progress > 35 then
-								flow1.quest_label_3.style.font_color = GuiCommon.sufficient_font_color
-							else
-								flow1.quest_label_3.style.font_color = GuiCommon.insufficient_font_color
-							end
+							flow1.quest_label_3.caption = string.format('Fail')
+							flow1.quest_label_3.style.font_color = GuiCommon.insufficient_font_color
 						end
-					else
-						flow1.quest_label_3.caption = string.format('Fail')
-						flow1.quest_label_3.style.font_color = GuiCommon.insufficient_font_color
-					end
-	
-				elseif quest_type == Quest.enum.WORMS then
-					if tooltip == '' then tooltip = 'Quest: Worms\n\nKill enough worms for a bonus.' end
-	
-				elseif quest_type == Quest.enum.FIND then
-					if tooltip == '' then tooltip = 'Quest: Ghosts\n\nFind the ghosts for a bonus.' end
-	
-				elseif quest_type == Quest.enum.RESOURCEFLOW then
-					if tooltip == '' then tooltip = 'Quest: Resource Flow\n\nAchieve a production rate of a particular item for a bonus.' end
-	
-					-- out of date:
-					if quest_progressneeded/60 % 1 == 0 then
-						flow1.quest_label_2.caption = string.format('%s %.1f/%.0f /s', '[item=' .. quest_params.item .. ']', quest_progress/60, quest_progressneeded/60)
-						flow1.quest_label_3.caption = string.format(' for %s', quest_reward.display_sprite)
-					else
-						flow1.quest_label_2.caption = string.format('%s %.1f/%.1f /s', '[item=' .. quest_params.item .. ']', quest_progress/60, quest_progressneeded/60)
-						flow1.quest_label_3.caption = string.format(' for %s', quest_reward.display_sprite)
-					end
-	
-				elseif quest_type == Quest.enum.RESOURCECOUNT then
-					if tooltip == '' then tooltip = 'Quest: Item Production\n\nProduce a particular number of items for a bonus.' end
-					
-					flow1.quest_label_2.caption = string.format('%s ', '[item=' .. quest_params.item .. ']')
-	
-				elseif quest_type == Quest.enum.NODAMAGE then
-					if tooltip == '' then tooltip = 'Quest: No Damage\n\nLaunch a rocket without the silo taking damage.' end
-					
-					if (memory.boat and memory.boat.state == Boats.enum_state.APPROACHING) or (destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid and destination.dynamic_data.rocketsilohp == destination.dynamic_data.rocketsilomaxhp) then
-						flow1.quest_label_3.caption = string.format('OK')
-						flow1.quest_label_3.style.font_color = GuiCommon.sufficient_font_color
-					else
-						flow1.quest_label_3.caption = string.format('Fail')
-						flow1.quest_label_3.style.font_color = GuiCommon.insufficient_font_color
+		
+					elseif quest_type == Quest.enum.WORMS then
+						if tooltip == '' then tooltip = 'Quest: Worms\n\nKill enough worms for a bonus.' end
+		
+					elseif quest_type == Quest.enum.FIND then
+						if tooltip == '' then tooltip = 'Quest: Ghosts\n\nFind the ghosts for a bonus.' end
+		
+					elseif quest_type == Quest.enum.RESOURCEFLOW then
+						if tooltip == '' then tooltip = 'Quest: Resource Flow\n\nAchieve a production rate of a particular item for a bonus.' end
+		
+						-- out of date:
+						if quest_progressneeded/60 % 1 == 0 then
+							flow1.quest_label_2.caption = string.format('%s %.1f/%.0f /s', '[item=' .. quest_params.item .. ']', quest_progress/60, quest_progressneeded/60)
+							flow1.quest_label_3.caption = string.format(' for %s', quest_reward.display_sprite)
+						else
+							flow1.quest_label_2.caption = string.format('%s %.1f/%.1f /s', '[item=' .. quest_params.item .. ']', quest_progress/60, quest_progressneeded/60)
+							flow1.quest_label_3.caption = string.format(' for %s', quest_reward.display_sprite)
+						end
+		
+					elseif quest_type == Quest.enum.RESOURCECOUNT then
+						if tooltip == '' then tooltip = 'Quest: Item Production\n\nProduce a particular number of items for a bonus.' end
+						
+						flow1.quest_label_2.caption = string.format('%s ', '[item=' .. quest_params.item .. ']')
+		
+					elseif quest_type == Quest.enum.NODAMAGE then
+						if tooltip == '' then tooltip = 'Quest: No Damage\n\nLaunch a rocket without the silo taking damage.' end
+
+						if (memory.boat and memory.boat.state == Boats.enum_state.APPROACHING) or (destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid and destination.dynamic_data.rocketsilohp == destination.dynamic_data.rocketsilomaxhp) then
+							flow1.quest_label_3.caption = string.format('OK')
+							flow1.quest_label_3.style.font_color = GuiCommon.sufficient_font_color
+						else
+							flow1.quest_label_3.caption = string.format('Fail')
+							flow1.quest_label_3.style.font_color = GuiCommon.insufficient_font_color
+						end
 					end
 				end
-	
+
 				flow1.tooltip = tooltip
 				flow1.quest_label_1.tooltip = tooltip
 				flow1.quest_label_2.tooltip = tooltip
 				flow1.quest_label_3.tooltip = tooltip
+				flow1.quest_label_4.tooltip = tooltip
 			end
 		else
 			flow1.visible = false

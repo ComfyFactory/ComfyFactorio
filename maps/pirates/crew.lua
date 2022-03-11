@@ -696,7 +696,7 @@ function Public.initialise_crew(accepted_proposal)
 	-- memory.mode = CoreData.mode_options[accepted_proposal.mode_option].value
 
 	memory.destinationsvisited_indices = {}
-	memory.stored_fuel = 8000
+	memory.stored_fuel = Balance.starting_fuel
 	memory.available_classes_pool = Classes.initial_class_pool()
 
 	memory.captain_accrued_time_data = {}

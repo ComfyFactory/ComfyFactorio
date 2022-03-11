@@ -174,7 +174,7 @@ function Public.class_rewards_tick(tickinterval)
 			local player_index = player.index
 
 			if memory.classes_table and memory.classes_table[player_index] then
-				if game.tick % (60*6) == 0 and Common.validate_player_and_character(player) then
+				if game.tick % tickinterval == 0 and Common.validate_player_and_character(player) then
 					if memory.classes_table[player.index] == Classes.enum.SMOLDERING then
 						local inv = player.get_inventory(defines.inventory.character_main)
 						if not (inv and inv.valid) then return end
@@ -194,7 +194,7 @@ function Public.class_rewards_tick(tickinterval)
 			end
 
 
-			if game.tick % (60*6) == 0 and (not (memory.boat and memory.boat.state and memory.boat.state == Structures.Boats.enum_state.ATSEA_LOADING_MAP)) then --it is possible to spend extra time here, so don't give out freebies
+			if game.tick % tickinterval == 0 and (not (memory.boat and memory.boat.state and memory.boat.state == Structures.Boats.enum_state.ATSEA_LOADING_MAP)) then --it is possible to spend extra time here, so don't give out freebies
 
 				if memory.classes_table and memory.classes_table[player_index] then
 					local class = memory.classes_table[player_index]

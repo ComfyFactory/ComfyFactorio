@@ -53,6 +53,8 @@ end
 
 
 function Public.prevent_unbarreling_off_ship(tickinterval)
+	if Common.allow_barreling_off_ship then return end
+
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 	local boat = memory.boat
@@ -1214,10 +1216,12 @@ function Public.LOS_tick(tickinterval)
 		force.chart(surface, {{p.x - BoatData.width/2 - 70, p.y - 80},{p.x - BoatData.width/2 + 70, p.y + 80}})
 	end
 
-	local silos = destination.dynamic_data.rocketsilos
-	if silos and silos[1] and silos[1].valid then
-		local p = silos[1].position
-		force.chart(surface, {{p.x - 4, p.y - 4},{p.x + 4, p.y + 4}})
+	if CoreData.rocket_silo_death_causes_loss then
+		local silos = destination.dynamic_data.rocketsilos
+		if silos and silos[1] and silos[1].valid then
+			local p = silos[1].position
+			force.chart(surface, {{p.x - 4, p.y - 4},{p.x + 4, p.y + 4}})
+		end
 	end
 end
 

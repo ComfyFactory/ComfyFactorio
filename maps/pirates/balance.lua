@@ -28,7 +28,7 @@ Public.EEI_stages = { --multipliers
 
 
 function Public.scripted_biters_pollution_cost_multiplier()
-	return 1.33 --tuned
+	return 1.25 --tuned
 end
 
 function Public.cost_to_leave_multiplier()
@@ -124,7 +124,7 @@ end
 
 function Public.silo_total_pollution()
 	return (
-		380 * (Common.difficulty()^(1.2)) * Public.crew_scale()^(2/5) * (3.2 + 0.7 * (Common.overworldx()/40)^(1.6)) --shape of the curve with x is tuned
+		350 * (Common.difficulty()^(1.2)) * Public.crew_scale()^(2/5) * (3.2 + 0.7 * (Common.overworldx()/40)^(1.6)) --shape of the curve with x is tuned
 )
 end
 
@@ -152,7 +152,7 @@ function Public.boat_passive_pollution_per_minute(time)
 	end
 
 	return boost * (
-			6 * Common.difficulty() * (Common.overworldx()/40)^(1.6) * (Public.crew_scale())^(55/100)
+			5.6 * Common.difficulty() * (Common.overworldx()/40)^(1.6) * (Public.crew_scale())^(55/100)
 	 ) -- There is no _explicit_ T dependence, but it depends almost the same way on the crew_scale as T does.
 end
 
@@ -290,14 +290,16 @@ end
 
 Public.covered_first_appears_at = 40
 
+Public.starting_fuel = 4000
+
 Public.silo_max_hp = 8000
 
 function Public.pistol_damage_multiplier() return 2.05 end
 
-Public.kraken_spawns_base_extra_evo = 0.30
+Public.kraken_spawns_base_extra_evo = 0.35
 
 function Public.kraken_evo_increase_per_shot()
-	return 1/100 * 0.07 --started off low, currently slowly upping to see
+	return 1/100 * 0.08 --started off low, currently slowly upping to see
 end
 
 function Public.kraken_kill_reward()

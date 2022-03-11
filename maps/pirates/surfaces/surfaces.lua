@@ -169,19 +169,19 @@ function Public.destination_on_collide(destination)
 			if memory.overworldx/40 < 20 then
 				max_evo = 0.9 - (20 - memory.overworldx/40) * 1/100
 			else
-				max_evo = 0.91 + (memory.overworldx/40 - 20) * 0.5/100
+				max_evo = 0.91 + (memory.overworldx/40 - 20) * 0.25/100
 			end
 		elseif Common.difficulty() == 1 then
 			if memory.overworldx/40 < 15 then
 				max_evo = 0.9 - (15 - memory.overworldx/40) * 0.5/100
 			else
-				max_evo = 0.91 + (memory.overworldx/40 - 15) * 0.5/100
+				max_evo = 0.91 + (memory.overworldx/40 - 15) * 0.25/100
 			end
 		elseif Common.difficulty() > 1 then
-			if memory.overworldx/40 < 10 then
+			if memory.overworldx/40 < 12 then
 				max_evo = 0.9
 			else
-				max_evo = 0.91 + (memory.overworldx/40 - 10) * 0.5/100
+				max_evo = 0.91 + (memory.overworldx/40 - 12) * 0.25/100
 			end
 		end
 
@@ -303,7 +303,7 @@ function Public.destination_on_arrival(destination)
 		Server.to_discord_embed_raw((destination.static_params.discord_emoji or CoreData.comfy_emojis.wut) .. '[' .. memory.name .. '] Approaching ' .. name .. ', ' .. memory.overworldx .. ' leagues.')
 	end
 	if destination.static_params.name == 'Dock' then
-		message = message .. ' ' .. 'New trades are in the Captain\'s Store.'
+		message = message .. ' ' .. 'New trades are available in the Captain\'s Store.'
 	end
 	Common.notify_force(memory.force, message)
 

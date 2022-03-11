@@ -72,15 +72,15 @@ Public.main_shop_data_1 = {
 		what_you_get_sprite_buttons = {['item/steel-chest'] = false},
 		base_cost = {coins = 10000, fuel = 2000},
 	},
-	[Upgrades.enum.ROCKETS_FOR_SALE] = {
-		tooltip = 'Unlock rockets for sale at covered-up markets.',
-		what_you_get_sprite_buttons = {['item/rocket-launcher'] = false},
-		base_cost = {coins = 10000, fuel = 2500},
-	},
 	[Upgrades.enum.UNLOCK_MERCHANTS] = {
 		tooltip = 'Unlock merchant ships.',
 		what_you_get_sprite_buttons = {['entity/market'] = false},
 		base_cost = {coins = 10000, fuel = 2000},
+	},
+	[Upgrades.enum.ROCKETS_FOR_SALE] = {
+		tooltip = 'Unlock rockets for sale at covered-up markets.',
+		what_you_get_sprite_buttons = {['item/rocket-launcher'] = false},
+		base_cost = {coins = 15000, fuel = 2000},
 	},
 }
 
@@ -88,7 +88,7 @@ Public.main_shop_data_2 = {
 	rail_signal = {
 		tooltip = "100 signals, used to steer the boat one space in the Crow's Nest View.",
 		what_you_get_sprite_buttons = {['item/rail-signal'] = 100},
-		base_cost = {coins = 600},
+		base_cost = {coins = 650},
 	},
 	extra_time = {
 		tooltip = 'Relax at sea for an extra minute. (Increases the next destination\'s loading time.)',

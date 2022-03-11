@@ -30,6 +30,7 @@ Public.deepwater_distance_from_leftmost_shore = 32
 Public.lobby_spawnpoint = {x = -72, y = -8}
 
 Public.quartermaster_range = 17
+Public.allow_barreling_off_ship = true
 
 Public.fraction_of_map_loaded_atsea = 1
 Public.map_loading_ticks_atsea = 68 * 60
@@ -134,12 +135,12 @@ end
 
 function Public.notify_player_error(player, message, color_override)
 	color_override = color_override or CoreData.colors.notify_error
-	player.print('>> [Whispher] ' .. message, color_override)
+	player.print('>> [Whisper] ' .. message, color_override)
 end
 
 function Public.notify_player_expected(player, message, color_override)
 	color_override = color_override or CoreData.colors.notify_player_expected
-	player.print('>> [Whispher] ' .. message, color_override)
+	player.print('>> [Whisper] ' .. message, color_override)
 end
 
 function Public.parrot_speak(force, message)

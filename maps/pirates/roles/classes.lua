@@ -234,9 +234,9 @@ local function class_on_player_used_capsule(event)
 		local class = memory.classes_table[player_index]
 		if class == Public.enum.SAMURAI then
 			-- vanilla heal is 80HP
-			player.character.health = player.character.health + 175
+			player.character.health = player.character.health + 130
 		elseif class == Public.enum.HATAMOTO then
-			player.character.health = player.character.health + 250
+			player.character.health = player.character.health + 190
 		elseif class == Public.enum.GOURMET then
 			local tile = player.surface.get_tile(player.position)
 			if tile.valid then
