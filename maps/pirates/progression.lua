@@ -130,7 +130,7 @@ function Public.go_from_starting_dock_to_first_destination()
 
 		local scope = Boats.get_scope(boat)
 		local boatwidth, boatheight = scope.Data.width, scope.Data.height
-		Common.surface_place_random_obstacle_boxes(game.surfaces[boat.surface_name], {x = boat.position.x - boatwidth*0.575, y = boat.position.y}, boatwidth*0.85, boatheight*0.8, 'oil-refinery', {[1] = 3, [2] = 2, [3] = 0, [4] = 0}, items)
+		Common.surface_place_random_obstacle_boxes(game.surfaces[boat.surface_name], {x = boat.position.x - boatwidth*0.575, y = boat.position.y}, boatwidth*0.85, boatheight*0.8, 'oil-refinery', {[1] = 3, [2] = 3, [3] = 0, [4] = 0}, items)
 
 		-- go:
 		Public.progress_to_destination(1) --index of first destination
@@ -410,7 +410,7 @@ end
 
 
 
-function Public.try_retreat_from_island() -- Assumes the cost can be paid
+function Public.try_retreat_from_island(manual) -- Assumes the cost can be paid
 	local memory = Memory.get_crew_memory()
 	if memory.game_lost then return end
 	local destination = Common.current_destination()
@@ -456,11 +456,11 @@ function Public.try_retreat_from_island() -- Assumes the cost can be paid
 		if cost then
 			Common.spend_stored_resources(cost)
 		end
-		Public.retreat_from_island()
+		Public.retreat_from_island(manual)
 	end
 end
 
-function Public.retreat_from_island()
+function Public.retreat_from_island(manual)
 	local memory = Memory.get_crew_memory()
 	local boat = memory.boat
 
@@ -473,14 +473,18 @@ function Public.retreat_from_island()
 
 	local force = memory.force
 	if not (force and force.valid) then return end
-	Common.notify_force(force,'[font=heading-1]Boat undocked[/font].')
+	if manual then
+		Common.notify_force(force,'[font=heading-1]Ship undocked[/font]. Return to ship.')
+	else
+		Common.notify_force(force,'[font=heading-1]Ship auto-undocked[/font]. Return to ship.')
+	end
 
 	Surfaces.destination_on_departure(Common.current_destination())
 end
 
 
 
-function Public.undock_from_dock()
+function Public.undock_from_dock(manual)
 	local memory = Memory.get_crew_memory()
 	local boat = memory.boat
 	local destination = Common.current_destination()
@@ -498,7 +502,11 @@ function Public.undock_from_dock()
 
 	local force = memory.force
 	if not (force and force.valid) then return end
-	Common.notify_force(force,'Leaving the dock.')
+	if manual then
+		Common.notify_force(force,'[font=heading-1]Ship undocked[/font].')
+	else
+		Common.notify_force(force,'[font=heading-1]Ship auto-undocked[/font].')
+	end
 end
 
 

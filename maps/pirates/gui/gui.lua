@@ -1081,10 +1081,10 @@ local function on_gui_click(event)
 			if (not memory.undock_shortcut_are_you_sure_data) then memory.undock_shortcut_are_you_sure_data = {} end
 			if memory.undock_shortcut_are_you_sure_data[player.index] and memory.undock_shortcut_are_you_sure_data[player.index] > game.tick - 60 * 4 then
 				if memory.boat.state == Boats.enum_state.DOCKED then
-					Progression.undock_from_dock()
+					Progression.undock_from_dock(true)
 				elseif memory.boat.state == Boats.enum_state.LANDED then
 					if Common.query_can_pay_cost_to_leave() then
-						Progression.try_retreat_from_island()
+						Progression.try_retreat_from_island(true)
 					else
 						Common.notify_player_error(player, 'Not enough stored resources.')
 					end

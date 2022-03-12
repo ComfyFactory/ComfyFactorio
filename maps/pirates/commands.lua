@@ -268,10 +268,10 @@ function(cmd)
 		local player = game.players[cmd.player_index]
 		local memory = Memory.get_crew_memory()
 		if memory.boat.state == Boats.enum_state.DOCKED then
-			Progression.undock_from_dock()
+			Progression.undock_from_dock(true)
 		elseif memory.boat.state == Boats.enum_state.LANDED then
 			if Common.query_can_pay_cost_to_leave() then
-				Progression.try_retreat_from_island()
+				Progression.try_retreat_from_island(true)
 			else
 				Common.notify_player_error(player, 'Not enough stored resources.')
 			end
@@ -388,7 +388,7 @@ function(cmd)
 		local player = game.players[cmd.player_index]
 		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
 		Memory.set_working_id(crew_id)
-		Progression.retreat_from_island()
+		Progression.retreat_from_island(true)
 	end
 end)
 

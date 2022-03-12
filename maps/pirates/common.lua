@@ -485,7 +485,7 @@ function Public.surface_place_random_obstacle_boxes(surface, center, width, heig
 					e.rotatable = false
 					if contents[placed] and j==1 then
 						local inventory = e.get_inventory(defines.inventory.chest)
-						for name, count2 in pairs(contents[i]) do
+						for name, count2 in pairs(contents[placed]) do
 							inventory.insert{name = name, count = count2}
 						end
 					end

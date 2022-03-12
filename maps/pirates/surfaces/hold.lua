@@ -27,6 +27,10 @@ Public.Data.height = 46
 Public.Data.loco_offset = {x = -2, y = 0}
 -- Public.Data.loco_offset = {x = 18, y = 0}
 -- Public.Data.display_name = 'Ship\'s Hold'
+Public.Data.downstairs_pole_positions = {
+	{x = -1, y = -5},
+	{x = -1, y = 5},
+}
 
 Public[enum.INITIAL] = {}
 Public[enum.INITIAL].Data = {}
@@ -159,6 +163,24 @@ function Public.create_hold_surface(nth)
 	local items = subtype == enum.INITIAL and Balance.starting_items_crew_downstairs() or {}
 	Common.surface_place_random_obstacle_boxes(Public.get_hold_surface(nth), {x=0,y=0}, Public.Data.width, Public.Data.height, 'rocket-silo', {[1] = 0, [2] = 8, [3] = 4, [4] = 1}, items)
 	-- Public.hold_place_random_obstacle_boxes(nth, {[1] = 0, [2] = 9, [3] = 3, [4] = 1}, items)
+
+	if not boat.downstairs_poles then boat.downstairs_poles = {} end
+	boat.downstairs_poles[nth] = {}
+	for i = 1, 2 do
+		local e = surface.create_entity({name = 'substation', position = Public.Data.downstairs_pole_positions[i], force = boat.force_name, create_build_effect_smoke = false})
+		if e and e.valid then
+			e.destructible = false
+			e.minable = false
+			e.rotatable = false
+			e.operable = false
+			boat.downstairs_poles[nth][i] = e
+		end
+	end
+	if nth >= 2 then
+		if boat.downstairs_poles[nth][1] and boat.downstairs_poles[nth][1].valid and boat.downstairs_poles[nth-1][2] and boat.downstairs_poles[nth-1][2].valid then
+			boat.downstairs_poles[nth][1].connect_neighbour(boat.downstairs_poles[nth-1][2])
+		end
+	end
 
 	if subtype == enum.SECONDARY then
 		if Common.difficulty() >= 1 then

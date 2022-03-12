@@ -1162,7 +1162,7 @@ local function on_player_changed_surface(event)
         return
     end
 
-	-- prevent connecting power between surfaces:
+	-- prevent connecting power between surfaces: (for the ship we do this automatically, but no need to let players do it in the general case:)
 	if not player.is_cursor_empty() then
 		if player.cursor_stack and player.cursor_stack.valid_for_read then
 			local blacklisted = {

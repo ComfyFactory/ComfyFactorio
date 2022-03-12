@@ -120,11 +120,15 @@ Public.entities = {
 	},
 }
 Public.EEIs = {
-	{x = -13, y = -10},
-	{x = -13, y = 10},
+	{x = -64, y = -10},
+	{x = -64, y = 10},
 }
-Public.power1_rendering_position = {x = -13, y = 9.5}
-Public.power2_rendering_position = {x = -13, y = -10.5}
+Public.upstairs_poles = {
+	{x = -39.0, y = -5.0},
+	{x = -39.0, y = 5.0},
+}
+Public.power1_rendering_position = {x = -64, y = 9.5}
+Public.power2_rendering_position = {x = -64, y = -10.5}
 
 Public.cannons = {
 	{x = -39.5, y = 11.5},

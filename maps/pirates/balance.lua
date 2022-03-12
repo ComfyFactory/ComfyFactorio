@@ -40,6 +40,7 @@ Public.rocket_launch_coin_reward = 5000
 function Public.crew_scale()
 	local ret = Common.activecrewcount()/10
 	if ret == 0 then ret = 1/10 end --if all players are afk
+	if ret > 3 then ret = 3 end --cap
 	return ret
 end
 
@@ -450,7 +451,8 @@ function Public.starting_items_crew_downstairs()
 		{['storage-tank'] = 4},
 		{['medium-electric-pole'] = Math.random(15,21)},
 		{['coin'] = 2000},
-		{['solar-panel'] = 4},
+		{['solar-panel'] = 3},
+		{['accumulator'] = 1},
 	}
 end
 

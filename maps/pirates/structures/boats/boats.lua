@@ -282,6 +282,24 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 			end
 		end
 
+		if scope.Data.upstairs_poles then
+			for i = 1, 2 do
+				local p = scope.Data.upstairs_poles[i]
+				local p2 = {x = boat.position.x + p.x, y = boat.position.y + p.y}
+				local e = surface.create_entity({name = 'substation', position = p2, force = boat.force_name, create_build_effect_smoke = false})
+				if e and e.valid then
+					e.destructible = false
+					e.minable = false
+					e.rotatable = false
+					e.operable = false
+					if i == 1 then
+						boat.upstairs_pole = e
+						Public.try_connect_upstairs_and_downstairs_poles(boat)
+					end
+				end
+			end
+		end
+
 		if scope.Data.cannons then
 			for _, p in pairs(scope.Data.cannons) do
 				local p2 = {x = boat.position.x + p.x, y = boat.position.y + p.y}
@@ -638,6 +656,15 @@ end
 -- 		end
 -- 	end
 -- end
+
+
+function Public.try_connect_upstairs_and_downstairs_poles(boat)
+	local memory = Memory.get_crew_memory()
+
+	if not (boat and boat.upstairs_pole and boat.upstairs_pole.valid and boat.downstairs_poles and boat.downstairs_poles[1] and boat.downstairs_poles[1][1] and boat.downstairs_poles[1][1].valid) then return end
+
+	boat.upstairs_pole.connect_neighbour(boat.downstairs_poles[1][1])
+end
 
 
 
@@ -1038,6 +1065,12 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 					end
 
 					local ee = e.clone{position = p2, surface = newsurface, create_build_effect_smoke = false}
+
+					if boat.upstairs_pole and e == boat.upstairs_pole then
+						boat.upstairs_pole = ee
+						Public.try_connect_upstairs_and_downstairs_poles(boat)
+					end
+
 					e.destroy()
 
 					-- Right now in the game we don't expect any non-player characters, so let's kill them to make a point:

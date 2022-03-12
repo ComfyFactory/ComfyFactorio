@@ -253,9 +253,9 @@ local function crew_tick()
 					local surface_name_decoded = Surfaces.SurfacesCommon.decode_surface_name(memory.boat.surface_name)
 					local type = surface_name_decoded.type
 					if type == Surfaces.enum.ISLAND then
-						Progression.retreat_from_island()
+						Progression.retreat_from_island(false)
 					elseif type == Surfaces.enum.DOCK then
-						Progression.undock_from_dock()
+						Progression.undock_from_dock(false)
 					end
 				end
 			end
