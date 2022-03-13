@@ -67,7 +67,7 @@ function Public.parrot_boats_warning()
 end
 function Public.parrot_kraken_warning()
 	local memory = Memory.get_crew_memory()
-	Common.parrot_speak(memory.force, '400 leagues? What are those pink things I see up ahead...')
+	Common.parrot_speak(memory.force, '400 leagues coming up? What are those pink things I spy...')
 end
 function Public.parrot_radioactive_tip_1()
 	local memory = Memory.get_crew_memory()

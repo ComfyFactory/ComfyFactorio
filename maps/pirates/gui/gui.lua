@@ -153,7 +153,7 @@ local function create_gui(player)
 	-- flow4.style.left_margin = -100
 	-- flow3.style.horizontal_align = 'center'
 	-- flow4.style.left_padding = -5
-	flow3.style.left_margin = -1
+	flow3.style.left_margin = -2
 
 	flow3 = flow2.add({
 		name = 'fuel_label_2',
@@ -161,8 +161,7 @@ local function create_gui(player)
 		caption = ''
 	})
 	flow3.style.font = 'default-large'
-	
-	flow3.style.left_margin = 6
+	flow3.style.left_margin = 3
 
 
 
@@ -498,18 +497,23 @@ end
 function Public.update_gui(player)
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
+	local dynamic_data = destination.dynamic_data --assumes this always exists
+
 	local flow1, flow1b, flow2, flow3
 
 	local pirates_flow = player.gui.top
 
 	if not pirates_flow.info_piratebutton_frame then create_gui(player) end
 	
+
+	flow1 = pirates_flow.crew_piratebutton_frame.crew_piratebutton
+
 	if memory.id and memory.id ~= 0 then
-		pirates_flow.crew_piratebutton_frame.crew_piratebutton.tooltip = 'Your Crew\n\nPerform crew actions.'
-		pirates_flow.crew_piratebutton_frame.crew_piratebutton.mouse_button_filter = {'left','right'}
+		flow1.tooltip = 'Your Crew\n\nPerform crew actions.'
+		flow1.mouse_button_filter = {'left','right'}
 	else
-		pirates_flow.crew_piratebutton_frame.crew_piratebutton.tooltip = 'Your Crew\n\nYou\'re a free agent, so there\'s nothing to do here.'
-		pirates_flow.crew_piratebutton_frame.crew_piratebutton.mouse_button_filter = {'middle'} --hack to avoid press visual
+		flow1.tooltip = 'Your Crew\n\nYou\'re a free agent, so there\'s nothing to do here.'
+		flow1.mouse_button_filter = {'middle'} --hack to avoid press visual
 		if player.gui.screen['crew_piratewindow'] then
 			player.gui.screen['crew_piratewindow'].destroy()
 		end
@@ -536,21 +540,27 @@ function Public.update_gui(player)
 	-- 	button.number = 3
 	-- end
 
-	pirates_flow.fuel_piratebutton_flow_1.fuel_piratebutton_flow_2.fuel_label_1.caption = Utils.bignumber_abbrevform(memory.stored_fuel or 0) .. '[item=coal]'
-	pirates_flow.fuel_piratebutton_flow_1.fuel_piratebutton_flow_2.fuel_label_2.caption = Utils.negative_rate_abbrevform(memory.fuel_depletion_rate_memoized or 0)
+	flow1 = pirates_flow.fuel_piratebutton_flow_1
+
+	flow1.fuel_piratebutton.tooltip = {'pirates.fuel_tooltip', Math.floor(memory.stored_fuel or 0)}
+
+
+	flow2 = flow1.fuel_piratebutton_flow_2
+
+	flow2.fuel_label_1.caption = Utils.bignumber_abbrevform(memory.stored_fuel or 0) .. '[item=coal]'
+	flow2.fuel_label_2.caption = Utils.negative_rate_abbrevform(memory.fuel_depletion_rate_memoized or 0)
 	local color_scale = Math.max(Math.min((- (memory.fuel_depletion_rate_memoized or 0))/50, 1),0)
-	pirates_flow.fuel_piratebutton_flow_1.fuel_piratebutton_flow_2.fuel_label_2.style.font_color = {
+	flow2.fuel_label_2.style.font_color = {
 		r = GuiCommon.fuel_color_1.r * (1-color_scale) + GuiCommon.fuel_color_2.r * color_scale,
 		g = GuiCommon.fuel_color_1.g * (1-color_scale) + GuiCommon.fuel_color_2.g * color_scale,
 		b = GuiCommon.fuel_color_1.b * (1-color_scale) + GuiCommon.fuel_color_2.b * color_scale,
 	}
 
 
+	flow1 = pirates_flow.progress_piratebutton_frame.progress_piratebutton
 
-	pirates_flow.fuel_piratebutton_flow_1.fuel_piratebutton.tooltip = {'pirates.fuel_tooltip', Math.floor(memory.stored_fuel or 0)}
-
-	pirates_flow.progress_piratebutton_frame.progress_piratebutton.number = (memory.overworldx or 0)
-	pirates_flow.progress_piratebutton_frame.progress_piratebutton.caption = string.format('Progress: %d leagues.\n\nTravel %d leagues to win the game.', memory.overworldx or 0, CoreData.victory_x)
+	flow1.number = (memory.overworldx or 0)
+	flow1.caption = string.format('Progress: %d leagues.\n\nTravel %d leagues to win the game.', memory.overworldx or 0, CoreData.victory_x)
 	-- pirates_flow.destination_piratebutton_frame.destination_piratebutton.number = memory.destinationsvisited_indices and #memory.destinationsvisited_indices or 0
 
 
@@ -569,16 +579,16 @@ function Public.update_gui(player)
 		memory.boat and memory.boat.surface_name == destination.surface_name and (in_crowsnest_bool or in_hold_bool or in_cabin_bool)
 	))
 
-	if destination and destination.dynamic_data then
-		eta_bool = destination.dynamic_data.time_remaining and destination.dynamic_data.time_remaining > 0 and onmap_bool
-		retreating_bool = memory.boat and memory.boat.state and memory.boat.state == Boats.enum_state.RETREATING and onmap_bool
-		approaching_bool = memory.boat and memory.boat.state and memory.boat.state == Boats.enum_state.APPROACHING
-		atsea_sailing_bool = memory.boat and memory.boat.state and memory.boat.state == Boats.enum_state.ATSEA_SAILING
-		landed_bool = memory.boat and memory.boat.state and memory.boat.state == Boats.enum_state.LANDED
-		quest_bool = (destination.dynamic_data.quest_type ~= nil) and onmap_bool
-		silo_bool = destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid and onmap_bool
-		charged_bool = destination.dynamic_data.silocharged
-		launched_bool = destination.dynamic_data.rocketlaunched
+	if destination then
+		eta_bool = dynamic_data.time_remaining and dynamic_data.time_remaining > 0 and onmap_bool
+		retreating_bool = memory.boat and memory.boat.state == Boats.enum_state.RETREATING and onmap_bool
+		approaching_bool = memory.boat and memory.boat.state == Boats.enum_state.APPROACHING
+		atsea_sailing_bool = memory.boat and memory.boat.state == Boats.enum_state.ATSEA_SAILING
+		landed_bool = memory.boat and memory.boat.state == Boats.enum_state.LANDED
+		quest_bool = (dynamic_data.quest_type ~= nil) and onmap_bool
+		silo_bool = dynamic_data.rocketsilos and dynamic_data.rocketsilos[1] and dynamic_data.rocketsilos[1].valid and onmap_bool
+		charged_bool = dynamic_data.silocharged
+		launched_bool = dynamic_data.rocketlaunched
 
 		cost_bool = destination.static_params.cost_to_leave and (not atsea_sailing_bool) and (not retreating_bool)
 		cost_includes_rocket_launch = cost_bool and destination.static_params.cost_to_leave['launch_rocket']
@@ -601,14 +611,15 @@ function Public.update_gui(player)
 			on_deck_standing_near_crowsnest_bool = Math.distance(player.character.position, Math.vector_sum(memory.boat.position, BoatData.crowsnest_center)) < 2.7
 		end
 	
-
 		approaching_dock_bool = destination.type == Surfaces.enum.DOCK and memory.boat.state == Boats.enum_state.APPROACHING
 		leaving_dock_bool = destination.type == Surfaces.enum.DOCK and memory.boat.state == Boats.enum_state.LEAVING_DOCK
 	end
 
 	--== Update Gui ==--
 
+
 	flow1 = pirates_flow.fuel_piratebutton_flow_1
+
 	if memory.crewstatus == nil then
 		flow1.visible = false
 	else
@@ -644,7 +655,7 @@ function Public.update_gui(player)
 		
 				tooltip = {'pirates.auto_undock_tooltip'}
 		
-				local passive_eta = destination.dynamic_data.time_remaining
+				local passive_eta = dynamic_data.time_remaining
 		
 				flow2.etaframe_label_1.caption = 'Auto-undock:'
 				flow2.etaframe_label_2.caption = Utils.standard_string_form_of_time_in_seconds(passive_eta)
@@ -677,8 +688,10 @@ function Public.update_gui(player)
 			end
 
 			if cost_bool then
+				local cost_table = flow2.cost_table
+
 				flow2.etaframe_label_3.visible = true
-				flow2.cost_table.visible = true
+				cost_table.visible = true
 
 				if flow2.etaframe_label_2.visible then
 				flow2.etaframe_label_2.caption = flow2.etaframe_label_2.caption .. '.'
@@ -710,36 +723,35 @@ function Public.update_gui(player)
 					end
 				end
 
-				flow2.cost_table.visible = true
 				local costs = destination.static_params.cost_to_leave
 	
 				for i = 1, #CoreData.cost_items do
 					local item_name = CoreData.cost_items[i].name
 		
-					if costs[item_name] and flow2.cost_table['cost_' .. i] then
+					if costs[item_name] and cost_table['cost_' .. i] then
 						local stored = (memory.boat.stored_resources and memory.boat.stored_resources[item_name]) or 0
 						if atsea_loading_bool then
-							flow2.cost_table['cost_' .. i].number = costs[item_name]
+							cost_table['cost_' .. i].number = costs[item_name]
 						else --subtract off the amount we've stored
-							flow2.cost_table['cost_' .. i].number = Math.max(costs[item_name] - stored, 0)
+							cost_table['cost_' .. i].number = Math.max(costs[item_name] - stored, 0)
 						end
-						flow2.cost_table['cost_' .. i].tooltip = CoreData.cost_items[i].display_name
-						flow2.cost_table['cost_' .. i].visible = true
+						cost_table['cost_' .. i].tooltip = CoreData.cost_items[i].display_name
+						cost_table['cost_' .. i].visible = true
 					else
-						flow2.cost_table['cost_' .. i].visible = false
+						cost_table['cost_' .. i].visible = false
 					end
 				end
 
-				if costs['launch_rocket'] and flow2.cost_table['cost_launch_rocket'] then
-					if atsea_loading_bool or (not destination.dynamic_data.rocketlaunched) then
-						flow2.cost_table['cost_launch_rocket'].number = 1
+				if costs['launch_rocket'] and cost_table['cost_launch_rocket'] then
+					if atsea_loading_bool or (not dynamic_data.rocketlaunched) then
+						cost_table['cost_launch_rocket'].number = 1
 					else
-						flow2.cost_table['cost_launch_rocket'].number = 0
+						cost_table['cost_launch_rocket'].number = 0
 					end
-					flow2.cost_table['cost_launch_rocket'].tooltip = 'Launch a rocket'
-					flow2.cost_table['cost_launch_rocket'].visible = true
+					cost_table['cost_launch_rocket'].tooltip = 'Launch a rocket'
+					cost_table['cost_launch_rocket'].visible = true
 				else
-					flow2.cost_table['cost_launch_rocket'].visible = false
+					cost_table['cost_launch_rocket'].visible = false
 				end
 			end
 
@@ -862,12 +874,12 @@ function Public.update_gui(player)
 					flow1.silo_label_2.visible = false
 					flow1.silo_label_3.visible = true
 	
-					-- flow1.silo_label_1.caption = string.format('[achievement=there-is-no-spoon]: +%.0f[item=sulfur]', destination.dynamic_data.rocketcoalreward)
+					-- flow1.silo_label_1.caption = string.format('[achievement=there-is-no-spoon]: +%.0f[item=sulfur]', dynamic_data.rocketcoalreward)
 					flow1.silo_label_1.caption = string.format('Launched:')
-					-- flow1.silo_label_1.caption = string.format('Launched for %.0f[item=coal] , ' .. Balance.rocket_launch_coin_reward .. '[item=coin]', destination.dynamic_data.rocketcoalreward)
+					-- flow1.silo_label_1.caption = string.format('Launched for %.0f[item=coal] , ' .. Balance.rocket_launch_coin_reward .. '[item=coin]', dynamic_data.rocketcoalreward)
 					flow1.silo_label_1.style.font_color = GuiCommon.achieved_font_color
 
-					flow1.silo_label_3.caption = Math.floor(destination.dynamic_data.rocketcoalreward/100)/10 .. 'k[item=coal], ' .. Math.floor(Balance.rocket_launch_coin_reward/100)/10 .. 'k[item=coin]'
+					flow1.silo_label_3.caption = Math.floor(dynamic_data.rocketcoalreward/100)/10 .. 'k[item=coal], ' .. Math.floor(Balance.rocket_launch_coin_reward/100)/10 .. 'k[item=coin]'
 
 					local tooltip = 'The rocket has launched, and this is the reward.'
 					flow1.tooltip = tooltip
@@ -895,9 +907,9 @@ function Public.update_gui(player)
 				flow1.silo_progressbar.visible = true
 				flow1.silo_label_3.visible = false
 	
-				local consumed = destination.dynamic_data.rocketsiloenergyconsumed
-				local needed = destination.dynamic_data.rocketsiloenergyneeded
-				local recent = (destination.dynamic_data.rocketsiloenergyconsumedwithinlasthalfsecond * 2)
+				local consumed = dynamic_data.rocketsiloenergyconsumed
+				local needed = dynamic_data.rocketsiloenergyneeded
+				local recent = (dynamic_data.rocketsiloenergyconsumedwithinlasthalfsecond * 2)
 		
 				flow1.silo_progressbar.value = consumed/needed
 		
@@ -910,7 +922,7 @@ function Public.update_gui(player)
 				if recent ~= 0 then
 					active_eta = (needed - consumed) / recent
 					flow1.silo_label_2.caption = Utils.standard_string_form_of_time_in_seconds(active_eta)
-					if active_eta < destination.dynamic_data.time_remaining or (not eta_bool) then
+					if active_eta < dynamic_data.time_remaining or (not eta_bool) then
 						flow1.silo_label_2.style.font_color = GuiCommon.sufficient_font_color
 					else
 						flow1.silo_label_2.style.font_color = GuiCommon.insufficient_font_color
@@ -932,12 +944,12 @@ function Public.update_gui(player)
 		if quest_bool then
 			flow1.visible = true
 	
-			local quest_type = destination.dynamic_data.quest_type or nil
-			local quest_params = destination.dynamic_data.quest_params or {}
-			local quest_reward = destination.dynamic_data.quest_reward or nil
-			local quest_progress = destination.dynamic_data.quest_progress or 0
-			local quest_progressneeded = destination.dynamic_data.quest_progressneeded or 0
-			local quest_complete =  destination.dynamic_data.quest_complete or false
+			local quest_type = dynamic_data.quest_type or nil
+			local quest_params = dynamic_data.quest_params or {}
+			local quest_reward = dynamic_data.quest_reward or nil
+			local quest_progress = dynamic_data.quest_progress or 0
+			local quest_progressneeded = dynamic_data.quest_progressneeded or 0
+			local quest_complete =  dynamic_data.quest_complete or false
 	
 			if quest_type then
 	
@@ -1015,7 +1027,7 @@ function Public.update_gui(player)
 					elseif quest_type == Quest.enum.NODAMAGE then
 						if tooltip == '' then tooltip = 'Quest: No Damage\n\nLaunch a rocket without the silo taking damage.' end
 
-						if (memory.boat and memory.boat.state == Boats.enum_state.APPROACHING) or (destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid and destination.dynamic_data.rocketsilohp == destination.dynamic_data.rocketsilomaxhp) then
+						if (memory.boat and memory.boat.state == Boats.enum_state.APPROACHING) or (dynamic_data.rocketsilos and dynamic_data.rocketsilos[1] and dynamic_data.rocketsilos[1].valid and dynamic_data.rocketsilohp == dynamic_data.rocketsilomaxhp) then
 							flow1.quest_label_3.caption = string.format('OK')
 							flow1.quest_label_3.style.font_color = GuiCommon.sufficient_font_color
 						else
@@ -1138,7 +1150,7 @@ local function on_gui_click(event)
 					if Common.query_can_pay_cost_to_leave() then
 						Progression.try_retreat_from_island(true)
 					else
-						Common.notify_player_error(player, 'Not enough stored resources.')
+						Common.notify_force_error(player.force, 'Undock error: Not enough stored resources.')
 					end
 				end
 			else

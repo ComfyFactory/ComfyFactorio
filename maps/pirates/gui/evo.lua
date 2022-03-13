@@ -50,6 +50,8 @@ function Public.regular_update(player)
 end
 
 function Public.full_update(player)
+	Public.regular_update(player)
+	
 	local memory = Memory.get_crew_memory()
 	local pirates_flow = player.gui.top
 

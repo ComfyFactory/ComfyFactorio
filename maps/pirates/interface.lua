@@ -204,8 +204,8 @@ local function kraken_damage(event)
 	if event.damage_type.name and (event.damage_type.name == 'explosion' or event.damage_type.name == 'poison') then
 	-- if event.cause.name == 'artillery-turret' then
 		adjusted_damage = adjusted_damage / 2.5
-	-- elseif event.damage_type.name and (event.damage_type.name == 'fire') then
-	-- 	adjusted_damage = adjusted_damage
+	elseif event.damage_type.name and (event.damage_type.name == 'fire') then
+		adjusted_damage = adjusted_damage / 1.1
 	end
 	-- and additionally:
 	if event.cause.name == 'artillery-turret' then
@@ -397,14 +397,19 @@ local function maze_walls_resistance(event)
 
 	if not ((entity.type and entity.type == 'tree') or entity.name == 'rock-huge' or entity.name == 'rock-big' or entity.name == 'sand-rock-big') then return end
 
-
 	local damage = event.final_damage_amount
 
 	if (event.damage_type.name and (event.damage_type.name == 'explosion' or event.damage_type.name == 'poison')) then
 		event.entity.health = event.entity.health + damage
+	elseif event.damage_type.name and event.damage_type.name == 'fire' then
+		-- put out forest fires:
+		for _, e2 in pairs(entity.surface.find_entities_filtered({area = {{entity.position.x - 4, entity.position.y - 4},{entity.position.x + 4, entity.position.y + 4}}, name = "fire-flame-on-tree"})) do
+			if e2.valid then e2.destroy() end
+		end
 	else
-		if string.sub(event.cause.force.name, 1, 4) ~= 'crew' then return end --player damage only
-		event.entity.health = event.entity.health + damage * 0.9
+		if string.sub(event.cause.force.name, 1, 4) == 'crew' then --player damage only
+			event.entity.health = event.entity.health + damage * 0.9
+		end
 	end
 end
 
@@ -619,7 +624,7 @@ local function event_on_player_mined_entity(event)
 		if available and destination.type == Surfaces.enum.ISLAND then
 
 			if destination and destination.subtype and destination.subtype == Islands.enum.MAZE then
-				if Math.random(1, 45) == 1 then
+				if Math.random(1, 35) == 1 then
 					tick_tack_trap(memory.enemy_force_name, entity.surface, entity.position)
 					return
 				end
@@ -706,7 +711,7 @@ local function event_on_player_mined_entity(event)
 		if available and destination.type == Surfaces.enum.ISLAND then
 
 			if destination and destination.subtype and destination.subtype == Islands.enum.MAZE then
-				if Math.random(1, 45) == 1 then
+				if Math.random(1, 35) == 1 then
 					tick_tack_trap(memory.enemy_force_name, entity.surface, entity.position)
 					return
 				end
@@ -995,6 +1000,7 @@ local function event_on_research_finished(event)
 	p_force.recipes['car'].enabled = false
 	p_force.recipes['cargo-wagon'].enabled = false
 	p_force.recipes['slowdown-capsule'].enabled = false
+	p_force.recipes['nuclear-fuel'].enabled = false
 	-- p_force.recipes['rail'].enabled = false
 end
 
@@ -1466,7 +1472,7 @@ local function event_on_built_entity(event)
 						player.insert{name = entity.name, count = 1}
 					end
 					entity.destroy()
-					Common.notify_force_error(player, 'Build error: Undergrounds can\'t be built on the boat, due to conflicts with the boat movement code.')
+					Common.notify_player_error(player, 'Build error: Undergrounds can\'t be built on the boat, due to conflicts with the boat movement code.')
 					return
 			end
 		end

@@ -137,7 +137,7 @@ function Public.terrain(args)
 	local x, y = args.p.x, args.p.y
 
 	args.tiles[#args.tiles + 1] = {name = 'water', position = args.p}
-	local fishrng = Math.random(200)
+	local fishrng = Math.random(165)
 	if fishrng == 1 then
 		args.entities[#args.entities + 1] = {name = 'fish', position = args.p}
 	end

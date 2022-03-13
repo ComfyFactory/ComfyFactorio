@@ -32,7 +32,8 @@ function Public.scripted_biters_pollution_cost_multiplier()
 end
 
 function Public.cost_to_leave_multiplier()
-	return Common.difficulty()
+	-- return Math.sloped(Common.difficulty(), 7/10) --should scale with difficulty similar to, but slightly slower than, passive fuel depletion rate --Edit: not sure about this?
+	return Math.sloped(Common.difficulty(), 9/10)
 end
 
 Public.rocket_launch_coin_reward = 5000
@@ -159,15 +160,20 @@ end
 
 
 function Public.base_evolution()
-	local slope = 0.0201
-	local evo = (0.0201 * (Common.overworldx()/40)) * Math.sloped(Common.difficulty(), 1/5)
-	if Common.overworldx() > 600 then
-		evo = evo + (0.005 * (Math.min(Common.overworldx()/40,25) - 600)) * Math.sloped(Common.difficulty(), 1/5)
+	local evo
+
+	if Common.overworldx() == 0 then
+		evo = 0
+	else
+		evo = (0.0201 * (Common.overworldx()/40)) * Math.sloped(Common.difficulty(), 1/5)
+	
+		if Common.overworldx() > 600 and Common.overworldx() < 1000 then --extra slope from 600 to 1000
+			evo = evo + (0.0040 * (Common.overworldx() - 600)/40) * Math.sloped(Common.difficulty(), 1/5)
+		elseif Common.overworldx() > 1000 then
+			evo = evo + 0.0400 * Math.sloped(Common.difficulty(), 1/5)
+		end
 	end
-	if Common.overworldx() > 1000 then --undo this ramp:
-		evo = evo + (-0.005 * (Math.min(Common.overworldx()/40,25) - 1000)) * Math.sloped(Common.difficulty(), 1/5)
-	end
-	if Common.overworldx()/40 == 0 then evo = 0 end
+
 	return evo
 end
 
@@ -498,8 +504,8 @@ Public.covered1_entry_price_data_raw = { --watch out that the raw_materials ches
 	{0.75, 0, 0.6, false, {
 		price = {name = 'burner-inserter', count = 300},
 		raw_materials = {{name = 'iron-plate', count = 900}}}, {}},
-	{1.1, 0.05, 0.7, false, {
-		price = {name = 'electronic-circuit', count = 800},
+	{1, 0.05, 0.7, false, {
+		price = {name = 'small-lamp', count = 400},
 		raw_materials = {{name = 'iron-plate', count = 800}, {name = 'copper-plate', count = 1200}}}, {}},
 	{1, 0, 1, false, {
 		price = {name = 'firearm-magazine', count = 700},

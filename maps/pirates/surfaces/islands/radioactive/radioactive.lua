@@ -280,7 +280,7 @@ local function radioactive_tick()
 			destination.dynamic_data.evolution_accrued_time = destination.dynamic_data.evolution_accrued_time + extra_evo
 
 			-- faster pollute:
-			local pollution = 4.7 * (6 * Common.difficulty()^(1.1) * (Common.overworldx()/40)^(14/10) * (Balance.crew_scale())^(0.6)) / 3600 * tickinterval * (1 + (Common.difficulty()-1)*0.2 + 0.001 * (destination.dynamic_data.timer or 0))
+			local pollution = 4.7 * (6 * Common.difficulty()^(1.1) * (memory.overworldx/40)^(14/10) * (Balance.crew_scale())^(0.6)) / 3600 * tickinterval * (1 + (Common.difficulty()-1)*0.2 + 0.001 * (destination.dynamic_data.timer or 0))
 
 			if not memory.floating_pollution then memory.floating_pollution = 0 end
 			memory.floating_pollution = memory.floating_pollution + pollution
@@ -288,7 +288,7 @@ local function radioactive_tick()
 			game.pollution_statistics.on_flow('uranium-ore', pollution)
 
 			local surface = game.surfaces[destination.surface_name]
-			if surface and surface.valid and (not surface.freeze_daytime) and destination.dynamic_data.timer and destination.dynamic_data.timer >= CoreData.daynightcycle_types[3].ticksperday/60/2 then --once daytime, never go back to night
+			if surface and surface.valid and (not surface.freeze_daytime) and destination.dynamic_data.timer and destination.dynamic_data.timer >= CoreData.daynightcycle_types[Public.Data.static_params_default.daynightcycletype].ticksperday/60/2 then --once daytime, never go back to night
 				surface.freeze_daytime = true
 			end
 		end

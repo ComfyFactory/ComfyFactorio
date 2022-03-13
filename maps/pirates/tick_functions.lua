@@ -286,13 +286,15 @@ end
 function Public.pick_up_tick(tickinterval)
 	local destination = Common.current_destination()
 	if not destination then return end
+	local dynamic_data = destination.dynamic_data
 	local surface_name = destination.surface_name
-	if (not destination.dynamic_data) or (not destination.dynamic_data.treasure_maps) or (not surface_name) or (not game.surfaces[surface_name]) or (not game.surfaces[surface_name].valid) then return end
+	if not (surface_name and dynamic_data) then return end
 	local surface = game.surfaces[surface_name]
+	if not (surface and surface.valid) then return end
 
-	local maps = destination.dynamic_data.treasure_maps or {}
-	local buried_treasure = destination.dynamic_data.buried_treasure or {}
-	local ghosts = destination.dynamic_data.ghosts or {}
+	local maps = dynamic_data.treasure_maps or {}
+	local buried_treasure = dynamic_data.buried_treasure or {}
+	local ghosts = dynamic_data.ghosts or {}
 
 	for i = 1, #maps do
 		local map = maps[i]
@@ -361,7 +363,7 @@ function Public.pick_up_tick(tickinterval)
 		end
 	end
 
-	if not (destination and destination.dynamic_data and destination.dynamic_data.quest_type and (not destination.dynamic_data.quest_complete)) then return end
+	if not (dynamic_data.quest_type and (not dynamic_data.quest_complete)) then return end
 
 	for i = 1, #ghosts do
 		local ghost = ghosts[i]
@@ -389,7 +391,7 @@ function Public.pick_up_tick(tickinterval)
 	
 					Common.notify_force(player.force, player.name .. ' found a ghost.')
 	
-					destination.dynamic_data.quest_progress = destination.dynamic_data.quest_progress + 1
+					dynamic_data.quest_progress = dynamic_data.quest_progress + 1
 					Quest.try_resolve_quest()
 				end
 			end
@@ -599,10 +601,12 @@ function Public.place_cached_structures(tickinterval)
 					covered_data.market.rotatable = false
 					covered_data.market.destructible = false
 
-					covered_data.market.add_market_item{price={{'pistol', 1}}, offer={type = 'give-item', item = 'coin', count = 400}}
+					covered_data.market.add_market_item{price={{'pistol', 1}}, offer={type = 'give-item', item = 'coin', count = 450}}
 					covered_data.market.add_market_item{price={{'burner-mining-drill', 1}}, offer={type = 'give-item', item = 'iron-plate', count = 9}}
 
-					local coin_offers = ShopCovered.market_generate_coin_offers(4)
+					local how_many_coin_offers = 4
+					if Balance.crew_scale() >= 1.2 then how_many_coin_offers = 5 end
+					local coin_offers = ShopCovered.market_generate_coin_offers(how_many_coin_offers)
 					for _, o in pairs(coin_offers) do
 						covered_data.market.add_market_item(o)
 					end
@@ -1116,54 +1120,56 @@ function Public.silo_update(tickinterval)
 	local destination = Common.current_destination()
 
 	if destination.type == Surfaces.enum.ISLAND then
-		local silos = destination.dynamic_data.rocketsilos
+		local dynamic_data = destination.dynamic_data
+		local silos = dynamic_data.rocketsilos
 
-		if silos and silos[1] and silos[1].valid then
+		if silos then
 			local silo = silos[1]
-			if destination.dynamic_data.silocharged == false then
-
-				local p = silo.position
-
-				local e = destination.dynamic_data.energychargedinsilosincelastcheck or 0
-				destination.dynamic_data.energychargedinsilosincelastcheck = 0
-
-				destination.dynamic_data.rocketsiloenergyconsumed = destination.dynamic_data.rocketsiloenergyconsumed + e
-
-				destination.dynamic_data.rocketsiloenergyconsumedwithinlasthalfsecond = e
-
-				if memory.enemy_force_name then
-					local ef = memory.enemy_force
-					if ef and ef.valid then
-						local extra_evo = Balance.evolution_per_full_silo_charge() * e/destination.dynamic_data.rocketsiloenergyneeded
-						Common.increment_evo(extra_evo)
-						destination.dynamic_data.evolution_accrued_silo = destination.dynamic_data.evolution_accrued_silo + extra_evo
+			if silo and silo.valid then
+				if dynamic_data.silocharged then
+					if not dynamic_data.rocketlaunched then
+						silo.launch_rocket()
 					end
-				end
-
-				local pollution = e/1000000 * Balance.silo_total_pollution() / Balance.silo_energy_needed_MJ()
-
-				if p and pollution then
-					game.pollution_statistics.on_flow('rocket-silo', pollution)
-					if not memory.floating_pollution then memory.floating_pollution = 0 end
-
-					-- Eventually I want to reformulate pollution not to pull from the map directly, but to pull from pollution_statistics. Previously all the silo pollution went to the map, but this causes a lag ~1-2 minutes. So as a compromise, let's send half to floating_pollution directly, and half to the map:
-					memory.floating_pollution = memory.floating_pollution + pollution/2
-					game.surfaces[destination.surface_name].pollute(p, pollution/2)
+				else
+					local p = silo.position
 	
-					if destination.dynamic_data.rocketsiloenergyconsumed >= destination.dynamic_data.rocketsiloenergyneeded and (not (silo.rocket_parts == 100)) and (destination.dynamic_data.silocharged == false) and memory.game_lost == false then
-						-- silo.energy = 0
-						silo.rocket_parts = 100
-						destination.dynamic_data.silocharged = true
-						
-						if CoreData.rocket_silo_death_causes_loss then
-							-- become immune after launching
-							silo.destructible = false
+					local e = dynamic_data.energychargedinsilosincelastcheck or 0
+					dynamic_data.energychargedinsilosincelastcheck = 0
+	
+					dynamic_data.rocketsiloenergyconsumed = dynamic_data.rocketsiloenergyconsumed + e
+	
+					dynamic_data.rocketsiloenergyconsumedwithinlasthalfsecond = e
+	
+					if memory.enemy_force_name then
+						local ef = memory.enemy_force
+						if ef and ef.valid then
+							local extra_evo = Balance.evolution_per_full_silo_charge() * e/dynamic_data.rocketsiloenergyneeded
+							Common.increment_evo(extra_evo)
+							dynamic_data.evolution_accrued_silo = dynamic_data.evolution_accrued_silo + extra_evo
 						end
 					end
-				end
-			elseif destination.dynamic_data.silocharged == true then
-				if destination.dynamic_data.rocketlaunched == false then
-					silo.launch_rocket()
+	
+					local pollution = e/1000000 * Balance.silo_total_pollution() / Balance.silo_energy_needed_MJ()
+	
+					if p and pollution then
+						game.pollution_statistics.on_flow('rocket-silo', pollution)
+						if not memory.floating_pollution then memory.floating_pollution = 0 end
+	
+						-- Eventually I want to reformulate pollution not to pull from the map directly, but to pull from pollution_statistics. Previously all the silo pollution went to the map, but this causes a lag ~1-2 minutes. So as a compromise, let's send half to floating_pollution directly, and half to the map:
+						memory.floating_pollution = memory.floating_pollution + pollution/2
+						game.surfaces[destination.surface_name].pollute(p, pollution/2)
+		
+						if dynamic_data.rocketsiloenergyconsumed >= dynamic_data.rocketsiloenergyneeded and (not (silo.rocket_parts == 100)) and (dynamic_data.silocharged == false) and (not memory.game_lost) then
+							-- silo.energy = 0
+							silo.rocket_parts = 100
+							dynamic_data.silocharged = true
+							
+							if CoreData.rocket_silo_death_causes_loss then
+								-- become immune after launching
+								silo.destructible = false
+							end
+						end
+					end
 				end
 			end
 		end
@@ -1293,25 +1299,27 @@ function Public.quest_progress_tick(tickinterval)
 	local memory = Memory.get_crew_memory()
 	if memory.game_lost then return end
 	local destination = Common.current_destination()
+	local dynamic_data = destination.dynamic_data
 
-	if destination.dynamic_data.quest_type == Quest.enum.TIME and (not destination.dynamic_data.quest_complete) and destination.dynamic_data.quest_progress > 0 and destination.dynamic_data.quest_progressneeded ~= 1 then
-		destination.dynamic_data.quest_progress = destination.dynamic_data.quest_progress - tickinterval/60
+	if dynamic_data.quest_type then
+		if dynamic_data.quest_type == Quest.enum.TIME and (not dynamic_data.quest_complete) and dynamic_data.quest_progress > 0 and dynamic_data.quest_progressneeded ~= 1 then
+			dynamic_data.quest_progress = dynamic_data.quest_progress - tickinterval/60
+		end
+	
+		if dynamic_data.quest_type == Quest.enum.RESOURCEFLOW and (not dynamic_data.quest_complete) then
+			local force = memory.force
+			if not (force and force.valid and dynamic_data.quest_params) then return end
+			dynamic_data.quest_progress = force.item_production_statistics.get_flow_count{name = dynamic_data.quest_params.item, input = true, precision_index = defines.flow_precision_index.five_seconds, count = false}
+			Quest.try_resolve_quest()
+		end
+	
+		if dynamic_data.quest_type == Quest.enum.RESOURCECOUNT and (not dynamic_data.quest_complete) then
+			local force = memory.force
+			if not (force and force.valid and dynamic_data.quest_params) then return end
+			dynamic_data.quest_progress = force.item_production_statistics.get_flow_count{name = dynamic_data.quest_params.item, input = true, precision_index = defines.flow_precision_index.one_thousand_hours, count = true} - dynamic_data.quest_params.initial_count
+			Quest.try_resolve_quest()
+		end
 	end
-
-	if destination.dynamic_data.quest_type == Quest.enum.RESOURCEFLOW and (not destination.dynamic_data.quest_complete) then
-		local force = memory.force
-		if not (force and force.valid and destination.dynamic_data.quest_params) then return end
-		destination.dynamic_data.quest_progress = force.item_production_statistics.get_flow_count{name = destination.dynamic_data.quest_params.item, input = true, precision_index = defines.flow_precision_index.five_seconds, count = false}
-		Quest.try_resolve_quest()
-	end
-
-	if destination.dynamic_data.quest_type == Quest.enum.RESOURCECOUNT and (not destination.dynamic_data.quest_complete) then
-		local force = memory.force
-		if not (force and force.valid and destination.dynamic_data.quest_params) then return end
-		destination.dynamic_data.quest_progress = force.item_production_statistics.get_flow_count{name = destination.dynamic_data.quest_params.item, input = true, precision_index = defines.flow_precision_index.one_thousand_hours, count = true} - destination.dynamic_data.quest_params.initial_count
-		Quest.try_resolve_quest()
-	end
-
 end
 
 
@@ -1321,25 +1329,26 @@ function Public.silo_insta_update()
 	if memory.game_lost then return end
 
 	local destination = Common.current_destination()
+	local dynamic_data = destination.dynamic_data
 
-	local silos = destination.dynamic_data.rocketsilos
+	local silos = dynamic_data.rocketsilos
 	
 	if silos and silos[1] and silos[1].valid then --need the first silo to be alive in order to charge any others
-		if destination.dynamic_data.silocharged then
+		if dynamic_data.silocharged then
 			for i, silo in ipairs(silos) do
 				silo.energy = silo.electric_buffer_size
 			end
 		else
 			for i, silo in ipairs(silos) do
 				local e = silo.energy - 1
-				local e2 = destination.dynamic_data.rocketsiloenergyneeded - destination.dynamic_data.rocketsiloenergyconsumed
+				local e2 = dynamic_data.rocketsiloenergyneeded - dynamic_data.rocketsiloenergyconsumed
 				if e > 0 and e2 > 0 then
 					local absorb = Math.min(e, e2)
-					destination.dynamic_data.energychargedinsilosincelastcheck = destination.dynamic_data.energychargedinsilosincelastcheck + absorb
+					dynamic_data.energychargedinsilosincelastcheck = dynamic_data.energychargedinsilosincelastcheck + absorb
 					silo.energy = silo.energy - absorb
 		
-					if destination.dynamic_data.rocketsilochargedbools and (not destination.dynamic_data.rocketsilochargedbools[i]) then
-						destination.dynamic_data.rocketsilochargedbools[i] = true
+					if dynamic_data.rocketsilochargedbools and (not dynamic_data.rocketsilochargedbools[i]) then
+						dynamic_data.rocketsilochargedbools[i] = true
 						local inv = silo.get_inventory(defines.inventory.assembling_machine_input)
 						inv.insert{name = 'rocket-control-unit', count = 10}
 						inv.insert{name = 'low-density-structure', count = 10}

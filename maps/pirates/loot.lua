@@ -14,9 +14,9 @@ Public.buried_treasure_loot_data_raw = {
 	{50, 0, 1, false, 'defender-capsule', 5, 18},
 	{25, 0, 1, false, 'distractor-capsule', 5, 18},
 	{10, 0, 1, false, 'destroyer-capsule', 3, 8},
-	{20, 0, 1, false, 'flying-robot-frame', 20, 35},
+	-- {20, 0, 1, false, 'flying-robot-frame', 20, 35},
 	{40, 0, 1, false, 'construction-robot', 15, 25},
-	{100, 0, 1, false, 'electronic-circuit', 150, 250},
+	-- {100, 0, 1, false, 'electronic-circuit', 150, 250},
 	{70, 0, 1, false, 'advanced-circuit', 20, 40},
 	{150, 0, 1, false, 'crude-oil-barrel', 25, 45},
 	{70, 0, 1, false, 'effectivity-module-3', 3, 4},
@@ -44,7 +44,7 @@ Public.chest_loot_data_raw = {
 	{80, 0, 1, false, 'coin', 250, 400},
 	{30, 0, 1, false, 'rail-signal', 25, 110},
 	{1, 0.2, 1, false, 'electric-engine-unit', 1, 2},
-	{3, 0, 1, false, 'small-lamp', 8, 32},
+	{3, 0, 1, false, 'small-lamp', 4, 16},
 	{10, 0, 1, false, 'coal', 60, 100},
 	{12, 0, 1, false, 'artillery-shell', 1, 1},
 	{4, 0, 0.8, false, 'pistol', 1, 3},
@@ -56,7 +56,7 @@ Public.chest_loot_data_raw = {
 
 	{5, -0.2, 0.8, true, 'iron-gear-wheel', 20, 80},
 	{5, -0.2, 0.8, true, 'copper-cable', 30, 100},
-	{5, -0.2, 0.8, true, 'electronic-circuit', 15, 60},
+	-- {5, -0.2, 0.8, true, 'electronic-circuit', 15, 60},
 	{2, 0.3, 1, true, 'rocket-fuel', 1, 5},
 	{1, 0.2, 1.2, true, 'battery', 10, 30},
 	{4, 0.2, 1.4, true, 'advanced-circuit', 10, 40},
@@ -125,7 +125,7 @@ Public.chest_loot_data_raw = {
 	{0.2, 0, 1, false, 'defender-capsule', 2, 4},
 	{0.15, 0, 1, false, 'distractor-capsule', 2, 4},
 	{0.1, 0, 1, false, 'destroyer-capsule', 2, 2},
-	{10, 0.2, 1.2, true, 'piercing-shotgun-shell', 4, 9},
+	{10, 0.2, 1.2, true, 'piercing-shotgun-shell', 6, 9},
 	{2, 0.3, 1.2, true, 'combat-shotgun', 1, 1},
 	{5, 0.2, 1.8, true, 'cluster-grenade', 8, 16},
 
@@ -341,6 +341,8 @@ Public.maze_treasure_data_raw = {
 	{2, 0, 1, false, 'rail-signal', 400, 500},
 	{2, 0, 1, false, 'electric-engine-unit', 3, 4},
 	{2, 0, 1, false, 'cluster-grenade', 8, 12},
+
+	{0.5, 0, 1, false, 'nuclear-fuel', 1, 1},
 
 	{1, 0, 0.8, false, 'speed-module-3', 2, 2},
 	{1, 0, 0.8, false, 'effectivity-module-3', 3, 3},

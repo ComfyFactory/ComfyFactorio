@@ -48,7 +48,7 @@ Public.ban_from_rejoining_crew_ticks = 45 * 60 --to prevent observing map and re
 Public.afk_time = 60 * 60 * 5.5
 Public.afk_warning_time = 60 * 60 * 5
 Public.logged_off_items_preserved_minutes = 5
-Public.important_items = {'coin', 'uranium-235', 'uranium-238', 'fluid-wagon', 'coal', 'electric-engine-unit', 'advanced-circuit', 'beacon', 'speed-module-3', 'speed-module-2', 'roboport', 'construction-robot'} --internal inventories of these will not be preserved
+Public.important_items = {'coin', 'uranium-235', 'uranium-238', 'fluid-wagon', 'coal', 'electric-engine-unit', 'flying-robot-frame', 'advanced-circuit', 'beacon', 'speed-module-3', 'speed-module-2', 'roboport', 'construction-robot'} --internal inventories of these will not be preserved
 
 -- Public.mainshop_rate_limit_ticks = 11
 
@@ -500,7 +500,7 @@ end
 function Public.update_boat_stored_resources()
 	local memory = Memory.get_crew_memory()
 	local boat = memory.boat
-	if not memory.boat.stored_resources then return end
+	if not boat.stored_resources then return end
 	local input_chests = boat.input_chests
 
 	if not input_chests then return end
@@ -513,7 +513,7 @@ function Public.update_boat_stored_resources()
 			local item_type = CoreData.cost_items[i-1].name
 			local count = contents[item_type] or 0
 	
-			memory.boat.stored_resources[item_type] = count
+			boat.stored_resources[item_type] = count
 		end
 	end
 end

@@ -320,14 +320,14 @@ function Public.toggle_window(player)
 	flow3.tooltip = 'Teleport crewmembers to the ship.'
 
 	flow3 = flow2.add({
-		name = 'capn_take_coins',
+		name = 'capn_requisition',
 		type = 'button',
-		caption = 'Requisition Doubloons',
+		caption = 'Requisition Items',
 	})
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
-	flow3.tooltip = 'Take all the doubloons from each non-officer.'
+	flow3.tooltip = 'Take doubloons and uranium-235 from each non-officer.'
 
 
 	flow2 = flow.add({
@@ -356,6 +356,7 @@ function Public.regular_update(player)
 end
 
 function Public.full_update(player)
+	Public.regular_update(player)
 
 	if not player.gui.screen[window_name .. '_piratewindow'] then return end
 	local flow = player.gui.screen[window_name .. '_piratewindow']
@@ -424,7 +425,7 @@ function Public.full_update(player)
 	-- flow.captain.body.capn_undock_normal.visible = memory.boat and memory.boat.state and ((memory.boat.state == Boats.enum_state.LANDED) or (memory.boat.state == Boats.enum_state.APPROACHING) or (memory.boat.state == Boats.enum_state.DOCKED))
 
 	flow.captain.body.capn_summon_crew.visible = false
-	flow.captain.body.capn_take_coins.visible = true
+	flow.captain.body.capn_requisition.visible = true
 	-- flow.captain.body.capn_summon_crew.visible = memory.boat and memory.boat.state and (memory.boat.state == Boats.enum_state.RETREATING or memory.boat.state == Boats.enum_state.LEAVING_DOCK)
 
 	flow.captain.body.capn_disband_are_you_sure.visible = memory.disband_are_you_sure_ticks and memory.disband_are_you_sure_ticks[player.index] and memory.disband_are_you_sure_ticks[player.index] > game.tick - 60*2
@@ -585,10 +586,10 @@ function Public.click(event)
 		return
 	end
 
-	if eventname == 'capn_take_coins' then
+	if eventname == 'capn_requisition' then
 		--double check:
 		if Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN then
-			Roles.captain_requisition_coins(memory.playerindex_captain)
+			Roles.captain_requisition(memory.playerindex_captain)
 		end
 		return
 	end

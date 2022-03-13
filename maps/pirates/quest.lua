@@ -32,6 +32,8 @@ Public.quest_icons = {
 
 
 
+-- @TODO remake into a loot-style table:
+
 function Public.quest_reward()
 	local ret
 	local multiplier = Balance.quest_reward_multiplier()
@@ -322,18 +324,20 @@ end
 
 
 Public.resourcecount_quest_data_raw = {
-	{0.8, 0, 1, false, 'iron-gear-wheel', 2400},
-	{1, 0, 1, false, 'electronic-circuit', 1400},
-	{1, 0, 1, false, 'transport-belt', 1600},
+	{1, 0, 1, false, 'iron-gear-wheel', 2400},
+	-- {1, 0, 1, false, 'electronic-circuit', 1400},
+	{1.2, 0, 1, false, 'transport-belt', 1600},
+	{1, 0, 1, false, 'repair-pack', 350},
 	-- {0.1, 0, 1, false, 'red-wire', 500},
-	{0.4, 0, 1, false, 'empty-barrel', 600},
-	{0.2, 0, 0.2, false, 'underground-belt', 200},
-	{0.2, 0, 0.2, false, 'splitter', 150},
-	{0.3, 0.2, 1, false, 'fast-splitter', 60},
-	{0.3, 0.2, 1, false, 'fast-underground-belt', 75},
-	{0.4, 0.3, 1, false, 'big-electric-pole', 160},
-	{1, 0.61, 1, false, 'advanced-circuit', 350},
-	{3, 0, 1, false, 'shotgun-shell', 600},
+	{0.5, 0, 1, false, 'empty-barrel', 600},
+	{0.3, 0, 0.2, false, 'underground-belt', 200},
+	{0.3, 0, 0.2, false, 'splitter', 150},
+	{0.4, 0.2, 1, false, 'fast-splitter', 60},
+	{0.4, 0.2, 1, false, 'fast-underground-belt', 75},
+	{0.5, 0.3, 1, false, 'big-electric-pole', 160},
+	{1.2, 0.61, 1, false, 'advanced-circuit', 350},
+	{1, 0, 1, false, 'shotgun-shell', 600},
+	{1.5, 0.9, 1, false, 'processing-unit', 40},
 	-- {0.3, 0.8, 1, false, 'electric-engine-unit', 1 * 6},
 }
 

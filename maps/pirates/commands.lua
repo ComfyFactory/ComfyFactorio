@@ -32,6 +32,7 @@ local Token = require 'utils.token'
 local Task = require 'utils.task'
 local Highscore = require 'maps.pirates.highscore'
 local CustomEvents = require 'maps.pirates.custom_events'
+local Classes = require 'maps.pirates.roles.classes'
 
 local GUIcolor = require 'maps.pirates.gui.color'
 
@@ -58,7 +59,7 @@ end)
 -- end)
 
 commands.add_command(
-'class',
+'classinfo',
 '{classname} returns the definition of the named class.',
 function(cmd)
 	local param = tostring(cmd.parameter)
@@ -70,10 +71,46 @@ function(cmd)
 		if string then
 			Common.notify_player_expected(player, 'Class definition for ' .. string)
 		else
-			Common.notify_player_error(player, 'Class \'' .. param .. '\' not found.')
+			Common.notify_player_error(player, 'Command error: Class \'' .. param .. '\' not found.')
 		end
 	else
-		Common.notify_player_expected(player, '/class {classname} returns the definition of the named class.')
+		Common.notify_player_expected(player, '/classinfo {classname} returns the definition of the named class.')
+	end
+end)
+
+commands.add_command(
+'take',
+'{classname} takes a spare class with the given name for yourself.',
+function(cmd)
+	local param = tostring(cmd.parameter)
+	local player = game.players[cmd.player_index]
+	if not Common.validate_player(player) then return end
+	if param and param ~= 'nil' then
+		for _, class in ipairs(Classes.Class_List) do
+			if Classes.display_form[class]:lower() == param:lower() then
+				Classes.assign_class(player.index, class, true)
+				return true
+			end
+		end
+		--fallthrough:
+		Common.notify_player_error(player, 'Command error: Class \'' .. param .. '\' not found.')
+		return false
+	else
+		Common.notify_player_expected(player, '/take {classname} takes a spare class with the given name for yourself.')
+	end
+end)
+
+commands.add_command(
+'giveup',
+'gives up your current class, making it available for others.',
+function(cmd)
+	local param = tostring(cmd.parameter)
+	local player = game.players[cmd.player_index]
+	if not Common.validate_player(player) then return end
+	if param and param == 'nil' then
+		Classes.try_renounce_class(player)
+	else
+		Common.notify_player_error(player, 'Command error: parameter not needed.')
 	end
 end)
 
@@ -94,7 +131,7 @@ function(cmd)
 					local message = '[color=' .. rgb.r .. ',' .. rgb.g .. ',' .. rgb.b .. ']' .. player.name .. ' chose the color ' .. param .. '[/color] (via /ccolor).'
 					Common.notify_game(message)
 				else
-					Common.notify_player_error(player, 'Color \'' .. param .. '\' not found.')
+					Common.notify_player_error(player, 'Command error: Color \'' .. param .. '\' not found.')
 				end
 			else
 				local color = PlayerColors.bright_color_names[Math.random(#PlayerColors.bright_color_names)]
@@ -176,6 +213,29 @@ local function check_captain(cmd)
 			local crew_id = tonumber(string.sub(game.players[cmd.player_index].force.name, -3, -1)) or nil
 			Memory.set_working_id(crew_id)
 			local memory = Memory.get_crew_memory()
+			if not (Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN) then
+				p('[ERROR] Only captains are allowed to run this command!', Color.fail)
+				return false
+			end
+		else
+			p = log
+		end
+	end
+	return true
+end
+
+
+
+local function check_captain_or_admin(cmd)
+	local player = game.players[cmd.player_index]
+	local p
+	if player then
+		if player ~= nil then
+			p = player.print
+			if not Common.validate_player(player) then return end
+			local crew_id = tonumber(string.sub(game.players[cmd.player_index].force.name, -3, -1)) or nil
+			Memory.set_working_id(crew_id)
+			local memory = Memory.get_crew_memory()
 			if not (player.admin or Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN) then
 				p('[ERROR] Only captains are allowed to run this command!', Color.fail)
 				return false
@@ -232,11 +292,11 @@ commands.add_command(
 function(cmd)
 	local player = game.players[cmd.player_index]
 	local param = tostring(cmd.parameter)
-	if check_captain(cmd) then
+	if check_captain_or_admin(cmd) then
 		if param and game.players[param] and game.players[param].index then
 			Crew.plank(player, game.players[param])
 		else
-			Common.notify_player_error(player, 'Invalid player name.')
+			Common.notify_player_error(player, 'Command error: Invalid player name.')
 		end
 	end
 end)
@@ -247,7 +307,7 @@ commands.add_command(
 function(cmd)
 	local player = game.players[cmd.player_index]
 	local param = tostring(cmd.parameter)
-	if check_captain(cmd) then
+	if check_captain_or_admin(cmd) then
 		local memory = Memory.get_crew_memory()
 		if param and game.players[param] and game.players[param].index then
 			if memory.officers_table and memory.officers_table[game.players[param].index] then
@@ -256,7 +316,7 @@ function(cmd)
 				Roles.make_officer(player, game.players[param])
 			end
 		else
-			Common.notify_player_error(player, 'Invalid player name.')
+			Common.notify_player_error(player, 'Command error: Invalid player name.')
 		end
 	end
 end)
@@ -266,7 +326,7 @@ commands.add_command(
 'is a captain command to undock the ship.',
 function(cmd)
 	local param = tostring(cmd.parameter)
-	if check_captain(cmd) then
+	if check_captain_or_admin(cmd) then
 		local player = game.players[cmd.player_index]
 		local memory = Memory.get_crew_memory()
 		if memory.boat.state == Boats.enum_state.DOCKED then
@@ -275,9 +335,21 @@ function(cmd)
 			if Common.query_can_pay_cost_to_leave() then
 				Progression.try_retreat_from_island(true)
 			else
-				Common.notify_player_error(player, 'Not enough stored resources.')
+				Common.notify_force_error(player.force, 'Undock error: Not enough stored resources.')
 			end
 		end
+	end
+end)
+
+commands.add_command(
+'req',
+'is a captain command to requisition items from the crew.',
+function(cmd)
+	local param = tostring(cmd.parameter)
+	if check_captain(cmd) then
+		local player = game.players[cmd.player_index]
+		local memory = Memory.get_crew_memory()
+		Roles.captain_requisition(memory.playerindex_captain)
 	end
 end)
 
@@ -309,7 +381,7 @@ function(cmd)
 		if param and game.players[param] and game.players[param].index then
 			Roles.make_captain(game.players[param])
 		else
-			Common.notify_player_error(player, 'Invalid player name.')
+			Common.notify_player_error(player, 'Command error: Invalid player name.')
 		end
 	end
 end)

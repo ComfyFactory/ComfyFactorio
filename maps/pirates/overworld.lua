@@ -58,10 +58,10 @@ function Public.generate_overworld_destination(p)
 
 	if macrop.x >= 6 then island_subtype_raffle[#island_subtype_raffle + 1] = Surfaces.Island.enum.WALKWAYS end
 	if macrop.x >= 6 then island_subtype_raffle[#island_subtype_raffle + 1] = 'none' end
-	if macrop.x >= 13 and macrop.y == 1 then
-		island_subtype_raffle[#island_subtype_raffle + 1] = Surfaces.Island.enum.MAZE
-		island_subtype_raffle[#island_subtype_raffle + 1] = Surfaces.Island.enum.MAZE
-	end
+	-- if macrop.x >= 13 and macrop.y == 1 then
+	-- 	island_subtype_raffle[#island_subtype_raffle + 1] = Surfaces.Island.enum.MAZE
+	-- 	island_subtype_raffle[#island_subtype_raffle + 1] = Surfaces.Island.enum.MAZE
+	-- end
 	if macrop.x >= 21 then island_subtype_raffle[#island_subtype_raffle + 1] = Surfaces.Island.enum.SWAMP end
 	if macrop.x >= 21 then island_subtype_raffle[#island_subtype_raffle + 1] = 'none' end
 
@@ -168,7 +168,7 @@ function Public.generate_overworld_destination(p)
 
 	if _DEBUG and type == Surfaces.enum.ISLAND then
 		-- warning: the first map is unique in that it isn't all loaded by the time you arrive, which can cause issues. For example, structures might get placed after ore, thereby deleting the ore underneath them.
-		subtype = Surfaces.Island.enum.STANDARD_VARIANT
+		subtype = Surfaces.Island.enum.MAZE
 		-- subtype = nil
 		-- type = Surfaces.enum.DOCK
 	end
@@ -186,57 +186,57 @@ function Public.generate_overworld_destination(p)
 		local cost_to_leave
 
 		-- These need to scale up slower than the static fuel depletion rate:
-		local normal_costitems = {'small-lamp', 'engine-unit', 'advanced-circuit'}
+		local normal_costitems = {'electronic-circuit', 'engine-unit', 'advanced-circuit'}
 		local base_cost_0 = {
-			['small-lamp'] = Math.ceil(((macrop.x-2)^(2/3))*25),
+			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*65),
 		}
 		local base_cost_1 = {
-			['small-lamp'] = Math.ceil(((macrop.x-2)^(2/3))*25),
-			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*16),
+			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*65),
+			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*12),
 		}
 		local base_cost_2 = {
-			['small-lamp'] = Math.ceil(((macrop.x-2)^(2/3))*25),
-			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*16),
+			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*65),
+			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*12),
 			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*10),
 		}
 		local base_cost_2b = {
-			['small-lamp'] = Math.ceil(((macrop.x-2)^(2/3))*25),
-			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*16),
-			['electric-engine-unit'] = 2,
+			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*65),
+			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*12),
+			['flying-robot-frame'] = 2,
 		}
 		local base_cost_2c = {
-			['small-lamp'] = Math.ceil(((macrop.x-2)^(2/3))*25),
-			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*16),
+			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*65),
+			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*12),
 			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*10),
 			['launch_rocket'] = true,
 		}
 		local base_cost_3 = {
-			['small-lamp'] = Math.ceil(((macrop.x-2)^(2/3))*25),
-			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*16),
+			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*65),
+			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*12),
 			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*10),
-			['electric-engine-unit'] = Math.ceil(((macrop.x-18)^(2/3))*5),
+			['flying-robot-frame'] = Math.ceil(((macrop.x-18)^(2/3))*5),
 			['launch_rocket'] = true,
 		}
 		local base_cost_4 = {
-			['small-lamp'] = Math.ceil(((macrop.x-2)^(2/3))*25),
-			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*16),
+			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*65),
+			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*12),
 			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*10),
-			['electric-engine-unit'] = Math.ceil(((macrop.x-18)^(2/3))*5),
+			['flying-robot-frame'] = Math.ceil(((macrop.x-18)^(2/3))*5),
 		}
 		if macrop.x == 0 then
 			-- if _DEBUG then
 			-- 	cost_to_leave = {
-			-- 		['small-lamp'] = 5,
+			-- 		['electronic-circuit'] = 5,
 			-- 		['engine-unit'] = 5,
 			-- 		['advanced-circuit'] = 5,
-			-- 		['electric-engine-unit'] = 5,
+			-- 		['flying-robot-frame'] = 5,
 			-- 	}
 			-- end
 			-- cost_to_leave = nil
 		elseif macrop.x <= 6 then
-			-- cost_to_leave = {['small-lamp'] = 5}
+			-- cost_to_leave = {['electronic-circuit'] = 5}
 			cost_to_leave = nil
-		elseif macrop.x <= 8 then
+		elseif macrop.x <= 9 then
 			cost_to_leave = base_cost_0
 		elseif macrop.x <= 15 then
 			if macrop.x % 3 > 0 then
@@ -244,7 +244,7 @@ function Public.generate_overworld_destination(p)
 			else
 				cost_to_leave = nil
 			end
-		elseif macrop.x == 18 then --a super small amount of electric-engine-unit on a relatively early level so that they see they need lubricant
+		elseif macrop.x == 18 then --a super small amount of flying-robot-frame on a relatively early level so that they see they need lubricant
 			cost_to_leave = base_cost_2b
 		elseif macrop.x <= 20 then
 			if macrop.x % 3 > 0 then

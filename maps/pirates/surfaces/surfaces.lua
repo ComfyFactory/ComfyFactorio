@@ -237,6 +237,10 @@ function Public.destination_on_arrival(destination)
 
 	memory.floating_pollution = 0
 
+	-- catching a fallthrough error I've observed
+	if not memory.active_sea_enemies then memory.active_sea_enemies = {} end
+	memory.active_sea_enemies.krakens = {}
+
 	if destination.type == enum.ISLAND then
 
 		destination.dynamic_data.rocketsiloenergyneeded = Balance.silo_energy_needed_MJ() * 1000000
@@ -335,7 +339,7 @@ function Public.destination_on_arrival(destination)
 
 		if destination.subtype and destination.subtype == Islands.enum.MAZE then
 			local force = memory.force
-			force.manual_mining_speed_modifier = 0.66
+			force.manual_mining_speed_modifier = 0.8
 		end
 	end
 end

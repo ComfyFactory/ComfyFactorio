@@ -92,7 +92,10 @@ end
 
 
 function Public.full_update(player)
+	Public.regular_update(player)
+	
 	local flow, flow2, flow3, flow4, flow5, flow6
+
 
 	local memory = Memory.get_crew_memory()
 	local shop_data = Utils.nonrepeating_join_dict(Shop.Captains.main_shop_data_1, Shop.Captains.main_shop_data_2)

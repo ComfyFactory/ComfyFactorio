@@ -115,7 +115,7 @@ function Public.post_creation_process(special_name, components)
 					e.insert_fluid(Loot.storage_tank_fluid_loot('crude-oil'))
 				elseif e.name == 'storage-tank' and special_name == 'small_abandoned_refinery' then
 					e.insert_fluid(Loot.storage_tank_fluid_loot('petroleum-gas'))
-				elseif e.name == 'storage-tank' then
+				elseif e.name == 'storage-tank' and (not special_name == 'small_radioactive_reactor') then
 					e.insert_fluid(Loot.storage_tank_fluid_loot())
 				elseif (special_name == 'maze_labs') and e.name == 'lab' then
 					local inv = e.get_inventory(defines.inventory.lab_input)

@@ -40,15 +40,15 @@ function Public.make_officer(captain, player)
 				Common.notify_force_light(force, message)
 				Public.update_privileges(player)
 			else
-				Common.notify_player_error(captain, 'Player is invalid.')
+				Common.notify_player_error(captain, 'Command error: Player is invalid.')
 				return false
 			end
 		else
-			Common.notify_player_error(captain, 'Can\'t promote yourself to officer.')
+			Common.notify_player_error(captain, 'Command error: Can\'t promote yourself to officer.')
 			return false
 		end
 	else
-		Common.notify_player_error(captain, 'Player is not a crewmember.')
+		Common.notify_player_error(captain, 'Command error: Player is not a crewmember.')
 		return false
 	end
 end
@@ -66,11 +66,11 @@ function Public.unmake_officer(captain, player)
 			Public.update_privileges(player)
 			return true
 		else
-			Common.notify_player_error(captain, 'Player isn\'t an officer.')
+			Common.notify_player_error(captain, 'Command error: Player isn\'t an officer.')
 			return false
 		end
 	else
-		Common.notify_player_error(captain, 'Player is not a crewmember.')
+		Common.notify_player_error(captain, 'Command error: Player is not a crewmember.')
 		return false
 	end
 end
@@ -90,7 +90,6 @@ end
 function Public.tag_text(player)
 	local memory = Memory.get_crew_memory()
 
-
 	local str = ''
 	local tags = {}
 
@@ -102,8 +101,9 @@ function Public.tag_text(player)
 		tags[#tags + 1] = 'Officer'
 	end
 
-	if memory.classes_table and memory.classes_table[player.index] then
-		tags[#tags + 1] = Classes.display_form[memory.classes_table[player.index]]
+	local classes_table = memory.classes_table
+	if classes_table and classes_table[player.index] then
+		tags[#tags + 1] = Classes.display_form[classes_table[player.index]]
 	end
 
 	for i, t in ipairs(tags) do
@@ -116,6 +116,11 @@ function Public.tag_text(player)
 	return str
 end
 
+function Public.update_tags(player)
+
+	local str = Public.tag_text(player)
+	player.tag = str
+end
 
 -- function Public.get_classes_print_string()
 -- 	local str = 'Current class Descriptions:'
@@ -152,12 +157,6 @@ function Public.get_class_print_string(class)
 	return nil
 end
 
-function Public.update_tags(player)
-	
-	local str = Public.tag_text(player)
-	player.tag = str
-end
-
 function Public.player_privilege_level(player)
 	local memory = Memory.get_crew_memory()
 
@@ -191,7 +190,7 @@ function Public.player_confirm_captainhood(player)
 	local captain_index = memory.playerindex_captain
 
 	if not (player.index == captain_index) then
-		Common.notify_player_error(player, 'You\'re not the captain.')
+		Common.notify_player_error(player, 'Command error: You\'re not the captain.')
 	else
 		if memory.captain_acceptance_timer then
 			memory.captain_acceptance_timer = nil
@@ -203,7 +202,7 @@ function Public.player_confirm_captainhood(player)
 				Server.to_discord_embed_raw(CoreData.comfy_emojis.derp .. '[' .. memory.name .. '] ' .. message)
 			end
 		else
-			Common.notify_player_expected(player, 'You\'re not temporary, so you don\'t need to accept.')
+			Common.notify_player_expected(player, 'Command error: You\'re not temporary, so you don\'t need to accept.')
 		end
 	end
 end
@@ -231,7 +230,7 @@ function Public.renounce_captainhood(player)
 	local memory = Memory.get_crew_memory()
 
 	if #Common.crew_get_crew_members() == 1 then
-		Common.notify_player_error(player, 'But you\'re the only crew member...')
+		Common.notify_player_error(player, 'Command error: But you\'re the only crew member...')
 	else
 
 		local force = memory.force
@@ -382,45 +381,83 @@ function Public.assign_captain_based_on_priorities(excluded_player_index)
 end
 
 
-function Public.captain_requisition_coins(captain_index)
+function Public.captain_requisition(captain_index)
 	local memory = Memory.get_crew_memory()
-	local total = 0
+	local any_taken = false
+
+	local items_to_req = {'coin', 'uranium-235'}
+
+	local item_count_table = {}
+	for _, i in pairs(items_to_req) do
+		item_count_table[i] = 0
+	end
 
 	local crew_members = memory.crewplayerindices
 	local captain = game.players[captain_index]
-	if not (captain and crew_members and #crew_members > 1) then return end
+	if not (captain and crew_members) then return end
 	
 	local captain_inv = captain.get_inventory(defines.inventory.character_main)
 	if captain_inv and captain_inv.valid then
 		for _, player_index in pairs(crew_members) do
 			if player_index ~= captain_index then
 				local player = game.players[player_index]
-				if player and not (memory.officers_table and memory.officers_table[player.index]) then
+				if player and player.valid and not (memory.officers_table and memory.officers_table[player.index]) then
 					local inv = player.get_inventory(defines.inventory.character_main)
 					if inv and inv.valid then
-						local coin_amount = inv.get_item_count('coin')
-						if coin_amount and coin_amount > 0 then
-							inv.remove{name='coin', count=coin_amount}
-							captain_inv.insert{name='coin', count=coin_amount}
-							total = total + coin_amount
+						for _, i in pairs(items_to_req) do
+							local amount = inv.get_item_count(i)
+							if amount and amount > 0 then
+								inv.remove{name=i, count=amount}
+								captain_inv.insert{name=i, count=amount}
+								item_count_table[i] = item_count_table[i] + amount
+								any_taken = true
+							end
 						end
 					end
 
 					local cursor_stack = player.cursor_stack
-					if cursor_stack and cursor_stack.valid_for_read and cursor_stack.name == 'coin' then
-						local cursor_stack_count = cursor_stack.count
-						if cursor_stack_count > 0 then
-							cursor_stack.count = 0
-							captain_inv.insert{name='coin', count = cursor_stack_count}
-							total = total + cursor_stack_count
+					if cursor_stack and cursor_stack.valid_for_read then
+						for _, i in pairs(items_to_req) do
+							if cursor_stack.name == i then
+								local cursor_stack_count = cursor_stack.count
+								if cursor_stack_count > 0 then
+									cursor_stack.count = 0
+									captain_inv.insert{name=i, count = cursor_stack_count}
+									item_count_table[i] = item_count_table[i] + cursor_stack_count
+									any_taken = true
+								end
+								break
+							end
 						end
 					end
 				end
 			end
 		end
-	
-		if total > 0 then 
-			Common.notify_force(memory.force, 'The captain requisitioned ' .. Utils.bignumber_abbrevform2(total) .. ' doubloons.')
+
+		if any_taken then
+			local str = 'The captain requisitioned '
+			for i = 1, #items_to_req do
+				local item = items_to_req[i]
+				if i > 1 then
+					if i == #items_to_req then
+						str = str .. ' and '
+					else
+						str = str .. ', '
+					end
+				end
+				local display_name = item .. 's'
+				if display_name == 'coins' then display_name = 'doubloons' end
+				if display_name == 'uranium-235s' then display_name = 'uranium-235' end
+				if item_count_table[i] >= 1000 then
+					str = str .. Utils.bignumber_abbrevform2(item_count_table[i]) .. ' ' .. display_name
+				else
+					str = str .. item_count_table[i] .. ' ' .. display_name
+				end
+			end
+			str = str .. '.'
+			Common.notify_force(memory.force, str)
+		else
+			Common.notify_player_error(captain, 'Item requisition error: Nothing to take.')
 		end
 	end
 end

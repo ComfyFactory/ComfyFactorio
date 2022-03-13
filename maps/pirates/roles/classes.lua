@@ -132,10 +132,20 @@ end
 
 function Public.assign_class(player_index, class, self_assigned)
 	local memory = Memory.get_crew_memory()
+	local player = game.players[player_index]
 
 	if not memory.classes_table then memory.classes_table = {} end
 
+	if memory.classes_table[player_index] == class then
+		Common.notify_player_error(player, 'Class error: You\'re already a ' .. Public.display_form[class] .. '.')
+		return false
+	end
+
 	if Utils.contains(memory.spare_classes, class) then -- verify that one is spare
+
+		if memory.classes_table[player_index] then
+			Public.try_renounce_class(player)
+		end
 	
 		memory.classes_table[player_index] = class
 	
@@ -144,14 +154,18 @@ function Public.assign_class(player_index, class, self_assigned)
 			local message
 			if self_assigned then
 				message = '%s took the spare class %s. ([font=scenario-message-dialog]%s[/font])'
-				Common.notify_force_light(force,string.format(message, game.players[player_index].name, Public.display_form[memory.classes_table[player_index]], Public.explanation[memory.classes_table[player_index]]))
+				Common.notify_force_light(force,string.format(message, player.name, Public.display_form[memory.classes_table[player_index]], Public.explanation[memory.classes_table[player_index]]))
 			else
 				message = 'A spare %s class was given to %s. [font=scenario-message-dialog](%s)[/font]'
-				Common.notify_force_light(force,string.format(message, Public.display_form[memory.classes_table[player_index]], game.players[player_index].name, Public.explanation[memory.classes_table[player_index]]))
+				Common.notify_force_light(force,string.format(message, Public.display_form[memory.classes_table[player_index]], player.name, Public.explanation[memory.classes_table[player_index]]))
 			end
 		end
 	
 		memory.spare_classes = Utils.ordered_table_with_single_value_removed(memory.spare_classes, class)
+		return true
+	else
+		Common.notify_player_error(player, 'Class error: No spare class of that type is available.')
+		return false
 	end
 end
 
@@ -159,8 +173,8 @@ function Public.try_renounce_class(player, override_message)
 	local memory = Memory.get_crew_memory()
 
 	local force = memory.force
-	if force and force.valid then
-		if player and player.index and memory.classes_table and memory.classes_table[player.index] then
+	if force and force.valid and player and player.index then
+		if memory.classes_table and memory.classes_table[player.index] then
 			if force and force.valid then
 				if override_message then
 					Common.notify_force_light(force,string.format(override_message, Public.display_form[memory.classes_table[player.index]]))
@@ -172,6 +186,8 @@ function Public.try_renounce_class(player, override_message)
 
 			memory.spare_classes[#memory.spare_classes + 1] = memory.classes_table[player.index]
 			memory.classes_table[player.index] = nil
+		else
+			Common.notify_player_error(player, 'Class error: You don\'t have any class to give up.')
 		end
 	end
 end

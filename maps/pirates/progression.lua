@@ -425,7 +425,7 @@ function Public.try_retreat_from_island(manual) -- Assumes the cost can be paid
 	local captain = game.players[captain_index]
 
 	if captain and Common.validate_player(captain) and destination.dynamic_data.timeratlandingtime and destination.dynamic_data.timer < destination.dynamic_data.timeratlandingtime + 10 then
-		Common.notify_player_error(captain, 'Can\'t undock in the first 10 seconds.')
+		Common.notify_player_error(captain, 'Undock error: Can\'t undock in the first 10 seconds.')
 	else
 		local cost = destination.static_params.cost_to_leave
 		-- if cost and (not destination.dynamic_data.rocketlaunched) then
@@ -481,7 +481,7 @@ function Public.retreat_from_island(manual)
 	local force = memory.force
 	if not (force and force.valid) then return end
 	if manual then
-		Common.notify_force(force,'[font=heading-1]Ship undocked[/font]. Return to ship.')
+		Common.notify_force(force,'[font=heading-1]Ship undocked[/font] by captain.')
 	else
 		Common.notify_force(force,'[font=heading-1]Ship auto-undocked[/font]. Return to ship.')
 	end
@@ -556,6 +556,8 @@ function Public.go_from_currentdestination_to_sea()
 	memory.boat.surface_name = seaname
 
 	memory.enemy_force.reset_evolution()
+
+	--@FIX: This doesn't change the evo during sea travel, which is relevant now that krakens are in the game:
 	local base_evo = Balance.base_evolution()
 	Common.set_evo(base_evo)
 	memory.kraken_evo = 0

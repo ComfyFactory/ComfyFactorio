@@ -76,10 +76,11 @@ Public.noiseparams = {
 	},
 
 	terrain = {
-		type = 'island1',
+		type = 'simplex_2d',
 		normalised = true,
 		params = {
-			{upperscale = 40, amplitude = 1, seedfactor = 2},
+			{wavelength = 60, amplitude = 1},
+			{wavelength = 10, amplitude = 0.1},
 		},
 	},
 }

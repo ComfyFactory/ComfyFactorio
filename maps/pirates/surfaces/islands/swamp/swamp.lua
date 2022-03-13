@@ -53,9 +53,9 @@ function Public.terrain(args)
 	-- elseif noises.height(p) < 0.07 then
 	-- 	args.tiles[#args.tiles + 1] = {name = 'grass-4', position = args.p}
 	else
-		if noises.terrain(p) < 0.4 then
+		if noises.terrain(p) < 0.5 then
 			args.tiles[#args.tiles + 1] = {name = 'grass-1', position = args.p}
-		elseif noises.terrain(p) < 0.55 then
+		elseif noises.terrain(p) < 0.65 then
 			args.tiles[#args.tiles + 1] = {name = 'grass-2', position = args.p}
 		else
 			args.tiles[#args.tiles + 1] = {name = 'water-mud', position = args.p}
@@ -68,7 +68,7 @@ function Public.terrain(args)
 			args.specials[#args.specials + 1] = {name = 'chest', position = args.p}
 		else
 			if noises.forest_abs(p) > 0.15 then
-				local treedensity = 0.08 * Math.slopefromto(noises.forest_abs_suppressed(p), 0.15, 0.6) + 0.3 * Math.slopefromto(noises.forest_abs_suppressed(p), 0.65, 1.2)
+				local treedensity = 0.08 * Math.slopefromto(noises.forest_abs_suppressed(p), 0.3, 0.6) + 0.3 * Math.slopefromto(noises.forest_abs_suppressed(p), 0.65, 1.2)
 				if noises.forest(p) > 1.3 then
 					if Math.random(1,100) < treedensity*100 then args.entities[#args.entities + 1] = {name = 'tree-09-brown', position = args.p} end
 				else

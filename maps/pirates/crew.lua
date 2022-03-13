@@ -479,11 +479,11 @@ function Public.plank(captain, player)
 			memory.tempbanned_from_joining_data[player.index] = game.tick + 60 * 120
 			return true
 		else
-			Common.notify_player_error(captain, 'Can\'t plank yourself.')
+			Common.notify_player_error(captain, 'Command error: Can\'t plank yourself.')
 			return false
 		end
 	else
-		Common.notify_player_error(captain, 'Player is not a crewmember.')
+		Common.notify_player_error(captain, 'Command error: Player is not a crewmember.')
 		return false
 	end
 end
@@ -850,6 +850,8 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.recipes['locomotive'].enabled = false
 	crew_force.recipes['car'].enabled = false
 	crew_force.recipes['cargo-wagon'].enabled = false
+
+	crew_force.recipes['nuclear-fuel'].enabled = false -- reduce clutter
 
 	-- crew_force.recipes['underground-belt'].enabled = false
 	-- crew_force.recipes['fast-underground-belt'].enabled = false
