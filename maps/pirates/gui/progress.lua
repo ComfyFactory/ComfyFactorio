@@ -48,22 +48,22 @@ function Public.toggle_window(player)
 	-- flow3.style.maximal_width = 160
 	-- flow3.style.font = 'default-dropdown'
 	
-	flow3 = flow2.add({type = 'label', name = 'hidden_ores_yes', caption = 'Ores detected:'})
+	-- flow3 = flow2.add({type = 'label', name = 'hidden_ores_yes', caption = 'Ores detected:'})
 	
-	flow3 = flow2.add({type = 'table', name = 'hidden_ores_yes_table', column_count = 3})
-	flow3.style.left_margin = 5
-	flow3.style.bottom_margin = 4
+	-- flow3 = flow2.add({type = 'table', name = 'hidden_ores_yes_table', column_count = 3})
+	-- flow3.style.left_margin = 5
+	-- flow3.style.bottom_margin = 4
 
-	for _, ore in ipairs(CoreData.ore_types) do
-		flow3.add({type = 'sprite-button', name = ore.name, sprite = ore.sprite_name, enabled = false, number = 0})
-	end
+	-- for _, ore in ipairs(CoreData.ore_types) do
+	-- 	flow3.add({type = 'sprite-button', name = ore.name, sprite = ore.sprite_name, enabled = false, number = 0})
+	-- end
 	
-	flow3 = flow2.add({type = 'label', name = 'hidden_ores_no', caption = 'Ores detected: None'})
+	-- flow3 = flow2.add({type = 'label', name = 'hidden_ores_no', caption = 'Ores detected: None'})
 
-	-- flow3 = flow2.add({type = 'label', name = 'daynight', caption = ''})
+	-- -- flow3 = flow2.add({type = 'label', name = 'daynight', caption = ''})
 
-	flow3 = flow2.add({type = 'label', name = 'patch_size', caption = ''})
-	flow3.style.top_margin = -3
+	-- flow3 = flow2.add({type = 'label', name = 'patch_size', caption = ''})
+	-- flow3.style.top_margin = -3
 
 	flow3 = flow2.add({type = 'label', name = 'daynight', caption = ''})
 	flow3.style.top_margin = -3
@@ -83,7 +83,11 @@ function Public.toggle_window(player)
 end
 
 
-function Public.update(player)
+function Public.regular_update(player)
+
+end
+
+function Public.full_update(player)
 	if not player.gui.screen[window_name .. '_piratewindow'] then return end
 	local flow = player.gui.screen[window_name .. '_piratewindow']
 
@@ -113,21 +117,21 @@ function Public.update(player)
 	-- end
 	-- flow.current_location.body.daynight.caption = string.format('Day/night cycle: %s', CoreData.daynightcycle_types[daynighttype].displayname)
 
-	if destination.static_params and destination.static_params.radius_squared_modifier then
-		local radius_squared_modifier = destination.static_params.radius_squared_modifier
-		flow.current_location.body.patch_size.visible = true
-		if radius_squared_modifier <= 0.65 then
-			flow.current_location.body.patch_size.caption = 'Patch sizing: ' .. 'Nano'
-		elseif radius_squared_modifier <= 0.85 then
-			flow.current_location.body.patch_size.caption = 'Patch sizing: ' .. 'Small'
-		elseif radius_squared_modifier <= 1.5 then
-			flow.current_location.body.patch_size.caption = 'Patch sizing: ' .. 'Normal'
-		else
-			flow.current_location.body.patch_size.caption = 'Patch sizing: ' .. 'Large'
-		end
-	else
-		flow.current_location.body.patch_size.visible = false
-	end
+	-- if destination.static_params and destination.static_params.radius_squared_modifier then
+	-- 	local radius_squared_modifier = destination.static_params.radius_squared_modifier
+	-- 	flow.current_location.body.patch_size.visible = true
+	-- 	if radius_squared_modifier <= 0.65 then
+	-- 		flow.current_location.body.patch_size.caption = 'Patch sizing: ' .. 'Nano'
+	-- 	elseif radius_squared_modifier <= 0.85 then
+	-- 		flow.current_location.body.patch_size.caption = 'Patch sizing: ' .. 'Small'
+	-- 	elseif radius_squared_modifier <= 1.5 then
+	-- 		flow.current_location.body.patch_size.caption = 'Patch sizing: ' .. 'Normal'
+	-- 	else
+	-- 		flow.current_location.body.patch_size.caption = 'Patch sizing: ' .. 'Large'
+	-- 	end
+	-- else
+	-- 	flow.current_location.body.patch_size.visible = false
+	-- end
 
 	-- if destination.static_params and destination.static_params.daynightcycletype then
 	-- 	flow.current_location.body.daynight.visible = true
@@ -141,29 +145,29 @@ function Public.update(player)
 	flow.current_location.body.daynight.caption = 'Time of day: ' .. CoreData.daynightcycle_types[daynightcycletype].displayname
 	
 
-	local ores
-	-- if destination.static_params and destination.static_params.abstract_ore_amounts then ores = destination.static_params.abstract_ore_amounts end
-	if destination.dynamic_data and destination.dynamic_data.hidden_ore_remaining_abstract then ores = destination.dynamic_data.hidden_ore_remaining_abstract end
+	-- local ores
+	-- -- if destination.static_params and destination.static_params.abstract_ore_amounts then ores = destination.static_params.abstract_ore_amounts end
+	-- if destination.dynamic_data and destination.dynamic_data.hidden_ore_remaining_abstract then ores = destination.dynamic_data.hidden_ore_remaining_abstract end
 
-	if ores then
-		flow.current_location.body.hidden_ores_yes.visible = true
-		flow.current_location.body.hidden_ores_yes_table.visible = true
-		flow.current_location.body.patch_size.visible = true
-		flow.current_location.body.hidden_ores_no.visible = false
+	-- if ores then
+	-- 	flow.current_location.body.hidden_ores_yes.visible = true
+	-- 	flow.current_location.body.hidden_ores_yes_table.visible = true
+	-- 	flow.current_location.body.patch_size.visible = true
+	-- 	flow.current_location.body.hidden_ores_no.visible = false
 
-		for _, ore in ipairs(CoreData.ore_types) do
-			if ores[ore.name] then
-				flow.current_location.body.hidden_ores_yes_table[ore.name].number = Math.ceil(ores[ore.name])
-			else
-				flow.current_location.body.hidden_ores_yes_table[ore.name].number = 0
-			end
-		end
-	else
-		flow.current_location.body.hidden_ores_yes.visible = false
-		flow.current_location.body.hidden_ores_yes_table.visible = false
-		flow.current_location.body.patch_size.visible = false
-		flow.current_location.body.hidden_ores_no.visible = true
-	end
+	-- 	for _, ore in ipairs(CoreData.ore_types) do
+	-- 		if ores[ore.name] then
+	-- 			flow.current_location.body.hidden_ores_yes_table[ore.name].number = Math.ceil(ores[ore.name])
+	-- 		else
+	-- 			flow.current_location.body.hidden_ores_yes_table[ore.name].number = 0
+	-- 		end
+	-- 	end
+	-- else
+	-- 	flow.current_location.body.hidden_ores_yes.visible = false
+	-- 	flow.current_location.body.hidden_ores_yes_table.visible = false
+	-- 	flow.current_location.body.patch_size.visible = false
+	-- 	flow.current_location.body.hidden_ores_no.visible = true
+	-- end
 end
 
 

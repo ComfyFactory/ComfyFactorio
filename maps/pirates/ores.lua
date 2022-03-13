@@ -7,6 +7,8 @@ local inspect = require 'utils.inspect'.inspect
 local Common = require 'maps.pirates.common'
 local Utils = require 'maps.pirates.utils_local'
 local simplex_noise = require 'utils.simplex_noise'.d2
+local CustomEvents = require 'maps.pirates.custom_events'
+
 local Public = {}
 
 
@@ -19,6 +21,8 @@ function Public.try_ore_spawn(surface, realp, source_name, density_bonus)
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 	local choices = destination.dynamic_data.hidden_ore_remaining_abstract
+
+	local ret = false
 
 	if choices and Utils.length(choices) > 0 then
 		local choices_possible = {}
@@ -59,7 +63,7 @@ function Public.try_ore_spawn(surface, realp, source_name, density_bonus)
 					if placed > 0 and not destination.dynamic_data.ore_types_spawned[choice] then
 						destination.dynamic_data.ore_types_spawned[choice] = true
 					end
-					return true
+					ret = true
 				end
 			else
 				local real_amount = Math.max(Common.minimum_ore_placed_per_tile, Common.ore_abstract_to_real(choices[choice]))
@@ -79,13 +83,15 @@ function Public.try_ore_spawn(surface, realp, source_name, density_bonus)
 					if placed > 0 and not destination.dynamic_data.ore_types_spawned[choice] then
 						destination.dynamic_data.ore_types_spawned[choice] = true
 					end
-					return true
+					ret = true
 				end
 			end
 		end
 	end
 
-	return false
+	-- script.raise_event(CustomEvents.enum['update_crew_progress_gui'], {})
+
+	return ret
 end
 
 

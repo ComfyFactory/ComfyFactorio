@@ -43,7 +43,13 @@ local GuiCommon = require 'maps.pirates.gui.common'
 -- 	return last_match
 -- end
 
-function Public.update(player)
+
+
+function Public.regular_update(player)
+
+end
+
+function Public.full_update(player)
 	local memory = Memory.get_crew_memory()
 	local pirates_flow = player.gui.top
 
@@ -60,10 +66,10 @@ function Public.update(player)
 		-- else
 
 		local destination = Common.current_destination()
-		local evolution_base
-		local evolution_time
-		local evolution_silo
-		local evolution_nests
+		local evolution_base = 0
+		local evolution_time = 0
+		local evolution_silo = 0
+		local evolution_nests = 0
 		if memory.boat and memory.boat.state and (memory.boat.state == Boats.enum_state.ATSEA_SAILING or memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP) then
 			evolution_base = evo - (memory.kraken_evo or 0)
 			-- here Kraken.kraken_slots
@@ -81,10 +87,12 @@ function Public.update(player)
 				button.number = evo
 			end
 		else
-			evolution_base = (destination and destination.dynamic_data and destination.dynamic_data.evolution_accrued_leagues) or 0
-			evolution_time = (destination and destination.dynamic_data and destination.dynamic_data.evolution_accrued_time) or 0
-			evolution_nests = (destination and destination.dynamic_data and destination.dynamic_data.evolution_accrued_nests) or 0
-			evolution_silo = (destination and destination.dynamic_data and destination.dynamic_data.evolution_accrued_silo) or 0
+			if destination and destination.dynamic_data then
+				evolution_base = destination.dynamic_data.evolution_accrued_leagues or 0
+				evolution_time = destination.dynamic_data.evolution_accrued_time or 0
+				evolution_nests = destination.dynamic_data.evolution_accrued_nests or 0
+				evolution_silo = destination.dynamic_data.evolution_accrued_silo or 0
+			end
 			button.tooltip = string.format('Local biter evolution\n\nLeagues: %.2f\nTime: %.2f\nNests: %.2f\nSilo: %.2f\nTotal: %.2f', evolution_base, evolution_time, evolution_nests, evolution_silo, evo)
 			button.number = evo
 		end

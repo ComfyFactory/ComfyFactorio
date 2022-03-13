@@ -351,7 +351,11 @@ end
 
 
 
-function Public.update(player)
+function Public.regular_update(player)
+
+end
+
+function Public.full_update(player)
 
 	if not player.gui.screen[window_name .. '_piratewindow'] then return end
 	local flow = player.gui.screen[window_name .. '_piratewindow']

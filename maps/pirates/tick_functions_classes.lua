@@ -178,7 +178,7 @@ function Public.class_rewards_tick(tickinterval)
 					if memory.classes_table[player.index] == Classes.enum.SMOLDERING then
 						local inv = player.get_inventory(defines.inventory.character_main)
 						if not (inv and inv.valid) then return end
-						local max_coal = 25
+						local max_coal = 50
 						-- local max_transfer = 1
 						local wood_count = inv.get_item_count('wood')
 						local coal_count = inv.get_item_count('coal')

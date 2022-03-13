@@ -12,6 +12,7 @@ local Hold = require 'maps.pirates.surfaces.hold'
 local Crew = require 'maps.pirates.crew'
 local Boats = require 'maps.pirates.structures.boats.boats'
 local Dock = require 'maps.pirates.surfaces.dock'
+local CustomEvents = require 'maps.pirates.custom_events'
 
 local Public = {}
 
@@ -137,6 +138,8 @@ function Public.initialise_captains_shop()
 		-- buy_fast_loader = true,
 		-- sell_copper = false,
 	}
+
+	script.raise_event(CustomEvents.enum['update_crew_fuel_gui'], {})
 end
 
 function Public.main_shop_try_purchase(player, purchase_name)
@@ -301,6 +304,7 @@ function Public.main_shop_try_purchase(player, purchase_name)
 
 		end
 
+		script.raise_event(CustomEvents.enum['update_crew_fuel_gui'], {})
 
 		-- memory.mainshop_rate_limit_ticker = Common.mainshop_rate_limit_ticks
 	else

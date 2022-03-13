@@ -67,10 +67,31 @@ function Public.toggle_window(player)
 end
 
 
+function Public.regular_update(player)
+	local flow, flow2, flow3, flow4, flow5, flow6
+
+	local memory = Memory.get_crew_memory()
+
+	if not player.gui.screen[window_name .. '_piratewindow'] then return end
+	flow = player.gui.screen[window_name .. '_piratewindow']
+
+	if Roles.player_privilege_level(player) >= Roles.privilege_levels.OFFICER then
+		flow.close_button_flow.hflow.tospend.visible = true
+
+		local inv = player.get_inventory(defines.inventory.character_main)
+		if inv and inv.valid then
+			local coin_amount = inv.get_item_count('coin') or 0
+
+			flow.close_button_flow.hflow.tospend.number = coin_amount
+			flow.close_button_flow.hflow.tospend.tooltip = string.format("You're holding " .. Utils.bignumber_abbrevform2(coin_amount) .. " doubloons.")
+		end
+	else
+		flow.close_button_flow.hflow.tospend.visible = false
+	end
+end
 
 
-
-function Public.update(player)
+function Public.full_update(player)
 	local flow, flow2, flow3, flow4, flow5, flow6
 
 	local memory = Memory.get_crew_memory()
@@ -93,20 +114,6 @@ function Public.update(player)
 	-- 	flow.close_button_flow.hflow.tospend.number = 0
 	-- 	flow.close_button_flow.hflow.tospend.tooltip = string.format('The crew has %01d stored coal.', 0)
 	-- end
-
-	if Roles.player_privilege_level(player) >= Roles.privilege_levels.OFFICER then
-		flow.close_button_flow.hflow.tospend.visible = true
-
-		local inv = player.get_inventory(defines.inventory.character_main)
-		if inv and inv.valid then
-			local coin_amount = inv.get_item_count('coin') or 0
-
-			flow.close_button_flow.hflow.tospend.number = coin_amount
-			flow.close_button_flow.hflow.tospend.tooltip = string.format("You're holding " .. Utils.bignumber_abbrevform2(coin_amount) .. " doubloons.")
-		end
-	else
-		flow.close_button_flow.hflow.tospend.visible = false
-	end
 
 
 
@@ -159,7 +166,6 @@ function Public.update(player)
 		end
 	end
 
-	
 end
 
 

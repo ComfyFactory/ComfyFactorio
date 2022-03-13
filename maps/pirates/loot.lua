@@ -103,9 +103,9 @@ Public.chest_loot_data_raw = {
 	{4, 0, 2, true, 'electric-furnace', 1, 3},
 	{3, 0.2, 1, true, 'chemical-plant', 1, 3},
 
-	{40, -1, 0.5, true, 'speed-module', 1, 3},
-	{20, 0, 1.5, true, 'speed-module-2', 1, 2},
-	{10, 0, 2, true, 'speed-module-3', 1, 1},
+	{50, -1, 0.5, true, 'speed-module', 1, 3},
+	{25, 0, 1.5, true, 'speed-module-2', 1, 2},
+	{12, 0, 2, true, 'speed-module-3', 1, 1},
 	{4, -1, 1, true, 'effectivity-module', 1, 3},
 	-- {4, 0, 1, true, 'effectivity-module-2', 1, 3}, --disabled to reduce 'avalanche of crap' effect
 	{4, 0, 2, true, 'effectivity-module-3', 1, 1},
@@ -314,12 +314,12 @@ function Public.maze_camp_loot()
 end
 
 Public.maze_lab_loot_data_raw = {
-	{8, -0.5, 0.5, true, 'automation-science-pack', 5, 18},
-	{8, -0.6, 0.6, true, 'logistic-science-pack', 5, 18},
-	{6, -0.1, 1, true, 'military-science-pack', 5, 15},
-	{6, -0.5, 1.5, true, 'chemical-science-pack', 4, 10},
-	{6, 0, 1.5, true, 'production-science-pack', 3, 9},
-	{2, 0, 2, true, 'utility-science-pack', 2, 2},
+	{8, -0.5, 0.5, true, 'automation-science-pack', 5, 20},
+	{8, -0.6, 0.6, true, 'logistic-science-pack', 5, 20},
+	{6, -0.1, 1, true, 'military-science-pack', 5, 18},
+	{6, -0.5, 1.5, true, 'chemical-science-pack', 4, 12},
+	{6, 0, 1.5, true, 'production-science-pack', 3, 11},
+	{2, 0, 2, true, 'utility-science-pack', 2, 3},
 	-- {4, 0.4, 1.5, true, 'utility-science-pack', 16, 32},
 	-- {10, 0.5, 1.5, true, 'space-science-pack', 16, 32},
 }

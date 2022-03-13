@@ -114,7 +114,11 @@ end
 
 
 
-function Public.update(player)
+function Public.regular_update(player)
+
+end
+
+function Public.full_update(player)
 	local flow, flow2, flow3, flow4, flow5, flow6
 
 	local memory = Memory.get_crew_memory()

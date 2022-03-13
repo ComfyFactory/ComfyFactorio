@@ -172,7 +172,6 @@ function Public.create_hold_surface(nth)
 			e.destructible = false
 			e.minable = false
 			e.rotatable = false
-			e.operable = false
 			boat.downstairs_poles[nth][i] = e
 		end
 	end

@@ -86,10 +86,10 @@ Public.explanation = {
 	[enum.WOOD_LORD] = 'They find many more resources when chopping trees.',
 	[enum.CHIEF_EXCAVATOR] = 'They find many more resources when handmining ore.',
 	[enum.HATAMOTO] = 'They are very tough, and *with no weapon equipped* fight well by melee, but poorly otherwise.',
-	[enum.IRON_LEG] = 'They are very resistant to damage when carrying 2500 iron ore.',
+	[enum.IRON_LEG] = 'They are very resistant to damage when carrying 3500 iron ore.',
 	[enum.QUARTERMASTER] = 'They give nearby crewmates extra physical attack, and generate ore for the captain\'s cabin for each one.',
 	[enum.DREDGER] = 'They find surprising items when they fish.',
-	[enum.SMOLDERING] = 'They periodically convert wood into coal, if they have less than 25 coal.',
+	[enum.SMOLDERING] = 'They periodically convert wood into coal, if they have less than 50 coal.',
 	[enum.GOURMET] = 'They generate ore for the captain\'s cabin by eating fish in fancy locations.',
 }
 
@@ -201,7 +201,7 @@ function Public.class_ore_grant(player, how_much, disable_scaling)
 	else
 		count = Math.ceil(how_much * Balance.class_resource_scale())
 	end
-	if Math.random(3) == 1 then
+	if Math.random(4) == 1 then
 		Common.flying_text_small(player.surface, player.position, '[color=0.85,0.58,0.37]+' .. count .. '[/color]')
 		Common.give_items_to_crew{{name = 'copper-ore', count = count}}
 	else

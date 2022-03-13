@@ -402,8 +402,12 @@ end
 
 
 
+function Public.regular_update(player)
 
-function Public.update(player)
+end
+
+
+function Public.full_update(player)
 	local global_memory = Memory.get_global_memory()
 	local memory = Memory.get_crew_memory()
 

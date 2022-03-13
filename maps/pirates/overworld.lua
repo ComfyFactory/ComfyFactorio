@@ -28,6 +28,7 @@ local Shop = require 'maps.pirates.shop.shop'
 local Upgrades = require 'maps.pirates.boat_upgrades'
 local Kraken = require 'maps.pirates.surfaces.sea.kraken'
 local Highscore = require 'maps.pirates.highscore'
+local CustomEvents = require 'maps.pirates.custom_events'
 
 
 local infront_positions = {}
@@ -106,6 +107,9 @@ function Public.generate_overworld_destination(p)
 	elseif (macrop.x > 25 and (macrop.x - 22) % 18 == 14) then --we want this to overwrite dock, so putting it here
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.WALKWAYS
+	elseif macrop.x == 23 then --overwrite dock. rocket launch cost
+		type = Surfaces.enum.ISLAND
+		subtype = Surfaces.Island.enum.MAZE
 	elseif macrop.y == -1 and (((macrop.x % 4) == 3 and macrop.x ~= 15) or macrop.x == 14) then --avoid x=15 because radioactive is there
 		type = Surfaces.enum.DOCK
 	elseif macrop.x == 5 then --biter boats appear. large island works well so players run off
@@ -144,9 +148,6 @@ function Public.generate_overworld_destination(p)
 		subtype = Surfaces.Island.enum.SWAMP
 	elseif macrop.x == 22 then --game length decrease, pending more content. also kinda fun to have to steer in realtime due to double space
 		type = nil
-	elseif macrop.x == 23 then --rocket launch cost
-		type = Surfaces.enum.ISLAND
-		subtype = Surfaces.Island.enum.MAZE
 	elseif macrop.x == 24 then --rocket launch cost
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.WALKWAYS
@@ -310,9 +311,9 @@ function Public.generate_overworld_destination(p)
 		end
 		static_params.abstract_ore_amounts = abstract_ore_amounts
 
-		static_params.radius_squared_modifier = (1 + 1 * Math.random())^2
+		static_params.radius_squared_modifier = (2 + 2 * Math.random())
 
-		if macrop.x == 0 then static_params.radius_squared_modifier = 1 end
+		if macrop.x == 0 then static_params.radius_squared_modifier = 2 end
 
 		static_params.discord_emoji = scope.Data.discord_emoji
 
@@ -571,6 +572,8 @@ function Public.check_for_destination_collisions()
 			memory.mapbeingloadeddestination_index = index
 			memory.currentdestination_index = index
 			memory.boat.state = Boats.enum_state.ATSEA_LOADING_MAP
+
+			script.raise_event(CustomEvents.enum['update_crew_progress_gui'], {})
 
 			local destination = Common.current_destination()
 			Surfaces.destination_on_collide(destination)

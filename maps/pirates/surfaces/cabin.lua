@@ -174,7 +174,7 @@ function Public.create_cabin_surface()
 			e.destructible = false
 			e.minable = false
 			e.rotatable = false
-			e.operable = false
+			-- e.operable = false
 			boat.output_chest = e
 		end
 
@@ -184,7 +184,7 @@ function Public.create_cabin_surface()
 			e.destructible = false
 			e.minable = false
 			e.rotatable = false
-			e.operable = false
+			-- e.operable = false
 			boat.backup_output_chest = e
 		end
 

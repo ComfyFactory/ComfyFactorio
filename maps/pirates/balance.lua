@@ -23,7 +23,7 @@ function Public.starting_boatEEIelectric_buffer_size_MJ() --maybe needs to be at
 	return 3/2
 end
 Public.EEI_stages = { --multipliers
-	1,2,5,8,12
+	1,2,4,7,11
 }
 
 
@@ -40,7 +40,7 @@ Public.rocket_launch_coin_reward = 5000
 function Public.crew_scale()
 	local ret = Common.activecrewcount()/10
 	if ret == 0 then ret = 1/10 end --if all players are afk
-	if ret > 3 then ret = 3 end --cap
+	if ret > 2.4 then ret = 2.4 end --we have to cap this because you need time to mine the ore... and big crews are a mess anyway. currently this value matches the 24 player cap
 	return ret
 end
 
@@ -109,7 +109,7 @@ function Public.fuel_depletion_rate_static()
 
 	local rate
 	if Common.overworldx() > 0 then
-		rate = 560 * (0 + (Common.overworldx()/40)^(9/10)) * Public.crew_scale()^(1/6) * Math.sloped(Common.difficulty(), 4/5) / T --most of the crewsize dependence is through T, i.e. the coal cost per island stays the same... but the extra player dependency accounts for the fact that even in compressed time, more players seem to get more resources per island
+		rate = 570 * (0 + (Common.overworldx()/40)^(9/10)) * Public.crew_scale()^(1/6) * Math.sloped(Common.difficulty(), 4/5) / T --most of the crewsize dependence is through T, i.e. the coal cost per island stays the same... but the extra player dependency accounts for the fact that even in compressed time, more players seem to get more resources per island
 	else
 		rate = 0
 	end
@@ -159,7 +159,14 @@ end
 
 
 function Public.base_evolution()
+	local slope = 0.0201
 	local evo = (0.0201 * (Common.overworldx()/40)) * Math.sloped(Common.difficulty(), 1/5)
+	if Common.overworldx() > 600 then
+		evo = evo + (0.005 * (Math.min(Common.overworldx()/40,25) - 600)) * Math.sloped(Common.difficulty(), 1/5)
+	end
+	if Common.overworldx() > 1000 then --undo this ramp:
+		evo = evo + (-0.005 * (Math.min(Common.overworldx()/40,25) - 1000)) * Math.sloped(Common.difficulty(), 1/5)
+	end
 	if Common.overworldx()/40 == 0 then evo = 0 end
 	return evo
 end
@@ -221,10 +228,10 @@ function Public.evolution_per_full_silo_charge()
 end
 
 function Public.bonus_damage_to_humans()
-	local ret = 0.125
+	local ret = 0.050
 	local diff = Common.difficulty()
-	if diff <= 0.7 then ret = 0.1 end
-	if diff >= 1.3 then ret = 0.15 end
+	if diff <= 0.7 then ret = 0.025 end
+	if diff >= 1.3 then ret = 0.075 end
 	return ret
 end
 
@@ -271,8 +278,13 @@ function Public.quest_reward_multiplier()
 end
 
 function Public.island_richness_avg_multiplier()
-	return 0.7 + 0.1 * (Common.overworldx()/40)^(7/10)
-end --tuned tbh
+	local ret
+	local base = 0.7 + 0.1 * (Common.overworldx()/40)^(7/10) --tuned tbh
+
+	ret = base * Math.sloped(Public.crew_scale(), 1/20) --we don't really have resources scaling by player count in this resource-constrained scenario, but we scale a little, to accommodate each player filling their inventory with useful tools. also, I would do 1/14, but we go even slightly lower because we're applying this somewhat sooner than players actually get there.
+
+	return ret
+end
 
 function Public.resource_quest_multiplier()
 	return (1.0 + 0.075 * (Common.overworldx()/40)^(8/10)) * Math.sloped(Common.difficulty(), 1/3) * (Public.crew_scale())^(1/8)

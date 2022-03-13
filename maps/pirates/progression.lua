@@ -8,6 +8,7 @@ local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
 local Utils = require 'maps.pirates.utils_local'
 local inspect = require 'utils.inspect'.inspect
+local CustomEvents = require 'maps.pirates.custom_events'
 
 local Structures = require 'maps.pirates.structures.structures'
 local Boats = require 'maps.pirates.structures.boats.boats'
@@ -229,6 +230,8 @@ function Public.progress_to_destination(destination_index)
 			end
 		end
 
+		script.raise_event(CustomEvents.enum['update_crew_fuel_gui'], {})
+
 		-- Delay.add(Delay.enum.PLACE_DOCK_JETTY_AND_BOATS)
 		Task.set_timeout_in_ticks(2, place_dock_jetty_and_boats, {crew_id = memory.id})
 	else
@@ -268,8 +271,10 @@ function Public.progress_to_destination(destination_index)
 
 	memory.destinationsvisited_indices[#memory.destinationsvisited_indices + 1] = destination_index
 
-	memory.currentdestination_index = destination_index
+	memory.currentdestination_index = destination_index --already done when we collide with it typically
 	local destination = Common.current_destination()
+
+	script.raise_event(CustomEvents.enum['update_crew_progress_gui'], {})
 
 	destination.dynamic_data.timer = 0
 	destination.dynamic_data.timeratlandingtime = nil
@@ -388,6 +393,8 @@ function Public.check_for_end_of_boat_movement(boat)
 			memory.mainshop_availability_bools.upgrade_power = false
 			memory.mainshop_availability_bools.unlock_merchants = false
 			memory.mainshop_availability_bools.rockets_for_sale = false
+
+			script.raise_event(CustomEvents.enum['update_crew_fuel_gui'], {})
 	
 			Public.go_from_currentdestination_to_sea()
 	
@@ -498,6 +505,8 @@ function Public.undock_from_dock(manual)
 	memory.mainshop_availability_bools.new_boat_cutter_with_hold = false
 	memory.mainshop_availability_bools.new_boat_sloop_with_hold = false
 
+	script.raise_event(CustomEvents.enum['update_crew_fuel_gui'], {})
+
 	Crew.summon_crew()
 
 	local force = memory.force
@@ -549,10 +558,6 @@ function Public.go_from_currentdestination_to_sea()
 	memory.enemy_force.reset_evolution()
 	local base_evo = Balance.base_evolution()
 	Common.set_evo(base_evo)
-	destination.dynamic_data.evolution_accrued_leagues = base_evo
-	destination.dynamic_data.evolution_accrued_time = 0
-	destination.dynamic_data.evolution_accrued_nests = 0
-	destination.dynamic_data.evolution_accrued_silo = 0
 	memory.kraken_evo = 0
 
 	memory.loadingticks = nil

@@ -8,7 +8,7 @@ local GuiEvo = require 'maps.pirates.gui.evo'
 local GuiProgress = require 'maps.pirates.gui.progress'
 local GuiRuns = require 'maps.pirates.gui.runs'
 local GuiCrew = require 'maps.pirates.gui.crew'
-local GuiShop = require 'maps.pirates.gui.shop'
+local GuiFuel = require 'maps.pirates.gui.fuel'
 local GuiMinimap = require 'maps.pirates.gui.minimap'
 local GuiInfo = require 'maps.pirates.gui.info'
 local Quest = require 'maps.pirates.quest'
@@ -22,21 +22,49 @@ local Crowsnest = require 'maps.pirates.surfaces.crowsnest'
 local Progression = require 'maps.pirates.progression'
 local Surfaces = require 'maps.pirates.surfaces.surfaces'
 local Roles = require 'maps.pirates.roles.roles'
+local Event = require 'utils.event'
+local CustomEvents = require 'maps.pirates.custom_events'
 
 local ComfyPanel = require 'comfy_panel.main'
 
 
 local Public = {}
+local enum = {
+	PROGRESS = 'progress',
+	RUNS = 'runs',
+	CREW = 'crew',
+	FUEL = 'fuel',
+	MINIMAP = 'minimap',
+	INFO = 'info',
+	COLOR = 'color',
+}
+Public.enum = enum
 Public.progress = require 'maps.pirates.gui.progress'
 Public.runs = require 'maps.pirates.gui.runs'
 Public.crew = require 'maps.pirates.gui.crew'
-Public.fuel = require 'maps.pirates.gui.shop'
+Public.fuel = require 'maps.pirates.gui.fuel'
 Public.minimap = require 'maps.pirates.gui.minimap'
 Public.info = require 'maps.pirates.gui.info'
 Public.color = require 'maps.pirates.gui.color'
 
 
+function Public.update_crew_gui(which_gui)
+	local players = Common.crew_get_crew_members_and_spectators()
 
+	for _, player in pairs(players) do
+		Public[which_gui].full_update(player)
+	end
+end
+
+function Public.update_crew_progress_gui()
+	return Public.update_crew_gui('progress')
+end
+Event.add(CustomEvents.enum['update_crew_progress_gui'], Public.update_crew_progress_gui)
+-- script.raise_event(CustomEvents.enum['update_crew_progress_gui'], {})
+function Public.update_crew_fuel_gui()
+	return Public.update_crew_gui('fuel')
+end
+Event.add(CustomEvents.enum['update_crew_fuel_gui'], Public.update_crew_fuel_gui)
 
 
 local function create_gui(player)
@@ -362,7 +390,6 @@ local function create_gui(player)
 		type = 'label',
 	})
 	flow3.style.font = 'default-large-semibold'
-	flow3.style.font_color = GuiCommon.bold_font_color
 	flow3.style.right_margin = 2
 
 	flow3 = flow2.add({
@@ -479,13 +506,13 @@ function Public.update_gui(player)
 		end
 	end
 	
-	GuiEvo.update(player)
-	GuiProgress.update(player)
-	GuiRuns.update(player)
-	GuiCrew.update(player)
-	GuiShop.update(player)
-	GuiMinimap.update(player)
-	GuiInfo.update(player)
+	GuiEvo.regular_update(player)
+	GuiProgress.regular_update(player) --moved to event
+	GuiRuns.regular_update(player)
+	GuiCrew.regular_update(player)
+	GuiFuel.regular_update(player)
+	GuiMinimap.regular_update(player)
+	GuiInfo.regular_update(player)
 
 	-- local lives = memory.lives or 1
 	-- local button = pirates_flow.lives_piratebutton_frame.lives_piratebutton
@@ -500,9 +527,9 @@ function Public.update_gui(player)
 	-- 	button.number = 3
 	-- end
 
-	pirates_flow.fuel_piratebutton_flow_1.fuel_piratebutton_flow_2.fuel_label_1.caption = '[item=coal] ' .. Utils.bignumber_abbrevform(memory.stored_fuel or 0)
-	pirates_flow.fuel_piratebutton_flow_1.fuel_piratebutton_flow_2.fuel_label_2.caption = Utils.negative_rate_abbrevform(Progression.fuel_depletion_rate() or 0)
-	local color_scale = Math.max(Math.min((- (Progression.fuel_depletion_rate() or 0))/50, 1),0)
+	pirates_flow.fuel_piratebutton_flow_1.fuel_piratebutton_flow_2.fuel_label_1.caption = 'Fuel: ' .. Utils.bignumber_abbrevform(memory.stored_fuel or 0) .. '[item=coal]'
+	pirates_flow.fuel_piratebutton_flow_1.fuel_piratebutton_flow_2.fuel_label_2.caption = Utils.negative_rate_abbrevform(memory.fuel_depletion_rate_memoized or 0)
+	local color_scale = Math.max(Math.min((- (memory.fuel_depletion_rate_memoized or 0))/50, 1),0)
 	pirates_flow.fuel_piratebutton_flow_1.fuel_piratebutton_flow_2.fuel_label_2.style.font_color = {
 		r = GuiCommon.fuel_color_1.r * (1-color_scale) + GuiCommon.fuel_color_2.r * color_scale,
 		g = GuiCommon.fuel_color_1.g * (1-color_scale) + GuiCommon.fuel_color_2.g * color_scale,
@@ -520,41 +547,55 @@ function Public.update_gui(player)
 
 	--== State-checking bools ==--
 
-	local in_crowsnest_bool = string.sub(player.surface.name, 9, 17) == 'Crowsnest'
-	local in_hold_bool = string.sub(player.surface.name, 9, 12) == 'Hold'
-	local in_cabin_bool = string.sub(player.surface.name, 9, 13) == 'Cabin'
 
-	local onmap_bool = destination.surface_name and (player.surface.name == destination.surface_name or (memory.boat and memory.boat.surface_name and
-	memory.boat.surface_name == destination.surface_name and (in_crowsnest_bool or in_hold_bool or in_cabin_bool)
-	))
+	local in_crowsnest_bool, in_hold_bool, in_cabin_bool, onmap_bool, eta_bool, retreating_bool, approaching_bool, atsea_sailing_bool, landed_bool, quest_bool, silo_bool, charged_bool, launched_bool, captain_bool, atsea_loading_bool, character_on_deck_bool, on_deck_standing_near_loco_bool, on_deck_standing_near_cabin_bool, on_deck_standing_near_crowsnest_bool, cost_bool, cost_includes_rocket_launch, approaching_dock_bool, leaving_dock_bool, leave_anytime_bool
 
-	local eta_bool = destination.dynamic_data.time_remaining and destination.dynamic_data.time_remaining > 0 and onmap_bool
-	local retreating_bool = memory.boat and memory.boat.state and memory.boat.state == Boats.enum_state.RETREATING and onmap_bool
-	local approaching_bool = memory.boat and memory.boat.state and memory.boat.state == Boats.enum_state.APPROACHING
-	local atsea_sailing_bool = memory.boat and memory.boat.state and memory.boat.state == Boats.enum_state.ATSEA_SAILING
-	local landed_bool = memory.boat and memory.boat.state and memory.boat.state == Boats.enum_state.LANDED
-	local quest_bool = (destination.dynamic_data.quest_type ~= nil) and onmap_bool
-	local silo_bool = destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid and onmap_bool
-	local charged_bool = destination.dynamic_data.silocharged
-	local launched_bool = destination.dynamic_data.rocketlaunched
+	captain_bool = Common.is_captain(player)
 
-	local captain_bool = Common.is_captain(player)
+	in_crowsnest_bool = string.sub(player.surface.name, 9, 17) == 'Crowsnest'
+	in_hold_bool = string.sub(player.surface.name, 9, 12) == 'Hold'
+	in_cabin_bool = string.sub(player.surface.name, 9, 13) == 'Cabin'
 
-	local atsea_loading_bool = memory.boat and memory.boat.state and memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP and memory.loadingticks
+	if destination and destination.dynamic_data then
+		eta_bool = destination.dynamic_data.time_remaining and destination.dynamic_data.time_remaining > 0 and onmap_bool
+		retreating_bool = memory.boat and memory.boat.state and memory.boat.state == Boats.enum_state.RETREATING and onmap_bool
+		approaching_bool = memory.boat and memory.boat.state and memory.boat.state == Boats.enum_state.APPROACHING
+		atsea_sailing_bool = memory.boat and memory.boat.state and memory.boat.state == Boats.enum_state.ATSEA_SAILING
+		landed_bool = memory.boat and memory.boat.state and memory.boat.state == Boats.enum_state.LANDED
+		quest_bool = (destination.dynamic_data.quest_type ~= nil) and onmap_bool
+		silo_bool = destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid and onmap_bool
+		charged_bool = destination.dynamic_data.silocharged
+		launched_bool = destination.dynamic_data.rocketlaunched
 
-	local character_on_deck_bool = player.character and player.character.position and memory.boat and memory.boat.position and memory.boat.surface_name and player.surface.name and player.surface.name == memory.boat.surface_name
+		cost_bool = destination.static_params.cost_to_leave and (not atsea_sailing_bool) and (not retreating_bool)
+		cost_includes_rocket_launch = cost_bool and destination.static_params.cost_to_leave['launch_rocket']
+	
+		leave_anytime_bool = (landed_bool and not (eta_bool or cost_bool))
+	end
 
-	local on_deck_standing_near_loco_bool = character_on_deck_bool and Boats.get_scope(memory.boat) and Math.distance(player.character.position, Math.vector_sum(memory.boat.position, Boats.get_scope(memory.boat).Data.loco_pos)) < 3
-	local on_deck_standing_near_cabin_bool = character_on_deck_bool and Boats.get_scope(memory.boat) and Math.distance(player.character.position, Math.vector_sum(memory.boat.position, Boats.get_scope(memory.boat).Data.cabin_car)) < 2.5
-	local on_deck_standing_near_crowsnest_bool = character_on_deck_bool and Boats.get_scope(memory.boat) and Math.distance(player.character.position, Math.vector_sum(memory.boat.position, Boats.get_scope(memory.boat).Data.crowsnest_center)) < 2.7
+	if memory.boat then
+		onmap_bool = destination.surface_name and (player.surface.name == destination.surface_name or (
+			memory.boat.surface_name == destination.surface_name and (in_crowsnest_bool or in_hold_bool or in_cabin_bool)
+		))
 
-	local cost_bool = destination.static_params.cost_to_leave and (not atsea_sailing_bool) and (not retreating_bool)
-	local cost_includes_rocket_launch = cost_bool and destination.static_params.cost_to_leave['launch_rocket']
+		atsea_loading_bool = memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP and memory.loadingticks
 
-	local approaching_dock_bool = destination.type == Surfaces.enum.DOCK and memory.boat.state == Boats.enum_state.APPROACHING
-	local leaving_dock_bool = destination.type == Surfaces.enum.DOCK and memory.boat.state == Boats.enum_state.LEAVING_DOCK
+		character_on_deck_bool = player.character and player.character.position and player.surface.name and player.surface.name == memory.boat.surface_name
 
-	local leave_anytime_bool = (landed_bool and not (eta_bool or cost_bool)) 
+		if character_on_deck_bool then
+			local BoatData = Boats.get_scope(memory.boat).Data
+
+			on_deck_standing_near_loco_bool = Math.distance(player.character.position, Math.vector_sum(memory.boat.position, BoatData.loco_pos)) < 3
+	
+			on_deck_standing_near_cabin_bool = Math.distance(player.character.position, Math.vector_sum(memory.boat.position, BoatData.cabin_car)) < 2.5
+	
+			on_deck_standing_near_crowsnest_bool = Math.distance(player.character.position, Math.vector_sum(memory.boat.position, BoatData.crowsnest_center)) < 2.7
+		end
+	
+
+		approaching_dock_bool = destination.type == Surfaces.enum.DOCK and memory.boat.state == Boats.enum_state.APPROACHING
+		leaving_dock_bool = destination.type == Surfaces.enum.DOCK and memory.boat.state == Boats.enum_state.LEAVING_DOCK
+	end
 
 	--== Update Gui ==--
 
@@ -813,11 +854,11 @@ function Public.update_gui(player)
 					flow1.silo_label_3.visible = true
 	
 					-- flow1.silo_label_1.caption = string.format('[achievement=there-is-no-spoon]: +%.0f[item=sulfur]', destination.dynamic_data.rocketcoalreward)
-					flow1.silo_label_1.caption = string.format('Launched')
+					flow1.silo_label_1.caption = string.format('Launched:')
 					-- flow1.silo_label_1.caption = string.format('Launched for %.0f[item=coal] , ' .. Balance.rocket_launch_coin_reward .. '[item=coin]', destination.dynamic_data.rocketcoalreward)
 					flow1.silo_label_1.style.font_color = GuiCommon.achieved_font_color
 
-					flow1.silo_label_3.caption = 'for ' .. Math.floor(destination.dynamic_data.rocketcoalreward/100)/10 .. 'k[item=coal], ' .. Math.floor(Balance.rocket_launch_coin_reward/100)/10 .. 'k[item=coin]'
+					flow1.silo_label_3.caption = Math.floor(destination.dynamic_data.rocketcoalreward/100)/10 .. 'k[item=coal], ' .. Math.floor(Balance.rocket_launch_coin_reward/100)/10 .. 'k[item=coin]'
 
 					local tooltip = 'The rocket has launched, and this is the reward.'
 					flow1.tooltip = tooltip
@@ -896,6 +937,7 @@ function Public.update_gui(player)
 				if quest_complete then
 					tooltip = 'The quest is complete, and this is the reward.'
 					flow1.quest_label_1.caption = 'Quest:'
+					flow1.quest_label_1.style.font_color = GuiCommon.achieved_font_color
 					flow1.quest_label_2.visible = true
 					flow1.quest_label_3.visible = false
 					flow1.quest_label_4.visible = false
@@ -903,6 +945,7 @@ function Public.update_gui(player)
 				else
 					if quest_progress < quest_progressneeded then
 						flow1.quest_label_1.caption = 'Quest:'
+						flow1.quest_label_1.style.font_color = GuiCommon.bold_font_color
 						flow1.quest_label_2.visible = true
 						flow1.quest_label_3.visible = true
 						flow1.quest_label_4.visible = true
@@ -1097,15 +1140,15 @@ local function on_gui_click(event)
 			local name = string.sub(event.element.name, 1, -14)
 			if Public[name] then
 				Public[name].toggle_window(player)
-				Public[name].update(player)
+				Public[name].full_update(player)
 			end
 		-- elseif event.element.name == 'fuel_label_1' or event.element.name == 'fuel_label_2' then
 		-- 	Public.fuel.toggle_window(player)
-		-- 	Public.fuel.update(player)
+		-- 	Public.fuel.full_update(player)
 	else
 		GuiRuns.click(event)
 		GuiCrew.click(event)
-		GuiShop.click(event)
+		GuiFuel.click(event)
 		GuiMinimap.click(event)
 		GuiInfo.click(event)
 	end
@@ -1121,6 +1164,9 @@ local function on_gui_location_changed(event)
 		GuiCommon.update_gui_memory(player, name, 'position', event.element.location)
 	end
 end
+
+
+
 
 local event = require 'utils.event'
 event.add(defines.events.on_gui_click, on_gui_click)

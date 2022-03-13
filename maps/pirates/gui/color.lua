@@ -45,7 +45,11 @@ end
 
 
 
-function Public.update(player)
+function Public.regular_update(player)
+
+end
+
+function Public.full_update(player)
 end
 
 

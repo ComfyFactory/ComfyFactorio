@@ -38,7 +38,7 @@ function Public.strobe_player_colors(tickinterval)
 
 	local strobing_players = memory.speed_boost_characters
 
-	if strobing_players and #strobing_players > 0 then
+	if #strobing_players > 0 then
 		local col = Utils.rgb_from_hsv((game.tick*6) % 360, 0.7, 0.9)
 		for index, val in pairs(strobing_players) do
 			if val then
@@ -69,7 +69,7 @@ function Public.prevent_unbarreling_off_ship(tickinterval)
 			local r = a.get_recipe()
 			if r and r.subgroup and r.subgroup.name and r.subgroup.name == 'fill-barrel' and (not (r.name and r.name == 'fill-water-barrel')) then
 				if not Boats.on_boat(boat, a.position) then
-					Common.notify_force_error(memory.force, 'Recipe error: barrels are too heavy to carry back to the ship. Try another way.')
+					Common.notify_force_error(memory.force, 'Recipe error: Barrels are too heavy to carry back to the ship. Try another way.')
 					a.set_recipe('fill-water-barrel')
 				end
 			end
@@ -163,6 +163,8 @@ function Public.ship_deplete_fuel(tickinterval)
 
 	local rate = Progression.fuel_depletion_rate()
 
+	memory.fuel_depletion_rate_memoized = rate
+
 	local boat = memory.boat
 
 	local input_chests = boat.input_chests
@@ -198,7 +200,6 @@ function Public.transfer_pollution(tickinterval)
 end
 
 function Public.shop_ratelimit_tick(tickinterval)
-	local memory = Memory.get_crew_memory()
 
 	-- if memory.mainshop_rate_limit_ticker and memory.mainshop_rate_limit_ticker > 0 then
 	-- 	memory.mainshop_rate_limit_ticker = memory.mainshop_rate_limit_ticker - tickinterval
@@ -283,7 +284,6 @@ function Public.periodic_free_resources(tickinterval)
 end
 
 function Public.pick_up_tick(tickinterval)
-	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 	if not destination then return end
 	local surface_name = destination.surface_name
@@ -947,9 +947,9 @@ end
 function Public.loading_update(tickinterval)
 	local memory = Memory.get_crew_memory()
 	if memory.game_lost then return end
-	local currentdestination = Common.current_destination()
-
 	if not memory.loadingticks then return end
+
+	local destination = Common.current_destination()
 	
 	local destination_index = memory.mapbeingloadeddestination_index
 	if not destination_index then memory.loadingticks = nil return end
@@ -960,9 +960,8 @@ function Public.loading_update(tickinterval)
 
 	-- if memory.loadingticks % 100 == 0 then game.print(memory.loadingticks) end
 
-	local destination_data = memory.destinations[destination_index]
-	if (not destination_data) then
-		if memory.boat and currentdestination.type == Surfaces.enum.LOBBY then
+	if (not destination) then
+		if memory.boat and destination.type == Surfaces.enum.LOBBY then
 			if memory.loadingticks >= 350 - Common.loading_interval then
 				if Boats.players_on_boat_count(memory.boat) > 0 then
 					if memory.loadingticks < 350 then
@@ -988,13 +987,13 @@ function Public.loading_update(tickinterval)
 		end
 		return
 	else
-		local surface_name = destination_data.surface_name
+		local surface_name = destination.surface_name
 		if not surface_name then return end
 		local surface = game.surfaces[surface_name]
 		if not surface then return end
 
 
-		if currentdestination.type == Surfaces.enum.LOBBY then
+		if destination.type == Surfaces.enum.LOBBY then
 
 			if memory.loadingticks >= 1260 then
 				
@@ -1039,9 +1038,9 @@ function Public.loading_update(tickinterval)
 		elseif memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP then
 
 			local total = Common.map_loading_ticks_atsea
-			if currentdestination.type == Surfaces.enum.DOCK then
+			if destination.type == Surfaces.enum.DOCK then
 				total = Common.map_loading_ticks_atsea_dock
-			elseif currentdestination.type == Surfaces.enum.ISLAND and currentdestination.subtype == Surfaces.Island.enum.MAZE then
+			elseif destination.type == Surfaces.enum.ISLAND and destination.subtype == Surfaces.Island.enum.MAZE then
 				total = Common.map_loading_ticks_atsea_maze
 			end
 
@@ -1223,14 +1222,17 @@ end
 
 function Public.minimap_jam(tickinterval)
 	local memory = Memory.get_crew_memory()
-	local destination = Common.current_destination()
 
-	if destination.type == Surfaces.enum.ISLAND and destination.subtype == Surfaces.Island.enum.MAZE and memory.overworldx >= Common.maze_minimap_jam_start_league and memory.boat and memory.boat.state == Boats.enum_state.LANDED then
-		if not destination.surface_name then return end
-		local surface = game.surfaces[destination.surface_name]
-		local force = memory.force
-		force.clear_chart(surface)
+	if memory.overworldx >= Common.maze_minimap_jam_start_league and memory.boat and memory.boat.state == Boats.enum_state.LANDED then
+		local destination = Common.current_destination()
+		if destination.type == Surfaces.enum.ISLAND and destination.subtype == Surfaces.Island.enum.MAZE then
+			if not destination.surface_name then return end
+			local surface = game.surfaces[destination.surface_name]
+			local force = memory.force
+			force.clear_chart(surface)
+		end
 	end
+
 end
 
 -- function Public.crewtick_handle_delayed_tasks(tickinterval)
@@ -1266,7 +1268,7 @@ function Public.Kraken_Destroyed_Backup_check(tickinterval) -- a server became b
 			for i = 1, Kraken.kraken_slots do
 				if memory.active_sea_enemies.krakens[i] then
 					local kraken_data = memory.active_sea_enemies.krakens[i]
-					if kraken_data.step >= 3 then
+					if kraken_data.step and kraken_data.step >= 3 then
 						some_spawners_should_be_alive = true
 					end
 				end
@@ -1314,8 +1316,9 @@ end
 
 function Public.silo_insta_update()
 	local memory = Memory.get_crew_memory()
-	local destination = Common.current_destination()
 	if memory.game_lost then return end
+
+	local destination = Common.current_destination()
 
 	local silos = destination.dynamic_data.rocketsilos
 	

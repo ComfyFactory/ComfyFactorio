@@ -204,8 +204,8 @@ local function kraken_damage(event)
 	if event.damage_type.name and (event.damage_type.name == 'explosion' or event.damage_type.name == 'poison') then
 	-- if event.cause.name == 'artillery-turret' then
 		adjusted_damage = adjusted_damage / 2.5
-	elseif event.damage_type.name and (event.damage_type.name == 'fire') then
-		adjusted_damage = adjusted_damage / 1.1
+	-- elseif event.damage_type.name and (event.damage_type.name == 'fire') then
+	-- 	adjusted_damage = adjusted_damage
 	end
 	-- and additionally:
 	if event.cause.name == 'artillery-turret' then
@@ -253,8 +253,8 @@ local function extra_damage_to_players(event)
 			local inv = event.entity.get_inventory(defines.inventory.character_main)
 			if not (inv and inv.valid) then return end
 			local count = inv.get_item_count('iron-ore')
-			if count and count >= 2500 then
-				event.entity.health = event.entity.health + event.final_damage_amount * 0.8
+			if count and count >= 3500 then
+				event.entity.health = event.entity.health + event.final_damage_amount * 0.87
 			end
 		end --samurai health buff is elsewhere
 	end
@@ -781,7 +781,7 @@ local function base_kill_rewards(event)
 	local iron_amount = 0
 	local coin_amount = 0
 
-	if memory.overworldx > 0 then
+	if memory.overworldx >= 0 then
 		if entity.name == 'small-worm-turret' then
 			iron_amount = 5
 			coin_amount = 40
@@ -1530,18 +1530,18 @@ local remove_boost_movement_speed_on_respawn =
     function(data)
         local player = data.player
 		local crew_id = data.crew_id
-        if not (player and player.valid and player.character and player.character.valid) then
+        if not (player and player.valid) then
             return
         end
+
+		-- their color was strobing, so now reset it to their chat color:
+		player.color = player.chat_color
 
 		Memory.set_working_id(crew_id)
 		local memory = Memory.get_crew_memory()
 		if not (memory.id and memory.id > 0) then return end --check if crew disbanded
 		if memory.game_lost then return end
 		memory.speed_boost_characters[player.index] = nil
-
-		-- their color was strobing, so now reset it to their chat color:
-		player.color = player.chat_color
 
 		Common.notify_player_expected(player, 'Respawn speed bonus removed.')
     end
@@ -1554,9 +1554,6 @@ local boost_movement_speed_on_respawn =
         local player = data.player
 		local crew_id = data.crew_id
         if not player or not player.valid then
-            return
-        end
-        if not player.character or not player.character.valid and player.character and player.character.valid then
             return
         end
 

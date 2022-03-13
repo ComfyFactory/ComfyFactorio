@@ -291,7 +291,6 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 					e.destructible = false
 					e.minable = false
 					e.rotatable = false
-					e.operable = false
 					if i == 1 then
 						boat.upstairs_pole = e
 						Public.try_connect_upstairs_and_downstairs_poles(boat)

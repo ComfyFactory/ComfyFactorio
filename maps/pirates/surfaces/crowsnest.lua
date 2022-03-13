@@ -5,6 +5,7 @@ local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
 local Utils = require 'maps.pirates.utils_local'
 local Math = require 'maps.pirates.math'
+local CustomEvents = require 'maps.pirates.custom_events'
 
 local inspect = require 'utils.inspect'.inspect
 local Token = require 'utils.token'
@@ -117,6 +118,8 @@ function Public.move_crowsnest(vectorx, vectory)
 		-- crew_force.clear_chart(surface)
 		crew_force.chart(surface, area)
 	end
+
+	script.raise_event(CustomEvents.enum['update_crew_progress_gui'], {})
 end
 
 

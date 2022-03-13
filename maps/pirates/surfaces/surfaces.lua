@@ -203,6 +203,8 @@ function Public.destination_on_collide(destination)
 				times = {1, 5, 10, 15, 20, 25}
 			elseif playercount <= 15 then
 				times = {1, 5, 10, 15, 20, 25, 30}
+			elseif playercount <= 21 then
+				times = {1, 5, 10, 15, 20, 25, 30, 35}
 			else
 				times = {1, 5, 10, 15, 20, 25, 30, 35, 40}
 			end

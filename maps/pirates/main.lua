@@ -18,6 +18,8 @@ The scenario is quite complex, but there are ways to get started, even if you do
 require 'modules.biter_noms_you'
 require 'modules.no_deconstruction_of_neutral_entities'
 
+local CustomEvents = require 'maps.pirates.custom_events' --it might be necessary to do this before anything
+
 local Server = require 'utils.server'
 local inspect = require 'utils.inspect'.inspect
 -- local Modifers = require 'player_modifiers'
@@ -204,8 +206,8 @@ local function crew_tick()
 		TickFunctions.update_boat_stored_resources(10)
 	end
 
-	if tick % 15 == 0 then
-		TickFunctions.covered_requirement_check(15)
+	if tick % 10 == 0 then
+		TickFunctions.covered_requirement_check(10)
 	end
 
 	if tick % 30 == 0 then
@@ -270,8 +272,6 @@ local function crew_tick()
 			end
 		end
 	end
-
-
 
 	if tick % 240 == 0 then
 		TickFunctions.Kraken_Destroyed_Backup_check(240)

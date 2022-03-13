@@ -1034,14 +1034,14 @@ end
 
 
 function Public.validate_player(player)
-	local ret = false
 	if player and player.valid and player.connected and game.players[player.name] then
-		ret = true
+		return true
+	else
+		if _DEBUG then
+			log('player validation fail: ' .. (player.name or 'noname'))
+		end
+		return false
 	end
-	if not ret and _DEBUG then
-		log('player validation fail: ' .. (player.name or 'noname'))
-	end
-    return ret
 end
 
 
@@ -1125,9 +1125,11 @@ function Public.give_items_to_crew(items)
 					Public.notify_force(force, 'Warning: captain\'s cabin chests are full!')
 				end
 			else
-				log('give_items_to_crew: i2.name is nil. inspect:')
-				log(inspect(items))
-				log(inspect(i2))
+				if _DEBUG then
+					log('give_items_to_crew: i2.name is nil. inspect:')
+					log(inspect(items))
+					log(inspect(i2))
+				end
 			end
 		end
 	else

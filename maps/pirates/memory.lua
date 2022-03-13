@@ -40,7 +40,9 @@ end
 
 
 
-function Public.reset_crew_memory(id) --also serves as a dev reference of memory entries
+function Public.reset_crew_memory(id) --mostly serves as a dev reference of memory entries
+	-- but not _everything_ is stored here, it's just a guide to the most important things
+
 	pirates_global_memory.crew_memories[id] = {}
 	local memory = pirates_global_memory.crew_memories[id]
 
@@ -109,7 +111,7 @@ function Public.reset_crew_memory(id) --also serves as a dev reference of memory
 	memory.floating_pollution = nil
 end
 
-function Public.fallthrough_crew_memory() --could make this a metatable
+function Public.fallthrough_crew_memory() --could make this a metatable, but metatables and factorio global seem not to play nicely
 	return {
 		id = 0,
 		difficulty = 1,

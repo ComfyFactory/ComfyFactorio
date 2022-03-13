@@ -31,6 +31,7 @@ local simplex_noise = require 'utils.simplex_noise'.d2
 local Token = require 'utils.token'
 local Task = require 'utils.task'
 local Highscore = require 'maps.pirates.highscore'
+local CustomEvents = require 'maps.pirates.custom_events'
 
 local GUIcolor = require 'maps.pirates.gui.color'
 
@@ -101,7 +102,7 @@ function(cmd)
 				if not rgb then return end
 				player.color = rgb
 				player.chat_color = rgb
-				local message = '[color=' .. rgb.r .. ',' .. rgb.g .. ',' .. rgb.b .. ']' .. player.name .. '\'s color became ' .. color .. '[/color] (via /ccolor).'
+				local message = '[color=' .. rgb.r .. ',' .. rgb.g .. ',' .. rgb.b .. ']' .. player.name .. '\'s color randomly became ' .. color .. '[/color] (via /ccolor).'
 				Common.notify_game(message)
 				-- disabled due to lag:
 				-- GUIcolor.toggle_window(player)
@@ -135,6 +136,7 @@ local go_1 = Token.register(
 		Overworld.ensure_lane_generated_up_to(24, Crowsnest.Data.visibilitywidth/2)
 		Overworld.ensure_lane_generated_up_to(-24, Crowsnest.Data.visibilitywidth/2)
 		memory.currentdestination_index = 1
+		script.raise_event(CustomEvents.enum['update_crew_progress_gui'], {})
 		Surfaces.create_surface(Common.current_destination())
 		Task.set_timeout_in_ticks(60, go_2, {})
 	end
