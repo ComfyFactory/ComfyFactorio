@@ -38,7 +38,7 @@ function Public.strobe_player_colors(tickinterval)
 
 	local strobing_players = memory.speed_boost_characters
 
-	if #strobing_players > 0 then
+	if strobing_players and #strobing_players > 0 then
 		local col = Utils.rgb_from_hsv((game.tick*6) % 360, 0.7, 0.9)
 		for index, val in pairs(strobing_players) do
 			if val then
@@ -947,9 +947,10 @@ end
 function Public.loading_update(tickinterval)
 	local memory = Memory.get_crew_memory()
 	if memory.game_lost then return end
+
 	if not memory.loadingticks then return end
 
-	local destination = Common.current_destination()
+	local currentdestination = Common.current_destination()
 	
 	local destination_index = memory.mapbeingloadeddestination_index
 	if not destination_index then memory.loadingticks = nil return end
@@ -960,8 +961,9 @@ function Public.loading_update(tickinterval)
 
 	-- if memory.loadingticks % 100 == 0 then game.print(memory.loadingticks) end
 
-	if (not destination) then
-		if memory.boat and destination.type == Surfaces.enum.LOBBY then
+	local destination_data = memory.destinations[destination_index]
+	if (not destination_data) then
+		if memory.boat and currentdestination.type == Surfaces.enum.LOBBY then
 			if memory.loadingticks >= 350 - Common.loading_interval then
 				if Boats.players_on_boat_count(memory.boat) > 0 then
 					if memory.loadingticks < 350 then
@@ -987,13 +989,13 @@ function Public.loading_update(tickinterval)
 		end
 		return
 	else
-		local surface_name = destination.surface_name
+		local surface_name = destination_data.surface_name
 		if not surface_name then return end
 		local surface = game.surfaces[surface_name]
 		if not surface then return end
 
 
-		if destination.type == Surfaces.enum.LOBBY then
+		if currentdestination.type == Surfaces.enum.LOBBY then
 
 			if memory.loadingticks >= 1260 then
 				
@@ -1038,9 +1040,9 @@ function Public.loading_update(tickinterval)
 		elseif memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP then
 
 			local total = Common.map_loading_ticks_atsea
-			if destination.type == Surfaces.enum.DOCK then
+			if currentdestination.type == Surfaces.enum.DOCK then
 				total = Common.map_loading_ticks_atsea_dock
-			elseif destination.type == Surfaces.enum.ISLAND and destination.subtype == Surfaces.Island.enum.MAZE then
+			elseif currentdestination.type == Surfaces.enum.ISLAND and currentdestination.subtype == Surfaces.Island.enum.MAZE then
 				total = Common.map_loading_ticks_atsea_maze
 			end
 

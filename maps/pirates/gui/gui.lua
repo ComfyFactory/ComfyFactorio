@@ -506,13 +506,13 @@ function Public.update_gui(player)
 		end
 	end
 	
-	GuiEvo.regular_update(player)
+	GuiEvo.full_update(player)
 	GuiProgress.regular_update(player) --moved to event
-	GuiRuns.regular_update(player)
-	GuiCrew.regular_update(player)
+	GuiRuns.full_update(player)
+	GuiCrew.full_update(player)
 	GuiFuel.regular_update(player)
-	GuiMinimap.regular_update(player)
-	GuiInfo.regular_update(player)
+	GuiMinimap.full_update(player)
+	GuiInfo.full_update(player)
 
 	-- local lives = memory.lives or 1
 	-- local button = pirates_flow.lives_piratebutton_frame.lives_piratebutton
