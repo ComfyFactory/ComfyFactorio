@@ -56,6 +56,8 @@ local Upgrades = require 'maps.pirates.boat_upgrades'
 local Token = require 'utils.token'
 local Task = require 'utils.task'
 
+require 'utils.profiler'
+
 local Public = {}
 
 -- parrot sprites from https://elthen.itch.io/2d-pixel-art-parrot-sprites, licensed appropriately

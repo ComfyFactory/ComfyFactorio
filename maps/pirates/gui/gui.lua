@@ -133,12 +133,21 @@ local function create_gui(player)
 	-- flow2.style.right_padding = -100
 
 	flow3 = flow2.add({
-		name = 'fuel_label_1',
+		name = 'fuel_label_0',
 		type = 'label',
 		caption = ''
 	})
 	flow3.style.font = 'default-large-semibold'
 	flow3.style.font_color = GuiCommon.bold_font_color
+	flow3.caption = 'Fuel:'
+
+	flow3 = flow2.add({
+		name = 'fuel_label_1',
+		type = 'label',
+		caption = ''
+	})
+	flow3.style.font = 'default-large'
+	flow3.style.font_color = GuiCommon.default_font_color
 	-- flow3.style.font_color = GuiCommon.bold_font_color
 	-- flow4.style.top_margin = -36
 	-- flow4.style.left_margin = -100
@@ -527,7 +536,7 @@ function Public.update_gui(player)
 	-- 	button.number = 3
 	-- end
 
-	pirates_flow.fuel_piratebutton_flow_1.fuel_piratebutton_flow_2.fuel_label_1.caption = 'Fuel: ' .. Utils.bignumber_abbrevform(memory.stored_fuel or 0) .. '[item=coal]'
+	pirates_flow.fuel_piratebutton_flow_1.fuel_piratebutton_flow_2.fuel_label_1.caption = Utils.bignumber_abbrevform(memory.stored_fuel or 0) .. '[item=coal]'
 	pirates_flow.fuel_piratebutton_flow_1.fuel_piratebutton_flow_2.fuel_label_2.caption = Utils.negative_rate_abbrevform(memory.fuel_depletion_rate_memoized or 0)
 	local color_scale = Math.max(Math.min((- (memory.fuel_depletion_rate_memoized or 0))/50, 1),0)
 	pirates_flow.fuel_piratebutton_flow_1.fuel_piratebutton_flow_2.fuel_label_2.style.font_color = {
@@ -556,6 +565,10 @@ function Public.update_gui(player)
 	in_hold_bool = string.sub(player.surface.name, 9, 12) == 'Hold'
 	in_cabin_bool = string.sub(player.surface.name, 9, 13) == 'Cabin'
 
+	onmap_bool = destination.surface_name and (player.surface.name == destination.surface_name or (
+		memory.boat and memory.boat.surface_name == destination.surface_name and (in_crowsnest_bool or in_hold_bool or in_cabin_bool)
+	))
+
 	if destination and destination.dynamic_data then
 		eta_bool = destination.dynamic_data.time_remaining and destination.dynamic_data.time_remaining > 0 and onmap_bool
 		retreating_bool = memory.boat and memory.boat.state and memory.boat.state == Boats.enum_state.RETREATING and onmap_bool
@@ -574,10 +587,6 @@ function Public.update_gui(player)
 	end
 
 	if memory.boat then
-		onmap_bool = destination.surface_name and (player.surface.name == destination.surface_name or (
-			memory.boat.surface_name == destination.surface_name and (in_crowsnest_bool or in_hold_bool or in_cabin_bool)
-		))
-
 		atsea_loading_bool = memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP and memory.loadingticks
 
 		character_on_deck_bool = player.character and player.character.position and player.surface.name and player.surface.name == memory.boat.surface_name
