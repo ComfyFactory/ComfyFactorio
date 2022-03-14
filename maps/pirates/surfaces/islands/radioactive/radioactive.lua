@@ -283,8 +283,9 @@ local function radioactive_tick()
 
 			-- faster pollute:
 			local pollution = 0
-			if destination.dynamic_data.timer > 15 then
-				pollution = 4.7 * (6 * Common.difficulty()^(1.1) * (memory.overworldx/40)^(14/10) * (Balance.crew_scale())^(0.6)) / 3600 * tickinterval * (1 + (Common.difficulty()-1)*0.2 + 0.001 * (destination.dynamic_data.timer or 0))
+			local timer = destination.dynamic_data.timer
+			if timer and timer > 15 then
+				pollution = 4.7 * (6 * Common.difficulty()^(1.1) * (memory.overworldx/40)^(14/10) * (Balance.crew_scale())^(0.6)) / 3600 * tickinterval * (1 + (Common.difficulty()-1)*0.2 + 0.001 * timer)
 			end
 
 			if pollution > 0 then

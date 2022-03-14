@@ -394,7 +394,7 @@ function Public.destination_on_crewboat_hits_shore(destination)
 			end
 			
 			Parrot.parrot_radioactive_tip_2()
-		elseif destination.subtype == Islands.enum.MAZE and memory.overworldx >= Common.maze_minimap_jam_start_league then
+		elseif destination.subtype == Islands.enum.MAZE and memory.overworldx == Common.maze_minimap_jam_league then
 			Parrot.parrot_maze_tip_1()
 		end
 

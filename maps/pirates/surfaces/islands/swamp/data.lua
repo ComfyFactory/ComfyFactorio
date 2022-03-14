@@ -22,9 +22,9 @@ Public.static_params_default = {
 
 function Public.base_ores() 
 	return {
-		['copper-ore'] = 1.8,
-		['iron-ore'] = 3.8,
-		['coal'] = 5.5,
+		['copper-ore'] = 2.9,
+		['iron-ore'] = 3.6,
+		['coal'] = 4.8,
 		['stone'] = 0.5,
 		['crude-oil'] = 50,
 	}
@@ -79,7 +79,7 @@ Public.noiseparams = {
 		type = 'simplex_2d',
 		normalised = true,
 		params = {
-			{wavelength = 60, amplitude = 1},
+			{wavelength = 48, amplitude = 1},
 		},
 	},
 }

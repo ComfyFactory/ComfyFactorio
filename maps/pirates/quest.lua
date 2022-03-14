@@ -255,7 +255,14 @@ function Public.try_resolve_quest()
 		local inserted = inventory.insert{name = name, count = count}
 		
 		if inserted < count then
-			Common.notify_force(force,'There wasn\'t space in the cabin for all of your reward.')
+			local chest2 = boat.backup_output_chest
+			if chest2 and chest2.valid then
+				local inventory2 = chest2.get_inventory(defines.inventory.chest)
+				local inserted2 = inventory2.insert{name = name, count = count - inserted}
+				if (inserted + inserted2) < count then
+					Common.notify_force(force,'Sadly, there wasn\'t space in the cabin for all of your reward.')
+				end
+			end
 		end
 	end
 end

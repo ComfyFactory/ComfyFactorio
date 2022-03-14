@@ -509,7 +509,7 @@ function Public.update_gui(player)
 	flow1 = pirates_flow.crew_piratebutton_frame.crew_piratebutton
 
 	if memory.id and memory.id ~= 0 then
-		flow1.tooltip = 'Your Crew\n\nPerform crew actions.'
+		flow1.tooltip = 'Your Crew\n\nPerform crew actions, such as selecting a class if any are available.'
 		flow1.mouse_button_filter = {'left','right'}
 	else
 		flow1.tooltip = 'Your Crew\n\nYou\'re a free agent, so there\'s nothing to do here.'
@@ -1057,12 +1057,14 @@ function Public.update_gui(player)
 	flow1 = pirates_flow.covering_line_frame
 
 	if flow1 then
-		if not eta_bool and not retreating_bool and not quest_bool and not silo_bool and not atsea_loading_bool and not leave_anytime_bool and not cost_bool and not approaching_dock_bool and not leaving_dock_bool then
+		-- if not eta_bool and not retreating_bool and not quest_bool and not silo_bool and not atsea_loading_bool and not leave_anytime_bool and not cost_bool and not approaching_dock_bool and not leaving_dock_bool then
+		if not eta_bool and not retreating_bool and not quest_bool and not silo_bool and not atsea_loading_bool and not leave_anytime_bool and not cost_bool and not approaching_dock_bool and not leaving_dock_bool and not atsea_sailing_bool then
 			flow1.visible = true
 		else
 			flow1.visible = false
 		end
 	end
+
 
 	flow1 = pirates_flow.minimap_piratebutton_frame
 

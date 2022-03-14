@@ -41,7 +41,7 @@ Public.loading_interval = 5
 
 Public.minimum_ore_placed_per_tile = 10
 
-Public.maze_minimap_jam_start_league = 920
+Public.maze_minimap_jam_league = 960
 
 Public.ban_from_rejoining_crew_ticks = 45 * 60 --to prevent observing map and rejoining
 

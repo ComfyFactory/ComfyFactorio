@@ -438,6 +438,7 @@ function Public.captain_requisition(captain_index)
 			local str = 'The captain requisitioned '
 			for i = 1, #items_to_req do
 				local item = items_to_req[i]
+				local count = item_count_table[item]
 				if i > 1 then
 					if i == #items_to_req then
 						str = str .. ' and '
@@ -448,16 +449,16 @@ function Public.captain_requisition(captain_index)
 				local display_name = item .. 's'
 				if display_name == 'coins' then display_name = 'doubloons' end
 				if display_name == 'uranium-235s' then display_name = 'uranium-235' end
-				if item_count_table[i] >= 1000 then
-					str = str .. Utils.bignumber_abbrevform2(item_count_table[i]) .. ' ' .. display_name
+				if count >= 1000 then
+					str = str .. Utils.bignumber_abbrevform2(count) .. ' ' .. display_name
 				else
-					str = str .. item_count_table[i] .. ' ' .. display_name
+					str = str .. count .. ' ' .. display_name
 				end
 			end
 			str = str .. '.'
 			Common.notify_force(memory.force, str)
 		else
-			Common.notify_player_error(captain, 'Item requisition error: Nothing to take.')
+			Common.notify_player_error(captain, 'No important items found in crewmates\' inventories.')
 		end
 	end
 end

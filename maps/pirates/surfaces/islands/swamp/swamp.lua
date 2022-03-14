@@ -53,9 +53,9 @@ function Public.terrain(args)
 	-- elseif noises.height(p) < 0.07 then
 	-- 	args.tiles[#args.tiles + 1] = {name = 'grass-4', position = args.p}
 	else
-		if noises.terrain(p) < 0.5 then
+		if noises.terrain(p) < 0.44 then
 			args.tiles[#args.tiles + 1] = {name = 'grass-1', position = args.p}
-		elseif noises.terrain(p) < 0.65 then
+		elseif noises.terrain(p) < 0.59 then
 			args.tiles[#args.tiles + 1] = {name = 'grass-2', position = args.p}
 		else
 			args.tiles[#args.tiles + 1] = {name = 'water-mud', position = args.p}

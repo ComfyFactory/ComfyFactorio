@@ -31,10 +31,10 @@ local side_attack_target_names = {
 	'character',
 	'pumpjack',
 	'radar',
-	'burner-mining-drill',
 	'electric-mining-drill',
+	'assembling-machine-1',
+	'solar-panel',
 	'nuclear-reactor',
-	'boiler',
 	'oil-refinery',
 	'centrifuge',
 }
@@ -423,9 +423,9 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 		base_pollution_cost_multiplier = base_pollution_cost_multiplier * 0.9 --biters 10% more aggressive
 	end
 
-	if destination.subtype and destination.subtype == IslandsCommon.enum.MAZE then
-		base_pollution_cost_multiplier = base_pollution_cost_multiplier * 1.25 --biters 25% less aggressive
-	end
+	-- if destination.subtype and destination.subtype == IslandsCommon.enum.MAZE then
+	-- 	base_pollution_cost_multiplier = base_pollution_cost_multiplier * 1.2 --biters 20% less aggressive
+	-- end
 
     if budget >= minimum_avg_units * Common.averageUnitPollutionCost(evolution) * base_pollution_cost_multiplier then
 

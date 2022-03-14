@@ -343,7 +343,7 @@ function Public.check_for_end_of_boat_movement(boat)
 			elseif boat.spawner and boat.spawner.valid and boat.spawner.destructible then
 				-- This code seems to make the spawner destructible a little earlier than when it hits the shore
 				local boat2 = Utils.deepcopy(boat)
-				boat2.position = {x = boat.position.x + 5, y = boat.position.y}
+				boat2.position = {x = boat.position.x + 6, y = boat.position.y}
 				if Boats.collision_infront(boat2) then
 					boat.spawner.destructible = false
 				end

@@ -207,11 +207,13 @@ local function damage_to_krakens(event)
 	local damage = event.final_damage_amount
 	local adjusted_damage = damage
 
-	if event.damage_type.name and (event.damage_type.name == 'explosion' or event.damage_type.name == 'poison') then
+	if event.damage_type.name and event.damage_type.name == 'poison' then
 	-- if event.cause.name == 'artillery-turret' then
-		adjusted_damage = adjusted_damage / 2.5
+		adjusted_damage = adjusted_damage / 1.25
+	elseif event.damage_type.name and (event.damage_type.name == 'explosion') then
+		adjusted_damage = adjusted_damage / 1.5
 	elseif event.damage_type.name and (event.damage_type.name == 'fire') then
-		adjusted_damage = adjusted_damage / 1.1
+		adjusted_damage = adjusted_damage / 1.25
 	end
 	-- and additionally:
 	if event.cause.name == 'artillery-turret' then
@@ -219,7 +221,7 @@ local function damage_to_krakens(event)
 	end
 
 	if event.damage_type.name and (event.damage_type.name == 'laser') then
-		adjusted_damage = adjusted_damage / 10 --laser turrets are in range
+		adjusted_damage = adjusted_damage / 8 --laser turrets are in range
 	end
 
 	local healthbar = memory.healthbars[unit_number]

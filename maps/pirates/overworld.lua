@@ -222,14 +222,14 @@ function Public.generate_overworld_destination(p)
 			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*80),
 			-- ['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*12),
 			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*12),
-			['flying-robot-frame'] = Math.ceil(((macrop.x-18)^(2/3))*5),
+			['flying-robot-frame'] = Math.ceil(((macrop.x-18)^(2/3))*10),
 			['launch_rocket'] = true,
 		}
 		local base_cost_4 = {
 			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*80),
 			-- ['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*12),
 			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*12),
-			['flying-robot-frame'] = Math.ceil(((macrop.x-18)^(2/3))*5),
+			['flying-robot-frame'] = Math.ceil(((macrop.x-18)^(2/3))*10),
 		}
 		if macrop.x == 0 then
 			-- if _DEBUG then
@@ -260,7 +260,7 @@ function Public.generate_overworld_destination(p)
 			else
 				base_cost_to_undock = nil
 			end
-		elseif macrop.x <= 22 then
+		elseif macrop.x <= 23 then
 			base_cost_to_undock = base_cost_2c
 		elseif macrop.x <= 24 then
 			base_cost_to_undock = base_cost_3
@@ -275,7 +275,7 @@ function Public.generate_overworld_destination(p)
 		-- override:
 		if subtype == Surfaces.Island.enum.RADIOACTIVE then
 			base_cost_to_undock = {
-				['uranium-235'] = Math.ceil(Math.ceil(80 + (macrop.x))),
+				['uranium-235'] = Math.ceil(Math.ceil(80 + (macrop.x - 1))),
 				-- ['uranium-235'] = Math.ceil(Math.ceil(80 + (macrop.x)/2)), --tried adding beacons instead of this
 			}
 		end
@@ -460,9 +460,9 @@ function Public.generate_overworld_destination(p)
 		kraken_count = 1
 	end
 
-	-- if _DEBUG then
-	-- 	kraken_count = 1
-	-- end
+	if _DEBUG then
+		kraken_count = 1
+	end
 
 	if position_candidates then
 		local positions_placed = {}
