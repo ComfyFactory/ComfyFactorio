@@ -59,7 +59,7 @@ function Public.event_on_market_item_purchased(event)
 	if offer_type == 'nothing' then
 		decay_type = 'one-off'
 	elseif dock_bool and purchase_bool and (offer_giveitem_name) and (offer_giveitem_name == 'stone' or offer_giveitem_name == 'iron-ore' or offer_giveitem_name == 'copper-ore' or offer_giveitem_name == 'crude-oil-barrel') then
-		decay_type = 'double_decay'
+		decay_type = 'fast_decay'
 	elseif dock_bool and purchase_bool and (offer_giveitem_name) then
 		decay_type = 'one-off'
 	elseif simple_efficiency_trade_bool or special_purchase_bool then
@@ -153,16 +153,16 @@ function Public.event_on_market_item_purchased(event)
 				if price[2] then
 					local fish = price[2].name
 					if fish == 'raw-fish' then fish = 'fish' end
-					Common.notify_force_light(player.force, player.name .. ' is trading away ' .. price[1].amount .. ' ' .. price[1].name .. ' and ' .. fish .. ' for ' .. this_offer.offer.count .. ' ' .. this_offer.offer.item .. '...')
+					Common.notify_force_light(player.force, player.name .. ' traded away ' .. price[1].amount .. ' ' .. price[1].name .. ' and ' .. fish .. ' for ' .. this_offer.offer.count .. ' ' .. this_offer.offer.item .. '.')
 				else
 					if price[1].name == 'coin' then
-						Common.notify_force_light(player.force, player.name .. ' bought ' ..this_offer.offer.count .. ' ' .. this_offer.offer.item  .. ' for ' .. price[1].amount .. ' ' .. price[1].name .. '...')
+						Common.notify_force_light(player.force, player.name .. ' bought ' ..this_offer.offer.count .. ' ' .. this_offer.offer.item  .. ' for ' .. price[1].amount .. ' ' .. price[1].name .. '.')
 					elseif this_offer.offer.item == 'coin' then
 						local sold_amount = price[1].amount
 						if sold_amount == 1 then sold_amount = 'a' end
-						Common.notify_force_light(player.force, player.name .. ' sold ' .. sold_amount .. ' ' .. price[1].name .. ' for ' .. this_offer.offer.count .. ' ' .. this_offer.offer.item .. '...')
+						Common.notify_force_light(player.force, player.name .. ' sold ' .. sold_amount .. ' ' .. price[1].name .. ' for ' .. this_offer.offer.count .. ' ' .. this_offer.offer.item .. '.')
 					else
-						Common.notify_force_light(player.force, player.name .. ' is trading away ' .. price[1].amount .. ' ' .. price[1].name .. ' for ' .. this_offer.offer.count .. ' ' .. this_offer.offer.item .. '...')
+						Common.notify_force_light(player.force, player.name .. ' traded away ' .. price[1].amount .. ' ' .. price[1].name .. ' for ' .. this_offer.offer.count .. ' ' .. this_offer.offer.item .. '.')
 					end
 				end
 			end
@@ -177,7 +177,7 @@ function Public.event_on_market_item_purchased(event)
 			Common.flying_text(player.surface, player.position, text1 .. '  [font=count-font]' .. text2 .. '[/font]')
 		else
 			local decay_param =  Balance.barter_decay_parameter()
-			if decay_type == 'double_decay' then decay_param =  Balance.barter_decay_parameter()^2 end
+			if decay_type == 'fast_decay' then decay_param =  Balance.barter_decay_parameter()^3 end
 
 			if not inv then return end
 			local flying_text_color = {r = 255, g = 255, b = 255}

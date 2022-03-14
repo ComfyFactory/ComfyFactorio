@@ -56,6 +56,9 @@ function Public.terrain(args)
 		else
 			if noises.mood(p) > 0.66 then
 				args.tiles[#args.tiles + 1] = {name = 'water', position = args.p}
+				if Math.random(100) == 1 then
+					args.entities[#args.entities + 1] = {name = 'fish', position = args.p}
+				end
 			else
 				args.tiles[#args.tiles + 1] = {name = 'sand-3', position = args.p}
 			end

@@ -1447,7 +1447,7 @@ local function event_on_rocket_launched(event)
 	end
 	
 	local force = memory.force
-	Common.notify_force_light(force,'Granted ' .. string.format('%.1fk', Balance.rocket_launch_coin_reward/1000) .. ' [item=coin] and ' .. string.format('%.1fk', destination.dynamic_data.rocketcoalreward/1000) .. ' fuel.')
+	Common.notify_force_light(force,'Granted ' .. string.format('%.1fk', Balance.rocket_launch_coin_reward/1000) .. ' doubloons and ' .. string.format('%.1fk', destination.dynamic_data.rocketcoalreward/1000) .. ' fuel.')
 
 	if destination.dynamic_data.quest_type == Quest.enum.TIME and (not destination.dynamic_data.quest_complete) then
 		destination.dynamic_data.quest_progressneeded = 1

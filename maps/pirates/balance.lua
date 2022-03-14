@@ -171,11 +171,11 @@ function Public.base_evolution()
 	else
 		evo = (0.0201 * (overworldx/40)) * Math.sloped(Common.difficulty(), 1/5)
 	
-		if overworldx > 600 and overworldx < 1000 then --extra slope from 600 to 1000 adds 2.5% evo
+		if overworldx > 600 and overworldx < 1000 then
 			evo = evo + (0.0025 * (overworldx - 600)/40)
 		elseif overworldx > 1000 then
 			evo = evo + 0.0025 * 10
-		end
+		end --extra slope from 600 to 1000 adds 2.5% evo
 	end
 
 	return evo
@@ -396,7 +396,7 @@ Public.research_buffs = { --currently disabled anyway
 
 
 function Public.flamers_tech_multipliers()
-	return 0.75
+	return 0.8
 end
 
 function Public.flamers_base_nerf()
@@ -510,8 +510,8 @@ Public.covered1_entry_price_data_raw = { --watch out that the raw_materials ches
 		price = {name = 'burner-inserter', count = 300},
 		raw_materials = {{name = 'iron-plate', count = 900}}}, {}},
 	{1, 0.05, 0.7, false, {
-		price = {name = 'small-lamp', count = 400},
-		raw_materials = {{name = 'iron-plate', count = 800}, {name = 'copper-plate', count = 1200}}}, {}},
+		price = {name = 'small-lamp', count = 300},
+		raw_materials = {{name = 'iron-plate', count = 600}, {name = 'copper-plate', count = 900}}}, {}},
 	{1, 0, 1, false, {
 		price = {name = 'firearm-magazine', count = 700},
 		raw_materials = {{name = 'iron-plate', count = 2800}}}, {}},

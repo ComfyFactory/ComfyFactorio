@@ -245,9 +245,9 @@ function Public.prune_offline_characters_list(tickinterval)
 
 				local any = false
 				for ii = 1, 5, 1 do
-					if player_inv[ii].valid then
+					if player_inv[ii] and player_inv[ii].valid then
 						for iii = 1, #player_inv[ii], 1 do
-							if player_inv[ii][iii].valid and player_inv[ii][iii].valid_for_read then
+							if player_inv[ii][iii] and player_inv[ii][iii].valid and player_inv[ii][iii].valid_for_read then
 								-- items[#items + 1] = player_inv[ii][iii]
 								Common.give_items_to_crew(player_inv[ii][iii])
 								any = true
@@ -256,7 +256,7 @@ function Public.prune_offline_characters_list(tickinterval)
 					end
 				end
 				if any then
-					Common.notify_force_light(memory.force, 'Offline player\'s items recovered.')
+					Common.notify_force_light(memory.force, 'Offline player\'s items recovered to cabin.')
 				end
 				for ii = 1, 5, 1 do
 					if player_inv[ii].valid then

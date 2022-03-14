@@ -80,7 +80,7 @@ function Public.generate_overworld_destination(p)
 		island_subtype_raffle = Utils.ordered_table_with_values_removed(island_subtype_raffle, Surfaces.Island.enum.STANDARD)
 	end
 	if macrop.x == 18 then
-		island_subtype_raffle = Utils.ordered_table_with_values_removed('none') --flying-robot-frame cost is here, and we just make sure there's an island to see it
+		island_subtype_raffle = Utils.ordered_table_with_values_removed(island_subtype_raffle, 'none') --flying-robot-frame cost is here, and we just make sure there's an island to see it
 	end
 	if macrop.x == 19 then
 		island_subtype_raffle = Utils.ordered_table_with_values_removed(island_subtype_raffle, Surfaces.Island.enum.SWAMP)
@@ -159,7 +159,11 @@ function Public.generate_overworld_destination(p)
 	else
 		type = Surfaces.enum.ISLAND
 
-		subtype = island_subtype_raffle[Math.random(#island_subtype_raffle)]
+		if #island_subtype_raffle > 0 then
+			subtype = island_subtype_raffle[Math.random(#island_subtype_raffle)]
+		else
+			subtype = 'none'
+		end
 
 		if subtype == 'none' then
 			type = nil

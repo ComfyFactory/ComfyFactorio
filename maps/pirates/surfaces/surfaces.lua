@@ -378,8 +378,8 @@ function Public.destination_on_crewboat_hits_shore(destination)
 
 		if memory.overworldx == 0 then
 			Parrot.parrot_0()
-		elseif memory.overworldx == 80 then
-			Parrot.parrot_80()
+		-- elseif memory.overworldx == 80 then
+		-- 	Parrot.parrot_80()
 		end
 
 		if destination.subtype == Islands.enum.RADIOACTIVE then

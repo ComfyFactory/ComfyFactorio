@@ -73,13 +73,13 @@ Public.display_form = {
 	[enum.GOURMET] = 'Gourmet',
 }
 Public.explanation = {
-	[enum.DECKHAND] = 'They move faster and generate ore for the captain\'s cabin whilst onboard above deck, but move slower offboard.',
+	[enum.DECKHAND] = 'They move faster and generate ore for the cabin whilst onboard above deck, but move slower offboard.',
 	[enum.FISHERMAN] = 'They fish at greater distance.',
 	[enum.SCOUT] = 'They are faster, but frail and deal less damage.',
 	[enum.SAMURAI] = 'They are tough, and *with no weapon equipped* fight well by melee, but poorly otherwise.',
 	[enum.MERCHANT] = 'They generate 40 doubloons per league, but are frail.',
-	[enum.SHORESMAN] = 'They move slightly faster and generate ore for the captain\'s cabin whilst offboard, but move slower onboard.',
-	[enum.BOATSWAIN] = 'They move faster and generate ore for the captain\'s cabin whilst below deck, but move slower offboard.',
+	[enum.SHORESMAN] = 'They move slightly faster and generate ore for the cabin whilst offboard, but move slower onboard.',
+	[enum.BOATSWAIN] = 'They move faster and generate ore for the cabin whilst below deck, but move slower offboard.',
 	[enum.PROSPECTOR] = 'They find more resources when handmining ore.',
 	[enum.LUMBERJACK] = 'They find more resources when chopping trees.',
 	[enum.MASTER_ANGLER] = 'They fish at much greater distance, and catch more.',
@@ -87,10 +87,10 @@ Public.explanation = {
 	[enum.CHIEF_EXCAVATOR] = 'They find many more resources when handmining ore.',
 	[enum.HATAMOTO] = 'They are very tough, and *with no weapon equipped* fight well by melee, but poorly otherwise.',
 	[enum.IRON_LEG] = 'They are very resistant to damage when carrying 3500 iron ore.',
-	[enum.QUARTERMASTER] = 'They give nearby crewmates extra physical attack, and generate ore for the captain\'s cabin for each one.',
+	[enum.QUARTERMASTER] = 'They give nearby crewmates extra physical attack, and generate ore for the cabin for each one.',
 	[enum.DREDGER] = 'They find surprising items when they fish.',
 	[enum.SMOLDERING] = 'They periodically convert wood into coal, if they have less than 50 coal.',
-	[enum.GOURMET] = 'They generate ore for the captain\'s cabin by eating fish in fancy locations.',
+	[enum.GOURMET] = 'They generate ore for the cabin by eating fish in fancy locations.',
 }
 
 Public.class_unlocks = {

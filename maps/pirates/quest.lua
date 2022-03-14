@@ -46,7 +46,7 @@ function Public.quest_reward()
 	elseif rng <= 0.7 then
 		ret = {name = 'solid-fuel', count = Math.ceil(450 * multiplier), display_sprite = '[item=solid-fuel]', display_amount = string.format('%.0f', Math.ceil(450 * multiplier))}
 	elseif rng <= 0.9 then
-		ret = {name = 'coin', count = Math.ceil(6000 * (multiplier^(1/2))), display_sprite = '[item=coin]', display_amount = string.format('%.1fk', Math.ceil(6 * (multiplier^(1/2))))}
+		ret = {name = 'coin', count = Math.ceil(6000 * (multiplier^(1/2))), display_sprite = 'doubloons', display_amount = string.format('%.1fk', Math.ceil(6 * (multiplier^(1/2))))}
 	else
 		ret = {name = 'piercing-rounds-magazine', count = Math.ceil(250 * multiplier), display_sprite = '[item=piercing-rounds-magazine]', display_amount = string.format('%.0f', Math.ceil(250 * multiplier))}
 	end

@@ -1144,7 +1144,7 @@ function Public.send_important_items_from_player_to_crew(player, all_items)
 			local to_remove = {}
 			for iii = 1, #player_inv[ii], 1 do
 				-- local item_stack = player_inv[ii][iii] --don't do this as LuaItemStack is a reference!
-				if player_inv[ii][iii].valid and player_inv[ii][iii].valid_for_read then
+				if player_inv[ii] and player_inv[ii][iii].valid and player_inv[ii][iii].valid_for_read then
 					if all_items or (player_inv[ii][iii].name and Utils.contains(Public.important_items, player_inv[ii][iii].name)) then
 						to_remove[#to_remove + 1] = player_inv[ii][iii]
 						any = true
