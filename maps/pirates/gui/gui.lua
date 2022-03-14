@@ -590,8 +590,8 @@ function Public.update_gui(player)
 		charged_bool = dynamic_data.silocharged
 		launched_bool = dynamic_data.rocketlaunched
 
-		cost_bool = destination.static_params.cost_to_leave and (not atsea_sailing_bool) and (not retreating_bool)
-		cost_includes_rocket_launch = cost_bool and destination.static_params.cost_to_leave['launch_rocket']
+		cost_bool = destination.static_params.base_cost_to_undock and (not atsea_sailing_bool) and (not retreating_bool)
+		cost_includes_rocket_launch = cost_bool and destination.static_params.base_cost_to_undock['launch_rocket']
 	
 		leave_anytime_bool = (landed_bool and not (eta_bool or cost_bool))
 	end
@@ -688,6 +688,9 @@ function Public.update_gui(player)
 			end
 
 			if cost_bool then
+				local costs = destination.static_params.base_cost_to_undock
+				local adjusted_costs = Common.time_adjusted_departure_cost(costs)
+
 				local cost_table = flow2.cost_table
 
 				flow2.etaframe_label_3.visible = true
@@ -709,31 +712,33 @@ function Public.update_gui(player)
 					flow2.etaframe_label_3.visible = false
 					flow2.etaframe_label_1.visible = true
 					flow2.etaframe_label_1.caption = 'To escape, store'
+					
 					if cost_includes_rocket_launch then
 						tooltip = {'pirates.resources_needed_tooltip_3_rocketvariant'}
 					else
 						tooltip = {'pirates.resources_needed_tooltip_3'}
 					end
 				else
-					flow2.etaframe_label_3.caption = 'Or pay'
+					flow2.etaframe_label_3.caption = 'Or store'
+
+					local adjusted_costs_resources_strings = Common.time_adjusted_departure_cost_resources_strings(memory)
 					if cost_includes_rocket_launch then
-						tooltip = {'pirates.resources_needed_tooltip_2_rocketvariant'}
+						tooltip = {'pirates.resources_needed_tooltip_2_rocketvariant', adjusted_costs_resources_strings[1], adjusted_costs_resources_strings[2]}
 					else
-						tooltip = {'pirates.resources_needed_tooltip_2'}
+						--@Future reference: localisation handling
+						tooltip = {'pirates.resources_needed_tooltip_2', adjusted_costs_resources_strings[1], adjusted_costs_resources_strings[2]}
 					end
 				end
-
-				local costs = destination.static_params.cost_to_leave
 	
 				for i = 1, #CoreData.cost_items do
 					local item_name = CoreData.cost_items[i].name
 		
-					if costs[item_name] and cost_table['cost_' .. i] then
+					if adjusted_costs[item_name] and cost_table['cost_' .. i] then
 						local stored = (memory.boat.stored_resources and memory.boat.stored_resources[item_name]) or 0
 						if atsea_loading_bool then
-							cost_table['cost_' .. i].number = costs[item_name]
+							cost_table['cost_' .. i].number = adjusted_costs[item_name]
 						else --subtract off the amount we've stored
-							cost_table['cost_' .. i].number = Math.max(costs[item_name] - stored, 0)
+							cost_table['cost_' .. i].number = Math.max(adjusted_costs[item_name] - stored, 0)
 						end
 						cost_table['cost_' .. i].tooltip = CoreData.cost_items[i].display_name
 						cost_table['cost_' .. i].visible = true
@@ -742,7 +747,7 @@ function Public.update_gui(player)
 					end
 				end
 
-				if costs['launch_rocket'] and cost_table['cost_launch_rocket'] then
+				if adjusted_costs['launch_rocket'] and cost_table['cost_launch_rocket'] then
 					if atsea_loading_bool or (not dynamic_data.rocketlaunched) then
 						cost_table['cost_launch_rocket'].number = 1
 					else
@@ -782,7 +787,7 @@ function Public.update_gui(player)
 	-- 	if cost_bool then
 	-- 		flow1.visible = true
 	
-	-- 		-- local costs = destination.static_params.cost_to_leave
+	-- 		-- local costs = destination.static_params.base_cost_to_undock
 	
 	-- 		-- for i = 1, #CoreData.cost_items do
 	-- 		-- 	local item_name = CoreData.cost_items[i].name
@@ -1147,11 +1152,7 @@ local function on_gui_click(event)
 				if memory.boat.state == Boats.enum_state.DOCKED then
 					Progression.undock_from_dock(true)
 				elseif memory.boat.state == Boats.enum_state.LANDED then
-					if Common.query_can_pay_cost_to_leave() then
-						Progression.try_retreat_from_island(true)
-					else
-						Common.notify_force_error(player.force, 'Undock error: Not enough stored resources.')
-					end
+					Progression.try_retreat_from_island(player, true)
 				end
 			else
 				memory.undock_shortcut_are_you_sure_data[player.index] = game.tick

@@ -143,9 +143,7 @@ function Public.assign_class(player_index, class, self_assigned)
 
 	if Utils.contains(memory.spare_classes, class) then -- verify that one is spare
 
-		if memory.classes_table[player_index] then
-			Public.try_renounce_class(player)
-		end
+		Public.try_renounce_class(player, false)
 	
 		memory.classes_table[player_index] = class
 	
@@ -169,7 +167,7 @@ function Public.assign_class(player_index, class, self_assigned)
 	end
 end
 
-function Public.try_renounce_class(player, override_message)
+function Public.try_renounce_class(player, whisper_failure_message, override_message)
 	local memory = Memory.get_crew_memory()
 
 	local force = memory.force
@@ -186,7 +184,7 @@ function Public.try_renounce_class(player, override_message)
 
 			memory.spare_classes[#memory.spare_classes + 1] = memory.classes_table[player.index]
 			memory.classes_table[player.index] = nil
-		else
+		elseif whisper_failure_message then
 			Common.notify_player_error(player, 'Class error: You don\'t have any class to give up.')
 		end
 	end
@@ -248,12 +246,7 @@ local function class_on_player_used_capsule(event)
 
 	if memory.classes_table and memory.classes_table[player_index] then
 		local class = memory.classes_table[player_index]
-		if class == Public.enum.SAMURAI then
-			-- vanilla heal is 80HP
-			player.character.health = player.character.health + 130
-		elseif class == Public.enum.HATAMOTO then
-			player.character.health = player.character.health + 190
-		elseif class == Public.enum.GOURMET then
+		if class == Public.enum.GOURMET then
 			local tile = player.surface.get_tile(player.position)
 			if tile.valid then
 				local multiplier = 0

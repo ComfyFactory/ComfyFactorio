@@ -182,10 +182,10 @@ function Public.create_hold_surface(nth)
 	end
 
 	if subtype == enum.SECONDARY then
-		if Common.difficulty() >= 1 then
+		if Common.difficulty() >= 1 and Common.difficulty() < 2 then
 			Public.upgrade_chests(nth, 'iron-chest')
-		-- elseif Common.difficulty() > 1 then
-		-- 	Public.upgrade_chests(nth, 'steel-chest')
+		elseif Common.difficulty() >= 2 then
+			Public.upgrade_chests(nth, 'steel-chest')
 		end
 
 		Public.nth_hold_connect_linked_belts(nth)

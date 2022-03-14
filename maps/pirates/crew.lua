@@ -375,6 +375,8 @@ function Public.join_crew(player, crewid, rejoin)
 			end
 		end
 
+		Roles.confirm_captain_exists(player)
+
 		if #Common.crew_get_crew_members() == 1 and memory.crew_disband_tick then
 			memory.crew_disband_tick = nil --to prevent disbanding the crew after saving the game (booting everyone) and loading it again (joining the crew as the only member)
 		end
@@ -828,7 +830,7 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['advanced-material-processing'].researched = true
 	crew_force.technologies['advanced-material-processing-2'].researched = true
 	crew_force.technologies['solar-energy'].researched = true
-	-- crew_force.technologies['inserter-capacity-bonus-1'].researched = true
+	crew_force.technologies['inserter-capacity-bonus-1'].researched = true --needed to make stack inserters different to fast inserters
 	-- crew_force.technologies['inserter-capacity-bonus-2'].researched = true
 
 	--@TRYING this out:

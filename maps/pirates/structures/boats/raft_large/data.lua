@@ -8,7 +8,7 @@ Public.tile_areas = {
 }
 Public.width = 18
 Public.height = 9
-Public.spawn_point = {x = -7, y = 0}
+Public.spawn_point = {x = -6, y = 0}
 Public.areas_infront = {
 	{{0,-4},{1,5}},
 }

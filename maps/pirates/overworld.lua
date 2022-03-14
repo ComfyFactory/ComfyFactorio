@@ -79,6 +79,9 @@ function Public.generate_overworld_destination(p)
 	if macrop.x == 4 then
 		island_subtype_raffle = Utils.ordered_table_with_values_removed(island_subtype_raffle, Surfaces.Island.enum.STANDARD)
 	end
+	if macrop.x == 18 then
+		island_subtype_raffle = Utils.ordered_table_with_values_removed('none') --flying-robot-frame cost is here, and we just make sure there's an island to see it
+	end
 	if macrop.x == 19 then
 		island_subtype_raffle = Utils.ordered_table_with_values_removed(island_subtype_raffle, Surfaces.Island.enum.SWAMP)
 	end
@@ -109,7 +112,7 @@ function Public.generate_overworld_destination(p)
 		subtype = Surfaces.Island.enum.WALKWAYS
 	elseif macrop.x == 23 then --overwrite dock. rocket launch cost
 		type = Surfaces.enum.ISLAND
-		subtype = Surfaces.Island.enum.MAZE
+		subtype = Surfaces.Island.enum.WALKWAYS
 	elseif macrop.y == -1 and (((macrop.x % 4) == 3 and macrop.x ~= 15) or macrop.x == 14) then --avoid x=15 because radioactive is there
 		type = Surfaces.enum.DOCK
 	elseif macrop.x == 5 then --biter boats appear. large island works well so players run off
@@ -135,7 +138,7 @@ function Public.generate_overworld_destination(p)
 	elseif macrop.x == 11 then --just after krakens, but dock is here too, so there's a choice
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.SWAMP
-	elseif macrop.x == 15 then
+	elseif macrop.x == 16 then
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.RADIOACTIVE
 		 --electric engines needed at 20
@@ -150,7 +153,7 @@ function Public.generate_overworld_destination(p)
 		type = nil
 	elseif macrop.x == 24 then --rocket launch cost
 		type = Surfaces.enum.ISLAND
-		subtype = Surfaces.Island.enum.WALKWAYS
+		subtype = Surfaces.Island.enum.MAZE
 	elseif macrop.x == 25 then
 		type = nil --finish line
 	else
@@ -168,7 +171,7 @@ function Public.generate_overworld_destination(p)
 
 	if _DEBUG and type == Surfaces.enum.ISLAND then
 		-- warning: the first map is unique in that it isn't all loaded by the time you arrive, which can cause issues. For example, structures might get placed after ore, thereby deleting the ore underneath them.
-		subtype = Surfaces.Island.enum.MAZE
+		subtype = Surfaces.Island.enum.WALKWAYS
 		-- subtype = nil
 		-- type = Surfaces.enum.DOCK
 	end
@@ -183,103 +186,105 @@ function Public.generate_overworld_destination(p)
 		local scope = Surfaces[Surfaces.enum.ISLAND][subtype]
 
 		local static_params = Utils.deepcopy(scope.Data.static_params_default)
-		local cost_to_leave
+		local base_cost_to_undock
 
 		-- These need to scale up slower than the static fuel depletion rate:
-		local normal_costitems = {'electronic-circuit', 'engine-unit', 'advanced-circuit'}
+		local normal_costitems = {'electronic-circuit', 'advanced-circuit'}
+		-- local normal_costitems = {'electronic-circuit', 'engine-unit', 'advanced-circuit'}
 		local base_cost_0 = {
-			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*65),
+			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*80),
 		}
 		local base_cost_1 = {
-			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*65),
-			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*12),
+			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*80),
+			-- ['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*12),
 		}
 		local base_cost_2 = {
-			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*65),
-			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*12),
-			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*10),
+			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*80),
+			-- ['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*12),
+			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*12),
 		}
 		local base_cost_2b = {
-			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*65),
-			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*12),
+			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*80),
+			-- ['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*12),
 			['flying-robot-frame'] = 2,
 		}
 		local base_cost_2c = {
-			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*65),
-			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*12),
-			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*10),
+			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*80),
+			-- ['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*12),
+			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*12),
 			['launch_rocket'] = true,
 		}
 		local base_cost_3 = {
-			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*65),
-			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*12),
-			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*10),
+			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*80),
+			-- ['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*12),
+			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*12),
 			['flying-robot-frame'] = Math.ceil(((macrop.x-18)^(2/3))*5),
 			['launch_rocket'] = true,
 		}
 		local base_cost_4 = {
-			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*65),
-			['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*12),
-			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*10),
+			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*80),
+			-- ['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*12),
+			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*12),
 			['flying-robot-frame'] = Math.ceil(((macrop.x-18)^(2/3))*5),
 		}
 		if macrop.x == 0 then
 			-- if _DEBUG then
-			-- 	cost_to_leave = {
+			-- 	base_cost_to_undock = {
 			-- 		['electronic-circuit'] = 5,
 			-- 		['engine-unit'] = 5,
 			-- 		['advanced-circuit'] = 5,
 			-- 		['flying-robot-frame'] = 5,
 			-- 	}
 			-- end
-			-- cost_to_leave = nil
+			-- base_cost_to_undock = nil
 		elseif macrop.x <= 6 then
-			-- cost_to_leave = {['electronic-circuit'] = 5}
-			cost_to_leave = nil
+			-- base_cost_to_undock = {['electronic-circuit'] = 5}
+			base_cost_to_undock = nil
 		elseif macrop.x <= 9 then
-			cost_to_leave = base_cost_0
+			base_cost_to_undock = base_cost_0
 		elseif macrop.x <= 15 then
 			if macrop.x % 3 > 0 then
-				cost_to_leave = base_cost_1
+				base_cost_to_undock = base_cost_1
 			else
-				cost_to_leave = nil
+				base_cost_to_undock = nil
 			end
 		elseif macrop.x == 18 then --a super small amount of flying-robot-frame on a relatively early level so that they see they need lubricant
-			cost_to_leave = base_cost_2b
+			base_cost_to_undock = base_cost_2b
 		elseif macrop.x <= 20 then
 			if macrop.x % 3 > 0 then
-				cost_to_leave = base_cost_2
+				base_cost_to_undock = base_cost_2
 			else
-				cost_to_leave = nil
+				base_cost_to_undock = nil
 			end
 		elseif macrop.x <= 22 then
-			cost_to_leave = base_cost_2c
+			base_cost_to_undock = base_cost_2c
 		elseif macrop.x <= 24 then
-			cost_to_leave = base_cost_3
+			base_cost_to_undock = base_cost_3
 		else
-			cost_to_leave = Utils.deepcopy(base_cost_4)
+			base_cost_to_undock = Utils.deepcopy(base_cost_4)
 			local delete = normal_costitems[Math.random(#normal_costitems)]
-			cost_to_leave[delete] = nil
+			base_cost_to_undock[delete] = nil
 			if macrop.x % 2 == 0 then
-				cost_to_leave['launch_rocket'] = true
+				base_cost_to_undock['launch_rocket'] = true
 			end
 		end
 		-- override:
 		if subtype == Surfaces.Island.enum.RADIOACTIVE then
-			cost_to_leave = {
+			base_cost_to_undock = {
 				['uranium-235'] = Math.ceil(Math.ceil(80 + (macrop.x))),
 				-- ['uranium-235'] = Math.ceil(Math.ceil(80 + (macrop.x)/2)), --tried adding beacons instead of this
 			}
 		end
 
 		-- -- debug override:
-		-- if _DEBUG then
-		-- 	cost_to_leave = {
-		-- 		['launch_rocket'] = true,
-		-- 	}
-		-- end
+		if _DEBUG then
+			base_cost_to_undock = {
+				['electronic-circuit'] = 200,
+				['launch_rocket'] = true,
+			}
+		end
 
-		static_params.cost_to_leave = cost_to_leave -- Multiplication by Balance.cost_to_leave_multiplier() happens later, in destination_on_collide.
+		static_params.base_cost_to_undock = base_cost_to_undock -- Multiplication by Balance.cost_to_leave_multiplier() happens later, in destination_on_collide.
 
 		--scheduled raft raids moved to destination_on_arrival
 
@@ -313,7 +318,7 @@ function Public.generate_overworld_destination(p)
 
 		static_params.radius_squared_modifier = (2 + 2 * Math.random())
 
-		if macrop.x == 0 then static_params.radius_squared_modifier = 2 end
+		if macrop.x == 0 then static_params.radius_squared_modifier = 1.75 end
 
 		static_params.discord_emoji = scope.Data.discord_emoji
 

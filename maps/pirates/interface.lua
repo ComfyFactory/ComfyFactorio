@@ -58,7 +58,7 @@ function Public.silo_died()
 			if CoreData.rocket_silo_death_causes_loss then
 				-- Crew.lose_life()
 				Crew.try_lose('silo destroyed')
-			elseif (not destination.dynamic_data.rocketlaunched) and destination.static_params and destination.static_params.cost_to_leave and destination.static_params.cost_to_leave['launch_rocket'] and destination.static_params.cost_to_leave['launch_rocket'] == true then
+			elseif (not destination.dynamic_data.rocketlaunched) and destination.static_params and destination.static_params.base_cost_to_undock and destination.static_params.base_cost_to_undock['launch_rocket'] and destination.static_params.base_cost_to_undock['launch_rocket'] == true then
 				Crew.try_lose('silo destroyed before a necessary launch')
 			elseif (not destination.dynamic_data.rocketlaunched) then
 				Common.notify_force(force, 'The silo was destroyed.')
@@ -169,7 +169,7 @@ local function enemyboat_spawners_invulnerable(event)
 	end
 end
 
-local function artillery_damage(event)
+local function damage_to_artillery(event)
 	local memory = Memory.get_crew_memory()
 
 	if not (event.entity and event.entity.valid and event.entity.name and event.entity.name == 'artillery-turret') then return end
@@ -186,13 +186,19 @@ local function artillery_damage(event)
 	end
 end
 
-local function kraken_damage(event)
-	local memory = Memory.get_crew_memory()
+local function damage_to_krakens(event)
 
 	if not (event.entity and event.entity.valid and event.entity.name and event.entity.name == 'biter-spawner') then return end
+
+	if string.sub(event.entity.force.name, 1, 5) ~= 'enemy' then
+		return
+	end
+
 	if not event.cause then return end
 	if not event.cause.valid then return end
 	if not event.cause.name then return end
+
+	local memory = Memory.get_crew_memory()
 
 	local surface_name = memory.boat and memory.boat.surface_name
 	if not (surface_name == memory.sea_name) then return end
@@ -232,7 +238,7 @@ end
 
 
 
-local function extra_damage_to_players(event)
+local function damage_to_players_changes(event)
 	local memory = Memory.get_crew_memory()
 
 	if not (event.entity and event.entity.valid and event.entity.name and event.entity.name == 'character') then return end
@@ -244,60 +250,68 @@ local function extra_damage_to_players(event)
 	-- if string.sub(event.cause.force.name, 1, 5) ~= 'enemy' then return end --Enemy Forces
 
 	local player_index = event.entity.player.index
-	if memory.classes_table and memory.classes_table[player_index] then
-		if memory.classes_table[player_index] == Classes.enum.MERCHANT then
-			event.entity.health = event.entity.health - event.final_damage_amount * 0.5
-		elseif memory.classes_table[player_index] == Classes.enum.SCOUT then
-			event.entity.health = event.entity.health - event.final_damage_amount * 0.2
-		elseif memory.classes_table[player_index] == Classes.enum.IRON_LEG and event.final_health > 0 then --lethal damage is unaffected, as otherwise they can never die
-			local inv = event.entity.get_inventory(defines.inventory.character_main)
-			if not (inv and inv.valid) then return end
-			local count = inv.get_item_count('iron-ore')
-			if count and count >= 3500 then
-				event.entity.health = event.entity.health + event.final_damage_amount * 0.87
-			end
-		end --samurai health buff is elsewhere
-	end
+	local class = memory.classes_table and memory.classes_table[player_index]
 
-	if event.final_health > 0 then
-		if event.damage_type.name == 'poison' then --make all poison damage stronger
-			event.entity.health = event.entity.health - event.final_damage_amount * 0.25
-		end
+	local damage_multiplier = 1
 	
-		event.entity.health = event.entity.health - event.final_damage_amount * Balance.bonus_damage_to_humans()
-	end
-end
-
-
-local function scout_damage_dealt_changes(event)
-	local memory = Memory.get_crew_memory()
-
-	local player_index = event.cause.player.index
-	if memory.classes_table and memory.classes_table[player_index] and memory.classes_table[player_index] == Classes.enum.SCOUT then
-		if event.final_health > 0 then --lethal damage is unaffected, as otherwise they can never kill
-			event.entity.health = event.entity.health + 0.4 * event.final_damage_amount
+	if class and class == Classes.enum.MERCHANT then
+		damage_multiplier = damage_multiplier * 1.5
+	elseif class and class == Classes.enum.SCOUT then
+		damage_multiplier = damage_multiplier * 1.25
+	elseif class and class == Classes.enum.SAMURAI then
+		damage_multiplier = damage_multiplier * 0.25
+	elseif class and class == Classes.enum.HATAMOTO then --lethal damage needs to be unaffected
+		damage_multiplier = damage_multiplier * 0.15
+	elseif class and class == Classes.enum.IRON_LEG then --lethal damage needs to be unaffected
+		local inv = event.entity.get_inventory(defines.inventory.character_main)
+		if not (inv and inv.valid) then return end
+		local count = inv.get_item_count('iron-ore')
+		if count and count >= 3500 then
+			damage_multiplier = damage_multiplier * 0.15
 		end
+	else
+		damage_multiplier = damage_multiplier * (1 + Balance.bonus_damage_to_humans())
+	end
+
+	if event.damage_type.name == 'poison' then --make all poison damage stronger
+		damage_multiplier = damage_multiplier * 1.25
+	end
+
+
+	if damage_multiplier > 1 then
+		event.entity.health = event.entity.health - event.final_damage_amount * (damage_multiplier - 1)
+	elseif damage_multiplier < 1 and event.final_health > 0 then --lethal damage needs to be unaffected, else they never die
+		event.entity.health = event.entity.health + event.final_damage_amount * (1 - damage_multiplier)
 	end
 end
 
 
-local function samurai_damage_dealt_changes(event)
+local function damage_dealt_by_players_changes(event)
 	local memory = Memory.get_crew_memory()
+
+	if not event.cause then return end
+	if not event.cause.valid then return end
+	if not event.entity.valid then return end
+	if event.cause.name ~= 'character' then return end
 
 	local character = event.cause
 	local player = character.player
 
-	local player_index = player.index
+	local physical = event.damage_type.name == 'physical'
+	local acid = event.damage_type.name == 'acid'
 
-	if player and memory.classes_table and memory.classes_table[player_index] then
+	local player_index = player.index
+	local class = memory.classes_table and memory.classes_table[player_index]
+
+	if class and class == Classes.enum.SCOUT and event.final_health > 0 then --lethal damage must be unaffected
+		event.entity.health = event.entity.health + 0.4 * event.final_damage_amount
+	elseif class and (class == Classes.enum.SAMURAI or class == Classes.enum.HATAMOTO) then
 		local samurai = memory.classes_table[player_index] == Classes.enum.SAMURAI
 		local hatamoto = memory.classes_table[player_index] == Classes.enum.HATAMOTO
 
 		--==Note this!
 		if not (samurai or hatamoto) then return end
 
-		local physical = event.damage_type.name == 'physical'
-		local acid = event.damage_type.name == 'acid'
 		local no_weapon = (not (character.get_inventory(defines.inventory.character_guns) and character.get_inventory(defines.inventory.character_guns)[character.selected_gun_index] and character.get_inventory(defines.inventory.character_guns)[character.selected_gun_index].valid_for_read))
 
 		local melee = (physical or acid) and no_weapon
@@ -335,33 +349,33 @@ local function samurai_damage_dealt_changes(event)
 			end
 		end
 	end
-end
 
+	if physical then
 
-local function quartermaster_damage_dealt_changes(event)
-	local memory = Memory.get_crew_memory()
-	if not memory.classes_table then return end
-
-	if event.damage_type.name ~= 'physical' then return end
-
-	local character = event.cause
-	if not character.valid then return end
-	local player = character.player
-	local player_index = player.index
-
-    local nearby_players = player.surface.find_entities_filtered{position = player.position, radius = Common.quartermaster_range, type = {'character'}}
-
-	for _, p2 in pairs(nearby_players) do
-		if p2.player and p2.player.valid then
-			local p2_index = p2.player.index
-			if player_index ~= p2_index and memory.classes_table[p2_index] and memory.classes_table[p2_index] == Classes.enum.QUARTERMASTER then
-				if event.damage_type.name == 'physical' then
+		-- QUARTERMASTER BUFFS
+		local nearby_players = player.surface.find_entities_filtered{position = player.position, radius = Common.quartermaster_range, type = {'character'}}
+	
+		for _, p2 in pairs(nearby_players) do
+			if p2.player and p2.player.valid then
+				local p2_index = p2.player.index
+				if player_index ~= p2_index and memory.classes_table[p2_index] and memory.classes_table[p2_index] == Classes.enum.QUARTERMASTER then
 					event.entity.damage(0.1 * event.final_damage_amount, character.force, 'impact', character) --triggers this function again, but not physical this time
 				end
 			end
 		end
+
+
+		-- PISTOL BUFFS
+		if character.shooting_state.state ~= defines.shooting.not_shooting then
+			local weapon = character.get_inventory(defines.inventory.character_guns)[character.selected_gun_index]
+			local ammo = character.get_inventory(defines.inventory.character_ammo)[character.selected_gun_index]
+			if weapon.valid_for_read and ammo.valid_for_read and weapon.name == 'pistol' and (ammo.name == 'firearm-magazine' or ammo.name == 'piercing-rounds-magazine' or ammo.name == 'uranium-rounds-magazine') then
+				event.entity.damage(event.final_damage_amount * (Balance.pistol_damage_multiplier() - 1), character.force, 'impact', character) --triggers this function again, but not physical this time
+			end
+		end
 	end
 end
+
 
 
 local function swamp_resist_poison(event)
@@ -431,38 +445,20 @@ local function event_on_entity_damaged(event)
 	if not event.entity.valid then return end -- need to call again, silo might be dead
 	if not event.entity.health then return end
 	
+	damage_to_players_changes(event)
+	
 	enemyboat_spawners_invulnerable(event)
 	biters_chew_stuff_faster(event)
-	extra_damage_to_players(event)
-	artillery_damage(event)
+	damage_to_artillery(event)
 	swamp_resist_poison(event)
 	maze_walls_resistance(event)
+	damage_to_krakens(event)
 
-	if string.sub(event.entity.force.name, 1, 5) == 'enemy' then
-		kraken_damage(event)
-		-- Balance.biter_immunities(event)
-	end
+	damage_dealt_by_players_changes(event)
 
-	if not event.cause then return end
-	if not event.cause.valid then return end
-	if event.cause.name ~= 'character' then return end
-
-	scout_damage_dealt_changes(event)
-	samurai_damage_dealt_changes(event)
-	quartermaster_damage_dealt_changes(event)
-
-	if event.damage_type.name ~= 'physical' then return end --guns and melee... maybe more
-	
-	local character = event.cause
-	if character.shooting_state.state == defines.shooting.not_shooting then return end
-	
-	local weapon = character.get_inventory(defines.inventory.character_guns)[character.selected_gun_index]
-	local ammo = character.get_inventory(defines.inventory.character_ammo)[character.selected_gun_index]
-	if not weapon.valid_for_read or not ammo.valid_for_read then return end
-	if weapon.name ~= 'pistol' then return end
-	if ammo.name ~= 'firearm-magazine' and ammo.name ~= 'piercing-rounds-magazine' and ammo.name ~= 'uranium-rounds-magazine' then return end
-	if not event.entity.valid then return end 
-	event.entity.damage(event.final_damage_amount * (Balance.pistol_damage_multiplier() - 1), character.force, 'impact', character) --triggers this function again, but not physical this time
+	-- if string.sub(event.entity.force.name, 1, 5) == 'enemy' then
+	-- 	-- Balance.biter_immunities(event)
+	-- end
 end
 
 
@@ -627,6 +623,26 @@ local function event_on_player_mined_entity(event)
 				if Math.random(1, 35) == 1 then
 					tick_tack_trap(memory.enemy_force_name, entity.surface, entity.position)
 					return
+				end
+
+				local give = {}
+				if memory.classes_table and memory.classes_table[event.player_index] then
+					if memory.classes_table[event.player_index] == Classes.enum.LUMBERJACK then
+						if Math.random(7) == 1 then
+							give[#give + 1] = {name = 'coin', count = 15}
+						end
+					elseif memory.classes_table[event.player_index] == Classes.enum.WOOD_LORD then
+						give[#give + 1] = {name = 'iron-ore', count = 2}
+						give[#give + 1] = {name = 'copper-ore', count = 2}
+						give[#give + 1] = {name = 'coal', count = 2}
+						if Math.random(7) == 1 then
+							give[#give + 1] = {name = 'coin', count = 15}
+						end
+					end
+				end
+
+				if #give > 0 then
+					Common.give(player, give, entity.position)
 				end
 			else
 				local give = {}
@@ -1068,8 +1084,6 @@ local function event_on_player_joined_game(event)
 		end
 	end
 
-	Roles.confirm_captain_exists(player)
-
 	if not _DEBUG then
 		Gui.info.toggle_window(player)
 	end
@@ -1433,7 +1447,7 @@ local function event_on_rocket_launched(event)
 	end
 	
 	local force = memory.force
-	Common.notify_force_light(force,'Granted ' .. Balance.rocket_launch_coin_reward .. ' [item=coin] and ' .. destination.dynamic_data.rocketcoalreward .. ' fuel.')
+	Common.notify_force_light(force,'Granted ' .. string.format('%.1fk', Balance.rocket_launch_coin_reward/1000) .. ' [item=coin] and ' .. string.format('%.1fk', destination.dynamic_data.rocketcoalreward/1000) .. ' fuel.')
 
 	if destination.dynamic_data.quest_type == Quest.enum.TIME and (not destination.dynamic_data.quest_complete) then
 		destination.dynamic_data.quest_progressneeded = 1

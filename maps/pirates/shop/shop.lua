@@ -108,7 +108,7 @@ function Public.event_on_market_item_purchased(event)
 				else
 					-- check if they have a role already - renounce it if so
 					if memory.classes_table and memory.classes_table[player.index] then
-						Classes.try_renounce_class(player)
+						Classes.try_renounce_class(player, false)
 					end
 
 					if force and force.valid then

@@ -108,16 +108,17 @@ function Public.update_character_properties(tickinterval)
 				character.character_reach_distance_bonus = max_reach_bonus
 			end
 
-			local health_boost = 0
-			-- base health is 250
-			if memory.classes_table and memory.classes_table[player_index] then
-				local class = memory.classes_table[player_index]
-				if class == Classes.enum.SAMURAI then
-					health_boost = health_boost + 800
-				elseif class == Classes.enum.HATAMOTO then
-					health_boost = health_boost + 1300
-				end
-			end
+			local health_boost = 0 -- base health is 250
+			
+			-- moved to damage resistance:
+			-- if memory.classes_table and memory.classes_table[player_index] then
+			-- 	local class = memory.classes_table[player_index]
+			-- 	if class == Classes.enum.SAMURAI then
+			-- 		health_boost = health_boost + 800
+			-- 	elseif class == Classes.enum.HATAMOTO then
+			-- 		health_boost = health_boost + 1300
+			-- 	end
+			-- end
 			if Common.is_captain(player) then
 				health_boost = health_boost + 50
 			end

@@ -329,7 +329,7 @@ Public.resourcecount_quest_data_raw = {
 	{1.2, 0, 1, false, 'transport-belt', 1600},
 	{1, 0, 1, false, 'repair-pack', 350},
 	-- {0.1, 0, 1, false, 'red-wire', 500},
-	{0.5, 0, 1, false, 'empty-barrel', 600},
+	{0.5, 0, 1, false, 'empty-barrel', 200},
 	{0.3, 0, 0.2, false, 'underground-belt', 200},
 	{0.3, 0, 0.2, false, 'splitter', 150},
 	{0.4, 0.2, 1, false, 'fast-splitter', 60},

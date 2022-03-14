@@ -10,9 +10,9 @@ Public.display_names = {'Poisonous Fen'}
 Public.terraingen_frame_width = 325
 Public.terraingen_frame_height = 325
 Public.static_params_default = {
-	starting_time_of_day = 0.4,
+	starting_time_of_day = 0.35,
 	daynightcycletype = 1,
-	brightness_visual_weights = {0.1, 0.1, 0.1},
+	brightness_visual_weights = {0, 0, 0},
 	default_decoratives = true,
 	base_starting_treasure = 1000,
 	base_starting_rock_material = 800,
@@ -80,7 +80,6 @@ Public.noiseparams = {
 		normalised = true,
 		params = {
 			{wavelength = 60, amplitude = 1},
-			{wavelength = 10, amplitude = 0.1},
 		},
 	},
 }

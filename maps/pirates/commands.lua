@@ -108,7 +108,7 @@ function(cmd)
 	local player = game.players[cmd.player_index]
 	if not Common.validate_player(player) then return end
 	if param and param == 'nil' then
-		Classes.try_renounce_class(player)
+		Classes.try_renounce_class(player, true)
 	else
 		Common.notify_player_error(player, 'Command error: parameter not needed.')
 	end
@@ -139,7 +139,7 @@ function(cmd)
 				if not rgb then return end
 				player.color = rgb
 				player.chat_color = rgb
-				local message = '[color=' .. rgb.r .. ',' .. rgb.g .. ',' .. rgb.b .. ']' .. player.name .. '\'s color randomly became ' .. color .. '[/color] (via /ccolor).'
+				local message = '[color=' .. rgb.r .. ',' .. rgb.g .. ',' .. rgb.b .. ']' .. player.name .. '\'s color randomized to ' .. color .. '[/color] (via /ccolor).' --'randomly became' was amusing, but let's not
 				Common.notify_game(message)
 				-- disabled due to lag:
 				-- GUIcolor.toggle_window(player)
@@ -332,18 +332,14 @@ function(cmd)
 		if memory.boat.state == Boats.enum_state.DOCKED then
 			Progression.undock_from_dock(true)
 		elseif memory.boat.state == Boats.enum_state.LANDED then
-			if Common.query_can_pay_cost_to_leave() then
-				Progression.try_retreat_from_island(true)
-			else
-				Common.notify_force_error(player.force, 'Undock error: Not enough stored resources.')
-			end
+			Progression.try_retreat_from_island(player, true)
 		end
 	end
 end)
 
 commands.add_command(
 'req',
-'is a captain command to requisition items from the crew.',
+'is a captain command to take \'important\' items from the crew into your inventory.',
 function(cmd)
 	local param = tostring(cmd.parameter)
 	if check_captain(cmd) then

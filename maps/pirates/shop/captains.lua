@@ -94,7 +94,7 @@ Public.main_shop_data_2 = {
 	artillery_shell = {
 		tooltip = '8 cannon shells.',
 		what_you_get_sprite_buttons = {['item/artillery-shell'] = 8},
-		base_cost = {coins = 800, fuel = 10},
+		base_cost = {coins = 800, fuel = 30},
 	},
 	artillery_remote = {
 		tooltip = 'An artillery targeting remote.',
@@ -254,7 +254,7 @@ function Public.main_shop_try_purchase(player, purchase_name)
 			for _, c in pairs(cannons) do
 				c.health = c.prototype.max_health
 			end
-			Common.notify_force_light(force,string.format('%s repaired the ship\'s cannons.', player.name))
+			Common.notify_force(force,string.format('[font=heading-1]%s repaired the cannons.[/font]', player.name))
 			memory.mainshop_availability_bools[purchase_name] = false
 
 		elseif purchase_name == Upgrades.enum.MORE_POWER then

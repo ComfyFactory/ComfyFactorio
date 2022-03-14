@@ -163,7 +163,7 @@ function Public.create_cabin_surface()
 				e.destructible = false
 				e.minable = false
 				e.rotatable = false
-				e.operable = false
+				-- e.operable = false
 				boat.input_chests[#boat.input_chests + 1] = e
 			end
 		end

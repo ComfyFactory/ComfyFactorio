@@ -47,7 +47,7 @@ function Public.fuel_depletion_rate()
 	elseif state == Boats.enum_state.LANDED then
 		return Balance.fuel_depletion_rate_static()
 	elseif state == Boats.enum_state.DOCKED then
-		return 0.1
+		return -0.1
 	else
 		return 0
 	end
@@ -417,53 +417,30 @@ end
 
 
 
-function Public.try_retreat_from_island(manual) -- Assumes the cost can be paid
+function Public.try_retreat_from_island(player, manual) -- Assumes the cost can be paid
 	local memory = Memory.get_crew_memory()
 	if memory.game_lost then return end
 	local destination = Common.current_destination()
-	local captain_index = memory.playerindex_captain
-	local captain = game.players[captain_index]
+	
+	if Common.query_can_pay_cost_to_leave() then
+		if destination.dynamic_data.timeratlandingtime and destination.dynamic_data.timer < destination.dynamic_data.timeratlandingtime + 10 then
+			if player and Common.validate_player(player) then
+				Common.notify_player_error(player, 'Undock error: Can\'t undock in the first 10 seconds.')
+			end
+		else
+			local cost = destination.static_params.base_cost_to_undock
 
-	if captain and Common.validate_player(captain) and destination.dynamic_data.timeratlandingtime and destination.dynamic_data.timer < destination.dynamic_data.timeratlandingtime + 10 then
-		Common.notify_player_error(captain, 'Undock error: Can\'t undock in the first 10 seconds.')
-	else
-		local cost = destination.static_params.cost_to_leave
-		-- if cost and (not destination.dynamic_data.rocketlaunched) then
+			if cost then
+				local adjusted_cost = Common.time_adjusted_departure_cost(cost)
 	
-		-- 	local gold = memory.gold
-		-- 	local captain_index = memory.playerindex_captain
-		-- 	if not (gold and captain_index) then return end
-		-- 	local captain = game.players[captain_index]
-		-- 	if not Common.validate_player_and_character(captain) then return end
-		-- 	local captain_inv = captain.get_inventory(defines.inventory.character_main)
-		-- 	if not captain_inv then return end
-			
-		-- 	local can_buy = true
-	
-		-- 	if cost.name == 'gold' then
-		-- 		can_buy = gold >= cost.count
-		-- 	else
-		-- 		can_buy = captain_inv.get_item_count(cost.name) >= cost.count
-		-- 	end
-		
-		-- 	if can_buy then
-		-- 		if cost.name == 'gold' then
-		-- 			memory.gold = memory.gold - cost.count
-		-- 		else
-		-- 			captain_inv.remove{name=cost.name, count=cost.count}
-		-- 		end
-	
-		-- 		Public.retreat_from_island()
-		-- 	else
-		-- 		Common.notify_player(captain, 'Can\'t afford it.')
-		-- 	end
-		-- else
-		-- 	Public.retreat_from_island()
-		-- end
-		if cost then
-			Common.spend_stored_resources(cost)
+				Common.spend_stored_resources(adjusted_cost)
+			end
+			Public.retreat_from_island(manual)
 		end
-		Public.retreat_from_island(manual)
+	else
+		if player and Common.validate_player(player) then
+			Common.notify_player_error(player.force, 'Undock error: Not enough resources stored in the captain\'s cabin.')
+		end
 	end
 end
 
@@ -537,16 +514,18 @@ function Public.go_from_currentdestination_to_sea()
 	Boats.teleport_boat(boat, seaname, new_boatposition, CoreData.static_boat_floor, 'water')
 
 	if memory.overworldx == 0 and memory.boat then
-		if Common.difficulty() >= 1 then
+		if Common.difficulty() >= 1 and Common.difficulty() < 2 then
 			Boats.upgrade_chests(boat, 'iron-chest')
 			Hold.upgrade_chests(1, 'iron-chest')
 			Crowsnest.upgrade_chests('iron-chest')
 
 			Common.parrot_speak(memory.force, 'The harbor upgraded our ship\'s chests, due to our choice of difficulty.')
-		-- elseif Common.difficulty() > 1 then
-		-- 	Boats.upgrade_chests(boat, 'steel-chest')
-		-- 	Hold.upgrade_chests(1, 'steel-chest')
-		-- 	Crowsnest.upgrade_chests('steel-chest')
+		elseif Common.difficulty() >= 2 then
+			Boats.upgrade_chests(boat, 'steel-chest')
+			Hold.upgrade_chests(1, 'steel-chest')
+			Crowsnest.upgrade_chests('steel-chest')
+
+			Common.parrot_speak(memory.force, 'The harbor upgraded our ship\'s chests, due to our choice of difficulty.')
 		end
 	end
 	

@@ -114,14 +114,14 @@ function Public.check_all_spawners_dead(tickinterval)
 	local destination = Common.current_destination()
 	local boat = memory.boat
 
-	if destination.static_params and destination.static_params.cost_to_leave and (not (destination.subtype and destination.subtype == Islands.enum.RED_DESERT)) then
+	if destination.static_params and destination.static_params.base_cost_to_undock and (not (destination.subtype and destination.subtype == Islands.enum.RED_DESERT)) then
 		if boat and boat.surface_name and boat.surface_name == destination.surface_name then
 			local surface = game.surfaces[destination.surface_name]
 			if not (surface and surface.valid) then return end
 
 			local spawnerscount = Common.spawner_count(surface)
 			if spawnerscount == 0 then
-				destination.static_params.cost_to_leave = nil
+				destination.static_params.base_cost_to_undock = nil
 				Common.notify_force(memory.force, 'All biter bases destroyed — escape cost removed.')
 			end
 		end
@@ -159,7 +159,7 @@ end
 function Public.ship_deplete_fuel(tickinterval)
 	local memory = Memory.get_crew_memory()
 	if memory.game_lost then return end
-	if not (memory.stored_fuel and memory.boat.input_chests and memory.boat.input_chests[1])then return end
+	if not (memory.stored_fuel and memory.boat.input_chests and memory.boat.input_chests[1]) then return end
 
 	local rate = Progression.fuel_depletion_rate()
 
@@ -177,6 +177,11 @@ function Public.ship_deplete_fuel(tickinterval)
 	end
 
 	memory.stored_fuel = memory.stored_fuel + count + rate*tickinterval/60
+
+	if rate < 0 and memory.stored_fuel < 1000 and (not (memory.parrot_fuel_most_recent_warning and memory.parrot_fuel_most_recent_warning >= game.tick - 60*60*12)) then --12 minutes
+		memory.parrot_fuel_most_recent_warning = game.tick
+		Common.parrot_speak(memory.force, 'Fuel is low!')
+	end
 
 	if memory.stored_fuel < 0 then
 		Crew.try_lose('out of fuel')
@@ -1158,8 +1163,11 @@ function Public.silo_update(tickinterval)
 						-- Eventually I want to reformulate pollution not to pull from the map directly, but to pull from pollution_statistics. Previously all the silo pollution went to the map, but this causes a lag ~1-2 minutes. So as a compromise, let's send half to floating_pollution directly, and half to the map:
 						memory.floating_pollution = memory.floating_pollution + pollution/2
 						game.surfaces[destination.surface_name].pollute(p, pollution/2)
-		
-						if dynamic_data.rocketsiloenergyconsumed >= dynamic_data.rocketsiloenergyneeded and (not (silo.rocket_parts == 100)) and (dynamic_data.silocharged == false) and (not memory.game_lost) then
+
+						if memory.overworldx >= 500 and dynamic_data.rocketsiloenergyconsumed >= 0.25 * dynamic_data.rocketsiloenergyneeded and (not dynamic_data.parrot_silo_warned) then
+							dynamic_data.parrot_silo_warned = true
+							Common.parrot_speak(memory.force, 'The silo is attracting biters!')
+						elseif dynamic_data.rocketsiloenergyconsumed >= dynamic_data.rocketsiloenergyneeded and (not (silo.rocket_parts == 100)) and (dynamic_data.silocharged == false) and (not memory.game_lost) then
 							-- silo.energy = 0
 							silo.rocket_parts = 100
 							dynamic_data.silocharged = true
@@ -1219,7 +1227,7 @@ function Public.LOS_tick(tickinterval)
 		force.chart(surface, {{p.x - BoatData.width/2 - 70, p.y - 80},{p.x - BoatData.width/2 + 70, p.y + 80}})
 	end
 
-	if CoreData.rocket_silo_death_causes_loss or (destination.static_params and destination.static_params.cost_to_leave and destination.static_params.cost_to_leave['launch_rocket'] and destination.static_params.cost_to_leave['launch_rocket'] == true) then
+	if CoreData.rocket_silo_death_causes_loss or (destination.static_params and destination.static_params.base_cost_to_undock and destination.static_params.base_cost_to_undock['launch_rocket'] and destination.static_params.base_cost_to_undock['launch_rocket'] == true) then
 		local silos = destination.dynamic_data.rocketsilos
 		if silos and silos[1] and silos[1].valid then
 			local p = silos[1].position

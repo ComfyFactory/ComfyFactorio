@@ -566,18 +566,6 @@ function Public.click(event)
 	end
 
 
-	-- if eventname == 'capn_undock_normal' then
-	-- 	--double check:
-	-- 	if Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN then
-	-- 		if memory.boat.state == Boats.enum_state.DOCKED then
-	-- 			Progression.undock_from_dock()
-	-- 		else
-	-- 			Progression.try_retreat_from_island()
-	-- 		end
-	-- 	end
-	-- 	return
-	-- end
-
 	if eventname == 'capn_summon_crew' then
 		--double check:
 		if Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN then
@@ -595,7 +583,7 @@ function Public.click(event)
 	end
 
 	if eventname == 'class_renounce' then
-		Classes.try_renounce_class(player)
+		Classes.try_renounce_class(player, true)
 		return
 	end
 

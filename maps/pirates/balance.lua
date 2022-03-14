@@ -33,7 +33,10 @@ end
 
 function Public.cost_to_leave_multiplier()
 	-- return Math.sloped(Common.difficulty(), 7/10) --should scale with difficulty similar to, but slightly slower than, passive fuel depletion rate --Edit: not sure about this?
-	return Math.sloped(Common.difficulty(), 9/10)
+	-- return Math.sloped(Common.difficulty(), 9/10)
+
+	-- extra factor now that the cost scales with time:
+	return Math.sloped(Common.difficulty(), 9/10) * 1.5
 end
 
 Public.rocket_launch_coin_reward = 5000
@@ -83,7 +86,7 @@ end
 
 function Public.max_time_on_island_formula() --always >0  --tuned
 	return 60 * (
-			(32 + 2 * (Common.overworldx()/40)^(1/3))
+			(32 + 2.2 * (Common.overworldx()/40)^(1/3))
 	) * Public.game_slowness_scale()
 end
 
@@ -110,7 +113,7 @@ function Public.fuel_depletion_rate_static()
 
 	local rate
 	if Common.overworldx() > 0 then
-		rate = 570 * (0 + (Common.overworldx()/40)^(9/10)) * Public.crew_scale()^(1/6) * Math.sloped(Common.difficulty(), 4/5) / T --most of the crewsize dependence is through T, i.e. the coal cost per island stays the same... but the extra player dependency accounts for the fact that even in compressed time, more players seem to get more resources per island
+		rate = 550 * (0 + (Common.overworldx()/40)^(9/10)) * Public.crew_scale()^(1/7) * Math.sloped(Common.difficulty(), 65/100) / T --most of the crewsize dependence is through T, i.e. the coal cost per island stays the same... but the extra player dependency accounts for the fact that even in compressed time, more players seem to get more resources per island
 	else
 		rate = 0
 	end
@@ -154,23 +157,24 @@ function Public.boat_passive_pollution_per_minute(time)
 	end
 
 	return boost * (
-			5.6 * Common.difficulty() * (Common.overworldx()/40)^(1.6) * (Public.crew_scale())^(55/100)
+			5.0 * Common.difficulty() * (Common.overworldx()/40)^(1.6) * (Public.crew_scale())^(55/100)
 	 ) -- There is no _explicit_ T dependence, but it depends almost the same way on the crew_scale as T does.
 end
 
 
 function Public.base_evolution()
 	local evo
+	local overworldx = Common.overworldx()
 
-	if Common.overworldx() == 0 then
+	if overworldx == 0 then
 		evo = 0
 	else
-		evo = (0.0201 * (Common.overworldx()/40)) * Math.sloped(Common.difficulty(), 1/5)
+		evo = (0.0201 * (overworldx/40)) * Math.sloped(Common.difficulty(), 1/5)
 	
-		if Common.overworldx() > 600 and Common.overworldx() < 1000 then --extra slope from 600 to 1000
-			evo = evo + (0.0040 * (Common.overworldx() - 600)/40) * Math.sloped(Common.difficulty(), 1/5)
-		elseif Common.overworldx() > 1000 then
-			evo = evo + 0.0400 * Math.sloped(Common.difficulty(), 1/5)
+		if overworldx > 600 and overworldx < 1000 then --extra slope from 600 to 1000 adds 2.5% evo
+			evo = evo + (0.0025 * (overworldx - 600)/40)
+		elseif overworldx > 1000 then
+			evo = evo + 0.0025 * 10
 		end
 	end
 
@@ -285,7 +289,8 @@ end
 
 function Public.island_richness_avg_multiplier()
 	local ret
-	local base = 0.7 + 0.1 * (Common.overworldx()/40)^(7/10) --tuned tbh
+	-- local base = 0.7 + 0.1 * (Common.overworldx()/40)^(7/10) --tuned tbh
+	local base = 0.73 + 0.105 * (Common.overworldx()/40)^(7/10) --tuned tbh
 
 	ret = base * Math.sloped(Public.crew_scale(), 1/20) --we don't really have resources scaling by player count in this resource-constrained scenario, but we scale a little, to accommodate each player filling their inventory with useful tools. also, I would do 1/14, but we go even slightly lower because we're applying this somewhat sooner than players actually get there.
 
@@ -313,12 +318,12 @@ Public.starting_fuel = 4000
 
 Public.silo_max_hp = 8000
 
-function Public.pistol_damage_multiplier() return 2.05 end
+function Public.pistol_damage_multiplier() return 2.5 end
 
 Public.kraken_spawns_base_extra_evo = 0.35
 
 function Public.kraken_evo_increase_per_shot()
-	return 1/100 * 0.08 --started off low, currently slowly upping to see
+	return 1/100 * 0.07
 end
 
 function Public.kraken_kill_reward()
@@ -391,7 +396,7 @@ Public.research_buffs = { --currently disabled anyway
 
 
 function Public.flamers_tech_multipliers()
-	return 1/2
+	return 0.75
 end
 
 function Public.flamers_base_nerf()

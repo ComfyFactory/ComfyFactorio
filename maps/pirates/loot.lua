@@ -21,7 +21,7 @@ Public.buried_treasure_loot_data_raw = {
 	{150, 0, 1, false, 'crude-oil-barrel', 25, 45},
 	{70, 0, 1, false, 'effectivity-module-3', 3, 4},
 	{70, 0, 1, false, 'speed-module-3', 3, 4},
-	{10, 0, 1, false, 'productivity-module-3', 2, 2},
+	{10, 0, 1, false, 'productivity-module-2', 2, 2}, --3s are banned because of game mech
 	{70, 0, 1, false, 'plastic-bar', 40, 70},
 	{60, 0, 1, false, 'chemical-science-pack', 12, 24},
 	{70, 0, 1, false, 'assembling-machine-3', 2, 2},
@@ -330,11 +330,11 @@ end
 
 Public.maze_treasure_data_raw = {
 	{2, -1, 1, true, 'rocket', 18, 24},
-	{2, -1, 1, false, 'stack-inserter', 8, 10},
-	{2, -1, 1, false, 'stack-filter-inserter', 5, 6},
-	{2, 0, 1, false, 'poison-capsule', 10, 12},
-	{2, 0, 1, false, 'destroyer-capsule', 6, 6},
-	{2, 0, 1, false, 'slowdown-capsule', 8, 8},
+	{2, -0.8, 0.8, false, 'stack-inserter', 8, 10},
+	{2, -0.8, 0.8, false, 'stack-filter-inserter', 5, 6},
+	{2, 0, 1, false, 'poison-capsule', 22, 22},
+	{2, 0, 1, false, 'destroyer-capsule', 8, 8},
+	{2, 0, 1, false, 'slowdown-capsule', 14, 14},
 
 	{2, 0, 1, false, 'uranium-rounds-magazine', 15, 25},
 	{2, 0, 1, false, 'artillery-shell', 5, 7},
@@ -346,7 +346,7 @@ Public.maze_treasure_data_raw = {
 
 	{1, 0, 0.8, false, 'speed-module-3', 2, 2},
 	{1, 0, 0.8, false, 'effectivity-module-3', 3, 3},
-	{0.5, 0, 1, false, 'productivity-module-3', 2, 2},
+	{0.5, 0, 1, false, 'productivity-module-2', 2, 2}, --3s are banned because of game mech
 
 	{2, 0, 1.5, true, 'production-science-pack', 20, 25},
 	{2, 0, 2, true, 'utility-science-pack', 7, 8},
@@ -417,7 +417,7 @@ Public.dredger_loot_raw = {
 
 	{0.05, 0, 1, false, 'speed-module-3', 1, 1},
 	{0.05, 0, 1, false, 'effectivity-module-3', 1, 1},
-	{0.05, 0, 1, false, 'productivity-module-3', 1, 1},
+	{0.05, 0, 1, false, 'productivity-module-2', 1, 1}, --3s are banned because of game mech
 
 	{0.1, 0, 1, false, 'rocket', 1, 1},
 	{0.01, 0, 1, false, 'explosive-rocket', 1, 1},

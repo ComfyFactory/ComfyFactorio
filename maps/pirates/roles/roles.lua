@@ -221,7 +221,7 @@ function Public.player_left_so_redestribute_roles(player)
 		-- end
 	end
 	
-	Classes.try_renounce_class(player, "A %s class is now spare.")
+	Classes.try_renounce_class(player, false, "A %s class is now spare.")
 end
 
 
@@ -269,7 +269,7 @@ function Public.confirm_captain_exists(player_to_make_captain_otherwise)
 	if (memory.id and memory.id > 0 and memory.crewstatus and memory.crewstatus == 'adventuring') and (not (memory.playerindex_captain and game.players[memory.playerindex_captain] and Common.validate_player(game.players[memory.playerindex_captain]))) then --fixme: enum hacked
 		if player_to_make_captain_otherwise then
 			Public.make_captain(player_to_make_captain_otherwise)
-			game.print('Reassigning captain.')
+			game.print('Auto-reassigning captain.')
 		else
 			log('Error: Couldn\'t make a captain.')
 		end

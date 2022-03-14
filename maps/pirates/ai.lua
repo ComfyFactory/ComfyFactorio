@@ -420,7 +420,7 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 	base_pollution_cost_multiplier = base_pollution_cost_multiplier * Balance.scripted_biters_pollution_cost_multiplier()
 
 	if destination.subtype and destination.subtype == IslandsCommon.enum.SWAMP then
-		base_pollution_cost_multiplier = base_pollution_cost_multiplier * 0.85 --biters 15% more aggressive
+		base_pollution_cost_multiplier = base_pollution_cost_multiplier * 0.9 --biters 10% more aggressive
 	end
 
 	if destination.subtype and destination.subtype == IslandsCommon.enum.MAZE then

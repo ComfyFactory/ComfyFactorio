@@ -71,7 +71,7 @@ function Public.parrot_kraken_warning()
 end
 function Public.parrot_radioactive_tip_1()
 	local memory = Memory.get_crew_memory()
-	Common.parrot_speak(memory.force, '600 leagues? We\'ll need uranium-235 to push away from this island...')
+	Common.parrot_speak(memory.force, 'We\'ll need uranium-235 to push away from this island...')
 end
 function Public.parrot_radioactive_tip_2()
 	local memory = Memory.get_crew_memory()
@@ -83,7 +83,7 @@ function Public.parrot_maze_tip_1()
 end
 function Public.parrot_800_tip()
 	local memory = Memory.get_crew_memory()
-	Common.parrot_speak(memory.force, '800 leagues? The resources needed to leave will get a bit harder now...')
+	Common.parrot_speak(memory.force, 'The resources needed to leave will get a bit harder now...')
 end
 function Public.parrot_overstay_tip()
 	local memory = Memory.get_crew_memory()

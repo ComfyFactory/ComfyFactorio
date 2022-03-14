@@ -68,7 +68,7 @@ function Public.terrain(args)
 			args.specials[#args.specials + 1] = {name = 'chest', position = args.p}
 		else
 			if noises.forest_abs(p) > 0.15 then
-				local treedensity = 0.08 * Math.slopefromto(noises.forest_abs_suppressed(p), 0.3, 0.6) + 0.3 * Math.slopefromto(noises.forest_abs_suppressed(p), 0.65, 1.2)
+				local treedensity = 0.08 * Math.slopefromto(noises.forest_abs_suppressed(p), 0.3, 0.6) + 0.3 * Math.slopefromto(noises.forest_abs_suppressed(p), 0.65, 1.0)
 				if noises.forest(p) > 1.3 then
 					if Math.random(1,100) < treedensity*100 then args.entities[#args.entities + 1] = {name = 'tree-09-brown', position = args.p} end
 				else

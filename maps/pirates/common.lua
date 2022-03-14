@@ -45,8 +45,8 @@ Public.maze_minimap_jam_start_league = 920
 
 Public.ban_from_rejoining_crew_ticks = 45 * 60 --to prevent observing map and rejoining
 
-Public.afk_time = 60 * 60 * 5.5
-Public.afk_warning_time = 60 * 60 * 5
+Public.afk_time = 60 * 60 * 5
+Public.afk_warning_time = 60 * 60 * 4.5
 Public.logged_off_items_preserved_minutes = 5
 Public.important_items = {'coin', 'uranium-235', 'uranium-238', 'fluid-wagon', 'coal', 'electric-engine-unit', 'flying-robot-frame', 'advanced-circuit', 'beacon', 'speed-module-3', 'speed-module-2', 'roboport', 'construction-robot'} --internal inventories of these will not be preserved
 
@@ -430,17 +430,93 @@ function Public.current_destination()
 end
 
 
+function Public.time_adjusted_departure_cost(cost)
+	local memory = Memory.get_crew_memory()
+
+	local ret = cost
+
+	-- 1.5s memoization since the gui update will call this function:
+	if (not memory.time_adjusted_departure_cost_memoized) or (memory.time_adjusted_departure_cost_memoized.tick < game.tick - 90) then
+		local destination = Public.current_destination()
+		local dynamic_data = destination.dynamic_data
+		local timer = dynamic_data.timer
+		local time_remaining = dynamic_data.time_remaining
+	
+		if timer and time_remaining and timer >= 0 and time_remaining >= 0 then
+			local total_time = timer + time_remaining
+			local elapsed_fraction = timer / total_time
+			local cost_fraction = 1 - elapsed_fraction
+	
+			local new_cost = {}
+			for name, count in pairs(cost) do
+				if type(count) == "number" then
+					new_cost[name] = Math.ceil(count * cost_fraction)
+				else
+					new_cost[name] = count
+				end
+			end
+	
+			ret = new_cost
+		end
+
+		local resources_strings1 = ''
+		local j = 1
+		for name, count in pairs(cost) do
+			if name ~= 'launch_rocket' then
+				if j > 1 then
+					resources_strings1 = resources_strings1 .. ', '
+				end
+				resources_strings1 = resources_strings1 .. count .. ' [item=' .. name .. ']'
+
+				j = j + 1
+			end
+		end
+		local resources_strings2 = ''
+		j = 1
+		for name, count in pairs(ret) do
+			if name ~= 'launch_rocket' then
+				if j > 1 then
+					resources_strings2 = resources_strings2 .. ', '
+				end
+				resources_strings2 = resources_strings2 .. count .. ' [item=' .. name .. ']'
+
+				j = j + 1
+			end
+		end
+
+		memory.time_adjusted_departure_cost_memoized = {
+			tick = game.tick,
+			cost = ret,
+			resources_strings = {resources_strings1, resources_strings2}
+		}
+	else
+		ret = memory.time_adjusted_departure_cost_memoized.cost
+	end
+
+	return ret
+end
+
+
+function Public.time_adjusted_departure_cost_resources_strings(memory)
+	-- written to be efficient... only called in the gui after Public.time_adjusted_departure_cost()
+
+	return memory.time_adjusted_departure_cost_memoized.resources_strings
+end
+
+
 function Public.query_can_pay_cost_to_leave()
 	local memory = Memory.get_crew_memory()
 	local boat = memory.boat
 	local destination = Public.current_destination()
 	if not (boat and destination) then return end
 
-	local cost = destination.static_params.cost_to_leave
+	local cost = destination.static_params.base_cost_to_undock
 	if not cost then return true end
 
+	local adjusted_cost = Public.time_adjusted_departure_cost(cost)
+
 	local can_leave = true
-	for name, count in pairs(cost) do
+	for name, count in pairs(adjusted_cost) do
 		if name == 'launch_rocket' then
 			if not destination.dynamic_data.rocketlaunched then
 				can_leave = false
