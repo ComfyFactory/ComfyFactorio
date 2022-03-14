@@ -99,6 +99,11 @@ function Public.get_common_resource_amount(surface_index)
     local amount = math_random(350, 700) + Public.get_dungeon_evolution_factor(surface_index) * 16000
     if dungeontable.tiered then
         amount = amount / 8
+        local floor = surface_index - dungeontable.original_surface_index
+	-- rocks stop going up here, so more than make up for it in resources on ground
+	if floor > 19 then
+	    amount = amount * (1+(floor - 19)/5)
+	end
     end
     return amount
 end

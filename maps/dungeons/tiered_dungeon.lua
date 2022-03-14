@@ -17,9 +17,10 @@ local DungeonsTable = require 'maps.dungeons.table'
 local BottomFrame = require 'comfy_panel.bottom_frame'
 local Autostash = require 'modules.autostash'
 local Panel = require 'comfy_panel.config'
+Panel.get('gui_config').spaghett.noop = true
 local Collapse = require 'modules.collapse'
 Collapse.disable()
-Panel.get('gui_config').spaghett.noop = true
+local Changelog = require 'modules.changelog'
 require 'maps.dungeons.boss_arena'
 require 'modules.melee_mode'
 
@@ -863,3 +864,26 @@ Event.add(defines.events.on_surface_created, on_surface_created)
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_player_changed_surface, on_player_changed_surface)
 Event.add(defines.events.on_player_respawned, on_player_respawned)
+
+Changelog.SetVersions({
+	{ ver = '1.1', date = '2022-03-13', desc = [[
+* All research is now found at random.
+  * Red science floors 0-1
+  * Green on floors 1-5
+  * Gray on floors 5-10
+  * Blue on floors 8-13
+  * Blue/gray on floors 10-14
+  * Purple on floors 12-19
+  * Yellow on floors 14-21
+  * White on floors 20-25
+  * Atomic Bomb/Spidertron on floors 22-25
+* Add melee mode toggle to top bar. Keeps weapons in main inventory if possible.
+* Ore from rocks nerfed. Used to hit max value on floor 2, now scales up from
+  floors 0-19 along with ore from rooms. After floor 20 ore from rooms scales up faster.
+* Treasure room resources rescaled to have similar total regardless of size
+* Autostash and corpse clearing from Mountain Fortress enabled
+* Harder rooms will occur somewhat farther out on the early floors.
+* Spawners and worm counts bounded in early rooms.
+]]},
+	{ ver = '1.0', date = 'past', desc = "Pre-changelog version of multi-floor dungeons" },
+})
