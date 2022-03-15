@@ -2,10 +2,10 @@ local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Event = require 'utils.event'
 local Terrain = require 'maps.deep_jungle.terrain'
+local DPT = require 'maps.deep_jungle.table'
 
 local Public = {}
 
-local force_chunk = false
 local ceil = math.ceil
 local queue_task = Task.queue_task
 local tiles_per_call = 12
@@ -496,7 +496,11 @@ local do_chunk = Public.do_chunk
 local schedule_chunk = Public.schedule_chunk
 
 local function on_chunk(event)
-    if force_chunk then
+    local settings = DPT.get('settings')
+    if settings.stop_chunk then
+        return
+    end
+    if settings.force_chunk then
         do_chunk(event)
     else
         schedule_chunk(event)
