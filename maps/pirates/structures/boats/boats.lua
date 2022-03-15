@@ -1051,7 +1051,7 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 						local wire = v.wire
 						local source_circuit_id = v.source_circuit_id
 						local target_circuit_id = v.target_circuit_id
-						if e2 and e2.valid and e2.position then
+						if e2 and e2.valid and e2.position and (wire == defines.wire_type.red or wire == defines.wire_type.green) then --observed an error "Expected source_wire_id for entities with more than one wire connection" in the .connect_neighbour() function called later, so putting the red/green wire check in to try and catch it
 							local e2p = e2.position
 							if not circuit_neighbours_matrix[e2p.x] then
 								circuit_neighbours_matrix[e2p.x] = {}

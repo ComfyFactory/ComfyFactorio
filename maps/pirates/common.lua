@@ -143,6 +143,11 @@ function Public.notify_player_expected(player, message, color_override)
 	player.print('>> [Whisper] ' .. message, color_override)
 end
 
+function Public.notify_player_announce(player, message, color_override)
+	color_override = color_override or CoreData.colors.notify_player_announce
+	player.print('>> [Whisper] ' .. message, color_override)
+end
+
 function Public.parrot_speak(force, message)
 	force.print('Parrot: ' .. message, CoreData.colors.parrot)
 end
@@ -621,7 +626,7 @@ function Public.spend_stored_resources(to_spend)
 end
 
 
-function Public.new_healthbar(id, text, target_entity, max_health, health, size)
+function Public.new_healthbar(text, target_entity, max_health, optional_id, health, size)
 	health = health or max_health
 	size = size or 0.5
 	text = text or false
@@ -660,7 +665,7 @@ function Public.new_healthbar(id, text, target_entity, max_health, health, size)
 		max_health = max_health,
 		render1 = render1,
 		render2 = render2,
-		id = id,
+		id = optional_id,
 	}
 
 	memory.healthbars[target_entity.unit_number] = new_healthbar
@@ -668,6 +673,24 @@ function Public.new_healthbar(id, text, target_entity, max_health, health, size)
 	Public.update_healthbar_rendering(new_healthbar, health)
 
 	return new_healthbar
+end
+
+function Public.entity_damage_healthbar(entity, damage)
+	local memory = Memory.get_crew_memory()
+	local unit_number = entity.unit_number
+
+	local healthbar = memory.healthbars[unit_number]
+	if not healthbar then return 0 end
+
+	local new_health = healthbar.health - damage
+	healthbar.health = new_health
+	Public.update_healthbar_rendering(healthbar, new_health)
+
+	if entity and entity.valid then
+		entity.health = entity.prototype.max_health
+	end
+
+	return healthbar.health
 end
 
 function Public.update_healthbar_rendering(new_healthbar, health)

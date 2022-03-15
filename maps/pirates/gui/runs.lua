@@ -320,7 +320,7 @@ function Public.toggle_window(player)
 	flow5.style.width = 200
 	flow5.style.margin = 0
 
-	flow_add_proposal_slider(flow5, 'capacity', 'Capacity', #CoreData.capacity_options, 4, {'pirates.capacity_tooltip'})
+	flow_add_proposal_slider(flow5, 'capacity', 'Capacity', #CoreData.capacity_options, 5, {'pirates.capacity_tooltip'})
 	-- flow_add_proposal_slider(flow5, 'difficulty', 'Difficulty', #CoreData.difficulty_options, 2, {'pirates.difficulty_tooltip'})
 	-- flow_add_proposal_switch(flow5, 'mode', 'Mode', 'left', {'pirates.mode_tooltip'})
 

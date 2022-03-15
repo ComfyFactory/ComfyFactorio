@@ -383,7 +383,13 @@ function Public.spawn_enemy_boat(type)
 		Boats.place_boat(boat, CoreData.static_boat_floor, true, true)
 	
 		local e = surface.create_entity({name = 'biter-spawner', force = boat.force_name, position = {boat.position.x + Boats.get_scope(boat).Data.spawn_point.x, boat.position.y + Boats.get_scope(boat).Data.spawn_point.y}})
-		boat.spawner = e
+
+		if e and e.valid then
+			-- e.destructible = false
+			boat.spawner = e
+
+			Common.new_healthbar(false, e, 400, nil, 400, 0.3)
+		end
 
 		return enemyboats[#enemyboats]
 	end

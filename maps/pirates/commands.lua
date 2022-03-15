@@ -502,6 +502,20 @@ function(cmd)
 end)
 
 
+commands.add_command(
+'overwrite_scores_specific',
+'is a dev command.',
+function(cmd)
+	if check_admin(cmd) then
+		local player = game.players[cmd.player_index]
+		if not Common.validate_player(player) then return end
+		local crew_id = tonumber(string.sub(game.players[cmd.player_index].force.name, -3, -1)) or nil
+		Memory.set_working_id(crew_id)
+		local memory = Memory.get_crew_memory()
+		if Highscore.overwrite_scores_specific() then player.print('Highscores overwritten.') end
+	end
+end)
+
 
 if _DEBUG then
 
@@ -543,20 +557,6 @@ if _DEBUG then
 			-- boat.crowsneststeeringchests = {}
 	
 			Task.set_timeout_in_ticks(120, go_1, {})
-		end
-	end)
-
-	commands.add_command(
-	'overwrite_scores_specific',
-	'is a dev command.',
-	function(cmd)
-		if check_admin(cmd) then
-			local player = game.players[cmd.player_index]
-			if not Common.validate_player(player) then return end
-			local crew_id = tonumber(string.sub(game.players[cmd.player_index].force.name, -3, -1)) or nil
-			Memory.set_working_id(crew_id)
-			local memory = Memory.get_crew_memory()
-			if Highscore.overwrite_scores_specific() then player.print('Highscores overwritten.') end
 		end
 	end)
 	

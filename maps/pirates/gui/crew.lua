@@ -32,31 +32,40 @@ function Public.toggle_window(player)
 	flow = GuiCommon.new_window(player, window_name)
 	flow.caption = 'Crew'
 
-	--*** RUN AGE ***--
+	--*** PARAMETERS OF RUN ***--
+	
+	flow2 = flow.add({
+		name = 'crew_capacity_and_difficulty',
+		type = 'label',
+	})
+	flow2.style.left_margin = 5
+	flow2.style.top_margin = 0
+	flow2.style.bottom_margin = -3
+	flow2.style.single_line = false
+	flow2.style.maximal_width = 190
+	flow2.style.font = 'default'
 	
 	flow2 = flow.add({
 		name = 'crew_age',
 		type = 'label',
 	})
 	flow2.style.left_margin = 5
-	flow2.style.top_margin = 0
-	flow2.style.bottom_margin = -3
+	flow2.style.top_margin = -3
+	flow2.style.bottom_margin = 0
 	flow2.style.single_line = true
 	flow2.style.maximal_width = 200
 	flow2.style.font = 'default'
-
-	--*** RUN DIFFICULTY ***--
 	
-	flow2 = flow.add({
-		name = 'crew_difficulty',
-		type = 'label',
-	})
-	flow2.style.left_margin = 5
-	flow2.style.top_margin = -3
-	flow2.style.bottom_margin = 0
-	flow2.style.single_line = false
-	flow2.style.maximal_width = 190
-	flow2.style.font = 'default'
+	-- flow2 = flow.add({
+	-- 	name = 'crew_difficulty',
+	-- 	type = 'label',
+	-- })
+	-- flow2.style.left_margin = 5
+	-- flow2.style.top_margin = -3
+	-- flow2.style.bottom_margin = 0
+	-- flow2.style.single_line = false
+	-- flow2.style.maximal_width = 190
+	-- flow2.style.font = 'default'
 
 
 	--*** MEMBERSHIP BUTTONS ***--
@@ -460,7 +469,8 @@ function Public.full_update(player)
 		flow.caption = memory.name
 
 		flow.crew_age.caption = 'Age: ' .. Utils.time_mediumform((memory.age or 0)/60)
-		flow.crew_difficulty.caption = 'Difficulty: ' .. CoreData.difficulty_options[memory.difficulty_option].text
+		-- flow.crew_difficulty.caption = 'Difficulty: ' .. CoreData.difficulty_options[memory.difficulty_option].text
+		flow.crew_capacity_and_difficulty.caption = CoreData.difficulty_options[memory.difficulty_option].text .. ', Capacity ' .. CoreData.capacity_options[memory.capacity_option].text
 
 		if flow.spare_classes.visible then
 			local str = ''

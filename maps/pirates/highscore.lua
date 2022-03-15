@@ -255,9 +255,10 @@ function Public.dump_highscores()
 end
 
 function Public.overwrite_scores_specific()
-	return nil
 	-- the correct format is to put _everything_ from a dump into the third argument:
-	-- Server.set_data(score_dataset, score_key, {})
+	-- Server.set_data(score_dataset, score_key, )
+	-- return true
+	return nil
 end
 
 function Public.write_score(crew_secs_id, name, captain_name, completion_time, leagues_travelled, version, difficulty, max_players)
@@ -438,7 +439,7 @@ local function score_gui(data)
         local n = entry.completion_time > 0 and Utils.time_mediumform(entry.completion_time or 0) or 'N/A'
         local l = entry.leagues_travelled > 0 and entry.leagues_travelled or '?'
         local v = entry.version > 0 and entry.version or '?'
-        local d = entry.difficulty > 0 and CoreData.highscore_difficulty_displayform(entry.difficulty) or '?'
+        local d = entry.difficulty > 0 and CoreData.get_difficulty_name_from_value(entry.difficulty) or '?'
         local c = entry.max_players > 0 and entry.max_players or '?'
         local line = {
             {caption = entry.name, color = special_color},

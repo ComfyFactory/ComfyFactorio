@@ -152,16 +152,24 @@ local function silo_damage(event)
 end
 
 
-local function enemyboat_spawners_invulnerable(event)
+local function damage_to_enemyboat_spawners(event)
 	local memory = Memory.get_crew_memory()
 
-	if event.cause and event.cause.valid and event.entity and event.entity.valid then
-		if event.entity.force.name == memory.enemy_force_name then
-			if memory.enemyboats then
+	if memory.enemyboats and #memory.enemyboats > 0 then
+		if event.cause and event.cause.valid and event.entity and event.entity.valid then
+			if event.entity.force.name == memory.enemy_force_name then
 				for i = 1, #memory.enemyboats do
 					local eb = memory.enemyboats[i]
-					if eb.spawner and eb.spawner.valid and event.entity == eb.spawner and eb.state == Structures.Boats.enum_state.APPROACHING then
-						event.entity.health = event.entity.health + event.final_damage_amount
+					if eb.spawner and eb.spawner.valid and event.entity == eb.spawner then
+					-- if eb.spawner and eb.spawner.valid and event.entity == eb.spawner and eb.state == Structures.Boats.enum_state.APPROACHING then
+						local damage = event.final_damage_amount
+						local adjusted_damage = damage
+
+						adjusted_damage = adjusted_damage / 5
+
+						if Common.entity_damage_healthbar(event.entity, adjusted_damage) < 0 then
+							event.entity.die()
+						end
 					end
 				end
 			end
@@ -224,16 +232,8 @@ local function damage_to_krakens(event)
 		adjusted_damage = adjusted_damage / 8 --laser turrets are in range
 	end
 
-	local healthbar = memory.healthbars[unit_number]
-	if not healthbar then return end
-
-	event.entity.health = 350 --set to full hp
-	local new_health = healthbar.health - adjusted_damage
-	healthbar.health = new_health
-	Common.update_healthbar_rendering(healthbar, new_health)
-
-	if new_health < 0 then
-		Kraken.kraken_die(healthbar.id)
+	if Common.entity_damage_healthbar(event.entity, adjusted_damage) < 0 then
+		Kraken.kraken_die(memory.healthbars[unit_number].id)
 	end
 end
 
@@ -449,7 +449,7 @@ local function event_on_entity_damaged(event)
 	
 	damage_to_players_changes(event)
 	
-	enemyboat_spawners_invulnerable(event)
+	damage_to_enemyboat_spawners(event)
 	biters_chew_stuff_faster(event)
 	damage_to_artillery(event)
 	swamp_resist_poison(event)
@@ -1078,10 +1078,7 @@ local function event_on_player_joined_game(event)
 		if ages[1] then
 			Crew.join_crew(player, ages[1].id)
 			if ages[2] then
-				Common.notify_player_expected(player, 'There are multiple crews on this server. You have been placed in the oldest.')
-			end
-			if global_memory.crew_memories[ages[1].id] and global_memory.crew_memories[ages[1].id].id == ages[1].id and global_memory.crew_memories[ages[1].id].capacity and global_memory.crew_memories[ages[1].id].capacity < Common.minimum_run_capacity_to_enforce_space_for then
-				Common.notify_player_expected(player, 'NOTE: Your crew has a reduced capacity of ' .. global_memory.crew_memories[ages[1].id].capacity .. ' maximum players.')
+				Common.notify_player_announce(player, 'There are multiple crews on this server. You have been placed in the oldest.')
 			end
 		end
 	end

@@ -218,7 +218,7 @@ function Public.captain_warn_afk(tickinterval)
 	if memory.playerindex_captain then
 		for _, player in pairs(game.connected_players) do
 			if Common.is_captain(player) and #Common.crew_get_nonafk_crew_members() > 1 and player.afk_time >= Common.afk_time - 20*60 - 60 - tickinterval and player.afk_time < Common.afk_time - 20*60 then
-				Common.notify_player_expected(player, 'Note: If you go idle as captain for too long, the role passes to another crewmember.')
+				Common.notify_player_announce(player, 'Note: If you go idle as captain for too long, the role passes to another crewmember.')
 				player.play_sound{path = 'utility/scenario_message'}
 			end
 		end
@@ -1205,10 +1205,11 @@ function Public.slower_boat_tick(tickinterval)
 		for i = 1, #memory.enemyboats do
 			local b = memory.enemyboats[i]
 	
-			if b.landing_time and destination.dynamic_data.timer and destination.dynamic_data.timer >= b.landing_time + 3 and b.spawner and b.spawner.valid then
-				b.spawner.destructible = true
-				b.landing_time = nil
-			end
+			-- if b.landing_time and destination.dynamic_data.timer and destination.dynamic_data.timer >= b.landing_time and b.spawner and b.spawner.valid then
+			-- -- if b.landing_time and destination.dynamic_data.timer and destination.dynamic_data.timer >= b.landing_time + 3 and b.spawner and b.spawner.valid then
+			-- 	b.spawner.destructible = true
+			-- 	b.landing_time = nil
+			-- end
 		end
 	end
 end

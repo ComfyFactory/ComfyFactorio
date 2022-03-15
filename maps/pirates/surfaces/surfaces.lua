@@ -168,19 +168,21 @@ function Public.destination_on_collide(destination)
 			-- temporarily placed this back here, as moving it to shorehit broke things:
 			local playercount = Common.activecrewcount()
 			local max_evo
-			if Common.difficulty() < 1 then
+
+			local difficulty_name = CoreData.get_difficulty_name_from_value(Common.difficulty())
+			if difficulty_name == CoreData.difficulty_options[1].text then
 				if memory.overworldx/40 < 20 then
 					max_evo = 0.9 - (20 - memory.overworldx/40) * 1/100
 				else
 					max_evo = 0.91 + (memory.overworldx/40 - 20) * 0.25/100
 				end
-			elseif Common.difficulty() == 1 then
+			elseif difficulty_name == CoreData.difficulty_options[2].text then
 				if memory.overworldx/40 < 15 then
 					max_evo = 0.9 - (15 - memory.overworldx/40) * 0.5/100
 				else
 					max_evo = 0.91 + (memory.overworldx/40 - 15) * 0.25/100
 				end
-			elseif Common.difficulty() > 1 then
+			else
 				if memory.overworldx/40 < 12 then
 					max_evo = 0.9
 				else

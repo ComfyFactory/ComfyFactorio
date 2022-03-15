@@ -5,8 +5,8 @@ local inspect = require 'utils.inspect'.inspect
 local Public = {}
 
 Public.scenario_id_name = 'pirates'
-Public.version_string = '1.1.1.2'
-Public.version_float = 1.112
+Public.version_string = '1.1.1.4'
+Public.version_float = 1.114
 
 Public.blueprint_library_allowed = true
 Public.blueprint_importing_allowed = true
@@ -31,6 +31,7 @@ Public.colors = {
 	['copper-ore'] = {r=219, g=149, b=96},
 	notify_error = {r=170, g=170, b=170},
 	notify_player_expected = {r=255, g=231, b=46},
+	notify_player_announce = {r=244, g=255, b=145},
 	notify_game = {r=249, g=103, b=56},
 	notify_lobby = {r=249, g=153, b=56},
 	notify_force = {r=249, g=153, b=56},
@@ -98,6 +99,7 @@ Public.comfy_emojis = {
 }
 
 Public.capacity_options = {
+	{value = 2, icon = 'virtual-signal/signal-2', text = '2', text2 = '/2', text3 = '2'},
 	{value = 4, icon = 'virtual-signal/signal-4', text = '4', text2 = '/4', text3 = '4'},
 	{value = 8, icon = 'virtual-signal/signal-8', text = '8', text2 = '/8', text3 = '8'},
 	{value = 24, icon = 'virtual-signal/signal-blue', text = '24', text2 = '/24', text3 = '24'},
@@ -105,27 +107,31 @@ Public.capacity_options = {
 	-- {value = 64, icon = 'item/storage-tank', text = '64'},
 }
 Public.difficulty_options = {
-	{value = 0.6, icon = 'item/firearm-magazine', text = 'Easy', associated_color = {r = 50, g = 255, b = 50}},
-	{value = 1, icon = 'item/piercing-rounds-magazine', text = 'Normal', associated_color = {r = 255, g = 255, b = 50}},
-	{value = 1.4, icon = 'item/uranium-rounds-magazine', text = 'Hard', associated_color = {r = 255, g = 50, b = 50}},
-	{value = 3, icon = 'item/atomic-bomb', text = 'Nightmare', associated_color = {r = 50, g = 10, b = 10}},
-}
--- Public.mode_options = {
--- 	left = {value = 'speedrun', icon = 'achievement/watch-your-step', text = 'Speedrun'},
--- 	right = {value = 'infinity', icon = 'achievement/mass-production-1', text = 'Infinity'},
--- }
+	-- The difficulty values we currently offer
 
-function Public.highscore_difficulty_displayform(difficulty_value)
-	if difficulty_value < 1 then
+	--For the value of Easy difficulty, we are pulled in two directions: We wish to make the game comfy to play for those who haven't played it, but we also wish to represent the game mechanics faithfully so that Normal is not a crazy distance away.
+	{value = 0.55, icon = 'item/firearm-magazine', text = 'Easy', associated_color = {r = 50, g = 255, b = 50}},
+	{value = 0.9, icon = 'item/piercing-rounds-magazine', text = 'Normal', associated_color = {r = 255, g = 255, b = 50}},
+	{value = 1.5, icon = 'item/uranium-rounds-magazine', text = 'Hard', associated_color = {r = 255, g = 50, b = 50}},
+	{value = 3, icon = 'item/atomic-bomb', text = 'Nightmare', associated_color = {r = 120, g = 35, b = 35}},
+}
+function Public.get_difficulty_name_from_value(difficulty_value)
+	-- Functions will reference this when given a difficulty value and want to present a difficulty name to the player; just make it consistent with the above
+	if difficulty_value <= 0.7 then
 		return 'Easy'
-	elseif difficulty_value == 1 then
+	elseif difficulty_value < 1.3 then
 		return 'Normal'
-	elseif difficulty_value <= 1.5 then
+	elseif difficulty_value <= 2 then
 		return 'Hard'
 	else
 		return 'Nightmare'
 	end
 end
+
+-- Public.mode_options = {
+-- 	left = {value = 'speedrun', icon = 'achievement/watch-your-step', text = 'Speedrun'},
+-- 	right = {value = 'infinity', icon = 'achievement/mass-production-1', text = 'Infinity'},
+-- }
 
 Public.daynightcycle_types = {
 	{displayname = 'Static', 0},

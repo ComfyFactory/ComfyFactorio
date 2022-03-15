@@ -340,13 +340,13 @@ function Public.check_for_end_of_boat_movement(boat)
 
 				return true
 
-			elseif boat.spawner and boat.spawner.valid and boat.spawner.destructible then
-				-- This code seems to make the spawner destructible a little earlier than when it hits the shore
-				local boat2 = Utils.deepcopy(boat)
-				boat2.position = {x = boat.position.x + 6, y = boat.position.y}
-				if Boats.collision_infront(boat2) then
-					boat.spawner.destructible = false
-				end
+			-- elseif boat.spawner and boat.spawner.valid and boat.spawner.destructible then
+			-- 	-- This code was somehow making the spawners destructible but still able to be shot at.
+			-- 	local boat2 = Utils.deepcopy(boat)
+			-- 	boat2.position = {x = boat.position.x + 6, y = boat.position.y}
+			-- 	if Boats.collision_infront(boat2) then
+			-- 		boat.spawner.destructible = false
+			-- 	end
 			end
 
 		end
@@ -514,18 +514,20 @@ function Public.go_from_currentdestination_to_sea()
 	Boats.teleport_boat(boat, seaname, new_boatposition, CoreData.static_boat_floor, 'water')
 
 	if memory.overworldx == 0 and memory.boat then
-		if Common.difficulty() >= 1 and Common.difficulty() < 2 then
-			Boats.upgrade_chests(boat, 'iron-chest')
-			Hold.upgrade_chests(1, 'iron-chest')
-			Crowsnest.upgrade_chests('iron-chest')
 
-			Common.parrot_speak(memory.force, 'The harbor upgraded our ship\'s chests, due to our choice of difficulty.')
-		elseif Common.difficulty() >= 2 then
+		local difficulty_name = CoreData.get_difficulty_name_from_value(Common.difficulty())
+		if difficulty_name == CoreData.difficulty_options[#CoreData.difficulty_options].text then
 			Boats.upgrade_chests(boat, 'steel-chest')
 			Hold.upgrade_chests(1, 'steel-chest')
 			Crowsnest.upgrade_chests('steel-chest')
 
-			Common.parrot_speak(memory.force, 'The harbor upgraded our ship\'s chests, due to our choice of difficulty.')
+			Common.parrot_speak(memory.force, 'Steel chests for steel players! Squawk!')
+		elseif difficulty_name ~= CoreData.difficulty_options[1].text then
+			Boats.upgrade_chests(boat, 'iron-chest')
+			Hold.upgrade_chests(1, 'iron-chest')
+			Crowsnest.upgrade_chests('iron-chest')
+
+			Common.parrot_speak(memory.force, 'Iron chests for iron players! Squawk!')
 		end
 	end
 	

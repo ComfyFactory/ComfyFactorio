@@ -146,9 +146,9 @@ function Public.try_win()
 		memory.game_won = true
 		-- memory.crew_disband_tick = game.tick + 1200
 
-		Server.to_discord_embed_raw(CoreData.comfy_emojis.goldenobese .. '[' .. memory.name .. '] Victory, on v' .. CoreData.version_string .. ', ' .. CoreData.difficulty_options[memory.difficulty_option].text .. ', cap ' .. CoreData.capacity_options[memory.capacity_option].text3 .. '. Playtime: ' .. speedrun_time_str .. '[/font] since 1st island. Crewmembers: ' .. Public.get_crewmembers_printable_string())
+		Server.to_discord_embed_raw(CoreData.comfy_emojis.goldenobese .. '[' .. memory.name .. '] Victory, on v' .. CoreData.version_string .. ', ' .. CoreData.difficulty_options[memory.difficulty_option].text .. ', capacity ' .. CoreData.capacity_options[memory.capacity_option].text3 .. '. Playtime: ' .. speedrun_time_str .. ' since 1st island. Crewmembers: ' .. Public.get_crewmembers_printable_string())
 
-		Common.notify_game('[' .. memory.name .. '] Victory, on v' .. CoreData.version_string .. ', ' .. CoreData.difficulty_options[memory.difficulty_option].text .. ', cap ' .. CoreData.capacity_options[memory.capacity_option].text3 .. '. Playtime: [font=default-large-semibold]' .. speedrun_time_str .. '[/font] since 1st island. Crewmembers: ' .. Public.get_crewmembers_printable_string(), CoreData.colors.notify_victory)
+		Common.notify_game('[' .. memory.name .. '] Victory, on v' .. CoreData.version_string .. ', ' .. CoreData.difficulty_options[memory.difficulty_option].text .. ', capacity ' .. CoreData.capacity_options[memory.capacity_option].text3 .. '. Playtime: [font=default-large-semibold]' .. speedrun_time_str .. '[/font] since 1st island. Crewmembers: ' .. Public.get_crewmembers_printable_string(), CoreData.colors.notify_victory)
 
 		game.play_sound{path='utility/game_won', volume_modifier=0.9}
 
@@ -380,6 +380,17 @@ function Public.join_crew(player, crewid, rejoin)
 		if #Common.crew_get_crew_members() == 1 and memory.crew_disband_tick then
 			memory.crew_disband_tick = nil --to prevent disbanding the crew after saving the game (booting everyone) and loading it again (joining the crew as the only member)
 		end
+
+		local personal_str = 'You have joined the crew ' .. memory.name
+
+		if memory.overworldx > 0 then
+			local color = CoreData.difficulty_options[memory.difficulty_option].associated_color
+			personal_str = personal_str .. ' [Capacity ' .. CoreData.capacity_options[memory.capacity_option].text3 .. ', Difficulty [color=' .. color.r .. ',' .. color.g .. ',' .. color.b .. ']' .. CoreData.difficulty_options[memory.difficulty_option].text .. '[/color]].'
+		else
+			personal_str = personal_str .. ' [Capacity ' .. CoreData.capacity_options[memory.capacity_option].text3 .. '].'
+		end
+
+		Common.notify_player_announce(player, personal_str)
 	end
 end
 
@@ -722,7 +733,7 @@ function Public.initialise_crew(accepted_proposal)
 	
 	local crew_force = game.forces[string.format('crew-%03d', new_id)]
 	crew_force.set_spawn_position(memory.spawnpoint, surface)
-				
+
 	local message = '[' .. accepted_proposal.name .. '] Launched.'
 	Common.notify_game(message)
 	-- Server.to_discord_embed_raw(CoreData.comfy_emojis.pogkot .. message .. ' Difficulty: ' .. CoreData.difficulty_options[memory.difficulty_option].text .. ', Capacity: ' .. CoreData.capacity_options[memory.capacity_option].text3 .. '.')

@@ -436,29 +436,32 @@ function Public.captain_requisition(captain_index)
 
 		if any_taken then
 			local str = 'The captain requisitioned '
+			local j = 1
 			for i = 1, #items_to_req do
 				local item = items_to_req[i]
 				local count = item_count_table[item]
-				if i > 1 then
-					if i == #items_to_req then
-						str = str .. ' and '
-					else
-						str = str .. ', '
+				if count > 0 then
+					if j > 1 then
+						if i == #items_to_req then
+							str = str .. ' and '
+						else
+							str = str .. ', '
+						end
 					end
-				end
-				local display_name = item .. 's'
-				if display_name == 'coins' then display_name = 'doubloons' end
-				if display_name == 'uranium-235s' then display_name = 'uranium-235' end
-				if count >= 1000 then
-					str = str .. Utils.bignumber_abbrevform2(count) .. ' ' .. display_name
-				else
-					str = str .. count .. ' ' .. display_name
+					local display_name = item
+					if display_name == 'coin' then display_name = 'doubloons' end
+					if count >= 1000 then
+						str = str .. Utils.bignumber_abbrevform2(count) .. ' ' .. display_name
+					else
+						str = str .. count .. ' ' .. display_name
+					end
+					j = j + 1
 				end
 			end
 			str = str .. '.'
 			Common.notify_force(memory.force, str)
 		else
-			Common.notify_player_error(captain, 'No important items found in crewmates\' inventories.')
+			Common.notify_player_error(captain, 'No important items found in crewmates\' inventories or cursor stacks.')
 		end
 	end
 end

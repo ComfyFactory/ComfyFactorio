@@ -182,10 +182,11 @@ function Public.create_hold_surface(nth)
 	end
 
 	if subtype == enum.SECONDARY then
-		if Common.difficulty() >= 1 and Common.difficulty() < 2 then
-			Public.upgrade_chests(nth, 'iron-chest')
-		elseif Common.difficulty() >= 2 then
+		local difficulty_name = CoreData.get_difficulty_name_from_value(Common.difficulty())
+		if difficulty_name == CoreData.difficulty_options[#CoreData.difficulty_options].text then
 			Public.upgrade_chests(nth, 'steel-chest')
+		elseif difficulty_name ~= CoreData.difficulty_options[1].text then
+			Public.upgrade_chests(nth, 'iron-chest')
 		end
 
 		Public.nth_hold_connect_linked_belts(nth)

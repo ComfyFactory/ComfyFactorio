@@ -124,7 +124,7 @@ end
 function Public.fuel_depletion_rate_sailing()
 	if (not Common.overworldx()) then return 0 end
 
-	return - 7.5 * (1 + 0.13 * (Common.overworldx()/40)^(100/100)) * Math.sloped(Common.difficulty(), 1/5) --shouldn't depend on difficulty much, as available resources don't depend much on difficulty
+	return - 7.0 * (1 + 0.13 * (Common.overworldx()/40)^(100/100)) * Math.sloped(Common.difficulty(), 1/20) --shouldn't depend on difficulty much if at all, as available resources don't depend much on difficulty
 end
 
 function Public.silo_total_pollution()

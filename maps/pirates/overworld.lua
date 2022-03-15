@@ -282,10 +282,10 @@ function Public.generate_overworld_destination(p)
 
 		-- -- debug override:
 		if _DEBUG then
-			base_cost_to_undock = {
-				['electronic-circuit'] = 200,
-				['launch_rocket'] = true,
-			}
+			-- base_cost_to_undock = {
+			-- 	['electronic-circuit'] = 200,
+			-- 	['launch_rocket'] = true,
+			-- }
 		end
 
 		static_params.base_cost_to_undock = base_cost_to_undock -- Multiplication by Balance.cost_to_leave_multiplier() happens later, in destination_on_collide.

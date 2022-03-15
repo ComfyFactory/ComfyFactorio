@@ -6,6 +6,7 @@ local Common = require 'maps.pirates.common'
 local Utils = require 'maps.pirates.utils_local'
 local Math = require 'maps.pirates.math'
 local Loot = require 'maps.pirates.loot'
+local CoreData = require 'maps.pirates.coredata'
 local inspect = require 'utils.inspect'.inspect
 
 
@@ -207,6 +208,13 @@ function Public.initialise_worms_quest()
 
 	if  Common.difficulty() < 1 then needed = Math.max(1, needed - 3) end
 	if  Common.difficulty() > 1 then needed = Math.max(1, needed + 2) end
+
+	local difficulty_name = CoreData.get_difficulty_name_from_value(Common.difficulty())
+	if difficulty_name == CoreData.difficulty_options[1].text then
+		needed = Math.max(1, needed - 3)
+	elseif difficulty_name ~= CoreData.difficulty_options[2].text then
+		needed = Math.max(1, needed + 2)
+	end
 
 	if needed >= 5 then
 		destination.dynamic_data.quest_type = enum.WORMS
