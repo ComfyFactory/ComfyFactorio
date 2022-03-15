@@ -86,7 +86,9 @@ local function island(surface, room)
     for x = 0, a, 1 do
         for y = 0, a, 1 do
             local p = {x = left_top.x + x, y = left_top.y + y}
-            if not math_abs(p.x - center_position.x) < room.radius * 0.6 and math_abs(p.y - center_position.y) < room.radius * 0.6 then
+	    local inside_x = math_abs(p.x - center_position.x) < room.radius * 0.6
+	    local inside_y = math_abs(p.y - center_position.y) < room.radius * 0.6
+            if not inside_x and not inside_y then
                 surface.set_tiles({{name = 'water', position = p}})
                 if math_random(1, 16) == 1 then
                     surface.create_entity({name = 'fish', position = p})
@@ -124,7 +126,9 @@ local function cross_inverted(surface, room)
     for x = 0, a, 1 do
         for y = 0, a, 1 do
             local p = {x = left_top.x + x, y = left_top.y + y}
-            if not math_abs(p.x - center_position.x) > room.radius * 0.33 and math_abs(p.y - center_position.y) > room.radius * 0.33 then
+	    local outside_x = math_abs(p.x - center_position.x) > room.radius * 0.33
+	    local outside_y = math_abs(p.y - center_position.y) > room.radius * 0.33
+            if not outside_x and outside_y then
                 surface.set_tiles({{name = 'water', position = p}})
                 if math_random(1, 16) == 1 then
                     surface.create_entity({name = 'fish', position = p})
@@ -202,7 +206,9 @@ local function biome(surface, room)
         surface.set_tiles({{name = 'cyan-refined-concrete', position = tile.position}}, true)
     end
 
-    water_shapes[math_random(1, #water_shapes)](surface, room)
+    local choice = math_random(1, #water_shapes)
+    -- choice = 5
+    water_shapes[choice](surface, room)
     for key, tile in pairs(room.room_tiles) do
         tile = surface.get_tile(tile.position)
         if not tile.collides_with('resource-layer') then
