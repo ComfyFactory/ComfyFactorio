@@ -188,7 +188,9 @@ local function expand(surface, position)
     if not room then
         return
     end
-    if dungeontable.treasures[surface.index] < 5 and dungeontable.surface_size[surface.index] >= 225 and math.random(1, 50) == 1 then
+    local treasure_room_one_in = 30 + 10 * dungeontable.treasures[surface.index]
+    if dungeontable.surface_size[surface.index] >= 225 and math.random(1, treasure_room_one_in) == 1 then
+	log('Found treasure room, change was 1 in ' .. treasure_room_one_in)
         Biomes['treasure'](surface, room)
         if room.room_tiles[1] then
             dungeontable.treasures[surface.index] = dungeontable.treasures[surface.index] + 1
@@ -880,7 +882,9 @@ Changelog.SetVersions({
 * Add melee mode toggle to top bar. Keeps weapons in main inventory if possible.
 * Ore from rocks nerfed. Used to hit max value on floor 2, now scales up from
   floors 0-19 along with ore from rooms. After floor 20 ore from rooms scales up faster.
-* Treasure room resources rescaled to have similar total regardless of size
+* Treasure rooms
+  * Rescaled to have similar total resources regardless of size
+  * Unlimited number of rooms but lower frequency
 * Autostash and corpse clearing from Mountain Fortress enabled
 * Harder rooms will occur somewhat farther out on the early floors.
 * Spawners and worm counts bounded in early rooms.
