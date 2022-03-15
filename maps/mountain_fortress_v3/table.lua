@@ -252,9 +252,13 @@ function Public.set(key, value)
     end
 end
 
-function Public.remove(key)
+function Public.remove(key, sub_key)
     if key then
-        this[key] = nil
+        if this[key] and this[key][sub_key] then
+            this[key][sub_key] = nil
+        elseif this[key] then
+            this[key] = nil
+        end
     end
 end
 
