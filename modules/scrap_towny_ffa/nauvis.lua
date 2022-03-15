@@ -117,7 +117,11 @@ local function initialize_nauvis()
         -- this will make and average base radius around 12 tiles
         ['enemy-base-radius'] = 12
     }
-    mgs.seed = game.surfaces[1].map_gen_settings.seed
+    if _SEED then
+        mgs.seed = _SEED
+    else
+        mgs.seed = game.surfaces[1].map_gen_settings.seed
+    end
     surface.map_gen_settings = mgs
     surface.peaceful_mode = false
     surface.always_day = false
@@ -140,6 +144,7 @@ local function initialize_limbo()
     surface.freeze_daytime = true
     surface.clear(true)
 end
+
 
 function Public.initialize()
     -- difficulty settings
