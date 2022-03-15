@@ -402,14 +402,15 @@ local function prevent_unconnected_town_tiles(event)
     for _, t in pairs(tiles) do
         local old_tile = t.old_tile
         position = t.position
-        if tile.name ~= 'tile-ghost' then
+        local name = tile.name
+        if name ~= 'tile-ghost' then
             if not in_own_town(force, position) and isolated(surface, force, position) then
                 fail = true
                 surface.set_tiles({{name = old_tile.name, position = position}}, true)
-                if tile.name == 'stone-path' then
-                    tile.name = 'stone-brick'
+                if name == 'stone-path' then
+                    name = 'stone-brick'
                 end
-                refund_item(event, tile.name)
+                refund_item(event, name)
             end
         end
     end
@@ -516,9 +517,9 @@ end
 local function prevent_neutral_deconstruct(event)
     local player = game.players[event.player_index] or nil
     local entity = event.entity
-    if entity.to_be_deconstructed() and entity.force.name == 'neutral' then
+    if entity ~= nil and entity.to_be_deconstructed() and entity.force.name == 'neutral' then
         for _, f in pairs(game.forces) do
-            if entity.is_registered_for_deconstruction(f) then
+            if f ~= nil and entity.is_registered_for_deconstruction(f) then
                 entity.cancel_deconstruction(f, player)
             end
         end

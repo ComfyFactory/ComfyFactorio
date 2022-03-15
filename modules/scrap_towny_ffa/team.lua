@@ -936,12 +936,12 @@ local function on_entity_damaged(event)
             -- cars and tanks
             if cause.type == 'car' or cause.type == 'tank' then
                 local driver = cause.get_driver()
-                if driver ~= nil and driver.force.index == game.forces['player'].index then
+                if driver ~= nil and driver.type == 'character' and driver.force.index == game.forces['player'].index then
                     -- set the force of the player to rogue until they die or create a town
                     set_player_to_rogue(driver)
                 end
                 local passenger = cause.get_passenger()
-                if passenger ~= nil and passenger.force.index == game.forces['player'].index then
+                if passenger ~= nil and passenger.type == 'character' and passenger.force.index == game.forces['player'].index then
                     -- set the force of the player to rogue until they die or create a town
                     set_player_to_rogue(passenger)
                 end
@@ -950,7 +950,7 @@ local function on_entity_damaged(event)
             if cause.type == 'locomotive' or cause.type == 'cargo-wagon' or cause.type == 'fluid-wagon' or cause.type == 'artillery-wagon' then
                 local train = cause.train
                 for _, passenger in pairs(train.passengers) do
-                    if passenger ~= nil and passenger.force.index == game.forces['player'].index then
+                    if passenger ~= nil and passenger.type == 'character' and passenger.force.index == game.forces['player'].index then
                         set_player_to_rogue(passenger)
                     end
                 end
@@ -958,7 +958,7 @@ local function on_entity_damaged(event)
             -- combat robots
             if cause.type == 'combat-robot' then
                 local owner = cause.last_user
-                if owner ~= nil and owner.force == game.forces['player]'] then
+                if owner ~= nil and owner.type == 'character' and owner.force == game.forces['player]'] then
                     -- set the force of the player to rogue until they die or create a town
                     set_player_to_rogue(owner)
                 end
