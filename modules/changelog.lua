@@ -29,30 +29,24 @@ local function create_changelog(data)
     frame.style.padding = 4
     frame.style.margin = 0
 
-    local t = frame.add {type = 'table', column_count = 1}
-
-    local line = t.add {type = 'line'}
-    line.style.top_margin = 4
-    line.style.bottom_margin = 4
-
-    local scroll_pane =
+    local scroll =
         frame.add {
         type = 'scroll-pane',
-        name = 'scroll_pane',
+        name = 'scroll_changelog',
         direction = 'vertical',
         horizontal_scroll_policy = 'never',
         vertical_scroll_policy = 'auto'
     }
     for i = 1, #changelog.versions do
 	local v = changelog.versions[i]
-	local l = t.add {type = 'label', caption = 'Version ' .. v.ver .. ' -- ' .. v.date}
+	local l = scroll.add {type = 'label', caption = 'Version ' .. v.ver .. ' -- ' .. v.date}
 	l.style.font = 'heading-1'
 	l.style.font_color = {r = 0.2, g = 0.9, b = 0.2}
 	l.style.minimal_width = 780
 	l.style.horizontal_align = 'center'
 	l.style.vertical_align = 'center'
 
-	local c = t.add {type = 'label', caption = v.desc}
+	local c = scroll.add {type = 'label', caption = v.desc}
 	c.style.font = 'heading-2'
 	c.style.single_line = false
 	c.style.font_color = {r = 0.85, g = 0.85, b = 0.88}
@@ -60,21 +54,10 @@ local function create_changelog(data)
 	c.style.horizontal_align = 'left'
 	c.style.vertical_align = 'center'
 
-	local line_v = t.add {type = 'line'}
+	local line_v = scroll.add {type = 'line'}
 	line_v.style.top_margin = 4
 	line_v.style.bottom_margin = 4
     end
-
---    scroll_pane.style.maximal_height = 320
---    scroll_pane.style.minimal_height = 320
---
---    local l_3 = scroll_pane.add {type = 'label', caption = map_info.text}
---    l_3.style.font = 'heading-2'
---    l_3.style.single_line = false
---    l_3.style.font_color = {r = 0.85, g = 0.85, b = 0.88}
---    l_3.style.minimal_width = 780
---    l_3.style.horizontal_align = 'center'
---    l_3.style.vertical_align = 'center'
 
     local b = frame.add {type = 'button', caption = 'CLOSE', name = 'close_changelog'}
     b.style.font = 'heading-2'
@@ -109,7 +92,7 @@ local function on_gui_click(event)
         end
     end
 
-    if name == 'close_map_intro' then
+    if name == 'close_changelog' then
         if SpamProtection.is_spamming(player, nil, 'Changelog Close Button') then
             return
         end
