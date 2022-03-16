@@ -129,12 +129,35 @@ function Public.go_from_starting_dock_to_first_destination()
 		local items = Balance.starting_items_crew_upstairs()
 		-- Boats.deck_place_random_obstacle_boxes(boat, 6, items, 0)
 
+		-- Let's try just adding the items to nearby boxes
 		local scope = Boats.get_scope(boat)
-		local boatwidth, boatheight = scope.Data.width, scope.Data.height
-		Common.surface_place_random_obstacle_boxes(game.surfaces[boat.surface_name], {x = boat.position.x - boatwidth*0.575, y = boat.position.y}, boatwidth*0.85, boatheight*0.8, 'oil-refinery', {[1] = 3, [2] = 3, [3] = 0, [4] = 0}, items)
+		local surface = game.surfaces[boat.surface_name]
+		local boxes = surface.find_entities_filtered{
+			name = 'wooden-chest',
+			area = {
+				{x = boat.position.x - scope.Data.width/2, y = boat.position.y - scope.Data.height/2},
+				{x = boat.position.x + scope.Data.width/2, y = boat.position.y + scope.Data.height/2}
+			},
+		}
+		boxes = Math.shuffle(boxes)
+		for i = 1, #items do
+			if boxes[i] then
+				local inventory = boxes[i].get_inventory(defines.inventory.chest)
+				for name, count in pairs(items[i]) do
+					inventory.insert{name = name, count = count}
+				end
+			else
+				game.print('fail at ' .. boxes[i].position.x .. ' ' .. boxes[i].position.y)
+			end
+		end
 
-		-- go:
 		Public.progress_to_destination(1) --index of first destination
+
+		-- local scope = Boats.get_scope(boat)
+		-- local boatwidth, boatheight = scope.Data.width, scope.Data.height
+		-- Common.surface_place_random_obstacle_boxes(game.surfaces[boat.surface_name], {x = boat.position.x - boatwidth*0.575, y = boat.position.y}, boatwidth*0.85, boatheight*0.8, 'oil-refinery', {[1] = 3, [2] = 3, [3] = 0, [4] = 0}, items)
+		-- go:
+		-- Public.progress_to_destination(1) --index of first destination
 
 		boat.EEI_stage = 1
 		Boats.update_EEIs(boat)

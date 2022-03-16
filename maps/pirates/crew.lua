@@ -381,13 +381,13 @@ function Public.join_crew(player, crewid, rejoin)
 			memory.crew_disband_tick = nil --to prevent disbanding the crew after saving the game (booting everyone) and loading it again (joining the crew as the only member)
 		end
 
-		local personal_str = 'You have joined the crew ' .. memory.name
+		local personal_str = 'You have joined the crew \'' .. memory.name
 
 		if memory.overworldx > 0 then
 			local color = CoreData.difficulty_options[memory.difficulty_option].associated_color
-			personal_str = personal_str .. ' [Capacity ' .. CoreData.capacity_options[memory.capacity_option].text3 .. ', Difficulty [color=' .. color.r .. ',' .. color.g .. ',' .. color.b .. ']' .. CoreData.difficulty_options[memory.difficulty_option].text .. '[/color]].'
+			personal_str = personal_str .. '\' [Capacity ' .. CoreData.capacity_options[memory.capacity_option].text3 .. ', Difficulty [color=' .. color.r .. ',' .. color.g .. ',' .. color.b .. ']' .. CoreData.difficulty_options[memory.difficulty_option].text .. '[/color]].'
 		else
-			personal_str = personal_str .. ' [Capacity ' .. CoreData.capacity_options[memory.capacity_option].text3 .. '].'
+			personal_str = personal_str .. '\' [Capacity ' .. CoreData.capacity_options[memory.capacity_option].text3 .. '].'
 		end
 
 		Common.notify_player_announce(player, personal_str)

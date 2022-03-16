@@ -28,7 +28,7 @@ Public.EEI_stages = { --multipliers
 
 
 function Public.scripted_biters_pollution_cost_multiplier()
-	return 1.25 --tuned
+	return 1.3 --tuned
 end
 
 function Public.cost_to_leave_multiplier()
@@ -129,7 +129,7 @@ end
 
 function Public.silo_total_pollution()
 	return (
-		350 * (Common.difficulty()^(1.2)) * Public.crew_scale()^(2/5) * (3.2 + 0.7 * (Common.overworldx()/40)^(1.6)) --shape of the curve with x is tuned
+		365 * (Common.difficulty()^(1.2)) * Public.crew_scale()^(2/5) * (3.2 + 0.7 * (Common.overworldx()/40)^(1.6)) --shape of the curve with x is tuned
 )
 end
 
@@ -157,7 +157,7 @@ function Public.boat_passive_pollution_per_minute(time)
 	end
 
 	return boost * (
-			5.0 * Common.difficulty() * (Common.overworldx()/40)^(1.6) * (Public.crew_scale())^(55/100)
+			5.2 * Common.difficulty() * (Common.overworldx()/40)^(1.6) * (Public.crew_scale())^(55/100)
 	 ) -- There is no _explicit_ T dependence, but it depends almost the same way on the crew_scale as T does.
 end
 
@@ -520,7 +520,7 @@ Public.covered1_entry_price_data_raw = { --watch out that the raw_materials ches
 		raw_materials = {{name = 'iron-plate', count = 552}, {name = 'copper-plate', count = 1518}}}, {}},
 
 	{1, 0.05, 1, false, {
-		price = {name = 'stone-furnace', count = 350},
+		price = {name = 'stone-furnace', count = 250},
 		raw_materials = {}}, {}},
 	{1, 0.4, 1.6, true, {
 		price = {name = 'advanced-circuit', count = 180},

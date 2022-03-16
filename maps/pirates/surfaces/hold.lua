@@ -161,7 +161,7 @@ function Public.create_hold_surface(nth)
 	Common.build_small_loco(surface, Public.Data.loco_offset, memory.force, {255, 106, 52})
 
 	local items = subtype == enum.INITIAL and Balance.starting_items_crew_downstairs() or {}
-	Common.surface_place_random_obstacle_boxes(Public.get_hold_surface(nth), {x=0,y=0}, Public.Data.width, Public.Data.height, 'rocket-silo', {[1] = 0, [2] = 8, [3] = 4, [4] = 1}, items)
+	Common.surface_place_random_obstacle_boxes(Public.get_hold_surface(nth), {x=0,y=0}, Public.Data.width, Public.Data.height, 'rocket-silo', {[1] = 0, [2] = 5, [3] = 3, [4] = 2}, items)
 	-- Public.hold_place_random_obstacle_boxes(nth, {[1] = 0, [2] = 9, [3] = 3, [4] = 1}, items)
 
 	if not boat.downstairs_poles then boat.downstairs_poles = {} end

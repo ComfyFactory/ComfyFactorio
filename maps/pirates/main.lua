@@ -91,7 +91,7 @@ local function on_init()
 	game.surfaces['nauvis'].clear()
 
 	game.create_surface('piratedev1', Common.default_map_gen_settings(100, 100))
-	game.surfaces['nauvis'].clear()
+	game.surfaces['piratedev1'].clear()
 
 	Common.init_game_settings(Balance.technology_price_multiplier)
 	

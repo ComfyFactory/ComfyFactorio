@@ -165,7 +165,11 @@ local function damage_to_enemyboat_spawners(event)
 						local damage = event.final_damage_amount
 						local adjusted_damage = damage
 
-						adjusted_damage = adjusted_damage / 5
+						adjusted_damage = adjusted_damage / 3
+
+						if event.cause.name == 'artillery-turret' then
+							adjusted_damage = adjusted_damage / 1.8
+						end
 
 						if Common.entity_damage_healthbar(event.entity, adjusted_damage) < 0 then
 							event.entity.die()
@@ -613,6 +617,11 @@ local function event_on_player_mined_entity(event)
 
 	local entity = event.entity
 	if not entity.valid then return end
+
+	if player.surface.name == 'gulag' then
+		event.buffer.clear()
+		return
+	end
 	
     if entity.type == 'tree' then
         if not event.buffer then return end

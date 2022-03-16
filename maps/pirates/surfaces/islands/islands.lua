@@ -388,7 +388,7 @@ function Public.spawn_enemy_boat(type)
 			-- e.destructible = false
 			boat.spawner = e
 
-			Common.new_healthbar(false, e, 400, nil, 400, 0.3)
+			Common.new_healthbar(false, e, 350, nil, 350, 0.3)
 		end
 
 		return enemyboats[#enemyboats]

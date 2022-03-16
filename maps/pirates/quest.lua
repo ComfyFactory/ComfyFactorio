@@ -41,15 +41,15 @@ function Public.quest_reward()
 	local rng = Math.random()
 
 	if rng <= 0.3 then
-		ret = {name = 'iron-plate', count = Math.ceil(2000 * multiplier), display_sprite = '[item=iron-plate]', display_amount = string.format('%.1fk', 2 * multiplier)}
+		ret = {name = 'iron-plate', count = Math.ceil(2000 * multiplier), display_sprite = '[item=iron-plate]', display_amount = string.format('%.1fk', 2 * multiplier), chat_name = '[item=iron-plate]'}
 	elseif rng <= 0.5 then
-		ret = {name = 'copper-plate', count = Math.ceil(2000 * multiplier), display_sprite = '[item=copper-plate]', display_amount = string.format('%.1fk', 2 * multiplier)}
+		ret = {name = 'copper-plate', count = Math.ceil(2000 * multiplier), display_sprite = '[item=copper-plate]', display_amount = string.format('%.1fk', 2 * multiplier), chat_name = '[item=copper-plate]'}
 	elseif rng <= 0.7 then
-		ret = {name = 'solid-fuel', count = Math.ceil(450 * multiplier), display_sprite = '[item=solid-fuel]', display_amount = string.format('%.0f', Math.ceil(450 * multiplier))}
+		ret = {name = 'solid-fuel', count = Math.ceil(450 * multiplier), display_sprite = '[item=solid-fuel]', display_amount = string.format('%.0f', Math.ceil(450 * multiplier)), chat_name = '[item=solid-fuel]'}
 	elseif rng <= 0.9 then
-		ret = {name = 'coin', count = Math.ceil(6000 * (multiplier^(1/2))), display_sprite = 'doubloons', display_amount = string.format('%.1fk', Math.ceil(6 * (multiplier^(1/2))))}
+		ret = {name = 'coin', count = Math.ceil(6000 * (multiplier^(1/2))), display_sprite = '[item=coin]', display_amount = string.format('%.1fk', Math.ceil(6 * (multiplier^(1/2)))), chat_name = 'doubloons'}
 	else
-		ret = {name = 'piercing-rounds-magazine', count = Math.ceil(250 * multiplier), display_sprite = '[item=piercing-rounds-magazine]', display_amount = string.format('%.0f', Math.ceil(250 * multiplier))}
+		ret = {name = 'piercing-rounds-magazine', count = Math.ceil(250 * multiplier), display_sprite = '[item=piercing-rounds-magazine]', display_amount = string.format('%.0f', Math.ceil(250 * multiplier)), chat_name = '[item=piercing-rounds-magazine]'}
 	end
 
 	return ret
@@ -239,7 +239,7 @@ function Public.try_resolve_quest()
 
 		local force = memory.force
 		if not (force and force.valid) then return end
-		Common.notify_force_light(force,'Granted ' .. destination.dynamic_data.quest_reward.display_amount .. ' ' .. destination.dynamic_data.quest_reward.display_sprite)
+		Common.notify_force_light(force,'Granted ' .. destination.dynamic_data.quest_reward.display_amount .. ' ' .. destination.dynamic_data.quest_reward.chat_name)
 
 		local name = destination.dynamic_data.quest_reward.name
 		local count = destination.dynamic_data.quest_reward.count
