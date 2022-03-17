@@ -101,20 +101,19 @@ function Public.generate_overworld_destination(p)
 	elseif macrop.x == 2 then
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.STANDARD_VARIANT --aesthetically different to first map
-	elseif (macrop.x > 25 and (macrop.x - 22) % 18 == 0) then --we want this to overwrite dock, so putting it here
+	elseif (macrop.x > 25 and (macrop.x - 22) % 20 == 0) then --we want this to overwrite dock, so putting it here
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.RADIOACTIVE
-	elseif (macrop.x > 25 and (macrop.x - 22) % 18 == 10) then --we want this to overwrite dock, so putting it here
+	elseif (macrop.x > 25 and (macrop.x - 22) % 20 == 18) then --we want this to overwrite dock, so putting it here
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.MAZE
-	elseif (macrop.x > 25 and (macrop.x - 22) % 18 == 14) then --we want this to overwrite dock, so putting it here
-		type = Surfaces.enum.ISLAND
-		subtype = Surfaces.Island.enum.WALKWAYS
 	elseif macrop.x == 23 then --overwrite dock. rocket launch cost
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.WALKWAYS
 	elseif macrop.y == -1 and (((macrop.x % 4) == 3 and macrop.x ~= 15) or macrop.x == 14) then --avoid x=15 because radioactive is there
 		type = Surfaces.enum.DOCK
+	elseif macrop.x == 3 then
+		type = nil
 	elseif macrop.x == 5 then --biter boats appear. large island works well so players run off
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.STANDARD
@@ -175,7 +174,7 @@ function Public.generate_overworld_destination(p)
 
 	if _DEBUG and type == Surfaces.enum.ISLAND then
 		-- warning: the first map is unique in that it isn't all loaded by the time you arrive, which can cause issues. For example, structures might get placed after ore, thereby deleting the ore underneath them.
-		subtype = Surfaces.Island.enum.WALKWAYS
+		subtype = Surfaces.Island.enum.MAZE
 		-- subtype = nil
 		-- type = Surfaces.enum.DOCK
 	end
@@ -192,43 +191,37 @@ function Public.generate_overworld_destination(p)
 		local static_params = Utils.deepcopy(scope.Data.static_params_default)
 		local base_cost_to_undock
 
-		-- These need to scale up slower than the static fuel depletion rate:
 		local normal_costitems = {'electronic-circuit', 'advanced-circuit'}
-		-- local normal_costitems = {'electronic-circuit', 'engine-unit', 'advanced-circuit'}
-		local base_cost_0 = {
-			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*80),
-		}
+
+		-- These need to scale up slightly slower than the static fuel depletion rate, so you're increasingly incentivised to leave:
 		local base_cost_1 = {
-			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*80),
-			-- ['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*12),
+			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*120),
 		}
 		local base_cost_2 = {
-			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*80),
-			-- ['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*12),
-			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*12),
+			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*180),
+			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*18),
+			-- the below got this response from a new player: "This feels... underwhelming."
+			-- ['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*120),
+			-- ['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*18),
 		}
 		local base_cost_2b = {
-			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*80),
-			-- ['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*12),
+			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*180),
 			['flying-robot-frame'] = 2,
 		}
-		local base_cost_2c = {
-			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*80),
-			-- ['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*12),
-			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*12),
-			['launch_rocket'] = true,
-		}
 		local base_cost_3 = {
-			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*80),
-			-- ['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*12),
-			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*12),
-			['flying-robot-frame'] = Math.ceil(((macrop.x-18)^(2/3))*10),
+			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*140),
+			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*20),
 			['launch_rocket'] = true,
 		}
 		local base_cost_4 = {
-			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*80),
-			-- ['engine-unit'] = Math.ceil(((macrop.x-7)^(2/3))*12),
-			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*12),
+			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*140),
+			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*20),
+			['flying-robot-frame'] = Math.ceil(((macrop.x-18)^(2/3))*10),
+			['launch_rocket'] = true,
+		}
+		local base_cost_5 = {
+			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*140),
+			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*20),
 			['flying-robot-frame'] = Math.ceil(((macrop.x-18)^(2/3))*10),
 		}
 		if macrop.x == 0 then
@@ -245,7 +238,7 @@ function Public.generate_overworld_destination(p)
 			-- base_cost_to_undock = {['electronic-circuit'] = 5}
 			base_cost_to_undock = nil
 		elseif macrop.x <= 9 then
-			base_cost_to_undock = base_cost_0
+			base_cost_to_undock = base_cost_1
 		elseif macrop.x <= 15 then
 			if macrop.x % 3 > 0 then
 				base_cost_to_undock = base_cost_1
@@ -260,12 +253,13 @@ function Public.generate_overworld_destination(p)
 			else
 				base_cost_to_undock = nil
 			end
+			-- after this point, mandatory
 		elseif macrop.x <= 23 then
-			base_cost_to_undock = base_cost_2c
-		elseif macrop.x <= 24 then
 			base_cost_to_undock = base_cost_3
+		elseif macrop.x <= 24 then
+			base_cost_to_undock = base_cost_4
 		else
-			base_cost_to_undock = Utils.deepcopy(base_cost_4)
+			base_cost_to_undock = Utils.deepcopy(base_cost_5)
 			local delete = normal_costitems[Math.random(#normal_costitems)]
 			base_cost_to_undock[delete] = nil
 			if macrop.x % 2 == 0 then
@@ -461,7 +455,7 @@ function Public.generate_overworld_destination(p)
 	end
 
 	if _DEBUG then
-		kraken_count = 1
+		-- kraken_count = 1
 	end
 
 	if position_candidates then
@@ -640,6 +634,9 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 				Balance.apply_crew_buffs_per_x(memory.force)
 			end
 
+			-- add some evo: (this will get reset upon arriving at a destination anyway, so this is just relevant for sea monsters and the like:)
+			local extra_evo = Balance.base_evolution_leagues(memory.overworldx) - Balance.base_evolution_leagues(memory.overworldx - vector.x)
+			Common.increment_evo(extra_evo)
 		end
 
 		if memory.overworldx >= CoreData.victory_x then

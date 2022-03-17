@@ -75,7 +75,7 @@ function Public.parrot_radioactive_tip_1()
 end
 function Public.parrot_radioactive_tip_2()
 	local memory = Memory.get_crew_memory()
-	Common.parrot_speak(memory.force, 'The biters don\'t care if we pollute here, they only care how long we stay...')
+	Common.parrot_speak(memory.force, 'The biters don\'t care if we pollute here, but they evolve fast...')
 end
 function Public.parrot_maze_tip_1()
 	local memory = Memory.get_crew_memory()

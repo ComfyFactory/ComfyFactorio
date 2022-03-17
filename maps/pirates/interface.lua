@@ -259,28 +259,28 @@ local function damage_to_players_changes(event)
 	local class = memory.classes_table and memory.classes_table[player_index]
 
 	local damage_multiplier = 1
-	
-	if class and class == Classes.enum.MERCHANT then
-		damage_multiplier = damage_multiplier * 1.5
-	elseif class and class == Classes.enum.SCOUT then
-		damage_multiplier = damage_multiplier * 1.25
-	elseif class and class == Classes.enum.SAMURAI then
-		damage_multiplier = damage_multiplier * 0.25
-	elseif class and class == Classes.enum.HATAMOTO then --lethal damage needs to be unaffected
-		damage_multiplier = damage_multiplier * 0.15
-	elseif class and class == Classes.enum.IRON_LEG then --lethal damage needs to be unaffected
-		local inv = event.entity.get_inventory(defines.inventory.character_main)
-		if not (inv and inv.valid) then return end
-		local count = inv.get_item_count('iron-ore')
-		if count and count >= 3500 then
-			damage_multiplier = damage_multiplier * 0.15
-		end
-	else
-		damage_multiplier = damage_multiplier * (1 + Balance.bonus_damage_to_humans())
-	end
 
 	if event.damage_type.name == 'poison' then --make all poison damage stronger
-		damage_multiplier = damage_multiplier * 1.25
+		damage_multiplier = damage_multiplier * 1.5
+	else
+		if class and class == Classes.enum.SCOUT then
+			damage_multiplier = damage_multiplier * 1.25
+		-- elseif class and class == Classes.enum.MERCHANT then
+		-- 	damage_multiplier = damage_multiplier * 1.10
+		elseif class and class == Classes.enum.SAMURAI then
+			damage_multiplier = damage_multiplier * 0.25
+		elseif class and class == Classes.enum.HATAMOTO then --lethal damage needs to be unaffected
+			damage_multiplier = damage_multiplier * 0.16
+		elseif class and class == Classes.enum.IRON_LEG then --lethal damage needs to be unaffected
+			local inv = event.entity.get_inventory(defines.inventory.character_main)
+			if not (inv and inv.valid) then return end
+			local count = inv.get_item_count('iron-ore')
+			if count and count >= 3500 then
+				damage_multiplier = damage_multiplier * 0.14
+			end
+		else
+			damage_multiplier = damage_multiplier * (1 + Balance.bonus_damage_to_humans())
+		end
 	end
 
 
@@ -872,16 +872,31 @@ local function spawner_died(event)
 	local destination = Common.current_destination()
 
 	if (destination and destination.type and destination.type == Surfaces.enum.ISLAND) then
-		local extra_evo = Balance.evolution_per_nest_kill()
-		Common.increment_evo(extra_evo)
-	
-		if destination.dynamic_data then
-			destination.dynamic_data.evolution_accrued_nests = destination.dynamic_data.evolution_accrued_nests + extra_evo
+
+		local not_boat = true
+		if memory.enemyboats and #memory.enemyboats > 0 then
+			for i = 1, #memory.enemyboats do
+				local eb = memory.enemyboats[i]
+				if eb.spawner and eb.spawner.valid and event.entity and event.entity.valid and event.entity == eb.spawner then
+					not_boat = false
+					break
+				end
+			end
+		end
+
+		if not_boat then
+			local extra_evo = Balance.evolution_per_nest_kill()
+			Common.increment_evo(extra_evo)
+		
+			if destination.dynamic_data then
+				destination.dynamic_data.evolution_accrued_nests = destination.dynamic_data.evolution_accrued_nests + extra_evo
+			end
 		end
 	end
 end
 
 local function event_on_entity_died(event)
+	--== MODDING NOTE: event.cause is not always provided.
 	local entity = event.entity
 	if not (entity and entity.valid) then return end
 	if not (event.force and event.force.valid) then return end
@@ -918,6 +933,7 @@ local function event_on_entity_died(event)
 	if entity and entity.valid and entity.force and entity.force.name == memory.enemy_force_name then
 		if (entity.name == 'biter-spawner' or entity.name == 'spitter-spawner') then
 			spawner_died(event)
+			-- I think the only reason krakens don't trigger this right now is that they are destroyed rather than .die()
 		else
 			local destination = Common.current_destination()
 			if not (destination and destination.dynamic_data and destination.dynamic_data.quest_type and (not destination.dynamic_data.quest_complete)) then return end

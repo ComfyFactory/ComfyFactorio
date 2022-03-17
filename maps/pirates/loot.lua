@@ -145,7 +145,9 @@ Public.chest_loot_data_raw = {
 	{6, 0, 2, true, 'utility-science-pack', 3, 3},
 
 	{0.5, 0.2, 1.4, true, 'construction-robot', 5, 15},
-	{2, 0.6, 1.4, true, 'roboport', 1, 1},
+	{2, 0.5, 1.5, true, 'roboport', 1, 1},
+	{2, 0.5, 1.5, false, 'logistic-chest-passive-provider', 2, 2},
+	{2, 0.5, 1.5, false, 'logistic-robot', 5, 15},
 
 	{4, 0.2, 1.2, true, 'lubricant-barrel', 1, 4},
 
@@ -353,7 +355,8 @@ Public.maze_treasure_data_raw = {
 	{2, 0, 1.5, true, 'coin', 3000, 6500},
 	{3, 0, 0.9, false, 'beacon', 1, 1},
 
-	{3, 0, 1, false, 'construction-robot', 30, 40},
+	{1, 0, 1, false, 'construction-robot', 30, 40},
+	{3, 0, 1, false, 'logistic-chest-passive-provider', 2, 2},
 
 	{1, 0.2, 1.8, true, 'explosive-rocket', 6, 8},
 
@@ -402,7 +405,7 @@ Public.dredger_loot_raw = {
 	{8, 0, 1, false, 'iron-plate', 1, 1},
 	{8, 0, 1, false, 'copper-plate', 1, 1},
 	{8, 0, 1, false, 'coal', 1, 1},
-	{8, 0, 1, false, 'coin', 1, 1},
+	{10, 0, 1, false, 'coin', 1, 1},
 
 	{2, 0, 1, false, 'small-electric-pole', 1, 1},
 	{1, 0, 1, false, 'medium-electric-pole', 1, 1},
@@ -425,9 +428,9 @@ Public.dredger_loot_raw = {
 	{4, 0, 1, false, 'automation-science-pack', 1, 1},
 	{4, 0, 1, false, 'logistic-science-pack', 1, 1},
 	{2, 0, 1, false, 'military-science-pack', 1, 1},
-	{2, 0, 1, false, 'chemical-science-pack', 1, 1},
-	{2, 0, 1, false, 'production-science-pack', 1, 1},
-	{1, 0, 1, false, 'utility-science-pack', 1, 1},
+	{1, 0, 1, false, 'chemical-science-pack', 1, 1},
+	{1, 0, 1, false, 'production-science-pack', 1, 1},
+	{0.5, 0, 1, false, 'utility-science-pack', 1, 1},
 
 	{0.012, 0, 0.8, false, 'night-vision-equipment', 1, 1},
 	{0.01, 0, 1, false, 'exoskeleton-equipment', 1, 1},

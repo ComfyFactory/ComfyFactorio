@@ -208,6 +208,23 @@ Public.maze_undefended_camp = {
 	},
 }
 
+Public.maze_mines = {
+	name = 'maze_mines',
+	width = 24,
+	height = 24,
+	doNotDestroyExistingEntities = true,
+	components = {
+		{
+			type = 'entities_randomlyplaced',
+			name = 'land-mine',
+			force = 'ancient-hostile',
+			offset = {x = 0, y = 0},
+			count = 20,
+			r = 12,
+		},
+	},
+}
+
 Public.maze_labs = {
 	name = 'maze_labs',
 	width = 12,

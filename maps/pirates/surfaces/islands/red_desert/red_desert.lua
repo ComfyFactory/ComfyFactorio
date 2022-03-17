@@ -313,6 +313,13 @@ function Public.underground_worms_ai()
 								Effects.worm_emerge_effect(surface, emerge_position)
 								indices_to_remove[#indices_to_remove + 1] = i
 								if w.chart_tag then w.chart_tag.destroy() end
+
+								local extra_evo = Balance.sandworm_evo_increase_per_spawn()
+								Common.increment_evo(extra_evo)
+							
+								if destination.dynamic_data then
+									destination.dynamic_data.evolution_accrued_sandwurms = destination.dynamic_data.evolution_accrued_sandwurms + extra_evo
+								end
 							end
 						end
 			

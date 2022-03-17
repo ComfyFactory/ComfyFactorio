@@ -15,7 +15,6 @@ Public.terraingen_frame_height = 700
 Public.static_params_default = {
 	starting_time_of_day = 0,
 	daynightcycletype = 1,
-	solar_power_multiplier = 1,
 	default_decoratives = true,
 	base_starting_treasure = 0,
 	base_starting_rock_material = 8600,
@@ -30,7 +29,7 @@ function Public.base_ores() --here, just for the visualisation:
 	}
 end
 
-local rscale = 180
+local rscale = 175
 local hscale = 0.16
 Public.noiseparams = {
 	radius = {

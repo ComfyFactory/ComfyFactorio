@@ -36,7 +36,7 @@ function Public.cost_to_leave_multiplier()
 	-- return Math.sloped(Common.difficulty(), 9/10)
 
 	-- extra factor now that the cost scales with time:
-	return Math.sloped(Common.difficulty(), 9/10) * 1.5
+	return Math.sloped(Common.difficulty(), 9/10)
 end
 
 Public.rocket_launch_coin_reward = 5000
@@ -139,7 +139,9 @@ function Public.boat_passive_pollution_per_minute(time)
 	if (Common.overworldx()/40) > 25 then T = T * 0.9 end
 
 	if time then
-		if time >= 95/100 * T then
+		if time >= 100/100 * T then --will still happen regularly, on islands without an auto-undock timer
+			boost = 20
+		elseif time >= 95/100 * T then
 			boost = 16
 		elseif time >= 90/100 * T then
 			boost = 12
@@ -162,9 +164,9 @@ function Public.boat_passive_pollution_per_minute(time)
 end
 
 
-function Public.base_evolution()
+function Public.base_evolution_leagues(leagues)
 	local evo
-	local overworldx = Common.overworldx()
+	local overworldx = leagues
 
 	if overworldx == 0 then
 		evo = 0
@@ -238,10 +240,10 @@ function Public.evolution_per_full_silo_charge()
 end
 
 function Public.bonus_damage_to_humans()
-	local ret = 0.050
+	local ret = 0.025
 	local diff = Common.difficulty()
-	if diff <= 0.7 then ret = 0.025 end
-	if diff >= 1.3 then ret = 0.075 end
+	if diff <= 0.7 then ret = 0 end
+	if diff >= 1.3 then ret = 0.050 end
 	return ret
 end
 
@@ -290,7 +292,7 @@ end
 function Public.island_richness_avg_multiplier()
 	local ret
 	-- local base = 0.7 + 0.1 * (Common.overworldx()/40)^(7/10) --tuned tbh
-	local base = 0.73 + 0.105 * (Common.overworldx()/40)^(7/10) --tuned tbh
+	local base = 0.73 + 0.110 * (Common.overworldx()/40)^(7/10) --tuned tbh
 
 	ret = base * Math.sloped(Public.crew_scale(), 1/20) --we don't really have resources scaling by player count in this resource-constrained scenario, but we scale a little, to accommodate each player filling their inventory with useful tools. also, I would do 1/14, but we go even slightly lower because we're applying this somewhat sooner than players actually get there.
 
@@ -326,8 +328,16 @@ function Public.kraken_evo_increase_per_shot()
 	return 1/100 * 0.07
 end
 
+function Public.sandworm_evo_increase_per_spawn()
+	if _DEBUG then
+		return 1/100
+	else
+		return 1/100 * 1/15 * Math.sloped(Common.difficulty(), 1)
+	end
+end
+
 function Public.kraken_kill_reward()
-	return {{name = 'sulfuric-acid-barrel', count = 5}}
+	return {{name = 'sulfuric-acid-barrel', count = 10}}
 end
 
 function Public.kraken_health()

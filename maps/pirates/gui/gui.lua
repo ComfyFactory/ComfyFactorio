@@ -549,7 +549,7 @@ function Public.update_gui(player)
 
 	flow2.fuel_label_1.caption = Utils.bignumber_abbrevform(memory.stored_fuel or 0) .. '[item=coal]'
 	flow2.fuel_label_2.caption = Utils.negative_rate_abbrevform(memory.fuel_depletion_rate_memoized or 0)
-	local color_scale = Math.max(Math.min((- (memory.fuel_depletion_rate_memoized or 0))/50, 1),0)
+	local color_scale = Math.max(Math.min((- (memory.fuel_depletion_rate_memoized or 0))/30, 1),0)
 	flow2.fuel_label_2.style.font_color = {
 		r = GuiCommon.fuel_color_1.r * (1-color_scale) + GuiCommon.fuel_color_2.r * color_scale,
 		g = GuiCommon.fuel_color_1.g * (1-color_scale) + GuiCommon.fuel_color_2.g * color_scale,
@@ -886,7 +886,7 @@ function Public.update_gui(player)
 
 					flow1.silo_label_3.caption = Math.floor(dynamic_data.rocketcoalreward/100)/10 .. 'k[item=coal], ' .. Math.floor(Balance.rocket_launch_coin_reward/100)/10 .. 'k[item=coin]'
 
-					local tooltip = 'The rocket has launched, and this is the reward.'
+					local tooltip = 'This island\'s rocket has launched, and this is the reward.'
 					flow1.tooltip = tooltip
 					flow1.silo_label_1.tooltip = tooltip
 					flow1.silo_label_3.tooltip = tooltip
@@ -961,7 +961,7 @@ function Public.update_gui(player)
 				local tooltip = ''
 	
 				if quest_complete then
-					tooltip = 'The quest is complete, and this is the reward.'
+					tooltip = 'This island\'s quest is complete, and this is the reward.'
 					flow1.quest_label_1.caption = 'Quest:'
 					flow1.quest_label_1.style.font_color = GuiCommon.achieved_font_color
 					flow1.quest_label_2.visible = true

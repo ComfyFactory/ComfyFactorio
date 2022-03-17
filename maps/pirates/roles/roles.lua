@@ -80,10 +80,10 @@ function Public.revoke_class(captain, player)
 	local force = memory.force
 
 	if force and force.valid and player.index and memory.classes_table[player.index] then
-		Common.notify_force_light(force, string.format('%s revoked %s from %s.', captain.name, Public.display_form[memory.classes_table[player.index]]), player.name)
-
 		memory.spare_classes[#memory.spare_classes + 1] = memory.classes_table[player.index]
 		memory.classes_table[player.index] = nil
+
+		Common.notify_force_light(force, string.format('%s revoked %s from %s.', captain.name, Classes.display_form[memory.classes_table[player.index]]), player.name)
 	end
 end
 

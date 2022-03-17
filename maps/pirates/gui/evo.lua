@@ -68,13 +68,21 @@ function Public.full_update(player)
 		-- else
 
 		local destination = Common.current_destination()
-		local evolution_base = 0
-		local evolution_time = 0
-		local evolution_silo = 0
-		local evolution_nests = 0
+		
+		local evolution_leagues = nil
+		local evolution_kraken = nil
+		local evolution_time = nil
+		local evolution_silo = nil
+		local evolution_nests = nil
+		local evolution_sandwurms = nil
+		local evolution_total = nil
+
+		local types = {'leagues', 'kraken', 'time', 'silo', 'nests', 'sandwurms'}
+
+		local str = 'Local biter evolution\n\n'
+
 		if memory.boat and memory.boat.state and (memory.boat.state == Boats.enum_state.ATSEA_SAILING or memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP) then
-			evolution_base = evo - (memory.kraken_evo or 0)
-			-- here Kraken.kraken_slots
+			evolution_leagues = evo - (memory.kraken_evo or 0)
 			local krakens = false
 			if memory.active_sea_enemies and memory.active_sea_enemies.krakens then
 				for i = 1, Kraken.kraken_slots do
@@ -82,26 +90,53 @@ function Public.full_update(player)
 				end
 			end
 			if krakens then
-				button.tooltip = string.format('Local biter evolution\n\nLeagues: %.2f\nKraken: %.2f\nTotal: %.2f', evolution_base, Balance.kraken_spawns_base_extra_evo + (memory.kraken_evo or 0), Balance.kraken_spawns_base_extra_evo + evo)
-				button.number = Balance.kraken_spawns_base_extra_evo + evo
+				evolution_kraken = Balance.kraken_spawns_base_extra_evo + (memory.kraken_evo or 0)
+				evolution_total = evolution_leagues + Balance.kraken_spawns_base_extra_evo
 			else
-				button.tooltip = string.format('Local biter evolution\n\nLeagues: %.2f\nTotal: %.2f', evolution_base, evo)
-				button.number = evo
+				evolution_total = evolution_leagues
 			end
 		else
 			if destination and destination.dynamic_data then
-				evolution_base = destination.dynamic_data.evolution_accrued_leagues or 0
-				evolution_time = destination.dynamic_data.evolution_accrued_time or 0
-				evolution_nests = destination.dynamic_data.evolution_accrued_nests or 0
-				evolution_silo = destination.dynamic_data.evolution_accrued_silo or 0
+				evolution_leagues = destination.dynamic_data.evolution_accrued_leagues
+				evolution_time = destination.dynamic_data.evolution_accrued_time
+				evolution_nests = destination.dynamic_data.evolution_accrued_nests
+				evolution_silo = destination.dynamic_data.evolution_accrued_silo
+				evolution_sandwurms = destination.dynamic_data.evolution_accrued_sandwurms
 			end
-			button.tooltip = string.format('Local biter evolution\n\nLeagues: %.2f\nTime: %.2f\nNests: %.2f\nSilo: %.2f\nTotal: %.2f', evolution_base, evolution_time, evolution_nests, evolution_silo, evo)
-			button.number = evo
+			evolution_total = (evolution_leagues or 0) + (evolution_time or 0) + (evolution_nests or 0) + (evolution_silo or 0) + (evolution_sandwurms or 0)
 		end
-	-- end
-	-- if sprite then
-	-- 	button.sprite = spritem
-	-- end
+
+		for _, type in ipairs(types) do
+			if type == 'leagues' then
+				if evolution_leagues then
+					str = str .. string.format('Leagues: %.2f\n', evolution_leagues)
+				end
+			elseif type == 'kraken' then
+				if evolution_kraken then
+					str = str .. string.format('Kraken: %.2f\n', evolution_kraken)
+				end
+			elseif type == 'time' then
+				if evolution_time then
+					str = str .. string.format('Time: %.2f\n', evolution_time)
+				end
+			elseif type == 'silo' then
+				if evolution_silo then
+					str = str .. string.format('Silo: %.2f\n', evolution_silo)
+				end
+			elseif type == 'nests' then
+				if evolution_nests then
+					str = str .. string.format('Nests: %.2f\n', evolution_nests)
+				end
+			elseif type == 'sandwurms' then
+				if evolution_sandwurms then
+					str = str .. string.format('Sandwurms: %.2f\n', evolution_sandwurms)
+				end
+			end
+		end
+		str = str .. string.format('Total: %.2f', evolution_total)
+
+		button.number = evolution_total
+		button.tooltip = str
 	end
 end
 

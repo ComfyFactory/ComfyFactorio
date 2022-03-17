@@ -279,7 +279,7 @@ function Public.periodic_free_resources(tickinterval)
 
 	Common.give_items_to_crew(Balance.periodic_free_resources_per_destination_5_seconds())
 
-	if game.tick % (300*28) == 0 and (destination and destination.subtype and destination.subtype == Islands.enum.RADIOACTIVE) then -- every 140 seconds
+	if game.tick % (300*30) == 0 and (destination and destination.subtype and destination.subtype == Islands.enum.RADIOACTIVE) then -- every 150 seconds
 		local count = 2
 		Common.give_items_to_crew{{name = 'sulfuric-acid-barrel', count = count}}
 		local force = memory.force

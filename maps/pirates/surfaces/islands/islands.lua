@@ -215,10 +215,20 @@ function Public.spawn_ores_on_arrival(destination, points_to_avoid)
 				if p then points_to_avoid[#points_to_avoid + 1] = {x=p.x, y=p.y, r=11} end
 
 				if ore == 'crude-oil' then
-					local amount = Common.oil_abstract_to_real(destination.static_params.abstract_ore_amounts[ore])
 
-					surface.create_entity{name = 'crude-oil', amount = amount, position = p}
-					--@TODO: Make this into a collection of multiple oil patches
+					local count = Math.max(1, Math.ceil((destination.static_params.abstract_ore_amounts[ore]/3)^(1/2)))
+					local amount = Common.oil_abstract_to_real(destination.static_params.abstract_ore_amounts[ore]) / count
+					
+					for i = 1, count do
+						local p2 = {p.x + Math.random(-7, 7), p.y + Math.random(-7, 7)}
+						local whilesafety = 0
+						while (not surface.can_place_entity{name = 'crude-oil', position = p2}) and whilesafety < 30 do
+							p2 = {p.x + Math.random(-7, 7), p.y + Math.random(-7, 7)}
+							whilesafety = whilesafety + 1
+						end
+
+						surface.create_entity{name = 'crude-oil', position = p2, amount = amount}
+					end
 			
 					destination.dynamic_data.ore_types_spawned[ore] = true
 				else

@@ -66,7 +66,7 @@ Public.main_shop_data_1 = {
 	[Upgrades.enum.MORE_POWER] = {
 		tooltip = 'Upgrade the ship\'s power.',
 		what_you_get_sprite_buttons = {['utility/status_working'] = false},
-		base_cost = {coins = 5000, fuel = 800},
+		base_cost = {coins = 5000, fuel = 500},
 	},
 	[Upgrades.enum.EXTRA_HOLD] = {
 		tooltip = 'Upgrade the ship\'s hold.',

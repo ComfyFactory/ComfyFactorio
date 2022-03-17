@@ -562,7 +562,7 @@ function Public.go_from_currentdestination_to_sea()
 	memory.enemy_force.reset_evolution()
 
 	--@FIX: This doesn't change the evo during sea travel, which is relevant now that krakens are in the game:
-	local base_evo = Balance.base_evolution()
+	local base_evo = Balance.base_evolution_leagues(memory.overworldx)
 	Common.set_evo(base_evo)
 	memory.kraken_evo = 0
 

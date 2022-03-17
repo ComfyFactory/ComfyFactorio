@@ -268,12 +268,18 @@ function Public.destination_on_arrival(destination)
 		end
 
 		memory.enemy_force.reset_evolution()
-		local base_evo = Balance.base_evolution()
+		local base_evo = Balance.base_evolution_leagues(memory.overworldx)
 		Common.set_evo(base_evo)
 		destination.dynamic_data.evolution_accrued_leagues = base_evo
 		destination.dynamic_data.evolution_accrued_time = 0
-		destination.dynamic_data.evolution_accrued_nests = 0
-		destination.dynamic_data.evolution_accrued_silo = 0
+		if destination.subtype == Islands.enum.RED_DESERT then
+			destination.dynamic_data.evolution_accrued_sandwurms = 0
+		else
+			destination.dynamic_data.evolution_accrued_nests = 0
+		end
+		if destination.subtype ~= Islands.enum.RADIOACTIVE then
+			destination.dynamic_data.evolution_accrued_silo = 0
+		end
 
 		memory.scripted_biters = {}
 		memory.scripted_unit_groups = {}
@@ -635,7 +641,7 @@ function Public.create_surface(destination)
 
 	surface.solar_power_multiplier = destination.static_params.solar_power_multiplier or 1
 	surface.show_clouds = destination.static_params.clouds or false
-	surface.min_brightness = destination.static_params.min_brightness or 0
+	surface.min_brightness = destination.static_params.min_brightness or 0.15
 	surface.brightness_visual_weights = destination.static_params.brightness_visual_weights or {1, 1, 1}
 	surface.daytime = destination.static_params.starting_time_of_day or 0
 
@@ -698,7 +704,7 @@ function Public.clean_up(destination)
 		local ef = memory.enemy_force
 		if ef and ef.valid then
 			memory.enemy_force.reset_evolution()
-			local base_evo = Balance.base_evolution()
+			local base_evo = Balance.base_evolution_leagues(memory.overworldx)
 			Common.set_evo(base_evo)
 		end
 	end

@@ -12,7 +12,7 @@ Public.terraingen_frame_height = 896
 Public.static_params_default = {
 	starting_time_of_day = 0,
 	daynightcycletype = 4,
-	min_brightness = 0.1,
+	min_brightness = 0.05,
 	brightness_visual_weights = {1, 1, 1}, --almost pitch black
 	default_decoratives = false,
 	base_starting_rock_material = 800,
@@ -23,7 +23,7 @@ function Public.base_ores()
 		['copper-ore'] = 2.6,
 		['iron-ore'] = 2.8,
 		['coal'] = 4,
-		['crude-oil'] = 100,
+		['crude-oil'] = 120,
 	}
 end
 

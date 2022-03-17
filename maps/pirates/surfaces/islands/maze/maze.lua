@@ -134,7 +134,7 @@ local function terrain_entity_at_relative_position(args, entity)
 end
 
 local free_labyrinth_cell_raffle = {
-	empty = 17,
+	empty = 16.5,
 	maze_labs = 0.6,
 	maze_defended_camp = 1,
 	maze_undefended_camp = 0.25,
@@ -145,6 +145,7 @@ local free_labyrinth_cell_raffle = {
 	maze_belts_2 = 0.2,
 	maze_belts_3 = 0.2,
 	maze_belts_4 = 0.2,
+	maze_mines = 0.2,
 	maze_treasure = 0.7,
 }
 

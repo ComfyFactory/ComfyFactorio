@@ -47,7 +47,7 @@ function Public.try_ore_spawn(surface, realp, source_name, density_bonus)
 			local placed
 			if choice == 'crude-oil' then
 
-				placed = Common.oil_abstract_to_real(choices[choice]/2 + 10) * (0.6 + Math.random())
+				placed = Common.oil_abstract_to_real(6 + 0.7*choices[choice]/(Math.max(1, Math.ceil((choices[choice]/4)^(1/2))))) * (0.8 + 0.4 * Math.random()) --thesixthroc's magic function, just plot this to see that it makes sense
 
 				placed = Math.min(placed, Common.oil_abstract_to_real(choices[choice]))
 

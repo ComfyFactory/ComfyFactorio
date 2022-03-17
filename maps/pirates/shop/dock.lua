@@ -37,8 +37,8 @@ Public.market_barters = {
 }
 
 Public.market_permanent_offers = {
-	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'iron-ore', count = 800}},
-	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'copper-ore', count = 800}},
+	{price = {{'coin', 2400}}, offer = {type = 'give-item', item = 'iron-ore', count = 800}},
+	{price = {{'coin', 2400}}, offer = {type = 'give-item', item = 'copper-ore', count = 800}},
 	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'crude-oil-barrel', count = 100}},
 	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'fast-loader', count = 1}},
 	{price = {{'coin', 5000}}, offer = {type = 'give-item', item = 'beacon', count = 2}},
@@ -48,14 +48,12 @@ Public.market_permanent_offers = {
 -- cheap but one-off
 Public.market_sales = {
 	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'coal', count = 900}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'firearm-magazine', count = 500}},
 	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'piercing-rounds-magazine', count = 75}},
 	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'uranium-rounds-magazine', count = 30}},
 	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'piercing-shotgun-shell', count = 50}},
 	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'raw-fish', count = 300}},
 	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'laser-turret', count = 1}},
 	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'vehicle-machine-gun', count = 3}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'substation', count = 5}},
 	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'modular-armor', count = 1}},
 	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'distractor-capsule', count = 20}},
 	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'poison-capsule', count = 20}},
@@ -63,48 +61,50 @@ Public.market_sales = {
 	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'coin', count = 4000}},
 	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'roboport', count = 1}},
 	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'construction-robot', count = 10}},
+	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'logistic-chest-passive-provider', count = 2}},
+	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'logistic-robot', count = 2}},
 }
 
 
 
-function Public.dock_generate_offers(how_many_barters, how_many_sales)
-	local ret = {}
+-- function Public.dock_generate_offers(how_many_barters, how_many_sales)
+-- 	local ret = {}
 
-	local toaddcount
+-- 	local toaddcount
 
-	local barterscopy = Utils.deepcopy(Public.market_barters)
-	toaddcount = how_many_barters
-	while toaddcount>0 and #barterscopy > 0 do
-		local index = Math.random(#barterscopy)
-		local toadd = barterscopy[index]
-		ret[#ret + 1] = toadd
-		for i = index, #barterscopy - 1 do
-			barterscopy[i] = barterscopy[i+1]
-		end
-		barterscopy[#barterscopy] = nil
-		toaddcount = toaddcount - 1
-	end
+-- 	local barterscopy = Utils.deepcopy(Public.market_barters)
+-- 	toaddcount = how_many_barters
+-- 	while toaddcount>0 and #barterscopy > 0 do
+-- 		local index = Math.random(#barterscopy)
+-- 		local toadd = barterscopy[index]
+-- 		ret[#ret + 1] = toadd
+-- 		for i = index, #barterscopy - 1 do
+-- 			barterscopy[i] = barterscopy[i+1]
+-- 		end
+-- 		barterscopy[#barterscopy] = nil
+-- 		toaddcount = toaddcount - 1
+-- 	end
 
-	for _, offer in pairs(Public.market_permanent_offers) do
-		ret[#ret + 1] = offer
-	end
+-- 	for _, offer in pairs(Public.market_permanent_offers) do
+-- 		ret[#ret + 1] = offer
+-- 	end
 
-	local salescopy = Utils.deepcopy(Public.market_sales)
-	toaddcount = how_many_sales
-	while toaddcount>0 and #salescopy > 0 do
-		local index = Math.random(#salescopy)
-		local toadd = salescopy[index]
-		ret[#ret + 1] = toadd
-		for i = index, #salescopy - 1 do
-			salescopy[i] = salescopy[i+1]
-		end
-		salescopy[#salescopy] = nil
-		toaddcount = toaddcount - 1
-	end
+-- 	local salescopy = Utils.deepcopy(Public.market_sales)
+-- 	toaddcount = how_many_sales
+-- 	while toaddcount>0 and #salescopy > 0 do
+-- 		local index = Math.random(#salescopy)
+-- 		local toadd = salescopy[index]
+-- 		ret[#ret + 1] = toadd
+-- 		for i = index, #salescopy - 1 do
+-- 			salescopy[i] = salescopy[i+1]
+-- 		end
+-- 		salescopy[#salescopy] = nil
+-- 		toaddcount = toaddcount - 1
+-- 	end
 	
 
-    return ret
-end
+--     return ret
+-- end
 
 
 function Public.create_dock_markets(surface, p)
