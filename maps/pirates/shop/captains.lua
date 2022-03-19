@@ -109,7 +109,7 @@ Public.main_shop_data_2 = {
 	uranium_ore = {
 		tooltip = '10 green rocks of unknown origin.',
 		what_you_get_sprite_buttons = {['item/uranium-238'] = 10},
-		base_cost = {coins = 1000, fuel = 80},
+		base_cost = {coins = 1000, fuel = 100},
 	},
 	extra_time = {
 		tooltip = 'Relax at sea for an extra minute. (Increases the next destination\'s loading time.)',

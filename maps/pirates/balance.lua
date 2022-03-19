@@ -36,7 +36,7 @@ function Public.cost_to_leave_multiplier()
 	-- return Math.sloped(Common.difficulty(), 9/10)
 
 	-- extra factor now that the cost scales with time:
-	return Math.sloped(Common.difficulty(), 9/10)
+	return Math.sloped(Common.difficulty(), 8/10)
 end
 
 Public.rocket_launch_coin_reward = 5000
@@ -294,7 +294,7 @@ function Public.island_richness_avg_multiplier()
 	-- local base = 0.7 + 0.1 * (Common.overworldx()/40)^(7/10) --tuned tbh
 	local base = 0.73 + 0.110 * (Common.overworldx()/40)^(7/10) --tuned tbh
 
-	ret = base * Math.sloped(Public.crew_scale(), 1/20) --we don't really have resources scaling by player count in this resource-constrained scenario, but we scale a little, to accommodate each player filling their inventory with useful tools. also, I would do 1/14, but we go even slightly lower because we're applying this somewhat sooner than players actually get there.
+	ret = base * Math.sloped(Public.crew_scale(), 1/40) --we don't really have resources scaling by player count in this resource-constrained scenario, but we scale a little, to accommodate each player filling their inventory with useful tools. also, I would do higher than 1/40, but we go even slightly lower because we're applying this somewhat sooner than players actually get there.
 
 	return ret
 end
@@ -332,7 +332,7 @@ function Public.sandworm_evo_increase_per_spawn()
 	if _DEBUG then
 		return 1/100
 	else
-		return 1/100 * 1/15 * Math.sloped(Common.difficulty(), 1)
+		return 1/100 * 1/8 * Math.sloped(Common.difficulty(), 3/5)
 	end
 end
 

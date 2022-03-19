@@ -136,7 +136,7 @@ end
 local free_labyrinth_cell_raffle = {
 	empty = 16.5,
 	maze_labs = 0.6,
-	maze_defended_camp = 1,
+	maze_defended_camp = 0.85,
 	maze_undefended_camp = 0.25,
 	maze_worms = 0.8,
 	small_abandoned_refinery = 0.05,
@@ -145,7 +145,7 @@ local free_labyrinth_cell_raffle = {
 	maze_belts_2 = 0.2,
 	maze_belts_3 = 0.2,
 	maze_belts_4 = 0.2,
-	maze_mines = 0.2,
+	maze_mines = 0.1,
 	maze_treasure = 0.7,
 }
 
@@ -243,8 +243,8 @@ function Public.chunk_structures(args)
 
 		return {
 			placeable = noises.farness(p) > 0.66,
-			-- spawners_indestructible = noises.farness(p) > 0.7,
-			spawners_indestructible = true,
+			spawners_indestructible = noises.farness(p) > 0.7,
+			-- spawners_indestructible = true,
 			density_perchunk = 150 * Math.slopefromto(noises.farness(p), 0.3, 1)^2 * args.biter_base_density_scale,
 		}
 	end

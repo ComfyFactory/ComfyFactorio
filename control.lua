@@ -3,7 +3,6 @@ _LIFECYCLE = _STAGE.control -- Control stage
 _DEBUG = false
 _DUMP_ENV = false
 
-
 require 'utils.server'
 require 'utils.server_commands'
 require 'utils.command_handler'
@@ -33,9 +32,9 @@ require 'modules.autostash'
 require 'comfy_panel.main'
 require 'comfy_panel.player_list'
 require 'comfy_panel.admin'
--- require 'comfy_panel.group'
--- require 'comfy_panel.poll'
--- require 'comfy_panel.score'
+require 'comfy_panel.group'
+require 'comfy_panel.poll'
+require 'comfy_panel.score'
 require 'comfy_panel.config'
 require 'comfy_panel.server_select'
 

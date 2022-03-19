@@ -177,7 +177,7 @@ Public.maze_defended_camp = {
 			force = 'ancient-friendly',
 			offset = {x = 0, y = 0},
 			count = 13,
-			r = 5,
+			r = 4,
 		},
 	},
 }
@@ -203,7 +203,7 @@ Public.maze_undefended_camp = {
 			force = 'ancient-friendly',
 			offset = {x = 0, y = 0},
 			count = 7,
-			r = 5,
+			r = 4,
 		},
 	},
 }

@@ -5,7 +5,7 @@ local Math = require 'maps.pirates.math'
 
 local Public = {}
 
-Public.display_names = {'Horseshoe Keys'}
+Public.display_names = {'Shark Keys', 'Little Keys', 'Little Keys'}
 
 Public.terraingen_frame_width = 896
 Public.terraingen_frame_height = 896

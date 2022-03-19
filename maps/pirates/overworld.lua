@@ -210,18 +210,18 @@ function Public.generate_overworld_destination(p)
 		}
 		local base_cost_3 = {
 			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*140),
-			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*20),
+			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*18),
 			['launch_rocket'] = true,
 		}
 		local base_cost_4 = {
-			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*140),
-			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*20),
+			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*100),
+			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*18),
 			['flying-robot-frame'] = Math.ceil(((macrop.x-18)^(2/3))*10),
 			['launch_rocket'] = true,
 		}
 		local base_cost_5 = {
-			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*140),
-			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*20),
+			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*100),
+			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*18),
 			['flying-robot-frame'] = Math.ceil(((macrop.x-18)^(2/3))*10),
 		}
 		if macrop.x == 0 then
