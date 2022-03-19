@@ -6,10 +6,10 @@ local Server = require 'utils.server'
 local Math = require 'maps.pirates.math'
 local Token = require 'utils.token'
 local Tabs = require 'comfy_panel.main'
-local Core = require 'utils.core'
-local inspect = require 'utils.inspect'.inspect
+require 'utils.core'
+local _inspect = require 'utils.inspect'.inspect
 local SpamProtection = require 'utils.spam_protection'
-local Memory = require 'maps.pirates.memory'
+-- local Memory = require 'maps.pirates.memory'
 local Utils = require 'maps.pirates.utils_local'
 local CoreData = require 'maps.pirates.coredata'
 
@@ -56,8 +56,8 @@ local function sort_list(method, column_name, score_list)
 end
 
 
-local function saved_scores_trim(scores)
-	-- the goal here is to trim away highscores so we don't have too many.
+
+local function get_tables_of_scores_by_type(scores)
 
 	local completion_times = {}
 	local leagues_travelled = {}
@@ -103,7 +103,7 @@ local function saved_scores_trim(scores)
 	for _, v in pairs(versions) do
 		if v > latest_version then latest_version = v end
 	end
-	
+
 	for _, score in pairs(scores) do
 		if score.version and score.version == latest_version then
 			if score.completion_time and score.completion_time > 0 then
@@ -134,41 +134,80 @@ local function saved_scores_trim(scores)
 	table.sort(completion_times_latestv)
 	table.sort(leagues_travelled_latestv)
 
-	local completion_times_cutoff = #completion_times > 8 and completion_times[8] or 9999999
-	local completion_times_mediump_latestv_cutoff = #completion_times_mediump_latestv > 4 and completion_times_mediump_latestv[4] or 9999999
-	local completion_times_hard_cutoff = #completion_times_hard > 4 and completion_times_hard[4] or 9999999
-	local completion_times_nightmare_cutoff = #completion_times_hard > 2 and completion_times_hard[2] or 9999999
-	local completion_times_latestv_cutoff = #completion_times_latestv > 8 and completion_times_latestv[8] or 9999999
+	return {
+		latest_version = latest_version,
+		completion_times = completion_times,
+		leagues_travelled = leagues_travelled,
+		completion_times_mediump_latestv = completion_times_mediump_latestv,
+		leagues_travelled_mediump_latestv = leagues_travelled_mediump_latestv,
+		completion_times_hard = completion_times_hard,
+		leagues_travelled_hard = leagues_travelled_hard,
+		completion_times_nightmare = completion_times_nightmare,
+		leagues_travelled_nightmare = leagues_travelled_nightmare,
+		completion_times_latestv = completion_times_latestv,
+		leagues_travelled_latestv = leagues_travelled_latestv,
+	}
+end
 
-	local leagues_travelled_cutoff = #leagues_travelled > 8 and leagues_travelled[-8] or 0
-	local leagues_travelled_mediump_latestv_cutoff = #leagues_travelled_mediump_latestv > 4 and leagues_travelled_mediump_latestv[-4] or 0
-	local leagues_travelled_hard_cutoff = #leagues_travelled_hard > 4 and leagues_travelled_hard[-4] or 0
-	local leagues_travelled_nightmare_cutoff = #leagues_travelled_hard > 2 and leagues_travelled_hard[-2] or 0
-	local leagues_travelled_latestv_cutoff = #leagues_travelled_latestv > 86 and leagues_travelled_latestv[-8] or 0
 
-	-- log(inspect{completion_times_cutoff,completion_times_mediump_latestv_cutoff,completion_times_hard_cutoff,completion_times_latestv_cutoff,leagues_travelled_cutoff,leagues_travelled_mediump_latestv_cutoff,leagues_travelled_hard_cutoff,leagues_travelled_latestv_cutoff})
+local function get_score_cuttofs(tables_of_scores_by_type)
+
+	local completion_times_cutoff = #tables_of_scores_by_type.completion_times > 8 and tables_of_scores_by_type.completion_times[8] or 9999999
+	local completion_times_mediump_latestv_cutoff = #tables_of_scores_by_type.completion_times_mediump_latestv > 4 and tables_of_scores_by_type.completion_times_mediump_latestv[4] or 9999999
+	local completion_times_hard_cutoff = #tables_of_scores_by_type.completion_times_hard > 4 and tables_of_scores_by_type.completion_times_hard[4] or 9999999
+	local completion_times_nightmare_cutoff = #tables_of_scores_by_type.completion_times_hard > 2 and tables_of_scores_by_type.completion_times_hard[2] or 9999999
+	local completion_times_latestv_cutoff = #tables_of_scores_by_type.completion_times_latestv > 8 and tables_of_scores_by_type.completion_times_latestv[8] or 9999999
+
+	local leagues_travelled_cutoff = #tables_of_scores_by_type.leagues_travelled > 8 and tables_of_scores_by_type.leagues_travelled[-8] or 0
+	local leagues_travelled_mediump_latestv_cutoff = #tables_of_scores_by_type.leagues_travelled_mediump_latestv > 4 and tables_of_scores_by_type.leagues_travelled_mediump_latestv[-4] or 0
+	local leagues_travelled_hard_cutoff = #tables_of_scores_by_type.leagues_travelled_hard > 4 and tables_of_scores_by_type.leagues_travelled_hard[-4] or 0
+	local leagues_travelled_nightmare_cutoff = #tables_of_scores_by_type.leagues_travelled_hard > 2 and tables_of_scores_by_type.leagues_travelled_hard[-2] or 0
+	local leagues_travelled_latestv_cutoff = #tables_of_scores_by_type.leagues_travelled_latestv > 86 and tables_of_scores_by_type.leagues_travelled_latestv[-8] or 0
+
+	return {
+		completion_times_cutoff = completion_times_cutoff,
+		completion_times_mediump_latestv_cutoff = completion_times_mediump_latestv_cutoff,
+		completion_times_hard_cutoff = completion_times_hard_cutoff,
+		completion_times_nightmare_cutoff = completion_times_nightmare_cutoff,
+		completion_times_latestv_cutoff = completion_times_latestv_cutoff,
+		leagues_travelled_cutoff = leagues_travelled_cutoff,
+		leagues_travelled_mediump_latestv_cutoff = leagues_travelled_mediump_latestv_cutoff,
+		leagues_travelled_hard_cutoff = leagues_travelled_hard_cutoff,
+		leagues_travelled_nightmare_cutoff = leagues_travelled_nightmare_cutoff,
+		leagues_travelled_latestv_cutoff = leagues_travelled_latestv_cutoff,
+	}
+end
+
+local function saved_scores_trim(scores)
+	-- the goal here is to trim away highscores so we don't have too many.
+
+	local tables_of_scores_by_type = get_tables_of_scores_by_type(scores)
+
+	local cutoffs = get_score_cuttofs(tables_of_scores_by_type)
+
+	-- log(_inspect{completion_times_cutoff,completion_times_mediump_latestv_cutoff,completion_times_hard_cutoff,completion_times_latestv_cutoff,leagues_travelled_cutoff,leagues_travelled_mediump_latestv_cutoff,leagues_travelled_hard_cutoff,leagues_travelled_latestv_cutoff})
 
 	local delete = {}
-	
+
 	for secs_id, score in pairs(scores) do
 		local include = false
-		
-		if completion_times_cutoff and score.completion_time and score.completion_time < completion_times_cutoff then include = true
-		elseif completion_times_mediump_latestv_cutoff and score.completion_time and score.completion_time < completion_times_mediump_latestv_cutoff and score.version == latest_version and score.difficulty >= 1 then include = true
-		elseif completion_times_hard_cutoff and score.completion_time and score.completion_time < completion_times_hard_cutoff and score.difficulty >= 1.5 then include = true
-		elseif completion_times_nightmare_cutoff and score.completion_time and score.completion_time < completion_times_nightmare_cutoff and score.difficulty >=3 then include = true
-		elseif completion_times_latestv_cutoff and score.completion_time and score.completion_time < completion_times_latestv_cutoff and score.version == latest_version then include = true
 
-		elseif leagues_travelled_cutoff and score.leagues_travelled and score.leagues_travelled > leagues_travelled_cutoff then include = true
-		elseif leagues_travelled_mediump_latestv_cutoff and score.leagues_travelled and score.leagues_travelled > leagues_travelled_mediump_latestv_cutoff and score.version == latest_version and score.difficulty >= 1 then include = true
-		elseif leagues_travelled_hard_cutoff and score.leagues_travelled and score.leagues_travelled > leagues_travelled_hard_cutoff and score.difficulty >= 1.5 then include = true
-		elseif leagues_travelled_nightmare_cutoff and score.leagues_travelled and score.leagues_travelled > leagues_travelled_nightmare_cutoff and score.difficulty >= 3 then include = true
-		elseif leagues_travelled_latestv_cutoff and score.leagues_travelled and score.leagues_travelled > leagues_travelled_latestv_cutoff and score.version == latest_version then include = true
+		if cutoffs.completion_times_cutoff and score.completion_time and score.completion_time < cutoffs.completion_times_cutoff then include = true
+		elseif cutoffs.completion_times_mediump_latestv_cutoff and score.completion_time and score.completion_time < cutoffs.completion_times_mediump_latestv_cutoff and score.version == cutoffs.latest_version and score.difficulty >= 1 then include = true
+		elseif cutoffs.completion_times_hard_cutoff and score.completion_time and score.completion_time < cutoffs.completion_times_hard_cutoff and score.difficulty >= 1.5 then include = true
+		elseif cutoffs.completion_times_nightmare_cutoff and score.completion_time and score.completion_time < cutoffs.completion_times_nightmare_cutoff and score.difficulty >=3 then include = true
+		elseif cutoffs.completion_times_latestv_cutoff and score.completion_time and score.completion_time < cutoffs.completion_times_latestv_cutoff and score.version == cutoffs.latest_version then include = true
+
+		elseif cutoffs.leagues_travelled_cutoff and score.leagues_travelled and score.leagues_travelled > cutoffs.leagues_travelled_cutoff then include = true
+		elseif cutoffs.leagues_travelled_mediump_latestv_cutoff and score.leagues_travelled and score.leagues_travelled > cutoffs.leagues_travelled_mediump_latestv_cutoff and score.version == cutoffs.latest_version and score.difficulty >= 1 then include = true
+		elseif cutoffs.leagues_travelled_hard_cutoff and score.leagues_travelled and score.leagues_travelled > cutoffs.leagues_travelled_hard_cutoff and score.difficulty >= 1.5 then include = true
+		elseif cutoffs.leagues_travelled_nightmare_cutoff and score.leagues_travelled and score.leagues_travelled > cutoffs.leagues_travelled_nightmare_cutoff and score.difficulty >= 3 then include = true
+		elseif cutoffs.leagues_travelled_latestv_cutoff and score.leagues_travelled and score.leagues_travelled > cutoffs.leagues_travelled_latestv_cutoff and score.version == cutoffs.latest_version then include = true
 		end
 
 		if not include then delete[#delete + 1] = secs_id end
 	end
-	-- log(inspect(delete))
+	-- log(_inspect(delete))
 
 	for _, secs_id in pairs(delete) do
 		scores[secs_id] = nil
@@ -176,6 +215,7 @@ local function saved_scores_trim(scores)
 
 	return scores
 end
+
 
 
 
@@ -205,18 +245,18 @@ local function local_highscores_write_stats(crew_secs_id, name, captain_name, co
         -- if max_players then
         --     t.max_players = max_players
         -- end
-		
+
 		if crew_secs_id then
 			t.runs[crew_secs_id] = {name = name, captain_name = captain_name, version = version, completion_time = completion_time, leagues_travelled = leagues_travelled, difficulty = difficulty, max_players = max_players}
 
-			-- log(inspect(t))
+			-- log(_inspect(t))
 
 			saved_scores_trim(t.runs)
 		end
     end
 
     this.score_table['player'] = t
-	-- log(inspect(t))
+	-- log(_inspect(t))
 end
 
 
@@ -251,7 +291,7 @@ function Public.load_in_scores()
 end
 
 function Public.dump_highscores()
-	log(inspect(this.score_table['player']))
+	log(_inspect(this.score_table['player']))
 end
 
 function Public.overwrite_scores_specific()
@@ -393,7 +433,7 @@ local function score_gui(data)
 
     -- Score list
     local score_list = get_saved_scores_for_displaying()
-	-- log(inspect(score_list))
+	-- log(_inspect(score_list))
 
 	for i = #sorting_pref, 1, -1 do
 		local sort = sorting_pref[i]

@@ -2,13 +2,15 @@
 local Memory = require 'maps.pirates.memory'
 local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
-local Utils = require 'maps.pirates.utils_local'
+-- local Utils = require 'maps.pirates.utils_local'
 local Math = require 'maps.pirates.math'
-local inspect = require 'utils.inspect'.inspect
+local _inspect = require 'utils.inspect'.inspect
 local Crew = require 'maps.pirates.crew'
-local Progression = require 'maps.pirates.progression'
-local Structures = require 'maps.pirates.structures.structures'
+-- local Progression = require 'maps.pirates.progression'
+-- local Structures = require 'maps.pirates.structures.structures'
 local Shop = require 'maps.pirates.shop.shop'
+local Boats = require 'maps.pirates.structures.boats.boats'
+local Surfaces = require 'maps.pirates.surfaces.surfaces'
 
 
 local Public = {}
@@ -46,7 +48,7 @@ function Public.new_window(player, name)
 
 	local global_memory = Memory.get_global_memory()
 	local gui_memory = global_memory.player_gui_memories[player.index]
-	local flow, flow2, flow3, flow4
+	local flow
 
 	flow = player.gui.screen.add{
         type = 'frame',
@@ -59,7 +61,7 @@ function Public.new_window(player, name)
 	else
 		flow.location = Public.default_window_positions[name]
 	end
-	
+
 	flow.style = 'map_details_frame'
 	flow.style.minimal_width = 210
 	flow.style.natural_width = 210
@@ -89,7 +91,7 @@ end
 function Public.flow_add_floating_sprite_button(flow1, button_name, width)
 	width = width or 40
 	local flow2, flow3
-    
+
     flow2 = flow1.add({
 		name = button_name .. '_frame',
 		type = 'frame',
@@ -117,7 +119,7 @@ end
 
 function Public.flow_add_floating_button(flow1, button_name)
 	local flow2, flow3
-    
+
     flow2 = flow1.add({
 		name = button_name .. '_flow_1',
 		type = 'flow',
@@ -161,13 +163,13 @@ end
 
 
 function Public.flow_add_shop_item(flow, name)
-	local flow2, flow3, flow4
+	local flow2, flow3
 
 	local shop_data_1 = Shop.Captains.main_shop_data_1
 	local shop_data_2 = Shop.Captains.main_shop_data_2
 	local trade_data = shop_data_1[name] or shop_data_2[name]
 	if not trade_data then return end
-	
+
 	flow2 = flow.add({
 		name = name,
 		type = 'flow',
@@ -178,7 +180,7 @@ function Public.flow_add_shop_item(flow, name)
     flow2.style.vertical_align = 'center'
 	flow2.tooltip = trade_data.tooltip
 
-	
+
 	for k, v in pairs(trade_data.what_you_get_sprite_buttons) do
 		flow3 = flow2.add({
 			type = 'sprite-button',
@@ -205,7 +207,7 @@ function Public.flow_add_shop_item(flow, name)
 	flow3.style.font_color = Public.default_font_color
 	flow3.tooltip = trade_data.tooltip
 
-	for k, v in pairs(trade_data.base_cost) do
+	for k, _ in pairs(trade_data.base_cost) do
 		flow3 = flow2.add({
 			name = 'cost_' .. k,
 			type = 'sprite-button',
@@ -225,7 +227,7 @@ function Public.flow_add_shop_item(flow, name)
 		end
 	end
 
-	
+
 	flow3 = flow2.add({
 		name = 'spacing',
 		type = 'flow',
@@ -331,12 +333,12 @@ function Public.flow_add_close_button(flow, close_button_name)
 end
 
 
-function Public.playercrew_status_table(player_index)
+function Public.crew_overall_state_bools(player_index)
 	local global_memory = Memory.get_global_memory()
 	local memory = Memory.get_crew_memory()
 
 	--*** PLAYER STATUS ***--
-	
+
 	local ret = {
 		adventuring = false,
 		spectating = false,
@@ -389,6 +391,102 @@ function Public.playercrew_status_table(player_index)
 
 	return ret
 end
+
+
+
+
+
+function Public.player_and_crew_state_bools(player)
+	local memory = Memory.get_crew_memory()
+
+	-- if memory.player_and_crew_state_bools_memoized and memory.player_and_crew_state_bools_memoized.tick > game.tick - 30 then -- auto-memoize and only update every half-second
+	-- 	return memory.player_and_crew_state_bools_memoized.ret
+	-- else
+		local destination = Common.current_destination()
+		local dynamic_data = destination.dynamic_data --assumes this always exists
+
+		local in_crowsnest_bool, in_hold_bool, in_cabin_bool, onmap_bool, eta_bool, approaching_bool, retreating_bool, atsea_sailing_bool, landed_bool, quest_bool, silo_bool, charged_bool, launched_bool, captain_bool, atsea_loading_bool, character_on_deck_bool, on_deck_standing_near_loco_bool, on_deck_standing_near_cabin_bool, on_deck_standing_near_crowsnest_bool, cost_bool, cost_includes_rocket_launch_bool, approaching_dock_bool, leaving_dock_bool, leave_anytime_bool
+
+		captain_bool = Common.is_captain(player)
+
+		in_crowsnest_bool = string.sub(player.surface.name, 9, 17) == 'Crowsnest'
+		in_hold_bool = string.sub(player.surface.name, 9, 12) == 'Hold'
+		in_cabin_bool = string.sub(player.surface.name, 9, 13) == 'Cabin'
+
+		onmap_bool = destination.surface_name and (player.surface.name == destination.surface_name or (
+			memory.boat and memory.boat.surface_name == destination.surface_name and (in_crowsnest_bool or in_hold_bool or in_cabin_bool)
+		))
+
+		if destination then
+			eta_bool = dynamic_data.time_remaining and dynamic_data.time_remaining > 0 and onmap_bool
+			approaching_bool = memory.boat and memory.boat.state == Boats.enum_state.APPROACHING and onmap_bool
+			retreating_bool = memory.boat and memory.boat.state == Boats.enum_state.RETREATING and onmap_bool
+			-- approaching_bool = memory.boat and memory.boat.state == Boats.enum_state.APPROACHING
+			atsea_sailing_bool = memory.boat and memory.boat.state == Boats.enum_state.ATSEA_SAILING
+			landed_bool = memory.boat and memory.boat.state == Boats.enum_state.LANDED
+			quest_bool = (dynamic_data.quest_type ~= nil) and onmap_bool
+			silo_bool = dynamic_data.rocketsilos and dynamic_data.rocketsilos[1] and dynamic_data.rocketsilos[1].valid and onmap_bool
+			charged_bool = dynamic_data.silocharged
+			launched_bool = dynamic_data.rocketlaunched
+
+			cost_bool = destination.static_params.base_cost_to_undock and (not atsea_sailing_bool) and (not retreating_bool)
+			cost_includes_rocket_launch_bool = cost_bool and destination.static_params.base_cost_to_undock['launch_rocket']
+
+			leave_anytime_bool = (landed_bool and not (eta_bool or cost_bool))
+		end
+
+		if memory.boat then
+			atsea_loading_bool = memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP and memory.loadingticks
+
+			character_on_deck_bool = player.character and player.character.position and player.surface.name and player.surface.name == memory.boat.surface_name
+
+			if character_on_deck_bool then
+				local BoatData = Boats.get_scope(memory.boat).Data
+
+				on_deck_standing_near_loco_bool = Math.distance(player.character.position, Math.vector_sum(memory.boat.position, BoatData.loco_pos)) < 3
+
+				on_deck_standing_near_cabin_bool = Math.distance(player.character.position, Math.vector_sum(memory.boat.position, BoatData.cabin_car)) < 2.5
+
+				on_deck_standing_near_crowsnest_bool = Math.distance(player.character.position, Math.vector_sum(memory.boat.position, BoatData.crowsnest_center)) < 2.7
+			end
+
+			approaching_dock_bool = destination.type == Surfaces.enum.DOCK and memory.boat.state == Boats.enum_state.APPROACHING
+			leaving_dock_bool = destination.type == Surfaces.enum.DOCK and memory.boat.state == Boats.enum_state.LEAVING_DOCK
+		end
+
+		local ret = {
+			in_crowsnest_bool = in_crowsnest_bool,
+			in_hold_bool = in_hold_bool,
+			in_cabin_bool = in_cabin_bool,
+			-- onmap_bool = onmap_bool,
+			eta_bool = eta_bool,
+			approaching_bool = approaching_bool,
+			retreating_bool = retreating_bool,
+			atsea_sailing_bool = atsea_sailing_bool,
+			-- landed_bool = landed_bool,
+			quest_bool = quest_bool,
+			silo_bool = silo_bool,
+			charged_bool = charged_bool,
+			launched_bool = launched_bool,
+			captain_bool = captain_bool,
+			atsea_loading_bool = atsea_loading_bool,
+			-- character_on_deck_bool = character_on_deck_bool,
+			on_deck_standing_near_loco_bool = on_deck_standing_near_loco_bool,
+			on_deck_standing_near_cabin_bool = on_deck_standing_near_cabin_bool,
+			on_deck_standing_near_crowsnest_bool = on_deck_standing_near_crowsnest_bool,
+			cost_bool = cost_bool,
+			cost_includes_rocket_launch_bool = cost_includes_rocket_launch_bool,
+			approaching_dock_bool = approaching_dock_bool,
+			leaving_dock_bool = leaving_dock_bool,
+			leave_anytime_bool = leave_anytime_bool
+		}
+
+		-- memory.player_and_crew_state_bools_memoized = {ret = ret, tick = game.tick}
+
+		return ret
+	-- end
+end
+
 
 
 function Public.update_listbox(listbox, table)

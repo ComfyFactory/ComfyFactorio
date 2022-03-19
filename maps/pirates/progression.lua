@@ -7,21 +7,21 @@ local Balance = require 'maps.pirates.balance'
 local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
 local Utils = require 'maps.pirates.utils_local'
-local inspect = require 'utils.inspect'.inspect
+local _inspect = require 'utils.inspect'.inspect
 local CustomEvents = require 'maps.pirates.custom_events'
 
-local Structures = require 'maps.pirates.structures.structures'
+-- local Structures = require 'maps.pirates.structures.structures'
 local Boats = require 'maps.pirates.structures.boats.boats'
 local Surfaces = require 'maps.pirates.surfaces.surfaces'
 local Crowsnest = require 'maps.pirates.surfaces.crowsnest'
 local Server = require 'utils.server'
 local Dock = require 'maps.pirates.surfaces.dock'
-local Islands = require 'maps.pirates.surfaces.islands.islands'
+-- local Islands = require 'maps.pirates.surfaces.islands.islands'
 local Sea = require 'maps.pirates.surfaces.sea.sea'
 local Crew = require 'maps.pirates.crew'
 local Roles = require 'maps.pirates.roles.roles'
-local Parrot = require 'maps.pirates.parrot'
-local Quest = require 'maps.pirates.quest'
+-- local Parrot = require 'maps.pirates.parrot'
+-- local Quest = require 'maps.pirates.quest'
 
 local Shop = require 'maps.pirates.shop.shop'
 local Overworld = require 'maps.pirates.overworld'
@@ -111,7 +111,7 @@ function Public.go_from_starting_dock_to_first_destination()
 		Server.to_discord_embed_raw(CoreData.comfy_emojis.pogkot .. message)
 
 		Roles.assign_captain_based_on_priorities()
-		
+
 		for _, player in pairs(crew_members) do
 			Crew.player_abandon_endorsements(player)
 			for item, amount in pairs(Balance.starting_items_player) do
@@ -188,7 +188,7 @@ local place_dock_jetty_and_boats = Token.register(
 		local memory = Memory.get_crew_memory()
 		if memory.game_lost then return end
 		Surfaces.Dock.place_dock_jetty_and_boats()
-	
+
 		local destination = Common.current_destination()
 		ShopDock.create_dock_markets(game.surfaces[destination.surface_name], Surfaces.Dock.Data.markets_position)
 	end
@@ -232,7 +232,7 @@ function Public.progress_to_destination(destination_index)
 		-- memory.mainshop_availability_bools.sell_copper = true
 
 		memory.mainshop_availability_bools.repair_cannons = true
-		
+
 		local boat_for_sale_type = Common.current_destination().static_params.boat_for_sale_type
 		if boat_for_sale_type then
 			if boat_for_sale_type == Boats.enum.CUTTER then
@@ -279,7 +279,7 @@ function Public.progress_to_destination(destination_index)
 
 	Boats.teleport_boat(boat, newsurface_name, starting_boatposition, CoreData.moving_boat_floor, old_water)
 
-	
+
 	if old_type == Surfaces.enum.LOBBY then
 		Crowsnest.draw_extra_bits()
 	end
@@ -336,7 +336,7 @@ function Public.check_for_end_of_boat_movement(boat)
 
 	local approaching_island = boat.state == Boats.enum_state.APPROACHING and destination.type == Surfaces.enum.ISLAND
 	local retreating_island = boat.state == Boats.enum_state.RETREATING and destination.type == Surfaces.enum.ISLAND
-	
+
 	local approaching_dock = destination.type == Surfaces.enum.DOCK and boat.state == Boats.enum_state.APPROACHING
 	local leaving_dock = destination.type == Surfaces.enum.DOCK and boat.state == Boats.enum_state.LEAVING_DOCK
 
@@ -358,7 +358,7 @@ function Public.check_for_end_of_boat_movement(boat)
 
 			if collided then
 				boat.landing_time = destination.dynamic_data.timer
-	
+
 				Boats.place_landingtrack(boat, CoreData.enemy_landing_tile)
 
 				return true
@@ -381,7 +381,7 @@ function Public.check_for_end_of_boat_movement(boat)
 
 			Surfaces.destination_on_crewboat_hits_shore(destination)
 			return true
-		
+
 		elseif retreating_island and boat.position.x < ((boat.dockedposition.x or 999) - Boats.get_scope(boat).Data.width - 2 * Boats.get_scope(boat).Data.rightmost_gate_position - 8) then
 
 			Public.go_from_currentdestination_to_sea()
@@ -393,9 +393,9 @@ function Public.check_for_end_of_boat_movement(boat)
 			boat.state = Boats.enum_state.DOCKED
 			boat.speed = 0
 			boat.dockedposition = boat.position
-	
+
 			destination.dynamic_data.timeratlandingtime = destination.dynamic_data.timer
-	
+
 			Boats.place_boat(boat, CoreData.static_boat_floor, false, false)
 			return true
 
@@ -418,12 +418,12 @@ function Public.check_for_end_of_boat_movement(boat)
 			memory.mainshop_availability_bools.rockets_for_sale = false
 
 			script.raise_event(CustomEvents.enum['update_crew_fuel_gui'], {})
-	
+
 			Public.go_from_currentdestination_to_sea()
-	
+
 			return true
 
-		
+
 		--=== Fallthrough right-hand side
 		elseif destination.type == Surfaces.enum.ISLAND and boat.position.x >= game.surfaces[boat.surface_name].map_gen_settings.width/2 - 10 then
 			Public.go_from_currentdestination_to_sea()
@@ -432,7 +432,7 @@ function Public.check_for_end_of_boat_movement(boat)
 	end
 
 
-	
+
 	return false
 end
 
@@ -444,7 +444,7 @@ function Public.try_retreat_from_island(player, manual) -- Assumes the cost can 
 	local memory = Memory.get_crew_memory()
 	if memory.game_lost then return end
 	local destination = Common.current_destination()
-	
+
 	if Common.query_can_pay_cost_to_leave() then
 		if destination.dynamic_data.timeratlandingtime and destination.dynamic_data.timer < destination.dynamic_data.timeratlandingtime + 10 then
 			if player and Common.validate_player(player) then
@@ -455,7 +455,7 @@ function Public.try_retreat_from_island(player, manual) -- Assumes the cost can 
 
 			if cost then
 				local adjusted_cost = Common.time_adjusted_departure_cost(cost)
-	
+
 				Common.spend_stored_resources(adjusted_cost)
 			end
 			Public.retreat_from_island(manual)
@@ -472,7 +472,7 @@ function Public.retreat_from_island(manual)
 	local boat = memory.boat
 
 	if boat.state and boat.state == Boats.enum_state.RETREATING then return end
-	
+
 	boat.state = Boats.enum_state.RETREATING
 	boat.speed = 1.25
 
@@ -495,7 +495,7 @@ function Public.undock_from_dock(manual)
 	local memory = Memory.get_crew_memory()
 	local boat = memory.boat
 	local destination = Common.current_destination()
-	
+
 	boat.state = Boats.enum_state.LEAVING_DOCK
 	destination.dynamic_data.time_remaining = -1
 
@@ -533,7 +533,7 @@ function Public.go_from_currentdestination_to_sea()
 	local boat = memory.boat
 
 	local new_boatposition = Utils.snap_coordinates_for_rails({x = Boats.get_scope(memory.boat).Data.width / 2, y = 0})
-	
+
 	Boats.teleport_boat(boat, seaname, new_boatposition, CoreData.static_boat_floor, 'water')
 
 	if memory.overworldx == 0 and memory.boat then
@@ -553,7 +553,7 @@ function Public.go_from_currentdestination_to_sea()
 			Common.parrot_speak(memory.force, 'Iron chests for iron players! Squawk!')
 		end
 	end
-	
+
 	memory.boat.state = Boats.enum_state.ATSEA_SAILING
 	memory.boat.speed = 0
 	memory.boat.position = new_boatposition
@@ -572,7 +572,7 @@ function Public.go_from_currentdestination_to_sea()
 	local d = destination.iconized_map_width + Crowsnest.platformwidth
 
 	Crowsnest.paint_around_destination(destination.destination_index, 'deepwater')
-	
+
 	Overworld.try_overworld_move_v2{x = d, y = 0}
 
 

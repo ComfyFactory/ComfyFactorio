@@ -5,10 +5,10 @@ local Balance = require 'maps.pirates.balance'
 local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
 local Hold = require 'maps.pirates.surfaces.hold'
-local Parrot = require 'maps.pirates.parrot'
+-- local Parrot = require 'maps.pirates.parrot'
 local Cabin = require 'maps.pirates.surfaces.cabin'
 local Utils = require 'maps.pirates.utils_local'
-local inspect = require 'utils.inspect'.inspect
+local _inspect = require 'utils.inspect'.inspect
 
 -- DEV NOTE: If making boat designs that have rails, make sure the boat is placed at odd co-ordinates before blueprinting.
 
@@ -35,8 +35,11 @@ local enum_state = {
 }
 Public.enum_state = enum_state
 
+Public.small_distance = 0.1--for generous areas
+
+
 function Public.get_scope(boat)
-	local ret
+
 	if boat.type then
 		if boat.subtype then
 			return Public[boat.type][boat.subtype]
@@ -56,7 +59,7 @@ function Public.currentdestination_move_boat_natural()
     local destination = Common.current_destination()
 
 	if (destination and destination.dynamic_data and destination.dynamic_data.timer) and (not (destination.dynamic_data.timer >= 1)) then return end
-	
+
 	if boat and boat.state == enum_state.LEAVING_DOCK or boat.state == enum_state.APPROACHING then
 		local newp = {x = boat.position.x + Common.boat_steps_at_a_time, y = boat.position.y}
 		Public.teleport_boat(boat, nil, newp)
@@ -142,7 +145,7 @@ function Public.destroy_boat(boat, tile_type, flipped)
 		end
 	end
 	Public.place_boat(boat, tile_type, false, true, flipped)
-	boat = {}
+	-- boat = {} --I guess this doesn't do anything, since it doesn't actually set anything upstream
 end
 
 
@@ -201,7 +204,10 @@ end
 
 
 --!! you must place boats at odd-valued co-ordinates...
-function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles, flipped, comfy_logo)
+-- function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles, flipped)
+
+function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles, flipped)
+-- function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles, flipped, comfy_logo)
 	flipped = flipped or false
 	local flipped_sign = flipped and -1 or 1
 	correct_tiles = correct_tiles or true
@@ -210,12 +216,12 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 
 	local surface = game.surfaces[boat.surface_name]
 
-	
+
 	local tiles = {}
 	for _, area in pairs(scope.Data.tile_areas) do
 		Common.tiles_from_area(tiles, area, boat.position, floor_tile)
 	end
-	
+
 	if flipped then
 		tiles = Common.tiles_horizontally_flipped(tiles, boat.position.x)
 		Common.ensure_chunks_at(surface, {boat.position.x + scope.Data.width/2, boat.position.y}, 3)
@@ -229,7 +235,7 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 	boat.speedticker2 = 1/3 * Common.boat_steps_at_a_time
 	boat.speedticker3 = 2/3 * Common.boat_steps_at_a_time
 
-	
+
 	if place_entities_bool then
 		for etype, entitydata in pairs(scope.Data.entities) do
 			local entities_pos
@@ -334,7 +340,7 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 				end
 			end
 		end
-		
+
 		if scope.Data.cabin_car then
 			local car_pos = {x = boat.position.x + scope.Data.cabin_car.x, y = boat.position.y + scope.Data.cabin_car.y}
 			local e = surface.create_entity({name = 'car', position = car_pos, force = boat.force_name, create_build_effect_smoke = false})
@@ -347,7 +353,7 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 				e.operable = false
 			end
 		end
-		
+
 		if scope.Data.steering_boxes then
 			if not boat.decksteeringchests then boat.decksteeringchests = {} end
 			for _, p in pairs(scope.Data.steering_boxes or {}) do
@@ -408,7 +414,7 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 		if scope.Data.loco_pos then
 			Common.build_small_loco(surface, {x = boat.position.x + scope.Data.loco_pos.x, y = boat.position.y + scope.Data.loco_pos.y}, boat.force_name, {255, 106, 52})
 		end
-		
+
 		if scope.Data.deck_whitebelts_lrtp_order then
 			if not boat.deck_whitebelts then boat.deck_whitebelts = {} end
 			for _, b in ipairs(scope.Data.deck_whitebelts_lrtp_order or {}) do
@@ -423,12 +429,12 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 					boat.deck_whitebelts[#boat.deck_whitebelts + 1] = e
 				end
 			end
-		
+
 			Hold.connect_up_linked_belts_to_deck()
 			Cabin.connect_up_linked_belts_to_deck()
 		end
 	end
-	
+
 	-- if comfy_logo then
 	-- 	local p = Utils.psum{boat.position, scope.Data.comfy_rendering_position}
 	-- 	boat.rendering_comfy = rendering.draw_sprite{
@@ -453,6 +459,27 @@ end
 
 
 
+function Public.put_deck_whitebelts_in_standard_order(boat)
+
+	if boat and boat.deck_whitebelts and #boat.deck_whitebelts > 0 then
+
+		local i1 = {}
+		for i = 1, #boat.deck_whitebelts do
+			i1[i] = i
+		end
+
+		table.sort(i1, function(a,b) return boat.deck_whitebelts[a].position.y < boat.deck_whitebelts[b].position.y or (boat.deck_whitebelts[a].position.y == boat.deck_whitebelts[b].position.y and boat.deck_whitebelts[a].position.x < boat.deck_whitebelts[b].position.x) end) --true if a should be to the left of b
+
+		local replacementlist = {}
+		for i = 1, #boat.deck_whitebelts do
+			replacementlist[i] = boat.deck_whitebelts[i1[i]]
+		end
+		boat.deck_whitebelts = nil
+		boat.deck_whitebelts = replacementlist
+	end
+end
+
+
 
 function Public.place_landingtrack(boat, floor_tile, flipped)
 	flipped = flipped or false
@@ -470,12 +497,11 @@ function Public.place_landingtrack(boat, floor_tile, flipped)
 		tiles[#tiles + 1] = {name = floor_tile, position = p2}
 		surface.destroy_decoratives{position = p2}
 	end
-		
+
 	surface.set_tiles(tiles, true)
 end
 
 
-local small = 0.1--generous areas
 function Public.get_players_on_gate_tiles(boat, boatposition_override)
 	local surface = game.surfaces[boat.surface_name]
 	local scope = Public.get_scope(boat)
@@ -484,7 +510,7 @@ function Public.get_players_on_gate_tiles(boat, boatposition_override)
 
 	local players_on_gate_tiles = {}
 	for _, relative_area in pairs(scope.Data.right_gate_tile_areas) do
-		local area = {{position.x + relative_area[1][1] - small, position.y + relative_area[1][2] - small}, {position.x + relative_area[2][1] + small, position.y + relative_area[2][2] + small}}
+		local area = {{position.x + relative_area[1][1] - Public.small_distance, position.y + relative_area[1][2] - Public.small_distance}, {position.x + relative_area[2][1] + Public.small_distance, position.y + relative_area[2][2] + Public.small_distance}}
 		local entities = surface.find_entities_filtered{area = area, name = 'character'}
 		for _, e in pairs(entities) do
 			if e and e.valid then
@@ -493,7 +519,7 @@ function Public.get_players_on_gate_tiles(boat, boatposition_override)
 		end
 	end
 	for _, relative_area in pairs(scope.Data.left_gate_tile_areas) do
-		local area = {{position.x + relative_area[1][1] - small, position.y + relative_area[1][2] - small}, {position.x + relative_area[2][1] + small, position.y + relative_area[2][2] + small}}
+		local area = {{position.x + relative_area[1][1] - Public.small_distance, position.y + relative_area[1][2] - Public.small_distance}, {position.x + relative_area[2][1] + Public.small_distance, position.y + relative_area[2][2] + Public.small_distance}}
 		local entities = surface.find_entities_filtered{area = area, name = 'character'}
 		for _, e in pairs(entities) do
 			if e and e.valid then
@@ -505,7 +531,6 @@ function Public.get_players_on_gate_tiles(boat, boatposition_override)
 end
 
 
-local small = 0.1--generous areas
 function Public.get_players_just_offside(boat, boatposition_override)
 	local players_just_offside = {}
 	local surface = game.surfaces[boat.surface_name]
@@ -513,7 +538,7 @@ function Public.get_players_just_offside(boat, boatposition_override)
 	local position = boatposition_override or boat.position
 
 	for _, relative_area in pairs(Public[boat.type].Data.areas_offleft) do
-		local area = {{position.x + relative_area[1][1] - small, position.y + relative_area[1][2] - small}, {position.x + relative_area[2][1] + small, position.y + relative_area[2][2] + small}}
+		local area = {{position.x + relative_area[1][1] - Public.small_distance, position.y + relative_area[1][2] - Public.small_distance}, {position.x + relative_area[2][1] + Public.small_distance, position.y + relative_area[2][2] + Public.small_distance}}
 		local entities = surface.find_entities_filtered{area = area, name = 'character'}
 		for _, e in pairs(entities) do
 			if e and e.valid then
@@ -522,7 +547,7 @@ function Public.get_players_just_offside(boat, boatposition_override)
 		end
 	end
 	for _, relative_area in pairs(Public[boat.type].Data.areas_offright) do
-		local area = {{position.x + relative_area[1][1] - small, position.y + relative_area[1][2] - small}, {position.x + relative_area[2][1] + small, position.y + relative_area[2][2] + small}}
+		local area = {{position.x + relative_area[1][1] - Public.small_distance, position.y + relative_area[1][2] - Public.small_distance}, {position.x + relative_area[2][1] + Public.small_distance, position.y + relative_area[2][2] + Public.small_distance}}
 		local entities = surface.find_entities_filtered{area = area, name = 'character'}
 		for _, e in pairs(entities) do
 			if e and e.valid then
@@ -531,7 +556,7 @@ function Public.get_players_just_offside(boat, boatposition_override)
 		end
 	end
 	for _, relative_area in pairs(Public[boat.type].Data.areas_infront) do
-		local area = {{position.x + relative_area[1][1] - small, position.y + relative_area[1][2] - small}, {position.x + relative_area[2][1] + small, position.y + relative_area[2][2] + small}}
+		local area = {{position.x + relative_area[1][1] - Public.small_distance, position.y + relative_area[1][2] - Public.small_distance}, {position.x + relative_area[2][1] + Public.small_distance, position.y + relative_area[2][2] + Public.small_distance}}
 		local entities = surface.find_entities_filtered{area = area, name = 'character'}
 		for _, e in pairs(entities) do
 			if e and e.valid then
@@ -540,7 +565,7 @@ function Public.get_players_just_offside(boat, boatposition_override)
 		end
 	end
 	for _, relative_area in pairs(Public[boat.type].Data.areas_behind) do
-		local area = {{position.x + relative_area[1][1] - small, position.y + relative_area[1][2] - small}, {position.x + relative_area[2][1] + small, position.y + relative_area[2][2] + small}}
+		local area = {{position.x + relative_area[1][1] - Public.small_distance, position.y + relative_area[1][2] - Public.small_distance}, {position.x + relative_area[2][1] + Public.small_distance, position.y + relative_area[2][2] + Public.small_distance}}
 		local entities = surface.find_entities_filtered{area = area, name = 'character'}
 		for _, e in pairs(entities) do
 			if e and e.valid then
@@ -608,7 +633,7 @@ end
 
 -- 	local function boxposition()
 -- 		local p1 = {x = boat.position.x - boatwidth*1 + Math.random(boatwidth)*0.85, y = boat.position.y - boatheight/2*0.8 + Math.random(boatheight)*0.8}
-		
+
 -- 		local whilesafety = 50
 -- 		local p2
 --         while whilesafety>0 and ((not p2) or Utils.contains(smallpositions, p2)) do
@@ -658,7 +683,7 @@ end
 
 
 function Public.try_connect_upstairs_and_downstairs_poles(boat)
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
 
 	if not (boat and boat.upstairs_pole and boat.upstairs_pole.valid and boat.downstairs_poles and boat.downstairs_poles[1] and boat.downstairs_poles[1][1] and boat.downstairs_poles[1][1].valid) then return end
 
@@ -667,537 +692,293 @@ end
 
 
 
+local function process_entity_on_boat_unteleportable(memory, boat, newsurface, vector, players_just_offside, oldsurface_name, newsurface_name, e, name)
 
+	local p = e.position
+	local p2 = {x = p.x + vector.x, y = p.y + vector.y}
 
-function Public.put_deck_whitebelts_in_standard_order(boat)
+	-- if e.type and e.type == 'underground-belt' then
+	-- 	local n = e.neighbours
+	-- 	if n and n.valid and n.position then
+	-- 		local np = n.position
+	-- 		if not underground_belt_neighbours_matrix[np.x] then
+	-- 			underground_belt_neighbours_matrix[np.x] = {}
+	-- 		end
+	-- 		underground_belt_neighbours_matrix[np.x][np.y] = {name = e.name, pos = p}
+	-- 	end
+	-- end
 
-	if boat and boat.deck_whitebelts and #boat.deck_whitebelts > 0 then
-
-		local i1 = {}
-		for i = 1, #boat.deck_whitebelts do
-			i1[i] = i
+	local ee = e.clone{position = p2, surface = newsurface, force = e.force, create_build_effect_smoke = false}
+	if ee and ee.valid then
+		e.destroy()
+	else
+		local f = e.force
+		local eee = e.clone{position = {x = p.x % 1, y = p.y % 1}, surface = game.surfaces['nauvis'], force = f, create_build_effect_smoke = false}
+		if eee and eee.valid then
+			e.destroy()
+			ee = eee.clone{position = {p.x + vector.x, p.y + vector.y}, surface = newsurface, force = f, create_build_effect_smoke = false}
+			eee.destroy()
 		end
+	end
 
-		table.sort(i1, function(a,b) return boat.deck_whitebelts[a].position.y < boat.deck_whitebelts[b].position.y or (boat.deck_whitebelts[a].position.y == boat.deck_whitebelts[b].position.y and boat.deck_whitebelts[a].position.x < boat.deck_whitebelts[b].position.x) end) --true if a should be to the left of b
+	if ee and ee.valid then
 
-		local replacementlist = {}
-		for i = 1, #boat.deck_whitebelts do
-			replacementlist[i] = boat.deck_whitebelts[i1[i]]
+		if name == 'artillery-turret' then
+			-- if friendlyboat_bool then
+			-- 	if memory.enemyboatcannons then memory.enemyboatcannons[#memory.enemyboatcannons + 1] = ee end
+			-- else
+			-- 	if boat.cannons then boat.cannons[#boat.cannons + 1] = ee end
+			-- end
+			if oldsurface_name == newsurface_name then -- push players
+				local area1 = {{ee.position.x - 1.5, ee.position.y - 1.5}, {ee.position.x + 1.5, ee.position.y + 1.5}}
+				local area2 = {{ee.position.x - vector.x - 1.5, ee.position.y - vector.y - 1.5}, {ee.position.x - vector.x + 1.5, ee.position.y - vector.y + 1.5}}
+				if ee.position.y > boat.position.y then
+					area1 = {{ee.position.x - 2.5, ee.position.y}, {ee.position.x + 2.5, ee.position.y + 1.5}}
+					area2 = {{ee.position.x - 2.5, ee.position.y}, {ee.position.x + 2.5, ee.position.y + 1.5}}
+				elseif ee.position.y < boat.position.y then
+					area1 = {{ee.position.x - 2.5, ee.position.y - 1.5}, {ee.position.x + 2.5, ee.position.y}}
+					area2 = {{ee.position.x - 2.5, ee.position.y - 1.5}, {ee.position.x + 2.5, ee.position.y}}
+				end
+
+				local intersectingcharacters = newsurface.find_entities_filtered{area = area1, name = 'character'}
+				local intersectingcharacters2 = newsurface.find_entities_filtered{area = area2, name = 'character'}
+				local teleportedbool = false
+				for _, char in pairs(intersectingcharacters) do
+					if Utils.contains(intersectingcharacters2, char) then
+						char.teleport(vector.x, vector.y)
+						teleportedbool = true
+					end
+				end
+				for _, char in pairs(players_just_offside) do
+					if Utils.contains(intersectingcharacters, char) or Utils.contains(intersectingcharacters2, char) then
+						char.teleport(vector.x, vector.y)
+						teleportedbool = true
+					end
+					if teleportedbool and char and char.valid then --did I push you into water?
+						local nearbytiles = {newsurface.get_tile(char.position.x-1, char.position.y-1), newsurface.get_tile(char.position.x-1, char.position.y), newsurface.get_tile(char.position.x-1, char.position.y+1), newsurface.get_tile(char.position.x, char.position.y-1), newsurface.get_tile(char.position.x, char.position.y), newsurface.get_tile(char.position.x, char.position.y+1), newsurface.get_tile(char.position.x+1, char.position.y-1), newsurface.get_tile(char.position.x+1, char.position.y), newsurface.get_tile(char.position.x+1, char.position.y+1)}
+						local watercount = 0
+						for _, t in pairs(nearbytiles) do
+							if Utils.contains(CoreData.water_tile_names, t.name) then watercount = watercount + 1 end
+						end
+						if watercount > 5 then
+							local name2 = char.player and char.player.name or 'unknown-character'
+							char.die(char.force)
+
+							local force = memory.force
+							if not (force and force.valid) then return end
+							Common.notify_force(force,string.format('%s was pushed into water by a cannon.', name2), {r = 0.98, g = 0.66, b = 0.22})
+						end
+					end
+				end
+			end
+
+		-- elseif ee.type and ee.type == 'underground-belt' then
+		-- 	local n = underground_belt_neighbours_matrix[p.x] and underground_belt_neighbours_matrix[p.x][p.y] or nil
+		-- 	if n then
+		-- 		log(_inspect(n))
+		-- 		local p3 = {x = n.pos.x + vector.x, y = n.pos.y + vector.y}
+		-- 		local e3s = newsurface.find_entities_filtered{
+		-- 			name = n.name,
+		-- 			position = p3,
+		-- 			radius = 0.01,
+		-- 		}
+		-- 		if e3s and #e3s>0 then
+		-- 			local e3 = e3s[1]
+		-- 			if e3 and e3.valid then
+		-- 				ee.connect_neighbour(e3)
+		-- 			end
+		-- 		end
+		-- 	end
+
+		elseif name == 'electric-energy-interface' then
+			boat.EEIs[#boat.EEIs + 1] = ee
+
+		elseif name == 'linked-belt' then
+			-- if ee.linked_belt_type == 'output' then
+			-- 	boat.deck_output_belts[#boat.deck_output_belts + 1] = ee
+			-- else
+			-- 	boat.deck_input_belts[#boat.deck_input_belts + 1] = ee
+			-- end
+			boat.deck_whitebelts[#boat.deck_whitebelts + 1] = ee
 		end
-		boat.deck_whitebelts = nil
-		boat.deck_whitebelts = replacementlist
 	end
 end
 
 
+local function process_entity_on_boat_teleportable(memory, boat, newsurface, newposition, vector, oldsurface_name, newsurface_name, electric_pole_neighbours_matrix, circuit_neighbours_matrix, e)
 
---if you're teleporting to the same surface, only do this in an orthogonal direction
-function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile, old_water_tile)
-	new_floor_tile = new_floor_tile or CoreData.moving_boat_floor
-	old_water_tile = old_water_tile or 'water'
-	local oldsurface_name = boat.surface_name
-	newsurface_name = newsurface_name or oldsurface_name
-	local oldposition = boat.position
-	newposition = newposition or oldposition
-
-	local scope = Public.get_scope(boat)
-
-	local memory = Memory.get_crew_memory()
-	local friendlyboat_bool = (memory.force_name == boat.force_name)
-	local oldsurface, newsurface = game.surfaces[oldsurface_name], game.surfaces[newsurface_name]
-
-	game.surfaces['nauvis'].request_to_generate_chunks({0,0}, 1)
-	game.surfaces['nauvis'].force_generate_chunk_requests() --WARNING: THIS DOES NOT PLAY NICELY WITH DELAYED TASKS. log(inspect{global_memory.working_id}) was observed to vary before and after this function.
-
-	-- reset these:
-	boat.deck_whitebelts = {}
-	boat.EEIs = {}
-	
-	-- only relevant for teleporting to the same surface, i.e. moving:
-	local vector = {x = newposition.x - oldposition.x, y = newposition.y - oldposition.y}
-	local vectordirection = {x = 0, y = 0};
-	local vectorlength = 0;
 	if oldsurface_name == newsurface_name then
-		if vector.x > 0 then
-			vectorlength = vector.x
-			vectordirection = {x = 1, y = 0}
-		elseif vector.x < 0 then
-			vectorlength = - vector.x
-			vectordirection = {x = -1, y = 0}
-		elseif vector.y > 0 then
-			vectorlength = vector.y
-			vectordirection = {x = 0, y = 1}
-		elseif vector.y < 0 then
-			vectorlength = - vector.y
-			vectordirection = {x = 0, y = -1}
-		end
-	end
-
-	local dummyboat
-	if oldsurface_name ~= newsurface_name then
-		dummyboat = Utils.deepcopy(boat)
-	end
-	
-
-	boat.position = newposition
-	boat.surface_name = newsurface_name
-
-	if friendlyboat_bool then
-		if oldsurface_name == newsurface_name then
-			if oldsurface_name ~= CoreData.lobby_surface_name then
-				local oldspawn = memory.spawnpoint
-				memory.spawnpoint = {x = oldspawn.x + vector.x, y = oldspawn.y + vector.y}
-			end
-		else
-			memory.spawnpoint = {x = scope.Data.spawn_point.x + boat.position.x, y = scope.Data.spawn_point.y + boat.position.y}
-		end
-		game.forces[boat.force_name].set_spawn_position(memory.spawnpoint, game.surfaces[newsurface_name])
-	end
-
-	local sorting_f
-	if oldsurface_name == newsurface_name then
-		sorting_f = function(a,b)
-			if (a.name == 'straight-rail' or a.name == 'curved-rail') and (not (b.name == 'straight-rail' or b.name == 'curved-rail')) then return true end
-			if (b.name == 'straight-rail' or b.name == 'curved-rail') and (not (a.name == 'straight-rail' or a.name == 'curved-rail')) then return false end
-			if vector.x > 0 then
-				return ((a.position.x > b.position.x) or ((a.position.x == b.position.x) and (a.position.y > b.position.y)))
-			elseif vector.x < 0 then
-				return ((a.position.x < b.position.x) or ((a.position.x == b.position.x) and (a.position.y > b.position.y)))
-			end
-			if vector.y > 0 then
-				return ((a.position.y > b.position.y) or ((a.position.y == b.position.y) and (a.position.x > b.position.x)))
-			elseif vector.y < 0 then
-				return ((a.position.y < b.position.y) or ((a.position.y == b.position.y) and (a.position.x > b.position.x)))
-			end
-			return false
-		end
+		e.teleport(vector.x, vector.y)
+		e.update_connections()
 	else
-		 --move walls before artillery
-		sorting_f = function(a,b)
-			return (a.name and a.name == 'stone-wall') and (not (b.name and b.name == 'stone-wall'))
-		end
-	end
-	
+		local p = Utils.deepcopy(e.position)
+		local p2 = {x = p.x + vector.x, y = p.y + vector.y}
 
-	local chunkloadradius = 1
-	if boat.type == enum.SLOOP then
-		chunkloadradius = 2
-	elseif boat.type == enum.CUTTER then
-		chunkloadradius = 3
-	end
-	Common.ensure_chunks_at(game.surfaces[newsurface_name], {x = newposition.x - scope.Data.width, y = newposition.y}, chunkloadradius)
-	
-	if oldsurface_name == newsurface_name then
-		local areas = {}
-		if vector.x > 0 then
-			areas = scope.Data.areas_infront
-		elseif vector.x < 0 then
-			areas = scope.Data.areas_behind
-		elseif vector.y > 0 then
-			areas = scope.Data.areas_offright
-		elseif vector.y < 0 then
-			areas = scope.Data.areas_offleft
-		end
-
-		local newtiles = {}
-		for i=1,vectorlength,1 do
-			local adjustedoldposition = {x = oldposition.x + (i-1)*vectordirection.x, y = oldposition.y + (i-1)*vectordirection.y}
-			for _, area in pairs(areas) do
-				Common.tiles_from_area(newtiles, area, adjustedoldposition, new_floor_tile)
-				Common.destroy_decoratives_in_area(game.surfaces[newsurface_name], area, adjustedoldposition)
-			end
-		end
-		game.surfaces[newsurface_name].set_tiles(newtiles, true, true, true)
-	else
-		Public.place_boat(boat, new_floor_tile, false, true)
-	end
-	
-
-	local entities_on_boat = {}
-	for _, relative_area in pairs(scope.Data.tile_areas) do
-		local area = {{oldposition.x + relative_area[1][1], oldposition.y + relative_area[1][2]}, {oldposition.x + relative_area[2][1], oldposition.y + relative_area[2][2]}}
-		local entities = oldsurface.find_entities(area)
-		for _, e in pairs(entities) do
-			if e and e.valid then
-				entities_on_boat[#entities_on_boat + 1] = e
-			end
-		end
-	end
-
-	local players_just_offside = {}
-
-	if friendlyboat_bool then
-		players_just_offside = Public.get_players_just_offside(boat, oldposition)
-		entities_on_boat = Utils.exclude(entities_on_boat, players_just_offside)
-		table.sort(entities_on_boat, sorting_f)
-	end
-
-
-	local unique_entities_list = {}
-
-	-- copy away rails:
-	local saved_rails = {}
-	local first_rail_found_p = nil
-	for i = 1, #entities_on_boat do
-		local e = entities_on_boat[i]
-		if e and e.valid and (e.name == 'straight-rail' or e.name == 'curved-rail' or (e.name == 'entity-ghost' and (e.ghost_name == 'straight-rail' or e.ghost_name == 'curved-rail'))) and (not Utils.contains(unique_entities_list, e)) then
-			unique_entities_list[#unique_entities_list + 1] = e
-			local p, f = e.position, e.force
-			if not first_rail_found_p then
-				first_rail_found_p = {x = p.x, y = p.y}
-			end
-			local ee = e.clone{position = {x = p.x - first_rail_found_p.x, y = p.y - first_rail_found_p.y}, surface = game.surfaces['piratedev1'], force = f, create_build_effect_smoke = false}
-			if ee and ee.valid then
-				saved_rails[#saved_rails + 1] = ee
-			end
-		end
-	end
-
-	-- copy away wagons:
-	local saved_wagons = {}
-	for i = 1, #entities_on_boat do
-		local e = entities_on_boat[i]
-		if e and e.valid and (e.name == 'cargo-wagon' or e.name == 'locomotive' or (e.name == 'entity-ghost' and (e.ghost_name == 'cargo-wagon' or e.ghost_name == 'locomotive'))) and (not Utils.contains(unique_entities_list, e)) then
-			unique_entities_list[#unique_entities_list + 1] = e
-			local p, f = e.position, e.force
-			local ee = e.clone{position = {x = p.x - first_rail_found_p.x, y = p.y - first_rail_found_p.y}, surface = game.surfaces['piratedev1'], force = f, create_build_effect_smoke = false}
-			if ee and ee.valid then
-				saved_wagons[#saved_wagons + 1] = ee
-			end
-		end
-	end
-	
-
-	-- destroy rail/wagons:
-	for i = 1, #entities_on_boat do
-		local e = entities_on_boat[i]
-		if e and e.valid and (e.name == 'cargo-wagon' or e.name == 'locomotive' or (e.name == 'entity-ghost' and (e.ghost_name == 'cargo-wagon' or e.name == 'locomotive'))) then
-			e.destroy()
-		end
-	end
-	for i = 1, #entities_on_boat do
-		local e = entities_on_boat[i]
-		if e and e.valid and (e.name == 'straight-rail' or e.name == 'curved-rail' or (e.name == 'entity-ghost' and (e.ghost_name == 'straight-rail' or e.ghost_name == 'curved-rail'))) then
-			e.destroy()
-		end
-	end
-
-
-
-	local electric_pole_neighbours_matrix = {}
-	local circuit_neighbours_matrix = {}
-	local underground_belt_neighbours_matrix = {}
-
-	for i = 1, #entities_on_boat do
-		local e = entities_on_boat[i]
-		if e and e.valid and (not Utils.contains(unique_entities_list, e)) then
-			unique_entities_list[#unique_entities_list + 1] = e
-			local name = e.name
-
-			-- if e.name and e.name == 'item-on-ground' then
-			-- 	log(inspect{'hi', name, e.position})
-			-- end
-
-			if name == 'character' and e.player then -- associated player required to teleport it across surfaces
-				if oldsurface_name == newsurface_name then
-					e.teleport(vector.x, vector.y)
-				else
-					local p = {e.position.x + vector.x, e.position.y + vector.y}
-					if e.player then --e.player being nil caused a bug once!
-						e.player.teleport(newsurface.find_non_colliding_position('character', p, 1.2, 0.2) or p, newsurface)
+		if e.type and e.type == 'electric-pole' then
+			for k, v in pairs(e.neighbours or {}) do
+				if k == 'copper' then --red and green cases handled by circuit_neighbours_matrix
+					if not electric_pole_neighbours_matrix[k] then electric_pole_neighbours_matrix[k] = {} end
+					for _, v2 in pairs(v) do
+						if v2 and v2.valid and v2.position then
+							local v2p = v2.position
+							if not electric_pole_neighbours_matrix[k][v2p.x] then
+								electric_pole_neighbours_matrix[k][v2p.x] = {}
+							end
+							if not electric_pole_neighbours_matrix[k][v2p.x][v2p.y] then
+								electric_pole_neighbours_matrix[k][v2p.x][v2p.y] = {}
+							end
+							electric_pole_neighbours_matrix[k][v2p.x][v2p.y][#electric_pole_neighbours_matrix[k][v2p.x][v2p.y] + 1] = {name = e.name, pos = p}
+						end
 					end
 				end
+			end
+		end
 
-			elseif Utils.contains(CoreData.unteleportable_names, name) or (name == 'entity-ghost' and Utils.contains(CoreData.unteleportable_names, e.ghost_name)) then
+		for _, v in pairs(e.circuit_connection_definitions or {}) do
+			local e2 = v.target_entity
+			local wire = v.wire
+			local source_circuit_id = v.source_circuit_id
+			local target_circuit_id = v.target_circuit_id
+			if e2 and e2.valid and e2.position and (wire == defines.wire_type.red or wire == defines.wire_type.green) then --observed an error "Expected source_wire_id for entities with more than one wire connection" in the .connect_neighbour() function called later, so putting the red/green wire check in to try and catch it
+				local e2p = e2.position
+				if not circuit_neighbours_matrix[e2p.x] then
+					circuit_neighbours_matrix[e2p.x] = {}
+				end
+				if not circuit_neighbours_matrix[e2p.x][e2p.y] then
+					circuit_neighbours_matrix[e2p.x][e2p.y] = {}
+				end
+				circuit_neighbours_matrix[e2p.x][e2p.y][#circuit_neighbours_matrix[e2p.x][e2p.y] + 1] = {name = e.name, pos = p, wire = wire, source_circuit_id = target_circuit_id, target_circuit_id = source_circuit_id} --flip since we will read these backwards
+			end
+		end
 
-				local p = e.position
-				local p2 = {x = p.x + vector.x, y = p.y + vector.y}
+		local ee = e.clone{position = p2, surface = newsurface, create_build_effect_smoke = false}
 
-				-- if e.type and e.type == 'underground-belt' then
-				-- 	local n = e.neighbours
-				-- 	if n and n.valid and n.position then
-				-- 		local np = n.position
-				-- 		if not underground_belt_neighbours_matrix[np.x] then
-				-- 			underground_belt_neighbours_matrix[np.x] = {}
-				-- 		end
-				-- 		underground_belt_neighbours_matrix[np.x][np.y] = {name = e.name, pos = p}
-				-- 	end
-				-- end
+		if boat.upstairs_pole and e == boat.upstairs_pole then
+			boat.upstairs_pole = ee
+			Public.try_connect_upstairs_and_downstairs_poles(boat)
+		end
 
-				local ee = e.clone{position = p2, surface = newsurface, force = e.force, create_build_effect_smoke = false}
-				if ee and ee.valid then
-					e.destroy()
-				else
-					local f = e.force
-					local eee = e.clone{position = {x = p.x % 1, y = p.y % 1}, surface = game.surfaces['nauvis'], force = f, create_build_effect_smoke = false}
-					if eee and eee.valid then
-						e.destroy()
-						ee = eee.clone{position = {p.x + vector.x, p.y + vector.y}, surface = newsurface, force = f, create_build_effect_smoke = false}
-						eee.destroy()
+		e.destroy()
+
+		-- Right now in the game we don't expect any non-player characters, so let's kill them to make a point:
+		if ee and ee.valid and ee.name and ee.name == 'character' and (not ee.player) then
+			ee.die()
+		end
+
+		if ee and ee.valid and ee.name then
+			if ee.name == 'blue-chest' then
+				if p2.y < newposition.y then
+					memory.boat.decksteeringchests.left = ee
+					-- --attach parrot to this:
+					-- if boat.parrot then
+					-- 	local r = rendering.draw_sprite{
+					-- 		sprite = "file/parrot/parrot_idle_fly_1.png",
+					-- 		surface = newsurface,
+					-- 		target = ee,
+					-- 		target_offset = Utils.psum{boat.parrot.position_relative_to_boat, boat.parrot.sprite_extra_offset},
+					-- 		x_scale = 2.8,
+					-- 		y_scale = 2.8,
+					-- 	}
+					-- 	local r2 = rendering.draw_text{
+					-- 		text = 'Parrot',
+					-- 		color = CoreData.colors.parrot,
+					-- 		surface = newsurface,
+					-- 		target = ee,
+					-- 		target_offset = Utils.psum{boat.parrot.position_relative_to_boat, boat.parrot.text_extra_offset},
+					-- 		alignment = 'center',
+					-- 	}
+					-- 	rendering.destroy(boat.parrot.render)
+					-- 	rendering.destroy(boat.parrot.render_name)
+					-- 	boat.parrot.frame = 1
+					-- 	boat.parrot.state = Parrot.enum.FLY
+					-- 	boat.parrot.render = r
+					-- 	boat.parrot.render_name = r2
+					-- end
+				elseif p2.y > newposition.y then
+					memory.boat.decksteeringchests.right = ee
+				end
+			end
+
+			if circuit_neighbours_matrix[p.x] and circuit_neighbours_matrix[p.x][p.y] then
+				for _, v2 in pairs(circuit_neighbours_matrix[p.x][p.y]) do
+					local p3 = {x = v2.pos.x + vector.x, y = v2.pos.y + vector.y}
+					local e3s = newsurface.find_entities_filtered{
+						name = v2.name,
+						position = p3,
+						radius = 0.01,
+					}
+					if e3s and #e3s>0 then
+						local e3 = e3s[1]
+						if e3 and e3.valid then
+							ee.connect_neighbour{wire = v2.wire, target_entity = e3, source_circuit_id = v2.source_circuit_id, target_circuit_id = v2.target_circuit_id}
+						end
 					end
 				end
+			end
 
-				if ee and ee.valid then
-
-					if name == 'artillery-turret' then
-						-- if friendlyboat_bool then
-						-- 	if memory.enemyboatcannons then memory.enemyboatcannons[#memory.enemyboatcannons + 1] = ee end
-						-- else
-						-- 	if boat.cannons then boat.cannons[#boat.cannons + 1] = ee end
-						-- end
-						if oldsurface_name == newsurface_name then -- push players
-							local area1 = {{ee.position.x - 1.5, ee.position.y - 1.5}, {ee.position.x + 1.5, ee.position.y + 1.5}}
-							local area2 = {{ee.position.x - vector.x - 1.5, ee.position.y - vector.y - 1.5}, {ee.position.x - vector.x + 1.5, ee.position.y - vector.y + 1.5}}
-							if ee.position.y > boat.position.y then
-								area1 = {{ee.position.x - 2.5, ee.position.y}, {ee.position.x + 2.5, ee.position.y + 1.5}}
-								area2 = {{ee.position.x - 2.5, ee.position.y}, {ee.position.x + 2.5, ee.position.y + 1.5}}
-							elseif ee.position.y < boat.position.y then
-								area1 = {{ee.position.x - 2.5, ee.position.y - 1.5}, {ee.position.x + 2.5, ee.position.y}}
-								area2 = {{ee.position.x - 2.5, ee.position.y - 1.5}, {ee.position.x + 2.5, ee.position.y}}
-							end
-
-							local intersectingcharacters = newsurface.find_entities_filtered{area = area1, name = 'character'}
-							local intersectingcharacters2 = newsurface.find_entities_filtered{area = area2, name = 'character'}
-							local teleportedbool = false
-							for _, char in pairs(intersectingcharacters) do
-								if Utils.contains(intersectingcharacters2, char) then
-									char.teleport(vector.x, vector.y)
-									teleportedbool = true
-								end
-							end
-							for _, char in pairs(players_just_offside) do
-								if Utils.contains(intersectingcharacters, char) or Utils.contains(intersectingcharacters2, char) then
-									char.teleport(vector.x, vector.y)
-									teleportedbool = true
-								end
-								if teleportedbool and char and char.valid then --did I push you into water?
-									local nearbytiles = {newsurface.get_tile(char.position.x-1, char.position.y-1), newsurface.get_tile(char.position.x-1, char.position.y), newsurface.get_tile(char.position.x-1, char.position.y+1), newsurface.get_tile(char.position.x, char.position.y-1), newsurface.get_tile(char.position.x, char.position.y), newsurface.get_tile(char.position.x, char.position.y+1), newsurface.get_tile(char.position.x+1, char.position.y-1), newsurface.get_tile(char.position.x+1, char.position.y), newsurface.get_tile(char.position.x+1, char.position.y+1)}
-									local watercount = 0
-									for _, t in pairs(nearbytiles) do
-										if Utils.contains(CoreData.water_tile_names, t.name) then watercount = watercount + 1 end
-									end
-									if watercount > 5 then
-										local name2 = char.player and char.player.name or 'unknown-character'
-										char.die(char.force)
-
-										local force = memory.force
-										if not (force and force.valid) then return end
-										Common.notify_force(force,string.format('%s was pushed into water by a cannon.', name2), {r = 0.98, g = 0.66, b = 0.22})
+			if ee.type and ee.type == 'electric-pole' then
+				for k, v in pairs(electric_pole_neighbours_matrix or {}) do
+					if v[p.x] and v[p.x][p.y] then
+						for _, v2 in pairs(v[p.x][p.y]) do
+							local p3 = {x = v2.pos.x + vector.x, y = v2.pos.y + vector.y}
+							local e3s = newsurface.find_entities_filtered{
+								name = v2.name,
+								position = p3,
+								radius = 0.01,
+							}
+							if e3s and #e3s>0 then
+								local e3 = e3s[1]
+								if e3 and e3.valid then
+									if k == 'copper' then
+										ee.connect_neighbour(e3)
+									-- elseif k == 'red' then
+									-- 	ee.connect_neighbour{wire = defines.wire_type.red, target_entity = e3}
+									-- elseif k == 'green' then
+									-- 	ee.connect_neighbour{wire = defines.wire_type.green, target_entity = e3}
 									end
 								end
 							end
 						end
-
-					-- elseif ee.type and ee.type == 'underground-belt' then
-					-- 	local n = underground_belt_neighbours_matrix[p.x] and underground_belt_neighbours_matrix[p.x][p.y] or nil
-					-- 	if n then
-					-- 		log(inspect(n))
-					-- 		local p3 = {x = n.pos.x + vector.x, y = n.pos.y + vector.y}
-					-- 		local e3s = newsurface.find_entities_filtered{
-					-- 			name = n.name,
-					-- 			position = p3,
-					-- 			radius = 0.01,
-					-- 		}
-					-- 		if e3s and #e3s>0 then
-					-- 			local e3 = e3s[1]
-					-- 			if e3 and e3.valid then
-					-- 				ee.connect_neighbour(e3)
-					-- 			end
-					-- 		end
-					-- 	end
-
-					elseif name == 'electric-energy-interface' then
-						boat.EEIs[#boat.EEIs + 1] = ee
-
-					elseif name == 'linked-belt' then
-						-- if ee.linked_belt_type == 'output' then
-						-- 	boat.deck_output_belts[#boat.deck_output_belts + 1] = ee
-						-- else
-						-- 	boat.deck_input_belts[#boat.deck_input_belts + 1] = ee
-						-- end
-						boat.deck_whitebelts[#boat.deck_whitebelts + 1] = ee
 					end
 				end
+			end
+		end
+	end
+end
+
+
+local function process_entity_on_boat(memory, boat, newsurface, newposition, vector, players_just_offside, oldsurface_name, newsurface_name, unique_entities_list, electric_pole_neighbours_matrix, circuit_neighbours_matrix, e)
+
+	if e and e.valid and (not Utils.contains(unique_entities_list, e)) then
+		unique_entities_list[#unique_entities_list + 1] = e
+		local name = e.name
+
+		-- if e.name and e.name == 'item-on-ground' then
+		-- 	log(_inspect{'hi', name, e.position})
+		-- end
+
+		if name == 'character' and e.player then -- characters with associated players treated as special case
+			if oldsurface_name == newsurface_name then
+				e.teleport(vector.x, vector.y)
 			else
-				if oldsurface_name == newsurface_name then
-					e.teleport(vector.x, vector.y)
-					e.update_connections()
-				else
-					local p = Utils.deepcopy(e.position)
-					local p2 = {x = p.x + vector.x, y = p.y + vector.y}
-
-					if e.type and e.type == 'electric-pole' then
-						for k, v in pairs(e.neighbours or {}) do
-							if k == 'copper' then --red and green cases handled by circuit_neighbours_matrix
-								if not electric_pole_neighbours_matrix[k] then electric_pole_neighbours_matrix[k] = {} end
-								for _, v2 in pairs(v) do
-									if v2 and v2.valid and v2.position then
-										local v2p = v2.position
-										if not electric_pole_neighbours_matrix[k][v2p.x] then
-											electric_pole_neighbours_matrix[k][v2p.x] = {}
-										end
-										if not electric_pole_neighbours_matrix[k][v2p.x][v2p.y] then
-											electric_pole_neighbours_matrix[k][v2p.x][v2p.y] = {}
-										end
-										electric_pole_neighbours_matrix[k][v2p.x][v2p.y][#electric_pole_neighbours_matrix[k][v2p.x][v2p.y] + 1] = {name = e.name, pos = p}
-									end
-								end
-							end
-						end
-					end
-
-					for _, v in pairs(e.circuit_connection_definitions or {}) do
-						local e2 = v.target_entity
-						local wire = v.wire
-						local source_circuit_id = v.source_circuit_id
-						local target_circuit_id = v.target_circuit_id
-						if e2 and e2.valid and e2.position and (wire == defines.wire_type.red or wire == defines.wire_type.green) then --observed an error "Expected source_wire_id for entities with more than one wire connection" in the .connect_neighbour() function called later, so putting the red/green wire check in to try and catch it
-							local e2p = e2.position
-							if not circuit_neighbours_matrix[e2p.x] then
-								circuit_neighbours_matrix[e2p.x] = {}
-							end
-							if not circuit_neighbours_matrix[e2p.x][e2p.y] then
-								circuit_neighbours_matrix[e2p.x][e2p.y] = {}
-							end
-							circuit_neighbours_matrix[e2p.x][e2p.y][#circuit_neighbours_matrix[e2p.x][e2p.y] + 1] = {name = e.name, pos = p, wire = wire, source_circuit_id = target_circuit_id, target_circuit_id = source_circuit_id} --flip since we will read these backwards
-						end
-					end
-
-					local ee = e.clone{position = p2, surface = newsurface, create_build_effect_smoke = false}
-
-					if boat.upstairs_pole and e == boat.upstairs_pole then
-						boat.upstairs_pole = ee
-						Public.try_connect_upstairs_and_downstairs_poles(boat)
-					end
-
-					e.destroy()
-
-					-- Right now in the game we don't expect any non-player characters, so let's kill them to make a point:
-					if ee and ee.valid and ee.name and ee.name == 'character' and (not ee.player) then
-						ee.die()
-					end
-
-					if ee and ee.valid and ee.name then
-						if ee.name == 'blue-chest' then
-							if p2.y < newposition.y then
-								memory.boat.decksteeringchests.left = ee
-								-- --attach parrot to this:
-								-- if boat.parrot then
-								-- 	local r = rendering.draw_sprite{
-								-- 		sprite = "file/parrot/parrot_idle_fly_1.png",
-								-- 		surface = newsurface,
-								-- 		target = ee,
-								-- 		target_offset = Utils.psum{boat.parrot.position_relative_to_boat, boat.parrot.sprite_extra_offset},
-								-- 		x_scale = 2.8,
-								-- 		y_scale = 2.8,
-								-- 	}
-								-- 	local r2 = rendering.draw_text{
-								-- 		text = 'Parrot',
-								-- 		color = CoreData.colors.parrot,
-								-- 		surface = newsurface,
-								-- 		target = ee,
-								-- 		target_offset = Utils.psum{boat.parrot.position_relative_to_boat, boat.parrot.text_extra_offset},
-								-- 		alignment = 'center',
-								-- 	}
-								-- 	rendering.destroy(boat.parrot.render)
-								-- 	rendering.destroy(boat.parrot.render_name)
-								-- 	boat.parrot.frame = 1
-								-- 	boat.parrot.state = Parrot.enum.FLY
-								-- 	boat.parrot.render = r
-								-- 	boat.parrot.render_name = r2
-								-- end
-							elseif p2.y > newposition.y then
-								memory.boat.decksteeringchests.right = ee
-							end
-						end
-
-						if circuit_neighbours_matrix[p.x] and circuit_neighbours_matrix[p.x][p.y] then
-							for _, v2 in pairs(circuit_neighbours_matrix[p.x][p.y]) do
-								local p3 = {x = v2.pos.x + vector.x, y = v2.pos.y + vector.y}
-								local e3s = newsurface.find_entities_filtered{
-									name = v2.name,
-									position = p3,
-									radius = 0.01,
-								}
-								if e3s and #e3s>0 then
-									local e3 = e3s[1]
-									if e3 and e3.valid then
-										ee.connect_neighbour{wire = v2.wire, target_entity = e3, source_circuit_id = v2.source_circuit_id, target_circuit_id = v2.target_circuit_id}
-									end
-								end
-							end
-						end
-
-						if ee.type and ee.type == 'electric-pole' then
-							for k, v in pairs(electric_pole_neighbours_matrix or {}) do
-								if v[p.x] and v[p.x][p.y] then
-									for _, v2 in pairs(v[p.x][p.y]) do
-										local p3 = {x = v2.pos.x + vector.x, y = v2.pos.y + vector.y}
-										local e3s = newsurface.find_entities_filtered{
-											name = v2.name,
-											position = p3,
-											radius = 0.01,
-										}
-										if e3s and #e3s>0 then
-											local e3 = e3s[1]
-											if e3 and e3.valid then
-												if k == 'copper' then
-													ee.connect_neighbour(e3)
-												-- elseif k == 'red' then
-												-- 	ee.connect_neighbour{wire = defines.wire_type.red, target_entity = e3}
-												-- elseif k == 'green' then
-												-- 	ee.connect_neighbour{wire = defines.wire_type.green, target_entity = e3}
-												end
-											end
-										end
-									end
-								end
-							end
-						end
-					end
+				local p = {e.position.x + vector.x, e.position.y + vector.y}
+				if e.player then --e.player being nil caused a bug once!
+					e.player.teleport(newsurface.find_non_colliding_position('character', p, 1.2, 0.2) or p, newsurface)
 				end
 			end
+
+		elseif Utils.contains(CoreData.unteleportable_names, name) or (name == 'entity-ghost' and Utils.contains(CoreData.unteleportable_names, e.ghost_name)) then
+			process_entity_on_boat_unteleportable(memory, boat, newsurface, vector, players_just_offside, oldsurface_name, newsurface_name, e, name)
+		else
+			process_entity_on_boat_teleportable(memory, boat, newsurface, newposition, vector, oldsurface_name, newsurface_name, electric_pole_neighbours_matrix, circuit_neighbours_matrix, e)
 		end
 	end
-	
+end
 
-	-- copy back rails:
-	for _, ee in ipairs(saved_rails) do
-		if ee and ee.valid then
-			local p, f = ee.position, ee.force
-			local eee = ee.clone{position = {p.x + first_rail_found_p.x + vector.x, p.y + first_rail_found_p.y + vector.y}, surface = newsurface, force = f, create_build_effect_smoke = false}
-		end
-	end
 
-	-- copy back wagons:
-	for _, ee in ipairs(saved_wagons) do
-		if ee and ee.valid then
-			local p, f = ee.position, ee.force
-			local eee = ee.clone{position = {p.x + first_rail_found_p.x + vector.x, p.y + first_rail_found_p.y + vector.y}, surface = newsurface, force = f, create_build_effect_smoke = false}
-		end
-	end
-
-	-- destroy copies of rail/wagons:
-	for _, e in ipairs(saved_wagons) do
-		if e and e.valid then
-			e.destroy()
-		end
-	end
-	for _, e in ipairs(saved_rails) do
-		if e and e.valid then
-			e.destroy()
-		end
-	end
-	
-
-	Public.put_deck_whitebelts_in_standard_order(boat)
-	Hold.connect_up_linked_belts_to_deck()
-	Cabin.connect_up_linked_belts_to_deck()
-	
-
+local function teleport_handle_wake_tiles(boat, newsurface_name, oldsurface_name, oldsurface, newposition, vector, scope, vectordirection, vectorlength, old_water_tile, friendlyboat_bool)
 
 	local static_params = Common.current_destination().static_params
-	
 
 	--handle wake tiles:
 	if oldsurface_name == newsurface_name then
@@ -1232,10 +1013,15 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 
 	else
 		-- place waterboat
+		local dummyboat
+		if oldsurface_name ~= newsurface_name then
+			dummyboat = Utils.deepcopy(boat)
+		end
+
 		local p = dummyboat.position
-		
+
 		Public.destroy_boat(dummyboat, old_water_tile)
-		
+
 		local deepwaterfixuptiles = {}
 		for x = p.x, p.x - scope.Data.width, -1 do
 			if static_params and static_params.deepwater_xposition and x < static_params.deepwater_xposition then
@@ -1244,14 +1030,14 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 				end
 			end
 		end
-		
+
 		oldsurface.set_tiles(deepwaterfixuptiles, true)
-		
+
 	end
+end
 
 
-
-	-- handle renderings:
+local function teleport_handle_renderings(boat, oldsurface_name, newsurface_name, vector, scope, memory, newsurface)
 
 	if boat.renderings_power and #boat.renderings_power > 0 then
 
@@ -1307,8 +1093,253 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 	-- 		}
 	-- 	end
 	-- end
+end
 
-	
+
+local function teleport_prepare_new_tiles(boat, new_floor_tile, oldposition, oldsurface_name, newsurface_name, vector, scope, vectorlength, vectordirection)
+
+	if oldsurface_name == newsurface_name then
+		local areas = {}
+		if vector.x > 0 then
+			areas = scope.Data.areas_infront
+		elseif vector.x < 0 then
+			areas = scope.Data.areas_behind
+		elseif vector.y > 0 then
+			areas = scope.Data.areas_offright
+		elseif vector.y < 0 then
+			areas = scope.Data.areas_offleft
+		end
+
+		local newtiles = {}
+		for i=1,vectorlength,1 do
+			local adjustedoldposition = {x = oldposition.x + (i-1)*vectordirection.x, y = oldposition.y + (i-1)*vectordirection.y}
+			for _, area in pairs(areas) do
+				Common.tiles_from_area(newtiles, area, adjustedoldposition, new_floor_tile)
+				Common.destroy_decoratives_in_area(game.surfaces[newsurface_name], area, adjustedoldposition)
+			end
+		end
+		game.surfaces[newsurface_name].set_tiles(newtiles, true, true, true)
+	else
+		Public.place_boat(boat, new_floor_tile, false, true)
+	end
+end
+
+
+
+--if you're teleporting to the same surface, only do this in an orthogonal direction
+function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile, old_water_tile)
+	new_floor_tile = new_floor_tile or CoreData.moving_boat_floor
+	old_water_tile = old_water_tile or 'water'
+	local oldsurface_name = boat.surface_name
+	newsurface_name = newsurface_name or oldsurface_name
+	local oldposition = boat.position
+	newposition = newposition or oldposition
+
+	local scope = Public.get_scope(boat)
+
+	local memory = Memory.get_crew_memory()
+	local friendlyboat_bool = (memory.force_name == boat.force_name)
+	local oldsurface, newsurface = game.surfaces[oldsurface_name], game.surfaces[newsurface_name]
+
+	game.surfaces['nauvis'].request_to_generate_chunks({0,0}, 1)
+	game.surfaces['nauvis'].force_generate_chunk_requests() --WARNING: THIS DOES NOT PLAY NICELY WITH DELAYED TASKS. log(_inspect{global_memory.working_id}) was observed to vary before and after this function.
+
+	-- reset these:
+	boat.deck_whitebelts = {}
+	boat.EEIs = {}
+
+	-- only relevant for teleporting to the same surface, i.e. moving:
+	local vector = {x = newposition.x - oldposition.x, y = newposition.y - oldposition.y}
+	local vectordirection = {x = 0, y = 0};
+	local vectorlength = 0;
+	if oldsurface_name == newsurface_name then
+		if vector.x > 0 then
+			vectorlength = vector.x
+			vectordirection = {x = 1, y = 0}
+		elseif vector.x < 0 then
+			vectorlength = - vector.x
+			vectordirection = {x = -1, y = 0}
+		elseif vector.y > 0 then
+			vectorlength = vector.y
+			vectordirection = {x = 0, y = 1}
+		elseif vector.y < 0 then
+			vectorlength = - vector.y
+			vectordirection = {x = 0, y = -1}
+		end
+	end
+
+
+	boat.position = newposition
+	boat.surface_name = newsurface_name
+
+	if friendlyboat_bool then
+		if oldsurface_name == newsurface_name then
+			if oldsurface_name ~= CoreData.lobby_surface_name then
+				local oldspawn = memory.spawnpoint
+				memory.spawnpoint = {x = oldspawn.x + vector.x, y = oldspawn.y + vector.y}
+			end
+		else
+			memory.spawnpoint = {x = scope.Data.spawn_point.x + boat.position.x, y = scope.Data.spawn_point.y + boat.position.y}
+		end
+		game.forces[boat.force_name].set_spawn_position(memory.spawnpoint, game.surfaces[newsurface_name])
+	end
+
+	local sorting_f
+	if oldsurface_name == newsurface_name then
+		sorting_f = function(a,b)
+			if (a.name == 'straight-rail' or a.name == 'curved-rail') and (not (b.name == 'straight-rail' or b.name == 'curved-rail')) then return true end
+			if (b.name == 'straight-rail' or b.name == 'curved-rail') and (not (a.name == 'straight-rail' or a.name == 'curved-rail')) then return false end
+			if vector.x > 0 then
+				return ((a.position.x > b.position.x) or ((a.position.x == b.position.x) and (a.position.y > b.position.y)))
+			elseif vector.x < 0 then
+				return ((a.position.x < b.position.x) or ((a.position.x == b.position.x) and (a.position.y > b.position.y)))
+			end
+			if vector.y > 0 then
+				return ((a.position.y > b.position.y) or ((a.position.y == b.position.y) and (a.position.x > b.position.x)))
+			elseif vector.y < 0 then
+				return ((a.position.y < b.position.y) or ((a.position.y == b.position.y) and (a.position.x > b.position.x)))
+			end
+			return false
+		end
+	else
+		 --move walls before artillery
+		sorting_f = function(a,b)
+			return (a.name and a.name == 'stone-wall') and (not (b.name and b.name == 'stone-wall'))
+		end
+	end
+
+
+	local chunkloadradius = 1
+	if boat.type == enum.SLOOP then
+		chunkloadradius = 2
+	elseif boat.type == enum.CUTTER then
+		chunkloadradius = 3
+	end
+	Common.ensure_chunks_at(game.surfaces[newsurface_name], {x = newposition.x - scope.Data.width, y = newposition.y}, chunkloadradius)
+
+	teleport_prepare_new_tiles(boat, new_floor_tile, oldposition, oldsurface_name, newsurface_name, vector, scope, vectorlength, vectordirection)
+
+
+	local entities_on_boat = {}
+	for _, relative_area in pairs(scope.Data.tile_areas) do
+		local area = {{oldposition.x + relative_area[1][1], oldposition.y + relative_area[1][2]}, {oldposition.x + relative_area[2][1], oldposition.y + relative_area[2][2]}}
+		local entities = oldsurface.find_entities(area)
+		for _, e in pairs(entities) do
+			if e and e.valid then
+				entities_on_boat[#entities_on_boat + 1] = e
+			end
+		end
+	end
+
+	local players_just_offside = {}
+
+	if friendlyboat_bool then
+		players_just_offside = Public.get_players_just_offside(boat, oldposition)
+		entities_on_boat = Utils.exclude(entities_on_boat, players_just_offside)
+		table.sort(entities_on_boat, sorting_f)
+	end
+
+
+	local unique_entities_list = {}
+
+	-- copy away rails:
+	local saved_rails = {}
+	local first_rail_found_p = nil
+	for i = 1, #entities_on_boat do
+		local e = entities_on_boat[i]
+		if e and e.valid and (e.name == 'straight-rail' or e.name == 'curved-rail' or (e.name == 'entity-ghost' and (e.ghost_name == 'straight-rail' or e.ghost_name == 'curved-rail'))) and (not Utils.contains(unique_entities_list, e)) then
+			unique_entities_list[#unique_entities_list + 1] = e
+			local p, f = e.position, e.force
+			if not first_rail_found_p then
+				first_rail_found_p = {x = p.x, y = p.y}
+			end
+			local ee = e.clone{position = {x = p.x - first_rail_found_p.x, y = p.y - first_rail_found_p.y}, surface = game.surfaces['piratedev1'], force = f, create_build_effect_smoke = false}
+			if ee and ee.valid then
+				saved_rails[#saved_rails + 1] = ee
+			end
+		end
+	end
+
+	-- copy away wagons:
+	local saved_wagons = {}
+	for i = 1, #entities_on_boat do
+		local e = entities_on_boat[i]
+		if e and e.valid and (e.name == 'cargo-wagon' or e.name == 'locomotive' or (e.name == 'entity-ghost' and (e.ghost_name == 'cargo-wagon' or e.ghost_name == 'locomotive'))) and (not Utils.contains(unique_entities_list, e)) then
+			unique_entities_list[#unique_entities_list + 1] = e
+			local p, f = e.position, e.force
+			local ee = e.clone{position = {x = p.x - first_rail_found_p.x, y = p.y - first_rail_found_p.y}, surface = game.surfaces['piratedev1'], force = f, create_build_effect_smoke = false}
+			if ee and ee.valid then
+				saved_wagons[#saved_wagons + 1] = ee
+			end
+		end
+	end
+
+
+	-- destroy rail/wagons:
+	for i = 1, #entities_on_boat do
+		local e = entities_on_boat[i]
+		if e and e.valid and (e.name == 'cargo-wagon' or e.name == 'locomotive' or (e.name == 'entity-ghost' and (e.ghost_name == 'cargo-wagon' or e.name == 'locomotive'))) then
+			e.destroy()
+		end
+	end
+	for i = 1, #entities_on_boat do
+		local e = entities_on_boat[i]
+		if e and e.valid and (e.name == 'straight-rail' or e.name == 'curved-rail' or (e.name == 'entity-ghost' and (e.ghost_name == 'straight-rail' or e.ghost_name == 'curved-rail'))) then
+			e.destroy()
+		end
+	end
+
+
+
+	local electric_pole_neighbours_matrix = {}
+	local circuit_neighbours_matrix = {}
+	-- local underground_belt_neighbours_matrix = {}
+
+	for i = 1, #entities_on_boat do
+		local e = entities_on_boat[i]
+		process_entity_on_boat(memory, boat, newsurface, newposition, vector, players_just_offside, oldsurface_name, newsurface_name, unique_entities_list, electric_pole_neighbours_matrix, circuit_neighbours_matrix, e)
+	end
+
+
+	-- copy back rails:
+	for _, ee in ipairs(saved_rails) do
+		if ee and ee.valid then
+			local p, f = ee.position, ee.force
+			ee.clone{position = {p.x + first_rail_found_p.x + vector.x, p.y + first_rail_found_p.y + vector.y}, surface = newsurface, force = f, create_build_effect_smoke = false}
+		end
+	end
+
+	-- copy back wagons:
+	for _, ee in ipairs(saved_wagons) do
+		if ee and ee.valid then
+			local p, f = ee.position, ee.force
+			ee.clone{position = {p.x + first_rail_found_p.x + vector.x, p.y + first_rail_found_p.y + vector.y}, surface = newsurface, force = f, create_build_effect_smoke = false}
+		end
+	end
+
+	-- destroy copies of rail/wagons:
+	for _, e in ipairs(saved_wagons) do
+		if e and e.valid then
+			e.destroy()
+		end
+	end
+	for _, e in ipairs(saved_rails) do
+		if e and e.valid then
+			e.destroy()
+		end
+	end
+
+
+	Public.put_deck_whitebelts_in_standard_order(boat)
+	Hold.connect_up_linked_belts_to_deck()
+	Cabin.connect_up_linked_belts_to_deck()
+
+
+
+	teleport_handle_wake_tiles(boat, newsurface_name, oldsurface_name, oldsurface, newposition, vector, scope, vectordirection, vectorlength, old_water_tile, friendlyboat_bool)
+
+	teleport_handle_renderings(boat, oldsurface_name, newsurface_name, vector, scope, memory, newsurface)
+
 end
 
 return Public

@@ -1,15 +1,15 @@
 
 local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
-local Balance = require 'maps.pirates.balance'
-local Structures = require 'maps.pirates.structures.structures'
+-- local Balance = require 'maps.pirates.balance'
+-- local Structures = require 'maps.pirates.structures.structures'
 local Boats = require 'maps.pirates.structures.boats.boats'
 local Common = require 'maps.pirates.common'
 local Hold = require 'maps.pirates.surfaces.hold'
 local Cabin = require 'maps.pirates.surfaces.cabin'
 local CoreData = require 'maps.pirates.coredata'
 local Utils = require 'maps.pirates.utils_local'
-local inspect = require 'utils.inspect'.inspect
+local _inspect = require 'utils.inspect'.inspect
 local CustomEvents = require 'maps.pirates.custom_events'
 
 
@@ -90,7 +90,7 @@ function Public.place_dock_jetty_and_boats()
 	Common.add_tiles_from_blueprint(tiles, Public.Data.ground_bp_1, 'grass-4', Public.Data.ground_bp_1_offset)
 	Common.add_tiles_from_blueprint(tiles, Public.Data.jetty_bp, CoreData.walkway_tile, Public.Data.jetty_offset)
 	Common.add_tiles_from_blueprint(tiles, Public.Data.stone_bp_1, 'stone-path', Public.Data.stone_bp_1_offset)
-		
+
 	surface.set_tiles(tiles, true)
 
 	local boat_for_sale_type = destination.static_params.boat_for_sale_type
@@ -120,7 +120,7 @@ function Public.place_dock_jetty_and_boats()
 
 		destination.dynamic_data.boat_for_sale = boat2
 	end
-	
+
 
 
 	-- for y = -3.5, 3.5 do
@@ -134,7 +134,7 @@ end
 
 function Public.terrain(args)
 
-	local x, y = args.p.x, args.p.y
+	-- local x, y = args.p.x, args.p.y
 
 	args.tiles[#args.tiles + 1] = {name = 'water', position = args.p}
 	local fishrng = Math.random(165)
@@ -143,7 +143,7 @@ function Public.terrain(args)
 	end
 end
 
-function Public.chunk_structures(args)
+function Public.chunk_structures()
 	return nil
 end
 

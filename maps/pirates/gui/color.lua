@@ -1,7 +1,7 @@
 
-local Memory = require 'maps.pirates.memory'
-local Utils = require 'maps.pirates.utils_local'
-local Math = require 'maps.pirates.math'
+-- local Memory = require 'maps.pirates.memory'
+-- local Utils = require 'maps.pirates.utils_local'
+-- local Math = require 'maps.pirates.math'
 local GuiCommon = require 'maps.pirates.gui.common'
 local PlayerColors = require 'maps.pirates.player_colors'
 local Public = {}
@@ -9,10 +9,10 @@ local Public = {}
 local window_name = 'color'
 
 function Public.toggle_window(player)
-	local flow, flow2, flow3, flow4, flow5, flow6
+	local flow, flow2
 
 	if player.gui.screen[window_name .. '_piratewindow'] then player.gui.screen[window_name .. '_piratewindow'].destroy() return end
-	
+
 	flow = GuiCommon.new_window(player, window_name)
 	flow.caption = 'Colors!'
 	flow.style.width = 500
@@ -39,22 +39,21 @@ function Public.toggle_window(player)
 	flow2.style.width = 450
 	flow2.style.height = 400
 
-	flow2 = GuiCommon.flow_add_close_button(flow, window_name .. '_piratebutton')
-
+	GuiCommon.flow_add_close_button(flow, window_name .. '_piratebutton')
 end
 
 
 
-function Public.regular_update(player)
+-- function Public.regular_update(player)
 
-end
+-- end
 
 function Public.full_update(player)
 	Public.regular_update(player)
 end
 
 
-function Public.click(event)
-end
+-- function Public.click(event)
+-- end
 
 return Public

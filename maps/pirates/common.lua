@@ -3,9 +3,9 @@ local Math = require 'maps.pirates.math'
 local Utils = require 'maps.pirates.utils_local'
 local CoreData = require 'maps.pirates.coredata'
 local Memory = require 'maps.pirates.memory'
-local inspect = require 'utils.inspect'.inspect
-local simplex_noise = require 'utils.simplex_noise'.d2
-local perlin_noise = require 'utils.perlin_noise'
+local _inspect = require 'utils.inspect'.inspect
+-- local simplex_noise = require 'utils.simplex_noise'.d2
+-- local perlin_noise = require 'utils.perlin_noise'
 -- local Force_health_booster = require 'modules.force_health_booster'
 
 local Public = {}
@@ -272,7 +272,7 @@ function Public.give(player, stacks, spill_position, spill_surface)
 		local stack = stacks2[j]
 		local itemname, itemcount, flying_text_color = stack.name, stack.count or 1, stack.color or (CoreData.colors[stack.name] or {r = 1, g = 1, b = 1})
 		local itemcount_remember = itemcount
-	
+
 		if not itemname then return end
 
 		if itemcount > 0 then
@@ -380,20 +380,20 @@ function Public.set_biter_surplus_evo_modifiers()
 	local surplus = memory.evolution_factor - 1
 
 	local damage_fractional_mod
-	local health_fractional_mod
+	-- local health_fractional_mod
 
 	if surplus > 0 then
 		damage_fractional_mod = Public.surplus_evo_biter_damage_modifier(surplus)
-		health_fractional_mod = Public.surplus_evo_biter_health_fractional_modifier(surplus)
+		-- health_fractional_mod = Public.surplus_evo_biter_health_fractional_modifier(surplus)
 	else
 		damage_fractional_mod = 0
-		health_fractional_mod = 0
+		-- health_fractional_mod = 0
 	end
 	enemy_force.set_ammo_damage_modifier('melee', damage_fractional_mod)
 	enemy_force.set_ammo_damage_modifier('biological', damage_fractional_mod)
 	enemy_force.set_ammo_damage_modifier('artillery-shell', damage_fractional_mod)
 	enemy_force.set_ammo_damage_modifier('flamethrower', damage_fractional_mod)
-	
+
 	-- this event is behaving really weirdly, e.g. messing up samurai damage:
 	-- Force_health_booster.set_health_modifier(enemy_force.index, 1 + health_fractional_mod)
 end
@@ -426,7 +426,7 @@ end
 
 function Public.current_destination()
 	local memory = Memory.get_crew_memory()
-	
+
 	if memory.currentdestination_index then
 		return memory.destinations[memory.currentdestination_index]
 	else
@@ -446,12 +446,12 @@ function Public.time_adjusted_departure_cost(cost)
 		local dynamic_data = destination.dynamic_data
 		local timer = dynamic_data.timer
 		local time_remaining = dynamic_data.time_remaining
-	
+
 		if timer and time_remaining and timer >= 0 and time_remaining >= 0 then
 			local total_time = timer + time_remaining
 			local elapsed_fraction = timer / total_time
 			local cost_fraction = 1 - elapsed_fraction
-	
+
 			local new_cost = {}
 			for name, count in pairs(cost) do
 				if type(count) == "number" then
@@ -460,7 +460,7 @@ function Public.time_adjusted_departure_cost(cost)
 					new_cost[name] = count
 				end
 			end
-	
+
 			ret = new_cost
 		end
 
@@ -585,15 +585,15 @@ function Public.update_boat_stored_resources()
 	local input_chests = boat.input_chests
 
 	if not input_chests then return end
-	
+
 	for i, chest in ipairs(input_chests) do
 		if i>1 and CoreData.cost_items[i-1] then
 			local inv = chest.get_inventory(defines.inventory.chest)
 			local contents = inv.get_contents()
-	
+
 			local item_type = CoreData.cost_items[i-1].name
 			local count = contents[item_type] or 0
-	
+
 			boat.stored_resources[item_type] = count
 		end
 	end
@@ -609,13 +609,13 @@ function Public.spend_stored_resources(to_spend)
 	local input_chests = boat.input_chests
 
 	if not input_chests then return end
-	
+
 	for i, chest in ipairs(input_chests) do
 		if i>1 then
 			local inv = chest.get_inventory(defines.inventory.chest)
 			local item_type = CoreData.cost_items[i-1].name
 			local to_spend_i = to_spend[item_type] or 0
-	
+
 			if to_spend_i > 0 then
 				inv.remove{name = item_type, count = to_spend_i}
 			end
@@ -703,7 +703,7 @@ function Public.update_healthbar_rendering(new_healthbar, health)
 		local x_scale = rendering.get_y_scale(render1) * 15
 		rendering.set_x_scale(render1, x_scale * m)
 		rendering.set_color(render1, {Math.floor(255 - 255 * m), Math.floor(200 * m), 0})
-	
+
 		if render2 then
 			rendering.set_text(render2, string.format('HP: %d/%d',Math.ceil(health),Math.ceil(max_health)))
 		end
@@ -717,7 +717,7 @@ end
 
 function Public.spawner_count(surface)
 	local memory = Memory.get_crew_memory()
-	
+
 	local spawners = surface.find_entities_filtered({type = 'unit-spawner', force = memory.enemy_force_name})
 	local spawnerscount = #spawners or 0
 	return spawnerscount
@@ -804,14 +804,14 @@ function Public.can_place_silo_setup(surface, p, silo_count, generous, build_che
 	return s
 end
 
-function Public.ensure_chunks_at(surface, pos, radius) --WARNING: THIS DOES NOT PLAY NICELY WITH DELAYED TASKS. log(inspect{global_memory.working_id}) was observed to vary before and after this function.
-	local global_memory = Memory.get_global_memory()
+function Public.ensure_chunks_at(surface, pos, radius) --WARNING: THIS DOES NOT PLAY NICELY WITH DELAYED TASKS. log(_inspect{global_memory.working_id}) was observed to vary before and after this function.
+	-- local global_memory = Memory.get_global_memory()
 	if surface and surface.valid then
 		surface.request_to_generate_chunks(pos, radius)
-		surface.force_generate_chunk_requests() --WARNING: THIS DOES NOT PLAY NICELY WITH DELAYED TASKS. log(inspect{global_memory.working_id}) was observed to vary before and after this function.
+		surface.force_generate_chunk_requests() --WARNING: THIS DOES NOT PLAY NICELY WITH DELAYED TASKS. log(_inspect{global_memory.working_id}) was observed to vary before and after this function.
 	end
-	
-	
+
+
 end
 
 
@@ -819,7 +819,7 @@ function Public.default_map_gen_settings(width, height, seed)
 	width = width or 512
 	height = height or 512
 	seed = seed or Math.random(1, 1000000)
-	
+
 	local map_gen_settings = {
 		['seed'] = seed,
 		['width'] = width,
@@ -855,7 +855,7 @@ function Public.build_from_blueprint(bp_string, surface, pos, force, flipped)
 	local rev_entities = {}
 	for _, e in pairs(entities) do
 		if e and e.valid then
-			local collisions, revived_entity = e.silent_revive()
+			local _collisions, revived_entity = e.silent_revive()
 			rev_entities[#rev_entities + 1] = revived_entity
 		end
 	end
@@ -863,7 +863,7 @@ function Public.build_from_blueprint(bp_string, surface, pos, force, flipped)
 	-- once again, to revive wagons:
 	for _, e in pairs(entities) do
 		if e and e.valid and e.type and e.type == 'entity-ghost' then
-			local collisions, revived_entity = e.silent_revive()
+			local _collisions, revived_entity = e.silent_revive()
 			rev_entities[#rev_entities + 1] = revived_entity
 
 			if revived_entity and revived_entity.valid and revived_entity.name == 'locomotive' then
@@ -873,7 +873,7 @@ function Public.build_from_blueprint(bp_string, surface, pos, force, flipped)
 			end
 		end
 	end
-	
+
 	return rev_entities
 end
 
@@ -912,9 +912,9 @@ function Public.add_tiles_from_blueprint(tilesTable, bp_string, tile_name, offse
 			tilesTable[#tilesTable + 1] = {name = tile_name, position = {x = tile.position.x + offset.x, y = tile.position.y + offset.y}}
 		end
 	end
-	
+
 	bp_entity.destroy()
-	
+
 	return tilesTable
 end
 
@@ -931,9 +931,9 @@ function Public.tile_positions_from_blueprint(bp_string, offset)
 			positions[#positions + 1] = {x = tile.position.x + offset.x, y = tile.position.y + offset.y}
 		end
 	end
-	
+
 	bp_entity.destroy()
-	
+
 	return positions
 end
 
@@ -953,9 +953,9 @@ function Public.tile_positions_from_blueprint_arrayform(bp_string, offset)
 			positions[x][y] = true
 		end
 	end
-	
+
 	bp_entity.destroy()
-	
+
 	return positions
 end
 
@@ -972,9 +972,9 @@ function Public.entity_positions_from_blueprint(bp_string, offset)
 			positions[#positions + 1] = {x = e.position.x + offset.x, y = e.position.y + offset.y}
 		end
 	end
-	
+
 	bp_entity.destroy()
-	
+
 	return positions
 end
 
@@ -1225,9 +1225,9 @@ function Public.give_items_to_crew(items)
 				end
 			else
 				if _DEBUG then
-					log('give_items_to_crew: i2.name is nil. inspect:')
-					log(inspect(items))
-					log(inspect(i2))
+					log('give_items_to_crew: i2.name is nil. _inspect:')
+					log(_inspect(items))
+					log(_inspect(i2))
 				end
 			end
 		end
@@ -1257,7 +1257,7 @@ end
 function Public.init_game_settings(technology_price_multiplier)
 
 	--== Tuned for Pirate Ship ==--
-	
+
 	global.friendly_fire_history = {}
 	global.landfill_history = {}
 	global.mining_history = {}
@@ -1286,8 +1286,11 @@ function Public.init_game_settings(technology_price_multiplier)
 
 	game.map_settings.enemy_expansion.enabled = true
 	-- faster expansion:
-	game.map_settings.enemy_expansion.min_expansion_cooldown = 4 * 3600
-	game.map_settings.enemy_expansion.max_expansion_cooldown = 30 * 3600
+	-- game.map_settings.enemy_expansion.min_expansion_cooldown = 4 * 3600
+	-- game.map_settings.enemy_expansion.max_expansion_cooldown = 30 * 3600
+	-- slowed down due to the effect on single-player games:
+	game.map_settings.enemy_expansion.min_expansion_cooldown = 6 * 3600
+	game.map_settings.enemy_expansion.max_expansion_cooldown = 45 * 3600
 	game.map_settings.enemy_expansion.settler_group_max_size = 24
 	game.map_settings.enemy_expansion.settler_group_min_size = 6
 	-- maybe should be 3.5 if possible:
@@ -1295,7 +1298,7 @@ function Public.init_game_settings(technology_price_multiplier)
 
 	-- could turn off default AI attacks:
 	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 1
-	-- 
+	--
 	game.map_settings.pollution.enabled = true
 	game.map_settings.pollution.expected_max_per_chunk = 120
 	game.map_settings.pollution.min_to_show_per_chunk = 10

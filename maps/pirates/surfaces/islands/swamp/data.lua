@@ -1,7 +1,7 @@
 
-local Common = require 'maps.pirates.common'
-local Utils = require 'maps.pirates.utils_local'
-local Math = require 'maps.pirates.math'
+-- local Common = require 'maps.pirates.common'
+-- local Utils = require 'maps.pirates.utils_local'
+-- local Math = require 'maps.pirates.math'
 
 local Public = {}
 
@@ -20,7 +20,7 @@ Public.static_params_default = {
 	base_starting_treasure_maps = 0,
 }
 
-function Public.base_ores() 
+function Public.base_ores()
 	return {
 		['copper-ore'] = 2.9,
 		['iron-ore'] = 3.6,

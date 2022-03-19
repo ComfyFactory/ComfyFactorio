@@ -1,24 +1,21 @@
 
-local Balance = require 'maps.pirates.balance'
-local Memory = require 'maps.pirates.memory'
+-- local Balance = require 'maps.pirates.balance'
+-- local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
 local CoreData = require 'maps.pirates.coredata'
-local inspect = require 'utils.inspect'.inspect
+local _inspect = require 'utils.inspect'.inspect
 local Common = require 'maps.pirates.common'
 local Utils = require 'maps.pirates.utils_local'
 local simplex_noise = require 'utils.simplex_noise'.d2
-local CustomEvents = require 'maps.pirates.custom_events'
+-- local CustomEvents = require 'maps.pirates.custom_events'
 
 local Public = {}
 
 
 
-
-
-
 function Public.try_ore_spawn(surface, realp, source_name, density_bonus)
 	density_bonus = density_bonus or 0
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 	local choices = destination.dynamic_data.hidden_ore_remaining_abstract
 
@@ -69,15 +66,15 @@ function Public.try_ore_spawn(surface, realp, source_name, density_bonus)
 				local real_amount = Math.max(Common.minimum_ore_placed_per_tile, Common.ore_abstract_to_real(choices[choice]))
 
 				local density = (density_bonus + 17 + 4 * Math.random()) -- not too big, and not too much variation; it makes players have to stay longer
-				
+
 				local radius_squared = (destination.static_params and destination.static_params.radius_squared_modifier or 1) * (12 + 45 * Math.slopefromto(Common.ore_abstract_to_real(choices[choice]), 800, 20000)) * (0.6 + Math.random()) --tuned
-	
+
 				if source_name == 'rock-huge' then
 					radius_squared = radius_squared * 1.5
 				end
-			
+
 				placed = Public.draw_noisy_ore_patch(surface, realp, choice, real_amount, radius_squared, density)
-				
+
 				if placed then
 					choices[choice] = Math.max(0, choices[choice] - Common.ore_real_to_abstract(placed))
 					if placed > 0 and not destination.dynamic_data.ore_types_spawned[choice] then
@@ -119,7 +116,7 @@ function Public.draw_noisy_ore_patch(surface, position, name, budget, radius_squ
 		local absx = x + position.x
 		local absy = y + position.y
 		local absp = {x = absx, y = absy}
-		
+
 		local amount_to_place_here = Math.min(density * strength, budget - amountplaced)
 
 		if amount_to_place_here >= Common.minimum_ore_placed_per_tile then

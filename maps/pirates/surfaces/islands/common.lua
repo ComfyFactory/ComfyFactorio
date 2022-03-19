@@ -1,12 +1,12 @@
 
 local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
-local Balance = require 'maps.pirates.balance'
+-- local Balance = require 'maps.pirates.balance'
 local Structures = require 'maps.pirates.structures.structures'
 local Common = require 'maps.pirates.common'
-local Utils = require 'maps.pirates.utils_local'
-local Ores = require 'maps.pirates.ores'
-local inspect = require 'utils.inspect'.inspect
+-- local Utils = require 'maps.pirates.utils_local'
+-- local Ores = require 'maps.pirates.ores'
+local _inspect = require 'utils.inspect'.inspect
 
 local Public = {}
 
@@ -295,11 +295,11 @@ function Public.assorted_structures_1(args, spec)
 			x = avgleft_top.x - 16,
 			y = avgleft_top.y - 16,
 		}
-	
+
 		local spec2 = spec{x = avgleft_top.x + 16, y = avgleft_top.y + 16}
-		
+
 		if rng < spec2.chanceper4chunks then
-	
+
 			local rng2 = Math.random()
 			local struct
 
@@ -348,7 +348,7 @@ function Public.assorted_structures_1(args, spec)
 					struct = Structures.IslandStructures.MATTISSO.small_roboport_base
 				end
 			end
-	
+
 			if struct then
 				Structures.try_place(struct, args.specials, leftmost_topmost, 64, 64, function(p) return spec(p).placeable end)
 			end

@@ -1,11 +1,11 @@
 
 local Memory = require 'maps.pirates.memory'
-local Math = require 'maps.pirates.math'
+-- local Math = require 'maps.pirates.math'
 local Balance = require 'maps.pirates.balance'
 local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
-local Utils = require 'maps.pirates.utils_local'
-local inspect = require 'utils.inspect'.inspect
+-- local Utils = require 'maps.pirates.utils_local'
+local _inspect = require 'utils.inspect'.inspect
 
 
 local SurfacesCommon = require 'maps.pirates.surfaces.common'
@@ -38,7 +38,7 @@ Public[enum.INITIAL].Data.hold_whitebelts_lrtp_order = {
 	{x = -19.5, y = -21.5, direction = defines.direction.north, type = 'output'},
 	{x = -18.5, y = -21.5, direction = defines.direction.north, type = 'output'},
 	{x = -17.5, y = -21.5, direction = defines.direction.north, type = 'output'},
-	
+
 	{x = 17.5, y = -21.5, direction = defines.direction.north, type = 'output'},
 	{x = 18.5, y = -21.5, direction = defines.direction.north, type = 'output'},
 	{x = 19.5, y = -21.5, direction = defines.direction.north, type = 'output'},
@@ -51,7 +51,7 @@ Public[enum.INITIAL].Data.hold_whitebelts_lrtp_order = {
 	{x = 44.5, y = 2.5, direction = defines.direction.east, type = 'input'},
 	{x = -44.5, y = 3.5, direction = defines.direction.west, type = 'input'},
 	{x = 44.5, y = 3.5, direction = defines.direction.east, type = 'input'},
-	
+
 	{x = -19.5, y = 21.5, direction = defines.direction.south, type = 'input'},
 	{x = -18.5, y = 21.5, direction = defines.direction.south, type = 'input'},
 	{x = -17.5, y = 21.5, direction = defines.direction.south, type = 'input'},
@@ -96,7 +96,7 @@ function Public.create_hold_surface(nth)
 	local memory = Memory.get_crew_memory()
 	local boat = memory.boat
 
-	
+
 	local width = Public.Data.width
 	local height = Public.Data.height
 	local map_gen_settings = Common.default_map_gen_settings(width, height)
@@ -105,7 +105,7 @@ function Public.create_hold_surface(nth)
 
 	local holdname = Public.get_hold_surface_name(nth)
 
-	if not holdname then log(inspect{'holdname is nil? here some stuff:', memory.id, nth, SurfacesCommon.enum.HOLD}) end
+	if not holdname then log(_inspect{'holdname is nil? here some stuff:', memory.id, nth, SurfacesCommon.enum.HOLD}) end
 
 	local surface = game.create_surface(holdname, map_gen_settings)
 	surface.freeze_daytime = true
@@ -117,7 +117,7 @@ function Public.create_hold_surface(nth)
 
 	Common.ensure_chunks_at(surface, {x = 0, y = 0}, 5)
 
-	
+
 	local subtype = nth == 1 and enum.INITIAL or enum.SECONDARY
 
 	local whitebelts_table, whitebelts_data
@@ -368,7 +368,7 @@ function Public.terrain(args)
 	return nil
 end
 
-function Public.chunk_structures(args)
+function Public.chunk_structures()
 	return nil
 end
 

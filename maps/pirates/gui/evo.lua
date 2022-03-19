@@ -1,15 +1,15 @@
 
 local Common = require 'maps.pirates.common'
 local Balance = require 'maps.pirates.balance'
-local Utils = require 'maps.pirates.utils_local'
-local Math = require 'maps.pirates.math'
-local inspect = require 'utils.inspect'.inspect
+-- local Utils = require 'maps.pirates.utils_local'
+-- local Math = require 'maps.pirates.math'
+local _inspect = require 'utils.inspect'.inspect
 local Boats = require 'maps.pirates.structures.boats.boats'
 local Memory = require 'maps.pirates.memory'
 local Kraken = require 'maps.pirates.surfaces.sea.kraken'
 local Public = {}
 
-local GuiCommon = require 'maps.pirates.gui.common'
+-- local GuiCommon = require 'maps.pirates.gui.common'
 
 -- local button_sprites = {
 -- 	['small-biter'] = 0,
@@ -45,13 +45,13 @@ local GuiCommon = require 'maps.pirates.gui.common'
 
 
 
-function Public.regular_update(player)
+-- function Public.regular_update(player)
 
-end
+-- end
 
 function Public.full_update(player)
 	Public.regular_update(player)
-	
+
 	local memory = Memory.get_crew_memory()
 	local pirates_flow = player.gui.top
 
@@ -68,14 +68,14 @@ function Public.full_update(player)
 		-- else
 
 		local destination = Common.current_destination()
-		
-		local evolution_leagues = nil
-		local evolution_kraken = nil
-		local evolution_time = nil
-		local evolution_silo = nil
-		local evolution_nests = nil
-		local evolution_sandwurms = nil
-		local evolution_total = nil
+
+		local evolution_leagues
+		local evolution_kraken
+		local evolution_time
+		local evolution_silo
+		local evolution_nests
+		local evolution_sandwurms
+		local evolution_total
 
 		local types = {'leagues', 'kraken', 'time', 'silo', 'nests', 'sandwurms'}
 

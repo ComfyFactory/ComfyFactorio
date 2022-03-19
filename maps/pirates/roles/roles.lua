@@ -1,8 +1,8 @@
 
 local Session = require 'utils.datastore.session_data'
 local Antigrief = require 'utils.antigrief'
-local Balance = require 'maps.pirates.balance'
-local inspect = require 'utils.inspect'.inspect
+-- local Balance = require 'maps.pirates.balance'
+local _inspect = require 'utils.inspect'.inspect
 local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
 local Common = require 'maps.pirates.common'
@@ -30,12 +30,12 @@ end
 function Public.make_officer(captain, player)
 	local memory = Memory.get_crew_memory()
 	local force = memory.force
-	
+
 	if Utils.contains(Common.crew_get_crew_members(), player) then
 		if (not (captain.index == player.index)) then
 			if Common.validate_player(player) then
 				memory.officers_table[player.index] = true
-		
+
 				local message = (captain.name .. ' made ' .. player.name .. ' an officer.')
 				Common.notify_force_light(force, message)
 				Public.update_privileges(player)
@@ -56,11 +56,11 @@ end
 function Public.unmake_officer(captain, player)
 	local memory = Memory.get_crew_memory()
 	local force = memory.force
-	
+
 	if Utils.contains(Common.crew_get_crew_members(), player) then
 		if memory.officers_table[player.index] then
 			memory.officers_table[player.index] = nil
-	
+
 			local message = (captain.name .. ' unmade ' .. player.name .. ' an officer.')
 			Common.notify_force_light(force, message)
 			Public.update_privileges(player)
@@ -208,19 +208,19 @@ function Public.player_confirm_captainhood(player)
 end
 
 function Public.player_left_so_redestribute_roles(player)
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
 
 	if player and player.index then
 		if Common.is_captain(player) then
 			Public.assign_captain_based_on_priorities()
 		end
-		
+
 		-- no need to do this, as long as officers get reset when the captainhood changes hands
 		-- if memory.officers_table and memory.officers_table[player.index] then
 		-- 	memory.officers_table[player.index] = nil
 		-- end
 	end
-	
+
 	Classes.try_renounce_class(player, false, "A %s class is now spare.")
 end
 
@@ -240,7 +240,7 @@ function Public.renounce_captainhood(player)
 			Common.notify_force(force, message)
 			Server.to_discord_embed_raw(CoreData.comfy_emojis.ree1 .. '[' .. memory.name .. '] ' .. message)
 		end
-		
+
 		Public.assign_captain_based_on_priorities(player.index)
 	end
 end
@@ -264,12 +264,12 @@ end
 
 function Public.confirm_captain_exists(player_to_make_captain_otherwise)
 	local memory = Memory.get_crew_memory()
-	-- Currently this catches an issue where someone starts a crew and leaves it, and more players join later.
+	-- Currently this catches an issue where a crew drops to zero players, and then someone else joins.
 
 	if (memory.id and memory.id > 0 and memory.crewstatus and memory.crewstatus == 'adventuring') and (not (memory.playerindex_captain and game.players[memory.playerindex_captain] and Common.validate_player(game.players[memory.playerindex_captain]))) then --fixme: enum hacked
 		if player_to_make_captain_otherwise then
 			Public.make_captain(player_to_make_captain_otherwise)
-			game.print('Auto-reassigning captain.')
+			-- game.print('Auto-reassigning captain.')
 		else
 			log('Error: Couldn\'t make a captain.')
 		end
@@ -277,7 +277,7 @@ function Public.confirm_captain_exists(player_to_make_captain_otherwise)
 end
 
 function Public.pass_captainhood(player, player_to_pass_to)
-	local global_memory = Memory.get_global_memory()
+	-- local global_memory = Memory.get_global_memory()
 	local memory = Memory.get_crew_memory()
 
 	local force = memory.force
@@ -290,9 +290,9 @@ function Public.pass_captainhood(player, player_to_pass_to)
 end
 
 function Public.afk_player_tick(player)
-	local global_memory = Memory.get_global_memory()
+	-- local global_memory = Memory.get_global_memory()
 	local memory = Memory.get_crew_memory()
-	
+
 	if Common.is_captain(player) and #Common.crew_get_nonafk_crew_members() > 0 then
 
 		local force = memory.force
@@ -336,7 +336,7 @@ function Public.assign_captain_based_on_priorities(excluded_player_index)
 			-- prefer non-afk players:
 			if only_found_afk_players or player_active then
 				only_found_afk_players = player_active
-	
+
 				local player_priority = global_memory.playerindex_to_captainhood_priority[player_index]
 				if player_priority and player_priority > best_priority_so_far then
 					best_priority_so_far = player_priority
@@ -395,7 +395,7 @@ function Public.captain_requisition(captain_index)
 	local crew_members = memory.crewplayerindices
 	local captain = game.players[captain_index]
 	if not (captain and crew_members) then return end
-	
+
 	local captain_inv = captain.get_inventory(defines.inventory.character_main)
 	if captain_inv and captain_inv.valid then
 		for _, player_index in pairs(crew_members) do

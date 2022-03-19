@@ -7,23 +7,23 @@ local Balance = require 'maps.pirates.balance'
 local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
 local Utils = require 'maps.pirates.utils_local'
-local inspect = require 'utils.inspect'.inspect
-local Server = require 'utils.server'
+local _inspect = require 'utils.inspect'.inspect
+-- local Server = require 'utils.server'
 
-local Structures = require 'maps.pirates.structures.structures'
+-- local Structures = require 'maps.pirates.structures.structures'
 local Boats = require 'maps.pirates.structures.boats.boats'
 local Surfaces = require 'maps.pirates.surfaces.surfaces'
 local Crowsnest = require 'maps.pirates.surfaces.crowsnest'
 local Dock = require 'maps.pirates.surfaces.dock'
-local Islands = require 'maps.pirates.surfaces.islands.islands'
-local Sea = require 'maps.pirates.surfaces.sea.sea'
+-- local Islands = require 'maps.pirates.surfaces.islands.islands'
+-- local Sea = require 'maps.pirates.surfaces.sea.sea'
 local Crew = require 'maps.pirates.crew'
-local Roles = require 'maps.pirates.roles.roles'
+-- local Roles = require 'maps.pirates.roles.roles'
 local Classes = require 'maps.pirates.roles.classes'
-local Quest = require 'maps.pirates.quest'
-local Parrot = require 'maps.pirates.parrot'
-local Hold = require 'maps.pirates.surfaces.hold'
-local Cabin = require 'maps.pirates.surfaces.cabin'
+-- local Quest = require 'maps.pirates.quest'
+-- local Parrot = require 'maps.pirates.parrot'
+-- local Hold = require 'maps.pirates.surfaces.hold'
+-- local Cabin = require 'maps.pirates.surfaces.cabin'
 local Shop = require 'maps.pirates.shop.shop'
 local Upgrades = require 'maps.pirates.boat_upgrades'
 local Kraken = require 'maps.pirates.surfaces.sea.kraken'
@@ -45,29 +45,29 @@ for x = 1, 14 do
 end
 
 
-
-function Public.generate_overworld_destination(p)
-	-- be careful when calling any Balance functions that depend on overworldx — they will be evaluated when the island is chosen, not on arrival
+function Public.generate_destination_type_and_subtype(overworld_position)
 	local memory = Memory.get_crew_memory()
 
-	local macrop = {x = p.x/40, y = p.y/24}
+	local macro_p = {x = overworld_position.x/40, y = overworld_position.y/24}
+	local macro_x = macro_p.x
+	local macro_y = macro_p.y
 
 	local type, subtype
 
 	local island_subtype_raffle = {'none', 'none', Surfaces.Island.enum.STANDARD, Surfaces.Island.enum.STANDARD_VARIANT, Surfaces.Island.enum.RED_DESERT, Surfaces.Island.enum.HORSESHOE}
 
-	if macrop.x >= 6 then island_subtype_raffle[#island_subtype_raffle + 1] = Surfaces.Island.enum.WALKWAYS end
-	if macrop.x >= 6 then island_subtype_raffle[#island_subtype_raffle + 1] = 'none' end
-	-- if macrop.x >= 13 and macrop.y == 1 then
+	if macro_x >= 6 then island_subtype_raffle[#island_subtype_raffle + 1] = Surfaces.Island.enum.WALKWAYS end
+	if macro_x >= 6 then island_subtype_raffle[#island_subtype_raffle + 1] = 'none' end
+	-- if macro_x >= 13 and macro_y == 1 then
 	-- 	island_subtype_raffle[#island_subtype_raffle + 1] = Surfaces.Island.enum.MAZE
 	-- 	island_subtype_raffle[#island_subtype_raffle + 1] = Surfaces.Island.enum.MAZE
 	-- end
-	if macrop.x >= 21 then island_subtype_raffle[#island_subtype_raffle + 1] = Surfaces.Island.enum.SWAMP end
-	if macrop.x >= 21 then island_subtype_raffle[#island_subtype_raffle + 1] = 'none' end
+	if macro_x >= 21 then island_subtype_raffle[#island_subtype_raffle + 1] = Surfaces.Island.enum.SWAMP end
+	if macro_x >= 21 then island_subtype_raffle[#island_subtype_raffle + 1] = 'none' end
 
 	--avoid duplicate subtype twice in a row in the same lane
 	for _, d in pairs(memory.destinations) do
-		if d.subtype and d.overworld_position.x == p.x - 40 and d.overworld_position.y == p.y then
+		if d.subtype and d.overworld_position.x == macro_p.x - 40 and d.overworld_position.y == macro_p.y then
 			local new_island_subtype_raffle = Utils.ordered_table_with_values_removed(island_subtype_raffle, d.subtype)
 			-- if _DEBUG and #new_island_subtype_raffle ~= #island_subtype_raffle then
 			-- 	game.print('Removed ' .. d.subtype .. ' from raffle at ' .. p.x .. ',' .. p.y)
@@ -76,84 +76,84 @@ function Public.generate_overworld_destination(p)
 		end
 	end
 	-- some other raffle removals for smoothness:
-	if macrop.x == 4 then
+	if macro_x == 4 then
 		island_subtype_raffle = Utils.ordered_table_with_values_removed(island_subtype_raffle, Surfaces.Island.enum.STANDARD)
 	end
-	if macrop.x == 18 then
+	if macro_x == 18 then
 		island_subtype_raffle = Utils.ordered_table_with_values_removed(island_subtype_raffle, 'none') --flying-robot-frame cost is here, and we just make sure there's an island to see it
 	end
-	if macrop.x == 19 then
+	if macro_x == 19 then
 		island_subtype_raffle = Utils.ordered_table_with_values_removed(island_subtype_raffle, Surfaces.Island.enum.SWAMP)
 	end
 
-	if macrop.x == 0 then
-		if macrop.y == 0 then
+	if macro_x == 0 then
+		if macro_y == 0 then
 			type = Surfaces.enum.ISLAND
 			subtype = Surfaces.Island.enum.FIRST
-		elseif macrop.y == -1 then
+		elseif macro_y == -1 then
 			type = Surfaces.enum.DOCK
 		else
 			type = nil
 		end
-	elseif macrop.x == 1 then
+	elseif macro_x == 1 then
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.HORSESHOE --map where you break rocks
-	elseif macrop.x == 2 then
+	elseif macro_x == 2 then
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.STANDARD_VARIANT --aesthetically different to first map
-	elseif (macrop.x > 25 and (macrop.x - 22) % 20 == 0) then --we want this to overwrite dock, so putting it here
+	elseif (macro_x > 25 and (macro_x - 22) % 20 == 0) then --we want this to overwrite dock, so putting it here
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.RADIOACTIVE
-	elseif (macrop.x > 25 and (macrop.x - 22) % 20 == 18) then --we want this to overwrite dock, so putting it here
+	elseif (macro_x > 25 and (macro_x - 22) % 20 == 18) then --we want this to overwrite dock, so putting it here
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.MAZE
-	elseif macrop.x == 23 then --overwrite dock. rocket launch cost
+	elseif macro_x == 23 then --overwrite dock. rocket launch cost
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.WALKWAYS
-	elseif macrop.y == -1 and (((macrop.x % 4) == 3 and macrop.x ~= 15) or macrop.x == 14) then --avoid x=15 because radioactive is there
+	elseif macro_y == -1 and (((macro_x % 4) == 3 and macro_x ~= 15) or macro_x == 14) then --avoid x=15 because radioactive is there
 		type = Surfaces.enum.DOCK
-	elseif macrop.x == 3 then
+	elseif macro_x == 3 then
 		type = nil
-	elseif macrop.x == 5 then --biter boats appear. large island works well so players run off
+	elseif macro_x == 5 then --biter boats appear. large island works well so players run off
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.STANDARD
-	elseif macrop.x == 6 then
+	elseif macro_x == 6 then
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.MAZE
-	elseif macrop.x == 8 then --game length decrease, pending more content
+	elseif macro_x == 8 then --game length decrease, pending more content
 		type = nil
-	-- elseif macrop.x == 9 then --just before krakens
+	-- elseif macro_x == 9 then --just before krakens
 	-- 	type = Surfaces.enum.ISLAND
 	-- 	subtype = Surfaces.Island.enum.RED_DESERT
-	elseif macrop.x == 10 then --krakens appear
+	elseif macro_x == 10 then --krakens appear
 		type = nil
-	-- elseif macrop.x == 11 then
-	-- 	if macrop.y == -1 then
+	-- elseif macro_x == 11 then
+	-- 	if macro_y == -1 then
 	-- 		type = Surfaces.enum.ISLAND
 	-- 		subtype = Surfaces.Island.enum.MAZE
 	-- 	else
 	-- 		type = nil
 	-- 	end
-	elseif macrop.x == 11 then --just after krakens, but dock is here too, so there's a choice
+	elseif macro_x == 11 then --just after krakens, but dock is here too, so there's a choice
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.SWAMP
-	elseif macrop.x == 16 then
+	elseif macro_x == 16 then
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.RADIOACTIVE
 		 --electric engines needed at 20
-	-- elseif macrop.x == 17 then --game length decrease, pending more content
+	-- elseif macro_x == 17 then --game length decrease, pending more content
 	-- 	type = nil
-	elseif macrop.x == 20 then --game length decrease, pending more content
+	elseif macro_x == 20 then --game length decrease, pending more content
 		type = nil
-	elseif macrop.x == 21 then --rocket launch cost
+	elseif macro_x == 21 then --rocket launch cost
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.SWAMP
-	elseif macrop.x == 22 then --game length decrease, pending more content. also kinda fun to have to steer in realtime due to double space
+	elseif macro_x == 22 then --game length decrease, pending more content. also kinda fun to have to steer in realtime due to double space
 		type = nil
-	elseif macrop.x == 24 then --rocket launch cost
+	elseif macro_x == 24 then --rocket launch cost
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.MAZE
-	elseif macrop.x == 25 then
+	elseif macro_x == 25 then
 		type = nil --finish line
 	else
 		type = Surfaces.enum.ISLAND
@@ -179,10 +179,24 @@ function Public.generate_overworld_destination(p)
 		-- type = Surfaces.enum.DOCK
 	end
 
-	-- if _DEBUG and ((macrop.x > 0 and macrop.x < 25)) and type ~= Surfaces.enum.DOCK then
+	-- if _DEBUG and ((macro_p.x > 0 and macro_p.x < 25)) and type ~= Surfaces.enum.DOCK then
 	-- 	type = nil
 	-- 	subtype = nil
 	-- end
+
+	return {type = type, subtype = subtype}
+end
+
+
+function Public.generate_overworld_destination(p)
+	-- be careful when calling any Balance functions that depend on overworldx — they will be evaluated when the island is chosen, not on arrival
+	local memory = Memory.get_crew_memory()
+
+	local macro_p = {x = p.x/40, y = p.y/24}
+
+	local type_data = Public.generate_destination_type_and_subtype(p)
+	local type = type_data.type
+	local subtype = type_data.subtype
 
 	if type == Surfaces.enum.ISLAND then
 
@@ -195,36 +209,36 @@ function Public.generate_overworld_destination(p)
 
 		-- These need to scale up slightly slower than the static fuel depletion rate, so you're increasingly incentivised to leave:
 		local base_cost_1 = {
-			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*120),
+			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*120),
 		}
 		local base_cost_2 = {
-			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*180),
-			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*18),
+			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*180),
+			['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*18),
 			-- the below got this response from a new player: "This feels... underwhelming."
-			-- ['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*120),
-			-- ['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*18),
+			-- ['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*120),
+			-- ['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*18),
 		}
 		local base_cost_2b = {
-			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*180),
+			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*180),
 			['flying-robot-frame'] = 2,
 		}
 		local base_cost_3 = {
-			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*140),
-			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*18),
+			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*140),
+			['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*18),
 			['launch_rocket'] = true,
 		}
 		local base_cost_4 = {
-			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*100),
-			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*18),
-			['flying-robot-frame'] = Math.ceil(((macrop.x-18)^(2/3))*10),
+			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*100),
+			['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*18),
+			['flying-robot-frame'] = Math.ceil(((macro_p.x-18)^(2/3))*10),
 			['launch_rocket'] = true,
 		}
 		local base_cost_5 = {
-			['electronic-circuit'] = Math.ceil(((macrop.x-2)^(2/3))*100),
-			['advanced-circuit'] = Math.ceil(((macrop.x-14)^(2/3))*18),
-			['flying-robot-frame'] = Math.ceil(((macrop.x-18)^(2/3))*10),
+			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*100),
+			['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*18),
+			['flying-robot-frame'] = Math.ceil(((macro_p.x-18)^(2/3))*10),
 		}
-		if macrop.x == 0 then
+		-- if macro_p.x == 0 then
 			-- if _DEBUG then
 			-- 	base_cost_to_undock = {
 			-- 		['electronic-circuit'] = 5,
@@ -234,61 +248,62 @@ function Public.generate_overworld_destination(p)
 			-- 	}
 			-- end
 			-- base_cost_to_undock = nil
-		elseif macrop.x <= 6 then
+		-- elseif macro_p.x <= 6 then
+		if macro_p.x <= 6 then
 			-- base_cost_to_undock = {['electronic-circuit'] = 5}
 			base_cost_to_undock = nil
-		elseif macrop.x <= 9 then
+		elseif macro_p.x <= 9 then
 			base_cost_to_undock = base_cost_1
-		elseif macrop.x <= 15 then
-			if macrop.x % 3 > 0 then
+		elseif macro_p.x <= 15 then
+			if macro_p.x % 3 > 0 then
 				base_cost_to_undock = base_cost_1
 			else
 				base_cost_to_undock = nil
 			end
-		elseif macrop.x == 18 then --a super small amount of flying-robot-frame on a relatively early level so that they see they need lubricant
+		elseif macro_p.x == 18 then --a super small amount of flying-robot-frame on a relatively early level so that they see they need lubricant
 			base_cost_to_undock = base_cost_2b
-		elseif macrop.x <= 20 then
-			if macrop.x % 3 > 0 then
+		elseif macro_p.x <= 20 then
+			if macro_p.x % 3 > 0 then
 				base_cost_to_undock = base_cost_2
 			else
 				base_cost_to_undock = nil
 			end
 			-- after this point, mandatory
-		elseif macrop.x <= 23 then
+		elseif macro_p.x <= 23 then
 			base_cost_to_undock = base_cost_3
-		elseif macrop.x <= 24 then
+		elseif macro_p.x <= 24 then
 			base_cost_to_undock = base_cost_4
 		else
 			base_cost_to_undock = Utils.deepcopy(base_cost_5)
 			local delete = normal_costitems[Math.random(#normal_costitems)]
 			base_cost_to_undock[delete] = nil
-			if macrop.x % 2 == 0 then
+			if macro_p.x % 2 == 0 then
 				base_cost_to_undock['launch_rocket'] = true
 			end
 		end
 		-- override:
 		if subtype == Surfaces.Island.enum.RADIOACTIVE then
 			base_cost_to_undock = {
-				['uranium-235'] = Math.ceil(Math.ceil(80 + (macrop.x - 1))),
-				-- ['uranium-235'] = Math.ceil(Math.ceil(80 + (macrop.x)/2)), --tried adding beacons instead of this
+				['uranium-235'] = Math.ceil(Math.ceil(80 + (macro_p.x - 1))),
+				-- ['uranium-235'] = Math.ceil(Math.ceil(80 + (macro_p.x)/2)), --tried adding beacons instead of this
 			}
 		end
 
 		-- -- debug override:
-		if _DEBUG then
+		-- if _DEBUG then
 			-- base_cost_to_undock = {
 			-- 	['electronic-circuit'] = 200,
 			-- 	['launch_rocket'] = true,
 			-- }
-		end
+		-- end
 
 		static_params.base_cost_to_undock = base_cost_to_undock -- Multiplication by Balance.cost_to_leave_multiplier() happens later, in destination_on_collide.
 
 		--scheduled raft raids moved to destination_on_arrival
 
 		local ores_multiplier = Balance.island_richness_avg_multiplier()
-		if macrop.x == 0 then ores_multiplier = 0.9 end
-		
+		if macro_p.x == 0 then ores_multiplier = 0.9 end
+
 		local base_ores = scope.Data.base_ores()
 
 		local rngs = {}
@@ -307,7 +322,7 @@ function Public.generate_overworld_destination(p)
 		local abstract_ore_amounts = {}
 		for k, v in pairs(base_ores) do
 			local rng = 1
-			if not (k == 'coal' or macrop.x == 0) then
+			if not (k == 'coal' or macro_p.x == 0) then
 				rng = rngs[k] / (rngsum/rngcount) --average of 1
 			end
 			abstract_ore_amounts[k] = ores_multiplier * v * rng
@@ -316,7 +331,7 @@ function Public.generate_overworld_destination(p)
 
 		static_params.radius_squared_modifier = (2 + 2 * Math.random())
 
-		if macrop.x == 0 then static_params.radius_squared_modifier = 1.75 end
+		if macro_p.x == 0 then static_params.radius_squared_modifier = 1.75 end
 
 		static_params.discord_emoji = scope.Data.discord_emoji
 
@@ -324,12 +339,12 @@ function Public.generate_overworld_destination(p)
 		static_params.starting_treasure_maps = Math.ceil((static_params.base_starting_treasure_maps or 0) * rng)
 		static_params.starting_wood = Math.ceil(static_params.base_starting_wood or 1000)
 		static_params.starting_rock_material = Math.ceil(static_params.base_starting_rock_material or 300) * Balance.island_richness_avg_multiplier()
-		
+
 		rng = 0.5 + 1 * Math.random()
 		static_params.starting_treasure = Math.ceil((static_params.base_starting_treasure or 1000) * Balance.island_richness_avg_multiplier() * rng)
 
 		static_params.name = scope.Data.display_names[Math.random(#scope.Data.display_names)]
-		
+
         local dest = Surfaces.initialise_destination{
             static_params = static_params,
             type = type,
@@ -342,21 +357,21 @@ function Public.generate_overworld_destination(p)
 	elseif type == Surfaces.enum.DOCK then
 
 		local boat_for_sale_type
-		-- if macrop.x == 3 then
+		-- if macro_p.x == 3 then
 		-- 	boat_for_sale_type = Boats.enum.CUTTER
-		-- elseif macrop.x == 7 or macrop.x == 0 then
+		-- elseif macro_p.x == 7 or macro_p.x == 0 then
 		-- 	boat_for_sale_type = Boats.enum.SLOOP_WITH_HOLD
 		-- end
 		boat_for_sale_type = Boats.enum.SLOOP
 
 		local upgrade_for_sale
-		if macrop.x == 0 then
+		if macro_p.x == 0 then
 			upgrade_for_sale = nil
-		elseif macrop.x == 3 then
+		elseif macro_p.x == 3 then
 			upgrade_for_sale = Upgrades.enum.MORE_POWER
-		elseif macrop.x == 7 then
+		elseif macro_p.x == 7 then
 			upgrade_for_sale = Upgrades.enum.EXTRA_HOLD
-		elseif macrop.x % 16 < 8 then
+		elseif macro_p.x % 16 < 8 then
 			upgrade_for_sale = Upgrades.enum.MORE_POWER
 		else
 			upgrade_for_sale = Upgrades.enum.EXTRA_HOLD
@@ -380,7 +395,7 @@ function Public.generate_overworld_destination(p)
 		Crowsnest.draw_destination(dest)
 
 		-- renderings e.g. for docks
-	
+
 		local surface = Crowsnest.get_crowsnest_surface()
 		local x = Crowsnest.platformrightmostedge + dest.overworld_position.x
 		local y = dest.overworld_position.y
@@ -390,7 +405,7 @@ function Public.generate_overworld_destination(p)
 			if not dest.dynamic_data.crowsnest_renderings then
 				dest.dynamic_data.crowsnest_renderings = {}
 			end
-			
+
 			dest.dynamic_data.crowsnest_renderings.base_text_rendering = rendering.draw_text{
 				text = display_form .. ':',
 				surface = surface,
@@ -443,20 +458,20 @@ function Public.generate_overworld_destination(p)
 		kraken_count = Balance.krakens_per_free_slot(p.x)
 		position_candidates = interior_positions
 	elseif type ~= Surfaces.enum.DOCK then
-		kraken_count = Balance.krakens_per_slot(p.x)
+		kraken_count = Balance.krakens_per_slot()
 		position_candidates = infront_positions
 	end
 
 	-- override:
-	if macrop.x < 10 then
+	if macro_p.x < 10 then
 		kraken_count = 0
-	elseif macrop.x == 10 then
+	elseif macro_p.x == 10 then
 		kraken_count = 1
 	end
 
-	if _DEBUG then
+	-- if _DEBUG then
 		-- kraken_count = 1
-	end
+	-- end
 
 	if position_candidates then
 		local positions_placed = {}
@@ -474,7 +489,7 @@ function Public.generate_overworld_destination(p)
 			memory.overworld_krakens[#memory.overworld_krakens + 1] = p_kraken
 			whilesafety = whilesafety + 1
 		end
-		-- game.print(#positions_placed .. ' krakens placed for' .. macrop.x .. ', ' .. macrop.y)
+		-- game.print(#positions_placed .. ' krakens placed for' .. macro_p.x .. ', ' .. macro_p.y)
 	end
 end
 
@@ -565,7 +580,7 @@ function Public.check_for_destination_collisions()
 
 		if (relativex == 4 and relativey + destination_data.iconized_map_height/2 >= -3.5 and relativey - destination_data.iconized_map_height/2 <= 3.5) then
 			--or (relativey - destination_data.iconized_map.height/2 == 5 and (relativex >= -3.5 or relativex <= 4.5)) or (relativey + destination_data.iconized_map.height/2 == -4 and (relativex >= -3.5 or relativex <= 4.5))
-			
+
 			Surfaces.clean_up(Common.current_destination())
 
 			Surfaces.create_surface(destination_data)
@@ -613,7 +628,7 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 	else
 
 		Crowsnest.move_crowsnest(vector.x, vector.y)
-	
+
 		if vector.x > 0 then
 
 			-- crew bonus resources per x:
@@ -689,14 +704,14 @@ function Public.overwrite_a_dock_upgrade()
 			if #possible_overwrites > 0 then
 				if memory.dock_overwrite_variable > #possible_overwrites then memory.dock_overwrite_variable = 1 end
 				upgrade_to_overwrite_with = possible_overwrites[memory.dock_overwrite_variable]
-	
+
 				-- bump the variable up, but only if the list hasn't reduced in length. use a second variable to track this:
 				if memory.dock_overwrite_variable_2 and memory.dock_overwrite_variable_2 == #possible_overwrites then
 					memory.dock_overwrite_variable = memory.dock_overwrite_variable + 1
 				end
 				memory.dock_overwrite_variable_2 = #possible_overwrites
 			end
-		
+
 			if upgrade_to_overwrite_with then
 				for _, dest in pairs(memory.destinations) do
 					if dest.type == Surfaces.enum.DOCK then

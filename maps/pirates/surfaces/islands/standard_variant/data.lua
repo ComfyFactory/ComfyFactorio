@@ -1,7 +1,7 @@
 
-local Common = require 'maps.pirates.common'
-local Utils = require 'maps.pirates.utils_local'
-local Math = require 'maps.pirates.math'
+-- local Common = require 'maps.pirates.common'
+-- local Utils = require 'maps.pirates.utils_local'
+-- local Math = require 'maps.pirates.math'
 
 local Public = {}
 
@@ -21,7 +21,7 @@ Public.static_params_default = {
 	min_brightness = 0.2,
 }
 
-function Public.base_ores() 
+function Public.base_ores()
 	return {
 		['copper-ore'] = 4.4,
 		['iron-ore'] = 4.9,

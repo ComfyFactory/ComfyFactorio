@@ -1,11 +1,11 @@
 
-local Memory = require 'maps.pirates.memory'
-local Math = require 'maps.pirates.math'
-local Balance = require 'maps.pirates.balance'
-local Common = require 'maps.pirates.common'
+-- local Memory = require 'maps.pirates.memory'
+-- local Math = require 'maps.pirates.math'
+-- local Balance = require 'maps.pirates.balance'
+-- local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
-local Utils = require 'maps.pirates.utils_local'
-local inspect = require 'utils.inspect'.inspect
+-- local Utils = require 'maps.pirates.utils_local'
+local _inspect = require 'utils.inspect'.inspect
 
 local Public = {}
 local enum = {
@@ -22,7 +22,7 @@ Public.enum = enum
 
 
 function Public.encode_surface_name(crewid, destination_index, type, subtype) -- crewid=0 is shared surfaces
-	local str = ''
+	local str
 	if subtype then
 		str = string.format('%03d-%03d-%s-%s', crewid, destination_index, type, subtype) --uses the fact that type and subtype resolve to strings
 	else
@@ -36,7 +36,7 @@ function Public.decode_surface_name(name)
 	local destination_index = tonumber(string.sub(name, 5, 7))
 	local type = nil
 	local subtype = nil
-	
+
 	local substring = string.sub(name, 9, -1)
 	local pull = {}
 	for a, b in string.gmatch(substring, "(%w+)-(%w+)") do

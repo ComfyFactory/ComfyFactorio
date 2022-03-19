@@ -1,13 +1,11 @@
 
-local ores = require "maps.pirates.ores"
-
 local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
-local Balance = require 'maps.pirates.balance'
+-- local Balance = require 'maps.pirates.balance'
 local Structures = require 'maps.pirates.structures.structures'
 local Common = require 'maps.pirates.common'
-local Utils = require 'maps.pirates.utils_local'
-local inspect = require 'utils.inspect'.inspect
+-- local Utils = require 'maps.pirates.utils_local'
+local _inspect = require 'utils.inspect'.inspect
 local Ores = require 'maps.pirates.ores'
 local IslandsCommon = require 'maps.pirates.surfaces.islands.common'
 local Hunt = require 'maps.pirates.surfaces.islands.hunt'
@@ -37,7 +35,7 @@ function Public.terrain(args)
 	local noises = Public.noises(args)
 	local p = args.p
 
-	
+
 	if IslandsCommon.place_water_tile(args) then return end
 
 	if noises.height(p) < 0 then
@@ -46,7 +44,7 @@ function Public.terrain(args)
 	end
 
 	local land = true
-	
+
 	if noises.height(p) < 0.03 then
 		args.tiles[#args.tiles + 1] = {name = 'water-shallow', position = args.p}
 		land = false
@@ -74,9 +72,9 @@ function Public.terrain(args)
 				else
 					if Math.random(1,100) < treedensity*100 then args.entities[#args.entities + 1] = {name = 'tree-08', position = args.p, visible_on_overworld = true} end
 				end
-		
+
 				if noises.forest_abs_suppressed(p) < 0.7 then
-			
+
 					if noises.height(p) > 0.12 then
 						if noises.rock_abs(p) > -0.15 then
 							local rockdensity = 1/600 * Math.slopefromto(noises.rock_abs(p), 0.22, 0.6) + 1/5 * Math.slopefromto(noises.rock_abs(p), 1.6, 1.8)
@@ -94,8 +92,8 @@ function Public.terrain(args)
 					end
 				end
 			end
-	
-	
+
+
 			if noises.mood(p) > 0.3 then
 				local density = 0.001 * Math.slopefromto(noises.rock_abs(p), 0.25, 0.4)
 				local rng = Math.random()
@@ -103,14 +101,14 @@ function Public.terrain(args)
 					args.decoratives[#args.decoratives + 1] = {name = 'shroom-decal', position = args.p}
 				end
 			end
-	
+
 			if noises.mood(p) < -0.3 then
 				local rng = Math.random()
 				if rng < 0.0015 then
 					args.decoratives[#args.decoratives + 1] = {name = 'lichen-decal', position = args.p}
 				end
 			end
-	
+
 			local rng = Math.random()
 			if rng < 0.004 then
 				args.decoratives[#args.decoratives + 1] = {name = 'green-asterisk', position = args.p}
@@ -149,14 +147,14 @@ end
 
 
 function Public.swamp_structures(args, spec)
-	local memory = Memory.get_crew_memory()
-	local overworldx = memory.overworldx or 0
+	-- local memory = Memory.get_crew_memory()
+	-- local overworldx = memory.overworldx or 0
 
 	local rng = Math.random()
 	local left_top = args.left_top
 
 	local spec2 = spec{x = left_top.x + 16, y = left_top.y + 16}
-		
+
 	if rng < spec2.chanceperchunk then
 
 		local struct
@@ -185,7 +183,7 @@ local function swamp_tick()
 		Memory.set_working_id(id)
 		local memory = Memory.get_crew_memory()
 		local destination = Common.current_destination()
-		
+
 		if destination.subtype and destination.subtype == IslandsCommon.enum.SWAMP then
 			if memory.boat and memory.boat.surface_name and memory.boat.surface_name == destination.surface_name then
 				local surface = game.surfaces[destination.surface_name]
@@ -203,10 +201,10 @@ local function swamp_tick()
 					local random_x = Math.random(island_center.x - width/2, island_center.x + width/2)
 					local random_y = Math.random(island_center.y - height/2, island_center.y + height/2)
 					local random_p = {x = random_x, y = random_y}
-					
+
 					local tile = surface.get_tile(random_x, random_y)
 					if not (tile and tile.valid) then return end
-	
+
 					if tile.name == 'water-mud' then
 						local nearby_characters = surface.find_entities_filtered{position = random_p, radius = 66, name = 'character'}
 						local nearby_characters_count = #nearby_characters

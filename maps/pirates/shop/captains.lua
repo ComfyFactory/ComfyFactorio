@@ -1,14 +1,14 @@
 
 local Memory = require 'maps.pirates.memory'
-local Roles = require 'maps.pirates.roles.roles'
+-- local Roles = require 'maps.pirates.roles.roles'
 local Balance = require 'maps.pirates.balance'
 local Common = require 'maps.pirates.common'
-local Utils = require 'maps.pirates.utils_local'
-local Math = require 'maps.pirates.math'
-local Loot = require 'maps.pirates.loot'
-local inspect = require 'utils.inspect'.inspect
+-- local Utils = require 'maps.pirates.utils_local'
+-- local Math = require 'maps.pirates.math'
+-- local Loot = require 'maps.pirates.loot'
+local _inspect = require 'utils.inspect'.inspect
 local Upgrades = require 'maps.pirates.boat_upgrades'
-local Hold = require 'maps.pirates.surfaces.hold'
+-- local Hold = require 'maps.pirates.surfaces.hold'
 local Crew = require 'maps.pirates.crew'
 local Boats = require 'maps.pirates.structures.boats.boats'
 local Dock = require 'maps.pirates.surfaces.dock'
@@ -162,20 +162,19 @@ function Public.main_shop_try_purchase(player, purchase_name)
 
 	local multiplier = Balance.main_shop_cost_multiplier()
 
-	local can_buy = true
 	-- local rate_limit_ok = not (memory.mainshop_rate_limit_ticker and memory.mainshop_rate_limit_ticker > 0)
 	local rate_limit_ok = true
 	local enough_fuel = true
 	local enough_iron_plates = true
 	local enough_coins = true
 	local enough_copper_plates = true
-	local coins_got = nil
-	local iron_plates_got = nil
-	local copper_plates_got = nil
+	local coins_got
+	local iron_plates_got
+	local copper_plates_got
 	-- local able_to_buy_boats = memory.boat.state == Boats.enum_state.DOCKED --disabled for now
 	local able_to_buy_boats = false
 	-- local able_to_buy_boats = (memory.boat.state == Boats.enum_state.DOCKED or memory.boat.state == Boats.enum_state.APPROACHING) --problem with this if you buy whilst approaching, the original one no longer moves
-	
+
 	for k, v in pairs(trade_data.base_cost) do
 		if k == 'fuel' then
 			enough_fuel = (stored_fuel >= v * multiplier)
@@ -191,7 +190,7 @@ function Public.main_shop_try_purchase(player, purchase_name)
 		end
 	end
 
-	can_buy = rate_limit_ok and enough_coins and enough_fuel and enough_iron_plates and enough_copper_plates
+	local can_buy = rate_limit_ok and enough_coins and enough_fuel and enough_iron_plates and enough_copper_plates
 
 	if purchase_name == 'new_boat_sloop_with_hold' or purchase_name == 'new_boat_cutter_with_hold' or purchase_name == 'new_boat_cutter' then can_buy = can_buy and able_to_buy_boats end
 

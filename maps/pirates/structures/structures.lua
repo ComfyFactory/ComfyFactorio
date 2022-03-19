@@ -1,17 +1,17 @@
 
 local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
-local Balance = require 'maps.pirates.balance'
-local Common = require 'maps.pirates.common'
+-- local Balance = require 'maps.pirates.balance'
+-- local Common = require 'maps.pirates.common'
 local Loot = require 'maps.pirates.loot'
-local Utils = require 'maps.pirates.utils_local'
-local inspect = require 'utils.inspect'.inspect
+-- local Utils = require 'maps.pirates.utils_local'
+local _inspect = require 'utils.inspect'.inspect
 
 local Public = {}
 local enum = {
 	BOATS = 'Boats',
 	ISLANDSTRUCTURES = 'IslandStructures',
-} 
+}
 Public.enum = enum
 Public[enum.BOATS] = require 'maps.pirates.structures.boats.boats'
 Public[enum.ISLANDSTRUCTURES] = require 'maps.pirates.structures.island_structures.island_structures'
@@ -23,9 +23,9 @@ function Public.post_creation_process(special_name, components)
 	for _, c in pairs(components) do
 		local type = c.type
 		local force_name = c.force_name
-		local force
-		if force_name then force = game.forces[force_name] end
-	
+		-- local force
+		-- if force_name then force = game.forces[force_name] end
+
 		if type == 'static' then
 			for _, e in pairs(c.built_entities) do
 				if e and e.valid then
@@ -41,10 +41,10 @@ function Public.post_creation_process(special_name, components)
 					e.rotatable = false
 				end
 			end
-		elseif type == 'plain' then
-			for _, e in pairs(c.built_entities) do
-				--
-			end
+		-- elseif type == 'plain' then
+		-- 	for _, e in pairs(c.built_entities) do
+		-- 		--
+		-- 	end
 		elseif type == 'static_inoperable' then
 			for _, e in pairs(c.built_entities) do
 				if e and e.valid then
@@ -69,10 +69,10 @@ function Public.post_creation_process(special_name, components)
 					e.rotatable = false
 				end
 			end
-		elseif type == 'entities_minable' then
-			for _, e in pairs(c.built_entities) do
-				--
-			end
+		-- elseif type == 'entities_minable' then
+		-- 	for _, e in pairs(c.built_entities) do
+		-- 		--
+		-- 	end
 		end
 
 
@@ -188,7 +188,7 @@ function Public.try_place(structureScope, specialsTable, left_top, areawidth, ar
 			x = structure_topleft.x + structureData.width,
 			y = structure_topleft.y + structureData.height,
 		}
-	
+
 		if placeability_function(structure_topleft) and placeability_function(structure_topright) and placeability_function(structure_bottomleft) and placeability_function(structure_bottomright) and placeability_function(structure_center) then
 			specialsTable[#specialsTable + 1] = {
 				position = structure_center,
@@ -201,10 +201,10 @@ function Public.try_place(structureScope, specialsTable, left_top, areawidth, ar
 			if _DEBUG then
 				log('structure_yes: ' .. structureData.name .. ' at ' .. structure_center.x .. ', ' .. structure_center.y)
 			end
-		else
-			-- if _DEBUG then
-			-- 	log('structure_no: ' .. structureData.name .. ' at ' .. structure_center.x .. ', ' .. structure_center.y)
-			-- end
+		-- else
+		-- 	-- if _DEBUG then
+		-- 	-- 	log('structure_no: ' .. structureData.name .. ' at ' .. structure_center.x .. ', ' .. structure_center.y)
+		-- 	-- end
 		end
 	end
 end
@@ -218,7 +218,7 @@ function Public.tryAddStructureByName(specialsTable, name, p)
 		return {}
 	else
 		local structureData = structureScope.Data
-	
+
 		specialsTable[#specialsTable + 1] = {
 			position = p,
 			components = structureData.components,

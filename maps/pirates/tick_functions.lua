@@ -1,3 +1,5 @@
+--luacheck: ignore
+--luacheck ignores because tickinterval arguments are a code templating choice...
 
 local Memory = require 'maps.pirates.memory'
 local Gui = require 'maps.pirates.gui.gui'
@@ -22,7 +24,7 @@ local Utils = require 'maps.pirates.utils_local'
 local Crew = require 'maps.pirates.crew'
 local Parrot = require 'maps.pirates.parrot'
 local Math = require 'maps.pirates.math'
-local inspect = require 'utils.inspect'.inspect
+local _inspect = require 'utils.inspect'.inspect
 local Kraken = require 'maps.pirates.surfaces.sea.kraken'
 
 local Quest = require 'maps.pirates.quest'
@@ -126,7 +128,7 @@ function Public.check_all_spawners_dead(tickinterval)
 			end
 		end
 	end
-	
+
 end
 
 
@@ -190,7 +192,7 @@ end
 
 function Public.transfer_pollution(tickinterval)
 	local memory = Memory.get_crew_memory()
-	
+
 	local p = 0
 	for i = 1, memory.hold_surface_count do
 		local surface = Hold.get_hold_surface(i)
@@ -229,7 +231,7 @@ function Public.prune_offline_characters_list(tickinterval)
 	local memory = Memory.get_crew_memory()
 
     if memory.game_lost then return end
-	
+
 	for player_index, tick in pairs(memory.temporarily_logged_off_characters) do
 		if player_index and game.players[player_index] and game.players[player_index].connected then
 			--game.print("deleting already online character from list")
@@ -306,11 +308,11 @@ function Public.pick_up_tick(tickinterval)
 
 		if map.state == 'on_ground' then
 			local p = map.position
-	
+
 			local nearby_characters = surface.find_entities_filtered{position = p, radius = 3, name = 'character'}
 			local nearby_characters_count = #nearby_characters
 			if nearby_characters_count > 0 then
-	
+
 				local player
 				local j = 1
 				while j <= nearby_characters_count do
@@ -329,16 +331,16 @@ function Public.pick_up_tick(tickinterval)
 					end
 					if #buried_treasure_candidates == 0 then break end
 					local chosen = buried_treasure_candidates[Math.random(#buried_treasure_candidates)]
-		
+
 					chosen.associated_to_map = true
 					local p2 = chosen.position
 					map.buried_treasure_position = p2
-		
+
 					map.state = 'picked_up'
 					rendering.destroy(map.mapobject_rendering)
-	
+
 					Common.notify_force_light(player.force, player.name .. ' found a map. Treasure location revealed.')
-		
+
 					map.x_renderings = {
 						rendering.draw_line{
 							width = 8,
@@ -375,11 +377,11 @@ function Public.pick_up_tick(tickinterval)
 
 		if ghost.state == 'on_ground' then
 			local p = ghost.position
-	
+
 			local nearby_characters = surface.find_entities_filtered{position = p, radius = 3, name = 'character'}
 			local nearby_characters_count = #nearby_characters
 			if nearby_characters_count > 0 then
-	
+
 				local player
 				local j = 1
 				while j <= nearby_characters_count do
@@ -391,17 +393,51 @@ function Public.pick_up_tick(tickinterval)
 				end
 				if player then
 					rendering.destroy(ghost.ghostobject_rendering)
-			
+
 					ghost.state = 'picked_up'
-	
+
 					Common.notify_force(player.force, player.name .. ' found a ghost.')
-	
+
 					dynamic_data.quest_progress = dynamic_data.quest_progress + 1
 					Quest.try_resolve_quest()
 				end
 			end
 		end
 	end
+end
+
+local function cached_structure_delete_existing_entities_if_needed(surface, position, special)
+	if (not special.doNotDestroyExistingEntities) then
+		-- destroy existing entities
+		local area = {left_top = {position.x - special.width/2, position.y - special.height/2}, right_bottom = {position.x + special.width/2 + 0.5, position.y + special.height/2 + 0.5}}
+		surface.destroy_decoratives{area=area}
+		local existing = surface.find_entities_filtered{area = area}
+		if existing and (not (special.name == 'covered1b')) then
+			for _, e in pairs(existing) do
+				if not (((special.name == 'small_primitive_mining_base' or special.name == 'small_mining_base') and (e.name == 'iron-ore' or e.name == 'copper-ore' or e.name == 'stone')) or (special.name == 'uranium_miners' and e.name == 'uranium-ore')) then
+					if not (e.name and e.name == 'rocket-silo') then
+						e.destroy()
+					end
+				end
+			end
+		end
+	end
+end
+
+function Public.interpret_shorthanded_force_name(shorthanded_name)
+	local memory = Memory.get_crew_memory()
+
+	local ret
+	if shorthanded_name == 'ancient-friendly' then
+		ret = memory.ancient_friendly_force_name
+	elseif shorthanded_name == 'ancient-hostile' then
+		ret = memory.ancient_enemy_force_name
+	elseif shorthanded_name == 'crew' then
+		ret = memory.force_name
+	elseif shorthanded_name == 'enemy' then
+		ret = memory.enemy_force_name
+	end
+	return ret
 end
 
 function Public.place_cached_structures(tickinterval)
@@ -424,37 +460,14 @@ function Public.place_cached_structures(tickinterval)
 
 			Common.ensure_chunks_at(surface, position, 2)
 
-			if (not special.doNotDestroyExistingEntities) then
-				-- destroy existing entities
-				local area = {left_top = {position.x - special.width/2, position.y - special.height/2}, right_bottom = {position.x + special.width/2 + 0.5, position.y + special.height/2 + 0.5}}
-				surface.destroy_decoratives{area=area}
-				local existing = surface.find_entities_filtered{area = area}
-				if existing and (not (special.name == 'covered1b')) then
-					for _, e in pairs(existing) do
-						if not (((special.name == 'small_primitive_mining_base' or special.name == 'small_mining_base') and (e.name == 'iron-ore' or e.name == 'copper-ore' or e.name == 'stone')) or (special.name == 'uranium_miners' and e.name == 'uranium-ore')) then
-							if not (e.name and e.name == 'rocket-silo') then
-								e.destroy()
-							end
-						end
-					end
-				end
-			end
-			
+			cached_structure_delete_existing_entities_if_needed(surface, position, special)
+
 			local saved_components = {}
 			for k = 1, #special.components do
 				local c = special.components[k]
 
 				local force_name
-				if c.force then force_name = c.force end
-				if force_name == 'ancient-friendly' then
-					force_name = memory.ancient_friendly_force_name
-				elseif force_name == 'ancient-hostile' then
-					force_name = memory.ancient_enemy_force_name
-				elseif force_name == 'crew' then
-					force_name = memory.force_name
-				elseif force_name == 'enemy' then
-					force_name = memory.enemy_force_name
-				end
+				if c.force then force_name = Public.interpret_shorthanded_force_name(c.force) end
 
 				if c.type == 'tiles' then
 					local tiles = {}
@@ -689,13 +702,13 @@ function Public.covered_requirement_check(tickinterval)
 
 	local covered_data = destination.dynamic_data.covered_data
 	if not covered_data then return end
-	
+
 	local blue_chest = covered_data.blue_chest
 	local red_chest = covered_data.red_chest
 	if not (blue_chest and blue_chest.valid and red_chest and red_chest.valid) then return end
 	local blue_inv = covered_data.blue_chest.get_inventory(defines.inventory.chest)
 	local red_inv = covered_data.red_chest.get_inventory(defines.inventory.chest)
-	
+
 	local blue_contents = blue_inv.get_contents()
 
 	local requirement = covered_data.requirement
@@ -790,19 +803,19 @@ function Public.buried_treasure_check(tickinterval)
 						direction = defines.direction.north
 					}
 				}
-	
+
 				for j = 1,4 do
-	
+
 					if inserters[j] and inserters[j][1] then
 						local ins = inserters[j][1]
-	
+
 						local t = treasure.treasure
 						-- if #treasure.treasure > 0 then
 						-- 	t = treasure.treasure
 						-- 	-- t = treasure.treasure[1]
 						-- end
 						if not t then break end
-						
+
 						if destination.dynamic_data.treasure_remaining > 0 and ins.held_stack.count == 0 and ins.status == defines.entity_status.waiting_for_source_items then
 							surface.create_entity{name = 'item-on-ground', position = p, stack = {name = t.name, count = 1}}
 							t.count = t.count - 1
@@ -917,7 +930,7 @@ function Public.boat_movement_tick(tickinterval)
 						end
 					end
 				elseif eboat.state == Boats.enum_state.LANDED then
-
+					do end
 				end
 			else
 				memory.enemyboats[i] = nil
@@ -960,7 +973,7 @@ function Public.loading_update(tickinterval)
 	if not memory.loadingticks then return end
 
 	local currentdestination = Common.current_destination()
-	
+
 	local destination_index = memory.mapbeingloadeddestination_index
 	if not destination_index then memory.loadingticks = nil return end
 
@@ -1007,12 +1020,12 @@ function Public.loading_update(tickinterval)
 		if currentdestination.type == Surfaces.enum.LOBBY then
 
 			if memory.loadingticks >= 1260 then
-				
+
 				if memory.boat and memory.boat.rendering_crewname_text and rendering.is_valid(memory.boat.rendering_crewname_text) then
 					rendering.destroy(memory.boat.rendering_crewname_text)
 					memory.boat.rendering_crewname_text = nil
 				end
-				
+
 				Progression.go_from_starting_dock_to_first_destination()
 
 			elseif memory.loadingticks > 1230 then
@@ -1061,7 +1074,7 @@ function Public.loading_update(tickinterval)
 				memory.loadingticks = memory.loadingticks - tickinterval
 			else
 				local fraction = memory.loadingticks / (total + (memory.extra_time_at_sea or 0))
-		
+
 				if fraction > Common.fraction_of_map_loaded_atsea then
 					Progression.progress_to_destination(destination_index)
 					memory.loadingticks = 0
@@ -1092,7 +1105,7 @@ end
 function Public.crowsnest_steer(tickinterval)
 	local memory = Memory.get_crew_memory()
 	if memory.game_lost then return end
-	
+
 	if memory.boat and memory.boat.state == Structures.Boats.enum_state.ATSEA_SAILING and memory.game_lost == false and memory.boat.crowsneststeeringchests then
 		local leftchest, rightchest = memory.boat.crowsneststeeringchests.left, memory.boat.crowsneststeeringchests.right
 		if leftchest and leftchest.valid and rightchest and rightchest.valid then
@@ -1137,14 +1150,14 @@ function Public.silo_update(tickinterval)
 					end
 				else
 					local p = silo.position
-	
+
 					local e = dynamic_data.energychargedinsilosincelastcheck or 0
 					dynamic_data.energychargedinsilosincelastcheck = 0
-	
+
 					dynamic_data.rocketsiloenergyconsumed = dynamic_data.rocketsiloenergyconsumed + e
-	
+
 					dynamic_data.rocketsiloenergyconsumedwithinlasthalfsecond = e
-	
+
 					if memory.enemy_force_name then
 						local ef = memory.enemy_force
 						if ef and ef.valid then
@@ -1153,13 +1166,13 @@ function Public.silo_update(tickinterval)
 							dynamic_data.evolution_accrued_silo = dynamic_data.evolution_accrued_silo + extra_evo
 						end
 					end
-	
+
 					local pollution = e/1000000 * Balance.silo_total_pollution() / Balance.silo_energy_needed_MJ()
-	
+
 					if p and pollution then
 						game.pollution_statistics.on_flow('rocket-silo', pollution)
 						if not memory.floating_pollution then memory.floating_pollution = 0 end
-	
+
 						-- Eventually I want to reformulate pollution not to pull from the map directly, but to pull from pollution_statistics. Previously all the silo pollution went to the map, but this causes a lag ~1-2 minutes. So as a compromise, let's send half to floating_pollution directly, and half to the map:
 						memory.floating_pollution = memory.floating_pollution + pollution/2
 						game.surfaces[destination.surface_name].pollute(p, pollution/2)
@@ -1171,7 +1184,7 @@ function Public.silo_update(tickinterval)
 							-- silo.energy = 0
 							silo.rocket_parts = 100
 							dynamic_data.silocharged = true
-							
+
 							if CoreData.rocket_silo_death_causes_loss then
 								-- become immune after launching
 								silo.destructible = false
@@ -1196,7 +1209,7 @@ function Public.slower_boat_tick(tickinterval)
 	local p = memory.boat.position
 	if p and (not (destination.subtype and destination.subtype == IslandsCommon.enum.RADIOACTIVE)) and destination.surface_name and game.surfaces[destination.surface_name] and game.surfaces[destination.surface_name].valid then --no locomotive pollute on radioactive islands
 		local pollution = Balance.boat_passive_pollution_per_minute(destination.dynamic_data.timer) / 3600 * tickinterval
-	
+
 		game.surfaces[destination.surface_name].pollute(p, pollution)
 		game.pollution_statistics.on_flow('locomotive', pollution)
 	end
@@ -1204,7 +1217,7 @@ function Public.slower_boat_tick(tickinterval)
 	if memory.enemyboats then
 		for i = 1, #memory.enemyboats do
 			local b = memory.enemyboats[i]
-	
+
 			-- if b.landing_time and destination.dynamic_data.timer and destination.dynamic_data.timer >= b.landing_time and b.spawner and b.spawner.valid then
 			-- -- if b.landing_time and destination.dynamic_data.timer and destination.dynamic_data.timer >= b.landing_time + 3 and b.spawner and b.spawner.valid then
 			-- 	b.spawner.destructible = true
@@ -1224,7 +1237,7 @@ function Public.LOS_tick(tickinterval)
 	if memory.boat and memory.boat.state == Boats.enum_state.APPROACHING or memory.boat.state == Boats.enum_state.LANDED or memory.boat.state == Boats.enum_state.RETREATING then
 		local p = memory.boat.position
 		local BoatData = Boats.get_scope(memory.boat).Data
-	
+
 		force.chart(surface, {{p.x - BoatData.width/2 - 70, p.y - 80},{p.x - BoatData.width/2 + 70, p.y + 80}})
 	end
 
@@ -1259,10 +1272,10 @@ end
 -- 		if not (memory.game_lost) then
 -- 			if task == Delay.enum.PAINT_CROWSNEST then
 -- 				Surfaces.Crowsnest.crowsnest_surface_delayed_init()
-	
+
 -- 			elseif task == Delay.enum.PLACE_DOCK_JETTY_AND_BOATS then
 -- 				Surfaces.Dock.place_dock_jetty_and_boats()
-	
+
 -- 				local destination = Common.current_destination()
 -- 				ShopDock.create_dock_markets(game.surfaces[destination.surface_name], Surfaces.Dock.Data.markets_position)
 -- 			end
@@ -1275,7 +1288,7 @@ end
 function Public.Kraken_Destroyed_Backup_check(tickinterval) -- a server became bugged when the kraken spawner entity disappeared but the kraken_die had not fired, and I'm not sure why, so this is a backup checker for that case
 	local memory = Memory.get_crew_memory()
 	local boat = memory.boat
-	
+
 	if boat and boat.surface_name and boat.state and boat.state == Boats.enum_state.ATSEA_LOADING_MAP then
 		if (memory.active_sea_enemies and memory.active_sea_enemies.krakens and #memory.active_sea_enemies.krakens > 0) then
 
@@ -1314,14 +1327,14 @@ function Public.quest_progress_tick(tickinterval)
 		if dynamic_data.quest_type == Quest.enum.TIME and (not dynamic_data.quest_complete) and dynamic_data.quest_progress > 0 and dynamic_data.quest_progressneeded ~= 1 then
 			dynamic_data.quest_progress = dynamic_data.quest_progress - tickinterval/60
 		end
-	
+
 		if dynamic_data.quest_type == Quest.enum.RESOURCEFLOW and (not dynamic_data.quest_complete) then
 			local force = memory.force
 			if not (force and force.valid and dynamic_data.quest_params) then return end
 			dynamic_data.quest_progress = force.item_production_statistics.get_flow_count{name = dynamic_data.quest_params.item, input = true, precision_index = defines.flow_precision_index.five_seconds, count = false}
 			Quest.try_resolve_quest()
 		end
-	
+
 		if dynamic_data.quest_type == Quest.enum.RESOURCECOUNT and (not dynamic_data.quest_complete) then
 			local force = memory.force
 			if not (force and force.valid and dynamic_data.quest_params) then return end
@@ -1341,7 +1354,7 @@ function Public.silo_insta_update()
 	local dynamic_data = destination.dynamic_data
 
 	local silos = dynamic_data.rocketsilos
-	
+
 	if silos and silos[1] and silos[1].valid then --need the first silo to be alive in order to charge any others
 		if dynamic_data.silocharged then
 			for i, silo in ipairs(silos) do
@@ -1355,7 +1368,7 @@ function Public.silo_insta_update()
 					local absorb = Math.min(e, e2)
 					dynamic_data.energychargedinsilosincelastcheck = dynamic_data.energychargedinsilosincelastcheck + absorb
 					silo.energy = silo.energy - absorb
-		
+
 					if dynamic_data.rocketsilochargedbools and (not dynamic_data.rocketsilochargedbools[i]) then
 						dynamic_data.rocketsilochargedbools[i] = true
 						local inv = silo.get_inventory(defines.inventory.assembling_machine_input)
@@ -1397,9 +1410,9 @@ end
 
 -- function Public.globaltick_handle_delayed_tasks(tickinterval)
 -- 	local global_memory = Memory.get_global_memory()
-	
+
 -- 	for _, task in pairs(global_memory.global_buffered_tasks) do
-		
+
 -- 		if task == Delay.global_enum.PLACE_LOBBY_JETTY_AND_BOATS then
 -- 			Surfaces.Lobby.place_lobby_jetty_and_boats()
 
@@ -1417,11 +1430,11 @@ end
 -- 		elseif task == Delay.global_enum.ADMIN_GO4 then
 -- 			Memory.set_working_id(1)
 -- 			local memory = Memory.get_crew_memory()
-			
+
 -- 			Progression.go_from_starting_dock_to_first_destination()
 -- 			memory.mapbeingloadeddestination_index = 1
 -- 			memory.loadingticks = 0
-			
+
 -- 		end
 -- 	end
 -- 	Delay.global_clear_buffer()
@@ -1478,7 +1491,7 @@ function Public.update_players_second()
 				playerindex_to_captainhood_priority[player.index] = 0
 			else
 				playerindex_to_captainhood_priority[player.index] = playerindex_to_captainhood_priority[player.index] or 0
-	
+
 				playerindex_to_captainhood_priority[player.index] = playerindex_to_captainhood_priority[player.index] + 1
 			end
 		else

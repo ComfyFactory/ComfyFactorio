@@ -1,12 +1,12 @@
 
 local Balance = require 'maps.pirates.balance'
-local inspect = require 'utils.inspect'.inspect
+local _inspect = require 'utils.inspect'.inspect
 local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
 local Common = require 'maps.pirates.common'
 local Utils = require 'maps.pirates.utils_local'
 local CoreData = require 'maps.pirates.coredata'
-local Server = require 'utils.server'
+-- local Server = require 'utils.server'
 
 local Public = {}
 local enum = {
@@ -144,9 +144,9 @@ function Public.assign_class(player_index, class, self_assigned)
 	if Utils.contains(memory.spare_classes, class) then -- verify that one is spare
 
 		Public.try_renounce_class(player, false)
-	
+
 		memory.classes_table[player_index] = class
-	
+
 		local force = memory.force
 		if force and force.valid then
 			local message
@@ -158,7 +158,7 @@ function Public.assign_class(player_index, class, self_assigned)
 				Common.notify_force_light(force,string.format(message, Public.display_form[memory.classes_table[player_index]], player.name, Public.explanation[memory.classes_table[player_index]]))
 			end
 		end
-	
+
 		memory.spare_classes = Utils.ordered_table_with_single_value_removed(memory.spare_classes, class)
 		return true
 	else
@@ -193,10 +193,10 @@ end
 function Public.generate_class_for_sale()
 	local memory = Memory.get_crew_memory()
 
-	if #memory.available_classes_pool == 0 then
-		-- memory.available_classes_pool = Public.initial_class_pool() --reset to initial state
-		-- turned off as this makes too many classes
-	end
+	-- if #memory.available_classes_pool == 0 then
+	-- 	-- memory.available_classes_pool = Public.initial_class_pool() --reset to initial state
+	-- 	-- turned off as this makes too many classes
+	-- end
 
 	local class
 	if #memory.available_classes_pool > 0 then

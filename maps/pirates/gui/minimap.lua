@@ -1,17 +1,17 @@
 
 local Memory = require 'maps.pirates.memory'
 local Common = require 'maps.pirates.common'
-local CoreData = require 'maps.pirates.coredata'
-local Utils = require 'maps.pirates.utils_local'
-local Math = require 'maps.pirates.math'
-local Balance = require 'maps.pirates.balance'
+-- local CoreData = require 'maps.pirates.coredata'
+-- local Utils = require 'maps.pirates.utils_local'
+-- local Math = require 'maps.pirates.math'
+-- local Balance = require 'maps.pirates.balance'
 local Surfaces = require 'maps.pirates.surfaces.surfaces'
-local Roles = require 'maps.pirates.roles.roles'
-local Crew = require 'maps.pirates.crew'
-local Progression = require 'maps.pirates.progression'
-local Structures = require 'maps.pirates.structures.structures'
-local inspect = require 'utils.inspect'.inspect
-local Boats = require 'maps.pirates.structures.boats.boats'
+-- local Roles = require 'maps.pirates.roles.roles'
+-- local Crew = require 'maps.pirates.crew'
+-- local Progression = require 'maps.pirates.progression'
+-- local Structures = require 'maps.pirates.structures.structures'
+local _inspect = require 'utils.inspect'.inspect
+-- local Boats = require 'maps.pirates.structures.boats.boats'
 local GuiCommon = require 'maps.pirates.gui.common'
 local Public = {}
 
@@ -21,7 +21,7 @@ local default_zoom = 0.1
 local default_size = 320
 
 function Public.toggle_window(player)
-	local flow, flow2, flow3, flow4, flow5, flow6
+	local flow, flow2
 
 	local window = player.gui.screen[window_name .. '_piratewindow']
 	if window then
@@ -35,7 +35,7 @@ function Public.toggle_window(player)
 		window.destroy()
 		return
 	end -- else:
-	
+
 	flow = GuiCommon.new_window(player, window_name)
 	flow.caption = 'Outside View'
 	flow.style.maximal_width = 800
@@ -43,7 +43,7 @@ function Public.toggle_window(player)
 	local memory = Memory.get_crew_memory()
 	local global_memory = Memory.get_global_memory()
 	local gui_memory = global_memory.player_gui_memories[player.index]
-	
+
 	local auto_map
 	if gui_memory and gui_memory[window_name] then
 		auto_map = gui_memory[window_name].auto_map
@@ -95,7 +95,7 @@ function Public.toggle_window(player)
         element.style.maximal_height = size
         element.style.maximal_width = size
     end
-	
+
 	flow2 = GuiCommon.flow_add_close_button(flow, window_name .. '_piratebutton')
 	flow2.add(
 		{
@@ -114,13 +114,13 @@ end
 
 
 
-function Public.regular_update(player)
+-- function Public.regular_update(player)
 
-end
+-- end
 
 function Public.full_update(player)
 	Public.regular_update(player)
-	local flow, flow2, flow3, flow4, flow5, flow6
+	local flow
 
 	local memory = Memory.get_crew_memory()
 
@@ -153,7 +153,7 @@ function Public.click(event)
 	local eventname = event.element.name
 
 	if not player.gui.screen[window_name .. '_piratewindow'] then return end
-	local flow = player.gui.screen[window_name .. '_piratewindow']
+	-- local flow = player.gui.screen[window_name .. '_piratewindow']
 
 	-- local memory = Memory.get_crew_memory()
 	-- local shop_data = Shop.main_shop_data
@@ -166,10 +166,10 @@ function Public.click(event)
 
 	local zoom = default_zoom
 	local size = default_size
-	
+
 	local global_memory = Memory.get_global_memory()
 	local gui_memory = global_memory.player_gui_memories[player.index]
-	
+
 	if gui_memory and gui_memory[window_name] then
 		zoom = gui_memory[window_name].zoom or default_zoom
 		size = gui_memory[window_name].size or default_size
@@ -237,12 +237,12 @@ local function on_player_changed_surface(event)
 	elseif to_hold_bool and (not from_hold_bool) then
 		local global_memory = Memory.get_global_memory()
 		local gui_memory = global_memory.player_gui_memories[player.index]
-		
+
 		if (gui_memory and gui_memory[window_name] and gui_memory[window_name].auto_map) or (not gui_memory) or (gui_memory and (not gui_memory[window_name])) then --if no gui memory exists for this, default to opening the minimap
 			Public.toggle_window(player)
 		end
     end
-	
+
 end
 
 local event = require 'utils.event'

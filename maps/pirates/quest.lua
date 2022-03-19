@@ -1,13 +1,13 @@
 
 local Memory = require 'maps.pirates.memory'
-local Roles = require 'maps.pirates.roles.roles'
+-- local Roles = require 'maps.pirates.roles.roles'
 local Balance = require 'maps.pirates.balance'
 local Common = require 'maps.pirates.common'
-local Utils = require 'maps.pirates.utils_local'
+-- local Utils = require 'maps.pirates.utils_local'
 local Math = require 'maps.pirates.math'
-local Loot = require 'maps.pirates.loot'
+-- local Loot = require 'maps.pirates.loot'
 local CoreData = require 'maps.pirates.coredata'
-local inspect = require 'utils.inspect'.inspect
+local _inspect = require 'utils.inspect'.inspect
 
 
 local Public = {}
@@ -19,7 +19,7 @@ local enum = {
 	RESOURCEFLOW = 'Resource_Flow',
 	RESOURCECOUNT = 'Resource_Count',
 	WORMS = 'Worms',
-} 
+}
 Public.enum = enum
 
 Public.quest_icons = {
@@ -59,7 +59,6 @@ end
 
 
 function Public.initialise_random_quest()
-	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 
 	destination.dynamic_data.quest_complete = false
@@ -89,19 +88,17 @@ end
 
 
 function Public.initialise_time_quest()
-	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 
 	destination.dynamic_data.quest_type = enum.TIME
 	destination.dynamic_data.quest_reward = Public.quest_reward()
 	destination.dynamic_data.quest_progress = Balance.time_quest_seconds()
 	destination.dynamic_data.quest_progressneeded = 9999999
-	
+
 	return true
 end
 
 function Public.initialise_find_quest()
-	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 
 	-- @FIXME: Magic numbers
@@ -125,7 +122,6 @@ end
 
 
 function Public.initialise_nodamage_quest()
-	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 
 	if not destination and destination.dynamic_data and destination.dynamic_data.rocketsilomaxhp then return end
@@ -134,13 +130,12 @@ function Public.initialise_nodamage_quest()
 	destination.dynamic_data.quest_reward = Public.quest_reward()
 	destination.dynamic_data.quest_progress = 0
 	destination.dynamic_data.quest_progressneeded = destination.dynamic_data.rocketsilomaxhp
-	
+
 	return true
 end
 
 
 function Public.initialise_resourceflow_quest()
-	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 
 	if not destination and destination.dynamic_data and destination.dynamic_data.rocketsilomaxhp then return end
@@ -155,7 +150,7 @@ function Public.initialise_resourceflow_quest()
 	local progressneeded_before_rounding = generated_flow_quest.base_rate * Balance.resource_quest_multiplier()
 
 	destination.dynamic_data.quest_progressneeded = Math.ceil(progressneeded_before_rounding/10)*10
-	
+
 	return true
 end
 
@@ -181,13 +176,12 @@ function Public.initialise_resourcecount_quest()
 	local progressneeded_before_rounding = generated_production_quest.base_rate * Balance.resource_quest_multiplier() * Common.difficulty()
 
 	destination.dynamic_data.quest_progressneeded = Math.ceil(progressneeded_before_rounding/10)*10
-	
+
 	return true
 end
 
 
 function Public.initialise_worms_quest()
-	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 
 	if not (destination.surface_name and game.surfaces[destination.surface_name]) then return end
@@ -261,7 +255,7 @@ function Public.try_resolve_quest()
 
 		local inventory = chest.get_inventory(defines.inventory.chest)
 		local inserted = inventory.insert{name = name, count = count}
-		
+
 		if inserted < count then
 			local chest2 = boat.backup_output_chest
 			if chest2 and chest2.valid then
@@ -306,7 +300,6 @@ end
 -- end
 
 function Public.generate_flow_quest()
-	local memory = Memory.get_crew_memory()
 	local game_completion_progress = Common.game_completion_progress_capped()
 
 	local data = Public.flow_quest_data()
@@ -374,7 +367,6 @@ function Public.resourcecount_quest_data()
 end
 
 function Public.generate_resourcecount_quest()
-	local memory = Memory.get_crew_memory()
 	local game_completion_progress = Common.game_completion_progress_capped()
 
 	local data = Public.resourcecount_quest_data()

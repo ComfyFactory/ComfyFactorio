@@ -1,7 +1,7 @@
 
 local Math = require 'maps.pirates.math'
-local Memory = require 'maps.pirates.memory'
-local inspect = require 'utils.inspect'.inspect
+-- local Memory = require 'maps.pirates.memory'
+local _inspect = require 'utils.inspect'.inspect
 local Token = require 'utils.token'
 local Task = require 'utils.task'
 
@@ -26,7 +26,7 @@ function Public.worm_movement_effect(surface, position, solid_ground, big_bool)
 		particles = {'huge-rock-stone-particle-medium', 'red-desert-1-stone-particle-medium', 'red-desert-1-stone-particle-small'}
 		sound = 'utility/build_blueprint_medium'
 	end
-	
+
 	if solid_ground then
 		particles = {'refined-concrete-stone-particle-medium', 'refined-concrete-stone-particle-small'}
 		sound = 'utility/build_blueprint_small'
@@ -42,7 +42,7 @@ function Public.worm_movement_effect(surface, position, solid_ground, big_bool)
 		local _p = p(r,theta)
 
 		surface.create_particle{name = name, position = _p, movement = {0/10, 0/10}, height = 0, vertical_speed = 0.02 + Math.sqrt(rmax - r)*rmax/50, frame_speed = 1}
-		
+
 		if i<=5 then
 			surface.play_sound{path = sound, position = _p, override_sound_type = 'walking', volume_modifier=0.75}
 		end
@@ -54,7 +54,7 @@ function Public.worm_emerge_effect(surface, position)
 	if not (surface and surface.valid) then return end
 	if position then
 		local function p(r, theta) return {x = position.x + r*Math.sin(theta), y = position.y + r*Math.cos(theta)} end
-	
+
 		for theta=0,6,0.5 do
 			local r = 3
 			surface.create_entity{name = 'blood-explosion-huge', position = p(r,theta), color={1,1,1}}

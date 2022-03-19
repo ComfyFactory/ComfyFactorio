@@ -1,10 +1,10 @@
 
 local Math = require 'maps.pirates.math'
-local inspect = require 'utils.inspect'.inspect
+-- local _inspect = require 'utils.inspect'.inspect
 local simplex_noise = require 'utils.simplex_noise'.d2 --rms ~ 0.1925
-local perlin_noise = require 'utils.perlin_noise'
-local Memory = require 'maps.pirates.memory'
-local CoreData = require 'maps.pirates.coredata'
+-- local perlin_noise = require 'utils.perlin_noise'
+-- local Memory = require 'maps.pirates.memory'
+-- local CoreData = require 'maps.pirates.coredata'
 local NoisePregen = require 'maps.pirates.noise_pregen.noise_pregen'
 
 local Public = {}
@@ -51,7 +51,7 @@ function Public.stable_sort(list, comp) --sorts but preserves ordering of equals
 	comp = comp or function (a, b) return a < b end
 
     local num = 0
-    for k, v in ipairs(list) do
+    for k, _ in ipairs(list) do
         num = num + 1
     end
 
@@ -239,7 +239,7 @@ function Public.standard_string_form_of_time_in_seconds(time)
 		time2 = - time
 		str1 = '-'
 	end
-	local str2 = ''
+	local str2
 	local hours = Math.floor(Math.ceil(time2) / 3600)
 	local minutes = Math.floor(Math.ceil(time2) / 60)
 	local seconds = Math.ceil(time2)
@@ -398,8 +398,8 @@ end
 function Public.hardcoded_noise_field_decompress(fieldtype, noise_data, seed, normalised)
 	normalised = normalised or false
 
-	local hardcoded_upperscale = NoisePregen[fieldtype].upperscale
-	local hardcoded_boxsize = NoisePregen[fieldtype].boxsize
+	-- local hardcoded_upperscale = NoisePregen[fieldtype].upperscale
+	-- local hardcoded_boxsize = NoisePregen[fieldtype].boxsize
 	local hardcoded_wordlength = NoisePregen[fieldtype].wordlength
 	local factor = NoisePregen[fieldtype].factor
 
@@ -420,12 +420,12 @@ function Public.hardcoded_noise_field_decompress(fieldtype, noise_data, seed, no
 
 				local x2remainder = x2%1
 				local y2remainder = y2%1
-	
+
 				local x2floor = x2 - x2remainder
 				local y2floor = y2 - y2remainder
 
 				local topleftnoiseindex = seed2 % (1000*1000)
-	
+
 				local relativeindex00 = x2floor + y2floor * 1000
 
 				local totalindex00 = (topleftnoiseindex + relativeindex00) % (1000*1000)
@@ -454,7 +454,7 @@ function Public.hardcoded_noise_field_decompress(fieldtype, noise_data, seed, no
 
 				if noise01 % 2 == 1 then noise01 = -noise01 end
 				noise01 = noise01 / (NoisePregen.encoding_length ^ (hardcoded_wordlength-1))
-	
+
 				-- local hardnoise00 = tonumber(strsub00:sub(2,6))/10000
 				-- if strsub00:sub(1,1) == '-' then hardnoise00 = -hardnoise00 end
 				-- local hardnoise10 = tonumber(strsub10:sub(2,6))/10000
@@ -462,11 +462,11 @@ function Public.hardcoded_noise_field_decompress(fieldtype, noise_data, seed, no
 				-- local hardnoise01 = tonumber(strsub01:sub(2,6))/10000
 				-- if strsub01:sub(1,1) == '-' then hardnoise01 = -hardnoise01 end
 
-				-- log(inspect{topleftnoiseindex, topleftnoiseindex2, relativeindex00, relativeindex10, relativeindex01})
-				-- log(inspect{strindex00, strindex10, strindex01, hardnoise1, hardnoise2, hardnoise3})
-	
+				-- log(_inspect{topleftnoiseindex, topleftnoiseindex2, relativeindex00, relativeindex10, relativeindex01})
+				-- log(_inspect{strindex00, strindex10, strindex01, hardnoise1, hardnoise2, hardnoise3})
+
 				local interpolatedhardnoise = noise00 + x2remainder*(noise10-noise00) + y2remainder*(noise01-noise00)
-	
+
 				toadd = toadd * factor * tonumber(interpolatedhardnoise)
 				_seed = _seed + 12345
 			end
@@ -485,8 +485,8 @@ end
 function Public.hardcoded_noise_field(fieldtype, noise_data, seed, normalised)
 	normalised = normalised or false
 
-	local hardcoded_upperscale = NoisePregen[fieldtype].upperscale --100
-	local hardcoded_boxsize = NoisePregen[fieldtype].boxsize --1000
+	-- local hardcoded_upperscale = NoisePregen[fieldtype].upperscale --100
+	-- local hardcoded_boxsize = NoisePregen[fieldtype].boxsize --1000
 	local hardcoded_wordlength = NoisePregen[fieldtype].wordlength
 	local factor = NoisePregen[fieldtype].factor
 
@@ -507,12 +507,12 @@ function Public.hardcoded_noise_field(fieldtype, noise_data, seed, normalised)
 
 				local x2remainder = x2%1
 				local y2remainder = y2%1
-	
+
 				local x2floor = x2 - x2remainder
 				local y2floor = y2 - y2remainder
 
 				local seedindex = seed2 % (1000*1000)
-	
+
 				local relativeindex00 = x2floor + y2floor * 1000
 
 				local noiseindex1 = seedindex + relativeindex00
@@ -536,11 +536,11 @@ function Public.hardcoded_noise_field(fieldtype, noise_data, seed, normalised)
 				local noise01 = tonumber(str01:sub(2,6))/10000
 				if str01:sub(1,1) == '-' then noise01 = -noise01 end
 
-				-- log(inspect{topleftnoiseindex, topleftnoiseindex2, relativeindex00, relativeindex10, relativeindex01})
-				-- log(inspect{strindex00, strindex10, strindex01, hardnoise1, hardnoise2, hardnoise3})
-	
+				-- log(_inspect{topleftnoiseindex, topleftnoiseindex2, relativeindex00, relativeindex10, relativeindex01})
+				-- log(_inspect{strindex00, strindex10, strindex01, hardnoise1, hardnoise2, hardnoise3})
+
 				local interpolatedhardnoise = noise00 + x2remainder*(noise10-noise00) + y2remainder*(noise01-noise00)
-	
+
 				toadd = toadd * factor * tonumber(interpolatedhardnoise)
 				_seed = _seed + 12345 --some deficiencies
 			end
@@ -558,8 +558,8 @@ end
 
 function Public.noise_generator(noiseparams, seed)
 	--memoizes locally
-	local noiseparams = noiseparams or {}
-	local seed = seed or 0
+	noiseparams = noiseparams or {}
+	seed = seed or 0
 
 	local ret = {}
 	for k, v in pairs(noiseparams) do
@@ -639,8 +639,8 @@ local function is_callable(f)
 	  return type(mt) == 'table' and is_callable(mt.__call)
 	end
 	return false
-  end
-  
+end
+
 -- == memoization
 -- memoize takes in a function and outputs an auto-memoizing version of the same
 -- e.g. local memoized_f = memoize(f, <cache>), explicit cache is optional

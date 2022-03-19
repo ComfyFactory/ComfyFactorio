@@ -5,17 +5,18 @@ local Balance = require 'maps.pirates.balance'
 local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
 local Utils = require 'maps.pirates.utils_local'
-local inspect = require 'utils.inspect'.inspect
-local Structures = require 'maps.pirates.structures.structures'
+local _inspect = require 'utils.inspect'.inspect
+-- local Structures = require 'maps.pirates.structures.structures'
 local Token = require 'utils.token'
 local Task = require 'utils.task'
-local SurfacesCommon = require 'maps.pirates.surfaces.common'
+-- local SurfacesCommon = require 'maps.pirates.surfaces.common'
 local Effects = require 'maps.pirates.effects'
 
 local Public = {}
 
-local kraken_width = 31
-local kraken_height = 31
+-- local kraken_width = 31 --not old code, just commented for luacheck
+-- local kraken_height = 31 --not old code, just commented for luacheck
+
 local kraken_bps = {
 	[[0eNqd2tuOmzAQgOF38TWR8Nj4wKtUe5EmaIuUhSihh9Uq714IdtWLVpp/r1aRvh1mxgQYnA/z9fJ9uN7GaTH9h7lPx+thmQ+vt/G8ff5leuca8779eTRmPM3T3fRfVji+TsfLRpb362B6My7Dm2nMdHzbPv2c5/MwHU7fhvtitn+czsMayz5eGrOMl2EPcp3v4zLOUzmSfR7IhsefMOvhTrdhGdYQ/9HO6rTssSPSCelMtCDtWqSVPdkXVlqkE9LKKv2uEW6Rjkgri+xI2jt2BGeCbYs0iq1tSCA17tgTHAlGOWeCta0u2iKNMpGANOqfdtHjU3cEB4IjwVaQZrFRQwR1RLuQac/EIR2JFhRblN/fvGfCdCRaBGlllbYlJ2zREemEtLaFlbNctHfVypWXNmvJNaLogHRGWnsFr5xlrm66ZU0X1EVBd5/KA+OR8Yw4bIywUrUXjMod49rvqSOPQUVr73KVO8ZhMh3jgfHIeGI8I64+IR16BLAenQOerZJnq+TZKnm2Sp6tkmerxEbDylmpwkrVju4WzYdFe6QtC25h9I7xwHhkPDGeERe2psKSEZaM+gQr8yXSgrRjmbDgFkb3jHeMB8Yj44lx7QkT2RMhm6grd4x7xjvGA+ORce0yJTZzJLZMiTUysUYm1kj2xqFybSMza2RmubO3DtKSubNobeqVB8a1qaORWdi+jNjP5KLea7Fss4VN2CLkjUzRGWl1G9lMK2ymFYcKdahQNucVrh2vK1de7sSjQj0qlI1KhWuHQmHTiaAtI2F7RsIewgtXp452gorukGaZZKTVTWTPghI+00TtdCpoI0bQTkzRCemMtGWpqLvCnnYK1853lf+z1Jdm/wlF/9cPMhrzY7jdnwEkWR+zRO+Cz+sBH78BXJmyLg==]],
 	[[0eNqdmt2O2jAQRt/F19lVPPFfeJVqVbFgbSNBQJBti1Z59ybEqaoWtXN6hSKdDJ/HY/sbw4d5Pbzn86XrB7P5MNd+e34aTk9vl24/P383m6apzG3+GCvT7U791Ww+TWD31m8PMzLcztlsTDfko6lMvz3OT99Op33un3Zf8nUw84v9Pk+x7PhSmdwP3dDlJc794fa5fz++5ssEPI5QmfPpOr106osoG579XVb97Mex+iOOKOPUJcwc71GcRhmnkX8EcnRgc8RxTtfQHUqufkeXLxx/Rp4mZ3fJQzbz9z+EhcANgZ0OFg57HbxUaSCwVYZ2JPQCW4doJMQyJRHRSUd7kpIFjgRGMphoQUJEGTsQ2QHNTECDDEh2JLIjKr+IBrnQ4hGNlAhTosxJIglMaLUnlO6FFkF0g2jlntaSlLQoJQstNaK1J2RNdBdaK7zgWuV2OVRbRKu1FFwbXZCWhbY1wz3DA8O12ostsAwXhjcMdwz3DA8MjwxPDNdOk0ML1bG0M/9mmYGzzMFZZuEs83ArztKuPWFWnOVdWN6F5V1Y3rWOwXrSqFjknS0yzxa550K3iFbv7J5tpp4tU8+WqWfL1LNl6tkyZV3LirNpEjZNwqZJvQn4/1lIwjIj2swEcvlQaI9otRcIrNoDq/bAqj2wamfdq2Xt64qzOVWXQEQlENkWFlkNRFYDkdVAZDXAenvLmvsVTwxnk6qugYRqIKEzMrEzMrECS6wE2HWDZfcNKx4ZnhjO8t5o894iU4UuNAqtTiO70ii4dqBSE69Z6Ihoy4JrjcaKC8LVebHkcC90QLRluLZPWnHHcOU6EvSTi7DbmIKrpQuT3iDp7P6j4GrpDZPukHR2oSHsDkFYH77i2pGiTllYTyisJxTWtRVcmBh1HlG3IawfEObYC67eeiOSHtFeykyvMBcrzMVKQtITOkyZtRNm7QT5HfmL33mplj96bH7520hlvubL9f6+JOtiK9E1wbVTGz/+ALfE6PI=]],
@@ -102,7 +103,7 @@ function Public.kraken_tick(crew_id, kraken_id, step, substep)
 					p_can_fire_at[#p_can_fire_at + 1] = p
 				end
 			end
-	
+
 			if #p_can_fire_at > 0 then
 				local p_fire = p_can_fire_at[Math.random(#p_can_fire_at)]
 				local stream = surface.create_entity{
@@ -213,7 +214,7 @@ function Public.kraken_move(kraken_id, new_p, new_frame)
 	local surface = game.surfaces[memory.sea_name]
 	if not surface and surface.valid then return end -- check sea still exists
 	local kraken_data = memory.active_sea_enemies.krakens[kraken_id]
-	
+
 	local kraken_tile = CoreData.kraken_tile
 
 	local old_p = kraken_data.position
@@ -244,7 +245,7 @@ function Public.kraken_move(kraken_id, new_p, new_frame)
 		kraken_data.spawner_entity = surface.create_entity{name = 'biter-spawner', position = new_p_2, force = memory.enemy_force_name}
 		Common.new_healthbar(true, kraken_data.spawner_entity, kraken_data.max_health, kraken_id)
 	end
-	
+
 	if old_frame then --cleanup old tiles
 		local old_tile_positions2 = Utils.exclude_position_arrays(old_tile_positions, new_tile_positions)
 		local tiles2 = {}

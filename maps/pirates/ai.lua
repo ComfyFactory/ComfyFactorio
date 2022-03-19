@@ -3,18 +3,18 @@ local Memory = require 'maps.pirates.memory'
 local Balance = require 'maps.pirates.balance'
 local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
-local Utils = require 'maps.pirates.utils_local'
+-- local Utils = require 'maps.pirates.utils_local'
 local Math = require 'maps.pirates.math'
-local inspect = require 'utils.inspect'.inspect
+local _inspect = require 'utils.inspect'.inspect
 
-local Structures = require 'maps.pirates.structures.structures'
+-- local Structures = require 'maps.pirates.structures.structures'
 local Boats = require 'maps.pirates.structures.boats.boats'
 local Surfaces = require 'maps.pirates.surfaces.surfaces'
 local Islands = require 'maps.pirates.surfaces.islands.islands'
 local IslandsCommon = require 'maps.pirates.surfaces.islands.common'
-local Sea = require 'maps.pirates.surfaces.sea.sea'
-local Crew = require 'maps.pirates.crew'
-local Quest = require 'maps.pirates.quest'
+-- local Sea = require 'maps.pirates.surfaces.sea.sea'
+-- local Crew = require 'maps.pirates.crew'
+-- local Quest = require 'maps.pirates.quest'
 
 local Public = {}
 
@@ -48,7 +48,7 @@ function Public.Tick_actions(tickinterval)
 
 	if (not destination.type) or (not destination.type == Surfaces.enum.ISLAND) then return end
 	if (not memory.boat.state) or (not (memory.boat.state == Boats.enum_state.LANDED or memory.boat.state == Boats.enum_state.RETREATING)) then return end
-	
+
     if (memory.game_lost) or (destination.dynamic_data.timeratlandingtime and destination.dynamic_data.timer < destination.dynamic_data.timeratlandingtime + Common.seconds_after_landing_to_enable_AI) then return end
 
 	if game.tick % (tickinterval * 2) == 0 and memory.boat.state == Boats.enum_state.LANDED then
@@ -56,7 +56,6 @@ function Public.Tick_actions(tickinterval)
 		Common.increment_evo(extra_evo)
 		destination.dynamic_data.evolution_accrued_time = destination.dynamic_data.evolution_accrued_time + extra_evo
 	end
-    
 
 
     -- if destination.subtype and destination.subtype == Islands.enum.RED_DESERT then return end -- This was a hack to stop biter boats causing attacks, but, it has the even worse effect of stopping all floating_pollution gathering.
@@ -87,15 +86,15 @@ end
 
 
 function Public.eat_up_fraction_of_all_pollution_wrapped()
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
     local surface = game.surfaces[Common.current_destination().surface_name]
     Public.eat_up_fraction_of_all_pollution(surface, 0.05)
 end
 
 function Public.eat_up_fraction_of_all_pollution(surface, fraction_of_global_pollution)
-	
+
 	local memory = Memory.get_crew_memory()
-	local enemy_force_name = memory.enemy_force_name
+	-- local enemy_force_name = memory.enemy_force_name
 
     local pollution_available = memory.floating_pollution
 
@@ -114,7 +113,7 @@ function Public.eat_up_fraction_of_all_pollution(surface, fraction_of_global_pol
         surface.pollute(p, - pollution_to_eat)
 		-- Radioactive world doesn't absorb map pollution:
 		if not (Common.current_destination().subtype and Common.current_destination().subtype == Islands.enum.RADIOACTIVE) then
-        	pollution_available = pollution_available + pollution_to_eat
+			pollution_available = pollution_available + pollution_to_eat
 		end
     end
 
@@ -166,7 +165,7 @@ function Public.try_secondary_attack()
 
     local group = Public.spawn_group_of_scripted_biters(2/3, 12, 180, wave_size_multiplier)
 	if not (group and group.valid) then return end
-	
+
 	local target
 	if Math.random(2) == 1 then
 		target = Public.generate_main_attack_target()
@@ -300,7 +299,7 @@ function Public.create_mail_delivery_biters() --these travel cross-map between b
                 memory.floating_pollution = memory.floating_pollution + 64
                 local units = Public.try_spawner_spend_fraction_of_available_pollution_on_biters(s1.position, 1/4, 4, 32, 1, 'small-biter')
                 memory.floating_pollution = memory.floating_pollution - 64
-                
+
                 if (not units) or (not #units) or (#units == 0) then return end
 
                 local start_p = surface.find_non_colliding_position('rocket-silo', s1.position, 256, 2) or s1.position
@@ -330,7 +329,7 @@ function Public.spawn_group_of_scripted_biters(fraction_of_floating_pollution, m
 	local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[Common.current_destination().surface_name]
 	local enemy_force_name = memory.enemy_force_name
-	
+
     local spawner = Public.get_random_spawner(surface)
     if not spawner then log('no spawner found') return end
 
@@ -364,12 +363,12 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
     maximum_units = maximum_units or 256
 
 	-- log('ai spawning attempt params: ' .. (fraction_of_floating_pollution or '') .. ' ' .. (minimum_avg_units or '') .. ' ' .. (maximum_units or '') .. ' ' .. (unit_pollutioncost_multiplier or '') .. ' ' .. (enforce_type or ''))
-	
+
 	local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[Common.current_destination().surface_name]
 	-- local surface = spawner.surface
 	-- local spawnposition = spawner.position
-    local difficulty = memory.difficulty
+    -- local difficulty = memory.difficulty
 	local enemy_force_name = memory.enemy_force_name
 	local evolution = memory.evolution_factor
 
@@ -380,7 +379,7 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
     local budget = fraction_of_floating_pollution * temp_floating_pollution
 
     local initialpollution = memory.floating_pollution
-    local initialbudget = budget
+    -- local initialbudget = budget
 
 	local base_pollution_cost_multiplier = 1
 	local destination = Common.current_destination()
@@ -400,7 +399,7 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 				-- base_pollution_cost_multiplier = (initial_spawner_count/spawnerscount)^(1/2)
 				-- Now directly proportional:
 				base_pollution_cost_multiplier = initial_spawner_count/spawnerscount
-				
+
 				if memory.overworldx == 0 then
 					base_pollution_cost_multiplier = Math.max(1, base_pollution_cost_multiplier)
 				end -- The first map not being fully loaded when you get there commonly means it records too few initial spawners, which this helps fix
@@ -416,7 +415,7 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 	end
 
 	base_pollution_cost_multiplier = base_pollution_cost_multiplier * unit_pollutioncost_multiplier
-	
+
 	base_pollution_cost_multiplier = base_pollution_cost_multiplier * Balance.scripted_biters_pollution_cost_multiplier()
 
 	if destination.subtype and destination.subtype == IslandsCommon.enum.SWAMP then
@@ -480,7 +479,7 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 	if units_created_count > 0 then
 		log('Spent ' .. Math.floor(100 * (initialpollution - temp_floating_pollution) / initialpollution) .. '% of ' .. Math.ceil(initialpollution) .. ' pollution budget on biters, at ' .. Math.ceil(base_pollution_cost_multiplier*100)/100 .. 'x price.')
 	end
-	
+
     return units_created
 end
 
@@ -488,14 +487,14 @@ end
 --=== Misc Functions
 
 function Public.generate_main_attack_target()
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
     local destination = Common.current_destination()
-    local target = nil
+    local target
     local fractioncharged = 0
     if (not destination.dynamic_data.rocketlaunched) and destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid and destination.dynamic_data.rocketsilos[1].destructible and destination.dynamic_data.rocketsiloenergyconsumed and destination.dynamic_data.rocketsiloenergyneeded and destination.dynamic_data.rocketsiloenergyneeded > 0 then
         fractioncharged = destination.dynamic_data.rocketsiloenergyconsumed / destination.dynamic_data.rocketsiloenergyneeded
     end
-    
+
     local rng = Math.random()
 	if rng <= fractioncharged^(1/2) then
 		target = destination.dynamic_data.rocketsilos[1]
@@ -590,7 +589,7 @@ end
 function Public.stop()
     local command = {
         type = defines.command.stop,
-        distraction = defines.distraction.stop
+        distraction = defines.distraction.none
     }
     return command
 end
@@ -599,7 +598,7 @@ function Public.move_to(position)
     local command = {
         type = defines.command.go_to_location,
         destination = position,
-        distraction = defines.distraction.anything
+        distraction = defines.distraction.by_anything
     }
     return command
 end
@@ -652,7 +651,7 @@ end
 function Public.wander_around(ticks_to_wait) --wander individually inside group radius
     local command = {
         type = defines.command.wander,
-        distraction = defines.distraction.anything,
+        distraction = defines.distraction.by_anything,
         ticks_to_wait = ticks_to_wait,
     }
     return command
@@ -774,7 +773,7 @@ function Public.spawn_boat_biters(boat, max_evo, count, width)
 	-- max_evolution_bonus = max_evolution_bonus or 0.3
 	local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[boat.surface_name]
-    local difficulty = memory.difficulty
+    -- local difficulty = memory.difficulty
 	local enemy_force_name = boat.force_name
 	-- local evolution = memory.evolution_factor
 
@@ -789,9 +788,9 @@ function Public.spawn_boat_biters(boat, max_evo, count, width)
 		local p2 = surface.find_non_colliding_position('wooden-chest', p, 8, 0.5) --needs to be wooden-chest for collisions to work properly
 		if p2 then
             local biter = surface.create_entity({name = name, force = enemy_force_name, position = p2})
-    
+
             memory.scripted_biters[biter.unit_number] = {entity = biter, created_at = game.tick}
-    
+
             units[#units + 1] = biter
         end
     end

@@ -2,15 +2,15 @@
 local Memory = require 'maps.pirates.memory'
 local Common = require 'maps.pirates.common'
 local Utils = require 'maps.pirates.utils_local'
-local Math = require 'maps.pirates.math'
-local Surfaces = require 'maps.pirates.surfaces.surfaces'
+-- local Math = require 'maps.pirates.math'
+-- local Surfaces = require 'maps.pirates.surfaces.surfaces'
 local Roles = require 'maps.pirates.roles.roles'
 local Classes = require 'maps.pirates.roles.classes'
 local Crew = require 'maps.pirates.crew'
-local Progression = require 'maps.pirates.progression'
-local Structures = require 'maps.pirates.structures.structures'
-local inspect = require 'utils.inspect'.inspect
-local Boats = require 'maps.pirates.structures.boats.boats'
+-- local Progression = require 'maps.pirates.progression'
+-- local Structures = require 'maps.pirates.structures.structures'
+local _inspect = require 'utils.inspect'.inspect
+-- local Boats = require 'maps.pirates.structures.boats.boats'
 local GuiCommon = require 'maps.pirates.gui.common'
 local CoreData = require 'maps.pirates.coredata'
 local Server = require 'utils.server'
@@ -22,18 +22,18 @@ local window_name = 'crew'
 
 function Public.toggle_window(player)
 	local memory = Memory.get_crew_memory()
-	local flow, flow2, flow3, flow4, flow5, flow6
+	local flow, flow2, flow3, flow4
 
 	--*** OVERALL FLOW ***--
 	if player.gui.screen[window_name .. '_piratewindow'] then player.gui.screen[window_name .. '_piratewindow'].destroy() return end
 
 	if not memory.id then return end
-	
+
 	flow = GuiCommon.new_window(player, window_name)
 	flow.caption = 'Crew'
 
 	--*** PARAMETERS OF RUN ***--
-	
+
 	flow2 = flow.add({
 		name = 'crew_capacity_and_difficulty',
 		type = 'label',
@@ -44,7 +44,7 @@ function Public.toggle_window(player)
 	flow2.style.single_line = false
 	flow2.style.maximal_width = 190
 	flow2.style.font = 'default'
-	
+
 	flow2 = flow.add({
 		name = 'crew_age',
 		type = 'label',
@@ -55,7 +55,7 @@ function Public.toggle_window(player)
 	flow2.style.single_line = true
 	flow2.style.maximal_width = 200
 	flow2.style.font = 'default'
-	
+
 	-- flow2 = flow.add({
 	-- 	name = 'crew_difficulty',
 	-- 	type = 'label',
@@ -172,7 +172,7 @@ function Public.toggle_window(player)
 	--*** SPARE CLASSES ***--
 
 	flow2 = GuiCommon.flow_add_section(flow, 'spare_classes', 'Spare Classes')
-	
+
 	flow3 = flow2.add({
 		name = 'list',
 		type = 'label',
@@ -360,9 +360,9 @@ end
 
 
 
-function Public.regular_update(player)
+-- function Public.regular_update(player)
 
-end
+-- end
 
 function Public.full_update(player)
 	Public.regular_update(player)
@@ -371,8 +371,8 @@ function Public.full_update(player)
 	local flow = player.gui.screen[window_name .. '_piratewindow']
 
 	local memory = Memory.get_crew_memory()
-	local playercrew_status = GuiCommon.playercrew_status_table(player.index)
-	local destination = Common.current_destination()
+	local playercrew_status = GuiCommon.crew_overall_state_bools(player.index)
+	-- local destination = Common.current_destination()
 
 
 	--*** WHAT TO SHOW ***--
@@ -445,7 +445,7 @@ function Public.full_update(player)
 	-- flow.crew_age.visible = true
 	-- -- flow.crew_age.visible = memory.mode and memory.mode == 'speedrun'
 	-- flow.crew_difficulty.visible = true
-	
+
 	local count = 0
 	if playercrew_status.spectating then
 		for _, v in pairs(memory.crewplayerindices) do
@@ -464,7 +464,7 @@ function Public.full_update(player)
 
 
 	--== UPDATE CONTENT ==--
-	
+
 	if memory.id then
 		flow.caption = memory.name
 

@@ -1,18 +1,18 @@
 
-local Memory = require 'maps.pirates.memory'
-local Roles = require 'maps.pirates.roles.roles'
+-- local Memory = require 'maps.pirates.memory'
+-- local Roles = require 'maps.pirates.roles.roles'
 local CoreData = require 'maps.pirates.coredata'
 local Classes = require 'maps.pirates.roles.classes'
-local Crew = require 'maps.pirates.crew'
-local Boats = require 'maps.pirates.structures.boats.boats'
-local Dock = require 'maps.pirates.surfaces.dock'
+-- local Crew = require 'maps.pirates.crew'
+-- local Boats = require 'maps.pirates.structures.boats.boats'
+-- local Dock = require 'maps.pirates.surfaces.dock'
 local Balance = require 'maps.pirates.balance'
 local Common = require 'maps.pirates.common'
 local Utils = require 'maps.pirates.utils_local'
 local Math = require 'maps.pirates.math'
-local inspect = require 'utils.inspect'.inspect
+local _inspect = require 'utils.inspect'.inspect
 
-local Upgrades = require 'maps.pirates.boat_upgrades'
+-- local Upgrades = require 'maps.pirates.boat_upgrades'
 
 local Public = {}
 
@@ -101,30 +101,30 @@ Public.market_sales = {
 -- 		salescopy[#salescopy] = nil
 -- 		toaddcount = toaddcount - 1
 -- 	end
-	
+
 
 --     return ret
 -- end
 
 
 function Public.create_dock_markets(surface, p)
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
 
 	if not (surface and p) then return end
 
 	local e
-	
+
 	e = surface.create_entity{name = 'market', position = {x = p.x - 7, y = p.y}}
 	if e and e.valid then
 		e.minable = false
 		e.rotatable = false
 		e.destructible = false
-	
+
 		for _, offer in pairs(Public.market_permanent_offers) do
 			e.add_market_item(offer)
 		end
 	end
-	
+
 	e = surface.create_entity{name = 'market', position = {x = p.x, y = p.y - 1}}
 	if e and e.valid then
 		e.minable = false
@@ -132,7 +132,7 @@ function Public.create_dock_markets(surface, p)
 		e.destructible = false
 
 		local toaddcount
-	
+
 		local salescopy = Utils.deepcopy(Public.market_sales)
 		toaddcount = 3
 		while toaddcount>0 and #salescopy > 0 do
@@ -162,7 +162,7 @@ function Public.create_dock_markets(surface, p)
 			}
 		end
 	end
-	
+
 	e = surface.create_entity{name = 'market', position = {x = p.x + 7, y = p.y}}
 	if e and e.valid then
 		e.minable = false
@@ -170,7 +170,7 @@ function Public.create_dock_markets(surface, p)
 		e.destructible = false
 
 		local toaddcount
-	
+
 		local barterscopy = Utils.deepcopy(Public.market_barters)
 		toaddcount = 2
 		while toaddcount>0 and #barterscopy>0 do

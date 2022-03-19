@@ -1,13 +1,11 @@
 
-local ores = require "maps.pirates.ores"
-
-local Memory = require 'maps.pirates.memory'
+-- local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
-local Balance = require 'maps.pirates.balance'
-local Structures = require 'maps.pirates.structures.structures'
-local Common = require 'maps.pirates.common'
-local Utils = require 'maps.pirates.utils_local'
-local inspect = require 'utils.inspect'.inspect
+-- local Balance = require 'maps.pirates.balance'
+-- local Structures = require 'maps.pirates.structures.structures'
+-- local Common = require 'maps.pirates.common'
+-- local Utils = require 'maps.pirates.utils_local'
+local _inspect = require 'utils.inspect'.inspect
 local Ores = require 'maps.pirates.ores'
 local IslandsCommon = require 'maps.pirates.surfaces.islands.common'
 local Hunt = require 'maps.pirates.surfaces.islands.hunt'
@@ -34,14 +32,14 @@ function Public.terrain(args)
 	local noises = Public.noises(args)
 	local p = args.p
 
-	
+
 	if IslandsCommon.place_water_tile(args) then return end
 
 	if noises.height(p) < 0 then
 		args.tiles[#args.tiles + 1] = {name = 'water', position = args.p}
 		return
 	end
-	
+
 	if noises.height(p) < 0.1 then
 		args.tiles[#args.tiles + 1] = {name = 'sand-1', position = args.p}
 		-- if args.specials and noises.farness(p) > 0.0001 and noises.farness(p) < 0.6 and Math.random(150) == 1 then

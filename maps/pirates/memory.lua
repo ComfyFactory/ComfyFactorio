@@ -1,6 +1,6 @@
 
 local Global = require 'utils.global'
-local CoreData = require 'maps.pirates.coredata'
+-- local CoreData = require 'maps.pirates.coredata'
 local pirates_global_memory = {}
 local Public = {}
 
@@ -25,12 +25,12 @@ function Public.global_reset_memory()
 	pirates_global_memory.crew_memories = {}
 	pirates_global_memory.crew_active_ids = {}
 	pirates_global_memory.working_id = nil --should only ever be nil, 1, 2 or 3
-	
+
 	pirates_global_memory.lobby_boats = {}
-	
+
 	pirates_global_memory.active_crews_cap = nil
 	pirates_global_memory.crew_capacity_min = nil
-	
+
 	pirates_global_memory.crewproposals = {}
 
 	pirates_global_memory.global_delayed_tasks = {}
@@ -64,7 +64,7 @@ function Public.reset_crew_memory(id) --mostly serves as a dev reference of memo
 	memory.difficulty = nil
 	memory.capacity = nil
 	-- memory.mode = nil
-	
+
 	memory.destinations = nil
 	memory.currentdestination_index = nil
 
@@ -74,7 +74,7 @@ function Public.reset_crew_memory(id) --mostly serves as a dev reference of memo
 	memory.boat = nil
 
 	memory.available_classes_pool = nil
-	
+
 	memory.crewplayerindices = nil
 	memory.spectatorplayerindices = nil
 	memory.tempbanned_from_joining_data = nil

@@ -6,7 +6,7 @@ local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
 local Utils = require 'maps.pirates.utils_local'
 local IslandsCommon = require 'maps.pirates.surfaces.islands.common'
-local inspect = require 'utils.inspect'.inspect
+local _inspect = require 'utils.inspect'.inspect
 
 local Public = {}
 
@@ -41,7 +41,7 @@ function Public.silo_setup_position(x_fractional_offset, x_absolute_offset)
 
 	local tries = 0
 	local p_ret = nil
-	local p2 = nil
+	local p2
 	while p_ret == nil and tries < 200 do
 		p2 = {x = p.x + Math.random(-30, 0), y = p.y + Math.random(-70, 70)}
 		if p2.x >= boatposition.x+5 and Common.can_place_silo_setup(surface, p2, silo_count) then p_ret = p2 end
@@ -78,7 +78,7 @@ end
 function Public.mid_farness_position_1(args, points_to_avoid)
 	points_to_avoid = points_to_avoid or {}
 
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 	local surface = game.surfaces[destination.surface_name]
 
@@ -89,7 +89,7 @@ function Public.mid_farness_position_1(args, points_to_avoid)
 	local tries = 0
 	local p_ret = nil
 
-    local p2 = nil
+    local p2
 	while p_ret == nil and tries < 400 do
 		p2 = {x = island_center.x + Math.random(Math.ceil(-width/2), Math.ceil(width/2)), y = island_center.y + Math.random(Math.ceil(-height/2), Math.ceil(height/2))}
 
@@ -140,7 +140,7 @@ function Public.close_position_try_avoiding_entities(args, points_to_avoid, farn
 	farness_boost_high = farness_boost_high or 0
 	points_to_avoid = points_to_avoid or {}
 
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 	local surface = game.surfaces[destination.surface_name]
 
@@ -151,7 +151,7 @@ function Public.close_position_try_avoiding_entities(args, points_to_avoid, farn
 	local tries = 0
 	local p_ret = nil
 
-    local p2 = nil
+    local p2
 	while p_ret == nil and tries < 700 do
 		p2 = {x = island_center.x + Math.random(Math.ceil(-width/2), 0), y = island_center.y + Math.random(Math.ceil(-height/3), Math.ceil(height/3))}
 
@@ -208,10 +208,10 @@ end
 
 
 
-function Public.position_away_from_players_1(args, radius)
+function Public.position_away_from_players_1(_, radius)
     radius = radius or 60
 
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 	local surface = game.surfaces[destination.surface_name]
 
@@ -222,13 +222,13 @@ function Public.position_away_from_players_1(args, radius)
 	local tries = 0
 	local p_ret = nil
 
-    local p2 = nil
+    local p2
 	while p_ret == nil and tries < 500 do
 		p2 = {x = island_center.x + Math.random(Math.ceil(-width/2), Math.ceil(width/2)), y = island_center.y + Math.random(Math.ceil(-height/2), Math.ceil(height/2))}
 
         Common.ensure_chunks_at(surface, p2, 0.01)
 
-        local p3 = {x = p2.x + args.static_params.terraingen_coordinates_offset.x, y = p2.y + args.static_params.terraingen_coordinates_offset.y}
+        -- local p3 = {x = p2.x + args.static_params.terraingen_coordinates_offset.x, y = p2.y + args.static_params.terraingen_coordinates_offset.y}
         local tile = surface.get_tile(p2)
 
         if tile and tile.valid and tile.name then
@@ -265,7 +265,7 @@ end
 
 
 
-function Public.merchant_ship_position(args)
+function Public.merchant_ship_position()
 
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
@@ -304,7 +304,7 @@ function Public.merchant_ship_position(args)
 			else
 				if not Utils.contains(CoreData.tiles_that_conflict_with_resource_layer, tile.name) then
 					local area = {{p2.x - 40, p2.y - 11},{p2.x + 4, p2.y + 11}}
-						
+
 					local spawners = surface.find_entities_filtered({type = 'unit-spawner', force = memory.enemy_force_name, area = area})
 					local worms = surface.find_entities_filtered({type = 'turret', force = memory.enemy_force_name, area = area})
 					if #spawners == 0 and #worms == 0 then

@@ -1,15 +1,15 @@
 
 local Memory = require 'maps.pirates.memory'
-local Roles = require 'maps.pirates.roles.roles'
-local Balance = require 'maps.pirates.balance'
-local Common = require 'maps.pirates.common'
-local Utils = require 'maps.pirates.utils_local'
-local Math = require 'maps.pirates.math'
-local Loot = require 'maps.pirates.loot'
-local inspect = require 'utils.inspect'.inspect
+-- local Roles = require 'maps.pirates.roles.roles'
+-- local Balance = require 'maps.pirates.balance'
+-- local Common = require 'maps.pirates.common'
+-- local Utils = require 'maps.pirates.utils_local'
+-- local Math = require 'maps.pirates.math'
+-- local Loot = require 'maps.pirates.loot'
+local _inspect = require 'utils.inspect'.inspect
 
-local Structures = require 'maps.pirates.structures.structures'
-local Surfaces = require 'maps.pirates.surfaces.surfaces'
+-- local Structures = require 'maps.pirates.structures.structures'
+-- local Surfaces = require 'maps.pirates.surfaces.surfaces'
 local Boats = require 'maps.pirates.structures.boats.boats'
 local Hold = require 'maps.pirates.surfaces.hold'
 
@@ -28,7 +28,7 @@ local enum = {
 	MORE_POWER = 'upgrade_power',
 	UNLOCK_MERCHANTS = 'unlock_merchants',
 	ROCKETS_FOR_SALE = 'rockets_for_sale',
-} 
+}
 Public.enum = enum
 Public.List = {
 	enum.EXTRA_HOLD,

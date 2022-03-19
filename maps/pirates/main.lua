@@ -11,48 +11,47 @@
 == Tips for Developers! ==
 
 The scenario is quite complex, but there are ways to get started, even if you don't know any Lua:
-• Go to pirates/surfaces/islands/first and 
+• Go to pirates/surfaces/islands/first and
 ]]
 
 -- require 'modules.biters_yield_coins'
 require 'modules.biter_noms_you'
 require 'modules.no_deconstruction_of_neutral_entities'
 
-local CustomEvents = require 'maps.pirates.custom_events' --it might be necessary to do this before anything
+require 'maps.pirates.custom_events' --it might be necessary to do this before anything
 
-local Server = require 'utils.server'
-local inspect = require 'utils.inspect'.inspect
+require 'utils.server'
+local _inspect = require 'utils.inspect'.inspect
 -- local Modifers = require 'player_modifiers'
 local BottomFrame = require 'comfy_panel.bottom_frame'
 local Autostash = require 'modules.autostash'
-local Pickup = require 'modules.inserter_drops_pickup'
--- local Autostash = require 'maps.pirates.from_comfy.autostash'
+require 'modules.inserter_drops_pickup'
 
 
 local TickFunctions = require 'maps.pirates.tick_functions'
 local ClassTickFunctions = require 'maps.pirates.tick_functions_classes'
 
-local Commands = require 'maps.pirates.commands'
-local Math = require 'maps.pirates.math'
+require 'maps.pirates.commands'
+require 'maps.pirates.math'
 local Memory = require 'maps.pirates.memory'
-local Gui = require 'maps.pirates.gui.gui'
+require 'maps.pirates.gui.gui'
 local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
-local Utils = require 'maps.pirates.utils_local'
+require 'maps.pirates.utils_local'
 local Balance = require 'maps.pirates.balance'
 local Crew = require 'maps.pirates.crew'
 local Roles = require 'maps.pirates.roles.roles'
 local Structures = require 'maps.pirates.structures.structures'
 local Surfaces = require 'maps.pirates.surfaces.surfaces'
 local Interface = require 'maps.pirates.interface'
-local Boats = require 'maps.pirates.structures.boats.boats'
+require 'maps.pirates.structures.boats.boats'
 local Progression = require 'maps.pirates.progression'
 local Ai = require 'maps.pirates.ai'
-local Ores = require 'maps.pirates.ores'
-local Quest = require 'maps.pirates.quest'
-local Parrot = require 'maps.pirates.parrot'
-local Shop = require 'maps.pirates.shop.shop'
-local Upgrades = require 'maps.pirates.boat_upgrades'
+require 'maps.pirates.ores'
+require 'maps.pirates.quest'
+require 'maps.pirates.parrot'
+require 'maps.pirates.shop.shop'
+require 'maps.pirates.boat_upgrades'
 local Token = require 'utils.token'
 local Task = require 'utils.task'
 
@@ -63,7 +62,8 @@ local Public = {}
 -- parrot sprites from https://elthen.itch.io/2d-pixel-art-parrot-sprites, licensed appropriately
 
 local jetty_delayed = Token.register(
-	function(data)
+	-- function(data)
+	function()
 		Surfaces.Lobby.place_lobby_jetty_and_boats()
 	end
 )
@@ -76,7 +76,7 @@ local function on_init()
 	-- local spectator = game.create_force('spectator')
 	-- local spectator_permissions = game.permissions.create_group('spectator')
 	-- spectator_permissions.set_allows_action(defines.input_action.start_walking,false)
-	
+
     Autostash.insert_into_furnace(true)
     -- Autostash.insert_into_wagon(true)
     Autostash.bottom_button(true)
@@ -94,22 +94,22 @@ local function on_init()
 	game.surfaces['piratedev1'].clear()
 
 	Common.init_game_settings(Balance.technology_price_multiplier)
-	
+
 	global_memory.active_crews_cap = Common.active_crews_cap
 	global_memory.minimum_capacity_slider_value = Common.minimum_capacity_slider_value
-	
+
 	Surfaces.Lobby.create_starting_dock_surface()
 	local lobby = game.surfaces[CoreData.lobby_surface_name]
 	game.forces.player.set_spawn_position(Common.lobby_spawnpoint, lobby)
 	game.forces.player.character_running_speed_modifier = Balance.base_extra_character_speed
 
-	local environment_force = game.create_force('environment')
-	local player_force = game.forces.player
+	game.create_force('environment')
 	for id = 1, 3, 1 do
+		game.create_force(string.format('enemy-%03d', id))
+		game.create_force(string.format('ancient-friendly-%03d', id))
+		game.create_force(string.format('ancient-hostile-%03d', id))
+
 		local crew_force = game.create_force(string.format('crew-%03d', id))
-		local enemy_force = game.create_force(string.format('enemy-%03d', id))
-		local ancient_friendly_force = game.create_force(string.format('ancient-friendly-%03d', id))
-		local ancient_enemy_force = game.create_force(string.format('ancient-hostile-%03d', id))
 
 		Crew.reset_crew_and_enemy_force(id)
 		crew_force.research_queue_enabled = true
@@ -121,7 +121,7 @@ local function on_init()
 	if _DEBUG then
 		game.print('Debug mode on. Use /go to get started (sometimes crashes)')
 	end
-	
+
 end
 
 local event = require 'utils.event'
@@ -229,7 +229,7 @@ local function crew_tick()
 	end
 
 	if tick % 60 == 0 then
-		
+
 		if destination.dynamic_data.timer then
 			destination.dynamic_data.timer = destination.dynamic_data.timer + 1
 		end
@@ -251,7 +251,7 @@ local function crew_tick()
 
 		if destination.dynamic_data.time_remaining and destination.dynamic_data.time_remaining > 0 then
 			destination.dynamic_data.time_remaining = destination.dynamic_data.time_remaining - 1
-			
+
 			if destination.dynamic_data.time_remaining == 0 then
 				if memory.boat and memory.boat.surface_name then
 					local surface_name_decoded = Surfaces.SurfacesCommon.decode_surface_name(memory.boat.surface_name)
@@ -278,15 +278,15 @@ local function crew_tick()
 	if tick % 240 == 0 then
 		TickFunctions.Kraken_Destroyed_Backup_check(240)
 	end
-	
+
 	if tick % 300 == 0 then
 		TickFunctions.periodic_free_resources(300)
 	end
-	
+
 	if tick % 30 == 0 then
 		ClassTickFunctions.update_character_properties(30)
 	end
-	
+
 	if tick % 30 == 0 then
 		ClassTickFunctions.class_renderings(30)
 	end
@@ -298,7 +298,7 @@ local function crew_tick()
 	if tick % 240 == 0 then
 		TickFunctions.LOS_tick(240)
 	end
-	
+
 	if tick % 420 == 0 then
 		ClassTickFunctions.class_rewards_tick(420)
 	end
@@ -336,7 +336,7 @@ local function global_tick()
 	if tick % 60 == 0 then
 		TickFunctions.update_players_second()
 	end
-	
+
 	if tick % 30 == 0 then
 		for _, player in pairs(game.connected_players) do
 			-- figure out which crew this is about:

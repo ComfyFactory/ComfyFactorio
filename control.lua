@@ -32,9 +32,9 @@ require 'modules.autostash'
 require 'comfy_panel.main'
 require 'comfy_panel.player_list'
 require 'comfy_panel.admin'
-require 'comfy_panel.group'
-require 'comfy_panel.poll'
-require 'comfy_panel.score'
+-- require 'comfy_panel.group'
+-- require 'comfy_panel.poll'
+-- require 'comfy_panel.score'
 require 'comfy_panel.config'
 require 'comfy_panel.server_select'
 
@@ -111,8 +111,8 @@ require 'comfy_panel.server_select'
 --require 'maps.chronosphere.main'
 
 --![[Adventure as a crew of pirates!]]--
--- require 'maps.pirates.main'
--- Note: should disable comfy_panel.group, comfy_panel.poll, comfy_panel.score
+-- Note: This scenario is intended to be used with comfy_panel.group, comfy_panel.poll, and comfy_panel.score disabled
+require 'maps.pirates.main'
 
 --![[Launch rockets in increasingly harder getting worlds.]]--
 --require 'maps.journey.main'

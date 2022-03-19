@@ -1,12 +1,12 @@
 
 local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
-local Balance = require 'maps.pirates.balance'
+-- local Balance = require 'maps.pirates.balance'
 local Boats = require 'maps.pirates.structures.boats.boats'
 local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
 local Utils = require 'maps.pirates.utils_local'
-local inspect = require 'utils.inspect'.inspect
+local _inspect = require 'utils.inspect'.inspect
 
 
 local Public = {}
@@ -67,7 +67,7 @@ Public.Data.iconized_map_height = 20
 function Public.terrain(args)
 
 	local x, y = args.p.x, args.p.y
-	
+
 	if Math.distance(args.p, {x = -316, y = 0}) < 230 then
 		args.tiles[#args.tiles + 1] = {name = 'dirt-3', position = args.p}
 	elseif Math.distance(args.p, {x = -264, y = 0}) < 180 then
@@ -79,12 +79,12 @@ function Public.terrain(args)
 	end
 end
 
-function Public.chunk_structures(args)
+function Public.chunk_structures()
 	return nil
 end
 
 function Public.create_starting_dock_surface()
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
 
 	local starting_dock_name = CoreData.lobby_surface_name
 
@@ -101,12 +101,13 @@ function Public.place_starting_dock_showboat(id)
 	local global_memory = Memory.get_global_memory()
 
 	Memory.set_working_id(id)
-	
+
 	local boat = Utils.deepcopy(Public.StartingBoats[id])
 
 	global_memory.lobby_boats[id] = boat
 
-	Boats.place_boat(boat, CoreData.static_boat_floor, true, true, false, true)
+	Boats.place_boat(boat, CoreData.static_boat_floor, true, true, false)
+	-- Boats.place_boat(boat, CoreData.static_boat_floor, true, true, false, true) --this final argument is to enable the comfy graphic to be placed on the boat, but that argument is disabled for now, so luacheck forbids this line
 end
 
 function Public.place_lobby_jetty_and_boats()
@@ -123,7 +124,7 @@ function Public.place_lobby_jetty_and_boats()
 	for _, p in pairs(Common.tile_positions_from_blueprint(Public.Data.jetty_bp, offset)) do
 		tiles[#tiles + 1] = {name = CoreData.walkway_tile, position = p, force = 'environment'}
 	end
-		
+
 	surface.set_tiles(tiles, true)
 
 	-- for y = -3.5, 3.5 do

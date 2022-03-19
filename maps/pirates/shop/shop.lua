@@ -1,17 +1,17 @@
 
 local Memory = require 'maps.pirates.memory'
-local Roles = require 'maps.pirates.roles.roles'
+-- local Roles = require 'maps.pirates.roles.roles'
 local Classes = require 'maps.pirates.roles.classes'
-local Crew = require 'maps.pirates.crew'
-local Boats = require 'maps.pirates.structures.boats.boats'
-local Dock = require 'maps.pirates.surfaces.dock'
+-- local Crew = require 'maps.pirates.crew'
+-- local Boats = require 'maps.pirates.structures.boats.boats'
+-- local Dock = require 'maps.pirates.surfaces.dock'
 local Balance = require 'maps.pirates.balance'
 local Common = require 'maps.pirates.common'
 local Utils = require 'maps.pirates.utils_local'
 local Math = require 'maps.pirates.math'
-local inspect = require 'utils.inspect'.inspect
+local _inspect = require 'utils.inspect'.inspect
 local SurfacesCommon = require 'maps.pirates.surfaces.common'
-local Upgrades = require 'maps.pirates.boat_upgrades'
+-- local Upgrades = require 'maps.pirates.boat_upgrades'
 
 local Public = {}
 Public.Captains = require 'maps.pirates.shop.captains'
@@ -119,7 +119,7 @@ function Public.event_on_market_item_purchased(event)
 				memory.classes_table[player.index] = class_for_sale
 
 				memory.available_classes_pool = Utils.ordered_table_with_single_value_removed(memory.available_classes_pool, class_for_sale)
-			
+
 				if destination.dynamic_data and destination.dynamic_data.market_class_offer_rendering then
 					rendering.destroy(destination.dynamic_data.market_class_offer_rendering)
 				end
@@ -173,7 +173,7 @@ function Public.event_on_market_item_purchased(event)
 			local flying_text_color = {r = 255, g = 255, b = 255}
 			local text1 = '[color=1,1,1]+' .. this_offer.offer.count .. '[/color] [item=' .. alloffers[offer_index].offer.item .. ']'
 			local text2 = '[color=' .. flying_text_color.r .. ',' .. flying_text_color.g .. ',' .. flying_text_color.b .. '](' .. inv.get_item_count(alloffers[offer_index].offer.item) .. ')[/color]'
-		
+
 			Common.flying_text(player.surface, player.position, text1 .. '  [font=count-font]' .. text2 .. '[/font]')
 		else
 			local decay_param =  Balance.barter_decay_parameter()
@@ -183,12 +183,12 @@ function Public.event_on_market_item_purchased(event)
 			local flying_text_color = {r = 255, g = 255, b = 255}
 			local text1 = '[color=1,1,1]+' .. this_offer.offer.count .. '[/color] [item=' .. alloffers[offer_index].offer.item .. ']'
 			local text2 = '[color=' .. flying_text_color.r .. ',' .. flying_text_color.g .. ',' .. flying_text_color.b .. '](' .. inv.get_item_count(this_offer.offer.item) .. ')[/color]'
-		
+
 			Common.flying_text(player.surface, player.position, text1 .. '  [font=count-font]' .. text2 .. '[/font]')
 
 			--update market trades:
 			alloffers[offer_index].offer.count = Math.max(Math.floor(alloffers[offer_index].offer.count * decay_param),1)
-		
+
 			market.clear_market_items()
 			for _, offer in pairs(alloffers) do
 				market.add_market_item(offer)

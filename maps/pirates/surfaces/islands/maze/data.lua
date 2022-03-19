@@ -1,7 +1,7 @@
 
-local Common = require 'maps.pirates.common'
-local Utils = require 'maps.pirates.utils_local'
-local Math = require 'maps.pirates.math'
+-- local Common = require 'maps.pirates.common'
+-- local Utils = require 'maps.pirates.utils_local'
+-- local Math = require 'maps.pirates.math'
 
 local Public = {}
 
@@ -19,7 +19,7 @@ Public.static_params_default = {
 	base_starting_treasure_maps = 3,
 }
 
-function Public.base_ores() 
+function Public.base_ores()
 	return {
 		['copper-ore'] = 3.5,
 		['iron-ore'] = 6.5,
@@ -30,7 +30,7 @@ function Public.base_ores()
 end
 
 local rscale = 240
-local hscale = 0.1
+-- local hscale = 0.1
 Public.noiseparams = {
 	radius = {
 		type = 'simplex_2d',

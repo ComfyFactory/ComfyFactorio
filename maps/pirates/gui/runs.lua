@@ -4,15 +4,15 @@ local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
 local Utils = require 'maps.pirates.utils_local'
 local Math = require 'maps.pirates.math'
-local Surfaces = require 'maps.pirates.surfaces.surfaces'
-local Roles = require 'maps.pirates.roles.roles'
+-- local Surfaces = require 'maps.pirates.surfaces.surfaces'
+-- local Roles = require 'maps.pirates.roles.roles'
 local Crew = require 'maps.pirates.crew'
 local Progression = require 'maps.pirates.progression'
-local Structures = require 'maps.pirates.structures.structures'
-local inspect = require 'utils.inspect'.inspect
+-- local Structures = require 'maps.pirates.structures.structures'
+local _inspect = require 'utils.inspect'.inspect
 local Boats = require 'maps.pirates.structures.boats.boats'
 local GuiCommon = require 'maps.pirates.gui.common'
-local Server = require 'utils.server'
+-- local Server = require 'utils.server'
 local Public = {}
 
 
@@ -22,7 +22,7 @@ local window_name = 'runs'
 local function flow_add_proposal_slider(flow, name, displayname, indices_count, starting_index, tooltip)
 	local flow2, flow3, flow4
 
-	
+
 	flow2 = flow.add({
 		name = name,
 		type = 'flow',
@@ -43,7 +43,7 @@ local function flow_add_proposal_slider(flow, name, displayname, indices_count, 
     flow3.style.bottom_margin = 0
 	flow3.style.font_color = GuiCommon.subsection_header_font_color
 	flow3.tooltip = tooltip
-	
+
 	flow3 = flow2.add({
 		name = name,
 		type = 'flow',
@@ -92,80 +92,81 @@ local function flow_add_proposal_slider(flow, name, displayname, indices_count, 
 end
 
 
-local function flow_add_proposal_switch(flow, name, displayname, starting_position, tooltip)
-	local flow2, flow3, flow4
-	
-	flow2 = flow.add({
-		name = name,
-		type = 'flow',
-		direction = 'vertical',
-	})
-    flow2.style.horizontal_align = 'left'
-    flow2.style.width = 130
+-- commented out for luacheck:
+-- local function flow_add_proposal_switch(flow, name, displayname, starting_position, tooltip)
+-- 	local flow2, flow3, flow4
 
-	flow3 = flow2.add({
-		type = 'label',
-		caption = displayname,
-	})
-	flow3.style.font = 'heading-3'
-	flow3.style.height = 20
-    flow3.style.margin = 0
-    flow3.style.padding = 0
-    flow3.style.top_padding = -4
-    flow3.style.bottom_margin = 0
-	flow3.style.font_color = GuiCommon.subsection_header_font_color
-	flow3.tooltip = tooltip
-	
-	flow3 = flow2.add({
-		name = name,
-		type = 'flow',
-		direction = 'vertical',
-	})
-    flow3.style.horizontal_align = 'center'
-    flow3.style.width = 130
+-- 	flow2 = flow.add({
+-- 		name = name,
+-- 		type = 'flow',
+-- 		direction = 'vertical',
+-- 	})
+--     flow2.style.horizontal_align = 'left'
+--     flow2.style.width = 130
 
-	flow4 = flow3.add({
-		name = 'switch',
-		type = 'switch',
-		switch_state = starting_position,
-	})
-	-- flow4.style.width = 80
-	-- flow4.style.height = 40
-    flow4.style.margin = 0
-	flow4.tooltip = tooltip
+-- 	flow3 = flow2.add({
+-- 		type = 'label',
+-- 		caption = displayname,
+-- 	})
+-- 	flow3.style.font = 'heading-3'
+-- 	flow3.style.height = 20
+--     flow3.style.margin = 0
+--     flow3.style.padding = 0
+--     flow3.style.top_padding = -4
+--     flow3.style.bottom_margin = 0
+-- 	flow3.style.font_color = GuiCommon.subsection_header_font_color
+-- 	flow3.tooltip = tooltip
 
-	flow4 = flow3.add({
-		name = 'readoff_text',
-		type = 'label',
-		caption = '',
-	})
-	flow4.style.font = 'default-listbox'
-	flow4.style.height = 20
-    flow4.style.margin = 0
-    flow4.style.padding = 0
-    flow4.style.top_padding = 0
-    flow4.style.bottom_margin = 16
-	flow4.tooltip = tooltip
+-- 	flow3 = flow2.add({
+-- 		name = name,
+-- 		type = 'flow',
+-- 		direction = 'vertical',
+-- 	})
+--     flow3.style.horizontal_align = 'center'
+--     flow3.style.width = 130
 
-	flow2 = flow.add({
-		name = name .. '_readoff_icon',
-		type = 'sprite-button',
-		enabled = false,
-	})
-	flow2.style.width = 48
-	flow2.style.height = 48
-	flow2.tooltip = tooltip
+-- 	flow4 = flow3.add({
+-- 		name = 'switch',
+-- 		type = 'switch',
+-- 		switch_state = starting_position,
+-- 	})
+-- 	-- flow4.style.width = 80
+-- 	-- flow4.style.height = 40
+--     flow4.style.margin = 0
+-- 	flow4.tooltip = tooltip
 
-	return flow2
-end
+-- 	flow4 = flow3.add({
+-- 		name = 'readoff_text',
+-- 		type = 'label',
+-- 		caption = '',
+-- 	})
+-- 	flow4.style.font = 'default-listbox'
+-- 	flow4.style.height = 20
+--     flow4.style.margin = 0
+--     flow4.style.padding = 0
+--     flow4.style.top_padding = 0
+--     flow4.style.bottom_margin = 16
+-- 	flow4.tooltip = tooltip
+
+-- 	flow2 = flow.add({
+-- 		name = name .. '_readoff_icon',
+-- 		type = 'sprite-button',
+-- 		enabled = false,
+-- 	})
+-- 	flow2.style.width = 48
+-- 	flow2.style.height = 48
+-- 	flow2.tooltip = tooltip
+
+-- 	return flow2
+-- end
 
 
 function Public.toggle_window(player)
-	local flow, flow2, flow3, flow4, flow5, flow6, flow7
+	local flow, flow2, flow3, flow4, flow5
 
 	--*** OVERALL FLOW ***--
 	if player.gui.screen[window_name .. '_piratewindow'] then player.gui.screen[window_name .. '_piratewindow'].destroy() return end
-	
+
 	flow = GuiCommon.new_window(player, window_name)
 	flow.caption = 'Play'
 
@@ -221,13 +222,13 @@ function Public.toggle_window(player)
 	flow4.style.minimal_width = 95
 	flow4.style.font = 'default-bold'
 	flow4.style.font_color = {r=0.10, g=0.10, b=0.10}
-	
+
 	flow3 = flow2.add({
 		name = 'wait_to_join',
 		type = 'label',
 	})
 	flow3.style.left_margin = 5
-	
+
 	flow3 = flow2.add({
 		name = 'leaving_prompt',
 		type = 'label',
@@ -345,9 +346,9 @@ function Public.toggle_window(player)
 		type = 'button',
 		caption = 'Propose',
 	})
-	flow4.style.minimal_width = 75
-	flow4.style.font = 'default-bold'
-	flow4.style.font_color = {r=0.10, g=0.10, b=0.10}
+	flow5.style.minimal_width = 75
+	flow5.style.font = 'default-bold'
+	flow5.style.font_color = {r=0.10, g=0.10, b=0.10}
 
 
 	-- LAUNCH YOUR PROPOSAL --
@@ -402,9 +403,9 @@ end
 
 
 
-function Public.regular_update(player)
+-- function Public.regular_update(player)
 
-end
+-- end
 
 
 function Public.full_update(player)
@@ -414,7 +415,7 @@ function Public.full_update(player)
 
 	if not player.gui.screen['runs_piratewindow'] then return end
 	local flow = player.gui.screen['runs_piratewindow']
-	local playercrew_status = GuiCommon.playercrew_status_table(player.index)
+	local playercrew_status = GuiCommon.crew_overall_state_bools(player.index)
 	if not playercrew_status then return end
 
 
@@ -456,7 +457,7 @@ function Public.full_update(player)
 		end
 
 		flow.proposals.body.proposals_listbox.visible = (not playercrew_status.leaving) and (#global_memory.crewproposals > 0)
-		
+
 		flow.proposals.body.flow_buttons.endorse_proposal.visible = (not playercrew_status.leaving) and (not playercrew_status.endorsing) and (#global_memory.crewproposals > 0) and flow.proposals.body.proposals_listbox.selected_index ~= 0
 
 		flow.proposals.body.flow_buttons.abandon_proposal.visible = (not playercrew_status.leaving) and playercrew_status.endorsing and playercrew_status.endorsing and playercrew_status.proposing and (#global_memory.crewproposals > 0)
@@ -485,7 +486,7 @@ function Public.full_update(player)
 
 	end
 
-	
+
 
 	--*** UPDATE CONTENT ***--
 
@@ -549,12 +550,12 @@ function Public.click(event)
 	local player = game.players[event.element.player_index]
 
 	local eventname = event.element.name
-	
+
 	if not player.gui.screen[window_name .. '_piratewindow'] then return end
 	local flow = player.gui.screen[window_name .. '_piratewindow']
-	
+
 	local global_memory = Memory.get_global_memory()
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
 
 
 	if eventname == 'join_spectators' then
@@ -607,7 +608,7 @@ function Public.click(event)
 		-- end
 		-- if not unique then return end
 		-- if changed then proposal_name = proposal_name .. i end
-		
+
 		local unique = true
 		for _, proposal in pairs(global_memory.crewproposals) do
 			if proposal_name == proposal.name then
@@ -636,13 +637,13 @@ function Public.click(event)
 
 	if eventname == 'endorse_proposal' then
 		local lb = flow.proposals.body.proposals_listbox
-			
+
 		local index = lb.selected_index
 		if index ~= 0 then
 			local name2 = lb.get_item(lb.selected_index)[2]
 
 			for _, proposal in pairs(global_memory.crewproposals) do
-					
+
 				if proposal.name == name2 and #proposal.endorserindices < CoreData.capacity_options[proposal.capacity_option].value then
 					proposal.endorserindices[#proposal.endorserindices + 1] = player.index
 				end
@@ -663,7 +664,7 @@ function Public.click(event)
 	end
 
 	if eventname == 'launch_crew' then
-		if GuiCommon.playercrew_status_table(player.index).proposal_can_launch then --double check
+		if GuiCommon.crew_overall_state_bools(player.index).proposal_can_launch then --double check
 			for k, proposal in pairs(global_memory.crewproposals) do
 				if #proposal.endorserindices > 0 and proposal.endorserindices[1] == player.index then
 					Crew.initialise_crew(proposal)

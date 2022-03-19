@@ -1,13 +1,13 @@
 
 local Memory = require 'maps.pirates.memory'
-local Balance = require 'maps.pirates.balance'
+-- local Balance = require 'maps.pirates.balance'
 local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
 local Utils = require 'maps.pirates.utils_local'
-local Math = require 'maps.pirates.math'
+-- local Math = require 'maps.pirates.math'
 local CustomEvents = require 'maps.pirates.custom_events'
 
-local inspect = require 'utils.inspect'.inspect
+local _inspect = require 'utils.inspect'.inspect
 local Token = require 'utils.token'
 local Task = require 'utils.task'
 
@@ -62,7 +62,7 @@ function Public.crowsnest_surface_name()
 end
 
 function Public.get_crowsnest_surface()
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
 
 	return game.surfaces[Public.crowsnest_surface_name()]
 end
@@ -73,7 +73,7 @@ function Public.move_crowsnest(vectorx, vectory)
 	local surface = game.surfaces[Public.crowsnest_surface_name()]
 
 	local old_area = {{memory.overworldx - 2.5, memory.overworldy - 3.5},{memory.overworldx + 3.5, memory.overworldy + 3.5}}
-		
+
 	memory.overworldx = memory.overworldx + vectorx
 	memory.overworldy = memory.overworldy + vectory
 
@@ -165,21 +165,21 @@ end
 
 
 function Public.draw_kraken(p)
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[Public.crowsnest_surface_name()]
-	
+
 	surface.set_tiles({{name = CoreData.kraken_tile, position = {x = Public.platformrightmostedge + p.x, y = p.y}}}, true, true, true)
 end
 
 
 
 function Public.draw_destination(destination)
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[Public.crowsnest_surface_name()]
 
 	local tiles = {}
-	local entities = {}
-	local renderings = {}
+	-- local entities = {}
+	-- local renderings = {}
 
 	local iconized_map = SurfacesCommon.fetch_iconized_map(destination)
 
@@ -261,7 +261,7 @@ function Public.create_crowsnest_surface()
 end
 
 function Public.paint_water_between_overworld_positions(overworldx1, overworldx2)
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[Public.crowsnest_surface_name()]
 
 	Common.ensure_chunks_at(surface, {x = overworldx2, y = 0}, 10)
@@ -281,7 +281,7 @@ function Public.paint_water_between_overworld_positions(overworldx1, overworldx2
 end
 
 function Public.paint_crowsnest_background_tiles()
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[Public.crowsnest_surface_name()]
 
 	local tiles = {}
@@ -342,7 +342,7 @@ function Public.crowsnest_surface_delayed_init()
 		Task.set_timeout_in_ticks(5, crowsnest_delayed, {crew_id = memory.id})
 		return
 	end
-	
+
 	surface.destroy_decoratives{area = {{-3, -4},{4, 4}}}
 
 	local chestspos = Public.Data.chestspos
@@ -398,7 +398,7 @@ function Public.paint_around_destination(id, tile_name)
 	local destination_data = memory.destinations[id]
 	local surface = game.surfaces[Public.crowsnest_surface_name()]
 
-	local static_params = destination_data.static_params
+	-- local static_params = destination_data.static_params
 	local type = destination_data.type
 
 	local tiles = {}
@@ -417,11 +417,11 @@ function Public.paint_around_destination(id, tile_name)
 	surface.set_tiles(tiles, true, true, true)
 end
 
-function Public.terrain(args) --blank since we do this manually
+function Public.terrain() --blank since we do this manually
 	--
 end
 
-function Public.chunk_structures(args)
+function Public.chunk_structures()
 	--
 end
 

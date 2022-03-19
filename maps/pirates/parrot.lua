@@ -1,13 +1,13 @@
 
-local Math = require 'maps.pirates.math'
+-- local Math = require 'maps.pirates.math'
 local Memory = require 'maps.pirates.memory'
-local inspect = require 'utils.inspect'.inspect
-local Token = require 'utils.token'
-local CoreData = require 'maps.pirates.coredata'
-local Task = require 'utils.task'
-local Balance = require 'maps.pirates.balance'
+local _inspect = require 'utils.inspect'.inspect
+-- local Token = require 'utils.token'
+-- local CoreData = require 'maps.pirates.coredata'
+-- local Task = require 'utils.task'
+-- local Balance = require 'maps.pirates.balance'
 local Common = require 'maps.pirates.common'
-local Utils = require 'maps.pirates.utils_local'
+-- local Utils = require 'maps.pirates.utils_local'
 
 local Public = {}
 local enum = {
@@ -18,10 +18,10 @@ local enum = {
 	TIP_LANDED_1 = 'tip_landed_1',
 	TIP_LANDED_2 = 'tip_landed_2',
 	TIP_SQUAWK = 'tip_squawk',
-} 
+}
 Public.enum = enum
 
-local parrot_tip_interval = 15*60
+-- local parrot_tip_interval = 15*60
 
 Public.framecounts = {
 	idle_fly = 5,
@@ -110,7 +110,7 @@ end
 
 -- 	if destination.dynamic_data and destination.dynamic_data.timer and destination.dynamic_data.timer == Math.ceil(Balance.expected_time_on_island()) and (not destination.dynamic_data.parrot_gave_overstay_tip) then
 -- 		destination.dynamic_data.parrot_gave_overstay_tip = true
-		
+
 -- 		local spawners = surface.find_entities_filtered({type = 'unit-spawner', force = memory.enemy_force_name})
 -- 		local spawnerscount = #spawners or 0
 -- 		if spawnerscount > 0 then --check biter bases actually exist
@@ -160,7 +160,7 @@ end
 
 -- 			local p1 = {x = boat.position.x - 15 - Math.random(35), y = boat.position.y - 8 + Math.random(15)}
 -- 			local p2 = surface.find_non_colliding_position('stone-furnace', p1, 6, 0.5)
-			
+
 -- 			parrot.spot_to_fly_from = position_relative_to_boat
 -- 			local real_fly_to = p2 or p1
 -- 			parrot.spot_to_fly_to = {x = real_fly_to.x - boat.position.x, y = real_fly_to.y - boat.position.y}
@@ -171,14 +171,14 @@ end
 -- 			if game.tick % 10 == 0 then
 -- 				frame = frame + 1
 -- 			end
-	
+
 -- 			if boat.speed and boat.speed > 0 then
 -- 				state = enum.FLY
 -- 			end
 -- 		end
 
 -- 	elseif state == enum.TIP_FLYING_1 then
-	
+
 -- 		if boat.speed and boat.speed > 0 then
 -- 			state_counter = 0
 -- 			state = enum.IDLE_FLY
@@ -187,7 +187,7 @@ end
 -- 			if game.tick % 10 == 0 then
 -- 				frame = frame + 1
 -- 			end
-	
+
 -- 			if state_counter < parrot.fly_distance then
 -- 				position_relative_to_boat = Utils.interpolate(parrot.spot_to_fly_from, parrot.spot_to_fly_to, state_counter/parrot.fly_distance)
 -- 				state_counter = state_counter + 0.5
@@ -222,7 +222,7 @@ end
 -- 			if state_counter == 0 then
 -- 				Public.parrot_say_tip()
 -- 			end
-	
+
 -- 			if state_counter < 18 then
 -- 				if game.tick % 15 == 0 then
 -- 					frame = frame + 1
@@ -253,7 +253,7 @@ end
 -- 		end
 
 -- 	elseif state == enum.TIP_FLYING_2 then
-	
+
 -- 		if boat.speed and boat.speed > 0 then
 -- 			state_counter = 0
 -- 			state = enum.IDLE_FLY
@@ -262,7 +262,7 @@ end
 -- 			if game.tick % 10 == 0 then
 -- 				frame = frame + 1
 -- 			end
-	
+
 -- 			if state_counter < parrot.fly_distance then
 -- 				position_relative_to_boat = Utils.interpolate(parrot.spot_to_fly_from, parrot.spot_to_fly_to, state_counter/parrot.fly_distance)
 -- 				state_counter = state_counter + 0.5
@@ -273,7 +273,7 @@ end
 -- 		end
 
 -- 	elseif state == enum.FLY then
-	
+
 -- 		if game.tick % 10 == 0 then
 -- 			frame = frame + 1
 -- 		end
@@ -286,7 +286,7 @@ end
 -- 	if state == enum.TIP_FLYING_2 then sprite_name = 'fly_right' end
 -- 	if state == enum.TIP_LANDED_1 or state == enum.TIP_LANDED_2 then sprite_name = 'chill' end
 -- 	if state == enum.TIP_SQUAWK then sprite_name = 'squawk' end
-	
+
 -- 	if frame > Public.framecounts[sprite_name] then frame = 1 end
 -- 	parrot.state = state
 -- 	parrot.frame = frame

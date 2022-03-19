@@ -1,10 +1,10 @@
 
 local Public = {}
 local Math = require 'maps.pirates.math'
-local Memory = require 'maps.pirates.memory'
+-- local Memory = require 'maps.pirates.memory'
 local Common = require 'maps.pirates.common'
 local Utils = require 'maps.pirates.utils_local'
-local inspect = require 'utils.inspect'.inspect
+local _inspect = require 'utils.inspect'.inspect
 
 -- this file is an API to all the balance tuning knobs
 
@@ -172,7 +172,7 @@ function Public.base_evolution_leagues(leagues)
 		evo = 0
 	else
 		evo = (0.0201 * (overworldx/40)) * Math.sloped(Common.difficulty(), 1/5)
-	
+
 		if overworldx > 600 and overworldx < 1000 then
 			evo = evo + (0.0025 * (overworldx - 600)/40)
 		elseif overworldx > 1000 then
@@ -248,7 +248,7 @@ function Public.bonus_damage_to_humans()
 end
 
 
-function Public.periodic_free_resources_per_x(x)
+function Public.periodic_free_resources_per_x()
 	return {
 	}
 	-- return {
@@ -257,7 +257,7 @@ function Public.periodic_free_resources_per_x(x)
 	-- }
 end
 
-function Public.periodic_free_resources_per_destination_5_seconds(x)
+function Public.periodic_free_resources_per_destination_5_seconds()
 	return {
 	}
 	-- return {
@@ -346,7 +346,7 @@ end
 
 Public.kraken_regen_scale = 0.1 --starting off low
 
-function Public.krakens_per_slot(overworldx)
+function Public.krakens_per_slot()
 	local rng = Math.random()
 	if rng < 0.03 then
 		return 2
@@ -566,10 +566,10 @@ end
 
 
 function Public.covered1_entry_price()
-	local rng = Math.random()
-	local memory = Memory.get_crew_memory()
+	-- local rng = Math.random()
+	-- local memory = Memory.get_crew_memory()
 
-	local overworldx = memory.overworldx or 0
+	-- local overworldx = memory.overworldx or 0
 
 	local game_completion_progress = Math.max(Math.min(Math.sloped(Common.difficulty(),1/2) * Common.game_completion_progress(), 1), 0)
 

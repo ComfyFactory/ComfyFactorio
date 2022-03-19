@@ -1,13 +1,13 @@
 
 local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
-local Balance = require 'maps.pirates.balance'
-local Structures = require 'maps.pirates.structures.structures'
+-- local Balance = require 'maps.pirates.balance'
+-- local Structures = require 'maps.pirates.structures.structures'
 local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
-local Utils = require 'maps.pirates.utils_local'
-local inspect = require 'utils.inspect'.inspect
-local Data = require 'maps.pirates.surfaces.islands.walkways.data'
+-- local Utils = require 'maps.pirates.utils_local'
+local _inspect = require 'utils.inspect'.inspect
+-- local Data = require 'maps.pirates.surfaces.islands.walkways.data'
 local Ores = require 'maps.pirates.ores'
 local IslandsCommon = require 'maps.pirates.surfaces.islands.common'
 local Hunt = require 'maps.pirates.surfaces.islands.hunt'
@@ -18,7 +18,7 @@ Public.Data = require 'maps.pirates.surfaces.islands.walkways.data'
 
 function Public.noises(args)
 	local ret = {}
-	
+
 	ret.height = IslandsCommon.island_height_1(args)
 	ret.walkways = function (p) return Math.abs(args.noise_generator.walkways(p)) end
 	ret.rock = args.noise_generator.rock
@@ -29,7 +29,7 @@ function Public.noises(args)
 end
 
 function Public.terrain(args)
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
 	local noises = Public.noises(args)
 	local p = args.p
 
@@ -108,7 +108,7 @@ end
 
 
 function Public.generate_silo_setup_position()
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 	local surface = game.surfaces[destination.surface_name]
 
@@ -137,7 +137,7 @@ local function walkways_tick()
 		Memory.set_working_id(id)
 		local memory = Memory.get_crew_memory()
 		local destination = Common.current_destination()
-		
+
 		if destination.subtype and destination.subtype == IslandsCommon.enum.WALKWAYS then
 			for _, player in pairs(game.connected_players) do
 				if player.force.name == memory.force_name and player.surface == game.surfaces[destination.surface_name] and player.character and player.character.valid and game.surfaces[destination.surface_name].get_tile(player.position).name == 'water-shallow' then

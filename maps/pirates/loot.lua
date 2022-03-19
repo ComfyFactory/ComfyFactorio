@@ -1,10 +1,10 @@
 
 local Math = require 'maps.pirates.math'
-local Memory = require 'maps.pirates.memory'
-local Balance = require 'maps.pirates.balance'
-local CoreData = require 'maps.pirates.coredata'
+-- local Memory = require 'maps.pirates.memory'
+-- local Balance = require 'maps.pirates.balance'
+-- local CoreData = require 'maps.pirates.coredata'
 local Common = require 'maps.pirates.common'
-local inspect = require 'utils.inspect'.inspect
+local _inspect = require 'utils.inspect'.inspect
 
 local Public = {}
 
@@ -207,8 +207,6 @@ Public.chest_loot_data_raw = {
 }
 
 function Public.wooden_chest_loot()
-	local memory = Memory.get_crew_memory()
-	local overworldx = memory.overworldx or 0
 	local num = 1
 
 	return Public.chest_loot(num,
@@ -217,8 +215,6 @@ function Public.wooden_chest_loot()
 end
 
 function Public.iron_chest_loot()
-	local memory = Memory.get_crew_memory()
-	local overworldx = memory.overworldx or 0
 	local num = 2
 
 	local loot = Public.chest_loot(num,
@@ -230,8 +226,6 @@ function Public.iron_chest_loot()
 end
 
 function Public.covered_wooden_chest_loot()
-	local memory = Memory.get_crew_memory()
-	local overworldx = memory.overworldx or 0
 	local num = 2
 
 	local loot = Public.chest_loot(num,

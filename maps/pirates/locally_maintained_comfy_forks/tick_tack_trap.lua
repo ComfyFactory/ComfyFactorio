@@ -1,6 +1,8 @@
 -- by mewmew
 -- modified by Gerkiz
 
+-- this fork by thesixthroc to use forces except 'enemy'
+
 local Event = require 'utils.event'
 local Global = require 'utils.global'
 

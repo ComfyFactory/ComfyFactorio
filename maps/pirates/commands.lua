@@ -1,3 +1,5 @@
+--luacheck: ignore
+--luacheck ignores because mass requires is a code templating choice...
 
 local Color = require 'utils.color_presets'
 local Server = require 'utils.server'
@@ -26,7 +28,7 @@ local Interface = require 'maps.pirates.interface'
 local Upgrades = require 'maps.pirates.boat_upgrades'
 local Effects = require 'maps.pirates.effects'
 local Kraken = require 'maps.pirates.surfaces.sea.kraken'
-local inspect = require 'utils.inspect'.inspect
+local _inspect = require 'utils.inspect'.inspect
 local simplex_noise = require 'utils.simplex_noise'.d2
 local Token = require 'utils.token'
 local Task = require 'utils.task'
@@ -155,7 +157,7 @@ local go_2 = Token.register(
 	function(data)
 		Memory.set_working_id(1)
 		local memory = Memory.get_crew_memory()
-		
+
 		memory.mapbeingloadeddestination_index = 1
 		memory.loadingticks = 0
 
@@ -526,7 +528,7 @@ if _DEBUG then
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
 			local player = game.players[cmd.player_index]
-	
+
 			local proposal = {
 				capacity_option = 3,
 				difficulty_option = 2,
@@ -534,32 +536,32 @@ if _DEBUG then
 				endorserindices = { 1 },
 				name = "AdminRun"
 			}
-	
+
 			Memory.set_working_id(1)
-	
+
 			Crew.initialise_crew(proposal)
 			Crew.initialise_crowsnest() --contains a Task
-	
+
 			local memory = Memory.get_crew_memory()
 			local boat = Utils.deepcopy(Surfaces.Lobby.StartingBoats[memory.id])
-			
+
 			for _, p in pairs(game.connected_players) do
 				p.teleport({x = -30, y = boat.position.y}, game.surfaces[boat.surface_name])
 			end
-	
+
 			Progression.set_off_from_starting_dock()
-	
+
 			-- local memory = Memory.get_crew_memory()
 			-- local boat = Utils.deepcopy(Surfaces.Lobby.StartingBoats[memory.id])
 			-- memory.boat = boat
 			-- boat.dockedposition = boat.position
 			-- boat.decksteeringchests = {}
 			-- boat.crowsneststeeringchests = {}
-	
+
 			Task.set_timeout_in_ticks(120, go_1, {})
 		end
 	end)
-	
+
 	commands.add_command(
 	'chnk',
 	'is a dev command.',
@@ -570,7 +572,7 @@ if _DEBUG then
 			local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
 			Memory.set_working_id(crew_id)
 			local memory = Memory.get_crew_memory()
-	
+
 			for i = 0, 13 do
 				for j = 0, 13 do
 					Interface.event_on_chunk_generated({surface = player.surface, area = {left_top = {x = -7 * 32 + i * 32, y = -7 * 32 + j * 32}}})
@@ -579,7 +581,7 @@ if _DEBUG then
 			game.print('chunks generated')
 		end
 	end)
-	
+
 	commands.add_command(
 	'spd',
 	'is a dev command.',
@@ -593,7 +595,7 @@ if _DEBUG then
 			memory.boat.speed = 60
 		end
 	end)
-	
+
 	commands.add_command(
 	'stp',
 	'is a dev command.',
@@ -607,7 +609,7 @@ if _DEBUG then
 			memory.boat.speed = 0
 		end
 	end)
-	
+
 	commands.add_command(
 	'rms',
 	'is a dev command.',
@@ -626,7 +628,7 @@ if _DEBUG then
 			game.print(rms)
 		end
 	end)
-	
+
 	commands.add_command(
 	'pro',
 	'is a dev command.',
@@ -635,7 +637,7 @@ if _DEBUG then
 		if check_admin(cmd) then
 			local player = game.players[cmd.player_index]
 			local global_memory = Memory.get_global_memory()
-	
+
 			local proposal = {
 				capacity_option = 3,
 				difficulty_option = 2,
@@ -643,12 +645,12 @@ if _DEBUG then
 				endorserindices = { 2 },
 				name = "TestRun"
 			}
-	
+
 			global_memory.crewproposals[#global_memory.crewproposals + 1] = proposal
-	
+
 		end
 	end)
-	
+
 	commands.add_command(
 	'lev',
 	'is a dev command.',
@@ -661,7 +663,7 @@ if _DEBUG then
 			Progression.go_from_currentdestination_to_sea()
 		end
 	end)
-	
+
 	commands.add_command(
 	'hld',
 	'is a dev command.',
@@ -674,7 +676,7 @@ if _DEBUG then
 			Upgrades.execute_upgade(Upgrades.enum.EXTRA_HOLD)
 		end
 	end)
-	
+
 	commands.add_command(
 	'pwr',
 	'is a dev command.',
@@ -687,8 +689,8 @@ if _DEBUG then
 			Upgrades.execute_upgade(Upgrades.enum.MORE_POWER)
 		end
 	end)
-	
-	
+
+
 	commands.add_command(
 	'score',
 	'is a dev command.',
@@ -699,12 +701,12 @@ if _DEBUG then
 			local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
 			Memory.set_working_id(crew_id)
 			local memory = Memory.get_crew_memory()
-			
+
 			game.print('faking a highscore...')
 			Highscore.write_score(memory.secs_id, 'fakers', 0, 40, CoreData.version_float, 1, 1)
 		end
 	end)
-	
+
 	commands.add_command(
 	'scrget',
 	'is a dev command.',
@@ -743,7 +745,7 @@ if _DEBUG then
 			memory.stored_fuel = memory.stored_fuel + 20000
 		end
 	end)
-	
+
 	commands.add_command(
 	'bld',
 	'is a dev command.',
@@ -756,7 +758,7 @@ if _DEBUG then
 			memory.classes_table = {[1] = 1}
 		end
 	end)
-	
+
 	commands.add_command(
 	'rad',
 	'is a dev command.',
@@ -772,7 +774,7 @@ if _DEBUG then
 			game.print('enemy boat spawned')
 		end
 	end)
-	
+
 	commands.add_command(
 	'rad2',
 	'is a dev command.',
@@ -812,7 +814,7 @@ if _DEBUG then
 			game.speed = 1
 		end
 	end)
-	
+
 	commands.add_command(
 	'2',
 	'is a dev command.',
@@ -823,7 +825,7 @@ if _DEBUG then
 			game.speed = 2
 		end
 	end)
-	
+
 	commands.add_command(
 	'4',
 	'is a dev command.',
@@ -834,7 +836,7 @@ if _DEBUG then
 			game.speed = 4
 		end
 	end)
-	
+
 	commands.add_command(
 	'8',
 	'is a dev command.',
@@ -845,7 +847,7 @@ if _DEBUG then
 			game.speed = 8
 		end
 	end)
-	
+
 	commands.add_command(
 	'16',
 	'is a dev command.',
@@ -856,7 +858,7 @@ if _DEBUG then
 			game.speed = 16
 		end
 	end)
-	
+
 	commands.add_command(
 	'32',
 	'is a dev command.',
@@ -867,7 +869,7 @@ if _DEBUG then
 			game.speed = 32
 		end
 	end)
-	
+
 	commands.add_command(
 	'64',
 	'is a dev command.',
@@ -878,7 +880,7 @@ if _DEBUG then
 			game.speed = 64
 		end
 	end)
-	
+
 	commands.add_command(
 	'ef1',
 	'is a dev command.',
@@ -893,7 +895,7 @@ if _DEBUG then
 			Effects.worm_movement_effect(surface, {x = -45, y = 0}, false, true)
 		end
 	end)
-	
+
 	commands.add_command(
 	'ef2',
 	'is a dev command.',
@@ -908,7 +910,7 @@ if _DEBUG then
 			Effects.worm_movement_effect(surface, {x = -45, y = 0}, false, false)
 		end
 	end)
-	
+
 	commands.add_command(
 	'ef3',
 	'is a dev command.',
@@ -923,7 +925,7 @@ if _DEBUG then
 			Effects.worm_movement_effect(surface, {x = -45, y = 0}, true, false)
 		end
 	end)
-	
+
 	commands.add_command(
 	'ef4',
 	'is a dev command.',
@@ -938,7 +940,7 @@ if _DEBUG then
 			Effects.worm_emerge_effect(surface, {x = -45, y = 0})
 		end
 	end)
-	
+
 	commands.add_command(
 	'ef5',
 	'is a dev command.',
@@ -953,7 +955,7 @@ if _DEBUG then
 			Effects.biters_emerge(surface, {x = -30, y = 0})
 		end
 	end)
-	
+
 	commands.add_command(
 	'emoji',
 	'is a dev command.',

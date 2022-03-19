@@ -1,3 +1,6 @@
+--luacheck: ignore
+--luacheck ignores because tickinterval arguments are a code templating choice...
+
 local Memory = require 'maps.pirates.memory'
 local Gui = require 'maps.pirates.gui.gui'
 local Ai = require 'maps.pirates.ai'
@@ -19,7 +22,7 @@ local Overworld = require 'maps.pirates.overworld'
 local Utils = require 'maps.pirates.utils_local'
 local Crew = require 'maps.pirates.crew'
 local Math = require 'maps.pirates.math'
-local inspect = require 'utils.inspect'.inspect
+local _inspect = require 'utils.inspect'.inspect
 
 local Quest = require 'maps.pirates.quest'
 
@@ -109,7 +112,7 @@ function Public.update_character_properties(tickinterval)
 			end
 
 			local health_boost = 0 -- base health is 250
-			
+
 			-- moved to damage resistance:
 			-- if memory.classes_table and memory.classes_table[player_index] then
 			-- 	local class = memory.classes_table[player_index]
@@ -204,7 +207,7 @@ function Public.class_rewards_tick(tickinterval)
 						local type = surfacedata.type
 						local on_ship_bool = type == Surfaces.enum.HOLD or type == Surfaces.enum.CABIN or type == Surfaces.enum.CROWSNEST or (player.surface.name == memory.boat.surface_name and Boats.on_boat(memory.boat, player.position))
 						local hold_bool = surfacedata.type == Surfaces.enum.HOLD
-	
+
 						if class == Classes.enum.DECKHAND and on_ship_bool and (not hold_bool) then
 							Classes.class_ore_grant(player, 4)
 						elseif class == Classes.enum.BOATSWAIN and hold_bool then
@@ -213,7 +216,7 @@ function Public.class_rewards_tick(tickinterval)
 							Classes.class_ore_grant(player, 2)
 						elseif class == Classes.enum.QUARTERMASTER then
 							local nearby_players = #player.surface.find_entities_filtered{position = player.position, radius = Common.quartermaster_range, name = 'character'}
-				
+
 							if nearby_players > 1 then
 								Classes.class_ore_grant(player, nearby_players - 1, true)
 							end

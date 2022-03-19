@@ -11,7 +11,7 @@ local IslandsCommon = require 'maps.pirates.surfaces.islands.common'
 local Hunt = require 'maps.pirates.surfaces.islands.hunt'
 local Ores = require 'maps.pirates.ores'
 local Quest = require 'maps.pirates.quest'
-local inspect = require 'utils.inspect'.inspect
+local _inspect = require 'utils.inspect'.inspect
 local Token = require 'utils.token'
 local Task = require 'utils.task'
 
@@ -33,7 +33,7 @@ Public['IslandsCommon'] = require 'maps.pirates.surfaces.islands.common'
 
 
 local function render_silo_hp()
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 	local surface = game.surfaces[destination.surface_name]
 	if not (destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid) then return end
@@ -53,7 +53,7 @@ end
 
 function Public.spawn_treasure_maps(destination, points_to_avoid)
 	points_to_avoid = points_to_avoid or {}
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[destination.surface_name]
 	if not surface and surface.valid then return end
 
@@ -91,7 +91,7 @@ end
 
 function Public.spawn_ghosts(destination, points_to_avoid)
 	points_to_avoid = points_to_avoid or {}
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[destination.surface_name]
 	if not surface and surface.valid then return end
 
@@ -107,9 +107,9 @@ function Public.spawn_ghosts(destination, points_to_avoid)
 
 	for i = 1, num do
 		local ghost = {}
-	
+
 		local p = Hunt.mid_farness_position_1(args, points_to_avoid)
-	
+
 		ghost.position = p
 		ghost.ghostobject_rendering = rendering.draw_sprite{
 			surface = surface,
@@ -129,7 +129,7 @@ end
 
 function Public.spawn_covered(destination, points_to_avoid)
 	points_to_avoid = points_to_avoid or {}
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[destination.surface_name]
 	if not surface and surface.valid then return end
 
@@ -191,24 +191,24 @@ end
 
 function Public.spawn_ores_on_arrival(destination, points_to_avoid)
 	points_to_avoid = points_to_avoid or {}
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[destination.surface_name]
 	if not surface and surface.valid then return end
 
 	if (destination.subtype and (destination.subtype == enum.STANDARD or destination.subtype == enum.STANDARD_VARIANT or destination.subtype == enum.MAZE)) then
 		local ores = {'iron-ore', 'copper-ore', 'stone', 'coal', 'crude-oil'}
-	
+
 		local args = {
 			static_params = destination.static_params,
 			noise_generator = Utils.noise_generator({}, 0),
 		}
-			
+
 		local farness_boost_low, farness_boost_high = 0, 0
 		if destination.subtype == enum.MAZE then
 			farness_boost_low = 0.08
 			farness_boost_high = 0.25
 		end
-	
+
 		for _, ore in pairs(ores) do
 			if destination.static_params.abstract_ore_amounts[ore] then
 				local p = Hunt.close_position_try_avoiding_entities(args, points_to_avoid, farness_boost_low, farness_boost_high)
@@ -218,7 +218,7 @@ function Public.spawn_ores_on_arrival(destination, points_to_avoid)
 
 					local count = Math.max(1, Math.ceil((destination.static_params.abstract_ore_amounts[ore]/3)^(1/2)))
 					local amount = Common.oil_abstract_to_real(destination.static_params.abstract_ore_amounts[ore]) / count
-					
+
 					for i = 1, count do
 						local p2 = {p.x + Math.random(-7, 7), p.y + Math.random(-7, 7)}
 						local whilesafety = 0
@@ -229,13 +229,13 @@ function Public.spawn_ores_on_arrival(destination, points_to_avoid)
 
 						surface.create_entity{name = 'crude-oil', position = p2, amount = amount}
 					end
-			
+
 					destination.dynamic_data.ore_types_spawned[ore] = true
 				else
 					local amount = Common.ore_abstract_to_real(destination.static_params.abstract_ore_amounts[ore])
-			
+
 					local placed = Ores.draw_noisy_ore_patch(surface, p, ore, amount, 10000, 30, true, true)
-			
+
 					if placed > 0 then
 						destination.dynamic_data.ore_types_spawned[ore] = true
 					end
@@ -248,16 +248,16 @@ end
 
 
 function Public.spawn_merchant_ship(destination)
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[destination.surface_name]
 	if not surface and surface.valid then return end
 
-	local args = {
-		static_params = destination.static_params,
-		noise_generator = Utils.noise_generator({}, 0),
-	}
-
-	local p = Hunt.merchant_ship_position(args)
+	-- local args = {
+	-- 	static_params = destination.static_params,
+	-- 	noise_generator = Utils.noise_generator({}, 0),
+	-- }
+	-- local p = Hunt.merchant_ship_position(args)
+	local p = Hunt.merchant_ship_position()
 
 	if p then
 		local boat = {
@@ -268,10 +268,10 @@ function Public.spawn_merchant_ship(destination)
 			surface_name = surface.name,
 			market = nil,
 		}
-	
+
 		Boats.place_landingtrack(boat, CoreData.landing_tile, true)
-	
-		Boats.place_boat(boat, CoreData.static_boat_floor, true, true, true, false)
+
+		Boats.place_boat(boat, CoreData.static_boat_floor, true, true, true)
 
 		destination.dynamic_data.merchant_market = boat.market
 
@@ -292,7 +292,7 @@ local silo_chart_tag = Token.register(
 
 		Memory.set_working_id(data.crew_id)
 		local memory = Memory.get_crew_memory()
-		
+
 		if memory.game_lost then return end
 		local destination = Common.current_destination()
 		local force = memory.force
@@ -391,7 +391,7 @@ function Public.spawn_enemy_boat(type)
 		enemyboats[#enemyboats + 1] = boat
 
 		Boats.place_boat(boat, CoreData.static_boat_floor, true, true)
-	
+
 		local e = surface.create_entity({name = 'biter-spawner', force = boat.force_name, position = {boat.position.x + Boats.get_scope(boat).Data.spawn_point.x, boat.position.y + Boats.get_scope(boat).Data.spawn_point.y}})
 
 		if e and e.valid then

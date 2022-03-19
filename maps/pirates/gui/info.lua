@@ -1,13 +1,13 @@
 
-local Memory = require 'maps.pirates.memory'
-local Common = require 'maps.pirates.common'
+-- local Memory = require 'maps.pirates.memory'
+-- local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
-local Utils = require 'maps.pirates.utils_local'
-local Math = require 'maps.pirates.math'
-local Surfaces = require 'maps.pirates.surfaces.surfaces'
-local Lobby = require 'maps.pirates.surfaces.lobby'
-local inspect = require 'utils.inspect'.inspect
-local Boats = require 'maps.pirates.structures.boats.boats'
+-- local Utils = require 'maps.pirates.utils_local'
+-- local Math = require 'maps.pirates.math'
+-- local Surfaces = require 'maps.pirates.surfaces.surfaces'
+-- local Lobby = require 'maps.pirates.surfaces.lobby'
+local _inspect = require 'utils.inspect'.inspect
+-- local Boats = require 'maps.pirates.structures.boats.boats'
 local GuiCommon = require 'maps.pirates.gui.common'
 local Public = {}
 
@@ -20,10 +20,10 @@ local width = 430
 
 
 function Public.toggle_window(player)
-	local flow, flow2, flow3, flow4, flow5, sections
-	
+	local flow, flow2, flow3, flow4
+
 	if player.gui.screen[window_name .. '_piratewindow'] then player.gui.screen[window_name .. '_piratewindow'].destroy() return end
-	
+
 	flow = player.gui.screen.add{
         type = 'tabbed-pane',
         name = window_name .. '_piratewindow',
@@ -38,14 +38,14 @@ function Public.toggle_window(player)
 
 	flow2 = Public.flow_add_info_tab(flow, 'Info')
 
-	flow4 = flow2.parent.last_info_flow_1.last_info_flow_2
-	flow5 = flow4.add{type = "label", caption = {"pirates.softmod_info_body_1"}}
-	flow5.style.font_color = GuiCommon.friendly_font_color
-	flow5.style.single_line = false
-	flow5.style.font = 'debug'
-	flow5.style.top_margin = -2
-	flow5.style.bottom_margin = 0
-	-- flow5.style.bottom_margin = 16
+	flow3 = flow2.parent.last_info_flow_1.last_info_flow_2
+	flow4 = flow3.add{type = "label", caption = {"pirates.softmod_info_body_1"}}
+	flow4.style.font_color = GuiCommon.friendly_font_color
+	flow4.style.single_line = false
+	flow4.style.font = 'debug'
+	flow4.style.top_margin = -2
+	flow4.style.bottom_margin = 0
+	-- flow4.style.bottom_margin = 16
 
 	Public.flow_add_info_sections(flow2, {'game_description'})
 
@@ -68,7 +68,7 @@ function Public.flow_add_info_sections(flow, sections_list)
 
 	for j = 1, #sections_list do
 		local i = sections_list[j]
-		
+
 		flow2 = flow.add{type = "label", caption = {"pirates.softmod_info_" .. i .. "_1"}}
 		flow2.style.font_color = GuiCommon.friendly_font_color
 		flow2.style.single_line = false
@@ -185,14 +185,14 @@ end
 function Public.click(event)
 
 	local player = game.players[event.element.player_index]
-	local name = 'info'
+	-- local name = 'info'
 
 	local element = event.element
 	local eventtype = element.type
 
 	if not player.gui.screen[window_name .. '_piratewindow'] then return end
 
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
 
 	if eventtype ~= 'tab' and (
 		element.name == (window_name .. '_piratewindow') or
@@ -201,16 +201,16 @@ function Public.click(event)
 		(element.parent and element.parent.parent and element.parent.parent.parent and element.parent.parent.parent.name == (window_name .. '_piratewindow')) or
 		(element.parent and element.parent.parent and element.parent.parent.parent and element.parent.parent.parent.parent and element.parent.parent.parent.parent.name == (window_name .. '_piratewindow')) or
 		(element.parent and element.parent.parent and element.parent.parent.parent and element.parent.parent.parent.parent and element.parent.parent.parent.parent.parent and element.parent.parent.parent.parent.parent.name == (window_name .. '_piratewindow'))
- 	) then
+	) then
 		Public.toggle_window(player)
 	end
 end
 
 
 
-function Public.regular_update(player)
+-- function Public.regular_update(player)
 
-end
+-- end
 
 function Public.full_update(player)
 	Public.regular_update(player)

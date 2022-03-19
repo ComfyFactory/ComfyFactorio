@@ -1,18 +1,16 @@
 
-local ores = require "maps.pirates.ores"
-
 local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
 local CoreData = require 'maps.pirates.coredata'
 local Balance = require 'maps.pirates.balance'
 local Structures = require 'maps.pirates.structures.structures'
 local Common = require 'maps.pirates.common'
-local Effects = require 'maps.pirates.effects'
+-- local Effects = require 'maps.pirates.effects'
 local Utils = require 'maps.pirates.utils_local'
-local inspect = require 'utils.inspect'.inspect
-local Ores = require 'maps.pirates.ores'
+local _inspect = require 'utils.inspect'.inspect
+-- local Ores = require 'maps.pirates.ores'
 local IslandsCommon = require 'maps.pirates.surfaces.islands.common'
-local Hunt = require 'maps.pirates.surfaces.islands.hunt'
+-- local Hunt = require 'maps.pirates.surfaces.islands.hunt'
 
 local Public = {}
 Public.Data = require 'maps.pirates.surfaces.islands.radioactive.data'
@@ -38,14 +36,14 @@ function Public.terrain(args)
 	local noises = Public.noises(args)
 	local p = args.p
 
-	
+
 	if IslandsCommon.place_water_tile(args) then return end
 
 	if noises.height(p) < 0 then
 		args.tiles[#args.tiles + 1] = {name = 'water', position = args.p}
 		return
 	end
-	
+
 	if noises.height(p) < 0.05 then
 		args.tiles[#args.tiles + 1] = {name = 'sand-1', position = args.p}
 		if (not args.iconized_generation) and noises.farness(p) > 0.02 and noises.farness(p) < 0.6 and Math.random(500) == 1 then
@@ -78,7 +76,7 @@ function Public.terrain(args)
 			if Math.random(1,100) < treedensity*100 then args.entities[#args.entities + 1] = {name = 'dry-tree', position = args.p, visible_on_overworld = true} end
 		end
 	end
-	
+
 	if noises.forest_abs_suppressed(p) < 0.65 then
 		if noises.height(p) > 0.12 then
 			if noises.rock_abs(p) > 0.25 then
@@ -139,12 +137,12 @@ end
 
 
 function Public.spawn_structures()
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
-	local surface = game.surfaces[destination.surface_name]
-	local subtype = destination.subtype
-	local force = memory.force
-	local ancient_force = string.format('ancient-friendly-%03d', memory.id)
+	-- local surface = game.surfaces[destination.surface_name]
+	-- local subtype = destination.subtype
+	-- local force = memory.force
+	-- local ancient_force = string.format('ancient-friendly-%03d', memory.id)
 
 	local ps = Public.structure_positions()
 
@@ -186,7 +184,7 @@ end
 
 function Public.structure_positions()
 
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 	local surface = game.surfaces[destination.surface_name]
 
@@ -257,9 +255,9 @@ end
 
 
 
-function Public.break_rock(surface, p, entity_name)
-	-- return Ores.try_ore_spawn(surface, p, entity_name)
-end
+-- function Public.break_rock(surface, p, entity_name)
+-- 	-- return Ores.try_ore_spawn(surface, p, entity_name)
+-- end
 
 
 local function radioactive_tick()
@@ -269,7 +267,7 @@ local function radioactive_tick()
 		local destination = Common.current_destination()
 
 		local tickinterval = 60
-		
+
 		if destination.subtype == IslandsCommon.enum.RADIOACTIVE then
 			-- faster evo (doesn't need difficulty scaling as higher difficulties have higher base evo):
 			local extra_evo = 0.22 * tickinterval/60 / Balance.expected_time_on_island()
@@ -290,7 +288,7 @@ local function radioactive_tick()
 
 			if pollution > 0 then
 				memory.floating_pollution = memory.floating_pollution + pollution
-			
+
 				game.pollution_statistics.on_flow('uranium-ore', pollution)
 			end
 

@@ -1,20 +1,20 @@
 
-local Memory = require 'maps.pirates.memory'
-local Roles = require 'maps.pirates.roles.roles'
-local Balance = require 'maps.pirates.balance'
+-- local Memory = require 'maps.pirates.memory'
+-- local Roles = require 'maps.pirates.roles.roles'
+-- local Balance = require 'maps.pirates.balance'
 local Common = require 'maps.pirates.common'
-local Utils = require 'maps.pirates.utils_local'
-local Math = require 'maps.pirates.math'
-local Loot = require 'maps.pirates.loot'
-local inspect = require 'utils.inspect'.inspect
+-- local Utils = require 'maps.pirates.utils_local'
+-- local Math = require 'maps.pirates.math'
+-- local Loot = require 'maps.pirates.loot'
+local _inspect = require 'utils.inspect'.inspect
 
-local Hold = require 'maps.pirates.surfaces.hold'
+-- local Hold = require 'maps.pirates.surfaces.hold'
 
 local Public = {}
 
 
 function Public.generate_merchant_trades(market)
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
 
 	if market and market.valid then
 
@@ -52,7 +52,7 @@ function Public.generate_merchant_trades(market)
 		-- 	market.add_market_item{price = {{'coin', 8000}, {'raw-fish', 10}}, offer = {type = 'give-item', item = 'exoskeleton-equipment', count = 1}}
 		-- 	market.add_market_item{price = {{'coin', 10000}, {'raw-fish', 10}}, offer = {type = 'give-item', item = 'personal-laser-defense', count = 1}}
 		end
-	
+
 	end
 end
 

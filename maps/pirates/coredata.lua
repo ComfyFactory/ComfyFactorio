@@ -1,6 +1,6 @@
 
 local Math = require 'maps.pirates.math'
-local inspect = require 'utils.inspect'.inspect
+local _inspect = require 'utils.inspect'.inspect
 
 local Public = {}
 
@@ -251,8 +251,10 @@ end
 
 
 function Public.Lobby_iconized_map()
-	local tiles, width, height = {}, 4,
-	20
+
+	local tiles = {}
+	local width = 4
+	-- local height = 20
 
 	for x = -100, width do
 		for y = -35.5, 35.5 do

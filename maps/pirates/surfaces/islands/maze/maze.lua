@@ -1,14 +1,12 @@
 
-local ores = require "maps.pirates.ores"
-
-local Memory = require 'maps.pirates.memory'
+-- local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
-local Balance = require 'maps.pirates.balance'
+-- local Balance = require 'maps.pirates.balance'
 local Structures = require 'maps.pirates.structures.structures'
-local Common = require 'maps.pirates.common'
-local Utils = require 'maps.pirates.utils_local'
-local inspect = require 'utils.inspect'.inspect
-local Ores = require 'maps.pirates.ores'
+-- local Common = require 'maps.pirates.common'
+-- local Utils = require 'maps.pirates.utils_local'
+local _inspect = require 'utils.inspect'.inspect
+-- local Ores = require 'maps.pirates.ores'
 local IslandsCommon = require 'maps.pirates.surfaces.islands.common'
 local Hunt = require 'maps.pirates.surfaces.islands.hunt'
 
@@ -63,7 +61,7 @@ local function get_path_connections_count(lab_cells, p)
 end
 
 local function labyrinth_determine_walkable_cell(args)
-	local noises = Public.noises(args)
+	-- local noises = Public.noises(args)
     -- local mazenoise = noises.maze()
 	local reduced_p = {x = args.true_p.x - (args.true_p.x % maze_scale), y = args.true_p.y - (args.true_p.y % maze_scale)}
 
@@ -79,7 +77,7 @@ local function labyrinth_determine_walkable_cell(args)
 	else
 		-- presumptive
 		lab_cells[tostring(reduced_p.x) .. '_' .. tostring(reduced_p.y)] = false
-	
+
 		for _, modifier in pairs(steps_diagonal) do
 			if lab_cells[tostring(reduced_p.x + modifier.diagonal.x) .. '_' .. tostring(reduced_p.y + modifier.diagonal.y)] then
 				local connection_1 = lab_cells[tostring(reduced_p.x + modifier.connection_1.x) .. '_' .. tostring(reduced_p.y + modifier.connection_1.y)]
@@ -89,49 +87,49 @@ local function labyrinth_determine_walkable_cell(args)
 				end
 			end
 		end
-	
+
 		local max_connections = 2
 		if Math.random(4) == 1 then max_connections = 3 end
-	
+
 		for _, m in pairs(steps_orthogonal) do
 			if get_path_connections_count(lab_cells, {x = reduced_p.x + m.x, y = reduced_p.y + m.y}) >= max_connections then
 				return false
 			end
 		end
-	
+
 		if get_path_connections_count(lab_cells, reduced_p) >= max_connections then
 			return false
 		end
-	
+
 		-- for _, m in pairs(steps_orthogonal) do
 		--     if get_path_connections_count(lab_cells, {x = reduced_p.x + m.x, y = reduced_p.y + m.y}) >= Math.random(2, 3) then
 		--         return false
 		--     end
 		-- end
-	
+
 		-- if get_path_connections_count(lab_cells, reduced_p) >= Math.random(2, 3) then
 		--     return false
 		-- end
-	
+
 		-- if Math.random(80) == 1 then --dead ends and such
 		-- 	log(reduced_p.x .. '_' .. reduced_p.y .. ' is dead end')
 		-- 	return false
 		-- end
-	
+
 		lab_cells[tostring(reduced_p.x) .. '_' .. tostring(reduced_p.y)] = true
 		return true
 	end
 end
 
-local function terrain_entity_at_relative_position(args, entity)
-	local relative_p = {x = args.true_p.x % maze_scale, y = args.true_p.y % maze_scale}
+-- local function terrain_entity_at_relative_position(args, entity)
+-- 	local relative_p = {x = args.true_p.x % maze_scale, y = args.true_p.y % maze_scale}
 
-	if relative_p.x >= entity.rel_p.x and relative_p.x < entity.rel_p.x+1 and relative_p.y >= entity.rel_p.y and relative_p.y < entity.rel_p.y+1 then
-		entity.rel_p = nil
-		entity.position = args.p
-		args.entities[#args.entities + 1] = entity
-	end
-end
+-- 	if relative_p.x >= entity.rel_p.x and relative_p.x < entity.rel_p.x+1 and relative_p.y >= entity.rel_p.y and relative_p.y < entity.rel_p.y+1 then
+-- 		entity.rel_p = nil
+-- 		entity.position = args.p
+-- 		args.entities[#args.entities + 1] = entity
+-- 	end
+-- end
 
 local free_labyrinth_cell_raffle = {
 	empty = 16.5,
@@ -171,12 +169,12 @@ local function free_labyrinth_cell_type(args)
 end
 
 local function free_labyrinth_cell_contents(args)
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
 
-	local noises = Public.noises(args)
+	-- local noises = Public.noises(args)
     -- local mazenoise = noises.maze()
 	local relative_p = {x = args.true_p.x % maze_scale, y = args.true_p.y % maze_scale}
-	local reduced_p = {x = args.true_p.x - relative_p.x, y = args.true_p.y - relative_p.y}
+	-- local reduced_p = {x = args.true_p.x - relative_p.x, y = args.true_p.y - relative_p.y}
 
 	local type = free_labyrinth_cell_type(args)
 
@@ -197,7 +195,7 @@ end
 function Public.terrain(args)
 	local noises = Public.noises(args)
 	local p = args.p
-	
+
 	if IslandsCommon.place_water_tile(args) then return end
 
 	if noises.height(p) < 0 then
@@ -253,9 +251,9 @@ function Public.chunk_structures(args)
 end
 
 
-function Public.break_rock(surface, p, entity_name)
-	-- return Ores.try_ore_spawn(surface, p, entity_name)
-end
+-- function Public.break_rock(surface, p, entity_name)
+-- 	-- return Ores.try_ore_spawn(surface, p, entity_name)
+-- end
 
 
 function Public.generate_silo_setup_position()

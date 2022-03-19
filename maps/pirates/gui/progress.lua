@@ -2,12 +2,12 @@
 local Memory = require 'maps.pirates.memory'
 local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
-local Utils = require 'maps.pirates.utils_local'
-local Math = require 'maps.pirates.math'
+-- local Utils = require 'maps.pirates.utils_local'
+-- local Math = require 'maps.pirates.math'
 local Surfaces = require 'maps.pirates.surfaces.surfaces'
 local Lobby = require 'maps.pirates.surfaces.lobby'
-local inspect = require 'utils.inspect'.inspect
-local Boats = require 'maps.pirates.structures.boats.boats'
+local _inspect = require 'utils.inspect'.inspect
+-- local Boats = require 'maps.pirates.structures.boats.boats'
 local GuiCommon = require 'maps.pirates.gui.common'
 local Public = {}
 
@@ -17,13 +17,13 @@ local window_name = 'progress'
 function Public.toggle_window(player)
 
 	if player.gui.screen[window_name .. '_piratewindow'] then player.gui.screen[window_name .. '_piratewindow'].destroy() return end
-	
+
 	local flow, flow2, flow3
 	flow = GuiCommon.new_window(player, window_name)
 	flow.caption = 'Progress'
 
 	flow2 = GuiCommon.flow_add_section(flow, 'distance_travelled', 'Distance Travelled:')
-	
+
 	flow3 = flow2.add({
 		name = 'leagues',
 		type = 'label',
@@ -36,7 +36,7 @@ function Public.toggle_window(player)
 	flow3.style.font = 'default-dropdown'
 
 	flow2 = GuiCommon.flow_add_section(flow, 'current_location', 'Current location: ')
-	
+
 	-- flow3 = flow2.add({
 	-- 	name = 'location_name',
 	-- 	type = 'label',
@@ -47,9 +47,9 @@ function Public.toggle_window(player)
 	-- flow3.style.single_line = false
 	-- flow3.style.maximal_width = 160
 	-- flow3.style.font = 'default-dropdown'
-	
+
 	-- flow3 = flow2.add({type = 'label', name = 'hidden_ores_yes', caption = 'Ores detected:'})
-	
+
 	-- flow3 = flow2.add({type = 'table', name = 'hidden_ores_yes_table', column_count = 3})
 	-- flow3.style.left_margin = 5
 	-- flow3.style.bottom_margin = 4
@@ -57,7 +57,7 @@ function Public.toggle_window(player)
 	-- for _, ore in ipairs(CoreData.ore_types) do
 	-- 	flow3.add({type = 'sprite-button', name = ore.name, sprite = ore.sprite_name, enabled = false, number = 0})
 	-- end
-	
+
 	-- flow3 = flow2.add({type = 'label', name = 'hidden_ores_no', caption = 'Ores detected: None'})
 
 	-- -- flow3 = flow2.add({type = 'label', name = 'daynight', caption = ''})
@@ -70,7 +70,7 @@ function Public.toggle_window(player)
 
 
 	-- flow2 = GuiCommon.flow_add_section(flow, 'departure_items', 'Resources needed for departure:')
-	
+
 	-- flow3.style.bottom_margin = -2
 	-- flow3 = flow2.add({type = 'table', name = 'needed', column_count = 4})
 	-- flow3.style.left_margin = 5
@@ -83,9 +83,9 @@ function Public.toggle_window(player)
 end
 
 
-function Public.regular_update(player)
+-- function Public.regular_update(player)
 
-end
+-- end
 
 function Public.full_update(player)
 	Public.regular_update(player)
@@ -95,8 +95,8 @@ function Public.full_update(player)
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 
-	local type = destination.type
-	local subtype = destination.subtype
+	-- local type = destination.type
+	-- local subtype = destination.subtype
 
 	local scope = Surfaces.get_scope(destination)
 
@@ -138,13 +138,13 @@ function Public.full_update(player)
 	-- 	flow.current_location.body.daynight.visible = true
 	-- 	local daynightcycletype = destination.static_params.daynightcycletype
 	-- 	flow.current_location.body.daynight.caption = 'Daynight cycle: ' .. CoreData.daynightcycle_types[daynightcycletype].displayname
-		
+
 	-- else
 	-- 	flow.current_location.body.daynight.visible = false
 	-- end
 	local daynightcycletype = destination.static_params.daynightcycletype or 1
 	flow.current_location.body.daynight.caption = 'Time of day: ' .. CoreData.daynightcycle_types[daynightcycletype].displayname
-	
+
 
 	-- local ores
 	-- -- if destination.static_params and destination.static_params.abstract_ore_amounts then ores = destination.static_params.abstract_ore_amounts end

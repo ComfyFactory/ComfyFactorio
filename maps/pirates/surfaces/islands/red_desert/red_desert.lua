@@ -1,6 +1,4 @@
 
-local ores = require "maps.pirates.ores"
-
 local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
 local Balance = require 'maps.pirates.balance'
@@ -9,8 +7,8 @@ local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
 local Effects = require 'maps.pirates.effects'
 local Utils = require 'maps.pirates.utils_local'
-local inspect = require 'utils.inspect'.inspect
-local Ores = require 'maps.pirates.ores'
+local _inspect = require 'utils.inspect'.inspect
+-- local Ores = require 'maps.pirates.ores'
 local IslandsCommon = require 'maps.pirates.surfaces.islands.common'
 local Hunt = require 'maps.pirates.surfaces.islands.hunt'
 
@@ -39,14 +37,14 @@ function Public.terrain(args)
 	local noises = Public.noises(args)
 	local p = args.p
 
-	
+
 	if IslandsCommon.place_water_tile(args) then return end
 
 	if noises.height(p) < 0 then
 		args.tiles[#args.tiles + 1] = {name = 'water', position = args.p}
 		return
 	end
-	
+
 	if noises.height(p) < 0.19 then
 		args.tiles[#args.tiles + 1] = {name = 'sand-1', position = args.p}
 	elseif noises.height(p) < 0.22 then
@@ -97,7 +95,7 @@ function Public.terrain(args)
 			if Math.random(1,100) < treedensity*100 then args.entities[#args.entities + 1] = {name = 'dead-tree-desert', position = args.p, visible_on_overworld = true} end
 		end
 	end
-	
+
 	if noises.forest_abs_suppressed(p) < 0.65 then
 		if noises.height(p) > 0.15 then
 			if noises.rock_abs(p) > 0.25 then
@@ -188,14 +186,14 @@ function Public.chunk_structures(args)
 			x = avgleft_top.x - 32,
 			y = avgleft_top.y - 32,
 		}
-	
+
 		local spec2 = spec{x = avgleft_top.x + 16, y = avgleft_top.y + 16}
-		
+
 		if rng < spec2.chanceper4chunks then
-	
+
 			local rng2 = Math.random()
 			local struct
-	
+
 			if rng2 < 28/100 then
 				struct = Structures.IslandStructures.ROC.shelter2
 			else
@@ -210,9 +208,9 @@ end
 
 
 
-function Public.break_rock(surface, p, entity_name)
-	-- return Ores.try_ore_spawn(surface, p, entity_name)
-end
+-- function Public.break_rock(surface, p, entity_name)
+-- 	-- return Ores.try_ore_spawn(surface, p, entity_name)
+-- end
 
 
 function Public.generate_silo_setup_position()
@@ -224,10 +222,10 @@ local function red_desert_tick()
 		Memory.set_working_id(id)
 		local memory = Memory.get_crew_memory()
 		local destination = Common.current_destination()
-		
+
 		if destination.subtype == IslandsCommon.enum.RED_DESERT then
 			if memory.boat and memory.boat.surface_name and memory.boat.surface_name == destination.surface_name then
-	
+
 				Public.underground_worms_ai()
 
 				if game.tick % 360 == 0 and destination.dynamic_data.timer and destination.dynamic_data.timer > 60 then
@@ -273,19 +271,19 @@ function Public.underground_worms_ai()
 
 			local tile = surface.get_tile(w.position.x, w.position.y)
 			local on_land = tile and tile.valid and (not Utils.contains(CoreData.tiles_that_conflict_with_resource_layer, tile.name)) and (not Utils.contains(CoreData.noworm_tile_names, tile.name))
-			
+
 			if on_land then
 				local solid_ground = (tile and tile.valid and Utils.contains(CoreData.worm_solid_tile_names, tile.name))
 
 				-- stomp
 				local big_bool = (w.age % 4 == 0)
 				Effects.worm_movement_effect(surface, w.position, solid_ground, big_bool)
-				
+
 				w.chart_tag = player_force.add_chart_tag(surface, {icon = {type = 'virtual', name = 'signal-red'}, position = w.position})
 
 				if not solid_ground then
 					local nearby_characters = surface.find_entities_filtered{position = w.position, radius = 7, name = 'character'}
-	
+
 					local character_outside = false
 					for j = 1, #nearby_characters do
 						local c = nearby_characters[j]
@@ -297,17 +295,17 @@ function Public.underground_worms_ai()
 							break
 						end
 					end
-			
+
 					if character_outside then
 						local type = Common.get_random_worm_type(evolution)
-			
+
 						local emerge_position = surface.find_non_colliding_position(type, w.position, 3, 0.5)
 
 						if emerge_position then
 							local emerge_position_tile = surface.get_tile(emerge_position.x, emerge_position.y)
-				
+
 							local can_emerge = (not solid_ground) and (not (tile and tile.valid and Utils.contains(CoreData.worm_solid_tile_names, emerge_position_tile.name)))
-				
+
 							if can_emerge then
 								surface.create_entity{name = type, position = emerge_position, force = enemy_force_name}
 								Effects.worm_emerge_effect(surface, emerge_position)
@@ -316,13 +314,13 @@ function Public.underground_worms_ai()
 
 								local extra_evo = Balance.sandworm_evo_increase_per_spawn()
 								Common.increment_evo(extra_evo)
-							
+
 								if destination.dynamic_data then
 									destination.dynamic_data.evolution_accrued_sandwurms = destination.dynamic_data.evolution_accrued_sandwurms + extra_evo
 								end
 							end
 						end
-			
+
 					end
 				end
 			end
@@ -364,7 +362,7 @@ function Public.custom_biter_ai()
 	local destination = Common.current_destination()
 
 	local surface = game.surfaces[destination.surface_name]
-	local difficulty = memory.difficulty
+	-- local difficulty = memory.difficulty
 	local enemy_force_name = memory.enemy_force_name
 	local evolution = memory.evolution_factor
 
@@ -379,20 +377,20 @@ function Public.custom_biter_ai()
 		local initialbudget = budget
 
 		local position = Hunt.position_away_from_players_1({static_params = destination.static_params}, 50)
-	
+
 		local units_created_count = 0
 		local units_created = {}
 
 		local name = Common.get_random_unit_type(evolution)
 		local unittype_pollutioncost = CoreData.biterPollutionValues[name] * 1.1 * Balance.scripted_biters_pollution_cost_multiplier()
 
-		local function spawn(name)
+		local function spawn(name2)
 			units_created_count = units_created_count + 1
 
-			local p = surface.find_non_colliding_position(name, position, 50, 2)
+			local p = surface.find_non_colliding_position(name2, position, 50, 2)
 			if not p then return end
 
-			local biter = surface.create_entity({name = name, force = enemy_force_name, position = p})
+			local biter = surface.create_entity({name = name2, force = enemy_force_name, position = p})
 
 			units_created[#units_created + 1] = biter
 			memory.scripted_biters[biter.unit_number] = {entity = biter, created_at = game.tick}
