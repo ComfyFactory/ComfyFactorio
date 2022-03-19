@@ -111,7 +111,7 @@ require 'comfy_panel.server_select'
 --require 'maps.chronosphere.main'
 
 --![[Adventure as a crew of pirates!]]--
-require 'maps.pirates.main'
+-- require 'maps.pirates.main'
 -- Note: should disable comfy_panel.group, comfy_panel.poll, comfy_panel.score
 
 --![[Launch rockets in increasingly harder getting worlds.]]--
