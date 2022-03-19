@@ -4,32 +4,22 @@ require 'modules.biters_yield_coins'
 require 'modules.rocks_yield_coins'
 require 'modules.flashlight_toggle_button'
 require 'maps.deep_jungle.generate'
-local Global = require 'utils.global'
+
 local Event = require 'utils.event'
 local map_functions = require 'tools.map_functions'
+local Task = require 'utils.task'
+local DPT = require 'maps.deep_jungle.table'
 local random = math.random
 
-local this = {
-    chunks_charted = {}
-}
-
-Global.register(
-    this,
-    function(tbl)
-        this = tbl
-    end
-)
-
-local Public = {}
-
 local function on_chunk_charted(event)
+    local settings = DPT.get('settings')
     local surface = game.get_surface(event.surface_index)
     local deco = game.decorative_prototypes
     local position = event.position
-    if this.chunks_charted[tostring(position.x) .. tostring(position.y)] then
+    if settings.chunks_charted[tostring(position.x) .. tostring(position.y)] then
         return
     end
-    this.chunks_charted[tostring(position.x) .. tostring(position.y)] = true
+    settings.chunks_charted[tostring(position.x) .. tostring(position.y)] = true
 
     local decorative_names = {}
     for k, v in pairs(deco) do
@@ -113,8 +103,29 @@ local function on_entity_died(event)
     end
 end
 
+local function chunk_load()
+    local tick = game.tick
+    local settings = DPT.get('settings')
+    if settings.chunk_load_tick then
+        if settings.chunk_load_tick < tick then
+            settings.force_chunk = false
+            DPT.remove('settings', 'chunk_load_tick')
+            Task.set_queue_speed(8)
+        end
+    end
+end
+
+local on_tick = function()
+    local tick = game.tick
+    if tick % 40 == 0 then
+        chunk_load()
+    end
+end
+
 local function on_init()
     local map_gen_settings = {}
+    local settings = DPT.get('settings')
+
     map_gen_settings.moisture = 0.99
     map_gen_settings.water = 'none'
     map_gen_settings.starting_area = 'normal'
@@ -130,13 +141,14 @@ local function on_init()
     }
     game.create_surface('deep_jungle', map_gen_settings)
     game.forces.player.set_spawn_position({0, 0}, game.surfaces['deep_jungle'])
+    settings.force_chunk = true
+    settings.chunk_load_tick = game.tick + 200
 end
 
 Event.on_init(on_init)
 Event.add(defines.events.on_chunk_charted, on_chunk_charted)
 Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.on_nth_tick(10, on_tick)
 
 require 'modules.rocks_yield_ore'
-
-return Public

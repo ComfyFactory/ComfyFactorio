@@ -6,13 +6,16 @@ local Task = require 'utils.task'
 local Server = require 'utils.server'
 local Event = require 'utils.event'
 local Utils = require 'utils.core'
+local table = require 'utils.table'
 
 local jailed_data_set = 'jailed'
+local revoked_permissions_set = 'revoked_permissions_jailed'
 local jailed = {}
 local player_data = {}
 local terms_tbl = {}
 local votejail = {}
 local votefree = {}
+local revoked_permissions = {}
 local settings = {
     playtime_for_vote = 25920000, -- 5 days
     playtime_for_instant_jail = 103680000, -- 20 days
@@ -38,7 +41,8 @@ Global.register(
         votefree = votefree,
         settings = settings,
         player_data = player_data,
-        terms_tbl = terms_tbl
+        terms_tbl = terms_tbl,
+        revoked_permissions = revoked_permissions
     },
     function(t)
         jailed = t.jailed
@@ -47,17 +51,55 @@ Global.register(
         settings = t.settings
         player_data = t.player_data
         terms_tbl = t.terms_tbl
+        revoked_permissions = t.revoked_permissions
     end
 )
 
 local Public = {}
 
-local validate_entity = function(entity)
+local function validate_entity(entity)
     if not (entity and entity.valid) then
         return false
     end
 
     return true
+end
+
+local function is_revoked(name)
+    if name then
+        if revoked_permissions[name] then
+            return true
+        else
+            return false
+        end
+    end
+    return false
+end
+
+local function add_revoked(name, admin, reason)
+    if name then
+        if not revoked_permissions[name] then
+            revoked_permissions[name] = true
+            set_data(revoked_permissions_set, name, {revoked = true, actor = admin, reason = reason})
+            return true
+        else
+            return false
+        end
+    end
+    return false
+end
+
+local function remove_revoked(name)
+    if name then
+        if revoked_permissions[name] then
+            revoked_permissions[name] = nil
+            set_data(revoked_permissions_set, name, nil)
+            return true
+        else
+            return false
+        end
+    end
+    return false
 end
 
 local clear_terms_tbl =
@@ -124,7 +166,7 @@ local clear_gui =
     end
 )
 
-local validate_playtime = function(player)
+local function validate_playtime(player)
     local tracker = Session.get_session_table()
 
     local playtime = player.online_time
@@ -136,7 +178,7 @@ local validate_playtime = function(player)
     return playtime
 end
 
-local validate_trusted = function(player)
+local function validate_trusted(player)
     local trusted = Session.get_trusted_table()
 
     local is_trusted = false
@@ -148,7 +190,7 @@ local validate_trusted = function(player)
     return is_trusted
 end
 
-local get_player_data = function(player, remove)
+local function get_player_data(player, remove)
     if remove and player_data[player.name] then
         player_data[player.name] = nil
         return
@@ -159,7 +201,7 @@ local get_player_data = function(player, remove)
     return player_data[player.name]
 end
 
-local get_gulag_permission_group = function()
+local function get_gulag_permission_group()
     local gulag = game.permissions.get_group('gulag')
     if not gulag then
         gulag = game.permissions.create_group('gulag')
@@ -172,7 +214,7 @@ local get_gulag_permission_group = function()
     return gulag
 end
 
-local create_gulag_surface = function()
+local function create_gulag_surface()
     local surface = game.surfaces['gulag']
     if not surface then
         local walls = {}
@@ -243,7 +285,7 @@ local create_gulag_surface = function()
     return surface
 end
 
-local teleport_player_to_gulag = function(player, action)
+local function teleport_player_to_gulag(player, action)
     local p_data = get_player_data(player)
 
     if action == 'jail' then
@@ -290,7 +332,7 @@ local teleport_player_to_gulag = function(player, action)
     end
 end
 
-local validate_args = function(data)
+local function validate_args(data)
     local player = data.player
     local griefer = data.griefer
     local trusted = data.trusted
@@ -367,7 +409,7 @@ local validate_args = function(data)
     return true
 end
 
-local vote_to_jail = function(player, griefer, msg)
+local function vote_to_jail(player, griefer, msg)
     if not griefer then
         return
     end
@@ -398,7 +440,7 @@ local vote_to_jail = function(player, griefer, msg)
     end
 end
 
-local vote_to_free = function(player, griefer)
+local function vote_to_free(player, griefer)
     if not griefer then
         return
     end
@@ -432,7 +474,7 @@ local vote_to_free = function(player, griefer)
     return
 end
 
-local jail = function(player, griefer, msg, raised)
+local function jail(player, griefer, msg, raised)
     player = player or 'script'
 
     if jailed[griefer] then
@@ -443,21 +485,21 @@ local jail = function(player, griefer, msg, raised)
         return
     end
 
-    if not game.players[griefer] then
+    if not game.get_player(griefer) then
         return
     end
 
-    local g = game.players[griefer]
+    local to_jail_player = game.get_player(griefer)
 
-    teleport_player_to_gulag(g, 'jail')
+    teleport_player_to_gulag(to_jail_player, 'jail')
 
     local gulag = get_gulag_permission_group()
     gulag.add_player(griefer)
 
     local message = griefer .. ' has been jailed by ' .. player .. '. Cause: ' .. msg
 
-    if game.players[griefer].character and game.players[griefer].character.valid and game.players[griefer].character.driving then
-        game.players[griefer].character.driving = false
+    if to_jail_player.character and to_jail_player.character.valid and to_jail_player.character.driving then
+        to_jail_player.character.driving = false
     end
 
     jailed[griefer] = {jailed = true, actor = player, reason = msg}
@@ -476,23 +518,23 @@ local jail = function(player, griefer, msg, raised)
         votejail[griefer].jailed = true
     end
 
-    game.players[griefer].clear_console()
+    to_jail_player.clear_console()
     Utils.print_to(griefer, message)
     return true
 end
 
-local free = function(player, griefer)
+local function free(player, griefer)
     player = player or 'script'
     if not jailed[griefer] then
         return false
     end
 
-    if not game.players[griefer] then
+    if not game.get_player(griefer) then
         return
     end
 
-    local g = game.players[griefer]
-    teleport_player_to_gulag(g, 'free')
+    local to_jail_player = game.get_player(griefer)
+    teleport_player_to_gulag(to_jail_player, 'free')
 
     local message = griefer .. ' was set free from jail by ' .. player .. '.'
 
@@ -592,6 +634,64 @@ function Public.get_jailed_table()
     return jailed
 end
 
+--- Sets a value to required_playtime_for_instant_jail
+-- @param value<int>
+function Public.required_playtime_for_instant_jail(value)
+    if value then
+        settings.playtime_for_instant_jail = value
+    end
+    return settings.playtime_for_instant_jail
+end
+
+--- Sets a value to set_valid_surface
+-- @param value<string>
+function Public.set_valid_surface(value)
+    settings.valid_surface = value or 'nauvis'
+    return settings.valid_surface
+end
+
+--- Sets a value to required_playtime_for_vote
+-- @param value<int>
+function Public.required_playtime_for_vote(value)
+    if value then
+        settings.playtime_for_vote = value
+    end
+    return settings.playtime_for_vote
+end
+
+--- Resets reset_vote_table
+function Public.reset_vote_table()
+    for k, _ in pairs(votejail) do
+        votejail[k] = nil
+    end
+    for k, _ in pairs(votefree) do
+        votefree[k] = nil
+    end
+end
+
+--- Writes the data called back from the server into the revoked_permissions table, clearing any previous entries
+local sync_revoked_permissions_callback =
+    Token.register(
+    function(data)
+        if not data then
+            return
+        end
+        if not data.entries then
+            return
+        end
+
+        table.clear_table(revoked_permissions)
+        for k, v in pairs(data.entries) do
+            revoked_permissions[k] = v
+        end
+    end
+)
+
+--- Signals the server to retrieve the revoked_permissions dataset
+function Public.sync_revoked_permissions()
+    Server.try_get_all_data(revoked_permissions_set, sync_revoked_permissions_callback)
+end
+
 Server.on_data_set_changed(
     jailed_data_set,
     function(data)
@@ -607,6 +707,17 @@ Server.on_data_set_changed(
                 free('script', data.key)
             end
         end
+    end
+)
+
+Server.on_data_set_changed(
+    revoked_permissions_set,
+    function(data)
+        if not data then
+            return
+        end
+
+        revoked_permissions[data.key] = data.value
     end
 )
 
@@ -626,38 +737,88 @@ commands.add_command(
     end
 )
 
-function Public.required_playtime_for_instant_jail(value)
-    if value then
-        settings.playtime_for_instant_jail = value
-    end
-    return settings.playtime_for_instant_jail
-end
+commands.add_command(
+    'toggle_jail_permission',
+    'Usable only for admins - controls who may use jail commands!',
+    function(cmd)
+        local name
+        local player = game.player
 
-function Public.set_valid_surface(value)
-    settings.valid_surface = value or 'nauvis'
-    return settings.valid_surface
-end
+        if not player or not player.valid then
+            name = 'Server'
+        else
+            name = player.name
 
-function Public.required_playtime_for_vote(value)
-    if value then
-        settings.playtime_for_vote = value
-    end
-    return settings.playtime_for_vote
-end
+            if not player.admin then
+                return
+            end
+        end
 
-function Public.reset_vote_table()
-    for k, _ in pairs(votejail) do
-        votejail[k] = nil
+        local param = cmd.parameter
+
+        local t_player
+        local revoke_reason
+        local revoke_player
+        local str = ''
+
+        if not param then
+            return Utils.print_to(player, 'Both player and reason is needed!')
+        end
+
+        local t = {}
+        for i in string.gmatch(param, '%S+') do
+            table.insert(t, i)
+        end
+
+        t_player = t[1]
+
+        for i = 2, #t do
+            str = str .. t[i] .. ' '
+            revoke_reason = str
+        end
+
+        if game.get_player(t_player) then
+            revoke_player = game.get_player(t_player)
+        else
+            return Utils.print_to(player, 'No player was provided.')
+        end
+
+        if is_revoked(revoke_player.name) then
+            remove_revoked(revoke_player.name)
+            Utils.print_to(player, revoke_player.name .. ' can now utilize jail commands once again!')
+            return
+        end
+
+        if revoke_reason then
+            if revoke_reason and string.len(revoke_reason) <= 0 then
+                Utils.print_to(player, 'No valid reason was given.')
+                return
+            end
+
+            if revoke_reason and string.len(revoke_reason) <= 10 then
+                Utils.print_to(player, 'Reason is too short.')
+                return
+            end
+
+            add_revoked(revoke_player.name, name, revoke_reason)
+            Utils.print_to(player, revoke_player.name .. ' is now forbidden from utilizing jail commands!')
+        else
+            Utils.print_to(player, 'No message was provided')
+        end
     end
-    for k, _ in pairs(votefree) do
-        votefree[k] = nil
-    end
-end
+)
 
 Event.on_init(
     function()
         get_gulag_permission_group()
         create_gulag_surface()
+    end
+)
+
+Event.add(
+    Server.events.on_server_started,
+    function()
+        Public.sync_revoked_permissions()
     end
 )
 
@@ -672,9 +833,15 @@ Event.add(
         local param = event.parameters
 
         if event.player_index then
-            local player = game.players[event.player_index]
+            local player = game.get_player(event.player_index)
             local playtime = validate_playtime(player)
             local trusted = validate_trusted(player)
+
+            if is_revoked(player.name) then
+                Utils.warning(player, 'You have abused your trusted permissions and therefore')
+                Utils.warning(player, 'your permissions have been revoked!')
+                return
+            end
 
             if not param then
                 return Utils.print_to(player, 'No valid reason given.')
@@ -709,8 +876,8 @@ Event.add(
 
             local delay = 30
 
-            if game.players[griefer] then
-                griefer = game.players[griefer].name
+            if game.get_player(griefer) then
+                griefer = game.get_player(griefer).name
             end
 
             if trusted and playtime >= settings.playtime_for_vote and playtime < settings.playtime_for_instant_jail and not player.admin then
@@ -720,6 +887,7 @@ Event.add(
                             player,
                             'Abusing the jail command will lead to revoked permissions. Jailing someone in case of disagreement is _NEVER_ OK!'
                         )
+                        Utils.warning(player, "Jailing someone because they're afk or other stupid reasons is NOT valid!")
                         Utils.warning(player, 'Run this command again to if you really want to do this!')
                         for i = 1, 4 do
                             Task.set_timeout_in_ticks(delay, play_alert_sound, {name = player.name})
@@ -801,7 +969,7 @@ Event.add(
 Event.add(
     defines.events.on_player_changed_surface,
     function(event)
-        local player = game.players[event.player_index]
+        local player = game.get_player(event.player_index)
         if not player or not player.valid then
             return
         end
