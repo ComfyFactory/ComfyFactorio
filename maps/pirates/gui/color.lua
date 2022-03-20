@@ -49,7 +49,7 @@ end
 -- end
 
 function Public.full_update(player)
-	Public.regular_update(player)
+	if Public.regular_update then Public.regular_update(player) end
 end
 
 

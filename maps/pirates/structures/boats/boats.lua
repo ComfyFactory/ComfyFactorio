@@ -976,7 +976,7 @@ local function process_entity_on_boat(memory, boat, newsurface, newposition, vec
 end
 
 
-local function teleport_handle_wake_tiles(boat, newsurface_name, oldsurface_name, oldsurface, newposition, vector, scope, vectordirection, vectorlength, old_water_tile, friendlyboat_bool)
+local function teleport_handle_wake_tiles(boat, dummyboat, newsurface_name, oldsurface_name, oldsurface, newposition, vector, scope, vectordirection, vectorlength, old_water_tile, friendlyboat_bool)
 
 	local static_params = Common.current_destination().static_params
 
@@ -1012,11 +1012,6 @@ local function teleport_handle_wake_tiles(boat, newsurface_name, oldsurface_name
 		oldsurface.set_tiles(newtiles, true, true, true)
 
 	else
-		-- place waterboat
-		local dummyboat
-		if oldsurface_name ~= newsurface_name then
-			dummyboat = Utils.deepcopy(boat)
-		end
 
 		local p = dummyboat.position
 
@@ -1140,6 +1135,12 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 	local memory = Memory.get_crew_memory()
 	local friendlyboat_bool = (memory.force_name == boat.force_name)
 	local oldsurface, newsurface = game.surfaces[oldsurface_name], game.surfaces[newsurface_name]
+
+	local dummyboat
+	if oldsurface_name ~= newsurface_name then
+		-- we will place this with water:
+		dummyboat = Utils.deepcopy(boat)
+	end
 
 	game.surfaces['nauvis'].request_to_generate_chunks({0,0}, 1)
 	game.surfaces['nauvis'].force_generate_chunk_requests() --WARNING: THIS DOES NOT PLAY NICELY WITH DELAYED TASKS. log(_inspect{global_memory.working_id}) was observed to vary before and after this function.
@@ -1334,9 +1335,7 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 	Hold.connect_up_linked_belts_to_deck()
 	Cabin.connect_up_linked_belts_to_deck()
 
-
-
-	teleport_handle_wake_tiles(boat, newsurface_name, oldsurface_name, oldsurface, newposition, vector, scope, vectordirection, vectorlength, old_water_tile, friendlyboat_bool)
+	teleport_handle_wake_tiles(boat, dummyboat, newsurface_name, oldsurface_name, oldsurface, newposition, vector, scope, vectordirection, vectorlength, old_water_tile, friendlyboat_bool)
 
 	teleport_handle_renderings(boat, oldsurface_name, newsurface_name, vector, scope, memory, newsurface)
 

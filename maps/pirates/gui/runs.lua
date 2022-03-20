@@ -409,7 +409,7 @@ end
 
 
 function Public.full_update(player)
-	Public.regular_update(player)
+	if Public.regular_update then Public.regular_update(player) end
 	local global_memory = Memory.get_global_memory()
 	local memory = Memory.get_crew_memory()
 

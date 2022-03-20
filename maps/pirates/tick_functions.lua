@@ -436,6 +436,8 @@ function Public.interpret_shorthanded_force_name(shorthanded_name)
 		ret = memory.force_name
 	elseif shorthanded_name == 'enemy' then
 		ret = memory.enemy_force_name
+	else
+		ret = shorthanded_name
 	end
 	return ret
 end
@@ -566,6 +568,7 @@ function Public.place_cached_structures(tickinterval)
 					local c2 = {type = c.type, force_name = force_name, built_entities = {}}
 
 					local es = Common.build_from_blueprint(c.bp_string, surface, Utils.psum{position, c.offset}, game.forces[force_name])
+
 					for l = 1, #es do
 						c2.built_entities[#c2.built_entities + 1] = es[l]
 					end

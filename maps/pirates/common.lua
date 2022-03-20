@@ -840,6 +840,7 @@ function Public.default_map_gen_settings(width, height, seed)
 	return map_gen_settings
 end
 
+
 function Public.build_from_blueprint(bp_string, surface, pos, force, flipped)
 	flipped = flipped or false
 
