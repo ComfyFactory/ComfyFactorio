@@ -112,7 +112,7 @@ require 'comfy_panel.server_select'
 
 --![[Adventure as a crew of pirates!]]--
 -- Note: This scenario is intended to be used with comfy_panel.group, comfy_panel.poll, and comfy_panel.score disabled
-require 'maps.pirates.main'
+-- require 'maps.pirates.main'
 
 --![[Launch rockets in increasingly harder getting worlds.]]--
 --require 'maps.journey.main'
