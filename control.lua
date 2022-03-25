@@ -110,9 +110,10 @@ require 'comfy_panel.server_select'
 --![[Comfylatron has seized the Fish Train and turned it into a time machine]]--
 --require 'maps.chronosphere.main'
 
---![[Adventure as a crew of pirates!]]--
--- Note: This scenario is intended to be used with comfy_panel.group, comfy_panel.poll, and comfy_panel.score disabled
--- require 'maps.pirates.main'
+--![[Adventure as a crew of pirates]]--
+-- NOTE: This scenario is too large for the main repo, due to hardcoded random numbers. Obtain it from https://github.com/danielmartin0/ComfyFactorio-Pirates
+-- NOTE: This scenario is intended to be used with comfy_panel.group, comfy_panel.poll, and comfy_panel.score disabled
+require 'maps.pirates.main'
 
 --![[Launch rockets in increasingly harder getting worlds.]]--
 --require 'maps.journey.main'

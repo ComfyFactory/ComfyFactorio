@@ -320,7 +320,7 @@ Public.starting_fuel = 4000
 
 Public.silo_max_hp = 8000
 
-function Public.pistol_damage_multiplier() return 2.5 end
+function Public.pistol_damage_multiplier() return 2.25 end --2.0 slightly too low, 2.5 causes players to yell at each other for not using pistol
 
 Public.kraken_spawns_base_extra_evo = 0.35
 
