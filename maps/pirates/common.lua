@@ -363,11 +363,13 @@ function Public.is_captain(player)
 	end
 end
 
+-- lifted shamelessly from biter battles, since I haven't done balancing work on this:
 function Public.surplus_evo_biter_damage_modifier(surplus_evo)
-	return Math.floor(surplus_evo/2*1000)/1000
+	return Math.floor(surplus_evo/2*1000)/1000 --is this floor needed?
 end
 function Public.surplus_evo_biter_health_fractional_modifier(surplus_evo)
-	return Math.floor(surplus_evo*3*1000)/1000
+	return surplus_evo*3
+	-- return Math.floor(surplus_evo*3*1000)/1000
 end
 
 function Public.set_biter_surplus_evo_modifiers()
@@ -980,7 +982,7 @@ function Public.entity_positions_from_blueprint(bp_string, offset)
 end
 
 function Public.get_random_unit_type(evolution)
-	-- approximating graphs from https://wiki.factorio.com/Enemies
+	-- designed to approximate https://wiki.factorio.com/Enemies
 	local r = Math.random()
 
 	if Math.random(5) == 1 then
@@ -1009,7 +1011,7 @@ function Public.get_random_unit_type(evolution)
 end
 
 function Public.get_random_biter_type(evolution)
-	-- approximating graphs from https://wiki.factorio.com/Enemies
+	-- designed to approximate https://wiki.factorio.com/Enemies
 	local r = Math.random()
 
 	if r < 1 - 1/0.4*(evolution - 0.2) then
@@ -1024,7 +1026,7 @@ function Public.get_random_biter_type(evolution)
 end
 
 function Public.get_random_spitter_type(evolution)
-	-- approximating graphs from https://wiki.factorio.com/Enemies
+	-- designed to approximate https://wiki.factorio.com/Enemies
 	local r = Math.random()
 
 	if r < 1 - 1/0.3*(evolution - 0.4) then

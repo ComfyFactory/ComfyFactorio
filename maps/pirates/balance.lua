@@ -75,18 +75,21 @@ end
 
 function Public.silo_count()
 	local E = Public.silo_energy_needed_MJ()
-	return Math.ceil(E/(16.8 * 210)) --no more than this many seconds to charge it. Players can in fact go even faster using beacons
+	return Math.ceil(E/(16.8 * 300)) --no more than this many seconds to charge it. Players can in fact go even faster using beacons
+	-- return Math.ceil(E/(16.8 * 210)) --no more than this many seconds to charge it. Players can in fact go even faster using beacons
 end
 
 
 function Public.game_slowness_scale()
-	return 1 / Public.crew_scale()^(55/100) / Math.sloped(Common.difficulty(), 1/4) --changed crew_scale factor significantly to help smaller crews
+	-- return 1 / Public.crew_scale()^(55/100) / Math.sloped(Common.difficulty(), 1/4) --changed crew_scale factor significantly to help smaller crews
+	return 1 / Public.crew_scale()^(50/100) / Math.sloped(Common.difficulty(), 1/4) --changed crew_scale factor significantly to help smaller crews
 end
 
 
 function Public.max_time_on_island_formula() --always >0  --tuned
 	return 60 * (
-			(32 + 2.2 * (Common.overworldx()/40)^(1/3))
+			-- (32 + 2.2 * (Common.overworldx()/40)^(1/3))
+			(33 + 0.2 * (Common.overworldx()/40)^(1/3)) --based on observing x=2000, lets try killing the extra time
 	) * Public.game_slowness_scale()
 end
 
@@ -159,7 +162,7 @@ function Public.boat_passive_pollution_per_minute(time)
 	end
 
 	return boost * (
-			5.2 * Common.difficulty() * (Common.overworldx()/40)^(1.6) * (Public.crew_scale())^(55/100)
+			2.73 * Common.difficulty() * (Common.overworldx()/40)^(1.8) * (Public.crew_scale())^(55/100)
 	 ) -- There is no _explicit_ T dependence, but it depends almost the same way on the crew_scale as T does.
 end
 
@@ -236,7 +239,10 @@ function Public.evolution_per_nest_kill() --it's important to have evo go up wit
 end
 
 function Public.evolution_per_full_silo_charge()
-	return 0.05 --too low and you always charge immediately, too high and you always charge late
+	 --too low and you always charge immediately, too high and you always charge late
+	-- return 0.05
+	-- observed x=2000 run, changed this to:
+	return 0.05 + 0.03 * Common.overworldx()/1000
 end
 
 function Public.bonus_damage_to_humans()

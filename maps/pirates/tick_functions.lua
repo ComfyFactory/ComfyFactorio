@@ -1361,26 +1361,30 @@ function Public.silo_insta_update()
 	if silos and silos[1] and silos[1].valid then --need the first silo to be alive in order to charge any others
 		if dynamic_data.silocharged then
 			for i, silo in ipairs(silos) do
-				silo.energy = silo.electric_buffer_size
+				if silo and silo.valid then --sometimes theyre overwritten by other structures e.g. market
+					silo.energy = silo.electric_buffer_size
+				end
 			end
 		else
 			for i, silo in ipairs(silos) do
-				local e = silo.energy - 1
-				local e2 = dynamic_data.rocketsiloenergyneeded - dynamic_data.rocketsiloenergyconsumed
-				if e > 0 and e2 > 0 then
-					local absorb = Math.min(e, e2)
-					dynamic_data.energychargedinsilosincelastcheck = dynamic_data.energychargedinsilosincelastcheck + absorb
-					silo.energy = silo.energy - absorb
-
-					if dynamic_data.rocketsilochargedbools and (not dynamic_data.rocketsilochargedbools[i]) then
-						dynamic_data.rocketsilochargedbools[i] = true
-						local inv = silo.get_inventory(defines.inventory.assembling_machine_input)
-						inv.insert{name = 'rocket-control-unit', count = 10}
-						inv.insert{name = 'low-density-structure', count = 10}
-						inv.insert{name = 'rocket-fuel', count = 10}
+				if silo and silo.valid then --sometimes theyre overwritten by other structures e.g. market
+					local e = silo.energy - 1
+					local e2 = dynamic_data.rocketsiloenergyneeded - dynamic_data.rocketsiloenergyconsumed
+					if e > 0 and e2 > 0 then
+						local absorb = Math.min(e, e2)
+						dynamic_data.energychargedinsilosincelastcheck = dynamic_data.energychargedinsilosincelastcheck + absorb
+						silo.energy = silo.energy - absorb
+	
+						if dynamic_data.rocketsilochargedbools and (not dynamic_data.rocketsilochargedbools[i]) then
+							dynamic_data.rocketsilochargedbools[i] = true
+							local inv = silo.get_inventory(defines.inventory.assembling_machine_input)
+							inv.insert{name = 'rocket-control-unit', count = 10}
+							inv.insert{name = 'low-density-structure', count = 10}
+							inv.insert{name = 'rocket-fuel', count = 10}
+						end
+					else
+						silo.energy = 0
 					end
-				else
-					silo.energy = 0
 				end
 			end
 		end

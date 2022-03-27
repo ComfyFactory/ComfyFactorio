@@ -270,7 +270,7 @@ function Public.time_longform(seconds)
 	elseif seconds2 < 60 * 60 * 24 - 1 then
 		str2 = string.format('%.0f hours, %.0f mins, %.0f seconds', Math.floor(Math.ceil(seconds2) / (60*60)), Math.floor(Math.ceil(seconds2) / 60) % 60, Math.ceil(seconds2) % 60)
 	else
-		str2 = string.format('%.0fdays, %.0f hours, %.0f mins, %.0f seconds', Math.floor(Math.ceil(seconds2) / (24*60*60)), Math.floor(Math.ceil(seconds2) / (60*60)) % 24, Math.floor(Math.ceil(seconds2) / 60) % 60, Math.ceil(seconds2) % 60)
+		str2 = string.format('%.0f days, %.0f hours, %.0f mins, %.0f seconds', Math.floor(Math.ceil(seconds2) / (24*60*60)), Math.floor(Math.ceil(seconds2) / (60*60)) % 24, Math.floor(Math.ceil(seconds2) / 60) % 60, Math.ceil(seconds2) % 60)
 	end
 	return str1 .. str2
 end

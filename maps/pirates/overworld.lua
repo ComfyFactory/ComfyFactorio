@@ -101,10 +101,10 @@ function Public.generate_destination_type_and_subtype(overworld_position)
 	elseif macro_x == 2 then
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.STANDARD_VARIANT --aesthetically different to first map
-	elseif (macro_x > 25 and (macro_x - 22) % 20 == 0) then --we want this to overwrite dock, so putting it here
+	elseif (macro_x > 25 and (macro_x - 22) % 20 == 0) then --we want this to overwrite dock, so putting it here.
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.RADIOACTIVE
-	elseif (macro_x > 25 and (macro_x - 22) % 20 == 18) then --we want this to overwrite dock, so putting it here
+	elseif (macro_x > 25 and (macro_x - 22) % 20 == 18) then --we want this to overwrite dock, so putting it here. should be even so rocket launch is forced
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.MAZE
 	elseif macro_x == 23 then --overwrite dock. rocket launch cost
@@ -239,6 +239,9 @@ function Public.generate_overworld_destination(p)
 			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*100),
 			['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*18),
 			['flying-robot-frame'] = Math.ceil(((macro_p.x-18)^(2/3))*10),
+			-- ['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*100),
+			-- ['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*18),
+			-- ['flying-robot-frame'] = Math.ceil(((macro_p.x-18)^(2/3))*10),
 		}
 		-- if macro_p.x == 0 then
 			-- if _DEBUG then
@@ -279,7 +282,11 @@ function Public.generate_overworld_destination(p)
 			base_cost_to_undock = Utils.deepcopy(base_cost_5)
 			local delete = normal_costitems[Math.random(#normal_costitems)]
 			base_cost_to_undock[delete] = nil
-			if macro_p.x % 2 == 0 then
+			if macro_p.x < 50 then
+				if macro_p.x % 2 == 0 then
+					base_cost_to_undock['launch_rocket'] = true
+				end
+			else --now we're just trying to kill you
 				base_cost_to_undock['launch_rocket'] = true
 			end
 		end

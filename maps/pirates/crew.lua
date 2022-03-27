@@ -667,6 +667,8 @@ function Public.initialise_crew(accepted_proposal)
 	Memory.reset_crew_memory(new_id)
 	Memory.set_working_id(new_id)
 
+	game.reset_time_played() -- affects the multiplayer lobby view
+
 	local memory = Memory.get_crew_memory()
 
     local secs = Server.get_current_time()
@@ -886,11 +888,7 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['spidertron'].enabled = false
 	crew_force.technologies['atomic-bomb'].enabled = false
 	crew_force.technologies['explosive-rocketry'].enabled = false
-	crew_force.technologies['artillery-shell-range-1'].enabled = false
-	crew_force.technologies['artillery-shell-speed-1'].enabled = false
-	crew_force.technologies['worker-robots-storage-1'].enabled = false
-	crew_force.technologies['worker-robots-storage-2'].enabled = false
-	crew_force.technologies['worker-robots-storage-3'].enabled = false
+
 	crew_force.technologies['research-speed-1'].enabled = false
 	crew_force.technologies['research-speed-2'].enabled = false
 	crew_force.technologies['research-speed-3'].enabled = false
@@ -901,18 +899,44 @@ function Public.reset_crew_and_enemy_force(id)
 	-- crew_force.technologies['follower-robot-count-2'].enabled = false
 	-- crew_force.technologies['follower-robot-count-3'].enabled = false
 	-- crew_force.technologies['follower-robot-count-4'].enabled = false
-	crew_force.technologies['follower-robot-count-5'].enabled = false
-	crew_force.technologies['follower-robot-count-6'].enabled = false
-	crew_force.technologies['follower-robot-count-7'].enabled = false
+
 	-- crew_force.technologies['inserter-capacity-bonus-3'].enabled = false
 	-- crew_force.technologies['inserter-capacity-bonus-4'].enabled = false
 	-- crew_force.technologies['inserter-capacity-bonus-5'].enabled = false
 	-- crew_force.technologies['inserter-capacity-bonus-6'].enabled = false
-	crew_force.technologies['inserter-capacity-bonus-7'].enabled = false
 	-- crew_force.technologies['refined-flammables-3'].enabled = false
-	crew_force.technologies['refined-flammables-4'].enabled = false
+	-- crew_force.technologies['refined-flammables-4'].enabled = false
+	-- crew_force.technologies['refined-flammables-5'].enabled = false
+
+	-- for lategame balance:
+	-- crew_force.technologies['worker-robots-storage-1'].enabled = false
+	crew_force.technologies['worker-robots-storage-2'].enabled = false
+	crew_force.technologies['worker-robots-storage-3'].enabled = false
+	crew_force.technologies['worker-robots-speed-5'].enabled = false
+	crew_force.technologies['worker-robots-speed-6'].enabled = false
+	crew_force.technologies['follower-robot-count-5'].enabled = false
+	crew_force.technologies['follower-robot-count-6'].enabled = false
+	crew_force.technologies['follower-robot-count-7'].enabled = false
+	crew_force.technologies['inserter-capacity-bonus-6'].enabled = false
+	crew_force.technologies['inserter-capacity-bonus-7'].enabled = false
+
+	crew_force.technologies['weapon-shooting-speed-6'].enabled = false
+	crew_force.technologies['laser-shooting-speed-6'].enabled = false
+	crew_force.technologies['laser-shooting-speed-7'].enabled = false
 	crew_force.technologies['refined-flammables-5'].enabled = false
 	crew_force.technologies['refined-flammables-6'].enabled = false
+	crew_force.technologies['refined-flammables-7'].enabled = false
+	crew_force.technologies['energy-weapons-damage-5'].enabled = false --5 makes krakens too easy
+	crew_force.technologies['energy-weapons-damage-6'].enabled = false
+	crew_force.technologies['energy-weapons-damage-7'].enabled = false
+	crew_force.technologies['physical-projectile-damage-5'].enabled = false
+	crew_force.technologies['physical-projectile-damage-6'].enabled = false
+	crew_force.technologies['physical-projectile-damage-7'].enabled = false
+	crew_force.technologies['stronger-explosives-5'].enabled = false
+	crew_force.technologies['stronger-explosives-6'].enabled = false
+	crew_force.technologies['stronger-explosives-7'].enabled = false
+	crew_force.technologies['artillery-shell-range-1'].enabled = false --infinite techs
+	-- crew_force.technologies['artillery-shell-speed-1'].enabled = false --infinite techs
 
 	crew_force.technologies['steel-axe'].enabled = false
 
@@ -936,11 +960,6 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['rocket-silo'].enabled = false
 	crew_force.technologies['space-science-pack'].enabled = false
 	crew_force.technologies['mining-productivity-4'].enabled = false
-	crew_force.technologies['worker-robots-speed-6'].enabled = false
-	crew_force.technologies['energy-weapons-damage-7'].enabled = false
-	crew_force.technologies['physical-projectile-damage-7'].enabled = false
-	crew_force.technologies['refined-flammables-7'].enabled = false
-	crew_force.technologies['stronger-explosives-7'].enabled = false
 	crew_force.technologies['logistics-3'].enabled = true
 	crew_force.technologies['nuclear-fuel-reprocessing'].enabled = false
 

@@ -431,6 +431,34 @@ local function maze_walls_resistance(event)
 end
 
 
+
+
+local function damage_to_enemies(event)
+	local memory = Memory.get_crew_memory()
+
+	if not (event.entity and event.entity.valid and event.entity.force and event.entity.force.valid) then return end
+
+	if not string.sub(event.entity.force.name, 1, 5) == 'enemy' then return end
+	local evo = memory.evolution_factor
+
+	if evo and evo > 1 and event.final_health > 0 then --lethal damage needs to be unaffected, else they never die
+
+		local surplus = evo - 1
+
+		local damage_multiplier = 1/(1 + Common.surplus_evo_biter_health_fractional_modifier(surplus))
+
+		if damage_multiplier < 1 then
+			event.entity.health = event.entity.health + event.final_damage_amount * (1 - damage_multiplier)
+		end
+	end
+
+	-- commented out as this is done elsewhere:
+	-- if event.damage_type.name == 'poison' then
+	-- 		event.entity.health = event.entity.health + event.final_damage_amount
+	-- end
+end
+
+
 local function event_on_entity_damaged(event)
 
 	-- figure out which crew this is about:
@@ -459,35 +487,8 @@ local function event_on_entity_damaged(event)
 
 	damage_dealt_by_players_changes(event)
 
-	-- if string.sub(event.entity.force.name, 1, 5) == 'enemy' then
-	-- 	-- Balance.biter_immunities(event)
-	-- end
+	damage_to_enemies(event)
 end
-
-
-
-
--- function Public.biter_immunities(event)
--- 	-- local memory = Memory.get_crew_memory()
--- 	-- local planet = memory.planet[1].type.id
--- 	-- if event.damage_type.name == 'fire' then
--- 	-- 	if planet == 14 then --lava planet
--- 	-- 		event.entity.health = event.entity.health + event.final_damage_amount
--- 	-- 		local fire = event.entity.stickers
--- 	-- 		if fire and #fire > 0 then
--- 	-- 			for i = 1, #fire, 1 do
--- 	-- 				if fire[i].sticked_to == event.entity and fire[i].name == 'fire-sticker' then fire[i].destroy() break end
--- 	-- 			end
--- 	-- 		end
--- 	-- 	-- else -- other planets
--- 	-- 	-- 	event.entity.health = Math.floor(event.entity.health + event.final_damage_amount - (event.final_damage_amount / (1 + 0.02 * memory.difficulty * memory.chronojumps)))
--- 	-- 	end
--- 	-- elseif event.damage_type.name == 'poison' then
--- 	-- 	if planet == 18 then --swamp planet
--- 	-- 		event.entity.health = event.entity.health + event.final_damage_amount
--- 	-- 	end
--- 	-- end
--- end
 
 
 
