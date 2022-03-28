@@ -1,24 +1,26 @@
 
 --[[
- Mountain Fortress v3 is maintained by thesixthroc and hosted by Comfy.
+ Pirate Ship is maintained by thesixthroc and hosted by Comfy.
  Want to host it? Ask us at getcomfy.eu/discord!
  ]]
 
- --[[personal note for thesixthroc in XX years: my design notes are all in obsidian]]
-
+ --[[personal note for thesixthroc in XX years: my design notes are all in Obsidian (edit: partially moved to Github Projects)]]
 
 --[[
+
 == Tips for Developers! ==
 
-The scenario is quite complex, but there are ways to get started, even if you don't know any Lua:
-• Go to pirates/surfaces/islands/first and
+The scenario is quite complex, but there are ways to get started, even if you don't know much Lua. Some ideas (incomplete):
+
+• Go to pirates/surfaces/islands/first and edit stuff there to see the effect it has on the first island
+• Ask thesixthroc for access to the ToDo list on Github Projects, to see what needs doing
 ]]
 
 -- require 'modules.biters_yield_coins'
 require 'modules.biter_noms_you'
 require 'modules.no_deconstruction_of_neutral_entities'
 
-require 'maps.pirates.custom_events' --it might be necessary to do this before anything
+require 'maps.pirates.custom_events' --probably do this before anything else
 
 require 'utils.server'
 local _inspect = require 'utils.inspect'.inspect
@@ -358,21 +360,11 @@ end
 event.on_nth_tick(5, global_tick)
 
 
-local function fasttick()
-	local global_memory = Memory.get_global_memory()
-	for _, id in pairs(global_memory.crew_active_ids) do
-		Memory.set_working_id(id)
-		TickFunctions.minimap_jam(1)
-	end
-end
-
-event.on_nth_tick(1, fasttick)
-
-
 local function instatick()
 	local global_memory = Memory.get_global_memory()
 	for _, id in pairs(global_memory.crew_active_ids) do
 		Memory.set_working_id(id)
+		TickFunctions.minimap_jam(1)
 		TickFunctions.silo_insta_update()
 	end
 end

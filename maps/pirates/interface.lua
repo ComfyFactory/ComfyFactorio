@@ -1091,19 +1091,29 @@ local function event_on_player_joined_game(event)
 		local ages = {}
 		for _, mem in pairs(global_memory.crew_memories) do
 			if mem.id and mem.crewstatus and mem.crewstatus == Crew.enum.ADVENTURING and mem.capacity and mem.crewplayerindices and #mem.crewplayerindices < mem.capacity and (not (mem.tempbanned_from_joining_data and mem.tempbanned_from_joining_data[player.index] and game.tick < mem.tempbanned_from_joining_data[player.index] + Common.ban_from_rejoining_crew_ticks)) then
-				ages[#ages+1] = {id = mem.id, age = mem.age}
+				ages[#ages+1] = {id = mem.id, age = mem.age, large = (mem.capacity >= Common.minimum_run_capacity_to_enforce_space_for)}
 			end
 		end
 		table.sort(
 			ages,
 			function(a, b) --true if a should be to the left of b
-				return a.age > b.age
+				if a.large and (not b.large) then
+					return true
+				elseif (not a.large) and b.large then
+					return false
+				else
+					return a.age > b.age
+				end
 			end
 		)
 		if ages[1] then
 			Crew.join_crew(player, ages[1].id)
 			if ages[2] then
-				Common.notify_player_announce(player, 'There are multiple crews on this server. You have been placed in the oldest.')
+				if ages[1].large and (not ages[#ages].large) then
+					Common.notify_player_announce(player, 'There are multiple crews on this server. You have been placed in the oldest crew with large capacity.')
+				else
+					Common.notify_player_announce(player, 'There are multiple crews on this server. You have been placed in the oldest.')
+				end
 			end
 		end
 	end
