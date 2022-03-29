@@ -24,6 +24,18 @@ local bottom_guis_frame = Gui.uid_name()
 local clear_corpse_button_name = Gui.uid_name()
 local bottom_quickbar_button_name = Gui.uid_name()
 
+function Public.toggle_player_frame(player, state)
+    local gui = player.gui
+    local frame = gui.screen[bottom_guis_frame]
+    if frame and frame.valid then
+        if state then
+            frame.visible = true
+        else
+            frame.visible = false
+        end
+    end
+end
+
 function Public.get_player_data(player, remove_user_data)
     if remove_user_data then
         if this.players[player.index] then
@@ -32,7 +44,9 @@ function Public.get_player_data(player, remove_user_data)
         return
     end
     if not this.players[player.index] then
-        this.players[player.index] = {}
+        this.players[player.index] = {
+            hidden = false
+        }
     end
     return this.players[player.index]
 end
@@ -84,7 +98,7 @@ local function destroy_frame(player)
     end
 end
 
-local function create_frame(player, alignment, location, portable)
+local function create_frame(player, alignment, location, portable, hidden)
     local gui = player.gui
     local frame = gui.screen[bottom_guis_frame]
     if frame and frame.valid then
@@ -99,6 +113,12 @@ local function create_frame(player, alignment, location, portable)
         name = bottom_guis_frame,
         direction = alignment
     }
+
+    if hidden then
+        frame.visible = false
+    else
+        frame.visible = true
+    end
 
     frame.style.padding = 3
     frame.style.top_padding = 4
@@ -188,7 +208,7 @@ local function set_location(player, state)
         }
     end
 
-    create_frame(player, alignment, location, data.portable)
+    create_frame(player, alignment, location, data.portable, data.hidden)
 end
 
 --- Activates the custom buttons
@@ -220,7 +240,7 @@ Gui.on_click(
 Event.add(
     defines.events.on_player_joined_game,
     function(event)
-        local player = game.players[event.player_index]
+        local player = game.get_player(event.player_index)
         if this.activate_custom_buttons then
             set_location(player)
         end

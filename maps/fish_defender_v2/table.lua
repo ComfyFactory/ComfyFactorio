@@ -49,18 +49,43 @@ function Public.reset_table()
     this.boss_biters = {}
     this.acid_lines_delay = {}
     this.entity_limits = {
-        ['gun-turret'] = {placed = 1, limit = 3, str = 'gun turret', slot_price = 70},
+        ['gun-turret'] = {placed = 1, limit = 6, str = 'gun turret', slot_price = 70},
         ['laser-turret'] = {placed = 0, limit = 1, str = 'laser turret', slot_price = 300},
         ['artillery-turret'] = {placed = 0, limit = 1, str = 'artillery turret', slot_price = 500},
         ['flamethrower-turret'] = {placed = 0, limit = 0, str = 'flamethrower turret', slot_price = 50000},
         ['land-mine'] = {placed = 0, limit = 1, str = 'mine', slot_price = 20}
     }
     this.difficulties_votes = {
-        [1] = {wave_interval = 3800, amount_modifier = 0.90, strength_modifier = 0.90, boss_modifier = 5.0},
-        [2] = {wave_interval = 3600, amount_modifier = 1.00, strength_modifier = 1.00, boss_modifier = 6.0},
-        [3] = {wave_interval = 3400, amount_modifier = 1.10, strength_modifier = 1.30, boss_modifier = 7.0},
-        [4] = {wave_interval = 3200, amount_modifier = 1.20, strength_modifier = 1.60, boss_modifier = 8.0},
-        [5] = {wave_interval = 3000, amount_modifier = 1.40, strength_modifier = 2.20, boss_modifier = 9.0}
+        [1] = {
+            wave_interval = 5000,
+            amount_modifier = 0.90,
+            strength_modifier = 0.90,
+            boss_modifier = 5.0
+        },
+        [2] = {
+            wave_interval = 3500,
+            amount_modifier = 1.00,
+            strength_modifier = 1.00,
+            boss_modifier = 6.0
+        },
+        [3] = {
+            wave_interval = 3400,
+            amount_modifier = 1.10,
+            strength_modifier = 1.30,
+            boss_modifier = 7.0
+        },
+        [4] = {
+            wave_interval = 3200,
+            amount_modifier = 1.20,
+            strength_modifier = 1.60,
+            boss_modifier = 8.0
+        },
+        [5] = {
+            wave_interval = 3000,
+            amount_modifier = 1.40,
+            strength_modifier = 2.20,
+            boss_modifier = 9.0
+        }
     }
     this.boss_waves = {
         [50] = {{name = 'big-biter', count = 3}},
