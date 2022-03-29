@@ -149,8 +149,7 @@ local function create_main_button(event)
                 name = main_button_name,
                 sprite = 'utility/surface_editor_icon',
                 tooltip = 'Connect to another Comfy server!'
-            },
-            main_button_name
+            }
         )
     else
         local main_button = player.gui.top[main_button_name]
