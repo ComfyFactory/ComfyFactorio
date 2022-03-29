@@ -189,7 +189,7 @@ local function expand(surface, position)
         return
     end
     local treasure_room_one_in = 30 + 10 * dungeontable.treasures[surface.index]
-    if dungeontable.surface_size[surface.index] >= 225 and math.random(1, treasure_room_one_in) == 1 then
+    if dungeontable.surface_size[surface.index] >= 225 and math.random(1, treasure_room_one_in) == 1 and room.room_tiles[1] then
 	log('Found treasure room, change was 1 in ' .. treasure_room_one_in)
         Biomes['treasure'](surface, room)
         if room.room_tiles[1] then
