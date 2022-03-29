@@ -236,10 +236,10 @@ local freeplay_interface = {
         this.respawn_items = map or error("Remote call parameter to freeplay set respawn items can't be nil.")
     end,
     set_skip_intro = function(bool)
-        this.skip_intro = bool or error('Remote call parameter to freeplay set skip_intro must be bool')
+        this.skip_intro = bool
     end,
     set_disabled = function(bool)
-        this.disabled = bool or error('Remote call parameter to freeplay set disabled must be bool')
+        this.disabled = bool
     end,
     set_custom_surface_name = function(str)
         this.custom_surface_name = str or error('Remote call parameter to freeplay set custom_surface_name must be string')
@@ -248,7 +248,7 @@ local freeplay_interface = {
         this.chart_distance = tonumber(value) or error('Remote call parameter to freeplay set chart distance must be a number')
     end,
     set_disable_crashsite = function(bool)
-        this.disable_crashsite = bool or error('Remote call parameter to freeplay set disable_crashsite must be bool')
+        this.disable_crashsite = bool
     end,
     get_ship_items = function()
         return this.crashed_ship_items

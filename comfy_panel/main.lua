@@ -13,10 +13,47 @@ local Event = require 'utils.event'
 local Server = require 'utils.server'
 local SpamProtection = require 'utils.spam_protection'
 local Token = require 'utils.token'
+local Global = require 'utils.global'
+local Gui = require 'utils.gui'
 
 local main_gui_tabs = {}
 local Public = {}
 local screen_elements = {}
+local this = {
+    settings = {
+        mod_gui_top_frame = false
+    }
+}
+
+Global.register(
+    this,
+    function(tbl)
+        this = tbl
+    end
+)
+
+--- This adds the given gui to the top gui.
+---@param player <userdata>
+---@param frame <object>
+---@param name <string>
+function Public.add_mod_button(player, frame, name)
+    if Gui.get_button_flow(player)[name] then
+        return
+    end
+
+    Gui.get_button_flow(player).add(frame)
+end
+
+---@param state <bool>
+--- If we should use the new mod gui or not
+function Public.set_mod_gui_top_frame(state)
+    this.settings.mod_gui_top_frame = state or false
+end
+
+--- Get mod_gui_top_frame
+function Public.get_mod_gui_top_frame()
+    return this.settings.mod_gui_top_frame
+end
 
 --- This adds the given gui to the main gui.
 ---@param tbl
@@ -108,14 +145,18 @@ function Public.comfy_panel_refresh_active_tab(player)
 end
 
 local function top_button(player)
-    if player.gui.top['comfy_panel_top_button'] then
-        return
+    if this.settings.mod_gui_top_frame then
+        Public.add_mod_button(player, {type = 'sprite-button', name = 'comfy_panel_top_button', sprite = 'item/raw-fish'}, 'comfy_panel_top_button')
+    else
+        if player.gui.top['comfy_panel_top_button'] then
+            return
+        end
+        local button = player.gui.top.add({type = 'sprite-button', name = 'comfy_panel_top_button', sprite = 'item/raw-fish'})
+        button.style.minimal_height = 38
+        button.style.maximal_height = 38
+        button.style.minimal_width = 40
+        button.style.padding = -2
     end
-    local button = player.gui.top.add({type = 'sprite-button', name = 'comfy_panel_top_button', sprite = 'item/raw-fish'})
-    button.style.minimal_height = 38
-    button.style.maximal_height = 38
-    button.style.minimal_width = 40
-    button.style.padding = -2
 end
 
 local function main_frame(player)
