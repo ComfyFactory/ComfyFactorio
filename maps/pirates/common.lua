@@ -457,7 +457,8 @@ function Public.time_adjusted_departure_cost(cost)
 			local new_cost = {}
 			for name, count in pairs(cost) do
 				if type(count) == "number" then
-					new_cost[name] = Math.ceil(count * cost_fraction)
+					new_cost[name] = Math.floor(count * cost_fraction)
+					-- new_cost[name] = Math.ceil(count * cost_fraction)
 				else
 					new_cost[name] = count
 				end

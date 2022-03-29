@@ -222,7 +222,7 @@ function Public.generate_overworld_destination(p)
 		}
 		local base_cost_2b = {
 			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*180),
-			['flying-robot-frame'] = 2,
+			['flying-robot-frame'] = 3,
 		}
 		local base_cost_3 = {
 			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*140),
