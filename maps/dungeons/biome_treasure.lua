@@ -30,10 +30,15 @@ local function treasure(surface, room)
         table_insert(tiles, tile)
     end
 
-    -- Small rooms are 9x9, big ones are 29x29, so 100-1000 tiles
-    -- middle size about 400 tiles, scale so that every treasure room has resources
-    -- as if it was 400 tiles.
-    local scale_factor = 10 * 400 / #tiles
+    local scale_factor = 5
+
+    if room.room_tiles[1] then
+	-- room.room_tiles[1] is set only if this is a real room not a walkway
+	-- Small rooms are 9x9, big ones are 29x29, so 100-1000 tiles
+	-- middle size about 400 tiles, but test at that showed treasure rooms over-buffed.
+	-- test#2 at 200.
+	scale_factor = 10 * 200 / #tiles
+    end
     for _, tile in pairs(tiles) do
         surface.set_tiles({{name = rainbow_tiles[math_random(1, 2)], position = tile.position}}, true)
 
