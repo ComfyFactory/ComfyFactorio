@@ -21,7 +21,7 @@ local Public = {}
 local screen_elements = {}
 local this = {
     settings = {
-        mod_gui_top_frame = true
+        mod_gui_top_frame = false
     }
 }
 
