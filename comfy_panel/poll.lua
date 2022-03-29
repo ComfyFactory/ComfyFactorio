@@ -774,8 +774,7 @@ local function player_joined(event)
                 name = main_button_name,
                 sprite = 'item/programmable-speaker',
                 tooltip = 'Let your question be heard!'
-            },
-            'main_button_name'
+            }
         )
     else
         if player.gui.top[main_button_name] ~= nil then
