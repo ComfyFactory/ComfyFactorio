@@ -1526,7 +1526,7 @@ function Public.reset_game()
                 goal = 250000,
                 rank = 'Anti-matter',
                 color = {r = 100, g = 100, b = 245},
-                msg = 'The obese cat colapses and forms a black hole!',
+                msg = 'The obese cat collapses and forms a black hole!',
                 msg2 = ':obese:',
                 achieved = false
             },
@@ -1590,6 +1590,7 @@ local function on_tick()
         if wave_count >= wave_limit then
             if market and market.valid then
                 market.die()
+                game.print('Game won!', {r = 0.22, g = 0.88, b = 0.22})
                 game.print('Game wave limit reached! Game will soft-reset shortly.', {r = 0.22, g = 0.88, b = 0.22})
             end
         end
