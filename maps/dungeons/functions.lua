@@ -10,6 +10,18 @@ local math_random = math.random
 local math_abs = math.abs
 local math_floor = math.floor
 
+-- Epic loot chest is 0.05 * (floor + 1) * 4000 * 8 + rand(512,1024)
+-- So floor 0 = 2112 .. 2624
+-- floor 4 = 8512 .. 9024
+-- floor 9 = 16512 .. 17024
+-- floor 19 = 32512 .. 33024
+LootRaffle.TweakItemWorth({
+	['modular-armor'] = 512, -- floors 1-5 from research.lua
+	['power-armor'] = 4096, -- floors 8-13 from research.lua
+	['personal-laser-defense-equipment'] = 1536, -- floors 10-14 from research.lua
+	['power-armor-mk2'] = 24576, -- floors 14-21 from research.lua
+})
+
 function Public.get_dungeon_evolution_factor(surface_index)
     local dungeontable = DungeonsTable.get_dungeontable()
     local e = dungeontable.depth[surface_index] * 0.0005
@@ -22,38 +34,43 @@ end
 local function blacklist(surface_index, special)
     local dungeontable = DungeonsTable.get_dungeontable()
     local evolution_factor = Public.get_dungeon_evolution_factor(surface_index)
+    if special then
+	-- treasure rooms act as if they are 3 levels farther down.
+	evolution_factor = evolution_factor + 0.15
+    end
     local blacklists = {}
     --general unused items on dungeons
     blacklists['cliff-explosives'] = true
     --items that would trivialize stuff if dropped too early
-    if dungeontable.item_blacklist and not special then
-        if evolution_factor < 0.9 then
-            blacklists['discharge-defense-equipment'] = true
+    if dungeontable.item_blacklist then
+        if evolution_factor < 0.9 then -- floor 18
             blacklists['power-armor-mk2'] = true
             blacklists['fusion-reactor-equipment'] = true
             blacklists['rocket-silo'] = true
-            blacklists['discharge-defense-remote'] = true
+	    blacklists['atomic-bomb'] = true
         end
-        if evolution_factor < 0.7 then
+        if evolution_factor < 0.7 then -- floor 14
             blacklists['energy-shield-mk2-equipment'] = true
             blacklists['personal-laser-defense-equipment'] = true
             blacklists['personal-roboport-mk2-equipment'] = true
             blacklists['battery-mk2-equipment'] = true
-            blacklists['nuclear-reactor'] = true
             blacklists['artillery-turret'] = true
             blacklists['artillery-wagon'] = true
             blacklists['power-armor'] = true
         end
-        if evolution_factor < 0.4 then
+	if evolution_factor < 0.55 then -- floor 11
+            blacklists['discharge-defense-equipment'] = true
+            blacklists['discharge-defense-remote'] = true
+            blacklists['nuclear-reactor'] = true
+	end
+        if evolution_factor < 0.4 then -- floor 8
             blacklists['steam-turbine'] = true
             blacklists['heat-exchanger'] = true
             blacklists['heat-pipe'] = true
             blacklists['express-loader'] = true
             blacklists['modular-armor'] = true
-            blacklists['solar-panel-equipment'] = true
             blacklists['energy-shield-equipment'] = true
             blacklists['battery-equipment'] = true
-            blacklists['solar-panel-equipment'] = true
         end
     end
     return blacklists
@@ -143,6 +160,9 @@ end
 function Public.epic_loot_crate(surface, position, special)
     local dungeontable = DungeonsTable.get_dungeontable()
     local loot_value = get_loot_value(surface.index, 8) + math_random(512, 1024)
+    if special then
+	loot_value = loot_value * 1.5
+    end
     local bonus_loot = nil
     if dungeontable.tiered and loot_value > 32000 and Public.get_dungeon_evolution_factor(surface.index) > 1 then
         local bonus = special_loot(loot_value)

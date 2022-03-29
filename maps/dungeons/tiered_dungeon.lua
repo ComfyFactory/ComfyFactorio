@@ -885,6 +885,7 @@ Changelog.SetVersions({
 * Treasure rooms
   * Rescaled to have similar total resources regardless of size
   * Unlimited number of rooms but lower frequency
+  * Loot is limited to available loot 3 floors lower, but slightly more total value than before.
 * Autostash and corpse clearing from Mountain Fortress enabled
 * Harder rooms will occur somewhat farther out on the early floors.
 * Spawners and worm counts bounded in early rooms.

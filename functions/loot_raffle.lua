@@ -413,6 +413,19 @@ for k, _ in pairs(item_worths) do
 end
 local size_of_item_names = #item_names
 
+function Public.TweakItemWorth(updates)
+    item_names = {}
+    for k, v in pairs(updates) do
+	item_worths[k] = v
+    end
+    item_names = {}
+    for k, _ in pairs(item_worths) do
+	table_insert(item_names, k)
+    end
+
+    size_of_item_names = #item_names
+end
+
 local function get_raffle_keys()
     local raffle_keys = {}
     for i = 1, size_of_item_names, 1 do
