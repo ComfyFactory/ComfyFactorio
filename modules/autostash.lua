@@ -574,8 +574,7 @@ local function create_gui_button(player)
                     name = 'auto_stash',
                     sprite = 'item/wooden-chest',
                     tooltip = tooltip
-                },
-                'auto_stash'
+                }
             )
         else
             local b =

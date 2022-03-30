@@ -36,8 +36,8 @@ Global.register(
 ---@param player <userdata>
 ---@param frame <object>
 ---@param name <string>
-function Public.add_mod_button(player, frame, name)
-    if Gui.get_button_flow(player)[name] then
+function Public.add_mod_button(player, frame)
+    if Gui.get_button_flow(player)[frame.name] and Gui.get_button_flow(player)[frame.name].valid then
         return
     end
 
