@@ -159,13 +159,18 @@ local function reset_forces(new_surface, old_surface)
     end
 end
 
-local function teleport_players(surface)
+local function teleport_players(surface, small_force_chunk)
     for _, player in pairs(game.connected_players) do
         local spawn = player.force.get_spawn_position(surface)
         local chunk = {math.floor(spawn.x / 32), math.floor(spawn.y / 32)}
         if not surface.is_chunk_generated(chunk) then
-            surface.request_to_generate_chunks(spawn, 1)
-            surface.force_generate_chunk_requests()
+            if not small_force_chunk then
+                surface.request_to_generate_chunks(spawn, 1)
+                surface.force_generate_chunk_requests()
+            else
+                surface.request_to_generate_chunks({0, 0}, 0.1)
+                surface.force_generate_chunk_requests()
+            end
         end
         local pos = surface.find_non_colliding_position('character', spawn, 3, 0.5)
         player.teleport(pos, surface)
@@ -199,15 +204,20 @@ local function clear_robots(new_surface)
     end
 end
 
-function Public.soft_reset_map(old_surface, map_gen_settings, player_starting_items)
+function Public.soft_reset_map(old_surface, map_gen_settings, player_starting_items, small_force_chunk)
     if not this.original_surface_name then
         this.original_surface_name = old_surface.name
     end
     this.soft_reset_counter = this.soft_reset_counter + 1
 
     local new_surface = game.create_surface(this.original_surface_name .. '_' .. tostring(this.soft_reset_counter), map_gen_settings)
-    new_surface.request_to_generate_chunks({0, 0}, 1)
-    new_surface.force_generate_chunk_requests()
+    if not small_force_chunk then
+        new_surface.request_to_generate_chunks({0, 0}, 1)
+        new_surface.force_generate_chunk_requests()
+    else
+        new_surface.request_to_generate_chunks({0, 0}, 0.1)
+        new_surface.force_generate_chunk_requests()
+    end
 
     reset_forces(new_surface, old_surface)
     teleport_players(new_surface)

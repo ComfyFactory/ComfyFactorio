@@ -429,8 +429,8 @@ local function build_config_gui(data)
         scroll_pane,
         switch_state,
         'comfy_panel_spectator_switch',
-        'SpectatorMode',
-        'Toggles zoom-to-world view noise effect.\nEnvironmental sounds will be based on map view.'
+        {'gui.spectator_mode'},
+            {'gui-description.spectator_mode'}
     )
 
     scroll_pane.add({type = 'line'})
@@ -455,8 +455,8 @@ local function build_config_gui(data)
             scroll_pane,
             switch_state,
             'comfy_panel_poll_no_notify_toggle',
-            'Notify on polls',
-            'Receive a message when new polls are created and popup the poll.'
+                {'gui.notify_on_polls'},
+                {'gui-description.notify_on_polls'}
         )
         scroll_pane.add({type = 'line'})
     end
@@ -540,7 +540,7 @@ local function build_config_gui(data)
         if Gui.get_disable_clear_invalid_data() then
             switch_state = 'left'
         end
-        add_switch(scroll_pane, switch_state, 'disable_cleaning', 'Gui Data Cleaning', 'Toggles the Gui data cleaning.')
+        add_switch(scroll_pane, switch_state, 'disable_cleaning', {'gui.gui_data_cleaning'}, {'gui-description.gui_data_cleaning'})
 
         scroll_pane.add({type = 'line'})
 
@@ -552,8 +552,8 @@ local function build_config_gui(data)
             scroll_pane,
             switch_state,
             'comfy_panel_spaghett_toggle',
-            'Spaghett Mode',
-            'Disables the Logistic System research.\nRequester, buffer or active-provider containers can not be built.'
+                {'gui.spaghett_mode'},
+                {'gui-description.spaghett_mode'}
         )
 
         if poll then

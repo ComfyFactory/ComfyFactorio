@@ -38,9 +38,9 @@ local function build_group_gui(data)
 
     local t = frame.add({type = 'table', column_count = 5})
     local headings = {
-        {'Title', group_name_width},
-        {'Description', description_width},
-        {'Members', members_width * member_columns},
+        {{'gui.title'}, group_name_width},
+        {{'gui.description'}, description_width},
+        {{'gui.members'}, members_width * member_columns},
         {'', actions_width}
     }
     for _, h in pairs(headings) do
@@ -116,18 +116,18 @@ local function build_group_gui(data)
 
             tt = t.add({type = 'table', name = group.name, column_count = 1})
             if group.name ~= this.player_group[player.name] then
-                local b = tt.add({type = 'button', caption = 'Join'})
+                local b = tt.add({type = 'button', caption = {'gui.join'}})
                 b.style.font = 'default-bold'
                 b.style.minimal_width = actions_width
                 b.style.maximal_width = actions_width
             else
-                local b = tt.add({type = 'button', caption = 'Leave'})
+                local b = tt.add({type = 'button', caption = {'gui.leave'}})
                 b.style.font = 'default-bold'
                 b.style.minimal_width = actions_width
                 b.style.maximal_width = actions_width
             end
             if player.admin == true or group.founder == player.name then
-                local b = tt.add({type = 'button', caption = 'Delete'})
+                local b = tt.add({type = 'button', caption = {'gui.delete'}})
                 b.style.font = 'default-bold'
                 b.style.minimal_width = actions_width
                 b.style.maximal_width = actions_width
@@ -145,7 +145,7 @@ local function build_group_gui(data)
     textfield.style.minimal_width = 200
     textfield = t.add({type = 'textfield', name = 'new_group_description', text = 'Description'})
     textfield.style.minimal_width = 400
-    local b = t.add({type = 'button', name = 'create_new_group', caption = 'Create'})
+    local b = t.add({type = 'button', name = 'create_new_group', caption = {'gui.create'}})
     b.style.minimal_width = 150
     b.style.font = 'default-bold'
 end
@@ -233,13 +233,9 @@ local function on_gui_click(event)
     end
     local player = game.get_player(event.player_index)
 
-    local name = event.element.name
+    local name = element.name
 
-    if not name then
-        return
-    end
-
-    if name == 'tab_' .. module_name then
+    if name and name == 'tab_' .. module_name then
         local is_spamming = SpamProtection.is_spamming(player, nil, 'Groups tab_Groups')
         if is_spamming then
             return
@@ -320,7 +316,9 @@ local function on_gui_click(event)
                 return
             end
 
-            if element.type == 'button' and element.caption == 'Join' then
+            local caption = element.caption and element.caption[1]
+
+            if element.type == 'button' and caption == 'gui.join' then
                 this.player_group[player.name] = element.parent.name
                 local str = '[' .. element.parent.name
                 str = str .. ']'
@@ -339,7 +337,7 @@ local function on_gui_click(event)
                 return
             end
 
-            if element.type == 'button' and element.caption == 'Delete' then
+            if element.type == 'button' and caption == 'gui.delete' then
                 for _, players in pairs(game.players) do
                     if this.player_group[players.name] then
                         if this.player_group[players.name] == element.parent.name then
@@ -354,7 +352,7 @@ local function on_gui_click(event)
                 return
             end
 
-            if element.type == 'button' and element.caption == 'Leave' then
+            if element.type == 'button' and caption == 'gui.leave' then
                 this.player_group[player.name] = '[Group]'
                 player.tag = ''
                 refresh_gui()

@@ -1,6 +1,7 @@
 local Event = require 'utils.event'
 local Gui = require 'utils.gui'
 local Server = require 'utils.server'
+local ComfyGui = require 'comfy_panel.main'
 local SpamProtection = require 'utils.spam_protection'
 
 local main_frame_name = Gui.uid_name()
@@ -140,25 +141,37 @@ end
 
 local function create_main_button(event)
     local player = game.get_player(event.player_index)
-    local main_button = player.gui.top[main_button_name]
-    if not main_button or not main_button.valid then
-        main_button =
-            player.gui.top.add(
+    if ComfyGui.get_mod_gui_top_frame() then
+        ComfyGui.add_mod_button(
+            player,
             {
                 type = 'sprite-button',
+                name = main_button_name,
                 sprite = 'utility/surface_editor_icon',
-                tooltip = 'Connect to another Comfy server!',
-                name = main_button_name
+                tooltip = 'Connect to another Comfy server!'
             }
         )
-        main_button.style.font_color = {r = 0.11, g = 0.8, b = 0.44}
-        main_button.style.font = 'heading-1'
-        main_button.style.minimal_height = 40
-        main_button.style.maximal_width = 40
-        main_button.style.minimal_width = 38
-        main_button.style.maximal_height = 38
-        main_button.style.padding = 1
-        main_button.style.margin = 0
+    else
+        local main_button = player.gui.top[main_button_name]
+        if not main_button or not main_button.valid then
+            main_button =
+                player.gui.top.add(
+                {
+                    type = 'sprite-button',
+                    sprite = 'utility/surface_editor_icon',
+                    tooltip = 'Connect to another Comfy server!',
+                    name = main_button_name
+                }
+            )
+            main_button.style.font_color = {r = 0.11, g = 0.8, b = 0.44}
+            main_button.style.font = 'heading-1'
+            main_button.style.minimal_height = 40
+            main_button.style.maximal_width = 40
+            main_button.style.minimal_width = 38
+            main_button.style.maximal_height = 38
+            main_button.style.padding = 1
+            main_button.style.margin = 0
+        end
     end
 end
 

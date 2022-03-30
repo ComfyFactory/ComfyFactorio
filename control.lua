@@ -9,7 +9,6 @@ require 'utils.command_handler'
 require 'utils.utils'
 require 'utils.pause_game'
 require 'utils.table'
-require 'utils.freeplay'
 require 'utils.datastore.server_ups_data'
 require 'utils.datastore.current_time_data'
 require 'utils.datastore.color_data'
@@ -37,6 +36,7 @@ require 'comfy_panel.poll'
 require 'comfy_panel.score'
 require 'comfy_panel.config'
 require 'comfy_panel.server_select'
+require 'utils.freeplay'
 
 ---------------- !ENABLE MODULES HERE ----------------
 --require 'modules.admins_operate_biters'
@@ -155,6 +155,9 @@ require 'maps.dungeons.tiered_dungeon'
 --![[Territorial Control - reveal the map as you walk through the mist]]--
 --require 'maps.territorial_control'
 
+--![[Deep Jungle - dangerous map]]--
+--require 'maps.deep_jungle.main'
+
 --![[You fell in a dark cave, will you survive?]]--
 --require 'maps.cave_choppy.main'
 --require 'maps.cave_miner'
@@ -210,7 +213,6 @@ require 'maps.dungeons.tiered_dungeon'
 
 --![[Misc / WIP]]--
 --require 'maps.rainbow_road'
---require 'maps.deep_jungle'
 --require 'maps.cratewood_forest'
 --require 'maps.maze_challenge'
 --require 'maps.lost_desert'

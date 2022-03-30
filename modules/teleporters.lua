@@ -1,5 +1,5 @@
 local Event = require 'utils.event'
-local key_item = 'computer'
+local key_item = 'player-port'
 local blacklisted_tiles = {'out-of-map', 'water', 'deepwater', 'water-green', 'lab-white', 'lab-dark-1'}
 local teleporter_names = {
     'Stuedrik',
@@ -211,7 +211,10 @@ local function gui_teleporter(player, visited_teleporter_index)
                 {
                     type = 'label',
                     caption = tostring(
-                        math.ceil(math.sqrt((global.teleporters[x].position.x - player.position.x) ^ 2 + (global.teleporters[x].position.y - player.position.y) ^ 2), 0)
+                        math.ceil(
+                            math.sqrt((global.teleporters[x].position.x - player.position.x) ^ 2 + (global.teleporters[x].position.y - player.position.y) ^ 2),
+                            0
+                        )
                     ) .. ' Units'
                 }
             )

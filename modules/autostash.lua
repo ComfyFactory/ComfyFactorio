@@ -5,6 +5,7 @@ local Global = require 'utils.global'
 local SpamProtection = require 'utils.spam_protection'
 local Event = require 'utils.event'
 local BottomFrame = require 'comfy_panel.bottom_frame'
+local ComfyGui = require 'comfy_panel.main'
 local floor = math.floor
 local print_color = {r = 120, g = 255, b = 0}
 
@@ -551,22 +552,19 @@ local function auto_stash(player, event)
 end
 
 local function create_gui_button(player)
-    if player.gui.top.auto_stash then
-        return
-    end
     local tooltip
     if this.insert_into_furnace and this.insert_into_wagon then
         tooltip =
             'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.\nCTRL+RMB: Fill nearby furnaces.\nSHIFT+LMB: Everything onto filtered slots to wagon.\nSHIFT+RMB: Only ores to wagon'
     elseif this.insert_into_furnace then
-        tooltip =
-            'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.\nCTRL+RMB: Fill nearby furnaces.'
+        tooltip = 'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.\nCTRL+RMB: Fill nearby furnaces.'
     elseif this.insert_into_wagon then
-        tooltip =
-            'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.\nSHIFT+LMB: Everything onto filtered slots to wagon.\nSHIFT+RMB: Only ores to wagon'
+        tooltip = 'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.\nSHIFT+LMB: Everything onto filtered slots to wagon.\nSHIFT+RMB: Only ores to wagon'
     else
-        tooltip =
-            'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.'
+        tooltip = 'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.'
+    end
+    if player.gui.top.auto_stash then
+        return
     end
     if this.bottom_button then
         local data = BottomFrame.get('bottom_quickbar_button')
@@ -582,23 +580,35 @@ local function create_gui_button(player)
             end
         end
     else
-        local b =
-            player.gui.top.add(
-            {
-                type = 'sprite-button',
-                sprite = 'item/wooden-chest',
-                name = 'auto_stash',
-                tooltip = tooltip
-            }
-        )
-        b.style.font_color = {r = 0.11, g = 0.8, b = 0.44}
-        b.style.font = 'heading-1'
-        b.style.minimal_height = 40
-        b.style.maximal_width = 40
-        b.style.minimal_width = 38
-        b.style.maximal_height = 38
-        b.style.padding = 1
-        b.style.margin = 0
+        if ComfyGui.get_mod_gui_top_frame() then
+            ComfyGui.add_mod_button(
+                player,
+                {
+                    type = 'sprite-button',
+                    name = 'auto_stash',
+                    sprite = 'item/wooden-chest',
+                    tooltip = tooltip
+                }
+            )
+        else
+            local b =
+                player.gui.top.add(
+                {
+                    type = 'sprite-button',
+                    sprite = 'item/wooden-chest',
+                    name = 'auto_stash',
+                    tooltip = tooltip
+                }
+            )
+            b.style.font_color = {r = 0.11, g = 0.8, b = 0.44}
+            b.style.font = 'heading-1'
+            b.style.minimal_height = 40
+            b.style.maximal_width = 40
+            b.style.minimal_width = 38
+            b.style.maximal_height = 38
+            b.style.padding = 1
+            b.style.margin = 0
+        end
     end
 end
 

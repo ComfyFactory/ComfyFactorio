@@ -734,7 +734,7 @@ function Public.remove_surface(player)
         return
     end
 
-    if not car.saved_entity then
+    if car.saved_entity then
         return
     end
 
@@ -742,42 +742,43 @@ function Public.remove_surface(player)
     kick_players_from_surface(car)
 
     local trust_system = IC.get('trust_system')
-    local owner = car.owner
-
-    if owner then
-        owner = game.get_player(owner)
-        if owner and owner.valid then
-            if trust_system[owner.index] then
-                trust_system[owner.index] = nil
-            end
-        end
+    if trust_system[player.index] then
+        trust_system[player.index] = nil
     end
 
     local renders = IC.get('renders')
 
-    if renders[owner.index] then
-        rendering.destroy(renders[owner.index])
-        renders[owner.index] = nil
+    if renders[player.index] then
+        rendering.destroy(renders[player.index])
+        renders[player.index] = nil
     end
 
     local player_gui_data = IC.get('player_gui_data')
-    if player_gui_data[owner.name] then
-        player_gui_data[owner.name] = nil
+    if player_gui_data[player.name] then
+        player_gui_data[player.name] = nil
     end
 
     local players = IC.get('players')
-    if players[owner.index] then
-        players[owner.index] = nil
+    if players[player.index] then
+        players[player.index] = nil
     end
 
     local misc_settings = IC.get('misc_settings')
-    if misc_settings[owner.index] then
-        misc_settings[owner.index] = nil
+    if misc_settings[player.index] then
+        misc_settings[player.index] = nil
     end
+
+    kill_doors(car)
+
+    surfaces[car.saved_entity] = nil
+    cars[car.saved_entity] = nil
 
     local surface_index = car.surface
     local surface = game.surfaces[surface_index]
-    kill_doors(car)
+    if not surface or not surface.valid then
+        return
+    end
+
     for _, tile in pairs(surface.find_tiles_filtered({area = car.area})) do
         surface.set_tiles({{name = 'out-of-map', position = tile.position}}, true)
     end
@@ -787,8 +788,6 @@ function Public.remove_surface(player)
         surface.set_tiles({{name = 'out-of-map', position = {x = p.x - 1, y = p.y}}}, true)
     end
     game.delete_surface(surface)
-    surfaces[car.saved_entity] = nil
-    cars[car.saved_entity] = nil
 end
 
 function Public.kill_car(entity)
@@ -1195,6 +1194,9 @@ function Public.remove_invalid_cars()
     end
     for k, index in pairs(surfaces) do
         local surface = game.surfaces[index]
+        if not validate_entity(surface) then
+            return
+        end
         if not cars[tonumber(surface.name)] then
             game.delete_surface(surface)
             surfaces[k] = nil

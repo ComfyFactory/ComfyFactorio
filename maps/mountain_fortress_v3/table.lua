@@ -190,6 +190,7 @@ function Public.reset_table()
     this.disconnect_wagon = false
     this.offline_players_enabled = true
     this.offline_players = {}
+    this.offline_players_surface_removal = false
     this.collapse_amount = false
     this.collapse_speed = false
     this.y_value_position = 20
@@ -251,9 +252,15 @@ function Public.set(key, value)
     end
 end
 
-function Public.remove(key)
-    if key then
-        this[key] = nil
+function Public.remove(key, sub_key)
+    if key and sub_key then
+        if this[key] and this[key][sub_key] then
+            this[key][sub_key] = nil
+        end
+    elseif key then
+        if this[key] then
+            this[key] = nil
+        end
     end
 end
 

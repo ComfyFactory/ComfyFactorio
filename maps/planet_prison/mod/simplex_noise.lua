@@ -1,7 +1,7 @@
 -- Original implementation taken from here https://github.com/thenumbernine/lua-simplexnoise/blob/master/2d.lua
 
 local Global = require 'utils.global'
-local CommonFunctions = require 'maps.planet_prison.mod.common'
+local CommonFunctions = require 'utils.common'
 
 local Public = {}
 local this = {}

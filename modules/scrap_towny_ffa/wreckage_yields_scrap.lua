@@ -6,10 +6,10 @@ local Scrap = require 'modules.scrap_towny_ffa.scrap'
 -- loot chances and amounts for scrap entities
 
 local entity_loot_chance = {
-    {name = 'advanced-circuit', chance = 5},
+    {name = 'advanced-circuit', chance = 15},
     --{name = "artillery-shell", chance = 1},
-    {name = 'battery', chance = 20},
-    {name = 'cannon-shell', chance = 2},
+    {name = 'battery', chance = 15},
+    {name = 'cannon-shell', chance = 4},
     --{name = "cluster-grenade", chance = 2},
     {name = 'construction-robot', chance = 1},
     {name = 'copper-cable', chance = 250},
@@ -19,9 +19,9 @@ local entity_loot_chance = {
     {name = 'destroyer-capsule', chance = 1},
     {name = 'distractor-capsule', chance = 2},
     {name = 'electric-engine-unit', chance = 2},
-    {name = 'electronic-circuit', chance = 200},
+    {name = 'electronic-circuit', chance = 150},
     {name = 'empty-barrel', chance = 10},
-    {name = 'engine-unit', chance = 4},
+    {name = 'engine-unit', chance = 5},
     {name = 'explosive-cannon-shell', chance = 2},
     --{name = "explosive-rocket", chance = 3},
     --{name = "explosive-uranium-cannon-shell", chance = 1},
@@ -55,15 +55,16 @@ local entity_loot_chance = {
     --{name = "uranium-fuel-cell", chance = 1},
     --{name = "used-up-uranium-fuel-cell", chance = 1},
     {name = 'water-barrel', chance = 10},
-    {name = 'tank', chance = 1},
-    {name = 'car', chance = 1}
+    {name = 'tank', chance = 2},
+    {name = 'car', chance = 3}
 }
 
+-- positive numbers can scale, 0 is disabled, and negative numbers are fixed absolute values
 local entity_loot_amounts = {
-    ['advanced-circuit'] = 2,
+    ['advanced-circuit'] = 6,
     --["artillery-shell"] = 0.3,
     ['battery'] = 2,
-    ['cannon-shell'] = 2,
+    ['cannon-shell'] = 4,
     --["cluster-grenade"] = 0.3,
     ['construction-robot'] = 0.3,
     ['copper-cable'] = 24,
@@ -81,13 +82,13 @@ local entity_loot_amounts = {
     --["explosive-uranium-cannon-shell"] = 2,
     ['explosives'] = 4,
     ['green-wire'] = 8,
-    ['grenade'] = 2,
+    ['grenade'] = 6,
     ['heat-pipe'] = 1,
     ['heavy-oil-barrel'] = 3,
     ['iron-gear-wheel'] = 8,
     ['iron-plate'] = 16,
     ['iron-stick'] = 16,
-    ['land-mine'] = 1,
+    ['land-mine'] = 6,
     ['light-oil-barrel'] = 3,
     ['logistic-robot'] = 0.3,
     ['low-density-structure'] = 0.3,
@@ -97,7 +98,7 @@ local entity_loot_amounts = {
     ['pipe'] = 8,
     ['pipe-to-ground'] = 1,
     ['plastic-bar'] = 4,
-    ['processing-unit'] = 1,
+    ['processing-unit'] = 2,
     ['red-wire'] = 8,
     --["rocket"] = 2,
     --["rocket-control-unit"] = 0.3,
@@ -109,8 +110,8 @@ local entity_loot_amounts = {
     --["uranium-fuel-cell"] = 0.3,
     --["used-up-uranium-fuel-cell"] = 1,
     ['water-barrel'] = 3,
-    ['tank'] = 1,
-    ['car'] = 1
+    ['tank'] = -1,
+    ['car'] = -1
 }
 
 local scrap_raffle = {}
@@ -141,9 +142,16 @@ local function on_player_mined_entity(event)
     local scrap = scrap_raffle[math.random(1, size_of_scrap_raffle)]
 
     local amount_bonus = (game.forces.enemy.evolution_factor * 2) + (game.forces.player.mining_drill_productivity_bonus * 2)
-    local r1 = math.ceil(entity_loot_amounts[scrap] * (0.3 + (amount_bonus * 0.3)))
-    local r2 = math.ceil(entity_loot_amounts[scrap] * (1.7 + (amount_bonus * 1.7)))
-    local amount = math.random(r1, r2)
+    local amount
+    if entity_loot_amounts[scrap] <= 0 then
+        amount = math.abs(entity_loot_amounts[scrap])
+    else
+        local m1 = 0.3 + (amount_bonus * 0.3)
+        local m2 = 1.7 + (amount_bonus * 1.7)
+        local r1 = math.ceil(entity_loot_amounts[scrap] * m1)
+        local r2 = math.ceil(entity_loot_amounts[scrap] * m2)
+        amount = math.random(r1, r2)
+    end
 
     local player = game.players[event.player_index]
     local inserted_count = player.insert({name = scrap, count = amount})

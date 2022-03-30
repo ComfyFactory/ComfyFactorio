@@ -3,7 +3,7 @@ local Global = require 'utils.global'
 local Event = require 'utils.event'
 local Game = require 'utils.game'
 local Server = require 'utils.server'
-local Tabs = require 'comfy_panel.main'
+local ComfyGui = require 'comfy_panel.main'
 local session = require 'utils.datastore.session_data'
 local Config = require 'comfy_panel.config'
 local SpamProtection = require 'utils.spam_protection'
@@ -403,7 +403,7 @@ local function toggle(event)
     if main_frame then
         remove_main_frame(main_frame, left, event.player)
     else
-        Tabs.comfy_panel_clear_gui(event.player)
+        ComfyGui.comfy_panel_clear_gui(event.player)
         draw_main_frame(left, event.player)
     end
 end
@@ -766,21 +766,33 @@ local function player_joined(event)
         return
     end
 
-    if player.gui.top[main_button_name] ~= nil then
-        local frame = player.gui.top[main_frame_name]
-        if frame and frame.valid then
-            local data = Gui.get_data(frame)
-            update_poll_viewer(data)
-        end
+    if ComfyGui.get_mod_gui_top_frame() then
+        ComfyGui.add_mod_button(
+            player,
+            {
+                type = 'sprite-button',
+                name = main_button_name,
+                sprite = 'item/programmable-speaker',
+                tooltip = 'Let your question be heard!'
+            }
+        )
     else
-        local b =
-            player.gui.top.add {
-            type = 'sprite-button',
-            name = main_button_name,
-            sprite = 'item/programmable-speaker',
-            tooltip = 'Let your question be heard!'
-        }
-        b.style.maximal_height = 38
+        if player.gui.top[main_button_name] ~= nil then
+            local frame = player.gui.top[main_frame_name]
+            if frame and frame.valid then
+                local data = Gui.get_data(frame)
+                update_poll_viewer(data)
+            end
+        else
+            local b =
+                player.gui.top.add {
+                type = 'sprite-button',
+                name = main_button_name,
+                sprite = 'item/programmable-speaker',
+                tooltip = 'Let your question be heard!'
+            }
+            b.style.maximal_height = 38
+        end
     end
 end
 

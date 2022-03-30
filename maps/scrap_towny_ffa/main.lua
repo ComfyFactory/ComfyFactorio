@@ -6,6 +6,7 @@ require 'modules.biters_yield_coins'
 require 'modules.scrap_towny_ffa.mining'
 require 'modules.scrap_towny_ffa.on_tick_schedule'
 require 'modules.scrap_towny_ffa.building'
+require 'modules.scrap_towny_ffa.spaceship'
 require 'modules.scrap_towny_ffa.town_center'
 require 'modules.scrap_towny_ffa.market'
 require 'modules.scrap_towny_ffa.slots'
@@ -18,6 +19,8 @@ require 'modules.scrap_towny_ffa.trap'
 require 'modules.scrap_towny_ffa.turrets_drop_ammo'
 require 'modules.scrap_towny_ffa.combat_balance'
 
+local Autostash = require 'modules.autostash'
+local BottomFrame = require 'comfy_panel.bottom_frame'
 local Table = require 'modules.scrap_towny_ffa.table'
 local Nauvis = require 'modules.scrap_towny_ffa.nauvis'
 local Biters = require 'modules.scrap_towny_ffa.biters'
@@ -28,43 +31,91 @@ local Team = require 'modules.scrap_towny_ffa.team'
 local Spawn = require 'modules.scrap_towny_ffa.spawn'
 local Radar = require 'modules.scrap_towny_ffa.limited_radar'
 
-local default_surface = 'nauvis'
+-- for testing purposes only!!!
+local testing_mode = false
+
+-- how long in ticks between spawn and death will be considered spawn kill (10 seconds)
+local max_ticks_between_spawns = 60 * 10
+-- how many players must login before teams are teams_enabled
+local min_players_for_enabling_towns = 0
+
+local function load_buffs(player)
+    if player.force.name ~= 'player' and player.force.name ~= 'rogue' then return end
+    local ffatable = Table.get_table()
+    local player_index = player.index
+    if player.character == nil then return end
+    if ffatable.buffs[player_index] == nil then ffatable.buffs[player_index] = {} end
+    if ffatable.buffs[player_index].character_inventory_slots_bonus ~= nil then
+        player.character.character_inventory_slots_bonus = ffatable.buffs[player_index].character_inventory_slots_bonus
+    end
+    if ffatable.buffs[player_index].character_mining_speed_modifier ~= nil then
+        player.character.character_mining_speed_modifier = ffatable.buffs[player_index].character_mining_speed_modifier
+    end
+    if ffatable.buffs[player_index].character_crafting_speed_modifier ~= nil then
+        player.character.character_crafting_speed_modifier = ffatable.buffs[player_index].character_crafting_speed_modifier
+    end
+end
 
 local function on_player_joined_game(event)
     local ffatable = Table.get_table()
     local player = game.players[event.player_index]
-    local surface = game.surfaces[default_surface]
+    local surface = game.surfaces['nauvis']
 
     player.game_view_settings.show_minimap = false
     player.game_view_settings.show_map_view_options = false
     player.game_view_settings.show_entity_info = true
+    player.map_view_settings = {
+        ["show-logistic-network"] = false,
+        ["show-electric-network"] = false,
+        ["show-turret-range"] = false,
+        ["show-pollution"] = false,
+        ["show-train-station-names"] = false,
+        ["show-player-names"] = false,
+        ["show-networkless-logistic-members"] = false,
+        ["show-non-standard-map-info"] = false
+    }
+    player.show_on_map = false
     --player.game_view_settings.show_side_menu = false
 
     Info.toggle_button(player)
-    Info.show(player)
     Team.set_player_color(player)
     if player.force ~= game.forces.player then
         return
     end
 
-    -- setup outlanders
-    Team.set_player_to_outlander(player)
-
     if player.online_time == 0 then
+        Info.show(player)
+        if testing_mode then
+            ffatable.towns_enabled = true
+        else
+            ffatable.players = ffatable.players + 1
+            if ffatable.players >= min_players_for_enabling_towns then ffatable.towns_enabled = true end
+        end
+
         player.teleport({0, 0}, game.surfaces['limbo'])
-        Team.give_outlander_items(player)
-        Team.give_key(player)
+        Team.set_player_to_outlander(player)
+        Team.give_player_items(player)
+        player.insert{name="coin", count="100"}
+        player.insert{name="stone-furnace", count="1"}
+        Team.give_key(player.index)
+        if (testing_mode == true) then
+            player.cheat_mode = true
+            player.force.research_all_technologies()
+            player.insert{name="coin", count="9900"}
+        end
         -- first time spawn point
-        local spawn_point = Spawn.get_spawn_point(player, surface)
+        local spawn_point = Spawn.get_new_spawn_point(player, surface)
+        ffatable.strikes[player.name] = 0
         Spawn.clear_spawn_point(spawn_point, surface)
+        -- reset cooldown
+        ffatable.cooldowns_town_placement[player.index] = 0
+        ffatable.last_respawn[player.name] = 0
         player.teleport(spawn_point, surface)
         return
     end
+    load_buffs(player)
 
-    if not ffatable.requests[player.index] then
-        return
-    end
-    if ffatable.requests[player.index] ~= 'kill-character' then
+    if not ffatable.requests[player.index] or ffatable.requests[player.index] ~= 'kill-character' then
         return
     end
     if player.character then
@@ -79,39 +130,57 @@ local function on_player_respawned(event)
     local ffatable = Table.get_table()
     local player = game.players[event.player_index]
     local surface = player.surface
+    Team.give_player_items(player)
     if player.force == game.forces['rogue'] then
         Team.set_player_to_outlander(player)
     end
     if player.force == game.forces['player'] then
-        Team.give_key(player)
+        Team.give_key(player.index)
     end
 
-    -- TODO: this needs fixing!
-    -- 5 second cooldown
-    --local last_respawn = ffatable.cooldowns_last_respawn[player.name]
-    --if last_respawn == nil then last_respawn = 0 end
+    -- get_spawn_point will always return a valid spawn
     local spawn_point = Spawn.get_spawn_point(player, surface)
-    -- reset cooldown
-    ffatable.cooldowns_last_respawn[player.name] = game.tick
 
-    player.teleport(surface.find_non_colliding_position('character', spawn_point, 0, 0.5, false), surface)
+    -- reset cooldown
+    ffatable.last_respawn[player.name] = game.tick
+    player.teleport(spawn_point, surface)
+    load_buffs(player)
 end
 
 local function on_player_died(event)
     local ffatable = Table.get_table()
     local player = game.players[event.player_index]
-    ffatable.cooldowns_last_death[player.name] = game.tick
+    if ffatable.strikes[player.name] == nil then ffatable.strikes[player.name] = 0 end
+
+    local ticks_elapsed = game.tick - ffatable.last_respawn[player.name]
+    if ticks_elapsed < max_ticks_between_spawns then
+        ffatable.strikes[player.name] = ffatable.strikes[player.name] + 1
+    else
+        ffatable.strikes[player.name] = 0
+    end
 end
 
 local function on_init()
-    local ffatable = Table.get_table()
+    Autostash.insert_into_furnace(true)
+    Autostash.insert_into_wagon(true)
+    Autostash.bottom_button(true)
+    BottomFrame.reset()
+    BottomFrame.activate_custom_buttons(true)
+
     --log("on_init")
     game.enemy_has_vision_on_land_mines = false
     game.draw_resource_selection = true
     game.disable_tutorial_triggers()
 
-    ffatable.cooldowns_last_respawn = {}
-    ffatable.cooldowns_last_death = {}
+    local ffatable = Table.get_table()
+    ffatable.last_respawn = {}
+    ffatable.last_death = {}
+    ffatable.strikes = {}
+    ffatable.testing_mode = testing_mode
+    ffatable.spawn_point = {}
+    ffatable.buffs = {}
+    ffatable.players = 0
+    ffatable.towns_enabled = true
 
     Nauvis.initialize()
     Team.initialize()
@@ -136,6 +205,8 @@ local function on_nth_tick(event)
     if not tick_actions[seconds] then
         return
     end
+    --game.surfaces['nauvis'].play_sound({path = 'utility/alert_destroyed', volume_modifier = 1})
+    --log('seconds = ' .. seconds)
     tick_actions[seconds]()
 end
 
