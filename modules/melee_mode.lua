@@ -88,8 +88,8 @@ local function change_to_ranged(player)
    if main_inv == nil or gun_inv == nil or ammo_inv == nil then
       return false
    end
-   local gun_moved = try_move_from_main(main_inv, gun_inv, moved.gun)
-   local ammo_moved = try_move_from_main(main_inv, ammo_inv, moved.ammo)
+   try_move_from_main(main_inv, gun_inv, moved.gun)
+   try_move_from_main(main_inv, ammo_inv, moved.ammo)
    state[player.index] = {}
    return true
 end

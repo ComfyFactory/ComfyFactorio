@@ -75,12 +75,12 @@ function Fixed.Init()
     end
 end
 
-local function get_surface_research(index) 
+local function get_surface_research(index)
    return locked_researches[floor_num(index)]
 end
 
 function Fixed.techs_remain(index)
-   local tech = get_surface_research(index) 
+   local tech = get_surface_research(index)
    if tech and game.forces.player.technologies[tech].enabled == false then
       return 1
    end
@@ -103,6 +103,11 @@ function Fixed.room_is_lab(index)
    local tech = get_surface_research(index)
    return tech and game.forces.player.technologies[tech].enabled == false
 end
+
+function Fixed.noop()
+end
+
+Fixed.noop() -- eliminate luacheck warning
 
 -- Variant 2, all research needs unlocking, several can be found on each floor
 -- and the research is semi-randomly distributed. Research packs occur at the
@@ -357,7 +362,7 @@ function Variable.calculate_distribution()
    table.shuffle_table(all_research)
    local technologies = game.forces.player.technologies
    for i = 1, #all_research do
-      v = all_research[i]
+      local v = all_research[i]
       local floor1 = math.random(v.min, v.max)
       local floor2 = math.random(v.min, v.max)
       local res1 = get_research_by_floor(floor1)
@@ -505,4 +510,9 @@ function Variable.room_is_lab(index)
    return rooms_opened(index) >= res[1].room
 end
 
+function Variable.noop()
+end
+Variable.noop() -- eliminate luacheck warning if return Fixed is used
+
+-- return Fixed
 return Variable

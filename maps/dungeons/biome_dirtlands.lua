@@ -53,8 +53,8 @@ end
 
 local function dirtlands(surface, room)
     local dungeontable = DungeonsTable.get_dungeontable()
-    max_spawn = math.floor(dungeontable.depth[surface.index] / 8)
-    max_worm = max_spawn + 1
+    local max_spawn = math.floor(dungeontable.depth[surface.index] / 8)
+    local max_worm = max_spawn + 1
     local path_tile = 'dirt-' .. math_random(1, 3)
     for _, tile in pairs(room.path_tiles) do
         surface.set_tiles({{name = path_tile, position = tile.position}}, true)

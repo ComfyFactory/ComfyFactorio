@@ -1,5 +1,4 @@
 local Event = require 'utils.event'
-local Global = require 'utils.global'
 local Tabs = require 'comfy_panel.main'
 local SpamProtection = require 'utils.spam_protection'
 local Token = require 'utils.token'

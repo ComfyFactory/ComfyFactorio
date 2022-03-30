@@ -363,18 +363,6 @@ end
 --
 -- 1000 science (all types) = 9822 coal, 13492 stone, 48736 copper, 63018 iron
 --                            20         27           98            127 max-stones
-local function get_ore_amount_old(surface_index)
-    local scaling = game.forces.player.mining_drill_productivity_bonus
-    local amount = 5000 * Public.get_dungeon_evolution_factor(surface_index) * (1 + scaling)
-    if amount > 500 then
-        amount = 500
-    end
-    amount = math_random(math_floor(amount * 0.7), math_floor(amount * 1.3))
-    if amount < 1 then
-        amount = 1
-    end
-    return amount
-end
 
 local function get_ore_amount(surface_index)
    local d = DungeonsTable.get_dungeontable()
@@ -440,7 +428,7 @@ function Public.rocky_loot(event)
     end
     local player = game.players[event.player_index]
     local amount = math.ceil(get_ore_amount(player.surface.index))
-    local rock_mining = {}
+    local rock_mining
     local floor = player.surface.index - DungeonsTable.get_dungeontable().original_surface_index;
     if floor < 10 then
        -- early game science uses less copper and more iron/stone

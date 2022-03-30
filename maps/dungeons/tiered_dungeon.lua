@@ -56,11 +56,11 @@ local disabled_for_deconstruction = {
 }
 
 local function enable_hard_rooms(position, surface_index)
-    dungeon_table = DungeonsTable.get_dungeontable()
-    floor = surface_index - dungeon_table.original_surface_index
+    local dungeon_table = DungeonsTable.get_dungeontable()
+    local floor = surface_index - dungeon_table.original_surface_index
     -- can make it out to ~200 before hitting the "must explore more" limit
     -- 140 puts hard rooms halfway between the only dirtlands and the edge
-    floor_mindist = 140 - floor * 10
+    local floor_mindist = 140 - floor * 10
     if floor_mindist < 80 then -- all dirtlands within this
        return true
     end
