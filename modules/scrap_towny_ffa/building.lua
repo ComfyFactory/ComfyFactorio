@@ -300,6 +300,7 @@ local function prevent_entity_in_restricted_zone(event)
     if entity == nil or not entity.valid then
         return
     end
+    local item = event.item
     local name = entity.name
     local surface = entity.surface
     local position = entity.position
@@ -307,9 +308,10 @@ local function prevent_entity_in_restricted_zone(event)
     if Public.in_restricted_zone(surface, position) then
         error = true
         entity.destroy()
-        local item = event.item
         if name ~= 'entity-ghost' and name ~= 'tile-ghost' and item ~= nil then
-            refund_item(event, item.name)
+            if item ~= nil then
+                refund_item(event, item.name)
+            end
         end
     end
     if error == true then
@@ -327,6 +329,7 @@ local function prevent_unconnected_town_entities(event)
     if entity == nil or not entity.valid then
         return
     end
+    local item = event.item
     local name = entity.name
     local surface = entity.surface
     local position = entity.position
@@ -340,7 +343,6 @@ local function prevent_unconnected_town_entities(event)
         if not in_own_town(force, position) and isolated(surface, force, position) and not team_whitelist[name] then
             error = true
             entity.destroy()
-            local item = event.item
             if item ~= nil then
                 refund_item(event, item.name)
             end
@@ -361,6 +363,7 @@ local function prevent_landfill_in_restricted_zone(event)
     if tile == nil or not tile.valid then
         return
     end
+    local item = event.item
     local surface = game.surfaces[event.surface_index]
     local fail = false
     local position
@@ -370,7 +373,9 @@ local function prevent_landfill_in_restricted_zone(event)
         if Public.in_restricted_zone(surface, position) then
             fail = true
             surface.set_tiles({{name = old_tile.name, position = position}}, true)
-            refund_item(event, tile.name)
+            if item ~= nil then
+                refund_item(event, item.name)
+            end
         end
     end
     if fail == true then
@@ -389,6 +394,7 @@ local function prevent_unconnected_town_tiles(event)
     if tile == nil or not tile.valid then
         return
     end
+    local item = event.item
     local surface = game.surfaces[event.surface_index]
     local tiles = event.tiles
     local force
@@ -407,10 +413,9 @@ local function prevent_unconnected_town_tiles(event)
             if not in_own_town(force, position) and isolated(surface, force, position) then
                 fail = true
                 surface.set_tiles({{name = old_tile.name, position = position}}, true)
-                if name == 'stone-path' then
-                    name = 'stone-brick'
+                if item ~= nil then
+                    refund_item(event, item.name)
                 end
-                refund_item(event, name)
             end
         end
     end
@@ -429,6 +434,7 @@ local function prevent_entities_near_towns(event)
     if entity == nil or not entity.valid then
         return
     end
+    local item = event.item
     local name = entity.name
     local surface = entity.surface
     local position = entity.position
@@ -461,7 +467,9 @@ local function prevent_entities_near_towns(event)
             end
             error_floaty(surface, position, "Can't build near town!")
             if name ~= 'entity-ghost' then
-                refund_item(event, event.stack.name)
+                if item ~= nil then
+                    refund_item(event, item.name)
+                end
             end
             return
         end
@@ -474,6 +482,7 @@ local function prevent_tiles_near_towns(event)
     if tile == nil or not tile.valid then
         return
     end
+    local item = event.item
     local surface = game.surfaces[event.surface_index]
     local force_name
     if player_index ~= nil then
@@ -501,7 +510,9 @@ local function prevent_tiles_near_towns(event)
         if Public.near_another_town(force_name, position, surface, 32) == true then
             fail = true
             surface.set_tiles({{name = old_tile.name, position = position}}, true)
-            refund_item(event, tile.name)
+            if item ~= nil then
+                refund_item(event, item.name)
+            end
         end
     end
     if fail == true then

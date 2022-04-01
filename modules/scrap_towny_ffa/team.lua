@@ -958,7 +958,7 @@ local function on_entity_damaged(event)
             -- combat robots
             if cause.type == 'combat-robot' then
                 local owner = cause.last_user
-                if owner ~= nil and owner.type == 'character' and owner.force == game.forces['player]'] then
+                if owner ~= nil and owner.force == game.forces['player]'] then
                     -- set the force of the player to rogue until they die or create a town
                     set_player_to_rogue(owner)
                 end

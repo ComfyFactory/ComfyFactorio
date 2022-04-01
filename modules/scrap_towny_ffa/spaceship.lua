@@ -1,6 +1,7 @@
 local table_insert = table.insert
 
 local Table = require 'modules.scrap_towny_ffa.table'
+local Util = require 'modules.scrap_towny_ffa.util'
 
 local upgrade_functions = {
     -- Upgrade Backpack
@@ -179,8 +180,8 @@ local function refresh_offers(event)
     if market.name ~= 'crash-site-spaceship-market' then
         return
     end
-    local position = market.position
-    local spaceship = ffatable.spaceships[position.x][position.y]
+    local key = Util.position_tostring(market.position)
+    local spaceship = ffatable.spaceships[key]
     if not spaceship then
         return
     end
@@ -197,7 +198,8 @@ local function offer_purchased(event)
     if not upgrade_functions[offer_index] then
         return
     end
-    local spaceship = ffatable.spaceships[market.position.x][market.position.y]
+    local key = Util.position_tostring(market.position)
+    local spaceship = ffatable.spaceships[key]
     if not spaceship then
         return
     end
@@ -243,9 +245,9 @@ end
 
 local function kill_spaceship(entity)
     local ffatable = Table.get_table()
-    local spaceship = ffatable.spaceships[entity.position.x][entity.position.y]
-    if spaceship ~= nil then
-        ffatable.spaceships[entity.position.x][entity.position.y] = nil
+    local key = Util.position_tostring(entity.position)
+    if ffatable.spaceships[key] ~= nil then
+        ffatable.spaceships[key] = nil
     end
 end
 

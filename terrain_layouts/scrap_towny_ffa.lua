@@ -6,6 +6,7 @@ local math_abs = math.abs
 local get_noise = require 'utils.get_noise'
 local Table = require 'modules.scrap_towny_ffa.table'
 local Scrap = require 'modules.scrap_towny_ffa.scrap'
+local Util = require 'modules.scrap_towny_ffa.util'
 require 'modules.no_deconstruction_of_neutral_entities'
 
 local scrap_entities = {
@@ -203,18 +204,17 @@ local function place_scrap(surface, position)
     end
 
     -- place market spaceship
-    if math_random(1, 4096) == 1 then
+    if math_random(1, 2400) == 1 then
         local spaceship = {}
-        if surface.can_place_entity({name = 'crash-site-spaceship-market', position = position, force = 'neutral'}) then
-            spaceship.market = surface.create_entity({name = 'crash-site-spaceship-market', position = position, force = 'neutral'})
+        local center = surface.find_non_colliding_position('crash-site-spaceship-market', position, 128, 0.5)
+        if center ~= nil then
+            spaceship.market = surface.create_entity({name = 'crash-site-spaceship-market', position = center, force = 'neutral'})
             spaceship.market.minable = false
             spaceship.max_health = 300
             spaceship.health = spaceship.max_health
             if spaceship.market and spaceship.market.valid then
-                if ffatable.spaceships[position.x] == nil then
-                    ffatable.spaceships[position.x] = {}
-                end
-                ffatable.spaceships[position.x][position.y] = spaceship
+                local key = Util.position_tostring(spaceship.market.position)
+                ffatable.spaceships[key] = spaceship
             end
         end
         return
