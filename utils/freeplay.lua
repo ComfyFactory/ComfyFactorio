@@ -10,11 +10,13 @@ local this = {
     created_items = {},
     respawn_items = {},
     disabled = false,
+    init_ran = false,
     skip_intro = false,
     chart_distance = 0,
     disable_crashsite = false,
     crashed_ship_items = {},
     crashed_debris_items = {},
+    crashed_ship_parts = {},
     custom_surface_name = nil
 }
 
@@ -63,10 +65,6 @@ local respawn_items = function()
     }
 end
 
-local ship_parts = function()
-    return crash_site.default_ship_parts()
-end
-
 local ship_items = function()
     return {
         ['firearm-magazine'] = 8
@@ -77,6 +75,10 @@ local debris_items = function()
     return {
         ['iron-plate'] = 8
     }
+end
+
+local ship_parts = function()
+    return crash_site.default_ship_parts()
 end
 
 local chart_starting_area = function()
@@ -247,8 +249,14 @@ local freeplay_interface = {
     set_chart_distance = function(value)
         this.chart_distance = tonumber(value) or error('Remote call parameter to freeplay set chart distance must be a number')
     end,
+    get_disable_crashsite = function()
+        return this.disable_crashsite
+    end,
     set_disable_crashsite = function(bool)
         this.disable_crashsite = bool
+    end,
+    get_init_ran = function()
+        return this.init_ran
     end,
     get_ship_items = function()
         return this.crashed_ship_items
@@ -261,6 +269,12 @@ local freeplay_interface = {
     end,
     set_debris_items = function(map)
         this.crashed_debris_items = map or error("Remote call parameter to freeplay set respawn items can't be nil.")
+    end,
+    get_ship_parts = function()
+        return this.crashed_ship_parts
+    end,
+    set_ship_parts = function(parts)
+        this.crashed_ship_parts = parts or error("Remote call parameter to freeplay set ship parts can't be nil.")
     end
 }
 
