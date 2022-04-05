@@ -529,7 +529,7 @@ local function draw_main_frame(player)
         Public.get_main_frame(player).destroy()
     end
 
-    local frame, inside_frame = Public.add_main_frame_with_toolbar(player, 'left', main_frame_name, _, close_button_name, 'Comfy Panel')
+    local frame, inside_frame = Public.add_main_frame_with_toolbar(player, 'left', main_frame_name, nil, close_button_name, 'Comfy Panel')
 
     local tabbed_pane = inside_frame.add({type = 'tabbed-pane', name = 'tabbed_pane'})
 
