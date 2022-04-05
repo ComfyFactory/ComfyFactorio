@@ -14,7 +14,7 @@ local DefenseSystem = require 'maps.mountain_fortress_v3.locomotive.defense_syst
 local Collapse = require 'modules.collapse'
 local Alert = require 'utils.alert'
 local Task = require 'utils.task'
-local Score = require 'comfy_panel.score'
+local Score = require 'utils.gui.score'
 local Token = require 'utils.token'
 -- local HS = require 'maps.mountain_fortress_v3.highscore'
 local Discord = require 'utils.discord'
@@ -1153,8 +1153,7 @@ local function show_mvps(player)
         local miners_label = t.add({type = 'label', caption = 'Miners >> '})
         miners_label.style.font = 'default-listbox'
         miners_label.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-        local miners_label_text =
-            t.add({type = 'label', caption = mvp.mined_entities.name .. ' mined a total of  ' .. mvp.mined_entities.score .. ' entities!'})
+        local miners_label_text = t.add({type = 'label', caption = mvp.mined_entities.name .. ' mined a total of  ' .. mvp.mined_entities.score .. ' entities!'})
         miners_label_text.style.font = 'default-bold'
         miners_label_text.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 

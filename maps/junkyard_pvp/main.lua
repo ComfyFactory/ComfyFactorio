@@ -1,8 +1,8 @@
 --luacheck: ignore
-local Tabs = require 'comfy_panel.main'
+local Gui = require 'utils.gui'
 local Map_score = require 'modules.map_score'
 local Terrain = require 'maps.junkyard_pvp.terrain'
-local Gui = require 'maps.junkyard_pvp.gui'
+local MapGui = require 'maps.junkyard_pvp.gui'
 require 'maps.junkyard_pvp.surrounded_by_worms'
 require 'modules.flashlight_toggle_button'
 require 'modules.rocks_heal_over_time'
@@ -65,7 +65,7 @@ function Public.reset_map()
         Team.set_player_to_spectator(player)
     end
     for _, player in pairs(game.forces.spectator.players) do
-        Gui.rejoin_question(player)
+        MapGui.rejoin_question(player)
     end
 
     set_player_colors()
@@ -119,7 +119,7 @@ local function on_entity_died(event)
             for _, child in pairs(player.gui.left.children) do
                 child.destroy()
             end
-            Tabs.comfy_panel_call_tab(player, 'Map Scores')
+            Gui.call_existing_tab(player, 'Map Scores')
         end
     end
 end
@@ -129,7 +129,7 @@ local function on_player_joined_game(event)
     local surface = game.surfaces[global.active_surface_index]
 
     set_player_colors()
-    Gui.spectate_button(player)
+    MapGui.spectate_button(player)
 
     if player.surface.index ~= global.active_surface_index then
         if player.force.name == 'spectator' then

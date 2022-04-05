@@ -1,7 +1,6 @@
 local Event = require 'utils.event'
 local Gui = require 'utils.gui'
 local Server = require 'utils.server'
-local ComfyGui = require 'comfy_panel.main'
 local SpamProtection = require 'utils.spam_protection'
 
 local main_frame_name = Gui.uid_name()
@@ -33,21 +32,16 @@ local function apply_button_style(button)
 end
 
 local function draw_main_frame(player)
+    Gui.clear_all_active_frames(player)
     local instance = get_instance()
-    local left = player.gui.left
 
-    local frame = left.add {type = 'frame', name = main_frame_name, caption = 'Comfy Servers', direction = 'vertical'}
+    local main_frame, inside_frame = Gui.add_main_frame_with_toolbar(player, 'left', main_frame_name, nil, discard_button_name, 'Comfy Servers')
 
-    local inside_frame =
-        frame.add {
-        type = 'frame',
-        style = 'deep_frame_in_shallow_frame'
-    }
     local inside_frame_style = inside_frame.style
     inside_frame_style.padding = 0
     inside_frame_style.maximal_height = 800
 
-    player.opened = frame
+    player.opened = main_frame
 
     local instances = {}
     local server_instances = Server.get_instances()
@@ -74,7 +68,7 @@ local function draw_main_frame(player)
         for _, i in ipairs(instances) do
             viewer_table.add {
                 type = 'label',
-                caption = 'Name: ' .. i.name,
+                caption = i.name,
                 tooltip = i.connected .. '\nVersion: ' .. i.version,
                 style = 'caption_label'
             }
@@ -111,26 +105,16 @@ local function draw_main_frame(player)
             end
         end
     end
-
-    local bottom_flow = frame.add {type = 'flow', direction = 'horizontal'}
-
-    local left_flow = bottom_flow.add {type = 'flow'}
-    left_flow.style.horizontal_align = 'left'
-    left_flow.style.horizontally_stretchable = true
-
-    local close_button = left_flow.add {type = 'button', name = discard_button_name, caption = 'Close'}
-    apply_button_style(close_button)
-
-    local right_flow = bottom_flow.add {type = 'flow'}
-    right_flow.style.horizontal_align = 'right'
 end
 
 local function toggle(player)
     local left = player.gui.left
     local frame = left[main_frame_name]
+
     if not player or not player.valid or not player.character then
         return
     end
+
     if frame and frame.valid then
         Gui.remove_data_recursively(frame)
         frame.destroy()
@@ -140,9 +124,14 @@ local function toggle(player)
 end
 
 local function create_main_button(event)
+    local multiplayer = game.is_multiplayer()
+    if not multiplayer then
+        return
+    end
+
     local player = game.get_player(event.player_index)
-    if ComfyGui.get_mod_gui_top_frame() then
-        ComfyGui.add_mod_button(
+    if Gui.get_mod_gui_top_frame() then
+        Gui.add_mod_button(
             player,
             {
                 type = 'sprite-button',

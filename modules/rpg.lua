@@ -17,7 +17,7 @@ local math_random = math.random
 local math_sqrt = math.sqrt
 local math_floor = math.floor
 local Global = require 'utils.global'
-local Tabs = require 'comfy_panel.main'
+local Tabs = require 'utils.gui'
 local P = require 'utils.player_modifiers'
 local visuals_delay = 1800
 local level_up_floating_text_color = {0, 205, 0}
@@ -251,7 +251,7 @@ local function draw_gui(player, forced)
         end
     end
 
-    Tabs.comfy_panel_clear_gui(player)
+    Tabs.clear_all_active_frames(player)
 
     if player.gui.left.rpg then
         player.gui.left.rpg.destroy()

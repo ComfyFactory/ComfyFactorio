@@ -17,7 +17,7 @@ local Where = require 'utils.commands.where'
 local Session = require 'utils.datastore.session_data'
 local Jailed = require 'utils.datastore.jail_data'
 local Supporters = require 'utils.datastore.supporters'
-local Tabs = require 'comfy_panel.main'
+local Gui = require 'utils.gui'
 local Global = require 'utils.global'
 local SpamProtection = require 'utils.spam_protection'
 local RPG = require 'modules.rpg.table'
@@ -25,7 +25,7 @@ local Token = require 'utils.token'
 
 local Public = {}
 
-local module_name = 'Players'
+local module_name = Gui.uid_name()
 
 local this = {
     player_list = {
@@ -740,18 +740,11 @@ local function on_gui_click(event)
     local name = element.name
     local player = game.get_player(event.player_index)
 
-    if name == 'tab_' .. module_name then
-        local is_spamming = SpamProtection.is_spamming(player, nil, 'PlayerList tab_Players')
-        if is_spamming then
-            return
-        end
-    end
-
-    local frame = Tabs.comfy_panel_get_active_frame(player)
+    local frame = Gui.get_player_active_frame(player)
     if not frame then
         return
     end
-    if frame.name ~= module_name then
+    if frame.name ~= 'Players' then
         return
     end
 
@@ -900,9 +893,9 @@ end
 
 local function refresh()
     for _, player in pairs(game.connected_players) do
-        local frame = Tabs.comfy_panel_get_active_frame(player)
+        local frame = Gui.get_player_active_frame(player)
         if frame then
-            if frame.name ~= module_name then
+            if frame.name ~= 'Players' then
                 return
             end
             local data = {player = player, frame = frame, sort_by = this.player_list.sorting_method[player.index]}
@@ -938,7 +931,15 @@ function Public.rpg_enabled(value)
     return this.rpg_enabled
 end
 
-Tabs.add_tab_to_gui({name = module_name, id = player_list_show_token, admin = false})
+Gui.add_tab_to_gui({name = module_name, caption = 'Players', id = player_list_show_token, admin = false})
+
+Gui.on_click(
+    module_name,
+    function(event)
+        local player = event.player
+        Gui.reload_active_tab(player)
+    end
+)
 
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_left_game, on_player_left_game)

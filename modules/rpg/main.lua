@@ -3,7 +3,6 @@ local Public = require 'modules.rpg.core'
 local Gui = require 'utils.gui'
 local Event = require 'utils.event'
 local AntiGrief = require 'utils.antigrief'
-local Color = require 'utils.color_presets'
 local SpamProtection = require 'utils.spam_protection'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local Explosives = require 'modules.explosives'
@@ -1153,8 +1152,6 @@ local function on_player_used_capsule(event)
     if not rpg_t.enable_entity_spawn then
         return
     end
-
-    local p = player.print
 
     if rpg_t.last_spawned >= game.tick then
         return Public.cast_spell(player, true)

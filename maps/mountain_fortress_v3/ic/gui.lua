@@ -2,7 +2,7 @@ local ICT = require 'maps.mountain_fortress_v3.ic.table'
 local Functions = require 'maps.mountain_fortress_v3.ic.functions'
 local Color = require 'utils.color_presets'
 local Gui = require 'utils.gui'
-local Tabs = require 'comfy_panel.main'
+local Tabs = require 'utils.gui'
 local Event = require 'utils.event'
 local Token = require 'utils.token'
 local Task = require 'utils.task'
@@ -464,7 +464,7 @@ local function toggle(player, recreate)
     if main_frame then
         remove_main_frame(main_frame)
     else
-        Tabs.comfy_panel_clear_gui(player)
+        Tabs.clear_all_active_frames(player)
         draw_main_frame(player)
     end
 end
@@ -813,10 +813,7 @@ Gui.on_click(
 
         if not misc_settings[player.index].final_warning then
             misc_settings[player.index].final_warning = true
-            player.print(
-                '[IC] WARNING! WARNING WARNING! Pressing the save button ONE MORE TIME will DELETE your surface. This action is irreversible!',
-                Color.red
-            )
+            player.print('[IC] WARNING! WARNING WARNING! Pressing the save button ONE MORE TIME will DELETE your surface. This action is irreversible!', Color.red)
             Task.set_timeout_in_ticks(600, clear_misc_settings, {player_index = player.index})
             return
         end

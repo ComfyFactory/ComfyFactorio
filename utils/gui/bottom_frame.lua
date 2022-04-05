@@ -1,7 +1,6 @@
 local Misc = require 'utils.commands.misc'
 local Event = require 'utils.event'
 local Global = require 'utils.global'
-local ComfyGui = require 'comfy_panel.main'
 local Gui = require 'utils.gui'
 local SpamProtection = require 'utils.spam_protection'
 
@@ -288,6 +287,6 @@ Event.add(
 
 Public.bottom_guis_frame = bottom_guis_frame
 Public.set_location = set_location
-ComfyGui.screen_to_bypass(bottom_guis_frame)
+Gui.screen_to_bypass(bottom_guis_frame)
 
 return Public

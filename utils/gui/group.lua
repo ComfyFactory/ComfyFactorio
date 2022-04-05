@@ -1,12 +1,12 @@
 -- this script adds a group button to create groups for your players --
 
-local Tabs = require 'comfy_panel.main'
+local Gui = require 'utils.gui'
 local Global = require 'utils.global'
 local SpamProtection = require 'utils.spam_protection'
 local Event = require 'utils.event'
 local Token = require 'utils.token'
 
-local module_name = 'Groups'
+local module_name = Gui.uid_name()
 
 local this = {
     player_group = {},
@@ -154,7 +154,7 @@ local build_group_gui_token = Token.register(build_group_gui)
 
 local function refresh_gui()
     for _, p in pairs(game.connected_players) do
-        local frame = Tabs.comfy_panel_get_active_frame(p)
+        local frame = Gui.get_player_active_frame(p)
         if frame then
             if frame.name == module_name then
                 local new_group_name = frame.frame2.group_table.new_group_name.text
@@ -171,7 +171,7 @@ local function refresh_gui()
                 local data = {player = p, frame = frame}
                 build_group_gui(data)
 
-                frame = Tabs.comfy_panel_get_active_frame(p)
+                frame = Gui.get_player_active_frame(p)
                 frame.frame2.group_table.new_group_name.text = new_group_name
                 frame.frame2.group_table.new_group_description.text = new_group_description
             end
@@ -235,18 +235,11 @@ local function on_gui_click(event)
 
     local name = element.name
 
-    if name and name == 'tab_' .. module_name then
-        local is_spamming = SpamProtection.is_spamming(player, nil, 'Groups tab_Groups')
-        if is_spamming then
-            return
-        end
-    end
-
-    local frame = Tabs.comfy_panel_get_active_frame(player)
+    local frame = Gui.get_player_active_frame(player)
     if not frame then
         return
     end
-    if frame.name ~= module_name then
+    if frame.name ~= 'Groups' then
         return
     end
 
@@ -380,7 +373,15 @@ function Public.reset_groups()
     this.tag_groups = {}
 end
 
-Tabs.add_tab_to_gui({name = module_name, id = build_group_gui_token, admin = false})
+Gui.add_tab_to_gui({name = module_name, caption = 'Groups', id = build_group_gui_token, admin = false})
+
+Gui.on_click(
+    module_name,
+    function(event)
+        local player = event.player
+        Gui.reload_active_tab(player)
+    end
+)
 
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)

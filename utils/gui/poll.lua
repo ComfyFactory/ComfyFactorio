@@ -3,9 +3,8 @@ local Global = require 'utils.global'
 local Event = require 'utils.event'
 local Game = require 'utils.game'
 local Server = require 'utils.server'
-local ComfyGui = require 'comfy_panel.main'
 local session = require 'utils.datastore.session_data'
-local Config = require 'comfy_panel.config'
+local Config = require 'utils.gui.config'
 local SpamProtection = require 'utils.spam_protection'
 
 local Class = {}
@@ -293,11 +292,11 @@ local function update_poll_viewer(data)
     redraw_poll_viewer_content(data)
 end
 
-local function draw_main_frame(left, player)
+local function draw_main_frame(_, player)
     local trusted = session.get_trusted_table()
-    local frame = left.add {type = 'frame', name = main_frame_name, caption = 'Polls', direction = 'vertical'}
+    local main_frame, inside_frame = Gui.add_main_frame_with_toolbar(player, 'left', main_frame_name, nil, main_button_name, 'Polls')
 
-    local poll_viewer_top_flow = frame.add {type = 'table', column_count = 5}
+    local poll_viewer_top_flow = inside_frame.add {type = 'table', column_count = 5}
     poll_viewer_top_flow.style.horizontal_spacing = 0
 
     local back_button = poll_viewer_top_flow.add {type = 'button', name = poll_view_back_name, caption = '◀'}
@@ -314,9 +313,9 @@ local function draw_main_frame(left, player)
 
     local remaining_time_label = poll_viewer_top_flow.add {type = 'label'}
 
-    local poll_viewer_content = frame.add {type = 'scroll-pane'}
+    local poll_viewer_content = inside_frame.add {type = 'scroll-pane'}
     poll_viewer_content.style.maximal_height = 480
-    poll_viewer_content.style.width = 295
+    poll_viewer_content.style.width = 274
 
     local poll_index = player_poll_index[player.index] or #polls
 
@@ -329,27 +328,24 @@ local function draw_main_frame(left, player)
         poll_index = poll_index
     }
 
-    Gui.set_data(frame, data)
+    Gui.set_data(main_frame, data)
     Gui.set_data(back_button, data)
     Gui.set_data(forward_button, data)
 
     update_poll_viewer(data)
 
-    local bottom_flow = frame.add {type = 'flow', direction = 'horizontal'}
+    local bottom_flow = inside_frame.add {type = 'flow', direction = 'horizontal'}
 
     local left_flow = bottom_flow.add {type = 'flow'}
     left_flow.style.horizontal_align = 'left'
     left_flow.style.horizontally_stretchable = true
 
-    local close_button = left_flow.add {type = 'button', name = main_button_name, caption = 'Close'}
-    apply_button_style(close_button)
-
     local right_flow = bottom_flow.add {type = 'flow'}
     right_flow.style.horizontal_align = 'right'
 
-    local comfy_panel_config = Config.get('gui_config')
+    local config = Config.get('gui_config')
 
-    if (trusted[player.name] or player.admin) or comfy_panel_config.poll_trusted == false then
+    if (trusted[player.name] or player.admin) or config.poll_trusted == false then
         local create_poll_button = right_flow.add {type = 'button', name = create_poll_button_name, caption = 'Create Poll'}
         apply_button_style(create_poll_button)
     else
@@ -403,7 +399,7 @@ local function toggle(event)
     if main_frame then
         remove_main_frame(main_frame, left, event.player)
     else
-        ComfyGui.comfy_panel_clear_gui(event.player)
+        Gui.clear_all_active_frames(event.player)
         draw_main_frame(left, event.player)
     end
 end
@@ -420,7 +416,7 @@ local function update_duration(slider)
     if value == 0 then
         label.caption = 'Endless Poll.'
     else
-        label.caption = value * duration_step .. ' seconds.'
+        label.caption = value * duration_step .. ' sec.'
     end
 end
 
@@ -551,6 +547,7 @@ local function draw_create_poll_frame(parent, player, previous_data)
     local scroll_pane = frame.add {type = 'scroll-pane', vertical_scroll_policy = 'always'}
     scroll_pane.style.maximal_height = 250
     scroll_pane.style.maximal_width = 300
+    scroll_pane.style.padding = 3
 
     local grid = scroll_pane.add {type = 'table', column_count = 3}
 
@@ -766,8 +763,8 @@ local function player_joined(event)
         return
     end
 
-    if ComfyGui.get_mod_gui_top_frame() then
-        ComfyGui.add_mod_button(
+    if Gui.get_mod_gui_top_frame() then
+        Gui.add_mod_button(
             player,
             {
                 type = 'sprite-button',
@@ -936,6 +933,10 @@ Gui.on_text_changed(
         end
 
         if textfield and textfield.valid then
+            if string.len(textfield.text) >= 50 then
+                textfield.text = ''
+                return
+            end
             data.question = textfield.text
         end
     end
@@ -952,6 +953,10 @@ Gui.on_text_changed(
         end
 
         if textfield and textfield.valid then
+            if string.len(textfield.text) >= 50 then
+                textfield.text = ''
+                return
+            end
             data.answers[data.count].text = textfield.text
         end
     end
