@@ -69,8 +69,7 @@ function Public.main_gui(player, text)
         inside_table.add(
         {
             type = 'label',
-            caption = 'We have played for ' ..
-                Server.format_time(game.ticks_played) .. ' now.\nIf you want to take a quick break,\nplease vote to pause the waves for 5 minutes.'
+            caption = 'We have played for ' .. Server.format_time(game.ticks_played) .. ' now.\nIf you want to take a quick break,\nplease vote to pause the waves for 5 minutes.'
         }
     )
     local info_sub_style = info_sub.style
@@ -197,6 +196,10 @@ Event.on_nth_tick(
     216000, -- 1 hour
     function()
         if game.ticks_played < 100 then
+            return
+        end
+
+        if Server.format_time(game.ticks_played) == 0 then
             return
         end
 

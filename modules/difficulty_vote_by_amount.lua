@@ -1,10 +1,16 @@
 local Event = require 'utils.event'
+local Gui = require 'utils.gui'
 local Server = require 'utils.server'
 local Global = require 'utils.global'
 local SpamProtection = require 'utils.spam_protection'
 
 local max = math.max
 local round = math.round
+
+local main_frame_name = Gui.uid_name()
+local selection_button_name = Gui.uid_name()
+local close_main_frame = Gui.uid_name()
+local top_button_name = Gui.uid_name()
 
 local this = {
     difficulties = {
@@ -64,21 +70,29 @@ Global.register(
     end
 )
 
+local function clear_main_frame(player)
+    local screen = player.gui.center
+    if screen[main_frame_name] and screen[main_frame_name].valid then
+        screen[main_frame_name].destroy()
+    end
+end
+
 function Public.difficulty_gui()
     local tooltip = 'Current difficulty of the map is ' .. this.difficulties[this.difficulty_vote_index].name .. '.'
 
     for _, player in pairs(game.connected_players) do
-        if player.gui.top['difficulty_gui'] then
-            player.gui.top['difficulty_gui'].caption = this.difficulties[this.difficulty_vote_index].name
-            player.gui.top['difficulty_gui'].tooltip = this.button_tooltip or tooltip
-            player.gui.top['difficulty_gui'].style.font_color = this.difficulties[this.difficulty_vote_index].print_color
+        local top = player.gui.top
+        if top[top_button_name] then
+            top[top_button_name].caption = this.difficulties[this.difficulty_vote_index].name
+            top[top_button_name].tooltip = this.button_tooltip or tooltip
+            top[top_button_name].style.font_color = this.difficulties[this.difficulty_vote_index].print_color
         else
             local b =
-                player.gui.top.add {
+                top.add {
                 type = 'button',
                 caption = this.difficulties[this.difficulty_vote_index].name,
                 tooltip = tooltip,
-                name = 'difficulty_gui'
+                name = top_button_name
             }
             b.style.font = 'heading-2'
             b.style.font_color = this.difficulties[this.difficulty_vote_index].print_color
@@ -130,10 +144,10 @@ local function highest_count(tbl)
 end
 
 local function poll_difficulty(player)
-    if player.gui.center['difficulty_poll'] then
-        player.gui.center['difficulty_poll'].destroy()
-        return
+    if player.gui.center[main_frame_name] then
+        clear_main_frame(player)
     end
+
     if game.tick > this.difficulty_poll_closing_timeout then
         if player.online_time ~= 0 then
             local t = math.abs(math.floor((this.difficulty_poll_closing_timeout - game.tick) / 3600))
@@ -148,32 +162,49 @@ local function poll_difficulty(player)
         return
     end
 
-    local frame =
-        player.gui.center.add {
-        type = 'frame',
-        caption = 'Vote difficulty:',
-        name = 'difficulty_poll',
-        direction = 'vertical'
-    }
+    local _, inside_frame = Gui.add_main_frame_with_toolbar(player, 'center', main_frame_name, nil, close_main_frame, 'Difficulty')
+
     for i = 1, #this.difficulties, 1 do
-        local b = frame.add({type = 'button', name = tostring(i), caption = this.difficulties[i].name})
+        local button_flow =
+            inside_frame.add {
+            type = 'flow',
+            name = tostring(i)
+        }
+        local b = button_flow.add({type = 'button', name = selection_button_name, caption = this.difficulties[i].name})
         b.style.font_color = this.difficulties[i].color
         b.style.font = 'heading-2'
         b.style.minimal_width = 160
         b.tooltip = this.tooltip[i]
     end
-    frame.add({type = 'label', caption = '- - - - - - - - - - - - - - - - - -'})
+
+    local label_flow =
+        inside_frame.add {
+        type = 'flow'
+    }
+
+    label_flow.add({type = 'label', caption = '- - - - - - - - - - - - - - - - - -'})
+
+    label_flow.style.horizontal_align = 'center'
+    label_flow.style.horizontally_stretchable = true
+
+    local timeleft_flow =
+        inside_frame.add {
+        type = 'flow'
+    }
+    timeleft_flow.style.horizontal_align = 'center'
+    timeleft_flow.style.horizontally_stretchable = true
+
     local b =
-        frame.add(
+        timeleft_flow.add(
         {
             type = 'button',
-            name = 'close',
-            caption = 'Close (' .. math.floor((this.difficulty_poll_closing_timeout - game.tick) / 3600) .. ' minutes left)'
+            caption = math.floor((this.difficulty_poll_closing_timeout - game.tick) / 3600) .. ' minutes left.'
         }
     )
     b.style.font_color = {r = 0.66, g = 0.0, b = 0.66}
     b.style.font = 'heading-3'
     b.style.minimal_width = 96
+    b.enabled = false
 end
 
 local function set_difficulty()
@@ -200,8 +231,8 @@ function Public.reset_difficulty_poll(tbl)
         this.difficulty_player_votes = {}
         this.difficulty_poll_closing_timeout = tbl.difficulty_poll_closing_timeout or game.tick + 54000
         for _, p in pairs(game.connected_players) do
-            if p.gui.center['difficulty_poll'] then
-                p.gui.center['difficulty_poll'].destroy()
+            if p.gui.center[main_frame_name] then
+                clear_main_frame(p)
             end
             poll_difficulty(p)
         end
@@ -215,8 +246,8 @@ function Public.reset_difficulty_poll(tbl)
         this.difficulty_player_votes = {}
         this.difficulty_poll_closing_timeout = game.tick + 54000
         for _, p in pairs(game.connected_players) do
-            if p.gui.center['difficulty_poll'] then
-                p.gui.center['difficulty_poll'].destroy()
+            if p.gui.center[main_frame_name] then
+                clear_main_frame(p)
             end
             poll_difficulty(p)
         end
@@ -228,15 +259,13 @@ function Public.reset_difficulty_poll(tbl)
 end
 
 local function on_player_joined_game(event)
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
     if game.tick < this.difficulty_poll_closing_timeout then
         if not this.difficulty_player_votes[player.name] then
             poll_difficulty(player)
         end
     else
-        if player.gui.center['difficulty_poll'] then
-            player.gui.center['difficulty_poll'].destroy()
-        end
+        clear_main_frame(player)
     end
     Public.difficulty_gui()
 end
@@ -245,7 +274,7 @@ local function on_player_left_game(event)
     if game.tick > this.difficulty_poll_closing_timeout then
         return
     end
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
     if not this.difficulty_player_votes[player.name] then
         return
     end
@@ -257,73 +286,6 @@ local function on_player_left_game(event)
     this.difficulty_player_votes[player.name] = nil
     set_difficulty()
     Public.difficulty_gui()
-end
-
-local function on_gui_click(event)
-    if not event then
-        return
-    end
-    local player = game.players[event.player_index]
-
-    if not event.element then
-        return
-    end
-    if not event.element.valid then
-        return
-    end
-
-    if event.element.name == 'difficulty_gui' then
-        local is_spamming = SpamProtection.is_spamming(player, nil, 'Difficulty Vote Gui Click')
-        if is_spamming then
-            return
-        end
-        poll_difficulty(player)
-        return
-    end
-    if event.element.type ~= 'button' then
-        return
-    end
-    if event.element.parent.name ~= 'difficulty_poll' then
-        return
-    end
-    if event.element.name == 'close' then
-        event.element.parent.destroy()
-        return
-    end
-    if game.tick > this.difficulty_poll_closing_timeout then
-        event.element.parent.destroy()
-        return
-    end
-
-    local is_spamming = SpamProtection.is_spamming(player, nil, 'Difficulty Gui No Func')
-    if is_spamming then
-        return
-    end
-
-    local i = tonumber(event.element.name)
-
-    if this.difficulty_player_votes[player.name] and this.difficulty_player_votes[player.name].index == i then
-        player.print('You have already voted for ' .. this.difficulties[i].name .. '.', this.difficulties[i].print_color)
-        return event.element.parent.destroy()
-    end
-
-    if this.difficulty_player_votes[player.name] then
-        local index = this.difficulty_player_votes[player.name].index
-        this.difficulties[index].count = this.difficulties[index].count - 1
-        if this.difficulties[index].count <= 0 then
-            this.difficulties[index].count = 0
-        end
-    end
-
-    this.difficulties[i].count = this.difficulties[i].count + 1
-    this.difficulty_player_votes[player.name] = {voted = true, index = i}
-
-    set_difficulty()
-    Public.difficulty_gui()
-    event.element.parent.destroy()
-    local message = '*** ' .. player.name .. ' has voted for ' .. this.difficulties[i].name .. ' difficulty! ***'
-    game.print(message, this.difficulties[i].print_color)
-    Server.to_discord_embed(message)
 end
 
 function Public.set_tooltip(...)
@@ -358,9 +320,94 @@ function Public.get(key)
     end
 end
 
+Gui.on_click(
+    selection_button_name,
+    function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Poll difficulty selection frame name')
+        if is_spamming then
+            return
+        end
+        local element = event.element
+        if not element or not element.valid then
+            return
+        end
+
+        local player = event.player
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        local i = tonumber(element.parent.name)
+
+        if this.difficulty_player_votes[player.name] and this.difficulty_player_votes[player.name].index == i then
+            player.print('You have already voted for ' .. this.difficulties[i].name .. '.', this.difficulties[i].print_color)
+            clear_main_frame(player)
+            return
+        end
+
+        if this.difficulty_player_votes[player.name] then
+            local index = this.difficulty_player_votes[player.name].index
+            this.difficulties[index].count = this.difficulties[index].count - 1
+            if this.difficulties[index].count <= 0 then
+                this.difficulties[index].count = 0
+            end
+        end
+
+        this.difficulties[i].count = this.difficulties[i].count + 1
+        this.difficulty_player_votes[player.name] = {voted = true, index = i}
+
+        set_difficulty()
+        Public.difficulty_gui()
+        clear_main_frame(player)
+        local message = '*** ' .. player.name .. ' has voted for ' .. this.difficulties[i].name .. ' difficulty! ***'
+        game.print(message, this.difficulties[i].print_color)
+        Server.to_discord_embed(message)
+    end
+)
+
+Gui.on_click(
+    top_button_name,
+    function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Poll difficulty top button')
+        if is_spamming then
+            return
+        end
+        local player = event.player
+        if not player or not player.valid or not player.character then
+            return
+        end
+        if game.tick > this.difficulty_poll_closing_timeout then
+            clear_main_frame(player)
+            return
+        end
+        local screen = player.gui.center
+        if screen[main_frame_name] and screen[main_frame_name].valid then
+            clear_main_frame(player)
+        else
+            poll_difficulty(player)
+        end
+    end
+)
+
+Gui.on_click(
+    close_main_frame,
+    function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Poll difficulty close button')
+        if is_spamming then
+            return
+        end
+        local player = event.player
+        if not player or not player.valid or not player.character then
+            return
+        end
+        clear_main_frame(player)
+    end
+)
+
 Event.add(defines.events.on_player_created, on_player_joined_game)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_left_game, on_player_left_game)
-Event.add(defines.events.on_gui_click, on_gui_click)
+
+Public.top_button_name = top_button_name
 
 return Public

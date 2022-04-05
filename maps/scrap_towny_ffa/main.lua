@@ -20,7 +20,7 @@ require 'modules.scrap_towny_ffa.turrets_drop_ammo'
 require 'modules.scrap_towny_ffa.combat_balance'
 
 local Autostash = require 'modules.autostash'
-local BottomFrame = require 'comfy_panel.bottom_frame'
+local BottomFrame = require 'utils.gui.bottom_frame'
 local Table = require 'modules.scrap_towny_ffa.table'
 local Nauvis = require 'modules.scrap_towny_ffa.nauvis'
 local Biters = require 'modules.scrap_towny_ffa.biters'
@@ -40,11 +40,17 @@ local max_ticks_between_spawns = 60 * 10
 local min_players_for_enabling_towns = 0
 
 local function load_buffs(player)
-    if player.force.name ~= 'player' and player.force.name ~= 'rogue' then return end
+    if player.force.name ~= 'player' and player.force.name ~= 'rogue' then
+        return
+    end
     local ffatable = Table.get_table()
     local player_index = player.index
-    if player.character == nil then return end
-    if ffatable.buffs[player_index] == nil then ffatable.buffs[player_index] = {} end
+    if player.character == nil then
+        return
+    end
+    if ffatable.buffs[player_index] == nil then
+        ffatable.buffs[player_index] = {}
+    end
     if ffatable.buffs[player_index].character_inventory_slots_bonus ~= nil then
         player.character.character_inventory_slots_bonus = ffatable.buffs[player_index].character_inventory_slots_bonus
     end
@@ -65,14 +71,14 @@ local function on_player_joined_game(event)
     player.game_view_settings.show_map_view_options = false
     player.game_view_settings.show_entity_info = true
     player.map_view_settings = {
-        ["show-logistic-network"] = false,
-        ["show-electric-network"] = false,
-        ["show-turret-range"] = false,
-        ["show-pollution"] = false,
-        ["show-train-station-names"] = false,
-        ["show-player-names"] = false,
-        ["show-networkless-logistic-members"] = false,
-        ["show-non-standard-map-info"] = false
+        ['show-logistic-network'] = false,
+        ['show-electric-network'] = false,
+        ['show-turret-range'] = false,
+        ['show-pollution'] = false,
+        ['show-train-station-names'] = false,
+        ['show-player-names'] = false,
+        ['show-networkless-logistic-members'] = false,
+        ['show-non-standard-map-info'] = false
     }
     player.show_on_map = false
     --player.game_view_settings.show_side_menu = false
@@ -89,19 +95,21 @@ local function on_player_joined_game(event)
             ffatable.towns_enabled = true
         else
             ffatable.players = ffatable.players + 1
-            if ffatable.players >= min_players_for_enabling_towns then ffatable.towns_enabled = true end
+            if ffatable.players >= min_players_for_enabling_towns then
+                ffatable.towns_enabled = true
+            end
         end
 
         player.teleport({0, 0}, game.surfaces['limbo'])
         Team.set_player_to_outlander(player)
         Team.give_player_items(player)
-        player.insert{name="coin", count="100"}
-        player.insert{name="stone-furnace", count="1"}
+        player.insert {name = 'coin', count = '100'}
+        player.insert {name = 'stone-furnace', count = '1'}
         Team.give_key(player.index)
         if (testing_mode == true) then
             player.cheat_mode = true
             player.force.research_all_technologies()
-            player.insert{name="coin", count="9900"}
+            player.insert {name = 'coin', count = '9900'}
         end
         -- first time spawn point
         local spawn_point = Spawn.get_new_spawn_point(player, surface)
@@ -150,7 +158,9 @@ end
 local function on_player_died(event)
     local ffatable = Table.get_table()
     local player = game.players[event.player_index]
-    if ffatable.strikes[player.name] == nil then ffatable.strikes[player.name] = 0 end
+    if ffatable.strikes[player.name] == nil then
+        ffatable.strikes[player.name] = 0
+    end
 
     local ticks_elapsed = game.tick - ffatable.last_respawn[player.name]
     if ticks_elapsed < max_ticks_between_spawns then

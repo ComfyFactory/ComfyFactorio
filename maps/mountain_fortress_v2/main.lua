@@ -7,8 +7,8 @@ local darkness = false
 require 'functions.soft_reset'
 require 'functions.basic_markets'
 
-local ComfyPanel = require 'comfy_panel.main'
-local Map_score = require 'comfy_panel.map_score'
+local Gui = require 'utils.gui'
+local Map_score = require 'utils.gui.map_score'
 local Collapse = require 'modules.collapse'
 local RPG = require 'modules.rpg'
 require 'modules.wave_defense.main'
@@ -54,7 +54,7 @@ local function game_over()
     global.game_reset_tick = game.tick + 1800
     for _, player in pairs(game.connected_players) do
         player.play_sound {path = 'utility/game_lost', volume_modifier = 0.80}
-        ComfyPanel.comfy_panel_call_tab(player, 'Map Scores')
+        Gui.call_existing_tab(player, 'Map Scores')
     end
 end
 

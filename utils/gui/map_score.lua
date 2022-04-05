@@ -1,7 +1,8 @@
-local Tabs = require 'comfy_panel.main'
+local Gui = require 'utils.gui'
+local Event = require 'utils.event'
 local Token = require 'utils.token'
 
-local module_name = 'Map Scores'
+local module_name = Gui.uid_name()
 
 local Public = {}
 
@@ -100,9 +101,16 @@ local function on_init()
     }
 end
 
-Tabs.add_tab_to_gui({name = module_name, id = score_list_token, admin = false})
+Gui.add_tab_to_gui({name = module_name, caption = 'Map Scores', id = score_list_token, admin = false})
 
-local event = require 'utils.event'
-event.on_init(on_init)
+Gui.on_click(
+    module_name,
+    function(event)
+        local player = event.player
+        Gui.reload_active_tab(player)
+    end
+)
+
+Event.on_init(on_init)
 
 return Public

@@ -157,7 +157,6 @@ local item_worths = {
     ['explosive-uranium-cannon-shell'] = 64,
     ['rocket'] = 8,
     ['explosive-rocket'] = 8,
-    ['atomic-bomb'] = 16384,
     ['flamethrower-ammo'] = 32,
     ['grenade'] = 16,
     ['cluster-grenade'] = 64,

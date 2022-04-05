@@ -3,6 +3,7 @@ local RPG = require 'modules.rpg.main'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local IC_Gui = require 'maps.mountain_fortress_v3.ic.gui'
 local IC_Minimap = require 'maps.mountain_fortress_v3.ic.minimap'
+local Difficulty = require 'modules.difficulty_vote_by_amount'
 local Gui = require 'utils.gui'
 local SpamProtection = require 'utils.spam_protection'
 
@@ -195,7 +196,7 @@ local function on_gui_click(event)
         if player.gui.top[main_frame_name] then
             local info = player.gui.top[main_frame_name]
             local wd = player.gui.top['wave_defense']
-            local diff = player.gui.top['difficulty_gui']
+            local diff = player.gui.top[Difficulty.top_button_name]
 
             if info and info.visible then
                 if wd then
@@ -256,7 +257,7 @@ local function on_player_changed_surface(event)
     local rpg_b = player.gui.top[rpg_button]
     local rpg_f = player.gui.screen[rpg_frame]
     local rpg_s = player.gui.screen[rpg_settings]
-    local diff = player.gui.top['difficulty_gui']
+    local diff = player.gui.top[Difficulty.top_button_name]
     local charging = player.gui.top['charging_station']
     local frame = player.gui.top[main_frame_name]
     local spell_gui_frame_name = RPG.spell_gui_frame_name
@@ -356,7 +357,7 @@ local function enable_guis(event)
     local info = player.gui.top[main_button_name]
     local wd = player.gui.top['wave_defense']
     local rpg_b = player.gui.top[rpg_button]
-    local diff = player.gui.top['difficulty_gui']
+    local diff = player.gui.top[Difficulty.top_button_name]
     local charging = player.gui.top['charging_station']
 
     IC_Gui.remove_toolbar(player)
@@ -437,8 +438,7 @@ function Public.update_gui(player)
     gui.landmine.caption = ' [img=entity.land-mine]: ' .. format_number(upgrades.landmine.built, true) .. ' / ' .. format_number(upgrades.landmine.limit, true)
     gui.landmine.tooltip = ({'gui.land_mine_placed'})
 
-    gui.flame_turret.caption =
-        ' [img=entity.flamethrower-turret]: ' .. format_number(upgrades.flame_turret.built, true) .. ' / ' .. format_number(upgrades.flame_turret.limit, true)
+    gui.flame_turret.caption = ' [img=entity.flamethrower-turret]: ' .. format_number(upgrades.flame_turret.built, true) .. ' / ' .. format_number(upgrades.flame_turret.limit, true)
     gui.flame_turret.tooltip = ({'gui.flamethrowers_placed'})
 
     gui.train_upgrades.caption = ' [img=entity.locomotive]: ' .. format_number(train_upgrades, true)

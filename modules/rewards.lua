@@ -5,7 +5,7 @@
 local Event = require 'utils.event'
 local Token = require 'utils.token'
 local Task = require 'utils.task'
-local Score = require 'comfy_panel.score'
+local Score = require 'utils.gui.score'
 local floor = math.floor
 local sqrt = math.sqrt
 local insert = table.insert
@@ -197,14 +197,10 @@ local function reward_messages(data)
     end
     local print_text = ''
 
-    player.surface.create_entity(
-        {name = 'flying-text', position = {player.position.x, player.position.y}, text = 'Reached Combat Level: ' .. data.next_level, color = {r = 0.2, g = 1.0, b = 0.1}}
-    )
+    player.surface.create_entity({name = 'flying-text', position = {player.position.x, player.position.y}, text = 'Reached Combat Level: ' .. data.next_level, color = {r = 0.2, g = 1.0, b = 0.1}})
     -- Loop through all of the rewards for this level and print out flying text
     for i = 1, #item_rewards, 1 do
-        player.surface.create_entity(
-            {name = 'flying-text', position = {player.position.x, player.position.y + (i * 0.5)}, text = item_rewards[i].text, color = {r = 1.0, g = 1.0, b = 1.0}}
-        )
+        player.surface.create_entity({name = 'flying-text', position = {player.position.x, player.position.y + (i * 0.5)}, text = item_rewards[i].text, color = {r = 1.0, g = 1.0, b = 1.0}})
         if i > 1 then
             print_text = item_rewards[i].text .. ' ' .. print_text
         else
