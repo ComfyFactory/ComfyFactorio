@@ -533,10 +533,12 @@ Public.magic_item_crafting_callback =
         local force = game.forces.player
 
         local tech = callback_data.tech
-        if tech then
-            if not force.technologies[tech].researched then
-                entity.destroy()
-                return
+        if not callback_data.testing then
+            if tech then
+                if not force.technologies[tech].researched then
+                    entity.destroy()
+                    return
+                end
             end
         end
 
@@ -603,11 +605,13 @@ Public.magic_item_crafting_callback_weighted =
         local force = game.forces.player
 
         local tech = stack.tech
-        if tech then
-            if force.technologies[tech] then
-                if not force.technologies[tech].researched then
-                    entity.destroy()
-                    return
+        if not callback_data.testing then
+            if tech then
+                if force.technologies[tech] then
+                    if not force.technologies[tech].researched then
+                        entity.destroy()
+                        return
+                    end
                 end
             end
         end

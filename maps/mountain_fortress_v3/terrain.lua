@@ -315,14 +315,8 @@ local function wall(p, data)
                         if not alert_zone_1 then
                             local x_min = -WPT.level_width / 2
                             local x_max = WPT.level_width / 2
-                            WPT.set(
-                                'zone1_beam1',
-                                surface.create_entity({name = 'electric-beam', position = {x_min, p.y}, source = {x_min, p.y}, target = {x_max, p.y}})
-                            )
-                            WPT.set(
-                                'zone1_beam2',
-                                surface.create_entity({name = 'electric-beam', position = {x_min, p.y}, source = {x_min, p.y}, target = {x_max, p.y}})
-                            )
+                            WPT.set('zone1_beam1', surface.create_entity({name = 'electric-beam', position = {x_min, p.y}, source = {x_min, p.y}, target = {x_max, p.y}}))
+                            WPT.set('zone1_beam2', surface.create_entity({name = 'electric-beam', position = {x_min, p.y}, source = {x_min, p.y}, target = {x_max, p.y}}))
                             WPT.set('alert_zone_1', true)
                             WPT.set(
                                 'zone1_text1',
@@ -2574,9 +2568,7 @@ Event.add(
             local locomotive = WPT.get('locomotive')
             if locomotive and locomotive.valid then
                 local position = locomotive.position
-                for _, entity in pairs(
-                    surface.find_entities_filtered({area = {{position.x - 5, position.y - 6}, {position.x + 5, position.y + 10}}, type = 'simple-entity'})
-                ) do
+                for _, entity in pairs(surface.find_entities_filtered({area = {{position.x - 5, position.y - 6}, {position.x + 5, position.y + 10}}, type = 'simple-entity'})) do
                     entity.destroy()
                 end
             end
