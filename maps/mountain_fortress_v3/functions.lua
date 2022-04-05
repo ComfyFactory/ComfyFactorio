@@ -149,19 +149,6 @@ local function do_refill_turrets()
     end
 end
 
---[[ local function do_turret_energy()
-    local power_sources = this.power_sources
-
-    for index = 1, #power_sources do
-        local ps_data = power_sources[index]
-        if not (ps_data and ps_data.valid) then
-            fast_remove(power_sources, index)
-            return
-        end
-
-        ps_data.energy = 0xfffff
-    end
-end ]]
 local function do_magic_crafters()
     local magic_crafters = this.magic_crafters
     local limit = #magic_crafters
@@ -367,7 +354,7 @@ local function add_magic_crafter_output(entity, output, distance)
     local fluidbox_index = output.fluidbox_index
     local data = {
         entity = entity,
-        last_tick = round(game.tick),
+        last_tick = game.tick,
         base_rate = round(rate, 8),
         rate = round(rate, 8),
         item = output.item,
@@ -1139,57 +1126,22 @@ function Public.boost_difficulty()
 
     local force = game.forces.player
 
-    if name == "I'm too young to die" then
-        force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 0.5
-        force.character_running_speed_modifier = 0.15
-        force.manual_crafting_speed_modifier = 0.15
-        WPT.set('coin_amount', 1)
-        WPT.set('upgrades').flame_turret.limit = 12
-        WPT.set('upgrades').landmine.limit = 50
-        WPT.set('locomotive_health', 10000)
-        WPT.set('locomotive_max_health', 10000)
-        WPT.set('bonus_xp_on_join', 500)
-        WD.set('next_wave', game.tick + 3600 * 15)
-        WPT.set('spidertron_unlocked_at_zone', 10)
-        WD.set_normal_unit_current_health(1.0)
-        WD.set_unit_health_increment_per_wave(0.15)
-        WD.set_boss_unit_current_health(2)
-        WD.set_boss_health_increment_per_wave(1.5)
-        WPT.set('difficulty_set', true)
-    elseif name == 'Hurt me plenty' then
-        force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 0.25
-        force.character_running_speed_modifier = 0.1
-        force.manual_crafting_speed_modifier = 0.1
-        WPT.set('coin_amount', 2)
-        WPT.set('upgrades').flame_turret.limit = 10
-        WPT.set('upgrades').landmine.limit = 50
-        WPT.set('locomotive_health', 7000)
-        WPT.set('locomotive_max_health', 7000)
-        WPT.set('bonus_xp_on_join', 300)
-        WD.set('next_wave', game.tick + 3600 * 8)
-        WPT.set('spidertron_unlocked_at_zone', 8)
-        WD.set_normal_unit_current_health(1.6)
-        WD.set_unit_health_increment_per_wave(0.5)
-        WD.set_boss_unit_current_health(3)
-        WD.set_boss_health_increment_per_wave(5)
-        WPT.set('difficulty_set', true)
-    elseif name == 'Ultra-violence' then
-        force.character_running_speed_modifier = 0
-        force.manual_crafting_speed_modifier = 0
-        WPT.set('coin_amount', 4)
-        WPT.set('upgrades').flame_turret.limit = 3
-        WPT.set('upgrades').landmine.limit = 10
-        WPT.set('locomotive_health', 5000)
-        WPT.set('locomotive_max_health', 5000)
-        WPT.set('bonus_xp_on_join', 50)
-        WD.set('next_wave', game.tick + 3600 * 5)
-        WPT.set('spidertron_unlocked_at_zone', 6)
-        WD.set_normal_unit_current_health(2)
-        WD.set_unit_health_increment_per_wave(1)
-        WD.set_boss_unit_current_health(4)
-        WD.set_boss_health_increment_per_wave(10)
-        WPT.set('difficulty_set', true)
-    end
+    force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 0.5
+    force.character_running_speed_modifier = 0.15
+    force.manual_crafting_speed_modifier = 0.15
+    WPT.set('coin_amount', 1)
+    WPT.set('upgrades').flame_turret.limit = 12
+    WPT.set('upgrades').landmine.limit = 50
+    WPT.set('locomotive_health', 10000)
+    WPT.set('locomotive_max_health', 10000)
+    WPT.set('bonus_xp_on_join', 500)
+    WD.set('next_wave', game.tick + 3600 * 15)
+    WPT.set('spidertron_unlocked_at_zone', 10)
+    WD.set_normal_unit_current_health(1.0)
+    WD.set_unit_health_increment_per_wave(0.15)
+    WD.set_boss_unit_current_health(2)
+    WD.set_boss_health_increment_per_wave(1.5)
+    WPT.set('difficulty_set', true)
 end
 
 function Public.set_spawn_position()
@@ -1556,6 +1508,5 @@ Event.add(defines.events.on_player_changed_position, on_player_changed_position)
 Event.add(defines.events.on_pre_player_left_game, on_pre_player_left_game)
 Event.add(defines.events.on_player_respawned, on_player_respawned)
 Event.on_nth_tick(10, tick)
--- Event.on_nth_tick(5, do_turret_energy)
 
 return Public

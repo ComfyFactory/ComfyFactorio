@@ -519,8 +519,8 @@ function Public.update_player_stats(player)
     local rpg_extra = Public.get('rpg_extra')
     local rpg_t = Public.get_value_from_player(player.index)
     local strength = rpg_t.strength - 10
-    P.update_single_modifier(player, 'character_inventory_slots_bonus', 'rpg', round(strength * 0.2, 3))
-    P.update_single_modifier(player, 'character_mining_speed_modifier', 'rpg', round(strength * 0.007, 3))
+    P.update_single_modifier(player, 'character_inventory_slots_bonus', 'rpg', round(strength * 0.1, 3))
+    P.update_single_modifier(player, 'character_mining_speed_modifier', 'rpg', round(strength * 0.006, 3))
     P.update_single_modifier(player, 'character_maximum_following_robot_count_bonus', 'rpg', round(strength / 2 * 0.03, 3))
 
     local magic = rpg_t.magicka - 10
@@ -555,7 +555,24 @@ function Public.level_up_effects(player)
         }
         player.surface.create_entity({name = 'flying-text', position = p, text = '✚', color = {255, math.random(0, 100), 0}})
     end
-    player.play_sound {path = 'utility/achievement_unlocked', volume_modifier = 0.40}
+    player.play_sound {path = 'utility/achievement_unlocked', volume_modifier = 0.50}
+end
+
+function Public.cast_spell(player, failed)
+    local position = {x = player.position.x - 0.75, y = player.position.y - 1}
+    local b = 0.75
+    if not failed then
+        for _ = 1, 3, 1 do
+            local p = {
+                (position.x + 0.4) + (b * -1 + math.random(0, b * 20) * 0.1),
+                position.y + (b * -1 + math.random(0, b * 20) * 0.1)
+            }
+            player.surface.create_entity({name = 'flying-text', position = p, text = '✔️', color = {255, math.random(0, 100), 0}})
+        end
+        player.play_sound {path = 'utility/scenario_message', volume_modifier = 0.50}
+    else
+        player.play_sound {path = 'utility/cannot_build', volume_modifier = 0.50}
+    end
 end
 
 function Public.xp_effects(player)
@@ -569,7 +586,7 @@ function Public.xp_effects(player)
         }
         player.surface.create_entity({name = 'flying-text', position = p, text = '✚', color = {255, math.random(0, 100), 0}})
     end
-    player.play_sound {path = 'utility/achievement_unlocked', volume_modifier = 0.40}
+    player.play_sound {path = 'utility/achievement_unlocked', volume_modifier = 0.50}
 end
 
 function Public.get_range_modifier(player)
@@ -682,7 +699,7 @@ function Public.get_one_punch_chance(player)
     if rpg_t.strength < 100 then
         return 0
     end
-    local chance = round(rpg_t.strength * 0.012, 1)
+    local chance = round(rpg_t.strength * 0.007, 1)
     if chance > 100 then
         chance = 100
     end

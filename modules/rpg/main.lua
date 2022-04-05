@@ -680,10 +680,7 @@ local function on_entity_damaged(event)
     local original_damage_amount = event.original_damage_amount
     local final_damage_amount = event.final_damage_amount
 
-    if
-        cause.get_inventory(defines.inventory.character_ammo)[cause.selected_gun_index].valid_for_read or
-            cause.get_inventory(defines.inventory.character_guns)[cause.selected_gun_index].valid_for_read
-     then
+    if cause.get_inventory(defines.inventory.character_ammo)[cause.selected_gun_index].valid_for_read or cause.get_inventory(defines.inventory.character_guns)[cause.selected_gun_index].valid_for_read then
         local is_explosive_bullets_enabled = Public.get_explosive_bullets()
         if is_explosive_bullets_enabled then
             Public.explosive_bullets(event)
@@ -1160,7 +1157,7 @@ local function on_player_used_capsule(event)
     local p = player.print
 
     if rpg_t.last_spawned >= game.tick then
-        return p(({'rpg_main.mana_casting_too_fast', player.name}), Color.warning)
+        return Public.cast_spell(player, true)
     end
 
     local mana = rpg_t.mana
@@ -1183,7 +1180,7 @@ local function on_player_used_capsule(event)
     }
 
     if rpg_t.level < object.level then
-        return p(({'rpg_main.low_level'}), Color.fail)
+        return Public.cast_spell(player, true)
     end
 
     if not object.enabled then
@@ -1191,12 +1188,12 @@ local function on_player_used_capsule(event)
     end
 
     if not Math2D.bounding_box.contains_point(area, player.position) then
-        player.print(({'rpg_main.not_inside_pos'}), Color.fail)
+        Public.cast_spell(player, true)
         return
     end
 
     if mana < object.mana_cost then
-        return p(({'rpg_main.no_mana'}), Color.fail)
+        return Public.cast_spell(player, true)
     end
 
     local target_pos
@@ -1223,11 +1220,11 @@ local function on_player_used_capsule(event)
 
     if object.entityName == 'suicidal_comfylatron' then
         Public.suicidal_comfylatron(position, surface)
-        p(({'rpg_main.suicidal_comfylatron', 'Suicidal Comfylatron'}), Color.success)
+        Public.cast_spell(player)
         Public.remove_mana(player, object.mana_cost)
     elseif object.entityName == 'repair_aoe' then
-        local ents = Public.repair_aoe(player, position)
-        p(({'rpg_main.repair_aoe', ents}), Color.success)
+        Public.repair_aoe(player, position)
+        Public.cast_spell(player)
         Public.remove_mana(player, object.mana_cost)
     elseif object.entityName == 'pointy_explosives' then
         local entities =
@@ -1245,11 +1242,9 @@ local function on_player_used_capsule(event)
         if detonate_chest and detonate_chest.valid then
             local success = Explosives.detonate_chest(detonate_chest)
             if success then
-                player.print(({'rpg_main.detonate_chest'}), Color.success)
                 Public.remove_mana(player, object.mana_cost)
-            else
-                player.print(({'rpg_main.detonate_chest_failed'}), Color.fail)
             end
+            Public.cast_spell(player)
         end
     elseif object.entityName == 'warp-gate' then
         local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
@@ -1262,10 +1257,10 @@ local function on_player_used_capsule(event)
         Public.remove_mana(player, 999999)
         Public.damage_player_over_time(player, random(8, 16))
         player.play_sound {path = 'utility/armor_insert', volume_modifier = 1}
-        p(({'rpg_main.warped_ok'}), Color.info)
+        Public.cast_spell(player)
     elseif object.capsule then -- spawn in capsules i.e objects that are usable with mouse-click
         player.insert({name = object.entityName, count = object.amount})
-        p(({'rpg_main.object_spawned', object.entityName}), Color.success)
+        Public.cast_spell(player)
         Public.remove_mana(player, object.mana_cost)
     elseif projectile_types[object.entityName] then -- projectiles
         for i = 1, object.amount do
@@ -1280,12 +1275,12 @@ local function on_player_used_capsule(event)
                 end
             end
         end
-        p(({'rpg_main.object_spawned', object.entityName}), Color.success)
+        Public.cast_spell(player)
         Public.remove_mana(player, object.mana_cost)
     else
         if object.target then -- rockets and such
             surface.create_entity({name = object.entityName, position = position, force = force, target = target_pos, speed = 1})
-            p(({'rpg_main.object_spawned', object.entityName}), Color.success)
+            Public.cast_spell(player)
             Public.remove_mana(player, object.mana_cost)
         elseif surface.can_place_entity {name = object.entityName, position = position} then
             if object.biter then
@@ -1311,9 +1306,9 @@ local function on_player_used_capsule(event)
                 e.direction = player.character.direction
                 Public.remove_mana(player, object.mana_cost)
             end
-            p(({'rpg_main.object_spawned', object.entityName}), Color.success)
+            Public.cast_spell(player)
         else
-            p(({'rpg_main.out_of_reach'}), Color.fail)
+            Public.cast_spell(player, true)
             return
         end
     end

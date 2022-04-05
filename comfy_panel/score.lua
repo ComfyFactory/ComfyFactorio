@@ -1,10 +1,12 @@
 --scoreboard by mewmew
+-- modified by Gerkiz
 
 local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Tabs = require 'comfy_panel.main'
 local SpamProtection = require 'utils.spam_protection'
 local Token = require 'utils.token'
+local format_number = require 'util'.format_number
 
 local Public = {}
 local this = {
@@ -129,7 +131,7 @@ local function add_global_stats(frame, player)
     l.style.font_color = {r = 175, g = 75, b = 255}
     l.style.minimal_width = 140
 
-    local rocketsLaunched_label = t.add {type = 'label', caption = player.force.rockets_launched}
+    local rocketsLaunched_label = t.add {type = 'label', caption = format_number(player.force.rockets_launched, true)}
     rocketsLaunched_label.style.font = 'default-listbox'
     rocketsLaunched_label.style.font_color = {r = 0.9, g = 0.9, b = 0.9}
     rocketsLaunched_label.style.minimal_width = 123
@@ -139,7 +141,7 @@ local function add_global_stats(frame, player)
     bugs_dead_label.style.font_color = {r = 0.90, g = 0.3, b = 0.3}
     bugs_dead_label.style.minimal_width = 100
 
-    local killcount_label = t.add {type = 'label', caption = tostring(get_total_biter_killcount(player.force))}
+    local killcount_label = t.add {type = 'label', caption = format_number(tonumber(get_total_biter_killcount(player.force)), true)}
     killcount_label.style.font = 'default-listbox'
     killcount_label.style.font_color = {r = 0.9, g = 0.9, b = 0.9}
     killcount_label.style.minimal_width = 145
@@ -227,10 +229,10 @@ local function show_score(data)
         }
         local lines = {
             {caption = entry.name, color = special_color},
-            {caption = tostring(entry.killscore)},
-            {caption = tostring(entry.deaths)},
-            {caption = tostring(entry.built_entities)},
-            {caption = tostring(entry.mined_entities)}
+            {caption = format_number(tonumber(entry.killscore), true)},
+            {caption = format_number(tonumber(entry.deaths), true)},
+            {caption = format_number(tonumber(entry.built_entities), true)},
+            {caption = format_number(tonumber(entry.mined_entities), true)}
         }
         local default_color = {r = 0.9, g = 0.9, b = 0.9}
 

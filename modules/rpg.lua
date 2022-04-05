@@ -119,7 +119,7 @@ local function get_one_punch_chance(player)
     if rpg_t[player.index].strength < 100 then
         return 0
     end
-    local chance = math.round(rpg_t[player.index].strength * 0.01, 1)
+    local chance = math.round(rpg_t[player.index].strength * 0.007, 1)
     if chance > 100 then
         chance = 100
     end
@@ -152,8 +152,8 @@ end
 
 local function update_player_stats(player)
     local strength = rpg_t[player.index].strength - 10
-    P.update_single_modifier(player, 'character_inventory_slots_bonus', 'rpg', math.round(strength * 0.2, 3))
-    P.update_single_modifier(player, 'character_mining_speed_modifier', 'rpg', math.round(strength * 0.008, 3))
+    P.update_single_modifier(player, 'character_inventory_slots_bonus', 'rpg', math.round(strength * 0.1, 3))
+    P.update_single_modifier(player, 'character_mining_speed_modifier', 'rpg', math.round(strength * 0.007, 3))
 
     local magic = rpg_t[player.index].magic - 10
     local v = magic * 0.15
@@ -831,10 +831,7 @@ local function on_entity_damaged(event)
     if not event.entity.valid then
         return
     end
-    if
-        event.cause.get_inventory(defines.inventory.character_ammo)[event.cause.selected_gun_index].valid_for_read and
-            event.cause.get_inventory(defines.inventory.character_guns)[event.cause.selected_gun_index].valid_for_read
-     then
+    if event.cause.get_inventory(defines.inventory.character_ammo)[event.cause.selected_gun_index].valid_for_read and event.cause.get_inventory(defines.inventory.character_guns)[event.cause.selected_gun_index].valid_for_read then
         return
     end
     if not event.cause.player then
@@ -873,9 +870,7 @@ local function on_entity_damaged(event)
         event.cause.surface.create_entity({name = 'blood-explosion-huge', position = event.entity.position})
     else
         damage = damage * math_random(100, 125) * 0.01
-        event.cause.player.create_local_flying_text(
-            {text = math.floor(damage), position = event.entity.position, color = {150, 150, 150}, time_to_live = 90, speed = 2}
-        )
+        event.cause.player.create_local_flying_text({text = math.floor(damage), position = event.entity.position, color = {150, 150, 150}, time_to_live = 90, speed = 2})
     end
 
     --Handle the custom health pool of the biter health booster, if it is used in the map.
@@ -960,10 +955,7 @@ local function on_pre_player_mined_item(event)
     end
     local player = game.players[event.player_index]
 
-    if
-        rpg_t[player.index].last_mined_entity_position.x == event.entity.position.x and
-            rpg_t[player.index].last_mined_entity_position.y == event.entity.position.y
-     then
+    if rpg_t[player.index].last_mined_entity_position.x == event.entity.position.x and rpg_t[player.index].last_mined_entity_position.y == event.entity.position.y then
         return
     end
     rpg_t[player.index].last_mined_entity_position.x = entity.position.x
