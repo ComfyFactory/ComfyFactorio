@@ -519,12 +519,14 @@ local function redraw_market_items(gui, player, search_text)
         return
     end
 
-    gui.add(
+    local upgrades_label =
+        gui.add(
         {
             type = 'label',
             caption = ({'locomotive.upgrades'})
         }
     )
+    upgrades_label.style.font = 'heading-2'
 
     local upgrade_table = gui.add({type = 'table', column_count = 6})
 
@@ -574,12 +576,14 @@ local function redraw_market_items(gui, player, search_text)
             ::continue::
         end
     end
-    gui.add(
+    local items_label =
+        gui.add(
         {
             type = 'label',
             caption = ({'locomotive.items'})
         }
     )
+    items_label.style.font = 'heading-2'
 
     local slider_value = ceil(players[player.index].data.slider.slider_value)
     local items_table = gui.add({type = 'table', column_count = 6})
@@ -801,7 +805,8 @@ local function gui_opened(event)
     player.opened = frame
 
     local search_table = inside_table.add({type = 'table', column_count = 2})
-    search_table.add({type = 'label', caption = ({'locomotive.search_text'})})
+    local search_name = search_table.add({type = 'label', caption = ({'locomotive.search_text'})})
+    search_name.style.font = 'heading-2'
     local search_text = search_table.add({type = 'textfield'})
     search_text.style.width = 140
 
