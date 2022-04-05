@@ -330,7 +330,7 @@ function Public.extra_settings(player)
     local flame_boots_gui_input
     local explosive_bullets_gui_input
     local stone_path_gui_input
-    local one_punch_gui_input
+    local aoe_punch_gui_input
     local auto_allocate_gui_input
 
     if rpg_extra.enable_stone_path then
@@ -370,44 +370,44 @@ function Public.extra_settings(player)
         end
     end
 
-    if rpg_extra.enable_one_punch then
-        local one_punch_label =
+    if rpg_extra.enable_aoe_punch then
+        local aoe_punch_label =
             setting_grid.add(
             {
                 type = 'label',
-                caption = ({'rpg_settings.one_punch_label'}),
-                tooltip = ({'rpg_settings.one_punch_tooltip'})
+                caption = ({'rpg_settings.aoe_punch_label'}),
+                tooltip = ({'rpg_settings.aoe_punch_tooltip'})
             }
         )
 
-        local one_punch_label_style = one_punch_label.style
-        one_punch_label_style.horizontally_stretchable = true
-        one_punch_label_style.height = 35
-        one_punch_label_style.vertical_align = 'center'
+        local aoe_punch_label_style = aoe_punch_label.style
+        aoe_punch_label_style.horizontally_stretchable = true
+        aoe_punch_label_style.height = 35
+        aoe_punch_label_style.vertical_align = 'center'
 
-        local one_punch_input = setting_grid.add({type = 'flow'})
-        local one_punch_input_style = one_punch_input.style
-        one_punch_input_style.height = 35
-        one_punch_input_style.vertical_align = 'center'
-        local one_punch
-        if rpg_t.one_punch then
-            one_punch = rpg_t.one_punch
+        local aoe_punch_input = setting_grid.add({type = 'flow'})
+        local aoe_punch_input_style = aoe_punch_input.style
+        aoe_punch_input_style.height = 35
+        aoe_punch_input_style.vertical_align = 'center'
+        local aoe_punch
+        if rpg_t.aoe_punch then
+            aoe_punch = rpg_t.aoe_punch
         else
-            one_punch = false
+            aoe_punch = false
         end
-        one_punch_gui_input = create_input_element(one_punch_input, 'boolean', one_punch)
+        aoe_punch_gui_input = create_input_element(aoe_punch_input, 'boolean', aoe_punch)
 
-        if rpg_extra.enable_one_punch_globally then
-            one_punch_gui_input.state = true
-            one_punch_gui_input.enabled = false
-            one_punch_gui_input.tooltip = ({'rpg_settings.one_punch_globally'})
+        if rpg_extra.enable_aoe_punch_globally then
+            aoe_punch_gui_input.state = true
+            aoe_punch_gui_input.enabled = false
+            aoe_punch_gui_input.tooltip = ({'rpg_settings.aoe_punch_globally'})
         else
-            if rpg_t.level < settings_level['one_punch_label'] then
-                one_punch_gui_input.enabled = false
-                one_punch_gui_input.tooltip = ({'rpg_settings.low_level', 30})
+            if rpg_t.level < settings_level['aoe_punch_label'] then
+                aoe_punch_gui_input.enabled = false
+                aoe_punch_gui_input.tooltip = ({'rpg_settings.low_level', 30})
             else
-                one_punch_gui_input.enabled = true
-                one_punch_gui_input.tooltip = ({'rpg_settings.tooltip_check'})
+                aoe_punch_gui_input.enabled = true
+                aoe_punch_gui_input.tooltip = ({'rpg_settings.tooltip_check'})
             end
         end
     end
@@ -698,8 +698,8 @@ function Public.extra_settings(player)
         data.stone_path_gui_input = stone_path_gui_input
     end
 
-    if rpg_extra.enable_one_punch then
-        data.one_punch_gui_input = one_punch_gui_input
+    if rpg_extra.enable_aoe_punch then
+        data.aoe_punch_gui_input = aoe_punch_gui_input
     end
 
     if rpg_extra.enable_auto_allocate then

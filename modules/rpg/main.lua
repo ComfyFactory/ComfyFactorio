@@ -26,8 +26,8 @@ local random = math.random
 local sqrt = math.sqrt
 local abs = math.abs
 
-local function log_one_punch(callback)
-    local debug = Public.get('rpg_extra').debug_one_punch
+local function log_aoe_punch(callback)
+    local debug = Public.get('rpg_extra').debug_aoe_punch
     if not debug then
         return
     end
@@ -541,7 +541,7 @@ local function set_health_boost(entity, damage, cause)
 end
 
 --Melee damage modifier
-local function one_punch(character, target, damage, get_health_pool)
+local function aoe_punch(character, target, damage, get_health_pool)
     if not (target and target.valid) then
         return
     end
@@ -556,7 +556,7 @@ local function one_punch(character, target, damage, get_health_pool)
         {
             name = 'flying-text',
             position = {character.position.x + base_vector[1] * 0.5, character.position.y + base_vector[2] * 0.5},
-            text = ({'rpg_main.one_punch_text'}),
+            text = ({'rpg_main.aoe_punch_text'}),
             color = {255, 0, 0}
         }
     )
@@ -727,7 +727,7 @@ local function on_entity_damaged(event)
 
     --Calculate modified damage.
     local damage = Public.get_final_damage(cause.player, entity, original_damage_amount)
-    local enable_one_punch = Public.get('rpg_extra').enable_one_punch
+    local enable_aoe_punch = Public.get('rpg_extra').enable_aoe_punch
     local rpg_t = Public.get_value_from_player(cause.player.index)
 
     --Floating messages and particle effects.
@@ -758,12 +758,12 @@ local function on_entity_damaged(event)
     local get_health_pool = has_health_boost(entity, damage, final_damage_amount, cause)
 
     --Cause a one punch.
-    if enable_one_punch then
-        if rpg_t.one_punch then
-            local chance = Public.get_one_punch_chance(cause.player) * 10
+    if enable_aoe_punch then
+        if rpg_t.aoe_punch then
+            local chance = Public.get_aoe_punch_chance(cause.player) * 10
             local chance_to_hit = random(0, 999)
             local success = chance_to_hit < chance
-            log_one_punch(
+            log_aoe_punch(
                 function()
                     if success then
                         print('[OnePunch]: Chance: ' .. chance .. ' Chance to hit:  ' .. chance_to_hit .. ' Success: true' .. ' Damage: ' .. damage)
@@ -773,7 +773,7 @@ local function on_entity_damaged(event)
                 end
             )
             if success then
-                one_punch(cause, entity, damage, get_health_pool) -- only kill the biters if their health is below or equal to zero
+                aoe_punch(cause, entity, damage, get_health_pool) -- only kill the biters if their health is below or equal to zero
                 return
             end
         end

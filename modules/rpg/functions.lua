@@ -119,12 +119,12 @@ local function level_up(player)
         return
     end
 
-    -- automatically enable one_punch and stone_path,
+    -- automatically enable aoe_punch and stone_path,
     -- but do so only once.
-    if rpg_t.level >= settings_level['one_punch_label'] then
-        if not rpg_t.auto_toggle_features.one_punch then
-            rpg_t.auto_toggle_features.one_punch = true
-            rpg_t.one_punch = true
+    if rpg_t.level >= settings_level['aoe_punch_label'] then
+        if not rpg_t.auto_toggle_features.aoe_punch then
+            rpg_t.auto_toggle_features.aoe_punch = true
+            rpg_t.aoe_punch = true
         end
     end
     if rpg_t.level >= settings_level['stone_path_label'] then
@@ -694,7 +694,7 @@ function Public.get_life_on_hit(player)
     return (rpg_t.vitality - 10) * 0.4
 end
 
-function Public.get_one_punch_chance(player)
+function Public.get_aoe_punch_chance(player)
     local rpg_t = Public.get_value_from_player(player.index)
     if rpg_t.strength < 100 then
         return 0
@@ -782,10 +782,10 @@ function Public.rpg_reset_player(player, one_time_reset)
                 last_mined_entity_position = {x = 0, y = 0},
                 show_bars = false,
                 stone_path = false,
-                one_punch = false,
+                aoe_punch = false,
                 auto_toggle_features = {
                     stone_path = false,
-                    one_punch = false
+                    aoe_punch = false
                 }
             }
         )
@@ -824,10 +824,10 @@ function Public.rpg_reset_player(player, one_time_reset)
                 last_mined_entity_position = {x = 0, y = 0},
                 show_bars = false,
                 stone_path = false,
-                one_punch = false,
+                aoe_punch = false,
                 auto_toggle_features = {
                     stone_path = false,
-                    one_punch = false
+                    aoe_punch = false
                 }
             }
         )

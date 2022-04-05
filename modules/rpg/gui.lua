@@ -314,15 +314,15 @@ local function draw_main_frame(player, location)
     add_gui_description(right_bottom_table, ({'rpg_gui.melee_name'}), w1)
     local melee_damage_value = round(100 * (1 + Public.get_melee_modifier(player))) .. '%'
     local melee_damage_tooltip
-    if rpg_extra.enable_one_punch then
+    if rpg_extra.enable_aoe_punch then
         melee_damage_tooltip = ({
-            'rpg_gui.one_punch_chance',
+            'rpg_gui.aoe_punch_chance',
             Public.get_life_on_hit(player),
-            Public.get_one_punch_chance(player),
+            Public.get_aoe_punch_chance(player),
             Public.get_extra_following_robots(player)
         })
     else
-        melee_damage_tooltip = ({'rpg_gui.one_punch_disabled'})
+        melee_damage_tooltip = ({'rpg_gui.aoe_punch_disabled'})
     end
     add_gui_stat(right_bottom_table, melee_damage_value, w2, melee_damage_tooltip)
 
@@ -505,7 +505,7 @@ Gui.on_click(
         local explosive_bullets_gui_input = data.explosive_bullets_gui_input
         local enable_entity_gui_input = data.enable_entity_gui_input
         local stone_path_gui_input = data.stone_path_gui_input
-        local one_punch_gui_input = data.one_punch_gui_input
+        local aoe_punch_gui_input = data.aoe_punch_gui_input
         local auto_allocate_gui_input = data.auto_allocate_gui_input
 
         local rpg_t = Public.get_value_from_player(player.index)
@@ -515,11 +515,11 @@ Gui.on_click(
                 rpg_t.allocate_index = auto_allocate_gui_input.selected_index
             end
 
-            if one_punch_gui_input and one_punch_gui_input.valid then
-                if not one_punch_gui_input.state then
-                    rpg_t.one_punch = false
-                elseif one_punch_gui_input.state then
-                    rpg_t.one_punch = true
+            if aoe_punch_gui_input and aoe_punch_gui_input.valid then
+                if not aoe_punch_gui_input.state then
+                    rpg_t.aoe_punch = false
+                elseif aoe_punch_gui_input.state then
+                    rpg_t.aoe_punch = true
                 end
             end
 
