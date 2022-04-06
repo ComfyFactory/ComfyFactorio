@@ -6,7 +6,6 @@ blacklist		-	optional list of item names that can not be rolled. example: {["sub
 ]]
 local Public = {}
 
-local table_shuffle_table = table.shuffle_table
 local table_insert = table.insert
 local math_random = math.random
 local math_floor = math.floor
