@@ -407,6 +407,15 @@ local tech_tier_list = {
     'rocket-silo'
 }
 
+local function shuffle(tbl)
+    local size = #tbl
+    for i = size, 1, -1 do
+        local rand = math_random(size)
+        tbl[i], tbl[rand] = tbl[rand], tbl[i]
+    end
+    return tbl
+end
+
 local item_names = {}
 for k, _ in pairs(item_worths) do
     table_insert(item_names, k)
@@ -418,7 +427,7 @@ local function get_raffle_keys()
     for i = 1, size_of_item_names, 1 do
         raffle_keys[i] = i
     end
-    table_shuffle_table(raffle_keys)
+    shuffle(raffle_keys)
     return raffle_keys
 end
 
