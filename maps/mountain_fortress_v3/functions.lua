@@ -13,6 +13,7 @@ local Difficulty = require 'modules.difficulty_vote_by_amount'
 local ICW_Func = require 'maps.mountain_fortress_v3.icw.functions'
 local math2d = require 'math2d'
 local Misc = require 'utils.commands.misc'
+local zone_settings = WPT.zone_settings
 
 local this = {
     power_sources = {index = 1},
@@ -1094,8 +1095,8 @@ function Public.render_direction(surface)
         scale_with_zoom = false
     }
 
-    local x_min = -WPT.level_width / 2
-    local x_max = WPT.level_width / 2
+    local x_min = -zone_settings.zone_width / 2
+    local x_max = zone_settings.zone_width / 2
 
     surface.create_entity({name = 'electric-beam', position = {x_min, 74}, source = {x_min, 74}, target = {x_max, 74}})
     surface.create_entity({name = 'electric-beam', position = {x_min, 74}, source = {x_min, 74}, target = {x_max, 74}})

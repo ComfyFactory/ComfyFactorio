@@ -7,7 +7,6 @@ local Loot = require 'maps.mountain_fortress_v3.loot'
 local RPG = require 'modules.rpg.main'
 local Callbacks = require 'maps.mountain_fortress_v3.functions'
 local Mining = require 'maps.mountain_fortress_v3.mining'
-local Terrain = require 'maps.mountain_fortress_v3.terrain'
 local Traps = require 'maps.mountain_fortress_v3.traps'
 local Locomotive = require 'maps.mountain_fortress_v3.locomotive'
 local DefenseSystem = require 'maps.mountain_fortress_v3.locomotive.defense_system'
@@ -26,6 +25,7 @@ local RPG_Progression = require 'utils.datastore.rpg_data'
 -- tables
 local WPT = require 'maps.mountain_fortress_v3.table'
 local WD = require 'modules.wave_defense.table'
+local zone_settings = WPT.zone_settings
 
 -- module
 local Public = {}
@@ -394,7 +394,7 @@ local function angry_tree(entity, cause, player)
         return
     end
 
-    if abs(entity.position.y) < Terrain.level_depth then
+    if abs(entity.position.y) < zone_settings.zone_depth then
         return
     end
     if random(1, 6) == 1 then
