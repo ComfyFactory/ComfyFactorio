@@ -11,16 +11,8 @@ local abs = math.abs
 local floor = math.floor
 local ceil = math.ceil
 
-Public.level_depth = WPT.level_depth
-Public.level_width = WPT.level_width
+local zone_settings = WPT.zone_settings
 local worm_level_modifier = 0.19
-
--- local start_ground_tiles = {
---     'dirt-1',
---     'grass-1',
---     'grass-2',
---     'dirt-2'
--- }
 
 local wagon_raffle = {
     'cargo-wagon',
@@ -133,6 +125,15 @@ local function get_scrap_mineable_entities()
     return scrap_mineable_entities, scrap_mineable_entities_index
 end
 
+local function shuffle(tbl)
+    local size = #tbl
+    for i = size, 1, -1 do
+        local rand = random(size)
+        tbl[i], tbl[rand] = tbl[rand], tbl[i]
+    end
+    return tbl
+end
+
 local function is_position_near(area, table_to_check)
     local status = false
     local function inside(pos)
@@ -159,7 +160,33 @@ local function place_wagon(data)
         placed_trains_in_zone = WPT.get('placed_trains_in_zone')
     end
 
-    if placed_trains_in_zone.placed >= placed_trains_in_zone.limit then
+    if not data.new_zone then
+        data.new_zone = 1
+    end
+
+    if data.new_zone == zone_settings.size then
+        data.new_zone = 1
+    end
+
+    if data.current_zone == zone_settings.size then
+        local new_zone = placed_trains_in_zone.zones[data.new_zone]
+        if new_zone then
+            new_zone.placed = 0
+            new_zone.positions = {}
+            data.new_zone = data.new_zone + 1
+        end
+    end
+
+    local zone = placed_trains_in_zone.zones[data.current_zone]
+    if not zone then
+        placed_trains_in_zone.zones[data.current_zone] = {
+            placed = 0,
+            positions = {}
+        }
+        zone = placed_trains_in_zone.zones[data.current_zone]
+    end
+
+    if zone.placed >= placed_trains_in_zone.limit then
         return
     end
 
@@ -182,7 +209,7 @@ local function place_wagon(data)
         right_bottom = {x = position.x + radius, y = position.y + radius}
     }
 
-    if is_position_near(area, placed_trains_in_zone.positions) then
+    if is_position_near(area, zone.positions) then
         return
     end
 
@@ -217,8 +244,9 @@ local function place_wagon(data)
         force = 'player',
         callback = wagon_mineable
     }
-    placed_trains_in_zone.placed = placed_trains_in_zone.placed + 1
-    placed_trains_in_zone.positions[#placed_trains_in_zone.positions + 1] = position
+
+    zone.placed = zone.placed + 1
+    zone.positions[#zone.positions + 1] = position
 
     return true
 end
@@ -313,8 +341,8 @@ local function wall(p, data)
                             callback = stone_wall
                         }
                         if not alert_zone_1 then
-                            local x_min = -WPT.level_width / 2
-                            local x_max = WPT.level_width / 2
+                            local x_min = -zone_settings.zone_width / 2
+                            local x_max = zone_settings.zone_width / 2
                             WPT.set('zone1_beam1', surface.create_entity({name = 'electric-beam', position = {x_min, p.y}, source = {x_min, p.y}, target = {x_max, p.y}}))
                             WPT.set('zone1_beam2', surface.create_entity({name = 'electric-beam', position = {x_min, p.y}, source = {x_min, p.y}, target = {x_max, p.y}}))
                             WPT.set('alert_zone_1', true)
@@ -393,36 +421,36 @@ local function wall(p, data)
         end
 
         if random(1, 25) == 1 then
-            if abs(p.y) < Public.level_depth * 1.5 then
+            if abs(p.y) < zone_settings.zone_depth * 1.5 then
                 if random(1, 16) == 1 then
                     spawn_turret(entities, p, 1)
                 else
                     spawn_turret(entities, p, 2)
                 end
-            elseif abs(p.y) < Public.level_depth * 2.5 then
+            elseif abs(p.y) < zone_settings.zone_depth * 2.5 then
                 if random(1, 8) == 1 then
                     spawn_turret(entities, p, 3)
                 end
-            elseif abs(p.y) < Public.level_depth * 3.5 then
+            elseif abs(p.y) < zone_settings.zone_depth * 3.5 then
                 if random(1, 4) == 1 then
                     spawn_turret(entities, p, 4)
                 else
                     spawn_turret(entities, p, 3)
                 end
-            elseif abs(p.y) < Public.level_depth * 4.5 then
+            elseif abs(p.y) < zone_settings.zone_depth * 4.5 then
                 if random(1, 4) == 1 then
                     spawn_turret(entities, p, 4)
                 else
                     spawn_turret(entities, p, 5)
                 end
-            elseif abs(p.y) < Public.level_depth * 5.5 then
+            elseif abs(p.y) < zone_settings.zone_depth * 5.5 then
                 if random(1, 4) == 1 then
                     spawn_turret(entities, p, 4)
                 elseif random(1, 2) == 1 then
                     spawn_turret(entities, p, 5)
                 end
             end
-        elseif abs(p.y) > Public.level_depth * 5.5 then
+        elseif abs(p.y) > zone_settings.zone_depth * 5.5 then
             if random(1, 15) == 1 then
                 spawn_turret(entities, p, random(3, enable_arties))
             end
@@ -430,7 +458,7 @@ local function wall(p, data)
     end
 end
 
-local function process_level_14_position(x, y, data)
+local function generate_zone_14(x, y, data)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -445,7 +473,7 @@ local function process_level_14_position(x, y, data)
     --Resource Spots
     if smol_areas < -0.71 then
         if random(1, 32) == 1 then
-            Generate_resources(buildings, p, Public.level_depth)
+            Generate_resources(buildings, p, zone_settings.zone_depth)
         end
     end
 
@@ -510,7 +538,7 @@ local function process_level_14_position(x, y, data)
     tiles[#tiles + 1] = {name = 'water-shallow', position = p}
 end
 
-local function process_level_13_position(x, y, data)
+local function generate_zone_13(x, y, data)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -525,7 +553,7 @@ local function process_level_13_position(x, y, data)
     --Resource Spots
     if smol_areas < -0.72 then
         if random(1, 32) == 1 then
-            Generate_resources(buildings, p, Public.level_depth)
+            Generate_resources(buildings, p, zone_settings.zone_depth)
         end
     end
 
@@ -590,7 +618,7 @@ local function process_level_13_position(x, y, data)
     tiles[#tiles + 1] = {name = 'water-shallow', position = p}
 end
 
-local function process_level_12_position(x, y, data, void_or_lab)
+local function generate_zone_12(x, y, data, void_or_lab)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -606,7 +634,7 @@ local function process_level_12_position(x, y, data, void_or_lab)
     --Resource Spots
     if smol_areas < -0.72 then
         if random(1, 32) == 1 then
-            Generate_resources(buildings, p, Public.level_depth)
+            Generate_resources(buildings, p, zone_settings.zone_depth)
         end
     end
 
@@ -676,7 +704,7 @@ local function process_level_12_position(x, y, data, void_or_lab)
     tiles[#tiles + 1] = {name = 'tutorial-grid', position = p}
 end
 
-local function process_level_11_position(x, y, data)
+local function generate_zone_11(x, y, data)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -700,7 +728,7 @@ local function process_level_11_position(x, y, data)
     --Resource Spots
     if smol_areas < -0.72 then
         if random(1, 32) == 1 then
-            Generate_resources(buildings, p, Public.level_depth)
+            Generate_resources(buildings, p, zone_settings.zone_depth)
         end
     end
 
@@ -772,7 +800,7 @@ local function process_level_11_position(x, y, data)
     end
 end
 
-local function process_level_10_position(x, y, data)
+local function generate_zone_10(x, y, data)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -798,7 +826,7 @@ local function process_level_10_position(x, y, data)
     --Resource Spots
     if smol_areas < -0.72 then
         if random(1, 32) == 1 then
-            Generate_resources(buildings, p, Public.level_depth)
+            Generate_resources(buildings, p, zone_settings.zone_depth)
         end
     end
 
@@ -886,7 +914,7 @@ local function process_level_10_position(x, y, data)
     tiles[#tiles + 1] = {name = 'grass-2', position = p}
 end
 
-local function process_level_9_position(x, y, data)
+local function generate_zone_9(x, y, data)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -940,7 +968,7 @@ local function process_level_9_position(x, y, data)
     --Resource Spots
     if smol_areas < -0.72 then
         if random(1, 32) == 1 then
-            Generate_resources(buildings, p, Public.level_depth)
+            Generate_resources(buildings, p, zone_settings.zone_depth)
         end
     end
 
@@ -959,13 +987,143 @@ local function process_level_9_position(x, y, data)
 end
 
 --SCRAPYARD
-local function process_scrap_zone_1(x, y, data, void_or_lab)
+local function process_zone_scrap_2(x, y, data, void_or_lab)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
     local entities = data.entities
     local buildings = data.buildings
     local treasure = data.treasure
+    data.scrap_zone = true
+
+    local scrapyard_modified = get_perlin('scrapyard_modified', p, seed)
+    local cave_rivers = get_perlin('cave_rivers', p, seed + 65030)
+
+    --Chasms
+    local noise_cave_ponds = get_perlin('cave_ponds', p, seed)
+    local small_caves = get_perlin('small_caves', p, seed)
+    if noise_cave_ponds < 0.15 and noise_cave_ponds > -0.15 then
+        if small_caves > 0.35 then
+            tiles[#tiles + 1] = {name = void_or_lab, position = p}
+            return
+        end
+
+        if small_caves < -0.35 then
+            tiles[#tiles + 1] = {name = void_or_lab, position = p}
+            return
+        end
+    end
+
+    if scrapyard_modified < -0.25 or scrapyard_modified > 0.25 then
+        if random(1, 256) == 1 then
+            if random(1, 8) == 1 then
+                spawn_turret(entities, p, 3)
+            else
+                spawn_turret(entities, p, 4)
+            end
+            if random(1, 2048) == 1 then
+                treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
+            end
+        end
+        tiles[#tiles + 1] = {name = 'dirt-7', position = p}
+        if scrapyard_modified < -0.55 or scrapyard_modified > 0.55 then
+            if random(1, 2) == 1 then
+                entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
+            end
+            return
+        end
+        if scrapyard_modified < -0.28 or scrapyard_modified > 0.28 then
+            local success = place_wagon(data)
+            if success then
+                return
+            end
+            if random(1, 128) == 1 then
+                Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
+                entities[#entities + 1] = {
+                    name = Biters.wave_defense_roll_worm_name(),
+                    position = p,
+                    force = 'enemy',
+                    note = true
+                }
+            end
+            if random(1, 96) == 1 then
+                entities[#entities + 1] = {
+                    name = scrap_entities[random(1, scrap_entities_index)],
+                    position = p,
+                    force = 'enemy'
+                }
+            end
+            if random(1, 96) == 1 then
+                entities[#entities + 1] = {
+                    name = scrap_entities_friendly[random(1, scrap_entities_friendly_index)],
+                    position = p,
+                    force = 'neutral'
+                }
+            end
+
+            local scrap_mineable_entities, scrap_mineable_entities_index = get_scrap_mineable_entities()
+
+            if random(1, 5) > 1 then
+                entities[#entities + 1] = {name = scrap_mineable_entities[random(1, scrap_mineable_entities_index)], position = p, force = 'neutral'}
+            end
+
+            if random(1, 256) == 1 then
+                entities[#entities + 1] = {name = 'land-mine', position = p, force = 'enemy'}
+            end
+            return
+        end
+        return
+    end
+
+    local cave_ponds = get_perlin('cave_ponds', p, seed)
+    if cave_ponds < -0.6 and scrapyard_modified > -0.2 and scrapyard_modified < 0.2 then
+        tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
+        if random(1, 128) == 1 then
+            entities[#entities + 1] = {name = 'fish', position = p}
+        end
+        return
+    end
+
+    --Resource Spots
+    if cave_rivers < -0.72 then
+        if random(1, 32) == 1 then
+            Generate_resources(buildings, p, zone_settings.zone_depth)
+        end
+    end
+
+    local large_caves = get_perlin('large_caves', p, seed)
+    if scrapyard_modified > -0.15 and scrapyard_modified < 0.15 then
+        if floor(large_caves * 10) % 4 < 3 then
+            tiles[#tiles + 1] = {name = 'dirt-7', position = p}
+            if random(1, 2) == 1 then
+                entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
+            end
+            if random(1, 2048) == 1 then
+                treasure[#treasure + 1] = {position = p, chest = 'wooden-chest'}
+            end
+            return
+        end
+    end
+
+    if random(1, 64) == 1 and cave_ponds > 0.6 then
+        entities[#entities + 1] = {name = 'crude-oil', position = p, amount = get_oil_amount(p)}
+    end
+
+    tiles[#tiles + 1] = {name = 'nuclear-ground', position = p}
+    if random(1, 256) == 1 then
+        entities[#entities + 1] = {name = 'land-mine', position = p, force = 'enemy'}
+    end
+end
+
+--SCRAPYARD
+local function process_zone_scrap_1(x, y, data, void_or_lab)
+    local p = {x = x, y = y}
+    local seed = data.seed
+    local tiles = data.tiles
+    local entities = data.entities
+    local buildings = data.buildings
+    local treasure = data.treasure
+    data.scrap_zone = true
 
     local scrapyard = get_perlin('scrapyard', p, seed)
     local smol_areas = get_perlin('smol_areas', p, seed + 35000)
@@ -1028,7 +1186,7 @@ local function process_scrap_zone_1(x, y, data, void_or_lab)
                 entities[#entities + 1] = {
                     name = scrap_entities_friendly[random(1, scrap_entities_friendly_index)],
                     position = p,
-                    force = 'player'
+                    force = 'neutral'
                 }
             end
 
@@ -1058,7 +1216,7 @@ local function process_scrap_zone_1(x, y, data, void_or_lab)
     --Resource Spots
     if smol_areas < -0.72 then
         if random(1, 32) == 1 then
-            Generate_resources(buildings, p, Public.level_depth)
+            Generate_resources(buildings, p, zone_settings.zone_depth)
         end
     end
 
@@ -1086,7 +1244,7 @@ local function process_scrap_zone_1(x, y, data, void_or_lab)
     end
 end
 
-local function process_level_7_position(x, y, data, void_or_lab)
+local function generate_zone_7(x, y, data, void_or_lab)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -1190,7 +1348,7 @@ local function process_level_7_position(x, y, data, void_or_lab)
     --Resource Spots
     if smol_areas < -0.72 then
         if random(1, 32) == 1 then
-            Generate_resources(buildings, p, Public.level_depth)
+            Generate_resources(buildings, p, zone_settings.zone_depth)
         end
     end
 
@@ -1203,7 +1361,7 @@ local function process_level_7_position(x, y, data, void_or_lab)
     end
 end
 
-local function process_forest_zone_2(x, y, data, void_or_lab)
+local function generate_zone_forest_2(x, y, data, void_or_lab)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -1211,6 +1369,7 @@ local function process_forest_zone_2(x, y, data, void_or_lab)
     local buildings = data.buildings
     local markets = data.markets
     local treasure = data.treasure
+    data.forest_zone = true
 
     local large_caves = get_perlin('large_caves', p, seed)
     local cave_rivers = get_perlin('cave_rivers', p, seed)
@@ -1243,7 +1402,7 @@ local function process_forest_zone_2(x, y, data, void_or_lab)
     if smol_areas < 0.055 and smol_areas > -0.025 then
         tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
         if random(1, 32) == 1 then
-            Generate_resources(buildings, p, Public.level_depth)
+            Generate_resources(buildings, p, zone_settings.zone_depth)
         end
         if random(1, 128) == 1 then
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
@@ -1338,7 +1497,7 @@ local function process_forest_zone_2(x, y, data, void_or_lab)
     end
 end
 
-local function process_level_5_position(x, y, data, void_or_lab)
+local function generate_zone_5(x, y, data, void_or_lab)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -1385,7 +1544,7 @@ local function process_level_5_position(x, y, data, void_or_lab)
     if smol_areas < 0.055 and smol_areas > -0.025 then
         tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
         if random(1, 32) == 1 then
-            Generate_resources(buildings, p, Public.level_depth)
+            Generate_resources(buildings, p, zone_settings.zone_depth)
         end
         if random(1, 128) == 1 then
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
@@ -1430,7 +1589,7 @@ local function process_level_5_position(x, y, data, void_or_lab)
     tiles[#tiles + 1] = {name = void_or_lab, position = p}
 end
 
-local function process_level_4_position(x, y, data, void_or_lab)
+local function generate_zone_4(x, y, data, void_or_lab)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -1521,7 +1680,7 @@ local function process_level_4_position(x, y, data, void_or_lab)
     if smol_areas < 0.055 and smol_areas > -0.025 then
         tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
         if random(1, 32) == 1 then
-            Generate_resources(buildings, p, Public.level_depth)
+            Generate_resources(buildings, p, zone_settings.zone_depth)
         end
         if random(1, 128) == 1 then
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
@@ -1561,7 +1720,7 @@ local function process_level_4_position(x, y, data, void_or_lab)
     tiles[#tiles + 1] = {name = void_or_lab, position = p}
 end
 
-local function process_level_3_position(x, y, data, void_or_lab)
+local function generate_zone_3(x, y, data, void_or_lab)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -1581,7 +1740,7 @@ local function process_level_3_position(x, y, data, void_or_lab)
     if smol_areas < 0.055 and smol_areas > -0.025 then
         tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
         if random(1, 32) == 1 then
-            Generate_resources(buildings, p, Public.level_depth)
+            Generate_resources(buildings, p, zone_settings.zone_depth)
         end
         if random(1, 128) == 1 then
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
@@ -1727,7 +1886,7 @@ local function process_level_3_position(x, y, data, void_or_lab)
     end
 end
 
-local function process_level_2_position(x, y, data, void_or_lab)
+local function generate_zone_2(x, y, data, void_or_lab)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -1744,7 +1903,7 @@ local function process_level_2_position(x, y, data, void_or_lab)
     if smol_areas < 0.055 and smol_areas > -0.025 then
         tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
         if random(1, 32) == 1 then
-            Generate_resources(buildings, p, Public.level_depth)
+            Generate_resources(buildings, p, zone_settings.zone_depth)
         end
         if random(1, 128) == 1 then
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
@@ -1871,7 +2030,7 @@ local function process_level_2_position(x, y, data, void_or_lab)
     tiles[#tiles + 1] = {name = void_or_lab, position = p}
 end
 
-local function process_forest_zone_1(x, y, data, void_or_lab)
+local function generate_zone_forest_1(x, y, data, void_or_lab)
     local p = {x = x, y = y}
     local seed = data.seed
     local buildings = data.buildings
@@ -1879,6 +2038,7 @@ local function process_forest_zone_1(x, y, data, void_or_lab)
     local entities = data.entities
     local markets = data.markets
     local treasure = data.treasure
+    data.forest_zone = true
 
     local small_caves = get_perlin('dungeons', p, seed + 33322)
     local noise_cave_ponds = get_perlin('cave_ponds', p, seed)
@@ -1888,7 +2048,7 @@ local function process_forest_zone_1(x, y, data, void_or_lab)
     if smol_areas < 0.055 and smol_areas > -0.025 then
         tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
         if random(1, 32) == 1 then
-            Generate_resources(buildings, p, Public.level_depth)
+            Generate_resources(buildings, p, zone_settings.zone_depth)
         end
         if random(1, 128) == 1 then
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
@@ -2054,7 +2214,7 @@ local function process_forest_zone_1(x, y, data, void_or_lab)
     end
 end
 
-local function process_level_1_position(x, y, data, void_or_lab)
+local function generate_zone_1(x, y, data, void_or_lab)
     local p = {x = x, y = y}
     local seed = data.seed
     local buildings = data.buildings
@@ -2070,7 +2230,7 @@ local function process_level_1_position(x, y, data, void_or_lab)
     if smol_areas < 0.055 and smol_areas > -0.025 then
         tiles[#tiles + 1] = {name = 'deepwater-green', position = p}
         if random(1, 32) == 1 then
-            Generate_resources(buildings, p, Public.level_depth)
+            Generate_resources(buildings, p, zone_settings.zone_depth)
         end
         if random(1, 32) == 1 then
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
@@ -2218,7 +2378,7 @@ local function process_level_1_position(x, y, data, void_or_lab)
     end
 end
 
-local function process_level_0_position(x, y, data, void_or_lab)
+local function starting_zone(x, y, data, void_or_lab)
     local p = {x = x, y = y}
     local seed = data.seed
     local buildings = data.buildings
@@ -2237,7 +2397,7 @@ local function process_level_0_position(x, y, data, void_or_lab)
     if smol_areas < 0.055 and smol_areas > -0.025 then
         entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
         if random(1, 32) == 1 then
-            Generate_resources(buildings, p, Public.level_depth)
+            Generate_resources(buildings, p, zone_settings.zone_depth)
         end
         if random(1, 128) == 1 then
             Biters.wave_defense_set_worm_raffle(abs(p.y) * worm_level_modifier)
@@ -2356,30 +2516,87 @@ local function process_level_0_position(x, y, data, void_or_lab)
     end
 end
 
-Public.levels = {
-    process_level_0_position,
-    process_level_1_position,
-    process_forest_zone_1, -- zone 3
-    process_level_3_position,
-    process_level_5_position,
-    process_scrap_zone_1, -- zone 6
-    process_level_9_position,
-    process_level_4_position,
-    process_level_2_position,
-    process_level_3_position,
-    process_forest_zone_2, -- zone 11
-    process_level_4_position,
-    process_level_5_position,
-    process_forest_zone_2, -- zone 14
-    process_level_7_position,
-    process_scrap_zone_1, -- zone 16
-    process_level_9_position,
-    process_level_10_position,
-    process_level_11_position,
-    process_level_12_position,
-    process_level_13_position,
-    process_level_14_position
+local zones = {
+    generate_zone_1,
+    generate_zone_forest_1,
+    generate_zone_3,
+    generate_zone_5,
+    generate_zone_11,
+    generate_zone_forest_2,
+    process_zone_scrap_1,
+    process_zone_scrap_2,
+    generate_zone_9,
+    generate_zone_4,
+    process_zone_scrap_1,
+    generate_zone_2,
+    generate_zone_3,
+    process_zone_scrap_2,
+    generate_zone_3,
+    generate_zone_forest_2,
+    generate_zone_4,
+    generate_zone_forest_1,
+    generate_zone_forest_2,
+    generate_zone_2,
+    generate_zone_4,
+    process_zone_scrap_2,
+    generate_zone_5,
+    generate_zone_1,
+    generate_zone_forest_2,
+    generate_zone_7,
+    process_zone_scrap_1,
+    generate_zone_9,
+    generate_zone_10,
+    generate_zone_11,
+    generate_zone_12,
+    generate_zone_forest_2,
+    process_zone_scrap_2,
+    process_zone_scrap_1,
+    generate_zone_11,
+    generate_zone_12,
+    process_zone_scrap_1,
+    generate_zone_13,
+    generate_zone_14,
+    process_zone_scrap_1,
+    generate_zone_forest_1,
+    generate_zone_14,
+    process_zone_scrap_2
 }
+
+--[[ local zones_non_raffled = {
+    generate_zone_1,
+    generate_zone_2,
+    generate_zone_3,
+    generate_zone_4,
+    generate_zone_5,
+    generate_zone_forest_1,
+    generate_zone_forest_2,
+    process_zone_scrap_1,
+    process_zone_scrap_2,
+    generate_zone_7,
+    generate_zone_9,
+    generate_zone_11,
+    generate_zone_10,
+    generate_zone_11,
+    generate_zone_12,
+    generate_zone_13,
+    generate_zone_14
+} ]]
+
+zone_settings.size = #zones
+
+local function shuffle_terrains(new_zone)
+    local adjusted_zones = WPT.get('adjusted_zones')
+
+    if not adjusted_zones.shuffled_terrains then
+        shuffle(zones)
+        adjusted_zones.shuffled_terrains = new_zone
+    end
+
+    -- if adjusted_zones.shuffled_terrains and adjusted_zones.shuffled_terrains ~= new_zone then
+    --     table.shuffle_table(zones)
+    --     adjusted_zones.shuffled_terrains = new_zone
+    -- end
+end
 
 local function is_out_of_map(p)
     if p.x < 480 and p.x >= -480 then
@@ -2389,12 +2606,30 @@ local function is_out_of_map(p)
 end
 
 local function process_bits(p, data)
-    local levels = Public.levels
     local left_top_y = data.area.left_top.y
-    local index = floor((abs(left_top_y / Public.level_depth)) % 22) + 1
-    local process_level = levels[index]
-    if not process_level then
-        process_level = levels[#levels]
+    local index = floor((abs(left_top_y / zone_settings.zone_depth)) % zone_settings.size) + 1
+    shuffle_terrains(index)
+
+    local generate_zone
+    if left_top_y >= -zone_settings.zone_depth then
+        generate_zone = starting_zone
+    else
+        generate_zone = zones[index]
+        if not generate_zone then
+            generate_zone = zones[zone_settings.size]
+        end
+    end
+
+    data.current_zone = index
+
+    local adjusted_zones = WPT.get('adjusted_zones')
+
+    if data.forest_zone and not adjusted_zones.forest[index] then
+        adjusted_zones.forest[index] = true
+    end
+
+    if data.scrap_zone and not adjusted_zones.scrap[index] then
+        adjusted_zones.scrap[index] = true
     end
 
     local void_or_tile = WPT.get('void_or_tile')
@@ -2402,7 +2637,7 @@ local function process_bits(p, data)
     local x = p.x
     local y = p.y
 
-    process_level(x, y, data, void_or_tile)
+    generate_zone(x, y, data, void_or_tile)
 end
 
 local function border_chunk(p, data)
@@ -2508,8 +2743,8 @@ function Public.heavy_functions(data)
         return
     end
 
-    if top_y % Public.level_depth == 0 and top_y < 0 then
-        WPT.set().left_top = data.left_top
+    if top_y % zone_settings.zone_depth == 0 and top_y < 0 then
+        WPT.set('left_top', data.left_top)
         return wall(p, data)
     end
 

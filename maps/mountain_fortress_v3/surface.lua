@@ -2,6 +2,7 @@ local Global = require 'utils.global'
 local surface_name = 'mountain_fortress_v3'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local Reset = require 'maps.mountain_fortress_v3.soft_reset'
+local zone_settings = WPT.zone_settings
 
 local Public = {}
 
@@ -22,7 +23,7 @@ local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16
 function Public.create_surface()
     local map_gen_settings = {
         ['seed'] = math.random(10000, 99999),
-        ['width'] = WPT.level_width,
+        ['width'] = zone_settings.zone_width,
         ['water'] = 0.001,
         ['starting_area'] = 1,
         ['cliff_settings'] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},

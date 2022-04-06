@@ -17,8 +17,11 @@ Global.register(
     end
 )
 
-Public.level_depth = 704
-Public.level_width = 510
+Public.zone_settings = {
+    zone_depth = 704,
+    zone_width = 510,
+    size = nil
+}
 
 Public.pickaxe_upgrades = {
     'Wood',
@@ -167,10 +170,9 @@ function Public.reset_table()
     this.chests_linked_to = {}
     this.chest_limit_outside_upgrades = 1
     this.placed_trains_in_zone = {
-        placed = 0,
-        positions = {},
         limit = 2,
-        randomized = false
+        randomized = false,
+        zones = {}
     }
     this.marked_fixed_prices = {
         chest_limit_cost = 3000,
@@ -225,6 +227,10 @@ function Public.reset_table()
     this.mc_rewards = {
         current = {},
         temp_boosts = {}
+    }
+    this.adjusted_zones = {
+        scrap = {},
+        forest = {}
     }
     this.alert_zone_1 = false -- alert the players
 
