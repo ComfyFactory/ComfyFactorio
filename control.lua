@@ -252,7 +252,7 @@ require 'utils.freeplay'
 
 --- this file exists only for the panel to sync and start from within the panel
 -- it does nothing if it's not synced from within the panel
-require 'utils/templates/map_loader'
+require 'map_loader'
 
 if _DUMP_ENV then
     require 'utils.dump_env'
