@@ -333,7 +333,7 @@ Gui.on_click(
         end
 
         local player = event.player
-        if not player or not player.valid or not player.character then
+        if not player or not player.valid then
             return
         end
 
@@ -373,13 +373,14 @@ Gui.on_click(
             return
         end
         local player = event.player
-        if not player or not player.valid or not player.character then
+        if not player or not player.valid then
             return
         end
         if game.tick > this.difficulty_poll_closing_timeout then
             clear_main_frame(player)
             return
         end
+
         local screen = player.gui.center
         if screen[main_frame_name] and screen[main_frame_name].valid then
             clear_main_frame(player)
@@ -397,7 +398,7 @@ Gui.on_click(
             return
         end
         local player = event.player
-        if not player or not player.valid or not player.character then
+        if not player or not player.valid then
             return
         end
         clear_main_frame(player)
