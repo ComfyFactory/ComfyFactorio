@@ -286,11 +286,6 @@ for i = 0, 511 do
     perm[i + 1] = p[bit32_band(i, 255) + 1]
 end
 
--- special case of dot with 3 inputs
-local function dot2(g, x, y)
-    return x * g[1] + y * g[2]
-end
-
 local F2 = 0.5 * (math.sqrt(3.0) - 1.0)
 local G2 = (3.0 - math.sqrt(3.0)) / 6.0
 
@@ -317,6 +312,7 @@ function Simplex.d2(xin, yin, seed)
         i1 = 0
         j1 = 1
     end
+
     -- upper triangle, YX order: (0,0)->(0,1)->(1,1)
     -- A step of (1,0) in (i,j) means a step of (1-c,-c) in (x,y), and
     -- a step of (0,1) in (i,j) means a step of (-c,1-c) in (x,y), where
@@ -339,7 +335,7 @@ function Simplex.d2(xin, yin, seed)
         n0 = 0.0
     else
         t0 = t0 * t0
-        n0 = t0 * t0 * dot2(grad3[gi0 + 1], x0, y0) -- (x,y) of grad3 used for 2D gradient
+        n0 = t0 * t0 * (x0 * grad3[gi0 + 1][1] + y0 * grad3[gi0 + 1][2]) -- (x,y) of grad3 used for 2D gradient
     end
 
     local t1 = 0.5 - x1 * x1 - y1 * y1
@@ -347,7 +343,7 @@ function Simplex.d2(xin, yin, seed)
         n1 = 0.0
     else
         t1 = t1 * t1
-        n1 = t1 * t1 * dot2(grad3[gi1 + 1], x1, y1)
+        n1 = t1 * t1 * (x1 * grad3[gi1 + 1][1] + y1 * grad3[gi1 + 1][2])
     end
 
     local t2 = 0.5 - x2 * x2 - y2 * y2
@@ -355,7 +351,7 @@ function Simplex.d2(xin, yin, seed)
         n2 = 0.0
     else
         t2 = t2 * t2
-        n2 = t2 * t2 * dot2(grad3[gi2 + 1], x2, y2)
+        n2 = t2 * t2 * (x2 * grad3[gi2 + 1][1] + y2 * grad3[gi2 + 1][2])
     end
 
     -- Add contributions from each corner to get the final noise value.
