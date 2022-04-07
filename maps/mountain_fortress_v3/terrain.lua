@@ -144,7 +144,7 @@ local function is_position_near(area, table_to_check)
     end
 
     for i = 1, #table_to_check do
-        if inside(table_to_check[i], area) then
+        if inside(table_to_check[i]) then
             status = true
         end
     end
@@ -152,7 +152,7 @@ local function is_position_near(area, table_to_check)
     return status
 end
 
-local function place_wagon(data)
+local function place_wagon(data, adjusted_zones)
     local placed_trains_in_zone = WPT.get('placed_trains_in_zone')
     if not placed_trains_in_zone.randomized then
         placed_trains_in_zone.limit = random(1, 2)
@@ -164,11 +164,11 @@ local function place_wagon(data)
         data.new_zone = 1
     end
 
-    if data.new_zone == zone_settings.size then
+    if data.new_zone == adjusted_zones.size then
         data.new_zone = 1
     end
 
-    if data.current_zone == zone_settings.size then
+    if data.current_zone == adjusted_zones.size then
         local new_zone = placed_trains_in_zone.zones[data.new_zone]
         if new_zone then
             new_zone.placed = 0
@@ -215,6 +215,7 @@ local function place_wagon(data)
 
     local location
     local direction
+
     local r1 = random(2, 4) * 2
     local r2 = random(2, 4) * 2
 
@@ -226,7 +227,7 @@ local function place_wagon(data)
         direction = 2
     end
 
-    for k, tile in pairs(location) do
+    for _, tile in pairs(location) do
         tiles[#tiles + 1] = {name = 'nuclear-ground', position = tile.position}
         if tile.position.y % 1 == 0 and tile.position.x % 1 == 0 then
             entities[#entities + 1] = {
@@ -458,7 +459,7 @@ local function wall(p, data)
     end
 end
 
-local function generate_zone_14(x, y, data)
+local function zone_14(x, y, data, _, adjusted_zones)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -510,7 +511,7 @@ local function generate_zone_14(x, y, data)
 
     if small_caves > -0.41 and small_caves < 0.41 then
         if noise_cave_ponds > 0.35 then
-            local success = place_wagon(data)
+            local success = place_wagon(data, adjusted_zones)
             if success then
                 return
             end
@@ -538,7 +539,7 @@ local function generate_zone_14(x, y, data)
     tiles[#tiles + 1] = {name = 'water-shallow', position = p}
 end
 
-local function generate_zone_13(x, y, data)
+local function zone_13(x, y, data, _, adjusted_zones)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -590,7 +591,7 @@ local function generate_zone_13(x, y, data)
 
     if small_caves > -0.40 and small_caves < 0.40 then
         if noise_cave_ponds > 0.35 then
-            local success = place_wagon(data)
+            local success = place_wagon(data, adjusted_zones)
             if success then
                 return
             end
@@ -618,7 +619,7 @@ local function generate_zone_13(x, y, data)
     tiles[#tiles + 1] = {name = 'water-shallow', position = p}
 end
 
-local function generate_zone_12(x, y, data, void_or_lab)
+local function zone_12(x, y, data, void_or_lab, adjusted_zones)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -653,7 +654,7 @@ local function generate_zone_12(x, y, data, void_or_lab)
     end
 
     if noise_1 < -0.72 then
-        local success = place_wagon(data)
+        local success = place_wagon(data, adjusted_zones)
         if success then
             return
         end
@@ -704,7 +705,7 @@ local function generate_zone_12(x, y, data, void_or_lab)
     tiles[#tiles + 1] = {name = 'tutorial-grid', position = p}
 end
 
-local function generate_zone_11(x, y, data)
+local function zone_11(x, y, data, _, adjusted_zones)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -767,7 +768,7 @@ local function generate_zone_11(x, y, data)
         }
     end
 
-    local success = place_wagon(data)
+    local success = place_wagon(data, adjusted_zones)
     if success then
         return
     end
@@ -800,7 +801,7 @@ local function generate_zone_11(x, y, data)
     end
 end
 
-local function generate_zone_10(x, y, data)
+local function zone_10(x, y, data, _, adjusted_zones)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -844,7 +845,7 @@ local function generate_zone_10(x, y, data)
         return
     end
     if abs(scrapyard) > 0.25 and abs(scrapyard) < 0.40 then
-        local success = place_wagon(data)
+        local success = place_wagon(data, adjusted_zones)
         if success then
             return
         end
@@ -914,7 +915,7 @@ local function generate_zone_10(x, y, data)
     tiles[#tiles + 1] = {name = 'grass-2', position = p}
 end
 
-local function generate_zone_9(x, y, data)
+local function zone_9(x, y, data, _, adjusted_zones)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -949,7 +950,7 @@ local function generate_zone_9(x, y, data)
     end
 
     if maze_noise > 0 and maze_noise < 0.45 then
-        local success = place_wagon(data)
+        local success = place_wagon(data, adjusted_zones)
         if success then
             return
         end
@@ -987,7 +988,7 @@ local function generate_zone_9(x, y, data)
 end
 
 --SCRAPYARD
-local function process_zone_scrap_2(x, y, data, void_or_lab)
+local function zone_scrap_2(x, y, data, void_or_lab, adjusted_zones)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -1033,7 +1034,7 @@ local function process_zone_scrap_2(x, y, data, void_or_lab)
             return
         end
         if scrapyard_modified < -0.28 or scrapyard_modified > 0.28 then
-            local success = place_wagon(data)
+            local success = place_wagon(data, adjusted_zones)
             if success then
                 return
             end
@@ -1116,7 +1117,7 @@ local function process_zone_scrap_2(x, y, data, void_or_lab)
 end
 
 --SCRAPYARD
-local function process_zone_scrap_1(x, y, data, void_or_lab)
+local function zone_scrap_1(x, y, data, void_or_lab, adjusted_zones)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -1162,7 +1163,7 @@ local function process_zone_scrap_1(x, y, data, void_or_lab)
             return
         end
         if scrapyard < -0.28 or scrapyard > 0.28 then
-            local success = place_wagon(data)
+            local success = place_wagon(data, adjusted_zones)
             if success then
                 return
             end
@@ -1244,7 +1245,7 @@ local function process_zone_scrap_1(x, y, data, void_or_lab)
     end
 end
 
-local function generate_zone_7(x, y, data, void_or_lab)
+local function zone_7(x, y, data, void_or_lab, adjusted_zones)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -1304,7 +1305,7 @@ local function generate_zone_7(x, y, data, void_or_lab)
     if cave_rivers_4 > -0.20 and cave_rivers_4 < 0.20 then
         tiles[#tiles + 1] = {name = 'grass-' .. floor(cave_rivers_4 * 32) % 3 + 1, position = p}
         if cave_rivers_4 > -0.10 and cave_rivers_4 < 0.10 then
-            local success = place_wagon(data)
+            local success = place_wagon(data, adjusted_zones)
             if success then
                 return
             end
@@ -1361,7 +1362,7 @@ local function generate_zone_7(x, y, data, void_or_lab)
     end
 end
 
-local function generate_zone_forest_2(x, y, data, void_or_lab)
+local function zone_forest_2(x, y, data, void_or_lab, adjusted_zones)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -1418,7 +1419,7 @@ local function generate_zone_forest_2(x, y, data, void_or_lab)
     end
     local noise_forest_location = get_perlin('forest_location', p, seed)
     if cave_rivers > -0.1 and cave_rivers < 0.1 then
-        local success = place_wagon(data)
+        local success = place_wagon(data, adjusted_zones)
         if success then
             return
         end
@@ -1497,7 +1498,7 @@ local function generate_zone_forest_2(x, y, data, void_or_lab)
     end
 end
 
-local function generate_zone_5(x, y, data, void_or_lab)
+local function zone_5(x, y, data, void_or_lab, adjusted_zones)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -1561,7 +1562,7 @@ local function generate_zone_5(x, y, data, void_or_lab)
 
     if small_caves > -0.40 and small_caves < 0.40 then
         if noise_cave_ponds > 0.35 then
-            local success = place_wagon(data)
+            local success = place_wagon(data, adjusted_zones)
             if success then
                 return
             end
@@ -1589,7 +1590,7 @@ local function generate_zone_5(x, y, data, void_or_lab)
     tiles[#tiles + 1] = {name = void_or_lab, position = p}
 end
 
-local function generate_zone_4(x, y, data, void_or_lab)
+local function zone_4(x, y, data, void_or_lab, adjusted_zones)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -1632,7 +1633,7 @@ local function generate_zone_4(x, y, data, void_or_lab)
                 note = true
             }
         end
-        local success = place_wagon(data)
+        local success = place_wagon(data, adjusted_zones)
         if success then
             return
         end
@@ -1720,7 +1721,7 @@ local function generate_zone_4(x, y, data, void_or_lab)
     tiles[#tiles + 1] = {name = void_or_lab, position = p}
 end
 
-local function generate_zone_3(x, y, data, void_or_lab)
+local function zone_3(x, y, data, void_or_lab, adjusted_zones)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -1857,7 +1858,7 @@ local function generate_zone_3(x, y, data, void_or_lab)
         --Main Rock Terrain
         local no_rocks_2 = get_perlin('no_rocks_2', p, seed + 75000)
         if no_rocks_2 > 0.80 or no_rocks_2 < -0.80 then
-            local success = place_wagon(data)
+            local success = place_wagon(data, adjusted_zones)
             if success then
                 return
             end
@@ -1886,7 +1887,7 @@ local function generate_zone_3(x, y, data, void_or_lab)
     end
 end
 
-local function generate_zone_2(x, y, data, void_or_lab)
+local function zone_2(x, y, data, void_or_lab, adjusted_zones)
     local p = {x = x, y = y}
     local seed = data.seed
     local tiles = data.tiles
@@ -2005,7 +2006,7 @@ local function generate_zone_2(x, y, data, void_or_lab)
         --Main Rock Terrain
         local no_rocks_2 = get_perlin('no_rocks_2', p, seed + 75000)
         if no_rocks_2 > 0.80 or no_rocks_2 < -0.80 then
-            local success = place_wagon(data)
+            local success = place_wagon(data, adjusted_zones)
             if success then
                 return
             end
@@ -2030,7 +2031,7 @@ local function generate_zone_2(x, y, data, void_or_lab)
     tiles[#tiles + 1] = {name = void_or_lab, position = p}
 end
 
-local function generate_zone_forest_1(x, y, data, void_or_lab)
+local function zone_forest_1(x, y, data, void_or_lab, adjusted_zones)
     local p = {x = x, y = y}
     local seed = data.seed
     local buildings = data.buildings
@@ -2149,7 +2150,7 @@ local function generate_zone_forest_1(x, y, data, void_or_lab)
     --Main Rock Terrain
     local no_rocks_2 = get_perlin('no_rocks_2', p, seed + 5000)
     if no_rocks_2 > 0.64 or no_rocks_2 < -0.64 then
-        local success = place_wagon(data)
+        local success = place_wagon(data, adjusted_zones)
         if success then
             return
         end
@@ -2214,7 +2215,7 @@ local function generate_zone_forest_1(x, y, data, void_or_lab)
     end
 end
 
-local function generate_zone_1(x, y, data, void_or_lab)
+local function zone_1(x, y, data, void_or_lab, adjusted_zones)
     local p = {x = x, y = y}
     local seed = data.seed
     local buildings = data.buildings
@@ -2331,7 +2332,7 @@ local function generate_zone_1(x, y, data, void_or_lab)
     --Main Rock Terrain
     local no_rocks_2 = get_perlin('no_rocks_2', p, seed + 75000)
     if no_rocks_2 > 0.66 or no_rocks_2 < -0.66 then
-        local success = place_wagon(data)
+        local success = place_wagon(data, adjusted_zones)
         if success then
             return
         end
@@ -2378,7 +2379,7 @@ local function generate_zone_1(x, y, data, void_or_lab)
     end
 end
 
-local function starting_zone(x, y, data, void_or_lab)
+local function starting_zone(x, y, data, void_or_lab, adjusted_zones)
     local p = {x = x, y = y}
     local seed = data.seed
     local buildings = data.buildings
@@ -2492,7 +2493,7 @@ local function starting_zone(x, y, data, void_or_lab)
 
     --Main Rock Terrain
     if no_rocks_2 > 0.334 and no_rocks_2 < 0.544 then
-        local success = place_wagon(data)
+        local success = place_wagon(data, adjusted_zones)
         if success then
             return
         end
@@ -2517,78 +2518,27 @@ local function starting_zone(x, y, data, void_or_lab)
 end
 
 local zones = {
-    generate_zone_1,
-    generate_zone_forest_1,
-    generate_zone_3,
-    generate_zone_5,
-    generate_zone_11,
-    generate_zone_forest_2,
-    process_zone_scrap_1,
-    process_zone_scrap_2,
-    generate_zone_9,
-    generate_zone_4,
-    process_zone_scrap_1,
-    generate_zone_2,
-    generate_zone_3,
-    process_zone_scrap_2,
-    generate_zone_3,
-    generate_zone_forest_2,
-    generate_zone_4,
-    generate_zone_forest_1,
-    generate_zone_forest_2,
-    generate_zone_2,
-    generate_zone_4,
-    process_zone_scrap_2,
-    generate_zone_5,
-    generate_zone_1,
-    generate_zone_forest_2,
-    generate_zone_7,
-    process_zone_scrap_1,
-    generate_zone_9,
-    generate_zone_10,
-    generate_zone_11,
-    generate_zone_12,
-    generate_zone_forest_2,
-    process_zone_scrap_2,
-    process_zone_scrap_1,
-    generate_zone_11,
-    generate_zone_12,
-    process_zone_scrap_1,
-    generate_zone_13,
-    generate_zone_14,
-    process_zone_scrap_1,
-    generate_zone_forest_1,
-    generate_zone_14,
-    process_zone_scrap_2
+    ['zone_1'] = zone_1,
+    ['zone_2'] = zone_2,
+    ['zone_3'] = zone_3,
+    ['zone_4'] = zone_4,
+    ['zone_5'] = zone_5,
+    ['zone_forest_1'] = zone_forest_1,
+    ['zone_forest_2'] = zone_forest_2,
+    ['zone_scrap_1'] = zone_scrap_1,
+    ['zone_scrap_2'] = zone_scrap_2,
+    ['zone_7'] = zone_7,
+    ['zone_9'] = zone_9,
+    ['zone_10'] = zone_10,
+    ['zone_11'] = zone_11,
+    ['zone_12'] = zone_12,
+    ['zone_13'] = zone_13,
+    ['zone_14'] = zone_14
 }
 
---[[ local zones_non_raffled = {
-    generate_zone_1,
-    generate_zone_2,
-    generate_zone_3,
-    generate_zone_4,
-    generate_zone_5,
-    generate_zone_forest_1,
-    generate_zone_forest_2,
-    process_zone_scrap_1,
-    process_zone_scrap_2,
-    generate_zone_7,
-    generate_zone_9,
-    generate_zone_11,
-    generate_zone_10,
-    generate_zone_11,
-    generate_zone_12,
-    generate_zone_13,
-    generate_zone_14
-} ]]
-
-zone_settings.size = #zones
-
-local function shuffle_terrains(new_zone)
-    local adjusted_zones = WPT.get('adjusted_zones')
-
+local function shuffle_terrains(adjusted_zones, new_zone)
     if not adjusted_zones.shuffled_terrains then
-        shuffle(zones)
+        shuffle(adjusted_zones.shuffled_zones)
         adjusted_zones.shuffled_terrains = new_zone
     end
 
@@ -2605,24 +2555,42 @@ local function is_out_of_map(p)
     return true
 end
 
-local function process_bits(p, data)
+local function init_terrain(adjusted_zones)
+    if adjusted_zones.init_terrain then
+        return
+    end
+
+    local count = 1
+    local shuffled_zones = {}
+
+    for zone_name, _ in pairs(zones) do
+        shuffled_zones[count] = zone_name
+        count = count + 1
+    end
+
+    adjusted_zones.size = count
+    adjusted_zones.shuffled_zones = shuffled_zones
+    adjusted_zones.init_terrain = true
+end
+
+local function process_bits(p, data, adjusted_zones)
     local left_top_y = data.area.left_top.y
-    local index = floor((abs(left_top_y / zone_settings.zone_depth)) % zone_settings.size) + 1
-    shuffle_terrains(index)
+
+    local index = floor((abs(left_top_y / zone_settings.zone_depth)) % adjusted_zones.size) + 1
+
+    shuffle_terrains(adjusted_zones, index)
 
     local generate_zone
     if left_top_y >= -zone_settings.zone_depth then
         generate_zone = starting_zone
     else
-        generate_zone = zones[index]
+        generate_zone = zones[adjusted_zones.shuffled_zones[index]]
         if not generate_zone then
-            generate_zone = zones[zone_settings.size]
+            generate_zone = zones[adjusted_zones.shuffled_zones[adjusted_zones.size]]
         end
     end
 
     data.current_zone = index
-
-    local adjusted_zones = WPT.get('adjusted_zones')
 
     if data.forest_zone and not adjusted_zones.forest[index] then
         adjusted_zones.forest[index] = true
@@ -2637,7 +2605,7 @@ local function process_bits(p, data)
     local x = p.x
     local y = p.y
 
-    generate_zone(x, y, data, void_or_tile)
+    generate_zone(x, y, data, void_or_tile, adjusted_zones)
 end
 
 local function border_chunk(p, data)
@@ -2729,6 +2697,9 @@ function Public.heavy_functions(data)
     local p = data.position
     local get_tile = surface.get_tile(p)
 
+    local adjusted_zones = WPT.get('adjusted_zones')
+    init_terrain(adjusted_zones)
+
     local map_name = 'mountain_fortress_v3'
 
     if string.sub(surface.name, 0, #map_name) ~= map_name then
@@ -2749,7 +2720,7 @@ function Public.heavy_functions(data)
     end
 
     if top_y < 0 then
-        return process_bits(p, data)
+        return process_bits(p, data, adjusted_zones)
     end
 
     if top_y > 120 then

@@ -19,8 +19,7 @@ Global.register(
 
 Public.zone_settings = {
     zone_depth = 704,
-    zone_width = 510,
-    size = nil
+    zone_width = 510
 }
 
 Public.pickaxe_upgrades = {
@@ -230,9 +229,12 @@ function Public.reset_table()
     }
     this.adjusted_zones = {
         scrap = {},
-        forest = {}
+        forest = {},
+        size = nil,
+        shuffled_zones = nil
     }
     this.alert_zone_1 = false -- alert the players
+    this.radars_reveal_new_chunks = false -- allows for the player to explore the map instead
 
     for k, _ in pairs(this.players) do
         this.players[k] = {}
@@ -270,10 +272,6 @@ function Public.remove(key, sub_key)
     end
 end
 
-local on_init = function()
-    Public.reset_table()
-end
-
-Event.on_init(on_init)
+Event.on_init(Public.reset_table)
 
 return Public

@@ -13,6 +13,7 @@ local Difficulty = require 'modules.difficulty_vote_by_amount'
 local ICW_Func = require 'maps.mountain_fortress_v3.icw.functions'
 local math2d = require 'math2d'
 local Misc = require 'utils.commands.misc'
+local Core = require 'utils.core'
 local zone_settings = WPT.zone_settings
 
 local this = {
@@ -159,7 +160,7 @@ local function do_magic_crafters()
 
     local index = magic_crafters.index
 
-    for i = 1, magic_crafters_per_tick do
+    for _ = 1, magic_crafters_per_tick do
         if index > limit then
             index = 1
         end
@@ -211,7 +212,7 @@ local function do_magic_fluid_crafters()
 
     local index = magic_fluid_crafters.index
 
-    for i = 1, magic_fluid_crafters_per_tick do
+    for _ = 1, magic_fluid_crafters_per_tick do
         if index > limit then
             index = 1
         end
@@ -430,7 +431,7 @@ Public.disable_minable_and_ICW_callback =
     function(entity)
         if entity and entity.valid then
             entity.minable = false
-            ICW.register_wagon(entity, true)
+            ICW.register_wagon(entity)
         end
     end
 )
@@ -791,12 +792,13 @@ local function calc_players()
         return #players
     end
     local total = 0
-    for i = 1, #players do
-        local player = players[i]
-        if player.afk_time < 36000 then
-            total = total + 1
+    Core.iter_connected_players(
+        function(player)
+            if player.afk_time < 36000 then
+                total = total + 1
+            end
         end
-    end
+    )
     if total <= 0 then
         total = #players
     end

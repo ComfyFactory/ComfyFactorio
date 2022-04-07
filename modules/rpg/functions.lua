@@ -519,7 +519,7 @@ function Public.update_player_stats(player)
     local rpg_extra = Public.get('rpg_extra')
     local rpg_t = Public.get_value_from_player(player.index)
     local strength = rpg_t.strength - 10
-    P.update_single_modifier(player, 'character_inventory_slots_bonus', 'rpg', round(strength * 0.1, 3))
+    P.update_single_modifier(player, 'character_inventory_slots_bonus', 'rpg', round(strength * 0.2, 3))
     P.update_single_modifier(player, 'character_mining_speed_modifier', 'rpg', round(strength * 0.006, 3))
     P.update_single_modifier(player, 'character_maximum_following_robot_count_bonus', 'rpg', round(strength / 2 * 0.03, 3))
 

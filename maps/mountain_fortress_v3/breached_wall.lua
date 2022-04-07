@@ -125,8 +125,12 @@ end
 local compare_player_pos = function(player)
     local p = player.position
     local index = player.index
-    local zone = floor((abs(p.y / zone_settings.zone_depth)) % zone_settings.size) + 1
     local adjusted_zones = WPT.get('adjusted_zones')
+    if not adjusted_zones.size then
+        return
+    end
+
+    local zone = floor((abs(p.y / zone_settings.zone_depth)) % adjusted_zones.size) + 1
 
     if adjusted_zones.scrap[zone] then
         RPG.set_value_to_player(index, 'scrap_zone', true)

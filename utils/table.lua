@@ -1,3 +1,4 @@
+---@diagnostic disable: undefined-field
 --luacheck: globals table
 local Stats = require 'utils.stats'
 local random = math.random

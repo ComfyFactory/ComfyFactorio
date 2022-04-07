@@ -127,22 +127,22 @@ local function add_global_stats(frame, player)
     local t = frame.add {type = 'table', column_count = 5}
 
     local l = t.add {type = 'label', caption = 'Rockets launched: '}
-    l.style.font = 'default-game'
+    l.style.font = 'heading-2'
     l.style.font_color = {r = 175, g = 75, b = 255}
     l.style.minimal_width = 140
 
     local rocketsLaunched_label = t.add {type = 'label', caption = format_number(player.force.rockets_launched, true)}
-    rocketsLaunched_label.style.font = 'default-listbox'
+    rocketsLaunched_label.style.font = 'heading-3'
     rocketsLaunched_label.style.font_color = {r = 0.9, g = 0.9, b = 0.9}
     rocketsLaunched_label.style.minimal_width = 123
 
     local bugs_dead_label = t.add {type = 'label', caption = 'Dead bugs: '}
-    bugs_dead_label.style.font = 'default-game'
+    bugs_dead_label.style.font = 'heading-2'
     bugs_dead_label.style.font_color = {r = 0.90, g = 0.3, b = 0.3}
     bugs_dead_label.style.minimal_width = 100
 
     local killcount_label = t.add {type = 'label', caption = format_number(tonumber(get_total_biter_killcount(player.force)), true)}
-    killcount_label.style.font = 'default-listbox'
+    killcount_label.style.font = 'heading-3'
     killcount_label.style.font_color = {r = 0.9, g = 0.9, b = 0.9}
     killcount_label.style.minimal_width = 145
 end
@@ -191,10 +191,10 @@ local function show_score(data)
             caption = cap,
             name = header.name
         }
-        label.style.font = 'default-listbox'
+        label.style.font = 'heading-2'
         label.style.font_color = {r = 0.98, g = 0.66, b = 0.22} -- yellow
         label.style.minimal_width = 150
-        label.style.horizontal_align = 'right'
+        label.style.horizontal_align = 'center'
     end
 
     -- Score list
@@ -243,10 +243,10 @@ local function show_score(data)
                 caption = column.caption,
                 color = column.color or default_color
             }
-            label.style.font = 'default'
+            label.style.font = 'heading-3'
             label.style.minimal_width = 150
             label.style.maximal_width = 150
-            label.style.horizontal_align = 'right'
+            label.style.horizontal_align = 'center'
         end -- foreach column
     end -- foreach entry
 end

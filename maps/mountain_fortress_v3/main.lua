@@ -313,7 +313,8 @@ end
 
 local is_player_valid = function()
     local players = game.connected_players
-    for _, player in pairs(players) do
+    for i = 1, #players do
+        local player = players[i]
         if player.connected and player.controller_type == 2 then
             player.set_controller {type = defines.controllers.god}
             player.create_character()
@@ -467,9 +468,11 @@ end
 local on_tick = function()
     local update_gui = Gui_mf.update_gui
     local tick = game.tick
+    local players = game.connected_players
 
     if tick % 40 == 0 then
-        for _, player in pairs(game.connected_players) do
+        for i = 1, #players do
+            local player = players[i]
             update_gui(player)
         end
         lock_locomotive_positions()
@@ -537,5 +540,24 @@ end
 Event.on_nth_tick(10, on_tick)
 Event.on_init(on_init)
 Event.add(WPT.events.reset_map, Public.reset_map)
+Event.add(
+    defines.events.on_sector_scanned,
+    function(event)
+        local radar = event.radar
+        if not radar or not radar.valid then
+            return
+        end
+
+        local radars_reveal_new_chunks = WPT.get('radars_reveal_new_chunks')
+        if radars_reveal_new_chunks then
+            return
+        end
+
+        local pos = event.chunk_position
+
+        radar.force.cancel_charting(radar.surface.index)
+        radar.force.unchart_chunk(pos, radar.surface.index)
+    end
+)
 
 return Public
