@@ -211,7 +211,7 @@ local function set_location(player, state)
 end
 
 --- Activates the custom buttons
----@param boolean
+---@param value boolean
 function Public.activate_custom_buttons(value)
     if value then
         this.activate_custom_buttons = value
