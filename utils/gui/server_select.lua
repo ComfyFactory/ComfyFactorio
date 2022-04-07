@@ -66,42 +66,44 @@ local function draw_main_frame(player)
         }
     else
         for _, i in ipairs(instances) do
-            viewer_table.add {
-                type = 'label',
-                caption = i.name,
-                tooltip = i.connected .. '\nVersion: ' .. i.version,
-                style = 'caption_label'
-            }
-            local flow = viewer_table.add {type = 'flow'}
-            flow.style.horizontal_align = 'right'
-            flow.style.horizontally_stretchable = true
-            local empty_flow = viewer_table.add {type = 'flow'}
-            local button =
-                empty_flow.add {
-                type = 'button',
-                caption = 'Connect',
-                tooltip = 'Click to connect to this server.\n' .. i.connected .. '\nVersion: ' .. i.version,
-                name = instance_id_name
-            }
-            Gui.set_data(button, i.id)
-            apply_button_style(button)
+            if string.len(i.name) > 1 then
+                viewer_table.add {
+                    type = 'label',
+                    caption = i.name,
+                    tooltip = i.connected .. '\nVersion: ' .. i.version,
+                    style = 'caption_label'
+                }
+                local flow = viewer_table.add {type = 'flow'}
+                flow.style.horizontal_align = 'right'
+                flow.style.horizontally_stretchable = true
+                local empty_flow = viewer_table.add {type = 'flow'}
+                local button =
+                    empty_flow.add {
+                    type = 'button',
+                    caption = 'Connect',
+                    tooltip = 'Click to connect to this server.\n' .. i.connected .. '\nVersion: ' .. i.version,
+                    name = instance_id_name
+                }
+                Gui.set_data(button, i.id)
+                apply_button_style(button)
 
-            if i.id == instance.id then
-                button.enabled = false
-                button.tooltip = 'You are here'
-            elseif i.status == 'unknown' then
-                button.enabled = i.game_port ~= nil
-                button.style.font_color = {r = 0.65}
-                button.style.hovered_font_color = {r = 0.65}
-                button.style.clicked_font_color = {r = 0.65}
-                button.style.disabled_font_color = {r = 0.75, g = 0.1, b = 0.1}
-                button.tooltip = 'Unknown status for this server'
-            elseif i.status ~= 'running' then
-                button.enabled = false
-                button.tooltip = 'This server is offline'
-            elseif i.version ~= instance.version then
-                button.enabled = false
-                button.tooltip = "We're on version: " .. instance.version .. '\nDestination server is on version: ' .. i.version
+                if i.id == instance.id then
+                    button.enabled = false
+                    button.tooltip = 'You are here'
+                elseif i.status == 'unknown' then
+                    button.enabled = i.game_port ~= nil
+                    button.style.font_color = {r = 0.65}
+                    button.style.hovered_font_color = {r = 0.65}
+                    button.style.clicked_font_color = {r = 0.65}
+                    button.style.disabled_font_color = {r = 0.75, g = 0.1, b = 0.1}
+                    button.tooltip = 'Unknown status for this server'
+                elseif i.status ~= 'running' then
+                    button.enabled = false
+                    button.tooltip = 'This server is offline'
+                elseif i.version ~= instance.version then
+                    button.enabled = false
+                    button.tooltip = "We're on version: " .. instance.version .. '\nDestination server is on version: ' .. i.version
+                end
             end
         end
     end
