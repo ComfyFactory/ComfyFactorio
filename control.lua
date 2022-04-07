@@ -250,8 +250,9 @@ require 'utils.freeplay'
 --require 'terrain_layouts.scrap_towny_ffa'
 ---------------------------------------------------------------
 
--- this file exists only for the panel to sync and start from within the panel
-require 'map_loader'
+--- this file exists only for the panel to sync and start from within the panel
+-- it does nothing if it's not synced from within the panel
+require 'utils/templates/map_loader'
 
 if _DUMP_ENV then
     require 'utils.dump_env'
