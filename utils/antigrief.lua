@@ -88,7 +88,7 @@ end
 
 -- Removes the first 100 entries of a table
 local function overflow(t)
-    for _=1,100,1 do
+    for _ = 1, 100, 1 do
         table.remove(t, 1)
     end
 end
@@ -352,12 +352,7 @@ local function on_player_used_capsule(event)
 
             local prefix = '[Capsule]'
             msg = format(player.name .. ' damaged: %s with: %s', get_entities(name, entities), name)
-            local ban_msg =
-                format(
-                'Damaged: %s with: %s. This action was performed automatically. Visit getcomfy.eu/discord for forgiveness',
-                get_entities(name, entities),
-                name
-            )
+            local ban_msg = format('Damaged: %s with: %s. This action was performed automatically. Visit getcomfy.eu/discord for forgiveness', get_entities(name, entities), name)
 
             do_action(player, prefix, msg, ban_msg, true)
         else
@@ -736,13 +731,7 @@ local function on_player_cancelled_crafting(event)
 
             player.character.die('player')
 
-            Utils.action_warning(
-                '[Crafting]',
-                player.name ..
-                    ' canceled their craft of item ' ..
-                        event.recipe.name ..
-                            ' of total count ' .. crafting_queue_item_count .. ' in raw items (' .. crafted_items .. ' slots) but had no inventory left.'
-            )
+            Utils.action_warning('[Crafting]', player.name .. ' canceled their craft of item ' .. event.recipe.name .. ' of total count ' .. crafting_queue_item_count .. ' in raw items (' .. crafted_items .. ' slots) but had no inventory left.')
         end
 
         if not this.cancel_crafting_history then
@@ -865,9 +854,9 @@ local function on_permission_string_imported(event)
 end
 
 --- This is used for the RPG module, when casting capsules.
----@param player <LuaPlayer>
----@param position <EventPosition>
----@param msg <string>
+---@param player userdata
+---@param position table
+---@param msg string
 function Public.insert_into_capsule_history(player, position, msg)
     if not this.capsule_history then
         this.capsule_history = {}
@@ -901,8 +890,8 @@ function Public.reset_tables()
 end
 
 --- Add entity type to the whitelist so it gets logged.
----@param key <string>
----@param value <string>
+---@param key string
+---@param value string
 function Public.whitelist_types(key, value)
     if key and value then
         this.whitelist_types[key] = value
@@ -912,35 +901,35 @@ function Public.whitelist_types(key, value)
 end
 
 --- If the event should also check trusted players.
----@param value <string>
+---@param value string
 function Public.do_not_check_trusted(value)
     this.do_not_check_trusted = value or false
     return this.do_not_check_trusted
 end
 
 --- If ANY actions should be performed when a player misbehaves.
----@param value <string>
+---@param value string
 function Public.enable_capsule_warning(value)
     this.enable_capsule_warning = value or false
     return this.enable_capsule_warning
 end
 
 --- If ANY actions should be performed when a player misbehaves.
----@param value <string>
+---@param value string
 function Public.enable_capsule_cursor_warning(value)
     this.enable_capsule_cursor_warning = value or false
     return this.enable_capsule_cursor_warning
 end
 
 --- If the script should jail a person instead of kicking them
----@param value <string>
+---@param value string
 function Public.enable_jail(value)
     this.enable_jail = value or false
     return this.enable_jail
 end
 
 --- Defines what the threshold for amount of explosives in chest should be - logged or not.
----@param value <string>
+---@param value string
 function Public.explosive_threshold(value)
     if value then
         this.explosive_threshold = value
@@ -950,7 +939,7 @@ function Public.explosive_threshold(value)
 end
 
 --- Defines what the threshold for amount of times before the script should take action.
----@param value <string>
+---@param value string
 function Public.damage_entity_threshold(value)
     if value then
         this.damage_entity_threshold = value

@@ -298,6 +298,7 @@ local function custom_handler_factory(handlers)
 end
 
 --luacheck: ignore custom_raise
+---@diagnostic disable-next-line: unused-function, unused-local
 local function custom_raise(handlers, element, player)
     local handler = handlers[element.name]
     if not handler then
@@ -355,8 +356,8 @@ function Public.get_parent_frame(player)
 end
 
 --- This adds the given gui to the top gui.
----@param player <userdata>
----@param frame <object>
+---@param player userdata
+---@param frame userdata
 function Public.add_mod_button(player, frame)
     if Public.get_button_flow(player)[frame.name] and Public.get_button_flow(player)[frame.name].valid then
         return
@@ -365,7 +366,7 @@ function Public.add_mod_button(player, frame)
     Public.get_button_flow(player).add(frame)
 end
 
----@param state <bool>
+---@param state boolean
 --- If we should use the new mod gui or not
 function Public.set_mod_gui_top_frame(state)
     settings.mod_gui_top_frame = state or false
@@ -377,7 +378,7 @@ function Public.get_mod_gui_top_frame()
 end
 
 --- This adds the given gui to the main gui.
----@param tbl
+---@param tbl table
 function Public.add_tab_to_gui(tbl)
     if not tbl then
         return
@@ -411,7 +412,7 @@ function Public.screen_to_bypass(elem)
 end
 
 --- Fetches the main gui tabs. You are forbidden to write as this is local.
----@param key
+---@param key string
 function Public.get(key)
     if key then
         return main_gui_tabs[key]
