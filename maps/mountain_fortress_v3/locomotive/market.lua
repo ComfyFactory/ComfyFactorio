@@ -553,6 +553,7 @@ local function redraw_market_items(gui, player, search_text)
                 frame.add(
                 {
                     type = 'sprite-button',
+                    ---@diagnostic disable-next-line: ambiguity-1
                     sprite = data.sprite or 'item/' .. item,
                     number = item_count,
                     name = item,
@@ -611,6 +612,7 @@ local function redraw_market_items(gui, player, search_text)
                 frame.add(
                 {
                     type = 'sprite-button',
+                    ---@diagnostic disable-next-line: ambiguity-1
                     sprite = data.sprite or 'item/' .. item,
                     number = item_count,
                     name = item,
