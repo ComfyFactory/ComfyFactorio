@@ -521,7 +521,7 @@ local function on_gui_click(event)
     end
 
     local player = game.players[event.element.player_index]
-    local frame = Tabs.comfy_panel_get_active_frame(player)
+    local frame = Tabs.get_player_active_frame(player)
     if not frame then
         return
     end
