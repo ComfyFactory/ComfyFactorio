@@ -59,7 +59,6 @@ end
 
 local function chest_is_valid(chest)
    if this.dungeons_initial_level ~= nil then
-      -- game.print('ERIC cpos ' .. serpent.line(chest.position))
       if chest.position.x == -3.5 or chest.position.x == 4.5 then
 	  if chest.surface.index == this.dungeons_initial_level then
 	     if chest.position.y == 4.5 then

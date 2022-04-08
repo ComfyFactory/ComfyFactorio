@@ -814,8 +814,6 @@ local function on_init()
     rpg_table.personal_tax_rate = 0
     -- rpg_table.enable_mana = true
     -- setup_magic()
-    local misc = require 'utils.commands.misc'
-    misc.set_always_allow_clear_corpses(true)
 
     local T = MapInfo.Pop_info()
     T.localised_category = 'dungeons_tiered'
