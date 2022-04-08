@@ -569,9 +569,16 @@ function Public.cast_spell(player, failed)
             }
             player.surface.create_entity({name = 'flying-text', position = p, text = '✔️', color = {255, math.random(0, 100), 0}})
         end
-        player.play_sound {path = 'utility/scenario_message', volume_modifier = 0.50}
+        player.play_sound {path = 'utility/scenario_message', volume_modifier = 1}
     else
-        player.play_sound {path = 'utility/cannot_build', volume_modifier = 0.50}
+        for _ = 1, 3, 1 do
+            local p = {
+                (position.x + 0.4) + (b * -1 + math.random(0, b * 20) * 0.1),
+                position.y + (b * -1 + math.random(0, b * 20) * 0.1)
+            }
+            player.surface.create_entity({name = 'flying-text', position = p, text = '✖', color = {255, math.random(0, 100), 0}})
+        end
+        player.play_sound {path = 'utility/cannot_build', volume_modifier = 1}
     end
 end
 
@@ -852,6 +859,7 @@ function Public.rpg_reset_all_players()
     rpg_extra.global_pool = 0
 end
 
+-- local Public = require 'modules.rpg.table' Public.gain_xp(game.players['Gerkiz'], 5012, true)
 function Public.gain_xp(player, amount, added_to_pool, text)
     if not Public.validate_player(player) then
         return
