@@ -1,10 +1,9 @@
 local Event = require 'utils.event'
 local Global = require 'utils.global'
-local Tabs = require 'comfy_panel.main'
-local SpamProtection = require 'utils.spam_protection'
+local Gui = require 'utils.gui'
 local Token = require 'utils.token'
 
-local module_name = 'Map Info'
+local module_name = Gui.uid_name()
 
 local map_info = {
     localised_category = false,
@@ -85,14 +84,6 @@ local function create_map_intro(data)
     l_3.style.minimal_width = 780
     l_3.style.horizontal_align = 'center'
     l_3.style.vertical_align = 'center'
-
-    local b = frame.add {type = 'button', caption = 'CLOSE', name = 'close_map_intro'}
-    b.style.font = 'heading-2'
-    b.style.padding = 2
-    b.style.top_margin = 3
-    b.style.left_margin = 333
-    b.style.horizontal_align = 'center'
-    b.style.vertical_align = 'center'
 end
 
 local create_map_intro_token = Token.register(create_map_intro)
@@ -100,52 +91,20 @@ local create_map_intro_token = Token.register(create_map_intro)
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
     if player.online_time == 0 then
-        Tabs.comfy_panel_call_tab(player, 'Map Info')
+        Gui.call_existing_tab(player, 'Map Info')
     end
 end
 
-local function on_gui_click(event)
-    if not event then
-        return
-    end
-    local player = game.get_player(event.player_index)
-    if not (player and player.valid) then
-        return
-    end
-
-    if not event.element then
-        return
-    end
-    if not event.element.valid then
-        return
-    end
-
-    local name = event.element.name
-
-    if not name then
-        return
-    end
-
-    if name == 'tab_' .. module_name then
-        local is_spamming = SpamProtection.is_spamming(player, nil, 'Map Info Main Button')
-        if is_spamming then
-            return
-        end
-    end
-
-    if name == 'close_map_intro' then
-        local is_spamming = SpamProtection.is_spamming(player, nil, 'Map Info Close Button')
-        if is_spamming then
-            return
-        end
-        player.gui.left.comfy_panel.destroy()
-        return
-    end
-end
-
-Tabs.add_tab_to_gui({name = module_name, id = create_map_intro_token, admin = false})
+Gui.add_tab_to_gui({name = module_name, caption = 'Map Info', id = create_map_intro_token, admin = false})
 
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
-Event.add(defines.events.on_gui_click, on_gui_click)
+
+Gui.on_click(
+    module_name,
+    function(event)
+        local player = event.player
+        Gui.reload_active_tab(player)
+    end
+)
 
 return Public

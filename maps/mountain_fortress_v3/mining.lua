@@ -177,7 +177,7 @@ local function create_particles(surface, name, position, amount, cause_position)
         d2 = (cause_position.y - position.y) * 0.025
     end
 
-    for i = 1, amount, 1 do
+    for _ = 1, amount, 1 do
         local m = random(4, 10)
         local m2 = m * 0.005
 

@@ -4,8 +4,8 @@
 local Global = require 'utils.global'
 local SpamProtection = require 'utils.spam_protection'
 local Event = require 'utils.event'
-local BottomFrame = require 'comfy_panel.bottom_frame'
-local ComfyGui = require 'comfy_panel.main'
+local BottomFrame = require 'utils.gui.bottom_frame'
+local ComfyGui = require 'utils.gui'
 local floor = math.floor
 local print_color = {r = 120, g = 255, b = 0}
 

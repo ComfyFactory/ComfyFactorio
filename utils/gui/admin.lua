@@ -2,13 +2,13 @@
 
 local Event = require 'utils.event'
 local Jailed = require 'utils.datastore.jail_data'
-local Tabs = require 'comfy_panel.main'
+local Gui = require 'utils.gui'
 local AntiGrief = require 'utils.antigrief'
 local SpamProtection = require 'utils.spam_protection'
 local Token = require 'utils.token'
 
 local lower = string.lower
-local module_name = 'Admin'
+local module_name = Gui.uid_name()
 
 local function admin_only_message(str)
     for _, player in pairs(game.connected_players) do
@@ -49,10 +49,7 @@ local function bring_player(player, source_player)
     local pos = source_player.surface.find_non_colliding_position('character', source_player.position, 50, 1)
     if pos then
         player.teleport(pos, source_player.surface)
-        game.print(
-            player.name .. ' has been teleported to ' .. source_player.name .. '. ' .. bring_player_messages[math.random(1, #bring_player_messages)],
-            {r = 0.98, g = 0.66, b = 0.22}
-        )
+        game.print(player.name .. ' has been teleported to ' .. source_player.name .. '. ' .. bring_player_messages[math.random(1, #bring_player_messages)], {r = 0.98, g = 0.66, b = 0.22})
     end
 end
 
@@ -67,10 +64,7 @@ local function go_to_player(player, source_player)
     local pos = player.surface.find_non_colliding_position('character', player.position, 50, 1)
     if pos then
         source_player.teleport(pos, player.surface)
-        game.print(
-            source_player.name .. ' is visiting ' .. player.name .. '. ' .. go_to_player_messages[math.random(1, #go_to_player_messages)],
-            {r = 0.98, g = 0.66, b = 0.22}
-        )
+        game.print(source_player.name .. ' is visiting ' .. player.name .. '. ' .. go_to_player_messages[math.random(1, #go_to_player_messages)], {r = 0.98, g = 0.66, b = 0.22})
     end
 end
 
@@ -338,11 +332,11 @@ local function text_changed(event)
     local antigrief = AntiGrief.get()
     local player = game.get_player(event.player_index)
 
-    local frame = Tabs.comfy_panel_get_active_frame(player)
+    local frame = Gui.get_player_active_frame(player)
     if not frame then
         return
     end
-    if frame.name ~= module_name then
+    if frame.name ~= 'Admin' then
         return
     end
 
@@ -644,24 +638,17 @@ local function on_gui_click(event)
 
     local name = event.element.name
 
-    if name == 'tab_' .. module_name then
-        local is_spamming = SpamProtection.is_spamming(player, nil, 'Admin tab_Admin')
-        if is_spamming then
-            return
-        end
+    local frame = Gui.get_player_active_frame(player)
+    if not frame then
+        return
     end
 
-    local frame = Tabs.comfy_panel_get_active_frame(player)
-    if not frame then
+    if frame.name ~= 'Admin' then
         return
     end
 
     if name == 'mini_camera' or name == 'mini_cam_element' then
         player.gui.center['mini_camera'].destroy()
-        return
-    end
-
-    if frame.name ~= module_name then
         return
     end
 
@@ -727,11 +714,11 @@ local function on_gui_selection_state_changed(event)
         end
         global.admin_panel_selected_history_index[player.name] = event.element.selected_index
 
-        local frame = Tabs.comfy_panel_get_active_frame(player)
+        local frame = Gui.get_player_active_frame(player)
         if not frame then
             return
         end
-        if frame.name ~= module_name then
+        if frame.name ~= 'Admin' then
             return
         end
 
@@ -748,11 +735,11 @@ local function on_gui_selection_state_changed(event)
         end
         global.admin_panel_selected_player_index[player.name] = event.element.selected_index
 
-        local frame = Tabs.comfy_panel_get_active_frame(player)
+        local frame = Gui.get_player_active_frame(player)
         if not frame then
             return
         end
-        if frame.name ~= module_name then
+        if frame.name ~= 'Admin' then
             return
         end
 
@@ -766,7 +753,15 @@ local function on_gui_selection_state_changed(event)
     end
 end
 
-Tabs.add_tab_to_gui({name = module_name, id = create_admin_panel_token, admin = true})
+Gui.add_tab_to_gui({name = module_name, caption = 'Admin', id = create_admin_panel_token, admin = true})
+
+Gui.on_click(
+    module_name,
+    function(event)
+        local player = event.player
+        Gui.reload_active_tab(player)
+    end
+)
 
 Event.add(defines.events.on_gui_text_changed, text_changed)
 Event.add(defines.events.on_gui_click, on_gui_click)

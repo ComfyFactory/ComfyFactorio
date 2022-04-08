@@ -1,8 +1,8 @@
 --luacheck: ignore
 require 'modules.no_turrets'
 require 'modules.no_acid_puddles'
-local Tabs = require 'comfy_panel.main'
-local Map_score = require 'comfy_panel.map_score'
+local Gui = require 'utils.gui'
+local Map_score = require 'utils.gui.map_score'
 local unit_raffle = require 'maps.biter_hatchery.raffle_tables'
 local Terrain = require 'maps.biter_hatchery.terrain'
 local Gui = require 'maps.biter_hatchery.gui'
@@ -310,7 +310,7 @@ local function on_entity_died(event)
         for _, child in pairs(player.gui.left.children) do
             child.destroy()
         end
-        Tabs.comfy_panel_call_tab(player, 'Map Scores')
+        Gui.call_existing_tab(player, 'Map Scores')
     end
 
     for _, e in pairs(entity.surface.find_entities_filtered({type = 'unit'})) do

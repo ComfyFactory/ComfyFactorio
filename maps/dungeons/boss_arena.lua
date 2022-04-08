@@ -195,7 +195,7 @@ local function teleport_player_out(arena, player)
     local surface = arenatable.previous_position[arena].surface
     local position = arenatable.previous_position[arena].position
     local rpg = RPG.get('rpg_t')
-    rpg[player.index].one_punch = true
+    rpg[player.index].aoe_punch = true
     hide_rpg(player, true)
     player.teleport(surface.find_non_colliding_position('character', position, 20, 0.5), surface)
     arenatable.previous_position[arena].position = nil
@@ -212,7 +212,7 @@ local function teleport_player_in(arena, player)
     arenatable.previous_position[arena].surface = player.surface
     arenatable.timer[arena] = game.tick
     local rpg = RPG.get('rpg_t')
-    rpg[player.index].one_punch = false
+    rpg[player.index].aoe_punch = false
     rpg[player.index].enable_entity_spawn = false
     hide_rpg(player, false)
 

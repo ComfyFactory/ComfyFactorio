@@ -28,14 +28,14 @@ require 'modules.show_inventory'
 require 'modules.inserter_drops_pickup'
 require 'modules.autostash'
 
-require 'comfy_panel.main'
-require 'comfy_panel.player_list'
-require 'comfy_panel.admin'
--- require 'comfy_panel.group'
--- require 'comfy_panel.poll'
--- require 'comfy_panel.score'
-require 'comfy_panel.config'
-require 'comfy_panel.server_select'
+require 'utils.gui'
+require 'utils.gui.player_list'
+require 'utils.gui.admin'
+-- require 'utils.gui.group'
+-- require 'utils.gui.poll'
+-- require 'utils.gui.score'
+require 'utils.gui.config'
+require 'utils.gui.server_select'
 require 'utils.freeplay'
 
 ---------------- !ENABLE MODULES HERE ----------------
@@ -112,8 +112,8 @@ require 'utils.freeplay'
 
 --![[Adventure as a crew of pirates]]--
 -- NOTE: This scenario is too large for the main repo, due to hardcoded random numbers. Obtain it from https://github.com/danielmartin0/ComfyFactorio-Pirates
--- NOTE: This scenario is intended to be used with comfy_panel.group, comfy_panel.poll, and comfy_panel.score disabled
-require 'maps.pirates.main'
+-- NOTE: This scenario is intended to be used with utils.gui.group, utils.gui.poll, and utils.gui.score disabled
+-- require 'maps.pirates.main'
 
 --![[Launch rockets in increasingly harder getting worlds.]]--
 --require 'maps.journey.main'
@@ -254,6 +254,10 @@ require 'maps.pirates.main'
 --require 'terrain_layouts.tree_01'
 --require 'terrain_layouts.scrap_towny_ffa'
 ---------------------------------------------------------------
+
+--- this file exists only for the panel to sync and start from within the panel
+-- it does nothing if it's not synced from within the panel
+require 'map_loader'
 
 if _DUMP_ENV then
     require 'utils.dump_env'

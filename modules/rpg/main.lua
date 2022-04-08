@@ -3,7 +3,6 @@ local Public = require 'modules.rpg.core'
 local Gui = require 'utils.gui'
 local Event = require 'utils.event'
 local AntiGrief = require 'utils.antigrief'
-local Color = require 'utils.color_presets'
 local SpamProtection = require 'utils.spam_protection'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local Explosives = require 'modules.explosives'
@@ -27,8 +26,8 @@ local random = math.random
 local sqrt = math.sqrt
 local abs = math.abs
 
-local function log_one_punch(callback)
-    local debug = Public.get('rpg_extra').debug_one_punch
+local function log_aoe_punch(callback)
+    local debug = Public.get('rpg_extra').debug_aoe_punch
     if not debug then
         return
     end
@@ -542,7 +541,7 @@ local function set_health_boost(entity, damage, cause)
 end
 
 --Melee damage modifier
-local function one_punch(character, target, damage, get_health_pool)
+local function aoe_punch(character, target, damage, get_health_pool)
     if not (target and target.valid) then
         return
     end
@@ -557,7 +556,7 @@ local function one_punch(character, target, damage, get_health_pool)
         {
             name = 'flying-text',
             position = {character.position.x + base_vector[1] * 0.5, character.position.y + base_vector[2] * 0.5},
-            text = ({'rpg_main.one_punch_text'}),
+            text = ({'rpg_main.aoe_punch_text'}),
             color = {255, 0, 0}
         }
     )
@@ -680,10 +679,7 @@ local function on_entity_damaged(event)
     local original_damage_amount = event.original_damage_amount
     local final_damage_amount = event.final_damage_amount
 
-    if
-        cause.get_inventory(defines.inventory.character_ammo)[cause.selected_gun_index].valid_for_read or
-            cause.get_inventory(defines.inventory.character_guns)[cause.selected_gun_index].valid_for_read
-     then
+    if cause.get_inventory(defines.inventory.character_ammo)[cause.selected_gun_index].valid_for_read or cause.get_inventory(defines.inventory.character_guns)[cause.selected_gun_index].valid_for_read then
         local is_explosive_bullets_enabled = Public.get_explosive_bullets()
         if is_explosive_bullets_enabled then
             Public.explosive_bullets(event)
@@ -731,7 +727,7 @@ local function on_entity_damaged(event)
 
     --Calculate modified damage.
     local damage = Public.get_final_damage(cause.player, entity, original_damage_amount)
-    local enable_one_punch = Public.get('rpg_extra').enable_one_punch
+    local enable_aoe_punch = Public.get('rpg_extra').enable_aoe_punch
     local rpg_t = Public.get_value_from_player(cause.player.index)
 
     --Floating messages and particle effects.
@@ -762,12 +758,12 @@ local function on_entity_damaged(event)
     local get_health_pool = has_health_boost(entity, damage, final_damage_amount, cause)
 
     --Cause a one punch.
-    if enable_one_punch then
-        if rpg_t.one_punch then
-            local chance = Public.get_one_punch_chance(cause.player) * 10
+    if enable_aoe_punch then
+        if rpg_t.aoe_punch then
+            local chance = Public.get_aoe_punch_chance(cause.player) * 10
             local chance_to_hit = random(0, 999)
             local success = chance_to_hit < chance
-            log_one_punch(
+            log_aoe_punch(
                 function()
                     if success then
                         print('[OnePunch]: Chance: ' .. chance .. ' Chance to hit:  ' .. chance_to_hit .. ' Success: true' .. ' Damage: ' .. damage)
@@ -777,7 +773,7 @@ local function on_entity_damaged(event)
                 end
             )
             if success then
-                one_punch(cause, entity, damage, get_health_pool) -- only kill the biters if their health is below or equal to zero
+                aoe_punch(cause, entity, damage, get_health_pool) -- only kill the biters if their health is below or equal to zero
                 return
             end
         end
@@ -1157,10 +1153,8 @@ local function on_player_used_capsule(event)
         return
     end
 
-    local p = player.print
-
     if rpg_t.last_spawned >= game.tick then
-        return p(({'rpg_main.mana_casting_too_fast', player.name}), Color.warning)
+        return Public.cast_spell(player, true)
     end
 
     local mana = rpg_t.mana
@@ -1183,7 +1177,7 @@ local function on_player_used_capsule(event)
     }
 
     if rpg_t.level < object.level then
-        return p(({'rpg_main.low_level'}), Color.fail)
+        return Public.cast_spell(player, true)
     end
 
     if not object.enabled then
@@ -1191,12 +1185,12 @@ local function on_player_used_capsule(event)
     end
 
     if not Math2D.bounding_box.contains_point(area, player.position) then
-        player.print(({'rpg_main.not_inside_pos'}), Color.fail)
+        Public.cast_spell(player, true)
         return
     end
 
     if mana < object.mana_cost then
-        return p(({'rpg_main.no_mana'}), Color.fail)
+        return Public.cast_spell(player, true)
     end
 
     local target_pos
@@ -1223,11 +1217,11 @@ local function on_player_used_capsule(event)
 
     if object.entityName == 'suicidal_comfylatron' then
         Public.suicidal_comfylatron(position, surface)
-        p(({'rpg_main.suicidal_comfylatron', 'Suicidal Comfylatron'}), Color.success)
+        Public.cast_spell(player)
         Public.remove_mana(player, object.mana_cost)
     elseif object.entityName == 'repair_aoe' then
-        local ents = Public.repair_aoe(player, position)
-        p(({'rpg_main.repair_aoe', ents}), Color.success)
+        Public.repair_aoe(player, position)
+        Public.cast_spell(player)
         Public.remove_mana(player, object.mana_cost)
     elseif object.entityName == 'pointy_explosives' then
         local entities =
@@ -1245,11 +1239,9 @@ local function on_player_used_capsule(event)
         if detonate_chest and detonate_chest.valid then
             local success = Explosives.detonate_chest(detonate_chest)
             if success then
-                player.print(({'rpg_main.detonate_chest'}), Color.success)
                 Public.remove_mana(player, object.mana_cost)
-            else
-                player.print(({'rpg_main.detonate_chest_failed'}), Color.fail)
             end
+            Public.cast_spell(player)
         end
     elseif object.entityName == 'warp-gate' then
         local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
@@ -1262,10 +1254,10 @@ local function on_player_used_capsule(event)
         Public.remove_mana(player, 999999)
         Public.damage_player_over_time(player, random(8, 16))
         player.play_sound {path = 'utility/armor_insert', volume_modifier = 1}
-        p(({'rpg_main.warped_ok'}), Color.info)
+        Public.cast_spell(player)
     elseif object.capsule then -- spawn in capsules i.e objects that are usable with mouse-click
         player.insert({name = object.entityName, count = object.amount})
-        p(({'rpg_main.object_spawned', object.entityName}), Color.success)
+        Public.cast_spell(player)
         Public.remove_mana(player, object.mana_cost)
     elseif projectile_types[object.entityName] then -- projectiles
         for i = 1, object.amount do
@@ -1280,12 +1272,12 @@ local function on_player_used_capsule(event)
                 end
             end
         end
-        p(({'rpg_main.object_spawned', object.entityName}), Color.success)
+        Public.cast_spell(player)
         Public.remove_mana(player, object.mana_cost)
     else
         if object.target then -- rockets and such
             surface.create_entity({name = object.entityName, position = position, force = force, target = target_pos, speed = 1})
-            p(({'rpg_main.object_spawned', object.entityName}), Color.success)
+            Public.cast_spell(player)
             Public.remove_mana(player, object.mana_cost)
         elseif surface.can_place_entity {name = object.entityName, position = position} then
             if object.biter then
@@ -1311,9 +1303,9 @@ local function on_player_used_capsule(event)
                 e.direction = player.character.direction
                 Public.remove_mana(player, object.mana_cost)
             end
-            p(({'rpg_main.object_spawned', object.entityName}), Color.success)
+            Public.cast_spell(player)
         else
-            p(({'rpg_main.out_of_reach'}), Color.fail)
+            Public.cast_spell(player, true)
             return
         end
     end

@@ -17,8 +17,10 @@ Global.register(
     end
 )
 
-Public.level_depth = 704
-Public.level_width = 510
+Public.zone_settings = {
+    zone_depth = 704,
+    zone_width = 510
+}
 
 Public.pickaxe_upgrades = {
     'Wood',
@@ -167,10 +169,9 @@ function Public.reset_table()
     this.chests_linked_to = {}
     this.chest_limit_outside_upgrades = 1
     this.placed_trains_in_zone = {
-        placed = 0,
-        positions = {},
         limit = 2,
-        randomized = false
+        randomized = false,
+        zones = {}
     }
     this.marked_fixed_prices = {
         chest_limit_cost = 3000,
@@ -226,7 +227,14 @@ function Public.reset_table()
         current = {},
         temp_boosts = {}
     }
+    this.adjusted_zones = {
+        scrap = {},
+        forest = {},
+        size = nil,
+        shuffled_zones = nil
+    }
     this.alert_zone_1 = false -- alert the players
+    this.radars_reveal_new_chunks = false -- allows for the player to explore the map instead
 
     for k, _ in pairs(this.players) do
         this.players[k] = {}
@@ -264,10 +272,6 @@ function Public.remove(key, sub_key)
     end
 end
 
-local on_init = function()
-    Public.reset_table()
-end
-
-Event.on_init(on_init)
+Event.on_init(Public.reset_table)
 
 return Public

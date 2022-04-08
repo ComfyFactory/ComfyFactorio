@@ -1,7 +1,7 @@
 -- Biter Battles -- mewmew made this --
 --luacheck:ignore
 local Server = require 'utils.server'
-local Score = require 'comfy_panel.score'
+local Score = require 'utils.gui.score'
 local Global = require 'utils.global'
 require 'modules.splice_double'
 require 'modules.explosive_biters'
@@ -525,15 +525,9 @@ end
 local function reveal_team(f)
     local m = 32
     if f == 'north' then
-        game.forces['south'].chart(
-            game.surfaces['surface'],
-            {{x = global.force_area[f].x_top - m, y = global.force_area[f].y_top - m}, {x = global.force_area[f].x_bot + m, y = global.force_area[f].y_bot + m}}
-        )
+        game.forces['south'].chart(game.surfaces['surface'], {{x = global.force_area[f].x_top - m, y = global.force_area[f].y_top - m}, {x = global.force_area[f].x_bot + m, y = global.force_area[f].y_bot + m}})
     else
-        game.forces['north'].chart(
-            game.surfaces['surface'],
-            {{x = global.force_area[f].x_top - m, y = global.force_area[f].y_top - m}, {x = global.force_area[f].x_bot + m, y = global.force_area[f].y_bot + m}}
-        )
+        game.forces['north'].chart(game.surfaces['surface'], {{x = global.force_area[f].x_top - m, y = global.force_area[f].y_top - m}, {x = global.force_area[f].x_bot + m, y = global.force_area[f].y_bot + m}})
     end
 end
 
@@ -851,10 +845,7 @@ local function on_gui_click(event)
         join_team(player, global.team_chosen[player.name])
     end
     if (name == 'biter_battle_leave_spectate') and game.tick - global.spectator_spam_protection[player.name] < 1800 then
-        player.print(
-            'Not ready to return to your team yet. Please wait ' .. 30 - (math.round((game.tick - global.spectator_spam_protection[player.name]) / 60, 0)) .. ' seconds.',
-            {r = 0.98, g = 0.66, b = 0.22}
-        )
+        player.print('Not ready to return to your team yet. Please wait ' .. 30 - (math.round((game.tick - global.spectator_spam_protection[player.name]) / 60, 0)) .. ' seconds.', {r = 0.98, g = 0.66, b = 0.22})
     end
 
     if (name == 'biter_battle_hide_players') then
@@ -1053,15 +1044,11 @@ local function biter_attack_silo(team, requested_amount, mode)
 
         if math_random(1, 6) == 1 then
             for _, biter in pairs(biters_selected_for_attack) do
-                biter.set_command(
-                    {type = defines.command.attack_area, destination = global.biter_attack_main_target[team], radius = 12, distraction = defines.distraction.by_anything}
-                )
+                biter.set_command({type = defines.command.attack_area, destination = global.biter_attack_main_target[team], radius = 12, distraction = defines.distraction.by_anything})
             end
         else
             for _, biter in pairs(biters_selected_for_attack) do
-                biter.set_command(
-                    {type = defines.command.attack_area, destination = global.biter_attack_main_target[team], radius = 12, distraction = defines.distraction.by_enemy}
-                )
+                biter.set_command({type = defines.command.attack_area, destination = global.biter_attack_main_target[team], radius = 12, distraction = defines.distraction.by_enemy})
             end
         end
         if global.biter_battles_debug then
@@ -1279,15 +1266,11 @@ local function biter_attack_silo(team, requested_amount, mode)
         if t > 8 then
             if math_random(1, 6) ~= 1 then
                 for _, biter in pairs(biters_selected_for_attack) do
-                    biter.set_command(
-                        {type = defines.command.attack_area, destination = global.biter_attack_main_target[team], radius = 12, distraction = defines.distraction.by_enemy}
-                    )
+                    biter.set_command({type = defines.command.attack_area, destination = global.biter_attack_main_target[team], radius = 12, distraction = defines.distraction.by_enemy})
                 end
             else
                 for _, biter in pairs(biters_selected_for_attack) do
-                    biter.set_command(
-                        {type = defines.command.attack_area, destination = global.biter_attack_main_target[team], radius = 12, distraction = defines.distraction.by_anything}
-                    )
+                    biter.set_command({type = defines.command.attack_area, destination = global.biter_attack_main_target[team], radius = 12, distraction = defines.distraction.by_anything})
                 end
             end
             if global.biter_battles_debug then
@@ -1298,9 +1281,7 @@ local function biter_attack_silo(team, requested_amount, mode)
             for _, biter in pairs(biters_selected_for_attack) do
                 biter_attack_group.add_member(biter)
             end
-            biter_attack_group.set_command(
-                {type = defines.command.attack_area, destination = global.biter_attack_main_target[team], radius = 12, distraction = defines.distraction.by_enemy}
-            )
+            biter_attack_group.set_command({type = defines.command.attack_area, destination = global.biter_attack_main_target[team], radius = 12, distraction = defines.distraction.by_enemy})
             if global.biter_battles_debug then
                 game.players[1].print(#valid_biters .. ' valid biters found.')
                 game.players[1].print(#biters_selected_for_attack .. ' gathering at (x: ' .. gathering_point_x .. '  y: ' .. gathering_point_y .. ')')

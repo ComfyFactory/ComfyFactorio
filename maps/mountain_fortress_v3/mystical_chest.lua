@@ -1,7 +1,6 @@
 local Color = require 'utils.color_presets'
 local Event = require 'utils.event'
 local WPT = require 'maps.mountain_fortress_v3.table'
-local WD = require 'modules.wave_defense.table'
 local RPG = require 'modules.rpg.main'
 local Alert = require 'utils.alert'
 local Task = require 'utils.task'
@@ -157,7 +156,6 @@ local item_worths = {
     ['explosive-uranium-cannon-shell'] = 64,
     ['rocket'] = 8,
     ['explosive-rocket'] = 8,
-    ['atomic-bomb'] = 16384,
     ['flamethrower-ammo'] = 32,
     ['grenade'] = 16,
     ['cluster-grenade'] = 64,
@@ -266,17 +264,6 @@ local function roll_item_stacks(remaining_budget, max_slots, blacklist)
     return item_stack_set, item_stack_set_worth
 end
 
-local pause_wd_token =
-    Token.register(
-    function()
-        WD.pause(false)
-        local mc_rewards = WPT.get('mc_rewards')
-        mc_rewards.temp_boosts.wave_defense = nil
-        local message = ({'locomotive.wd_resumed'})
-        Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
-    end
-)
-
 local restore_mining_speed_token =
     Token.register(
     function()
@@ -381,19 +368,6 @@ local mc_random_rewards = {
         512
     },
     {
-        name = 'Inventory Bonus',
-        color = {r = 0.00, g = 0.00, b = 0.25},
-        tooltip = 'Selecting this will grant the team permanent inventory bonus!',
-        func = (function(player)
-            local force = game.forces.player
-            force.character_inventory_slots_bonus = force.character_inventory_slots_bonus + 1
-            local message = ({'locomotive.inventory_bonus', player.name})
-            Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
-            return true
-        end),
-        512
-    },
-    {
         name = 'Heal Locomotive',
         color = {r = 0.00, g = 0.00, b = 0.25},
         tooltip = 'Selecting this will heal the main locomotive to full health!',
@@ -405,26 +379,6 @@ local mc_random_rewards = {
             return true
         end),
         256
-    },
-    {
-        name = 'Wave Defense',
-        str = 'wave_defense',
-        color = {r = 0.35, g = 0.00, b = 0.00},
-        tooltip = 'Selecting this will pause the wave defense for 5 minutes. Ideal if you want to take a break!',
-        func = (function(player)
-            local mc_rewards = WPT.get('mc_rewards')
-            if mc_rewards.temp_boosts.wave_defense then
-                return false, '[Rewards] Wave Defense break is already applied. Please choose another reward.'
-            end
-            mc_rewards.temp_boosts.wave_defense = true
-
-            WD.pause(true)
-            Task.set_timeout_in_ticks(18000, pause_wd_token)
-            local message = ({'locomotive.wd_paused', player.name})
-            Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
-            return true
-        end),
-        64
     }
 }
 

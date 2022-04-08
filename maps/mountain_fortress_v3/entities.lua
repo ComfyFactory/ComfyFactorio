@@ -7,14 +7,13 @@ local Loot = require 'maps.mountain_fortress_v3.loot'
 local RPG = require 'modules.rpg.main'
 local Callbacks = require 'maps.mountain_fortress_v3.functions'
 local Mining = require 'maps.mountain_fortress_v3.mining'
-local Terrain = require 'maps.mountain_fortress_v3.terrain'
 local Traps = require 'maps.mountain_fortress_v3.traps'
 local Locomotive = require 'maps.mountain_fortress_v3.locomotive'
 local DefenseSystem = require 'maps.mountain_fortress_v3.locomotive.defense_system'
 local Collapse = require 'modules.collapse'
 local Alert = require 'utils.alert'
 local Task = require 'utils.task'
-local Score = require 'comfy_panel.score'
+local Score = require 'utils.gui.score'
 local Token = require 'utils.token'
 -- local HS = require 'maps.mountain_fortress_v3.highscore'
 local Discord = require 'utils.discord'
@@ -26,6 +25,7 @@ local RPG_Progression = require 'utils.datastore.rpg_data'
 -- tables
 local WPT = require 'maps.mountain_fortress_v3.table'
 local WD = require 'modules.wave_defense.table'
+local zone_settings = WPT.zone_settings
 
 -- module
 local Public = {}
@@ -394,7 +394,7 @@ local function angry_tree(entity, cause, player)
         return
     end
 
-    if abs(entity.position.y) < Terrain.level_depth then
+    if abs(entity.position.y) < zone_settings.zone_depth then
         return
     end
     if random(1, 6) == 1 then
@@ -1153,8 +1153,7 @@ local function show_mvps(player)
         local miners_label = t.add({type = 'label', caption = 'Miners >> '})
         miners_label.style.font = 'default-listbox'
         miners_label.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-        local miners_label_text =
-            t.add({type = 'label', caption = mvp.mined_entities.name .. ' mined a total of  ' .. mvp.mined_entities.score .. ' entities!'})
+        local miners_label_text = t.add({type = 'label', caption = mvp.mined_entities.name .. ' mined a total of  ' .. mvp.mined_entities.score .. ' entities!'})
         miners_label_text.style.font = 'default-bold'
         miners_label_text.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 

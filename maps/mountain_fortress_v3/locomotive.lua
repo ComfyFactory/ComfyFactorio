@@ -85,7 +85,7 @@ local function validate_player(player)
     return true
 end
 
-local function property_boost(data)
+local function give_passive_xp(data)
     local xp_floating_text_color = {r = 188, g = 201, b = 63}
     local visuals_delay = 1800
     local loco_surface = WPT.get('loco_surface')
@@ -430,7 +430,7 @@ function Public.boost_players_around_train()
         locomotive_surface = locomotive_surface,
         rpg = rpg
     }
-    property_boost(data)
+    give_passive_xp(data)
 end
 
 function Public.is_around_train(entity)

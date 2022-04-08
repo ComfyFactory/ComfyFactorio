@@ -8,7 +8,8 @@ local round = math.round
 
 local this = {
     modifiers = {},
-    disabled_modifier = {}
+    disabled_modifier = {},
+    rpg_inventory_slot_limit = 320 -- huge inventory lags the server, this fixes it
 }
 
 Global.register(
@@ -74,7 +75,7 @@ function Public.update_player_modifiers(player)
             if disabled_modifiers and disabled_modifiers[k] then
                 player[modifier] = 0
             else
-                player[modifier] = round(sum_value, 8)
+                player[modifier] = round(sum_value, 4)
             end
         end
     end
@@ -92,9 +93,13 @@ function Public.update_single_modifier(player, modifier, category, value)
         if modifiers[k] == modifier and player_modifiers[k] then
             if category then
                 if not player_modifiers[k][category] then
-                    player_modifiers[k][category] = {}
+                    player_modifiers[k][category] = 0
                 end
                 player_modifiers[k][category] = value
+
+                if category == 'rpg' and modifiers[k] == 'character_inventory_slots_bonus' and player_modifiers[k][category] >= this.rpg_inventory_slot_limit then
+                    player_modifiers[k][category] = this.rpg_inventory_slot_limit - player.force.character_inventory_slots_bonus
+                end
             else
                 player_modifiers[k] = value
             end
