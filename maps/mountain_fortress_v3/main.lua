@@ -74,6 +74,7 @@ local Public = {}
 local raise_event = script.raise_event
 local floor = math.floor
 local remove = table.remove
+RPG.disable_cooldowns_on_spells()
 
 local collapse_kill = {
     entities = {
@@ -178,7 +179,6 @@ function Public.reset_map()
     RPG.enable_aoe_punch_globally(false)
     RPG.enable_range_buffs(true)
     RPG.enable_auto_allocate(true)
-    RPG.disable_cooldowns_on_spells()
     RPG.enable_explosive_bullets_globally(true)
     RPG.enable_explosive_bullets(false)
     RPG_Progression.toggle_module(false)
