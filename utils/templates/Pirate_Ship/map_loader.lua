@@ -1,1 +1,1 @@
-return require maps.pirates.main
+return require 'maps.pirates.main'
