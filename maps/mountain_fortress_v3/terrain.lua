@@ -341,7 +341,7 @@ local function wall(p, data)
                             force = 'player',
                             callback = stone_wall
                         }
-                        if not alert_zone_1 then
+                        if not alert_zone_1 and data.y >= -zone_settings.zone_depth then
                             local x_min = -zone_settings.zone_width / 2
                             local x_max = zone_settings.zone_width / 2
                             WPT.set('zone1_beam1', surface.create_entity({name = 'electric-beam', position = {x_min, p.y}, source = {x_min, p.y}, target = {x_max, p.y}}))
@@ -2568,8 +2568,21 @@ local function init_terrain(adjusted_zones)
         count = count + 1
     end
 
-    adjusted_zones.size = count
-    adjusted_zones.shuffled_zones = shuffled_zones
+    count = count - 1
+
+    local shuffle_again = {}
+
+    local size = 132
+
+    for inc = 1, size do
+        local map = shuffled_zones[random(1, count)]
+        if map then
+            shuffle_again[inc] = map
+        end
+    end
+
+    adjusted_zones.size = size
+    adjusted_zones.shuffled_zones = shuffle_again
     adjusted_zones.init_terrain = true
 end
 
