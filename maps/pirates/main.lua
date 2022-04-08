@@ -5,7 +5,6 @@
  ]]
 --[[
 
-
 == Tips for Developers! ==
 
 The scenario is quite complex, but there are ways to get started, even if you don't know much Lua. Some ideas (incomplete):
