@@ -14,9 +14,9 @@ local Get_noise = require 'utils.get_noise'
 local Alert = require 'utils.alert'
 local Research = require 'maps.dungeons.research'
 local DungeonsTable = require 'maps.dungeons.table'
-local BottomFrame = require 'comfy_panel.bottom_frame'
+local BottomFrame = require 'utils.gui.bottom_frame'
 local Autostash = require 'modules.autostash'
-local Panel = require 'comfy_panel.config'
+local Panel = require 'utils.gui.config'
 Panel.get('gui_config').spaghett.noop = true
 local Collapse = require 'modules.collapse'
 Collapse.disable()

@@ -1,9 +1,7 @@
-local Event = require 'utils.event'
-local Tabs = require 'comfy_panel.main'
-local SpamProtection = require 'utils.spam_protection'
+local Gui = require 'utils.gui'
 local Token = require 'utils.token'
 
-local module_name = 'Changelog'
+local module_name = Gui.uid_name()
 
 local changelog = {
     versions = {}
@@ -57,51 +55,18 @@ local function create_changelog(data)
 	line_v.style.top_margin = 4
 	line_v.style.bottom_margin = 4
     end
-
-    local b = frame.add {type = 'button', caption = 'CLOSE', name = 'close_changelog'}
-    b.style.font = 'heading-2'
-    b.style.padding = 2
-    b.style.top_margin = 3
-    b.style.left_margin = 333
-    b.style.horizontal_align = 'center'
-    b.style.vertical_align = 'center'
 end
 
 local create_changelog_token = Token.register(create_changelog)
 
-local function on_gui_click(event)
-    if not event or not event.element or not event.element.valid then
-        return
+Gui.on_click(
+    module_name,
+    function(event)
+        local player = event.player
+        Gui.reload_active_tab(player)
     end
+)
 
-    local player = game.get_player(event.player_index)
-    if not (player and player.valid) then
-        return
-    end
-
-    local name = event.element.name
-
-    if not name then
-        return
-    end
-
-    if name == 'tab_' .. module_name then
-        if SpamProtection.is_spamming(player, nil, 'Changelog Main Button') then
-            return
-        end
-    end
-
-    if name == 'close_changelog' then
-        if SpamProtection.is_spamming(player, nil, 'Changelog Close Button') then
-            return
-        end
-        player.gui.left.comfy_panel.destroy()
-        return
-    end
-end
-
-Tabs.add_tab_to_gui({name = module_name, id = create_changelog_token, admin = false})
-
-Event.add(defines.events.on_gui_click, on_gui_click)
+Gui.add_tab_to_gui({name = module_name, caption = 'Changelog', id = create_changelog_token, admin = false})
 
 return Public
