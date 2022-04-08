@@ -103,6 +103,16 @@ function Public.get_actor()
     return '<server>'
 end
 
+--- Iterates over all connected players
+---@param callback function
+function Public.iter_connected_players(callback)
+    local players = game.connected_players
+    for i = 1, #players do
+        local player = players[i]
+        callback(player)
+    end
+end
+
 function Public.cast_bool(var)
     if var then
         return true

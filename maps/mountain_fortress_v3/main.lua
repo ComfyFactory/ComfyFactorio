@@ -13,8 +13,8 @@ local Discord = require 'utils.discord'
 local IC = require 'maps.mountain_fortress_v3.ic.table'
 local ICMinimap = require 'maps.mountain_fortress_v3.ic.minimap'
 local Autostash = require 'modules.autostash'
-local Group = require 'comfy_panel.group'
-local PL = require 'comfy_panel.player_list'
+local Group = require 'utils.gui.group'
+local PL = require 'utils.gui.player_list'
 local CS = require 'maps.mountain_fortress_v3.surface'
 local Server = require 'utils.server'
 local Explosives = require 'modules.explosives'
@@ -29,14 +29,14 @@ local Event = require 'utils.event'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local Locomotive = require 'maps.mountain_fortress_v3.locomotive'
 local SpawnLocomotive = require 'maps.mountain_fortress_v3.locomotive.spawn_locomotive'
-local Score = require 'comfy_panel.score'
-local Poll = require 'comfy_panel.poll'
+local Score = require 'utils.gui.score'
+local Poll = require 'utils.gui.poll'
 local Collapse = require 'modules.collapse'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Alert = require 'utils.alert'
-local BottomFrame = require 'comfy_panel.bottom_frame'
+local BottomFrame = require 'utils.gui.bottom_frame'
 local AntiGrief = require 'utils.antigrief'
 local Misc = require 'utils.commands.misc'
 local Modifiers = require 'utils.player_modifiers'
@@ -174,8 +174,8 @@ function Public.reset_map()
     RPG.enable_flame_boots(true)
     RPG.personal_tax_rate(0.4)
     RPG.enable_stone_path(true)
-    RPG.enable_one_punch(true)
-    RPG.enable_one_punch_globally(false)
+    RPG.enable_aoe_punch(true)
+    RPG.enable_aoe_punch_globally(false)
     RPG.enable_range_buffs(true)
     RPG.enable_auto_allocate(true)
     RPG.disable_cooldowns_on_spells()
@@ -252,7 +252,7 @@ function Public.reset_map()
     Collapse.set_kill_specific_entities(collapse_kill)
     Collapse.set_speed(8)
     Collapse.set_amount(1)
-    -- Collapse.set_max_line_size(WPT.level_width)
+    -- Collapse.set_max_line_size(zone_settings.zone_width)
     Collapse.set_max_line_size(540)
     Collapse.set_surface(surface)
     Collapse.set_position({0, 130})
@@ -313,7 +313,8 @@ end
 
 local is_player_valid = function()
     local players = game.connected_players
-    for _, player in pairs(players) do
+    for i = 1, #players do
+        local player = players[i]
         if player.connected and player.controller_type == 2 then
             player.set_controller {type = defines.controllers.god}
             player.create_character()
@@ -467,9 +468,11 @@ end
 local on_tick = function()
     local update_gui = Gui_mf.update_gui
     local tick = game.tick
+    local players = game.connected_players
 
     if tick % 40 == 0 then
-        for _, player in pairs(game.connected_players) do
+        for i = 1, #players do
+            local player = players[i]
             update_gui(player)
         end
         lock_locomotive_positions()
@@ -537,5 +540,24 @@ end
 Event.on_nth_tick(10, on_tick)
 Event.on_init(on_init)
 Event.add(WPT.events.reset_map, Public.reset_map)
+Event.add(
+    defines.events.on_sector_scanned,
+    function(event)
+        local radar = event.radar
+        if not radar or not radar.valid then
+            return
+        end
+
+        local radars_reveal_new_chunks = WPT.get('radars_reveal_new_chunks')
+        if radars_reveal_new_chunks then
+            return
+        end
+
+        local pos = event.chunk_position
+
+        radar.force.cancel_charting(radar.surface.index)
+        radar.force.unchart_chunk(pos, radar.surface.index)
+    end
+)
 
 return Public

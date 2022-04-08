@@ -119,12 +119,12 @@ local function level_up(player)
         return
     end
 
-    -- automatically enable one_punch and stone_path,
+    -- automatically enable aoe_punch and stone_path,
     -- but do so only once.
-    if rpg_t.level >= settings_level['one_punch_label'] then
-        if not rpg_t.auto_toggle_features.one_punch then
-            rpg_t.auto_toggle_features.one_punch = true
-            rpg_t.one_punch = true
+    if rpg_t.level >= settings_level['aoe_punch_label'] then
+        if not rpg_t.auto_toggle_features.aoe_punch then
+            rpg_t.auto_toggle_features.aoe_punch = true
+            rpg_t.aoe_punch = true
         end
     end
     if rpg_t.level >= settings_level['stone_path_label'] then
@@ -520,7 +520,7 @@ function Public.update_player_stats(player)
     local rpg_t = Public.get_value_from_player(player.index)
     local strength = rpg_t.strength - 10
     P.update_single_modifier(player, 'character_inventory_slots_bonus', 'rpg', round(strength * 0.2, 3))
-    P.update_single_modifier(player, 'character_mining_speed_modifier', 'rpg', round(strength * 0.007, 3))
+    P.update_single_modifier(player, 'character_mining_speed_modifier', 'rpg', round(strength * 0.006, 3))
     P.update_single_modifier(player, 'character_maximum_following_robot_count_bonus', 'rpg', round(strength / 2 * 0.03, 3))
 
     local magic = rpg_t.magicka - 10
@@ -555,7 +555,24 @@ function Public.level_up_effects(player)
         }
         player.surface.create_entity({name = 'flying-text', position = p, text = '✚', color = {255, math.random(0, 100), 0}})
     end
-    player.play_sound {path = 'utility/achievement_unlocked', volume_modifier = 0.40}
+    player.play_sound {path = 'utility/achievement_unlocked', volume_modifier = 0.50}
+end
+
+function Public.cast_spell(player, failed)
+    local position = {x = player.position.x - 0.75, y = player.position.y - 1}
+    local b = 0.75
+    if not failed then
+        for _ = 1, 3, 1 do
+            local p = {
+                (position.x + 0.4) + (b * -1 + math.random(0, b * 20) * 0.1),
+                position.y + (b * -1 + math.random(0, b * 20) * 0.1)
+            }
+            player.surface.create_entity({name = 'flying-text', position = p, text = '✔️', color = {255, math.random(0, 100), 0}})
+        end
+        player.play_sound {path = 'utility/scenario_message', volume_modifier = 0.50}
+    else
+        player.play_sound {path = 'utility/cannot_build', volume_modifier = 0.50}
+    end
 end
 
 function Public.xp_effects(player)
@@ -569,7 +586,7 @@ function Public.xp_effects(player)
         }
         player.surface.create_entity({name = 'flying-text', position = p, text = '✚', color = {255, math.random(0, 100), 0}})
     end
-    player.play_sound {path = 'utility/achievement_unlocked', volume_modifier = 0.40}
+    player.play_sound {path = 'utility/achievement_unlocked', volume_modifier = 0.50}
 end
 
 function Public.get_range_modifier(player)
@@ -677,12 +694,12 @@ function Public.get_life_on_hit(player)
     return (rpg_t.vitality - 10) * 0.4
 end
 
-function Public.get_one_punch_chance(player)
+function Public.get_aoe_punch_chance(player)
     local rpg_t = Public.get_value_from_player(player.index)
     if rpg_t.strength < 100 then
         return 0
     end
-    local chance = round(rpg_t.strength * 0.012, 1)
+    local chance = round(rpg_t.strength * 0.007, 1)
     if chance > 100 then
         chance = 100
     end
@@ -765,10 +782,10 @@ function Public.rpg_reset_player(player, one_time_reset)
                 last_mined_entity_position = {x = 0, y = 0},
                 show_bars = false,
                 stone_path = false,
-                one_punch = false,
+                aoe_punch = false,
                 auto_toggle_features = {
                     stone_path = false,
-                    one_punch = false
+                    aoe_punch = false
                 }
             }
         )
@@ -807,10 +824,10 @@ function Public.rpg_reset_player(player, one_time_reset)
                 last_mined_entity_position = {x = 0, y = 0},
                 show_bars = false,
                 stone_path = false,
-                one_punch = false,
+                aoe_punch = false,
                 auto_toggle_features = {
                     stone_path = false,
-                    one_punch = false
+                    aoe_punch = false
                 }
             }
         )

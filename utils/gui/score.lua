@@ -1,10 +1,12 @@
 --scoreboard by mewmew
+-- modified by Gerkiz
 
 local Event = require 'utils.event'
 local Global = require 'utils.global'
-local Tabs = require 'comfy_panel.main'
+local Gui = require 'utils.gui'
 local SpamProtection = require 'utils.spam_protection'
 local Token = require 'utils.token'
+local format_number = require 'util'.format_number
 
 local Public = {}
 local this = {
@@ -12,7 +14,7 @@ local this = {
     sort_by = {}
 }
 
-local module_name = 'Scoreboard'
+local module_name = Gui.uid_name()
 
 Global.register(
     this,
@@ -125,22 +127,22 @@ local function add_global_stats(frame, player)
     local t = frame.add {type = 'table', column_count = 5}
 
     local l = t.add {type = 'label', caption = 'Rockets launched: '}
-    l.style.font = 'default-game'
+    l.style.font = 'heading-2'
     l.style.font_color = {r = 175, g = 75, b = 255}
     l.style.minimal_width = 140
 
-    local rocketsLaunched_label = t.add {type = 'label', caption = player.force.rockets_launched}
-    rocketsLaunched_label.style.font = 'default-listbox'
+    local rocketsLaunched_label = t.add {type = 'label', caption = format_number(player.force.rockets_launched, true)}
+    rocketsLaunched_label.style.font = 'heading-3'
     rocketsLaunched_label.style.font_color = {r = 0.9, g = 0.9, b = 0.9}
     rocketsLaunched_label.style.minimal_width = 123
 
     local bugs_dead_label = t.add {type = 'label', caption = 'Dead bugs: '}
-    bugs_dead_label.style.font = 'default-game'
+    bugs_dead_label.style.font = 'heading-2'
     bugs_dead_label.style.font_color = {r = 0.90, g = 0.3, b = 0.3}
     bugs_dead_label.style.minimal_width = 100
 
-    local killcount_label = t.add {type = 'label', caption = tostring(get_total_biter_killcount(player.force))}
-    killcount_label.style.font = 'default-listbox'
+    local killcount_label = t.add {type = 'label', caption = format_number(tonumber(get_total_biter_killcount(player.force)), true)}
+    killcount_label.style.font = 'heading-3'
     killcount_label.style.font_color = {r = 0.9, g = 0.9, b = 0.9}
     killcount_label.style.minimal_width = 145
 end
@@ -189,10 +191,10 @@ local function show_score(data)
             caption = cap,
             name = header.name
         }
-        label.style.font = 'default-listbox'
+        label.style.font = 'heading-2'
         label.style.font_color = {r = 0.98, g = 0.66, b = 0.22} -- yellow
         label.style.minimal_width = 150
-        label.style.horizontal_align = 'right'
+        label.style.horizontal_align = 'center'
     end
 
     -- Score list
@@ -227,10 +229,10 @@ local function show_score(data)
         }
         local lines = {
             {caption = entry.name, color = special_color},
-            {caption = tostring(entry.killscore)},
-            {caption = tostring(entry.deaths)},
-            {caption = tostring(entry.built_entities)},
-            {caption = tostring(entry.mined_entities)}
+            {caption = format_number(tonumber(entry.killscore), true)},
+            {caption = format_number(tonumber(entry.deaths), true)},
+            {caption = format_number(tonumber(entry.built_entities), true)},
+            {caption = format_number(tonumber(entry.mined_entities), true)}
         }
         local default_color = {r = 0.9, g = 0.9, b = 0.9}
 
@@ -241,10 +243,10 @@ local function show_score(data)
                 caption = column.caption,
                 color = column.color or default_color
             }
-            label.style.font = 'default'
+            label.style.font = 'heading-3'
             label.style.minimal_width = 150
             label.style.maximal_width = 150
-            label.style.horizontal_align = 'right'
+            label.style.horizontal_align = 'center'
         end -- foreach column
     end -- foreach entry
 end
@@ -253,11 +255,12 @@ local show_score_token = Token.register(show_score)
 
 local function refresh_score_full()
     for _, player in pairs(game.connected_players) do
-        local frame = Tabs.comfy_panel_get_active_frame(player)
+        local frame = Gui.get_player_active_frame(player)
         if frame then
-            if frame.name == module_name then
-                show_score({player = player, frame = frame})
+            if frame.name ~= 'Scoreboard' then
+                return
             end
+            show_score({player = player, frame = frame})
         end
     end
 end
@@ -278,18 +281,11 @@ local function on_gui_click(event)
     local player = game.get_player(event.player_index)
     local name = event.element.name
 
-    if name == 'tab_' .. module_name then
-        local is_spamming = SpamProtection.is_spamming(player, nil, 'Scoreboard tab_Scoreboard')
-        if is_spamming then
-            return
-        end
-    end
-
-    local frame = Tabs.comfy_panel_get_active_frame(player)
+    local frame = Gui.get_player_active_frame(player)
     if not frame then
         return
     end
-    if frame.name ~= module_name then
+    if frame.name ~= 'Scoreboard' then
         return
     end
 
@@ -460,7 +456,15 @@ local function on_built_entity(event)
     score.built_entities = 1 + (score.built_entities or 0)
 end
 
-Tabs.add_tab_to_gui({name = module_name, id = show_score_token, admin = false})
+Gui.add_tab_to_gui({name = module_name, caption = 'Scoreboard', id = show_score_token, admin = false})
+
+Gui.on_click(
+    module_name,
+    function(event)
+        local player = event.player
+        Gui.reload_active_tab(player)
+    end
+)
 
 Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 Event.add(defines.events.on_player_died, on_player_died)

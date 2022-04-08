@@ -1,4 +1,4 @@
-local ComfyGui = require 'comfy_panel.main'
+local ComfyGui = require 'utils.gui'
 local Session = require 'utils.datastore.session_data'
 local P = require 'utils.player_modifiers'
 local Gui = require 'utils.gui'
@@ -15,6 +15,7 @@ local experience_levels = Public.experience_levels
 --RPG Frames
 local main_frame_name = Public.main_frame_name
 local draw_main_frame_name = Public.draw_main_frame_name
+local close_main_frame_name = Public.close_main_frame_name
 local settings_button_name = Public.settings_button_name
 local settings_frame_name = Public.settings_frame_name
 local discard_button_name = Public.discard_button_name
@@ -102,20 +103,6 @@ local function add_gui_stat(element, value, width, tooltip, name, color)
     return e
 end
 
-local function add_elem_stat(element, value, width, height, font, tooltip, name, color)
-    local e = element.add({type = 'sprite-button', name = name or nil, caption = value})
-    e.tooltip = tooltip or ''
-    e.style.maximal_width = width
-    e.style.minimal_width = width
-    e.style.maximal_height = height
-    e.style.minimal_height = height
-    e.style.font = font or 'default-bold'
-    e.style.horizontal_align = 'center'
-    e.style.vertical_align = 'center'
-    e.style.font_color = color or {222, 222, 222}
-    return e
-end
-
 local function add_gui_increase_stat(element, name, player)
     local rpg_t = Public.get_value_from_player(player.index)
     local sprite = 'virtual-signal/signal-red'
@@ -147,9 +134,9 @@ local function add_separator(element, width)
     return e
 end
 
-local function remove_settings_frame(settings_frame)
-    Gui.remove_data_recursively(settings_frame)
-    settings_frame.destroy()
+local function remove_target_frame(target_frame)
+    Gui.remove_data_recursively(target_frame)
+    target_frame.destroy()
 end
 
 local function remove_main_frame(main_frame, screen)
@@ -158,7 +145,7 @@ local function remove_main_frame(main_frame, screen)
 
     local settings_frame = screen[settings_frame_name]
     if settings_frame and settings_frame.valid then
-        remove_settings_frame(settings_frame)
+        remove_target_frame(settings_frame)
     end
 end
 
@@ -167,15 +154,8 @@ local function draw_main_frame(player, location)
         return
     end
 
-    local main_frame =
-        player.gui.screen.add(
-        {
-            type = 'frame',
-            name = main_frame_name,
-            caption = 'RPG',
-            direction = 'vertical'
-        }
-    )
+    local main_frame, inside_frame = Gui.add_main_frame_with_toolbar(player, 'screen', main_frame_name, settings_button_name, close_main_frame_name, 'RPG')
+
     if location then
         main_frame.location = location
     else
@@ -186,23 +166,8 @@ local function draw_main_frame(player, location)
     local rpg_extra = Public.get('rpg_extra')
     local rpg_t = Public.get_value_from_player(player.index)
 
-    local inside_frame =
-        main_frame.add {
-        type = 'frame',
-        style = 'deep_frame_in_shallow_frame'
-    }
-    local inside_frame_style = inside_frame.style
-    inside_frame_style.padding = 0
-    inside_frame_style.maximal_height = 800
-
-    local inside_table =
-        inside_frame.add {
-        type = 'table',
-        column_count = 1
-    }
-
     local scroll_pane =
-        inside_table.add {
+        inside_frame.add {
         type = 'scroll-pane',
         vertical_scroll_policy = 'never',
         horizontal_scroll_policy = 'never'
@@ -221,8 +186,6 @@ local function draw_main_frame(player, location)
     player_name.style.font = 'default-large-bold'
     local rank = add_gui_stat(main_table, get_class(player), 200, ({'rpg_gui.class_info', get_class(player)}))
     rank.style.font = 'default-large-bold'
-
-    add_elem_stat(main_table, ({'rpg_gui.settings_name'}), 200, 35, nil, ({'rpg_gui.settings_frame'}), settings_button_name)
 
     add_separator(scroll_pane, 400)
 
@@ -286,12 +249,7 @@ local function draw_main_frame(player, location)
     add_gui_description(left_bottom_table, ({'rpg_gui.life_name'}), w1, ({'rpg_gui.life_tooltip'}))
     local health_gui = add_gui_stat(left_bottom_table, floor(player.character.health), w2, ({'rpg_gui.life_increase'}))
     data.health = health_gui
-    add_gui_stat(
-        left_bottom_table,
-        floor(player.character.prototype.max_health + player.character_health_bonus + player.force.character_health_bonus),
-        w2,
-        ({'rpg_gui.life_maximum'})
-    )
+    add_gui_stat(left_bottom_table, floor(player.character.prototype.max_health + player.character_health_bonus + player.force.character_health_bonus), w2, ({'rpg_gui.life_maximum'}))
 
     local shield = 0
     local shield_max = 0
@@ -356,15 +314,15 @@ local function draw_main_frame(player, location)
     add_gui_description(right_bottom_table, ({'rpg_gui.melee_name'}), w1)
     local melee_damage_value = round(100 * (1 + Public.get_melee_modifier(player))) .. '%'
     local melee_damage_tooltip
-    if rpg_extra.enable_one_punch then
+    if rpg_extra.enable_aoe_punch then
         melee_damage_tooltip = ({
-            'rpg_gui.one_punch_chance',
+            'rpg_gui.aoe_punch_chance',
             Public.get_life_on_hit(player),
-            Public.get_one_punch_chance(player),
+            Public.get_aoe_punch_chance(player),
             Public.get_extra_following_robots(player)
         })
     else
-        melee_damage_tooltip = ({'rpg_gui.one_punch_disabled'})
+        melee_damage_tooltip = ({'rpg_gui.aoe_punch_disabled'})
     end
     add_gui_stat(right_bottom_table, melee_damage_value, w2, melee_damage_tooltip)
 
@@ -487,7 +445,7 @@ function Public.toggle(player, recreate)
     if main_frame then
         remove_main_frame(main_frame, screen)
     else
-        ComfyGui.comfy_panel_clear_gui(player)
+        ComfyGui.clear_all_active_frames(player)
         draw_main_frame(player)
     end
 end
@@ -547,7 +505,7 @@ Gui.on_click(
         local explosive_bullets_gui_input = data.explosive_bullets_gui_input
         local enable_entity_gui_input = data.enable_entity_gui_input
         local stone_path_gui_input = data.stone_path_gui_input
-        local one_punch_gui_input = data.one_punch_gui_input
+        local aoe_punch_gui_input = data.aoe_punch_gui_input
         local auto_allocate_gui_input = data.auto_allocate_gui_input
 
         local rpg_t = Public.get_value_from_player(player.index)
@@ -557,11 +515,11 @@ Gui.on_click(
                 rpg_t.allocate_index = auto_allocate_gui_input.selected_index
             end
 
-            if one_punch_gui_input and one_punch_gui_input.valid then
-                if not one_punch_gui_input.state then
-                    rpg_t.one_punch = false
-                elseif one_punch_gui_input.state then
-                    rpg_t.one_punch = true
+            if aoe_punch_gui_input and aoe_punch_gui_input.valid then
+                if not aoe_punch_gui_input.state then
+                    rpg_t.aoe_punch = false
+                elseif aoe_punch_gui_input.state then
+                    rpg_t.aoe_punch = true
                 end
             end
 
@@ -661,7 +619,7 @@ Gui.on_click(
                 end
             end
 
-            remove_settings_frame(event.element)
+            remove_target_frame(event.element)
 
             if player.gui.screen[main_frame_name] then
                 toggle(player, true)
@@ -686,6 +644,30 @@ Gui.on_click(
         if frame and frame.valid then
             Gui.remove_data_recursively(frame)
             frame.destroy()
+        end
+    end
+)
+
+Gui.on_click(
+    close_main_frame_name,
+    function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'RPG Close Button')
+        if is_spamming then
+            return
+        end
+        local player = event.player
+        local screen = player.gui.screen
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        local main_frame = screen[main_frame_name]
+        if main_frame and main_frame.valid then
+            remove_target_frame(main_frame)
+        end
+        local settings_frame = screen[settings_frame_name]
+        if settings_frame and settings_frame.valid then
+            remove_target_frame(settings_frame)
         end
     end
 )

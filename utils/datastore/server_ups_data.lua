@@ -1,6 +1,6 @@
 local Server = require 'utils.server'
 local Event = require 'utils.event'
-local ComfyGui = require 'comfy_panel.main'
+local Gui = require 'utils.gui'
 local Color = require 'utils.color_presets'
 
 local ups_label = 'ups_label'
@@ -106,7 +106,7 @@ commands.add_command(
     end
 )
 
-ComfyGui.screen_to_bypass(ups_label)
+Gui.screen_to_bypass(ups_label)
 
 Event.add(
     defines.events.on_player_display_resolution_changed,

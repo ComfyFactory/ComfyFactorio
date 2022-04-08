@@ -73,6 +73,12 @@ local noises = {
         {modifier = 0.05, weight = 0.23},
         {modifier = 0.1, weight = 0.11}
     },
+    ['scrapyard_modified'] = {
+        {modifier = 0.006, weight = 1},
+        {modifier = 0.04, weight = 0.15},
+        {modifier = 0.22, weight = 0.05},
+        {modifier = 0.05, weight = 0.32}
+    },
     ['big_cave'] = {
         {modifier = 0.003, weight = 1},
         {modifier = 0.02, weight = 0.05},

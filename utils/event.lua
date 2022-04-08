@@ -477,7 +477,7 @@ function Event.remove_removable_nth_tick_function(tick, name)
     local handlers = on_nth_tick_event_handlers[tick]
     local f = function_nth_tick_table[name]
 
-    for k, v in pairs(function_nth_tick_table[name]) do
+    for _, v in pairs(function_nth_tick_table[name]) do
         local t = v.tick
         if t == tick then
             f = v.handler

@@ -8,11 +8,24 @@ local types = {
     'furnace'
 }
 
+local testing = false
+
+local testing_loot = {
+    {
+        stack = {
+            recipe = 'speed-module-2',
+            tech = 'speed-module-2',
+            output = {item = 'speed-module-2', min_rate = 1 / 8 / 60 / 2, distance_factor = 1 / 8 / 60 / 20480}
+        },
+        weight = 4
+    }
+}
+
 local science_loot = {
     {
         stack = {
             recipe = 'automation-science-pack',
-            output = {item = 'automation-science-pack', min_rate = 0.5 / 8 / 60, distance_factor = 1 / 5 / 60 / 512}
+            output = {item = 'automation-science-pack', min_rate = 3 / 800, distance_factor = 1 / 8 / 60 / 20480}
         },
         weight = 4
     },
@@ -20,7 +33,7 @@ local science_loot = {
         stack = {
             recipe = 'logistic-science-pack',
             tech = 'logistic-science-pack',
-            output = {item = 'logistic-science-pack', min_rate = 0.5 / 8 / 60, distance_factor = 1 / 15 / 60 / 512}
+            output = {item = 'logistic-science-pack', min_rate = 2 / 800, distance_factor = 1 / 8 / 60 / 20480}
         },
         weight = 2
     }
@@ -31,21 +44,21 @@ local ammo_loot = {
         stack = {
             recipe = 'piercing-rounds-magazine',
             tech = 'military-2',
-            output = {item = 'piercing-rounds-magazine', min_rate = 1 / 2 / 60, distance_factor = 1 / 10 / 60 / 512}
+            output = {item = 'piercing-rounds-magazine', min_rate = 1 / 800, distance_factor = 1 / 8 / 60 / 20480}
         },
         weight = 1
     },
     {
         stack = {
             recipe = 'firearm-magazine',
-            output = {item = 'firearm-magazine', min_rate = 1 / 2 / 60, distance_factor = 1 / 4 / 60 / 512}
+            output = {item = 'firearm-magazine', min_rate = 2 / 800, distance_factor = 1 / 8 / 60 / 20480}
         },
         weight = 4
     },
     {
         stack = {
             recipe = 'shotgun-shell',
-            output = {item = 'shotgun-shell', min_rate = 1 / 2 / 60, distance_factor = 1 / 8 / 60 / 512}
+            output = {item = 'shotgun-shell', min_rate = 2 / 800, distance_factor = 1 / 8 / 60 / 20480}
         },
         weight = 4
     },
@@ -53,7 +66,7 @@ local ammo_loot = {
         stack = {
             recipe = 'uranium-rounds-magazine',
             tech = 'uranium-ammo',
-            output = {item = 'uranium-rounds-magazine', min_rate = 0.1 / 8 / 60, distance_factor = 1 / 25 / 60 / 512}
+            output = {item = 'uranium-rounds-magazine', min_rate = 2 / 1800, distance_factor = 1 / 8 / 60 / 20480}
         },
         weight = 0.25
     }
@@ -66,7 +79,7 @@ local oil_loot = {
             tech = 'oil-processing',
             output = {
                 min_rate = 1 / 60,
-                distance_factor = 1 / 10 / 60 / 512,
+                distance_factor = 1 / 8 / 60 / 20480,
                 item = 'petroleum-gas',
                 fluidbox_index = 2
             }
@@ -78,9 +91,9 @@ local oil_loot = {
             recipe = 'advanced-oil-processing',
             tech = 'advanced-oil-processing',
             output = {
-                {min_rate = 0.7 / 60, distance_factor = 3.125 / 60 / 512, item = 'heavy-oil', fluidbox_index = 3},
-                {min_rate = 0.82 / 60, distance_factor = 5.625 / 60 / 512, item = 'light-oil', fluidbox_index = 4},
-                {min_rate = 0.83 / 60, distance_factor = 6.875 / 60 / 512, item = 'petroleum-gas', fluidbox_index = 5}
+                {min_rate = 0.7 / 60, distance_factor = 1 / 8 / 60 / 20480, item = 'heavy-oil', fluidbox_index = 3},
+                {min_rate = 0.82 / 60, distance_factor = 1 / 8 / 60 / 20480, item = 'light-oil', fluidbox_index = 4},
+                {min_rate = 0.83 / 60, distance_factor = 1 / 8 / 60 / 20480, item = 'petroleum-gas', fluidbox_index = 5}
             }
         },
         weight = 0.1
@@ -95,7 +108,7 @@ local oil_prod_loot = {
             output = {
                 item = 'lubricant',
                 min_rate = 0.7 / 60,
-                distance_factor = 1 / 10 / 60 / 512,
+                distance_factor = 1 / 8 / 60 / 20480,
                 fluidbox_index = 2
             }
         },
@@ -108,7 +121,7 @@ local oil_prod_loot = {
             output = {
                 item = 'solid-fuel',
                 min_rate = 0.7 / 60,
-                distance_factor = 1 / 4 / 60 / 512
+                distance_factor = 1 / 8 / 60 / 20480
             }
         },
         weight = 4
@@ -120,7 +133,7 @@ local oil_prod_loot = {
             output = {
                 item = 'sulfuric-acid',
                 min_rate = 0.8 / 60,
-                distance_factor = 1 / 8 / 60 / 512,
+                distance_factor = 1 / 8 / 60 / 20480,
                 fluidbox_index = 2
             }
         },
@@ -133,7 +146,7 @@ local oil_prod_loot = {
             output = {
                 item = 'battery',
                 min_rate = 0.6 / 60,
-                distance_factor = 1 / 25 / 60 / 512
+                distance_factor = 1 / 8 / 60 / 20480
             }
         },
         weight = 0.75
@@ -145,7 +158,7 @@ local oil_prod_loot = {
             output = {
                 item = 'sulfur',
                 min_rate = 0.8 / 60,
-                distance_factor = 1 / 25 / 60 / 512
+                distance_factor = 1 / 8 / 60 / 20480
             }
         },
         weight = 0.55
@@ -157,7 +170,7 @@ local oil_prod_loot = {
             output = {
                 item = 'plastic-bar',
                 min_rate = 0.8 / 60,
-                distance_factor = 1 / 25 / 60 / 512
+                distance_factor = 1 / 8 / 60 / 20480
             }
         },
         weight = 0.25
@@ -169,7 +182,7 @@ local oil_prod_loot = {
             output = {
                 item = 'explosives',
                 min_rate = 0.8 / 60,
-                distance_factor = 1 / 25 / 60 / 512
+                distance_factor = 1 / 8 / 60 / 20480
             }
         },
         weight = 0.20
@@ -181,7 +194,7 @@ local resource_loot = {
         stack = {
             recipe = 'stone-wall',
             tech = 'stone-walls',
-            output = {item = 'stone-wall', min_rate = 0.6 / 60, distance_factor = 1 / 6 / 60 / 512}
+            output = {item = 'stone-wall', min_rate = 0.6 / 60, distance_factor = 1 / 8 / 60 / 20480}
         },
         weight = 10
     },
@@ -189,21 +202,21 @@ local resource_loot = {
         stack = {
             recipe = 'concrete',
             tech = 'concrete',
-            output = {item = 'concrete', min_rate = 1 / 4 / 60, distance_factor = 1 / 6 / 60 / 512}
+            output = {item = 'concrete', min_rate = 1 / 4 / 60, distance_factor = 1 / 8 / 60 / 20480}
         },
         weight = 6
     },
     {
         stack = {
             recipe = 'iron-gear-wheel',
-            output = {item = 'iron-gear-wheel', min_rate = 0.6 / 60, distance_factor = 1 / 6 / 60 / 512}
+            output = {item = 'iron-gear-wheel', min_rate = 0.6 / 60, distance_factor = 1 / 8 / 60 / 20480}
         },
         weight = 12
     },
     {
         stack = {
             recipe = 'inserter',
-            output = {item = 'inserter', min_rate = 0.6 / 60, distance_factor = 1 / 6 / 60 / 512}
+            output = {item = 'inserter', min_rate = 0.6 / 60, distance_factor = 1 / 8 / 60 / 20480}
         },
         weight = 12
     },
@@ -211,14 +224,14 @@ local resource_loot = {
         stack = {
             recipe = 'fast-inserter',
             tech = 'fast-inserter',
-            output = {item = 'fast-inserter', min_rate = 1 / 4 / 60, distance_factor = 1 / 6 / 60 / 512}
+            output = {item = 'fast-inserter', min_rate = 1 / 4 / 60, distance_factor = 1 / 8 / 60 / 20480}
         },
         weight = 4
     },
     {
         stack = {
             recipe = 'electronic-circuit',
-            output = {item = 'electronic-circuit', min_rate = 1 / 4 / 60, distance_factor = 1 / 6 / 60 / 512}
+            output = {item = 'electronic-circuit', min_rate = 1 / 4 / 60, distance_factor = 1 / 8 / 60 / 20480}
         },
         weight = 2
     },
@@ -226,7 +239,7 @@ local resource_loot = {
         stack = {
             recipe = 'advanced-circuit',
             tech = 'advanced-electronics',
-            output = {item = 'advanced-circuit', min_rate = 1 / 4 / 60, distance_factor = 1 / 6 / 60 / 512}
+            output = {item = 'advanced-circuit', min_rate = 1 / 4 / 60, distance_factor = 1 / 8 / 60 / 20480}
         },
         weight = 1
     },
@@ -234,28 +247,28 @@ local resource_loot = {
         stack = {
             recipe = 'processing-unit',
             tech = 'advanced-electronics-2',
-            output = {item = 'processing-unit', min_rate = 1 / 10 / 60, distance_factor = 1 / 8 / 60 / 512}
+            output = {item = 'processing-unit', min_rate = 1 / 10 / 60, distance_factor = 1 / 8 / 60 / 20480}
         },
         weight = 2
     },
     {
         stack = {
             recipe = 'transport-belt',
-            output = {item = 'transport-belt', min_rate = 0.6 / 60, distance_factor = 1 / 6 / 60 / 512}
+            output = {item = 'transport-belt', min_rate = 0.6 / 60, distance_factor = 1 / 8 / 60 / 20480}
         },
         weight = 8
     },
     {
         stack = {
             recipe = 'underground-belt',
-            output = {item = 'underground-belt', min_rate = 1 / 4 / 60, distance_factor = 1 / 6 / 60 / 512}
+            output = {item = 'underground-belt', min_rate = 1 / 4 / 60, distance_factor = 1 / 8 / 60 / 20480}
         },
         weight = 8
     },
     {
         stack = {
             recipe = 'small-electric-pole',
-            output = {item = 'small-electric-pole', min_rate = 1 / 4 / 60, distance_factor = 1 / 6 / 60 / 512}
+            output = {item = 'small-electric-pole', min_rate = 1 / 4 / 60, distance_factor = 1 / 8 / 60 / 20480}
         },
         weight = 8
     },
@@ -263,7 +276,7 @@ local resource_loot = {
         stack = {
             recipe = 'fast-transport-belt',
             tech = 'logistics-2',
-            output = {item = 'fast-transport-belt', min_rate = 1 / 4 / 60, distance_factor = 1 / 8 / 60 / 512}
+            output = {item = 'fast-transport-belt', min_rate = 1 / 4 / 60, distance_factor = 1 / 8 / 60 / 20480}
         },
         weight = 5
     },
@@ -271,7 +284,7 @@ local resource_loot = {
         stack = {
             recipe = 'fast-underground-belt',
             tech = 'logistics-2',
-            output = {item = 'fast-underground-belt', min_rate = 1 / 4 / 60, distance_factor = 1 / 8 / 60 / 512}
+            output = {item = 'fast-underground-belt', min_rate = 1 / 4 / 60, distance_factor = 1 / 8 / 60 / 20480}
         },
         weight = 5
     },
@@ -279,7 +292,7 @@ local resource_loot = {
         stack = {
             recipe = 'solar-panel',
             tech = 'solar-energy',
-            output = {item = 'solar-panel', min_rate = 1 / 6 / 60, distance_factor = 1 / 8 / 60 / 512}
+            output = {item = 'solar-panel', min_rate = 1 / 15 / 60, distance_factor = 1 / 8 / 60 / 20480}
         },
         weight = 3
     },
@@ -287,7 +300,7 @@ local resource_loot = {
         stack = {
             recipe = 'productivity-module',
             tech = 'productivity-module',
-            output = {item = 'productivity-module', min_rate = 1 / 6 / 60, distance_factor = 1 / 8 / 60 / 512}
+            output = {item = 'productivity-module', min_rate = 1 / 10 / 60, distance_factor = 1 / 8 / 60 / 20480}
         },
         weight = 0.9
     },
@@ -295,7 +308,7 @@ local resource_loot = {
         stack = {
             recipe = 'effectivity-module',
             tech = 'effectivity-module',
-            output = {item = 'effectivity-module', min_rate = 1 / 6 / 60, distance_factor = 1 / 8 / 60 / 512}
+            output = {item = 'effectivity-module', min_rate = 1 / 10 / 60, distance_factor = 1 / 8 / 60 / 20480}
         },
         weight = 0.9
     },
@@ -303,7 +316,7 @@ local resource_loot = {
         stack = {
             recipe = 'speed-module',
             tech = 'speed-module',
-            output = {item = 'speed-module', min_rate = 1 / 6 / 60, distance_factor = 1 / 8 / 60 / 512}
+            output = {item = 'speed-module', min_rate = 1 / 10 / 60, distance_factor = 1 / 8 / 60 / 20480}
         },
         weight = 0.8
     },
@@ -311,7 +324,7 @@ local resource_loot = {
         stack = {
             recipe = 'productivity-module-2',
             tech = 'productivity-module-2',
-            output = {item = 'productivity-module-2', min_rate = 1 / 8 / 60, distance_factor = 1 / 8 / 60 / 512}
+            output = {item = 'productivity-module-2', min_rate = 1 / 15 / 60, distance_factor = 1 / 8 / 60 / 20480}
         },
         weight = 0.5
     },
@@ -319,7 +332,7 @@ local resource_loot = {
         stack = {
             recipe = 'effectivity-module-2',
             tech = 'effectivity-module-2',
-            output = {item = 'effectivity-module-2', min_rate = 1 / 8 / 60, distance_factor = 1 / 8 / 60 / 512}
+            output = {item = 'effectivity-module-2', min_rate = 1 / 15 / 60, distance_factor = 1 / 8 / 60 / 20480}
         },
         weight = 0.5
     },
@@ -327,7 +340,7 @@ local resource_loot = {
         stack = {
             recipe = 'speed-module-2',
             tech = 'speed-module-2',
-            output = {item = 'speed-module-2', min_rate = 1 / 8 / 60, distance_factor = 1 / 8 / 60 / 512}
+            output = {item = 'speed-module-2', min_rate = 1 / 15 / 60, distance_factor = 1 / 8 / 60 / 20480}
         },
         weight = 0.5
     },
@@ -335,7 +348,7 @@ local resource_loot = {
         stack = {
             recipe = 'productivity-module-3',
             tech = 'productivity-module-3',
-            output = {item = 'productivity-module-3', min_rate = 1 / 10 / 60, distance_factor = 1 / 8 / 60 / 512}
+            output = {item = 'productivity-module-3', min_rate = 1 / 20 / 60, distance_factor = 1 / 8 / 60 / 20480}
         },
         weight = 0.25
     },
@@ -343,7 +356,7 @@ local resource_loot = {
         stack = {
             recipe = 'effectivity-module-3',
             tech = 'effectivity-module-3',
-            output = {item = 'effectivity-module-3', min_rate = 1 / 10 / 60, distance_factor = 1 / 8 / 60 / 512}
+            output = {item = 'effectivity-module-3', min_rate = 1 / 20 / 60, distance_factor = 1 / 8 / 60 / 20480}
         },
         weight = 0.25
     },
@@ -351,7 +364,7 @@ local resource_loot = {
         stack = {
             recipe = 'speed-module-3',
             tech = 'speed-module-3',
-            output = {item = 'speed-module-3', min_rate = 1 / 10 / 60, distance_factor = 1 / 8 / 60 / 512}
+            output = {item = 'speed-module-3', min_rate = 1 / 20 / 60, distance_factor = 1 / 8 / 60 / 20480}
         },
         weight = 0.10
     }
@@ -361,14 +374,14 @@ local furnace_loot = {
     {
         stack = {
             furance_item = 'iron-plate',
-            output = {item = 'iron-plate', min_rate = 2.0 / 60, distance_factor = 1 / 6 / 60 / 512}
+            output = {item = 'iron-plate', min_rate = 2.0 / 60, distance_factor = 1 / 8 / 60 / 20480}
         },
         weight = 4
     },
     {
         stack = {
             furance_item = 'copper-plate',
-            output = {item = 'copper-plate', min_rate = 2.0 / 60, distance_factor = 1 / 6 / 60 / 512}
+            output = {item = 'copper-plate', min_rate = 2.0 / 60, distance_factor = 1 / 8 / 60 / 20480}
         },
         weight = 4
     },
@@ -376,18 +389,28 @@ local furnace_loot = {
         stack = {
             furance_item = 'steel-plate',
             tech = 'steel-processing',
-            output = {item = 'steel-plate', min_rate = 1.0 / 60, distance_factor = 1 / 8 / 60 / 512}
+            output = {item = 'steel-plate', min_rate = 1.0 / 60, distance_factor = 1 / 8 / 60 / 20480}
         },
         weight = 1
     }
 }
 
+local testing_weights = Functions.prepare_weighted_loot(testing_loot)
 local science_weights = Functions.prepare_weighted_loot(science_loot)
 local building_weights = Functions.prepare_weighted_loot(ammo_loot)
 local oil_weights = Functions.prepare_weighted_loot(oil_loot)
 local oil_prod_weights = Functions.prepare_weighted_loot(oil_prod_loot)
 local resource_weights = Functions.prepare_weighted_loot(resource_loot)
 local furnace_weights = Functions.prepare_weighted_loot(furnace_loot)
+
+local testing_callback = {
+    callback = Functions.magic_item_crafting_callback_weighted,
+    data = {
+        loot = testing_loot,
+        weights = testing_weights,
+        testing = true
+    }
+}
 
 local science_callback = {
     callback = Functions.magic_item_crafting_callback_weighted,
@@ -437,6 +460,12 @@ local furnace_callback = {
     }
 }
 
+local testing_list = {
+    [1] = {name = 'assembling-machine-1', callback = testing_callback},
+    [2] = {name = 'assembling-machine-2', callback = testing_callback},
+    [3] = {name = 'assembling-machine-3', callback = testing_callback}
+}
+
 local science_list = {
     [1] = {name = 'assembling-machine-1', callback = science_callback},
     [2] = {name = 'assembling-machine-2', callback = science_callback},
@@ -468,6 +497,19 @@ local furnace_list = {
     [2] = {name = 'steel-furnace', callback = furnace_callback},
     [3] = {name = 'electric-furnace', callback = furnace_callback}
 }
+
+local function spawn_testing_buildings(entities, p, probability)
+    local callback = testing_list[probability].callback
+
+    entities[#entities + 1] = {
+        name = testing_list[probability].name,
+        position = p,
+        force = 'neutral',
+        callback = callback,
+        collision = true,
+        e_type = types
+    }
+end
 
 local function spawn_science_buildings(entities, p, probability)
     local callback = science_list[probability].callback
@@ -555,6 +597,12 @@ local buildings = {
     [5] = spawn_oil_buildings,
     [6] = spawn_oil_prod_buildings
 }
+
+if testing then
+    buildings = {
+        [1] = spawn_testing_buildings
+    }
+end
 
 local function spawn_random_buildings(entities, p, depth)
     local randomizer = random(1, #buildings)

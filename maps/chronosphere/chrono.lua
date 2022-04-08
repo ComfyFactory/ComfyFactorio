@@ -1,6 +1,6 @@
 local Chrono_table = require 'maps.chronosphere.table'
 local Balance = require 'maps.chronosphere.balance'
-local Score = require 'comfy_panel.score'
+local Score = require 'utils.gui.score'
 local Difficulty = require 'modules.difficulty_vote'
 local Upgrades = require 'maps.chronosphere.upgrade_list'
 local List = require 'maps.chronosphere.production_list'
@@ -120,48 +120,48 @@ function Public.restart_settings()
     global.mining_history = {}
     get_score.score_table = {}
 
-	game.difficulty_settings.technology_price_multiplier = Balance.Tech_price_multiplier
-	game.map_settings.enemy_evolution.destroy_factor = 0.005
-	game.map_settings.enemy_evolution.pollution_factor = 0
-	game.map_settings.enemy_evolution.time_factor = 7e-05
-	game.map_settings.enemy_expansion.enabled = false
-	-- game.map_settings.enemy_expansion.max_expansion_cooldown = 3600
-	-- game.map_settings.enemy_expansion.min_expansion_cooldown = 3600
-	-- game.map_settings.enemy_expansion.settler_group_max_size = 30
-	-- game.map_settings.enemy_expansion.settler_group_min_size = 10
-  -- game.map_settings.enemy_expansion.max_expansion_distance = 9
-	game.map_settings.pollution.enabled = true
-	game.map_settings.pollution.expected_max_per_chunk = 400
-	game.map_settings.pollution.min_to_show_per_chunk = 40
-	game.map_settings.pollution.pollution_restored_per_tree_damage = 0.02
-	game.map_settings.pollution.min_pollution_to_damage_trees = 1
-	game.map_settings.pollution.max_pollution_to_restore_trees = 0
-	game.map_settings.pollution.pollution_with_max_forest_damage = 10
-	game.map_settings.pollution.pollution_per_tree_damage = 0.1
-	game.map_settings.pollution.ageing = 0.1
-	game.map_settings.pollution.diffusion_ratio = 0.1
-	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 5
-	game.map_settings.unit_group.min_group_gathering_time = 1800
-	game.map_settings.unit_group.max_group_gathering_time = 18000
-	game.map_settings.unit_group.max_wait_time_for_late_members = 600
-	game.map_settings.path_finder.general_entity_collision_penalty = 1
-	game.map_settings.path_finder.general_entity_subsequent_collision_penalty = 1
-	game.map_settings.path_finder.short_cache_size = 20
-	game.map_settings.path_finder.long_cache_size = 100
-	game.map_settings.unit_group.max_gathering_unit_groups = 10
-	game.forces.neutral.character_inventory_slots_bonus = 500
-	game.forces.enemy.evolution_factor = 0.0001
-	game.forces.scrapyard.set_friend('enemy', true)
-	game.forces.enemy.set_friend('scrapyard', true)
-	game.forces.enemy.set_ammo_damage_modifier("rocket", -0.5)
-	game.forces.player.technologies["land-mine"].enabled = false
-	game.forces.player.technologies["landfill"].enabled = false
-	game.forces.player.technologies["cliff-explosives"].enabled = false
-	game.forces.player.technologies["fusion-reactor-equipment"].enabled = false
-	game.forces.player.technologies["power-armor-mk2"].enabled = false
-	game.forces.player.technologies["railway"].researched = true
-	game.forces.player.recipes["pistol"].enabled = false
-	game.forces.player.ghost_time_to_live = 15 * 60 * 60
+    game.difficulty_settings.technology_price_multiplier = Balance.Tech_price_multiplier
+    game.map_settings.enemy_evolution.destroy_factor = 0.005
+    game.map_settings.enemy_evolution.pollution_factor = 0
+    game.map_settings.enemy_evolution.time_factor = 7e-05
+    game.map_settings.enemy_expansion.enabled = false
+    -- game.map_settings.enemy_expansion.max_expansion_cooldown = 3600
+    -- game.map_settings.enemy_expansion.min_expansion_cooldown = 3600
+    -- game.map_settings.enemy_expansion.settler_group_max_size = 30
+    -- game.map_settings.enemy_expansion.settler_group_min_size = 10
+    -- game.map_settings.enemy_expansion.max_expansion_distance = 9
+    game.map_settings.pollution.enabled = true
+    game.map_settings.pollution.expected_max_per_chunk = 400
+    game.map_settings.pollution.min_to_show_per_chunk = 40
+    game.map_settings.pollution.pollution_restored_per_tree_damage = 0.02
+    game.map_settings.pollution.min_pollution_to_damage_trees = 1
+    game.map_settings.pollution.max_pollution_to_restore_trees = 0
+    game.map_settings.pollution.pollution_with_max_forest_damage = 10
+    game.map_settings.pollution.pollution_per_tree_damage = 0.1
+    game.map_settings.pollution.ageing = 0.1
+    game.map_settings.pollution.diffusion_ratio = 0.1
+    game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 5
+    game.map_settings.unit_group.min_group_gathering_time = 1800
+    game.map_settings.unit_group.max_group_gathering_time = 18000
+    game.map_settings.unit_group.max_wait_time_for_late_members = 600
+    game.map_settings.path_finder.general_entity_collision_penalty = 1
+    game.map_settings.path_finder.general_entity_subsequent_collision_penalty = 1
+    game.map_settings.path_finder.short_cache_size = 20
+    game.map_settings.path_finder.long_cache_size = 100
+    game.map_settings.unit_group.max_gathering_unit_groups = 10
+    game.forces.neutral.character_inventory_slots_bonus = 500
+    game.forces.enemy.evolution_factor = 0.0001
+    game.forces.scrapyard.set_friend('enemy', true)
+    game.forces.enemy.set_friend('scrapyard', true)
+    game.forces.enemy.set_ammo_damage_modifier('rocket', -0.5)
+    game.forces.player.technologies['land-mine'].enabled = false
+    game.forces.player.technologies['landfill'].enabled = false
+    game.forces.player.technologies['cliff-explosives'].enabled = false
+    game.forces.player.technologies['fusion-reactor-equipment'].enabled = false
+    game.forces.player.technologies['power-armor-mk2'].enabled = false
+    game.forces.player.technologies['railway'].researched = true
+    game.forces.player.recipes['pistol'].enabled = false
+    game.forces.player.ghost_time_to_live = 15 * 60 * 60
 end
 
 function Public.set_difficulty_settings()
@@ -244,8 +244,7 @@ function Public.process_jump()
     objective.chronojumps = objective.chronojumps + 1
     objective.passivetimer = 0
     objective.chronochargesneeded = Balance.MJ_needed_for_full_charge(Difficulty.get().difficulty_vote_value, objective.chronojumps)
-    objective.passive_chronocharge_rate =
-        Balance.MJ_needed_for_full_charge(Difficulty.get().difficulty_vote_value, objective.chronojumps) / Balance.passive_planet_jumptime(objective.chronojumps)
+    objective.passive_chronocharge_rate = Balance.MJ_needed_for_full_charge(Difficulty.get().difficulty_vote_value, objective.chronojumps) / Balance.passive_planet_jumptime(objective.chronojumps)
     bitertable.active_biters = {}
     bitertable.unit_groups = {}
     bitertable.biter_raffle = {}
@@ -274,10 +273,7 @@ function Public.process_jump()
         objective.computermessage = 5
         game.play_sound {path = 'utility/new_objective', volume_modifier = 0.85}
     end
-    if
-        (objective.passivetimer - 180) * objective.passive_chronocharge_rate > objective.chronochargesneeded * 0.75 and
-            objective.chronojumps >= Balance.jumps_until_overstay_is_on(Difficulty.get().difficulty_vote_value)
-     then
+    if (objective.passivetimer - 180) * objective.passive_chronocharge_rate > objective.chronochargesneeded * 0.75 and objective.chronojumps >= Balance.jumps_until_overstay_is_on(Difficulty.get().difficulty_vote_value) then
         game.print({'chronosphere.message_overstay'}, {r = 0.98, g = 0.36, b = 0.22})
     end
     if objective.world.id == 2 and objective.world.variant.id == 2 then
@@ -407,7 +403,12 @@ local function create_chunk_list(surface)
             chunks[#chunks + 1] = {pos = {x, y}, generated = surface.is_chunk_generated({x, y}), distance = math.sqrt(x * x + y * y)}
         end
     end
-    for k, v in Rand.spairs(chunks, function(t, a, b) return t[b].distance > t[a].distance end) do
+    for k, v in Rand.spairs(
+        chunks,
+        function(t, a, b)
+            return t[b].distance > t[a].distance
+        end
+    ) do
         if v.generated == false then
             schedule.chunks_to_generate[#schedule.chunks_to_generate + 1] = v
         end
@@ -415,24 +416,24 @@ local function create_chunk_list(surface)
 end
 
 function Public.setup_world(surface)
-	local objective = Chrono_table.get_table()
-	local world = objective.world
-	if objective.chronojumps <= 2 then
-		surface.min_brightness = 0.5
-	else
-		surface.min_brightness = 0
-	end
-	surface.brightness_visual_weights = {1, 1, 1}
-	objective.surface = surface
-	surface.daytime = world.daytime
-	local timer = world.dayspeed.timer
-	if timer == 0 then
-		surface.freeze_daytime = true
-		timer = timer + 1
-	else
-		surface.freeze_daytime = false
-	end
-	surface.ticks_per_day = timer * 250
+    local objective = Chrono_table.get_table()
+    local world = objective.world
+    if objective.chronojumps <= 2 then
+        surface.min_brightness = 0.5
+    else
+        surface.min_brightness = 0
+    end
+    surface.brightness_visual_weights = {1, 1, 1}
+    objective.surface = surface
+    surface.daytime = world.daytime
+    local timer = world.dayspeed.timer
+    if timer == 0 then
+        surface.freeze_daytime = true
+        timer = timer + 1
+    else
+        surface.freeze_daytime = false
+    end
+    surface.ticks_per_day = timer * 250
 
     local moisture = world.variant.moisture
     if moisture ~= 0 then

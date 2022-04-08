@@ -13,7 +13,7 @@ Cell Values:
 require 'modules.satellite_score'
 
 local Functions = require 'maps.minesweeper.functions'
-local Map_score = require 'comfy_panel.map_score'
+local Map_score = require 'utils.gui.map_score'
 local Map = require 'modules.map_info'
 local Global = require 'utils.global'
 

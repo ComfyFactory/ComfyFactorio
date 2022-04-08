@@ -17,7 +17,7 @@ local Where = require 'utils.commands.where'
 local Session = require 'utils.datastore.session_data'
 local Jailed = require 'utils.datastore.jail_data'
 local Supporters = require 'utils.datastore.supporters'
-local Tabs = require 'comfy_panel.main'
+local Gui = require 'utils.gui'
 local Global = require 'utils.global'
 local SpamProtection = require 'utils.spam_protection'
 local RPG = require 'modules.rpg.table'
@@ -25,7 +25,7 @@ local Token = require 'utils.token'
 
 local Public = {}
 
-local module_name = 'Players'
+local module_name = Gui.uid_name()
 
 local this = {
     player_list = {
@@ -576,7 +576,7 @@ local function player_list_show(data)
             name = 'player_list_panel_header_' .. k,
             caption = v
         }
-        header_label.style.font = 'default-bold'
+        header_label.style.font = 'heading-2'
         header_label.style.font_color = {r = 0.98, g = 0.66, b = 0.22}
     end
 
@@ -677,6 +677,7 @@ local function player_list_show(data)
         }
         name_label.style.minimal_width = column_widths['name_label']
         name_label.style.maximal_width = column_widths['name_label']
+        name_label.style.font = 'heading-3'
 
         -- RPG level
         if this.rpg_enabled then
@@ -689,6 +690,7 @@ local function player_list_show(data)
             }
             rpg_level_label.style.minimal_width = column_widths['rpg_level_label']
             rpg_level_label.style.maximal_width = column_widths['rpg_level_label']
+            rpg_level_label.style.font = 'heading-3'
         end
 
         -- Total time
@@ -700,6 +702,7 @@ local function player_list_show(data)
         }
         total_label.style.minimal_width = column_widths['total_label']
         total_label.style.maximal_width = column_widths['total_label']
+        total_label.style.font = 'heading-3'
 
         -- Current time
         local current_label =
@@ -710,6 +713,7 @@ local function player_list_show(data)
         }
         current_label.style.minimal_width = column_widths['current_label']
         current_label.style.maximal_width = column_widths['current_label']
+        current_label.style.font = 'heading-3'
 
         -- Poke
         local flow = player_list_panel_table.add {type = 'flow', name = 'button_flow_' .. i, direction = 'horizontal'}
@@ -740,18 +744,11 @@ local function on_gui_click(event)
     local name = element.name
     local player = game.get_player(event.player_index)
 
-    if name == 'tab_' .. module_name then
-        local is_spamming = SpamProtection.is_spamming(player, nil, 'PlayerList tab_Players')
-        if is_spamming then
-            return
-        end
-    end
-
-    local frame = Tabs.comfy_panel_get_active_frame(player)
+    local frame = Gui.get_player_active_frame(player)
     if not frame then
         return
     end
-    if frame.name ~= module_name then
+    if frame.name ~= 'Players' then
         return
     end
 
@@ -900,9 +897,9 @@ end
 
 local function refresh()
     for _, player in pairs(game.connected_players) do
-        local frame = Tabs.comfy_panel_get_active_frame(player)
+        local frame = Gui.get_player_active_frame(player)
         if frame then
-            if frame.name ~= module_name then
+            if frame.name ~= 'Players' then
                 return
             end
             local data = {player = player, frame = frame, sort_by = this.player_list.sorting_method[player.index]}
@@ -938,7 +935,15 @@ function Public.rpg_enabled(value)
     return this.rpg_enabled
 end
 
-Tabs.add_tab_to_gui({name = module_name, id = player_list_show_token, admin = false})
+Gui.add_tab_to_gui({name = module_name, caption = 'Players', id = player_list_show_token, admin = false})
+
+Gui.on_click(
+    module_name,
+    function(event)
+        local player = event.player
+        Gui.reload_active_tab(player)
+    end
+)
 
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_left_game, on_player_left_game)

@@ -1,12 +1,12 @@
 -- this script adds a group button to create groups for your players --
 
-local Tabs = require 'comfy_panel.main'
+local Gui = require 'utils.gui'
 local Global = require 'utils.global'
 local SpamProtection = require 'utils.spam_protection'
 local Event = require 'utils.event'
 local Token = require 'utils.token'
 
-local module_name = 'Groups'
+local module_name = Gui.uid_name()
 
 local this = {
     player_group = {},
@@ -30,8 +30,8 @@ local function build_group_gui(data)
     local group_name_width = 150
     local description_width = 240
     local members_width = 90
-    local member_columns = 3
-    local actions_width = 80
+    local member_columns = 2
+    local actions_width = 130
     local total_height = frame.style.minimal_height - 60
 
     frame.clear()
@@ -46,11 +46,12 @@ local function build_group_gui(data)
     for _, h in pairs(headings) do
         local l = t.add({type = 'label', caption = h[1]})
         l.style.font_color = {r = 0.98, g = 0.66, b = 0.22}
-        l.style.font = 'default-listbox'
+        l.style.font = 'heading-2'
         l.style.top_padding = 6
         l.style.minimal_height = 40
         l.style.minimal_width = h[2]
         l.style.maximal_width = h[2]
+        l.style.horizontal_align = 'center'
     end
 
     local scroll_pane =
@@ -76,11 +77,12 @@ local function build_group_gui(data)
     for _, group in pairs(this.tag_groups) do
         if (group.name and group.founder and group.description) then
             local l = t.add({type = 'label', caption = group.name})
-            l.style.font = 'default-bold'
             l.style.top_padding = 16
             l.style.bottom_padding = 16
             l.style.minimal_width = group_name_width
             l.style.maximal_width = group_name_width
+            l.style.font = 'heading-3'
+            l.style.horizontal_align = 'center'
             local color
             if game.players[group.founder] and game.players[group.founder].color then
                 color = game.players[group.founder].color
@@ -97,11 +99,17 @@ local function build_group_gui(data)
             l.style.maximal_width = description_width
             l.style.font_color = {r = 0.90, g = 0.90, b = 0.90}
             l.style.single_line = false
+            l.style.font = 'heading-3'
+            l.style.horizontal_align = 'center'
 
-            local tt = t.add({type = 'table', column_count = member_columns})
+            local tt = t.add({type = 'table', column_count = 2})
+            local flow = tt.add({type = 'flow'})
+            flow.style.left_padding = 65
+            local ttt = tt.add({type = 'table', column_count = member_columns})
+            ttt.style.minimal_width = members_width * 2 - 25
             for _, p in pairs(game.connected_players) do
                 if group.name == this.player_group[p.name] then
-                    l = tt.add({type = 'label', caption = p.name})
+                    l = ttt.add({type = 'label', caption = p.name})
                     color = {
                         r = p.color.r * 0.6 + 0.4,
                         g = p.color.g * 0.6 + 0.4,
@@ -109,8 +117,10 @@ local function build_group_gui(data)
                         a = 1
                     }
                     l.style.font_color = color
-                    --l.style.minimal_width = members_width
-                    l.style.maximal_width = members_width * 2
+                    l.style.maximal_width = members_width * 2 - 60
+                    l.style.single_line = false
+                    l.style.font = 'heading-3'
+                    l.style.horizontal_align = 'center'
                 end
             end
 
@@ -153,10 +163,12 @@ end
 local build_group_gui_token = Token.register(build_group_gui)
 
 local function refresh_gui()
-    for _, p in pairs(game.connected_players) do
-        local frame = Tabs.comfy_panel_get_active_frame(p)
+    local players = game.connected_players
+    for i = 1, #players do
+        local player = players[i]
+        local frame = Gui.get_player_active_frame(player)
         if frame then
-            if frame.name == module_name then
+            if frame.frame2 and frame.frame2.valid then
                 local new_group_name = frame.frame2.group_table.new_group_name.text
                 local new_group_description = frame.frame2.group_table.new_group_description.text
 
@@ -168,10 +180,10 @@ local function refresh_gui()
                     new_group_description = ''
                 end
 
-                local data = {player = p, frame = frame}
+                local data = {player = player, frame = frame}
                 build_group_gui(data)
 
-                frame = Tabs.comfy_panel_get_active_frame(p)
+                frame = Gui.get_player_active_frame(player)
                 frame.frame2.group_table.new_group_name.text = new_group_name
                 frame.frame2.group_table.new_group_description.text = new_group_description
             end
@@ -235,18 +247,11 @@ local function on_gui_click(event)
 
     local name = element.name
 
-    if name and name == 'tab_' .. module_name then
-        local is_spamming = SpamProtection.is_spamming(player, nil, 'Groups tab_Groups')
-        if is_spamming then
-            return
-        end
-    end
-
-    local frame = Tabs.comfy_panel_get_active_frame(player)
+    local frame = Gui.get_player_active_frame(player)
     if not frame then
         return
     end
-    if frame.name ~= module_name then
+    if frame.name ~= 'Groups' then
         return
     end
 
@@ -380,7 +385,15 @@ function Public.reset_groups()
     this.tag_groups = {}
 end
 
-Tabs.add_tab_to_gui({name = module_name, id = build_group_gui_token, admin = false})
+Gui.add_tab_to_gui({name = module_name, caption = 'Groups', id = build_group_gui_token, admin = false})
+
+Gui.on_click(
+    module_name,
+    function(event)
+        local player = event.player
+        Gui.reload_active_tab(player)
+    end
+)
 
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)

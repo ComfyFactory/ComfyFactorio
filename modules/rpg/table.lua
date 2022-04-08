@@ -15,6 +15,7 @@ local settings_frame_name = Gui.uid_name()
 local save_button_name = Gui.uid_name()
 local discard_button_name = Gui.uid_name()
 local draw_main_frame_name = Gui.uid_name()
+local close_main_frame_name = Gui.uid_name()
 local main_frame_name = Gui.uid_name()
 local settings_button_name = Gui.uid_name()
 local spell_gui_button_name = Gui.uid_name()
@@ -43,7 +44,7 @@ end
 Public.gui_settings_levels = {
     ['reset_text_label'] = 50,
     ['stone_path_label'] = 20,
-    ['one_punch_label'] = 30,
+    ['aoe_punch_label'] = 30,
     ['flameboots_label'] = 100,
     ['explosive_bullets_label'] = 50
 }
@@ -113,8 +114,8 @@ function Public.reset_table()
     this.rpg_extra.force_mana_per_tick = false
     this.rpg_extra.enable_stone_path = false
     this.rpg_extra.enable_auto_allocate = false
-    this.rpg_extra.enable_one_punch = true
-    this.rpg_extra.enable_one_punch_globally = false
+    this.rpg_extra.enable_aoe_punch = true
+    this.rpg_extra.enable_aoe_punch_globally = false
     this.rpg_extra.disable_get_heal_modifier_from_using_fish = false
     this.rpg_extra.tweaked_crafting_items = {
         ['red-wire'] = true,
@@ -238,14 +239,14 @@ function Public.toggle_debug()
 end
 
 --- Toggle debug - when you need to troubleshoot.
-function Public.toggle_debug_one_punch()
-    if this.rpg_extra.debug_one_punch then
-        this.rpg_extra.debug_one_punch = false
+function Public.toggle_debug_aoe_punch()
+    if this.rpg_extra.debug_aoe_punch then
+        this.rpg_extra.debug_aoe_punch = false
     else
-        this.rpg_extra.debug_one_punch = true
+        this.rpg_extra.debug_aoe_punch = true
     end
 
-    return this.rpg_extra.debug_one_punch
+    return this.rpg_extra.debug_aoe_punch
 end
 
 --- Debug only - when you need to troubleshoot.
@@ -366,20 +367,20 @@ function Public.enable_auto_allocate(value)
     return this.rpg_extra.enable_auto_allocate
 end
 
---- Enables/disabled stone-path-tile creation on mined.
+--- Enables/disabled aoe_punch.
 ---@param value <boolean>
-function Public.enable_one_punch(value)
-    this.rpg_extra.enable_one_punch = value or false
+function Public.enable_aoe_punch(value)
+    this.rpg_extra.enable_aoe_punch = value or false
 
-    return this.rpg_extra.enable_one_punch
+    return this.rpg_extra.enable_aoe_punch
 end
 
---- Enables/disabled stone-path-tile creation on mined.
+--- Enables/disabled aoe_punch.
 ---@param value <boolean>
-function Public.enable_one_punch_globally(value)
-    this.rpg_extra.enable_one_punch_globally = value or false
+function Public.enable_aoe_punch_globally(value)
+    this.rpg_extra.enable_aoe_punch_globally = value or false
 
-    return this.rpg_extra.enable_one_punch_globally
+    return this.rpg_extra.enable_aoe_punch_globally
 end
 
 --- Retrieves the spells table or a given spell.
@@ -515,6 +516,7 @@ Public.settings_frame_name = settings_frame_name
 Public.save_button_name = save_button_name
 Public.discard_button_name = discard_button_name
 Public.draw_main_frame_name = draw_main_frame_name
+Public.close_main_frame_name = close_main_frame_name
 Public.main_frame_name = main_frame_name
 Public.settings_button_name = settings_button_name
 Public.spell_gui_button_name = spell_gui_button_name

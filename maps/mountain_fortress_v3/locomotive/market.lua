@@ -19,6 +19,7 @@ local Public = {}
 local concat = table.concat
 
 local main_frame_name = Gui.uid_name()
+local close_market_gui_name = Gui.uid_name()
 local random = math.random
 local round = math.round
 
@@ -518,12 +519,14 @@ local function redraw_market_items(gui, player, search_text)
         return
     end
 
-    gui.add(
+    local upgrades_label =
+        gui.add(
         {
             type = 'label',
             caption = ({'locomotive.upgrades'})
         }
     )
+    upgrades_label.style.font = 'heading-2'
 
     local upgrade_table = gui.add({type = 'table', column_count = 6})
 
@@ -550,6 +553,7 @@ local function redraw_market_items(gui, player, search_text)
                 frame.add(
                 {
                     type = 'sprite-button',
+                    ---@diagnostic disable-next-line: ambiguity-1
                     sprite = data.sprite or 'item/' .. item,
                     number = item_count,
                     name = item,
@@ -573,12 +577,14 @@ local function redraw_market_items(gui, player, search_text)
             ::continue::
         end
     end
-    gui.add(
+    local items_label =
+        gui.add(
         {
             type = 'label',
             caption = ({'locomotive.items'})
         }
     )
+    items_label.style.font = 'heading-2'
 
     local slider_value = ceil(players[player.index].data.slider.slider_value)
     local items_table = gui.add({type = 'table', column_count = 6})
@@ -606,6 +612,7 @@ local function redraw_market_items(gui, player, search_text)
                 frame.add(
                 {
                     type = 'sprite-button',
+                    ---@diagnostic disable-next-line: ambiguity-1
                     sprite = data.sprite or 'item/' .. item,
                     number = item_count,
                     name = item,
@@ -793,31 +800,22 @@ local function gui_opened(event)
     if data.frame then
         data.frame = nil
     end
-    local frame =
-        player.gui.screen.add(
-        {
-            type = 'frame',
-            caption = ({'locomotive.market_name'}),
-            direction = 'vertical',
-            name = main_frame_name
-        }
-    )
 
+    local frame, inside_table = Gui.add_main_frame_with_toolbar(player, 'screen', main_frame_name, nil, close_market_gui_name, 'Market')
     frame.auto_center = true
 
     player.opened = frame
-    frame.style.minimal_width = 325
-    frame.style.minimal_height = 250
 
-    local search_table = frame.add({type = 'table', column_count = 2})
-    search_table.add({type = 'label', caption = ({'locomotive.search_text'})})
+    local search_table = inside_table.add({type = 'table', column_count = 2})
+    local search_name = search_table.add({type = 'label', caption = ({'locomotive.search_text'})})
+    search_name.style.font = 'heading-2'
     local search_text = search_table.add({type = 'textfield'})
     search_text.style.width = 140
 
-    add_space(frame)
+    add_space(inside_table)
 
     local pane =
-        frame.add {
+        inside_table.add {
         type = 'scroll-pane',
         direction = 'vertical',
         vertical_scroll_policy = 'always',
@@ -828,11 +826,11 @@ local function gui_opened(event)
     pane.style.minimal_height = 200
     pane.style.right_padding = 0
 
-    local flow = frame.add({type = 'flow'})
+    local flow = inside_table.add({type = 'flow'})
 
     add_space(flow)
 
-    local bottom_grid = frame.add({type = 'table', column_count = 4})
+    local bottom_grid = inside_table.add({type = 'table', column_count = 4})
     bottom_grid.style.vertically_stretchable = false
 
     local bg = bottom_grid.add({type = 'label', caption = ({'locomotive.quantity_text'})})
@@ -848,7 +846,7 @@ local function gui_opened(event)
     text_input.style.maximal_height = 28
 
     local slider =
-        frame.add(
+        inside_table.add(
         {
             type = 'slider',
             minimum_value = 1,
@@ -859,7 +857,7 @@ local function gui_opened(event)
     slider.style.width = 115
     text_input.style.width = 60
 
-    local coinsleft = frame.add({type = 'flow'})
+    local coinsleft = inside_table.add({type = 'flow'})
 
     coinsleft.add(
         {
@@ -871,7 +869,7 @@ local function gui_opened(event)
     players[player.index].data.search_text = search_text
     players[player.index].data.text_input = text_input
     players[player.index].data.slider = slider
-    players[player.index].data.frame = frame
+    players[player.index].data.frame = inside_table
     players[player.index].data.item_frame = pane
     players[player.index].data.coins_left = coinsleft
 
@@ -1479,6 +1477,17 @@ local function tick()
         place_market()
     end
 end
+
+Gui.on_click(
+    close_market_gui_name,
+    function(event)
+        local player = event.player
+        if not player or not player.valid or not player.character then
+            return
+        end
+        close_market_gui(player)
+    end
+)
 
 Event.on_nth_tick(5, tick)
 Event.add(defines.events.on_gui_click, gui_click)

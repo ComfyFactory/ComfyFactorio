@@ -104,7 +104,7 @@ function Public.spawn_biter()
         target = this.locomotive_biter,
         target_offset = {0, -3.5},
         scale = 1.05,
-        font = 'default-large-semibold',
+        font = 'heading-2',
         color = {r = 175, g = 75, b = 255},
         alignment = 'center',
         scale_with_zoom = false

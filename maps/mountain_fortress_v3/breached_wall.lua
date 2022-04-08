@@ -1,5 +1,4 @@
 local Collapse = require 'modules.collapse'
-local Terrain = require 'maps.mountain_fortress_v3.terrain'
 local Balance = require 'maps.mountain_fortress_v3.balance'
 local RPG = require 'modules.rpg.main'
 local WPT = require 'maps.mountain_fortress_v3.table'
@@ -15,21 +14,7 @@ local abs = math.abs
 local random = math.random
 local sub = string.sub
 local sqrt = math.sqrt
-local level_depth = WPT.level_depth
-
-local forest = {
-    [2] = true,
-    [10] = true,
-    [13] = true,
-    [17] = true,
-    [19] = true,
-    [21] = true
-}
-
-local scrap = {
-    [5] = true,
-    [15] = true
-}
+local zone_settings = WPT.zone_settings
 
 local clear_breach_text_and_render = function()
     local beam1 = WPT.get('zone1_beam1')
@@ -140,8 +125,14 @@ end
 local compare_player_pos = function(player)
     local p = player.position
     local index = player.index
-    local zone = floor((abs(p.y / level_depth)) % 22)
-    if scrap[zone] then
+    local adjusted_zones = WPT.get('adjusted_zones')
+    if not adjusted_zones.size then
+        return
+    end
+
+    local zone = floor((abs(p.y / zone_settings.zone_depth)) % adjusted_zones.size) + 1
+
+    if adjusted_zones.scrap[zone] then
         RPG.set_value_to_player(index, 'scrap_zone', true)
     else
         local has_scrap = RPG.get_value_from_player(index, 'scrap_zone')
@@ -150,7 +141,7 @@ local compare_player_pos = function(player)
         end
     end
 
-    if forest[zone] then
+    if adjusted_zones.forest[zone] then
         RPG.set_value_to_player(index, 'forest_zone', true)
     else
         local is_in_forest = RPG.get_value_from_player(index, 'forest_zone')
@@ -186,13 +177,13 @@ local compare_player_and_train = function(player, entity)
     if c_y - t_y <= spidertron_warning_position then
         local surface = player.surface
         surface.create_entity(
-        {
-            name = 'flying-text',
-            position = position,
-            text = 'Warning!!! You are too far from the train!!!',
-            color = {r = 0.9, g = 0.0, b = 0.0}
-        }
-    )
+            {
+                name = 'flying-text',
+                position = position,
+                text = 'Warning! You are too far away from the main locomotive!',
+                color = {r = 0.9, g = 0.0, b = 0.0}
+            }
+        )
     end
 
     if c_y - t_y <= gap_between_zones.neg_gap then
@@ -228,14 +219,14 @@ local function distance(player)
 
     compare_player_pos(player)
 
-    local distance_to_center = floor(sqrt(p.x ^ 2 + p.y ^ 2))
+    local distance_to_center = floor(sqrt(p.y ^ 2))
     local location = distance_to_center
-    if location < Terrain.level_depth * bonus - 10 then
+    if location < zone_settings.zone_depth * bonus - 10 then
         return
     end
 
-    local max = Terrain.level_depth * bonus
-    local breach_max = Terrain.level_depth * breached_wall
+    local max = zone_settings.zone_depth * bonus
+    local breach_max = zone_settings.zone_depth * breached_wall
     local breach_max_times = location >= breach_max
     local max_times = location >= max
     if max_times then
@@ -245,10 +236,8 @@ local function distance(player)
             rpg_extra.breached_walls = rpg_extra.breached_walls + 1
             rpg_extra.reward_new_players = bonus_xp_on_join * rpg_extra.breached_walls
             WPT.set('breached_wall', breached_wall + 1)
-            placed_trains_in_zone.placed = 0
             biters.amount = 0
             placed_trains_in_zone.randomized = false
-            placed_trains_in_zone.positions = {}
             raise_event(Balance.events.breached_wall, {})
             if WPT.get('breached_wall') == WPT.get('spidertron_unlocked_at_zone') then
                 local main_market_items = WPT.get('main_market_items')
@@ -258,7 +247,7 @@ local function distance(player)
                         stack = 1,
                         value = 'coin',
                         price = rng,
-                        tooltip = 'Chonk Spidertron',
+                        tooltip = 'BiterStunner 9000',
                         upgrade = false,
                         static = true
                     }

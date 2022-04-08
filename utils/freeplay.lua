@@ -1,6 +1,6 @@
 local Global = require 'utils.global'
 local Event = require 'utils.event'
-local BottomFrame = require 'comfy_panel.bottom_frame'
+local BottomFrame = require 'utils.gui.bottom_frame'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
 

@@ -2,12 +2,12 @@
 require 'modules.biter_reanimator'
 require 'maps.native_war.share_chat'
 require 'maps.native_war.mineable_wreckage_yields_scrap'
+require 'maps.native_war.gui'
 local Global = require 'utils.global'
-local Tabs = require 'comfy_panel.main'
+local Gui = require 'utils.gui'
 local Map_score = require 'modules.map_score'
 local Team = require 'maps.native_war.team'
 local Terrain = require 'maps.native_war.terrain'
-local Gui = require 'maps.native_war.gui'
 local Init = require 'maps.native_war.init'
 local Settings = require 'maps.native_war.settings'
 local Reset = require 'functions.soft_reset'
@@ -343,7 +343,7 @@ local function on_entity_died(event)
         for _, child in pairs(player.gui.left.children) do
             child.destroy()
         end
-        Tabs.comfy_panel_call_tab(player, 'Map Scores')
+        Gui.call_existing_tab(player, 'Map Scores')
     end
 end
 
@@ -549,12 +549,10 @@ local function on_entity_damaged(event)
     if entity.type == 'unit' or entity.type == 'turret' then
         if cause.type == 'unit' then
             if cause.name == 'small-biter' or cause.name == 'medium-biter' or cause.name == 'big-biter' or cause.name == 'behemoth-biter' then
-                local modified_damage =
-                    event.original_damage_amount * global.map_forces[cause.force.name].modifier.damage * global.map_forces[entity.force.name].modifier.resistance
+                local modified_damage = event.original_damage_amount * global.map_forces[cause.force.name].modifier.damage * global.map_forces[entity.force.name].modifier.resistance
                 entity.health = entity.health - modified_damage
             elseif cause.name == 'small-spitter' or cause.name == 'medium-spitter' or cause.name == 'big-spitter' or cause.name == 'behemoth-spitter' then
-                local modified_damage =
-                    event.original_damage_amount * global.map_forces[cause.force.name].modifier.splash * global.map_forces[entity.force.name].modifier.resistance
+                local modified_damage = event.original_damage_amount * global.map_forces[cause.force.name].modifier.splash * global.map_forces[entity.force.name].modifier.resistance
                 entity.health = entity.health - modified_damage
             end
         end
