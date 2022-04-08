@@ -5,7 +5,7 @@ local Global = require 'utils.global'
 local Server = require 'utils.server'
 local Math = require 'maps.pirates.math'
 local Token = require 'utils.token'
-local Tabs = require 'comfy_panel.main'
+local Tabs = require 'utils.gui'
 require 'utils.core'
 local _inspect = require 'utils.inspect'.inspect
 local SpamProtection = require 'utils.spam_protection'

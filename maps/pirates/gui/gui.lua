@@ -25,8 +25,8 @@ local Roles = require 'maps.pirates.roles.roles'
 local Event = require 'utils.event'
 local CustomEvents = require 'maps.pirates.custom_events'
 
-require 'comfy_panel.main'
--- local ComfyPanel = require 'comfy_panel.main'
+require 'utils.gui'
+-- local ComfyPanel = require 'utils.gui'
 
 
 local Public = {}

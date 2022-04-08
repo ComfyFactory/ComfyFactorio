@@ -111,7 +111,6 @@ require 'utils.freeplay'
 --require 'maps.chronosphere.main'
 
 --![[Adventure as a crew of pirates]]--
--- NOTE: This scenario is too large for the main repo, due to hardcoded random numbers. Obtain it from https://github.com/danielmartin0/ComfyFactorio-Pirates
 -- NOTE: This scenario is intended to be used with utils.gui.group, utils.gui.poll, and utils.gui.score disabled
 -- require 'maps.pirates.main'
 

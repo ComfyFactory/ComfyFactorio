@@ -4,8 +4,6 @@
  Want to host it? Ask us at getcomfy.eu/discord!
  ]]
 
- --[[personal note for thesixthroc in XX years: my design notes are all in Obsidian (edit: partially moved to Github Projects)]]
-
 --[[
 
 == Tips for Developers! ==
@@ -16,6 +14,8 @@ The scenario is quite complex, but there are ways to get started, even if you do
 • Ask thesixthroc for access to the ToDo list on Github Projects, to see what needs doing
 ]]
 
+ --[[personal note for thesixthroc in XX years: my design notes are all in Obsidian (edit: mostly moved to Github Projects)]]
+
 -- require 'modules.biters_yield_coins'
 require 'modules.biter_noms_you'
 require 'modules.no_deconstruction_of_neutral_entities'
@@ -25,7 +25,7 @@ require 'maps.pirates.custom_events' --probably do this before anything else
 require 'utils.server'
 local _inspect = require 'utils.inspect'.inspect
 -- local Modifers = require 'player_modifiers'
-local BottomFrame = require 'comfy_panel.bottom_frame'
+local BottomFrame = require 'utils.gui.bottom_frame'
 local Autostash = require 'modules.autostash'
 require 'modules.inserter_drops_pickup'
 
