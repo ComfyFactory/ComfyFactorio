@@ -20,7 +20,8 @@ local on_pre_hidden_handlers = {}
 local data = {}
 local element_map = {}
 local settings = {
-    mod_gui_top_frame = false
+    mod_gui_top_frame = false,
+    disabled_tabs = {}
 }
 
 Public.token =
@@ -318,6 +319,27 @@ function Public.get_disable_clear_invalid_data()
     return settings.disable_clear_invalid_data
 end
 
+-- Disable a gui.
+---@param frame_name string
+---@param state boolean?
+function Public.set_disabled_tab(frame_name, state)
+    if not frame_name then
+        return
+    end
+
+    settings.disabled_tabs[frame_name] = state or false
+end
+
+-- Fetches if a gui is disabled.
+---@param frame_name string
+function Public.get_disabled_tab(frame_name)
+    if not frame_name then
+        return
+    end
+
+    return settings.disabled_tabs[frame_name]
+end
+
 -- Fetches the main frame name
 function Public.get_main_frame(player)
     if not player then
@@ -535,9 +557,29 @@ local function draw_main_frame(player)
     local tabbed_pane = inside_frame.add({type = 'tabbed-pane', name = 'tabbed_pane'})
 
     for name, func in pairs(tabs) do
-        if func.only_server_sided then
-            local secs = Server.get_current_time()
-            if secs then
+        if not settings.disabled_tabs[name] then
+            if func.only_server_sided then
+                local secs = Server.get_current_time()
+                if secs then
+                    local tab = tabbed_pane.add({type = 'tab', caption = name, name = func.name})
+                    local name_frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
+                    name_frame.style.minimal_height = 480
+                    name_frame.style.maximal_height = 480
+                    name_frame.style.minimal_width = 800
+                    name_frame.style.maximal_width = 800
+                    tabbed_pane.add_tab(tab, name_frame)
+                end
+            elseif func.admin == true then
+                if player.admin then
+                    local tab = tabbed_pane.add({type = 'tab', caption = name, name = func.name})
+                    local name_frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
+                    name_frame.style.minimal_height = 480
+                    name_frame.style.maximal_height = 480
+                    name_frame.style.minimal_width = 800
+                    name_frame.style.maximal_width = 800
+                    tabbed_pane.add_tab(tab, name_frame)
+                end
+            else
                 local tab = tabbed_pane.add({type = 'tab', caption = name, name = func.name})
                 local name_frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
                 name_frame.style.minimal_height = 480
@@ -546,24 +588,6 @@ local function draw_main_frame(player)
                 name_frame.style.maximal_width = 800
                 tabbed_pane.add_tab(tab, name_frame)
             end
-        elseif func.admin == true then
-            if player.admin then
-                local tab = tabbed_pane.add({type = 'tab', caption = name, name = func.name})
-                local name_frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
-                name_frame.style.minimal_height = 480
-                name_frame.style.maximal_height = 480
-                name_frame.style.minimal_width = 800
-                name_frame.style.maximal_width = 800
-                tabbed_pane.add_tab(tab, name_frame)
-            end
-        else
-            local tab = tabbed_pane.add({type = 'tab', caption = name, name = func.name})
-            local name_frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
-            name_frame.style.minimal_height = 480
-            name_frame.style.maximal_height = 480
-            name_frame.style.minimal_width = 800
-            name_frame.style.maximal_width = 800
-            tabbed_pane.add_tab(tab, name_frame)
         end
     end
 

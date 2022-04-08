@@ -1009,33 +1009,6 @@ local function on_player_joined_game(event)
     Public.update_player_stats(player)
 end
 
-local function create_projectile(surface, name, position, force, target, max_range)
-    if max_range then
-        surface.create_entity(
-            {
-                name = name,
-                position = position,
-                force = force,
-                source = position,
-                target = target,
-                max_range = max_range,
-                speed = 0.4
-            }
-        )
-    else
-        surface.create_entity(
-            {
-                name = name,
-                position = position,
-                force = force,
-                source = position,
-                target = target,
-                speed = 0.4
-            }
-        )
-    end
-end
-
 local function get_near_coord_modifier(range)
     local coord = {x = (range * -1) + random(0, range * 2), y = (range * -1) + random(0, range * 2)}
     for i = 1, 5, 1 do
@@ -1117,7 +1090,7 @@ local function on_player_used_capsule(event)
         return
     end
 
-    local conjure_items = Public.get_spells()
+    local conjure_items = Public.spells
     local projectile_types = Public.get_projectiles
 
     local player = game.players[event.player_index]
@@ -1215,100 +1188,21 @@ local function on_player_used_capsule(event)
         force = 'player'
     end
 
-    if object.entityName == 'suicidal_comfylatron' then
-        Public.suicidal_comfylatron(position, surface)
-        Public.cast_spell(player)
-        Public.remove_mana(player, object.mana_cost)
-    elseif object.entityName == 'repair_aoe' then
-        Public.repair_aoe(player, position)
-        Public.cast_spell(player)
-        Public.remove_mana(player, object.mana_cost)
-    elseif object.entityName == 'pointy_explosives' then
-        local entities =
-            player.surface.find_entities_filtered {
-            force = player.force,
-            type = 'container',
-            area = {{position.x - 1, position.y - 1}, {position.x + 1, position.y + 1}}
-        }
+    local data = {
+        self = object,
+        player = player,
+        damage_entity = damage_entity,
+        position = position,
+        surface = surface,
+        force = force,
+        target_pos = target_pos,
+        range = range,
+        mana = rpg_t.mana,
+        tame_unit_effects = tame_unit_effects,
+        explosives = Explosives
+    }
 
-        local detonate_chest
-        for i = 1, #entities do
-            local e = entities[i]
-            detonate_chest = e
-        end
-        if detonate_chest and detonate_chest.valid then
-            local success = Explosives.detonate_chest(detonate_chest)
-            if success then
-                Public.remove_mana(player, object.mana_cost)
-            end
-            Public.cast_spell(player)
-        end
-    elseif object.entityName == 'warp-gate' then
-        local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
-        if pos then
-            player.teleport(pos, surface)
-        else
-            pos = game.forces.player.get_spawn_position(surface)
-            player.teleport(pos, surface)
-        end
-        Public.remove_mana(player, 999999)
-        Public.damage_player_over_time(player, random(8, 16))
-        player.play_sound {path = 'utility/armor_insert', volume_modifier = 1}
-        Public.cast_spell(player)
-    elseif object.capsule then -- spawn in capsules i.e objects that are usable with mouse-click
-        player.insert({name = object.entityName, count = object.amount})
-        Public.cast_spell(player)
-        Public.remove_mana(player, object.mana_cost)
-    elseif projectile_types[object.entityName] then -- projectiles
-        for i = 1, object.amount do
-            local damage_area = {
-                left_top = {x = position.x - 2, y = position.y - 2},
-                right_bottom = {x = position.x + 2, y = position.y + 2}
-            }
-            create_projectile(surface, projectile_types[object.entityName].name, position, force, target_pos, range)
-            if object.damage then
-                for _, e in pairs(surface.find_entities_filtered({area = damage_area})) do
-                    damage_entity(e)
-                end
-            end
-        end
-        Public.cast_spell(player)
-        Public.remove_mana(player, object.mana_cost)
-    else
-        if object.target then -- rockets and such
-            surface.create_entity({name = object.entityName, position = position, force = force, target = target_pos, speed = 1})
-            Public.cast_spell(player)
-            Public.remove_mana(player, object.mana_cost)
-        elseif surface.can_place_entity {name = object.entityName, position = position} then
-            if object.biter then
-                local e = surface.create_entity({name = object.entityName, position = position, force = force})
-                tame_unit_effects(player, e)
-                Public.remove_mana(player, object.mana_cost)
-            elseif object.aoe then
-                for x = 1, -1, -1 do
-                    for y = 1, -1, -1 do
-                        local pos = {x = position.x + x, y = position.y + y}
-                        if surface.can_place_entity {name = object.entityName, position = pos} then
-                            if object.mana_cost > rpg_t.mana then
-                                break
-                            end
-                            local e = surface.create_entity({name = object.entityName, position = pos, force = force})
-                            e.direction = player.character.direction
-                            Public.remove_mana(player, object.mana_cost)
-                        end
-                    end
-                end
-            else
-                local e = surface.create_entity({name = object.entityName, position = position, force = force})
-                e.direction = player.character.direction
-                Public.remove_mana(player, object.mana_cost)
-            end
-            Public.cast_spell(player)
-        else
-            Public.cast_spell(player, true)
-            return
-        end
-    end
+    object.callback(data)
 
     local msg = player.name .. ' casted ' .. object.entityName .. '. '
 
@@ -1323,8 +1217,6 @@ local function on_player_used_capsule(event)
     Public.gain_xp(player, reward_xp)
 
     AntiGrief.insert_into_capsule_history(player, position, msg)
-
-    return
 end
 
 local function on_player_changed_surface(event)
