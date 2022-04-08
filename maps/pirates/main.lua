@@ -13,7 +13,6 @@ The scenario is quite complex, but there are ways to get started, even if you do
 • Ask thesixthroc for access to the ToDo list on Github Projects, to see what needs doing
 ]]
 
-
  --[[personal note for thesixthroc in XX years: my design notes are all in Obsidian (edit: mostly moved to Github Projects)]]
 
 
