@@ -21,7 +21,6 @@ local Core = require 'utils.core'
 local Diff = require 'modules.difficulty_vote_by_amount'
 local format_number = require 'util'.format_number
 local RPG_Progression = require 'utils.datastore.rpg_data'
-local Utils = require 'utils.utils'
 
 -- tables
 local WPT = require 'maps.mountain_fortress_v3.table'
