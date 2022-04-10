@@ -25,8 +25,9 @@ local Roles = require 'maps.pirates.roles.roles'
 local Event = require 'utils.event'
 local CustomEvents = require 'maps.pirates.custom_events'
 
-require 'utils.gui'
--- local ComfyPanel = require 'utils.gui'
+local ComfyGui = require 'utils.gui'
+ComfyGui.set_disabled_tab('Scoreboard', true)
+ComfyGui.set_disabled_tab('Groups', true)
 
 
 local Public = {}
