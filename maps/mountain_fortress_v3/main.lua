@@ -540,24 +540,5 @@ end
 Event.on_nth_tick(10, on_tick)
 Event.on_init(on_init)
 Event.add(WPT.events.reset_map, Public.reset_map)
-Event.add(
-    defines.events.on_sector_scanned,
-    function(event)
-        local radar = event.radar
-        if not radar or not radar.valid then
-            return
-        end
-
-        local radars_reveal_new_chunks = WPT.get('radars_reveal_new_chunks')
-        if radars_reveal_new_chunks then
-            return
-        end
-
-        local pos = event.chunk_position
-
-        radar.force.cancel_charting(radar.surface.index)
-        radar.force.unchart_chunk(pos, radar.surface.index)
-    end
-)
 
 return Public

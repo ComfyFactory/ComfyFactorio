@@ -21,6 +21,7 @@ local Core = require 'utils.core'
 local Diff = require 'modules.difficulty_vote_by_amount'
 local format_number = require 'util'.format_number
 local RPG_Progression = require 'utils.datastore.rpg_data'
+local Utils = require 'utils.utils'
 
 -- tables
 local WPT = require 'maps.mountain_fortress_v3.table'
@@ -717,7 +718,7 @@ local mining_events = {
 
 local function on_player_mined_entity(event)
     local entity = event.entity
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
     if not player.valid then
         return
     end
@@ -946,7 +947,7 @@ local function on_player_repaired_entity(event)
     local carriages_numbers = WPT.get('carriages_numbers')
 
     if carriages_numbers[entity.unit_number] then
-        local player = game.players[event.player_index]
+        local player = game.get_player(event.player_index)
         local repair_speed = RPG.get_magicka(player)
         if repair_speed <= 0 then
             set_train_final_health(-1, true)
@@ -1393,6 +1394,26 @@ local function on_built_entity(event)
         return
     end
 
+    local position = entity.position
+    local player = game.get_player(event.player_index)
+
+    if entity.name == 'radar' then
+        if entity.surface.count_entities_filtered({type = 'radar', position = position, radius = 64}) > 1 then
+            player.surface.create_entity(
+                {
+                    name = 'flying-text',
+                    position = entity.position,
+                    text = ({'entity.radar_limit'}),
+                    color = {255, 0, 0}
+                }
+            )
+
+            player.surface.spill_item_stack(position, {name = entity.name, count = 1, true})
+            entity.destroy()
+            return
+        end
+    end
+
     local valid_drills = {
         ['burner-mining-drill'] = true,
         ['electric-mining-drill'] = true
@@ -1452,7 +1473,6 @@ local function on_built_entity(event)
 
                 upgrades.showed_text = true
             end
-            local player = game.players[event.player_index]
             player.insert({name = entity.name, count = 1})
             entity.destroy()
         end
@@ -1469,6 +1489,25 @@ local function on_robot_built_entity(event)
 
     if string.sub(entity.surface.name, 0, #map_name) ~= map_name then
         return
+    end
+
+    local position = entity.position
+
+    if entity.name == 'radar' then
+        if entity.surface.count_entities_filtered({type = 'radar', position = position, radius = 64}) > 1 then
+            entity.surface.create_entity(
+                {
+                    name = 'flying-text',
+                    position = entity.position,
+                    text = ({'entity.radar_limit'}),
+                    color = {255, 0, 0}
+                }
+            )
+
+            entity.surface.spill_item_stack(position, {name = entity.name, count = 1, true})
+            entity.destroy()
+            return
+        end
     end
 
     local valid_drills = {
