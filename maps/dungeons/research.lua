@@ -500,7 +500,7 @@ end
 function Variable.room_is_lab(index)
    local res = state.research_by_floor[floor_num(index)]
 
-   if #res == 0 then
+   if res == nil or #res == 0 then
       return false
    end
    if game.forces.player.technologies[res[1].name].enabled then
