@@ -59,7 +59,7 @@ end
 local function create_entity(data)
     local self = data.self
     local player = data.player
-    local mana = data.mana
+    local rpg_t = data.rpg_t
     local position = data.position
     local surface = data.surface
     local force = data.force
@@ -77,7 +77,7 @@ local function create_entity(data)
             for y = 1, -1, -1 do
                 local pos = {x = position.x + x, y = position.y + y}
                 if surface.can_place_entity {name = self.entityName, position = pos} then
-                    if self.mana_cost > mana then
+                    if self.mana_cost > rpg_t.mana then
                         break
                     end
                     local e = surface.create_entity({name = self.entityName, position = pos, force = force})
