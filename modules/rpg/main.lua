@@ -1197,9 +1197,9 @@ local function on_player_used_capsule(event)
         force = force,
         target_pos = target_pos,
         range = range,
-        mana = rpg_t.mana,
         tame_unit_effects = tame_unit_effects,
-        explosives = Explosives
+        explosives = Explosives,
+        rpg_t = rpg_t
     }
 
     object.callback(data)
