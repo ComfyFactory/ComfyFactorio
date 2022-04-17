@@ -91,7 +91,7 @@ local function create_mini_camera_gui(player, caption, position, surface)
         player_data.target_player = target_player
     else
         remove_player_data(player)
-        player.print('Please type a name of a player who is connected.', Color.warning)
+        player.print('[Where] Please type a name of a player who is connected.', Color.warning)
         return
     end
 
@@ -140,7 +140,7 @@ commands.add_command(
                 create_mini_camera_gui(player, target_player.name, target_player.position, target_player.surface.index)
             else
                 remove_player_data(player)
-                player.print('Please type a name of a player who is connected.', Color.warning)
+                player.print('[Where] Please type a name of a player who is connected.', Color.warning)
             end
         else
             return

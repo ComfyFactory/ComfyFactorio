@@ -41,6 +41,7 @@ Public.pin_black_icon = 'file/utils/files/pin-black.png'
 Public.infinite_icon = 'file/utils/files/infinity.png'
 Public.arrow_up_icon = 'file/utils/files/arrow-up.png'
 Public.arrow_down_icon = 'file/utils/files/arrow-down.png'
+Public.info_icon = 'file/utils/files/info.png'
 
 function Public.uid_name()
     return tostring(Token.uid())
@@ -97,7 +98,7 @@ function Public.get_data(element)
 end
 
 -- Adds a gui that is alike the factorio native gui.
-function Public.add_main_frame_with_toolbar(player, align, set_frame_name, set_settings_button_name, close_main_frame_name, name)
+function Public.add_main_frame_with_toolbar(player, align, set_frame_name, set_settings_button_name, close_main_frame_name, name, info)
     if not align then
         return
     end
@@ -132,19 +133,35 @@ function Public.add_main_frame_with_toolbar(player, align, set_frame_name, set_s
     widget.style.horizontally_stretchable = true
 
     if set_settings_button_name then
-        titlebar.add {
-            type = 'sprite-button',
-            name = set_settings_button_name,
-            style = 'frame_action_button',
-            sprite = Public.settings_white_icon,
-            mouse_button_filter = {'left'},
-            hovered_sprite = Public.settings_black_icon,
-            clicked_sprite = Public.settings_black_icon,
-            tooltip = 'Settings',
-            tags = {
-                action = 'open_settings_gui'
+        if not info then
+            titlebar.add {
+                type = 'sprite-button',
+                name = set_settings_button_name,
+                style = 'frame_action_button',
+                sprite = Public.settings_white_icon,
+                mouse_button_filter = {'left'},
+                hovered_sprite = Public.settings_black_icon,
+                clicked_sprite = Public.settings_black_icon,
+                tooltip = 'Settings',
+                tags = {
+                    action = 'open_settings_gui'
+                }
             }
-        }
+        else
+            titlebar.add {
+                type = 'sprite-button',
+                name = set_settings_button_name,
+                style = 'frame_action_button',
+                sprite = Public.info_icon,
+                mouse_button_filter = {'left'},
+                hovered_sprite = Public.info_icon,
+                clicked_sprite = Public.info_icon,
+                tooltip = 'Info',
+                tags = {
+                    action = 'open_settings_gui'
+                }
+            }
+        end
     end
 
     if close_main_frame_name then
@@ -166,7 +183,7 @@ function Public.add_main_frame_with_toolbar(player, align, set_frame_name, set_s
     local inside_frame =
         main_frame.add {
         type = 'frame',
-        style = 'b_inner_frame'
+        style = 'inside_shallow_frame'
     }
 
     local inside_frame_style = inside_frame.style
@@ -450,6 +467,20 @@ function Public.clear_main_frame(player)
     local frame = Public.get_main_frame(player)
     if frame then
         frame.destroy()
+    end
+end
+
+function Public.clear_all_center_frames(player)
+    for _, child in pairs(player.gui.center.children) do
+        child.destroy()
+    end
+end
+
+function Public.clear_all_screen_frames(player)
+    for _, child in pairs(player.gui.screen.children) do
+        if not screen_elements[child.name] then
+            child.destroy()
+        end
     end
 end
 
