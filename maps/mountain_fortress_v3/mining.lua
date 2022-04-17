@@ -120,17 +120,17 @@ local valid_rocks = {
 }
 
 local valid_trees = {
-    ['dead-tree-desert'] = true,
-    ['dead-dry-hairy-tree'] = true,
-    ['dry-hairy-tree'] = true,
-    ['tree-06'] = true,
-    ['tree-06-brown'] = true,
-    ['dry-tree'] = true,
-    ['tree-01'] = true,
-    ['tree-02-red'] = true,
-    ['tree-03'] = true,
-    ['tree-04'] = true,
-    ['tree-08-brown'] = true
+    ['dead-tree-desert'] = 'wood',
+    ['dead-dry-hairy-tree'] = 'wood',
+    ['dry-hairy-tree'] = 'wood',
+    ['tree-06'] = 'wood',
+    ['tree-06-brown'] = 'wood',
+    ['dry-tree'] = 'wood',
+    ['tree-01'] = 'iron-ore',
+    ['tree-02-red'] = 'copper-ore',
+    ['tree-03'] = 'coal',
+    ['tree-04'] = 'coal',
+    ['tree-08-brown'] = 'stone'
 }
 
 local valid_scrap = {
@@ -141,15 +141,6 @@ local valid_scrap = {
     ['crash-site-spaceship-wreck-small-5'] = true,
     ['crash-site-spaceship-wreck-small-6'] = true,
     ['mineable-wreckages'] = true
-}
-
-local reward_wood = {
-    ['dead-tree-desert'] = true,
-    ['dead-dry-hairy-tree'] = true,
-    ['dry-hairy-tree'] = true,
-    ['tree-06'] = true,
-    ['tree-06-brown'] = true,
-    ['dry-tree'] = true
 }
 
 local rock_yield = {
@@ -197,31 +188,27 @@ local function create_particles(surface, name, position, amount, cause_position)
     end
 end
 
-local function mining_chances_ores()
-    local data = {
-        {name = 'iron-ore', chance = 26},
-        {name = 'copper-ore', chance = 21},
-        {name = 'coal', chance = 17},
-        {name = 'stone', chance = 6},
-        {name = 'uranium-ore', chance = 2}
-    }
-
-    return data
-end
+local mining_chances_ores = {
+    {name = 'iron-ore', chance = 26},
+    {name = 'copper-ore', chance = 21},
+    {name = 'coal', chance = 17},
+    {name = 'stone', chance = 6},
+    {name = 'uranium-ore', chance = 2}
+}
 
 local harvest_raffle_ores = {}
-for _, t in pairs(mining_chances_ores()) do
-    for _ = 1, t.chance, 1 do
-        harvest_raffle_ores[#harvest_raffle_ores + 1] = t.name
+for _, data in pairs(mining_chances_ores) do
+    for _ = 1, data.chance, 1 do
+        harvest_raffle_ores[#harvest_raffle_ores + 1] = data.name
     end
 end
 
 local size_of_ore_raffle = #harvest_raffle_ores
 
 local scrap_raffle = {}
-for _, t in pairs(mining_chance_weights) do
-    for _ = 1, t.chance, 1 do
-        scrap_raffle[#scrap_raffle + 1] = t.name
+for _, data in pairs(mining_chance_weights) do
+    for _ = 1, data.chance, 1 do
+        scrap_raffle[#scrap_raffle + 1] = data.name
     end
 end
 
@@ -229,10 +216,11 @@ local size_of_scrap_raffle = #scrap_raffle
 
 local function get_amount(data)
     local entity = data.entity
-    local t_modifier = WPT.get('type_modifier')
-    local rocks_yield_ore_distance_modifier = WPT.get('rocks_yield_ore_distance_modifier')
-    local rocks_yield_ore_base_amount = WPT.get('rocks_yield_ore_base_amount')
-    local rocks_yield_ore_maximum_amount = WPT.get('rocks_yield_ore_maximum_amount')
+    local mining_utils = WPT.get('mining_utils')
+    local t_modifier = mining_utils.type_modifier
+    local rocks_yield_ore_distance_modifier = mining_utils.rocks_yield_ore_distance_modifier
+    local rocks_yield_ore_base_amount = mining_utils.rocks_yield_ore_base_amount
+    local rocks_yield_ore_maximum_amount = mining_utils.rocks_yield_ore_maximum_amount
     local distance_to_center = floor(sqrt(entity.position.x ^ 2 + entity.position.y ^ 2))
     local type_modifier = 1
     local amount
@@ -301,20 +289,11 @@ local function randomness(data)
 
     harvest_amount = get_amount(data)
 
-    local n = entity.name
-    if n == 'tree-08-brown' then
-        harvest = 'stone'
-    elseif n == 'tree-04' then
-        harvest = 'coal'
-    elseif n == 'tree-02-red' then
-        harvest = 'copper-ore'
-    elseif n == 'tree-01' then
-        harvest = 'iron-ore'
-    elseif n == 'tree-03' then
-        harvest = 'coal'
-    elseif reward_wood[n] then
-        harvest = 'wood'
-        harvest_amount = random(1, 20)
+    if valid_trees[entity.name] then
+        harvest = valid_trees[entity.name]
+        if harvest == 'wood' then
+            harvest_amount = random(1, 20)
+        end
     else
         harvest = harvest_raffle_ores[random(1, size_of_ore_raffle)]
     end
@@ -431,8 +410,10 @@ function Public.on_player_mined_entity(event)
         is_scrap = true
     end
 
+    local buffer = event.buffer
+
     if valid_rocks[entity.name] or valid_trees[entity.name] or is_scrap then
-        event.buffer.clear()
+        buffer.clear()
 
         local data = {
             entity = entity,

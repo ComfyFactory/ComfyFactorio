@@ -182,7 +182,7 @@ local function poll_difficulty(player)
         type = 'flow'
     }
 
-    label_flow.add({type = 'label', caption = '- - - - - - - - - - - - - - - - - -'})
+    inside_frame.add({type = 'line'})
 
     label_flow.style.horizontal_align = 'center'
     label_flow.style.horizontally_stretchable = true
@@ -205,6 +205,8 @@ local function poll_difficulty(player)
     b.style.font = 'heading-3'
     b.style.minimal_width = 96
     b.enabled = false
+
+    inside_frame.add({type = 'line'})
 end
 
 local function set_difficulty()

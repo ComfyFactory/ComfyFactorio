@@ -172,7 +172,6 @@ function Public.reset_map()
     RPG.enable_health_and_mana_bars(true)
     RPG.enable_wave_defense(true)
     RPG.enable_mana(true)
-    RPG.enable_flame_boots(true)
     RPG.personal_tax_rate(0.4)
     RPG.enable_stone_path(true)
     RPG.enable_aoe_punch(true)
@@ -497,7 +496,6 @@ local on_tick = function()
 end
 
 local on_init = function()
-    local this = WPT.get()
     Public.reset_map()
 
     game.map_settings.path_finder.general_entity_collision_penalty = 10 -- Recommended value
@@ -510,11 +508,6 @@ local on_init = function()
     }
 
     Difficulty.set_tooltip(tooltip)
-
-    this.rocks_yield_ore_maximum_amount = 500
-    this.type_modifier = 1
-    this.rocks_yield_ore_base_amount = 40
-    this.rocks_yield_ore_distance_modifier = 0.020
 
     local T = Map.Pop_info()
     T.localised_category = 'mountain_fortress_v3'

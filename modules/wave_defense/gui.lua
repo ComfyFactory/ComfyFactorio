@@ -76,6 +76,9 @@ function Public.update_gui(player)
         biter_health_boost = biter_health_boosts
     end
 
+    local paused = Public.get('paused')
+    local paused_waves_for = Public.get('paused_waves_for')
+    local last_pause = Public.get('last_pause')
     local wave_number = Public.get('wave_number')
     local next_wave = Public.get('next_wave')
     local last_wave = Public.get('last_wave')
@@ -84,19 +87,38 @@ function Public.update_gui(player)
     local enable_threat_log = Public.get('enable_threat_log')
 
     gui.label.caption = {'wave_defense.gui_2'}
-    gui.wave_number.caption = wave_number
-    if wave_number == 0 then
-        gui.label.caption = {'wave_defense.gui_1'}
-        gui.wave_number.caption = floor((next_wave - game.tick) / 60) + 1
+    if not paused then
+        gui.wave_number.caption = wave_number
+        if wave_number == 0 then
+            gui.label.caption = {'wave_defense.gui_1'}
+            gui.wave_number.caption = floor((next_wave - game.tick) / 60) + 1 .. 's'
+        end
+        local interval = next_wave - last_wave
+        local value = 1 - (next_wave - game.tick) / interval
+        if value < 0 then
+            value = 0
+        elseif value > 1 then
+            value = 1
+        end
+        gui.progressbar.value = value
+    else
+        gui.label.caption = {'wave_defense.gui_4'}
+        local pause_for = floor((paused_waves_for - game.tick) / 60) + 1
+        if pause_for < 0 then
+            pause_for = 0
+        end
+        gui.wave_number.caption = pause_for .. 's'
+
+        local interval = paused_waves_for - last_pause
+        local value = 1 - (paused_waves_for - game.tick) / interval
+        if value < 0 then
+            value = 0
+        elseif value > 1 then
+            value = 1
+        end
+        gui.progressbar.value = value
+        return
     end
-    local interval = next_wave - last_wave
-    local value = 1 - (next_wave - game.tick) / interval
-    if value < 0 then
-        value = 0
-    elseif value > 1 then
-        value = 1
-    end
-    gui.progressbar.value = value
 
     gui.threat.caption = {'wave_defense.gui_3'}
     gui.threat.tooltip = {'wave_defense.tooltip_1', biter_health_boost * 100, max_active_biters}

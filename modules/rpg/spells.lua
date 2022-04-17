@@ -1,11 +1,128 @@
 local Public = require 'modules.rpg.table'
+local Token = require 'utils.token'
+local Task = require 'utils.task'
 
 local spells = {}
 local random = math.random
+local floor = math.floor
+
+local states = {
+    ['attack'] = 'nuclear-smoke',
+    ['support'] = 'poison-capsule-smoke'
+}
+
+local repair_buildings =
+    Token.register(
+    function(data)
+        local entity = data.entity
+        if entity and entity.valid then
+            local rng = 0.1
+            if random(1, 5) == 1 then
+                rng = 0.2
+            elseif random(1, 8) == 1 then
+                rng = 0.4
+            end
+            local to_heal = entity.prototype.max_health * rng
+            if entity.health and to_heal then
+                entity.health = entity.health + to_heal
+            end
+        end
+    end
+)
+
+local function get_area(pos, dist)
+    local area = {
+        left_top = {
+            x = pos.x - dist,
+            y = pos.y - dist
+        },
+        right_bottom = {
+            x = pos.x + dist,
+            y = pos.y + dist
+        }
+    }
+    return area
+end
+
+local function area_of_effect(player, position, state, radius, callback, find_entities)
+    if not radius then
+        return
+    end
+
+    local cs = player.surface
+    local cp = position or player.position
+
+    if radius and radius > 256 then
+        radius = 256
+    end
+
+    local area = get_area(cp, radius)
+
+    if not states[state] then
+        return
+    end
+
+    for x = area.left_top.x, area.right_bottom.x, 1 do
+        for y = area.left_top.y, area.right_bottom.y, 1 do
+            local d = floor((cp.x - x) ^ 2 + (cp.y - y) ^ 2)
+            if d < radius then
+                local p = {x = x, y = y}
+                if find_entities then
+                    for _, e in pairs(cs.find_entities_filtered({position = p})) do
+                        if e and e.valid and e.name ~= 'character' and e.health and e.destructible and e.type ~= 'simple-entity' and e.type ~= 'simple-entity-with-owner' then
+                            callback(e, p)
+                        end
+                    end
+                else
+                    callback(p)
+                end
+
+                cs.create_trivial_smoke({name = states[state], position = p})
+            end
+        end
+    end
+end
+
+local restore_movement_speed_token =
+    Token.register(
+    function(event)
+        local player_index = event.player_index
+        local old_speed = event.old_speed
+        local rpg_t = event.rpg_t
+
+        if rpg_t then
+            rpg_t.has_custom_spell_active = nil
+        end
+
+        local player = game.get_player(player_index)
+        if not player or not player.valid then
+            return
+        end
+
+        player.character.character_running_speed_modifier = old_speed
+    end
+)
+
+local function do_projectile(player_surface, name, _position, _force, target, max_range)
+    player_surface.create_entity(
+        {
+            name = name,
+            position = _position,
+            force = _force,
+            source = _position,
+            target = target or nil,
+            max_range = max_range or nil,
+            speed = 0.4,
+            fast_replace = true,
+            create_build_effect_smoke = false
+        }
+    )
+end
 
 local function create_projectiles(data)
     local self = data.self
     local player = data.player
+    local rpg_t = data.rpg_t
     local damage_entity = data.damage_entity
     local position = data.position
     local surface = data.surface
@@ -13,22 +130,12 @@ local function create_projectiles(data)
     local target_pos = data.target_pos
     local range = data.range
 
-    local function do_projectile(player_surface, name, _position, _force, target, max_range)
-        player_surface.create_entity(
-            {
-                name = name,
-                position = _position,
-                force = _force,
-                source = _position,
-                target = target,
-                max_range = max_range,
-                speed = 0.4
-            }
-        )
-    end
-
     if self.aoe then
         for _ = 1, self.amount do
+            if self.mana_cost > rpg_t.mana then
+                break
+            end
+
             local damage_area = {
                 left_top = {x = position.x - 2, y = position.y - 2},
                 right_bottom = {x = position.x + 2, y = position.y + 2}
@@ -37,6 +144,7 @@ local function create_projectiles(data)
             if self.damage then
                 for _, e in pairs(surface.find_entities_filtered({area = damage_area})) do
                     damage_entity(e)
+                    Public.remove_mana(player, self.mana_cost)
                 end
             end
         end
@@ -46,14 +154,16 @@ local function create_projectiles(data)
             right_bottom = {x = position.x + 2, y = position.y + 2}
         }
         do_projectile(surface, self.entityName, position, force, target_pos, range)
+
         if self.damage then
             for _, e in pairs(surface.find_entities_filtered({area = damage_area})) do
                 damage_entity(e)
+                Public.remove_mana(player, self.mana_cost)
             end
         end
     end
+
     Public.cast_spell(player)
-    Public.remove_mana(player, self.mana_cost)
 end
 
 local function create_entity(data)
@@ -93,8 +203,8 @@ local function create_entity(data)
             Public.remove_mana(player, self.mana_cost)
         end
     end
+
     Public.cast_spell(player)
-    Public.remove_mana(player, self.mana_cost)
 end
 
 local function insert_onto(data)
@@ -520,7 +630,7 @@ spells[#spells + 1] = {
     mana_cost = 100,
     tick = 100,
     enabled = true,
-    sprite = 'recipe/explosives',
+    sprite = 'recipe=explosives',
     callback = function(data)
         local self = data.self
         local player = data.player
@@ -561,13 +671,31 @@ spells[#spells + 1] = {
     mana_cost = 150,
     tick = 100,
     enabled = true,
-    sprite = 'recipe/repair-pack',
+    sprite = 'recipe=repair-pack',
     callback = function(data)
         local self = data.self
+        local rpg_t = data.rpg_t
         local player = data.player
         local position = data.position
 
-        Public.repair_aoe(player, position)
+        local range = Public.get_area_of_effect_range(player)
+
+        area_of_effect(
+            player,
+            position,
+            'support',
+            range,
+            function(entity)
+                if entity.prototype.max_health ~= entity.health then
+                    if self.mana_cost < rpg_t.mana then
+                        Task.set_timeout_in_ticks(10, repair_buildings, {entity = entity})
+                        Public.remove_mana(player, self.mana_cost)
+                    end
+                end
+            end,
+            true
+        )
+
         Public.cast_spell(player)
         Public.remove_mana(player, self.mana_cost)
     end
@@ -585,9 +713,30 @@ spells[#spells + 1] = {
     mana_cost = 70,
     tick = 100,
     enabled = true,
-    sprite = 'virtual-signal/signal-S',
+    sprite = 'virtual-signal=signal-S',
     callback = function(data)
-        create_projectiles(data)
+        local self = data.self
+        local rpg_t = data.rpg_t
+        local player = data.player
+        local position = data.position
+
+        local range = Public.get_area_of_effect_range(player)
+
+        area_of_effect(
+            player,
+            position,
+            'attack',
+            range,
+            function(p)
+                if self.mana_cost < rpg_t.mana then
+                    do_projectile(player.surface, 'acid-stream-spitter-big', p, player.force, p)
+                    Public.remove_mana(player, self.mana_cost)
+                end
+            end,
+            false
+        )
+
+        Public.cast_spell(player)
     end
 }
 spells[#spells + 1] = {
@@ -601,7 +750,7 @@ spells[#spells + 1] = {
     mana_cost = 10000, -- they who know, will know
     tick = 320,
     enabled = false,
-    sprite = 'entity/tank',
+    sprite = 'entity=tank',
     callback = function(data)
         create_entity(data)
     end
@@ -617,7 +766,7 @@ spells[#spells + 1] = {
     mana_cost = 19500, -- they who know, will know
     tick = 320,
     enabled = false,
-    sprite = 'entity/spidertron',
+    sprite = 'entity=spidertron',
     callback = function(data)
         create_entity(data)
     end
@@ -636,7 +785,7 @@ spells[#spells + 1] = {
     mana_cost = 140,
     tick = 320,
     enabled = true,
-    sprite = 'item/raw-fish',
+    sprite = 'item=raw-fish',
     callback = function(data)
         insert_onto(data)
     end
@@ -655,7 +804,7 @@ spells[#spells + 1] = {
     mana_cost = 140,
     tick = 320,
     enabled = true,
-    sprite = 'item/explosives',
+    sprite = 'item=explosives',
     callback = function(data)
         insert_onto(data)
     end
@@ -673,7 +822,7 @@ spells[#spells + 1] = {
     mana_cost = 150,
     tick = 320,
     enabled = true,
-    sprite = 'entity/compilatron',
+    sprite = 'entity=compilatron',
     callback = function(data)
         local self = data.self
         local player = data.player
@@ -698,7 +847,7 @@ spells[#spells + 1] = {
     mana_cost = 220,
     tick = 320,
     enabled = true,
-    sprite = 'recipe/distractor-capsule',
+    sprite = 'recipe=distractor-capsule',
     callback = function(data)
         create_projectiles(data)
     end
@@ -713,7 +862,7 @@ spells[#spells + 1] = {
     mana_cost = 340,
     tick = 2000,
     enabled = true,
-    sprite = 'virtual-signal/signal-W',
+    sprite = 'virtual-signal=signal-W',
     callback = function(data)
         local player = data.player
         local surface = data.surface
@@ -729,6 +878,93 @@ spells[#spells + 1] = {
         Public.damage_player_over_time(player, random(8, 16))
         player.play_sound {path = 'utility/armor_insert', volume_modifier = 1}
         Public.cast_spell(player)
+    end
+}
+spells[#spells + 1] = {
+    name = {'spells.charge'},
+    entityName = 'haste',
+    target = false,
+    force = 'player',
+    level = 25,
+    type = 'special',
+    mana_cost = 100,
+    tick = 2000,
+    check_if_active = true,
+    enabled = true,
+    sprite = 'virtual-signal=signal-info',
+    callback = function(data)
+        local self = data.self
+        local player = data.player
+        local rpg_t = data.rpg_t
+        rpg_t.has_custom_spell_active = true
+
+        Public.remove_mana(player, self.mana_cost)
+        for _ = 1, 3 do
+            player.play_sound {path = 'utility/armor_insert', volume_modifier = 1}
+        end
+
+        Task.set_timeout_in_ticks(300, restore_movement_speed_token, {player_index = player.index, old_speed = player.character.character_running_speed_modifier, rpg_t = rpg_t})
+        player.character.character_running_speed_modifier = player.character.character_running_speed_modifier + 1
+        Public.cast_spell(player)
+    end
+}
+spells[#spells + 1] = {
+    name = {'spells.eternal_blades'},
+    entityName = 'eternal_blades',
+    target = false,
+    force = 'player',
+    level = 25,
+    type = 'special',
+    mana_cost = 100,
+    tick = 2000,
+    check_if_active = true,
+    enabled = false,
+    sprite = 'virtual-signal=signal-info',
+    callback = function(data)
+        local self = data.self
+        local player = data.player
+        local position = data.position
+
+        local range = Public.get_area_of_effect_range(player)
+
+        local damage = 34
+
+        area_of_effect(
+            player,
+            position,
+            'attack',
+            range,
+            function(entity)
+                if entity.force.index ~= player.force.index then
+                    local get_health_pool = Public.has_health_boost(entity, damage, damage, player.character)
+                    if get_health_pool then
+                        local max_unit_health = floor(get_health_pool * 0.00015)
+                        if max_unit_health <= 0 then
+                            max_unit_health = 4
+                        end
+                        if max_unit_health >= 10 then
+                            max_unit_health = 10
+                        end
+                        local final = floor(damage * max_unit_health)
+                        Public.set_health_boost(entity, final, player.character)
+                        if entity.valid and entity.health <= 0 and get_health_pool <= 0 then
+                            entity.die(entity.force.name, player.character)
+                        end
+                    else
+                        if entity.valid then
+                            entity.health = entity.health - damage * 0.05
+                            if entity.health <= 0 then
+                                entity.die(entity.force.name, player.character)
+                            end
+                        end
+                    end
+                end
+            end,
+            true
+        )
+
+        Public.cast_spell(player)
+        Public.remove_mana(player, self.mana_cost)
     end
 }
 
@@ -772,7 +1008,7 @@ Public.projectile_types = {
 }
 
 Public.get_projectiles = Public.projectile_types
-Public.spells = spells
+Public.all_spells = spells
 
 --- Retrieves the spells table or a given spell.
 ---@param key string
@@ -780,10 +1016,10 @@ function Public.get_spells(key)
     if game then
         return error('Calling Public.get_spells() after on_init() or on_load() has run is a desync risk.', 2)
     end
-    if Public.spells[key] then
-        return Public.spells[key]
+    if Public.all_spells[key] then
+        return Public.all_spells[key]
     else
-        return Public.spells
+        return Public.all_spells
     end
 end
 
@@ -798,10 +1034,10 @@ function Public.disable_spell(key)
 
     if type(key) == 'table' then
         for _, k in pairs(key) do
-            Public.spells[k].enabled = false
+            Public.all_spells[k].enabled = false
         end
-    elseif Public.spells[key] then
-        Public.spells[key].enabled = false
+    elseif Public.all_spells[key] then
+        Public.all_spells[key].enabled = false
     end
 end
 
@@ -811,7 +1047,7 @@ function Public.clear_spell_table()
         return error('Calling Public.clear_spell_table() after on_init() or on_load() has run is a desync risk.', 2)
     end
 
-    Public.spells = {}
+    Public.all_spells = {}
 end
 
 --- Adds a spell to the rpg_spells
@@ -859,7 +1095,7 @@ function Public.set_new_spell(tbl)
             return error('A spell requires enabled. boolean', 2)
         end
 
-        Public.spells[#Public.spells + 1] = tbl
+        Public.all_spells[#Public.all_spells + 1] = tbl
     end
 end
 
@@ -894,7 +1130,7 @@ function Public.disable_cooldowns_on_spells()
         end
     end
 
-    Public.spells = new_spells
+    Public.all_spells = new_spells
 
     return new_spells
 end

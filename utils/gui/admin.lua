@@ -663,7 +663,7 @@ local function on_gui_click(event)
             return
         end
         if target_player_name == 'Select Player' then
-            player.print('No target player selected.', {r = 0.88, g = 0.88, b = 0.88})
+            player.print('[AdminGui] No target player selected.', {r = 0.88, g = 0.88, b = 0.88})
             return
         end
         local target_player = game.players[target_player_name]
