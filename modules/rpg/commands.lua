@@ -122,7 +122,7 @@ commands.add_command(
             player.play_sound {path = 'utility/scenario_message', volume_modifier = 1}
             player.print(msg)
         else
-            player.print('Please type a name of a player who is connected.', Color.warning)
+            player.print('[Stats] Please type a name of a player who is connected.', Color.warning)
         end
     end
 )

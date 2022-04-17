@@ -10,6 +10,9 @@ local this = {
 
 --! Gui Frames
 local settings_frame_name = Gui.uid_name()
+local settings_tooltip_frame = Gui.uid_name()
+local close_settings_tooltip_frame = Gui.uid_name()
+local settings_tooltip_name = Gui.uid_name()
 local save_button_name = Gui.uid_name()
 local discard_button_name = Gui.uid_name()
 local draw_main_frame_name = Gui.uid_name()
@@ -43,7 +46,6 @@ Public.gui_settings_levels = {
     ['reset_text_label'] = 50,
     ['stone_path_label'] = 20,
     ['aoe_punch_label'] = 30,
-    ['flameboots_label'] = 100,
     ['explosive_bullets_label'] = 50
 }
 
@@ -103,7 +105,6 @@ function Public.reset_table()
     this.rpg_extra.enable_mana = false
     this.rpg_extra.mana_limit = 100000
     this.rpg_extra.enable_wave_defense = false
-    this.rpg_extra.enable_flame_boots = false
     this.rpg_extra.enable_explosive_bullets = false
     this.rpg_extra.enable_explosive_bullets_globally = false
     this.rpg_extra.enable_range_buffs = false
@@ -294,14 +295,6 @@ function Public.enable_wave_defense(value)
     return this.rpg_extra.enable_wave_defense
 end
 
---- Enables/disabled flame boots.
----@param value boolean
-function Public.enable_flame_boots(value)
-    this.rpg_extra.enable_flame_boots = value or false
-
-    return this.rpg_extra.enable_flame_boots
-end
-
 --- Enables/disabled explosive bullets globally.
 ---@param value boolean
 function Public.enable_explosive_bullets_globally(value)
@@ -396,6 +389,9 @@ function Public.tweaked_crafting_items(tbl)
 end
 
 Public.settings_frame_name = settings_frame_name
+Public.settings_tooltip_frame = settings_tooltip_frame
+Public.close_settings_tooltip_frame = close_settings_tooltip_frame
+Public.settings_tooltip_name = settings_tooltip_name
 Public.save_button_name = save_button_name
 Public.discard_button_name = discard_button_name
 Public.draw_main_frame_name = draw_main_frame_name
