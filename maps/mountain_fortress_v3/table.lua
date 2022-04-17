@@ -234,7 +234,14 @@ function Public.reset_table()
         shuffled_zones = nil
     }
     this.alert_zone_1 = false -- alert the players
-    this.radars_reveal_new_chunks = false -- allows for the player to explore the map instead
+    this.radars_reveal_new_chunks = false -- allows for the player to explore the map instead,
+
+    this.mining_utils = {
+        rocks_yield_ore_maximum_amount = 500,
+        type_modifier = 1,
+        rocks_yield_ore_base_amount = 40,
+        rocks_yield_ore_distance_modifier = 0.020
+    }
 
     for k, _ in pairs(this.players) do
         this.players[k] = {}
