@@ -36,7 +36,9 @@ local function create_input_element(frame, type, value, items, index)
         return frame.add({type = 'checkbox', state = value})
     end
     if type == 'label' then
-        return frame.add({type = 'label', caption = value})
+        local label = frame.add({type = 'label', caption = value})
+        label.style.font = 'default-listbox'
+        return label
     end
     if type == 'dropdown' then
         return frame.add({type = 'drop-down', items = items, selected_index = index})
@@ -47,8 +49,12 @@ end
 local function create_custom_label_element(frame, sprite, localised_string, value)
     local t = frame.add({type = 'flow'})
     t.add({type = 'label', caption = '[' .. sprite .. ']'})
-    t.add({type = 'label', caption = localised_string})
-    return t.add({type = 'label', caption = value})
+    local heading = t.add({type = 'label', caption = localised_string})
+    heading.style.font = 'default-listbox'
+    local subheading = t.add({type = 'label', caption = value})
+    subheading.style.font = 'default-listbox'
+
+    return subheading
 end
 
 function Public.update_spell_gui_indicator(player)
@@ -184,8 +190,6 @@ function Public.extra_settings(player)
     local main_frame_style = main_frame.style
     main_frame_style.width = 500
     main_frame.auto_center = true
-
-    inside_table.add({type = 'line'})
 
     local info_text = inside_table.add({type = 'label', caption = ({'rpg_settings.info_text_label'})})
     local info_text_style = info_text.style
@@ -668,9 +672,7 @@ function Public.settings_tooltip(player)
     local main_frame, inside_table = Gui.add_main_frame_with_toolbar(player, 'center', settings_tooltip_frame, nil, close_settings_tooltip_frame, 'Spell info')
 
     local inside_table_style = inside_table.style
-    inside_table_style.width = 500
-
-    inside_table.add({type = 'line'})
+    inside_table_style.width = 530
 
     local info_text = inside_table.add({type = 'label', caption = ({'rpg_settings.spellbook_label'})})
     local info_text_style = info_text.style
@@ -708,16 +710,15 @@ function Public.settings_tooltip(player)
         table.sort(spells, comparator)
 
         for _, entity in pairs(spells) do
+            local cooldown = (entity.cooldown / 60) .. 's'
             if entity.type == 'item' then
-                local text = '[item=' .. entity.entityName .. '] requires ' .. entity.mana_cost .. ' mana to cast. Level: ' .. entity.level
+                local text = '[item=' .. entity.entityName .. '] ▪️ Level: [font=default-bold]' .. entity.level .. '[/font] Mana: [font=default-bold]' .. entity.mana_cost .. '[/font].  Cooldown: [font=default-bold]' .. cooldown .. '[/font]'
                 create_input_element(normal_spell_grid, 'label', text)
             elseif entity.type == 'entity' then
-                local text = '[entity=' .. entity.entityName .. '] requires ' .. entity.mana_cost .. ' mana to cast. Level: ' .. entity.level
+                local text = '[entity=' .. entity.entityName .. '] ▪️ Level: [font=default-bold]' .. entity.level .. '[/font] Mana: [font=default-bold]' .. entity.mana_cost .. '[/font].  Cooldown: [font=default-bold]' .. cooldown .. '[/font]'
                 create_input_element(normal_spell_grid, 'label', text)
             end
         end
-
-        normal_spell_pane.add({type = 'line'})
 
         local special_spell_pane = inside_table.add({type = 'scroll-pane'})
         local ss = special_spell_pane.style
@@ -726,6 +727,8 @@ function Public.settings_tooltip(player)
         ss.left_padding = 5
         ss.right_padding = 5
         ss.top_padding = 5
+
+        normal_spell_pane.add({type = 'line'})
 
         local special_spells = special_spell_pane.add({type = 'label', caption = ({'rpg_settings.special_spells_label'})})
         local special_spells_style = special_spells.style
@@ -738,9 +741,10 @@ function Public.settings_tooltip(player)
         local special_spell_grid = special_spell_pane.add({type = 'table', column_count = 1})
 
         for _, entity in pairs(spells) do
+            local cooldown = (entity.cooldown / 60) .. 's'
             if entity.type == 'special' then
-                local text = 'requires ' .. entity.mana_cost .. ' mana to cast. Level: ' .. entity.level
-                create_custom_label_element(special_spell_grid, entity.sprite, entity.name, text)
+                local text = '▪️ Level: [font=default-bold]' .. entity.level .. '[/font] Mana: [font=default-bold]' .. entity.mana_cost .. '[/font]. Cooldown: [font=default-bold]' .. cooldown .. '[/font]'
+                create_custom_label_element(special_spell_grid, entity.special_sprite, entity.name, text)
             end
         end
     end

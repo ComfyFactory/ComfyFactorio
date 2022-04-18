@@ -801,6 +801,14 @@ function Public.get_melee_modifier(player)
     return total
 end
 
+function Public.get_player_level(player)
+    local rpg_t = Public.get_value_from_player(player.index)
+    if not rpg_t then
+        return false
+    end
+    return rpg_t.level
+end
+
 function Public.get_area_of_effect_range(player)
     local rpg_t = Public.get_value_from_player(player.index)
     if not rpg_t then
