@@ -820,8 +820,8 @@ spells[#spells + 1] = {
     mana_cost = 140,
     cooldown = 320,
     enabled = true,
-    sprite = 'item=explosives',
-    special_sprite = 'item/explosives',
+    sprite = 'item/explosives',
+    special_sprite = 'item=explosives',
     callback = function(data)
         insert_onto(data)
     end
