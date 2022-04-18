@@ -7,7 +7,7 @@ local random = math.random
 local floor = math.floor
 
 local states = {
-    ['attack'] = 'nuclear-smoke',
+    ['attack'] = 'fire-smoke',
     ['support'] = 'poison-capsule-smoke'
 }
 
@@ -76,7 +76,6 @@ local function area_of_effect(player, position, state, radius, callback, find_en
                 else
                     callback(p)
                 end
-
                 cs.create_trivial_smoke({name = states[state], position = p})
             end
         end
@@ -222,7 +221,7 @@ spells[#spells + 1] = {
     level = 1,
     type = 'item',
     mana_cost = 60,
-    tick = 100,
+    cooldown = 100,
     aoe = true,
     enabled = true,
     sprite = 'recipe/stone-wall',
@@ -236,7 +235,7 @@ spells[#spells + 1] = {
     level = 1,
     type = 'item',
     mana_cost = 50,
-    tick = 100,
+    cooldown = 100,
     aoe = true,
     enabled = true,
     sprite = 'recipe/wooden-chest',
@@ -250,7 +249,7 @@ spells[#spells + 1] = {
     level = 10,
     type = 'item',
     mana_cost = 110,
-    tick = 200,
+    cooldown = 200,
     aoe = true,
     enabled = true,
     sprite = 'recipe/iron-chest',
@@ -264,7 +263,7 @@ spells[#spells + 1] = {
     level = 30,
     type = 'item',
     mana_cost = 150,
-    tick = 300,
+    cooldown = 300,
     aoe = true,
     enabled = true,
     sprite = 'recipe/steel-chest',
@@ -278,7 +277,7 @@ spells[#spells + 1] = {
     level = 1,
     type = 'item',
     mana_cost = 80,
-    tick = 100,
+    cooldown = 100,
     aoe = true,
     enabled = true,
     sprite = 'recipe/transport-belt',
@@ -292,7 +291,7 @@ spells[#spells + 1] = {
     level = 10,
     type = 'item',
     mana_cost = 110,
-    tick = 200,
+    cooldown = 200,
     aoe = true,
     enabled = true,
     sprite = 'recipe/fast-transport-belt',
@@ -306,7 +305,7 @@ spells[#spells + 1] = {
     level = 30,
     type = 'item',
     mana_cost = 150,
-    tick = 300,
+    cooldown = 300,
     aoe = true,
     enabled = true,
     sprite = 'recipe/express-transport-belt',
@@ -320,7 +319,7 @@ spells[#spells + 1] = {
     level = 1,
     type = 'item',
     mana_cost = 80,
-    tick = 100,
+    cooldown = 100,
     aoe = true,
     enabled = true,
     sprite = 'recipe/underground-belt',
@@ -334,7 +333,7 @@ spells[#spells + 1] = {
     level = 10,
     type = 'item',
     mana_cost = 110,
-    tick = 200,
+    cooldown = 200,
     aoe = true,
     enabled = true,
     sprite = 'recipe/fast-underground-belt',
@@ -348,7 +347,7 @@ spells[#spells + 1] = {
     level = 30,
     type = 'item',
     mana_cost = 150,
-    tick = 300,
+    cooldown = 300,
     aoe = true,
     enabled = true,
     sprite = 'recipe/express-underground-belt',
@@ -362,7 +361,7 @@ spells[#spells + 1] = {
     level = 1,
     type = 'item',
     mana_cost = 50,
-    tick = 100,
+    cooldown = 100,
     aoe = true,
     enabled = true,
     sprite = 'recipe/pipe',
@@ -376,7 +375,7 @@ spells[#spells + 1] = {
     level = 1,
     type = 'item',
     mana_cost = 100,
-    tick = 100,
+    cooldown = 100,
     aoe = true,
     enabled = true,
     sprite = 'recipe/pipe-to-ground',
@@ -390,7 +389,7 @@ spells[#spells + 1] = {
     level = 30,
     type = 'entity',
     mana_cost = 100,
-    tick = 350,
+    cooldown = 350,
     aoe = true,
     enabled = true,
     sprite = 'entity/tree-05',
@@ -404,7 +403,7 @@ spells[#spells + 1] = {
     level = 60,
     type = 'entity',
     mana_cost = 80,
-    tick = 350,
+    cooldown = 350,
     aoe = true,
     enabled = true,
     sprite = 'entity/sand-rock-big',
@@ -419,7 +418,7 @@ spells[#spells + 1] = {
     biter = true,
     type = 'entity',
     mana_cost = 55,
-    tick = 200,
+    cooldown = 200,
     enabled = true,
     sprite = 'entity/small-biter',
     callback = function(data)
@@ -433,7 +432,7 @@ spells[#spells + 1] = {
     biter = true,
     type = 'entity',
     mana_cost = 55,
-    tick = 200,
+    cooldown = 200,
     enabled = true,
     sprite = 'entity/small-spitter',
     callback = function(data)
@@ -447,7 +446,7 @@ spells[#spells + 1] = {
     biter = true,
     type = 'entity',
     mana_cost = 100,
-    tick = 300,
+    cooldown = 300,
     enabled = true,
     sprite = 'entity/medium-biter',
     callback = function(data)
@@ -461,7 +460,7 @@ spells[#spells + 1] = {
     biter = true,
     type = 'entity',
     mana_cost = 100,
-    tick = 300,
+    cooldown = 300,
     enabled = true,
     sprite = 'entity/medium-spitter',
     callback = function(data)
@@ -475,8 +474,9 @@ spells[#spells + 1] = {
     biter = true,
     type = 'entity',
     mana_cost = 800,
-    tick = 1420,
+    cooldown = 1420,
     enabled = false,
+    log_spell = true,
     sprite = 'entity/biter-spawner',
     callback = function(data)
         create_entity(data)
@@ -489,8 +489,9 @@ spells[#spells + 1] = {
     biter = true,
     type = 'entity',
     mana_cost = 800,
-    tick = 1420,
+    cooldown = 1420,
     enabled = false,
+    log_spell = true,
     sprite = 'entity/spitter-spawner',
     callback = function(data)
         create_entity(data)
@@ -507,8 +508,9 @@ spells[#spells + 1] = {
     level = 10,
     type = 'item',
     mana_cost = 40,
-    tick = 150,
+    cooldown = 150,
     enabled = true,
+    log_spell = true,
     sprite = 'recipe/shotgun-shell',
     callback = function(data)
         create_projectiles(data)
@@ -524,8 +526,9 @@ spells[#spells + 1] = {
     level = 30,
     type = 'item',
     mana_cost = 100,
-    tick = 150,
+    cooldown = 150,
     enabled = true,
+    log_spell = true,
     sprite = 'recipe/grenade',
     callback = function(data)
         create_projectiles(data)
@@ -541,8 +544,9 @@ spells[#spells + 1] = {
     level = 50,
     type = 'item',
     mana_cost = 225,
-    tick = 200,
+    cooldown = 200,
     enabled = true,
+    log_spell = true,
     sprite = 'recipe/cluster-grenade',
     callback = function(data)
         create_projectiles(data)
@@ -558,8 +562,9 @@ spells[#spells + 1] = {
     level = 30,
     type = 'item',
     mana_cost = 125,
-    tick = 150,
+    cooldown = 150,
     enabled = true,
+    log_spell = true,
     sprite = 'recipe/cannon-shell',
     callback = function(data)
         create_projectiles(data)
@@ -575,8 +580,9 @@ spells[#spells + 1] = {
     level = 50,
     type = 'item',
     mana_cost = 250,
-    tick = 200,
+    cooldown = 200,
     enabled = true,
+    log_spell = true,
     sprite = 'recipe/explosive-cannon-shell',
     callback = function(data)
         create_projectiles(data)
@@ -592,8 +598,9 @@ spells[#spells + 1] = {
     level = 70,
     type = 'item',
     mana_cost = 400,
-    tick = 200,
+    cooldown = 200,
     enabled = true,
+    log_spell = true,
     sprite = 'recipe/uranium-cannon-shell',
     callback = function(data)
         create_projectiles(data)
@@ -610,8 +617,9 @@ spells[#spells + 1] = {
     level = 40,
     type = 'item',
     mana_cost = 60,
-    tick = 320,
+    cooldown = 320,
     enabled = true,
+    log_spell = true,
     sprite = 'recipe/rocket',
     callback = function(data)
         create_projectiles(data)
@@ -628,9 +636,11 @@ spells[#spells + 1] = {
     level = 70,
     type = 'special',
     mana_cost = 100,
-    tick = 100,
+    cooldown = 100,
     enabled = true,
-    sprite = 'recipe=explosives',
+    log_spell = true,
+    sprite = 'recipe/explosives',
+    special_sprite = 'recipe=explosives',
     callback = function(data)
         local self = data.self
         local player = data.player
@@ -668,10 +678,13 @@ spells[#spells + 1] = {
     force = 'player',
     level = 45,
     type = 'special',
-    mana_cost = 150,
-    tick = 100,
+    mana_cost = 400,
+    cooldown = 2400,
     enabled = true,
-    sprite = 'recipe=repair-pack',
+    enforce_cooldown = true,
+    log_spell = true,
+    sprite = 'recipe/repair-pack',
+    special_sprite = 'recipe=repair-pack',
     callback = function(data)
         local self = data.self
         local rpg_t = data.rpg_t
@@ -710,13 +723,14 @@ spells[#spells + 1] = {
     force = 'player',
     level = 50,
     type = 'special',
-    mana_cost = 70,
-    tick = 100,
+    mana_cost = 700,
+    cooldown = 900,
     enabled = true,
-    sprite = 'virtual-signal=signal-S',
+    enforce_cooldown = true,
+    sprite = 'virtual-signal/signal-S',
+    special_sprite = 'virtual-signal=signal-S',
     callback = function(data)
         local self = data.self
-        local rpg_t = data.rpg_t
         local player = data.player
         local position = data.position
 
@@ -728,14 +742,12 @@ spells[#spells + 1] = {
             'attack',
             range,
             function(p)
-                if self.mana_cost < rpg_t.mana then
-                    do_projectile(player.surface, 'acid-stream-spitter-big', p, player.force, p)
-                    Public.remove_mana(player, self.mana_cost)
-                end
+                do_projectile(player.surface, 'acid-stream-spitter-big', p, player.force, p)
             end,
             false
         )
 
+        Public.remove_mana(player, self.mana_cost)
         Public.cast_spell(player)
     end
 }
@@ -748,9 +760,10 @@ spells[#spells + 1] = {
     level = 1000,
     type = 'special',
     mana_cost = 10000, -- they who know, will know
-    tick = 320,
+    cooldown = 320,
     enabled = false,
-    sprite = 'entity=tank',
+    sprite = 'entity/tank',
+    special_sprite = 'entity=tank',
     callback = function(data)
         create_entity(data)
     end
@@ -764,9 +777,11 @@ spells[#spells + 1] = {
     level = 2000,
     type = 'special',
     mana_cost = 19500, -- they who know, will know
-    tick = 320,
+    cooldown = 320,
     enabled = false,
-    sprite = 'entity=spidertron',
+    log_spell = true,
+    sprite = 'entity/spidertron',
+    special_sprite = 'entity=spidertron',
     callback = function(data)
         create_entity(data)
     end
@@ -783,9 +798,10 @@ spells[#spells + 1] = {
     level = 50,
     type = 'special',
     mana_cost = 140,
-    tick = 320,
+    cooldown = 320,
     enabled = true,
-    sprite = 'item=raw-fish',
+    sprite = 'item/raw-fish',
+    special_sprite = 'item=raw-fish',
     callback = function(data)
         insert_onto(data)
     end
@@ -802,9 +818,10 @@ spells[#spells + 1] = {
     level = 25,
     type = 'special',
     mana_cost = 140,
-    tick = 320,
+    cooldown = 320,
     enabled = true,
     sprite = 'item=explosives',
+    special_sprite = 'item/explosives',
     callback = function(data)
         insert_onto(data)
     end
@@ -820,9 +837,11 @@ spells[#spells + 1] = {
     level = 60,
     type = 'special',
     mana_cost = 150,
-    tick = 320,
+    cooldown = 320,
     enabled = true,
-    sprite = 'entity=compilatron',
+    log_spell = true,
+    sprite = 'entity/compilatron',
+    special_sprite = 'entity=compilatron',
     callback = function(data)
         local self = data.self
         local player = data.player
@@ -845,9 +864,10 @@ spells[#spells + 1] = {
     level = 50,
     type = 'special',
     mana_cost = 220,
-    tick = 320,
+    cooldown = 320,
     enabled = true,
-    sprite = 'recipe=distractor-capsule',
+    sprite = 'recipe/distractor-capsule',
+    special_sprite = 'recipe=distractor-capsule',
     callback = function(data)
         create_projectiles(data)
     end
@@ -860,9 +880,11 @@ spells[#spells + 1] = {
     level = 60,
     type = 'special',
     mana_cost = 340,
-    tick = 2000,
+    cooldown = 2000,
     enabled = true,
-    sprite = 'virtual-signal=signal-W',
+    log_spell = true,
+    sprite = 'virtual-signal/signal-W',
+    special_sprite = 'virtual-signal=signal-W',
     callback = function(data)
         local player = data.player
         local surface = data.surface
@@ -888,10 +910,12 @@ spells[#spells + 1] = {
     level = 25,
     type = 'special',
     mana_cost = 100,
-    tick = 2000,
+    cooldown = 2000,
     check_if_active = true,
     enabled = true,
-    sprite = 'virtual-signal=signal-info',
+    log_spell = true,
+    sprite = 'virtual-signal/signal-info',
+    special_sprite = 'virtual-signal=signal-info',
     callback = function(data)
         local self = data.self
         local player = data.player
@@ -913,13 +937,15 @@ spells[#spells + 1] = {
     entityName = 'eternal_blades',
     target = false,
     force = 'player',
-    level = 25,
+    level = 200,
     type = 'special',
-    mana_cost = 100,
-    tick = 2000,
-    check_if_active = true,
+    mana_cost = 350,
+    cooldown = 2000,
     enabled = false,
-    sprite = 'virtual-signal=signal-info',
+    enforce_cooldown = false,
+    log_spell = true,
+    sprite = 'virtual-signal/signal-info',
+    special_sprite = 'virtual-signal=signal-info',
     callback = function(data)
         local self = data.self
         local player = data.player
@@ -927,7 +953,9 @@ spells[#spells + 1] = {
 
         local range = Public.get_area_of_effect_range(player)
 
-        local damage = 34
+        local damage = Public.get_player_level(player)
+
+        damage = damage / 4
 
         area_of_effect(
             player,
@@ -952,7 +980,8 @@ spells[#spells + 1] = {
                         end
                     else
                         if entity.valid then
-                            entity.health = entity.health - damage * 0.05
+                            log(serpent.block(entity.name))
+                            entity.health = entity.health - damage
                             if entity.health <= 0 then
                                 entity.die(entity.force.name, player.character)
                             end
@@ -1059,13 +1088,13 @@ function Public.set_new_spell(tbl)
 
     if tbl then
         if not tbl.name then
-            return error('A spell requires a name. string', 2)
+            return error('A spell requires a name. <string>', 2)
         end
         if not tbl.entityName then
-            return error('A spell requires an object to create. string', 2)
+            return error('A spell requires an object to create. <string>', 2)
         end
         if not tbl.target then
-            return error('A spell requires position. boolean', 2)
+            return error('A spell requires position. <boolean>', 2)
         end
         if not tbl.amount then
             return error('A spell requires an amount of creation. <integer>', 2)
@@ -1077,7 +1106,7 @@ function Public.set_new_spell(tbl)
             return error('A spell requires damage. <damage-area=true/false>', 2)
         end
         if not tbl.force then
-            return error('A spell requires a force. string', 2)
+            return error('A spell requires a force. <string>', 2)
         end
         if not tbl.level then
             return error('A spell requires a level. <integer>', 2)
@@ -1088,11 +1117,20 @@ function Public.set_new_spell(tbl)
         if not tbl.mana_cost then
             return error('A spell requires mana_cost. <integer>', 2)
         end
-        if not tbl.tick then
-            return error('A spell requires tick. <integer>', 2)
+        if not tbl.cooldown then
+            return error('A spell requires cooldown. <integer>', 2)
+        end
+        if not tbl.enforce_cooldown then
+            return error('A spell requires enforce_cooldown. <boolean>', 2)
         end
         if not tbl.enabled then
-            return error('A spell requires enabled. boolean', 2)
+            return error('A spell requires enabled. <boolean>', 2)
+        end
+        if not tbl.log_spell then
+            return error('A spell requires log_spell. <boolean>', 2)
+        end
+        if not tbl.check_if_active then
+            return error('A spell requires check_if_active. <boolean>', 2)
         end
 
         Public.all_spells[#Public.all_spells + 1] = tbl
@@ -1124,9 +1162,14 @@ function Public.disable_cooldowns_on_spells()
     local new_spells = {}
 
     for i = 1, #spells do
-        if spells[i].enabled then
-            spells[i].tick = 0
-            new_spells[#new_spells + 1] = spells[i]
+        local spell = spells[i]
+        if spell.enabled then
+            if not spell.enforce_cooldown then
+                spell.cooldown = 0
+                new_spells[#new_spells + 1] = spell
+            else
+                new_spells[#new_spells + 1] = spell
+            end
         end
     end
 

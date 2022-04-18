@@ -970,9 +970,7 @@ local function on_player_used_capsule(event)
 
     spell.callback(data)
 
-    local msg = player.name .. ' casted ' .. spell.entityName .. '. '
-
-    rpg_t.last_spawned = game.tick + spell.tick
+    rpg_t.last_spawned = game.tick + spell.cooldown
     Public.update_mana(player)
 
     local reward_xp = spell.mana_cost * 0.085
@@ -982,7 +980,10 @@ local function on_player_used_capsule(event)
 
     Public.gain_xp(player, reward_xp)
 
-    AntiGrief.insert_into_capsule_history(player, position, msg)
+    if spell.log_spell then
+        local msg = player.name .. ' casted ' .. spell.entityName .. '. '
+        AntiGrief.insert_into_capsule_history(player, position, msg)
+    end
 end
 
 local function on_player_changed_surface(event)

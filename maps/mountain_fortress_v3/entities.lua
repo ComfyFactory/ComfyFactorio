@@ -245,11 +245,9 @@ local function set_train_final_health(final_damage_amount, repair)
                 local carriages = WPT.get('carriages')
 
                 if carriages then
-                    for _ = 1, 10 do
-                        for i = 1, #carriages do
-                            local entity = carriages[i]
-                            DefenseSystem.enable_robotic_defense(entity.position)
-                        end
+                    for i = 1, #carriages do
+                        local entity = carriages[i]
+                        DefenseSystem.enable_robotic_defense(entity.position)
                     end
                 end
                 local p = {
