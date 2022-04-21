@@ -236,8 +236,8 @@ local function roll_item_stack(entity, wave)
     local item_count = 1
 
     for c = 1, random(1, stack_size), 1 do
-        local price = c * item_worth
-        if price <= wave then
+        local p = c * item_worth
+        if p <= wave then
             item_count = c
         else
             break
@@ -249,27 +249,9 @@ local function roll_item_stack(entity, wave)
     return {name = item_name, count = item_count}
 end
 
+-- local Public = require 'modules.mobs_drop_loot' Public.drop_loot(game.get_player('Gerkiz'), 80)
 function Public.drop_loot(entity, wave)
-    local returned_loot
-    if wave >= 1 and wave < 50 then
-        returned_loot = roll_item_stack(entity, wave)
-    elseif wave >= 50 and wave < 100 then
-        returned_loot = roll_item_stack(entity, wave)
-    elseif wave >= 100 and wave < 200 then
-        returned_loot = roll_item_stack(entity, wave)
-    elseif wave >= 100 and wave < 400 then
-        returned_loot = roll_item_stack(entity, wave)
-    elseif wave >= 400 and wave < 800 then
-        returned_loot = roll_item_stack(entity, wave)
-    elseif wave >= 800 and wave < 1200 then
-        returned_loot = roll_item_stack(entity, wave)
-    elseif wave >= 1200 and wave < 2000 then
-        returned_loot = roll_item_stack(entity, wave)
-    elseif wave >= 2000 and wave < 3000 then
-        returned_loot = roll_item_stack(entity, wave)
-    elseif wave >= 3000 and wave < 4000 then
-        returned_loot = roll_item_stack(entity, wave)
-    end
+    local returned_loot = roll_item_stack(entity, wave)
     return returned_loot
 end
 
