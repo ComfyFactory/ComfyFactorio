@@ -536,11 +536,10 @@ local function on_entity_damaged(event)
                     end
                 end
             )
-            -- if success then
-            log(serpent.block('hit'))
-            Public.aoe_punch(cause, entity, damage, get_health_pool) -- only kill the biters if their health is below or equal to zero
-            return
-        -- end
+            if success then
+                Public.aoe_punch(cause, entity, damage, get_health_pool) -- only kill the biters if their health is below or equal to zero
+                return
+            end
         end
     end
 

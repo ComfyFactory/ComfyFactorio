@@ -68,7 +68,7 @@ local function area_of_effect(player, position, state, radius, callback, find_en
             if d < radius then
                 local p = {x = x, y = y}
                 if find_entities then
-                    for _, e in pairs(cs.find_entities_filtered({position = p})) do
+                    for _, e in pairs(cs.find_entities({{p.x - 1, p.y - 1}, {p.x + 1, p.y + 1}})) do
                         if e and e.valid and e.name ~= 'character' and e.health and e.destructible and e.type ~= 'simple-entity' and e.type ~= 'simple-entity-with-owner' then
                             callback(e, p)
                         end
@@ -140,10 +140,10 @@ local function create_projectiles(data)
                 right_bottom = {x = position.x + 2, y = position.y + 2}
             }
             do_projectile(surface, self.entityName, position, force, target_pos, range)
+            Public.remove_mana(player, self.mana_cost)
             if self.damage then
                 for _, e in pairs(surface.find_entities_filtered({area = damage_area})) do
                     damage_entity(e)
-                    Public.remove_mana(player, self.mana_cost)
                 end
             end
         end
@@ -153,11 +153,11 @@ local function create_projectiles(data)
             right_bottom = {x = position.x + 2, y = position.y + 2}
         }
         do_projectile(surface, self.entityName, position, force, target_pos, range)
+        Public.remove_mana(player, self.mana_cost)
 
         if self.damage then
             for _, e in pairs(surface.find_entities_filtered({area = damage_area})) do
                 damage_entity(e)
-                Public.remove_mana(player, self.mana_cost)
             end
         end
     end
@@ -946,6 +946,7 @@ spells[#spells + 1] = {
     log_spell = true,
     sprite = 'virtual-signal/signal-info',
     special_sprite = 'virtual-signal=signal-info',
+    tooltip = 'Damages enemies in radius when cast.',
     callback = function(data)
         local self = data.self
         local player = data.player
@@ -980,7 +981,6 @@ spells[#spells + 1] = {
                         end
                     else
                         if entity.valid then
-                            log(serpent.block(entity.name))
                             entity.health = entity.health - damage
                             if entity.health <= 0 then
                                 entity.die(entity.force.name, player.character)
