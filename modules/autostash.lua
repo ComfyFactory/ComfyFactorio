@@ -59,16 +59,9 @@ end
 
 local function chest_is_valid(chest)
    if this.dungeons_initial_level ~= nil then
-      if chest.position.x == -3.5 or chest.position.x == 4.5 then
-	  if chest.surface.index == this.dungeons_initial_level then
-	     if chest.position.y == 4.5 then
-		return true
-	     end
-	  else
-	     if chest.position.y == 4.5 or chest.position.y == -3.5 then
-		return true
-	     end
-	  end
+       -- transport chests always are valid targets
+       if chest.name == 'blue-chest' or chest.name == 'red-chest' then
+	   return true
        end
     end
     for _, e in pairs(
