@@ -4,6 +4,9 @@ require 'modules.mineable_wreckage_yields_scrap'
 require 'modules.satellite_score'
 require 'modules.charging_station'
 
+-- Tuning constants
+local MIN_ROOMS_TO_DESCEND = 100
+
 local MapInfo = require 'modules.map_info'
 local Room_generator = require 'functions.room_generator'
 local RPG = require 'modules.rpg.main'
@@ -151,7 +154,7 @@ local function draw_depth_gui()
             Functions.get_dungeon_evolution_factor(surface.index) * 100,
             forceshp[enemy_force.index] * 100,
             math_round(enemy_force.get_ammo_damage_modifier('melee') * 100 + 100, 1),
-            Functions.get_dungeon_evolution_factor(surface.index) * 2000,
+            Functions.get_base_loot_value(surface.index),
             dungeontable.treasures[surface.index],
             techs
         }
@@ -188,7 +191,7 @@ local function expand(surface, position)
     if not room then
         return
     end
-    local treasure_room_one_in = 30 + 10 * dungeontable.treasures[surface.index]
+    local treasure_room_one_in = 30 + 15 * dungeontable.treasures[surface.index]
     if dungeontable.surface_size[surface.index] >= 225 and math.random(1, treasure_room_one_in) == 1 and room.room_tiles[1] then
 	log('Found treasure room, change was 1 in ' .. treasure_room_one_in)
         Biomes['treasure'](surface, room)
@@ -546,8 +549,9 @@ local function get_lowest_safe_floor(player)
     local level = rpg[player.index].level
     local sizes = dungeontable.surface_size
     local safe = dungeontable.original_surface_index
+    local min_size = 200 + MIN_ROOMS_TO_DESCEND / 4
     for key, size in pairs(sizes) do
-        if size > 215 and level >= (key + 1 - dungeontable.original_surface_index) * 10 and game.surfaces[key + 1] then
+        if size >= min_size and level >= (key + 1 - dungeontable.original_surface_index) * 10 and game.surfaces[key + 1] then
             safe = key + 1
         else
             break
@@ -576,8 +580,8 @@ local function descend(player, button, shift)
     end
     local surface = game.surfaces[player.surface.index + 1]
     if not surface then
-        if dungeontable.surface_size[player.surface.index] < 215 then
-            player.print({'dungeons_tiered.floor_size_required'})
+        if dungeontable.surface_size[player.surface.index] < 200 + MIN_ROOMS_TO_DESCEND/4 then
+            player.print({'dungeons_tiered.floor_size_required', MIN_ROOMS_TO_DESCEND})
             return
         end
         surface = game.create_surface('dungeons_floor' .. player.surface.index - dungeontable.original_surface_index + 1, get_map_gen_settings())
@@ -866,6 +870,25 @@ Event.add(defines.events.on_player_changed_surface, on_player_changed_surface)
 Event.add(defines.events.on_player_respawned, on_player_respawned)
 
 Changelog.SetVersions({
+	{ ver = 'next', date = 'the future', desc = 'Make suggestions in the comfy #dungeons discord channel' },
+	{ ver = '1.1.1', date = '2022-04-10', desc = [[
+Balancing patch
+* Evolution goes up faster with floor level 0.05/level -> 0.06/level; e.g. floor 20 now like floor 24 before
+* Now require 100 open rooms to descend
+* Treasure rooms
+  * Occur less frequently as each subsequent one is found. was 1 in 30 + 10*Nfound now 1 in 30 + 15*Nfound
+  * Rebalanced ores to match end-game science needs. Was very low on copper
+* Loot
+  * Ammo/follower robot frequency ~0.5x previous
+  * Loot is calculated at floor evolution * 0.9
+  * Loot/box down by 0.75x
+* Rocks
+  * Ore from rocks from 25 + 25*floor to 40 + 15*floor capped at floor 15
+  * Rebalanced to include ~10% more coal to give coal for power
+* Require getting to room 100 before you can descend
+* Science from rooms 40-160+2.5*floor to 60-300+2.5*floor
+* Atomic bomb research moved to 40-50
+]]},
 	{ ver = '1.1', date = '2022-03-13', desc = [[
 * All research is now found at random.
   * Red science floors 0-1
