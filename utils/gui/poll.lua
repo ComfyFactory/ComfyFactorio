@@ -636,6 +636,10 @@ local function create_poll(event)
     local player = event.player
     local data = Gui.get_data(event.element)
 
+    if not data then
+        return
+    end
+
     local frame = data.frame
     local question = data.question
 
