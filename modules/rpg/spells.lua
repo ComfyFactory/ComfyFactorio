@@ -128,6 +128,7 @@ local function create_projectiles(data)
     local force = data.force
     local target_pos = data.target_pos
     local range = data.range
+    local projectile_types = Public.projectile_types
 
     if self.aoe then
         for _ = 1, self.amount do
@@ -139,7 +140,7 @@ local function create_projectiles(data)
                 left_top = {x = position.x - 2, y = position.y - 2},
                 right_bottom = {x = position.x + 2, y = position.y + 2}
             }
-            do_projectile(surface, self.entityName, position, force, target_pos, range)
+            do_projectile(surface, projectile_types[self.entityName].name, position, force, target_pos, range)
             Public.remove_mana(player, self.mana_cost)
             if self.damage then
                 for _, e in pairs(surface.find_entities_filtered({area = damage_area})) do
@@ -152,7 +153,7 @@ local function create_projectiles(data)
             left_top = {x = position.x - 2, y = position.y - 2},
             right_bottom = {x = position.x + 2, y = position.y + 2}
         }
-        do_projectile(surface, self.entityName, position, force, target_pos, range)
+        do_projectile(surface, projectile_types[self.entityName].name, position, force, target_pos, range)
         Public.remove_mana(player, self.mana_cost)
 
         if self.damage then
