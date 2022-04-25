@@ -19,7 +19,6 @@ local Autostash = require 'modules.autostash'
 local Panel = require 'utils.gui.config'
 Panel.get('gui_config').spaghett.noop = true
 local Collapse = require 'modules.collapse'
-Collapse.disable()
 local Changelog = require 'modules.changelog'
 require 'maps.dungeons.boss_arena'
 require 'modules.melee_mode'
@@ -749,6 +748,9 @@ end
 -- end
 
 local function on_init()
+    -- dungeons depends on rpg.main depends on modules.explosives depends on modules.collapse
+    -- without disabling collapse, it starts logging lots of errors after ~1 week.
+    Collapse.start_now(false)
     local dungeontable = DungeonsTable.get_dungeontable()
     local forceshp = BiterHealthBooster.get('biter_health_boost_forces')
     local force = game.create_force('dungeon')
