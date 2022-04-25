@@ -54,13 +54,7 @@ local function validate_player(player)
     if not player.valid then
         return false
     end
-    if not player.character then
-        return false
-    end
-    if not player.connected then
-        return false
-    end
-    if not game.players[player.index] then
+    if player.admin then
         return false
     end
     return true
@@ -77,30 +71,31 @@ local function validate_frame(frame)
     return true
 end
 
-local function create_mini_camera_gui(player, caption, position, surface)
+local function create_mini_camera_gui(player, target)
+    if not player or not player.valid then
+        return
+    end
+
     if player.gui.center[locate_player_frame_name] then
         player.gui.center[locate_player_frame_name].destroy()
         remove_player_data(player)
         return
     end
 
-    local target_player = game.players[caption]
-
-    if validate_player(target_player) then
+    if validate_player(target) then
         local player_data = create_player_data(player)
-        player_data.target_player = target_player
+        player_data.target = target
     else
         remove_player_data(player)
-        player.print('Please type a name of a player who is connected.', Color.warning)
         return
     end
 
     local frame = player.gui.center[locate_player_frame_name]
     if not validate_frame(frame) then
-        frame = player.gui.center.add({type = 'frame', name = locate_player_frame_name, caption = caption})
+        frame = player.gui.center.add({type = 'frame', name = locate_player_frame_name, caption = target.name})
     end
 
-    surface = tonumber(surface)
+    local surface = tonumber(target.surface.index)
 
     if frame[player_frame_name] and frame[player_frame_name].valid then
         frame[player_frame_name].destroy()
@@ -111,7 +106,7 @@ local function create_mini_camera_gui(player, caption, position, surface)
         {
             type = 'camera',
             name = player_frame_name,
-            position = position,
+            position = target.position,
             zoom = 0.4,
             surface_index = surface
         }
@@ -132,15 +127,16 @@ commands.add_command(
             if not cmd.parameter then
                 return
             end
-            local target_player = game.players[cmd.parameter]
+
+            local target_player = game.get_player(cmd.parameter)
 
             if validate_player(target_player) then
                 local player_data = create_player_data(player)
                 player_data.target_player = target_player
-                create_mini_camera_gui(player, target_player.name, target_player.position, target_player.surface.index)
+                create_mini_camera_gui(player, target_player)
             else
                 remove_player_data(player)
-                player.print('Please type a name of a player who is connected.', Color.warning)
+                player.print('[Where] Please type a name of a player who is connected.', Color.warning)
             end
         else
             return

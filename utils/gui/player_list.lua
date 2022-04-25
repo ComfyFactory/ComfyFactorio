@@ -635,7 +635,7 @@ local function player_list_show(data)
 
         if game.players[player_list[i].name].admin then
             trusted = '[color=red][A][/color]' .. trusted
-            tooltip = 'This player is an admin of this server.' .. minimap .. tooltip
+            tooltip = 'This player is an admin of this server.' .. tooltip
         elseif jailed[player_list[i].name] then
             trusted = '[color=orange][J][/color]' .. trusted
             tooltip = 'This player is currently jailed.' .. minimap .. tooltip
@@ -857,16 +857,16 @@ local function on_gui_click(event)
     end
     --Locate other players
     local index = tonumber(element.name)
-    if index and game.players[index] and index == game.players[index].index then
+    if index and game.get_player(index) and index == game.get_player(index).index then
         local is_spamming = SpamProtection.is_spamming(player, nil, 'PlayerList Locate Player')
         if is_spamming then
             return
         end
-        local target = game.players[index]
+        local target = game.get_player(index)
         if not target or not target.valid then
             return
         end
-        Where.create_mini_camera_gui(player, target.name, target.position, target.surface.index)
+        Where.create_mini_camera_gui(player, target)
     end
     --Poke other players
     if string.sub(element.name, 1, 11) == 'poke_player' then

@@ -32,9 +32,9 @@ require 'utils.gui'
 require 'utils.gui.player_list'
 require 'utils.gui.admin'
 require 'utils.gui.group'
-require 'utils.gui.poll'
 require 'utils.gui.score'
 require 'utils.gui.config'
+require 'utils.gui.poll'
 require 'utils.gui.server_select'
 require 'utils.freeplay'
 
@@ -109,6 +109,9 @@ require 'utils.freeplay'
 
 --![[Comfylatron has seized the Fish Train and turned it into a time machine]]--
 --require 'maps.chronosphere.main'
+
+--![[Adventure as a crew of pirates]]--
+--require 'maps.pirates.main'
 
 --![[Launch rockets in increasingly harder getting worlds.]]--
 --require 'maps.journey.main'

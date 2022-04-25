@@ -42,7 +42,7 @@ local function create_particles(data)
     if not surface or not surface.valid then
         return
     end
-    for i = 1, amount, 1 do
+    for _ = 1, amount, 1 do
         local m = random(6, 12)
         local m2 = m * 0.005
 

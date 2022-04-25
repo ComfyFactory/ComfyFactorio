@@ -238,6 +238,9 @@ local function insert_to_furnace(player_inventory, chests, name, count, floaty_t
                     if valid_to_insert then
                         if chest_inventory.can_insert({name = name, count = amount}) then
                             local inserted_count = chest_inventory.insert({name = name, count = amount})
+                            if inserted_count < 0 then
+                                return
+                            end
                             player_inventory.remove({name = name, count = inserted_count})
                             prepare_floaty_text(floaty_text_list, chest.surface, chest.position, name, inserted_count)
                             count = count - inserted_count
@@ -257,6 +260,9 @@ local function insert_to_furnace(player_inventory, chests, name, count, floaty_t
                 else
                     if chest_inventory.can_insert({name = name, count = amount}) then
                         local inserted_count = chest_inventory.insert({name = name, count = amount})
+                        if inserted_count < 0 then
+                            return
+                        end
                         player_inventory.remove({name = name, count = inserted_count})
                         prepare_floaty_text(floaty_text_list, chest.surface, chest.position, name, inserted_count)
                         count = count - inserted_count
@@ -285,6 +291,9 @@ local function insert_to_furnace(player_inventory, chests, name, count, floaty_t
             local chest_inventory = chest.get_inventory(defines.inventory.chest)
             if chest_inventory and chest_inventory.can_insert({name = name, count = amount}) then
                 local inserted_count = chest_inventory.insert({name = name, count = amount})
+                if inserted_count < 0 then
+                    return
+                end
                 player_inventory.remove({name = name, count = inserted_count})
                 prepare_floaty_text(floaty_text_list, chest.surface, chest.position, name, inserted_count)
                 count = count - inserted_count

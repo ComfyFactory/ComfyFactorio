@@ -17,6 +17,9 @@ local main_frame_name = Public.main_frame_name
 local draw_main_frame_name = Public.draw_main_frame_name
 local close_main_frame_name = Public.close_main_frame_name
 local settings_button_name = Public.settings_button_name
+local settings_tooltip_frame = Public.settings_tooltip_frame
+local close_settings_tooltip_frame = Public.close_settings_tooltip_frame
+local settings_tooltip_name = Public.settings_tooltip_name
 local settings_frame_name = Public.settings_frame_name
 local discard_button_name = Public.discard_button_name
 local save_button_name = Public.save_button_name
@@ -459,6 +462,21 @@ function Public.remove_frame(player)
     end
 end
 
+function Public.clear_settings_frames(player)
+    local screen = player.gui.screen
+    local center = player.gui.center
+
+    local setting_tooltip_frame = center[settings_tooltip_frame]
+    local setting_frame = screen[settings_frame_name]
+
+    if setting_tooltip_frame then
+        remove_target_frame(setting_tooltip_frame)
+    end
+    if setting_frame then
+        remove_target_frame(setting_frame)
+    end
+end
+
 local toggle = Public.toggle
 Public.remove_main_frame = remove_main_frame
 
@@ -501,7 +519,6 @@ Gui.on_click(
         local spell_gui_input3 = data.spell_gui_input3
         local magic_pickup_gui_input = data.magic_pickup_gui_input
         local movement_speed_gui_input = data.movement_speed_gui_input
-        local flame_boots_gui_input = data.flame_boots_gui_input
         local explosive_bullets_gui_input = data.explosive_bullets_gui_input
         local enable_entity_gui_input = data.enable_entity_gui_input
         local stone_path_gui_input = data.stone_path_gui_input
@@ -536,14 +553,6 @@ Gui.on_click(
                     rpg_t.enable_entity_spawn = false
                 elseif enable_entity_gui_input.state then
                     rpg_t.enable_entity_spawn = true
-                end
-            end
-
-            if flame_boots_gui_input and flame_boots_gui_input.valid then
-                if not flame_boots_gui_input.state then
-                    rpg_t.flame_boots = false
-                elseif flame_boots_gui_input.state then
-                    rpg_t.flame_boots = true
                 end
             end
 
@@ -673,6 +682,26 @@ Gui.on_click(
 )
 
 Gui.on_click(
+    close_settings_tooltip_frame,
+    function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'RPG Close Button')
+        if is_spamming then
+            return
+        end
+        local player = event.player
+        local center = player.gui.center
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        local main_frame = center[settings_tooltip_frame]
+        if main_frame and main_frame.valid then
+            remove_target_frame(main_frame)
+        end
+    end
+)
+
+Gui.on_click(
     settings_button_name,
     function(event)
         local is_spamming = SpamProtection.is_spamming(event.player, nil, 'RPG Settings Button')
@@ -695,7 +724,37 @@ Gui.on_click(
             Gui.remove_data_recursively(frame)
             frame.destroy()
         else
+            ComfyGui.clear_all_center_frames(player)
             Public.extra_settings(player)
+        end
+    end
+)
+
+Gui.on_click(
+    settings_tooltip_name,
+    function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'RPG Settings Tooltip Button')
+        if is_spamming then
+            return
+        end
+        local player = event.player
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        local surface_name = Public.get('rpg_extra').surface_name
+        if sub(player.surface.name, 0, #surface_name) ~= surface_name then
+            return
+        end
+
+        local center = player.gui.center
+        local main_frame = center[settings_tooltip_frame]
+        if main_frame and main_frame.valid then
+            remove_target_frame(main_frame)
+        else
+            ComfyGui.clear_all_center_frames(player)
+            ComfyGui.clear_all_screen_frames(player)
+            Public.settings_tooltip(player)
         end
     end
 )

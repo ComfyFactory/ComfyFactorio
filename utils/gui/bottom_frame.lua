@@ -19,21 +19,9 @@ Global.register(
 
 local Public = {}
 
-local bottom_guis_frame = Gui.uid_name()
+local main_frame_name = Gui.uid_name()
 local clear_corpse_button_name = Gui.uid_name()
 local bottom_quickbar_button_name = Gui.uid_name()
-
-function Public.toggle_player_frame(player, state)
-    local gui = player.gui
-    local frame = gui.screen[bottom_guis_frame]
-    if frame and frame.valid then
-        if state then
-            frame.visible = true
-        else
-            frame.visible = false
-        end
-    end
-end
 
 function Public.get_player_data(player, remove_user_data)
     if remove_user_data then
@@ -43,9 +31,7 @@ function Public.get_player_data(player, remove_user_data)
         return
     end
     if not this.players[player.index] then
-        this.players[player.index] = {
-            hidden = false
-        }
+        this.players[player.index] = {}
     end
     return this.players[player.index]
 end
@@ -69,9 +55,9 @@ function Public.set(key, value)
     end
 end
 
-function Public.clear_data(player)
-    this.players[player.index] = nil
-    this.bottom_quickbar_button[player.index] = nil
+function Public.remove_player(index)
+    this.players[index] = nil
+    this.bottom_quickbar_button[index] = nil
 end
 
 function Public.reset()
@@ -91,15 +77,15 @@ end
 
 local function destroy_frame(player)
     local gui = player.gui
-    local frame = gui.screen[bottom_guis_frame]
+    local frame = gui.screen[main_frame_name]
     if frame and frame.valid then
         frame.destroy()
     end
 end
 
-local function create_frame(player, alignment, location, portable, hidden)
+local function create_frame(player, alignment, location, portable)
     local gui = player.gui
-    local frame = gui.screen[bottom_guis_frame]
+    local frame = gui.screen[main_frame_name]
     if frame and frame.valid then
         destroy_frame(player)
     end
@@ -109,14 +95,18 @@ local function create_frame(player, alignment, location, portable, hidden)
     frame =
         player.gui.screen.add {
         type = 'frame',
-        name = bottom_guis_frame,
+        name = main_frame_name,
         direction = alignment
     }
 
-    if hidden then
-        frame.visible = false
-    else
-        frame.visible = true
+    local data = Public.get_player_data(player)
+
+    if data.visible ~= nil then
+        if data.visible then
+            frame.visible = true
+        else
+            frame.visible = false
+        end
     end
 
     frame.style.padding = 3
@@ -171,6 +161,8 @@ local function set_location(player, state)
     local resolution = player.display_resolution
     local scale = player.display_scale
 
+    state = state or data.state
+
     if state == 'bottom_left' then
         if data.above then
             location = {
@@ -200,24 +192,21 @@ local function set_location(player, state)
         end
         data.bottom_state = 'bottom_right'
     else
-        Public.get_player_data(player, true)
         location = {
             x = (resolution.width / 2) - ((54 + -528) * scale),
             y = (resolution.height - (96 * scale))
         }
     end
 
-    create_frame(player, alignment, location, data.portable, data.hidden)
+    data.state = state
+
+    create_frame(player, alignment, location, data.portable)
 end
 
 --- Activates the custom buttons
 ---@param value boolean
 function Public.activate_custom_buttons(value)
-    if value then
-        this.activate_custom_buttons = value
-    else
-        this.activate_custom_buttons = false
-    end
+    this.activate_custom_buttons = value or false
 end
 
 --- Fetches if the custom buttons are activated
@@ -239,9 +228,10 @@ Gui.on_click(
 Event.add(
     defines.events.on_player_joined_game,
     function(event)
-        local player = game.get_player(event.player_index)
         if this.activate_custom_buttons then
-            set_location(player)
+            local player = game.get_player(event.player_index)
+            local data = Public.get_player_data(player)
+            set_location(player, data.state)
         end
     end
 )
@@ -249,19 +239,10 @@ Event.add(
 Event.add(
     defines.events.on_player_display_resolution_changed,
     function(event)
-        local player = game.get_player(event.player_index)
         if this.activate_custom_buttons then
-            set_location(player)
-        end
-    end
-)
-
-Event.add(
-    defines.events.on_player_respawned,
-    function(event)
-        local player = game.get_player(event.player_index)
-        if this.activate_custom_buttons then
-            set_location(player)
+            local player = game.get_player(event.player_index)
+            local data = Public.get_player_data(player)
+            set_location(player, data.state)
         end
     end
 )
@@ -271,7 +252,8 @@ Event.add(
     function(event)
         local player = game.get_player(event.player_index)
         if this.activate_custom_buttons then
-            set_location(player)
+            local data = Public.get_player_data(player)
+            set_location(player, data.state)
         end
     end
 )
@@ -281,12 +263,53 @@ Event.add(
     function(event)
         local player = game.get_player(event.player_index)
         destroy_frame(player)
-        Public.clear_data(player)
     end
 )
 
-Public.bottom_guis_frame = bottom_guis_frame
+Event.add(
+    defines.events.on_pre_player_died,
+    function(event)
+        if this.activate_custom_buttons then
+            local player = game.get_player(event.player_index)
+            destroy_frame(player)
+        end
+    end
+)
+
+Event.add(
+    defines.events.on_player_respawned,
+    function(event)
+        if this.activate_custom_buttons then
+            local player = game.get_player(event.player_index)
+            local data = Public.get_player_data(player)
+            set_location(player, data.state)
+        end
+    end
+)
+
+Event.add(
+    defines.events.on_player_removed,
+    function(event)
+        Public.remove_player(event.player_index)
+    end
+)
+
+function Public.toggle_player_frame(player, state)
+    local gui = player.gui
+    local frame = gui.screen[main_frame_name]
+    if frame and frame.valid then
+        local data = Public.get_player_data(player)
+        if state then
+            data.visible = true
+            frame.visible = true
+        else
+            data.visible = false
+            frame.visible = false
+        end
+    end
+end
+Public.main_frame_name = main_frame_name
 Public.set_location = set_location
-Gui.screen_to_bypass(bottom_guis_frame)
+Gui.screen_to_bypass(main_frame_name)
 
 return Public

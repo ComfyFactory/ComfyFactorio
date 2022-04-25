@@ -20,7 +20,8 @@ local on_pre_hidden_handlers = {}
 local data = {}
 local element_map = {}
 local settings = {
-    mod_gui_top_frame = false
+    mod_gui_top_frame = false,
+    disabled_tabs = {}
 }
 
 Public.token =
@@ -40,6 +41,7 @@ Public.pin_black_icon = 'file/utils/files/pin-black.png'
 Public.infinite_icon = 'file/utils/files/infinity.png'
 Public.arrow_up_icon = 'file/utils/files/arrow-up.png'
 Public.arrow_down_icon = 'file/utils/files/arrow-down.png'
+Public.info_icon = 'file/utils/files/info.png'
 
 function Public.uid_name()
     return tostring(Token.uid())
@@ -96,7 +98,7 @@ function Public.get_data(element)
 end
 
 -- Adds a gui that is alike the factorio native gui.
-function Public.add_main_frame_with_toolbar(player, align, set_frame_name, set_settings_button_name, close_main_frame_name, name)
+function Public.add_main_frame_with_toolbar(player, align, set_frame_name, set_settings_button_name, close_main_frame_name, name, info)
     if not align then
         return
     end
@@ -131,19 +133,35 @@ function Public.add_main_frame_with_toolbar(player, align, set_frame_name, set_s
     widget.style.horizontally_stretchable = true
 
     if set_settings_button_name then
-        titlebar.add {
-            type = 'sprite-button',
-            name = set_settings_button_name,
-            style = 'frame_action_button',
-            sprite = Public.settings_white_icon,
-            mouse_button_filter = {'left'},
-            hovered_sprite = Public.settings_black_icon,
-            clicked_sprite = Public.settings_black_icon,
-            tooltip = 'Settings',
-            tags = {
-                action = 'open_settings_gui'
+        if not info then
+            titlebar.add {
+                type = 'sprite-button',
+                name = set_settings_button_name,
+                style = 'frame_action_button',
+                sprite = Public.settings_white_icon,
+                mouse_button_filter = {'left'},
+                hovered_sprite = Public.settings_black_icon,
+                clicked_sprite = Public.settings_black_icon,
+                tooltip = 'Settings',
+                tags = {
+                    action = 'open_settings_gui'
+                }
             }
-        }
+        else
+            titlebar.add {
+                type = 'sprite-button',
+                name = set_settings_button_name,
+                style = 'frame_action_button',
+                sprite = Public.info_icon,
+                mouse_button_filter = {'left'},
+                hovered_sprite = Public.info_icon,
+                clicked_sprite = Public.info_icon,
+                tooltip = 'Info',
+                tags = {
+                    action = 'open_settings_gui'
+                }
+            }
+        end
     end
 
     if close_main_frame_name then
@@ -165,7 +183,7 @@ function Public.add_main_frame_with_toolbar(player, align, set_frame_name, set_s
     local inside_frame =
         main_frame.add {
         type = 'frame',
-        style = 'b_inner_frame'
+        style = 'inside_shallow_frame'
     }
 
     local inside_frame_style = inside_frame.style
@@ -318,6 +336,27 @@ function Public.get_disable_clear_invalid_data()
     return settings.disable_clear_invalid_data
 end
 
+-- Disable a gui.
+---@param frame_name string
+---@param state boolean?
+function Public.set_disabled_tab(frame_name, state)
+    if not frame_name then
+        return
+    end
+
+    settings.disabled_tabs[frame_name] = state or false
+end
+
+-- Fetches if a gui is disabled.
+---@param frame_name string
+function Public.get_disabled_tab(frame_name)
+    if not frame_name then
+        return
+    end
+
+    return settings.disabled_tabs[frame_name]
+end
+
 -- Fetches the main frame name
 function Public.get_main_frame(player)
     if not player then
@@ -431,6 +470,20 @@ function Public.clear_main_frame(player)
     end
 end
 
+function Public.clear_all_center_frames(player)
+    for _, child in pairs(player.gui.center.children) do
+        child.destroy()
+    end
+end
+
+function Public.clear_all_screen_frames(player)
+    for _, child in pairs(player.gui.screen.children) do
+        if not screen_elements[child.name] then
+            child.destroy()
+        end
+    end
+end
+
 function Public.clear_all_active_frames(player)
     for _, child in pairs(player.gui.left.children) do
         child.destroy()
@@ -535,9 +588,29 @@ local function draw_main_frame(player)
     local tabbed_pane = inside_frame.add({type = 'tabbed-pane', name = 'tabbed_pane'})
 
     for name, func in pairs(tabs) do
-        if func.only_server_sided then
-            local secs = Server.get_current_time()
-            if secs then
+        if not settings.disabled_tabs[name] then
+            if func.only_server_sided then
+                local secs = Server.get_current_time()
+                if secs then
+                    local tab = tabbed_pane.add({type = 'tab', caption = name, name = func.name})
+                    local name_frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
+                    name_frame.style.minimal_height = 480
+                    name_frame.style.maximal_height = 480
+                    name_frame.style.minimal_width = 800
+                    name_frame.style.maximal_width = 800
+                    tabbed_pane.add_tab(tab, name_frame)
+                end
+            elseif func.admin == true then
+                if player.admin then
+                    local tab = tabbed_pane.add({type = 'tab', caption = name, name = func.name})
+                    local name_frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
+                    name_frame.style.minimal_height = 480
+                    name_frame.style.maximal_height = 480
+                    name_frame.style.minimal_width = 800
+                    name_frame.style.maximal_width = 800
+                    tabbed_pane.add_tab(tab, name_frame)
+                end
+            else
                 local tab = tabbed_pane.add({type = 'tab', caption = name, name = func.name})
                 local name_frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
                 name_frame.style.minimal_height = 480
@@ -546,24 +619,6 @@ local function draw_main_frame(player)
                 name_frame.style.maximal_width = 800
                 tabbed_pane.add_tab(tab, name_frame)
             end
-        elseif func.admin == true then
-            if player.admin then
-                local tab = tabbed_pane.add({type = 'tab', caption = name, name = func.name})
-                local name_frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
-                name_frame.style.minimal_height = 480
-                name_frame.style.maximal_height = 480
-                name_frame.style.minimal_width = 800
-                name_frame.style.maximal_width = 800
-                tabbed_pane.add_tab(tab, name_frame)
-            end
-        else
-            local tab = tabbed_pane.add({type = 'tab', caption = name, name = func.name})
-            local name_frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
-            name_frame.style.minimal_height = 480
-            name_frame.style.maximal_height = 480
-            name_frame.style.minimal_width = 800
-            name_frame.style.maximal_width = 800
-            tabbed_pane.add_tab(tab, name_frame)
         end
     end
 

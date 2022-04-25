@@ -74,6 +74,7 @@ local Public = {}
 local raise_event = script.raise_event
 local floor = math.floor
 local remove = table.remove
+RPG.disable_cooldowns_on_spells()
 
 local collapse_kill = {
     entities = {
@@ -171,14 +172,12 @@ function Public.reset_map()
     RPG.enable_health_and_mana_bars(true)
     RPG.enable_wave_defense(true)
     RPG.enable_mana(true)
-    RPG.enable_flame_boots(true)
     RPG.personal_tax_rate(0.4)
     RPG.enable_stone_path(true)
     RPG.enable_aoe_punch(true)
     RPG.enable_aoe_punch_globally(false)
     RPG.enable_range_buffs(true)
     RPG.enable_auto_allocate(true)
-    RPG.disable_cooldowns_on_spells()
     RPG.enable_explosive_bullets_globally(true)
     RPG.enable_explosive_bullets(false)
     RPG_Progression.toggle_module(false)
@@ -497,7 +496,6 @@ local on_tick = function()
 end
 
 local on_init = function()
-    local this = WPT.get()
     Public.reset_map()
 
     game.map_settings.path_finder.general_entity_collision_penalty = 10 -- Recommended value
@@ -510,11 +508,6 @@ local on_init = function()
     }
 
     Difficulty.set_tooltip(tooltip)
-
-    this.rocks_yield_ore_maximum_amount = 500
-    this.type_modifier = 1
-    this.rocks_yield_ore_base_amount = 40
-    this.rocks_yield_ore_distance_modifier = 0.020
 
     local T = Map.Pop_info()
     T.localised_category = 'mountain_fortress_v3'
@@ -540,24 +533,5 @@ end
 Event.on_nth_tick(10, on_tick)
 Event.on_init(on_init)
 Event.add(WPT.events.reset_map, Public.reset_map)
-Event.add(
-    defines.events.on_sector_scanned,
-    function(event)
-        local radar = event.radar
-        if not radar or not radar.valid then
-            return
-        end
-
-        local radars_reveal_new_chunks = WPT.get('radars_reveal_new_chunks')
-        if radars_reveal_new_chunks then
-            return
-        end
-
-        local pos = event.chunk_position
-
-        radar.force.cancel_charting(radar.surface.index)
-        radar.force.unchart_chunk(pos, radar.surface.index)
-    end
-)
 
 return Public

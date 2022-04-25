@@ -276,6 +276,10 @@ local function distance(player)
             Task.set_timeout_in_ticks(550, collapse_message, data)
         end
 
+        if Collapse.start_now() then
+            clear_breach_text_and_render()
+        end
+
         RPG.set_value_to_player(index, 'bonus', bonus + 1)
 
         RPG.gain_xp(player, bonus_xp_on_join * bonus)
