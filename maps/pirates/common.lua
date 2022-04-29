@@ -289,51 +289,60 @@ function Public.give(player, stacks, spill_position, spill_surface)
 					end
 				end
 				if itemcount > 0 then
-					if itemcount < 5 then
-						spill_surface.spill_item_stack(spill_position, {name = itemname, count = itemcount}, true)
-					else
-						local e = spill_surface.create_entity{name = 'item-on-ground', position = spill_position, stack = {name = itemname, count = itemcount}}
-						if e and e.valid then
-							e.to_be_looted = true
-						end
-					end
+					-- if itemcount < 5 then
+					-- 	spill_surface.spill_item_stack(spill_position, {name = itemname, count = itemcount}, true)
+					-- else
+					-- 	local e = spill_surface.create_entity{name = 'item-on-ground', position = spill_position, stack = {name = itemname, count = itemcount}}
+					-- 	if e and e.valid then
+					-- 		e.to_be_looted = true
+					-- 	end
+					-- end
+					spill_surface.spill_item_stack(spill_position, {name = itemname, count = itemcount}, true)
 				end
 			else
-				local e = spill_surface.create_entity{name = 'item-on-ground', position = spill_position, stack = {name = itemname, count = itemcount}}
-				if e and e.valid then
-					e.to_be_looted = true
-				end
+				-- local e = spill_surface.create_entity{name = 'item-on-ground', position = spill_position, stack = {name = itemname, count = itemcount}}
+				-- if e and e.valid then
+				-- 	e.to_be_looted = true
+				-- end
+				spill_surface.spill_item_stack(spill_position, {name = itemname, count = itemcount}, true)
 			end
 		end
 
-		text1 = text1 .. '[color=1,1,1]'
 		if itemcount_remember > 0 then
-			text1 = text1 .. '+'
-			text1 = text1 .. itemcount_remember .. '[/color] [item=' .. itemname .. ']'
+			if #stacks2 == 1 and itemcount_remember == 1 then
+				text1 = text1 .. '[item=' .. itemname .. ']'
+			else
+				text1 = text1 .. '[color=1,1,1]'
+				text1 = text1 .. '+'
+				text1 = text1 .. itemcount_remember .. '[/color] [item=' .. itemname .. ']'
+			end
 		else
+			text1 = text1 .. '[color=1,1,1]'
 			text1 = text1 .. '-'
 			text1 = text1 .. -itemcount_remember .. '[/color] [item=' .. itemname .. ']'
 		end
 
-		-- count total of that item they have:
-		local new_total_count = 0
-		if player then
+
+		if player and not (#stacks2 == 1 and itemcount_remember == 1) then
+			-- count total of that item they have:
+			local new_total_count = 0
+
 			local cursor_stack = player.cursor_stack
 			if cursor_stack and cursor_stack.valid_for_read and cursor_stack.name == itemname and cursor_stack.count and cursor_stack.count > 0 then
 				new_total_count = new_total_count + cursor_stack.count
 			end
-		end
-		if inv and inv.get_item_count(itemname) and inv.get_item_count(itemname) > 0 then
-			new_total_count = new_total_count + inv.get_item_count(itemname)
-		end
+			if inv and inv.get_item_count(itemname) and inv.get_item_count(itemname) > 0 then
+				new_total_count = new_total_count + inv.get_item_count(itemname)
+			end
 
-		if #stacks2 > 1 then
-			text2 = text2 .. '[color=' .. flying_text_color.r .. ',' .. flying_text_color.g .. ',' .. flying_text_color.b .. ']' .. new_total_count .. '[/color]'
-		else
-			text2 = '[color=' .. flying_text_color.r .. ',' .. flying_text_color.g .. ',' .. flying_text_color.b .. '](' .. new_total_count .. ')[/color]'
-		end
-		if j < #stacks2 then
-			text2 = text2 .. ', '
+			if #stacks2 > 1 then
+				text2 = text2 .. '[color=' .. flying_text_color.r .. ',' .. flying_text_color.g .. ',' .. flying_text_color.b .. ']' .. new_total_count .. '[/color]'
+			else
+				text2 = '[color=' .. flying_text_color.r .. ',' .. flying_text_color.g .. ',' .. flying_text_color.b .. '](' .. new_total_count .. ')[/color]'
+			end
+			if j < #stacks2 then
+				text2 = text2 .. ', '
+			end
 		end
 
 		if j < #stacks2 then

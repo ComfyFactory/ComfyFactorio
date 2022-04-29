@@ -637,13 +637,15 @@ local function event_on_player_mined_entity(event)
 				local give = {}
 				if memory.classes_table and memory.classes_table[event.player_index] then
 					if memory.classes_table[event.player_index] == Classes.enum.LUMBERJACK then
+						give[#give + 1] = {name = 'wood', count = 1}
 						if Math.random(7) == 1 then
 							give[#give + 1] = {name = 'coin', count = 15}
 						end
 					elseif memory.classes_table[event.player_index] == Classes.enum.WOOD_LORD then
-						give[#give + 1] = {name = 'iron-ore', count = 2}
-						give[#give + 1] = {name = 'copper-ore', count = 2}
-						give[#give + 1] = {name = 'coal', count = 2}
+						give[#give + 1] = {name = 'wood', count = 1}
+						give[#give + 1] = {name = 'iron-ore', count = 1}
+						give[#give + 1] = {name = 'copper-ore', count = 1}
+						give[#give + 1] = {name = 'coal', count = 1}
 						if Math.random(7) == 1 then
 							give[#give + 1] = {name = 'coin', count = 15}
 						end
@@ -748,24 +750,23 @@ local function event_on_player_mined_entity(event)
 				if memory.overworldx >= 0 then --used to be only later levels
 					if entity.name == 'rock-huge' then
 						c2[#c2 + 1] = {name = 'coin', count = 45, color = CoreData.colors.coin}
+						if Math.random(1, 35) == 1 then
+							c2[#c2 + 1] = {name = 'crude-oil-barrel', count = 1, color = CoreData.colors.oil}
+						end
 					else
 						c2[#c2 + 1] = {name = 'coin', count = 30, color = CoreData.colors.coin}
+						if Math.random(1, 35*3) == 1 then
+							c2[#c2 + 1] = {name = 'crude-oil-barrel', count = 1, color = CoreData.colors.oil}
+						end
 					end
 				end
 
 				for k, v in pairs(c) do
-					local color
-					if k == 'coal' then
-						color = CoreData.colors.coal
+					if k == 'coal' and #c2 <= 1 then --if oil, then no coal
+						c2[#c2 + 1] = {name = k, count = v, color = CoreData.colors.coal}
 					elseif k == 'stone' then
-						color = CoreData.colors.stone
+						c2[#c2 + 1] = {name = k, count = v, color = CoreData.colors.stone}
 					end
-
-					--old version:
-					-- local amount = Math.max(Math.min(available,Math.ceil(v * available/starting)),1)
-					local amount = v
-
-					c2[#c2 + 1] = {name = k, count = amount, color = color}
 				end
 				Common.give(player, c2, entity.position)
 
@@ -800,52 +801,75 @@ local function base_kill_rewards(event)
 	local entity = event.entity
 	if not (entity and entity.valid) then return end
 	if not (event.force and event.force.valid) then return end
+	local entity_name = entity.name
 
 	-- no worm loot in the maze:
-	local maze = (destination and destination.subtype and destination.subtype == Islands.enum.MAZE)
-	if maze and not (entity.name == 'biter-spawner' or entity.name == 'spitter-spawner') then return end
+	local maze = (destination.subtype and destination.subtype == Islands.enum.MAZE)
+	if maze and not (entity_name == 'biter-spawner' or entity_name == 'spitter-spawner') then return end
 
 	local revenge_target
 	if event.cause and event.cause.valid and event.cause.name == 'character' then
 		revenge_target = event.cause
 	end
 
-	local iron_amount = 0
-	local coin_amount = 0
+	local iron_amount
+	local coin_amount
 
-	if memory.overworldx >= 0 then
-		if entity.name == 'small-worm-turret' then
-			iron_amount = 5
-			coin_amount = 40
-		elseif entity.name == 'medium-worm-turret' then
-			iron_amount = 20
-			coin_amount = 70
-		elseif entity.name == 'biter-spawner' or entity.name == 'spitter-spawner'
-		then
-			iron_amount = 30
-			coin_amount = 70
-		elseif entity.name == 'big-worm-turret'
-		then
-			iron_amount = 30
-			coin_amount = 100
-		elseif entity.name == 'behemoth-worm-turret'
-		then
-			iron_amount = 50
-			coin_amount = 200
+	if entity_name == 'small-worm-turret' then
+		iron_amount = 5
+		coin_amount = 40
+	elseif entity_name == 'medium-worm-turret' then
+		iron_amount = 20
+		coin_amount = 70
+	elseif entity_name == 'biter-spawner' or entity_name == 'spitter-spawner' then
+		iron_amount = 30
+		coin_amount = 70
+	elseif entity_name == 'big-worm-turret' then
+		iron_amount = 30
+		coin_amount = 100
+	elseif entity_name == 'behemoth-worm-turret' then
+		iron_amount = 50
+		coin_amount = 200
+	elseif memory.overworldx > 0 then
+		if entity_name == 'small-biter' then
+			coin_amount = 1
+		elseif entity_name == 'small-spitter' then
+			coin_amount = 1
+		elseif entity_name == 'medium-biter' then
+			coin_amount = 2
+		elseif entity_name == 'medium-spitter' then
+			coin_amount = 2
+		elseif entity_name == 'big-biter' then
+			coin_amount = 3
+		elseif entity_name == 'big-spitter' then
+			coin_amount = 3
+		elseif entity_name == 'behemoth-biter' then
+			coin_amount = 5
+		elseif entity_name == 'behemoth-spitter' then
+			coin_amount = 5
 		end
 	end
 
-	if iron_amount > 0 then
-		local stack = {{name = 'iron-plate', count = iron_amount}, {name = 'coin', count = coin_amount}}
+	if coin_amount then
+		local stack
+		if iron_amount then
+			stack = {{name = 'iron-plate', count = iron_amount}, {name = 'coin', count = coin_amount}}
+		else
+			stack = {{name = 'coin', count = coin_amount}}
+		end
 
 		if revenge_target then
 			Common.give(event.cause.player, stack)
 		else
-			Common.give(nil, stack, entity.position, entity.surface)
+			if event.cause.position then
+				Common.give(nil, stack, event.cause.position, entity.surface)
+			else
+				Common.give(nil, stack, entity.position, entity.surface)
+			end
 		end
 	end
 
-	if (entity.name == 'biter-spawner' or entity.name == 'spitter-spawner') and entity.position and entity.surface and entity.surface.valid then
+	if (entity_name == 'biter-spawner' or entity_name == 'spitter-spawner') and entity.position and entity.surface and entity.surface.valid then
 		--check if its a boat biter entity
 		local boat_spawner = false
 		if memory.enemyboats then
@@ -859,7 +883,7 @@ local function base_kill_rewards(event)
 		end
 		if boat_spawner then
 			Ai.revenge_group(entity.surface, entity.position, revenge_target, 'biter', 0.3, 2)
-		elseif entity.name == 'biter-spawner' then
+		elseif entity_name == 'biter-spawner' then
 			Ai.revenge_group(entity.surface, entity.position, revenge_target, 'biter')
 		else
 			Ai.revenge_group(entity.surface, entity.position, revenge_target, 'spitter')

@@ -131,8 +131,21 @@ local function create_gui(player)
 
 
 
-	flow2 = GuiCommon.flow_add_floating_button(flow1, 'fuel_piratebutton')
-	-- flow2.style.right_padding = -100
+
+	flow2 = flow1.add({
+		name = 'fuel_flow',
+		type = 'frame',
+	})
+	flow2.style.minimal_width = 80
+	flow2.style.natural_width = 80
+	flow2.style.minimal_height = 40
+	flow2.style.maximal_height = 40
+	flow2.style.left_padding = 4
+	flow2.style.right_padding = 4
+	flow2.style.top_padding = 3
+
+	-- interactive version:
+	-- flow2 = GuiCommon.flow_add_floating_button(flow1, 'fuel_piratebutton')
 
 	flow3 = flow2.add({
 		name = 'fuel_label_0',
@@ -902,12 +915,16 @@ function Public.update_gui(player)
 	-- 	button.number = 3
 	-- end
 
-	flow1 = pirates_flow.fuel_piratebutton_flow_1
+	flow1 = pirates_flow.fuel_flow
+	-- flow1 = pirates_flow.fuel_piratebutton_flow_1
 
-	flow1.fuel_piratebutton.tooltip = {'pirates.fuel_tooltip', Math.floor(memory.stored_fuel or 0)}
+	local tooltip = {'pirates.fuel_tooltip', Math.floor(memory.stored_fuel or 0)}
+	flow1.tooltip = tooltip
+	-- flow1.fuel_piratebutton.tooltip = {'pirates.fuel_tooltip', Math.floor(memory.stored_fuel or 0)}
 
 
-	flow2 = flow1.fuel_piratebutton_flow_2
+	flow2 = flow1
+	-- flow2 = flow1.fuel_piratebutton_flow_2
 
 	flow2.fuel_label_1.caption = Utils.bignumber_abbrevform(memory.stored_fuel or 0) .. '[item=coal]'
 	flow2.fuel_label_2.caption = Utils.negative_rate_abbrevform(memory.fuel_depletion_rate_memoized or 0)
@@ -917,6 +934,9 @@ function Public.update_gui(player)
 		g = GuiCommon.fuel_color_1.g * (1-color_scale) + GuiCommon.fuel_color_2.g * color_scale,
 		b = GuiCommon.fuel_color_1.b * (1-color_scale) + GuiCommon.fuel_color_2.b * color_scale,
 	}
+	flow2.fuel_label_0.tooltip = tooltip
+	flow2.fuel_label_1.tooltip = tooltip
+	flow2.fuel_label_2.tooltip = tooltip
 
 
 	flow1 = pirates_flow.progress_piratebutton_frame.progress_piratebutton
@@ -936,7 +956,8 @@ function Public.update_gui(player)
 	--== Update Gui ==--
 
 
-	flow1 = pirates_flow.fuel_piratebutton_flow_1
+	flow1 = pirates_flow.fuel_flow
+	-- flow1 = pirates_flow.fuel_piratebutton_flow_1
 
 	if memory.crewstatus == nil then
 		flow1.visible = false

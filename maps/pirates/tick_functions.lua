@@ -633,17 +633,17 @@ function Public.place_cached_structures(tickinterval)
 					end
 
 					if destination.static_params.class_for_sale then
-						covered_data.market.add_market_item{price={{'coin', Balance.class_cost()}}, offer={type="nothing"}}
+						covered_data.market.add_market_item{price={{'coin', Balance.class_cost()}}, offer={type="nothing", effect_description = 'Purchase the class ' .. Classes.display_form[destination.static_params.class_for_sale] .. '.'}}
 
-						destination.dynamic_data.market_class_offer_rendering = rendering.draw_text{
-							text = 'Class available: ' .. Classes.display_form[destination.static_params.class_for_sale],
-							surface = surface,
-							target = Utils.psum{special.position, hardcoded_data.market, {x = 1, y = -3.9}},
-							color = CoreData.colors.renderingtext_green,
-							scale = 2.5,
-							font = 'default-game',
-							alignment = 'center'
-						}
+						-- destination.dynamic_data.market_class_offer_rendering = rendering.draw_text{
+						-- 	text = 'Class available: ' .. Classes.display_form[destination.static_params.class_for_sale],
+						-- 	surface = surface,
+						-- 	target = Utils.psum{special.position, hardcoded_data.market, {x = 1, y = -3.9}},
+						-- 	color = CoreData.colors.renderingtext_green,
+						-- 	scale = 2.5,
+						-- 	font = 'default-game',
+						-- 	alignment = 'center'
+						-- }
 					end
 				end
 

@@ -319,9 +319,9 @@ function Public.destination_on_arrival(destination)
 	if not (#memory.destinationsvisited_indices and #memory.destinationsvisited_indices == 1) then --don't need to notify for the first island
 		Server.to_discord_embed_raw((destination.static_params.discord_emoji or CoreData.comfy_emojis.wut) .. '[' .. memory.name .. '] Approaching ' .. name .. ', ' .. memory.overworldx .. ' leagues.')
 	end
-	if destination.static_params.name == 'Dock' then
-		message = message .. ' ' .. 'New trades are available in the Captain\'s Store.'
-	end
+	-- if destination.static_params.name == 'Dock' then
+	-- 	message = message .. ' ' .. 'New trades are available in the Captain\'s Store.'
+	-- end
 	Common.notify_force(memory.force, message)
 
 	if destination.type == enum.ISLAND then

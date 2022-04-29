@@ -1,5 +1,5 @@
 
--- local Memory = require 'maps.pirates.memory'
+local Memory = require 'maps.pirates.memory'
 -- local Roles = require 'maps.pirates.roles.roles'
 local CoreData = require 'maps.pirates.coredata'
 local Classes = require 'maps.pirates.roles.classes'
@@ -10,6 +10,7 @@ local Balance = require 'maps.pirates.balance'
 local Common = require 'maps.pirates.common'
 local Utils = require 'maps.pirates.utils_local'
 local Math = require 'maps.pirates.math'
+local Upgrades = require 'maps.pirates.boat_upgrades'
 local _inspect = require 'utils.inspect'.inspect
 
 -- local Upgrades = require 'maps.pirates.boat_upgrades'
@@ -109,11 +110,27 @@ Public.market_sales = {
 
 
 function Public.create_dock_markets(surface, p)
-	-- local memory = Memory.get_crew_memory()
+    local destination = Common.current_destination()
 
 	if not (surface and p) then return end
 
 	local e
+
+	e = surface.create_entity{name = 'market', position = {x = p.x - 22, y = p.y - 1}}
+	if e and e.valid then
+		e.minable = false
+		e.rotatable = false
+		e.destructible = false
+
+		e.add_market_item{price = {{'coin', 1000}}, offer = {type = 'give-item', item = 'artillery-turret', count = 1}}
+
+		local upgrade_for_sale = Common.current_destination().static_params.upgrade_for_sale
+		if upgrade_for_sale then
+			e.add_market_item(Upgrades.market_offer_form[upgrade_for_sale])
+		end
+
+		destination.dynamic_data.dock_captains_market = e
+	end
 
 	e = surface.create_entity{name = 'market', position = {x = p.x - 7, y = p.y}}
 	if e and e.valid then
@@ -148,19 +165,18 @@ function Public.create_dock_markets(surface, p)
 		end
 
 		-- new class offerings:
-		local destination = Common.current_destination()
 		if destination.static_params.class_for_sale then
-			e.add_market_item{price={{'coin', Balance.class_cost()}}, offer={type="nothing"}}
+			e.add_market_item{price={{'coin', Balance.class_cost()}}, offer={type="nothing", effect_description = 'Purchase the class ' .. Classes.display_form[destination.static_params.class_for_sale] .. '.'}}
 
-			destination.dynamic_data.market_class_offer_rendering = rendering.draw_text{
-				text = 'Class available: ' .. Classes.display_form[destination.static_params.class_for_sale],
-				surface = surface,
-				target = Utils.psum{e.position, {x = 0, y = -4}},
-				color = CoreData.colors.renderingtext_green,
-				scale = 2.5,
-				font = 'default-game',
-				alignment = 'center'
-			}
+			-- destination.dynamic_data.market_class_offer_rendering = rendering.draw_text{
+			-- 	text = 'Class available: ' .. Classes.display_form[destination.static_params.class_for_sale],
+			-- 	surface = surface,
+			-- 	target = Utils.psum{e.position, {x = 0, y = -4}},
+			-- 	color = CoreData.colors.renderingtext_green,
+			-- 	scale = 2.5,
+			-- 	font = 'default-game',
+			-- 	alignment = 'center'
+			-- }
 		end
 	end
 

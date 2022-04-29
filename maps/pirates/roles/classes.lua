@@ -95,7 +95,7 @@ Public.explanation = {
 
 Public.class_unlocks = {
 	[enum.FISHERMAN] = {enum.MASTER_ANGLER},
-	[enum.LUMBERJACK] = {enum.WOOD_LORD},
+	-- [enum.LUMBERJACK] = {enum.WOOD_LORD}, --not that interesting
 	-- [enum.PROSPECTOR] = {enum.CHIEF_EXCAVATOR}, --breaks the resource pressure in the game too strongly I think
 	[enum.SAMURAI] = {enum.HATAMOTO},
 	[enum.MASTER_ANGLER] = {enum.DREDGER},

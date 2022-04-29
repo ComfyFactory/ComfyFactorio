@@ -18,9 +18,13 @@ local Public = {}
 
 
 
+-- Note! This file is deprecated. It is replaced with a dedicated market at the dock and inside the captain's cabin. The exception is main_shop_data_1 as noted below, which is consulted for the Crowsnest caption. (Haven't had time to unify this yet.)
+
+
 
 --== Warning: If something only costs fuel, then we need to check the player can't buy it whilst they're dead
 
+-- WARNING: The Crowsnest caption pulls data from this data. But the actual dock market pulls from boat_upgrades.lua.
 Public.main_shop_data_1 = {
 	repair_cannons = {
 		tooltip = 'Repair the cannons.',
@@ -258,22 +262,18 @@ function Public.main_shop_try_purchase(player, purchase_name)
 
 		elseif purchase_name == Upgrades.enum.MORE_POWER then
 			Upgrades.execute_upgade(Upgrades.enum.MORE_POWER)
-			Common.notify_force(force,string.format('[font=heading-1]%s upgraded the ship\'s power.[/font]', player.name))
 			memory.mainshop_availability_bools[purchase_name] = false
 
 		elseif purchase_name == Upgrades.enum.EXTRA_HOLD then
 			Upgrades.execute_upgade(Upgrades.enum.EXTRA_HOLD)
-			Common.notify_force(force,string.format('[font=heading-1]%s upgraded the ship\'s hold.[/font]', player.name))
 			memory.mainshop_availability_bools[purchase_name] = false
 
 		elseif purchase_name == Upgrades.enum.UNLOCK_MERCHANTS then
 			Upgrades.execute_upgade(Upgrades.enum.UNLOCK_MERCHANTS)
-			Common.notify_force(force,string.format('[font=heading-1]%s unlocked merchant ships.[/font]', player.name))
 			memory.mainshop_availability_bools[purchase_name] = false
 
 		elseif purchase_name == Upgrades.enum.ROCKETS_FOR_SALE then
 			Upgrades.execute_upgade(Upgrades.enum.ROCKETS_FOR_SALE)
-			Common.notify_force(force,string.format('[font=heading-1]%s unlocked the sale of rockets at covered-up markets.[/font]', player.name))
 			memory.mainshop_availability_bools[purchase_name] = false
 
 		elseif purchase_name == 'sell_iron' then

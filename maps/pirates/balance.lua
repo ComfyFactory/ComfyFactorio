@@ -315,7 +315,7 @@ function Public.apply_crew_buffs_per_x(force)
 end
 
 function Public.class_cost()
-	return 8000
+	return 9000
 	-- return Math.ceil(10000 / (Public.crew_scale()*10/4)^(1/6))
 end
 

@@ -38,7 +38,9 @@ Public[enum.INITIAL].Data.hold_whitebelts_lrtp_order = {
 	{x = -19.5, y = -21.5, direction = defines.direction.north, type = 'output'},
 	{x = -18.5, y = -21.5, direction = defines.direction.north, type = 'output'},
 	{x = -17.5, y = -21.5, direction = defines.direction.north, type = 'output'},
+	{x = -16.5, y = -21.5, direction = defines.direction.north, type = 'output'},
 
+	{x = 16.5, y = -21.5, direction = defines.direction.north, type = 'output'},
 	{x = 17.5, y = -21.5, direction = defines.direction.north, type = 'output'},
 	{x = 18.5, y = -21.5, direction = defines.direction.north, type = 'output'},
 	{x = 19.5, y = -21.5, direction = defines.direction.north, type = 'output'},
@@ -55,7 +57,9 @@ Public[enum.INITIAL].Data.hold_whitebelts_lrtp_order = {
 	{x = -19.5, y = 21.5, direction = defines.direction.south, type = 'input'},
 	{x = -18.5, y = 21.5, direction = defines.direction.south, type = 'input'},
 	{x = -17.5, y = 21.5, direction = defines.direction.south, type = 'input'},
+	{x = -16.5, y = 21.5, direction = defines.direction.south, type = 'input'},
 
+	{x = 16.5, y = 21.5, direction = defines.direction.south, type = 'input'},
 	{x = 17.5, y = 21.5, direction = defines.direction.south, type = 'input'},
 	{x = 18.5, y = 21.5, direction = defines.direction.south, type = 'input'},
 	{x = 19.5, y = 21.5, direction = defines.direction.south, type = 'input'},
@@ -271,12 +275,16 @@ function Public.connect_up_linked_belts_to_deck() --assumes both are in standard
 			{4,4},
 			{5,5},
 			{6,6},
-			{15,13},
-			{16,14},
-			{17,15},
-			{18,16},
-			{19,17},
-			{20,18},
+			{7,7},
+			{8,8},
+			{17,17},
+			{18,18},
+			{19,19},
+			{20,20},
+			{21,21},
+			{22,22},
+			{23,23},
+			{24,24},
 		}
 
 		for _, c in pairs(connections) do
@@ -298,10 +306,10 @@ function Public.nth_hold_connect_linked_belts(nth) --assumes both are in standar
 		if nth % 2 == 0 then
 			if nth == 2 then
 				connections = {
-					{5,11},
-					{6,12},
-					{7,13},
-					{8,14},
+					{5,13},
+					{6,14},
+					{7,15},
+					{8,16},
 				}
 				for _, c in pairs(connections) do
 					local b1 = boat.hold_whitebelts[nth][c[1]]
@@ -322,10 +330,10 @@ function Public.nth_hold_connect_linked_belts(nth) --assumes both are in standar
 				end
 			end
 			connections = {
-				{1,7},
-				{2,8},
-				{3,9},
-				{4,10},
+				{1,9},
+				{2,10},
+				{3,11},
+				{4,12},
 			}
 			for _, c in pairs(connections) do
 				local b1 = boat.hold_whitebelts[nth][c[1]]
@@ -345,10 +353,10 @@ function Public.nth_hold_connect_linked_belts(nth) --assumes both are in standar
 				b1.connect_linked_belts(b2)
 			end
 			connections = {
-				{5,7},
-				{6,8},
-				{7,9},
-				{8,10},
+				{5,9},
+				{6,10},
+				{7,11},
+				{8,12},
 			}
 			for _, c in pairs(connections) do
 				local b1 = boat.hold_whitebelts[nth][c[1]]
