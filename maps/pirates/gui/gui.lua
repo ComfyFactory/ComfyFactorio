@@ -850,6 +850,13 @@ function Public.process_siloframe_and_questframe_updates(flowsilo, flowquest, bo
 end
 
 
+-- local function create_gui_2()
+
+-- end
+
+-- Event.add(defines.events.on_player_joined_game, create_gui_2)
+
+
 function Public.update_gui(player)
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()

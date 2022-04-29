@@ -462,7 +462,7 @@ function Public.try_retreat_from_island(player, manual) -- Assumes the cost can 
 		end
 	else
 		if player and Common.validate_player(player) then
-			Common.notify_player_error(player.force, 'Undock error: Not enough resources stored in the captain\'s cabin.')
+			Common.notify_force_error(player.force, 'Undock error: Not enough resources stored in the captain\'s cabin.')
 		end
 	end
 end

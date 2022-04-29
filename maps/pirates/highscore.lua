@@ -3,9 +3,9 @@
 local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Server = require 'utils.server'
+local Gui = require 'utils.gui'
 local Math = require 'maps.pirates.math'
 local Token = require 'utils.token'
-local Tabs = require 'utils.gui'
 require 'utils.core'
 local _inspect = require 'utils.inspect'.inspect
 local SpamProtection = require 'utils.spam_protection'
@@ -13,11 +13,13 @@ local SpamProtection = require 'utils.spam_protection'
 local Utils = require 'maps.pirates.utils_local'
 local CoreData = require 'maps.pirates.coredata'
 
-local module_name = 'Highscore'
+local module_name = Gui.uid_name()
+-- local module_name = 'Highscore'
 local score_dataset = 'highscores'
 local score_key = 'pirate_ship_scores'
 local score_key_debug = 'pirate_ship_scores_debug'
 local score_key_modded = 'pirate_ship_scores_modded'
+
 
 local Public = {}
 local insert = table.insert
@@ -38,6 +40,8 @@ local function sort_list(method, column_name, score_list)
         ['ascending'] = function(a, b)
 			if column_name == 'completion_time' then
 				return (a[column_name] < b[column_name]) and not (a[column_name] == 0 and b[column_name] ~= 0)
+			elseif type(a[column_name]) == 'string' then
+				return a[column_name] > b[column_name]
 			else
 				return a[column_name] < b[column_name]
 			end
@@ -45,6 +49,8 @@ local function sort_list(method, column_name, score_list)
         ['descending'] = function(a, b)
 			if column_name == 'completion_time' then
 				return (a[column_name] > b[column_name])
+			elseif type(a[column_name]) == 'string' then
+				return a[column_name] < b[column_name]
 			else
 				return a[column_name] > b[column_name]
 			end
@@ -81,7 +87,7 @@ local function get_tables_of_scores_by_type(scores)
 		if score.leagues_travelled and score.leagues_travelled > 0 then
 			leagues_travelled[#leagues_travelled + 1] = score.leagues_travelled
 		end
-		if score.difficulty and score.difficulty >= 1.5 then
+		if score.difficulty and score.difficulty > 1 then
 			if score.completion_time and score.completion_time > 0 then
 				completion_times_hard[#completion_times_hard + 1] = score.completion_time
 			end
@@ -89,7 +95,7 @@ local function get_tables_of_scores_by_type(scores)
 				leagues_travelled_hard[#leagues_travelled_hard + 1] = score.leagues_travelled
 			end
 		end
-		if score.difficulty and score.difficulty >= 3 then
+		if score.difficulty and score.difficulty > 2 then
 			if score.completion_time and score.completion_time > 0 then
 				completion_times_nightmare[#completion_times_nightmare + 1] = score.completion_time
 			end
@@ -194,14 +200,14 @@ local function saved_scores_trim(scores)
 
 		if cutoffs.completion_times_cutoff and score.completion_time and score.completion_time < cutoffs.completion_times_cutoff then include = true
 		elseif cutoffs.completion_times_mediump_latestv_cutoff and score.completion_time and score.completion_time < cutoffs.completion_times_mediump_latestv_cutoff and score.version == cutoffs.latest_version and score.difficulty >= 1 then include = true
-		elseif cutoffs.completion_times_hard_cutoff and score.completion_time and score.completion_time < cutoffs.completion_times_hard_cutoff and score.difficulty >= 1.5 then include = true
-		elseif cutoffs.completion_times_nightmare_cutoff and score.completion_time and score.completion_time < cutoffs.completion_times_nightmare_cutoff and score.difficulty >=3 then include = true
+		elseif cutoffs.completion_times_hard_cutoff and score.completion_time and score.completion_time < cutoffs.completion_times_hard_cutoff and score.difficulty > 1 then include = true
+		elseif cutoffs.completion_times_nightmare_cutoff and score.completion_time and score.completion_time < cutoffs.completion_times_nightmare_cutoff and score.difficulty > 2 then include = true
 		elseif cutoffs.completion_times_latestv_cutoff and score.completion_time and score.completion_time < cutoffs.completion_times_latestv_cutoff and score.version == cutoffs.latest_version then include = true
 
 		elseif cutoffs.leagues_travelled_cutoff and score.leagues_travelled and score.leagues_travelled > cutoffs.leagues_travelled_cutoff then include = true
 		elseif cutoffs.leagues_travelled_mediump_latestv_cutoff and score.leagues_travelled and score.leagues_travelled > cutoffs.leagues_travelled_mediump_latestv_cutoff and score.version == cutoffs.latest_version and score.difficulty >= 1 then include = true
-		elseif cutoffs.leagues_travelled_hard_cutoff and score.leagues_travelled and score.leagues_travelled > cutoffs.leagues_travelled_hard_cutoff and score.difficulty >= 1.5 then include = true
-		elseif cutoffs.leagues_travelled_nightmare_cutoff and score.leagues_travelled and score.leagues_travelled > cutoffs.leagues_travelled_nightmare_cutoff and score.difficulty >= 3 then include = true
+		elseif cutoffs.leagues_travelled_hard_cutoff and score.leagues_travelled and score.leagues_travelled > cutoffs.leagues_travelled_hard_cutoff and score.difficulty > 1 then include = true
+		elseif cutoffs.leagues_travelled_nightmare_cutoff and score.leagues_travelled and score.leagues_travelled > cutoffs.leagues_travelled_nightmare_cutoff and score.difficulty > 2 then include = true
 		elseif cutoffs.leagues_travelled_latestv_cutoff and score.leagues_travelled and score.leagues_travelled > cutoffs.leagues_travelled_latestv_cutoff and score.version == cutoffs.latest_version then include = true
 		end
 
@@ -398,7 +404,7 @@ local function score_gui(data)
     -- Score headers
     local headers = {
         {name = '_name', caption = 'Crew'},
-        {name = '_captain_name', caption = 'Captain'},
+        {column = 'captain_name', name = '_captain_name', caption = 'Captain'},
         {column = 'completion_time', name = '_completion_time', caption = 'Completion'},
         {column = 'leagues_travelled', name = '_leagues_travelled', caption = 'Leagues'},
         {column = 'version', name = '_version', caption = 'Version'},
@@ -510,22 +516,18 @@ end
 local score_gui_token = Token.register(score_gui)
 
 local function on_gui_click(event)
-    if not event then
-        return
-    end
-    if not event.element then
-        return
-    end
-    if not event.element.valid then
+    local element = event.element
+    if not element or not element.valid then
         return
     end
 
-    local player = game.players[event.element.player_index]
-    local frame = Tabs.get_player_active_frame(player)
+    local player = game.get_player(element.player_index)
+
+    local frame = Gui.get_player_active_frame(player)
     if not frame then
         return
     end
-    if frame.name ~= module_name then
+    if frame.name ~= 'Highscore' then
         return
     end
 
@@ -538,6 +540,7 @@ local function on_gui_click(event)
 
     -- Handles click on a score header
     local element_to_column = {
+        ['_captain_name'] = 'captain_name',
         ['_version'] = 'version',
         ['_completion_time'] = 'completion_time',
         ['_leagues_travelled'] = 'leagues_travelled',
@@ -577,7 +580,7 @@ end
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
     if player.index and this.sort_by and (not this.sort_by[player.index]) then
-        this.sort_by[player.index] = {{method = 'ascending', column = 'completion_time'}, {method = 'descending', column = 'leagues_travelled'}, {method = 'descending', column = 'version'}, {method = 'descending', column = 'difficulty'}}
+        this.sort_by[player.index] = {{method = 'ascending', column = 'completion_time'}, {method = 'descending', column = 'leagues_travelled'}, {method = 'descending', column = 'version'}, {method = 'descending', column = 'difficulty'}, {method = 'ascending', column = 'captain_name'}}
     end
 end
 
@@ -607,8 +610,15 @@ Server.on_data_set_changed(
     end
 )
 
+Gui.add_tab_to_gui({name = module_name, caption = 'Highscore', id = score_gui_token, admin = false, only_server_sided = true})
 
-Tabs.add_tab_to_gui({name = module_name, id = score_gui_token, admin = false, only_server_sided = false})
+Gui.on_click(
+    module_name,
+    function(event)
+        local player = event.player
+        Gui.reload_active_tab(player)
+    end
+)
 
 Event.on_init(on_init)
 Event.add(defines.events.on_player_left_game, on_player_left_game)

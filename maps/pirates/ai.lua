@@ -67,7 +67,6 @@ function Public.Tick_actions(tickinterval)
         [6] = Public.poke_script_groups,
         [16] = Public.try_main_attack,
         [20] = Public.poke_script_groups,
-        -- [18] = Public.try_secondary_attack, --commenting out: less attacks per minute, but stronger. @TODO need to do more here
         [24] = Public.tell_biters_near_silo_to_attack_it,
         [28] = Public.eat_up_fraction_of_all_pollution_wrapped,
         [30] = Public.try_secondary_attack,
@@ -128,8 +127,8 @@ function Public.try_main_attack()
 	local wave_size_multiplier = 1
 	local memory = Memory.get_crew_memory()
 	if memory.overworldx > 0 then
-		if Math.random(2) == 1 then
-			-- log('attack aborted by chance')
+		if Math.random(10) >= 5 then
+			log('attack aborted by chance')
 			return nil
 		end --variance in attack sizes
 		if Math.random(10) == 1 then wave_size_multiplier = 1.7 end --variance in attack sizes
@@ -152,8 +151,9 @@ function Public.try_secondary_attack()
 	local wave_size_multiplier = 1
 	local memory = Memory.get_crew_memory()
 	if memory.overworldx > 0 then
-		if Math.random(2) == 1 then
+		if Math.random(10) >= 5 then
 			log('attack aborted by chance')
+			return nil
 		end --variance in attack sizes
 		if Math.random(10) == 1 then wave_size_multiplier = 1.7 end --variance in attack sizes
 		if Math.random(70) == 1 then wave_size_multiplier = 3.2 end --variance in attack sizes
@@ -185,8 +185,9 @@ function Public.try_rogue_attack()
 	local wave_size_multiplier = 1
 	local memory = Memory.get_crew_memory()
 	if memory.overworldx > 0 then
-		if Math.random(2) == 1 then
+		if Math.random(10) >= 5 then
 			log('attack aborted by chance')
+			return nil
 		end --variance in attack sizes
 		if Math.random(10) == 1 then wave_size_multiplier = 1.7 end --variance in attack sizes
 		if Math.random(70) == 1 then wave_size_multiplier = 3.2 end --variance in attack sizes

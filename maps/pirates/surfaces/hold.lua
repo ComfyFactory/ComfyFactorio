@@ -149,6 +149,13 @@ function Public.create_hold_surface(nth)
 		end
 	end
 
+	Common.build_small_loco(surface, Public.Data.loco_offset, memory.force, {255, 106, 52})
+
+	-- We place obstacle boxes before the other static boxes, so that they are potentially one tile closer to the edge than they would be otherwise:
+	local items = subtype == enum.INITIAL and Balance.starting_items_crew_downstairs() or {}
+	Common.surface_place_random_obstacle_boxes(Public.get_hold_surface(nth), {x=0,y=0}, Public.Data.width, Public.Data.height, 'rocket-silo', {[1] = 0, [2] = 5, [3] = 5, [4] = 2}, items)
+	-- Public.hold_place_random_obstacle_boxes(nth, {[1] = 0, [2] = 9, [3] = 3, [4] = 1}, items)
+
 	local boxes = Common.build_from_blueprint(Public.Data.boxes_bp, surface, Public.Data.boxes_bp_offset, boat.force_name)
 	for _, e in pairs(boxes) do
 		if e and e.valid then
@@ -157,12 +164,6 @@ function Public.create_hold_surface(nth)
 			e.rotatable = false
 		end
 	end
-
-	Common.build_small_loco(surface, Public.Data.loco_offset, memory.force, {255, 106, 52})
-
-	local items = subtype == enum.INITIAL and Balance.starting_items_crew_downstairs() or {}
-	Common.surface_place_random_obstacle_boxes(Public.get_hold_surface(nth), {x=0,y=0}, Public.Data.width, Public.Data.height, 'rocket-silo', {[1] = 0, [2] = 5, [3] = 4, [4] = 2}, items)
-	-- Public.hold_place_random_obstacle_boxes(nth, {[1] = 0, [2] = 9, [3] = 3, [4] = 1}, items)
 
 	if not boat.downstairs_poles then boat.downstairs_poles = {} end
 	boat.downstairs_poles[nth] = {}

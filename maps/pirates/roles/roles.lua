@@ -553,9 +553,9 @@ function Public.add_player_to_permission_group(player, group_override)
         group.set_allows_action(defines.input_action.activate_paste, false)
         group.set_allows_action(defines.input_action.upgrade, false)
 
-		group.set_allows_action(defines.input_action.grab_blueprint_record, false)
 		if not CoreData.blueprint_library_allowed then
 			group.set_allows_action(defines.input_action.open_blueprint_library_gui, false)
+			group.set_allows_action(defines.input_action.grab_blueprint_record, false)
 		end
 		if not CoreData.blueprint_importing_allowed then
 			group.set_allows_action(defines.input_action.import_blueprint_string, false)
@@ -572,9 +572,9 @@ function Public.add_player_to_permission_group(player, group_override)
 			plebs_group.set_allows_action(defines.input_action.add_permission_group, false)
 			plebs_group.set_allows_action(defines.input_action.admin_action, false)
 
-			plebs_group.set_allows_action(defines.input_action.grab_blueprint_record, false)
 			if not CoreData.blueprint_library_allowed then
 				plebs_group.set_allows_action(defines.input_action.open_blueprint_library_gui, false)
+				plebs_group.set_allows_action(defines.input_action.grab_blueprint_record, false)
 			end
 			if not CoreData.blueprint_importing_allowed then
 				plebs_group.set_allows_action(defines.input_action.import_blueprint_string, false)

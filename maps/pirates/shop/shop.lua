@@ -58,12 +58,12 @@ function Public.event_on_market_item_purchased(event)
 
 	if offer_type == 'nothing' then
 		decay_type = 'one-off'
+	elseif simple_efficiency_trade_bool or special_purchase_bool then
+		decay_type = 'static'
 	elseif dock_bool and purchase_bool and (offer_giveitem_name) and (offer_giveitem_name == 'stone' or offer_giveitem_name == 'iron-ore' or offer_giveitem_name == 'copper-ore' or offer_giveitem_name == 'crude-oil-barrel') then
 		decay_type = 'fast_decay'
 	elseif dock_bool and purchase_bool and (offer_giveitem_name) then
 		decay_type = 'one-off'
-	elseif simple_efficiency_trade_bool or special_purchase_bool then
-		decay_type = 'static'
 	elseif island_bool and (not (offer_giveitem_name and offer_giveitem_name == 'rocket')) then
 		decay_type = 'one-off'
 	else
