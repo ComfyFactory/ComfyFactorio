@@ -46,8 +46,12 @@ function Public.quest_reward()
 		ret = {name = 'copper-plate', count = Math.ceil(2000 * multiplier), display_sprite = '[item=copper-plate]', display_amount = string.format('%.1fk', 2 * multiplier), chat_name = '[item=copper-plate]'}
 	elseif rng <= 0.7 then
 		ret = {name = 'solid-fuel', count = Math.ceil(450 * multiplier), display_sprite = '[item=solid-fuel]', display_amount = string.format('%.0f', Math.ceil(450 * multiplier)), chat_name = '[item=solid-fuel]'}
+	elseif rng <= 0.71 then
+		ret = {name = 'modular-armor', count = 1, display_sprite = '[item=modular-armor]', display_amount = '1', chat_name = '[item=modular-armor]'}
+	elseif rng <= 0.8 then
+		ret = {name = 'steel-plate', count = Math.ceil(380 * multiplier), display_sprite = '[item=steel-plate]', display_amount = string.format('%.0f', 380 * multiplier), chat_name = '[item=steel-plate]'}
 	elseif rng <= 0.9 then
-		ret = {name = 'coin', count = Math.ceil(6000 * (multiplier^(1/2))), display_sprite = '[item=coin]', display_amount = string.format('%.1fk', Math.ceil(6 * (multiplier^(1/2)))), chat_name = 'doubloons'}
+		ret = {name = 'raw-fish', count = Math.ceil(800 * (multiplier^(1/2))), display_sprite = '[item=raw-fish]', display_amount = string.format('%.1fk', Math.ceil(0.8 * (multiplier^(1/2)))), chat_name = '[item=raw-fish]'}
 	else
 		ret = {name = 'piercing-rounds-magazine', count = Math.ceil(250 * multiplier), display_sprite = '[item=piercing-rounds-magazine]', display_amount = string.format('%.0f', Math.ceil(250 * multiplier)), chat_name = '[item=piercing-rounds-magazine]'}
 	end

@@ -1,7 +1,7 @@
 
-local Memory = require 'maps.pirates.memory'
+-- local Memory = require 'maps.pirates.memory'
 -- local Roles = require 'maps.pirates.roles.roles'
-local CoreData = require 'maps.pirates.coredata'
+-- local CoreData = require 'maps.pirates.coredata'
 local Classes = require 'maps.pirates.roles.classes'
 -- local Crew = require 'maps.pirates.crew'
 -- local Boats = require 'maps.pirates.structures.boats.boats'
@@ -33,38 +33,38 @@ Public.market_barters = {
 	{price = {{'raw-fish', 50}}, offer = {type = 'give-item', item = 'copper-plate', count = 750}},
 	{price = {{'raw-fish', 50}}, offer = {type = 'give-item', item = 'steel-plate', count = 125}},
 
-	{price = {{'wood', 200}}, offer = {type = 'give-item', item = 'coin', count = 250}},
+	{price = {{'wood', 200}}, offer = {type = 'give-item', item = 'coin', count = 300}},
 	--TODO: add more complex trades
 }
 
 Public.market_permanent_offers = {
 	{price = {{'pistol', 1}}, offer = {type = 'give-item', item = 'coin', count = 450}},
-	{price = {{'coin', 2400}}, offer = {type = 'give-item', item = 'iron-ore', count = 800}},
-	{price = {{'coin', 2400}}, offer = {type = 'give-item', item = 'copper-ore', count = 800}},
-	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'crude-oil-barrel', count = 100}},
-	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'fast-loader', count = 1}},
-	{price = {{'coin', 5000}}, offer = {type = 'give-item', item = 'beacon', count = 2}},
-	{price = {{'coin', 2800}}, offer = {type = 'give-item', item = 'speed-module-2', count = 2}},
+	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'iron-ore', count = 800}},
+	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'copper-ore', count = 800}},
+	{price = {{'coin', 3500}}, offer = {type = 'give-item', item = 'crude-oil-barrel', count = 100}},
+	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'fast-loader', count = 1}},
+	{price = {{'coin', 6000}}, offer = {type = 'give-item', item = 'beacon', count = 2}},
+	{price = {{'coin', 3500}}, offer = {type = 'give-item', item = 'speed-module-2', count = 2}},
 }
 
 -- cheap but one-off
 Public.market_sales = {
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'coal', count = 900}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'piercing-rounds-magazine', count = 75}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'uranium-rounds-magazine', count = 30}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'piercing-shotgun-shell', count = 50}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'raw-fish', count = 300}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'laser-turret', count = 1}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'vehicle-machine-gun', count = 3}},
-	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'modular-armor', count = 1}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'distractor-capsule', count = 20}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'poison-capsule', count = 20}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'slowdown-capsule', count = 20}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'coin', count = 4000}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'roboport', count = 1}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'construction-robot', count = 10}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'logistic-chest-passive-provider', count = 2}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'logistic-robot', count = 2}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'coal', count = 900}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'piercing-rounds-magazine', count = 75}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'uranium-rounds-magazine', count = 30}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'piercing-shotgun-shell', count = 50}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'raw-fish', count = 300}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'laser-turret', count = 1}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'vehicle-machine-gun', count = 3}},
+	{price = {{'coin', 5000}}, offer = {type = 'give-item', item = 'modular-armor', count = 1}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'distractor-capsule', count = 20}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'poison-capsule', count = 20}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'slowdown-capsule', count = 20}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'coin', count = 5000}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'roboport', count = 1}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'construction-robot', count = 10}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'logistic-chest-passive-provider', count = 2}},
+	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'logistic-robot', count = 2}},
 }
 
 

@@ -41,7 +41,7 @@ Public.buried_treasure_loot_data_raw = {
 }
 
 Public.chest_loot_data_raw = {
-	{80, 0, 1, false, 'coin', 250, 400},
+	{80, 0, 1, false, 'coin', 250, 500},
 	{30, 0, 1, false, 'rail-signal', 25, 110},
 	{1, 0.2, 1, false, 'electric-engine-unit', 1, 2},
 	{3, 0, 1, false, 'small-lamp', 4, 16},

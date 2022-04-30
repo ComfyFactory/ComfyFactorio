@@ -46,10 +46,10 @@ Public.crowsnest_display_form = {
 
 -- WARNING: The dock market pulls from these values, but the Crowsnest caption pulls data from main_shop_data_1. So don't change one without the other
 Public.market_offer_form = {
-	[enum.EXTRA_HOLD] = {price = {{'coin', 5000}, {'coal', 500}}, offer = {type='nothing', effect_description='Purchase an extra hold.'}},
-	[enum.MORE_POWER] = {price = {{'coin', 10000}, {'coal', 2000}}, offer = {type='nothing', effect_description='Upgrade the ship\'s passive power generators.'}},
-	[enum.UNLOCK_MERCHANTS] = {price = {{'coin', 10000}, {'coal', 2000}}, offer = {type='nothing', effect_description='Unlock merchant ships on future islands.'}},
-	[enum.ROCKETS_FOR_SALE] = {price = {{'coin', 15000}, {'coal', 2000}}, offer = {type='nothing', effect_description='Unlock the sale of rockets at covered markets.'}},
+	[enum.EXTRA_HOLD] = {price = {{'coin', 6000}, {'coal', 500}}, offer = {type='nothing', effect_description='Purchase an extra hold.'}},
+	[enum.MORE_POWER] = {price = {{'coin', 12000}, {'coal', 2000}}, offer = {type='nothing', effect_description='Upgrade the ship\'s passive power generators.'}},
+	[enum.UNLOCK_MERCHANTS] = {price = {{'coin', 12000}, {'coal', 2000}}, offer = {type='nothing', effect_description='Unlock merchant ships on future islands.'}},
+	[enum.ROCKETS_FOR_SALE] = {price = {{'coin', 18000}, {'coal', 2000}}, offer = {type='nothing', effect_description='Unlock the sale of rockets at covered markets.'}},
 }
 
 function Public.execute_upgade(upgrade_type, player)

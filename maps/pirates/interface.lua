@@ -817,36 +817,40 @@ local function base_kill_rewards(event)
 
 	if entity_name == 'small-worm-turret' then
 		iron_amount = 5
-		coin_amount = 40
+		coin_amount = 50
 	elseif entity_name == 'medium-worm-turret' then
 		iron_amount = 20
-		coin_amount = 70
+		coin_amount = 80
 	elseif entity_name == 'biter-spawner' or entity_name == 'spitter-spawner' then
 		iron_amount = 30
-		coin_amount = 70
+		coin_amount = 80
 	elseif entity_name == 'big-worm-turret' then
 		iron_amount = 30
-		coin_amount = 100
+		coin_amount = 120
 	elseif entity_name == 'behemoth-worm-turret' then
 		iron_amount = 50
-		coin_amount = 200
+		coin_amount = 240
 	elseif memory.overworldx > 0 then
 		if entity_name == 'small-biter' then
-			coin_amount = 1
+			if Math.random(3) == 1 then
+				coin_amount = 1
+			end
 		elseif entity_name == 'small-spitter' then
-			coin_amount = 1
+			if Math.random(3) == 1 then
+				coin_amount = 1
+			end
 		elseif entity_name == 'medium-biter' then
-			coin_amount = 2
+			coin_amount = 1
 		elseif entity_name == 'medium-spitter' then
-			coin_amount = 2
+			coin_amount = 1
 		elseif entity_name == 'big-biter' then
-			coin_amount = 3
+			coin_amount = 2
 		elseif entity_name == 'big-spitter' then
-			coin_amount = 3
+			coin_amount = 2
 		elseif entity_name == 'behemoth-biter' then
-			coin_amount = 5
+			coin_amount = 4
 		elseif entity_name == 'behemoth-spitter' then
-			coin_amount = 5
+			coin_amount = 4
 		end
 	end
 
@@ -859,10 +863,10 @@ local function base_kill_rewards(event)
 		end
 
 		if revenge_target then
-			Common.give(event.cause.player, stack)
+			Common.give(revenge_target.player, stack, revenge_target.player.position, entity.surface, entity.position)
 		else
 			if event.cause.position then
-				Common.give(nil, stack, event.cause.position, entity.surface)
+				Common.give(nil, stack, event.cause.position, entity.surface, entity.position)
 			else
 				Common.give(nil, stack, entity.position, entity.surface)
 			end

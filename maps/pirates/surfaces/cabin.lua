@@ -97,7 +97,7 @@ Public.Data.surfacename_rendering_pos = {x = -0.5, y = -15}
 
 Public.cabin_shop_data = {
 	{
-		price = {{'coin', 1000}},
+		price = {{'electronic-circuit', 25}, {'coin', 1200}},
 		offer = {type='give-item', item = 'rail-signal', count = 100},
 	},
 	{

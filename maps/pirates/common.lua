@@ -248,11 +248,12 @@ end
 
 
 
-function Public.give(player, stacks, spill_position, spill_surface)
+function Public.give(player, stacks, spill_position, spill_surface, flying_text_position)
 	-- stack elements of form {name = '', count = '', color = {r = , g = , b = }}
 	-- to just spill on the ground, pass player and nill and give a position and surface directly
 	spill_position = spill_position or player.position
 	spill_surface = spill_surface or player.surface
+	flying_text_position = flying_text_position or spill_position
 
 	local text1 = ''
 	local text2 = ''
@@ -354,9 +355,9 @@ function Public.give(player, stacks, spill_position, spill_surface)
 		if #stacks2 > 1 then
 			text2 = '(' .. text2 .. ')'
 		end
-		Public.flying_text(spill_surface, spill_position, text1 .. ' [font=count-font]' .. text2 .. '[/font]')
+		Public.flying_text(spill_surface, flying_text_position, text1 .. ' [font=count-font]' .. text2 .. '[/font]')
 	else
-		Public.flying_text(spill_surface, spill_position, text1)
+		Public.flying_text(spill_surface, flying_text_position, text1)
 	end
 end
 

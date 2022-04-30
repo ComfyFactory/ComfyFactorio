@@ -127,7 +127,7 @@ end
 function Public.fuel_depletion_rate_sailing()
 	if (not Common.overworldx()) then return 0 end
 
-	return - 7.35 * (1 + 0.135 * (Common.overworldx()/40)^(100/100)) * Math.sloped(Common.difficulty(), 1/20) --shouldn't depend on difficulty much if at all, as available resources don't depend much on difficulty
+	return - 7.55 * (1 + 0.135 * (Common.overworldx()/40)^(100/100)) * Math.sloped(Common.difficulty(), 1/20) --shouldn't depend on difficulty much if at all, as available resources don't depend much on difficulty
 end
 
 function Public.silo_total_pollution()
@@ -287,7 +287,7 @@ end
 
 
 function Public.launch_fuel_reward()
-	return Math.ceil(1000 * (1 + 0.13 * (Common.overworldx()/40)^(9/10)))
+	return Math.ceil(1100 * (1 + 0.13 * (Common.overworldx()/40)^(9/10)))
 	-- return Math.ceil(1000 * (1 + 0.1 * (Common.overworldx()/40)^(8/10)) / Math.sloped(Common.difficulty(), 1/4))
 end
 
@@ -315,7 +315,7 @@ function Public.apply_crew_buffs_per_x(force)
 end
 
 function Public.class_cost()
-	return 9000
+	return 10000
 	-- return Math.ceil(10000 / (Public.crew_scale()*10/4)^(1/6))
 end
 

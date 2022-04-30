@@ -647,7 +647,7 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 					local player_index = player.index
 					if memory.classes_table and memory.classes_table[player_index] and memory.classes_table[player_index] == Classes.enum.MERCHANT then
 						Common.flying_text_small(player.surface, player.position, '[color=0.97,0.9,0.2]+[/color]')
-						Common.give_items_to_crew{{name = 'coin', count = 40 * vector.x}}
+						Common.give_items_to_crew{{name = 'coin', count = 50 * vector.x}}
 					end
 				end
 			end
