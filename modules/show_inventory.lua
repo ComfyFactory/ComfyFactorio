@@ -483,7 +483,7 @@ commands.add_command(
             if validate_player(target_player) then
                 open_inventory(player, target_player)
             else
-                player.print('Please type a name of a player who is connected.', Color.warning)
+                player.print('[Inventory] Please type a name of a player who is connected.', Color.warning)
             end
         else
             return

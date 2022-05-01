@@ -59,16 +59,9 @@ end
 
 local function chest_is_valid(chest)
    if this.dungeons_initial_level ~= nil then
-      if chest.position.x == -3.5 or chest.position.x == 4.5 then
-	  if chest.surface.index == this.dungeons_initial_level then
-	     if chest.position.y == 4.5 then
-		return true
-	     end
-	  else
-	     if chest.position.y == 4.5 or chest.position.y == -3.5 then
-		return true
-	     end
-	  end
+       -- transport chests always are valid targets
+       if chest.name == 'blue-chest' or chest.name == 'red-chest' then
+	   return true
        end
     end
     for _, e in pairs(
@@ -245,6 +238,9 @@ local function insert_to_furnace(player_inventory, chests, name, count, floaty_t
                     if valid_to_insert then
                         if chest_inventory.can_insert({name = name, count = amount}) then
                             local inserted_count = chest_inventory.insert({name = name, count = amount})
+                            if inserted_count < 0 then
+                                return
+                            end
                             player_inventory.remove({name = name, count = inserted_count})
                             prepare_floaty_text(floaty_text_list, chest.surface, chest.position, name, inserted_count)
                             count = count - inserted_count
@@ -264,6 +260,9 @@ local function insert_to_furnace(player_inventory, chests, name, count, floaty_t
                 else
                     if chest_inventory.can_insert({name = name, count = amount}) then
                         local inserted_count = chest_inventory.insert({name = name, count = amount})
+                        if inserted_count < 0 then
+                            return
+                        end
                         player_inventory.remove({name = name, count = inserted_count})
                         prepare_floaty_text(floaty_text_list, chest.surface, chest.position, name, inserted_count)
                         count = count - inserted_count
@@ -292,6 +291,9 @@ local function insert_to_furnace(player_inventory, chests, name, count, floaty_t
             local chest_inventory = chest.get_inventory(defines.inventory.chest)
             if chest_inventory and chest_inventory.can_insert({name = name, count = amount}) then
                 local inserted_count = chest_inventory.insert({name = name, count = amount})
+                if inserted_count < 0 then
+                    return
+                end
                 player_inventory.remove({name = name, count = inserted_count})
                 prepare_floaty_text(floaty_text_list, chest.surface, chest.position, name, inserted_count)
                 count = count - inserted_count
