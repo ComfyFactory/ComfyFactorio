@@ -865,7 +865,7 @@ local function base_kill_rewards(event)
 		if revenge_target then
 			Common.give(revenge_target.player, stack, revenge_target.player.position, entity.surface, entity.position)
 		else
-			if event.cause.position then
+			if event.cause and event.cause.valid and event.cause.position then
 				Common.give(nil, stack, event.cause.position, entity.surface, entity.position)
 			else
 				Common.give(nil, stack, entity.position, entity.surface)

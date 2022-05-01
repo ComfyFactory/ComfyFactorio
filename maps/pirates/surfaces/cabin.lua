@@ -97,7 +97,7 @@ Public.Data.surfacename_rendering_pos = {x = -0.5, y = -15}
 
 Public.cabin_shop_data = {
 	{
-		price = {{'electronic-circuit', 25}, {'coin', 1200}},
+		price = {{'electronic-circuit', 30}, {'coin', 800}},
 		offer = {type='give-item', item = 'rail-signal', count = 100},
 	},
 	{
@@ -105,7 +105,7 @@ Public.cabin_shop_data = {
 		offer = {type='give-item', item = 'artillery-shell', count = 8},
 	},
 	{
-		price = {{'stone-brick', 100}, {'coin', 1000}},
+		price = {{'stone-brick', 30}, {'coin', 800}},
 		offer = {type='give-item', item = 'uranium-238', count = 10},
 	},
 	{

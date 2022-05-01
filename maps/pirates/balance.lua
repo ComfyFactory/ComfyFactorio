@@ -28,7 +28,12 @@ Public.EEI_stages = { --multipliers
 
 
 function Public.scripted_biters_pollution_cost_multiplier()
-	return 1.3 --tuned
+	-- return 1.3 --tuned
+	-- return 1.33
+	-- return 1.45 --We started getting too strong biter attacks once we staggered the waves more
+	-- caught a bug with the wave multiplier! going back to 1.3
+
+	return 1.3 * (1 + 1.3 / ((1 + (Common.overworldx()/40))^(1.5+Common.difficulty()))) -- the factor in brackets makes the early-game easier; in particular the first island, but on easier difficulties the next few islands as well
 end
 
 function Public.cost_to_leave_multiplier()
@@ -116,7 +121,7 @@ function Public.fuel_depletion_rate_static()
 
 	local rate
 	if Common.overworldx() > 0 then
-		rate = 550 * (0 + (Common.overworldx()/40)^(9/10)) * Public.crew_scale()^(1/7) * Math.sloped(Common.difficulty(), 65/100) / T --most of the crewsize dependence is through T, i.e. the coal cost per island stays the same... but the extra player dependency accounts for the fact that even in compressed time, more players seem to get more resources per island
+		rate = 575 * (0 + (Common.overworldx()/40)^(9/10)) * Public.crew_scale()^(1/7) * Math.sloped(Common.difficulty(), 65/100) / T --most of the crewsize dependence is through T, i.e. the coal cost per island stays the same... but the extra player dependency accounts for the fact that even in compressed time, more players seem to get more resources per island
 	else
 		rate = 0
 	end
@@ -127,7 +132,7 @@ end
 function Public.fuel_depletion_rate_sailing()
 	if (not Common.overworldx()) then return 0 end
 
-	return - 7.55 * (1 + 0.135 * (Common.overworldx()/40)^(100/100)) * Math.sloped(Common.difficulty(), 1/20) --shouldn't depend on difficulty much if at all, as available resources don't depend much on difficulty
+	return - 7.65 * (1 + 0.135 * (Common.overworldx()/40)^(100/100)) * Math.sloped(Common.difficulty(), 1/20) --shouldn't depend on difficulty much if at all, as available resources don't depend much on difficulty
 end
 
 function Public.silo_total_pollution()
@@ -287,7 +292,7 @@ end
 
 
 function Public.launch_fuel_reward()
-	return Math.ceil(1100 * (1 + 0.13 * (Common.overworldx()/40)^(9/10)))
+	return Math.ceil(1250 * (1 + 0.13 * (Common.overworldx()/40)^(9/10)))
 	-- return Math.ceil(1000 * (1 + 0.1 * (Common.overworldx()/40)^(8/10)) / Math.sloped(Common.difficulty(), 1/4))
 end
 
@@ -315,7 +320,7 @@ function Public.apply_crew_buffs_per_x(force)
 end
 
 function Public.class_cost()
-	return 10000
+	return 9000
 	-- return Math.ceil(10000 / (Public.crew_scale()*10/4)^(1/6))
 end
 
@@ -519,7 +524,7 @@ Public.covered1_entry_price_data_raw = { --watch out that the raw_materials ches
 	{1, 0.1, 1, false, {
 		price = {name = 'assembling-machine-1', count = 80},
 		raw_materials = {{name = 'iron-plate', count = 1760}, {name = 'copper-plate', count = 360}}}, {}},
-	{1, 0, 0.15, false, {
+	{0.25, 0, 0.15, false, {
 		price = {name = 'burner-mining-drill', count = 150},
 		raw_materials = {{name = 'iron-plate', count = 1350}}}, {}},
 	{0.75, 0, 0.6, false, {
@@ -531,7 +536,7 @@ Public.covered1_entry_price_data_raw = { --watch out that the raw_materials ches
 	{1, 0, 1, false, {
 		price = {name = 'firearm-magazine', count = 700},
 		raw_materials = {{name = 'iron-plate', count = 2800}}}, {}},
-	{1, 0, 1, false, {
+	{0.6, 0, 1, false, {
 		price = {name = 'constant-combinator', count = 276},
 		raw_materials = {{name = 'iron-plate', count = 552}, {name = 'copper-plate', count = 1518}}}, {}},
 

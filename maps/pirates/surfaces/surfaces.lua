@@ -200,7 +200,7 @@ function Public.destination_on_collide(destination)
 						-- scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_bonus_evolution = 0.52}
 					end
 				end
-			elseif memory.overworldx == 200 or _DEBUG then
+			elseif memory.overworldx == 200 then
 				local times
 				if playercount <= 2 then
 					times = {1, 5, 10, 15, 20}
