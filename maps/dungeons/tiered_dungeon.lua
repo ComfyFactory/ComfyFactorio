@@ -12,8 +12,16 @@ local BiterRaffle = require 'functions.biter_raffle'
 local Functions = require 'maps.dungeons.functions'
 local Get_noise = require 'utils.get_noise'
 local Alert = require 'utils.alert'
+local Research = require 'maps.dungeons.research'
 local DungeonsTable = require 'maps.dungeons.table'
+local BottomFrame = require 'utils.gui.bottom_frame'
+local Autostash = require 'modules.autostash'
+local Panel = require 'utils.gui.config'
+Panel.get('gui_config').spaghett.noop = true
+local Collapse = require 'modules.collapse'
+local Changelog = require 'modules.changelog'
 require 'maps.dungeons.boss_arena'
+require 'modules.melee_mode'
 
 local Biomes = {}
 Biomes.dirtlands = require 'maps.dungeons.biome_dirtlands'
@@ -46,6 +54,18 @@ local disabled_for_deconstruction = {
     ['crash-site-spaceship-wreck-small-6'] = true
 }
 
+local function enable_hard_rooms(position, surface_index)
+    local dungeon_table = DungeonsTable.get_dungeontable()
+    local floor = surface_index - dungeon_table.original_surface_index
+    -- can make it out to ~200 before hitting the "must explore more" limit
+    -- 140 puts hard rooms halfway between the only dirtlands and the edge
+    local floor_mindist = 140 - floor * 10
+    if floor_mindist < 80 then -- all dirtlands within this
+       return true
+    end
+    return position.x ^ 2 + position.y ^ 2 > floor_mindist^2
+end
+
 local function get_biome(position, surface_index)
     --if not a then return "concrete" end
     if position.x ^ 2 + position.y ^ 2 < 6400 then
@@ -59,17 +79,21 @@ local function get_biome(position, surface_index)
     if Get_noise('dungeons', position, seed + seed_addition * a) > 0.66 then
         return 'glitch'
     end
-    a = a + 1
-    if Get_noise('dungeons', position, seed + seed_addition * a) > 0.60 then
-        return 'doom'
-    end
-    a = a + 1
-    if Get_noise('dungeons', position, seed + seed_addition * a) > 0.62 then
-        return 'acid_zone'
-    end
-    a = a + 1
-    if Get_noise('dungeons', position, seed + seed_addition * a) > 0.60 then
-        return 'concrete'
+    if enable_hard_rooms(position, surface_index) then
+       a = a + 1
+       if Get_noise('dungeons', position, seed + seed_addition * a) > 0.60 then
+	  return 'doom'
+       end
+       a = a + 1
+       if Get_noise('dungeons', position, seed + seed_addition * a) > 0.62 then
+	  return 'acid_zone'
+       end
+       a = a + 1
+       if Get_noise('dungeons', position, seed + seed_addition * a) > 0.60 then
+	  return 'concrete'
+       end
+    else
+       a = a + 3
     end
     a = a + 1
     if Get_noise('dungeons', position, seed + seed_addition * a) > 0.71 then
@@ -95,34 +119,6 @@ local function get_biome(position, surface_index)
     return 'dirtlands'
 end
 
-local locked_researches = {
-    [0] = 'steel-axe',
-    [1] = 'heavy-armor',
-    [2] = 'military-2',
-    [3] = 'physical-projectile-damage-2',
-    [4] = 'oil-processing',
-    [5] = 'stronger-explosives-2',
-    [6] = 'military-science-pack',
-    [7] = 'rocketry',
-    [8] = 'chemical-science-pack',
-    [9] = 'military-3',
-    [10] = 'flamethrower',
-    [11] = 'distractor',
-    [12] = 'laser',
-    [13] = 'laser-shooting-speed-3',
-    [14] = 'power-armor',
-    [15] = 'nuclear-power',
-    [16] = 'production-science-pack',
-    [17] = 'energy-weapons-damage-3',
-    [18] = 'utility-science-pack',
-    [19] = 'kovarex-enrichment-process',
-    [20] = 'power-armor-mk2',
-    [22] = 'fusion-reactor-equipment',
-    [24] = 'discharge-defense-equipment',
-    [30] = 'atomic-bomb',
-    [35] = 'spidertron'
-}
-
 local function draw_arrows_gui()
     for _, player in pairs(game.connected_players) do
         if not player.gui.top.dungeon_down then
@@ -134,20 +130,12 @@ local function draw_arrows_gui()
     end
 end
 
-local function get_surface_research(index)
-    local dungeontable = DungeonsTable.get_dungeontable()
-    return locked_researches[index - dungeontable.original_surface_index]
-end
-
 local function draw_depth_gui()
     local dungeontable = DungeonsTable.get_dungeontable()
     local forceshp = BiterHealthBooster.get('biter_health_boost_forces')
     for _, player in pairs(game.connected_players) do
         local surface = player.surface
-        local techs = 0
-        if get_surface_research(surface.index) and game.forces.player.technologies[get_surface_research(surface.index)].enabled == false then
-            techs = 1
-        end
+        local techs = Research.techs_remain(surface.index)
         local enemy_force = dungeontable.enemy_forces[surface.index]
         if player.gui.top.dungeon_depth then
             player.gui.top.dungeon_depth.destroy()
@@ -180,15 +168,6 @@ local function draw_depth_gui()
     end
 end
 
-local function unlock_researches(surface_index)
-    local dungeontable = DungeonsTable.get_dungeontable()
-    local tech = game.forces.player.technologies
-    if get_surface_research(surface_index) and tech[get_surface_research(surface_index)].enabled == false then
-        tech[get_surface_research(surface_index)].enabled = true
-        game.print({'dungeons_tiered.tech_unlock', '[technology=' .. get_surface_research(surface_index) .. ']', surface_index - dungeontable.original_surface_index})
-    end
-end
-
 local function expand(surface, position)
     local dungeontable = DungeonsTable.get_dungeontable()
     local forceshp = BiterHealthBooster.get('biter_health_boost_forces')
@@ -208,19 +187,18 @@ local function expand(surface, position)
     if not room then
         return
     end
-    if dungeontable.treasures[surface.index] < 5 and dungeontable.surface_size[surface.index] >= 225 and math.random(1, 50) == 1 then
+    local treasure_room_one_in = 30 + 10 * dungeontable.treasures[surface.index]
+    if dungeontable.surface_size[surface.index] >= 225 and math.random(1, treasure_room_one_in) == 1 and room.room_tiles[1] then
+	log('Found treasure room, change was 1 in ' .. treasure_room_one_in)
         Biomes['treasure'](surface, room)
         if room.room_tiles[1] then
             dungeontable.treasures[surface.index] = dungeontable.treasures[surface.index] + 1
             game.print({'dungeons_tiered.treasure_room', surface.index - dungeontable.original_surface_index}, {r = 0.88, g = 0.22, b = 0})
         end
-    elseif
-        dungeontable.surface_size[surface.index] >= 225 and math.random(1, 50) == 1 and get_surface_research(surface.index) and
-            game.forces.player.technologies[get_surface_research(surface.index)].enabled == false
-     then
+    elseif Research.room_is_lab(surface.index) then
         Biomes['laboratory'](surface, room)
         if room.room_tiles[1] then
-            unlock_researches(surface.index)
+            Research.unlock_research(surface.index)
         end
     elseif math_random(1, 256) == 1 then
         Biomes['market'](surface, room)
@@ -298,14 +276,20 @@ end
 local function init_player(player, surface)
     if surface == game.surfaces['dungeons_floor0'] then
         if player.character then
-            player.disassociate_character(player.character)
+	    player.disassociate_character(player.character)
             player.character.destroy()
         end
 
-        player.set_controller({type = defines.controllers.god})
-        player.create_character()
+	if not player.connected then
+	   log('BUG Player ' .. player.name .. ' is not connected; how did we get here?')
+	end
 
+        player.set_controller({type = defines.controllers.god})
         player.teleport(surface.find_non_colliding_position('character', {0, 0}, 50, 0.5), surface)
+        if not player.create_character() then
+	   log('BUG: create_character for ' .. player.name .. ' failed')
+	end
+
         player.insert({name = 'raw-fish', count = 8})
         player.set_quick_bar_slot(1, 'raw-fish')
         player.insert({name = 'pistol', count = 1})
@@ -424,7 +408,11 @@ local function on_player_joined_game(event)
     end
     local player = game.players[event.player_index]
     if player.online_time == 0 then
-        init_player(player, game.surfaces['dungeons_floor0'])
+       init_player(player, game.surfaces['dungeons_floor0'])
+    end
+    if player.character == nil and player.ticks_to_respawn == nil then
+       log('BUG: ' .. player.name .. ' is missing associated character and is not waiting to respawn')
+       init_player(player, game.surfaces['dungeons_floor0'])
     end
     draw_light(player)
 end
@@ -489,12 +477,12 @@ local function on_player_mined_entity(event)
     if not entity.valid then
         return
     end
-    local player = game.players[event.player_index]
     if entity.name == 'rock-big' then
         local size = dungeontable.surface_size[entity.surface.index]
         if size < math.abs(entity.position.y) or size < math.abs(entity.position.x) then
             entity.surface.create_entity({name = entity.name, position = entity.position})
             entity.destroy()
+	    local player = game.players[event.player_index]
             RPG.gain_xp(player, -10)
             Alert.alert_player_warning(player, 30, {'dungeons_tiered.too_small'}, {r = 0.98, g = 0.22, b = 0})
             event.buffer.clear()
@@ -760,6 +748,9 @@ end
 -- end
 
 local function on_init()
+    -- dungeons depends on rpg.main depends on modules.explosives depends on modules.collapse
+    -- without disabling collapse, it starts logging lots of errors after ~1 week.
+    Collapse.start_now(false)
     local dungeontable = DungeonsTable.get_dungeontable()
     local forceshp = BiterHealthBooster.get('biter_health_boost_forces')
     local force = game.create_force('dungeon')
@@ -796,7 +787,6 @@ local function on_init()
     game.map_settings.enemy_expansion.settler_group_min_size = 16
     game.map_settings.enemy_expansion.max_expansion_distance = 16
     game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 0.50
-    game.difficulty_settings.technology_price_multiplier = 3
 
     dungeontable.tiered = true
     dungeontable.depth[surface.index] = 0
@@ -814,10 +804,13 @@ local function on_init()
     game.forces.player.technologies['land-mine'].enabled = false
     game.forces.player.technologies['landfill'].enabled = false
     game.forces.player.technologies['cliff-explosives'].enabled = false
-    --recipes to be unlocked through playing--
-    for _, tech in pairs(locked_researches) do
-        game.forces.player.technologies[tech].enabled = false
-    end
+    Research.Init(dungeontable)
+    Autostash.insert_into_furnace(true)
+    Autostash.insert_into_wagon(false)
+    Autostash.bottom_button(true)
+    Autostash.set_dungeons_initial_level(surface.index)
+    BottomFrame.reset()
+    BottomFrame.activate_custom_buttons(true)
     RPG.set_surface_name('dungeons_floor')
     local rpg_table = RPG.get('rpg_extra')
     rpg_table.personal_tax_rate = 0
@@ -873,3 +866,29 @@ Event.add(defines.events.on_surface_created, on_surface_created)
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_player_changed_surface, on_player_changed_surface)
 Event.add(defines.events.on_player_respawned, on_player_respawned)
+
+Changelog.SetVersions({
+	{ ver = '1.1', date = '2022-03-13', desc = [[
+* All research is now found at random.
+  * Red science floors 0-1
+  * Green on floors 1-5
+  * Gray on floors 5-10
+  * Blue on floors 8-13
+  * Blue/gray on floors 10-14
+  * Purple on floors 12-19
+  * Yellow on floors 14-21
+  * White on floors 20-25
+  * Atomic Bomb/Spidertron on floors 22-25
+* Add melee mode toggle to top bar. Keeps weapons in main inventory if possible.
+* Ore from rocks nerfed. Used to hit max value on floor 2, now scales up from
+  floors 0-19 along with ore from rooms. After floor 20 ore from rooms scales up faster.
+* Treasure rooms
+  * Rescaled to have similar total resources regardless of size
+  * Unlimited number of rooms but lower frequency
+  * Loot is limited to available loot 3 floors lower, but slightly more total value than before.
+* Autostash and corpse clearing from Mountain Fortress enabled
+* Harder rooms will occur somewhat farther out on the early floors.
+* Spawners and worm counts bounded in early rooms.
+]]},
+	{ ver = '1.0', date = 'past', desc = "Pre-changelog version of multi-floor dungeons" },
+})

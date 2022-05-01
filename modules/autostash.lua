@@ -58,6 +58,12 @@ local function prepare_floaty_text(list, surface, position, name, count)
 end
 
 local function chest_is_valid(chest)
+   if this.dungeons_initial_level ~= nil then
+       -- transport chests always are valid targets
+       if chest.name == 'blue-chest' or chest.name == 'red-chest' then
+	   return true
+       end
+    end
     for _, e in pairs(
         chest.surface.find_entities_filtered(
             {
@@ -685,6 +691,9 @@ function Public.bottom_button(value)
     end
 end
 
+function Public.set_dungeons_initial_level(value)
+   this.dungeons_initial_level = value
+end
 Event.on_configuration_changed(do_whitelist)
 
 Event.on_init(do_whitelist)
