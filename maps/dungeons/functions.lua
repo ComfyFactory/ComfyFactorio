@@ -358,6 +358,26 @@ function Public.create_scrap(surface, position)
     surface.create_entity({name = scraps[math_random(1, #scraps)], position = position, force = 'neutral'})
 end
 
+function Public.on_marked_for_deconstruction(event)
+    local disabled_for_deconstruction = {
+        ['fish'] = true,
+        ['rock-huge'] = true,
+        ['rock-big'] = true,
+        ['sand-rock-big'] = true,
+        ['crash-site-spaceship-wreck-small-1'] = true,
+        ['crash-site-spaceship-wreck-small-2'] = true,
+        ['crash-site-spaceship-wreck-small-3'] = true,
+        ['crash-site-spaceship-wreck-small-4'] = true,
+        ['crash-site-spaceship-wreck-small-5'] = true,
+        ['crash-site-spaceship-wreck-small-6'] = true
+    }
+    if event.entity and event.entity.valid then
+        if disabled_for_deconstruction[event.entity.name] then
+            event.entity.cancel_deconstruction(game.players[event.player_index].force.name)
+        end
+    end
+end
+
 -- old function 0 - 250 floor 0; 250-500 floor 1; 500 floor 2+
 -- new function 25 - 75 floor 0; 50-100 floor 1; 75-125 floor 2; ...; 500 floor 19
 --
