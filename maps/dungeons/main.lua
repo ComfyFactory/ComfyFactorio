@@ -30,19 +30,6 @@ local math_abs = math.abs
 local math_floor = math.floor
 local math_round = math.round
 
-local disabled_for_deconstruction = {
-    ['fish'] = true,
-    ['rock-huge'] = true,
-    ['rock-big'] = true,
-    ['sand-rock-big'] = true,
-    ['crash-site-spaceship-wreck-small-1'] = true,
-    ['crash-site-spaceship-wreck-small-2'] = true,
-    ['crash-site-spaceship-wreck-small-3'] = true,
-    ['crash-site-spaceship-wreck-small-4'] = true,
-    ['crash-site-spaceship-wreck-small-5'] = true,
-    ['crash-site-spaceship-wreck-small-6'] = true
-}
-
 local function get_biome(position)
     --if not a then return "concrete" end
     if position.x ^ 2 + position.y ^ 2 < 6400 then
@@ -359,12 +346,6 @@ local function on_entity_died(event)
     expand(entity.surface, entity.position)
 end
 
-local function on_marked_for_deconstruction(event)
-    if disabled_for_deconstruction[event.entity.name] then
-        event.entity.cancel_deconstruction(game.players[event.player_index].force.name)
-    end
-end
-
 local function on_init()
     local dungeontable = DungeonsTable.get_dungeontable()
     local force = game.create_force('dungeon')
@@ -445,7 +426,7 @@ end
 local Event = require 'utils.event'
 Event.on_init(on_init)
 --Event.add(defines.events.on_tick, on_tick)
-Event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
+Event.add(defines.events.on_marked_for_deconstruction, Functions.on_marked_for_deconstruction)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 Event.add(defines.events.on_chunk_generated, on_chunk_generated)
