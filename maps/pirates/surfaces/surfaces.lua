@@ -169,7 +169,7 @@ function Public.destination_on_collide(destination)
 			local playercount = Common.activecrewcount()
 			local max_evo
 
-			local difficulty_name = CoreData.get_difficulty_name_from_value(Common.difficulty())
+			local difficulty_name = CoreData.get_difficulty_name_from_value(Common.difficulty_scale())
 			if difficulty_name == CoreData.difficulty_options[1].text then
 				if memory.overworldx/40 < 20 then
 					max_evo = 0.9 - (20 - memory.overworldx/40) * 1/100

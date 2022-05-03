@@ -92,7 +92,7 @@ function Public.try_add_extra_time_at_sea(ticks)
 
 	if not memory.extra_time_at_sea then memory.extra_time_at_sea = 0 end
 
-	if memory.extra_time_at_sea > CoreData.max_extra_seconds_at_sea * 60 then return false end
+	if memory.extra_time_at_sea >= CoreData.max_extra_seconds_at_sea * 60 then return false end
 
 	-- if memory.boat and memory.boat.state and memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP then return false end
 

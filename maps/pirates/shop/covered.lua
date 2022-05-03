@@ -43,7 +43,7 @@ Public.offers_default = {
 	{price = {{'coin', 400}}, offer = {type = 'give-item', item = 'distractor-capsule', count = 3}},
 	{price = {{'coin', 500}}, offer = {type = 'give-item', item = 'slowdown-capsule', count = 5}},
 	{price = {{'coin', 500}}, offer = {type = 'give-item', item = 'poison-capsule', count = 5}},
-	{price = {{'coin', 500}}, offer = {type = 'give-item', item = 'gate', count = 10}},
+	{price = {{'coin', 600}}, offer = {type = 'give-item', item = 'gate', count = 10}},
 	{price = {{'coin', 100}}, offer = {type = 'give-item', item = 'storage-tank', count = 4}},
 	{price = {{'coin', 200}}, offer = {type = 'give-item', item = 'big-electric-pole', count = 8}},
 	{price = {{'coin', 200}}, offer = {type = 'give-item', item = 'steel-furnace', count = 4}},

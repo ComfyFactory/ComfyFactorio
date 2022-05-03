@@ -27,7 +27,7 @@ function Public.silo_setup_position(x_fractional_offset, x_absolute_offset)
 	local surface = game.surfaces[destination.surface_name]
 	local boatposition = memory.boat.position
 	local island_center = destination.static_params.islandcenter_position
-	local difficulty_offset = (1 - Common.difficulty()) * 20 or 0
+	local difficulty_offset = (1 - Common.difficulty_scale()) * 20 or 0
 
 	local silo_count = Balance.silo_count()
 

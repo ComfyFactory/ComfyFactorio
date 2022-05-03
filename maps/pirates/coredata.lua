@@ -5,8 +5,8 @@ local _inspect = require 'utils.inspect'.inspect
 local Public = {}
 
 Public.scenario_id_name = 'pirates'
-Public.version_string = '1.1.2.0.3'
-Public.version_float = 1.1203
+Public.version_string = '1.1.2.0.5'
+Public.version_float = 1.1205
 
 Public.blueprint_library_allowed = true
 Public.blueprint_importing_allowed = true
@@ -111,10 +111,10 @@ Public.difficulty_options = {
 	-- The difficulty values we currently offer
 
 	--For the value of Easy difficulty, we are pulled in two directions: We wish to make the game comfy to play for those who haven't played it, but we also wish to represent the game mechanics faithfully so that Normal is not a crazy distance away.
-	{value = 0.55, icon = 'item/firearm-magazine', text = 'Easy', associated_color = {r = 50, g = 255, b = 50}},
-	{value = 0.9, icon = 'item/piercing-rounds-magazine', text = 'Normal', associated_color = {r = 255, g = 255, b = 50}},
-	{value = 1.5, icon = 'item/uranium-rounds-magazine', text = 'Hard', associated_color = {r = 255, g = 50, b = 50}},
-	{value = 3, icon = 'item/atomic-bomb', text = 'Nightmare', associated_color = {r = 120, g = 35, b = 35}},
+	{value = 0.6, icon = 'item/firearm-magazine', text = 'Easy', associated_color = {r = 50, g = 255, b = 50}},
+	{value = 1.0, icon = 'item/piercing-rounds-magazine', text = 'Normal', associated_color = {r = 255, g = 255, b = 50}},
+	{value = 1.4, icon = 'item/uranium-rounds-magazine', text = 'Hard', associated_color = {r = 255, g = 50, b = 50}},
+	{value = 2.8, icon = 'item/atomic-bomb', text = 'Nightmare', associated_color = {r = 120, g = 35, b = 35}},
 }
 function Public.get_difficulty_name_from_value(difficulty_value)
 	-- Functions will reference this when given a difficulty value and want to present a difficulty name to the player; just make it consistent with the above
@@ -190,7 +190,7 @@ Public.biterPollutionValues = {
 --     ['small-spitter'] = 4
 -- }
 
-Public.max_extra_seconds_at_sea = 8 * 60
+Public.max_extra_seconds_at_sea = 7 * 60
 
 Public.loco_bp_1 = [[0eNqV0ttqwzAMBuB30bVTVufsVxljpKloBYkcbLdrCH73Oi6UMrxDLm3zf7KEFjgMF5wMsQO1APWaLaj3BSyduBvWOzdPCArI4QgCuBvX06B7PWpHVwQvgPiIN1B7L/4Mmo6Gl4j0HwKQHTnCR+F4mD/5Mh7QBDNVUsCkbYhoXusEJmsFzKCqAGtDgegej2/rj76J8il+aX1EzvozWpcwm10ZVbkrfcLJ/+u0vzvF07EuTOd0dlkc0k9NJpFyI1KnkGrrZJp0R/XWyUQnLEJcFfWykgKuaGxMyGZf1K2sC5nnTVl5fwdTR+VL]]
 

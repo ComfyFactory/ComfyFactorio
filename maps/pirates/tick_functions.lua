@@ -1180,7 +1180,7 @@ function Public.silo_update(tickinterval)
 						memory.floating_pollution = memory.floating_pollution + pollution/2
 						game.surfaces[destination.surface_name].pollute(p, pollution/2)
 
-						if memory.overworldx >= 160 and dynamic_data.rocketsiloenergyconsumed >= 0.25 * dynamic_data.rocketsiloenergyneeded and (not dynamic_data.parrot_silo_warned) then
+						if memory.overworldx >= 80 and dynamic_data.rocketsiloenergyconsumed >= 0.25 * dynamic_data.rocketsiloenergyneeded and (not dynamic_data.parrot_silo_warned) then
 							dynamic_data.parrot_silo_warned = true
 							Common.parrot_speak(memory.force, 'The silo is attracting biters...')
 						elseif dynamic_data.rocketsiloenergyconsumed >= dynamic_data.rocketsiloenergyneeded and (not (silo.rocket_parts == 100)) and (dynamic_data.silocharged == false) and (not memory.game_lost) then

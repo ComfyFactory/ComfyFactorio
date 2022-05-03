@@ -210,7 +210,7 @@ function Public.wooden_chest_loot()
 	local num = 1
 
 	return Public.chest_loot(num,
-	Math.max(0,Math.min(1, Math.sloped(Common.difficulty(),1/2) * Common.game_completion_progress())) --enforce 0 to 1
+	Math.max(0,Math.min(1, Math.sloped(Common.difficulty_scale(),1/2) * Common.game_completion_progress())) --enforce 0 to 1
 )
 end
 
@@ -218,7 +218,7 @@ function Public.iron_chest_loot()
 	local num = 2
 
 	local loot = Public.chest_loot(num,
-	Math.max(0,Math.min(1, Math.sloped(Common.difficulty(),1/2) * (5/100 + Common.game_completion_progress()))) --enforce 0 to 1
+	Math.max(0,Math.min(1, Math.sloped(Common.difficulty_scale(),1/2) * (5/100 + Common.game_completion_progress()))) --enforce 0 to 1
 ) --reward higher difficulties with better loot
 	loot[#loot + 1] = {name = 'coin', count = Math.random(1,1500)}
 
@@ -229,7 +229,7 @@ function Public.covered_wooden_chest_loot()
 	local num = 2
 
 	local loot = Public.chest_loot(num,
-	Math.max(0,Math.min(1, Math.sloped(Common.difficulty(),1/2) * (10/100 + Common.game_completion_progress()))) --enforce 0 to 1
+	Math.max(0,Math.min(1, Math.sloped(Common.difficulty_scale(),1/2) * (10/100 + Common.game_completion_progress()))) --enforce 0 to 1
 ) --reward higher difficulties with better loot
 
     return loot
@@ -296,7 +296,7 @@ function Public.chest_loot(number_of_items, game_completion_progress)
 end
 
 function Public.buried_treasure_loot()
-	local ret = Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.buried_treasure_loot_data_raw), 1, Math.sloped(Common.difficulty(),1/2) * Common.game_completion_progress_capped())
+	local ret = Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.buried_treasure_loot_data_raw), 1, Math.sloped(Common.difficulty_scale(),1/2) * Common.game_completion_progress_capped())
 
 	if ret and ret[1] then return ret[1] end
 end
@@ -305,7 +305,7 @@ function Public.maze_camp_loot()
 	if Math.random(10) <= 7 then
 		return {Public.random_plates()}
 	else
-		return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.chest_loot_data_raw), 1, Math.max(0,Math.min(1, Math.sloped(Common.difficulty(),1/2) * (15/100 + Common.game_completion_progress()))))
+		return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.chest_loot_data_raw), 1, Math.max(0,Math.min(1, Math.sloped(Common.difficulty_scale(),1/2) * (15/100 + Common.game_completion_progress()))))
 	end
 end
 
@@ -321,7 +321,7 @@ Public.maze_lab_loot_data_raw = {
 }
 
 function Public.maze_lab_loot()
-	return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.maze_lab_loot_data_raw), 1, Math.max(0,Math.min(1, Math.sloped(Common.difficulty(),1/2) * (Common.game_completion_progress()))))
+	return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.maze_lab_loot_data_raw), 1, Math.max(0,Math.min(1, Math.sloped(Common.difficulty_scale(),1/2) * (Common.game_completion_progress()))))
 end
 
 Public.maze_treasure_data_raw = {
@@ -391,7 +391,7 @@ function Public.maze_treasure_loot()
 	if Math.random(5) == 1 then
 		return {Public.random_plates(8)}
 	else
-		return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.maze_treasure_data_raw), 1, Math.max(0,Math.min(1, Math.sloped(Common.difficulty(),1/2) * (Common.game_completion_progress()))))
+		return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.maze_treasure_data_raw), 1, Math.max(0,Math.min(1, Math.sloped(Common.difficulty_scale(),1/2) * (Common.game_completion_progress()))))
 	end
 end
 

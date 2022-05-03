@@ -63,18 +63,17 @@ function Public.Tick_actions(tickinterval)
 
     local minute_cycle = {-- even seconds only
         [2] = Public.eat_up_fraction_of_all_pollution_wrapped,
-        [4] = Public.try_rogue_attack,
-        [6] = Public.poke_script_groups,
-        [16] = Public.try_main_attack,
-        [20] = Public.poke_script_groups,
+        [4] = Public.poke_script_groups,
+        [6] = Public.try_rogue_attack,
+        [14] = Public.poke_script_groups,
+        [21] = Public.try_main_attack,
         [24] = Public.tell_biters_near_silo_to_attack_it,
-        [28] = Public.eat_up_fraction_of_all_pollution_wrapped,
-        [30] = Public.try_secondary_attack,
-        [36] = Public.poke_script_groups,
-        [46] = Public.poke_script_groups,
-        [50] = Public.tell_biters_near_silo_to_attack_it,
-        [52] = Public.create_mail_delivery_biters,
-        [56] = Public.poke_script_groups,
+        [34] = Public.poke_script_groups,
+        [36] = Public.try_secondary_attack,
+        [44] = Public.poke_script_groups,
+        [48] = Public.eat_up_fraction_of_all_pollution_wrapped,
+        [54] = Public.poke_script_groups,
+        [56] = Public.create_mail_delivery_biters,
         [58] = Public.poke_inactive_scripted_biters,
     }
 
@@ -150,7 +149,7 @@ function Public.try_main_attack()
 	local wave_size_multiplier = Public.wave_size_rng()
 
 	if wave_size_multiplier == 0 then
-		-- log('attack aborted by chance')
+		log('attack aborted by chance')
 		return nil
 	else
 		local group = Public.spawn_group_of_scripted_biters(2/3, 6, 180, wave_size_multiplier)
@@ -169,7 +168,7 @@ function Public.try_secondary_attack()
 	local wave_size_multiplier = Public.wave_size_rng()
 
 	if wave_size_multiplier == 0 then
-		-- log('attack aborted by chance')
+		log('attack aborted by chance')
 		return nil
 	else
 		local surface = game.surfaces[Common.current_destination().surface_name]
@@ -197,7 +196,7 @@ function Public.try_rogue_attack()
 	local wave_size_multiplier = Public.wave_size_rng()
 
 	if wave_size_multiplier == 0 then
-		-- log('attack aborted by chance')
+		log('attack aborted by chance')
 		return nil
 	else
 		local surface = game.surfaces[Common.current_destination().surface_name]

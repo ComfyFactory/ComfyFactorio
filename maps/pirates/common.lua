@@ -68,7 +68,14 @@ function Public.oil_abstract_to_real(amount)
 	return Math.ceil(amount*3000)
 end
 
-function Public.difficulty() return Memory.get_crew_memory().difficulty end
+function Public.difficulty_scale()
+	local memory = Memory.get_crew_memory()
+	if memory.overworldx > 0 then
+		return memory.difficulty
+	else
+		return 1
+	end
+end
 function Public.capacity() return Memory.get_crew_memory().capacity end
 -- function Public.mode() return Memory.get_crew_memory().mode end
 function Public.overworldx() return Memory.get_crew_memory().overworldx end

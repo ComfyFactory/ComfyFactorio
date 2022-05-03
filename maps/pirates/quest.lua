@@ -51,7 +51,7 @@ function Public.quest_reward()
 	elseif rng <= 0.8 then
 		ret = {name = 'steel-plate', count = Math.ceil(380 * multiplier), display_sprite = '[item=steel-plate]', display_amount = string.format('%.0f', 380 * multiplier), chat_name = '[item=steel-plate]'}
 	elseif rng <= 0.9 then
-		ret = {name = 'raw-fish', count = Math.ceil(800 * (multiplier^(1/2))), display_sprite = '[item=raw-fish]', display_amount = string.format('%.1fk', Math.ceil(0.8 * (multiplier^(1/2)))), chat_name = '[item=raw-fish]'}
+		ret = {name = 'raw-fish', count = Math.ceil(450 * (multiplier^(1/2))), display_sprite = '[item=raw-fish]', display_amount = string.format('%.1fk', Math.ceil(0.45 * (multiplier^(1/2)))), chat_name = '[item=raw-fish]'}
 	else
 		ret = {name = 'piercing-rounds-magazine', count = Math.ceil(250 * multiplier), display_sprite = '[item=piercing-rounds-magazine]', display_amount = string.format('%.0f', Math.ceil(250 * multiplier)), chat_name = '[item=piercing-rounds-magazine]'}
 	end
@@ -177,7 +177,7 @@ function Public.initialise_resourcecount_quest()
 		destination.dynamic_data.quest_params.initial_count = force.item_production_statistics.get_flow_count{name = generated_production_quest.item, input = true, precision_index = defines.flow_precision_index.one_thousand_hours, count = true}
 	end
 
-	local progressneeded_before_rounding = generated_production_quest.base_rate * Balance.resource_quest_multiplier() * Common.difficulty()
+	local progressneeded_before_rounding = generated_production_quest.base_rate * Balance.resource_quest_multiplier() * Common.difficulty_scale()
 
 	destination.dynamic_data.quest_progressneeded = Math.ceil(progressneeded_before_rounding/10)*10
 
@@ -204,10 +204,10 @@ function Public.initialise_worms_quest()
 		1 + 9 * Math.slopefromto(count, 0, 20) + 10 * Math.slopefromto(count, 20, 70)
 	)
 
-	if  Common.difficulty() < 1 then needed = Math.max(1, needed - 3) end
-	if  Common.difficulty() > 1 then needed = Math.max(1, needed + 2) end
+	if  Common.difficulty_scale() < 1 then needed = Math.max(1, needed - 3) end
+	if  Common.difficulty_scale() > 1 then needed = Math.max(1, needed + 2) end
 
-	local difficulty_name = CoreData.get_difficulty_name_from_value(Common.difficulty())
+	local difficulty_name = CoreData.get_difficulty_name_from_value(Common.difficulty_scale())
 	if difficulty_name == CoreData.difficulty_options[1].text then
 		needed = Math.max(1, needed - 3)
 	elseif difficulty_name ~= CoreData.difficulty_options[2].text then

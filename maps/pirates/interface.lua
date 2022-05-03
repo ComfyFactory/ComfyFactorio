@@ -836,21 +836,21 @@ local function base_kill_rewards(event)
 				coin_amount = 1
 			end
 		elseif entity_name == 'small-spitter' then
-			if Math.random(3) == 1 then
+			if Math.random(3) <= 2 then
 				coin_amount = 1
 			end
 		elseif entity_name == 'medium-biter' then
 			coin_amount = 1
 		elseif entity_name == 'medium-spitter' then
-			coin_amount = 1
+			coin_amount = 2
 		elseif entity_name == 'big-biter' then
 			coin_amount = 2
 		elseif entity_name == 'big-spitter' then
-			coin_amount = 2
+			coin_amount = 4
 		elseif entity_name == 'behemoth-biter' then
 			coin_amount = 4
 		elseif entity_name == 'behemoth-spitter' then
-			coin_amount = 4
+			coin_amount = 8
 		end
 	end
 
