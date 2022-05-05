@@ -705,6 +705,7 @@ end
 function Public.transfer_healthbar(old_unit_number, new_entity)
 	local memory = Memory.get_crew_memory()
 	local new_unit_number = new_entity.unit_number
+	if not memory.healthbars then return end
 	local old_healthbar = memory.healthbars[old_unit_number]
 
 	-- if new_surface_bool then

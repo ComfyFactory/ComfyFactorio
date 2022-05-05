@@ -726,7 +726,7 @@ local function process_entity_on_boat_unteleportable(memory, boat, newsurface, v
 
 	if ee and ee.valid then
 
-		if un and memory.healthbars[un] then
+		if un and memory.healthbars and memory.healthbars[un] then
 			Common.transfer_healthbar(un, ee)
 		end
 
@@ -1007,7 +1007,7 @@ local function teleport_handle_wake_tiles(boat, dummyboat, newsurface_name, olds
 			for _, area in pairs(wakeareas) do
 				for _, p in pairs(Common.central_positions_within_area(area, adjustednewposition)) do
 					local t = old_water_tile
-					if static_params and static_params.deepwater_xposition and (p.x <= static_params.deepwater_xposition) then t = 'deepwater' end
+					if static_params and static_params.deepwater_xposition and (p.x <= static_params.deepwater_xposition - 0.5) then t = 'deepwater' end
 					if friendlyboat_bool and boat.state == enum_state.RETREATING and vector.x < 0 then --in this case we need to place some landing tiles, as the cannon juts out
 						if (p.x >= boat.dockedposition.x + scope.Data.leftmost_gate_position) and (p.y <= scope.Data.upmost_gate_position or p.y >= scope.Data.downmost_gate_position) then t = CoreData.landing_tile end
 					end

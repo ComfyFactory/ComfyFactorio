@@ -643,6 +643,13 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 		Common.notify_force(memory.force, message, CoreData.colors.notify_victory)
 	end
 
+	if vector.x > 0 then
+		Public.ensure_lane_generated_up_to(0, memory.overworldx + Crowsnest.Data.visibilitywidth)
+		Public.ensure_lane_generated_up_to(24, memory.overworldx + Crowsnest.Data.visibilitywidth)
+		Public.ensure_lane_generated_up_to(-24, memory.overworldx + Crowsnest.Data.visibilitywidth)
+		Public.overwrite_a_dock_upgrade()
+	end
+
 	if not Public.is_position_free_to_move_to{x = memory.overworldx + vector.x, y = memory.overworldy+ vector.y} then
 		if _DEBUG then log(string.format('can\'t move by ' .. vector.x .. ', ' .. vector.y)) end
 		return false
@@ -651,11 +658,6 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 		Crowsnest.move_crowsnest(vector.x, vector.y)
 
 		if vector.x > 0 then
-
-			Public.ensure_lane_generated_up_to(0, memory.overworldx + Crowsnest.Data.visibilitywidth)
-			Public.ensure_lane_generated_up_to(24, memory.overworldx + Crowsnest.Data.visibilitywidth)
-			Public.ensure_lane_generated_up_to(-24, memory.overworldx + Crowsnest.Data.visibilitywidth)
-			Public.overwrite_a_dock_upgrade()
 
 			-- crew bonus resources per x:
 			local crew = Common.crew_get_crew_members()
