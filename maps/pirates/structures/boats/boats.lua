@@ -726,8 +726,8 @@ local function process_entity_on_boat_unteleportable(memory, boat, newsurface, v
 
 	if ee and ee.valid then
 
-		if un and memory.healthbars and memory.healthbars[un] then
-			Common.transfer_healthbar(un, ee)
+		if un and boat.healthbars and boat.healthbars[un] then
+			Common.transfer_healthbar(un, ee, boat) --for some reason I don't understand, if the old healthbars is contained within memory rather than boat, sometimes this function can't find them (observed during the initial ship launch)
 		end
 
 		if name == 'artillery-turret' then

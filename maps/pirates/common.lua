@@ -652,12 +652,11 @@ function Public.spend_stored_resources(to_spend)
 end
 
 
-function Public.new_healthbar(text, target_entity, max_health, optional_id, health, size)
+function Public.new_healthbar(text, target_entity, max_health, optional_id, health, size, location_override)
 	health = health or max_health
 	size = size or 0.5
 	text = text or false
-
-	local memory = Memory.get_crew_memory()
+	location_override = location_override or Memory.get_crew_memory()
 
 	local render1 = rendering.draw_sprite(
 		{
@@ -695,18 +694,19 @@ function Public.new_healthbar(text, target_entity, max_health, optional_id, heal
 		id = optional_id,
 	}
 
-	memory.healthbars[target_entity.unit_number] = new_healthbar
+	if not location_override.healthbars then location_override.healthbars = {} end
+	location_override.healthbars[target_entity.unit_number] = new_healthbar
 
 	Public.update_healthbar_rendering(new_healthbar, health)
 
 	return new_healthbar
 end
 
-function Public.transfer_healthbar(old_unit_number, new_entity)
-	local memory = Memory.get_crew_memory()
+function Public.transfer_healthbar(old_unit_number, new_entity, location_override)
+	location_override = location_override or Memory.get_crew_memory()
 	local new_unit_number = new_entity.unit_number
-	if not memory.healthbars then return end
-	local old_healthbar = memory.healthbars[old_unit_number]
+	if not location_override.healthbars then return end
+	local old_healthbar = location_override.healthbars[old_unit_number]
 
 	-- if new_surface_bool then
 	-- 	Public.new_healthbar(old_healthbar.render2, new_entity, old_healthbar.max_health, old_healthbar.id, old_healthbar.health, rendering.get_y_scale(old_healthbar.render1))
@@ -718,7 +718,7 @@ function Public.transfer_healthbar(old_unit_number, new_entity)
 	-- 	memory.healthbars[new_unit_number] = old_healthbar
 	-- end
 
-	Public.new_healthbar(old_healthbar.render2, new_entity, old_healthbar.max_health, old_healthbar.id, old_healthbar.health, old_healthbar.size)
+	Public.new_healthbar(old_healthbar.render2, new_entity, old_healthbar.max_health, old_healthbar.id, old_healthbar.health, old_healthbar.size, location_override)
 
 	if rendering.is_valid(old_healthbar.render1) then
 		rendering.destroy(old_healthbar.render1)
@@ -727,7 +727,7 @@ function Public.transfer_healthbar(old_unit_number, new_entity)
 		rendering.destroy(old_healthbar.render2)
 	end
 
-	memory.healthbars[old_unit_number] = nil
+	location_override.healthbars[old_unit_number] = nil
 end
 
 function Public.entity_damage_healthbar(entity, damage)

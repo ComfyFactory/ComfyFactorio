@@ -746,7 +746,7 @@ function Public.initialise_crew(accepted_proposal)
 	local boat = memory.boat
 
 	for _, e in pairs(memory.boat.cannons_temporary_reference or {}) do
-		Common.new_healthbar(true, e, 2000, nil, e.health, 0.5)
+		Common.new_healthbar(true, e, 2000, nil, e.health, 0.3, memory.boat)
 	end
 
 	boat.dockedposition = boat.position
