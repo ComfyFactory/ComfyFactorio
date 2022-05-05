@@ -745,6 +745,10 @@ function Public.initialise_crew(accepted_proposal)
 	memory.boat = global_memory.lobby_boats[new_id]
 	local boat = memory.boat
 
+	for _, e in pairs(memory.boat.cannons_temporary_reference or {}) do
+		Common.new_healthbar(true, e, 2000, nil, e.health, 0.5)
+	end
+
 	boat.dockedposition = boat.position
 	boat.speed = 0
 	boat.cannonscount = 2

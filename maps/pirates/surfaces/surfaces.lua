@@ -254,7 +254,7 @@ function Public.destination_on_arrival(destination)
 		if destination.subtype == Islands.enum.RADIOACTIVE then
 			destination.dynamic_data.time_remaining = -1
 		elseif destination.subtype == Islands.enum.MAZE then --more time
-			destination.dynamic_data.time_remaining = Math.ceil(1.08 * Balance.max_time_on_island())
+			destination.dynamic_data.time_remaining = Math.ceil(1.05 * Balance.max_time_on_island())
 		else
 			destination.dynamic_data.time_remaining = Math.ceil(Balance.max_time_on_island())
 		end
@@ -384,6 +384,8 @@ function Public.destination_on_crewboat_hits_shore(destination)
 
 	if destination.type == enum.ISLAND then
 
+		destination.dynamic_data.initial_spawner_count = Common.spawner_count(game.surfaces[destination.surface_name])
+
 		if memory.overworldx == 0 then
 			Parrot.parrot_0()
 		-- elseif memory.overworldx == 80 then
@@ -412,12 +414,6 @@ function Public.destination_on_crewboat_hits_shore(destination)
 			ShopMerchants.generate_merchant_trades(destination.dynamic_data.merchant_market)
 		end
 	end
-
-	if destination and destination.surface_name and game.surfaces[destination.surface_name] and game.surfaces[destination.surface_name].valid and (not (destination.dynamic_data and destination.dynamic_data.initial_spawner_count)) then
-		--Note: This gives the wrong answer on the first island. Because the terrain hasn't finished generating yet.
-		destination.dynamic_data.initial_spawner_count = Common.spawner_count(game.surfaces[destination.surface_name])
-	end
-
 end
 
 

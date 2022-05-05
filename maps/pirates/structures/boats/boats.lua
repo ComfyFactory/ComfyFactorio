@@ -312,7 +312,8 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 				if e and e.valid then
 					e.minable = false
 					if p.y > 0 then e.direction = defines.direction.south end
-					-- boat.cannons[#boat.cannons + 1] = e
+					if not boat.cannons_temporary_reference then boat.cannons_temporary_reference = {} end
+					boat.cannons_temporary_reference[#boat.cannons_temporary_reference + 1] = e
 				end
 				local wall1,wall2,wall3 = surface.create_entity({name = 'stone-wall', position = {x = p2.x+1, y = p2.y}, force = boat.force_name, create_build_effect_smoke = false}),surface.create_entity({name = 'stone-wall', position = {x = p2.x, y = p2.y}, force = boat.force_name, create_build_effect_smoke = false}),surface.create_entity({name = 'stone-wall', position = {x = p2.x-1, y = p2.y}, force = boat.force_name, create_build_effect_smoke = false})
 				if wall1 and wall2 and wall3 and wall1.valid and wall2.valid and wall3.valid then
@@ -694,6 +695,7 @@ end
 
 local function process_entity_on_boat_unteleportable(memory, boat, newsurface, vector, players_just_offside, oldsurface_name, newsurface_name, e, name)
 
+	local un = e.unit_number
 	local p = e.position
 	local p2 = {x = p.x + vector.x, y = p.y + vector.y}
 
@@ -709,6 +711,7 @@ local function process_entity_on_boat_unteleportable(memory, boat, newsurface, v
 	-- end
 
 	local ee = e.clone{position = p2, surface = newsurface, force = e.force, create_build_effect_smoke = false}
+
 	if ee and ee.valid then
 		e.destroy()
 	else
@@ -722,6 +725,10 @@ local function process_entity_on_boat_unteleportable(memory, boat, newsurface, v
 	end
 
 	if ee and ee.valid then
+
+		if un and memory.healthbars[un] then
+			Common.transfer_healthbar(un, ee)
+		end
 
 		if name == 'artillery-turret' then
 			-- if friendlyboat_bool then
@@ -1000,8 +1007,8 @@ local function teleport_handle_wake_tiles(boat, dummyboat, newsurface_name, olds
 			for _, area in pairs(wakeareas) do
 				for _, p in pairs(Common.central_positions_within_area(area, adjustednewposition)) do
 					local t = old_water_tile
-					if static_params and static_params.deepwater_xposition and (p.x <= static_params.deepwater_xposition) then t = 'deepwater' end
-					if friendlyboat_bool and boat.state == enum_state.RETREATING and vector.x < 0 then
+					if static_params and static_params.deepwater_xposition and (p.x <= static_params.deepwater_xposition - 0.5) then t = 'deepwater' end
+					if friendlyboat_bool and boat.state == enum_state.RETREATING and vector.x < 0 then --in this case we need to place some landing tiles, as the cannon juts out
 						if (p.x >= boat.dockedposition.x + scope.Data.leftmost_gate_position) and (p.y <= scope.Data.upmost_gate_position or p.y >= scope.Data.downmost_gate_position) then t = CoreData.landing_tile end
 					end
 					newtiles[#newtiles + 1] = {name = t, position = {x = p.x, y = p.y}}

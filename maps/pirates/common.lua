@@ -1,5 +1,6 @@
 
 local Math = require 'maps.pirates.math'
+local Server = require 'utils.server'
 local Utils = require 'maps.pirates.utils_local'
 local CoreData = require 'maps.pirates.coredata'
 local Memory = require 'maps.pirates.memory'
@@ -48,7 +49,7 @@ Public.ban_from_rejoining_crew_ticks = 45 * 60 --to prevent observing map and re
 Public.afk_time = 60 * 60 * 5
 Public.afk_warning_time = 60 * 60 * 4.5
 Public.logged_off_items_preserved_minutes = 5
-Public.important_items = {'coin', 'uranium-235', 'uranium-238', 'fluid-wagon', 'coal', 'electric-engine-unit', 'flying-robot-frame', 'advanced-circuit', 'beacon', 'speed-module-3', 'speed-module-2', 'roboport', 'construction-robot'} --internal inventories of these will not be preserved
+Public.logout_unprotected_items = {'coin', 'uranium-235', 'rail-signal', 'uranium-238', 'fluid-wagon', 'coal', 'electric-engine-unit', 'flying-robot-frame', 'advanced-circuit', 'beacon', 'speed-module-3', 'speed-module-2', 'roboport', 'construction-robot'} --internal inventories of these will not be preserved
 
 -- Public.mainshop_rate_limit_ticks = 11
 
@@ -73,7 +74,7 @@ function Public.difficulty_scale()
 	if memory.overworldx > 0 then
 		return memory.difficulty
 	else
-		return 1
+		return 0.75
 	end
 end
 function Public.capacity() return Memory.get_crew_memory().capacity end
@@ -157,6 +158,9 @@ end
 
 function Public.parrot_speak(force, message)
 	force.print('Parrot: ' .. message, CoreData.colors.parrot)
+
+	local memory = Memory.get_crew_memory()
+	Server.to_discord_embed_raw('[' .. memory.name .. '] Parrot: ' .. message)
 end
 
 
@@ -236,16 +240,18 @@ function Public.raffle_from_processed_loot_data(processed_loot_data, how_many, g
 
 	for _ = 1, how_many do
         local loot = Math.raffle(loot_types, loot_weights)
-        local low = Math.max(1, Math.ceil(loot.min_count))
-        local high = Math.max(1, Math.ceil(loot.max_count))
-        local _count = Math.random(low, high)
-        local lucky = Math.random(1, 220)
-        if lucky == 1 then --lucky
-            _count = _count * 3
-        elseif lucky <= 12 then
-            _count = _count * 2
-        end
-        ret[#ret + 1] = {name = loot.name, count = _count}
+		if loot then
+			local low = Math.max(1, Math.ceil(loot.min_count))
+			local high = Math.max(1, Math.ceil(loot.max_count))
+			local _count = Math.random(low, high)
+			local lucky = Math.random(1, 220)
+			if lucky == 1 then --lucky
+				_count = _count * 3
+			elseif lucky <= 12 then
+				_count = _count * 2
+			end
+			ret[#ret + 1] = {name = loot.name, count = _count}
+		end
     end
 
 	return ret
@@ -317,7 +323,7 @@ function Public.give(player, stacks, spill_position, spill_surface, flying_text_
 		end
 
 		if itemcount_remember > 0 then
-			if #stacks2 == 1 and itemcount_remember == 1 then
+			if #stacks2 == 1 and itemname == 'coin' and itemcount_remember == 1 then --for a single coin, drop the '+'
 				text1 = text1 .. '[item=' .. itemname .. ']'
 			else
 				text1 = text1 .. '[color=1,1,1]'
@@ -331,7 +337,7 @@ function Public.give(player, stacks, spill_position, spill_surface, flying_text_
 		end
 
 
-		if player and not (#stacks2 == 1 and itemcount_remember == 1) then
+		if player and not (#stacks2 == 1 and itemname == 'coin') then
 			-- count total of that item they have:
 			local new_total_count = 0
 
@@ -675,14 +681,15 @@ function Public.new_healthbar(text, target_entity, max_health, optional_id, heal
 			target = target_entity,
 			target_offset = {0, -4},
 			surface = target_entity.surface,
-			alignment = 'center'
+			alignment = 'center',
 		}
 	)
 	end
 
 	local new_healthbar = {
-		health = max_health,
+		health = health,
 		max_health = max_health,
+		size = size,
 		render1 = render1,
 		render2 = render2,
 		id = optional_id,
@@ -693,6 +700,33 @@ function Public.new_healthbar(text, target_entity, max_health, optional_id, heal
 	Public.update_healthbar_rendering(new_healthbar, health)
 
 	return new_healthbar
+end
+
+function Public.transfer_healthbar(old_unit_number, new_entity)
+	local memory = Memory.get_crew_memory()
+	local new_unit_number = new_entity.unit_number
+	local old_healthbar = memory.healthbars[old_unit_number]
+
+	-- if new_surface_bool then
+	-- 	Public.new_healthbar(old_healthbar.render2, new_entity, old_healthbar.max_health, old_healthbar.id, old_healthbar.health, rendering.get_y_scale(old_healthbar.render1))
+	-- else
+	-- 	rendering.set_target(old_healthbar.render1, new_entity)
+	-- 	if old_healthbar.render2 then
+	-- 		rendering.set_target(old_healthbar.render2, new_entity)
+	-- 	end
+	-- 	memory.healthbars[new_unit_number] = old_healthbar
+	-- end
+
+	Public.new_healthbar(old_healthbar.render2, new_entity, old_healthbar.max_health, old_healthbar.id, old_healthbar.health, old_healthbar.size)
+
+	if rendering.is_valid(old_healthbar.render1) then
+		rendering.destroy(old_healthbar.render1)
+	end
+	if rendering.is_valid(old_healthbar.render2) then
+		rendering.destroy(old_healthbar.render2)
+	end
+
+	memory.healthbars[old_unit_number] = nil
 end
 
 function Public.entity_damage_healthbar(entity, damage)
@@ -1189,7 +1223,7 @@ function Public.send_important_items_from_player_to_crew(player, all_items)
 			for iii = 1, #player_inv[ii], 1 do
 				-- local item_stack = player_inv[ii][iii] --don't do this as LuaItemStack is a reference!
 				if player_inv[ii] and player_inv[ii][iii].valid and player_inv[ii][iii].valid_for_read then
-					if all_items or (player_inv[ii][iii].name and Utils.contains(Public.important_items, player_inv[ii][iii].name)) then
+					if all_items or (player_inv[ii][iii].name and Utils.contains(Public.logout_unprotected_items, player_inv[ii][iii].name)) then
 						to_remove[#to_remove + 1] = player_inv[ii][iii]
 						any = true
 					-- else

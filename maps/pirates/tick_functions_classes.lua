@@ -122,9 +122,11 @@ function Public.update_character_properties(tickinterval)
 			-- 		health_boost = health_boost + 1300
 			-- 	end
 			-- end
-			if Common.is_captain(player) then
-				health_boost = health_boost + 50
-			end
+
+			-- Captain health boost:
+			-- if Common.is_captain(player) then
+			-- 	health_boost = health_boost + 50
+			-- end
 			character.character_health_bonus = health_boost
 
 			local speed_boost = Balance.base_extra_character_speed
@@ -209,9 +211,9 @@ function Public.class_rewards_tick(tickinterval)
 						local hold_bool = surfacedata.type == Surfaces.enum.HOLD
 
 						if class == Classes.enum.DECKHAND and on_ship_bool and (not hold_bool) then
-							Classes.class_ore_grant(player, 4)
+							Classes.class_ore_grant(player, 2)
 						elseif class == Classes.enum.BOATSWAIN and hold_bool then
-							Classes.class_ore_grant(player, 6)
+							Classes.class_ore_grant(player, 4)
 						elseif class == Classes.enum.SHORESMAN and (not on_ship_bool) then
 							Classes.class_ore_grant(player, 2)
 						elseif class == Classes.enum.QUARTERMASTER then

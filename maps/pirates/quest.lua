@@ -237,7 +237,7 @@ function Public.try_resolve_quest()
 
 		local force = memory.force
 		if not (force and force.valid) then return end
-		Common.notify_force_light(force,'Granted ' .. destination.dynamic_data.quest_reward.display_amount .. ' ' .. destination.dynamic_data.quest_reward.chat_name)
+		Common.notify_force_light(force,'Granted: ' .. destination.dynamic_data.quest_reward.display_amount .. ' ' .. destination.dynamic_data.quest_reward.chat_name)
 
 		local name = destination.dynamic_data.quest_reward.name
 		local count = destination.dynamic_data.quest_reward.count
@@ -346,7 +346,7 @@ Public.resourcecount_quest_data_raw = {
 	{0.3, 0, 0.2, false, 'splitter', 150},
 	{0.4, 0.2, 1, false, 'fast-splitter', 60},
 	{0.4, 0.2, 1, false, 'fast-underground-belt', 75},
-	{0.5, 0.3, 1, false, 'big-electric-pole', 160},
+	{0.5, 0.3, 1, false, 'big-electric-pole', 100},
 	{1.2, 0.61, 1, false, 'advanced-circuit', 350},
 	{1, 0, 1, false, 'shotgun-shell', 600},
 	{1.5, 0.9, 1, false, 'processing-unit', 40},

@@ -336,7 +336,7 @@ function Public.toggle_window(player)
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
-	flow3.tooltip = 'Take doubloons and uranium-235 from each non-officer.'
+	flow3.tooltip = 'Take doubloons and other important items from each non-officer.'
 
 
 	flow2 = flow.add({

@@ -61,20 +61,25 @@ function Public.Tick_actions(tickinterval)
     -- if destination.subtype and destination.subtype == Islands.enum.RED_DESERT then return end -- This was a hack to stop biter boats causing attacks, but, it has the even worse effect of stopping all floating_pollution gathering.
 
 
-    local minute_cycle = {-- even seconds only
-        [2] = Public.eat_up_fraction_of_all_pollution_wrapped,
+    local minute_cycle = {-- warning: use even seconds only
+		[2] = Public.tell_biters_near_silo_to_attack_it,
         [4] = Public.poke_script_groups,
-        [6] = Public.try_rogue_attack,
-        [14] = Public.poke_script_groups,
-        [21] = Public.try_main_attack,
-        [24] = Public.tell_biters_near_silo_to_attack_it,
+        [6] = Public.try_main_attack,
+
+        [16] = Public.tell_biters_near_silo_to_attack_it,
+        [18] = Public.poke_script_groups,
+        [20] = Public.try_rogue_attack,
+
+        [32] = Public.tell_biters_near_silo_to_attack_it,
         [34] = Public.poke_script_groups,
-        [36] = Public.try_secondary_attack,
-        [44] = Public.poke_script_groups,
-        [48] = Public.eat_up_fraction_of_all_pollution_wrapped,
-        [54] = Public.poke_script_groups,
-        [56] = Public.create_mail_delivery_biters,
-        [58] = Public.poke_inactive_scripted_biters,
+        [36] = Public.try_main_attack,
+
+        [46] = Public.tell_biters_near_silo_to_attack_it,
+        [48] = Public.poke_script_groups,
+        [50] = Public.try_secondary_attack,
+
+        [56] = Public.poke_inactive_scripted_biters,
+        [58] = Public.create_mail_delivery_biters,
     }
 
     if minute_cycle[(game.tick / 60) % 60] then
@@ -126,19 +131,22 @@ function Public.wave_size_rng() -- random variance in attack sizes
 	local wave_size_multiplier = 1
 	local memory = Memory.get_crew_memory()
 	if memory.overworldx > 0 then
-		local rng = Math.random(1000)
-		if rng <= 600 then
+		local rng1 = Math.random(100)
+		if rng1 <= 74 then
 			wave_size_multiplier = 0
-		elseif rng <= 960 then
-			wave_size_multiplier = 1
-		elseif rng <= 990 then
-			wave_size_multiplier = 1.5
-		elseif rng <= 994 then
-			wave_size_multiplier = 2
-		elseif rng <= 998 then
-			wave_size_multiplier = 2.5
 		else
-			wave_size_multiplier = 3
+			local rng2 = Math.random(1000)
+			if rng2 <= 900 then
+				wave_size_multiplier = 1
+			elseif rng2 <= 975 then
+				wave_size_multiplier = 1.5
+			elseif rng2 <= 985 then
+				wave_size_multiplier = 2
+			elseif rng2 <= 995 then
+				wave_size_multiplier = 2.5
+			else
+				wave_size_multiplier = 3
+			end
 		end
 	end
 
@@ -146,10 +154,12 @@ function Public.wave_size_rng() -- random variance in attack sizes
 end
 
 function Public.try_main_attack()
+	Public.eat_up_fraction_of_all_pollution_wrapped()
+
 	local wave_size_multiplier = Public.wave_size_rng()
 
 	if wave_size_multiplier == 0 then
-		log('attack aborted by chance')
+		log('Attacks: ' .. 'Aborted by chance.')
 		return nil
 	else
 		local group = Public.spawn_group_of_scripted_biters(2/3, 6, 180, wave_size_multiplier)
@@ -165,10 +175,12 @@ function Public.try_main_attack()
 end
 
 function Public.try_secondary_attack()
+	Public.eat_up_fraction_of_all_pollution_wrapped()
+
 	local wave_size_multiplier = Public.wave_size_rng()
 
 	if wave_size_multiplier == 0 then
-		log('attack aborted by chance')
+		log('Attacks: ' .. 'Aborted by chance.')
 		return nil
 	else
 		local surface = game.surfaces[Common.current_destination().surface_name]
@@ -193,10 +205,12 @@ function Public.try_secondary_attack()
 end
 
 function Public.try_rogue_attack()
+	Public.eat_up_fraction_of_all_pollution_wrapped()
+
 	local wave_size_multiplier = Public.wave_size_rng()
 
 	if wave_size_multiplier == 0 then
-		log('attack aborted by chance')
+		log('Attacks: ' .. 'Aborted by chance.')
 		return nil
 	else
 		local surface = game.surfaces[Common.current_destination().surface_name]
@@ -462,7 +476,7 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 		local mixed = (Math.random(3) <= 2)
 		if mixed then
 
-			local whilesafety = 1000
+			local whilesafety = 5000
 			local next_name = enforce_type or Common.get_random_unit_type(evolution)
 
 			while units_created_count < maximum_units and budget >= CoreData.biterPollutionValues[next_name] * map_pollution_cost_multiplier and #memory.scripted_biters < CoreData.total_max_biters and whilesafety > 0 do
@@ -473,7 +487,7 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 		else
 			local name = enforce_type or Common.get_random_unit_type(evolution)
 
-			local whilesafety = 1000
+			local whilesafety = 5000
 			while units_created_count < maximum_units and budget >= CoreData.biterPollutionValues[name] * map_pollution_cost_multiplier and #memory.scripted_biters < CoreData.total_max_biters and whilesafety > 0 do
 				whilesafety = whilesafety - 1
 				spawn(name)
@@ -481,12 +495,12 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 		end
 
         memory.floating_pollution = temp_floating_pollution
-    -- else
-	-- 	log('insufficient pollution for wave')
+	else
+		log('Attacks: ' .. 'Insufficient pollution for wave.')
 	end
 
 	if units_created_count > 0 then
-		log('Spent ' .. Math.floor(100 * (initialpollution - temp_floating_pollution) / initialpollution) .. '% of ' .. Math.ceil(initialpollution) .. ' pollution budget on biters, at ' .. Math.ceil(map_pollution_cost_multiplier/wave_size_multiplier*100)/100 .. 'x price.')
+		log('Attacks: ' .. 'Spent ' .. Math.floor(100 * (initialpollution - temp_floating_pollution) / initialpollution) .. '% of ' .. Math.ceil(initialpollution) .. ' pollution budget on biters, at ' .. Math.ceil(map_pollution_cost_multiplier/wave_size_multiplier*100)/100 .. 'x price.')
 	end
 
     return units_created

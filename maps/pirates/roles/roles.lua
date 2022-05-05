@@ -83,7 +83,7 @@ function Public.revoke_class(captain, player)
 		memory.spare_classes[#memory.spare_classes + 1] = memory.classes_table[player.index]
 		memory.classes_table[player.index] = nil
 
-		Common.notify_force_light(force, string.format('%s revoked %s from %s.', captain.name, Classes.display_form[memory.classes_table[player.index]]), player.name)
+		Common.notify_force_light(force, string.format('%s revoked %s from %s.', captain.name, Classes.display_form[memory.classes_table[player.index]], player.name))
 	end
 end
 
@@ -385,7 +385,7 @@ function Public.captain_requisition(captain_index)
 	local memory = Memory.get_crew_memory()
 	local any_taken = false
 
-	local items_to_req = {'coin', 'uranium-235'}
+	local items_to_req = {'coin', 'rail-signal', 'uranium-235'}
 
 	local item_count_table = {}
 	for _, i in pairs(items_to_req) do

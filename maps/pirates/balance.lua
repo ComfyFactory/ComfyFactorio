@@ -95,8 +95,11 @@ function Public.max_time_on_island_formula() --always >0  --tuned
 end
 
 
+Public.rockets_needed_x = 40*21
+
+
 function Public.max_time_on_island()
-	if Common.overworldx() == 0 or ((Common.overworldx()/40) > 20) then
+	if Common.overworldx() == 0 or ((Common.overworldx()/40) >= (Public.rockets_needed_x/40)) then
 	-- if Common.overworldx() == 0 or ((Common.overworldx()/40) > 20 and (Common.overworldx()/40) < 25) then
 		return -1
 	else
@@ -117,7 +120,7 @@ function Public.fuel_depletion_rate_static()
 
 	local rate
 	if Common.overworldx() > 0 then
-		rate = 575 * (0 + (Common.overworldx()/40)^(9/10)) * Public.crew_scale()^(1/7) * Math.sloped(Common.difficulty_scale(), 65/100) / T --most of the crewsize dependence is through T, i.e. the coal cost per island stays the same... but the extra player dependency accounts for the fact that even in compressed time, more players seem to get more resources per island
+		rate = 575 * (0 + (Common.overworldx()/40)^(9/10)) * Public.crew_scale()^(1/8) * Math.sloped(Common.difficulty_scale(), 65/100) / T --most of the crewsize dependence is through T, i.e. the coal cost per island stays the same... but the extra player dependency accounts for the fact that even in compressed time, more players seem to get more resources per island
 	else
 		rate = 0
 	end
@@ -133,7 +136,7 @@ end
 
 function Public.silo_total_pollution()
 	return (
-		365 * (Common.difficulty_scale()^(1.2)) * Public.crew_scale()^(2/5) * (3.2 + 0.7 * (Common.overworldx()/40)^(1.6)) / Math.sloped(Common.difficulty_scale(), 1/5) --shape of the curve with x is tuned. Final factor of difficulty is to offset a change made to scripted_biters_pollution_cost_multiplier
+		365 * (Common.difficulty_scale()^(1.2)) * Public.crew_scale()^(3/10) * (3.2 + 0.7 * (Common.overworldx()/40)^(1.6)) / Math.sloped(Common.difficulty_scale(), 1/5) --shape of the curve with x is tuned. Final factor of difficulty is to offset a change made to scripted_biters_pollution_cost_multiplier
 )
 end
 
@@ -143,7 +146,11 @@ function Public.boat_passive_pollution_per_minute(time)
 	if (Common.overworldx()/40) > 25 then T = T * 0.9 end
 
 	if time then
-		if time >= 100/100 * T then --will still happen regularly, on islands without an auto-undock timer
+		if time >= 160/100 * T then
+		boost = 40
+		elseif time >= 130/100 * T then
+			boost = 30
+		elseif time >= 100/100 * T then --will still happen regularly, on islands without an auto-undock timer
 			boost = 20
 		elseif time >= 95/100 * T then
 			boost = 16
@@ -299,7 +306,7 @@ end
 function Public.island_richness_avg_multiplier()
 	local ret
 	-- local base = 0.7 + 0.1 * (Common.overworldx()/40)^(7/10) --tuned tbh
-	local base = 0.73 + 0.110 * (Common.overworldx()/40)^(7/10) --tuned tbh
+	local base = 0.73 + 0.120 * (Common.overworldx()/40)^(65/100) --tuned tbh
 
 	ret = base * Math.sloped(Public.crew_scale(), 1/40) --we don't really have resources scaling by player count in this resource-constrained scenario, but we scale a little, to accommodate each player filling their inventory with useful tools. also, I would do higher than 1/40, but we go even slightly lower because we're applying this somewhat sooner than players actually get there.
 
@@ -343,12 +350,16 @@ function Public.sandworm_evo_increase_per_spawn()
 	end
 end
 
-function Public.kraken_kill_reward()
-	return {{name = 'sulfuric-acid-barrel', count = 10}}
+function Public.kraken_kill_reward_items()
+	return {{name = 'sulfuric-acid-barrel', count = 5}, {name = 'coin', count = 1000}}
+end
+function Public.kraken_kill_reward_fuel()
+	return 200
 end
 
 function Public.kraken_health()
-	return Math.ceil(3500 * Math.max(1, 1 + 0.08 * ((Common.overworldx()/40)^(13/10)-6)) * (Public.crew_scale()^(5/8)) * Math.sloped(Common.difficulty_scale(), 3/4))
+	return Math.ceil(3500 * Math.max(1, 1 + 0.075 * (Common.overworldx()/40)^(13/10)) * (Public.crew_scale()^(4/8)) * Math.sloped(Common.difficulty_scale(), 3/4))
+	-- return Math.ceil(3500 * Math.max(1, 1 + 0.08 * ((Common.overworldx()/40)^(13/10)-6)) * (Public.crew_scale()^(5/8)) * Math.sloped(Common.difficulty_scale(), 3/4))
 end
 
 Public.kraken_regen_scale = 0.1 --starting off low
@@ -488,11 +499,10 @@ function Public.starting_items_crew_downstairs()
 		{['underground-belt'] = 80},
 		{['splitter'] = Math.random(50,56)},
 		{['inserter'] = Math.random(120,140)},
-		{['storage-tank'] = 4},
+		{['storage-tank'] = 2},
 		{['medium-electric-pole'] = Math.random(15,21)},
 		{['coin'] = 2000},
 		{['solar-panel'] = 3},
-		{['accumulator'] = 1},
 	}
 end
 

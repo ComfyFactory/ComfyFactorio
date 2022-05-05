@@ -538,7 +538,7 @@ function Public.go_from_currentdestination_to_sea()
 
 	if memory.overworldx == 0 and memory.boat then
 
-		local difficulty_name = CoreData.get_difficulty_name_from_value(Common.difficulty_scale())
+		local difficulty_name = CoreData.get_difficulty_name_from_value(memory.difficulty)
 		if difficulty_name == CoreData.difficulty_options[#CoreData.difficulty_options].text then
 			Boats.upgrade_chests(boat, 'steel-chest')
 			Hold.upgrade_chests(1, 'steel-chest')

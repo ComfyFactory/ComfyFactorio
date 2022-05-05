@@ -124,7 +124,7 @@ function Public.initial_class_pool()
 		enum.PROSPECTOR,
 		enum.LUMBERJACK,
 		enum.IRON_LEG,
-		enum.SMOLDERING,
+		-- enum.SMOLDERING,
 		enum.GOURMET,
 	}
 end
@@ -257,7 +257,7 @@ local function class_on_player_used_capsule(event)
 				elseif tile.name == CoreData.walkway_tile then
 					multiplier = 1
 				elseif tile.name == 'orange-refined-concrete' then
-					multiplier = 0.8
+					multiplier = 0.5
 				elseif tile.name == CoreData.enemy_landing_tile then
 					multiplier = 0.33
 				elseif tile.name == CoreData.static_boat_floor then

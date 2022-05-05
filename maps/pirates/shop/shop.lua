@@ -115,7 +115,13 @@ function Public.event_on_market_item_purchased(event)
 					-- heal all cannons:
 					local cannons = game.surfaces[destination.surface_name].find_entities_filtered({type = 'artillery-turret'})
 					for _, c in pairs(cannons) do
-						c.health = c.prototype.max_health
+						local unit_number = c.unit_number
+					
+						local healthbar = memory.healthbars[unit_number]
+						if healthbar then
+							healthbar.health = healthbar.max_health
+							Common.update_healthbar_rendering(healthbar, healthbar.max_health)
+						end
 					end
 					Common.notify_force(force,string.format('[font=heading-1]%s repaired the ship\'s cannons.[/font]', player.name))
 					market.remove_market_item(offer_index)

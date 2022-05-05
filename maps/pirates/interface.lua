@@ -39,7 +39,7 @@ local tick_tack_trap = require 'maps.pirates.locally_maintained_comfy_forks.tick
 
 local Public = {}
 
-function Public.silo_died()
+function Public.silo_die()
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 	local force = memory.force
@@ -62,38 +62,38 @@ function Public.silo_died()
 			end
 		end
 
-		destination.dynamic_data.rocketsilos[1].destroy()
+		destination.dynamic_data.rocketsilos[1].die()
 		destination.dynamic_data.rocketsilos = nil
 	end
 end
 
-function Public.damage_silo(final_damage_amount)
-	if final_damage_amount == 0 then return end
-	local destination = Common.current_destination()
-	-- local memory = Memory.get_crew_memory()
+-- function Public.damage_silo(final_damage_amount)
+-- 	if final_damage_amount == 0 then return end
+-- 	local destination = Common.current_destination()
+-- 	-- local memory = Memory.get_crew_memory()
 
-	-- if we are doing the 'no damage' quest, then damage in the first 20 seconds after landing doesn't count:
-	if destination and destination.dynamic_data and destination.dynamic_data.quest_type == Quest.enum.NODAMAGE then
-		if not (destination.dynamic_data.timer and destination.dynamic_data.timeratlandingtime and destination.dynamic_data.timer > destination.dynamic_data.timeratlandingtime + 20) then return end
-	end
+-- 	-- if we are doing the 'no damage' quest, then damage in the first 20 seconds after landing doesn't count:
+-- 	if destination and destination.dynamic_data and destination.dynamic_data.quest_type == Quest.enum.NODAMAGE then
+-- 		if not (destination.dynamic_data.timer and destination.dynamic_data.timeratlandingtime and destination.dynamic_data.timer > destination.dynamic_data.timeratlandingtime + 20) then return end
+-- 	end
 
-	-- manual 'resistance:'
-	local final_damage_amount2 = Utils.deepcopy(final_damage_amount) / 5
+-- 	-- manual 'resistance:'
+-- 	local final_damage_amount2 = final_damage_amount / 4
 
-	destination.dynamic_data.rocketsilohp = Math.max(0, Math.floor(destination.dynamic_data.rocketsilohp - final_damage_amount2))
-	if destination.dynamic_data.rocketsilohp > destination.dynamic_data.rocketsilomaxhp then destination.dynamic_data.rocketsilohp = destination.dynamic_data.rocketsilomaxhp end
+-- 	destination.dynamic_data.rocketsilohp = Math.max(0, Math.floor(destination.dynamic_data.rocketsilohp - final_damage_amount2))
+-- 	if destination.dynamic_data.rocketsilohp > destination.dynamic_data.rocketsilomaxhp then destination.dynamic_data.rocketsilohp = destination.dynamic_data.rocketsilomaxhp end
 
-	if destination.dynamic_data.rocketsilohp <= 0 then
-	-- if destination.dynamic_data.rocketsilohp <= 0 and (not destination.dynamic_data.rocketlaunched) then
-		Public.silo_died()
-		rendering.destroy(destination.dynamic_data.rocketsilohptext)
-	else
-		rendering.set_text(destination.dynamic_data.rocketsilohptext, 'HP: ' .. destination.dynamic_data.rocketsilohp .. ' / ' .. destination.dynamic_data.rocketsilomaxhp)
-	end
-	-- if destination.dynamic_data.rocketsilohp < destination.dynamic_data.rocketsilomaxhp / 2 and final_damage_amount > 0 then
-	-- 	Upgrades.trigger_poison()
-	-- end
-end
+-- 	if destination.dynamic_data.rocketsilohp <= 0 then
+-- 	-- if destination.dynamic_data.rocketsilohp <= 0 and (not destination.dynamic_data.rocketlaunched) then
+-- 		Public.silo_die()
+-- 		rendering.destroy(destination.dynamic_data.rocketsilohptext)
+-- 	else
+-- 		rendering.set_text(destination.dynamic_data.rocketsilohptext, 'HP: ' .. destination.dynamic_data.rocketsilohp .. ' / ' .. destination.dynamic_data.rocketsilomaxhp)
+-- 	end
+-- 	-- if destination.dynamic_data.rocketsilohp < destination.dynamic_data.rocketsilomaxhp / 2 and final_damage_amount > 0 then
+-- 	-- 	Upgrades.trigger_poison()
+-- 	-- end
+-- end
 
 
 local function biters_chew_stuff_faster(event)
@@ -119,30 +119,46 @@ end
 
 
 
-local function event_on_player_repaired_entity(event)
+-- local function event_on_player_repaired_entity(event)
+-- 	local entity = event.entity
+
+-- 	if entity and entity.valid and entity.name and entity.name == 'artillery-turret' then
+-- 		entity.health = entity.health - 2 --prevents repairing
+-- 	end
+-- 	--@TODO: somehow fix the fact that drones can repair the turret
+-- end
+
+
+local function protect_special_entities(event)
+	local memory = Memory.get_crew_memory()
 	local entity = event.entity
 
-	if entity and entity.valid and entity.name and entity.name == 'artillery-turret' then
-		entity.health = entity.health - 2 --prevents repairing
+	if event.cause and event.cause.valid and entity and entity.valid then
+		local surfacedata = Surfaces.SurfacesCommon.decode_surface_name(entity.surface.name)
+		local dest = Common.current_destination()
+		if surfacedata.type == Surfaces.enum.CROWSNEST or surfacedata.type == Surfaces.enum.LOBBY then
+			entity.health = entity.health + event.final_damage_amount
+		end
 	end
-	--@TODO: somehow fix the fact that drones can repair the turret
 end
 
 
 local function silo_damage(event)
 	local memory = Memory.get_crew_memory()
+	local entity = event.entity
 
-	if event.cause and event.cause.valid and event.entity and event.entity.valid then
-		if event.entity.force.name == memory.force_name then
-			local surfacedata = Surfaces.SurfacesCommon.decode_surface_name(event.entity.surface.name)
-			local dest = Common.current_destination()
-			if surfacedata.type == Surfaces.enum.CROWSNEST or surfacedata.type == Surfaces.enum.LOBBY then
-				event.entity.health = event.entity.health + event.final_damage_amount
-			elseif dest.dynamic_data.rocketsilos and dest.dynamic_data.rocketsilos[1] and dest.dynamic_data.rocketsilos[1].valid and event.entity == Common.current_destination().dynamic_data.rocketsilos[1] then
-				event.entity.health = event.entity.health + event.final_damage_amount
-				if string.sub(event.cause.force.name, 1, 4) ~= 'crew' then
-					Public.damage_silo(event.original_damage_amount)
+	if event.cause and event.cause.valid and entity and entity.valid and entity.force.name == memory.force_name then
+		local destination = Common.current_destination()
+		if destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid and entity == Common.current_destination().dynamic_data.rocketsilos[1] then
+			
+			if string.sub(event.cause.force.name, 1, 4) ~= 'crew' then
+				if Common.entity_damage_healthbar(entity, event.original_damage_amount / 4) <= 0 then
+					Public.silo_die()
+				else
+					destination.dynamic_data.rocketsilohp = memory.healthbars[entity.unit_number].health
 				end
+			else
+				entity.health = entity.prototype.max_health
 			end
 		end
 	end
@@ -168,7 +184,7 @@ local function damage_to_enemyboat_spawners(event)
 							adjusted_damage = adjusted_damage / 1.8
 						end
 
-						if Common.entity_damage_healthbar(event.entity, adjusted_damage) < 0 then
+						if Common.entity_damage_healthbar(event.entity, adjusted_damage) <= 0 then
 							event.entity.die()
 						end
 					end
@@ -186,12 +202,18 @@ local function damage_to_artillery(event)
 	if not event.cause.valid then return end
 	if not event.cause.name then return end
 
+
 	if (event.cause.name == 'small-biter') or (event.cause.name == 'small-spitter') or (event.cause.name == 'medium-biter') or (event.cause.name == 'medium-spitter') or (event.cause.name == 'big-biter') or (event.cause.name == 'big-spitter') or (event.cause.name == 'behemoth-biter') or (event.cause.name == 'behemoth-spitter') then
 		if string.sub(event.cause.force.name, 1, 5) ~= 'enemy' then return end
+
 		-- remove resistances:
-		event.entity.health = event.entity.health + event.final_damage_amount - event.original_damage_amount
+		-- event.entity.health = event.entity.health + event.final_damage_amount - event.original_damage_amount
+
+		if Common.entity_damage_healthbar(event.entity, event.original_damage_amount) <= 0 then
+			event.entity.die()
+		end
 	else
-		event.entity.health = event.entity.health + event.final_damage_amount --nothing else should damage it
+		event.entity.health = event.entity.prototype.max_health --nothing else should damage it
 	end
 end
 
@@ -233,7 +255,7 @@ local function damage_to_krakens(event)
 		adjusted_damage = adjusted_damage / 8 --laser turrets are in range
 	end
 
-	if Common.entity_damage_healthbar(event.entity, adjusted_damage) < 0 then
+	if Common.entity_damage_healthbar(event.entity, adjusted_damage) <= 0 then
 		Kraken.kraken_die(memory.healthbars[unit_number].id)
 	end
 end
@@ -273,7 +295,7 @@ local function damage_to_players_changes(event)
 			if not (inv and inv.valid) then return end
 			local count = inv.get_item_count('iron-ore')
 			if count and count >= 3500 then
-				damage_multiplier = damage_multiplier * 0.14
+				damage_multiplier = damage_multiplier * 0.18
 			end
 		else
 			damage_multiplier = damage_multiplier * (1 + Balance.bonus_damage_to_humans())
@@ -330,7 +352,7 @@ local function damage_dealt_by_players_changes(event)
 				elseif hatamoto then
 					extra_damage_to_deal = 50
 				end
-			elseif acid then --this hacky stuff is to implement repeated spillover splash damage, whilst getting around the fact that if ovekill damage takes something to zero health, we can't tell in that event how much double-overkill damage should be dealt by reading off its HP. it assumes that characters only deal acid damage via this function.
+			elseif acid then --this hacky stuff is to implement repeated spillover splash damage, whilst getting around the fact that if ovekill damage takes something to zero health, we can't tell in that event how much double-overkill damage should be dealt by reading off its HP. This code assumes that characters only deal acid damage via this function.
 				extra_damage_to_deal = event.original_damage_amount * big_number
 			end
 		elseif (not melee) and event.final_health > 0 then
@@ -341,7 +363,7 @@ local function damage_dealt_by_players_changes(event)
 
 		if extra_damage_to_deal > 0 then
 			if event.entity.health >= extra_damage_to_deal then
-				event.entity.health = event.entity.health - extra_damage_to_deal
+				event.entity.damage(extra_damage_to_deal, character.force, 'impact', character) --using .damage rather than subtracting from health directly plays better with entities which use healthbars
 			else
 				local surplus = (extra_damage_to_deal - event.entity.health)*0.8
 				event.entity.die(character.force, character)
@@ -361,7 +383,7 @@ local function damage_dealt_by_players_changes(event)
 		for _, p2 in pairs(nearby_players) do
 			if p2.player and p2.player.valid then
 				local p2_index = p2.player.index
-				if player_index ~= p2_index and memory.classes_table[p2_index] and memory.classes_table[p2_index] == Classes.enum.QUARTERMASTER then
+				if event.entity.valid and player_index ~= p2_index and memory.classes_table[p2_index] and memory.classes_table[p2_index] == Classes.enum.QUARTERMASTER then
 					event.entity.damage(0.1 * event.final_damage_amount, character.force, 'impact', character) --triggers this function again, but not physical this time
 				end
 			end
@@ -372,7 +394,7 @@ local function damage_dealt_by_players_changes(event)
 		if character.shooting_state.state ~= defines.shooting.not_shooting then
 			local weapon = character.get_inventory(defines.inventory.character_guns)[character.selected_gun_index]
 			local ammo = character.get_inventory(defines.inventory.character_ammo)[character.selected_gun_index]
-			if weapon.valid_for_read and ammo.valid_for_read and weapon.name == 'pistol' and (ammo.name == 'firearm-magazine' or ammo.name == 'piercing-rounds-magazine' or ammo.name == 'uranium-rounds-magazine') then
+			if event.entity.valid and weapon.valid_for_read and ammo.valid_for_read and weapon.name == 'pistol' and (ammo.name == 'firearm-magazine' or ammo.name == 'piercing-rounds-magazine' or ammo.name == 'uranium-rounds-magazine') then
 				event.entity.damage(event.final_damage_amount * (Balance.pistol_damage_multiplier() - 1), character.force, 'impact', character) --triggers this function again, but not physical this time
 			end
 		end
@@ -473,6 +495,7 @@ local function event_on_entity_damaged(event)
 
 	if not event.entity.valid then return end
 	silo_damage(event)
+	protect_special_entities(event)
 	if not event.entity.valid then return end -- need to call again, silo might be dead
 	if not event.entity.health then return end
 
@@ -829,29 +852,26 @@ local function base_kill_rewards(event)
 		coin_amount = 120
 	elseif entity_name == 'behemoth-worm-turret' then
 		iron_amount = 50
-		coin_amount = 240
-	elseif memory.overworldx > 0 then
-		if entity_name == 'small-biter' then
-			if Math.random(3) == 1 then
-				coin_amount = 1
-			end
-		elseif entity_name == 'small-spitter' then
-			if Math.random(3) <= 2 then
-				coin_amount = 1
-			end
-		elseif entity_name == 'medium-biter' then
+	-- 	coin_amount = 240
+	-- elseif memory.overworldx >= 0 then
+	elseif entity_name == 'small-biter' then
+		if Math.random(2) == 1 then
 			coin_amount = 1
-		elseif entity_name == 'medium-spitter' then
-			coin_amount = 2
-		elseif entity_name == 'big-biter' then
-			coin_amount = 2
-		elseif entity_name == 'big-spitter' then
-			coin_amount = 4
-		elseif entity_name == 'behemoth-biter' then
-			coin_amount = 4
-		elseif entity_name == 'behemoth-spitter' then
-			coin_amount = 8
 		end
+	elseif entity_name == 'small-spitter' then
+		coin_amount = 1
+	elseif entity_name == 'medium-biter' then
+		coin_amount = 1
+	elseif entity_name == 'medium-spitter' then
+		coin_amount = 2
+	elseif entity_name == 'big-biter' then
+		coin_amount = 2
+	elseif entity_name == 'big-spitter' then
+		coin_amount = 4
+	elseif entity_name == 'behemoth-biter' then
+		coin_amount = 4
+	elseif entity_name == 'behemoth-spitter' then
+		coin_amount = 8
 	end
 
 	if coin_amount then
@@ -1509,7 +1529,7 @@ local function event_on_rocket_launched(event)
 	end
 
 	local force = memory.force
-	Common.notify_force_light(force,'Granted ' .. string.format('%.1fk', Balance.rocket_launch_coin_reward/1000) .. ' doubloons and ' .. string.format('%.1fk', destination.dynamic_data.rocketcoalreward/1000) .. ' fuel.')
+	Common.notify_force_light(force,'Granted: ' .. string.format('%.1fk', Balance.rocket_launch_coin_reward/1000) .. ' [item=coin], ' .. string.format('%.1fk', destination.dynamic_data.rocketcoalreward/1000) .. ' [item=coal].')
 
 	if destination.dynamic_data.quest_type == Quest.enum.TIME and (not destination.dynamic_data.quest_complete) then
 		destination.dynamic_data.quest_progressneeded = 1
@@ -1679,7 +1699,7 @@ local event = require 'utils.event'
 event.add(defines.events.on_built_entity, event_on_built_entity)
 event.add(defines.events.on_entity_damaged, event_on_entity_damaged)
 event.add(defines.events.on_entity_died, event_on_entity_died)
-event.add(defines.events.on_player_repaired_entity, event_on_player_repaired_entity)
+-- event.add(defines.events.on_player_repaired_entity, event_on_player_repaired_entity)
 event.add(defines.events.on_player_joined_game, event_on_player_joined_game)
 event.add(defines.events.on_pre_player_left_game, event_on_pre_player_left_game)
 -- event.add(defines.events.on_player_left_game, event_on_player_left_game)

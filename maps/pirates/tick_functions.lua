@@ -286,7 +286,7 @@ function Public.periodic_free_resources(tickinterval)
 		Common.give_items_to_crew{{name = 'sulfuric-acid-barrel', count = count}}
 		local force = memory.force
 		if not (force and force.valid) then return end
-		Common.notify_force_light(force, 'Granted ' .. count .. ' [item=sulfuric-acid-barrel]')
+		Common.notify_force_light(force, 'Granted: ' .. count .. ' [item=sulfuric-acid-barrel]')
 	end
 end
 

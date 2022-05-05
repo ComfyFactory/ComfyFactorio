@@ -109,7 +109,13 @@ function Public.generate_destination_type_and_subtype(overworld_position)
 		subtype = Surfaces.Island.enum.MAZE
 	elseif macro_x == 23 then --overwrite dock. rocket launch cost
 		type = Surfaces.enum.ISLAND
-		subtype = Surfaces.Island.enum.WALKWAYS
+		if macro_y == 0 then
+			subtype = Surfaces.Island.enum.RED_DESERT
+		elseif macro_y == -1 then
+			subtype = Surfaces.Island.enum.SWAMP
+		else
+			subtype = Surfaces.Island.enum.STANDARD_VARIANT
+		end
 	elseif macro_y == -1 and (((macro_x % 4) == 3 and macro_x ~= 15) or macro_x == 14) then --avoid x=15 because radioactive is there
 		type = Surfaces.enum.DOCK
 	elseif macro_x == 3 then
@@ -147,7 +153,7 @@ function Public.generate_destination_type_and_subtype(overworld_position)
 		type = nil
 	elseif macro_x == 21 then --rocket launch cost
 		type = Surfaces.enum.ISLAND
-		subtype = Surfaces.Island.enum.SWAMP
+		subtype = Surfaces.Island.enum.WALKWAYS
 	elseif macro_x == 22 then --game length decrease, pending more content. also kinda fun to have to steer in realtime due to double space
 		type = nil
 	elseif macro_x == 24 then --rocket launch cost
@@ -605,12 +611,23 @@ function Public.check_for_destination_collisions()
 			local destination = Common.current_destination()
 			Surfaces.destination_on_collide(destination)
 
+			Public.cleanup_old_destination_data()
+
 			return true
 		end
 	end
 	return false
 end
 
+
+function Public.cleanup_old_destination_data() --we do actually access destinations behind us (during the cleanup process and for marooned players), so only fire this when safe
+	local memory = Memory.get_crew_memory()
+	for i, destination_data in pairs(memory.destinations) do
+		if destination_data.overworld_position.x < memory.overworldx then
+			memory.destinations[i] = nil
+		end
+	end
+end
 
 
 
@@ -626,11 +643,6 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 		Common.notify_force(memory.force, message, CoreData.colors.notify_victory)
 	end
 
-	Public.ensure_lane_generated_up_to(0, memory.overworldx + Crowsnest.Data.visibilitywidth)
-	Public.ensure_lane_generated_up_to(24, memory.overworldx + Crowsnest.Data.visibilitywidth)
-	Public.ensure_lane_generated_up_to(-24, memory.overworldx + Crowsnest.Data.visibilitywidth)
-	Public.overwrite_a_dock_upgrade()
-
 	if not Public.is_position_free_to_move_to{x = memory.overworldx + vector.x, y = memory.overworldy+ vector.y} then
 		if _DEBUG then log(string.format('can\'t move by ' .. vector.x .. ', ' .. vector.y)) end
 		return false
@@ -639,6 +651,11 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 		Crowsnest.move_crowsnest(vector.x, vector.y)
 
 		if vector.x > 0 then
+
+			Public.ensure_lane_generated_up_to(0, memory.overworldx + Crowsnest.Data.visibilitywidth)
+			Public.ensure_lane_generated_up_to(24, memory.overworldx + Crowsnest.Data.visibilitywidth)
+			Public.ensure_lane_generated_up_to(-24, memory.overworldx + Crowsnest.Data.visibilitywidth)
+			Public.overwrite_a_dock_upgrade()
 
 			-- crew bonus resources per x:
 			local crew = Common.crew_get_crew_members()

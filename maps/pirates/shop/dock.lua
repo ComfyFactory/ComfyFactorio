@@ -117,13 +117,13 @@ function Public.create_dock_markets(surface, p)
 
 	local e
 
-	e = surface.create_entity{name = 'market', position = {x = p.x - 22, y = p.y - 1}}
+	e = surface.create_entity{name = 'market', position = {x = p.x - 22, y = p.y - 1}, force = 'environment'}
 	if e and e.valid then
 		e.minable = false
 		e.rotatable = false
 		e.destructible = false
 
-		e.add_market_item{price = {{'coin', 1000}}, offer = {type = 'give-item', item = 'artillery-turret', count = 1}}
+		e.add_market_item{price = {{'repair-pack', 40}, {'coin', 1000}}, offer = {type = 'give-item', item = 'artillery-turret', count = 1}}
 
 		local upgrade_for_sale = Common.current_destination().static_params.upgrade_for_sale
 		if upgrade_for_sale then
@@ -133,7 +133,7 @@ function Public.create_dock_markets(surface, p)
 		destination.dynamic_data.dock_captains_market = e
 	end
 
-	e = surface.create_entity{name = 'market', position = {x = p.x - 7, y = p.y}}
+	e = surface.create_entity{name = 'market', position = {x = p.x - 7, y = p.y}, force = 'environment'}
 	if e and e.valid then
 		e.minable = false
 		e.rotatable = false
@@ -144,7 +144,7 @@ function Public.create_dock_markets(surface, p)
 		end
 	end
 
-	e = surface.create_entity{name = 'market', position = {x = p.x, y = p.y - 1}}
+	e = surface.create_entity{name = 'market', position = {x = p.x, y = p.y - 1}, force = 'environment'}
 	if e and e.valid then
 		e.minable = false
 		e.rotatable = false
@@ -181,7 +181,7 @@ function Public.create_dock_markets(surface, p)
 		end
 	end
 
-	e = surface.create_entity{name = 'market', position = {x = p.x + 7, y = p.y}}
+	e = surface.create_entity{name = 'market', position = {x = p.x + 7, y = p.y}, force = 'environment'}
 	if e and e.valid then
 		e.minable = false
 		e.rotatable = false

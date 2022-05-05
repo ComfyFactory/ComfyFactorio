@@ -93,13 +93,24 @@ function Public.kraken_tick(crew_id, kraken_id, step, substep)
 			Common.update_healthbar_rendering(healthbar, new_health)
 		end
 
-		if substep % 4 == 0 then
-			local crewmembers = Common.crew_get_crew_members()
+		local crewmembers = Common.crew_get_crew_members()
+		local crewCount = #crewmembers
+
+		-- firing speed now depends on player count:
+		local firing_period
+		if crewCount <= 8 then
+			firing_period = 4
+		elseif crewCount <= 16 then
+			firing_period = 3
+		else
+			firing_period = 2
+		end
+
+		if substep % firing_period == 0 then
 			local p_can_fire_at = {}
 			for _, player in pairs(crewmembers) do
 				local p = player.position
-				if player.surface == surface then
-				-- if player.surface == surface and Public.on_boat(memory.boat, p) then
+				if player.surface == surface then -- and Public.on_boat(memory.boat, p)
 					p_can_fire_at[#p_can_fire_at + 1] = p
 				end
 			end
@@ -282,12 +293,13 @@ function Public.kraken_die(kraken_id)
 
 	memory.active_sea_enemies.krakens[kraken_id] = nil
 
-	local reward = Balance.kraken_kill_reward()
-	Common.give_items_to_crew(reward)
+	local reward_items = Balance.kraken_kill_reward_items()
+	Common.give_items_to_crew(reward_items)
 
-	local force = memory.force
-	if not (force and force.valid) then return end
-	Common.notify_force_light(force,'Granted ' .. reward[1].count .. ' [item=sulfuric-acid-barrel]')
+	local reward_fuel = Balance.kraken_kill_reward_fuel()
+	memory.stored_fuel = memory.stored_fuel + reward_fuel
+
+	Common.notify_force_light(memory.force,'Granted: ' .. reward_fuel .. ' [item=coal], ' .. reward_items[2].count/1000 .. 'k [item=coin], ' .. reward_items[1].count .. ' [item=sulfuric-acid-barrel].')
 end
 
 local event = require 'utils.event'

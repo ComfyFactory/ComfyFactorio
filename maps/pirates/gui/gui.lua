@@ -588,11 +588,20 @@ function Public.process_etaframe_update(player, flow1, bools)
 
 			-- local caption
 			if bools.atsea_loading_bool then
-				flow2.etaframe_label_3.caption = 'Next escape cost:'
-				if bools.cost_includes_rocket_launch_bool then
-					tooltip = {'pirates.resources_needed_tooltip_1_rocketvariant'}
+				if memory.overworldx >= Balance.rockets_needed_x then --bools.eta_bool is not helpful yet
+					flow2.etaframe_label_3.caption = 'Next escape cost:'
+					if bools.cost_includes_rocket_launch_bool then
+						tooltip = {'pirates.resources_needed_tooltip_1_rocketvariant'}
+					else
+						tooltip = {'pirates.resources_needed_tooltip_1'}
+					end
 				else
-					tooltip = {'pirates.resources_needed_tooltip_1'}
+					flow2.etaframe_label_3.caption = 'Next escape cost:'
+					if bools.cost_includes_rocket_launch_bool then
+						tooltip = {'pirates.resources_needed_tooltip_0_rocketvariant'}
+					else
+						tooltip = {'pirates.resources_needed_tooltip_0'}
+					end
 				end
 			elseif (not bools.eta_bool) then
 				flow2.etaframe_label_3.visible = false
@@ -768,7 +777,7 @@ function Public.process_siloframe_and_questframe_updates(flowsilo, flowquest, bo
 
 				local tooltip = ''
 
-				if quest_complete then
+				if quest_complete and quest_reward then
 					tooltip = 'This island\'s quest is complete, and this is the reward.'
 					flow1.quest_label_1.caption = 'Quest:'
 					flow1.quest_label_1.style.font_color = GuiCommon.achieved_font_color
@@ -776,7 +785,7 @@ function Public.process_siloframe_and_questframe_updates(flowsilo, flowquest, bo
 					flow1.quest_label_3.visible = false
 					flow1.quest_label_4.visible = false
 					flow1.quest_label_2.caption = quest_reward.display_amount .. ' ' .. quest_reward.display_sprite
-				else
+				elseif quest_reward then
 					if quest_progress < quest_progressneeded then
 						flow1.quest_label_1.caption = 'Quest:'
 						flow1.quest_label_1.style.font_color = GuiCommon.bold_font_color
