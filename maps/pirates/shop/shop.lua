@@ -23,6 +23,37 @@ Public.Minimarket = require 'maps.pirates.shop.dock'
 
 
 
+function Public.print_transaction(player, offer, price)
+	local s1 = ' traded away '
+	local s2 = ''
+	local s3 = offer.count .. ' ' .. offer.item
+	if offer.item == 'coin' then s1 = ' sold ' end
+	for i, p in pairs(price) do
+		local p2 = {name = p.name, amount = p.amount}
+		if p2.name == 'raw-fish' then p2.name = 'fish' end
+		if p2.name == 'coin' then
+			s1 = ' bought '
+			p2.name = 'doubloons'
+		end
+		if i > 1 then
+			if i == #price then
+				s2 = s2 .. ' and '
+			else
+				s2 = s2 .. ', '
+			end
+		end
+		s2 = s2 .. p2.amount .. ' ' .. p2.name
+	end
+	if s1 == ' sold ' or s1 == ' traded away ' then
+		Common.notify_force_light(player.force, player.name .. s1 .. s2 .. ' for ' .. s3 .. '.')
+	else
+		Common.notify_force_light(player.force, player.name .. s1 .. s3 .. ' for ' .. s2 .. '.')
+	end
+end
+
+
+
+
 function Public.event_on_market_item_purchased(event)
     local player_index, market, offer_index, trade_count = event.player_index, event.market, event.offer_index, event.count
 	local player = game.players[player_index]
@@ -67,7 +98,7 @@ function Public.event_on_market_item_purchased(event)
 
 	if in_captains_cabin then
 		decay_type = 'static'
-	elseif offer_type == 'nothing' then
+	elseif offer_type == 'nothing' or dock_upgrades_market then
 		decay_type = 'one-off'
 	elseif simple_efficiency_trade_bool or special_purchase_bool then
 		decay_type = 'static'
@@ -223,23 +254,7 @@ function Public.event_on_market_item_purchased(event)
 						local price_name = price[1].name
 						Common.notify_force_light(player.force, player.name .. ' bought extra time at sea for ' .. price[1].amount .. ' ' .. price_name .. '.')
 					else
-						if price[2] then
-							local price_name = price[2].name
-							if price_name == 'raw-fish' then price_name = 'fish' end
-							Common.notify_force_light(player.force, player.name .. ' traded away ' .. price[1].amount .. ' ' .. price[1].name .. ' and ' .. price_name .. ' for ' .. this_offer.offer.count .. ' ' .. this_offer.offer.item .. '.')
-						else
-							local price_name = price[1].name
-							if price_name == 'raw-fish' then price_name = 'fish' end
-							if price_name == 'coin' then
-								Common.notify_force_light(player.force, player.name .. ' bought ' ..this_offer.offer.count .. ' ' .. this_offer.offer.item  .. ' for ' .. price[1].amount .. ' ' .. price_name .. '.')
-							elseif this_offer.offer.item == 'coin' then
-								local sold_amount = price[1].amount
-								if sold_amount == 1 then sold_amount = 'a' end
-								Common.notify_force_light(player.force, player.name .. ' sold ' .. sold_amount .. ' ' .. price_name .. ' for ' .. this_offer.offer.count .. ' ' .. this_offer.offer.item .. '.')
-							else
-								Common.notify_force_light(player.force, player.name .. ' traded away ' .. price[1].amount .. ' ' .. price_name .. ' for ' .. this_offer.offer.count .. ' ' .. this_offer.offer.item .. '.')
-							end
-						end
+						Public.print_transaction(player, this_offer.offer, price)
 					end
 				end
 			end

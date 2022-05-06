@@ -126,23 +126,21 @@ end
 function Public.wave_size_rng() -- random variance in attack sizes
 	local wave_size_multiplier = 1
 	local memory = Memory.get_crew_memory()
-	if memory.overworldx > 0 then
-		local rng1 = Math.random(100)
-		if rng1 <= 65 then
-			wave_size_multiplier = 0
+	local rng1 = Math.random(100)
+	if rng1 <= 65 then
+		wave_size_multiplier = 0
+	elseif memory.overworldx > 0 then
+		local rng2 = Math.random(1000)
+		if rng2 <= 900 then
+			wave_size_multiplier = 1
+		elseif rng2 <= 975 then
+			wave_size_multiplier = 1.5
+		elseif rng2 <= 985 then
+			wave_size_multiplier = 2
+		elseif rng2 <= 995 then
+			wave_size_multiplier = 2.5
 		else
-			local rng2 = Math.random(1000)
-			if rng2 <= 900 then
-				wave_size_multiplier = 1
-			elseif rng2 <= 975 then
-				wave_size_multiplier = 1.5
-			elseif rng2 <= 985 then
-				wave_size_multiplier = 2
-			elseif rng2 <= 995 then
-				wave_size_multiplier = 2.5
-			else
-				wave_size_multiplier = 3
-			end
+			wave_size_multiplier = 3
 		end
 	end
 
