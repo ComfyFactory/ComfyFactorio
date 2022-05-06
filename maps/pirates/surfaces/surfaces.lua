@@ -364,10 +364,6 @@ function Public.destination_on_departure(destination)
 
 	-- need to put tips only where we know there are islands:
 
-	if memory.overworldx == 40*5 then
-		Parrot.parrot_nightdamage_tip()
-	end
-
 	if memory.overworldx == 40*9 then
 		Parrot.parrot_kraken_warning()
 	end
@@ -397,8 +393,8 @@ function Public.destination_on_crewboat_hits_shore(destination)
 
 		if memory.overworldx == 0 then
 			Parrot.parrot_0()
-		-- elseif memory.overworldx == 80 then
-		-- 	Parrot.parrot_80()
+		elseif memory.overworldx == 80 then
+			Parrot.parrot_80()
 		end
 
 		if destination.subtype == Islands.enum.RADIOACTIVE then

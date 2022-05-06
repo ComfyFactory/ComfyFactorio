@@ -381,7 +381,7 @@ function Public.assign_captain_based_on_priorities(excluded_player_index)
 end
 
 
-function Public.captain_requisition(captain_index)
+function Public.captain_tax(captain_index)
 	local memory = Memory.get_crew_memory()
 	local any_taken = false
 
@@ -406,7 +406,7 @@ function Public.captain_requisition(captain_index)
 					if inv and inv.valid then
 						for _, i in pairs(items_to_req) do
 							local amount = inv.get_item_count(i)
-							if i == 'coin' then amount = Math.floor(amount/4) end
+							if i == 'coin' then amount = Math.floor(amount/10) end
 							if amount and amount > 0 then
 								inv.remove{name=i, count=amount}
 								captain_inv.insert{name=i, count=amount}

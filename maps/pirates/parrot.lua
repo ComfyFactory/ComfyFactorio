@@ -57,10 +57,11 @@ function Public.parrot_0()
 	local memory = Memory.get_crew_memory()
 	Common.parrot_speak(memory.force, 'We can wait here for as long as we like.')
 end
--- function Public.parrot_80()
--- 	local memory = Memory.get_crew_memory()
--- 	Common.parrot_speak(memory.force, 'Let\'s build out the ship?')
--- end
+function Public.parrot_80()
+	local memory = Memory.get_crew_memory()
+	-- Common.parrot_speak(memory.force, 'Let\'s build out the ship?')
+	Common.parrot_speak(memory.force, 'Did you know that biters deal more damage at night?')
+end
 function Public.parrot_boats_warning()
 	local memory = Memory.get_crew_memory()
 	Common.parrot_speak(memory.force, '200 leagues? I think we\'re being chased...')
@@ -88,10 +89,6 @@ end
 function Public.parrot_overstay_tip()
 	local memory = Memory.get_crew_memory()
 	Common.parrot_speak(memory.force, 'We\'ve been here quite a while! Check the evo...')
-end
-function Public.parrot_nightdamage_tip()
-	local memory = Memory.get_crew_memory()
-	Common.parrot_speak(memory.force, 'Did you know that biters deal more damage at night?')
 end
 
 -- function Public.parrot_say_tip()

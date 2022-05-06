@@ -912,34 +912,35 @@ local function base_kill_rewards(event)
 		iron_amount = 50
 	 	coin_amount = 280
 		 memory.playtesting_stats.coins_gained_by_nests_and_worms = memory.playtesting_stats.coins_gained_by_nests_and_worms + coin_amount
-	-- elseif memory.overworldx >= 0 then
-	elseif entity_name == 'small-biter' then
-		-- if Math.random(2) == 1 then
-		-- 	coin_amount = 1
-		-- end
-		coin_amount = 1
-		memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
-	elseif entity_name == 'small-spitter' then
-		coin_amount = 1
-		memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
-	elseif entity_name == 'medium-biter' then
-		coin_amount = 2
-		memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
-	elseif entity_name == 'medium-spitter' then
-		coin_amount = 2
-		memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
-	elseif entity_name == 'big-biter' then
-		coin_amount = 4
-		memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
-	elseif entity_name == 'big-spitter' then
-		coin_amount = 4
-		memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
-	elseif entity_name == 'behemoth-biter' then
-		coin_amount = 8
-		memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
-	elseif entity_name == 'behemoth-spitter' then
-		coin_amount = 8
-		memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
+	elseif memory.overworldx > 0 then --avoid coin farming on first island
+		if entity_name == 'small-biter' then
+			-- if Math.random(2) == 1 then
+			-- 	coin_amount = 1
+			-- end
+			coin_amount = 1
+			memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
+		elseif entity_name == 'small-spitter' then
+			coin_amount = 1
+			memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
+		elseif entity_name == 'medium-biter' then
+			coin_amount = 2
+			memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
+		elseif entity_name == 'medium-spitter' then
+			coin_amount = 2
+			memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
+		elseif entity_name == 'big-biter' then
+			coin_amount = 4
+			memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
+		elseif entity_name == 'big-spitter' then
+			coin_amount = 4
+			memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
+		elseif entity_name == 'behemoth-biter' then
+			coin_amount = 8
+			memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
+		elseif entity_name == 'behemoth-spitter' then
+			coin_amount = 8
+			memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
+		end
 	end
 
 	if coin_amount then
