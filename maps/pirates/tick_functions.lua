@@ -678,7 +678,7 @@ function Public.place_cached_structures(tickinterval)
 
 						local inv = e.get_inventory(defines.inventory.chest)
 						local loot = Loot.covered_wooden_chest_loot()
-						if k==1 then loot[1] = {name = 'coin', count = 1500} end
+						if k==1 then loot[1] = {name = 'coin', count = 2000} end
 						for j = 1, #loot do
 							local l = loot[j]
 							inv.insert(l)

@@ -341,7 +341,7 @@ end)
 
 commands.add_command(
 'req',
-'is a captain command to take \'important\' items from the crew into your inventory.',
+'is a captain command to take game-critical items from the crew into your inventory.',
 function(cmd)
 	local param = tostring(cmd.parameter)
 	if check_captain(cmd) then

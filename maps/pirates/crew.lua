@@ -713,6 +713,14 @@ function Public.initialise_crew(accepted_proposal)
 	memory.destinationsvisited_indices = {}
 	memory.stored_fuel = Balance.starting_fuel
 	memory.available_classes_pool = Classes.initial_class_pool()
+	memory.playtesting_stats = {
+		coins_gained_by_biters = 0,
+		coins_gained_by_nests_and_worms = 0,
+		coins_gained_by_trees_and_rocks = 0,
+		coins_gained_by_ore = 0,
+		coins_gained_by_rocket_launches = 0,
+		coins_gained_by_markets = 0,
+	}
 
 	memory.captain_accrued_time_data = {}
 	memory.max_players_recorded = 0

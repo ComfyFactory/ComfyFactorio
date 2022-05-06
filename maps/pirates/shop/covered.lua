@@ -23,35 +23,35 @@ Public.enum = enum
 
 
 Public.offers_loaders = {
-	{price = {{'coin', 1500}}, offer = {type = 'give-item', item = 'loader', count = 1}},
-	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'fast-loader', count = 1}},
-	{price = {{'coin', 3500}}, offer = {type = 'give-item', item = 'express-loader', count = 1}},
+	{price = {{'coin', 1800}}, offer = {type = 'give-item', item = 'loader', count = 1}},
+	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'fast-loader', count = 1}},
+	{price = {{'coin', 4200}}, offer = {type = 'give-item', item = 'express-loader', count = 1}},
 }
 
 Public.offers_rockets = {
-	{price = {{'coin', 200}, {'electronic-circuit', 80}}, offer = {type = 'give-item', item = 'rocket-launcher', count = 1}},
-	{price = {{'coin', 1000}, {'explosives', 20}, {'electronic-circuit', 20}}, offer = {type = 'give-item', item = 'rocket', count = 20}},
+	{price = {{'coin', 250}, {'electronic-circuit', 80}}, offer = {type = 'give-item', item = 'rocket-launcher', count = 1}},
+	{price = {{'coin', 1200}, {'explosives', 20}, {'electronic-circuit', 20}}, offer = {type = 'give-item', item = 'rocket', count = 20}},
 }
 
 Public.offers_default = {
-	{price = {{'coin', 600}}, offer = {type = 'give-item', item = 'copper-plate', count = 150}},
-	{price = {{'coin', 600}}, offer = {type = 'give-item', item = 'iron-plate', count = 150}},
-	{price = {{'coin', 450}}, offer = {type = 'give-item', item = 'piercing-rounds-magazine', count = 14}},
-	{price = {{'coin', 700}}, offer = {type = 'give-item', item = 'heavy-armor', count = 1}},
-	{price = {{'coin', 400}}, offer = {type = 'give-item', item = 'grenade', count = 10}},
-	{price = {{'coin', 300}}, offer = {type = 'give-item', item = 'defender-capsule', count = 3}},
-	{price = {{'coin', 400}}, offer = {type = 'give-item', item = 'distractor-capsule', count = 3}},
-	{price = {{'coin', 500}}, offer = {type = 'give-item', item = 'slowdown-capsule', count = 5}},
-	{price = {{'coin', 500}}, offer = {type = 'give-item', item = 'poison-capsule', count = 5}},
-	{price = {{'coin', 600}}, offer = {type = 'give-item', item = 'gate', count = 10}},
-	{price = {{'coin', 100}}, offer = {type = 'give-item', item = 'storage-tank', count = 4}},
-	{price = {{'coin', 200}}, offer = {type = 'give-item', item = 'big-electric-pole', count = 8}},
-	{price = {{'coin', 200}}, offer = {type = 'give-item', item = 'steel-furnace', count = 4}},
-	{price = {{'coin', 300}}, offer = {type = 'give-item', item = 'stack-inserter', count = 3}},
-	{price = {{'coin', 750}}, offer = {type = 'give-item', item = 'piercing-shotgun-shell', count = 9}},
-	{price = {{'coin', 800}}, offer = {type = 'give-item', item = 'flamethrower', count = 1}},
-	{price = {{'coin', 1500}}, offer = {type = 'give-item', item = 'flamethrower-ammo', count = 4}},
-	{price = {{'coin', 1500}}, offer = {type = 'give-item', item = 'flying-robot-frame', count = 1}},
+	{price = {{'coin', 720}}, offer = {type = 'give-item', item = 'copper-plate', count = 150}},
+	{price = {{'coin', 720}}, offer = {type = 'give-item', item = 'iron-plate', count = 150}},
+	{price = {{'coin', 540}}, offer = {type = 'give-item', item = 'piercing-rounds-magazine', count = 14}},
+	{price = {{'coin', 840}}, offer = {type = 'give-item', item = 'heavy-armor', count = 1}},
+	{price = {{'coin', 480}}, offer = {type = 'give-item', item = 'grenade', count = 10}},
+	{price = {{'coin', 360}}, offer = {type = 'give-item', item = 'defender-capsule', count = 3}},
+	{price = {{'coin', 480}}, offer = {type = 'give-item', item = 'distractor-capsule', count = 3}},
+	{price = {{'coin', 600}}, offer = {type = 'give-item', item = 'slowdown-capsule', count = 5}},
+	{price = {{'coin', 600}}, offer = {type = 'give-item', item = 'poison-capsule', count = 5}},
+	{price = {{'coin', 720}}, offer = {type = 'give-item', item = 'gate', count = 10}},
+	{price = {{'coin', 120}}, offer = {type = 'give-item', item = 'storage-tank', count = 4}},
+	{price = {{'coin', 240}}, offer = {type = 'give-item', item = 'big-electric-pole', count = 8}},
+	{price = {{'coin', 240}}, offer = {type = 'give-item', item = 'steel-furnace', count = 4}},
+	{price = {{'coin', 360}}, offer = {type = 'give-item', item = 'stack-inserter', count = 3}},
+	{price = {{'coin', 900}}, offer = {type = 'give-item', item = 'piercing-shotgun-shell', count = 9}},
+	{price = {{'coin', 960}}, offer = {type = 'give-item', item = 'flamethrower', count = 1}},
+	{price = {{'coin', 1800}}, offer = {type = 'give-item', item = 'flamethrower-ammo', count = 4}},
+	{price = {{'coin', 1800}}, offer = {type = 'give-item', item = 'flying-robot-frame', count = 1}},
 }
 
 

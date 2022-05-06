@@ -98,18 +98,18 @@ Public.Data.surfacename_rendering_pos = {x = -0.5, y = -15}
 Public.cabin_shop_data = {
 	{
 		price = {{'coal', 25}, {'coin', 300}},
-		offer = {type='give-item', item = 'artillery-shell', count = 6},
+		offer = {type='give-item', item = 'artillery-shell', count = 5},
 	},
 	{
-		price = {{'electronic-circuit', 30}, {'coin', 800}},
+		price = {{'electronic-circuit', 30}, {'coin', 1000}},
 		offer = {type='give-item', item = 'rail-signal', count = 100},
 	},
 	{
-		price = {{'stone-brick', 30}, {'coin', 1000}},
+		price = {{'stone-brick', 30}, {'coin', 2000}},
 		offer = {type='give-item', item = 'uranium-238', count = 10},
 	},
 	{
-		price = {{'coin', 20}},
+		price = {{'coin', 25}},
 		offer = {type='nothing', effect_description='Relax at sea for an extra minute: Increase the next destination\'s loading time by 60 seconds.'},
 	},
 }

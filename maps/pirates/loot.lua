@@ -41,7 +41,7 @@ Public.buried_treasure_loot_data_raw = {
 }
 
 Public.chest_loot_data_raw = {
-	{80, 0, 1, false, 'coin', 250, 500},
+	{80, 0, 1, false, 'coin', 400, 700},
 	{30, 0, 1, false, 'rail-signal', 25, 110},
 	{1, 0.2, 1, false, 'electric-engine-unit', 1, 2},
 	{3, 0, 1, false, 'small-lamp', 4, 16},
@@ -222,7 +222,7 @@ function Public.iron_chest_loot()
 	local loot = Public.chest_loot(num,
 	Math.max(0,Math.min(1, Math.sloped(Common.difficulty_scale(),1/2) * (5/100 + Common.game_completion_progress()))) --enforce 0 to 1
 ) --reward higher difficulties with better loot
-	loot[#loot + 1] = {name = 'coin', count = Math.random(1,1500)}
+	loot[#loot + 1] = {name = 'coin', count = Math.random(500,1500)}
 
     return loot
 end
@@ -348,7 +348,7 @@ Public.maze_treasure_data_raw = {
 
 	{2, 0, 1.5, true, 'production-science-pack', 20, 25},
 	{2, 0, 2, true, 'utility-science-pack', 7, 8},
-	{2, 0, 1.5, true, 'coin', 3000, 6500},
+	-- {2, 0, 1.5, true, 'coin', 4000, 6500},
 	{3, 0, 0.9, false, 'beacon', 1, 1},
 
 	{1, 0, 1, false, 'construction-robot', 30, 40},

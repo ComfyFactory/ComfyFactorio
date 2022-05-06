@@ -40,7 +40,7 @@ function Public.cost_to_leave_multiplier()
 	return Math.sloped(Common.difficulty_scale(), 8/10)
 end
 
-Public.rocket_launch_coin_reward = 5000
+Public.rocket_launch_coin_reward = 6000
 
 function Public.crew_scale()
 	local ret = Common.activecrewcount()/10
@@ -328,7 +328,7 @@ function Public.apply_crew_buffs_per_x(force)
 end
 
 function Public.class_cost()
-	return 8000
+	return 10000
 	-- return Math.ceil(10000 / (Public.crew_scale()*10/4)^(1/6))
 end
 
@@ -357,7 +357,7 @@ function Public.sandworm_evo_increase_per_spawn()
 end
 
 function Public.kraken_kill_reward_items()
-	return {{name = 'sulfuric-acid-barrel', count = 5}, {name = 'coin', count = 1000}}
+	return {{name = 'sulfuric-acid-barrel', count = 5}, {name = 'coin', count = 1200}}
 end
 function Public.kraken_kill_reward_fuel()
 	return 200

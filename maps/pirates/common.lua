@@ -1251,7 +1251,7 @@ function Public.send_important_items_from_player_to_crew(player, all_items)
 end
 
 
-function Public.give_items_to_crew(items)
+function Public.give_items_to_crew(items, prefer_alternate_chest)
 	local memory = Memory.get_crew_memory()
 
 	local boat = memory.boat
@@ -1260,8 +1260,18 @@ function Public.give_items_to_crew(items)
 	if not surface_name then return end
 	local surface = game.surfaces[surface_name]
 	if not (surface and surface.valid) then return end
-	local chest = boat.output_chest
-	if not (chest and chest.valid) then return end
+	local chest, chest2
+	if prefer_alternate_chest then
+		chest = boat.backup_output_chest
+		if not (chest and chest.valid) then return end
+		chest2 = boat.output_chest
+		if not (chest2 and chest2.valid) then return end
+	else
+		chest = boat.output_chest
+		if not (chest and chest.valid) then return end
+		chest2 = boat.backup_output_chest
+		if not (chest2 and chest2.valid) then return end
+	end
 
 	local inventory = chest.get_inventory(defines.inventory.chest)
 
@@ -1269,8 +1279,6 @@ function Public.give_items_to_crew(items)
 		if not (items.count and items.count>0) then return end
 		local inserted = inventory.insert(items)
 		if items.count - inserted > 0 then
-			local chest2 = boat.backup_output_chest
-			if not (chest2 and chest2.valid) then return end
 			local inventory2 = chest2.get_inventory(defines.inventory.chest)
 			local i2 = Utils.deepcopy(items)
 			if i2.name then
@@ -1294,8 +1302,6 @@ function Public.give_items_to_crew(items)
 			if not (i.count and i.count>0) then return end
 			local inserted = inventory.insert(i)
 			if i.count - inserted > 0 then
-				local chest2 = boat.backup_output_chest
-				if not (chest2 and chest2.valid) then return end
 				local inventory2 = chest2.get_inventory(defines.inventory.chest)
 				local i2 = Utils.deepcopy(i)
 				i2.count = i.count - inserted

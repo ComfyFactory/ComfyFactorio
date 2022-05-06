@@ -331,12 +331,12 @@ function Public.toggle_window(player)
 	flow3 = flow2.add({
 		name = 'capn_requisition',
 		type = 'button',
-		caption = 'Requisition Items',
+		caption = 'Tax Crew',
 	})
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
-	flow3.tooltip = 'Take doubloons and other important items from each non-officer.'
+	flow3.tooltip = 'For each non-officer in your crew, takes a quarter of their doubloons (along with other game-critical items).'
 
 
 	flow2 = flow.add({

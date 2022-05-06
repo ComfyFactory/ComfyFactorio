@@ -695,16 +695,20 @@ local function event_on_player_mined_entity(event)
 				if memory.classes_table and memory.classes_table[event.player_index] then
 					if memory.classes_table[event.player_index] == Classes.enum.LUMBERJACK then
 						give[#give + 1] = {name = 'wood', count = 1}
-						if Math.random(7) == 1 then
-							give[#give + 1] = {name = 'coin', count = 15}
+						if Math.random(6) == 1 then
+							local a = 15
+							give[#give + 1] = {name = 'coin', count = a}
+							memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
 						end
 					elseif memory.classes_table[event.player_index] == Classes.enum.WOOD_LORD then
 						give[#give + 1] = {name = 'wood', count = 1}
 						give[#give + 1] = {name = 'iron-ore', count = 1}
 						give[#give + 1] = {name = 'copper-ore', count = 1}
 						give[#give + 1] = {name = 'coal', count = 1}
-						if Math.random(7) == 1 then
-							give[#give + 1] = {name = 'coin', count = 15}
+						if Math.random(6) == 1 then
+							local a = 15
+							give[#give + 1] = {name = 'coin', count = a}
+							memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
 						end
 					end
 				end
@@ -722,21 +726,27 @@ local function event_on_player_mined_entity(event)
 
 				if memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.LUMBERJACK then
 					give[#give + 1] = {name = 'wood', count = amount + 3}
-					if Math.random(7) == 1 then
-						give[#give + 1] = {name = 'coin', count = 15}
+					if Math.random(6) == 1 then
+						local a = 15
+						give[#give + 1] = {name = 'coin', count = a}
+						memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
 					end
 				elseif memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.WOOD_LORD then
 					give[#give + 1] = {name = 'wood', count = amount + 3}
 					give[#give + 1] = {name = 'iron-ore', count = 1}
 					give[#give + 1] = {name = 'copper-ore', count = 1}
 					give[#give + 1] = {name = 'coal', count = 1}
-					if Math.random(7) == 1 then
-						give[#give + 1] = {name = 'coin', count = 15}
+					if Math.random(6) == 1 then
+						local a = 15
+						give[#give + 1] = {name = 'coin', count = a}
+						memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
 					end
 				else
 					give[#give + 1] = {name = 'wood', count = amount}
-					if Math.random(7) == 1 then --tuned
-						give[#give + 1] = {name = 'coin', count = 5}
+					if Math.random(6) == 1 then --tuned
+						local a = 5
+						give[#give + 1] = {name = 'coin', count = a}
+						memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
 					end
 				end
 
@@ -750,7 +760,7 @@ local function event_on_player_mined_entity(event)
 
 
 		if memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.MASTER_ANGLER then
-			Common.give(player, {{name = 'raw-fish', count = 4}, {name = 'coin', count = 8}}, entity.position)
+			Common.give(player, {{name = 'raw-fish', count = 4}, {name = 'coin', count = 10}}, entity.position)
 		elseif memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.DREDGER then
 			local to_give = {{name = 'raw-fish', count = 4}}
 			to_give[#to_give + 1] = Loot.dredger_loot()[1]
@@ -768,14 +778,20 @@ local function event_on_player_mined_entity(event)
 
 		if memory.overworldx > 0 then
 			if memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.PROSPECTOR then
-				give[#give + 1] = {name = 'coin', count = 3}
+				local a = 3
+				give[#give + 1] = {name = 'coin', count = a}
+				memory.playtesting_stats.coins_gained_by_ore = memory.playtesting_stats.coins_gained_by_ore + a
 				give[#give + 1] = {name = entity.name, count = 6}
 			elseif memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.CHIEF_EXCAVATOR then
-				give[#give + 1] = {name = 'coin', count = 4}
+				local a = 4
+				give[#give + 1] = {name = 'coin', count = a}
+				memory.playtesting_stats.coins_gained_by_ore = memory.playtesting_stats.coins_gained_by_ore + a
 				give[#give + 1] = {name = entity.name, count = 12}
 			else
 				if memory.overworldx > 0 then
-					give[#give + 1] = {name = 'coin', count = 1}
+					local a = 1
+					give[#give + 1] = {name = 'coin', count = a}
+					memory.playtesting_stats.coins_gained_by_ore = memory.playtesting_stats.coins_gained_by_ore + a
 				end
 				give[#give + 1] = {name = entity.name, count = 2}
 			end
@@ -806,12 +822,16 @@ local function event_on_player_mined_entity(event)
 
 				if memory.overworldx >= 0 then --used to be only later levels
 					if entity.name == 'rock-huge' then
-						c2[#c2 + 1] = {name = 'coin', count = 45, color = CoreData.colors.coin}
+						local a = 55
+						c2[#c2 + 1] = {name = 'coin', count = a, color = CoreData.colors.coin}
+						memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
 						if Math.random(1, 35) == 1 then
 							c2[#c2 + 1] = {name = 'crude-oil-barrel', count = 1, color = CoreData.colors.oil}
 						end
 					else
-						c2[#c2 + 1] = {name = 'coin', count = 30, color = CoreData.colors.coin}
+						local a = 35
+						c2[#c2 + 1] = {name = 'coin', count = a, color = CoreData.colors.coin}
+						memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
 						if Math.random(1, 35*3) == 1 then
 							c2[#c2 + 1] = {name = 'crude-oil-barrel', count = 1, color = CoreData.colors.oil}
 						end
@@ -874,38 +894,52 @@ local function base_kill_rewards(event)
 
 	if entity_name == 'small-worm-turret' then
 		iron_amount = 5
-		coin_amount = 50
+		coin_amount = 60
+		memory.playtesting_stats.coins_gained_by_nests_and_worms = memory.playtesting_stats.coins_gained_by_nests_and_worms + coin_amount
 	elseif entity_name == 'medium-worm-turret' then
 		iron_amount = 20
-		coin_amount = 80
+		coin_amount = 100
+		memory.playtesting_stats.coins_gained_by_nests_and_worms = memory.playtesting_stats.coins_gained_by_nests_and_worms + coin_amount
 	elseif entity_name == 'biter-spawner' or entity_name == 'spitter-spawner' then
 		iron_amount = 30
-		coin_amount = 80
+		coin_amount = 100
+		memory.playtesting_stats.coins_gained_by_nests_and_worms = memory.playtesting_stats.coins_gained_by_nests_and_worms + coin_amount
 	elseif entity_name == 'big-worm-turret' then
 		iron_amount = 30
-		coin_amount = 120
+		coin_amount = 160
+		memory.playtesting_stats.coins_gained_by_nests_and_worms = memory.playtesting_stats.coins_gained_by_nests_and_worms + coin_amount
 	elseif entity_name == 'behemoth-worm-turret' then
 		iron_amount = 50
-	-- 	coin_amount = 240
+	 	coin_amount = 280
+		 memory.playtesting_stats.coins_gained_by_nests_and_worms = memory.playtesting_stats.coins_gained_by_nests_and_worms + coin_amount
 	-- elseif memory.overworldx >= 0 then
 	elseif entity_name == 'small-biter' then
-		if Math.random(2) == 1 then
-			coin_amount = 1
-		end
+		-- if Math.random(2) == 1 then
+		-- 	coin_amount = 1
+		-- end
+		coin_amount = 1
+		memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
 	elseif entity_name == 'small-spitter' then
 		coin_amount = 1
+		memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
 	elseif entity_name == 'medium-biter' then
-		coin_amount = 1
+		coin_amount = 2
+		memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
 	elseif entity_name == 'medium-spitter' then
 		coin_amount = 2
+		memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
 	elseif entity_name == 'big-biter' then
-		coin_amount = 2
+		coin_amount = 4
+		memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
 	elseif entity_name == 'big-spitter' then
 		coin_amount = 4
+		memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
 	elseif entity_name == 'behemoth-biter' then
-		coin_amount = 4
+		coin_amount = 8
+		memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
 	elseif entity_name == 'behemoth-spitter' then
 		coin_amount = 8
+		memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
 	end
 
 	if coin_amount then
@@ -1566,7 +1600,10 @@ local function event_on_rocket_launched(event)
 	destination.dynamic_data.rocketlaunched = true
 	if memory.stored_fuel and destination.dynamic_data and destination.dynamic_data.rocketcoalreward then
 		memory.stored_fuel = memory.stored_fuel + destination.dynamic_data.rocketcoalreward
-		Common.give_items_to_crew{{name = 'coin', count = Balance.rocket_launch_coin_reward}}
+		local a = Balance.rocket_launch_coin_reward
+		Common.give_items_to_crew({{name = 'coin', count = a}}, true)
+		memory.playtesting_stats.coins_gained_by_rocket_launches = memory.playtesting_stats.coins_gained_by_rocket_launches + a
+
 	end
 
 	local force = memory.force

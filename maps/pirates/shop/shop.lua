@@ -81,6 +81,8 @@ function Public.event_on_market_item_purchased(event)
 		decay_type = 'decay'
 	end
 
+	local refunds = 0
+
 	-- Normally we want to disallow multi-purchases in this game (with the exception of static trades for items), so refund any additional purchases:
 	if (decay_type ~= 'static' or offer_type == 'nothing') and player and trade_count and trade_count > 1 then
 		inv = player.get_inventory(defines.inventory.character_main)
@@ -91,6 +93,7 @@ function Public.event_on_market_item_purchased(event)
 		if offer_type == 'give-item' then
 			inv.remove{name = offer_giveitem_name, count = offer_giveitem_count * (trade_count - 1)}
 		end
+		refunds = refunds + (trade_count - 1)
 	end
 
 	if decay_type == 'one-off' then
@@ -110,6 +113,7 @@ function Public.event_on_market_item_purchased(event)
 				for _, p in pairs(price) do
 					inv.insert{name = p.name, count = p.amount}
 				end
+				refunds = refunds + 1
 			else
 				if offer_type == 'give-item' then
 					-- heal all cannons:
@@ -189,6 +193,7 @@ function Public.event_on_market_item_purchased(event)
 					for _, p in pairs(price) do
 						inv.insert{name = p.name, count = p.amount}
 					end
+					refunds = refunds + 1
 				end
 			else
 				Common.notify_force_light(player.force, player.name .. ' bought ' .. this_offer.offer.count .. ' ' .. this_offer.offer.item .. ' for ' .. price[1].amount .. ' ' .. price[1].name .. '.')
@@ -209,6 +214,7 @@ function Public.event_on_market_item_purchased(event)
 			if offer_type == 'give-item' then
 				inv.remove{name = offer_giveitem_name, count = offer_giveitem_count}
 			end
+			refunds = refunds + 1
 		else
 			-- print:
 			if (price and price[1]) then
@@ -248,6 +254,7 @@ function Public.event_on_market_item_purchased(event)
 					for _, p in pairs(price) do
 						inv.insert{name = p.name, count = p.amount}
 					end
+					refunds = refunds + 1
 				end
 			else
 	
@@ -279,6 +286,10 @@ function Public.event_on_market_item_purchased(event)
 				end
 			end
 		end
+	end
+
+	if this_offer.offer.item == 'coin' then
+		memory.playtesting_stats.coins_gained_by_markets = memory.playtesting_stats.coins_gained_by_markets + this_offer.offer.count
 	end
 end
 
