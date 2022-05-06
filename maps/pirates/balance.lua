@@ -253,12 +253,17 @@ function Public.evolution_per_full_silo_charge()
 	return 0.05 + 0.03 * Common.overworldx()/1000
 end
 
-function Public.bonus_damage_to_humans()
-	local ret = 0.025
-	local diff = Common.difficulty_scale()
-	if diff <= 0.7 then ret = 0 end
-	if diff >= 1.3 then ret = 0.050 end
-	return ret
+-- function Public.bonus_damage_to_humans()
+-- 	local ret = 0.025
+-- 	local diff = Common.difficulty_scale()
+-- 	if diff <= 0.7 then ret = 0 end
+-- 	if diff >= 1.3 then ret = 0.050 end
+-- 	return ret
+-- end
+
+
+function Public.biter_timeofday_bonus_damage(darkness) -- a surface having min_brightness of 0.2 will cap this at 0.8
+	return 0.1 * darkness
 end
 
 
@@ -332,7 +337,8 @@ Public.covered_first_appears_at = 40
 
 Public.starting_fuel = 4000
 
-Public.silo_max_hp = 8000
+Public.silo_max_hp = 5000
+Public.silo_resistance_factor = 7
 
 function Public.pistol_damage_multiplier() return 2.25 end --2.0 slightly too low, 2.5 causes players to yell at each other for not using pistol
 

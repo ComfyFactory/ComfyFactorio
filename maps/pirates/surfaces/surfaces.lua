@@ -227,8 +227,8 @@ function Public.destination_on_collide(destination)
 
 	if memory.overworldx == 40*5 then
 		Parrot.parrot_boats_warning()
-	elseif memory.overworldx == 800 then
-		Parrot.parrot_800_tip()
+	-- elseif memory.overworldx == 800 then
+	-- 	Parrot.parrot_800_tip()
 	end
 end
 
@@ -358,6 +358,10 @@ end
 function Public.destination_on_departure(destination)
 	local memory = Memory.get_crew_memory()
 	-- local boat = memory.boat
+
+	if memory.overworldx == 40*5 then
+		Parrot.parrot_nightdamage_tip()
+	end
 
 	if memory.overworldx == 40*9 then
 		Parrot.parrot_kraken_warning()

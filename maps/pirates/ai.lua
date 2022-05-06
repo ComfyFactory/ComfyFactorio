@@ -68,18 +68,14 @@ function Public.Tick_actions(tickinterval)
 
         [16] = Public.tell_biters_near_silo_to_attack_it,
         [18] = Public.poke_script_groups,
-        [20] = Public.try_rogue_attack,
+        [20] = Public.try_secondary_attack,
 
         [32] = Public.tell_biters_near_silo_to_attack_it,
         [34] = Public.poke_script_groups,
-        [36] = Public.try_main_attack,
+        [36] = Public.try_rogue_attack,
 
-        [46] = Public.tell_biters_near_silo_to_attack_it,
-        [48] = Public.poke_script_groups,
-        [50] = Public.try_secondary_attack,
-
-        [56] = Public.poke_inactive_scripted_biters,
-        [58] = Public.create_mail_delivery_biters,
+        [46] = Public.poke_inactive_scripted_biters,
+        [48] = Public.create_mail_delivery_biters,
     }
 
     if minute_cycle[(game.tick / 60) % 60] then
@@ -132,7 +128,7 @@ function Public.wave_size_rng() -- random variance in attack sizes
 	local memory = Memory.get_crew_memory()
 	if memory.overworldx > 0 then
 		local rng1 = Math.random(100)
-		if rng1 <= 74 then
+		if rng1 <= 65 then
 			wave_size_multiplier = 0
 		else
 			local rng2 = Math.random(1000)

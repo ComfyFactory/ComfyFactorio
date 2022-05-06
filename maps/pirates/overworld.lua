@@ -79,6 +79,12 @@ function Public.generate_destination_type_and_subtype(overworld_position)
 	if macro_x == 4 then
 		island_subtype_raffle = Utils.ordered_table_with_values_removed(island_subtype_raffle, Surfaces.Island.enum.STANDARD)
 	end
+	if macro_x == 11 then
+		island_subtype_raffle = Utils.ordered_table_with_values_removed(island_subtype_raffle, 'none') --make sure there's an island after kraken
+	end
+	if macro_x == 12 then
+		island_subtype_raffle = Utils.ordered_table_with_values_removed(island_subtype_raffle, 'none') --make sure there's another island after kraken
+	end
 	if macro_x == 18 then
 		island_subtype_raffle = Utils.ordered_table_with_values_removed(island_subtype_raffle, 'none') --flying-robot-frame cost is here, and we just make sure there's an island to see it
 	end
@@ -140,7 +146,7 @@ function Public.generate_destination_type_and_subtype(overworld_position)
 	-- 	else
 	-- 		type = nil
 	-- 	end
-	elseif macro_x == 11 then --just after krakens, but dock is here too, so there's a choice
+	elseif macro_x == 12 and macro_y < 1 then
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.SWAMP
 	elseif macro_x == 16 then

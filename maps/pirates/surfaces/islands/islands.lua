@@ -328,7 +328,7 @@ function Public.spawn_silo_setup()
 			silo.operable = false
 			if i == 1 then
 				silo.auto_launch = true
-				Common.new_healthbar(true, silo, Balance.silo_max_hp, nil, Balance.silo_max_hp, 0.6)
+				Common.new_healthbar(true, silo, Balance.silo_max_hp, nil, Balance.silo_max_hp, 0.6, -2)
 			else
 				silo.destructible = false
 			end
@@ -399,7 +399,7 @@ function Public.spawn_enemy_boat(type)
 			-- e.destructible = false
 			boat.spawner = e
 
-			Common.new_healthbar(false, e, 350, nil, 350, 0.5)
+			Common.new_healthbar(true, e, 900, nil, 900, 0.5)
 		end
 
 		return enemyboats[#enemyboats]

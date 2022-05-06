@@ -746,7 +746,7 @@ function Public.initialise_crew(accepted_proposal)
 	local boat = memory.boat
 
 	for _, e in pairs(memory.boat.cannons_temporary_reference or {}) do
-		Common.new_healthbar(true, e, 2000, nil, e.health, 0.3, memory.boat)
+		Common.new_healthbar(true, e, 2000, nil, e.health, 0.3, -0.1, memory.boat)
 	end
 
 	boat.dockedposition = boat.position
@@ -850,13 +850,21 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['inserter-capacity-bonus-1'].researched = true --needed to make stack inserters different to fast inserters
 	-- crew_force.technologies['inserter-capacity-bonus-2'].researched = true
 
+	--as prerequisites for uranium ammo and automation 3:
+	crew_force.technologies['speed-module'].researched = true
+	crew_force.technologies['tank'].researched = true
+	crew_force.recipes['speed-module'].enabled = false
+	crew_force.recipes['tank'].enabled = false
+	crew_force.recipes['cannon-shell'].enabled = false
+	crew_force.recipes['explosive-cannon-shell'].enabled = false
+
 	--@TRYING this out:
 	crew_force.technologies['coal-liquefaction'].enabled = true
 	crew_force.technologies['coal-liquefaction'].researched = true
 
 	crew_force.technologies['automobilism'].enabled = false
 
-	-- note: some of these are overwritten after tech researched!!!!!!! like pistol
+	-- note: many of these recipes are overwritten after tech researched!!!!!!! like pistol. check elsewhere in code
 
 	crew_force.recipes['pistol'].enabled = false
 
@@ -939,8 +947,9 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['stronger-explosives-5'].enabled = false
 	crew_force.technologies['stronger-explosives-6'].enabled = false
 	crew_force.technologies['stronger-explosives-7'].enabled = false
+	-- these require 2000 white sci each:
 	crew_force.technologies['artillery-shell-range-1'].enabled = false --infinite techs
-	-- crew_force.technologies['artillery-shell-speed-1'].enabled = false --infinite techs
+	crew_force.technologies['artillery-shell-speed-1'].enabled = false --infinite techs
 
 	crew_force.technologies['steel-axe'].enabled = false
 
@@ -949,7 +958,8 @@ function Public.reset_crew_and_enemy_force(id)
 
 	crew_force.technologies['effect-transmission'].enabled = true
 
-	crew_force.technologies['gate'].enabled = false
+	-- exploit?:
+	crew_force.technologies['gate'].enabled = true
 
 	crew_force.technologies['productivity-module-2'].enabled = true
 	crew_force.technologies['productivity-module-3'].enabled = false

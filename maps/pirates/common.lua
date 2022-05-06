@@ -390,10 +390,10 @@ end
 function Public.surplus_evo_biter_damage_modifier(surplus_evo)
 	return Math.floor(surplus_evo/2*1000)/1000 --is this floor needed?
 end
-function Public.surplus_evo_biter_health_fractional_modifier(surplus_evo)
-	return surplus_evo*3
-	-- return Math.floor(surplus_evo*3*1000)/1000
-end
+-- function Public.surplus_evo_biter_health_fractional_modifier(surplus_evo)
+-- 	return surplus_evo*3
+-- 	-- return Math.floor(surplus_evo*3*1000)/1000
+-- end
 
 function Public.set_biter_surplus_evo_modifiers()
 	local memory = Memory.get_crew_memory()
@@ -652,10 +652,11 @@ function Public.spend_stored_resources(to_spend)
 end
 
 
-function Public.new_healthbar(text, target_entity, max_health, optional_id, health, size, location_override)
+function Public.new_healthbar(text, target_entity, max_health, optional_id, health, size, extra_offset, location_override)
 	health = health or max_health
 	size = size or 0.5
 	text = text or false
+	extra_offset = extra_offset or 0
 	location_override = location_override or Memory.get_crew_memory()
 
 	local render1 = rendering.draw_sprite(
@@ -666,7 +667,7 @@ function Public.new_healthbar(text, target_entity, max_health, optional_id, heal
 			y_scale = size,
 			render_layer = 'light-effect',
 			target = target_entity,
-			target_offset = {0, -2.5},
+			target_offset = {0, -2.5 + extra_offset},
 			surface = target_entity.surface,
 		}
 	)
@@ -675,10 +676,10 @@ function Public.new_healthbar(text, target_entity, max_health, optional_id, heal
 		render2 = rendering.draw_text(
 		{
 			color = {255, 255, 255},
-			scale = 2,
+			scale = 1.2 + size*2,
 			render_layer = 'light-effect',
 			target = target_entity,
-			target_offset = {0, -4},
+			target_offset = {0, -3.6 - size*0.6 + extra_offset},
 			surface = target_entity.surface,
 			alignment = 'center',
 		}
@@ -689,6 +690,7 @@ function Public.new_healthbar(text, target_entity, max_health, optional_id, heal
 		health = health,
 		max_health = max_health,
 		size = size,
+		extra_offset = extra_offset,
 		render1 = render1,
 		render2 = render2,
 		id = optional_id,
@@ -718,7 +720,7 @@ function Public.transfer_healthbar(old_unit_number, new_entity, location_overrid
 	-- 	memory.healthbars[new_unit_number] = old_healthbar
 	-- end
 
-	Public.new_healthbar(old_healthbar.render2, new_entity, old_healthbar.max_health, old_healthbar.id, old_healthbar.health, old_healthbar.size, location_override)
+	Public.new_healthbar(old_healthbar.render2, new_entity, old_healthbar.max_health, old_healthbar.id, old_healthbar.health, old_healthbar.size, old_healthbar.extra_offset, location_override)
 
 	if rendering.is_valid(old_healthbar.render1) then
 		rendering.destroy(old_healthbar.render1)
@@ -730,11 +732,11 @@ function Public.transfer_healthbar(old_unit_number, new_entity, location_overrid
 	location_override.healthbars[old_unit_number] = nil
 end
 
-function Public.entity_damage_healthbar(entity, damage)
-	local memory = Memory.get_crew_memory()
+function Public.entity_damage_healthbar(entity, damage, location_override)
+	location_override = location_override or Memory.get_crew_memory()
 	local unit_number = entity.unit_number
 
-	local healthbar = memory.healthbars[unit_number]
+	local healthbar = location_override.healthbars[unit_number]
 	if not healthbar then return 0 end
 
 	local new_health = healthbar.health - damage

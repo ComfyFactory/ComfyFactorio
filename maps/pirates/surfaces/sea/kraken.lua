@@ -254,7 +254,7 @@ function Public.kraken_move(kraken_id, new_p, new_frame)
 		kraken_data.spawner_entity.teleport(new_p_2.x - old_p_2.x, new_p_2.y - old_p_2.y)
 	else
 		kraken_data.spawner_entity = surface.create_entity{name = 'biter-spawner', position = new_p_2, force = memory.enemy_force_name}
-		Common.new_healthbar(true, kraken_data.spawner_entity, kraken_data.max_health, kraken_id)
+		Common.new_healthbar(true, kraken_data.spawner_entity, kraken_data.max_health, kraken_id, kraken_data.max_health, 0.8)
 	end
 
 	if old_frame then --cleanup old tiles

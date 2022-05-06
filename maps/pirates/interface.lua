@@ -143,7 +143,7 @@ local function protect_special_entities(event)
 end
 
 
-local function silo_damage(event)
+local function damage_to_silo(event)
 	local memory = Memory.get_crew_memory()
 	local entity = event.entity
 
@@ -152,7 +152,7 @@ local function silo_damage(event)
 		if destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid and entity == Common.current_destination().dynamic_data.rocketsilos[1] then
 			
 			if string.sub(event.cause.force.name, 1, 4) ~= 'crew' then
-				if Common.entity_damage_healthbar(entity, event.original_damage_amount / 4) <= 0 then
+				if Common.entity_damage_healthbar(entity, event.original_damage_amount / Balance.silo_resistance_factor * (1 + Balance.biter_timeofday_bonus_damage(event.cause.surface.darkness))) <= 0 then
 					Public.silo_die()
 				else
 					destination.dynamic_data.rocketsilohp = memory.healthbars[entity.unit_number].health
@@ -178,10 +178,10 @@ local function damage_to_enemyboat_spawners(event)
 						local damage = event.final_damage_amount
 						local adjusted_damage = damage
 
-						adjusted_damage = adjusted_damage / 3
+						adjusted_damage = adjusted_damage / 2.6
 
 						if event.cause.name == 'artillery-turret' then
-							adjusted_damage = adjusted_damage / 1.8
+							adjusted_damage = adjusted_damage / 2
 						end
 
 						if Common.entity_damage_healthbar(event.entity, adjusted_damage) <= 0 then
@@ -197,7 +197,6 @@ end
 local function damage_to_artillery(event)
 	-- local memory = Memory.get_crew_memory()
 
-	if not (event.entity and event.entity.valid and event.entity.name and event.entity.name == 'artillery-turret') then return end
 	if not event.cause then return end
 	if not event.cause.valid then return end
 	if not event.cause.name then return end
@@ -209,7 +208,7 @@ local function damage_to_artillery(event)
 		-- remove resistances:
 		-- event.entity.health = event.entity.health + event.final_damage_amount - event.original_damage_amount
 
-		if Common.entity_damage_healthbar(event.entity, event.original_damage_amount) <= 0 then
+		if Common.entity_damage_healthbar(event.entity, event.original_damage_amount / 1.5 * (1 + Balance.biter_timeofday_bonus_damage(event.cause.surface.darkness)), Memory.get_crew_memory().boat) <= 0 then
 			event.entity.die()
 		end
 	else
@@ -266,13 +265,11 @@ end
 local function damage_to_players_changes(event)
 	local memory = Memory.get_crew_memory()
 
-	if not (event.entity and event.entity.valid and event.entity.name and event.entity.name == 'character') then return end
 	if not event.cause then return end
 	if not event.cause.valid then return end
 	if not event.cause.name then return end
 
 	-- if not (event.cause.name == 'small-biter') or (event.cause.name == 'small-spitter') or (event.cause.name == 'medium-biter') or (event.cause.name == 'medium-spitter') or (event.cause.name == 'big-biter') or (event.cause.name == 'big-spitter') or (event.cause.name == 'behemoth-biter') or (event.cause.name == 'behemoth-spitter') then return end
-	-- if string.sub(event.cause.force.name, 1, 5) ~= 'enemy' then return end --Enemy Forces
 
 	local player_index = event.entity.player.index
 	local class = memory.classes_table and memory.classes_table[player_index]
@@ -297,10 +294,14 @@ local function damage_to_players_changes(event)
 			if count and count >= 3500 then
 				damage_multiplier = damage_multiplier * 0.18
 			end
-		else
-			damage_multiplier = damage_multiplier * (1 + Balance.bonus_damage_to_humans())
+		-- else
+		-- 	damage_multiplier = damage_multiplier * (1 + Balance.bonus_damage_to_humans())
 		end
 	end
+
+	if string.sub(event.cause.force.name, 1, 5) == 'enemy' then
+		damage_multiplier = damage_multiplier * (1 + Balance.biter_timeofday_bonus_damage(event.cause.surface.darkness))
+	end --Enemy Forces
 
 
 	if damage_multiplier > 1 then
@@ -309,6 +310,28 @@ local function damage_to_players_changes(event)
 		event.entity.health = event.entity.health + event.final_damage_amount * (1 - damage_multiplier)
 	end
 end
+
+
+local function other_enemy_damage_bonuses(event)
+
+	if not event.cause then return end
+	if not event.cause.valid then return end
+	if not event.cause.name then return end
+	if not event.cause.surface then return end
+	if not event.cause.surface.valid then return end
+
+	if event.damage_type.name == 'impact' then return end --avoid circularity
+
+	-- if not (event.cause.name == 'small-biter') or (event.cause.name == 'small-spitter') or (event.cause.name == 'medium-biter') or (event.cause.name == 'medium-spitter') or (event.cause.name == 'big-biter') or (event.cause.name == 'big-spitter') or (event.cause.name == 'behemoth-biter') or (event.cause.name == 'behemoth-spitter') then return end
+	if string.sub(event.cause.force.name, 1, 5) ~= 'enemy' then return end --Enemy Forces
+
+	local bonusDamage = event.final_damage_amount * Balance.biter_timeofday_bonus_damage(event.cause.surface.darkness)
+
+	if bonusDamage > 0 then
+		event.entity.damage(bonusDamage, event.cause.force, 'impact', event.cause)
+	end
+end
+
 
 
 local function damage_dealt_by_players_changes(event)
@@ -455,30 +478,31 @@ end
 
 
 
-local function damage_to_enemies(event)
-	local memory = Memory.get_crew_memory()
+-- functions like this need to be rewritten so they play nicely with healthbars:
+-- local function damage_to_enemies(event)
+-- 	local memory = Memory.get_crew_memory()
 
-	if not (event.entity and event.entity.valid and event.entity.force and event.entity.force.valid) then return end
+-- 	if not (event.entity and event.entity.valid and event.entity.force and event.entity.force.valid) then return end
 
-	if not string.sub(event.entity.force.name, 1, 5) == 'enemy' then return end
-	local evo = memory.evolution_factor
+-- 	if not string.sub(event.entity.force.name, 1, 5) == 'enemy' then return end
+-- 	local evo = memory.evolution_factor
 
-	if evo and evo > 1 and event.final_health > 0 then --lethal damage needs to be unaffected, else they never die
+-- 	if evo and evo > 1 and event.final_health > 0 then --lethal damage needs to be unaffected, else they never die
 
-		local surplus = evo - 1
+-- 		local surplus = evo - 1
 
-		local damage_multiplier = 1/(1 + Common.surplus_evo_biter_health_fractional_modifier(surplus))
+-- 		local damage_multiplier = 1/(1 + Common.surplus_evo_biter_health_fractional_modifier(surplus))
 
-		if damage_multiplier < 1 then
-			event.entity.health = event.entity.health + event.final_damage_amount * (1 - damage_multiplier)
-		end
-	end
+-- 		if damage_multiplier < 1 then
+-- 			event.entity.health = event.entity.health + event.final_damage_amount * (1 - damage_multiplier)
+-- 		end
+-- 	end
 
-	-- commented out as this is done elsewhere:
-	-- if event.damage_type.name == 'poison' then
-	-- 		event.entity.health = event.entity.health + event.final_damage_amount
-	-- end
-end
+-- 	-- commented out as this is done elsewhere:
+-- 	-- if event.damage_type.name == 'poison' then
+-- 	-- 		event.entity.health = event.entity.health + event.final_damage_amount
+-- 	-- end
+-- end
 
 
 local function event_on_entity_damaged(event)
@@ -494,23 +518,33 @@ local function event_on_entity_damaged(event)
 	-- local difficulty = memory.difficulty
 
 	if not event.entity.valid then return end
-	silo_damage(event)
+
+	damage_to_silo(event)
+	damage_to_krakens(event)
+	damage_to_enemyboat_spawners(event)
+
+	if event.entity and event.entity.valid and event.entity.name and event.entity.name == 'artillery-turret' then
+		damage_to_artillery(event)
+	end
+
 	protect_special_entities(event)
-	if not event.entity.valid then return end -- need to call again, silo might be dead
+
+	if not event.entity.valid then return end -- need to call again, healthbar'd object might have been killed by script, so we shouldn't proceed now
 	if not event.entity.health then return end
 
-	damage_to_players_changes(event)
+	if (event.entity and event.entity.valid and event.entity.name and event.entity.name == 'character') then
+		damage_to_players_changes(event)
+	else
+		other_enemy_damage_bonuses(event)
+	end
 
-	damage_to_enemyboat_spawners(event)
 	biters_chew_stuff_faster(event)
-	damage_to_artillery(event)
 	swamp_resist_poison(event)
 	maze_walls_resistance(event)
-	damage_to_krakens(event)
 
 	damage_dealt_by_players_changes(event)
 
-	damage_to_enemies(event)
+	-- damage_to_enemies(event)
 end
 
 
@@ -1093,6 +1127,13 @@ local function event_on_research_finished(event)
 	p_force.recipes['slowdown-capsule'].enabled = false
 	p_force.recipes['nuclear-fuel'].enabled = false
 	-- p_force.recipes['rail'].enabled = false
+	p_force.recipes['speed-module'].enabled = false
+	p_force.recipes['tank'].enabled = false
+	p_force.recipes['cannon-shell'].enabled = false
+	p_force.recipes['explosive-cannon-shell'].enabled = false
+	-- and since we can't build tanks anyway, let's disable this for later:
+	p_force.recipes['uranium-cannon-shell'].enabled = false
+	p_force.recipes['explosive-uranium-cannon-shell'].enabled = false
 end
 
 local function event_on_player_joined_game(event)

@@ -89,6 +89,10 @@ function Public.parrot_overstay_tip()
 	local memory = Memory.get_crew_memory()
 	Common.parrot_speak(memory.force, 'We\'ve been here quite a while! Check the evo...')
 end
+function Public.parrot_nightdamage_tip()
+	local memory = Memory.get_crew_memory()
+	Common.parrot_speak(memory.force, 'Did you know that biters deal more damage at night?')
+end
 
 -- function Public.parrot_say_tip()
 -- 	local memory = Memory.get_crew_memory()
