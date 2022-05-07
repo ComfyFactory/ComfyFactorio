@@ -50,7 +50,7 @@ Public.offers_default = {
 	{price = {{'coin', 360}}, offer = {type = 'give-item', item = 'stack-inserter', count = 3}},
 	{price = {{'coin', 900}}, offer = {type = 'give-item', item = 'piercing-shotgun-shell', count = 9}},
 	{price = {{'coin', 960}}, offer = {type = 'give-item', item = 'flamethrower', count = 1}},
-	{price = {{'coin', 1800}}, offer = {type = 'give-item', item = 'flamethrower-ammo', count = 4}},
+	{price = {{'coin', 1800}}, offer = {type = 'give-item', item = 'flamethrower-ammo', count = 5}},
 	{price = {{'coin', 1800}}, offer = {type = 'give-item', item = 'flying-robot-frame', count = 1}},
 }
 

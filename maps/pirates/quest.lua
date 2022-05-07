@@ -47,10 +47,10 @@ function Public.quest_reward()
 	elseif rng <= 0.6 then
 		ret = {name = 'steel-plate', count = Math.ceil(380 * multiplier), display_sprite = '[item=steel-plate]', display_amount = string.format('%.0f', 380 * multiplier), chat_name = '[item=steel-plate]'}
 	elseif rng <= 0.7 then
-		ret = {name = 'raw-fish', count = Math.ceil(450 * (multiplier^(1/2))), display_sprite = '[item=raw-fish]', display_amount = string.format('%.1fk', Math.ceil(0.45 * (multiplier^(1/2)))), chat_name = '[item=raw-fish]'}
+		ret = {name = 'raw-fish', count = Math.ceil(420 * (multiplier^(1/2))), display_sprite = '[item=raw-fish]', display_amount = string.format('%.1fk', 0.42 * (multiplier^(1/2))), chat_name = '[item=raw-fish]'}
 	elseif rng <= 0.85 then
 		ret = {name = 'piercing-rounds-magazine', count = Math.ceil(250 * multiplier), display_sprite = '[item=piercing-rounds-magazine]', display_amount = string.format('%.0f', Math.ceil(250 * multiplier)), chat_name = '[item=piercing-rounds-magazine]'}
-	elseif rng <= 0.96 then
+	elseif rng <= 0.94 then
 		ret = {name = 'solid-fuel', count = Math.ceil(450 * multiplier), display_sprite = '[item=solid-fuel]', display_amount = string.format('%.0f', Math.ceil(450 * multiplier)), chat_name = '[item=solid-fuel]'}
 	else
 		ret = {name = 'modular-armor', count = 1, display_sprite = '[item=modular-armor]', display_amount = '1', chat_name = '[item=modular-armor]'}
@@ -69,16 +69,16 @@ function Public.initialise_random_quest()
 
 	if destination.destination_index == 2 then return end
 
-	local rng = Math.random(10)
-	if rng == 1 then
+	local rng = Math.random(100)
+	if rng <= 10 then
 		Public.initialise_nodamage_quest()
-	elseif rng <= 3 then
+	elseif rng <= 33 then
 		Public.initialise_worms_quest()
-	elseif rng <= 5 then
+	elseif rng <= 54 then
 		Public.initialise_time_quest()
-	elseif rng <= 7 then
+	elseif rng <= 74 then
 		Public.initialise_find_quest()
-	elseif rng <= 10 then
+	elseif rng <= 100 then
 		Public.initialise_resourcecount_quest()
 		-- Public.initialise_resourceflow_quest()
 	end
@@ -336,21 +336,21 @@ end
 
 
 Public.resourcecount_quest_data_raw = {
-	{1, 0, 1, false, 'iron-gear-wheel', 2400},
-	-- {1, 0, 1, false, 'electronic-circuit', 1400},
-	{1.2, 0, 1, false, 'transport-belt', 1600},
-	{1, 0, 1, false, 'repair-pack', 350},
+	{1.1, 0, 1, false, 'iron-gear-wheel', 2400},
+	{0.5, 0, 1, false, 'electronic-circuit', 1400},
+	{1.1, 0, 1, false, 'transport-belt', 1600},
+	{0.8, 0, 1, false, 'repair-pack', 350},
 	-- {0.1, 0, 1, false, 'red-wire', 500},
-	{0.5, 0, 1, false, 'empty-barrel', 200},
-	{0.3, 0, 0.2, false, 'underground-belt', 200},
-	{0.3, 0, 0.2, false, 'splitter', 150},
-	{0.4, 0.2, 1, false, 'fast-splitter', 60},
-	{0.4, 0.2, 1, false, 'fast-underground-belt', 75},
-	{0.5, 0.3, 1, false, 'big-electric-pole', 100},
-	{1.2, 0.61, 1, false, 'advanced-circuit', 350},
+	{0.4, 0, 1, false, 'empty-barrel', 200},
+	{0.7, 0, 0.5, false, 'underground-belt', 200},
+	{0.7, 0, 0.5, false, 'splitter', 150},
+	{0.35, 0.2, 1, false, 'fast-splitter', 60},
+	{0.35, 0.2, 1, false, 'fast-underground-belt', 75},
+	{0.7, 0.3, 1, false, 'big-electric-pole', 100},
+	{0.3, 0.61, 1, false, 'advanced-circuit', 350},
 	{1, 0, 1, false, 'shotgun-shell', 600},
-	{1.5, 0.9, 1, false, 'processing-unit', 40},
-	-- {0.3, 0.8, 1, false, 'electric-engine-unit', 1 * 6},
+	{1, 0.9, 1, false, 'processing-unit', 40},
+	{0.6, 0.8, 1, false, 'electric-engine-unit', 1 * 6},
 }
 
 function Public.resourcecount_quest_data()

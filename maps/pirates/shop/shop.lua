@@ -152,10 +152,12 @@ function Public.event_on_market_item_purchased(event)
 					for _, c in pairs(cannons) do
 						local unit_number = c.unit_number
 					
-						local healthbar = memory.healthbars[unit_number]
+						local healthbar = memory.boat.healthbars[unit_number]
 						if healthbar then
 							healthbar.health = healthbar.max_health
 							Common.update_healthbar_rendering(healthbar, healthbar.max_health)
+						else
+							log('error: healthbar ' .. unit_number .. ' not found')
 						end
 					end
 					Common.notify_force(force,string.format('[font=heading-1]%s repaired the ship\'s cannons.[/font]', player.name))

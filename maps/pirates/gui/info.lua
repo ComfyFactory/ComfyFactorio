@@ -228,7 +228,7 @@ function Public.full_update(player)
 	elseif flow2.selected_tab_index == 3 then
 		flow2.style.height = 685
 	elseif flow2.selected_tab_index == 4 then
-		flow2.style.height = 330
+		flow2.style.height = 360
 	end
 end
 

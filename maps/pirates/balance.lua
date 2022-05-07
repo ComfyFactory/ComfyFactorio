@@ -99,11 +99,16 @@ Public.rockets_needed_x = 40*21
 
 
 function Public.max_time_on_island()
-	if Common.overworldx() == 0 or ((Common.overworldx()/40) >= (Public.rockets_needed_x/40)) then
+	local x = Common.overworldx()
+	if x == 0 or (x >= Public.rockets_needed_x) then
 	-- if Common.overworldx() == 0 or ((Common.overworldx()/40) > 20 and (Common.overworldx()/40) < 25) then
 		return -1
 	else
-		return Math.ceil(Public.max_time_on_island_formula())
+		if x == 40 then
+			return 1.1 * Math.ceil(Public.max_time_on_island_formula()) --it's important for this island to be chill, so that it's not such a shock to go here from the first chill island
+		else
+			return Math.ceil(Public.max_time_on_island_formula())
+		end
 	end
 end
 
@@ -250,7 +255,7 @@ function Public.evolution_per_full_silo_charge()
 	 --too low and you always charge immediately, too high and you always charge late
 	-- return 0.05
 	-- observed x=2000 run, changed this to:
-	return 0.05 + 0.03 * Common.overworldx()/1000
+	return 0.05 + 0.02 * Common.overworldx()/1000
 end
 
 -- function Public.bonus_damage_to_humans()
@@ -299,8 +304,8 @@ function Public.biter_base_density_scale()
 end
 
 
-function Public.launch_fuel_reward()
-	return Math.ceil(1250 * (1 + 0.13 * (Common.overworldx()/40)^(9/10)))
+function Public.rocket_launch_fuel_reward()
+	return Math.ceil(1250 * (1 + 0.13 * (Common.overworldx()/40)^(9/10)) * Math.sloped(Common.difficulty_scale(), 1/3))
 	-- return Math.ceil(1000 * (1 + 0.1 * (Common.overworldx()/40)^(8/10)) / Math.sloped(Common.difficulty_scale(), 1/4))
 end
 
@@ -319,7 +324,7 @@ function Public.island_richness_avg_multiplier()
 end
 
 function Public.resource_quest_multiplier()
-	return (1.0 + 0.075 * (Common.overworldx()/40)^(8/10)) * Math.sloped(Common.difficulty_scale(), 1/3) * (Public.crew_scale())^(1/8)
+	return (1.0 + 0.075 * (Common.overworldx()/40)^(8/10)) * Math.sloped(Common.difficulty_scale(), 1/5) * (Public.crew_scale())^(1/10)
 end
 
 
@@ -334,6 +339,8 @@ end
 
 
 Public.covered_first_appears_at = 40
+
+Public.coin_sell_amount = 500
 
 Public.starting_fuel = 4000
 
@@ -352,15 +359,15 @@ function Public.sandworm_evo_increase_per_spawn()
 	if _DEBUG then
 		return 1/100
 	else
-		return 1/100 * 1/8 * Math.sloped(Common.difficulty_scale(), 3/5)
+		return 1/100 * 1/7 * Math.sloped(Common.difficulty_scale(), 3/5)
 	end
 end
 
 function Public.kraken_kill_reward_items()
-	return {{name = 'sulfuric-acid-barrel', count = 5}, {name = 'coin', count = 1200}}
+	return {{name = 'sulfuric-acid-barrel', count = 5}, {name = 'coin', count = 1000}}
 end
 function Public.kraken_kill_reward_fuel()
-	return 200
+	return 150
 end
 
 function Public.kraken_health()
@@ -495,7 +502,7 @@ function Public.starting_items_crew_upstairs()
 		{['grenade'] = 3},
 		{['shotgun'] = 2, ['shotgun-shell'] = 36},
 		-- {['raw-fish'] = 5},
-		{['coin'] = 1000},
+		{['coin'] = 2000},
 	}
 end
 

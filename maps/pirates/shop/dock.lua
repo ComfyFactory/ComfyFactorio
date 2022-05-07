@@ -38,7 +38,7 @@ Public.market_barters = {
 }
 
 Public.market_permanent_offers = {
-	{price = {{'pistol', 1}}, offer = {type = 'give-item', item = 'coin', count = 400}},
+	{price = {{'pistol', 1}}, offer = {type = 'give-item', item = 'coin', count = Balance.coin_sell_amount}},
 	{price = {{'coin', 3600}}, offer = {type = 'give-item', item = 'iron-ore', count = 800}},
 	{price = {{'coin', 3600}}, offer = {type = 'give-item', item = 'copper-ore', count = 800}},
 	{price = {{'coin', 4200}}, offer = {type = 'give-item', item = 'crude-oil-barrel', count = 100}},

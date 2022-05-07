@@ -252,7 +252,7 @@ function Public.destination_on_arrival(destination)
 	if destination.type == enum.ISLAND then
 
 		destination.dynamic_data.rocketsiloenergyneeded = Balance.silo_energy_needed_MJ() * 1000000
-		destination.dynamic_data.rocketcoalreward = Balance.launch_fuel_reward()
+		destination.dynamic_data.rocketcoalreward = Balance.rocket_launch_fuel_reward()
 
 		if destination.subtype == Islands.enum.RADIOACTIVE then
 			destination.dynamic_data.time_remaining = -1

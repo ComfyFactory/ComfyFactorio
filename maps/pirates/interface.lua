@@ -180,9 +180,9 @@ local function damage_to_enemyboat_spawners(event)
 
 						adjusted_damage = adjusted_damage / 2.6
 
-						if event.cause.name == 'artillery-turret' then
-							adjusted_damage = adjusted_damage / 2
-						end
+						-- if event.cause.name == 'artillery-turret' then
+						-- 	adjusted_damage = adjusted_damage / 1
+						-- end
 
 						if Common.entity_damage_healthbar(event.entity, adjusted_damage) <= 0 then
 							event.entity.die()
@@ -678,6 +678,8 @@ local function event_on_player_mined_entity(event)
 		return
 	end
 
+	local every_nth_tree_gives_coins = 6
+
     if entity.type == 'tree' then
         if not event.buffer then return end
 		local available = destination.dynamic_data.wood_remaining
@@ -694,9 +696,9 @@ local function event_on_player_mined_entity(event)
 				local give = {}
 				if memory.classes_table and memory.classes_table[event.player_index] then
 					if memory.classes_table[event.player_index] == Classes.enum.LUMBERJACK then
-						give[#give + 1] = {name = 'wood', count = 1}
-						if Math.random(6) == 1 then
-							local a = 15
+						give[#give + 1] = {name = 'wood', count = 4}
+						if Math.random(every_nth_tree_gives_coins) == 1 then
+							local a = 20
 							give[#give + 1] = {name = 'coin', count = a}
 							memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
 						end
@@ -705,8 +707,8 @@ local function event_on_player_mined_entity(event)
 						give[#give + 1] = {name = 'iron-ore', count = 1}
 						give[#give + 1] = {name = 'copper-ore', count = 1}
 						give[#give + 1] = {name = 'coal', count = 1}
-						if Math.random(6) == 1 then
-							local a = 15
+						if Math.random(every_nth_tree_gives_coins) == 1 then
+							local a = 12
 							give[#give + 1] = {name = 'coin', count = a}
 							memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
 						end
@@ -726,8 +728,8 @@ local function event_on_player_mined_entity(event)
 
 				if memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.LUMBERJACK then
 					give[#give + 1] = {name = 'wood', count = amount + 3}
-					if Math.random(6) == 1 then
-						local a = 15
+					if Math.random(every_nth_tree_gives_coins) == 1 then
+						local a = 12
 						give[#give + 1] = {name = 'coin', count = a}
 						memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
 					end
@@ -736,14 +738,14 @@ local function event_on_player_mined_entity(event)
 					give[#give + 1] = {name = 'iron-ore', count = 1}
 					give[#give + 1] = {name = 'copper-ore', count = 1}
 					give[#give + 1] = {name = 'coal', count = 1}
-					if Math.random(6) == 1 then
-						local a = 15
+					if Math.random(every_nth_tree_gives_coins) == 1 then
+						local a = 12
 						give[#give + 1] = {name = 'coin', count = a}
 						memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
 					end
 				else
 					give[#give + 1] = {name = 'wood', count = amount}
-					if Math.random(6) == 1 then --tuned
+					if Math.random(every_nth_tree_gives_coins) == 1 then --tuned
 						local a = 5
 						give[#give + 1] = {name = 'coin', count = a}
 						memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
@@ -1608,7 +1610,7 @@ local function event_on_rocket_launched(event)
 	end
 
 	local force = memory.force
-	Common.notify_force_light(force,'Granted: ' .. string.format('%.1fk', Balance.rocket_launch_coin_reward/1000) .. ' [item=coin], ' .. string.format('%.1fk', destination.dynamic_data.rocketcoalreward/1000) .. ' [item=coal].')
+	Common.notify_force_light(force,'Granted: ' .. Math.floor(Balance.rocket_launch_coin_reward/100)/10 .. 'k [item=coin], ' .. Math.floor(destination.dynamic_data.rocketcoalreward/100)/10 .. 'k [item=coal].')
 
 	if destination.dynamic_data.quest_type == Quest.enum.TIME and (not destination.dynamic_data.quest_complete) then
 		destination.dynamic_data.quest_progressneeded = 1
@@ -1639,7 +1641,7 @@ local function event_on_built_entity(event)
         entity.time_to_live = entity.force.ghost_time_to_live
 	end
 
-	if memory.boat and memory.boat.surface_name and player.surface == game.surfaces[memory.boat.surface_name] and entity.position then
+	if memory.boat and memory.boat.surface_name and player.surface == game.surfaces[memory.boat.surface_name] and entity.valid and entity.position then
 		if (entity.type and (entity.type == 'underground-belt')) or (entity.name == 'entity-ghost' and entity.ghost_type and (entity.ghost_type == 'underground-belt')) then
 			if Boats.on_boat(memory.boat, entity.position) then
 				-- if (entity.type and (entity.type == 'underground-belt' or entity.type == 'pipe-to-ground')) or (entity.name == 'entity-ghost' and entity.ghost_type and (entity.ghost_type == 'underground-belt' or entity.ghost_type == 'pipe-to-ground')) then

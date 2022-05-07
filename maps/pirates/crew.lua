@@ -720,6 +720,7 @@ function Public.initialise_crew(accepted_proposal)
 		coins_gained_by_ore = 0,
 		coins_gained_by_rocket_launches = 0,
 		coins_gained_by_markets = 0,
+		coins_gained_by_krakens = 0,
 	}
 
 	memory.captain_accrued_time_data = {}

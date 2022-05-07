@@ -382,8 +382,8 @@ function Public.spawn_enemy_boat(type)
 		local boat = {
 			state = Boats.enum_state.APPROACHING,
 			type = type,
-			speed = 4.5,
-			position = {x = - surface.map_gen_settings.width/2 + 17.5, y = (memory.boat.dockedposition or memory.boat.position).y + offsets[Math.random(4)]},
+			speed = 4,
+			position = {x = - surface.map_gen_settings.width/2 + 23.5, y = (memory.boat.dockedposition or memory.boat.position).y + offsets[Math.random(4)]},
 			force_name = memory.enemy_force_name,
 			surface_name = surface.name,
 			unit_group = nil,

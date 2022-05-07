@@ -146,19 +146,13 @@ function Public.update_character_properties(tickinterval)
 						if class == Classes.enum.DECKHAND then
 							if on_ship_bool and (not hold_bool) then
 								speed_boost = speed_boost + 0.25
-							elseif (not on_ship_bool) then
-								speed_boost = speed_boost - 0.25
 							end
 						elseif class == Classes.enum.BOATSWAIN then
 							if hold_bool then
 								speed_boost = speed_boost + 0.25
-							elseif (not on_ship_bool) then
-								speed_boost = speed_boost - 0.25
 							end
 						elseif class == Classes.enum.SHORESMAN then
-							if on_ship_bool then
-								speed_boost = speed_boost - 0.25
-							else
+							if not on_ship_bool then
 								speed_boost = speed_boost + 0.07
 							end
 						end

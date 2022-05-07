@@ -591,16 +591,16 @@ function Public.process_etaframe_update(player, flow1, bools)
 				if memory.overworldx >= Balance.rockets_needed_x then --bools.eta_bool is not helpful yet
 					flow2.etaframe_label_3.caption = 'Next escape cost:'
 					if bools.cost_includes_rocket_launch_bool then
-						tooltip = {'pirates.resources_needed_tooltip_1_rocketvariant'}
+						tooltip = {'pirates.resources_needed_tooltip_0_rocketvariant'}
 					else
-						tooltip = {'pirates.resources_needed_tooltip_1'}
+						tooltip = {'pirates.resources_needed_tooltip_0'}
 					end
 				else
 					flow2.etaframe_label_3.caption = 'Next escape cost:'
 					if bools.cost_includes_rocket_launch_bool then
-						tooltip = {'pirates.resources_needed_tooltip_0_rocketvariant'}
+						tooltip = {'pirates.resources_needed_tooltip_1_rocketvariant'}
 					else
-						tooltip = {'pirates.resources_needed_tooltip_0'}
+						tooltip = {'pirates.resources_needed_tooltip_1'}
 					end
 				end
 			elseif (not bools.eta_bool) then
@@ -842,7 +842,7 @@ function Public.process_siloframe_and_questframe_updates(flowsilo, flowquest, bo
 						end
 
 					elseif quest_type == Quest.enum.RESOURCECOUNT then
-						if tooltip == '' then tooltip = 'Quest: Item Production\n\nProduce a particular number of items for a bonus.' end
+						if tooltip == '' then tooltip = 'Quest: Item Production\n\nSimply produce a particular number of items for a bonus, anywhere on the map.' end
 
 						flow1.quest_label_2.caption = string.format('%s ', '[item=' .. quest_params.item .. ']')
 
