@@ -182,7 +182,7 @@ function Public.generate_destination_type_and_subtype(overworld_position)
 		end
 	end
 
-	-- an incomplete list of things that could break if the islands are rearranged: parrot tips are given on certain islands; 
+	-- an incomplete list of things that could break if the islands are rearranged: parrot tips are given on certain islands;
 
 
 	--== DEBUG override to test islands:

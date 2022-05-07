@@ -706,9 +706,9 @@ end
 
 function Public.transfer_healthbar(old_unit_number, new_entity, location_override)
 	location_override = location_override or Memory.get_crew_memory()
-	local new_unit_number = new_entity.unit_number
 	if not location_override.healthbars then return end
 	local old_healthbar = location_override.healthbars[old_unit_number]
+	-- local new_unit_number = new_entity.unit_number
 
 	-- if new_surface_bool then
 	-- 	Public.new_healthbar(old_healthbar.render2, new_entity, old_healthbar.max_health, old_healthbar.id, old_healthbar.health, rendering.get_y_scale(old_healthbar.render1))

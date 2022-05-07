@@ -130,12 +130,12 @@ end
 
 
 local function protect_special_entities(event)
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
 	local entity = event.entity
 
 	if event.cause and event.cause.valid and entity and entity.valid then
 		local surfacedata = Surfaces.SurfacesCommon.decode_surface_name(entity.surface.name)
-		local dest = Common.current_destination()
+		-- local dest = Common.current_destination()
 		if surfacedata.type == Surfaces.enum.CROWSNEST or surfacedata.type == Surfaces.enum.LOBBY then
 			entity.health = entity.health + event.final_damage_amount
 		end
@@ -150,7 +150,7 @@ local function damage_to_silo(event)
 	if event.cause and event.cause.valid and entity and entity.valid and entity.force.name == memory.force_name then
 		local destination = Common.current_destination()
 		if destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid and entity == Common.current_destination().dynamic_data.rocketsilos[1] then
-			
+
 			if string.sub(event.cause.force.name, 1, 4) ~= 'crew' then
 				if Common.entity_damage_healthbar(entity, event.original_damage_amount / Balance.silo_resistance_factor * (1 + Balance.biter_timeofday_bonus_damage(event.cause.surface.darkness))) <= 0 then
 					Public.silo_die()
@@ -913,7 +913,7 @@ local function base_kill_rewards(event)
 	elseif entity_name == 'behemoth-worm-turret' then
 		iron_amount = 50
 	 	coin_amount = 280
-		 memory.playtesting_stats.coins_gained_by_nests_and_worms = memory.playtesting_stats.coins_gained_by_nests_and_worms + coin_amount
+		memory.playtesting_stats.coins_gained_by_nests_and_worms = memory.playtesting_stats.coins_gained_by_nests_and_worms + coin_amount
 	elseif memory.overworldx > 0 then --avoid coin farming on first island
 		if entity_name == 'small-biter' then
 			-- if Math.random(2) == 1 then
