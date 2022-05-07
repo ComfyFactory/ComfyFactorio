@@ -56,7 +56,6 @@ end
 local function purchaseData(market, player, offer_index)
 	--a proper rewriting of this function would directly check market entities against saved references to them in memory, but we haven't had time to rewrite it yet
 
-	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 
 	local alloffers = market.get_market_items()
