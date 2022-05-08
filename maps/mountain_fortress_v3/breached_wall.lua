@@ -110,7 +110,7 @@ local check_distance_between_player_and_locomotive = function(player)
     local t_y = gap_between_locomotive.highest_pos.y
 
     if c_y - t_y <= gap_between_locomotive.neg_gap then
-        player.teleport({position.x, locomotive.position.y + gap_between_locomotive.neg_gap}, surface)
+        player.teleport({position.x, locomotive.position.y + gap_between_locomotive.neg_gap + 2}, surface)
         player.print(({'breached_wall.hinder'}), Color.warning)
         if player.character then
             player.character.health = player.character.health - 5
