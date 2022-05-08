@@ -664,7 +664,7 @@ function Public.initialise_crew(accepted_proposal)
 
 	global_memory.crew_active_ids[#global_memory.crew_active_ids + 1] = new_id
 
-	Memory.reset_crew_memory(new_id)
+	Memory.initialise_crew_memory(new_id)
 	Memory.set_working_id(new_id)
 
 	game.reset_time_played() -- affects the multiplayer lobby view

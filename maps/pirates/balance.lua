@@ -45,7 +45,9 @@ Public.rocket_launch_coin_reward = 6000
 function Public.crew_scale()
 	local ret = Common.activecrewcount()/10
 	if ret == 0 then ret = 1/10 end --if all players are afk
-	if ret > 2.4 then ret = 2.4 end --we have to cap this because you need time to mine the ore... and big crews are a mess anyway. currently this value matches the 24 player capacity setting
+	if ret > 2.1 then ret = 2.1 end --An upper cap on this is important, for two reasons:
+	-- large crews become disorganised
+	-- Higher values of this scale lower the amount of time you get on each island. But the amount of time certain island tasks take is fixed; e.g. the amount of ore is mostly invariant, and you need time to mine it.
 	return ret
 end
 

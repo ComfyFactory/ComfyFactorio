@@ -40,7 +40,7 @@ end
 
 
 
-function Public.reset_crew_memory(id) --mostly serves as a dev reference of memory entries
+function Public.initialise_crew_memory(id) --mostly serves as a dev reference of memory entries
 	-- but not _everything_ is stored here, it's just a guide to the most important things
 
 	pirates_global_memory.crew_memories[id] = {}

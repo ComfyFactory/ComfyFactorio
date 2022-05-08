@@ -779,7 +779,7 @@ function Public.process_siloframe_and_questframe_updates(flowsilo, flowquest, bo
 
 				if quest_complete and quest_reward then
 					tooltip = 'This island\'s quest is complete, and this is the reward.'
-					flow1.quest_label_1.caption = 'Quest:'
+					flow1.quest_label_1.caption = 'Island Quest:'
 					flow1.quest_label_1.style.font_color = GuiCommon.achieved_font_color
 					flow1.quest_label_2.visible = true
 					flow1.quest_label_3.visible = false
@@ -787,7 +787,7 @@ function Public.process_siloframe_and_questframe_updates(flowsilo, flowquest, bo
 					flow1.quest_label_2.caption = quest_reward.display_amount .. ' ' .. quest_reward.display_sprite
 				elseif quest_reward then
 					if quest_progress < quest_progressneeded then
-						flow1.quest_label_1.caption = 'Quest:'
+						flow1.quest_label_1.caption = 'Island Quest:'
 						flow1.quest_label_1.style.font_color = GuiCommon.bold_font_color
 						flow1.quest_label_2.visible = true
 						flow1.quest_label_3.visible = true
@@ -801,7 +801,7 @@ function Public.process_siloframe_and_questframe_updates(flowsilo, flowquest, bo
 					end
 
 					if quest_type == Quest.enum.TIME then
-						if tooltip == '' then tooltip = 'Quest: Time\n\nLaunch a rocket before the countdown completes for a bonus.' end
+						if tooltip == '' then tooltip = 'Island Quest: Time\n\nLaunch a rocket before the countdown completes for a bonus.' end
 
 						if quest_progress >= 0 then
 							flow1.quest_label_3.caption = string.format('%.0fm%.0fs', Math.floor(quest_progress / 60), quest_progress % 60)
@@ -824,13 +824,13 @@ function Public.process_siloframe_and_questframe_updates(flowsilo, flowquest, bo
 						end
 
 					elseif quest_type == Quest.enum.WORMS then
-						if tooltip == '' then tooltip = 'Quest: Worms\n\nKill enough worms for a bonus.' end
+						if tooltip == '' then tooltip = 'Island Quest: Worms\n\nKill enough worms for a bonus.' end
 
 					elseif quest_type == Quest.enum.FIND then
-						if tooltip == '' then tooltip = 'Quest: Ghosts\n\nFind the ghosts for a bonus.' end
+						if tooltip == '' then tooltip = 'Island Quest: Ghosts\n\nFind the ghosts for a bonus.' end
 
 					elseif quest_type == Quest.enum.RESOURCEFLOW then
-						if tooltip == '' then tooltip = 'Quest: Resource Flow\n\nAchieve a production rate of a particular item for a bonus.' end
+						if tooltip == '' then tooltip = 'Island Quest: Resource Flow\n\nAchieve a production rate of a particular item for a bonus.' end
 
 						-- out of date:
 						if quest_progressneeded/60 % 1 == 0 then
@@ -842,12 +842,12 @@ function Public.process_siloframe_and_questframe_updates(flowsilo, flowquest, bo
 						end
 
 					elseif quest_type == Quest.enum.RESOURCECOUNT then
-						if tooltip == '' then tooltip = 'Quest: Item Production\n\nSimply produce a particular number of items for a bonus, anywhere on the map.' end
+						if tooltip == '' then tooltip = 'Island Quest: Item Production\n\nSimply complete production of these items for a bonus, anywhere on the map.' end
 
 						flow1.quest_label_2.caption = string.format('%s ', '[item=' .. quest_params.item .. ']')
 
 					elseif quest_type == Quest.enum.NODAMAGE then
-						if tooltip == '' then tooltip = 'Quest: No Damage\n\nLaunch a rocket without the silo taking damage.' end
+						if tooltip == '' then tooltip = 'Island Quest: No Damage\n\nLaunch a rocket without the silo taking damage.' end
 
 						if bools.approaching_bool or (dynamic_data.rocketsilos and dynamic_data.rocketsilos[1] and dynamic_data.rocketsilos[1].valid and dynamic_data.rocketsilohp == dynamic_data.rocketsilomaxhp) then
 							flow1.quest_label_3.caption = string.format('OK')

@@ -9,6 +9,9 @@ local _inspect = require 'utils.inspect'.inspect
 -- local perlin_noise = require 'utils.perlin_noise'
 -- local Force_health_booster = require 'modules.force_health_booster'
 
+-- == Common variables and functions used throughout pirate ship files
+
+
 local Public = {}
 
 -- Public.active_crews_cap = 1
