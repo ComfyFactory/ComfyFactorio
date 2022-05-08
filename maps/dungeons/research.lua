@@ -1,7 +1,7 @@
 --- Tuning factors
-local first_research_room_min = 40
+local first_research_room_min = 60
 local first_research_floor_scale = 1
-local last_research_room_max = 160
+local last_research_room_max = 300
 local last_research_floor_scale = 2.5
 
 -- Early technologies are cheap and we have lots of excess resources for them. Slow down the early part of the
@@ -340,7 +340,7 @@ local all_research = {
    { name = "follower-robot-count-7", min = 20, max = 25 },
 
    { name = "spidertron", min = 22, max = 25 },
-   { name = "atomic-bomb", min = 22, max = 25 },
+   { name = "atomic-bomb", min = 40, max = 50 },
 
 -- --  ["landfill"] = { min = 1, max = 100 },
 -- --  ["land-mine"] = { min = 1, max = 100 },
