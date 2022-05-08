@@ -101,7 +101,7 @@ function Public.kraken_tick(crew_id, kraken_id, step, substep)
 		if crewCount <= 12 then
 			firing_period = 4
 		else
-		 	firing_period = 3
+			firing_period = 3
 		-- elseif crewCount <= 24 then
 		-- 	firing_period = 3
 		-- else

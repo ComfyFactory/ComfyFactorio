@@ -304,6 +304,9 @@ end
 -- end
 
 function Public.generate_flow_quest()
+	--@TODO: Ensure this function cannot return nil
+	--@TODO: This is related to a more general problem with raffles — how they handle game_completion being above 1. As of May '22, we cap game_completion at 1 before passing it to the raffle
+
 	local game_completion_progress = Common.game_completion_progress_capped()
 
 	local data = Public.flow_quest_data()
