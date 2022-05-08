@@ -255,6 +255,7 @@ function Public.evolution_per_full_silo_charge()
 	 --too low and you always charge immediately, too high and you always charge late
 	-- return 0.05
 	-- observed x=2000 run, changed this to:
+	-- return 0.05 + 0.03 * Common.overworldx()/1000
 	return 0.05 + 0.02 * Common.overworldx()/1000
 end
 

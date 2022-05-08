@@ -98,9 +98,9 @@ function Public.kraken_tick(crew_id, kraken_id, step, substep)
 
 		-- firing speed now depends on player count:
 		local firing_period
-		if crewCount <= 8 then
+		if crewCount <= 12 then
 			firing_period = 4
-		elseif crewCount <= 16 then
+		elseif crewCount <= 24 then
 			firing_period = 3
 		else
 			firing_period = 2
