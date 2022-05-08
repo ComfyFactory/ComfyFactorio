@@ -81,6 +81,9 @@ end
 
 local function spaghett()
     local spaghetti = this.gui_config.spaghett
+    if spaghetti.noop then
+       return
+    end
     if spaghetti.enabled then
         for _, f in pairs(game.forces) do
             if f.technologies['logistic-system'].researched then
