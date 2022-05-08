@@ -44,12 +44,16 @@ function Public.quest_reward()
 		ret = {name = 'iron-plate', count = Math.ceil(2000 * multiplier), display_sprite = '[item=iron-plate]', display_amount = string.format('%.1fk', 2 * multiplier), chat_name = '[item=iron-plate]'}
 	elseif rng <= 0.5 then
 		ret = {name = 'copper-plate', count = Math.ceil(2000 * multiplier), display_sprite = '[item=copper-plate]', display_amount = string.format('%.1fk', 2 * multiplier), chat_name = '[item=copper-plate]'}
+	elseif rng <= 0.6 then
+		ret = {name = 'steel-plate', count = Math.ceil(380 * multiplier), display_sprite = '[item=steel-plate]', display_amount = string.format('%.0f', 380 * multiplier), chat_name = '[item=steel-plate]'}
 	elseif rng <= 0.7 then
-		ret = {name = 'solid-fuel', count = Math.ceil(450 * multiplier), display_sprite = '[item=solid-fuel]', display_amount = string.format('%.0f', Math.ceil(450 * multiplier)), chat_name = '[item=solid-fuel]'}
-	elseif rng <= 0.9 then
-		ret = {name = 'coin', count = Math.ceil(6000 * (multiplier^(1/2))), display_sprite = '[item=coin]', display_amount = string.format('%.1fk', Math.ceil(6 * (multiplier^(1/2)))), chat_name = 'doubloons'}
-	else
+		ret = {name = 'raw-fish', count = Math.ceil(420 * (multiplier^(1/2))), display_sprite = '[item=raw-fish]', display_amount = string.format('%.1fk', 0.42 * (multiplier^(1/2))), chat_name = '[item=raw-fish]'}
+	elseif rng <= 0.85 then
 		ret = {name = 'piercing-rounds-magazine', count = Math.ceil(250 * multiplier), display_sprite = '[item=piercing-rounds-magazine]', display_amount = string.format('%.0f', Math.ceil(250 * multiplier)), chat_name = '[item=piercing-rounds-magazine]'}
+	elseif rng <= 0.94 then
+		ret = {name = 'solid-fuel', count = Math.ceil(450 * multiplier), display_sprite = '[item=solid-fuel]', display_amount = string.format('%.0f', Math.ceil(450 * multiplier)), chat_name = '[item=solid-fuel]'}
+	else
+		ret = {name = 'modular-armor', count = 1, display_sprite = '[item=modular-armor]', display_amount = '1', chat_name = '[item=modular-armor]'}
 	end
 
 	return ret
@@ -65,16 +69,16 @@ function Public.initialise_random_quest()
 
 	if destination.destination_index == 2 then return end
 
-	local rng = Math.random(10)
-	if rng == 1 then
+	local rng = Math.random(100)
+	if rng <= 10 then
 		Public.initialise_nodamage_quest()
-	elseif rng <= 3 then
+	elseif rng <= 33 then
 		Public.initialise_worms_quest()
-	elseif rng <= 5 then
+	elseif rng <= 54 then
 		Public.initialise_time_quest()
-	elseif rng <= 7 then
+	elseif rng <= 74 then
 		Public.initialise_find_quest()
-	elseif rng <= 10 then
+	elseif rng <= 100 then
 		Public.initialise_resourcecount_quest()
 		-- Public.initialise_resourceflow_quest()
 	end
@@ -173,7 +177,7 @@ function Public.initialise_resourcecount_quest()
 		destination.dynamic_data.quest_params.initial_count = force.item_production_statistics.get_flow_count{name = generated_production_quest.item, input = true, precision_index = defines.flow_precision_index.one_thousand_hours, count = true}
 	end
 
-	local progressneeded_before_rounding = generated_production_quest.base_rate * Balance.resource_quest_multiplier() * Common.difficulty()
+	local progressneeded_before_rounding = generated_production_quest.base_rate * Balance.resource_quest_multiplier() * Common.difficulty_scale()
 
 	destination.dynamic_data.quest_progressneeded = Math.ceil(progressneeded_before_rounding/10)*10
 
@@ -200,10 +204,10 @@ function Public.initialise_worms_quest()
 		1 + 9 * Math.slopefromto(count, 0, 20) + 10 * Math.slopefromto(count, 20, 70)
 	)
 
-	if  Common.difficulty() < 1 then needed = Math.max(1, needed - 3) end
-	if  Common.difficulty() > 1 then needed = Math.max(1, needed + 2) end
+	if  Common.difficulty_scale() < 1 then needed = Math.max(1, needed - 3) end
+	if  Common.difficulty_scale() > 1 then needed = Math.max(1, needed + 2) end
 
-	local difficulty_name = CoreData.get_difficulty_name_from_value(Common.difficulty())
+	local difficulty_name = CoreData.get_difficulty_name_from_value(Common.difficulty_scale())
 	if difficulty_name == CoreData.difficulty_options[1].text then
 		needed = Math.max(1, needed - 3)
 	elseif difficulty_name ~= CoreData.difficulty_options[2].text then
@@ -233,7 +237,7 @@ function Public.try_resolve_quest()
 
 		local force = memory.force
 		if not (force and force.valid) then return end
-		Common.notify_force_light(force,'Granted ' .. destination.dynamic_data.quest_reward.display_amount .. ' ' .. destination.dynamic_data.quest_reward.chat_name)
+		Common.notify_force_light(force,'Granted: ' .. destination.dynamic_data.quest_reward.display_amount .. ' ' .. destination.dynamic_data.quest_reward.chat_name)
 
 		local name = destination.dynamic_data.quest_reward.name
 		local count = destination.dynamic_data.quest_reward.count
@@ -300,6 +304,9 @@ end
 -- end
 
 function Public.generate_flow_quest()
+	--@TODO: Ensure this function cannot return nil
+	--@TODO: This is related to a more general problem with raffles — how they handle game_completion being above 1. As of May '22, we cap game_completion at 1 before passing it to the raffle
+
 	local game_completion_progress = Common.game_completion_progress_capped()
 
 	local data = Public.flow_quest_data()
@@ -332,21 +339,21 @@ end
 
 
 Public.resourcecount_quest_data_raw = {
-	{1, 0, 1, false, 'iron-gear-wheel', 2400},
-	-- {1, 0, 1, false, 'electronic-circuit', 1400},
-	{1.2, 0, 1, false, 'transport-belt', 1600},
-	{1, 0, 1, false, 'repair-pack', 350},
+	{1.1, 0, 1, false, 'iron-gear-wheel', 2400},
+	{0.5, 0, 1, false, 'electronic-circuit', 1400},
+	{1.1, 0, 1, false, 'transport-belt', 1600},
+	{0.8, 0, 1, false, 'repair-pack', 350},
 	-- {0.1, 0, 1, false, 'red-wire', 500},
-	{0.5, 0, 1, false, 'empty-barrel', 200},
-	{0.3, 0, 0.2, false, 'underground-belt', 200},
-	{0.3, 0, 0.2, false, 'splitter', 150},
-	{0.4, 0.2, 1, false, 'fast-splitter', 60},
-	{0.4, 0.2, 1, false, 'fast-underground-belt', 75},
-	{0.5, 0.3, 1, false, 'big-electric-pole', 160},
-	{1.2, 0.61, 1, false, 'advanced-circuit', 350},
+	{0.4, 0, 1, false, 'empty-barrel', 200},
+	{0.7, 0, 0.5, false, 'underground-belt', 200},
+	{0.7, 0, 0.5, false, 'splitter', 150},
+	{0.35, 0.2, 1, false, 'fast-splitter', 60},
+	{0.35, 0.2, 1, false, 'fast-underground-belt', 75},
+	{0.7, 0.3, 1, false, 'big-electric-pole', 100},
+	{0.3, 0.61, 1, false, 'advanced-circuit', 350},
 	{1, 0, 1, false, 'shotgun-shell', 600},
-	{1.5, 0.9, 1, false, 'processing-unit', 40},
-	-- {0.3, 0.8, 1, false, 'electric-engine-unit', 1 * 6},
+	{1, 0.9, 1, false, 'processing-unit', 40},
+	{0.6, 0.8, 1, false, 'electric-engine-unit', 1 * 6},
 }
 
 function Public.resourcecount_quest_data()

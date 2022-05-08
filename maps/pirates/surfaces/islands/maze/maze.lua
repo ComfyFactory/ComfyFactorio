@@ -139,12 +139,12 @@ local free_labyrinth_cell_raffle = {
 	maze_worms = 0.8,
 	small_abandoned_refinery = 0.05,
 	small_roboport_base = 0.05,
-	maze_belts_1 = 0.2,
-	maze_belts_2 = 0.2,
-	maze_belts_3 = 0.2,
-	maze_belts_4 = 0.2,
+	maze_belts_1 = 0.28,
+	maze_belts_2 = 0.28,
+	maze_belts_3 = 0.28,
+	maze_belts_4 = 0.28,
 	maze_mines = 0.1,
-	maze_treasure = 0.7,
+	maze_treasure = 0.74,
 }
 
 local function free_labyrinth_cell_type(args)

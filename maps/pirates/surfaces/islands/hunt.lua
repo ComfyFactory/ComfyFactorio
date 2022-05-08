@@ -27,7 +27,7 @@ function Public.silo_setup_position(x_fractional_offset, x_absolute_offset)
 	local surface = game.surfaces[destination.surface_name]
 	local boatposition = memory.boat.position
 	local island_center = destination.static_params.islandcenter_position
-	local difficulty_offset = (1 - Common.difficulty()) * 20 or 0
+	local difficulty_offset = (1 - Common.difficulty_scale()) * 20 or 0
 
 	local silo_count = Balance.silo_count()
 
@@ -232,7 +232,7 @@ function Public.position_away_from_players_1(_, radius)
         local tile = surface.get_tile(p2)
 
         if tile and tile.valid and tile.name then
-            if not Utils.contains(CoreData.tiles_that_conflict_with_resource_layer, tile.name) then
+            if not Utils.contains(CoreData.tiles_that_conflict_with_resource_layer_extended, tile.name) then
                 local nearby_characters = surface.find_entities_filtered{position = p2, radius = radius, name = 'character'}
                 if (not nearby_characters) or (#nearby_characters == 0) then
                     p_ret = p2

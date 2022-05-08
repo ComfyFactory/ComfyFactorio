@@ -51,7 +51,8 @@ function Public.toggle_window(player)
 
 	flow2 = Public.flow_add_info_tab(flow, 'Updates')
 
-	Public.flow_add_info_sections(flow2, {'updates', 'bugs'})
+	Public.flow_add_info_sections(flow2, {'updates'})
+	-- Public.flow_add_info_sections(flow2, {'updates', 'bugs'})
 
 	flow2 = Public.flow_add_info_tab(flow, 'Tips')
 
@@ -223,11 +224,11 @@ function Public.full_update(player)
 	if flow2.selected_tab_index == 1 then
 		flow2.style.height = 400
 	elseif flow2.selected_tab_index == 2 then
-		flow2.style.height = 330
+		flow2.style.height = 420
 	elseif flow2.selected_tab_index == 3 then
-		flow2.style.height = 660
+		flow2.style.height = 685
 	elseif flow2.selected_tab_index == 4 then
-		flow2.style.height = 330
+		flow2.style.height = 360
 	end
 end
 

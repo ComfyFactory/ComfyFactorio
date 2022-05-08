@@ -268,7 +268,7 @@ function Public.toggle_window(player)
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
-	flow3.tooltip = 'The player will be returned to the lobby and can\'t join your crew for a while.'
+	flow3.tooltip = 'The player will be returned to the lobby and can\'t join your crew for a while.  (or use /plank {player})'
 
 	flow3 = flow2.add({
 		name = 'line',
@@ -296,7 +296,7 @@ function Public.toggle_window(player)
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
-	flow3.tooltip = 'Make this player an Officer.'
+	flow3.tooltip = 'Make this player an Officer. (or use /officer {player})'
 
 	flow3 = flow2.add({
 		name = 'unmake_officer',
@@ -306,7 +306,7 @@ function Public.toggle_window(player)
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
-	flow3.tooltip = 'Remove this player as an Officer.'
+	flow3.tooltip = 'Remove this player as an Officer. (or use /officer {player})'
 
 	flow3 = flow2.add({
 		name = 'revoke_class',
@@ -331,12 +331,12 @@ function Public.toggle_window(player)
 	flow3 = flow2.add({
 		name = 'capn_requisition',
 		type = 'button',
-		caption = 'Requisition Items',
+		caption = 'Tax Crew',
 	})
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
-	flow3.tooltip = 'Take doubloons and uranium-235 from each non-officer.'
+	flow3.tooltip = 'For each non-officer in your crew, take a quarter of their doubloons (and other game-critical items). (or use /tax)'
 
 
 	flow2 = flow.add({
@@ -587,7 +587,7 @@ function Public.click(event)
 	if eventname == 'capn_requisition' then
 		--double check:
 		if Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN then
-			Roles.captain_requisition(memory.playerindex_captain)
+			Roles.captain_tax(memory.playerindex_captain)
 		end
 		return
 	end

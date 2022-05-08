@@ -336,7 +336,7 @@ function Public.underground_worms_ai()
 		worms[#worms] = nil
 	end
 
-	local max_worms = Math.ceil(45 * Math.sloped(Common.difficulty(), 1/2))
+	local max_worms = Math.ceil(45 * Math.sloped(Common.difficulty_scale(), 1/2))
 
 	-- spawn worms
 	if game.tick % 90 == 0 then

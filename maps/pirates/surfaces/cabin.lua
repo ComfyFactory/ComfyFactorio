@@ -16,68 +16,103 @@ Public.enum = enum
 
 Public.Data = {}
 
-Public.Data.width = 16
+Public.Data.width = 18
 Public.Data.height = 24
 
 Public.Data.cabin_whitebelts_lrtp_order = {
+	{x = -7.5, y = -10.5, direction = defines.direction.north, type = 'input'},
+	{x = -6.5, y = -10.5, direction = defines.direction.north, type = 'input'},
 	{x = -5.5, y = -10.5, direction = defines.direction.north, type = 'input'},
 	{x = -4.5, y = -10.5, direction = defines.direction.north, type = 'input'},
-	{x = -3.5, y = -10.5, direction = defines.direction.north, type = 'input'},
+	{x = -7.5, y = 10.5, direction = defines.direction.south, type = 'output'},
+	{x = -6.5, y = 10.5, direction = defines.direction.south, type = 'output'},
 	{x = -5.5, y = 10.5, direction = defines.direction.south, type = 'output'},
 	{x = -4.5, y = 10.5, direction = defines.direction.south, type = 'output'},
-	{x = -3.5, y = 10.5, direction = defines.direction.south, type = 'output'},
 }
 
-Public.Data.car_pos = {x = 7, y = 0}
+Public.Data.car_pos = {x = 9, y = 0}
 
-Public.Data.static_entities_bp = [[0eNqlmt1u4jAQhd/F16HKOP4Lr1JVK1qsbiSaoCTstqp49yWwW9EtJ/FxLyPIx9g+4zP28K4ed4e475t2VOt3NbSb/WrsVs99s52eX9VaXKHe1FqbY6Gap64d1Pr+9MXmud3spq+Mb/uo1qoZ44sqVLt5mZ5+d902tqunn3EY1fRiu40T61gsvhpf930chtXYb9ph3/Xj6jHuriH6+FCo2I7N2MRLMOeHtx/t4eUx9qdfuR1GofbdcHqpa/+N7M6eh1be2eMU2H8YnYgp5zFVIqaax5hEjJ7H2ESMnce4RIyZx/hEjJ/HhESMm8fUiZh6HiNlIicscJJ1vCBkSVWyLEhZUrUsC2KWVDXLgpwlVc+yoERxZLYL4HiSowEnLG2IMNcQsWanCoB0yYLAXGkh56oCHHanNoBT0XOuF4gmm4jGamlitRCj+0LcdZvt6aMb+8MHqFDbpo9Plw9PhL9W3h3G/WEy668/41nVoHgDC0JTWZOyscDgS5LjAEeyxYKIOpuIxlplyw8R+RSxV6P+pEN9i2+zN1IUscuOGBF9cgp6MPKPDGxakIAV7yj+KuzPCX+LX9N8x/BNye5TNmefMsJuLyD5jGZBQB2mIvcXDziG5ATAsdm7CiLmZ1RI2QMMm18hI78M7UtoNuhCDSy4ZY2pBhy2ThN0+Mz3I4issqVzRi5qxxpSOzewy+KxyecYuzQhjq7OEYmu2JB+AqsfcGCwbMUm4AjjynwhIqTkC1GnCNFpVog6Q4iONRsB1bVj3UZAve/y7QYi8/1GTNJasYZzA5uwVoHeNNBi0ZaDptbzlwMgJk+7DqifPHs9IKCi8/n3AxCZf/qRpOOPt6wSc84WnjcdNCG06cBlp10HlFGedh1Q2IVvuA5CfsN1kkrnQLtOTu0cKnrV0YQYmgSWPVh22UH5E9irZY3aHD5bPxBJH1ogibcQMF81e2zRoFysWQfRoLardf5lPIqNVjwMjlY8jMmSjVMNrLumFY9AnmyeQlAg26cQVJMNVASSsiR7qJgkZBsVkzTZScWkimymYpIh26mYZNmGKkY5tqWKUZ5tqmJUYNuqGMV3C8+oh+Lyd4711f9KCvUr9sOlFghifK29FSuVK4/HPzs+Pbo=]]
+Public.Data.market_position = {x = 4.5, y = 3.5}
 
-Public.Data.operable_entities_bp = [[0eNqV1NtqxCAQBuB3mWtTVnP2VUopyWbYCskY1G0bFt+9MUthKW4a7xzw/xyN5gb9eMXZKHIgb2CpmzOns4tRQ6i/QfKKwQJSFJ6BOmuyIF/XiepC3RimuGVGkKAcTsCAuilUX1oPSNn5A62DEKQBg+XZv1FnOrKzNi7rcXwMC//GAMkpp/DexFYs73SdejSrHl+ewaztGtL0u6PTS7ntKQx8aOkPJFKhNu7kRx2+7xRHHbHvlEedfN+pkg+ax6E6GRJxqEmGijjUJkN5HOKn1I/2rCXOU6/RU0mkXoC7tL677Y3Kh58Fg080douIhhd1K+pC5HlTVt7/AARAZgM=]]
+Public.Data.static_entities_bp = [[0eNqlmu9u2jAUxd8ln2HK9X/zKlM10RJ1kWiCkrAVVX33hVJtXcuJfcwnhEh+XF+fY8e596W63x+bw9B2U7V5qcZue1hP/fpxaHfn78/VRsKqOlUbZV5XVfvQd2O1+T5f2D522/35kul0aKpN1U7NU7Wquu3T+dvvvt813frhZzNO1fnGbtecWa+r5K3N82FoxnE9HvbtNDXDh9vV692qarqpndrmEsbbl9OP7vh0P1+5kesBrKpDP8439d37mOpv9m1Q8+frOaRPGJWJkWWMzsSoZYzJxOhljM3EmGWMy8TYZYzPxLhlTMjE+GVMzMSEZYzUmZyY4OTqWBJClmwlJ6QsuVqWhJglV82SkLPk6lkSgpZcRUtC0pKraUmIWgK5jCnAiSRHwHJYf1mcp2HbjYd+mNb3zX5hLQKRKaGJJkFUpPUQR5MclLN/Ot8OU7vfN8NpPR2HoVmS6Jy2ebfbtUPzcPnZXUNbVmcoRseCUNI8KTQDOKzwNeBEWl6yTNR1MRGMVfMWUAmiKjYVGrX+Qtz32938E9ynzf/6nV3w/pDXH6fD8fws+PVfTPa/+Bv+xZLGRll2JAfllt4tECiwIDQydrtw4Hm1JjkWcKTYc4ioiolorLrYxYhoiolo1LZ4+0YxumIiitEXr10oxkATbYLI7yruAzG5r1v29ADitEJywJxYxS4sCKRZEBqZIVeWADiW5HjAccXrCSL6YiIaayheT1CMsdhZ/rMP1LU3DHX+8wCg/n0eaDvwOOBYk4D0OvbcAZLqaI8gkGFBaGSsSQS9MXIkKAJOuTdgaOWbRMySciSlHAuk7Nl9A2XDs54AE+XpjQOBsk3hU0OjXQFJtC3AodmzthBwjPc3+ALFVu6LtyiTxvCsMa5g084ItDNAPgLrDDRXQbGTDg5rQbMgcHwMplw9KDZbrh6do57gWPXoEvV4dtJRPgILQnMV6VUMhBRremUFMUWhY0Ik2hvgmBBpb4CDS7zBGyi2G7xhc7wRaW/YAm9E2hsoH7Q30Fzx3rCoilfTKIdQbEVaAiLR7vCIpMtVDaMz5bLOOhRKbVldlxwLpWZf7+KU0BaBE0a/4cUo3iVofMK+5lWw2k2bJCJS+QteHJ0ur1VCpmGrlZDEljVw7lxJxfItsOSrTeFr4zhO2g04eWzFQ6FKu6LNIIgk5cV2yCyvDGImWyjHuaPNAGOiK+MYxdfG4fjY6rjSiBTIxjRMimRvGiTpmmxPwyQhO9QwSZFNapikyT41TDJkqxomsUs+Jjmy7w2TPNtohlGBbX7DqMg2m0FUdlFbko4xwjacYZRim+Awii5AXFB3q0v/7uZDI/Gq+tUM4+WZO4jxUXlrZt3W8/V/ACz9dUA=]]
+
+Public.Data.operable_entities_bp = [[0eNqVkeFqwzAMhN9Fv51Ru8nS+lVKGWkjOkMiG0vZGkrefbZXRhljbX+Jg7vPJ/kCh2HCEB0J2AswdaESX52i67M+gzUrBXMa9aLAHT0x2F0yuhN1Q7bIHBAsOMERFFA3ZvXpfY9UHd+RBXKQekwsvai7UTyHiMwVh8GJYLyJm2WvAEmcOPyuUcT8RtN4SE6rfygsiMP1fQXBc8p4uq6kX1+aslSaS670C2MexLT/Y9ZPtmn/xtRPtimYdKhyVnvzvwo+MHJJmI2u261pm1qvm1XyfwG7QKjd]]
 
 Public.Data.cabin_splitters = {
-	{x = -5, y = 9.5, direction = defines.direction.north, type = 0},
-	{x = -4, y = 8.5, direction = defines.direction.north, type = 0},
-	{x = -3, y = 7.5, direction = defines.direction.north, type = 0},
-	{x = -5, y = 7.5, direction = defines.direction.north, type = 1},
-	{x = -4, y = 6.5, direction = defines.direction.north, type = 1},
-	{x = -3, y = 5.5, direction = defines.direction.north, type = 1},
-	{x = -5, y = 5.5, direction = defines.direction.north, type = 2},
-	{x = -4, y = 4.5, direction = defines.direction.north, type = 2},
-	{x = -3, y = 3.5, direction = defines.direction.north, type = 2},
-	{x = -5, y = 3.5, direction = defines.direction.north, type = 3},
-	{x = -4, y = 2.5, direction = defines.direction.north, type = 3},
-	{x = -3, y = 1.5, direction = defines.direction.north, type = 3},
-	{x = -5, y = 1.5, direction = defines.direction.north, type = 4},
-	{x = -4, y = 0.5, direction = defines.direction.north, type = 4},
-	{x = -3, y = -0.5, direction = defines.direction.north, type = 4},
-	{x = -5, y = -0.5, direction = defines.direction.north, type = 5},
-	{x = -4, y = -1.5, direction = defines.direction.north, type = 5},
-	{x = -3, y = -2.5, direction = defines.direction.north, type = 5},
-	{x = -5, y = -2.5, direction = defines.direction.north, type = 6},
-	{x = -4, y = -3.5, direction = defines.direction.north, type = 6},
-	{x = -3, y = -4.5, direction = defines.direction.north, type = 6},
+	{x = -7, y = 9.5, direction = defines.direction.north, type = 0},
+	{x = -6, y = 8.5, direction = defines.direction.north, type = 0},
+	{x = -5, y = 7.5, direction = defines.direction.north, type = 0},
+	{x = -4, y = 6.5, direction = defines.direction.north, type = 0},
+	{x = -7, y = 7.5, direction = defines.direction.north, type = 1},
+	{x = -6, y = 6.5, direction = defines.direction.north, type = 1},
+	{x = -5, y = 5.5, direction = defines.direction.north, type = 1},
+	{x = -4, y = 4.5, direction = defines.direction.north, type = 1},
+	{x = -7, y = 5.5, direction = defines.direction.north, type = 2},
+	{x = -6, y = 4.5, direction = defines.direction.north, type = 2},
+	{x = -5, y = 3.5, direction = defines.direction.north, type = 2},
+	{x = -4, y = 2.5, direction = defines.direction.north, type = 2},
+	{x = -7, y = 3.5, direction = defines.direction.north, type = 3},
+	{x = -6, y = 2.5, direction = defines.direction.north, type = 3},
+	{x = -5, y = 1.5, direction = defines.direction.north, type = 3},
+	{x = -4, y = 0.5, direction = defines.direction.north, type = 3},
+	{x = -7, y = 1.5, direction = defines.direction.north, type = 4},
+	{x = -6, y = 0.5, direction = defines.direction.north, type = 4},
+	{x = -5, y = -0.5, direction = defines.direction.north, type = 4},
+	{x = -4, y = -1.5, direction = defines.direction.north, type = 4},
+	{x = -7, y = -0.5, direction = defines.direction.north, type = 5},
+	{x = -6, y = -1.5, direction = defines.direction.north, type = 5},
+	{x = -5, y = -2.5, direction = defines.direction.north, type = 5},
+	{x = -4, y = -3.5, direction = defines.direction.north, type = 5},
+	-- {x = -7, y = -2.5, direction = defines.direction.north, type = 6},
+	-- {x = -6, y = -3.5, direction = defines.direction.north, type = 6},
+	-- {x = -5, y = -4.5, direction = defines.direction.north, type = 6},
+	-- {x = -4, y = -5.5, direction = defines.direction.north, type = 6},
+	{x = -7, y = -2.5, direction = defines.direction.north, type = 7},
+	{x = -6, y = -3.5, direction = defines.direction.north, type = 7},
 	{x = -5, y = -4.5, direction = defines.direction.north, type = 7},
-	{x = -4, y = -5.5, direction = defines.direction.north, type = 7},
-	{x = -4, y = -8.5, direction = defines.direction.north, type = 7},
-	{x = -5, y = -9.5, direction = defines.direction.north, type = 7},
-	{x = -3, y = -7.5, direction = defines.direction.north, type = 8},
-	{x = 0.5, y = -7, direction = defines.direction.west, type = 8},
+
+	{x = -5, y = -7.5, direction = defines.direction.north, type = 7},
+	{x = -6, y = -8.5, direction = defines.direction.north, type = 7},
+	{x = -7, y = -9.5, direction = defines.direction.north, type = 7},
+	{x = -4, y = -6.5, direction = defines.direction.north, type = 8},
+	{x = -2, y = -6.5, direction = defines.direction.south, type = 9},
 }
 
-Public.Data.output_chest = {x = 3.5, y = -6.5}
-Public.Data.backup_output_chest = {x = 3.5, y = -7.5}
+Public.Data.output_chest = {x = -2.5, y = -9.5}
+Public.Data.backup_output_chest = {x = -1.5, y = -9.5}
 
 Public.Data.input_chests = {
-	{x = 0.5, y = 6.5},
-	{x = 0.5, y = 4.5},
-	{x = 0.5, y = 2.5},
-	{x = 0.5, y = 0.5},
-	{x = 0.5, y = -1.5},
-	{x = 0.5, y = -3.5},
-	{x = 0.5, y = -5.5},
+	{x = -0.5, y = 5.5},
+	{x = -0.5, y = 3.5},
+	{x = -0.5, y = 1.5},
+	{x = -0.5, y = -0.5},
+	{x = -0.5, y = -2.5},
+	{x = -0.5, y = -4.5},
+	-- {x = 0.5, y = -6.5},
 }
 
 Public.Data.surfacename_rendering_pos = {x = -0.5, y = -15}
+
+
+
+Public.cabin_shop_data = {
+	{
+		price = {{'coin', 300}, {'coal', 25}},
+		offer = {type='give-item', item = 'artillery-shell', count = 5},
+	},
+	{
+		price = {{'coin', 1000}, {'electronic-circuit', 30}},
+		offer = {type='give-item', item = 'rail-signal', count = 100},
+	},
+	{
+		price = {{'coin', 2000}, {'stone-brick', 30}},
+		offer = {type='give-item', item = 'uranium-238', count = 10},
+	},
+	{
+		price = {{'coin', 25}},
+		offer = {type='nothing', effect_description='Relax at sea for an extra minute: Increase the next destination\'s loading time by 60 seconds.'},
+	},
+}
 
 function Public.get_cabin_surface_name()
 	local memory = Memory.get_crew_memory()
@@ -142,6 +177,9 @@ function Public.create_cabin_surface()
 			elseif splitter.type == 8 then
 				priority = 'right'
 				filter = 'landfill'
+			elseif splitter.type == 9 then
+				priority = 'left'
+				filter = 'landfill'
 			end
 			local e = surface.create_entity({name = name, position = p, force = boat.force_name, create_build_effect_smoke = false, direction = splitter.direction})
 			if e and e.valid then
@@ -197,7 +235,7 @@ function Public.create_cabin_surface()
 				e2.operable = false
 			end
 		end
-		local es2 = Common.build_from_blueprint(Public.Data.operable_entities_bp, surface, {x=4, y=0}, boat.force_name)
+		local es2 = Common.build_from_blueprint(Public.Data.operable_entities_bp, surface, {x=5, y=-4}, boat.force_name)
 		for _, e2 in pairs(es2) do
 			if e2 and e2.valid then
 				e2.destructible = false
@@ -213,6 +251,16 @@ function Public.create_cabin_surface()
 			e.minable = false
 			e.rotatable = false
 			e.operable = false
+		end
+
+		e = surface.create_entity({name = 'market', position = Public.Data.market_position, force = boat.force_name, create_build_effect_smoke = false})
+		if e and e.valid then
+			e.destructible = false
+			e.minable = false
+			e.rotatable = false
+			for _, offer in pairs(Public.cabin_shop_data) do
+				e.add_market_item(offer)
+			end
 		end
 
 		rendering.draw_text{
@@ -234,12 +282,14 @@ function Public.connect_up_linked_belts_to_deck() --assumes both are in standard
 	if boat and boat.deck_whitebelts and #boat.deck_whitebelts > 0 and boat.cabin_whitebelts and #boat.cabin_whitebelts > 0 then
 
 		local connections = {
-			{1,7},
-			{2,8},
-			{3,9},
-			{4,10},
-			{5,11},
-			{6,12},
+			{1,9},
+			{2,10},
+			{3,11},
+			{4,12},
+			{5,13},
+			{6,14},
+			{7,15},
+			{8,16},
 		}
 
 		for _, c in pairs(connections) do

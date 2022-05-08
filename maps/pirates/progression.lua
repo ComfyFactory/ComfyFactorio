@@ -162,11 +162,11 @@ function Public.go_from_starting_dock_to_first_destination()
 		boat.EEI_stage = 1
 		Boats.update_EEIs(boat)
 
-		-- if Common.difficulty() == 1 then
+		-- if Common.difficulty_scale() == 1 then
 		-- 	Boats.upgrade_chests(boat, 'iron-chest')
 		-- 	Hold.upgrade_chests(1, 'iron-chest')
 		-- 	Crowsnest.upgrade_chests('iron-chest')
-		-- elseif Common.difficulty() > 1 then
+		-- elseif Common.difficulty_scale() > 1 then
 		-- 	Boats.upgrade_chests(boat, 'steel-chest')
 		-- 	Hold.upgrade_chests(1, 'steel-chest')
 		-- 	Crowsnest.upgrade_chests('steel-chest')
@@ -462,7 +462,7 @@ function Public.try_retreat_from_island(player, manual) -- Assumes the cost can 
 		end
 	else
 		if player and Common.validate_player(player) then
-			Common.notify_player_error(player.force, 'Undock error: Not enough resources stored in the captain\'s cabin.')
+			Common.notify_force_error(player.force, 'Undock error: Not enough resources stored in the captain\'s cabin.')
 		end
 	end
 end
@@ -538,7 +538,7 @@ function Public.go_from_currentdestination_to_sea()
 
 	if memory.overworldx == 0 and memory.boat then
 
-		local difficulty_name = CoreData.get_difficulty_name_from_value(Common.difficulty())
+		local difficulty_name = CoreData.get_difficulty_name_from_value(memory.difficulty)
 		if difficulty_name == CoreData.difficulty_options[#CoreData.difficulty_options].text then
 			Boats.upgrade_chests(boat, 'steel-chest')
 			Hold.upgrade_chests(1, 'steel-chest')

@@ -83,7 +83,7 @@ function Public.revoke_class(captain, player)
 		memory.spare_classes[#memory.spare_classes + 1] = memory.classes_table[player.index]
 		memory.classes_table[player.index] = nil
 
-		Common.notify_force_light(force, string.format('%s revoked %s from %s.', captain.name, Classes.display_form[memory.classes_table[player.index]]), player.name)
+		Common.notify_force_light(force, string.format('%s revoked %s from %s.', captain.name, Classes.display_form[memory.classes_table[player.index]], player.name))
 	end
 end
 
@@ -381,11 +381,11 @@ function Public.assign_captain_based_on_priorities(excluded_player_index)
 end
 
 
-function Public.captain_requisition(captain_index)
+function Public.captain_tax(captain_index)
 	local memory = Memory.get_crew_memory()
 	local any_taken = false
 
-	local items_to_req = {'coin', 'uranium-235'}
+	local items_to_req = {'coin', 'rail-signal', 'uranium-235'}
 
 	local item_count_table = {}
 	for _, i in pairs(items_to_req) do
@@ -406,6 +406,7 @@ function Public.captain_requisition(captain_index)
 					if inv and inv.valid then
 						for _, i in pairs(items_to_req) do
 							local amount = inv.get_item_count(i)
+							if i == 'coin' then amount = Math.floor(amount/10) end
 							if amount and amount > 0 then
 								inv.remove{name=i, count=amount}
 								captain_inv.insert{name=i, count=amount}
@@ -435,7 +436,7 @@ function Public.captain_requisition(captain_index)
 		end
 
 		if any_taken then
-			local str = 'The captain requisitioned '
+			local str = 'The captain taxed '
 			local j = 1
 			for i = 1, #items_to_req do
 				local item = items_to_req[i]
@@ -461,7 +462,7 @@ function Public.captain_requisition(captain_index)
 			str = str .. '.'
 			Common.notify_force(memory.force, str)
 		else
-			Common.notify_player_error(captain, 'No important items found in crewmates\' inventories or cursor stacks.')
+			Common.notify_player_error(captain, 'No coins or game-critical found in crewmates\' inventories or cursor stacks.')
 		end
 	end
 end
@@ -553,9 +554,9 @@ function Public.add_player_to_permission_group(player, group_override)
         group.set_allows_action(defines.input_action.activate_paste, false)
         group.set_allows_action(defines.input_action.upgrade, false)
 
-		group.set_allows_action(defines.input_action.grab_blueprint_record, false)
 		if not CoreData.blueprint_library_allowed then
 			group.set_allows_action(defines.input_action.open_blueprint_library_gui, false)
+			group.set_allows_action(defines.input_action.grab_blueprint_record, false)
 		end
 		if not CoreData.blueprint_importing_allowed then
 			group.set_allows_action(defines.input_action.import_blueprint_string, false)
@@ -572,9 +573,9 @@ function Public.add_player_to_permission_group(player, group_override)
 			plebs_group.set_allows_action(defines.input_action.add_permission_group, false)
 			plebs_group.set_allows_action(defines.input_action.admin_action, false)
 
-			plebs_group.set_allows_action(defines.input_action.grab_blueprint_record, false)
 			if not CoreData.blueprint_library_allowed then
 				plebs_group.set_allows_action(defines.input_action.open_blueprint_library_gui, false)
+				plebs_group.set_allows_action(defines.input_action.grab_blueprint_record, false)
 			end
 			if not CoreData.blueprint_importing_allowed then
 				plebs_group.set_allows_action(defines.input_action.import_blueprint_string, false)

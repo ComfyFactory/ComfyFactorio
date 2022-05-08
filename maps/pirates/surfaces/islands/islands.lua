@@ -32,23 +32,23 @@ Public['IslandsCommon'] = require 'maps.pirates.surfaces.islands.common'
 
 
 
-local function render_silo_hp()
-	-- local memory = Memory.get_crew_memory()
-	local destination = Common.current_destination()
-	local surface = game.surfaces[destination.surface_name]
-	if not (destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid) then return end
-	destination.dynamic_data.rocketsilohptext = rendering.draw_text{
-		text = 'HP: ' .. destination.dynamic_data.rocketsilohp .. ' / ' .. destination.dynamic_data.rocketsilomaxhp,
-		surface = surface,
-		target = destination.dynamic_data.rocketsilos[1],
-		target_offset = {0, 4.5},
-		color = {0, 255, 0},
-		scale = 1.20,
-		font = 'default-game',
-		alignment = 'center',
-		scale_with_zoom = true
-	}
-end
+-- local function render_silo_hp()
+-- 	-- local memory = Memory.get_crew_memory()
+-- 	local destination = Common.current_destination()
+-- 	local surface = game.surfaces[destination.surface_name]
+-- 	if not (destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid) then return end
+-- 	destination.dynamic_data.rocketsilohptext = rendering.draw_text{
+-- 		text = 'HP: ' .. destination.dynamic_data.rocketsilohp .. ' / ' .. destination.dynamic_data.rocketsilomaxhp,
+-- 		surface = surface,
+-- 		target = destination.dynamic_data.rocketsilos[1],
+-- 		target_offset = {0, 4.5},
+-- 		color = {0, 255, 0},
+-- 		scale = 1.20,
+-- 		font = 'default-game',
+-- 		alignment = 'center',
+-- 		scale_with_zoom = true
+-- 	}
+-- end
 
 
 function Public.spawn_treasure_maps(destination, points_to_avoid)
@@ -328,6 +328,7 @@ function Public.spawn_silo_setup()
 			silo.operable = false
 			if i == 1 then
 				silo.auto_launch = true
+				Common.new_healthbar(true, silo, Balance.silo_max_hp, nil, Balance.silo_max_hp, 0.6, -2)
 			else
 				silo.destructible = false
 			end
@@ -361,7 +362,7 @@ function Public.spawn_silo_setup()
 		Task.set_timeout_in_ticks(2, silo_chart_tag, {p_silo = p_silo, surface_name = destination.surface_name, crew_id = memory.id})
 	end
 
-	render_silo_hp()
+	-- render_silo_hp()
 
 	return p_silo
 end
@@ -381,8 +382,8 @@ function Public.spawn_enemy_boat(type)
 		local boat = {
 			state = Boats.enum_state.APPROACHING,
 			type = type,
-			speed = 4.5,
-			position = {x = - surface.map_gen_settings.width/2 + 17.5, y = (memory.boat.dockedposition or memory.boat.position).y + offsets[Math.random(4)]},
+			speed = 4,
+			position = {x = - surface.map_gen_settings.width/2 + 23.5, y = (memory.boat.dockedposition or memory.boat.position).y + offsets[Math.random(4)]},
 			force_name = memory.enemy_force_name,
 			surface_name = surface.name,
 			unit_group = nil,
@@ -398,7 +399,7 @@ function Public.spawn_enemy_boat(type)
 			-- e.destructible = false
 			boat.spawner = e
 
-			Common.new_healthbar(false, e, 350, nil, 350, 0.3)
+			Common.new_healthbar(true, e, 900, nil, 900, 0.5)
 		end
 
 		return enemyboats[#enemyboats]

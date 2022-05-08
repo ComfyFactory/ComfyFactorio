@@ -28,23 +28,24 @@ Public.EEI_stages = { --multipliers
 
 
 function Public.scripted_biters_pollution_cost_multiplier()
-	return 1.3 --tuned
+
+	return 1.45 / Math.sloped(Common.difficulty_scale(), 1/5) * (1 + 1.2 / ((1 + (Common.overworldx()/40))^(1.5+Common.difficulty_scale()))) -- the complicated factor just makes the early-game easier; in particular the first island, but on easier difficulties the next few islands as well
 end
 
 function Public.cost_to_leave_multiplier()
-	-- return Math.sloped(Common.difficulty(), 7/10) --should scale with difficulty similar to, but slightly slower than, passive fuel depletion rate --Edit: not sure about this?
-	-- return Math.sloped(Common.difficulty(), 9/10)
+	-- return Math.sloped(Common.difficulty_scale(), 7/10) --should scale with difficulty similar to, but slightly slower than, passive fuel depletion rate --Edit: not sure about this?
+	-- return Math.sloped(Common.difficulty_scale(), 9/10)
 
 	-- extra factor now that the cost scales with time:
-	return Math.sloped(Common.difficulty(), 8/10)
+	return Math.sloped(Common.difficulty_scale(), 8/10)
 end
 
-Public.rocket_launch_coin_reward = 5000
+Public.rocket_launch_coin_reward = 6000
 
 function Public.crew_scale()
 	local ret = Common.activecrewcount()/10
 	if ret == 0 then ret = 1/10 end --if all players are afk
-	if ret > 2.4 then ret = 2.4 end --we have to cap this because you need time to mine the ore... and big crews are a mess anyway. currently this value matches the 24 player cap
+	if ret > 2.4 then ret = 2.4 end --we have to cap this because you need time to mine the ore... and big crews are a mess anyway. currently this value matches the 24 player capacity setting
 	return ret
 end
 
@@ -70,7 +71,7 @@ function Public.silo_energy_needed_MJ()
 	local est_base_power = 2*Public.starting_boatEEIpower_production_MW() * (1 + 0.05 * (Common.overworldx()/40)^(5/3))
 
 	return est_secs * est_base_power
-	-- return est_secs * est_base_power * Math.sloped(Common.difficulty(), 1/3)
+	-- return est_secs * est_base_power * Math.sloped(Common.difficulty_scale(), 1/3)
 end
 
 function Public.silo_count()
@@ -81,8 +82,8 @@ end
 
 
 function Public.game_slowness_scale()
-	-- return 1 / Public.crew_scale()^(55/100) / Math.sloped(Common.difficulty(), 1/4) --changed crew_scale factor significantly to help smaller crews
-	return 1 / Public.crew_scale()^(50/100) / Math.sloped(Common.difficulty(), 1/4) --changed crew_scale factor significantly to help smaller crews
+	-- return 1 / Public.crew_scale()^(55/100) / Math.sloped(Common.difficulty_scale(), 1/4) --changed crew_scale factor significantly to help smaller crews
+	return 1 / Public.crew_scale()^(50/100) / Math.sloped(Common.difficulty_scale(), 1/4) --changed crew_scale factor significantly to help smaller crews
 end
 
 
@@ -94,12 +95,20 @@ function Public.max_time_on_island_formula() --always >0  --tuned
 end
 
 
+Public.rockets_needed_x = 40*21
+
+
 function Public.max_time_on_island()
-	if Common.overworldx() == 0 or ((Common.overworldx()/40) > 20) then
+	local x = Common.overworldx()
+	if x == 0 or (x >= Public.rockets_needed_x) then
 	-- if Common.overworldx() == 0 or ((Common.overworldx()/40) > 20 and (Common.overworldx()/40) < 25) then
 		return -1
 	else
-		return Math.ceil(Public.max_time_on_island_formula())
+		if x == 40 then
+			return 1.1 * Math.ceil(Public.max_time_on_island_formula()) --it's important for this island to be chill, so that it's not such a shock to go here from the first chill island
+		else
+			return Math.ceil(Public.max_time_on_island_formula())
+		end
 	end
 end
 
@@ -116,7 +125,7 @@ function Public.fuel_depletion_rate_static()
 
 	local rate
 	if Common.overworldx() > 0 then
-		rate = 550 * (0 + (Common.overworldx()/40)^(9/10)) * Public.crew_scale()^(1/7) * Math.sloped(Common.difficulty(), 65/100) / T --most of the crewsize dependence is through T, i.e. the coal cost per island stays the same... but the extra player dependency accounts for the fact that even in compressed time, more players seem to get more resources per island
+		rate = 575 * (0 + (Common.overworldx()/40)^(9/10)) * Public.crew_scale()^(1/8) * Math.sloped(Common.difficulty_scale(), 65/100) / T --most of the crewsize dependence is through T, i.e. the coal cost per island stays the same... but the extra player dependency accounts for the fact that even in compressed time, more players seem to get more resources per island
 	else
 		rate = 0
 	end
@@ -127,12 +136,12 @@ end
 function Public.fuel_depletion_rate_sailing()
 	if (not Common.overworldx()) then return 0 end
 
-	return - 7.35 * (1 + 0.135 * (Common.overworldx()/40)^(100/100)) * Math.sloped(Common.difficulty(), 1/20) --shouldn't depend on difficulty much if at all, as available resources don't depend much on difficulty
+	return - 7.65 * (1 + 0.135 * (Common.overworldx()/40)^(100/100)) * Math.sloped(Common.difficulty_scale(), 1/20) --shouldn't depend on difficulty much if at all, as available resources don't depend much on difficulty
 end
 
 function Public.silo_total_pollution()
 	return (
-		365 * (Common.difficulty()^(1.2)) * Public.crew_scale()^(2/5) * (3.2 + 0.7 * (Common.overworldx()/40)^(1.6)) --shape of the curve with x is tuned
+		365 * (Common.difficulty_scale()^(1.2)) * Public.crew_scale()^(3/10) * (3.2 + 0.7 * (Common.overworldx()/40)^(1.6)) / Math.sloped(Common.difficulty_scale(), 1/5) --shape of the curve with x is tuned. Final factor of difficulty is to offset a change made to scripted_biters_pollution_cost_multiplier
 )
 end
 
@@ -142,7 +151,11 @@ function Public.boat_passive_pollution_per_minute(time)
 	if (Common.overworldx()/40) > 25 then T = T * 0.9 end
 
 	if time then
-		if time >= 100/100 * T then --will still happen regularly, on islands without an auto-undock timer
+		if time >= 160/100 * T then
+		boost = 40
+		elseif time >= 130/100 * T then
+			boost = 30
+		elseif time >= 100/100 * T then --will still happen regularly, on islands without an auto-undock timer
 			boost = 20
 		elseif time >= 95/100 * T then
 			boost = 16
@@ -162,8 +175,8 @@ function Public.boat_passive_pollution_per_minute(time)
 	end
 
 	return boost * (
-			2.73 * Common.difficulty() * (Common.overworldx()/40)^(1.8) * (Public.crew_scale())^(55/100)
-	 ) -- There is no _explicit_ T dependence, but it depends almost the same way on the crew_scale as T does.
+			2.73 * (Common.difficulty_scale()^(1.1)) * (Common.overworldx()/40)^(1.8) * (Public.crew_scale())^(55/100)-- There is no _explicit_ T dependence, but it depends almost the same way on the crew_scale as T does.
+	 ) / Math.sloped(Common.difficulty_scale(), 1/5) --Final factor of difficulty is to offset a change made to scripted_biters_pollution_cost_multiplier
 end
 
 
@@ -174,7 +187,7 @@ function Public.base_evolution_leagues(leagues)
 	if overworldx == 0 then
 		evo = 0
 	else
-		evo = (0.0201 * (overworldx/40)) * Math.sloped(Common.difficulty(), 1/5)
+		evo = (0.0201 * (overworldx/40)) * Math.sloped(Common.difficulty_scale(), 1/5)
 
 		if overworldx > 600 and overworldx < 1000 then
 			evo = evo + (0.0025 * (overworldx - 600)/40)
@@ -235,22 +248,28 @@ function Public.evolution_per_nest_kill() --it's important to have evo go up wit
 		return 0
 	end
 
-	-- return 0.003 * Common.difficulty()
+	-- return 0.003 * Common.difficulty_scale()
 end
 
 function Public.evolution_per_full_silo_charge()
 	 --too low and you always charge immediately, too high and you always charge late
 	-- return 0.05
 	-- observed x=2000 run, changed this to:
-	return 0.05 + 0.03 * Common.overworldx()/1000
+	-- return 0.05 + 0.03 * Common.overworldx()/1000
+	return 0.05 + 0.02 * Common.overworldx()/1000
 end
 
-function Public.bonus_damage_to_humans()
-	local ret = 0.025
-	local diff = Common.difficulty()
-	if diff <= 0.7 then ret = 0 end
-	if diff >= 1.3 then ret = 0.050 end
-	return ret
+-- function Public.bonus_damage_to_humans()
+-- 	local ret = 0.025
+-- 	local diff = Common.difficulty_scale()
+-- 	if diff <= 0.7 then ret = 0 end
+-- 	if diff >= 1.3 then ret = 0.050 end
+-- 	return ret
+-- end
+
+
+function Public.biter_timeofday_bonus_damage(darkness) -- a surface having min_brightness of 0.2 will cap this at 0.8
+	return 0.1 * darkness
 end
 
 
@@ -286,19 +305,19 @@ function Public.biter_base_density_scale()
 end
 
 
-function Public.launch_fuel_reward()
-	return Math.ceil(1000 * (1 + 0.13 * (Common.overworldx()/40)^(9/10)))
-	-- return Math.ceil(1000 * (1 + 0.1 * (Common.overworldx()/40)^(8/10)) / Math.sloped(Common.difficulty(), 1/4))
+function Public.rocket_launch_fuel_reward()
+	return Math.ceil(1250 * (1 + 0.13 * (Common.overworldx()/40)^(9/10)) * Math.sloped(Common.difficulty_scale(), 1/3))
+	-- return Math.ceil(1000 * (1 + 0.1 * (Common.overworldx()/40)^(8/10)) / Math.sloped(Common.difficulty_scale(), 1/4))
 end
 
 function Public.quest_reward_multiplier()
-	return (0.4 + 0.08 * (Common.overworldx()/40)^(8/10)) * Math.sloped(Common.difficulty(), 1/3) * (Public.crew_scale())^(1/8)
+	return (0.4 + 0.08 * (Common.overworldx()/40)^(8/10)) * Math.sloped(Common.difficulty_scale(), 1/3) * (Public.crew_scale())^(1/8)
 end
 
 function Public.island_richness_avg_multiplier()
 	local ret
 	-- local base = 0.7 + 0.1 * (Common.overworldx()/40)^(7/10) --tuned tbh
-	local base = 0.73 + 0.110 * (Common.overworldx()/40)^(7/10) --tuned tbh
+	local base = 0.73 + 0.120 * (Common.overworldx()/40)^(65/100) --tuned tbh
 
 	ret = base * Math.sloped(Public.crew_scale(), 1/40) --we don't really have resources scaling by player count in this resource-constrained scenario, but we scale a little, to accommodate each player filling their inventory with useful tools. also, I would do higher than 1/40, but we go even slightly lower because we're applying this somewhat sooner than players actually get there.
 
@@ -306,25 +325,28 @@ function Public.island_richness_avg_multiplier()
 end
 
 function Public.resource_quest_multiplier()
-	return (1.0 + 0.075 * (Common.overworldx()/40)^(8/10)) * Math.sloped(Common.difficulty(), 1/3) * (Public.crew_scale())^(1/8)
+	return (1.0 + 0.075 * (Common.overworldx()/40)^(8/10)) * Math.sloped(Common.difficulty_scale(), 1/5) * (Public.crew_scale())^(1/10)
 end
 
 
 function Public.apply_crew_buffs_per_x(force)
-	force.laboratory_productivity_bonus = Math.max(0, 7/100 * (Common.overworldx()/40) - (10*(Common.difficulty()) - 5)) --difficulty causes lab productivity boosts to start later
+	force.laboratory_productivity_bonus = Math.max(0, 7/100 * (Common.overworldx()/40) - (10*(Common.difficulty_scale()) - 5)) --difficulty causes lab productivity boosts to start later
 end
 
 function Public.class_cost()
-	return 8000
+	return 10000
 	-- return Math.ceil(10000 / (Public.crew_scale()*10/4)^(1/6))
 end
 
 
 Public.covered_first_appears_at = 40
 
+Public.coin_sell_amount = 500
+
 Public.starting_fuel = 4000
 
-Public.silo_max_hp = 8000
+Public.silo_max_hp = 5000
+Public.silo_resistance_factor = 7
 
 function Public.pistol_damage_multiplier() return 2.25 end --2.0 slightly too low, 2.5 causes players to yell at each other for not using pistol
 
@@ -338,16 +360,20 @@ function Public.sandworm_evo_increase_per_spawn()
 	if _DEBUG then
 		return 1/100
 	else
-		return 1/100 * 1/8 * Math.sloped(Common.difficulty(), 3/5)
+		return 1/100 * 1/7 * Math.sloped(Common.difficulty_scale(), 3/5)
 	end
 end
 
-function Public.kraken_kill_reward()
-	return {{name = 'sulfuric-acid-barrel', count = 10}}
+function Public.kraken_kill_reward_items()
+	return {{name = 'sulfuric-acid-barrel', count = 5}, {name = 'coin', count = 1000}}
+end
+function Public.kraken_kill_reward_fuel()
+	return 150
 end
 
 function Public.kraken_health()
-	return Math.ceil(3500 * Math.max(1, 1 + 0.08 * ((Common.overworldx()/40)^(13/10)-6)) * (Public.crew_scale()^(5/8)) * Math.sloped(Common.difficulty(), 3/4))
+	return Math.ceil(3500 * Math.max(1, 1 + 0.075 * (Common.overworldx()/40)^(13/10)) * (Public.crew_scale()^(4/8)) * Math.sloped(Common.difficulty_scale(), 3/4))
+	-- return Math.ceil(3500 * Math.max(1, 1 + 0.08 * ((Common.overworldx()/40)^(13/10)-6)) * (Public.crew_scale()^(5/8)) * Math.sloped(Common.difficulty_scale(), 3/4))
 end
 
 Public.kraken_regen_scale = 0.1 --starting off low
@@ -390,7 +416,7 @@ function Public.barter_decay_parameter()
 end
 
 function Public.sandworm_speed()
-	return 6.4 * Math.sloped(Common.difficulty(), 1/5)
+	return 6.4 * Math.sloped(Common.difficulty_scale(), 1/5)
 end
 
 -- function Public.island_otherresources_prospect_decay_parameter()
@@ -477,7 +503,7 @@ function Public.starting_items_crew_upstairs()
 		{['grenade'] = 3},
 		{['shotgun'] = 2, ['shotgun-shell'] = 36},
 		-- {['raw-fish'] = 5},
-		{['coin'] = 1000},
+		{['coin'] = 2000},
 	}
 end
 
@@ -487,11 +513,10 @@ function Public.starting_items_crew_downstairs()
 		{['underground-belt'] = 80},
 		{['splitter'] = Math.random(50,56)},
 		{['inserter'] = Math.random(120,140)},
-		{['storage-tank'] = 4},
+		{['storage-tank'] = 2},
 		{['medium-electric-pole'] = Math.random(15,21)},
 		{['coin'] = 2000},
 		{['solar-panel'] = 3},
-		{['accumulator'] = 1},
 	}
 end
 
@@ -499,7 +524,7 @@ end
 
 
 function Public.covered_entry_price_scale()
-	return 0.85 * (1 + 0.033 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty(), 1/2) --whilst resource scales tend to be held fixed with crew size, we account slightly for the fact that more players tend to handcraft more
+	return 0.85 * (1 + 0.033 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty_scale(), 1/2) --whilst resource scales tend to be held fixed with crew size, we account slightly for the fact that more players tend to handcraft more
 end
 
 -- if the prices are too high, players will accidentally throw too much in when they can't do it
@@ -519,7 +544,7 @@ Public.covered1_entry_price_data_raw = { --watch out that the raw_materials ches
 	{1, 0.1, 1, false, {
 		price = {name = 'assembling-machine-1', count = 80},
 		raw_materials = {{name = 'iron-plate', count = 1760}, {name = 'copper-plate', count = 360}}}, {}},
-	{1, 0, 0.15, false, {
+	{0.25, 0, 0.15, false, {
 		price = {name = 'burner-mining-drill', count = 150},
 		raw_materials = {{name = 'iron-plate', count = 1350}}}, {}},
 	{0.75, 0, 0.6, false, {
@@ -531,7 +556,7 @@ Public.covered1_entry_price_data_raw = { --watch out that the raw_materials ches
 	{1, 0, 1, false, {
 		price = {name = 'firearm-magazine', count = 700},
 		raw_materials = {{name = 'iron-plate', count = 2800}}}, {}},
-	{1, 0, 1, false, {
+	{0.6, 0, 1, false, {
 		price = {name = 'constant-combinator', count = 276},
 		raw_materials = {{name = 'iron-plate', count = 552}, {name = 'copper-plate', count = 1518}}}, {}},
 
@@ -577,7 +602,7 @@ function Public.covered1_entry_price()
 
 	-- local overworldx = memory.overworldx or 0
 
-	local game_completion_progress = Math.max(Math.min(Math.sloped(Common.difficulty(),1/2) * Common.game_completion_progress(), 1), 0)
+	local game_completion_progress = Math.max(Math.min(Math.sloped(Common.difficulty_scale(),1/2) * Common.game_completion_progress(), 1), 0)
 
 	local data = Public.covered1_entry_price_data()
     local types, weights = {}, {}

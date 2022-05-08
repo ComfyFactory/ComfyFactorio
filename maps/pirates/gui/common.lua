@@ -425,8 +425,8 @@ function Public.player_and_crew_state_bools(player)
 			atsea_sailing_bool = memory.boat and memory.boat.state == Boats.enum_state.ATSEA_SAILING
 			landed_bool = memory.boat and memory.boat.state == Boats.enum_state.LANDED
 			quest_bool = (dynamic_data.quest_type ~= nil) and onmap_bool
-			silo_bool = dynamic_data.rocketsilos and dynamic_data.rocketsilos[1] and dynamic_data.rocketsilos[1].valid and onmap_bool
 			charged_bool = dynamic_data.silocharged
+			silo_bool = dynamic_data.rocketsilos and onmap_bool and ((dynamic_data.rocketsilos[1] and dynamic_data.rocketsilos[1].valid) or charged_bool)
 			launched_bool = dynamic_data.rocketlaunched
 
 			cost_bool = destination.static_params.base_cost_to_undock and (not atsea_sailing_bool) and (not retreating_bool)

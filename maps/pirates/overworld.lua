@@ -79,6 +79,12 @@ function Public.generate_destination_type_and_subtype(overworld_position)
 	if macro_x == 4 then
 		island_subtype_raffle = Utils.ordered_table_with_values_removed(island_subtype_raffle, Surfaces.Island.enum.STANDARD)
 	end
+	if macro_x == 11 then
+		island_subtype_raffle = Utils.ordered_table_with_values_removed(island_subtype_raffle, 'none') --make sure there's an island after kraken
+	end
+	if macro_x == 12 then
+		island_subtype_raffle = Utils.ordered_table_with_values_removed(island_subtype_raffle, 'none') --make sure there's another island after kraken
+	end
 	if macro_x == 18 then
 		island_subtype_raffle = Utils.ordered_table_with_values_removed(island_subtype_raffle, 'none') --flying-robot-frame cost is here, and we just make sure there's an island to see it
 	end
@@ -109,7 +115,13 @@ function Public.generate_destination_type_and_subtype(overworld_position)
 		subtype = Surfaces.Island.enum.MAZE
 	elseif macro_x == 23 then --overwrite dock. rocket launch cost
 		type = Surfaces.enum.ISLAND
-		subtype = Surfaces.Island.enum.WALKWAYS
+		if macro_y == 0 then
+			subtype = Surfaces.Island.enum.RED_DESERT
+		elseif macro_y == -1 then
+			subtype = Surfaces.Island.enum.SWAMP
+		else
+			subtype = Surfaces.Island.enum.STANDARD_VARIANT
+		end
 	elseif macro_y == -1 and (((macro_x % 4) == 3 and macro_x ~= 15) or macro_x == 14) then --avoid x=15 because radioactive is there
 		type = Surfaces.enum.DOCK
 	elseif macro_x == 3 then
@@ -134,7 +146,7 @@ function Public.generate_destination_type_and_subtype(overworld_position)
 	-- 	else
 	-- 		type = nil
 	-- 	end
-	elseif macro_x == 11 then --just after krakens, but dock is here too, so there's a choice
+	elseif macro_x == 12 and macro_y < 1 then
 		type = Surfaces.enum.ISLAND
 		subtype = Surfaces.Island.enum.SWAMP
 	elseif macro_x == 16 then
@@ -147,7 +159,7 @@ function Public.generate_destination_type_and_subtype(overworld_position)
 		type = nil
 	elseif macro_x == 21 then --rocket launch cost
 		type = Surfaces.enum.ISLAND
-		subtype = Surfaces.Island.enum.SWAMP
+		subtype = Surfaces.Island.enum.WALKWAYS
 	elseif macro_x == 22 then --game length decrease, pending more content. also kinda fun to have to steer in realtime due to double space
 		type = nil
 	elseif macro_x == 24 then --rocket launch cost
@@ -169,6 +181,8 @@ function Public.generate_destination_type_and_subtype(overworld_position)
 			subtype = nil
 		end
 	end
+
+	-- an incomplete list of things that could break if the islands are rearranged: parrot tips are given on certain islands;
 
 
 	--== DEBUG override to test islands:
@@ -605,12 +619,23 @@ function Public.check_for_destination_collisions()
 			local destination = Common.current_destination()
 			Surfaces.destination_on_collide(destination)
 
+			Public.cleanup_old_destination_data()
+
 			return true
 		end
 	end
 	return false
 end
 
+
+function Public.cleanup_old_destination_data() --we do actually access destinations behind us (during the cleanup process and for marooned players), so only fire this when safe
+	local memory = Memory.get_crew_memory()
+	for i, destination_data in pairs(memory.destinations) do
+		if destination_data.overworld_position.x < memory.overworldx then
+			memory.destinations[i] = nil
+		end
+	end
+end
 
 
 
@@ -626,10 +651,12 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 		Common.notify_force(memory.force, message, CoreData.colors.notify_victory)
 	end
 
-	Public.ensure_lane_generated_up_to(0, memory.overworldx + Crowsnest.Data.visibilitywidth)
-	Public.ensure_lane_generated_up_to(24, memory.overworldx + Crowsnest.Data.visibilitywidth)
-	Public.ensure_lane_generated_up_to(-24, memory.overworldx + Crowsnest.Data.visibilitywidth)
-	Public.overwrite_a_dock_upgrade()
+	if vector.x > 0 then
+		Public.ensure_lane_generated_up_to(0, memory.overworldx + Crowsnest.Data.visibilitywidth)
+		Public.ensure_lane_generated_up_to(24, memory.overworldx + Crowsnest.Data.visibilitywidth)
+		Public.ensure_lane_generated_up_to(-24, memory.overworldx + Crowsnest.Data.visibilitywidth)
+		Public.overwrite_a_dock_upgrade()
+	end
 
 	if not Public.is_position_free_to_move_to{x = memory.overworldx + vector.x, y = memory.overworldy+ vector.y} then
 		if _DEBUG then log(string.format('can\'t move by ' .. vector.x .. ', ' .. vector.y)) end
@@ -647,7 +674,7 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 					local player_index = player.index
 					if memory.classes_table and memory.classes_table[player_index] and memory.classes_table[player_index] == Classes.enum.MERCHANT then
 						Common.flying_text_small(player.surface, player.position, '[color=0.97,0.9,0.2]+[/color]')
-						Common.give_items_to_crew{{name = 'coin', count = 40 * vector.x}}
+						Common.give_items_to_crew{{name = 'coin', count = 50 * vector.x}}
 					end
 				end
 			end

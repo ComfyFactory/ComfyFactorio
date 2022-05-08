@@ -1,5 +1,6 @@
 
 local Math = require 'maps.pirates.math'
+local Server = require 'utils.server'
 local Utils = require 'maps.pirates.utils_local'
 local CoreData = require 'maps.pirates.coredata'
 local Memory = require 'maps.pirates.memory'
@@ -48,7 +49,7 @@ Public.ban_from_rejoining_crew_ticks = 45 * 60 --to prevent observing map and re
 Public.afk_time = 60 * 60 * 5
 Public.afk_warning_time = 60 * 60 * 4.5
 Public.logged_off_items_preserved_minutes = 5
-Public.important_items = {'coin', 'uranium-235', 'uranium-238', 'fluid-wagon', 'coal', 'electric-engine-unit', 'flying-robot-frame', 'advanced-circuit', 'beacon', 'speed-module-3', 'speed-module-2', 'roboport', 'construction-robot'} --internal inventories of these will not be preserved
+Public.logout_unprotected_items = {'coin', 'uranium-235', 'rail-signal', 'uranium-238', 'fluid-wagon', 'coal', 'electric-engine-unit', 'flying-robot-frame', 'advanced-circuit', 'beacon', 'speed-module-3', 'speed-module-2', 'roboport', 'construction-robot'} --internal inventories of these will not be preserved
 
 -- Public.mainshop_rate_limit_ticks = 11
 
@@ -68,7 +69,14 @@ function Public.oil_abstract_to_real(amount)
 	return Math.ceil(amount*3000)
 end
 
-function Public.difficulty() return Memory.get_crew_memory().difficulty end
+function Public.difficulty_scale()
+	local memory = Memory.get_crew_memory()
+	if memory.overworldx > 0 then
+		return memory.difficulty
+	else
+		return 0.75
+	end
+end
 function Public.capacity() return Memory.get_crew_memory().capacity end
 -- function Public.mode() return Memory.get_crew_memory().mode end
 function Public.overworldx() return Memory.get_crew_memory().overworldx end
@@ -150,6 +158,9 @@ end
 
 function Public.parrot_speak(force, message)
 	force.print('Parrot: ' .. message, CoreData.colors.parrot)
+
+	local memory = Memory.get_crew_memory()
+	Server.to_discord_embed_raw('[' .. memory.name .. '] Parrot: ' .. message)
 end
 
 
@@ -229,16 +240,18 @@ function Public.raffle_from_processed_loot_data(processed_loot_data, how_many, g
 
 	for _ = 1, how_many do
         local loot = Math.raffle(loot_types, loot_weights)
-        local low = Math.max(1, Math.ceil(loot.min_count))
-        local high = Math.max(1, Math.ceil(loot.max_count))
-        local _count = Math.random(low, high)
-        local lucky = Math.random(1, 220)
-        if lucky == 1 then --lucky
-            _count = _count * 3
-        elseif lucky <= 12 then
-            _count = _count * 2
-        end
-        ret[#ret + 1] = {name = loot.name, count = _count}
+		if loot then
+			local low = Math.max(1, Math.ceil(loot.min_count))
+			local high = Math.max(1, Math.ceil(loot.max_count))
+			local _count = Math.random(low, high)
+			local lucky = Math.random(1, 220)
+			if lucky == 1 then --lucky
+				_count = _count * 3
+			elseif lucky <= 12 then
+				_count = _count * 2
+			end
+			ret[#ret + 1] = {name = loot.name, count = _count}
+		end
     end
 
 	return ret
@@ -248,11 +261,12 @@ end
 
 
 
-function Public.give(player, stacks, spill_position, spill_surface)
+function Public.give(player, stacks, spill_position, spill_surface, flying_text_position)
 	-- stack elements of form {name = '', count = '', color = {r = , g = , b = }}
 	-- to just spill on the ground, pass player and nill and give a position and surface directly
 	spill_position = spill_position or player.position
 	spill_surface = spill_surface or player.surface
+	flying_text_position = flying_text_position or spill_position
 
 	local text1 = ''
 	local text2 = ''
@@ -289,51 +303,60 @@ function Public.give(player, stacks, spill_position, spill_surface)
 					end
 				end
 				if itemcount > 0 then
-					if itemcount < 5 then
-						spill_surface.spill_item_stack(spill_position, {name = itemname, count = itemcount}, true)
-					else
-						local e = spill_surface.create_entity{name = 'item-on-ground', position = spill_position, stack = {name = itemname, count = itemcount}}
-						if e and e.valid then
-							e.to_be_looted = true
-						end
-					end
+					-- if itemcount < 5 then
+					-- 	spill_surface.spill_item_stack(spill_position, {name = itemname, count = itemcount}, true)
+					-- else
+					-- 	local e = spill_surface.create_entity{name = 'item-on-ground', position = spill_position, stack = {name = itemname, count = itemcount}}
+					-- 	if e and e.valid then
+					-- 		e.to_be_looted = true
+					-- 	end
+					-- end
+					spill_surface.spill_item_stack(spill_position, {name = itemname, count = itemcount}, true)
 				end
 			else
-				local e = spill_surface.create_entity{name = 'item-on-ground', position = spill_position, stack = {name = itemname, count = itemcount}}
-				if e and e.valid then
-					e.to_be_looted = true
-				end
+				-- local e = spill_surface.create_entity{name = 'item-on-ground', position = spill_position, stack = {name = itemname, count = itemcount}}
+				-- if e and e.valid then
+				-- 	e.to_be_looted = true
+				-- end
+				spill_surface.spill_item_stack(spill_position, {name = itemname, count = itemcount}, true)
 			end
 		end
 
-		text1 = text1 .. '[color=1,1,1]'
 		if itemcount_remember > 0 then
-			text1 = text1 .. '+'
-			text1 = text1 .. itemcount_remember .. '[/color] [item=' .. itemname .. ']'
+			if #stacks2 == 1 and itemname == 'coin' and itemcount_remember == 1 then --for a single coin, drop the '+'
+				text1 = text1 .. '[item=' .. itemname .. ']'
+			else
+				text1 = text1 .. '[color=1,1,1]'
+				text1 = text1 .. '+'
+				text1 = text1 .. itemcount_remember .. '[/color] [item=' .. itemname .. ']'
+			end
 		else
+			text1 = text1 .. '[color=1,1,1]'
 			text1 = text1 .. '-'
 			text1 = text1 .. -itemcount_remember .. '[/color] [item=' .. itemname .. ']'
 		end
 
-		-- count total of that item they have:
-		local new_total_count = 0
-		if player then
+
+		if player and not (#stacks2 == 1 and itemname == 'coin') then
+			-- count total of that item they have:
+			local new_total_count = 0
+
 			local cursor_stack = player.cursor_stack
 			if cursor_stack and cursor_stack.valid_for_read and cursor_stack.name == itemname and cursor_stack.count and cursor_stack.count > 0 then
 				new_total_count = new_total_count + cursor_stack.count
 			end
-		end
-		if inv and inv.get_item_count(itemname) and inv.get_item_count(itemname) > 0 then
-			new_total_count = new_total_count + inv.get_item_count(itemname)
-		end
+			if inv and inv.get_item_count(itemname) and inv.get_item_count(itemname) > 0 then
+				new_total_count = new_total_count + inv.get_item_count(itemname)
+			end
 
-		if #stacks2 > 1 then
-			text2 = text2 .. '[color=' .. flying_text_color.r .. ',' .. flying_text_color.g .. ',' .. flying_text_color.b .. ']' .. new_total_count .. '[/color]'
-		else
-			text2 = '[color=' .. flying_text_color.r .. ',' .. flying_text_color.g .. ',' .. flying_text_color.b .. '](' .. new_total_count .. ')[/color]'
-		end
-		if j < #stacks2 then
-			text2 = text2 .. ', '
+			if #stacks2 > 1 then
+				text2 = text2 .. '[color=' .. flying_text_color.r .. ',' .. flying_text_color.g .. ',' .. flying_text_color.b .. ']' .. new_total_count .. '[/color]'
+			else
+				text2 = '[color=' .. flying_text_color.r .. ',' .. flying_text_color.g .. ',' .. flying_text_color.b .. '](' .. new_total_count .. ')[/color]'
+			end
+			if j < #stacks2 then
+				text2 = text2 .. ', '
+			end
 		end
 
 		if j < #stacks2 then
@@ -345,9 +368,9 @@ function Public.give(player, stacks, spill_position, spill_surface)
 		if #stacks2 > 1 then
 			text2 = '(' .. text2 .. ')'
 		end
-		Public.flying_text(spill_surface, spill_position, text1 .. ' [font=count-font]' .. text2 .. '[/font]')
+		Public.flying_text(spill_surface, flying_text_position, text1 .. ' [font=count-font]' .. text2 .. '[/font]')
 	else
-		Public.flying_text(spill_surface, spill_position, text1)
+		Public.flying_text(spill_surface, flying_text_position, text1)
 	end
 end
 
@@ -367,10 +390,10 @@ end
 function Public.surplus_evo_biter_damage_modifier(surplus_evo)
 	return Math.floor(surplus_evo/2*1000)/1000 --is this floor needed?
 end
-function Public.surplus_evo_biter_health_fractional_modifier(surplus_evo)
-	return surplus_evo*3
-	-- return Math.floor(surplus_evo*3*1000)/1000
-end
+-- function Public.surplus_evo_biter_health_fractional_modifier(surplus_evo)
+-- 	return surplus_evo*3
+-- 	-- return Math.floor(surplus_evo*3*1000)/1000
+-- end
 
 function Public.set_biter_surplus_evo_modifiers()
 	local memory = Memory.get_crew_memory()
@@ -629,12 +652,12 @@ function Public.spend_stored_resources(to_spend)
 end
 
 
-function Public.new_healthbar(text, target_entity, max_health, optional_id, health, size)
+function Public.new_healthbar(text, target_entity, max_health, optional_id, health, size, extra_offset, location_override)
 	health = health or max_health
 	size = size or 0.5
 	text = text or false
-
-	local memory = Memory.get_crew_memory()
+	extra_offset = extra_offset or 0
+	location_override = location_override or Memory.get_crew_memory()
 
 	local render1 = rendering.draw_sprite(
 		{
@@ -644,7 +667,7 @@ function Public.new_healthbar(text, target_entity, max_health, optional_id, heal
 			y_scale = size,
 			render_layer = 'light-effect',
 			target = target_entity,
-			target_offset = {0, -2.5},
+			target_offset = {0, -2.5 + extra_offset},
 			surface = target_entity.surface,
 		}
 	)
@@ -653,36 +676,67 @@ function Public.new_healthbar(text, target_entity, max_health, optional_id, heal
 		render2 = rendering.draw_text(
 		{
 			color = {255, 255, 255},
-			scale = 2,
+			scale = 1.2 + size*2,
 			render_layer = 'light-effect',
 			target = target_entity,
-			target_offset = {0, -4},
+			target_offset = {0, -3.6 - size*0.6 + extra_offset},
 			surface = target_entity.surface,
-			alignment = 'center'
+			alignment = 'center',
 		}
 	)
 	end
 
 	local new_healthbar = {
-		health = max_health,
+		health = health,
 		max_health = max_health,
+		size = size,
+		extra_offset = extra_offset,
 		render1 = render1,
 		render2 = render2,
 		id = optional_id,
 	}
 
-	memory.healthbars[target_entity.unit_number] = new_healthbar
+	if not location_override.healthbars then location_override.healthbars = {} end
+	location_override.healthbars[target_entity.unit_number] = new_healthbar
 
 	Public.update_healthbar_rendering(new_healthbar, health)
 
 	return new_healthbar
 end
 
-function Public.entity_damage_healthbar(entity, damage)
-	local memory = Memory.get_crew_memory()
+function Public.transfer_healthbar(old_unit_number, new_entity, location_override)
+	location_override = location_override or Memory.get_crew_memory()
+	if not location_override.healthbars then return end
+	local old_healthbar = location_override.healthbars[old_unit_number]
+	-- local new_unit_number = new_entity.unit_number
+
+	-- if new_surface_bool then
+	-- 	Public.new_healthbar(old_healthbar.render2, new_entity, old_healthbar.max_health, old_healthbar.id, old_healthbar.health, rendering.get_y_scale(old_healthbar.render1))
+	-- else
+	-- 	rendering.set_target(old_healthbar.render1, new_entity)
+	-- 	if old_healthbar.render2 then
+	-- 		rendering.set_target(old_healthbar.render2, new_entity)
+	-- 	end
+	-- 	memory.healthbars[new_unit_number] = old_healthbar
+	-- end
+
+	Public.new_healthbar(old_healthbar.render2, new_entity, old_healthbar.max_health, old_healthbar.id, old_healthbar.health, old_healthbar.size, old_healthbar.extra_offset, location_override)
+
+	if rendering.is_valid(old_healthbar.render1) then
+		rendering.destroy(old_healthbar.render1)
+	end
+	if rendering.is_valid(old_healthbar.render2) then
+		rendering.destroy(old_healthbar.render2)
+	end
+
+	location_override.healthbars[old_unit_number] = nil
+end
+
+function Public.entity_damage_healthbar(entity, damage, location_override)
+	location_override = location_override or Memory.get_crew_memory()
 	local unit_number = entity.unit_number
 
-	local healthbar = memory.healthbars[unit_number]
+	local healthbar = location_override.healthbars[unit_number]
 	if not healthbar then return 0 end
 
 	local new_health = healthbar.health - damage
@@ -1172,7 +1226,7 @@ function Public.send_important_items_from_player_to_crew(player, all_items)
 			for iii = 1, #player_inv[ii], 1 do
 				-- local item_stack = player_inv[ii][iii] --don't do this as LuaItemStack is a reference!
 				if player_inv[ii] and player_inv[ii][iii].valid and player_inv[ii][iii].valid_for_read then
-					if all_items or (player_inv[ii][iii].name and Utils.contains(Public.important_items, player_inv[ii][iii].name)) then
+					if all_items or (player_inv[ii][iii].name and Utils.contains(Public.logout_unprotected_items, player_inv[ii][iii].name)) then
 						to_remove[#to_remove + 1] = player_inv[ii][iii]
 						any = true
 					-- else
@@ -1197,7 +1251,7 @@ function Public.send_important_items_from_player_to_crew(player, all_items)
 end
 
 
-function Public.give_items_to_crew(items)
+function Public.give_items_to_crew(items, prefer_alternate_chest)
 	local memory = Memory.get_crew_memory()
 
 	local boat = memory.boat
@@ -1206,8 +1260,18 @@ function Public.give_items_to_crew(items)
 	if not surface_name then return end
 	local surface = game.surfaces[surface_name]
 	if not (surface and surface.valid) then return end
-	local chest = boat.output_chest
-	if not (chest and chest.valid) then return end
+	local chest, chest2
+	if prefer_alternate_chest then
+		chest = boat.backup_output_chest
+		if not (chest and chest.valid) then return end
+		chest2 = boat.output_chest
+		if not (chest2 and chest2.valid) then return end
+	else
+		chest = boat.output_chest
+		if not (chest and chest.valid) then return end
+		chest2 = boat.backup_output_chest
+		if not (chest2 and chest2.valid) then return end
+	end
 
 	local inventory = chest.get_inventory(defines.inventory.chest)
 
@@ -1215,8 +1279,6 @@ function Public.give_items_to_crew(items)
 		if not (items.count and items.count>0) then return end
 		local inserted = inventory.insert(items)
 		if items.count - inserted > 0 then
-			local chest2 = boat.backup_output_chest
-			if not (chest2 and chest2.valid) then return end
 			local inventory2 = chest2.get_inventory(defines.inventory.chest)
 			local i2 = Utils.deepcopy(items)
 			if i2.name then
@@ -1240,8 +1302,6 @@ function Public.give_items_to_crew(items)
 			if not (i.count and i.count>0) then return end
 			local inserted = inventory.insert(i)
 			if i.count - inserted > 0 then
-				local chest2 = boat.backup_output_chest
-				if not (chest2 and chest2.valid) then return end
 				local inventory2 = chest2.get_inventory(defines.inventory.chest)
 				local i2 = Utils.deepcopy(i)
 				i2.count = i.count - inserted

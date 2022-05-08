@@ -41,7 +41,7 @@ Public.buried_treasure_loot_data_raw = {
 }
 
 Public.chest_loot_data_raw = {
-	{80, 0, 1, false, 'coin', 250, 400},
+	{80, 0, 1, false, 'coin', 400, 700},
 	{30, 0, 1, false, 'rail-signal', 25, 110},
 	{1, 0.2, 1, false, 'electric-engine-unit', 1, 2},
 	{3, 0, 1, false, 'small-lamp', 4, 16},
@@ -129,13 +129,15 @@ Public.chest_loot_data_raw = {
 	{2, 0.3, 1.2, true, 'combat-shotgun', 1, 1},
 	{5, 0.2, 1.8, true, 'cluster-grenade', 8, 16},
 
-	{0.04, 0.25, 1.75, true, 'modular-armor', 1, 1},
-	{0.01, 0.5, 1.5, true, 'power-armor', 1, 1},
-	{0.3, 0.1, 1, true, 'solar-panel-equipment', 1, 2},
-	{0.2, 0.1, 1, true, 'battery-equipment', 1, 1},
-	{0.16, 0.2, 1, true, 'energy-shield-equipment', 1, 2},
-	{0.08, 0.1, 1, true, 'night-vision-equipment', 1, 1},
-	{0.04, 0.5, 1.5, true, 'personal-laser-defense-equipment', 1, 1},
+	{0.04, 0.1, 1.9, true, 'modular-armor', 1, 1},
+	{0.01, 0.4, 1.6, true, 'power-armor', 1, 1},
+	{0.001, 0.6, 1.4, true, 'power-armor-mk2', 1, 1},
+	{0.6, 0.05, 2, true, 'solar-panel-equipment', 1, 2},
+	{0.4, 0.05, 2, true, 'battery-equipment', 1, 1},
+	{0.32, 0.05, 2, true, 'energy-shield-equipment', 1, 2},
+	{0.16, 0.05, 1.5, true, 'night-vision-equipment', 1, 1},
+	{0.12, 0.01, 1.8, true, 'personal-laser-defense-equipment', 1, 1},
+	{0.12, 0.01, 1.8, true, 'exoskeleton-equipment', 1, 1},
 
 	{8, -0.5, 0.5, true, 'automation-science-pack', 4, 24},
 	{8, -0.6, 0.6, true, 'logistic-science-pack', 4, 24},
@@ -210,7 +212,7 @@ function Public.wooden_chest_loot()
 	local num = 1
 
 	return Public.chest_loot(num,
-	Math.max(0,Math.min(1, Math.sloped(Common.difficulty(),1/2) * Common.game_completion_progress())) --enforce 0 to 1
+	Math.max(0,Math.min(1, Math.sloped(Common.difficulty_scale(),1/2) * Common.game_completion_progress())) --enforce 0 to 1
 )
 end
 
@@ -218,9 +220,9 @@ function Public.iron_chest_loot()
 	local num = 2
 
 	local loot = Public.chest_loot(num,
-	Math.max(0,Math.min(1, Math.sloped(Common.difficulty(),1/2) * (5/100 + Common.game_completion_progress()))) --enforce 0 to 1
+	Math.max(0,Math.min(1, Math.sloped(Common.difficulty_scale(),1/2) * (5/100 + Common.game_completion_progress()))) --enforce 0 to 1
 ) --reward higher difficulties with better loot
-	loot[#loot + 1] = {name = 'coin', count = Math.random(1,1500)}
+	loot[#loot + 1] = {name = 'coin', count = Math.random(500,1500)}
 
     return loot
 end
@@ -229,7 +231,7 @@ function Public.covered_wooden_chest_loot()
 	local num = 2
 
 	local loot = Public.chest_loot(num,
-	Math.max(0,Math.min(1, Math.sloped(Common.difficulty(),1/2) * (10/100 + Common.game_completion_progress()))) --enforce 0 to 1
+	Math.max(0,Math.min(1, Math.sloped(Common.difficulty_scale(),1/2) * (10/100 + Common.game_completion_progress()))) --enforce 0 to 1
 ) --reward higher difficulties with better loot
 
     return loot
@@ -296,7 +298,7 @@ function Public.chest_loot(number_of_items, game_completion_progress)
 end
 
 function Public.buried_treasure_loot()
-	local ret = Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.buried_treasure_loot_data_raw), 1, Math.sloped(Common.difficulty(),1/2) * Common.game_completion_progress_capped())
+	local ret = Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.buried_treasure_loot_data_raw), 1, Math.sloped(Common.difficulty_scale(),1/2) * Common.game_completion_progress_capped())
 
 	if ret and ret[1] then return ret[1] end
 end
@@ -305,7 +307,7 @@ function Public.maze_camp_loot()
 	if Math.random(10) <= 7 then
 		return {Public.random_plates()}
 	else
-		return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.chest_loot_data_raw), 1, Math.max(0,Math.min(1, Math.sloped(Common.difficulty(),1/2) * (15/100 + Common.game_completion_progress()))))
+		return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.chest_loot_data_raw), 1, Math.max(0,Math.min(1, Math.sloped(Common.difficulty_scale(),1/2) * (15/100 + Common.game_completion_progress()))))
 	end
 end
 
@@ -321,7 +323,7 @@ Public.maze_lab_loot_data_raw = {
 }
 
 function Public.maze_lab_loot()
-	return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.maze_lab_loot_data_raw), 1, Math.max(0,Math.min(1, Math.sloped(Common.difficulty(),1/2) * (Common.game_completion_progress()))))
+	return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.maze_lab_loot_data_raw), 1, Math.max(0,Math.min(1, Math.sloped(Common.difficulty_scale(),1/2) * (Common.game_completion_progress()))))
 end
 
 Public.maze_treasure_data_raw = {
@@ -346,7 +348,7 @@ Public.maze_treasure_data_raw = {
 
 	{2, 0, 1.5, true, 'production-science-pack', 20, 25},
 	{2, 0, 2, true, 'utility-science-pack', 7, 8},
-	{2, 0, 1.5, true, 'coin', 3000, 6500},
+	-- {2, 0, 1.5, true, 'coin', 4000, 6500},
 	{3, 0, 0.9, false, 'beacon', 1, 1},
 
 	{1, 0, 1, false, 'construction-robot', 30, 40},
@@ -366,17 +368,17 @@ Public.maze_treasure_data_raw = {
 	{1, 0, 2, true, 'power-armor', 1, 1},
 	{0.1, 0, 2, true, 'power-armor-mk2', 1, 1},
 
-	{2, -1, 1, true, 'solar-panel-equipment', 3, 4},
-	{2, -1, 1, true, 'battery-equipment', 1, 1},
-	{1, 0, 2, true, 'battery-mk2-equipment', 1, 1},
-	{2, -1, 1, true, 'energy-shield-equipment', 1, 2},
-	{1, 0, 2, true, 'energy-shield-mk2-equipment', 1, 1},
-	{1, -1, 1, true, 'personal-roboport-equipment', 1, 1},
-	{0.5, 0, 2, true, 'personal-roboport-mk2-equipment', 1, 1},
-	{0.5, 0, 0.8, false, 'night-vision-equipment', 1, 1},
-	{1, 0, 1, false, 'personal-laser-defense-equipment', 1, 1},
-	{0.5, 0, 1, false, 'fusion-reactor-equipment', 1, 1},
-	{2, 0, 1, false, 'exoskeleton-equipment', 1, 1},
+	{4, -1, 1, true, 'solar-panel-equipment', 3, 4},
+	{4, -1, 1, true, 'battery-equipment', 1, 1},
+	{2, 0, 2, true, 'battery-mk2-equipment', 1, 1},
+	{4, -1, 1, true, 'energy-shield-equipment', 1, 2},
+	{2, 0, 2, true, 'energy-shield-mk2-equipment', 1, 1},
+	{2, -1, 1, true, 'personal-roboport-equipment', 1, 1},
+	{1, 0, 2, true, 'personal-roboport-mk2-equipment', 1, 1},
+	{1, 0, 0.8, false, 'night-vision-equipment', 1, 1},
+	{2, 0, 1, false, 'personal-laser-defense-equipment', 1, 1},
+	{1, 0, 1, false, 'fusion-reactor-equipment', 1, 1},
+	{4, 0, 1, false, 'exoskeleton-equipment', 1, 1},
 
 	{2, -0.7, 1.3, true, 'advanced-circuit', 40, 90},
 
@@ -391,7 +393,7 @@ function Public.maze_treasure_loot()
 	if Math.random(5) == 1 then
 		return {Public.random_plates(8)}
 	else
-		return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.maze_treasure_data_raw), 1, Math.max(0,Math.min(1, Math.sloped(Common.difficulty(),1/2) * (Common.game_completion_progress()))))
+		return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.maze_treasure_data_raw), 1, Math.max(0,Math.min(1, Math.sloped(Common.difficulty_scale(),1/2) * (Common.game_completion_progress()))))
 	end
 end
 

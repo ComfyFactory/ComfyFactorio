@@ -61,22 +61,21 @@ function Public.Tick_actions(tickinterval)
     -- if destination.subtype and destination.subtype == Islands.enum.RED_DESERT then return end -- This was a hack to stop biter boats causing attacks, but, it has the even worse effect of stopping all floating_pollution gathering.
 
 
-    local minute_cycle = {-- even seconds only
-        [2] = Public.eat_up_fraction_of_all_pollution_wrapped,
-        [4] = Public.try_rogue_attack,
-        [6] = Public.poke_script_groups,
-        [16] = Public.try_main_attack,
-        [20] = Public.poke_script_groups,
-        -- [18] = Public.try_secondary_attack, --commenting out: less attacks per minute, but stronger. @TODO need to do more here
-        [24] = Public.tell_biters_near_silo_to_attack_it,
-        [28] = Public.eat_up_fraction_of_all_pollution_wrapped,
-        [30] = Public.try_secondary_attack,
-        [36] = Public.poke_script_groups,
-        [46] = Public.poke_script_groups,
-        [50] = Public.tell_biters_near_silo_to_attack_it,
-        [52] = Public.create_mail_delivery_biters,
-        [56] = Public.poke_script_groups,
-        [58] = Public.poke_inactive_scripted_biters,
+    local minute_cycle = {-- warning: use even seconds only
+		[2] = Public.tell_biters_near_silo_to_attack_it,
+        [4] = Public.poke_script_groups,
+        [6] = Public.try_main_attack,
+
+        [16] = Public.tell_biters_near_silo_to_attack_it,
+        [18] = Public.poke_script_groups,
+        [20] = Public.try_secondary_attack,
+
+        [32] = Public.tell_biters_near_silo_to_attack_it,
+        [34] = Public.poke_script_groups,
+        [36] = Public.try_rogue_attack,
+
+        [46] = Public.poke_inactive_scripted_biters,
+        [48] = Public.create_mail_delivery_biters,
     }
 
     if minute_cycle[(game.tick / 60) % 60] then
@@ -124,87 +123,103 @@ function Public.eat_up_fraction_of_all_pollution(surface, fraction_of_global_pol
     memory.floating_pollution = pollution_available
 end
 
-function Public.try_main_attack()
+function Public.wave_size_rng() -- random variance in attack sizes
 	local wave_size_multiplier = 1
 	local memory = Memory.get_crew_memory()
-	if memory.overworldx > 0 then
-		if Math.random(2) == 1 then
-			-- log('attack aborted by chance')
-			return nil
-		end --variance in attack sizes
-		if Math.random(10) == 1 then wave_size_multiplier = 1.7 end --variance in attack sizes
-		if Math.random(70) == 1 then wave_size_multiplier = 3.2 end --variance in attack sizes
-		if Math.random(500) == 1 then wave_size_multiplier = 5 end --variance in attack sizes
+	local rng1 = Math.random(100)
+	if rng1 <= 65 then
+		wave_size_multiplier = 0
+	elseif memory.overworldx > 0 then
+		local rng2 = Math.random(1000)
+		if rng2 <= 900 then
+			wave_size_multiplier = 1
+		elseif rng2 <= 975 then
+			wave_size_multiplier = 1.5
+		elseif rng2 <= 985 then
+			wave_size_multiplier = 2
+		elseif rng2 <= 995 then
+			wave_size_multiplier = 2.5
+		else
+			wave_size_multiplier = 3
+		end
 	end
 
-    local group = Public.spawn_group_of_scripted_biters(2/3, 6, 180, wave_size_multiplier)
-    local target = Public.generate_main_attack_target()
-    if not group or not group.valid or not target or not target.valid then return end
+	return wave_size_multiplier
+end
 
-	-- group.set_command(Public.attack_target(target))
+function Public.try_main_attack()
+	Public.eat_up_fraction_of_all_pollution_wrapped()
 
-    Public.group_set_commands(group, Public.attack_target(target))
+	local wave_size_multiplier = Public.wave_size_rng()
 
-	-- if _DEBUG then game.print(game.tick .. string.format(": sending main attack of %s units from {%f,%f} to %s", #group.members, group.position.x, group.position.y, target.name)) end
+	if wave_size_multiplier == 0 then
+		log('Attacks: ' .. 'Aborted by chance.')
+		return nil
+	else
+		local group = Public.spawn_group_of_scripted_biters(2/3, 6, 180, wave_size_multiplier)
+		local target = Public.generate_main_attack_target()
+		if not group or not group.valid or not target or not target.valid then return end
+
+		-- group.set_command(Public.attack_target(target))
+
+		Public.group_set_commands(group, Public.attack_target(target))
+
+		-- if _DEBUG then game.print(game.tick .. string.format(": sending main attack of %s units from {%f,%f} to %s", #group.members, group.position.x, group.position.y, target.name)) end
+	end
 end
 
 function Public.try_secondary_attack()
-	local wave_size_multiplier = 1
-	local memory = Memory.get_crew_memory()
-	if memory.overworldx > 0 then
-		if Math.random(2) == 1 then
-			log('attack aborted by chance')
-		end --variance in attack sizes
-		if Math.random(10) == 1 then wave_size_multiplier = 1.7 end --variance in attack sizes
-		if Math.random(70) == 1 then wave_size_multiplier = 3.2 end --variance in attack sizes
-		if Math.random(500) == 1 then wave_size_multiplier = 5 end --variance in attack sizes
-	end
+	Public.eat_up_fraction_of_all_pollution_wrapped()
 
-    local surface = game.surfaces[Common.current_destination().surface_name]
+	local wave_size_multiplier = Public.wave_size_rng()
 
-
-    local group = Public.spawn_group_of_scripted_biters(2/3, 12, 180, wave_size_multiplier)
-	if not (group and group.valid) then return end
-
-	local target
-	if Math.random(2) == 1 then
-		target = Public.generate_main_attack_target()
+	if wave_size_multiplier == 0 then
+		log('Attacks: ' .. 'Aborted by chance.')
+		return nil
 	else
-		target = Public.generate_side_attack_target(surface, group.position)
+		local surface = game.surfaces[Common.current_destination().surface_name]
+
+		local group = Public.spawn_group_of_scripted_biters(2/3, 12, 180, wave_size_multiplier)
+		if not (group and group.valid) then return end
+
+		local target
+		if Math.random(2) == 1 then
+			target = Public.generate_main_attack_target()
+		else
+			target = Public.generate_side_attack_target(surface, group.position)
+		end
+		if not group or not group.valid or not target or not target.valid then log('target invalid') return end
+
+		-- group.set_command(Public.attack_target(target))
+
+		Public.group_set_commands(group, Public.attack_target(target))
+
+		-- if _DEBUG then game.print(game.tick .. string.format(": sending main attack of %s units from {%f,%f} to %s", #group.members, group.position.x, group.position.y, target.name)) end
 	end
-    if not group or not group.valid or not target or not target.valid then log('target invalid') return end
-
-	-- group.set_command(Public.attack_target(target))
-
-    Public.group_set_commands(group, Public.attack_target(target))
-
-	-- if _DEBUG then game.print(game.tick .. string.format(": sending main attack of %s units from {%f,%f} to %s", #group.members, group.position.x, group.position.y, target.name)) end
 end
 
 function Public.try_rogue_attack()
-	local wave_size_multiplier = 1
-	local memory = Memory.get_crew_memory()
-	if memory.overworldx > 0 then
-		if Math.random(2) == 1 then
-			log('attack aborted by chance')
-		end --variance in attack sizes
-		if Math.random(10) == 1 then wave_size_multiplier = 1.7 end --variance in attack sizes
-		if Math.random(70) == 1 then wave_size_multiplier = 3.2 end --variance in attack sizes
-		if Math.random(500) == 1 then wave_size_multiplier = 5 end --variance in attack sizes
+	Public.eat_up_fraction_of_all_pollution_wrapped()
+
+	local wave_size_multiplier = Public.wave_size_rng()
+
+	if wave_size_multiplier == 0 then
+		log('Attacks: ' .. 'Aborted by chance.')
+		return nil
+	else
+		local surface = game.surfaces[Common.current_destination().surface_name]
+
+		local group = Public.spawn_group_of_scripted_biters(1/2, 6, 180, wave_size_multiplier)
+		if not (group and group.valid) then return end
+		local target = Public.generate_side_attack_target(surface, group.position)
+		if not (target and target.valid) then return end
+
+		-- group.set_command(Public.attack_target(target))
+
+		Public.group_set_commands(group, Public.attack_target(target))
+
+		-- if _DEBUG then game.print(game.tick .. string.format(": sending rogue attack of %s units from {%f,%f} to %s", #group.members, group.position.x, group.position.y, target.name)) end
 	end
-
-	local surface = game.surfaces[Common.current_destination().surface_name]
-
-	local group = Public.spawn_group_of_scripted_biters(1/2, 6, 180, wave_size_multiplier)
-	if not (group and group.valid) then return end
-	local target = Public.generate_side_attack_target(surface, group.position)
-	if not (target and target.valid) then return end
-
-	-- group.set_command(Public.attack_target(target))
-
-    Public.group_set_commands(group, Public.attack_target(target))
-
-	-- if _DEBUG then game.print(game.tick .. string.format(": sending rogue attack of %s units from {%f,%f} to %s", #group.members, group.position.x, group.position.y, target.name)) end
 end
 
 
@@ -341,7 +356,7 @@ function Public.spawn_group_of_scripted_biters(fraction_of_floating_pollution, m
 		nearby_units_to_bring = {}
 	end
 
-    local new_units = Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spawner.position, fraction_of_floating_pollution, minimum_avg_units, maximum_units, 1/wave_size_multiplier)
+    local new_units = Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spawner.position, fraction_of_floating_pollution, minimum_avg_units, maximum_units, wave_size_multiplier)
 
     if (new_units and nearby_units_to_bring and (#new_units + #nearby_units_to_bring) == 0) then return end
 
@@ -359,7 +374,7 @@ function Public.spawn_group_of_scripted_biters(fraction_of_floating_pollution, m
 end
 
 
-function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spawnposition, fraction_of_floating_pollution, minimum_avg_units, maximum_units, unit_pollutioncost_multiplier, enforce_type)
+function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spawnposition, fraction_of_floating_pollution, minimum_avg_units, maximum_units, wave_size_multiplier, enforce_type)
     maximum_units = maximum_units or 256
 
 	-- log('ai spawning attempt params: ' .. (fraction_of_floating_pollution or '') .. ' ' .. (minimum_avg_units or '') .. ' ' .. (maximum_units or '') .. ' ' .. (unit_pollutioncost_multiplier or '') .. ' ' .. (enforce_type or ''))
@@ -381,7 +396,7 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
     local initialpollution = memory.floating_pollution
     -- local initialbudget = budget
 
-	local base_pollution_cost_multiplier = 1
+	local map_pollution_cost_multiplier = 1
 	local destination = Common.current_destination()
 
 	if destination.dynamic_data and destination.dynamic_data.initial_spawner_count then
@@ -398,40 +413,40 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 				-- end
 				-- base_pollution_cost_multiplier = (initial_spawner_count/spawnerscount)^(1/2)
 				-- Now directly proportional:
-				base_pollution_cost_multiplier = initial_spawner_count/spawnerscount
+				map_pollution_cost_multiplier = initial_spawner_count/spawnerscount
 
 				if memory.overworldx == 0 then
-					base_pollution_cost_multiplier = Math.max(1, base_pollution_cost_multiplier)
+					map_pollution_cost_multiplier = Math.max(1, map_pollution_cost_multiplier)
 				end -- The first map not being fully loaded when you get there commonly means it records too few initial spawners, which this helps fix
 			else
-				base_pollution_cost_multiplier = 1000000
+				map_pollution_cost_multiplier = 1000000
 			end
 		end
 	end
 
-	if memory.overworldx == 0 then
-		-- less biters:
-		base_pollution_cost_multiplier = base_pollution_cost_multiplier * 2.30 --tuned to teach players to defend, but then to feel relaxing once they do
-	end
+	-- if memory.overworldx == 0 then
+	-- 	-- less biters:
+	-- 	base_pollution_cost_multiplier = base_pollution_cost_multiplier * 2.30 --tuned to teach players to defend, but then to feel relaxing once they do
+	-- end -- moved to scripted_biters_pollution_cost_multiplier
 
-	base_pollution_cost_multiplier = base_pollution_cost_multiplier * unit_pollutioncost_multiplier
+	local base_scripted_biters_pollution_cost_multiplier = Balance.scripted_biters_pollution_cost_multiplier()
 
-	base_pollution_cost_multiplier = base_pollution_cost_multiplier * Balance.scripted_biters_pollution_cost_multiplier()
+	map_pollution_cost_multiplier = map_pollution_cost_multiplier * base_scripted_biters_pollution_cost_multiplier
 
 	if destination.subtype and destination.subtype == IslandsCommon.enum.SWAMP then
-		base_pollution_cost_multiplier = base_pollution_cost_multiplier * 0.9 --biters 10% more aggressive
+		map_pollution_cost_multiplier = map_pollution_cost_multiplier * 0.95 --biters 5% more aggressive
 	end
 
 	-- if destination.subtype and destination.subtype == IslandsCommon.enum.MAZE then
 	-- 	base_pollution_cost_multiplier = base_pollution_cost_multiplier * 1.2 --biters 20% less aggressive
 	-- end
 
-    if budget >= minimum_avg_units * Common.averageUnitPollutionCost(evolution) * base_pollution_cost_multiplier then
+    if budget >= minimum_avg_units * Common.averageUnitPollutionCost(evolution) * map_pollution_cost_multiplier then
 
         local function spawn(name2)
             units_created_count = units_created_count + 1
 
-			local unittype_pollutioncost = CoreData.biterPollutionValues[name2] * base_pollution_cost_multiplier
+			local unit_pollutioncost = CoreData.biterPollutionValues[name2] * map_pollution_cost_multiplier / wave_size_multiplier
 
             local p = surface.find_non_colliding_position(name2, spawnposition, 60, 1)
             if not p then
@@ -444,10 +459,10 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
             units_created[#units_created + 1] = biter
             memory.scripted_biters[biter.unit_number] = {entity = biter, created_at = game.tick}
 
-			temp_floating_pollution = temp_floating_pollution - unittype_pollutioncost
-			budget = budget - unittype_pollutioncost
+			temp_floating_pollution = temp_floating_pollution - unit_pollutioncost
+			budget = budget - unit_pollutioncost
 			-- flow statistics should reflect the number of biters generated. Therefore it should mismatch the actual pollution spent, because it should miss all the factors that can vary:
-			game.pollution_statistics.on_flow(name2, - CoreData.biterPollutionValues[name2] * Balance.scripted_biters_pollution_cost_multiplier())
+			game.pollution_statistics.on_flow(name2, - CoreData.biterPollutionValues[name2])
 
             return biter.unit_number
         end
@@ -455,10 +470,10 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 		local mixed = (Math.random(3) <= 2)
 		if mixed then
 
-			local whilesafety = 1000
+			local whilesafety = 5000
 			local next_name = enforce_type or Common.get_random_unit_type(evolution)
 
-			while units_created_count < maximum_units and budget >= CoreData.biterPollutionValues[next_name] * base_pollution_cost_multiplier and #memory.scripted_biters < CoreData.total_max_biters and whilesafety > 0 do
+			while units_created_count < maximum_units and budget >= CoreData.biterPollutionValues[next_name] * map_pollution_cost_multiplier and #memory.scripted_biters < CoreData.total_max_biters and whilesafety > 0 do
 				whilesafety = whilesafety - 1
 				spawn(next_name)
 				next_name = enforce_type or Common.get_random_unit_type(evolution)
@@ -466,18 +481,20 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 		else
 			local name = enforce_type or Common.get_random_unit_type(evolution)
 
-			local whilesafety = 1000
-			while units_created_count < maximum_units and budget >= CoreData.biterPollutionValues[name] * base_pollution_cost_multiplier and #memory.scripted_biters < CoreData.total_max_biters and whilesafety > 0 do
+			local whilesafety = 5000
+			while units_created_count < maximum_units and budget >= CoreData.biterPollutionValues[name] * map_pollution_cost_multiplier and #memory.scripted_biters < CoreData.total_max_biters and whilesafety > 0 do
 				whilesafety = whilesafety - 1
 				spawn(name)
 			end
 		end
 
         memory.floating_pollution = temp_floating_pollution
-    end
+	else
+		log('Attacks: ' .. 'Insufficient pollution for wave.')
+	end
 
 	if units_created_count > 0 then
-		log('Spent ' .. Math.floor(100 * (initialpollution - temp_floating_pollution) / initialpollution) .. '% of ' .. Math.ceil(initialpollution) .. ' pollution budget on biters, at ' .. Math.ceil(base_pollution_cost_multiplier*100)/100 .. 'x price.')
+		log('Attacks: ' .. 'Spent ' .. Math.floor(100 * (initialpollution - temp_floating_pollution) / initialpollution) .. '% of ' .. Math.ceil(initialpollution) .. ' pollution budget on biters, at ' .. Math.ceil(map_pollution_cost_multiplier/wave_size_multiplier*100)/100 .. 'x price.')
 	end
 
     return units_created

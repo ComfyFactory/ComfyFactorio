@@ -5,8 +5,8 @@ local _inspect = require 'utils.inspect'.inspect
 local Public = {}
 
 Public.scenario_id_name = 'pirates'
-Public.version_string = '1.1.1.5.4'
-Public.version_float = 1.1154
+Public.version_string = '1.1.2.2.2'
+Public.version_float = 1.1222
 
 Public.blueprint_library_allowed = true
 Public.blueprint_importing_allowed = true
@@ -24,6 +24,7 @@ Public.colors = {
 	wood = {r=204, g=158, b=67},
 	stone = {r=230, g=220, b=190},
 	coin = {r=242, g=193, b=97},
+	oil = {r=181, g=107, b=91},
 	['raw-fish'] = {r=0, g=237, b=170},
 	['iron-plate'] = {r=170, g=180, b=190},
 	['iron-ore'] = {r=170, g=180, b=190},
@@ -110,10 +111,10 @@ Public.difficulty_options = {
 	-- The difficulty values we currently offer
 
 	--For the value of Easy difficulty, we are pulled in two directions: We wish to make the game comfy to play for those who haven't played it, but we also wish to represent the game mechanics faithfully so that Normal is not a crazy distance away.
-	{value = 0.55, icon = 'item/firearm-magazine', text = 'Easy', associated_color = {r = 50, g = 255, b = 50}},
-	{value = 0.9, icon = 'item/piercing-rounds-magazine', text = 'Normal', associated_color = {r = 255, g = 255, b = 50}},
-	{value = 1.5, icon = 'item/uranium-rounds-magazine', text = 'Hard', associated_color = {r = 255, g = 50, b = 50}},
-	{value = 3, icon = 'item/atomic-bomb', text = 'Nightmare', associated_color = {r = 120, g = 35, b = 35}},
+	{value = 0.6, icon = 'item/firearm-magazine', text = 'Easy', associated_color = {r = 50, g = 255, b = 50}},
+	{value = 1.0, icon = 'item/piercing-rounds-magazine', text = 'Normal', associated_color = {r = 255, g = 255, b = 50}},
+	{value = 1.4, icon = 'item/uranium-rounds-magazine', text = 'Hard', associated_color = {r = 255, g = 50, b = 50}},
+	{value = 2.4, icon = 'item/atomic-bomb', text = 'Nightmare', associated_color = {r = 120, g = 35, b = 35}},
 }
 function Public.get_difficulty_name_from_value(difficulty_value)
 	-- Functions will reference this when given a difficulty value and want to present a difficulty name to the player; just make it consistent with the above

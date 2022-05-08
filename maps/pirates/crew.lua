@@ -92,7 +92,7 @@ function Public.try_add_extra_time_at_sea(ticks)
 
 	if not memory.extra_time_at_sea then memory.extra_time_at_sea = 0 end
 
-	if memory.extra_time_at_sea > CoreData.max_extra_seconds_at_sea * 60 then return false end
+	if memory.extra_time_at_sea >= CoreData.max_extra_seconds_at_sea * 60 then return false end
 
 	-- if memory.boat and memory.boat.state and memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP then return false end
 
@@ -713,6 +713,15 @@ function Public.initialise_crew(accepted_proposal)
 	memory.destinationsvisited_indices = {}
 	memory.stored_fuel = Balance.starting_fuel
 	memory.available_classes_pool = Classes.initial_class_pool()
+	memory.playtesting_stats = {
+		coins_gained_by_biters = 0,
+		coins_gained_by_nests_and_worms = 0,
+		coins_gained_by_trees_and_rocks = 0,
+		coins_gained_by_ore = 0,
+		coins_gained_by_rocket_launches = 0,
+		coins_gained_by_markets = 0,
+		coins_gained_by_krakens = 0,
+	}
 
 	memory.captain_accrued_time_data = {}
 	memory.max_players_recorded = 0
@@ -744,6 +753,10 @@ function Public.initialise_crew(accepted_proposal)
 
 	memory.boat = global_memory.lobby_boats[new_id]
 	local boat = memory.boat
+
+	for _, e in pairs(memory.boat.cannons_temporary_reference or {}) do
+		Common.new_healthbar(true, e, 2000, nil, e.health, 0.3, -0.1, memory.boat)
+	end
 
 	boat.dockedposition = boat.position
 	boat.speed = 0
@@ -846,13 +859,21 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['inserter-capacity-bonus-1'].researched = true --needed to make stack inserters different to fast inserters
 	-- crew_force.technologies['inserter-capacity-bonus-2'].researched = true
 
+	--as prerequisites for uranium ammo and automation 3:
+	crew_force.technologies['speed-module'].researched = true
+	crew_force.technologies['tank'].researched = true
+	crew_force.recipes['speed-module'].enabled = false
+	crew_force.recipes['tank'].enabled = false
+	crew_force.recipes['cannon-shell'].enabled = false
+	crew_force.recipes['explosive-cannon-shell'].enabled = false
+
 	--@TRYING this out:
 	crew_force.technologies['coal-liquefaction'].enabled = true
 	crew_force.technologies['coal-liquefaction'].researched = true
 
 	crew_force.technologies['automobilism'].enabled = false
 
-	-- note: some of these are overwritten after tech researched!!!!!!! like pistol
+	-- note: many of these recipes are overwritten after tech researched!!!!!!! like pistol. check elsewhere in code
 
 	crew_force.recipes['pistol'].enabled = false
 
@@ -935,8 +956,9 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['stronger-explosives-5'].enabled = false
 	crew_force.technologies['stronger-explosives-6'].enabled = false
 	crew_force.technologies['stronger-explosives-7'].enabled = false
+	-- these require 2000 white sci each:
 	crew_force.technologies['artillery-shell-range-1'].enabled = false --infinite techs
-	-- crew_force.technologies['artillery-shell-speed-1'].enabled = false --infinite techs
+	crew_force.technologies['artillery-shell-speed-1'].enabled = false --infinite techs
 
 	crew_force.technologies['steel-axe'].enabled = false
 
@@ -945,7 +967,8 @@ function Public.reset_crew_and_enemy_force(id)
 
 	crew_force.technologies['effect-transmission'].enabled = true
 
-	crew_force.technologies['gate'].enabled = false
+	-- exploit?:
+	crew_force.technologies['gate'].enabled = true
 
 	crew_force.technologies['productivity-module-2'].enabled = true
 	crew_force.technologies['productivity-module-3'].enabled = false

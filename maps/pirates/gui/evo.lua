@@ -79,7 +79,7 @@ function Public.full_update(player)
 
 		local types = {'leagues', 'kraken', 'time', 'silo', 'nests', 'sandwurms'}
 
-		local str = 'Local biter evolution\n\n'
+		local str = 'Local biter evolution: '
 
 		if memory.boat and memory.boat.state and (memory.boat.state == Boats.enum_state.ATSEA_SAILING or memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP) then
 			evolution_leagues = evo - (memory.kraken_evo or 0)
@@ -106,34 +106,34 @@ function Public.full_update(player)
 			evolution_total = (evolution_leagues or 0) + (evolution_time or 0) + (evolution_nests or 0) + (evolution_silo or 0) + (evolution_sandwurms or 0)
 		end
 
+		str = str .. string.format('%.2f\n', evolution_total)
 		for _, type in ipairs(types) do
 			if type == 'leagues' then
 				if evolution_leagues then
-					str = str .. string.format('Leagues: %.2f\n', evolution_leagues)
+					str = str .. string.format('\nLeagues: %.2f', evolution_leagues)
 				end
 			elseif type == 'kraken' then
 				if evolution_kraken then
-					str = str .. string.format('Kraken: %.2f\n', evolution_kraken)
+					str = str .. string.format('\nKraken: %.2f', evolution_kraken)
 				end
 			elseif type == 'time' then
 				if evolution_time then
-					str = str .. string.format('Time: %.2f\n', evolution_time)
+					str = str .. string.format('\nTime: %.2f', evolution_time)
 				end
 			elseif type == 'silo' then
 				if evolution_silo then
-					str = str .. string.format('Silo: %.2f\n', evolution_silo)
+					str = str .. string.format('\nSilo: %.2f', evolution_silo)
 				end
 			elseif type == 'nests' then
 				if evolution_nests then
-					str = str .. string.format('Nests: %.2f\n', evolution_nests)
+					str = str .. string.format('\nNests: %.2f', evolution_nests)
 				end
 			elseif type == 'sandwurms' then
 				if evolution_sandwurms then
-					str = str .. string.format('Sandwurms: %.2f\n', evolution_sandwurms)
+					str = str .. string.format('\nSandwurms: %.2f', evolution_sandwurms)
 				end
 			end
 		end
-		str = str .. string.format('Total: %.2f', evolution_total)
 
 		button.number = evolution_total
 		button.tooltip = str
