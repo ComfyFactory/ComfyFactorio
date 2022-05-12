@@ -351,9 +351,13 @@ end
 
 local function hidden_treasure(player, entity)
     local rpg = RPG.get_value_from_player(player.index)
+    if not rpg then
+        return
+    end
+
     local magic = rpg.magicka
 
-    if magic > 50 then
+    if magic >= 50 then
         local msg = rare_treasure_chest_messages[random(1, #rare_treasure_chest_messages)]
         Alert.alert_player(player, 5, msg)
         Loot.add_rare(entity.surface, entity.position, 'wooden-chest', magic)
