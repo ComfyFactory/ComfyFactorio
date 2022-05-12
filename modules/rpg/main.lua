@@ -29,7 +29,7 @@ local function on_gui_click(event)
     if not event then
         return
     end
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
     if not (player and player.valid) then
         return
     end
@@ -369,6 +369,9 @@ local function regen_mana_player(players)
         local mana_per_tick = Public.get_mana_modifier(player)
         local rpg_extra = Public.get('rpg_extra')
         local rpg_t = Public.get_value_from_player(player.index)
+        if not rpg_t then
+            return
+        end
         if mana_per_tick <= 0.1 then
             mana_per_tick = rpg_extra.mana_per_tick
         end
@@ -568,7 +571,7 @@ local function on_player_repaired_entity(event)
         return
     end
 
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
 
     if not player or not player.valid or not player.character then
         return
@@ -585,7 +588,7 @@ local function on_player_repaired_entity(event)
 end
 
 local function on_player_rotated_entity(event)
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
 
     if not player or not player.valid then
         return
@@ -603,7 +606,7 @@ local function on_player_rotated_entity(event)
 end
 
 local function on_player_changed_position(event)
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
     if not player or not player.valid then
         return
     end
@@ -627,7 +630,7 @@ local building_and_mining_blacklist = {
 }
 
 local function on_player_died(event)
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
 
     if not player or not player.valid then
         return
@@ -637,7 +640,7 @@ local function on_player_died(event)
 end
 
 local function on_pre_player_left_game(event)
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
 
     if not player or not player.valid then
         return
@@ -657,7 +660,7 @@ local function on_pre_player_mined_item(event)
     if entity.force.index ~= 3 then
         return
     end
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
 
     if not player or not player.valid then
         return
@@ -702,7 +705,7 @@ local function on_player_crafted_item(event)
     if not event.recipe.energy then
         return
     end
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
     if not player or not player.valid then
         return
     end
@@ -735,7 +738,7 @@ local function on_player_crafted_item(event)
 end
 
 local function on_player_respawned(event)
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
     local rpg_t = Public.get_value_from_player(player.index)
     if not rpg_t then
         Public.rpg_reset_player(player)
@@ -748,7 +751,7 @@ local function on_player_respawned(event)
 end
 
 local function on_player_joined_game(event)
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
     local rpg_t = Public.get_value_from_player(player.index)
     local rpg_extra = Public.get('rpg_extra')
     if not rpg_t then
@@ -851,7 +854,7 @@ local function on_player_used_capsule(event)
     local conjure_items = Public.all_spells
     local projectile_types = Public.get_projectiles
 
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
     if not player or not player.valid then
         return
     end
