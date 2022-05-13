@@ -340,7 +340,7 @@ function Public.destination_on_arrival(destination)
 
 		Islands.spawn_ores_on_arrival(destination, points_to_avoid)
 
-		if memory.overworldx >= Balance.covered_first_appears_at and destination.subtype ~= Islands.enum.RADIOACTIVE then
+		if (memory.overworldx >= Balance.covered_first_appears_at and destination.subtype ~= Islands.enum.RADIOACTIVE) or _DEBUG then
 			local class_for_sale = Classes.generate_class_for_sale()
 			destination.static_params.class_for_sale = class_for_sale
 

@@ -5,6 +5,7 @@ local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
 -- local Utils = require 'maps.pirates.utils_local'
 local Math = require 'maps.pirates.math'
+local Raffle = require 'maps.pirates.raffle'
 local _inspect = require 'utils.inspect'.inspect
 
 -- local Structures = require 'maps.pirates.structures.structures'
@@ -532,7 +533,7 @@ function Public.generate_side_attack_target(surface, position)
     for index, _ in pairs(entities) do
         weights[#weights + 1] = 1 + Math.floor((#entities - index) / 2)
     end
-    return Math.raffle(entities, weights)
+    return Raffle.raffle(entities, weights)
 end
 
 function Public.nearest_target(surface, position)

@@ -1,5 +1,6 @@
 
 local Math = require 'maps.pirates.math'
+local Raffle = require 'maps.pirates.raffle'
 local Server = require 'utils.server'
 local Utils = require 'maps.pirates.utils_local'
 local CoreData = require 'maps.pirates.coredata'
@@ -14,9 +15,10 @@ local _inspect = require 'utils.inspect'.inspect
 
 local Public = {}
 
+--@TODO: decide on snakecase vs camelcase
 -- Public.active_crews_cap = 1
-Public.active_crews_cap = 2
-Public.minimum_capacity_slider_value = 1
+Public.activeCrewsCap = 2
+Public.minimumCapacitySliderValue = 1
 Public.minimum_run_capacity_to_enforce_space_for = 32
 -- auto-disbanding when there are no players left in the crew:
 Public.autodisband_ticks = nil
@@ -33,10 +35,10 @@ Public.mapedge_distance_from_boat_starting_position = 272 -- to accommodate hors
 Public.deepwater_distance_from_leftmost_shore = 32
 Public.lobby_spawnpoint = {x = -72, y = -8}
 
-Public.quartermaster_range = 17
+Public.quartermaster_range = 19
 Public.allow_barreling_off_ship = true
 
-Public.fraction_of_map_loaded_atsea = 1
+Public.fraction_of_map_loaded_at_sea = 1
 Public.map_loading_ticks_atsea = 68 * 60
 Public.map_loading_ticks_atsea_maze = 80 * 60
 Public.map_loading_ticks_atsea_dock = 20 * 60
@@ -242,7 +244,7 @@ function Public.raffle_from_processed_loot_data(processed_loot_data, how_many, g
     end
 
 	for _ = 1, how_many do
-        local loot = Math.raffle(loot_types, loot_weights)
+        local loot = Raffle.raffle(loot_types, loot_weights)
 		if loot then
 			local low = Math.max(1, Math.ceil(loot.min_count))
 			local high = Math.max(1, Math.ceil(loot.max_count))

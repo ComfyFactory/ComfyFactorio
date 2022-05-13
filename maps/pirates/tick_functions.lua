@@ -686,6 +686,114 @@ function Public.place_cached_structures(tickinterval)
 					end
 					covered_data.wooden_chests[#covered_data.wooden_chests + 1] = e
 				end
+
+			elseif special.name == 'covered2' then
+				local covered_data = destination.dynamic_data.covered_data
+				if not covered_data then return end
+
+				local hardcoded_data = Structures.IslandStructures.ROC.covered2.Data
+
+				covered_data.blue_chest = surface.create_entity{name = 'blue-chest', position = Math.vector_sum(special.position, hardcoded_data.blue_chest), force = 'environment'}
+				if covered_data.blue_chest and covered_data.blue_chest.valid then
+					covered_data.blue_chest.minable = false
+					covered_data.blue_chest.rotatable = false
+					covered_data.blue_chest.operable = false
+					covered_data.blue_chest.destructible = false
+				end
+				covered_data.red_chests = {}
+				for _, chest_position in pairs(hardcoded_data.red_chests) do
+					local e = surface.create_entity{name = 'red-chest', position = Math.vector_sum(special.position, chest_position), force = 'environment'}
+					if e and e.valid then
+						e.minable = false
+						e.rotatable = false
+						e.operable = false
+						e.destructible = false
+						covered_data.red_chests[#covered_data.red_chests+1] = e
+					end
+				end
+				covered_data.door_walls = {}
+				for _, p in pairs(hardcoded_data.walls) do
+					local e = surface.create_entity{name = 'stone-wall', position = Math.vector_sum(special.position, p), force = 'environment'}
+					if e and e.valid then
+						e.minable = false
+						e.rotatable = false
+						e.operable = false
+						e.destructible = false
+					end
+					covered_data.door_walls[#covered_data.door_walls + 1] = e
+				end
+
+			elseif special.name == 'covered2b' then
+				local covered_data = destination.dynamic_data.covered_data
+				if not covered_data then return end
+
+				local hardcoded_data = Structures.IslandStructures.ROC.covered2b.Data
+
+				covered_data.market = surface.create_entity{name = 'market', position = Math.vector_sum(special.position, hardcoded_data.market), force = string.format('ancient-friendly-%03d', memory.id)}
+				if covered_data.market and covered_data.market.valid then
+					covered_data.market.minable = false
+					covered_data.market.rotatable = false
+					covered_data.market.destructible = false
+
+					covered_data.market.add_market_item{price={{'pistol', 1}}, offer={type = 'give-item', item = 'coin', count = Balance.coin_sell_amount}}
+					covered_data.market.add_market_item{price={{'burner-mining-drill', 1}}, offer={type = 'give-item', item = 'iron-plate', count = 9}}
+
+					local how_many_coin_offers = 4
+					if Balance.crew_scale() >= 1.2 then how_many_coin_offers = 5 end
+					local coin_offers = ShopCovered.market_generate_coin_offers(how_many_coin_offers)
+					for _, o in pairs(coin_offers) do
+						covered_data.market.add_market_item(o)
+					end
+
+					if destination.static_params.class_for_sale then
+						covered_data.market.add_market_item{price={{'coin', Balance.class_cost()}}, offer={type="nothing", effect_description = 'Purchase the class ' .. Classes.display_form[destination.static_params.class_for_sale] .. '.'}}
+
+						-- destination.dynamic_data.market_class_offer_rendering = rendering.draw_text{
+						-- 	text = 'Class available: ' .. Classes.display_form[destination.static_params.class_for_sale],
+						-- 	surface = surface,
+						-- 	target = Utils.psum{special.position, hardcoded_data.market, {x = 1, y = -3.9}},
+						-- 	color = CoreData.colors.renderingtext_green,
+						-- 	scale = 2.5,
+						-- 	font = 'default-game',
+						-- 	alignment = 'center'
+						-- }
+					end
+				end
+
+				for _, w in pairs(covered_data.door_walls) do
+					if w and w.valid then
+						w.destructible = true
+						w.destroy()
+					end
+				end
+
+				covered_data.wooden_chests = {}
+				for k, p in ipairs(hardcoded_data.wooden_chests) do
+					local e = surface.create_entity{name = 'wooden-chest', position = Math.vector_sum(special.position, p), force = string.format('ancient-friendly-%03d', memory.id)}
+					if e and e.valid then
+						e.minable = false
+						e.rotatable = false
+						e.destructible = false
+
+						local inv = e.get_inventory(defines.inventory.chest)
+						if k==1 then
+							inv.insert({name = 'coin', count = 2000})
+						elseif k==4 then
+							local loot = Loot.covered_wooden_chest_loot_1()
+							for j = 1, #loot do
+								local l = loot[j]
+								inv.insert(l)
+							end
+						else
+							local loot = Loot.covered_wooden_chest_loot_2()
+							for j = 1, #loot do
+								local l = loot[j]
+								inv.insert(l)
+							end
+						end
+					end
+					covered_data.wooden_chests[#covered_data.wooden_chests + 1] = e
+				end
 			end
 
 
@@ -706,49 +814,113 @@ function Public.covered_requirement_check(tickinterval)
 	local covered_data = destination.dynamic_data.covered_data
 	if not covered_data then return end
 
-	local blue_chest = covered_data.blue_chest
-	local red_chest = covered_data.red_chest
-	if not (blue_chest and blue_chest.valid and red_chest and red_chest.valid) then return end
-	local blue_inv = covered_data.blue_chest.get_inventory(defines.inventory.chest)
-	local red_inv = covered_data.red_chest.get_inventory(defines.inventory.chest)
+	if covered_data.structure_type == 'covered1' then
 
-	local blue_contents = blue_inv.get_contents()
-
-	local requirement = covered_data.requirement
-
-	local got = 0
-	for k, v in pairs(blue_contents) do
-		if covered_data.state == 'covered' and k == requirement.name then
-			got = v
-		else
-			-- @FIX: power armor loses components, items lose health!
-			red_inv.insert({name = k, count = v});
-			blue_inv.remove({name = k, count = v});
-		end
-	end
-
-	if covered_data.state == 'covered' then
-		if got >= requirement.count then
-			blue_inv.remove({name = requirement.name, count = requirement.count});
-			covered_data.state = 'uncovered'
-			rendering.destroy(covered_data.rendering1)
-			rendering.destroy(covered_data.rendering2)
-
-			local structureData = Structures.IslandStructures.ROC.covered1b.Data
-			local special = {
-				position = covered_data.position,
-				components = structureData.components,
-				width = structureData.width,
-				height = structureData.height,
-				name = structureData.name,
-			}
-			destination.dynamic_data.structures_waiting_to_be_placed[#destination.dynamic_data.structures_waiting_to_be_placed + 1] = {data = special, tick = game.tick}
-		else
-			if covered_data.rendering1 then
-				rendering.set_text(covered_data.rendering1, 'Needs ' .. requirement.count - got .. ' x')
+		local blue_chest = covered_data.blue_chest
+		local red_chest = covered_data.red_chest
+		if not (blue_chest and blue_chest.valid and red_chest and red_chest.valid) then return end
+		local blue_inv = covered_data.blue_chest.get_inventory(defines.inventory.chest)
+		local red_inv = covered_data.red_chest.get_inventory(defines.inventory.chest)
+	
+		local blue_contents = blue_inv.get_contents()
+	
+		local requirement = covered_data.requirement
+	
+		local got = 0
+		for k, v in pairs(blue_contents) do
+			if covered_data.state == 'covered' and k == requirement.name then
+				got = v
+			else
+				-- @FIX: power armor loses components, items lose health!
+				red_inv.insert({name = k, count = v});
+				blue_inv.remove({name = k, count = v});
 			end
 		end
-	else
+	
+		if covered_data.state == 'covered' then
+			if got >= requirement.count then
+				blue_inv.remove({name = requirement.name, count = requirement.count});
+				covered_data.state = 'uncovered'
+				rendering.destroy(covered_data.rendering1)
+				rendering.destroy(covered_data.rendering2)
+	
+				local structureData = Structures.IslandStructures.ROC.covered1b.Data
+				local special = {
+					position = covered_data.position,
+					components = structureData.components,
+					width = structureData.width,
+					height = structureData.height,
+					name = structureData.name,
+				}
+				destination.dynamic_data.structures_waiting_to_be_placed[#destination.dynamic_data.structures_waiting_to_be_placed + 1] = {data = special, tick = game.tick}
+			else
+				if covered_data.rendering1 then
+					rendering.set_text(covered_data.rendering1, 'Needs ' .. requirement.count - got .. ' x')
+				end
+			end
+		end
+
+	elseif covered_data.structure_type == 'covered2' then
+		local blue_chest = covered_data.blue_chest
+		local red_chests = covered_data.red_chests
+		if not (blue_chest and blue_chest.valid and red_chests and red_chests[1] and red_chests[1].valid and red_chests[2] and red_chests[2].valid and red_chests[3] and red_chests[3].valid) then return end
+
+		local blue_inv = covered_data.blue_chest.get_inventory(defines.inventory.chest)
+		local red_inv_main = {}
+		red_inv_main[1] = covered_data.red_chests[1].get_inventory(defines.inventory.chest)
+		red_inv_main[2] = covered_data.red_chests[3].get_inventory(defines.inventory.chest)
+		local red_inv_other = covered_data.red_chests[2].get_inventory(defines.inventory.chest)
+	
+		local blue_contents = blue_inv.get_contents()
+	
+		local requirement = covered_data.requirement --fields {name, count, batchSize, batchRawMaterials}
+	
+		for k, v in pairs(blue_contents) do
+
+			if covered_data.state == 'covered' and k == requirement.name and v >= requirement.batchSize then
+				local toRemove = v - (v % requirement.batchSize)
+				local batches = toRemove / requirement.batchSize
+
+				covered_data.completion_counter = covered_data.completion_counter + toRemove
+				blue_inv.remove({name = k, count = toRemove});
+
+				local i = 1
+				for k2, v2 in pairs(requirement.batchRawMaterials) do
+					red_inv_main[i].insert({name = k2, count = v2 * batches})
+					if red_inv_main[i+1] then i = i + 1 end
+				end
+			elseif not (covered_data.state == 'covered' and k == requirement.name and v < requirement.batchSize) then
+				-- @FIX: power armor loses components, items lose health data!
+				red_inv_other.insert({name = k, count = v});
+				blue_inv.remove({name = k, count = v});
+			end
+		end
+	
+		if covered_data.state == 'covered' then
+			if covered_data.completion_counter >= requirement.count then
+				covered_data.state = 'uncovered'
+				rendering.destroy(covered_data.rendering1)
+				rendering.destroy(covered_data.rendering2)
+	
+				-- local structureData = Structures.IslandStructures.ROC.covered1b.Data
+				-- local structureData = Structures.IslandStructures.ROC.covered2b.Data
+				-- local special = {
+				-- 	position = covered_data.position,
+				-- 	components = structureData.components,
+				-- 	width = structureData.width,
+				-- 	height = structureData.height,
+				-- 	name = structureData.name,
+				-- }
+				local special = Utils.deepcopy(Structures.IslandStructures.ROC.covered2b.Data)
+				special.position = covered_data.position
+				
+				destination.dynamic_data.structures_waiting_to_be_placed[#destination.dynamic_data.structures_waiting_to_be_placed + 1] = {data = special, tick = game.tick}
+			else
+				if covered_data.rendering1 then
+					rendering.set_text(covered_data.rendering1, 'Needs ' .. requirement.count - covered_data.completion_counter .. ' x')
+				end
+			end
+		end
 
 	end
 end
@@ -1078,7 +1250,7 @@ function Public.loading_update(tickinterval)
 			else
 				local fraction = memory.loadingticks / (total + (memory.extra_time_at_sea or 0))
 
-				if fraction > Common.fraction_of_map_loaded_atsea then
+				if fraction > Common.fraction_of_map_loaded_at_sea then
 					Progression.progress_to_destination(destination_index)
 					memory.loadingticks = 0
 				else
@@ -1087,7 +1259,7 @@ function Public.loading_update(tickinterval)
 			end
 
 		elseif memory.boat.state == Boats.enum_state.LANDED then
-			local fraction = Common.fraction_of_map_loaded_atsea + (1 - Common.fraction_of_map_loaded_atsea) * memory.loadingticks / Common.map_loading_ticks_onisland
+			local fraction = Common.fraction_of_map_loaded_at_sea + (1 - Common.fraction_of_map_loaded_at_sea) * memory.loadingticks / Common.map_loading_ticks_onisland
 
 			if fraction > 1 then
 				memory.loadingticks = nil

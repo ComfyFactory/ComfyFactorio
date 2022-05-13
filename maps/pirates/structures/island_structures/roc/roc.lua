@@ -6,10 +6,24 @@ Public.shelter1 = {}
 Public.shelter1.Data = Data.shelter1
 Public.shelter2 = {}
 Public.shelter2.Data = Data.shelter2
+
 Public.covered1 = {}
 Public.covered1.Data = Data.covered1
 Public.covered1b = {}
 Public.covered1b.Data = Data.covered1b
+Public.covered2 = {}
+Public.covered2.Data = Data.covered2
+Public.covered2b = {}
+Public.covered2b.Data = Data.covered2b
+Public.v2_covered_market = {}
+Public.v2_covered_market.Data = Data.v2_covered_market
+Public.v2_covered_market_b = {}
+Public.v2_covered_market_b.Data = Data.v2_covered_market_b
+Public.v2_covered_furnace = {}
+Public.v2_covered_furnace.Data = Data.v2_covered_furnace
+Public.v2_covered_furnace_b = {}
+Public.v2_covered_furnace_b.Data = Data.v2_covered_furnace_b
+
 Public.lonely_storage_tank = {}
 Public.lonely_storage_tank.Data = Data.lonely_storage_tank
 Public.swamp_lonely_storage_tank = {}

@@ -48,7 +48,6 @@ Public.shelter2 = {
 	},
 }
 
-
 Public.lonely_storage_tank = {
 	name = 'lonely_storage_tank',
 	width = 4,
@@ -148,6 +147,241 @@ Public.covered1b.wooden_chests = {
 	{x = -4, y = 3},
 	{x = -5, y = 5},
 }
+
+
+
+Public.covered2 = {
+	name = 'covered2',
+	width = 17,
+	height = 15,
+	components = {
+		--for some reason tile blueprints need to be offset...
+		{
+			type = 'tiles',
+			tile_name = 'orange-refined-concrete',
+			offset = {x = -9, y = -8},
+			bp_string = [[0eNqVmMGKwjAURf8l6wreJG2S/srgwtEgAW1L7Qwj0n8fqy5m4YBnJcKxHrxc7sOr+Tx+5WEs3WTaqzl322E19avDWPbL+x/TKlXmcnsJc2XKru/Opv24geXQbY8LMl2GbFpTpnwylem2p+XdjduNecpm+VC3z8tz5k1lpnLMjwcM/blMpe+e37K+f8l6fvWEf2AR2BLYEdgTuCZwQ+BA4EjghEJhEaIMhUIUSlEoRqEc9WaQIh0Q6YBIB0Q6INIBkQ6IdECkAyIdEOmAUAeEOiDUAaEOCHVAqANCHbCkA5Z0wCJri6wdsXbE2iFrh6w9sfbE2iNrj6xrYl0T6xpZ18i6IdYNsW6QdYOsA7EOxDog64CsI7GOxDoi64isE7FOxDoh68RuFnS4C13uYseW4LXFzi12b8GJZBspNJJCKyk2k2I7KTSUQkspNpViWyk0lkJrKTaXYnspNJhCiyk2mWKbKTSaQqspNptiuyk0nELL+aQtoh2iPaJrRLNfMCA6IjqxdGCYLE2xOMXyFAtULNG3S4HuMqHD7ElbRDtEe0TXiGa/YEB0RHRi6cAwWZpicYrlKRaoWKKvS7GpHv+Tt3/+da/Mdx7P9wfYKB+SDd41Ptk4z7+pVIVy]],
+		},
+		{
+			type = 'tiles',
+			tile_name = 'green-refined-concrete',
+			offset = {x = -4, y = 2},
+			bp_string = [[0eNqV1NEKgjAUxvF3OdcLnO6k7lWiC9MhA52iKxLZuzeti6CCvsvBb+fwv9hWunRXM07WedIrza4aD344tJNttvOddCloIc1BkK0HN5M+RWZbV3Ub8MtoSJP1pidBruq3U3T1ZLyh7ZJrTJwiw1mQt515DhiH2Xo7uNeOZN+hwrcJH1giOEVwtuMEwRLBKYIzBP8ZqJBAhQQqJFAhgQoJZCSQkUBGAhkJZCTwiOAcwcVvHJ/u/sD122ch6Gameb+eFlLlZZqzkhknHMIDrYdkGw==]],
+		},
+		{
+			type = 'tiles',
+			tile_name = 'out-of-map',
+			offset = {x = -7, y = -6},
+			bp_string = [[0eNqd2c1qwkAYheF7mXUKnpn55ie3UrqwGiSgUTQtLZJ7r9EWurDg21URvqZw8mz6enav27fucOyH0bVndxqWh6dx/7Q59uv584drZY37vPwIU+P61X44ufb5cthvhuV2Phk/D51rXT92O9e4YbmbP13uVsdu7Nz8S8O6m58zvTRu7Lfd7QGH/akf+/3w/VcW1z+ymO494Y9jkWNPjgM5juTYyHEix5kcF3Jc0UthrxC9Qz34EkUsiVgSsSRiScSSiCURSyKWRCyJWBKyJGRJyJInljyx5IklTyx5YskTS55Y8sSSJ5Y8seSRJY8seWQpEEuBWArEUiCWArEUiKVALAViKRBLgVgKyFJAlgKyFImlSCxFYikSS5FYisRSJJYisRSJpUgsRWQpIktGdBjRYUSHER1GdBjRYUSHER1GdBjRYUiHIR2J6EhERyI6EtGRiI5EdCSiIxEdmeycyc6Z7JzJzpnsnMnOmeycyc6F7FzIzoXsXMjOhexcyM6F7FzIzpXsXMnOlexcyc6V7FzJzpXsXPnOhRxX9FLYK3z0/2qU8IQanlDEE6p4QhlPqOMJhTyhkieU8oRanljME6t5YoGOFTqW6FijY5GOVTqW6VinY6GOlTqY6vQfKQ+HX1TrhHKdUK8TCnZCxU4o2Qk1O6FoJ1TthLKdWLcTC3di5U4o3Qm1O6F4J1TvhPKdUL8TCnhCBU8o4Qk1PLGIJ1bxxDKeUMcTCnlCJU8o5Qm1PKGYJ1TzhHKeUM8TCnpiRU8s6f2c332dL83t+/f217f5jXvvjqfrA3xRzNVniwq2sGn6ArBHNd4=]],
+		},
+		--this needs to appear last, so that the walls connect properly
+		{
+			type = 'static',
+			force = 'environment',
+			offset = {x = 0, y = 0},
+			bp_string = [[0eNqlmNFuqzAMht8l1zBhQkjCq0zVEV2jCokGBGFbNfXdD7TaTnVWE5teVajw5Xfi38Z8iX07uX5ofBDVlxh93aehS49Dc1iuP0UFOhHn+UddEtG8dX4U1et8Y3P0dbvcEs69E5VogjuJRPj6tFyNofMu/ajbViyP+YNbSJck+qD77Ac3jmnb1Qc33D2cX3aJcD40oXE3CdeL8x8/nfbznRU8WjwRfTfOj3T+O5oXdQ0ne1GXRc5/kJwEydYhkgSR65CCBMnXIYoEUeuQkgQp1iH61wlP87kOx6Gbf9O9a8NvpL5DJt/p0k2hn4J4sIQh6SzXddoNOg1PJ2Qb1rDMNYhuiGQy0PwAEVcBzREQsQTQPAERUwDNFRCxBdB8ARFjgKZhInkLhlW5coRiWRRAimjGCwkRkwMPg6nh1XSDUCSLohFKwQsJE6N4GExNyTttrGdqFsYiFIO9A6B9AYBSCnP7ROux9+W28cgSMiNrNyztEshgywPnT/Qg4qbIJ1opcQmmnbAMlkw/ISksmX5C6p7k+QmQuicNc3MwOZbJQfQUGesFfembDzHA2x0Ms8UAP1B5Tc9DM7i32995PFkL3liACucNBihGbYhfEeLHa05RsqYRVLlmzSMohtFvnjh0mnl0RKzKWLMNiqG3k2VIeRh0GQ9a0d64bEwtzTAmhik2ZPrPRLO2AXiqK8Wbm1DtJW+MQzmaN4ChHMObwFCO5Y1gGKfMeDMYyuGOGhhnS1f5R42bbZfcvpdVd5/tEvHuhvFWkQwU2uZaFSBVNkv8C+RQcGE=]],
+		},
+	},
+}
+
+Public.covered2.red_chests = {
+	{x = -1, y = 5},
+	{x = 0, y = 5},
+	{x = 1, y = 5},
+}
+Public.covered2.blue_chest = {x = 0, y = 6}
+Public.covered2.walls = {
+	{x = -8, y = -4},
+	{x = -8, y = -3},
+	{x = -8, y = -2},
+	{x = -8, y = -1},
+	{x = 8, y = -4},
+	{x = 8, y = -3},
+	{x = 8, y = -2},
+	{x = 8, y = -1},
+}
+
+Public.covered2b = {
+	name = 'covered2b',
+	width = 17,
+	height = 15,
+	doNotDestroyExistingEntities = true,
+	components = {
+		{
+			type = 'tiles',
+			tile_name = 'orange-refined-concrete',
+			offset = {x = -7, y = -6},
+			bp_string = [[0eNqV2M1qg0AYheF7+dYGcubHUW+ldJEmQxhIVIwtDcF7b0y76KItfZfCcYRn9To3ezm95nEq/WzdzS79btzMw+Y4lcP6/G6dYmVX6+qlsrIf+ot1T/ddOfa707qYr2O2zsqcz1ZZvzuvT/fdfspztvWl/pDXY5bnyuZyyp8HjMOlzGXovz6yfXxju/x0wi9jkbEjY0/GgYzj/8YiGiIaIhoiGiIaIhqOaDii4YiGIxqOaDii4YmGJxqeaHii4YmGJxqBaASiEYhGIBqBaASiEYlGJBqRaESiEYlGJBo10aiJRk00aqJRE42aaCSikYhGIhqJaCSikYhGQzQaotEQjYZoNESjIRot0WiJRks0WqLREo0W1ReKUaEaFcpRoR4VClKxImVJypqURSmrUpalqEuFwlSoTIXSVKhNheJUqE6F8lSoT4UCVahQhRJVqFGFIlWoUoUyVahThUJVf5Tq/c//cT/QfbtsqOwtT5fH+65RSK1LMcjHbVyWD41XTnY=]],
+		},
+		{
+			type = 'static',
+			force = 'ancient-friendly',
+			offset = {x = 0, y = -6},
+			bp_string = [[0eNqN01GLgzAMAOD/kuc6rNqp/SvHOPQWRkFTsd3tZPjf1+o9DO6oeQqB5CO0yRP64Y7TbMiDfoKjbsq8zW6zucb8B7RUApYQVgHmy5ID/RHqzI26IVb4ZULQYDyOIIC6MWbOW8Ls0Q0DxDa6YoTWiwAkb7zBXdmS5ZPuY49zKPivX8BkXWix9DtPftoHCnFdxR+kYCEyjZQs5JxGKhai0ohiIU0aObOQOo3UvIc9+J6GpbRppOWNUqQVmfOYg12RvLWV5QHDXNzqnQkHtR2efrtiAd84u62jaGRVt0WtKlmqPNS/ABFaQ/0=]],
+		},
+	},
+}
+
+Public.covered2b.market = {x = -4, y = -5}
+Public.covered2b.wooden_chests = {
+	{x = -7, y = -5},
+	{x = -6, y = -5},
+	{x = 6, y = -5},
+	{x = 7, y = -5},
+}
+
+
+
+
+
+
+
+Public.v2_covered_market = {
+	name = 'v2_covered_market',
+	width = 15,
+	height = 18,
+	components = {
+		{
+			type = 'tiles',
+			tile_name = 'orange-refined-concrete',
+			offset = {x = -8, y = -9},
+			bp_string = [[0eNqVmc1Kw0AYRd9l1hHmfvOfVxEX1QYJ1LS0URTJu9u0Llyo9KxK4DaBe3oDZ/rpHnevw+E4TrPrP91p2hzu5v3d83Hcrtfvrlfq3Mf5oy6dG5/208n19+fg+Dxtdmtk/jgMrnfjPLy4zk2bl/XqnHs6DvPg1i9N22G9z/LQuXncDdcbHPancR730/dT/OUhtvx2hz/CSreldUl7EhYJGwkHEo4kjNrIJFxIuJJwQ1AYQsRQCKIQRSGM7FctBFI3kjSyGCOLMbIYI4sxshgjizGyGCOLMbIYI4sxtBhDizG0GEOLMbQYQ4sxtBhDiwlkMYEsJpDFBLKYgMgERCYgMgGRCYhMJGQiIRMJmUjIRNReRO1F1F4i7SXSXiLtJdJeQu0l1F5C7WXSXibtZdJeJu1l1F5G7WXUXiHtFdJeIe0V0l5B79SC3qkFkSmITEFkKiFTCZlKyFRCpiIyFZGpiExFZCoi0wiZRsg01F9D/TXUX0P9NdSfPDos8Oi0wDN59Mwe4aGIZ/7oWY3szIUdukAHhxIOLRxqOPNwIREXMnEhFRdycSEZF7JxIR0X8nEhIRcycjElF3NyMSkXs3IxLRfzcjExFzNzITUXcnMhORey8+90ROmE0hmlWd8VpRujA2EymmI4xXiKARUjKob05g39dyDx0F3/++l//JPUubfheLrcwKpiaVZSVEg+LcsXIxltDQ==]],
+		},
+		{
+			type = 'tiles',
+			tile_name = 'out-of-map',
+			offset = {x = -6, y = -7},
+			bp_string = [[0eNqd2D1uwkAQQOG7TG0kZn+Yta8SURBYoZXAtmwnCkK+ezCkSJFEvJQrvZkpvm6v8np6y/1Q2kmaq4ztrl9N3eo4lMPy/pCmruQijfq5krLv2lGal1tXju3utBTTpc/SSJnyWSppd+fldev2Q56yLEPtId/W6LytZCqn/FjQd2OZStd+HVnfj7j5pw2/xJ7EgcSRxBsSG4kTiWsS6/q5WomKEhUlKkpUlKgoUVGiokRF/6GiiuonER0Rd0TcEXFHxB0Rd0TcEXFHxB0Sd0jcIXFPxD0R90TcE3FPxD0R90TcE3GPxD0S90g8EPFAxAMRD0Q8EPFAxAMRD0Q8IPFIVCJRiUQlEpVIVCJRiUQlEpWIVDb3GsVKYkdiT+JA4kjiDYmNxInENUJ5ktCItxFvI95GvI14G/E24m3E24i3EW9D3ol4J+KdiHci3ol4J+KdiHci3ol4J+Kd/vDeVo9/iebbJ0cl73kY7/MuabDaWQzq4zrO8yeeGHe9]],
+		},
+		{
+			type = 'static',
+			force = 'environment',
+			offset = {x = 0, y = 0},
+			bp_string = [[0eNqlmN2OmzAQhd/F16TCfxjyKtWqIhsrQiIGgdNutMq7F5JW3So5xIdcIRTzzbEzczz2p9i1J98PTYhi+ynGUPeb2G0OQ7Of3z/EVspMnKdHcclE896FUWy/TwObQ6jbeUg8915sRRP9UWQi1Mf5bYxd8JtfdduK+bOw9zPp8pYJH2ITG3+jXF/OP8LpuPPDNODR95nou3H6pAt/BOXf7FXR9LxcsjuISoLIZYhOgqhliEmC6GWITYKYZUiRBLHLEJcEKZYhZRLELUOqJEi5DJF5EqV6QknLWfkkaaWiUl8BiqZyH1EMRZGA8i9x/Uc/+HHcnCYbGA5DNz03O99GPL+ZmYl9M/j326/T8vz1mdCfongUsKBqFk3eUUWLKOWKyavnk+9OEc2+uovYdvUU8oFXPI5SJERROWUkYHWUpDwNURTlRyBNlaYoSIvhXABhLIdBcyooM9GA4jgxCFNSYkpAqSiKA7t6zk0JiNGk5yM1nOdL1KpoClMBCpnBUA2ZwkgOl8ISFJR2HAYUlC65HRGpuffoONRh7Lshgj3BfkX+vyk8ajhzOoDjAkg6QMEFUHSA8smqG031eRDDFgjisB4PctIUXE4agHGvtGlmRZ9myGIC+4rhdgSEsfkrnZpZ06pZybZqa5bZqvVmg9ZKJwt3QHiRINys+EfKVzLSWs4hQCnZgsOgVV5TkTJ/LSVL0pSQ9oqrbQuuK3KuthFGUmc5iFHUwRJiNHV2ghhDHZ4gxlIXMRBTcIcwhHHUjQ7ElFwFIkxFVsOV85bd7kC3X25UM/HTD+OtDEtpXKWcNVLbfBr/G8eu84M=]],
+		},
+	},
+}
+
+Public.v2_covered_market.red_chest = {x = 0, y = -6}
+Public.v2_covered_market.blue_chest = {x = 0, y = 6}
+Public.v2_covered_market.walls = {
+	{x = -8, y = -5},
+	{x = -8, y = -4},
+	{x = -8, y = -3},
+	{x = 8, y = -5},
+	{x = 8, y = -4},
+	{x = 8, y = -3},
+}
+
+Public.v2_covered_market_b = {
+	name = 'v2_covered_market_b',
+	width = 17,
+	height = 15,
+	components = {
+		{
+			type = 'tiles',
+			tile_name = 'orange-refined-concrete',
+			offset = {x = -7, y = -6},
+			bp_string = [[0eNqd2D1uwkAQQOG7TG0kZn+Yta8SURBYoZXAtmwnCkK+ezCkSJFEvJQrvZkpvm6v8np6y/1Q2kmaq4ztrl9N3eo4lMPy/pCmruQijfq5krLv2lGal1tXju3utBTTpc/SSJnyWSppd+fldev2Q56yLEPtId/W6LytZCqn/FjQd2OZStd+HVnfj7j5pw2/xJ7EgcSRxBsSG4kTiWsS6/q5WomKEhUlKkpUlKgoUVGiokRF/6GiiuonER0Rd0TcEXFHxB0Rd0TcEXFHxB0Sd0jcIXFPxD0R90TcE3FPxD0R90TcE3GPxD0S90g8EPFAxAMRD0Q8EPFAxAMRD0Q8IPFIVCJRiUQlEpVIVCJRiUQlEpWIVDb3GsVKYkdiT+JA4kjiDYmNxInENUJ5ktCItxFvI95GvI14G/E24m3E24i3EW9D3ol4J+KdiHci3ol4J+KdiHci3ol4J+Kd/vDeVo9/iebbJ0cl73kY7/MuabDaWQzq4zrO8yeeGHe9]],
+		},
+		{
+			type = 'static',
+			force = 'ancient-friendly',
+			offset = {x = 0, y = 0},
+			bp_string = [[0eNqdkd0KgzAMhd8l11X8xa2vMsbwJ0hB09LGoYjvvlZ3MdjYhVfhkJMvh2SFZpjQWEUMcgVHtYlYR71VXdAzyFTAAjLfBKhWkwN58zbVUz0EAy8GQYJiHEEA1WNQOBuLzkVsa3JGW44aHBgCgjoMzO0uAIkVKzyIu1geNI0N2n3pf5YAo50f1/SOmcTlHjSNy20TX8DsNNBXH7xTFtujm/3A56fxWcjrr7FfUH58Q8ATrTs2XtKiumZVWaR5mXj/CzxjkfE=]],
+		},
+	},
+}
+
+Public.v2_covered_market_b.market = {x = 3, y = -5}
+Public.v2_covered_market_b.steel_chest = {x = 4, y = 2}
+Public.v2_covered_market_b.wooden_chests = {
+	{x = 0, y = -3},
+	{x = -4, y = 3},
+	{x = -4, y = 4},
+}
+
+
+
+Public.v2_covered_furnace = {
+	name = 'v2_covered_furnace',
+	width = 14,
+	height = 15,
+	components = {
+		--for some reason tile blueprints need to be offset...
+		{
+			type = 'tiles',
+			tile_name = 'orange-refined-concrete',
+			offset = {x = -7, y = -8},
+			bp_string = [[0eNqVmM1qwkAYRd9l1ink+5n8vUpxYXWQAU1CTEtF8u412kUXbfGsQuB4E7gH7phreDu+p3HK/Ry6azj32/FlHl4OU96v95+hEy/C5XaJSxHybujPoXu9gfnQb48rMl/GFLqQ53QKRei3p/Xuxu2mNKew/qjfpzVn2RRhzsf0CBiHc57z0H8/pXw8ZPkt4Q9YCWwEdgJHAlcErgncELglsJSIRh0KKlGebFHudElgIbASGL2zEzgSuCJwTeCGwC0qhVWIOhRUIjNPnqxRiadKPFXiqRJPlXiqxFMlnirxVImnSjxV5KkiTxV5qshTRZ4a8dSIp0Y8NeKpEU+NeGrEUyOeGvHUiKeGPDXkqSFPDXlqyFMn6jlRz4l6TtRzop6Tzh117qhzR5076jySFiOKrkh0haJrEl2j6IZENyi6JdEtOwqhv3QCT/js1A4PceioJWx5Be2joIEUtJCCJlLQRgoaSUErKWgmBe2ksKEUtpTCplL+28pN8fjk0v34gFOEjzSd7wHaiNet1tHFYhmX5QubhLg2]],
+		},
+		{
+			type = 'tiles',
+			tile_name = 'out-of-map',
+			offset = {x = -5, y = -6},
+			bp_string = [[0eNqV2EFuwjAQQNG7zDpIxJ6xTa5SsaBgIUuQREmoilDuXgJddNFW/KWl77Hkt5ubvJ8uuR9KO0lzk7Hd9aupWx2HcljOn9JsKrlKU9dzJWXftaM0b/euHNvdaSmma5+lkTLls1TS7s7L6d7thzxlWS61h3wfU8/bSqZyys8BfTeWqXTt9yPrxyM6/zbhj9hIHF6L60e8JnFNYkdiT2IlsZEYfV0kcSLxBqG8SOiItyPejng74u2ItyPejng74u2ItyPeDnl74u2Jtyfennh74u2Jtyfennh74u2Jt0feSryVeCvxVuKtxFuJtxJvJd5KvJV4K/I24m3E24i3EW8j3ka8jXgb8TbibcTbkHcg3oF4B+IdiHcg3oF4B+IdiHcg3oF4B+QdiXck3pF4R+IdiXck3pF4R+IdiXck3hF5J+KdiHci3ol4J+KdiHci3ol4J+KdiHf6x3tbPdcGzY8dRCUfeRgf912qNW5cNK29rW2evwC3J1mB]],
+		},
+		--this needs to appear last, so that the walls connect properly
+		{
+			type = 'static',
+			force = 'environment',
+			offset = {x = 0, y = 0},
+			bp_string = [[0eNqlmNtuozAURf/Fz1DhG7dfGVUjkngiJGoQmJlGVf59oOlDNJMdvMsTQsLrXNjn2Mcf4tDNbhhbH0T9ISbfDGno0/PYntb3d1FLk4jL8rDXRLTH3k+i/rF82J59062fhMvgRC3a4N5EInzztr5Nofcu/dN0nViX+ZNbSddkc6F7H0Y3TWnXNyc33i1W19dEOB/a0LqbC58vl59+fjssX9bykfFEDP20LOn9VzTZi72F82Kvqzv/QFQURD6H6P+imZcYxvPYL8/04LqAkYt/S8xfqennMMxBPDBhovxUz/20URD9HJJ/I1jNBVt8w4TiTJRRqTDPU1FFQexziMyiKPkGJa4aig1KXDmUGxQdV1QbapVxmpcbepUW9RpYkyZGQTKn+o8G3hU7eoe613rrkaMl5agCjlbRadRMGlUWzVUUV+7oU3GJVWpHn4o0oak+BUSmDEUBClCWq0eEyTkMiqmgVG0AhasNCygVlV9A0RlFARFpyaUXYRSHQTHdHY06dwxje0x/zaNvjg6XRgFYhvpXOaBYioJ8IUWMnCk4DPKGU3EJKBVFqR5TDKdiRCFVDEIypIqRN5o+QkgZ0d0Np2iZAfc4SUtwUDI5vcPHRVnQO3wclzzDo7C55o1+gs3I0yrikMpHYVnFiQLs1nbPbCtV3DBmyToARwJruWEeYfZMuNEh75lxo42U3K0BSkjF3RsATM7tDBAjuakbYRTnDaiPXHPTO/LGcOM7wlhufkeYnBzgEYc83kBOSXLQz6r2NDMTNbEV2Z7uEWlD7mkej2y8Jrdr2frudjgRv904fQJUKU1RqcIaqW225PYv7EY6nw==]],
+		},
+	},
+}
+
+Public.v2_covered_furnace.red_chests = {
+	{x = -4, y = 2},
+	{x = -3, y = 2},
+	{x = -2, y = 2},
+}
+Public.v2_covered_furnace.blue_chests = {
+	{x = -4, y = -2},
+	{x = -3, y = -2},
+	{x = -2, y = -2},
+}
+Public.v2_covered_furnace.walls = {
+	{x = 3, y = -6},
+	{x = 4, y = -6},
+	{x = 5, y = -6},
+	{x = 3, y = 6},
+	{x = 4, y = 6},
+	{x = 5, y = 6},
+}
+
+Public.v2_covered_furnace_b = {
+	name = 'v2_covered_furnace_b',
+	width = 17,
+	height = 15,
+	doNotDestroyExistingEntities = true,
+	components = {
+		{
+			type = 'tiles',
+			tile_name = 'orange-refined-concrete',
+			offset = {x = -7, y = -6},
+			bp_string = [[0eNqV2M1qg0AYheF7+dYGcubHUW+ldJEmQxhIVIwtDcF7b0y76KItfZfCcYRn9To3ezm95nEq/WzdzS79btzMw+Y4lcP6/G6dYmVX6+qlsrIf+ot1T/ddOfa707qYr2O2zsqcz1ZZvzuvT/fdfspztvWl/pDXY5bnyuZyyp8HjMOlzGXovz6yfXxju/x0wi9jkbEjY0/GgYzj/8YiGiIaIhoiGiIaIhqOaDii4YiGIxqOaDii4YmGJxqeaHii4YmGJxqBaASiEYhGIBqBaASiEYlGJBqRaESiEYlGJBo10aiJRk00aqJRE42aaCSikYhGIhqJaCSikYhGQzQaotEQjYZoNESjIRot0WiJRks0WqLREo0W1ReKUaEaFcpRoR4VClKxImVJypqURSmrUpalqEuFwlSoTIXSVKhNheJUqE6F8lSoT4UCVahQhRJVqFGFIlWoUoUyVahThUJVf5Tq/c//cT/QfbtsqOwtT5fH+65RSK1LMcjHbVyWD41XTnY=]],
+		},
+		{
+			type = 'static',
+			force = 'ancient-friendly',
+			offset = {x = 0, y = 0},
+			bp_string = [[0eNqV01FvgyAQAOD/cs+4COpU/krTLNZeOxI9DGAz0/jfh2wPTYZdeSKX3H054O4Op2HGyShyIO9gqZsyp7OrUect/gJZMFhAcr4yUL0mC/Lg89SVumHLcMuEIEE5HIEBdeMWWYc4ZP0nWgdbHZ3RS3w9MkByyin8YUKwfNA8ntD4hCjAYNLW12j67Sh/q0JP/lxX9kcRaQqPK8VrCn+ulGnKzo2qB0UTZpfZUNdjxAlKETPe016ljndSpylNXGnSlDautGlvu6PwPHFcdv6Ivzi84j9HJA5ecPxihQ2UD+vM4IbGhgrR8LJuRV2VvKhyn/8NRt5ISg==]],
+		},
+	},
+}
+
+Public.v2_covered_furnace_b.market = {x = 4, y = 0}
+Public.v2_covered_furnace_b.wooden_chests = {
+	{x = 5, y = -5},
+	{x = 5, y = -4},
+	{x = 5, y = 4},
+	{x = 5, y = 5},
+}
+
+
+
+
 
 
 Public.maze_defended_camp = {

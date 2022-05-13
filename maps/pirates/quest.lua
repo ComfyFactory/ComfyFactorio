@@ -5,6 +5,7 @@ local Balance = require 'maps.pirates.balance'
 local Common = require 'maps.pirates.common'
 -- local Utils = require 'maps.pirates.utils_local'
 local Math = require 'maps.pirates.math'
+local Raffle = require 'maps.pirates.raffle'
 -- local Loot = require 'maps.pirates.loot'
 local CoreData = require 'maps.pirates.coredata'
 local _inspect = require 'utils.inspect'.inspect
@@ -331,7 +332,7 @@ function Public.generate_flow_quest()
 		end
     end
 
-	return Math.raffle(v, w)
+	return Raffle.raffle(v, w)
 end
 
 
@@ -398,7 +399,7 @@ function Public.generate_resourcecount_quest()
 		end
     end
 
-	return Math.raffle(v, w)
+	return Raffle.raffle(v, w)
 end
 
 

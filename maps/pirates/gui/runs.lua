@@ -477,7 +477,7 @@ function Public.full_update(player)
 		-- flow.proposals.body.proposal_maker.body.proposal_cant_do_infinity_mode.visible = (flow.proposals.body.proposal_maker.body.options.mode.mode.switch.switch_state == 'right')
 
 		-- flow.proposals.body.proposal_maker.body.proposal_disabled_low_crew_caps.visible = false
-		flow.proposals.body.proposal_maker.body.proposal_disabled_low_crew_caps.visible = (flow.proposals.body.proposal_maker.body.options.capacity.capacity.slider.slider_value < global_memory.minimum_capacity_slider_value)
+		flow.proposals.body.proposal_maker.body.proposal_disabled_low_crew_caps.visible = (flow.proposals.body.proposal_maker.body.options.capacity.capacity.slider.slider_value < global_memory.minimumCapacitySliderValue)
 
 		flow.proposals.body.proposal_maker.body.propose_crew.visible = (flow.proposals.body.proposal_maker.body.proposal_disabled_low_crew_caps.visible == false)
 		-- flow.proposals.body.proposal_maker.body.propose_crew.visible = (flow.proposals.body.proposal_maker.body.proposal_cant_do_infinity_mode.visible == false) and (flow.proposals.body.proposal_maker.body.proposal_disabled_low_crew_caps.visible == false)

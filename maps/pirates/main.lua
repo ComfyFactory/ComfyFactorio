@@ -97,8 +97,8 @@ local function on_init()
 
 	Common.init_game_settings(Balance.technology_price_multiplier)
 
-	global_memory.active_crews_cap = Common.active_crews_cap
-	global_memory.minimum_capacity_slider_value = Common.minimum_capacity_slider_value
+	global_memory.active_crews_cap = Common.activeCrewsCap
+	global_memory.minimumCapacitySliderValue = Common.minimumCapacitySliderValue
 
 	Surfaces.Lobby.create_starting_dock_surface()
 	local lobby = game.surfaces[CoreData.lobby_surface_name]

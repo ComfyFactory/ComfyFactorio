@@ -196,6 +196,31 @@ local place_dock_jetty_and_boats = Token.register(
 
 
 
+function Public.choose_quest_structures(destination_data)
+	local subtype = destination_data.subtype
+
+	--@TODO: Finish writing this function
+	--@Package 'quest structures' into their own folder
+
+	local rng = Math.random(2)
+
+	if rng == 1 or subtype == Surfaces.Island.enum.WALKWAYS then
+		--Avoid furnace type on movement-restricted islands (like walkways)
+		local covered2_requirement = Balance.generateCovered2EntryPrice()
+
+		-- market
+		destination_data.dynamic_data.quest_structure_requirements = {}
+		destination_data.dynamic_data.quest_structure_requirements[] = covered2_requirement
+	else
+
+		-- furnace
+		local covered2_requirement = Balance.generateCovered2EntryPrice()
+		destination_data.dynamic_data.covered2_requirement[] = covered2_requirement
+	end
+end
+
+
+
 function Public.progress_to_destination(destination_index)
 	local memory = Memory.get_crew_memory()
 	if memory.game_lost then return end
@@ -215,8 +240,7 @@ function Public.progress_to_destination(destination_index)
 	local initial_boatspeed, starting_boatposition
 
 	if type == Surfaces.enum.ISLAND then --moved from overworld generation, so that it updates properly
-		local covered1_requirement = Balance.covered1_entry_price()
-		destination_data.dynamic_data.covered1_requirement = covered1_requirement
+		Public.choose_quest_structures(destination_data)
 	end
 
 	if type == Surfaces.enum.DOCK then
