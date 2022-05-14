@@ -109,6 +109,8 @@ function Public.reset_crew_memory(id) --mostly serves as a dev reference of memo
 	memory.scripted_biters = nil
 	memory.scripted_unit_groups = nil
 	memory.floating_pollution = nil
+
+	memory.playtesting_stats = nil
 end
 
 function Public.fallthrough_crew_memory() --could make this a metatable, but metatables and factorio global seem not to play nicely

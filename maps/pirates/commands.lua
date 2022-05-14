@@ -340,14 +340,14 @@ function(cmd)
 end)
 
 commands.add_command(
-'req',
-'is a captain command to take \'important\' items from the crew into your inventory.',
+'tax',
+'is a captain command to take a quarter of all coins, plus other game-critical items from the crew, into your inventory.',
 function(cmd)
 	local param = tostring(cmd.parameter)
 	if check_captain(cmd) then
 		local player = game.players[cmd.player_index]
 		local memory = Memory.get_crew_memory()
-		Roles.captain_requisition(memory.playerindex_captain)
+		Roles.captain_tax(memory.playerindex_captain)
 	end
 end)
 

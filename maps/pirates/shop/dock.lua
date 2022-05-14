@@ -1,7 +1,7 @@
 
 -- local Memory = require 'maps.pirates.memory'
 -- local Roles = require 'maps.pirates.roles.roles'
-local CoreData = require 'maps.pirates.coredata'
+-- local CoreData = require 'maps.pirates.coredata'
 local Classes = require 'maps.pirates.roles.classes'
 -- local Crew = require 'maps.pirates.crew'
 -- local Boats = require 'maps.pirates.structures.boats.boats'
@@ -10,6 +10,7 @@ local Balance = require 'maps.pirates.balance'
 local Common = require 'maps.pirates.common'
 local Utils = require 'maps.pirates.utils_local'
 local Math = require 'maps.pirates.math'
+local Upgrades = require 'maps.pirates.boat_upgrades'
 local _inspect = require 'utils.inspect'.inspect
 
 -- local Upgrades = require 'maps.pirates.boat_upgrades'
@@ -32,37 +33,39 @@ Public.market_barters = {
 	{price = {{'raw-fish', 50}}, offer = {type = 'give-item', item = 'copper-plate', count = 750}},
 	{price = {{'raw-fish', 50}}, offer = {type = 'give-item', item = 'steel-plate', count = 125}},
 
-	{price = {{'wood', 200}}, offer = {type = 'give-item', item = 'coin', count = 250}},
+	{price = {{'wood', 200}}, offer = {type = 'give-item', item = 'coin', count = 360}},
 	--TODO: add more complex trades
 }
 
 Public.market_permanent_offers = {
-	{price = {{'coin', 2400}}, offer = {type = 'give-item', item = 'iron-ore', count = 800}},
-	{price = {{'coin', 2400}}, offer = {type = 'give-item', item = 'copper-ore', count = 800}},
-	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'crude-oil-barrel', count = 100}},
-	{price = {{'coin', 2500}}, offer = {type = 'give-item', item = 'fast-loader', count = 1}},
-	{price = {{'coin', 5000}}, offer = {type = 'give-item', item = 'beacon', count = 2}},
-	{price = {{'coin', 2800}}, offer = {type = 'give-item', item = 'speed-module-2', count = 2}},
+	{price = {{'pistol', 1}}, offer = {type = 'give-item', item = 'coin', count = Balance.coin_sell_amount}},
+	{price = {{'coin', 3600}}, offer = {type = 'give-item', item = 'iron-ore', count = 800}},
+	{price = {{'coin', 3600}}, offer = {type = 'give-item', item = 'copper-ore', count = 800}},
+	{price = {{'coin', 4200}}, offer = {type = 'give-item', item = 'crude-oil-barrel', count = 100}},
+	{price = {{'coin', 3600}}, offer = {type = 'give-item', item = 'fast-loader', count = 1}},
+	{price = {{'coin', 7200}}, offer = {type = 'give-item', item = 'beacon', count = 2}},
+	{price = {{'coin', 4200}}, offer = {type = 'give-item', item = 'speed-module-2', count = 2}},
+	{price = {{'coin', 28000}}, offer = {type = 'give-item', item = 'artillery-targeting-remote', count = 1}},
 }
 
 -- cheap but one-off
 Public.market_sales = {
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'coal', count = 900}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'piercing-rounds-magazine', count = 75}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'uranium-rounds-magazine', count = 30}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'piercing-shotgun-shell', count = 50}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'raw-fish', count = 300}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'laser-turret', count = 1}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'vehicle-machine-gun', count = 3}},
-	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'modular-armor', count = 1}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'distractor-capsule', count = 20}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'poison-capsule', count = 20}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'slowdown-capsule', count = 20}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'coin', count = 4000}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'roboport', count = 1}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'construction-robot', count = 10}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'logistic-chest-passive-provider', count = 2}},
-	{price = {{'coin', 2000}}, offer = {type = 'give-item', item = 'logistic-robot', count = 2}},
+	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'coal', count = 900}},
+	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'piercing-rounds-magazine', count = 75}},
+	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'uranium-rounds-magazine', count = 30}},
+	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'piercing-shotgun-shell', count = 50}},
+	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'raw-fish', count = 300}},
+	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'laser-turret', count = 1}},
+	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'vehicle-machine-gun', count = 3}},
+	{price = {{'coin', 6000}}, offer = {type = 'give-item', item = 'modular-armor', count = 1}},
+	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'distractor-capsule', count = 20}},
+	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'poison-capsule', count = 20}},
+	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'slowdown-capsule', count = 20}},
+	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'coin', count = 6000}},
+	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'roboport', count = 1}},
+	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'construction-robot', count = 10}},
+	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'logistic-chest-passive-provider', count = 2}},
+	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'logistic-robot', count = 2}},
 }
 
 
@@ -108,13 +111,29 @@ Public.market_sales = {
 
 
 function Public.create_dock_markets(surface, p)
-	-- local memory = Memory.get_crew_memory()
+    local destination = Common.current_destination()
 
 	if not (surface and p) then return end
 
 	local e
 
-	e = surface.create_entity{name = 'market', position = {x = p.x - 7, y = p.y}}
+	e = surface.create_entity{name = 'market', position = {x = p.x - 22, y = p.y - 1}, force = 'environment'}
+	if e and e.valid then
+		e.minable = false
+		e.rotatable = false
+		e.destructible = false
+
+		e.add_market_item{price = {{'repair-pack', 20}, {'coin', 1000}}, offer = {type = 'give-item', item = 'artillery-turret', count = 1}}
+
+		local upgrade_for_sale = Common.current_destination().static_params.upgrade_for_sale
+		if upgrade_for_sale then
+			e.add_market_item(Upgrades.market_offer_form[upgrade_for_sale])
+		end
+
+		destination.dynamic_data.dock_captains_market = e
+	end
+
+	e = surface.create_entity{name = 'market', position = {x = p.x - 7, y = p.y}, force = 'environment'}
 	if e and e.valid then
 		e.minable = false
 		e.rotatable = false
@@ -125,7 +144,7 @@ function Public.create_dock_markets(surface, p)
 		end
 	end
 
-	e = surface.create_entity{name = 'market', position = {x = p.x, y = p.y - 1}}
+	e = surface.create_entity{name = 'market', position = {x = p.x, y = p.y - 1}, force = 'environment'}
 	if e and e.valid then
 		e.minable = false
 		e.rotatable = false
@@ -147,23 +166,22 @@ function Public.create_dock_markets(surface, p)
 		end
 
 		-- new class offerings:
-		local destination = Common.current_destination()
 		if destination.static_params.class_for_sale then
-			e.add_market_item{price={{'coin', Balance.class_cost()}}, offer={type="nothing"}}
+			e.add_market_item{price={{'coin', Balance.class_cost()}}, offer={type="nothing", effect_description = 'Purchase the class ' .. Classes.display_form[destination.static_params.class_for_sale] .. '.'}}
 
-			destination.dynamic_data.market_class_offer_rendering = rendering.draw_text{
-				text = 'Class available: ' .. Classes.display_form[destination.static_params.class_for_sale],
-				surface = surface,
-				target = Utils.psum{e.position, {x = 0, y = -4}},
-				color = CoreData.colors.renderingtext_green,
-				scale = 2.5,
-				font = 'default-game',
-				alignment = 'center'
-			}
+			-- destination.dynamic_data.market_class_offer_rendering = rendering.draw_text{
+			-- 	text = 'Class available: ' .. Classes.display_form[destination.static_params.class_for_sale],
+			-- 	surface = surface,
+			-- 	target = Utils.psum{e.position, {x = 0, y = -4}},
+			-- 	color = CoreData.colors.renderingtext_green,
+			-- 	scale = 2.5,
+			-- 	font = 'default-game',
+			-- 	alignment = 'center'
+			-- }
 		end
 	end
 
-	e = surface.create_entity{name = 'market', position = {x = p.x + 7, y = p.y}}
+	e = surface.create_entity{name = 'market', position = {x = p.x + 7, y = p.y}, force = 'environment'}
 	if e and e.valid then
 		e.minable = false
 		e.rotatable = false

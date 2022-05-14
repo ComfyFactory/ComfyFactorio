@@ -3,7 +3,7 @@ local Public = require 'modules.wave_defense.table'
 function Public.wave_defense_roll_biter_name()
     local biter_raffle = Public.get('biter_raffle')
     local max_chance = 0
-    for k, v in pairs(biter_raffle) do
+    for _, v in pairs(biter_raffle) do
         max_chance = max_chance + v
     end
     local r = math.random(0, math.floor(max_chance))
@@ -19,7 +19,7 @@ end
 function Public.wave_defense_roll_spitter_name()
     local spitter_raffle = Public.get('spitter_raffle')
     local max_chance = 0
-    for k, v in pairs(spitter_raffle) do
+    for _, v in pairs(spitter_raffle) do
         max_chance = max_chance + v
     end
     local r = math.random(0, math.floor(max_chance))
@@ -80,7 +80,7 @@ end
 function Public.wave_defense_roll_worm_name()
     local worm_raffle = Public.get('worm_raffle')
     local max_chance = 0
-    for k, v in pairs(worm_raffle) do
+    for _, v in pairs(worm_raffle) do
         max_chance = max_chance + v
     end
     local r = math.random(0, math.floor(max_chance))

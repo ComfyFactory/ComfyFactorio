@@ -109,7 +109,7 @@ local function place_nest_near_unit_group()
     Task.set_timeout_in_ticks(200, immunity_spawner, {entity = spawner})
 
     if boss then
-        BiterHealthBooster.add_boss_unit(spawner, modified_boss_unit_health.current_value)
+        BiterHealthBooster.add_boss_unit(spawner, modified_boss_unit_health.current_value, 0.5)
     else
         BiterHealthBooster.add_unit(spawner, modified_unit_health.current_value)
     end
@@ -206,7 +206,7 @@ function Public.build_worm()
     local modified_boss_unit_health = Public.get('modified_boss_unit_health')
 
     if boss then
-        BiterHealthBooster.add_boss_unit(u, modified_boss_unit_health.current_value)
+        BiterHealthBooster.add_boss_unit(u, modified_boss_unit_health.current_value, 0.5)
     else
         local final_health = round(modified_unit_health.current_value * worm_unit_settings.scale_units_by_health[worm], 3)
         if final_health < 1 then

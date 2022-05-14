@@ -286,7 +286,7 @@ function Public.periodic_free_resources(tickinterval)
 		Common.give_items_to_crew{{name = 'sulfuric-acid-barrel', count = count}}
 		local force = memory.force
 		if not (force and force.valid) then return end
-		Common.notify_force_light(force, 'Granted ' .. count .. ' [item=sulfuric-acid-barrel]')
+		Common.notify_force_light(force, 'Granted: ' .. count .. ' [item=sulfuric-acid-barrel]')
 	end
 end
 
@@ -622,7 +622,7 @@ function Public.place_cached_structures(tickinterval)
 					covered_data.market.rotatable = false
 					covered_data.market.destructible = false
 
-					covered_data.market.add_market_item{price={{'pistol', 1}}, offer={type = 'give-item', item = 'coin', count = 450}}
+					covered_data.market.add_market_item{price={{'pistol', 1}}, offer={type = 'give-item', item = 'coin', count = Balance.coin_sell_amount}}
 					covered_data.market.add_market_item{price={{'burner-mining-drill', 1}}, offer={type = 'give-item', item = 'iron-plate', count = 9}}
 
 					local how_many_coin_offers = 4
@@ -633,17 +633,17 @@ function Public.place_cached_structures(tickinterval)
 					end
 
 					if destination.static_params.class_for_sale then
-						covered_data.market.add_market_item{price={{'coin', Balance.class_cost()}}, offer={type="nothing"}}
+						covered_data.market.add_market_item{price={{'coin', Balance.class_cost()}}, offer={type="nothing", effect_description = 'Purchase the class ' .. Classes.display_form[destination.static_params.class_for_sale] .. '.'}}
 
-						destination.dynamic_data.market_class_offer_rendering = rendering.draw_text{
-							text = 'Class available: ' .. Classes.display_form[destination.static_params.class_for_sale],
-							surface = surface,
-							target = Utils.psum{special.position, hardcoded_data.market, {x = 1, y = -3.9}},
-							color = CoreData.colors.renderingtext_green,
-							scale = 2.5,
-							font = 'default-game',
-							alignment = 'center'
-						}
+						-- destination.dynamic_data.market_class_offer_rendering = rendering.draw_text{
+						-- 	text = 'Class available: ' .. Classes.display_form[destination.static_params.class_for_sale],
+						-- 	surface = surface,
+						-- 	target = Utils.psum{special.position, hardcoded_data.market, {x = 1, y = -3.9}},
+						-- 	color = CoreData.colors.renderingtext_green,
+						-- 	scale = 2.5,
+						-- 	font = 'default-game',
+						-- 	alignment = 'center'
+						-- }
 					end
 				end
 
@@ -678,7 +678,7 @@ function Public.place_cached_structures(tickinterval)
 
 						local inv = e.get_inventory(defines.inventory.chest)
 						local loot = Loot.covered_wooden_chest_loot()
-						if k==1 then loot[1] = {name = 'coin', count = 1500} end
+						if k==1 then loot[1] = {name = 'coin', count = 2000} end
 						for j = 1, #loot do
 							local l = loot[j]
 							inv.insert(l)
@@ -1180,9 +1180,9 @@ function Public.silo_update(tickinterval)
 						memory.floating_pollution = memory.floating_pollution + pollution/2
 						game.surfaces[destination.surface_name].pollute(p, pollution/2)
 
-						if memory.overworldx >= 200 and dynamic_data.rocketsiloenergyconsumed >= 0.25 * dynamic_data.rocketsiloenergyneeded and (not dynamic_data.parrot_silo_warned) then
+						if memory.overworldx >= 80 and dynamic_data.rocketsiloenergyconsumed >= 0.25 * dynamic_data.rocketsiloenergyneeded and (not dynamic_data.parrot_silo_warned) then
 							dynamic_data.parrot_silo_warned = true
-							Common.parrot_speak(memory.force, 'Just a warning... the silo is attracting biters...')
+							Common.parrot_speak(memory.force, 'The silo is attracting biters...')
 						elseif dynamic_data.rocketsiloenergyconsumed >= dynamic_data.rocketsiloenergyneeded and (not (silo.rocket_parts == 100)) and (dynamic_data.silocharged == false) and (not memory.game_lost) then
 							-- silo.energy = 0
 							silo.rocket_parts = 100

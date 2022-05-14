@@ -1,17 +1,15 @@
 local Event = require 'utils.event'
 local Global = require 'utils.global'
-local BiterRolls = require 'modules.wave_defense.biter_rolls'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local WD = require 'modules.wave_defense.table'
 local WPT = require 'maps.mountain_fortress_v3.table'
-local Diff = require 'modules.difficulty_vote_by_amount'
 
-local traps = {}
+local this = {}
 
 Global.register(
-    traps,
+    this,
     function(t)
-        traps = t
+        this = t
     end
 )
 
@@ -59,41 +57,10 @@ local function create_particles(data)
     end
 end
 
-local function trigger_health()
-    local wave_number = WD.get('wave_number')
-    local d = Diff.get()
-    local m = 0.0015
-    if d.difficulty_vote_index then
-        if not d.strength_modifier then
-            m = m * 1.05
-        else
-            m = m * d.strength_modifier
-        end
-    end
-
-    local boosted_health = 1.25
-
-    if wave_number <= 10 then
-        wave_number = 10
-    end
-
-    boosted_health = boosted_health * (wave_number * 0.02)
-
-    local sum = boosted_health * 5
-
-    sum = sum + m
-
-    if sum >= 100 then
-        sum = 100
-    end
-
-    return sum
-end
-
 local function spawn_biters(data)
     local surface = data.surface
     if not (surface and surface.valid) then
-        return
+        return false
     end
     local position = data.position
     local h = floor(abs(position.y))
@@ -101,58 +68,66 @@ local function spawn_biters(data)
     local max_biters = WPT.get('biters')
 
     if max_biters.amount >= max_biters.limit then
-        return
+        return false
     end
 
     if not position then
         position = surface.find_non_colliding_position('small-biter', position, 10, 1)
         if not position then
-            return
+            return false
         end
     end
 
-    BiterRolls.wave_defense_set_unit_raffle(h * 0.20)
+    local unit_to_create
 
-    local unit
     if random(1, 3) == 1 then
-        unit = surface.create_entity({name = BiterRolls.wave_defense_roll_spitter_name(), position = position})
-        max_biters.amount = max_biters.amount + 1
+        unit_to_create = WD.wave_defense_roll_spitter_name()
     else
-        unit = surface.create_entity({name = BiterRolls.wave_defense_roll_biter_name(), position = position})
-        max_biters.amount = max_biters.amount + 1
+        unit_to_create = WD.wave_defense_roll_biter_name()
     end
 
-    if random(1, 45) == 1 then
-        local sum = trigger_health()
-        BiterHealthBooster.add_unit(unit, sum)
-    elseif random(1, 64) == 1 then
-        local sum = trigger_health()
-        BiterHealthBooster.add_boss_unit(unit, sum, 0.38)
+    local modified_unit_health = WD.get('modified_unit_health')
+    local modified_boss_unit_health = WD.get('modified_boss_unit_health')
+
+    WD.wave_defense_set_unit_raffle(h * 0.20)
+
+    local unit = surface.create_entity({name = unit_to_create, position = position})
+    max_biters.amount = max_biters.amount + 1
+
+    if random(1, 30) == 1 then
+        BiterHealthBooster.add_boss_unit(unit, modified_boss_unit_health.current_value, 0.38)
+    else
+        BiterHealthBooster.add_unit(unit, modified_unit_health.current_value)
     end
+    return true
 end
 
 local function spawn_worms(data)
+    local modified_unit_health = WD.get('modified_unit_health')
+    local modified_boss_unit_health = WD.get('modified_boss_unit_health')
     local max_biters = WPT.get('biters')
 
     if max_biters.amount >= max_biters.limit then
         return
     end
 
+    local unit_to_create = WD.wave_defense_roll_worm_name()
+
     local surface = data.surface
     if not (surface and surface.valid) then
         return
     end
     local position = data.position
-    BiterRolls.wave_defense_set_worm_raffle(sqrt(position.x ^ 2 + position.y ^ 2) * 0.20)
-    local unit = surface.create_entity({name = BiterRolls.wave_defense_roll_worm_name(), position = position})
+
+    WD.wave_defense_set_worm_raffle(sqrt(position.x ^ 2 + position.y ^ 2) * 0.20)
+
+    local unit = surface.create_entity({name = unit_to_create, position = position})
     max_biters.amount = max_biters.amount + 1
 
-    if random(1, 45) == 1 then
-        local sum = trigger_health()
-        BiterHealthBooster.add_unit(unit, sum)
-    elseif random(1, 64) == 1 then
-        local sum = trigger_health()
-        BiterHealthBooster.add_boss_unit(unit, sum, 0.38)
+    if random(1, 30) == 1 then
+        BiterHealthBooster.add_boss_unit(unit, modified_boss_unit_health.current_value, 0.38)
+    else
+        BiterHealthBooster.add_unit(unit, modified_unit_health.current_value)
     end
 end
 
@@ -171,17 +146,17 @@ function Public.buried_biter(surface, position)
     end
 
     for t = 1, 60, 1 do
-        if not traps[game.tick + t] then
-            traps[game.tick + t] = {}
+        if not this[game.tick + t] then
+            this[game.tick + t] = {}
         end
 
-        traps[game.tick + t][#traps[game.tick + t] + 1] = {
+        this[game.tick + t][#this[game.tick + t] + 1] = {
             callback = 'create_particles',
             data = {surface = surface, position = {x = position.x, y = position.y}, amount = math.ceil(t * 0.05)}
         }
 
         if t == 60 then
-            traps[game.tick + t][#traps[game.tick + t] + 1] = {
+            this[game.tick + t][#this[game.tick + t] + 1] = {
                 callback = 'spawn_biters',
                 data = {surface = surface, position = {x = position.x, y = position.y}}
             }
@@ -204,17 +179,17 @@ function Public.buried_worm(surface, position)
     end
 
     for t = 1, 60, 1 do
-        if not traps[game.tick + t] then
-            traps[game.tick + t] = {}
+        if not this[game.tick + t] then
+            this[game.tick + t] = {}
         end
 
-        traps[game.tick + t][#traps[game.tick + t] + 1] = {
+        this[game.tick + t][#this[game.tick + t] + 1] = {
             callback = 'create_particles',
             data = {surface = surface, position = {x = position.x, y = position.y}, amount = math.ceil(t * 0.05)}
         }
 
         if t == 60 then
-            traps[game.tick + t][#traps[game.tick + t] + 1] = {
+            this[game.tick + t][#this[game.tick + t] + 1] = {
                 callback = 'spawn_worms',
                 data = {surface = surface, position = {x = position.x, y = position.y}}
             }
@@ -230,10 +205,10 @@ local callbacks = {
 
 local function on_tick()
     local t = game.tick
-    if not traps[t] then
+    if not this[t] then
         return
     end
-    for _, token in pairs(traps[t]) do
+    for _, token in pairs(this[t]) do
         local callback = token.callback
         local data = token.data
         local cbl = callbacks[callback]
@@ -241,12 +216,12 @@ local function on_tick()
             cbl(data)
         end
     end
-    traps[t] = nil
+    this[t] = nil
 end
 
 function Public.reset()
-    for k, _ in pairs(traps) do
-        traps[k] = nil
+    for k, _ in pairs(this) do
+        this[k] = nil
     end
 end
 

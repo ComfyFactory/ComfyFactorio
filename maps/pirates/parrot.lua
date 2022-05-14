@@ -57,10 +57,11 @@ function Public.parrot_0()
 	local memory = Memory.get_crew_memory()
 	Common.parrot_speak(memory.force, 'We can wait here for as long as we like.')
 end
--- function Public.parrot_80()
--- 	local memory = Memory.get_crew_memory()
--- 	Common.parrot_speak(memory.force, 'Let\'s build out the ship?')
--- end
+function Public.parrot_80()
+	local memory = Memory.get_crew_memory()
+	-- Common.parrot_speak(memory.force, 'Let\'s build out the ship?')
+	Common.parrot_speak(memory.force, 'Did you know that biters deal more damage at night?')
+end
 function Public.parrot_boats_warning()
 	local memory = Memory.get_crew_memory()
 	Common.parrot_speak(memory.force, '200 leagues? I think we\'re being chased...')
@@ -75,20 +76,20 @@ function Public.parrot_radioactive_tip_1()
 end
 function Public.parrot_radioactive_tip_2()
 	local memory = Memory.get_crew_memory()
-	Common.parrot_speak(memory.force, 'The biters don\'t care if we pollute here, but they evolve fast...')
+	Common.parrot_speak(memory.force, 'The biters don\'t care if we pollute here, but they evolve fast.')
 end
 function Public.parrot_maze_tip_1()
 	local memory = Memory.get_crew_memory()
 	Common.parrot_speak(memory.force, 'Something seems wrong with our minimap.')
 end
-function Public.parrot_800_tip()
-	local memory = Memory.get_crew_memory()
-	Common.parrot_speak(memory.force, 'The resources needed to leave will get a bit harder now...')
-end
-function Public.parrot_overstay_tip()
-	local memory = Memory.get_crew_memory()
-	Common.parrot_speak(memory.force, 'We\'ve been here quite a while! Check the evo...')
-end
+-- function Public.parrot_800_tip()
+-- 	local memory = Memory.get_crew_memory()
+-- 	Common.parrot_speak(memory.force, 'The resources needed to leave will get a bit harder now...')
+-- end
+-- function Public.parrot_overstay_tip()
+-- 	local memory = Memory.get_crew_memory()
+-- 	Common.parrot_speak(memory.force, 'We\'ve been here quite a while! Check the evo.')
+-- end
 
 -- function Public.parrot_say_tip()
 -- 	local memory = Memory.get_crew_memory()
@@ -99,6 +100,8 @@ end
 -- end
 
 
+
+-- if we're using custom sprites, we have access to this dynamic parrot that flies around:
 
 -- function Public.parrot_tick()
 -- 	local memory = Memory.get_crew_memory()

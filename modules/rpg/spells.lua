@@ -1000,6 +1000,7 @@ spells[#spells + 1] = {
 
 Public.projectile_types = {
     ['explosives'] = {name = 'grenade', count = 0.5, max_range = 32, tick_speed = 1},
+    ['distractor-capsule'] = {name = 'distractor-capsule', count = 1, max_range = 32, tick_speed = 1},
     ['land-mine'] = {name = 'grenade', count = 1, max_range = 32, tick_speed = 1},
     ['grenade'] = {name = 'grenade', count = 1, max_range = 40, tick_speed = 1},
     ['cluster-grenade'] = {name = 'cluster-grenade', count = 1, max_range = 40, tick_speed = 3},

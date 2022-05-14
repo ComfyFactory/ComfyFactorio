@@ -73,18 +73,18 @@ Public.display_form = {
 	[enum.GOURMET] = 'Gourmet',
 }
 Public.explanation = {
-	[enum.DECKHAND] = 'They move faster and generate ore for the cabin whilst onboard above deck, but move slower offboard.',
+	[enum.DECKHAND] = 'They move faster and generate ore for the cabin whilst onboard above deck.',
 	[enum.FISHERMAN] = 'They fish at greater distance.',
 	[enum.SCOUT] = 'They are faster, but frail and deal less damage.',
 	[enum.SAMURAI] = 'They are tough, and *with no weapon equipped* fight well by melee, but poorly otherwise.',
-	[enum.MERCHANT] = 'They generate 40 doubloons per league.',
-	[enum.SHORESMAN] = 'They move slightly faster and generate ore for the cabin whilst offboard, but move slower onboard.',
-	[enum.BOATSWAIN] = 'They move faster and generate ore for the cabin whilst below deck, but move slower offboard.',
-	[enum.PROSPECTOR] = 'They find more resources when handmining ore.',
+	[enum.MERCHANT] = 'They generate 50 doubloons per league.',
+	[enum.SHORESMAN] = 'They move slightly faster and generate ore for the cabin whilst offboard.',
+	[enum.BOATSWAIN] = 'They move faster and generate ore for the cabin whilst below deck.',
+	[enum.PROSPECTOR] = 'They find more resources when handmining.',
 	[enum.LUMBERJACK] = 'They find more resources when chopping trees.',
 	[enum.MASTER_ANGLER] = 'They fish at much greater distance, and catch more.',
 	[enum.WOOD_LORD] = 'They find many more resources when chopping trees.',
-	[enum.CHIEF_EXCAVATOR] = 'They find many more resources when handmining ore.',
+	[enum.CHIEF_EXCAVATOR] = 'They find many more resources when handmining.',
 	[enum.HATAMOTO] = 'They are very tough, and *with no weapon equipped* fight well by melee, but poorly otherwise.',
 	[enum.IRON_LEG] = 'They are very resistant to damage when carrying 3500 iron ore.',
 	[enum.QUARTERMASTER] = 'They give nearby crewmates extra physical attack, and generate ore for the cabin for each one.',
@@ -95,7 +95,7 @@ Public.explanation = {
 
 Public.class_unlocks = {
 	[enum.FISHERMAN] = {enum.MASTER_ANGLER},
-	[enum.LUMBERJACK] = {enum.WOOD_LORD},
+	-- [enum.LUMBERJACK] = {enum.WOOD_LORD}, --not that interesting
 	-- [enum.PROSPECTOR] = {enum.CHIEF_EXCAVATOR}, --breaks the resource pressure in the game too strongly I think
 	[enum.SAMURAI] = {enum.HATAMOTO},
 	[enum.MASTER_ANGLER] = {enum.DREDGER},
@@ -124,7 +124,7 @@ function Public.initial_class_pool()
 		enum.PROSPECTOR,
 		enum.LUMBERJACK,
 		enum.IRON_LEG,
-		enum.SMOLDERING,
+		-- enum.SMOLDERING,
 		enum.GOURMET,
 	}
 end
@@ -257,7 +257,7 @@ local function class_on_player_used_capsule(event)
 				elseif tile.name == CoreData.walkway_tile then
 					multiplier = 1
 				elseif tile.name == 'orange-refined-concrete' then
-					multiplier = 0.8
+					multiplier = 0.5
 				elseif tile.name == CoreData.enemy_landing_tile then
 					multiplier = 0.33
 				elseif tile.name == CoreData.static_boat_floor then

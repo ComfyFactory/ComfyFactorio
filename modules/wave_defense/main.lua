@@ -118,7 +118,7 @@ local function remove_trees(entity)
     local area = {{pos.x - radius, pos.y - radius}, {pos.x + radius, pos.y + radius}}
     local trees = surface.find_entities_filtered {area = area, type = 'tree'}
     if #trees > 0 then
-        for i, tree in pairs(trees) do
+        for _, tree in pairs(trees) do
             if tree and tree.valid then
                 tree.destroy()
             end
@@ -136,7 +136,7 @@ local function remove_rocks(entity)
     local area = {{pos.x - radius, pos.y - radius}, {pos.x + radius, pos.y + radius}}
     local rocks = surface.find_entities_filtered {area = area, type = 'simple-entity'}
     if #rocks > 0 then
-        for i, rock in pairs(rocks) do
+        for _, rock in pairs(rocks) do
             if rock and rock.valid then
                 rock.destroy()
             end
@@ -1113,10 +1113,10 @@ Event.on_nth_tick(
         local t2 = tick % 18000
 
         if tick_tasks[t] then
-            tick_tasks[t](true)
+            tick_tasks[t]()
         end
         if tick_tasks[t2] then
-            tick_tasks[t2](true)
+            tick_tasks[t2]()
         end
 
         local resolve_pathing = Public.get('resolve_pathing')
@@ -1162,5 +1162,7 @@ Event.on_nth_tick(
         spawn_unit_group()
     end
 )
+
+Public.set_next_wave = set_next_wave
 
 return Public

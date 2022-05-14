@@ -131,8 +131,21 @@ local function create_gui(player)
 
 
 
-	flow2 = GuiCommon.flow_add_floating_button(flow1, 'fuel_piratebutton')
-	-- flow2.style.right_padding = -100
+
+	flow2 = flow1.add({
+		name = 'fuel_flow',
+		type = 'frame',
+	})
+	flow2.style.minimal_width = 80
+	flow2.style.natural_width = 80
+	flow2.style.minimal_height = 40
+	flow2.style.maximal_height = 40
+	flow2.style.left_padding = 4
+	flow2.style.right_padding = 4
+	flow2.style.top_padding = 3
+
+	-- interactive version:
+	-- flow2 = GuiCommon.flow_add_floating_button(flow1, 'fuel_piratebutton')
 
 	flow3 = flow2.add({
 		name = 'fuel_label_0',
@@ -575,11 +588,20 @@ function Public.process_etaframe_update(player, flow1, bools)
 
 			-- local caption
 			if bools.atsea_loading_bool then
-				flow2.etaframe_label_3.caption = 'Next escape cost:'
-				if bools.cost_includes_rocket_launch_bool then
-					tooltip = {'pirates.resources_needed_tooltip_1_rocketvariant'}
+				if memory.overworldx >= Balance.rockets_needed_x then --bools.eta_bool is not helpful yet
+					flow2.etaframe_label_3.caption = 'Next escape cost:'
+					if bools.cost_includes_rocket_launch_bool then
+						tooltip = {'pirates.resources_needed_tooltip_0_rocketvariant'}
+					else
+						tooltip = {'pirates.resources_needed_tooltip_0'}
+					end
 				else
-					tooltip = {'pirates.resources_needed_tooltip_1'}
+					flow2.etaframe_label_3.caption = 'Next escape cost:'
+					if bools.cost_includes_rocket_launch_bool then
+						tooltip = {'pirates.resources_needed_tooltip_1_rocketvariant'}
+					else
+						tooltip = {'pirates.resources_needed_tooltip_1'}
+					end
 				end
 			elseif (not bools.eta_bool) then
 				flow2.etaframe_label_3.visible = false
@@ -755,7 +777,7 @@ function Public.process_siloframe_and_questframe_updates(flowsilo, flowquest, bo
 
 				local tooltip = ''
 
-				if quest_complete then
+				if quest_complete and quest_reward then
 					tooltip = 'This island\'s quest is complete, and this is the reward.'
 					flow1.quest_label_1.caption = 'Quest:'
 					flow1.quest_label_1.style.font_color = GuiCommon.achieved_font_color
@@ -763,7 +785,7 @@ function Public.process_siloframe_and_questframe_updates(flowsilo, flowquest, bo
 					flow1.quest_label_3.visible = false
 					flow1.quest_label_4.visible = false
 					flow1.quest_label_2.caption = quest_reward.display_amount .. ' ' .. quest_reward.display_sprite
-				else
+				elseif quest_reward then
 					if quest_progress < quest_progressneeded then
 						flow1.quest_label_1.caption = 'Quest:'
 						flow1.quest_label_1.style.font_color = GuiCommon.bold_font_color
@@ -820,7 +842,7 @@ function Public.process_siloframe_and_questframe_updates(flowsilo, flowquest, bo
 						end
 
 					elseif quest_type == Quest.enum.RESOURCECOUNT then
-						if tooltip == '' then tooltip = 'Quest: Item Production\n\nProduce a particular number of items for a bonus.' end
+						if tooltip == '' then tooltip = 'Quest: Item Production\n\nSimply produce a particular number of items for a bonus, anywhere on the map.' end
 
 						flow1.quest_label_2.caption = string.format('%s ', '[item=' .. quest_params.item .. ']')
 
@@ -848,6 +870,13 @@ function Public.process_siloframe_and_questframe_updates(flowsilo, flowquest, bo
 		end
 	end
 end
+
+
+-- local function create_gui_2()
+
+-- end
+
+-- Event.add(defines.events.on_player_joined_game, create_gui_2)
 
 
 function Public.update_gui(player)
@@ -895,12 +924,16 @@ function Public.update_gui(player)
 	-- 	button.number = 3
 	-- end
 
-	flow1 = pirates_flow.fuel_piratebutton_flow_1
+	flow1 = pirates_flow.fuel_flow
+	-- flow1 = pirates_flow.fuel_piratebutton_flow_1
 
-	flow1.fuel_piratebutton.tooltip = {'pirates.fuel_tooltip', Math.floor(memory.stored_fuel or 0)}
+	local tooltip = {'pirates.fuel_tooltip', Math.floor(memory.stored_fuel or 0)}
+	flow1.tooltip = tooltip
+	-- flow1.fuel_piratebutton.tooltip = {'pirates.fuel_tooltip', Math.floor(memory.stored_fuel or 0)}
 
 
-	flow2 = flow1.fuel_piratebutton_flow_2
+	flow2 = flow1
+	-- flow2 = flow1.fuel_piratebutton_flow_2
 
 	flow2.fuel_label_1.caption = Utils.bignumber_abbrevform(memory.stored_fuel or 0) .. '[item=coal]'
 	flow2.fuel_label_2.caption = Utils.negative_rate_abbrevform(memory.fuel_depletion_rate_memoized or 0)
@@ -910,6 +943,9 @@ function Public.update_gui(player)
 		g = GuiCommon.fuel_color_1.g * (1-color_scale) + GuiCommon.fuel_color_2.g * color_scale,
 		b = GuiCommon.fuel_color_1.b * (1-color_scale) + GuiCommon.fuel_color_2.b * color_scale,
 	}
+	flow2.fuel_label_0.tooltip = tooltip
+	flow2.fuel_label_1.tooltip = tooltip
+	flow2.fuel_label_2.tooltip = tooltip
 
 
 	flow1 = pirates_flow.progress_piratebutton_frame.progress_piratebutton
@@ -929,7 +965,8 @@ function Public.update_gui(player)
 	--== Update Gui ==--
 
 
-	flow1 = pirates_flow.fuel_piratebutton_flow_1
+	flow1 = pirates_flow.fuel_flow
+	-- flow1 = pirates_flow.fuel_piratebutton_flow_1
 
 	if memory.crewstatus == nil then
 		flow1.visible = false

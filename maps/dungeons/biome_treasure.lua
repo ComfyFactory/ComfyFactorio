@@ -9,11 +9,16 @@ local rainbow_tiles = {
     'purple-refined-concrete'
 }
 
+-- balanced the same as end-game rocks from functions.lua:rocky_loot
 local ores = {
+    'copper-ore',
+    'copper-ore',
     'copper-ore',
     'iron-ore',
     'iron-ore',
     'iron-ore',
+    'iron-ore',
+    'coal',
     'coal',
     'stone'
 }
@@ -43,7 +48,7 @@ local function treasure(surface, room)
         surface.set_tiles({{name = rainbow_tiles[math_random(1, 2)], position = tile.position}}, true)
 
         if math_random(1, 3) == 1 then
-            surface.create_entity({name = ores[math_random(1, 6)], position = tile.position, amount = Functions.get_common_resource_amount(surface.index) * scale_factor})
+            surface.create_entity({name = ores[math_random(1, #ores)], position = tile.position, amount = Functions.get_common_resource_amount(surface.index) * scale_factor})
         end
     end
 

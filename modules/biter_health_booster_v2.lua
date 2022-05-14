@@ -157,7 +157,7 @@ local function create_entity_radius(surface, name, source, target)
 
     local position = {source.x, source.y}
 
-    for i = 1, distance * 1.5, 1 do
+    for _ = 1, distance * 1.5, 1 do
         if random(1, 2) ~= 1 then
             surface.create_entity(
                 {
@@ -401,7 +401,7 @@ local function on_entity_died(event)
 end
 
 --- Use this function to retrieve a key from the global table.
----@param key <string>
+---@param key string
 function Public.get(key)
     if key then
         return this[key]
@@ -411,8 +411,8 @@ function Public.get(key)
 end
 
 --- Using this function can set a new value to an exist key or create a new key with value
----@param key <string>
----@param value <string/boolean>
+---@param key string
+---@param value any
 function Public.set(key, value)
     if key and (value or value == false) then
         this[key] = value
@@ -442,8 +442,8 @@ function Public.reset_table()
 end
 
 --- Use this function to add a new unit that has extra health
----@param unit <LuaEntity>
----@param health_multiplier <number>
+---@param unit userdata
+---@param health_multiplier number
 function Public.add_unit(unit, health_multiplier)
     if not health_multiplier then
         health_multiplier = this.biter_health_boost
@@ -460,9 +460,9 @@ function Public.add_unit(unit, health_multiplier)
 end
 
 --- Use this function to add a new boss unit (with healthbar)
----@param unit <LuaEntity>
----@param health_multiplier <number>
----@param health_bar_size <number>
+---@param unit userdata
+---@param health_multiplier number
+---@param health_bar_size number
 function Public.add_boss_unit(unit, health_multiplier, health_bar_size)
     if not health_multiplier then
         health_multiplier = this.biter_health_boost
@@ -483,7 +483,7 @@ end
 
 --- This sets the active surface that we check and have the script active.
 --- This deletes the list of surfaces if we use multiple, so use it only before setting more of them.
----@param string
+---@param str string
 function Public.set_active_surface(str)
     if str and type(str) == 'string' then
         this.active_surfaces = {}
@@ -493,7 +493,8 @@ function Public.set_active_surface(str)
 end
 
 --- This sets if this surface is active, when we using multiple surfaces. The default active surface does not need to be added again
----@param string, boolean
+---@param name string
+---@param value boolean
 function Public.set_surface_activity(name, value)
     if name and type(name) == 'string' and type(value) == 'boolean' then
         this.active_surfaces[name] = value

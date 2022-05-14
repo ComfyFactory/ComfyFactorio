@@ -169,7 +169,7 @@ function Public.destination_on_collide(destination)
 			local playercount = Common.activecrewcount()
 			local max_evo
 
-			local difficulty_name = CoreData.get_difficulty_name_from_value(Common.difficulty())
+			local difficulty_name = CoreData.get_difficulty_name_from_value(Common.difficulty_scale())
 			if difficulty_name == CoreData.difficulty_options[1].text then
 				if memory.overworldx/40 < 20 then
 					max_evo = 0.9 - (20 - memory.overworldx/40) * 1/100
@@ -200,7 +200,7 @@ function Public.destination_on_collide(destination)
 						-- scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_bonus_evolution = 0.52}
 					end
 				end
-			elseif memory.overworldx == 200 or _DEBUG then
+			elseif memory.overworldx == 200 then
 				local times
 				if playercount <= 2 then
 					times = {1, 5, 10, 15, 20}
@@ -227,8 +227,8 @@ function Public.destination_on_collide(destination)
 
 	if memory.overworldx == 40*5 then
 		Parrot.parrot_boats_warning()
-	elseif memory.overworldx == 800 then
-		Parrot.parrot_800_tip()
+	-- elseif memory.overworldx == 800 then
+	-- 	Parrot.parrot_800_tip()
 	end
 end
 
@@ -238,7 +238,10 @@ function Public.destination_on_arrival(destination)
 	local memory = Memory.get_crew_memory()
 
 	-- game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = Balance.defaultai_attack_pollution_consumption_modifier()
-		-- Event_functions.flamer_nerfs()
+	-- Event_functions.flamer_nerfs()
+
+	log('Playthrough stats:')
+	log(_inspect(memory.playtesting_stats))
 
 	memory.floating_pollution = 0
 
@@ -249,12 +252,12 @@ function Public.destination_on_arrival(destination)
 	if destination.type == enum.ISLAND then
 
 		destination.dynamic_data.rocketsiloenergyneeded = Balance.silo_energy_needed_MJ() * 1000000
-		destination.dynamic_data.rocketcoalreward = Balance.launch_fuel_reward()
+		destination.dynamic_data.rocketcoalreward = Balance.rocket_launch_fuel_reward()
 
 		if destination.subtype == Islands.enum.RADIOACTIVE then
 			destination.dynamic_data.time_remaining = -1
 		elseif destination.subtype == Islands.enum.MAZE then --more time
-			destination.dynamic_data.time_remaining = Math.ceil(1.08 * Balance.max_time_on_island())
+			destination.dynamic_data.time_remaining = Math.ceil(1.05 * Balance.max_time_on_island())
 		else
 			destination.dynamic_data.time_remaining = Math.ceil(Balance.max_time_on_island())
 		end
@@ -319,9 +322,9 @@ function Public.destination_on_arrival(destination)
 	if not (#memory.destinationsvisited_indices and #memory.destinationsvisited_indices == 1) then --don't need to notify for the first island
 		Server.to_discord_embed_raw((destination.static_params.discord_emoji or CoreData.comfy_emojis.wut) .. '[' .. memory.name .. '] Approaching ' .. name .. ', ' .. memory.overworldx .. ' leagues.')
 	end
-	if destination.static_params.name == 'Dock' then
-		message = message .. ' ' .. 'New trades are available in the Captain\'s Store.'
-	end
+	-- if destination.static_params.name == 'Dock' then
+	-- 	message = message .. ' ' .. 'New trades are available in the Captain\'s Store.'
+	-- end
 	Common.notify_force(memory.force, message)
 
 	if destination.type == enum.ISLAND then
@@ -359,6 +362,8 @@ function Public.destination_on_departure(destination)
 	local memory = Memory.get_crew_memory()
 	-- local boat = memory.boat
 
+	-- need to put tips only where we know there are islands:
+
 	if memory.overworldx == 40*9 then
 		Parrot.parrot_kraken_warning()
 	end
@@ -384,10 +389,12 @@ function Public.destination_on_crewboat_hits_shore(destination)
 
 	if destination.type == enum.ISLAND then
 
+		destination.dynamic_data.initial_spawner_count = Common.spawner_count(game.surfaces[destination.surface_name])
+
 		if memory.overworldx == 0 then
 			Parrot.parrot_0()
-		-- elseif memory.overworldx == 80 then
-		-- 	Parrot.parrot_80()
+		elseif memory.overworldx == 80 then
+			Parrot.parrot_80()
 		end
 
 		if destination.subtype == Islands.enum.RADIOACTIVE then
@@ -412,12 +419,6 @@ function Public.destination_on_crewboat_hits_shore(destination)
 			ShopMerchants.generate_merchant_trades(destination.dynamic_data.merchant_market)
 		end
 	end
-
-	if destination and destination.surface_name and game.surfaces[destination.surface_name] and game.surfaces[destination.surface_name].valid and (not (destination.dynamic_data and destination.dynamic_data.initial_spawner_count)) then
-		--Note: This gives the wrong answer on the first island. Because the terrain hasn't finished generating yet.
-		destination.dynamic_data.initial_spawner_count = Common.spawner_count(game.surfaces[destination.surface_name])
-	end
-
 end
 
 
