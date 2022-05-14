@@ -136,9 +136,10 @@ local function init(mountain_race)
     Collapse.set_speed(8)
     Collapse.set_amount(0)
     Collapse.set_max_line_size(mountain_race.border_width + mountain_race.playfield_height * 2)
-    Collapse.set_surface(surface)
+    Collapse.set_surface_index(surface.index)
     Collapse.set_position({0, 0})
     Collapse.set_direction('east')
+    Collapse.start_now(true)
 
     game.reset_time_played()
 

@@ -82,7 +82,7 @@ local collapse_kill = {
         ['flamethrower-turret'] = true,
         ['gun-turret'] = true,
         ['artillery-turret'] = true,
-        ['landmine'] = true,
+        ['land-mine'] = true,
         ['locomotive'] = true,
         ['cargo-wagon'] = true,
         ['character'] = true,
@@ -253,7 +253,7 @@ function Public.reset_map()
     Collapse.set_amount(1)
     -- Collapse.set_max_line_size(zone_settings.zone_width)
     Collapse.set_max_line_size(540)
-    Collapse.set_surface(surface)
+    Collapse.set_surface_index(surface.index)
     Collapse.set_position({0, 130})
     Collapse.set_direction('north')
     Collapse.start_now(false)
