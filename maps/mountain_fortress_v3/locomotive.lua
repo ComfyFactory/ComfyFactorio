@@ -274,17 +274,6 @@ local function get_driver_action(entity)
         return
     end
 
-    local weapon = driver.get_inventory(defines.inventory.character_guns)
-    if weapon then
-        for i = 1, 3 do
-            if weapon[i] and weapon[i].valid_for_read then
-                player.print('[color=blue][Locomotive][/color] Unequip your weapon if you want to drive.')
-                driver.driving = false
-                return
-            end
-        end
-    end
-
     local armor = driver.get_inventory(defines.inventory.character_armor)
     if armor and armor[1] and armor[1].valid_for_read and valid_armors[armor[1].name] then
         player.print('[color=blue][Locomotive][/color] Unequip your armor if you want to drive.')
