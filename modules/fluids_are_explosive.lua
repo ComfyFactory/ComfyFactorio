@@ -925,7 +925,7 @@ end
 
 local function on_entity_damaged(event)
     local entity = event.entity
-    if not entity.health then
+    if not entity or not entity.health then
         return
     end
     if not container_types[entity.type] then
