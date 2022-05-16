@@ -15,6 +15,7 @@ local this = {
     disable_crashsite = false,
     crashed_ship_items = {},
     crashed_debris_items = {},
+    crashed_ship_parts = {},
     custom_surface_name = nil
 }
 
@@ -95,6 +96,9 @@ local on_player_created = function(event)
         return
     end
     local player = game.get_player(event.player_index)
+    if not player or not player.valid then
+        return
+    end
     util.insert_safe(player, this.created_items)
 
     if not this.init_ran then
@@ -261,6 +265,12 @@ local freeplay_interface = {
     end,
     set_debris_items = function(map)
         this.crashed_debris_items = map or error("Remote call parameter to freeplay set respawn items can't be nil.")
+    end,
+    get_ship_parts = function()
+        return this.crashed_ship_parts
+    end,
+    set_ship_parts = function(parts)
+        this.crashed_ship_parts = parts or error("Remote call parameter to freeplay set ship parts can't be nil.")
     end
 }
 
