@@ -1,13 +1,6 @@
 local Table = require 'modules.scrap_towny_ffa.table'
 
 local crash_site = {
-    -- simple entity with owner
-    'crash-site-spaceship-wreck-small-1',
-    'crash-site-spaceship-wreck-small-2',
-    'crash-site-spaceship-wreck-small-3',
-    'crash-site-spaceship-wreck-small-4',
-    'crash-site-spaceship-wreck-small-5',
-    'crash-site-spaceship-wreck-small-6',
     -- containers
     'big-ship-wreck-1',
     'big-ship-wreck-2',
@@ -58,12 +51,8 @@ local function on_tick()
                 ffatable.mining[index] = mining
                 -- state change
                 if mining == true then
-                    --log(player.name .. " started mining")
                     local target = player.selected
                     if target ~= nil and target.valid then
-                        --log("target name = " .. target.prototype.name)
-                        --log("position = " .. serpent.block(target.position))
-                        --log("mineable_properties = " .. serpent.block(target.prototype.mineable_properties))
                         if is_crash_site(target) then
                             -- mining crash site
                             mining_sound(player)
@@ -81,8 +70,6 @@ local function on_tick()
                 if mining == true then
                     local target = player.selected
                     if target ~= nil and target.valid then
-                        --local progress = player.character_mining_progress
-                        --log("progress = " .. progress)
                         if is_crash_site(target) then
                             -- mining crash site
                             mining_sound(player)
@@ -97,7 +84,6 @@ end
 local on_init = function()
     local ffatable = Table.get_table()
     ffatable.mining = {}
-    ffatable.mining_entity = {}
     ffatable.mining_target = {}
 end
 

@@ -60,7 +60,6 @@ local function initialize_nauvis()
     --mgs.starting_points = {
     --	{x = 0, y = 0}
     --}
-    mgs.research_queue_from_the_start = 'always'
     -- here we put the named noise expressions for the specific noise-layer if we want to override them
     mgs.property_expression_names = {
         -- here we are overriding the moisture noise-layer with a fixed value of 0 to keep moisture consistently dry across the map
@@ -145,12 +144,12 @@ local function initialize_limbo()
     surface.clear(true)
 end
 
-
 function Public.initialize()
     -- difficulty settings
     game.difficulty_settings.recipe_difficulty = defines.difficulty_settings.recipe_difficulty.normal
     game.difficulty_settings.technology_difficulty = defines.difficulty_settings.technology_difficulty.normal
     game.difficulty_settings.technology_price_multiplier = 0.50
+    game.difficulty_settings.research_queue_from_the_start = 'always'
 
     -- pollution settings
     game.map_settings.pollution.enabled = true

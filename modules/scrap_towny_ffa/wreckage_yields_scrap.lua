@@ -6,9 +6,10 @@ local Scrap = require 'modules.scrap_towny_ffa.scrap'
 -- loot chances and amounts for scrap entities
 
 local entity_loot_chance = {
-    {name = 'advanced-circuit', chance = 15},
+    {name = 'advanced-circuit', chance = 10},
     --{name = "artillery-shell", chance = 1},
-    {name = 'battery', chance = 15},
+    {name = 'battery', chance = 10},
+    {name = 'coin', chance = 2},
     {name = 'cannon-shell', chance = 4},
     --{name = "cluster-grenade", chance = 2},
     {name = 'construction-robot', chance = 1},
@@ -26,6 +27,7 @@ local entity_loot_chance = {
     --{name = "explosive-rocket", chance = 3},
     --{name = "explosive-uranium-cannon-shell", chance = 1},
     {name = 'explosives', chance = 5},
+    {name = 'raw-fish', chance = 5},
     {name = 'green-wire', chance = 10},
     {name = 'grenade', chance = 10},
     {name = 'heat-pipe', chance = 1},
@@ -48,9 +50,12 @@ local entity_loot_chance = {
     --{name = "rocket", chance = 3},
     --{name = "rocket-control-unit", chance = 1},
     --{name = "rocket-fuel", chance = 3},
+    {name = 'solar-panel', chance = 5},
     {name = 'solid-fuel', chance = 100},
     {name = 'steel-plate', chance = 150},
+    {name = 'stone-wall', chance = 10},
     {name = 'sulfuric-acid-barrel', chance = 15},
+    {name = 'gun-turret', chance = 10},
     --{name = "uranium-cannon-shell", chance = 1},
     --{name = "uranium-fuel-cell", chance = 1},
     --{name = "used-up-uranium-fuel-cell", chance = 1},
@@ -64,6 +69,7 @@ local entity_loot_amounts = {
     ['advanced-circuit'] = 6,
     --["artillery-shell"] = 0.3,
     ['battery'] = 2,
+    ['coin'] = 50,
     ['cannon-shell'] = 4,
     --["cluster-grenade"] = 0.3,
     ['construction-robot'] = 0.3,
@@ -81,6 +87,7 @@ local entity_loot_amounts = {
     --["explosive-rocket"] = 2,
     --["explosive-uranium-cannon-shell"] = 2,
     ['explosives'] = 4,
+    ['raw-fish'] = 8,
     ['green-wire'] = 8,
     ['grenade'] = 6,
     ['heat-pipe'] = 1,
@@ -103,9 +110,12 @@ local entity_loot_amounts = {
     --["rocket"] = 2,
     --["rocket-control-unit"] = 0.3,
     --["rocket-fuel"] = 0.3,
+    ['solar-panel'] = 2,
     ['solid-fuel'] = 4,
     ['steel-plate'] = 4,
+    ['stone-wall'] = 5,
     ['sulfuric-acid-barrel'] = 3,
+    ['gun-turret'] = 1,
     --["uranium-cannon-shell"] = 2,
     --["uranium-fuel-cell"] = 0.3,
     --["used-up-uranium-fuel-cell"] = 1,
@@ -125,7 +135,7 @@ local size_of_scrap_raffle = #scrap_raffle
 
 local function on_player_mined_entity(event)
     local entity = event.entity
-    if not entity.valid then
+    if not entity or not entity.valid then
         return
     end
     local position = entity.position

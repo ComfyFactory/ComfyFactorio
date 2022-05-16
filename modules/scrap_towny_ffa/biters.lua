@@ -22,7 +22,7 @@ Global.register(
 local Table = require 'modules.scrap_towny_ffa.table'
 local Evolution = require 'modules.scrap_towny_ffa.evolution'
 
-local function get_commmands(target, group)
+local function get_attack_commands(target, group)
     local commands = {}
     local group_position = {x = group.position.x, y = group.position.y}
     local step_length = 128
@@ -60,6 +60,38 @@ local function get_commmands(target, group)
     commands[#commands + 1] = {
         type = defines.command.build_base,
         destination = target.position,
+        distraction = defines.distraction.by_damage
+    }
+
+    return commands
+end
+
+local function get_nesting_commands(target_position, group)
+    local commands = {}
+    local group_position = {x = group.position.x, y = group.position.y}
+    local step_length = 128
+
+    local distance_to_target = math_floor(math_sqrt((target_position.x - group_position.x) ^ 2 + (target_position.y - group_position.y) ^ 2))
+    local steps = math_floor((distance_to_target - 27) / step_length) + 1
+    local vector = {math_round((target_position.x - group_position.x) / steps, 3), math_round((target_position.y - group_position.y) / steps, 3)}
+
+    for _ = 1, steps, 1 do
+        group_position.x = group_position.x + vector[1]
+        group_position.y = group_position.y + vector[2]
+        local position = group.surface.find_non_colliding_position('small-biter', group_position, step_length, 2)
+        if position then
+            commands[#commands + 1] = {
+                type = defines.command.go_to_location,
+                destination = {x = position.x, y = position.y},
+                radius = 16,
+                distraction = defines.distraction.by_damage
+            }
+        end
+    end
+
+    commands[#commands + 1] = {
+        type = defines.command.build_base,
+        destination = target_position,
         distraction = defines.distraction.by_damage
     }
 
@@ -252,7 +284,7 @@ function Public.swarm(town_center, radius)
         {
             type = defines.command.compound,
             structure_type = defines.compound_command.return_last,
-            commands = get_commmands(market, unit_group)
+            commands = get_attack_commands(market, unit_group)
         }
     )
     table_insert(ffatable.swarms, {group = unit_group, timeout = game.tick + 36000})
@@ -261,11 +293,12 @@ end
 local function on_unit_group_finished_gathering(event)
     local unit_group = event.group
     local position = unit_group.position
+    local ffatable = Table.get_table()
     local entities = unit_group.surface.find_entities_filtered({position = position, radius = 256, name = 'market'})
     local target = entities[1]
     if target ~= nil then
+        -- if there is a nearby town, attack it
         local force = target.force
-        local ffatable = Table.get_table()
         local town_centers = ffatable.town_centers
         local town_center = town_centers[force.name]
         -- cancel if relatively new town
@@ -276,9 +309,27 @@ local function on_unit_group_finished_gathering(event)
             {
                 type = defines.command.compound,
                 structure_type = defines.compound_command.return_last,
-                commands = get_commmands(target, unit_group)
+                commands = get_attack_commands(target, unit_group)
             }
         )
+    else
+        -- if there is fish, create a spawner
+        if not ffatable.fish_mounds then
+            ffatable.fish_mounds = {}
+            return
+        end
+        local fish_mounds = ffatable.fish_mounds
+        if #fish_mounds > 0 then
+            local target_position = {x = fish_mounds[1].x, y = fish_mounds[1].y}
+            unit_group.set_command(
+                    {
+                        type = defines.command.compound,
+                        structure_type = defines.compound_command.return_last,
+                        commands = get_nesting_commands(target_position, unit_group)
+                    }
+            )
+            table_remove(fish_mounds, 1)
+        end
     end
 end
 

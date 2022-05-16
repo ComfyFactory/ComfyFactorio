@@ -65,7 +65,7 @@ local upgrade_functions = {
         local position = player.position
         position = surface.find_non_colliding_position('character', position, 0, 0.25)
         if position ~= nil and player ~= nil then
-            ffatable.spawn_point[player.name] = {x = position.x, y = position.y}
+            ffatable.spawn_point[player.index] = {x = position.x, y = position.y}
             surface.play_sound({path = 'utility/scenario_message', position = player.position, volume_modifier = 1})
         else
             surface.create_entity(

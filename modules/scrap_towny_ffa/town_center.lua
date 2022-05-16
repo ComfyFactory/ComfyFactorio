@@ -107,17 +107,9 @@ for _, vector in pairs(additional_resource_vectors[3]) do
     table_insert(additional_resource_vectors[4], {vector[1], vector[2] * -1})
 end
 
---local clear_whitelist_types = {
---    ['character'] = true,
---    ['market'] = true,
---    ['simple-entity'] = true,
---    ['simple-entity-with-owner'] = true,
---    ['container'] = true,
---    ['car'] = true,
---    ['resource'] = true,
---    ['cliff'] = true,
---    ['tree'] = true
---}
+local clear_entities = {
+    ['cliff'] = true,
+}
 
 local starter_supplies = {
     {name = 'raw-fish', count = 3},
@@ -144,34 +136,35 @@ local function count_nearby_ore(surface, position, ore_name)
     return count
 end
 
-local function draw_town_spawn(player_name)
+local function draw_town_spawn(force_name)
     local ffatable = Table.get_table()
-    local market = ffatable.town_centers[player_name].market
+    local town_center = ffatable.town_centers[force_name]
+    local market = town_center.market
     local position = market.position
     local surface = market.surface
 
-    --local area = {{position.x - (town_radius + 1), position.y - (town_radius + 1)}, {position.x + (town_radius + 1), position.y + (town_radius + 1)}}
+    local area = {{position.x - (town_radius + 1), position.y - (town_radius + 1)}, {position.x + (town_radius + 1), position.y + (town_radius + 1)}}
 
-    -- remove other than cliffs, rocks and ores and trees
-    --for _, e in pairs(surface.find_entities_filtered({area = area, force = 'neutral'})) do
-    --    if not clear_whitelist_types[e.type] then
-    --        e.destroy()
-    --    end
-    --end
+    -- remove cliffs
+    for _, e in pairs(surface.find_entities_filtered({area = area, force = 'neutral'})) do
+        if clear_entities[e.type] then
+            e.destroy()
+        end
+    end
 
     -- create walls
     for _, vector in pairs(gate_vectors_horizontal) do
         local p = {position.x + vector[1], position.y + vector[2]}
         --p = surface.find_non_colliding_position("gate", p, 64, 1)
         if p then
-            surface.create_entity({name = 'gate', position = p, force = player_name, direction = 2})
+            surface.create_entity({name = 'gate', position = p, force = force_name, direction = 2})
         end
     end
     for _, vector in pairs(gate_vectors_vertical) do
         local p = {position.x + vector[1], position.y + vector[2]}
         --p = surface.find_non_colliding_position("gate", p, 64, 1)
         if p then
-            surface.create_entity({name = 'gate', position = p, force = player_name, direction = 0})
+            surface.create_entity({name = 'gate', position = p, force = force_name, direction = 0})
         end
     end
 
@@ -179,7 +172,7 @@ local function draw_town_spawn(player_name)
         local p = {position.x + vector[1], position.y + vector[2]}
         --p = surface.find_non_colliding_position("stone-wall", p, 64, 1)
         if p then
-            surface.create_entity({name = 'stone-wall', position = p, force = player_name})
+            surface.create_entity({name = 'stone-wall', position = p, force = force_name})
         end
     end
 
@@ -206,7 +199,7 @@ local function draw_town_spawn(player_name)
         local p = {position.x + m1, position.y + m2}
         p = surface.find_non_colliding_position('wooden-chest', p, 64, 1)
         if p then
-            local e = surface.create_entity({name = 'iron-chest', position = p, force = player_name})
+            local e = surface.create_entity({name = 'iron-chest', position = p, force = force_name})
             local inventory = e.get_inventory(defines.inventory.chest)
             inventory.insert(item_stack)
         end
@@ -234,6 +227,7 @@ local function draw_town_spawn(player_name)
         local x = position.x + vector[1]
         local y = position.y + vector[2]
         local p = {x = x, y = y}
+        surface.destroy_decoratives({position = p})
         if surface.get_tile(p).name ~= 'out-of-map' then
             surface.set_tiles({{name = 'water-shallow', position = p}})
         end

@@ -172,7 +172,7 @@ function Public.get_new_spawn_point(player, surface)
         end
     end
     -- should never be invalid or blocked
-    ffatable.spawn_point[player.name] = position
+    ffatable.spawn_point[player.index] = position
     --log("player " .. player.name .. " assigned new spawn point at {" .. position.x .. "," .. position.y .. "}")
     return position
 end
@@ -180,9 +180,9 @@ end
 -- gets a new or existing spawn point for the player
 function Public.get_spawn_point(player, surface)
     local ffatable = Table.get_table()
-    local position = ffatable.spawn_point[player.name]
+    local position = ffatable.spawn_point[player.index]
     -- if there is a spawn point and less than three strikes
-    if position ~= nil and ffatable.strikes[player.name] < 3 then
+    if position ~= nil and ffatable.strikes[player.index] < 3 then
         -- check that the spawn point is not blocked
         if surface.can_place_entity({name = 'character', position = position}) then
             --log("player " .. player.name .. "using existing spawn point at {" .. position.x .. "," .. position.y .. "}")

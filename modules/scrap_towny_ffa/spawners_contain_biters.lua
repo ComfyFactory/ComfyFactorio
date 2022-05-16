@@ -20,7 +20,7 @@ local function on_entity_died(event)
     if not event.entity.valid then
         return
     end
-    if event.entity.type ~= 'unit-spawner' then
+    if event.entity.name ~= 'biter-spawner' then
         return
     end
     local e = math.ceil(Evolution.get_biter_evolution(event.entity) * 10)
