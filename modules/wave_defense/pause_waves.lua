@@ -69,8 +69,7 @@ function Public.main_gui(player, text)
         inside_table.add(
         {
             type = 'label',
-            caption = 'We have played for ' ..
-                Server.format_time(game.ticks_played) .. ' now.\nIf you want to take a quick break,\nplease vote to pause the waves for 5 minutes.'
+            caption = 'We have played for ' .. Server.format_time(game.ticks_played) .. ' now.\nIf you want to take a quick break,\nplease vote to pause the waves for 5 minutes.'
         }
     )
     local info_sub_style = info_sub.style
@@ -115,13 +114,30 @@ local function pause_waves_state(state)
     if state then
         game.print('[color=blue][Wave Defense][/color] New waves will not spawn for 5 minutes!', {r = 0.98, g = 0.66, b = 0.22})
         Public.set('paused', true)
+        Public.set('last_pause', game.tick)
+        Public.set('paused_waves_for', game.tick + 18000)
+
+        local next_wave = Public.get('next_wave')
+        Public.set('next_wave', next_wave + 18000)
     else
         game.print('[color=blue][Wave Defense][/color] Waves will spawn normally again.', {r = 0.98, g = 0.66, b = 0.22})
         Public.set('paused', false)
+        Public.set('paused_waves_for', nil)
+        Public.set('last_pause', nil)
     end
 end
 
 local pause_waves_state_token = Token.register(pause_waves_state)
+
+function Public.toggle_pause_wave()
+    local greeting = random_greetings[random(1, random_greetings_size)]
+
+    local players = game.connected_players
+    for i = 1, #players do
+        local player = players[i]
+        Public.display_pause_wave(player, greeting)
+    end
+end
 
 Gui.on_click(
     save_button_name,
@@ -200,12 +216,38 @@ Event.on_nth_tick(
             return
         end
 
-        local greeting = random_greetings[random(1, random_greetings_size)]
+        if Server.format_time(game.ticks_played) == 0 then
+            return
+        end
 
-        local players = game.connected_players
-        for i = 1, #players do
-            local player = players[i]
-            Public.display_pause_wave(player, greeting)
+        local paused = Public.get('paused')
+        if paused then
+            return
+        end
+
+        Public.toggle_pause_wave()
+    end
+)
+
+commands.add_command(
+    'wave_defense_pause_waves',
+    'Usable only for admins - pauses the wave defense waves!',
+    function()
+        local player = game.player
+
+        if player and player.valid then
+            if not player.admin then
+                return
+            end
+
+            local paused = Public.get('paused')
+            if paused then
+                return
+            end
+
+            print('[Wave Defense] ' .. player.name .. ' paused wave defense.')
+
+            Public.toggle_pause_wave()
         end
     end
 )

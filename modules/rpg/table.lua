@@ -1,20 +1,22 @@
 -- one table to rule them all!
 local Global = require 'utils.global'
-local Spells = require 'modules.rpg.spells'
 local Event = require 'utils.event'
 local Gui = require 'utils.gui'
 
 local this = {
     rpg_extra = {},
-    rpg_t = {},
-    rpg_spells = Spells.conjure_items()
+    rpg_t = {}
 }
 
 --! Gui Frames
 local settings_frame_name = Gui.uid_name()
+local settings_tooltip_frame = Gui.uid_name()
+local close_settings_tooltip_frame = Gui.uid_name()
+local settings_tooltip_name = Gui.uid_name()
 local save_button_name = Gui.uid_name()
 local discard_button_name = Gui.uid_name()
 local draw_main_frame_name = Gui.uid_name()
+local close_main_frame_name = Gui.uid_name()
 local main_frame_name = Gui.uid_name()
 local settings_button_name = Gui.uid_name()
 local spell_gui_button_name = Gui.uid_name()
@@ -43,8 +45,7 @@ end
 Public.gui_settings_levels = {
     ['reset_text_label'] = 50,
     ['stone_path_label'] = 20,
-    ['one_punch_label'] = 30,
-    ['flameboots_label'] = 100,
+    ['aoe_punch_label'] = 30,
     ['explosive_bullets_label'] = 50
 }
 
@@ -104,7 +105,6 @@ function Public.reset_table()
     this.rpg_extra.enable_mana = false
     this.rpg_extra.mana_limit = 100000
     this.rpg_extra.enable_wave_defense = false
-    this.rpg_extra.enable_flame_boots = false
     this.rpg_extra.enable_explosive_bullets = false
     this.rpg_extra.enable_explosive_bullets_globally = false
     this.rpg_extra.enable_range_buffs = false
@@ -113,8 +113,8 @@ function Public.reset_table()
     this.rpg_extra.force_mana_per_tick = false
     this.rpg_extra.enable_stone_path = false
     this.rpg_extra.enable_auto_allocate = false
-    this.rpg_extra.enable_one_punch = true
-    this.rpg_extra.enable_one_punch_globally = false
+    this.rpg_extra.enable_aoe_punch = true
+    this.rpg_extra.enable_aoe_punch_globally = false
     this.rpg_extra.disable_get_heal_modifier_from_using_fish = false
     this.rpg_extra.tweaked_crafting_items = {
         ['red-wire'] = true,
@@ -150,7 +150,7 @@ function Public.reset_table()
 end
 
 --- Gets value from table
----@param key <string>
+---@param key string
 function Public.get(key)
     if key then
         return this[key]
@@ -160,8 +160,8 @@ function Public.get(key)
 end
 
 --- Gets value from player rpg_t table
----@param key <string>
----@param value <string>
+---@param key string
+---@param value string
 function Public.get_value_from_player(key, value)
     if key and value then
         if (this.rpg_t[key] and this.rpg_t[key][value]) then
@@ -179,9 +179,9 @@ function Public.get_value_from_player(key, value)
 end
 
 --- Sets value to player rpg_t table
----@param key <string>
----@param value <string>
----@param setter <string>
+---@param key string
+---@param value string
+---@param setter string
 function Public.set_value_to_player(key, value, setter)
     if key and value then
         if (this.rpg_t[key] and this.rpg_t[key][value]) then
@@ -193,8 +193,8 @@ function Public.set_value_to_player(key, value, setter)
 end
 
 --- Sets a new table to rpg_t table
----@param key <string>
----@param tbl <string>
+---@param key string
+---@param tbl string
 function Public.set_new_player_tbl(key, tbl)
     if key and tbl then
         if type(tbl) ~= 'table' then
@@ -207,7 +207,7 @@ function Public.set_new_player_tbl(key, tbl)
 end
 
 --- Removes a player from rpg_t table
----@param key <LuaPlayerIndex>
+---@param index number
 function Public.remove_player(index)
     if index then
         if this.rpg_t[index] then
@@ -217,7 +217,7 @@ function Public.remove_player(index)
 end
 
 --- Sets value to table
----@param key <string>
+---@param key string
 function Public.set(key)
     if key then
         return this[key]
@@ -238,18 +238,18 @@ function Public.toggle_debug()
 end
 
 --- Toggle debug - when you need to troubleshoot.
-function Public.toggle_debug_one_punch()
-    if this.rpg_extra.debug_one_punch then
-        this.rpg_extra.debug_one_punch = false
+function Public.toggle_debug_aoe_punch()
+    if this.rpg_extra.debug_aoe_punch then
+        this.rpg_extra.debug_aoe_punch = false
     else
-        this.rpg_extra.debug_one_punch = true
+        this.rpg_extra.debug_aoe_punch = true
     end
 
-    return this.rpg_extra.debug_one_punch
+    return this.rpg_extra.debug_aoe_punch
 end
 
 --- Debug only - when you need to troubleshoot.
----@param str <string>
+---@param str string
 function Public.debug_log(str)
     if not this.rpg_extra.debug then
         return
@@ -258,7 +258,7 @@ function Public.debug_log(str)
 end
 
 --- Sets surface name for rpg_v2 to use
----@param name <string>
+---@param name string
 function Public.set_surface_name(name)
     if name then
         this.rpg_extra.surface_name = name
@@ -271,7 +271,7 @@ end
 
 --- Enables the bars that shows above the player character.
 --- If you disable mana but enable <enable_health_and_mana_bars> then only health will be shown
----@param value <boolean>
+---@param value boolean
 function Public.enable_health_and_mana_bars(value)
     this.rpg_extra.enable_health_and_mana_bars = value or false
 
@@ -279,7 +279,7 @@ function Public.enable_health_and_mana_bars(value)
 end
 
 --- Enables the mana feature that allows players to spawn entities.
----@param value <boolean>
+---@param value boolean
 function Public.enable_mana(value)
     this.rpg_extra.enable_mana = value or false
 
@@ -288,23 +288,15 @@ end
 
 --- This should only be enabled if wave_defense is enabled.
 --- It boosts the amount of xp the players get after x amount of waves.
----@param value <boolean>
+---@param value boolean
 function Public.enable_wave_defense(value)
     this.rpg_extra.enable_wave_defense = value or false
 
     return this.rpg_extra.enable_wave_defense
 end
 
---- Enables/disabled flame boots.
----@param value <boolean>
-function Public.enable_flame_boots(value)
-    this.rpg_extra.enable_flame_boots = value or false
-
-    return this.rpg_extra.enable_flame_boots
-end
-
 --- Enables/disabled explosive bullets globally.
----@param value <boolean>
+---@param value boolean
 function Public.enable_explosive_bullets_globally(value)
     this.rpg_extra.enable_explosive_bullets_globally = value or false
 
@@ -322,7 +314,7 @@ function Public.get_explosive_bullets()
 end
 
 --- Enables/disabled explosive bullets.
----@param value <boolean>
+---@param value boolean
 function Public.enable_explosive_bullets(value)
     this.rpg_extra.enable_explosive_bullets = value or false
 
@@ -335,7 +327,7 @@ function Public.get_range_buffs()
 end
 
 --- Enables/disabled range buffs.
----@param value <boolean>
+---@param value boolean
 function Public.enable_range_buffs(value)
     this.rpg_extra.enable_range_buffs = value or false
 
@@ -343,7 +335,7 @@ function Public.enable_range_buffs(value)
 end
 
 --- Enables/disabled personal tax.
----@param value <boolean>
+---@param value boolean
 function Public.personal_tax_rate(value)
     this.rpg_extra.personal_tax_rate = value or false
 
@@ -351,7 +343,7 @@ function Public.personal_tax_rate(value)
 end
 
 --- Enables/disabled stone-path-tile creation on mined.
----@param value <boolean>
+---@param value boolean
 function Public.enable_stone_path(value)
     this.rpg_extra.enable_stone_path = value or false
 
@@ -359,141 +351,27 @@ function Public.enable_stone_path(value)
 end
 
 --- Enables/disabled auto-allocations of skill-points.
----@param value <boolean>
+---@param value boolean
 function Public.enable_auto_allocate(value)
     this.rpg_extra.enable_auto_allocate = value or false
 
     return this.rpg_extra.enable_auto_allocate
 end
 
---- Enables/disabled stone-path-tile creation on mined.
----@param value <boolean>
-function Public.enable_one_punch(value)
-    this.rpg_extra.enable_one_punch = value or false
+--- Enables/disabled aoe_punch.
+---@param value boolean
+function Public.enable_aoe_punch(value)
+    this.rpg_extra.enable_aoe_punch = value or false
 
-    return this.rpg_extra.enable_one_punch
+    return this.rpg_extra.enable_aoe_punch
 end
 
---- Enables/disabled stone-path-tile creation on mined.
----@param value <boolean>
-function Public.enable_one_punch_globally(value)
-    this.rpg_extra.enable_one_punch_globally = value or false
+--- Enables/disabled aoe_punch.
+---@param value boolean
+function Public.enable_aoe_punch_globally(value)
+    this.rpg_extra.enable_aoe_punch_globally = value or false
 
-    return this.rpg_extra.enable_one_punch_globally
-end
-
---- Retrieves the spells table or a given spell.
----@param key <string>
-function Public.get_spells(key)
-    if this.rpg_spells[key] then
-        return this.rpg_spells[key]
-    else
-        return this.rpg_spells
-    end
-end
-
---- Disables a spell.
----@param key <string/table>
--- Table would look like:
--- Public.disable_spell({1, 2, 3, 4, 5, 6, 7, 8})
-function Public.disable_spell(key)
-    if type(key) == 'table' then
-        for _, k in pairs(key) do
-            this.rpg_spells[k].enabled = false
-        end
-    elseif this.rpg_spells[key] then
-        this.rpg_spells[key].enabled = false
-    end
-end
-
---- Clears the spell table.
-function Public.clear_spell_table()
-    this.rpg_spells = {}
-end
-
---- Adds a spell to the rpg_spells
----@param tbl <table>
-function Public.set_new_spell(tbl)
-    if tbl then
-        if not tbl.name then
-            return error('A spell requires a name. <string>', 2)
-        end
-        if not tbl.entityName then
-            return error('A spell requires an object to create. <string>', 2)
-        end
-        if not tbl.target then
-            return error('A spell requires position. <boolean>', 2)
-        end
-        if not tbl.amount then
-            return error('A spell requires an amount of creation. <integer>', 2)
-        end
-        if not tbl.range then
-            return error('A spell requires a range. <integer>', 2)
-        end
-        if not tbl.damage then
-            return error('A spell requires damage. <damage-area=true/false>', 2)
-        end
-        if not tbl.force then
-            return error('A spell requires a force. <string>', 2)
-        end
-        if not tbl.level then
-            return error('A spell requires a level. <integer>', 2)
-        end
-        if not tbl.type then
-            return error('A spell requires a type. <item/entity/special>', 2)
-        end
-        if not tbl.mana_cost then
-            return error('A spell requires mana_cost. <integer>', 2)
-        end
-        if not tbl.tick then
-            return error('A spell requires tick. <integer>', 2)
-        end
-        if not tbl.enabled then
-            return error('A spell requires enabled. <boolean>', 2)
-        end
-
-        this.rpg_spells[#this.rpg_spells + 1] = tbl
-    end
-end
-
---- This rebuilds all spells. Make sure to make changes on_init if you don't
---  want all spells enabled.
-function Public.rebuild_spells(rebuild)
-    local spells = this.rpg_spells
-
-    local new_spells = {}
-    local spell_names = {}
-
-    for i = 1, #spells do
-        if spells[i].enabled then
-            new_spells[#new_spells + 1] = spells[i]
-            spell_names[#spell_names + 1] = spells[i].name
-        end
-    end
-
-    if rebuild then
-        this.rpg_spells = new_spells
-    end
-
-    return new_spells, spell_names
-end
-
---- This will disable the cooldown of all spells.
-function Public.disable_cooldowns_on_spells()
-    local spells = this.rpg_spells
-
-    local new_spells = {}
-
-    for i = 1, #spells do
-        if spells[i].enabled then
-            spells[i].tick = 0
-            new_spells[#new_spells + 1] = spells[i]
-        end
-    end
-
-    this.rpg_spells = new_spells
-
-    return new_spells
+    return this.rpg_extra.enable_aoe_punch_globally
 end
 
 function Public.tweaked_crafting_items(tbl)
@@ -510,11 +388,14 @@ function Public.tweaked_crafting_items(tbl)
     return this.tweaked_crafting_items
 end
 
-Public.get_projectiles = Spells.projectile_types
 Public.settings_frame_name = settings_frame_name
+Public.settings_tooltip_frame = settings_tooltip_frame
+Public.close_settings_tooltip_frame = close_settings_tooltip_frame
+Public.settings_tooltip_name = settings_tooltip_name
 Public.save_button_name = save_button_name
 Public.discard_button_name = discard_button_name
 Public.draw_main_frame_name = draw_main_frame_name
+Public.close_main_frame_name = close_main_frame_name
 Public.main_frame_name = main_frame_name
 Public.settings_button_name = settings_button_name
 Public.spell_gui_button_name = spell_gui_button_name

@@ -13,8 +13,8 @@ local Discord = require 'utils.discord'
 local IC = require 'maps.mountain_fortress_v3.ic.table'
 local ICMinimap = require 'maps.mountain_fortress_v3.ic.minimap'
 local Autostash = require 'modules.autostash'
-local Group = require 'comfy_panel.group'
-local PL = require 'comfy_panel.player_list'
+local Group = require 'utils.gui.group'
+local PL = require 'utils.gui.player_list'
 local CS = require 'maps.mountain_fortress_v3.surface'
 local Server = require 'utils.server'
 local Explosives = require 'modules.explosives'
@@ -29,14 +29,14 @@ local Event = require 'utils.event'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local Locomotive = require 'maps.mountain_fortress_v3.locomotive'
 local SpawnLocomotive = require 'maps.mountain_fortress_v3.locomotive.spawn_locomotive'
-local Score = require 'comfy_panel.score'
-local Poll = require 'comfy_panel.poll'
+local Score = require 'utils.gui.score'
+local Poll = require 'utils.gui.poll'
 local Collapse = require 'modules.collapse'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Alert = require 'utils.alert'
-local BottomFrame = require 'comfy_panel.bottom_frame'
+local BottomFrame = require 'utils.gui.bottom_frame'
 local AntiGrief = require 'utils.antigrief'
 local Misc = require 'utils.commands.misc'
 local Modifiers = require 'utils.player_modifiers'
@@ -74,6 +74,7 @@ local Public = {}
 local raise_event = script.raise_event
 local floor = math.floor
 local remove = table.remove
+RPG.disable_cooldowns_on_spells()
 
 local collapse_kill = {
     entities = {
@@ -81,7 +82,7 @@ local collapse_kill = {
         ['flamethrower-turret'] = true,
         ['gun-turret'] = true,
         ['artillery-turret'] = true,
-        ['landmine'] = true,
+        ['land-mine'] = true,
         ['locomotive'] = true,
         ['cargo-wagon'] = true,
         ['character'] = true,
@@ -171,14 +172,12 @@ function Public.reset_map()
     RPG.enable_health_and_mana_bars(true)
     RPG.enable_wave_defense(true)
     RPG.enable_mana(true)
-    RPG.enable_flame_boots(true)
     RPG.personal_tax_rate(0.4)
     RPG.enable_stone_path(true)
-    RPG.enable_one_punch(true)
-    RPG.enable_one_punch_globally(false)
+    RPG.enable_aoe_punch(true)
+    RPG.enable_aoe_punch_globally(false)
     RPG.enable_range_buffs(true)
     RPG.enable_auto_allocate(true)
-    RPG.disable_cooldowns_on_spells()
     RPG.enable_explosive_bullets_globally(true)
     RPG.enable_explosive_bullets(false)
     RPG_Progression.toggle_module(false)
@@ -252,9 +251,9 @@ function Public.reset_map()
     Collapse.set_kill_specific_entities(collapse_kill)
     Collapse.set_speed(8)
     Collapse.set_amount(1)
-    -- Collapse.set_max_line_size(WPT.level_width)
+    -- Collapse.set_max_line_size(zone_settings.zone_width)
     Collapse.set_max_line_size(540)
-    Collapse.set_surface(surface)
+    Collapse.set_surface_index(surface.index)
     Collapse.set_position({0, 130})
     Collapse.set_direction('north')
     Collapse.start_now(false)
@@ -313,7 +312,8 @@ end
 
 local is_player_valid = function()
     local players = game.connected_players
-    for _, player in pairs(players) do
+    for i = 1, #players do
+        local player = players[i]
         if player.connected and player.controller_type == 2 then
             player.set_controller {type = defines.controllers.god}
             player.create_character()
@@ -467,9 +467,11 @@ end
 local on_tick = function()
     local update_gui = Gui_mf.update_gui
     local tick = game.tick
+    local players = game.connected_players
 
     if tick % 40 == 0 then
-        for _, player in pairs(game.connected_players) do
+        for i = 1, #players do
+            local player = players[i]
             update_gui(player)
         end
         lock_locomotive_positions()
@@ -494,7 +496,6 @@ local on_tick = function()
 end
 
 local on_init = function()
-    local this = WPT.get()
     Public.reset_map()
 
     game.map_settings.path_finder.general_entity_collision_penalty = 10 -- Recommended value
@@ -507,11 +508,6 @@ local on_init = function()
     }
 
     Difficulty.set_tooltip(tooltip)
-
-    this.rocks_yield_ore_maximum_amount = 500
-    this.type_modifier = 1
-    this.rocks_yield_ore_base_amount = 40
-    this.rocks_yield_ore_distance_modifier = 0.020
 
     local T = Map.Pop_info()
     T.localised_category = 'mountain_fortress_v3'

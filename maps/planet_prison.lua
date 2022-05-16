@@ -838,15 +838,7 @@ local function on_gui_click(e)
         return
     end
 
-    if elem.name == 'comfy_panel_top_button' then
-        if not p.admin then
-            if p.gui.left['comfy_panel'] and p.gui.left['comfy_panel'].valid then
-                p.gui.left['comfy_panel'].destroy()
-            end
-            redraw_gui(p)
-            return p.print('Comfy panel is disabled in this scenario.', Color.fail)
-        end
-    elseif elem.name == 'chat_toggle' then
+    if elem.name == 'chat_toggle' then
         if perks.chat_global then
             elem.caption = 'NAP chat'
             perks.chat_global = false

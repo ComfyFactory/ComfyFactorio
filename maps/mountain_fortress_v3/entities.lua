@@ -7,14 +7,13 @@ local Loot = require 'maps.mountain_fortress_v3.loot'
 local RPG = require 'modules.rpg.main'
 local Callbacks = require 'maps.mountain_fortress_v3.functions'
 local Mining = require 'maps.mountain_fortress_v3.mining'
-local Terrain = require 'maps.mountain_fortress_v3.terrain'
 local Traps = require 'maps.mountain_fortress_v3.traps'
 local Locomotive = require 'maps.mountain_fortress_v3.locomotive'
 local DefenseSystem = require 'maps.mountain_fortress_v3.locomotive.defense_system'
 local Collapse = require 'modules.collapse'
 local Alert = require 'utils.alert'
 local Task = require 'utils.task'
-local Score = require 'comfy_panel.score'
+local Score = require 'utils.gui.score'
 local Token = require 'utils.token'
 -- local HS = require 'maps.mountain_fortress_v3.highscore'
 local Discord = require 'utils.discord'
@@ -26,6 +25,7 @@ local RPG_Progression = require 'utils.datastore.rpg_data'
 -- tables
 local WPT = require 'maps.mountain_fortress_v3.table'
 local WD = require 'modules.wave_defense.table'
+local zone_settings = WPT.zone_settings
 
 -- module
 local Public = {}
@@ -245,11 +245,9 @@ local function set_train_final_health(final_damage_amount, repair)
                 local carriages = WPT.get('carriages')
 
                 if carriages then
-                    for _ = 1, 10 do
-                        for i = 1, #carriages do
-                            local entity = carriages[i]
-                            DefenseSystem.enable_robotic_defense(entity.position)
-                        end
+                    for i = 1, #carriages do
+                        local entity = carriages[i]
+                        DefenseSystem.enable_robotic_defense(entity.position)
                     end
                 end
                 local p = {
@@ -353,9 +351,13 @@ end
 
 local function hidden_treasure(player, entity)
     local rpg = RPG.get_value_from_player(player.index)
+    if not rpg then
+        return
+    end
+
     local magic = rpg.magicka
 
-    if magic > 50 then
+    if magic >= 50 then
         local msg = rare_treasure_chest_messages[random(1, #rare_treasure_chest_messages)]
         Alert.alert_player(player, 5, msg)
         Loot.add_rare(entity.surface, entity.position, 'wooden-chest', magic)
@@ -394,7 +396,7 @@ local function angry_tree(entity, cause, player)
         return
     end
 
-    if abs(entity.position.y) < Terrain.level_depth then
+    if abs(entity.position.y) < zone_settings.zone_depth then
         return
     end
     if random(1, 6) == 1 then
@@ -717,7 +719,7 @@ local mining_events = {
 
 local function on_player_mined_entity(event)
     local entity = event.entity
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
     if not player.valid then
         return
     end
@@ -946,7 +948,7 @@ local function on_player_repaired_entity(event)
     local carriages_numbers = WPT.get('carriages_numbers')
 
     if carriages_numbers[entity.unit_number] then
-        local player = game.players[event.player_index]
+        local player = game.get_player(event.player_index)
         local repair_speed = RPG.get_magicka(player)
         if repair_speed <= 0 then
             set_train_final_health(-1, true)
@@ -1153,8 +1155,7 @@ local function show_mvps(player)
         local miners_label = t.add({type = 'label', caption = 'Miners >> '})
         miners_label.style.font = 'default-listbox'
         miners_label.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
-        local miners_label_text =
-            t.add({type = 'label', caption = mvp.mined_entities.name .. ' mined a total of  ' .. mvp.mined_entities.score .. ' entities!'})
+        local miners_label_text = t.add({type = 'label', caption = mvp.mined_entities.name .. ' mined a total of  ' .. mvp.mined_entities.score .. ' entities!'})
         miners_label_text.style.font = 'default-bold'
         miners_label_text.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 
@@ -1394,6 +1395,26 @@ local function on_built_entity(event)
         return
     end
 
+    local position = entity.position
+    local player = game.get_player(event.player_index)
+
+    if entity.name == 'radar' then
+        if entity.surface.count_entities_filtered({type = 'radar', position = position, radius = 64}) > 1 then
+            player.surface.create_entity(
+                {
+                    name = 'flying-text',
+                    position = entity.position,
+                    text = ({'entity.radar_limit'}),
+                    color = {255, 0, 0}
+                }
+            )
+
+            player.surface.spill_item_stack(position, {name = entity.name, count = 1, true})
+            entity.destroy()
+            return
+        end
+    end
+
     local valid_drills = {
         ['burner-mining-drill'] = true,
         ['electric-mining-drill'] = true
@@ -1453,7 +1474,6 @@ local function on_built_entity(event)
 
                 upgrades.showed_text = true
             end
-            local player = game.players[event.player_index]
             player.insert({name = entity.name, count = 1})
             entity.destroy()
         end
@@ -1470,6 +1490,25 @@ local function on_robot_built_entity(event)
 
     if string.sub(entity.surface.name, 0, #map_name) ~= map_name then
         return
+    end
+
+    local position = entity.position
+
+    if entity.name == 'radar' then
+        if entity.surface.count_entities_filtered({type = 'radar', position = position, radius = 64}) > 1 then
+            entity.surface.create_entity(
+                {
+                    name = 'flying-text',
+                    position = entity.position,
+                    text = ({'entity.radar_limit'}),
+                    color = {255, 0, 0}
+                }
+            )
+
+            entity.surface.spill_item_stack(position, {name = entity.name, count = 1, true})
+            entity.destroy()
+            return
+        end
     end
 
     local valid_drills = {

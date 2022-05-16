@@ -61,8 +61,7 @@ globals = {
     'is_loaded',
     'is_game_modded',
     'is_mod_loaded',
-    'require',
-    'comfy_panel_tabs'
+    'require'
 }
 max_line_length = LINE_LENGTH
 
@@ -2010,7 +2009,7 @@ stds.factorio_defines = {
         }
     }
 }
- --))
+--))
 
 --[[ Options
     "ignore", "std", "globals", "unused_args", "self", "compat", "global", "unused", "redefined",

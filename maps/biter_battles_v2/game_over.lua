@@ -2,7 +2,7 @@
 local Functions = require 'maps.biter_battles_v2.functions'
 local Gui = require 'maps.biter_battles_v2.gui'
 local Init = require 'maps.biter_battles_v2.init'
-local Score = require 'comfy_panel.score'
+local Score = require 'utils.gui.score'
 local Server = require 'utils.server'
 local Discord = require 'utils.discord'
 

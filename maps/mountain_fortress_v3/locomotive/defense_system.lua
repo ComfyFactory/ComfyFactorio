@@ -87,10 +87,6 @@ function Public.enable_poison_defense(pos)
     end
     pos = pos or locomotive.position
     create_defense_system({x = pos.x, y = pos.y}, 'poison-cloud', pos)
-    if random(1, 4) == 1 then
-        local random_angles = {rad(random(344))}
-        create_defense_system({x = pos.x + 24 * cos(random_angles[1]), y = pos.y + -24 * sin(random_angles[1])}, 'poison-cloud', pos)
-    end
 end
 
 function Public.enable_robotic_defense(pos)
@@ -104,10 +100,6 @@ function Public.enable_robotic_defense(pos)
 
     pos = pos or locomotive.position
     create_defense_system({x = pos.x, y = pos.y}, 'destroyer-capsule', pos)
-    if random(1, 4) == 1 then
-        local random_angles = {rad(random(324))}
-        create_defense_system({x = pos.x + 24 * cos(random_angles[1]), y = pos.y + -24 * sin(random_angles[1])}, 'destroyer-capsule', pos)
-    end
 end
 
 return Public

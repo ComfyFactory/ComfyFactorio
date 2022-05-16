@@ -4,8 +4,8 @@
 local Global = require 'utils.global'
 local SpamProtection = require 'utils.spam_protection'
 local Event = require 'utils.event'
-local BottomFrame = require 'comfy_panel.bottom_frame'
-local ComfyGui = require 'comfy_panel.main'
+local BottomFrame = require 'utils.gui.bottom_frame'
+local ComfyGui = require 'utils.gui'
 local floor = math.floor
 local print_color = {r = 120, g = 255, b = 0}
 
@@ -58,6 +58,12 @@ local function prepare_floaty_text(list, surface, position, name, count)
 end
 
 local function chest_is_valid(chest)
+   if this.dungeons_initial_level ~= nil then
+       -- transport chests always are valid targets
+       if chest.name == 'blue-chest' or chest.name == 'red-chest' then
+	   return true
+       end
+    end
     for _, e in pairs(
         chest.surface.find_entities_filtered(
             {
@@ -232,6 +238,9 @@ local function insert_to_furnace(player_inventory, chests, name, count, floaty_t
                     if valid_to_insert then
                         if chest_inventory.can_insert({name = name, count = amount}) then
                             local inserted_count = chest_inventory.insert({name = name, count = amount})
+                            if inserted_count < 0 then
+                                return
+                            end
                             player_inventory.remove({name = name, count = inserted_count})
                             prepare_floaty_text(floaty_text_list, chest.surface, chest.position, name, inserted_count)
                             count = count - inserted_count
@@ -251,6 +260,9 @@ local function insert_to_furnace(player_inventory, chests, name, count, floaty_t
                 else
                     if chest_inventory.can_insert({name = name, count = amount}) then
                         local inserted_count = chest_inventory.insert({name = name, count = amount})
+                        if inserted_count < 0 then
+                            return
+                        end
                         player_inventory.remove({name = name, count = inserted_count})
                         prepare_floaty_text(floaty_text_list, chest.surface, chest.position, name, inserted_count)
                         count = count - inserted_count
@@ -279,6 +291,9 @@ local function insert_to_furnace(player_inventory, chests, name, count, floaty_t
             local chest_inventory = chest.get_inventory(defines.inventory.chest)
             if chest_inventory and chest_inventory.can_insert({name = name, count = amount}) then
                 local inserted_count = chest_inventory.insert({name = name, count = amount})
+                if inserted_count < 0 then
+                    return
+                end
                 player_inventory.remove({name = name, count = inserted_count})
                 prepare_floaty_text(floaty_text_list, chest.surface, chest.position, name, inserted_count)
                 count = count - inserted_count
@@ -676,6 +691,9 @@ function Public.bottom_button(value)
     end
 end
 
+function Public.set_dungeons_initial_level(value)
+   this.dungeons_initial_level = value
+end
 Event.on_configuration_changed(do_whitelist)
 
 Event.on_init(do_whitelist)

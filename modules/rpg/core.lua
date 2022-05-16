@@ -1,5 +1,8 @@
 local Public = require 'modules.rpg.table'
 
+local Spells = require 'modules.rpg.spells'
+Public.spells = Spells
+
 local Bullets = require 'modules.rpg.explosive_gun_bullets'
 Public.explosive_bullet = Bullets
 
@@ -14,9 +17,6 @@ Public.gui = Gui
 
 local Settings = require 'modules.rpg.settings'
 Public.settings = Settings
-
-local Spells = require 'modules.rpg.spells'
-Public.spells = Spells
 
 local Commands = require 'modules.rpg.commands'
 Public.commands = Commands

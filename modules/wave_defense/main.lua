@@ -118,7 +118,7 @@ local function remove_trees(entity)
     local area = {{pos.x - radius, pos.y - radius}, {pos.x + radius, pos.y + radius}}
     local trees = surface.find_entities_filtered {area = area, type = 'tree'}
     if #trees > 0 then
-        for i, tree in pairs(trees) do
+        for _, tree in pairs(trees) do
             if tree and tree.valid then
                 tree.destroy()
             end
@@ -136,7 +136,7 @@ local function remove_rocks(entity)
     local area = {{pos.x - radius, pos.y - radius}, {pos.x + radius, pos.y + radius}}
     local rocks = surface.find_entities_filtered {area = area, type = 'simple-entity'}
     if #rocks > 0 then
-        for i, rock in pairs(rocks) do
+        for _, rock in pairs(rocks) do
             if rock and rock.valid then
                 rock.destroy()
             end
@@ -294,7 +294,7 @@ local function get_random_close_spawner()
     local center = target.position
     local spawner
     local retries = 0
-    for i = 1, get_random_close_spawner_attempts, 1 do
+    for _ = 1, get_random_close_spawner_attempts, 1 do
         ::retry::
         if #generated_units.nests < 1 then
             return false
@@ -309,11 +309,7 @@ local function get_random_close_spawner()
             end
             goto retry
         end
-        if
-            not spawner or
-                (center.x - spawner_2.position.x) ^ 2 + (center.y - spawner_2.position.y) ^ 2 <
-                    (center.x - spawner.position.x) ^ 2 + (center.y - spawner.position.y) ^ 2
-         then
+        if not spawner or (center.x - spawner_2.position.x) ^ 2 + (center.y - spawner_2.position.y) ^ 2 < (center.x - spawner.position.x) ^ 2 + (center.y - spawner.position.y) ^ 2 then
             spawner = spawner_2
             if spawner and spawner.position then
                 debug_print('get_random_close_spawner - Found at x' .. spawner.position.x .. ' y' .. spawner.position.y)
@@ -365,9 +361,7 @@ local function set_main_target()
     end
 
     Public.set('target', sec_target)
-    debug_print(
-        'set_main_target -- New main target ' .. sec_target.name .. ' at position x' .. sec_target.position.x .. ' y' .. sec_target.position.y .. ' selected.'
-    )
+    debug_print('set_main_target -- New main target ' .. sec_target.name .. ' at position x' .. sec_target.position.x .. ' y' .. sec_target.position.y .. ' selected.')
 end
 
 local function set_group_spawn_position(surface)
@@ -644,7 +638,7 @@ local function reform_group(group)
     local position = group.surface.find_non_colliding_position('biter-spawner', group_position, step_length, 4)
     if position then
         local new_group = group.surface.create_unit_group {position = position, force = group.force}
-        for key, biter in pairs(group.members) do
+        for _, biter in pairs(group.members) do
             new_group.add_member(biter)
         end
         debug_print('Creating new unit group, because old one was stuck.')
@@ -684,7 +678,7 @@ local function get_side_targets(group)
     local distance_to_target = floor(sqrt((target_position.x - group_position.x) ^ 2 + (target_position.y - group_position.y) ^ 2))
     local steps = floor(distance_to_target / step_length) + 1
 
-    for i = 1, steps, 1 do
+    for _ = 1, steps, 1 do
         local old_position = group_position
         local obstacles =
             group.surface.find_entities_filtered {
@@ -740,7 +734,7 @@ local function get_main_command(group)
     debug_print('get_commmands - distance_to_target:' .. distance_to_target .. ' steps:' .. steps)
     debug_print('get_commmands - vector ' .. vector[1] .. '_' .. vector[2])
 
-    for i = 1, steps, 1 do
+    for _ = 1, steps, 1 do
         local old_position = group_position
         group_position.x = group_position.x + vector[1]
         group_position.y = group_position.y + vector[2]
@@ -887,7 +881,7 @@ local function give_side_commands_to_group()
     end
 
     local generated_units = Public.get('generated_units')
-    for k, group in pairs(generated_units.unit_groups) do
+    for _, group in pairs(generated_units.unit_groups) do
         if type(group) ~= 'number' then
             if group.valid then
                 command_to_side_target(group)
@@ -905,7 +899,7 @@ local function give_main_command_to_group()
     end
 
     local generated_units = Public.get('generated_units')
-    for k, group in pairs(generated_units.unit_groups) do
+    for _, group in pairs(generated_units.unit_groups) do
         if type(group) ~= 'number' then
             if group.valid then
                 if group.surface.index == target.surface.index then
@@ -958,7 +952,7 @@ local function spawn_unit_group(fs, only_bosses)
         left_top = {spawn_position.x - radius, spawn_position.y - radius},
         right_bottom = {spawn_position.x + radius, spawn_position.y + radius}
     }
-    for k, v in pairs(surface.find_entities_filtered {area = area, name = 'land-mine'}) do
+    for _, v in pairs(surface.find_entities_filtered {area = area, name = 'land-mine'}) do
         if v and v.valid then
             debug_print('spawn_unit_group - found land-mines')
             v.die()
@@ -1033,7 +1027,7 @@ local function check_group_positions()
         return
     end
 
-    for k, group in pairs(generated_units.unit_groups) do
+    for _, group in pairs(generated_units.unit_groups) do
         if group.valid then
             local ugp = generated_units.unit_group_pos.positions
             if group.state == defines.group_state.finished then
@@ -1095,8 +1089,13 @@ Event.on_nth_tick(
 
         local paused = Public.get('paused')
         if paused then
+            local players = game.connected_players
+            for _, player in pairs(players) do
+                Public.update_gui(player)
+            end
             return
         end
+
         local enable_grace_time = Public.get('enable_grace_time')
         if enable_grace_time and (not enable_grace_time.enabled) then
             if not enable_grace_time.set then
@@ -1114,10 +1113,10 @@ Event.on_nth_tick(
         local t2 = tick % 18000
 
         if tick_tasks[t] then
-            tick_tasks[t](true)
+            tick_tasks[t]()
         end
         if tick_tasks[t2] then
-            tick_tasks[t2](true)
+            tick_tasks[t2]()
         end
 
         local resolve_pathing = Public.get('resolve_pathing')
@@ -1163,5 +1162,7 @@ Event.on_nth_tick(
         spawn_unit_group()
     end
 )
+
+Public.set_next_wave = set_next_wave
 
 return Public

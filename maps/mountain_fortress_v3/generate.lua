@@ -19,6 +19,7 @@ local tiles_per_call = 8
 local total_calls = ceil(1024 / tiles_per_call)
 local regen_decoratives = false
 local generate_map = Terrain.heavy_functions
+local winter_mode = false
 local wintery_type = {
     ['simple-entity'] = true,
     ['tree'] = true,
@@ -299,7 +300,6 @@ local function do_place_buildings(data)
 end
 
 local function wintery(ent, extra_lights)
-    local winter_mode = WPT.get('winter_mode')
     if not winter_mode then
         return false
     end

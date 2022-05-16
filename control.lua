@@ -28,14 +28,14 @@ require 'modules.show_inventory'
 require 'modules.inserter_drops_pickup'
 require 'modules.autostash'
 
-require 'comfy_panel.main'
-require 'comfy_panel.player_list'
-require 'comfy_panel.admin'
-require 'comfy_panel.group'
-require 'comfy_panel.poll'
-require 'comfy_panel.score'
-require 'comfy_panel.config'
-require 'comfy_panel.server_select'
+require 'utils.gui'
+require 'utils.gui.player_list'
+require 'utils.gui.admin'
+require 'utils.gui.group'
+require 'utils.gui.score'
+require 'utils.gui.config'
+require 'utils.gui.poll'
+require 'utils.gui.server_select'
 require 'utils.freeplay'
 
 ---------------- !ENABLE MODULES HERE ----------------
@@ -109,6 +109,9 @@ require 'utils.freeplay'
 
 --![[Comfylatron has seized the Fish Train and turned it into a time machine]]--
 --require 'maps.chronosphere.main'
+
+--![[Adventure as a crew of pirates]]--
+--require 'maps.pirates.main'
 
 --![[Launch rockets in increasingly harder getting worlds.]]--
 --require 'maps.journey.main'
@@ -250,6 +253,10 @@ require 'utils.freeplay'
 --require 'terrain_layouts.tree_01'
 --require 'terrain_layouts.scrap_towny_ffa'
 ---------------------------------------------------------------
+
+--- this file exists only for the panel to sync and start from within the panel
+-- it does nothing if it's not synced from within the panel
+require 'map_loader'
 
 if _DUMP_ENV then
     require 'utils.dump_env'

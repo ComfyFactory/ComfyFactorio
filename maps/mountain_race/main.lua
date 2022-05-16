@@ -2,7 +2,7 @@
 require 'modules.biters_yield_ore'
 require 'modules.rocks_yield_ore_veins'
 
-local Map_score = require 'comfy_panel.map_score'
+local Map_score = require 'utils.gui.map_score'
 local Collapse = require 'modules.collapse'
 local Immersive_cargo_wagons = require 'modules.immersive_cargo_wagons.main'
 local Terrain = require 'maps.mountain_race.terrain'
@@ -136,9 +136,10 @@ local function init(mountain_race)
     Collapse.set_speed(8)
     Collapse.set_amount(0)
     Collapse.set_max_line_size(mountain_race.border_width + mountain_race.playfield_height * 2)
-    Collapse.set_surface(surface)
+    Collapse.set_surface_index(surface.index)
     Collapse.set_position({0, 0})
     Collapse.set_direction('east')
+    Collapse.start_now(true)
 
     game.reset_time_played()
 

@@ -123,7 +123,7 @@ commands.add_command(
 
 commands.add_command(
     'disable_biters',
-    'Usable only for admins - sets the queue speed of this map!',
+    'Usable only for admins - disables wave defense!',
     function()
         local player = game.player
 

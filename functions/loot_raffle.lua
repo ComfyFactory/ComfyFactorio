@@ -6,7 +6,6 @@ blacklist		-	optional list of item names that can not be rolled. example: {["sub
 ]]
 local Public = {}
 
-local table_shuffle_table = table.shuffle_table
 local table_insert = table.insert
 local math_random = math.random
 local math_floor = math.floor
@@ -407,18 +406,40 @@ local tech_tier_list = {
     'rocket-silo'
 }
 
+local function shuffle(tbl)
+    local size = #tbl
+    for i = size, 1, -1 do
+        local rand = math_random(size)
+        tbl[i], tbl[rand] = tbl[rand], tbl[i]
+    end
+    return tbl
+end
+
 local item_names = {}
 for k, _ in pairs(item_worths) do
     table_insert(item_names, k)
 end
 local size_of_item_names = #item_names
 
+function Public.TweakItemWorth(updates)
+    item_names = {}
+    for k, v in pairs(updates) do
+	item_worths[k] = v
+    end
+    item_names = {}
+    for k, _ in pairs(item_worths) do
+	table_insert(item_names, k)
+    end
+
+    size_of_item_names = #item_names
+end
+
 local function get_raffle_keys()
     local raffle_keys = {}
     for i = 1, size_of_item_names, 1 do
         raffle_keys[i] = i
     end
-    table_shuffle_table(raffle_keys)
+    shuffle(raffle_keys)
     return raffle_keys
 end
 

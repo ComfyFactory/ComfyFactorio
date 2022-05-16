@@ -72,6 +72,7 @@ local set_loco_tiles =
 
         local p = {}
 
+        ---@diagnostic disable-next-line: count-down-loop
         for x = position.x - 5, 1, 3 do
             for y = 1, position.y + 5, 2 do
                 if random(1, 4) == 1 then

@@ -239,10 +239,7 @@ commands.add_command(
         end
         if not this.creative_are_you_sure then
             this.creative_are_you_sure = true
-            player.print(
-                '[WARNING] This command will enable creative/cheat-mode for all connected players, run this command again if you really want to do this!',
-                Color.yellow
-            )
+            player.print('[WARNING] This command will enable creative/cheat-mode for all connected players, run this command again if you really want to do this!', Color.yellow)
             return
         end
         if this.creative_enabled then

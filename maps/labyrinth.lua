@@ -10,11 +10,11 @@ local Server = require 'utils.server'
 local Global = require 'utils.global'
 local map_functions = require 'tools.map_functions'
 local simplex_noise = require 'utils.simplex_noise'.d2
-local Score = require 'comfy_panel.score'
+local Score = require 'utils.gui.score'
 local unique_rooms = require 'maps.labyrinth_unique_rooms'
 local SoftReset = require 'functions.soft_reset'
 local Autostash = require 'modules.autostash'
-local BottomFrame = require 'comfy_panel.bottom_frame'
+local BottomFrame = require 'utils.gui.bottom_frame'
 local this = {
     settings = {
         labyrinth_size = 1,
@@ -517,10 +517,7 @@ local function grow_cell(chunk_position, surface) -- luacheck: ignore
                     end
                 end
             end
-            placed_enemies =
-                #entities_to_place.biters * 0.35 + #entities_to_place.spitters * 0.35 + #entities_to_place.enemy_buildings * 2 + #entities_to_place.worms * 3 +
-                #entities_to_place.gun_turrets * 3 +
-                #entities_to_place.allied_entities
+            placed_enemies = #entities_to_place.biters * 0.35 + #entities_to_place.spitters * 0.35 + #entities_to_place.enemy_buildings * 2 + #entities_to_place.worms * 3 + #entities_to_place.gun_turrets * 3 + #entities_to_place.allied_entities
         end
 
         for x = 0, 31, 1 do --luacheck: ignore
@@ -570,10 +567,7 @@ local function grow_cell(chunk_position, surface) -- luacheck: ignore
                                 table.insert(entities_to_place.spitters, {left_top_x + e.position.x, left_top_y + e.position.y})
                                 break
                             end
-                            table.insert(
-                                entities_to_place.misc,
-                                {name = e.name, position = {left_top_x + e.position.x, left_top_y + e.position.y}, direction = e.direction, force = e.force}
-                            )
+                            table.insert(entities_to_place.misc, {name = e.name, position = {left_top_x + e.position.x, left_top_y + e.position.y}, direction = e.direction, force = e.force})
                             break
                         end
                     end
@@ -1055,8 +1049,7 @@ local function on_entity_died(event)
         if game.forces.enemy.evolution_factor < 0.5 then
             local evolution_drop_modifier = (0.1 - game.forces.enemy.evolution_factor) * 10
             if evolution_drop_modifier > 0 then
-                local amount =
-                    math.ceil(math.random(entity_drop_amount[event.entity.name].low, entity_drop_amount[event.entity.name].high) * evolution_drop_modifier)
+                local amount = math.ceil(math.random(entity_drop_amount[event.entity.name].low, entity_drop_amount[event.entity.name].high) * evolution_drop_modifier)
                 event.entity.surface.spill_item_stack(event.entity.position, {name = ore_spill_raffle[math.random(1, #ore_spill_raffle)], count = amount}, true)
             end
         end
@@ -1291,8 +1284,7 @@ local function on_built_entity(event)
                 if get_score then
                     if get_score[player.force.name] then
                         if get_score[player.force.name].players[player.name] then
-                            get_score[player.force.name].players[player.name].built_entities =
-                                get_score[player.force.name].players[player.name].built_entities - 1
+                            get_score[player.force.name].players[player.name].built_entities = get_score[player.force.name].players[player.name].built_entities - 1
                         end
                     end
                 end

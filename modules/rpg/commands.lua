@@ -122,7 +122,7 @@ commands.add_command(
             player.play_sound {path = 'utility/scenario_message', volume_modifier = 1}
             player.print(msg)
         else
-            player.print('Please type a name of a player who is connected.', Color.warning)
+            player.print('[Stats] Please type a name of a player who is connected.', Color.warning)
         end
     end
 )
@@ -171,7 +171,7 @@ if _DEBUG then
     )
 
     commands.add_command(
-        'rpg_debug_one_punch',
+        'rpg_debug_aoe_punch',
         '',
         function()
             local player = game.player
@@ -184,7 +184,7 @@ if _DEBUG then
                 return
             end
 
-            Public.toggle_debug_one_punch()
+            Public.toggle_debug_aoe_punch()
         end
     )
 
@@ -212,7 +212,7 @@ if _DEBUG then
                 data[k].mana = 50000
                 data[k].mana_max = 50000
                 data[k].debug_mode = true
-                data[k].one_punch = true
+                data[k].aoe_punch = true
                 data[k].stone_path = true
                 data[k].strength = 3000
                 data[k].vitality = 3000

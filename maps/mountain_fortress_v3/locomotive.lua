@@ -27,6 +27,12 @@ local clear_items_upon_surface_entry = {
     ['substation'] = true
 }
 
+local valid_armors = {
+    ['modular-armor'] = true,
+    ['power-armor'] = true,
+    ['power-armor-mk2'] = true
+}
+
 local function add_random_loot_to_main_market(rarity)
     local main_market_items = WPT.get('main_market_items')
     local items = Market.get_random_item(rarity, true, false)
@@ -85,7 +91,7 @@ local function validate_player(player)
     return true
 end
 
-local function property_boost(data)
+local function give_passive_xp(data)
     local xp_floating_text_color = {r = 188, g = 201, b = 63}
     local visuals_delay = 1800
     local loco_surface = WPT.get('loco_surface')
@@ -247,6 +253,34 @@ local function set_carriages()
     WPT.set('carriages', locomotive.train.carriages)
 end
 
+local function get_driver_action(entity)
+    if not entity or not entity.valid then
+        return
+    end
+
+    local driver = entity.get_driver()
+    if not driver or not driver.valid then
+        return
+    end
+
+    local player = driver.player
+    if not player or not player.valid then
+        return
+    end
+
+    if player.cursor_stack and player.cursor_stack.valid_for_read and player.cursor_stack.name == 'raw-fish' then
+        player.print('[color=blue][Locomotive][/color] Unequip your fishy if you want to drive.')
+        driver.driving = false
+        return
+    end
+
+    local armor = driver.get_inventory(defines.inventory.character_armor)
+    if armor and armor[1] and armor[1].valid_for_read and valid_armors[armor[1].name] then
+        player.print('[color=blue][Locomotive][/color] Unequip your armor if you want to drive.')
+        driver.driving = false
+    end
+end
+
 local function set_locomotive_health()
     local locomotive_health = WPT.get('locomotive_health')
     local locomotive_max_health = WPT.get('locomotive_max_health')
@@ -265,6 +299,7 @@ local function set_locomotive_health()
                 if not (entity and entity.valid) then
                     return
                 end
+                get_driver_action(entity)
                 local cargo_health = 600
                 if entity.type == 'locomotive' then
                     entity.health = 1000 * m
@@ -430,7 +465,7 @@ function Public.boost_players_around_train()
         locomotive_surface = locomotive_surface,
         rpg = rpg
     }
-    property_boost(data)
+    give_passive_xp(data)
 end
 
 function Public.is_around_train(entity)

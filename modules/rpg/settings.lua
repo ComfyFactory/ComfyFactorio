@@ -4,6 +4,9 @@ local P = require 'utils.player_modifiers'
 local Session = require 'utils.datastore.session_data'
 
 local settings_frame_name = Public.settings_frame_name
+local close_settings_tooltip_frame = Public.close_settings_tooltip_frame
+local settings_tooltip_frame = Public.settings_tooltip_frame
+local settings_tooltip_name = Public.settings_tooltip_name
 local save_button_name = Public.save_button_name
 local discard_button_name = Public.discard_button_name
 local spell_gui_button_name = Public.spell_gui_button_name
@@ -15,6 +18,16 @@ local spell3_button_name = Public.spell3_button_name
 
 local settings_level = Public.gui_settings_levels
 
+local comparators = {
+    ['levels'] = function(a, b)
+        return a.level < b.level
+    end
+}
+
+local function get_comparator(sort_by)
+    return comparators[sort_by]
+end
+
 local function create_input_element(frame, type, value, items, index)
     if type == 'slider' then
         return frame.add({type = 'slider', value = value, minimum_value = 0, maximum_value = 1})
@@ -22,10 +35,26 @@ local function create_input_element(frame, type, value, items, index)
     if type == 'boolean' then
         return frame.add({type = 'checkbox', state = value})
     end
+    if type == 'label' then
+        local label = frame.add({type = 'label', caption = value})
+        label.style.font = 'default-listbox'
+        return label
+    end
     if type == 'dropdown' then
         return frame.add({type = 'drop-down', items = items, selected_index = index})
     end
     return frame.add({type = 'text-box', text = value})
+end
+
+local function create_custom_label_element(frame, sprite, localised_string, value)
+    local t = frame.add({type = 'flow'})
+    t.add({type = 'label', caption = '[' .. sprite .. ']'})
+    local heading = t.add({type = 'label', caption = localised_string})
+    heading.style.font = 'default-listbox'
+    local subheading = t.add({type = 'label', caption = value})
+    subheading.style.font = 'default-listbox'
+
+    return subheading
 end
 
 function Public.update_spell_gui_indicator(player)
@@ -155,27 +184,12 @@ function Public.extra_settings(player)
     local rpg_extra = Public.get('rpg_extra')
     local rpg_t = Public.get_value_from_player(player.index)
     local trusted = Session.get_trusted_table()
-    local main_frame =
-        player.gui.screen.add(
-        {
-            type = 'frame',
-            name = settings_frame_name,
-            caption = ({'rpg_settings.name'}),
-            direction = 'vertical'
-        }
-    )
-    main_frame.auto_center = true
+
+    local main_frame, inside_table = Gui.add_main_frame_with_toolbar(player, 'screen', settings_frame_name, settings_tooltip_name, nil, 'RPG Settings', true)
+
     local main_frame_style = main_frame.style
     main_frame_style.width = 500
-
-    local inside_frame = main_frame.add {type = 'frame', style = 'inside_shallow_frame'}
-    local inside_frame_style = inside_frame.style
-    inside_frame_style.padding = 0
-    local inside_table = inside_frame.add {type = 'table', column_count = 1}
-    local inside_table_style = inside_table.style
-    inside_table_style.vertical_spacing = 0
-
-    inside_table.add({type = 'line'})
+    main_frame.auto_center = true
 
     local info_text = inside_table.add({type = 'label', caption = ({'rpg_settings.info_text_label'})})
     local info_text_style = info_text.style
@@ -327,10 +341,9 @@ function Public.extra_settings(player)
     local spell_gui_input1
     local spell_gui_input2
     local spell_gui_input3
-    local flame_boots_gui_input
     local explosive_bullets_gui_input
     local stone_path_gui_input
-    local one_punch_gui_input
+    local aoe_punch_gui_input
     local auto_allocate_gui_input
 
     if rpg_extra.enable_stone_path then
@@ -370,87 +383,45 @@ function Public.extra_settings(player)
         end
     end
 
-    if rpg_extra.enable_one_punch then
-        local one_punch_label =
+    if rpg_extra.enable_aoe_punch then
+        local aoe_punch_label =
             setting_grid.add(
             {
                 type = 'label',
-                caption = ({'rpg_settings.one_punch_label'}),
-                tooltip = ({'rpg_settings.one_punch_tooltip'})
+                caption = ({'rpg_settings.aoe_punch_label'}),
+                tooltip = ({'rpg_settings.aoe_punch_tooltip'})
             }
         )
 
-        local one_punch_label_style = one_punch_label.style
-        one_punch_label_style.horizontally_stretchable = true
-        one_punch_label_style.height = 35
-        one_punch_label_style.vertical_align = 'center'
+        local aoe_punch_label_style = aoe_punch_label.style
+        aoe_punch_label_style.horizontally_stretchable = true
+        aoe_punch_label_style.height = 35
+        aoe_punch_label_style.vertical_align = 'center'
 
-        local one_punch_input = setting_grid.add({type = 'flow'})
-        local one_punch_input_style = one_punch_input.style
-        one_punch_input_style.height = 35
-        one_punch_input_style.vertical_align = 'center'
-        local one_punch
-        if rpg_t.one_punch then
-            one_punch = rpg_t.one_punch
+        local aoe_punch_input = setting_grid.add({type = 'flow'})
+        local aoe_punch_input_style = aoe_punch_input.style
+        aoe_punch_input_style.height = 35
+        aoe_punch_input_style.vertical_align = 'center'
+        local aoe_punch
+        if rpg_t.aoe_punch then
+            aoe_punch = rpg_t.aoe_punch
         else
-            one_punch = false
+            aoe_punch = false
         end
-        one_punch_gui_input = create_input_element(one_punch_input, 'boolean', one_punch)
+        aoe_punch_gui_input = create_input_element(aoe_punch_input, 'boolean', aoe_punch)
 
-        if rpg_extra.enable_one_punch_globally then
-            one_punch_gui_input.state = true
-            one_punch_gui_input.enabled = false
-            one_punch_gui_input.tooltip = ({'rpg_settings.one_punch_globally'})
+        if rpg_extra.enable_aoe_punch_globally then
+            aoe_punch_gui_input.state = true
+            aoe_punch_gui_input.enabled = false
+            aoe_punch_gui_input.tooltip = ({'rpg_settings.aoe_punch_globally'})
         else
-            if rpg_t.level < settings_level['one_punch_label'] then
-                one_punch_gui_input.enabled = false
-                one_punch_gui_input.tooltip = ({'rpg_settings.low_level', 30})
+            if rpg_t.level < settings_level['aoe_punch_label'] then
+                aoe_punch_gui_input.enabled = false
+                aoe_punch_gui_input.tooltip = ({'rpg_settings.low_level', 30})
             else
-                one_punch_gui_input.enabled = true
-                one_punch_gui_input.tooltip = ({'rpg_settings.tooltip_check'})
+                aoe_punch_gui_input.enabled = true
+                aoe_punch_gui_input.tooltip = ({'rpg_settings.tooltip_check'})
             end
-        end
-    end
-
-    if rpg_extra.enable_flame_boots then
-        local flame_boots_label =
-            setting_grid.add(
-            {
-                type = 'label',
-                caption = ({'rpg_settings.flameboots_label'}),
-                tooltip = ({'rpg_settings.flameboots_tooltip'})
-            }
-        )
-
-        local flame_boots_label_style = flame_boots_label.style
-        flame_boots_label_style.horizontally_stretchable = true
-        flame_boots_label_style.height = 35
-        flame_boots_label_style.vertical_align = 'center'
-
-        local flame_boots_input = setting_grid.add({type = 'flow'})
-        local flame_boots_input_style = flame_boots_input.style
-        flame_boots_input_style.height = 35
-        flame_boots_input_style.vertical_align = 'center'
-        local flame_mod
-        if rpg_t.flame_boots then
-            flame_mod = rpg_t.flame_boots
-        else
-            flame_mod = false
-        end
-        flame_boots_gui_input = create_input_element(flame_boots_input, 'boolean', flame_mod)
-
-        if rpg_t.mana > 50 then
-            if rpg_t.level < settings_level['flameboots_label'] then
-                flame_boots_gui_input.enabled = false
-                flame_boots_gui_input.tooltip = ({'rpg_settings.low_level', 100})
-                flame_boots_label.tooltip = ({'rpg_settings.low_level', 100})
-            else
-                flame_boots_gui_input.enabled = true
-                flame_boots_gui_input.tooltip = ({'rpg_settings.tooltip_check'})
-            end
-        else
-            flame_boots_gui_input.enabled = false
-            flame_boots_gui_input.tooltip = ({'rpg_settings.no_mana'})
         end
     end
 
@@ -556,7 +527,7 @@ function Public.extra_settings(player)
             {
                 type = 'label',
                 caption = ({'rpg_settings.magic_spell'}),
-                tooltip = ''
+                tooltip = 'Check the info button at upper right for more information'
             }
         )
 
@@ -573,33 +544,6 @@ function Public.extra_settings(player)
         conjure_input_style.vertical_align = 'center'
         conjure_gui_input = create_input_element(conjure_input, 'dropdown', false, names, rpg_t.dropdown_select_index)
 
-        for _, entity in pairs(spells) do
-            if entity.type == 'item' then
-                conjure_label.tooltip = ({
-                    'rpg_settings.magic_item_requirement',
-                    conjure_label.tooltip,
-                    entity.entityName,
-                    entity.mana_cost,
-                    entity.level
-                })
-            elseif entity.type == 'entity' then
-                conjure_label.tooltip = ({
-                    'rpg_settings.magic_entity_requirement',
-                    conjure_label.tooltip,
-                    entity.entityName,
-                    entity.mana_cost,
-                    entity.level
-                })
-            elseif entity.type == 'special' then
-                conjure_label.tooltip = ({
-                    'rpg_settings.magic_special_requirement',
-                    conjure_label.tooltip,
-                    entity.name,
-                    entity.mana_cost,
-                    entity.level
-                })
-            end
-        end
         if not spells[rpg_t.dropdown_select_index1] then
             rpg_t.dropdown_select_index1 = 1
         end
@@ -686,10 +630,6 @@ function Public.extra_settings(player)
         data.enable_entity_gui_input = enable_entity_gui_input
     end
 
-    if rpg_extra.enable_flame_boots then
-        data.flame_boots_gui_input = flame_boots_gui_input
-    end
-
     if rpg_extra.enable_explosive_bullets_globally then
         data.explosive_bullets_gui_input = explosive_bullets_gui_input
     end
@@ -698,8 +638,8 @@ function Public.extra_settings(player)
         data.stone_path_gui_input = stone_path_gui_input
     end
 
-    if rpg_extra.enable_one_punch then
-        data.one_punch_gui_input = one_punch_gui_input
+    if rpg_extra.enable_aoe_punch then
+        data.aoe_punch_gui_input = aoe_punch_gui_input
     end
 
     if rpg_extra.enable_auto_allocate then
@@ -722,6 +662,92 @@ function Public.extra_settings(player)
     save_button.style = 'confirm_button'
 
     Gui.set_data(save_button, data)
+
+    player.opened = main_frame
+end
+
+function Public.settings_tooltip(player)
+    local rpg_extra = Public.get('rpg_extra')
+
+    local main_frame, inside_table = Gui.add_main_frame_with_toolbar(player, 'center', settings_tooltip_frame, nil, close_settings_tooltip_frame, 'Spell info')
+
+    local inside_table_style = inside_table.style
+    inside_table_style.width = 530
+
+    local info_text = inside_table.add({type = 'label', caption = ({'rpg_settings.spellbook_label'})})
+    local info_text_style = info_text.style
+    info_text_style.font = 'heading-2'
+    info_text_style.padding = 0
+    info_text_style.left_padding = 10
+    info_text_style.horizontal_align = 'left'
+    info_text_style.vertical_align = 'bottom'
+    info_text_style.font_color = {0.55, 0.55, 0.99}
+
+    if rpg_extra.enable_mana then
+        local normal_spell_pane = inside_table.add({type = 'scroll-pane'})
+        local ns = normal_spell_pane.style
+        ns.vertically_squashable = true
+        ns.bottom_padding = 5
+        ns.left_padding = 5
+        ns.right_padding = 5
+        ns.top_padding = 5
+
+        normal_spell_pane.add({type = 'line'})
+
+        local entity_spells = normal_spell_pane.add({type = 'label', caption = ({'rpg_settings.entity_spells_label'})})
+        local entity_spells_style = entity_spells.style
+        entity_spells_style.font = 'heading-3'
+        entity_spells_style.padding = 0
+        entity_spells_style.left_padding = 10
+        entity_spells_style.horizontal_align = 'left'
+        entity_spells_style.font_color = {0.55, 0.55, 0.99}
+
+        local normal_spell_grid = normal_spell_pane.add({type = 'table', column_count = 2})
+
+        local spells = Public.rebuild_spells()
+
+        local comparator = get_comparator('levels')
+        table.sort(spells, comparator)
+
+        for _, entity in pairs(spells) do
+            local cooldown = (entity.cooldown / 60) .. 's'
+            if entity.type == 'item' then
+                local text = '[item=' .. entity.entityName .. '] ▪️ Level: [font=default-bold]' .. entity.level .. '[/font] Mana: [font=default-bold]' .. entity.mana_cost .. '[/font].  Cooldown: [font=default-bold]' .. cooldown .. '[/font]'
+                create_input_element(normal_spell_grid, 'label', text)
+            elseif entity.type == 'entity' then
+                local text = '[entity=' .. entity.entityName .. '] ▪️ Level: [font=default-bold]' .. entity.level .. '[/font] Mana: [font=default-bold]' .. entity.mana_cost .. '[/font].  Cooldown: [font=default-bold]' .. cooldown .. '[/font]'
+                create_input_element(normal_spell_grid, 'label', text)
+            end
+        end
+
+        local special_spell_pane = inside_table.add({type = 'scroll-pane'})
+        local ss = special_spell_pane.style
+        ss.vertically_squashable = true
+        ss.bottom_padding = 5
+        ss.left_padding = 5
+        ss.right_padding = 5
+        ss.top_padding = 5
+
+        normal_spell_pane.add({type = 'line'})
+
+        local special_spells = special_spell_pane.add({type = 'label', caption = ({'rpg_settings.special_spells_label'})})
+        local special_spells_style = special_spells.style
+        special_spells_style.font = 'heading-3'
+        special_spells_style.padding = 0
+        special_spells_style.left_padding = 10
+        special_spells_style.horizontal_align = 'left'
+        special_spells_style.font_color = {0.55, 0.55, 0.99}
+
+        local special_spell_grid = special_spell_pane.add({type = 'table', column_count = 1})
+
+        for _, entity in pairs(spells) do
+            local cooldown = (entity.cooldown / 60) .. 's'
+            if entity.type == 'special' then
+                local text = '▪️ Level: [font=default-bold]' .. entity.level .. '[/font] Mana: [font=default-bold]' .. entity.mana_cost .. '[/font]. Cooldown: [font=default-bold]' .. cooldown .. '[/font]'
+                create_custom_label_element(special_spell_grid, entity.special_sprite, entity.name, text)
+            end
+        end
+    end
 
     player.opened = main_frame
 end

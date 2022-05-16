@@ -2,14 +2,14 @@ local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Server = require 'utils.server'
 local Token = require 'utils.token'
-local Tabs = require 'comfy_panel.main'
-local Score = require 'comfy_panel.score'
+local Gui = require 'utils.gui'
+local Score = require 'utils.gui.score'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local WD = require 'modules.wave_defense.table'
 local Core = require 'utils.core'
 local SpamProtection = require 'utils.spam_protection'
 
-local module_name = 'Highscore'
+local module_name = Gui.uid_name()
 local score_dataset = 'highscores'
 local score_key = 'mountain_fortress_v3_scores'
 local set_data = Server.set_data
@@ -609,22 +609,18 @@ end
 local show_score_token = Token.register(show_score)
 
 local function on_gui_click(event)
-    if not event then
-        return
-    end
-    if not event.element then
-        return
-    end
-    if not event.element.valid then
+    local element = event.element
+    if not element or not element.valid then
         return
     end
 
-    local player = game.players[event.element.player_index]
-    local frame = Tabs.comfy_panel_get_active_frame(player)
+    local player = game.get_player(event.element.player_index)
+
+    local frame = Gui.get_player_active_frame(player)
     if not frame then
         return
     end
-    if frame.name ~= module_name then
+    if frame.name ~= 'Highscore' then
         return
     end
 
@@ -681,7 +677,15 @@ Server.on_data_set_changed(
     end
 )
 
-Tabs.add_tab_to_gui({name = module_name, id = show_score_token, admin = false, only_server_sided = true})
+Gui.add_tab_to_gui({name = module_name, caption = 'Highscore', id = show_score_token, admin = false, only_server_sided = true})
+
+Gui.on_click(
+    module_name,
+    function(event)
+        local player = event.player
+        Gui.reload_active_tab(player)
+    end
+)
 
 Event.on_init(on_init)
 Event.add(defines.events.on_player_left_game, on_player_left_game)

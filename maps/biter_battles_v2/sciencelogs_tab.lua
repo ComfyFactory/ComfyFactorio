@@ -1,7 +1,7 @@
 --luacheck: ignore
 -- science logs tab --
 
-local Tabs = require 'comfy_panel.main'
+local Tabs = require 'utils.gui'
 local tables = require 'maps.biter_battles_v2.tables'
 local event = require 'utils.event'
 local bb_config = require 'maps.biter_battles_v2.config'
@@ -13,8 +13,7 @@ local science_list = tables.science_list
 local evofilter_list = tables.evofilter_list
 local food_value_table_version = tables.food_value_table_version
 local Token = require 'utils.token'
-
-local module_name = 'MutagenLog'
+local module_name = Tabs.uid_name()
 
 local function initialize_dropdown_users_choice()
     global.dropdown_users_choice_force = {}
@@ -27,8 +26,7 @@ local function get_science_text(food_name, food_short_name)
 end
 
 local function add_science_logs(player, element)
-    local science_scrollpanel =
-        element.add {type = 'scroll-pane', name = 'scroll_pane', direction = 'vertical', horizontal_scroll_policy = 'never', vertical_scroll_policy = 'auto'}
+    local science_scrollpanel = element.add {type = 'scroll-pane', name = 'scroll_pane', direction = 'vertical', horizontal_scroll_policy = 'never', vertical_scroll_policy = 'auto'}
     science_scrollpanel.style.maximal_height = 530
 
     if global.science_logs_category_potion == nil then
@@ -129,8 +127,7 @@ local function add_science_logs(player, element)
 
     local dropdown_force = t_filter.add {name = 'dropdown-force', type = 'drop-down', items = forces_list, selected_index = global.dropdown_users_choice_force[player.name]}
     local dropdown_science = t_filter.add {name = 'dropdown-science', type = 'drop-down', items = science_list, selected_index = global.dropdown_users_choice_science[player.name]}
-    local dropdown_evofilter =
-        t_filter.add {name = 'dropdown-evofilter', type = 'drop-down', items = evofilter_list, selected_index = global.dropdown_users_choice_evo_filter[player.name]}
+    local dropdown_evofilter = t_filter.add {name = 'dropdown-evofilter', type = 'drop-down', items = evofilter_list, selected_index = global.dropdown_users_choice_evo_filter[player.name]}
 
     local t = science_scrollpanel.add {type = 'table', name = 'science_logs_header_table', column_count = 4}
     local column_widths = {tonumber(75), tonumber(310), tonumber(165), tonumber(230)}
@@ -171,13 +168,9 @@ local function add_science_logs(player, element)
 
             if dropdown_force.selected_index == 1 or real_force_name:match(dropdown_force.get_item(dropdown_force.selected_index)) then
                 if
-                    dropdown_science.selected_index == 1 or
-                        (dropdown_science.selected_index == 2 and (easy_food_name:match('space') or easy_food_name:match('utility') or easy_food_name:match('production'))) or
-                        (dropdown_science.selected_index == 3 and
-                            (easy_food_name:match('space') or easy_food_name:match('utility') or easy_food_name:match('production') or easy_food_name:match('chemical'))) or
-                        (dropdown_science.selected_index == 4 and
-                            (easy_food_name:match('space') or easy_food_name:match('utility') or easy_food_name:match('production') or easy_food_name:match('chemical') or
-                                easy_food_name:match('military'))) or
+                    dropdown_science.selected_index == 1 or (dropdown_science.selected_index == 2 and (easy_food_name:match('space') or easy_food_name:match('utility') or easy_food_name:match('production'))) or
+                        (dropdown_science.selected_index == 3 and (easy_food_name:match('space') or easy_food_name:match('utility') or easy_food_name:match('production') or easy_food_name:match('chemical'))) or
+                        (dropdown_science.selected_index == 4 and (easy_food_name:match('space') or easy_food_name:match('utility') or easy_food_name:match('production') or easy_food_name:match('chemical') or easy_food_name:match('military'))) or
                         easy_food_name:match(dropdown_science.get_item(dropdown_science.selected_index))
                  then
                     if
@@ -221,19 +214,9 @@ local function add_science_logs(player, element)
     end
 end
 
-local function comfy_panel_get_active_frame(player)
-    if not player.gui.left.comfy_panel then
-        return false
-    end
-    if not player.gui.left.comfy_panel.tabbed_pane.selected_tab_index then
-        return player.gui.left.comfy_panel.tabbed_pane.tabs[1].content
-    end
-    return player.gui.left.comfy_panel.tabbed_pane.tabs[player.gui.left.comfy_panel.tabbed_pane.selected_tab_index].content
-end
-
 local function build_config_gui(data)
     local player = data.player
-    local frame_sciencelogs = comfy_panel_get_active_frame(player)
+    local frame_sciencelogs = Gui.get_player_active_frame(player)
     if not frame_sciencelogs then
         return
     end
@@ -268,4 +251,12 @@ end
 
 event.add(defines.events.on_gui_selection_state_changed, on_gui_selection_state_changed)
 
-Tabs.add_tab_to_gui({name = module_name, id = build_config_gui_token, admin = false})
+Tabs.add_tab_to_gui({name = module_name, caption = 'MutagenLog', id = build_config_gui_token, admin = false})
+
+Tabs.on_click(
+    module_name,
+    function(event)
+        local player = event.player
+        Tabs.reload_active_tab(player)
+    end
+)

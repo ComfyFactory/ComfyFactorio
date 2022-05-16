@@ -3,9 +3,10 @@
 local Chrono_table = require 'maps.chronosphere.table'
 local Chrono = require 'maps.chronosphere.chrono'
 local Token = require 'utils.token'
-local Tabs = require 'comfy_panel.main'
+local Event = require 'utils.event'
+local Gui = require 'utils.gui'
 
-local module_name = 'ChronoTrain'
+local module_name = Gui.uid_name()
 
 local functions = {
     ['comfy_panel_offline_accidents'] = function(event)
@@ -230,7 +231,14 @@ local function on_gui_click(event)
     end
 end
 
-Tabs.add_tab_to_gui({name = module_name, id = build_config_gui_token, admin = true})
+Gui.add_tab_to_gui({name = module_name, caption = 'ChronoTrain', id = build_config_gui_token, admin = true})
 
-local event = require 'utils.event'
-event.add(defines.events.on_gui_click, on_gui_click)
+Gui.on_click(
+    module_name,
+    function(event)
+        local player = event.player
+        Gui.reload_active_tab(player)
+    end
+)
+
+Event.add(defines.events.on_gui_click, on_gui_click)

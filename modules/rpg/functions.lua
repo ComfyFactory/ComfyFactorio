@@ -2,6 +2,7 @@ local Public = require 'modules.rpg.table'
 local Task = require 'utils.task'
 local Gui = require 'utils.gui'
 local Color = require 'utils.color_presets'
+local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local P = require 'utils.player_modifiers'
 local Token = require 'utils.token'
 local Alert = require 'utils.alert'
@@ -12,9 +13,11 @@ local xp_floating_text_color = Public.xp_floating_text_color
 local experience_levels = Public.experience_levels
 local points_per_level = Public.points_per_level
 local settings_level = Public.gui_settings_levels
+
+local round = math.round
 local floor = math.floor
 local random = math.random
-local round = math.round
+local abs = math.abs
 
 --RPG Frames
 local main_frame_name = Public.main_frame_name
@@ -41,7 +44,7 @@ local desync =
         end
         local surface = data.surface
         local fake_shooter = surface.create_entity({name = 'character', position = entity.position, force = 'enemy'})
-        for i = 1, 3 do
+        for _ = 1, 3 do
             surface.create_entity(
                 {
                     name = 'explosive-rocket',
@@ -119,12 +122,12 @@ local function level_up(player)
         return
     end
 
-    -- automatically enable one_punch and stone_path,
+    -- automatically enable aoe_punch and stone_path,
     -- but do so only once.
-    if rpg_t.level >= settings_level['one_punch_label'] then
-        if not rpg_t.auto_toggle_features.one_punch then
-            rpg_t.auto_toggle_features.one_punch = true
-            rpg_t.one_punch = true
+    if rpg_t.level >= settings_level['aoe_punch_label'] then
+        if not rpg_t.auto_toggle_features.aoe_punch then
+            rpg_t.auto_toggle_features.aoe_punch = true
+            rpg_t.aoe_punch = true
         end
     end
     if rpg_t.level >= settings_level['stone_path_label'] then
@@ -153,6 +156,98 @@ local function level_up(player)
     end
 
     Public.level_up_effects(player)
+end
+
+local function has_health_boost(entity, damage, final_damage_amount, cause)
+    local biter_health_boost = BiterHealthBooster.get('biter_health_boost')
+    local biter_health_boost_units = BiterHealthBooster.get('biter_health_boost_units')
+
+    local get_health_pool
+
+    if not entity.valid then
+        return
+    end
+
+    --Handle the custom health pool of the biter health booster, if it is used in the map.
+    if biter_health_boost then
+        local health_pool = biter_health_boost_units[entity.unit_number]
+        if health_pool then
+            get_health_pool = health_pool[1]
+            --Set entity health relative to health pool
+            local max_health = health_pool[3].max_health
+            local m = health_pool[1] / max_health
+            local final_health = round(entity.prototype.max_health * m)
+
+            health_pool[1] = round(health_pool[1] + final_damage_amount)
+            health_pool[1] = round(health_pool[1] - damage)
+
+            --Set entity health relative to health pool
+            entity.health = final_health
+
+            if health_pool[1] <= 0 then
+                local entity_number = entity.unit_number
+                entity.die(entity.force.name, cause)
+
+                if biter_health_boost_units[entity_number] then
+                    biter_health_boost_units[entity_number] = nil
+                end
+            end
+        else
+            entity.health = entity.health + final_damage_amount
+            entity.health = entity.health - damage
+            if entity.health <= 0 then
+                entity.die(cause.force.name, cause)
+            end
+        end
+    else
+        --Handle vanilla damage.
+        entity.health = entity.health + final_damage_amount
+        entity.health = entity.health - damage
+        if entity.health <= 0 then
+            entity.die(cause.force.name, cause)
+        end
+    end
+
+    return get_health_pool
+end
+
+local function set_health_boost(entity, damage, cause)
+    local biter_health_boost = BiterHealthBooster.get('biter_health_boost')
+    local biter_health_boost_units = BiterHealthBooster.get('biter_health_boost_units')
+
+    local get_health_pool
+
+    if not entity.valid then
+        return
+    end
+
+    --Handle the custom health pool of the biter health booster, if it is used in the map.
+    if biter_health_boost then
+        local health_pool = biter_health_boost_units[entity.unit_number]
+        if health_pool then
+            get_health_pool = health_pool[1]
+            --Set entity health relative to health pool
+            local max_health = health_pool[3].max_health
+            local m = health_pool[1] / max_health
+            local final_health = round(entity.prototype.max_health * m)
+
+            health_pool[1] = round(health_pool[1] - damage)
+
+            --Set entity health relative to health pool
+            entity.health = final_health
+
+            if health_pool[1] <= 0 then
+                local entity_number = entity.unit_number
+                entity.die(entity.force.name, cause)
+
+                if biter_health_boost_units[entity_number] then
+                    biter_health_boost_units[entity_number] = nil
+                end
+            end
+        end
+    end
+
+    return get_health_pool
 end
 
 local function add_to_global_pool(amount, personal_tax)
@@ -480,6 +575,95 @@ function Public.update_health(player)
     end
 end
 
+function Public.log_aoe_punch(callback)
+    local debug = Public.get('rpg_extra').debug_aoe_punch
+    if not debug then
+        return
+    end
+    callback()
+end
+
+--Melee damage modifier
+function Public.aoe_punch(character, target, damage, get_health_pool)
+    if not (target and target.valid) then
+        return
+    end
+
+    local base_vector = {target.position.x - character.position.x, target.position.y - character.position.y}
+
+    local vector = {base_vector[1], base_vector[2]}
+    vector[1] = vector[1] * 1000
+    vector[2] = vector[2] * 1000
+
+    character.surface.create_entity({name = 'blood-explosion-huge', position = target.position})
+
+    if abs(vector[1]) > abs(vector[2]) then
+        local d = abs(vector[1])
+        if abs(vector[1]) > 0 then
+            vector[1] = vector[1] / d
+        end
+        if abs(vector[2]) > 0 then
+            vector[2] = vector[2] / d
+        end
+    else
+        local d = abs(vector[2])
+        if abs(vector[2]) > 0 then
+            vector[2] = vector[2] / d
+        end
+        if abs(vector[1]) > 0 and d > 0 then
+            vector[1] = vector[1] / d
+        end
+    end
+
+    vector[1] = vector[1] * 1.5
+    vector[2] = vector[2] * 1.5
+
+    local a = 0.20
+
+    local cs = character.surface
+    local cp = character.position
+
+    for i = 1, 16, 1 do
+        for x = i * -1 * a, i * a, 1 do
+            for y = i * -1 * a, i * a, 1 do
+                local p = {cp.x + x + vector[1] * i, cp.y + y + vector[2] * i}
+                cs.create_trivial_smoke({name = 'train-smoke', position = p})
+                for _, e in pairs(cs.find_entities({{p[1] - a, p[2] - a}, {p[1] + a, p[2] + a}})) do
+                    if e.valid then
+                        if e.health then
+                            if e.destructible and e.minable and e.force.index ~= 3 then
+                                if e.force.index ~= character.force.index then
+                                    if get_health_pool then
+                                        local max_unit_health = floor(get_health_pool * 0.00015)
+                                        if max_unit_health <= 0 then
+                                            max_unit_health = 4
+                                        end
+                                        if max_unit_health >= 10 then
+                                            max_unit_health = 10
+                                        end
+                                        local final = floor(damage * max_unit_health)
+                                        set_health_boost(e, final, character)
+                                        if e.valid and e.health <= 0 and get_health_pool <= 0 then
+                                            e.die(e.force.name, character)
+                                        end
+                                    else
+                                        if e.valid then
+                                            e.health = e.health - damage * 0.05
+                                            if e.health <= 0 then
+                                                e.die(e.force.name, character)
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
 function Public.level_limit_exceeded(player, value)
     local rpg_extra = Public.get('rpg_extra')
     local rpg_t = Public.get_value_from_player(player.index)
@@ -520,7 +704,7 @@ function Public.update_player_stats(player)
     local rpg_t = Public.get_value_from_player(player.index)
     local strength = rpg_t.strength - 10
     P.update_single_modifier(player, 'character_inventory_slots_bonus', 'rpg', round(strength * 0.2, 3))
-    P.update_single_modifier(player, 'character_mining_speed_modifier', 'rpg', round(strength * 0.007, 3))
+    P.update_single_modifier(player, 'character_mining_speed_modifier', 'rpg', round(strength * 0.006, 3))
     P.update_single_modifier(player, 'character_maximum_following_robot_count_bonus', 'rpg', round(strength / 2 * 0.03, 3))
 
     local magic = rpg_t.magicka - 10
@@ -555,7 +739,31 @@ function Public.level_up_effects(player)
         }
         player.surface.create_entity({name = 'flying-text', position = p, text = '✚', color = {255, math.random(0, 100), 0}})
     end
-    player.play_sound {path = 'utility/achievement_unlocked', volume_modifier = 0.40}
+    player.play_sound {path = 'utility/achievement_unlocked', volume_modifier = 0.50}
+end
+
+function Public.cast_spell(player, failed)
+    local position = {x = player.position.x - 0.75, y = player.position.y - 1}
+    local b = 0.75
+    if not failed then
+        for _ = 1, 3, 1 do
+            local p = {
+                (position.x + 0.4) + (b * -1 + math.random(0, b * 20) * 0.1),
+                position.y + (b * -1 + math.random(0, b * 20) * 0.1)
+            }
+            player.surface.create_entity({name = 'flying-text', position = p, text = '✔️', color = {255, math.random(0, 100), 0}})
+        end
+        player.play_sound {path = 'utility/scenario_message', volume_modifier = 1}
+    else
+        for _ = 1, 3, 1 do
+            local p = {
+                (position.x + 0.4) + (b * -1 + math.random(0, b * 20) * 0.1),
+                position.y + (b * -1 + math.random(0, b * 20) * 0.1)
+            }
+            player.surface.create_entity({name = 'flying-text', position = p, text = '✖', color = {255, math.random(0, 100), 0}})
+        end
+        player.play_sound {path = 'utility/cannot_build', volume_modifier = 1}
+    end
 end
 
 function Public.xp_effects(player)
@@ -569,7 +777,7 @@ function Public.xp_effects(player)
         }
         player.surface.create_entity({name = 'flying-text', position = p, text = '✚', color = {255, math.random(0, 100), 0}})
     end
-    player.play_sound {path = 'utility/achievement_unlocked', volume_modifier = 0.40}
+    player.play_sound {path = 'utility/achievement_unlocked', volume_modifier = 0.50}
 end
 
 function Public.get_range_modifier(player)
@@ -590,6 +798,27 @@ function Public.get_melee_modifier(player)
         return false
     end
     local total = (rpg_t.strength - 10) * 0.10
+    return total
+end
+
+function Public.get_player_level(player)
+    local rpg_t = Public.get_value_from_player(player.index)
+    if not rpg_t then
+        return false
+    end
+    return rpg_t.level
+end
+
+function Public.get_area_of_effect_range(player)
+    local rpg_t = Public.get_value_from_player(player.index)
+    if not rpg_t then
+        return false
+    end
+    local total = (rpg_t.level - 10) * 0.05
+
+    if rpg_t.level < 10 then
+        total = 1
+    end
     return total
 end
 
@@ -677,12 +906,12 @@ function Public.get_life_on_hit(player)
     return (rpg_t.vitality - 10) * 0.4
 end
 
-function Public.get_one_punch_chance(player)
+function Public.get_aoe_punch_chance(player)
     local rpg_t = Public.get_value_from_player(player.index)
     if rpg_t.strength < 100 then
         return 0
     end
-    local chance = round(rpg_t.strength * 0.012, 1)
+    local chance = round(rpg_t.strength * 0.007, 1)
     if chance > 100 then
         chance = 100
     end
@@ -750,7 +979,6 @@ function Public.rpg_reset_player(player, one_time_reset)
                 dropdown_select_index2 = 1,
                 dropdown_select_index3 = 1,
                 allocate_index = 1,
-                flame_boots = false,
                 explosive_bullets = false,
                 enable_entity_spawn = false,
                 health_bar = rpg_t.health_bar,
@@ -765,10 +993,10 @@ function Public.rpg_reset_player(player, one_time_reset)
                 last_mined_entity_position = {x = 0, y = 0},
                 show_bars = false,
                 stone_path = false,
-                one_punch = false,
+                aoe_punch = false,
                 auto_toggle_features = {
                     stone_path = false,
-                    one_punch = false
+                    aoe_punch = false
                 }
             }
         )
@@ -793,7 +1021,6 @@ function Public.rpg_reset_player(player, one_time_reset)
                 dropdown_select_index2 = 1,
                 dropdown_select_index3 = 1,
                 allocate_index = 1,
-                flame_boots = false,
                 explosive_bullets = false,
                 enable_entity_spawn = false,
                 points_left = 0,
@@ -807,10 +1034,10 @@ function Public.rpg_reset_player(player, one_time_reset)
                 last_mined_entity_position = {x = 0, y = 0},
                 show_bars = false,
                 stone_path = false,
-                one_punch = false,
+                aoe_punch = false,
                 auto_toggle_features = {
                     stone_path = false,
-                    one_punch = false
+                    aoe_punch = false
                 }
             }
         )
@@ -835,6 +1062,7 @@ function Public.rpg_reset_all_players()
     rpg_extra.global_pool = 0
 end
 
+-- local Public = require 'modules.rpg.table' Public.gain_xp(game.players['Gerkiz'], 5012, true)
 function Public.gain_xp(player, amount, added_to_pool, text)
     if not Public.validate_player(player) then
         return
@@ -958,8 +1186,6 @@ function Public.global_pool(players, count)
     end
 
     rpg_extra.global_pool = rpg_extra.leftover_pool or 0
-
-    return
 end
 
 local damage_player_over_time_token =
@@ -995,5 +1221,8 @@ function Public.distribute_pool()
     Public.global_pool(players, count)
     print('Distributed the global XP pool')
 end
+
+Public.has_health_boost = has_health_boost
+Public.set_health_boost = set_health_boost
 
 Public.add_to_global_pool = add_to_global_pool
