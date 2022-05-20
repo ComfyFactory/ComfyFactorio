@@ -98,6 +98,10 @@ local restore_movement_speed_token =
             return
         end
 
+        if not player.character or not player.character.valid then
+            return
+        end
+
         player.character.character_running_speed_modifier = old_speed
     end
 )
