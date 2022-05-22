@@ -370,7 +370,7 @@ function Public.kraken_kill_reward_items()
 	return {{name = 'sulfuric-acid-barrel', count = 5}, {name = 'coin', count = 1000}}
 end
 function Public.kraken_kill_reward_fuel()
-	return 150
+	return 200
 end
 
 function Public.kraken_health()
