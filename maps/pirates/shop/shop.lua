@@ -23,11 +23,11 @@ Public.Minimarket = require 'maps.pirates.shop.dock'
 
 
 
-function Public.print_transaction(player, offer, price)
+function Public.print_transaction(player, offer_itename, offer_itemcount, price)
 	local s1 = ' traded away '
 	local s2 = ''
-	local s3 = offer.count .. ' ' .. offer.item
-	if offer.item == 'coin' then s1 = ' sold ' end
+	local s3 = offer_itemcount .. ' ' .. offer_itename
+	if offer_itename == 'coin' then s1 = ' sold ' end
 	for i, p in pairs(price) do
 		local p2 = {name = p.name, amount = p.amount}
 		if p2.name == 'raw-fish' then p2.name = 'fish' end
@@ -253,7 +253,7 @@ function Public.event_on_market_item_purchased(event)
 					refunds = refunds + 1
 				end
 			else
-				Common.notify_force_light(player.force, player.name .. ' bought ' .. thisPurchaseData.this_offer.offer.count .. ' ' .. thisPurchaseData.this_offer.offer.item .. ' for ' .. thisPurchaseData.price[1].amount .. ' ' .. thisPurchaseData.price[1].name .. '.')
+				Common.notify_force_light(player.force, player.name .. ' bought ' .. thisPurchaseData.offer_giveitem_count .. ' ' .. thisPurchaseData.offer_giveitem_name .. ' for ' .. thisPurchaseData.price[1].amount .. ' ' .. thisPurchaseData.price[1].name .. '.')
 
 				market.remove_market_item(offer_index)
 			end
@@ -280,7 +280,7 @@ function Public.event_on_market_item_purchased(event)
 						local price_name = thisPurchaseData.price[1].name
 						Common.notify_force_light(player.force, player.name .. ' bought extra time at sea for ' .. thisPurchaseData.price[1].amount .. ' ' .. price_name .. '.')
 					else
-						Public.print_transaction(player, thisPurchaseData.this_offer.offer, thisPurchaseData.price)
+						Public.print_transaction(player, thisPurchaseData.offer_giveitem_name, thisPurchaseData.offer_giveitem_count, thisPurchaseData.price)
 					end
 				end
 			end
@@ -302,7 +302,7 @@ function Public.event_on_market_item_purchased(event)
 				if thisPurchaseData.decay_type == 'static' then
 					if not inv then return end
 					local flying_text_color = {r = 255, g = 255, b = 255}
-					local text1 = '[color=1,1,1]+' .. thisPurchaseData.this_offer.offer.count .. '[/color] [item=' .. thisPurchaseData.alloffers[offer_index].offer.item .. ']'
+					local text1 = '[color=1,1,1]+' .. thisPurchaseData.offer_giveitem_count .. '[/color] [item=' .. thisPurchaseData.alloffers[offer_index].offer.item .. ']'
 					local text2 = '[color=' .. flying_text_color.r .. ',' .. flying_text_color.g .. ',' .. flying_text_color.b .. '](' .. inv.get_item_count(thisPurchaseData.alloffers[offer_index].offer.item) .. ')[/color]'
 
 					Common.flying_text(player.surface, player.position, text1 .. '  [font=count-font]' .. text2 .. '[/font]')
@@ -312,8 +312,8 @@ function Public.event_on_market_item_purchased(event)
 
 					if not inv then return end
 					local flying_text_color = {r = 255, g = 255, b = 255}
-					local text1 = '[color=1,1,1]+' .. thisPurchaseData.this_offer.offer.count .. '[/color] [item=' .. thisPurchaseData.alloffers[offer_index].offer.item .. ']'
-					local text2 = '[color=' .. flying_text_color.r .. ',' .. flying_text_color.g .. ',' .. flying_text_color.b .. '](' .. inv.get_item_count(thisPurchaseData.this_offer.offer.item) .. ')[/color]'
+					local text1 = '[color=1,1,1]+' .. thisPurchaseData.offer_giveitem_count .. '[/color] [item=' .. thisPurchaseData.alloffers[offer_index].offer.item .. ']'
+					local text2 = '[color=' .. flying_text_color.r .. ',' .. flying_text_color.g .. ',' .. flying_text_color.b .. '](' .. inv.get_item_count(thisPurchaseData.offer_giveitem_name) .. ')[/color]'
 
 					Common.flying_text(player.surface, player.position, text1 .. '  [font=count-font]' .. text2 .. '[/font]')
 
@@ -329,8 +329,8 @@ function Public.event_on_market_item_purchased(event)
 		end
 	end
 
-	if thisPurchaseData.this_offer.offer.item == 'coin' and refunds < trade_count then
-		memory.playtesting_stats.coins_gained_by_markets = memory.playtesting_stats.coins_gained_by_markets + thisPurchaseData.this_offer.offer.count
+	if thisPurchaseData.offer_giveitem_name and thisPurchaseData.offer_giveitem_name == 'coin' and refunds < trade_count then
+		memory.playtesting_stats.coins_gained_by_markets = memory.playtesting_stats.coins_gained_by_markets + thisPurchaseData.offer_giveitem_count
 	end
 end
 

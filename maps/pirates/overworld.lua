@@ -246,7 +246,7 @@ function Public.generate_overworld_destination(p)
 		local base_cost_4 = {
 			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*100),
 			['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*18),
-			['flying-robot-frame'] = Math.ceil(((macro_p.x-18)^(2/3))*10),
+			['flying-robot-frame'] = Math.ceil(((macro_p.x-18)^(2/3))*15),
 			['launch_rocket'] = true,
 		}
 		local base_cost_5 = {

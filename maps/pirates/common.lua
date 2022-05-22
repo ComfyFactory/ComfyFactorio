@@ -738,6 +738,7 @@ end
 function Public.entity_damage_healthbar(entity, damage, location_override)
 	location_override = location_override or Memory.get_crew_memory()
 	local unit_number = entity.unit_number
+	if not (location_override.healthbars) then return end
 
 	local healthbar = location_override.healthbars[unit_number]
 	if not healthbar then return 0 end
