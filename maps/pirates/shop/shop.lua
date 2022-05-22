@@ -104,6 +104,7 @@ local function purchaseData(market, player, offer_index)
 	end
 
 	return {
+		alloffers = alloffers,
 		decay_type = decay_type,
 		price = price,
 		offer_type = offer_type,
@@ -302,8 +303,8 @@ function Public.event_on_market_item_purchased(event)
 				if thisPurchaseData.decay_type == 'static' then
 					if not inv then return end
 					local flying_text_color = {r = 255, g = 255, b = 255}
-					local text1 = '[color=1,1,1]+' .. thisPurchaseData.offer_giveitem_count .. '[/color] [item=' .. thisPurchaseData.alloffers[offer_index].offer.item .. ']'
-					local text2 = '[color=' .. flying_text_color.r .. ',' .. flying_text_color.g .. ',' .. flying_text_color.b .. '](' .. inv.get_item_count(thisPurchaseData.alloffers[offer_index].offer.item) .. ')[/color]'
+					local text1 = '[color=1,1,1]+' .. thisPurchaseData.offer_giveitem_count .. '[/color] [item=' .. thisPurchaseData.offer_giveitem_name .. ']'
+					local text2 = '[color=' .. flying_text_color.r .. ',' .. flying_text_color.g .. ',' .. flying_text_color.b .. '](' .. inv.get_item_count(thisPurchaseData.offer_giveitem_name) .. ')[/color]'
 
 					Common.flying_text(player.surface, player.position, text1 .. '  [font=count-font]' .. text2 .. '[/font]')
 				else
@@ -312,7 +313,7 @@ function Public.event_on_market_item_purchased(event)
 
 					if not inv then return end
 					local flying_text_color = {r = 255, g = 255, b = 255}
-					local text1 = '[color=1,1,1]+' .. thisPurchaseData.offer_giveitem_count .. '[/color] [item=' .. thisPurchaseData.alloffers[offer_index].offer.item .. ']'
+					local text1 = '[color=1,1,1]+' .. thisPurchaseData.offer_giveitem_count .. '[/color] [item=' .. thisPurchaseData.offer_giveitem_name .. ']'
 					local text2 = '[color=' .. flying_text_color.r .. ',' .. flying_text_color.g .. ',' .. flying_text_color.b .. '](' .. inv.get_item_count(thisPurchaseData.offer_giveitem_name) .. ')[/color]'
 
 					Common.flying_text(player.surface, player.position, text1 .. '  [font=count-font]' .. text2 .. '[/font]')
