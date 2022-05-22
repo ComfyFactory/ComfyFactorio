@@ -23,11 +23,11 @@ Public.Minimarket = require 'maps.pirates.shop.dock'
 
 
 
-function Public.print_transaction(player, offer_itename, offer_itemcount, price)
+function Public.print_transaction(player, offer_itemname, offer_itemcount, price)
 	local s1 = ' traded away '
 	local s2 = ''
-	local s3 = offer_itemcount .. ' ' .. offer_itename
-	if offer_itename == 'coin' then s1 = ' sold ' end
+	local s3 = offer_itemcount .. ' ' .. offer_itemname
+	if offer_itemname == 'coin' then s1 = ' sold ' end
 	for i, p in pairs(price) do
 		local p2 = {name = p.name, amount = p.amount}
 		if p2.name == 'raw-fish' then p2.name = 'fish' end
