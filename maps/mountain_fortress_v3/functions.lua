@@ -8,6 +8,7 @@ local Global = require 'utils.global'
 local Alert = require 'utils.alert'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local WD = require 'modules.wave_defense.table'
+local RPG = require 'modules.rpg.main'
 local Collapse = require 'modules.collapse'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 local ICW_Func = require 'maps.mountain_fortress_v3.icw.functions'
@@ -818,6 +819,8 @@ local retry_final_boost_movement_speed_on_respawn =
         end
         player.character.character_running_speed_modifier = old_speed
         player.print('Movement speed bonus removed!', Color.info)
+        local rpg_t = RPG.get_value_from_player(player.index)
+        rpg_t.has_custom_spell_active = nil
     end
 )
 
@@ -835,6 +838,8 @@ local retry_boost_movement_speed_on_respawn =
         end
         player.character.character_running_speed_modifier = old_speed
         player.print('Movement speed bonus removed!', Color.info)
+        local rpg_t = RPG.get_value_from_player(player.index)
+        rpg_t.has_custom_spell_active = nil
     end
 )
 
@@ -852,6 +857,8 @@ local remove_boost_movement_speed_on_respawn =
         end
         player.character.character_running_speed_modifier = old_speed
         player.print('Movement speed bonus removed!', Color.info)
+        local rpg_t = RPG.get_value_from_player(player.index)
+        rpg_t.has_custom_spell_active = nil
     end
 )
 
@@ -865,6 +872,9 @@ local boost_movement_speed_on_respawn =
         if not player.character or not player.character.valid then
             return
         end
+
+        local rpg_t = RPG.get_value_from_player(player.index)
+        rpg_t.has_custom_spell_active = true
 
         local old_speed = player.character_running_speed_modifier
         local new_speed = player.character_running_speed_modifier + 1

@@ -14,6 +14,15 @@ local ceil = math.ceil
 local zone_settings = WPT.zone_settings
 local worm_level_modifier = 0.19
 
+local start_ground_tiles = {
+    'sand-1',
+    'dirt-1',
+    'dirt-2',
+    'sand-2',
+    'dirt-3',
+    'sand-3'
+}
+
 local wagon_raffle = {
     'cargo-wagon',
     'cargo-wagon',
@@ -2624,7 +2633,7 @@ end
 local function border_chunk(p, data)
     local entities = data.entities
     local decoratives = data.decoratives
-    -- local tiles = data.tiles
+    local tiles = data.tiles
 
     local pos = p
 
@@ -2632,9 +2641,9 @@ local function border_chunk(p, data)
         entities[#entities + 1] = {name = trees[random(1, #trees)], position = pos}
     end
 
-    -- local noise = get_perlin('dungeons', pos, data.seed)
-    -- local index = floor(noise * 32) % 4 + 1
-    -- tiles[#tiles + 1] = {name = start_ground_tiles[index], position = pos}
+    local noise = get_perlin('dungeons', pos, data.seed)
+    local index = floor(noise * 32) % 4 + 1
+    tiles[#tiles + 1] = {name = start_ground_tiles[index], position = pos}
 
     local scrap_mineable_entities, scrap_mineable_entities_index = get_scrap_mineable_entities()
 

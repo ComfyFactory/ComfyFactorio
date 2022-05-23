@@ -192,7 +192,7 @@ function Public.reset_map()
     Collapse.set_speed(8)
     Collapse.set_amount(1)
     Collapse.set_max_line_size(level_depth)
-    Collapse.set_surface(surface)
+    Collapse.set_surface_index(surface.index)
     Collapse.set_position({0, 130})
     Collapse.set_direction('north')
 
