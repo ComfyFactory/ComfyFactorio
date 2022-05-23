@@ -126,6 +126,18 @@ local functions = {
             game.get_player(event.player_index).spectator = false
         end
     end,
+    ['blueprint_requesting'] = function(event)
+        local BPRequests = is_loaded('modules.blueprint_requesting')
+        local Module = BPRequests.get()
+        if not Module[event.player_index] then
+            Module[event.player_index] = {}
+        end
+        if event.element.switch_state == 'left' then
+            Module[event.player_index].disabled = false
+        else
+            Module[event.player_index].disabled = true
+        end
+    end,
     ['bottom_location'] = function(event)
         local player = game.get_player(event.player_index)
         if event.element.switch_state == 'left' then
@@ -445,6 +457,17 @@ local function build_config_gui(data)
             switch_state = 'left'
         end
         add_switch(scroll_pane, switch_state, 'poll_no_notify_toggle', {'gui.notify_on_polls'}, {'gui-description.notify_on_polls'})
+        scroll_pane.add({type = 'line'})
+    end
+
+    local BPRequests = is_loaded('modules.blueprint_requesting')
+    if BPRequests then
+        local Module = BPRequests.get()
+        switch_state = 'left'
+        if Module[player.index] and Module[player.index].disabled then
+            switch_state = 'right'
+        end
+        add_switch(scroll_pane, switch_state, 'blueprint_requesting', {'modules.blueprint_requesting'}, {'modules.blueprint_requesting_desc'})
         scroll_pane.add({type = 'line'})
     end
 
