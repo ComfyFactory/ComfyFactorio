@@ -231,7 +231,6 @@ require 'utils.freeplay'
 --require 'maps.mountain_race.main'
 --require 'maps.native_war.main'
 --require 'maps.scrap_towny_ffa.main'
---require 'maps.ubiquity'
 ---------------------------------------------------------------
 
 ---------------- MORE MODULES HERE ----------------
