@@ -27,6 +27,7 @@ require 'modules.floaty_chat'
 require 'modules.show_inventory'
 require 'modules.inserter_drops_pickup'
 require 'modules.autostash'
+require 'modules.blueprint_requesting'
 
 require 'utils.gui'
 require 'utils.gui.player_list'
