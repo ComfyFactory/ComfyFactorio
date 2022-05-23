@@ -526,9 +526,13 @@ local function prevent_tiles_near_towns(event)
 end
 
 local function prevent_neutral_deconstruct(event)
-    local player = game.players[event.player_index] or nil
+    local index = event.player_index
+    local player
+    if index then
+        player = game.players[index]
+    end
     local entity = event.entity
-    if entity ~= nil and entity.to_be_deconstructed() and entity.force.name == 'neutral' then
+    if entity and entity.valid and entity.to_be_deconstructed() and entity.force.name == 'neutral' then
         for _, f in pairs(game.forces) do
             if f ~= nil and entity.is_registered_for_deconstruction(f) then
                 entity.cancel_deconstruction(f, player)

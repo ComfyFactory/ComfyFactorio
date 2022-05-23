@@ -158,7 +158,9 @@ end
 local function on_player_died(event)
     local ffatable = Table.get_table()
     local player = game.players[event.player_index]
-    if ffatable.strikes[player.name] == nil then ffatable.strikes[player.name] = 0 end
+    if ffatable.strikes[player.name] == nil then
+        ffatable.strikes[player.name] = 0
+    end
 
     local ticks_elapsed = game.tick - ffatable.last_respawn[player.name]
     if ticks_elapsed < max_ticks_between_spawns then

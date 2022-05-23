@@ -1002,32 +1002,59 @@ local function on_entity_damaged(event)
             -- cars and tanks
             if cause.type == 'car' or cause.type == 'tank' then
                 local driver = cause.get_driver()
-                if driver ~= nil and driver.valid and driver.type == 'character' and driver.force.index == game.forces['player'].index then
-                    -- set the force of the player to rogue until they die or create a town
-                    set_player_to_rogue(driver)
+                if driver and driver.valid then
+                    -- driver may be LuaEntity or LuaPlayer
+                    local player = driver
+                    if driver.object_name == 'LuaEntity' then
+                        player = driver.player
+                    end
+                    if player and player.valid and player.force.index == game.forces['player'].index then
+                        -- set the force of the player to rogue until they die or create a town
+                        set_player_to_rogue(player)
+                    end
                 end
+
                 local passenger = cause.get_passenger()
-                if passenger ~= nil and passenger.valid and passenger.type == 'character' and passenger.force.index == game.forces['player'].index then
-                    -- set the force of the player to rogue until they die or create a town
-                    set_player_to_rogue(passenger)
+                if passenger and passenger.valid then
+                    -- passenger may be LuaEntity or LuaPlayer
+                    local player = passenger
+                    if passenger.object_name == 'LuaEntity' then
+                        player = passenger.player
+                    end
+                    if player and player.valid and player.force.index == game.forces['player'].index then
+                        -- set the force of the player to rogue until they die or create a town
+                        set_player_to_rogue(player)
+                    end
                 end
+                -- set the vehicle to rogue
+                cause.force = game.forces['rogue']
             end
             -- trains
             if cause.type == 'locomotive' or cause.type == 'cargo-wagon' or cause.type == 'fluid-wagon' or cause.type == 'artillery-wagon' then
                 local train = cause.train
                 for _, passenger in pairs(train.passengers) do
-                    if passenger ~= nil and passenger.valid and passenger.type == 'character' and passenger.force.index == game.forces['player'].index then
-                        set_player_to_rogue(passenger)
+                    if passenger and passenger.valid then
+                        -- passenger may be LuaEntity or LuaPlayer
+                        local player = passenger
+                        if passenger.object_name == 'LuaEntity' then
+                            player = passenger.player
+                        end
+                        if player and player.valid and player.force.index == game.forces['player'].index then
+                            set_player_to_rogue(player)
+                        end
                     end
                 end
+                cause.force = game.forces['rogue']
             end
             -- combat robots
             if cause.type == 'combat-robot' then
-                local owner = cause.last_user
-                if owner ~= nil and owner.valid and owner.force == game.forces['player]'] then
+                local owner = cause.combat_robot_owner
+                if owner and owner.valid and owner.force == game.forces['player'] then
                     -- set the force of the player to rogue until they die or create a town
                     set_player_to_rogue(owner)
                 end
+                -- set the robot to rogue
+                cause.force = game.forces['rogue']
             end
         end
     end
@@ -1036,7 +1063,7 @@ end
 local function on_entity_died(event)
     local entity = event.entity
     local cause = event.cause
-    if entity ~= nil and entity.valid and entity.name == 'market' then
+    if entity and entity.valid and entity.name == 'market' then
         kill_force(entity.force.name, cause)
     end
 end
