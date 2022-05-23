@@ -164,11 +164,14 @@ function Public.get_new_spawn_point(player, surface)
     local ffatable = Table.get_table()
     -- get a new spawn point
     local position = {0, 0}
-    if player ~= nil then
+    if player and player.valid then
         local force = player.force
         if force ~= nil then
             local force_name = force.name
-            position = find_valid_spawn_point(force_name, surface)
+            local target = find_valid_spawn_point(force_name, surface)
+            if target then
+                position = target
+            end
         end
     end
     -- should never be invalid or blocked
@@ -179,17 +182,19 @@ end
 
 -- gets a new or existing spawn point for the player
 function Public.get_spawn_point(player, surface)
-    local ffatable = Table.get_table()
-    local position = ffatable.spawn_point[player.index]
-    -- if there is a spawn point and less than three strikes
-    if position ~= nil and ffatable.strikes[player.index] < 3 then
-        -- check that the spawn point is not blocked
-        if surface.can_place_entity({name = 'character', position = position}) then
-            --log("player " .. player.name .. "using existing spawn point at {" .. position.x .. "," .. position.y .. "}")
-            return position
-        else
-            position = surface.find_non_colliding_position('character', position, 0, 0.25)
-            return position
+    if player and player.valid then
+        local ffatable = Table.get_table()
+        local position = ffatable.spawn_point[player.index]
+        -- if there is a spawn point and less than three strikes
+        if position and ffatable.strikes[player.index] < 3 then
+            -- check that the spawn point is not blocked
+            if surface.can_place_entity({name = 'character', position = position}) then
+                --log("player " .. player.name .. "using existing spawn point at {" .. position.x .. "," .. position.y .. "}")
+                return position
+            else
+                position = surface.find_non_colliding_position('character', position, 0, 0.25)
+                return position
+            end
         end
     end
     -- otherwise get a new spawn point
