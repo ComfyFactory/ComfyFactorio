@@ -3,7 +3,7 @@
 local math_min = math.min
 local math_random = math.random
 
-local Table = require 'modules.scrap_towny_ffa.table'
+local FFATable = require 'modules.scrap_towny_ffa.ffa_table'
 local Pollution = require 'modules.scrap_towny_ffa.pollution'
 
 --local damage_per_explosive = 100
@@ -1676,7 +1676,7 @@ local circle_coordinates = {
 }
 
 local function process_explosion_tile(pos, explosion_index, current_radius)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     local surface = game.surfaces[ffatable.explosion_schedule[explosion_index].surface]
     local target_entities = surface.find_entities_filtered({area = {{pos.x - 0.5, pos.y - 0.5}, {pos.x + 0.499, pos.y + 0.499}}})
     local explosion_animation = 'explosion'
@@ -1752,7 +1752,7 @@ local function volatility(inventory)
 end
 
 local function create_explosion_schedule(entity)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     local inventory = defines.inventory.chest
     if entity.type == 'car' then
         inventory = defines.inventory.car_trunk
@@ -1816,7 +1816,7 @@ local function on_entity_damaged(event)
 end
 
 local function on_tick(event)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     local tick = event.tick
     if ffatable.explosion_schedule then
         local explosion_schedule_is_alive = false
@@ -1847,7 +1847,7 @@ local function on_tick(event)
 end
 
 local on_init = function()
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     ffatable.explosion_schedule = {}
 end
 

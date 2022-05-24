@@ -1,4 +1,4 @@
-local Table = require 'modules.scrap_towny_ffa.table'
+local FFATable = require 'modules.scrap_towny_ffa.ffa_table'
 
 local crash_site = {
     -- containers
@@ -43,7 +43,7 @@ local function mining_sound(player)
 end
 
 local function on_tick()
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     for index, player in pairs(game.players) do
         if player.character ~= nil then
             local mining = player.mining_state.mining
@@ -82,7 +82,7 @@ local function on_tick()
 end
 
 local on_init = function()
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     ffatable.mining = {}
     ffatable.mining_target = {}
 end

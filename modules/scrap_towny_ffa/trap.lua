@@ -1,4 +1,5 @@
 local math_random = math.random
+
 local Evolution = require 'modules.scrap_towny_ffa.evolution'
 local Town_center = require 'modules.scrap_towny_ffa.town_center'
 local Scrap = require 'modules.scrap_towny_ffa.scrap'

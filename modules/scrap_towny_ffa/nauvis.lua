@@ -1,12 +1,88 @@
 local Public = {}
 
---local Server = require 'utils.server'
+local math_random = math.random
+local math_abs = math.abs
+local table_shuffle = table.shuffle_table
 
-local function create_limbo()
-    game.create_surface('limbo')
+local Global = require 'utils.global'
+local FFATable = require 'modules.scrap_towny_ffa.ffa_table'
+
+--local Server = require 'utils.server'
+local map_width = 2560
+local map_height = 2560
+
+local nuke_tick_schedule = {}
+Global.register(
+        nuke_tick_schedule,
+        function(t)
+            nuke_tick_schedule = t
+        end
+)
+
+function Public.nuke(position)
+    local surface = game.surfaces['nauvis']
+    surface.create_entity({name = 'atomic-rocket', position = position, target = position, speed = 0.5})
 end
 
-local function initialize_nauvis()
+function Public.armageddon()
+    local targets = {}
+    local offset = 1
+    local ffatable = FFATable.get_table()
+    for _, town_center in pairs(ffatable.town_centers) do
+        local market = town_center.market
+        if market and market.valid then
+            for _ = 1, 5 do
+                local px = market.position.x + math_random(1, 256) - 128
+                local py = market.position.y + math_random(1, 256) - 128
+                targets[offset] = {x = px, y = py}
+                offset = offset + 1
+            end
+            targets[offset] = {x = market.position.x, y = market.position.y}
+            offset = offset + 1
+        end
+    end
+    for _, spaceship in pairs(ffatable.spaceships) do
+        local market = spaceship.market
+        if market and market.valid then
+            for _ = 1, 5 do
+                local px = market.position.x + math_random(1, 256) - 128
+                local py = market.position.y + math_random(1, 256) - 128
+                targets[offset] = {x = px, y = py}
+                offset = offset + 1
+            end
+            targets[offset] = {x = market.position.x, y = market.position.y}
+            offset = offset + 1
+        end
+    end
+
+    table_shuffle(targets)
+
+    for i, pos in pairs(targets) do
+        local position = pos
+        local future = game.tick + i * 60
+        -- schedule to run this method again with a higher radius on next tick
+        if not nuke_tick_schedule[future] then
+            nuke_tick_schedule[future] = {}
+        end
+        nuke_tick_schedule[future][#nuke_tick_schedule[future] + 1] = {
+            callback = 'nuke',
+            params = {position}
+        }
+    end
+end
+
+local function get_seed()
+    local max = 4294967296
+    local salt = game.surfaces[1].map_gen_settings.seed
+    local seed = math_abs(salt + math_random(1, max)) % max + 1
+    return seed
+end
+
+function Public.initialize()
+    if game.surfaces['nauvis'] then
+        -- clear the surface
+        game.surfaces['nauvis'].clear(false)
+    end
     local surface = game.surfaces['nauvis']
 
     -- this overrides what is in the map_gen_settings.json file
@@ -55,8 +131,8 @@ local function initialize_nauvis()
     mgs.starting_area = 'none'
     mgs.terrain_segmentation = 8
     -- terrain size is 64 x 64 chunks, water size is 80 x 80
-    mgs.width = 2560
-    mgs.height = 2560
+    mgs.width = map_width
+    mgs.height = map_height
     --mgs.starting_points = {
     --	{x = 0, y = 0}
     --}
@@ -116,7 +192,7 @@ local function initialize_nauvis()
         -- this will make and average base radius around 12 tiles
         ['enemy-base-radius'] = 12
     }
-    mgs.seed = game.surfaces[1].map_gen_settings.seed
+    mgs.seed = get_seed(game.surfaces[1].map_gen_settings.seed)
     surface.map_gen_settings = mgs
     surface.peaceful_mode = false
     surface.always_day = false
@@ -131,85 +207,25 @@ local function initialize_nauvis()
     --Server.to_discord_embed('Regeneration Complete')
 end
 
-local function initialize_limbo()
-    local surface = game.surfaces['limbo']
-    surface.generate_with_lab_tiles = true
-    surface.peaceful_mode = true
-    surface.always_day = true
-    surface.freeze_daytime = true
-    surface.clear(true)
+local function on_tick()
+    if not nuke_tick_schedule[game.tick] then
+        return
+    end
+    for _, token in pairs(nuke_tick_schedule[game.tick]) do
+        local callback = token.callback
+        local params = token.params
+        if callback == 'nuke' then
+            Public.nuke(params[1])
+        end
+    end
+    nuke_tick_schedule[game.tick] = nil
 end
 
-function Public.initialize()
-    -- difficulty settings
-    game.difficulty_settings.recipe_difficulty = defines.difficulty_settings.recipe_difficulty.normal
-    game.difficulty_settings.technology_difficulty = defines.difficulty_settings.technology_difficulty.normal
-    game.difficulty_settings.technology_price_multiplier = 0.50
-    game.difficulty_settings.research_queue_from_the_start = 'always'
-
-    -- pollution settings
-    game.map_settings.pollution.enabled = true
-    game.map_settings.pollution.diffusion_ratio = 0.02 -- amount that is diffused to neighboring chunk each second
-    game.map_settings.pollution.min_to_diffuse = 15 -- minimum number of pollution units on the chunk to start diffusing
-    game.map_settings.pollution.ageing = 1 -- percent of pollution eaten by a chunk's tiles per second
-    game.map_settings.pollution.expected_max_per_chunk = 150 -- anything greater than this number of pollution units is visualized similarly
-    game.map_settings.pollution.min_to_show_per_chunk = 50
-    game.map_settings.pollution.min_pollution_to_damage_trees = 60
-    game.map_settings.pollution.pollution_with_max_forest_damage = 150
-    game.map_settings.pollution.pollution_per_tree_damage = 50
-    game.map_settings.pollution.pollution_restored_per_tree_damage = 10
-    game.map_settings.pollution.max_pollution_to_restore_trees = 20
-    game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 1
-
-    -- enemy evolution settings
-    game.map_settings.enemy_evolution.enabled = true
-    game.map_settings.enemy_evolution.time_factor = 0.0 -- percent increase in the evolution factor per second
-    game.map_settings.enemy_evolution.destroy_factor = 0.0 -- percent increase in the evolution factor for each spawner destroyed
-    game.map_settings.enemy_evolution.pollution_factor = 0.0 -- percent increase in the evolution factor for each pollution unit
-
-    -- enemy expansion settings
-    game.map_settings.enemy_expansion.enabled = true
-    game.map_settings.enemy_expansion.max_expansion_distance = 7 -- maximum distance in chunks from the nearest base (4 = 128 tiles)
-    game.map_settings.enemy_expansion.friendly_base_influence_radius = 4 -- consider other nests within radius number of chunks (2 = 64 tiles)
-    game.map_settings.enemy_expansion.other_base_coefficient = 2.0 -- multiply by coefficient for friendly bases
-    game.map_settings.enemy_expansion.neighbouring_base_chunk_coefficient = 0.4 -- multiply by coefficient for friendly bases (^distance)
-    game.map_settings.enemy_expansion.enemy_building_influence_radius = 4 -- consider player buildings within radius number of chunks
-    game.map_settings.enemy_expansion.building_coefficient = 1.0 -- multiply by coefficient for player buildings
-    game.map_settings.enemy_expansion.neighbouring_chunk_coefficient = 0.5 -- multiply by coefficient for player buildings (^distance)
-    game.map_settings.enemy_expansion.max_colliding_tiles_coefficient = 0.9 -- percent of unbuildable tiles to not be considered a candidate
-    game.map_settings.enemy_expansion.settler_group_min_size = 4 -- min size of group for building a base (multiplied by evo factor, so need evo > 0)
-    game.map_settings.enemy_expansion.settler_group_max_size = 12 -- max size of group for building a base (multiplied by evo factor, so need evo > 0)
-    game.map_settings.enemy_expansion.min_expansion_cooldown = 1200 -- minimum time before next expansion
-    game.map_settings.enemy_expansion.max_expansion_cooldown = 3600 -- maximum time before next expansion
-
-    -- unit group settings
-    game.map_settings.unit_group.min_group_gathering_time = 400
-    game.map_settings.unit_group.max_group_gathering_time = 2400
-    game.map_settings.unit_group.max_wait_time_for_late_members = 3600
-    game.map_settings.unit_group.max_group_radius = 30.0
-    game.map_settings.unit_group.min_group_radius = 5.0
-    game.map_settings.unit_group.max_member_speedup_when_behind = 1.4
-    game.map_settings.unit_group.max_member_slowdown_when_ahead = 0.6
-    game.map_settings.unit_group.max_group_slowdown_factor = 0.3
-    game.map_settings.unit_group.max_group_member_fallback_factor = 3
-    game.map_settings.unit_group.member_disown_distance = 10
-    game.map_settings.unit_group.tick_tolerance_when_member_arrives = 60
-    game.map_settings.unit_group.max_gathering_unit_groups = 30
-    game.map_settings.unit_group.max_unit_group_size = 200
-
-    ---- steering settings
-    --game.map_settings.steering.default.radius = 1.2
-    --game.map_settings.steering.default.separation_force = 0.005
-    --game.map_settings.steering.default.separation_factor = 1.2
-    --game.map_settings.steering.default.force_unit_fuzzy_goto_behavior = false
-    --game.map_settings.steering.moving.radius = 3
-    --game.map_settings.steering.moving.separation_force = 0.01
-    --game.map_settings.steering.moving.separation_factor = 3
-    --game.map_settings.steering.moving.force_unit_fuzzy_goto_behavior = false
-
-    create_limbo()
-    initialize_limbo()
-    initialize_nauvis()
+function Public.clear_nuke_schedule()
+    nuke_tick_schedule = {}
 end
+
+local Event = require 'utils.event'
+Event.add(defines.events.on_tick, on_tick)
 
 return Public

@@ -2,10 +2,10 @@ local Public = {}
 local math_random = math.random
 local math_floor = math.floor
 
-local Table = require 'modules.scrap_towny_ffa.table'
+local FFATable = require 'modules.scrap_towny_ffa.ffa_table'
 
 function Public.reproduce()
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     for _, town_center in pairs(ffatable.town_centers) do
         local surface = town_center.market.surface
         local position = town_center.market.position

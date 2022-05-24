@@ -1,6 +1,6 @@
 local table_insert = table.insert
 
-local Table = require 'modules.scrap_towny_ffa.table'
+local FFATable = require 'modules.scrap_towny_ffa.ffa_table'
 local Town_center = require 'modules.scrap_towny_ffa.town_center'
 
 local upgrade_functions = {
@@ -78,7 +78,7 @@ local upgrade_functions = {
     end,
     -- Set Spawn Point
     [7] = function(town_center, player)
-        local ffatable = Table.get_table()
+        local ffatable = FFATable.get_table()
         local market = town_center.market
         local force = market.force
         local surface = market.surface
@@ -168,7 +168,7 @@ local function set_offers(town_center)
 end
 
 local function refresh_offers(event)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     local player = game.players[event.player_index]
     local market = event.entity or event.market
     if not market then
@@ -203,7 +203,7 @@ local function refresh_offers(event)
 end
 
 local function offer_purchased(event)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     local player = game.players[event.player_index]
     local market = event.market
     local offer_index = event.offer_index
@@ -636,7 +636,7 @@ local function handle_connected_entity(town_center, market, entity)
 end
 
 local function on_tick(_)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     if not ffatable.town_centers then
         return
     end

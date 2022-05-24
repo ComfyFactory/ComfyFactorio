@@ -1,9 +1,9 @@
 local Public = {}
 
-local Table = require 'modules.scrap_towny_ffa.table'
+local FFATable = require 'modules.scrap_towny_ffa.ffa_table'
 
 local info =
-    [[You are an "outlander" stuck on this god-forsaken planet with a bunch of other desolate fools. You can choose to join
+    [[You are an "outlander" stuck on this desolate planet with a bunch of other stranded fools. You can choose to join
 an existing town if accepted, or go at it alone, building your own outpost or living as an "outlander".
 
 The local inhabitants are indifferent to you at first, so long as you don't build or pollute, but become increasingly aggressive
@@ -51,7 +51,7 @@ function Public.toggle_button(player)
 end
 
 function Public.show(player)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     if player.gui.center['towny_map_intro_frame'] then
         player.gui.center['towny_map_intro_frame'].destroy()
     end

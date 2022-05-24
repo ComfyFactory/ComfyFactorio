@@ -2,7 +2,7 @@ local Public = {}
 local math_floor = math.floor
 local math_log10 = math.log10
 
-local Table = require 'modules.scrap_towny_ffa.table'
+local FFATable = require 'modules.scrap_towny_ffa.ffa_table'
 
 local biters = {
     [1] = 'small-biter',
@@ -387,7 +387,7 @@ local function calculate_relative_evolution(evolution_factor, distance_factor)
 end
 
 local function get_relative_biter_evolution(position)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     local relative_evolution = 0.0
     local max_d2 = max_evolution_distance * max_evolution_distance
     -- for all of the teams
@@ -416,7 +416,7 @@ local function get_relative_biter_evolution(position)
 end
 
 local function get_relative_spitter_evolution(position)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     local relative_evolution = 0.0
     local max_d2 = max_evolution_distance * max_evolution_distance
     -- for all of the teams
@@ -445,7 +445,7 @@ local function get_relative_spitter_evolution(position)
 end
 
 local function get_relative_worm_evolution(position)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     local relative_evolution = 0.0
     local max_d2 = max_evolution_distance * max_evolution_distance
     -- for all of the teams
@@ -636,7 +636,7 @@ local function update_evolution(force_name, technology)
     if technology == nil then
         return
     end
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     local town_center = ffatable.town_centers[force_name]
     -- town_center is a reference to a global table
     if not town_center then

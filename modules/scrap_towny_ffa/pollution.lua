@@ -1,7 +1,7 @@
 local Public = {}
 local math_random = math.random
 
-local Table = require 'modules.scrap_towny_ffa.table'
+local FFATable = require 'modules.scrap_towny_ffa.ffa_table'
 local Scrap = require 'modules.scrap_towny_ffa.scrap'
 
 local pollution_index = {
@@ -46,7 +46,7 @@ local pollution_index = {
 }
 
 function Public.market_scent()
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     if ffatable.testing_mode then
         return
     end

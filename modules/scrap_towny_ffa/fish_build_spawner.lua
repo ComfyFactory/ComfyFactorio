@@ -2,7 +2,7 @@ local Public = {}
 
 local table_insert = table.insert
 
-local Table = require 'modules.scrap_towny_ffa.table'
+local FFATable = require 'modules.scrap_towny_ffa.ffa_table'
 
 local function on_player_dropped_item(event)
 	local player = game.players[event.player_index]
@@ -42,7 +42,7 @@ local function on_player_dropped_item(event)
 			end
 		end
 		-- set the scent
-		local ffatable = Table.get_table()
+		local ffatable = FFATable.get_table()
 		if not ffatable.fish_mounds then
 			ffatable.fish_mounds = {}
 		end

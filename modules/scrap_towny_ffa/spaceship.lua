@@ -1,12 +1,12 @@
 local table_insert = table.insert
 
-local Table = require 'modules.scrap_towny_ffa.table'
+local FFATable = require 'modules.scrap_towny_ffa.ffa_table'
 local Util = require 'modules.scrap_towny_ffa.util'
 
 local upgrade_functions = {
     -- Upgrade Backpack
     [1] = function(player)
-        local ffatable = Table.get_table()
+        local ffatable = FFATable.get_table()
         local surface = player.surface
         if player.character.character_inventory_slots_bonus + 5 > 100 then
             return false
@@ -24,7 +24,7 @@ local upgrade_functions = {
     end,
     -- Upgrade Pickaxe Speed
     [2] = function(player)
-        local ffatable = Table.get_table()
+        local ffatable = FFATable.get_table()
         local surface = player.surface
         if player.character.character_mining_speed_modifier + 0.1 > 1 then
             return false
@@ -42,7 +42,7 @@ local upgrade_functions = {
     end,
     -- Upgrade Crafting Speed
     [3] = function(player)
-        local ffatable = Table.get_table()
+        local ffatable = FFATable.get_table()
         local surface = player.surface
         if player.character.character_crafting_speed_modifier + 0.1 > 1 then
             return false
@@ -60,7 +60,7 @@ local upgrade_functions = {
     end,
     -- Set Spawn Point
     [4] = function(player)
-        local ffatable = Table.get_table()
+        local ffatable = FFATable.get_table()
         local surface = player.surface
         local position = player.position
         position = surface.find_non_colliding_position('character', position, 0, 0.25)
@@ -125,11 +125,12 @@ local function set_offers(market, player)
 
     -- coin purchases
     table_insert(market_items, {price = {{'coin', 1}}, offer = {type = 'give-item', item = 'raw-fish', count = 1}})
-    table_insert(market_items, {price = {{'coin', 4}}, offer = {type = 'give-item', item = 'firearm-magazine', count = 5}})
+    table_insert(market_items, {price = {{'coin', 3}}, offer = {type = 'give-item', item = 'firearm-magazine', count = 10}})
     table_insert(market_items, {price = {{'coin', 10}}, offer = {type = 'give-item', item = 'grenade', count = 6}})
-    table_insert(market_items, {price = {{'coin', 40}}, offer = {type = 'give-item', item = 'piercing-rounds-magazine', count = 10}})
-    table_insert(market_items, {price = {{'coin', 75}}, offer = {type = 'give-item', item = 'heavy-armor', count = 1}})
-    table_insert(market_items, {price = {{'coin', 150}}, offer = {type = 'give-item', item = 'modular-armor', count = 1}})
+    table_insert(market_items, {price = {{'coin', 10}}, offer = {type = 'give-item', item = 'piercing-rounds-magazine', count = 10}})
+    table_insert(market_items, {price = {{'coin', 500}}, offer = {type = 'give-item', item = 'light-armor', count = 1}})
+    table_insert(market_items, {price = {{'coin', 1000}}, offer = {type = 'give-item', item = 'heavy-armor', count = 1}})
+    table_insert(market_items, {price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'modular-armor', count = 1}})
     -- scrap selling
     table_insert(market_items, {price = {{'raw-fish', 1}}, offer = {type = 'give-item', item = 'coin', count = 1}})
     table_insert(market_items, {price = {{'wood', 7}}, offer = {type = 'give-item', item = 'coin', count = 1}})
@@ -138,25 +139,26 @@ local function set_offers(market, player)
     table_insert(market_items, {price = {{'iron-stick', 12}}, offer = {type = 'give-item', item = 'coin', count = 1}})
     table_insert(market_items, {price = {{'iron-gear-wheel', 3}}, offer = {type = 'give-item', item = 'coin', count = 1}})
     table_insert(market_items, {price = {{'iron-plate', 5}}, offer = {type = 'give-item', item = 'coin', count = 1}})
-    table_insert(market_items, {price = {{'steel-plate', 1}}, offer = {type = 'give-item', item = 'coin', count = 1}})
-    table_insert(market_items, {price = {{'empty-barrel', 1}}, offer = {type = 'give-item', item = 'coin', count = 1}})
-    table_insert(market_items, {price = {{'crude-oil-barrel', 1}}, offer = {type = 'give-item', item = 'coin', count = 1}})
-    table_insert(market_items, {price = {{'heavy-oil-barrel', 1}}, offer = {type = 'give-item', item = 'coin', count = 1}})
-    table_insert(market_items, {price = {{'light-oil-barrel', 1}}, offer = {type = 'give-item', item = 'coin', count = 1}})
-    table_insert(market_items, {price = {{'lubricant-barrel', 1}}, offer = {type = 'give-item', item = 'coin', count = 1}})
-    table_insert(market_items, {price = {{'petroleum-gas-barrel', 1}}, offer = {type = 'give-item', item = 'coin', count = 1}})
-    table_insert(market_items, {price = {{'sulfuric-acid-barrel', 1}}, offer = {type = 'give-item', item = 'coin', count = 1}})
-    table_insert(market_items, {price = {{'water-barrel', 1}}, offer = {type = 'give-item', item = 'coin', count = 1}})
-    table_insert(market_items, {price = {{'electronic-circuit', 5}}, offer = {type = 'give-item', item = 'coin', count = 1}})
-    table_insert(market_items, {price = {{'advanced-circuit', 1}}, offer = {type = 'give-item', item = 'coin', count = 5}})
-    table_insert(market_items, {price = {{'processing-unit', 1}}, offer = {type = 'give-item', item = 'coin', count = 10}})
-    table_insert(market_items, {price = {{'plastic-bar', 1}}, offer = {type = 'give-item', item = 'coin', count = 1}})
+    table_insert(market_items, {price = {{'steel-plate', 1}}, offer = {type = 'give-item', item = 'coin', count = 3}})
+    table_insert(market_items, {price = {{'empty-barrel', 1}}, offer = {type = 'give-item', item = 'coin', count = 3}})
+    table_insert(market_items, {price = {{'crude-oil-barrel', 1}}, offer = {type = 'give-item', item = 'coin', count = 3}})
+    table_insert(market_items, {price = {{'heavy-oil-barrel', 1}}, offer = {type = 'give-item', item = 'coin', count = 3}})
+    table_insert(market_items, {price = {{'light-oil-barrel', 1}}, offer = {type = 'give-item', item = 'coin', count = 3}})
+    table_insert(market_items, {price = {{'lubricant-barrel', 1}}, offer = {type = 'give-item', item = 'coin', count = 3}})
+    table_insert(market_items, {price = {{'petroleum-gas-barrel', 1}}, offer = {type = 'give-item', item = 'coin', count = 3}})
+    table_insert(market_items, {price = {{'sulfuric-acid-barrel', 1}}, offer = {type = 'give-item', item = 'coin', count = 3}})
+    table_insert(market_items, {price = {{'water-barrel', 1}}, offer = {type = 'give-item', item = 'coin', count = 3}})
+    table_insert(market_items, {price = {{'electronic-circuit', 5}}, offer = {type = 'give-item', item = 'coin', count = 4}})
+    table_insert(market_items, {price = {{'advanced-circuit', 1}}, offer = {type = 'give-item', item = 'coin', count = 10}})
+    table_insert(market_items, {price = {{'processing-unit', 1}}, offer = {type = 'give-item', item = 'coin', count = 20}})
+    table_insert(market_items, {price = {{'plastic-bar', 1}}, offer = {type = 'give-item', item = 'coin', count = 3}})
     table_insert(market_items, {price = {{'green-wire', 5}}, offer = {type = 'give-item', item = 'coin', count = 1}})
     table_insert(market_items, {price = {{'red-wire', 5}}, offer = {type = 'give-item', item = 'coin', count = 1}})
     table_insert(market_items, {price = {{'battery', 1}}, offer = {type = 'give-item', item = 'coin', count = 1}})
     table_insert(market_items, {price = {{'heat-pipe', 1}}, offer = {type = 'give-item', item = 'coin', count = 1}})
     table_insert(market_items, {price = {{'pipe', 8}}, offer = {type = 'give-item', item = 'coin', count = 1}})
     table_insert(market_items, {price = {{'pipe-to-ground', 1}}, offer = {type = 'give-item', item = 'coin', count = 1}})
+    table_insert(market_items, {price = {{'engine-unit', 5}}, offer = {type = 'give-item', item = 'coin', count = 4}})
 
     for _, item in pairs(market_items) do
         market.add_market_item(item)
@@ -169,7 +171,7 @@ local function refresh_offers(event)
         return
     end
     local player = game.players[event.player_index]
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     local market = event.entity or event.market
     if not market then
         return
@@ -190,7 +192,7 @@ local function refresh_offers(event)
 end
 
 local function offer_purchased(event)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     local player = game.players[event.player_index]
     local market = event.market
     local offer_index = event.offer_index
@@ -244,7 +246,7 @@ local function on_market_item_purchased(event)
 end
 
 local function kill_spaceship(entity)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     local key = Util.position_tostring(entity.position)
     if ffatable.spaceships[key] ~= nil then
         ffatable.spaceships[key] = nil
@@ -259,7 +261,7 @@ local function on_entity_died(event)
 end
 
 local on_init = function()
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     ffatable.spaceships = {}
 end
 

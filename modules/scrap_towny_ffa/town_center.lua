@@ -6,7 +6,7 @@ local math_floor = math.floor
 local table_shuffle = table.shuffle_table
 
 local Server = require 'utils.server'
-local Table = require 'modules.scrap_towny_ffa.table'
+local FFATable = require 'modules.scrap_towny_ffa.ffa_table'
 local Team = require 'modules.scrap_towny_ffa.team'
 local Building = require 'modules.scrap_towny_ffa.building'
 local Colors = require 'modules.scrap_towny_ffa.colors'
@@ -137,7 +137,7 @@ local function count_nearby_ore(surface, position, ore_name)
 end
 
 local function draw_town_spawn(force_name)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     local town_center = ffatable.town_centers[force_name]
     local market = town_center.market
     local position = market.position
@@ -270,7 +270,7 @@ local function draw_town_spawn(force_name)
 end
 
 local function is_valid_location(force_name, surface, position)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     if not surface.can_place_entity({name = 'market', position = position}) then
         surface.create_entity(
             {
@@ -326,7 +326,7 @@ local function is_valid_location(force_name, surface, position)
 end
 
 function Public.in_any_town(position)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     local town_centers = ffatable.town_centers
     for _, town_center in pairs(town_centers) do
         local market = town_center.market
@@ -340,13 +340,13 @@ function Public.in_any_town(position)
 end
 
 function Public.update_town_name(force)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     local town_center = ffatable.town_centers[force.name]
     rendering.set_text(town_center.town_caption, town_center.town_name)
 end
 
 function Public.set_market_health(entity, final_damage_amount)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     local town_center = ffatable.town_centers[entity.force.name]
     town_center.health = math_floor(town_center.health - final_damage_amount)
     if town_center.health > town_center.max_health then
@@ -358,7 +358,7 @@ function Public.set_market_health(entity, final_damage_amount)
 end
 
 function Public.update_coin_balance(force)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     local town_center = ffatable.town_centers[force.name]
     rendering.set_text(town_center.coins_text, 'Coins: ' .. town_center.coin_balance)
 end
@@ -397,7 +397,7 @@ local function found_town(event)
     entity.destroy()
 
     -- are towns enabled?
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     if not ffatable.towns_enabled then
         player.print('You must wait for more players to join!', {255, 255, 0})
         player.insert({name = 'stone-furnace', count = 1})
@@ -567,7 +567,7 @@ local function on_entity_damaged(event)
 end
 
 local on_init = function()
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     ffatable.town_centers = {}
     ffatable.number_of_towns = 0
     ffatable.cooldowns_town_placement = {}
@@ -588,7 +588,7 @@ local function rename_town(cmd)
         player.print('Must specify new town name!', Color.fail)
         return
     end
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     local town_center = ffatable.town_centers[force.name]
     local old_name = town_center.town_name
     town_center.town_name = name

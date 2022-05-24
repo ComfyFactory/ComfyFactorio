@@ -7,7 +7,7 @@ local string_lower = string.lower
 
 local Server = require 'utils.server'
 local Map = require 'modules.scrap_towny_ffa.map'
-local Table = require 'modules.scrap_towny_ffa.table'
+local FFATable = require 'modules.scrap_towny_ffa.ffa_table'
 
 local outlander_color = {150, 150, 150}
 local outlander_chat_color = {170, 170, 170}
@@ -56,7 +56,7 @@ local function can_force_accept_member(force)
         log('force nil or not valid!')
         return
     end
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     local town_centers = ffatable.town_centers
     if ffatable.member_limit == nil then
         ffatable.member_limit = 1
@@ -102,7 +102,7 @@ function Public.is_towny(force)
 end
 
 function Public.has_key(index)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     if ffatable.key == nil then
         ffatable.key = {}
     end
@@ -113,7 +113,7 @@ function Public.has_key(index)
 end
 
 function Public.give_key(index)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     if ffatable.key == nil then
         ffatable.key = {}
     end
@@ -121,7 +121,7 @@ function Public.give_key(index)
 end
 
 function Public.remove_key(index)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     if ffatable.key == nil then
         ffatable.key = {}
     end
@@ -133,13 +133,14 @@ function Public.set_player_color(player)
         log('player nil or not valid!')
         return
     end
-    local ffatable = Table.get_table()
-    if player.force.index == game.forces['player'].index then
+    local ffatable = FFATable.get_table()
+    local force_name = player.force.name
+    if force_name == 'player' then
         player.color = outlander_color
         player.chat_color = outlander_chat_color
         return
     end
-    if player.force.index == game.forces['rogue'].index then
+    if force_name == 'rogue' then
         player.color = rogue_color
         player.chat_color = rogue_chat_color
         return
@@ -153,7 +154,7 @@ function Public.set_player_color(player)
 end
 
 local function set_town_color(event)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     if event.command ~= 'color' then
         return
     end
@@ -199,7 +200,7 @@ function Public.add_player_to_town(player, town_center)
         log('town_center nil!')
         return
     end
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     local market = town_center.market
     local force = market.force
     local surface = market.surface
@@ -264,7 +265,7 @@ local function ally_outlander(player, target)
         log('target nil or not valid!')
         return
     end
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     local requesting_force = player.force
     local target_force = target.force
 
@@ -408,7 +409,7 @@ local function declare_war(player, item)
         log('player nil or not valid!')
         return
     end
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     local position = item.position
     local surface = player.surface
     local area = {{position.x - item_drop_radius, position.y - item_drop_radius}, {position.x + item_drop_radius, position.y + item_drop_radius}}
@@ -496,7 +497,7 @@ function Public.add_chart_tag(town_center)
 end
 
 function Public.update_town_chart_tags()
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     local town_centers = ffatable.town_centers
     local forces = game.forces
     for _, town_center in pairs(town_centers) do
@@ -679,7 +680,7 @@ end
 
 -- setup a team force
 function Public.add_new_force(force_name)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     -- disable permissions
     local force = game.create_force(force_name)
     local permission_group = game.permissions.create_group(force_name)
@@ -711,8 +712,21 @@ function Public.add_new_force(force_name)
     return force
 end
 
+function Public.reset_all_forces()
+    for _, force in pairs(game.forces) do
+        if force and force.valid then
+            if force.name ~= 'enemy' and force.name ~= 'player' and force.name ~= 'neutral' and force.name ~= 'rogue' then
+                game.merge_forces(force.name, 'player')
+            end
+        end
+    end
+    game.forces['enemy'].reset()
+    game.forces['neutral'].reset()
+    game.forces['player'].reset()
+end
+
 local function kill_force(force_name, cause)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     local force = game.forces[force_name]
     local town_center = ffatable.town_centers[force_name]
     local market = town_center.market
@@ -854,6 +868,21 @@ local player_force_enabled_recipes = {
     'decider-combinator'
 }
 
+local function setup_global_table()
+    local ffatable = FFATable.get_table()
+    ffatable.key = {}
+    ffatable.spawn_point = {}
+    ffatable.requests = {}
+    ffatable.last_respawn = {}
+    ffatable.last_death = {}
+    ffatable.strikes = {}
+    ffatable.testing_mode = testing_mode
+    ffatable.buffs = {}
+    ffatable.players = 0
+    ffatable.towns_enabled = true
+    ffatable.rocket_launches = {}
+end
+
 local function setup_neutral_force()
     local force = game.forces['neutral']
     force.technologies['military'].researched = true
@@ -872,7 +901,7 @@ end
 
 -- setup the player force (this is the default for Outlanders)
 local function setup_player_force()
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     local force = game.forces.player
     local permission_group = game.permissions.create_group('outlander')
     -- disable permissions
@@ -908,10 +937,12 @@ local function setup_player_force()
 end
 
 local function setup_rogue_force()
-    local ffatable = Table.get_table()
-    local force_name = 'rogue'
-    local force = game.create_force(force_name)
-    local permission_group = game.permissions.create_group(force_name)
+    local ffatable = FFATable.get_table()
+    local force = game.forces['rogue']
+    if game.forces['rogue'] == nil then
+        force = game.create_force('rogue')
+    end
+    local permission_group = game.permissions.create_group('rogue')
     -- disable permissions
     reset_permissions(permission_group)
     disable_blueprints(permission_group)
@@ -945,7 +976,7 @@ local function setup_rogue_force()
 end
 
 local function setup_enemy_force()
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     local e_force = game.forces['enemy']
     e_force.evolution_factor = 1 -- this should never change since we are changing biter types on spawn
     e_force.set_friend(game.forces.player, true) -- outlander force (player) should not be attacked by turrets
@@ -1097,21 +1128,14 @@ local function on_console_chat(event)
 end
 
 function Public.initialize()
+    setup_global_table()
     setup_neutral_force()
     setup_player_force()
     setup_rogue_force()
     setup_enemy_force()
 end
 
-local on_init = function()
-    local ffatable = Table.get_table()
-    ffatable.key = {}
-    ffatable.spawn_point = {}
-    ffatable.requests = {}
-end
-
 local Event = require 'utils.event'
-Event.on_init(on_init)
 Event.add(defines.events.on_player_dropped_item, on_player_dropped_item)
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.add(defines.events.on_entity_died, on_entity_died)

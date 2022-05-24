@@ -4,7 +4,7 @@ local math_floor = math.floor
 local math_abs = math.abs
 
 local get_noise = require 'utils.get_noise'
-local Table = require 'modules.scrap_towny_ffa.table'
+local FFATable = require 'modules.scrap_towny_ffa.ffa_table'
 local Scrap = require 'modules.scrap_towny_ffa.scrap'
 local Util = require 'modules.scrap_towny_ffa.util'
 require 'modules.no_deconstruction_of_neutral_entities'
@@ -74,31 +74,32 @@ local scrap_containers_index = table.size(scrap_containers)
 local container_loot_chance = {
     {name = 'advanced-circuit', chance = 5},
     {name = 'artillery-shell', chance = 1},
+    {name = 'battery', chance = 20},
     {name = 'cannon-shell', chance = 2},
     {name = 'cliff-explosives', chance = 5},
-    --{name = "cluster-grenade", chance = 2},
+    --{name = 'cluster-grenade', chance = 2},
     {name = 'coin', chance = 1},
     {name = 'construction-robot', chance = 1},
-    {name = 'copper-cable', chance = 250},
-    {name = 'copper-plate', chance = 500},
+    {name = 'copper-cable', chance = 25},
+    {name = 'copper-plate', chance = 50},
     {name = 'crude-oil-barrel', chance = 30},
     {name = 'defender-capsule', chance = 5},
     {name = 'destroyer-capsule', chance = 1},
     {name = 'distractor-capsule', chance = 2},
     {name = 'electric-engine-unit', chance = 2},
-    {name = 'electronic-circuit', chance = 200},
+    {name = 'electronic-circuit', chance = 15},
     {name = 'empty-barrel', chance = 10},
     {name = 'engine-unit', chance = 7},
     {name = 'explosive-cannon-shell', chance = 2},
-    --{name = "explosive-rocket", chance = 3},
+    --{name = 'explosive-rocket', chance = 3},
     {name = 'explosive-uranium-cannon-shell', chance = 1},
     {name = 'explosives', chance = 5},
     {name = 'green-wire', chance = 10},
     {name = 'grenade', chance = 10},
     {name = 'heat-pipe', chance = 1},
     {name = 'heavy-oil-barrel', chance = 15},
-    {name = 'iron-gear-wheel', chance = 500},
-    {name = 'iron-plate', chance = 750},
+    {name = 'iron-gear-wheel', chance = 50},
+    {name = 'iron-plate', chance = 75},
     {name = 'iron-stick', chance = 50},
     {name = 'land-mine', chance = 3},
     {name = 'light-oil-barrel', chance = 15},
@@ -112,11 +113,11 @@ local container_loot_chance = {
     {name = 'plastic-bar', chance = 5},
     {name = 'processing-unit', chance = 2},
     {name = 'red-wire', chance = 10},
-    --{name = "rocket", chance = 3},  {name = "battery", chance = 20},
+    --{name = 'rocket', chance = 3},
     {name = 'rocket-control-unit', chance = 1},
     {name = 'rocket-fuel', chance = 3},
-    {name = 'solid-fuel', chance = 100},
-    {name = 'steel-plate', chance = 150},
+    {name = 'solid-fuel', chance = 10},
+    {name = 'steel-plate', chance = 15},
     {name = 'sulfuric-acid-barrel', chance = 15},
     {name = 'uranium-cannon-shell', chance = 1},
     {name = 'uranium-fuel-cell', chance = 1},
@@ -124,27 +125,28 @@ local container_loot_chance = {
     {name = 'water-barrel', chance = 10}
 }
 
+-- positive numbers can scale, 0 is disabled, and negative numbers are fixed absolute values
 local container_loot_amounts = {
     ['advanced-circuit'] = 2,
-    ['artillery-shell'] = 0.3,
+    ['artillery-shell'] = 2,
     ['battery'] = 2,
     ['cannon-shell'] = 2,
     ['cliff-explosives'] = 2,
-    --["cluster-grenade"] = 0.3,
+    --['cluster-grenade'] = 3,
     ['coin'] = 2,
-    ['construction-robot'] = 0.3,
-    ['copper-cable'] = 24,
+    ['construction-robot'] = -1,
+    ['copper-cable'] = 8,
     ['copper-plate'] = 16,
     ['crude-oil-barrel'] = 3,
     ['defender-capsule'] = 2,
-    ['destroyer-capsule'] = 0.3,
-    ['distractor-capsule'] = 0.3,
+    ['destroyer-capsule'] = -1,
+    ['distractor-capsule'] = -1,
     ['electric-engine-unit'] = 2,
-    ['electronic-circuit'] = 8,
+    ['electronic-circuit'] = 4,
     ['empty-barrel'] = 3,
     ['engine-unit'] = 2,
     ['explosive-cannon-shell'] = 2,
-    --["explosive-rocket"] = 2,
+    --['explosive-rocket'] = 2,
     ['explosive-uranium-cannon-shell'] = 2,
     ['explosives'] = 4,
     ['green-wire'] = 8,
@@ -153,27 +155,27 @@ local container_loot_amounts = {
     ['heavy-oil-barrel'] = 3,
     ['iron-gear-wheel'] = 8,
     ['iron-plate'] = 16,
-    ['iron-stick'] = 16,
+    ['iron-stick'] = 8,
     ['land-mine'] = 1,
     ['light-oil-barrel'] = 3,
-    ['logistic-robot'] = 0.3,
-    ['low-density-structure'] = 0.3,
+    ['logistic-robot'] = -1,
+    ['low-density-structure'] = 2,
     ['lubricant-barrel'] = 3,
-    ['nuclear-fuel'] = 0.1,
+    ['nuclear-fuel'] = -1,
     ['petroleum-gas-barrel'] = 3,
     ['pipe'] = 8,
     ['pipe-to-ground'] = 1,
     ['plastic-bar'] = 4,
     ['processing-unit'] = 1,
     ['red-wire'] = 8,
-    --["rocket"] = 2,
-    ['rocket-control-unit'] = 0.3,
-    ['rocket-fuel'] = 0.3,
+    --['rocket'] = 2,
+    ['rocket-control-unit'] = -1,
+    ['rocket-fuel'] = 2,
     ['solid-fuel'] = 4,
     ['steel-plate'] = 4,
     ['sulfuric-acid-barrel'] = 3,
     ['uranium-cannon-shell'] = 2,
-    ['uranium-fuel-cell'] = 0.3,
+    ['uranium-fuel-cell'] = -1,
     ['used-up-uranium-fuel-cell'] = 1,
     ['water-barrel'] = 3
 }
@@ -188,7 +190,7 @@ end
 local size_of_scrap_raffle = #scrap_raffle
 
 local function place_scrap(surface, position)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     if ffatable.spaceships == nil then
         ffatable.spaceships = {}
     end
@@ -230,9 +232,15 @@ local function place_scrap(surface, position)
             local size = scrap.size
             for _ = 1, math_random(1, size), 1 do
                 local loot = scrap_raffle[math_random(1, size_of_scrap_raffle)]
-                local amount = container_loot_amounts[loot]
-                local count = math_floor(amount * math_random(5, 35) * 0.1) + 1
-                i.insert({name = loot, count = count})
+                local amount
+                if container_loot_amounts[loot] <= 0 then
+                    amount = math.abs(container_loot_amounts[loot])
+                else
+                    amount = math_random(1, container_loot_amounts[loot])
+                end
+                if amount > 0 then
+                    i.insert({name = loot, count = amount})
+                end
             end
         end
         return

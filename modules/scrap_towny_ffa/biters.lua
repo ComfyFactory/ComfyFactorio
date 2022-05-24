@@ -11,15 +11,15 @@ local table_shuffle = table.shuffle_table
 local Global = require 'utils.global'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 
-local tick_schedule = {}
+local biter_tick_schedule = {}
 Global.register(
-    tick_schedule,
+        biter_tick_schedule,
     function(t)
-        tick_schedule = t
+        biter_tick_schedule = t
     end
 )
 
-local Table = require 'modules.scrap_towny_ffa.table'
+local Table = require 'modules.scrap_towny_ffa.ffa_table'
 local Evolution = require 'modules.scrap_towny_ffa.evolution'
 
 local function get_attack_commands(target, group)
@@ -217,10 +217,10 @@ function Public.swarm(town_center, radius)
         r = r + 16
         local future = game.tick + 1
         -- schedule to run this method again with a higher radius on next tick
-        if not tick_schedule[future] then
-            tick_schedule[future] = {}
+        if not biter_tick_schedule[future] then
+            biter_tick_schedule[future] = {}
         end
-        tick_schedule[future][#tick_schedule[future] + 1] = {
+        biter_tick_schedule[future][#biter_tick_schedule[future] + 1] = {
             callback = 'swarm',
             params = {tc, r}
         }
@@ -334,17 +334,17 @@ local function on_unit_group_finished_gathering(event)
 end
 
 local function on_tick()
-    if not tick_schedule[game.tick] then
+    if not biter_tick_schedule[game.tick] then
         return
     end
-    for _, token in pairs(tick_schedule[game.tick]) do
+    for _, token in pairs(biter_tick_schedule[game.tick]) do
         local callback = token.callback
         local params = token.params
         if callback == 'swarm' then
             Public.swarm(params[1], params[2])
         end
     end
-    tick_schedule[game.tick] = nil
+    biter_tick_schedule[game.tick] = nil
 end
 
 local on_init = function()

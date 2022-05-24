@@ -8,7 +8,7 @@ local math_sin = math.sin
 local math_cos = math.cos
 local math_floor = math.floor
 
-local Table = require 'modules.scrap_towny_ffa.table'
+local FFATable = require 'modules.scrap_towny_ffa.ffa_table'
 local Enemy = require 'modules.scrap_towny_ffa.enemy'
 local Building = require 'modules.scrap_towny_ffa.building'
 
@@ -55,7 +55,7 @@ end
 
 -- is the position already used
 local function in_use(position)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     local result = false
     for _, v in pairs(ffatable.spawn_point) do
         if v == position then
@@ -95,7 +95,7 @@ end
 
 -- finds a valid spawn point that is not near a town and not in a polluted area
 local function find_valid_spawn_point(force_name, surface)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
 
     -- check center of map first if valid
     local position = {x = 0, y = 0}
@@ -161,7 +161,7 @@ local function find_valid_spawn_point(force_name, surface)
 end
 
 function Public.get_new_spawn_point(player, surface)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     -- get a new spawn point
     local position = {0, 0}
     if player and player.valid then
@@ -183,17 +183,19 @@ end
 -- gets a new or existing spawn point for the player
 function Public.get_spawn_point(player, surface)
     if player and player.valid then
-        local ffatable = Table.get_table()
+        local ffatable = FFATable.get_table()
         local position = ffatable.spawn_point[player.index]
         -- if there is a spawn point and less than three strikes
-        if position and ffatable.strikes[player.index] < 3 then
-            -- check that the spawn point is not blocked
-            if surface.can_place_entity({name = 'character', position = position}) then
-                --log("player " .. player.name .. "using existing spawn point at {" .. position.x .. "," .. position.y .. "}")
-                return position
-            else
-                position = surface.find_non_colliding_position('character', position, 0, 0.25)
-                return position
+        if position then
+            if ffatable.strikes and ffatable.strikes[player.index] ~= nil and ffatable.strikes[player.index] < 3 then
+                -- check that the spawn point is not blocked
+                if surface.can_place_entity({name = 'character', position = position}) then
+                    --log("player " .. player.name .. "using existing spawn point at {" .. position.x .. "," .. position.y .. "}")
+                    return position
+                else
+                    position = surface.find_non_colliding_position('character', position, 0, 0.25)
+                    return position
+                end
             end
         end
     end

@@ -1,7 +1,7 @@
-local Table = require 'modules.scrap_towny_ffa.table'
+local FFATable = require 'modules.scrap_towny_ffa.ffa_table'
 
 local function on_tick()
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     if not ffatable.on_tick_schedule[game.tick] then
         return
     end
@@ -12,7 +12,7 @@ local function on_tick()
 end
 
 local on_init = function()
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     ffatable.on_tick_schedule = {}
 end
 

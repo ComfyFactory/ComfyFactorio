@@ -1,7 +1,7 @@
 local math_random = math.random
 local math_ceil = math.ceil
 
-local Table = require 'modules.scrap_towny_ffa.table'
+local FFATable = require 'modules.scrap_towny_ffa.ffa_table'
 
 local function create_particles(surface, position, amount)
     if not surface.valid then
@@ -46,7 +46,7 @@ local function spawn_worm(surface, position, evolution_index)
 end
 
 local function unearthing_worm(surface, position, relative_evolution)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     if not surface then
         return
     end

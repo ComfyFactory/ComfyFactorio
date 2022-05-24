@@ -1,6 +1,6 @@
 local math_random = math.random
 
-local Table = require 'modules.scrap_towny_ffa.table'
+local FFATable = require 'modules.scrap_towny_ffa.ffa_table'
 
 local function create_particles(surface, position, amount)
     if not surface.valid then
@@ -64,7 +64,7 @@ local function spawn_biter(surface, position, evolution)
 end
 
 local function unearthing_biters(surface, position, amount, relative_evolution)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     if not surface then
         return
     end

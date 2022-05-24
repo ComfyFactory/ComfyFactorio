@@ -3,7 +3,7 @@ local Public = {}
 local math_floor = math.floor
 local table_insert = table.insert
 local table_size = table.size
-local Table = require 'modules.scrap_towny_ffa.table'
+local FFATable = require 'modules.scrap_towny_ffa.ffa_table'
 
 local town_radius = 27
 local connection_radius = 7
@@ -18,25 +18,42 @@ local blacklist_entity_types = {
     ['character-corpse'] = true,
     ['corpse'] = true
 }
--- these should be allowed to place inside any base by outlanders as neutral
-local neutral_whitelist = {
-    ['burner-inserter'] = true,
-    ['car'] = true,
+-- these should be allowed to place inside any base by outlanders
+local subterfuge_items = {
     ['coin'] = true,
-    ['express-loader'] = true,
-    ['fast-inserter'] = true,
-    ['fast-loader'] = true,
-    ['filter-inserter'] = true,
-    ['inserter'] = true,
-    ['iron-chest'] = true,
-    ['loader'] = true,
-    ['long-handed-inserter'] = true,
     ['raw-fish'] = true,
-    ['stack-filter-inserter'] = true,
+    ['burner-inserter'] = true,
+    ['inserter'] = true,
+    ['long-handed-inserter'] = true,
+    ['fast-inserter'] = true,
     ['stack-inserter'] = true,
+    ['filter-inserter'] = true,
+    ['stack-filter-inserter'] = true,
+    ['loader'] = true,
+    ['fast-loader'] = true,
+    ['express-loader'] = true,
+    ['wooden-chest'] = true,
+    ['iron-chest'] = true,
     ['steel-chest'] = true,
+    ['car'] = true,
+    ['tank'] = true
+}
+
+local neutral_items = {
+    ['car'] = true,
     ['tank'] = true,
+    ['locomotive'] = true,
+    ['cargo-wagon'] = true,
+    ['fluid-wagon'] = true,
+    ['artillery-wagon'] = true,
+    ['rail'] = true,
+    ['rail-chain-signal'] = true,
+    ['rail-signal'] = true,
+    ['train-stop'] = true,
+    ['steel-chest'] = true,
+    ['iron-chest'] = true,
     ['wooden-chest'] = true
+    
 }
 
 -- these should be allowed to place outside any base by town players
@@ -207,12 +224,12 @@ function Public.in_area(position, area_center, area_radius)
 end
 
 -- is the position near another town?
-function Public.near_another_town(force_name, position, surface, radius)
+function Public.near_another_town(force_name, position, surface, radius, allow_friendly)
     -- check for nearby town centers
     if force_name == nil then
         return false
     end
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     local forces = {}
     -- check for nearby town centers
     local fail = false
@@ -227,8 +244,15 @@ function Public.near_another_town(force_name, position, surface, radius)
                             table_insert(forces, market_force.name)
                             if force_name ~= market_force.name then
                                 if Public.in_range(position, market.position, radius) == true then
-                                    fail = true
-                                    break
+                                    if allow_friendly then
+                                        if not game.forces[market_force].get_friend(force_name) then
+                                            fail = true
+                                            break
+                                        end
+                                    else
+                                        fail = true
+                                        break
+                                    end
                                 end
                             end
                         end
@@ -265,7 +289,7 @@ function Public.near_another_town(force_name, position, surface, radius)
 end
 
 local function in_own_town(force, position)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     local town_center = ffatable.town_centers[force.name]
     if town_center ~= nil then
         local market = town_center.market
@@ -456,10 +480,8 @@ local function prevent_entities_near_towns(event)
             end
         end
     end
-    if Public.near_another_town(force_name, position, surface, 32) == true then
-        if neutral_whitelist[name] then
-            entity.force = game.forces['neutral']
-        else
+    if Public.near_another_town(force_name, position, surface, 32, true) == true then
+        if not subterfuge_items[name] then
             entity.destroy()
             if player_index ~= nil then
                 local player = game.players[player_index]
@@ -507,7 +529,7 @@ local function prevent_tiles_near_towns(event)
     for _, t in pairs(event.tiles) do
         local old_tile = t.old_tile
         position = t.position
-        if Public.near_another_town(force_name, position, surface, 32) == true then
+        if Public.near_another_town(force_name, position, surface, 32, true) == true then
             fail = true
             surface.set_tiles({{name = old_tile.name, position = position}}, true)
             if item ~= nil then
@@ -541,6 +563,17 @@ local function prevent_neutral_deconstruct(event)
     end
 end
 
+local function set_neutral_items(event)
+    local entity = event.created_entity
+    if entity == nil or not entity.valid then
+        return
+    end
+    local item = event.item
+    if neutral_items[item.name] then
+        entity.force = 'neutral'
+    end
+end
+
 -- called when a player places an item, or a ghost
 local function on_built_entity(event)
     local player = game.players[event.player_index]
@@ -553,6 +586,7 @@ local function on_built_entity(event)
     if player.force.index ~= game.forces['player'].index and player.force.index ~= game.forces['rogue'].index then
         prevent_unconnected_town_entities(event)
     end
+    set_neutral_items(event)
 end
 
 local function on_robot_built_entity(event)
@@ -566,6 +600,7 @@ local function on_robot_built_entity(event)
     if robot.force.index ~= game.forces['player'].index and robot.force.index ~= game.forces['rogue'].index then
         prevent_unconnected_town_entities(event)
     end
+    set_neutral_items(event)
 end
 
 -- called when a player places landfill

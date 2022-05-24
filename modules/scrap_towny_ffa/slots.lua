@@ -1,8 +1,8 @@
-local Table = require 'modules.scrap_towny_ffa.table'
+local FFATable = require 'modules.scrap_towny_ffa.ffa_table'
 
 -- called whenever a player places an item
 local function on_built_entity(event)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     local entity = event.created_entity
     if not entity.valid then
         return
@@ -62,7 +62,7 @@ end
 
 -- called whenever a robot places an item
 local function on_robot_built_entity(event)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     local entity = event.created_entity
     if not entity.valid then
         return
@@ -122,7 +122,7 @@ end
 -- called whenever a laser-turret is removed from the map
 local function on_entity_destroyed(event)
     local key = event.registration_number
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     if (ffatable.laser_turrets == nil) then
         return
     end

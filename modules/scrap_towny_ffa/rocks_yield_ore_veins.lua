@@ -3,7 +3,7 @@ local math_floor = math.floor
 local table_insert = table.insert
 local table_shuffle = table.shuffle_table
 
-local Table = require 'modules.scrap_towny_ffa.table'
+local FFATable = require 'modules.scrap_towny_ffa.ffa_table'
 
 local valid_entities = {
     ['rock-big'] = true,
@@ -31,7 +31,7 @@ local function get_chances()
 end
 
 local function set_raffle()
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     ffatable.rocks_yield_ore_veins.raffle = {}
     for _, t in pairs(get_chances()) do
         for _ = 1, t[2], 1 do
@@ -48,7 +48,7 @@ local function get_amount()
 end
 
 local function draw_chain(surface, count, ore, ore_entities, ore_positions)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     local vectors = {{0, -0.75}, {-0.75, 0}, {0.75, 0}, {0, 0.75}}
     local r = math_random(1, #ore_entities)
     local position = {x = ore_entities[r].ore.position.x, y = ore_entities[r].ore.position.y}
@@ -97,7 +97,7 @@ local function draw_chain(surface, count, ore, ore_entities, ore_positions)
 end
 
 local function ore_vein(event)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     local surface = event.entity.surface
     local size = size_raffle[math_random(1, #size_raffle)]
     local ore = ffatable.rocks_yield_ore_veins.raffle[math_random(1, #ffatable.rocks_yield_ore_veins.raffle)]
@@ -180,7 +180,7 @@ local function ore_vein(event)
 end
 
 local function on_player_mined_entity(event)
-    local rocks_yield_ore_veins = Table.get('rocks_yield_ore_veins')
+    local rocks_yield_ore_veins = FFATable.get('rocks_yield_ore_veins')
     if not rocks_yield_ore_veins then
         return
     end
@@ -202,7 +202,7 @@ local function on_player_mined_entity(event)
 end
 
 local function on_init()
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     ffatable.rocks_yield_ore_veins = {}
     ffatable.rocks_yield_ore_veins.raffle = {}
     ffatable.rocks_yield_ore_veins.mixed_ores = {}

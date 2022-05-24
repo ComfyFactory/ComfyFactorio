@@ -1,9 +1,9 @@
 local Public = {}
 
-local Table = require 'modules.scrap_towny_ffa.table'
+local FFATable = require 'modules.scrap_towny_ffa.ffa_table'
 
 function Public.reset()
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     if ffatable.testing_mode then return end
     for index = 1, table.size(game.forces), 1 do
         local force = game.forces[index]
@@ -40,7 +40,7 @@ local function on_chunk_charted(event)
     local markets = surface.find_entities_filtered({area = area, name = 'market'})
     for _, market in pairs(markets) do
         local force_name = market.force.name
-        local ffatable = Table.get_table()
+        local ffatable = FFATable.get_table()
         local town_center = ffatable.town_centers[force_name]
         -- town caption
         local town_caption = town_center.town_caption

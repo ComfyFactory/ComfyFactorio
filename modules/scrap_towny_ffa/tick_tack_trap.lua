@@ -2,7 +2,7 @@
 local table_insert = table.insert
 local math_random = math.random
 
-local Table = require 'modules.scrap_towny_ffa.table'
+local FFATable = require 'modules.scrap_towny_ffa.ffa_table'
 
 local tick_tacks = {'*tick*', '*tick*', '*tack*', '*tak*', '*tik*', '*tok*'}
 
@@ -69,7 +69,7 @@ local function create_kaboom(surface, position, name)
 end
 
 local function tick_tack_trap(surface, position)
-    local ffatable = Table.get_table()
+    local ffatable = FFATable.get_table()
     if not surface then
         return
     end
