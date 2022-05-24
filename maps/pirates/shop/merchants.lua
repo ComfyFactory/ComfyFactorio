@@ -39,7 +39,7 @@ function Public.generate_merchant_trades(market)
 			market.add_market_item{price = {{'coin', 5000}, {'raw-fish', 10}}, offer = {type = 'give-item', item = 'energy-shield-mk2-equipment', count = 1}}
 			market.add_market_item{price = {{'coin', 4000}, {'raw-fish', 10}}, offer = {type = 'give-item', item = 'personal-roboport-mk2-equipment', count = 1}}
 			market.add_market_item{price = {{'coin', 8000}, {'raw-fish', 10}}, offer = {type = 'give-item', item = 'exoskeleton-equipment', count = 1}}
-			market.add_market_item{price = {{'coin', 10000}, {'raw-fish', 10}}, offer = {type = 'give-item', item = 'personal-laser-defense', count = 1}}
+			market.add_market_item{price = {{'coin', 10000}, {'raw-fish', 10}}, offer = {type = 'give-item', item = 'personal-laser-defense-equipment', count = 1}}
 		-- else
 		-- 	market.add_market_item{price = {{'coin', 18000}, {'raw-fish', 100}}, offer = {type = 'give-item', item = 'power-armor', count = 1}}
 		-- 	market.add_market_item{price = {{'coin', 24000}, {'raw-fish', 100}}, offer = {type = 'give-item', item = 'power-armor-mk2', count = 1}}
@@ -50,7 +50,7 @@ function Public.generate_merchant_trades(market)
 		-- 	market.add_market_item{price = {{'coin', 5000}, {'raw-fish', 10}}, offer = {type = 'give-item', item = 'energy-shield-mk2-equipment', count = 1}}
 		-- 	market.add_market_item{price = {{'coin', 4000}, {'raw-fish', 10}}, offer = {type = 'give-item', item = 'personal-roboport-mk2-equipment', count = 1}}
 		-- 	market.add_market_item{price = {{'coin', 8000}, {'raw-fish', 10}}, offer = {type = 'give-item', item = 'exoskeleton-equipment', count = 1}}
-		-- 	market.add_market_item{price = {{'coin', 10000}, {'raw-fish', 10}}, offer = {type = 'give-item', item = 'personal-laser-defense', count = 1}}
+		-- 	market.add_market_item{price = {{'coin', 10000}, {'raw-fish', 10}}, offer = {type = 'give-item', item = 'personal-laser-defense-equipment', count = 1}}
 		end
 
 	end

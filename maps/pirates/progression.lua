@@ -41,7 +41,7 @@ function Public.fuel_depletion_rate()
 	if state == Boats.enum_state.ATSEA_SAILING or state == Boats.enum_state.APPROACHING then
 		return Balance.fuel_depletion_rate_sailing()
 	elseif state == Boats.enum_state.LEAVING_DOCK then
-		return Balance.fuel_depletion_rate_sailing() * 2
+		return Balance.fuel_depletion_rate_sailing() * 1.25
 	elseif state == Boats.enum_state.RETREATING then
 		return Balance.fuel_depletion_rate_sailing() / 4
 	elseif state == Boats.enum_state.LANDED then

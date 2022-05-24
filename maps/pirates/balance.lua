@@ -45,7 +45,9 @@ Public.rocket_launch_coin_reward = 6000
 function Public.crew_scale()
 	local ret = Common.activecrewcount()/10
 	if ret == 0 then ret = 1/10 end --if all players are afk
-	if ret > 2.4 then ret = 2.4 end --we have to cap this because you need time to mine the ore... and big crews are a mess anyway. currently this value matches the 24 player capacity setting
+	if ret > 2.1 then ret = 2.1 end --An upper cap on this is important, for two reasons:
+	-- large crews become disorganised
+	-- Higher values of this scale lower the amount of time you get on each island. But the amount of time certain island tasks take is fixed; e.g. the amount of ore is mostly invariant, and you need time to mine it.
 	return ret
 end
 
@@ -105,7 +107,7 @@ function Public.max_time_on_island()
 		return -1
 	else
 		if x == 40 then
-			return 1.1 * Math.ceil(Public.max_time_on_island_formula()) --it's important for this island to be chill, so that it's not such a shock to go here from the first chill island
+			return 1.1 * Math.ceil(Public.max_time_on_island_formula()) --it's important for this island to be somewhat chill, so that it's not such a shock to go here from the first lobby chill island
 		else
 			return Math.ceil(Public.max_time_on_island_formula())
 		end
@@ -191,7 +193,7 @@ function Public.base_evolution_leagues(leagues)
 
 		if overworldx > 600 and overworldx < 1000 then
 			evo = evo + (0.0025 * (overworldx - 600)/40)
-		elseif overworldx > 1000 then
+		elseif overworldx >= 1000 then
 			evo = evo + 0.0025 * 10
 		end --extra slope from 600 to 1000 adds 2.5% evo
 	end
@@ -268,7 +270,7 @@ end
 -- end
 
 
-function Public.biter_timeofday_bonus_damage(darkness) -- a surface having min_brightness of 0.2 will cap this at 0.8
+function Public.biter_timeofday_bonus_damage(darkness) -- a surface having min_brightness of 0.2 will cap darkness at 0.8
 	return 0.1 * darkness
 end
 
@@ -368,7 +370,7 @@ function Public.kraken_kill_reward_items()
 	return {{name = 'sulfuric-acid-barrel', count = 5}, {name = 'coin', count = 1000}}
 end
 function Public.kraken_kill_reward_fuel()
-	return 150
+	return 200
 end
 
 function Public.kraken_health()
@@ -524,13 +526,12 @@ end
 
 
 function Public.covered_entry_price_scale()
-	return 0.85 * (1 + 0.033 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty_scale(), 1/2) --whilst resource scales tend to be held fixed with crew size, we account slightly for the fact that more players tend to handcraft more
+	return 0.85 * (1 + 0.033 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty_scale(), 1/2) --whilst the scenario philosophy says that resource scales tend to be independent of crew size, we account slightly for the fact that more players tend to handcraft more
 end
-
--- if the prices are too high, players will accidentally throw too much in when they can't do it
 
 Public.covered1_entry_price_data_raw = { --watch out that the raw_materials chest can only hold e.g. 4.8 iron-plates
 	-- choose things that are easy to make at outposts
+	-- if the prices are too high, players will accidentally throw too much in when they can't do it
 	{1, 0, 1, false, {
 		price = {name = 'iron-stick', count = 1500},
 		raw_materials = {{name = 'iron-plate', count = 750}}}, {}},

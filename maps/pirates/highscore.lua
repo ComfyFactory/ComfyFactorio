@@ -21,6 +21,9 @@ local score_key_debug = 'pirate_ship_scores_debug'
 local score_key_modded = 'pirate_ship_scores_modded'
 
 
+-- == This code is mostly a fork of the file from Mountain Fortress
+
+
 local Public = {}
 local insert = table.insert
 local this = {
