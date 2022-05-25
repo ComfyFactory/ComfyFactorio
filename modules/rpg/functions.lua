@@ -6,6 +6,7 @@ local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local P = require 'utils.player_modifiers'
 local Token = require 'utils.token'
 local Alert = require 'utils.alert'
+local Math2D = require 'math2d'
 
 local level_up_floating_text_color = {0, 205, 0}
 local visuals_delay = Public.visuals_delay
@@ -366,6 +367,56 @@ function Public.validate_player(player)
         return false
     end
     return true
+end
+
+function Public.set_last_spell_cast(player, position)
+    if not player or not player.valid then
+        return false
+    end
+    if not position then
+        return false
+    end
+
+    if not type(position) == 'table' then
+        return false
+    end
+
+    local rpg_t = Public.get_value_from_player(player.index)
+
+    rpg_t.last_spell_cast = position
+
+    return true
+end
+
+function Public.get_last_spell_cast(player)
+    if not player or not player.valid then
+        return false
+    end
+
+    local rpg_t = Public.get_value_from_player(player.index)
+
+    if not rpg_t then
+        return
+    end
+
+    if not rpg_t.last_spell_cast then
+        return false
+    end
+
+    local position = player.position
+    local cast_radius = 1
+    local cast_area = {
+        left_top = {x = rpg_t.last_spell_cast.x - cast_radius, y = rpg_t.last_spell_cast.y - cast_radius},
+        right_bottom = {x = rpg_t.last_spell_cast.x + cast_radius, y = rpg_t.last_spell_cast.y + cast_radius}
+    }
+
+    if rpg_t.last_spell_cast then
+        if Math2D.bounding_box.contains_point(cast_area, position) then
+            return true
+        else
+            return false
+        end
+    end
 end
 
 function Public.remove_mana(player, mana_to_remove)
@@ -991,6 +1042,7 @@ function Public.rpg_reset_player(player, one_time_reset)
                 bonus = rpg_extra.breached_walls or 1,
                 rotated_entity_delay = 0,
                 last_mined_entity_position = {x = 0, y = 0},
+                last_spell_cast = {x = 0, y = 0},
                 show_bars = false,
                 stone_path = false,
                 aoe_punch = false,
@@ -1032,6 +1084,7 @@ function Public.rpg_reset_player(player, one_time_reset)
                 bonus = 1,
                 rotated_entity_delay = 0,
                 last_mined_entity_position = {x = 0, y = 0},
+                last_spell_cast = {x = 0, y = 0},
                 show_bars = false,
                 stone_path = false,
                 aoe_punch = false,
