@@ -2,6 +2,7 @@
 -- local Balance = require 'maps.pirates.balance'
 -- local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
+local Raffle = require 'maps.pirates.raffle'
 local CoreData = require 'maps.pirates.coredata'
 local _inspect = require 'utils.inspect'.inspect
 local Common = require 'maps.pirates.common'
@@ -38,7 +39,7 @@ function Public.try_ore_spawn(surface, realp, source_name, density_bonus)
 			if Utils.length(choices_to_prioitise) > 0 then
 				choice = choices_to_prioitise[Math.random(Utils.length(choices_to_prioitise))]
 			else
-				choice = Math.raffle2(choices_possible)
+				choice = Raffle.raffle2(choices_possible)
 			end
 
 			local placed

@@ -1,6 +1,7 @@
 
 local Public = {}
 local Math = require 'maps.pirates.math'
+local Raffle = require 'maps.pirates.raffle'
 -- local Memory = require 'maps.pirates.memory'
 local Common = require 'maps.pirates.common'
 local Utils = require 'maps.pirates.utils_local'
@@ -626,15 +627,160 @@ function Public.covered1_entry_price()
 		end
     end
 
-	local res = Utils.deepcopy(Math.raffle(types, weights))
+	local res = Utils.deepcopy(Raffle.raffle(types, weights))
 
-	res.price.count = Math.ceil(res.price.count * Public.covered_entry_price_scale())
+	res.price.count = Math.ceil(res.price.count * Public.covered1_entry_price_scale())
 
 	for i, _ in pairs(res.raw_materials) do
-		res.raw_materials[i].count = Math.ceil(res.raw_materials[i].count * Public.covered_entry_price_scale() * (0.9 + 0.2 * Math.random()))
+		res.raw_materials[i].count = Math.ceil(res.raw_materials[i].count * Public.covered1_entry_price_scale() * (0.9 + 0.2 * Math.random()))
 	end
 
 	return res
 end
+
+
+
+
+
+
+
+
+
+
+
+function Public.covered2_entry_price_scale()
+	return 0.85 * (1 + 0.033 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty_scale(), 1/2) --whilst resource scales tend to be held fixed with crew size, we account slightly for the fact that more players tend to handcraft more
+end
+
+Public.covered2EntryPriceData = {-- choose things which make interesting minifactories
+	['electric-mining-drill'] = {
+		overallWeight = 1,
+		minLambda = -0.75,
+		maxLambda = 0.75,
+		shape = 'bump',
+		enabled = true,
+		baseAmount = 500,
+		itemBatchSize = 2,
+		batchRawMaterials = {['iron-plate'] = 46, ['copper-plate'] = 9},
+	},
+	['fast-splitter'] = {
+		overallWeight = 1,
+		minLambda = -1,
+		maxLambda = 1,
+		shape = 'bump',
+		enabled = true,
+		baseAmount = 500,
+		itemBatchSize = 2,
+		batchRawMaterials = {['iron-plate'] = 92, ['copper-plate'] = 45},
+	},
+	['assembling-machine-1'] = {
+		overallWeight = 1,
+		minLambda = -1,
+		maxLambda = 1,
+		shape = 'bump',
+		enabled = true,
+		baseAmount = 500,
+		itemBatchSize = 2,
+		batchRawMaterials = {['iron-plate'] = 44, ['copper-plate'] = 9},
+	},
+	['filter-inserter'] = {
+		overallWeight = 1,
+		minLambda = 0,
+		maxLambda = 1,
+		shape = 'density',
+		enabled = true,
+		baseAmount = 500,
+		itemBatchSize = 2,
+		batchRawMaterials = {['iron-plate'] = 32, ['copper-plate'] = 24},
+	},
+	['programmable-speaker'] = {
+		overallWeight = 1,
+		minLambda = 0,
+		maxLambda = 1,
+		shape = 'density',
+		enabled = true,
+		baseAmount = 500,
+		itemBatchSize = 2,
+		batchRawMaterials = {['iron-plate'] = 18, ['copper-plate'] = 17},
+	},
+	['pump'] = {
+		overallWeight = 1,
+		minLambda = 0.05,
+		maxLambda = 1,
+		shape = 'density',
+		enabled = true,
+		baseAmount = 500,
+		itemBatchSize = 1,
+		batchRawMaterials = {['iron-plate'] = 15},
+	},
+	['grenade'] = {
+		overallWeight = 1,
+		minLambda = 0.05,
+		maxLambda = 1,
+		shape = 'density',
+		enabled = true,
+		baseAmount = 500,
+		itemBatchSize = 1,
+		batchRawMaterials = {['iron-plate'] = 5, ['coal'] = 10},
+	},
+	['assembling-machine-2'] = {
+		overallWeight = 1,
+		minLambda = 0.2,
+		maxLambda = 1.2,
+		shape = 'bump',
+		enabled = true,
+		baseAmount = 500,
+		itemBatchSize = 2,
+		batchRawMaterials = {['iron-plate'] = 160, ['copper-plate'] = 18},
+	},
+	['pumpjack'] = {
+		overallWeight = 1,
+		minLambda = 0.35,
+		maxLambda = 1,
+		shape = 'density',
+		enabled = true,
+		baseAmount = 500,
+		itemBatchSize = 2,
+		batchRawMaterials = {['iron-plate'] = 120, ['copper-plate'] = 15},
+	},
+	['oil-refinery'] = {
+		overallWeight = 1,
+		minLambda = 0.35,
+		maxLambda = 1,
+		shape = 'density',
+		enabled = true,
+		baseAmount = 500,
+		itemBatchSize = 1,
+		batchRawMaterials = {['iron-plate'] = 115, ['copper-plate'] = 15, ['stone-brick'] = 10},
+	},
+	['chemical-plant'] = {
+		overallWeight = 1,
+		minLambda = 0.35,
+		maxLambda = 1,
+		shape = 'density',
+		enabled = true,
+		baseAmount = 500,
+		itemBatchSize = 2,
+		batchRawMaterials = {['iron-plate'] = 90, ['copper-plate'] = 15},
+	},
+}
+
+function Public.generateCovered2EntryPrice()
+	local lambda = Math.max(Math.min(Math.sloped(Common.difficulty_scale(),1/2) * Common.game_completion_progress(), 1), 0)
+
+	local item = Raffle.LambdaRaffle(Public.covered2EntryPriceData, lambda)
+
+	local batchSize = Public.covered2EntryPriceData[item].itemBatchSize
+
+	return {
+		name = item,
+		count = Math.ceil(
+			(0.9 + 0.2 * Math.random()) * Public.covered2EntryPriceData[item].baseAmount * Public.covered2_entry_price_scale() / batchSize
+		) * batchSize,
+		batchSize = batchSize,
+		batchRawMaterials = Public.covered2EntryPriceData[item].batchRawMaterials,
+	}
+end
+
 
 return Public

@@ -114,13 +114,13 @@ Public.difficulty_options = {
 	{value = 0.6, icon = 'item/firearm-magazine', text = 'Easy', associated_color = {r = 50, g = 255, b = 50}},
 	{value = 1.0, icon = 'item/piercing-rounds-magazine', text = 'Normal', associated_color = {r = 255, g = 255, b = 50}},
 	{value = 1.4, icon = 'item/uranium-rounds-magazine', text = 'Hard', associated_color = {r = 255, g = 50, b = 50}},
-	{value = 2.4, icon = 'item/atomic-bomb', text = 'Nightmare', associated_color = {r = 120, g = 35, b = 35}},
+	{value = 2.1, icon = 'item/atomic-bomb', text = 'Nightmare', associated_color = {r = 120, g = 35, b = 35}},
 }
 function Public.get_difficulty_name_from_value(difficulty_value)
 	-- Functions will reference this when given a difficulty value and want to present a difficulty name to the player; just make it consistent with the above
 	if difficulty_value <= 0.7 then
 		return 'Easy'
-	elseif difficulty_value < 1.3 then
+	elseif difficulty_value < 1.2 then
 		return 'Normal'
 	elseif difficulty_value <= 2 then
 		return 'Hard'

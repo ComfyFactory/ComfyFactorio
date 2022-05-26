@@ -142,18 +142,22 @@ function Public.spawn_covered(destination, points_to_avoid)
 	for i = 1, 1 do
 		p = Hunt.mid_farness_position_1(args, points_to_avoid)
 
-		local structureData = Structures.IslandStructures.ROC.covered1.Data
-		local special = {
-			position = p,
-			components = structureData.components,
-			width = structureData.width,
-			height = structureData.height,
-			name = structureData.name,
-		}
-		if not destination.dynamic_data.structures_waiting_to_be_placed then
-			destination.dynamic_data.structures_waiting_to_be_placed = {}
-		end
-		destination.dynamic_data.structures_waiting_to_be_placed[#destination.dynamic_data.structures_waiting_to_be_placed + 1] = {data = special, tick = game.tick}
+		--@TODO: Figure out what to do about these two kinds of structure
+		local which = 'covered2'
+
+		if which == 'covered1' then
+			local structureData = Structures.IslandStructures.ROC.covered1.Data
+			local special = {
+				position = p,
+				components = structureData.components,
+				width = structureData.width,
+				height = structureData.height,
+				name = structureData.name,
+			}
+			if not destination.dynamic_data.structures_waiting_to_be_placed then
+				destination.dynamic_data.structures_waiting_to_be_placed = {}
+			end
+			destination.dynamic_data.structures_waiting_to_be_placed[#destination.dynamic_data.structures_waiting_to_be_placed + 1] = {data = special, tick = game.tick}
 
 		local requirement = destination.dynamic_data.covered1_requirement.price
 
@@ -174,12 +178,57 @@ function Public.spawn_covered(destination, points_to_avoid)
 		}
 
 		destination.dynamic_data.covered_data = {
+			structure_type = structureData.name,
 			position = p,
 			state = 'covered',
 			requirement = requirement,
 			rendering1 = rendering1,
 			rendering2 = rendering2,
 		}
+
+		elseif which == 'covered2' then
+
+			local structureData = Structures.IslandStructures.ROC.covered2.Data
+			local special = {
+				position = p,
+				components = structureData.components,
+				width = structureData.width,
+				height = structureData.height,
+				name = structureData.name,
+			}
+			if not destination.dynamic_data.structures_waiting_to_be_placed then
+				destination.dynamic_data.structures_waiting_to_be_placed = {}
+			end
+			destination.dynamic_data.structures_waiting_to_be_placed[#destination.dynamic_data.structures_waiting_to_be_placed + 1] = {data = special, tick = game.tick}
+
+			local requirement = destination.dynamic_data.covered2_requirement
+	
+			local rendering1 = rendering.draw_text{
+				surface = surface,
+				target = {x = p.x + 2, y = p.y + 6.85},
+				color = CoreData.colors.renderingtext_green,
+				scale = 1.5,
+				font = 'default-game',
+				alignment = 'right',
+			}
+			local rendering2 = rendering.draw_sprite{
+				sprite = 'item/' .. requirement.name,
+				surface = surface,
+				target = {x = p.x + 2.85, y = p.y + 7.5},
+				x_scale = 1.5,
+				y_scale = 1.5
+			}
+	
+			destination.dynamic_data.covered_data = {
+				structure_type = structureData.name,
+				position = p,
+				state = 'covered',
+				rendering1 = rendering1,
+				rendering2 = rendering2,
+				requirement = requirement,
+				completion_counter = 0,
+			}
+		end
 
 		log('covered market position: ' .. p.x .. ', ' .. p.y)
 	end
