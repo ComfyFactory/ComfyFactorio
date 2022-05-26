@@ -805,6 +805,28 @@ if _DEBUG then
 	end)
 
 	commands.add_command(
+	'1/4',
+	'is a dev command.',
+	function(cmd)
+		local param = tostring(cmd.parameter)
+		if check_admin(cmd) then
+		local player = game.players[cmd.player_index]
+			game.speed = 0.5
+		end
+	end)
+
+	commands.add_command(
+	'1/2',
+	'is a dev command.',
+	function(cmd)
+		local param = tostring(cmd.parameter)
+		if check_admin(cmd) then
+		local player = game.players[cmd.player_index]
+			game.speed = 0.5
+		end
+	end)
+
+	commands.add_command(
 	'1',
 	'is a dev command.',
 	function(cmd)

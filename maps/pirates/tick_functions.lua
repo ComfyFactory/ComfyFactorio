@@ -449,6 +449,11 @@ function Public.place_cached_structures(tickinterval)
 
 	if (not destination.dynamic_data) or (not destination.dynamic_data.structures_waiting_to_be_placed) or (not surface_name) or (not game.surfaces[surface_name]) or (not game.surfaces[surface_name].valid) then return end
 
+	if not (memory.boat and memory.boat.surface_name and memory.boat.surface_name == surface_name) then
+		return --We only want to generate structures once the players arrive on the island. Otherwise, the following issue happens. 2x2 structures force-generate nearby chunks. But if the island has many structures, that could cause a domino effect of chunk-generation, lagging the game.
+		-- Since this change, this function has little conceptual reason to be an on_tick function, but it makes sense to run it a few ticks after you teleport to the island, so it can stay one for now.
+	end
+
 	local surface = game.surfaces[surface_name]
 
 	local structures = destination.dynamic_data.structures_waiting_to_be_placed
