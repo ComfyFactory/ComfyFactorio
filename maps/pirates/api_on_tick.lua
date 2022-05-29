@@ -1024,7 +1024,10 @@ function Public.silo_update(tickinterval)
 
 						if memory.overworldx >= 0 and dynamic_data.rocketsiloenergyconsumed >= 0.25 * dynamic_data.rocketsiloenergyneeded and (not dynamic_data.parrot_silo_warned) then
 							dynamic_data.parrot_silo_warned = true
-							Common.parrot_speak(memory.force, {'pirates.parrot_silo_warning'})
+							local spawnerscount = Common.spawner_count(surface)
+							if spawnerscount > 0 then
+								Common.parrot_speak(memory.force, {'pirates.parrot_silo_warning'})
+							end
 						elseif dynamic_data.rocketsiloenergyconsumed >= dynamic_data.rocketsiloenergyneeded and (not (silo.rocket_parts == 100)) and (dynamic_data.silocharged == false) and (not memory.game_lost) then
 							-- silo.energy = 0
 							silo.rocket_parts = 100

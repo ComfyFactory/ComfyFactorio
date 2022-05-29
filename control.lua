@@ -1,6 +1,6 @@
 require 'utils.data_stages'
 _LIFECYCLE = _STAGE.control -- Control stage
-_DEBUG = false
+_DEBUG = true
 _DUMP_ENV = false
 
 require 'utils.server'

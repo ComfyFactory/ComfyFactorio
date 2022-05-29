@@ -1180,7 +1180,7 @@ local function event_on_player_joined_game(event)
 	--figure out if we should drop them back into a crew:
 
 	if (not Server.get_current_time()) then -- don't run this on servers because I'd need to negotiate that with the rest of Comfy
-		player.print('Support Pirate Ship design at ko-fi.com/thesixthroc', {r=1, g=0.4, b=0.9})
+		player.print('Support Pirate Ship scenario design at ko-fi.com/thesixthroc', {r=1, g=0.4, b=0.9})
 	end
 
 	local crew_to_put_back_in = nil

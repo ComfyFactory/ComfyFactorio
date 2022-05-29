@@ -153,7 +153,7 @@ function Public.try_win()
 
 		Server.to_discord_embed_raw(CoreData.comfy_emojis.goldenobese .. '[' .. memory.name .. '] Victory, on v' .. CoreData.version_string .. ', ' .. CoreData.difficulty_options[memory.difficulty_option].text .. ', capacity ' .. CoreData.capacity_options[memory.capacity_option].text3 .. '. Playtime: ' .. speedrun_time_str .. ' since 1st island. Crewmembers: ' .. Public.get_crewmembers_printable_string())
 
-		Common.notify_game({'','[' .. memory.name .. '] ',{'pirates.victory',CoreData.version_string, CoreData.difficulty_options[memory.difficulty_option].text, speedrun_time_str, Public.get_crewmembers_printable_string()}}, CoreData.colors.notify_victory)
+		Common.notify_game({'','[' .. memory.name .. '] ',{'pirates.victory',CoreData.version_string, CoreData.difficulty_options[memory.difficulty_option].text, CoreData.capacity_options[memory.capacity_option].text3, speedrun_time_str, Public.get_crewmembers_printable_string()}}, CoreData.colors.notify_victory)
 
 		game.play_sound{path='utility/game_won', volume_modifier=0.9}
 

@@ -475,8 +475,12 @@ function Public.full_update(player)
 			local str = {''}
 
 			for i, c in ipairs(memory.spare_classes) do
-				if i>1 then str[#str+1] = {'pirates.separator_1'} end
-				str[#str+1] = Classes.display_form(c)
+				if i>1 then
+					str[#str+1] = {'', 'pirates.separator_1', Classes.display_form(c)} -- we need to do nesting here, because you can't contanenate more than 20 localised strings. Watch out!
+					--@TODO: In fact we should nest iteratively, as this still caps out around 19 classes.
+				else
+					str[#str+1] = {'', Classes.display_form(c)}
+				end
 			end
 			str[#str+1] = '.'
 

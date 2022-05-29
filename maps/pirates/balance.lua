@@ -79,8 +79,8 @@ end
 
 function Public.silo_count()
 	local E = Public.silo_energy_needed_MJ()
-	return Math.ceil(E/(16.8 * 300)) --no more than this many seconds to charge it. Players can in fact go even faster using beacons
-	-- return Math.ceil(E/(16.8 * 210)) --no more than this many seconds to charge it. Players can in fact go even faster using beacons
+	return Math.min(Math.ceil(E/(16.8 * 300)),6)
+	-- return Math.ceil(E/(16.8 * 300)) --no more than this many seconds to charge it. Players can in fact go even faster using beacons
 end
 
 

@@ -75,7 +75,7 @@ function Public.execute_upgade(upgrade_type, player)
 		memory.merchant_ships_unlocked = true
 	elseif upgrade_type == enum.ROCKETS_FOR_SALE then
 		if player then
-			Common.notify_force(player.force,{'pirates.upgrade_rocket',player.name})
+			Common.notify_force(player.force,{'pirates.upgrade_rockets',player.name})
 		end
 		memory.rockets_for_sale = true
 	end
