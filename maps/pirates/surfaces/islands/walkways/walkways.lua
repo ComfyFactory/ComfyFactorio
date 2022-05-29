@@ -123,7 +123,7 @@ function Public.generate_silo_setup_position()
 		end
 		Common.ensure_chunks_at(surface, p_silo, 1)
 		surface.set_tiles(tiles, true)
-	
+
 		return p_silo
 	end
 end

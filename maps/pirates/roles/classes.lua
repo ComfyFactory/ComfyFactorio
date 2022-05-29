@@ -134,7 +134,6 @@ function Public.assign_class(player_index, class, self_assigned)
 
 		local force = memory.force
 		if force and force.valid then
-			local message
 			if self_assigned then
 				Common.notify_force_light(force,{'pirates.class_take_spare', player.name, Public.display_form(memory.classes_table[player_index]), Public.explanation(memory.classes_table[player_index])})
 			else

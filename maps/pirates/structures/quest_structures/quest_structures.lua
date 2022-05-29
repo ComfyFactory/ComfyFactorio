@@ -1,17 +1,17 @@
 
 local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
-local Balance = require 'maps.pirates.balance'
+-- local Balance = require 'maps.pirates.balance'
 local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
 local Utils = require 'maps.pirates.utils_local'
 local _inspect = require 'utils.inspect'.inspect
-local CustomEvents = require 'maps.pirates.custom_events'
+-- local CustomEvents = require 'maps.pirates.custom_events'
 local SurfacesCommon = require 'maps.pirates.surfaces.common'
-local Raffle = require 'maps.pirates.raffle'
-local ShopCovered = require 'maps.pirates.shop.covered'
-local Classes = require 'maps.pirates.roles.classes'
-local Loot = require 'maps.pirates.loot'
+-- local Raffle = require 'maps.pirates.raffle'
+-- local ShopCovered = require 'maps.pirates.shop.covered'
+-- local Classes = require 'maps.pirates.roles.classes'
+-- local Loot = require 'maps.pirates.loot'
 
 local Public = {}
 
@@ -44,8 +44,6 @@ end
 function Public.initialise_cached_quest_structure(position, quest_structure_type)
     local destination = Common.current_destination()
 	local surface = game.surfaces[destination.surface_name]
-
-	local special_to_return
 
 	if quest_structure_type == enum.MARKET1 then
 
@@ -190,8 +188,6 @@ function Public.initialise_cached_quest_structure(position, quest_structure_type
 	end
 
 	log('quest structure position: ' .. position.x .. ', ' .. position.y)
-
-	return special_to_return
 end
 
 
@@ -239,11 +235,11 @@ function Public.tick_quest_structure_entry_price_check()
 		if not (blue_chest and blue_chest.valid and red_chest and red_chest.valid) then return end
 		local blue_inv = quest_structure_data.blue_chest.get_inventory(defines.inventory.chest)
 		local red_inv = quest_structure_data.red_chest.get_inventory(defines.inventory.chest)
-	
+
 		local blue_contents = blue_inv.get_contents()
-	
+
 		local entry_price = quest_structure_data.entry_price
-	
+
 		local got = 0
 		for k, v in pairs(blue_contents) do
 			if quest_structure_data.state == 'covered' and k == entry_price.name then
@@ -254,7 +250,7 @@ function Public.tick_quest_structure_entry_price_check()
 				blue_inv.remove({name = k, count = v});
 			end
 		end
-	
+
 		if quest_structure_data.state == 'covered' then
 			if got >= entry_price.count then
 				blue_inv.remove({name = entry_price.name, count = entry_price.count});
@@ -263,7 +259,7 @@ function Public.tick_quest_structure_entry_price_check()
 				rendering.destroy(quest_structure_data.rendering2)
 				rendering.destroy(quest_structure_data.rendering3)
 				rendering.destroy(quest_structure_data.rendering4)
-	
+
 				local special = Utils.deepcopy(Public[enum.MARKET1].Data.step2)
 				special.position = quest_structure_data.position
 
@@ -290,12 +286,12 @@ function Public.tick_quest_structure_entry_price_check()
 		red_invs[1] = quest_structure_data.red_chests[1].get_inventory(defines.inventory.chest)
 		red_invs[2] = quest_structure_data.red_chests[2].get_inventory(defines.inventory.chest)
 		red_invs[3] = quest_structure_data.red_chests[3].get_inventory(defines.inventory.chest)
-	
+
 		local blue_contents = {}
 		blue_contents[1] = blue_invs[1].get_contents()
 		blue_contents[2] = blue_invs[2].get_contents()
 		blue_contents[3] = blue_invs[3].get_contents()
-	
+
 		local entry_price = quest_structure_data.entry_price --fields {name, count, batchSize, batchRawMaterials}
 
 		if quest_structure_data.state == 'covered' then
@@ -358,10 +354,10 @@ function Public.tick_quest_structure_entry_price_check()
 				rendering.destroy(quest_structure_data.rendering3)
 				rendering.destroy(quest_structure_data.rendering4)
 				rendering.destroy(quest_structure_data.rendering5)
-	
+
 				local special = Utils.deepcopy(Public[enum.FURNACE1].Data.step2)
 				special.position = quest_structure_data.position
-				
+
 				destination.dynamic_data.structures_waiting_to_be_placed[#destination.dynamic_data.structures_waiting_to_be_placed + 1] = {data = special, tick = game.tick}
 			else
 				if quest_structure_data.rendering1 then

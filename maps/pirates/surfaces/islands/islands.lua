@@ -2,7 +2,7 @@
 local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
 local Balance = require 'maps.pirates.balance'
-local Structures = require 'maps.pirates.structures.structures'
+-- local Structures = require 'maps.pirates.structures.structures'
 local Boats = require 'maps.pirates.structures.boats.boats'
 local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
@@ -178,10 +178,10 @@ function Public.spawn_ores_on_arrival(destination, points_to_avoid)
 					points_to_avoid[#points_to_avoid + 1] = {x=p.x, y=p.y, r=11}
 
 					if ore == 'crude-oil' then
-	
+
 						local count = Math.max(1, Math.ceil((destination.static_params.abstract_ore_amounts[ore]/3)^(1/2)))
 						local amount = Common.oil_abstract_to_real(destination.static_params.abstract_ore_amounts[ore]) / count
-	
+
 						for i = 1, count do
 							local p2 = {p.x + Math.random(-7, 7), p.y + Math.random(-7, 7)}
 							local whilesafety = 0
@@ -189,16 +189,16 @@ function Public.spawn_ores_on_arrival(destination, points_to_avoid)
 								p2 = {p.x + Math.random(-7, 7), p.y + Math.random(-7, 7)}
 								whilesafety = whilesafety + 1
 							end
-	
+
 							surface.create_entity{name = 'crude-oil', position = p2, amount = amount}
 						end
-	
+
 						destination.dynamic_data.ore_types_spawned[ore] = true
 					else
 						local amount = Common.ore_abstract_to_real(destination.static_params.abstract_ore_amounts[ore])
-	
+
 						local placed = Ores.draw_noisy_ore_patch(surface, p, ore, amount, 10000, 30, true, true)
-	
+
 						if placed > 0 then
 							destination.dynamic_data.ore_types_spawned[ore] = true
 						end

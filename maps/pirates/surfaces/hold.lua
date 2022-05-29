@@ -394,7 +394,7 @@ function Public.nth_hold_connect_linked_belts(nth) --assumes both are in standar
 			rendering.set_text(boat.hold_helper_renderings[nth-1][1], 'to -' .. nth)
 			rendering.set_text(boat.hold_helper_renderings[nth][2], 'from -' .. nth-1)
 			rendering.set_text(boat.hold_helper_renderings[nth-1][2], 'to -' .. nth)
-			
+
 			connections = {
 				{5,9},
 				{6,10},

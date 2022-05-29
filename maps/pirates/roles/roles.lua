@@ -284,7 +284,7 @@ function Public.pass_captainhood(player, player_to_pass_to)
 	if not (force and force.valid) then return end
 
 
-	
+
 	local message = {'pirates.roles_pass_captainhood', player.name, player_to_pass_to.name}
 
 	Common.notify_force(force, message)
@@ -379,7 +379,7 @@ function Public.assign_captain_based_on_priorities(excluded_player_index)
 		else
 			message = {'pirates.roles_ask_player_about_captainhood_variant_3', captain_name}
 		end
-		
+
 		Common.notify_force_light(force, message)
 		-- Server.to_discord_embed_raw('[' .. memory.name .. ']' .. CoreData.comfy_emojis.spurdo .. ' ' .. message)
 		memory.captain_acceptance_timer = 72 --tuned

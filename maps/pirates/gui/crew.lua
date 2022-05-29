@@ -145,7 +145,7 @@ function Public.toggle_window(player)
 	flow3.tooltip = {'pirates.gui_crew_window_crewmembers_resign_as_officer_tooltip'}
 
 	flow2 = GuiCommon.flow_add_section(flow, 'spectators', {'pirates.gui_crew_window_spectators'})
-	
+
 
 	flow3 = flow2.add({
 		name = 'spectators_listbox',

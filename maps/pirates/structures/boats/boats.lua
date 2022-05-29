@@ -973,7 +973,7 @@ local function process_entity_on_boat(memory, boat, newsurface, newposition, vec
 						e.player.teleport(newsurface.find_non_colliding_position('character', p, 1.2, 0.2) or p, newsurface)
 					end
 				end
-	
+
 			elseif Utils.contains(CoreData.unteleportable_names, name) or (name == 'entity-ghost' and Utils.contains(CoreData.unteleportable_names, e.ghost_name)) then
 				process_entity_on_boat_unteleportable(memory, boat, newsurface, vector, players_just_offside, oldsurface_name, newsurface_name, e, name)
 			else

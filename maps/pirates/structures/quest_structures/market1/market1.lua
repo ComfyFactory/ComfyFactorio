@@ -3,11 +3,11 @@ local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
 local Balance = require 'maps.pirates.balance'
 local Common = require 'maps.pirates.common'
-local CoreData = require 'maps.pirates.coredata'
-local Utils = require 'maps.pirates.utils_local'
+-- local CoreData = require 'maps.pirates.coredata'
+-- local Utils = require 'maps.pirates.utils_local'
 local _inspect = require 'utils.inspect'.inspect
-local CustomEvents = require 'maps.pirates.custom_events'
-local SurfacesCommon = require 'maps.pirates.surfaces.common'
+-- local CustomEvents = require 'maps.pirates.custom_events'
+-- local SurfacesCommon = require 'maps.pirates.surfaces.common'
 local Raffle = require 'maps.pirates.raffle'
 local ShopCovered = require 'maps.pirates.shop.covered'
 local Classes = require 'maps.pirates.roles.classes'
@@ -18,7 +18,6 @@ Public.Data = require 'maps.pirates.structures.quest_structures.market1.data'
 
 
 function Public.create_step1_entities()
-	local memory = Memory.get_crew_memory()
     local destination = Common.current_destination()
 	local surface = game.surfaces[destination.surface_name]
 

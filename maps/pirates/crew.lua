@@ -405,7 +405,6 @@ function Public.leave_crew(player, to_lobby, quiet)
 	if char and char.valid then
 		-- local p = char.position
 		-- local surface_name = char.surface.name
-		local message
 		if not quiet then
 			Common.notify_force(player.force, {'pirates.crew_leave', player.name})
 		-- else
@@ -868,7 +867,7 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.recipes['cannon-shell'].enabled = false
 	crew_force.recipes['explosive-cannon-shell'].enabled = false
 
-	
+
 
 	--@TRYING this out:
 	crew_force.technologies['coal-liquefaction'].enabled = true
