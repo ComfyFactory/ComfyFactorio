@@ -14,6 +14,7 @@ local Quest = require 'maps.pirates.quest'
 local _inspect = require 'utils.inspect'.inspect
 local Token = require 'utils.token'
 local Task = require 'utils.task'
+local QuestStructures = require 'maps.pirates.structures.quest_structures.quest_structures'
 
 local Public = {}
 local enum = IslandsCommon.enum
@@ -127,7 +128,7 @@ end
 
 
 
-function Public.spawn_covered(destination, points_to_avoid)
+function Public.spawn_quest_structure(destination, points_to_avoid)
 	points_to_avoid = points_to_avoid or {}
 	-- local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[destination.surface_name]
@@ -142,95 +143,7 @@ function Public.spawn_covered(destination, points_to_avoid)
 	for i = 1, 1 do
 		p = Hunt.mid_farness_position_1(args, points_to_avoid)
 
-		--@TODO: Figure out what to do about these two kinds of structure
-		local which = 'covered2'
-
-		if which == 'covered1' then
-			local structureData = Structures.IslandStructures.ROC.covered1.Data
-			local special = {
-				position = p,
-				components = structureData.components,
-				width = structureData.width,
-				height = structureData.height,
-				name = structureData.name,
-			}
-			if not destination.dynamic_data.structures_waiting_to_be_placed then
-				destination.dynamic_data.structures_waiting_to_be_placed = {}
-			end
-			destination.dynamic_data.structures_waiting_to_be_placed[#destination.dynamic_data.structures_waiting_to_be_placed + 1] = {data = special, tick = game.tick}
-
-		local requirement = destination.dynamic_data.covered1_requirement.price
-
-		local rendering1 = rendering.draw_text{
-			surface = surface,
-			target = {x = p.x + 4, y = p.y + 6.85},
-			color = CoreData.colors.renderingtext_green,
-			scale = 1.5,
-			font = 'default-game',
-			alignment = 'right',
-		}
-		local rendering2 = rendering.draw_sprite{
-			sprite = 'item/' .. requirement.name,
-			surface = surface,
-			target = {x = p.x + 4.85, y = p.y + 7.5},
-			x_scale = 1.5,
-			y_scale = 1.5
-		}
-
-		destination.dynamic_data.covered_data = {
-			structure_type = structureData.name,
-			position = p,
-			state = 'covered',
-			requirement = requirement,
-			rendering1 = rendering1,
-			rendering2 = rendering2,
-		}
-
-		elseif which == 'covered2' then
-
-			local structureData = Structures.IslandStructures.ROC.covered2.Data
-			local special = {
-				position = p,
-				components = structureData.components,
-				width = structureData.width,
-				height = structureData.height,
-				name = structureData.name,
-			}
-			if not destination.dynamic_data.structures_waiting_to_be_placed then
-				destination.dynamic_data.structures_waiting_to_be_placed = {}
-			end
-			destination.dynamic_data.structures_waiting_to_be_placed[#destination.dynamic_data.structures_waiting_to_be_placed + 1] = {data = special, tick = game.tick}
-
-			local requirement = destination.dynamic_data.covered2_requirement
-	
-			local rendering1 = rendering.draw_text{
-				surface = surface,
-				target = {x = p.x + 2, y = p.y + 6.85},
-				color = CoreData.colors.renderingtext_green,
-				scale = 1.5,
-				font = 'default-game',
-				alignment = 'right',
-			}
-			local rendering2 = rendering.draw_sprite{
-				sprite = 'item/' .. requirement.name,
-				surface = surface,
-				target = {x = p.x + 2.85, y = p.y + 7.5},
-				x_scale = 1.5,
-				y_scale = 1.5
-			}
-	
-			destination.dynamic_data.covered_data = {
-				structure_type = structureData.name,
-				position = p,
-				state = 'covered',
-				rendering1 = rendering1,
-				rendering2 = rendering2,
-				requirement = requirement,
-				completion_counter = 0,
-			}
-		end
-
-		log('covered market position: ' .. p.x .. ', ' .. p.y)
+		QuestStructures.initialise_cached_quest_structure(p, QuestStructures.choose_quest_structure_type())
 	end
 
 	return p
@@ -261,32 +174,34 @@ function Public.spawn_ores_on_arrival(destination, points_to_avoid)
 		for _, ore in pairs(ores) do
 			if destination.static_params.abstract_ore_amounts[ore] then
 				local p = Hunt.close_position_try_avoiding_entities(args, points_to_avoid, farness_boost_low, farness_boost_high)
-				if p then points_to_avoid[#points_to_avoid + 1] = {x=p.x, y=p.y, r=11} end
+				if p then
+					points_to_avoid[#points_to_avoid + 1] = {x=p.x, y=p.y, r=11}
 
-				if ore == 'crude-oil' then
-
-					local count = Math.max(1, Math.ceil((destination.static_params.abstract_ore_amounts[ore]/3)^(1/2)))
-					local amount = Common.oil_abstract_to_real(destination.static_params.abstract_ore_amounts[ore]) / count
-
-					for i = 1, count do
-						local p2 = {p.x + Math.random(-7, 7), p.y + Math.random(-7, 7)}
-						local whilesafety = 0
-						while (not surface.can_place_entity{name = 'crude-oil', position = p2}) and whilesafety < 30 do
-							p2 = {p.x + Math.random(-7, 7), p.y + Math.random(-7, 7)}
-							whilesafety = whilesafety + 1
+					if ore == 'crude-oil' then
+	
+						local count = Math.max(1, Math.ceil((destination.static_params.abstract_ore_amounts[ore]/3)^(1/2)))
+						local amount = Common.oil_abstract_to_real(destination.static_params.abstract_ore_amounts[ore]) / count
+	
+						for i = 1, count do
+							local p2 = {p.x + Math.random(-7, 7), p.y + Math.random(-7, 7)}
+							local whilesafety = 0
+							while (not surface.can_place_entity{name = 'crude-oil', position = p2}) and whilesafety < 30 do
+								p2 = {p.x + Math.random(-7, 7), p.y + Math.random(-7, 7)}
+								whilesafety = whilesafety + 1
+							end
+	
+							surface.create_entity{name = 'crude-oil', position = p2, amount = amount}
 						end
-
-						surface.create_entity{name = 'crude-oil', position = p2, amount = amount}
-					end
-
-					destination.dynamic_data.ore_types_spawned[ore] = true
-				else
-					local amount = Common.ore_abstract_to_real(destination.static_params.abstract_ore_amounts[ore])
-
-					local placed = Ores.draw_noisy_ore_patch(surface, p, ore, amount, 10000, 30, true, true)
-
-					if placed > 0 then
+	
 						destination.dynamic_data.ore_types_spawned[ore] = true
+					else
+						local amount = Common.ore_abstract_to_real(destination.static_params.abstract_ore_amounts[ore])
+	
+						local placed = Ores.draw_noisy_ore_patch(surface, p, ore, amount, 10000, 30, true, true)
+	
+						if placed > 0 then
+							destination.dynamic_data.ore_types_spawned[ore] = true
+						end
 					end
 				end
 			end

@@ -36,19 +36,18 @@ function Public.make_officer(captain, player)
 			if Common.validate_player(player) then
 				memory.officers_table[player.index] = true
 
-				local message = (captain.name .. ' made ' .. player.name .. ' an officer.')
-				Common.notify_force_light(force, message)
+				Common.notify_force_light(force,{'pirates.roles_make_officer', captain.name, player.name})
 				Public.update_privileges(player)
 			else
-				Common.notify_player_error(captain, 'Command error: Player is invalid.')
+				Common.notify_player_error(captain,{'pirates.roles_make_officer_error_1'})
 				return false
 			end
 		else
-			Common.notify_player_error(captain, 'Command error: Can\'t promote yourself to officer.')
+			Common.notify_player_error(captain,{'pirates.roles_make_officer_error_2'})
 			return false
 		end
 	else
-		Common.notify_player_error(captain, 'Command error: Player is not a crewmember.')
+		Common.notify_player_error(captain,{'pirates.roles_make_officer_error_3'})
 		return false
 	end
 end
@@ -61,16 +60,15 @@ function Public.unmake_officer(captain, player)
 		if memory.officers_table[player.index] then
 			memory.officers_table[player.index] = nil
 
-			local message = (captain.name .. ' unmade ' .. player.name .. ' an officer.')
-			Common.notify_force_light(force, message)
+			Common.notify_force_light(force,{'pirates.roles_unmake_officer', captain.name, player.name})
 			Public.update_privileges(player)
 			return true
 		else
-			Common.notify_player_error(captain, 'Command error: Player isn\'t an officer.')
+			Common.notify_player_error(captain,{'pirates.roles_unmake_officer_error_1'})
 			return false
 		end
 	else
-		Common.notify_player_error(captain, 'Command error: Player is not a crewmember.')
+		Common.notify_player_error(captain,{'pirates.roles_unmake_officer_error_2'})
 		return false
 	end
 end
@@ -83,7 +81,7 @@ function Public.revoke_class(captain, player)
 		memory.spare_classes[#memory.spare_classes + 1] = memory.classes_table[player.index]
 		memory.classes_table[player.index] = nil
 
-		Common.notify_force_light(force, string.format('%s revoked %s from %s.', captain.name, Classes.display_form[memory.classes_table[player.index]], player.name))
+		Common.notify_force_light(captain,{'pirates.class_revoke', captain.name, Classes.display_form(memory.classes_table[player.index]), player.name})
 	end
 end
 
@@ -103,7 +101,7 @@ function Public.tag_text(player)
 
 	local classes_table = memory.classes_table
 	if classes_table and classes_table[player.index] then
-		tags[#tags + 1] = Classes.display_form[classes_table[player.index]]
+		tags[#tags + 1] = Classes.eng_form[classes_table[player.index]]
 	end
 
 	for i, t in ipairs(tags) do
@@ -125,7 +123,7 @@ end
 -- function Public.get_classes_print_string()
 -- 	local str = 'Current class Descriptions:'
 
--- 	for i, class in ipairs(Classes.Class_List) do
+-- 	for i, class in pairs(Classes.enum) do
 -- 		str = str .. '\n' .. Classes.display_form[class] .. ': ' .. Classes.explanation[class] .. ''
 -- 	end
 
@@ -134,24 +132,22 @@ end
 
 function Public.get_class_print_string(class)
 
-	for _, class2 in ipairs(Classes.Class_List) do
-		if Classes.display_form[class2]:lower() == class:lower() then
-			local str = ''
-			str = str .. Classes.display_form[class2] .. ': '
+	for _, class2 in pairs(Classes.enum) do
+		if Classes.eng_form[class2]:lower() == class:lower() or class2 == class:lower() then
 			if Classes.class_purchase_requirement[class2] then
-				str = str .. 'An upgrade of ' .. Classes.display_form[Classes.class_purchase_requirement[class2]] .. '. '
+				return {'pirates.class_explanation_upgraded_class', Classes.display_form(class2), Classes.display_form(Classes.class_purchase_requirement[class2]), Classes.explanation(class2)}
+			else
+				return {'pirates.class_explanation', Classes.display_form(class2), Classes.explanation(class2)}
 			end
-			str = str .. Classes.explanation[class2]
-			return str
 		end
 	end
 
 	if class:lower() == 'officer' then
-		return 'Officer: Assigned by the captain, officers can use the Captain\'s shop and access privileged chests.'
+		return {'pirates.class_explanation', {'pirates.role_officer'}, {'pirates.role_officer_description'}}
 	end
 
 	if class:lower() == 'captain' then
-		return 'Captain: Has executive power to undock the ship, purchase items, and various other special actions. When the game assigns a captain, it gives priority to those who have been playing the longest as a non-captain.'
+		return {'pirates.class_explanation', {'pirates.role_captain'}, {'pirates.role_captain_description'}}
 	end
 
 	return nil
@@ -190,19 +186,20 @@ function Public.player_confirm_captainhood(player)
 	local captain_index = memory.playerindex_captain
 
 	if not (player.index == captain_index) then
-		Common.notify_player_error(player, 'Command error: You\'re not the captain.')
+		Common.notify_player_error(player,{'pirates.roles_confirm_captain_error_1'})
 	else
 		if memory.captain_acceptance_timer then
 			memory.captain_acceptance_timer = nil
 
 			local force = player.force
 			if force and force.valid then
-				local message = (player.name .. ' accepted the role of captain.')
+				local message = {'pirates.roles_confirm_captain', player.name}
+
 				Common.notify_force(force, message)
-				Server.to_discord_embed_raw(CoreData.comfy_emojis.derp .. '[' .. memory.name .. '] ' .. message)
+				Server.to_discord_embed_raw({'',CoreData.comfy_emojis.derp .. '[' .. memory.name .. '] ',message}, true)
 			end
 		else
-			Common.notify_player_expected(player, 'Command error: You\'re not temporary, so you don\'t need to accept.')
+			Common.notify_player_error(player,{'pirates.roles_confirm_captain_error_2'})
 		end
 	end
 end
@@ -221,7 +218,7 @@ function Public.player_left_so_redestribute_roles(player)
 		-- end
 	end
 
-	Classes.try_renounce_class(player, false, "A %s class is now spare.")
+	Classes.try_renounce_class(player, false, true)
 end
 
 
@@ -230,15 +227,16 @@ function Public.renounce_captainhood(player)
 	local memory = Memory.get_crew_memory()
 
 	if #Common.crew_get_crew_members() == 1 then
-		Common.notify_player_error(player, 'Command error: But you\'re the only crew member...')
+		Common.notify_player_error(player,{'pirates.roles_renounce_captain_error_1'})
 	else
 
 		local force = memory.force
 		global_memory.playerindex_to_captainhood_priority[player.index] = nil
 		if force and force.valid then
-			local message = (player.name .. ' renounces their title of captain.')
+			local message = {'pirates.roles_renounce_captain', player.name}
+
 			Common.notify_force(force, message)
-			Server.to_discord_embed_raw(CoreData.comfy_emojis.ree1 .. '[' .. memory.name .. '] ' .. message)
+			Server.to_discord_embed_raw({'',CoreData.comfy_emojis.ree1 .. '[' .. memory.name .. '] ',message}, true)
 		end
 
 		Public.assign_captain_based_on_priorities(player.index)
@@ -252,9 +250,11 @@ function Public.resign_as_officer(player)
 	if memory.officers_table and memory.officers_table[player.index] then
 		memory.officers_table[player.index] = nil
 
-		local message = (player.name .. ' resigns as an officer.')
+
+		local message = {'pirates.roles_resign_officer', player.name}
+
 		Common.notify_force(force, message)
-		Server.to_discord_embed_raw(CoreData.comfy_emojis.ree1 .. '[' .. memory.name .. '] ' .. message)
+		Server.to_discord_embed_raw({'',CoreData.comfy_emojis.ree1 .. '[' .. memory.name .. '] ',message}, true)
 	else
 		log('Error: player tried to resign as officer despite not being one.')
 	end
@@ -282,9 +282,13 @@ function Public.pass_captainhood(player, player_to_pass_to)
 
 	local force = memory.force
 	if not (force and force.valid) then return end
-	local message = string.format("%s has passed their captainhood to %s.", player.name, player_to_pass_to.name)
+
+
+	
+	local message = {'pirates.roles_pass_captainhood', player.name, player_to_pass_to.name}
+
 	Common.notify_force(force, message)
-	Server.to_discord_embed_raw(CoreData.comfy_emojis.spurdo .. '[' .. memory.name .. '] ' .. message)
+	Server.to_discord_embed_raw({'',CoreData.comfy_emojis.spurdo .. '[' .. memory.name .. '] ',message}, true)
 
 	Public.make_captain(player_to_pass_to)
 end
@@ -297,9 +301,10 @@ function Public.afk_player_tick(player)
 
 		local force = memory.force
 		if force and force.valid then
-			local message = string.format(player.name .. ' was afk.')
+			local message = {'pirates.roles_lose_captainhood_by_afk', player.name}
+
 			Common.notify_force(force, message)
-			Server.to_discord_embed_raw(CoreData.comfy_emojis.loops .. '[' .. memory.name .. '] ' .. message)
+			Server.to_discord_embed_raw({'',CoreData.comfy_emojis.loops .. '[' .. memory.name .. '] ',message}, true)
 		end
 
 		if #Common.crew_get_nonafk_crew_members() == 1 then --don't need to bounce it around
@@ -353,7 +358,7 @@ function Public.assign_captain_based_on_priorities(excluded_player_index)
 	if not captain_index then
 		captain_index = crew_members[1]
 		captain_name = game.players[captain_index].name
-		Common.notify_force(force,'Looking for a suitable captain...')
+		Common.notify_force(force,{'pirates.roles_notify_looking_for_captain'})
 	end
 
 	if captain_index then
@@ -365,14 +370,17 @@ function Public.assign_captain_based_on_priorities(excluded_player_index)
 	end
 
 	if #Common.crew_get_crew_members() > 1 then
-		local messages = {
-			"would you like to be captain?",
-			"would you like to be captain?",
-			"captain?",
-			"is it your turn to be captain?",
-		}
-		local message = captain_name .. ', ' .. messages[Math.random(#messages)]
-		Common.notify_force_light(force, message .. ' If yes say /ok')
+		local rng = Math.random(4)
+		local message
+		if rng <= 2 then
+			message = {'pirates.roles_ask_player_about_captainhood_variant_1', captain_name}
+		elseif rng <= 3 then
+			message = {'pirates.roles_ask_player_about_captainhood_variant_2', captain_name}
+		else
+			message = {'pirates.roles_ask_player_about_captainhood_variant_3', captain_name}
+		end
+		
+		Common.notify_force_light(force, message)
 		-- Server.to_discord_embed_raw('[' .. memory.name .. ']' .. CoreData.comfy_emojis.spurdo .. ' ' .. message)
 		memory.captain_acceptance_timer = 72 --tuned
 	else
@@ -436,7 +444,7 @@ function Public.captain_tax(captain_index)
 		end
 
 		if any_taken then
-			local str = 'The captain taxed '
+			local str = {''}
 			local j = 1
 			for i = 1, #items_to_req do
 				local item = items_to_req[i]
@@ -444,25 +452,28 @@ function Public.captain_tax(captain_index)
 				if count > 0 then
 					if j > 1 then
 						if i == #items_to_req then
-							str = str .. ' and '
+							str[#str+1] = {'pirates.separator_2'}
 						else
-							str = str .. ', '
+							str[#str+1] = {'pirates.separator_1'}
 						end
 					end
 					local display_name = item
 					if display_name == 'coin' then display_name = 'doubloons' end
 					if count >= 1000 then
-						str = str .. Utils.bignumber_abbrevform2(count) .. ' ' .. display_name
+						str[#str+1] = Utils.bignumber_abbrevform2(count)
+						str[#str+1] = ' '
+						str[#str+1] = display_name
 					else
-						str = str .. count .. ' ' .. display_name
+						str[#str+1] = count
+						str[#str+1] = ' '
+						str[#str+1] = display_name
 					end
 					j = j + 1
 				end
 			end
-			str = str .. '.'
-			Common.notify_force(memory.force, str)
+			Common.notify_force(memory.force, {'pirates.tax', str})
 		else
-			Common.notify_player_error(captain, 'No coins or game-critical found in crewmates\' inventories or cursor stacks.')
+			Common.notify_player_error(captain, {'pirates.tax_error_nothing'})
 		end
 	end
 end

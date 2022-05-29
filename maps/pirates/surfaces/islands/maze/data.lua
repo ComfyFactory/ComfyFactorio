@@ -5,7 +5,7 @@
 
 local Public = {}
 
-Public.display_names = {'Bewildering Maze'}
+Public.display_names = {{'pirates.location_displayname_maze_1'}}
 
 Public.terraingen_frame_width = 896
 Public.terraingen_frame_height = 896

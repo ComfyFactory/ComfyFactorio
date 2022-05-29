@@ -17,7 +17,7 @@ Public[enum.BOATS] = require 'maps.pirates.structures.boats.boats'
 Public[enum.ISLANDSTRUCTURES] = require 'maps.pirates.structures.island_structures.island_structures'
 
 
-function Public.post_creation_process(special_name, components)
+function Public.configure_structure_entities(special_name, components)
 	local memory = Memory.get_crew_memory()
 
 	for _, c in pairs(components) do

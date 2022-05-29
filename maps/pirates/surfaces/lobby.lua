@@ -43,7 +43,7 @@ Public.StartingBoats = {
 
 
 Public.Data = {}
-Public.Data.display_name = 'Starting Dock'
+Public.Data.display_name = {'pirates.location_displayname_lobby_1'}
 Public.Data.width = 224
 Public.Data.height = 128
 -- Public.Data.noiseparams = {
@@ -118,7 +118,7 @@ function Public.place_lobby_jetty_and_boats()
 		Public.place_starting_dock_showboat(id)
 	end
 
-	local offset = {x = -85, y = -23}
+	local offset = {x = -47, y = -1}
 
 	local tiles = {}
 	for _, p in pairs(Common.tile_positions_from_blueprint(Public.Data.jetty_bp, offset)) do

@@ -2,77 +2,154 @@
 --luacheck ignores because tickinterval arguments are a code templating choice...
 
 local Memory = require 'maps.pirates.memory'
-local Gui = require 'maps.pirates.gui.gui'
-local Ai = require 'maps.pirates.ai'
 local Structures = require 'maps.pirates.structures.structures'
-local Islands = require 'maps.pirates.surfaces.islands.islands'
 local Boats = require 'maps.pirates.structures.boats.boats'
 local Surfaces = require 'maps.pirates.surfaces.surfaces'
-local Interface = require 'maps.pirates.interface'
-local Roles = require 'maps.pirates.roles.roles'
 local Classes = require 'maps.pirates.roles.classes'
-local Progression = require 'maps.pirates.progression'
-local Crowsnest = require 'maps.pirates.surfaces.crowsnest'
-local Hold = require 'maps.pirates.surfaces.hold'
-local Cabin = require 'maps.pirates.surfaces.cabin'
 local Balance = require 'maps.pirates.balance'
 local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
-local Overworld = require 'maps.pirates.overworld'
-local Utils = require 'maps.pirates.utils_local'
-local Crew = require 'maps.pirates.crew'
 local Math = require 'maps.pirates.math'
 local _inspect = require 'utils.inspect'.inspect
 
-local Quest = require 'maps.pirates.quest'
-
 local Public = {}
 
+function Public.class_update_auxiliary_data(tickinterval)
+	local memory = Memory.get_crew_memory()
+	if not memory.classes_table then return end
+
+	local class_auxiliary_data = memory.class_auxiliary_data
+
+	local crew = Common.crew_get_crew_members()
+
+	local processed_players = {}
+
+	for _, player in pairs(crew) do
+		local player_index = player.index
+		local class = memory.classes_table[player_index]
+		if class and class == Classes.enum.IRON_LEG then
+			if (not class_auxiliary_data[player_index]) then class_auxiliary_data[player_index] = {} end
+			local data = class_auxiliary_data[player_index]
+			processed_players[player_index] = true
+			local check
+			if Common.validate_player_and_character(player) then
+				local inv = player.character.get_inventory(defines.inventory.character_main)
+				if inv and inv.valid then
+					local count = inv.get_item_count('iron-ore')
+					if count and count >= 3000 then
+						check = true
+					end
+				end
+			end
+			if check then
+				data.iron_leg_active = true
+			else
+				data.iron_leg_active = false
+			end
+		end
+	end
+
+	for k, _ in pairs(class_auxiliary_data) do
+		if not processed_players[k] then
+			class_auxiliary_data[k] = nil
+		end
+	end
+end
 
 function Public.class_renderings(tickinterval)
 	local memory = Memory.get_crew_memory()
 	if not memory.classes_table then return end
 
+	local class_renderings = memory.class_renderings
+
 	local crew = Common.crew_get_crew_members()
 
-	if not memory.quartermaster_renderings then
-		memory.quartermaster_renderings = {}
-	end
-
-	local processed_renderings = {}
+	local processed_players = {}
 
 	for _, player in pairs(crew) do
 		local player_index = player.index
-		if memory.classes_table[player_index] == Classes.enum.QUARTERMASTER then
-			local r = memory.quartermaster_renderings[player_index]
-			processed_renderings[player_index] = true
-			if Common.validate_player_and_character(player) then
-				if r and rendering.is_valid(r) then
-					rendering.set_target(r, player.character)
+		local class = memory.classes_table[player_index]
+		if class then
+			if not class_renderings[player_index] then class_renderings[player_index] = {} end
+			local rendering_data = class_renderings[player_index]
+			local r = rendering_data.rendering
+			local c = rendering_data.class
+			processed_players[player_index] = true
+			if Common.validate_player_and_character(player) and (c ~= Classes.enum.IRON_LEG or (memory.class_auxiliary_data[player_index] and memory.class_auxiliary_data[player_index].iron_leg_active)) then
+				if class == c then
+					if r and rendering.is_valid(r) then
+						rendering.set_target(r, player.character)
+					end
 				else
-					memory.quartermaster_renderings[player_index] = rendering.draw_circle{
-						surface = player.surface,
-						target = player.character,
-						color = CoreData.colors.quartermaster_rendering,
-						filled = false,
-						radius = Common.quartermaster_range,
-						only_in_alt_mode = true,
-						draw_on_ground = true,
-					}
+					if r and rendering.is_valid(r) then
+						rendering.destroy(r)
+					end
+					if class == Classes.enum.QUARTERMASTER then
+						class_renderings[player_index] = {
+							rendering = rendering.draw_circle{
+								surface = player.surface,
+								target = player.character,
+								color = CoreData.colors.quartermaster_rendering,
+								filled = false,
+								radius = Common.quartermaster_range,
+								only_in_alt_mode = true,
+								draw_on_ground = true,
+							}
+						}
+					elseif class == Classes.enum.SAMURAI then
+						class_renderings[player_index] = {
+							rendering = rendering.draw_circle{
+								surface = player.surface,
+								target = player.character,
+								color = CoreData.colors.toughness_rendering,
+								filled = false,
+								radius = Balance.samurai_resistance^2,
+								only_in_alt_mode = false,
+								draw_on_ground = true,
+							}
+						}
+					elseif class == Classes.enum.HATAMOTO then
+						class_renderings[player_index] = {
+							rendering = rendering.draw_circle{
+								surface = player.surface,
+								target = player.character,
+								color = CoreData.colors.toughness_rendering,
+								filled = false,
+								radius = Balance.hatamoto_resistance^2,
+								only_in_alt_mode = false,
+								draw_on_ground = true,
+							}
+						}
+					elseif class == Classes.enum.IRON_LEG and memory.class_auxiliary_data[player_index] and memory.class_auxiliary_data[player_index].iron_leg_active then
+						class_renderings[player_index] = {
+							rendering = rendering.draw_circle{
+								surface = player.surface,
+								target = player.character,
+								color = CoreData.colors.toughness_rendering,
+								filled = false,
+								radius = Balance.iron_leg_resistance^2,
+								only_in_alt_mode = false,
+								draw_on_ground = true,
+							}
+						}
+					end
 				end
 			else
 				if r then
 					rendering.destroy(r)
-					memory.quartermaster_renderings[player_index] = nil
 				end
+				class_renderings[player_index] = nil
 			end
 		end
 	end
 
-	for k, r in pairs(memory.quartermaster_renderings) do
-		if not processed_renderings[k] then
-			rendering.destroy(r)
-			memory.quartermaster_renderings[k] = nil
+	for k, data in pairs(class_renderings) do
+		if not processed_players[k] then
+			local r = data.rendering
+			if r and rendering.is_valid(r) then
+				rendering.destroy(r)
+			end
+			class_renderings[k] = nil
 		end
 	end
 end

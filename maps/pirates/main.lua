@@ -11,9 +11,17 @@ The scenario is quite complex, but there are ways to get started, even if you do
 
 • Go to pirates/surfaces/islands/first and edit stuff there to see the effect it has on the first island
 • Ask thesixthroc for access to the ToDo list on Github Projects, to see what needs doing
+• Make sure to use debug=true in control.lua
 ]]
 
- --[[personal note for thesixthroc in XX years: my design notes are all in Obsidian (edit: mostly moved to Github Projects)]]
+--[[
+	personal note for thesixthroc looking at this in XX years: my design notes are all in Obsidian (edit: mostly moved to Github Projects)
+]]
+
+--[[
+	Convention for Factorio blueprints in this folder: Use Snap to grid -> Relative, Offset of zeroes.
+	We record tiles and entities separately. For tiles, we use the factorio dev approved 'concrete trick', painting each tile type separately as concrete. The concrete BP will typically need an offset, since it doesn't remember the center of the entities BP — we configure this offset in the Lua rather than the BP itself, since it's easier to edit that way.
+]]
 
 
 -- require 'modules.biters_yield_coins'
@@ -30,8 +38,8 @@ local Autostash = require 'modules.autostash'
 require 'modules.inserter_drops_pickup'
 
 
-local TickFunctions = require 'maps.pirates.tick_functions'
-local ClassTickFunctions = require 'maps.pirates.tick_functions_classes'
+local PiratesApiOnTick = require 'maps.pirates.api_on_tick'
+local ClassPiratesApiOnTick = require 'maps.pirates.roles.tick_functions'
 
 require 'maps.pirates.commands'
 require 'maps.pirates.math'
@@ -45,9 +53,10 @@ local Crew = require 'maps.pirates.crew'
 local Roles = require 'maps.pirates.roles.roles'
 local Structures = require 'maps.pirates.structures.structures'
 local Surfaces = require 'maps.pirates.surfaces.surfaces'
-local Interface = require 'maps.pirates.interface'
+local PiratesApiEvents = require 'maps.pirates.api_events'
 require 'maps.pirates.structures.boats.boats'
 local Progression = require 'maps.pirates.progression'
+local QuestStructures = require 'maps.pirates.structures.quest_structures.quest_structures'
 local Ai = require 'maps.pirates.ai'
 require 'maps.pirates.ores'
 require 'maps.pirates.quest'
@@ -138,12 +147,12 @@ local function crew_tick()
 	local destination = Common.current_destination()
 	local tick = game.tick
 
-	TickFunctions.boat_movement_tick(5) --arguments are tick intervals
-	-- TickFunctions.parrot_tick(5)
+	PiratesApiOnTick.boat_movement_tick(5) --arguments are tick intervals
+	-- PiratesApiOnTick.parrot_tick(5)
 
 	if tick % 10 == 0 then
-		TickFunctions.prevent_disembark(10)
-		TickFunctions.prevent_unbarreling_off_ship(10)
+		PiratesApiOnTick.prevent_disembark(10)
+		PiratesApiOnTick.prevent_unbarreling_off_ship(10)
 	end
 
 	if memory.age and memory.overworldx and memory.overworldx > 0 then
@@ -153,81 +162,81 @@ local function crew_tick()
 		memory.real_age = memory.real_age + 5
 	end
 	if tick % 60 == 0 then
-		TickFunctions.captain_warn_afk(60)
+		PiratesApiOnTick.captain_warn_afk(60)
 	end
 
 	if tick % Common.loading_interval == 0 then
-		TickFunctions.loading_update(Common.loading_interval)
+		PiratesApiOnTick.loading_update(Common.loading_interval)
 	end
 
 	if tick % 5 == 0 then
-		TickFunctions.quest_progress_tick(5)
+		PiratesApiOnTick.quest_progress_tick(5)
 	end
 
 	if tick % 5 == 0 then
-		TickFunctions.strobe_player_colors(5)
+		PiratesApiOnTick.strobe_player_colors(5)
 	end
 
 	if tick % 10 == 0 then
-		TickFunctions.shop_ratelimit_tick(10)
+		PiratesApiOnTick.shop_ratelimit_tick(10)
 	end
 
 	if tick % 30 == 0 then
-		TickFunctions.silo_update(30)
+		PiratesApiOnTick.silo_update(30)
 	end
 
 	if tick % 60 == 0 then
-		TickFunctions.ship_deplete_fuel(60)
+		PiratesApiOnTick.ship_deplete_fuel(60)
 	end
 
 	if tick % 10 == 0 then
-		TickFunctions.pick_up_tick(10)
+		PiratesApiOnTick.pick_up_tick(10)
 	end
 
 	if tick % 60 == 0 then
 		if memory.boat and memory.boat.state == Structures.Boats.enum_state.ATSEA_SAILING then
-			TickFunctions.crowsnest_natural_move(120)
+			PiratesApiOnTick.crowsnest_natural_move(120)
 		end
 	end
 
 	if tick % 60 == 15 or tick % 60 == 45 then
 		if memory.boat and memory.boat.state == Structures.Boats.enum_state.ATSEA_SAILING then
-			TickFunctions.overworld_check_collisions(120)
+			PiratesApiOnTick.overworld_check_collisions(120)
 		end
 	end
 
 	if tick % 60 == 30 then
 		if memory.boat and memory.boat.state == Structures.Boats.enum_state.ATSEA_SAILING then
-			TickFunctions.crowsnest_steer(120)
+			PiratesApiOnTick.crowsnest_steer(120)
 		end
 	end
 
 	if tick % 60 == 0 then
-		TickFunctions.slower_boat_tick(60)
+		PiratesApiOnTick.slower_boat_tick(60)
 	end
 
 	if tick % 10 == 0 then
-		TickFunctions.update_boat_stored_resources(10)
+		PiratesApiOnTick.update_boat_stored_resources(10)
 	end
 
 	if tick % 10 == 0 then
-		TickFunctions.covered_requirement_check(10)
+		QuestStructures.tick_quest_structure_entry_price_check(10)
 	end
 
 	if tick % 30 == 0 then
-		TickFunctions.buried_treasure_check(30)
+		PiratesApiOnTick.buried_treasure_check(30)
 	end
 
 	if tick % 60 == 0 then
-		TickFunctions.raft_raids(60)
+		PiratesApiOnTick.raft_raids(60)
 	end
 
 	if tick % 60 == 0 then
-		TickFunctions.place_cached_structures(60)
+		PiratesApiOnTick.place_cached_structures(60)
 	end
 
 	if tick % 240 == 0 then
-		TickFunctions.check_all_spawners_dead(240)
+		PiratesApiOnTick.check_all_spawners_dead(240)
 	end
 
 	if tick % 60 == 0 then
@@ -278,19 +287,17 @@ local function crew_tick()
 	end
 
 	if tick % 240 == 0 then
-		TickFunctions.Kraken_Destroyed_Backup_check(240)
+		PiratesApiOnTick.Kraken_Destroyed_Backup_check(240)
 	end
 
 	if tick % 300 == 0 then
-		TickFunctions.periodic_free_resources(300)
+		PiratesApiOnTick.periodic_free_resources(300)
 	end
 
 	if tick % 30 == 0 then
-		ClassTickFunctions.update_character_properties(30)
-	end
-
-	if tick % 30 == 0 then
-		ClassTickFunctions.class_renderings(30)
+		ClassPiratesApiOnTick.update_character_properties(30)
+		ClassPiratesApiOnTick.class_update_auxiliary_data(30)
+		ClassPiratesApiOnTick.class_renderings(30)
 	end
 
 	if tick % 120 == 0 then
@@ -298,23 +305,23 @@ local function crew_tick()
 	end
 
 	if tick % 240 == 0 then
-		TickFunctions.LOS_tick(240)
+		PiratesApiOnTick.LOS_tick(240)
 	end
 
 	if tick % 420 == 0 then
-		ClassTickFunctions.class_rewards_tick(420)
+		ClassPiratesApiOnTick.class_rewards_tick(420)
 	end
 
 	if tick % 300 == 0 then
-		TickFunctions.update_recentcrewmember_list(300)
+		PiratesApiOnTick.update_recentcrewmember_list(300)
 	end
 
 	if tick % 1800 == 0 then
-		TickFunctions.transfer_pollution(1800)
+		PiratesApiOnTick.transfer_pollution(1800)
 	end
 
 	if tick % 3600 == 0 then
-		TickFunctions.prune_offline_characters_list(3600)
+		PiratesApiOnTick.prune_offline_characters_list(3600)
 	end
 
 	-- if tick % (60*60*60) == 0 then
@@ -336,7 +343,7 @@ local function global_tick()
 	local tick = game.tick
 
 	if tick % 60 == 0 then
-		TickFunctions.update_players_second()
+		PiratesApiOnTick.update_players_second()
 	end
 
 	if tick % 30 == 0 then
@@ -354,7 +361,7 @@ local function global_tick()
 		crew_tick()
 	end
 
-	TickFunctions.update_player_guis(5)
+	PiratesApiOnTick.update_player_guis(5)
 end
 
 event.on_nth_tick(5, global_tick)
@@ -364,8 +371,8 @@ local function instatick()
 	local global_memory = Memory.get_global_memory()
 	for _, id in pairs(global_memory.crew_active_ids) do
 		Memory.set_working_id(id)
-		TickFunctions.minimap_jam(1)
-		TickFunctions.silo_insta_update()
+		PiratesApiOnTick.minimap_jam(1)
+		PiratesApiOnTick.silo_insta_update()
 	end
 end
 
@@ -376,7 +383,7 @@ event.on_nth_tick(1, instatick)
 ----- FOR BUGFIXING HARD CRASHES (segfaults) ------
 -- often, segfaults are due to an error during chunk generation (as of 1.1.0 or so, anyway.)
 -- to help debug, comment this out, and instead use the command /chnk to generate some chunks manually
-event.add(defines.events.on_chunk_generated, Interface.event_on_chunk_generated)
+event.add(defines.events.on_chunk_generated, PiratesApiEvents.event_on_chunk_generated)
 
 ----- FOR DESYNC BUGFIXING -----
 local gMeta = getmetatable(_ENV)

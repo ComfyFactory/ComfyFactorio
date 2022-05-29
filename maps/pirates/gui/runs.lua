@@ -168,16 +168,16 @@ function Public.toggle_window(player)
 	if player.gui.screen[window_name .. '_piratewindow'] then player.gui.screen[window_name .. '_piratewindow'].destroy() return end
 
 	flow = GuiCommon.new_window(player, window_name)
-	flow.caption = 'Play'
+	flow.caption = {'pirates.gui_runs_play'}
 
 	--*** ONGOING RUNS ***--
 
-	flow2 = GuiCommon.flow_add_section(flow, 'ongoing_runs', 'Ongoing Runs')
+	flow2 = GuiCommon.flow_add_section(flow, 'ongoing_runs', {'pirates.gui_runs_ongoing_runs'})
 
 	flow3 = flow2.add({
 		name = 'helpful_tip',
 		type = 'label',
-		caption = 'To join a run, first select it in the table below.',
+		caption = {'pirates.gui_runs_ongoing_runs_helpful_tip'},
 	})
 	flow3.style.font_color = {r=0.90, g=0.90, b=0.90}
 	flow3.style.single_line = false
@@ -199,7 +199,7 @@ function Public.toggle_window(player)
 	flow4 = flow3.add({
 		name = 'join_spectators',
 		type = 'button',
-		caption = 'Spectate',
+		caption = {'pirates.gui_runs_ongoing_runs_spectate'},
 	})
 	flow4.style.minimal_width = 95
 	flow4.style.font = 'default-bold'
@@ -208,7 +208,7 @@ function Public.toggle_window(player)
 	flow4 = flow3.add({
 		name = 'join_crew',
 		type = 'button',
-		caption = 'Join Crew',
+		caption = {'pirates.gui_runs_ongoing_runs_join_crew'},
 	})
 	flow4.style.minimal_width = 95
 	flow4.style.font = 'default-bold'
@@ -217,7 +217,7 @@ function Public.toggle_window(player)
 	flow4 = flow3.add({
 		name = 'leave_spectators',
 		type = 'button',
-		caption = 'Return to Lobby',
+		caption = {'pirates.gui_runs_ongoing_runs_return_to_lobby'},
 	})
 	flow4.style.minimal_width = 95
 	flow4.style.font = 'default-bold'
@@ -232,14 +232,14 @@ function Public.toggle_window(player)
 	flow3 = flow2.add({
 		name = 'leaving_prompt',
 		type = 'label',
-		caption = 'Hop on board.',
+		caption = {'pirates.gui_runs_ongoing_runs_hop_on_board'},
 	})
 	flow3.style.left_margin = 5
 
 
 	-- PROPOSALS --
 
-	flow2 = GuiCommon.flow_add_section(flow, 'proposals', 'Proposals')
+	flow2 = GuiCommon.flow_add_section(flow, 'proposals', {'pirates.gui_runs_proposals'})
 
 	flow3 = flow2.add({
 		name = 'proposals_listbox',
@@ -256,7 +256,7 @@ function Public.toggle_window(player)
 	flow4 = flow3.add({
 		name = 'endorse_proposal',
 		type = 'button',
-		caption = 'Endorse Proposal',
+		caption = {'pirates.gui_runs_proposals_endorse_proposal'},
 	})
 	flow4.style.minimal_width = 150
 	flow4.style.font = 'default-bold'
@@ -266,7 +266,7 @@ function Public.toggle_window(player)
 	flow4 = flow3.add({
 		name = 'retract_endorsement',
 		type = 'button',
-		caption = 'Retract Endorsement',
+		caption = {'pirates.gui_runs_proposals_retract_endorsement'},
 	})
 	flow4.style.minimal_width = 150
 	flow4.style.font = 'default-bold'
@@ -276,7 +276,7 @@ function Public.toggle_window(player)
 	flow4 = flow3.add({
 		name = 'abandon_proposal',
 		type = 'button',
-		caption = 'Abandon Proposal',
+		caption = {'pirates.gui_runs_proposals_abandon_proposal'},
 	})
 	flow4.style.minimal_width = 150
 	flow4.style.font = 'default-bold'
@@ -298,14 +298,14 @@ function Public.toggle_window(player)
 
 	flow5 = flow4.add({
 		type = 'label',
-		caption = 'Run name',
+		caption = {'pirates.gui_runs_proposal_maker_run_name'},
 	})
 	flow5.style.font = 'heading-3'
 
 	flow5 = flow4.add({
 		name = 'namefield',
 		type = 'textfield',
-		caption = 'Name',
+		caption = {'pirates.gui_runs_proposal_maker_run_name_2'},
 		text = '',
 	})
 	flow5.style.width = 150
@@ -321,7 +321,7 @@ function Public.toggle_window(player)
 	flow5.style.width = 200
 	flow5.style.margin = 0
 
-	flow_add_proposal_slider(flow5, 'capacity', 'Capacity', #CoreData.capacity_options, 5, {'pirates.capacity_tooltip'})
+	flow_add_proposal_slider(flow5, 'capacity', {'pirates.gui_runs_proposal_maker_capacity'}, #CoreData.capacity_options, 5, {'pirates.capacity_tooltip'})
 	-- flow_add_proposal_slider(flow5, 'difficulty', 'Difficulty', #CoreData.difficulty_options, 2, {'pirates.difficulty_tooltip'})
 	-- flow_add_proposal_switch(flow5, 'mode', 'Mode', 'left', {'pirates.mode_tooltip'})
 
@@ -336,7 +336,7 @@ function Public.toggle_window(player)
 	flow5 = flow4.add({
 		name = 'proposal_disabled_low_crew_caps',
 		type = 'label',
-		caption = 'This capacity setting isn\'t available at the moment.',
+		caption = {'pirates.gui_runs_proposal_maker_capacity_disabled'},
 	})
 	flow5.style.single_line = false
 	flow5.style.maximal_width = 200
@@ -344,7 +344,7 @@ function Public.toggle_window(player)
 	flow5 = flow4.add({
 		name = 'propose_crew',
 		type = 'button',
-		caption = 'Propose',
+		caption = {'pirates.gui_runs_proposal_maker_propose'},
 	})
 	flow5.style.minimal_width = 75
 	flow5.style.font = 'default-bold'
@@ -362,35 +362,35 @@ function Public.toggle_window(player)
 	flow4 = flow3.add({
 		name = 'proposal_insufficient_endorsers',
 		type = 'label',
-		caption = 'Gather support from more pirates.',
+		caption = {'pirates.gui_runs_launch_error_1'},
 	})
 	flow4.style.single_line = false
 
 	flow4 = flow3.add({
 		name = 'proposal_crew_count_capped',
 		type = 'label',
-		caption = 'The number of concurrent runs on the server has reached the cap set by the admins.',
+		caption = {'pirates.gui_runs_launch_error_2'},
 	})
 	flow4.style.single_line = false
 
 	flow4 = flow3.add({
 		name = 'proposal_insufficient_player_capacity',
 		type = 'label',
-		caption = "Can't launch; at least one run needs high player capacity.",
+		caption = {'pirates.gui_runs_launch_error_3'},
 	})
 	flow4.style.single_line = false
 
 	flow4 = flow3.add({
 		name = 'proposal_insufficient_sloops',
 		type = 'label',
-		caption = 'No sloops available. Join an existing run instead.',
+		caption = {'pirates.gui_runs_launch_error_4'},
 	})
 	flow4.style.single_line = false
 
 	flow4 = flow3.add({
 		name = 'launch_crew',
 		type = 'button',
-		caption = 'Launch run',
+		caption = {'pirates.gui_runs_launch'},
 	})
 	flow4.style.minimal_width = 150
 	flow4.style.font = 'default-bold'
@@ -441,7 +441,7 @@ function Public.full_update(player)
 
 		flow.ongoing_runs.body.wait_to_join.visible = selected_joinable_bool and crewid and global_memory.crew_memories[crewid] and (global_memory.crew_memories[crewid].tempbanned_from_joining_data and global_memory.crew_memories[crewid].tempbanned_from_joining_data[player.index] and game.tick < global_memory.crew_memories[crewid].tempbanned_from_joining_data[player.index] + Common.ban_from_rejoining_crew_ticks) and (not (global_memory.crew_memories[crewid].crewstatus == Crew.enum.LEAVING_INITIAL_DOCK or #global_memory.crew_memories[crewid].crewplayerindices >= global_memory.crew_memories[crewid].capacity))
 		if flow.ongoing_runs.body.wait_to_join.visible then
-			flow.ongoing_runs.body.wait_to_join.caption = 'Wait to join... ' .. Math.ceil(((global_memory.crew_memories[crewid].tempbanned_from_joining_data[player.index] - (game.tick - Common.ban_from_rejoining_crew_ticks)))/60)
+			flow.ongoing_runs.body.wait_to_join.caption = {'pirates.gui_runs_wait_to_join', Math.ceil(((global_memory.crew_memories[crewid].tempbanned_from_joining_data[player.index] - (game.tick - Common.ban_from_rejoining_crew_ticks)))/60)}
 		end
 
 		if not selected_joinable_bool then flow.ongoing_runs.body.ongoing_runs_listbox.selected_index = 0 end
@@ -523,7 +523,7 @@ function Public.full_update(player)
 				flow.proposals.body.proposal_maker.body.options.capacity_readoff_icon.sprite = opt.icon
 			end
 		end
-		if flow.proposals.body.proposal_maker.body.options.capacity.capacity.readoff_text.caption == '∞' then flow.proposals.body.proposal_maker.body.options.capacity.capacity.readoff_text.caption = 'No limit' end
+		if flow.proposals.body.proposal_maker.body.options.capacity.capacity.readoff_text.caption == '∞' then flow.proposals.body.proposal_maker.body.options.capacity.capacity.readoff_text.caption = {'pirates.gui_runs_proposal_maker_no_limit'} end
 
 		-- local difficulty_slider_value = flow.proposals.body.proposal_maker.body.options.difficulty.difficulty.slider.slider_value
 		-- for i, opt in pairs(CoreData.difficulty_options) do
@@ -629,7 +629,8 @@ function Public.click(event)
 
 		global_memory.crewproposals[#global_memory.crewproposals + 1] = proposal
 
-		local message = player.name .. ' proposed the run ' .. proposal_name .. ' [capacity ' .. CoreData.capacity_options[capacity_option].text3 .. '].'
+		local message = {'pirates.proposal_propose', player.name, proposal_name, CoreData.capacity_options[capacity_option].text3}
+
 		-- local message = player.name .. ' proposed the run ' .. proposal_name .. ' (difficulty ' .. CoreData.difficulty_options[difficulty_option].text .. ', capacity ' .. CoreData.capacity_options[capacity_option].text3 .. ').'
 		Common.notify_lobby(message)
 		return

@@ -24,7 +24,7 @@ local Islands = require 'maps.pirates.surfaces.islands.islands'
 local Progression = require 'maps.pirates.progression'
 local Crowsnest = require 'maps.pirates.surfaces.crowsnest'
 local Hold = require 'maps.pirates.surfaces.hold'
-local Interface = require 'maps.pirates.interface'
+local PiratesApiEvents = require 'maps.pirates.api_events'
 local Upgrades = require 'maps.pirates.boat_upgrades'
 local Effects = require 'maps.pirates.effects'
 local Kraken = require 'maps.pirates.surfaces.sea.kraken'
@@ -71,9 +71,9 @@ function(cmd)
 	if param and param ~= 'nil' then
 		local string = Roles.get_class_print_string(param)
 		if string then
-			Common.notify_player_expected(player, 'Class definition for ' .. string)
+			Common.notify_player_expected(player, {'', 'Class definition for ', string})
 		else
-			Common.notify_player_error(player, 'Command error: Class \'' .. param .. '\' not found.')
+			Common.notify_player_error(player, 'Command error: Class ' .. param .. ' not found.')
 		end
 	else
 		Common.notify_player_expected(player, '/classinfo {classname} returns the definition of the named class.')
@@ -88,14 +88,14 @@ function(cmd)
 	local player = game.players[cmd.player_index]
 	if not Common.validate_player(player) then return end
 	if param and param ~= 'nil' then
-		for _, class in ipairs(Classes.Class_List) do
-			if Classes.display_form[class]:lower() == param:lower() then
+		for _, class in pairs(Classes.enum) do
+			if Classes.eng_form[class]:lower() == param:lower() then
 				Classes.assign_class(player.index, class, true)
 				return true
 			end
 		end
 		--fallthrough:
-		Common.notify_player_error(player, 'Command error: Class \'' .. param .. '\' not found.')
+		Common.notify_player_error(player, 'Command error: Class ' .. param .. ' not found.')
 		return false
 	else
 		Common.notify_player_expected(player, '/take {classname} takes a spare class with the given name for yourself.')
@@ -130,7 +130,8 @@ function(cmd)
 					local rgb = PlayerColors.colors[param]
 					player.color = rgb
 					player.chat_color = rgb
-					local message = '[color=' .. rgb.r .. ',' .. rgb.g .. ',' .. rgb.b .. ']' .. player.name .. ' chose the color ' .. param .. '[/color] (via /ccolor).'
+					local message = {'', '[color=' .. rgb.r .. ',' .. rgb.g .. ',' .. rgb.b .. ']',{'pirates.choose_chat_color', player.name, param}, '[/color] (via /ccolor).'}
+					-- local message = '[color=' .. rgb.r .. ',' .. rgb.g .. ',' .. rgb.b .. ']' .. player.name .. ' chose the color ' .. param .. '[/color] (via /ccolor).'
 					Common.notify_game(message)
 				else
 					Common.notify_player_error(player, 'Command error: Color \'' .. param .. '\' not found.')
@@ -141,7 +142,8 @@ function(cmd)
 				if not rgb then return end
 				player.color = rgb
 				player.chat_color = rgb
-				local message = '[color=' .. rgb.r .. ',' .. rgb.g .. ',' .. rgb.b .. ']' .. player.name .. '\'s color randomized to ' .. color .. '[/color] (via /ccolor).' --'randomly became' was amusing, but let's not
+				local message = {'', '[color=' .. rgb.r .. ',' .. rgb.g .. ',' .. rgb.b .. ']', {'pirates.randomize_chat_color', player.name, color}, '[/color] (via /ccolor).'} --'randomly became' was amusing, but let's not
+				-- local message = '[color=' .. rgb.r .. ',' .. rgb.g .. ',' .. rgb.b .. ']' .. player.name .. '\'s color randomized to ' .. color .. '[/color] (via /ccolor).' --'randomly became' was amusing, but let's not
 				Common.notify_game(message)
 				-- disabled due to lag:
 				-- GUIcolor.toggle_window(player)
@@ -409,7 +411,7 @@ function(cmd)
 		local memory = Memory.get_crew_memory()
 		if not Common.validate_player(player) then return end
 		if not memory.classes_table then memory.classes_table = {} end
-		memory.classes_table[player.index] = tonumber(param)
+		memory.classes_table[player.index] = param
 		player.print('Set own class to ' .. param .. '.')
 	end
 end)
@@ -575,7 +577,7 @@ if _DEBUG then
 
 			for i = 0, 13 do
 				for j = 0, 13 do
-					Interface.event_on_chunk_generated({surface = player.surface, area = {left_top = {x = -7 * 32 + i * 32, y = -7 * 32 + j * 32}}})
+					PiratesApiEvents.event_on_chunk_generated({surface = player.surface, area = {left_top = {x = -7 * 32 + i * 32, y = -7 * 32 + j * 32}}})
 				end
 			end
 			game.print('chunks generated')
@@ -703,7 +705,7 @@ if _DEBUG then
 			local memory = Memory.get_crew_memory()
 
 			game.print('faking a highscore...')
-			Highscore.write_score(memory.secs_id, 'fakers', 0, 40, CoreData.version_float, 1, 1)
+			Highscore.write_score(memory.secs_id, 'fakers', 0, 40, CoreData.version_string, 1, 1)
 		end
 	end)
 

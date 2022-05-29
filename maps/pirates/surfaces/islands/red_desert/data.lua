@@ -6,7 +6,7 @@ local CoreData = require 'maps.pirates.coredata'
 
 local Public = {}
 
-Public.display_names = {'Sandworm Caldera'}
+Public.display_names = {{'pirates.location_displayname_red_desert_1'}}
 
 Public.discord_emoji = CoreData.comfy_emojis.mjau
 

@@ -9,9 +9,8 @@ local Boats = require 'maps.pirates.structures.boats.boats'
 local Islands = require 'maps.pirates.surfaces.islands.islands'
 local IslandsCommon = require 'maps.pirates.surfaces.islands.common'
 local Surfaces = require 'maps.pirates.surfaces.surfaces'
-local Interface = require 'maps.pirates.interface'
+local PiratesApiEvents = require 'maps.pirates.api_events'
 local Roles = require 'maps.pirates.roles.roles'
-local Classes = require 'maps.pirates.roles.classes'
 local Progression = require 'maps.pirates.progression'
 local Crowsnest = require 'maps.pirates.surfaces.crowsnest'
 local Hold = require 'maps.pirates.surfaces.hold'
@@ -28,9 +27,8 @@ local _inspect = require 'utils.inspect'.inspect
 local Kraken = require 'maps.pirates.surfaces.sea.kraken'
 
 local Quest = require 'maps.pirates.quest'
-local Loot = require 'maps.pirates.loot'
 local ShopDock = require 'maps.pirates.shop.dock'
-local ShopCovered = require 'maps.pirates.shop.covered'
+local QuestStructures = require 'maps.pirates.structures.quest_structures.quest_structures'
 
 local Public = {}
 
@@ -71,7 +69,7 @@ function Public.prevent_unbarreling_off_ship(tickinterval)
 			local r = a.get_recipe()
 			if r and r.subgroup and r.subgroup.name and r.subgroup.name == 'fill-barrel' and (not (r.name and r.name == 'fill-water-barrel')) then
 				if not Boats.on_boat(boat, a.position) then
-					Common.notify_force_error(memory.force, 'Recipe error: Barrels are too heavy to carry back to the ship. Try another way.')
+					Common.notify_force_error(memory.force, {'pirates.error_cant_carry_barrels'})
 					a.set_recipe('fill-water-barrel')
 				end
 			end
@@ -98,7 +96,7 @@ function Public.prevent_disembark(tickinterval)
 
 		for _, player in pairs(game.connected_players) do
 			if player.surface and player.surface.valid and boat.surface_name and player.surface.name == boat.surface_name and ps[player.index] and (not Boats.on_boat(boat, player.position)) and (not (player.controller_type == defines.controllers.spectator)) then
-				Common.notify_player_error(player, 'Now is no time to disembark.')
+				Common.notify_player_error(player, {'pirates.error_disembark'})
 				-- player.teleport(memory.spawnpoint)
 				local p = player.surface.find_non_colliding_position('character', memory.spawnpoint, 5, 0.1)
 				if p then
@@ -124,7 +122,7 @@ function Public.check_all_spawners_dead(tickinterval)
 			local spawnerscount = Common.spawner_count(surface)
 			if spawnerscount == 0 then
 				destination.static_params.base_cost_to_undock = nil
-				Common.notify_force(memory.force, 'All biter bases destroyed — escape cost removed.')
+				Common.notify_force(memory.force, {'pirates.destroyed_all_nests'})
 			end
 		end
 	end
@@ -182,11 +180,11 @@ function Public.ship_deplete_fuel(tickinterval)
 
 	if rate < 0 and memory.stored_fuel < 1000 and (not (memory.parrot_fuel_most_recent_warning and memory.parrot_fuel_most_recent_warning >= game.tick - 60*60*12)) then --12 minutes
 		memory.parrot_fuel_most_recent_warning = game.tick
-		Common.parrot_speak(memory.force, 'Fuel is low!')
+		Common.parrot_speak(memory.force, {'pirates.parrot_fuel_warning'})
 	end
 
 	if memory.stored_fuel < 0 then
-		Crew.try_lose('out of fuel')
+		Crew.try_lose({'pirates.loss_out_of_fuel'})
 	end
 end
 
@@ -220,7 +218,7 @@ function Public.captain_warn_afk(tickinterval)
 	if memory.playerindex_captain then
 		for _, player in pairs(game.connected_players) do
 			if Common.is_captain(player) and #Common.crew_get_nonafk_crew_members() > 1 and player.afk_time >= Common.afk_time - 20*60 - 60 - tickinterval and player.afk_time < Common.afk_time - 20*60 then
-				Common.notify_player_announce(player, 'Note: If you go idle as captain for too long, the role passes to another crewmember.')
+				Common.notify_player_announce(player, {'pirates.warn_nearly_afk_captain'})
 				player.play_sound{path = 'utility/scenario_message'}
 			end
 		end
@@ -258,7 +256,7 @@ function Public.prune_offline_characters_list(tickinterval)
 					end
 				end
 				if any then
-					Common.notify_force_light(memory.force, 'Offline player\'s items recovered to cabin.')
+					Common.notify_force_light(memory.force, {'pirates.recover_offline_player_items'})
 				end
 				for ii = 1, 5, 1 do
 					if player_inv[ii].valid then
@@ -286,7 +284,8 @@ function Public.periodic_free_resources(tickinterval)
 		Common.give_items_to_crew{{name = 'sulfuric-acid-barrel', count = count}}
 		local force = memory.force
 		if not (force and force.valid) then return end
-		Common.notify_force_light(force, 'Granted: ' .. count .. ' [item=sulfuric-acid-barrel]')
+		local message = {'pirates.granted_1', count .. ' [item=sulfuric-acid-barrel]'}
+		Common.notify_force_light(force, message)
 	end
 end
 
@@ -339,7 +338,7 @@ function Public.pick_up_tick(tickinterval)
 					map.state = 'picked_up'
 					rendering.destroy(map.mapobject_rendering)
 
-					Common.notify_force_light(player.force, player.name .. ' found a map. Treasure location revealed.')
+					Common.notify_force_light(player.force, {'pirates.find_map',player.name})
 
 					map.x_renderings = {
 						rendering.draw_line{
@@ -396,7 +395,7 @@ function Public.pick_up_tick(tickinterval)
 
 					ghost.state = 'picked_up'
 
-					Common.notify_force(player.force, player.name .. ' found a ghost.')
+					Common.notify_force(player.force, {'pirates.find_ghost',player.name})
 
 					dynamic_data.quest_progress = dynamic_data.quest_progress + 1
 					Quest.try_resolve_quest()
@@ -412,7 +411,7 @@ local function cached_structure_delete_existing_entities_if_needed(surface, posi
 		local area = {left_top = {position.x - special.width/2, position.y - special.height/2}, right_bottom = {position.x + special.width/2 + 0.5, position.y + special.height/2 + 0.5}}
 		surface.destroy_decoratives{area=area}
 		local existing = surface.find_entities_filtered{area = area}
-		if existing and (not (special.name == 'covered1b')) then
+		if existing then
 			for _, e in pairs(existing) do
 				if not (((special.name == 'small_primitive_mining_base' or special.name == 'small_mining_base') and (e.name == 'iron-ore' or e.name == 'copper-ore' or e.name == 'stone')) or (special.name == 'uranium_miners' and e.name == 'uranium-ore')) then
 					if not (e.name and e.name == 'rocket-silo') then
@@ -442,6 +441,8 @@ function Public.interpret_shorthanded_force_name(shorthanded_name)
 	return ret
 end
 
+
+
 function Public.place_cached_structures(tickinterval)
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
@@ -465,7 +466,7 @@ function Public.place_cached_structures(tickinterval)
 			local special = structure.data
 			local position = special.position
 
-			Common.ensure_chunks_at(surface, position, 2)
+			Common.ensure_chunks_at(surface, position, Common.structure_ensure_chunk_radius)
 
 			cached_structure_delete_existing_entities_if_needed(surface, position, special)
 
@@ -581,226 +582,10 @@ function Public.place_cached_structures(tickinterval)
 					saved_components[#saved_components + 1] = c2
 				end
 			end
-			Structures.post_creation_process(special.name, saved_components)
 
-			if special.name == 'covered1' then
-				local covered_data = destination.dynamic_data.covered_data
-				if not covered_data then return end
+			Structures.configure_structure_entities(special.name, saved_components)
 
-				local hardcoded_data = Structures.IslandStructures.ROC.covered1.Data
-
-				covered_data.blue_chest = surface.create_entity{name = 'blue-chest', position = Math.vector_sum(special.position, hardcoded_data.blue_chest), force = 'environment'}
-				if covered_data.blue_chest and covered_data.blue_chest.valid then
-					covered_data.blue_chest.minable = false
-					covered_data.blue_chest.rotatable = false
-					covered_data.blue_chest.operable = false
-					covered_data.blue_chest.destructible = false
-				end
-				covered_data.red_chest = surface.create_entity{name = 'red-chest', position = Math.vector_sum(special.position, hardcoded_data.red_chest), force = 'environment'}
-				if covered_data.red_chest and covered_data.red_chest.valid then
-					covered_data.red_chest.minable = false
-					covered_data.red_chest.rotatable = false
-					covered_data.red_chest.operable = false
-					covered_data.red_chest.destructible = false
-				end
-				covered_data.door_walls = {}
-				for _, p in pairs(hardcoded_data.walls) do
-					local e = surface.create_entity{name = 'stone-wall', position = Math.vector_sum(special.position, p), force = 'environment'}
-					if e and e.valid then
-						e.minable = false
-						e.rotatable = false
-						e.operable = false
-						e.destructible = false
-					end
-					covered_data.door_walls[#covered_data.door_walls + 1] = e
-				end
-
-			elseif special.name == 'covered1b' then
-				local covered_data = destination.dynamic_data.covered_data
-				if not covered_data then return end
-
-				local hardcoded_data = Structures.IslandStructures.ROC.covered1b.Data
-
-				covered_data.market = surface.create_entity{name = 'market', position = Math.vector_sum(special.position, hardcoded_data.market), force = string.format('ancient-friendly-%03d', memory.id)}
-				if covered_data.market and covered_data.market.valid then
-					covered_data.market.minable = false
-					covered_data.market.rotatable = false
-					covered_data.market.destructible = false
-
-					covered_data.market.add_market_item{price={{'pistol', 1}}, offer={type = 'give-item', item = 'coin', count = Balance.coin_sell_amount}}
-					covered_data.market.add_market_item{price={{'burner-mining-drill', 1}}, offer={type = 'give-item', item = 'iron-plate', count = 9}}
-
-					local how_many_coin_offers = 4
-					if Balance.crew_scale() >= 1.2 then how_many_coin_offers = 5 end
-					local coin_offers = ShopCovered.market_generate_coin_offers(how_many_coin_offers)
-					for _, o in pairs(coin_offers) do
-						covered_data.market.add_market_item(o)
-					end
-
-					if destination.static_params.class_for_sale then
-						covered_data.market.add_market_item{price={{'coin', Balance.class_cost()}}, offer={type="nothing", effect_description = 'Purchase the class ' .. Classes.display_form[destination.static_params.class_for_sale] .. '.'}}
-
-						-- destination.dynamic_data.market_class_offer_rendering = rendering.draw_text{
-						-- 	text = 'Class available: ' .. Classes.display_form[destination.static_params.class_for_sale],
-						-- 	surface = surface,
-						-- 	target = Utils.psum{special.position, hardcoded_data.market, {x = 1, y = -3.9}},
-						-- 	color = CoreData.colors.renderingtext_green,
-						-- 	scale = 2.5,
-						-- 	font = 'default-game',
-						-- 	alignment = 'center'
-						-- }
-					end
-				end
-
-				covered_data.steel_chest = surface.create_entity{name = 'steel-chest', position = Math.vector_sum(special.position, hardcoded_data.steel_chest), force = string.format('ancient-friendly-%03d', memory.id)}
-				if covered_data.steel_chest and covered_data.steel_chest.valid then
-					covered_data.steel_chest.minable = false
-					covered_data.steel_chest.rotatable = false
-					covered_data.steel_chest.destructible = false
-
-					local inv = covered_data.steel_chest.get_inventory(defines.inventory.chest)
-					local loot = destination.dynamic_data.covered1_requirement.raw_materials
-					for j = 1, #loot do
-						local l = loot[j]
-						if l.count > 0 then
-							inv.insert(l)
-						end
-					end
-				end
-
-				for _, w in pairs(covered_data.door_walls) do
-					w.destructible = true
-					w.destroy()
-				end
-
-				covered_data.wooden_chests = {}
-				for k, p in ipairs(hardcoded_data.wooden_chests) do
-					local e = surface.create_entity{name = 'wooden-chest', position = Math.vector_sum(special.position, p), force = string.format('ancient-friendly-%03d', memory.id)}
-					if e and e.valid then
-						e.minable = false
-						e.rotatable = false
-						e.destructible = false
-
-						local inv = e.get_inventory(defines.inventory.chest)
-						local loot = Loot.covered_wooden_chest_loot()
-						if k==1 then loot[1] = {name = 'coin', count = 2000} end
-						for j = 1, #loot do
-							local l = loot[j]
-							inv.insert(l)
-						end
-					end
-					covered_data.wooden_chests[#covered_data.wooden_chests + 1] = e
-				end
-
-			elseif special.name == 'covered2' then
-				local covered_data = destination.dynamic_data.covered_data
-				if not covered_data then return end
-
-				local hardcoded_data = Structures.IslandStructures.ROC.covered2.Data
-
-				covered_data.blue_chest = surface.create_entity{name = 'blue-chest', position = Math.vector_sum(special.position, hardcoded_data.blue_chest), force = 'environment'}
-				if covered_data.blue_chest and covered_data.blue_chest.valid then
-					covered_data.blue_chest.minable = false
-					covered_data.blue_chest.rotatable = false
-					covered_data.blue_chest.operable = false
-					covered_data.blue_chest.destructible = false
-				end
-				covered_data.red_chests = {}
-				for _, chest_position in pairs(hardcoded_data.red_chests) do
-					local e = surface.create_entity{name = 'red-chest', position = Math.vector_sum(special.position, chest_position), force = 'environment'}
-					if e and e.valid then
-						e.minable = false
-						e.rotatable = false
-						e.operable = false
-						e.destructible = false
-						covered_data.red_chests[#covered_data.red_chests+1] = e
-					end
-				end
-				covered_data.door_walls = {}
-				for _, p in pairs(hardcoded_data.walls) do
-					local e = surface.create_entity{name = 'stone-wall', position = Math.vector_sum(special.position, p), force = 'environment'}
-					if e and e.valid then
-						e.minable = false
-						e.rotatable = false
-						e.operable = false
-						e.destructible = false
-					end
-					covered_data.door_walls[#covered_data.door_walls + 1] = e
-				end
-
-			elseif special.name == 'covered2b' then
-				local covered_data = destination.dynamic_data.covered_data
-				if not covered_data then return end
-
-				local hardcoded_data = Structures.IslandStructures.ROC.covered2b.Data
-
-				covered_data.market = surface.create_entity{name = 'market', position = Math.vector_sum(special.position, hardcoded_data.market), force = string.format('ancient-friendly-%03d', memory.id)}
-				if covered_data.market and covered_data.market.valid then
-					covered_data.market.minable = false
-					covered_data.market.rotatable = false
-					covered_data.market.destructible = false
-
-					covered_data.market.add_market_item{price={{'pistol', 1}}, offer={type = 'give-item', item = 'coin', count = Balance.coin_sell_amount}}
-					covered_data.market.add_market_item{price={{'burner-mining-drill', 1}}, offer={type = 'give-item', item = 'iron-plate', count = 9}}
-
-					local how_many_coin_offers = 4
-					if Balance.crew_scale() >= 1.2 then how_many_coin_offers = 5 end
-					local coin_offers = ShopCovered.market_generate_coin_offers(how_many_coin_offers)
-					for _, o in pairs(coin_offers) do
-						covered_data.market.add_market_item(o)
-					end
-
-					if destination.static_params.class_for_sale then
-						covered_data.market.add_market_item{price={{'coin', Balance.class_cost()}}, offer={type="nothing", effect_description = 'Purchase the class ' .. Classes.display_form[destination.static_params.class_for_sale] .. '.'}}
-
-						-- destination.dynamic_data.market_class_offer_rendering = rendering.draw_text{
-						-- 	text = 'Class available: ' .. Classes.display_form[destination.static_params.class_for_sale],
-						-- 	surface = surface,
-						-- 	target = Utils.psum{special.position, hardcoded_data.market, {x = 1, y = -3.9}},
-						-- 	color = CoreData.colors.renderingtext_green,
-						-- 	scale = 2.5,
-						-- 	font = 'default-game',
-						-- 	alignment = 'center'
-						-- }
-					end
-				end
-
-				for _, w in pairs(covered_data.door_walls) do
-					if w and w.valid then
-						w.destructible = true
-						w.destroy()
-					end
-				end
-
-				covered_data.wooden_chests = {}
-				for k, p in ipairs(hardcoded_data.wooden_chests) do
-					local e = surface.create_entity{name = 'wooden-chest', position = Math.vector_sum(special.position, p), force = string.format('ancient-friendly-%03d', memory.id)}
-					if e and e.valid then
-						e.minable = false
-						e.rotatable = false
-						e.destructible = false
-
-						local inv = e.get_inventory(defines.inventory.chest)
-						if k==1 then
-							inv.insert({name = 'coin', count = 2000})
-						elseif k==4 then
-							local loot = Loot.covered_wooden_chest_loot_1()
-							for j = 1, #loot do
-								local l = loot[j]
-								inv.insert(l)
-							end
-						else
-							local loot = Loot.covered_wooden_chest_loot_2()
-							for j = 1, #loot do
-								local l = loot[j]
-								inv.insert(l)
-							end
-						end
-					end
-					covered_data.wooden_chests[#covered_data.wooden_chests + 1] = e
-				end
-			end
-
+			QuestStructures.create_quest_structure_entities(special.name)
 
 			for j = i, #structures-1 do
 				structures[j] = structures[j+1]
@@ -810,125 +595,7 @@ function Public.place_cached_structures(tickinterval)
 	end
 end
 
-function Public.covered_requirement_check(tickinterval)
-	local memory = Memory.get_crew_memory()
-	if memory.game_lost then return end
-	local destination = Common.current_destination()
-	if not (destination and destination.dynamic_data) then return end
 
-	local covered_data = destination.dynamic_data.covered_data
-	if not covered_data then return end
-
-	if covered_data.structure_type == 'covered1' then
-
-		local blue_chest = covered_data.blue_chest
-		local red_chest = covered_data.red_chest
-		if not (blue_chest and blue_chest.valid and red_chest and red_chest.valid) then return end
-		local blue_inv = covered_data.blue_chest.get_inventory(defines.inventory.chest)
-		local red_inv = covered_data.red_chest.get_inventory(defines.inventory.chest)
-	
-		local blue_contents = blue_inv.get_contents()
-	
-		local requirement = covered_data.requirement
-	
-		local got = 0
-		for k, v in pairs(blue_contents) do
-			if covered_data.state == 'covered' and k == requirement.name then
-				got = v
-			else
-				-- @FIX: power armor loses components, items lose health!
-				red_inv.insert({name = k, count = v});
-				blue_inv.remove({name = k, count = v});
-			end
-		end
-	
-		if covered_data.state == 'covered' then
-			if got >= requirement.count then
-				blue_inv.remove({name = requirement.name, count = requirement.count});
-				covered_data.state = 'uncovered'
-				rendering.destroy(covered_data.rendering1)
-				rendering.destroy(covered_data.rendering2)
-	
-				local structureData = Structures.IslandStructures.ROC.covered1b.Data
-				local special = {
-					position = covered_data.position,
-					components = structureData.components,
-					width = structureData.width,
-					height = structureData.height,
-					name = structureData.name,
-				}
-				destination.dynamic_data.structures_waiting_to_be_placed[#destination.dynamic_data.structures_waiting_to_be_placed + 1] = {data = special, tick = game.tick}
-			else
-				if covered_data.rendering1 then
-					rendering.set_text(covered_data.rendering1, 'Needs ' .. requirement.count - got .. ' x')
-				end
-			end
-		end
-
-	elseif covered_data.structure_type == 'covered2' then
-		local blue_chest = covered_data.blue_chest
-		local red_chests = covered_data.red_chests
-		if not (blue_chest and blue_chest.valid and red_chests and red_chests[1] and red_chests[1].valid and red_chests[2] and red_chests[2].valid and red_chests[3] and red_chests[3].valid) then return end
-
-		local blue_inv = covered_data.blue_chest.get_inventory(defines.inventory.chest)
-		local red_inv_main = {}
-		red_inv_main[1] = covered_data.red_chests[1].get_inventory(defines.inventory.chest)
-		red_inv_main[2] = covered_data.red_chests[3].get_inventory(defines.inventory.chest)
-		local red_inv_other = covered_data.red_chests[2].get_inventory(defines.inventory.chest)
-	
-		local blue_contents = blue_inv.get_contents()
-	
-		local requirement = covered_data.requirement --fields {name, count, batchSize, batchRawMaterials}
-	
-		for k, v in pairs(blue_contents) do
-
-			if covered_data.state == 'covered' and k == requirement.name and v >= requirement.batchSize then
-				local toRemove = v - (v % requirement.batchSize)
-				local batches = toRemove / requirement.batchSize
-
-				covered_data.completion_counter = covered_data.completion_counter + toRemove
-				blue_inv.remove({name = k, count = toRemove});
-
-				local i = 1
-				for k2, v2 in pairs(requirement.batchRawMaterials) do
-					red_inv_main[i].insert({name = k2, count = v2 * batches})
-					if red_inv_main[i+1] then i = i + 1 end
-				end
-			elseif not (covered_data.state == 'covered' and k == requirement.name and v < requirement.batchSize) then
-				-- @FIX: power armor loses components, items lose health data!
-				red_inv_other.insert({name = k, count = v});
-				blue_inv.remove({name = k, count = v});
-			end
-		end
-	
-		if covered_data.state == 'covered' then
-			if covered_data.completion_counter >= requirement.count then
-				covered_data.state = 'uncovered'
-				rendering.destroy(covered_data.rendering1)
-				rendering.destroy(covered_data.rendering2)
-	
-				-- local structureData = Structures.IslandStructures.ROC.covered1b.Data
-				-- local structureData = Structures.IslandStructures.ROC.covered2b.Data
-				-- local special = {
-				-- 	position = covered_data.position,
-				-- 	components = structureData.components,
-				-- 	width = structureData.width,
-				-- 	height = structureData.height,
-				-- 	name = structureData.name,
-				-- }
-				local special = Utils.deepcopy(Structures.IslandStructures.ROC.covered2b.Data)
-				special.position = covered_data.position
-				
-				destination.dynamic_data.structures_waiting_to_be_placed[#destination.dynamic_data.structures_waiting_to_be_placed + 1] = {data = special, tick = game.tick}
-			else
-				if covered_data.rendering1 then
-					rendering.set_text(covered_data.rendering1, 'Needs ' .. requirement.count - covered_data.completion_counter .. ' x')
-				end
-			end
-		end
-
-	end
-end
 
 
 
@@ -1169,7 +836,7 @@ function Public.loading_update(tickinterval)
 			if memory.loadingticks >= 350 - Common.loading_interval then
 				if Boats.players_on_boat_count(memory.boat) > 0 then
 					if memory.loadingticks < 350 then
-						Common.notify_game('[' .. memory.name .. '] Loading new game...')
+						Common.notify_game({'', '[' .. memory.name .. '] ', {'pirates.loading_new_game'}})
 					elseif memory.loadingticks > 410 then
 						if not Crowsnest.get_crowsnest_surface() then
 							Crew.initialise_crowsnest_1()
@@ -1177,7 +844,7 @@ function Public.loading_update(tickinterval)
 							Crew.initialise_crowsnest_2()
 							Overworld.ensure_lane_generated_up_to(0, 10)
 							Surfaces.create_surface(memory.destinations[destination_index])
-							-- Interface.load_some_map_chunks(destination_index, 0.02)
+							-- PiratesApiEvents.load_some_map_chunks(destination_index, 0.02)
 						end
 					end
 				else
@@ -1219,7 +886,7 @@ function Public.loading_update(tickinterval)
 				if Boats.players_on_boat_count(memory.boat) > 0 then
 					local fraction = 0.07 + 0.7 * (memory.loadingticks - 860) / 400
 
-					Interface.load_some_map_chunks(destination_index, fraction)
+					PiratesApiEvents.load_some_map_chunks(destination_index, fraction)
 				else
 					Boats.destroy_boat(memory.boat)
 					Crew.disband_crew()
@@ -1236,7 +903,7 @@ function Public.loading_update(tickinterval)
 			-- elseif memory.loadingticks <= 500 and memory.loadingticks >= 100 then
 			-- 	local fraction = 0.02 + 0.05 * (memory.loadingticks - 100) / 400
 
-			-- 	Interface.load_some_map_chunks(destination_index, fraction)
+			-- 	PiratesApiEvents.load_some_map_chunks(destination_index, fraction)
 			end
 
 		elseif memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP then
@@ -1259,7 +926,7 @@ function Public.loading_update(tickinterval)
 					Progression.progress_to_destination(destination_index)
 					memory.loadingticks = 0
 				else
-					Interface.load_some_map_chunks_random_order(destination_index, fraction) --random order is good for maze world
+					PiratesApiEvents.load_some_map_chunks_random_order(destination_index, fraction) --random order is good for maze world
 				end
 			end
 
@@ -1269,12 +936,10 @@ function Public.loading_update(tickinterval)
 			if fraction > 1 then
 				memory.loadingticks = nil
 			else
-				Interface.load_some_map_chunks(destination_index, fraction)
+				PiratesApiEvents.load_some_map_chunks(destination_index, fraction)
 			end
-
 		end
 	end
-
 end
 
 
@@ -1297,14 +962,14 @@ function Public.crowsnest_steer(tickinterval)
 			if count_left >= 100 and count_right < 100 and memory.overworldy > -24 then
 				if Overworld.try_overworld_move_v2{x = 0, y = -24} then
 					local force = memory.force
-					Common.notify_force(force, 'Steering portside...')
+					Common.notify_force(force, {'pirates.steer_left'})
 					inv_left.remove({name = "rail-signal", count = 100})
 				end
 				return
 			elseif count_right >= 100 and count_left < 100 and memory.overworldy < 24 then
 				if Overworld.try_overworld_move_v2{x = 0, y = 24} then
 					local force = memory.force
-					Common.notify_force(force, 'Steering starboard...')
+					Common.notify_force(force, {'pirates.steer_right'})
 					inv_right.remove({name = "rail-signal", count = 100})
 				end
 				return
@@ -1357,9 +1022,9 @@ function Public.silo_update(tickinterval)
 						memory.floating_pollution = memory.floating_pollution + pollution/2
 						game.surfaces[destination.surface_name].pollute(p, pollution/2)
 
-						if memory.overworldx >= 80 and dynamic_data.rocketsiloenergyconsumed >= 0.25 * dynamic_data.rocketsiloenergyneeded and (not dynamic_data.parrot_silo_warned) then
+						if memory.overworldx >= 0 and dynamic_data.rocketsiloenergyconsumed >= 0.25 * dynamic_data.rocketsiloenergyneeded and (not dynamic_data.parrot_silo_warned) then
 							dynamic_data.parrot_silo_warned = true
-							Common.parrot_speak(memory.force, 'The silo is attracting biters...')
+							Common.parrot_speak(memory.force, {'pirates.parrot_silo_warning'})
 						elseif dynamic_data.rocketsiloenergyconsumed >= dynamic_data.rocketsiloenergyneeded and (not (silo.rocket_parts == 100)) and (dynamic_data.silocharged == false) and (not memory.game_lost) then
 							-- silo.energy = 0
 							silo.rocket_parts = 100

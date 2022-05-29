@@ -5,7 +5,7 @@
 
 local Public = {}
 
-Public.display_names = {'Shark Keys', 'Little Keys', 'Little Keys'}
+Public.display_names = {{'pirates.location_displayname_horseshoe_1'}, {'pirates.location_displayname_horseshoe_2'}, {'pirates.location_displayname_horseshoe_3'}}
 
 Public.terraingen_frame_width = 896
 Public.terraingen_frame_height = 896

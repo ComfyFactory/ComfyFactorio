@@ -32,7 +32,7 @@ local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Classes = require 'maps.pirates.roles.classes'
 
--- local Server = require 'utils.server'
+local Server = require 'utils.server'
 -- local Modifers = require 'player_modifiers'
 
 local tick_tack_trap = require 'maps.pirates.locally_maintained_comfy_forks.tick_tack_trap' --'enemy' force, but that's okay
@@ -54,11 +54,11 @@ function Public.silo_die()
 
 			if CoreData.rocket_silo_death_causes_loss then
 				-- Crew.lose_life()
-				Crew.try_lose('silo destroyed')
+				Crew.try_lose({'pirates.loss_silo_destroyed'})
 			elseif (not destination.dynamic_data.rocketlaunched) and destination.static_params and destination.static_params.base_cost_to_undock and destination.static_params.base_cost_to_undock['launch_rocket'] and destination.static_params.base_cost_to_undock['launch_rocket'] == true then
-				Crew.try_lose('silo destroyed before a necessary launch')
+				Crew.try_lose({'pirates.loss_silo_destroyed_before_necessary_launch'})
 			elseif (not destination.dynamic_data.rocketlaunched) then
-				Common.notify_force(force, 'The silo was destroyed.')
+				Common.notify_force(force, {'pirates.silo_destroyed'})
 			end
 		end
 
@@ -284,15 +284,12 @@ local function damage_to_players_changes(event)
 		-- elseif class and class == Classes.enum.MERCHANT then
 		-- 	damage_multiplier = damage_multiplier * 1.10
 		elseif class and class == Classes.enum.SAMURAI then
-			damage_multiplier = damage_multiplier * 0.25
+			damage_multiplier = damage_multiplier * (1 - Balance.samurai_resistance)
 		elseif class and class == Classes.enum.HATAMOTO then --lethal damage needs to be unaffected
-			damage_multiplier = damage_multiplier * 0.16
+			damage_multiplier = damage_multiplier * (1 - Balance.hatamoto_resistance)
 		elseif class and class == Classes.enum.IRON_LEG then --lethal damage needs to be unaffected
-			local inv = event.entity.get_inventory(defines.inventory.character_main)
-			if not (inv and inv.valid) then return end
-			local count = inv.get_item_count('iron-ore')
-			if count and count >= 3500 then
-				damage_multiplier = damage_multiplier * 0.18
+			if memory.class_auxiliary_data[player_index] and memory.class_auxiliary_data[player_index].iron_leg_active then
+				damage_multiplier = damage_multiplier * (1 - Balance.iron_leg_resistance)
 			end
 		-- else
 		-- 	damage_multiplier = damage_multiplier * (1 + Balance.bonus_damage_to_humans())
@@ -599,7 +596,7 @@ end
 
 
 
-function Public.load_some_map_chunks_random_order(destination_index, fraction)
+function Public.load_some_map_chunks_random_order(destination_index, fraction) -- The reason we might want to do this is because of algorithms like the labyrinth code, which make directionally biased patterns if you don't generate chunks in a random order
 	local memory = Memory.get_crew_memory()
 
 	local destination_data = memory.destinations[destination_index]
@@ -953,13 +950,15 @@ local function base_kill_rewards(event)
 			stack = {{name = 'coin', count = coin_amount}}
 		end
 
+		local short_form = (not iron_amount) and true or false
+
 		if revenge_target then
-			Common.give(revenge_target.player, stack, revenge_target.player.position, entity.surface, entity.position)
+			Common.give(revenge_target.player, stack, revenge_target.player.position, short_form, entity.surface, entity.position)
 		else
 			if event.cause and event.cause.valid and event.cause.position then
-				Common.give(nil, stack, event.cause.position, entity.surface, entity.position)
+				Common.give(nil, stack, event.cause.position, short_form, entity.surface, entity.position)
 			else
-				Common.give(nil, stack, entity.position, entity.surface)
+				Common.give(nil, stack, entity.position, short_form, entity.surface)
 			end
 		end
 	end
@@ -1045,7 +1044,7 @@ local function event_on_entity_died(event)
 			-- if memory.boat.cannonscount <= 0 then
 			-- 	Crew.try_lose()
 			-- end
-			Crew.try_lose('cannon destroyed')
+			Crew.try_lose({'pirates.loss_cannon_destroyed'})
 		end
 	end
 
@@ -1114,7 +1113,7 @@ local function event_on_research_finished(event)
 	local memory = Memory.get_crew_memory()
 
 	-- using a localised string means we have to write this out (recall that "" signals concatenation)
-	memory.force.print({"", '>> ', event.research.localised_name, ' researched.'}, CoreData.colors.notify_force_light)
+	memory.force.print({"", '>> ', {'pirates.research_notification', event.research.localised_name}}, CoreData.colors.notify_force_light)
 
 	Public.apply_flamer_nerfs()
 	-- Public.research_apply_buffs(event) -- this is broken right now
@@ -1180,6 +1179,10 @@ local function event_on_player_joined_game(event)
 
 	--figure out if we should drop them back into a crew:
 
+	if (not Server.get_current_time()) then -- don't run this on servers because I'd need to negotiate that with the rest of Comfy
+		player.print('Support Pirate Ship design at ko-fi.com/thesixthroc', {r=1, g=0.4, b=0.9})
+	end
+
 	local crew_to_put_back_in = nil
 	for _, mem in pairs(global_memory.crew_memories) do
 		if mem.id and mem.crewstatus and mem.crewstatus == Crew.enum.ADVENTURING and mem.temporarily_logged_off_characters[player.index] then
@@ -1236,9 +1239,9 @@ local function event_on_player_joined_game(event)
 			Crew.join_crew(player, ages[1].id)
 			if ages[2] then
 				if ages[1].large and (not ages[#ages].large) then
-					Common.notify_player_announce(player, 'There are multiple crews on this server. You have been placed in the oldest crew with large capacity.')
+					Common.notify_player_announce(player, {'pirates.goto_oldest_crew_with_large_capacity'})
 				else
-					Common.notify_player_announce(player, 'There are multiple crews on this server. You have been placed in the oldest.')
+					Common.notify_player_announce(player, {'pirates.goto_oldest_crew'})
 				end
 			end
 		end
@@ -1604,13 +1607,14 @@ local function event_on_rocket_launched(event)
 	if memory.stored_fuel and destination.dynamic_data and destination.dynamic_data.rocketcoalreward then
 		memory.stored_fuel = memory.stored_fuel + destination.dynamic_data.rocketcoalreward
 		local a = Balance.rocket_launch_coin_reward
-		Common.give_items_to_crew({{name = 'coin', count = a}}, true)
+		Common.give_items_to_crew({{name = 'coin', count = a}})
 		memory.playtesting_stats.coins_gained_by_rocket_launches = memory.playtesting_stats.coins_gained_by_rocket_launches + a
 
 	end
 
 	local force = memory.force
-	Common.notify_force_light(force,'Granted: ' .. Math.floor(Balance.rocket_launch_coin_reward/100)/10 .. 'k [item=coin], ' .. Math.floor(destination.dynamic_data.rocketcoalreward/100)/10 .. 'k [item=coal].')
+	local message = {'pirates.granted_2',  Math.floor(Balance.rocket_launch_coin_reward/100)/10 .. 'k [item=coin]', Math.floor(destination.dynamic_data.rocketcoalreward/100)/10 .. 'k [item=coal]'}
+	Common.notify_force_light(force,message)
 
 	if destination.dynamic_data.quest_type == Quest.enum.TIME and (not destination.dynamic_data.quest_complete) then
 		destination.dynamic_data.quest_progressneeded = 1
@@ -1649,7 +1653,7 @@ local function event_on_built_entity(event)
 						player.insert{name = entity.name, count = 1}
 					end
 					entity.destroy()
-					Common.notify_player_error(player, 'Build error: Undergrounds can\'t be built on the boat, due to conflicts with the boat movement code.')
+					Common.notify_player_error(player, {'pirates.error_build_undergrounds_on_boat'})
 					return
 			end
 		end
@@ -1726,7 +1730,7 @@ local remove_boost_movement_speed_on_respawn =
 		if memory.game_lost then return end
 		memory.speed_boost_characters[player.index] = nil
 
-		Common.notify_player_expected(player, 'Respawn speed bonus removed.')
+		Common.notify_player_expected(player, {'pirates.respawn_speed_bonus_removed'})
     end
 )
 
@@ -1747,7 +1751,7 @@ local boost_movement_speed_on_respawn =
 		memory.speed_boost_characters[player.index] = true
 
         Task.set_timeout_in_ticks(1050, remove_boost_movement_speed_on_respawn, {player = player, crew_id = crew_id})
-		Common.notify_player_expected(player, 'Respawn speed bonus applied.')
+		Common.notify_player_expected(player, {'pirates.respawn_speed_bonus_applied'})
     end
 )
 
@@ -1791,7 +1795,7 @@ event.add(defines.events.on_player_changed_surface, on_player_changed_surface)
 event.add(defines.events.on_player_driving_changed_state, event_on_player_driving_changed_state)
 -- event.add(defines.events.on_player_changed_position, event_on_player_changed_position)
 -- event.add(defines.events.on_technology_effects_reset, event_on_technology_effects_reset)
--- event.add(defines.events.on_chunk_generated, Interface.on_chunk_generated) --moved to main in order to make the debug properties clear
+-- event.add(defines.events.on_chunk_generated, PiratesApiEvents.on_chunk_generated) --moved to main in order to make the debug properties clear
 event.add(defines.events.on_rocket_launched, event_on_rocket_launched)
 event.add(defines.events.on_console_chat, event_on_console_chat)
 event.add(defines.events.on_market_item_purchased, event_on_market_item_purchased)

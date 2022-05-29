@@ -32,6 +32,13 @@ Public.Data.downstairs_pole_positions = {
 	{x = -1, y = 5},
 }
 
+Public.Data.helper_text_rendering_positions = {
+	{x = -46.5, y = -3.5},
+	{x = 46.5, y = -3.5},
+	{x = -46.5, y = 2.5},
+	{x = 46.5, y = 2.5},
+}
+
 Public[enum.INITIAL] = {}
 Public[enum.INITIAL].Data = {}
 Public[enum.INITIAL].Data.hold_whitebelts_lrtp_order = {
@@ -151,6 +158,21 @@ function Public.create_hold_surface(nth)
 			e.linked_belt_type = type
 			whitebelts_table[#whitebelts_table + 1] = e
 		end
+	end
+
+	if (not boat.hold_helper_renderings) then boat.hold_helper_renderings = {} end
+	boat.hold_helper_renderings[nth] = {}
+	for i, p in ipairs(Public.Data.helper_text_rendering_positions) do
+		local alignment = i % 2 == 0 and 'left' or 'right'
+		boat.hold_helper_renderings[nth][i] = rendering.draw_text{
+			surface = surface,
+			target = p,
+			color = CoreData.colors.renderingtext_green,
+			scale = 1,
+			font = 'default-game',
+			alignment = alignment,
+			text = 'inactive',
+		}
 	end
 
 	Common.build_small_loco(surface, Public.Data.loco_offset, memory.force, {255, 106, 52})
@@ -311,11 +333,16 @@ function Public.nth_hold_connect_linked_belts(nth) --assumes both are in standar
 					{7,15},
 					{8,16},
 				}
-				for _, c in pairs(connections) do
+				for i, c in pairs(connections) do
 					local b1 = boat.hold_whitebelts[nth][c[1]]
 					local b2 = boat.hold_whitebelts[nth-1][c[2]]
 					b1.connect_linked_belts(b2)
 				end
+
+				rendering.set_text(boat.hold_helper_renderings[nth][3], 'from -' .. nth-1)
+				rendering.set_text(boat.hold_helper_renderings[nth-1][3], 'to -' .. nth)
+				rendering.set_text(boat.hold_helper_renderings[nth][4], 'from -' .. nth-1)
+				rendering.set_text(boat.hold_helper_renderings[nth-1][4], 'to -' .. nth)
 			else
 				connections = {
 					{5,5},
@@ -328,6 +355,11 @@ function Public.nth_hold_connect_linked_belts(nth) --assumes both are in standar
 					local b2 = boat.hold_whitebelts[nth-1][c[2]]
 					b1.connect_linked_belts(b2)
 				end
+
+				rendering.set_text(boat.hold_helper_renderings[nth][3], 'from -' .. nth-1)
+				rendering.set_text(boat.hold_helper_renderings[nth-1][3], 'to -' .. nth)
+				rendering.set_text(boat.hold_helper_renderings[nth][4], 'from -' .. nth-1)
+				rendering.set_text(boat.hold_helper_renderings[nth-1][4], 'to -' .. nth)
 			end
 			connections = {
 				{1,9},
@@ -340,6 +372,11 @@ function Public.nth_hold_connect_linked_belts(nth) --assumes both are in standar
 				local b2 = boat.hold_whitebelts[1][c[2]]
 				b1.connect_linked_belts(b2)
 			end
+
+			rendering.set_text(boat.hold_helper_renderings[nth][1], 'to -' .. 1)
+			rendering.set_text(boat.hold_helper_renderings[1][1], 'from -' .. nth)
+			rendering.set_text(boat.hold_helper_renderings[nth][2], 'to -' .. 1)
+			rendering.set_text(boat.hold_helper_renderings[1][2], 'from -' .. nth)
 		else
 			connections = {
 				{1,1},
@@ -352,6 +389,12 @@ function Public.nth_hold_connect_linked_belts(nth) --assumes both are in standar
 				local b2 = boat.hold_whitebelts[nth-1][c[2]]
 				b1.connect_linked_belts(b2)
 			end
+
+			rendering.set_text(boat.hold_helper_renderings[nth][1], 'from -' .. nth-1)
+			rendering.set_text(boat.hold_helper_renderings[nth-1][1], 'to -' .. nth)
+			rendering.set_text(boat.hold_helper_renderings[nth][2], 'from -' .. nth-1)
+			rendering.set_text(boat.hold_helper_renderings[nth-1][2], 'to -' .. nth)
+			
 			connections = {
 				{5,9},
 				{6,10},
@@ -363,6 +406,11 @@ function Public.nth_hold_connect_linked_belts(nth) --assumes both are in standar
 				local b2 = boat.hold_whitebelts[1][c[2]]
 				b1.connect_linked_belts(b2)
 			end
+
+			rendering.set_text(boat.hold_helper_renderings[nth][3], 'to -' .. 1)
+			rendering.set_text(boat.hold_helper_renderings[1][1], 'from -' .. nth)
+			rendering.set_text(boat.hold_helper_renderings[nth][4], 'to -' .. 1)
+			rendering.set_text(boat.hold_helper_renderings[1][2], 'from -' .. nth)
 		end
 	end
 end

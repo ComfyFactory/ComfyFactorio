@@ -47,14 +47,30 @@ function Public.raffle2(table) --arguments of the form {v1 = w1, v2 = w2, ...}
 end
 
 
+--==thesixthroc's Lambda Raffles
+
+-- This file provides a one-parameter family of raffles called 'Lambda raffles'. When you want to roll the raffle, you also provide a parameter 'lambda', and the raffle weights vary with lambda in a specified way. For example, the parameter could be the game completion progress, and the raffle could produce certain items only in the late game.
+
 function Public.LambdaRaffle(data, lambda, extraConditionParameter)
 -- 	example_argument = {
 -- 	['iron-stick'] = {
 -- 		overallWeight = 1,
 -- 		minLambda = 0,
+-- 		maxLambda = 0.5,
+-- 		shape = 'uniform', -- a uniform raffle weight of 1, if lambda is between 0 and 1
+-- 	},
+-- 	['coal'] = {
+-- 		overallWeight = 3,
+-- 		minLambda = 0,
+-- 		maxLambda = 0.5,
+-- 		shape = 'density', -- a uniform raffle weight of 6, if lambda is between 0 and 1
+-- 	},
+-- 	['copper-wire'] = {
+-- 		overallWeight = 1,
+-- 		minLambda = 0,
 -- 		maxLambda = 1,
--- 		shape = 'uniform',
--- 		condition = function(x) return x == 'ironIsland' end,
+-- 		shape = 'bump', -- the raffle weight is a ⋀ shape, going from (0, 0) to (0.5, 2) to (1, 0)
+-- 		condition = function(x) return x == 'copperIsland' end, --this optional key performs a check on extraConditionParameter to see whether this raffle value should be included at all
 -- 	},
 -- }
 	local raffle = {}
@@ -93,6 +109,32 @@ function Public.LambdaRaffle(data, lambda, extraConditionParameter)
 
 	return Public.raffle2(raffle)
 end
+
+
+-- a function that accepts more abbreviated raffle data:
+function Public.LambdaRaffleFromAbbreviatedData(abbreviatedData, lambda, extraConditionParameter)
+	-- 	example_argument = {
+	-- 	['iron-stick'] = {
+	-- 		1, 0, 1, 'uniform'
+	-- 	},
+	-- 	['copper-plate'] = {
+	-- 		1, 0, 1, 'uniform', function(x) return x == 'copperIsland' end
+	-- 	},
+	-- }
+
+	local data = {}
+	for k, v in pairs(abbreviatedData) do
+		data[k] = {
+			overallWeight = v[1],
+			minLambda = v[2],
+			maxLambda = v[3],
+			shape = v[4],
+			condition = v[4],
+		}
+	end
+	return Public.LambdaRaffle(data, lambda, extraConditionParameter)
+end
+
 
 
 return Public

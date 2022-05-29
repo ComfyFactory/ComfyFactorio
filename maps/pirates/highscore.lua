@@ -12,6 +12,7 @@ local SpamProtection = require 'utils.spam_protection'
 -- local Memory = require 'maps.pirates.memory'
 local Utils = require 'maps.pirates.utils_local'
 local CoreData = require 'maps.pirates.coredata'
+local Common = require 'maps.pirates.common'
 
 local module_name = Gui.uid_name()
 -- local module_name = 'Highscore'
@@ -42,19 +43,24 @@ local function sort_list(method, column_name, score_list)
     local comparators = {
         ['ascending'] = function(a, b)
 			if column_name == 'completion_time' then
-				return (a[column_name] < b[column_name]) and not (a[column_name] == 0 and b[column_name] ~= 0)
+				return ((a[column_name] < b[column_name]) and not (a[column_name] == 0 and b[column_name] ~= 0)) or (a[column_name] ~= 0 and b[column_name] == 0) --put all 0s at the end
+			elseif column_name == 'version' then
+				return Common.version_greater_than(b[column_name], a[column_name])
 			elseif type(a[column_name]) == 'string' then
 				return a[column_name] > b[column_name]
-			else
+			elseif a[column_name] then
 				return a[column_name] < b[column_name]
 			end
         end,
+		--nosort
         ['descending'] = function(a, b)
 			if column_name == 'completion_time' then
-				return (a[column_name] > b[column_name])
+				return ((b[column_name] < a[column_name]) and not (a[column_name] == 0 and b[column_name] ~= 0)) or (a[column_name] ~= 0 and b[column_name] == 0) --put all 0s at the end
+			elseif column_name == 'version' then
+				return Common.version_greater_than(a[column_name], b[column_name])
 			elseif type(a[column_name]) == 'string' then
 				return a[column_name] < b[column_name]
-			else
+			elseif a[column_name] then
 				return a[column_name] > b[column_name]
 			end
         end
@@ -81,7 +87,7 @@ local function get_tables_of_scores_by_type(scores)
 	local versions = {}
 
 	for _, score in pairs(scores) do
-		if score.version and score.version > 0 then
+		if score.version then
 			versions[#versions + 1] = score.version
 		end
 		if score.completion_time and score.completion_time > 0 then
@@ -110,11 +116,11 @@ local function get_tables_of_scores_by_type(scores)
 
 	local latest_version = 0
 	for _, v in pairs(versions) do
-		if v > latest_version then latest_version = v end
+		if Common.version_greater_than(v, latest_version) then latest_version = v end
 	end
 
 	for _, score in pairs(scores) do
-		if score.version and score.version == latest_version then
+		if score.version and type(score.version) == type(latest_version) and score.version == latest_version then
 			if score.completion_time and score.completion_time > 0 then
 				completion_times_latestv[#completion_times_latestv + 1] = score.completion_time
 			end
@@ -202,16 +208,16 @@ local function saved_scores_trim(scores)
 		local include = false
 
 		if cutoffs.completion_times_cutoff and score.completion_time and score.completion_time < cutoffs.completion_times_cutoff then include = true
-		elseif cutoffs.completion_times_mediump_latestv_cutoff and score.completion_time and score.completion_time < cutoffs.completion_times_mediump_latestv_cutoff and score.version == cutoffs.latest_version and score.difficulty >= 1 then include = true
+		elseif cutoffs.completion_times_mediump_latestv_cutoff and score.completion_time and score.completion_time < cutoffs.completion_times_mediump_latestv_cutoff and type(score.version) == type(cutoffs.latest_version) and score.version == cutoffs.latest_version and score.difficulty >= 1 then include = true
 		elseif cutoffs.completion_times_hard_cutoff and score.completion_time and score.completion_time < cutoffs.completion_times_hard_cutoff and score.difficulty > 1 then include = true
 		elseif cutoffs.completion_times_nightmare_cutoff and score.completion_time and score.completion_time < cutoffs.completion_times_nightmare_cutoff and score.difficulty > 2 then include = true
-		elseif cutoffs.completion_times_latestv_cutoff and score.completion_time and score.completion_time < cutoffs.completion_times_latestv_cutoff and score.version == cutoffs.latest_version then include = true
+		elseif cutoffs.completion_times_latestv_cutoff and score.completion_time and score.completion_time < cutoffs.completion_times_latestv_cutoff and type(score.version) == type(cutoffs.latest_version) and score.version == cutoffs.latest_version then include = true
 
 		elseif cutoffs.leagues_travelled_cutoff and score.leagues_travelled and score.leagues_travelled > cutoffs.leagues_travelled_cutoff then include = true
-		elseif cutoffs.leagues_travelled_mediump_latestv_cutoff and score.leagues_travelled and score.leagues_travelled > cutoffs.leagues_travelled_mediump_latestv_cutoff and score.version == cutoffs.latest_version and score.difficulty >= 1 then include = true
+		elseif cutoffs.leagues_travelled_mediump_latestv_cutoff and score.leagues_travelled and score.leagues_travelled > cutoffs.leagues_travelled_mediump_latestv_cutoff and type(score.version) == type(cutoffs.latest_version) and score.version == cutoffs.latest_version and score.difficulty >= 1 then include = true
 		elseif cutoffs.leagues_travelled_hard_cutoff and score.leagues_travelled and score.leagues_travelled > cutoffs.leagues_travelled_hard_cutoff and score.difficulty > 1 then include = true
 		elseif cutoffs.leagues_travelled_nightmare_cutoff and score.leagues_travelled and score.leagues_travelled > cutoffs.leagues_travelled_nightmare_cutoff and score.difficulty > 2 then include = true
-		elseif cutoffs.leagues_travelled_latestv_cutoff and score.leagues_travelled and score.leagues_travelled > cutoffs.leagues_travelled_latestv_cutoff and score.version == cutoffs.latest_version then include = true
+		elseif cutoffs.leagues_travelled_latestv_cutoff and score.leagues_travelled and score.leagues_travelled > cutoffs.leagues_travelled_latestv_cutoff and type(score.version) == type(cutoffs.latest_version) and score.version == cutoffs.latest_version then include = true
 		end
 
 		if not include then delete[#delete + 1] = secs_id end
@@ -307,7 +313,7 @@ function Public.overwrite_scores_specific()
 	-- the correct format is to put _everything_ from a dump into the third argument:
 	-- Server.set_data(score_dataset, score_key, )
 	-- return true
-	return nil
+	return true
 end
 
 function Public.write_score(crew_secs_id, name, captain_name, completion_time, leagues_travelled, version, difficulty, max_players)
@@ -406,13 +412,13 @@ local function score_gui(data)
 
     -- Score headers
     local headers = {
-        {name = '_name', caption = 'Crew'},
-        {column = 'captain_name', name = '_captain_name', caption = 'Captain'},
-        {column = 'completion_time', name = '_completion_time', caption = 'Completion'},
-        {column = 'leagues_travelled', name = '_leagues_travelled', caption = 'Leagues'},
-        {column = 'version', name = '_version', caption = 'Version'},
-        {column = 'difficulty', name = '_difficulty', caption = 'Difficulty'},
-        {column = 'max_players', name = '_max_players', caption = 'PeakPlayers'},
+        {name = '_name', caption = {'pirates.highscore_heading_crew'}},
+        {column = 'captain_name', name = '_captain_name', caption = {'pirates.highscore_heading_captain'}, tooltip = {'pirates.highscore_heading_captain_tooltip'}},
+        {column = 'completion_time', name = '_completion_time', caption = {'pirates.highscore_heading_completion'}},
+        {column = 'leagues_travelled', name = '_leagues_travelled', caption = {'pirates.highscore_heading_leagues'}},
+        {column = 'version', name = '_version', caption = {'pirates.highscore_heading_version'}},
+        {column = 'difficulty', name = '_difficulty', caption = {'pirates.highscore_heading_difficulty'}},
+        {column = 'max_players', name = '_max_players', caption = {'pirates.highscore_heading_peak_players'}},
     }
 
     local sorting_pref = this.sort_by[player.index] or {}
@@ -424,7 +430,7 @@ local function score_gui(data)
         -- Add sorting symbol if any
         if header.column and sorting_pref[1] and sorting_pref[1].column == header.column then
 			local symbol = sorting_symbol[sorting_pref[1].method]
-			cap = symbol .. cap
+			cap = {'', symbol, cap}
         end
 
         -- Header
@@ -434,6 +440,7 @@ local function score_gui(data)
             caption = cap,
             name = header.name
         }
+		if header.tooltip then label.tooltip = header.tooltip end
         label.style.font = 'default-listbox'
         label.style.font_color = {r = 0.98, g = 0.66, b = 0.22} -- yellow
         label.style.minimal_width = columnwidth
@@ -447,6 +454,7 @@ local function score_gui(data)
 	for i = #sorting_pref, 1, -1 do
 		local sort = sorting_pref[i]
 		if sort then
+			-- log(_inspect(score_list))
 			score_list = sort_list(sort.method, sort.column, score_list)
 		end
 	end
@@ -487,7 +495,7 @@ local function score_gui(data)
 		-- displayforms:
         local n = entry.completion_time > 0 and Utils.time_mediumform(entry.completion_time or 0) or 'N/A'
         local l = entry.leagues_travelled > 0 and entry.leagues_travelled or '?'
-        local v = entry.version > 0 and entry.version or '?'
+        local v = entry.version and entry.version or '?'
         local d = entry.difficulty > 0 and CoreData.get_difficulty_name_from_value(entry.difficulty) or '?'
         local c = entry.max_players > 0 and entry.max_players or '?'
         local line = {

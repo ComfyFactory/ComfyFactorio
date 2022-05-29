@@ -5,7 +5,7 @@
 
 local Public = {}
 
-Public.display_names = {'Frozen Pools'}
+Public.display_names = {{'pirates.location_displayname_walkways_1'}}
 
 Public.terraingen_frame_width = 896
 Public.terraingen_frame_height = 896

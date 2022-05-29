@@ -5,7 +5,7 @@
 
 local Public = {}
 
-Public.display_names = {'Fledgling Vale'}
+Public.display_names = {{'pirates.location_displayname_first_1'}}
 
 Public.terraingen_frame_width = 325
 Public.terraingen_frame_height = 325

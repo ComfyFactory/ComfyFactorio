@@ -34,6 +34,7 @@ Public.boat_default_starting_distance_from_shore = 22
 Public.mapedge_distance_from_boat_starting_position = 272 -- to accommodate horseshoe
 Public.deepwater_distance_from_leftmost_shore = 32
 Public.lobby_spawnpoint = {x = -72, y = -8}
+Public.structure_ensure_chunk_radius = 2
 
 Public.quartermaster_range = 19
 Public.allow_barreling_off_ship = true
@@ -45,6 +46,8 @@ Public.map_loading_ticks_atsea_dock = 20 * 60
 Public.map_loading_ticks_onisland = 2 * 60 * 60
 Public.loading_interval = 5
 
+Public.first_cost_to_leave_macrox = 7
+
 Public.minimum_ore_placed_per_tile = 10
 
 Public.maze_minimap_jam_league = 960
@@ -54,7 +57,7 @@ Public.ban_from_rejoining_crew_ticks = 45 * 60 --to prevent observing map and re
 Public.afk_time = 60 * 60 * 5
 Public.afk_warning_time = 60 * 60 * 4.5
 Public.logged_off_items_preserved_minutes = 5
-Public.logout_unprotected_items = {'coin', 'uranium-235', 'rail-signal', 'uranium-238', 'fluid-wagon', 'coal', 'electric-engine-unit', 'flying-robot-frame', 'advanced-circuit', 'beacon', 'speed-module-3', 'speed-module-2', 'roboport', 'construction-robot'} --internal inventories of these will not be preserved
+Public.logout_unprotected_items = {'uranium-235', 'uranium-238', 'fluid-wagon', 'coal', 'electric-engine-unit', 'flying-robot-frame', 'advanced-circuit', 'beacon', 'speed-module-3', 'speed-module-2', 'roboport', 'construction-robot'} --internal inventories of these will not be preserved
 
 -- Public.mainshop_rate_limit_ticks = 11
 
@@ -123,49 +126,49 @@ end
 
 function Public.notify_game(message, color_override)
 	color_override = color_override or CoreData.colors.notify_game
-	game.print('>> ' .. message, color_override)
+	game.print({"", '>> ',  message}, color_override)
 end
 
 function Public.notify_lobby(message, color_override)
 	color_override = color_override or CoreData.colors.notify_lobby
-	game.forces['player'].print('>> ' .. message, color_override)
+	game.forces['player'].print({"", '>> ',  message}, color_override)
 end
 
 function Public.notify_force(force, message, color_override)
 	color_override = color_override or CoreData.colors.notify_force
-	force.print('>> ' .. message, color_override)
+	force.print({"", '>> ',  message}, color_override)
 end
 
 function Public.notify_force_light(force, message, color_override)
 	color_override = color_override or CoreData.colors.notify_force_light
-	force.print('>> ' .. message, color_override)
+	force.print({"", '>> ',  message}, color_override)
 end
 
 function Public.notify_force_error(force, message, color_override)
 	color_override = color_override or CoreData.colors.notify_error
-	force.print('>> ' .. message, color_override)
+	force.print({"", '>> ',  message}, color_override)
 end
 
 function Public.notify_player_error(player, message, color_override)
 	color_override = color_override or CoreData.colors.notify_error
-	player.print('## [Whisper] ' .. message, color_override)
+	player.print({"", '## ', {'pirates.notify_whisper'}, ' ',  message}, color_override)
 end
 
 function Public.notify_player_expected(player, message, color_override)
 	color_override = color_override or CoreData.colors.notify_player_expected
-	player.print('>> [Whisper] ' .. message, color_override)
+	player.print({"", '## ', {'pirates.notify_whisper'}, ' ',  message}, color_override)
 end
 
 function Public.notify_player_announce(player, message, color_override)
 	color_override = color_override or CoreData.colors.notify_player_announce
-	player.print('>> [Whisper] ' .. message, color_override)
+	player.print({"", '## ', {'pirates.notify_whisper'}, ' ',  message}, color_override)
 end
 
 function Public.parrot_speak(force, message)
-	force.print('Parrot: ' .. message, CoreData.colors.parrot)
+	force.print({"", {'pirates.notify_parrot'}, ' ',  message}, CoreData.colors.parrot)
 
 	local memory = Memory.get_crew_memory()
-	Server.to_discord_embed_raw('[' .. memory.name .. '] Parrot: ' .. message)
+	Server.to_discord_embed_raw({"", {'pirates.notify_parrot'}, ' ',  message}, true)
 end
 
 
@@ -266,7 +269,7 @@ end
 
 
 
-function Public.give(player, stacks, spill_position, spill_surface, flying_text_position)
+function Public.give(player, stacks, spill_position, short_form, spill_surface, flying_text_position)
 	-- stack elements of form {name = '', count = '', color = {r = , g = , b = }}
 	-- to just spill on the ground, pass player and nill and give a position and surface directly
 	spill_position = spill_position or player.position
@@ -328,21 +331,25 @@ function Public.give(player, stacks, spill_position, spill_surface, flying_text_
 		end
 
 		if itemcount_remember > 0 then
-			if #stacks2 == 1 and itemname == 'coin' and itemcount_remember == 1 then --for a single coin, drop the '+'
-				text1 = text1 .. '[item=' .. itemname .. ']'
+			if short_form then
+				text1 = text1 .. '[color=' .. flying_text_color.r .. ',' .. flying_text_color.g .. ',' .. flying_text_color.b .. ']' .. '+' .. itemcount_remember .. '[/color]'
 			else
 				text1 = text1 .. '[color=1,1,1]'
 				text1 = text1 .. '+'
 				text1 = text1 .. itemcount_remember .. '[/color] [item=' .. itemname .. ']'
 			end
 		else
-			text1 = text1 .. '[color=1,1,1]'
-			text1 = text1 .. '-'
-			text1 = text1 .. -itemcount_remember .. '[/color] [item=' .. itemname .. ']'
+			if short_form then
+				text1 = text1 .. '[color=' .. flying_text_color.r .. ',' .. flying_text_color.g .. ',' .. flying_text_color.b .. ']' .. '-' .. -itemcount_remember .. '[/color]'
+			else
+				text1 = text1 .. '[color=1,1,1]'
+				text1 = text1 .. '-'
+				text1 = text1 .. -itemcount_remember .. '[/color] [item=' .. itemname .. ']'
+			end
 		end
 
 
-		if player and not (#stacks2 == 1 and itemname == 'coin') then
+		if player and (not short_form) then
 			-- count total of that item they have:
 			local new_total_count = 0
 
@@ -983,16 +990,42 @@ function Public.add_tiles_from_blueprint(tilesTable, bp_string, tile_name, offse
 end
 
 function Public.tile_positions_from_blueprint(bp_string, offset)
+	-- May '22 change: There seems to be a base game bug(?) which causes the tiles to be offset. We now correct for that.
 
 	local bp_entity = game.surfaces['nauvis'].create_entity{name = 'item-on-ground', position = {x = 158.5, y = 158.5}, stack = 'blueprint'}
 	bp_entity.stack.import_stack(bp_string)
 
 	local bp_tiles = bp_entity.stack.get_blueprint_tiles()
 
+
+	local min_x
+	local min_y
+	local max_x
+	local max_y
+
 	local positions = {}
 	if bp_tiles then
 		for _, tile in pairs(bp_tiles) do
-			positions[#positions + 1] = {x = tile.position.x + offset.x, y = tile.position.y + offset.y}
+			positions[#positions + 1] = {x = tile.position.x, y = tile.position.y}
+			if not min_x or tile.position.x < min_x then
+				min_x = tile.position.x
+			end
+			if not min_y or tile.position.y < min_y then
+				min_y = tile.position.y
+			end
+			if not max_x or tile.position.x > max_x then
+				max_x = tile.position.x
+			end
+			if not max_y or tile.position.y > max_y then
+				max_y = tile.position.y
+			end
+		end
+	end
+
+	if min_x and min_y and max_x and max_y then
+		for _, pos in pairs(positions) do
+			pos.x = pos.x - (max_x - min_x)/2 + offset.x
+			pos.y = pos.y - (max_y - min_y)/2 + offset.y
 		end
 	end
 
@@ -1257,7 +1290,7 @@ function Public.send_important_items_from_player_to_crew(player, all_items)
 end
 
 
-function Public.give_items_to_crew(items, prefer_alternate_chest)
+function Public.give_items_to_crew(items)
 	local memory = Memory.get_crew_memory()
 
 	local boat = memory.boat
@@ -1267,7 +1300,8 @@ function Public.give_items_to_crew(items, prefer_alternate_chest)
 	local surface = game.surfaces[surface_name]
 	if not (surface and surface.valid) then return end
 	local chest, chest2
-	if prefer_alternate_chest then
+
+	if items.name and items.name == 'coin' then
 		chest = boat.backup_output_chest
 		if not (chest and chest.valid) then return end
 		chest2 = boat.output_chest
@@ -1318,6 +1352,51 @@ function Public.give_items_to_crew(items, prefer_alternate_chest)
 					Public.notify_force(force, 'Warning: captain\'s cabin chests are full!')
 				end
 			end
+		end
+	end
+end
+
+
+function Public.version_to_array(v)
+	local vArray = {}
+	if type(v) == 'number' then --this is a legacy form
+		local vs = tostring(v)
+		for i = 1, string.len(vs) do
+			local char = vs:sub(i, i)
+			if i ~= 2 then
+				vArray[#vArray+1] = char
+			end
+		end
+	else
+		for i = 1, string.len(v) do
+			local char = v:sub(i, i)
+			if char ~= '.' then
+				vArray[#vArray+1] = char
+			end
+		end
+	end
+
+	return vArray
+end
+
+
+function Public.version_greater_than(v1, v2)
+	local v1Array = Public.version_to_array(v1)
+	local v2Array = Public.version_to_array(v2)
+
+	for i = 1, math.max(#v1Array, #v2Array) do
+		local v1i = tonumber(v1Array[i])
+		local v2i = tonumber(v2Array[i])
+		if v1i ~= nil and v2i ~= nil then
+			if v1i < v2i then
+				return false
+			elseif v1i > v2i then
+				return true
+			end
+		elseif v1i == nil then
+			return false
+		else
+			return true
 		end
 	end
 end

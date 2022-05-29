@@ -178,7 +178,7 @@ function Public.boat_passive_pollution_per_minute(time)
 	end
 
 	return boost * (
-			2.73 * (Common.difficulty_scale()^(1.1)) * (Common.overworldx()/40)^(1.8) * (Public.crew_scale())^(55/100)-- There is no _explicit_ T dependence, but it depends almost the same way on the crew_scale as T does.
+			2.73 * (Common.difficulty_scale()^(1.1)) * (Common.overworldx()/40)^(1.8) * (Public.crew_scale())^(52/100)-- There is no _explicit_ T dependence, but it depends almost the same way on the crew_scale as T does.
 	 ) / Math.sloped(Common.difficulty_scale(), 1/5) --Final factor of difficulty is to offset a change made to scripted_biters_pollution_cost_multiplier
 end
 
@@ -298,6 +298,10 @@ function Public.class_resource_scale()
 	return 1 / (Public.crew_scale()^(2/5)) --already helped by longer timescales
 end
 
+Public.samurai_resistance = 0.74
+Public.hatamoto_resistance = 0.84
+Public.iron_leg_resistance = 0.82
+
 function Public.biter_base_density_scale()
 	local p = Public.crew_scale()
 	if p >= 1 then
@@ -331,6 +335,10 @@ function Public.resource_quest_multiplier()
 	return (1.0 + 0.075 * (Common.overworldx()/40)^(8/10)) * Math.sloped(Common.difficulty_scale(), 1/5) * (Public.crew_scale())^(1/10)
 end
 
+function Public.quest_structure_entry_price_scale()
+	return 0.85 * (1 + 0.033 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty_scale(), 1/2) --whilst the scenario philosophy says that resource scales tend to be independent of crew size, we account slightly for the fact that more players tend to handcraft more
+end
+
 
 function Public.apply_crew_buffs_per_x(force)
 	force.laboratory_productivity_bonus = Math.max(0, 7/100 * (Common.overworldx()/40) - (10*(Common.difficulty_scale()) - 5)) --difficulty causes lab productivity boosts to start later
@@ -342,7 +350,7 @@ function Public.class_cost()
 end
 
 
-Public.covered_first_appears_at = 40
+Public.quest_structures_first_appear_at = 40
 
 Public.coin_sell_amount = 500
 
@@ -526,117 +534,6 @@ end
 
 
 
-function Public.covered_entry_price_scale()
-	return 0.85 * (1 + 0.033 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty_scale(), 1/2) --whilst the scenario philosophy says that resource scales tend to be independent of crew size, we account slightly for the fact that more players tend to handcraft more
-end
-
-Public.covered1_entry_price_data_raw = { --watch out that the raw_materials chest can only hold e.g. 4.8 iron-plates
-	-- choose things that are easy to make at outposts
-	-- if the prices are too high, players will accidentally throw too much in when they can't do it
-	{1, 0, 1, false, {
-		price = {name = 'iron-stick', count = 1500},
-		raw_materials = {{name = 'iron-plate', count = 750}}}, {}},
-	{0.85, 0, 1, false, {
-		price = {name = 'copper-cable', count = 1500},
-		raw_materials = {{name = 'copper-plate', count = 750}}}, {}},
-
-	{1, 0, 0.3, false, {
-		price = {name = 'small-electric-pole', count = 450},
-		raw_materials = {{name = 'copper-plate', count = 900}}}, {}},
-	{1, 0.1, 1, false, {
-		price = {name = 'assembling-machine-1', count = 80},
-		raw_materials = {{name = 'iron-plate', count = 1760}, {name = 'copper-plate', count = 360}}}, {}},
-	{0.25, 0, 0.15, false, {
-		price = {name = 'burner-mining-drill', count = 150},
-		raw_materials = {{name = 'iron-plate', count = 1350}}}, {}},
-	{0.75, 0, 0.6, false, {
-		price = {name = 'burner-inserter', count = 300},
-		raw_materials = {{name = 'iron-plate', count = 900}}}, {}},
-	{1, 0.05, 0.7, false, {
-		price = {name = 'small-lamp', count = 300},
-		raw_materials = {{name = 'iron-plate', count = 600}, {name = 'copper-plate', count = 900}}}, {}},
-	{1, 0, 1, false, {
-		price = {name = 'firearm-magazine', count = 700},
-		raw_materials = {{name = 'iron-plate', count = 2800}}}, {}},
-	{0.6, 0, 1, false, {
-		price = {name = 'constant-combinator', count = 276},
-		raw_materials = {{name = 'iron-plate', count = 552}, {name = 'copper-plate', count = 1518}}}, {}},
-
-	{1, 0.05, 1, false, {
-		price = {name = 'stone-furnace', count = 250},
-		raw_materials = {}}, {}},
-	{1, 0.4, 1.6, true, {
-		price = {name = 'advanced-circuit', count = 180},
-		raw_materials = {{name = 'iron-plate', count = 360}, {name = 'copper-plate', count = 900}, {name = 'plastic-bar', count = 360}}}, {}},
-
-	{0.5, -0.5, 0.5, true, {
-		price = {name = 'wooden-chest', count = 400},
-		raw_materials = {}}, {}},
-	{0.5, 0, 1, true, {
-		price = {name = 'iron-chest', count = 250},
-		raw_materials = {{name = 'iron-plate', count = 2000}}}, {}},
-	{0.5, 0.25, 1.75, true, {
-		price = {name = 'steel-chest', count = 125},
-		raw_materials = {{name = 'steel-plate', count = 1000}}}, {}},
-}
-
-function Public.covered1_entry_price_data()
-	local ret = {}
-	local data = Public.covered1_entry_price_data_raw
-	for i = 1, #data do
-		local data_item = data[i]
-		ret[#ret + 1] = {
-            weight = data_item[1],
-            game_completion_progress_min = data_item[2],
-            game_completion_progress_max = data_item[3],
-            scaling = data_item[4],
-            item = data_item[5],
-            map_subtypes = data_item[6],
-        }
-	end
-	return ret
-end
-
-
-function Public.covered1_entry_price()
-	-- local rng = Math.random()
-	-- local memory = Memory.get_crew_memory()
-
-	-- local overworldx = memory.overworldx or 0
-
-	local game_completion_progress = Math.max(Math.min(Math.sloped(Common.difficulty_scale(),1/2) * Common.game_completion_progress(), 1), 0)
-
-	local data = Public.covered1_entry_price_data()
-    local types, weights = {}, {}
-    for i = 1, #data, 1 do
-        table.insert(types, data[i].item)
-
-		local destination = Common.current_destination()
-		if not (data[i].map_subtypes and #data[i].map_subtypes > 0 and destination and destination.subtype and data[i].map_subtypes and (not Utils.contains(data[i].map_subtypes, destination.subtype))) then
-			if data[i].scaling then -- scale down weights away from the midpoint 'peak' (without changing the mean)
-				local midpoint = (data[i].game_completion_progress_max + data[i].game_completion_progress_min) / 2
-				local difference = (data[i].game_completion_progress_max - data[i].game_completion_progress_min)
-				table.insert(weights, data[i].weight * Math.max(0, 1 - (Math.abs(game_completion_progress - midpoint) / (difference / 2))))
-			else -- no scaling
-				if data[i].game_completion_progress_min <= game_completion_progress and data[i].game_completion_progress_max >= game_completion_progress then
-					table.insert(weights, data[i].weight)
-				else
-					table.insert(weights, 0)
-				end
-			end
-		end
-    end
-
-	local res = Utils.deepcopy(Raffle.raffle(types, weights))
-
-	res.price.count = Math.ceil(res.price.count * Public.covered1_entry_price_scale())
-
-	for i, _ in pairs(res.raw_materials) do
-		res.raw_materials[i].count = Math.ceil(res.raw_materials[i].count * Public.covered1_entry_price_scale() * (0.9 + 0.2 * Math.random()))
-	end
-
-	return res
-end
 
 
 
@@ -646,141 +543,6 @@ end
 
 
 
-
-
-function Public.covered2_entry_price_scale()
-	return 0.85 * (1 + 0.033 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty_scale(), 1/2) --whilst resource scales tend to be held fixed with crew size, we account slightly for the fact that more players tend to handcraft more
-end
-
-Public.covered2EntryPriceData = {-- choose things which make interesting minifactories
-	['electric-mining-drill'] = {
-		overallWeight = 1,
-		minLambda = -0.75,
-		maxLambda = 0.75,
-		shape = 'bump',
-		enabled = true,
-		baseAmount = 500,
-		itemBatchSize = 2,
-		batchRawMaterials = {['iron-plate'] = 46, ['copper-plate'] = 9},
-	},
-	['fast-splitter'] = {
-		overallWeight = 1,
-		minLambda = -1,
-		maxLambda = 1,
-		shape = 'bump',
-		enabled = true,
-		baseAmount = 500,
-		itemBatchSize = 2,
-		batchRawMaterials = {['iron-plate'] = 92, ['copper-plate'] = 45},
-	},
-	['assembling-machine-1'] = {
-		overallWeight = 1,
-		minLambda = -1,
-		maxLambda = 1,
-		shape = 'bump',
-		enabled = true,
-		baseAmount = 500,
-		itemBatchSize = 2,
-		batchRawMaterials = {['iron-plate'] = 44, ['copper-plate'] = 9},
-	},
-	['filter-inserter'] = {
-		overallWeight = 1,
-		minLambda = 0,
-		maxLambda = 1,
-		shape = 'density',
-		enabled = true,
-		baseAmount = 500,
-		itemBatchSize = 2,
-		batchRawMaterials = {['iron-plate'] = 32, ['copper-plate'] = 24},
-	},
-	['programmable-speaker'] = {
-		overallWeight = 1,
-		minLambda = 0,
-		maxLambda = 1,
-		shape = 'density',
-		enabled = true,
-		baseAmount = 500,
-		itemBatchSize = 2,
-		batchRawMaterials = {['iron-plate'] = 18, ['copper-plate'] = 17},
-	},
-	['pump'] = {
-		overallWeight = 1,
-		minLambda = 0.05,
-		maxLambda = 1,
-		shape = 'density',
-		enabled = true,
-		baseAmount = 500,
-		itemBatchSize = 1,
-		batchRawMaterials = {['iron-plate'] = 15},
-	},
-	['grenade'] = {
-		overallWeight = 1,
-		minLambda = 0.05,
-		maxLambda = 1,
-		shape = 'density',
-		enabled = true,
-		baseAmount = 500,
-		itemBatchSize = 1,
-		batchRawMaterials = {['iron-plate'] = 5, ['coal'] = 10},
-	},
-	['assembling-machine-2'] = {
-		overallWeight = 1,
-		minLambda = 0.2,
-		maxLambda = 1.2,
-		shape = 'bump',
-		enabled = true,
-		baseAmount = 500,
-		itemBatchSize = 2,
-		batchRawMaterials = {['iron-plate'] = 160, ['copper-plate'] = 18},
-	},
-	['pumpjack'] = {
-		overallWeight = 1,
-		minLambda = 0.35,
-		maxLambda = 1,
-		shape = 'density',
-		enabled = true,
-		baseAmount = 500,
-		itemBatchSize = 2,
-		batchRawMaterials = {['iron-plate'] = 120, ['copper-plate'] = 15},
-	},
-	['oil-refinery'] = {
-		overallWeight = 1,
-		minLambda = 0.35,
-		maxLambda = 1,
-		shape = 'density',
-		enabled = true,
-		baseAmount = 500,
-		itemBatchSize = 1,
-		batchRawMaterials = {['iron-plate'] = 115, ['copper-plate'] = 15, ['stone-brick'] = 10},
-	},
-	['chemical-plant'] = {
-		overallWeight = 1,
-		minLambda = 0.35,
-		maxLambda = 1,
-		shape = 'density',
-		enabled = true,
-		baseAmount = 500,
-		itemBatchSize = 2,
-		batchRawMaterials = {['iron-plate'] = 90, ['copper-plate'] = 15},
-	},
-}
-
-function Public.generateCovered2EntryPrice()
-	local lambda = Math.max(Math.min(Math.sloped(Common.difficulty_scale(),1/2) * Common.game_completion_progress(), 1), 0)
-
-	local item = Raffle.LambdaRaffle(Public.covered2EntryPriceData, lambda)
-
-	local batchSize = Public.covered2EntryPriceData[item].itemBatchSize
-
-	return {
-		name = item,
-		count = Math.ceil(
-			(0.9 + 0.2 * Math.random()) * Public.covered2EntryPriceData[item].baseAmount * Public.covered2_entry_price_scale() / batchSize
-		) * batchSize,
-		batchSize = batchSize,
-		batchRawMaterials = Public.covered2EntryPriceData[item].batchRawMaterials,
-	}
-end
 
 
 return Public

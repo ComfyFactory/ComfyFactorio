@@ -63,6 +63,10 @@ function Public.vector_sum(vec1, vec2)
 	return {x = vec1.x + vec2.x, y = vec1.y + vec2.y}
 end
 
+function Public.snap_to_grid(point)
+	return {x = Public.ceil(point.x), y = Public.ceil(point.x)}
+end
+
 
 function Public.shuffle(tbl)
 	local size = #tbl

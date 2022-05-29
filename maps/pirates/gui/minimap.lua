@@ -37,7 +37,7 @@ function Public.toggle_window(player)
 	end -- else:
 
 	flow = GuiCommon.new_window(player, window_name)
-	flow.caption = 'Outside View'
+	flow.caption = {'pirates.gui_minimap_outside_view'}
 	flow.style.maximal_width = 800
 
 	local memory = Memory.get_crew_memory()
@@ -86,7 +86,7 @@ function Public.toggle_window(player)
                 position = position,
                 surface_index = game.surfaces[memory.boat.surface_name].index,
                 zoom = zoom,
-                tooltip = 'LMB: Zoom in.\nRMB: Zoom out.\nMMB: Scale window.'
+                tooltip = {'pirates.gui_minimap_tooltip'}
             }
         )
         element.style.margin = 1
@@ -104,8 +104,8 @@ function Public.toggle_window(player)
 			index = 1,
 			allow_none_state = false,
 			switch_state = switch_state,
-			left_label_caption = 'Auto Show Map — On',
-			right_label_caption = 'Off'
+			left_label_caption = {'pirates.gui_minimap_switch_left'},
+			right_label_caption = {'pirates.gui_minimap_switch_right'},
 		}
 	)
 end

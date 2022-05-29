@@ -773,7 +773,7 @@ local function process_entity_on_boat_unteleportable(memory, boat, newsurface, v
 
 							local force = memory.force
 							if not (force and force.valid) then return end
-							Common.notify_force(force,string.format('%s was pushed into water by a cannon.', name2), {r = 0.98, g = 0.66, b = 0.22})
+							Common.notify_force(force,{'pirates.death_pushed_into_water_by_cannon', name2}, {r = 0.98, g = 0.66, b = 0.22})
 						end
 					end
 				end
@@ -960,24 +960,25 @@ local function process_entity_on_boat(memory, boat, newsurface, newposition, vec
 		unique_entities_list[#unique_entities_list + 1] = e
 		local name = e.name
 
-		-- if e.name and e.name == 'item-on-ground' then
-		-- 	log(_inspect{'hi', name, e.position})
-		-- end
-
-		if name == 'character' and e.player then -- characters with associated players treated as special case
-			if oldsurface_name == newsurface_name then
-				e.teleport(vector.x, vector.y)
-			else
-				local p = {e.position.x + vector.x, e.position.y + vector.y}
-				if e.player then --e.player being nil caused a bug once!
-					e.player.teleport(newsurface.find_non_colliding_position('character', p, 1.2, 0.2) or p, newsurface)
-				end
-			end
-
-		elseif Utils.contains(CoreData.unteleportable_names, name) or (name == 'entity-ghost' and Utils.contains(CoreData.unteleportable_names, e.ghost_name)) then
-			process_entity_on_boat_unteleportable(memory, boat, newsurface, vector, players_just_offside, oldsurface_name, newsurface_name, e, name)
+		if name and name == 'item-on-ground' then
+			Common.give_items_to_crew{{name = e.stack.name, count = e.stack.count}}
+			e.destroy()
 		else
-			process_entity_on_boat_teleportable(memory, boat, newsurface, newposition, vector, oldsurface_name, newsurface_name, electric_pole_neighbours_matrix, circuit_neighbours_matrix, e)
+			if name == 'character' and e.player then -- characters with associated players treated as special case
+				if oldsurface_name == newsurface_name then
+					e.teleport(vector.x, vector.y)
+				else
+					local p = {e.position.x + vector.x, e.position.y + vector.y}
+					if e.player then --e.player being nil caused a bug once!
+						e.player.teleport(newsurface.find_non_colliding_position('character', p, 1.2, 0.2) or p, newsurface)
+					end
+				end
+	
+			elseif Utils.contains(CoreData.unteleportable_names, name) or (name == 'entity-ghost' and Utils.contains(CoreData.unteleportable_names, e.ghost_name)) then
+				process_entity_on_boat_unteleportable(memory, boat, newsurface, vector, players_just_offside, oldsurface_name, newsurface_name, e, name)
+			else
+				process_entity_on_boat_teleportable(memory, boat, newsurface, newposition, vector, oldsurface_name, newsurface_name, electric_pole_neighbours_matrix, circuit_neighbours_matrix, e)
+			end
 		end
 	end
 end

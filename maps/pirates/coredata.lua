@@ -5,8 +5,7 @@ local _inspect = require 'utils.inspect'.inspect
 local Public = {}
 
 Public.scenario_id_name = 'pirates'
-Public.version_string = '1.2.2' --will now try to stick to major.minor.patch versioning, to match factorio mod portal
-Public.version_float = 1.22
+Public.version_string = '1.2.3' --will now try to stick to major.minor.patch versioning, to match factorio mod portal
 
 Public.blueprint_library_allowed = true
 Public.blueprint_importing_allowed = true
@@ -43,6 +42,7 @@ Public.colors = {
 	renderingtext_green = {r=88, g=219, b=88},
 	renderingtext_yellow = {r=79, g=136, b=209},
 	quartermaster_rendering = {r=237, g=157, b=45, a=0.15},
+	toughness_rendering = {r=40, g=40, b=40, a=0.5},
 }
 
 Public.static_boat_floor = 'brown-refined-concrete'
@@ -190,7 +190,10 @@ Public.biterPollutionValues = {
 --     ['small-spitter'] = 4
 -- }
 
+--@TODO: Add a function to compare/print two version numbers
+
 Public.max_extra_seconds_at_sea = 8 * 60
+
 
 Public.loco_bp_1 = [[0eNqV0ttqwzAMBuB30bVTVufsVxljpKloBYkcbLdrCH73Oi6UMrxDLm3zf7KEFjgMF5wMsQO1APWaLaj3BSyduBvWOzdPCArI4QgCuBvX06B7PWpHVwQvgPiIN1B7L/4Mmo6Gl4j0HwKQHTnCR+F4mD/5Mh7QBDNVUsCkbYhoXusEJmsFzKCqAGtDgegej2/rj76J8il+aX1EzvozWpcwm10ZVbkrfcLJ/+u0vzvF07EuTOd0dlkc0k9NJpFyI1KnkGrrZJp0R/XWyUQnLEJcFfWykgKuaGxMyGZf1K2sC5nnTVl5fwdTR+VL]]
 

@@ -30,7 +30,6 @@ function Public.toggle_window(player)
 	if not memory.id then return end
 
 	flow = GuiCommon.new_window(player, window_name)
-	flow.caption = 'Crew'
 
 	--*** PARAMETERS OF RUN ***--
 
@@ -79,17 +78,17 @@ function Public.toggle_window(player)
 	flow3 = flow2.add({
 		name = 'leave_crew',
 		type = 'button',
-		caption = 'Quit Crew',
+		caption = {'pirates.gui_crew_window_buttons_quit_crew'},
 	})
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
-	flow3.tooltip = 'Return to the lobby.'
+	flow3.tooltip = {'pirates.gui_crew_window_buttons_quit_crew_tooltip'}
 
 	flow3 = flow2.add({
 		name = 'leave_spectators',
 		type = 'button',
-		caption = 'Return to Lobby',
+		caption = {'pirates.gui_crew_window_buttons_quit_spectators'},
 	})
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
@@ -98,7 +97,7 @@ function Public.toggle_window(player)
 	flow3 = flow2.add({
 		name = 'spectator_join_crew',
 		type = 'button',
-		caption = 'Join Crew',
+		caption = {'pirates.gui_crew_window_buttons_join_crew'},
 	})
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
@@ -107,16 +106,16 @@ function Public.toggle_window(player)
 	flow3 = flow2.add({
 		name = 'crewmember_join_spectators',
 		type = 'button',
-		caption = 'Spectate',
+		caption = {'pirates.gui_crew_window_buttons_join_spectators'},
 	})
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
-	flow3.tooltip = 'You won\t be able to rejoin the crew for a short while after you do this.'
+	flow3.tooltip = {'pirates.gui_crew_window_buttons_join_spectators_tooltip'}
 
 	--*** MEMBERS AND SPECTATORS ***--
 
-	flow2 = GuiCommon.flow_add_section(flow, 'members', 'Crew Members')
+	flow2 = GuiCommon.flow_add_section(flow, 'members', {'pirates.gui_crew_window_crewmembers'})
 
 	flow3 = flow2.add({
 		name = 'members_listbox',
@@ -128,24 +127,25 @@ function Public.toggle_window(player)
 	flow3 = flow2.add({
 		name = 'class_renounce',
 		type = 'button',
-		caption = 'Give Up Class',
+		caption = {'pirates.gui_crew_window_crewmembers_give_up_class'},
 	})
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
-	flow3.tooltip = 'The class will become available for other crewmembers to take.'
+	flow3.tooltip = {'pirates.gui_crew_window_crewmembers_give_up_class_tooltip'}
 
 	flow3 = flow2.add({
 		name = 'officer_resign',
 		type = 'button',
-		caption = 'Resign as Officer',
+		caption = {'pirates.gui_crew_window_crewmembers_resign_as_officer'},
 	})
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
-	flow3.tooltip = 'Give up the officer role.'
+	flow3.tooltip = {'pirates.gui_crew_window_crewmembers_resign_as_officer_tooltip'}
 
-	flow2 = GuiCommon.flow_add_section(flow, 'spectators', 'Spectators')
+	flow2 = GuiCommon.flow_add_section(flow, 'spectators', {'pirates.gui_crew_window_spectators'})
+	
 
 	flow3 = flow2.add({
 		name = 'spectators_listbox',
@@ -156,7 +156,7 @@ function Public.toggle_window(player)
 
 	--*** DIFFICULTY VOTE ***--
 
-	flow2 = GuiCommon.flow_add_section(flow, 'difficulty_vote', 'Vote for Difficulty')
+	flow2 = GuiCommon.flow_add_section(flow, 'difficulty_vote', {'pirates.gui_crew_window_vote_for_difficulty'})
 
 	for i, o in ipairs(CoreData.difficulty_options) do
 		flow3 = flow2.add({
@@ -171,7 +171,7 @@ function Public.toggle_window(player)
 
 	--*** SPARE CLASSES ***--
 
-	flow2 = GuiCommon.flow_add_section(flow, 'spare_classes', 'Spare Classes')
+	flow2 = GuiCommon.flow_add_section(flow, 'spare_classes', {'pirates.gui_crew_window_spare_classes'})
 
 	flow3 = flow2.add({
 		name = 'list',
@@ -191,84 +191,84 @@ function Public.toggle_window(player)
 	})
 	flow3.style.top_margin = 3
 
-	for _, c in ipairs(Classes.Class_List) do
+	for _, c in pairs(Classes.enum) do
 		flow4 = flow3.add({
 			name = 'assign_class_' .. c,
 			type = 'button',
-			caption = 'Give class: ' .. Classes.display_form[c],
+			caption = {'pirates.gui_crew_window_assign_class_button', Classes.display_form(c)},
 		})
 		flow4.style.minimal_width = 95
 		flow4.style.font = 'default-bold'
 		flow4.style.font_color = {r=0.10, g=0.10, b=0.10}
-		flow4.tooltip = 'Give the selected player the class ' .. Classes.display_form[c] .. '.\n\n Class description: ' .. Classes.explanation[c]
+		flow4.tooltip = {'pirates.gui_crew_window_assign_class_button_tooltip', Classes.display_form(c), Classes.explanation(c)}
 		-- flow4.tooltip = 'Give this class to the selected player.'
 	end
 
-	for _, c in ipairs(Classes.Class_List) do
+	for _, c in pairs(Classes.enum) do
 		flow4 = flow3.add({
 			name = 'selfassign_class_' .. c,
 			type = 'button',
-			caption = 'Take class: ' .. Classes.display_form[c],
+			caption = {'pirates.gui_crew_window_selfassign_class_button', Classes.display_form(c)},
 		})
 		flow4.style.minimal_width = 95
 		flow4.style.font = 'default-bold'
 		flow4.style.font_color = {r=0.10, g=0.10, b=0.10}
-		flow4.tooltip = 'Give yourself the spare class ' .. Classes.display_form[c] .. '.\n\nClass description: ' .. Classes.explanation[c]
+		flow4.tooltip = {'pirates.gui_crew_window_selfassign_class_button_tooltip', Classes.display_form(c), Classes.explanation(c)}
 	end
 
 	--*** CAPTAIN's ACTIONS ***--
 
-	flow2 = GuiCommon.flow_add_section(flow, 'captain', 'Captain\'s Actions')
+	flow2 = GuiCommon.flow_add_section(flow, 'captain', {'pirates.gui_crew_window_captains_actions'})
 
 	flow3 = flow2.add({
 		name = 'capn_disband_crew',
 		type = 'button',
-		caption = 'Disband Crew',
+		caption = {'pirates.gui_crew_window_captains_actions_disband_crew'},
 	})
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
-	flow3.tooltip = 'End the run. You will be prompted again after clicking.'
+	flow3.tooltip = {'pirates.gui_crew_window_captains_actions_disband_crew_tooltip'}
 
 	flow3 = flow2.add({
 		name = 'capn_disband_are_you_sure',
 		type = 'button',
-		caption = 'ARE YOU SURE?',
+		caption = {'pirates.gui_crew_window_captains_actions_disband_crew_check'},
 	})
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
-	flow3.tooltip = 'Click to disband the crew.'
+	flow3.tooltip = {'pirates.gui_crew_window_captains_actions_disband_crew_check_tooltip'}
 
 	flow3 = flow2.add({
 		name = 'capn_renounce',
 		type = 'button',
-		caption = 'Renounce Captainhood',
+		caption = {'pirates.gui_crew_window_captains_actions_renounce_title'},
 	})
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
-	flow3.tooltip = 'You will no longer be captain, and the role will be passed around until a crewmember takes it.'
+	flow3.tooltip = {'pirates.gui_crew_window_captains_actions_renounce_title_tooltip'}
 
 	flow3 = flow2.add({
 		name = 'capn_pass',
 		type = 'button',
-		caption = 'Pass Captain To',
+		caption = {'pirates.gui_crew_window_captains_actions_pass_title'},
 	})
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
-	flow3.tooltip = 'Make the selected crewmember into the Captain.'
+	flow3.tooltip = {'pirates.gui_crew_window_captains_actions_pass_title_tooltip'}
 
 	flow3 = flow2.add({
 		name = 'capn_plank',
 		type = 'button',
-		caption = 'Plank (Make Spectator)',
+		caption = {'pirates.gui_crew_window_captains_actions_plank'},
 	})
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
-	flow3.tooltip = 'The player will be returned to the lobby and can\'t join your crew for a while.  (or use /plank {player})'
+	flow3.tooltip = {'pirates.gui_crew_window_captains_actions_plank_tooltip'}
 
 	flow3 = flow2.add({
 		name = 'line',
@@ -291,52 +291,52 @@ function Public.toggle_window(player)
 	flow3 = flow2.add({
 		name = 'make_officer',
 		type = 'button',
-		caption = 'Make Officer',
+		caption = {'pirates.gui_crew_window_captains_actions_make_officer'},
 	})
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
-	flow3.tooltip = 'Make this player an Officer. (or use /officer {player})'
+	flow3.tooltip = {'pirates.gui_crew_window_captains_actions_make_officer_tooltip'}
 
 	flow3 = flow2.add({
 		name = 'unmake_officer',
 		type = 'button',
-		caption = 'Unamake Officer',
+		caption = {'pirates.gui_crew_window_captains_actions_unmake_officer'},
 	})
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
-	flow3.tooltip = 'Remove this player as an Officer. (or use /officer {player})'
+	flow3.tooltip = {'pirates.gui_crew_window_captains_actions_unmake_officer_tooltip'}
 
 	flow3 = flow2.add({
 		name = 'revoke_class',
 		type = 'button',
-		caption = 'Revoke Class',
+		caption = {'pirates.gui_crew_window_captains_actions_revoke_class'},
 	})
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
-	flow3.tooltip = 'Put this player\'s class back in the Spare Classes pool.'
+	flow3.tooltip = {'pirates.gui_crew_window_captains_actions_revoke_class_tooltip'}
 
 	flow3 = flow2.add({
 		name = 'capn_summon_crew',
 		type = 'button',
-		caption = 'Summon Crew to Ship',
+		caption = {'pirates.gui_crew_window_captains_actions_summon_crew'},
 	})
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
-	flow3.tooltip = 'Teleport crewmembers to the ship.'
+	flow3.tooltip = {'pirates.gui_crew_window_captains_actions_summon_crew_tooltip'}
 
 	flow3 = flow2.add({
 		name = 'capn_requisition',
 		type = 'button',
-		caption = 'Tax Crew',
+		caption = {'pirates.gui_crew_window_captains_actions_tax'},
 	})
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
-	flow3.tooltip = 'For each non-officer in your crew, take a quarter of their doubloons (and other game-critical items). (or use /tax)'
+	flow3.tooltip = {'pirates.gui_crew_window_captains_actions_tax_tooltip'}
 
 
 	flow2 = flow.add({
@@ -349,7 +349,7 @@ function Public.toggle_window(player)
 	flow2.style.single_line = false
 	flow2.style.maximal_width = 190
 	flow2.style.font = 'default'
-	flow2.caption = 'To undock, use the top toolbar.'
+	flow2.caption = {'pirates.gui_crew_window_captains_actions_undock_tip'}
 
 	--
 
@@ -388,7 +388,7 @@ function Public.full_update(player)
 	local other_player_selected = flow.members.body.members_listbox.selected_index ~= 0 and tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2]) ~= player.index
 
 	local any_class_button = false
-	for _, c in pairs(Classes.Class_List) do
+	for _, c in pairs(Classes.enum) do
 		if memory.spare_classes and Utils.contains(memory.spare_classes, c) and (not (player.controller_type == defines.controllers.spectator)) then
 			if Common.is_captain(player) and memory.crewplayerindices and #memory.crewplayerindices > 1 then
 				if other_player_selected and (not (memory.classes_table[tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])])) then
@@ -468,18 +468,17 @@ function Public.full_update(player)
 	if memory.id then
 		flow.caption = memory.name
 
-		flow.crew_age.caption = 'Age: ' .. Utils.time_mediumform((memory.age or 0)/60)
-		-- flow.crew_difficulty.caption = 'Difficulty: ' .. CoreData.difficulty_options[memory.difficulty_option].text
-		flow.crew_capacity_and_difficulty.caption = CoreData.difficulty_options[memory.difficulty_option].text .. ', Capacity ' .. CoreData.capacity_options[memory.capacity_option].text
+		flow.crew_age.caption = {'pirates.gui_crew_window_crew_age', Utils.time_mediumform((memory.age or 0)/60)}
+		flow.crew_capacity_and_difficulty.caption = {'pirates.gui_crew_window_crew_capacity_and_difficulty', CoreData.difficulty_options[memory.difficulty_option].text, CoreData.capacity_options[memory.capacity_option].text3}
 
 		if flow.spare_classes.visible then
-			local str = ''
+			local str = {''}
 
 			for i, c in ipairs(memory.spare_classes) do
-				if i>1 then str = str .. ', ' end
-				str = str .. Classes.display_form[c]
+				if i>1 then str[#str+1] = {'pirates.separator_1'} end
+				str[#str+1] = Classes.display_form(c)
 			end
-			str = str .. '.'
+			str[#str+1] = '.'
 
 			flow.spare_classes.body.list.caption = str
 		end
@@ -496,7 +495,7 @@ function Public.full_update(player)
 		end
 		GuiCommon.update_listbox(flow.members.body.members_listbox, wrappedcrew)
 
-		flow.members.header.caption = 'Crew Members (' .. (#memory.crewplayerindices or 0) .. ')'
+		flow.members.header.caption = {'pirates.gui_crew_window_crew_count', (#memory.crewplayerindices or 0)}
 	end
 
 	if flow.spectators.visible then
@@ -621,9 +620,9 @@ function Public.click(event)
 		if Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN then
 			local force = memory.force
 			if force and force.valid then
-				local message = player.name .. ' disbanded ' .. memory.name .. ', after ' .. Utils.time_longform((memory.real_age or 0)/60) .. '.'
+				local message = {'pirates.crew_disbanded', player.name, memory.name, Utils.time_longform((memory.real_age or 0)/60)}
 				Common.notify_game(message)
-				Server.to_discord_embed_raw(CoreData.comfy_emojis.trashbin .. '[' .. memory.name .. '] ' .. message)
+				Server.to_discord_embed_raw({'',CoreData.comfy_emojis.trashbin .. '[' .. memory.name .. '] ',message}, true)
 			end
 			Crew.disband_crew(true)
 		end

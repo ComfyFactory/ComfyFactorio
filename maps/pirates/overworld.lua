@@ -268,7 +268,7 @@ function Public.generate_overworld_destination(p)
 			-- end
 			-- base_cost_to_undock = nil
 		-- elseif macro_p.x <= 6 then
-		if macro_p.x <= 6 then
+		if macro_p.x <= Common.first_cost_to_leave_macrox - 1 then
 			-- base_cost_to_undock = {['electronic-circuit'] = 5}
 			base_cost_to_undock = nil
 		elseif macro_p.x <= 9 then
@@ -647,8 +647,7 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 
 	if memory.victory_continue_message then
 		memory.victory_continue_message = false
-		local message = 'The run now continues on \'Freeplay\'.'
-		Common.notify_force(memory.force, message, CoreData.colors.notify_victory)
+		Common.notify_force(memory.force, {'pirates.crew_continue_on_freeplay'}, CoreData.colors.notify_victory)
 	end
 
 	if vector.x > 0 then
@@ -703,7 +702,7 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 					modal_captain = name
 				end
 			end
-			Highscore.write_score(memory.secs_id, memory.name, modal_captain, memory.completion_time or 0, memory.overworldx, CoreData.version_float, memory.difficulty, memory.max_players_recorded or 0)
+			Highscore.write_score(memory.secs_id, memory.name, modal_captain, memory.completion_time or 0, memory.overworldx, CoreData.version_string, memory.difficulty, memory.max_players_recorded or 0)
 		end
 
 		return true

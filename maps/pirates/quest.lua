@@ -68,8 +68,6 @@ function Public.initialise_random_quest()
 
 	destination.dynamic_data.quest_complete = false
 
-	if destination.destination_index == 2 then return end
-
 	local rng = Math.random(100)
 	if rng <= 10 then
 		Public.initialise_nodamage_quest()
@@ -150,11 +148,13 @@ function Public.initialise_resourceflow_quest()
 	destination.dynamic_data.quest_progress = 0
 
 	local generated_flow_quest = Public.generate_flow_quest()
+	if not generated_flow_quest then return false end
+
 	destination.dynamic_data.quest_params = {item = generated_flow_quest.item}
 
 	local progressneeded_before_rounding = generated_flow_quest.base_rate * Balance.resource_quest_multiplier()
 
-	destination.dynamic_data.quest_progressneeded = Math.ceil(progressneeded_before_rounding/10)*10
+	destination.dynamic_data.quest_progressneeded = Math.ceil(progressneeded_before_rounding/10) * 10
 
 	return true
 end
@@ -171,6 +171,8 @@ function Public.initialise_resourcecount_quest()
 	destination.dynamic_data.quest_progress = 0
 
 	local generated_production_quest = Public.generate_resourcecount_quest()
+	if not generated_production_quest then return false end
+
 	destination.dynamic_data.quest_params = {item = generated_production_quest.item}
 
 	local force = memory.force
@@ -238,7 +240,7 @@ function Public.try_resolve_quest()
 
 		local force = memory.force
 		if not (force and force.valid) then return end
-		Common.notify_force_light(force,'Granted: ' .. destination.dynamic_data.quest_reward.display_amount .. ' ' .. destination.dynamic_data.quest_reward.chat_name)
+		Common.notify_force_light(force, {'pirates.granted_2', destination.dynamic_data.quest_reward.display_amount .. destination.dynamic_data.quest_reward.chat_name})
 
 		local name = destination.dynamic_data.quest_reward.name
 		local count = destination.dynamic_data.quest_reward.count
@@ -267,7 +269,7 @@ function Public.try_resolve_quest()
 				local inventory2 = chest2.get_inventory(defines.inventory.chest)
 				local inserted2 = inventory2.insert{name = name, count = count - inserted}
 				if (inserted + inserted2) < count then
-					Common.notify_force(force,'Sadly, there wasn\'t space in the cabin for all of your reward.')
+					Common.notify_force(force, {'pirates.error_cabin_full'})
 				end
 			end
 		end

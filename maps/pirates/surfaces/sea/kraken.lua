@@ -301,7 +301,8 @@ function Public.kraken_die(kraken_id)
 	local reward_fuel = Balance.kraken_kill_reward_fuel()
 	memory.stored_fuel = memory.stored_fuel + reward_fuel
 
-	Common.notify_force_light(memory.force,'Granted: ' .. Math.floor(reward_items[2].count/100)/10 .. 'k [item=coin], ' .. reward_fuel .. ' [item=coal], ' .. reward_items[1].count .. ' [item=sulfuric-acid-barrel].')
+	local message = {'pirates.granted_3', Math.floor(reward_items[2].count/100)/10 .. 'k [item=coin]', reward_fuel .. ' [item=coal]', reward_items[1].count .. ' [item=sulfuric-acid-barrel]'}
+	Common.notify_force_light(memory.force,message)
 
 	memory.playtesting_stats.coins_gained_by_krakens = memory.playtesting_stats.coins_gained_by_krakens + reward_items[2].count
 end

@@ -114,16 +114,18 @@ function Public.generate_silo_setup_position()
 
 	local p_silo = Hunt.silo_setup_position(0.2)
 
-	local tiles = {}
-	for x = -6.5, 6.5, 1 do
-		for y = -6.5, 6.5, 1 do
-			tiles[#tiles + 1] = {name = CoreData.world_concrete_tile, position = {x = p_silo.x + x, y = p_silo.y + y}}
+	if p_silo then
+		local tiles = {}
+		for x = -6.5, 6.5, 1 do
+			for y = -6.5, 6.5, 1 do
+				tiles[#tiles + 1] = {name = CoreData.world_concrete_tile, position = {x = p_silo.x + x, y = p_silo.y + y}}
+			end
 		end
+		Common.ensure_chunks_at(surface, p_silo, 1)
+		surface.set_tiles(tiles, true)
+	
+		return p_silo
 	end
-	Common.ensure_chunks_at(surface, p_silo, 1)
-	surface.set_tiles(tiles, true)
-
-	return p_silo
 end
 
 
@@ -143,7 +145,7 @@ local function walkways_tick()
 				if player.force.name == memory.force_name and player.surface == game.surfaces[destination.surface_name] and player.character and player.character.valid and game.surfaces[destination.surface_name].get_tile(player.position).name == 'water-shallow' then
 					player.character.damage(12, game.forces['environment'], 'fire')
 					if not (player.character and player.character.valid) then
-						Common.notify_force(player.force, player.name .. ' froze to death.')
+						Common.notify_force(player.force, {'pirates.death_froze',player.name})
 					end
 				end
 			end

@@ -96,14 +96,6 @@ function Public.interpolate(vector1, vector2, param)
 	return {x = vector1.x * (1-param) + vector2.x * param, y = vector1.y * (1-param) + vector2.y * param}
 end
 
-function Public.split(s, delimiter)
-    local result = {};
-    for match in (s..delimiter):gmatch("(.-)"..delimiter) do
-        table.insert(result, match);
-    end
-    return result;
-end
-
 function Public.contains(table, element)
 	if not table then return false end
 	for _, value in pairs(table) do
@@ -304,6 +296,9 @@ function Public.deepcopy(obj) --doesn't copy metatables
 	for k, v in pairs(obj) do res[Public.deepcopy(k)] = Public.deepcopy(v) end
 	return res
 end
+
+
+
 
 
 function Public.bignumber_abbrevform(number) --e.g. 516, 1.2k, 21.4k, 137k

@@ -196,30 +196,6 @@ local place_dock_jetty_and_boats = Token.register(
 
 
 
-function Public.choose_quest_structures(destination_data)
-	local subtype = destination_data.subtype
-
-	--@TODO: Finish writing this function
-	--@Package 'quest structures' into their own folder
-
-	local rng = Math.random(2)
-
-	if rng == 1 or subtype == Surfaces.Island.enum.WALKWAYS then
-		--Avoid furnace type on movement-restricted islands (like walkways)
-		local covered2_requirement = Balance.generateCovered2EntryPrice()
-
-		-- market
-		destination_data.dynamic_data.quest_structure_requirements = {}
-		destination_data.dynamic_data.quest_structure_requirements[] = covered2_requirement
-	else
-
-		-- furnace
-		local covered2_requirement = Balance.generateCovered2EntryPrice()
-		destination_data.dynamic_data.covered2_requirement[] = covered2_requirement
-	end
-end
-
-
 
 function Public.progress_to_destination(destination_index)
 	local memory = Memory.get_crew_memory()
@@ -239,9 +215,9 @@ function Public.progress_to_destination(destination_index)
 
 	local initial_boatspeed, starting_boatposition
 
-	if type == Surfaces.enum.ISLAND then --moved from overworld generation, so that it updates properly
-		Public.choose_quest_structures(destination_data)
-	end
+	-- if type == Surfaces.enum.ISLAND then --moved from overworld generation, so that it updates properly
+	-- 	Public.choose_quest_structures(destination_data)
+	-- end
 
 	if type == Surfaces.enum.DOCK then
 		local BoatData = Boats.get_scope(boat).Data
@@ -472,7 +448,7 @@ function Public.try_retreat_from_island(player, manual) -- Assumes the cost can 
 	if Common.query_can_pay_cost_to_leave() then
 		if destination.dynamic_data.timeratlandingtime and destination.dynamic_data.timer < destination.dynamic_data.timeratlandingtime + 10 then
 			if player and Common.validate_player(player) then
-				Common.notify_player_error(player, 'Undock error: Can\'t undock in the first 10 seconds.')
+				Common.notify_player_error(player, {'pirates.error_undock_too_early'})
 			end
 		else
 			local cost = destination.static_params.base_cost_to_undock
@@ -486,7 +462,7 @@ function Public.try_retreat_from_island(player, manual) -- Assumes the cost can 
 		end
 	else
 		if player and Common.validate_player(player) then
-			Common.notify_force_error(player.force, 'Undock error: Not enough resources stored in the captain\'s cabin.')
+			Common.notify_force_error(player.force, {'pirates.error_undock_insufficient_resources'})
 		end
 	end
 end
@@ -505,9 +481,9 @@ function Public.retreat_from_island(manual)
 	local force = memory.force
 	if not (force and force.valid) then return end
 	if manual then
-		Common.notify_force(force,'[font=heading-1]Ship undocked[/font] by captain.')
+		Common.notify_force(force, {'pirates.ship_undocked_1'})
 	else
-		Common.notify_force(force,'[font=heading-1]Ship auto-undocked[/font]. Return to ship.')
+		Common.notify_force(force, {'pirates.ship_undocked_2'})
 	end
 
 	Surfaces.destination_on_departure(Common.current_destination())
@@ -536,9 +512,9 @@ function Public.undock_from_dock(manual)
 	local force = memory.force
 	if not (force and force.valid) then return end
 	if manual then
-		Common.notify_force(force,'[font=heading-1]Ship undocked[/font].')
+		Common.notify_force(force, {'pirates.ship_undocked_1'})
 	else
-		Common.notify_force(force,'[font=heading-1]Ship auto-undocked[/font].')
+		Common.notify_force(force, {'pirates.ship_undocked_3'})
 	end
 end
 
@@ -568,13 +544,13 @@ function Public.go_from_currentdestination_to_sea()
 			Hold.upgrade_chests(1, 'steel-chest')
 			Crowsnest.upgrade_chests('steel-chest')
 
-			Common.parrot_speak(memory.force, 'Steel chests for steel players! Squawk!')
+			Common.parrot_speak(memory.force, {'pirates.parrot_hard_praise'})
 		elseif difficulty_name ~= CoreData.difficulty_options[1].text then
 			Boats.upgrade_chests(boat, 'iron-chest')
 			Hold.upgrade_chests(1, 'iron-chest')
 			Crowsnest.upgrade_chests('iron-chest')
 
-			Common.parrot_speak(memory.force, 'Iron chests for iron players! Squawk!')
+			Common.parrot_speak(memory.force, {'pirates.parrot_normal_praise'})
 		end
 	end
 

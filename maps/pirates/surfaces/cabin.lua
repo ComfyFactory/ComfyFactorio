@@ -97,7 +97,7 @@ Public.Data.surfacename_rendering_pos = {x = -0.5, y = -15}
 
 Public.cabin_shop_data = {
 	{
-		price = {{'coin', 300}, {'coal', 25}},
+		price = {{'coin', 400}, {'coal', 20}},
 		offer = {type='give-item', item = 'artillery-shell', count = 5},
 	},
 	{
@@ -110,7 +110,7 @@ Public.cabin_shop_data = {
 	},
 	{
 		price = {{'coin', 25}},
-		offer = {type='nothing', effect_description='Relax at sea for an extra minute: Increase the next destination\'s loading time by 60 seconds.'},
+		offer = {type='nothing', effect_description={'pirates.market_description_extra_time_at_sea'}},
 	},
 }
 

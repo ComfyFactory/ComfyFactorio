@@ -5,7 +5,7 @@
 
 local Public = {}
 
-Public.display_names = {'Abandoned Labs'}
+Public.display_names = {{'pirates.location_displayname_radioactive_1'}}
 
 Public.terraingen_frame_width = 700
 Public.terraingen_frame_height = 700

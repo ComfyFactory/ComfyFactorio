@@ -24,30 +24,34 @@ Public.Minimarket = require 'maps.pirates.shop.dock'
 
 
 function Public.print_transaction(player, offer_itemname, offer_itemcount, price)
-	local s1 = ' traded away '
-	local s2 = ''
+	local type = 'traded away'
+	local s2 = {''}
 	local s3 = offer_itemcount .. ' ' .. offer_itemname
-	if offer_itemname == 'coin' then s1 = ' sold ' end
+	if offer_itemname == 'coin' then type = 'sold' end
 	for i, p in pairs(price) do
 		local p2 = {name = p.name, amount = p.amount}
 		if p2.name == 'raw-fish' then p2.name = 'fish' end
 		if p2.name == 'coin' then
-			s1 = ' bought '
+			type = 'bought'
 			p2.name = 'doubloons'
 		end
 		if i > 1 then
 			if i == #price then
-				s2 = s2 .. ' and '
+				s2[#s2+1] = {'pirates.separator_2'}
 			else
-				s2 = s2 .. ', '
+				s2[#s2+1] = {'pirates.separator_1'}
 			end
 		end
-		s2 = s2 .. p2.amount .. ' ' .. p2.name
+		s2[#s2+1] = p2.amount
+		s2[#s2+1] = ' '
+		s2[#s2+1] = p2.name
 	end
-	if s1 == ' sold ' or s1 == ' traded away ' then
-		Common.notify_force_light(player.force, player.name .. s1 .. s2 .. ' for ' .. s3 .. '.')
-	else
-		Common.notify_force_light(player.force, player.name .. s1 .. s3 .. ' for ' .. s2 .. '.')
+	if type == 'sold' then
+		Common.notify_force_light(player.force, {'pirates.market_event_sell', player.name, s2, s3})
+	elseif type == 'traded away' then
+		Common.notify_force_light(player.force, {'pirates.market_event_trade', player.name, s2, s3})
+	elseif type == 'bought' then
+		Common.notify_force_light(player.force, {'pirates.market_event_buy', player.name, s3, s2})
 	end
 end
 
@@ -162,7 +166,7 @@ function Public.event_on_market_item_purchased(event)
 			end
 
 			if thisPurchaseData.permission_level_fail then
-				Common.notify_player_error(player, string.format('Purchase error: You need to be a captain or officer to buy this.', player.name))
+				Common.notify_player_error(player, {'pirates.market_error_not_captain'})
 				-- refund:
 				inv = player.get_inventory(defines.inventory.character_main)
 				if not inv then return end
@@ -185,7 +189,7 @@ function Public.event_on_market_item_purchased(event)
 							log('error: healthbar ' .. unit_number .. ' not found')
 						end
 					end
-					Common.notify_force(force,string.format('[font=heading-1]%s repaired the ship\'s cannons.[/font]', player.name))
+					Common.notify_force(force,{'pirates.repaired_cannons', player.name})
 					market.remove_market_item(offer_index)
 				else
 					local upgrade_type = Common.current_destination().static_params.upgrade_for_sale
@@ -209,14 +213,15 @@ function Public.event_on_market_item_purchased(event)
 				if required_class then
 					if not (memory.classes_table and memory.classes_table[player.index] and memory.classes_table[player.index] == required_class) then
 						ok = false
-						Common.notify_force_error(force, string.format('Class purchase error: You need to be a %s to buy this.', Classes.display_form[required_class]))
+						Common.notify_force_error(force, {'pirates.class_purchase_error_prerequisite_class',Classes.display_form(required_class)})
 					end
 				end
 
 				if ok then
 					if required_class then
 						if force and force.valid then
-							Common.notify_force_light(force,string.format('%s upgraded their class from %s to %s. ([font=scenario-message-dialog]%s[/font])', player.name, Classes.display_form[required_class], Classes.display_form[class_for_sale], Classes.explanation[class_for_sale]))
+							local message = {'pirates.class_upgrade', player.name, Classes.display_form(required_class), Classes.display_form(class_for_sale), Classes.explanation(class_for_sale)}
+							Common.notify_force_light(force,message)
 						end
 					else
 						-- check if they have a role already - renounce it if so
@@ -225,7 +230,8 @@ function Public.event_on_market_item_purchased(event)
 						end
 
 						if force and force.valid then
-							Common.notify_force_light(force,string.format('%s bought the class %s. ([font=scenario-message-dialog]%s[/font])', player.name, Classes.display_form[class_for_sale], Classes.explanation[class_for_sale]))
+							local message = {'pirates.class_purchase', player.name, Classes.display_form(class_for_sale), Classes.explanation(class_for_sale)}
+							Common.notify_force_light(force, message)
 						end
 					end
 
@@ -254,7 +260,7 @@ function Public.event_on_market_item_purchased(event)
 					refunds = refunds + 1
 				end
 			else
-				Common.notify_force_light(player.force, player.name .. ' bought ' .. thisPurchaseData.offer_giveitem_count .. ' ' .. thisPurchaseData.offer_giveitem_name .. ' for ' .. thisPurchaseData.price[1].amount .. ' ' .. thisPurchaseData.price[1].name .. '.')
+				Common.notify_force_light(player.force, {'pirates.market_event_buy', player.name, thisPurchaseData.offer_giveitem_count .. ' ' .. thisPurchaseData.offer_giveitem_name, thisPurchaseData.price[1].amount .. ' ' .. thisPurchaseData.price[1].name})
 
 				market.remove_market_item(offer_index)
 			end
@@ -262,7 +268,7 @@ function Public.event_on_market_item_purchased(event)
 
 	else
 		if thisPurchaseData.in_captains_cabin and thisPurchaseData.permission_level_fail then
-			Common.notify_player_error(player, string.format('Purchase error: You need to be a captain or officer to buy this.', player.name))
+			Common.notify_player_error(player, {'pirates.market_error_not_captain_or_officer'})
 			-- refund:
 			inv = player.get_inventory(defines.inventory.character_main)
 			if not inv then return end
@@ -278,8 +284,7 @@ function Public.event_on_market_item_purchased(event)
 			if (thisPurchaseData.price and thisPurchaseData.price[1]) then
 				if not (thisPurchaseData.price[1].name and thisPurchaseData.price[1].name == 'burner-mining-drill') then --this one is too boring to announce
 					if thisPurchaseData.in_captains_cabin and thisPurchaseData.offer_type == 'nothing' then
-						local price_name = thisPurchaseData.price[1].name
-						Common.notify_force_light(player.force, player.name .. ' bought extra time at sea for ' .. thisPurchaseData.price[1].amount .. ' ' .. price_name .. '.')
+						Common.notify_force_light(player.force, {'pirates.market_event_buy', player.name, {'pirates.extra_time_at_sea'}, thisPurchaseData.price[1].amount .. ' ' .. thisPurchaseData.price[1].name})
 					else
 						Public.print_transaction(player, thisPurchaseData.offer_giveitem_name, thisPurchaseData.offer_giveitem_count, thisPurchaseData.price)
 					end
@@ -289,7 +294,7 @@ function Public.event_on_market_item_purchased(event)
 			if thisPurchaseData.in_captains_cabin and thisPurchaseData.offer_type == 'nothing' then
 				local success = Crew.try_add_extra_time_at_sea(60 * 60)
 				if not success then
-					Common.notify_player_error(player, string.format('Purchase error: Reached the maximum allowed loading time.', player.name))
+					Common.notify_player_error(player, {'pirates.market_error_maximum_loading_time'})
 					-- refund:
 					inv = player.get_inventory(defines.inventory.character_main)
 					if not inv then return end

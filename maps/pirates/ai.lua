@@ -213,7 +213,7 @@ function Public.try_rogue_attack()
 		local group = Public.spawn_group_of_scripted_biters(1/2, 6, 180, wave_size_multiplier)
 		if not (group and group.valid) then return end
 		local target = Public.generate_side_attack_target(surface, group.position)
-		if not (target and target.valid) then return end
+        if (not target) or (not target.valid) then return end
 
 		-- group.set_command(Public.attack_target(target))
 

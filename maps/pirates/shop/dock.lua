@@ -1,5 +1,5 @@
 
--- local Memory = require 'maps.pirates.memory'
+local Memory = require 'maps.pirates.memory'
 -- local Roles = require 'maps.pirates.roles.roles'
 -- local CoreData = require 'maps.pirates.coredata'
 local Classes = require 'maps.pirates.roles.classes'
@@ -111,6 +111,7 @@ Public.market_sales = {
 
 
 function Public.create_dock_markets(surface, p)
+	local memory = Memory.get_crew_memory()
     local destination = Common.current_destination()
 
 	if not (surface and p) then return end
@@ -123,7 +124,22 @@ function Public.create_dock_markets(surface, p)
 		e.rotatable = false
 		e.destructible = false
 
-		e.add_market_item{price = {{'repair-pack', 20}, {'coin', 1000}}, offer = {type = 'give-item', item = 'artillery-turret', count = 1}}
+		-- check if cannons need healing:
+		local need_healing
+		local cannons = game.surfaces[destination.surface_name].find_entities_filtered({type = 'artillery-turret'})
+		for _, c in pairs(cannons) do
+			local unit_number = c.unit_number
+
+			local healthbar = memory.boat.healthbars[unit_number]
+			if healthbar and healthbar.health < healthbar.max_health then
+				need_healing = true
+				break
+			end
+		end
+
+		if need_healing then
+			e.add_market_item{price = {{'repair-pack', 20}, {'coin', 1000}}, offer = {type = 'give-item', item = 'artillery-turret', count = 1}}
+		end
 
 		local upgrade_for_sale = Common.current_destination().static_params.upgrade_for_sale
 		if upgrade_for_sale then
@@ -167,10 +183,10 @@ function Public.create_dock_markets(surface, p)
 
 		-- new class offerings:
 		if destination.static_params.class_for_sale then
-			e.add_market_item{price={{'coin', Balance.class_cost()}}, offer={type="nothing", effect_description = 'Purchase the class ' .. Classes.display_form[destination.static_params.class_for_sale] .. '.'}}
+			e.add_market_item{price={{'coin', Balance.class_cost()}}, offer={type="nothing", effect_description = {'pirates.market_description_purchase_class', Classes.display_form(destination.static_params.class_for_sale)}}}
 
 			-- destination.dynamic_data.market_class_offer_rendering = rendering.draw_text{
-			-- 	text = 'Class available: ' .. Classes.display_form[destination.static_params.class_for_sale],
+			-- 	text = 'Class available: ' .. Classes.display_form(destination.static_params.class_for_sale),
 			-- 	surface = surface,
 			-- 	target = Utils.psum{e.position, {x = 0, y = -4}},
 			-- 	color = CoreData.colors.renderingtext_green,
