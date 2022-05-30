@@ -1133,7 +1133,7 @@ end
 -- 	Delay.move_tasks_to_buffer()
 -- end
 
-function Public.Kraken_Destroyed_Backup_check(tickinterval) -- a server became bugged when the kraken spawner entity disappeared but the kraken_die had not fired, and I'm not sure why, so this is a backup checker for that case
+function Public.Kraken_Destroyed_Backup_check(tickinterval) -- a server became stuck when the kraken spawner entity disappeared but the kraken_die had not fired, and I'm not sure why, so this is a backup checker for that case
 	local memory = Memory.get_crew_memory()
 	local boat = memory.boat
 
@@ -1160,7 +1160,6 @@ function Public.Kraken_Destroyed_Backup_check(tickinterval) -- a server became b
 					end
 				end
 			end
-
 		end
 	end
 end

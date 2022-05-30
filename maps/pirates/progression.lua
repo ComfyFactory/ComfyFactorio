@@ -538,14 +538,14 @@ function Public.go_from_currentdestination_to_sea()
 
 	if memory.overworldx == 0 and memory.boat then
 
-		local difficulty_name = CoreData.get_difficulty_name_from_value(memory.difficulty)
-		if difficulty_name == CoreData.difficulty_options[#CoreData.difficulty_options].text then
+		local difficulty_name = CoreData.get_difficulty_option_informal_name_from_value(memory.difficulty)
+		if difficulty_name == 'nightmare' then
 			Boats.upgrade_chests(boat, 'steel-chest')
 			Hold.upgrade_chests(1, 'steel-chest')
 			Crowsnest.upgrade_chests('steel-chest')
 
 			Common.parrot_speak(memory.force, {'pirates.parrot_hard_praise'})
-		elseif difficulty_name ~= CoreData.difficulty_options[1].text then
+		elseif difficulty_name ~= 'easy' then
 			Boats.upgrade_chests(boat, 'iron-chest')
 			Hold.upgrade_chests(1, 'iron-chest')
 			Crowsnest.upgrade_chests('iron-chest')

@@ -1080,7 +1080,7 @@ function Public.update_gui(player)
 	flow1 = pirates_flow.minimap_piratebutton_frame
 
 	if flow1 then
-		if bools.in_hold_bool then
+		if bools.in_hold_bool or bools.in_cabin_bool then
 			flow1.visible = true
 		else
 			flow1.visible = false
@@ -1127,7 +1127,7 @@ function Public.update_gui(player)
 			flow1.style.minimal_height = 384
 			flow1.style.minimal_width = 384
 			flow1.position = {x=memory.overworldx,y=memory.overworldy}
-		elseif bools.in_cabin_bool or bools.in_crowsnest_bool then
+		elseif bools.in_crowsnest_bool then
 			flow1.visible = true
 			flow1.surface_index = game.surfaces[memory.boat.surface_name].index
 			flow1.zoom = 0.09

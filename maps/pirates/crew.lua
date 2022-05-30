@@ -32,13 +32,16 @@ Public.enum = enum
 function Public.difficulty_vote(player_index, difficulty_id)
 	local memory = Memory.get_crew_memory()
 
+
 	if not (memory.difficulty_votes) then memory.difficulty_votes = {} end
 	local player = game.players[player_index]
 	if not (player and player.valid) then return end
 
+
 	if memory.difficulty_votes[player_index] and memory.difficulty_votes[player_index] == difficulty_id then
 		return nil
 	else
+		log(_inspect(CoreData.difficulty_options))
 		local option = CoreData.difficulty_options[difficulty_id]
 		if not option then return end
 
@@ -77,10 +80,11 @@ function Public.update_difficulty()
 		local color = CoreData.difficulty_options[modal_id].associated_color
 
 		local message1 = {'pirates.notify_difficulty_change', color.r, color.g, color.b, CoreData.difficulty_options[modal_id].text}
+		
 		Common.notify_force(memory.force, message1)
 
-		local message2 = 'Difficulty changed to ' .. CoreData.difficulty_options[modal_id].text .. '.'
-		Server.to_discord_embed_raw(CoreData.comfy_emojis.kewl .. '[' .. memory.name .. '] ' .. message2)
+		-- local message2 = 'Difficulty changed to ' .. CoreData.difficulty_options[modal_id].text .. '.'
+		Server.to_discord_embed_raw({'', CoreData.comfy_emojis.kewl .. '[' .. memory.name .. '] ', message1}, true)
 
 		memory.difficulty_option = modal_id
 		memory.difficulty = CoreData.difficulty_options[modal_id].value
@@ -151,7 +155,7 @@ function Public.try_win()
 		memory.game_won = true
 		-- memory.crew_disband_tick = game.tick + 1200
 
-		Server.to_discord_embed_raw(CoreData.comfy_emojis.goldenobese .. '[' .. memory.name .. '] Victory, on v' .. CoreData.version_string .. ', ' .. CoreData.difficulty_options[memory.difficulty_option].text .. ', capacity ' .. CoreData.capacity_options[memory.capacity_option].text3 .. '. Playtime: ' .. speedrun_time_str .. ' since 1st island. Crewmembers: ' .. Public.get_crewmembers_printable_string())
+		Server.to_discord_embed_raw({'', CoreData.comfy_emojis.goldenobese .. '[' .. memory.name .. '] Victory, on v' .. CoreData.version_string .. ', ', CoreData.difficulty_options[memory.difficulty_option].text, ', capacity ' .. CoreData.capacity_options[memory.capacity_option].text3 .. '. Playtime: ' .. speedrun_time_str .. ' since 1st island. Crewmembers: ' .. Public.get_crewmembers_printable_string()}, true)
 
 		Common.notify_game({'','[' .. memory.name .. '] ',{'pirates.victory',CoreData.version_string, CoreData.difficulty_options[memory.difficulty_option].text, CoreData.capacity_options[memory.capacity_option].text3, speedrun_time_str, Public.get_crewmembers_printable_string()}}, CoreData.colors.notify_victory)
 
@@ -875,7 +879,7 @@ function Public.reset_crew_and_enemy_force(id)
 
 	crew_force.technologies['automobilism'].enabled = false
 
-	crew_force.technologies['toolbelt'].enabled = false --trying this. we don't actually want players to carry things manually, and in fact in a resource-tight scenario that's problematic
+	crew_force.technologies['toolbelt'].enabled = false --trying this. we don't actually want players to carry too many things manually, and in fact in a resource-tight scenario that's problematic
 
 	-- note: many of these recipes are overwritten after tech researched!!!!!!! like pistol. check elsewhere in code
 

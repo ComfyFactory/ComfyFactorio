@@ -250,7 +250,7 @@ function Public.create_crowsnest_surface()
 	-- end
 
 		memory.crowsnest_surfacename_rendering = rendering.draw_text{
-			text = 'Crow\'s Nest',
+			text = {'pirates.surface_label_crowsnest'},
 			surface = surface,
 			target = Public.Data.surfacename_rendering_pos,
 			color = CoreData.colors.renderingtext_yellow,

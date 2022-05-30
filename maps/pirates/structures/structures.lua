@@ -7,6 +7,7 @@ local Loot = require 'maps.pirates.loot'
 -- local Utils = require 'maps.pirates.utils_local'
 local _inspect = require 'utils.inspect'.inspect
 
+--@add stuff from new quest structures to this file?
 local Public = {}
 local enum = {
 	BOATS = 'Boats',

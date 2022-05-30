@@ -264,7 +264,7 @@ function Public.create_cabin_surface()
 		end
 
 		rendering.draw_text{
-			text = 'Captain\'s Cabin',
+			text = {'pirates.surface_label_cabin'},
 			surface = surface,
 			target = Public.Data.surfacename_rendering_pos,
 			color = CoreData.colors.renderingtext_yellow,

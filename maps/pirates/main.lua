@@ -129,10 +129,6 @@ local function on_init()
 	-- Delay.global_add(Delay.global_enum.PLACE_LOBBY_JETTY_AND_BOATS)
 	Task.set_timeout_in_ticks(2, jetty_delayed, {})
 
-	if _DEBUG then
-		game.print('Debug mode on. Use /go to get started (sometimes crashes)')
-	end
-
 end
 
 local event = require 'utils.event'

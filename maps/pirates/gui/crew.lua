@@ -574,7 +574,7 @@ function Public.click(event)
 	end
 
 	if string.sub(eventname, 1, 18) and string.sub(eventname, 1, 18) == 'difficulty_option_' then
-		Crew.difficulty_vote(player.index, string.sub(eventname, 19, -1))
+		Crew.difficulty_vote(player.index, tonumber(string.sub(eventname, 19, -1)))
 		return
 	end
 

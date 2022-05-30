@@ -15,7 +15,6 @@ local _inspect = require 'utils.inspect'.inspect
 
 local Public = {}
 
---@TODO: decide on snakecase vs camelcase
 -- Public.active_crews_cap = 1
 Public.activeCrewsCap = 2
 Public.minimumCapacitySliderValue = 1
@@ -147,11 +146,13 @@ end
 function Public.notify_force_error(force, message, color_override)
 	color_override = color_override or CoreData.colors.notify_error
 	force.print({"", '>> ',  message}, color_override)
+	force.play_sound{path = "utility/cannot_build"}
 end
 
 function Public.notify_player_error(player, message, color_override)
 	color_override = color_override or CoreData.colors.notify_error
 	player.print({"", '## ', {'pirates.notify_whisper'}, ' ',  message}, color_override)
+	player.play_sound{path = "utility/cannot_build"}
 end
 
 function Public.notify_player_expected(player, message, color_override)
@@ -220,6 +221,9 @@ end
 -- 	{20, 0, 1, false, 'flying-robot-frame', 20, 35},
 -- }
 
+
+
+--@TODO: Replace this old function with the newer code in raffle.lua
 function Public.raffle_from_processed_loot_data(processed_loot_data, how_many, game_completion_progress)
 	local ret = {}
 
@@ -405,6 +409,7 @@ end
 -- 	return surplus_evo*3
 -- 	-- return Math.floor(surplus_evo*3*1000)/1000
 -- end
+
 
 function Public.set_biter_surplus_evo_modifiers()
 	local memory = Memory.get_crew_memory()
@@ -788,8 +793,7 @@ function Public.spawner_count(surface)
 	local memory = Memory.get_crew_memory()
 
 	local spawners = surface.find_entities_filtered({type = 'unit-spawner', force = memory.enemy_force_name})
-	local spawnerscount = #spawners or 0
-	return spawnerscount
+	return #spawners or 0
 end
 
 
@@ -989,7 +993,7 @@ function Public.add_tiles_from_blueprint(tilesTable, bp_string, tile_name, offse
 end
 
 function Public.tile_positions_from_blueprint(bp_string, offset)
-	-- May '22 change: There seems to be a base game bug(?) which causes the tiles to be offset. We now correct for that.
+	-- May '22 change: There seems to be a base game bug(?) which causes the tiles to be offset. We now correct for that (with ` - (max_x - min_x)/2` and ` - (max_y - min_y)/2`).
 
 	local bp_entity = game.surfaces['nauvis'].create_entity{name = 'item-on-ground', position = {x = 158.5, y = 158.5}, stack = 'blueprint'}
 	bp_entity.stack.import_stack(bp_string)
@@ -1034,6 +1038,7 @@ function Public.tile_positions_from_blueprint(bp_string, offset)
 end
 
 function Public.tile_positions_from_blueprint_arrayform(bp_string, offset)
+	-- does not include the above May '22 fix yet, so may give different results
 
 	local bp_entity = game.surfaces['nauvis'].create_entity{name = 'item-on-ground', position = {x = 158.5, y = 158.5}, stack = 'blueprint'}
 	bp_entity.stack.import_stack(bp_string)

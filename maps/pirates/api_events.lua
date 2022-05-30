@@ -285,9 +285,9 @@ local function damage_to_players_changes(event)
 		-- 	damage_multiplier = damage_multiplier * 1.10
 		elseif class and class == Classes.enum.SAMURAI then
 			damage_multiplier = damage_multiplier * (1 - Balance.samurai_resistance)
-		elseif class and class == Classes.enum.HATAMOTO then --lethal damage needs to be unaffected
+		elseif class and class == Classes.enum.HATAMOTO then
 			damage_multiplier = damage_multiplier * (1 - Balance.hatamoto_resistance)
-		elseif class and class == Classes.enum.IRON_LEG then --lethal damage needs to be unaffected
+		elseif class and class == Classes.enum.IRON_LEG then
 			if memory.class_auxiliary_data[player_index] and memory.class_auxiliary_data[player_index].iron_leg_active then
 				damage_multiplier = damage_multiplier * (1 - Balance.iron_leg_resistance)
 			end
@@ -1181,6 +1181,10 @@ local function event_on_player_joined_game(event)
 
 	if (not Server.get_current_time()) then -- don't run this on servers because I'd need to negotiate that with the rest of Comfy
 		player.print('Support Pirate Ship scenario design at ko-fi.com/thesixthroc', {r=1, g=0.4, b=0.9})
+	end
+	
+	if _DEBUG then
+		game.print('Debug mode on. Use /go to get started')
 	end
 
 	local crew_to_put_back_in = nil

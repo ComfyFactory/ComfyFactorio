@@ -68,7 +68,7 @@ function Public.new_window(player, name)
 	flow.style.maximal_width = 270
 	flow.style.minimal_height = 80
 	flow.style.natural_height = 80
-	flow.style.maximal_height = 700
+	flow.style.maximal_height = 760
 	flow.style.padding = 10
 
 	return flow
