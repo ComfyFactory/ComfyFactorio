@@ -97,7 +97,7 @@ Public.Data.surfacename_rendering_pos = {x = -0.5, y = -15}
 
 Public.cabin_shop_data = {
 	{
-		price = {{'coin', 400}, {'coal', 20}},
+		price = {{'coin', 400}, {'coal', 20}, {'iron-plate', 10}},--should be inefficient on resources to merely buy arty to shoot nests
 		offer = {type='give-item', item = 'artillery-shell', count = 5},
 	},
 	{
