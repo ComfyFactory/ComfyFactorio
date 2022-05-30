@@ -231,7 +231,7 @@ function Public.covered_wooden_chest_loot()
 	local num = 2
 
 	local loot = Public.chest_loot(num,
-	Math.max(0,Math.min(1, Math.sloped(Common.difficulty_scale(),1/2) * (15/100 + Common.game_completion_progress())	)) --enforce 0 to 1
+	Math.max(0,Math.min(1, Math.sloped(Common.difficulty_scale(),1/2) * (18/100 + Common.game_completion_progress())	)) --enforce 0 to 1
 	) --reward higher difficulties with better loot
 
     return loot
@@ -240,7 +240,7 @@ end
 function Public.covered_wooden_chest_loot_1()
 
     return {
-		{name = 'iron-plate', count = 500},
+		{name = 'iron-plate', count = 650},
 		{name = 'copper-plate', count = 200}
 	}
 end
@@ -248,7 +248,7 @@ end
 function Public.covered_wooden_chest_loot_2()
 
     return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.chest_loot_data_raw), 2,
-	Math.max(0,Math.min(1, Math.sloped(Common.difficulty_scale(),1/2) * (12/100 + Common.game_completion_progress()))))
+	Math.max(0,Math.min(1, Math.sloped(Common.difficulty_scale(),1/2) * (10/100 + Common.game_completion_progress()))))
 end
 
 function Public.stone_furnace_loot()
