@@ -80,7 +80,7 @@ function Public.update_difficulty()
 		local color = CoreData.difficulty_options[modal_id].associated_color
 
 		local message1 = {'pirates.notify_difficulty_change', color.r, color.g, color.b, CoreData.difficulty_options[modal_id].text}
-		
+
 		Common.notify_force(memory.force, message1)
 
 		-- local message2 = 'Difficulty changed to ' .. CoreData.difficulty_options[modal_id].text .. '.'
