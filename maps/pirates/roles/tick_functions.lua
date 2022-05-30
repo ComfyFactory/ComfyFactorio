@@ -208,7 +208,7 @@ function Public.update_character_properties(tickinterval)
 
 			local speed_boost = Balance.base_extra_character_speed
 			if memory.speed_boost_characters and memory.speed_boost_characters[player_index] then
-				speed_boost = speed_boost + 0.75
+				speed_boost = speed_boost + 0.85
 			else
 				if memory.classes_table and memory.classes_table[player_index] then
 					local class = memory.classes_table[player_index]

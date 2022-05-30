@@ -276,8 +276,8 @@ local function damage_to_players_changes(event)
 
 	local damage_multiplier = 1
 
-	if event.damage_type.name == 'poison' then --make all poison damage stronger
-		damage_multiplier = damage_multiplier * 1.5
+	if event.damage_type.name == 'poison' then --make all poison damage stronger against players
+		damage_multiplier = damage_multiplier * 1.85
 	else
 		if class and class == Classes.enum.SCOUT then
 			damage_multiplier = damage_multiplier * 1.25

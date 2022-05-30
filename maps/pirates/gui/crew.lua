@@ -476,7 +476,7 @@ function Public.full_update(player)
 
 			for i, c in ipairs(memory.spare_classes) do
 				if i>1 then
-					str[#str+1] = {'', 'pirates.separator_1', Classes.display_form(c)} -- we need to do nesting here, because you can't contanenate more than 20 localised strings. Watch out!
+					str[#str+1] = {'', {'pirates.separator_1'}, Classes.display_form(c)} -- we need to do nesting here, because you can't contanenate more than 20 localised strings. Watch out!
 					--@TODO: In fact we should nest iteratively, as this still caps out around 19 classes.
 				else
 					str[#str+1] = {'', Classes.display_form(c)}
@@ -564,17 +564,17 @@ function Public.click(event)
 
 	if string.sub(eventname, 1, 13) and string.sub(eventname, 1, 13) == 'assign_class_' then
 		local other_id = tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])
-		Classes.assign_class(other_id, tonumber(string.sub(eventname, 14, -1)))
+		Classes.assign_class(other_id, string.sub(eventname, 14, -1))
 		return
 	end
 
 	if string.sub(eventname, 1, 17) and string.sub(eventname, 1, 17) == 'selfassign_class_' then
-		Classes.assign_class(player.index, tonumber(string.sub(eventname, 18, -1)), true)
+		Classes.assign_class(player.index, string.sub(eventname, 18, -1), true)
 		return
 	end
 
 	if string.sub(eventname, 1, 18) and string.sub(eventname, 1, 18) == 'difficulty_option_' then
-		Crew.difficulty_vote(player.index, tonumber(string.sub(eventname, 19, -1)))
+		Crew.difficulty_vote(player.index, string.sub(eventname, 19, -1))
 		return
 	end
 

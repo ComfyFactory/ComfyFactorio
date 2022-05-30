@@ -240,8 +240,8 @@ end
 function Public.covered_wooden_chest_loot_1()
 
     return {
-		{name = 'iron-plate', count = 180},
-		{name = 'copper-plate', count = 180}
+		{name = 'iron-plate', count = 500},
+		{name = 'copper-plate', count = 200}
 	}
 end
 
@@ -285,7 +285,7 @@ end
 
 function Public.roboport_bots_loot()
     return {
-		{name = 'logistic-robot', count = 5},
+		{name = 'logistic-robot', count = 8},
 	}
     -- construction robots
 end

@@ -129,6 +129,7 @@ function Public.create_step2_entities()
 			local inv = e.get_inventory(defines.inventory.chest)
 			local loot = Loot.covered_wooden_chest_loot()
 			if k==1 then loot[1] = {name = 'coin', count = 2000} end
+			--@TODO: log this in coin stats
 			for j = 1, #loot do
 				local l = loot[j]
 				inv.insert(l)
