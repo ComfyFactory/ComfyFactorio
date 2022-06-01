@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 --luacheck: ignore
 --luacheck ignores because tickinterval arguments are a code templating choice...
 

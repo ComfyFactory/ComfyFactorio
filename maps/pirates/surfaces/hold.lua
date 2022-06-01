@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Memory = require 'maps.pirates.memory'
 -- local Math = require 'maps.pirates.math'
@@ -232,7 +234,7 @@ function Public.create_hold_surface(nth)
 	else
 		if nth==2 then
 			if memory.shiphold_rendering_1 then
-				rendering.set_text(memory.shiphold_rendering_1, 'Ship\'s Hold: -1')
+				rendering.set_text(memory.shiphold_rendering_1, {'pirates.surface_label_hold_nth', -1})
 			end
 		end
 		rendering.draw_text{

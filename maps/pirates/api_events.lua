@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Memory = require 'maps.pirates.memory'
 local Balance = require 'maps.pirates.balance'
@@ -720,7 +722,8 @@ local function event_on_player_mined_entity(event)
 
 				local baseamount = 4
 				--minimum 1 wood
-				local amount = Math.max(Math.ceil(Math.min(available, baseamount * available/starting)),1)
+				local amount = Math.clamp(1, Math.ceil(available), Math.ceil(baseamount * available/starting))
+				
 				destination.dynamic_data.wood_remaining = destination.dynamic_data.wood_remaining - amount
 
 				if memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.LUMBERJACK then
@@ -1184,7 +1187,7 @@ local function event_on_player_joined_game(event)
 	end
 
 	if _DEBUG then
-		game.print('Debug mode on. Use /go to get started')
+		game.print('Debug mode on. Use /go to get started, /1 /4 /32 etc to change game speed.')
 	end
 
 	local crew_to_put_back_in = nil

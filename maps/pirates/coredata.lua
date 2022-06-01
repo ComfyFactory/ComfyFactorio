@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Math = require 'maps.pirates.math'
 local _inspect = require 'utils.inspect'.inspect
@@ -116,29 +118,29 @@ Public.difficulty_options = {
 
 	{value = 1.0, icon = 'item/piercing-rounds-magazine', text = {'pirates.difficulty_normal'}, associated_color = {r = 255, g = 255, b = 50}},
 
-	{value = 1.45, icon = 'item/uranium-rounds-magazine', text = {'pirates.difficutly_hard'}, associated_color = {r = 255, g = 50, b = 50}},
+	{value = 1.4, icon = 'item/uranium-rounds-magazine', text = {'pirates.difficutly_hard'}, associated_color = {r = 255, g = 50, b = 50}},
 
 	{value = 2.1, icon = 'item/atomic-bomb', text = {'pirates.difficulty_nightmare'}, associated_color = {r = 170, g = 60, b = 60}},
 }
 function Public.get_difficulty_option_from_value(difficulty_value)
-	-- given a difficulty value, key in to the closesy entry in the above table. (organising things this way allows us to make changes to the 'value' keys in the above table)
-	if difficulty_value <= 0.7 then
+	-- given a difficulty value, key in to the closesy entry in the above table. (organising things this way allows us to make changes to the 'value' keys in the above table without disrupting e.g. past highscores data)
+	if difficulty_value <= 0.8 then
 		return 1
 	elseif difficulty_value < 1.2 then
 		return 2
-	elseif difficulty_value <= 2 then
+	elseif difficulty_value <= 1.75 then
 		return 3
 	else
 		return 4
 	end
 end
 function Public.get_difficulty_option_informal_name_from_value(difficulty_value)
-	-- given a difficulty value, provide a simple named description of the difficulty
-	if difficulty_value <= 0.7 then
+	-- given a difficulty value, provide a simple named description of the difficulty. for internal use
+	if difficulty_value <= 0.8 then
 		return 'easy'
 	elseif difficulty_value < 1.2 then
 		return 'normal'
-	elseif difficulty_value <= 2 then
+	elseif difficulty_value <= 1.75 then
 		return 'hard'
 	else
 		return 'nightmare'

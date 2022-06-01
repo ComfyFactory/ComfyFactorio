@@ -1,4 +1,7 @@
--- Adapted from mountain_fortress_v3 highscores.lua
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
+
+-- == This code is mostly a fork of the file from Mountain Fortress
 
 local Event = require 'utils.event'
 local Global = require 'utils.global'
@@ -21,8 +24,6 @@ local score_key = 'pirate_ship_scores'
 local score_key_debug = 'pirate_ship_scores_debug'
 local score_key_modded = 'pirate_ship_scores_modded'
 
-
--- == This code is mostly a fork of the file from Mountain Fortress
 
 
 local Public = {}

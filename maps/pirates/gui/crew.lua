@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Memory = require 'maps.pirates.memory'
 local Common = require 'maps.pirates.common'
@@ -336,7 +338,7 @@ function Public.toggle_window(player)
 	flow3.style.minimal_width = 95
 	flow3.style.font = 'default-bold'
 	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
-	flow3.tooltip = {'pirates.gui_crew_window_captains_actions_tax_tooltip'}
+	flow3.tooltip = {'pirates.gui_crew_window_captains_actions_tax_tooltip', Common.coin_tax_percentage}
 
 
 	flow2 = flow.add({

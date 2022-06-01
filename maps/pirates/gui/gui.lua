@@ -1,3 +1,4 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
@@ -154,7 +155,7 @@ local function create_gui(player)
 	})
 	flow3.style.font = 'default-large-semibold'
 	flow3.style.font_color = GuiCommon.bold_font_color
-	flow3.caption = 'Fuel:'
+	flow3.caption = {'pirates.gui_fuel_1'}
 
 	flow3 = flow2.add({
 		name = 'fuel_label_1',
@@ -937,7 +938,7 @@ function Public.update_gui(player)
 
 	flow2.fuel_label_1.caption = Utils.bignumber_abbrevform(memory.stored_fuel or 0) .. '[item=coal]'
 	flow2.fuel_label_2.caption = Utils.negative_rate_abbrevform(memory.fuel_depletion_rate_memoized or 0)
-	local color_scale = Math.max(Math.min((- (memory.fuel_depletion_rate_memoized or 0))/30, 1),0)
+	local color_scale = Math.clamp(0, 1, (- (memory.fuel_depletion_rate_memoized or 0))/30)
 	flow2.fuel_label_2.style.font_color = {
 		r = GuiCommon.fuel_color_1.r * (1-color_scale) + GuiCommon.fuel_color_2.r * color_scale,
 		g = GuiCommon.fuel_color_1.g * (1-color_scale) + GuiCommon.fuel_color_2.g * color_scale,

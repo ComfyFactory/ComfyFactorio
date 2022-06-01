@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Math = require 'maps.pirates.math'
 local Raffle = require 'maps.pirates.raffle'
@@ -37,6 +39,8 @@ Public.structure_ensure_chunk_radius = 2
 
 Public.quartermaster_range = 19
 Public.allow_barreling_off_ship = true
+
+Public.coin_tax_percentage = 10
 
 Public.fraction_of_map_loaded_at_sea = 1
 Public.map_loading_ticks_atsea = 68 * 60
@@ -88,7 +92,7 @@ function Public.capacity() return Memory.get_crew_memory().capacity end
 -- function Public.mode() return Memory.get_crew_memory().mode end
 function Public.overworldx() return Memory.get_crew_memory().overworldx end
 function Public.game_completion_progress() return Public.overworldx()/CoreData.victory_x end
-function Public.game_completion_progress_capped() return Math.min(Public.overworldx()/CoreData.victory_x, 1) end
+function Public.game_completion_progress_capped() return Math.clamp(0, 1, Public.overworldx()/CoreData.victory_x) end
 function Public.capacity_scale()
 	local capacity = Public.capacity()
 	if not capacity then --e.g. for EE wattage on boats not owned by a crew

@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Public = {}
 
@@ -20,7 +22,6 @@ Public.round = math.round
 
 
 
-
 --- SCALING CURVES ---
 
 function Public.sloped(x, slope)
@@ -39,6 +40,12 @@ end
 -- exponent -1.2 -> {5.28, 2.30, 1.41, 1.00, 0.61, 0.27, 0.14}
 
 
+
+
+function Public.clamp(min, max, number)
+	return Public.min(max, Public.max(min, number))
+end
+
 function Public.sgn(number)
     return number > 0 and 1 or (number == 0 and 0 or -1)
 end
@@ -48,9 +55,9 @@ function Public.length(vec)
 end
 
 function Public.slopefromto(x, from, to)
-	return Public.max(0,Public.min(1,
-	(x - from) / (to - from)
-	))
+	return Public.clamp(0, 1,
+		(x - from) / (to - from)
+	)
 end
 
 function Public.distance(vec1, vec2)

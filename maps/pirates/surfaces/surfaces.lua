@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
@@ -346,7 +348,9 @@ function Public.destination_on_arrival(destination)
 			destination.static_params.class_for_sale = class_for_sale
 
 			local covered = Islands.spawn_quest_structure(destination, points_to_avoid)
-			points_to_avoid[#points_to_avoid + 1] = {x = covered.x, y = covered.y, r = 25}
+			if covered then
+				points_to_avoid[#points_to_avoid + 1] = {x = covered.x, y = covered.y, r = 25}
+			end
 		end
 
 		Islands.spawn_treasure_maps(destination, points_to_avoid)

@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Memory = require 'maps.pirates.memory'
 local Balance = require 'maps.pirates.balance'
@@ -295,7 +297,7 @@ function Public.create_mail_delivery_biters() --these travel cross-map between b
 
     local spawners = surface.find_entities_filtered{name = 'biter-spawner', force = enemy_force_name}
 
-    local try_how_many_groups = Math.min(Math.max(0, (#spawners - 8) / 100), 4)
+    local try_how_many_groups = Math.clamp(0, 4, (#spawners - 8) / 100)
 
     for i = 1, try_how_many_groups do
         if Math.random(2) == 1 then

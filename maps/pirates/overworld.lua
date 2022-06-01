@@ -1,3 +1,4 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 local Public = {}
 
@@ -423,14 +424,14 @@ function Public.generate_overworld_destination(p)
 		local x = Crowsnest.platformrightmostedge + dest.overworld_position.x
 		local y = dest.overworld_position.y
 		if dest.static_params.upgrade_for_sale then
-			local display_form = Upgrades.crowsnest_display_form[dest.static_params.upgrade_for_sale]
+			local display_form = {'', Upgrades.crowsnest_display_form[dest.static_params.upgrade_for_sale], ':'}
 
 			if not dest.dynamic_data.crowsnest_renderings then
 				dest.dynamic_data.crowsnest_renderings = {}
 			end
 
 			dest.dynamic_data.crowsnest_renderings.base_text_rendering = rendering.draw_text{
-				text = display_form .. ':',
+				text = display_form,
 				surface = surface,
 				target = {x = x + 5.5, y = y + 2.5},
 				color = CoreData.colors.renderingtext_green,
@@ -538,7 +539,7 @@ function Public.ensure_lane_generated_up_to(lane_yvalue, x)
 			for _, dest in pairs(memory.destinations) do
 				if dest.static_params.upgrade_for_sale and dest.dynamic_data.crowsnest_renderings then
 					if rendering.is_valid(dest.dynamic_data.crowsnest_renderings.base_text_rendering) then
-						rendering.set_text(dest.dynamic_data.crowsnest_renderings.base_text_rendering, Upgrades.crowsnest_display_form[dest.static_params.upgrade_for_sale] .. ':')
+						rendering.set_text(dest.dynamic_data.crowsnest_renderings.base_text_rendering, {'', Upgrades.crowsnest_display_form[dest.static_params.upgrade_for_sale], ':'})
 					end
 					for rendering_name, r in pairs(dest.dynamic_data.crowsnest_renderings) do
 						if type(r) == 'table' and r.text_rendering and rendering.is_valid(r.text_rendering) then

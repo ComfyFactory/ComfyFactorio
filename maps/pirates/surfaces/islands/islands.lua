@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
@@ -143,7 +145,9 @@ function Public.spawn_quest_structure(destination, points_to_avoid)
 	for i = 1, 1 do
 		p = Hunt.mid_farness_position_1(args, points_to_avoid)
 
-		QuestStructures.initialise_cached_quest_structure(p, QuestStructures.choose_quest_structure_type())
+		if p then
+			QuestStructures.initialise_cached_quest_structure(p, QuestStructures.choose_quest_structure_type())
+		end
 	end
 
 	return p

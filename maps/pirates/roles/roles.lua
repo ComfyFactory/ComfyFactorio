@@ -1,3 +1,4 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 local Session = require 'utils.datastore.session_data'
 local Antigrief = require 'utils.antigrief'
@@ -414,7 +415,7 @@ function Public.captain_tax(captain_index)
 					if inv and inv.valid then
 						for _, i in pairs(items_to_req) do
 							local amount = inv.get_item_count(i)
-							if i == 'coin' then amount = Math.floor(amount/10) end
+							if i == 'coin' then amount = Math.floor(amount/100*Common.coin_tax_percentage) end
 							if amount and amount > 0 then
 								inv.remove{name=i, count=amount}
 								captain_inv.insert{name=i, count=amount}

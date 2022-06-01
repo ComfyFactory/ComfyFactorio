@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Balance = require 'maps.pirates.balance'
 local _inspect = require 'utils.inspect'.inspect
@@ -255,7 +257,7 @@ local function class_on_player_used_capsule(event)
 			if multiplier > 0 then
 				local timescale = 60*30 * Math.max((Balance.game_slowness_scale())^(2/3),0.8)
 				if memory.gourmet_recency_tick then
-					multiplier = multiplier * Math.max(0.2, Math.min(5, (1/5)^((memory.gourmet_recency_tick - game.tick)/(60*300))))
+					multiplier = multiplier *Math.clamp(0.2, 5, (1/5)^((memory.gourmet_recency_tick - game.tick)/(60*300)))
 					memory.gourmet_recency_tick = Math.max(memory.gourmet_recency_tick, game.tick - timescale*10) + timescale
 				else
 					multiplier = multiplier * 5

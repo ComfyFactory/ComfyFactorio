@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
@@ -259,7 +261,7 @@ Public.entry_price_data_raw = {-- choose things which make interesting minifacto
 }
 
 function Public.entry_price()
-	local lambda = Math.max(Math.min(Math.sloped(Common.difficulty_scale(),1/2) * Common.game_completion_progress(), 1), 0)
+	local lambda = Math.clamp(0, 1, Math.sloped(Common.difficulty_scale(),1/2) * Common.game_completion_progress())
 
 	local item = Raffle.LambdaRaffle(Public.entry_price_data_raw, lambda)
 
