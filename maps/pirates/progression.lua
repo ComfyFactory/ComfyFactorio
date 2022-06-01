@@ -547,6 +547,7 @@ local parrot_set_sail_advice =
 
 		local memory = Memory.get_crew_memory()
 		if not (memory.id and memory.id > 0) then return end --check if crew disbanded
+		if memory.game_lost then return end
 
 		if memory.boat and memory.boat.state and memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL then
 			Common.parrot_speak(memory.force, {'pirates.parrot_set_sail_advice'})

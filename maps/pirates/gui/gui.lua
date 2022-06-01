@@ -1168,22 +1168,25 @@ local function on_gui_click(event)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
 
-	if event.element.name and event.element.name == 'etaframe_piratebutton' and (memory.boat.state == Boats.enum_state.DOCKED or memory.boat.state == Boats.enum_state.LANDED) then
-		if Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN then
-			if (not memory.undock_shortcut_are_you_sure_data) then memory.undock_shortcut_are_you_sure_data = {} end
-			if memory.undock_shortcut_are_you_sure_data[player.index] and memory.undock_shortcut_are_you_sure_data[player.index] > game.tick - 60 * 4 then
-				if memory.boat.state == Boats.enum_state.DOCKED then
-					Progression.undock_from_dock(true)
-				elseif memory.boat.state == Boats.enum_state.LANDED then
-					Progression.try_retreat_from_island(player, true)
+	if event.element.name and event.element.name == 'etaframe_piratebutton' then
+		if (memory.boat.state == Boats.enum_state.DOCKED or memory.boat.state == Boats.enum_state.LANDED) then
+			if Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN then
+				if (not memory.undock_shortcut_are_you_sure_data) then memory.undock_shortcut_are_you_sure_data = {} end
+				if memory.undock_shortcut_are_you_sure_data[player.index] and memory.undock_shortcut_are_you_sure_data[player.index] > game.tick - 60 * 4 then
+					if memory.boat.state == Boats.enum_state.DOCKED then
+						Progression.undock_from_dock(true)
+					elseif memory.boat.state == Boats.enum_state.LANDED then
+						Progression.try_retreat_from_island(player, true)
+					end
+				else
+					memory.undock_shortcut_are_you_sure_data[player.index] = game.tick
 				end
-			else
-				memory.undock_shortcut_are_you_sure_data[player.index] = game.tick
 			end
-		end
-	elseif memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL then
-		if Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN then
-			Progression.at_sea_begin_to_set_sail()
+
+		elseif memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL then
+			if Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN then
+				Progression.at_sea_begin_to_set_sail()
+			end
 		end
 
 	elseif string.sub(event.element.name, -13, -1) and string.sub(event.element.name, -13, -1) == '_piratebutton' then
