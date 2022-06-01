@@ -110,10 +110,11 @@ Public.cabin_shop_data = {
 		price = {{'coin', 2000}, {'stone-brick', 30}},
 		offer = {type='give-item', item = 'uranium-238', count = 10},
 	},
-	{
-		price = {{'coin', 25}},
-		offer = {type='nothing', effect_description={'pirates.market_description_extra_time_at_sea'}},
-	},
+	--disabled now that we can wait after any destination:
+	-- {
+	-- 	price = {{'coin', 25}},
+	-- 	offer = {type='nothing', effect_description={'pirates.market_description_extra_time_at_sea'}},
+	-- },
 }
 
 function Public.get_cabin_surface_name()

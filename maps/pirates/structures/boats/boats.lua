@@ -27,12 +27,13 @@ Public[enum.RAFTLARGE] = require 'maps.pirates.structures.boats.raft_large.raft_
 Public[enum.MERCHANT] = require 'maps.pirates.structures.boats.merchant_1.merchant_1'
 Public.enum = enum
 local enum_state = {
-		ATSEA_SAILING = 'at_sea',
 		APPROACHING = 'approaching',
 		LANDED = 'landed',
 		RETREATING = 'retreating',
 		LEAVING_DOCK = 'leaving',
+		ATSEA_SAILING = 'at_sea',
 		ATSEA_LOADING_MAP = 'waiting_for_load',
+		ATSEA_WAITING_TO_SAIL = 'waiting_for_sail',
 		DOCKED = 'docked',
 }
 Public.enum_state = enum_state
