@@ -169,25 +169,14 @@ function Public.update_character_properties(tickinterval)
 			local player_index = player.index
 			local character = player.character
 			if memory.classes_table and memory.classes_table[player_index] then
-				local max_reach_bonus = 0
-				-- if memory.classes_table[player_index] == Classes.enum.DECKHAND then
-				-- 	max_reach_bonus = Math.max(max_reach_bonus, 6)
-				-- 	character.character_build_distance_bonus = 6
-				-- else
-				-- 	character.character_build_distance_bonus = 0
-				-- end
 
 				if memory.classes_table[player_index] == Classes.enum.FISHERMAN then
-					max_reach_bonus = Math.max(max_reach_bonus, 10)
-					character.character_resource_reach_distance_bonus = 10
+					character.character_reach_distance_bonus = 10
 				elseif memory.classes_table[player_index] == Classes.enum.MASTER_ANGLER or memory.classes_table[player_index] == Classes.enum.DREDGER then
-					max_reach_bonus = Math.max(max_reach_bonus, 16)
-					character.character_resource_reach_distance_bonus = 16
+					character.character_reach_distance_bonus = 16
 				else
-					character.character_resource_reach_distance_bonus = 0
+					character.character_reach_distance_bonus = 0
 				end
-
-				character.character_reach_distance_bonus = max_reach_bonus
 			end
 
 			local health_boost = 0 -- base health is 250
