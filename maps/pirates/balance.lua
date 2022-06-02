@@ -342,8 +342,8 @@ function Public.quest_structure_entry_price_scale()
 end
 
 
-function Public.apply_crew_buffs_at_x(force)
-	force.laboratory_productivity_bonus = Math.max(0, 7/100 * (Common.overworldx()/40) - (10*(Common.difficulty_scale()) - 5)) --difficulty causes lab productivity boosts to start later
+function Public.apply_crew_buffs_per_league(force, leagues_travelled)
+	force.laboratory_productivity_bonus = force.laboratory_productivity_bonus + Math.max(0, 6/100 * leagues_travelled/40)
 end
 
 function Public.class_cost(at_dock)
