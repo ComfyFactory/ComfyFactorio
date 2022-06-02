@@ -68,6 +68,10 @@ function Public.explanation(class)
 	return {'pirates.class_' .. class .. '_explanation'}
 end
 
+function Public.explanation_advanced(class)
+	return {'pirates.class_' .. class .. '_explanation_advanced', Balance.deckhand_extra_speed}
+end
+
 -- Public.display_form = {
 -- 	[enum.DECKHAND] = {'pirates.class_deckhand'},
 -- }
@@ -88,7 +92,7 @@ Public.class_unlocks = {
 
 Public.class_purchase_requirement = {
 	[enum.MASTER_ANGLER] = enum.FISHERMAN,
-	[enum.WOOD_LORD] = enum.LUMBERJACK,
+	-- [enum.WOOD_LORD] = enum.LUMBERJACK,
 	-- [enum.CHIEF_EXCAVATOR] = enum.PROSPECTOR,
 	[enum.HATAMOTO] = enum.SAMURAI,
 	[enum.DREDGER] = enum.MASTER_ANGLER,
@@ -224,6 +228,9 @@ local function class_on_player_used_capsule(event)
 
     local item = event.item
     if not (item and item.name and item.name == 'raw-fish') then return end
+
+	local global_memory = Memory.get_global_memory()
+	global_memory.last_players_health[event.player_index] = player.character.health
 
 	if memory.classes_table and memory.classes_table[player_index] then
 		local class = memory.classes_table[player_index]

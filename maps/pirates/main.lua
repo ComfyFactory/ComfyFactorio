@@ -308,8 +308,8 @@ local function crew_tick()
 		PiratesApiOnTick.LOS_tick(240)
 	end
 
-	if tick % 420 == 0 then
-		ClassPiratesApiOnTick.class_rewards_tick(420)
+	if tick % (60 * Balance.class_reward_tick_rate_in_seconds) == 0 then
+		ClassPiratesApiOnTick.class_rewards_tick(60 * Balance.class_reward_tick_rate_in_seconds)
 	end
 
 	if tick % 300 == 0 then

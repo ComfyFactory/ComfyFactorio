@@ -298,9 +298,24 @@ function Public.class_resource_scale()
 	return 1 / (Public.crew_scale()^(2/5)) --already helped by longer timescales
 end
 
+Public.base_caught_fish_amount = 3
+Public.class_reward_tick_rate_in_seconds = 7
+
 Public.samurai_resistance = 0.74
 Public.hatamoto_resistance = 0.84
 Public.iron_leg_resistance = 0.82
+Public.deckhand_extra_speed = 0.25
+Public.boatswain_extra_speed = 0.25
+Public.shoresman_extra_speed = 0.07
+Public.quartermaster_range = 19
+Public.quartermaster_bonus_damage = 0.1
+Public.scout_extra_speed = 0.35
+Public.fisherman_reach_bonus = 10
+Public.master_angler_reach_bonus = 16
+Public.master_angler_fish_bonus = 1
+Public.master_angler_coin_bonus = 10
+Public.dredger_reach_bonus = 16
+Public.dredger_fish_bonus = 1
 
 function Public.biter_base_density_scale()
 	local p = Public.crew_scale()

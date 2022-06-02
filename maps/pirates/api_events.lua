@@ -276,6 +276,8 @@ local function damage_to_players_changes(event)
 
 	local damage_multiplier = 1
 
+	--game.print('on damage info: {name: ' .. event.damage_type.name .. ', object_name: ' .. event.damage_type.object_name .. '}')
+
 	if event.damage_type.name == 'poison' then --make all poison damage stronger against players
 		damage_multiplier = damage_multiplier * 1.85
 	else
@@ -306,6 +308,24 @@ local function damage_to_players_changes(event)
 	elseif damage_multiplier < 1 and event.final_health > 0 then --lethal damage needs to be unaffected, else they never die
 		event.entity.health = event.entity.health + event.final_damage_amount * (1 - damage_multiplier)
 	end
+
+
+	-- deal with damage reduction on lethal damage for players
+	local player = game.players[player_index]
+    if not (player and player.valid and player.character and player.character.valid) then
+        return
+    end
+	
+	local global_memory = Memory.get_global_memory()
+
+	if damage_multiplier < 1 and event.final_health <= 0 then
+		local damage_dealt = event.final_damage_amount * damage_multiplier
+		if damage_dealt < global_memory.last_players_health[player_index] then
+			event.entity.health = global_memory.last_players_health[player_index] - damage_dealt
+		end
+	end
+
+	global_memory.last_players_health[player_index] = event.entity.health
 end
 
 
@@ -398,13 +418,13 @@ local function damage_dealt_by_players_changes(event)
 	if physical then
 
 		-- QUARTERMASTER BUFFS
-		local nearby_players = player.surface.find_entities_filtered{position = player.position, radius = Common.quartermaster_range, type = {'character'}}
+		local nearby_players = player.surface.find_entities_filtered{position = player.position, radius = Balance.quartermaster_range, type = {'character'}}
 
 		for _, p2 in pairs(nearby_players) do
 			if p2.player and p2.player.valid then
 				local p2_index = p2.player.index
 				if event.entity.valid and player_index ~= p2_index and memory.classes_table[p2_index] and memory.classes_table[p2_index] == Classes.enum.QUARTERMASTER then
-					event.entity.damage(0.1 * event.final_damage_amount, character.force, 'impact', character) --triggers this function again, but not physical this time
+					event.entity.damage(Balance.quartermaster_bonus_damage * event.final_damage_amount, character.force, 'impact', character) --triggers this function again, but not physical this time
 				end
 			end
 		end
@@ -759,13 +779,13 @@ local function event_on_player_mined_entity(event)
 
 
 		if memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.MASTER_ANGLER then
-			Common.give(player, {{name = 'raw-fish', count = 4}, {name = 'coin', count = 10}}, entity.position)
+			Common.give(player, {{name = 'raw-fish', count = Balance.base_caught_fish_amount + Balance.master_angler_fish_bonus}, {name = 'coin', count = Balance.master_angler_coin_bonus}}, entity.position)
 		elseif memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.DREDGER then
-			local to_give = {{name = 'raw-fish', count = 4}}
+			local to_give = {{name = 'raw-fish', count = Balance.base_caught_fish_amount + Balance.dredger_fish_bonus}}
 			to_give[#to_give + 1] = Loot.dredger_loot()[1]
 			Common.give(player, to_give, entity.position)
 		else
-			Common.give(player, {{name = 'raw-fish', count = 3}}, entity.position)
+			Common.give(player, {{name = 'raw-fish', count = Balance.base_caught_fish_amount}}, entity.position)
 		end
 
 		event.buffer.clear()
@@ -1251,6 +1271,8 @@ local function event_on_player_joined_game(event)
 		Gui.info.toggle_window(player)
 	end
 
+	global_memory.last_players_health[event.player_index] = player.character.health
+
 	-- 	player.teleport(surface.find_non_colliding_position('character', spawnpoint, 32, 0.5), surface)
 	-- 	-- for item, amount in pairs(Balance.starting_items_player) do
 	-- 	-- 	player.insert({name = item, count = amount})
@@ -1320,6 +1342,8 @@ local function event_on_pre_player_left_game(event)
 			break
 		end
 	end
+
+	global_memory.last_players_health[event.player_index] = nil
 end
 
 
@@ -1774,6 +1798,9 @@ local function event_on_player_respawned(event)
 
 			if player.character and player.character.valid then
 				Task.set_timeout_in_ticks(360, boost_movement_speed_on_respawn, {player = player, crew_id = crew_id})
+
+				local global_memory = Memory.get_global_memory()
+				global_memory.last_players_health[event.player_index] = player.character.health
 			end
 		end
 	end

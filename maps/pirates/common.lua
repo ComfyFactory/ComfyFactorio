@@ -36,7 +36,6 @@ Public.deepwater_distance_from_leftmost_shore = 32
 Public.lobby_spawnpoint = {x = -72, y = -8}
 Public.structure_ensure_chunk_radius = 2
 
-Public.quartermaster_range = 19
 Public.allow_barreling_off_ship = true
 
 Public.fraction_of_map_loaded_at_sea = 1

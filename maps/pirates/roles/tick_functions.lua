@@ -167,7 +167,7 @@ function Public.update_character_properties(tickinterval)
 			local player_index = player.index
 			local character = player.character
 			if memory.classes_table and memory.classes_table[player_index] then
-				local max_reach_bonus = 0
+				--local max_reach_bonus = 0
 				-- if memory.classes_table[player_index] == Classes.enum.DECKHAND then
 				-- 	max_reach_bonus = Math.max(max_reach_bonus, 6)
 				-- 	character.character_build_distance_bonus = 6
@@ -176,16 +176,16 @@ function Public.update_character_properties(tickinterval)
 				-- end
 
 				if memory.classes_table[player_index] == Classes.enum.FISHERMAN then
-					max_reach_bonus = Math.max(max_reach_bonus, 10)
-					character.character_resource_reach_distance_bonus = 10
-				elseif memory.classes_table[player_index] == Classes.enum.MASTER_ANGLER or memory.classes_table[player_index] == Classes.enum.DREDGER then
-					max_reach_bonus = Math.max(max_reach_bonus, 16)
-					character.character_resource_reach_distance_bonus = 16
+					character.character_reach_distance_bonus = Balance.fisherman_reach_bonus
+				elseif memory.classes_table[player_index] == Classes.enum.MASTER_ANGLER then
+					character.character_reach_distance_bonus = Balance.master_angler_reach_bonus
+				elseif memory.classes_table[player_index] == Classes.enum.DREDGER then
+					character.character_reach_distance_bonus = Balance.dredger_reach_bonus
 				else
-					character.character_resource_reach_distance_bonus = 0
+					character.character_reach_distance_bonus = 0
 				end
 
-				character.character_reach_distance_bonus = max_reach_bonus
+				--character.character_reach_distance_bonus = max_reach_bonus
 			end
 
 			local health_boost = 0 -- base health is 250
@@ -213,7 +213,7 @@ function Public.update_character_properties(tickinterval)
 				if memory.classes_table and memory.classes_table[player_index] then
 					local class = memory.classes_table[player_index]
 					if class == Classes.enum.SCOUT then
-						speed_boost = speed_boost + 0.35
+						speed_boost = speed_boost + Balance.scout_extra_speed
 					elseif class == Classes.enum.DECKHAND or class == Classes.enum.BOATSWAIN or class == Classes.enum.SHORESMAN then
 						local surfacedata = Surfaces.SurfacesCommon.decode_surface_name(player.surface.name)
 						local type = surfacedata.type
@@ -222,15 +222,15 @@ function Public.update_character_properties(tickinterval)
 
 						if class == Classes.enum.DECKHAND then
 							if on_ship_bool and (not hold_bool) then
-								speed_boost = speed_boost + 0.25
+								speed_boost = speed_boost + Balance.deckhand_extra_speed
 							end
 						elseif class == Classes.enum.BOATSWAIN then
 							if hold_bool then
-								speed_boost = speed_boost + 0.25
+								speed_boost = speed_boost + Balance.boatswain_extra_speed
 							end
 						elseif class == Classes.enum.SHORESMAN then
 							if not on_ship_bool then
-								speed_boost = speed_boost + 0.07
+								speed_boost = speed_boost + Balance.shoresman_extra_speed
 							end
 						end
 					end
@@ -242,7 +242,7 @@ function Public.update_character_properties(tickinterval)
 end
 
 function Public.class_rewards_tick(tickinterval)
-	--assuming tickinterval = 6 seconds for now
+	--assuming tickinterval = 7 seconds for now
 	local memory = Memory.get_crew_memory()
 
 	local crew = Common.crew_get_crew_members()
@@ -288,7 +288,7 @@ function Public.class_rewards_tick(tickinterval)
 						elseif class == Classes.enum.SHORESMAN and (not on_ship_bool) then
 							Classes.class_ore_grant(player, 2)
 						elseif class == Classes.enum.QUARTERMASTER then
-							local nearby_players = #player.surface.find_entities_filtered{position = player.position, radius = Common.quartermaster_range, name = 'character'}
+							local nearby_players = #player.surface.find_entities_filtered{position = player.position, radius = Balance.quartermaster_range, name = 'character'}
 
 							if nearby_players > 1 then
 								Classes.class_ore_grant(player, nearby_players - 1, true)
