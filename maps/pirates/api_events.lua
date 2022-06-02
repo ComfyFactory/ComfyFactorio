@@ -1610,7 +1610,6 @@ local function event_on_rocket_launched(event)
 		local a = Balance.rocket_launch_coin_reward
 		Common.give_items_to_crew({{name = 'coin', count = a}})
 		memory.playtesting_stats.coins_gained_by_rocket_launches = memory.playtesting_stats.coins_gained_by_rocket_launches + a
-
 	end
 
 	local force = memory.force
@@ -1625,6 +1624,11 @@ local function event_on_rocket_launched(event)
 	if destination.dynamic_data.quest_type == Quest.enum.NODAMAGE and (not destination.dynamic_data.quest_complete) then
 		destination.dynamic_data.quest_progress = destination.dynamic_data.rocketsilohp
 		Quest.try_resolve_quest()
+	end
+
+	if destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid then
+		destination.dynamic_data.rocketsilos[1].die()
+		destination.dynamic_data.rocketsilos = nil
 	end
 end
 
