@@ -402,7 +402,7 @@ function(cmd)
 		local player = game.players[cmd.player_index]
 		local memory = Memory.get_crew_memory()
 		Roles.captain_tax(memory.playerindex_captain)
-	end
+	end --@TODO: else
 end)
 
 commands.add_command(
