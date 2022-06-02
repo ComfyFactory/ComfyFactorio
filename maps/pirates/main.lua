@@ -156,7 +156,7 @@ local function crew_tick()
 
 	PiratesApiOnTick.quest_progress_tick(5)
 	PiratesApiOnTick.strobe_player_colors(5)
-	
+
 	if tick % 10 == 0 then
 		PiratesApiOnTick.prevent_disembark(10)
 		PiratesApiOnTick.prevent_unbarreling_off_ship(10)
@@ -181,7 +181,7 @@ local function crew_tick()
 				PiratesApiOnTick.slower_boat_tick(60)
 				PiratesApiOnTick.raft_raids(60)
 				PiratesApiOnTick.place_cached_structures(60)
-				
+
 
 				if destination.dynamic_data.timer then
 					destination.dynamic_data.timer = destination.dynamic_data.timer + 1
@@ -246,7 +246,7 @@ local function crew_tick()
 						end
 					end
 				end
-				
+
 
 				if tick % 420 == 0 then
 					ClassPiratesApiOnTick.class_rewards_tick(420)
