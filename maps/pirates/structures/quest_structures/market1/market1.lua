@@ -223,7 +223,7 @@ Public.entry_price_data_raw = {
 		maxLambda = 1,
 		shape = false,
 		base_amount = 250,
-		raw_materials = {}
+		raw_materials = {{name = 'stone', count = 1250}}
 	},
 	['advanced-circuit'] = {
 		overallWeight = 1,
