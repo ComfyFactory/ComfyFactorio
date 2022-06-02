@@ -262,7 +262,7 @@ function Public.class_rewards_tick(tickinterval)
 			end
 
 
-			if game.tick % tickinterval == 0 and (not (memory.boat and memory.boat.state and memory.boat.state == Structures.Boats.enum_state.ATSEA_LOADING_MAP)) then --it is possible to spend extra time here, so don't give out freebies
+			if game.tick % tickinterval == 0 and (not (memory.boat and memory.boat.state and (memory.boat.state == Structures.Boats.enum_state.ATSEA_LOADING_MAP or memory.boat.state == Structures.Boats.enum_state.ATSEA_WAITING_TO_SAIL))) then --it is possible to spend extra time here, so don't give out freebies
 
 				if memory.classes_table and memory.classes_table[player_index] then
 					local class = memory.classes_table[player_index]

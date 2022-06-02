@@ -346,8 +346,12 @@ function Public.apply_crew_buffs_per_x(force)
 	force.laboratory_productivity_bonus = Math.max(0, 7/100 * (Common.overworldx()/40) - (10*(Common.difficulty_scale()) - 5)) --difficulty causes lab productivity boosts to start later
 end
 
-function Public.class_cost()
-	return 10000
+function Public.class_cost(at_dock)
+	if at_dock then
+		return 9000
+	else
+		return 6000
+	end
 	-- return Math.ceil(10000 / (Public.crew_scale()*10/4)^(1/6))
 end
 
