@@ -644,21 +644,21 @@ end
 
 
 
-local function event_pre_player_mined_item(event)
-	-- figure out which crew this is about:
-	-- local crew_id = nil
-	-- if event.player_index and game.players[event.player_index].valid then crew_id = tonumber(string.sub(game.players[event.player_index].force.name, -3, -1)) or nil end
-	-- Memory.set_working_id(crew_id)
-	-- local memory = Memory.get_crew_memory()
+-- local function event_pre_player_mined_item(event)
+-- 	-- figure out which crew this is about:
+-- 	-- local crew_id = nil
+-- 	-- if event.player_index and game.players[event.player_index].valid then crew_id = tonumber(string.sub(game.players[event.player_index].force.name, -3, -1)) or nil end
+-- 	-- Memory.set_working_id(crew_id)
+-- 	-- local memory = Memory.get_crew_memory()
 
-	-- if memory.planet[1].type.id == 11 then --rocky planet
-	-- 	if event.entity.name == 'rock-huge' or event.entity.name == 'rock-big' or event.entity.name == 'sand-rock-big' then
-	-- 		Event_functions.trap(event.entity, false)
-	-- 		event.entity.destroy()
-	-- 		Event_functions.rocky_loot(event)
-	-- 	end
-	-- end
-end
+-- 	-- if memory.planet[1].type.id == 11 then --rocky planet
+-- 	-- 	if event.entity.name == 'rock-huge' or event.entity.name == 'rock-big' or event.entity.name == 'sand-rock-big' then
+-- 	-- 		Event_functions.trap(event.entity, false)
+-- 	-- 		event.entity.destroy()
+-- 	-- 		Event_functions.rocky_loot(event)
+-- 	-- 	end
+-- 	-- end
+-- end
 
 
 Public.every_nth_tree_gives_coins = 6
@@ -1793,7 +1793,7 @@ event.add(defines.events.on_entity_died, event_on_entity_died)
 event.add(defines.events.on_player_joined_game, event_on_player_joined_game)
 event.add(defines.events.on_pre_player_left_game, event_on_pre_player_left_game)
 -- event.add(defines.events.on_player_left_game, event_on_player_left_game)
-event.add(defines.events.on_pre_player_mined_item, event_pre_player_mined_item)
+-- event.add(defines.events.on_pre_player_mined_item, event_pre_player_mined_item)
 event.add(defines.events.on_player_mined_entity, event_on_player_mined_entity)
 event.add(defines.events.on_research_finished, event_on_research_finished)
 event.add(defines.events.on_player_changed_surface, on_player_changed_surface)
