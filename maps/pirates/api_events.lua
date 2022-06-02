@@ -646,9 +646,9 @@ end
 
 local function event_pre_player_mined_item(event)
 	-- figure out which crew this is about:
-	local crew_id = nil
-	if event.player_index and game.players[event.player_index].valid then crew_id = tonumber(string.sub(game.players[event.player_index].force.name, -3, -1)) or nil end
-	Memory.set_working_id(crew_id)
+	-- local crew_id = nil
+	-- if event.player_index and game.players[event.player_index].valid then crew_id = tonumber(string.sub(game.players[event.player_index].force.name, -3, -1)) or nil end
+	-- Memory.set_working_id(crew_id)
 	-- local memory = Memory.get_crew_memory()
 
 	-- if memory.planet[1].type.id == 11 then --rocky planet
@@ -659,6 +659,10 @@ local function event_pre_player_mined_item(event)
 	-- 	end
 	-- end
 end
+
+
+Public.every_nth_tree_gives_coins = 6
+
 
 local function event_on_player_mined_entity(event)
 	if not event.player_index then return end
@@ -677,8 +681,6 @@ local function event_on_player_mined_entity(event)
 		return
 	end
 
-	local every_nth_tree_gives_coins = 6
-
     if entity.type == 'tree' then
         if not event.buffer then return end
 		local available = destination.dynamic_data.wood_remaining
@@ -695,22 +697,18 @@ local function event_on_player_mined_entity(event)
 				local give = {}
 				if memory.classes_table and memory.classes_table[event.player_index] then
 					if memory.classes_table[event.player_index] == Classes.enum.LUMBERJACK then
-						give[#give + 1] = {name = 'wood', count = 4}
-						if Math.random(every_nth_tree_gives_coins) == 1 then
-							local a = 20
-							give[#give + 1] = {name = 'coin', count = a}
-							memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
-						end
-					elseif memory.classes_table[event.player_index] == Classes.enum.WOOD_LORD then
 						give[#give + 1] = {name = 'wood', count = 1}
-						give[#give + 1] = {name = 'iron-ore', count = 1}
-						give[#give + 1] = {name = 'copper-ore', count = 1}
-						give[#give + 1] = {name = 'coal', count = 1}
-						if Math.random(every_nth_tree_gives_coins) == 1 then
-							local a = 12
-							give[#give + 1] = {name = 'coin', count = a}
-							memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
-						end
+						Classes.lumberjack_bonus_items(give)
+					-- elseif memory.classes_table[event.player_index] == Classes.enum.WOOD_LORD then
+					-- 	give[#give + 1] = {name = 'wood', count = 1}
+					-- 	give[#give + 1] = {name = 'iron-ore', count = 1}
+					-- 	give[#give + 1] = {name = 'copper-ore', count = 1}
+					-- 	give[#give + 1] = {name = 'coal', count = 1}
+					-- 	if Math.random(every_nth_tree_gives_coins) == 1 then
+					-- 		local a = 12
+					-- 		give[#give + 1] = {name = 'coin', count = a}
+					-- 		memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
+					-- 	end
 					end
 				end
 
@@ -727,25 +725,21 @@ local function event_on_player_mined_entity(event)
 				destination.dynamic_data.wood_remaining = destination.dynamic_data.wood_remaining - amount
 
 				if memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.LUMBERJACK then
-					give[#give + 1] = {name = 'wood', count = amount + 3}
-					if Math.random(every_nth_tree_gives_coins) == 1 then
-						local a = 12
-						give[#give + 1] = {name = 'coin', count = a}
-						memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
-					end
-				elseif memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.WOOD_LORD then
-					give[#give + 1] = {name = 'wood', count = amount + 3}
-					give[#give + 1] = {name = 'iron-ore', count = 1}
-					give[#give + 1] = {name = 'copper-ore', count = 1}
-					give[#give + 1] = {name = 'coal', count = 1}
-					if Math.random(every_nth_tree_gives_coins) == 1 then
-						local a = 12
-						give[#give + 1] = {name = 'coin', count = a}
-						memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
-					end
+					give[#give + 1] = {name = 'wood', count = amount}
+					Classes.lumberjack_bonus_items(give)
+				-- elseif memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.WOOD_LORD then
+				-- 	give[#give + 1] = {name = 'wood', count = amount + 3}
+				-- 	give[#give + 1] = {name = 'iron-ore', count = 1}
+				-- 	give[#give + 1] = {name = 'copper-ore', count = 1}
+				-- 	give[#give + 1] = {name = 'coal', count = 1}
+				-- 	if Math.random(every_nth_tree_gives_coins) == 1 then
+				-- 		local a = 12
+				-- 		give[#give + 1] = {name = 'coin', count = a}
+				-- 		memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
+				-- 	end
 				else
 					give[#give + 1] = {name = 'wood', count = amount}
-					if Math.random(every_nth_tree_gives_coins) == 1 then --tuned
+					if Math.random(Public.every_nth_tree_gives_coins) == 1 then --tuned
 						local a = 5
 						give[#give + 1] = {name = 'coin', count = a}
 						memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
@@ -778,7 +772,7 @@ local function event_on_player_mined_entity(event)
 
 		local give = {}
 
-		if memory.overworldx > 0 then
+		if memory.overworldx > 0 then --no coins on first map, else the optimal strategy is to handmine everything there
 			if memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.PROSPECTOR then
 				local a = 3
 				give[#give + 1] = {name = 'coin', count = a}

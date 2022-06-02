@@ -48,11 +48,13 @@ Public.offers_default = {
 	{price = {{'coin', 720}}, offer = {type = 'give-item', item = 'gate', count = 10}},
 	{price = {{'coin', 120}}, offer = {type = 'give-item', item = 'storage-tank', count = 4}},
 	{price = {{'coin', 240}}, offer = {type = 'give-item', item = 'big-electric-pole', count = 8}},
-	{price = {{'coin', 240}}, offer = {type = 'give-item', item = 'steel-furnace', count = 4}},
 	{price = {{'coin', 360}}, offer = {type = 'give-item', item = 'stack-inserter', count = 3}},
 	{price = {{'coin', 900}}, offer = {type = 'give-item', item = 'piercing-shotgun-shell', count = 9}},
 	{price = {{'coin', 960}}, offer = {type = 'give-item', item = 'flamethrower', count = 1}},
-	{price = {{'coin', 1800}}, offer = {type = 'give-item', item = 'flamethrower-ammo', count = 5}},
+	{price = {{'coin', 960}}, offer = {type = 'give-item', item = 'flamethrower', count = 1}},
+	{price = {{'coin', 1800}}, offer = {type = 'give-item', item = 'flamethrower-ammo', count = 6}},
+	{price = {{'coin', 1800}}, offer = {type = 'give-item', item = 'flamethrower-ammo', count = 6}},
+	{price = {{'coin', 1800}}, offer = {type = 'give-item', item = 'flamethrower-ammo', count = 6}},
 	{price = {{'coin', 1800}}, offer = {type = 'give-item', item = 'flying-robot-frame', count = 1}},
 }
 
