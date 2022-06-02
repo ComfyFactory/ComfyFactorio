@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 --luacheck: ignore
 --luacheck ignores because tickinterval arguments are a code templating choice...
 
@@ -1024,7 +1026,7 @@ function Public.silo_update(tickinterval)
 
 						if memory.overworldx >= 0 and dynamic_data.rocketsiloenergyconsumed >= 0.25 * dynamic_data.rocketsiloenergyneeded and (not dynamic_data.parrot_silo_warned) then
 							dynamic_data.parrot_silo_warned = true
-							local spawnerscount = Common.spawner_count(surface)
+							local spawnerscount = Common.spawner_count(game.surfaces[destination.surface_name])
 							if spawnerscount > 0 then
 								Common.parrot_speak(memory.force, {'pirates.parrot_silo_warning'})
 							end
@@ -1133,7 +1135,7 @@ end
 -- 	Delay.move_tasks_to_buffer()
 -- end
 
-function Public.Kraken_Destroyed_Backup_check(tickinterval) -- a server became bugged when the kraken spawner entity disappeared but the kraken_die had not fired, and I'm not sure why, so this is a backup checker for that case
+function Public.Kraken_Destroyed_Backup_check(tickinterval) -- a server became stuck when the kraken spawner entity disappeared but the kraken_die had not fired, and I'm not sure why, so this is a backup checker for that case
 	local memory = Memory.get_crew_memory()
 	local boat = memory.boat
 
@@ -1160,7 +1162,6 @@ function Public.Kraken_Destroyed_Backup_check(tickinterval) -- a server became b
 					end
 				end
 			end
-
 		end
 	end
 end

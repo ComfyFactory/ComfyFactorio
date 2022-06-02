@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Memory = require 'maps.pirates.memory'
 local Balance = require 'maps.pirates.balance'
@@ -287,9 +289,9 @@ local function damage_to_players_changes(event)
 		-- 	damage_multiplier = damage_multiplier * 1.10
 		elseif class and class == Classes.enum.SAMURAI then
 			damage_multiplier = damage_multiplier * (1 - Balance.samurai_resistance)
-		elseif class and class == Classes.enum.HATAMOTO then --lethal damage needs to be unaffected
+		elseif class and class == Classes.enum.HATAMOTO then
 			damage_multiplier = damage_multiplier * (1 - Balance.hatamoto_resistance)
-		elseif class and class == Classes.enum.IRON_LEG then --lethal damage needs to be unaffected
+		elseif class and class == Classes.enum.IRON_LEG then
 			if memory.class_auxiliary_data[player_index] and memory.class_auxiliary_data[player_index].iron_leg_active then
 				damage_multiplier = damage_multiplier * (1 - Balance.iron_leg_resistance)
 			end
@@ -664,9 +666,9 @@ end
 
 local function event_pre_player_mined_item(event)
 	-- figure out which crew this is about:
-	local crew_id = nil
-	if event.player_index and game.players[event.player_index].valid then crew_id = tonumber(string.sub(game.players[event.player_index].force.name, -3, -1)) or nil end
-	Memory.set_working_id(crew_id)
+	-- local crew_id = nil
+	-- if event.player_index and game.players[event.player_index].valid then crew_id = tonumber(string.sub(game.players[event.player_index].force.name, -3, -1)) or nil end
+	-- Memory.set_working_id(crew_id)
 	-- local memory = Memory.get_crew_memory()
 
 	-- if memory.planet[1].type.id == 11 then --rocky planet
@@ -677,6 +679,10 @@ local function event_pre_player_mined_item(event)
 	-- 	end
 	-- end
 end
+
+
+Public.every_nth_tree_gives_coins = 6
+
 
 local function event_on_player_mined_entity(event)
 	if not event.player_index then return end
@@ -695,8 +701,6 @@ local function event_on_player_mined_entity(event)
 		return
 	end
 
-	local every_nth_tree_gives_coins = 6
-
     if entity.type == 'tree' then
         if not event.buffer then return end
 		local available = destination.dynamic_data.wood_remaining
@@ -713,22 +717,18 @@ local function event_on_player_mined_entity(event)
 				local give = {}
 				if memory.classes_table and memory.classes_table[event.player_index] then
 					if memory.classes_table[event.player_index] == Classes.enum.LUMBERJACK then
-						give[#give + 1] = {name = 'wood', count = 4}
-						if Math.random(every_nth_tree_gives_coins) == 1 then
-							local a = 20
-							give[#give + 1] = {name = 'coin', count = a}
-							memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
-						end
-					elseif memory.classes_table[event.player_index] == Classes.enum.WOOD_LORD then
 						give[#give + 1] = {name = 'wood', count = 1}
-						give[#give + 1] = {name = 'iron-ore', count = 1}
-						give[#give + 1] = {name = 'copper-ore', count = 1}
-						give[#give + 1] = {name = 'coal', count = 1}
-						if Math.random(every_nth_tree_gives_coins) == 1 then
-							local a = 12
-							give[#give + 1] = {name = 'coin', count = a}
-							memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
-						end
+						Classes.lumberjack_bonus_items(give)
+					-- elseif memory.classes_table[event.player_index] == Classes.enum.WOOD_LORD then
+					-- 	give[#give + 1] = {name = 'wood', count = 1}
+					-- 	give[#give + 1] = {name = 'iron-ore', count = 1}
+					-- 	give[#give + 1] = {name = 'copper-ore', count = 1}
+					-- 	give[#give + 1] = {name = 'coal', count = 1}
+					-- 	if Math.random(every_nth_tree_gives_coins) == 1 then
+					-- 		local a = 12
+					-- 		give[#give + 1] = {name = 'coin', count = a}
+					-- 		memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
+					-- 	end
 					end
 				end
 
@@ -740,29 +740,26 @@ local function event_on_player_mined_entity(event)
 
 				local baseamount = 4
 				--minimum 1 wood
-				local amount = Math.max(Math.ceil(Math.min(available, baseamount * available/starting)),1)
+				local amount = Math.clamp(1, Math.ceil(available), Math.ceil(baseamount * available/starting))
+
 				destination.dynamic_data.wood_remaining = destination.dynamic_data.wood_remaining - amount
 
 				if memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.LUMBERJACK then
-					give[#give + 1] = {name = 'wood', count = amount + 3}
-					if Math.random(every_nth_tree_gives_coins) == 1 then
-						local a = 12
-						give[#give + 1] = {name = 'coin', count = a}
-						memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
-					end
-				elseif memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.WOOD_LORD then
-					give[#give + 1] = {name = 'wood', count = amount + 3}
-					give[#give + 1] = {name = 'iron-ore', count = 1}
-					give[#give + 1] = {name = 'copper-ore', count = 1}
-					give[#give + 1] = {name = 'coal', count = 1}
-					if Math.random(every_nth_tree_gives_coins) == 1 then
-						local a = 12
-						give[#give + 1] = {name = 'coin', count = a}
-						memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
-					end
+					give[#give + 1] = {name = 'wood', count = amount}
+					Classes.lumberjack_bonus_items(give)
+				-- elseif memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.WOOD_LORD then
+				-- 	give[#give + 1] = {name = 'wood', count = amount + 3}
+				-- 	give[#give + 1] = {name = 'iron-ore', count = 1}
+				-- 	give[#give + 1] = {name = 'copper-ore', count = 1}
+				-- 	give[#give + 1] = {name = 'coal', count = 1}
+				-- 	if Math.random(every_nth_tree_gives_coins) == 1 then
+				-- 		local a = 12
+				-- 		give[#give + 1] = {name = 'coin', count = a}
+				-- 		memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
+				-- 	end
 				else
 					give[#give + 1] = {name = 'wood', count = amount}
-					if Math.random(every_nth_tree_gives_coins) == 1 then --tuned
+					if Math.random(Public.every_nth_tree_gives_coins) == 1 then --tuned
 						local a = 5
 						give[#give + 1] = {name = 'coin', count = a}
 						memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
@@ -795,7 +792,7 @@ local function event_on_player_mined_entity(event)
 
 		local give = {}
 
-		if memory.overworldx > 0 then
+		if memory.overworldx > 0 then --no coins on first map, else the optimal strategy is to handmine everything there
 			if memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.PROSPECTOR then
 				local a = 3
 				give[#give + 1] = {name = 'coin', count = a}
@@ -913,11 +910,11 @@ local function base_kill_rewards(event)
 
 	if entity_name == 'small-worm-turret' then
 		iron_amount = 5
-		coin_amount = 60
+		coin_amount = 50
 		memory.playtesting_stats.coins_gained_by_nests_and_worms = memory.playtesting_stats.coins_gained_by_nests_and_worms + coin_amount
 	elseif entity_name == 'medium-worm-turret' then
 		iron_amount = 20
-		coin_amount = 100
+		coin_amount = 90
 		memory.playtesting_stats.coins_gained_by_nests_and_worms = memory.playtesting_stats.coins_gained_by_nests_and_worms + coin_amount
 	elseif entity_name == 'biter-spawner' or entity_name == 'spitter-spawner' then
 		iron_amount = 30
@@ -925,11 +922,11 @@ local function base_kill_rewards(event)
 		memory.playtesting_stats.coins_gained_by_nests_and_worms = memory.playtesting_stats.coins_gained_by_nests_and_worms + coin_amount
 	elseif entity_name == 'big-worm-turret' then
 		iron_amount = 30
-		coin_amount = 160
+		coin_amount = 140
 		memory.playtesting_stats.coins_gained_by_nests_and_worms = memory.playtesting_stats.coins_gained_by_nests_and_worms + coin_amount
 	elseif entity_name == 'behemoth-worm-turret' then
 		iron_amount = 50
-		coin_amount = 280
+		coin_amount = 260
 		memory.playtesting_stats.coins_gained_by_nests_and_worms = memory.playtesting_stats.coins_gained_by_nests_and_worms + coin_amount
 	elseif memory.overworldx > 0 then --avoid coin farming on first island
 		if entity_name == 'small-biter' then
@@ -1201,6 +1198,10 @@ local function event_on_player_joined_game(event)
 
 	if (not Server.get_current_time()) then -- don't run this on servers because I'd need to negotiate that with the rest of Comfy
 		player.print('Support Pirate Ship scenario design at ko-fi.com/thesixthroc', {r=1, g=0.4, b=0.9})
+	end
+
+	if _DEBUG then
+		game.print('Debug mode on. Use /go to get started, /1 /4 /32 etc to change game speed.')
 	end
 
 	local crew_to_put_back_in = nil
@@ -1633,7 +1634,6 @@ local function event_on_rocket_launched(event)
 		local a = Balance.rocket_launch_coin_reward
 		Common.give_items_to_crew({{name = 'coin', count = a}})
 		memory.playtesting_stats.coins_gained_by_rocket_launches = memory.playtesting_stats.coins_gained_by_rocket_launches + a
-
 	end
 
 	local force = memory.force
@@ -1648,6 +1648,11 @@ local function event_on_rocket_launched(event)
 	if destination.dynamic_data.quest_type == Quest.enum.NODAMAGE and (not destination.dynamic_data.quest_complete) then
 		destination.dynamic_data.quest_progress = destination.dynamic_data.rocketsilohp
 		Quest.try_resolve_quest()
+	end
+
+	if destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid then
+		destination.dynamic_data.rocketsilos[1].die()
+		destination.dynamic_data.rocketsilos = nil
 	end
 end
 
@@ -1790,7 +1795,7 @@ local function event_on_player_respawned(event)
 	local boat = memory.boat
 
 	if player.surface == game.surfaces[Common.current_destination().surface_name] then
-		if boat and boat.state == Boats.enum_state.ATSEA_SAILING then
+		if boat and boat.state == Boats.enum_state.ATSEA_SAILING or boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL or boat.state == Boats.enum_state.ATSEA_LOADING_MAP then
 			-- assuming sea is always default:
 			local seasurface = game.surfaces[memory.sea_name]
 			player.teleport(memory.spawnpoint, seasurface)

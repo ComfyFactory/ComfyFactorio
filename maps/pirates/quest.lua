@@ -1,3 +1,4 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 local Memory = require 'maps.pirates.memory'
 -- local Roles = require 'maps.pirates.roles.roles'
@@ -210,10 +211,10 @@ function Public.initialise_worms_quest()
 	if  Common.difficulty_scale() < 1 then needed = Math.max(1, needed - 3) end
 	if  Common.difficulty_scale() > 1 then needed = Math.max(1, needed + 2) end
 
-	local difficulty_name = CoreData.get_difficulty_name_from_value(Common.difficulty_scale())
-	if difficulty_name == CoreData.difficulty_options[1].text then
+	local difficulty_name = CoreData.get_difficulty_option_informal_name_from_value(Common.difficulty_scale())
+	if difficulty_name == 'easy' then
 		needed = Math.max(1, needed - 3)
-	elseif difficulty_name ~= CoreData.difficulty_options[2].text then
+	elseif difficulty_name ~= 'normal' then
 		needed = Math.max(1, needed + 2)
 	end
 

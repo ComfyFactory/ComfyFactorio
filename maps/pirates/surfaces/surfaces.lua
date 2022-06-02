@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
@@ -169,14 +171,14 @@ function Public.destination_on_collide(destination)
 			local playercount = Common.activecrewcount()
 			local max_evo
 
-			local difficulty_name = CoreData.get_difficulty_name_from_value(Common.difficulty_scale())
-			if difficulty_name == CoreData.difficulty_options[1].text then
+			local difficulty_name = CoreData.get_difficulty_option_informal_name_from_value(Common.difficulty_scale())
+			if difficulty_name == 'easy' then
 				if memory.overworldx/40 < 20 then
 					max_evo = 0.9 - (20 - memory.overworldx/40) * 1/100
 				else
 					max_evo = 0.91 + (memory.overworldx/40 - 20) * 0.25/100
 				end
-			elseif difficulty_name == CoreData.difficulty_options[2].text then
+			elseif difficulty_name == 'normal' then
 				if memory.overworldx/40 < 15 then
 					max_evo = 0.9 - (15 - memory.overworldx/40) * 0.5/100
 				else
@@ -346,7 +348,9 @@ function Public.destination_on_arrival(destination)
 			destination.static_params.class_for_sale = class_for_sale
 
 			local covered = Islands.spawn_quest_structure(destination, points_to_avoid)
-			points_to_avoid[#points_to_avoid + 1] = {x = covered.x, y = covered.y, r = 25}
+			if covered then
+				points_to_avoid[#points_to_avoid + 1] = {x = covered.x, y = covered.y, r = 25}
+			end
 		end
 
 		Islands.spawn_treasure_maps(destination, points_to_avoid)
@@ -779,7 +783,7 @@ function Public.player_exit_crows_nest(player, player_relative_pos)
 	local memory = Memory.get_crew_memory()
 	local surface
 
-	if memory.boat and (memory.boat.state == Boats.enum_state.ATSEA_SAILING or memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP) then
+	if memory.boat and (memory.boat.state == Boats.enum_state.ATSEA_SAILING or memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL or memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP) then
 		surface = game.surfaces[SurfacesCommon.encode_surface_name(memory.id, 0, Public.enum.SEA, Public.Sea.enum.DEFAULT)]
 	else
 		surface = game.surfaces[Common.current_destination().surface_name]
@@ -818,7 +822,7 @@ function Public.player_exit_hold(player, relative_pos)
 	local memory = Memory.get_crew_memory()
 	local surface
 
-	if memory.boat and (memory.boat.state == Boats.enum_state.ATSEA_SAILING or memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP) then
+	if memory.boat and (memory.boat.state == Boats.enum_state.ATSEA_SAILING or memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL or memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP) then
 		surface = game.surfaces[SurfacesCommon.encode_surface_name(memory.id, 0, Public.enum.SEA, Public.Sea.enum.DEFAULT)]
 	else
 		surface = game.surfaces[Common.current_destination().surface_name]
@@ -856,7 +860,7 @@ function Public.player_exit_cabin(player, relative_pos)
 	local memory = Memory.get_crew_memory()
 	local surface
 
-	if memory.boat and (memory.boat.state == Boats.enum_state.ATSEA_SAILING or memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP) then
+	if memory.boat and (memory.boat.state == Boats.enum_state.ATSEA_SAILING or memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL or memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP) then
 		surface = game.surfaces[SurfacesCommon.encode_surface_name(memory.id, 0, Public.enum.SEA, Public.Sea.enum.DEFAULT)]
 	else
 		surface = game.surfaces[Common.current_destination().surface_name]

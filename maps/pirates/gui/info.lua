@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 -- local Memory = require 'maps.pirates.memory'
 -- local Common = require 'maps.pirates.common'
@@ -226,7 +228,7 @@ function Public.full_update(player)
 	elseif flow2.selected_tab_index == 2 then
 		flow2.style.height = 520
 	elseif flow2.selected_tab_index == 3 then
-		flow2.style.height = 620
+		flow2.style.height = 580
 	elseif flow2.selected_tab_index == 4 then
 		flow2.style.height = 360
 	end

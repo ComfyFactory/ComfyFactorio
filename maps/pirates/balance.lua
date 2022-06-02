@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Public = {}
 local Math = require 'maps.pirates.math'
@@ -41,7 +43,7 @@ function Public.cost_to_leave_multiplier()
 	return Math.sloped(Common.difficulty_scale(), 8/10)
 end
 
-Public.rocket_launch_coin_reward = 6000
+Public.rocket_launch_coin_reward = 5000
 
 function Public.crew_scale()
 	local ret = Common.activecrewcount()/10
@@ -359,8 +361,12 @@ function Public.apply_crew_buffs_per_x(force)
 	force.laboratory_productivity_bonus = Math.max(0, 7/100 * (Common.overworldx()/40) - (10*(Common.difficulty_scale()) - 5)) --difficulty causes lab productivity boosts to start later
 end
 
-function Public.class_cost()
-	return 10000
+function Public.class_cost(at_dock)
+	if at_dock then
+		return 10000
+	else
+		return 6000
+	end
 	-- return Math.ceil(10000 / (Public.crew_scale()*10/4)^(1/6))
 end
 
@@ -391,7 +397,7 @@ function Public.sandworm_evo_increase_per_spawn()
 end
 
 function Public.kraken_kill_reward_items()
-	return {{name = 'sulfuric-acid-barrel', count = 5}, {name = 'coin', count = 1000}}
+	return {{name = 'sulfuric-acid-barrel', count = 5}, {name = 'coin', count = 800}}
 end
 function Public.kraken_kill_reward_fuel()
 	return 200
@@ -529,7 +535,7 @@ function Public.starting_items_crew_upstairs()
 		{['grenade'] = 3},
 		{['shotgun'] = 2, ['shotgun-shell'] = 36},
 		-- {['raw-fish'] = 5},
-		{['coin'] = 2000},
+		{['coin'] = 1000},
 	}
 end
 
@@ -541,7 +547,7 @@ function Public.starting_items_crew_downstairs()
 		{['inserter'] = Math.random(120,140)},
 		{['storage-tank'] = 2},
 		{['medium-electric-pole'] = Math.random(15,21)},
-		{['coin'] = 2000},
+		{['coin'] = 1000},
 		{['solar-panel'] = 3},
 	}
 end

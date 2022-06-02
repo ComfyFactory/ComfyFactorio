@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Math = require 'maps.pirates.math'
 local _inspect = require 'utils.inspect'.inspect
@@ -5,7 +7,7 @@ local _inspect = require 'utils.inspect'.inspect
 local Public = {}
 
 Public.scenario_id_name = 'pirates'
-Public.version_string = '1.2.8' --will now try to stick to major.minor.patch versioning, to match factorio mod portal
+Public.version_string = '1.2.11' --major.minor.patch versioning, to match factorio mod portal
 
 Public.blueprint_library_allowed = true
 Public.blueprint_importing_allowed = true
@@ -107,25 +109,41 @@ Public.capacity_options = {
 	{value = 999, icon = 'virtual-signal/signal-white', text = 'Inf.', text2 = '', text3 = 'Inf'},
 	-- {value = 64, icon = 'item/storage-tank', text = '64'},
 }
+
 Public.difficulty_options = {
 	-- The difficulty values we currently offer
 
 	--For the value of Easy difficulty, we are pulled in two directions: We wish to make the game comfy to play for those who haven't played it, but we also wish to represent the game mechanics faithfully so that Normal is not a crazy distance away.
-	{value = 0.6, icon = 'item/firearm-magazine', text = 'Easy', associated_color = {r = 50, g = 255, b = 50}},
-	{value = 1.0, icon = 'item/piercing-rounds-magazine', text = 'Normal', associated_color = {r = 255, g = 255, b = 50}},
-	{value = 1.4, icon = 'item/uranium-rounds-magazine', text = 'Hard', associated_color = {r = 255, g = 50, b = 50}},
-	{value = 2.1, icon = 'item/atomic-bomb', text = 'Nightmare', associated_color = {r = 120, g = 35, b = 35}},
+	{value = 0.6, icon = 'item/firearm-magazine', text = {'pirates.difficulty_easy'}, associated_color = {r = 50, g = 255, b = 50}},
+
+	{value = 1.0, icon = 'item/piercing-rounds-magazine', text = {'pirates.difficulty_normal'}, associated_color = {r = 255, g = 255, b = 50}},
+
+	{value = 1.4, icon = 'item/uranium-rounds-magazine', text = {'pirates.difficutly_hard'}, associated_color = {r = 255, g = 50, b = 50}},
+
+	{value = 2.1, icon = 'item/atomic-bomb', text = {'pirates.difficulty_nightmare'}, associated_color = {r = 170, g = 60, b = 60}},
 }
-function Public.get_difficulty_name_from_value(difficulty_value)
-	-- Functions will reference this when given a difficulty value and want to present a difficulty name to the player; just make it consistent with the above
-	if difficulty_value <= 0.7 then
-		return 'Easy'
+function Public.get_difficulty_option_from_value(difficulty_value)
+	-- given a difficulty value, key in to the closesy entry in the above table. (organising things this way allows us to make changes to the 'value' keys in the above table without disrupting e.g. past highscores data)
+	if difficulty_value <= 0.8 then
+		return 1
 	elseif difficulty_value < 1.2 then
-		return 'Normal'
-	elseif difficulty_value <= 2 then
-		return 'Hard'
+		return 2
+	elseif difficulty_value <= 1.75 then
+		return 3
 	else
-		return 'Nightmare'
+		return 4
+	end
+end
+function Public.get_difficulty_option_informal_name_from_value(difficulty_value)
+	-- given a difficulty value, provide a simple named description of the difficulty. for internal use
+	if difficulty_value <= 0.8 then
+		return 'easy'
+	elseif difficulty_value < 1.2 then
+		return 'normal'
+	elseif difficulty_value <= 1.75 then
+		return 'hard'
+	else
+		return 'nightmare'
 	end
 end
 
@@ -135,11 +153,11 @@ end
 -- }
 
 Public.daynightcycle_types = {
-	{displayname = 'Static', 0},
-	{displayname = 'Slow Cyclic', ticksperday = 100000},
-	{displayname = 'Cyclic', ticksperday = 80000},
-	{displayname = 'Fast Cyclic', ticksperday = 60000},
-	{displayname = 'Rapid Cyclic', ticksperday = 40000},
+	{displayname = {'pirates.daynightcycle_static'}, 0},
+	{displayname = {'pirates.daynightcycle_slowcyclic'}, ticksperday = 100000},
+	{displayname = {'pirates.daynightcycle_cyclic'}, ticksperday = 80000},
+	{displayname = {'pirates.daynightcycle_fastcyclic'}, ticksperday = 60000},
+	{displayname = {'pirates.daynightcycle_rapidcyclic'}, ticksperday = 40000},
 }
 
 Public.ore_types = {

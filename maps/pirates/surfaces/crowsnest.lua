@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Memory = require 'maps.pirates.memory'
 -- local Balance = require 'maps.pirates.balance'
@@ -250,7 +252,7 @@ function Public.create_crowsnest_surface()
 	-- end
 
 		memory.crowsnest_surfacename_rendering = rendering.draw_text{
-			text = 'Crow\'s Nest',
+			text = {'pirates.surface_label_crowsnest'},
 			surface = surface,
 			target = Public.Data.surfacename_rendering_pos,
 			color = CoreData.colors.renderingtext_yellow,

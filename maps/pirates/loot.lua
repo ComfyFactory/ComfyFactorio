@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Math = require 'maps.pirates.math'
 -- local Memory = require 'maps.pirates.memory'
@@ -212,7 +214,7 @@ function Public.wooden_chest_loot()
 	local num = 1
 
 	return Public.chest_loot(num,
-	Math.max(0,Math.min(1, Math.sloped(Common.difficulty_scale(),1/2) * Common.game_completion_progress())) 		--enforce 0 to 1
+	Math.clamp(0, 1, Math.sloped(Common.difficulty_scale(),1/2) * Common.game_completion_progress())
 	)
 end
 
@@ -220,7 +222,7 @@ function Public.iron_chest_loot()
 	local num = 2
 
 	local loot = Public.chest_loot(num,
-	Math.max(0,Math.min(1, Math.sloped(Common.difficulty_scale(),1/2) * (5/100 + Common.game_completion_progress()))	) --enforce 0 to 1
+		Math.clamp(0, 1, Math.sloped(Common.difficulty_scale(),1/2) * (5/100 + Common.game_completion_progress()))
 	) --reward higher difficulties with better loot
 	loot[#loot + 1] = {name = 'coin', count = Math.random(500,1500)}
 
@@ -231,7 +233,7 @@ function Public.covered_wooden_chest_loot()
 	local num = 2
 
 	local loot = Public.chest_loot(num,
-	Math.max(0,Math.min(1, Math.sloped(Common.difficulty_scale(),1/2) * (18/100 + Common.game_completion_progress())	)) --enforce 0 to 1
+		Math.clamp(0, 1, Math.sloped(Common.difficulty_scale(),1/2) * (18/100 + Common.game_completion_progress()))
 	) --reward higher difficulties with better loot
 
     return loot
@@ -248,7 +250,7 @@ end
 function Public.covered_wooden_chest_loot_2()
 
     return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.chest_loot_data_raw), 2,
-	Math.max(0,Math.min(1, Math.sloped(Common.difficulty_scale(),1/2) * (10/100 + Common.game_completion_progress()))))
+		Math.clamp(0, 1, Math.sloped(Common.difficulty_scale(),1/2) * (10/100 + Common.game_completion_progress())))
 end
 
 function Public.stone_furnace_loot()
@@ -263,7 +265,7 @@ function Public.storage_tank_fluid_loot(force_type)
 		ret = {name = 'crude-oil', amount = Math.random(3000, 12500)}
 	elseif force_type == 'petroleum-gas' then
 		ret = {name = 'petroleum-gas', amount = Math.random(1500, 7500)}
-	elseif rng < 6 then
+	elseif rng <= 6 then
 		ret = {name = 'crude-oil', amount = Math.random(1500, 4500)}
 	elseif rng == 7 then
 		ret = {name = 'light-oil', amount = Math.random(1500, 3500)}
@@ -321,7 +323,7 @@ function Public.maze_camp_loot()
 	if Math.random(10) <= 7 then
 		return {Public.random_plates()}
 	else
-		return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.chest_loot_data_raw), 1, Math.max(0,Math.min(1, Math.sloped(Common.difficulty_scale(),1/2) * (15/100 + Common.game_completion_progress()))))
+		return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.chest_loot_data_raw), 1, Math.clamp(0, 1, Math.sloped(Common.difficulty_scale(),1/2) * (15/100 + Common.game_completion_progress())))
 	end
 end
 
@@ -337,7 +339,7 @@ Public.maze_lab_loot_data_raw = {
 }
 
 function Public.maze_lab_loot()
-	return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.maze_lab_loot_data_raw), 1, Math.max(0,Math.min(1, Math.sloped(Common.difficulty_scale(),1/2) * (Common.game_completion_progress()))))
+	return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.maze_lab_loot_data_raw), 1, Math.clamp(0, 1, Math.sloped(Common.difficulty_scale(),1/2) * (Common.game_completion_progress())))
 end
 
 Public.maze_treasure_data_raw = {
@@ -407,7 +409,7 @@ function Public.maze_treasure_loot()
 	if Math.random(5) == 1 then
 		return {Public.random_plates(8)}
 	else
-		return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.maze_treasure_data_raw), 1, Math.max(0,Math.min(1, Math.sloped(Common.difficulty_scale(),1/2) * (Common.game_completion_progress()))))
+		return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.maze_treasure_data_raw), 1, Math.clamp(0, 1, Math.sloped(Common.difficulty_scale(),1/2) * (Common.game_completion_progress())))
 	end
 end
 
@@ -456,7 +458,7 @@ Public.dredger_loot_raw = {
 }
 
 function Public.dredger_loot()
-	return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.dredger_loot_raw), 1, Math.max(0,Math.min(1, Common.game_completion_progress())))
+	return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.dredger_loot_raw), 1, Math.clamp(0, 1, Common.game_completion_progress()))
 end
 
 return Public

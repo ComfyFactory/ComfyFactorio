@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Memory = require 'maps.pirates.memory'
 local Common = require 'maps.pirates.common'
@@ -201,8 +203,8 @@ function Public.click(event)
 		elseif size == 440 then
 			size = 560
 		elseif size == 560 then
-			size = 700
-		elseif size == 700 then
+			size = 660
+		elseif size == 660 then
 			size = 280
 		else
 			size = 340
@@ -227,14 +229,14 @@ local function on_player_changed_surface(event)
 
 	local window = player.gui.screen[window_name .. '_piratewindow']
 
-	local from_hold_bool = string.sub(game.surfaces[event.surface_index].name, 9, 12) == 'Hold'
-	local to_hold_bool = string.sub(player.surface.name, 9, 12) == 'Hold'
+	local from_hold_or_cabin_bool = string.sub(game.surfaces[event.surface_index].name, 9, 12) == 'Hold' or string.sub(game.surfaces[event.surface_index].name, 9, 13) == 'Cabin'
+	local to_hold_or_cabin_bool = string.sub(player.surface.name, 9, 12) == 'Hold' or string.sub(player.surface.name, 9, 13) == 'Cabin'
 
-    if from_hold_bool and (not to_hold_bool) then
+    if from_hold_or_cabin_bool and (not to_hold_or_cabin_bool) then
         if window then
 			Public.toggle_window(player)
 		end
-	elseif to_hold_bool and (not from_hold_bool) then
+	elseif to_hold_or_cabin_bool and (not from_hold_or_cabin_bool) then
 		local global_memory = Memory.get_global_memory()
 		local gui_memory = global_memory.player_gui_memories[player.index]
 

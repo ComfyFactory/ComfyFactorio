@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
@@ -83,7 +85,7 @@ function Public.create_step2_entities()
 		end
 
 		if destination.static_params.class_for_sale then
-			quest_structure_data.market.add_market_item{price={{'coin', Balance.class_cost()}}, offer={type="nothing", effect_description = {'pirates.market_description_purchase_class', Classes.display_form(destination.static_params.class_for_sale)}}}
+			quest_structure_data.market.add_market_item{price={{'coin', Balance.class_cost(false)}}, offer={type="nothing", effect_description = {'pirates.market_description_purchase_class', Classes.display_form(destination.static_params.class_for_sale)}}}
 
 			-- destination.dynamic_data.market_class_offer_rendering = rendering.draw_text{
 			-- 	text = 'Class available: ' .. Classes.display_form(destination.static_params.class_for_sale),
@@ -221,7 +223,7 @@ Public.entry_price_data_raw = {
 		maxLambda = 1,
 		shape = false,
 		base_amount = 250,
-		raw_materials = {}
+		raw_materials = {{name = 'stone', count = 1250}}
 	},
 	['advanced-circuit'] = {
 		overallWeight = 1,
@@ -258,7 +260,7 @@ Public.entry_price_data_raw = {
 }
 
 function Public.entry_price()
-	local lambda = Math.max(Math.min(Math.sloped(Common.difficulty_scale(),1/2) * Common.game_completion_progress(), 1), 0)
+	local lambda = Math.clamp(0, 1, Math.sloped(Common.difficulty_scale(),1/2) * Common.game_completion_progress())
 
 	local item = Raffle.LambdaRaffle(Public.entry_price_data_raw, lambda)
 

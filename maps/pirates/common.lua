@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Math = require 'maps.pirates.math'
 local Raffle = require 'maps.pirates.raffle'
@@ -15,7 +17,6 @@ local _inspect = require 'utils.inspect'.inspect
 
 local Public = {}
 
---@TODO: decide on snakecase vs camelcase
 -- Public.active_crews_cap = 1
 Public.activeCrewsCap = 2
 Public.minimumCapacitySliderValue = 1
@@ -37,6 +38,8 @@ Public.lobby_spawnpoint = {x = -72, y = -8}
 Public.structure_ensure_chunk_radius = 2
 
 Public.allow_barreling_off_ship = true
+
+Public.coin_tax_percentage = 10
 
 Public.fraction_of_map_loaded_at_sea = 1
 Public.map_loading_ticks_atsea = 68 * 60
@@ -88,7 +91,7 @@ function Public.capacity() return Memory.get_crew_memory().capacity end
 -- function Public.mode() return Memory.get_crew_memory().mode end
 function Public.overworldx() return Memory.get_crew_memory().overworldx end
 function Public.game_completion_progress() return Public.overworldx()/CoreData.victory_x end
-function Public.game_completion_progress_capped() return Math.min(Public.overworldx()/CoreData.victory_x, 1) end
+function Public.game_completion_progress_capped() return Math.clamp(0, 1, Public.overworldx()/CoreData.victory_x) end
 function Public.capacity_scale()
 	local capacity = Public.capacity()
 	if not capacity then --e.g. for EE wattage on boats not owned by a crew
@@ -146,11 +149,13 @@ end
 function Public.notify_force_error(force, message, color_override)
 	color_override = color_override or CoreData.colors.notify_error
 	force.print({"", '>> ',  message}, color_override)
+	force.play_sound{path = "utility/cannot_build"}
 end
 
 function Public.notify_player_error(player, message, color_override)
 	color_override = color_override or CoreData.colors.notify_error
 	player.print({"", '## ', {'pirates.notify_whisper'}, ' ',  message}, color_override)
+	player.play_sound{path = "utility/cannot_build"}
 end
 
 function Public.notify_player_expected(player, message, color_override)
@@ -166,7 +171,8 @@ end
 function Public.parrot_speak(force, message)
 	force.print({"", {'pirates.notify_parrot'}, ' ',  message}, CoreData.colors.parrot)
 
-	Server.to_discord_embed_raw({"", {'pirates.notify_parrot'}, ' ',  message}, true)
+	local memory = Memory.get_crew_memory()
+	Server.to_discord_embed_raw({"", '[' .. memory.name .. ']', {'pirates.notify_parrot'}, ' ',  message}, true)
 end
 
 
@@ -219,6 +225,9 @@ end
 -- 	{20, 0, 1, false, 'flying-robot-frame', 20, 35},
 -- }
 
+
+
+--@TODO: Replace this old function with the newer code in raffle.lua
 function Public.raffle_from_processed_loot_data(processed_loot_data, how_many, game_completion_progress)
 	local ret = {}
 
@@ -404,6 +413,7 @@ end
 -- 	return surplus_evo*3
 -- 	-- return Math.floor(surplus_evo*3*1000)/1000
 -- end
+
 
 function Public.set_biter_surplus_evo_modifiers()
 	local memory = Memory.get_crew_memory()
@@ -787,8 +797,7 @@ function Public.spawner_count(surface)
 	local memory = Memory.get_crew_memory()
 
 	local spawners = surface.find_entities_filtered({type = 'unit-spawner', force = memory.enemy_force_name})
-	local spawnerscount = #spawners or 0
-	return spawnerscount
+	return #spawners or 0
 end
 
 
@@ -988,7 +997,7 @@ function Public.add_tiles_from_blueprint(tilesTable, bp_string, tile_name, offse
 end
 
 function Public.tile_positions_from_blueprint(bp_string, offset)
-	-- May '22 change: There seems to be a base game bug(?) which causes the tiles to be offset. We now correct for that.
+	-- May '22 change: There seems to be a base game bug(?) which causes the tiles to be offset. We now correct for that (with ` - (max_x - min_x)/2` and ` - (max_y - min_y)/2`).
 
 	local bp_entity = game.surfaces['nauvis'].create_entity{name = 'item-on-ground', position = {x = 158.5, y = 158.5}, stack = 'blueprint'}
 	bp_entity.stack.import_stack(bp_string)
@@ -1033,6 +1042,7 @@ function Public.tile_positions_from_blueprint(bp_string, offset)
 end
 
 function Public.tile_positions_from_blueprint_arrayform(bp_string, offset)
+	-- does not include the above May '22 fix yet, so may give different results
 
 	local bp_entity = game.surfaces['nauvis'].create_entity{name = 'item-on-ground', position = {x = 158.5, y = 158.5}, stack = 'blueprint'}
 	bp_entity.stack.import_stack(bp_string)

@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Public = {}
 
@@ -519,6 +521,43 @@ function Public.undock_from_dock(manual)
 end
 
 
+function Public.at_sea_begin_to_set_sail()
+	local memory = Memory.get_crew_memory()
+	local boat = memory.boat
+
+	boat.state = Boats.enum_state.ATSEA_SAILING
+
+	script.raise_event(CustomEvents.enum['update_crew_fuel_gui'], {})
+
+	Crew.summon_crew()
+
+	local force = memory.force
+	if not (force and force.valid) then return end
+	Common.notify_force(force, {'pirates.ship_set_off_to_next_island'})
+end
+
+
+
+
+local parrot_set_sail_advice =
+    Token.register(
+    function(data)
+		local crew_id = data.crew_id
+		Memory.set_working_id(crew_id)
+
+		local memory = Memory.get_crew_memory()
+		if not (memory.id and memory.id > 0) then return end --check if crew disbanded
+		if memory.game_lost then return end
+
+		if memory.boat and memory.boat.state and memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL then
+			Common.parrot_speak(memory.force, {'pirates.parrot_set_sail_advice'})
+		end
+    end
+)
+
+
+
+
 
 function Public.go_from_currentdestination_to_sea()
 	local memory = Memory.get_crew_memory()
@@ -538,23 +577,25 @@ function Public.go_from_currentdestination_to_sea()
 
 	if memory.overworldx == 0 and memory.boat then
 
-		local difficulty_name = CoreData.get_difficulty_name_from_value(memory.difficulty)
-		if difficulty_name == CoreData.difficulty_options[#CoreData.difficulty_options].text then
+		local difficulty_name = CoreData.get_difficulty_option_informal_name_from_value(memory.difficulty)
+		if difficulty_name == 'nightmare' then
 			Boats.upgrade_chests(boat, 'steel-chest')
 			Hold.upgrade_chests(1, 'steel-chest')
 			Crowsnest.upgrade_chests('steel-chest')
 
 			Common.parrot_speak(memory.force, {'pirates.parrot_hard_praise'})
-		elseif difficulty_name ~= CoreData.difficulty_options[1].text then
+		elseif difficulty_name ~= 'easy' then
 			Boats.upgrade_chests(boat, 'iron-chest')
 			Hold.upgrade_chests(1, 'iron-chest')
 			Crowsnest.upgrade_chests('iron-chest')
 
 			Common.parrot_speak(memory.force, {'pirates.parrot_normal_praise'})
+
+			Task.set_timeout_in_ticks(60 * 10, parrot_set_sail_advice, {crew_id = memory.id})
 		end
 	end
 
-	memory.boat.state = Boats.enum_state.ATSEA_SAILING
+	memory.boat.state = Boats.enum_state.ATSEA_WAITING_TO_SAIL
 	memory.boat.speed = 0
 	memory.boat.position = new_boatposition
 	memory.boat.surface_name = seaname

@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Balance = require 'maps.pirates.balance'
 local _inspect = require 'utils.inspect'.inspect
@@ -92,8 +94,8 @@ Public.class_unlocks = {
 
 Public.class_purchase_requirement = {
 	[enum.MASTER_ANGLER] = enum.FISHERMAN,
-	-- [enum.WOOD_LORD] = enum.LUMBERJACK,
-	-- [enum.CHIEF_EXCAVATOR] = enum.PROSPECTOR,
+	[enum.WOOD_LORD] = enum.LUMBERJACK,
+	[enum.CHIEF_EXCAVATOR] = enum.PROSPECTOR,
 	[enum.HATAMOTO] = enum.SAMURAI,
 	[enum.DREDGER] = enum.MASTER_ANGLER,
 }
@@ -110,10 +112,10 @@ function Public.initial_class_pool()
 		enum.SAMURAI,
 		-- enum.MERCHANT, --not interesting, breaks coin economy
 		enum.BOATSWAIN,
-		enum.PROSPECTOR,
+		-- enum.PROSPECTOR, --lumberjack is just more fun
 		enum.LUMBERJACK,
 		enum.IRON_LEG,
-		-- enum.SMOLDERING,
+		-- enum.SMOLDERING, --tedious
 		enum.GOURMET,
 	}
 end
@@ -262,7 +264,7 @@ local function class_on_player_used_capsule(event)
 			if multiplier > 0 then
 				local timescale = 60*30 * Math.max((Balance.game_slowness_scale())^(2/3),0.8)
 				if memory.gourmet_recency_tick then
-					multiplier = multiplier * Math.max(0.2, Math.min(5, (1/5)^((memory.gourmet_recency_tick - game.tick)/(60*300))))
+					multiplier = multiplier *Math.clamp(0.2, 5, (1/5)^((memory.gourmet_recency_tick - game.tick)/(60*300)))
 					memory.gourmet_recency_tick = Math.max(memory.gourmet_recency_tick, game.tick - timescale*10) + timescale
 				else
 					multiplier = multiplier * 5
@@ -273,6 +275,24 @@ local function class_on_player_used_capsule(event)
 		end
 	end
 end
+
+
+function Public.lumberjack_bonus_items(give_table)
+	local memory = Memory.get_crew_memory()
+
+	if Math.random(Public.every_nth_tree_gives_coins) == 1 then
+		local a = 12
+		give_table[#give_table + 1] = {name = 'coin', count = a}
+		memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
+	elseif Math.random(2) == 1 then
+		if Math.random(5) == 1 then
+			give_table[#give_table + 1] = {name = 'copper-ore', count = 1}
+		else
+			give_table[#give_table + 1] = {name = 'iron-ore', count = 1}
+		end
+	end
+end
+
 
 local event = require 'utils.event'
 event.add(defines.events.on_player_used_capsule, class_on_player_used_capsule)

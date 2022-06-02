@@ -1,4 +1,7 @@
--- Adapted from mountain_fortress_v3 highscores.lua
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
+
+-- == This code is mostly a fork of the file from Mountain Fortress
 
 local Event = require 'utils.event'
 local Global = require 'utils.global'
@@ -21,8 +24,6 @@ local score_key = 'pirate_ship_scores'
 local score_key_debug = 'pirate_ship_scores_debug'
 local score_key_modded = 'pirate_ship_scores_modded'
 
-
--- == This code is mostly a fork of the file from Mountain Fortress
 
 
 local Public = {}
@@ -496,7 +497,7 @@ local function score_gui(data)
         local n = entry.completion_time > 0 and Utils.time_mediumform(entry.completion_time or 0) or 'N/A'
         local l = entry.leagues_travelled > 0 and entry.leagues_travelled or '?'
         local v = entry.version and entry.version or '?'
-        local d = entry.difficulty > 0 and CoreData.get_difficulty_name_from_value(entry.difficulty) or '?'
+        local d = entry.difficulty > 0 and CoreData.difficulty_options[CoreData.get_difficulty_option_from_value(entry.difficulty)].text or '?'
         local c = entry.max_players > 0 and entry.max_players or '?'
         local line = {
             {caption = entry.name, color = special_color},
@@ -504,7 +505,7 @@ local function score_gui(data)
             {caption = tostring(n)},
             {caption = tostring(l)},
             {caption = tostring(v)},
-            {caption = tostring(d)},
+            {caption = d},
             {caption = tostring(c)},
         }
         local default_color = {r = 0.9, g = 0.9, b = 0.9}

@@ -1,3 +1,4 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
@@ -154,7 +155,7 @@ local function create_gui(player)
 	})
 	flow3.style.font = 'default-large-semibold'
 	flow3.style.font_color = GuiCommon.bold_font_color
-	flow3.caption = 'Fuel:'
+	flow3.caption = {'pirates.gui_fuel_1'}
 
 	flow3 = flow2.add({
 		name = 'fuel_label_1',
@@ -516,7 +517,7 @@ function Public.process_etaframe_update(player, flow1, bools)
 
 	local flow2
 
-	if bools.cost_bool or bools.atsea_loading_bool or bools.eta_bool or bools.retreating_bool or bools.leave_anytime_bool then
+	if bools.cost_bool or bools.atsea_loading_bool or bools.atsea_waiting_bool or bools.eta_bool or bools.retreating_bool or bools.leave_anytime_bool then
 		flow1.visible = true
 		local tooltip = ''
 
@@ -563,6 +564,15 @@ function Public.process_etaframe_update(player, flow1, bools)
 
 			flow2.etaframe_label_1.caption = {'pirates.gui_etaframe_arriving_in'}
 			flow2.etaframe_label_2.caption = Utils.standard_string_form_of_time_in_seconds(eta_ticks / 60)
+
+		elseif bools.atsea_waiting_bool then
+			flow2.etaframe_label_1.visible = true
+			flow2.etaframe_label_2.visible = false
+
+			tooltip = {'pirates.atsea_waiting_tooltip'}
+
+			flow2.etaframe_label_1.caption = {'pirates.gui_etaframe_atsea_waiting'}
+
 		elseif bools.leave_anytime_bool then
 			flow2.etaframe_label_1.visible = true
 			flow2.etaframe_label_2.visible = true
@@ -658,7 +668,7 @@ function Public.process_etaframe_update(player, flow1, bools)
 		flow1.etaframe_piratebutton.tooltip = tooltip
 		flow2.tooltip = tooltip
 
-		if bools.captain_bool and (not bools.retreating_bool) and (bools.leave_anytime_bool or bools.eta_bool or (bools.cost_bool and (not bools.atsea_loading_bool))) then
+		if bools.captain_bool and (not bools.retreating_bool) and (bools.leave_anytime_bool or bools.atsea_waiting_bool or bools.eta_bool or (bools.cost_bool and (not bools.atsea_loading_bool))) then
 			flow1.etaframe_piratebutton.mouse_button_filter = {'left'}
 			if memory.undock_shortcut_are_you_sure_data and memory.undock_shortcut_are_you_sure_data[player.index] and memory.undock_shortcut_are_you_sure_data[player.index] > game.tick - 60 * 4 then
 				flow2.etaframe_label_1.visible = true
@@ -937,7 +947,7 @@ function Public.update_gui(player)
 
 	flow2.fuel_label_1.caption = Utils.bignumber_abbrevform(memory.stored_fuel or 0) .. '[item=coal]'
 	flow2.fuel_label_2.caption = Utils.negative_rate_abbrevform(memory.fuel_depletion_rate_memoized or 0)
-	local color_scale = Math.max(Math.min((- (memory.fuel_depletion_rate_memoized or 0))/30, 1),0)
+	local color_scale = Math.clamp(0, 1, (- (memory.fuel_depletion_rate_memoized or 0))/30)
 	flow2.fuel_label_2.style.font_color = {
 		r = GuiCommon.fuel_color_1.r * (1-color_scale) + GuiCommon.fuel_color_2.r * color_scale,
 		g = GuiCommon.fuel_color_1.g * (1-color_scale) + GuiCommon.fuel_color_2.g * color_scale,
@@ -1069,7 +1079,7 @@ function Public.update_gui(player)
 
 	if flow1 then
 		-- if not bools.eta_bool and not bools.retreating_bool and not bools.quest_bool and not bools.silo_bool and not bools.atsea_loading_bool and not bools.leave_anytime_bool and not bools.cost_bool and not bools.approaching_dock_bool and not bools.leaving_dock_bool then
-		if not bools.eta_bool and not bools.retreating_bool and not bools.quest_bool and not bools.silo_bool and not bools.atsea_loading_bool and not bools.leave_anytime_bool and not bools.cost_bool and not bools.approaching_dock_bool and not bools.leaving_dock_bool and not bools.atsea_sailing_bool then
+		if not (bools.eta_bool or bools.retreating_bool or bools.quest_bool or bools.silo_bool or bools.atsea_loading_bool or bools.leave_anytime_bool or bools.cost_bool or bools.approaching_dock_bool or bools.leaving_dock_bool or bools.atsea_sailing_bool or bools.atsea_waiting_bool) then
 			flow1.visible = true
 		else
 			flow1.visible = false
@@ -1080,7 +1090,7 @@ function Public.update_gui(player)
 	flow1 = pirates_flow.minimap_piratebutton_frame
 
 	if flow1 then
-		if bools.in_hold_bool then
+		if bools.in_hold_bool or bools.in_cabin_bool then
 			flow1.visible = true
 		else
 			flow1.visible = false
@@ -1127,7 +1137,7 @@ function Public.update_gui(player)
 			flow1.style.minimal_height = 384
 			flow1.style.minimal_width = 384
 			flow1.position = {x=memory.overworldx,y=memory.overworldy}
-		elseif bools.in_cabin_bool or bools.in_crowsnest_bool then
+		elseif bools.in_crowsnest_bool then
 			flow1.visible = true
 			flow1.surface_index = game.surfaces[memory.boat.surface_name].index
 			flow1.zoom = 0.09
@@ -1158,19 +1168,27 @@ local function on_gui_click(event)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
 
-	if event.element.name and event.element.name == 'etaframe_piratebutton' and (memory.boat.state == Boats.enum_state.DOCKED or memory.boat.state == Boats.enum_state.LANDED) then
-		if Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN then
-			if (not memory.undock_shortcut_are_you_sure_data) then memory.undock_shortcut_are_you_sure_data = {} end
-			if memory.undock_shortcut_are_you_sure_data[player.index] and memory.undock_shortcut_are_you_sure_data[player.index] > game.tick - 60 * 4 then
-				if memory.boat.state == Boats.enum_state.DOCKED then
-					Progression.undock_from_dock(true)
-				elseif memory.boat.state == Boats.enum_state.LANDED then
-					Progression.try_retreat_from_island(player, true)
+	if event.element.name and event.element.name == 'etaframe_piratebutton' then
+		if (memory.boat.state == Boats.enum_state.DOCKED or memory.boat.state == Boats.enum_state.LANDED) then
+			if Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN then
+				if (not memory.undock_shortcut_are_you_sure_data) then memory.undock_shortcut_are_you_sure_data = {} end
+				if memory.undock_shortcut_are_you_sure_data[player.index] and memory.undock_shortcut_are_you_sure_data[player.index] > game.tick - 60 * 4 then
+					if memory.boat.state == Boats.enum_state.DOCKED then
+						Progression.undock_from_dock(true)
+					elseif memory.boat.state == Boats.enum_state.LANDED then
+						Progression.try_retreat_from_island(player, true)
+					end
+				else
+					memory.undock_shortcut_are_you_sure_data[player.index] = game.tick
 				end
-			else
-				memory.undock_shortcut_are_you_sure_data[player.index] = game.tick
+			end
+
+		elseif memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL then
+			if Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN then
+				Progression.at_sea_begin_to_set_sail()
 			end
 		end
+
 	elseif string.sub(event.element.name, -13, -1) and string.sub(event.element.name, -13, -1) == '_piratebutton' then
 			local name = string.sub(event.element.name, 1, -14)
 			if Public[name] then

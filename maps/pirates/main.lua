@@ -1,3 +1,4 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 --[[
  Pirate Ship is maintained by thesixthroc and hosted by Comfy.
@@ -129,10 +130,6 @@ local function on_init()
 	-- Delay.global_add(Delay.global_enum.PLACE_LOBBY_JETTY_AND_BOATS)
 	Task.set_timeout_in_ticks(2, jetty_delayed, {})
 
-	if _DEBUG then
-		game.print('Debug mode on. Use /go to get started (sometimes crashes)')
-	end
-
 end
 
 local event = require 'utils.event'
@@ -147,55 +144,114 @@ local function crew_tick()
 	local destination = Common.current_destination()
 	local tick = game.tick
 
-	PiratesApiOnTick.boat_movement_tick(5) --arguments are tick intervals
-	-- PiratesApiOnTick.parrot_tick(5)
-
-	if tick % 10 == 0 then
-		PiratesApiOnTick.prevent_disembark(10)
-		PiratesApiOnTick.prevent_unbarreling_off_ship(10)
-	end
-
 	if memory.age and memory.overworldx and memory.overworldx > 0 then
 		memory.age = memory.age + 5
 	end
 	if memory.real_age then
 		memory.real_age = memory.real_age + 5
 	end
-	if tick % 60 == 0 then
-		PiratesApiOnTick.captain_warn_afk(60)
-	end
 
-	if tick % Common.loading_interval == 0 then
-		PiratesApiOnTick.loading_update(Common.loading_interval)
-	end
+	PiratesApiOnTick.boat_movement_tick(5) --arguments are tick intervals
+	-- PiratesApiOnTick.parrot_tick(5)
 
-	if tick % 5 == 0 then
-		PiratesApiOnTick.quest_progress_tick(5)
-	end
-
-	if tick % 5 == 0 then
-		PiratesApiOnTick.strobe_player_colors(5)
-	end
+	PiratesApiOnTick.quest_progress_tick(5)
+	PiratesApiOnTick.strobe_player_colors(5)
 
 	if tick % 10 == 0 then
+		PiratesApiOnTick.prevent_disembark(10)
+		PiratesApiOnTick.prevent_unbarreling_off_ship(10)
 		PiratesApiOnTick.shop_ratelimit_tick(10)
-	end
-
-	if tick % 30 == 0 then
-		PiratesApiOnTick.silo_update(30)
-	end
-
-	if tick % 60 == 0 then
-		PiratesApiOnTick.ship_deplete_fuel(60)
-	end
-
-	if tick % 10 == 0 then
 		PiratesApiOnTick.pick_up_tick(10)
-	end
+		QuestStructures.tick_quest_structure_entry_price_check(10)
+		PiratesApiOnTick.update_boat_stored_resources(10)
 
-	if tick % 60 == 0 then
-		if memory.boat and memory.boat.state == Structures.Boats.enum_state.ATSEA_SAILING then
-			PiratesApiOnTick.crowsnest_natural_move(120)
+		if tick % 30 == 0 then
+			PiratesApiOnTick.silo_update(30)
+			PiratesApiOnTick.buried_treasure_check(30)
+			ClassPiratesApiOnTick.update_character_properties(30)
+			ClassPiratesApiOnTick.class_update_auxiliary_data(30)
+			ClassPiratesApiOnTick.class_renderings(30)
+
+			if tick % 60 == 0 then
+				PiratesApiOnTick.captain_warn_afk(60)
+				PiratesApiOnTick.ship_deplete_fuel(60)
+				if memory.boat and memory.boat.state == Structures.Boats.enum_state.ATSEA_SAILING then
+					PiratesApiOnTick.crowsnest_natural_move(60)
+				end
+				PiratesApiOnTick.slower_boat_tick(60)
+				PiratesApiOnTick.raft_raids(60)
+				PiratesApiOnTick.place_cached_structures(60)
+
+
+				if destination.dynamic_data.timer then
+					destination.dynamic_data.timer = destination.dynamic_data.timer + 1
+				end
+
+				if memory.captain_acceptance_timer then
+					memory.captain_acceptance_timer = memory.captain_acceptance_timer - 1
+					if memory.captain_acceptance_timer == 0 then
+						Roles.assign_captain_based_on_priorities()
+					end
+				end
+
+				if memory.captain_accrued_time_data and memory.playerindex_captain and memory.overworldx and memory.overworldx > 0 and memory.overworldx < CoreData.victory_x then --only count time in the 'main game'
+					local player = game.players[memory.playerindex_captain]
+					if player and player.name then
+						if (not memory.captain_accrued_time_data[player.name]) then memory.captain_accrued_time_data[player.name] = 0 end
+						memory.captain_accrued_time_data[player.name] = memory.captain_accrued_time_data[player.name] + 1
+					end
+				end
+
+				if destination.dynamic_data.time_remaining and destination.dynamic_data.time_remaining > 0 then
+					destination.dynamic_data.time_remaining = destination.dynamic_data.time_remaining - 1
+
+					if destination.dynamic_data.time_remaining == 0 then
+						if memory.boat and memory.boat.surface_name then
+							local surface_name_decoded = Surfaces.SurfacesCommon.decode_surface_name(memory.boat.surface_name)
+							local type = surface_name_decoded.type
+							if type == Surfaces.enum.ISLAND then
+								Progression.retreat_from_island(false)
+							elseif type == Surfaces.enum.DOCK then
+								Progression.undock_from_dock(false)
+							end
+						end
+					end
+				end
+
+				if tick % 120 == 0 then
+					Ai.Tick_actions(120)
+
+					if tick % 240 == 0 then
+						PiratesApiOnTick.check_all_spawners_dead(240)
+						if memory.max_players_recorded then
+							local count_now = #Common.crew_get_crew_members()
+							if count_now and count_now > memory.max_players_recorded then
+								memory.max_players_recorded = count_now
+							end
+						end
+						PiratesApiOnTick.Kraken_Destroyed_Backup_check(240)
+						PiratesApiOnTick.LOS_tick(240)
+					end
+				end
+
+				if tick % 300 == 0 then
+					PiratesApiOnTick.periodic_free_resources(300)
+					PiratesApiOnTick.update_recentcrewmember_list(300)
+
+					if tick % 1800 == 0 then
+						PiratesApiOnTick.transfer_pollution(1800)
+
+						if tick % 3600 == 0 then
+							PiratesApiOnTick.prune_offline_characters_list(3600)
+						end
+					end
+				end
+
+
+				if tick % 420 == 0 then
+					ClassPiratesApiOnTick.class_rewards_tick(420)
+				end
+			end
 		end
 	end
 
@@ -211,122 +267,9 @@ local function crew_tick()
 		end
 	end
 
-	if tick % 60 == 0 then
-		PiratesApiOnTick.slower_boat_tick(60)
+	if tick % Common.loading_interval == 0 then
+		PiratesApiOnTick.loading_update(Common.loading_interval)
 	end
-
-	if tick % 10 == 0 then
-		PiratesApiOnTick.update_boat_stored_resources(10)
-	end
-
-	if tick % 10 == 0 then
-		QuestStructures.tick_quest_structure_entry_price_check(10)
-	end
-
-	if tick % 30 == 0 then
-		PiratesApiOnTick.buried_treasure_check(30)
-	end
-
-	if tick % 60 == 0 then
-		PiratesApiOnTick.raft_raids(60)
-	end
-
-	if tick % 60 == 0 then
-		PiratesApiOnTick.place_cached_structures(60)
-	end
-
-	if tick % 240 == 0 then
-		PiratesApiOnTick.check_all_spawners_dead(240)
-	end
-
-	if tick % 60 == 0 then
-
-		if destination.dynamic_data.timer then
-			destination.dynamic_data.timer = destination.dynamic_data.timer + 1
-		end
-
-		if memory.captain_acceptance_timer then
-			memory.captain_acceptance_timer = memory.captain_acceptance_timer - 1
-			if memory.captain_acceptance_timer == 0 then
-				Roles.assign_captain_based_on_priorities()
-			end
-		end
-
-		if memory.captain_accrued_time_data and memory.playerindex_captain and memory.overworldx and memory.overworldx > 0 and memory.overworldx < CoreData.victory_x then --only count time in the 'main game'
-			local player = game.players[memory.playerindex_captain]
-			if player and player.name then
-				if (not memory.captain_accrued_time_data[player.name]) then memory.captain_accrued_time_data[player.name] = 0 end
-				memory.captain_accrued_time_data[player.name] = memory.captain_accrued_time_data[player.name] + 1
-			end
-		end
-
-		if destination.dynamic_data.time_remaining and destination.dynamic_data.time_remaining > 0 then
-			destination.dynamic_data.time_remaining = destination.dynamic_data.time_remaining - 1
-
-			if destination.dynamic_data.time_remaining == 0 then
-				if memory.boat and memory.boat.surface_name then
-					local surface_name_decoded = Surfaces.SurfacesCommon.decode_surface_name(memory.boat.surface_name)
-					local type = surface_name_decoded.type
-					if type == Surfaces.enum.ISLAND then
-						Progression.retreat_from_island(false)
-					elseif type == Surfaces.enum.DOCK then
-						Progression.undock_from_dock(false)
-					end
-				end
-			end
-		end
-	end
-
-	if tick % 240 == 0 then
-		if memory.max_players_recorded then
-			local count_now = #Common.crew_get_crew_members()
-			if count_now and count_now > memory.max_players_recorded then
-				memory.max_players_recorded = count_now
-			end
-		end
-	end
-
-	if tick % 240 == 0 then
-		PiratesApiOnTick.Kraken_Destroyed_Backup_check(240)
-	end
-
-	if tick % 300 == 0 then
-		PiratesApiOnTick.periodic_free_resources(300)
-	end
-
-	if tick % 30 == 0 then
-		ClassPiratesApiOnTick.update_character_properties(30)
-		ClassPiratesApiOnTick.class_update_auxiliary_data(30)
-		ClassPiratesApiOnTick.class_renderings(30)
-	end
-
-	if tick % 120 == 0 then
-		Ai.Tick_actions(120)
-	end
-
-	if tick % 240 == 0 then
-		PiratesApiOnTick.LOS_tick(240)
-	end
-
-	if tick % (60 * Balance.class_reward_tick_rate_in_seconds) == 0 then
-		ClassPiratesApiOnTick.class_rewards_tick(60 * Balance.class_reward_tick_rate_in_seconds)
-	end
-
-	if tick % 300 == 0 then
-		PiratesApiOnTick.update_recentcrewmember_list(300)
-	end
-
-	if tick % 1800 == 0 then
-		PiratesApiOnTick.transfer_pollution(1800)
-	end
-
-	if tick % 3600 == 0 then
-		PiratesApiOnTick.prune_offline_characters_list(3600)
-	end
-
-	-- if tick % (60*60*60) == 0 then
-	-- 	Parrot.parrot_say_tip()
-	-- end
 
 	if memory.crew_disband_tick then
 		if memory.crew_disband_tick < tick then

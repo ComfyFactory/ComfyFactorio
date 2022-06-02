@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Memory = require 'maps.pirates.memory'
 -- local Math = require 'maps.pirates.math'
@@ -171,7 +173,7 @@ function Public.create_hold_surface(nth)
 			scale = 1,
 			font = 'default-game',
 			alignment = alignment,
-			text = 'inactive',
+			text = {'pirates.hold_connections_label_inactive'},
 		}
 	end
 
@@ -209,10 +211,10 @@ function Public.create_hold_surface(nth)
 	end
 
 	if subtype == enum.SECONDARY then
-		local difficulty_name = CoreData.get_difficulty_name_from_value(memory.difficulty)
-		if difficulty_name == CoreData.difficulty_options[#CoreData.difficulty_options].text then
+		local difficulty_name = CoreData.get_difficulty_option_informal_name_from_value(memory.difficulty)
+		if difficulty_name == 'nightmare' then
 			Public.upgrade_chests(nth, 'steel-chest')
-		elseif difficulty_name ~= CoreData.difficulty_options[1].text then
+		elseif difficulty_name ~= 'easy' then
 			Public.upgrade_chests(nth, 'iron-chest')
 		end
 
@@ -221,7 +223,7 @@ function Public.create_hold_surface(nth)
 
 	if nth==1 then
 		memory.shiphold_rendering_1 = rendering.draw_text{
-			text = 'Ship\'s Hold',
+			text = {'pirates.surface_label_hold'},
 			surface = surface,
 			target = Public.Data.surfacename_rendering_pos,
 			color = CoreData.colors.renderingtext_yellow,
@@ -232,11 +234,11 @@ function Public.create_hold_surface(nth)
 	else
 		if nth==2 then
 			if memory.shiphold_rendering_1 then
-				rendering.set_text(memory.shiphold_rendering_1, 'Ship\'s Hold: -1')
+				rendering.set_text(memory.shiphold_rendering_1, {'pirates.surface_label_hold_nth', -1})
 			end
 		end
 		rendering.draw_text{
-			text = 'Ship\'s Hold: -' .. nth,
+			text = {'pirates.surface_label_hold_nth', nth},
 			surface = surface,
 			target = Public.Data.surfacename_rendering_pos,
 			color = CoreData.colors.renderingtext_yellow,
@@ -339,10 +341,10 @@ function Public.nth_hold_connect_linked_belts(nth) --assumes both are in standar
 					b1.connect_linked_belts(b2)
 				end
 
-				rendering.set_text(boat.hold_helper_renderings[nth][3], 'from -' .. nth-1)
-				rendering.set_text(boat.hold_helper_renderings[nth-1][3], 'to -' .. nth)
-				rendering.set_text(boat.hold_helper_renderings[nth][4], 'from -' .. nth-1)
-				rendering.set_text(boat.hold_helper_renderings[nth-1][4], 'to -' .. nth)
+				rendering.set_text(boat.hold_helper_renderings[nth][3], {'pirates.hold_connections_label_from', nth-1})
+				rendering.set_text(boat.hold_helper_renderings[nth-1][3], {'pirates.hold_connections_label_to', nth})
+				rendering.set_text(boat.hold_helper_renderings[nth][4], {'pirates.hold_connections_label_from', nth-1})
+				rendering.set_text(boat.hold_helper_renderings[nth-1][4], {'pirates.hold_connections_label_to', nth})
 			else
 				connections = {
 					{5,5},
@@ -356,10 +358,10 @@ function Public.nth_hold_connect_linked_belts(nth) --assumes both are in standar
 					b1.connect_linked_belts(b2)
 				end
 
-				rendering.set_text(boat.hold_helper_renderings[nth][3], 'from -' .. nth-1)
-				rendering.set_text(boat.hold_helper_renderings[nth-1][3], 'to -' .. nth)
-				rendering.set_text(boat.hold_helper_renderings[nth][4], 'from -' .. nth-1)
-				rendering.set_text(boat.hold_helper_renderings[nth-1][4], 'to -' .. nth)
+				rendering.set_text(boat.hold_helper_renderings[nth][3], {'pirates.hold_connections_label_from', nth-1})
+				rendering.set_text(boat.hold_helper_renderings[nth-1][3], {'pirates.hold_connections_label_to', nth})
+				rendering.set_text(boat.hold_helper_renderings[nth][4], {'pirates.hold_connections_label_from', nth-1})
+				rendering.set_text(boat.hold_helper_renderings[nth-1][4], {'pirates.hold_connections_label_to', nth})
 			end
 			connections = {
 				{1,9},
@@ -373,10 +375,10 @@ function Public.nth_hold_connect_linked_belts(nth) --assumes both are in standar
 				b1.connect_linked_belts(b2)
 			end
 
-			rendering.set_text(boat.hold_helper_renderings[nth][1], 'to -' .. 1)
-			rendering.set_text(boat.hold_helper_renderings[1][1], 'from -' .. nth)
-			rendering.set_text(boat.hold_helper_renderings[nth][2], 'to -' .. 1)
-			rendering.set_text(boat.hold_helper_renderings[1][2], 'from -' .. nth)
+			rendering.set_text(boat.hold_helper_renderings[nth][1], {'pirates.hold_connections_label_to', 1})
+			rendering.set_text(boat.hold_helper_renderings[1][1], {'pirates.hold_connections_label_from', nth})
+			rendering.set_text(boat.hold_helper_renderings[nth][2], {'pirates.hold_connections_label_to', 1})
+			rendering.set_text(boat.hold_helper_renderings[1][2], {'pirates.hold_connections_label_from', nth})
 		else
 			connections = {
 				{1,1},
@@ -390,10 +392,10 @@ function Public.nth_hold_connect_linked_belts(nth) --assumes both are in standar
 				b1.connect_linked_belts(b2)
 			end
 
-			rendering.set_text(boat.hold_helper_renderings[nth][1], 'from -' .. nth-1)
-			rendering.set_text(boat.hold_helper_renderings[nth-1][1], 'to -' .. nth)
-			rendering.set_text(boat.hold_helper_renderings[nth][2], 'from -' .. nth-1)
-			rendering.set_text(boat.hold_helper_renderings[nth-1][2], 'to -' .. nth)
+			rendering.set_text(boat.hold_helper_renderings[nth][1], {'pirates.hold_connections_label_from', nth-1})
+			rendering.set_text(boat.hold_helper_renderings[nth-1][1], {'pirates.hold_connections_label_to', nth})
+			rendering.set_text(boat.hold_helper_renderings[nth][2], {'pirates.hold_connections_label_from', nth-1})
+			rendering.set_text(boat.hold_helper_renderings[nth-1][2], {'pirates.hold_connections_label_to', nth})
 
 			connections = {
 				{5,9},
@@ -407,10 +409,10 @@ function Public.nth_hold_connect_linked_belts(nth) --assumes both are in standar
 				b1.connect_linked_belts(b2)
 			end
 
-			rendering.set_text(boat.hold_helper_renderings[nth][3], 'to -' .. 1)
-			rendering.set_text(boat.hold_helper_renderings[1][1], 'from -' .. nth)
-			rendering.set_text(boat.hold_helper_renderings[nth][4], 'to -' .. 1)
-			rendering.set_text(boat.hold_helper_renderings[1][2], 'from -' .. nth)
+			rendering.set_text(boat.hold_helper_renderings[nth][3], {'pirates.hold_connections_label_to', 1})
+			rendering.set_text(boat.hold_helper_renderings[1][1], {'pirates.hold_connections_label_from', nth})
+			rendering.set_text(boat.hold_helper_renderings[nth][4], {'pirates.hold_connections_label_to', 1})
+			rendering.set_text(boat.hold_helper_renderings[1][2], {'pirates.hold_connections_label_from', nth})
 		end
 	end
 end

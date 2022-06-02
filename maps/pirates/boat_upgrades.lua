@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Memory = require 'maps.pirates.memory'
 -- local Roles = require 'maps.pirates.roles.roles'
@@ -38,10 +40,10 @@ Public.List = {
 }
 
 Public.crowsnest_display_form = {
-	[enum.EXTRA_HOLD] = 'Extra Hold',
-	[enum.MORE_POWER] = 'Power',
-	[enum.UNLOCK_MERCHANTS] = 'Unlock Merchants',
-	[enum.ROCKETS_FOR_SALE] = 'Unlock Rockets',
+	[enum.EXTRA_HOLD] = {'pirates.upgrade_hold_crowsnest_form'},
+	[enum.MORE_POWER] = {'pirates.upgrade_power_crowsnest_form'},
+	[enum.UNLOCK_MERCHANTS] = {'pirates.upgrade_merchants_crowsnest_form'},
+	[enum.ROCKETS_FOR_SALE] = {'pirates.upgrade_rockets_crowsnest_form'},
 }
 
 -- WARNING: The dock market pulls from these values, but the Crowsnest caption pulls data from main_shop_data_1. So don't change one without the other

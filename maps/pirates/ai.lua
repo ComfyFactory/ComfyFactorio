@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Memory = require 'maps.pirates.memory'
 local Balance = require 'maps.pirates.balance'
@@ -125,10 +127,14 @@ function Public.eat_up_fraction_of_all_pollution(surface, fraction_of_global_pol
 end
 
 function Public.wave_size_rng() -- random variance in attack sizes
+	local memory = Memory.get_crew_memory()
+
+    local wave_percentage_chance = Math.clamp(0, 70, 20 + 10 * memory.floating_pollution/1400) --trying this out
+
 	local wave_size_multiplier = 1
 	local memory = Memory.get_crew_memory()
 	local rng1 = Math.random(100)
-	if rng1 <= 68 then
+	if rng1 > wave_percentage_chance then
 		wave_size_multiplier = 0
 	elseif memory.overworldx > 0 then
 		local rng2 = Math.random(1000)
@@ -295,7 +301,7 @@ function Public.create_mail_delivery_biters() --these travel cross-map between b
 
     local spawners = surface.find_entities_filtered{name = 'biter-spawner', force = enemy_force_name}
 
-    local try_how_many_groups = Math.min(Math.max(0, (#spawners - 8) / 100), 4)
+    local try_how_many_groups = Math.clamp(0, 4, (#spawners - 8) / 100)
 
     for i = 1, try_how_many_groups do
         if Math.random(2) == 1 then

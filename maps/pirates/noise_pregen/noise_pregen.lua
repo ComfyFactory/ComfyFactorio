@@ -1,6 +1,7 @@
 
 local Public = {}
 
+-- no longer using the below code
 Public.encoding = [[!#$%&'()*+'-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ/^_`abcdefghijklmnopqrstuvwxyz{}|~]]
 Public.encoding_length = 91
 Public.enc = {}

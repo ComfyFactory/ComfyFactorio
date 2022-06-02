@@ -36,7 +36,7 @@ function Public.class_update_auxiliary_data(tickinterval)
 				local inv = player.character.get_inventory(defines.inventory.character_main)
 				if inv and inv.valid then
 					local count = inv.get_item_count('iron-ore')
-					if count and count >= 3000 then
+					if count and count >= Balance.iron_leg_iron_ore_required then
 						check = true
 					end
 				end
@@ -208,7 +208,7 @@ function Public.update_character_properties(tickinterval)
 
 			local speed_boost = Balance.base_extra_character_speed
 			if memory.speed_boost_characters and memory.speed_boost_characters[player_index] then
-				speed_boost = speed_boost + 0.85
+				speed_boost = speed_boost + Balance.respawn_speed_boost
 			else
 				if memory.classes_table and memory.classes_table[player_index] then
 					local class = memory.classes_table[player_index]
@@ -282,11 +282,11 @@ function Public.class_rewards_tick(tickinterval)
 						local hold_bool = surfacedata.type == Surfaces.enum.HOLD
 
 						if class == Classes.enum.DECKHAND and on_ship_bool and (not hold_bool) then
-							Classes.class_ore_grant(player, 2)
+							Classes.class_ore_grant(player, Balance.deckhand_ore_grant_multiplier)
 						elseif class == Classes.enum.BOATSWAIN and hold_bool then
-							Classes.class_ore_grant(player, 4)
+							Classes.class_ore_grant(player, Balance.boatswain_ore_grant_multiplier)
 						elseif class == Classes.enum.SHORESMAN and (not on_ship_bool) then
-							Classes.class_ore_grant(player, 2)
+							Classes.class_ore_grant(player, Balance.shoresman_ore_grant_multiplier)
 						elseif class == Classes.enum.QUARTERMASTER then
 							local nearby_players = #player.surface.find_entities_filtered{position = player.position, radius = Balance.quartermaster_range, name = 'character'}
 

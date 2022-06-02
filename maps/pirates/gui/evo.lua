@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Common = require 'maps.pirates.common'
 local Balance = require 'maps.pirates.balance'
@@ -79,7 +81,7 @@ function Public.full_update(player)
 
 		local types = {'leagues', 'kraken', 'time', 'silo', 'nests', 'sandwurms'}
 
-		if memory.boat and memory.boat.state and (memory.boat.state == Boats.enum_state.ATSEA_SAILING or memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP) then
+		if memory.boat and memory.boat.state and (memory.boat.state == Boats.enum_state.ATSEA_SAILING or memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL or memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP) then
 			evolution_leagues = evo - (memory.kraken_evo or 0)
 			local krakens = false
 			if memory.active_sea_enemies and memory.active_sea_enemies.krakens then
