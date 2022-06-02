@@ -1626,8 +1626,13 @@ local function event_on_rocket_launched(event)
 		Quest.try_resolve_quest()
 	end
 
-	if destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid then
-		destination.dynamic_data.rocketsilos[1].die()
+	if destination.dynamic_data.rocketsilos then
+		for i = 1, #destination.dynamic_data.rocketsilos do
+			local s = destination.dynamic_data.rocketsilos[i]
+			if s and s.valid then
+				s.die()
+			end
+		end
 		destination.dynamic_data.rocketsilos = nil
 	end
 end
