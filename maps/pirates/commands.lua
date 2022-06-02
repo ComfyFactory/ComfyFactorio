@@ -40,6 +40,161 @@ local Classes = require 'maps.pirates.roles.classes'
 
 local GUIcolor = require 'maps.pirates.gui.color'
 
+
+local function check_admin(cmd)
+	local Session = require 'utils.datastore.session_data'
+	local player = game.players[cmd.player_index]
+	local trusted = Session.get_trusted_table()
+	local p
+	if player then
+		if player ~= nil then
+			p = player.print
+			if not player.admin then
+				p('[ERROR] Only admins are allowed to run this command!', Color.fail)
+				return false
+			end
+		else
+			p = log
+		end
+	end
+	return true
+end
+
+
+
+local function check_captain(cmd)
+	local player = game.players[cmd.player_index]
+	local p
+	if player then
+		if player ~= nil then
+			p = player.print
+			if not Common.validate_player(player) then return end
+			local crew_id = tonumber(string.sub(game.players[cmd.player_index].force.name, -3, -1)) or nil
+			Memory.set_working_id(crew_id)
+			local memory = Memory.get_crew_memory()
+			if not (Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN) then
+				p('[ERROR] Only captains are allowed to run this command!', Color.fail)
+				return false
+			end
+		else
+			p = log
+		end
+	end
+	return true
+end
+
+
+
+local function check_captain_or_admin(cmd)
+	local player = game.players[cmd.player_index]
+	local p
+	if player then
+		if player ~= nil then
+			p = player.print
+			if not Common.validate_player(player) then return end
+			local crew_id = tonumber(string.sub(game.players[cmd.player_index].force.name, -3, -1)) or nil
+			Memory.set_working_id(crew_id)
+			local memory = Memory.get_crew_memory()
+			if not (player.admin or Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN) then
+				p('[ERROR] Only captains are allowed to run this command!', Color.fail)
+				return false
+			end
+		else
+			p = log
+		end
+	end
+	return true
+end
+
+
+local function check_trusted(cmd)
+	local Session = require 'utils.datastore.session_data'
+	local player = game.players[cmd.player_index]
+	local trusted = Session.get_trusted_table()
+	local p
+	if player then
+		if player ~= nil then
+			p = player.print
+			if not (trusted[player.name] or player.admin) then
+				p('[ERROR] Only admins and trusted weebs are allowed to run this command!', Color.fail)
+				return false
+			end
+		else
+			p = log
+		end
+	end
+	return true
+end
+
+
+
+commands.add_command(
+'set_max_crews',
+'is an admin command to set the maximum number of concurrent crews allowed on the server.',
+function(cmd)
+	local param = tostring(cmd.parameter)
+	if check_admin(cmd) then
+		local player = game.players[cmd.player_index]
+		local global_memory = Memory.get_global_memory()
+
+		if tonumber(param) then
+			global_memory.active_crews_cap = tonumber(param)
+			Common.notify_player_expected(player, 'The maximum number of concurrent crews has been set to ' .. param .. '.')
+		end
+	end
+end)
+
+commands.add_command(
+'sail',
+'is an admin command to set the ship sailing after an island, in case there\'s a problem with the captain doing so.',
+function(cmd)
+	local param = tostring(cmd.parameter)
+	if check_admin(cmd) then
+		local player = game.players[cmd.player_index]
+		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+		Memory.set_working_id(crew_id)
+		local memory = Memory.get_crew_memory()
+		Crew.summon_crew()
+		if memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL then
+			Progression.at_sea_begin_to_set_sail()
+		end
+	end
+end)
+
+commands.add_command(
+'setcaptain',
+'{player} is an admin command to set the crew\'s captain to {player}.',
+function(cmd)
+	local param = tostring(cmd.parameter)
+	if check_admin(cmd) then
+		local player = game.players[cmd.player_index]
+		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+		Memory.set_working_id(crew_id)
+		if param and game.players[param] and game.players[param].index then
+			Roles.make_captain(game.players[param])
+		else
+			Common.notify_player_error(player, 'Command error: Invalid player name.')
+		end
+	end
+end)
+
+commands.add_command(
+'summoncrew',
+'is an admin command to summon the crew to the ship.',
+function(cmd)
+	local param = tostring(cmd.parameter)
+	if check_admin(cmd) then
+		local player = game.players[cmd.player_index]
+		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+		Memory.set_working_id(crew_id)
+		Crew.summon_crew()
+	end
+end)
+
+
+
+
+
 commands.add_command(
 'ok',
 'is used to accept captainhood.',
@@ -187,111 +342,6 @@ local go_1 = Token.register(
 
 
 
-
-local function check_admin(cmd)
-	local Session = require 'utils.datastore.session_data'
-	local player = game.players[cmd.player_index]
-	local trusted = Session.get_trusted_table()
-	local p
-	if player then
-		if player ~= nil then
-			p = player.print
-			if not player.admin then
-				p('[ERROR] Only admins are allowed to run this command!', Color.fail)
-				return false
-			end
-		else
-			p = log
-		end
-	end
-	return true
-end
-
-
-
-local function check_captain(cmd)
-	local player = game.players[cmd.player_index]
-	local p
-	if player then
-		if player ~= nil then
-			p = player.print
-			if not Common.validate_player(player) then return end
-			local crew_id = tonumber(string.sub(game.players[cmd.player_index].force.name, -3, -1)) or nil
-			Memory.set_working_id(crew_id)
-			local memory = Memory.get_crew_memory()
-			if not (Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN) then
-				p('[ERROR] Only captains are allowed to run this command!', Color.fail)
-				return false
-			end
-		else
-			p = log
-		end
-	end
-	return true
-end
-
-
-
-local function check_captain_or_admin(cmd)
-	local player = game.players[cmd.player_index]
-	local p
-	if player then
-		if player ~= nil then
-			p = player.print
-			if not Common.validate_player(player) then return end
-			local crew_id = tonumber(string.sub(game.players[cmd.player_index].force.name, -3, -1)) or nil
-			Memory.set_working_id(crew_id)
-			local memory = Memory.get_crew_memory()
-			if not (player.admin or Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN) then
-				p('[ERROR] Only captains are allowed to run this command!', Color.fail)
-				return false
-			end
-		else
-			p = log
-		end
-	end
-	return true
-end
-
-
-local function check_trusted(cmd)
-	local Session = require 'utils.datastore.session_data'
-	local player = game.players[cmd.player_index]
-	local trusted = Session.get_trusted_table()
-	local p
-	if player then
-		if player ~= nil then
-			p = player.print
-			if not (trusted[player.name] or player.admin) then
-				p('[ERROR] Only admins and trusted weebs are allowed to run this command!', Color.fail)
-				return false
-			end
-		else
-			p = log
-		end
-	end
-	return true
-end
-
-
-
-commands.add_command(
-'set_max_crews',
-'is an admin command to set the maximum number of concurrent crews allowed on the server.',
-function(cmd)
-	local param = tostring(cmd.parameter)
-	if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-		local global_memory = Memory.get_global_memory()
-
-		if tonumber(param) then
-			global_memory.active_crews_cap = tonumber(param)
-			Common.notify_player_expected(player, 'The maximum number of concurrent crews has been set to ' .. param .. '.')
-		end
-	end
-end)
-
-
 commands.add_command(
 'plank',
 'is a captain command to remove a player by making them a spectator.',
@@ -367,37 +417,6 @@ function(cmd)
 		local memory = Memory.get_crew_memory()
 		Highscore.dump_highscores()
 		player.print('Highscores dumped.')
-	end
-end)
-
-commands.add_command(
-'setcaptain',
-'{player} is an admin command to set the crew\'s captain to {player}.',
-function(cmd)
-	local param = tostring(cmd.parameter)
-	if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-		Memory.set_working_id(crew_id)
-		local memory = Memory.get_crew_memory()
-		if param and game.players[param] and game.players[param].index then
-			Roles.make_captain(game.players[param])
-		else
-			Common.notify_player_error(player, 'Command error: Invalid player name.')
-		end
-	end
-end)
-
-commands.add_command(
-'summoncrew',
-'is an admin command to summon the crew to the ship.',
-function(cmd)
-	local param = tostring(cmd.parameter)
-	if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-		Memory.set_working_id(crew_id)
-		Crew.summon_crew()
 	end
 end)
 
