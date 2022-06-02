@@ -43,7 +43,7 @@ function Public.cost_to_leave_multiplier()
 	return Math.sloped(Common.difficulty_scale(), 8/10)
 end
 
-Public.rocket_launch_coin_reward = 6000
+Public.rocket_launch_coin_reward = 5000
 
 function Public.crew_scale()
 	local ret = Common.activecrewcount()/10
@@ -382,7 +382,7 @@ function Public.sandworm_evo_increase_per_spawn()
 end
 
 function Public.kraken_kill_reward_items()
-	return {{name = 'sulfuric-acid-barrel', count = 5}, {name = 'coin', count = 1000}}
+	return {{name = 'sulfuric-acid-barrel', count = 5}, {name = 'coin', count = 800}}
 end
 function Public.kraken_kill_reward_fuel()
 	return 200
@@ -520,7 +520,7 @@ function Public.starting_items_crew_upstairs()
 		{['grenade'] = 3},
 		{['shotgun'] = 2, ['shotgun-shell'] = 36},
 		-- {['raw-fish'] = 5},
-		{['coin'] = 2000},
+		{['coin'] = 1000},
 	}
 end
 
@@ -532,7 +532,7 @@ function Public.starting_items_crew_downstairs()
 		{['inserter'] = Math.random(120,140)},
 		{['storage-tank'] = 2},
 		{['medium-electric-pole'] = Math.random(15,21)},
-		{['coin'] = 2000},
+		{['coin'] = 1000},
 		{['solar-panel'] = 3},
 	}
 end
