@@ -127,10 +127,14 @@ function Public.eat_up_fraction_of_all_pollution(surface, fraction_of_global_pol
 end
 
 function Public.wave_size_rng() -- random variance in attack sizes
+	local memory = Memory.get_crew_memory()
+
+    local wave_percentage_chance = Math.clamp(0, 70, 20 + 10 * memory.floating_pollution/1400) --trying this out
+
 	local wave_size_multiplier = 1
 	local memory = Memory.get_crew_memory()
 	local rng1 = Math.random(100)
-	if rng1 <= 68 then
+	if rng1 > wave_percentage_chance then
 		wave_size_multiplier = 0
 	elseif memory.overworldx > 0 then
 		local rng2 = Math.random(1000)
