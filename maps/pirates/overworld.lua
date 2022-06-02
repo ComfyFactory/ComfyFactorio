@@ -683,7 +683,7 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 			for i=1,vector.x do
 				Common.give_items_to_crew(Balance.periodic_free_resources_per_x())
 			end
-			
+
 			Balance.apply_crew_buffs_at_x(memory.force)
 
 			-- add some evo: (this will get reset upon arriving at a destination anyway, so this is just relevant for sea monsters and the like:)
