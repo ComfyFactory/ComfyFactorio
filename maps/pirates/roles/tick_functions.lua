@@ -103,7 +103,7 @@ function Public.class_renderings(tickinterval)
 								target = player.character,
 								color = CoreData.colors.toughness_rendering,
 								filled = false,
-								radius = Balance.samurai_resistance^2,
+								radius = (1 - Balance.samurai_damage_taken_multiplier)^2,
 								only_in_alt_mode = false,
 								draw_on_ground = true,
 							}
@@ -115,7 +115,7 @@ function Public.class_renderings(tickinterval)
 								target = player.character,
 								color = CoreData.colors.toughness_rendering,
 								filled = false,
-								radius = Balance.hatamoto_resistance^2,
+								radius = (1 - Balance.hatamoto_damage_taken_multiplier)^2,
 								only_in_alt_mode = false,
 								draw_on_ground = true,
 							}
@@ -127,7 +127,7 @@ function Public.class_renderings(tickinterval)
 								target = player.character,
 								color = CoreData.colors.toughness_rendering,
 								filled = false,
-								radius = Balance.iron_leg_resistance^2,
+								radius = (1 - Balance.iron_leg_damage_taken_multiplier)^2,
 								only_in_alt_mode = false,
 								draw_on_ground = true,
 							}
@@ -207,13 +207,14 @@ function Public.update_character_properties(tickinterval)
 			character.character_health_bonus = health_boost
 
 			local speed_boost = Balance.base_extra_character_speed
+
 			if memory.speed_boost_characters and memory.speed_boost_characters[player_index] then
-				speed_boost = speed_boost + Balance.respawn_speed_boost
+				speed_boost = speed_boost * Balance.respawn_speed_boost
 			else
 				if memory.classes_table and memory.classes_table[player_index] then
 					local class = memory.classes_table[player_index]
 					if class == Classes.enum.SCOUT then
-						speed_boost = speed_boost + Balance.scout_extra_speed
+						speed_boost = speed_boost * Balance.scout_extra_speed
 					elseif class == Classes.enum.DECKHAND or class == Classes.enum.BOATSWAIN or class == Classes.enum.SHORESMAN then
 						local surfacedata = Surfaces.SurfacesCommon.decode_surface_name(player.surface.name)
 						local type = surfacedata.type
@@ -222,21 +223,21 @@ function Public.update_character_properties(tickinterval)
 
 						if class == Classes.enum.DECKHAND then
 							if on_ship_bool and (not hold_bool) then
-								speed_boost = speed_boost + Balance.deckhand_extra_speed
+								speed_boost = speed_boost * Balance.deckhand_extra_speed
 							end
 						elseif class == Classes.enum.BOATSWAIN then
 							if hold_bool then
-								speed_boost = speed_boost + Balance.boatswain_extra_speed
+								speed_boost = speed_boost * Balance.boatswain_extra_speed
 							end
 						elseif class == Classes.enum.SHORESMAN then
 							if not on_ship_bool then
-								speed_boost = speed_boost + Balance.shoresman_extra_speed
+								speed_boost = speed_boost * Balance.shoresman_extra_speed
 							end
 						end
 					end
 				end
 			end
-			character.character_running_speed_modifier = speed_boost
+			character.character_running_speed_modifier = speed_boost - 1
 		end
 	end
 end
@@ -282,16 +283,16 @@ function Public.class_rewards_tick(tickinterval)
 						local hold_bool = surfacedata.type == Surfaces.enum.HOLD
 
 						if class == Classes.enum.DECKHAND and on_ship_bool and (not hold_bool) then
-							Classes.class_ore_grant(player, Balance.deckhand_ore_grant_multiplier)
+							Classes.class_ore_grant(player, Balance.deckhand_ore_grant_multiplier, Balance.deckhand_ore_scaling_enabled)
 						elseif class == Classes.enum.BOATSWAIN and hold_bool then
-							Classes.class_ore_grant(player, Balance.boatswain_ore_grant_multiplier)
+							Classes.class_ore_grant(player, Balance.boatswain_ore_grant_multiplier, Balance.boatswain_ore_scaling_enabled)
 						elseif class == Classes.enum.SHORESMAN and (not on_ship_bool) then
-							Classes.class_ore_grant(player, Balance.shoresman_ore_grant_multiplier)
+							Classes.class_ore_grant(player, Balance.shoresman_ore_grant_multiplier, Balance.shoresman_ore_scaling_enabled)
 						elseif class == Classes.enum.QUARTERMASTER then
 							local nearby_players = #player.surface.find_entities_filtered{position = player.position, radius = Balance.quartermaster_range, name = 'character'}
 
 							if nearby_players > 1 then
-								Classes.class_ore_grant(player, nearby_players - 1, true)
+								Classes.class_ore_grant(player, nearby_players - 1, Balance.quartermaster_ore_scaling_enabled)
 							end
 						end
 					end

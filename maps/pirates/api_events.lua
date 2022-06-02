@@ -280,20 +280,20 @@ local function damage_to_players_changes(event)
 
 	--game.print('on damage info: {name: ' .. event.damage_type.name .. ', object_name: ' .. event.damage_type.object_name .. '}')
 
-	if event.damage_type.name == 'poison' then --make all poison damage stronger against players
-		damage_multiplier = damage_multiplier * 1.85
+	if event.damage_type.name == 'poison' then --make all poison damage stronger against players and enemies
+		damage_multiplier = damage_multiplier * Balance.poison_damage_multiplier
 	else
 		if class and class == Classes.enum.SCOUT then
-			damage_multiplier = damage_multiplier * 1.25
+			damage_multiplier = damage_multiplier * Balance.scout_damage_taken_multiplier
 		-- elseif class and class == Classes.enum.MERCHANT then
 		-- 	damage_multiplier = damage_multiplier * 1.10
 		elseif class and class == Classes.enum.SAMURAI then
-			damage_multiplier = damage_multiplier * (1 - Balance.samurai_resistance)
-		elseif class and class == Classes.enum.HATAMOTO then
-			damage_multiplier = damage_multiplier * (1 - Balance.hatamoto_resistance)
-		elseif class and class == Classes.enum.IRON_LEG then
+			damage_multiplier = damage_multiplier * Balance.samurai_damage_taken_multiplier
+		elseif class and class == Classes.enum.HATAMOTO then --lethal damage needs to be unaffected
+			damage_multiplier = damage_multiplier * Balance.hatamoto_damage_taken_multiplier
+		elseif class and class == Classes.enum.IRON_LEG then --lethal damage needs to be unaffected
 			if memory.class_auxiliary_data[player_index] and memory.class_auxiliary_data[player_index].iron_leg_active then
-				damage_multiplier = damage_multiplier * (1 - Balance.iron_leg_resistance)
+				damage_multiplier = damage_multiplier * Balance.iron_leg_damage_taken_multiplier
 			end
 		-- else
 		-- 	damage_multiplier = damage_multiplier * (1 + Balance.bonus_damage_to_humans())
@@ -317,7 +317,7 @@ local function damage_to_players_changes(event)
     if not (player and player.valid and player.character and player.character.valid) then
         return
     end
-	
+
 	local global_memory = Memory.get_global_memory()
 
 	if damage_multiplier < 1 and event.final_health <= 0 then
@@ -371,7 +371,7 @@ local function damage_dealt_by_players_changes(event)
 	local class = memory.classes_table and memory.classes_table[player_index]
 
 	if class and class == Classes.enum.SCOUT and event.final_health > 0 then --lethal damage must be unaffected
-		event.entity.health = event.entity.health + 0.4 * event.final_damage_amount
+		event.entity.health = event.entity.health + (1 - Balance.scout_damage_dealt_multiplier) * event.final_damage_amount
 	elseif class and (class == Classes.enum.SAMURAI or class == Classes.enum.HATAMOTO) then
 		local samurai = memory.classes_table[player_index] == Classes.enum.SAMURAI
 		local hatamoto = memory.classes_table[player_index] == Classes.enum.HATAMOTO
@@ -387,19 +387,23 @@ local function damage_dealt_by_players_changes(event)
 
 		local big_number = 1000
 
+		local extra_physical_damage_from_research_multiplier = 1 -- TODO: implement this later
+
 		if melee and event.final_health > 0 then
 			if physical then
 				if samurai then
-					extra_damage_to_deal = 30
+					extra_damage_to_deal = Balanace.samurai_damage_dealt_with_melee_multiplier * extra_physical_damage_from_research_multiplier
 				elseif hatamoto then
-					extra_damage_to_deal = 50
+					extra_damage_to_deal = Balanace.hatamoto_damage_dealt_with_melee_multiplier * extra_physical_damage_from_research_multiplier
 				end
 			elseif acid then --this hacky stuff is to implement repeated spillover splash damage, whilst getting around the fact that if ovekill damage takes something to zero health, we can't tell in that event how much double-overkill damage should be dealt by reading off its HP. This code assumes that characters only deal acid damage via this function.
 				extra_damage_to_deal = event.original_damage_amount * big_number
 			end
 		elseif (not melee) and event.final_health > 0 then
-			if samurai or hatamoto then
-				event.entity.health = event.entity.health + 0.25 * event.final_damage_amount
+			if samurai then
+				event.entity.health = event.entity.health + (1 - Balance.samurai_damage_dealt_when_not_melee_multiplier) * event.final_damage_amount
+			elseif hatamoto then
+				event.entity.health = event.entity.health + (1 - Balance.hatamoto_damage_dealt_when_not_melee_multiplier) * event.final_damage_amount
 			end
 		end
 
@@ -680,10 +684,6 @@ local function event_pre_player_mined_item(event)
 	-- end
 end
 
-
-Public.every_nth_tree_gives_coins = 6
-
-
 local function event_on_player_mined_entity(event)
 	if not event.player_index then return end
 	local player = game.players[event.player_index]
@@ -759,7 +759,7 @@ local function event_on_player_mined_entity(event)
 				-- 	end
 				else
 					give[#give + 1] = {name = 'wood', count = amount}
-					if Math.random(Public.every_nth_tree_gives_coins) == 1 then --tuned
+					if Math.random(Balance.every_nth_tree_gives_coins) == 1 then --tuned
 						local a = 5
 						give[#give + 1] = {name = 'coin', count = a}
 						memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
@@ -1649,7 +1649,7 @@ local function event_on_rocket_launched(event)
 		destination.dynamic_data.quest_progress = destination.dynamic_data.rocketsilohp
 		Quest.try_resolve_quest()
 	end
-
+	
 	if destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid then
 		destination.dynamic_data.rocketsilos[1].die()
 		destination.dynamic_data.rocketsilos = nil
