@@ -348,7 +348,7 @@ end
 
 function Public.class_cost(at_dock)
 	if at_dock then
-		return 9000
+		return 10000
 	else
 		return 6000
 	end
