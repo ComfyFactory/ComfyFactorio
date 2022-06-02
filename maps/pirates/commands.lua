@@ -41,6 +41,13 @@ local Classes = require 'maps.pirates.roles.classes'
 local GUIcolor = require 'maps.pirates.gui.color'
 
 
+
+local function cmd_set_memory(cmd)
+	local crew_id = tonumber(string.sub(game.players[cmd.player_index].force.name, -3, -1)) or nil
+	Memory.set_working_id(crew_id)
+end
+
+
 local function check_admin(cmd)
 	local Session = require 'utils.datastore.session_data'
 	local player = game.players[cmd.player_index]
@@ -69,9 +76,6 @@ local function check_captain(cmd)
 		if player ~= nil then
 			p = player.print
 			if not Common.validate_player(player) then return end
-			local crew_id = tonumber(string.sub(game.players[cmd.player_index].force.name, -3, -1)) or nil
-			Memory.set_working_id(crew_id)
-			local memory = Memory.get_crew_memory()
 			if not (Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN) then
 				p('[ERROR] Only captains are allowed to run this command!', Color.fail)
 				return false
@@ -92,9 +96,6 @@ local function check_captain_or_admin(cmd)
 		if player ~= nil then
 			p = player.print
 			if not Common.validate_player(player) then return end
-			local crew_id = tonumber(string.sub(game.players[cmd.player_index].force.name, -3, -1)) or nil
-			Memory.set_working_id(crew_id)
-			local memory = Memory.get_crew_memory()
 			if not (player.admin or Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN) then
 				p('[ERROR] Only captains are allowed to run this command!', Color.fail)
 				return false
@@ -148,11 +149,11 @@ commands.add_command(
 'sail',
 'is an admin command to set the ship sailing after an island, in case there\'s a problem with the captain doing so.',
 function(cmd)
+	cmd_set_memory(cmd)
+
 	local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
 		local player = game.players[cmd.player_index]
-		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-		Memory.set_working_id(crew_id)
 		local memory = Memory.get_crew_memory()
 		Crew.summon_crew()
 		if memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL then
@@ -165,11 +166,11 @@ commands.add_command(
 'setcaptain',
 '{player} is an admin command to set the crew\'s captain to {player}.',
 function(cmd)
+	cmd_set_memory(cmd)
+
 	local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
 		local player = game.players[cmd.player_index]
-		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-		Memory.set_working_id(crew_id)
 		if param and game.players[param] and game.players[param].index then
 			Roles.make_captain(game.players[param])
 		else
@@ -182,6 +183,8 @@ commands.add_command(
 'summoncrew',
 'is an admin command to summon the crew to the ship.',
 function(cmd)
+	cmd_set_memory(cmd)
+
 	local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
 		local player = game.players[cmd.player_index]
@@ -199,10 +202,10 @@ commands.add_command(
 'ok',
 'is used to accept captainhood.',
 function(cmd)
-			local player = game.players[cmd.player_index]
+	cmd_set_memory(cmd)
+	local player = game.players[cmd.player_index]
 	if not Common.validate_player(player) then return end
-	local crew_id = tonumber(string.sub(game.players[cmd.player_index].force.name, -3, -1)) or nil
-	Memory.set_working_id(crew_id)
+	
 	local memory = Memory.get_crew_memory()
 	Roles.player_confirm_captainhood(player)
 end)
@@ -241,9 +244,11 @@ commands.add_command(
 'take',
 '{classname} takes a spare class with the given name for yourself.',
 function(cmd)
+	cmd_set_memory(cmd)
 	local param = tostring(cmd.parameter)
 	local player = game.players[cmd.player_index]
 	if not Common.validate_player(player) then return end
+	
 	if param and param ~= 'nil' then
 		for _, class in pairs(Classes.enum) do
 			if Classes.eng_form[class]:lower() == param:lower() then
@@ -263,9 +268,11 @@ commands.add_command(
 'giveup',
 'gives up your current class, making it available for others.',
 function(cmd)
+	cmd_set_memory(cmd)
 	local param = tostring(cmd.parameter)
 	local player = game.players[cmd.player_index]
 	if not Common.validate_player(player) then return end
+
 	if param and param == 'nil' then
 		Classes.try_renounce_class(player, true)
 	else
@@ -346,6 +353,8 @@ commands.add_command(
 'plank',
 'is a captain command to remove a player by making them a spectator.',
 function(cmd)
+	cmd_set_memory(cmd)
+
 	local player = game.players[cmd.player_index]
 	local param = tostring(cmd.parameter)
 	if check_captain_or_admin(cmd) then
@@ -361,6 +370,8 @@ commands.add_command(
 'officer',
 'is a captain command to make a player into an officer, or remove them as one.',
 function(cmd)
+	cmd_set_memory(cmd)
+	
 	local player = game.players[cmd.player_index]
 	local param = tostring(cmd.parameter)
 	if check_captain_or_admin(cmd) then
@@ -381,6 +392,8 @@ commands.add_command(
 'undock',
 'is a captain command to undock the ship.',
 function(cmd)
+	cmd_set_memory(cmd)
+	
 	local param = tostring(cmd.parameter)
 	if check_captain_or_admin(cmd) then
 		local player = game.players[cmd.player_index]
@@ -397,6 +410,8 @@ commands.add_command(
 'tax',
 'is a captain command to take a quarter of all coins, plus other game-critical items from the crew, into your inventory.',
 function(cmd)
+	cmd_set_memory(cmd)
+	
 	local param = tostring(cmd.parameter)
 	if check_captain(cmd) then
 		local player = game.players[cmd.player_index]
@@ -409,12 +424,11 @@ commands.add_command(
 'dump_highscores',
 'is a dev command.',
 function(cmd)
+	cmd_set_memory(cmd)
+	
 	if check_admin(cmd) then
 		local player = game.players[cmd.player_index]
 		if not Common.validate_player(player) then return end
-		local crew_id = tonumber(string.sub(game.players[cmd.player_index].force.name, -3, -1)) or nil
-		Memory.set_working_id(crew_id)
-		local memory = Memory.get_crew_memory()
 		Highscore.dump_highscores()
 		player.print('Highscores dumped.')
 	end
@@ -424,11 +438,11 @@ commands.add_command(
 'setclass',
 'is a dev command.',
 function(cmd)
+	cmd_set_memory(cmd)
+	
 	local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
 		local player = game.players[cmd.player_index]
-		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-		Memory.set_working_id(crew_id)
 		local memory = Memory.get_crew_memory()
 		if not Common.validate_player(player) then return end
 		if not memory.classes_table then memory.classes_table = {} end
@@ -441,11 +455,11 @@ commands.add_command(
 'setevo',
 'is a dev command.',
 function(cmd)
+	cmd_set_memory(cmd)
+	
 	local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
 		local player = game.players[cmd.player_index]
-		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-		Memory.set_working_id(crew_id)
 		Common.set_evo(tonumber(param))
 	end
 end)
@@ -454,11 +468,11 @@ commands.add_command(
 'modi',
 'is a dev command.',
 function(cmd)
+	cmd_set_memory(cmd)
+	
 	local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
 		local player = game.players[cmd.player_index]
-		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-		Memory.set_working_id(crew_id)
 		local memory = Memory.get_crew_memory()
 		local surface = game.surfaces[Common.current_destination().surface_name]
 		local entities = surface.find_entities_filtered{position = player.position, radius = 500}
@@ -478,11 +492,11 @@ commands.add_command(
 'ret',
 'is a dev command.',
 function(cmd)
+	cmd_set_memory(cmd)
+	
 	local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
 		local player = game.players[cmd.player_index]
-		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-		Memory.set_working_id(crew_id)
 		Progression.retreat_from_island(true)
 	end
 end)
@@ -491,11 +505,11 @@ commands.add_command(
 'jump',
 'is a dev command.',
 function(cmd)
+	cmd_set_memory(cmd)
+	
 	local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
 		local player = game.players[cmd.player_index]
-		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-		Memory.set_working_id(crew_id)
 		Overworld.try_overworld_move_v2({x = 40, y = 0})
 	end
 end)
@@ -504,11 +518,11 @@ commands.add_command(
 'advu',
 'is a dev command.',
 function(cmd)
+	cmd_set_memory(cmd)
+	
 	local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
 		local player = game.players[cmd.player_index]
-		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-		Memory.set_working_id(crew_id)
 		Overworld.try_overworld_move_v2{x = 0, y = -24}
 	end
 end)
@@ -517,11 +531,11 @@ commands.add_command(
 'advd',
 'is a dev command.',
 function(cmd)
+	cmd_set_memory(cmd)
+	
 	local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
 		local player = game.players[cmd.player_index]
-		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-		Memory.set_working_id(crew_id)
 		Overworld.try_overworld_move_v2{x = 0, y = 24}
 	end
 end)
@@ -531,11 +545,11 @@ commands.add_command(
 'overwrite_scores_specific',
 'is a dev command.',
 function(cmd)
+	cmd_set_memory(cmd)
+	
 	if check_admin(cmd) then
 		local player = game.players[cmd.player_index]
 		if not Common.validate_player(player) then return end
-		local crew_id = tonumber(string.sub(game.players[cmd.player_index].force.name, -3, -1)) or nil
-		Memory.set_working_id(crew_id)
 		local memory = Memory.get_crew_memory()
 		if Highscore.overwrite_scores_specific() then player.print('Highscores overwritten.') end
 	end
@@ -589,11 +603,11 @@ if _DEBUG then
 	'chnk',
 	'is a dev command.',
 	function(cmd)
+		cmd_set_memory(cmd)
+		
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
 			local player = game.players[cmd.player_index]
-			local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-			Memory.set_working_id(crew_id)
 			local memory = Memory.get_crew_memory()
 
 			for i = 0, 13 do
@@ -609,11 +623,11 @@ if _DEBUG then
 	'spd',
 	'is a dev command.',
 	function(cmd)
+		cmd_set_memory(cmd)
+		
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
 			local player = game.players[cmd.player_index]
-			local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-			Memory.set_working_id(crew_id)
 			local memory = Memory.get_crew_memory()
 			memory.boat.speed = 60
 		end
@@ -623,11 +637,11 @@ if _DEBUG then
 	'stp',
 	'is a dev command.',
 	function(cmd)
+		cmd_set_memory(cmd)
+		
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
 			local player = game.players[cmd.player_index]
-			local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-			Memory.set_working_id(crew_id)
 			local memory = Memory.get_crew_memory()
 			memory.boat.speed = 0
 		end
@@ -718,11 +732,11 @@ if _DEBUG then
 	'score',
 	'is a dev command.',
 	function(cmd)
+		cmd_set_memory(cmd)
+		
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
 			local player = game.players[cmd.player_index]
-			local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-			Memory.set_working_id(crew_id)
 			local memory = Memory.get_crew_memory()
 
 			game.print('faking a highscore...')
@@ -930,11 +944,11 @@ if _DEBUG then
 	'ef1',
 	'is a dev command.',
 	function(cmd)
+		cmd_set_memory(cmd)
+		
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
 		local player = game.players[cmd.player_index]
-			local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-			Memory.set_working_id(crew_id)
 			local memory = Memory.get_crew_memory()
 			local surface = game.surfaces[Common.current_destination().surface_name]
 			Effects.worm_movement_effect(surface, {x = -45, y = 0}, false, true)
@@ -945,11 +959,11 @@ if _DEBUG then
 	'ef2',
 	'is a dev command.',
 	function(cmd)
+		cmd_set_memory(cmd)
+		
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
 		local player = game.players[cmd.player_index]
-			local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-			Memory.set_working_id(crew_id)
 			local memory = Memory.get_crew_memory()
 			local surface = game.surfaces[Common.current_destination().surface_name]
 			Effects.worm_movement_effect(surface, {x = -45, y = 0}, false, false)
@@ -960,11 +974,11 @@ if _DEBUG then
 	'ef3',
 	'is a dev command.',
 	function(cmd)
+		cmd_set_memory(cmd)
+		
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
 		local player = game.players[cmd.player_index]
-			local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-			Memory.set_working_id(crew_id)
 			local memory = Memory.get_crew_memory()
 			local surface = game.surfaces[Common.current_destination().surface_name]
 			Effects.worm_movement_effect(surface, {x = -45, y = 0}, true, false)
@@ -975,11 +989,11 @@ if _DEBUG then
 	'ef4',
 	'is a dev command.',
 	function(cmd)
+		cmd_set_memory(cmd)
+		
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
 		local player = game.players[cmd.player_index]
-			local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-			Memory.set_working_id(crew_id)
 			local memory = Memory.get_crew_memory()
 			local surface = game.surfaces[Common.current_destination().surface_name]
 			Effects.worm_emerge_effect(surface, {x = -45, y = 0})
@@ -990,11 +1004,11 @@ if _DEBUG then
 	'ef5',
 	'is a dev command.',
 	function(cmd)
+		cmd_set_memory(cmd)
+		
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
 		local player = game.players[cmd.player_index]
-			local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-			Memory.set_working_id(crew_id)
 			local memory = Memory.get_crew_memory()
 			local surface = game.surfaces[Common.current_destination().surface_name]
 			Effects.biters_emerge(surface, {x = -30, y = 0})

@@ -120,7 +120,7 @@ local function create_gui(player)
 	flow2 = GuiCommon.flow_add_floating_sprite_button(flow1, 'evo_piratebutton')
 	flow2.sprite = 'entity/small-biter'
 	flow2.mouse_button_filter = {'middle'} --hack to avoid press visual
-	flow2.show_percent_for_small_numbers = true
+	flow2.show_percent_for_small_numbers = true --as of factorio v1.1.59, there is a bug in which 1.002 displays as like 1e-2% or something. but after 1.01 it's ok
 
 	flow2 = GuiCommon.flow_add_floating_sprite_button(flow1, 'minimap_piratebutton')
 	flow2.tooltip = {'pirates.gui_minimap_main_tooltip'}
