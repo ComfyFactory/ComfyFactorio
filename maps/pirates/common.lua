@@ -172,7 +172,7 @@ function Public.parrot_speak(force, message)
 	force.print({"", {'pirates.notify_parrot'}, ' ',  message}, CoreData.colors.parrot)
 
 	local memory = Memory.get_crew_memory()
-	Server.to_discord_embed_raw({"", '[' .. memory.name .. ']', {'pirates.notify_parrot'}, ' ',  message}, true)
+	Server.to_discord_embed_raw({"", '[' .. memory.name .. '] ', {'pirates.notify_parrot'}, ' ',  message}, true)
 end
 
 

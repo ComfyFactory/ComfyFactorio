@@ -668,21 +668,21 @@ end
 
 
 
-local function event_pre_player_mined_item(event)
-	-- figure out which crew this is about:
-	-- local crew_id = nil
-	-- if event.player_index and game.players[event.player_index].valid then crew_id = tonumber(string.sub(game.players[event.player_index].force.name, -3, -1)) or nil end
-	-- Memory.set_working_id(crew_id)
-	-- local memory = Memory.get_crew_memory()
+-- local function event_pre_player_mined_item(event)
+-- 	-- figure out which crew this is about:
+-- 	-- local crew_id = nil
+-- 	-- if event.player_index and game.players[event.player_index].valid then crew_id = tonumber(string.sub(game.players[event.player_index].force.name, -3, -1)) or nil end
+-- 	-- Memory.set_working_id(crew_id)
+-- 	-- local memory = Memory.get_crew_memory()
 
-	-- if memory.planet[1].type.id == 11 then --rocky planet
-	-- 	if event.entity.name == 'rock-huge' or event.entity.name == 'rock-big' or event.entity.name == 'sand-rock-big' then
-	-- 		Event_functions.trap(event.entity, false)
-	-- 		event.entity.destroy()
-	-- 		Event_functions.rocky_loot(event)
-	-- 	end
-	-- end
-end
+-- 	-- if memory.planet[1].type.id == 11 then --rocky planet
+-- 	-- 	if event.entity.name == 'rock-huge' or event.entity.name == 'rock-big' or event.entity.name == 'sand-rock-big' then
+-- 	-- 		Event_functions.trap(event.entity, false)
+-- 	-- 		event.entity.destroy()
+-- 	-- 		Event_functions.rocky_loot(event)
+-- 	-- 	end
+-- 	-- end
+-- end
 
 local function event_on_player_mined_entity(event)
 	if not event.player_index then return end
@@ -1197,7 +1197,7 @@ local function event_on_player_joined_game(event)
 	--figure out if we should drop them back into a crew:
 
 	if (not Server.get_current_time()) then -- don't run this on servers because I'd need to negotiate that with the rest of Comfy
-		player.print('Support Pirate Ship scenario design at ko-fi.com/thesixthroc', {r=1, g=0.4, b=0.9})
+		player.print({'pirates.thesixthroc_support_toast'}, {r=1, g=0.4, b=0.9})
 	end
 
 	if _DEBUG then
@@ -1637,7 +1637,7 @@ local function event_on_rocket_launched(event)
 	end
 
 	local force = memory.force
-	local message = {'pirates.granted_2',  Math.floor(Balance.rocket_launch_coin_reward/100)/10 .. 'k [item=coin]', Math.floor(destination.dynamic_data.rocketcoalreward/100)/10 .. 'k [item=coal]'}
+	local message = {'pirates.granted_2', {'pirates.granted_rocket_launch'}, Math.floor(Balance.rocket_launch_coin_reward/100)/10 .. 'k [item=coin]', Math.floor(destination.dynamic_data.rocketcoalreward/100)/10 .. 'k [item=coal]'}
 	Common.notify_force_light(force,message)
 
 	if destination.dynamic_data.quest_type == Quest.enum.TIME and (not destination.dynamic_data.quest_complete) then
@@ -1649,9 +1649,14 @@ local function event_on_rocket_launched(event)
 		destination.dynamic_data.quest_progress = destination.dynamic_data.rocketsilohp
 		Quest.try_resolve_quest()
 	end
-	
-	if destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid then
-		destination.dynamic_data.rocketsilos[1].die()
+
+	if destination.dynamic_data.rocketsilos then
+		for i = 1, #destination.dynamic_data.rocketsilos do
+			local s = destination.dynamic_data.rocketsilos[i]
+			if s and s.valid then
+				s.die()
+			end
+		end
 		destination.dynamic_data.rocketsilos = nil
 	end
 end
@@ -1820,7 +1825,7 @@ event.add(defines.events.on_entity_died, event_on_entity_died)
 event.add(defines.events.on_player_joined_game, event_on_player_joined_game)
 event.add(defines.events.on_pre_player_left_game, event_on_pre_player_left_game)
 -- event.add(defines.events.on_player_left_game, event_on_player_left_game)
-event.add(defines.events.on_pre_player_mined_item, event_pre_player_mined_item)
+-- event.add(defines.events.on_pre_player_mined_item, event_pre_player_mined_item)
 event.add(defines.events.on_player_mined_entity, event_on_player_mined_entity)
 event.add(defines.events.on_research_finished, event_on_research_finished)
 event.add(defines.events.on_player_changed_surface, on_player_changed_surface)

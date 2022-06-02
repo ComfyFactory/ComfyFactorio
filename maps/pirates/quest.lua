@@ -241,7 +241,7 @@ function Public.try_resolve_quest()
 
 		local force = memory.force
 		if not (force and force.valid) then return end
-		Common.notify_force_light(force, {'pirates.granted_1', destination.dynamic_data.quest_reward.display_amount .. destination.dynamic_data.quest_reward.chat_name})
+		Common.notify_force_light(force, {'pirates.granted_1', {'pirates.granted_quest_complete'}, destination.dynamic_data.quest_reward.display_amount .. destination.dynamic_data.quest_reward.chat_name})
 
 		local name = destination.dynamic_data.quest_reward.name
 		local count = destination.dynamic_data.quest_reward.count

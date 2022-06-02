@@ -286,7 +286,7 @@ function Public.periodic_free_resources(tickinterval)
 		Common.give_items_to_crew{{name = 'sulfuric-acid-barrel', count = count}}
 		local force = memory.force
 		if not (force and force.valid) then return end
-		local message = {'pirates.granted_1', count .. ' [item=sulfuric-acid-barrel]'}
+		local message = {'pirates.granted_1', {'pirates.granted_periodic_barrel'}, count .. ' [item=sulfuric-acid-barrel]'}
 		Common.notify_force_light(force, message)
 	end
 end
@@ -919,8 +919,10 @@ function Public.loading_update(tickinterval)
 
 			local eta_ticks = total - (memory.loadingticks - (memory.extra_time_at_sea or 0))
 
+			-- log(_inspect{eta_ticks, (memory.active_sea_enemies.krakens and #memory.active_sea_enemies.krakens or 'nil'), memory.loadingticks})
+
 			if eta_ticks < 60*20 and memory.active_sea_enemies and (memory.active_sea_enemies.krakens and #memory.active_sea_enemies.krakens > 0) then
-				memory.loadingticks = memory.loadingticks - tickinterval
+				memory.loadingticks = memory.loadingticks - tickinterval --reverse the change
 			else
 				local fraction = memory.loadingticks / (total + (memory.extra_time_at_sea or 0))
 

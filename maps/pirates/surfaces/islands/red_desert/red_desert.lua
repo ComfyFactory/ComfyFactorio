@@ -118,14 +118,14 @@ function Public.terrain(args)
 
 	if noises.forest_abs_suppressed(p) < 0.8 and noises.mood(p) > -0.3 then
 		if noises.height(p) > 0.27 then
-			if noises.ore(p) > 1.55 then
+			if noises.ore(p) > 1.5 then
 				local name = 'iron-ore'
 				if (args.p.x + args.p.y) % 2 < 1 then
 					name = 'copper-ore'
 				end
-				args.entities[#args.entities + 1] = {name = name, position = args.p, amount = 24}
+				args.entities[#args.entities + 1] = {name = name, position = args.p, amount = 20}
 			elseif noises.ore(p) < -1.6 then
-				args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = 24}
+				args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = 20}
 			elseif noises.ore(p) < 0.041 and noises.ore(p) > -0.041 then
 				args.entities[#args.entities + 1] = {name = 'stone', position = args.p, amount = 10}
 			end
