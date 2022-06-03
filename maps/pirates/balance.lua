@@ -510,9 +510,9 @@ function Public.player_gun_speed_modifiers()
 end
 
 
-Public.starting_items_player = {['pistol'] = 1, ['firearm-magazine'] = 12, ['raw-fish'] = 1, ['iron-plate'] = 12, ['medium-electric-pole'] = 4}
+Public.starting_items_player = {['pistol'] = 1, ['firearm-magazine'] = 20, ['raw-fish'] = 4, ['medium-electric-pole'] = 20, ['iron-plate'] = 50, ['copper-plate'] = 20, ['iron-gear-wheel'] = 6, ['copper-cable'] = 20, ['burner-inserter'] = 2}
 
-Public.starting_items_player_late = {['pistol'] = 1, ['firearm-magazine'] = 5}
+Public.starting_items_player_late = {['pistol'] = 1, ['firearm-magazine'] = 10, ['raw-fish'] = 4, ['small-electric-pole'] = 20, ['iron-plate'] = 50, ['copper-plate'] = 20, ['iron-gear-wheel'] = 6, ['copper-cable'] = 20, ['burner-inserter'] = 2}
 
 function Public.starting_items_crew_upstairs()
 	return {
