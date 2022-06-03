@@ -229,7 +229,7 @@ function(cmd)
 	if not Common.validate_player(player) then return end
 
 	if param and param ~= 'nil' then
-		local string = Roles.get_class_print_string(param)
+		local string = Roles.get_class_print_string(param, false)
 		if string then
 			Common.notify_player_expected(player, {'', 'Class definition for ', string})
 		else
@@ -237,6 +237,27 @@ function(cmd)
 		end
 	else
 		Common.notify_player_expected(player, '/classinfo {classname} returns the definition of the named class.')
+	end
+end)
+
+commands.add_command(
+'classinfofull',
+'{classname} returns detailed definition of the named class.',
+function(cmd)
+	cmd_set_memory(cmd)
+	local param = tostring(cmd.parameter)
+	local player = game.players[cmd.player_index]
+	if not Common.validate_player(player) then return end
+
+	if param and param ~= 'nil' then
+		local string = Roles.get_class_print_string(param, true)
+		if string then
+			Common.notify_player_expected(player, {'', 'Class definition for ', string})
+		else
+			Common.notify_player_error(player, 'Command error: Class ' .. param .. ' not found.')
+		end
+	else
+		Common.notify_player_expected(player, '/classinfofull {classname} returns detailed definition of the named class.')
 	end
 end)
 
@@ -1023,6 +1044,18 @@ if _DEBUG then
 		if check_admin(cmd) then
 		local player = game.players[cmd.player_index]
 			Server.to_discord_embed_raw(CoreData.comfy_emojis.monkas)
+		end
+	end)
+
+	commands.add_command(
+	'piratux_test',
+	'is a dev command of piratux.',
+	function(cmd)
+		local param = tostring(cmd.parameter)
+		if check_admin(cmd) then
+			local player = game.players[cmd.player_index]
+
+			player.print('speed: ' .. player.character.speed .. 'effective_speed: ' .. player.character.effective_speed)
 		end
 	end)
 end

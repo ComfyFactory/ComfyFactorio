@@ -37,6 +37,8 @@ function Public.global_reset_memory()
 
 	pirates_global_memory.global_delayed_tasks = {}
 	pirates_global_memory.global_buffered_tasks = {}
+
+	pirates_global_memory.last_players_health = {} --used to make damage reduction work somewhat properly
 end
 
 

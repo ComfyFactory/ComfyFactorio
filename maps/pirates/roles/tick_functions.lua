@@ -1,5 +1,3 @@
--- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
-
 --luacheck: ignore
 --luacheck ignores because tickinterval arguments are a code templating choice...
 
@@ -38,7 +36,7 @@ function Public.class_update_auxiliary_data(tickinterval)
 				local inv = player.character.get_inventory(defines.inventory.character_main)
 				if inv and inv.valid then
 					local count = inv.get_item_count('iron-ore')
-					if count and count >= 3000 then
+					if count and count >= Balance.iron_leg_iron_ore_required then
 						check = true
 					end
 				end
@@ -105,7 +103,7 @@ function Public.class_renderings(tickinterval)
 								target = player.character,
 								color = CoreData.colors.toughness_rendering,
 								filled = false,
-								radius = Balance.samurai_resistance^2,
+								radius = (1 - Balance.samurai_damage_taken_multiplier)^2,
 								only_in_alt_mode = false,
 								draw_on_ground = true,
 							}
@@ -117,7 +115,7 @@ function Public.class_renderings(tickinterval)
 								target = player.character,
 								color = CoreData.colors.toughness_rendering,
 								filled = false,
-								radius = Balance.hatamoto_resistance^2,
+								radius = (1 - Balance.hatamoto_damage_taken_multiplier)^2,
 								only_in_alt_mode = false,
 								draw_on_ground = true,
 							}
@@ -129,7 +127,7 @@ function Public.class_renderings(tickinterval)
 								target = player.character,
 								color = CoreData.colors.toughness_rendering,
 								filled = false,
-								radius = Balance.iron_leg_resistance^2,
+								radius = (1 - Balance.iron_leg_damage_taken_multiplier)^2,
 								only_in_alt_mode = false,
 								draw_on_ground = true,
 							}
@@ -169,14 +167,25 @@ function Public.update_character_properties(tickinterval)
 			local player_index = player.index
 			local character = player.character
 			if memory.classes_table and memory.classes_table[player_index] then
+				--local max_reach_bonus = 0
+				-- if memory.classes_table[player_index] == Classes.enum.DECKHAND then
+				-- 	max_reach_bonus = Math.max(max_reach_bonus, 6)
+				-- 	character.character_build_distance_bonus = 6
+				-- else
+				-- 	character.character_build_distance_bonus = 0
+				-- end
 
 				if memory.classes_table[player_index] == Classes.enum.FISHERMAN then
-					character.character_reach_distance_bonus = 10
-				elseif memory.classes_table[player_index] == Classes.enum.MASTER_ANGLER or memory.classes_table[player_index] == Classes.enum.DREDGER then
-					character.character_reach_distance_bonus = 16
+					character.character_reach_distance_bonus = Balance.fisherman_reach_bonus
+				elseif memory.classes_table[player_index] == Classes.enum.MASTER_ANGLER then
+					character.character_reach_distance_bonus = Balance.master_angler_reach_bonus
+				elseif memory.classes_table[player_index] == Classes.enum.DREDGER then
+					character.character_reach_distance_bonus = Balance.dredger_reach_bonus
 				else
 					character.character_reach_distance_bonus = 0
 				end
+
+				--character.character_reach_distance_bonus = max_reach_bonus
 			end
 
 			local health_boost = 0 -- base health is 250
@@ -198,13 +207,14 @@ function Public.update_character_properties(tickinterval)
 			character.character_health_bonus = health_boost
 
 			local speed_boost = Balance.base_extra_character_speed
+
 			if memory.speed_boost_characters and memory.speed_boost_characters[player_index] then
-				speed_boost = speed_boost + 0.85
+				speed_boost = speed_boost * Balance.respawn_speed_boost
 			else
 				if memory.classes_table and memory.classes_table[player_index] then
 					local class = memory.classes_table[player_index]
 					if class == Classes.enum.SCOUT then
-						speed_boost = speed_boost + 0.35
+						speed_boost = speed_boost * Balance.scout_extra_speed
 					elseif class == Classes.enum.DECKHAND or class == Classes.enum.BOATSWAIN or class == Classes.enum.SHORESMAN then
 						local surfacedata = Surfaces.SurfacesCommon.decode_surface_name(player.surface.name)
 						local type = surfacedata.type
@@ -213,27 +223,27 @@ function Public.update_character_properties(tickinterval)
 
 						if class == Classes.enum.DECKHAND then
 							if on_ship_bool and (not hold_bool) then
-								speed_boost = speed_boost + 0.25
+								speed_boost = speed_boost * Balance.deckhand_extra_speed
 							end
 						elseif class == Classes.enum.BOATSWAIN then
 							if hold_bool then
-								speed_boost = speed_boost + 0.25
+								speed_boost = speed_boost * Balance.boatswain_extra_speed
 							end
 						elseif class == Classes.enum.SHORESMAN then
 							if not on_ship_bool then
-								speed_boost = speed_boost + 0.07
+								speed_boost = speed_boost * Balance.shoresman_extra_speed
 							end
 						end
 					end
 				end
 			end
-			character.character_running_speed_modifier = speed_boost
+			character.character_running_speed_modifier = speed_boost - 1
 		end
 	end
 end
 
 function Public.class_rewards_tick(tickinterval)
-	--assuming tickinterval = 6 seconds for now
+	--assuming tickinterval = 7 seconds for now
 	local memory = Memory.get_crew_memory()
 
 	local crew = Common.crew_get_crew_members()
@@ -262,7 +272,7 @@ function Public.class_rewards_tick(tickinterval)
 			end
 
 
-			if game.tick % tickinterval == 0 and (not (memory.boat and memory.boat.state and (memory.boat.state == Structures.Boats.enum_state.ATSEA_LOADING_MAP or memory.boat.state == Structures.Boats.enum_state.ATSEA_WAITING_TO_SAIL))) then --it is possible to spend extra time here, so don't give out freebies
+			if game.tick % tickinterval == 0 and (not (memory.boat and memory.boat.state and memory.boat.state == Structures.Boats.enum_state.ATSEA_LOADING_MAP)) then --it is possible to spend extra time here, so don't give out freebies
 
 				if memory.classes_table and memory.classes_table[player_index] then
 					local class = memory.classes_table[player_index]
@@ -273,16 +283,16 @@ function Public.class_rewards_tick(tickinterval)
 						local hold_bool = surfacedata.type == Surfaces.enum.HOLD
 
 						if class == Classes.enum.DECKHAND and on_ship_bool and (not hold_bool) then
-							Classes.class_ore_grant(player, 2)
+							Classes.class_ore_grant(player, Balance.deckhand_ore_grant_multiplier, Balance.deckhand_ore_scaling_enabled)
 						elseif class == Classes.enum.BOATSWAIN and hold_bool then
-							Classes.class_ore_grant(player, 4)
+							Classes.class_ore_grant(player, Balance.boatswain_ore_grant_multiplier, Balance.boatswain_ore_scaling_enabled)
 						elseif class == Classes.enum.SHORESMAN and (not on_ship_bool) then
-							Classes.class_ore_grant(player, 2)
+							Classes.class_ore_grant(player, Balance.shoresman_ore_grant_multiplier, Balance.shoresman_ore_scaling_enabled)
 						elseif class == Classes.enum.QUARTERMASTER then
-							local nearby_players = #player.surface.find_entities_filtered{position = player.position, radius = Common.quartermaster_range, name = 'character'}
+							local nearby_players = #player.surface.find_entities_filtered{position = player.position, radius = Balance.quartermaster_range, name = 'character'}
 
 							if nearby_players > 1 then
-								Classes.class_ore_grant(player, nearby_players - 1, true)
+								Classes.class_ore_grant(player, nearby_players - 1, Balance.quartermaster_ore_scaling_enabled)
 							end
 						end
 					end
