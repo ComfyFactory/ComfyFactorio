@@ -1195,6 +1195,11 @@ local function event_on_player_joined_game(event)
 	if crew_to_put_back_in then
 		Crew.join_crew(player, crew_to_put_back_in, true)
 
+		local memory = global_memory.crew_memories[crew_to_put_back_in]
+		if #memory.crewplayerindices <= 1 then
+			memory.playerindex_captain = player.index
+		end
+
 		if _DEBUG then log('putting player back in their old crew') end
 	else
 		if player.character and player.character.valid then
@@ -1238,6 +1243,12 @@ local function event_on_player_joined_game(event)
 		)
 		if ages[1] then
 			Crew.join_crew(player, ages[1].id)
+
+			local memory = global_memory.crew_memories[ages[1].id]
+			if #memory.crewplayerindices <= 1 then
+				memory.playerindex_captain = player.index
+			end
+
 			if ages[2] then
 				if ages[1].large and (not ages[#ages].large) then
 					Common.notify_player_announce(player, {'pirates.goto_oldest_crew_with_large_capacity'})
