@@ -73,25 +73,25 @@ end
 function Public.explanation_advanced(class)
 	local explanation = 'pirates.class_' .. class .. '_explanation_advanced'
 	local full_explanation = {}
-	
+
 	if class == enum.DECKHAND then
-		local extra_speed = Public.calculate_percentage(Balance.deckhand_extra_speed)
+		local extra_speed = Public.percentage_points_difference_from_100_percent(Balance.deckhand_extra_speed)
 		local ore_amount = Public.ore_grant_amount(Balance.deckhand_ore_grant_multiplier, Balance.deckhand_ore_scaling_enabled)
 		local tick_rate = Balance.class_reward_tick_rate_in_seconds
 		full_explanation = {'', {explanation, extra_speed, ore_amount, tick_rate}}
 	elseif class == enum.BOATSWAIN then
-		local extra_speed = Public.calculate_percentage(Balance.boatswain_extra_speed)
+		local extra_speed = Public.percentage_points_difference_from_100_percent(Balance.boatswain_extra_speed)
 		local ore_amount = Public.ore_grant_amount(Balance.boatswain_ore_grant_multiplier, Balance.boatswain_ore_scaling_enabled)
 		local tick_rate = Balance.class_reward_tick_rate_in_seconds
 		full_explanation = {'', {explanation, extra_speed, ore_amount, tick_rate}}
 	elseif class == enum.SHORESMAN then
-		local extra_speed = Public.calculate_percentage(Balance.shoresman_extra_speed)
+		local extra_speed = Public.percentage_points_difference_from_100_percent(Balance.shoresman_extra_speed)
 		local ore_amount = Public.ore_grant_amount(Balance.shoresman_ore_grant_multiplier, Balance.shoresman_ore_scaling_enabled)
 		local tick_rate = Balance.class_reward_tick_rate_in_seconds
 		full_explanation = {'', {explanation, extra_speed, ore_amount, tick_rate}}
 	elseif class == enum.QUARTERMASTER then
 		local range = Balance.quartermaster_range
-		local extra_physical = Public.calculate_percentage(Balance.quartermaster_bonus_physical_damage)
+		local extra_physical = Public.percentage_points_difference_from_100_percent(Balance.quartermaster_bonus_physical_damage)
 		full_explanation = {'', {explanation, range, extra_physical}}
 	elseif class == enum.FISHERMAN then
 		local extra_range = Balance.fisherman_reach_bonus
@@ -102,22 +102,22 @@ function Public.explanation_advanced(class)
 		local extra_coins = Balance.master_angler_coin_bonus
 		full_explanation = {'', {explanation, extra_range, extra_fish, extra_coins}}
 	elseif class == enum.SCOUT then
-		local extra_speed = Public.calculate_percentage(Balance.scout_extra_speed)
-		local received_damage = Public.calculate_percentage(Balance.scout_damage_taken_multiplier)
-		local dealt_damage = Public.calculate_percentage(Balance.scout_damage_dealt_multiplier)
+		local extra_speed = Public.percentage_points_difference_from_100_percent(Balance.scout_extra_speed)
+		local received_damage = Public.percentage_points_difference_from_100_percent(Balance.scout_damage_taken_multiplier)
+		local dealt_damage = Public.percentage_points_difference_from_100_percent(Balance.scout_damage_dealt_multiplier)
 		full_explanation = {'', {explanation, extra_speed, received_damage, dealt_damage}}
 	elseif class == enum.SAMURAI then
-		local received_damage = Public.calculate_percentage(Balance.samurai_damage_taken_multiplier)
+		local received_damage = Public.percentage_points_difference_from_100_percent(Balance.samurai_damage_taken_multiplier)
 		local melee_damage = Balance.samurai_damage_dealt_with_melee_multiplier
-		local non_melee_damage = Public.calculate_percentage(Balance.samurai_damage_dealt_when_not_melee_multiplier)
+		local non_melee_damage = Public.percentage_points_difference_from_100_percent(Balance.samurai_damage_dealt_when_not_melee_multiplier)
 		full_explanation = {'', {explanation, received_damage, melee_damage, non_melee_damage}}
 	elseif class == enum.HATAMOTO then
-		local received_damage = Public.calculate_percentage(Balance.hatamoto_damage_taken_multiplier)
+		local received_damage = Public.percentage_points_difference_from_100_percent(Balance.hatamoto_damage_taken_multiplier)
 		local melee_damage = Balance.hatamoto_damage_dealt_with_melee_multiplier
-		local non_melee_damage = Public.calculate_percentage(Balance.hatamoto_damage_dealt_when_not_melee_multiplier)
+		local non_melee_damage = Public.percentage_points_difference_from_100_percent(Balance.hatamoto_damage_dealt_when_not_melee_multiplier)
 		full_explanation = {'', {explanation, received_damage, melee_damage, non_melee_damage}}
 	elseif class == enum.IRON_LEG then
-		local received_damage = Public.calculate_percentage(Balance.iron_leg_damage_taken_multiplier)
+		local received_damage = Public.percentage_points_difference_from_100_percent(Balance.iron_leg_damage_taken_multiplier)
 		local iron_ore_required = Balance.iron_leg_iron_ore_required
 		full_explanation = {'', {explanation, received_damage, iron_ore_required}}
 	else
@@ -137,7 +137,11 @@ end
 -- }
 
 
-function Public.calculate_percentage(multiplier)
+-- returns by how much % result changes when you multiply it by multiplier
+-- for example consider these multiplier cases {0.6, 1.2}:
+-- number * 0.6 -> result decreased by 40%
+-- number * 1.2 -> result increased by 20%
+function Public.percentage_points_difference_from_100_percent(multiplier)
 	if(multiplier < 1) then
 		return (1 - multiplier) * 100
 	else
