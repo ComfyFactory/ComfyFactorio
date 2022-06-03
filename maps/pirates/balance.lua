@@ -28,10 +28,10 @@ Public.rocket_launch_coin_reward = 5000
 
  Public.samurai_damage_taken_multiplier = 0.26
  Public.samurai_damage_dealt_when_not_melee_multiplier = 0.75
- Public.samurai_damage_dealt_with_melee_multiplier = 25
+ Public.samurai_damage_dealt_with_melee = 25
  Public.hatamoto_damage_taken_multiplier = 0.16
  Public.hatamoto_damage_dealt_when_not_melee_multiplier = 0.75
- Public.hatamoto_damage_dealt_with_melee_multiplier = 45
+ Public.hatamoto_damage_dealt_with_melee = 45
  Public.iron_leg_damage_taken_multiplier = 0.18
  Public.iron_leg_iron_ore_required = 3000
  Public.deckhand_extra_speed = 1.25
