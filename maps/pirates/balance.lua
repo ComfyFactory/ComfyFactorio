@@ -13,8 +13,8 @@ local _inspect = require 'utils.inspect'.inspect
 
 
 Public.base_extra_character_speed = 0.20
-Public.cannon_starting_hp = 2000
-Public.cannon_resistance_factor = 2.5
+Public.cannon_starting_hp = 2000--too low, and crew is too fragile. too high, and the run survives when we should put it out of its misery. But this should go up later in the game.
+Public.cannon_resistance_factor = 2
 Public.technology_price_multiplier = 1
 
 
