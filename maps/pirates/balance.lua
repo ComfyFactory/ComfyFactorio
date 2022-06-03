@@ -11,6 +11,7 @@ local _inspect = require 'utils.inspect'.inspect
 
 -- this file is an API to all the balance tuning knobs
 
+--test_change
 
 Public.base_extra_character_speed = 0.20
 Public.cannon_starting_hp = 2000--too low, and crew is too fragile. too high, and the run survives when we should put it out of its misery. But this should go up later in the game.
