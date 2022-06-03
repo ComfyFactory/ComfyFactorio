@@ -210,7 +210,7 @@ local function damage_to_artillery(event)
 		-- remove resistances:
 		-- event.entity.health = event.entity.health + event.final_damage_amount - event.original_damage_amount
 
-		if Common.entity_damage_healthbar(event.entity, event.original_damage_amount / 1.5 * (1 + Balance.biter_timeofday_bonus_damage(event.cause.surface.darkness)), Memory.get_crew_memory().boat) <= 0 then
+		if Common.entity_damage_healthbar(event.entity, event.original_damage_amount / Balance.cannon_resistance_factor * (1 + Balance.biter_timeofday_bonus_damage(event.cause.surface.darkness)), Memory.get_crew_memory().boat) <= 0 then
 			event.entity.die()
 		end
 	else

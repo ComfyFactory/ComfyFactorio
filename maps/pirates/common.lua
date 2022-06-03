@@ -338,7 +338,7 @@ function Public.give(player, stacks, spill_position, short_form, spill_surface, 
 			end
 		end
 
-		if itemcount_remember > 0 then
+		if itemcount_remember >= 0 then
 			if short_form then
 				text1 = text1 .. '[color=' .. flying_text_color.r .. ',' .. flying_text_color.g .. ',' .. flying_text_color.b .. ']' .. '+' .. itemcount_remember .. '[/color]'
 			else
