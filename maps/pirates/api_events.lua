@@ -720,7 +720,7 @@ local function event_on_player_mined_entity(event)
 
 				local baseamount = 4
 				--minimum 1 wood
-				local amount = Math.clamp(1, Math.ceil(available), Math.ceil(baseamount * available/starting))
+				local amount = Math.clamp(1, Math.max(1, Math.ceil(available)), Math.ceil(baseamount * available/starting))
 
 				destination.dynamic_data.wood_remaining = destination.dynamic_data.wood_remaining - amount
 
