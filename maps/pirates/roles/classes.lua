@@ -281,7 +281,7 @@ end
 
 function Public.class_ore_grant(player, how_much, enable_scaling)
 	local count = Public.ore_grant_amount(how_much, enable_scaling)
-	
+
 	if Math.random(4) == 1 then
 		Common.flying_text_small(player.surface, player.position, '[color=0.85,0.58,0.37]+' .. count .. '[/color]')
 		Common.give_items_to_crew{{name = 'copper-ore', count = count}}
