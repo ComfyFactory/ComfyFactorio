@@ -33,7 +33,7 @@ Public.EEI_stages = { --multipliers
 
 function Public.scripted_biters_pollution_cost_multiplier()
 
-	return 1.45 / Math.sloped(Common.difficulty_scale(), 1/5) * (1 + 1.2 / ((1 + (Common.overworldx()/40))^(1.5+Common.difficulty_scale()))) -- the complicated factor just makes the early-game easier; in particular the first island, but on easier difficulties the next few islands as well
+	return 1.45 / Math.sloped(Common.difficulty_scale(), 1/3) * (1 + 1.2 / ((1 + (Common.overworldx()/40))^(1.5+Common.difficulty_scale()))) -- the complicated factor just makes the early-game easier; in particular the first island, but on easier difficulties the next few islands as well
 end
 
 function Public.cost_to_leave_multiplier()
