@@ -587,7 +587,7 @@ function Public.click(event)
 		-- local difficulty_option = flow.proposals.body.proposal_maker.body.options.difficulty.difficulty.slider.slider_value
 		-- local mode_option = flow.proposals.body.proposal_maker.body.options.mode.mode.switch.switch_state
 
-		if (not proposal_name) or (proposal_name == '') then proposal_name = {'pirates.default_crew_name'} end
+		if (not proposal_name) or (proposal_name == '') then proposal_name = 'NoName' end
 
 		-- make name unique
 		-- local unique, changed = true, false

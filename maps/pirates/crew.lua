@@ -760,7 +760,7 @@ function Public.initialise_crew(accepted_proposal)
 	local boat = memory.boat
 
 	for _, e in pairs(memory.boat.cannons_temporary_reference or {}) do
-		Common.new_healthbar(true, e, 2000, nil, e.health, 0.3, -0.1, memory.boat)
+		Common.new_healthbar(true, e, Balance.cannon_starting_hp, nil, e.health, 0.3, -0.1, memory.boat)
 	end
 
 	boat.dockedposition = boat.position
@@ -841,7 +841,7 @@ function Public.reset_crew_and_enemy_force(id)
 	-- crew_force.character_inventory_slots_bonus = 10
 	-- crew_force.character_running_speed_modifier = Balance.base_extra_character_speed
 	crew_force.laboratory_productivity_bonus = 0
-	crew_force.ghost_time_to_live = 8 * 60 * 60
+	crew_force.ghost_time_to_live = 12 * 60 * 60
 
 	for k, v in pairs(Balance.player_ammo_damage_modifiers()) do
 		crew_force.set_ammo_damage_modifier(k, v)

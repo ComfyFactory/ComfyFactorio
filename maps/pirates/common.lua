@@ -20,7 +20,7 @@ local Public = {}
 -- Public.active_crews_cap = 1
 Public.activeCrewsCap = 2
 Public.minimumCapacitySliderValue = 1
-Public.minimum_run_capacity_to_enforce_space_for = 32
+Public.minimum_run_capacity_to_enforce_space_for = 22
 -- auto-disbanding when there are no players left in the crew:
 Public.autodisband_ticks = nil
 -- Public.autodisband_ticks = 30*60*60
@@ -337,7 +337,7 @@ function Public.give(player, stacks, spill_position, short_form, spill_surface, 
 			end
 		end
 
-		if itemcount_remember > 0 then
+		if itemcount_remember >= 0 then
 			if short_form then
 				text1 = text1 .. '[color=' .. flying_text_color.r .. ',' .. flying_text_color.g .. ',' .. flying_text_color.b .. ']' .. '+' .. itemcount_remember .. '[/color]'
 			else
