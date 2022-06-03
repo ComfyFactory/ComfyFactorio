@@ -11,12 +11,51 @@ local _inspect = require 'utils.inspect'.inspect
 
 -- this file is an API to all the balance tuning knobs
 
---test_change
 
-Public.base_extra_character_speed = 0.20
+Public.base_extra_character_speed = 1.44
+Public.respawn_speed_boost = 1.75
+
 Public.cannon_starting_hp = 2000--too low, and crew is too fragile. too high, and the run survives when we should put it out of its misery. But this should go up later in the game.
 Public.cannon_resistance_factor = 2
 Public.technology_price_multiplier = 1
+
+Public.rocket_launch_coin_reward = 5000
+
+ Public.base_caught_fish_amount = 3
+ Public.class_reward_tick_rate_in_seconds = 7
+ Public.poison_damage_multiplier = 1.85
+ Public.every_nth_tree_gives_coins = 6
+
+ Public.samurai_damage_taken_multiplier = 0.26
+ Public.samurai_damage_dealt_when_not_melee_multiplier = 0.75
+ Public.samurai_damage_dealt_with_melee_multiplier = 25
+ Public.hatamoto_damage_taken_multiplier = 0.16
+ Public.hatamoto_damage_dealt_when_not_melee_multiplier = 0.75
+ Public.hatamoto_damage_dealt_with_melee_multiplier = 45
+ Public.iron_leg_damage_taken_multiplier = 0.18
+ Public.iron_leg_iron_ore_required = 3000
+ Public.deckhand_extra_speed = 1.25
+ Public.deckhand_ore_grant_multiplier = 2
+ Public.deckhand_ore_scaling_enabled = true
+ Public.boatswain_extra_speed = 1.25
+ Public.boatswain_ore_grant_multiplier = 4
+ Public.boatswain_ore_scaling_enabled = true
+ Public.shoresman_extra_speed = 1.1
+ Public.shoresman_ore_grant_multiplier = 2
+ Public.shoresman_ore_scaling_enabled = true
+ Public.quartermaster_range = 19
+ Public.quartermaster_bonus_physical_damage = 0.1
+ Public.quartermaster_ore_scaling_enabled = false
+ Public.scout_extra_speed = 1.3
+ Public.scout_damage_taken_multiplier = 1.25
+ Public.scout_damage_dealt_multiplier = 0.6
+ Public.fisherman_reach_bonus = 10
+ Public.master_angler_reach_bonus = 16
+ Public.master_angler_fish_bonus = 1
+ Public.master_angler_coin_bonus = 10
+ Public.dredger_reach_bonus = 16
+ Public.dredger_fish_bonus = 1
+ Public.gourmet_ore_scaling_enabled = false
 
 
 function Public.starting_boatEEIpower_production_MW()
@@ -44,8 +83,6 @@ function Public.cost_to_leave_multiplier()
 	-- extra factor now that the cost scales with time:
 	return Math.sloped(Common.difficulty_scale(), 8/10)
 end
-
-Public.rocket_launch_coin_reward = 5000
 
 function Public.crew_scale()
 	local ret = Common.activecrewcount()/10
@@ -301,10 +338,6 @@ end
 function Public.class_resource_scale()
 	return 1 / (Public.crew_scale()^(2/5)) --already helped by longer timescales
 end
-
-Public.samurai_resistance = 0.74
-Public.hatamoto_resistance = 0.84
-Public.iron_leg_resistance = 0.82
 
 function Public.biter_base_density_scale()
 	local p = Public.crew_scale()
