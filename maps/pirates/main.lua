@@ -113,7 +113,7 @@ local function on_init()
 	Surfaces.Lobby.create_starting_dock_surface()
 	local lobby = game.surfaces[CoreData.lobby_surface_name]
 	game.forces.player.set_spawn_position(Common.lobby_spawnpoint, lobby)
-	game.forces.player.character_running_speed_modifier = Balance.base_extra_character_speed
+	-- game.forces.player.character_running_speed_modifier = Balance.base_extra_character_speed
 
 	game.create_force('environment')
 	for id = 1, 3, 1 do
@@ -248,8 +248,8 @@ local function crew_tick()
 				end
 
 
-				if tick % 420 == 0 then
-					ClassPiratesApiOnTick.class_rewards_tick(420)
+				if tick % (60 * Balance.class_reward_tick_rate_in_seconds) == 0 then
+					ClassPiratesApiOnTick.class_rewards_tick(60 * Balance.class_reward_tick_rate_in_seconds)
 				end
 			end
 		end

@@ -70,6 +70,65 @@ function Public.explanation(class)
 	return {'pirates.class_' .. class .. '_explanation'}
 end
 
+function Public.explanation_advanced(class)
+	local explanation = 'pirates.class_' .. class .. '_explanation_advanced'
+	local full_explanation = {}
+
+	if class == enum.DECKHAND then
+		local extra_speed = Public.percentage_points_difference_from_100_percent(Balance.deckhand_extra_speed)
+		local ore_amount = Public.ore_grant_amount(Balance.deckhand_ore_grant_multiplier, Balance.deckhand_ore_scaling_enabled)
+		local tick_rate = Balance.class_reward_tick_rate_in_seconds
+		full_explanation = {'', {explanation, extra_speed, ore_amount, tick_rate}}
+	elseif class == enum.BOATSWAIN then
+		local extra_speed = Public.percentage_points_difference_from_100_percent(Balance.boatswain_extra_speed)
+		local ore_amount = Public.ore_grant_amount(Balance.boatswain_ore_grant_multiplier, Balance.boatswain_ore_scaling_enabled)
+		local tick_rate = Balance.class_reward_tick_rate_in_seconds
+		full_explanation = {'', {explanation, extra_speed, ore_amount, tick_rate}}
+	elseif class == enum.SHORESMAN then
+		local extra_speed = Public.percentage_points_difference_from_100_percent(Balance.shoresman_extra_speed)
+		local ore_amount = Public.ore_grant_amount(Balance.shoresman_ore_grant_multiplier, Balance.shoresman_ore_scaling_enabled)
+		local tick_rate = Balance.class_reward_tick_rate_in_seconds
+		full_explanation = {'', {explanation, extra_speed, ore_amount, tick_rate}}
+	elseif class == enum.QUARTERMASTER then
+		local range = Balance.quartermaster_range
+		local extra_physical = Public.percentage_points_difference_from_100_percent(Balance.quartermaster_bonus_physical_damage)
+		full_explanation = {'', {explanation, range, extra_physical}}
+	elseif class == enum.FISHERMAN then
+		local extra_range = Balance.fisherman_reach_bonus
+		full_explanation = {'', {explanation, extra_range}}
+	elseif class == enum.MASTER_ANGLER then
+		local extra_range = Balance.master_angler_reach_bonus
+		local extra_fish = Balance.master_angler_fish_bonus
+		local extra_coins = Balance.master_angler_coin_bonus
+		full_explanation = {'', {explanation, extra_range, extra_fish, extra_coins}}
+	elseif class == enum.SCOUT then
+		local extra_speed = Public.percentage_points_difference_from_100_percent(Balance.scout_extra_speed)
+		local received_damage = Public.percentage_points_difference_from_100_percent(Balance.scout_damage_taken_multiplier)
+		local dealt_damage = Public.percentage_points_difference_from_100_percent(Balance.scout_damage_dealt_multiplier)
+		full_explanation = {'', {explanation, extra_speed, received_damage, dealt_damage}}
+	elseif class == enum.SAMURAI then
+		local received_damage = Public.percentage_points_difference_from_100_percent(Balance.samurai_damage_taken_multiplier)
+		local melee_damage = Balance.samurai_damage_dealt_with_melee_multiplier
+		local non_melee_damage = Public.percentage_points_difference_from_100_percent(Balance.samurai_damage_dealt_when_not_melee_multiplier)
+		full_explanation = {'', {explanation, received_damage, melee_damage, non_melee_damage}}
+	elseif class == enum.HATAMOTO then
+		local received_damage = Public.percentage_points_difference_from_100_percent(Balance.hatamoto_damage_taken_multiplier)
+		local melee_damage = Balance.hatamoto_damage_dealt_with_melee_multiplier
+		local non_melee_damage = Public.percentage_points_difference_from_100_percent(Balance.hatamoto_damage_dealt_when_not_melee_multiplier)
+		full_explanation = {'', {explanation, received_damage, melee_damage, non_melee_damage}}
+	elseif class == enum.IRON_LEG then
+		local received_damage = Public.percentage_points_difference_from_100_percent(Balance.iron_leg_damage_taken_multiplier)
+		local iron_ore_required = Balance.iron_leg_iron_ore_required
+		full_explanation = {'', {explanation, received_damage, iron_ore_required}}
+	else
+		full_explanation = {'', {explanation}}
+	end
+
+	full_explanation[#full_explanation + 1] = Public.class_is_obtainable(class) and {'', ' ', {'pirates.class_obtainable'}} or {'', ' ', {'pirates.class_unobtainable'}} 
+
+	return full_explanation
+end
+
 -- Public.display_form = {
 -- 	[enum.DECKHAND] = {'pirates.class_deckhand'},
 -- }
@@ -78,6 +137,17 @@ end
 -- }
 
 
+-- returns by how much % result changes when you multiply it by multiplier
+-- for example consider these multiplier cases {0.6, 1.2}:
+-- number * 0.6 -> result decreased by 40%
+-- number * 1.2 -> result increased by 20%
+function Public.percentage_points_difference_from_100_percent(multiplier)
+	if(multiplier < 1) then
+		return (1 - multiplier) * 100
+	else
+		return (multiplier - 1) * 100
+	end
+end
 
 
 Public.class_unlocks = {
@@ -114,6 +184,24 @@ function Public.initial_class_pool()
 		-- enum.SMOLDERING, --tedious
 		enum.GOURMET,
 	}
+end
+
+function Public.class_is_obtainable(class)
+	local obtainable_class_pool = Public.initial_class_pool()
+	
+	for _, unlocked_class_list in pairs(Public.class_unlocks) do
+		for __, unlocked_class in ipairs(unlocked_class_list) do
+			obtainable_class_pool[#obtainable_class_pool + 1] = unlocked_class
+		end
+	end
+	
+	for _, unlockable_class in ipairs(obtainable_class_pool) do
+		if unlockable_class == class then
+			return true
+		end
+	end
+	
+	return false
 end
 
 
@@ -191,13 +279,9 @@ end
 
 
 
-function Public.class_ore_grant(player, how_much, disable_scaling)
-	local count
-	if disable_scaling then
-		count = Math.ceil(how_much)
-	else
-		count = Math.ceil(how_much * Balance.class_resource_scale())
-	end
+function Public.class_ore_grant(player, how_much, enable_scaling)
+	local count = ore_grant_amount(how_much, enable_scaling)
+	
 	if Math.random(4) == 1 then
 		Common.flying_text_small(player.surface, player.position, '[color=0.85,0.58,0.37]+' .. count .. '[/color]')
 		Common.give_items_to_crew{{name = 'copper-ore', count = count}}
@@ -207,6 +291,13 @@ function Public.class_ore_grant(player, how_much, disable_scaling)
 	end
 end
 
+function Public.ore_grant_amount(how_much, enable_scaling)
+	if enable_scaling then
+		return Math.ceil(how_much * Balance.class_resource_scale())
+	else
+		return Math.ceil(how_much)
+	end
+end
 
 local function class_on_player_used_capsule(event)
 
@@ -226,6 +317,9 @@ local function class_on_player_used_capsule(event)
 
     local item = event.item
     if not (item and item.name and item.name == 'raw-fish') then return end
+
+	local global_memory = Memory.get_global_memory()
+	global_memory.last_players_health[event.player_index] = player.character.health
 
 	if memory.classes_table and memory.classes_table[player_index] then
 		local class = memory.classes_table[player_index]
@@ -263,7 +357,7 @@ local function class_on_player_used_capsule(event)
 					multiplier = multiplier * 5
 					memory.gourmet_recency_tick = game.tick - timescale*10 + timescale
 				end
-				Public.class_ore_grant(player, 10 * multiplier, true)
+				Public.class_ore_grant(player, 10 * multiplier, Balance.gourmet_ore_scaling_enabled)
 			end
 		end
 	end
@@ -273,7 +367,7 @@ end
 function Public.lumberjack_bonus_items(give_table)
 	local memory = Memory.get_crew_memory()
 
-	if Math.random(Public.every_nth_tree_gives_coins) == 1 then
+	if Math.random(Balance.every_nth_tree_gives_coins) == 1 then
 		local a = 12
 		give_table[#give_table + 1] = {name = 'coin', count = a}
 		memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a

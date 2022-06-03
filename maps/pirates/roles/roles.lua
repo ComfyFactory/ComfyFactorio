@@ -131,14 +131,21 @@ end
 -- 	return str
 -- end
 
-function Public.get_class_print_string(class)
+function Public.get_class_print_string(class, full)
 
 	for _, class2 in pairs(Classes.enum) do
 		if Classes.eng_form[class2]:lower() == class:lower() or class2 == class:lower() then
+			local explanation = nil
+			if full then
+				explanation = Classes.explanation_advanced(class2)
+			else 
+				explanation = Classes.explanation(class2)
+			end
+
 			if Classes.class_purchase_requirement[class2] then
-				return {'pirates.class_explanation_upgraded_class', Classes.display_form(class2), Classes.display_form(Classes.class_purchase_requirement[class2]), Classes.explanation(class2)}
+				return {'pirates.class_explanation_upgraded_class', Classes.display_form(class2), Classes.display_form(Classes.class_purchase_requirement[class2]), explanation}
 			else
-				return {'pirates.class_explanation', Classes.display_form(class2), Classes.explanation(class2)}
+				return {'pirates.class_explanation', Classes.display_form(class2), explanation}
 			end
 		end
 	end
