@@ -108,12 +108,12 @@ function Public.explanation_advanced(class)
 		full_explanation = {'', {explanation, extra_speed, received_damage, dealt_damage}}
 	elseif class == enum.SAMURAI then
 		local received_damage = Public.percentage_points_difference_from_100_percent(Balance.samurai_damage_taken_multiplier)
-		local melee_damage = Balance.samurai_damage_dealt_with_melee_multiplier
+		local melee_damage = Balance.samurai_damage_dealt_with_melee
 		local non_melee_damage = Public.percentage_points_difference_from_100_percent(Balance.samurai_damage_dealt_when_not_melee_multiplier)
 		full_explanation = {'', {explanation, received_damage, melee_damage, non_melee_damage}}
 	elseif class == enum.HATAMOTO then
 		local received_damage = Public.percentage_points_difference_from_100_percent(Balance.hatamoto_damage_taken_multiplier)
-		local melee_damage = Balance.hatamoto_damage_dealt_with_melee_multiplier
+		local melee_damage = Balance.hatamoto_damage_dealt_with_melee
 		local non_melee_damage = Public.percentage_points_difference_from_100_percent(Balance.hatamoto_damage_dealt_when_not_melee_multiplier)
 		full_explanation = {'', {explanation, received_damage, melee_damage, non_melee_damage}}
 	elseif class == enum.IRON_LEG then

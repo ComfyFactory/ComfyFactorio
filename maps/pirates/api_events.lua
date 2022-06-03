@@ -392,9 +392,9 @@ local function damage_dealt_by_players_changes(event)
 		if melee and event.final_health > 0 then
 			if physical then
 				if samurai then
-					extra_damage_to_deal = Balance.samurai_damage_dealt_with_melee_multiplier * extra_physical_damage_from_research_multiplier
+					extra_damage_to_deal = Balance.samurai_damage_dealt_with_melee * extra_physical_damage_from_research_multiplier
 				elseif hatamoto then
-					extra_damage_to_deal = Balance.hatamoto_damage_dealt_with_melee_multiplier * extra_physical_damage_from_research_multiplier
+					extra_damage_to_deal = Balance.hatamoto_damage_dealt_with_melee * extra_physical_damage_from_research_multiplier
 				end
 			elseif acid then --this hacky stuff is to implement repeated spillover splash damage, whilst getting around the fact that if ovekill damage takes something to zero health, we can't tell in that event how much double-overkill damage should be dealt by reading off its HP. This code assumes that characters only deal acid damage via this function.
 				extra_damage_to_deal = event.original_damage_amount * big_number
