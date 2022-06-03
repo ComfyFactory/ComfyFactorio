@@ -387,14 +387,14 @@ local function damage_dealt_by_players_changes(event)
 
 		local big_number = 1000
 
-		local extra_physical_damage_from_research_multiplier = 1 -- TODO: implement this later
+		local extra_physical_damage_from_research_multiplier = 1 + memory.force.get_ammo_damage_modifier('bullet')
 
 		if melee and event.final_health > 0 then
 			if physical then
 				if samurai then
-					extra_damage_to_deal = Balanace.samurai_damage_dealt_with_melee_multiplier * extra_physical_damage_from_research_multiplier
+					extra_damage_to_deal = Balance.samurai_damage_dealt_with_melee_multiplier * extra_physical_damage_from_research_multiplier
 				elseif hatamoto then
-					extra_damage_to_deal = Balanace.hatamoto_damage_dealt_with_melee_multiplier * extra_physical_damage_from_research_multiplier
+					extra_damage_to_deal = Balance.hatamoto_damage_dealt_with_melee_multiplier * extra_physical_damage_from_research_multiplier
 				end
 			elseif acid then --this hacky stuff is to implement repeated spillover splash damage, whilst getting around the fact that if ovekill damage takes something to zero health, we can't tell in that event how much double-overkill damage should be dealt by reading off its HP. This code assumes that characters only deal acid damage via this function.
 				extra_damage_to_deal = event.original_damage_amount * big_number
@@ -430,7 +430,7 @@ local function damage_dealt_by_players_changes(event)
 			if p2.player and p2.player.valid then
 				local p2_index = p2.player.index
 				if event.entity.valid and player_index ~= p2_index and memory.classes_table[p2_index] and memory.classes_table[p2_index] == Classes.enum.QUARTERMASTER then
-					event.entity.damage(Balance.quartermaster_bonus_damage * event.final_damage_amount, character.force, 'impact', character) --triggers this function again, but not physical this time
+					event.entity.damage(Balance.quartermaster_bonus_physical_damage * event.final_damage_amount, character.force, 'impact', character) --triggers this function again, but not physical this time
 				end
 			end
 		end

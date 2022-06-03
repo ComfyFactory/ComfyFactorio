@@ -73,17 +73,58 @@ end
 function Public.explanation_advanced(class)
 	local explanation = 'pirates.class_' .. class .. '_explanation_advanced'
 	local full_explanation = {}
-
-	-- perhaps some of the code here could be simplified or put somewhere outside the function
+	
 	if class == enum.DECKHAND then
-		local extra_speed = (Balance.deckhand_extra_speed - 1) * 100
+		local extra_speed = Public.calculate_percentage(Balance.deckhand_extra_speed)
 		local ore_amount = Public.ore_grant_amount(Balance.deckhand_ore_grant_multiplier, Balance.deckhand_ore_scaling_enabled)
 		local tick_rate = Balance.class_reward_tick_rate_in_seconds
-		full_explanation = {explanation, extra_speed, ore_amount, tick_rate}
+		full_explanation = {'', {explanation, extra_speed, ore_amount, tick_rate}}
+	elseif class == enum.BOATSWAIN then
+		local extra_speed = Public.calculate_percentage(Balance.boatswain_extra_speed)
+		local ore_amount = Public.ore_grant_amount(Balance.boatswain_ore_grant_multiplier, Balance.boatswain_ore_scaling_enabled)
+		local tick_rate = Balance.class_reward_tick_rate_in_seconds
+		full_explanation = {'', {explanation, extra_speed, ore_amount, tick_rate}}
+	elseif class == enum.SHORESMAN then
+		local extra_speed = Public.calculate_percentage(Balance.shoresman_extra_speed)
+		local ore_amount = Public.ore_grant_amount(Balance.shoresman_ore_grant_multiplier, Balance.shoresman_ore_scaling_enabled)
+		local tick_rate = Balance.class_reward_tick_rate_in_seconds
+		full_explanation = {'', {explanation, extra_speed, ore_amount, tick_rate}}
+	elseif class == enum.QUARTERMASTER then
+		local range = Balance.quartermaster_range
+		local extra_physical = Public.calculate_percentage(Balance.quartermaster_bonus_physical_damage)
+		full_explanation = {'', {explanation, range, extra_physical}}
+	elseif class == enum.FISHERMAN then
+		local extra_range = Balance.fisherman_reach_bonus
+		full_explanation = {'', {explanation, extra_range}}
+	elseif class == enum.MASTER_ANGLER then
+		local extra_range = Balance.master_angler_reach_bonus
+		local extra_fish = Balance.master_angler_fish_bonus
+		local extra_coins = Balance.master_angler_coin_bonus
+		full_explanation = {'', {explanation, extra_range, extra_fish, extra_coins}}
+	elseif class == enum.SCOUT then
+		local extra_speed = Public.calculate_percentage(Balance.scout_extra_speed)
+		local received_damage = Public.calculate_percentage(Balance.scout_damage_taken_multiplier)
+		local dealt_damage = Public.calculate_percentage(Balance.scout_damage_dealt_multiplier)
+		full_explanation = {'', {explanation, extra_speed, received_damage, dealt_damage}}
+	elseif class == enum.SAMURAI then
+		local received_damage = Public.calculate_percentage(Balance.samurai_damage_taken_multiplier)
+		local melee_damage = Balance.samurai_damage_dealt_with_melee_multiplier
+		local non_melee_damage = Public.calculate_percentage(Balance.samurai_damage_dealt_when_not_melee_multiplier)
+		full_explanation = {'', {explanation, received_damage, melee_damage, non_melee_damage}}
+	elseif class == enum.HATAMOTO then
+		local received_damage = Public.calculate_percentage(Balance.hatamoto_damage_taken_multiplier)
+		local melee_damage = Balance.hatamoto_damage_dealt_with_melee_multiplier
+		local non_melee_damage = Public.calculate_percentage(Balance.hatamoto_damage_dealt_when_not_melee_multiplier)
+		full_explanation = {'', {explanation, received_damage, melee_damage, non_melee_damage}}
+	elseif class == enum.IRON_LEG then
+		local received_damage = Public.calculate_percentage(Balance.iron_leg_damage_taken_multiplier)
+		local iron_ore_required = Balance.iron_leg_iron_ore_required
+		full_explanation = {'', {explanation, received_damage, iron_ore_required}}
+	else
+		full_explanation = {'', {explanation}}
 	end
 
-	full_explanation[#full_explanation + 1] = Public.required_class_to_unlock_at_market()
-	full_explanation[#full_explanation + 1] = Public.class_is_obtainable()
+	full_explanation[#full_explanation + 1] = Public.class_is_obtainable(class) and {'', ' ', {'pirates.class_obtainable'}} or {'', ' ', {'pirates.class_unobtainable'}} 
 
 	return full_explanation
 end
@@ -96,6 +137,13 @@ end
 -- }
 
 
+function Public.calculate_percentage(multiplier)
+	if(multiplier < 1) then
+		return (1 - multiplier) * 100
+	else
+		return (multiplier - 1) * 100
+	end
+end
 
 
 Public.class_unlocks = {
@@ -134,15 +182,6 @@ function Public.initial_class_pool()
 	}
 end
 
-function Public.required_class_to_unlock_at_market(class)
-	local required_class = Public.class_purchase_requirement[class]
-	if required_class then
-		return {'\nRequired classes', ':', Public.display_form(required_class)}
-	else
-		return ''
-	end
-end
-
 function Public.class_is_obtainable(class)
 	local obtainable_class_pool = Public.initial_class_pool()
 	
@@ -154,13 +193,11 @@ function Public.class_is_obtainable(class)
 	
 	for _, unlockable_class in ipairs(obtainable_class_pool) do
 		if unlockable_class == class then
-			--return true
-			return {'\n(', 'Enabled', ')'}
+			return true
 		end
 	end
 	
-	--return false
-	return {'\n(', 'Disabled', ')'}
+	return false
 end
 
 

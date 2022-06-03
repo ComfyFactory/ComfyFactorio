@@ -37,10 +37,10 @@ Public.every_nth_tree_gives_coins = 6
 
 Public.samurai_damage_taken_multiplier = 0.26
 Public.samurai_damage_dealt_when_not_melee_multiplier = 0.75
-Public.samurai_damage_dealt_with_melee_multiplier = 30
+Public.samurai_damage_dealt_with_melee_multiplier = 25
 Public.hatamoto_damage_taken_multiplier = 0.16
 Public.hatamoto_damage_dealt_when_not_melee_multiplier = 0.75
-Public.hatamoto_damage_dealt_with_melee_multiplier = 50
+Public.hatamoto_damage_dealt_with_melee_multiplier = 45
 Public.iron_leg_damage_taken_multiplier = 0.18
 Public.iron_leg_iron_ore_required = 3000
 Public.deckhand_extra_speed = 1.25
@@ -53,7 +53,7 @@ Public.shoresman_extra_speed = 1.1
 Public.shoresman_ore_grant_multiplier = 2
 Public.shoresman_ore_scaling_enabled = true
 Public.quartermaster_range = 19
-Public.quartermaster_bonus_damage = 0.1
+Public.quartermaster_bonus_physical_damage = 0.1
 Public.quartermaster_ore_scaling_enabled = false
 Public.scout_extra_speed = 1.3
 Public.scout_damage_taken_multiplier = 1.25
@@ -65,7 +65,6 @@ Public.master_angler_coin_bonus = 10
 Public.dredger_reach_bonus = 16
 Public.dredger_fish_bonus = 1
 Public.gourmet_ore_scaling_enabled = false
-
 
 function Public.starting_boatEEIpower_production_MW()
 	-- return 3 * Math.sloped(Common.capacity_scale(), 1/2) / 2 --/2 as we have 2

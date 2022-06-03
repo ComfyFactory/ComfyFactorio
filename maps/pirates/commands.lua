@@ -244,6 +244,7 @@ commands.add_command(
 'classinfofull',
 '{classname} returns detailed definition of the named class.',
 function(cmd)
+	cmd_set_memory(cmd)
 	local param = tostring(cmd.parameter)
 	local player = game.players[cmd.player_index]
 	if not Common.validate_player(player) then return end
