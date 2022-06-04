@@ -1023,8 +1023,8 @@ function Public.silo_update(tickinterval)
 						if not memory.floating_pollution then memory.floating_pollution = 0 end
 
 						-- Eventually I want to reformulate pollution not to pull from the map directly, but to pull from pollution_statistics. Previously all the silo pollution went to the map, but this causes a lag ~1-2 minutes. So as a compromise, let's send some to floating_pollution directly, and some to the map:
-						memory.floating_pollution = memory.floating_pollution + 2*pollution/3
-						game.surfaces[destination.surface_name].pollute(p, pollution/3)
+						memory.floating_pollution = memory.floating_pollution + 3*pollution/4
+						game.surfaces[destination.surface_name].pollute(p, pollution/4)
 
 						if memory.overworldx >= 0 and dynamic_data.rocketsiloenergyconsumed >= 0.25 * dynamic_data.rocketsiloenergyneeded and (not dynamic_data.parrot_silo_warned) then
 							dynamic_data.parrot_silo_warned = true
