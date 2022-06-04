@@ -62,7 +62,7 @@ function Public.terrain(args)
 
 	if noises.height(p) > 0.06 then
 		if noises.forest_abs_suppressed(p) > 0.5 then
-            if (not args.iconized_generation) and noises.forest_abs_suppressed(p) < 0.75 and Math.random(2000) == 1 then
+            if (not args.iconized_generation) and noises.forest_abs_suppressed(p) < 0.75 and Math.random(1300) == 1 then
                 args.specials[#args.specials + 1] = {name = 'chest', position = args.p}
 			else
 				local forest_noise = noises.forest(p)

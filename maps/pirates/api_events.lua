@@ -289,9 +289,9 @@ local function damage_to_players_changes(event)
 		-- 	damage_multiplier = damage_multiplier * 1.10
 		elseif class and class == Classes.enum.SAMURAI then
 			damage_multiplier = damage_multiplier * Balance.samurai_damage_taken_multiplier
-		elseif class and class == Classes.enum.HATAMOTO then --lethal damage needs to be unaffected
+		elseif class and class == Classes.enum.HATAMOTO then
 			damage_multiplier = damage_multiplier * Balance.hatamoto_damage_taken_multiplier
-		elseif class and class == Classes.enum.IRON_LEG then --lethal damage needs to be unaffected
+		elseif class and class == Classes.enum.IRON_LEG then
 			if memory.class_auxiliary_data[player_index] and memory.class_auxiliary_data[player_index].iron_leg_active then
 				damage_multiplier = damage_multiplier * Balance.iron_leg_damage_taken_multiplier
 			end
@@ -307,12 +307,13 @@ local function damage_to_players_changes(event)
 
 	if damage_multiplier > 1 then
 		event.entity.health = event.entity.health - event.final_damage_amount * (damage_multiplier - 1)
-	elseif damage_multiplier < 1 and event.final_health > 0 then --lethal damage needs to be unaffected, else they never die
+	elseif damage_multiplier < 1 and event.final_health > 0 then --lethal damage case isn't this easy
 		event.entity.health = event.entity.health + event.final_damage_amount * (1 - damage_multiplier)
 	end
 
 
 	-- deal with damage reduction on lethal damage for players
+	-- Piratux wrote this code — it tracks player health (except passive regen), and intervenes on a lethal damage event, so it should work most of the time.
 	local player = game.players[player_index]
     if not (player and player.valid and player.character and player.character.valid) then
         return
