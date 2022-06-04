@@ -31,7 +31,7 @@ function Public.choose_quest_structure_type()
     local destination = Common.current_destination()
 	local subtype = destination.subtype
 
-	local rng = Math.random(2)
+	local rng = Math.random(3)
 
 	if rng == 1 or subtype and subtype == IslandsCommon.enum.WALKWAYS then
 		return enum.MARKET1
