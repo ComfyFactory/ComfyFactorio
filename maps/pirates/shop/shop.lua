@@ -210,34 +210,49 @@ function Public.event_on_market_item_purchased(event)
 				-- if not class_for_sale then return end
 				local required_class = Classes.class_purchase_requirement[class_for_sale]
 
-				local ok = true
-				-- check if they have the required class to buy it
-				if required_class then
-					if not (memory.classes_table and memory.classes_table[player.index] and memory.classes_table[player.index] == required_class) then
-						ok = false
-						Common.notify_force_error(force, {'pirates.class_purchase_error_prerequisite_class',Classes.display_form(required_class)})
+				local ok = false
+
+				if memory.classes_table and memory.spare_classes then
+					if required_class then
+						local chosen_class_assigned = false
+						local spare_class_assigned = false
+
+						if required_class then
+							for p_index, chosen_class in pairs(memory.classes_table) do
+								if chosen_class == required_class then
+									memory.classes_table[p_index] = class_for_sale
+									chosen_class_assigned = true
+									ok = true
+									break
+								end
+							end
+						end
+
+						if not chosen_class_assigned then
+							for i, spare_class in pairs(memory.spare_classes) do
+								if spare_class == required_class then
+									memory.spare_classes[i] = class_for_sale
+									spare_class_assigned = true
+									ok = true
+									break
+								end
+							end
+						end
+					else -- there is no required class
+						if not memory.classes_table[player.index] then
+							memory.classes_table[player.index] = class_for_sale
+						else
+							memory.spare_classes[#memory.spare_classes + 1] = class_for_sale
+						end
+						ok = true
 					end
 				end
 
 				if ok then
-					if required_class then
-						if force and force.valid then
-							local message = {'pirates.class_upgrade', player.name, Classes.display_form(required_class), Classes.display_form(class_for_sale), Classes.explanation(class_for_sale)}
-							Common.notify_force_light(force,message)
-						end
-					else
-						-- check if they have a role already - renounce it if so
-						if memory.classes_table and memory.classes_table[player.index] then
-							Classes.try_renounce_class(player, false)
-						end
-
-						if force and force.valid then
-							local message = {'pirates.class_purchase', player.name, Classes.display_form(class_for_sale), Classes.explanation(class_for_sale)}
-							Common.notify_force_light(force, message)
-						end
+					if force and force.valid then
+						local message = {'pirates.class_purchase', player.name, Classes.display_form(class_for_sale), Classes.explanation(class_for_sale)}
+						Common.notify_force_light(force, message)
 					end
-
-					memory.classes_table[player.index] = class_for_sale
 
 					memory.available_classes_pool = Utils.ordered_table_with_single_value_removed(memory.available_classes_pool, class_for_sale)
 
@@ -253,6 +268,10 @@ function Public.event_on_market_item_purchased(event)
 						end
 					end
 				else
+					if force and force.valid then
+						Common.notify_force_error(force, {'pirates.class_purchase_error_prerequisite_class', Classes.display_form(required_class)})
+					end
+
 					--refund
 					inv = player.get_inventory(defines.inventory.character_main)
 					if not inv then return end
