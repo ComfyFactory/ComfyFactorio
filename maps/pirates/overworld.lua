@@ -229,14 +229,14 @@ function Public.generate_overworld_destination(p)
 			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*120),
 		}
 		local base_cost_2 = {
-			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*200),
+			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*190),
 			['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*22),
 			-- the below got this response from a new player: "This feels... underwhelming."
 			-- ['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*120),
 			-- ['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*18),
 		}
 		local base_cost_2b = {
-			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*200),
+			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*190),
 			['flying-robot-frame'] = 3,
 		}
 		local base_cost_3 = {
