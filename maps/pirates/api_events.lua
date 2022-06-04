@@ -280,7 +280,7 @@ local function damage_to_players_changes(event)
 
 	--game.print('on damage info: {name: ' .. event.damage_type.name .. ', object_name: ' .. event.damage_type.object_name .. '}')
 
-	if event.damage_type.name == 'poison' then --make all poison damage stronger against players and enemies
+	if event.damage_type.name == 'poison' then --make all poison damage stronger against players
 		damage_multiplier = damage_multiplier * Balance.poison_damage_multiplier
 	else
 		if class and class == Classes.enum.SCOUT then
