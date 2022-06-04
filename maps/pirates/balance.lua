@@ -27,8 +27,9 @@ local _inspect = require 'utils.inspect'.inspect
 Public.base_extra_character_speed = 1.44
 Public.respawn_speed_boost = 1.75
 
+Public.cannon_extra_hp_for_upgrade = 1000
 Public.cannon_starting_hp = 2000
-Public.cannon_resistance_factor = 2.5
+Public.cannon_resistance_factor = 2
 Public.technology_price_multiplier = 1
 Public.rocket_launch_coin_reward = 5000
 

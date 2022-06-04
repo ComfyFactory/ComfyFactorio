@@ -185,13 +185,14 @@ function Public.event_on_market_item_purchased(event)
 
 						local healthbar = memory.boat.healthbars[unit_number]
 						if healthbar then
+							healthbar.max_health = healthbar.max_health + Balance.cannon_extra_hp_for_upgrade
 							healthbar.health = healthbar.max_health
 							Common.update_healthbar_rendering(healthbar, healthbar.max_health)
 						else
 							log('error: healthbar ' .. unit_number .. ' not found')
 						end
 					end
-					Common.notify_force(force,{'pirates.repaired_cannons', player.name})
+					Common.notify_force(force,{'pirates.upgraded_cannons', player.name})
 					market.remove_market_item(offer_index)
 				else
 					local upgrade_type = Common.current_destination().static_params.upgrade_for_sale
