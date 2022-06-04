@@ -253,7 +253,7 @@ local function damage_to_krakens(event)
 	end
 
 	if event.damage_type.name and (event.damage_type.name == 'laser') then
-		adjusted_damage = adjusted_damage / 5 --laser turrets are in range. give some resistance
+		adjusted_damage = adjusted_damage / 7 --laser turrets are in range. give some resistance
 	end
 
 	if Common.entity_damage_healthbar(event.entity, adjusted_damage) <= 0 then
