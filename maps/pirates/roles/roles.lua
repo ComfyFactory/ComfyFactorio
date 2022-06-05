@@ -138,7 +138,7 @@ function Public.get_class_print_string(class, full)
 			local explanation = nil
 			if full then
 				explanation = Classes.explanation_advanced(class2)
-			else 
+			else
 				explanation = Classes.explanation(class2)
 			end
 
