@@ -72,7 +72,7 @@ end
 
 function Public.explanation_advanced(class)
 	local explanation = 'pirates.class_' .. class .. '_explanation_advanced'
-	local full_explanation = {}
+	local full_explanation
 
 	if class == enum.DECKHAND then
 		local extra_speed = Public.percentage_points_difference_from_100_percent(Balance.deckhand_extra_speed)
