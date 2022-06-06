@@ -24,6 +24,11 @@ local _inspect = require 'utils.inspect'.inspect
 -- if multiplier < 1: entity moves slower
 -- NOTE: when some extra speed modifiers stack, they stack multiplicatively
 
+-- Kraken related parameters
+Public.biter_swim_speed = 1
+Public.kraken_biter_spawn_radius = 6 -- only used during non automatic forced spawning during kraken's "special ability"
+Public.kraken_spit_targetting_player_chance = 0.4
+
 Public.base_extra_character_speed = 1.44
 Public.respawn_speed_boost = 1.75
 

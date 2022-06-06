@@ -1,5 +1,6 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
+local Boats = require 'maps.pirates.structures.boats.boats'
 
 local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
@@ -41,14 +42,56 @@ local kraken_tick_token =
 		Public.kraken_tick(data.crew_id, data.kraken_id, data.step, data.substep)
 	end
 )
+
+local swimming_biters_tick_token =
+    Token.register(
+    function(data)
+		Public.swimming_biters_tick(data.crew_id, data.kraken_id)
+	end
+)
+
+-- should only be used during kraken encounter
+function Public.swimming_biters_tick(crew_id, kraken_id)
+	Memory.set_working_id(crew_id)
+	local memory = Memory.get_crew_memory()	
+	if not (memory.id and memory.id > 0) then return end --check if crew disbanded
+	if memory.game_lost then return end
+	local kraken_data = memory.active_sea_enemies.krakens[kraken_id]
+	if not kraken_data then return end --check if kraken died
+	local surface = game.surfaces[memory.sea_name]
+
+	local spawners_biters = surface.find_entities_filtered{force = memory.enemy_force_name}
+	for _, biter in pairs(spawners_biters) do
+		if biter and biter.valid then
+			if biter.name ~= 'biter-spawner' then -- might need to be changed if kraken battle one day will involve worms too
+				if not Boats.on_boat(memory.boat, biter.position) then
+					local biter_pos = biter.position
+					local target_pos = {x = 0, y = 0}
+
+					-- choose closest boarding entrance on the ship
+					target_pos.x = biter_pos.x > 0 and Math.random_float_in_range(18, 11) or Math.random_float_in_range(-18, -11)
+					target_pos.y = biter_pos.y > 0 and 12 or -12
+					
+					local towards_target_vec = Math.vector_dir(biter_pos, target_pos)
+					towards_target_vec = Math.vector_norm(towards_target_vec)
+					towards_target_vec = Math.vector_scale(towards_target_vec, Balance.biter_swim_speed)
+					biter.teleport(Math.vector_sum(biter_pos, towards_target_vec))
+				end
+			end
+		end
+	end
+
+	Task.set_timeout_in_ticks(20, swimming_biters_tick_token, {crew_id = crew_id, kraken_id = kraken_id})
+end
+
 function Public.kraken_tick(crew_id, kraken_id, step, substep)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
 	if not (memory.id and memory.id > 0) then return end --check if crew disbanded
 	if memory.game_lost then return end
-	local surface = game.surfaces[memory.sea_name]
 	local kraken_data = memory.active_sea_enemies.krakens[kraken_id]
 	if not kraken_data then return end --check if kraken died
+	local surface = game.surfaces[memory.sea_name]
 	local kraken_spawner_entity = kraken_data.spawner_entity
 
 	if step == 1 then
@@ -100,17 +143,35 @@ function Public.kraken_tick(crew_id, kraken_id, step, substep)
 
 		-- firing speed now depends on player count:
 		local firing_period
+		local summoned_biter_amount
 		if crewCount <= 12 then
 			firing_period = 4
+			summoned_biter_amount = 2
 		else
 			firing_period = 3
+			summoned_biter_amount = 3
 		-- elseif crewCount <= 24 then
 		-- 	firing_period = 3
 		-- else
 		-- 	firing_period = 2
 		end
 
-		if substep % firing_period == 0 then
+		-- special ability: stop shooting, and summon some biters randomly around the spawner
+		if substep % 100 > 70 then
+			if substep % 5 == 0 then
+				if kraken_spawner_entity then
+					for i = 1, summoned_biter_amount do
+						local name = Common.get_random_unit_type(memory.evolution_factor)
+						local random_dir_vec = {x = Math.random_float_in_range(-1, 1), y = Math.random_float_in_range(-1, 1)}
+						random_dir_vec = Math.vector_norm(random_dir_vec)
+						random_dir_vec = Math.vector_scale(random_dir_vec, Balance.kraken_biter_spawn_radius)
+						local spawn_pos = Math.vector_sum(kraken_spawner_entity.position, random_dir_vec)
+						surface.create_entity{name = name, position = spawn_pos, force = memory.enemy_force_name}
+					end
+				end
+			end
+		-- otherwise continue actively shooting at the ship/random player
+		elseif substep % firing_period == 0 then
 			local p_can_fire_at = {}
 			for _, player in pairs(crewmembers) do
 				local p = player.position
@@ -119,20 +180,29 @@ function Public.kraken_tick(crew_id, kraken_id, step, substep)
 				end
 			end
 
-			if #p_can_fire_at > 0 then
-				local p_fire = p_can_fire_at[Math.random(#p_can_fire_at)]
-				local stream = surface.create_entity{
-					name = 'acid-stream-spitter-big',
-					position = kraken_data.position,
-					force = memory.enemy_force_name,
-					source = kraken_data.position,
-					target = p_fire,
-					max_range = 500,
-					speed = 0.1
-				}
-				memory.kraken_stream_registrations[#memory.kraken_stream_registrations + 1] = {number = script.register_on_entity_destroyed(stream), position = p_fire}
-				Effects.kraken_effect_4(surface, kraken_data.position)
+
+			local spit_target_pos
+
+			-- shoot at player
+			if Math.random() < Balance.kraken_spit_targetting_player_chance and #p_can_fire_at > 0 then
+				spit_target_pos = p_can_fire_at[Math.random(#p_can_fire_at)]
+			-- shoot at the ship
+			else
+				-- select random position in hardcoded bounded box within the ship
+				spit_target_pos = {x = Math.random_float_in_range(-28, 21), y = Math.random_float_in_range(-9, 9)}
 			end
+
+			local stream = surface.create_entity{
+				name = 'acid-stream-spitter-big',
+				position = kraken_data.position,
+				force = memory.enemy_force_name,
+				source = kraken_data.position,
+				target = spit_target_pos,
+				max_range = 500,
+				speed = 0.1
+			}
+			memory.kraken_stream_registrations[#memory.kraken_stream_registrations + 1] = {number = script.register_on_entity_destroyed(stream), position = spit_target_pos}
+			Effects.kraken_effect_4(surface, kraken_data.position)
 		end
 
 		if substep % 50 > 40 then
@@ -192,7 +262,6 @@ local function on_entity_destroyed(event)
 	end
 end
 
-
 function Public.try_spawn_kraken()
 	local memory = Memory.get_crew_memory()
 	local surface = game.surfaces[memory.sea_name]
@@ -221,6 +290,7 @@ function Public.try_spawn_kraken()
 		}
 
 		Task.set_timeout_in_ticks(10, kraken_tick_token, {crew_id = memory.id, kraken_id = kraken_id, step = 1, substep = 1})
+		Task.set_timeout_in_ticks(10, swimming_biters_tick_token, {crew_id = memory.id, kraken_id = kraken_id})
 	end
 end
 

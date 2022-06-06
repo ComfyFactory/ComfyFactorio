@@ -1051,11 +1051,22 @@ if _DEBUG then
 	'piratux_test',
 	'is a dev command of piratux.',
 	function(cmd)
+		cmd_set_memory(cmd)
 		local param = tostring(cmd.parameter)
+
 		if check_admin(cmd) then
+			local memory = Memory.get_crew_memory()
 			local player = game.players[cmd.player_index]
 
-			player.print('speed: ' .. player.character.speed .. 'effective_speed: ' .. player.character.effective_speed)
+			local spawners_biters = player.surface.find_entities_filtered{position = player.position, radius = 50, force = memory.enemy_force_name}
+			player.print('size: ' .. #spawners_biters)
+			for _, biter in pairs(spawners_biters) do
+				if biter and biter.valid then
+					if string.sub(biter.force.name, 1, 5) == 'enemy' then
+						player.print('biter[' .. biter.unit_number .. ']: pos: ' .. biter.position.x .. ', ' .. biter.position.y .. ', name: ' .. biter.name)
+					end
+				end
+			end
 		end
 	end)
 end
