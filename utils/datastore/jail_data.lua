@@ -78,9 +78,11 @@ end
 
 local function add_revoked(name, admin, reason)
     if name then
+        local date = Server.get_current_date_with_time()
+
         if not revoked_permissions[name] then
             revoked_permissions[name] = true
-            set_data(revoked_permissions_set, name, {revoked = true, actor = admin, reason = reason})
+            set_data(revoked_permissions_set, name, {revoked = true, actor = admin, reason = reason, date = date})
             return true
         else
             return false
@@ -429,10 +431,7 @@ local function vote_to_jail(player, griefer, msg)
         votejail[griefer][player.name] = true
         votejail[griefer].index = votejail[griefer].index + 1
         Utils.print_to(player, 'You have voted to jail player ' .. griefer .. '.')
-        if
-            votejail[griefer].index >= settings.votejail_count or
-                (votejail[griefer].index == #game.connected_players - 1 and #game.connected_players > votejail[griefer].index)
-         then
+        if votejail[griefer].index >= settings.votejail_count or (votejail[griefer].index == #game.connected_players - 1 and #game.connected_players > votejail[griefer].index) then
             Public.try_ul_data(griefer, true, votejail[griefer].actor, msg)
         end
     else
@@ -460,10 +459,7 @@ local function vote_to_free(player, griefer)
         votefree[griefer].index = votefree[griefer].index + 1
 
         Utils.print_to(player, 'You have voted to free player ' .. griefer .. '.')
-        if
-            votefree[griefer].index >= settings.votejail_count or
-                (votefree[griefer].index == #game.connected_players - 1 and #game.connected_players > votefree[griefer].index)
-         then
+        if votefree[griefer].index >= settings.votejail_count or (votefree[griefer].index == #game.connected_players - 1 and #game.connected_players > votefree[griefer].index) then
             Public.try_ul_data(griefer, false, votefree[griefer].actor)
             votejail[griefer] = nil
             votefree[griefer] = nil
@@ -496,6 +492,8 @@ local function jail(player, griefer, msg, raised)
     local gulag = get_gulag_permission_group()
     gulag.add_player(griefer)
 
+    local date = Server.get_current_date_with_time()
+
     local message = griefer .. ' has been jailed by ' .. player .. '. Cause: ' .. msg
 
     if to_jail_player.character and to_jail_player.character.valid and to_jail_player.character.driving then
@@ -504,7 +502,7 @@ local function jail(player, griefer, msg, raised)
 
     jailed[griefer] = {jailed = true, actor = player, reason = msg}
     if not raised then
-        set_data(jailed_data_set, griefer, {jailed = true, actor = player, reason = msg})
+        set_data(jailed_data_set, griefer, {jailed = true, actor = player, reason = msg, date = date})
     end
 
     Utils.print_to(nil, message)
@@ -700,12 +698,11 @@ Server.on_data_set_changed(
         end
 
         local v = data.value
+        local k = data.key
         if v and v.actor then
-            if v.jailed then
-                jail(v.actor, data.key, v.reason, true)
-            elseif not v.jailed then
-                free('script', data.key)
-            end
+            jail(v.actor, data.key, v.reason, true)
+        elseif k then
+            free('script', data.key)
         end
     end
 )
@@ -725,7 +722,6 @@ commands.add_command(
     'jail',
     'Sends the player to gulag! Valid arguments are:\n/jail <LuaPlayer> <reason>',
     function()
-        return
     end
 )
 
@@ -733,7 +729,6 @@ commands.add_command(
     'free',
     'Brings back the player from gulag.',
     function()
-        return
     end
 )
 
@@ -883,10 +878,7 @@ Event.add(
             if trusted and playtime >= settings.playtime_for_vote and playtime < settings.playtime_for_instant_jail and not player.admin then
                 if cmd == 'jail' then
                     if not terms_tbl[player.name] then
-                        Utils.warning(
-                            player,
-                            'Abusing the jail command will lead to revoked permissions. Jailing someone in case of disagreement is _NEVER_ OK!'
-                        )
+                        Utils.warning(player, 'Abusing the jail command will lead to revoked permissions. Jailing someone in case of disagreement is _NEVER_ OK!')
                         Utils.warning(player, "Jailing someone because they're afk or other stupid reasons is NOT valid!")
                         Utils.warning(player, 'Run this command again to if you really want to do this!')
                         for i = 1, 4 do
@@ -909,10 +901,7 @@ Event.add(
             if player.admin or playtime >= settings.playtime_for_instant_jail then
                 if cmd == 'jail' then
                     if not terms_tbl[player.name] then
-                        Utils.warning(
-                            player,
-                            'Abusing the jail command will lead to revoked permissions. Jailing someone in case of disagreement is _NEVER_ OK!'
-                        )
+                        Utils.warning(player, 'Abusing the jail command will lead to revoked permissions. Jailing someone in case of disagreement is _NEVER_ OK!')
                         Utils.warning(player, 'Run this command again to if you really want to do this!')
                         for i = 1, 4 do
                             Task.set_timeout_in_ticks(delay, play_alert_sound, {name = player.name})
