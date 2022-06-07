@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 -- local Memory = require 'maps.pirates.memory'
 -- local Common = require 'maps.pirates.common'
@@ -36,7 +38,7 @@ function Public.toggle_window(player)
 	flow.style.width = width
 	flow.style.height = 420
 
-	flow2 = Public.flow_add_info_tab(flow, 'Info')
+	flow2 = Public.flow_add_info_tab(flow, {'pirates.gui_info_info'})
 
 	flow3 = flow2.parent.last_info_flow_1.last_info_flow_2
 	flow4 = flow3.add{type = "label", caption = {"pirates.softmod_info_body_1"}}
@@ -49,16 +51,16 @@ function Public.toggle_window(player)
 
 	Public.flow_add_info_sections(flow2, {'game_description'})
 
-	flow2 = Public.flow_add_info_tab(flow, 'Updates')
+	flow2 = Public.flow_add_info_tab(flow, {'pirates.gui_info_updates'})
 
 	Public.flow_add_info_sections(flow2, {'updates'})
 	-- Public.flow_add_info_sections(flow2, {'updates', 'bugs'})
 
-	flow2 = Public.flow_add_info_tab(flow, 'Tips')
+	flow2 = Public.flow_add_info_tab(flow, {'pirates.gui_info_tips'})
 
 	Public.flow_add_info_sections(flow2, {'new_players', 'tips'})
 
-	flow2 = Public.flow_add_info_tab(flow, 'Credits')
+	flow2 = Public.flow_add_info_tab(flow, {'pirates.gui_info_credits'})
 
 	Public.flow_add_info_sections(flow2, {'credits'})
 end
@@ -224,11 +226,11 @@ function Public.full_update(player)
 	if flow2.selected_tab_index == 1 then
 		flow2.style.height = 400
 	elseif flow2.selected_tab_index == 2 then
-		flow2.style.height = 420
+		flow2.style.height = 570
 	elseif flow2.selected_tab_index == 3 then
-		flow2.style.height = 685
+		flow2.style.height = 580
 	elseif flow2.selected_tab_index == 4 then
-		flow2.style.height = 360
+		flow2.style.height = 340
 	end
 end
 

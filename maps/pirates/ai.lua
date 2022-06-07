@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Memory = require 'maps.pirates.memory'
 local Balance = require 'maps.pirates.balance'
@@ -5,6 +7,7 @@ local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
 -- local Utils = require 'maps.pirates.utils_local'
 local Math = require 'maps.pirates.math'
+local Raffle = require 'maps.pirates.raffle'
 local _inspect = require 'utils.inspect'.inspect
 
 -- local Structures = require 'maps.pirates.structures.structures'
@@ -124,10 +127,13 @@ function Public.eat_up_fraction_of_all_pollution(surface, fraction_of_global_pol
 end
 
 function Public.wave_size_rng() -- random variance in attack sizes
-	local wave_size_multiplier = 1
 	local memory = Memory.get_crew_memory()
+
+    local wave_percentage_chance = Math.clamp(0, 36, 15 + 7 * memory.floating_pollution/1500) --trying this out
+
+	local wave_size_multiplier = 1
 	local rng1 = Math.random(100)
-	if rng1 <= 65 then
+	if rng1 > wave_percentage_chance then
 		wave_size_multiplier = 0
 	elseif memory.overworldx > 0 then
 		local rng2 = Math.random(1000)
@@ -212,7 +218,7 @@ function Public.try_rogue_attack()
 		local group = Public.spawn_group_of_scripted_biters(1/2, 6, 180, wave_size_multiplier)
 		if not (group and group.valid) then return end
 		local target = Public.generate_side_attack_target(surface, group.position)
-		if not (target and target.valid) then return end
+        if (not target) or (not target.valid) then return end
 
 		-- group.set_command(Public.attack_target(target))
 
@@ -292,9 +298,9 @@ function Public.create_mail_delivery_biters() --these travel cross-map between b
 	local surface = game.surfaces[Common.current_destination().surface_name]
 	local enemy_force_name = memory.enemy_force_name
 
-    local spawners = surface.find_entities_filtered{name = 'biter-spawner', force = enemy_force_name}
+    local spawners = Public.get_valid_spawners(surface)
 
-    local try_how_many_groups = Math.min(Math.max(0, (#spawners - 8) / 100), 4)
+    local try_how_many_groups = Math.clamp(0, 4, (#spawners - 8) / 100)
 
     for i = 1, try_how_many_groups do
         if Math.random(2) == 1 then
@@ -345,7 +351,7 @@ function Public.spawn_group_of_scripted_biters(fraction_of_floating_pollution, m
 	local surface = game.surfaces[Common.current_destination().surface_name]
 	local enemy_force_name = memory.enemy_force_name
 
-    local spawner = Public.get_random_spawner(surface)
+    local spawner = Public.get_random_valid_spawner(surface)
     if not spawner then log('no spawner found') return end
 
 	local nearby_units_to_bring
@@ -532,7 +538,7 @@ function Public.generate_side_attack_target(surface, position)
     for index, _ in pairs(entities) do
         weights[#weights + 1] = 1 + Math.floor((#entities - index) / 2)
     end
-    return Math.raffle(entities, weights)
+    return Raffle.raffle(entities, weights)
 end
 
 function Public.nearest_target(surface, position)
@@ -568,11 +574,47 @@ end
 --     return false
 -- end
 
-function Public.get_random_spawner(surface)
+function Public.get_valid_spawners(surface)
 	local memory = Memory.get_crew_memory()
 
     local spawners = surface.find_entities_filtered({type = 'unit-spawner', force = memory.enemy_force_name})
-    if (not spawners) or (not spawners[1]) then return end
+
+    local boat_spawners = {}
+
+	if memory.enemyboats and #memory.enemyboats > 0 then
+        for i = 1, #memory.enemyboats do
+            local eb = memory.enemyboats[i]
+            if eb.spawner and eb.spawner.valid then
+                boat_spawners[#boat_spawners + 1] = eb.spawner
+            end
+        end
+    end
+
+    local valid_spawners = {}
+    for i = 1, #spawners do
+        local s = spawners[i]
+        local valid = true
+        for j = 1, #boat_spawners do
+            local bs = boat_spawners[j]
+            if s == bs then
+                valid = false
+                break
+            end
+        end
+        if valid then
+            valid_spawners[#valid_spawners + 1] = s
+        end
+    end
+
+    return valid_spawners
+end
+
+function Public.get_random_valid_spawner(surface)
+
+    local spawners = Public.get_valid_spawners(surface)
+
+    if #spawners == 0 then return end
+
 	return spawners[Math.random(#spawners)]
 end
 

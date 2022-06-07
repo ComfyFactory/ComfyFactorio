@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Memory = require 'maps.pirates.memory'
 local Common = require 'maps.pirates.common'
@@ -37,7 +39,7 @@ function Public.toggle_window(player)
 	end -- else:
 
 	flow = GuiCommon.new_window(player, window_name)
-	flow.caption = 'Outside View'
+	flow.caption = {'pirates.gui_minimap_outside_view'}
 	flow.style.maximal_width = 800
 
 	local memory = Memory.get_crew_memory()
@@ -86,7 +88,7 @@ function Public.toggle_window(player)
                 position = position,
                 surface_index = game.surfaces[memory.boat.surface_name].index,
                 zoom = zoom,
-                tooltip = 'LMB: Zoom in.\nRMB: Zoom out.\nMMB: Scale window.'
+                tooltip = {'pirates.gui_minimap_tooltip'}
             }
         )
         element.style.margin = 1
@@ -104,8 +106,8 @@ function Public.toggle_window(player)
 			index = 1,
 			allow_none_state = false,
 			switch_state = switch_state,
-			left_label_caption = 'Auto Show Map — On',
-			right_label_caption = 'Off'
+			left_label_caption = {'pirates.gui_minimap_switch_left'},
+			right_label_caption = {'pirates.gui_minimap_switch_right'},
 		}
 	)
 end
@@ -201,8 +203,8 @@ function Public.click(event)
 		elseif size == 440 then
 			size = 560
 		elseif size == 560 then
-			size = 700
-		elseif size == 700 then
+			size = 660
+		elseif size == 660 then
 			size = 280
 		else
 			size = 340
@@ -227,14 +229,14 @@ local function on_player_changed_surface(event)
 
 	local window = player.gui.screen[window_name .. '_piratewindow']
 
-	local from_hold_bool = string.sub(game.surfaces[event.surface_index].name, 9, 12) == 'Hold'
-	local to_hold_bool = string.sub(player.surface.name, 9, 12) == 'Hold'
+	local from_hold_or_cabin_bool = string.sub(game.surfaces[event.surface_index].name, 9, 12) == 'Hold' or string.sub(game.surfaces[event.surface_index].name, 9, 13) == 'Cabin'
+	local to_hold_or_cabin_bool = string.sub(player.surface.name, 9, 12) == 'Hold' or string.sub(player.surface.name, 9, 13) == 'Cabin'
 
-    if from_hold_bool and (not to_hold_bool) then
+    if from_hold_or_cabin_bool and (not to_hold_or_cabin_bool) then
         if window then
 			Public.toggle_window(player)
 		end
-	elseif to_hold_bool and (not from_hold_bool) then
+	elseif to_hold_or_cabin_bool and (not from_hold_or_cabin_bool) then
 		local global_memory = Memory.get_global_memory()
 		local gui_memory = global_memory.player_gui_memories[player.index]
 

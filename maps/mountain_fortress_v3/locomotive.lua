@@ -113,7 +113,7 @@ local function give_passive_xp(data)
         if not validate_player(player) then
             return
         end
-        if player.afk_time < 200 then
+        if player.afk_time < 200 and not RPG.get_last_spell_cast(player) then
             if Math2D.bounding_box.contains_point(area, player.position) or player.surface.index == loco_surface.index then
                 if player.surface.index == loco_surface.index then
                     PermissionGroups.add_player_to_permission_group(player, 'limited')
@@ -135,6 +135,7 @@ local function give_passive_xp(data)
                 }
                 rpg[player.index].xp_since_last_floaty_text = 0
                 rpg[player.index].last_floaty_text = game.tick + visuals_delay
+                RPG.set_last_spell_cast(player, player.position)
                 if player.gui.screen[rpg_main_frame] then
                     local f = player.gui.screen[rpg_main_frame]
                     local d = Gui.get_data(f)

@@ -1,6 +1,9 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 -- local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
+local Raffle = require 'maps.pirates.raffle'
 -- local Balance = require 'maps.pirates.balance'
 local Structures = require 'maps.pirates.structures.structures'
 -- local Common = require 'maps.pirates.common'
@@ -144,7 +147,8 @@ local free_labyrinth_cell_raffle = {
 	maze_belts_3 = 0.28,
 	maze_belts_4 = 0.28,
 	maze_mines = 0.1,
-	maze_treasure = 0.74,
+	maze_treasure = 0.92,
+	-- maze_treasure = 0.74,
 }
 
 local function free_labyrinth_cell_type(args)
@@ -161,7 +165,7 @@ local function free_labyrinth_cell_type(args)
 	end
 
 	if not type then
-		type = Math.raffle2(free_labyrinth_cell_raffle)
+		type = Raffle.raffle2(free_labyrinth_cell_raffle)
 		cell_types[tostring(reduced_p.x) .. '_' .. tostring(reduced_p.y)] = type
 	end
 

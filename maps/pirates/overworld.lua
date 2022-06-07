@@ -1,3 +1,4 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 local Public = {}
 
@@ -228,33 +229,33 @@ function Public.generate_overworld_destination(p)
 			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*120),
 		}
 		local base_cost_2 = {
-			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*180),
-			['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*18),
+			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*200),
+			['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*20),
 			-- the below got this response from a new player: "This feels... underwhelming."
 			-- ['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*120),
 			-- ['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*18),
 		}
 		local base_cost_2b = {
-			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*180),
+			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*200),
 			['flying-robot-frame'] = 3,
 		}
 		local base_cost_3 = {
-			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*140),
-			['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*18),
+			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*160),
+			['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*20),
 			['launch_rocket'] = true,
 		}
 		local base_cost_4 = {
-			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*100),
-			['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*18),
+			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*140),
+			['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*20),
 			['flying-robot-frame'] = Math.ceil(((macro_p.x-18)^(2/3))*15),
 			['launch_rocket'] = true,
 		}
 		local base_cost_5 = {
-			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*100),
-			['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*18),
+			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*140),
+			['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*20),
 			['flying-robot-frame'] = Math.ceil(((macro_p.x-18)^(2/3))*10),
 			-- ['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*100),
-			-- ['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*18),
+			-- ['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*20),
 			-- ['flying-robot-frame'] = Math.ceil(((macro_p.x-18)^(2/3))*10),
 		}
 		-- if macro_p.x == 0 then
@@ -268,7 +269,7 @@ function Public.generate_overworld_destination(p)
 			-- end
 			-- base_cost_to_undock = nil
 		-- elseif macro_p.x <= 6 then
-		if macro_p.x <= 6 then
+		if macro_p.x <= Common.first_cost_to_leave_macrox - 1 then
 			-- base_cost_to_undock = {['electronic-circuit'] = 5}
 			base_cost_to_undock = nil
 		elseif macro_p.x <= 9 then
@@ -423,14 +424,14 @@ function Public.generate_overworld_destination(p)
 		local x = Crowsnest.platformrightmostedge + dest.overworld_position.x
 		local y = dest.overworld_position.y
 		if dest.static_params.upgrade_for_sale then
-			local display_form = Upgrades.crowsnest_display_form[dest.static_params.upgrade_for_sale]
+			local display_form = {'', Upgrades.crowsnest_display_form[dest.static_params.upgrade_for_sale], ':'}
 
 			if not dest.dynamic_data.crowsnest_renderings then
 				dest.dynamic_data.crowsnest_renderings = {}
 			end
 
 			dest.dynamic_data.crowsnest_renderings.base_text_rendering = rendering.draw_text{
-				text = display_form .. ':',
+				text = display_form,
 				surface = surface,
 				target = {x = x + 5.5, y = y + 2.5},
 				color = CoreData.colors.renderingtext_green,
@@ -538,7 +539,7 @@ function Public.ensure_lane_generated_up_to(lane_yvalue, x)
 			for _, dest in pairs(memory.destinations) do
 				if dest.static_params.upgrade_for_sale and dest.dynamic_data.crowsnest_renderings then
 					if rendering.is_valid(dest.dynamic_data.crowsnest_renderings.base_text_rendering) then
-						rendering.set_text(dest.dynamic_data.crowsnest_renderings.base_text_rendering, Upgrades.crowsnest_display_form[dest.static_params.upgrade_for_sale] .. ':')
+						rendering.set_text(dest.dynamic_data.crowsnest_renderings.base_text_rendering, {'', Upgrades.crowsnest_display_form[dest.static_params.upgrade_for_sale], ':'})
 					end
 					for rendering_name, r in pairs(dest.dynamic_data.crowsnest_renderings) do
 						if type(r) == 'table' and r.text_rendering and rendering.is_valid(r.text_rendering) then
@@ -647,8 +648,7 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 
 	if memory.victory_continue_message then
 		memory.victory_continue_message = false
-		local message = 'The run now continues on \'Freeplay\'.'
-		Common.notify_force(memory.force, message, CoreData.colors.notify_victory)
+		Common.notify_force(memory.force, {'pirates.crew_continue_on_freeplay'}, CoreData.colors.notify_victory)
 	end
 
 	if vector.x > 0 then
@@ -682,8 +682,9 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 			-- other freebies:
 			for i=1,vector.x do
 				Common.give_items_to_crew(Balance.periodic_free_resources_per_x())
-				Balance.apply_crew_buffs_per_x(memory.force)
 			end
+
+			Balance.apply_crew_buffs_per_league(memory.force, vector.x)
 
 			-- add some evo: (this will get reset upon arriving at a destination anyway, so this is just relevant for sea monsters and the like:)
 			local extra_evo = Balance.base_evolution_leagues(memory.overworldx) - Balance.base_evolution_leagues(memory.overworldx - vector.x)
@@ -703,7 +704,7 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 					modal_captain = name
 				end
 			end
-			Highscore.write_score(memory.secs_id, memory.name, modal_captain, memory.completion_time or 0, memory.overworldx, CoreData.version_float, memory.difficulty, memory.max_players_recorded or 0)
+			Highscore.write_score(memory.secs_id, memory.name, modal_captain, memory.completion_time or 0, memory.overworldx, CoreData.version_string, memory.difficulty, memory.max_players_recorded or 0)
 		end
 
 		return true

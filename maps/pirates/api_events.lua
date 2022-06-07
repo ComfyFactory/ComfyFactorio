@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Memory = require 'maps.pirates.memory'
 local Balance = require 'maps.pirates.balance'
@@ -32,7 +34,7 @@ local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Classes = require 'maps.pirates.roles.classes'
 
--- local Server = require 'utils.server'
+local Server = require 'utils.server'
 -- local Modifers = require 'player_modifiers'
 
 local tick_tack_trap = require 'maps.pirates.locally_maintained_comfy_forks.tick_tack_trap' --'enemy' force, but that's okay
@@ -54,11 +56,11 @@ function Public.silo_die()
 
 			if CoreData.rocket_silo_death_causes_loss then
 				-- Crew.lose_life()
-				Crew.try_lose('silo destroyed')
+				Crew.try_lose({'pirates.loss_silo_destroyed'})
 			elseif (not destination.dynamic_data.rocketlaunched) and destination.static_params and destination.static_params.base_cost_to_undock and destination.static_params.base_cost_to_undock['launch_rocket'] and destination.static_params.base_cost_to_undock['launch_rocket'] == true then
-				Crew.try_lose('silo destroyed before a necessary launch')
+				Crew.try_lose({'pirates.loss_silo_destroyed_before_necessary_launch'})
 			elseif (not destination.dynamic_data.rocketlaunched) then
-				Common.notify_force(force, 'The silo was destroyed.')
+				Common.notify_force(force, {'pirates.silo_destroyed'})
 			end
 		end
 
@@ -208,7 +210,7 @@ local function damage_to_artillery(event)
 		-- remove resistances:
 		-- event.entity.health = event.entity.health + event.final_damage_amount - event.original_damage_amount
 
-		if Common.entity_damage_healthbar(event.entity, event.original_damage_amount / 1.5 * (1 + Balance.biter_timeofday_bonus_damage(event.cause.surface.darkness)), Memory.get_crew_memory().boat) <= 0 then
+		if Common.entity_damage_healthbar(event.entity, event.original_damage_amount / Balance.cannon_resistance_factor * (1 + Balance.biter_timeofday_bonus_damage(event.cause.surface.darkness)), Memory.get_crew_memory().boat) <= 0 then
 			event.entity.die()
 		end
 	else
@@ -251,7 +253,7 @@ local function damage_to_krakens(event)
 	end
 
 	if event.damage_type.name and (event.damage_type.name == 'laser') then
-		adjusted_damage = adjusted_damage / 8 --laser turrets are in range
+		adjusted_damage = adjusted_damage / 7 --laser turrets are in range. give some resistance
 	end
 
 	if Common.entity_damage_healthbar(event.entity, adjusted_damage) <= 0 then
@@ -276,23 +278,22 @@ local function damage_to_players_changes(event)
 
 	local damage_multiplier = 1
 
-	if event.damage_type.name == 'poison' then --make all poison damage stronger
-		damage_multiplier = damage_multiplier * 1.5
+	--game.print('on damage info: {name: ' .. event.damage_type.name .. ', object_name: ' .. event.damage_type.object_name .. '}')
+
+	if event.damage_type.name == 'poison' then --make all poison damage stronger against players
+		damage_multiplier = damage_multiplier * Balance.poison_damage_multiplier
 	else
 		if class and class == Classes.enum.SCOUT then
-			damage_multiplier = damage_multiplier * 1.25
+			damage_multiplier = damage_multiplier * Balance.scout_damage_taken_multiplier
 		-- elseif class and class == Classes.enum.MERCHANT then
 		-- 	damage_multiplier = damage_multiplier * 1.10
 		elseif class and class == Classes.enum.SAMURAI then
-			damage_multiplier = damage_multiplier * 0.25
-		elseif class and class == Classes.enum.HATAMOTO then --lethal damage needs to be unaffected
-			damage_multiplier = damage_multiplier * 0.16
-		elseif class and class == Classes.enum.IRON_LEG then --lethal damage needs to be unaffected
-			local inv = event.entity.get_inventory(defines.inventory.character_main)
-			if not (inv and inv.valid) then return end
-			local count = inv.get_item_count('iron-ore')
-			if count and count >= 3500 then
-				damage_multiplier = damage_multiplier * 0.18
+			damage_multiplier = damage_multiplier * Balance.samurai_damage_taken_multiplier
+		elseif class and class == Classes.enum.HATAMOTO then
+			damage_multiplier = damage_multiplier * Balance.hatamoto_damage_taken_multiplier
+		elseif class and class == Classes.enum.IRON_LEG then
+			if memory.class_auxiliary_data[player_index] and memory.class_auxiliary_data[player_index].iron_leg_active then
+				damage_multiplier = damage_multiplier * Balance.iron_leg_damage_taken_multiplier
 			end
 		-- else
 		-- 	damage_multiplier = damage_multiplier * (1 + Balance.bonus_damage_to_humans())
@@ -306,9 +307,28 @@ local function damage_to_players_changes(event)
 
 	if damage_multiplier > 1 then
 		event.entity.health = event.entity.health - event.final_damage_amount * (damage_multiplier - 1)
-	elseif damage_multiplier < 1 and event.final_health > 0 then --lethal damage needs to be unaffected, else they never die
+	elseif damage_multiplier < 1 and event.final_health > 0 then --lethal damage case isn't this easy
 		event.entity.health = event.entity.health + event.final_damage_amount * (1 - damage_multiplier)
 	end
+
+
+	-- deal with damage reduction on lethal damage for players
+	-- Piratux wrote this code — it tracks player health (except passive regen), and intervenes on a lethal damage event, so it should work most of the time.
+	local player = game.players[player_index]
+    if not (player and player.valid and player.character and player.character.valid) then
+        return
+    end
+
+	local global_memory = Memory.get_global_memory()
+
+	if damage_multiplier < 1 and event.final_health <= 0 then
+		local damage_dealt = event.final_damage_amount * damage_multiplier
+		if damage_dealt < global_memory.last_players_health[player_index] then
+			event.entity.health = global_memory.last_players_health[player_index] - damage_dealt
+		end
+	end
+
+	global_memory.last_players_health[player_index] = event.entity.health
 end
 
 
@@ -352,7 +372,7 @@ local function damage_dealt_by_players_changes(event)
 	local class = memory.classes_table and memory.classes_table[player_index]
 
 	if class and class == Classes.enum.SCOUT and event.final_health > 0 then --lethal damage must be unaffected
-		event.entity.health = event.entity.health + 0.4 * event.final_damage_amount
+		event.entity.health = event.entity.health + (1 - Balance.scout_damage_dealt_multiplier) * event.final_damage_amount
 	elseif class and (class == Classes.enum.SAMURAI or class == Classes.enum.HATAMOTO) then
 		local samurai = memory.classes_table[player_index] == Classes.enum.SAMURAI
 		local hatamoto = memory.classes_table[player_index] == Classes.enum.HATAMOTO
@@ -368,19 +388,23 @@ local function damage_dealt_by_players_changes(event)
 
 		local big_number = 1000
 
+		local extra_physical_damage_from_research_multiplier = 1 + memory.force.get_ammo_damage_modifier('bullet')
+
 		if melee and event.final_health > 0 then
 			if physical then
 				if samurai then
-					extra_damage_to_deal = 30
+					extra_damage_to_deal = Balance.samurai_damage_dealt_with_melee * extra_physical_damage_from_research_multiplier
 				elseif hatamoto then
-					extra_damage_to_deal = 50
+					extra_damage_to_deal = Balance.hatamoto_damage_dealt_with_melee * extra_physical_damage_from_research_multiplier
 				end
 			elseif acid then --this hacky stuff is to implement repeated spillover splash damage, whilst getting around the fact that if ovekill damage takes something to zero health, we can't tell in that event how much double-overkill damage should be dealt by reading off its HP. This code assumes that characters only deal acid damage via this function.
 				extra_damage_to_deal = event.original_damage_amount * big_number
 			end
 		elseif (not melee) and event.final_health > 0 then
-			if samurai or hatamoto then
-				event.entity.health = event.entity.health + 0.25 * event.final_damage_amount
+			if samurai then
+				event.entity.health = event.entity.health + (1 - Balance.samurai_damage_dealt_when_not_melee_multiplier) * event.final_damage_amount
+			elseif hatamoto then
+				event.entity.health = event.entity.health + (1 - Balance.hatamoto_damage_dealt_when_not_melee_multiplier) * event.final_damage_amount
 			end
 		end
 
@@ -401,13 +425,13 @@ local function damage_dealt_by_players_changes(event)
 	if physical then
 
 		-- QUARTERMASTER BUFFS
-		local nearby_players = player.surface.find_entities_filtered{position = player.position, radius = Common.quartermaster_range, type = {'character'}}
+		local nearby_players = player.surface.find_entities_filtered{position = player.position, radius = Balance.quartermaster_range, type = {'character'}}
 
 		for _, p2 in pairs(nearby_players) do
 			if p2.player and p2.player.valid then
 				local p2_index = p2.player.index
 				if event.entity.valid and player_index ~= p2_index and memory.classes_table[p2_index] and memory.classes_table[p2_index] == Classes.enum.QUARTERMASTER then
-					event.entity.damage(0.1 * event.final_damage_amount, character.force, 'impact', character) --triggers this function again, but not physical this time
+					event.entity.damage(Balance.quartermaster_bonus_physical_damage * event.final_damage_amount, character.force, 'impact', character) --triggers this function again, but not physical this time
 				end
 			end
 		end
@@ -599,7 +623,7 @@ end
 
 
 
-function Public.load_some_map_chunks_random_order(destination_index, fraction)
+function Public.load_some_map_chunks_random_order(destination_index, fraction) -- The reason we might want to do this is because of algorithms like the labyrinth code, which make directionally biased patterns if you don't generate chunks in a random order
 	local memory = Memory.get_crew_memory()
 
 	local destination_data = memory.destinations[destination_index]
@@ -645,21 +669,21 @@ end
 
 
 
-local function event_pre_player_mined_item(event)
-	-- figure out which crew this is about:
-	local crew_id = nil
-	if event.player_index and game.players[event.player_index].valid then crew_id = tonumber(string.sub(game.players[event.player_index].force.name, -3, -1)) or nil end
-	Memory.set_working_id(crew_id)
-	-- local memory = Memory.get_crew_memory()
+-- local function event_pre_player_mined_item(event)
+-- 	-- figure out which crew this is about:
+-- 	-- local crew_id = nil
+-- 	-- if event.player_index and game.players[event.player_index].valid then crew_id = tonumber(string.sub(game.players[event.player_index].force.name, -3, -1)) or nil end
+-- 	-- Memory.set_working_id(crew_id)
+-- 	-- local memory = Memory.get_crew_memory()
 
-	-- if memory.planet[1].type.id == 11 then --rocky planet
-	-- 	if event.entity.name == 'rock-huge' or event.entity.name == 'rock-big' or event.entity.name == 'sand-rock-big' then
-	-- 		Event_functions.trap(event.entity, false)
-	-- 		event.entity.destroy()
-	-- 		Event_functions.rocky_loot(event)
-	-- 	end
-	-- end
-end
+-- 	-- if memory.planet[1].type.id == 11 then --rocky planet
+-- 	-- 	if event.entity.name == 'rock-huge' or event.entity.name == 'rock-big' or event.entity.name == 'sand-rock-big' then
+-- 	-- 		Event_functions.trap(event.entity, false)
+-- 	-- 		event.entity.destroy()
+-- 	-- 		Event_functions.rocky_loot(event)
+-- 	-- 	end
+-- 	-- end
+-- end
 
 local function event_on_player_mined_entity(event)
 	if not event.player_index then return end
@@ -678,8 +702,6 @@ local function event_on_player_mined_entity(event)
 		return
 	end
 
-	local every_nth_tree_gives_coins = 6
-
     if entity.type == 'tree' then
         if not event.buffer then return end
 		local available = destination.dynamic_data.wood_remaining
@@ -688,7 +710,7 @@ local function event_on_player_mined_entity(event)
 		if available and destination.type == Surfaces.enum.ISLAND then
 
 			if destination and destination.subtype and destination.subtype == Islands.enum.MAZE then
-				if Math.random(1, 35) == 1 then
+				if Math.random(1, 38) == 1 then
 					tick_tack_trap(memory.enemy_force_name, entity.surface, entity.position)
 					return
 				end
@@ -696,22 +718,18 @@ local function event_on_player_mined_entity(event)
 				local give = {}
 				if memory.classes_table and memory.classes_table[event.player_index] then
 					if memory.classes_table[event.player_index] == Classes.enum.LUMBERJACK then
-						give[#give + 1] = {name = 'wood', count = 4}
-						if Math.random(every_nth_tree_gives_coins) == 1 then
-							local a = 20
-							give[#give + 1] = {name = 'coin', count = a}
-							memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
-						end
-					elseif memory.classes_table[event.player_index] == Classes.enum.WOOD_LORD then
 						give[#give + 1] = {name = 'wood', count = 1}
-						give[#give + 1] = {name = 'iron-ore', count = 1}
-						give[#give + 1] = {name = 'copper-ore', count = 1}
-						give[#give + 1] = {name = 'coal', count = 1}
-						if Math.random(every_nth_tree_gives_coins) == 1 then
-							local a = 12
-							give[#give + 1] = {name = 'coin', count = a}
-							memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
-						end
+						Classes.lumberjack_bonus_items(give)
+					-- elseif memory.classes_table[event.player_index] == Classes.enum.WOOD_LORD then
+					-- 	give[#give + 1] = {name = 'wood', count = 1}
+					-- 	give[#give + 1] = {name = 'iron-ore', count = 1}
+					-- 	give[#give + 1] = {name = 'copper-ore', count = 1}
+					-- 	give[#give + 1] = {name = 'coal', count = 1}
+					-- 	if Math.random(every_nth_tree_gives_coins) == 1 then
+					-- 		local a = 12
+					-- 		give[#give + 1] = {name = 'coin', count = a}
+					-- 		memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
+					-- 	end
 					end
 				end
 
@@ -723,29 +741,26 @@ local function event_on_player_mined_entity(event)
 
 				local baseamount = 4
 				--minimum 1 wood
-				local amount = Math.max(Math.ceil(Math.min(available, baseamount * available/starting)),1)
+				local amount = Math.clamp(1, Math.max(1, Math.ceil(available)), Math.ceil(baseamount * available/starting))
+
 				destination.dynamic_data.wood_remaining = destination.dynamic_data.wood_remaining - amount
 
 				if memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.LUMBERJACK then
-					give[#give + 1] = {name = 'wood', count = amount + 3}
-					if Math.random(every_nth_tree_gives_coins) == 1 then
-						local a = 12
-						give[#give + 1] = {name = 'coin', count = a}
-						memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
-					end
-				elseif memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.WOOD_LORD then
-					give[#give + 1] = {name = 'wood', count = amount + 3}
-					give[#give + 1] = {name = 'iron-ore', count = 1}
-					give[#give + 1] = {name = 'copper-ore', count = 1}
-					give[#give + 1] = {name = 'coal', count = 1}
-					if Math.random(every_nth_tree_gives_coins) == 1 then
-						local a = 12
-						give[#give + 1] = {name = 'coin', count = a}
-						memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
-					end
+					give[#give + 1] = {name = 'wood', count = amount}
+					Classes.lumberjack_bonus_items(give)
+				-- elseif memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.WOOD_LORD then
+				-- 	give[#give + 1] = {name = 'wood', count = amount + 3}
+				-- 	give[#give + 1] = {name = 'iron-ore', count = 1}
+				-- 	give[#give + 1] = {name = 'copper-ore', count = 1}
+				-- 	give[#give + 1] = {name = 'coal', count = 1}
+				-- 	if Math.random(every_nth_tree_gives_coins) == 1 then
+				-- 		local a = 12
+				-- 		give[#give + 1] = {name = 'coin', count = a}
+				-- 		memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
+				-- 	end
 				else
 					give[#give + 1] = {name = 'wood', count = amount}
-					if Math.random(every_nth_tree_gives_coins) == 1 then --tuned
+					if Math.random(Balance.every_nth_tree_gives_coins) == 1 then --tuned
 						local a = 5
 						give[#give + 1] = {name = 'coin', count = a}
 						memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
@@ -762,13 +777,13 @@ local function event_on_player_mined_entity(event)
 
 
 		if memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.MASTER_ANGLER then
-			Common.give(player, {{name = 'raw-fish', count = 4}, {name = 'coin', count = 10}}, entity.position)
+			Common.give(player, {{name = 'raw-fish', count = Balance.base_caught_fish_amount + Balance.master_angler_fish_bonus}, {name = 'coin', count = Balance.master_angler_coin_bonus}}, entity.position)
 		elseif memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.DREDGER then
-			local to_give = {{name = 'raw-fish', count = 4}}
+			local to_give = {{name = 'raw-fish', count = Balance.base_caught_fish_amount + Balance.dredger_fish_bonus}}
 			to_give[#to_give + 1] = Loot.dredger_loot()[1]
 			Common.give(player, to_give, entity.position)
 		else
-			Common.give(player, {{name = 'raw-fish', count = 3}}, entity.position)
+			Common.give(player, {{name = 'raw-fish', count = Balance.base_caught_fish_amount}}, entity.position)
 		end
 
 		event.buffer.clear()
@@ -778,7 +793,7 @@ local function event_on_player_mined_entity(event)
 
 		local give = {}
 
-		if memory.overworldx > 0 then
+		if memory.overworldx > 0 then --no coins on first map, else the optimal strategy is to handmine everything there
 			if memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.PROSPECTOR then
 				local a = 3
 				give[#give + 1] = {name = 'coin', count = a}
@@ -896,11 +911,11 @@ local function base_kill_rewards(event)
 
 	if entity_name == 'small-worm-turret' then
 		iron_amount = 5
-		coin_amount = 60
+		coin_amount = 50
 		memory.playtesting_stats.coins_gained_by_nests_and_worms = memory.playtesting_stats.coins_gained_by_nests_and_worms + coin_amount
 	elseif entity_name == 'medium-worm-turret' then
 		iron_amount = 20
-		coin_amount = 100
+		coin_amount = 90
 		memory.playtesting_stats.coins_gained_by_nests_and_worms = memory.playtesting_stats.coins_gained_by_nests_and_worms + coin_amount
 	elseif entity_name == 'biter-spawner' or entity_name == 'spitter-spawner' then
 		iron_amount = 30
@@ -908,11 +923,11 @@ local function base_kill_rewards(event)
 		memory.playtesting_stats.coins_gained_by_nests_and_worms = memory.playtesting_stats.coins_gained_by_nests_and_worms + coin_amount
 	elseif entity_name == 'big-worm-turret' then
 		iron_amount = 30
-		coin_amount = 160
+		coin_amount = 140
 		memory.playtesting_stats.coins_gained_by_nests_and_worms = memory.playtesting_stats.coins_gained_by_nests_and_worms + coin_amount
 	elseif entity_name == 'behemoth-worm-turret' then
 		iron_amount = 50
-		coin_amount = 280
+		coin_amount = 260
 		memory.playtesting_stats.coins_gained_by_nests_and_worms = memory.playtesting_stats.coins_gained_by_nests_and_worms + coin_amount
 	elseif memory.overworldx > 0 then --avoid coin farming on first island
 		if entity_name == 'small-biter' then
@@ -953,13 +968,15 @@ local function base_kill_rewards(event)
 			stack = {{name = 'coin', count = coin_amount}}
 		end
 
+		local short_form = (not iron_amount) and true or false
+
 		if revenge_target then
-			Common.give(revenge_target.player, stack, revenge_target.player.position, entity.surface, entity.position)
+			Common.give(revenge_target.player, stack, revenge_target.player.position, short_form, entity.surface, entity.position)
 		else
 			if event.cause and event.cause.valid and event.cause.position then
-				Common.give(nil, stack, event.cause.position, entity.surface, entity.position)
+				Common.give(nil, stack, event.cause.position, short_form, entity.surface, entity.position)
 			else
-				Common.give(nil, stack, entity.position, entity.surface)
+				Common.give(nil, stack, entity.position, short_form, entity.surface)
 			end
 		end
 	end
@@ -1045,7 +1062,7 @@ local function event_on_entity_died(event)
 			-- if memory.boat.cannonscount <= 0 then
 			-- 	Crew.try_lose()
 			-- end
-			Crew.try_lose('cannon destroyed')
+			Crew.try_lose({'pirates.loss_cannon_destroyed'})
 		end
 	end
 
@@ -1114,7 +1131,7 @@ local function event_on_research_finished(event)
 	local memory = Memory.get_crew_memory()
 
 	-- using a localised string means we have to write this out (recall that "" signals concatenation)
-	memory.force.print({"", '>> ', event.research.localised_name, ' researched.'}, CoreData.colors.notify_force_light)
+	memory.force.print({"", '>> ', {'pirates.research_notification', event.research.localised_name}}, CoreData.colors.notify_force_light)
 
 	Public.apply_flamer_nerfs()
 	-- Public.research_apply_buffs(event) -- this is broken right now
@@ -1180,6 +1197,14 @@ local function event_on_player_joined_game(event)
 
 	--figure out if we should drop them back into a crew:
 
+	if (not Server.get_current_time()) then -- don't run this on servers because I'd need to negotiate that with the rest of Comfy
+		player.print({'pirates.thesixthroc_support_toast'}, {r=1, g=0.4, b=0.9})
+	end
+
+	if _DEBUG then
+		game.print('Debug mode on. Use /go to get started, /1 /4 /32 etc to change game speed.')
+	end
+
 	local crew_to_put_back_in = nil
 	for _, mem in pairs(global_memory.crew_memories) do
 		if mem.id and mem.crewstatus and mem.crewstatus == Crew.enum.ADVENTURING and mem.temporarily_logged_off_characters[player.index] then
@@ -1190,6 +1215,11 @@ local function event_on_player_joined_game(event)
 
 	if crew_to_put_back_in then
 		Crew.join_crew(player, crew_to_put_back_in, true)
+
+		local memory = global_memory.crew_memories[crew_to_put_back_in]
+		if #memory.crewplayerindices <= 1 then
+			memory.playerindex_captain = player.index
+		end
 
 		if _DEBUG then log('putting player back in their old crew') end
 	else
@@ -1234,11 +1264,17 @@ local function event_on_player_joined_game(event)
 		)
 		if ages[1] then
 			Crew.join_crew(player, ages[1].id)
+
+			local memory = global_memory.crew_memories[ages[1].id]
+			if #memory.crewplayerindices <= 1 then
+				memory.playerindex_captain = player.index
+			end
+
 			if ages[2] then
 				if ages[1].large and (not ages[#ages].large) then
-					Common.notify_player_announce(player, 'There are multiple crews on this server. You have been placed in the oldest crew with large capacity.')
+					Common.notify_player_announce(player, {'pirates.goto_oldest_crew_with_large_capacity'})
 				else
-					Common.notify_player_announce(player, 'There are multiple crews on this server. You have been placed in the oldest.')
+					Common.notify_player_announce(player, {'pirates.goto_oldest_crew'})
 				end
 			end
 		end
@@ -1247,6 +1283,8 @@ local function event_on_player_joined_game(event)
 	if not _DEBUG then
 		Gui.info.toggle_window(player)
 	end
+
+	global_memory.last_players_health[event.player_index] = player.character.health
 
 	-- 	player.teleport(surface.find_non_colliding_position('character', spawnpoint, 32, 0.5), surface)
 	-- 	-- for item, amount in pairs(Balance.starting_items_player) do
@@ -1317,6 +1355,8 @@ local function event_on_pre_player_left_game(event)
 			break
 		end
 	end
+
+	global_memory.last_players_health[event.player_index] = nil
 end
 
 
@@ -1604,13 +1644,13 @@ local function event_on_rocket_launched(event)
 	if memory.stored_fuel and destination.dynamic_data and destination.dynamic_data.rocketcoalreward then
 		memory.stored_fuel = memory.stored_fuel + destination.dynamic_data.rocketcoalreward
 		local a = Balance.rocket_launch_coin_reward
-		Common.give_items_to_crew({{name = 'coin', count = a}}, true)
+		Common.give_items_to_crew({{name = 'coin', count = a}})
 		memory.playtesting_stats.coins_gained_by_rocket_launches = memory.playtesting_stats.coins_gained_by_rocket_launches + a
-
 	end
 
 	local force = memory.force
-	Common.notify_force_light(force,'Granted: ' .. Math.floor(Balance.rocket_launch_coin_reward/100)/10 .. 'k [item=coin], ' .. Math.floor(destination.dynamic_data.rocketcoalreward/100)/10 .. 'k [item=coal].')
+	local message = {'pirates.granted_2', {'pirates.granted_rocket_launch'}, Math.floor(Balance.rocket_launch_coin_reward/100)/10 .. 'k [item=coin]', Math.floor(destination.dynamic_data.rocketcoalreward/100)/10 .. 'k [item=coal]'}
+	Common.notify_force_light(force,message)
 
 	if destination.dynamic_data.quest_type == Quest.enum.TIME and (not destination.dynamic_data.quest_complete) then
 		destination.dynamic_data.quest_progressneeded = 1
@@ -1620,6 +1660,16 @@ local function event_on_rocket_launched(event)
 	if destination.dynamic_data.quest_type == Quest.enum.NODAMAGE and (not destination.dynamic_data.quest_complete) then
 		destination.dynamic_data.quest_progress = destination.dynamic_data.rocketsilohp
 		Quest.try_resolve_quest()
+	end
+
+	if destination.dynamic_data.rocketsilos then
+		for i = 1, #destination.dynamic_data.rocketsilos do
+			local s = destination.dynamic_data.rocketsilos[i]
+			if s and s.valid then
+				s.die()
+			end
+		end
+		destination.dynamic_data.rocketsilos = nil
 	end
 end
 
@@ -1649,7 +1699,7 @@ local function event_on_built_entity(event)
 						player.insert{name = entity.name, count = 1}
 					end
 					entity.destroy()
-					Common.notify_player_error(player, 'Build error: Undergrounds can\'t be built on the boat, due to conflicts with the boat movement code.')
+					Common.notify_player_error(player, {'pirates.error_build_undergrounds_on_boat'})
 					return
 			end
 		end
@@ -1726,7 +1776,7 @@ local remove_boost_movement_speed_on_respawn =
 		if memory.game_lost then return end
 		memory.speed_boost_characters[player.index] = nil
 
-		Common.notify_player_expected(player, 'Respawn speed bonus removed.')
+		Common.notify_player_expected(player, {'pirates.respawn_speed_bonus_removed'})
     end
 )
 
@@ -1747,7 +1797,7 @@ local boost_movement_speed_on_respawn =
 		memory.speed_boost_characters[player.index] = true
 
         Task.set_timeout_in_ticks(1050, remove_boost_movement_speed_on_respawn, {player = player, crew_id = crew_id})
-		Common.notify_player_expected(player, 'Respawn speed bonus applied.')
+		Common.notify_player_expected(player, {'pirates.respawn_speed_bonus_applied'})
     end
 )
 
@@ -1762,7 +1812,7 @@ local function event_on_player_respawned(event)
 	local boat = memory.boat
 
 	if player.surface == game.surfaces[Common.current_destination().surface_name] then
-		if boat and boat.state == Boats.enum_state.ATSEA_SAILING then
+		if boat and boat.state == Boats.enum_state.ATSEA_SAILING or boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL or boat.state == Boats.enum_state.ATSEA_LOADING_MAP then
 			-- assuming sea is always default:
 			local seasurface = game.surfaces[memory.sea_name]
 			player.teleport(memory.spawnpoint, seasurface)
@@ -1770,6 +1820,9 @@ local function event_on_player_respawned(event)
 
 			if player.character and player.character.valid then
 				Task.set_timeout_in_ticks(360, boost_movement_speed_on_respawn, {player = player, crew_id = crew_id})
+
+				local global_memory = Memory.get_global_memory()
+				global_memory.last_players_health[event.player_index] = player.character.health
 			end
 		end
 	end
@@ -1784,14 +1837,14 @@ event.add(defines.events.on_entity_died, event_on_entity_died)
 event.add(defines.events.on_player_joined_game, event_on_player_joined_game)
 event.add(defines.events.on_pre_player_left_game, event_on_pre_player_left_game)
 -- event.add(defines.events.on_player_left_game, event_on_player_left_game)
-event.add(defines.events.on_pre_player_mined_item, event_pre_player_mined_item)
+-- event.add(defines.events.on_pre_player_mined_item, event_pre_player_mined_item)
 event.add(defines.events.on_player_mined_entity, event_on_player_mined_entity)
 event.add(defines.events.on_research_finished, event_on_research_finished)
 event.add(defines.events.on_player_changed_surface, on_player_changed_surface)
 event.add(defines.events.on_player_driving_changed_state, event_on_player_driving_changed_state)
 -- event.add(defines.events.on_player_changed_position, event_on_player_changed_position)
 -- event.add(defines.events.on_technology_effects_reset, event_on_technology_effects_reset)
--- event.add(defines.events.on_chunk_generated, Interface.on_chunk_generated) --moved to main in order to make the debug properties clear
+-- event.add(defines.events.on_chunk_generated, PiratesApiEvents.on_chunk_generated) --moved to main in order to make the debug properties clear
 event.add(defines.events.on_rocket_launched, event_on_rocket_launched)
 event.add(defines.events.on_console_chat, event_on_console_chat)
 event.add(defines.events.on_market_item_purchased, event_on_market_item_purchased)

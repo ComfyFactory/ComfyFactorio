@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 -- local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
@@ -6,7 +8,7 @@ local CoreData = require 'maps.pirates.coredata'
 
 local Public = {}
 
-Public.display_names = {'Sandworm Caldera'}
+Public.display_names = {{'pirates.location_displayname_red_desert_1'}}
 
 Public.discord_emoji = CoreData.comfy_emojis.mjau
 
@@ -25,7 +27,7 @@ function Public.base_ores() --here, just for the visualisation:
 	return {
 		['copper-ore'] = 5,
 		['iron-ore'] = 5,
-		['coal'] = 5,
+		['coal'] = 3,
 	}
 end
 

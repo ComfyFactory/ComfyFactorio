@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Memory = require 'maps.pirates.memory'
 -- local Math = require 'maps.pirates.math'
@@ -97,7 +99,7 @@ Public.Data.surfacename_rendering_pos = {x = -0.5, y = -15}
 
 Public.cabin_shop_data = {
 	{
-		price = {{'coin', 300}, {'coal', 25}},
+		price = {{'coin', 400}, {'coal', 20}, {'iron-plate', 10}},--should be inefficient on resources to merely buy arty to shoot nests
 		offer = {type='give-item', item = 'artillery-shell', count = 5},
 	},
 	{
@@ -108,10 +110,11 @@ Public.cabin_shop_data = {
 		price = {{'coin', 2000}, {'stone-brick', 30}},
 		offer = {type='give-item', item = 'uranium-238', count = 10},
 	},
-	{
-		price = {{'coin', 25}},
-		offer = {type='nothing', effect_description='Relax at sea for an extra minute: Increase the next destination\'s loading time by 60 seconds.'},
-	},
+	--disabled now that we can wait after any destination:
+	-- {
+	-- 	price = {{'coin', 25}},
+	-- 	offer = {type='nothing', effect_description={'pirates.market_description_extra_time_at_sea'}},
+	-- },
 }
 
 function Public.get_cabin_surface_name()
@@ -264,7 +267,7 @@ function Public.create_cabin_surface()
 		end
 
 		rendering.draw_text{
-			text = 'Captain\'s Cabin',
+			text = {'pirates.surface_label_cabin'},
 			surface = surface,
 			target = Public.Data.surfacename_rendering_pos,
 			color = CoreData.colors.renderingtext_yellow,

@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
@@ -16,7 +18,7 @@ local CustomEvents = require 'maps.pirates.custom_events'
 local Public = {}
 
 Public.Data = {}
-Public.Data.display_names = {'Dock'}
+Public.Data.display_names = {{'pirates.location_displayname_dock_1'}}
 Public.Data.discord_emoji = CoreData.comfy_emojis.smolfish
 Public.Data.width = 296
 Public.Data.height = 98

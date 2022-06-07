@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Memory = require 'maps.pirates.memory'
 local Common = require 'maps.pirates.common'
@@ -20,9 +22,9 @@ function Public.toggle_window(player)
 
 	local flow, flow2, flow3
 	flow = GuiCommon.new_window(player, window_name)
-	flow.caption = 'Progress'
+	flow.caption = {'pirates.gui_progress'}
 
-	flow2 = GuiCommon.flow_add_section(flow, 'distance_travelled', 'Distance Travelled:')
+	flow2 = GuiCommon.flow_add_section(flow, 'distance_travelled', {'pirates.gui_progress_distance_travelled'})
 
 	flow3 = flow2.add({
 		name = 'leagues',
@@ -35,7 +37,7 @@ function Public.toggle_window(player)
 	flow3.style.maximal_width = 160
 	flow3.style.font = 'default-dropdown'
 
-	flow2 = GuiCommon.flow_add_section(flow, 'current_location', 'Current location: ')
+	flow2 = GuiCommon.flow_add_section(flow, 'current_location', {'pirates.gui_progress_current_location', ''})
 
 	-- flow3 = flow2.add({
 	-- 	name = 'location_name',
@@ -107,8 +109,8 @@ function Public.full_update(player)
 		name = Lobby.Data.display_name
 	end
 
-	flow.current_location.header.caption = string.format('Current location: %s', name)
-	flow.distance_travelled.body.leagues.caption = string.format('%d leagues', memory.overworldx or 0)
+	flow.current_location.header.caption = {'pirates.gui_progress_current_location', name}
+	flow.distance_travelled.body.leagues.caption = {'pirates.gui_progress_leagues', memory.overworldx or 0}
 
 	-- local daynighttype
 	-- if destination.static_params and destination.static_params.daynightcycletype then
@@ -143,7 +145,7 @@ function Public.full_update(player)
 	-- 	flow.current_location.body.daynight.visible = false
 	-- end
 	local daynightcycletype = destination.static_params.daynightcycletype or 1
-	flow.current_location.body.daynight.caption = 'Time of day: ' .. CoreData.daynightcycle_types[daynightcycletype].displayname
+	flow.current_location.body.daynight.caption = {'pirates.gui_progress_time_of_day', CoreData.daynightcycle_types[daynightcycletype].displayname}
 
 
 	-- local ores

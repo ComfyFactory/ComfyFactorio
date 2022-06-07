@@ -58,11 +58,11 @@ local function prepare_floaty_text(list, surface, position, name, count)
 end
 
 local function chest_is_valid(chest)
-   if this.dungeons_initial_level ~= nil then
-       -- transport chests always are valid targets
-       if chest.name == 'blue-chest' or chest.name == 'red-chest' then
-	   return true
-       end
+    if this.dungeons_initial_level ~= nil then
+        -- transport chests always are valid targets
+        if chest.name == 'blue-chest' or chest.name == 'red-chest' then
+            return true
+        end
     end
     for _, e in pairs(
         chest.surface.find_entities_filtered(
@@ -514,20 +514,20 @@ local function auto_stash(player, event)
                         furnaceList[name] = (furnaceList[name] or 0) + inventory[i].count
                     end
                 end
-            elseif shift and this.insert_into_wagon then
-                if button == defines.mouse_button_type.right then
+            elseif shift and this.insert_into_wagon then -- insert into wagon
+                if button == defines.mouse_button_type.right then -- insert all ores into wagon
                     if is_resource then
                         full_insert = {full = insert_into_wagon(inventory[i], chests, name, floaty_text_list), name = name}
                     end
                 end
-                if button == defines.mouse_button_type.left then
+                if button == defines.mouse_button_type.left then -- insert all filtered into wagon
                     full_insert = {full = insert_into_wagon_filtered(inventory[i], chests, name, floaty_text_list), name = name}
                 end
-            elseif button == defines.mouse_button_type.right then
+            elseif button == defines.mouse_button_type.right then -- only ores to nearby chests
                 if is_resource then
                     full_insert = {full = insert_item_into_chest(inventory[i], chests, filtered_chests, name, floaty_text_list, full_insert), name = name}
                 end
-            elseif button == defines.mouse_button_type.left then
+            elseif button == defines.mouse_button_type.left then -- all items to nearby chests
                 full_insert = {full = insert_item_into_chest(inventory[i], chests, filtered_chests, name, floaty_text_list, full_insert), name = name}
             end
             if not full_insert.success then
@@ -573,7 +573,7 @@ local function create_gui_button(player)
         data.tooltip = tooltip
         data.sprite = 'item/wooden-chest'
 
-        if data[player.index] then
+        if data and data[player.index] then
             local f = data[player.index]
             if f.frame and f.frame.valid then
                 f.frame.sprite = 'item/wooden-chest'
@@ -652,7 +652,7 @@ local function on_gui_click(event)
     local name = 'auto_stash'
     if this.bottom_button then
         local data = BottomFrame.get('bottom_quickbar_button')
-        if data[player.index] then
+        if data and data[player.index] then
             data = data[player.index]
             name = data.name
         end
@@ -692,7 +692,7 @@ function Public.bottom_button(value)
 end
 
 function Public.set_dungeons_initial_level(value)
-   this.dungeons_initial_level = value
+    this.dungeons_initial_level = value
 end
 Event.on_configuration_changed(do_whitelist)
 

@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 -- local Common = require 'maps.pirates.common'
 -- local Utils = require 'maps.pirates.utils_local'
@@ -5,7 +7,7 @@
 
 local Public = {}
 
-Public.display_names = {'Frozen Pools'}
+Public.display_names = {{'pirates.location_displayname_walkways_1'}}
 
 Public.terraingen_frame_width = 896
 Public.terraingen_frame_height = 896

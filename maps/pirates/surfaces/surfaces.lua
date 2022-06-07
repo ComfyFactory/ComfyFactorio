@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
@@ -15,7 +17,7 @@ local Cabin = require 'maps.pirates.surfaces.cabin'
 local Islands = require 'maps.pirates.surfaces.islands.islands'
 local Crowsnest = require 'maps.pirates.surfaces.crowsnest'
 local Quest = require 'maps.pirates.quest'
-local Parrot = require 'maps.pirates.parrot'
+-- local Parrot = require 'maps.pirates.parrot'
 local ShopMerchants = require 'maps.pirates.shop.merchants'
 local SurfacesCommon = require 'maps.pirates.surfaces.common'
 -- local Roles = require 'maps.pirates.roles.roles'
@@ -134,7 +136,7 @@ function Public.destination_on_collide(destination)
 	local memory = Memory.get_crew_memory()
 
 	local name = destination.static_params.name and destination.static_params.name or 'NameNotFound'
-	local message = '[' .. memory.name .. '] Loading destination ' .. (memory.destinationsvisited_indices and (#memory.destinationsvisited_indices + 1) or 0) .. ', ' .. name .. '.'
+	local message = {'', '[' .. memory.name .. '] ', {'pirates.approaching_destination', memory.destinationsvisited_indices and (#memory.destinationsvisited_indices + 1) or 0, name}} --notify the whole server
 	Common.notify_game(message)
 
 	if destination.type ~= Public.enum.DOCK then
@@ -161,7 +163,7 @@ function Public.destination_on_collide(destination)
 
 
 		if destination.subtype == Islands.enum.RADIOACTIVE then
-			Parrot.parrot_radioactive_tip_1()
+			Common.parrot_speak(memory.force, {'pirates.parrot_radioactive_tip_1'})
 		else
 
 			local scheduled_raft_raids
@@ -169,14 +171,14 @@ function Public.destination_on_collide(destination)
 			local playercount = Common.activecrewcount()
 			local max_evo
 
-			local difficulty_name = CoreData.get_difficulty_name_from_value(Common.difficulty_scale())
-			if difficulty_name == CoreData.difficulty_options[1].text then
+			local difficulty_name = CoreData.get_difficulty_option_informal_name_from_value(Common.difficulty_scale())
+			if difficulty_name == 'easy' then
 				if memory.overworldx/40 < 20 then
 					max_evo = 0.9 - (20 - memory.overworldx/40) * 1/100
 				else
 					max_evo = 0.91 + (memory.overworldx/40 - 20) * 0.25/100
 				end
-			elseif difficulty_name == CoreData.difficulty_options[2].text then
+			elseif difficulty_name == 'normal' then
 				if memory.overworldx/40 < 15 then
 					max_evo = 0.9 - (15 - memory.overworldx/40) * 0.5/100
 				else
@@ -226,7 +228,7 @@ function Public.destination_on_collide(destination)
 	end
 
 	if memory.overworldx == 40*5 then
-		Parrot.parrot_boats_warning()
+		Common.parrot_speak(memory.force, {'pirates.parrot_boats_warning'})
 	-- elseif memory.overworldx == 800 then
 	-- 	Parrot.parrot_800_tip()
 	end
@@ -262,7 +264,8 @@ function Public.destination_on_arrival(destination)
 			destination.dynamic_data.time_remaining = Math.ceil(Balance.max_time_on_island())
 		end
 
-		if destination.subtype ~= Islands.enum.FIRST and destination.subtype ~= Islands.enum.RADIOACTIVE then
+		if destination.subtype ~= Islands.enum.FIRST and destination.subtype ~= Islands.enum.RADIOACTIVE and destination.destination_index ~= 2 then
+			-- if not destination.overworld_position.x ~= Common.first_cost_to_leave_macrox * 40 then
 			Quest.initialise_random_quest()
 		-- else
 			-- if _DEBUG then
@@ -318,9 +321,9 @@ function Public.destination_on_arrival(destination)
 	end
 
 	local name = destination.static_params.name and destination.static_params.name or 'NameNotFound'
-	local message = 'Approaching destination ' .. (memory.destinationsvisited_indices and #memory.destinationsvisited_indices or 0) .. ', ' .. name .. '.'
+	local message = {'pirates.approaching_destination', memory.destinationsvisited_indices and #memory.destinationsvisited_indices or 0, name}
 	if not (#memory.destinationsvisited_indices and #memory.destinationsvisited_indices == 1) then --don't need to notify for the first island
-		Server.to_discord_embed_raw((destination.static_params.discord_emoji or CoreData.comfy_emojis.wut) .. '[' .. memory.name .. '] Approaching ' .. name .. ', ' .. memory.overworldx .. ' leagues.')
+		Server.to_discord_embed_raw({'',(destination.static_params.discord_emoji or CoreData.comfy_emojis.wut) .. '[' .. memory.name .. '] Approaching ', name, ', ' .. memory.overworldx .. ' leagues.'}, true)
 	end
 	-- if destination.static_params.name == 'Dock' then
 	-- 	message = message .. ' ' .. 'New trades are available in the Captain\'s Store.'
@@ -340,12 +343,14 @@ function Public.destination_on_arrival(destination)
 
 		Islands.spawn_ores_on_arrival(destination, points_to_avoid)
 
-		if memory.overworldx >= Balance.covered_first_appears_at and destination.subtype ~= Islands.enum.RADIOACTIVE then
+		if (memory.overworldx >= Balance.quest_structures_first_appear_at and destination.subtype ~= Islands.enum.RADIOACTIVE) or _DEBUG then
 			local class_for_sale = Classes.generate_class_for_sale()
 			destination.static_params.class_for_sale = class_for_sale
 
-			local covered = Islands.spawn_covered(destination, points_to_avoid)
-			points_to_avoid[#points_to_avoid + 1] = {x = covered.x, y = covered.y, r = 25}
+			local covered = Islands.spawn_quest_structure(destination, points_to_avoid)
+			if covered then
+				points_to_avoid[#points_to_avoid + 1] = {x = covered.x, y = covered.y, r = 25}
+			end
 		end
 
 		Islands.spawn_treasure_maps(destination, points_to_avoid)
@@ -353,7 +358,7 @@ function Public.destination_on_arrival(destination)
 
 		if destination.subtype and destination.subtype == Islands.enum.MAZE then
 			local force = memory.force
-			force.manual_mining_speed_modifier = 0.8
+			force.manual_mining_speed_modifier = 1
 		end
 	end
 end
@@ -365,7 +370,7 @@ function Public.destination_on_departure(destination)
 	-- need to put tips only where we know there are islands:
 
 	if memory.overworldx == 40*9 then
-		Parrot.parrot_kraken_warning()
+		Common.parrot_speak(memory.force, {'pirates.parrot_kraken_warning'})
 	end
 
 	if destination.subtype and destination.subtype == Islands.enum.MAZE then
@@ -392,9 +397,9 @@ function Public.destination_on_crewboat_hits_shore(destination)
 		destination.dynamic_data.initial_spawner_count = Common.spawner_count(game.surfaces[destination.surface_name])
 
 		if memory.overworldx == 0 then
-			Parrot.parrot_0()
+			Common.parrot_speak(memory.force, {'pirates.parrot_0'})
 		elseif memory.overworldx == 80 then
-			Parrot.parrot_80()
+			Common.parrot_speak(memory.force, {'pirates.parrot_night_warning'})
 		end
 
 		if destination.subtype == Islands.enum.RADIOACTIVE then
@@ -408,9 +413,9 @@ function Public.destination_on_crewboat_hits_shore(destination)
 				surface.create_entity{name = 'electric-mining-drill', direction = direction, position = position}
 			end
 
-			Parrot.parrot_radioactive_tip_2()
+			Common.parrot_speak(memory.force, {'pirates.parrot_radioactive_tip_2'})
 		elseif destination.subtype == Islands.enum.MAZE and memory.overworldx == Common.maze_minimap_jam_league then
-			Parrot.parrot_maze_tip_1()
+			Common.parrot_speak(memory.force, {'pirates.parrot_maze_tip_1'})
 		end
 
 		if memory.merchant_ships_unlocked or _DEBUG then
@@ -778,7 +783,7 @@ function Public.player_exit_crows_nest(player, player_relative_pos)
 	local memory = Memory.get_crew_memory()
 	local surface
 
-	if memory.boat and (memory.boat.state == Boats.enum_state.ATSEA_SAILING or memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP) then
+	if memory.boat and (memory.boat.state == Boats.enum_state.ATSEA_SAILING or memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL or memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP) then
 		surface = game.surfaces[SurfacesCommon.encode_surface_name(memory.id, 0, Public.enum.SEA, Public.Sea.enum.DEFAULT)]
 	else
 		surface = game.surfaces[Common.current_destination().surface_name]
@@ -817,7 +822,7 @@ function Public.player_exit_hold(player, relative_pos)
 	local memory = Memory.get_crew_memory()
 	local surface
 
-	if memory.boat and (memory.boat.state == Boats.enum_state.ATSEA_SAILING or memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP) then
+	if memory.boat and (memory.boat.state == Boats.enum_state.ATSEA_SAILING or memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL or memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP) then
 		surface = game.surfaces[SurfacesCommon.encode_surface_name(memory.id, 0, Public.enum.SEA, Public.Sea.enum.DEFAULT)]
 	else
 		surface = game.surfaces[Common.current_destination().surface_name]
@@ -834,7 +839,7 @@ end
 
 
 function Public.player_goto_cabin(player, relative_pos)
-	-- local memory = Memory.get_crew_memory()
+	local memory = Memory.get_crew_memory()
 
 	local surface = Cabin.get_cabin_surface()
 
@@ -843,6 +848,11 @@ function Public.player_goto_cabin(player, relative_pos)
 	local newpos2 = surface.find_non_colliding_position('character', newpos, 5, 0.2) or newpos
 
 	if newpos2 then player.teleport(newpos2, surface) end
+
+	if (not memory.captain_cabin_hint_given) and Common.is_captain(player) then
+		memory.captain_cabin_hint_given = true
+		Common.parrot_speak(memory.force, {'pirates.parrot_captain_first_time_in_cabin_hint'})
+	end
 end
 
 
@@ -850,7 +860,7 @@ function Public.player_exit_cabin(player, relative_pos)
 	local memory = Memory.get_crew_memory()
 	local surface
 
-	if memory.boat and (memory.boat.state == Boats.enum_state.ATSEA_SAILING or memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP) then
+	if memory.boat and (memory.boat.state == Boats.enum_state.ATSEA_SAILING or memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL or memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP) then
 		surface = game.surfaces[SurfacesCommon.encode_surface_name(memory.id, 0, Public.enum.SEA, Public.Sea.enum.DEFAULT)]
 	else
 		surface = game.surfaces[Common.current_destination().surface_name]

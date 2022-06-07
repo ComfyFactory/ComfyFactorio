@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 -- local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
@@ -64,7 +66,7 @@ function Public.terrain(args)
 
 	if noises.height(p) > 0.11 then
 		if noises.forest_abs_suppressed(p) > 0.7 then
-            if (not args.iconized_generation) and noises.forest_abs_suppressed(p) < 1 and Math.random(750) == 1 then -- high amounts of this
+            if (not args.iconized_generation) and noises.forest_abs_suppressed(p) < 1 and Math.random(700) == 1 then -- high amounts of this
                 args.specials[#args.specials + 1] = {name = 'chest', position = args.p}
 			else
 				local forest_noise = noises.forest(p)

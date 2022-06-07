@@ -611,6 +611,10 @@ local function on_player_changed_position(event)
         return
     end
 
+    if Public.get_last_spell_cast(player) then
+        return
+    end
+
     if random(1, 64) ~= 1 then
         return
     end
@@ -675,6 +679,7 @@ local function on_pre_player_mined_item(event)
     if rpg_t.last_mined_entity_position.x == entity.position.x and rpg_t.last_mined_entity_position.y == entity.position.y then
         return
     end
+
     rpg_t.last_mined_entity_position.x = entity.position.x
     rpg_t.last_mined_entity_position.y = entity.position.y
 
@@ -970,7 +975,10 @@ local function on_player_used_capsule(event)
         rpg_t = rpg_t
     }
 
-    spell.callback(data)
+    local cast_spell = spell.callback(data)
+    if not cast_spell then
+        return
+    end
 
     rpg_t.last_spawned = game.tick + spell.cooldown
     Public.update_mana(player)

@@ -1,12 +1,14 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 -- local Math = require 'maps.pirates.math'
-local Memory = require 'maps.pirates.memory'
+-- local Memory = require 'maps.pirates.memory'
 local _inspect = require 'utils.inspect'.inspect
 -- local Token = require 'utils.token'
 -- local CoreData = require 'maps.pirates.coredata'
 -- local Task = require 'utils.task'
 -- local Balance = require 'maps.pirates.balance'
-local Common = require 'maps.pirates.common'
+-- local Common = require 'maps.pirates.common'
 -- local Utils = require 'maps.pirates.utils_local'
 
 local Public = {}
@@ -53,35 +55,6 @@ Public.framecounts = {
 -- 	"If X marks the spot - use inserters to dig!",
 -- }
 
-function Public.parrot_0()
-	local memory = Memory.get_crew_memory()
-	Common.parrot_speak(memory.force, 'We can wait here for as long as we like.')
-end
-function Public.parrot_80()
-	local memory = Memory.get_crew_memory()
-	-- Common.parrot_speak(memory.force, 'Let\'s build out the ship?')
-	Common.parrot_speak(memory.force, 'Did you know that biters deal more damage at night?')
-end
-function Public.parrot_boats_warning()
-	local memory = Memory.get_crew_memory()
-	Common.parrot_speak(memory.force, '200 leagues? I think we\'re being chased...')
-end
-function Public.parrot_kraken_warning()
-	local memory = Memory.get_crew_memory()
-	Common.parrot_speak(memory.force, '400 leagues coming up? What are those pink things I spy...')
-end
-function Public.parrot_radioactive_tip_1()
-	local memory = Memory.get_crew_memory()
-	Common.parrot_speak(memory.force, 'We\'ll need uranium-235 to push away from this island...')
-end
-function Public.parrot_radioactive_tip_2()
-	local memory = Memory.get_crew_memory()
-	Common.parrot_speak(memory.force, 'The biters don\'t care if we pollute here, but they evolve fast.')
-end
-function Public.parrot_maze_tip_1()
-	local memory = Memory.get_crew_memory()
-	Common.parrot_speak(memory.force, 'Something seems wrong with our minimap.')
-end
 -- function Public.parrot_800_tip()
 -- 	local memory = Memory.get_crew_memory()
 -- 	Common.parrot_speak(memory.force, 'The resources needed to leave will get a bit harder now...')

@@ -179,6 +179,17 @@ local function create_entity(data)
     local force = data.force
     local tame_unit_effects = data.tame_unit_effects
 
+    local last_spell_cast = rpg_t.last_spell_cast
+
+    if last_spell_cast then
+        if Public.get_last_spell_cast(player) then
+            Public.cast_spell(player, true)
+            return false
+        end
+    end
+
+    Public.set_last_spell_cast(player, position)
+
     if self.biter then
         local e = surface.create_entity({name = self.entityName, position = position, force = force})
         tame_unit_effects(player, e)
@@ -197,6 +208,9 @@ local function create_entity(data)
                     local e = surface.create_entity({name = self.entityName, position = pos, force = force})
                     e.direction = player.character.direction
                     Public.remove_mana(player, self.mana_cost)
+                else
+                    Public.cast_spell(player, true)
+                    return false
                 end
             end
         end
@@ -205,6 +219,9 @@ local function create_entity(data)
             local e = surface.create_entity({name = self.entityName, position = position, force = force})
             e.direction = player.character.direction
             Public.remove_mana(player, self.mana_cost)
+        else
+            Public.cast_spell(player, true)
+            return false
         end
     end
 
@@ -231,7 +248,7 @@ spells[#spells + 1] = {
     enabled = true,
     sprite = 'recipe/stone-wall',
     callback = function(data)
-        create_entity(data)
+        return create_entity(data)
     end
 }
 spells[#spells + 1] = {
@@ -245,7 +262,7 @@ spells[#spells + 1] = {
     enabled = true,
     sprite = 'recipe/wooden-chest',
     callback = function(data)
-        create_entity(data)
+        return create_entity(data)
     end
 }
 spells[#spells + 1] = {
@@ -259,7 +276,7 @@ spells[#spells + 1] = {
     enabled = true,
     sprite = 'recipe/iron-chest',
     callback = function(data)
-        create_entity(data)
+        return create_entity(data)
     end
 }
 spells[#spells + 1] = {
@@ -273,7 +290,7 @@ spells[#spells + 1] = {
     enabled = true,
     sprite = 'recipe/steel-chest',
     callback = function(data)
-        create_entity(data)
+        return create_entity(data)
     end
 }
 spells[#spells + 1] = {
@@ -287,7 +304,7 @@ spells[#spells + 1] = {
     enabled = true,
     sprite = 'recipe/transport-belt',
     callback = function(data)
-        create_entity(data)
+        return create_entity(data)
     end
 }
 spells[#spells + 1] = {
@@ -301,7 +318,7 @@ spells[#spells + 1] = {
     enabled = true,
     sprite = 'recipe/fast-transport-belt',
     callback = function(data)
-        create_entity(data)
+        return create_entity(data)
     end
 }
 spells[#spells + 1] = {
@@ -315,7 +332,7 @@ spells[#spells + 1] = {
     enabled = true,
     sprite = 'recipe/express-transport-belt',
     callback = function(data)
-        create_entity(data)
+        return create_entity(data)
     end
 }
 spells[#spells + 1] = {
@@ -329,7 +346,7 @@ spells[#spells + 1] = {
     enabled = true,
     sprite = 'recipe/underground-belt',
     callback = function(data)
-        create_entity(data)
+        return create_entity(data)
     end
 }
 spells[#spells + 1] = {
@@ -343,7 +360,7 @@ spells[#spells + 1] = {
     enabled = true,
     sprite = 'recipe/fast-underground-belt',
     callback = function(data)
-        create_entity(data)
+        return create_entity(data)
     end
 }
 spells[#spells + 1] = {
@@ -357,7 +374,7 @@ spells[#spells + 1] = {
     enabled = true,
     sprite = 'recipe/express-underground-belt',
     callback = function(data)
-        create_entity(data)
+        return create_entity(data)
     end
 }
 spells[#spells + 1] = {
@@ -371,7 +388,7 @@ spells[#spells + 1] = {
     enabled = true,
     sprite = 'recipe/pipe',
     callback = function(data)
-        create_entity(data)
+        return create_entity(data)
     end
 }
 spells[#spells + 1] = {
@@ -385,7 +402,7 @@ spells[#spells + 1] = {
     enabled = true,
     sprite = 'recipe/pipe-to-ground',
     callback = function(data)
-        create_entity(data)
+        return create_entity(data)
     end
 }
 spells[#spells + 1] = {
@@ -399,7 +416,7 @@ spells[#spells + 1] = {
     enabled = true,
     sprite = 'entity/tree-05',
     callback = function(data)
-        create_entity(data)
+        return create_entity(data)
     end
 }
 spells[#spells + 1] = {
@@ -413,7 +430,7 @@ spells[#spells + 1] = {
     enabled = true,
     sprite = 'entity/sand-rock-big',
     callback = function(data)
-        create_entity(data)
+        return create_entity(data)
     end
 }
 spells[#spells + 1] = {
@@ -427,7 +444,7 @@ spells[#spells + 1] = {
     enabled = true,
     sprite = 'entity/small-biter',
     callback = function(data)
-        create_entity(data)
+        return create_entity(data)
     end
 }
 spells[#spells + 1] = {
@@ -441,7 +458,7 @@ spells[#spells + 1] = {
     enabled = true,
     sprite = 'entity/small-spitter',
     callback = function(data)
-        create_entity(data)
+        return create_entity(data)
     end
 }
 spells[#spells + 1] = {
@@ -455,7 +472,7 @@ spells[#spells + 1] = {
     enabled = true,
     sprite = 'entity/medium-biter',
     callback = function(data)
-        create_entity(data)
+        return create_entity(data)
     end
 }
 spells[#spells + 1] = {
@@ -469,7 +486,7 @@ spells[#spells + 1] = {
     enabled = true,
     sprite = 'entity/medium-spitter',
     callback = function(data)
-        create_entity(data)
+        return create_entity(data)
     end
 }
 spells[#spells + 1] = {
@@ -484,7 +501,7 @@ spells[#spells + 1] = {
     log_spell = true,
     sprite = 'entity/biter-spawner',
     callback = function(data)
-        create_entity(data)
+        return create_entity(data)
     end
 }
 spells[#spells + 1] = {
@@ -499,7 +516,7 @@ spells[#spells + 1] = {
     log_spell = true,
     sprite = 'entity/spitter-spawner',
     callback = function(data)
-        create_entity(data)
+        return create_entity(data)
     end
 }
 
@@ -770,7 +787,7 @@ spells[#spells + 1] = {
     sprite = 'entity/tank',
     special_sprite = 'entity=tank',
     callback = function(data)
-        create_entity(data)
+        return create_entity(data)
     end
 }
 spells[#spells + 1] = {
@@ -788,7 +805,7 @@ spells[#spells + 1] = {
     sprite = 'entity/spidertron',
     special_sprite = 'entity=spidertron',
     callback = function(data)
-        create_entity(data)
+        return create_entity(data)
     end
 }
 spells[#spells + 1] = {
