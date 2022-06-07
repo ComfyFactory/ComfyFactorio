@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
@@ -58,12 +60,12 @@ function Public.terrain(args)
 		if noises.height(p) < 0.33 then
 			args.tiles[#args.tiles + 1] = {name = 'sand-2', position = args.p}
 		elseif noises.height(p) < 0.35 then
-			args.tiles[#args.tiles + 1] = {name = 'dirt-5', position = args.p}
+			args.tiles[#args.tiles + 1] = {name = 'dirt-1', position = args.p}
 		else
 			if noises.height_background(p) > 0.4 then
 				args.tiles[#args.tiles + 1] = {name = 'nuclear-ground', position = args.p}
 			else
-				args.tiles[#args.tiles + 1] = {name = 'dirt-4', position = args.p}
+				args.tiles[#args.tiles + 1] = {name = 'dirt-3', position = args.p}
 			end
 		end
 	end

@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 -- local Common = require 'maps.pirates.common'
 -- local Utils = require 'maps.pirates.utils_local'
@@ -5,7 +7,7 @@
 
 local Public = {}
 
-Public.display_names = {'Poisonous Fen'}
+Public.display_names = {{'pirates.location_displayname_swamp_1'}}
 
 Public.terraingen_frame_width = 325
 Public.terraingen_frame_height = 325

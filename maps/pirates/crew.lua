@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Balance = require 'maps.pirates.balance'
 local _inspect = require 'utils.inspect'.inspect
@@ -32,18 +34,21 @@ Public.enum = enum
 function Public.difficulty_vote(player_index, difficulty_id)
 	local memory = Memory.get_crew_memory()
 
+
 	if not (memory.difficulty_votes) then memory.difficulty_votes = {} end
 	local player = game.players[player_index]
 	if not (player and player.valid) then return end
 
+
 	if memory.difficulty_votes[player_index] and memory.difficulty_votes[player_index] == difficulty_id then
 		return nil
 	else
+		log(_inspect(CoreData.difficulty_options))
 		local option = CoreData.difficulty_options[difficulty_id]
 		if not option then return end
 
 		local color = option.associated_color
-		Common.notify_force(memory.force, player.name .. ' voted [color=' .. color.r .. ',' .. color.g .. ',' .. color.b .. ']for difficulty ' .. option.text .. '[/color]')
+		Common.notify_force(memory.force, {'pirates.notify_difficulty_vote',player.name, color.r, color.g, color.b, option.text})
 
 		memory.difficulty_votes[player_index] = difficulty_id
 
@@ -75,11 +80,13 @@ function Public.update_difficulty()
 
 	if modal_id ~= memory.difficulty_option then
 		local color = CoreData.difficulty_options[modal_id].associated_color
-		local message1 = 'Difficulty [color=' .. color.r .. ',' .. color.g .. ',' .. color.b .. ']changed to ' .. CoreData.difficulty_options[modal_id].text .. '[/color].'
-		local message2 = 'Difficulty changed to ' .. CoreData.difficulty_options[modal_id].text .. '.'
+
+		local message1 = {'pirates.notify_difficulty_change', color.r, color.g, color.b, CoreData.difficulty_options[modal_id].text}
 
 		Common.notify_force(memory.force, message1)
-		Server.to_discord_embed_raw(CoreData.comfy_emojis.kewl .. '[' .. memory.name .. '] ' .. message2)
+
+		-- local message2 = 'Difficulty changed to ' .. CoreData.difficulty_options[modal_id].text .. '.'
+		Server.to_discord_embed_raw({'', CoreData.comfy_emojis.kewl .. '[' .. memory.name .. '] ', message1}, true)
 
 		memory.difficulty_option = modal_id
 		memory.difficulty = CoreData.difficulty_options[modal_id].value
@@ -113,7 +120,7 @@ function Public.get_crewmembers_printable_string()
 	return crewmembers_string
 end
 
-function Public.try_lose(reason)
+function Public.try_lose(loss_reason)
 	local memory = Memory.get_crew_memory()
 
 	if (not memory.game_lost) then
@@ -123,9 +130,13 @@ function Public.try_lose(reason)
 
 		local playtimetext = Utils.time_longform((memory.age or 0)/60)
 
-		Server.to_discord_embed_raw(CoreData.comfy_emojis.trashbin .. '[' .. memory.name .. '] Game over — ' .. reason ..'. Playtime: ' .. playtimetext .. ' since 1st island. Crewmembers: ' .. Public.get_crewmembers_printable_string())
+		local message = {'',loss_reason,' ',{'pirates.loss_rest_of_message_long', playtimetext, Public.get_crewmembers_printable_string()}}
 
-		Common.notify_game('[' .. memory.name .. '] Game over — ' .. reason ..'. Playtime: [font=default-large-semibold]' .. playtimetext .. '[/font] since 1st island.', CoreData.colors.notify_gameover)
+		Server.to_discord_embed_raw({'',CoreData.comfy_emojis.trashbin .. '[' .. memory.name .. '] ', message}, true)
+
+		local message2 = {'',loss_reason,' ',{'pirates.loss_rest_of_message_short', '[font=default-large-semibold]' .. playtimetext .. '[/font]'}}
+
+		Common.notify_game({'', '[' .. memory.name .. '] ',message2}, CoreData.colors.notify_gameover)
 
 		local force = memory.force
 		if not (force and force.valid) then return end
@@ -146,9 +157,9 @@ function Public.try_win()
 		memory.game_won = true
 		-- memory.crew_disband_tick = game.tick + 1200
 
-		Server.to_discord_embed_raw(CoreData.comfy_emojis.goldenobese .. '[' .. memory.name .. '] Victory, on v' .. CoreData.version_string .. ', ' .. CoreData.difficulty_options[memory.difficulty_option].text .. ', capacity ' .. CoreData.capacity_options[memory.capacity_option].text3 .. '. Playtime: ' .. speedrun_time_str .. ' since 1st island. Crewmembers: ' .. Public.get_crewmembers_printable_string())
+		Server.to_discord_embed_raw({'', CoreData.comfy_emojis.goldenobese .. '[' .. memory.name .. '] Victory, on v' .. CoreData.version_string .. ', ', CoreData.difficulty_options[memory.difficulty_option].text, ', capacity ' .. CoreData.capacity_options[memory.capacity_option].text3 .. '. Playtime: ' .. speedrun_time_str .. ' since 1st island. Crewmembers: ' .. Public.get_crewmembers_printable_string()}, true)
 
-		Common.notify_game('[' .. memory.name .. '] Victory, on v' .. CoreData.version_string .. ', ' .. CoreData.difficulty_options[memory.difficulty_option].text .. ', capacity ' .. CoreData.capacity_options[memory.capacity_option].text3 .. '. Playtime: [font=default-large-semibold]' .. speedrun_time_str .. '[/font] since 1st island. Crewmembers: ' .. Public.get_crewmembers_printable_string(), CoreData.colors.notify_victory)
+		Common.notify_game({'','[' .. memory.name .. '] ',{'pirates.victory',CoreData.version_string, CoreData.difficulty_options[memory.difficulty_option].text, CoreData.capacity_options[memory.capacity_option].text3, speedrun_time_str, Public.get_crewmembers_printable_string()}}, CoreData.colors.notify_victory)
 
 		game.play_sound{path='utility/game_won', volume_modifier=0.9}
 
@@ -226,9 +237,8 @@ function Public.join_spectators(player, crewid)
 				if char and char.valid then
 					local p = char.position
 					-- local surface_name = char.surface.name
-					local message = player.name .. ' left the crew'
 					if p then
-						Common.notify_force(force, message .. ' to become a spectator.')
+						Common.notify_force(force, {'pirates.crew_to_spectator', player.name})
 						-- Server.to_discord_embed_raw(CoreData.comfy_emojis.feel .. '[' .. memory.name .. '] ' .. message)
 					end
 					-- if p then
@@ -241,8 +251,7 @@ function Public.join_spectators(player, crewid)
 
 					player.set_controller{type = defines.controllers.spectator}
 				else
-					local message = player.name .. ' left the crew'
-					Common.notify_force(force, message .. ' to become a spectator.')
+					Common.notify_force(force, {'pirates.crew_to_spectator', player.name})
 					-- Server.to_discord_embed_raw(CoreData.comfy_emojis.feel .. '[' .. memory.name .. '] ' .. message)
 					player.set_controller{type = defines.controllers.spectator}
 				end
@@ -264,8 +273,8 @@ function Public.join_spectators(player, crewid)
 				player.force = force
 				player.associate_character(c)
 
-				Common.notify_force(force, player.name .. ' joined as a spectator.')
-				Common.notify_lobby(player.name .. ' left the lobby to spectate ' .. memory.name .. '.')
+				Common.notify_force(force, {'pirates.lobby_to_spectator', player.name})
+				Common.notify_lobby({'pirates.lobby_to_spectator_2', player.name, memory.name})
 			end
 			memory.spectatorplayerindices[#memory.spectatorplayerindices + 1] = player.index
 			memory.tempbanned_from_joining_data[player.index] = game.tick
@@ -288,7 +297,7 @@ function Public.leave_spectators(player, quiet)
 	if not Common.validate_player(player) then return end
 
 	if not quiet then
-		Common.notify_force(player.force, player.name .. ' stopped spectating and returned to the lobby.')
+		Common.notify_force(player.force, {'pirates.spectator_to_lobby', player.name})
 	end
 
 	local chars = player.get_associated_characters()
@@ -359,17 +368,16 @@ function Public.join_crew(player, crewid, rejoin)
 			player.force = game.forces[string.format('crew-%03d', memory.id)]
 			player.teleport(surface.find_non_colliding_position('character', memory.spawnpoint, 32, 0.5) or memory.spawnpoint, surface)
 
-		Common.notify_lobby(player.name .. ' left the lobby to join ' .. memory.name .. '.')
+		Common.notify_lobby({'pirates.lobby_to_crew_2', player.name, memory.name})
 		end
 
-		local message = player.name .. ' joined the crew.'
-		Common.notify_force(player.force, message)
+		Common.notify_force(player.force, {'pirates.lobby_to_crew', player.name})
 		-- Server.to_discord_embed_raw(CoreData.comfy_emojis.yum1 .. '[' .. memory.name .. '] ' .. message)
 
 		memory.crewplayerindices[#memory.crewplayerindices + 1] = player.index
 
 		-- don't give them items if they've been in the crew recently:
-		if not (memory.tempbanned_from_joining_data and memory.tempbanned_from_joining_data[player.index] and game.tick < memory.tempbanned_from_joining_data[player.index] + 8 * Common.ban_from_rejoining_crew_ticks) and (not rejoin) then
+		if not (memory.tempbanned_from_joining_data and memory.tempbanned_from_joining_data[player.index]) and (not rejoin) then --just using tempbanned_from_joining_data as a quick proxy for whether the player has ever been in this run before
 			for item, amount in pairs(Balance.starting_items_player_late) do
 				player.insert({name = item, count = amount})
 			end
@@ -381,16 +389,14 @@ function Public.join_crew(player, crewid, rejoin)
 			memory.crew_disband_tick = nil --to prevent disbanding the crew after saving the game (booting everyone) and loading it again (joining the crew as the only member)
 		end
 
-		local personal_str = 'You have joined the crew \'' .. memory.name
-
 		if memory.overworldx > 0 then
 			local color = CoreData.difficulty_options[memory.difficulty_option].associated_color
-			personal_str = personal_str .. '\' [Capacity ' .. CoreData.capacity_options[memory.capacity_option].text3 .. ', Difficulty [color=' .. color.r .. ',' .. color.g .. ',' .. color.b .. ']' .. CoreData.difficulty_options[memory.difficulty_option].text .. '[/color]].'
+
+			Common.notify_player_announce(player, {'pirates.personal_join_string_1', memory.name, CoreData.capacity_options[memory.capacity_option].text3, color.r, color.g, color.b, CoreData.difficulty_options[memory.difficulty_option].text})
 		else
-			personal_str = personal_str .. '\' [Capacity ' .. CoreData.capacity_options[memory.capacity_option].text3 .. '].'
+			Common.notify_player_announce(player, {'pirates.personal_join_string_1', memory.name, CoreData.capacity_options[memory.capacity_option].text3})
 		end
 
-		Common.notify_player_announce(player, personal_str)
 	end
 end
 
@@ -405,10 +411,8 @@ function Public.leave_crew(player, to_lobby, quiet)
 	if char and char.valid then
 		-- local p = char.position
 		-- local surface_name = char.surface.name
-		local message
 		if not quiet then
-			message = player.name .. ' left the crew.'
-			Common.notify_force(player.force, message)
+			Common.notify_force(player.force, {'pirates.crew_leave', player.name})
 		-- else
 		-- 	message = player.name .. ' left.'
 		end
@@ -483,20 +487,19 @@ function Public.plank(captain, player)
 
 	if Utils.contains(Common.crew_get_crew_members(), player) then
 		if (not (captain.index == player.index)) then
-			local message = "%s planked %s!"
-			Server.to_discord_embed_raw(CoreData.comfy_emojis.monkas .. string.format(message, captain.name, player.name))
+			Server.to_discord_embed_raw(CoreData.comfy_emojis.monkas .. string.format("%s planked %s!", captain.name, player.name))
 
-			Common.notify_force(player.force, string.format(message, captain.name, player.name))
+			Common.notify_force(player.force, {'pirates.plank', captain.name, player.name})
 
 			Public.join_spectators(player, memory.id)
 			memory.tempbanned_from_joining_data[player.index] = game.tick + 60 * 120
 			return true
 		else
-			Common.notify_player_error(captain, 'Command error: Can\'t plank yourself.')
+			Common.notify_player_error(player, {'pirates.plank_error_self'})
 			return false
 		end
 	else
-		Common.notify_player_error(captain, 'Command error: Player is not a crewmember.')
+		Common.notify_player_error(player, {'pirates.plank_error_invalid_player'})
 		return false
 	end
 end
@@ -519,9 +522,9 @@ function Public.disband_crew(donotprint)
 
 	if (not donotprint) then
 
-		local message = '[' .. memory.name .. '] Disbanded after ' .. Utils.time_longform((memory.real_age or 0)/60) .. '.'
+		local message = {'pirates.crew_disband', memory.name, Utils.time_longform((memory.real_age or 0)/60)}
 		Common.notify_game(message)
-		Server.to_discord_embed_raw(CoreData.comfy_emojis.monkas .. message)
+		Server.to_discord_embed_raw({'', CoreData.comfy_emojis.monkas, message}, true)
 
 		-- if memory.game_won then
 		--		 game.print({'chronosphere.message_game_won_restart'}, {r=0.98, g=0.66, b=0.22})
@@ -613,7 +616,7 @@ function Public.player_abandon_proposal(player)
 	for k, proposal in pairs(global_memory.crewproposals) do
 		if proposal.endorserindices and proposal.endorserindices[1] and proposal.endorserindices[1] == player.index then
 			proposal.endorserindices[k] = nil
-			Common.notify_lobby('Proposal ' .. proposal.name .. ' retracted.')
+			Common.notify_lobby({'pirates.proposal_retracted', proposal.name})
 			-- Server.to_discord_embed(message)
 			global_memory.crewproposals[k] = nil
 		end
@@ -628,7 +631,7 @@ function Public.player_abandon_endorsements(player)
 			if i == player.index then
 				proposal.endorserindices[k2] = nil
 				if #proposal.endorserindices == 0 then
-					Common.notify_lobby('Proposal ' .. proposal.name .. ' abandoned.')
+					Common.notify_lobby({'pirates.proposal_abandoned', proposal.name})
 					-- Server.to_discord_embed(message)
 					global_memory.crewproposals[k] = nil
 				end
@@ -696,6 +699,8 @@ function Public.initialise_crew(accepted_proposal)
 	memory.tempbanned_from_joining_data = {}
 	memory.destinations = {}
 	memory.temporarily_logged_off_characters = {}
+	memory.class_renderings = {}
+	memory.class_auxiliary_data = {}
 
 	memory.hold_surface_count = 1
 
@@ -745,17 +750,17 @@ function Public.initialise_crew(accepted_proposal)
 	local crew_force = game.forces[string.format('crew-%03d', new_id)]
 	crew_force.set_spawn_position(memory.spawnpoint, surface)
 
-	local message = '[' .. accepted_proposal.name .. '] Launched.'
+	local message = {'pirates.crew_launch', accepted_proposal.name}
 	Common.notify_game(message)
 	-- Server.to_discord_embed_raw(CoreData.comfy_emojis.pogkot .. message .. ' Difficulty: ' .. CoreData.difficulty_options[memory.difficulty_option].text .. ', Capacity: ' .. CoreData.capacity_options[memory.capacity_option].text3 .. '.')
-	Server.to_discord_embed_raw(CoreData.comfy_emojis.pogkot .. message .. ' Capacity: ' .. CoreData.capacity_options[memory.capacity_option].text3 .. '.')
+	Server.to_discord_embed_raw({'',CoreData.comfy_emojis.pogkot,message,' Capacity: ',CoreData.capacity_options[memory.capacity_option].text3,'.'}, true)
 	game.surfaces[CoreData.lobby_surface_name].play_sound{path='utility/new_objective', volume_modifier=0.75}
 
 	memory.boat = global_memory.lobby_boats[new_id]
 	local boat = memory.boat
 
 	for _, e in pairs(memory.boat.cannons_temporary_reference or {}) do
-		Common.new_healthbar(true, e, 2000, nil, e.health, 0.3, -0.1, memory.boat)
+		Common.new_healthbar(true, e, Balance.cannon_starting_hp, nil, e.health, 0.3, -0.1, memory.boat)
 	end
 
 	boat.dockedposition = boat.position
@@ -781,7 +786,7 @@ function Public.summon_crew()
 		end
 	end
 	if print then
-		Common.notify_force(memory.force, 'Crew summoned.')
+		Common.notify_force(memory.force, {'pirates.crew_summon'})
 	end
 end
 
@@ -832,10 +837,11 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.mining_drill_productivity_bonus = 1
 	-- crew_force.mining_drill_productivity_bonus = 1.25
 	crew_force.manual_mining_speed_modifier = 3
-	crew_force.character_inventory_slots_bonus = 10
-	crew_force.character_running_speed_modifier = Balance.base_extra_character_speed
+	crew_force.character_inventory_slots_bonus = 0
+	-- crew_force.character_inventory_slots_bonus = 10
+	-- crew_force.character_running_speed_modifier = Balance.base_extra_character_speed
 	crew_force.laboratory_productivity_bonus = 0
-	crew_force.ghost_time_to_live = 8 * 60 * 60
+	crew_force.ghost_time_to_live = 12 * 60 * 60
 
 	for k, v in pairs(Balance.player_ammo_damage_modifiers()) do
 		crew_force.set_ammo_damage_modifier(k, v)
@@ -867,11 +873,15 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.recipes['cannon-shell'].enabled = false
 	crew_force.recipes['explosive-cannon-shell'].enabled = false
 
+
+
 	--@TRYING this out:
 	crew_force.technologies['coal-liquefaction'].enabled = true
 	crew_force.technologies['coal-liquefaction'].researched = true
 
 	crew_force.technologies['automobilism'].enabled = false
+
+	crew_force.technologies['toolbelt'].enabled = false --trying this. we don't actually want players to carry too many things manually, and in fact in a resource-tight scenario that's problematic
 
 	-- note: many of these recipes are overwritten after tech researched!!!!!!! like pistol. check elsewhere in code
 

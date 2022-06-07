@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
@@ -15,6 +17,9 @@ local Public = {}
 -- quest treasure
 
 
+-- Something to be careful of whilst writing functions for this file:
+-- Try to ensure that they only return integer co-ordinates, not half-integer. This will make structures easier to place.
+
 
 
 
@@ -26,7 +31,7 @@ function Public.silo_setup_position(x_fractional_offset, x_absolute_offset)
 	local destination = Common.current_destination()
 	local surface = game.surfaces[destination.surface_name]
 	local boatposition = memory.boat.position
-	local island_center = destination.static_params.islandcenter_position
+	local island_center = Math.snap_to_grid(destination.static_params.islandcenter_position)
 	local difficulty_offset = (1 - Common.difficulty_scale()) * 20 or 0
 
 	local silo_count = Balance.silo_count()
@@ -82,7 +87,7 @@ function Public.mid_farness_position_1(args, points_to_avoid)
 	local destination = Common.current_destination()
 	local surface = game.surfaces[destination.surface_name]
 
-	local island_center = destination.static_params.islandcenter_position
+	local island_center = Math.snap_to_grid(destination.static_params.islandcenter_position)
     local width = destination.static_params.width
     local height = destination.static_params.height
 
@@ -144,7 +149,7 @@ function Public.close_position_try_avoiding_entities(args, points_to_avoid, farn
 	local destination = Common.current_destination()
 	local surface = game.surfaces[destination.surface_name]
 
-	local island_center = destination.static_params.islandcenter_position
+	local island_center = Math.snap_to_grid(destination.static_params.islandcenter_position)
     local width = destination.static_params.width
     local height = destination.static_params.height
 
@@ -215,7 +220,7 @@ function Public.position_away_from_players_1(_, radius)
 	local destination = Common.current_destination()
 	local surface = game.surfaces[destination.surface_name]
 
-	local island_center = destination.static_params.islandcenter_position
+	local island_center = Math.snap_to_grid(destination.static_params.islandcenter_position)
     local width = destination.static_params.width
     local height = destination.static_params.height
 
@@ -271,7 +276,7 @@ function Public.merchant_ship_position()
 	local destination = Common.current_destination()
 	local surface = game.surfaces[destination.surface_name]
 
-	local island_center = destination.static_params.islandcenter_position
+	local island_center = Math.snap_to_grid(destination.static_params.islandcenter_position)
     local width = destination.static_params.width
     local height = destination.static_params.height
 

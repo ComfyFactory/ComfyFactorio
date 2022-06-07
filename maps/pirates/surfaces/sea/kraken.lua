@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
@@ -301,7 +303,8 @@ function Public.kraken_die(kraken_id)
 	local reward_fuel = Balance.kraken_kill_reward_fuel()
 	memory.stored_fuel = memory.stored_fuel + reward_fuel
 
-	Common.notify_force_light(memory.force,'Granted: ' .. Math.floor(reward_items[2].count/100)/10 .. 'k [item=coin], ' .. reward_fuel .. ' [item=coal], ' .. reward_items[1].count .. ' [item=sulfuric-acid-barrel].')
+	local message = {'pirates.granted_3', {'pirates.granted_kraken_kill'}, reward_items[2].count .. ' [item=coin]', reward_fuel .. ' [item=coal]', reward_items[1].count .. ' [item=sulfuric-acid-barrel]'}
+	Common.notify_force_light(memory.force,message)
 
 	memory.playtesting_stats.coins_gained_by_krakens = memory.playtesting_stats.coins_gained_by_krakens + reward_items[2].count
 end

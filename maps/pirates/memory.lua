@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Global = require 'utils.global'
 -- local CoreData = require 'maps.pirates.coredata'
@@ -35,6 +37,8 @@ function Public.global_reset_memory()
 
 	pirates_global_memory.global_delayed_tasks = {}
 	pirates_global_memory.global_buffered_tasks = {}
+
+	pirates_global_memory.last_players_health = {} --used to make damage reduction work somewhat properly
 end
 
 

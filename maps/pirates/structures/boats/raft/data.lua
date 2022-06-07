@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Public = {}
 
@@ -29,8 +31,8 @@ Public.entities = {
 }
 
 Public.landingtrack = {
-	offset = {x = 3.5, y = -7},
-	bp = [[0eNqV2M1qwkAYheF7mXWE+eZ/civFhdVBBjQJSSwVyb3XVBddtMV3JYHjBJ85m+NNvZ8uZRhrN6v2pqZuN2zmfnMc62F9/lStmEZd7x9+aVTd992k2rd7sB673WmNzNehqFbVuZxVo7rdeX265/ZjmYtav9QdynrOsm3UXE/lccDQT3Wuffd8y+b5Gr38dsafcWFxA0+neQvz7tW8MBxhOMJwBOIIxBGIoxmOZjia4WiIoyGOZjgZ2WREk5FMZjCZuWTGkhBLQiwJsSTGkhhLYiwRsUTEEhFLZCyRsUTGEhBLQCwBsQTGEhhLYCwesXjE4hGLZyyesXjG4hCLQywOsTjG4hiLYywWsVjEYhHLI21Rmv1Kj9IBpSNKJ5TO7HbgZbLbFHadwu7z5dqyWcJWCRslBtXWoNoaVFuDamtQbQ2qrUG1Nay2htUWbkY4GeliZJuITSK2iFBtBdVWUG0F1VZQbQXVVlBthdVWWG3pmod79Z/abpvHv0btj/+gGvVRxun7AJPExWyiDc5pa5blC6gg570=]],
+	offset = {x = -3, y = 0},
+	bp = [[0eNqV2M1qwkAUhuF7mXUEz/wnt1JcpDrIgE5CMi0Vyb3XqIsu2uK7ksCXCXm+s/Dkqt5PH2mccqmqu6q59OOmDpvjlA/r9ZfqRDfqcvtxS6Pyfiiz6t5uwXws/WmN1MuYVKdyTWfVqNKf16tbbj+lmtR6Uzmk9Zxl16iaT+lxwDjMueahPJ+yvT9ku/x2wh9hIWGNTmZpg9L2tbQQECEgQkAEgQgCEQSiCYgmIJqAaASiEYhGIIaAGAJiCIhBIAaBGARiCYglIJaAWARiEYhFII6AOALiCIhDIA6BOATiCYgnIJ6AeATiEYhHIIGABAISCEhAIAGBBAQSCUgkIJGARAQSEUhEIC0BaQlIS0AeYUPC6AUdCXsSDiQcSbhFpbAKUYeCShTU4sv/l9EGIWiFELRDPNMGpdlbOpT2KB1QOqJ0y9qBZbI2hdUprM+Xx5bteWzRY5ueoLEVNLaCxlbQ2AoaW0FjK2hshY2tsLGFqzjcxf9bxnfN4/NO9+NjUaM+0zTfD9BRbGh1cM5aF/yyfAPSTNjI]],
 }
 
 return Public

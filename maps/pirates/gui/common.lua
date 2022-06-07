@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Memory = require 'maps.pirates.memory'
 local Common = require 'maps.pirates.common'
@@ -68,7 +70,7 @@ function Public.new_window(player, name)
 	flow.style.maximal_width = 270
 	flow.style.minimal_height = 80
 	flow.style.natural_height = 80
-	flow.style.maximal_height = 700
+	flow.style.maximal_height = 760
 	flow.style.padding = 10
 
 	return flow
@@ -405,7 +407,7 @@ function Public.player_and_crew_state_bools(player)
 		local destination = Common.current_destination()
 		local dynamic_data = destination.dynamic_data --assumes this always exists
 
-		local in_crowsnest_bool, in_hold_bool, in_cabin_bool, onmap_bool, eta_bool, approaching_bool, retreating_bool, atsea_sailing_bool, landed_bool, quest_bool, silo_bool, charged_bool, launched_bool, captain_bool, atsea_loading_bool, character_on_deck_bool, on_deck_standing_near_loco_bool, on_deck_standing_near_cabin_bool, on_deck_standing_near_crowsnest_bool, cost_bool, cost_includes_rocket_launch_bool, approaching_dock_bool, leaving_dock_bool, leave_anytime_bool
+		local in_crowsnest_bool, in_hold_bool, in_cabin_bool, onmap_bool, eta_bool, approaching_bool, retreating_bool, atsea_sailing_bool, landed_bool, quest_bool, silo_bool, charged_bool, launched_bool, captain_bool, atsea_loading_bool, atsea_waiting_bool, character_on_deck_bool, on_deck_standing_near_loco_bool, on_deck_standing_near_cabin_bool, on_deck_standing_near_crowsnest_bool, cost_bool, cost_includes_rocket_launch_bool, approaching_dock_bool, leaving_dock_bool, leave_anytime_bool
 
 		captain_bool = Common.is_captain(player)
 
@@ -423,13 +425,14 @@ function Public.player_and_crew_state_bools(player)
 			retreating_bool = memory.boat and memory.boat.state == Boats.enum_state.RETREATING and onmap_bool
 			-- approaching_bool = memory.boat and memory.boat.state == Boats.enum_state.APPROACHING
 			atsea_sailing_bool = memory.boat and memory.boat.state == Boats.enum_state.ATSEA_SAILING
+			atsea_waiting_bool = memory.boat and memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL
 			landed_bool = memory.boat and memory.boat.state == Boats.enum_state.LANDED
 			quest_bool = (dynamic_data.quest_type ~= nil) and onmap_bool
 			charged_bool = dynamic_data.silocharged
 			silo_bool = dynamic_data.rocketsilos and onmap_bool and ((dynamic_data.rocketsilos[1] and dynamic_data.rocketsilos[1].valid) or charged_bool)
 			launched_bool = dynamic_data.rocketlaunched
 
-			cost_bool = destination.static_params.base_cost_to_undock and (not atsea_sailing_bool) and (not retreating_bool)
+			cost_bool = destination.static_params.base_cost_to_undock and (not atsea_sailing_bool) and (not atsea_waiting_bool) and (not retreating_bool)
 			cost_includes_rocket_launch_bool = cost_bool and destination.static_params.base_cost_to_undock['launch_rocket']
 
 			leave_anytime_bool = (landed_bool and not (eta_bool or cost_bool))
@@ -443,11 +446,11 @@ function Public.player_and_crew_state_bools(player)
 			if character_on_deck_bool then
 				local BoatData = Boats.get_scope(memory.boat).Data
 
-				on_deck_standing_near_loco_bool = Math.distance(player.character.position, Math.vector_sum(memory.boat.position, BoatData.loco_pos)) < 3
+				on_deck_standing_near_loco_bool = Math.distance(player.character.position, Math.vector_sum(memory.boat.position, BoatData.loco_pos)) < 2.5
 
-				on_deck_standing_near_cabin_bool = Math.distance(player.character.position, Math.vector_sum(memory.boat.position, BoatData.cabin_car)) < 2.5
+				on_deck_standing_near_cabin_bool = Math.distance(player.character.position, Math.vector_sum(memory.boat.position, BoatData.cabin_car)) < 2.0
 
-				on_deck_standing_near_crowsnest_bool = Math.distance(player.character.position, Math.vector_sum(memory.boat.position, BoatData.crowsnest_center)) < 2.7
+				on_deck_standing_near_crowsnest_bool = Math.distance(player.character.position, Math.vector_sum(memory.boat.position, BoatData.crowsnest_center)) < 2.5
 			end
 
 			approaching_dock_bool = destination.type == Surfaces.enum.DOCK and memory.boat.state == Boats.enum_state.APPROACHING
@@ -463,6 +466,7 @@ function Public.player_and_crew_state_bools(player)
 			approaching_bool = approaching_bool,
 			retreating_bool = retreating_bool,
 			atsea_sailing_bool = atsea_sailing_bool,
+			atsea_waiting_bool = atsea_waiting_bool,
 			-- landed_bool = landed_bool,
 			quest_bool = quest_bool,
 			silo_bool = silo_bool,

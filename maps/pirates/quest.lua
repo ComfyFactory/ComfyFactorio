@@ -1,3 +1,4 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 local Memory = require 'maps.pirates.memory'
 -- local Roles = require 'maps.pirates.roles.roles'
@@ -5,6 +6,7 @@ local Balance = require 'maps.pirates.balance'
 local Common = require 'maps.pirates.common'
 -- local Utils = require 'maps.pirates.utils_local'
 local Math = require 'maps.pirates.math'
+local Raffle = require 'maps.pirates.raffle'
 -- local Loot = require 'maps.pirates.loot'
 local CoreData = require 'maps.pirates.coredata'
 local _inspect = require 'utils.inspect'.inspect
@@ -66,8 +68,6 @@ function Public.initialise_random_quest()
 	local destination = Common.current_destination()
 
 	destination.dynamic_data.quest_complete = false
-
-	if destination.destination_index == 2 then return end
 
 	local rng = Math.random(100)
 	if rng <= 10 then
@@ -149,11 +149,13 @@ function Public.initialise_resourceflow_quest()
 	destination.dynamic_data.quest_progress = 0
 
 	local generated_flow_quest = Public.generate_flow_quest()
+	if not generated_flow_quest then return false end
+
 	destination.dynamic_data.quest_params = {item = generated_flow_quest.item}
 
 	local progressneeded_before_rounding = generated_flow_quest.base_rate * Balance.resource_quest_multiplier()
 
-	destination.dynamic_data.quest_progressneeded = Math.ceil(progressneeded_before_rounding/10)*10
+	destination.dynamic_data.quest_progressneeded = Math.ceil(progressneeded_before_rounding/10) * 10
 
 	return true
 end
@@ -170,6 +172,8 @@ function Public.initialise_resourcecount_quest()
 	destination.dynamic_data.quest_progress = 0
 
 	local generated_production_quest = Public.generate_resourcecount_quest()
+	if not generated_production_quest then return false end
+
 	destination.dynamic_data.quest_params = {item = generated_production_quest.item}
 
 	local force = memory.force
@@ -207,10 +211,10 @@ function Public.initialise_worms_quest()
 	if  Common.difficulty_scale() < 1 then needed = Math.max(1, needed - 3) end
 	if  Common.difficulty_scale() > 1 then needed = Math.max(1, needed + 2) end
 
-	local difficulty_name = CoreData.get_difficulty_name_from_value(Common.difficulty_scale())
-	if difficulty_name == CoreData.difficulty_options[1].text then
+	local difficulty_name = CoreData.get_difficulty_option_informal_name_from_value(Common.difficulty_scale())
+	if difficulty_name == 'easy' then
 		needed = Math.max(1, needed - 3)
-	elseif difficulty_name ~= CoreData.difficulty_options[2].text then
+	elseif difficulty_name ~= 'normal' then
 		needed = Math.max(1, needed + 2)
 	end
 
@@ -237,7 +241,7 @@ function Public.try_resolve_quest()
 
 		local force = memory.force
 		if not (force and force.valid) then return end
-		Common.notify_force_light(force,'Granted: ' .. destination.dynamic_data.quest_reward.display_amount .. ' ' .. destination.dynamic_data.quest_reward.chat_name)
+		Common.notify_force_light(force, {'pirates.granted_1', {'pirates.granted_quest_complete'}, destination.dynamic_data.quest_reward.display_amount .. destination.dynamic_data.quest_reward.chat_name})
 
 		local name = destination.dynamic_data.quest_reward.name
 		local count = destination.dynamic_data.quest_reward.count
@@ -266,7 +270,7 @@ function Public.try_resolve_quest()
 				local inventory2 = chest2.get_inventory(defines.inventory.chest)
 				local inserted2 = inventory2.insert{name = name, count = count - inserted}
 				if (inserted + inserted2) < count then
-					Common.notify_force(force,'Sadly, there wasn\'t space in the cabin for all of your reward.')
+					Common.notify_force(force, {'pirates.error_cabin_full'})
 				end
 			end
 		end
@@ -331,7 +335,7 @@ function Public.generate_flow_quest()
 		end
     end
 
-	return Math.raffle(v, w)
+	return Raffle.raffle(v, w)
 end
 
 
@@ -398,7 +402,7 @@ function Public.generate_resourcecount_quest()
 		end
     end
 
-	return Math.raffle(v, w)
+	return Raffle.raffle(v, w)
 end
 
 

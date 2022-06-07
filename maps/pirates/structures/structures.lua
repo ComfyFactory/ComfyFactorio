@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
@@ -7,6 +9,7 @@ local Loot = require 'maps.pirates.loot'
 -- local Utils = require 'maps.pirates.utils_local'
 local _inspect = require 'utils.inspect'.inspect
 
+--@add stuff from new quest structures to this file?
 local Public = {}
 local enum = {
 	BOATS = 'Boats',
@@ -17,7 +20,7 @@ Public[enum.BOATS] = require 'maps.pirates.structures.boats.boats'
 Public[enum.ISLANDSTRUCTURES] = require 'maps.pirates.structures.island_structures.island_structures'
 
 
-function Public.post_creation_process(special_name, components)
+function Public.configure_structure_entities(special_name, components)
 	local memory = Memory.get_crew_memory()
 
 	for _, c in pairs(components) do

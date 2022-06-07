@@ -1,17 +1,61 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Public = {}
 local Math = require 'maps.pirates.math'
+-- local Raffle = require 'maps.pirates.raffle'
 -- local Memory = require 'maps.pirates.memory'
 local Common = require 'maps.pirates.common'
-local Utils = require 'maps.pirates.utils_local'
+-- local Utils = require 'maps.pirates.utils_local'
 local _inspect = require 'utils.inspect'.inspect
 
 -- this file is an API to all the balance tuning knobs
 
 
-Public.base_extra_character_speed = 0.20
+Public.base_extra_character_speed = 1.44
+Public.respawn_speed_boost = 1.75
 
+Public.cannon_starting_hp = 2000--too low, and crew is too fragile. too high, and the run survives when we should put it out of its misery. But this should go up later in the game.
+Public.cannon_resistance_factor = 2
 Public.technology_price_multiplier = 1
+
+Public.rocket_launch_coin_reward = 5000
+
+ Public.base_caught_fish_amount = 3
+ Public.class_reward_tick_rate_in_seconds = 7
+ Public.poison_damage_multiplier = 1.85
+ Public.every_nth_tree_gives_coins = 6
+
+ Public.samurai_damage_taken_multiplier = 0.26
+ Public.samurai_damage_dealt_when_not_melee_multiplier = 0.75
+ Public.samurai_damage_dealt_with_melee = 25
+ Public.hatamoto_damage_taken_multiplier = 0.16
+ Public.hatamoto_damage_dealt_when_not_melee_multiplier = 0.75
+ Public.hatamoto_damage_dealt_with_melee = 45
+ Public.iron_leg_damage_taken_multiplier = 0.18
+ Public.iron_leg_iron_ore_required = 3000
+ Public.deckhand_extra_speed = 1.25
+ Public.deckhand_ore_grant_multiplier = 2
+ Public.deckhand_ore_scaling_enabled = true
+ Public.boatswain_extra_speed = 1.25
+ Public.boatswain_ore_grant_multiplier = 4
+ Public.boatswain_ore_scaling_enabled = true
+ Public.shoresman_extra_speed = 1.1
+ Public.shoresman_ore_grant_multiplier = 2
+ Public.shoresman_ore_scaling_enabled = true
+ Public.quartermaster_range = 19
+ Public.quartermaster_bonus_physical_damage = 0.1
+ Public.quartermaster_ore_scaling_enabled = false
+ Public.scout_extra_speed = 1.3
+ Public.scout_damage_taken_multiplier = 1.25
+ Public.scout_damage_dealt_multiplier = 0.6
+ Public.fisherman_reach_bonus = 10
+ Public.master_angler_reach_bonus = 16
+ Public.master_angler_fish_bonus = 1
+ Public.master_angler_coin_bonus = 10
+ Public.dredger_reach_bonus = 16
+ Public.dredger_fish_bonus = 1
+ Public.gourmet_ore_scaling_enabled = false
 
 
 function Public.starting_boatEEIpower_production_MW()
@@ -29,7 +73,7 @@ Public.EEI_stages = { --multipliers
 
 function Public.scripted_biters_pollution_cost_multiplier()
 
-	return 1.45 / Math.sloped(Common.difficulty_scale(), 1/5) * (1 + 1.2 / ((1 + (Common.overworldx()/40))^(1.5+Common.difficulty_scale()))) -- the complicated factor just makes the early-game easier; in particular the first island, but on easier difficulties the next few islands as well
+	return 1.45 / Math.sloped(Common.difficulty_scale(), 1/3) * (1 + 1.2 / ((1 + (Common.overworldx()/40))^(1.5+Common.difficulty_scale()))) -- the complicated factor just makes the early-game easier; in particular the first island, but on easier difficulties the next few islands as well
 end
 
 function Public.cost_to_leave_multiplier()
@@ -39,8 +83,6 @@ function Public.cost_to_leave_multiplier()
 	-- extra factor now that the cost scales with time:
 	return Math.sloped(Common.difficulty_scale(), 8/10)
 end
-
-Public.rocket_launch_coin_reward = 6000
 
 function Public.crew_scale()
 	local ret = Common.activecrewcount()/10
@@ -78,8 +120,8 @@ end
 
 function Public.silo_count()
 	local E = Public.silo_energy_needed_MJ()
-	return Math.ceil(E/(16.8 * 300)) --no more than this many seconds to charge it. Players can in fact go even faster using beacons
-	-- return Math.ceil(E/(16.8 * 210)) --no more than this many seconds to charge it. Players can in fact go even faster using beacons
+	return Math.min(Math.ceil(E/(16.8 * 300)),6)
+	-- return Math.ceil(E/(16.8 * 300)) --no more than this many seconds to charge it. Players can in fact go even faster using beacons
 end
 
 
@@ -177,7 +219,7 @@ function Public.boat_passive_pollution_per_minute(time)
 	end
 
 	return boost * (
-			2.73 * (Common.difficulty_scale()^(1.1)) * (Common.overworldx()/40)^(1.8) * (Public.crew_scale())^(55/100)-- There is no _explicit_ T dependence, but it depends almost the same way on the crew_scale as T does.
+			2.73 * (Common.difficulty_scale()^(1.1)) * (Common.overworldx()/40)^(1.8) * (Public.crew_scale())^(52/100)-- There is no _explicit_ T dependence, but it depends almost the same way on the crew_scale as T does.
 	 ) / Math.sloped(Common.difficulty_scale(), 1/5) --Final factor of difficulty is to offset a change made to scripted_biters_pollution_cost_multiplier
 end
 
@@ -330,18 +372,26 @@ function Public.resource_quest_multiplier()
 	return (1.0 + 0.075 * (Common.overworldx()/40)^(8/10)) * Math.sloped(Common.difficulty_scale(), 1/5) * (Public.crew_scale())^(1/10)
 end
 
-
-function Public.apply_crew_buffs_per_x(force)
-	force.laboratory_productivity_bonus = Math.max(0, 7/100 * (Common.overworldx()/40) - (10*(Common.difficulty_scale()) - 5)) --difficulty causes lab productivity boosts to start later
+function Public.quest_structure_entry_price_scale()
+	return 0.85 * (1 + 0.033 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty_scale(), 1/2) --whilst the scenario philosophy says that resource scales tend to be independent of crew size, we account slightly for the fact that more players tend to handcraft more
 end
 
-function Public.class_cost()
-	return 10000
+
+function Public.apply_crew_buffs_per_league(force, leagues_travelled)
+	force.laboratory_productivity_bonus = force.laboratory_productivity_bonus + Math.max(0, 6/100 * leagues_travelled/40)
+end
+
+function Public.class_cost(at_dock)
+	if at_dock then
+		return 10000
+	else
+		return 6000
+	end
 	-- return Math.ceil(10000 / (Public.crew_scale()*10/4)^(1/6))
 end
 
 
-Public.covered_first_appears_at = 40
+Public.quest_structures_first_appear_at = 40
 
 Public.coin_sell_amount = 500
 
@@ -367,7 +417,7 @@ function Public.sandworm_evo_increase_per_spawn()
 end
 
 function Public.kraken_kill_reward_items()
-	return {{name = 'sulfuric-acid-barrel', count = 5}, {name = 'coin', count = 1000}}
+	return {{name = 'sulfuric-acid-barrel', count = 5}, {name = 'coin', count = 800}}
 end
 function Public.kraken_kill_reward_fuel()
 	return 200
@@ -494,9 +544,9 @@ function Public.player_gun_speed_modifiers()
 end
 
 
-Public.starting_items_player = {['pistol'] = 1, ['firearm-magazine'] = 12, ['raw-fish'] = 1, ['iron-plate'] = 12, ['medium-electric-pole'] = 4}
+Public.starting_items_player = {['pistol'] = 1, ['firearm-magazine'] = 20, ['raw-fish'] = 4, ['medium-electric-pole'] = 20, ['iron-plate'] = 50, ['copper-plate'] = 20, ['iron-gear-wheel'] = 6, ['copper-cable'] = 20, ['burner-inserter'] = 2, ['gun-turret'] = 1}
 
-Public.starting_items_player_late = {['pistol'] = 1, ['firearm-magazine'] = 5}
+Public.starting_items_player_late = {['pistol'] = 1, ['firearm-magazine'] = 10, ['raw-fish'] = 4, ['small-electric-pole'] = 20, ['iron-plate'] = 50, ['copper-plate'] = 20, ['iron-gear-wheel'] = 6, ['copper-cable'] = 20, ['burner-inserter'] = 2, ['gun-turret'] = 1}
 
 function Public.starting_items_crew_upstairs()
 	return {
@@ -505,7 +555,7 @@ function Public.starting_items_crew_upstairs()
 		{['grenade'] = 3},
 		{['shotgun'] = 2, ['shotgun-shell'] = 36},
 		-- {['raw-fish'] = 5},
-		{['coin'] = 2000},
+		{['coin'] = 1000},
 	}
 end
 
@@ -517,7 +567,7 @@ function Public.starting_items_crew_downstairs()
 		{['inserter'] = Math.random(120,140)},
 		{['storage-tank'] = 2},
 		{['medium-electric-pole'] = Math.random(15,21)},
-		{['coin'] = 2000},
+		{['coin'] = 1000},
 		{['solar-panel'] = 3},
 	}
 end
@@ -525,116 +575,15 @@ end
 
 
 
-function Public.covered_entry_price_scale()
-	return 0.85 * (1 + 0.033 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty_scale(), 1/2) --whilst the scenario philosophy says that resource scales tend to be independent of crew size, we account slightly for the fact that more players tend to handcraft more
-end
-
-Public.covered1_entry_price_data_raw = { --watch out that the raw_materials chest can only hold e.g. 4.8 iron-plates
-	-- choose things that are easy to make at outposts
-	-- if the prices are too high, players will accidentally throw too much in when they can't do it
-	{1, 0, 1, false, {
-		price = {name = 'iron-stick', count = 1500},
-		raw_materials = {{name = 'iron-plate', count = 750}}}, {}},
-	{0.85, 0, 1, false, {
-		price = {name = 'copper-cable', count = 1500},
-		raw_materials = {{name = 'copper-plate', count = 750}}}, {}},
-
-	{1, 0, 0.3, false, {
-		price = {name = 'small-electric-pole', count = 450},
-		raw_materials = {{name = 'copper-plate', count = 900}}}, {}},
-	{1, 0.1, 1, false, {
-		price = {name = 'assembling-machine-1', count = 80},
-		raw_materials = {{name = 'iron-plate', count = 1760}, {name = 'copper-plate', count = 360}}}, {}},
-	{0.25, 0, 0.15, false, {
-		price = {name = 'burner-mining-drill', count = 150},
-		raw_materials = {{name = 'iron-plate', count = 1350}}}, {}},
-	{0.75, 0, 0.6, false, {
-		price = {name = 'burner-inserter', count = 300},
-		raw_materials = {{name = 'iron-plate', count = 900}}}, {}},
-	{1, 0.05, 0.7, false, {
-		price = {name = 'small-lamp', count = 300},
-		raw_materials = {{name = 'iron-plate', count = 600}, {name = 'copper-plate', count = 900}}}, {}},
-	{1, 0, 1, false, {
-		price = {name = 'firearm-magazine', count = 700},
-		raw_materials = {{name = 'iron-plate', count = 2800}}}, {}},
-	{0.6, 0, 1, false, {
-		price = {name = 'constant-combinator', count = 276},
-		raw_materials = {{name = 'iron-plate', count = 552}, {name = 'copper-plate', count = 1518}}}, {}},
-
-	{1, 0.05, 1, false, {
-		price = {name = 'stone-furnace', count = 250},
-		raw_materials = {}}, {}},
-	{1, 0.4, 1.6, true, {
-		price = {name = 'advanced-circuit', count = 180},
-		raw_materials = {{name = 'iron-plate', count = 360}, {name = 'copper-plate', count = 900}, {name = 'plastic-bar', count = 360}}}, {}},
-
-	{0.5, -0.5, 0.5, true, {
-		price = {name = 'wooden-chest', count = 400},
-		raw_materials = {}}, {}},
-	{0.5, 0, 1, true, {
-		price = {name = 'iron-chest', count = 250},
-		raw_materials = {{name = 'iron-plate', count = 2000}}}, {}},
-	{0.5, 0.25, 1.75, true, {
-		price = {name = 'steel-chest', count = 125},
-		raw_materials = {{name = 'steel-plate', count = 1000}}}, {}},
-}
-
-function Public.covered1_entry_price_data()
-	local ret = {}
-	local data = Public.covered1_entry_price_data_raw
-	for i = 1, #data do
-		local data_item = data[i]
-		ret[#ret + 1] = {
-            weight = data_item[1],
-            game_completion_progress_min = data_item[2],
-            game_completion_progress_max = data_item[3],
-            scaling = data_item[4],
-            item = data_item[5],
-            map_subtypes = data_item[6],
-        }
-	end
-	return ret
-end
 
 
-function Public.covered1_entry_price()
-	-- local rng = Math.random()
-	-- local memory = Memory.get_crew_memory()
 
-	-- local overworldx = memory.overworldx or 0
 
-	local game_completion_progress = Math.max(Math.min(Math.sloped(Common.difficulty_scale(),1/2) * Common.game_completion_progress(), 1), 0)
 
-	local data = Public.covered1_entry_price_data()
-    local types, weights = {}, {}
-    for i = 1, #data, 1 do
-        table.insert(types, data[i].item)
 
-		local destination = Common.current_destination()
-		if not (data[i].map_subtypes and #data[i].map_subtypes > 0 and destination and destination.subtype and data[i].map_subtypes and (not Utils.contains(data[i].map_subtypes, destination.subtype))) then
-			if data[i].scaling then -- scale down weights away from the midpoint 'peak' (without changing the mean)
-				local midpoint = (data[i].game_completion_progress_max + data[i].game_completion_progress_min) / 2
-				local difference = (data[i].game_completion_progress_max - data[i].game_completion_progress_min)
-				table.insert(weights, data[i].weight * Math.max(0, 1 - (Math.abs(game_completion_progress - midpoint) / (difference / 2))))
-			else -- no scaling
-				if data[i].game_completion_progress_min <= game_completion_progress and data[i].game_completion_progress_max >= game_completion_progress then
-					table.insert(weights, data[i].weight)
-				else
-					table.insert(weights, 0)
-				end
-			end
-		end
-    end
 
-	local res = Utils.deepcopy(Math.raffle(types, weights))
 
-	res.price.count = Math.ceil(res.price.count * Public.covered_entry_price_scale())
 
-	for i, _ in pairs(res.raw_materials) do
-		res.raw_materials[i].count = Math.ceil(res.raw_materials[i].count * Public.covered_entry_price_scale() * (0.9 + 0.2 * Math.random()))
-	end
 
-	return res
-end
 
 return Public

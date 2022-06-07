@@ -1,3 +1,5 @@
+-- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
+
 
 local Public = {}
 
@@ -218,7 +220,7 @@ Public.small_radioactive_lab = {
 		{
 			type = 'tiles',
 			tile_name = 'tutorial-grid',
-			offset = {x = -5, y = -5},
+			offset = {x = 0, y = 0},
 			bp_string = [[0eNqdl8Fq4zAURf9FawciS7Yk72dR6K6zG4agJKIjxpGNrZQpxf/eKOkihWHGp6tgOM9+7+o+O/dN7PtzGKeYsujexJz8uMnD5nmKx3L9R3SyrsRr+VkqEQ9DmkX34wLG5+T7guTXMYhOxBxOohLJn8rVnIcUNvspHn6LUpeOodxqqf5b2fv9XUW9ouI8+RTPp80whbtKtfysRI59uPU7DnPMcUgfQ22vM5WRPjU8+vxLlEf+FZfbtby88QyvGa4YrhneMtww3DLcQd1Xn9PN2hCXDK8ZrhiuGW4Y7qAyq6VRTEnFPKnYrIp5UjFpFPSkglJqZhvNbKOZlJpJqZmUGkqpoZQNc2XD9rthB3XDG4avXpGWjdqy3tuvNGNg76ubN8zyhjVvWPOGWd6yL5Rlx2qZMpZZ0jIhLXt3WPgycEwax5bbsQVxTHjHhHfMko4J75iD3dfOaf2f5y1bkQ+e3l9BXkPe0f7XD0DjBc0XkrlT0shAMwMNDf9ODZcYec2b3V1SrkpMDZdIKr4/PH572s0n3/e7yR/j4A85voRdibGVeAnTfH1QbaU2rjaNbKRqt8vyDtor+Uc=]],
 		},
 	},
@@ -239,7 +241,7 @@ Public.small_radioactive_centrifuge = {
 		{
 			type = 'tiles',
 			tile_name = 'tutorial-grid',
-			offset = {x = -5, y = -5},
+			offset = {x = 0, y = 0},
 			bp_string = [[0eNqdl82K2zAURt9Fawcs68/yvotCd+2uDMFJ1FSMIxtbGToMfveJk1mEobQ+WRnDuZZ0vivDfRO77hyGMaYsmjcxpXbY5H5zHONhef8jGikL8Xp5lHMh4r5Pk2h+XsB4TG23IPl1CKIRMYeTKERqT8vblPsUNrsx7p/FUpcOYfnUXPy3ch9SHuOv8zHcFVYrCs9jm+L5tOnH+0o1PxUixy7ctj30U8yxTx9nK29Hmz/te2jzb7Es+Ve8YrhiuGG4Zbhbi0tmRjIzkpm54ZrhhuGW4VBkvRavrnjJcMnwiuGK4ZrhhuGW4au9KyZSMZGKiVRMpGIiFROpHhHp1+KaedfMu2beNfOumXfNRGom0rCjGnZUw3rGsH+kYWYs+0da1mKWtZhl3i3zblmLWebdPuJ9dUc6FpNjMTkWk2MxORaTYzE5dpscS9WxVGsWU82818x7zbzXTGTNRNaPiFx9PTzz7tn18Cwmz2LyLCbProdnqXqWqmepepaqLOGsAsc4+c857jLrXofi5m6qL0TX7sJlbhY/vn778n07ndqu247tIfbtPseXsL0buQvxEsbpulxVS+185Yw0Utlynt8B8lo3wQ==]],
 		},
 	},
@@ -259,7 +261,7 @@ Public.small_radioactive_reactor = {
 		{
 			type = 'tiles',
 			tile_name = 'tutorial-grid',
-			offset = {x = -9, y = -7},
+			offset = {x = 0, y = 0},
 			bp_string = [[0eNqdmV2Lm0AYhf/LXBvw1fnMfS8WetfelSVMkmE71GhQs3RZ/O+NiQuhlNanV8HwjJk55zia47vaN5d07nM7qu27Gtp43ozd5qXPx/n4p9qKL9Tb9cNNhcqHrh3U9tsVzC9tbGZkfDsntVV5TCdVqDae5qNh7Nq02ff58EPN49pjmk81Ff8c2V4OTYr9pk/xMHb9w+hqxehLH9t8OW26Pj2MrKfnQo25Sfe5n7shj7lrlwWWt/WZ6bfJn+P4Xc0/+UfcMtytxYWdXf7n7J7hgeFSQb5ey1d3nuEVw+FkNMMNwy3DHRSSCg8XK6tXW9/4kuHC8IrhmuGW4Y7hHipTQx4udr2xmjml2SWomVOaSa+Z9BpKY5g0hoXYMCUNU9IwJQ1T0sDbiIGht2y3scwoy4yyTHnLdhvLjLLMKMseDxYhoZICpaQ5EKi9rBbfseA49oTgWBIcS4JjSViWWkIearPeKget8swqz65xzzZjz7YEz3LjWW48y42HQfAwCB7uCR4Gx8O7uIdBCywKgXkbmFkBih+g+AFuyAGaFaBZAZolJdsWFl5D3tD5lHQAXQH4C19Czz4GrDdBoAkCTaCNC61caOdCSxehoRAaCtzrCA2FwCtZKvYML7A6EtgdCax3BPY7AguehfeQD1RPTQesVwh2QgJLIYG9jcDiZuEDnT9eMF3x+tux0HZIaD0kGpoM+6SFryBfQ15DnupjIe8hH6j+2DDqgFALhHoAQmpgSGFVJ7CrE1jWLbyFvIO8UIHAzmWoZbCEW/ga8hryDvIe8gHyQgUClyVsswTWWfL3xum5uL8X3j683S5UE/epuX739enzpy+74RSbZtfHY+7iYcyvaffxyrlQr6kfbj9WedEuVM6IkdqW0/QLDVP83g==]],
 		},
 	},
@@ -279,7 +281,7 @@ Public.uranium_miners = {
 		{
 			type = 'tiles',
 			tile_name = 'tutorial-grid',
-			offset = {x = -10, y = -5},
+			offset = {x = 0, y = 0},
 			bp_string = [[0eNqdmMGOmzAQht/FZ5CwMdhw72Gl3tpbtYpIYqVWwSBwVl2t8u6FhEMqVa2/HkHfDDP/jPQbf4hjf3XT7EMU7YdYQjflccwvsz9vzz9Fq2Qm3kUr5S0T/jSGRbTfVtBfQtdvSHyfnGiFj24QmQjdsD0tcQwuP87+9ENsceHs1lRrin9Gut6d4hqXDz74cMnPs+/7pxwqIcd17oK/Dvk4u6fI8vaaieh79+hgGhcf/Rj2Not7l2v231uYuvhdbJ/8I14y3DDcpuL7hBiuGK4ZXjG8ZrhheLKQigmpmJCK7Yxiuiumu2K6l0z3kun+wJtUXLNiNMtesSWo73jBcJhdM7xieM1ww3DL8OQxGaa7YcoYpoxhylhWu2U7Y9nOWDYmy8bUsFYb1mrDWm2gexTQWAtolfBYIKnRy//Kn37uUGy4EvqrhJ4moantvIF8uj4l1KeE+kDflBrWo2E9Gp4sNZwvdHJZwfzQy3deQd5CPr1fA+uBLiehze28hbxMHwB0xp2vIF9D3kDeQj59IaD7Smi/O19CXkO+gryBfPr/ITR49VeDf80e9xbt0x1MJvru6Pr13deXz5++HJah6/vD3J392J2if3OH/XLj8LgfWQPe3LzcP6ms1KZRppKVLOvidvsF+s6+8A==]],
 		},
 		{
