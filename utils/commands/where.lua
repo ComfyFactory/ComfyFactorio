@@ -128,12 +128,12 @@ commands.add_command(
                 return
             end
 
-            local target_player = game.get_player(cmd.parameter)
+            local target = game.get_player(cmd.parameter)
 
-            if validate_player(target_player) then
+            if validate_player(target) then
                 local player_data = create_player_data(player)
-                player_data.target_player = target_player
-                create_mini_camera_gui(player, target_player)
+                player_data.target = target
+                create_mini_camera_gui(player, target)
             else
                 remove_player_data(player)
                 player.print('[Where] Please type a name of a player who is connected.', Color.warning)
@@ -146,12 +146,12 @@ commands.add_command(
 
 local function on_nth_tick()
     for p, data in pairs(this.players) do
-        if data and data.target_player and data.target_player.valid then
-            local target_player = data.target_player
+        if data and data.target and data.target.valid then
+            local target = data.target
             local camera_frame = data.camera_frame
             local player = game.get_player(p)
 
-            if not (validate_player(player) and validate_player(target_player)) then
+            if not (validate_player(player) or validate_player(target)) then
                 remove_player_data(player)
                 goto continue
             end
@@ -161,8 +161,8 @@ local function on_nth_tick()
                 goto continue
             end
 
-            camera_frame.position = target_player.position
-            camera_frame.surface_index = target_player.surface.index
+            camera_frame.position = target.position
+            camera_frame.surface_index = target.surface.index
 
             ::continue::
         end
