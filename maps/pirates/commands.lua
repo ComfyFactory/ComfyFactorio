@@ -51,13 +51,13 @@ end
 local function check_admin(cmd)
 	local Session = require 'utils.datastore.session_data'
 	local player = game.players[cmd.player_index]
-	local trusted = Session.get_trusted_table()
+	--local trusted = Session.get_trusted_table()
 	local p
 	if player then
 		if player ~= nil then
 			p = player.print
 			if not player.admin then
-				p('[ERROR] Only admins are allowed to run this command!', Color.fail)
+				p({'pirates.cmd_error_not_admin'}, Color.fail)
 				return false
 			end
 		else
@@ -77,7 +77,7 @@ local function check_captain(cmd)
 			p = player.print
 			if not Common.validate_player(player) then return end
 			if not (Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN) then
-				p('[ERROR] Only captains are allowed to run this command!', Color.fail)
+				p({'pirates.cmd_error_not_captain'}, Color.fail)
 				return false
 			end
 		else
@@ -97,7 +97,7 @@ local function check_captain_or_admin(cmd)
 			p = player.print
 			if not Common.validate_player(player) then return end
 			if not (player.admin or Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN) then
-				p('[ERROR] Only captains are allowed to run this command!', Color.fail)
+				p({'pirates.cmd_error_not_captain'}, Color.fail)
 				return false
 			end
 		else
@@ -131,7 +131,7 @@ end
 
 commands.add_command(
 'set_max_crews',
-'is an admin command to set the maximum number of concurrent crews allowed on the server.',
+{'pirates.cmd_explain_set_max_crews'},
 function(cmd)
 	local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
@@ -140,20 +140,20 @@ function(cmd)
 
 		if tonumber(param) then
 			global_memory.active_crews_cap = tonumber(param)
-			Common.notify_player_expected(player, 'The maximum number of concurrent crews has been set to ' .. param .. '.')
+			Common.notify_player_expected(player, {'pirates.cmd_notify_set_max_crews', param})
 		end
 	end
 end)
 
 commands.add_command(
 'sail',
-'is an admin command to set the ship sailing after an island, in case there\'s a problem with the captain doing so.',
+{'pirates.cmd_explain_sail'},
 function(cmd)
 	cmd_set_memory(cmd)
 
-	local param = tostring(cmd.parameter)
+	--local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
+		--local player = game.players[cmd.player_index]
 		local memory = Memory.get_crew_memory()
 		Crew.summon_crew()
 		if memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL then
@@ -164,7 +164,7 @@ end)
 
 commands.add_command(
 'setcaptain',
-'{player} is an admin command to set the crew\'s captain to {player}.',
+{'pirates.cmd_explain_setcaptain'},
 function(cmd)
 	cmd_set_memory(cmd)
 
@@ -174,18 +174,18 @@ function(cmd)
 		if param and game.players[param] and game.players[param].index then
 			Roles.make_captain(game.players[param])
 		else
-			Common.notify_player_error(player, 'Command error: Invalid player name.')
+			Common.notify_player_error(player, {'pirates.cmd_error_invalid_player_name', param})
 		end
 	end
 end)
 
 commands.add_command(
 'summoncrew',
-'is an admin command to summon the crew to the ship.',
+{'pirates.cmd_explain_summoncrew'},
 function(cmd)
 	cmd_set_memory(cmd)
 
-	local param = tostring(cmd.parameter)
+	--local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
 		local player = game.players[cmd.player_index]
 		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
@@ -200,13 +200,13 @@ end)
 
 commands.add_command(
 'ok',
-'is used to accept captainhood.',
+{'pirates.cmd_explain_ok'},
 function(cmd)
 	cmd_set_memory(cmd)
 	local player = game.players[cmd.player_index]
 	if not Common.validate_player(player) then return end
 	
-	local memory = Memory.get_crew_memory()
+	--local memory = Memory.get_crew_memory()
 	Roles.player_confirm_captainhood(player)
 end)
 
@@ -222,7 +222,7 @@ end)
 
 commands.add_command(
 'classinfo',
-'{classname} returns the definition of the named class.',
+{'pirates.cmd_explain_classinfo'},
 function(cmd)
 	local param = tostring(cmd.parameter)
 	local player = game.players[cmd.player_index]
@@ -231,18 +231,19 @@ function(cmd)
 	if param and param ~= 'nil' then
 		local string = Roles.get_class_print_string(param, false)
 		if string then
-			Common.notify_player_expected(player, {'', 'Class definition for ', string})
+			Common.notify_player_expected(player, {'', {'pirates.class_definition_for'}, ' ', string})
 		else
-			Common.notify_player_error(player, 'Command error: Class ' .. param .. ' not found.')
+			Common.notify_player_error(player, {'pirates.cmd_error_invalid_class_name', param})
 		end
 	else
-		Common.notify_player_expected(player, '/classinfo {classname} returns the definition of the named class.')
+		--Common.notify_player_expected(player, '/classinfo {classname} returns the definition of the named class.')
+		Common.notify_player_expected(player, {'', '/classinfo ', {'pirates.cmd_explain_classinfo'}})
 	end
 end)
 
 commands.add_command(
 'classinfofull',
-'{classname} returns detailed definition of the named class.',
+{'pirates.cmd_explain_classinfofull'},
 function(cmd)
 	cmd_set_memory(cmd)
 	local param = tostring(cmd.parameter)
@@ -252,18 +253,18 @@ function(cmd)
 	if param and param ~= 'nil' then
 		local string = Roles.get_class_print_string(param, true)
 		if string then
-			Common.notify_player_expected(player, {'', 'Class definition for ', string})
+			Common.notify_player_expected(player, {'', {'pirates.class_definition_for'}, ' ', string})
 		else
-			Common.notify_player_error(player, 'Command error: Class ' .. param .. ' not found.')
+			Common.notify_player_error(player, {'pirates.cmd_error_invalid_class_name', param})
 		end
 	else
-		Common.notify_player_expected(player, '/classinfofull {classname} returns detailed definition of the named class.')
+		Common.notify_player_expected(player, {'', '/classinfofull ', {'pirates.cmd_explain_classinfofull'}})
 	end
 end)
 
 commands.add_command(
 'take',
-'{classname} takes a spare class with the given name for yourself.',
+{'pirates.cmd_explain_take'},
 function(cmd)
 	cmd_set_memory(cmd)
 	local param = tostring(cmd.parameter)
@@ -278,32 +279,28 @@ function(cmd)
 			end
 		end
 		--fallthrough:
-		Common.notify_player_error(player, 'Command error: Class ' .. param .. ' not found.')
+		Common.notify_player_error(player, {'pirates.cmd_error_invalid_class_name', param})
 		return false
 	else
-		Common.notify_player_expected(player, '/take {classname} takes a spare class with the given name for yourself.')
+		Common.notify_player_expected(player, {'', '/take ', {'pirates.cmd_explain_take'}})
 	end
 end)
 
 commands.add_command(
 'giveup',
-'gives up your current class, making it available for others.',
+{'pirates.cmd_explain_giveup'},
 function(cmd)
 	cmd_set_memory(cmd)
-	local param = tostring(cmd.parameter)
+	--local param = tostring(cmd.parameter)
 	local player = game.players[cmd.player_index]
 	if not Common.validate_player(player) then return end
 
-	if param and param == 'nil' then
-		Classes.try_renounce_class(player, true)
-	else
-		Common.notify_player_error(player, 'Command error: parameter not needed.')
-	end
+	Classes.try_renounce_class(player, true)
 end)
 
 commands.add_command(
 'ccolor',
-'is an extension to the built-in /color command, with more colors.',
+{'pirates.cmd_explain_ccolor'},
 function(cmd)
 	local param = tostring(cmd.parameter)
 	local player_index = cmd.player_index
@@ -319,7 +316,7 @@ function(cmd)
 					-- local message = '[color=' .. rgb.r .. ',' .. rgb.g .. ',' .. rgb.b .. ']' .. player.name .. ' chose the color ' .. param .. '[/color] (via /ccolor).'
 					Common.notify_game(message)
 				else
-					Common.notify_player_error(player, 'Command error: Color \'' .. param .. '\' not found.')
+					Common.notify_player_error(player, {'pirates.cmd_error_color_not_found', param})
 				end
 			else
 				local color = PlayerColors.bright_color_names[Math.random(#PlayerColors.bright_color_names)]
@@ -372,7 +369,7 @@ local go_1 = Token.register(
 
 commands.add_command(
 'plank',
-'is a captain command to remove a player by making them a spectator.',
+{'pirates.cmd_explain_plank'},
 function(cmd)
 	cmd_set_memory(cmd)
 
@@ -382,14 +379,14 @@ function(cmd)
 		if param and game.players[param] and game.players[param].index then
 			Crew.plank(player, game.players[param])
 		else
-			Common.notify_player_error(player, 'Command error: Invalid player name.')
+			Common.notify_player_error(player, {'pirates.cmd_error_invalid_player_name', param})
 		end
 	end
 end)
 
 commands.add_command(
 'officer',
-'is a captain command to make a player into an officer, or remove them as one.',
+{'pirates.cmd_explain_officer'},
 function(cmd)
 	cmd_set_memory(cmd)
 	
@@ -404,18 +401,18 @@ function(cmd)
 				Roles.make_officer(player, game.players[param])
 			end
 		else
-			Common.notify_player_error(player, 'Command error: Invalid player name.')
+			Common.notify_player_error(player, {'pirates.cmd_error_invalid_player_name', param})
 		end
 	end
 end)
 
 commands.add_command(
 'undock',
-'is a captain command to undock the ship.',
+{'pirates.cmd_explain_undock'},
 function(cmd)
 	cmd_set_memory(cmd)
 	
-	local param = tostring(cmd.parameter)
+	--local param = tostring(cmd.parameter)
 	if check_captain_or_admin(cmd) then
 		local player = game.players[cmd.player_index]
 		local memory = Memory.get_crew_memory()
@@ -429,13 +426,13 @@ end)
 
 commands.add_command(
 'tax',
-'is a captain command to take a quarter of all coins, plus other game-critical items from the crew, into your inventory.',
+{'pirates.cmd_explain_tax'},
 function(cmd)
 	cmd_set_memory(cmd)
 	
-	local param = tostring(cmd.parameter)
+	--local param = tostring(cmd.parameter)
 	if check_captain(cmd) then
-		local player = game.players[cmd.player_index]
+		--local player = game.players[cmd.player_index]
 		local memory = Memory.get_crew_memory()
 		Roles.captain_tax(memory.playerindex_captain)
 	end --@TODO: else
@@ -443,7 +440,7 @@ end)
 
 commands.add_command(
 'dump_highscores',
-'is a dev command.',
+{'pirates.cmd_explain_dev'},
 function(cmd)
 	cmd_set_memory(cmd)
 	
@@ -457,7 +454,7 @@ end)
 
 commands.add_command(
 'setclass',
-'is a dev command.',
+{'pirates.cmd_explain_dev'},
 function(cmd)
 	cmd_set_memory(cmd)
 	
@@ -474,7 +471,7 @@ end)
 
 commands.add_command(
 'setevo',
-'is a dev command.',
+{'pirates.cmd_explain_dev'},
 function(cmd)
 	cmd_set_memory(cmd)
 	
@@ -487,7 +484,7 @@ end)
 
 commands.add_command(
 'modi',
-'is a dev command.',
+{'pirates.cmd_explain_dev'},
 function(cmd)
 	cmd_set_memory(cmd)
 	
@@ -511,7 +508,7 @@ end)
 
 commands.add_command(
 'ret',
-'is a dev command.',
+{'pirates.cmd_explain_dev'},
 function(cmd)
 	cmd_set_memory(cmd)
 	
@@ -524,7 +521,7 @@ end)
 
 commands.add_command(
 'jump',
-'is a dev command.',
+{'pirates.cmd_explain_dev'},
 function(cmd)
 	cmd_set_memory(cmd)
 	
@@ -537,7 +534,7 @@ end)
 
 commands.add_command(
 'advu',
-'is a dev command.',
+{'pirates.cmd_explain_dev'},
 function(cmd)
 	cmd_set_memory(cmd)
 	
@@ -550,7 +547,7 @@ end)
 
 commands.add_command(
 'advd',
-'is a dev command.',
+{'pirates.cmd_explain_dev'},
 function(cmd)
 	cmd_set_memory(cmd)
 	
@@ -564,7 +561,7 @@ end)
 
 commands.add_command(
 'overwrite_scores_specific',
-'is a dev command.',
+{'pirates.cmd_explain_dev'},
 function(cmd)
 	cmd_set_memory(cmd)
 	
@@ -581,7 +578,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'go',
-	'is a dev command.',
+	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -622,7 +619,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'chnk',
-	'is a dev command.',
+	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		cmd_set_memory(cmd)
 		
@@ -642,7 +639,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'spd',
-	'is a dev command.',
+	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		cmd_set_memory(cmd)
 		
@@ -656,7 +653,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'stp',
-	'is a dev command.',
+	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		cmd_set_memory(cmd)
 		
@@ -670,7 +667,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'rms',
-	'is a dev command.',
+	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -689,7 +686,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'pro',
-	'is a dev command.',
+	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -711,7 +708,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'lev',
-	'is a dev command.',
+	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -724,7 +721,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'hld',
-	'is a dev command.',
+	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -737,7 +734,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'pwr',
-	'is a dev command.',
+	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -751,7 +748,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'score',
-	'is a dev command.',
+	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		cmd_set_memory(cmd)
 		
@@ -767,7 +764,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'scrget',
-	'is a dev command.',
+	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -779,7 +776,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'tim',
-	'is a dev command.',
+	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -793,7 +790,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'gld',
-	'is a dev command.',
+	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -806,7 +803,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'bld',
-	'is a dev command.',
+	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -819,7 +816,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'rad',
-	'is a dev command.',
+	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -835,7 +832,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'rad2',
-	'is a dev command.',
+	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -851,7 +848,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'krk',
-	'is a dev command.',
+	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -864,7 +861,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'1/4',
-	'is a dev command.',
+	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -875,7 +872,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'1/2',
-	'is a dev command.',
+	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -886,7 +883,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'1',
-	'is a dev command.',
+	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -897,7 +894,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'2',
-	'is a dev command.',
+	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -908,7 +905,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'4',
-	'is a dev command.',
+	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -919,7 +916,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'8',
-	'is a dev command.',
+	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -930,7 +927,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'16',
-	'is a dev command.',
+	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -941,7 +938,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'32',
-	'is a dev command.',
+	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -952,7 +949,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'64',
-	'is a dev command.',
+	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
@@ -963,7 +960,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'ef1',
-	'is a dev command.',
+	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		cmd_set_memory(cmd)
 		
@@ -978,7 +975,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'ef2',
-	'is a dev command.',
+	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		cmd_set_memory(cmd)
 		
@@ -993,7 +990,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'ef3',
-	'is a dev command.',
+	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		cmd_set_memory(cmd)
 		
@@ -1008,7 +1005,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'ef4',
-	'is a dev command.',
+	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		cmd_set_memory(cmd)
 		
@@ -1023,7 +1020,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'ef5',
-	'is a dev command.',
+	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		cmd_set_memory(cmd)
 		
@@ -1038,7 +1035,7 @@ if _DEBUG then
 
 	commands.add_command(
 	'emoji',
-	'is a dev command.',
+	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
