@@ -26,6 +26,8 @@ local Token = require 'utils.token'
 local Public = {}
 
 local module_name = Gui.uid_name()
+local locate_player_frame_name = Gui.uid_name()
+local poke_player_frame_name = Gui.uid_name()
 
 local this = {
     player_list = {
@@ -660,13 +662,20 @@ local function player_list_show(data)
             return
         end
 
-        local name_label =
+        local name_flow =
             player_list_panel_table.add {
+            type = 'flow'
+        }
+
+        local name_label =
+            name_flow.add {
             type = 'label',
-            name = p.index,
+            name = locate_player_frame_name,
             caption = caption,
             tooltip = tooltip
         }
+
+        Gui.set_data(name_label, p.index)
 
         local p_color = game.players[player_list[i].player_index]
         name_label.style.font = 'default'
@@ -716,20 +725,21 @@ local function player_list_show(data)
         current_label.style.font = 'heading-3'
 
         -- Poke
-        local flow = player_list_panel_table.add {type = 'flow', name = 'button_flow_' .. i, direction = 'horizontal'}
-        flow.add {type = 'label', name = 'button_spacer_' .. i, caption = ''}
-        local button = flow.add {type = 'button', name = 'poke_player_' .. player_list[i].name, caption = player_list[i].pokes}
-        button.style.font = 'default'
-        button.tooltip = 'Poke ' .. player_list[i].name .. ' with a random message!'
+        local poke_flow = player_list_panel_table.add {type = 'flow', name = 'button_flow_' .. i, direction = 'horizontal'}
+        poke_flow.add {type = 'label', name = 'button_spacer_' .. i, caption = ''}
+        local poke_button = poke_flow.add {type = 'button', name = poke_player_frame_name, caption = player_list[i].pokes}
+        Gui.set_data(poke_button, p.index)
+        poke_button.style.font = 'default'
+        poke_button.tooltip = 'Poke ' .. player_list[i].name .. ' with a random message!'
         label.style.font_color = {r = 0.83, g = 0.83, b = 0.83}
-        button.style.minimal_height = 30
-        button.style.minimal_width = 30
-        button.style.maximal_height = 30
-        button.style.maximal_width = 30
-        button.style.top_padding = 0
-        button.style.left_padding = 0
-        button.style.right_padding = 0
-        button.style.bottom_padding = 0
+        poke_button.style.minimal_height = 30
+        poke_button.style.minimal_width = 30
+        poke_button.style.maximal_height = 30
+        poke_button.style.maximal_width = 30
+        poke_button.style.top_padding = 0
+        poke_button.style.left_padding = 0
+        poke_button.style.right_padding = 0
+        poke_button.style.bottom_padding = 0
     end
 end
 
@@ -851,49 +861,67 @@ local function on_gui_click(event)
         actions[name]()
         return
     end
+end
 
-    if not element.valid then
-        return
-    end
-    --Locate other players
-    local index = tonumber(element.name)
-    if index and game.get_player(index) and index == game.get_player(index).index then
+Gui.on_click(
+    locate_player_frame_name,
+    function(event)
+        local player = event.player
+        local element = event.element
+
+        local data = Gui.get_data(element)
+        if not data then
+            return
+        end
+
         local is_spamming = SpamProtection.is_spamming(player, nil, 'PlayerList Locate Player')
         if is_spamming then
             return
         end
-        local target = game.get_player(index)
+
+        local target = game.get_player(data)
         if not target or not target.valid then
+            Gui.set_data(element, nil)
             return
         end
+        Gui.set_data(element, nil)
         Where.create_mini_camera_gui(player, target)
     end
-    --Poke other players
-    if string.sub(element.name, 1, 11) == 'poke_player' then
-        local is_spamming = SpamProtection.is_spamming(player, nil, 'PlayerList Poke Player')
-        if is_spamming then
+)
+
+Gui.on_click(
+    poke_player_frame_name,
+    function(event)
+        local player = event.player
+        local element = event.element
+
+        local data = Gui.get_data(element)
+        if not data then
             return
         end
-        local poked_player = string.sub(element.name, 13, string.len(element.name))
-        if player.name == poked_player then
+        local target = game.get_player(data)
+
+        if player.index == target.index then
+            Gui.set_data(element, nil)
             return
         end
-        if this.player_list.last_poke_tick[element.player_index] + 300 < game.tick then
+
+        if this.player_list.last_poke_tick[player.index] + 300 < game.tick then
             local str = '>> '
             str = str .. player.name
             str = str .. ' has poked '
-            str = str .. poked_player
+            str = str .. target.name
             str = str .. ' with '
             local z = math.random(1, #pokemessages)
             str = str .. pokemessages[z]
             str = str .. ' <<'
             game.print(str)
-            this.player_list.last_poke_tick[element.player_index] = game.tick
-            local p = game.players[poked_player]
-            this.player_list.pokes[p.index] = this.player_list.pokes[p.index] + 1
+            this.player_list.last_poke_tick[player.index] = game.tick
+            this.player_list.pokes[target.index] = this.player_list.pokes[target.index] + 1
+            Gui.set_data(element, nil)
         end
     end
-end
+)
 
 local function refresh()
     for _, player in pairs(game.connected_players) do
