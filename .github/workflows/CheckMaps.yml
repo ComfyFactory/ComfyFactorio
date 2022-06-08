@@ -1,0 +1,27 @@
+name: CheckMaps
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the develop branch
+on:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [develop]
+
+jobs:
+  check:
+    name: Check if requestor has made a boo boo
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Factorio Control comment
+        uses: Gerkiz/FactorioControlChecker@v1.0.5
+        id: factorio_control_runner
+
+      - name: Check control.lua
+        if: steps.factorio_control_runner.outputs.should_run == 1
+        run: |
+          echo "Maps are required in control.lua - please fix these."
+          exit 1
