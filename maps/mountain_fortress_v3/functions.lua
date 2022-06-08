@@ -1381,7 +1381,7 @@ function Public.on_player_changed_position(event)
         return
     end
     local player = game.players[event.player_index]
-    local map_name = 'mountain_fortress_v3'
+    local map_name = 'mtn_v3'
 
     if string.sub(player.surface.name, 0, #map_name) ~= map_name then
         return

@@ -347,7 +347,7 @@ local function wall(p, data)
                         entities[#entities + 1] = {
                             name = 'stone-wall',
                             position = p,
-                            force = 'player',
+                            force = 'neutral',
                             callback = stone_wall
                         }
                         if not alert_zone_1 and data.y >= -zone_settings.zone_depth then
@@ -402,7 +402,7 @@ local function wall(p, data)
                         entities[#entities + 1] = {
                             name = 'stone-wall',
                             position = p,
-                            force = 'player',
+                            force = 'neutral',
                             callback = stone_wall
                         }
                     end
@@ -2722,7 +2722,7 @@ function Public.heavy_functions(data)
     local adjusted_zones = WPT.get('adjusted_zones')
     init_terrain(adjusted_zones)
 
-    local map_name = 'mountain_fortress_v3'
+    local map_name = 'mtn_v3'
 
     if string.sub(surface.name, 0, #map_name) ~= map_name then
         return
@@ -2762,7 +2762,7 @@ Event.add(
     defines.events.on_chunk_generated,
     function(e)
         local surface = e.surface
-        local map_name = 'mountain_fortress_v3'
+        local map_name = 'mtn_v3'
 
         if string.sub(surface.name, 0, #map_name) ~= map_name then
             return
