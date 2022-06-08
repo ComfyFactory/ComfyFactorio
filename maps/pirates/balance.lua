@@ -11,18 +11,6 @@ local _inspect = require 'utils.inspect'.inspect
 
 -- this file is an API to all the balance tuning knobs
 
--- damage_taken_multiplier:
--- if multiplier > 1: entity takes more damage
--- if multiplier < 1: entity takes less damage (has damage reduction)
-
--- damage_dealt_multiplier:
--- if multiplier > 1: entity deals more damage
--- if multiplier < 1: entity deals less damage
-
--- extra_speed:
--- if multiplier > 1: entity moves faster
--- if multiplier < 1: entity moves slower
--- NOTE: when some extra speed modifiers stack, they stack multiplicatively
 
 -- Kraken related parameters
 Public.biter_swim_speed = 1
@@ -36,43 +24,45 @@ Public.cannon_extra_hp_for_upgrade = 1000
 Public.cannon_starting_hp = 2000
 Public.cannon_resistance_factor = 2
 Public.technology_price_multiplier = 1
+
 Public.rocket_launch_coin_reward = 5000
 
-Public.base_caught_fish_amount = 3
-Public.class_reward_tick_rate_in_seconds = 7
-Public.poison_damage_multiplier = 1.85
-Public.every_nth_tree_gives_coins = 6
+ Public.base_caught_fish_amount = 3
+ Public.class_reward_tick_rate_in_seconds = 7
+ Public.poison_damage_multiplier = 1.85
+ Public.every_nth_tree_gives_coins = 6
 
-Public.samurai_damage_taken_multiplier = 0.26
-Public.samurai_damage_dealt_when_not_melee_multiplier = 0.75
-Public.samurai_damage_dealt_with_melee_multiplier = 25
-Public.hatamoto_damage_taken_multiplier = 0.16
-Public.hatamoto_damage_dealt_when_not_melee_multiplier = 0.75
-Public.hatamoto_damage_dealt_with_melee_multiplier = 45
-Public.iron_leg_damage_taken_multiplier = 0.18
-Public.iron_leg_iron_ore_required = 3000
-Public.deckhand_extra_speed = 1.25
-Public.deckhand_ore_grant_multiplier = 2
-Public.deckhand_ore_scaling_enabled = true
-Public.boatswain_extra_speed = 1.25
-Public.boatswain_ore_grant_multiplier = 4
-Public.boatswain_ore_scaling_enabled = true
-Public.shoresman_extra_speed = 1.1
-Public.shoresman_ore_grant_multiplier = 2
-Public.shoresman_ore_scaling_enabled = true
-Public.quartermaster_range = 19
-Public.quartermaster_bonus_physical_damage = 0.1
-Public.quartermaster_ore_scaling_enabled = false
-Public.scout_extra_speed = 1.3
-Public.scout_damage_taken_multiplier = 1.25
-Public.scout_damage_dealt_multiplier = 0.6
-Public.fisherman_reach_bonus = 10
-Public.master_angler_reach_bonus = 16
-Public.master_angler_fish_bonus = 1
-Public.master_angler_coin_bonus = 10
-Public.dredger_reach_bonus = 16
-Public.dredger_fish_bonus = 1
-Public.gourmet_ore_scaling_enabled = false
+ Public.samurai_damage_taken_multiplier = 0.26
+ Public.samurai_damage_dealt_when_not_melee_multiplier = 0.75
+ Public.samurai_damage_dealt_with_melee = 25
+ Public.hatamoto_damage_taken_multiplier = 0.16
+ Public.hatamoto_damage_dealt_when_not_melee_multiplier = 0.75
+ Public.hatamoto_damage_dealt_with_melee = 45
+ Public.iron_leg_damage_taken_multiplier = 0.18
+ Public.iron_leg_iron_ore_required = 3000
+ Public.deckhand_extra_speed = 1.25
+ Public.deckhand_ore_grant_multiplier = 2
+ Public.deckhand_ore_scaling_enabled = true
+ Public.boatswain_extra_speed = 1.25
+ Public.boatswain_ore_grant_multiplier = 4
+ Public.boatswain_ore_scaling_enabled = true
+ Public.shoresman_extra_speed = 1.1
+ Public.shoresman_ore_grant_multiplier = 2
+ Public.shoresman_ore_scaling_enabled = true
+ Public.quartermaster_range = 19
+ Public.quartermaster_bonus_physical_damage = 0.1
+ Public.quartermaster_ore_scaling_enabled = false
+ Public.scout_extra_speed = 1.3
+ Public.scout_damage_taken_multiplier = 1.25
+ Public.scout_damage_dealt_multiplier = 0.6
+ Public.fisherman_reach_bonus = 10
+ Public.master_angler_reach_bonus = 16
+ Public.master_angler_fish_bonus = 1
+ Public.master_angler_coin_bonus = 10
+ Public.dredger_reach_bonus = 16
+ Public.dredger_fish_bonus = 1
+ Public.gourmet_ore_scaling_enabled = false
+
 
 function Public.starting_boatEEIpower_production_MW()
 	-- return 3 * Math.sloped(Common.capacity_scale(), 1/2) / 2 --/2 as we have 2
@@ -560,9 +550,9 @@ function Public.player_gun_speed_modifiers()
 end
 
 
-Public.starting_items_player = {['pistol'] = 1, ['firearm-magazine'] = 12, ['raw-fish'] = 1, ['iron-plate'] = 12, ['medium-electric-pole'] = 4}
+Public.starting_items_player = {['pistol'] = 1, ['firearm-magazine'] = 20, ['raw-fish'] = 4, ['medium-electric-pole'] = 20, ['iron-plate'] = 50, ['copper-plate'] = 20, ['iron-gear-wheel'] = 6, ['copper-cable'] = 20, ['burner-inserter'] = 2, ['gun-turret'] = 1}
 
-Public.starting_items_player_late = {['pistol'] = 1, ['firearm-magazine'] = 5}
+Public.starting_items_player_late = {['pistol'] = 1, ['firearm-magazine'] = 10, ['raw-fish'] = 4, ['small-electric-pole'] = 20, ['iron-plate'] = 50, ['copper-plate'] = 20, ['iron-gear-wheel'] = 6, ['copper-cable'] = 20, ['burner-inserter'] = 2, ['gun-turret'] = 1}
 
 function Public.starting_items_crew_upstairs()
 	return {

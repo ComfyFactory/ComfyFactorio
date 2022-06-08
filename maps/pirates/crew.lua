@@ -377,7 +377,7 @@ function Public.join_crew(player, crewid, rejoin)
 		memory.crewplayerindices[#memory.crewplayerindices + 1] = player.index
 
 		-- don't give them items if they've been in the crew recently:
-		if not (memory.tempbanned_from_joining_data and memory.tempbanned_from_joining_data[player.index] and game.tick < memory.tempbanned_from_joining_data[player.index] + 8 * Common.ban_from_rejoining_crew_ticks) and (not rejoin) then
+		if not (memory.tempbanned_from_joining_data and memory.tempbanned_from_joining_data[player.index]) and (not rejoin) then --just using tempbanned_from_joining_data as a quick proxy for whether the player has ever been in this run before
 			for item, amount in pairs(Balance.starting_items_player_late) do
 				player.insert({name = item, count = amount})
 			end

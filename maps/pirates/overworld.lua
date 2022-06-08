@@ -229,33 +229,33 @@ function Public.generate_overworld_destination(p)
 			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*120),
 		}
 		local base_cost_2 = {
-			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*180),
-			['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*18),
+			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*200),
+			['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*20),
 			-- the below got this response from a new player: "This feels... underwhelming."
 			-- ['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*120),
 			-- ['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*18),
 		}
 		local base_cost_2b = {
-			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*180),
+			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*200),
 			['flying-robot-frame'] = 3,
 		}
 		local base_cost_3 = {
-			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*140),
-			['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*18),
+			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*160),
+			['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*20),
 			['launch_rocket'] = true,
 		}
 		local base_cost_4 = {
-			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*100),
-			['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*18),
+			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*140),
+			['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*20),
 			['flying-robot-frame'] = Math.ceil(((macro_p.x-18)^(2/3))*15),
 			['launch_rocket'] = true,
 		}
 		local base_cost_5 = {
-			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*100),
-			['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*18),
+			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*140),
+			['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*20),
 			['flying-robot-frame'] = Math.ceil(((macro_p.x-18)^(2/3))*10),
 			-- ['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*100),
-			-- ['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*18),
+			-- ['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*20),
 			-- ['flying-robot-frame'] = Math.ceil(((macro_p.x-18)^(2/3))*10),
 		}
 		-- if macro_p.x == 0 then

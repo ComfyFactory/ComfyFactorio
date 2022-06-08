@@ -9,7 +9,7 @@ local CoreData = require 'maps.pirates.coredata'
 local Utils = require 'maps.pirates.utils_local'
 local _inspect = require 'utils.inspect'.inspect
 -- local CustomEvents = require 'maps.pirates.custom_events'
-local SurfacesCommon = require 'maps.pirates.surfaces.common'
+local IslandsCommon = require 'maps.pirates.surfaces.islands.common'
 -- local Raffle = require 'maps.pirates.raffle'
 -- local ShopCovered = require 'maps.pirates.shop.covered'
 -- local Classes = require 'maps.pirates.roles.classes'
@@ -31,9 +31,9 @@ function Public.choose_quest_structure_type()
     local destination = Common.current_destination()
 	local subtype = destination.subtype
 
-	local rng = Math.random(2)
+	local rng = Math.random(3)
 
-	if rng == 1 or subtype == SurfacesCommon.enum.WALKWAYS then
+	if rng == 1 or subtype and subtype == IslandsCommon.enum.WALKWAYS then
 		return enum.MARKET1
 	else
 

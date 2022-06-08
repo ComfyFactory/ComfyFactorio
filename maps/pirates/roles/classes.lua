@@ -72,7 +72,7 @@ end
 
 function Public.explanation_advanced(class)
 	local explanation = 'pirates.class_' .. class .. '_explanation_advanced'
-	local full_explanation = {}
+	local full_explanation
 
 	if class == enum.DECKHAND then
 		local extra_speed = Public.percentage_points_difference_from_100_percent(Balance.deckhand_extra_speed)
@@ -108,12 +108,12 @@ function Public.explanation_advanced(class)
 		full_explanation = {'', {explanation, extra_speed, received_damage, dealt_damage}}
 	elseif class == enum.SAMURAI then
 		local received_damage = Public.percentage_points_difference_from_100_percent(Balance.samurai_damage_taken_multiplier)
-		local melee_damage = Balance.samurai_damage_dealt_with_melee_multiplier
+		local melee_damage = Balance.samurai_damage_dealt_with_melee
 		local non_melee_damage = Public.percentage_points_difference_from_100_percent(Balance.samurai_damage_dealt_when_not_melee_multiplier)
 		full_explanation = {'', {explanation, received_damage, melee_damage, non_melee_damage}}
 	elseif class == enum.HATAMOTO then
 		local received_damage = Public.percentage_points_difference_from_100_percent(Balance.hatamoto_damage_taken_multiplier)
-		local melee_damage = Balance.hatamoto_damage_dealt_with_melee_multiplier
+		local melee_damage = Balance.hatamoto_damage_dealt_with_melee
 		local non_melee_damage = Public.percentage_points_difference_from_100_percent(Balance.hatamoto_damage_dealt_when_not_melee_multiplier)
 		full_explanation = {'', {explanation, received_damage, melee_damage, non_melee_damage}}
 	elseif class == enum.IRON_LEG then
@@ -124,7 +124,7 @@ function Public.explanation_advanced(class)
 		full_explanation = {'', {explanation}}
 	end
 
-	full_explanation[#full_explanation + 1] = Public.class_is_obtainable(class) and {'', ' ', {'pirates.class_obtainable'}} or {'', ' ', {'pirates.class_unobtainable'}} 
+	full_explanation[#full_explanation + 1] = Public.class_is_obtainable(class) and {'', ' ', {'pirates.class_obtainable'}} or {'', ' ', {'pirates.class_unobtainable'}}
 
 	return full_explanation
 end
@@ -188,19 +188,19 @@ end
 
 function Public.class_is_obtainable(class)
 	local obtainable_class_pool = Public.initial_class_pool()
-	
+
 	for _, unlocked_class_list in pairs(Public.class_unlocks) do
-		for __, unlocked_class in ipairs(unlocked_class_list) do
+		for _, unlocked_class in ipairs(unlocked_class_list) do
 			obtainable_class_pool[#obtainable_class_pool + 1] = unlocked_class
 		end
 	end
-	
+
 	for _, unlockable_class in ipairs(obtainable_class_pool) do
 		if unlockable_class == class then
 			return true
 		end
 	end
-	
+
 	return false
 end
 
@@ -280,8 +280,8 @@ end
 
 
 function Public.class_ore_grant(player, how_much, enable_scaling)
-	local count = ore_grant_amount(how_much, enable_scaling)
-	
+	local count = Public.ore_grant_amount(how_much, enable_scaling)
+
 	if Math.random(4) == 1 then
 		Common.flying_text_small(player.surface, player.position, '[color=0.85,0.58,0.37]+' .. count .. '[/color]')
 		Common.give_items_to_crew{{name = 'copper-ore', count = count}}

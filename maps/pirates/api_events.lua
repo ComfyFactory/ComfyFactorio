@@ -253,7 +253,7 @@ local function damage_to_krakens(event)
 	end
 
 	if event.damage_type.name and (event.damage_type.name == 'laser') then
-		adjusted_damage = adjusted_damage / 5 --laser turrets are in range. give some resistance
+		adjusted_damage = adjusted_damage / 7 --laser turrets are in range. give some resistance
 	end
 
 	if Common.entity_damage_healthbar(event.entity, adjusted_damage) <= 0 then
@@ -280,7 +280,7 @@ local function damage_to_players_changes(event)
 
 	--game.print('on damage info: {name: ' .. event.damage_type.name .. ', object_name: ' .. event.damage_type.object_name .. '}')
 
-	if event.damage_type.name == 'poison' then --make all poison damage stronger against players and enemies
+	if event.damage_type.name == 'poison' then --make all poison damage stronger against players
 		damage_multiplier = damage_multiplier * Balance.poison_damage_multiplier
 	else
 		if class and class == Classes.enum.SCOUT then
@@ -289,9 +289,9 @@ local function damage_to_players_changes(event)
 		-- 	damage_multiplier = damage_multiplier * 1.10
 		elseif class and class == Classes.enum.SAMURAI then
 			damage_multiplier = damage_multiplier * Balance.samurai_damage_taken_multiplier
-		elseif class and class == Classes.enum.HATAMOTO then --lethal damage needs to be unaffected
+		elseif class and class == Classes.enum.HATAMOTO then
 			damage_multiplier = damage_multiplier * Balance.hatamoto_damage_taken_multiplier
-		elseif class and class == Classes.enum.IRON_LEG then --lethal damage needs to be unaffected
+		elseif class and class == Classes.enum.IRON_LEG then
 			if memory.class_auxiliary_data[player_index] and memory.class_auxiliary_data[player_index].iron_leg_active then
 				damage_multiplier = damage_multiplier * Balance.iron_leg_damage_taken_multiplier
 			end
@@ -307,12 +307,13 @@ local function damage_to_players_changes(event)
 
 	if damage_multiplier > 1 then
 		event.entity.health = event.entity.health - event.final_damage_amount * (damage_multiplier - 1)
-	elseif damage_multiplier < 1 and event.final_health > 0 then --lethal damage needs to be unaffected, else they never die
+	elseif damage_multiplier < 1 and event.final_health > 0 then --lethal damage case isn't this easy
 		event.entity.health = event.entity.health + event.final_damage_amount * (1 - damage_multiplier)
 	end
 
 
 	-- deal with damage reduction on lethal damage for players
+	-- Piratux wrote this code — it tracks player health (except passive regen), and intervenes on a lethal damage event, so it should work most of the time.
 	local player = game.players[player_index]
     if not (player and player.valid and player.character and player.character.valid) then
         return
@@ -392,9 +393,9 @@ local function damage_dealt_by_players_changes(event)
 		if melee and event.final_health > 0 then
 			if physical then
 				if samurai then
-					extra_damage_to_deal = Balance.samurai_damage_dealt_with_melee_multiplier * extra_physical_damage_from_research_multiplier
+					extra_damage_to_deal = Balance.samurai_damage_dealt_with_melee * extra_physical_damage_from_research_multiplier
 				elseif hatamoto then
-					extra_damage_to_deal = Balance.hatamoto_damage_dealt_with_melee_multiplier * extra_physical_damage_from_research_multiplier
+					extra_damage_to_deal = Balance.hatamoto_damage_dealt_with_melee * extra_physical_damage_from_research_multiplier
 				end
 			elseif acid then --this hacky stuff is to implement repeated spillover splash damage, whilst getting around the fact that if ovekill damage takes something to zero health, we can't tell in that event how much double-overkill damage should be dealt by reading off its HP. This code assumes that characters only deal acid damage via this function.
 				extra_damage_to_deal = event.original_damage_amount * big_number
@@ -1215,6 +1216,11 @@ local function event_on_player_joined_game(event)
 	if crew_to_put_back_in then
 		Crew.join_crew(player, crew_to_put_back_in, true)
 
+		local memory = global_memory.crew_memories[crew_to_put_back_in]
+		if #memory.crewplayerindices <= 1 then
+			memory.playerindex_captain = player.index
+		end
+
 		if _DEBUG then log('putting player back in their old crew') end
 	else
 		if player.character and player.character.valid then
@@ -1258,6 +1264,12 @@ local function event_on_player_joined_game(event)
 		)
 		if ages[1] then
 			Crew.join_crew(player, ages[1].id)
+
+			local memory = global_memory.crew_memories[ages[1].id]
+			if #memory.crewplayerindices <= 1 then
+				memory.playerindex_captain = player.index
+			end
+
 			if ages[2] then
 				if ages[1].large and (not ages[#ages].large) then
 					Common.notify_player_announce(player, {'pirates.goto_oldest_crew_with_large_capacity'})
