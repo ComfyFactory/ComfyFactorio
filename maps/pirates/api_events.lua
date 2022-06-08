@@ -154,6 +154,17 @@ local function damage_to_silo(event)
 		if destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid and entity == Common.current_destination().dynamic_data.rocketsilos[1] then
 
 			if string.sub(event.cause.force.name, 1, 4) ~= 'crew' then
+
+				-- play alert sound for all crew members
+				if memory.seconds_until_alert_sound_can_be_played_again <= 0 then
+					memory.seconds_until_alert_sound_can_be_played_again = Balance.alert_sound_max_frequency_in_seconds
+
+					for _, player_index in pairs(memory.crewplayerindices) do
+						local player = game.players[player_index]
+						player.play_sound({path = 'utility/alert_destroyed', volume_modifier = 1})
+					end
+				end
+
 				if Common.entity_damage_healthbar(entity, event.original_damage_amount / Balance.silo_resistance_factor * (1 + Balance.biter_timeofday_bonus_damage(event.cause.surface.darkness))) <= 0 then
 					Public.silo_die()
 				else
@@ -197,7 +208,7 @@ local function damage_to_enemyboat_spawners(event)
 end
 
 local function damage_to_artillery(event)
-	-- local memory = Memory.get_crew_memory()
+	local memory = Memory.get_crew_memory()
 
 	if not event.cause then return end
 	if not event.cause.valid then return end
@@ -207,6 +218,16 @@ local function damage_to_artillery(event)
 	if (event.cause.name == 'small-biter') or (event.cause.name == 'small-spitter') or (event.cause.name == 'medium-biter') or (event.cause.name == 'medium-spitter') or (event.cause.name == 'big-biter') or (event.cause.name == 'big-spitter') or (event.cause.name == 'behemoth-biter') or (event.cause.name == 'behemoth-spitter') then
 		if string.sub(event.cause.force.name, 1, 5) ~= 'enemy' then return end
 
+		-- play alert sound for all crew members
+		if memory.seconds_until_alert_sound_can_be_played_again <= 0 then
+			memory.seconds_until_alert_sound_can_be_played_again = Balance.alert_sound_max_frequency_in_seconds
+
+			for _, player_index in pairs(memory.crewplayerindices) do
+				local player = game.players[player_index]
+				player.play_sound({path = 'utility/alert_destroyed', volume_modifier = 1})
+			end
+		end
+		
 		-- remove resistances:
 		-- event.entity.health = event.entity.health + event.final_damage_amount - event.original_damage_amount
 

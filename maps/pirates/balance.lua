@@ -20,6 +20,10 @@ Public.kraken_spit_targetting_player_chance = 0.4
 Public.base_extra_character_speed = 1.44
 Public.respawn_speed_boost = 1.75
 
+-- maximum rate at which alert sound can be played when important buildings are damaged (like silo or cannons)
+-- NOTE: frequency can sometimes be faster by 1 second than denoted, but accuracy doesn't really matter here
+Public.alert_sound_max_frequency_in_seconds = 3
+
 Public.cannon_extra_hp_for_upgrade = 1000
 Public.cannon_starting_hp = 2000
 Public.cannon_resistance_factor = 2

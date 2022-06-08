@@ -1376,6 +1376,12 @@ function Public.update_players_second()
 	end
 end
 
-
+function Public.update_alert_sound_frequency_tracker()
+	local memory = Memory.get_crew_memory()
+	if memory.seconds_until_alert_sound_can_be_played_again > 0 then
+		memory.seconds_until_alert_sound_can_be_played_again = memory.seconds_until_alert_sound_can_be_played_again - 1
+		Math.max(0, memory.seconds_until_alert_sound_can_be_played_again)
+	end
+end
 
 return Public
