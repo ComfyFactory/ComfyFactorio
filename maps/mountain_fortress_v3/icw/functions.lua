@@ -71,10 +71,7 @@ local function kick_players_from_surface(wagon)
         if validate_entity(main_surface) then
             for _, e in pairs(wagon.surface.find_entities_filtered({area = wagon.area})) do
                 if validate_entity(e) and e.name == 'character' and e.player then
-                    e.player.teleport(
-                        main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0, 5),
-                        main_surface
-                    )
+                    e.player.teleport(main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0, 5), main_surface)
                 end
             end
         end
@@ -960,10 +957,7 @@ local function move_room_to_train(icw, train, wagon)
 
     train.top_y = destination_area.right_bottom.y
 
-    if
-        destination_area.left_top.x == wagon.area.left_top.x and destination_area.left_top.y == wagon.area.left_top.y and
-            wagon.surface.name == train.surface.name
-     then
+    if destination_area.left_top.x == wagon.area.left_top.x and destination_area.left_top.y == wagon.area.left_top.y and wagon.surface.name == train.surface.name then
         return
     end
     kick_players_from_surface(wagon)
@@ -1049,9 +1043,7 @@ local function get_connected_rolling_stock(entity, direction, carriages)
         return nil
     end
 
-    angle =
-        math.atan2(-(connected_stock.position.x - entity.position.x), connected_stock.position.y - entity.position.y) / (2 * math.pi) -
-        connected_stock.orientation
+    angle = math.atan2(-(connected_stock.position.x - entity.position.x), connected_stock.position.y - entity.position.y) / (2 * math.pi) - connected_stock.orientation
     while angle < -0.5 do
         angle = angle + 1
     end
@@ -1165,9 +1157,7 @@ function Public.draw_minimap(icw, player, surface, position)
     end
     local element = frame['icw_sub_frame']
     if not frame.icw_auto_switch then
-        frame.add(
-            {type = 'switch', name = 'icw_auto_switch', allow_none_state = false, left_label_caption = {'gui.map_on'}, right_label_caption = {'gui.map_off'}}
-        )
+        frame.add({type = 'switch', name = 'icw_auto_switch', allow_none_state = false, left_label_caption = {'gui.map_on'}, right_label_caption = {'gui.map_off'}})
     end
     if not element then
         element =
@@ -1252,7 +1242,7 @@ end
 function Public.on_player_or_robot_built_tile(event)
     local surface = game.surfaces[event.surface_index]
 
-    local map_name = 'mountain_fortress_v3'
+    local map_name = 'mtn_v3'
 
     if string.sub(surface.name, 0, #map_name) == map_name then
         return

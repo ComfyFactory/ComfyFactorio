@@ -99,9 +99,7 @@ function Public.soft_reset_map(old_surface, map_gen_settings, player_starting_it
             table.concat(
             {
                 mapkeeper,
-                ' The world has been reshaped, welcome to ',
-                this.original_surface_name,
-                ' number ',
+                ' The world has been reshaped, welcome to attempt number ',
                 tostring(this.soft_reset_counter),
                 '!'
             }

@@ -290,7 +290,7 @@ end
 local function on_player_changed_position(event)
     local player = game.get_player(event.player_index)
     local surface_name = player.surface.name
-    local map_name = 'mountain_fortress_v3'
+    local map_name = 'mtn_v3'
 
     if sub(surface_name, 0, #map_name) ~= map_name then
         return
