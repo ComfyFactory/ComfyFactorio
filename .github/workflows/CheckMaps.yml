@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Factorio Control comment
-        uses: Gerkiz/FactorioControlChecker@v1.0.5
+        uses: Gerkiz/FactorioControlChecker@v1.0.6
         id: factorio_control_runner
 
       - name: Check control.lua
