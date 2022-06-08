@@ -347,7 +347,7 @@ local function wall(p, data)
                         entities[#entities + 1] = {
                             name = 'stone-wall',
                             position = p,
-                            force = 'player',
+                            force = 'neutral',
                             callback = stone_wall
                         }
                         if not alert_zone_1 and data.y >= -zone_settings.zone_depth then
@@ -402,7 +402,7 @@ local function wall(p, data)
                         entities[#entities + 1] = {
                             name = 'stone-wall',
                             position = p,
-                            force = 'player',
+                            force = 'neutral',
                             callback = stone_wall
                         }
                     end
