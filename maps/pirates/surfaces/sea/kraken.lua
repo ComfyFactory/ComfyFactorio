@@ -53,7 +53,7 @@ local swimming_biters_tick_token =
 -- should only be used during kraken encounter
 function Public.swimming_biters_tick(crew_id, kraken_id)
 	Memory.set_working_id(crew_id)
-	local memory = Memory.get_crew_memory()	
+	local memory = Memory.get_crew_memory()
 	if not (memory.id and memory.id > 0) then return end --check if crew disbanded
 	if memory.game_lost then return end
 	local kraken_data = memory.active_sea_enemies.krakens[kraken_id]
@@ -71,7 +71,7 @@ function Public.swimming_biters_tick(crew_id, kraken_id)
 					-- choose closest boarding entrance on the ship
 					target_pos.x = biter_pos.x > 0 and Math.random_float_in_range(18, 11) or Math.random_float_in_range(-18, -11)
 					target_pos.y = biter_pos.y > 0 and 12 or -12
-					
+
 					local towards_target_vec = Math.vector_dir(biter_pos, target_pos)
 					towards_target_vec = Math.vector_norm(towards_target_vec)
 					towards_target_vec = Math.vector_scale(towards_target_vec, Balance.biter_swim_speed)

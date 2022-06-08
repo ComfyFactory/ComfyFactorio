@@ -227,7 +227,7 @@ local function damage_to_artillery(event)
 				player.play_sound({path = 'utility/alert_destroyed', volume_modifier = 1})
 			end
 		end
-		
+
 		-- remove resistances:
 		-- event.entity.health = event.entity.health + event.final_damage_amount - event.original_damage_amount
 

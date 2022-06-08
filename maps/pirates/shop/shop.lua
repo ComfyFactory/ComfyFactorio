@@ -216,7 +216,6 @@ function Public.event_on_market_item_purchased(event)
 				if memory.classes_table and memory.spare_classes then
 					if required_class then
 						local chosen_class_assigned = false
-						local spare_class_assigned = false
 
 						if required_class then
 							for p_index, chosen_class in pairs(memory.classes_table) do
@@ -233,7 +232,6 @@ function Public.event_on_market_item_purchased(event)
 							for i, spare_class in pairs(memory.spare_classes) do
 								if spare_class == required_class then
 									memory.spare_classes[i] = class_for_sale
-									spare_class_assigned = true
 									ok = true
 									break
 								end
