@@ -341,6 +341,11 @@ Gui.on_click(
 
         local i = tonumber(element.parent.name)
 
+        if game.tick > this.difficulty_poll_closing_timeout then
+            clear_main_frame(player)
+            return
+        end
+
         if this.difficulty_player_votes[player.name] and this.difficulty_player_votes[player.name].index == i then
             player.print('You have already voted for ' .. this.difficulties[i].name .. '.', this.difficulties[i].print_color)
             clear_main_frame(player)
