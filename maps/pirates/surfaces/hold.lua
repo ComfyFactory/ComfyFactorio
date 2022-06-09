@@ -234,7 +234,7 @@ function Public.create_hold_surface(nth)
 	else
 		if nth==2 then
 			if memory.shiphold_rendering_1 then
-				rendering.set_text(memory.shiphold_rendering_1, {'pirates.surface_label_hold_nth', -1})
+				rendering.set_text(memory.shiphold_rendering_1, {'pirates.surface_label_hold_nth', 1})
 			end
 		end
 		rendering.draw_text{

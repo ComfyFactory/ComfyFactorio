@@ -72,7 +72,7 @@ end
 
 function Public.explanation_advanced(class)
 	local explanation = 'pirates.class_' .. class .. '_explanation_advanced'
-	local full_explanation = {}
+	local full_explanation
 
 	if class == enum.DECKHAND then
 		local extra_speed = Public.percentage_points_difference_from_100_percent(Balance.deckhand_extra_speed)
@@ -124,7 +124,7 @@ function Public.explanation_advanced(class)
 		full_explanation = {'', {explanation}}
 	end
 
-	full_explanation[#full_explanation + 1] = Public.class_is_obtainable(class) and {'', ' ', {'pirates.class_obtainable'}} or {'', ' ', {'pirates.class_unobtainable'}} 
+	full_explanation[#full_explanation + 1] = Public.class_is_obtainable(class) and {'', ' ', {'pirates.class_obtainable'}} or {'', ' ', {'pirates.class_unobtainable'}}
 
 	return full_explanation
 end
@@ -188,19 +188,19 @@ end
 
 function Public.class_is_obtainable(class)
 	local obtainable_class_pool = Public.initial_class_pool()
-	
+
 	for _, unlocked_class_list in pairs(Public.class_unlocks) do
-		for __, unlocked_class in ipairs(unlocked_class_list) do
+		for _, unlocked_class in ipairs(unlocked_class_list) do
 			obtainable_class_pool[#obtainable_class_pool + 1] = unlocked_class
 		end
 	end
-	
+
 	for _, unlockable_class in ipairs(obtainable_class_pool) do
 		if unlockable_class == class then
 			return true
 		end
 	end
-	
+
 	return false
 end
 

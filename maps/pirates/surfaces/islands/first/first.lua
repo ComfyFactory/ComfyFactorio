@@ -61,13 +61,17 @@ function Public.terrain(args)
 
 	if noises.height(p) > 0.2 then
 		if noises.forest_abs(p) > 0.65 then
-            local treedensity = 0.4 * Math.slopefromto(noises.forest_abs_suppressed(p), 0.6, 0.85)
-			if noises.forest(p) > 0.87 then
-				if Math.random(1,100) < treedensity*100 then args.entities[#args.entities + 1] = {name = 'tree-01', position = args.p, visible_on_overworld = true} end
-			elseif noises.forest(p) < -1.4 then
-				if Math.random(1,100) < treedensity*100 then args.entities[#args.entities + 1] = {name = 'tree-03', position = args.p, visible_on_overworld = true} end
+            if (not args.iconized_generation) and Math.random(1600) == 1 then
+                args.specials[#args.specials + 1] = {name = 'chest', position = args.p}
 			else
-				if Math.random(1,100) < treedensity*100 then args.entities[#args.entities + 1] = {name = 'tree-02', position = args.p, visible_on_overworld = true} end
+				local treedensity = 0.4 * Math.slopefromto(noises.forest_abs_suppressed(p), 0.6, 0.85)
+				if noises.forest(p) > 0.87 then
+					if Math.random(1,100) < treedensity*100 then args.entities[#args.entities + 1] = {name = 'tree-01', position = args.p, visible_on_overworld = true} end
+				elseif noises.forest(p) < -1.4 then
+					if Math.random(1,100) < treedensity*100 then args.entities[#args.entities + 1] = {name = 'tree-03', position = args.p, visible_on_overworld = true} end
+				else
+					if Math.random(1,100) < treedensity*100 then args.entities[#args.entities + 1] = {name = 'tree-02', position = args.p, visible_on_overworld = true} end
+				end
 			end
 		end
 	end

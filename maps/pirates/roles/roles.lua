@@ -135,10 +135,10 @@ function Public.get_class_print_string(class, full)
 
 	for _, class2 in pairs(Classes.enum) do
 		if Classes.eng_form[class2]:lower() == class:lower() or class2 == class:lower() then
-			local explanation = nil
+			local explanation
 			if full then
 				explanation = Classes.explanation_advanced(class2)
-			else 
+			else
 				explanation = Classes.explanation(class2)
 			end
 

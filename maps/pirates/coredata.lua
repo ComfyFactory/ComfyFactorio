@@ -7,7 +7,7 @@ local _inspect = require 'utils.inspect'.inspect
 local Public = {}
 
 Public.scenario_id_name = 'pirates'
-Public.version_string = '1.2.13' --major.minor.patch versioning, to match factorio mod portal
+Public.version_string = '1.2.14' --major.minor.patch versioning, to match factorio mod portal
 
 Public.blueprint_library_allowed = true
 Public.blueprint_importing_allowed = true
