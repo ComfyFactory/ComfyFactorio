@@ -233,7 +233,7 @@ function Public.progress_to_destination(destination_index)
 		-- memory.mainshop_availability_bools.buy_fast_loader = true
 		-- memory.mainshop_availability_bools.sell_copper = true
 
-		memory.mainshop_availability_bools.repair_cannons = true
+		memory.mainshop_availability_bools.upgrade_cannons = true
 
 		local boat_for_sale_type = Common.current_destination().static_params.boat_for_sale_type
 		if boat_for_sale_type then
@@ -412,7 +412,7 @@ function Public.check_for_end_of_boat_movement(boat)
 			memory.mainshop_availability_bools.buy_copper = false
 			-- memory.mainshop_availability_bools.buy_fast_loader = false
 			-- memory.mainshop_availability_bools.sell_copper = false
-			memory.mainshop_availability_bools.repair_cannons = false
+			memory.mainshop_availability_bools.upgrade_cannons = false
 
 			memory.mainshop_availability_bools.extra_hold = false
 			memory.mainshop_availability_bools.upgrade_power = false

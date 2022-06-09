@@ -181,7 +181,7 @@ local function crew_tick()
 				PiratesApiOnTick.slower_boat_tick(60)
 				PiratesApiOnTick.raft_raids(60)
 				PiratesApiOnTick.place_cached_structures(60)
-
+				PiratesApiOnTick.update_alert_sound_frequency_tracker()
 
 				if destination.dynamic_data.timer then
 					destination.dynamic_data.timer = destination.dynamic_data.timer + 1

@@ -79,6 +79,7 @@ function Public.initialise_crew_memory(id) --mostly serves as a dev reference of
 
 	memory.available_classes_pool = nil
 
+	memory.seconds_until_alert_sound_can_be_played_again = 0
 	memory.crewplayerindices = nil
 	memory.spectatorplayerindices = nil
 	memory.tempbanned_from_joining_data = nil

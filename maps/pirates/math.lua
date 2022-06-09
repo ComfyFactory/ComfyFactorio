@@ -70,6 +70,36 @@ function Public.vector_sum(vec1, vec2)
 	return {x = vec1.x + vec2.x, y = vec1.y + vec2.y}
 end
 
+-- normalises vector to unit vector (length 1)
+-- if vector length is 0, returns {x = 0, y = 1} vector
+function Public.vector_norm(vec)
+	local vec_copy = { x = vec.x, y = vec.y}
+	local vec_length = Public.sqrt(vec_copy.x^2 + vec_copy.y^2)
+	if(vec_length == 0) then
+		vec_copy.x = 0
+		vec_copy.y = 1
+	else
+		vec_copy.x = vec_copy.x / vec_length
+		vec_copy.y = vec_copy.y / vec_length
+	end
+	return {x = vec_copy.x, y = vec_copy.y}
+end
+
+-- multiplies vec coordinates by scalar
+function Public.vector_scale(vec, scalar)
+	return {x = vec.x * scalar, y = vec.y * scalar}
+end
+
+-- returns vector which points from position to target
+function Public.vector_dir(pos_from, pos_target)
+	return {x = pos_target.x - pos_from.x, y = pos_target.y - pos_from.y}
+end
+
+
+function Public.random_float_in_range(from, to)
+	return Public.random() * (to - from) + from
+end
+
 function Public.snap_to_grid(point)
 	return {x = Public.ceil(point.x), y = Public.ceil(point.x)}
 end

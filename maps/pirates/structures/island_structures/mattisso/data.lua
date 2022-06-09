@@ -179,7 +179,7 @@ Public.small_primitive_mining_base = {
 			type = 'entities_minable',
 			name = 'burner-mining-drill',
 			force = 'ancient-friendly',
-			offset = {x = -1, y = -1},
+			offset = {x = 0, y = 0},
 			instances = {{position = {x = -4, y = -6}, direction = defines.direction.south}, {position = {x = -6, y = -4}, direction = defines.direction.east},{position = {x = 0, y = 1}, direction = defines.direction.south}, {position = {x = -2, y = 3}, direction = defines.direction.east},{position = {x = 5, y = 1}, direction = defines.direction.south}, {position = {x = 5, y = 5}, direction = defines.direction.north}}
 		},
 	},
