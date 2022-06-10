@@ -94,10 +94,9 @@ local function on_player_joined_game(event)
         Gui.call_existing_tab(player, 'Map Info')
     end
 end
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 
 Gui.add_tab_to_gui({name = module_name, caption = 'Map Info', id = create_map_intro_token, admin = false})
-
-Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 
 Gui.on_click(
     module_name,

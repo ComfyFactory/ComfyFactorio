@@ -135,6 +135,10 @@ function Public.reset_wave_defense()
     this.worm_unit_settings = {
         -- note that final health modifier isn't lower than 1
         scale_units_by_health = {
+            ['land-mine'] = 0.5, -- not active as of now
+            ['gun-turret'] = 0.5, -- not active as of now
+            ['flamethrower-turret'] = 0.4, -- not active as of now
+            ['artillery-turret'] = 0.25, -- not active as of now
             ['small-worm-turret'] = 0.8,
             ['medium-worm-turret'] = 0.6,
             ['big-worm-turret'] = 0.4,
