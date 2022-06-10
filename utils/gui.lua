@@ -577,6 +577,7 @@ end
 
 local function draw_main_frame(player)
     local tabs = main_gui_tabs
+
     Public.clear_all_active_frames(player)
 
     if Public.get_main_frame(player) then
@@ -584,7 +585,6 @@ local function draw_main_frame(player)
     end
 
     local frame, inside_frame = Public.add_main_frame_with_toolbar(player, 'left', main_frame_name, nil, close_button_name, 'Comfy Panel')
-
     local tabbed_pane = inside_frame.add({type = 'tabbed-pane', name = 'tabbed_pane'})
 
     for name, func in pairs(tabs) do
