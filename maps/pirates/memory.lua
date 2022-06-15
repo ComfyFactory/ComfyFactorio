@@ -116,6 +116,9 @@ function Public.initialise_crew_memory(id) --mostly serves as a dev reference of
 	memory.floating_pollution = nil
 
 	memory.playtesting_stats = nil
+
+	memory.cliff_explosives_acquired_once = false -- used to give tip by parrot what to do with them(only triggers from buying it in captain's cabin)
+	memory.hold_surface_destroyable_wooden_chests = nil
 end
 
 function Public.fallthrough_crew_memory() --could make this a metatable, but metatables and factorio global seem not to play nicely

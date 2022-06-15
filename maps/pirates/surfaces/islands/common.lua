@@ -288,73 +288,78 @@ function Public.assorted_structures_1(args, spec)
 		end
 	end
 
-	if nearby_chunks_generated_count == 4 then --should trigger only once per 4 chunks
-		local avgleft_top = {
-			x = (all_four_chunks[1].x + all_four_chunks[4].x)/2,
-			y = (all_four_chunks[1].y + all_four_chunks[4].y)/2,
-		}
-		local leftmost_topmost = {
-			x = avgleft_top.x - 16,
-			y = avgleft_top.y - 16,
-		}
+	if nearby_chunks_generated_count ~= 4 then return end --should trigger only once per 4 chunks
 
-		local spec2 = spec{x = avgleft_top.x + 16, y = avgleft_top.y + 16}
+	local avgleft_top = {
+		x = (all_four_chunks[1].x + all_four_chunks[4].x)/2,
+		y = (all_four_chunks[1].y + all_four_chunks[4].y)/2,
+	}
+	local leftmost_topmost = {
+		x = avgleft_top.x - 16,
+		y = avgleft_top.y - 16,
+	}
 
-		if rng < spec2.chanceper4chunks then
+	local spec2 = spec{x = avgleft_top.x + 16, y = avgleft_top.y + 16}
 
-			local rng2 = Math.random()
-			local struct
+	if rng > spec2.chanceper4chunks then return end
 
-			if overworldx <= 120 then
-				if rng2 < 20/100 then
-					struct = Structures.IslandStructures.ROC.lonely_storage_tank
-				elseif rng2 < 40/100 then
-					struct = Structures.IslandStructures.MATTISSO.small_crashed_ship
-				elseif rng2 < 50/100 then
-					struct = Structures.IslandStructures.MATTISSO.small_oilrig_base
-				elseif rng2 < 60/100 then
-					struct = Structures.IslandStructures.MATTISSO.small_abandoned_refinery
-				elseif rng2 < 70/100 then
-					struct = Structures.IslandStructures.MATTISSO.small_mining_base
-				else
-					struct = Structures.IslandStructures.MATTISSO.small_primitive_mining_base
-				end
-			elseif overworldx <= 240 then
-				if rng2 < 30/100 then
-					struct = Structures.IslandStructures.ROC.lonely_storage_tank
-				elseif rng2 < 40/100 then
-					struct = Structures.IslandStructures.MATTISSO.small_crashed_ship
-				elseif rng2 < 50/100 then
-					struct = Structures.IslandStructures.MATTISSO.small_oilrig_base
-				elseif rng2 < 70/100 then
-					struct = Structures.IslandStructures.MATTISSO.small_abandoned_refinery
-				elseif rng2 < 80/100 then
-					struct = Structures.IslandStructures.MATTISSO.small_mining_base
-				else
-					struct = Structures.IslandStructures.MATTISSO.small_solar_base
-				end
-			else
-				if rng2 < 10/100 then
-					struct = Structures.IslandStructures.ROC.lonely_storage_tank
-				elseif rng2 < 20/100 then
-					struct = Structures.IslandStructures.MATTISSO.small_crashed_ship
-				elseif rng2 < 40/100 then
-					struct = Structures.IslandStructures.MATTISSO.small_oilrig_base
-				elseif rng2 < 50/100 then
-					struct = Structures.IslandStructures.MATTISSO.small_abandoned_refinery
-				elseif rng2 < 60/100 then
-					struct = Structures.IslandStructures.MATTISSO.small_mining_base
-				elseif rng2 < 80/100 then
-					struct = Structures.IslandStructures.MATTISSO.small_solar_base
-				else
-					struct = Structures.IslandStructures.MATTISSO.small_roboport_base
-				end
-			end
+	local rng2 = Math.random()
+	local struct
 
-			if struct then
-				Structures.try_place(struct, args.specials, leftmost_topmost, 64, 64, function(p) return spec(p).placeable end)
-			end
+	if overworldx <= 120 then
+		if rng2 < 20/100 then
+			struct = Structures.IslandStructures.ROC.lonely_storage_tank
+		elseif rng2 < 40/100 then
+			struct = Structures.IslandStructures.MATTISSO.small_crashed_ship
+		elseif rng2 < 50/100 then
+			struct = Structures.IslandStructures.MATTISSO.small_oilrig_base
+		elseif rng2 < 60/100 then
+			struct = Structures.IslandStructures.MATTISSO.small_abandoned_refinery
+		elseif rng2 < 70/100 then
+			struct = Structures.IslandStructures.MATTISSO.small_mining_base
+		elseif rng2 < 80/100 then
+			struct = Structures.IslandStructures.MATTISSO.small_cliff_base
+		else
+			struct = Structures.IslandStructures.MATTISSO.small_primitive_mining_base
 		end
+	elseif overworldx <= 240 then
+		if rng2 < 30/100 then
+			struct = Structures.IslandStructures.ROC.lonely_storage_tank
+		elseif rng2 < 40/100 then
+			struct = Structures.IslandStructures.MATTISSO.small_crashed_ship
+		elseif rng2 < 50/100 then
+			struct = Structures.IslandStructures.MATTISSO.small_oilrig_base
+		elseif rng2 < 70/100 then
+			struct = Structures.IslandStructures.MATTISSO.small_abandoned_refinery
+		elseif rng2 < 80/100 then
+			struct = Structures.IslandStructures.MATTISSO.small_mining_base
+		elseif rng2 < 90/100 then
+			struct = Structures.IslandStructures.MATTISSO.small_cliff_base
+		else
+			struct = Structures.IslandStructures.MATTISSO.small_solar_base
+		end
+	else
+		if rng2 < 10/100 then
+			struct = Structures.IslandStructures.ROC.lonely_storage_tank
+		elseif rng2 < 20/100 then
+			struct = Structures.IslandStructures.MATTISSO.small_crashed_ship
+		elseif rng2 < 40/100 then
+			struct = Structures.IslandStructures.MATTISSO.small_oilrig_base
+		elseif rng2 < 50/100 then
+			struct = Structures.IslandStructures.MATTISSO.small_abandoned_refinery
+		elseif rng2 < 60/100 then
+			struct = Structures.IslandStructures.MATTISSO.small_mining_base
+		elseif rng2 < 80/100 then
+			struct = Structures.IslandStructures.MATTISSO.small_solar_base
+		elseif rng2 < 90/100 then
+			struct = Structures.IslandStructures.MATTISSO.small_cliff_base
+		else
+			struct = Structures.IslandStructures.MATTISSO.small_roboport_base
+		end
+	end
+
+	if struct then
+		Structures.try_place(struct, args.specials, leftmost_topmost, 64, 64, function(p) return spec(p).placeable_strict end, function(p) return spec(p).placeable_optional end)
 	end
 end
 

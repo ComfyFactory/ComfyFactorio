@@ -153,7 +153,7 @@ function Public.chunk_structures(args)
 
 		return {
 			placeable = noises.height(p) > 0.05 and noises.mood(p) > -0.6 and noises.farness(p) > 0.1,
-			chanceper4chunks = 0.4,
+			chanceper4chunks = 0.05,
 		}
 	end
 

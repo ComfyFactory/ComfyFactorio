@@ -211,81 +211,82 @@ end
 
 
 function Public.join_spectators(player, crewid)
-	if crewid > 0 then
-		Memory.set_working_id(crewid)
-		local memory = Memory.get_crew_memory()
+	if not (crewid > 0) then return end
 
-		local force = game.forces[string.format('crew-%03d', crewid)]
-		if not (force and force.valid and Common.validate_player(player)) then return end
+	Memory.set_working_id(crewid)
+	local memory = Memory.get_crew_memory()
 
-		local surface = game.surfaces[CoreData.lobby_surface_name]
+	local force = memory.force
+	if not (force and force.valid and Common.validate_player(player)) then return end
 
-		local adventuring = false
-		local spectating = false
-		if memory.crewstatus and memory.crewstatus == enum.ADVENTURING then
-			for _, playerindex in pairs(memory.crewplayerindices) do
-				if player.index == playerindex then adventuring = true end
-			end
-			for _, playerindex in pairs(memory.spectatorplayerindices) do
-				if player.index == playerindex then spectating = true end
-			end
+	local surface = game.surfaces[CoreData.lobby_surface_name]
+
+	local adventuring = false
+	local spectating = false
+	if memory.crewstatus and memory.crewstatus == enum.ADVENTURING then
+		for _, playerindex in pairs(memory.crewplayerindices) do
+			if player.index == playerindex then adventuring = true end
 		end
-		if not spectating then
-			if adventuring then
-				local char = player.character
-
-				if char and char.valid then
-					local p = char.position
-					-- local surface_name = char.surface.name
-					if p then
-						Common.notify_force(force, {'pirates.crew_to_spectator', player.name})
-						-- Server.to_discord_embed_raw(CoreData.comfy_emojis.feel .. '[' .. memory.name .. '] ' .. message)
-					end
-					-- if p then
-					-- 	Common.notify_force(force, message .. ' to become a spectator.' .. ' [gps=' .. Math.ceil(p.x) .. ',' .. Math.ceil(p.y) .. ',' .. surface_name ..']')
-					-- 	-- Server.to_discord_embed_raw(CoreData.comfy_emojis.feel .. '[' .. memory.name .. '] ' .. message)
-					-- end
-
-					Common.send_important_items_from_player_to_crew(player, true)
-					char.die(memory.force_name)
-
-					player.set_controller{type = defines.controllers.spectator}
-				else
-					Common.notify_force(force, {'pirates.crew_to_spectator', player.name})
-					-- Server.to_discord_embed_raw(CoreData.comfy_emojis.feel .. '[' .. memory.name .. '] ' .. message)
-					player.set_controller{type = defines.controllers.spectator}
-				end
-
-				local c = surface.create_entity{name = 'character', position = surface.find_non_colliding_position('character', Common.lobby_spawnpoint, 32, 0.5) or Common.lobby_spawnpoint, force = 'player'}
-
-				player.associate_character(c)
-
-				player.set_controller{type = defines.controllers.spectator}
-
-				memory.crewplayerindices = Utils.ordered_table_with_values_removed(memory.crewplayerindices, player.index)
-
-				Roles.player_left_so_redestribute_roles(player)
-			else
-				Public.player_abandon_endorsements(player)
-				local c = player.character
-				player.set_controller{type = defines.controllers.spectator}
-				player.teleport(memory.spawnpoint, game.surfaces[Common.current_destination().surface_name])
-				player.force = force
-				player.associate_character(c)
-
-				Common.notify_force(force, {'pirates.lobby_to_spectator', player.name})
-				Common.notify_lobby({'pirates.lobby_to_spectator_2', player.name, memory.name})
-			end
-			memory.spectatorplayerindices[#memory.spectatorplayerindices + 1] = player.index
-			memory.tempbanned_from_joining_data[player.index] = game.tick
-			-- if #Common.crew_get_crew_members() == 0 then
-			-- 	memory.crew_disband_tick = game.tick + 30
-			-- 	-- memory.crew_disband_tick = game.tick + 60*60*2 --give players time to log back in after a crash or save
-			-- end
-			if not (memory.difficulty_votes) then memory.difficulty_votes = {} end
-			memory.difficulty_votes[player.index] = nil
+		for _, playerindex in pairs(memory.spectatorplayerindices) do
+			if player.index == playerindex then spectating = true end
 		end
 	end
+
+	if spectating then return end
+
+	if adventuring then
+		local char = player.character
+
+		if char and char.valid then
+			local p = char.position
+			-- local surface_name = char.surface.name
+			if p then
+				Common.notify_force(force, {'pirates.crew_to_spectator', player.name})
+				-- Server.to_discord_embed_raw(CoreData.comfy_emojis.feel .. '[' .. memory.name .. '] ' .. message)
+			end
+			-- if p then
+			-- 	Common.notify_force(force, message .. ' to become a spectator.' .. ' [gps=' .. Math.ceil(p.x) .. ',' .. Math.ceil(p.y) .. ',' .. surface_name ..']')
+			-- 	-- Server.to_discord_embed_raw(CoreData.comfy_emojis.feel .. '[' .. memory.name .. '] ' .. message)
+			-- end
+
+			Common.send_important_items_from_player_to_crew(player, true)
+			char.die(memory.force_name)
+
+			player.set_controller{type = defines.controllers.spectator}
+		else
+			Common.notify_force(force, {'pirates.crew_to_spectator', player.name})
+			-- Server.to_discord_embed_raw(CoreData.comfy_emojis.feel .. '[' .. memory.name .. '] ' .. message)
+			player.set_controller{type = defines.controllers.spectator}
+		end
+
+		local c = surface.create_entity{name = 'character', position = surface.find_non_colliding_position('character', Common.lobby_spawnpoint, 32, 0.5) or Common.lobby_spawnpoint, force = 'player'}
+
+		player.associate_character(c)
+
+		player.set_controller{type = defines.controllers.spectator}
+
+		memory.crewplayerindices = Utils.ordered_table_with_values_removed(memory.crewplayerindices, player.index)
+
+		Roles.player_left_so_redestribute_roles(player)
+	else
+		Public.player_abandon_endorsements(player)
+		local c = player.character
+		player.set_controller{type = defines.controllers.spectator}
+		player.teleport(memory.spawnpoint, game.surfaces[Common.current_destination().surface_name])
+		player.force = force
+		player.associate_character(c)
+
+		Common.notify_force(force, {'pirates.lobby_to_spectator', player.name})
+		Common.notify_lobby({'pirates.lobby_to_spectator_2', player.name, memory.name})
+	end
+	memory.spectatorplayerindices[#memory.spectatorplayerindices + 1] = player.index
+	memory.tempbanned_from_joining_data[player.index] = game.tick
+	-- if #Common.crew_get_crew_members() == 0 then
+	-- 	memory.crew_disband_tick = game.tick + 30
+	-- 	-- memory.crew_disband_tick = game.tick + 60*60*2 --give players time to log back in after a crash or save
+	-- end
+	if not (memory.difficulty_votes) then memory.difficulty_votes = {} end
+	memory.difficulty_votes[player.index] = nil
 end
 
 
@@ -324,79 +325,78 @@ end
 
 
 function Public.join_crew(player, crewid, rejoin)
-	if crewid then
-		Memory.set_working_id(crewid)
-		local memory = Memory.get_crew_memory()
+	if not crewid then return end
 
-		if not Common.validate_player(player) then return end
+	Memory.set_working_id(crewid)
+	local memory = Memory.get_crew_memory()
 
-		-- local startsurface = game.surfaces[CoreData.lobby_surface_name]
+	if not Common.validate_player(player) then return end
 
-		local boat = memory.boat
-		local surface
-		if boat and boat.surface_name and game.surfaces[boat.surface_name] and game.surfaces[boat.surface_name].valid then
-			surface = game.surfaces[boat.surface_name]
-		else
-			surface = game.surfaces[Common.current_destination().surface_name]
+	-- local startsurface = game.surfaces[CoreData.lobby_surface_name]
+
+	local boat = memory.boat
+	local surface
+	if boat and boat.surface_name and game.surfaces[boat.surface_name] and game.surfaces[boat.surface_name].valid then
+		surface = game.surfaces[boat.surface_name]
+	else
+		surface = game.surfaces[Common.current_destination().surface_name]
+	end
+
+	-- local adventuring = false
+	local spectating = false
+	if memory.crewstatus and memory.crewstatus == enum.ADVENTURING then
+		-- for _, playerindex in pairs(memory.crewplayerindices) do
+		-- 	if player.index == playerindex then adventuring = true end
+		-- end
+		for _, playerindex in pairs(memory.spectatorplayerindices) do
+			if player.index == playerindex then spectating = true end
+		end
+	end
+
+	if spectating then
+		local chars = player.get_associated_characters()
+		for _, char in pairs(chars) do
+				char.destroy()
 		end
 
-		-- local adventuring = false
-		local spectating = false
-		if memory.crewstatus and memory.crewstatus == enum.ADVENTURING then
-			-- for _, playerindex in pairs(memory.crewplayerindices) do
-			-- 	if player.index == playerindex then adventuring = true end
-			-- end
-			for _, playerindex in pairs(memory.spectatorplayerindices) do
-				if player.index == playerindex then spectating = true end
-			end
+		player.teleport(surface.find_non_colliding_position('character', memory.spawnpoint, 32, 0.5) or memory.spawnpoint, surface)
+
+		player.set_controller{type = defines.controllers.god}
+		player.create_character()
+
+		memory.spectatorplayerindices = Utils.ordered_table_with_values_removed(memory.spectatorplayerindices, player.index)
+	else
+		Public.player_abandon_endorsements(player)
+		player.force = memory.force
+		player.teleport(surface.find_non_colliding_position('character', memory.spawnpoint, 32, 0.5) or memory.spawnpoint, surface)
+
+	Common.notify_lobby({'pirates.lobby_to_crew_2', player.name, memory.name})
+	end
+
+	Common.notify_force(player.force, {'pirates.lobby_to_crew', player.name})
+	-- Server.to_discord_embed_raw(CoreData.comfy_emojis.yum1 .. '[' .. memory.name .. '] ' .. message)
+
+	memory.crewplayerindices[#memory.crewplayerindices + 1] = player.index
+
+	-- don't give them items if they've been in the crew recently:
+	if not (memory.tempbanned_from_joining_data and memory.tempbanned_from_joining_data[player.index]) and (not rejoin) then --just using tempbanned_from_joining_data as a quick proxy for whether the player has ever been in this run before
+		for item, amount in pairs(Balance.starting_items_player_late) do
+			player.insert({name = item, count = amount})
 		end
+	end
 
-		if spectating then
-			local chars = player.get_associated_characters()
-			for _, char in pairs(chars) do
-					char.destroy()
-			end
+	Roles.confirm_captain_exists(player)
 
-			player.teleport(surface.find_non_colliding_position('character', memory.spawnpoint, 32, 0.5) or memory.spawnpoint, surface)
+	if #Common.crew_get_crew_members() == 1 and memory.crew_disband_tick then
+		memory.crew_disband_tick = nil --to prevent disbanding the crew after saving the game (booting everyone) and loading it again (joining the crew as the only member)
+	end
 
-			player.set_controller{type = defines.controllers.god}
-			player.create_character()
+	if memory.overworldx > 0 then
+		local color = CoreData.difficulty_options[memory.difficulty_option].associated_color
 
-			memory.spectatorplayerindices = Utils.ordered_table_with_values_removed(memory.spectatorplayerindices, player.index)
-		else
-			Public.player_abandon_endorsements(player)
-			player.force = game.forces[string.format('crew-%03d', memory.id)]
-			player.teleport(surface.find_non_colliding_position('character', memory.spawnpoint, 32, 0.5) or memory.spawnpoint, surface)
-
-		Common.notify_lobby({'pirates.lobby_to_crew_2', player.name, memory.name})
-		end
-
-		Common.notify_force(player.force, {'pirates.lobby_to_crew', player.name})
-		-- Server.to_discord_embed_raw(CoreData.comfy_emojis.yum1 .. '[' .. memory.name .. '] ' .. message)
-
-		memory.crewplayerindices[#memory.crewplayerindices + 1] = player.index
-
-		-- don't give them items if they've been in the crew recently:
-		if not (memory.tempbanned_from_joining_data and memory.tempbanned_from_joining_data[player.index]) and (not rejoin) then --just using tempbanned_from_joining_data as a quick proxy for whether the player has ever been in this run before
-			for item, amount in pairs(Balance.starting_items_player_late) do
-				player.insert({name = item, count = amount})
-			end
-		end
-
-		Roles.confirm_captain_exists(player)
-
-		if #Common.crew_get_crew_members() == 1 and memory.crew_disband_tick then
-			memory.crew_disband_tick = nil --to prevent disbanding the crew after saving the game (booting everyone) and loading it again (joining the crew as the only member)
-		end
-
-		if memory.overworldx > 0 then
-			local color = CoreData.difficulty_options[memory.difficulty_option].associated_color
-
-			Common.notify_player_announce(player, {'pirates.personal_join_string_1', memory.name, CoreData.capacity_options[memory.capacity_option].text3, color.r, color.g, color.b, CoreData.difficulty_options[memory.difficulty_option].text})
-		else
-			Common.notify_player_announce(player, {'pirates.personal_join_string_1', memory.name, CoreData.capacity_options[memory.capacity_option].text3})
-		end
-
+		Common.notify_player_announce(player, {'pirates.personal_join_string_1', memory.name, CoreData.capacity_options[memory.capacity_option].text3, color.r, color.g, color.b, CoreData.difficulty_options[memory.difficulty_option].text})
+	else
+		Common.notify_player_announce(player, {'pirates.personal_join_string_1', memory.name, CoreData.capacity_options[memory.capacity_option].text3})
 	end
 end
 
@@ -680,15 +680,15 @@ function Public.initialise_crew(accepted_proposal)
 
 	memory.id = new_id
 
-	memory.force_name = string.format('crew-%03d', new_id)
-	memory.enemy_force_name = string.format('enemy-%03d', new_id)
-	memory.ancient_enemy_force_name = string.format('ancient-hostile-%03d', new_id)
-	memory.ancient_friendly_force_name = string.format('ancient-friendly-%03d', new_id)
+	memory.force_name = Common.get_crew_force_name(new_id)
+	memory.enemy_force_name = Common.get_enemy_force_name(new_id)
+	memory.ancient_enemy_force_name = Common.get_ancient_hostile_force_name(new_id)
+	memory.ancient_friendly_force_name = Common.get_ancient_friendly_force_name(new_id)
 
-	memory.force = game.forces[string.format('crew-%03d', new_id)]
-	memory.enemy_force = game.forces[string.format('enemy-%03d', new_id)]
-	memory.ancient_enemy_force = game.forces[string.format('ancient-hostile-%03d', new_id)]
-	memory.ancient_friendly_force = game.forces[string.format('ancient-friendly-%03d', new_id)]
+	memory.force = game.forces[memory.force_name]
+	memory.enemy_force = game.forces[memory.enemy_force_name]
+	memory.ancient_enemy_force = game.forces[memory.ancient_enemy_force_name]
+	memory.ancient_friendly_force = game.forces[memory.ancient_friendly_force_name]
 
 	memory.evolution_factor = 0
 
@@ -742,13 +742,14 @@ function Public.initialise_crew(accepted_proposal)
 	memory.overworldx = 0
 	memory.overworldy = 0
 
+	memory.hold_surface_destroyable_wooden_chests = {}
+
 	memory.seaname = SurfacesCommon.encode_surface_name(memory.id, 0, SurfacesCommon.enum.SEA, enum.DEFAULT)
 
 	local surface = game.surfaces[CoreData.lobby_surface_name]
 	memory.spawnpoint = Common.lobby_spawnpoint
 
-	local crew_force = game.forces[string.format('crew-%03d', new_id)]
-	crew_force.set_spawn_position(memory.spawnpoint, surface)
+	memory.force.set_spawn_position(memory.spawnpoint, surface)
 
 	local message = {'pirates.crew_launch', accepted_proposal.name}
 	Common.notify_game(message)
@@ -792,10 +793,10 @@ end
 
 
 function Public.reset_crew_and_enemy_force(id)
-	local crew_force = game.forces[string.format('crew-%03d', id)]
-	local enemy_force = game.forces[string.format('enemy-%03d', id)]
-	local ancient_friendly_force = game.forces[string.format('ancient-friendly-%03d', id)]
-	local ancient_enemy_force = game.forces[string.format('ancient-hostile-%03d', id)]
+	local crew_force = game.forces[Common.get_crew_force_name(id)]
+	local enemy_force = game.forces[Common.get_enemy_force_name(id)]
+	local ancient_friendly_force = game.forces[Common.get_ancient_friendly_force_name(id)]
+	local ancient_enemy_force = game.forces[Common.get_ancient_hostile_force_name(id)]
 
 	crew_force.reset()
 	enemy_force.reset()

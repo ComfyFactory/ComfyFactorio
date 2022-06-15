@@ -78,7 +78,7 @@ function Public.create_step2_entities()
 	local position = quest_structure_data.position
 	local hardcoded_data = Public.Data.step2
 
-	quest_structure_data.market = surface.create_entity{name = 'market', position = Math.vector_sum(position, hardcoded_data.market), force = string.format('ancient-friendly-%03d', memory.id)}
+	quest_structure_data.market = surface.create_entity{name = 'market', position = Math.vector_sum(position, hardcoded_data.market), force = memory.ancient_friendly_force_name}
 	if quest_structure_data.market and quest_structure_data.market.valid then
 		quest_structure_data.market.minable = false
 		quest_structure_data.market.rotatable = false
@@ -118,7 +118,7 @@ function Public.create_step2_entities()
 
 	quest_structure_data.wooden_chests = {}
 	for k, p in ipairs(hardcoded_data.wooden_chests) do
-		local e = surface.create_entity{name = 'wooden-chest', position = Math.vector_sum(position, p), force = string.format('ancient-friendly-%03d', memory.id)}
+		local e = surface.create_entity{name = 'wooden-chest', position = Math.vector_sum(position, p), force = memory.ancient_friendly_force_name}
 		if e and e.valid then
 			e.minable = false
 			e.rotatable = false

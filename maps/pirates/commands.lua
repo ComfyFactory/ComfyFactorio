@@ -43,7 +43,8 @@ local GUIcolor = require 'maps.pirates.gui.color'
 
 
 local function cmd_set_memory(cmd)
-	local crew_id = tonumber(string.sub(game.players[cmd.player_index].force.name, -3, -1)) or nil
+	local player = game.players[cmd.player_index]
+	local crew_id = Common.get_id_from_force_name(player.force.name)
 	Memory.set_working_id(crew_id)
 end
 
@@ -187,16 +188,9 @@ function(cmd)
 
 	--local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-		Memory.set_working_id(crew_id)
 		Crew.summon_crew()
 	end
 end)
-
-
-
-
 
 commands.add_command(
 'ok',
@@ -1048,22 +1042,6 @@ if _DEBUG then
 	'piratux_test',
 	'is a dev command of piratux.',
 	function(cmd)
-		cmd_set_memory(cmd)
-		local param = tostring(cmd.parameter)
 
-		if check_admin(cmd) then
-			local memory = Memory.get_crew_memory()
-			local player = game.players[cmd.player_index]
-
-			local spawners_biters = player.surface.find_entities_filtered{position = player.position, radius = 50, force = memory.enemy_force_name}
-			player.print('size: ' .. #spawners_biters)
-			for _, biter in pairs(spawners_biters) do
-				if biter and biter.valid then
-					if string.sub(biter.force.name, 1, 5) == 'enemy' then
-						player.print('biter[' .. biter.unit_number .. ']: pos: ' .. biter.position.x .. ', ' .. biter.position.y .. ', name: ' .. biter.name)
-					end
-				end
-			end
-		end
 	end)
 end

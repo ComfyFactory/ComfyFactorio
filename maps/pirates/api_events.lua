@@ -5,6 +5,7 @@ local Memory = require 'maps.pirates.memory'
 local Balance = require 'maps.pirates.balance'
 local Math = require 'maps.pirates.math'
 local Common = require 'maps.pirates.common'
+local SurfacesCommon = require 'maps.pirates.surfaces.common'
 local CoreData = require 'maps.pirates.coredata'
 local Utils = require 'maps.pirates.utils_local'
 local _inspect = require 'utils.inspect'.inspect
@@ -99,11 +100,11 @@ end
 
 
 local function biters_chew_stuff_faster(event)
-	-- local memory = Memory.get_crew_memory()
+	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 
 	if not (event.cause and event.cause.valid and event.cause.force and event.cause.force.name and event.entity and event.entity.valid and event.entity.force and event.entity.force.name) then return end
-	if string.sub(event.cause.force.name, 1, 5) ~= 'enemy' then return end --Enemy Forces only
+	if event.cause.force.name ~= memory.enemy_force_name then return end --Enemy Forces only
 
 	if (event.entity.force.index == 3 or event.entity.force.name == 'environment') then
 		event.entity.health = event.entity.health - event.final_damage_amount * 5
@@ -216,7 +217,7 @@ local function damage_to_artillery(event)
 
 
 	if (event.cause.name == 'small-biter') or (event.cause.name == 'small-spitter') or (event.cause.name == 'medium-biter') or (event.cause.name == 'medium-spitter') or (event.cause.name == 'big-biter') or (event.cause.name == 'big-spitter') or (event.cause.name == 'behemoth-biter') or (event.cause.name == 'behemoth-spitter') then
-		if string.sub(event.cause.force.name, 1, 5) ~= 'enemy' then return end
+		if event.cause.force.name ~= memory.enemy_force_name then return end
 
 		-- play alert sound for all crew members
 		if memory.seconds_until_alert_sound_can_be_played_again <= 0 then
@@ -241,17 +242,18 @@ end
 
 local function damage_to_krakens(event)
 
-	if not (event.entity and event.entity.valid and event.entity.name and event.entity.name == 'biter-spawner') then return end
-
-	if string.sub(event.entity.force.name, 1, 5) ~= 'enemy' then
-		return
-	end
+	if not event.entity then return end
+	if not event.entity.valid then return end
+	if not event.entity.name then return end
+	if event.entity.name ~= 'biter-spawner' then return end
 
 	if not event.cause then return end
 	if not event.cause.valid then return end
 	if not event.cause.name then return end
 
 	local memory = Memory.get_crew_memory()
+
+	if event.entity.force.name ~= memory.enemy_force_name then return end
 
 	local surface_name = memory.boat and memory.boat.surface_name
 	if not (surface_name == memory.sea_name) then return end
@@ -321,7 +323,7 @@ local function damage_to_players_changes(event)
 		end
 	end
 
-	if string.sub(event.cause.force.name, 1, 5) == 'enemy' then
+	if event.cause.force.name == memory.enemy_force_name then
 		damage_multiplier = damage_multiplier * (1 + Balance.biter_timeofday_bonus_damage(event.cause.surface.darkness))
 	end --Enemy Forces
 
@@ -363,8 +365,10 @@ local function other_enemy_damage_bonuses(event)
 
 	if event.damage_type.name == 'impact' then return end --avoid circularity
 
+	local memory = Memory.get_crew_memory()
+
 	-- if not (event.cause.name == 'small-biter') or (event.cause.name == 'small-spitter') or (event.cause.name == 'medium-biter') or (event.cause.name == 'medium-spitter') or (event.cause.name == 'big-biter') or (event.cause.name == 'big-spitter') or (event.cause.name == 'behemoth-biter') or (event.cause.name == 'behemoth-spitter') then return end
-	if string.sub(event.cause.force.name, 1, 5) ~= 'enemy' then return end --Enemy Forces
+	if event.cause.force.name ~= memory.enemy_force_name then return end --Enemy Forces
 
 	local bonusDamage = event.final_damage_amount * Balance.biter_timeofday_bonus_damage(event.cause.surface.darkness)
 
@@ -472,7 +476,7 @@ end
 
 
 local function swamp_resist_poison(event)
-	-- local memory = Memory.get_crew_memory()
+	local memory = Memory.get_crew_memory()
 
 	local entity = event.entity
 	if not entity.valid then return end
@@ -484,7 +488,7 @@ local function swamp_resist_poison(event)
 
 	if not (destination.surface_name == entity.surface.name) then return end
 
-	if not ((entity.type and entity.type == 'tree') or (event.entity.force and string.sub(event.entity.force.name, 1, 5) == 'enemy')) then return end
+	if not ((entity.type and entity.type == 'tree') or (event.entity.force and event.entity.force.name == memory.enemy_force_name)) then return end
 
 	local damage = event.final_damage_amount
 	event.entity.health = event.entity.health + damage
@@ -529,7 +533,7 @@ end
 
 -- 	if not (event.entity and event.entity.valid and event.entity.force and event.entity.force.valid) then return end
 
--- 	if not string.sub(event.entity.force.name, 1, 5) == 'enemy' then return end
+-- 	if event.entity.force.name ~= memory.enemy_force_name then return end
 -- 	local evo = memory.evolution_factor
 
 -- 	if evo and evo > 1 and event.final_health > 0 then --lethal damage needs to be unaffected, else they never die
@@ -552,11 +556,10 @@ end
 
 local function event_on_entity_damaged(event)
 
-	-- figure out which crew this is about:
 	local crew_id = nil
-	if not crew_id and event.entity.surface.valid then crew_id = tonumber(string.sub(event.entity.surface.name, 1, 3)) or nil end
-	if not crew_id and event.force.valid then crew_id = tonumber(string.sub(event.force.name, -3, -1)) or nil end
-	if not crew_id and event.entity.valid then crew_id = tonumber(string.sub(event.entity.force.name, -3, -1)) or nil end
+	if not crew_id and event.entity.surface.valid then crew_id = SurfacesCommon.decode_surface_name(event.entity.surface.name).crewid end
+	if not crew_id and event.force.valid then crew_id = Common.get_id_from_force_name(event.force.name) end
+	if not crew_id and event.entity.valid then crew_id = Common.get_id_from_force_name(event.entity.force.name) end
 	Memory.set_working_id(crew_id)
 
 	-- local memory = Memory.get_crew_memory()
@@ -693,7 +696,7 @@ end
 -- local function event_pre_player_mined_item(event)
 -- 	-- figure out which crew this is about:
 -- 	-- local crew_id = nil
--- 	-- if event.player_index and game.players[event.player_index].valid then crew_id = tonumber(string.sub(game.players[event.player_index].force.name, -3, -1)) or nil end
+-- 	-- if event.player_index and game.players[event.player_index].valid then crew_id = Common.get_id_from_force_name(game.players[event.player_index].force.name) end
 -- 	-- Memory.set_working_id(crew_id)
 -- 	-- local memory = Memory.get_crew_memory()
 
@@ -709,8 +712,8 @@ end
 local function event_on_player_mined_entity(event)
 	if not event.player_index then return end
 	local player = game.players[event.player_index]
-	if not game.players[event.player_index].valid then return end
-	local crew_id = tonumber(string.sub(game.players[event.player_index].force.name, -3, -1)) or nil
+	if not player.valid then return end
+	local crew_id = Common.get_id_from_force_name(player.force.name)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
@@ -1058,9 +1061,7 @@ local function event_on_entity_died(event)
 	if not (entity and entity.valid) then return end
 	if not (event.force and event.force.valid) then return end
 
-	local crew_id = nil
-	if not crew_id and event.force.valid then crew_id = tonumber(string.sub(event.force.name, -3, -1)) or nil end
-	if not crew_id and entity.valid then crew_id = tonumber(string.sub(entity.force.name, -3, -1)) or nil end
+	local crew_id = Common.get_id_from_force_name(entity.force.name)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
 	if memory.id == 0 then return end
@@ -1147,7 +1148,7 @@ local function event_on_research_finished(event)
 	-- figure out which crew this is about:
 	local research = event.research
 	local p_force = research.force
-	local crew_id = tonumber(string.sub(p_force.name, -3, -1)) or nil
+	local crew_id = Common.get_id_from_force_name(p_force.name)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
 
@@ -1338,7 +1339,7 @@ local function event_on_pre_player_left_game(event)
 
 	local global_memory = Memory.get_global_memory()
 	-- figure out which crew this is about:
-	local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or 0
+	local crew_id = Common.get_id_from_force_name(player.force.name)
 
 	for k, proposal in pairs(global_memory.crewproposals) do
 		for k2, i in pairs(proposal.endorserindices) do
@@ -1352,7 +1353,7 @@ local function event_on_pre_player_left_game(event)
 		end
 	end
 
-	if crew_id == 0 then
+	if not crew_id then
 		if player.character and player.character.valid then
 			player.character.destroy()
 		end
@@ -1433,8 +1434,6 @@ function Public.player_entered_vehicle(player, vehicle)
 
 	local player_relative_pos = {x = player.position.x - vehicle.position.x, y = player.position.y - vehicle.position.y}
 
-	local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
 
 	local player_boat_relative_pos
@@ -1447,6 +1446,10 @@ function Public.player_entered_vehicle(player, vehicle)
 	local surfacedata = Surfaces.SurfacesCommon.decode_surface_name(player.surface.name)
 
 	if vehicle.name == 'car' then
+		-- a way to make simple cars work
+		if vehicle.minable then
+			return
+		end
 
 		if surfacedata.type ~= Surfaces.enum.CROWSNEST and surfacedata.type ~= Surfaces.enum.CABIN and surfacedata.type ~= Surfaces.enum.LOBBY then
 			if player_boat_relative_pos.x < -47 then
@@ -1487,8 +1490,7 @@ local function event_on_player_driving_changed_state(event)
 	local player = game.players[event.player_index]
 	local vehicle = event.entity
 
-	-- figure out which crew this is about:
-	local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+	local crew_id = Common.get_id_from_force_name(player.force.name)
 	Memory.set_working_id(crew_id)
 
 	Public.player_entered_vehicle(player, vehicle)
@@ -1609,7 +1611,7 @@ function Public.event_on_chunk_generated(event)
 					destination.dynamic_data.buried_treasure[#destination.dynamic_data.buried_treasure + 1] = {treasure = Loot.buried_treasure_loot(), position = special.position}
 				end
 			elseif special.name and special.name == 'chest' then
-				local e = surface.create_entity{name = 'wooden-chest', position = special.position, force = string.format('ancient-friendly-%03d', memory.id)}
+				local e = surface.create_entity{name = 'wooden-chest', position = special.position, force = memory.ancient_friendly_force_name}
 				if e and e.valid then
 					e.minable = false
 					e.rotatable = false
@@ -1656,7 +1658,7 @@ end
 
 local function event_on_rocket_launched(event)
 	-- figure out which crew this is about:
-	local crew_id = tonumber(string.sub(event.rocket.force.name, -3, -1)) or nil
+	local crew_id = Common.get_id_from_force_name(event.rocket.force.name)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
@@ -1698,15 +1700,18 @@ end
 
 local function event_on_built_entity(event)
     local entity = event.created_entity
-    if not entity or not entity.valid then
-        return
-    end
+	if not entity then return end
+	if not entity.valid then return end
 
-	local crew_id = nil
-	if event.player_index and game.players[event.player_index].valid then crew_id = tonumber(string.sub(game.players[event.player_index].force.name, -3, -1)) or nil end
+	if not event.player_index then return end
+	if not game.players[event.player_index] then return end
+	if not game.players[event.player_index].valid then return end
+
+	local player = game.players[event.player_index]
+	local crew_id = Common.get_id_from_force_name(player.force.name)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
-	local player = game.players[event.player_index]
+
 
     if entity.type == 'entity-ghost' and entity.force and entity.force.valid then
         entity.time_to_live = entity.force.ghost_time_to_live
@@ -1755,13 +1760,11 @@ local function event_on_console_chat(event)
     --     return
     -- end
 
-	local message_force_name = player.force.name
-
-	local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+	local crew_id = Common.get_id_from_force_name(player.force.name)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
 
-    if message_force_name == 'player' then
+    if player.force.name == 'player' then
 		local other_force_indices = global_memory.crew_active_ids
 
 		for _, index in pairs(other_force_indices) do
@@ -1826,7 +1829,7 @@ local boost_movement_speed_on_respawn =
 local function event_on_player_respawned(event)
 	local player = game.players[event.player_index]
 
-	local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+	local crew_id = Common.get_id_from_force_name(player.force.name)
 
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()

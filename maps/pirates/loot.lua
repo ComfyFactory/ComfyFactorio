@@ -258,6 +258,33 @@ function Public.stone_furnace_loot()
 		{name = 'coal', count = 50},
 	}
 end
+
+function Public.assembling_machine_loot()
+	-- not sure if similar table exists already, but I couldn't find any
+	local loot_table = {
+		'transport-belt',
+		'underground-belt',
+		'splitter',
+		'inserter',
+		'long-handed-inserter',
+		'fast-inserter',
+		'small-electric-pole',
+		'medium-electric-pole',
+		'pipe',
+		'pipe-to-ground',
+		'small-lamp',
+		'repair-pack',
+		'iron-stick',
+		'iron-gear-wheel',
+		'stone-wall',
+	}
+
+	local index = Math.random(#loot_table)
+
+	-- even though count is bigger than the stack size, it will automatically delete excess items
+	return {name = loot_table[index], count = 200}
+end
+
 function Public.storage_tank_fluid_loot(force_type)
 	local ret
 	local rng = Math.random(10)

@@ -82,6 +82,7 @@ function Public.configure_structure_entities(special_name, components)
 		for _, e in pairs(c.built_entities) do
 			if e and e.valid then
 				e.update_connections()
+
 				if e.name == 'iron-chest' then
 					local inv = e.get_inventory(defines.inventory.chest)
 					local loot = Loot.iron_chest_loot()
@@ -141,6 +142,27 @@ function Public.configure_structure_entities(special_name, components)
 						local l = loot[i]
 						inv.insert(l)
 					end
+				elseif special_name == 'small_cliff_base' then
+					-- this is to make friendly gun turrets work
+					e.force = memory.force
+
+					if e.name == 'boiler' or e.name == 'burner-mining-drill' then
+						local inv = e.get_inventory(defines.inventory.fuel)
+						local loot = Loot.stone_furnace_loot()
+						for i = 1, #loot do
+							local l = loot[i]
+							inv.insert(l)
+						end
+					elseif e.name == 'assembling-machine-2' then
+						local inv = e.get_output_inventory()
+						local loot = Loot.assembling_machine_loot()
+						e.set_recipe(loot.name)
+						inv.insert(loot)
+
+						e.operable = false
+					elseif e.type == 'resource' then
+						e.minable = true
+					end
 				end
 
 				if force_name and string.sub(force_name, 1, 15) and string.sub(force_name, 1, 15) == 'ancient-hostile' then
@@ -162,12 +184,12 @@ function Public.configure_structure_entities(special_name, components)
 end
 
 
-function Public.try_place(structureScope, specialsTable, left_top, areawidth, areaheight, placeability_function)
+function Public.try_place(structureScope, specialsTable, left_top, areawidth, areaheight, placeability_function_strict, placeability_function_optional)
 	local structureData = structureScope.Data
 
-	local attempts = 6
+	local attempts = 3
 	local succeeded = false
-
+	
 	while attempts > 0 and (not succeeded) do
 		attempts = attempts - 1
 
@@ -192,22 +214,49 @@ function Public.try_place(structureScope, specialsTable, left_top, areawidth, ar
 			y = structure_topleft.y + structureData.height,
 		}
 
-		if placeability_function(structure_topleft) and placeability_function(structure_topright) and placeability_function(structure_bottomleft) and placeability_function(structure_bottomright) and placeability_function(structure_center) then
-			specialsTable[#specialsTable + 1] = {
-				position = structure_center,
-				components = structureData.components,
-				width = structureData.width,
-				height = structureData.height,
-				name = structureData.name,
-			}
-			succeeded = true
-			if _DEBUG then
-				log('structure_yes: ' .. structureData.name .. ' at ' .. structure_center.x .. ', ' .. structure_center.y)
+		--game.print('trying: structure_yes: ' .. structureData.name .. ' at ' .. structure_center.x .. ', ' .. structure_center.y)
+
+		local positions_to_check = {structure_topleft, structure_topright, structure_bottomleft, structure_bottomright, structure_center}
+
+		local placable_strict_count = 0
+		for _, pos in pairs(positions_to_check) do
+			if placeability_function_strict(pos) then
+				placable_strict_count = placable_strict_count + 1
 			end
-		-- else
-		-- 	-- if _DEBUG then
-		-- 	-- 	log('structure_no: ' .. structureData.name .. ' at ' .. structure_center.x .. ', ' .. structure_center.y)
-		-- 	-- end
+		end
+
+		-- check if positions aren't in water
+		if placable_strict_count == #positions_to_check then
+
+			local placable_optional_count = 0
+			for _, pos in pairs(positions_to_check) do
+				if placeability_function_optional(pos) then
+					placable_optional_count = placable_optional_count + 1
+				end
+			end
+
+			-- check if at least single position is not in forest, to lower the chance of structure being completely surrounded by forest
+			if placable_optional_count >= 1 then
+				specialsTable[#specialsTable + 1] = {
+					position = structure_center,
+					components = structureData.components,
+					width = structureData.width,
+					height = structureData.height,
+					name = structureData.name,
+				}
+				succeeded = true
+
+
+				if _DEBUG then
+					--game.print('success: structure_yes: ' .. structureData.name .. ' at ' .. structure_center.x .. ', ' .. structure_center.y)
+					log('structure_yes: ' .. structureData.name .. ' at ' .. structure_center.x .. ', ' .. structure_center.y)
+				end
+			end
+
+			-- else
+			-- 	-- if _DEBUG then
+			-- 	-- 	log('structure_no: ' .. structureData.name .. ' at ' .. structure_center.x .. ', ' .. structure_center.y)
+			-- 	-- end
 		end
 	end
 end

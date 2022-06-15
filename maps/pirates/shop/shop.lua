@@ -134,7 +134,7 @@ function Public.event_on_market_item_purchased(event)
 	local player = game.players[player_index]
 	if not (market and market.valid and offer_index and Common.validate_player(player)) then return end
 
-	local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+	local crew_id = Common.get_id_from_force_name(player.force.name)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
@@ -357,6 +357,13 @@ function Public.event_on_market_item_purchased(event)
 
 	if thisPurchaseData.offer_giveitem_name and thisPurchaseData.offer_giveitem_name == 'coin' and refunds < trade_count then
 		memory.playtesting_stats.coins_gained_by_markets = memory.playtesting_stats.coins_gained_by_markets + thisPurchaseData.offer_giveitem_count
+	end
+
+	if thisPurchaseData.offer_type == 'give-item' and thisPurchaseData.offer_giveitem_name == 'cliff-explosives' then
+		if not memory.cliff_explosives_acquired_once then
+			memory.cliff_explosives_acquired_once = true
+			Common.parrot_speak(memory.force, {'pirates.parrot_cliff_explosive_tip'})
+		end
 	end
 end
 

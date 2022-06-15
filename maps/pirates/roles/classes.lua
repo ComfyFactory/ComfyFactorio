@@ -307,7 +307,7 @@ local function class_on_player_used_capsule(event)
     end
 	local player_index = player.index
 
-	local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+	local crew_id = Common.get_id_from_force_name(player.force.name)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
 

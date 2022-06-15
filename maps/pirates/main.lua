@@ -117,11 +117,11 @@ local function on_init()
 
 	game.create_force('environment')
 	for id = 1, 3, 1 do
-		game.create_force(string.format('enemy-%03d', id))
-		game.create_force(string.format('ancient-friendly-%03d', id))
-		game.create_force(string.format('ancient-hostile-%03d', id))
+		game.create_force(Common.get_enemy_force_name(id))
+		game.create_force(Common.get_ancient_friendly_force_name(id))
+		game.create_force(Common.get_ancient_hostile_force_name(id))
 
-		local crew_force = game.create_force(string.format('crew-%03d', id))
+		local crew_force = game.create_force(Common.get_crew_force_name(id))
 
 		Crew.reset_crew_and_enemy_force(id)
 		crew_force.research_queue_enabled = true
@@ -182,6 +182,7 @@ local function crew_tick()
 				PiratesApiOnTick.raft_raids(60)
 				PiratesApiOnTick.place_cached_structures(60)
 				PiratesApiOnTick.update_alert_sound_frequency_tracker()
+				PiratesApiOnTick.check_for_cliff_explosives_in_hold_wooden_chests()
 
 				if destination.dynamic_data.timer then
 					destination.dynamic_data.timer = destination.dynamic_data.timer + 1
@@ -291,8 +292,7 @@ local function global_tick()
 
 	if tick % 30 == 0 then
 		for _, player in pairs(game.connected_players) do
-			-- figure out which crew this is about:
-			local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or 0
+			local crew_id = Common.get_id_from_force_name(player.force.name)
 			Memory.set_working_id(crew_id)
 			Roles.update_tags(player)
 		end

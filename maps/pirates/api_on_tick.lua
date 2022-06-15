@@ -425,6 +425,22 @@ local function cached_structure_delete_existing_entities_if_needed(surface, posi
 	end
 end
 
+local function cached_structure_delete_existing_unwalkable_tiles_if_needed(surface, position, special)
+	local area = {left_top = {position.x - special.width/2, position.y - special.height/2}, right_bottom = {position.x + special.width/2 + 0.5, position.y + special.height/2 + 0.5}}
+	local existing = surface.find_tiles_filtered{area = area, collision_mask = "water-tile"}
+	if existing then
+		local tiles = {}
+
+		for _, t in pairs(existing) do
+			tiles[#tiles + 1] = {name = "landfill", position = t.position}
+		end
+
+		if #tiles > 0 then
+			surface.set_tiles(tiles, true)
+		end
+	end
+end
+
 function Public.interpret_shorthanded_force_name(shorthanded_name)
 	local memory = Memory.get_crew_memory()
 
@@ -468,9 +484,26 @@ function Public.place_cached_structures(tickinterval)
 			local special = structure.data
 			local position = special.position
 
+			-- Since this structure has cliffs, the positions need to be snapped and floored to nearest set of elements for x and y accordingly:
+			-- x: {..., -4, 0, 4, 8, ...}
+			-- y: {..., -4, 0, 4, 8, ...}
+			-- This is assuming that "cliff.position + offset" already has snapped positions as such:
+			-- x: {..., -2, 2, 6, ...}
+			-- y: {..., -1.5, 2.5, 6.5, ...}
+			-- The position would be corrected in "try_place" function, but it gets adjusted later with "terraingen_coordinates_offset", so have to do it here
+			if special.name == 'small_cliff_base' then
+				position.x = position.x - position.x % 4
+				position.y = position.y - position.y % 4
+
+				-- add a small bias to avoid situations such as 7.999999999993
+				position.x = position.x + 0.01
+				position.y = position.y + 0.01
+			end
+
 			Common.ensure_chunks_at(surface, position, Common.structure_ensure_chunk_radius)
 
 			cached_structure_delete_existing_entities_if_needed(surface, position, special)
+			cached_structure_delete_existing_unwalkable_tiles_if_needed(surface, position, special)
 
 			local saved_components = {}
 			for k = 1, #special.components do
@@ -488,12 +521,43 @@ function Public.place_cached_structures(tickinterval)
 						surface.set_tiles(tiles, true)
 					end
 
+				elseif c.type == 'water_tiles' then
+					local tiles = {}
+					for _, p in pairs(c.positions) do
+						tiles[#tiles + 1] = {name = c.tile_name, position = Utils.psum{position, p, c.offset}}
+					end
+					if #tiles > 0 then
+						surface.set_tiles(tiles, true)
+					end
+
+				elseif c.type == 'cliffs' then
+					--local c2 = {type = c.type, force_name = force_name, built_entities = {}}
+
+					for _, e in pairs(c.instances) do
+						local p = Utils.psum{position, e.position, c.offset}
+						local e2 = surface.create_entity{name = c.name, position = p, cliff_orientation = e.cliff_orientation}
+						-- c2.built_entities[#c2.built_entities + 1] = e2
+					end
+
+					--saved_components[#saved_components + 1] = c2
+
 				elseif c.type == 'entities' or c.type == 'entities_minable' then
 					local c2 = {type = c.type, force_name = force_name, built_entities = {}}
 
 					for _, e in pairs(c.instances) do
 						local p = Utils.psum{position, e.position, c.offset}
 						local e2 = surface.create_entity{name = c.name, position = p, direction = e.direction, force = force_name, amount = c.amount}
+						c2.built_entities[#c2.built_entities + 1] = e2
+					end
+
+					saved_components[#saved_components + 1] = c2
+
+				elseif c.type == 'vehicles' then
+					local c2 = {type = c.type, force_name = force_name, built_entities = {}}
+
+					for _, e in pairs(c.instances) do
+						local p = Utils.psum{position, e.position, c.offset}
+						local e2 = surface.create_entity{name = c.name, position = p, direction = e.direction}
 						c2.built_entities[#c2.built_entities + 1] = e2
 					end
 
@@ -1299,12 +1363,11 @@ end
 
 
 function Public.update_player_guis(tickinterval)
-	local global_memory = Memory.get_global_memory()
+	-- local global_memory = Memory.get_global_memory()
     local players = game.connected_players
 
 	for _, player in pairs(players) do
-		-- figure out which crew this is about:
-		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+		local crew_id = Common.get_id_from_force_name(player.force.name)
 		Memory.set_working_id(crew_id)
 
 		Gui.update_gui(player)
@@ -1335,7 +1398,7 @@ function Public.update_players_second()
 	end
 
 	for _, player in pairs(connected_players) do
-		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+		local crew_id = Common.get_id_from_force_name(player.force.name)
 		Memory.set_working_id(crew_id)
 
 		if player.afk_time < Common.afk_time then
@@ -1370,7 +1433,7 @@ function Public.update_players_second()
 
 	for _, index in pairs(afk_player_indices) do
 		local player = game.players[index]
-		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+		local crew_id = Common.get_id_from_force_name(player.force.name)
 		Memory.set_working_id(crew_id)
 		Roles.afk_player_tick(player)
 	end
@@ -1380,8 +1443,40 @@ function Public.update_alert_sound_frequency_tracker()
 	local memory = Memory.get_crew_memory()
 	if memory.seconds_until_alert_sound_can_be_played_again > 0 then
 		memory.seconds_until_alert_sound_can_be_played_again = memory.seconds_until_alert_sound_can_be_played_again - 1
-		Math.max(0, memory.seconds_until_alert_sound_can_be_played_again)
+		memory.seconds_until_alert_sound_can_be_played_again = Math.max(0, memory.seconds_until_alert_sound_can_be_played_again)
 	end
+end
+
+function Public.check_for_cliff_explosives_in_hold_wooden_chests()
+	local memory = Memory.get_crew_memory()
+	local input_chests = memory.hold_surface_destroyable_wooden_chests
+
+	if not input_chests then return end
+
+	for i, chest in ipairs(input_chests) do
+		if chest and chest.valid then
+			local item_count = chest.get_item_count('cliff-explosives')
+			if item_count and item_count > 0 then
+				local surface = chest.surface
+				local explosion = {
+					name = 'wooden-chest-explosion',
+					position = chest.position
+				}
+				local remnants = {
+					name = 'wooden-chest-remnants',
+					position = chest.position
+				}
+
+				chest.destroy()
+				surface.create_entity(explosion)
+				surface.create_entity(remnants)
+
+				table.fast_remove(memory.hold_surface_destroyable_wooden_chests, i)
+			end
+		end
+	end
+
+	Public.update_boat_stored_resources()
 end
 
 return Public

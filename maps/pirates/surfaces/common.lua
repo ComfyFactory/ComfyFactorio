@@ -7,7 +7,7 @@
 -- local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
 -- local Utils = require 'maps.pirates.utils_local'
-local _inspect = require 'utils.inspect'.inspect
+-- local _inspect = require 'utils.inspect'.inspect
 
 local Public = {}
 local enum = {
@@ -34,8 +34,8 @@ function Public.encode_surface_name(crewid, destination_index, type, subtype) --
 end
 
 function Public.decode_surface_name(name)
-	local crewid = tonumber(string.sub(name, 1, 3))
-	local destination_index = tonumber(string.sub(name, 5, 7))
+	local crewid = tonumber(string.sub(name, 1, 3)) or nil
+	local destination_index = tonumber(string.sub(name, 5, 7)) or nil
 	local type = nil
 	local subtype = nil
 

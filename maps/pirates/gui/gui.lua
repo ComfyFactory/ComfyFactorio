@@ -1164,7 +1164,7 @@ local function on_gui_click(event)
 
 	local player = game.players[event.element.player_index]
 
-	local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+	local crew_id = Common.get_id_from_force_name(player.force.name)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
 

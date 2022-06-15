@@ -607,6 +607,7 @@ function Public.surface_place_random_obstacle_boxes(surface, center, width, heig
 				for j = 1, size^2 do
 					local p2 = surface.find_non_colliding_position('wooden-chest', p, 5, 0.1, true)
 					local e = surface.create_entity{name = 'wooden-chest', position = p2, force = memory.force_name, create_build_effect_smoke = false}
+					memory.hold_surface_destroyable_wooden_chests[#memory.hold_surface_destroyable_wooden_chests + 1] = e
 					e.destructible = false
 					e.minable = false
 					e.rotatable = false
@@ -1472,5 +1473,28 @@ function Public.init_game_settings(technology_price_multiplier)
 	game.forces.enemy.evolution_factor = 0
 end
 
+-- prefer memory.force_name if possible
+function Public.get_crew_force_name(id)
+	return string.format('crew-%03d', id)
+end
+
+-- prefer memory.enemy_force_name if possible
+function Public.get_enemy_force_name(id)
+	return string.format('enemy-%03d', id)
+end
+
+-- prefer memory.ancient_friendly_force_name if possible
+function Public.get_ancient_friendly_force_name(id)
+	return string.format('ancient-friendly-%03d', id)
+end
+
+-- prefer memory.ancient_enemy_force_name if possible
+function Public.get_ancient_hostile_force_name(id)
+	return string.format('ancient-hostile-%03d', id)
+end
+
+function Public.get_id_from_force_name(force_name)
+	return tonumber(string.sub(force_name, -3, -1)) or nil
+end
 
 return Public

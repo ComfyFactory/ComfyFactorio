@@ -144,7 +144,7 @@ function Public.spawn_structures()
 	-- local surface = game.surfaces[destination.surface_name]
 	-- local subtype = destination.subtype
 	-- local force = memory.force
-	-- local ancient_force = string.format('ancient-friendly-%03d', memory.id)
+	-- local ancient_force = memory.ancient_friendly_force_name
 
 	local ps = Public.structure_positions()
 
