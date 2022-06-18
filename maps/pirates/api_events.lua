@@ -1599,6 +1599,9 @@ function Public.event_on_chunk_generated(event)
 			destination.dynamic_data.structures_waiting_to_be_placed = {}
 		end
 
+		-- to avoid having chests on water, add a landfill tile underneath them
+		local landfill_tiles = {}
+
 		for _, special in pairs(specials) do
 
 			-- recoordinatize:
@@ -1617,6 +1620,14 @@ function Public.event_on_chunk_generated(event)
 					e.rotatable = false
 					e.destructible = false
 
+					local water_tiles = surface.find_tiles_filtered{position = special.position, radius = 0.1, collision_mask = "water-tile"}
+
+					if water_tiles then
+						for _, t in pairs(water_tiles) do
+							landfill_tiles[#landfill_tiles + 1] = {name = "landfill", position = t.position}
+						end
+					end
+
 					local inv = e.get_inventory(defines.inventory.chest)
 					local loot = Loot.wooden_chest_loot()
 					for i = 1, #loot do
@@ -1631,6 +1642,9 @@ function Public.event_on_chunk_generated(event)
 			end
 		end
 
+		if #landfill_tiles > 0 then
+			surface.set_tiles(landfill_tiles, true, false, false)
+		end
 	end
 
 	for i = 1, #entities do

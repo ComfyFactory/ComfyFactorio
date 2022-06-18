@@ -585,7 +585,7 @@ end
 
 
 
-
+-- This function assumes you're placing obstacle boxes in the hold
 function Public.surface_place_random_obstacle_boxes(surface, center, width, height, spacing_entity, box_size_table, contents)
 	contents = contents or {}
 
@@ -605,7 +605,7 @@ function Public.surface_place_random_obstacle_boxes(surface, center, width, heig
 				placed = placed + 1
 				local p = boxposition()
 				for j = 1, size^2 do
-					local p2 = surface.find_non_colliding_position('wooden-chest', p, 5, 0.1, true)
+					local p2 = surface.find_non_colliding_position('wooden-chest', p, 5, 0.1, true) or p
 					local e = surface.create_entity{name = 'wooden-chest', position = p2, force = memory.force_name, create_build_effect_smoke = false}
 					memory.hold_surface_destroyable_wooden_chests[#memory.hold_surface_destroyable_wooden_chests + 1] = e
 					e.destructible = false

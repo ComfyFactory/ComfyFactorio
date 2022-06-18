@@ -1475,8 +1475,6 @@ function Public.check_for_cliff_explosives_in_hold_wooden_chests()
 			end
 		end
 	end
-
-	Public.update_boat_stored_resources()
 end
 
 return Public
