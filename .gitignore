@@ -3,6 +3,7 @@
 .git/
 maps/biter_battles_v3/
 
+control.lua
 
 #==Mac ignores==
 # General
