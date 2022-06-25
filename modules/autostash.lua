@@ -191,16 +191,6 @@ local function get_nearby_chests(player, a, furnace, wagon)
     return {chest = chests, inventory = inventories}
 end
 
-local function does_inventory_contain_item_type(content, item_subgroup, item_prototypes)
-    for name, _ in pairs(content) do
-        local t = item_prototypes[name]
-        if t and t.subgroup.name == item_subgroup then
-            return true
-        end
-    end
-    return false
-end
-
 local function insert_to_furnace(player_inventory, chests, name, count, floaty_text_list)
     local try = 0
 
