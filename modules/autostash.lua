@@ -191,9 +191,9 @@ local function get_nearby_chests(player, a, furnace, wagon)
     return {chest = chests, inventory = inventories}
 end
 
-local function does_inventory_contain_item_type(inventory, item_subgroup)
-    for name, _ in pairs(inventory.get_contents()) do
-        local t = game.item_prototypes[name]
+local function does_inventory_contain_item_type(content, item_subgroup, item_prototypes)
+    for name, _ in pairs(content) do
+        local t = item_prototypes[name]
         if t and t.subgroup.name == item_subgroup then
             return true
         end
@@ -369,8 +369,8 @@ local function insert_item_into_chest(stack, chests, filtered_chests, name, floa
     for chestnr, chest in pairs(chests.chest) do
         if container[chest.type] then
             local chest_inventory = chests.inventory[chestnr]
-            if chest_inventory and chest_inventory.can_insert(stack) then
-                if chest_inventory.find_item_stack(stack.name) then
+            if chest_inventory and chest_inventory.find_item_stack(stack.name) then
+                if chest_inventory.can_insert(stack) then
                     local inserted_count = chest_inventory.insert(stack)
                     stack.count = stack.count - inserted_count
                     prepare_floaty_text(floaty_text_list, chest.surface, chest.position, name, inserted_count)
@@ -386,18 +386,22 @@ local function insert_item_into_chest(stack, chests, filtered_chests, name, floa
     for chestnr, chest in pairs(filtered_chests.chest) do
         if container[chest.type] then
             local chest_inventory = filtered_chests.inventory[chestnr]
-            if chest_inventory and chest_inventory.can_insert(stack) then
-                if chest_inventory.is_empty() then
-                    local inserted_count = chest_inventory.insert(stack)
-                    stack.count = stack.count - inserted_count
-                    prepare_floaty_text(floaty_text_list, chest.surface, chest.position, name, inserted_count)
-                    if stack.count <= 0 then
-                        return chestnr
-                    end
+            if not chest_inventory then
+                break
+            end
+            local count = chest_inventory.get_item_count() == 0
+            if count then
+                local inserted_count = chest_inventory.insert(stack)
+                stack.count = stack.count - inserted_count
+                prepare_floaty_text(floaty_text_list, chest.surface, chest.position, name, inserted_count)
+                if stack.count <= 0 then
+                    return chestnr
                 end
             end
         end
     end
+
+    local item_prototypes = game.item_prototypes
 
     --Attempt to store in chests with same item subgroup.
     local item_subgroup = game.item_prototypes[name].subgroup.name
@@ -405,13 +409,20 @@ local function insert_item_into_chest(stack, chests, filtered_chests, name, floa
         for chestnr, chest in pairs(filtered_chests.chest) do
             if container[chest.type] then
                 local chest_inventory = filtered_chests.inventory[chestnr]
-                if chest_inventory and chest_inventory.can_insert(stack) then
-                    if does_inventory_contain_item_type(chest_inventory, item_subgroup) then
-                        local inserted_count = chest_inventory.insert(stack)
-                        stack.count = stack.count - inserted_count
-                        prepare_floaty_text(floaty_text_list, chest.surface, chest.position, name, inserted_count)
-                        if stack.count <= 0 then
-                            return chestnr
+                if not chest_inventory then
+                    break
+                end
+                local content = chest_inventory.get_contents()
+                if chest_inventory.can_insert(stack) then
+                    for equal_name, _ in pairs(content) do
+                        local t = item_prototypes[equal_name]
+                        if t and t.subgroup.name == item_subgroup then
+                            local inserted_count = chest_inventory.insert(stack)
+                            stack.count = stack.count - inserted_count
+                            prepare_floaty_text(floaty_text_list, chest.surface, chest.position, name, inserted_count)
+                            if stack.count <= 0 then
+                                return chestnr
+                            end
                         end
                     end
                 end
@@ -423,6 +434,9 @@ local function insert_item_into_chest(stack, chests, filtered_chests, name, floa
     for chestnr, chest in pairs(filtered_chests.chest) do
         if container[chest.type] then
             local chest_inventory = filtered_chests.inventory[chestnr]
+            if not chest_inventory then
+                break
+            end
             if chest_inventory.can_insert(stack) then
                 local inserted_count = chest_inventory.insert(stack)
                 stack.count = stack.count - inserted_count
