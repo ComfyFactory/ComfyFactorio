@@ -1,7 +1,6 @@
 local Gui = require 'utils.gui'
 local Global = require 'utils.global'
 local Event = require 'utils.event'
-local Game = require 'utils.game'
 local Server = require 'utils.server'
 local session = require 'utils.datastore.session_data'
 local Config = require 'utils.gui.config'

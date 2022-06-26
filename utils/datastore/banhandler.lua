@@ -1,7 +1,6 @@
 local Event = require 'utils.event'
 local Server = require 'utils.server'
 local Token = require 'utils.token'
-local Game = require 'utils.game'
 
 local len = string.len
 local gmatch = string.gmatch
