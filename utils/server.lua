@@ -13,8 +13,7 @@ local concat = table.concat
 local serialize = serpent.serialize
 local remove = table.remove
 local tostring = tostring
-local len = string.len
-local gmatch = string.gmatch
+
 local raw_print = Print.raw_print
 local minutes_to_ticks = 60 * 60
 local hours_to_ticks = 60 * 60 * 60
@@ -50,9 +49,6 @@ Global.register(
     end
 )
 
---- Jail dataset.
-local jailed_data_set = 'jailed'
-
 --- Web panel framework.
 local discord_tag = '[DISCORD]'
 local discord_raw_tag = '[DISCORD-RAW]'
@@ -82,6 +78,7 @@ local start_scenario_tag = '[START-SCENARIO]'
 local stop_scenario_tag = '[STOP-SCENARIO]'
 local ping_tag = '[PING]'
 local data_set_tag = '[DATA-SET]'
+local ban_get_tag = '[BAN-GET]'
 local data_get_tag = '[DATA-GET]'
 local data_get_and_print_tag = '[DATA-GET-AND-PRINT]'
 local data_get_all_tag = '[DATA-GET-ALL]'
@@ -522,6 +519,10 @@ end
 
 local function double_escape(str)
     -- Excessive escaping because the data is serialized twice.
+    if not str then
+        return ''
+    end
+
     return str:gsub('\\', '\\\\\\\\'):gsub('"', '\\\\\\"'):gsub('\n', '\\\\n')
 end
 
@@ -589,11 +590,28 @@ local function validate_arguments(data_set, key, callback_token)
     end
 end
 
+local function validate_arguments_of_ban(username, callback_token)
+    if type(username) ~= 'string' then
+        error('username must be a string', 3)
+    end
+
+    if type(callback_token) ~= 'number' then
+        error('callback_token must be a number', 3)
+    end
+end
+
 local function send_try_get_data(data_set, key, callback_token)
     data_set = double_escape(data_set)
     key = double_escape(key)
 
     local message = concat {data_get_tag, callback_token, ' {', 'data_set:"', data_set, '",key:"', key, '"}'}
+    raw_print(message)
+end
+
+local function send_try_get_ban(username, callback_token)
+    username = double_escape(username)
+
+    local message = concat {ban_get_tag, callback_token, ' {', 'username:"', username, '"}'}
     raw_print(message)
 end
 
@@ -656,6 +674,13 @@ function Public.try_get_data(data_set, key, callback_token)
     validate_arguments(data_set, key, callback_token)
 
     send_try_get_data(data_set, key, callback_token)
+end
+
+--- Same as try_get_data returns if a user is banned.
+function Public.try_get_ban(username, callback_token)
+    validate_arguments_of_ban(username, callback_token)
+
+    send_try_get_ban(username, callback_token)
 end
 
 --- Same as try_get_data but prints the returned value to the given player who ran the command.
@@ -1321,97 +1346,6 @@ Event.add(
 
         local reason = leave_reason_map[event.reason] or ''
         raw_print(player_leave_tag .. player.name .. reason)
-    end
-)
-
-Event.add(
-    defines.events.on_console_command,
-    function(event)
-        local cmd = event.command
-
-        local user = event.parameters
-        if not user then
-            return
-        end
-
-        if len(user) <= 2 then
-            return
-        end
-
-        local userIndex
-        local reason
-        local str = ''
-
-        local t = {}
-        for i in gmatch(user, '%S+') do
-            insert(t, i)
-        end
-
-        userIndex = t[1]
-
-        for i = 2, #t do
-            str = str .. t[i] .. ' '
-            reason = str
-        end
-
-        if not userIndex then
-            return log('Log to Discord when a user is banned failed. userIndex was undefined.')
-        end
-
-        local banishedPlayer
-        if game.get_player(userIndex) then
-            banishedPlayer = game.get_player(userIndex)
-        else
-            return
-        end
-
-        if event.player_index then
-            local player = game.get_player(event.player_index)
-            if player and player.valid and player.admin then
-                if banishedPlayer.index == player.index then
-                    return
-                end
-
-                local data = build_embed_data()
-                data.username = banishedPlayer.name
-                data.admin = player.name
-
-                if cmd == 'ban' then
-                    Public.set_data(jailed_data_set, banishedPlayer.name, nil) -- this is added here since we don't want to clutter the jail dataset.
-                    if not reason then
-                        data.reason = 'Not specified.'
-                        Public.to_banned_embed(data)
-                        return
-                    else
-                        data.reason = reason
-                        Public.to_banned_embed(data)
-                        return
-                    end
-                elseif cmd == 'unban' then
-                    Public.to_unbanned_embed(data)
-                    return
-                end
-            end
-        else
-            local data = build_embed_data()
-            data.username = banishedPlayer.name
-            data.admin = '<Server>'
-
-            if cmd == 'ban' then
-                if not reason then
-                    data.reason = 'Not specified.'
-                    Public.to_banned_embed(data)
-                    return
-                else
-                    data.reason = reason
-                    Public.to_banned_embed(data)
-                    return
-                end
-            elseif cmd == 'unban' then
-                Public.to_unbanned_embed(data)
-                return
-            end
-        end
     end
 )
 
