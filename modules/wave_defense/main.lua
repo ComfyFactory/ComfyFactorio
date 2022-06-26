@@ -3,6 +3,7 @@ local Event = require 'utils.event'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 local Alert = require 'utils.alert'
+local Server = require 'utils.server'
 
 local random = math.random
 local floor = math.floor
@@ -616,6 +617,12 @@ local function set_next_wave()
         if boss_wave_warning then
             Public.set('boss_wave_warning', false)
         end
+    end
+
+    local log_wave_to_discord = Public.get('log_wave_to_discord')
+
+    if wave_number % 100 == 0 and log_wave_to_discord then
+        Server.to_discord_embed('Current wave: ' .. wave_number)
     end
 
     local threat = Public.get('threat')

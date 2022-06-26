@@ -50,6 +50,7 @@ function Public.reset_wave_defense()
     this.biter_raffle = {}
     this.debug = false
     this.debug_health = false
+    this.log_wave_to_discord = true
     this.paused = false
     this.game_lost = false
     this.get_random_close_spawner_attempts = 5
