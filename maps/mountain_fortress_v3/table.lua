@@ -189,9 +189,6 @@ function Public.reset_table()
     this.explosive_bullets = false
     this.locomotive_biter = nil
     this.disconnect_wagon = false
-    this.offline_players_enabled = true
-    this.offline_players = {}
-    this.offline_players_surface_removal = false
     this.collapse_amount = false
     this.collapse_speed = false
     this.y_value_position = 20

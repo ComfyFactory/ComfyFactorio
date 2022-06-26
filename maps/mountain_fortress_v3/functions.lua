@@ -699,93 +699,6 @@ function Public.do_random_loot(entity, weights, loot)
     entity.insert {name = stack.name, count = count}
 end
 
-function Public.remove_offline_players()
-    local offline_players_enabled = WPT.get('offline_players_enabled')
-    if not offline_players_enabled then
-        return
-    end
-    local offline_players = WPT.get('offline_players')
-    local offline_players_surface_removal = WPT.get('offline_players_surface_removal')
-    local active_surface_index = WPT.get('active_surface_index')
-    local surface = game.surfaces[active_surface_index]
-    local player_inv = {}
-    local items = {}
-    if #offline_players > 0 then
-        for i = 1, #offline_players, 1 do
-            if offline_players[i] and offline_players[i].index then
-                local target = game.players[offline_players[i].index]
-                if target and target.connected then
-                    offline_players[i] = nil
-                else
-                    if target and offline_players[i].tick < game.tick - 108000 then
-                        local name = offline_players[i].name
-                        player_inv[1] = target.get_inventory(defines.inventory.character_main)
-                        player_inv[2] = target.get_inventory(defines.inventory.character_armor)
-                        player_inv[3] = target.get_inventory(defines.inventory.character_guns)
-                        player_inv[4] = target.get_inventory(defines.inventory.character_ammo)
-                        player_inv[5] = target.get_inventory(defines.inventory.character_trash)
-                        if offline_players_surface_removal then
-                            ICT_Functions.remove_surface(target) -- remove empty surface
-                        end
-
-                        if target.get_item_count() == 0 then -- if the player has zero items, don't do anything
-                            offline_players[i] = nil
-                            goto final
-                        end
-
-                        local pos = game.forces.player.get_spawn_position(surface)
-                        local e =
-                            surface.create_entity(
-                            {
-                                name = 'character',
-                                position = pos,
-                                force = 'neutral'
-                            }
-                        )
-                        local inv = e.get_inventory(defines.inventory.character_main)
-                        e.character_inventory_slots_bonus = #player_inv[1]
-                        for ii = 1, 5, 1 do
-                            if player_inv[ii].valid then
-                                for iii = 1, #player_inv[ii], 1 do
-                                    if player_inv[ii][iii].valid then
-                                        items[#items + 1] = player_inv[ii][iii]
-                                    end
-                                end
-                            end
-                        end
-                        if #items > 0 then
-                            for item = 1, #items, 1 do
-                                if items[item].valid then
-                                    inv.insert(items[item])
-                                end
-                            end
-
-                            local message = ({'main.cleaner', name})
-                            local data = {
-                                position = pos
-                            }
-                            Alert.alert_all_players_location(data, message)
-
-                            e.die('neutral')
-                        else
-                            e.destroy()
-                        end
-
-                        for ii = 1, 5, 1 do
-                            if player_inv[ii].valid then
-                                player_inv[ii].clear()
-                            end
-                        end
-                        offline_players[i] = nil
-                        break
-                    end
-                    ::final::
-                end
-            end
-        end
-    end
-end
-
 local function calc_players()
     local players = game.connected_players
     local check_afk_players = WPT.get('check_afk_players')
@@ -891,6 +804,9 @@ function Public.set_difficulty()
         return
     end
     local Diff = Difficulty.get()
+    if not Diff then
+        return
+    end
     local wave_defense_table = WD.get_table()
     local check_if_threat_below_zero = WPT.get('check_if_threat_below_zero')
     local collapse_amount = WPT.get('collapse_amount')
@@ -1345,24 +1261,6 @@ function Public.disable_creative()
     end
 end
 
-function Public.on_pre_player_left_game(event)
-    local offline_players_enabled = WPT.get('offline_players_enabled')
-    if not offline_players_enabled then
-        return
-    end
-
-    local offline_players = WPT.get('offline_players')
-    local player = game.players[event.player_index]
-    local ticker = game.tick
-    if player.character then
-        offline_players[#offline_players + 1] = {
-            index = event.player_index,
-            name = player.name,
-            tick = ticker
-        }
-    end
-end
-
 function Public.on_player_respawned(event)
     local player = game.get_player(event.player_index)
     if not player or not player.valid then
@@ -1515,14 +1413,12 @@ local on_player_joined_game = Public.on_player_joined_game
 local on_player_left_game = Public.on_player_left_game
 local on_research_finished = Public.on_research_finished
 local on_player_changed_position = Public.on_player_changed_position
-local on_pre_player_left_game = Public.on_pre_player_left_game
 local on_player_respawned = Public.on_player_respawned
 
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_left_game, on_player_left_game)
 Event.add(defines.events.on_research_finished, on_research_finished)
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)
-Event.add(defines.events.on_pre_player_left_game, on_pre_player_left_game)
 Event.add(defines.events.on_player_respawned, on_player_respawned)
 Event.on_nth_tick(10, tick)
 
