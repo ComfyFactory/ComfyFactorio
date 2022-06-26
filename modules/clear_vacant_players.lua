@@ -7,7 +7,7 @@ local this = {
         offline_players_enabled = false,
         offline_players_surface_removal = false,
         active_surface_index = nil, -- needs to be set else this will fail
-        required_online_time = 36000, -- nearest prime to 10 minutes in ticks
+        required_online_time = 18000, -- nearest prime to 5 minutes in ticks
         clear_player_after_tick = 108000 -- nearest prime to 30 minutes in ticks
     },
     offline_players = {}
