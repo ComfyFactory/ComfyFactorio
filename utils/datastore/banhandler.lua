@@ -5,6 +5,7 @@ local Token = require 'utils.token'
 local len = string.len
 local gmatch = string.gmatch
 local insert = table.insert
+local ban_by_join_enabled = false
 
 local try_get_ban = Server.try_get_ban
 
@@ -34,6 +35,10 @@ local try_get_is_banned_token =
 Event.add(
     defines.events.on_player_joined_game,
     function(event)
+        if not ban_by_join_enabled then
+            return
+        end
+
         local player = game.get_player(event.player_index)
         if not player or not player.valid then
             return
