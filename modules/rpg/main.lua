@@ -983,7 +983,6 @@ local function on_player_used_capsule(event)
     }
 
     local cast_spell = spell.callback(data)
-    log(serpent.block(cast_spell))
     if not cast_spell then
         return
     end
