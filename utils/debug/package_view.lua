@@ -87,6 +87,9 @@ Gui.on_click(
 
         local left_panel = element.parent.parent
         local data = Gui.get_data(left_panel)
+        if not data then
+            return
+        end
 
         local selected_file_label = data.selected_file_label
 

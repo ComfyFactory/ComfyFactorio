@@ -44,6 +44,7 @@ local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local Reset = require 'functions.soft_reset'
 local JailData = require 'utils.datastore.jail_data'
 local RPG_Progression = require 'utils.datastore.rpg_data'
+local OfflinePlayers = require 'modules.clear_vacant_players'
 
 require 'maps.mountain_fortress_v3.locomotive.market'
 require 'maps.mountain_fortress_v3.locomotive.linked_chests'
@@ -166,6 +167,10 @@ function Public.reset_map()
     Functions.reset_table()
     game.reset_time_played()
     WPT.reset_table()
+
+    OfflinePlayers.set_active_surface_index(this.active_surface_index)
+    OfflinePlayers.set_offline_players_enabled(true)
+    -- OfflinePlayers.set_offline_players_surface_removal(true)
 
     RPG.rpg_reset_all_players()
     RPG.set_surface_name(game.surfaces[this.active_surface_index].name)
@@ -489,7 +494,6 @@ local on_tick = function()
 
     if tick % 1000 == 0 then
         collapse_after_wave_200()
-        Functions.remove_offline_players()
         Functions.set_difficulty()
         Functions.is_creativity_mode_on()
     end

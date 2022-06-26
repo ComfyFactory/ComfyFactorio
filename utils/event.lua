@@ -108,6 +108,7 @@ local core_on_load = EventCore.on_load
 local core_on_nth_tick = EventCore.on_nth_tick
 local core_on_configuration_changed = EventCore.on_configuration_changed
 local stage_load = _STAGE.load
+local raise_event = script.raise_event
 local script_on_event = script.on_event
 local script_on_nth_tick = script.on_nth_tick
 local generate_event_name = script.generate_event_name
@@ -180,6 +181,17 @@ function Event.on_init(handler)
     end
 
     core_on_init(handler)
+end
+
+--- This exists only to become more easily available if you are already requiring the event module.
+function Event.raise(handler, data)
+    if data then
+        if not type(data) == 'table' then
+            return
+        end
+    end
+
+    raise_event(handler, data)
 end
 
 --- Register a handler for the script.on_load event.

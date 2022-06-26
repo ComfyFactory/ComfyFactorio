@@ -120,6 +120,7 @@ local function do_projectile(player_surface, name, _position, _force, target, ma
             create_build_effect_smoke = false
         }
     )
+    return true
 end
 
 local function create_projectiles(data)
@@ -168,6 +169,7 @@ local function create_projectiles(data)
     end
 
     Public.cast_spell(player)
+    return true
 end
 
 local function create_entity(data)
@@ -194,7 +196,7 @@ local function create_entity(data)
         local e = surface.create_entity({name = self.entityName, position = position, force = force})
         tame_unit_effects(player, e)
         Public.remove_mana(player, self.mana_cost)
-        return
+        return true
     end
 
     if self.aoe then
@@ -226,6 +228,7 @@ local function create_entity(data)
     end
 
     Public.cast_spell(player)
+    return true
 end
 
 local function insert_onto(data)
@@ -235,6 +238,7 @@ local function insert_onto(data)
     player.insert({name = self.entityName, count = self.amount})
     Public.cast_spell(player)
     Public.remove_mana(player, self.mana_cost)
+    return true
 end
 
 spells[#spells + 1] = {
@@ -535,7 +539,7 @@ spells[#spells + 1] = {
     log_spell = true,
     sprite = 'recipe/shotgun-shell',
     callback = function(data)
-        create_projectiles(data)
+        return create_projectiles(data)
     end
 }
 spells[#spells + 1] = {
@@ -553,7 +557,7 @@ spells[#spells + 1] = {
     log_spell = true,
     sprite = 'recipe/grenade',
     callback = function(data)
-        create_projectiles(data)
+        return create_projectiles(data)
     end
 }
 spells[#spells + 1] = {
@@ -571,7 +575,7 @@ spells[#spells + 1] = {
     log_spell = true,
     sprite = 'recipe/cluster-grenade',
     callback = function(data)
-        create_projectiles(data)
+        return create_projectiles(data)
     end
 }
 spells[#spells + 1] = {
@@ -589,7 +593,7 @@ spells[#spells + 1] = {
     log_spell = true,
     sprite = 'recipe/cannon-shell',
     callback = function(data)
-        create_projectiles(data)
+        return create_projectiles(data)
     end
 }
 spells[#spells + 1] = {
@@ -607,7 +611,7 @@ spells[#spells + 1] = {
     log_spell = true,
     sprite = 'recipe/explosive-cannon-shell',
     callback = function(data)
-        create_projectiles(data)
+        return create_projectiles(data)
     end
 }
 spells[#spells + 1] = {
@@ -625,7 +629,7 @@ spells[#spells + 1] = {
     log_spell = true,
     sprite = 'recipe/uranium-cannon-shell',
     callback = function(data)
-        create_projectiles(data)
+        return create_projectiles(data)
     end
 }
 spells[#spells + 1] = {
@@ -644,7 +648,7 @@ spells[#spells + 1] = {
     log_spell = true,
     sprite = 'recipe/rocket',
     callback = function(data)
-        create_projectiles(data)
+        return create_projectiles(data)
     end
 }
 spells[#spells + 1] = {
@@ -687,6 +691,7 @@ spells[#spells + 1] = {
                 Public.remove_mana(player, self.mana_cost)
             end
             Public.cast_spell(player)
+            return true
         end
     end
 }
@@ -733,6 +738,7 @@ spells[#spells + 1] = {
 
         Public.cast_spell(player)
         Public.remove_mana(player, self.mana_cost)
+        return true
     end
 }
 spells[#spells + 1] = {
@@ -771,6 +777,7 @@ spells[#spells + 1] = {
 
         Public.remove_mana(player, self.mana_cost)
         Public.cast_spell(player)
+        return true
     end
 }
 spells[#spells + 1] = {
@@ -825,7 +832,7 @@ spells[#spells + 1] = {
     sprite = 'item/raw-fish',
     special_sprite = 'item=raw-fish',
     callback = function(data)
-        insert_onto(data)
+        return insert_onto(data)
     end
 }
 spells[#spells + 1] = {
@@ -845,7 +852,7 @@ spells[#spells + 1] = {
     sprite = 'item/explosives',
     special_sprite = 'item=explosives',
     callback = function(data)
-        insert_onto(data)
+        return insert_onto(data)
     end
 }
 spells[#spells + 1] = {
@@ -873,6 +880,7 @@ spells[#spells + 1] = {
         Public.suicidal_comfylatron(position, surface)
         Public.cast_spell(player)
         Public.remove_mana(player, self.mana_cost)
+        return true
     end
 }
 spells[#spells + 1] = {
@@ -891,7 +899,7 @@ spells[#spells + 1] = {
     sprite = 'recipe/distractor-capsule',
     special_sprite = 'recipe=distractor-capsule',
     callback = function(data)
-        create_projectiles(data)
+        return create_projectiles(data)
     end
 }
 spells[#spells + 1] = {
@@ -922,6 +930,7 @@ spells[#spells + 1] = {
         Public.damage_player_over_time(player, random(8, 16))
         player.play_sound {path = 'utility/armor_insert', volume_modifier = 1}
         Public.cast_spell(player)
+        return true
     end
 }
 spells[#spells + 1] = {
@@ -952,6 +961,7 @@ spells[#spells + 1] = {
         Task.set_timeout_in_ticks(300, restore_movement_speed_token, {player_index = player.index, old_speed = player.character.character_running_speed_modifier, rpg_t = rpg_t})
         player.character.character_running_speed_modifier = player.character.character_running_speed_modifier + 1
         Public.cast_spell(player)
+        return true
     end
 }
 spells[#spells + 1] = {
@@ -1016,6 +1026,7 @@ spells[#spells + 1] = {
 
         Public.cast_spell(player)
         Public.remove_mana(player, self.mana_cost)
+        return true
     end
 }
 

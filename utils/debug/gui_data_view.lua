@@ -158,11 +158,17 @@ Gui.on_click(
     function(event)
         local element = event.element
         local header_data = Gui.get_data(element)
+        if not header_data then
+            return
+        end
         local values = header_data.values
         local player_index = header_data.player_index
 
         local player_panel = element.parent.parent
         local data = Gui.get_data(player_panel)
+        if not data then
+            return
+        end
         local element_panel = data.element_panel
         local selected_player_header = data.selected_player_header
         local input_text_box = data.input_text_box
@@ -191,11 +197,17 @@ Gui.on_click(
     function(event)
         local element = event.element
         local header_data = Gui.get_data(element)
+        if not header_data then
+            return
+        end
         local stored_data = header_data.stored_data
         local element_index = header_data.element_index
 
         local player_panel = element.parent.parent
         local data = Gui.get_data(player_panel)
+        if not data then
+            return
+        end
         local data_panel = data.data_panel
         local selected_element_header = data.selected_element_header
         local input_text_box = data.input_text_box
@@ -246,6 +258,9 @@ Gui.on_click(
     function(event)
         local element = event.element
         local data = Gui.get_data(element)
+        if not data then
+            return
+        end
 
         local input_text_box = data.input_text_box
         local player_panel = data.player_panel
@@ -263,6 +278,9 @@ Gui.on_click(
         Gui.clear(element_panel)
         if selected_player_header then
             local player_header_data = Gui.get_data(selected_player_header)
+            if not player_header_data then
+                return
+            end
             local values = player_header_data.values
 
             local selected_element_header = draw_element_headers(element_panel, values, selected_element_index)
