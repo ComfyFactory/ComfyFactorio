@@ -95,6 +95,9 @@ Gui.on_click(
 
         local left_panel = element.parent.parent
         local left_panel_data = Gui.get_data(left_panel)
+        if not left_panel_data then
+            return
+        end
         local right_panel = left_panel_data.right_panel
         local selected_header = left_panel_data.selected_header
 
