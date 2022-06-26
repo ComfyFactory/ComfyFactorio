@@ -2,38 +2,51 @@ local Event = require 'utils.event_core'
 local Token = require 'utils.token'
 
 local Global = {}
-local concat = table.concat
 
 local names = {}
 Global.names = names
+local concat = table.concat
 
 function Global.register(tbl, callback)
-    if _LIFECYCLE ~= _STAGE.control then
-        error('can only be called during the control stage', 2)
-    end
-
     local filepath = debug.getinfo(2, 'S').source:match('^.+/currently%-playing/(.+)$'):sub(1, -5)
+    local name = filepath:gsub('/', '_')
     local token = Token.register_global(tbl)
+    local token_name = Token.register_global_with_name(name, tbl)
 
-    names[token] = concat {token, ' - ', filepath}
+    if token then
+        names[token] = concat {token, ' - ', filepath}
+    else
+        names[token_name] = concat {Token.get_global_index(token_name), ' - ', filepath}
+    end
 
     Event.on_load(
         function()
-            callback(Token.get_global(token))
+            if token then
+                callback(Token.get_global(token))
+            else
+                callback(Token.get_global_with_name(name))
+            end
         end
     )
 
-    return token
+    if token then
+        return token
+    else
+        return token_name
+    end
 end
 
 function Global.register_init(tbl, init_handler, callback)
-    if _LIFECYCLE ~= _STAGE.control then
-        error('can only be called during the control stage', 2)
-    end
     local filepath = debug.getinfo(2, 'S').source:match('^.+/currently%-playing/(.+)$'):sub(1, -5)
+    local name = filepath:gsub('/', '_')
     local token = Token.register_global(tbl)
+    local token_name = Token.register_global_with_name(name, tbl)
 
-    names[token] = concat {token, ' - ', filepath}
+    if token then
+        names[token] = concat {token, ' - ', filepath}
+    else
+        names[token_name] = concat {Token.get_global_index(token_name), ' - ', filepath}
+    end
 
     Event.on_init(
         function()
@@ -44,11 +57,18 @@ function Global.register_init(tbl, init_handler, callback)
 
     Event.on_load(
         function()
-            callback(Token.get_global(token))
+            if token then
+                callback(Token.get_global(token))
+            else
+                callback(Token.get_global_with_name(name))
+            end
         end
     )
-
-    return token
+    if token then
+        return token
+    else
+        return token_name
+    end
 end
 
 return Global

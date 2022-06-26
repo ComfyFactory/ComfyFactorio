@@ -26,14 +26,42 @@ function Token.get(token_id)
     return tokens[token_id]
 end
 
-global.tokens = {}
+global.tokens = {
+    index = {},
+    counter = 0
+}
 
 function Token.register_global(var)
+    if #global.tokens == 0 then
+        return -- migration to newer version
+    end
+
     local c = #global.tokens + 1
 
     global.tokens[c] = var
 
     return c
+end
+
+function Token.register_global_with_name(name, var)
+    if not global.tokens[name] then
+        global.tokens[name] = var
+    end
+
+    if not global.tokens.index[name] then
+        global.tokens.counter = global.tokens.counter + 1
+        global.tokens.index[name] = global.tokens.counter
+    end
+
+    return name
+end
+
+function Token.get_global_index(name)
+    return global.tokens.index[name]
+end
+
+function Token.get_global_with_name(name)
+    return global.tokens[name]
 end
 
 function Token.get_global(token_id)
