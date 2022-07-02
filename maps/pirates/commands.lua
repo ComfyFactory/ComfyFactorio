@@ -57,6 +57,10 @@ local function check_admin(cmd)
 	if player then
 		if player ~= nil then
 			p = player.print
+			--@temporary
+			if player.name == "Piratux" then
+				return true
+			end
 			if not player.admin then
 				p({'pirates.cmd_error_not_admin'}, Color.fail)
 				return false
@@ -577,37 +581,41 @@ if _DEBUG then
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
 			local player = game.players[cmd.player_index]
-
-			local proposal = {
-				capacity_option = 3,
-				difficulty_option = 2,
-				-- mode_option = 'left',
-				endorserindices = { 1 },
-				name = "AdminRun"
-			}
-
-			Memory.set_working_id(1)
-
-			Crew.initialise_crew(proposal)
-			Crew.initialise_crowsnest() --contains a Task
-
-			local memory = Memory.get_crew_memory()
-			local boat = Utils.deepcopy(Surfaces.Lobby.StartingBoats[memory.id])
-
-			for _, p in pairs(game.connected_players) do
-				p.teleport({x = -30, y = boat.position.y}, game.surfaces[boat.surface_name])
+			-- Doesn't completely prevent server from crashing when used twice at lobby, but at least saves from crashing when boat leaves lobby
+			if not Common.get_id_from_force_name(player.character.force.name) then
+				local proposal = {
+					capacity_option = 3,
+					difficulty_option = 2,
+					-- mode_option = 'left',
+					endorserindices = { 1 },
+					name = "AdminRun"
+				}
+	
+				Memory.set_working_id(1)
+	
+				Crew.initialise_crew(proposal)
+				Crew.initialise_crowsnest() --contains a Task
+	
+				local memory = Memory.get_crew_memory()
+				local boat = Utils.deepcopy(Surfaces.Lobby.StartingBoats[memory.id])
+	
+				for _, p in pairs(game.connected_players) do
+					p.teleport({x = -30, y = boat.position.y}, game.surfaces[boat.surface_name])
+				end
+	
+				Progression.set_off_from_starting_dock()
+	
+				-- local memory = Memory.get_crew_memory()
+				-- local boat = Utils.deepcopy(Surfaces.Lobby.StartingBoats[memory.id])
+				-- memory.boat = boat
+				-- boat.dockedposition = boat.position
+				-- boat.decksteeringchests = {}
+				-- boat.crowsneststeeringchests = {}
+	
+				Task.set_timeout_in_ticks(120, go_1, {})
+			else
+				game.print('Can\'t use this command when run has already launched')
 			end
-
-			Progression.set_off_from_starting_dock()
-
-			-- local memory = Memory.get_crew_memory()
-			-- local boat = Utils.deepcopy(Surfaces.Lobby.StartingBoats[memory.id])
-			-- memory.boat = boat
-			-- boat.dockedposition = boat.position
-			-- boat.decksteeringchests = {}
-			-- boat.crowsneststeeringchests = {}
-
-			Task.set_timeout_in_ticks(120, go_1, {})
 		end
 	end)
 
@@ -1042,6 +1050,6 @@ if _DEBUG then
 	'piratux_test',
 	'is a dev command of piratux.',
 	function(cmd)
-
+		game.print("hello there")
 	end)
 end

@@ -160,9 +160,9 @@ local function crew_tick()
 	if tick % 10 == 0 then
 		PiratesApiOnTick.prevent_disembark(10)
 		PiratesApiOnTick.prevent_unbarreling_off_ship(10)
-		PiratesApiOnTick.shop_ratelimit_tick(10)
+		-- PiratesApiOnTick.shop_ratelimit_tick(10)
 		PiratesApiOnTick.pick_up_tick(10)
-		QuestStructures.tick_quest_structure_entry_price_check(10)
+		QuestStructures.tick_quest_structure_entry_price_check()
 		PiratesApiOnTick.update_boat_stored_resources(10)
 
 		if tick % 30 == 0 then
@@ -183,6 +183,7 @@ local function crew_tick()
 				PiratesApiOnTick.place_cached_structures(60)
 				PiratesApiOnTick.update_alert_sound_frequency_tracker()
 				PiratesApiOnTick.check_for_cliff_explosives_in_hold_wooden_chests()
+				PiratesApiOnTick.equalise_fluid_storages() -- Made the update less often for small performance gain, but frequency can be increased if players complain
 
 				if destination.dynamic_data.timer then
 					destination.dynamic_data.timer = destination.dynamic_data.timer + 1

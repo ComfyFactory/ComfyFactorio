@@ -1477,4 +1477,62 @@ function Public.check_for_cliff_explosives_in_hold_wooden_chests()
 	end
 end
 
+-- Code taken from Mountain fortress
+local function equalise_fluid_storage_pair(storage1, storage2)
+	if not storage1.valid then
+        return
+    end
+    if not storage2.valid then
+        return
+    end
+
+    local source_fluid = storage1.fluidbox[1]
+    if not source_fluid then
+        return
+    end
+
+    local target_fluid = storage2.fluidbox[1]
+    local source_fluid_amount = source_fluid.amount
+
+    local amount
+    if target_fluid then
+        amount = source_fluid_amount - ((target_fluid.amount + source_fluid_amount) * 0.5)
+    else
+        amount = source_fluid.amount * 0.5
+    end
+
+    if amount <= 0 then
+        return
+    end
+
+    local inserted_amount = storage2.insert_fluid({name = source_fluid.name, amount = amount, temperature = source_fluid.temperature})
+    if inserted_amount > 0 then
+        storage1.remove_fluid({name = source_fluid.name, amount = inserted_amount})
+    end
+end
+
+-- This function assumes that there is equal amount of special storage tanks on deck and every hold.
+-- NOTE: This function only equalises adjacent storage tank pairs. That is "Deck - 1st Hold" and "Nth Hold - (N+1)th Hold" pairs
+function Public.equalise_fluid_storages()
+	local memory = Memory.get_crew_memory()
+	local boat = memory.boat
+
+	if boat.upstairs_fluid_storages and boat.downstairs_fluid_storages then
+		-- Iterate every chain of together connected storages from deck and all holds
+		for i = 1, #boat.upstairs_fluid_storages do
+			local storages = {}
+			storages[1] = boat.upstairs_fluid_storages[i]
+
+			for j = 1, memory.hold_surface_count do
+				storages[j + 1] = boat.downstairs_fluid_storages[j][i]
+			end
+
+			for j = 2, #storages do
+				equalise_fluid_storage_pair(storages[j], storages[j-1])
+				equalise_fluid_storage_pair(storages[j-1], storages[j])
+			end
+		end
+	end
+end
+
 return Public
