@@ -779,7 +779,6 @@ local function on_init()
         return
     end
     local branch_version = '0.18.35'
-    local sub = string.sub
     local is_branch_18 = sub(branch_version, 3, 4)
     local get_active_version = sub(game.active_mods.base, 3, 4)
     local default = game.permissions.get_group('Default')
