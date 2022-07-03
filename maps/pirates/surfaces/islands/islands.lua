@@ -141,13 +141,10 @@ function Public.spawn_quest_structure(destination, points_to_avoid)
 		noise_generator = Utils.noise_generator({}, 0),
 	}
 
-	local p
-	for i = 1, 1 do
-		p = Hunt.mid_farness_position_1(args, points_to_avoid)
+	local p = Hunt.mid_farness_position_1(args, points_to_avoid)
 
-		if p then
-			QuestStructures.initialise_cached_quest_structure(p, QuestStructures.choose_quest_structure_type())
-		end
+	if p then
+		QuestStructures.initialise_cached_quest_structure(p, QuestStructures.choose_quest_structure_type())
 	end
 
 	return p
@@ -268,14 +265,14 @@ local silo_chart_tag = Token.register(
 		destination.dynamic_data.silo_chart_tag = force.add_chart_tag(surface, {icon = {type = 'item', name = 'rocket-silo'}, position = p_silo})
 	end
 )
-function Public.spawn_silo_setup()
+function Public.spawn_silo_setup(points_to_avoid)
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 	local surface = game.surfaces[destination.surface_name]
 	local subtype = destination.subtype
 	local force = memory.force
 
-	local p_silo = Public[subtype].generate_silo_setup_position()
+	local p_silo = Public[subtype].generate_silo_setup_position(points_to_avoid)
 	if not p_silo then return end
 	-- log(string.format("placing silo at x=%f, y = %f", p_silo.x, p_silo.y))
 

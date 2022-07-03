@@ -868,18 +868,31 @@ function Public.destroy_decoratives_in_area(surface, area, offset)
 	surface.destroy_decoratives{area = area2}
 end
 
-function Public.can_place_silo_setup(surface, p, silo_count, generous, build_check_type_name)
+function Public.can_place_silo_setup(surface, p, points_to_avoid, silo_count, generous, build_check_type_name)
+
+	-- game.print('checking silo pos: ' .. p.x .. ', ' .. p.y)
+
+	points_to_avoid = points_to_avoid or {}
 
 	Public.ensure_chunks_at(surface, p, 0.2)
 
 	build_check_type_name = build_check_type_name or 'manual'
 	local build_check_type = defines.build_check_type[build_check_type_name]
 	local s = true
+	local allowed = true
 	for i=1,silo_count do
-		s = (surface.can_place_entity{name = 'rocket-silo', position = {p.x + 9 * (i-1), p.y}, build_check_type = build_check_type} or (generous and i>2)) and s
+		local pos = {x = p.x + 9 * (i-1), y = p.y}
+		s = (surface.can_place_entity{name = 'rocket-silo', position = pos, build_check_type = build_check_type} or (generous and i>2)) and s
+		
+		for _, pa in pairs(points_to_avoid) do
+			if Math.distance({x = pa.x, y = pa.y}, pos) < pa.r then
+				allowed = false
+				break
+			end
+		end
 	end
 
-	return s
+	return s and allowed
 end
 
 function Public.ensure_chunks_at(surface, pos, radius) --WARNING: THIS DOES NOT PLAY NICELY WITH DELAYED TASKS. log(_inspect{global_memory.working_id}) was observed to vary before and after this function.

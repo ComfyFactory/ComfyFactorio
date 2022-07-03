@@ -109,12 +109,12 @@ function Public.chunk_structures(args)
 end
 
 
-function Public.generate_silo_setup_position()
+function Public.generate_silo_setup_position(points_to_avoid)
 	-- local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 	local surface = game.surfaces[destination.surface_name]
 
-	local p_silo = Hunt.silo_setup_position(0.2)
+	local p_silo = Hunt.silo_setup_position(points_to_avoid, 0.2)
 
 	if p_silo then
 		local tiles = {}

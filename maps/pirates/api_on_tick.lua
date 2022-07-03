@@ -476,13 +476,15 @@ function Public.place_cached_structures(tickinterval)
 	local surface = game.surfaces[surface_name]
 
 	local structures = destination.dynamic_data.structures_waiting_to_be_placed
-	local num = #structures
-	for i = num, 1, -1 do
+
+	for i = #structures, 1, -1 do
 		local structure = structures[i]
 
 		if game.tick > structure.tick + 5 then
 			local special = structure.data
 			local position = special.position
+
+			-- game.print(special.name)
 
 			-- Since this structure has cliffs, the positions need to be snapped and floored to nearest set of elements for x and y accordingly:
 			-- x: {..., -4, 0, 4, 8, ...}

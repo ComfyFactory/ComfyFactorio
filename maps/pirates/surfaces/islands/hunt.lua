@@ -24,7 +24,7 @@ local Public = {}
 
 
 
-function Public.silo_setup_position(x_fractional_offset, x_absolute_offset)
+function Public.silo_setup_position(points_to_avoid, x_fractional_offset, x_absolute_offset)
 	x_absolute_offset = x_absolute_offset or 0
 	x_fractional_offset = x_fractional_offset or 0
 	local memory = Memory.get_crew_memory()
@@ -49,17 +49,17 @@ function Public.silo_setup_position(x_fractional_offset, x_absolute_offset)
 	local p2
 	while p_ret == nil and tries < 200 do
 		p2 = {x = p.x + Math.random(-30, 0), y = p.y + Math.random(-70, 70)}
-		if p2.x >= boatposition.x+5 and Common.can_place_silo_setup(surface, p2, silo_count) then p_ret = p2 end
+		if p2.x >= boatposition.x+5 and Common.can_place_silo_setup(surface, p2, points_to_avoid, silo_count) then p_ret = p2 end
 		tries = tries + 1
 	end
 	while p_ret == nil and tries < 400 do
 		p2 = {x = p.x + Math.random(-60, 10), y = p.y + Math.random(-90, 90)}
-		if p2.x >= boatposition.x+5 and Common.can_place_silo_setup(surface, p2, silo_count, true) then p_ret = p2 end
+		if p2.x >= boatposition.x+5 and Common.can_place_silo_setup(surface, p2, points_to_avoid, silo_count, true) then p_ret = p2 end
 		tries = tries + 1
 	end
 	while p_ret == nil and tries < 1200 do
 		p2 = {x = p.x + Math.random(-90, 20), y = p.y + Math.random(-130, 130)}
-		if p2.x >= boatposition.x+5 and Common.can_place_silo_setup(surface, p2, silo_count, true) then p_ret = p2 end
+		if p2.x >= boatposition.x+5 and Common.can_place_silo_setup(surface, p2, points_to_avoid, silo_count, true) then p_ret = p2 end
 		tries = tries + 1
 	end
 	-- if _DEBUG then
@@ -110,6 +110,7 @@ function Public.mid_farness_position_1(args, points_to_avoid)
 					for _, pa in pairs(points_to_avoid) do
 						if Math.distance({x = pa.x, y = pa.y}, p2) < pa.r then
 							allowed = false
+							break
 						end
 					end
 					if allowed then
