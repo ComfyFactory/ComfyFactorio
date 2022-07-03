@@ -247,7 +247,8 @@ local function draw_events(data)
         ['Mining Override History'] = antigrief.whitelist_mining_history,
         ['Landfill History'] = antigrief.landfill_history,
         ['Corpse Looting History'] = antigrief.corpse_history,
-        ['Cancel Crafting History'] = antigrief.cancel_crafting_history
+        ['Cancel Crafting History'] = antigrief.cancel_crafting_history,
+        ['Deconstruct History'] = antigrief.deconstruct_history
     }
 
     local scroll_pane
@@ -358,6 +359,10 @@ local function create_admin_panel(data)
     local player = data.player
     local frame = data.frame
     local antigrief = AntiGrief.get()
+    if not antigrief then
+        return
+    end
+
     frame.clear()
 
     local player_names = {}
@@ -507,6 +512,9 @@ local function create_admin_panel(data)
     end
     if antigrief.cancel_crafting_history then
         table.insert(histories, 'Cancel Crafting History')
+    end
+    if antigrief.deconstruct_history then
+        table.insert(histories, 'Deconstruct History')
     end
 
     if #histories == 0 then

@@ -478,7 +478,7 @@ local function jail(player, griefer, msg, raised)
     end
 
     if not msg then
-        return
+        msg = 'Jailed by script'
     end
 
     if not game.get_player(griefer) then
@@ -589,7 +589,10 @@ function Public.try_dl_data(key)
 end
 
 --- Tries to get data from the webpanel and updates the local table with values.
--- @param data_set player token
+-- @param key LuaPlayer
+-- @param value boolean
+-- @param player LuaPlayer or <script>
+-- @param message string
 function Public.try_ul_data(key, value, player, message)
     if type(key) == 'table' then
         key = key.name
