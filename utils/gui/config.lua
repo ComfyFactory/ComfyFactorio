@@ -82,7 +82,7 @@ end
 local function spaghett()
     local spaghetti = this.gui_config.spaghett
     if spaghetti.noop then
-       return
+        return
     end
     if spaghetti.enabled then
         for _, f in pairs(game.forces) do
@@ -353,6 +353,40 @@ local fortress_functions = {
             end
             WPT.set('allow_decon', false)
             get_actor(event, '[Decon]', 'has disabled decon on car/tanks/trains.', true)
+        end
+    end,
+    ['allow_decon_main_surface'] = function(event)
+        local WPT = is_loaded('maps.mountain_fortress_v3.table')
+        if event.element.switch_state == 'left' then
+            local near_locomotive_group = game.permissions.get_group('near_locomotive')
+            if near_locomotive_group then
+                near_locomotive_group.set_allows_action(defines.input_action.deconstruct, true)
+            end
+            local default_group = game.permissions.get_group('Default')
+            if default_group then
+                default_group.set_allows_action(defines.input_action.deconstruct, true)
+            end
+            local main_surface_group = game.permissions.get_group('main_surface')
+            if main_surface_group then
+                main_surface_group.set_allows_action(defines.input_action.deconstruct, true)
+            end
+            WPT.set('allow_decon_main_surface', true)
+            get_actor(event, '[Decon]', 'has allowed decon on main surface.', true)
+        else
+            local near_locomotive_group = game.permissions.get_group('near_locomotive')
+            if near_locomotive_group then
+                near_locomotive_group.set_allows_action(defines.input_action.deconstruct, false)
+            end
+            local default_group = game.permissions.get_group('Default')
+            if default_group then
+                default_group.set_allows_action(defines.input_action.deconstruct, false)
+            end
+            local main_surface_group = game.permissions.get_group('main_surface')
+            if main_surface_group then
+                main_surface_group.set_allows_action(defines.input_action.deconstruct, false)
+            end
+            WPT.set('allow_decon_main_surface', false)
+            get_actor(event, '[Decon]', 'has disabled decon on main surface.', true)
         end
     end,
     ['christmas_mode'] = function(event)
@@ -667,8 +701,17 @@ local function build_config_gui(data)
             if Module.allow_decon then
                 switch_state = 'left'
             end
-            add_switch(scroll_pane, switch_state, 'allow_decon', 'Deconstruct', 'On = Allows decon on car/tanks/trains.\nOff = Disables decon on car/tanks/trains.')
+            add_switch(scroll_pane, switch_state, 'allow_decon', 'Deconstruct IC', 'On = Allows decon on car/tanks/trains.\nOff = Disables decon on car/tanks/trains.')
             scroll_pane.add({type = 'line'})
+
+            switch_state = 'right'
+            if Module.allow_decon_main_surface then
+                switch_state = 'left'
+            end
+            add_switch(scroll_pane, switch_state, 'allow_decon_main_surface', 'Deconstruct Surface', 'On = Allows decon on main surface.\nOff = Disables decon on main surface.')
+            scroll_pane.add({type = 'line'})
+
+            switch_state = 'right'
             if Module.christmas_mode then
                 switch_state = 'left'
             end

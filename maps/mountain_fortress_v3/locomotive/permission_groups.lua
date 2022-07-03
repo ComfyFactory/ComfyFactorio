@@ -14,10 +14,15 @@ function Public.add_player_to_permission_group(player, group, forced)
     local session = Session.get_session_table()
     local AG = Antigrief.get()
     local allow_decon = WPT.get('allow_decon')
+    local allow_decon_main_surface = WPT.get('allow_decon_main_surface')
 
     local default_group = game.permissions.get_group('Default')
-    default_group.set_allows_action(defines.input_action.deconstruct, false)
     default_group.set_allows_action(defines.input_action.activate_cut, false)
+    if allow_decon_main_surface then
+        default_group.set_allows_action(defines.input_action.deconstruct, true)
+    else
+        default_group.set_allows_action(defines.input_action.deconstruct, false)
+    end
 
     if not game.permissions.get_group('limited') then
         local limited_group = game.permissions.create_group('limited')
@@ -35,13 +40,21 @@ function Public.add_player_to_permission_group(player, group, forced)
         local near_locomotive_group = game.permissions.create_group('near_locomotive')
         near_locomotive_group.set_allows_action(defines.input_action.cancel_craft, false)
         near_locomotive_group.set_allows_action(defines.input_action.drop_item, false)
-        near_locomotive_group.set_allows_action(defines.input_action.deconstruct, false)
+        if allow_decon_main_surface then
+            near_locomotive_group.set_allows_action(defines.input_action.deconstruct, true)
+        else
+            near_locomotive_group.set_allows_action(defines.input_action.deconstruct, false)
+        end
         near_locomotive_group.set_allows_action(defines.input_action.activate_cut, false)
     end
 
     if not game.permissions.get_group('main_surface') then
         local main_surface_group = game.permissions.create_group('main_surface')
-        main_surface_group.set_allows_action(defines.input_action.deconstruct, false)
+        if allow_decon_main_surface then
+            main_surface_group.set_allows_action(defines.input_action.deconstruct, true)
+        else
+            main_surface_group.set_allows_action(defines.input_action.deconstruct, false)
+        end
         main_surface_group.set_allows_action(defines.input_action.activate_cut, false)
     end
 

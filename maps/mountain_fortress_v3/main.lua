@@ -230,6 +230,7 @@ function Public.reset_map()
     AntiGrief.enable_jail(true)
     AntiGrief.damage_entity_threshold(20)
     AntiGrief.explosive_threshold(32)
+    AntiGrief.decon_surface_blacklist(surface.name)
 
     PL.show_roles_in_list(true)
     PL.rpg_enabled(true)
