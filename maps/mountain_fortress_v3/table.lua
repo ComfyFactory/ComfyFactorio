@@ -112,6 +112,7 @@ function Public.reset_table()
     }
     this.force_chunk = false
     this.allow_decon = true
+    this.allow_decon_main_surface = true
     this.train_upgrades = 0
     this.flamethrower_damage = {}
     this.mined_scrap = 0
