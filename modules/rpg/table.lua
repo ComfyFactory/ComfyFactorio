@@ -89,7 +89,7 @@ Public.auto_allocate_nodes_func = {
     'Vitality'
 }
 
-function Public.reset_table()
+function Public.reset_table(migrate)
     this.rpg_extra.debug = false
     this.rpg_extra.breached_walls = 1
     this.rpg_extra.reward_new_players = 0
@@ -127,7 +127,9 @@ function Public.reset_table()
         ['pipe'] = true
     }
     this.tweaked_crafting_items_enabled = false
-    this.rpg_t = {}
+    if not migrate then
+        this.rpg_t = {}
+    end
     this.rpg_extra.rpg_xp_yield = {
         ['behemoth-biter'] = 16,
         ['behemoth-spitter'] = 16,
@@ -227,12 +229,8 @@ function Public.set(key)
 end
 
 --- Toggle debug - when you need to troubleshoot.
-function Public.toggle_debug()
-    if this.rpg_extra.debug then
-        this.rpg_extra.debug = false
-    else
-        this.rpg_extra.debug = true
-    end
+function Public.toggle_debug(value)
+    this.rpg_extra.debug = value or false
 
     return this.rpg_extra.debug
 end
@@ -276,6 +274,55 @@ function Public.enable_health_and_mana_bars(value)
     this.rpg_extra.enable_health_and_mana_bars = value or false
 
     return this.rpg_extra.enable_health_and_mana_bars
+end
+
+--- Toggles the mod gui state.
+---@param value boolean
+---@param read boolean
+function Public.enable_mod_gui(value, read)
+    if not read then
+        Gui.set_mod_gui_top_frame(value or false)
+    end
+
+    if Gui.get_mod_gui_top_frame() then
+        local players = game.connected_players
+        for i = 1, #players do
+            local player = players[i]
+            local top = player.gui.top
+            if top.mod_gui_top_frame and top.mod_gui_top_frame.valid then
+                top.mod_gui_top_frame.visible = true
+            end
+            for _, child in pairs(top.children) do
+                if child.caption == '[RPG]' then
+                    child.destroy()
+                    Public.draw_gui_char_button(player)
+                end
+            end
+        end
+    else
+        local players = game.connected_players
+        local count = 0
+        for i = 1, #players do
+            local player = players[i]
+            local top = Gui.get_button_flow(player)
+            for _, child in pairs(top.children) do
+                count = count + 1
+                if child.caption == '[RPG]' then
+                    child.destroy()
+                    Public.draw_gui_char_button(player)
+                end
+            end
+            if count == 0 then
+                if player.gui.top.mod_gui_top_frame and player.gui.top.mod_gui_top_frame.valid then
+                    player.gui.top.mod_gui_top_frame.visible = false
+                end
+            else
+                if player.gui.top.mod_gui_top_frame and player.gui.top.mod_gui_top_frame.valid then
+                    player.gui.top.mod_gui_top_frame.visible = true
+                end
+            end
+        end
+    end
 end
 
 --- Enables the mana feature that allows players to spawn entities.
@@ -388,6 +435,44 @@ function Public.tweaked_crafting_items(tbl)
     return this.tweaked_crafting_items
 end
 
+function Public.migrate_new_rpg_tbl(player)
+    local rpg_t = Public.get_value_from_player(player.index, nil)
+    if rpg_t then
+        rpg_t.flame_boots = nil
+        rpg_t.one_punch = nil
+        rpg_t.points_left = rpg_t.points_to_distribute or 0
+        rpg_t.points_to_distribute = nil
+
+        rpg_t.aoe_punch = false
+        rpg_t.auto_toggle_features = {
+            aoe_punch = false,
+            stone_path = false
+        }
+    end
+
+    Public.enable_mod_gui(false, true)
+
+    local screen = player.gui.screen
+    for _, child in pairs(screen.children) do
+        if child.caption and child.caption[1] == 'rpg_settings.spell_name' then
+            child.destroy()
+        end
+    end
+end
+
+function Public.migrate_to_new_version()
+    Public.reset_table(true)
+    if this.rpg_spells then
+        this.rpg_spells = nil
+    end
+
+    local players = game.players
+
+    for _, player in pairs(players) do
+        Public.migrate_new_rpg_tbl(player)
+    end
+end
+
 Public.settings_frame_name = settings_frame_name
 Public.settings_tooltip_frame = settings_tooltip_frame
 Public.close_settings_tooltip_frame = close_settings_tooltip_frame
@@ -410,5 +495,12 @@ local on_init = function()
 end
 
 Event.on_init(on_init)
+
+Event.on_configuration_changed(
+    function()
+        print('[RPG] Migrating to new version')
+        Public.migrate_to_new_version()
+    end
+)
 
 return Public

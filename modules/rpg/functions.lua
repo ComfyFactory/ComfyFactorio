@@ -19,6 +19,7 @@ local round = math.round
 local floor = math.floor
 local random = math.random
 local abs = math.abs
+local sub = string.sub
 
 --RPG Frames
 local main_frame_name = Public.main_frame_name
@@ -444,7 +445,7 @@ function Public.remove_mana(player, mana_to_remove)
     if player.gui.screen[main_frame_name] then
         local f = player.gui.screen[main_frame_name]
         local data = Gui.get_data(f)
-        if data.mana and data.mana.valid then
+        if data and data.mana and data.mana.valid then
             data.mana.caption = rpg_t.mana
         end
     end
@@ -483,7 +484,7 @@ function Public.update_mana(player)
     if player.gui.screen[main_frame_name] then
         local f = player.gui.screen[main_frame_name]
         local data = Gui.get_data(f)
-        if data.mana and data.mana.valid then
+        if data and data.mana and data.mana.valid then
             data.mana.caption = rpg_t.mana
         end
     end
@@ -542,7 +543,7 @@ function Public.reward_mana(player, mana_to_add)
     if player.gui.screen[main_frame_name] then
         local f = player.gui.screen[main_frame_name]
         local data = Gui.get_data(f)
-        if data.mana and data.mana.valid then
+        if data and data.mana and data.mana.valid then
             data.mana.caption = rpg_t.mana
         end
     end
@@ -589,7 +590,7 @@ function Public.update_health(player)
     if player.gui.screen[main_frame_name] then
         local f = player.gui.screen[main_frame_name]
         local data = Gui.get_data(f)
-        if data.health and data.health.valid then
+        if data and data.health and data.health.valid then
             data.health.caption = (round(player.character.health * 10) / 10)
         end
         local shield_gui = player.character.get_inventory(defines.inventory.character_armor)
@@ -597,10 +598,10 @@ function Public.update_health(player)
             if shield_gui[1].grid then
                 local shield = math.floor(shield_gui[1].grid.shield)
                 local shield_max = math.floor(shield_gui[1].grid.max_shield)
-                if data.shield and data.shield.valid then
+                if data and data.shield and data.shield.valid then
                     data.shield.caption = shield
                 end
-                if data.shield_max and data.shield_max.valid then
+                if data and data.shield_max and data.shield_max.valid then
                     data.shield_max.caption = shield_max
                 end
             end
@@ -991,6 +992,36 @@ function Public.give_xp(amount)
         end
         Public.gain_xp(player, amount)
     end
+end
+
+-- Checks if the player is on the correct surface.
+function Public.check_is_surface_valid(player)
+    if is_game_modded() then
+        return true
+    end
+
+    local is_surface_valid = false
+
+    local surface_name = Public.get('rpg_extra').surface_name
+    if type(surface_name) == 'table' then
+        for _, tbl_surface in pairs(surface_name) do
+            if sub(player.surface.name, 0, #surface_name) == tbl_surface then
+                is_surface_valid = true
+            end
+        end
+    else
+        if sub(player.surface.name, 0, #surface_name) ~= surface_name then
+            return false
+        else
+            return true
+        end
+    end
+
+    if not is_surface_valid then
+        return false
+    end
+
+    return true
 end
 
 function Public.rpg_reset_player(player, one_time_reset)
