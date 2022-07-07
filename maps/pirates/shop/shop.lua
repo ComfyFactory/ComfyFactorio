@@ -211,41 +211,7 @@ function Public.event_on_market_item_purchased(event)
 				-- if not class_for_sale then return end
 				local required_class = Classes.class_purchase_requirement[class_for_sale]
 
-				local ok = false
-
-				if memory.classes_table and memory.spare_classes then
-					if required_class then
-						local chosen_class_assigned = false
-
-						if required_class then
-							for p_index, chosen_class in pairs(memory.classes_table) do
-								if chosen_class == required_class then
-									memory.classes_table[p_index] = class_for_sale
-									chosen_class_assigned = true
-									ok = true
-									break
-								end
-							end
-						end
-
-						if not chosen_class_assigned then
-							for i, spare_class in pairs(memory.spare_classes) do
-								if spare_class == required_class then
-									memory.spare_classes[i] = class_for_sale
-									ok = true
-									break
-								end
-							end
-						end
-					else -- there is no required class
-						if not memory.classes_table[player.index] then
-							memory.classes_table[player.index] = class_for_sale
-						else
-							memory.spare_classes[#memory.spare_classes + 1] = class_for_sale
-						end
-						ok = true
-					end
-				end
+				local ok = Classes.try_unlock_class(class_for_sale, player)
 
 				if ok then
 					if force and force.valid then
@@ -266,7 +232,7 @@ function Public.event_on_market_item_purchased(event)
 							memory.available_classes_pool[#memory.available_classes_pool + 1] = upgrade
 						end
 					end
-				else
+				else -- if this happens, I believe there is something wrong with code
 					if force and force.valid then
 						Common.notify_force_error(force, {'pirates.class_purchase_error_prerequisite_class', Classes.display_form(required_class)})
 					end
@@ -278,6 +244,8 @@ function Public.event_on_market_item_purchased(event)
 						inv.insert{name = p.name, count = p.amount}
 					end
 					refunds = refunds + 1
+
+					log('Error purchasing class: ' .. class_for_sale)
 				end
 			else
 				Common.notify_force_light(player.force, {'pirates.market_event_buy', player.name, thisPurchaseData.offer_giveitem_count .. ' ' .. thisPurchaseData.offer_giveitem_name, thisPurchaseData.price[1].amount .. ' ' .. thisPurchaseData.price[1].name})

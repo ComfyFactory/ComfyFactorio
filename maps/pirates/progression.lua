@@ -546,7 +546,7 @@ local parrot_set_sail_advice =
 		Memory.set_working_id(crew_id)
 
 		local memory = Memory.get_crew_memory()
-		if not (memory.id and memory.id > 0) then return end --check if crew disbanded
+		if not Common.is_id_valid(memory.id) then return end --check if crew disbanded
 		if memory.game_lost then return end
 
 		if memory.boat and memory.boat.state and memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL then

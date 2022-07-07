@@ -74,17 +74,17 @@ function Public.unmake_officer(captain, player)
 	end
 end
 
-function Public.revoke_class(captain, player)
-	local memory = Memory.get_crew_memory()
-	local force = memory.force
+-- function Public.revoke_class(captain, player)
+-- 	local memory = Memory.get_crew_memory()
+-- 	local force = memory.force
 
-	if force and force.valid and player.index and memory.classes_table[player.index] then
-		memory.spare_classes[#memory.spare_classes + 1] = memory.classes_table[player.index]
-		memory.classes_table[player.index] = nil
+-- 	if force and force.valid and player.index and memory.classes_table[player.index] then
+-- 		memory.spare_classes[#memory.spare_classes + 1] = memory.classes_table[player.index]
+-- 		memory.classes_table[player.index] = nil
 
-		Common.notify_force_light(captain,{'pirates.class_revoke', captain.name, Classes.display_form(memory.classes_table[player.index]), player.name})
-	end
-end
+-- 		Common.notify_force_light(captain,{'pirates.class_revoke', captain.name, Classes.display_form(memory.classes_table[player.index]), player.name})
+-- 	end
+-- end
 
 function Public.tag_text(player)
 	local memory = Memory.get_crew_memory()
@@ -92,7 +92,7 @@ function Public.tag_text(player)
 	local str = ''
 	local tags = {}
 
-	if memory.id ~= 0 and Common.is_captain(player) then
+	if Common.is_id_valid(memory.id) and Common.is_captain(player) then
 		tags[#tags + 1] = 'Cap\'n'
 	elseif player.controller_type == defines.controllers.spectator then
 		tags[#tags + 1] = 'Spectating'
@@ -131,13 +131,13 @@ end
 -- 	return str
 -- end
 
-function Public.get_class_print_string(class, full)
+function Public.get_class_print_string(class, full, add_is_class_obstainable)
 
 	for _, class2 in pairs(Classes.enum) do
 		if Classes.eng_form[class2]:lower() == class:lower() or class2 == class:lower() then
 			local explanation
 			if full then
-				explanation = Classes.explanation_advanced(class2)
+				explanation = Classes.explanation_advanced(class2, add_is_class_obstainable)
 			else
 				explanation = Classes.explanation(class2)
 			end
@@ -164,7 +164,7 @@ end
 function Public.player_privilege_level(player)
 	local memory = Memory.get_crew_memory()
 
-	if memory.id ~= 0 and Common.is_captain(player) then
+	if Common.is_id_valid(memory.id) and Common.is_captain(player) then
 		return Public.privilege_levels.CAPTAIN
 	elseif memory.officers_table and memory.officers_table[player.index] then
 		return Public.privilege_levels.OFFICER
@@ -215,18 +215,31 @@ end
 function Public.player_left_so_redestribute_roles(player)
 	-- local memory = Memory.get_crew_memory()
 
-	if player and player.index then
-		if Common.is_captain(player) then
-			Public.assign_captain_based_on_priorities()
-		end
+	if not (player and player.index) then return end
 
-		-- no need to do this, as long as officers get reset when the captainhood changes hands
-		-- if memory.officers_table and memory.officers_table[player.index] then
-		-- 	memory.officers_table[player.index] = nil
-		-- end
+	if Common.is_captain(player) then
+		Public.assign_captain_based_on_priorities()
 	end
 
-	Classes.try_renounce_class(player, false, true)
+	-- no need to do this, as long as officers get reset when the captainhood changes hands
+	-- if memory.officers_table and memory.officers_table[player.index] then
+	-- 	memory.officers_table[player.index] = nil
+	-- end
+
+	local memory = Memory.get_crew_memory()
+
+	-- free up the class
+	if memory.classes_table and memory.classes_table[player.index] then
+		memory.spare_classes[#memory.spare_classes + 1] = memory.classes_table[player.index]
+		memory.classes_table[player.index] = nil
+
+		for _, class_entry in ipairs(memory.unlocked_classes) do
+			if class_entry.taken_by == player.index then
+				class_entry.taken_by = nil
+				break
+			end
+		end
+	end
 end
 
 
@@ -274,7 +287,7 @@ function Public.confirm_captain_exists(player_to_make_captain_otherwise)
 	local memory = Memory.get_crew_memory()
 	-- Currently this catches an issue where a crew drops to zero players, and then someone else joins.
 
-	if (memory.id and memory.id > 0 and memory.crewstatus and memory.crewstatus == 'adventuring') and (not (memory.playerindex_captain and game.players[memory.playerindex_captain] and Common.validate_player(game.players[memory.playerindex_captain]))) then --fixme: enum hacked
+	if (Common.is_id_valid(memory.id) and memory.crewstatus and memory.crewstatus == 'adventuring') and (not (memory.playerindex_captain and game.players[memory.playerindex_captain] and Common.validate_player(game.players[memory.playerindex_captain]))) then --fixme: enum hacked
 		if player_to_make_captain_otherwise then
 			Public.make_captain(player_to_make_captain_otherwise)
 			-- game.print('Auto-reassigning captain.')

@@ -338,15 +338,16 @@ function Public.destination_on_arrival(destination)
 		-- add special chunk structures(small mining base, etc.) to avoid list
 		local structures = destination.dynamic_data.structures_waiting_to_be_placed
 
-		for i = #structures, 1, -1 do
-			local structure = structures[i]
-			local special = structure.data
-			local position = special.position
-			local avoid_radius = math.sqrt(special.width * special.width + special.height * special.height) / 2 + 4
+		if structures then
+			for i = #structures, 1, -1 do
+				local structure = structures[i]
+				local special = structure.data
+				local position = special.position
+				local avoid_radius = math.sqrt(special.width * special.width + special.height * special.height) / 2 + 5
 
-			points_to_avoid[#points_to_avoid + 1] = {x = position.x, y = position.y, r = avoid_radius}
+				points_to_avoid[#points_to_avoid + 1] = {x = position.x, y = position.y, r = avoid_radius}
+			end
 		end
-
 
 		-- game.print('spawning silo')
 		if destination.subtype ~= Islands.enum.RADIOACTIVE then

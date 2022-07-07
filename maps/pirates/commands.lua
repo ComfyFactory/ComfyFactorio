@@ -156,6 +156,9 @@ commands.add_command(
 function(cmd)
 	cmd_set_memory(cmd)
 
+	local memory = Memory.get_crew_memory()
+	if not Common.is_id_valid(memory.id) then return end
+
 	--local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
 		--local player = game.players[cmd.player_index]
@@ -172,6 +175,9 @@ commands.add_command(
 {'pirates.cmd_explain_setcaptain'},
 function(cmd)
 	cmd_set_memory(cmd)
+
+	local memory = Memory.get_crew_memory()
+	if not Common.is_id_valid(memory.id) then return end
 
 	local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
@@ -190,6 +196,9 @@ commands.add_command(
 function(cmd)
 	cmd_set_memory(cmd)
 
+	local memory = Memory.get_crew_memory()
+	if not Common.is_id_valid(memory.id) then return end
+
 	--local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
 		Crew.summon_crew()
@@ -201,6 +210,10 @@ commands.add_command(
 {'pirates.cmd_explain_ok'},
 function(cmd)
 	cmd_set_memory(cmd)
+
+	local memory = Memory.get_crew_memory()
+	if not Common.is_id_valid(memory.id) then return end
+
 	local player = game.players[cmd.player_index]
 	if not Common.validate_player(player) then return end
 	
@@ -249,7 +262,7 @@ function(cmd)
 	if not Common.validate_player(player) then return end
 
 	if param and param ~= 'nil' then
-		local string = Roles.get_class_print_string(param, true)
+		local string = Roles.get_class_print_string(param, true, true)
 		if string then
 			Common.notify_player_expected(player, {'', {'pirates.class_definition_for'}, ' ', string})
 		else
@@ -265,6 +278,10 @@ commands.add_command(
 {'pirates.cmd_explain_take'},
 function(cmd)
 	cmd_set_memory(cmd)
+
+	local memory = Memory.get_crew_memory()
+	if not Common.is_id_valid(memory.id) then return end
+
 	local param = tostring(cmd.parameter)
 	local player = game.players[cmd.player_index]
 	if not Common.validate_player(player) then return end
@@ -272,7 +289,7 @@ function(cmd)
 	if param and param ~= 'nil' then
 		for _, class in pairs(Classes.enum) do
 			if Classes.eng_form[class]:lower() == param:lower() then
-				Classes.assign_class(player.index, class, true)
+				Classes.assign_class(player.index, class)
 				return true
 			end
 		end
@@ -289,11 +306,15 @@ commands.add_command(
 {'pirates.cmd_explain_giveup'},
 function(cmd)
 	cmd_set_memory(cmd)
+
+	local memory = Memory.get_crew_memory()
+	if not Common.is_id_valid(memory.id) then return end
+
 	--local param = tostring(cmd.parameter)
 	local player = game.players[cmd.player_index]
 	if not Common.validate_player(player) then return end
 
-	Classes.try_renounce_class(player, true)
+	Classes.assign_class(player.index, nil)
 end)
 
 commands.add_command(
@@ -371,6 +392,9 @@ commands.add_command(
 function(cmd)
 	cmd_set_memory(cmd)
 
+	local memory = Memory.get_crew_memory()
+	if not Common.is_id_valid(memory.id) then return end
+
 	local player = game.players[cmd.player_index]
 	local param = tostring(cmd.parameter)
 	if check_captain_or_admin(cmd) then
@@ -387,6 +411,9 @@ commands.add_command(
 {'pirates.cmd_explain_officer'},
 function(cmd)
 	cmd_set_memory(cmd)
+
+	local memory = Memory.get_crew_memory()
+	if not Common.is_id_valid(memory.id) then return end
 	
 	local player = game.players[cmd.player_index]
 	local param = tostring(cmd.parameter)
@@ -409,6 +436,9 @@ commands.add_command(
 {'pirates.cmd_explain_undock'},
 function(cmd)
 	cmd_set_memory(cmd)
+
+	local memory = Memory.get_crew_memory()
+	if not Common.is_id_valid(memory.id) then return end
 	
 	--local param = tostring(cmd.parameter)
 	if check_captain_or_admin(cmd) then
@@ -427,6 +457,9 @@ commands.add_command(
 {'pirates.cmd_explain_tax'},
 function(cmd)
 	cmd_set_memory(cmd)
+
+	local memory = Memory.get_crew_memory()
+	if not Common.is_id_valid(memory.id) then return end
 	
 	--local param = tostring(cmd.parameter)
 	if check_captain(cmd) then

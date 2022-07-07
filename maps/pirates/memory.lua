@@ -78,6 +78,8 @@ function Public.initialise_crew_memory(id) --mostly serves as a dev reference of
 	memory.boat = nil
 
 	memory.available_classes_pool = nil
+	-- Duplicating unlocked classes data for consistency reasons (this way, entries will remain in the same order when unlocked class data changes)
+	memory.unlocked_classes = nil
 
 	memory.seconds_until_alert_sound_can_be_played_again = 0
 	memory.crewplayerindices = nil

@@ -54,7 +54,7 @@ local swimming_biters_tick_token =
 function Public.swimming_biters_tick(crew_id, kraken_id)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
-	if not (memory.id and memory.id > 0) then return end --check if crew disbanded
+	if not Common.is_id_valid(memory.id) then return end --check if crew disbanded
 	if memory.game_lost then return end
 	local kraken_data = memory.active_sea_enemies.krakens[kraken_id]
 	if not kraken_data then return end --check if kraken died
@@ -87,7 +87,7 @@ end
 function Public.kraken_tick(crew_id, kraken_id, step, substep)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
-	if not (memory.id and memory.id > 0) then return end --check if crew disbanded
+	if not Common.is_id_valid(memory.id) then return end --check if crew disbanded
 	if memory.game_lost then return end
 	local kraken_data = memory.active_sea_enemies.krakens[kraken_id]
 	if not kraken_data then return end --check if kraken died

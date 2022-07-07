@@ -4,15 +4,8 @@
 local Memory = require 'maps.pirates.memory'
 local Common = require 'maps.pirates.common'
 local Utils = require 'maps.pirates.utils_local'
--- local Math = require 'maps.pirates.math'
--- local Surfaces = require 'maps.pirates.surfaces.surfaces'
 local Roles = require 'maps.pirates.roles.roles'
-local Classes = require 'maps.pirates.roles.classes'
 local Crew = require 'maps.pirates.crew'
--- local Progression = require 'maps.pirates.progression'
--- local Structures = require 'maps.pirates.structures.structures'
-local _inspect = require 'utils.inspect'.inspect
--- local Boats = require 'maps.pirates.structures.boats.boats'
 local GuiCommon = require 'maps.pirates.gui.common'
 local CoreData = require 'maps.pirates.coredata'
 local Server = require 'utils.server'
@@ -25,13 +18,24 @@ local window_name = 'crew'
 function Public.toggle_window(player)
 	local memory = Memory.get_crew_memory()
 	local flow, flow2, flow3, flow4
+	local window
 
 	--*** OVERALL FLOW ***--
 	if player.gui.screen[window_name .. '_piratewindow'] then player.gui.screen[window_name .. '_piratewindow'].destroy() return end
 
-	if not memory.id then return end
+	if not Common.is_id_valid(memory.id) then return end
 
-	flow = GuiCommon.new_window(player, window_name)
+	window = GuiCommon.new_window(player, window_name)
+
+	flow = window.add {
+        type = 'scroll-pane',
+        name = 'scroll_pane',
+        direction = 'vertical',
+        horizontal_scroll_policy = 'never',
+        vertical_scroll_policy = 'auto'
+    }
+    flow.style.maximal_height = 500
+	flow.style.bottom_padding = 20
 
 	--*** PARAMETERS OF RUN ***--
 
@@ -127,16 +131,6 @@ function Public.toggle_window(player)
 	flow3.style.maximal_height = 350
 
 	flow3 = flow2.add({
-		name = 'class_renounce',
-		type = 'button',
-		caption = {'pirates.gui_crew_window_crewmembers_give_up_class'},
-	})
-	flow3.style.minimal_width = 95
-	flow3.style.font = 'default-bold'
-	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
-	flow3.tooltip = {'pirates.gui_crew_window_crewmembers_give_up_class_tooltip'}
-
-	flow3 = flow2.add({
 		name = 'officer_resign',
 		type = 'button',
 		caption = {'pirates.gui_crew_window_crewmembers_resign_as_officer'},
@@ -169,53 +163,6 @@ function Public.toggle_window(player)
 		flow3.style.minimal_width = 95
 		flow3.style.font = 'default-bold'
 		flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
-	end
-
-	--*** SPARE CLASSES ***--
-
-	flow2 = GuiCommon.flow_add_section(flow, 'spare_classes', {'pirates.gui_crew_window_spare_classes'})
-
-	flow3 = flow2.add({
-		name = 'list',
-		type = 'label',
-	})
-	flow3.style.left_margin = 5
-	flow3.style.top_margin = -3
-	flow3.style.bottom_margin = -3
-	flow3.style.single_line = false
-	flow3.style.maximal_width = 160
-	flow3.style.font = 'default-dropdown'
-
-	flow3 = flow2.add({
-		name = 'assign_flow',
-		type = 'flow',
-		direction = 'vertical',
-	})
-	flow3.style.top_margin = 3
-
-	for _, c in pairs(Classes.enum) do
-		flow4 = flow3.add({
-			name = 'assign_class_' .. c,
-			type = 'button',
-			caption = {'pirates.gui_crew_window_assign_class_button', Classes.display_form(c)},
-		})
-		flow4.style.minimal_width = 95
-		flow4.style.font = 'default-bold'
-		flow4.style.font_color = {r=0.10, g=0.10, b=0.10}
-		flow4.tooltip = {'pirates.gui_crew_window_assign_class_button_tooltip', Classes.display_form(c), Classes.explanation(c)}
-		-- flow4.tooltip = 'Give this class to the selected player.'
-	end
-
-	for _, c in pairs(Classes.enum) do
-		flow4 = flow3.add({
-			name = 'selfassign_class_' .. c,
-			type = 'button',
-			caption = {'pirates.gui_crew_window_selfassign_class_button', Classes.display_form(c)},
-		})
-		flow4.style.minimal_width = 95
-		flow4.style.font = 'default-bold'
-		flow4.style.font_color = {r=0.10, g=0.10, b=0.10}
-		flow4.tooltip = {'pirates.gui_crew_window_selfassign_class_button_tooltip', Classes.display_form(c), Classes.explanation(c)}
 	end
 
 	--*** CAPTAIN's ACTIONS ***--
@@ -311,16 +258,6 @@ function Public.toggle_window(player)
 	flow3.tooltip = {'pirates.gui_crew_window_captains_actions_unmake_officer_tooltip'}
 
 	flow3 = flow2.add({
-		name = 'revoke_class',
-		type = 'button',
-		caption = {'pirates.gui_crew_window_captains_actions_revoke_class'},
-	})
-	flow3.style.minimal_width = 95
-	flow3.style.font = 'default-bold'
-	flow3.style.font_color = {r=0.10, g=0.10, b=0.10}
-	flow3.tooltip = {'pirates.gui_crew_window_captains_actions_revoke_class_tooltip'}
-
-	flow3 = flow2.add({
 		name = 'capn_summon_crew',
 		type = 'button',
 		caption = {'pirates.gui_crew_window_captains_actions_summon_crew'},
@@ -353,9 +290,8 @@ function Public.toggle_window(player)
 	flow2.style.font = 'default'
 	flow2.caption = {'pirates.gui_crew_window_captains_actions_undock_tip'}
 
-	--
 
-	GuiCommon.flow_add_close_button(flow, window_name .. '_piratebutton')
+	GuiCommon.flow_add_close_button(window, window_name .. '_piratebutton')
 end
 
 
@@ -370,57 +306,21 @@ function Public.full_update(player)
 	if Public.regular_update then Public.regular_update(player) end
 
 	if not player.gui.screen[window_name .. '_piratewindow'] then return end
-	local flow = player.gui.screen[window_name .. '_piratewindow']
+	local window = player.gui.screen[window_name .. '_piratewindow']
+	local flow = window.scroll_pane
+
 
 	local memory = Memory.get_crew_memory()
 	local playercrew_status = GuiCommon.crew_overall_state_bools(player.index)
-	-- local destination = Common.current_destination()
 
 
 	--*** WHAT TO SHOW ***--
 
 	flow.difficulty_vote.visible = memory.overworldx and memory.overworldx == 0
 
-	flow.members.body.class_renounce.visible = memory.classes_table and memory.classes_table[player.index]
-
 	flow.members.body.officer_resign.visible = memory.officers_table and memory.officers_table[player.index]
 
-	flow.spare_classes.visible = memory.spare_classes and #memory.spare_classes > 0
-
 	local other_player_selected = flow.members.body.members_listbox.selected_index ~= 0 and tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2]) ~= player.index
-
-	local any_class_button = false
-	for _, c in pairs(Classes.enum) do
-		if memory.spare_classes and Utils.contains(memory.spare_classes, c) and (not (player.controller_type == defines.controllers.spectator)) then
-			if Common.is_captain(player) and memory.crewplayerindices and #memory.crewplayerindices > 1 then
-				if other_player_selected and (not (memory.classes_table[tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])])) then
-					flow.spare_classes.body.assign_flow['selfassign_class_' .. c].visible = false
-					flow.spare_classes.body.assign_flow['assign_class_' .. c].visible = true
-					any_class_button = true
-				else
-					flow.spare_classes.body.assign_flow['assign_class_' .. c].visible = false
-					if (not memory.classes_table[player.index]) then
-						flow.spare_classes.body.assign_flow['selfassign_class_' .. c].visible = true
-						any_class_button = true
-					else
-						flow.spare_classes.body.assign_flow['selfassign_class_' .. c].visible = false
-					end
-				end
-			else
-				flow.spare_classes.body.assign_flow['assign_class_' .. c].visible = false
-				if (not memory.classes_table[player.index]) then
-					flow.spare_classes.body.assign_flow['selfassign_class_' .. c].visible = true
-					any_class_button = true
-				else
-					flow.spare_classes.body.assign_flow['selfassign_class_' .. c].visible = false
-				end
-			end
-		else
-			flow.spare_classes.body.assign_flow['assign_class_' .. c].visible = false
-			flow.spare_classes.body.assign_flow['selfassign_class_' .. c].visible = false
-		end
-	end
-	flow.spare_classes.body.assign_flow.visible = any_class_button
 
 	flow.captain.visible = Common.is_captain(player)
 	flow.undock_tip.visible = Common.is_captain(player)
@@ -430,8 +330,6 @@ function Public.full_update(player)
 
 	flow.captain.body.make_officer.visible = other_player_selected and (not (memory.officers_table and memory.officers_table[tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])]))
 	flow.captain.body.unmake_officer.visible = other_player_selected and ((memory.officers_table and memory.officers_table[tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])]))
-
-	flow.captain.body.revoke_class.visible = other_player_selected and (memory.classes_table[tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])])
 
 	-- flow.captain.body.capn_undock_normal.visible = memory.boat and memory.boat.state and ((memory.boat.state == Boats.enum_state.LANDED) or (memory.boat.state == Boats.enum_state.APPROACHING) or (memory.boat.state == Boats.enum_state.DOCKED))
 
@@ -467,27 +365,11 @@ function Public.full_update(player)
 
 	--== UPDATE CONTENT ==--
 
-	if memory.id then
-		flow.caption = memory.name
+	if Common.is_id_valid(memory.id) then
+		window.caption = memory.name
 
 		flow.crew_age.caption = {'pirates.gui_crew_window_crew_age', Utils.time_mediumform((memory.age or 0)/60)}
 		flow.crew_capacity_and_difficulty.caption = {'pirates.gui_crew_window_crew_capacity_and_difficulty', CoreData.difficulty_options[memory.difficulty_option].text, CoreData.capacity_options[memory.capacity_option].text3}
-
-		if flow.spare_classes.visible then
-			local str = {''}
-
-			for i, c in ipairs(memory.spare_classes) do
-				if i>1 then
-					str[#str+1] = {'', {'pirates.separator_1'}, Classes.display_form(c)} -- we need to do nesting here, because you can't contanenate more than 20 localised strings. Watch out!
-					--@TODO: In fact we should nest iteratively, as this still caps out around 19 classes.
-				else
-					str[#str+1] = {'', Classes.display_form(c)}
-				end
-			end
-			str[#str+1] = '.'
-
-			flow.spare_classes.body.list.caption = str
-		end
 	end
 
 
@@ -563,18 +445,6 @@ function Public.click(event)
 	-- 	return
 	-- end
 
-
-	if string.sub(eventname, 1, 13) and string.sub(eventname, 1, 13) == 'assign_class_' then
-		local other_id = tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])
-		Classes.assign_class(other_id, string.sub(eventname, 14, -1))
-		return
-	end
-
-	if string.sub(eventname, 1, 17) and string.sub(eventname, 1, 17) == 'selfassign_class_' then
-		Classes.assign_class(player.index, string.sub(eventname, 18, -1), true)
-		return
-	end
-
 	if string.sub(eventname, 1, 18) and string.sub(eventname, 1, 18) == 'difficulty_option_' then
 		Crew.difficulty_vote(player.index, tonumber(string.sub(eventname, 19, -1)))
 		return
@@ -594,11 +464,6 @@ function Public.click(event)
 		if Roles.player_privilege_level(player) >= Roles.privilege_levels.CAPTAIN then
 			Roles.captain_tax(memory.playerindex_captain)
 		end
-		return
-	end
-
-	if eventname == 'class_renounce' then
-		Classes.try_renounce_class(player, true)
 		return
 	end
 
@@ -650,12 +515,6 @@ function Public.click(event)
 	if eventname == 'unmake_officer' then
 		local other_id = tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])
 		Roles.unmake_officer(player, game.players[other_id])
-		return
-	end
-
-	if eventname == 'revoke_class' then
-		local other_id = tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])
-		Roles.revoke_class(player, game.players[other_id])
 		return
 	end
 

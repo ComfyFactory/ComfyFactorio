@@ -734,6 +734,7 @@ function Public.initialise_crew(accepted_proposal)
 	memory.classes_table = {}
 	memory.officers_table = {}
 	memory.spare_classes = {}
+	memory.unlocked_classes = {}
 
 	memory.healthbars = {}
 	memory.overworld_krakens = {}
@@ -1032,7 +1033,6 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['military-4'].enabled = true
 	crew_force.technologies['uranium-ammo'].enabled = true
 end
-
 
 
 return Public

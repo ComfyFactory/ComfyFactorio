@@ -70,7 +70,7 @@ function Public.explanation(class)
 	return {'pirates.class_' .. class .. '_explanation'}
 end
 
-function Public.explanation_advanced(class)
+function Public.explanation_advanced(class, add_is_class_obstainable)
 	local explanation = 'pirates.class_' .. class .. '_explanation_advanced'
 	local full_explanation
 
@@ -124,7 +124,9 @@ function Public.explanation_advanced(class)
 		full_explanation = {'', {explanation}}
 	end
 
-	full_explanation[#full_explanation + 1] = Public.class_is_obtainable(class) and {'', ' ', {'pirates.class_obtainable'}} or {'', ' ', {'pirates.class_unobtainable'}}
+	if add_is_class_obstainable then
+		full_explanation[#full_explanation + 1] = Public.class_is_obtainable(class) and {'', ' ', {'pirates.class_obtainable'}} or {'', ' ', {'pirates.class_unobtainable'}}
+	end
 
 	return full_explanation
 end
@@ -204,59 +206,61 @@ function Public.class_is_obtainable(class)
 	return false
 end
 
-
-function Public.assign_class(player_index, class, self_assigned)
+-- When "class" is nil, player drops equipped class
+-- "class_entry_index" only relevant for GUI order consistency
+function Public.assign_class(player_index, class, class_entry_index)
 	local memory = Memory.get_crew_memory()
 	local player = game.players[player_index]
 
 	if not memory.classes_table then memory.classes_table = {} end
 
-	if memory.classes_table[player_index] == class then
-		Common.notify_player_error(player, {'pirates.error_class_assign_redundant', Public.display_form(class)})
-		return false
-	end
 
-	if Utils.contains(memory.spare_classes, class) then -- verify that one is spare
+	if class then
+		if Utils.contains(memory.spare_classes, class) then
+			-- drop class
+			if memory.classes_table[player_index] then
+				memory.spare_classes[#memory.spare_classes + 1] = memory.classes_table[player_index]
+				memory.classes_table[player_index] = nil
 
-		Public.try_renounce_class(player, false)
-
-		memory.classes_table[player_index] = class
-
-		local force = memory.force
-		if force and force.valid then
-			if self_assigned then
-				Common.notify_force_light(force,{'pirates.class_take_spare', player.name, Public.display_form(memory.classes_table[player_index]), Public.explanation(memory.classes_table[player_index])})
-			else
-				Common.notify_force_light(force,{'pirates.class_give_spare', Public.display_form(memory.classes_table[player_index]), player.name, Public.explanation(memory.classes_table[player_index])})
-			end
-		end
-
-		memory.spare_classes = Utils.ordered_table_with_single_value_removed(memory.spare_classes, class)
-		return true
-	else
-		Common.notify_player_error(player, {'pirates.error_class_assign_unavailable_class'})
-		return false
-	end
-end
-
-function Public.try_renounce_class(player, whisper_failure_message, impersonal_bool)
-	local memory = Memory.get_crew_memory()
-
-	local force = memory.force
-	if force and force.valid and player and player.index then
-		if memory.classes_table and memory.classes_table[player.index] then
-			if force and force.valid then
-				if impersonal_bool then
-					Common.notify_force_light(force,{'pirates.class_becomes_spare', Public.display_form(memory.classes_table[player.index])})
-				else
-					Common.notify_force_light(force,{'pirates.class_give_up', player.name, Public.display_form(memory.classes_table[player.index])})
+				for _, class_entry in ipairs(memory.unlocked_classes) do
+					if class_entry.taken_by == player.index then
+						class_entry.taken_by = nil
+						break
+					end
 				end
 			end
 
-			memory.spare_classes[#memory.spare_classes + 1] = memory.classes_table[player.index]
-			memory.classes_table[player.index] = nil
-		elseif whisper_failure_message then
-			Common.notify_player_error(player, {'pirates.class_give_up_error_no_class'})
+			-- assign class
+			memory.classes_table[player_index] = class
+			memory.spare_classes = Utils.ordered_table_with_single_value_removed(memory.spare_classes, class)
+
+			if class_entry_index then
+				memory.unlocked_classes[class_entry_index].taken_by = player.index
+			else
+				for _, class_entry in ipairs(memory.unlocked_classes) do
+					if class_entry.class == class and (not class_entry.taken_by) then
+						class_entry.taken_by = player.index
+						break
+					end
+				end
+			end
+		end
+	else
+		-- drop class
+		if memory.classes_table[player_index] then
+			memory.spare_classes[#memory.spare_classes + 1] = memory.classes_table[player_index]
+			memory.classes_table[player_index] = nil
+
+			if class_entry_index then
+				memory.unlocked_classes[class_entry_index].taken_by = nil
+			else
+				for _, class_entry in ipairs(memory.unlocked_classes) do
+					if class_entry.taken_by == player.index then
+						class_entry.taken_by = nil
+						break
+					end
+				end
+			end
 		end
 	end
 end
@@ -379,6 +383,78 @@ function Public.lumberjack_bonus_items(give_table)
 		end
 	end
 end
+
+function Public.try_unlock_class(class_for_sale, player, force_unlock)
+	local memory = Memory.get_crew_memory()
+
+	local required_class = Public.class_purchase_requirement[class_for_sale]
+
+	if not (memory.classes_table and memory.spare_classes) then
+		return false
+	end
+
+	if required_class then
+		local chosen_class_assigned = false
+
+		for p_index, chosen_class in pairs(memory.classes_table) do
+			if chosen_class == required_class then
+				memory.classes_table[p_index] = class_for_sale
+				chosen_class_assigned = true
+
+				-- update GUI data
+				for _, class_entry in ipairs(memory.unlocked_classes) do
+					if class_entry.taken_by == player.index then
+						class_entry.class = class_for_sale
+						break
+					end
+				end
+				return true
+			end
+		end
+
+		if not chosen_class_assigned then
+			for i, spare_class in pairs(memory.spare_classes) do
+				if spare_class == required_class then
+					memory.spare_classes[i] = class_for_sale
+
+					-- update GUI data
+					for _, class_entry in ipairs(memory.unlocked_classes) do
+						if required_class == class_entry.class and (not class_entry.taken_by) then
+							class_entry.class = class_for_sale
+							break
+						end
+					end
+					return true
+				end
+			end
+		end
+
+		-- allows to unlock class even if pre-requisite is missing
+		if force_unlock then
+			memory.spare_classes[#memory.spare_classes + 1] = class_for_sale
+
+			-- update GUI data
+			memory.unlocked_classes[#memory.unlocked_classes + 1] = {class = class_for_sale}
+		end
+	else -- there is no required class
+		-- if player who unlocked class doesn't have one equipped, equip it for him
+		if not memory.classes_table[player.index] then
+			memory.classes_table[player.index] = class_for_sale
+
+			-- update GUI data
+			memory.unlocked_classes[#memory.unlocked_classes + 1] = {class = class_for_sale, taken_by = player.index}
+		else
+			memory.spare_classes[#memory.spare_classes + 1] = class_for_sale
+
+			-- update GUI data
+			memory.unlocked_classes[#memory.unlocked_classes + 1] = {class = class_for_sale}
+		end
+		return true
+	end
+
+	return false
+end
+
 
 
 local event = require 'utils.event'

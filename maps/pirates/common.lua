@@ -112,7 +112,7 @@ end
 function Public.activecrewcount()
 	local global_memory = Memory.get_global_memory()
 	local memory = Memory.get_crew_memory()
-	if memory.id == 0 then return 0 end
+	if not Public.is_id_valid(memory.id) then return 0 end
 
 	local count = 0
 	for _, id in pairs(memory.crewplayerindices) do
@@ -815,7 +815,7 @@ end
 
 function Public.crew_get_crew_members()
 	local memory = Memory.get_crew_memory()
-	if memory.id == 0 then return {} end
+	if not Public.is_id_valid(memory.id) then return {} end
 
 	local playerlist = {}
 	for _, id in pairs(memory.crewplayerindices) do
@@ -828,7 +828,7 @@ end
 
 function Public.crew_get_crew_members_and_spectators()
 	local memory = Memory.get_crew_memory()
-	if memory.id == 0 then return {} end
+	if not Public.is_id_valid(memory.id) then return {} end
 
 	local playerlist = {}
 	for _, id in pairs(memory.crewplayerindices) do
@@ -848,7 +848,7 @@ end
 function Public.crew_get_nonafk_crew_members()
 	local global_memory = Memory.get_global_memory()
 	local memory = Memory.get_crew_memory()
-	if memory.id == 0 then return {} end
+	if not Public.is_id_valid(memory.id) then return {} end
 
 	local playerlist = {}
 	for _, id in pairs(memory.crewplayerindices) do
@@ -1508,6 +1508,14 @@ end
 
 function Public.get_id_from_force_name(force_name)
 	return tonumber(string.sub(force_name, -3, -1)) or nil
+end
+
+function Public.is_id_valid(id)
+	if id and id ~= 0 then
+		return true
+	else
+		return false
+	end
 end
 
 return Public

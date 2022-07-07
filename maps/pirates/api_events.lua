@@ -216,7 +216,14 @@ local function damage_to_artillery(event)
 	if not event.cause.name then return end
 
 
-	if (event.cause.name == 'small-biter') or (event.cause.name == 'small-spitter') or (event.cause.name == 'medium-biter') or (event.cause.name == 'medium-spitter') or (event.cause.name == 'big-biter') or (event.cause.name == 'big-spitter') or (event.cause.name == 'behemoth-biter') or (event.cause.name == 'behemoth-spitter') then
+	if (event.cause.name == 'small-biter')
+		or (event.cause.name == 'small-spitter')
+		or (event.cause.name == 'medium-biter')
+		or (event.cause.name == 'medium-spitter')
+		or (event.cause.name == 'big-biter')
+		or (event.cause.name == 'big-spitter')
+		or (event.cause.name == 'behemoth-biter')
+		or (event.cause.name == 'behemoth-spitter') then
 		if event.cause.force.name ~= memory.enemy_force_name then return end
 
 		-- play alert sound for all crew members
@@ -1064,7 +1071,7 @@ local function event_on_entity_died(event)
 	local crew_id = Common.get_id_from_force_name(entity.force.name)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
-	if memory.id == 0 then return end
+	if not Common.is_id_valid(memory.id) then return end
 
 	base_kill_rewards(event)
 
@@ -1228,9 +1235,9 @@ local function event_on_player_joined_game(event)
 	end
 
 	local crew_to_put_back_in = nil
-	for _, mem in pairs(global_memory.crew_memories) do
-		if mem.id and mem.crewstatus and mem.crewstatus == Crew.enum.ADVENTURING and mem.temporarily_logged_off_characters[player.index] then
-			crew_to_put_back_in = mem.id
+	for _, memory in pairs(global_memory.crew_memories) do
+		if Common.is_id_valid(memory.id) and memory.crewstatus and memory.crewstatus == Crew.enum.ADVENTURING and memory.temporarily_logged_off_characters[player.index] then
+			crew_to_put_back_in = memory.id
 			break
 		end
 	end
@@ -1267,9 +1274,17 @@ local function event_on_player_joined_game(event)
 
 		-- Auto-join the oldest crew:
 		local ages = {}
-		for _, mem in pairs(global_memory.crew_memories) do
-			if mem.id and mem.crewstatus and mem.crewstatus == Crew.enum.ADVENTURING and mem.capacity and mem.crewplayerindices and #mem.crewplayerindices < mem.capacity and (not (mem.tempbanned_from_joining_data and mem.tempbanned_from_joining_data[player.index] and game.tick < mem.tempbanned_from_joining_data[player.index] + Common.ban_from_rejoining_crew_ticks)) then
-				ages[#ages+1] = {id = mem.id, age = mem.age, large = (mem.capacity >= Common.minimum_run_capacity_to_enforce_space_for)}
+		for _, memory in pairs(global_memory.crew_memories) do
+			if Common.is_id_valid(memory.id)
+				and memory.crewstatus
+				and memory.crewstatus == Crew.enum.ADVENTURING
+				and memory.capacity
+				and memory.crewplayerindices
+				and #memory.crewplayerindices < memory.capacity
+				and (not (memory.tempbanned_from_joining_data
+					and memory.tempbanned_from_joining_data[player.index]
+					and game.tick < memory.tempbanned_from_joining_data[player.index] + Common.ban_from_rejoining_crew_ticks)) then
+				ages[#ages+1] = {id = memory.id, age = memory.age, large = (memory.capacity >= Common.minimum_run_capacity_to_enforce_space_for)}
 			end
 		end
 		table.sort(
@@ -1570,14 +1585,38 @@ function Public.event_on_chunk_generated(event)
 
 			if (p.x >= -width/2 and p.y >=-height/2 and p.x <= width/2 and p.y <= height/2) then
 
-				terrain_fn{p = Utils.psum{p, {1, terraingen_coordinates_offset}}, true_p = p, true_left_top = chunk_left_top, left_top = Utils.psum{chunk_left_top, {1, terraingen_coordinates_offset}}, noise_generator = noise_generator, static_params = static_params, tiles = tiles, entities = entities, decoratives = decoratives, specials = specials, seed = seed, other_map_generation_data = other_map_generation_data, iconized_generation = false}
+				terrain_fn{
+					p = Utils.psum{p, {1, terraingen_coordinates_offset}},
+					true_p = p,
+					true_left_top = chunk_left_top,
+					left_top = Utils.psum{chunk_left_top, {1, terraingen_coordinates_offset}},
+					noise_generator = noise_generator,
+					static_params = static_params,
+					tiles = tiles,
+					entities = entities,
+					decoratives = decoratives,
+					specials = specials,
+					seed = seed,
+					other_map_generation_data = other_map_generation_data,
+					iconized_generation = false
+				}
 			else
 				tiles[#tiles + 1] = {name = 'out-of-map', position = Utils.psum{p, {1, terraingen_coordinates_offset}}}
 			end
 		end
 	end
 
-	chunk_structures_fn{true_left_top = chunk_left_top, left_top = Utils.psum{chunk_left_top, {1, terraingen_coordinates_offset}}, noise_generator = noise_generator, static_params = static_params, specials = specials, entities = entities, seed = seed, other_map_generation_data = other_map_generation_data, biter_base_density_scale = Balance.biter_base_density_scale()}
+	chunk_structures_fn{
+		true_left_top = chunk_left_top,
+		left_top = Utils.psum{chunk_left_top, {1, terraingen_coordinates_offset}},
+		noise_generator = noise_generator,
+		static_params = static_params,
+		specials = specials,
+		entities = entities,
+		seed = seed,
+		other_map_generation_data = other_map_generation_data,
+		biter_base_density_scale = Balance.biter_base_density_scale()
+	}
 
 	local tiles_corrected = {}
 	for i = 1, #tiles do
@@ -1810,7 +1849,7 @@ local remove_boost_movement_speed_on_respawn =
 
 		Memory.set_working_id(crew_id)
 		local memory = Memory.get_crew_memory()
-		if not (memory.id and memory.id > 0) then return end --check if crew disbanded
+		if not Common.is_id_valid(memory.id) then return end --check if crew disbanded
 		if memory.game_lost then return end
 		memory.speed_boost_characters[player.index] = nil
 
@@ -1830,7 +1869,7 @@ local boost_movement_speed_on_respawn =
 
 		Memory.set_working_id(crew_id)
 		local memory = Memory.get_crew_memory()
-		if not (memory.id and memory.id > 0) then return end --check if crew disbanded
+		if not Common.is_id_valid(memory.id) then return end --check if crew disbanded
 		if memory.game_lost then return end
 		memory.speed_boost_characters[player.index] = true
 
