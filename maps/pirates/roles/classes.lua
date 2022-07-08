@@ -31,6 +31,7 @@ local enum = {
 	DREDGER = 'dredger',
 	SMOLDERING = 'smoldering',
 	GOURMET = 'gourmet',
+	CHIEF = 'chief',
 }
 Public.enum = enum
 
@@ -60,6 +61,7 @@ Public.eng_form = {
 	[enum.DREDGER] = 'Dredger',
 	[enum.SMOLDERING] = 'Smoldering',
 	[enum.GOURMET] = 'Gourmet',
+	[enum.CHIEF] = 'Chief',
 }
 
 function Public.display_form(class)
@@ -185,6 +187,7 @@ function Public.initial_class_pool()
 		enum.IRON_LEG,
 		-- enum.SMOLDERING, --tedious
 		enum.GOURMET,
+		enum.CHIEF,
 	}
 end
 

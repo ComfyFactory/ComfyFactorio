@@ -66,6 +66,8 @@ Public.rocket_launch_coin_reward = 5000
  Public.dredger_reach_bonus = 16
  Public.dredger_fish_bonus = 1
  Public.gourmet_ore_scaling_enabled = false
+ Public.chief_fish_received_for_biter_kill = 1
+ Public.chief_fish_received_for_worm_kill = 3
 
 
 function Public.starting_boatEEIpower_production_MW()

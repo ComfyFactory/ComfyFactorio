@@ -928,37 +928,57 @@ local function base_kill_rewards(event)
 	if not (event.force and event.force.valid) then return end
 	local entity_name = entity.name
 
-	-- no worm loot in the maze:
-	local maze = (destination.subtype and destination.subtype == Islands.enum.MAZE)
-	if maze and not (entity_name == 'biter-spawner' or entity_name == 'spitter-spawner') then return end
-
 	local revenge_target
 	if event.cause and event.cause.valid and event.cause.name == 'character' then
 		revenge_target = event.cause
 	end
 
+	local class
+	if revenge_target and
+		revenge_target.valid and
+		revenge_target.player and
+		revenge_target.player.index and
+		memory.classes_table and
+		memory.classes_table[revenge_target.player.index]
+	then
+		class = memory.classes_table[revenge_target.player.index]
+	end
+
+	local class_is_chief = (class and class == Classes.enum.CHIEF) and true or false
+
+
+	-- no worm loot in the maze except for chiefs:
+	local maze = (destination.subtype and destination.subtype == Islands.enum.MAZE)
+	if maze and not (entity_name == 'biter-spawner' or entity_name == 'spitter-spawner') and not (class_is_chief) then return end
+
 	local iron_amount
 	local coin_amount
+	local fish_amount
 
 	if entity_name == 'small-worm-turret' then
 		iron_amount = 5
 		coin_amount = 50
+		fish_amount = 1 * Balance.chief_fish_received_for_worm_kill
 		memory.playtesting_stats.coins_gained_by_nests_and_worms = memory.playtesting_stats.coins_gained_by_nests_and_worms + coin_amount
 	elseif entity_name == 'medium-worm-turret' then
 		iron_amount = 20
 		coin_amount = 90
+		fish_amount = 1 * Balance.chief_fish_received_for_worm_kill
 		memory.playtesting_stats.coins_gained_by_nests_and_worms = memory.playtesting_stats.coins_gained_by_nests_and_worms + coin_amount
 	elseif entity_name == 'biter-spawner' or entity_name == 'spitter-spawner' then
 		iron_amount = 30
 		coin_amount = 100
+		fish_amount = 0 -- cooking spawners don't really fit class fantasy imo
 		memory.playtesting_stats.coins_gained_by_nests_and_worms = memory.playtesting_stats.coins_gained_by_nests_and_worms + coin_amount
 	elseif entity_name == 'big-worm-turret' then
 		iron_amount = 30
 		coin_amount = 140
+		fish_amount = 2 * Balance.chief_fish_received_for_worm_kill
 		memory.playtesting_stats.coins_gained_by_nests_and_worms = memory.playtesting_stats.coins_gained_by_nests_and_worms + coin_amount
 	elseif entity_name == 'behemoth-worm-turret' then
 		iron_amount = 50
 		coin_amount = 260
+		fish_amount = 3 * Balance.chief_fish_received_for_worm_kill
 		memory.playtesting_stats.coins_gained_by_nests_and_worms = memory.playtesting_stats.coins_gained_by_nests_and_worms + coin_amount
 	elseif memory.overworldx > 0 then --avoid coin farming on first island
 		if entity_name == 'small-biter' then
@@ -966,49 +986,62 @@ local function base_kill_rewards(event)
 			-- 	coin_amount = 1
 			-- end
 			coin_amount = 1
+			fish_amount = 1 * Balance.chief_fish_received_for_biter_kill
 			memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
 		elseif entity_name == 'small-spitter' then
 			coin_amount = 1
+			fish_amount = 1 * Balance.chief_fish_received_for_biter_kill
 			memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
 		elseif entity_name == 'medium-biter' then
 			coin_amount = 2
+			fish_amount = 1 * Balance.chief_fish_received_for_biter_kill
 			memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
 		elseif entity_name == 'medium-spitter' then
 			coin_amount = 2
+			fish_amount = 1 * Balance.chief_fish_received_for_biter_kill
 			memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
 		elseif entity_name == 'big-biter' then
 			coin_amount = 4
+			fish_amount = 2 * Balance.chief_fish_received_for_biter_kill
 			memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
 		elseif entity_name == 'big-spitter' then
 			coin_amount = 4
+			fish_amount = 2 * Balance.chief_fish_received_for_biter_kill
 			memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
 		elseif entity_name == 'behemoth-biter' then
 			coin_amount = 8
+			fish_amount = 3 * Balance.chief_fish_received_for_biter_kill
 			memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
 		elseif entity_name == 'behemoth-spitter' then
 			coin_amount = 8
+			fish_amount = 3 * Balance.chief_fish_received_for_biter_kill
 			memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
 		end
 	end
 
-	if coin_amount then
-		local stack
-		if iron_amount then
-			stack = {{name = 'iron-plate', count = iron_amount}, {name = 'coin', count = coin_amount}}
-		else
-			stack = {{name = 'coin', count = coin_amount}}
-		end
+	local stack = {}
 
-		local short_form = (not iron_amount) and true or false
+	if iron_amount and iron_amount > 0 then
+		stack[#stack + 1] = {name = 'iron-plate', count = iron_amount}
+	end
 
-		if revenge_target then
-			Common.give(revenge_target.player, stack, revenge_target.player.position, short_form, entity.surface, entity.position)
+	if coin_amount and coin_amount > 0 then
+		stack[#stack + 1] = {name = 'coin', count = coin_amount}
+	end
+
+	if class_is_chief and fish_amount and fish_amount > 0 then
+		stack[#stack + 1] = {name = 'raw-fish', count = fish_amount}
+	end
+
+	local short_form = (not iron_amount) and true or false
+
+	if revenge_target then
+		Common.give(revenge_target.player, stack, revenge_target.player.position, short_form, entity.surface, entity.position)
+	else
+		if event.cause and event.cause.valid and event.cause.position then
+			Common.give(nil, stack, event.cause.position, short_form, entity.surface, entity.position)
 		else
-			if event.cause and event.cause.valid and event.cause.position then
-				Common.give(nil, stack, event.cause.position, short_form, entity.surface, entity.position)
-			else
-				Common.give(nil, stack, entity.position, short_form, entity.surface)
-			end
+			Common.give(nil, stack, entity.position, short_form, entity.surface)
 		end
 	end
 
