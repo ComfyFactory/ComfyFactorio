@@ -73,6 +73,8 @@ function Public.spawn_treasure_maps(destination, points_to_avoid)
 
 		local p = Hunt.mid_farness_position_1(args, points_to_avoid)
 
+		-- game.print(p)
+
 		map.position = p
 		map.mapobject_rendering = rendering.draw_sprite{
 			surface = surface,

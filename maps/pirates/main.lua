@@ -184,6 +184,7 @@ local function crew_tick()
 				PiratesApiOnTick.update_alert_sound_frequency_tracker()
 				PiratesApiOnTick.check_for_cliff_explosives_in_hold_wooden_chests()
 				PiratesApiOnTick.equalise_fluid_storages() -- Made the update less often for small performance gain, but frequency can be increased if players complain
+				PiratesApiOnTick.revealed_buried_treasure_distance_check()
 
 				if destination.dynamic_data.timer then
 					destination.dynamic_data.timer = destination.dynamic_data.timer + 1

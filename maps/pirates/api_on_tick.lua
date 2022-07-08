@@ -674,21 +674,26 @@ end
 
 
 function Public.buried_treasure_check(tickinterval)
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 
 	local remaining = destination.dynamic_data.treasure_remaining
 
-	if remaining and remaining > 0 and destination.surface_name and destination.dynamic_data.buried_treasure and #destination.dynamic_data.buried_treasure > 0 then
-		local surface = game.surfaces[destination.surface_name]
-		local treasure_table = destination.dynamic_data.buried_treasure
+	if not (remaining and remaining > 0 and destination.surface_name and destination.dynamic_data.buried_treasure and #destination.dynamic_data.buried_treasure > 0) then
+		return
+	end
 
-		for i = 1, #treasure_table do
-			local treasure = treasure_table[i]
-			if not treasure then break end
+	local surface = game.surfaces[destination.surface_name]
+	local treasure_table = destination.dynamic_data.buried_treasure
+
+	for i = 1, #treasure_table do
+		local treasure = treasure_table[i]
+		if not treasure then break end
+
+		local t = treasure.treasure
+
+		if t then
 			local p = treasure.position
-
-
 			local free = surface.can_place_entity{name = 'wooden-chest', position = p}
 
 			if free then
@@ -723,13 +728,6 @@ function Public.buried_treasure_check(tickinterval)
 
 					if inserters[j] and inserters[j][1] then
 						local ins = inserters[j][1]
-
-						local t = treasure.treasure
-						-- if #treasure.treasure > 0 then
-						-- 	t = treasure.treasure
-						-- 	-- t = treasure.treasure[1]
-						-- end
-						if not t then break end
 
 						if destination.dynamic_data.treasure_remaining > 0 and ins.held_stack.count == 0 and ins.status == defines.entity_status.waiting_for_source_items then
 							surface.create_entity{name = 'item-on-ground', position = p, stack = {name = t.name, count = 1}}
@@ -1532,6 +1530,25 @@ function Public.equalise_fluid_storages()
 			for j = 2, #storages do
 				equalise_fluid_storage_pair(storages[j], storages[j-1])
 				equalise_fluid_storage_pair(storages[j-1], storages[j])
+			end
+		end
+	end
+end
+
+function Public.revealed_buried_treasure_distance_check()
+	local destination = Common.current_destination()
+
+	if destination.dynamic_data.some_player_was_close_to_buried_treasure then return end
+
+	local maps = destination.dynamic_data.treasure_maps or {}
+	for _, map in pairs(maps) do
+		if map.state == 'picked_up' then
+			for _, player in pairs(Common.crew_get_crew_members()) do
+				if player.character and player.character.valid then
+					if Math.distance(player.character.position, map.buried_treasure_position) <= 20 then
+						destination.dynamic_data.some_player_was_close_to_buried_treasure = true
+					end
+				end
 			end
 		end
 	end

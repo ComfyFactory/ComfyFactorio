@@ -691,6 +691,8 @@ end
 
 
 function Public.clean_up(destination)
+	-- game.print('clean_up')
+
 	local memory = Memory.get_crew_memory()
 
 	local oldsurface = game.surfaces[destination.surface_name]
@@ -701,11 +703,6 @@ function Public.clean_up(destination)
 	local seasurface = game.surfaces[memory.sea_name]
 
 	Quest.try_resolve_quest()
-	destination.dynamic_data.quest_type = nil
-	destination.dynamic_data.quest_reward = nil
-	destination.dynamic_data.quest_progress = nil
-	destination.dynamic_data.quest_progressneeded = nil
-	destination.dynamic_data.quest_complete = nil
 
 	-- handle players that were left on the island
 	-- if there is more than one crew on a surface, this will need to be generalised

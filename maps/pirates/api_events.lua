@@ -1681,8 +1681,6 @@ function Public.event_on_chunk_generated(event)
 
 			if special.name and special.name == 'buried-treasure' then
 				if destination.dynamic_data.buried_treasure and crewid ~= 0 then
-
-
 					destination.dynamic_data.buried_treasure[#destination.dynamic_data.buried_treasure + 1] = {treasure = Loot.buried_treasure_loot(), position = special.position}
 				end
 			elseif special.name and special.name == 'chest' then
