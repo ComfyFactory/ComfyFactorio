@@ -68,11 +68,11 @@ function Public.display_form(class)
 	return {'pirates.class_' .. class}
 end
 
-function Public.explanation(class)
-	return {'pirates.class_' .. class .. '_explanation'}
-end
+-- function Public.explanation(class)
+-- 	return {'pirates.class_' .. class .. '_explanation'}
+-- end
 
-function Public.explanation_advanced(class, add_is_class_obstainable)
+function Public.explanation(class, add_is_class_obtainable)
 	local explanation = 'pirates.class_' .. class .. '_explanation_advanced'
 	local full_explanation
 
@@ -126,7 +126,7 @@ function Public.explanation_advanced(class, add_is_class_obstainable)
 		full_explanation = {'', {explanation}}
 	end
 
-	if add_is_class_obstainable then
+	if add_is_class_obtainable then
 		full_explanation[#full_explanation + 1] = Public.class_is_obtainable(class) and {'', ' ', {'pirates.class_obtainable'}} or {'', ' ', {'pirates.class_unobtainable'}}
 	end
 

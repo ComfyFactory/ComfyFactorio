@@ -27,7 +27,7 @@ local function add_class_entry(player, class, taken_by_player_index, index)
 
 
 	-- Class label
-	local explanation = Classes.explanation_advanced(class, false)
+	local explanation = Classes.explanation(class, false)
 	local full_explanation
 
 	if Classes.class_purchase_requirement[class] then

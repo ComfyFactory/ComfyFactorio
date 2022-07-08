@@ -231,30 +231,30 @@ end)
 -- 	player.print('[color=gray]' .. Roles.get_classes_print_string() .. '[/color]')
 -- end)
 
+-- commands.add_command(
+-- 'classinfo',
+-- {'pirates.cmd_explain_classinfo'},
+-- function(cmd)
+-- 	local param = tostring(cmd.parameter)
+-- 	local player = game.players[cmd.player_index]
+-- 	if not Common.validate_player(player) then return end
+
+-- 	if param and param ~= 'nil' then
+-- 		local string = Roles.get_class_print_string(param, false)
+-- 		if string then
+-- 			Common.notify_player_expected(player, {'', {'pirates.class_definition_for'}, ' ', string})
+-- 		else
+-- 			Common.notify_player_error(player, {'pirates.cmd_error_invalid_class_name', param})
+-- 		end
+-- 	else
+-- 		--Common.notify_player_expected(player, '/classinfo {classname} returns the definition of the named class.')
+-- 		Common.notify_player_expected(player, {'', '/classinfo ', {'pirates.cmd_explain_classinfo'}})
+-- 	end
+-- end)
+
 commands.add_command(
 'classinfo',
 {'pirates.cmd_explain_classinfo'},
-function(cmd)
-	local param = tostring(cmd.parameter)
-	local player = game.players[cmd.player_index]
-	if not Common.validate_player(player) then return end
-
-	if param and param ~= 'nil' then
-		local string = Roles.get_class_print_string(param, false)
-		if string then
-			Common.notify_player_expected(player, {'', {'pirates.class_definition_for'}, ' ', string})
-		else
-			Common.notify_player_error(player, {'pirates.cmd_error_invalid_class_name', param})
-		end
-	else
-		--Common.notify_player_expected(player, '/classinfo {classname} returns the definition of the named class.')
-		Common.notify_player_expected(player, {'', '/classinfo ', {'pirates.cmd_explain_classinfo'}})
-	end
-end)
-
-commands.add_command(
-'classinfofull',
-{'pirates.cmd_explain_classinfofull'},
 function(cmd)
 	cmd_set_memory(cmd)
 	local param = tostring(cmd.parameter)
@@ -262,14 +262,14 @@ function(cmd)
 	if not Common.validate_player(player) then return end
 
 	if param and param ~= 'nil' then
-		local string = Roles.get_class_print_string(param, true, true)
+		local string = Roles.get_class_print_string(param, true)
 		if string then
 			Common.notify_player_expected(player, {'', {'pirates.class_definition_for'}, ' ', string})
 		else
 			Common.notify_player_error(player, {'pirates.cmd_error_invalid_class_name', param})
 		end
 	else
-		Common.notify_player_expected(player, {'', '/classinfofull ', {'pirates.cmd_explain_classinfofull'}})
+		Common.notify_player_expected(player, {'', '/classinfo ', {'pirates.cmd_explain_classinfo'}})
 	end
 end)
 

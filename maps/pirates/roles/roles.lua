@@ -131,16 +131,11 @@ end
 -- 	return str
 -- end
 
-function Public.get_class_print_string(class, full, add_is_class_obstainable)
+function Public.get_class_print_string(class, add_is_class_obstainable)
 
 	for _, class2 in pairs(Classes.enum) do
 		if Classes.eng_form[class2]:lower() == class:lower() or class2 == class:lower() then
-			local explanation
-			if full then
-				explanation = Classes.explanation_advanced(class2, add_is_class_obstainable)
-			else
-				explanation = Classes.explanation(class2)
-			end
+			local explanation = Classes.explanation(class2, add_is_class_obstainable)
 
 			if Classes.class_purchase_requirement[class2] then
 				return {'pirates.class_explanation_upgraded_class', Classes.display_form(class2), Classes.display_form(Classes.class_purchase_requirement[class2]), explanation}
