@@ -272,7 +272,7 @@ function Public.join_spectators(player, crewid)
 		Public.player_abandon_endorsements(player)
 		local c = player.character
 		player.set_controller{type = defines.controllers.spectator}
-		player.teleport(memory.spawnpoint, game.surfaces[Common.current_destination().surface_name])
+		player.teleport(memory.spawnpoint, game.surfaces[memory.boat.surface_name])
 		player.force = force
 		player.associate_character(c)
 
