@@ -213,7 +213,7 @@ local function get_saved_entity(entity, index)
 end
 
 local function replace_entity(cars, entity, index)
-    local has_upgraded_health_pool = WPT.get('has_upgraded_health_pool')
+    local upgrades = WPT.get('upgrades')
     local unit_number = entity.unit_number
     local health = floor(2000 * entity.health * 0.002)
     for k, car in pairs(cars) do
@@ -224,7 +224,7 @@ local function replace_entity(cars, entity, index)
             cars[unit_number].saved_entity = nil
             cars[unit_number].transfer_entities = car.transfer_entities
             cars[unit_number].health_pool = {
-                enabled = has_upgraded_health_pool or false,
+                enabled = upgrades.has_upgraded_health_pool or false,
                 health = health,
                 max = health
             }
@@ -1098,7 +1098,7 @@ function Public.create_car(event)
     end
 
     local renders = IC.get('renders')
-    local has_upgraded_health_pool = WPT.get('has_upgraded_health_pool')
+    local upgrades = WPT.get('upgrades')
 
     local name, mined = get_player_entity(player)
 
@@ -1148,7 +1148,7 @@ function Public.create_car(event)
         },
         doors = {},
         health_pool = {
-            enabled = has_upgraded_health_pool or false,
+            enabled = upgrades.has_upgraded_health_pool or false,
             health = health,
             max = health
         },
@@ -1352,7 +1352,7 @@ function Public.check_entity_healths()
         ['spidertron'] = 3000
     }
 
-    for k, car in pairs(cars) do
+    for _, car in pairs(cars) do
         local m = car.health_pool.health / car.health_pool.max
 
         if car.health_pool.health > car.health_pool.max then

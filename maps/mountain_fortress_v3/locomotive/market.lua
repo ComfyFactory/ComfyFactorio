@@ -44,34 +44,28 @@ local function add_space(frame)
 end
 
 local function get_items()
-    local chest_limit_outside_upgrades = WPT.get('chest_limit_outside_upgrades')
-    local health_upgrades = WPT.get('health_upgrades')
-    local pickaxe_tier = WPT.get('pickaxe_tier')
-    local aura_upgrades = WPT.get('aura_upgrades')
+    local market_limits = WPT.get('market_limits')
     local main_market_items = WPT.get('main_market_items')
-    local xp_points_upgrade = WPT.get('xp_points_upgrade')
     local flame_turret = WPT.get('upgrades').flame_turret.bought
-    local landmine = WPT.get('upgrades').landmine.bought
+    local upgrades = WPT.get('upgrades')
     local fixed_prices = WPT.get('marked_fixed_prices')
-    local health_upgrades_limit = WPT.get('health_upgrades_limit')
-    local has_upgraded_health_pool = WPT.get('has_upgraded_health_pool')
 
-    local chest_limit_cost = round(fixed_prices.chest_limit_cost * (1 + chest_limit_outside_upgrades))
-    local health_cost = round(fixed_prices.health_cost * (1 + health_upgrades))
-    local pickaxe_cost = round(fixed_prices.pickaxe_cost * (0.1 + pickaxe_tier / 2))
-    local aura_cost = round(fixed_prices.aura_cost * (1 + aura_upgrades))
-    local xp_point_boost_cost = round(fixed_prices.xp_point_boost_cost * (1 + xp_points_upgrade))
+    local chests_outside_cost = round(fixed_prices.chests_outside_cost * (1 + upgrades.chests_outside_upgrades))
+    local health_cost = round(fixed_prices.health_cost * (1 + upgrades.health_upgrades))
+    local pickaxe_cost = round(fixed_prices.pickaxe_cost * (0.1 + upgrades.pickaxe_tier / 2))
+    local aura_cost = round(fixed_prices.aura_cost * (1 + upgrades.aura_upgrades))
+    local xp_point_boost_cost = round(fixed_prices.xp_point_boost_cost * (1 + upgrades.xp_points_upgrade))
     local explosive_bullets_cost = round(fixed_prices.explosive_bullets_cost)
     local redraw_mystical_chest_cost = round(fixed_prices.redraw_mystical_chest_cost)
     local flamethrower_turrets_cost = round(fixed_prices.flamethrower_turrets_cost * (1 + flame_turret))
-    local land_mine_cost = round(fixed_prices.land_mine_cost * (1 + landmine))
+    local land_mine_cost = round(fixed_prices.land_mine_cost * (1 + upgrades.landmine.bought))
     local car_health_upgrade_pool = fixed_prices.car_health_upgrade_pool_cost
 
-    local pickaxe_tiers = WPT.pickaxe_upgrades
-    local tier = WPT.get('pickaxe_tier')
-    local offer = pickaxe_tiers[tier]
+    local pickaxe_upgrades = WPT.pickaxe_upgrades
 
-    if pickaxe_tier >= 59 then
+    local offer = pickaxe_upgrades[upgrades.pickaxe_tier]
+
+    if upgrades.pickaxe_tier >= market_limits.pickaxe_tier_limit then
         main_market_items['upgrade_pickaxe'] = {
             stack = 1,
             value = 'coin',
@@ -87,7 +81,7 @@ local function get_items()
             stack = 1,
             value = 'coin',
             price = pickaxe_cost,
-            tooltip = ({'main_market.purchase_pickaxe', offer, pickaxe_tier - 1}),
+            tooltip = ({'main_market.purchase_pickaxe', offer, upgrades.pickaxe_tier, market_limits.pickaxe_tier_limit}),
             sprite = 'achievement/delivery-service',
             enabled = true,
             upgrade = true,
@@ -95,11 +89,11 @@ local function get_items()
         }
     end
 
-    if chest_limit_outside_upgrades == 8 then
+    if upgrades.chests_outside_upgrades == market_limits.chests_outside_limit then
         main_market_items['chest_limit_outside'] = {
             stack = 1,
             value = 'coin',
-            price = chest_limit_cost,
+            price = chests_outside_cost,
             tooltip = ({'locomotive.limit_reached'}),
             sprite = 'achievement/so-long-and-thanks-for-all-the-fish',
             enabled = false,
@@ -110,8 +104,8 @@ local function get_items()
         main_market_items['chest_limit_outside'] = {
             stack = 1,
             value = 'coin',
-            price = chest_limit_cost,
-            tooltip = ({'main_market.chest', chest_limit_outside_upgrades - 1}),
+            price = chests_outside_cost,
+            tooltip = ({'main_market.chest', upgrades.chests_outside_upgrades, market_limits.chests_outside_limit}),
             sprite = 'achievement/so-long-and-thanks-for-all-the-fish',
             enabled = true,
             upgrade = true,
@@ -119,7 +113,7 @@ local function get_items()
         }
     end
 
-    if health_upgrades >= health_upgrades_limit then
+    if upgrades.health_upgrades >= market_limits.health_upgrades_limit then
         main_market_items['locomotive_max_health'] = {
             stack = 1,
             value = 'coin',
@@ -135,7 +129,7 @@ local function get_items()
             stack = 1,
             value = 'coin',
             price = health_cost,
-            tooltip = ({'main_market.locomotive_max_health', health_upgrades - 1}),
+            tooltip = ({'main_market.locomotive_max_health', upgrades.health_upgrades, market_limits.health_upgrades_limit}),
             sprite = 'achievement/getting-on-track',
             enabled = true,
             upgrade = true,
@@ -143,18 +137,31 @@ local function get_items()
         }
     end
 
-    main_market_items['locomotive_xp_aura'] = {
-        stack = 1,
-        value = 'coin',
-        price = aura_cost,
-        tooltip = ({'main_market.locomotive_xp_aura', aura_upgrades}),
-        sprite = 'achievement/tech-maniac',
-        enabled = true,
-        upgrade = true,
-        static = true
-    }
+    if upgrades.locomotive_aura_radius == market_limits.aura_limit then
+        main_market_items['locomotive_aura_radius'] = {
+            stack = 1,
+            value = 'coin',
+            price = aura_cost,
+            tooltip = ({'locomotive.limit_reached'}),
+            sprite = 'achievement/tech-maniac',
+            enabled = false,
+            upgrade = true,
+            static = true
+        }
+    else
+        main_market_items['locomotive_aura_radius'] = {
+            stack = 1,
+            value = 'coin',
+            price = aura_cost,
+            tooltip = ({'main_market.locomotive_aura_radius', upgrades.locomotive_aura_radius, market_limits.aura_limit}),
+            sprite = 'achievement/tech-maniac',
+            enabled = true,
+            upgrade = true,
+            static = true
+        }
+    end
 
-    if has_upgraded_health_pool then
+    if upgrades.has_upgraded_health_pool then
         main_market_items['car_health_upgrade_pool'] = {
             stack = 1,
             value = 'coin',
@@ -181,7 +188,7 @@ local function get_items()
         stack = 1,
         value = 'coin',
         price = xp_point_boost_cost,
-        tooltip = ({'main_market.xp_points_boost', xp_points_upgrade}),
+        tooltip = ({'main_market.xp_points_boost', upgrades.xp_points_upgrade}),
         sprite = 'achievement/trans-factorio-express',
         enabled = true,
         upgrade = true,
@@ -199,7 +206,7 @@ local function get_items()
         static = true
     }
 
-    if WPT.get('explosive_bullets') then
+    if upgrades.explosive_bullets_purchased then
         main_market_items['explosive_bullets'] = {
             stack = 1,
             value = 'coin',
@@ -222,6 +229,7 @@ local function get_items()
             static = true
         }
     end
+
     main_market_items['flamethrower_turrets'] = {
         stack = 1,
         value = 'coin',
@@ -236,7 +244,7 @@ local function get_items()
         stack = 1,
         value = 'coin',
         price = land_mine_cost,
-        tooltip = ({'main_market.land_mine', landmine}),
+        tooltip = ({'main_market.land_mine', upgrades.landmine.bought}),
         sprite = 'achievement/watch-your-step',
         enabled = true,
         upgrade = true,
@@ -802,6 +810,9 @@ local function gui_opened(event)
     end
 
     local frame, inside_table = Gui.add_main_frame_with_toolbar(player, 'screen', main_frame_name, nil, close_market_gui_name, 'Market')
+    if not inside_table then
+        return
+    end
     frame.auto_center = true
 
     player.opened = frame
@@ -933,11 +944,10 @@ local function gui_click(event)
     if name == 'upgrade_pickaxe' then
         player.remove_item({name = item.value, count = item.price})
 
-        this.pickaxe_tier = this.pickaxe_tier + item.stack
+        this.upgrades.pickaxe_tier = this.upgrades.pickaxe_tier + item.stack
 
-        local pickaxe_tiers = WPT.pickaxe_upgrades
-        local tier = this.pickaxe_tier
-        local offer = pickaxe_tiers[tier]
+        local pickaxe_upgrades = WPT.pickaxe_upgrades
+        local offer = pickaxe_upgrades[this.upgrades.pickaxe_tier]
 
         local message = ({
             'locomotive.pickaxe_bought_info',
@@ -949,7 +959,7 @@ local function gui_click(event)
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
-                player.name .. ' has upgraded the teams pickaxe to tier ' .. tier .. ' for ' .. format_number(item.price, true) .. ' coins.'
+                player.name .. ' has upgraded the teams pickaxe to tier ' .. this.upgrades.pickaxe_tier .. ' for ' .. format_number(item.price, true) .. ' coins.'
             }
         )
 
@@ -963,9 +973,10 @@ local function gui_click(event)
         return
     end
     if name == 'chest_limit_outside' then
-        if this.chest_limit_outside_upgrades == 7 then
+        if this.upgrades.chests_outside_upgrades == this.market_limits.chests_outside_limit then
             redraw_market_items(data.item_frame, player, data.search_text)
             player.print(({'locomotive.chests_full'}), {r = 0.98, g = 0.66, b = 0.22})
+            return
         end
         player.remove_item({name = item.value, count = item.price})
 
@@ -976,7 +987,7 @@ local function gui_click(event)
                 player.name .. ' has bought the chest limit upgrade for ' .. format_number(item.price, true) .. ' coins.'
             }
         )
-        this.chest_limit_outside_upgrades = this.chest_limit_outside_upgrades + item.stack
+        this.upgrades.chests_outside_upgrades = this.upgrades.chests_outside_upgrades + item.stack
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
@@ -1017,8 +1028,8 @@ local function gui_click(event)
             end
         end
 
-        this.train_upgrades = this.train_upgrades + item.stack
-        this.health_upgrades = this.health_upgrades + item.stack
+        this.upgrades.train_upgrades = this.upgrades.train_upgrades + item.stack
+        this.upgrades.health_upgrades = this.upgrades.health_upgrades + item.stack
         rendering.set_text(this.health_text, 'HP: ' .. round(this.locomotive_health) .. ' / ' .. round(this.locomotive_max_health))
 
         redraw_market_items(data.item_frame, player, data.search_text)
@@ -1026,7 +1037,12 @@ local function gui_click(event)
 
         return
     end
-    if name == 'locomotive_xp_aura' then
+    if name == 'locomotive_aura_radius' then
+        if this.upgrades.locomotive_aura_radius == this.market_limits.aura_limit then
+            redraw_market_items(data.item_frame, player, data.search_text)
+            player.print(({'locomotive.limit_reached'}), {r = 0.98, g = 0.66, b = 0.22})
+            return
+        end
         player.remove_item({name = item.value, count = item.price})
 
         local message = ({'locomotive.aura_bought_info', shopkeeper, player.name, format_number(item.price, true)})
@@ -1037,9 +1053,9 @@ local function gui_click(event)
                 player.name .. ' has bought the locomotive xp aura modifier for ' .. format_number(item.price, true) .. ' coins.'
             }
         )
-        this.locomotive_xp_aura = this.locomotive_xp_aura + 5
-        this.aura_upgrades = this.aura_upgrades + item.stack
-        this.train_upgrades = this.train_upgrades + item.stack
+        this.upgrades.locomotive_aura_radius = this.upgrades.locomotive_aura_radius + 5
+        this.upgrades.aura_upgrades = this.upgrades.aura_upgrades + item.stack
+        this.upgrades.train_upgrades = this.upgrades.train_upgrades + item.stack
 
         if this.circle then
             rendering.destroy(this.circle)
@@ -1050,7 +1066,7 @@ local function gui_click(event)
             target = this.locomotive,
             color = this.locomotive.color,
             filled = false,
-            radius = this.locomotive_xp_aura,
+            radius = this.upgrades.locomotive_aura_radius,
             only_in_alt_mode = true
         }
 
@@ -1070,9 +1086,9 @@ local function gui_click(event)
                 player.name .. ' has bought the XP points modifier for ' .. format_number(item.price) .. ' coins.'
             }
         )
-        this.xp_points = this.xp_points + 0.5
-        this.xp_points_upgrade = this.xp_points_upgrade + item.stack
-        this.train_upgrades = this.train_upgrades + item.stack
+        this.upgrades.xp_points = this.upgrades.xp_points + 0.5
+        this.upgrades.xp_points_upgrade = this.upgrades.xp_points_upgrade + item.stack
+        this.upgrades.train_upgrades = this.upgrades.train_upgrades + item.stack
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
@@ -1115,7 +1131,7 @@ local function gui_click(event)
             }
         )
         RPG.enable_explosive_bullets(true)
-        this.explosive_bullets = true
+        this.upgrades.explosive_bullets_purchased = true
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
@@ -1138,8 +1154,7 @@ local function gui_click(event)
                 player.name .. ' has bought the global car health modifier for ' .. format_number(item.price) .. ' coins.'
             }
         )
-        this.has_upgraded_health_pool = true
-        this.explosive_bullets = true
+        this.upgrades.has_upgraded_health_pool = true
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)

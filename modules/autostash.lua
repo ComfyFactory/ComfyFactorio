@@ -5,9 +5,11 @@ local Global = require 'utils.global'
 local SpamProtection = require 'utils.spam_protection'
 local Event = require 'utils.event'
 local BottomFrame = require 'utils.gui.bottom_frame'
-local ComfyGui = require 'utils.gui'
+local Gui = require 'utils.gui'
 local floor = math.floor
 local print_color = {r = 120, g = 255, b = 0}
+
+local auto_stash_button_name = Gui.uid()
 
 local this = {
     floating_text_y_offsets = {},
@@ -585,12 +587,12 @@ local function create_gui_button(player)
             end
         end
     else
-        if ComfyGui.get_mod_gui_top_frame() then
-            ComfyGui.add_mod_button(
+        if Gui.get_mod_gui_top_frame() then
+            Gui.add_mod_button(
                 player,
                 {
                     type = 'sprite-button',
-                    name = 'auto_stash',
+                    name = auto_stash_button_name,
                     sprite = 'item/wooden-chest',
                     tooltip = tooltip
                 }
@@ -601,7 +603,7 @@ local function create_gui_button(player)
                 {
                     type = 'sprite-button',
                     sprite = 'item/wooden-chest',
-                    name = 'auto_stash',
+                    name = auto_stash_button_name,
                     tooltip = tooltip
                 }
             )
@@ -645,31 +647,21 @@ local function on_player_joined_game(event)
     create_gui_button(game.players[event.player_index])
 end
 
-local function on_gui_click(event)
-    if not event.element then
-        return
-    end
-    if not event.element.valid then
-        return
-    end
-    local player = game.players[event.player_index]
-    local name = 'auto_stash'
-    if this.bottom_button then
-        local data = BottomFrame.get('bottom_quickbar_button')
-        if data and data[player.index] then
-            data = data[player.index]
-            name = data.name
-        end
-    end
-
-    if event.element.name == name then
-        local is_spamming = SpamProtection.is_spamming(player, nil, 'Autostash Click')
+Gui.on_click(
+    auto_stash_button_name,
+    function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Autostash click')
         if is_spamming then
             return
         end
-        auto_stash(player, event)
+        local player = event.player
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        auto_stash(event.player, event)
     end
-end
+)
 
 function Public.insert_into_furnace(value)
     if value then
@@ -702,6 +694,14 @@ Event.on_configuration_changed(do_whitelist)
 
 Event.on_init(do_whitelist)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
-Event.add(defines.events.on_gui_click, on_gui_click)
+
+Event.add(
+    BottomFrame.events.bottom_quickbar_button_name,
+    function(data)
+        local event = data.event
+        local player = event.player
+        auto_stash(player, event)
+    end
+)
 
 return Public

@@ -4,6 +4,8 @@ local Poll = {
 }
 local Token = require 'utils.token'
 local Server = require 'utils.server'
+local branch_version = '1.1' -- define what game version we're using
+local sub = string.sub
 
 --- This module is for the web server to call functions and raise events.
 -- Not intended to be called by scripts.
@@ -47,6 +49,50 @@ local SC_Interface = {
 
 if not remote.interfaces['ServerCommands'] then
     remote.add_interface('ServerCommands', SC_Interface)
+end
+
+function get_game_version()
+    local get_active_branch = sub(game.active_mods.base, 3, 4)
+    local is_branch_experimental = sub(branch_version, 3, 4)
+    if get_active_branch >= is_branch_experimental then
+        return true
+    else
+        return false
+    end
+end
+
+function is_loaded(module)
+    local res = _G.package.loaded[module]
+    if res then
+        return res
+    else
+        return false
+    end
+end
+
+function is_game_modded()
+    local active_mods = game.active_mods
+    local i = 0
+    for _, _ in pairs(active_mods) do
+        i = i + 1
+        if i > 1 then
+            return true
+        end
+    end
+    return false
+end
+
+function is_mod_loaded(module)
+    if not module then
+        return false
+    end
+
+    local res = game.active_mods[module]
+    if res then
+        return true
+    else
+        return false
+    end
 end
 
 return ServerCommands

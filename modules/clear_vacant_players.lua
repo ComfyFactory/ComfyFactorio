@@ -41,7 +41,7 @@ function Public.remove_offline_players()
         for i = 1, #this.offline_players, 1 do
             if this.offline_players[i] and this.offline_players[i].index then
                 local target = game.get_player(this.offline_players[i].index)
-                if target then
+                if target and target.valid then
                     if target.connected then
                         this.offline_players[i] = nil
                     else

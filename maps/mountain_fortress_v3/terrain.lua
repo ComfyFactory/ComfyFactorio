@@ -817,6 +817,8 @@ local function zone_10(x, y, data, _, adjusted_zones)
     local entities = data.entities
     local buildings = data.buildings
     local treasure = data.treasure
+    data.forest_zone = true
+    data.slow_movement_zone = true
 
     local scrapyard = get_perlin('scrapyard', p, seed)
     local smol_areas = get_perlin('smol_areas', p, seed + 45000)
@@ -2589,6 +2591,7 @@ local function init_terrain(adjusted_zones)
             shuffle_again[inc] = map
         end
     end
+    shuffle_again = shuffle(shuffle_again)
 
     adjusted_zones.size = size
     adjusted_zones.shuffled_zones = shuffle_again
@@ -2620,6 +2623,10 @@ local function process_bits(p, data, adjusted_zones)
 
     if data.scrap_zone and not adjusted_zones.scrap[index] then
         adjusted_zones.scrap[index] = true
+    end
+
+    if data.slow_movement_zone and not adjusted_zones.slow_movement[index] then
+        adjusted_zones.slow_movement[index] = true
     end
 
     local void_or_tile = WPT.get('void_or_tile')

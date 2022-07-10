@@ -536,7 +536,7 @@ local function increase_biter_damage()
     end
 
     local e = game.forces.enemy
-    local new = Difficulty.get().difficulty_vote_value * 0.04
+    local new = Difficulty.get('value') * 0.04
     local melee = new
     local bio = new - 0.02
     local e_old_melee = e.get_ammo_damage_modifier('melee')

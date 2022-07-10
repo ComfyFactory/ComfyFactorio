@@ -19,7 +19,6 @@ local nth_tick = Public.nth_tick
 --RPG Frames
 local main_frame_name = Public.main_frame_name
 
-local sub = string.sub
 local round = math.round
 local floor = math.floor
 local random = math.random
@@ -48,8 +47,7 @@ local function on_gui_click(event)
         end
     end
 
-    local surface_name = Public.get('rpg_extra').surface_name
-    if sub(player.surface.name, 0, #surface_name) ~= surface_name then
+    if not Public.check_is_surface_valid(player) then
         return
     end
 
@@ -459,8 +457,7 @@ local function on_entity_damaged(event)
 
     local p = cause.player
 
-    local surface_name = Public.get('rpg_extra').surface_name
-    if sub(p.surface.name, 0, #surface_name) ~= surface_name then
+    if not Public.check_is_surface_valid(p) then
         return
     end
 
@@ -670,16 +667,11 @@ local function on_pre_player_mined_item(event)
         return
     end
 
-    local surface_name = Public.get('rpg_extra').surface_name
-    if sub(player.surface.name, 0, #surface_name) ~= surface_name then
+    if not Public.check_is_surface_valid(player) then
         return
     end
 
     local rpg_t = Public.get_value_from_player(player.index)
-    if not rpg_t then
-        return
-    end
-
     if rpg_t.last_mined_entity_position.x == entity.position.x and rpg_t.last_mined_entity_position.y == entity.position.y then
         return
     end
@@ -701,9 +693,6 @@ local function on_pre_player_mined_item(event)
     if player.gui.screen[main_frame_name] then
         local f = player.gui.screen[main_frame_name]
         local data = Gui.get_data(f)
-        if not data then
-            return
-        end
         if data.exp_gui and data.exp_gui.valid then
             data.exp_gui.caption = floor(rpg_t.xp)
         end
@@ -858,7 +847,6 @@ end
 
 local function on_player_used_capsule(event)
     local enable_mana = Public.get('rpg_extra').enable_mana
-    local surface_name = Public.get('rpg_extra').surface_name
     if not enable_mana then
         return
     end
@@ -875,7 +863,7 @@ local function on_player_used_capsule(event)
         return
     end
 
-    if sub(player.surface.name, 0, #surface_name) ~= surface_name then
+    if not Public.check_is_surface_valid(player) then
         return
     end
 

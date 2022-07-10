@@ -113,6 +113,16 @@ function Public.iter_connected_players(callback)
     end
 end
 
+--- Iterates over all players
+---@param callback function
+function Public.iter_players(callback)
+    local players = game.players
+    for i = 1, #players do
+        local player = players[i]
+        callback(player)
+    end
+end
+
 function Public.cast_bool(var)
     if var then
         return true

@@ -1194,11 +1194,14 @@ local function show_mvps(player)
             local collapse_amount = Collapse.get_amount()
 
             local diff = Diff.get()
+            if not diff then
+                return
+            end
             local time_played = Core.format_time(game.ticks_played)
             local total_players = #game.players
-            local pickaxe_tiers = WPT.pickaxe_upgrades
-            local tier = WPT.get('pickaxe_tier')
-            local pick_tier = pickaxe_tiers[tier]
+            local pickaxe_upgrades = WPT.pickaxe_upgrades
+            local upgrades = WPT.get('upgrades')
+            local pick_tier = pickaxe_upgrades[upgrades.pickaxe_tier]
 
             local server_name_matches = Server.check_server_name('Mtn Fortress')
             if WPT.get('prestige_system_enabled') then
@@ -1207,7 +1210,7 @@ local function show_mvps(player)
             local date = Server.get_start_time()
             game.server_save('Final_Mtn_Fortress_v3_' .. tostring(date))
             local text = {
-                title = 'Game over <:helper:627426785918713877>',
+                title = 'Game over!',
                 description = 'Game statistics from the game is below',
                 color = 'failure',
                 field1 = {
@@ -1241,7 +1244,7 @@ local function show_mvps(player)
                 },
                 field6 = {
                     text1 = 'Pickaxe Upgrade:',
-                    text2 = pick_tier .. ' (' .. tier .. ')',
+                    text2 = pick_tier .. ' (' .. pick_tier .. ')',
                     inline = 'true',
                     emptyField = 'true',
                     emptyInline = 'true'

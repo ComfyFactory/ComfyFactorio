@@ -128,7 +128,7 @@ Gui.on_click(
 
         local top_panel = element.parent.parent
         local data = Gui.get_data(top_panel)
-        if not data or not data.valid then
+        if not data then
             return
         end
 

@@ -41,7 +41,6 @@ local AntiGrief = require 'utils.antigrief'
 local Misc = require 'utils.commands.misc'
 local Modifiers = require 'utils.player_modifiers'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
-local Reset = require 'functions.soft_reset'
 local JailData = require 'utils.datastore.jail_data'
 local RPG_Progression = require 'utils.datastore.rpg_data'
 local OfflinePlayers = require 'modules.clear_vacant_players'
@@ -143,13 +142,10 @@ local announce_new_map =
 )
 
 function Public.reset_map()
-    local Diff = Difficulty.get()
     local this = WPT.get()
     local wave_defense_table = WD.get_table()
     Misc.set('creative_are_you_sure', false)
     Misc.set('creative_enabled', false)
-
-    Reset.enable_mapkeeper(true)
 
     this.active_surface_index = CS.create_surface()
     -- this.soft_reset_counter = CS.get_reset_counter()
@@ -250,8 +246,8 @@ function Public.reset_map()
         raise_event(Gui_mf.events.reset_map, {player_index = player.index})
     end
 
-    Difficulty.reset_difficulty_poll({difficulty_poll_closing_timeout = game.tick + 36000})
-    Diff.gui_width = 20
+    Difficulty.reset_difficulty_poll({closing_timeout = game.tick + 36000})
+    Difficulty.set_gui_width(20)
 
     Collapse.set_kill_entities(false)
     Collapse.set_kill_specific_entities(collapse_kill)
