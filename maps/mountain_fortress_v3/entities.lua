@@ -1211,7 +1211,7 @@ local function show_mvps(player)
             local date = Server.get_start_time()
             game.server_save('Final_Mtn_Fortress_v3_' .. tostring(date))
             local text = {
-                title = 'Game over <:helper:627426785918713877>',
+                title = 'Game over!',
                 description = 'Game statistics from the game is below',
                 color = 'failure',
                 field1 = {
