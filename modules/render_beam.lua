@@ -48,7 +48,7 @@ local speed = 0.06
 ---@return integer
 function Public:new_render()
     local surface = game.get_surface(self.surface_id)
-    return rendering.draw_sprite {target = self.position, sprite = self.sprite, surface = surface}
+    self.render_id = rendering.draw_sprite {target = self.position, sprite = self.sprite, surface = surface}
 end
 
 --- Sets a new target for a given render.
@@ -79,14 +79,14 @@ end
 
 --- Sets the render scale.
 function Public:set_render_scalar_size()
-    if not self.target_id then
-        return
+    if not self.render_id then
+        return self:validate()
     end
 
-    rendering.set_y_scale(self.target_id, 3.5) -- 1.5
-    rendering.set_x_scale(self.target_id, 7) -- 2
+    rendering.set_y_scale(self.render_id, 3.5) -- 1.5
+    rendering.set_x_scale(self.render_id, 7) -- 2
     rendering.set_color(
-        self.target_id,
+        self.render_id,
         {
             r = 1,
             g = 0.7,
@@ -135,6 +135,33 @@ function Public:switch_position()
     end
 end
 
+--- Notifies for a new render
+function Public:notify_new_beam()
+    if not self.notify then
+        self.notify = true
+        local surface = game.get_surface(self.surface_id)
+        game.print('[Orbital] A new orbital strike has been spotted at: [gps=' .. self.position.x .. ',' .. self.position.y .. ',' .. surface.name .. ']')
+    end
+end
+
+--- Renders a new chart
+function Public:render_chart()
+    if self.chart then
+        self.chart.destroy()
+    end
+
+    local surface = game.get_surface(self.surface_id)
+    self.chart =
+        game.forces[self.force].add_chart_tag(
+        surface,
+        {
+            icon = {type = 'virtual', name = 'signal-info'},
+            position = self.position,
+            text = 'Beam'
+        }
+    )
+end
+
 --- Sets a new position for a render.
 function Public:set_new_position()
     self.position = self:change_position(speed, false)
@@ -166,23 +193,15 @@ end
 
 --- Damages entities nearby.
 function Public:damage_entities_nearby()
-    if random(1, 5) == 1 then
+    if random(1, 3) == 1 then
         local surface = game.get_surface(self.surface_id)
-        local radius = 10
         local damage = random(10, 15)
-        local entities = surface.find_entities_filtered({area = {{self.position.x - radius - 4, self.position.y - radius - 6}, {self.position.x + radius + 4, self.position.y + radius + 6}}})
+        local entities = surface.find_entities_filtered({position = self.position, radius = 20, type = 'simple-entity', invert = true})
         for _, entity in pairs(entities) do
             if entity.valid then
                 if entity.health then
                     if entity.force.name ~= 'enemy' then
-                        if entity.name == 'character' then
-                            entity.damage(damage, 'enemy')
-                        else
-                            entity.health = entity.health - damage
-                            if entity.health <= 0 then
-                                entity.die('enemy')
-                            end
-                        end
+                        entity.damage(damage, 'enemy')
                     end
                 end
             end
@@ -191,8 +210,11 @@ function Public:damage_entities_nearby()
 end
 
 --- Validates if a render is valid.
----@return boolean
+---@return boolean|integer
 function Public:validate()
+    if not self.render_id then
+        return self:new_render()
+    end
     if rendering.is_valid(self.render_id) then
         return true
     end
@@ -207,13 +229,38 @@ function Public:destroy_render()
     return self
 end
 
---- Removes a render.
----@param id integer
-function Public:remove_render(id)
-    self:destroy_render()
-
-    remove(this.renders, id)
+--- Destroys a render.
+function Public:destroy_chart()
+    if self.chart then
+        self.chart.destroy()
+    end
     return self
+end
+
+--- Removes a render.
+function Public:remove_render()
+    self:destroy_render()
+    self:destroy_chart()
+
+    remove(this.renders, self.id)
+    return self
+end
+
+function Public:work(tick)
+    if tick < self.ttl then
+        self:render_chart()
+        self:notify_new_beam()
+        self:set_new_position()
+        self:render_fire_damage()
+        self:damage_entities_nearby()
+        if self.random_pos_set and tick > self.random_pos_tick then
+            self:switch_position()
+            self.random_pos_set = nil
+            self.random_pos_tick = nil
+        end
+    else
+        self:remove_render()
+    end
 end
 
 --- Creates a new render.
@@ -221,23 +268,45 @@ end
 ---@param surface userdata
 ---@param ttl integer|nil
 ---@param scalar table|nil
+---@param delayed number|nil
 ---@return table
-function Public.new(sprite, surface, ttl, scalar)
+function Public.new(sprite, surface, ttl, scalar, delayed)
     local render = setmetatable({}, Public.metatable)
     render.surface_id = surface.index
     local position, random_position = render:new_target()
     render.position = position
     render.sprite = sprite
+    render.force = 'player'
     render.target_position = random_position
-    render.render_id = render:new_render()
-    render.ttl = ttl or game.tick + 7200 -- 2 minutes duration
-    if not scalar then
-        render:set_render_scalar_size()
+    render.id = #this.renders + 1
+    if delayed then
+        render.delayed = game.tick + delayed
+        render.ttl = ttl or (game.tick + delayed) + 7200 -- 2 minutes duration
+    else
+        render.ttl = ttl or game.tick + 7200 -- 2 minutes duration
+        render:validate()
+        if not scalar then
+            render:set_render_scalar_size()
+        end
     end
+    render.ttl = ttl or game.tick + 7200 -- 2 minutes duration
 
-    this.renders[#this.renders + 1] = render
+    this.renders[render.id] = render
 
     return render
+end
+
+--- Creates a new defined beam
+---@param surface userdata
+function Public.new_beam(surface)
+    Public.new(Gui.beam, surface)
+end
+
+--- Creates a new defined beam with a delayed action
+---@param surface userdata
+---@param time number
+function Public.new_beam_delayed(surface, time)
+    Public.new(Gui.beam, surface, nil, nil, time)
 end
 
 Event.add(
@@ -249,38 +318,35 @@ Event.add(
 
         local tick = game.tick
 
-        for id, render in pairs(this.renders) do
+        for id = 1, #this.renders, 1 do
+            local render = this.renders[id]
             if render then
-                if tick < render.ttl then
-                    render:set_new_position()
-                    render:render_fire_damage()
-                    render:damage_entities_nearby()
-                    if render.random_pos_set and tick > render.random_pos_tick then
-                        render:switch_position()
-                        render.random_pos_set = nil
-                        render.random_pos_tick = nil
+                if render.delayed then
+                    if tick > render.delayed then
+                        render:work(tick)
                     end
                 else
-                    render:remove_render(id)
+                    render:work(tick)
                 end
             end
         end
     end
 )
+if _DEBUG then
+    commands.add_command(
+        'laser',
+        'new laser',
+        function()
+            local player = game.player
+            if player and player.valid then
+                if not player.admin then
+                    return
+                end
 
-commands.add_command(
-    'laser',
-    'new laser',
-    function()
-        local player = game.player
-        if player and player.valid then
-            if not player.admin then
-                return
+                Public.new_beam_delayed(player.surface, 222)
             end
-
-            Public.new(Gui.beam, player.surface)
         end
-    end
-)
+    )
+end
 
 return Public
