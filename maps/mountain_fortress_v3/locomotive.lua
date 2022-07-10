@@ -4,12 +4,12 @@ local LocomotiveMarket = require 'maps.mountain_fortress_v3.locomotive.market'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local ICFunctions = require 'maps.mountain_fortress_v3.ic.functions'
+local ICT = require 'maps.mountain_fortress_v3.ic.table'
 local Session = require 'utils.datastore.session_data'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 local RPG = require 'modules.rpg.main'
 local Gui = require 'utils.gui'
 local Alert = require 'utils.alert'
-local Math2D = require 'math2d'
 local PermissionGroups = require 'maps.mountain_fortress_v3.locomotive.permission_groups'
 
 local Public = {}
@@ -18,6 +18,7 @@ local rpg_main_frame = RPG.main_frame_name
 local random = math.random
 local floor = math.floor
 local round = math.round
+local sub = string.sub
 
 local clear_items_upon_surface_entry = {
     ['entity-ghost'] = true,
@@ -91,6 +92,123 @@ local function validate_player(player)
     return true
 end
 
+local function death_effects(player)
+    local position = {x = player.position.x - 0.75, y = player.position.y - 1}
+    local b = 0.75
+    for _ = 1, 5, 1 do
+        local p = {
+            (position.x + 0.4) + (b * -1 + math.random(0, b * 20) * 0.1),
+            position.y + (b * -1 + math.random(0, b * 20) * 0.1)
+        }
+        player.surface.create_entity({name = 'flying-text', position = p, text = '☠️', color = {255, math.random(0, 100), 0}})
+    end
+    player.play_sound {path = 'utility/axe_fighting', volume_modifier = 0.9}
+end
+
+local messages = {
+    ' likes to play in magma.',
+    ' got melted.',
+    ' tried to swim in lava.',
+    ' was incinerated.',
+    " couldn't put the fire out.",
+    ' was turned into their molten form.'
+}
+
+local function is_around_train(data)
+    local entity = data.entity
+    local locomotive_aura_radius = data.locomotive_aura_radius + 20
+    local loco = data.locomotive.position
+    local position = entity.position
+    local inside = ((position.x - loco.x) ^ 2 + (position.y - loco.y) ^ 2) < locomotive_aura_radius ^ 2
+
+    if inside then
+        return true
+    end
+    return false
+end
+
+local function hurt_players_outside_of_aura()
+    local Diff = Difficulty.get()
+    if not Diff then
+        return
+    end
+    local death_mode = false
+    if Diff.index == 1 then
+        return
+    elseif Diff.index == 3 then
+        death_mode = true
+    end
+
+    local health_pool_upgrade = false
+
+    local upgrades = WPT.get('upgrades')
+    if upgrades.has_upgraded_health_pool then
+        health_pool_upgrade = true
+    end
+
+    local loco_surface = WPT.get('loco_surface')
+    if not (loco_surface and loco_surface.valid) then
+        return
+    end
+    local locomotive = WPT.get('locomotive')
+    local loco = locomotive.position
+
+    local players = game.connected_players
+    for i = 1, #players do
+        local player = players[i]
+        if validate_player(player) then
+            local map_name = 'mtn_v3'
+
+            if sub(player.surface.name, 0, #map_name) == map_name then
+                local position = player.position
+                local inside = ((position.x - loco.x) ^ 2 + (position.y - loco.y) ^ 2) < upgrades.locomotive_aura_radius ^ 2
+                if not inside then
+                    death_effects(player)
+                    player.surface.create_entity({name = 'fire-flame', position = position})
+                    if random(1, 3) == 1 then
+                        player.surface.create_entity({name = 'medium-scorchmark', position = position, force = 'neutral'})
+                    end
+                    local entity = player.character
+                    if entity and entity.valid then
+                        local max_health = entity.prototype.max_health
+                        local vehicle = player.vehicle
+                        if death_mode then
+                            if vehicle and vehicle.valid then
+                                vehicle.die()
+                            end
+                            if entity.name == 'character' then
+                                game.print(player.name .. messages[random(1, #messages)], {r = 200, g = 0, b = 0})
+                            end
+                            entity.die()
+                        else
+                            if vehicle and vehicle.valid then
+                                local v_health = vehicle.prototype.max_health
+                                if not health_pool_upgrade then
+                                    vehicle.health = vehicle.health - (v_health / 20)
+                                else
+                                    local cars = ICT.get('cars')
+                                    local car = cars[vehicle.unit_number]
+                                    if not car then
+                                        return
+                                    end
+                                    ICFunctions.set_damage_health({entity = vehicle, final_damage_amount = (v_health / 20), car = car})
+                                end
+                            else
+                                entity.health = entity.health - (max_health / 5)
+                                if entity.health <= 0 then
+                                    if entity.name == 'character' then
+                                        game.print(player.name .. messages[random(1, #messages)], {r = 200, g = 0, b = 0})
+                                    end
+                                    entity.die()
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
 local function give_passive_xp(data)
     local xp_floating_text_color = {r = 188, g = 201, b = 63}
     local visuals_delay = 1800
@@ -98,23 +216,19 @@ local function give_passive_xp(data)
     if not (loco_surface and loco_surface.valid) then
         return
     end
-    local locomotive_xp_aura = WPT.get('locomotive_xp_aura')
+    local upgrades = WPT.get('upgrades')
     local locomotive = WPT.get('locomotive')
-    local xp_points = WPT.get('xp_points')
-    local aura = locomotive_xp_aura
     local rpg = data.rpg
     local loco = locomotive.position
-    local area = {
-        left_top = {x = loco.x - aura, y = loco.y - aura},
-        right_bottom = {x = loco.x + aura, y = loco.y + aura}
-    }
 
     for _, player in pairs(game.connected_players) do
         if not validate_player(player) then
             return
         end
+        local position = player.position
+        local inside = ((position.x - loco.x) ^ 2 + (position.y - loco.y) ^ 2) < upgrades.locomotive_aura_radius ^ 2
         if player.afk_time < 200 and not RPG.get_last_spell_cast(player) then
-            if Math2D.bounding_box.contains_point(area, player.position) or player.surface.index == loco_surface.index then
+            if inside or player.surface.index == loco_surface.index then
                 if player.surface.index == loco_surface.index then
                     PermissionGroups.add_player_to_permission_group(player, 'limited')
                 elseif ICFunctions.get_player_surface(player) then
@@ -124,7 +238,7 @@ local function give_passive_xp(data)
                 end
 
                 local pos = player.position
-                RPG.gain_xp(player, 0.5 * (rpg[player.index].bonus + xp_points))
+                RPG.gain_xp(player, 0.5 * (rpg[player.index].bonus + upgrades.xp_points))
 
                 player.create_local_flying_text {
                     text = '+' .. '',
@@ -154,22 +268,6 @@ local function give_passive_xp(data)
             end
         end
     end
-end
-
-local function is_around_train(data)
-    local entity = data.entity
-    local aura = data.aura + 20
-    local loco = data.locomotive.position
-    local area = {
-        left_top = {x = loco.x - aura, y = loco.y - aura},
-        right_bottom = {x = loco.x + aura, y = loco.y + aura}
-    }
-    local pos = entity.position
-
-    if Math2D.bounding_box.contains_point(area, pos) then
-        return true
-    end
-    return false
 end
 
 local function fish_tag()
@@ -488,13 +586,13 @@ function Public.is_around_train(entity)
     end
 
     local surface = game.surfaces[active_surface_index]
-    local aura = WPT.get('locomotive_xp_aura')
+    local upgrades = WPT.get('upgrades')
 
     local data = {
         locomotive = locomotive,
         surface = surface,
         entity = entity,
-        aura = aura
+        locomotive_aura_radius = upgrades.locomotive_aura_radius
     }
 
     local success = is_around_train(data)
@@ -508,43 +606,49 @@ function Public.render_train_hp()
     local locomotive_health = WPT.get('locomotive_health')
     local locomotive_max_health = WPT.get('locomotive_max_health')
     local locomotive = WPT.get('locomotive')
-    local locomotive_xp_aura = WPT.get('locomotive_xp_aura')
+    local upgrades = WPT.get('upgrades')
 
-    WPT.set().health_text =
+    WPT.set(
+        'health_text',
         rendering.draw_text {
-        text = 'HP: ' .. locomotive_health .. ' / ' .. locomotive_max_health,
-        surface = surface,
-        target = locomotive,
-        target_offset = {0, -4.5},
-        color = locomotive.color,
-        scale = 1.40,
-        font = 'default-game',
-        alignment = 'center',
-        scale_with_zoom = false
-    }
+            text = 'HP: ' .. locomotive_health .. ' / ' .. locomotive_max_health,
+            surface = surface,
+            target = locomotive,
+            target_offset = {0, -4.5},
+            color = locomotive.color,
+            scale = 1.40,
+            font = 'default-game',
+            alignment = 'center',
+            scale_with_zoom = false
+        }
+    )
 
-    WPT.set().caption =
+    WPT.set(
+        'caption',
         rendering.draw_text {
-        text = 'Comfy Choo Choo',
-        surface = surface,
-        target = locomotive,
-        target_offset = {0, -6.25},
-        color = locomotive.color,
-        scale = 1.80,
-        font = 'default-game',
-        alignment = 'center',
-        scale_with_zoom = false
-    }
+            text = 'Comfy Choo Choo',
+            surface = surface,
+            target = locomotive,
+            target_offset = {0, -6.25},
+            color = locomotive.color,
+            scale = 1.80,
+            font = 'default-game',
+            alignment = 'center',
+            scale_with_zoom = false
+        }
+    )
 
-    WPT.set().circle =
+    WPT.set(
+        'circle',
         rendering.draw_circle {
-        surface = surface,
-        target = locomotive,
-        color = locomotive.color,
-        filled = false,
-        radius = locomotive_xp_aura,
-        only_in_alt_mode = true
-    }
+            surface = surface,
+            target = locomotive,
+            color = locomotive.color,
+            filled = false,
+            radius = upgrades.locomotive_aura_radius,
+            only_in_alt_mode = true
+        }
+    )
 end
 
 function Public.transfer_pollution()
@@ -567,7 +671,7 @@ function Public.transfer_pollution()
 
     local total_interior_pollution = surface.get_total_pollution()
 
-    local pollution = surface.get_total_pollution() * (3 / (4 / 3 + 1)) * Difficulty.get().difficulty_vote_value
+    local pollution = surface.get_total_pollution() * (3 / (4 / 3 + 1)) * Difficulty.get().value
     active_surface.pollute(locomotive.position, pollution)
     game.pollution_statistics.on_flow('locomotive', pollution - total_interior_pollution)
     surface.clear_pollution()
@@ -583,10 +687,12 @@ local function tick()
         set_locomotive_health()
         validate_index()
         fish_tag()
+        hurt_players_outside_of_aura()
     end
 
     if ticker % 120 == 0 then
         -- tp_player()
+
         boost_players()
     end
 

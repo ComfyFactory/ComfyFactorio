@@ -143,7 +143,6 @@ local announce_new_map =
 )
 
 function Public.reset_map()
-    local Diff = Difficulty.get()
     local this = WPT.get()
     local wave_defense_table = WD.get_table()
     Misc.set('creative_are_you_sure', false)
@@ -250,8 +249,8 @@ function Public.reset_map()
         raise_event(Gui_mf.events.reset_map, {player_index = player.index})
     end
 
-    Difficulty.reset_difficulty_poll({difficulty_poll_closing_timeout = game.tick + 36000})
-    Diff.gui_width = 20
+    Difficulty.reset_difficulty_poll({closing_timeout = game.tick + 36000})
+    Difficulty.set_gui_width(20)
 
     Collapse.set_kill_entities(false)
     Collapse.set_kill_specific_entities(collapse_kill)

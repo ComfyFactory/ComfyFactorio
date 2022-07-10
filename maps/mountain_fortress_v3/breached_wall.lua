@@ -1,3 +1,4 @@
+local Modifiers = require 'utils.player_modifiers'
 local Collapse = require 'modules.collapse'
 local Balance = require 'maps.mountain_fortress_v3.balance'
 local RPG = require 'modules.rpg.main'
@@ -131,23 +132,41 @@ local compare_player_pos = function(player)
     end
 
     local zone = floor((abs(p.y / zone_settings.zone_depth)) % adjusted_zones.size) + 1
+    local rpg_t = RPG.get_value_from_player(index)
 
     if adjusted_zones.scrap[zone] then
-        RPG.set_value_to_player(index, 'scrap_zone', true)
+        if rpg_t and not rpg_t.scrap_zone then
+            rpg_t.scrap_zone = true
+        end
     else
-        local has_scrap = RPG.get_value_from_player(index, 'scrap_zone')
-        if has_scrap then
-            RPG.set_value_to_player(index, 'scrap_zone', false)
+        if rpg_t and rpg_t.scrap_zone then
+            rpg_t.scrap_zone = false
         end
     end
 
     if adjusted_zones.forest[zone] then
-        RPG.set_value_to_player(index, 'forest_zone', true)
-    else
-        local is_in_forest = RPG.get_value_from_player(index, 'forest_zone')
-        if is_in_forest then
-            RPG.set_value_to_player(index, 'forest_zone', false)
+        if rpg_t and not rpg_t.forest_zone then
+            rpg_t.forest_zone = true
         end
+    else
+        if rpg_t and rpg_t.forest_zone then
+            rpg_t.forest_zone = false
+        end
+    end
+
+    if adjusted_zones.slow_movement[zone] then
+        if player.character and player.character.valid then
+            player.character.character_running_speed_modifier = -0.5
+        end
+        if rpg_t and not rpg_t.slow_movement_zone then
+            player.print(({'breached_wall.heavy_legs'}))
+            rpg_t.slow_movement_zone = true
+        end
+    else
+        if rpg_t and rpg_t.slow_movement_zone then
+            rpg_t.slow_movement_zone = false
+        end
+        Modifiers.update_player_modifiers(player)
     end
 end
 

@@ -293,9 +293,27 @@ local artillery_target_callback =
     end
 )
 
+local function difficulty_and_adjust_prices()
+    local fixed_prices = WPT.get('marked_fixed_prices')
+    local difficulty_index = Difficulty.get('index')
+
+    for index, price in pairs(fixed_prices) do
+        if difficulty_index == 2 then
+            fixed_prices[index] = price * 1.5
+        elseif difficulty_index == 3 then
+            fixed_prices[index] = price * 2
+        end
+    end
+end
+
 local function do_artillery_turrets_targets()
     local art_table = this.art_table
     local index = art_table.index
+
+    local difficulty_index = Difficulty.get('index')
+    if difficulty_index == 3 then
+        return
+    end
 
     if index > #art_table then
         art_table.index = 1
@@ -817,16 +835,16 @@ function Public.set_difficulty()
     local wave_number = WD.get_wave()
     local player_count = calc_players()
 
-    if not Diff.difficulty_vote_value then
-        Diff.difficulty_vote_value = 0.1
+    if not Diff.value then
+        Diff.value = 0.1
     end
 
-    if Diff.name == "I'm too young to die" then
-        wave_defense_table.max_active_biters = 768 + player_count * (90 * Diff.difficulty_vote_value)
-    elseif Diff.name == 'Hurt me plenty' then
-        wave_defense_table.max_active_biters = 845 + player_count * (90 * Diff.difficulty_vote_value)
-    elseif Diff.name == 'Ultra-violence' then
-        wave_defense_table.max_active_biters = 1000 + player_count * (90 * Diff.difficulty_vote_value)
+    if Diff.index == 1 then
+        wave_defense_table.max_active_biters = 768 + player_count * (90 * Diff.value)
+    elseif Diff.index == 2 then
+        wave_defense_table.max_active_biters = 845 + player_count * (90 * Diff.value)
+    elseif Diff.index == 3 then
+        wave_defense_table.max_active_biters = 1000 + player_count * (90 * Diff.value)
     end
 
     if wave_defense_table.max_active_biters >= 4000 then
@@ -834,12 +852,12 @@ function Public.set_difficulty()
     end
 
     -- threat gain / wave
-    if Diff.name == "I'm too young to die" then
-        wave_defense_table.threat_gain_multiplier = 1.2 + player_count * Diff.difficulty_vote_value * 0.1
-    elseif Diff.name == 'Hurt me plenty' then
-        wave_defense_table.threat_gain_multiplier = 2 + player_count * Diff.difficulty_vote_value * 0.1
-    elseif Diff.name == 'Ultra-violence' then
-        wave_defense_table.threat_gain_multiplier = 4 + player_count * Diff.difficulty_vote_value * 0.1
+    if Diff.index == 1 then
+        wave_defense_table.threat_gain_multiplier = 1.2 + player_count * Diff.value * 0.1
+    elseif Diff.index == 2 then
+        wave_defense_table.threat_gain_multiplier = 2 + player_count * Diff.value * 0.1
+    elseif Diff.index == 3 then
+        wave_defense_table.threat_gain_multiplier = 4 + player_count * Diff.value * 0.1
     end
 
     -- local amount = player_count * 0.40 + 2 -- too high?
@@ -857,7 +875,7 @@ function Public.set_difficulty()
         threat_check = wave_defense_table.threat <= 0
     end
 
-    if Diff.name == "I'm too young to die" then
+    if Diff.index == 1 then
         if player_count < 10 then
             wave_defense_table.wave_interval = 4500
         else
@@ -866,7 +884,7 @@ function Public.set_difficulty()
         if wave_defense_table.wave_interval < 2200 or threat_check then
             wave_defense_table.wave_interval = 2200
         end
-    elseif Diff.name == 'Hurt me plenty' then
+    elseif Diff.index == 2 then
         if player_count < 10 then
             wave_defense_table.wave_interval = 3000
         else
@@ -875,7 +893,7 @@ function Public.set_difficulty()
         if wave_defense_table.wave_interval < 1900 or threat_check then
             wave_defense_table.wave_interval = 1900
         end
-    elseif Diff.name == 'Ultra-violence' then
+    elseif Diff.index == 3 then
         if player_count < 10 then
             wave_defense_table.wave_interval = 2000
         else
@@ -1038,17 +1056,16 @@ function Public.boost_difficulty()
     local breached_wall = WPT.get('breached_wall')
 
     local difficulty = Difficulty.get()
-    local name = difficulty.difficulties[difficulty.difficulty_vote_index].name
-
-    if game.tick < difficulty.difficulty_poll_closing_timeout and breached_wall <= 1 then
+    if not difficulty then
         return
     end
 
-    Difficulty.get().name = name
-    Difficulty.get().difficulty_poll_closing_timeout = game.tick
+    local index = difficulty.index
+    local name = difficulty.name
 
-    Difficulty.get().button_tooltip = difficulty.tooltip[difficulty.difficulty_vote_index]
-    Difficulty.difficulty_gui()
+    if game.tick < difficulty.closing_timeout and breached_wall <= 1 then
+        return
+    end
 
     local message = ({'main.diff_set', name})
     local data = {
@@ -1058,22 +1075,83 @@ function Public.boost_difficulty()
 
     local force = game.forces.player
 
-    force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 0.5
-    force.character_running_speed_modifier = 0.15
-    force.manual_crafting_speed_modifier = 0.15
-    WPT.set('coin_amount', 1)
-    WPT.set('upgrades').flame_turret.limit = 12
-    WPT.set('upgrades').landmine.limit = 50
-    WPT.set('locomotive_health', 10000)
-    WPT.set('locomotive_max_health', 10000)
-    WPT.set('bonus_xp_on_join', 500)
-    WD.set('next_wave', game.tick + 3600 * 15)
-    WPT.set('spidertron_unlocked_at_zone', 10)
-    WD.set_normal_unit_current_health(1.0)
-    WD.set_unit_health_increment_per_wave(0.15)
-    WD.set_boss_unit_current_health(2)
-    WD.set_boss_health_increment_per_wave(1.5)
-    WPT.set('difficulty_set', true)
+    if index == 1 then
+        force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 0.5
+        force.character_running_speed_modifier = 0.15
+        force.manual_crafting_speed_modifier = 0.15
+        WPT.set('coin_amount', 1)
+        WPT.set('upgrades').flame_turret.limit = 12
+        WPT.set('upgrades').landmine.limit = 50
+        WPT.set('locomotive_health', 10000)
+        WPT.set('locomotive_max_health', 10000)
+        WPT.set('bonus_xp_on_join', 500)
+        WD.set('next_wave', game.tick + 3600 * 15)
+        WPT.set('spidertron_unlocked_at_zone', 10)
+        WD.set_normal_unit_current_health(1.0)
+        WD.set_unit_health_increment_per_wave(0.15)
+        WD.set_boss_unit_current_health(2)
+        WD.set_boss_health_increment_per_wave(1.5)
+        WD.set('death_mode', false)
+        WPT.set('difficulty_set', true)
+    elseif index == 2 then
+        force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 0.25
+        force.character_running_speed_modifier = 0.1
+        force.manual_crafting_speed_modifier = 0.1
+        WPT.set('coin_amount', 2)
+        WPT.set('upgrades').flame_turret.limit = 10
+        WPT.set('upgrades').landmine.limit = 50
+        WPT.set('locomotive_health', 7000)
+        WPT.set('locomotive_max_health', 7000)
+        WPT.set('bonus_xp_on_join', 300)
+        WD.set('next_wave', game.tick + 3600 * 8)
+        WPT.set('spidertron_unlocked_at_zone', 8)
+        WD.set_normal_unit_current_health(1.6)
+        WD.set_unit_health_increment_per_wave(0.5)
+        WD.set_boss_unit_current_health(3)
+        WD.set_boss_health_increment_per_wave(5)
+        WD.set('death_mode', false)
+        WPT.set('difficulty_set', true)
+        local damage_warning = ({'main.damage_mode_warning'})
+        Alert.alert_all_players_location(data, damage_warning)
+    elseif index == 3 then
+        force.character_running_speed_modifier = 0
+        force.manual_crafting_speed_modifier = 0
+        WPT.set('coin_amount', 4)
+        WPT.set('upgrades').flame_turret.limit = 3
+        WPT.set('upgrades').landmine.limit = 10
+        WPT.set('locomotive_health', 5000)
+        WPT.set('locomotive_max_health', 5000)
+        WPT.set('bonus_xp_on_join', 50)
+        WD.set('next_wave', game.tick + 3600 * 5)
+        WPT.set('spidertron_unlocked_at_zone', 6)
+        WD.set_normal_unit_current_health(2)
+        WD.set_unit_health_increment_per_wave(1)
+        WD.set_boss_unit_current_health(4)
+        WD.set_boss_health_increment_per_wave(10)
+        WD.set('death_mode', true)
+        WPT.set('difficulty_set', true)
+        local upgrades = WPT.get('upgrades')
+        upgrades.locomotive_aura_radius = upgrades.locomotive_aura_radius + 20
+        if WPT.get('circle') then
+            rendering.destroy(WPT.get('circle'))
+        end
+        local active_surface_index = WPT.get('active_surface_index')
+        local locomotive = WPT.get('locomotive')
+        WPT.set(
+            'circle',
+            rendering.draw_circle {
+                surface = game.surfaces[active_surface_index],
+                target = locomotive,
+                color = locomotive.color,
+                filled = false,
+                radius = upgrades.locomotive_aura_radius,
+                only_in_alt_mode = false
+            }
+        )
+        local death_warning = ({'main.death_mode_warning'})
+        Alert.alert_all_players_location(data, death_warning)
+        difficulty_and_adjust_prices()
+    end
 end
 
 function Public.set_spawn_position()
@@ -1204,6 +1282,10 @@ function Public.on_player_joined_game(event)
         end
         local message = ({'main.greeting', player.name})
         Alert.alert_player(player, 15, message)
+        if WPT.get('death_mode') then
+            local death_message = ({'main.death_mode_warning'})
+            Alert.alert_player(player, 15, death_message)
+        end
         for item, amount in pairs(starting_items) do
             player.insert({name = item, count = amount})
         end

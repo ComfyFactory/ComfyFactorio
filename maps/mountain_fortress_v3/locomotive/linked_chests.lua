@@ -54,15 +54,15 @@ local function on_built_entity(event)
 
     local outside_chests = WPT.get('outside_chests')
     local chests_linked_to = WPT.get('chests_linked_to')
-    local chest_limit_outside_upgrades = WPT.get('chest_limit_outside_upgrades')
+    local upgrades = WPT.get('upgrades')
     local chest_created
     local increased = false
 
-    for k, data in pairs(outside_chests) do
+    for _, data in pairs(outside_chests) do
         if data and data.chest and data.chest.valid then
             if chests_linked_to[train.unit_number] then
                 local linked_to = chests_linked_to[train.unit_number].count
-                if linked_to == chest_limit_outside_upgrades then
+                if linked_to == upgrades.chests_outside_upgrades then
                     return
                 end
                 outside_chests[entity.unit_number] = {chest = entity, position = entity.position, linked = train.unit_number}

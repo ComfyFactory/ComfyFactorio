@@ -95,6 +95,7 @@ function Public.reset_table()
     -- @end
     this.icw_locomotive = nil
     this.game_lost = false
+    this.death_mode = false
     this.fullness_enabled = true
     this.locomotive_health = 10000
     this.locomotive_max_health = 10000
@@ -113,16 +114,12 @@ function Public.reset_table()
     this.force_chunk = false
     this.allow_decon = true
     this.allow_decon_main_surface = true
-    this.train_upgrades = 0
     this.flamethrower_damage = {}
     this.mined_scrap = 0
     this.biters_killed = 0
     this.cleared_nauvis = false
-    this.locomotive_xp_aura = 40
     this.locomotive_pos = {tbl = {}}
     this.trusted_only_car_tanks = true
-    this.xp_points = 0
-    this.xp_points_upgrade = 0
     --!grief prevention
     this.enable_arties = 6 -- default to callback 6
     --!snip
@@ -143,13 +140,19 @@ function Public.reset_table()
         unit_number = {
             landmine = {},
             flame_turret = {}
-        }
+        },
+        has_upgraded_health_pool = false,
+        explosive_bullets_purchased = false,
+        xp_points_upgrade = 0,
+        aura_upgrades = 0,
+        locomotive_aura_radius = 40,
+        train_upgrades = 0,
+        xp_points = 0,
+        health_upgrades = 0,
+        pickaxe_tier = 1,
+        chests_outside_upgrades = 1
     }
-    this.aura_upgrades = 0
-    this.pickaxe_tier = 1
     this.pickaxe_speed_per_purchase = 0.07
-    this.health_upgrades = 1
-    this.health_upgrades_limit = 100
     this.breached_wall = 1
     this.left_top = {
         x = 0,
@@ -168,14 +171,19 @@ function Public.reset_table()
     this.spill_items_to_surface = false
     this.outside_chests = {}
     this.chests_linked_to = {}
-    this.chest_limit_outside_upgrades = 1
     this.placed_trains_in_zone = {
         limit = 2,
         randomized = false,
         zones = {}
     }
+    this.market_limits = {
+        chests_outside_limit = 8,
+        aura_limit = 100, -- limited to save UPS
+        pickaxe_tier_limit = 59,
+        health_upgrades_limit = 100
+    }
     this.marked_fixed_prices = {
-        chest_limit_cost = 3000,
+        chests_outside_cost = 3000,
         health_cost = 7000,
         pickaxe_cost = 3000,
         aura_cost = 4000,
@@ -187,7 +195,6 @@ function Public.reset_table()
         redraw_mystical_chest_cost = 3000
     }
     this.collapse_grace = true
-    this.explosive_bullets = false
     this.locomotive_biter = nil
     this.disconnect_wagon = false
     this.collapse_amount = false
@@ -218,7 +225,6 @@ function Public.reset_table()
     this.market_announce = game.tick + 1200
     this.check_heavy_damage = true
     this.prestige_system_enabled = false
-    this.has_upgraded_health_pool = false
     this.mystical_chest_enabled = true
     this.check_if_threat_below_zero = true
     this.mc_rewards = {
@@ -228,6 +234,7 @@ function Public.reset_table()
     this.adjusted_zones = {
         scrap = {},
         forest = {},
+        slow_movement = {},
         size = nil,
         shuffled_zones = nil
     }
