@@ -16,7 +16,7 @@ local function contains_positions(area)
     for _, wagon in pairs(wagons) do
         if wagon.entity and wagon.entity.valid then
             if wagon.entity.name == 'cargo-wagon' then
-                if inside(wagon.entity.position, area) then
+                if inside(wagon.entity.position) then
                     return true, wagon.entity
                 end
             end
@@ -80,7 +80,8 @@ local function on_built_entity(event)
             end
 
             ::continue::
-            rendering.draw_text {
+            outside_chests[entity.unit_number].render =
+                rendering.draw_text {
                 text = '♠',
                 surface = entity.surface,
                 target = entity,
@@ -102,7 +103,8 @@ local function on_built_entity(event)
         chests_linked_to[train.unit_number] = {count = 1}
         chests_linked_to[train.unit_number][entity.unit_number] = true
 
-        rendering.draw_text {
+        outside_chests[entity.unit_number].render =
+            rendering.draw_text {
             text = '♠',
             surface = entity.surface,
             target = entity,
@@ -159,6 +161,9 @@ local function divide_contents()
         if not (chest and chest.valid) then
             if chests_linked_to[data.linked] then
                 if chests_linked_to[data.linked][key] then
+                    if data.render and rendering.is_valid(data.render) then
+                        rendering.destroy(data.render)
+                    end
                     chests_linked_to[data.linked][key] = nil
                     chests_linked_to[data.linked].count = chests_linked_to[data.linked].count - 1
                     if chests_linked_to[data.linked].count <= 0 then
@@ -175,12 +180,16 @@ local function divide_contents()
             target_chest = entity
         else
             if chests_linked_to[data.linked] then
-                if chests_linked_to[data.linked][key] then
+                if data then
+                    if data.render and rendering.is_valid(data.render) then
+                        rendering.destroy(data.render)
+                    end
                     chests_linked_to[data.linked][key] = nil
                     chests_linked_to[data.linked].count = chests_linked_to[data.linked].count - 1
                     if chests_linked_to[data.linked].count <= 0 then
                         chests_linked_to[data.linked] = nil
                     end
+                    outside_chests[key] = nil
                 end
             end
             goto continue

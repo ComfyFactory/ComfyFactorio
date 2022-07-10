@@ -116,6 +116,7 @@ function Public.reset_table()
     this.allow_decon_main_surface = true
     this.flamethrower_damage = {}
     this.mined_scrap = 0
+    this.print_tech_to_discord = true
     this.biters_killed = 0
     this.cleared_nauvis = false
     this.locomotive_pos = {tbl = {}}

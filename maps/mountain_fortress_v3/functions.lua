@@ -1,3 +1,4 @@
+local Server = require 'utils.server'
 local Token = require 'utils.token'
 local Task = require 'utils.task'
 local Color = require 'utils.color_presets'
@@ -73,8 +74,9 @@ local Public = {}
 local random = math.random
 local floor = math.floor
 local round = math.round
-local remove = table.remove
 local sqrt = math.sqrt
+local remove = table.remove
+local concat = table.concat
 local magic_crafters_per_tick = 3
 local magic_fluid_crafters_per_tick = 8
 local tile_damage = 50
@@ -1504,6 +1506,15 @@ function Public.on_research_finished(event)
     local research = event.research
     local bonus_drill = game.forces.bonus_drill
     local player = game.forces.player
+
+    local research_name = research.name
+    local force = research.force
+
+    local technology_prototypes = game.technology_prototypes
+
+    if WPT.get('print_tech_to_discord') and force.name == 'player' then
+        Server.to_discord_bold({'functions.researched_complete', technology_prototypes[research_name].localised_name}, true)
+    end
 
     research.force.character_inventory_slots_bonus = player.mining_drill_productivity_bonus * 50 -- +5 Slots /
     bonus_drill.mining_drill_productivity_bonus = bonus_drill.mining_drill_productivity_bonus + 0.03

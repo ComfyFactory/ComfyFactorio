@@ -1202,7 +1202,6 @@ local function show_mvps(player)
             local pickaxe_upgrades = WPT.pickaxe_upgrades
             local upgrades = WPT.get('upgrades')
             local pick_tier = pickaxe_upgrades[upgrades.pickaxe_tier]
-            log(serpent.block(pick_tier))
 
             local server_name_matches = Server.check_server_name('Mtn Fortress')
             if WPT.get('prestige_system_enabled') then

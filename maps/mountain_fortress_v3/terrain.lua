@@ -2591,6 +2591,7 @@ local function init_terrain(adjusted_zones)
             shuffle_again[inc] = map
         end
     end
+    shuffle_again = shuffle(shuffle_again)
 
     adjusted_zones.size = size
     adjusted_zones.shuffled_zones = shuffle_again
