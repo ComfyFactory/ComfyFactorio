@@ -76,7 +76,6 @@ local floor = math.floor
 local round = math.round
 local sqrt = math.sqrt
 local remove = table.remove
-local concat = table.concat
 local magic_crafters_per_tick = 3
 local magic_fluid_crafters_per_tick = 8
 local tile_damage = 50
