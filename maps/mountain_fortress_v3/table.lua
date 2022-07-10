@@ -152,6 +152,9 @@ function Public.reset_table()
         pickaxe_tier = 1,
         chests_outside_upgrades = 1
     }
+    this.orbital_strikes = {
+        enabled = true
+    }
     this.pickaxe_speed_per_purchase = 0.07
     this.breached_wall = 1
     this.left_top = {

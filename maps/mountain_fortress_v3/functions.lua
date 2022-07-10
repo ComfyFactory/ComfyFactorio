@@ -14,6 +14,7 @@ local ICW_Func = require 'maps.mountain_fortress_v3.icw.functions'
 local math2d = require 'math2d'
 local Misc = require 'utils.commands.misc'
 local Core = require 'utils.core'
+local Beams = require 'modules.render_beam'
 local zone_settings = WPT.zone_settings
 
 local this = {
@@ -306,6 +307,36 @@ local function difficulty_and_adjust_prices()
     end
 end
 
+local function do_beams_away()
+    local wave_number = WD.get_wave()
+    local orbital_strikes = WPT.get('orbital_strikes')
+    if not orbital_strikes.enabled then
+        return
+    end
+
+    if wave_number > 1000 then
+        local difficulty_index = Difficulty.get('index')
+        local wave_nth = 9999
+        if difficulty_index == 1 then
+            wave_nth = 1000
+        elseif difficulty_index == 2 then
+            wave_nth = 500
+        elseif difficulty_index == 3 then
+            wave_nth = 250
+        end
+
+        if wave_number % wave_nth == 0 then
+            local active_surface_index = WPT.get('active_surface_index')
+            local surface = game.get_surface(active_surface_index)
+
+            if not orbital_strikes[wave_number] then
+                orbital_strikes[wave_number] = true
+                Beams.new_beam_delayed(surface, random(500, 3000))
+            end
+        end
+    end
+end
+
 local function do_artillery_turrets_targets()
     local art_table = this.art_table
     local index = art_table.index
@@ -393,6 +424,7 @@ local function tick()
     do_magic_crafters()
     do_magic_fluid_crafters()
     do_artillery_turrets_targets()
+    do_beams_away()
 end
 
 Public.deactivate_callback =

@@ -29,6 +29,13 @@ commands.add_command(
             return Public.spawn_unit_group(true, true)
         end
 
+        if param == 'set_wave_1500' then
+            for _ = 1, 1500 do
+                Public.set_next_wave()
+            end
+            return Public.spawn_unit_group(true, true)
+        end
+
         if param == 'log_all' then
             return Public.toggle_debug()
         end
