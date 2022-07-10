@@ -975,7 +975,7 @@ end
 
 --- Add entity type to the whitelist so it gets logged.
 ---@param key string
----@param value string
+---@param value string|boolean
 function Public.whitelist_types(key, value)
     if key and value then
         this.whitelist_types[key] = value
@@ -1027,7 +1027,7 @@ function Public.decon_surface_blacklist(value)
 end
 
 --- Defines what the threshold for amount of explosives in chest should be - logged or not.
----@param value string
+---@param value number
 function Public.explosive_threshold(value)
     if value then
         this.explosive_threshold = value
@@ -1037,7 +1037,7 @@ function Public.explosive_threshold(value)
 end
 
 --- Defines what the threshold for amount of times before the script should take action.
----@param value string
+---@param value number
 function Public.damage_entity_threshold(value)
     if value then
         this.damage_entity_threshold = value

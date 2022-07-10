@@ -163,7 +163,7 @@ end
 
 --- Gets value from player rpg_t table
 ---@param key string
----@param value string
+---@param value string|nil
 function Public.get_value_from_player(key, value)
     if key and value then
         if (this.rpg_t[key] and this.rpg_t[key][value]) then
@@ -182,8 +182,8 @@ end
 
 --- Sets value to player rpg_t table
 ---@param key string
----@param value string
----@param setter string
+---@param value string|boolean|number|nil
+---@param setter string|boolean|number|nil
 function Public.set_value_to_player(key, value, setter)
     if key and value then
         if (this.rpg_t[key] and this.rpg_t[key][value]) then
