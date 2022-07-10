@@ -34,6 +34,7 @@ Public.token =
     end
 )
 
+Public.beam = 'file/utils/files/beam.png'
 Public.settings_white_icon = 'file/utils/files/settings-white.png'
 Public.settings_black_icon = 'file/utils/files/settings-black.png'
 Public.pin_white_icon = 'file/utils/files/pin-white.png'

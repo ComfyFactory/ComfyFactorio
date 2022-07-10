@@ -1,14 +1,22 @@
 local Event = require 'utils.event'
 local Global = require 'utils.global'
+local Gui = require 'utils.gui'
 
 local this = {
     renders = {}
 }
 
+local Public = {}
+
+Public.metatable = {__index = Public}
+
 Global.register(
     this,
     function(tbl)
         this = tbl
+        for _, render in pairs(this.renders) do
+            setmetatable(render, Public.metatable)
+        end
     end
 )
 
@@ -31,27 +39,23 @@ local target_entities = {
     'spidertron'
 }
 
-local Public = {}
-
 local sqrt = math.sqrt
 local random = math.random
 local remove = table.remove
 local speed = 0.06
 
 --- Draws a new render.
----@param target table
----@param sprite string
----@param surface userdata
 ---@return integer
-function Public.new_render(target, sprite, surface)
-    return rendering.draw_sprite {target = target, sprite = sprite, surface = surface}
+function Public:new_render()
+    local surface = game.get_surface(self.surface_id)
+    return rendering.draw_sprite {target = self.position, sprite = self.sprite, surface = surface}
 end
 
 --- Sets a new target for a given render.
----@param surface userdata
 ---@return table
 ---@return table
-function Public.new_target(surface)
+function Public:new_target()
+    local surface = game.get_surface(self.surface_id)
     local position
     local entities = surface.find_entities_filtered {type = target_entities}
     if entities and #entities > 0 then
@@ -64,43 +68,25 @@ function Public.new_target(surface)
     return position, random_position
 end
 
---- Increments the given position
----@param p1 table
----@param p2 table
----@return table
-function Public.increment(p1, p2)
-    return {x = p1.x + p2.x, y = p1.y + p2.y}
-end
-
---- Multiples a given position
----@param a table|integer
----@return number|table
-function Public.multiply(a)
-    return sqrt(a.x * a.x + a.y * a.y)
-end
-
 --- Subtracts the given positions
----@param p1 table
----@param p2 table
 ---@return table|integer
-function Public.subtr(p1, p2)
-    if not p1 and p2 then
+function Public:subtr()
+    if not self.position and self.target_position then
         return 0
     end
-    return {x = p2.x - p1.x, y = p2.y - p1.y}
+    return {x = self.target_position.x - self.position.x, y = self.target_position.y - self.position.y}
 end
 
 --- Sets the render scale.
----@param target_id any
-function Public.set_render_scalar_size(target_id)
-    if not target_id then
+function Public:set_render_scalar_size()
+    if not self.target_id then
         return
     end
 
-    rendering.set_y_scale(target_id, 3.5) -- 1.5
-    rendering.set_x_scale(target_id, 7) -- 2
+    rendering.set_y_scale(self.target_id, 3.5) -- 1.5
+    rendering.set_x_scale(self.target_id, 7) -- 2
     rendering.set_color(
-        target_id,
+        self.target_id,
         {
             r = 1,
             g = 0.7,
@@ -108,31 +94,26 @@ function Public.set_render_scalar_size(target_id)
         }
     )
 end
---- local render = Public.new_render(target, sprite, surface)
---- render.target_position = random_position()
 --- Gets a random position.
----@param position any
 ---@return table
-function Public.random_position(position)
-    return Public.increment(position, {x = (random() - 0.5) * 64, y = (random() - 0.5) * 64})
+function Public:random_position()
+    return {x = self.position.x + (random() - 0.5) * 64, y = self.position.y + (random() - 0.5) * 64}
 end
 
 --- Changes the position of a render.
----@param position table
----@param target_position table
 ---@param max_abs number
 ---@param value boolean
 ---@return table|nil
-function Public.change_position(position, target_position, max_abs, value)
-    if not position or not target_position then
+function Public:change_position(max_abs, value)
+    if not self.position or not self.target_position then
         return
     end
     local scalar = 0.9
-    local subtr = Public.subtr(position, target_position)
+    local subtr = self:subtr()
     if value then
         subtr.y = subtr.y / scalar
     end
-    local multiply = Public.multiply(subtr)
+    local multiply = sqrt(subtr.x * subtr.x + subtr.y * subtr.y)
     if (multiply > max_abs) then
         local close = max_abs / multiply
         subtr = {x = subtr.x * close, y = subtr.y * close}
@@ -140,60 +121,56 @@ function Public.change_position(position, target_position, max_abs, value)
     if value then
         subtr.y = subtr.y * scalar
     end
-    return {x = position.x + subtr.x, y = position.y + subtr.y}
+    return {x = self.position.x + subtr.x, y = self.position.y + subtr.y}
 end
 
 --- If a render is stuck, give it a new position.
----@param render table
-function Public.switch_position(render)
+function Public:switch_position()
     if random() < 0.4 then
-        render.target_position = Public.random_position(render.target_position)
+        self.target_position = self:random_position()
     else
-        local surface = game.get_surface(render.surface_id)
+        local surface = game.get_surface(self.surface_id)
         local chunk = surface.get_random_chunk()
-        render.target_position = {x = (chunk.x + math.random()) * 32, y = (chunk.y + math.random()) * 32}
+        self.target_position = {x = (chunk.x + math.random()) * 32, y = (chunk.y + math.random()) * 32}
     end
 end
 
 --- Sets a new position for a render.
----@param render table
-function Public.set_new_position(render)
-    render.position = Public.change_position(render.position, render.target_position, speed, false)
+function Public:set_new_position()
+    self.position = self:change_position(speed, false)
 
-    if not render.random_pos_set then
-        render.random_pos_set = true
-        render.random_pos_tick = game.tick + 300
+    if not self.random_pos_set then
+        self.random_pos_set = true
+        self.random_pos_tick = game.tick + 300
     end
-    if render.position.x == render.target_position.x and render.position.y == render.target_position.y then
-        Public.switch_position(render)
+    if self.position.x == self.target_position.x and self.position.y == self.target_position.y then
+        self:switch_position()
     end
 
-    if Public.validate(render) then
-        rendering.set_target(render.render_id, render.position)
-        Public.set_render_scalar_size(render.render_id)
+    if self:validate() then
+        rendering.set_target(self.render_id, self.position)
+        self:set_render_scalar_size()
     end
 end
 
 --- Creates fire flame.
----@param render table
-function Public.render_fire_damage(render)
+function Public:render_fire_damage()
     if random(1, 15) == 1 then
-        local surface = game.get_surface(render.surface_id)
-        surface.create_entity({name = 'fire-flame', position = {x = render.position.x, y = render.position.y + 5}})
+        local surface = game.get_surface(self.surface_id)
+        surface.create_entity({name = 'fire-flame', position = {x = self.position.x, y = self.position.y + 5}})
         if random(1, 5) == 1 then
-            surface.create_entity({name = 'medium-scorchmark', position = {x = render.position.x, y = render.position.y + 5}, force = 'neutral'})
+            surface.create_entity({name = 'medium-scorchmark', position = {x = self.position.x, y = self.position.y + 5}, force = 'neutral'})
         end
     end
 end
 
 --- Damages entities nearby.
----@param render table
-function Public.damage_entities_nearby(render)
+function Public:damage_entities_nearby()
     if random(1, 5) == 1 then
-        local surface = game.get_surface(render.surface_id)
+        local surface = game.get_surface(self.surface_id)
         local radius = 10
         local damage = random(10, 15)
-        local entities = surface.find_entities_filtered({area = {{render.position.x - radius - 4, render.position.y - radius - 6}, {render.position.x + radius + 4, render.position.y + radius + 6}}})
+        local entities = surface.find_entities_filtered({area = {{self.position.x - radius - 4, self.position.y - radius - 6}, {self.position.x + radius + 4, self.position.y + radius + 6}}})
         for _, entity in pairs(entities) do
             if entity.valid then
                 if entity.health then
@@ -214,49 +191,48 @@ function Public.damage_entities_nearby(render)
 end
 
 --- Validates if a render is valid.
----@param render table
 ---@return boolean
-function Public.validate(render)
-    if rendering.is_valid(render.render_id) then
+function Public:validate()
+    if rendering.is_valid(self.render_id) then
         return true
     end
     return false
 end
 
 --- Destroys a render.
----@param render table
-function Public.destroy_render(render)
-    if rendering.is_valid(render.render_id) then
-        rendering.destroy(render.render_id)
+function Public:destroy_render()
+    if rendering.is_valid(self.render_id) then
+        rendering.destroy(self.render_id)
     end
+    return self
 end
 
 --- Removes a render.
----@param render table
 ---@param id integer
-function Public.remove_render(render, id)
-    Public.destroy_render(render)
+function Public:remove_render(id)
+    self:destroy_render()
 
     remove(this.renders, id)
+    return self
 end
 
 --- Creates a new render.
 ---@param sprite string
 ---@param surface userdata
----@param ttl integer
----@param scalar table
+---@param ttl integer|nil
+---@param scalar table|nil
 ---@return table
 function Public.new(sprite, surface, ttl, scalar)
-    local render = {}
-    local position, random_position = Public.new_target(surface)
-    render.position = position
+    local render = setmetatable({}, Public.metatable)
     render.surface_id = surface.index
+    local position, random_position = render:new_target()
+    render.position = position
     render.sprite = sprite
     render.target_position = random_position
-    render.render_id = Public.new_render(render.position, sprite, surface)
+    render.render_id = render:new_render()
     render.ttl = ttl or game.tick + 7200 -- 2 minutes duration
     if not scalar then
-        Public.set_render_scalar_size(render.render_id)
+        render:set_render_scalar_size()
     end
 
     this.renders[#this.renders + 1] = render
@@ -276,18 +252,33 @@ Event.add(
         for id, render in pairs(this.renders) do
             if render then
                 if tick < render.ttl then
-                    Public.set_new_position(render)
-                    Public.render_fire_damage(render)
-                    Public.damage_entities_nearby(render)
+                    render:set_new_position()
+                    render:render_fire_damage()
+                    render:damage_entities_nearby()
                     if render.random_pos_set and tick > render.random_pos_tick then
-                        Public.switch_position(render)
+                        render:switch_position()
                         render.random_pos_set = nil
                         render.random_pos_tick = nil
                     end
                 else
-                    Public.remove_render(render, id)
+                    render:remove_render(id)
                 end
             end
+        end
+    end
+)
+
+commands.add_command(
+    'laser',
+    'new laser',
+    function()
+        local player = game.player
+        if player and player.valid then
+            if not player.admin then
+                return
+            end
+
+            Public.new(Gui.beam, player.surface)
         end
     end
 )
