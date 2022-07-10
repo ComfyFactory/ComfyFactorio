@@ -4,7 +4,6 @@ local LocomotiveMarket = require 'maps.mountain_fortress_v3.locomotive.market'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local ICFunctions = require 'maps.mountain_fortress_v3.ic.functions'
-local ICT = require 'maps.mountain_fortress_v3.ic.table'
 local Session = require 'utils.datastore.session_data'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 local RPG = require 'modules.rpg.main'
@@ -32,6 +31,11 @@ local valid_armors = {
     ['modular-armor'] = true,
     ['power-armor'] = true,
     ['power-armor-mk2'] = true
+}
+
+local non_valid_vehicles = {
+    ['car'] = true,
+    ['spider-vehicle'] = true
 }
 
 local function add_random_loot_to_main_market(rarity)
@@ -132,18 +136,15 @@ local function hurt_players_outside_of_aura()
     if not Diff then
         return
     end
+    local difficulty_set = WPT.get('difficulty_set')
+    if not difficulty_set then
+        return
+    end
     local death_mode = false
     if Diff.index == 1 then
         return
     elseif Diff.index == 3 then
         death_mode = true
-    end
-
-    local health_pool_upgrade = false
-
-    local upgrades = WPT.get('upgrades')
-    if upgrades.has_upgraded_health_pool then
-        health_pool_upgrade = true
     end
 
     local loco_surface = WPT.get('loco_surface')
@@ -152,6 +153,8 @@ local function hurt_players_outside_of_aura()
     end
     local locomotive = WPT.get('locomotive')
     local loco = locomotive.position
+
+    local upgrades = WPT.get('upgrades')
 
     local players = game.connected_players
     for i = 1, #players do
@@ -170,37 +173,24 @@ local function hurt_players_outside_of_aura()
                     end
                     local entity = player.character
                     if entity and entity.valid then
-                        local max_health = entity.prototype.max_health
+                        local max_health = floor(player.character.prototype.max_health + player.character_health_bonus + player.force.character_health_bonus)
                         local vehicle = player.vehicle
+                        if vehicle and vehicle.valid and non_valid_vehicles[vehicle.type] then
+                            player.driving = false
+                        end
                         if death_mode then
-                            if vehicle and vehicle.valid then
-                                vehicle.die()
-                            end
                             if entity.name == 'character' then
                                 game.print(player.name .. messages[random(1, #messages)], {r = 200, g = 0, b = 0})
                             end
                             entity.die()
                         else
-                            if vehicle and vehicle.valid then
-                                local v_health = vehicle.prototype.max_health
-                                if not health_pool_upgrade then
-                                    vehicle.health = vehicle.health - (v_health / 20)
-                                else
-                                    local cars = ICT.get('cars')
-                                    local car = cars[vehicle.unit_number]
-                                    if not car then
-                                        return
-                                    end
-                                    ICFunctions.set_damage_health({entity = vehicle, final_damage_amount = (v_health / 20), car = car})
+                            entity.damage(1, 'enemy')
+                            entity.health = entity.health - (max_health / 25)
+                            if entity.health <= 0 then
+                                if entity.name == 'character' then
+                                    game.print(player.name .. messages[random(1, #messages)], {r = 200, g = 0, b = 0})
                                 end
-                            else
-                                entity.health = entity.health - (max_health / 5)
-                                if entity.health <= 0 then
-                                    if entity.name == 'character' then
-                                        game.print(player.name .. messages[random(1, #messages)], {r = 200, g = 0, b = 0})
-                                    end
-                                    entity.die()
-                                end
+                                entity.die()
                             end
                         end
                     end

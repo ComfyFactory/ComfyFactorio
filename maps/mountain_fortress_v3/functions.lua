@@ -1107,6 +1107,9 @@ function Public.boost_difficulty()
 
     local force = game.forces.player
 
+    local active_surface_index = WPT.get('active_surface_index')
+    local surface = game.get_surface(active_surface_index)
+
     if index == 1 then
         force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 0.5
         force.character_running_speed_modifier = 0.15
@@ -1145,6 +1148,17 @@ function Public.boost_difficulty()
         WPT.set('difficulty_set', true)
         local damage_warning = ({'main.damage_mode_warning'})
         Alert.alert_all_players_location(data, damage_warning)
+        Core.iter_players(
+            function(player)
+                local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
+                if pos then
+                    player.teleport(pos, surface)
+                else
+                    pos = game.forces.player.get_spawn_position(surface)
+                    player.teleport(pos, surface)
+                end
+            end
+        )
     elseif index == 3 then
         force.character_running_speed_modifier = 0
         force.manual_crafting_speed_modifier = 0
@@ -1162,17 +1176,27 @@ function Public.boost_difficulty()
         WD.set_boss_health_increment_per_wave(10)
         WD.set('death_mode', true)
         WPT.set('difficulty_set', true)
+        Core.iter_players(
+            function(player)
+                local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
+                if pos then
+                    player.teleport(pos, surface)
+                else
+                    pos = game.forces.player.get_spawn_position(surface)
+                    player.teleport(pos, surface)
+                end
+            end
+        )
         local upgrades = WPT.get('upgrades')
         upgrades.locomotive_aura_radius = upgrades.locomotive_aura_radius + 20
         if WPT.get('circle') then
             rendering.destroy(WPT.get('circle'))
         end
-        local active_surface_index = WPT.get('active_surface_index')
         local locomotive = WPT.get('locomotive')
         WPT.set(
             'circle',
             rendering.draw_circle {
-                surface = game.surfaces[active_surface_index],
+                surface = active_surface_index,
                 target = locomotive,
                 color = locomotive.color,
                 filled = false,
@@ -1180,6 +1204,8 @@ function Public.boost_difficulty()
                 only_in_alt_mode = false
             }
         )
+        local aura_upgrade = ({'main.aura_upgrade_warning'})
+        Alert.alert_all_players_location(data, aura_upgrade)
         local death_warning = ({'main.death_mode_warning'})
         Alert.alert_all_players_location(data, death_warning)
         difficulty_and_adjust_prices()
