@@ -4,6 +4,7 @@ local ICW = require 'maps.mountain_fortress_v3.icw.main'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local WD = require 'modules.wave_defense.table'
 local Session = require 'utils.datastore.session_data'
+local Difficulty = require 'modules.difficulty_vote_by_amount'
 local RPG = require 'modules.rpg.main'
 local Gui = require 'utils.gui'
 local Server = require 'utils.server'
@@ -1060,12 +1061,19 @@ local function gui_click(event)
         if this.circle then
             rendering.destroy(this.circle)
         end
+        local difficulty_index = Difficulty.get('index')
+
+        local fill_circle = false
+        if difficulty_index == 2 or difficulty_index == 3 then
+            fill_circle = true
+        end
+
         this.circle =
             rendering.draw_circle {
             surface = game.surfaces[this.active_surface_index],
             target = this.locomotive,
             color = this.locomotive.color,
-            filled = false,
+            filled = fill_circle,
             radius = this.upgrades.locomotive_aura_radius,
             only_in_alt_mode = true
         }

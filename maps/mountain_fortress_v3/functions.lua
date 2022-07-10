@@ -1160,6 +1160,22 @@ function Public.boost_difficulty()
                 end
             end
         )
+        local upgrades = WPT.get('upgrades')
+        if WPT.get('circle') then
+            rendering.destroy(WPT.get('circle'))
+        end
+        local locomotive = WPT.get('locomotive')
+        WPT.set(
+            'circle',
+            rendering.draw_circle {
+                surface = active_surface_index,
+                target = locomotive,
+                color = locomotive.color,
+                filled = false,
+                radius = upgrades.locomotive_aura_radius,
+                only_in_alt_mode = false
+            }
+        )
     elseif index == 3 then
         force.character_running_speed_modifier = 0
         force.manual_crafting_speed_modifier = 0
