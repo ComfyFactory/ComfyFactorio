@@ -1176,6 +1176,7 @@ function Public.boost_difficulty()
                 only_in_alt_mode = false
             }
         )
+        difficulty_and_adjust_prices()
     elseif index == 3 then
         force.character_running_speed_modifier = 0
         force.manual_crafting_speed_modifier = 0
