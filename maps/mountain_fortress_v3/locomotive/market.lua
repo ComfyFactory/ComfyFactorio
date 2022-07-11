@@ -1073,9 +1073,9 @@ local function gui_click(event)
             surface = game.surfaces[this.active_surface_index],
             target = this.locomotive,
             color = this.locomotive.color,
-            filled = fill_circle,
+            filled = false,
             radius = this.upgrades.locomotive_aura_radius,
-            only_in_alt_mode = true
+            only_in_alt_mode = fill_circle
         }
 
         redraw_market_items(data.item_frame, player, data.search_text)
