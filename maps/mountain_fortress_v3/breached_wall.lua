@@ -166,7 +166,9 @@ local compare_player_pos = function(player)
         if rpg_t and rpg_t.slow_movement_zone then
             rpg_t.slow_movement_zone = false
         end
-        Modifiers.update_player_modifiers(player)
+        if rpg_t and not rpg_t.has_custom_spell_active then
+            Modifiers.update_player_modifiers(player)
+        end
     end
 end
 

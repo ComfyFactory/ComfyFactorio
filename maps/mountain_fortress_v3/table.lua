@@ -188,7 +188,7 @@ function Public.reset_table()
     }
     this.marked_fixed_prices = {
         chests_outside_cost = 3000,
-        health_cost = 7000,
+        health_cost = 14000,
         pickaxe_cost = 3000,
         aura_cost = 4000,
         xp_point_boost_cost = 5000,
