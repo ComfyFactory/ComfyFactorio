@@ -32,6 +32,7 @@ local enum = {
 	SMOLDERING = 'smoldering',
 	GOURMET = 'gourmet',
 	CHIEF = 'chief',
+	ROC_EATER = 'roc_eater',
 }
 Public.enum = enum
 
@@ -62,6 +63,7 @@ Public.eng_form = {
 	[enum.SMOLDERING] = 'Smoldering',
 	[enum.GOURMET] = 'Gourmet',
 	[enum.CHIEF] = 'Chief',
+	[enum.ROC_EATER] = 'Roc Eater',
 }
 
 function Public.display_form(class)
@@ -122,6 +124,9 @@ function Public.explanation(class, add_is_class_obtainable)
 		local received_damage = Public.percentage_points_difference_from_100_percent(Balance.iron_leg_damage_taken_multiplier)
 		local iron_ore_required = Balance.iron_leg_iron_ore_required
 		full_explanation = {'', {explanation, received_damage, iron_ore_required}}
+	elseif class == enum.ROC_EATER then
+		local received_damage = Public.percentage_points_difference_from_100_percent(Balance.roc_eater_damage_taken_multiplier)
+		full_explanation = {'', {explanation, received_damage}}
 	else
 		full_explanation = {'', {explanation}}
 	end
@@ -188,9 +193,11 @@ function Public.initial_class_pool()
 		-- enum.SMOLDERING, --tedious
 		enum.GOURMET,
 		enum.CHIEF,
+		enum.ROC_EATER,
 	}
 end
 
+-- Returns true if it's possible to obtain the class, or false if it has been disabled
 function Public.class_is_obtainable(class)
 	local obtainable_class_pool = Public.initial_class_pool()
 
@@ -365,6 +372,12 @@ local function class_on_player_used_capsule(event)
 					memory.gourmet_recency_tick = game.tick - timescale*10 + timescale
 				end
 				Public.class_ore_grant(player, 10 * multiplier, Balance.gourmet_ore_scaling_enabled)
+			end
+		elseif class == Public.enum.ROC_EATER then
+			local required_count = Balance.roc_eater_required_stone_furnace_to_heal_count
+			if player.get_item_count('stone-furnace') >= required_count then
+				player.remove_item({name='stone-furnace', count=required_count})
+				player.insert({name='raw-fish', count=1})
 			end
 		end
 	end

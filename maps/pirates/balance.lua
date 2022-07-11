@@ -68,6 +68,8 @@ Public.rocket_launch_coin_reward = 5000
  Public.gourmet_ore_scaling_enabled = false
  Public.chief_fish_received_for_biter_kill = 1
  Public.chief_fish_received_for_worm_kill = 3
+ Public.roc_eater_damage_taken_multiplier = 0.8
+ Public.roc_eater_required_stone_furnace_to_heal_count = 1
 
 
 function Public.starting_boatEEIpower_production_MW()
