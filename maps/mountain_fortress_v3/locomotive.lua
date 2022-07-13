@@ -204,16 +204,15 @@ local function hurt_players_outside_of_aura()
                                     piece.energy = 0
                                 end
                             end
-                            entity.damage(1, 'enemy')
+                            local damage = (max_health / 18)
                             if entity.valid then
-                                entity.health = entity.health - (max_health / 25)
-                                if entity.health <= 0 then
+                                if entity.health - damage <= 0 then
                                     if entity.name == 'character' then
                                         game.print(player.name .. messages[random(1, #messages)], {r = 200, g = 0, b = 0})
                                     end
-                                    entity.die()
                                 end
                             end
+                            entity.damage(damage, 'enemy')
                         end
                     end
                 end
