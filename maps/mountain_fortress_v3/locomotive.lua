@@ -182,15 +182,40 @@ local function hurt_players_outside_of_aura()
                             if entity.name == 'character' then
                                 game.print(player.name .. messages[random(1, #messages)], {r = 200, g = 0, b = 0})
                             end
-                            entity.die()
-                        else
-                            entity.damage(1, 'enemy')
-                            entity.health = entity.health - (max_health / 25)
-                            if entity.health <= 0 then
-                                if entity.name == 'character' then
-                                    game.print(player.name .. messages[random(1, #messages)], {r = 200, g = 0, b = 0})
-                                end
+                            if entity.valid then
                                 entity.die()
+                            end
+                        else
+                            local armor_inventory = player.get_inventory(defines.inventory.character_armor)
+                            if not armor_inventory.valid then
+                                return
+                            end
+                            local armor = armor_inventory[1]
+                            if not armor.valid_for_read then
+                                return
+                            end
+                            local grid = armor.grid
+                            if not grid or not grid.valid then
+                                return
+                            end
+                            local equip = grid.equipment
+                            for _, piece in pairs(equip) do
+                                if piece.valid then
+                                    piece.energy = 0
+                                    if piece.shield and piece.shield.valid then
+                                        piece.shield = 0
+                                    end
+                                end
+                            end
+                            entity.damage(1, 'enemy')
+                            if entity.valid then
+                                entity.health = entity.health - (max_health / 25)
+                                if entity.health <= 0 then
+                                    if entity.name == 'character' then
+                                        game.print(player.name .. messages[random(1, #messages)], {r = 200, g = 0, b = 0})
+                                    end
+                                    entity.die()
+                                end
                             end
                         end
                     end
