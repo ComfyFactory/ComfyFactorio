@@ -202,9 +202,6 @@ local function hurt_players_outside_of_aura()
                             for _, piece in pairs(equip) do
                                 if piece.valid then
                                     piece.energy = 0
-                                    if piece.shield and piece.shield.valid then
-                                        piece.shield = 0
-                                    end
                                 end
                             end
                             entity.damage(1, 'enemy')
