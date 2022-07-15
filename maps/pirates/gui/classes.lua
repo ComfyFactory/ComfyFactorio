@@ -92,7 +92,7 @@ end
 
 function Public.toggle_window(player)
 	local memory = Memory.get_crew_memory()
-	local flow, flow2, flow3, flow4
+	local flow, flow2, flow3
 
 	--*** OVERALL FLOW ***--
 	if player.gui.screen[window_name .. '_piratewindow'] then player.gui.screen[window_name .. '_piratewindow'].destroy() return end
@@ -185,7 +185,7 @@ function Public.full_update(player)
 		local label = class_list_panel_table['player_label' .. i]
 		local class_entry = memory.unlocked_classes[i]
 		label.caption = class_entry.taken_by and game.players[class_entry.taken_by].name or ''
-		
+
 		local black = {r=0, g=0, b=0}
 		local red = {r=1, g=0, b=0}
 

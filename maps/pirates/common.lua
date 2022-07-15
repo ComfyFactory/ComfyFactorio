@@ -883,7 +883,7 @@ function Public.can_place_silo_setup(surface, p, points_to_avoid, silo_count, ge
 	for i=1,silo_count do
 		local pos = {x = p.x + 9 * (i-1), y = p.y}
 		s = (surface.can_place_entity{name = 'rocket-silo', position = pos, build_check_type = build_check_type} or (generous and i>2)) and s
-		
+
 		for _, pa in pairs(points_to_avoid) do
 			if Math.distance({x = pa.x, y = pa.y}, pos) < pa.r then
 				allowed = false

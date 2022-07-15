@@ -410,12 +410,10 @@ function Public.try_unlock_class(class_for_sale, player, force_unlock)
 	end
 
 	if required_class then
-		local chosen_class_assigned = false
-
+		-- check if pre-requisite class is taken by someone
 		for p_index, chosen_class in pairs(memory.classes_table) do
 			if chosen_class == required_class then
 				memory.classes_table[p_index] = class_for_sale
-				chosen_class_assigned = true
 
 				-- update GUI data
 				for _, class_entry in ipairs(memory.unlocked_classes) do
@@ -428,20 +426,19 @@ function Public.try_unlock_class(class_for_sale, player, force_unlock)
 			end
 		end
 
-		if not chosen_class_assigned then
-			for i, spare_class in pairs(memory.spare_classes) do
-				if spare_class == required_class then
-					memory.spare_classes[i] = class_for_sale
+		-- check if pre-requisite class is in spare classes
+		for i, spare_class in pairs(memory.spare_classes) do
+			if spare_class == required_class then
+				memory.spare_classes[i] = class_for_sale
 
-					-- update GUI data
-					for _, class_entry in ipairs(memory.unlocked_classes) do
-						if required_class == class_entry.class and (not class_entry.taken_by) then
-							class_entry.class = class_for_sale
-							break
-						end
+				-- update GUI data
+				for _, class_entry in ipairs(memory.unlocked_classes) do
+					if required_class == class_entry.class and (not class_entry.taken_by) then
+						class_entry.class = class_for_sale
+						break
 					end
-					return true
 				end
+				return true
 			end
 		end
 

@@ -17,7 +17,7 @@ local window_name = 'crew'
 
 function Public.toggle_window(player)
 	local memory = Memory.get_crew_memory()
-	local flow, flow2, flow3, flow4
+	local flow, flow2, flow3
 	local window
 
 	--*** OVERALL FLOW ***--

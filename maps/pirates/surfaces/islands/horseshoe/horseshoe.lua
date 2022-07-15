@@ -139,7 +139,7 @@ function Public.chunk_structures(args)
 		end
 		IslandsCommon.assorted_structures_1(args, spec2)
 	end
-	
+
 	-- local spec2 = function(p)
 	-- 	local noises = Public.noises{p = p, noise_generator = args.noise_generator, static_params = args.static_params, seed = args.seed}
 

@@ -1146,7 +1146,18 @@ local function teleport_prepare_new_tiles(boat, new_floor_tile, oldposition, old
 	end
 end
 
+function Public.reassign_fluid_storage_references(boat, newsurface, newposition)
+	local scope = Public.get_scope(boat)
 
+	if scope.Data.upstairs_fluid_storages then
+		for i = 1, #scope.Data.upstairs_fluid_storages do
+			local storages = newsurface.find_entities_filtered{name="storage-tank", position = Utils.psum{newposition, scope.Data.upstairs_fluid_storages[i]}, radius = 1.5}
+			if #storages == 1 then
+				boat.upstairs_fluid_storages[i] = storages[1]
+			end
+		end
+	end
+end
 
 --if you're teleporting to the same surface, only do this in an orthogonal direction
 function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile, old_water_tile)
@@ -1358,14 +1369,7 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 		end
 	end
 
-	if scope.Data.upstairs_fluid_storages then
-		for i = 1, #scope.Data.upstairs_fluid_storages do
-			local storages = newsurface.find_entities_filtered{name="storage-tank", position = Utils.psum{newposition, scope.Data.upstairs_fluid_storages[i]}, radius = 1.5}
-			if #storages == 1 then
-				boat.upstairs_fluid_storages[i] = storages[1]
-			end
-		end
-	end
+	Public.reassign_fluid_storage_references(boat, newsurface, newposition)
 
 	Public.put_deck_whitebelts_in_standard_order(boat)
 	Hold.connect_up_linked_belts_to_deck()

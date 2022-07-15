@@ -189,7 +189,7 @@ function Public.try_place(structureScope, specialsTable, left_top, areawidth, ar
 
 	local attempts = 3
 	local succeeded = false
-	
+
 	while attempts > 0 and (not succeeded) do
 		attempts = attempts - 1
 
