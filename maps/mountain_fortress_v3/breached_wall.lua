@@ -153,23 +153,6 @@ local compare_player_pos = function(player)
             rpg_t.forest_zone = false
         end
     end
-
-    if adjusted_zones.slow_movement[zone] then
-        if player.character and player.character.valid then
-            player.character.character_running_speed_modifier = -0.5
-        end
-        if rpg_t and not rpg_t.slow_movement_zone then
-            player.print(({'breached_wall.heavy_legs'}))
-            rpg_t.slow_movement_zone = true
-        end
-    else
-        if rpg_t and rpg_t.slow_movement_zone then
-            rpg_t.slow_movement_zone = false
-        end
-        if rpg_t and not rpg_t.has_custom_spell_active then
-            Modifiers.update_player_modifiers(player)
-        end
-    end
 end
 
 local compare_player_and_train = function(player, entity)
