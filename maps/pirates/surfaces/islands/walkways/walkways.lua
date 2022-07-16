@@ -101,7 +101,9 @@ function Public.chunk_structures(args)
 	-- 	local noises = Public.noises{p = p, noise_generator = args.noise_generator, static_params = args.static_params, seed = args.seed}
 
 	-- 	return {
-	-- 		placeable = noises.height(p) > 0.1 and noises.walkways(p) < 0.3,
+	-- 		-- placeable = noises.height(p) > 0.1 and noises.walkways(p) < 0.3,
+	-- 		placeable_strict = noises.height(p) > 0.1 and noises.walkways(p) < 0.3,
+	-- 		placeable_optional = true,
 	-- 		chanceper4chunks = 1/2,
 	-- 	}
 	-- end

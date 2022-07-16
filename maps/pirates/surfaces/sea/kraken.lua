@@ -239,7 +239,7 @@ local function on_entity_destroyed(event)
 	end
 	if p then
 		local surface = game.surfaces[memory.sea_name]
-		if not surface and surface.valid then return end
+		if not (surface and surface.valid) then return end
 
 		local spits_here = surface.find_entities_filtered{position = p, radius = 0.5, name = 'acid-splash-fire-spitter-big'}
 		if spits_here and #spits_here > 0 then
@@ -269,6 +269,7 @@ function Public.try_spawn_kraken()
 
 	if not memory.active_sea_enemies then memory.active_sea_enemies = {} end
 	if not memory.active_sea_enemies.krakens then memory.active_sea_enemies.krakens = {} end
+	if not memory.active_sea_enemies.kraken_count then memory.active_sea_enemies.kraken_count = 0 end
 
 	local possible_slots = {}
 	for i = 1, Public.kraken_slots do
@@ -288,6 +289,7 @@ function Public.try_spawn_kraken()
 			spawner_entity = nil,
 			frame = nil,
 		}
+		memory.active_sea_enemies.kraken_count = memory.active_sea_enemies.kraken_count + 1
 
 		Task.set_timeout_in_ticks(10, kraken_tick_token, {crew_id = memory.id, kraken_id = kraken_id, step = 1, substep = 1})
 		Task.set_timeout_in_ticks(10, swimming_biters_tick_token, {crew_id = memory.id, kraken_id = kraken_id})
@@ -365,7 +367,10 @@ function Public.kraken_die(kraken_id)
 	end
 	surface.set_tiles(tiles2, true, false)
 
-	memory.active_sea_enemies.krakens[kraken_id] = nil
+	if memory.active_sea_enemies.krakens[kraken_id] then
+		memory.active_sea_enemies.kraken_count = Math.max(0, memory.active_sea_enemies.kraken_count - 1)
+		memory.active_sea_enemies.krakens[kraken_id] = nil
+	end
 
 	local reward_items = Balance.kraken_kill_reward_items()
 	Common.give_items_to_crew(reward_items)

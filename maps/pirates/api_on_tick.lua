@@ -890,7 +890,17 @@ function Public.loading_update(tickinterval)
 	local destination_index = memory.mapbeingloadeddestination_index
 	if not destination_index then memory.loadingticks = nil return end
 
-	if (not memory.boat.state) or (not (memory.boat.state == Boats.enum_state.LANDED or memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP or memory.boat.state == Boats.enum_state.LEAVING_DOCK or (memory.boat.state == Boats.enum_state.APPROACHING and destination_index == 1))) then return end
+	-- if (not memory.boat.state) or (not (memory.boat.state == Boats.enum_state.LANDED or memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP or memory.boat.state == Boats.enum_state.LEAVING_DOCK or (memory.boat.state == Boats.enum_state.APPROACHING and destination_index == 1))) then return end
+
+	if not memory.boat.state then return end
+
+	local needs_loading_update = false
+	if memory.boat.state == Boats.enum_state.LANDED then needs_loading_update = true end
+	if memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP then needs_loading_update = true end
+	if memory.boat.state == Boats.enum_state.LEAVING_DOCK then needs_loading_update = true end
+	if memory.boat.state == Boats.enum_state.APPROACHING and destination_index == 1 then needs_loading_update = true end
+
+	if not needs_loading_update then return end
 
 	memory.loadingticks = memory.loadingticks + tickinterval
 
@@ -985,7 +995,11 @@ function Public.loading_update(tickinterval)
 
 			-- log(_inspect{eta_ticks, (memory.active_sea_enemies.krakens and #memory.active_sea_enemies.krakens or 'nil'), memory.loadingticks})
 
-			if eta_ticks < 60*20 and memory.active_sea_enemies and (memory.active_sea_enemies.krakens and #memory.active_sea_enemies.krakens > 0) then
+			if eta_ticks < 60*20 and
+				memory.active_sea_enemies and
+				memory.active_sea_enemies.kraken_count and
+				memory.active_sea_enemies.kraken_count > 0
+			then
 				memory.loadingticks = memory.loadingticks - tickinterval --reverse the change
 			else
 				local fraction = memory.loadingticks / (total + (memory.extra_time_at_sea or 0))
@@ -1206,7 +1220,7 @@ function Public.Kraken_Destroyed_Backup_check(tickinterval) -- a server became s
 	local boat = memory.boat
 
 	if boat and boat.surface_name and boat.state and boat.state == Boats.enum_state.ATSEA_LOADING_MAP then
-		if (memory.active_sea_enemies and memory.active_sea_enemies.krakens and #memory.active_sea_enemies.krakens > 0) then
+		if (memory.active_sea_enemies and memory.active_sea_enemies.krakens and memory.active_sea_enemies.kraken_count and memory.active_sea_enemies.kraken_count > 0) then
 
 			local surface = game.surfaces[boat.surface_name]
 

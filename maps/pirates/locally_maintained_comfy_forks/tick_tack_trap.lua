@@ -118,7 +118,7 @@ local function tick_tack_trap(force_name, surface, position)
             if math.random(1, 10) == 1 then
                 traps[tick][#traps[tick] + 1] = {
                     callback = 'create_flying_text',
-                    params = {surface, {x = position.x, y = position.y}, '...'}
+                    params = {surface, {x = position.x, y = position.y}, '(☞ ͡° ͜ʖ ͡°)☞'}
                 }
             else
                 traps[tick][#traps[tick] + 1] = {

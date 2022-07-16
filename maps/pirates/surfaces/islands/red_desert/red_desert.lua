@@ -152,7 +152,8 @@ function Public.chunk_structures(args)
 		local noises = Public.noises{p = p, noise_generator = args.noise_generator, static_params = args.static_params, seed = args.seed}
 
 		return {
-			placeable = noises.height(p) > 0.05 and noises.mood(p) > -0.6 and noises.farness(p) > 0.1,
+			placeable_strict = noises.height(p) > 0.05 and noises.mood(p) > -0.6 and noises.farness(p) > 0.1,
+			placeable_optional = true,
 			chanceper4chunks = 0.05,
 		}
 	end
@@ -202,7 +203,7 @@ function Public.chunk_structures(args)
 				struct = Structures.IslandStructures.ROC.shelter1
 			end
 			if struct then
-				Structures.try_place(struct, args.specials, leftmost_topmost, 64, 64, function(p) return spec(p).placeable end)
+				Structures.try_place(struct, args.specials, leftmost_topmost, 64, 64, function(p) return spec(p).placeable_strict end, function(p) return spec(p).placeable_optional end)
 			end
 		end
 	end

@@ -441,35 +441,35 @@ function Public.maze_treasure_loot()
 end
 
 Public.dredger_loot_raw = {
-	{8, 0, 1, false, 'iron-plate', 1, 1},
-	{8, 0, 1, false, 'copper-plate', 1, 1},
-	{8, 0, 1, false, 'coal', 1, 1},
-	{10, 0, 1, false, 'coin', 1, 1},
+	{8, 0, 1, false, 'iron-plate', 5, 80},
+	{8, 0, 1, false, 'copper-plate', 5, 80},
+	{8, 0, 1, false, 'coal', 5, 50},
+	{10, 0, 1, false, 'coin', 10, 100},
 
-	{2, 0, 1, false, 'small-electric-pole', 1, 1},
-	{1, 0, 1, false, 'medium-electric-pole', 1, 1},
-	{0.1, 0, 1, false, 'big-electric-pole', 1, 1},
+	{2, 0, 1, false, 'small-electric-pole', 2, 10},
+	{1, 0, 1, false, 'medium-electric-pole', 1, 5},
+	{0.1, 0, 1, false, 'big-electric-pole', 1, 3},
 
-	{0.2, 0, 1, false, 'poison-capsule', 1, 1},
-	{0.2, 0, 1, false, 'slowdown-capsule', 1, 1},
-	{0.1, 0, 1, false, 'destroyer-capsule', 1, 1},
-	{0.2, 0, 1, false, 'defender-capsule', 1, 1},
-	{0.2, 0, 1, false, 'distractor-capsule', 1, 1},
+	{0.2, 0, 1, false, 'poison-capsule', 1, 4},
+	{0.2, 0, 1, false, 'slowdown-capsule', 1, 4},
+	{0.1, 0, 1, false, 'destroyer-capsule', 1, 3},
+	{0.2, 0, 1, false, 'defender-capsule', 1, 4},
+	{0.2, 0, 1, false, 'distractor-capsule', 1, 3},
 
 
-	{0.05, 0, 1, false, 'speed-module-3', 1, 1},
-	{0.05, 0, 1, false, 'effectivity-module-3', 1, 1},
-	{0.05, 0, 1, false, 'productivity-module-2', 1, 1}, --3s are banned because of game mech
+	{0.05, 0, 1, false, 'speed-module-3', 1, 2},
+	{0.05, 0, 1, false, 'effectivity-module-3', 1, 2},
+	{0.05, 0, 1, false, 'productivity-module-2', 1, 2}, --3s are banned because of game mech
 
-	{0.1, 0, 1, false, 'rocket', 1, 1},
-	{0.01, 0, 1, false, 'explosive-rocket', 1, 1},
+	{0.1, 0, 1, false, 'rocket', 1, 3},
+	{0.01, 0, 1, false, 'explosive-rocket', 1, 2},
 
-	{4, 0, 1, false, 'automation-science-pack', 1, 1},
-	{4, 0, 1, false, 'logistic-science-pack', 1, 1},
-	{2, 0, 1, false, 'military-science-pack', 1, 1},
-	{1, 0, 1, false, 'chemical-science-pack', 1, 1},
-	{1, 0, 1, false, 'production-science-pack', 1, 1},
-	{0.5, 0, 1, false, 'utility-science-pack', 1, 1},
+	{4, 0, 1, false, 'automation-science-pack', 4, 15},
+	{4, 0, 1, false, 'logistic-science-pack', 4, 15},
+	{2, 0, 1, false, 'military-science-pack', 2, 10},
+	{1, 0, 1, false, 'chemical-science-pack', 2, 8},
+	{1, 0, 1, false, 'production-science-pack', 1, 5},
+	{0.5, 0, 1, false, 'utility-science-pack', 1, 4},
 
 	{0.012, 0, 0.8, false, 'night-vision-equipment', 1, 1},
 	{0.01, 0, 1, false, 'exoskeleton-equipment', 1, 1},

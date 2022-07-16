@@ -565,7 +565,11 @@ function Public.is_position_free_to_move_to(p)
 	local ret = true
 
 	for _, destination_data in pairs(memory.destinations) do
-		if p.x >= destination_data.overworld_position.x + 1 and p.x <= destination_data.overworld_position.x + destination_data.iconized_map_width + Crowsnest.platformwidth - 1 and p.y >= destination_data.overworld_position.y - destination_data.iconized_map_width/2 - Crowsnest.platformheight/2 + 1 and p.y <= destination_data.overworld_position.y + destination_data.iconized_map_width/2 + Crowsnest.platformheight/2 - 1 then
+		if p.x >= destination_data.overworld_position.x + 1 and
+			p.x <= destination_data.overworld_position.x + destination_data.iconized_map_width + Crowsnest.platformwidth - 1 and
+			p.y >= destination_data.overworld_position.y - destination_data.iconized_map_width/2 - Crowsnest.platformheight/2 + 1 and
+			p.y <= destination_data.overworld_position.y + destination_data.iconized_map_width/2 + Crowsnest.platformheight/2 - 1
+		then
 			ret = false
 			break
 		end

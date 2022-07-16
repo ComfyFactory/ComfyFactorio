@@ -321,6 +321,8 @@ local function damage_to_players_changes(event)
 			damage_multiplier = damage_multiplier * Balance.samurai_damage_taken_multiplier
 		elseif class and class == Classes.enum.HATAMOTO then
 			damage_multiplier = damage_multiplier * Balance.hatamoto_damage_taken_multiplier
+		elseif class and class == Classes.enum.ROC_EATER then
+			damage_multiplier = damage_multiplier * Balance.roc_eater_damage_taken_multiplier
 		elseif class and class == Classes.enum.IRON_LEG then
 			if memory.class_auxiliary_data[player_index] and memory.class_auxiliary_data[player_index].iron_leg_active then
 				damage_multiplier = damage_multiplier * Balance.iron_leg_damage_taken_multiplier
@@ -334,6 +336,8 @@ local function damage_to_players_changes(event)
 		damage_multiplier = damage_multiplier * (1 + Balance.biter_timeofday_bonus_damage(event.cause.surface.darkness))
 	end --Enemy Forces
 
+	-- game.print('name: ' .. event.cause.name .. ' damage: ' .. event.final_damage_amount)
+	-- game.print('multiplier: ' .. damage_multiplier)
 
 	if damage_multiplier > 1 then
 		event.entity.health = event.entity.health - event.final_damage_amount * (damage_multiplier - 1)
