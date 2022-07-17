@@ -74,11 +74,23 @@ function Public.create_step2_entities()
 		quest_structure_data.market.rotatable = false
 		quest_structure_data.market.destructible = false
 
-		quest_structure_data.market.add_market_item{price={{'pistol', 1}}, offer={type = 'give-item', item = 'coin', count = Balance.coin_sell_amount}}
-		quest_structure_data.market.add_market_item{price={{'burner-mining-drill', 1}}, offer={type = 'give-item', item = 'iron-plate', count = 9}}
+		-- quest_structure_data.market.add_market_item{price={{'pistol', 1}}, offer={type = 'give-item', item = 'coin', count = Balance.coin_sell_amount}}
+		-- quest_structure_data.market.add_market_item{price={{'burner-mining-drill', 1}}, offer={type = 'give-item', item = 'iron-plate', count = 9}}
 
-		local how_many_coin_offers = 4
-		if Balance.crew_scale() >= 1.2 then how_many_coin_offers = 5 end
+		local how_many_coin_offers = 5
+		if Balance.crew_scale() >= 1.2 then how_many_coin_offers = 6 end
+
+		-- Thinking of not having these offers available always (if it's bad design decision can always change it back)
+		if Math.random(4) == 1 then
+			quest_structure_data.market.add_market_item{price={{'pistol', 1}}, offer={type = 'give-item', item = 'coin', count = Balance.coin_sell_amount}}
+			how_many_coin_offers = how_many_coin_offers - 1
+		end
+
+		if Math.random(4) == 1 then
+			quest_structure_data.market.add_market_item{price={{'burner-mining-drill', 1}}, offer={type = 'give-item', item = 'iron-plate', count = 9}}
+			how_many_coin_offers = how_many_coin_offers - 1
+		end
+
 		local coin_offers = ShopCovered.market_generate_coin_offers(how_many_coin_offers)
 		for _, o in pairs(coin_offers) do
 			quest_structure_data.market.add_market_item(o)
