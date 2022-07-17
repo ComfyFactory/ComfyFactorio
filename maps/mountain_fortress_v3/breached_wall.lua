@@ -1,4 +1,3 @@
-local Modifiers = require 'utils.player_modifiers'
 local Collapse = require 'modules.collapse'
 local Balance = require 'maps.mountain_fortress_v3.balance'
 local RPG = require 'modules.rpg.main'
@@ -308,6 +307,7 @@ local function on_player_changed_position(event)
 
     distance(player)
 end
+
 local function on_player_driving_changed_state(event)
     local player = game.players[event.player_index]
     if not (player and player.valid) then
