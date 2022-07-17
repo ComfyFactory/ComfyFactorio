@@ -95,9 +95,19 @@ function Public.vector_dir(pos_from, pos_target)
 	return {x = pos_target.x - pos_from.x, y = pos_target.y - pos_from.y}
 end
 
-
 function Public.random_float_in_range(from, to)
 	return Public.random() * (to - from) + from
+end
+
+-- Returns vector in random direction.
+-- scalar: sets returned vector length. If null, 1 will be chosen
+function Public.random_vec(scalar)
+	scalar = scalar or 1
+	local random_angle = Public.random_float_in_range(0, 2 * Public.pi)
+	return {
+		x = Public.sin(random_angle) * scalar,
+		y = Public.cos(random_angle) * scalar
+	}
 end
 
 function Public.snap_to_grid(point)

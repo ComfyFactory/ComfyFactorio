@@ -60,6 +60,7 @@ Public.rocket_launch_coin_reward = 5000
  Public.scout_damage_taken_multiplier = 1.25
  Public.scout_damage_dealt_multiplier = 0.6
  Public.fisherman_reach_bonus = 10
+ Public.lumberjack_coins_from_tree = 12
  Public.master_angler_reach_bonus = 16
  Public.master_angler_fish_bonus = 2
  Public.master_angler_coin_bonus = 20
@@ -70,6 +71,9 @@ Public.rocket_launch_coin_reward = 5000
  Public.chief_fish_received_for_worm_kill = 3
  Public.roc_eater_damage_taken_multiplier = 0.8
  Public.roc_eater_required_stone_furnace_to_heal_count = 1
+ Public.soldier_defender_summon_chance = 0.2
+ Public.veteran_destroyer_summon_chance = 0.2
+ Public.veteran_on_hit_slow_chance = 0.1
 
 
 function Public.starting_boatEEIpower_production_MW()

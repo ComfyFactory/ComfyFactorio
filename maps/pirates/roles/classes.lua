@@ -33,6 +33,8 @@ local enum = {
 	GOURMET = 'gourmet',
 	CHIEF = 'chief',
 	ROC_EATER = 'roc_eater',
+	SOLDIER = 'soldier',
+	VETERAN = 'veteran',
 }
 Public.enum = enum
 
@@ -64,6 +66,8 @@ Public.eng_form = {
 	[enum.GOURMET] = 'Gourmet',
 	[enum.CHIEF] = 'Chief',
 	[enum.ROC_EATER] = 'Roc Eater',
+	[enum.SOLDIER] = 'Soldier',
+	[enum.VETERAN] = 'Veteran',
 }
 
 function Public.display_form(class)
@@ -127,6 +131,13 @@ function Public.explanation(class, add_is_class_obtainable)
 	elseif class == enum.ROC_EATER then
 		local received_damage = Public.percentage_points_difference_from_100_percent(Balance.roc_eater_damage_taken_multiplier)
 		full_explanation = {'', {explanation, received_damage}}
+	elseif class == enum.SOLDIER then
+		local chance = Balance.soldier_defender_summon_chance * 100
+		full_explanation = {'', {explanation, chance}}
+	elseif class == enum.VETERAN then
+		local chance = Balance.veteran_destroyer_summon_chance * 100
+		local chance2 = Balance.veteran_on_hit_slow_chance * 100
+		full_explanation = {'', {explanation, chance, chance2}}
 	else
 		full_explanation = {'', {explanation}}
 	end
@@ -165,6 +176,7 @@ Public.class_unlocks = {
 	-- [enum.PROSPECTOR] = {enum.CHIEF_EXCAVATOR}, --breaks the resource pressure in the game too strongly I think
 	[enum.SAMURAI] = {enum.HATAMOTO},
 	[enum.MASTER_ANGLER] = {enum.DREDGER},
+	[enum.SOLDIER] = {enum.VETERAN},
 }
 
 Public.class_purchase_requirement = {
@@ -173,6 +185,7 @@ Public.class_purchase_requirement = {
 	[enum.CHIEF_EXCAVATOR] = enum.PROSPECTOR,
 	[enum.HATAMOTO] = enum.SAMURAI,
 	[enum.DREDGER] = enum.MASTER_ANGLER,
+	[enum.VETERAN] = enum.SOLDIER,
 }
 
 function Public.initial_class_pool()
@@ -194,6 +207,7 @@ function Public.initial_class_pool()
 		enum.GOURMET,
 		enum.CHIEF,
 		enum.ROC_EATER,
+		enum.SOLDIER,
 	}
 end
 
@@ -379,6 +393,34 @@ local function class_on_player_used_capsule(event)
 				player.remove_item({name='stone-furnace', count=required_count})
 				player.insert({name='raw-fish', count=1})
 			end
+		elseif class == Public.enum.SOLDIER then
+			local chance = Balance.soldier_defender_summon_chance
+			if Math.random() < chance then
+				local random_vec = Math.random_vec(3)
+				local e = player.surface.create_entity{
+					name = 'defender',
+					position = Utils.psum{player.character.position, random_vec},
+					speed = 1.5,
+					force = player.force
+				}
+				if e and e.valid then
+					e.combat_robot_owner = player.character
+				end
+			end
+		elseif class == Public.enum.VETERAN then
+			local chance = Balance.veteran_destroyer_summon_chance
+			if Math.random() < chance then
+				local random_vec = Math.random_vec(3)
+				local e = player.surface.create_entity{
+					name = 'destroyer',
+					position = Utils.psum{player.character.position, random_vec},
+					speed = 1.5,
+					force = player.force
+				}
+				if e and e.valid then
+					e.combat_robot_owner = player.character
+				end
+			end
 		end
 	end
 end
@@ -388,7 +430,7 @@ function Public.lumberjack_bonus_items(give_table)
 	local memory = Memory.get_crew_memory()
 
 	if Math.random(Balance.every_nth_tree_gives_coins) == 1 then
-		local a = 12
+		local a = Balance.lumberjack_coins_from_tree
 		give_table[#give_table + 1] = {name = 'coin', count = a}
 		memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
 	elseif Math.random(2) == 1 then
@@ -446,8 +488,16 @@ function Public.try_unlock_class(class_for_sale, player, force_unlock)
 		if force_unlock then
 			memory.spare_classes[#memory.spare_classes + 1] = class_for_sale
 
-			-- update GUI data
-			memory.unlocked_classes[#memory.unlocked_classes + 1] = {class = class_for_sale}
+			-- if player who unlocked class doesn't have one equipped, equip it for him
+			if not memory.classes_table[player.index] then
+				memory.classes_table[player.index] = class_for_sale
+
+				-- update GUI data
+				memory.unlocked_classes[#memory.unlocked_classes + 1] = {class = class_for_sale, taken_by = player.index}
+			else
+				-- update GUI data
+				memory.unlocked_classes[#memory.unlocked_classes + 1] = {class = class_for_sale}
+			end
 		end
 	else -- there is no required class
 		-- if player who unlocked class doesn't have one equipped, equip it for him

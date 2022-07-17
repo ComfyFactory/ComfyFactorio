@@ -305,6 +305,11 @@ local function damage_to_players_changes(event)
 
 	local player_index = event.entity.player.index
 	local class = memory.classes_table and memory.classes_table[player_index]
+	local player = game.players[player_index]
+
+	if not (player and player.valid and player.character and player.character.valid) then
+        return
+    end
 
 	local damage_multiplier = 1
 
@@ -313,22 +318,46 @@ local function damage_to_players_changes(event)
 	if event.damage_type.name == 'poison' then --make all poison damage stronger against players
 		damage_multiplier = damage_multiplier * Balance.poison_damage_multiplier
 	else
-		if class and class == Classes.enum.SCOUT then
-			damage_multiplier = damage_multiplier * Balance.scout_damage_taken_multiplier
-		-- elseif class and class == Classes.enum.MERCHANT then
-		-- 	damage_multiplier = damage_multiplier * 1.10
-		elseif class and class == Classes.enum.SAMURAI then
-			damage_multiplier = damage_multiplier * Balance.samurai_damage_taken_multiplier
-		elseif class and class == Classes.enum.HATAMOTO then
-			damage_multiplier = damage_multiplier * Balance.hatamoto_damage_taken_multiplier
-		elseif class and class == Classes.enum.ROC_EATER then
-			damage_multiplier = damage_multiplier * Balance.roc_eater_damage_taken_multiplier
-		elseif class and class == Classes.enum.IRON_LEG then
-			if memory.class_auxiliary_data[player_index] and memory.class_auxiliary_data[player_index].iron_leg_active then
-				damage_multiplier = damage_multiplier * Balance.iron_leg_damage_taken_multiplier
+		if class then
+			if class == Classes.enum.SCOUT then
+				damage_multiplier = damage_multiplier * Balance.scout_damage_taken_multiplier
+			-- elseif class == Classes.enum.MERCHANT then
+			-- 	damage_multiplier = damage_multiplier * 1.10
+			elseif class == Classes.enum.SAMURAI then
+				damage_multiplier = damage_multiplier * Balance.samurai_damage_taken_multiplier
+			elseif class == Classes.enum.HATAMOTO then
+				damage_multiplier = damage_multiplier * Balance.hatamoto_damage_taken_multiplier
+			elseif class == Classes.enum.ROC_EATER then
+				damage_multiplier = damage_multiplier * Balance.roc_eater_damage_taken_multiplier
+			elseif class == Classes.enum.IRON_LEG then
+				if memory.class_auxiliary_data[player_index] and memory.class_auxiliary_data[player_index].iron_leg_active then
+					damage_multiplier = damage_multiplier * Balance.iron_leg_damage_taken_multiplier
+				end
+			elseif class == Classes.enum.VETERAN then
+				local chance = Balance.veteran_on_hit_slow_chance
+				if Math.random() < chance then
+					-- only certain targets accept stickers
+					if event.cause.name == 'small-biter' or
+						event.cause.name == 'small-spitter' or
+						event.cause.name == 'medium-biter' or
+						event.cause.name == 'medium-spitter' or
+						event.cause.name == 'big-biter' or
+						event.cause.name == 'big-spitter' or
+						event.cause.name == 'behemoth-biter' or
+						event.cause.name == 'behemoth-spitter'
+					then
+						player.surface.create_entity{
+							name = 'slowdown-sticker',
+							position = player.character.position,
+							speed = 1.5,
+							force = player.force,
+							target = event.cause
+						}
+					end
+				end
+			-- else
+			-- 	damage_multiplier = damage_multiplier * (1 + Balance.bonus_damage_to_humans())
 			end
-		-- else
-		-- 	damage_multiplier = damage_multiplier * (1 + Balance.bonus_damage_to_humans())
 		end
 	end
 
@@ -348,11 +377,6 @@ local function damage_to_players_changes(event)
 
 	-- deal with damage reduction on lethal damage for players
 	-- Piratux wrote this code — it tracks player health (except passive regen), and intervenes on a lethal damage event, so it should work most of the time.
-	local player = game.players[player_index]
-    if not (player and player.valid and player.character and player.character.valid) then
-        return
-    end
-
 	local global_memory = Memory.get_global_memory()
 
 	if damage_multiplier < 1 and event.final_health <= 0 then
@@ -935,6 +959,13 @@ local function base_kill_rewards(event)
 	local revenge_target
 	if event.cause and event.cause.valid and event.cause.name == 'character' then
 		revenge_target = event.cause
+	end
+
+	-- This gives enemy loot straight to combat robot owner's inventory instead of dropping it on the ground
+	if event.cause.name == 'defender' or event.cause.name == 'distractor' or event.cause.name == 'destroyer' then
+		if event.cause.combat_robot_owner and event.cause.combat_robot_owner.valid then
+			revenge_target = event.cause.combat_robot_owner
+		end
 	end
 
 	local class
