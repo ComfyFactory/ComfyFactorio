@@ -162,7 +162,7 @@ function Public.get(key)
 end
 
 --- Gets value from player rpg_t table
----@param key string
+---@param key string|integer
 ---@param value string|nil
 function Public.get_value_from_player(key, value)
     if key and value then

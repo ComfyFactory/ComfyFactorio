@@ -1,6 +1,7 @@
 local Public = require 'modules.rpg.table'
 local Token = require 'utils.token'
 local Task = require 'utils.task'
+local Ai = require 'modules.ai'
 
 local spells = {}
 local random = math.random
@@ -1023,6 +1024,58 @@ spells[#spells + 1] = {
             end,
             true
         )
+
+        Public.cast_spell(player)
+        Public.remove_mana(player, self.mana_cost)
+        return true
+    end
+}
+
+spells[#spells + 1] = {
+    name = {'spells.drone_enemy'},
+    entityName = 'drone_enemy',
+    target = false,
+    force = 'player',
+    level = 200,
+    type = 'special',
+    mana_cost = 1000,
+    cooldown = 18000,
+    enabled = false,
+    enforce_cooldown = true,
+    log_spell = true,
+    sprite = 'virtual-signal/signal-info',
+    special_sprite = 'virtual-signal=signal-info',
+    tooltip = 'Creates a drone that searches for enemies and destroys them.',
+    callback = function(data)
+        local self = data.self
+        local player = data.player
+        Ai.create_char({player_index = player.index, command = 1, search_local = true})
+
+        Public.cast_spell(player)
+        Public.remove_mana(player, self.mana_cost)
+        return true
+    end
+}
+
+spells[#spells + 1] = {
+    name = {'spells.drone_mine'},
+    entityName = 'drone_mine',
+    target = false,
+    force = 'player',
+    level = 200,
+    type = 'special',
+    mana_cost = 1000,
+    cooldown = 18000,
+    enabled = false,
+    enforce_cooldown = true,
+    log_spell = true,
+    sprite = 'virtual-signal/signal-info',
+    special_sprite = 'virtual-signal=signal-info',
+    tooltip = 'Creates a drone mines entities around you.',
+    callback = function(data)
+        local self = data.self
+        local player = data.player
+        Ai.create_char({player_index = player.index, command = 2, search_local = false})
 
         Public.cast_spell(player)
         Public.remove_mana(player, self.mana_cost)

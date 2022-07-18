@@ -28,7 +28,7 @@ local function get_comparator(sort_by)
     return comparators[sort_by]
 end
 
-local function create_input_element(frame, type, value, items, index)
+local function create_input_element(frame, type, value, items, index, tooltip)
     if type == 'slider' then
         return frame.add({type = 'slider', value = value, minimum_value = 0, maximum_value = 1})
     end
@@ -38,6 +38,7 @@ local function create_input_element(frame, type, value, items, index)
     if type == 'label' then
         local label = frame.add({type = 'label', caption = value})
         label.style.font = 'default-listbox'
+        label.tooltip = tooltip or ''
         return label
     end
     if type == 'dropdown' then
@@ -46,13 +47,15 @@ local function create_input_element(frame, type, value, items, index)
     return frame.add({type = 'text-box', text = value})
 end
 
-local function create_custom_label_element(frame, sprite, localised_string, value)
+local function create_custom_label_element(frame, sprite, localised_string, value, tooltip)
     local t = frame.add({type = 'flow'})
     t.add({type = 'label', caption = '[' .. sprite .. ']'})
     local heading = t.add({type = 'label', caption = localised_string})
     heading.style.font = 'default-listbox'
     local subheading = t.add({type = 'label', caption = value})
     subheading.style.font = 'default-listbox'
+
+    t.tooltip = tooltip or ''
 
     return subheading
 end
@@ -710,13 +713,15 @@ function Public.settings_tooltip(player)
         table.sort(spells, comparator)
 
         for _, entity in pairs(spells) do
-            local cooldown = (entity.cooldown / 60) .. 's'
-            if entity.type == 'item' then
-                local text = '[item=' .. entity.entityName .. '] ▪️ Level: [font=default-bold]' .. entity.level .. '[/font] Mana: [font=default-bold]' .. entity.mana_cost .. '[/font].  Cooldown: [font=default-bold]' .. cooldown .. '[/font]'
-                create_input_element(normal_spell_grid, 'label', text)
-            elseif entity.type == 'entity' then
-                local text = '[entity=' .. entity.entityName .. '] ▪️ Level: [font=default-bold]' .. entity.level .. '[/font] Mana: [font=default-bold]' .. entity.mana_cost .. '[/font].  Cooldown: [font=default-bold]' .. cooldown .. '[/font]'
-                create_input_element(normal_spell_grid, 'label', text)
+            if entity.enabled then
+                local cooldown = (entity.cooldown / 60) .. 's'
+                if entity.type == 'item' then
+                    local text = '[item=' .. entity.entityName .. '] ▪️ Level: [font=default-bold]' .. entity.level .. '[/font] Mana: [font=default-bold]' .. entity.mana_cost .. '[/font].  Cooldown: [font=default-bold]' .. cooldown .. '[/font]'
+                    create_input_element(normal_spell_grid, 'label', text, nil, nil, entity.tooltip)
+                elseif entity.type == 'entity' then
+                    local text = '[entity=' .. entity.entityName .. '] ▪️ Level: [font=default-bold]' .. entity.level .. '[/font] Mana: [font=default-bold]' .. entity.mana_cost .. '[/font].  Cooldown: [font=default-bold]' .. cooldown .. '[/font]'
+                    create_input_element(normal_spell_grid, 'label', text, nil, nil, entity.tooltip)
+                end
             end
         end
 
@@ -741,10 +746,12 @@ function Public.settings_tooltip(player)
         local special_spell_grid = special_spell_pane.add({type = 'table', column_count = 1})
 
         for _, entity in pairs(spells) do
-            local cooldown = (entity.cooldown / 60) .. 's'
-            if entity.type == 'special' then
-                local text = '▪️ Level: [font=default-bold]' .. entity.level .. '[/font] Mana: [font=default-bold]' .. entity.mana_cost .. '[/font]. Cooldown: [font=default-bold]' .. cooldown .. '[/font]'
-                create_custom_label_element(special_spell_grid, entity.special_sprite, entity.name, text)
+            if entity.enabled then
+                local cooldown = (entity.cooldown / 60) .. 's'
+                if entity.type == 'special' then
+                    local text = '▪️ Level: [font=default-bold]' .. entity.level .. '[/font] Mana: [font=default-bold]' .. entity.mana_cost .. '[/font]. Cooldown: [font=default-bold]' .. cooldown .. '[/font]'
+                    create_custom_label_element(special_spell_grid, entity.special_sprite, entity.name, text, entity.tooltip)
+                end
             end
         end
     end
