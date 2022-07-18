@@ -548,6 +548,15 @@ function Public.place_cached_structures(tickinterval)
 
 					for _, e in pairs(c.instances) do
 						local p = Utils.psum{position, e.position, c.offset}
+						if c.type == 'entities_minable' then
+							surface.create_entity{
+								name = Balance.pick_random_drilling_ore(),
+								position = p,
+								direction = e.direction,
+								force = force_name,
+								amount = Balance.pick_drilling_ore_amount()
+							}
+						end
 						local e2 = surface.create_entity{name = c.name, position = p, direction = e.direction, force = force_name, amount = c.amount}
 						c2.built_entities[#c2.built_entities + 1] = e2
 					end

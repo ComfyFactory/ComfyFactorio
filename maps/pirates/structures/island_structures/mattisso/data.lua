@@ -3,6 +3,7 @@
 
 local Public = {}
 
+-- Unused
 Public.refuel_station = {
 	name = 'refuel_station',
 	width = 28,
@@ -38,6 +39,7 @@ Public.small_crashed_ship = {
 	},
 }
 
+-- Unused
 Public.small_basic_factory = {
 	name = 'small_basic_factory',
 	width = 22,
@@ -52,6 +54,7 @@ Public.small_basic_factory = {
 	},
 }
 
+-- Unused
 Public.small_early_enemy_outpost = {
 	name = 'small_early_enemy_outpost',
 	width = 32,
@@ -66,6 +69,7 @@ Public.small_early_enemy_outpost = {
 	},
 }
 
+-- Unused
 Public.small_nuclear_powerplant = {
 	name = 'small_nuclear_powerplant',
 	width = 27,
@@ -80,6 +84,7 @@ Public.small_nuclear_powerplant = {
 	},
 }
 
+-- Unused
 Public.small_market_outpost = {
 	name = 'small_market_outpost',
 	width = 32,
@@ -294,7 +299,13 @@ Public.small_mining_base = {
 			name = 'electric-mining-drill',
 			force = 'ancient-friendly',
 			offset = {x = 0, y = 0},
-			instances = {{position = {x = -6, y = -3}, direction = defines.direction.east}, {position = {x = -6, y = 1}, direction = defines.direction.east}, {position = {x = -6, y = 5}, direction = defines.direction.east}, {position = {x = -2, y = -1}, direction = defines.direction.west}, {position = {x = -2, y = 3}, direction = defines.direction.west}}
+			instances = {
+				{position = {x = -6, y = -3}, direction = defines.direction.east},
+				{position = {x = -6, y = 1}, direction = defines.direction.east},
+				{position = {x = -6, y = 5}, direction = defines.direction.east},
+				{position = {x = -2, y = -1}, direction = defines.direction.west},
+				{position = {x = -2, y = 3}, direction = defines.direction.west}
+			}
 		},
 	},
 }
@@ -315,7 +326,14 @@ Public.small_primitive_mining_base = {
 			name = 'burner-mining-drill',
 			force = 'ancient-friendly',
 			offset = {x = 0, y = 0},
-			instances = {{position = {x = -4, y = -6}, direction = defines.direction.south}, {position = {x = -6, y = -4}, direction = defines.direction.east},{position = {x = 0, y = 1}, direction = defines.direction.south}, {position = {x = -2, y = 3}, direction = defines.direction.east},{position = {x = 5, y = 1}, direction = defines.direction.south}, {position = {x = 5, y = 5}, direction = defines.direction.north}}
+			instances = {
+				{position = {x = -4, y = -6}, direction = defines.direction.south},
+				{position = {x = -6, y = -4}, direction = defines.direction.east},
+				{position = {x = 0, y = 1}, direction = defines.direction.south},
+				{position = {x = -2, y = 3}, direction = defines.direction.east},
+				{position = {x = 5, y = 1}, direction = defines.direction.south},
+				{position = {x = 5, y = 5}, direction = defines.direction.north}
+			}
 		},
 	},
 }

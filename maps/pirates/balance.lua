@@ -7,7 +7,7 @@ local Math = require 'maps.pirates.math'
 -- local Memory = require 'maps.pirates.memory'
 local Common = require 'maps.pirates.common'
 -- local Utils = require 'maps.pirates.utils_local'
-local _inspect = require 'utils.inspect'.inspect
+-- local _inspect = require 'utils.inspect'.inspect
 
 -- this file is an API to all the balance tuning knobs
 
@@ -590,18 +590,31 @@ function Public.starting_items_crew_downstairs()
 	}
 end
 
+function Public.pick_random_drilling_ore()
+	local number = Math.random(10)
+	if number <= 4 then -- 40%
+		return 'iron-ore'
+	elseif number <= 7 then -- 30%
+		return 'copper-ore'
+	elseif number <= 9 then -- 20%
+		return 'coal'
+	else -- 10%
+		return 'stone'
+	end
+end
 
 
-
-
-
-
-
-
-
-
-
-
+-- Current formula returns [50 - 200] + random(1, [10 - 40]) depending on completion progress
+-- Formula is "a(100x)^(1/2) + random(1, 0.2a(100x)^(1/2))" where
+-- x: progress in range [0-1]
+-- a: scaling
+-- When the formula needs adjustments, I suggest changing scaling variable
+function Public.pick_drilling_ore_amount()
+	local scaling = 20
+	local amount = scaling * Math.sqrt(100 * Common.game_completion_progress())
+	local extra_random_amount = Math.random(Math.ceil(0.2 * amount))
+	return amount + extra_random_amount
+end
 
 
 return Public
