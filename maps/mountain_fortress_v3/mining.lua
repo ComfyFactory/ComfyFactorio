@@ -1,8 +1,11 @@
 local WPT = require 'maps.mountain_fortress_v3.table'
 local RPG = require 'modules.rpg.main'
+local Event = require 'utils.event'
+local Ai = require 'modules.ai'
 require 'modules.check_fullness'
 
-local Public = {}
+local Public = {events = {on_entity_mined = Event.generate_event_name('on_entity_mined')}}
+
 local random = math.random
 local floor = math.floor
 local sqrt = math.sqrt
@@ -337,7 +340,12 @@ local function randomness(data)
         end
     end
     local particle = particles[harvest]
-    create_particles(player.surface, particle, position, 64, {x = player.position.x, y = player.position.y})
+
+    if data.script_character then
+        create_particles(player.surface, particle, position, 64, {x = data.script_character.position.x, y = data.script_character.position.y})
+    else
+        create_particles(player.surface, particle, position, 64, {x = player.position.x, y = player.position.y})
+    end
 end
 
 local function randomness_scrap(data)
@@ -390,7 +398,11 @@ local function randomness_scrap(data)
         end
     end
     local particle = particles[harvest]
-    create_particles(player.surface, particle, position, 64, {x = player.position.x, y = player.position.y})
+    if data.script_character then
+        create_particles(player.surface, particle, position, 64, {x = data.script_character.position.x, y = data.script_character.position.y})
+    else
+        create_particles(player.surface, particle, position, 64, {x = player.position.x, y = player.position.y})
+    end
 end
 
 function Public.on_player_mined_entity(event)
@@ -413,12 +425,18 @@ function Public.on_player_mined_entity(event)
     local buffer = event.buffer
 
     if valid_rocks[entity.name] or valid_trees[entity.name] or is_scrap then
-        buffer.clear()
+        if buffer then
+            buffer.clear()
+        end
 
         local data = {
             entity = entity,
             player = player
         }
+
+        if event.script_character then
+            data.script_character = event.script_character
+        end
 
         local index = player.index
 
@@ -432,5 +450,27 @@ function Public.on_player_mined_entity(event)
         end
     end
 end
+
+Event.add(
+    Public.events.on_entity_mined,
+    function(event)
+        if not event then
+            return
+        end
+
+        Public.on_player_mined_entity(event)
+    end
+)
+
+Event.add(
+    Ai.events.on_entity_mined,
+    function(event)
+        if not event then
+            return
+        end
+
+        Public.on_player_mined_entity(event)
+    end
+)
 
 return Public

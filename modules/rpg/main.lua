@@ -910,12 +910,12 @@ local function on_player_used_capsule(event)
         right_bottom = {x = position.x + radius, y = position.y + radius}
     }
 
-    if rpg_t.level < spell.level then
+    if not spell.enabled then
         return Public.cast_spell(player, true)
     end
 
-    if not spell.enabled then
-        return
+    if rpg_t.level < spell.level then
+        return Public.cast_spell(player, true)
     end
 
     if not Math2D.bounding_box.contains_point(area, player.position) then
