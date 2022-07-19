@@ -1244,7 +1244,7 @@ local function show_mvps(player)
                 },
                 field6 = {
                     text1 = 'Pickaxe Upgrade:',
-                    text2 = pick_tier .. ' (' .. pick_tier .. ')',
+                    text2 = pick_tier .. ' (' .. upgrades.pickaxe_tier .. ')',
                     inline = 'true',
                     emptyField = 'true',
                     emptyInline = 'true'
