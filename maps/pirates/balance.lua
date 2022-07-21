@@ -7,7 +7,7 @@ local Math = require 'maps.pirates.math'
 -- local Memory = require 'maps.pirates.memory'
 local Common = require 'maps.pirates.common'
 -- local Utils = require 'maps.pirates.utils_local'
-local _inspect = require 'utils.inspect'.inspect
+-- local _inspect = require 'utils.inspect'.inspect
 
 -- this file is an API to all the balance tuning knobs
 
@@ -60,12 +60,20 @@ Public.rocket_launch_coin_reward = 5000
  Public.scout_damage_taken_multiplier = 1.25
  Public.scout_damage_dealt_multiplier = 0.6
  Public.fisherman_reach_bonus = 10
+ Public.lumberjack_coins_from_tree = 12
  Public.master_angler_reach_bonus = 16
- Public.master_angler_fish_bonus = 1
- Public.master_angler_coin_bonus = 10
+ Public.master_angler_fish_bonus = 2
+ Public.master_angler_coin_bonus = 20
  Public.dredger_reach_bonus = 16
- Public.dredger_fish_bonus = 1
+ Public.dredger_fish_bonus = 2
  Public.gourmet_ore_scaling_enabled = false
+ Public.chief_fish_received_for_biter_kill = 1
+ Public.chief_fish_received_for_worm_kill = 3
+ Public.roc_eater_damage_taken_multiplier = 0.8
+ Public.roc_eater_required_stone_furnace_to_heal_count = 1
+ Public.soldier_defender_summon_chance = 0.2
+ Public.veteran_destroyer_summon_chance = 0.2
+ Public.veteran_on_hit_slow_chance = 0.1
 
 
 function Public.starting_boatEEIpower_production_MW()
@@ -582,18 +590,31 @@ function Public.starting_items_crew_downstairs()
 	}
 end
 
+function Public.pick_random_drilling_ore()
+	local number = Math.random(10)
+	if number <= 4 then -- 40%
+		return 'iron-ore'
+	elseif number <= 7 then -- 30%
+		return 'copper-ore'
+	elseif number <= 9 then -- 20%
+		return 'coal'
+	else -- 10%
+		return 'stone'
+	end
+end
 
 
-
-
-
-
-
-
-
-
-
-
+-- Current formula returns [50 - 200] + random(1, [10 - 40]) depending on completion progress
+-- Formula is "a(100x)^(1/2) + random(1, 0.2a(100x)^(1/2))" where
+-- x: progress in range [0-1]
+-- a: scaling
+-- When the formula needs adjustments, I suggest changing scaling variable
+function Public.pick_drilling_ore_amount()
+	local scaling = 20
+	local amount = scaling * Math.sqrt(100 * Common.game_completion_progress())
+	local extra_random_amount = Math.random(Math.ceil(0.2 * amount))
+	return amount + extra_random_amount
+end
 
 
 return Public

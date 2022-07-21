@@ -16,6 +16,8 @@ Public.small_nuclear_powerplant = {}
 Public.small_nuclear_powerplant.Data = Data.small_nuclear_powerplant
 Public.small_market_outpost = {}
 Public.small_market_outpost.Data = Data.small_market_outpost
+Public.small_cliff_base = {}
+Public.small_cliff_base.Data = Data.small_cliff_base
 
 -- second lot:
 Public.small_abandoned_refinery = {}

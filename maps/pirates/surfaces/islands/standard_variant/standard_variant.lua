@@ -132,8 +132,10 @@ function Public.chunk_structures(args)
 		local noises = Public.noises{p = p, noise_generator = args.noise_generator, static_params = args.static_params, seed = args.seed}
 
 		return {
-			placeable = noises.height(p) >= 0 and noises.forest_abs_suppressed(p) < 0.3 + Math.max(0, 0.2 - noises.height(p)),
-			chanceper4chunks = 0.5 * Math.slopefromto(noises.farness(p), 0.1, 0.4) * Math.slopefromto(noises.mood(p), 0, 0.25),
+			-- placeable = noises.height(p) >= 0 and noises.forest_abs_suppressed(p) < 0.3 + Math.max(0, 0.2 - noises.height(p)),
+			placeable_strict = noises.height(p) >= 0.05,
+			placeable_optional = noises.forest_abs_suppressed(p) < 0.3 + Math.max(0, 0.2 - noises.height(p)),
+			chanceper4chunks = 0.1 * Math.slopefromto(noises.farness(p), 0.1, 0.4) * Math.slopefromto(noises.mood(p), 0, 0.25),
 		}
 	end
 	IslandsCommon.assorted_structures_1(args, spec2)
@@ -145,8 +147,8 @@ end
 -- end
 
 
-function Public.generate_silo_setup_position()
-	return Hunt.silo_setup_position()
+function Public.generate_silo_setup_position(points_to_avoid)
+	return Hunt.silo_setup_position(points_to_avoid)
 end
 
 

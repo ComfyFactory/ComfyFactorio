@@ -546,7 +546,7 @@ local parrot_set_sail_advice =
 		Memory.set_working_id(crew_id)
 
 		local memory = Memory.get_crew_memory()
-		if not (memory.id and memory.id > 0) then return end --check if crew disbanded
+		if not Common.is_id_valid(memory.id) then return end --check if crew disbanded
 		if memory.game_lost then return end
 
 		if memory.boat and memory.boat.state and memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL then
@@ -615,6 +615,18 @@ function Public.go_from_currentdestination_to_sea()
 	Crowsnest.paint_around_destination(destination.destination_index, 'deepwater')
 
 	Overworld.try_overworld_move_v2{x = d, y = 0}
+
+
+	-- If crew revealed treasure, but couldn't figure out how to dig it, give them tip
+	if destination.dynamic_data.some_player_was_close_to_buried_treasure then
+		local maps = destination.dynamic_data.treasure_maps or {}
+		for _, map in pairs(maps) do
+			if map.state == 'picked_up' then
+				Common.parrot_speak(memory.force, {'pirates.parrot_burried_treasure_tip'})
+				break
+			end
+		end
+	end
 
 
 	local players_marooned_count = 0

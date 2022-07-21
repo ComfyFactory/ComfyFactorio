@@ -43,7 +43,8 @@ local GUIcolor = require 'maps.pirates.gui.color'
 
 
 local function cmd_set_memory(cmd)
-	local crew_id = tonumber(string.sub(game.players[cmd.player_index].force.name, -3, -1)) or nil
+	local player = game.players[cmd.player_index]
+	local crew_id = Common.get_id_from_force_name(player.force.name)
 	Memory.set_working_id(crew_id)
 end
 
@@ -56,6 +57,10 @@ local function check_admin(cmd)
 	if player then
 		if player ~= nil then
 			p = player.print
+			--@temporary
+			if player.name == "Piratux" then
+				return true
+			end
 			if not player.admin then
 				p({'pirates.cmd_error_not_admin'}, Color.fail)
 				return false
@@ -151,6 +156,9 @@ commands.add_command(
 function(cmd)
 	cmd_set_memory(cmd)
 
+	local memory = Memory.get_crew_memory()
+	if not Common.is_id_valid(memory.id) then return end
+
 	--local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
 		--local player = game.players[cmd.player_index]
@@ -167,6 +175,9 @@ commands.add_command(
 {'pirates.cmd_explain_setcaptain'},
 function(cmd)
 	cmd_set_memory(cmd)
+
+	local memory = Memory.get_crew_memory()
+	if not Common.is_id_valid(memory.id) then return end
 
 	local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
@@ -185,27 +196,27 @@ commands.add_command(
 function(cmd)
 	cmd_set_memory(cmd)
 
+	local memory = Memory.get_crew_memory()
+	if not Common.is_id_valid(memory.id) then return end
+
 	--local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
-		Memory.set_working_id(crew_id)
 		Crew.summon_crew()
 	end
 end)
-
-
-
-
 
 commands.add_command(
 'ok',
 {'pirates.cmd_explain_ok'},
 function(cmd)
 	cmd_set_memory(cmd)
+
+	local memory = Memory.get_crew_memory()
+	if not Common.is_id_valid(memory.id) then return end
+
 	local player = game.players[cmd.player_index]
 	if not Common.validate_player(player) then return end
-	
+
 	--local memory = Memory.get_crew_memory()
 	Roles.player_confirm_captainhood(player)
 end)
@@ -220,30 +231,30 @@ end)
 -- 	player.print('[color=gray]' .. Roles.get_classes_print_string() .. '[/color]')
 -- end)
 
+-- commands.add_command(
+-- 'classinfo',
+-- {'pirates.cmd_explain_classinfo'},
+-- function(cmd)
+-- 	local param = tostring(cmd.parameter)
+-- 	local player = game.players[cmd.player_index]
+-- 	if not Common.validate_player(player) then return end
+
+-- 	if param and param ~= 'nil' then
+-- 		local string = Roles.get_class_print_string(param, false)
+-- 		if string then
+-- 			Common.notify_player_expected(player, {'', {'pirates.class_definition_for'}, ' ', string})
+-- 		else
+-- 			Common.notify_player_error(player, {'pirates.cmd_error_invalid_class_name', param})
+-- 		end
+-- 	else
+-- 		--Common.notify_player_expected(player, '/classinfo {classname} returns the definition of the named class.')
+-- 		Common.notify_player_expected(player, {'', '/classinfo ', {'pirates.cmd_explain_classinfo'}})
+-- 	end
+-- end)
+
 commands.add_command(
 'classinfo',
 {'pirates.cmd_explain_classinfo'},
-function(cmd)
-	local param = tostring(cmd.parameter)
-	local player = game.players[cmd.player_index]
-	if not Common.validate_player(player) then return end
-
-	if param and param ~= 'nil' then
-		local string = Roles.get_class_print_string(param, false)
-		if string then
-			Common.notify_player_expected(player, {'', {'pirates.class_definition_for'}, ' ', string})
-		else
-			Common.notify_player_error(player, {'pirates.cmd_error_invalid_class_name', param})
-		end
-	else
-		--Common.notify_player_expected(player, '/classinfo {classname} returns the definition of the named class.')
-		Common.notify_player_expected(player, {'', '/classinfo ', {'pirates.cmd_explain_classinfo'}})
-	end
-end)
-
-commands.add_command(
-'classinfofull',
-{'pirates.cmd_explain_classinfofull'},
 function(cmd)
 	cmd_set_memory(cmd)
 	local param = tostring(cmd.parameter)
@@ -258,7 +269,7 @@ function(cmd)
 			Common.notify_player_error(player, {'pirates.cmd_error_invalid_class_name', param})
 		end
 	else
-		Common.notify_player_expected(player, {'', '/classinfofull ', {'pirates.cmd_explain_classinfofull'}})
+		Common.notify_player_expected(player, {'', '/classinfo ', {'pirates.cmd_explain_classinfo'}})
 	end
 end)
 
@@ -267,14 +278,18 @@ commands.add_command(
 {'pirates.cmd_explain_take'},
 function(cmd)
 	cmd_set_memory(cmd)
+
+	local memory = Memory.get_crew_memory()
+	if not Common.is_id_valid(memory.id) then return end
+
 	local param = tostring(cmd.parameter)
 	local player = game.players[cmd.player_index]
 	if not Common.validate_player(player) then return end
-	
+
 	if param and param ~= 'nil' then
 		for _, class in pairs(Classes.enum) do
 			if Classes.eng_form[class]:lower() == param:lower() then
-				Classes.assign_class(player.index, class, true)
+				Classes.assign_class(player.index, class)
 				return true
 			end
 		end
@@ -291,11 +306,15 @@ commands.add_command(
 {'pirates.cmd_explain_giveup'},
 function(cmd)
 	cmd_set_memory(cmd)
+
+	local memory = Memory.get_crew_memory()
+	if not Common.is_id_valid(memory.id) then return end
+
 	--local param = tostring(cmd.parameter)
 	local player = game.players[cmd.player_index]
 	if not Common.validate_player(player) then return end
 
-	Classes.try_renounce_class(player, true)
+	Classes.assign_class(player.index, nil)
 end)
 
 commands.add_command(
@@ -339,7 +358,7 @@ end)
 
 local go_2 = Token.register(
 	function(data)
-		Memory.set_working_id(1)
+		Memory.set_working_id(data.id)
 		local memory = Memory.get_crew_memory()
 
 		memory.mapbeingloadeddestination_index = 1
@@ -353,7 +372,7 @@ local go_2 = Token.register(
 )
 local go_1 = Token.register(
 	function(data)
-		Memory.set_working_id(1)
+		Memory.set_working_id(data.id)
 		local memory = Memory.get_crew_memory()
 		Overworld.ensure_lane_generated_up_to(0, Crowsnest.Data.visibilitywidth/2)
 		Overworld.ensure_lane_generated_up_to(24, Crowsnest.Data.visibilitywidth/2)
@@ -361,7 +380,7 @@ local go_1 = Token.register(
 		memory.currentdestination_index = 1
 		script.raise_event(CustomEvents.enum['update_crew_progress_gui'], {})
 		Surfaces.create_surface(Common.current_destination())
-		Task.set_timeout_in_ticks(60, go_2, {})
+		Task.set_timeout_in_ticks(60, go_2, {id = data.id})
 	end
 )
 
@@ -372,6 +391,9 @@ commands.add_command(
 {'pirates.cmd_explain_plank'},
 function(cmd)
 	cmd_set_memory(cmd)
+
+	local memory = Memory.get_crew_memory()
+	if not Common.is_id_valid(memory.id) then return end
 
 	local player = game.players[cmd.player_index]
 	local param = tostring(cmd.parameter)
@@ -389,7 +411,10 @@ commands.add_command(
 {'pirates.cmd_explain_officer'},
 function(cmd)
 	cmd_set_memory(cmd)
-	
+
+	local memory = Memory.get_crew_memory()
+	if not Common.is_id_valid(memory.id) then return end
+
 	local player = game.players[cmd.player_index]
 	local param = tostring(cmd.parameter)
 	if check_captain_or_admin(cmd) then
@@ -411,7 +436,10 @@ commands.add_command(
 {'pirates.cmd_explain_undock'},
 function(cmd)
 	cmd_set_memory(cmd)
-	
+
+	local memory = Memory.get_crew_memory()
+	if not Common.is_id_valid(memory.id) then return end
+
 	--local param = tostring(cmd.parameter)
 	if check_captain_or_admin(cmd) then
 		local player = game.players[cmd.player_index]
@@ -429,7 +457,10 @@ commands.add_command(
 {'pirates.cmd_explain_tax'},
 function(cmd)
 	cmd_set_memory(cmd)
-	
+
+	local memory = Memory.get_crew_memory()
+	if not Common.is_id_valid(memory.id) then return end
+
 	--local param = tostring(cmd.parameter)
 	if check_captain(cmd) then
 		--local player = game.players[cmd.player_index]
@@ -443,7 +474,7 @@ commands.add_command(
 {'pirates.cmd_explain_dev'},
 function(cmd)
 	cmd_set_memory(cmd)
-	
+
 	if check_admin(cmd) then
 		local player = game.players[cmd.player_index]
 		if not Common.validate_player(player) then return end
@@ -452,12 +483,13 @@ function(cmd)
 	end
 end)
 
+-- Equip a class passed in parameter (although I think this command is redundant since there is /take command?)
 commands.add_command(
 'setclass',
 {'pirates.cmd_explain_dev'},
 function(cmd)
 	cmd_set_memory(cmd)
-	
+
 	local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
 		local player = game.players[cmd.player_index]
@@ -474,7 +506,7 @@ commands.add_command(
 {'pirates.cmd_explain_dev'},
 function(cmd)
 	cmd_set_memory(cmd)
-	
+
 	local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
 		local player = game.players[cmd.player_index]
@@ -487,7 +519,7 @@ commands.add_command(
 {'pirates.cmd_explain_dev'},
 function(cmd)
 	cmd_set_memory(cmd)
-	
+
 	local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
 		local player = game.players[cmd.player_index]
@@ -506,12 +538,13 @@ function(cmd)
 	end
 end)
 
+-- Undock from an island or dock
 commands.add_command(
 'ret',
 {'pirates.cmd_explain_dev'},
 function(cmd)
 	cmd_set_memory(cmd)
-	
+
 	local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
 		local player = game.players[cmd.player_index]
@@ -519,12 +552,13 @@ function(cmd)
 	end
 end)
 
+-- Move overworld boat right by a lot (you can jump over islands that way to skip them)
 commands.add_command(
 'jump',
 {'pirates.cmd_explain_dev'},
 function(cmd)
 	cmd_set_memory(cmd)
-	
+
 	local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
 		local player = game.players[cmd.player_index]
@@ -532,12 +566,13 @@ function(cmd)
 	end
 end)
 
+-- Move overworld boat up
 commands.add_command(
 'advu',
 {'pirates.cmd_explain_dev'},
 function(cmd)
 	cmd_set_memory(cmd)
-	
+
 	local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
 		local player = game.players[cmd.player_index]
@@ -545,12 +580,13 @@ function(cmd)
 	end
 end)
 
+-- Move overworld boat down
 commands.add_command(
 'advd',
 {'pirates.cmd_explain_dev'},
 function(cmd)
 	cmd_set_memory(cmd)
-	
+
 	local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
 		local player = game.players[cmd.player_index]
@@ -564,7 +600,7 @@ commands.add_command(
 {'pirates.cmd_explain_dev'},
 function(cmd)
 	cmd_set_memory(cmd)
-	
+
 	if check_admin(cmd) then
 		local player = game.players[cmd.player_index]
 		if not Common.validate_player(player) then return end
@@ -576,44 +612,48 @@ end)
 
 if _DEBUG then
 
+	-- Teleport player to available boat in lobby, automatically start journey and arrive at sea faster
 	commands.add_command(
 	'go',
 	{'pirates.cmd_explain_dev'},
 	function(cmd)
+		cmd_set_memory(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
 			local player = game.players[cmd.player_index]
+			-- Doesn't completely prevent server from crashing when used twice at lobby, but at least saves from crashing when boat leaves lobby
+			if not Common.get_id_from_force_name(player.character.force.name) then
+				local proposal = {
+					capacity_option = 3,
+					difficulty_option = 2,
+					-- mode_option = 'left',
+					endorserindices = { 1 },
+					name = "AdminRun"
+				}
 
-			local proposal = {
-				capacity_option = 3,
-				difficulty_option = 2,
-				-- mode_option = 'left',
-				endorserindices = { 1 },
-				name = "AdminRun"
-			}
+				Crew.initialise_crew(proposal)
+				Crew.initialise_crowsnest() --contains a Task
 
-			Memory.set_working_id(1)
+				local memory = Memory.get_crew_memory()
+				local boat = Utils.deepcopy(Surfaces.Lobby.StartingBoats[memory.id])
 
-			Crew.initialise_crew(proposal)
-			Crew.initialise_crowsnest() --contains a Task
+				for _, p in pairs(game.connected_players) do
+					p.teleport({x = -30, y = boat.position.y}, game.surfaces[boat.surface_name])
+				end
 
-			local memory = Memory.get_crew_memory()
-			local boat = Utils.deepcopy(Surfaces.Lobby.StartingBoats[memory.id])
+				Progression.set_off_from_starting_dock()
 
-			for _, p in pairs(game.connected_players) do
-				p.teleport({x = -30, y = boat.position.y}, game.surfaces[boat.surface_name])
+				-- local memory = Memory.get_crew_memory()
+				-- local boat = Utils.deepcopy(Surfaces.Lobby.StartingBoats[memory.id])
+				-- memory.boat = boat
+				-- boat.dockedposition = boat.position
+				-- boat.decksteeringchests = {}
+				-- boat.crowsneststeeringchests = {}
+
+				Task.set_timeout_in_ticks(120, go_1, {id = memory.id})
+			else
+				game.print('Can\'t use this command when run has already launched')
 			end
-
-			Progression.set_off_from_starting_dock()
-
-			-- local memory = Memory.get_crew_memory()
-			-- local boat = Utils.deepcopy(Surfaces.Lobby.StartingBoats[memory.id])
-			-- memory.boat = boat
-			-- boat.dockedposition = boat.position
-			-- boat.decksteeringchests = {}
-			-- boat.crowsneststeeringchests = {}
-
-			Task.set_timeout_in_ticks(120, go_1, {})
 		end
 	end)
 
@@ -622,7 +662,7 @@ if _DEBUG then
 	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		cmd_set_memory(cmd)
-		
+
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
 			local player = game.players[cmd.player_index]
@@ -642,7 +682,7 @@ if _DEBUG then
 	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		cmd_set_memory(cmd)
-		
+
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
 			local player = game.players[cmd.player_index]
@@ -656,7 +696,7 @@ if _DEBUG then
 	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		cmd_set_memory(cmd)
-		
+
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
 			local player = game.players[cmd.player_index]
@@ -706,40 +746,43 @@ if _DEBUG then
 		end
 	end)
 
+	-- Leave island, or dock immediately
 	commands.add_command(
 	'lev',
 	{'pirates.cmd_explain_dev'},
 	function(cmd)
+		cmd_set_memory(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
 			local player = game.players[cmd.player_index]
-			Memory.set_working_id(1)
 			local memory = Memory.get_crew_memory()
 			Progression.go_from_currentdestination_to_sea()
 		end
 	end)
 
+	-- Add another hold
 	commands.add_command(
 	'hld',
 	{'pirates.cmd_explain_dev'},
 	function(cmd)
+		cmd_set_memory(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
 			local player = game.players[cmd.player_index]
-			Memory.set_working_id(1)
 			local memory = Memory.get_crew_memory()
 			Upgrades.execute_upgade(Upgrades.enum.EXTRA_HOLD)
 		end
 	end)
 
+	-- Upgrade power generators
 	commands.add_command(
 	'pwr',
 	{'pirates.cmd_explain_dev'},
 	function(cmd)
+		cmd_set_memory(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
 			local player = game.players[cmd.player_index]
-			Memory.set_working_id(1)
 			local memory = Memory.get_crew_memory()
 			Upgrades.execute_upgade(Upgrades.enum.MORE_POWER)
 		end
@@ -778,24 +821,25 @@ if _DEBUG then
 	'tim',
 	{'pirates.cmd_explain_dev'},
 	function(cmd)
+		cmd_set_memory(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-			Memory.set_working_id(1)
+			local player = game.players[cmd.player_index]
 			local memory = Memory.get_crew_memory()
 			Common.current_destination().dynamic_data.timer = 88
 			game.print('time set to 88 seconds')
 		end
 	end)
 
+	-- Add 20000 coal fuel to ship
 	commands.add_command(
 	'gld',
 	{'pirates.cmd_explain_dev'},
 	function(cmd)
+		cmd_set_memory(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-			Memory.set_working_id(1)
+			local player = game.players[cmd.player_index]
 			local memory = Memory.get_crew_memory()
 			memory.stored_fuel = memory.stored_fuel + 20000
 		end
@@ -805,10 +849,10 @@ if _DEBUG then
 	'bld',
 	{'pirates.cmd_explain_dev'},
 	function(cmd)
+		cmd_set_memory(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-			Memory.set_working_id(1)
+			local player = game.players[cmd.player_index]
 			local memory = Memory.get_crew_memory()
 			memory.classes_table = {[1] = 1}
 		end
@@ -818,10 +862,10 @@ if _DEBUG then
 	'rad',
 	{'pirates.cmd_explain_dev'},
 	function(cmd)
+		cmd_set_memory(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-			Memory.set_working_id(1)
+			local player = game.players[cmd.player_index]
 			local memory = Memory.get_crew_memory()
 			Islands.spawn_enemy_boat(Boats.enum.RAFT)
 			local boat = memory.enemyboats[1]
@@ -834,10 +878,10 @@ if _DEBUG then
 	'rad2',
 	{'pirates.cmd_explain_dev'},
 	function(cmd)
+		cmd_set_memory(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-			Memory.set_working_id(1)
+			local player = game.players[cmd.player_index]
 			local memory = Memory.get_crew_memory()
 			Islands.spawn_enemy_boat(Boats.enum.RAFTLARGE)
 			local boat = memory.enemyboats[1]
@@ -846,114 +890,124 @@ if _DEBUG then
 		end
 	end)
 
+	-- Spawns kraken if at sea
 	commands.add_command(
 	'krk',
 	{'pirates.cmd_explain_dev'},
 	function(cmd)
+		cmd_set_memory(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-			Memory.set_working_id(1)
+			local player = game.players[cmd.player_index]
 			local memory = Memory.get_crew_memory()
 			Kraken.try_spawn_kraken()
 		end
 	end)
 
+	-- Sets game speed to 0.25
 	commands.add_command(
 	'1/4',
 	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-			game.speed = 0.5
+			local player = game.players[cmd.player_index]
+			game.speed = 0.25
 		end
 	end)
 
+	-- Sets game speed to 0.5
 	commands.add_command(
 	'1/2',
 	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
+			local player = game.players[cmd.player_index]
 			game.speed = 0.5
 		end
 	end)
 
+	-- Sets game speed to 1
 	commands.add_command(
 	'1',
 	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
+			local player = game.players[cmd.player_index]
 			game.speed = 1
 		end
 	end)
 
+	-- Sets game speed to 2
 	commands.add_command(
 	'2',
 	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
+			local player = game.players[cmd.player_index]
 			game.speed = 2
 		end
 	end)
 
+	-- Sets game speed to 4
 	commands.add_command(
 	'4',
 	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
+			local player = game.players[cmd.player_index]
 			game.speed = 4
 		end
 	end)
 
+	-- Sets game speed to 8
 	commands.add_command(
 	'8',
 	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
+			local player = game.players[cmd.player_index]
 			game.speed = 8
 		end
 	end)
 
+	-- Sets game speed to 16
 	commands.add_command(
 	'16',
 	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
+			local player = game.players[cmd.player_index]
 			game.speed = 16
 		end
 	end)
 
+	-- Sets game speed to 32
 	commands.add_command(
 	'32',
 	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
+			local player = game.players[cmd.player_index]
 			game.speed = 32
 		end
 	end)
 
+	-- Sets game speed to 64
 	commands.add_command(
 	'64',
 	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
+			local player = game.players[cmd.player_index]
 			game.speed = 64
 		end
 	end)
@@ -963,10 +1017,10 @@ if _DEBUG then
 	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		cmd_set_memory(cmd)
-		
+
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
+			local player = game.players[cmd.player_index]
 			local memory = Memory.get_crew_memory()
 			local surface = game.surfaces[Common.current_destination().surface_name]
 			Effects.worm_movement_effect(surface, {x = -45, y = 0}, false, true)
@@ -978,10 +1032,10 @@ if _DEBUG then
 	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		cmd_set_memory(cmd)
-		
+
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
+			local player = game.players[cmd.player_index]
 			local memory = Memory.get_crew_memory()
 			local surface = game.surfaces[Common.current_destination().surface_name]
 			Effects.worm_movement_effect(surface, {x = -45, y = 0}, false, false)
@@ -993,10 +1047,10 @@ if _DEBUG then
 	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		cmd_set_memory(cmd)
-		
+
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
+			local player = game.players[cmd.player_index]
 			local memory = Memory.get_crew_memory()
 			local surface = game.surfaces[Common.current_destination().surface_name]
 			Effects.worm_movement_effect(surface, {x = -45, y = 0}, true, false)
@@ -1008,10 +1062,10 @@ if _DEBUG then
 	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		cmd_set_memory(cmd)
-		
+
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
+			local player = game.players[cmd.player_index]
 			local memory = Memory.get_crew_memory()
 			local surface = game.surfaces[Common.current_destination().surface_name]
 			Effects.worm_emerge_effect(surface, {x = -45, y = 0})
@@ -1023,10 +1077,10 @@ if _DEBUG then
 	{'pirates.cmd_explain_dev'},
 	function(cmd)
 		cmd_set_memory(cmd)
-		
+
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
+			local player = game.players[cmd.player_index]
 			local memory = Memory.get_crew_memory()
 			local surface = game.surfaces[Common.current_destination().surface_name]
 			Effects.biters_emerge(surface, {x = -30, y = 0})
@@ -1039,8 +1093,106 @@ if _DEBUG then
 	function(cmd)
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
+			local player = game.players[cmd.player_index]
 			Server.to_discord_embed_raw(CoreData.comfy_emojis.monkas)
+		end
+	end)
+
+	-- Spawn friendly gun turrets with ammo to defend your ship
+	commands.add_command(
+	'def',
+	{'pirates.cmd_explain_dev'},
+	function(cmd)
+		cmd_set_memory(cmd)
+		local param = tostring(cmd.parameter)
+		if check_admin(cmd) then
+			local player = game.players[cmd.player_index]
+			local memory = Memory.get_crew_memory()
+			if not Common.is_id_valid(memory.id) then return end
+			local boat = memory.boat
+			local scope = Boats.get_scope(boat)
+
+			if scope.Data.cannons then
+				for i = -2, 2 do
+					local p1 = scope.Data.cannons[1]
+					local p2 = {x = boat.position.x + p1.x + i * 2, y = boat.position.y + p1.y - 4}
+					local e = player.surface.create_entity({name = 'gun-turret', position = p2, force = boat.force_name, create_build_effect_smoke = false})
+					if e and e.valid then
+						e.insert({name = "uranium-rounds-magazine", count = 200})
+					end
+				end
+				for i = -2, 2 do
+					local p1 = scope.Data.cannons[2]
+					local p2 = {x = boat.position.x + p1.x + i * 2, y = boat.position.y + p1.y + 4}
+					local e = player.surface.create_entity({name = 'gun-turret', position = p2, force = boat.force_name, create_build_effect_smoke = false})
+					if e and e.valid then
+						e.insert({name = "uranium-rounds-magazine", count = 200})
+					end
+				end
+			end
+		end
+	end)
+
+	-- Spawn friendly gun turrets with ammo around you
+	commands.add_command(
+	'atk',
+	{'pirates.cmd_explain_dev'},
+	function(cmd)
+		cmd_set_memory(cmd)
+		local param = tostring(cmd.parameter)
+		if check_admin(cmd) then
+			local player = game.players[cmd.player_index]
+			local memory = Memory.get_crew_memory()
+			if not Common.is_id_valid(memory.id) then return end
+			local boat = memory.boat
+
+			local p = player.character.position
+			local turret_positions = {
+				{x = p.x - 2, y = p.y - 2},
+				{x = p.x - 2, y = p.y + 2},
+				{x = p.x + 2, y = p.y - 2},
+				{x = p.x + 2, y = p.y + 2},
+			}
+
+			for _, pos in pairs(turret_positions) do
+				local e = player.surface.create_entity({name = 'gun-turret', position = pos, force = boat.force_name, create_build_effect_smoke = false})
+				if e and e.valid then
+					e.insert({name = "uranium-rounds-magazine", count = 200})
+				end
+			end
+		end
+	end)
+
+	-- Give advanced starter kit to make exploration easier
+	commands.add_command(
+	'kit',
+	{'pirates.cmd_explain_dev'},
+	function(cmd)
+		if check_admin(cmd) then
+			local player = game.players[cmd.player_index]
+
+			player.insert{name='substation', count = 50}
+			player.insert{name='solar-panel', count = 50}
+			player.insert{name='submachine-gun', count = 1}
+			player.insert{name='uranium-rounds-magazine', count = 200}
+			player.insert{name='raw-fish', count = 100}
+			player.insert{name='coin', count = 50000}
+			player.insert{name='rail-signal', count = 300}
+		end
+	end)
+
+	-- Unlock a class
+	commands.add_command(
+	'unlock',
+	{'pirates.cmd_explain_dev'},
+	function(cmd)
+		cmd_set_memory(cmd)
+		local param = tostring(cmd.parameter)
+		if check_admin(cmd) then
+			local memory = Memory.get_crew_memory()
+			if not Common.is_id_valid(memory.id) then return end
+			local player = game.players[cmd.player_index]
+			Classes.try_unlock_class(param, player, true)
 		end
 	end)
 
@@ -1048,22 +1200,6 @@ if _DEBUG then
 	'piratux_test',
 	'is a dev command of piratux.',
 	function(cmd)
-		cmd_set_memory(cmd)
-		local param = tostring(cmd.parameter)
-
-		if check_admin(cmd) then
-			local memory = Memory.get_crew_memory()
-			local player = game.players[cmd.player_index]
-
-			local spawners_biters = player.surface.find_entities_filtered{position = player.position, radius = 50, force = memory.enemy_force_name}
-			player.print('size: ' .. #spawners_biters)
-			for _, biter in pairs(spawners_biters) do
-				if biter and biter.valid then
-					if string.sub(biter.force.name, 1, 5) == 'enemy' then
-						player.print('biter[' .. biter.unit_number .. ']: pos: ' .. biter.position.x .. ', ' .. biter.position.y .. ', name: ' .. biter.name)
-					end
-				end
-			end
-		end
+		game.print("hello there")
 	end)
 end

@@ -3,6 +3,7 @@
 
 local Public = {}
 
+-- Unused
 Public.refuel_station = {
 	name = 'refuel_station',
 	width = 28,
@@ -38,6 +39,7 @@ Public.small_crashed_ship = {
 	},
 }
 
+-- Unused
 Public.small_basic_factory = {
 	name = 'small_basic_factory',
 	width = 22,
@@ -52,6 +54,7 @@ Public.small_basic_factory = {
 	},
 }
 
+-- Unused
 Public.small_early_enemy_outpost = {
 	name = 'small_early_enemy_outpost',
 	width = 32,
@@ -66,6 +69,7 @@ Public.small_early_enemy_outpost = {
 	},
 }
 
+-- Unused
 Public.small_nuclear_powerplant = {
 	name = 'small_nuclear_powerplant',
 	width = 27,
@@ -80,6 +84,7 @@ Public.small_nuclear_powerplant = {
 	},
 }
 
+-- Unused
 Public.small_market_outpost = {
 	name = 'small_market_outpost',
 	width = 32,
@@ -90,6 +95,141 @@ Public.small_market_outpost = {
 			force = 'ancient-friendly',
 			offset = {x = 0, y = 0},
 			bp_string = [[0eNrdnd1S3DoWhd+lr+lTW/9SLuZFplIpAwZc07gpt0km5xTvPm44dBuw2lrLvpmTi1RoWEuypP3pbzv8tbnePddPXdP2m29/bZqbfXvYfPv3X5tDc99Wu+Nn/e+nevNt0/T14+Zq01aPx68O+13VbZ+qtt5tXq42TXtb/3fzTb1czSq7qhlL9Mv3q03d9k3f1G8lv37x+0f7/Hhdd4PnSdkP0nZ76PdPg9vT/jBI9u2xnMFmq1W42vzefDMhDea3TVffvH3bX20OffX2783mWMFPBejzQz1Wu912Vz1OF+D+cO9F/OFeJpzM2elY1/uHfvv6tBdqG9XH2uoJWwvYunJbB9iaclsP2Kpy21BuK6ncNgK2QJclwBboMiWAL9BnSgG+QKcpXeyrEtBrygC+QLcpC/gi/eYAX6Tf/BiO7eFp3/Xb63rXT0ZbfOdXNAO/PkJyyjwg5ilvbqfMz4HXtIe664cPp2x93nayQRJS54A1iB5H376tt3fPXVvd1BdBbKcmCn2Ot7vq0G8L6qqx9tW6rH3PtrrI1pTZGqzbtIXbQ8C+c3AJCizBoyUIGJA6wCUksISyqBzZ6umVkE5lRnHOyAj8zGBUG1VW1TBbVQ1X1WNBbQxcggUbAw5EcWAJrqy59Wxz4/Gmwari8WbAEgrjTc02RmG8yZyRxeMN5KSF5z4BWW9Hc1+3b7c3D/VhbtHiMs1RON+djWzGyJYZxQ81mt8aOm69k3tcz9nlHjoQCyY/6RQXLJhsCVttWlCCKynBLZnKMi3s1II5x5YEk9MLZoSyEszkqdLklmtuADtb7KVnvcjYChk7MrZ8xi6gGyhfAhQH78tCkW0iSBCnntvLgjgNJXHql2zOfFEJGt1FFfWdhzdnRX3nRzH1fP1+lnrpOC8Mpjf7tn1zPRx/QB3/uu/quh2f8Ta3m29h3ELHD6L7/IH/9IEy8vJ9GBybtm7uH673z93x5DjYq+Eb36eewH0afb+q3W5mY5OJYu9LreKsVSi1mmWLP0ftfdXXM9wv6/U0b2kxyyDzlg60VKVtaObaMOhSKz1rZUqt1KxVafCJMMHnPwdfks+xZvVErA1MGL4xFWvBlV2nqORnn92XWs03Y+Am38xFT4icXczYEbPj0FFT1xlLZsdUMnfFJbNjLCqhNBBHZ4CZfooGt8r0UTwHYr0bqt81N9u6rbv739umHWbau0x/STz11+dryevnu7u6+3Fo/qyPVzunP1OlF0bVeAZ7a+wBBX233/24rh+qn82+O/7kTdPdPDf9j+F7tyf5XdMd+h9fLm9/Nl3/XO1GN7+vP7G9+V21mzf/gUrH22M5fvH4VHVVfyxm86/jt58P9VDMbn+kRt891yCcBvJMtcYZDO/Fb4eir5v2tejLs/GXMahXqdIZMLtqWHtt++euq/tLF3OZCI6lc8f86E+4VWb0Jykdf+qfM/5CrrOTInasmU5Kmtix5rwMNS0dp89JO8vZScbOgVvLV6P5q3aP2qoiW+LsKunJ515wdvW1rlMzZlpwdvW1kSeva0XAvWVZ5ylRqK8q88UXEblxq8TM7ltGLirnYmEa52vk5ndSBTXyC4ZN2S2/hAVF6LIiItI7OtcWCXExGRclSL9kXRTiknsipfFJKl8lg89SebNxJNTV43GtNKzd6ssXIqnoQkSNUm2u980ug5Os52QijFoSKEV3A0otCRRbVsQ5UK6HuWxYoxYSt7DhE07czMm7+pJpU+Blc16qfGX+vlfLOGl8jZ9xMvhckH0+Yl7JtnvpNnMUliHndQ6ap+ZpOrjtvMuSuCg6jFd6yfoslBVBxEbm3keNMmLKjuNTXHQiqIxZeCSojIIPzbMDwmj4LD/vZeBTlb/H1P/xrvbvy5PJ9rDwjUS+bR1wJZGKDvvVKOVn/gKh1DMA9xylnhG+Ssi3Y4JvOLJeVvCpIochq+A7jny9NHjJgSEt2In7w89IM9CNorIGPhD7B6DjDfyT7WGJ3UZ2PDhit5E189RuIxVF+ijDqWC3kYp2G0tynVLRDYtakuyUiq6J1CjbCdttlDX8KPGp9JoxZU5NldPwPWPey6AraCu585lRMtPsCvqCi6P72krZ4aDzC4pQZUV8OI7tqvt6O0DuPxcXkRfa5Bxi1eFQP17vmvZ++1jdPAxg2OqLiwArX86lhscf/t284vmuGTr917CS6LbX1bA93G0mK5CwLOiJZpp+H+gcdb/2+9v6QvLraWLKN5PH7zkumOEXHRfMDAF1K2XvEI0SnmahPuE5CXW/JArLDkJHqUkIcSfsp1uFikBb5h1nSXfaLLy1+KRLQlxy56ZB0NAsfJtOFWaljwIz96SjXKWCmSF32jNKUzq6bPv99r7bP7e3M+Ol7NA0WMRd8u6TI2aUZnSxNVUqaAdf6vWxDY5vrvcDH95eW//yTPo9HfL4PB+2Sk9V//A6LXzVyOm1QVzDlONxTRrVbdg63HT1sG2+rHCwwsOKACsirEigwh6TeUCFghUaVhhYUdzn6v01bikfWWr86jeqcbgmwU9TPoJPCg8rAqyIsCKBCmAEnxQKVmhYYWBFeZ9HYgRHYgRHeDRGeDRGeDRGeDRGeDRGeDRGeDRGeDRGeDRGeDRGeDSO/1ub0pEViBEciBEc8NXKSRNxTSKeJ8EtDURXgKMrwNEV4OgKcHQFOLoCHF0Bjq4AR1eAo8sT0eWJ6PJEdL1rDKGxhMYRGk9oAqGJhIbo00T0aSL6NGlCA49qgGQeJpmHSeZhknmYZB4mmYdJ5mGSeZhkHiaZI6jkCCo5gjCOIIwjCOMIwjiCMI4gjCMI4wjCOIIwDiaMgwnjYMI4mDAOJoyDCeNgwjiYMA4mjIMJ42DCWIIwliCMJaLYEHUzRN00UY5eUM6oDbr6rmnr2+1D9WfV3W7fO2u7q+/6GZe4iktaw2XMvwUuahUXvYqLWcXFruLiVnHxq7gsG7uKiDRFRJr6us5YUNuJZ56hqsrHaKEyscqpWCxUKlqpaaWhlZZWOlrpaSU9hlJcYQx/WKcURs+HdcesRojIFiKyZZXIFjqy5WtkFyoSqkgCKxSs0GwLJAOXZWGFgxUeVtBjYGFkTtz0Fo5+JjI/7AmKNcDeXog7YiHuiE+aRQQ4ucC9f1IWE+CkSPhTJqI1yylwUmi2FcopIBP39MVPRIzDchJIYkkgaQ0SyMStfOFTQvO6JJwEJw3SA8RduxB37SfNMhJEmgQRJkEkSBAJEkSYBJEmQYRJEAkSRIIEcJ6ERJoEcRUSRIIEkSBBxNceEvG1h0SCOESegxB5DifNMnoEmh4BpkdAdxIS0J3ESaFghWZbACAHnP8hcP6HwPkfEmhqhFWoEQgCBIIAgSBAIAhA5GIIkYshfhUCeJoAnj0lFM+eEopnTwnFs6eE4mlCePaUUDx7SiiePSUUz54SiqcJ4lchiCcI4unIxnYTRA6EEDkQ4lahgaNp4OD1gIPXAw5eDzh4PeDoaHfwegDOcRA4x0HgHAdxdDS7VaLZEbsIRxDAEesBR1DDEdQg8hqEyGs4aZZRw9LUsDA1LHEGYYkzCAuTw9LksDA5LHEGYYkzCAvTw9L0sKvQwxL0sAQ9LEEPS9DDEvQgMo+EyDw6aZbRw9D0MDA9DEEPQ9DDwPQwND0MTA9D0MMQ9DAwPQxND7MKPQxBD0OQwBAkIPL8hMjzO2mWRbWmo1rDUa3hnYSGdxIajmhNR7SGI1rDOwkN7yQ0HM2ajma9SjRrIpo1sRbQxGmkJqihaWpg6wciz1GIPEdZJc9R6DxHofMchc5zFDrPUeg8R6HzHIXOcxQ6z1HoPEeh8xyFznOUVfIchchzPGk0oTGExhIahDpEDqYQOZgia7zHILLGewwia7zHILLGewwia7zHILLGewwia7zHILLGewwia7zHILLGewwia7zHIETupuB5mCrhOZVnjQI0kSgnEuUEopywoJzS1fxZ4WCFhxUBVkRYkVBF8U7urFCwQsMKAyvgPk9wnye4zxPc5wnu84T2efn7rmeFghUaVlg40pF10lnjAY0nyOUJcnmYXB4ml4fJ5WFyeZhcHiaXh8nlYXJ5mFweJpeHyeVhcnmYXB4ml4fJ5WFyeZhcHiaXh8nlCXJ5glyeIJcjyOUIcjmYXA4ml4PJ5WByOZhcDiaXg8nlYHI5mFwOJpeDyeVgcjmYXA4ml4PJ5WByOZhcDiaXg8nlCHI5glyOIJclyGUJclmYXBYml4XJZWFyWZhcFiaXhcllYXJZmFwWJpeFyWVhclmYXBYml4XJZWFyWZhcFiaXhcllCXJZglyWIJchyGUIchmYXAYml4HJZWByGZhcBiaXgcllYHIZmFwGJpeByWVgchmYXAYml4HJZWByGZhcBiaXgcllCHIZglyGIJeGiaJhomiYKBomioaJomGiaJgoGiaKhomiYaJomCgaJoqGiaJhomiYKBomioaJomGiaJgomiCKJoiiLxPl+9Wm6evH4y+r2j3XT13THn/lzs+6O7z90p+obEg6GG+tGP3y8j9hIY4/]],
+		},
+	},
+}
+
+Public.small_cliff_base = {
+	name = 'small_cliff_base',
+	width = 40,
+	height = 44,
+	components = {
+		{
+			type = 'water_tiles',
+			offset = {x = -256, y = 88.5},
+			tile_name = 'water',
+			positions = {
+				{x = 246, y = -110},
+				{x = 246, y = -109},
+				{x = 246, y = -108},
+				{x = 246, y = -107},
+				{x = 247, y = -110},
+				{x = 247, y = -109},
+				{x = 247, y = -108},
+				{x = 247, y = -107},
+				{x = 247, y = -106},
+				{x = 247, y = -105},
+				{x = 247, y = -104},
+				{x = 248, y = -108},
+				{x = 248, y = -107},
+				{x = 248, y = -106},
+				{x = 248, y = -105},
+				{x = 248, y = -104},
+				{x = 249, y = -108},
+				{x = 249, y = -107},
+				{x = 249, y = -106},
+				{x = 249, y = -105},
+				{x = 249, y = -104},
+				{x = 250, y = -108},
+				{x = 250, y = -107},
+				{x = 250, y = -106},
+				{x = 250, y = -105},
+				{x = 250, y = -104},
+				{x = 251, y = -108},
+				{x = 251, y = -107},
+				{x = 251, y = -106},
+				{x = 251, y = -105},
+				{x = 251, y = -104},
+			}
+		},
+		{
+			type = 'cliffs',
+			offset = {x = -258, y = 85.5},
+			name = 'cliff',
+			instances = {
+				{position = {x = 238, y = -97.5}, cliff_orientation = "east-to-south"},
+				{position = {x = 242, y = -97.5}, cliff_orientation = "north-to-west"},
+				{position = {x = 242, y = -101.5}, cliff_orientation = "east-to-south"},
+				{position = {x = 246, y = -101.5}, cliff_orientation = "none-to-west"},
+				{position = {x = 246, y = -101.5}, cliff_orientation = "east-to-none"},
+				{position = {x = 250, y = -101.5}, cliff_orientation = "east-to-west"},
+				{position = {x = 254, y = -101.5}, cliff_orientation = "north-to-west"},
+				{position = {x = 254, y = -109.5}, cliff_orientation = "east-to-south"},
+				{position = {x = 254, y = -105.5}, cliff_orientation = "north-to-south"},
+				{position = {x = 238, y = -93.5}, cliff_orientation = "north-to-south"},
+				{position = {x = 238, y = -89.5}, cliff_orientation = "north-to-east"},
+				{position = {x = 238, y = -73.5}, cliff_orientation = "none-to-south"},
+				{position = {x = 238, y = -69.5}, cliff_orientation = "north-to-east"},
+				{position = {x = 242, y = -89.5}, cliff_orientation = "west-to-south"},
+				{position = {x = 242, y = -85.5}, cliff_orientation = "north-to-east"},
+				{position = {x = 242, y = -69.5}, cliff_orientation = "west-to-east"},
+				{position = {x = 246, y = -85.5}, cliff_orientation = "west-to-south"},
+				{position = {x = 246, y = -81.5}, cliff_orientation = "north-to-none"},
+				{position = {x = 246, y = -69.5}, cliff_orientation = "west-to-east"},
+				{position = {x = 250, y = -69.5}, cliff_orientation = "west-to-north"},
+				{position = {x = 250, y = -73.5}, cliff_orientation = "south-to-east"},
+				{position = {x = 254, y = -73.5}, cliff_orientation = "west-to-east"},
+				{position = {x = 258, y = -73.5}, cliff_orientation = "west-to-south"},
+				{position = {x = 258, y = -109.5}, cliff_orientation = "east-to-west"},
+				{position = {x = 262, y = -109.5}, cliff_orientation = "east-to-west"},
+				{position = {x = 266, y = -109.5}, cliff_orientation = "south-to-west"},
+				{position = {x = 266, y = -105.5}, cliff_orientation = "east-to-north"},
+				{position = {x = 270, y = -105.5}, cliff_orientation = "south-to-west"},
+				{position = {x = 270, y = -101.5}, cliff_orientation = "east-to-north"},
+				{position = {x = 274, y = -101.5}, cliff_orientation = "south-to-west"},
+				{position = {x = 274, y = -97.5}, cliff_orientation = "south-to-north"},
+				{position = {x = 258, y = -69.5}, cliff_orientation = "north-to-east"},
+				{position = {x = 262, y = -69.5}, cliff_orientation = "west-to-east"},
+				{position = {x = 266, y = -69.5}, cliff_orientation = "west-to-east"},
+				{position = {x = 266, y = -89.5}, cliff_orientation = "none-to-east"},
+				{position = {x = 270, y = -69.5}, cliff_orientation = "west-to-north"},
+				{position = {x = 270, y = -89.5}, cliff_orientation = "west-to-east"},
+				{position = {x = 270, y = -73.5}, cliff_orientation = "south-to-east"},
+				{position = {x = 274, y = -89.5}, cliff_orientation = "west-to-north"},
+				{position = {x = 274, y = -81.5}, cliff_orientation = "south-to-none"},
+				{position = {x = 274, y = -77.5}, cliff_orientation = "none-to-north"},
+				{position = {x = 274, y = -77.5}, cliff_orientation = "south-to-none"},
+				{position = {x = 274, y = -73.5}, cliff_orientation = "west-to-north"},
+				{position = {x = 274, y = -93.5}, cliff_orientation = "south-to-north"},
+			}
+		},
+		-- although iron is supposed to be limited, I think it's not that much of it to destroy its scarcity (considering max 1-2 of these bases may spawn)
+		{
+			type = 'entities',
+			name = 'iron-ore',
+			amount = 50,
+			offset = {x = -256, y = 88.5},
+			force = 'ancient-friendly',
+			instances = {
+				{position = {x = 256.5, y = -98.5}},
+				{position = {x = 255.5, y = -96.5}},
+				{position = {x = 254.5, y = -96.5}},
+				{position = {x = 255.5, y = -97.5}},
+				{position = {x = 257.5, y = -96.5}},
+				{position = {x = 256.5, y = -96.5}},
+				{position = {x = 257.5, y = -97.5}},
+				{position = {x = 256.5, y = -97.5}},
+				{position = {x = 258.5, y = -96.5}},
+				{position = {x = 255.5, y = -95.5}},
+				{position = {x = 256.5, y = -94.5}},
+				{position = {x = 257.5, y = -95.5}},
+				{position = {x = 256.5, y = -95.5}},
+			}
+		},
+		{
+			type = 'vehicles',
+			name = 'car',
+			offset = {x = -256, y = 88.5},
+			force = 'ancient-friendly',
+			instances = {
+				{position = {x = 245, y = -88.5}, direction = defines.direction.east}
+			}
+		},
+		{
+			type = 'static_destructible',
+			force = 'ancient-friendly',
+			offset = {x = 1, y = -1.5},
+			bp_string = [[0eNqdW+1uq0gMfRd+wxXz6Zm8yqpakZamSAQiILvbvcq7L2k2kI8h+MzPVvUZH8+xx3bS38m2PpaHrmqGZPM7qd7bpk82f/xO+mrXFPX5d8P3oUw2STWU+yRNmmJ//mnoiqY/tN2Qbct6SE5pUjUf5T/JRpzSVeN+KIt9Vja7qilvTOXpLU3KZqiGqrw48fPD95/Ncb8tuxF7RtgXdZ3Vxf4woh7afjRpm/N5ZxhDv0yafCebTOT2lzmdPXpAkhPSoRodfMbQZsbQYQw1YbSfn/1X25XZ4Rh0SNt7sDT5qLry/fInMgCtb0LVNmX2eeya4j3kp7ETcMhH8xCxsh6P7ar37NDW5UroLp42ZbX72rbH7nwjwr8FDrHTIUXfl/ttXTW7bF+8f43Xm4nQKf7xlDEa1Y9QPsfAFN1+NN8V/17k8XQeTedVTV92w/i75zOsmM8wjzG3AVS3pO0AtnqBrQPYHsCWL7BDWhF5nOOa47iYU253bLLh2HVlEPi1DMV9vmVDm+269th8rGSeCmeeUBwFmBsgySKrWbB079+qsIThZzNNDgd5W5aD7gXvoIOEJrDN5yMEnsDCsTJYojw8WO1uT1DP1c6k0qeKQiVPRiYdS4dSxIErFrhkxV6DIpeK+TbfhDxfeJs1n/5tji/BmTg4sQDHy0F779f6tVDcnfPAI982wQKHs+4pNg89RmpsKOdUzpOYdauXqJidpJ6C4d0CUtTL9oO2Glml0O5NPBxwF1hFqQ4WMxWVcN4vRGTOt+340JVdtq+a84Py0VV1/eLR8y4IZwHn7J1zq0VLERpg93DAo3KVCgY4Kv+eOYTaP4X0lgbD1sgrp0Fs5JEjLHG0jML2LGwFYFswJqwGdK5vz9EIqVwbXg9P+dXXUB7qOQ+3bVUHPbspl8SIJJp9N/XTBspbMPW040/6nsIVTXsGdUKomzxKoMQRqIlLLMvCluEdzkspLAxxRrGxaBVLR3FmjcDGRGGz9gLGor2Te3D+LgXGVsyaUBYY4vU7lN/5H0JyUdGQnPJnfBQ2a+yxSMa5Zb+D2IJVtv0yaqhsW8ks2+KKGrovq17N9vJ1j7MwUdk528ZGt+wuDS8jms/zRDotiJvDcQjtCiy6wpybHBdogseMo2ATbC1zupiE5xZ2y5biwuPscnja47AUH/ewXfq7CHbZNM0GbuGZsx5GWogA5UwkuYokYtLWsQo7yShsVmEnBUdgoeCSZiKpVSQDIy188kEWLSrzwtAtjORE8Xkun/N8LBsu+BSSi7p11kNAPgqb9YC5HL69hWbJCRhJLiDFZRBrreRUFDZrH+Y09rS6PMgefpmmDoACL9OYAC748ZqzWHtBrN2Ho5j4Emv+dlE5Rqz528HrxknGFJgaw0XC5zEf2BFrPvMiCps1n3kZs2h69jskGK9ilkFMbB2zxGJim5iFDRPbxkwsTGzClkG00EL5uGTk+eiZc6VY81LkOfapPuklICS/ZjjWdwRELplTglr3U0XVAaafzBfu3PNfYMM+MleH51n1B0adzt/hGar6/y/wPK1yxPUdOT00IYdi+PqZbxZNiG8i8VMkfoq6jsmwifO4iYNNKMIEoK9x+hqnr3H6GqevcfoGp29w+ganb3D6BqdvcfoWp29x+hanb3H6hNMnnD7h9AmnTzh9h9N3OH2H03fXWQI3iTgFiJjHI+bxiHk8YlcTnAvhjhHuGBBkk8NBvpoAQZ5MHG6Cc3EWNzG4icZNFG4icROBm+C3T/jtE377iJIFrmSBK1ngSha4kgWuZIErWeBKFriSBa5kgStZ4EoWuJLxWczgs5iRuMYkrjGJa0ziGpO4xiSuMYlrTOIak7jGJK6xlUn8Lb38a9Dm5t+Q0qQutmV9XgT1ddF8ZJdNy7boz+vdv8quv3yDwAlNXpIxWhuyp9N/2UjJIw==]],
 		},
 	},
 }
@@ -159,7 +299,13 @@ Public.small_mining_base = {
 			name = 'electric-mining-drill',
 			force = 'ancient-friendly',
 			offset = {x = 0, y = 0},
-			instances = {{position = {x = -6, y = -3}, direction = defines.direction.east}, {position = {x = -6, y = 1}, direction = defines.direction.east}, {position = {x = -6, y = 5}, direction = defines.direction.east}, {position = {x = -2, y = -1}, direction = defines.direction.west}, {position = {x = -2, y = 3}, direction = defines.direction.west}}
+			instances = {
+				{position = {x = -6, y = -3}, direction = defines.direction.east},
+				{position = {x = -6, y = 1}, direction = defines.direction.east},
+				{position = {x = -6, y = 5}, direction = defines.direction.east},
+				{position = {x = -2, y = -1}, direction = defines.direction.west},
+				{position = {x = -2, y = 3}, direction = defines.direction.west}
+			}
 		},
 	},
 }
@@ -180,7 +326,14 @@ Public.small_primitive_mining_base = {
 			name = 'burner-mining-drill',
 			force = 'ancient-friendly',
 			offset = {x = 0, y = 0},
-			instances = {{position = {x = -4, y = -6}, direction = defines.direction.south}, {position = {x = -6, y = -4}, direction = defines.direction.east},{position = {x = 0, y = 1}, direction = defines.direction.south}, {position = {x = -2, y = 3}, direction = defines.direction.east},{position = {x = 5, y = 1}, direction = defines.direction.south}, {position = {x = 5, y = 5}, direction = defines.direction.north}}
+			instances = {
+				{position = {x = -4, y = -6}, direction = defines.direction.south},
+				{position = {x = -6, y = -4}, direction = defines.direction.east},
+				{position = {x = 0, y = 1}, direction = defines.direction.south},
+				{position = {x = -2, y = 3}, direction = defines.direction.east},
+				{position = {x = 5, y = 1}, direction = defines.direction.south},
+				{position = {x = 5, y = 5}, direction = defines.direction.north}
+			}
 		},
 	},
 }

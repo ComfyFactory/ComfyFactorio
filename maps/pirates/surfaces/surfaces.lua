@@ -332,10 +332,26 @@ function Public.destination_on_arrival(destination)
 
 	if destination.type == enum.ISLAND then
 
+		--game.print('spawning ores, quest structures, etc.')
 		local points_to_avoid = {}
 
+		-- add special chunk structures(small mining base, etc.) to avoid list
+		local structures = destination.dynamic_data.structures_waiting_to_be_placed
+
+		if structures then
+			for i = #structures, 1, -1 do
+				local structure = structures[i]
+				local special = structure.data
+				local position = special.position
+				local avoid_radius = math.sqrt(special.width * special.width + special.height * special.height) / 2 + 5
+
+				points_to_avoid[#points_to_avoid + 1] = {x = position.x, y = position.y, r = avoid_radius}
+			end
+		end
+
+		-- game.print('spawning silo')
 		if destination.subtype ~= Islands.enum.RADIOACTIVE then
-			local silo_position = Islands.spawn_silo_setup()
+			local silo_position = Islands.spawn_silo_setup(points_to_avoid)
 			if silo_position then
 				points_to_avoid[#points_to_avoid + 1] = {x = silo_position.x, y = silo_position.y, r = 22}
 			end
@@ -675,6 +691,8 @@ end
 
 
 function Public.clean_up(destination)
+	-- game.print('clean_up')
+
 	local memory = Memory.get_crew_memory()
 
 	local oldsurface = game.surfaces[destination.surface_name]
@@ -685,11 +703,6 @@ function Public.clean_up(destination)
 	local seasurface = game.surfaces[memory.sea_name]
 
 	Quest.try_resolve_quest()
-	destination.dynamic_data.quest_type = nil
-	destination.dynamic_data.quest_reward = nil
-	destination.dynamic_data.quest_progress = nil
-	destination.dynamic_data.quest_progressneeded = nil
-	destination.dynamic_data.quest_complete = nil
 
 	-- handle players that were left on the island
 	-- if there is more than one crew on a surface, this will need to be generalised

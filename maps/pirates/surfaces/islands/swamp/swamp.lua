@@ -140,7 +140,8 @@ function Public.chunk_structures(args)
 		local noises = Public.noises{p = p, noise_generator = args.noise_generator, static_params = args.static_params, seed = args.seed}
 
 		return {
-			placeable = noises.height(p) > 0.05,
+			placeable_strict = noises.height(p) > 0.05,
+			placeable_optional = true,
 			chanceperchunk = 0.25 * Math.slopefromto(noises.farness(p), 0.05, 0.15),
 		}
 	end
@@ -163,7 +164,7 @@ function Public.swamp_structures(args, spec)
 		struct = Structures.IslandStructures.ROC.swamp_lonely_storage_tank
 
 		if struct then
-			Structures.try_place(struct, args.specials, left_top, 64, 64, function(p) return spec(p).placeable end)
+			Structures.try_place(struct, args.specials, left_top, 64, 64, function(p) return spec(p).placeable_strict end, function(p) return spec(p).placeable_optional end)
 		end
 	end
 end
@@ -175,8 +176,8 @@ function Public.break_rock(surface, p, entity_name)
 end
 
 
-function Public.generate_silo_setup_position()
-	return Hunt.silo_setup_position()
+function Public.generate_silo_setup_position(points_to_avoid)
+	return Hunt.silo_setup_position(points_to_avoid)
 end
 
 

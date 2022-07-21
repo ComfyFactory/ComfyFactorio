@@ -101,7 +101,9 @@ function Public.chunk_structures(args)
 	-- 	local noises = Public.noises{p = p, noise_generator = args.noise_generator, static_params = args.static_params, seed = args.seed}
 
 	-- 	return {
-	-- 		placeable = noises.height(p) > 0.1 and noises.walkways(p) < 0.3,
+	-- 		-- placeable = noises.height(p) > 0.1 and noises.walkways(p) < 0.3,
+	-- 		placeable_strict = noises.height(p) > 0.1 and noises.walkways(p) < 0.3,
+	-- 		placeable_optional = true,
 	-- 		chanceper4chunks = 1/2,
 	-- 	}
 	-- end
@@ -109,12 +111,12 @@ function Public.chunk_structures(args)
 end
 
 
-function Public.generate_silo_setup_position()
+function Public.generate_silo_setup_position(points_to_avoid)
 	-- local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 	local surface = game.surfaces[destination.surface_name]
 
-	local p_silo = Hunt.silo_setup_position(0.2)
+	local p_silo = Hunt.silo_setup_position(points_to_avoid, 0.2)
 
 	if p_silo then
 		local tiles = {}

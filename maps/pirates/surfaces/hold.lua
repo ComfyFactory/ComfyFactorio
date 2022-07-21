@@ -34,6 +34,11 @@ Public.Data.downstairs_pole_positions = {
 	{x = -1, y = 5},
 }
 
+Public.Data.downstairs_fluid_storage_positions = {
+	{x = -31.5, y = -21.5},
+	{x = -31.5, y = 21.5},
+}
+
 Public.Data.helper_text_rendering_positions = {
 	{x = -46.5, y = -3.5},
 	{x = 46.5, y = -3.5},
@@ -87,7 +92,7 @@ Public[enum.SECONDARY].Data.hold_whitebelts_lrtp_order = {
 	{x = 44.5, y = 3.5, direction = defines.direction.east, type = 'input'},
 }
 
-Public.Data.boxes_bp = [[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]]
+Public.Data.boxes_bp = [[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]]
 Public.Data.boxes_bp_offset = {x = 0, y = 0}
 
 Public.Data.surfacename_rendering_pos = {x = Public.Data.loco_offset.x, y = -Public.Data.height/2 - 5}
@@ -195,7 +200,7 @@ function Public.create_hold_surface(nth)
 
 	if not boat.downstairs_poles then boat.downstairs_poles = {} end
 	boat.downstairs_poles[nth] = {}
-	for i = 1, 2 do
+	for i = 1, #Public.Data.downstairs_pole_positions do
 		local e = surface.create_entity({name = 'substation', position = Public.Data.downstairs_pole_positions[i], force = boat.force_name, create_build_effect_smoke = false})
 		if e and e.valid then
 			e.destructible = false
@@ -207,6 +212,18 @@ function Public.create_hold_surface(nth)
 	if nth >= 2 then
 		if boat.downstairs_poles[nth][1] and boat.downstairs_poles[nth][1].valid and boat.downstairs_poles[nth-1][2] and boat.downstairs_poles[nth-1][2].valid then
 			boat.downstairs_poles[nth][1].connect_neighbour(boat.downstairs_poles[nth-1][2])
+		end
+	end
+
+	if not boat.downstairs_fluid_storages then boat.downstairs_fluid_storages = {} end
+	boat.downstairs_fluid_storages[nth] = {}
+	for i = 1, #Public.Data.downstairs_fluid_storage_positions do
+		local e = surface.create_entity({name = 'storage-tank', position = Public.Data.downstairs_fluid_storage_positions[i], force = boat.force_name, create_build_effect_smoke = false})
+		if e and e.valid then
+			e.destructible = false
+			e.minable = false
+			e.rotatable = true
+			boat.downstairs_fluid_storages[nth][i] = e
 		end
 	end
 

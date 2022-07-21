@@ -34,20 +34,25 @@ Public.market_barters = {
 	{price = {{'raw-fish', 50}}, offer = {type = 'give-item', item = 'iron-plate', count = 750}},
 	{price = {{'raw-fish', 50}}, offer = {type = 'give-item', item = 'copper-plate', count = 750}},
 	{price = {{'raw-fish', 50}}, offer = {type = 'give-item', item = 'steel-plate', count = 125}},
-
 	{price = {{'wood', 200}}, offer = {type = 'give-item', item = 'coin', count = 360}},
-	--TODO: add more complex trades
+	{price = {{'wood', 150}}, offer = {type = 'give-item', item = 'coal', count = 150}},
+	{price = {{'stone-brick', 100}}, offer = {type = 'give-item', item = 'iron-plate', count = 200}},
+	{price = {{'stone-brick', 100}}, offer = {type = 'give-item', item = 'copper-plate', count = 200}},
+	{price = {{'stone-brick', 100}}, offer = {type = 'give-item', item = 'steel-plate', count = 100}},
 }
 
+-- permanent means you can buy more than once (but only some items???)
 Public.market_permanent_offers = {
 	{price = {{'pistol', 1}}, offer = {type = 'give-item', item = 'coin', count = Balance.coin_sell_amount}},
 	{price = {{'coin', 3600}}, offer = {type = 'give-item', item = 'iron-ore', count = 800}},
 	{price = {{'coin', 3600}}, offer = {type = 'give-item', item = 'copper-ore', count = 800}},
 	{price = {{'coin', 4200}}, offer = {type = 'give-item', item = 'crude-oil-barrel', count = 100}},
 	{price = {{'coin', 3600}}, offer = {type = 'give-item', item = 'fast-loader', count = 1}},
-	{price = {{'coin', 7200}}, offer = {type = 'give-item', item = 'beacon', count = 2}},
+	{price = {{'coin', 6200}}, offer = {type = 'give-item', item = 'beacon', count = 2}},
 	{price = {{'coin', 4200}}, offer = {type = 'give-item', item = 'speed-module-2', count = 2}},
+	{price = {{'coin', 4200}}, offer = {type = 'give-item', item = 'productivity-module', count = 2}},
 	{price = {{'coin', 28000}}, offer = {type = 'give-item', item = 'artillery-targeting-remote', count = 1}},
+	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'explosives', count = 50}},
 }
 
 -- cheap but one-off
@@ -58,7 +63,7 @@ Public.market_sales = {
 	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'piercing-shotgun-shell', count = 50}},
 	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'raw-fish', count = 300}},
 	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'laser-turret', count = 1}},
-	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'vehicle-machine-gun', count = 3}},
+	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'vehicle-machine-gun', count = 2}},
 	{price = {{'coin', 6000}}, offer = {type = 'give-item', item = 'modular-armor', count = 1}},
 	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'distractor-capsule', count = 20}},
 	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'poison-capsule', count = 20}},
@@ -68,6 +73,17 @@ Public.market_sales = {
 	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'construction-robot', count = 10}},
 	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'logistic-chest-passive-provider', count = 2}},
 	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'logistic-robot', count = 2}},
+	{price = {{'transport-belt', 100}, {'coin', 800}}, offer = {type = 'give-item', item = 'fast-transport-belt', count = 100}},
+	{price = {{'fast-transport-belt', 100}, {'coin', 2500}}, offer = {type = 'give-item', item = 'express-transport-belt', count = 100}},
+	{price = {{'underground-belt', 10}, {'coin', 800}}, offer = {type = 'give-item', item = 'fast-underground-belt', count = 10}},
+	{price = {{'fast-underground-belt', 10}, {'coin', 2500}}, offer = {type = 'give-item', item = 'express-underground-belt', count = 10}},
+	{price = {{'splitter', 10}, {'coin', 800}}, offer = {type = 'give-item', item = 'fast-splitter', count = 10}},
+	{price = {{'fast-splitter', 10}, {'coin', 2500}}, offer = {type = 'give-item', item = 'express-splitter', count = 10}},
+	{price = {{'pistol', 1}, {'coin', 300}}, offer = {type = 'give-item', item = 'submachine-gun', count = 1}},
+	{price = {{'submachine-gun', 1}, {'coin', 1000}}, offer = {type = 'give-item', item = 'vehicle-machine-gun', count = 1}},
+	{price = {{'shotgun', 1}, {'coin', 3500}}, offer = {type = 'give-item', item = 'combat-shotgun', count = 1}},
+	{price = {{'shotgun-shell', 100}, {'coin', 2000}}, offer = {type = 'give-item', item = 'piercing-shotgun-shell', count = 100}},
+	{price = {{'piercing-rounds-magazine', 100}, {'coin', 3500}}, offer = {type = 'give-item', item = 'uranium-rounds-magazine', count = 100}},
 }
 
 
@@ -157,8 +173,23 @@ function Public.create_dock_markets(surface, p)
 		e.rotatable = false
 		e.destructible = false
 
-		for _, offer in pairs(Public.market_permanent_offers) do
+		-- for _, offer in pairs(Public.market_permanent_offers) do
+		-- 	e.add_market_item(offer)
+		-- end
+
+		local toaddcount
+
+		local salescopy = Utils.deepcopy(Public.market_permanent_offers)
+		toaddcount = 3 + Math.random(0, 2)
+		while toaddcount>0 and #salescopy > 0 do
+			local index = Math.random(#salescopy)
+			local offer = salescopy[index]
 			e.add_market_item(offer)
+			for i = index, #salescopy - 1 do
+				salescopy[i] = salescopy[i+1]
+			end
+			salescopy[#salescopy] = nil
+			toaddcount = toaddcount - 1
 		end
 	end
 
@@ -168,10 +199,14 @@ function Public.create_dock_markets(surface, p)
 		e.rotatable = false
 		e.destructible = false
 
+		-- for _, offer in pairs(Public.market_sales) do
+		-- 	e.add_market_item(offer)
+		-- end
+
 		local toaddcount
 
 		local salescopy = Utils.deepcopy(Public.market_sales)
-		toaddcount = 3
+		toaddcount = 3 + Math.random(0, 2)
 		while toaddcount>0 and #salescopy > 0 do
 			local index = Math.random(#salescopy)
 			local offer = salescopy[index]
@@ -205,10 +240,14 @@ function Public.create_dock_markets(surface, p)
 		e.rotatable = false
 		e.destructible = false
 
+		-- for _, offer in pairs(Public.market_barters) do
+		-- 	e.add_market_item(offer)
+		-- end
+
 		local toaddcount
 
 		local barterscopy = Utils.deepcopy(Public.market_barters)
-		toaddcount = 2
+		toaddcount = 2 + Math.random(0, 2)
 		while toaddcount>0 and #barterscopy>0 do
 			local index = Math.random(#barterscopy)
 			local offer = barterscopy[index]

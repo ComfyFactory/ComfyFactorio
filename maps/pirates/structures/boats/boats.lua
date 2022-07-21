@@ -292,7 +292,7 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 		end
 
 		if scope.Data.upstairs_poles then
-			for i = 1, 2 do
+			for i = 1, #scope.Data.upstairs_poles do
 				local p = scope.Data.upstairs_poles[i]
 				local p2 = {x = boat.position.x + p.x, y = boat.position.y + p.y}
 				local e = surface.create_entity({name = 'substation', position = p2, force = boat.force_name, create_build_effect_smoke = false})
@@ -304,6 +304,22 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 						boat.upstairs_pole = e
 						Public.try_connect_upstairs_and_downstairs_poles(boat)
 					end
+				end
+			end
+		end
+
+		if scope.Data.upstairs_fluid_storages then
+			if not boat.upstairs_fluid_storages then boat.upstairs_fluid_storages = {} end
+			for i = 1, #scope.Data.upstairs_fluid_storages do
+				local p = scope.Data.upstairs_fluid_storages[i]
+				local p2 = {x = boat.position.x + p.x, y = boat.position.y + p.y}
+				local e = surface.create_entity({name = 'storage-tank', position = p2, force = boat.force_name, create_build_effect_smoke = false})
+				if e and e.valid then
+					e.destructible = false
+					e.minable = false
+					e.rotatable = true
+
+					boat.upstairs_fluid_storages[i] = e
 				end
 			end
 		end
@@ -1130,7 +1146,18 @@ local function teleport_prepare_new_tiles(boat, new_floor_tile, oldposition, old
 	end
 end
 
+function Public.reassign_fluid_storage_references(boat, newsurface, newposition)
+	local scope = Public.get_scope(boat)
 
+	if scope.Data.upstairs_fluid_storages then
+		for i = 1, #scope.Data.upstairs_fluid_storages do
+			local storages = newsurface.find_entities_filtered{name="storage-tank", position = Utils.psum{newposition, scope.Data.upstairs_fluid_storages[i]}, radius = 1.5}
+			if #storages == 1 then
+				boat.upstairs_fluid_storages[i] = storages[1]
+			end
+		end
+	end
+end
 
 --if you're teleporting to the same surface, only do this in an orthogonal direction
 function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile, old_water_tile)
@@ -1159,6 +1186,7 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 	-- reset these:
 	boat.deck_whitebelts = {}
 	boat.EEIs = {}
+	boat.upstairs_fluid_storages = {}
 
 	-- only relevant for teleporting to the same surface, i.e. moving:
 	local vector = {x = newposition.x - oldposition.x, y = newposition.y - oldposition.y}
@@ -1341,6 +1369,7 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 		end
 	end
 
+	Public.reassign_fluid_storage_references(boat, newsurface, newposition)
 
 	Public.put_deck_whitebelts_in_standard_order(boat)
 	Hold.connect_up_linked_belts_to_deck()
