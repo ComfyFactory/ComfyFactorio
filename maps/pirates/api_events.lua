@@ -962,7 +962,7 @@ local function base_kill_rewards(event)
 	end
 
 	-- This gives enemy loot straight to combat robot owner's inventory instead of dropping it on the ground
-	if event.cause.name == 'defender' or event.cause.name == 'distractor' or event.cause.name == 'destroyer' then
+	if event.cause and (event.cause.name == 'defender' or event.cause.name == 'distractor' or event.cause.name == 'destroyer') then
 		if event.cause.combat_robot_owner and event.cause.combat_robot_owner.valid then
 			revenge_target = event.cause.combat_robot_owner
 		end
