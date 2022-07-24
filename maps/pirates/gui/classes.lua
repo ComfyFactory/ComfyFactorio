@@ -196,18 +196,21 @@ function Public.full_update(player)
 			button.style.font_color = black
 			button.style.hovered_font_color = black
 			button.style.clicked_font_color = black
+			button.enabled = true
 		elseif class_entry.taken_by == player.index then
 			button.caption = {'pirates.gui_classes_drop'}
 			button.tooltip = {'pirates.gui_classes_drop_tooltip'}
 			button.style.font_color = red
 			button.style.hovered_font_color = red
 			button.style.clicked_font_color = red
+			button.enabled = true
 		else
 			button.caption = {'pirates.gui_classes_take'}
 			button.tooltip = {'pirates.gui_classes_take_disabled_tooltip'}
 			button.style.font_color = black
 			button.style.hovered_font_color = black
 			button.style.clicked_font_color = black
+			button.enabled = false
 		end
 	end
 
