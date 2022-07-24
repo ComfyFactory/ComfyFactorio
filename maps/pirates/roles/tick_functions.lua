@@ -91,7 +91,7 @@ function Public.class_renderings(tickinterval)
 								target = player.character,
 								color = CoreData.colors.quartermaster_rendering,
 								filled = false,
-								radius = Common.quartermaster_range,
+								radius = Balance.quartermaster_range,
 								only_in_alt_mode = true,
 								draw_on_ground = true,
 							}

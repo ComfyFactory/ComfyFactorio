@@ -491,7 +491,7 @@ local function damage_dealt_by_players_changes(event)
 			if p2.player and p2.player.valid then
 				local p2_index = p2.player.index
 				if event.entity.valid and player_index ~= p2_index and memory.classes_table[p2_index] and memory.classes_table[p2_index] == Classes.enum.QUARTERMASTER then
-					event.entity.damage(Balance.quartermaster_bonus_physical_damage * event.final_damage_amount, character.force, 'impact', character) --triggers this function again, but not physical this time
+					event.entity.damage((Balance.quartermaster_bonus_physical_damage - 1) * event.final_damage_amount, character.force, 'impact', character) --triggers this function again, but not physical this time
 				end
 			end
 		end
