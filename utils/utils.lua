@@ -117,4 +117,11 @@ Module.format_time = function(ticks)
     return table.concat(result, ' ')
 end
 
+function Module.inside(pos, area)
+    local lt = area.left_top
+    local rb = area.right_bottom
+
+    return pos.x >= lt.x and pos.y >= lt.y and pos.x <= rb.x and pos.y <= rb.y
+end
+
 return Module

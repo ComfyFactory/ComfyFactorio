@@ -34,7 +34,7 @@ function Public.open_debug(player)
         return
     end
 
-    frame = screen.add {type = 'frame', name = main_frame_name, caption = 'Debuggertron 3003', direction = 'vertical'}
+    frame = screen.add {type = 'frame', name = main_frame_name, caption = 'Debuggertron 3004', direction = 'vertical'}
     frame.auto_center = true
     local frame_style = frame.style
     frame_style.height = 600
@@ -73,6 +73,9 @@ Gui.on_click(
     function(event)
         local element = event.element
         local data = Gui.get_data(element)
+        if not data then
+            return
+        end
 
         local index = data.index
         local frame_data = data.frame_data

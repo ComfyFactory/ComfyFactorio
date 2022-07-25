@@ -231,7 +231,7 @@ end
 ---Message all players at a given location
 ---@param player LuaPlayer
 ---@param message string
----@param color string
+---@param color string|nil
 function Public.alert_all_players_location(player, message, color, duration)
     local length = duration or 15
     Public.alert_all_players_template(
@@ -264,7 +264,7 @@ end
 ---@param player LuaPlayer
 ---@param duration number
 ---@param message string
----@param color string
+---@param color string|nil
 function Public.alert_player(player, duration, message, color, sprite, volume)
     Public.alert_player_template(
         player,
@@ -321,7 +321,7 @@ end
 ---Message to all players
 ---@param duration number
 ---@param message string
----@param color string
+---@param color string|nil
 function Public.alert_all_players(duration, message, color, sprite, volume)
     local players = game.connected_players
     for i = 1, #players do

@@ -16,7 +16,7 @@ local function contains_positions(area)
     for _, wagon in pairs(wagons) do
         if wagon.entity and wagon.entity.valid then
             if wagon.entity.name == 'cargo-wagon' then
-                if inside(wagon.entity.position, area) then
+                if inside(wagon.entity.position) then
                     return true, wagon.entity
                 end
             end
@@ -35,7 +35,7 @@ local function on_built_entity(event)
         return
     end
 
-    local map_name = 'mountain_fortress_v3'
+    local map_name = 'mtn_v3'
 
     if string.sub(entity.surface.name, 0, #map_name) ~= map_name then
         return
@@ -54,15 +54,15 @@ local function on_built_entity(event)
 
     local outside_chests = WPT.get('outside_chests')
     local chests_linked_to = WPT.get('chests_linked_to')
-    local chest_limit_outside_upgrades = WPT.get('chest_limit_outside_upgrades')
+    local upgrades = WPT.get('upgrades')
     local chest_created
     local increased = false
 
-    for k, data in pairs(outside_chests) do
+    for _, data in pairs(outside_chests) do
         if data and data.chest and data.chest.valid then
             if chests_linked_to[train.unit_number] then
                 local linked_to = chests_linked_to[train.unit_number].count
-                if linked_to == chest_limit_outside_upgrades then
+                if linked_to == upgrades.chests_outside_upgrades then
                     return
                 end
                 outside_chests[entity.unit_number] = {chest = entity, position = entity.position, linked = train.unit_number}
@@ -80,7 +80,8 @@ local function on_built_entity(event)
             end
 
             ::continue::
-            rendering.draw_text {
+            outside_chests[entity.unit_number].render =
+                rendering.draw_text {
                 text = '♠',
                 surface = entity.surface,
                 target = entity,
@@ -102,7 +103,8 @@ local function on_built_entity(event)
         chests_linked_to[train.unit_number] = {count = 1}
         chests_linked_to[train.unit_number][entity.unit_number] = true
 
-        rendering.draw_text {
+        outside_chests[entity.unit_number].render =
+            rendering.draw_text {
             text = '♠',
             surface = entity.surface,
             target = entity,
@@ -159,6 +161,9 @@ local function divide_contents()
         if not (chest and chest.valid) then
             if chests_linked_to[data.linked] then
                 if chests_linked_to[data.linked][key] then
+                    if data.render and rendering.is_valid(data.render) then
+                        rendering.destroy(data.render)
+                    end
                     chests_linked_to[data.linked][key] = nil
                     chests_linked_to[data.linked].count = chests_linked_to[data.linked].count - 1
                     if chests_linked_to[data.linked].count <= 0 then
@@ -175,12 +180,16 @@ local function divide_contents()
             target_chest = entity
         else
             if chests_linked_to[data.linked] then
-                if chests_linked_to[data.linked][key] then
+                if data then
+                    if data.render and rendering.is_valid(data.render) then
+                        rendering.destroy(data.render)
+                    end
                     chests_linked_to[data.linked][key] = nil
                     chests_linked_to[data.linked].count = chests_linked_to[data.linked].count - 1
                     if chests_linked_to[data.linked].count <= 0 then
                         chests_linked_to[data.linked] = nil
                     end
+                    outside_chests[key] = nil
                 end
             end
             goto continue

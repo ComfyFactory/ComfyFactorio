@@ -1,7 +1,6 @@
 local Gui = require 'utils.gui'
 local Global = require 'utils.global'
 local Event = require 'utils.event'
-local Game = require 'utils.game'
 local Server = require 'utils.server'
 local session = require 'utils.datastore.session_data'
 local Config = require 'utils.gui.config'
@@ -186,7 +185,7 @@ local function redraw_poll_viewer_content(data)
     if next(edited_by_players) then
         local edit_names = {'Edited by '}
         for pi, _ in pairs(edited_by_players) do
-            local p = Game.get_player_by_index(pi)
+            local p = game.get_player(pi)
             if p and p.valid then
                 insert(edit_names, p.name)
                 insert(edit_names, ', ')
@@ -762,7 +761,7 @@ local function vote(event)
 end
 
 local function player_joined(event)
-    local player = Game.get_player_by_index(event.player_index)
+    local player = game.get_player(event.player_index)
     if not player or not player.valid then
         return
     end

@@ -51,7 +51,7 @@ local function enemy_weapon_damage()
     }
 
     for k, v in pairs(data) do
-        local new = Difficulty.get().difficulty_vote_value * v
+        local new = Difficulty.get().value * v
 
         local e_old = e.get_ammo_damage_modifier(k)
 

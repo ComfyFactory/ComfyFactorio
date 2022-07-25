@@ -1,5 +1,5 @@
 local Global = require 'utils.global'
-local surface_name = 'mountain_fortress_v3'
+local surface_name = 'mtn_v3'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local Reset = require 'maps.mountain_fortress_v3.soft_reset'
 local zone_settings = WPT.zone_settings

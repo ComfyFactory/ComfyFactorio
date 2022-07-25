@@ -19,7 +19,6 @@ local nth_tick = Public.nth_tick
 --RPG Frames
 local main_frame_name = Public.main_frame_name
 
-local sub = string.sub
 local round = math.round
 local floor = math.floor
 local random = math.random
@@ -48,8 +47,7 @@ local function on_gui_click(event)
         end
     end
 
-    local surface_name = Public.get('rpg_extra').surface_name
-    if sub(player.surface.name, 0, #surface_name) ~= surface_name then
+    if not Public.check_is_surface_valid(player) then
         return
     end
 
@@ -459,8 +457,7 @@ local function on_entity_damaged(event)
 
     local p = cause.player
 
-    local surface_name = Public.get('rpg_extra').surface_name
-    if sub(p.surface.name, 0, #surface_name) ~= surface_name then
+    if not Public.check_is_surface_valid(p) then
         return
     end
 
@@ -670,8 +667,7 @@ local function on_pre_player_mined_item(event)
         return
     end
 
-    local surface_name = Public.get('rpg_extra').surface_name
-    if sub(player.surface.name, 0, #surface_name) ~= surface_name then
+    if not Public.check_is_surface_valid(player) then
         return
     end
 
@@ -851,7 +847,6 @@ end
 
 local function on_player_used_capsule(event)
     local enable_mana = Public.get('rpg_extra').enable_mana
-    local surface_name = Public.get('rpg_extra').surface_name
     if not enable_mana then
         return
     end
@@ -868,7 +863,7 @@ local function on_player_used_capsule(event)
         return
     end
 
-    if sub(player.surface.name, 0, #surface_name) ~= surface_name then
+    if not Public.check_is_surface_valid(player) then
         return
     end
 
@@ -915,12 +910,12 @@ local function on_player_used_capsule(event)
         right_bottom = {x = position.x + radius, y = position.y + radius}
     }
 
-    if rpg_t.level < spell.level then
+    if not spell.enabled then
         return Public.cast_spell(player, true)
     end
 
-    if not spell.enabled then
-        return
+    if rpg_t.level < spell.level then
+        return Public.cast_spell(player, true)
     end
 
     if not Math2D.bounding_box.contains_point(area, player.position) then

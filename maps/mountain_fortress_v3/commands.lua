@@ -157,6 +157,40 @@ commands.add_command(
 )
 
 commands.add_command(
+    'toggle_orbital_strikes',
+    'Usable only for admins - toggles orbital strikes!',
+    function()
+        local player = game.player
+
+        if not player and player.valid then
+            return
+        end
+        if not player.admin then
+            player.print("[ERROR] You're not admin!", Color.fail)
+            return
+        end
+
+        local this = WPT.get()
+
+        if not this.orbital_strikes_are_you_sure then
+            this.orbital_strikes_are_you_sure = true
+            player.print('[WARNING] This command will disable the orbital_strikes in-game, run this command again if you really want to do this!', Color.warning)
+            return
+        end
+
+        if this.orbital_strikes.enabled then
+            game.print(mapkeeper .. ' ' .. player.name .. ', has disabled the orbital_strikes module!', {r = 0.98, g = 0.66, b = 0.22})
+            this.orbital_strikes.enabled = false
+        else
+            game.print(mapkeeper .. ' ' .. player.name .. ', has enabled the orbital_strikes module!', {r = 0.98, g = 0.66, b = 0.22})
+            this.orbital_strikes.enabled = true
+        end
+
+        this.orbital_strikes_are_you_sure = nil
+    end
+)
+
+commands.add_command(
     'get_queue_speed',
     'Usable only for admins - gets the queue speed of this map!',
     function()

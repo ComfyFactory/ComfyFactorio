@@ -1,6 +1,5 @@
 local Gui = require 'utils.gui'
 local Global = require 'utils.global'
-local Token = require 'utils.token'
 local Color = require 'utils.color_presets'
 local Model = require 'utils.debug.model'
 
@@ -89,10 +88,10 @@ Gui.on_click(
         element.style.font_color = Color.orange
         data.selected_header = element
 
-        input_text_box.text = concat {'global.tokens[', token_id, ']'}
+        input_text_box.text = concat {'global.tokens.', token_id}
         input_text_box.style.font_color = Color.black
 
-        local id = Token.get_global(token_id)
+        local id = Global.get_global(token_id)
         local content = dump(id) or 'Could not load data.'
         if content:find('function_handlers') then
             content = '{}' -- desync handler

@@ -226,4 +226,42 @@ if _DEBUG then
     )
 end
 
+local RPG_Interface = {
+    rpg_reset_player = function(player_name)
+        if player_name then
+            local player = game.get_player(player_name)
+            if player and player.valid then
+                return Public.rpg_reset_player(player)
+            else
+                error('Remote call parameter to RPG rpg_reset_player must be a valid player name and not nil.')
+            end
+        else
+            error('Remote call parameter to RPG rpg_reset_player must be a valid player name and not nil.')
+        end
+    end,
+    give_xp = function(amount)
+        if type(amount) == 'number' then
+            return Public.give_xp(amount)
+        else
+            error('Remote call parameter to RPG give_xp must be number and not nil.')
+        end
+    end,
+    gain_xp = function(player_name, amount)
+        if player_name then
+            local player = game.get_player(player_name)
+            if player and player.valid and type(amount) == 'number' then
+                return Public.gain_xp(player, amount)
+            else
+                error('Remote call parameter to RPG give_xp must be a valid player name and contain amount(number) and not nil.')
+            end
+        else
+            error('Remote call parameter to RPG give_xp must be a valid player name and contain amount(number) and not nil.')
+        end
+    end
+}
+
+if not remote.interfaces['RPG'] then
+    remote.add_interface('RPG', RPG_Interface)
+end
+
 return Public

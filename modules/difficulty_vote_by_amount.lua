@@ -50,11 +50,11 @@ local this = {
         [2] = '',
         [3] = ''
     },
-    difficulty_vote_value = 0.75,
-    difficulty_vote_index = 1,
+    value = 0.75,
+    index = 1,
     fair_vote = false,
-    difficulty_poll_closing_timeout = 54000,
-    difficulty_player_votes = {},
+    closing_timeout = 54000,
+    all_votes = {},
     gui_width = 108,
     name = "I'm too young to die",
     strength_modifier = 1.00,
@@ -78,24 +78,24 @@ local function clear_main_frame(player)
 end
 
 function Public.difficulty_gui()
-    local tooltip = 'Current difficulty of the map is ' .. this.difficulties[this.difficulty_vote_index].name .. '.'
+    local tooltip = 'Current difficulty of the map is ' .. this.difficulties[this.index].name .. '.'
 
     for _, player in pairs(game.connected_players) do
         local top = player.gui.top
         if top[top_button_name] then
-            top[top_button_name].caption = this.difficulties[this.difficulty_vote_index].name
+            top[top_button_name].caption = this.difficulties[this.index].name
             top[top_button_name].tooltip = this.button_tooltip or tooltip
-            top[top_button_name].style.font_color = this.difficulties[this.difficulty_vote_index].print_color
+            top[top_button_name].style.font_color = this.difficulties[this.index].print_color
         else
             local b =
                 top.add {
                 type = 'button',
-                caption = this.difficulties[this.difficulty_vote_index].name,
+                caption = this.difficulties[this.index].name,
                 tooltip = tooltip,
                 name = top_button_name
             }
             b.style.font = 'heading-2'
-            b.style.font_color = this.difficulties[this.difficulty_vote_index].print_color
+            b.style.font_color = this.difficulties[this.index].print_color
             b.style.minimal_height = 37
             b.style.maximal_height = 37
             b.style.minimal_width = this.gui_width
@@ -148,9 +148,9 @@ local function poll_difficulty(player)
         clear_main_frame(player)
     end
 
-    if game.tick > this.difficulty_poll_closing_timeout then
+    if game.tick > this.closing_timeout then
         if player.online_time ~= 0 then
-            local t = math.abs(math.floor((this.difficulty_poll_closing_timeout - game.tick) / 3600))
+            local t = math.abs(math.floor((this.closing_timeout - game.tick) / 3600))
             local str = 'Votes have closed ' .. t
             str = str .. ' minute'
             if t > 1 then
@@ -163,6 +163,9 @@ local function poll_difficulty(player)
     end
 
     local _, inside_frame = Gui.add_main_frame_with_toolbar(player, 'center', main_frame_name, nil, close_main_frame, 'Difficulty')
+    if not inside_frame then
+        return
+    end
 
     for i = 1, #this.difficulties, 1 do
         local button_flow =
@@ -198,7 +201,7 @@ local function poll_difficulty(player)
         timeleft_flow.add(
         {
             type = 'button',
-            caption = math.floor((this.difficulty_poll_closing_timeout - game.tick) / 3600) .. ' minutes left.'
+            caption = math.floor((this.closing_timeout - game.tick) / 3600) .. ' minutes left.'
         }
     )
     b.style.font_color = {r = 0.66, g = 0.0, b = 0.66}
@@ -215,23 +218,25 @@ local function set_difficulty()
         return
     end
 
-    if this.difficulty_vote_index ~= index then
+    if this.index ~= index then
         local message = table.concat({'*** Map difficulty has changed to ', this.difficulties[index].name, ' difficulty! ***'})
         game.print(message, this.difficulties[index].print_color)
         Server.to_discord_embed(message)
     end
-    this.difficulty_vote_index = index
-    this.difficulty_vote_value = this.difficulties[index].value
+    this.index = index
+    this.name = this.difficulties[index].name
+    this.value = this.difficulties[index].value
     this.boss_modifier = this.difficulties[index].boss_modifier
     this.strength_modifier = this.difficulties[index].strength_modifier
+    this.button_tooltip = this.tooltip[index]
 end
 
 function Public.reset_difficulty_poll(tbl)
     if tbl then
-        this.difficulty_vote_value = tbl.difficulty_vote_value or 0.75
-        this.difficulty_vote_index = tbl.difficulty_vote_index or 1
-        this.difficulty_player_votes = {}
-        this.difficulty_poll_closing_timeout = tbl.difficulty_poll_closing_timeout or game.tick + 54000
+        this.value = tbl.value or 0.75
+        this.index = tbl.index or 1
+        this.all_votes = {}
+        this.closing_timeout = tbl.closing_timeout or game.tick + 54000
         for _, p in pairs(game.connected_players) do
             if p.gui.center[main_frame_name] then
                 clear_main_frame(p)
@@ -243,10 +248,10 @@ function Public.reset_difficulty_poll(tbl)
         end
         Public.difficulty_gui()
     else
-        this.difficulty_vote_value = 0.75
-        this.difficulty_vote_index = 1
-        this.difficulty_player_votes = {}
-        this.difficulty_poll_closing_timeout = game.tick + 54000
+        this.value = 0.75
+        this.index = 1
+        this.all_votes = {}
+        this.closing_timeout = game.tick + 54000
         for _, p in pairs(game.connected_players) do
             if p.gui.center[main_frame_name] then
                 clear_main_frame(p)
@@ -262,8 +267,8 @@ end
 
 local function on_player_joined_game(event)
     local player = game.get_player(event.player_index)
-    if game.tick < this.difficulty_poll_closing_timeout then
-        if not this.difficulty_player_votes[player.name] then
+    if game.tick < this.closing_timeout then
+        if not this.all_votes[player.name] then
             poll_difficulty(player)
         end
     else
@@ -273,19 +278,19 @@ local function on_player_joined_game(event)
 end
 
 local function on_player_left_game(event)
-    if game.tick > this.difficulty_poll_closing_timeout then
+    if game.tick > this.closing_timeout then
         return
     end
     local player = game.get_player(event.player_index)
-    if not this.difficulty_player_votes[player.name] then
+    if not this.all_votes[player.name] then
         return
     end
-    local index = this.difficulty_player_votes[player.name].index
+    local index = this.all_votes[player.name].index
     this.difficulties[index].count = this.difficulties[index].count - 1
     if this.difficulties[index].count <= 0 then
         this.difficulties[index].count = 0
     end
-    this.difficulty_player_votes[player.name] = nil
+    this.all_votes[player.name] = nil
     set_difficulty()
     Public.difficulty_gui()
 end
@@ -303,7 +308,13 @@ function Public.set_difficulties(...)
 end
 
 function Public.set_poll_closing_timeout(...)
-    this.difficulty_poll_closing_timeout = ...
+    this.closing_timeout = ...
+end
+
+--- Sets gui width
+---@param number number
+function Public.set_gui_width(number)
+    this.gui_width = number
 end
 
 function Public.get_fair_vote()
@@ -316,6 +327,17 @@ end
 
 function Public.get(key)
     if key then
+        return this[key]
+    else
+        return this
+    end
+end
+
+function Public.set(key, value)
+    if key and (value or value == false) then
+        this[key] = value
+        return this[key]
+    elseif key then
         return this[key]
     else
         return this
@@ -341,14 +363,19 @@ Gui.on_click(
 
         local i = tonumber(element.parent.name)
 
-        if this.difficulty_player_votes[player.name] and this.difficulty_player_votes[player.name].index == i then
+        if game.tick > this.closing_timeout then
+            clear_main_frame(player)
+            return
+        end
+
+        if this.all_votes[player.name] and this.all_votes[player.name].index == i then
             player.print('You have already voted for ' .. this.difficulties[i].name .. '.', this.difficulties[i].print_color)
             clear_main_frame(player)
             return
         end
 
-        if this.difficulty_player_votes[player.name] then
-            local index = this.difficulty_player_votes[player.name].index
+        if this.all_votes[player.name] then
+            local index = this.all_votes[player.name].index
             this.difficulties[index].count = this.difficulties[index].count - 1
             if this.difficulties[index].count <= 0 then
                 this.difficulties[index].count = 0
@@ -356,7 +383,7 @@ Gui.on_click(
         end
 
         this.difficulties[i].count = this.difficulties[i].count + 1
-        this.difficulty_player_votes[player.name] = {voted = true, index = i}
+        this.all_votes[player.name] = {voted = true, index = i}
 
         set_difficulty()
         Public.difficulty_gui()
@@ -378,7 +405,7 @@ Gui.on_click(
         if not player or not player.valid then
             return
         end
-        if game.tick > this.difficulty_poll_closing_timeout then
+        if game.tick > this.closing_timeout then
             clear_main_frame(player)
             return
         end

@@ -114,7 +114,7 @@ end
     @return the created entity
 ]]
 function Game.print_player_floating_text_position(player_index, text, color, x_offset, y_offset)
-    local player = Game.get_player_by_index(player_index)
+    local player = game.get_player(player_index)
     if not player or not player.valid then
         return
     end

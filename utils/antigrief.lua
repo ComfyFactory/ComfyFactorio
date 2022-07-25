@@ -10,16 +10,19 @@ local Color = require 'utils.color_presets'
 local Server = require 'utils.server'
 local Jail = require 'utils.datastore.jail_data'
 local FancyTime = require 'tools.fancy_time'
+local Task = require 'utils.task'
+local Token = require 'utils.token'
 
 local Public = {}
 local match = string.match
 local capsule_bomb_threshold = 8
 local de = defines.events
-
+local sub = string.sub
 local format = string.format
 local floor = math.floor
 local random = math.random
 local abs = math.abs
+local max_count_decon = 500
 
 local this = {
     enabled = true,
@@ -31,6 +34,7 @@ local this = {
     corpse_history = {},
     message_history = {},
     cancel_crafting_history = {},
+    deconstruct_history = {},
     whitelist_types = {},
     permission_group_editing = {},
     players_warned = {},
@@ -45,6 +49,11 @@ local this = {
     required_playtime = 2592000,
     damage_entity_threshold = 20,
     explosive_threshold = 16,
+    enable_jail_when_decon = true,
+    filtered_types_on_decon = {},
+    decon_surface_blacklist = 'nauvis',
+    players_warn_when_decon = {},
+    on_cancelled_deconstruction = {tick = 0, count = 0},
     limit = 2000
 }
 
@@ -74,6 +83,17 @@ local chests = {
     ['container'] = true,
     ['logistic-container'] = true
 }
+
+-- Clears the player from players_warn_when_decon tbl.
+local clear_player_decon_warnings =
+    Token.register(
+    function(event)
+        local player_index = event.player_index
+        if this.players_warn_when_decon[player_index] then
+            this.players_warn_when_decon[player_index] = nil
+        end
+    end
+)
 
 Global.register(
     this,
@@ -187,7 +207,7 @@ local function on_marked_for_deconstruction(event)
     end
 
     local player = game.get_player(event.player_index)
-    if Session.get_trusted_player(player.name) or this.do_not_check_trusted then
+    if Session.get_trusted_player(player) or this.do_not_check_trusted then
         return
     end
 
@@ -210,7 +230,7 @@ local function on_player_ammo_inventory_changed(event)
     if player.admin then
         return
     end
-    if Session.get_trusted_player(player.name) or this.do_not_check_trusted then
+    if Session.get_trusted_player(player) or this.do_not_check_trusted then
         return
     end
 
@@ -232,7 +252,7 @@ end
 local function on_player_joined_game(event)
     local player = game.get_player(event.player_index)
     if not this.enabled then
-        if not Session.get_trusted_player(player.name) then
+        if not Session.get_trusted_player(player) then
             Session.set_trusted_player(player.name)
         end
         return
@@ -289,7 +309,7 @@ local function on_built_entity(event)
         if player.admin then
             return
         end
-        if Session.get_trusted_player(player.name) or this.do_not_check_trusted then
+        if Session.get_trusted_player(player) or this.do_not_check_trusted then
             return
         end
 
@@ -313,7 +333,7 @@ local function on_player_used_capsule(event)
 
     local player = game.get_player(event.player_index)
 
-    if Session.get_trusted_player(player.name) or this.do_not_check_trusted then
+    if this.do_not_check_trusted then
         return
     end
 
@@ -678,7 +698,7 @@ local function on_player_cursor_stack_changed(event)
     if player.admin then
         return
     end
-    if Session.get_trusted_player(player.name) or this.do_not_check_trusted then
+    if Session.get_trusted_player(player) or this.do_not_check_trusted then
         return
     end
 
@@ -762,7 +782,6 @@ local function on_init()
         return
     end
     local branch_version = '0.18.35'
-    local sub = string.sub
     local is_branch_18 = sub(branch_version, 3, 4)
     local get_active_version = sub(game.active_mods.base, 3, 4)
     local default = game.permissions.get_group('Default')
@@ -807,6 +826,136 @@ local function on_permission_group_deleted(event)
     if name then
         Utils.log_msg('[Permission_Group]', player.name .. ' deleted ' .. name .. ' with ID: ' .. id)
     end
+end
+
+local function on_player_deconstructed_area(event)
+    if not this.enabled then
+        return
+    end
+
+    local surface = event.surface
+
+    local surface_name = this.decon_surface_blacklist
+    if sub(surface.name, 0, #surface_name) ~= surface_name then
+        return
+    end
+
+    local player = game.get_player(event.player_index)
+    local area = event.area
+    local count = surface.count_entities_filtered({area = area, type = 'resource', invert = true})
+    local max_count = 0
+    local is_trusted = Session.get_trusted_player(player)
+    if is_trusted then
+        max_count = max_count_decon
+    end
+
+    if next(this.filtered_types_on_decon) then
+        local filtered_count = surface.count_entities_filtered({area = area, type = this.filtered_types_on_decon})
+        if filtered_count and filtered_count > 0 then
+            surface.cancel_deconstruct_area {
+                area = area,
+                force = player.force
+            }
+        end
+    end
+
+    if count and count >= max_count then
+        surface.cancel_deconstruct_area {
+            area = area,
+            force = player.force
+        }
+        if not is_trusted then
+            return
+        end
+
+        local msg = '[Deconstruct] ' .. player.name .. ' tried to deconstruct: ' .. count .. ' entities!'
+        Utils.print_to(nil, msg)
+        Server.to_discord_embed(msg)
+
+        if not this.deconstruct_history then
+            this.deconstruct_history = {}
+        end
+        if #this.deconstruct_history > this.limit then
+            overflow(this.deconstruct_history)
+        end
+
+        local t = abs(floor((game.tick) / 60))
+        t = FancyTime.short_fancy_time(t)
+        local str = '[' .. t .. '] '
+        str = str .. msg
+        str = str .. ' at lt_x:'
+        str = str .. floor(area.left_top.x)
+        str = str .. ' at lt_y:'
+        str = str .. floor(area.left_top.y)
+        str = str .. ' at rb_x:'
+        str = str .. floor(area.right_bottom.x)
+        str = str .. ' at rb_y:'
+        str = str .. floor(area.right_bottom.y)
+        str = str .. ' '
+        str = str .. 'surface:' .. player.surface.index
+        increment(this.deconstruct_history, str)
+
+        if this.enable_jail_when_decon and not player.admin then
+            if not this.players_warn_when_decon[player.index] then
+                this.players_warn_when_decon[player.index] = 1
+                local r = random(7200, 18000)
+                Task.set_timeout_in_ticks(r, clear_player_decon_warnings, {player_index = player.index})
+            end
+            local warnings = this.players_warn_when_decon[player.index]
+            if warnings then
+                if warnings == 1 or warnings == 2 then
+                    Utils.print_to(player, '[Deconstruct] Warning! Do not deconstruct that many entities at once!')
+                    this.players_warn_when_decon[player.index] = this.players_warn_when_decon[player.index] + 1
+                elseif warnings == 3 then
+                    Utils.print_to(player, '[Deconstruct] Warning! Do not deconstruct that many entities at once! This is your final warning!')
+                    this.players_warn_when_decon[player.index] = this.players_warn_when_decon[player.index] + 1
+                else
+                    Jail.try_ul_data(player, true, 'script', 'Deconstructed ' .. count .. ' entities. Has been warned 3 times before getting jailed.')
+                    this.players_warn_when_decon[player.index] = nil
+                end
+            end
+        end
+    end
+end
+
+local function on_cancelled_deconstruction(event)
+    local player_index = event.player_index
+    if player_index then
+        return
+    end
+
+    local tick = event.tick
+    local entity = event.entity
+    if not entity or not entity.valid then
+        return
+    end
+
+    local handler = this.on_cancelled_deconstruction
+
+    if tick ~= handler.tick then
+        handler.tick = tick
+        handler.count = 0
+    end
+
+    handler.count = handler.count + 1
+
+    local player = entity.last_user
+    if player and player.valid and player.connected then
+        local is_trusted = Session.get_trusted_player(player)
+        if not is_trusted then
+            return
+        end
+    end
+
+    if entity.force.name == 'neutral' then
+        return
+    end
+
+    if tick == handler.tick and handler.count >= max_count_decon then
+        return
+    end
+
+    entity.order_deconstruction(entity.force)
 end
 
 local function on_permission_group_edited(event)
@@ -891,7 +1040,7 @@ end
 
 --- Add entity type to the whitelist so it gets logged.
 ---@param key string
----@param value string
+---@param value string|boolean
 function Public.whitelist_types(key, value)
     if key and value then
         this.whitelist_types[key] = value
@@ -901,35 +1050,49 @@ function Public.whitelist_types(key, value)
 end
 
 --- If the event should also check trusted players.
----@param value string
+---@param value boolean
 function Public.do_not_check_trusted(value)
     this.do_not_check_trusted = value or false
     return this.do_not_check_trusted
 end
 
 --- If ANY actions should be performed when a player misbehaves.
----@param value string
+---@param value boolean
 function Public.enable_capsule_warning(value)
     this.enable_capsule_warning = value or false
     return this.enable_capsule_warning
 end
 
 --- If ANY actions should be performed when a player misbehaves.
----@param value string
+---@param value boolean
 function Public.enable_capsule_cursor_warning(value)
     this.enable_capsule_cursor_warning = value or false
     return this.enable_capsule_cursor_warning
 end
 
 --- If the script should jail a person instead of kicking them
----@param value string
+---@param value boolean
 function Public.enable_jail(value)
     this.enable_jail = value or false
     return this.enable_jail
 end
 
---- Defines what the threshold for amount of explosives in chest should be - logged or not.
+--- If the script should jail a person whenever they deconstruct multiple times.
+---@param value boolean
+function Public.enable_jail_when_decon(value)
+    this.enable_jail_when_decon = value or false
+    return this.enable_jail_when_decon
+end
+
+--- If the script should jail a person whenever they deconstruct multiple times.
 ---@param value string
+function Public.decon_surface_blacklist(value)
+    this.decon_surface_blacklist = value or 'nauvis'
+    return this.decon_surface_blacklist
+end
+
+--- Defines what the threshold for amount of explosives in chest should be - logged or not.
+---@param value number
 function Public.explosive_threshold(value)
     if value then
         this.explosive_threshold = value
@@ -938,8 +1101,16 @@ function Public.explosive_threshold(value)
     return this.explosive_threshold
 end
 
+--- Defines if on_player_deconstructed_area should also check for other types.
+---@param tbl table
+function Public.filtered_types_on_decon(tbl)
+    if tbl then
+        this.filtered_types_on_decon = tbl
+    end
+end
+
 --- Defines what the threshold for amount of times before the script should take action.
----@param value string
+---@param value number
 function Public.damage_entity_threshold(value)
     if value then
         this.damage_entity_threshold = value
@@ -964,6 +1135,8 @@ Event.add(de.on_entity_died, on_entity_died)
 Event.add(de.on_built_entity, on_built_entity)
 Event.add(de.on_gui_opened, on_gui_opened)
 Event.add(de.on_marked_for_deconstruction, on_marked_for_deconstruction)
+Event.add(de.on_player_deconstructed_area, on_player_deconstructed_area)
+Event.add(de.on_cancelled_deconstruction, on_cancelled_deconstruction)
 Event.add(de.on_player_ammo_inventory_changed, on_player_ammo_inventory_changed)
 Event.add(de.on_player_built_tile, on_player_built_tile)
 Event.add(de.on_pre_player_mined_item, on_pre_player_mined_item)

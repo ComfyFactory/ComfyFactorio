@@ -5,6 +5,8 @@ local Token = require 'utils.token'
 local IC = require 'maps.mountain_fortress_v3.ic.table'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local RPG = require 'modules.rpg.main'
+local OfflinePlayers = require 'modules.clear_vacant_players'
+local Event = require 'utils.event'
 
 local Public = {}
 local main_tile_name = 'black-refined-concrete'
@@ -211,7 +213,7 @@ local function get_saved_entity(entity, index)
 end
 
 local function replace_entity(cars, entity, index)
-    local has_upgraded_health_pool = WPT.get('has_upgraded_health_pool')
+    local upgrades = WPT.get('upgrades')
     local unit_number = entity.unit_number
     local health = floor(2000 * entity.health * 0.002)
     for k, car in pairs(cars) do
@@ -222,7 +224,7 @@ local function replace_entity(cars, entity, index)
             cars[unit_number].saved_entity = nil
             cars[unit_number].transfer_entities = car.transfer_entities
             cars[unit_number].health_pool = {
-                enabled = has_upgraded_health_pool or false,
+                enabled = upgrades.has_upgraded_health_pool or false,
                 health = health,
                 max = health
             }
@@ -376,10 +378,7 @@ local function kick_players_from_surface(car)
         if validate_entity(main_surface) then
             for _, e in pairs(surface.find_entities_filtered({area = car.area})) do
                 if validate_entity(e) and e.name == 'character' and e.player then
-                    e.player.teleport(
-                        main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0, 5),
-                        main_surface
-                    )
+                    e.player.teleport(main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0, 5), main_surface)
                 end
             end
             check_if_players_are_in_nauvis()
@@ -424,10 +423,7 @@ local function kick_player_from_surface(player, target)
                 if p then
                     target.teleport(p, car.entity.surface)
                 else
-                    target.teleport(
-                        main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0, 5),
-                        main_surface
-                    )
+                    target.teleport(main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0, 5), main_surface)
                 end
                 target.print('You were kicked out of ' .. player.name .. ' vehicle.', Color.warning)
             end
@@ -649,9 +645,7 @@ local find_remove_car =
             return
         end
 
-        for _, dropped_ent in pairs(
-            surface.find_entities_filtered {type = 'item-entity', area = {{position.x - 10, position.y - 10}, {position.x + 10, position.y + 10}}}
-        ) do
+        for _, dropped_ent in pairs(surface.find_entities_filtered {type = 'item-entity', area = {{position.x - 10, position.y - 10}, {position.x + 10, position.y + 10}}}) do
             if dropped_ent and dropped_ent.valid and dropped_ent.stack then
                 if types[dropped_ent.stack.name] then
                     dropped_ent.destroy()
@@ -1104,7 +1098,7 @@ function Public.create_car(event)
     end
 
     local renders = IC.get('renders')
-    local has_upgraded_health_pool = WPT.get('has_upgraded_health_pool')
+    local upgrades = WPT.get('upgrades')
 
     local name, mined = get_player_entity(player)
 
@@ -1118,10 +1112,7 @@ function Public.create_car(event)
 
     local storage = get_trusted_system(player)
 
-    if
-        get_owner_car_name(player) == 'car' and ce.name == 'tank' or get_owner_car_name(player) == 'car' and ce.name == 'spidertron' or
-            get_owner_car_name(player) == 'tank' and ce.name == 'spidertron'
-     then
+    if get_owner_car_name(player) == 'car' and ce.name == 'tank' or get_owner_car_name(player) == 'car' and ce.name == 'spidertron' or get_owner_car_name(player) == 'tank' and ce.name == 'spidertron' then
         if storage.auto_upgrade and storage.auto_upgrade == 'right' then
             return
         end
@@ -1157,7 +1148,7 @@ function Public.create_car(event)
         },
         doors = {},
         health_pool = {
-            enabled = has_upgraded_health_pool or false,
+            enabled = upgrades.has_upgraded_health_pool or false,
             health = health,
             max = health
         },
@@ -1361,7 +1352,7 @@ function Public.check_entity_healths()
         ['spidertron'] = 3000
     }
 
-    for k, car in pairs(cars) do
+    for _, car in pairs(cars) do
         local m = car.health_pool.health / car.health_pool.max
 
         if car.health_pool.health > car.health_pool.max then
@@ -1433,5 +1424,17 @@ Public.get_player_surface = get_player_surface
 Public.get_entity_from_player_surface = get_entity_from_player_surface
 Public.get_owner_car_object = get_owner_car_object
 Public.render_owner_text = render_owner_text
+
+Event.add(
+    OfflinePlayers.events.remove_surface,
+    function(event)
+        local target = event.target
+        if not target then
+            return
+        end
+
+        Public.remove_surface(target)
+    end
+)
 
 return Public

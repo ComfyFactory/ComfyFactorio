@@ -13,7 +13,7 @@ local function on_entity_died(event)
     end
     local wagon_types = ICW.get('wagon_types')
 
-    if not wagon_types[entity.type] then
+    if entity and entity.valid and not wagon_types[entity.type] then
         return
     end
     local icw = ICW.get()

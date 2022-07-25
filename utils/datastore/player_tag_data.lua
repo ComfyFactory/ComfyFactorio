@@ -12,6 +12,10 @@ local Public = {}
 local fetch =
     Token.register(
     function(data)
+        if not data then
+            return
+        end
+
         local key = data.key
         local value = data.value
         local player = game.players[key]

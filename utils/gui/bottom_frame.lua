@@ -19,6 +19,8 @@ Global.register(
 
 local Public = {}
 
+Public.events = {bottom_quickbar_button_name = Event.generate_event_name('bottom_quickbar_button_name')}
+
 local main_frame_name = Gui.uid_name()
 local clear_corpse_button_name = Gui.uid_name()
 local bottom_quickbar_button_name = Gui.uid_name()
@@ -222,6 +224,17 @@ Gui.on_click(
             return
         end
         Misc.clear_corpses(event)
+    end
+)
+
+Gui.on_click(
+    bottom_quickbar_button_name,
+    function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Custom Bottom_quickbar_button_name')
+        if is_spamming then
+            return
+        end
+        Event.raise(Public.events.bottom_quickbar_button_name, {player = event.player, event = event})
     end
 )
 

@@ -947,7 +947,7 @@ local function market_kill_visuals()
 
     local m = 32
     local m2 = m * 0.005
-    for i = 1, 1024, 1 do
+    for _ = 1, 1024, 1 do
         surface.create_particle(
             {
                 name = 'branch-particle',
@@ -1015,7 +1015,7 @@ local function on_entity_died(event)
                     surface.create_entity {name = 'big-biter', position = p}
                 end
             end
-            for i = 1, random(1, 2), 1 do
+            for _ = 1, random(1, 2), 1 do
                 local p = surface.find_non_colliding_position('medium-biter', event.entity.position, 3, 0.5)
                 if p then
                     surface.create_entity {name = 'medium-biter', position = p}
@@ -1035,9 +1035,8 @@ local function on_entity_died(event)
         Public.set('market_age', game.tick - last_reset)
         Public.set('game_has_ended', true)
         is_game_lost()
-        local name = Server.get_server_name()
         local date = Server.get_start_time()
-        game.server_save('Final_' .. name .. '_' .. tostring(date))
+        game.server_save('Final_Fish_Defender_v2_' .. tostring(date))
         return
     end
 
@@ -1050,7 +1049,7 @@ local function on_entity_died(event)
 end
 
 local function on_player_joined_game(event)
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
     local active_surface_index = Public.get('active_surface_index')
     local surface = game.surfaces[active_surface_index]
     if not surface or not surface.valid then
@@ -1089,7 +1088,7 @@ local function deny_building(event)
     if entity.position.x >= 254 then
         if entity.name ~= 'entity-ghost' then
             if event.player_index then
-                game.players[event.player_index].insert({name = entity.name, count = 1})
+                game.get_player(event.player_index).insert({name = entity.name, count = 1})
             else
                 local inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
                 inventory.insert({name = entity.name, count = 1})
@@ -1249,7 +1248,7 @@ local function on_player_respawned(event)
     if not market_age then
         return
     end
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
     player.character.destructible = false
 end
 

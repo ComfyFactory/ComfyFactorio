@@ -30,33 +30,66 @@ local spell1_button_name = Public.spell1_button_name
 local spell2_button_name = Public.spell2_button_name
 local spell3_button_name = Public.spell3_button_name
 
-local sub = string.sub
 local round = math.round
 local floor = math.floor
 
 function Public.draw_gui_char_button(player)
-    if player.gui.top[draw_main_frame_name] then
-        return
+    if ComfyGui.get_mod_gui_top_frame() then
+        local b =
+            ComfyGui.add_mod_button(
+            player,
+            {
+                type = 'sprite-button',
+                name = draw_main_frame_name,
+                caption = '[RPG]',
+                tooltip = 'RPG'
+            }
+        )
+        if b then
+            b.style.font_color = {165, 165, 165}
+            b.style.font = 'heading-3'
+            b.style.minimal_height = 38
+            b.style.maximal_height = 38
+            b.style.minimal_width = 50
+            b.style.padding = 0
+            b.style.margin = 0
+        end
+    else
+        if player.gui.top[draw_main_frame_name] then
+            return
+        end
+        local b = player.gui.top.add({type = 'sprite-button', name = draw_main_frame_name, caption = '[RPG]', tooltip = 'RPG'})
+        b.style.font_color = {165, 165, 165}
+        b.style.font = 'heading-3'
+        b.style.minimal_height = 38
+        b.style.maximal_height = 38
+        b.style.minimal_width = 50
+        b.style.padding = 0
+        b.style.margin = 0
     end
-    local b = player.gui.top.add({type = 'sprite-button', name = draw_main_frame_name, caption = '[RPG]', tooltip = 'RPG'})
-    b.style.font_color = {165, 165, 165}
-    b.style.font = 'heading-3'
-    b.style.minimal_height = 38
-    b.style.maximal_height = 38
-    b.style.minimal_width = 50
-    b.style.padding = 0
-    b.style.margin = 0
 end
 
 function Public.update_char_button(player)
     local rpg_t = Public.get_value_from_player(player.index)
-    if not player.gui.top[draw_main_frame_name] then
-        Public.draw_gui_char_button(player)
-    end
-    if rpg_t.points_left > 0 then
-        player.gui.top[draw_main_frame_name].style.font_color = {245, 0, 0}
+
+    if ComfyGui.get_mod_gui_top_frame() then
+        if not ComfyGui.get_button_flow(player)[draw_main_frame_name] or not ComfyGui.get_button_flow(player)[draw_main_frame_name].valid then
+            Public.draw_gui_char_button(player)
+        end
+        if rpg_t.points_left > 0 then
+            ComfyGui.get_button_flow(player)[draw_main_frame_name].style.font_color = {245, 0, 0}
+        else
+            ComfyGui.get_button_flow(player)[draw_main_frame_name].style.font_color = {175, 175, 175}
+        end
     else
-        player.gui.top[draw_main_frame_name].style.font_color = {175, 175, 175}
+        if not player.gui.top[draw_main_frame_name] then
+            Public.draw_gui_char_button(player)
+        end
+        if rpg_t.points_left > 0 then
+            player.gui.top[draw_main_frame_name].style.font_color = {245, 0, 0}
+        else
+            player.gui.top[draw_main_frame_name].style.font_color = {175, 175, 175}
+        end
     end
 end
 
@@ -162,7 +195,11 @@ local function draw_main_frame(player, location)
     if location then
         main_frame.location = location
     else
-        main_frame.location = {x = 1, y = 40}
+        if ComfyGui.get_mod_gui_top_frame() then
+            main_frame.location = {x = 1, y = 55}
+        else
+            main_frame.location = {x = 1, y = 45}
+        end
     end
 
     local data = {}
@@ -715,8 +752,7 @@ Gui.on_click(
             return
         end
 
-        local surface_name = Public.get('rpg_extra').surface_name
-        if sub(player.surface.name, 0, #surface_name) ~= surface_name then
+        if not Public.check_is_surface_valid(player) then
             return
         end
 
@@ -742,8 +778,7 @@ Gui.on_click(
             return
         end
 
-        local surface_name = Public.get('rpg_extra').surface_name
-        if sub(player.surface.name, 0, #surface_name) ~= surface_name then
+        if not Public.check_is_surface_valid(player) then
             return
         end
 
@@ -808,8 +843,7 @@ Gui.on_click(
             return
         end
 
-        local surface_name = Public.get('rpg_extra').surface_name
-        if sub(player.surface.name, 0, #surface_name) ~= surface_name then
+        if not Public.check_is_surface_valid(player) then
             return
         end
 
@@ -836,8 +870,7 @@ Gui.on_click(
             return
         end
 
-        local surface_name = Public.get('rpg_extra').surface_name
-        if sub(player.surface.name, 0, #surface_name) ~= surface_name then
+        if not Public.check_is_surface_valid(player) then
             return
         end
 
@@ -861,8 +894,7 @@ Gui.on_click(
             return
         end
 
-        local surface_name = Public.get('rpg_extra').surface_name
-        if sub(player.surface.name, 0, #surface_name) ~= surface_name then
+        if not Public.check_is_surface_valid(player) then
             return
         end
 
@@ -886,8 +918,7 @@ Gui.on_click(
             return
         end
 
-        local surface_name = Public.get('rpg_extra').surface_name
-        if sub(player.surface.name, 0, #surface_name) ~= surface_name then
+        if not Public.check_is_surface_valid(player) then
             return
         end
 

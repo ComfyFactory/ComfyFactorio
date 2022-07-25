@@ -310,7 +310,7 @@ local function protect_entities(data)
     end
 
     local function is_protected(e)
-        local map_name = 'mountain_fortress_v3'
+        local map_name = 'mtn_v3'
 
         if string.sub(e.surface.name, 0, #map_name) ~= map_name then
             return true
@@ -728,7 +728,7 @@ local function on_player_mined_entity(event)
     end
     local rpg_char = RPG.get_value_from_player(player.index)
 
-    local map_name = 'mountain_fortress_v3'
+    local map_name = 'mtn_v3'
 
     if string.sub(entity.surface.name, 0, #map_name) ~= map_name then
         return
@@ -772,7 +772,7 @@ local function on_robot_mined_entity(event)
         return
     end
 
-    local map_name = 'mountain_fortress_v3'
+    local map_name = 'mtn_v3'
 
     if string.sub(entity.surface.name, 0, #map_name) ~= map_name then
         return
@@ -968,7 +968,7 @@ local function on_entity_died(event)
 
     local cause = event.cause
 
-    local map_name = 'mountain_fortress_v3'
+    local map_name = 'mtn_v3'
 
     if string.sub(entity.surface.name, 0, #map_name) ~= map_name then
         return
@@ -1194,11 +1194,14 @@ local function show_mvps(player)
             local collapse_amount = Collapse.get_amount()
 
             local diff = Diff.get()
+            if not diff then
+                return
+            end
             local time_played = Core.format_time(game.ticks_played)
             local total_players = #game.players
-            local pickaxe_tiers = WPT.pickaxe_upgrades
-            local tier = WPT.get('pickaxe_tier')
-            local pick_tier = pickaxe_tiers[tier]
+            local pickaxe_upgrades = WPT.pickaxe_upgrades
+            local upgrades = WPT.get('upgrades')
+            local pick_tier = pickaxe_upgrades[upgrades.pickaxe_tier]
 
             local server_name_matches = Server.check_server_name('Mtn Fortress')
             if WPT.get('prestige_system_enabled') then
@@ -1207,7 +1210,7 @@ local function show_mvps(player)
             local date = Server.get_start_time()
             game.server_save('Final_Mtn_Fortress_v3_' .. tostring(date))
             local text = {
-                title = 'Game over <:helper:627426785918713877>',
+                title = 'Game over!',
                 description = 'Game statistics from the game is below',
                 color = 'failure',
                 field1 = {
@@ -1241,7 +1244,7 @@ local function show_mvps(player)
                 },
                 field6 = {
                     text1 = 'Pickaxe Upgrade:',
-                    text2 = pick_tier .. ' (' .. tier .. ')',
+                    text2 = pick_tier .. ' (' .. upgrades.pickaxe_tier .. ')',
                     inline = 'true',
                     emptyField = 'true',
                     emptyInline = 'true'
@@ -1389,7 +1392,7 @@ local function on_built_entity(event)
         return
     end
 
-    local map_name = 'mountain_fortress_v3'
+    local map_name = 'mtn_v3'
 
     if string.sub(entity.surface.name, 0, #map_name) ~= map_name then
         return
@@ -1486,7 +1489,7 @@ local function on_robot_built_entity(event)
         return
     end
 
-    local map_name = 'mountain_fortress_v3'
+    local map_name = 'mtn_v3'
 
     if string.sub(entity.surface.name, 0, #map_name) ~= map_name then
         return
@@ -1580,7 +1583,7 @@ end
 local on_player_or_robot_built_tile = function(event)
     local surface = game.surfaces[event.surface_index]
 
-    local map_name = 'mountain_fortress_v3'
+    local map_name = 'mtn_v3'
 
     if string.sub(surface.name, 0, #map_name) ~= map_name then
         return

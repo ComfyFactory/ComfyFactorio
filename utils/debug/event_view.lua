@@ -133,6 +133,9 @@ Gui.on_text_changed(
     function(event)
         local element = event.element
         local gui_table = Gui.get_data(element)
+        if not gui_table then
+            return
+        end
 
         local filter = element.text:gsub(' ', '_')
 
@@ -149,6 +152,10 @@ Gui.on_click(
     function(event)
         local element = event.element
         local data = Gui.get_data(element)
+        if not data then
+            return
+        end
+
         local filter_textfield = data.filter_textfield
         local gui_table = data.gui_table
 
