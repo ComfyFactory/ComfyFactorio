@@ -1955,7 +1955,7 @@ local function event_on_player_respawned(event)
 	local boat = memory.boat
 
 	if player.surface == game.surfaces[Common.current_destination().surface_name] then
-		if boat and boat.state == Boats.enum_state.ATSEA_SAILING or boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL or boat.state == Boats.enum_state.ATSEA_LOADING_MAP then
+		if Boats.is_boat_at_sea() then
 			-- assuming sea is always default:
 			local seasurface = game.surfaces[memory.sea_name]
 			player.teleport(memory.spawnpoint, seasurface)

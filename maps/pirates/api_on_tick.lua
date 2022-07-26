@@ -866,11 +866,11 @@ end
 function Public.crowsnest_natural_move(tickinterval)
 	local memory = Memory.get_crew_memory()
 
-	if not memory.loadingticks then
-		if not Public.overworld_check_collisions() then
-			Overworld.try_overworld_move_v2{x = 1, y = 0}
-		end
-	end
+	if not (memory.boat and memory.boat.state == Structures.Boats.enum_state.ATSEA_SAILING) then return end
+	if memory.loadingticks then return end
+	if Public.overworld_check_collisions() then return end
+
+	Overworld.try_overworld_move_v2{x = 1, y = 0}
 end
 
 
@@ -883,8 +883,6 @@ function Public.overworld_check_collisions(tickinterval)
 	end
 	return false
 end
-
-
 
 
 
@@ -1034,38 +1032,46 @@ function Public.loading_update(tickinterval)
 end
 
 
-
-
-
-
 function Public.crowsnest_steer(tickinterval)
 	local memory = Memory.get_crew_memory()
+
 	if memory.game_lost then return end
 
-	if memory.boat and memory.boat.state == Structures.Boats.enum_state.ATSEA_SAILING and memory.game_lost == false and memory.boat.crowsneststeeringchests then
-		local leftchest, rightchest = memory.boat.crowsneststeeringchests.left, memory.boat.crowsneststeeringchests.right
-		if leftchest and leftchest.valid and rightchest and rightchest.valid then
-			local inv_left = leftchest.get_inventory(defines.inventory.chest)
-			local inv_right = rightchest.get_inventory(defines.inventory.chest)
-			local count_left = inv_left.get_item_count("rail-signal")
-			local count_right = inv_right.get_item_count("rail-signal")
+	if not 
+		(
+			memory.boat and
+			memory.boat.state and
+			memory.boat.state == Structures.Boats.enum_state.ATSEA_SAILING and
+			memory.game_lost == false and
+			memory.boat.crowsneststeeringchests
+		) 
+	then 
+		return
+	end
 
-			if count_left >= 100 and count_right < 100 and memory.overworldy > -24 then
-				if Overworld.try_overworld_move_v2{x = 0, y = -24} then
-					local force = memory.force
-					Common.notify_force(force, {'pirates.steer_left'})
-					inv_left.remove({name = "rail-signal", count = 100})
-				end
-				return
-			elseif count_right >= 100 and count_left < 100 and memory.overworldy < 24 then
-				if Overworld.try_overworld_move_v2{x = 0, y = 24} then
-					local force = memory.force
-					Common.notify_force(force, {'pirates.steer_right'})
-					inv_right.remove({name = "rail-signal", count = 100})
-				end
-				return
-			end
+	local leftchest = memory.boat.crowsneststeeringchests.left
+	local rightchest = memory.boat.crowsneststeeringchests.right
+	if not (leftchest and leftchest.valid and rightchest and rightchest.valid) then return end
+
+	local inv_left = leftchest.get_inventory(defines.inventory.chest)
+	local inv_right = rightchest.get_inventory(defines.inventory.chest)
+	local count_left = inv_left.get_item_count("rail-signal")
+	local count_right = inv_right.get_item_count("rail-signal")
+
+	if count_left >= 100 and count_right < 100 and memory.overworldy > -24 then
+		if Overworld.try_overworld_move_v2{x = 0, y = -24} then
+			local force = memory.force
+			Common.notify_force(force, {'pirates.steer_left'})
+			inv_left.remove({name = "rail-signal", count = 100})
 		end
+		return
+	elseif count_right >= 100 and count_left < 100 and memory.overworldy < 24 then
+		if Overworld.try_overworld_move_v2{x = 0, y = 24} then
+			local force = memory.force
+			Common.notify_force(force, {'pirates.steer_right'})
+			inv_right.remove({name = "rail-signal", count = 100})
+		end
+		return
 	end
 end
 

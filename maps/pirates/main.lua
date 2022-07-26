@@ -175,9 +175,7 @@ local function crew_tick()
 			if tick % 60 == 0 then
 				PiratesApiOnTick.captain_warn_afk(60)
 				PiratesApiOnTick.ship_deplete_fuel(60)
-				if memory.boat and memory.boat.state == Structures.Boats.enum_state.ATSEA_SAILING then
-					PiratesApiOnTick.crowsnest_natural_move(60)
-				end
+				PiratesApiOnTick.crowsnest_natural_move(60)
 				PiratesApiOnTick.slower_boat_tick(60)
 				PiratesApiOnTick.raft_raids(60)
 				PiratesApiOnTick.place_cached_structures(60)
@@ -259,15 +257,14 @@ local function crew_tick()
 	end
 
 	if tick % 60 == 15 or tick % 60 == 45 then
+		-- @TODO move this ugly check to function?
 		if memory.boat and memory.boat.state == Structures.Boats.enum_state.ATSEA_SAILING then
 			PiratesApiOnTick.overworld_check_collisions(120)
 		end
 	end
 
 	if tick % 60 == 30 then
-		if memory.boat and memory.boat.state == Structures.Boats.enum_state.ATSEA_SAILING then
-			PiratesApiOnTick.crowsnest_steer(120)
-		end
+		PiratesApiOnTick.crowsnest_steer(120)
 	end
 
 	if tick % Common.loading_interval == 0 then

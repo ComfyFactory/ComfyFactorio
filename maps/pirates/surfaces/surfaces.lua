@@ -796,7 +796,7 @@ function Public.player_exit_crows_nest(player, player_relative_pos)
 	local memory = Memory.get_crew_memory()
 	local surface
 
-	if memory.boat and (memory.boat.state == Boats.enum_state.ATSEA_SAILING or memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL or memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP) then
+	if Boats.is_boat_at_sea() then
 		surface = game.surfaces[SurfacesCommon.encode_surface_name(memory.id, 0, Public.enum.SEA, Public.Sea.enum.DEFAULT)]
 	else
 		surface = game.surfaces[Common.current_destination().surface_name]
@@ -835,7 +835,7 @@ function Public.player_exit_hold(player, relative_pos)
 	local memory = Memory.get_crew_memory()
 	local surface
 
-	if memory.boat and (memory.boat.state == Boats.enum_state.ATSEA_SAILING or memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL or memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP) then
+	if Boats.is_boat_at_sea() then
 		surface = game.surfaces[SurfacesCommon.encode_surface_name(memory.id, 0, Public.enum.SEA, Public.Sea.enum.DEFAULT)]
 	else
 		surface = game.surfaces[Common.current_destination().surface_name]
@@ -873,7 +873,7 @@ function Public.player_exit_cabin(player, relative_pos)
 	local memory = Memory.get_crew_memory()
 	local surface
 
-	if memory.boat and (memory.boat.state == Boats.enum_state.ATSEA_SAILING or memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL or memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP) then
+	if Boats.is_boat_at_sea() then
 		surface = game.surfaces[SurfacesCommon.encode_surface_name(memory.id, 0, Public.enum.SEA, Public.Sea.enum.DEFAULT)]
 	else
 		surface = game.surfaces[Common.current_destination().surface_name]

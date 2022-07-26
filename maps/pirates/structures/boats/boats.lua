@@ -1381,4 +1381,20 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 
 end
 
+function Public.is_boat_at_sea()
+	local memory = Memory.get_crew_memory()
+	if memory.boat and
+		memory.boat.state and
+		(
+			memory.boat.state == Boats.enum_state.ATSEA_SAILING or
+			memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL or
+			memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP
+		)
+	then
+		return true
+	else
+		return false
+	end
+end
+
 return Public
