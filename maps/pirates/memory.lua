@@ -79,6 +79,7 @@ function Public.initialise_crew_memory(id) --mostly serves as a dev reference of
 
 	memory.available_classes_pool = nil
 	-- Duplicating unlocked classes data for consistency reasons (this way, entries will remain in the same order when unlocked class data changes)
+	-- @TODO Might have to consider sacrificing consistency(or find a way to retain consistency) to reduce the chance of contradicting data which results in weird bugs (this happened once already)
 	memory.unlocked_classes = nil
 
 	memory.seconds_until_alert_sound_can_be_played_again = 0

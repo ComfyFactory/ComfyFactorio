@@ -451,14 +451,14 @@ function Public.leave_crew(player, to_lobby, quiet)
 	if not (memory.difficulty_votes) then memory.difficulty_votes = {} end
 	memory.difficulty_votes[player.index] = nil
 
+	Roles.player_left_so_redestribute_roles(player)
+
 	if #Common.crew_get_crew_members() == 0 then
 		if Common.autodisband_ticks then
 			memory.crew_disband_tick = game.tick + Common.autodisband_ticks
 		end
 		-- memory.crew_disband_tick = game.tick + 60*60*2 --give players time to log back in after a crash or save
 		if _DEBUG then memory.crew_disband_tick = game.tick + 30*60*60 end
-	else
-		Roles.player_left_so_redestribute_roles(player)
 	end
 end
 

@@ -211,7 +211,7 @@ function Public.event_on_market_item_purchased(event)
 				-- if not class_for_sale then return end
 				local required_class = Classes.class_purchase_requirement[class_for_sale]
 
-				local ok = Classes.try_unlock_class(class_for_sale, player)
+				local ok = Classes.try_unlock_class(class_for_sale, player, false)
 
 				if ok then
 					if force and force.valid then
