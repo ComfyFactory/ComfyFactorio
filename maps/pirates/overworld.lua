@@ -671,17 +671,18 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 
 		if vector.x > 0 then
 
+			-- merchant is disabled
 			-- crew bonus resources per x:
-			local crew = Common.crew_get_crew_members()
-			for _, player in pairs(crew) do
-				if Common.validate_player_and_character(player) then
-					local player_index = player.index
-					if memory.classes_table and memory.classes_table[player_index] and memory.classes_table[player_index] == Classes.enum.MERCHANT then
-						Common.flying_text_small(player.surface, player.position, '[color=0.97,0.9,0.2]+[/color]')
-						Common.give_items_to_crew{{name = 'coin', count = 50 * vector.x}}
-					end
-				end
-			end
+			-- local crew = Common.crew_get_crew_members()
+			-- for _, player in pairs(crew) do
+			-- 	if Common.validate_player_and_character(player) then
+			-- 		local player_index = player.index
+			-- 		if memory.classes_table and memory.classes_table[player_index] == Classes.enum.MERCHANT then
+			-- 			Common.flying_text_small(player.surface, player.position, '[color=0.97,0.9,0.2]+[/color]')
+			-- 			Common.give_items_to_crew{{name = 'coin', count = 50 * vector.x}}
+			-- 		end
+			-- 	end
+			-- end
 
 			-- other freebies:
 			for i=1,vector.x do

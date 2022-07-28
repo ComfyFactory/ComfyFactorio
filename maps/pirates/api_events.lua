@@ -152,8 +152,11 @@ local function damage_to_silo(event)
 
 	if event.cause and event.cause.valid and entity and entity.valid and entity.force.name == memory.force_name then
 		local destination = Common.current_destination()
-		if destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid and entity == Common.current_destination().dynamic_data.rocketsilos[1] then
-
+		if destination.dynamic_data.rocketsilos and
+			destination.dynamic_data.rocketsilos[1] and
+			destination.dynamic_data.rocketsilos[1].valid and
+			entity == Common.current_destination().dynamic_data.rocketsilos[1]
+		then
 			if string.sub(event.cause.force.name, 1, 4) ~= 'crew' then
 
 				-- play alert sound for all crew members
@@ -182,26 +185,29 @@ end
 local function damage_to_enemyboat_spawners(event)
 	local memory = Memory.get_crew_memory()
 
-	if memory.enemyboats and #memory.enemyboats > 0 then
-		if event.cause and event.cause.valid and event.entity and event.entity.valid then
-			if event.entity.force.name == memory.enemy_force_name then
-				for i = 1, #memory.enemyboats do
-					local eb = memory.enemyboats[i]
-					if eb.spawner and eb.spawner.valid and event.entity == eb.spawner then
-					-- if eb.spawner and eb.spawner.valid and event.entity == eb.spawner and eb.state == Structures.Boats.enum_state.APPROACHING then
-						local damage = event.final_damage_amount
-						local adjusted_damage = damage
+	if memory.enemyboats and
+		#memory.enemyboats > 0 and
+		event.cause and
+		event.cause.valid and
+		event.entity and
+		event.entity.valid and
+		event.entity.force.name == memory.enemy_force_name
+	then
+		for i = 1, #memory.enemyboats do
+			local eb = memory.enemyboats[i]
+			if eb.spawner and eb.spawner.valid and event.entity == eb.spawner then
+			-- if eb.spawner and eb.spawner.valid and event.entity == eb.spawner and eb.state == Structures.Boats.enum_state.APPROACHING then
+				local damage = event.final_damage_amount
+				local adjusted_damage = damage
 
-						adjusted_damage = adjusted_damage / 2.6
+				adjusted_damage = adjusted_damage / 2.6
 
-						-- if event.cause.name == 'artillery-turret' then
-						-- 	adjusted_damage = adjusted_damage / 1
-						-- end
+				-- if event.cause.name == 'artillery-turret' then
+				-- 	adjusted_damage = adjusted_damage / 1
+				-- end
 
-						if Common.entity_damage_healthbar(event.entity, adjusted_damage) <= 0 then
-							event.entity.die()
-						end
-					end
+				if Common.entity_damage_healthbar(event.entity, adjusted_damage) <= 0 then
+					event.entity.die()
 				end
 			end
 		end
@@ -215,7 +221,6 @@ local function damage_to_artillery(event)
 	if not event.cause.valid then return end
 	if not event.cause.name then return end
 
-
 	if (event.cause.name == 'small-biter')
 		or (event.cause.name == 'small-spitter')
 		or (event.cause.name == 'medium-biter')
@@ -223,7 +228,8 @@ local function damage_to_artillery(event)
 		or (event.cause.name == 'big-biter')
 		or (event.cause.name == 'big-spitter')
 		or (event.cause.name == 'behemoth-biter')
-		or (event.cause.name == 'behemoth-spitter') then
+		or (event.cause.name == 'behemoth-spitter')
+	then
 		if event.cause.force.name ~= memory.enemy_force_name then return end
 
 		-- play alert sound for all crew members
@@ -321,6 +327,7 @@ local function damage_to_players_changes(event)
 		if class then
 			if class == Classes.enum.SCOUT then
 				damage_multiplier = damage_multiplier * Balance.scout_damage_taken_multiplier
+			-- merchant is disabled
 			-- elseif class == Classes.enum.MERCHANT then
 			-- 	damage_multiplier = damage_multiplier * 1.10
 			elseif class == Classes.enum.SAMURAI then
@@ -852,28 +859,37 @@ local function event_on_player_mined_entity(event)
 
 		local give = {}
 
+		-- prospector and chief excavator are disabled
+		-- if memory.overworldx > 0 then --no coins on first map, else the optimal strategy is to handmine everything there
+		-- 	if memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.PROSPECTOR then
+		-- 		local a = 3
+		-- 		give[#give + 1] = {name = 'coin', count = a}
+		-- 		memory.playtesting_stats.coins_gained_by_ore = memory.playtesting_stats.coins_gained_by_ore + a
+		-- 		give[#give + 1] = {name = entity.name, count = 6}
+		-- 	elseif memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.CHIEF_EXCAVATOR then
+		-- 		local a = 4
+		-- 		give[#give + 1] = {name = 'coin', count = a}
+		-- 		memory.playtesting_stats.coins_gained_by_ore = memory.playtesting_stats.coins_gained_by_ore + a
+		-- 		give[#give + 1] = {name = entity.name, count = 12}
+		-- 	else
+		-- 		if memory.overworldx > 0 then
+		-- 			local a = 1
+		-- 			give[#give + 1] = {name = 'coin', count = a}
+		-- 			memory.playtesting_stats.coins_gained_by_ore = memory.playtesting_stats.coins_gained_by_ore + a
+		-- 		end
+		-- 		give[#give + 1] = {name = entity.name, count = 2}
+		-- 	end
+		-- else
+		-- 	give[#give + 1] = {name = entity.name, count = 2}
+		-- end
+
 		if memory.overworldx > 0 then --no coins on first map, else the optimal strategy is to handmine everything there
-			if memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.PROSPECTOR then
-				local a = 3
-				give[#give + 1] = {name = 'coin', count = a}
-				memory.playtesting_stats.coins_gained_by_ore = memory.playtesting_stats.coins_gained_by_ore + a
-				give[#give + 1] = {name = entity.name, count = 6}
-			elseif memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.CHIEF_EXCAVATOR then
-				local a = 4
-				give[#give + 1] = {name = 'coin', count = a}
-				memory.playtesting_stats.coins_gained_by_ore = memory.playtesting_stats.coins_gained_by_ore + a
-				give[#give + 1] = {name = entity.name, count = 12}
-			else
-				if memory.overworldx > 0 then
-					local a = 1
-					give[#give + 1] = {name = 'coin', count = a}
-					memory.playtesting_stats.coins_gained_by_ore = memory.playtesting_stats.coins_gained_by_ore + a
-				end
-				give[#give + 1] = {name = entity.name, count = 2}
-			end
-		else
-			give[#give + 1] = {name = entity.name, count = 2}
+			local a = 1
+			give[#give + 1] = {name = 'coin', count = a}
+			memory.playtesting_stats.coins_gained_by_ore = memory.playtesting_stats.coins_gained_by_ore + a
 		end
+
+		give[#give + 1] = {name = entity.name, count = 2}
 
 		Common.give(player, give, entity.position)
 		event.buffer.clear()
