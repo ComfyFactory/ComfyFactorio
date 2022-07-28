@@ -33,10 +33,12 @@ ComfyGui.set_disabled_tab('Groups', true)
 
 
 local Public = {}
+-- this seems to be never used
 local enum = {
 	PROGRESS = 'progress',
 	RUNS = 'runs',
 	CREW = 'crew',
+	CLASSES = 'classes',
 	FUEL = 'fuel',
 	MINIMAP = 'minimap',
 	INFO = 'info',
@@ -54,6 +56,8 @@ Public.color = require 'maps.pirates.gui.color'
 
 
 function Public.update_crew_gui(which_gui)
+	if not Public[which_gui] then return end
+
 	local players = Common.crew_get_crew_members_and_spectators()
 
 	for _, player in pairs(players) do

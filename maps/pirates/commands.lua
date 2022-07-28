@@ -38,6 +38,7 @@ local Highscore = require 'maps.pirates.highscore'
 local CustomEvents = require 'maps.pirates.custom_events'
 local Classes = require 'maps.pirates.roles.classes'
 
+local Gui = require 'maps.pirates.gui.gui'
 local GUIcolor = require 'maps.pirates.gui.color'
 
 
@@ -609,6 +610,46 @@ function(cmd)
 	end
 end)
 
+-- Unlock a class
+commands.add_command(
+'unlock',
+{'pirates.cmd_explain_dev'},
+function(cmd)
+	cmd_set_memory(cmd)
+	local param = tostring(cmd.parameter)
+	if check_admin(cmd) then
+		local memory = Memory.get_crew_memory()
+		if not Common.is_id_valid(memory.id) then return end
+		local player = game.players[cmd.player_index]
+		Classes.try_unlock_class(param, player, true)
+	end
+end)
+
+-- Remove all classes
+commands.add_command(
+'remove_classes',
+{'pirates.cmd_explain_dev'},
+function(cmd)
+	cmd_set_memory(cmd)
+	local param = tostring(cmd.parameter)
+	if check_admin(cmd) then
+		local memory = Memory.get_crew_memory()
+		if not Common.is_id_valid(memory.id) then return end
+
+		if not Gui.classes then return end
+
+		memory.spare_classes = {}
+		memory.classes_table = {}
+		memory.unlocked_classes = {}
+		memory.available_classes_pool = Classes.initial_class_pool()
+
+		local players = Common.crew_get_crew_members_and_spectators()
+
+		for _, player in pairs(players) do
+			Gui.classes.full_update(player, true)
+		end
+	end
+end)
 
 if _DEBUG then
 
@@ -1178,21 +1219,6 @@ if _DEBUG then
 			player.insert{name='raw-fish', count = 100}
 			player.insert{name='coin', count = 50000}
 			player.insert{name='rail-signal', count = 300}
-		end
-	end)
-
-	-- Unlock a class
-	commands.add_command(
-	'unlock',
-	{'pirates.cmd_explain_dev'},
-	function(cmd)
-		cmd_set_memory(cmd)
-		local param = tostring(cmd.parameter)
-		if check_admin(cmd) then
-			local memory = Memory.get_crew_memory()
-			if not Common.is_id_valid(memory.id) then return end
-			local player = game.players[cmd.player_index]
-			Classes.try_unlock_class(param, player, true)
 		end
 	end)
 

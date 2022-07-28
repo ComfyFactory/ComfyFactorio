@@ -168,7 +168,14 @@ end
 
 
 
-function Public.full_update(player)
+function Public.full_update(player, force_refresh)
+	force_refresh = force_refresh or nil
+	-- close and open the window to reconstruct the window (not really necessary when window is closed, but doesn't really matter as it should be ran once and only when necessary)
+	if force_refresh then
+		Public.toggle_window(player)
+		Public.toggle_window(player)
+	end
+
 	if not player.gui.screen[window_name .. '_piratewindow'] then return end
 	local flow = player.gui.screen[window_name .. '_piratewindow']
 

@@ -310,13 +310,14 @@ local function damage_to_players_changes(event)
 	-- if not (event.cause.name == 'small-biter') or (event.cause.name == 'small-spitter') or (event.cause.name == 'medium-biter') or (event.cause.name == 'medium-spitter') or (event.cause.name == 'big-biter') or (event.cause.name == 'big-spitter') or (event.cause.name == 'behemoth-biter') or (event.cause.name == 'behemoth-spitter') then return end
 
 	local player_index = event.entity.player.index
-	local class = memory.classes_table and memory.classes_table[player_index]
 	local player = game.players[player_index]
 
-	if not (player and player.valid and player.character and player.character.valid) then
-        return
-    end
+	if not player then return end
+	if not player.valid then return end
+	if not player.character then return end
+	if not player.character.valid then return end
 
+	local class = Classes.get_class(player_index)
 	local damage_multiplier = 1
 
 	--game.print('on damage info: {name: ' .. event.damage_type.name .. ', object_name: ' .. event.damage_type.object_name .. '}')
@@ -436,15 +437,15 @@ local function damage_dealt_by_players_changes(event)
 	local acid = event.damage_type.name == 'acid'
 
 	local player_index = player.index
-	local class = memory.classes_table and memory.classes_table[player_index]
+	local class = Classes.get_class(player_index)
 
 	if class and class == Classes.enum.SCOUT and event.final_health > 0 then --lethal damage must be unaffected
 		event.entity.health = event.entity.health + (1 - Balance.scout_damage_dealt_multiplier) * event.final_damage_amount
 	elseif class and (class == Classes.enum.SAMURAI or class == Classes.enum.HATAMOTO) then
-		local samurai = memory.classes_table[player_index] == Classes.enum.SAMURAI
-		local hatamoto = memory.classes_table[player_index] == Classes.enum.HATAMOTO
+		local samurai = class == Classes.enum.SAMURAI
+		local hatamoto = class == Classes.enum.HATAMOTO
 
-		--==Note this!
+		--==Note this! (what the hell is this)
 		if not (samurai or hatamoto) then return end
 
 		local no_weapon = (not (character.get_inventory(defines.inventory.character_guns) and character.get_inventory(defines.inventory.character_guns)[character.selected_gun_index] and character.get_inventory(defines.inventory.character_guns)[character.selected_gun_index].valid_for_read))
@@ -786,6 +787,7 @@ local function event_on_player_mined_entity(event)
 					if memory.classes_table[event.player_index] == Classes.enum.LUMBERJACK then
 						give[#give + 1] = {name = 'wood', count = 1}
 						Classes.lumberjack_bonus_items(give)
+					-- wood lord is disabled
 					-- elseif memory.classes_table[event.player_index] == Classes.enum.WOOD_LORD then
 					-- 	give[#give + 1] = {name = 'wood', count = 1}
 					-- 	give[#give + 1] = {name = 'iron-ore', count = 1}

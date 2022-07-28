@@ -443,7 +443,11 @@ function Public.lumberjack_bonus_items(give_table)
 end
 
 function Public.try_unlock_class(class_for_sale, player, force_unlock)
+	force_unlock = force_unlock or nil
 	local memory = Memory.get_crew_memory()
+
+	if not class_for_sale then return false end
+	if not player then return false end
 
 	local required_class = Public.class_purchase_requirement[class_for_sale]
 
@@ -459,7 +463,7 @@ function Public.try_unlock_class(class_for_sale, player, force_unlock)
 
 				-- update GUI data
 				for _, class_entry in ipairs(memory.unlocked_classes) do
-					if class_entry.taken_by == player.index then
+					if class_entry.taken_by == p_index then
 						class_entry.class = class_for_sale
 						break
 					end
@@ -518,6 +522,25 @@ function Public.try_unlock_class(class_for_sale, player, force_unlock)
 	return false
 end
 
+function Public.has_class(player_index)
+	local memory = Memory.get_crew_memory()
+
+	if memory.classes_table and memory.classes_table[player_index] then
+		return true
+	else
+		return false
+	end
+end
+
+function Public.get_class(player_index)
+	local memory = Memory.get_crew_memory()
+
+	if Public.has_class(player_index) then
+		return memory.classes_table[player_index]
+	else
+		return nil
+	end
+end
 
 
 local event = require 'utils.event'
