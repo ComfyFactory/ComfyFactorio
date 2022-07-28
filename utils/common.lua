@@ -554,4 +554,32 @@ Public.get_closest_neighbour = function(position, objects)
     return closest
 end
 
+--[[
+get_closest_neighbour - Return object whose is closest to given position.
+@param position - Position, origin point
+@param object - Table of objects that have any sort of position datafield.
+--]]
+Public.get_closest_neighbour_non_player = function(position, objects)
+    local closest = objects[1]
+    local min_dist = Public.get_distance(position, closest)
+
+    local object, dist
+    for i = #objects, 1, -1 do
+        object = objects[i]
+        if object and object.valid and object.destructible then
+            dist = Public.get_distance(position, object)
+            if dist < min_dist then
+                closest = object
+                min_dist = dist
+            end
+        end
+    end
+
+    if closest and closest.valid and not closest.destructible then
+        return false
+    end
+
+    return closest
+end
+
 return Public

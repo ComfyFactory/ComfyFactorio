@@ -950,14 +950,14 @@ local function on_player_left_game()
 end
 
 --- If the different roles should be shown in the player_list.
----@param value string
+---@param value boolean
 function Public.show_roles_in_list(value)
     this.show_roles_in_list = value or false
     return this.show_roles_in_list
 end
 
 --- Notifies player_list if RPG is enabled or not.
----@param value string
+---@param value boolean
 function Public.rpg_enabled(value)
     this.rpg_enabled = value or false
     return this.rpg_enabled

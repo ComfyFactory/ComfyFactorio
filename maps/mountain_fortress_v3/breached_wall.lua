@@ -131,22 +131,25 @@ local compare_player_pos = function(player)
     end
 
     local zone = floor((abs(p.y / zone_settings.zone_depth)) % adjusted_zones.size) + 1
+    local rpg_t = RPG.get_value_from_player(index)
 
     if adjusted_zones.scrap[zone] then
-        RPG.set_value_to_player(index, 'scrap_zone', true)
+        if rpg_t and not rpg_t.scrap_zone then
+            rpg_t.scrap_zone = true
+        end
     else
-        local has_scrap = RPG.get_value_from_player(index, 'scrap_zone')
-        if has_scrap then
-            RPG.set_value_to_player(index, 'scrap_zone', false)
+        if rpg_t and rpg_t.scrap_zone then
+            rpg_t.scrap_zone = false
         end
     end
 
     if adjusted_zones.forest[zone] then
-        RPG.set_value_to_player(index, 'forest_zone', true)
+        if rpg_t and not rpg_t.forest_zone then
+            rpg_t.forest_zone = true
+        end
     else
-        local is_in_forest = RPG.get_value_from_player(index, 'forest_zone')
-        if is_in_forest then
-            RPG.set_value_to_player(index, 'forest_zone', false)
+        if rpg_t and rpg_t.forest_zone then
+            rpg_t.forest_zone = false
         end
     end
 end
@@ -290,7 +293,7 @@ end
 local function on_player_changed_position(event)
     local player = game.get_player(event.player_index)
     local surface_name = player.surface.name
-    local map_name = 'mountain_fortress_v3'
+    local map_name = 'mtn_v3'
 
     if sub(surface_name, 0, #map_name) ~= map_name then
         return
@@ -304,6 +307,7 @@ local function on_player_changed_position(event)
 
     distance(player)
 end
+
 local function on_player_driving_changed_state(event)
     local player = game.players[event.player_index]
     if not (player and player.valid) then

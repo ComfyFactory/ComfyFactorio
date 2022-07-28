@@ -14,6 +14,7 @@ Global.register(
 )
 
 local Public = {}
+local round = math.round
 local floor = math.floor
 local random = math.random
 local abs = math.abs
@@ -79,6 +80,7 @@ local function spawn_biters(data)
     end
 
     local unit_to_create
+    WD.wave_defense_set_unit_raffle(h * 0.20)
 
     if random(1, 3) == 1 then
         unit_to_create = WD.wave_defense_roll_spitter_name()
@@ -86,10 +88,15 @@ local function spawn_biters(data)
         unit_to_create = WD.wave_defense_roll_biter_name()
     end
 
+    if not unit_to_create then
+        print('buried_enemies - unit_to_create was nil?')
+        return
+    end
+
     local modified_unit_health = WD.get('modified_unit_health')
     local modified_boss_unit_health = WD.get('modified_boss_unit_health')
 
-    WD.wave_defense_set_unit_raffle(h * 0.20)
+    local unit_settings = WD.get('unit_settings')
 
     local unit = surface.create_entity({name = unit_to_create, position = position})
     max_biters.amount = max_biters.amount + 1
@@ -97,7 +104,11 @@ local function spawn_biters(data)
     if random(1, 30) == 1 then
         BiterHealthBooster.add_boss_unit(unit, modified_boss_unit_health.current_value, 0.38)
     else
-        BiterHealthBooster.add_unit(unit, modified_unit_health.current_value)
+        local final_health = round(modified_unit_health.current_value * unit_settings.scale_units_by_health[unit.name], 3)
+        if final_health < 1 then
+            final_health = 1
+        end
+        BiterHealthBooster.add_unit(unit, final_health)
     end
     return true
 end
@@ -124,10 +135,17 @@ local function spawn_worms(data)
     local unit = surface.create_entity({name = unit_to_create, position = position})
     max_biters.amount = max_biters.amount + 1
 
+    local worm_unit_settings = WD.get('worm_unit_settings')
+
     if random(1, 30) == 1 then
         BiterHealthBooster.add_boss_unit(unit, modified_boss_unit_health.current_value, 0.38)
     else
-        BiterHealthBooster.add_unit(unit, modified_unit_health.current_value)
+        local final_health = round(modified_unit_health.current_value * worm_unit_settings.scale_units_by_health[unit.name], 3)
+        if final_health < 1 then
+            final_health = 1
+        end
+
+        BiterHealthBooster.add_unit(unit, final_health)
     end
 end
 

@@ -102,8 +102,8 @@ local function on_tick()
 
     if tick % 20 == 1 then
         Functions.item_transfer()
-        local has_upgraded_health_pool = WPT.get('has_upgraded_health_pool')
-        if has_upgraded_health_pool then
+        local upgrades = WPT.get('upgrades')
+        if upgrades.has_upgraded_health_pool then
             Functions.check_entity_healths()
         end
     end
@@ -214,8 +214,8 @@ local function on_gui_switch_state_changed(event)
 end
 
 local function on_entity_damaged(event)
-    local has_upgraded_health_pool = WPT.get('has_upgraded_health_pool')
-    if not has_upgraded_health_pool then
+    local upgrades = WPT.get('upgrades')
+    if not upgrades.has_upgraded_health_pool then
         return
     end
 
@@ -252,8 +252,8 @@ local function on_entity_damaged(event)
 end
 
 local function on_player_repaired_entity(event)
-    local has_upgraded_health_pool = WPT.get('has_upgraded_health_pool')
-    if not has_upgraded_health_pool then
+    local upgrades = WPT.get('upgrades')
+    if not upgrades.has_upgraded_health_pool then
         return
     end
 
