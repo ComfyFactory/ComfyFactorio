@@ -349,6 +349,7 @@ function Public.assign_captain_based_on_priorities(excluded_player_index)
 
 	-- Prefer officers for a captain (if there are any)
 	for _, player_index in pairs(memory.officers_table) do
+		local player = game.players[player_index]
 		local player_active = Utils.contains(Common.crew_get_nonafk_crew_members(), player)
 
 		if player_active then
@@ -362,21 +363,20 @@ function Public.assign_captain_based_on_priorities(excluded_player_index)
 	if not captain_index then
 		for _, player_index in pairs(crew_members) do
 			local player = game.players[player_index]
-	
+
 			if Common.validate_player(player) and not (player.index == excluded_player_index) then
-	
+
 				local player_active = Utils.contains(Common.crew_get_nonafk_crew_members(), player)
-	
+
 				-- prefer non-afk players:
 				if only_found_afk_players or player_active then
 					only_found_afk_players = player_active
-	
+
 					local player_priority = global_memory.playerindex_to_captainhood_priority[player_index]
 					if player_priority and player_priority > best_priority_so_far then
 						best_priority_so_far = player_priority
 						captain_index = player_index
 						captain_name = player.name
-						break
 					end
 				end
 			end
