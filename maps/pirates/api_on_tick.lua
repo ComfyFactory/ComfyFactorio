@@ -556,6 +556,12 @@ function Public.place_cached_structures(tickinterval)
 								force = force_name,
 								amount = Balance.pick_drilling_ore_amount()
 							}
+						elseif c.name == 'pumpjack' then
+							surface.create_entity{
+								name = 'crude-oil',
+								position = p,
+								amount = Balance.pick_special_pumpjack_oil_amount()
+							}
 						end
 						local e2 = surface.create_entity{name = c.name, position = p, direction = e.direction, force = force_name, amount = c.amount}
 						c2.built_entities[#c2.built_entities + 1] = e2

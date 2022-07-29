@@ -606,7 +606,7 @@ end
 
 -- Current formula returns [50 - 200] + random(1, [10 - 40]) depending on completion progress
 -- Formula is "a(100x)^(1/2) + random(1, 0.2a(100x)^(1/2))" where
--- x: progress in range [0-1]
+-- x: progress in range [0-1] (when leagues are in 0-1000)
 -- a: scaling
 -- When the formula needs adjustments, I suggest changing scaling variable
 function Public.pick_drilling_ore_amount()
@@ -616,5 +616,18 @@ function Public.pick_drilling_ore_amount()
 	return amount + extra_random_amount
 end
 
+
+-- Current formula returns [15000 - 50000] + random(1, [3000 - 10000]) depending on completion progress
+-- Formula is "a(1000000x)^(1/2) + random(1, 0.2a(1000000x)^(1/2))" where
+-- x: progress in range [0-1] (when leagues are in 0-1000)
+-- a: scaling
+-- When the formula needs adjustments, I suggest changing scaling variable
+-- Note: 3333 crude oil amount ~= 1% = 0.1/sec
+function Public.pick_special_pumpjack_oil_amount()
+	local scaling = 50
+	local amount = scaling * Math.sqrt(1000000 * Common.game_completion_progress())
+	local extra_random_amount = Math.random(Math.ceil(0.2 * amount))
+	return amount + extra_random_amount
+end
 
 return Public
