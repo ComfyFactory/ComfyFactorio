@@ -142,22 +142,24 @@ function Public.create_dock_markets(surface, p)
 		e.rotatable = false
 		e.destructible = false
 
-		-- check if cannons need healing:
-		local need_healing
-		local cannons = game.surfaces[destination.surface_name].find_entities_filtered({type = 'artillery-turret'})
-		for _, c in pairs(cannons) do
-			local unit_number = c.unit_number
+		-- -- check if cannons need healing:
+		-- local need_healing
+		-- local cannons = game.surfaces[destination.surface_name].find_entities_filtered({type = 'artillery-turret'})
+		-- for _, c in pairs(cannons) do
+		-- 	local unit_number = c.unit_number
 
-			local healthbar = memory.boat.healthbars[unit_number]
-			if healthbar and healthbar.health < healthbar.max_health then
-				need_healing = true
-				break
-			end
-		end
+		-- 	local healthbar = memory.boat.healthbars[unit_number]
+		-- 	if healthbar and healthbar.health < healthbar.max_health then
+		-- 		need_healing = true
+		-- 		break
+		-- 	end
+		-- end
 
-		if need_healing then
-			e.add_market_item{price = {{'repair-pack', 20}, {'coin', 1000}}, offer = {type = 'give-item', item = 'artillery-turret', count = 1}}
-		end
+		-- if need_healing then
+		-- 	e.add_market_item{price = {{'repair-pack', 20}, {'coin', 1000}}, offer = {type = 'give-item', item = 'artillery-turret', count = 1}}
+		-- end
+
+		e.add_market_item{price = {{'repair-pack', 20}, {'coin', 1000}}, offer = {type = 'give-item', item = 'artillery-turret', count = 1}}
 
 		local upgrade_for_sale = Common.current_destination().static_params.upgrade_for_sale
 		if upgrade_for_sale then
