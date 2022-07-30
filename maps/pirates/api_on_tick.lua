@@ -163,7 +163,7 @@ function Public.ship_deplete_fuel(tickinterval)
 	if memory.game_lost then return end
 	if not (memory.stored_fuel and memory.boat.input_chests and memory.boat.input_chests[1]) then return end
 
-	local rate = Progression.fuel_depletion_rate()
+	local rate = Progression.get_fuel_depletion_rate_once_per_second()
 
 	memory.fuel_depletion_rate_memoized = rate
 

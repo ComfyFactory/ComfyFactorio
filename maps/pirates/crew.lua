@@ -726,6 +726,9 @@ function Public.initialise_crew(accepted_proposal)
 		coins_gained_by_rocket_launches = 0,
 		coins_gained_by_markets = 0,
 		coins_gained_by_krakens = 0,
+		fuel_spent_at_sea = 0,
+		fuel_spent_at_destinations_passively = 0,
+		fuel_spent_at_destinations_while_moving = 0,
 	}
 
 	memory.captain_accrued_time_data = {}
@@ -940,6 +943,8 @@ function Public.reset_crew_and_enemy_force(id)
 	-- crew_force.technologies['refined-flammables-3'].enabled = false
 	-- crew_force.technologies['refined-flammables-4'].enabled = false
 	-- crew_force.technologies['refined-flammables-5'].enabled = false
+
+	crew_force.technologies['mining-productivity-3'].enabled = false --huge trap. even the earlier ones are a trap?
 
 	-- for lategame balance:
 	-- crew_force.technologies['worker-robots-storage-1'].enabled = false

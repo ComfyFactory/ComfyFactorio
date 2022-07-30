@@ -285,7 +285,7 @@ local function damage_to_krakens(event)
 	end
 	-- and additionally:
 	if event.cause.name == 'artillery-turret' then
-		adjusted_damage = adjusted_damage / 1.1
+		adjusted_damage = adjusted_damage / 1.4
 	end
 
 	if event.damage_type.name and (event.damage_type.name == 'laser') then
@@ -1196,18 +1196,18 @@ local function event_on_entity_died(event)
 	end
 end
 
--- function Public.research_apply_buffs(event)
--- 	local memory = Memory.get_crew_memory()
--- 	local force = memory.force
+function Public.research_apply_buffs(event)
+	local memory = Memory.get_crew_memory()
+	local force = memory.force
 
--- 	if Balance.research_buffs[event.research.name] then
--- 		local tech = Balance.research_buffs[event.research.name]
--- 		-- @FIXME: This code is from another scenario but doesn't work
--- 		-- for k, v in pairs(tech) do
--- 		-- 	force[k] = force[k] + v
--- 		-- end
--- 	end
--- end
+	if Balance.research_buffs[event.research.name] then
+		local tech = Balance.research_buffs[event.research.name]
+		-- @FIXME: This code is from another scenario but doesn't work
+		for k, v in pairs(tech) do
+			force[k] = force[k] + v
+		end
+	end
+end
 
 
 function Public.apply_flamer_nerfs()
@@ -1249,7 +1249,7 @@ local function event_on_research_finished(event)
 	memory.force.print({"", '>> ', {'pirates.research_notification', event.research.localised_name}}, CoreData.colors.notify_force_light)
 
 	Public.apply_flamer_nerfs()
-	-- Public.research_apply_buffs(event) -- this is broken right now
+	Public.research_apply_buffs(event) -- this is broken right now
 
 	for _, e in ipairs(research.effects) do
 	local t = e.type
@@ -1443,12 +1443,14 @@ local function event_on_pre_player_left_game(event)
 	local crew_id = Common.get_id_from_force_name(player.force.name)
 
 	for k, proposal in pairs(global_memory.crewproposals) do
-		for k2, i in pairs(proposal.endorserindices) do
-			if i == event.player_index then
-				proposal.endorserindices[k2] = nil
-				if #proposal.endorserindices == 0 then
-					proposal = nil
-					global_memory.crewproposals[k] = nil
+		if proposal and proposal.endorserindices then
+			for k2, i in pairs(proposal.endorserindices) do
+				if i == event.player_index then
+					proposal.endorserindices[k2] = nil
+					if #proposal.endorserindices == 0 then
+						proposal = nil
+						global_memory.crewproposals[k] = nil
+					end
 				end
 			end
 		end

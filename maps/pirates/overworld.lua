@@ -76,6 +76,7 @@ function Public.generate_destination_type_and_subtype(overworld_position)
 			island_subtype_raffle = new_island_subtype_raffle
 		end
 	end
+	
 	-- some other raffle removals for smoothness:
 	if macro_x == 4 then
 		island_subtype_raffle = Utils.ordered_table_with_values_removed(island_subtype_raffle, Surfaces.Island.enum.STANDARD)
@@ -189,7 +190,7 @@ function Public.generate_destination_type_and_subtype(overworld_position)
 	--== DEBUG override to test islands:
 
 	-- if _DEBUG and type == Surfaces.enum.ISLAND then
-	-- 	subtype = Surfaces.Island.enum.MAZE
+	-- 	subtype = Surfaces.Island.enum.SWAMP
 	-- 	-- subtype = nil
 	-- 	-- type = Surfaces.enum.DOCK
 	-- end
@@ -223,6 +224,7 @@ function Public.generate_overworld_destination(p)
 		local base_cost_to_undock
 
 		local normal_costitems = {'electronic-circuit', 'advanced-circuit'}
+		-- local special_costitems = {'rocket-fuel', 'flying-robot-frame'}
 
 		-- These need to scale up slightly slower than the static fuel depletion rate, so you're increasingly incentivised to leave:
 		local base_cost_1 = {
@@ -247,13 +249,14 @@ function Public.generate_overworld_destination(p)
 		local base_cost_4 = {
 			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*140),
 			['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*20),
-			['flying-robot-frame'] = Math.ceil(((macro_p.x-18)^(2/3))*15),
+			['flying-robot-frame'] = Math.ceil(((macro_p.x-18)^(2/3))*25),
 			['launch_rocket'] = true,
 		}
 		local base_cost_5 = {
 			['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*140),
 			['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*20),
 			['flying-robot-frame'] = Math.ceil(((macro_p.x-18)^(2/3))*10),
+			-- ['rocket-fuel'] = Math.ceil(((macro_p.x-18)^(2/3))*10),
 			-- ['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*100),
 			-- ['advanced-circuit'] = Math.ceil(((macro_p.x-14)^(2/3))*20),
 			-- ['flying-robot-frame'] = Math.ceil(((macro_p.x-18)^(2/3))*10),
@@ -297,6 +300,8 @@ function Public.generate_overworld_destination(p)
 			base_cost_to_undock = Utils.deepcopy(base_cost_5)
 			local delete = normal_costitems[Math.random(#normal_costitems)]
 			base_cost_to_undock[delete] = nil
+			-- local delete2 = special_costitems[Math.random(#special_costitems)]
+			-- base_cost_to_undock[delete2] = nil
 			if macro_p.x < 50 then
 				if macro_p.x % 2 == 0 then
 					base_cost_to_undock['launch_rocket'] = true

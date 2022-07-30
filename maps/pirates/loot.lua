@@ -308,7 +308,7 @@ end
 
 function Public.swamp_storage_tank_fluid_loot()
 	local ret
-	ret = {name = 'sulfuric-acid', amount = Math.random(500, 1500)}
+	ret = {name = 'sulfuric-acid', amount = 100*Math.ceil(Math.random(5^2, 40^2)^(1/2))}
     return ret
 end
 

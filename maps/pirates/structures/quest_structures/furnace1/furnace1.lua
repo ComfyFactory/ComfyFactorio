@@ -282,7 +282,7 @@ function Public.entry_price()
 	return {
 		name = item,
 		count = Math.ceil(
-			(0.9 + 0.2 * Math.random()) * Public.entry_price_data_raw[item].base_amount * Balance.quest_structure_entry_price_scale() / batchSize
+			(0.9 + 0.2 * Math.random()) * Public.entry_price_data_raw[item].base_amount * Balance.quest_furnace_entry_price_scale() / batchSize
 		) * batchSize,
 		batchSize = batchSize,
 		batchRawMaterials = Public.entry_price_data_raw[item].batchRawMaterials,

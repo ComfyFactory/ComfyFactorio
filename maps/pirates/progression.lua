@@ -36,18 +36,26 @@ local ShopDock = require 'maps.pirates.shop.dock'
 
 
 
-function Public.fuel_depletion_rate()
+function Public.get_fuel_depletion_rate_once_per_second()
 	local memory = Memory.get_crew_memory()
 	local state = memory.boat.state
 
 	if state == Boats.enum_state.ATSEA_SAILING or state == Boats.enum_state.APPROACHING then
-		return Balance.fuel_depletion_rate_sailing()
+		local ret = Balance.fuel_depletion_rate_sailing()
+		memory.playtesting_stats.fuel_spent_at_sea = memory.playtesting_stats.fuel_spent_at_sea + ret
+		return ret
 	elseif state == Boats.enum_state.LEAVING_DOCK then
-		return Balance.fuel_depletion_rate_sailing() * 1.25
+		local ret = Balance.fuel_depletion_rate_sailing() * 1.25
+		memory.playtesting_stats.fuel_spent_at_destinations_while_moving = memory.playtesting_stats.fuel_spent_at_destinations_while_moving + ret
+		return ret
 	elseif state == Boats.enum_state.RETREATING then
-		return Balance.fuel_depletion_rate_sailing() / 4
+		local ret = Balance.fuel_depletion_rate_sailing() / 4
+		memory.playtesting_stats.fuel_spent_at_destinations_while_moving = memory.playtesting_stats.fuel_spent_at_destinations_while_moving + ret
+		return ret
 	elseif state == Boats.enum_state.LANDED then
-		return Balance.fuel_depletion_rate_static()
+		local ret = Balance.fuel_depletion_rate_static()
+		memory.playtesting_stats.fuel_spent_at_destinations_passively = memory.playtesting_stats.fuel_spent_at_destinations_passively + ret
+		return ret
 	elseif state == Boats.enum_state.DOCKED then
 		return -0.1
 	else

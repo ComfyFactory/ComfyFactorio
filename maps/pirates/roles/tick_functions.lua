@@ -207,6 +207,16 @@ function Public.update_character_properties(tickinterval)
 			-- end
 			character.character_health_bonus = health_boost
 
+			if Common.is_captain(player) then
+				if player.character and player.character.valid then
+					player.character_inventory_slots_bonus = 20
+				end
+			else
+				if player.character and player.character.valid then
+					player.character_inventory_slots_bonus = 0
+				end
+			end
+
 			local speed_boost = Balance.base_extra_character_speed
 
 			if memory.speed_boost_characters and memory.speed_boost_characters[player_index] then

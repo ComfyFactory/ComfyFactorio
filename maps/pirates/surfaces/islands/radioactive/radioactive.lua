@@ -218,8 +218,7 @@ function Public.structure_positions()
 
 		local tile = surface.get_tile(p2)
         if tile and tile.valid and tile.name then
-            if tile.name ~= 'sand-1' and tile.name ~= 'water' and tile.name ~= 'deepwater' then
-
+            if (not Utils.contains(CoreData.tiles_that_conflict_with_resource_layer, tile.name)) then
 				local okay = true
 
                 local p3 = {x = p2.x + args.static_params.terraingen_coordinates_offset.x, y = p2.y + args.static_params.terraingen_coordinates_offset.y}

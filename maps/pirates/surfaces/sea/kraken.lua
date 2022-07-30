@@ -161,7 +161,7 @@ function Public.kraken_tick(crew_id, kraken_id, step, substep)
 			if substep % 5 == 0 then
 				if kraken_spawner_entity then
 					for i = 1, summoned_biter_amount do
-						local name = Common.get_random_unit_type(memory.evolution_factor)
+						local name = Common.get_random_unit_type(memory.evolution_factor + Balance.kraken_spawns_base_extra_evo)
 						local random_dir_vec = {x = Math.random_float_in_range(-1, 1), y = Math.random_float_in_range(-1, 1)}
 						random_dir_vec = Math.vector_norm(random_dir_vec)
 						random_dir_vec = Math.vector_scale(random_dir_vec, Balance.kraken_biter_spawn_radius)
@@ -184,7 +184,7 @@ function Public.kraken_tick(crew_id, kraken_id, step, substep)
 			local spit_target_pos
 
 			-- shoot at player
-			if Math.random() < Balance.kraken_spit_targetting_player_chance and #p_can_fire_at > 0 then
+			if Math.random() < Balance.kraken_spit_targeting_player_chance and #p_can_fire_at > 0 then
 				spit_target_pos = p_can_fire_at[Math.random(#p_can_fire_at)]
 			-- shoot at the ship
 			else
@@ -255,10 +255,24 @@ local function on_entity_destroyed(event)
 		Effects.kraken_effect_2(surface, p2)
 
 		local evo_increase = Balance.kraken_evo_increase_per_shot()
+		if evo_increase > 0 then
+			if not memory.kraken_evo then memory.kraken_evo = 0 end
+			memory.kraken_evo = memory.kraken_evo + evo_increase
+			Common.increment_evo(evo_increase)
+		end
+	end
+end
 
-		if not memory.kraken_evo then memory.kraken_evo = 0 end
-		memory.kraken_evo = memory.kraken_evo + evo_increase
-		Common.increment_evo(evo_increase)
+function Public.overall_kraken_tick()
+	local memory = Memory.get_crew_memory()
+
+	if memory.active_sea_enemies and memory.active_sea_enemies.krakens and #memory.active_sea_enemies.krakens > 0 then
+		local evo_increase = Balance.kraken_evo_increase_per_second()
+		if evo_increase > 0 then
+			if not memory.kraken_evo then memory.kraken_evo = 0 end
+			memory.kraken_evo = memory.kraken_evo + evo_increase
+			Common.increment_evo(evo_increase)
+		end
 	end
 end
 

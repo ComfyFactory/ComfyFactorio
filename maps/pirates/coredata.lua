@@ -114,21 +114,21 @@ Public.difficulty_options = {
 	-- The difficulty values we currently offer
 
 	--For the value of Easy difficulty, we are pulled in two directions: We wish to make the game comfy to play for those who haven't played it, but we also wish to represent the game mechanics faithfully so that Normal is not a crazy distance away.
-	{value = 0.6, icon = 'item/firearm-magazine', text = {'pirates.difficulty_easy'}, associated_color = {r = 50, g = 255, b = 50}},
+	{value = 0.5, icon = 'item/firearm-magazine', text = {'pirates.difficulty_easy'}, associated_color = {r = 50, g = 255, b = 50}},
 
-	{value = 1.0, icon = 'item/piercing-rounds-magazine', text = {'pirates.difficulty_normal'}, associated_color = {r = 255, g = 255, b = 50}},
+	{value = 0.9, icon = 'item/piercing-rounds-magazine', text = {'pirates.difficulty_normal'}, associated_color = {r = 255, g = 255, b = 50}},
 
-	{value = 1.4, icon = 'item/uranium-rounds-magazine', text = {'pirates.difficutly_hard'}, associated_color = {r = 255, g = 50, b = 50}},
+	{value = 1.3, icon = 'item/uranium-rounds-magazine', text = {'pirates.difficutly_hard'}, associated_color = {r = 255, g = 50, b = 50}},
 
-	{value = 2.1, icon = 'item/atomic-bomb', text = {'pirates.difficulty_nightmare'}, associated_color = {r = 170, g = 60, b = 60}},
+	{value = 1.8, icon = 'item/atomic-bomb', text = {'pirates.difficulty_nightmare'}, associated_color = {r = 170, g = 60, b = 60}},
 }
 function Public.get_difficulty_option_from_value(difficulty_value)
 	-- given a difficulty value, key in to the closesy entry in the above table. (organising things this way allows us to make changes to the 'value' keys in the above table without disrupting e.g. past highscores data)
-	if difficulty_value <= 0.8 then
+	if difficulty_value <= 0.75 then
 		return 1
 	elseif difficulty_value < 1.2 then
 		return 2
-	elseif difficulty_value <= 1.75 then
+	elseif difficulty_value <= 1.7 then
 		return 3
 	else
 		return 4
@@ -136,11 +136,11 @@ function Public.get_difficulty_option_from_value(difficulty_value)
 end
 function Public.get_difficulty_option_informal_name_from_value(difficulty_value)
 	-- given a difficulty value, provide a simple named description of the difficulty. for internal use
-	if difficulty_value <= 0.8 then
+	if difficulty_value <= 0.75 then
 		return 'easy'
 	elseif difficulty_value < 1.2 then
 		return 'normal'
-	elseif difficulty_value <= 1.75 then
+	elseif difficulty_value <= 1.7 then
 		return 'hard'
 	else
 		return 'nightmare'
@@ -173,9 +173,10 @@ Public.cost_items = {
 	{name = 'electronic-circuit', display_name = 'Electronic circuit', sprite_name = 'item/electronic-circuit', color={r=0,g=255,b=0}},
 	{name = 'engine-unit', display_name = 'Engine unit', sprite_name = 'item/engine-unit', color={r=255,g=255,b=0}},
 	{name = 'advanced-circuit', display_name = 'Advanced circuit', sprite_name = 'item/advanced-circuit', color={r=0,g=0,b=255}},
-	{name = 'flying-robot-frame', display_name = 'Flying robot frame', sprite_name = 'item/flying-robot-frame', color={r=0,g=255,b=255}},
 	{name = 'uranium-235', display_name = 'Uranium-235', sprite_name = 'item/uranium-235', color={r=0,g=255,b=0}},
-	{name = 'fluid-wagon', display_name = 'Fluid Wagon', sprite_name = 'item/fluid-wagon', color={r=255,g=255,b=255}},
+	{name = 'flying-robot-frame', display_name = 'Flying robot frame', sprite_name = 'item/flying-robot-frame', color={r=0,g=255,b=255}},
+	-- {name = 'rocket-fuel', display_name = 'Rocket Fuel', sprite_name = 'item/rocket-fuel', color={r=255,g=255,b=255}},
+	-- {name = 'fluid-wagon', display_name = 'Fluid Wagon', sprite_name = 'item/fluid-wagon', color={r=255,g=255,b=255}},
 }
 
 Public.fallthrough_destination = {

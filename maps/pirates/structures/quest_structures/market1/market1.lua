@@ -281,7 +281,7 @@ function Public.entry_price()
 	return {
 		name = item,
 		count = Math.ceil(
-			(0.9 + 0.2 * Math.random()) * Public.entry_price_data_raw[item].base_amount * Balance.quest_structure_entry_price_scale()
+			(0.9 + 0.2 * Math.random()) * Public.entry_price_data_raw[item].base_amount * Balance.quest_market_entry_price_scale()
 		),
 		raw_materials = raw_materials,
 	}

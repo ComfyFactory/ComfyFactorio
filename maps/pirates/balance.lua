@@ -15,10 +15,10 @@ local Common = require 'maps.pirates.common'
 -- Kraken related parameters
 Public.biter_swim_speed = 1
 Public.kraken_biter_spawn_radius = 6 -- only used during non automatic forced spawning during kraken's "special ability"
-Public.kraken_spit_targetting_player_chance = 0.4
+Public.kraken_spit_targeting_player_chance = 0.1
 
 Public.base_extra_character_speed = 1.44
-Public.respawn_speed_boost = 1.75
+Public.respawn_speed_boost = 1.85
 
 -- maximum rate at which alert sound can be played when important buildings are damaged (like silo or cannons)
 -- NOTE: frequency can sometimes be faster by 1 second than denoted, but accuracy doesn't really matter here
@@ -187,7 +187,7 @@ function Public.fuel_depletion_rate_static()
 
 	local rate
 	if Common.overworldx() > 0 then
-		rate = 575 * (0 + (Common.overworldx()/40)^(9/10)) * Public.crew_scale()^(1/8) * Math.sloped(Common.difficulty_scale(), 65/100) / T --most of the crewsize dependence is through T, i.e. the coal cost per island stays the same... but the extra player dependency accounts for the fact that even in compressed time, more players seem to get more resources per island
+		rate = 570 * (0 + (Common.overworldx()/40)^(9/10)) * Public.crew_scale()^(1/8) * Math.sloped(Common.difficulty_scale(), 65/100) / T --most of the crewsize dependence is through T, i.e. the coal cost per island stays the same... but the extra player dependency accounts for the fact that even in compressed time, more players seem to get more resources per island
 	else
 		rate = 0
 	end
@@ -198,7 +198,7 @@ end
 function Public.fuel_depletion_rate_sailing()
 	if (not Common.overworldx()) then return 0 end
 
-	return - 7.65 * (1 + 0.135 * (Common.overworldx()/40)^(100/100)) * Math.sloped(Common.difficulty_scale(), 1/20) --shouldn't depend on difficulty much if at all, as available resources don't depend much on difficulty
+	return - 7.75 * (1 + 0.135 * (Common.overworldx()/40)^(100/100)) * Math.sloped(Common.difficulty_scale(), 1/20) --shouldn't depend on difficulty much if at all, as available resources don't depend much on difficulty
 end
 
 function Public.silo_total_pollution()
@@ -262,7 +262,7 @@ function Public.base_evolution_leagues(leagues)
 end
 
 function Public.expected_time_evo()
-	return 0.14
+	return 0.125 --tuned
 end
 
 function Public.evolution_per_second()
@@ -390,10 +390,13 @@ function Public.resource_quest_multiplier()
 	return (1.0 + 0.075 * (Common.overworldx()/40)^(8/10)) * Math.sloped(Common.difficulty_scale(), 1/5) * (Public.crew_scale())^(1/10)
 end
 
-function Public.quest_structure_entry_price_scale()
-	return 0.85 * (1 + 0.033 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty_scale(), 1/2) --whilst the scenario philosophy says that resource scales tend to be independent of crew size, we account slightly for the fact that more players tend to handcraft more
+function Public.quest_market_entry_price_scale()
+	return 0.85 * (1 + 0.030 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty_scale(), 1/2) --whilst the scenario philosophy says that resource scales tend to be independent of crew size, we account slightly for the fact that more players tend to handcraft more
 end
 
+function Public.quest_furnace_entry_price_scale()
+	return 0.85 * (1 + 0.010 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty_scale(), 1/2) --slower increase with time, because this is more time-constrained than resource-constrained
+end
 
 function Public.apply_crew_buffs_per_league(force, leagues_travelled)
 	force.laboratory_productivity_bonus = force.laboratory_productivity_bonus + Math.max(0, 6/100 * leagues_travelled/40)
@@ -423,7 +426,12 @@ function Public.pistol_damage_multiplier() return 2.25 end --2.0 slightly too lo
 Public.kraken_spawns_base_extra_evo = 0.35
 
 function Public.kraken_evo_increase_per_shot()
-	return 1/100 * 0.07
+	-- return 1/100 * 0.08
+	return 0
+end
+
+function Public.kraken_evo_increase_per_second()
+	return 1/100 / 20
 end
 
 function Public.sandworm_evo_increase_per_spawn()
@@ -495,10 +503,10 @@ end
 
 Public.research_buffs = { --currently disabled anyway
 	-- these already give .1 productivity so we're adding .1 to get to 20%
-	['mining-productivity-1'] = {['mining-drill-productivity-bonus'] = .1},
-	['mining-productivity-2'] = {['mining-drill-productivity-bonus'] = .1},
-	['mining-productivity-3'] = {['mining-drill-productivity-bonus'] = .1},
-	['mining-productivity-4'] = {['mining-drill-productivity-bonus'] = .1},
+	['mining-productivity-1'] = {['mining_drill_productivity_bonus'] = .1},
+	['mining-productivity-2'] = {['mining_drill_productivity_bonus'] = .1},
+	['mining-productivity-3'] = {['mining_drill_productivity_bonus'] = .1},
+	['mining-productivity-4'] = {['mining_drill_productivity_bonus'] = .1},
 	-- -- these already give .1 productivity so we're adding .1 to get to 20%
 	-- ['mining-productivity-1'] = {['mining-drill-productivity-bonus'] = .1, ['character-inventory-slots-bonus'] = 5},
 	-- ['mining-productivity-2'] = {['mining-drill-productivity-bonus'] = .1, ['character-inventory-slots-bonus'] = 5},
