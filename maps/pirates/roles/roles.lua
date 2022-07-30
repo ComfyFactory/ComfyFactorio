@@ -511,33 +511,7 @@ function Public.captain_tax(captain_index)
 end
 
 
-
-function Public.add_player_to_permission_group(player, group_override)
-    -- local jailed = Jailed.get_jailed_table()
-    -- local enable_permission_group_disconnect = WPT.get('disconnect_wagon')
-    local session = Session.get_session_table()
-    local AG = Antigrief.get()
-
-    local gulag = game.permissions.get_group('gulag')
-    local tbl = gulag and gulag.players
-    for i = 1, #tbl do
-        if tbl[i].index == player.index then
-            return
-        end
-    end
-
-    -- if player.admin then
-    --     return
-    -- end
-
-    local playtime = player.online_time
-    if session and session[player.name] then
-        playtime = player.online_time + session[player.name]
-    end
-
-    -- if jailed[player.name] then
-    --     return
-    -- end
+function Public.try_create_permissions_groups()
 
     if not game.permissions.get_group('restricted_area') then
 		local group = game.permissions.create_group('restricted_area')
@@ -571,8 +545,6 @@ function Public.add_player_to_permission_group(player, group_override)
 		end
         group.set_allows_action(defines.input_action.fast_entity_transfer, false)
         group.set_allows_action(defines.input_action.fast_entity_split, false)
-
-        group.set_allows_action(defines.input_action.open_gui, true)
     end
 
     if not game.permissions.get_group('super_restricted_area') then
@@ -697,6 +669,38 @@ function Public.add_player_to_permission_group(player, group_override)
 			not_trusted.set_allows_action(defines.input_action.import_blueprint, false)
 		end
     end
+end
+
+
+
+function Public.add_player_to_permission_group(player, group_override)
+    -- local jailed = Jailed.get_jailed_table()
+    -- local enable_permission_group_disconnect = WPT.get('disconnect_wagon')
+    local session = Session.get_session_table()
+    local AG = Antigrief.get()
+
+    local gulag = game.permissions.get_group('gulag')
+    local tbl = gulag and gulag.players
+    for i = 1, #tbl do
+        if tbl[i].index == player.index then
+            return
+        end
+    end
+
+    -- if player.admin then
+    --     return
+    -- end
+
+    local playtime = player.online_time
+    if session and session[player.name] then
+        playtime = player.online_time + session[player.name]
+    end
+
+    -- if jailed[player.name] then
+    --     return
+    -- end
+
+	Public.try_create_permissions_groups()
 
 	local group
 	if group_override then
@@ -712,6 +716,8 @@ function Public.add_player_to_permission_group(player, group_override)
 end
 
 function Public.update_privileges(player)
+	Public.try_create_permissions_groups()
+
     if not Common.validate_player_and_character(player) then
         return
     end

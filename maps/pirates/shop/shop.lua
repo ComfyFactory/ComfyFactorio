@@ -25,10 +25,10 @@ Public.Minimarket = require 'maps.pirates.shop.dock'
 
 
 
-function Public.print_transaction(player, multipler, offer_itemname, offer_itemcount, price)
+function Public.print_transaction(player, multiplier, offer_itemname, offer_itemcount, price)
 	local type = 'traded away'
 	local s2 = {''}
-	local s3 = offer_itemcount * multipler .. ' ' .. offer_itemname
+	local s3 = offer_itemcount * multiplier .. ' ' .. offer_itemname
 	if offer_itemname == 'coin' then type = 'sold' end
 	for i, p in pairs(price) do
 		local p2 = {name = p.name, amount = p.amount}
@@ -44,7 +44,7 @@ function Public.print_transaction(player, multipler, offer_itemname, offer_itemc
 				s2[#s2+1] = {'pirates.separator_1'}
 			end
 		end
-		s2[#s2+1] = p2.amount * multipler
+		s2[#s2+1] = p2.amount * multiplier
 		s2[#s2+1] = ' '
 		s2[#s2+1] = p2.name
 	end
@@ -138,25 +138,27 @@ function Public.refund_items(player, price, price_multiplier, item_purchased_nam
 	end
 
 	if item_purchased_name and item_purchased_count then
-		local removed = inv.remove{name = item_purchased_name, count = item_purchased_count}.count
+		local removed = inv.remove{name = item_purchased_name, count = item_purchased_count}
 		if removed < item_purchased_count then
-			local nearby_floor_items = player.surface.find_entities_filtered{area = {{player.position.x - 5, player.position.y - 5}, {player.position.x + 5, player.position.y + 5}}, name = 'item-on-ground'}
+			local nearby_floor_items = player.surface.find_entities_filtered{area = {{player.position.x - 20, player.position.y - 20}, {player.position.x + 20, player.position.y + 20}}, name = 'item-on-ground'}
 			local whilesafety = 2000
 			local i = 1
-			while removed < item_purchased_count and i < #nearby_floor_items and i < whilesafety do
-				i = i + 1
+			while removed < item_purchased_count and i <= #nearby_floor_items and i < whilesafety do
 				if nearby_floor_items[i].stack and nearby_floor_items[i].stack.name and nearby_floor_items[i].stack.count and nearby_floor_items[i].stack.name == item_purchased_name then
-					local removed_count = nearby_floor_items[i].stack.count
-					if removed_count > item_purchased_count - removed then
-						removed_count = item_purchased_count - removed
-					end
-					if removed_count == nearby_floor_items[i].stack.count then
-						nearby_floor_items[i].destroy()
-					else
-						nearby_floor_items[i].stack.count = nearby_floor_items[i].stack.count - removed_count
-					end
-					removed = removed + removed_count
+					nearby_floor_items[i].destroy()
+					removed = removed + 1
+					-- local removed_count = nearby_floor_items[i].stack.count
+					-- if removed_count > item_purchased_count - removed then
+					-- 	removed_count = item_purchased_count - removed
+					-- end
+					-- if removed_count == nearby_floor_items[i].stack.count then
+					-- 	nearby_floor_items[i].destroy()
+					-- else
+					-- 	nearby_floor_items[i].stack.count = nearby_floor_items[i].stack.count - removed_count
+					-- end
+					-- removed = removed + removed_count
 				end
+				i = i + 1
 			end
 			if i == whilesafety then log('ERROR: whilesafety reached') end
 		end
