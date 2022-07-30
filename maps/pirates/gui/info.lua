@@ -227,7 +227,7 @@ function Public.full_update(player)
 	if flow2.selected_tab_index == 1 then
 		flow2.style.height = 400
 	elseif flow2.selected_tab_index == 2 then
-		flow2.style.height = 330
+		flow2.style.height = 490
 	elseif flow2.selected_tab_index == 3 then
 		flow2.style.height = 580
 	elseif flow2.selected_tab_index == 4 then

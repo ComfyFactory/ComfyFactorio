@@ -110,8 +110,8 @@ Public.cabin_shop_data = {
 		price = {{'coin', 1000}, {'stone-brick', 50}},
 		offer = {type='give-item', item = 'uranium-238', count = 10},
 	},
-	{ -- could raise the price later if this may seem too cheap
-		price = {{'coin', 1000}, {'explosives', 5}},
+	{
+		price = {{'coin', 800}, {'explosives', 4}},
 		offer = {type='give-item', item = 'cliff-explosives', count = 1},
 	},
 	--disabled now that we can wait after any destination:
