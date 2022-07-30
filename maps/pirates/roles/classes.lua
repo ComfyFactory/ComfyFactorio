@@ -190,9 +190,7 @@ Public.class_purchase_requirement = {
 
 function Public.initial_class_pool()
 	return {
-		enum.DECKHAND,
 		enum.DECKHAND, --good for afk players
-		enum.SHORESMAN,
 		enum.SHORESMAN,
 		enum.QUARTERMASTER,
 		enum.FISHERMAN,

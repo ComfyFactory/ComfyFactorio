@@ -266,7 +266,7 @@ end
 function Public.overall_kraken_tick()
 	local memory = Memory.get_crew_memory()
 
-	if memory.active_sea_enemies and memory.active_sea_enemies.krakens and #memory.active_sea_enemies.krakens > 0 then
+	if memory.active_sea_enemies and memory.active_sea_enemies.kraken_count and memory.active_sea_enemies.kraken_count > 0 then
 		local evo_increase = Balance.kraken_evo_increase_per_second()
 		if evo_increase > 0 then
 			if not memory.dynamic_kraken_evo then memory.dynamic_kraken_evo = 0 end

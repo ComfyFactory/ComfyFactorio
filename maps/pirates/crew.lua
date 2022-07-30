@@ -125,7 +125,8 @@ function Public.try_lose(loss_reason)
 	if (not memory.game_lost) then
 	-- if (not memory.game_lost) and (not memory.game_won) then
 		memory.game_lost = true
-		memory.crew_disband_tick = game.tick + 360
+		memory.crew_disband_tick_message = game.tick + 60*10
+		memory.crew_disband_tick = game.tick + 60*35
 
 		local playtimetext = Utils.time_longform((memory.age or 0)/60)
 

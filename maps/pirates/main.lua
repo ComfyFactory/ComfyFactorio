@@ -67,6 +67,7 @@ require 'maps.pirates.shop.shop'
 require 'maps.pirates.boat_upgrades'
 local Token = require 'utils.token'
 local Task = require 'utils.task'
+local Server = require 'utils.server'
 
 require 'utils.profiler'
 
@@ -274,12 +275,23 @@ local function crew_tick()
 		PiratesApiOnTick.loading_update(Common.loading_interval)
 	end
 
+	if memory.crew_disband_tick_message then
+		if memory.crew_disband_tick_message < tick then
+			memory.crew_disband_tick_message = nil
+
+			local message1 = {'pirates.crew_disband_tick_message', 25}
+	
+			Common.notify_force(memory.force, message1)
+	
+			Server.to_discord_embed_raw({'', '[' .. memory.name .. '] ', message1}, true)
+		end
+	end
+
 	if memory.crew_disband_tick then
 		if memory.crew_disband_tick < tick then
 			memory.crew_disband_tick = nil
 			Crew.disband_crew()
 		end
-		return
 	end
 end
 
