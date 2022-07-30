@@ -347,22 +347,37 @@ function Public.assign_captain_based_on_priorities(excluded_player_index)
 	local captain_index = nil
 	local captain_name = nil
 
-	for _, player_index in pairs(crew_members) do
+	-- Prefer officers for a captain (if there are any)
+	for _, player_index in pairs(memory.officers_table) do
 		local player = game.players[player_index]
+		local player_active = Utils.contains(Common.crew_get_nonafk_crew_members(), player)
 
-		if Common.validate_player(player) and not (player.index == excluded_player_index) then
+		if player_active then
+			captain_index = player_index
+			captain_name = player.name
+			break
+		end
+	end
 
-			local player_active = Utils.contains(Common.crew_get_nonafk_crew_members(), player)
+	-- No officers (or all officers afk), try pass captain to oldest crew member
+	if not captain_index then
+		for _, player_index in pairs(crew_members) do
+			local player = game.players[player_index]
 
-			-- prefer non-afk players:
-			if only_found_afk_players or player_active then
-				only_found_afk_players = player_active
+			if Common.validate_player(player) and not (player.index == excluded_player_index) then
 
-				local player_priority = global_memory.playerindex_to_captainhood_priority[player_index]
-				if player_priority and player_priority > best_priority_so_far then
-					best_priority_so_far = player_priority
-					captain_index = player_index
-					captain_name = player.name
+				local player_active = Utils.contains(Common.crew_get_nonafk_crew_members(), player)
+
+				-- prefer non-afk players:
+				if only_found_afk_players or player_active then
+					only_found_afk_players = player_active
+
+					local player_priority = global_memory.playerindex_to_captainhood_priority[player_index]
+					if player_priority and player_priority > best_priority_so_far then
+						best_priority_so_far = player_priority
+						captain_index = player_index
+						captain_name = player.name
+					end
 				end
 			end
 		end
@@ -371,6 +386,7 @@ function Public.assign_captain_based_on_priorities(excluded_player_index)
 	local force = memory.force
 	if not (force and force.valid) then return end
 
+	-- if all crew members afk (or if by some chance failed to pass captain), just give captain to first crew member
 	if not captain_index then
 		captain_index = crew_members[1]
 		captain_name = game.players[captain_index].name

@@ -409,7 +409,8 @@ function Public.click(event)
 	local eventname = event.element.name
 
 	if not player.gui.screen[window_name .. '_piratewindow'] then return end
-	local flow = player.gui.screen[window_name .. '_piratewindow']
+	local window = player.gui.screen[window_name .. '_piratewindow']
+	local flow = window.scroll_pane
 
 	local memory = Memory.get_crew_memory()
 
