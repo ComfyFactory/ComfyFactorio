@@ -82,7 +82,6 @@ function Public.full_update(player)
 		local types = {'leagues', 'kraken', 'time', 'silo', 'nests', 'sandwurms'}
 
 		if Boats.is_boat_at_sea() then
-			evolution_leagues = evo - (memory.kraken_evo or 0)
 			local krakens = false
 			if memory.active_sea_enemies and memory.active_sea_enemies.krakens then
 				for i = 1, Kraken.kraken_slots do
@@ -90,10 +89,12 @@ function Public.full_update(player)
 				end
 			end
 			if krakens then
-				evolution_kraken = Balance.kraken_spawns_base_extra_evo + (memory.kraken_evo or 0)
-				evolution_total = evolution_leagues + Balance.kraken_spawns_base_extra_evo
+				evolution_leagues = evo - (memory.dynamic_kraken_evo or 0)
+				evolution_kraken = Balance.kraken_static_evo + (memory.dynamic_kraken_evo or 0)
+				evolution_total = evo + Balance.kraken_static_evo
 			else
-				evolution_total = evolution_leagues
+				evolution_leagues = evo
+				evolution_total = evo
 			end
 		else
 			if destination and destination.dynamic_data then
@@ -103,7 +104,7 @@ function Public.full_update(player)
 				evolution_silo = destination.dynamic_data.evolution_accrued_silo
 				evolution_sandwurms = destination.dynamic_data.evolution_accrued_sandwurms
 			end
-			evolution_total = (evolution_leagues or 0) + (evolution_time or 0) + (evolution_nests or 0) + (evolution_silo or 0) + (evolution_sandwurms or 0)
+			evolution_total = (evolution_leagues or 0) + (evolution_time or 0) + (evolution_nests or 0) + (evolution_silo or 0) + (evolution_sandwurms or 0) + (evolution_kraken or 0)
 		end
 
 		local str = {'',{'pirates.gui_evo_tooltip_1', string.format('%.2f', evolution_total)}}
@@ -142,6 +143,20 @@ function Public.full_update(player)
 
 		button.number = evolution_total
 		button.tooltip = str
+		
+		if evolution_total > 1.0 then
+			button.sprite = 'entity/behemoth-worm-turret'
+		elseif evolution_total >= 0.9 then
+			button.sprite = 'entity/behemoth-biter'
+		elseif evolution_total >= 0.5 then
+			button.sprite = 'entity/big-biter'
+		elseif evolution_total >= 0.4 then
+			button.sprite = 'entity/medium-spitter'
+		elseif evolution_total >= 0.2 then
+			button.sprite = 'entity/medium-biter'
+		else
+			button.sprite = 'entity/small-biter'
+		end
 	end
 end
 

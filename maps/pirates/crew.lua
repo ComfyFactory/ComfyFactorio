@@ -43,7 +43,6 @@ function Public.difficulty_vote(player_index, difficulty_id)
 	if memory.difficulty_votes[player_index] and memory.difficulty_votes[player_index] == difficulty_id then
 		return nil
 	else
-		log(_inspect(CoreData.difficulty_options))
 		local option = CoreData.difficulty_options[difficulty_id]
 		if not option then return end
 
@@ -163,7 +162,8 @@ function Public.try_win()
 
 		game.play_sound{path='utility/game_won', volume_modifier=0.9}
 
-		memory.victory_pause_until_tick = game.tick + 60*18
+		memory.boat.state = Boats.enum_state.ATSEA_WAITING_TO_SAIL
+		memory.victory_continue_reminder = game.tick + 60*14
 		memory.victory_continue_message = true
 	end
 end
@@ -847,6 +847,7 @@ function Public.reset_crew_and_enemy_force(id)
 	-- crew_force.character_running_speed_modifier = Balance.base_extra_character_speed
 	crew_force.laboratory_productivity_bonus = 0
 	crew_force.ghost_time_to_live = 12 * 60 * 60
+	crew_force.worker_robots_speed_modifier = 0.5
 
 	for k, v in pairs(Balance.player_ammo_damage_modifiers()) do
 		crew_force.set_ammo_damage_modifier(k, v)

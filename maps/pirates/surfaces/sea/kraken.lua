@@ -146,10 +146,10 @@ function Public.kraken_tick(crew_id, kraken_id, step, substep)
 		local summoned_biter_amount
 		if crewCount <= 12 then
 			firing_period = 4
-			summoned_biter_amount = 2
+			summoned_biter_amount = 3
 		else
 			firing_period = 3
-			summoned_biter_amount = 3
+			summoned_biter_amount = 4
 		-- elseif crewCount <= 24 then
 		-- 	firing_period = 3
 		-- else
@@ -161,7 +161,7 @@ function Public.kraken_tick(crew_id, kraken_id, step, substep)
 			if substep % 5 == 0 then
 				if kraken_spawner_entity then
 					for i = 1, summoned_biter_amount do
-						local name = Common.get_random_unit_type(memory.evolution_factor + Balance.kraken_spawns_base_extra_evo)
+						local name = Common.get_random_unit_type(memory.evolution_factor + Balance.kraken_static_evo)
 						local random_dir_vec = {x = Math.random_float_in_range(-1, 1), y = Math.random_float_in_range(-1, 1)}
 						random_dir_vec = Math.vector_norm(random_dir_vec)
 						random_dir_vec = Math.vector_scale(random_dir_vec, Balance.kraken_biter_spawn_radius)
@@ -250,14 +250,14 @@ local function on_entity_destroyed(event)
 
 		local p2 = surface.find_non_colliding_position('medium-biter', p, 10, 0.2)
 		if not p2 then return end
-		local name = Common.get_random_unit_type(memory.evolution_factor + Balance.kraken_spawns_base_extra_evo)
+		local name = Common.get_random_unit_type(memory.evolution_factor + Balance.kraken_static_evo)
 		surface.create_entity{name = name, position = p2, force = memory.enemy_force_name}
 		Effects.kraken_effect_2(surface, p2)
 
 		local evo_increase = Balance.kraken_evo_increase_per_shot()
 		if evo_increase > 0 then
-			if not memory.kraken_evo then memory.kraken_evo = 0 end
-			memory.kraken_evo = memory.kraken_evo + evo_increase
+			if not memory.dynamic_kraken_evo then memory.dynamic_kraken_evo = 0 end
+			memory.dynamic_kraken_evo = memory.dynamic_kraken_evo + evo_increase
 			Common.increment_evo(evo_increase)
 		end
 	end
@@ -269,8 +269,8 @@ function Public.overall_kraken_tick()
 	if memory.active_sea_enemies and memory.active_sea_enemies.krakens and #memory.active_sea_enemies.krakens > 0 then
 		local evo_increase = Balance.kraken_evo_increase_per_second()
 		if evo_increase > 0 then
-			if not memory.kraken_evo then memory.kraken_evo = 0 end
-			memory.kraken_evo = memory.kraken_evo + evo_increase
+			if not memory.dynamic_kraken_evo then memory.dynamic_kraken_evo = 0 end
+			memory.dynamic_kraken_evo = memory.dynamic_kraken_evo + evo_increase
 			Common.increment_evo(evo_increase)
 		end
 	end

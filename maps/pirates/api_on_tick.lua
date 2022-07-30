@@ -190,6 +190,17 @@ function Public.ship_deplete_fuel(tickinterval)
 	end
 end
 
+function Public.victory_continue_reminder()
+	local memory = Memory.get_crew_memory()
+
+	if memory.victory_continue_reminder and game.tick >= memory.victory_continue_reminder then
+		memory.victory_continue_reminder = nil
+		if memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL then
+			Common.notify_force(memory.force, {'pirates.victory_continue_reminder'}, CoreData.colors.notify_victory)
+		end
+	end
+end
+
 function Public.transfer_pollution(tickinterval)
 	local memory = Memory.get_crew_memory()
 

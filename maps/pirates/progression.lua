@@ -541,7 +541,13 @@ function Public.at_sea_begin_to_set_sail()
 
 	local force = memory.force
 	if not (force and force.valid) then return end
-	Common.notify_force(force, {'pirates.ship_set_off_to_next_island'})
+
+	if memory.victory_continue_message then
+		memory.victory_continue_message = false
+		Common.notify_force(force, {'pirates.crew_continue_on_freeplay'}, CoreData.colors.notify_victory)
+	else
+		Common.notify_force(force, {'pirates.ship_set_off_to_next_island'})
+	end
 end
 
 
@@ -613,7 +619,7 @@ function Public.go_from_currentdestination_to_sea()
 	--@FIX: This doesn't change the evo during sea travel, which is relevant now that krakens are in the game:
 	local base_evo = Balance.base_evolution_leagues(memory.overworldx)
 	Common.set_evo(base_evo)
-	memory.kraken_evo = 0
+	memory.dynamic_kraken_evo = 0
 
 	memory.loadingticks = nil
 	memory.mapbeingloadeddestination_index = nil

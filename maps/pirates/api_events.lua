@@ -58,7 +58,7 @@ function Public.silo_die()
 			if CoreData.rocket_silo_death_causes_loss then
 				-- Crew.lose_life()
 				Crew.try_lose({'pirates.loss_silo_destroyed'})
-			elseif (not destination.dynamic_data.rocketlaunched) and destination.static_params and destination.static_params.base_cost_to_undock and destination.static_params.base_cost_to_undock['launch_rocket'] and destination.static_params.base_cost_to_undock['launch_rocket'] == true then
+			elseif (not destination.dynamic_data.rocketlaunched) and destination.static_params and destination.static_params.base_cost_to_undock and destination.static_params.base_cost_to_undock['launch_rocket'] and destination.static_params.base_cost_to_undock['launch_rocket'] == true and (not (destination.dynamic_data.time_remaining and destination.dynamic_data.time_remaining > 0)) then
 				Crew.try_lose({'pirates.loss_silo_destroyed_before_necessary_launch'})
 			elseif (not destination.dynamic_data.rocketlaunched) then
 				Common.notify_force(force, {'pirates.silo_destroyed'})
@@ -285,7 +285,7 @@ local function damage_to_krakens(event)
 	end
 	-- and additionally:
 	if event.cause.name == 'artillery-turret' then
-		adjusted_damage = adjusted_damage / 1.4
+		adjusted_damage = adjusted_damage / 1.5
 	end
 
 	if event.damage_type.name and (event.damage_type.name == 'laser') then
@@ -1828,6 +1828,7 @@ local function event_on_rocket_launched(event)
 		for i = 1, #destination.dynamic_data.rocketsilos do
 			local s = destination.dynamic_data.rocketsilos[i]
 			if s and s.valid then
+				s.destructible = true
 				s.die()
 			end
 		end

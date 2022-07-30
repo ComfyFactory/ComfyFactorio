@@ -99,7 +99,7 @@ Public.Data.surfacename_rendering_pos = {x = -0.5, y = -15}
 
 Public.cabin_shop_data = {
 	{
-		price = {{'coin', 400}, {'coal', 20}, {'iron-plate', 10}},--should be inefficient on resources to merely buy arty to shoot nests
+		price = {{'coin', 400}, {'coal', 20}, {'iron-plate', 30}},--should be inefficient on resources to merely buy arty to shoot nests
 		offer = {type='give-item', item = 'artillery-shell', count = 5},
 	},
 	{
@@ -107,12 +107,12 @@ Public.cabin_shop_data = {
 		offer = {type='give-item', item = 'rail-signal', count = 100},
 	},
 	{
-		price = {{'coin', 2000}, {'stone-brick', 30}},
+		price = {{'coin', 1000}, {'stone-brick', 50}},
 		offer = {type='give-item', item = 'uranium-238', count = 10},
 	},
 	{ -- could raise the price later if this may seem too cheap
-		price = {{'coin', 2000}, {'explosives', 5}},
-		offer = {type='give-item', item = 'cliff-explosives', count = 5},
+		price = {{'coin', 1000}, {'explosives', 5}},
+		offer = {type='give-item', item = 'cliff-explosives', count = 1},
 	},
 	--disabled now that we can wait after any destination:
 	-- {

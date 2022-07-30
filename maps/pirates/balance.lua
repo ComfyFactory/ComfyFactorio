@@ -15,7 +15,7 @@ local Common = require 'maps.pirates.common'
 -- Kraken related parameters
 Public.biter_swim_speed = 1
 Public.kraken_biter_spawn_radius = 6 -- only used during non automatic forced spawning during kraken's "special ability"
-Public.kraken_spit_targeting_player_chance = 0.1
+Public.kraken_spit_targeting_player_chance = 0
 
 Public.base_extra_character_speed = 1.44
 Public.respawn_speed_boost = 1.85
@@ -162,7 +162,7 @@ Public.rockets_needed_x = 40*21
 
 function Public.max_time_on_island()
 	local x = Common.overworldx()
-	if x == 0 or (x >= Public.rockets_needed_x) then
+	if x == 0 or (x >= Public.rockets_needed_x and x ~= 40*22) then
 	-- if Common.overworldx() == 0 or ((Common.overworldx()/40) > 20 and (Common.overworldx()/40) < 25) then
 		return -1
 	else
@@ -399,7 +399,7 @@ function Public.quest_furnace_entry_price_scale()
 end
 
 function Public.apply_crew_buffs_per_league(force, leagues_travelled)
-	force.laboratory_productivity_bonus = force.laboratory_productivity_bonus + Math.max(0, 6/100 * leagues_travelled/40)
+	force.laboratory_productivity_bonus = force.laboratory_productivity_bonus + Math.max(0, 7/100 * leagues_travelled/40)
 end
 
 function Public.class_cost(at_dock)
@@ -423,7 +423,7 @@ Public.silo_resistance_factor = 7
 
 function Public.pistol_damage_multiplier() return 2.25 end --2.0 slightly too low, 2.5 causes players to yell at each other for not using pistol
 
-Public.kraken_spawns_base_extra_evo = 0.35
+Public.kraken_static_evo = 0.35
 
 function Public.kraken_evo_increase_per_shot()
 	-- return 1/100 * 0.08
@@ -443,10 +443,10 @@ function Public.sandworm_evo_increase_per_spawn()
 end
 
 function Public.kraken_kill_reward_items()
-	return {{name = 'sulfuric-acid-barrel', count = 5}, {name = 'coin', count = 800}}
+	return {{name = 'coin', count = 800}, {name = 'utility-science-pack', count = 10}}
 end
 function Public.kraken_kill_reward_fuel()
-	return 200
+	return 150
 end
 
 function Public.kraken_health()
