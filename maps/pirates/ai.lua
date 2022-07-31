@@ -129,7 +129,7 @@ end
 function Public.wave_size_rng() -- random variance in attack sizes
 	local memory = Memory.get_crew_memory()
 
-    local wave_percentage_chance = Math.clamp(0, 48, 11 + 9 * memory.floating_pollution/1500)
+    local wave_percentage_chance = Math.clamp(0, 44, 11 + 9 * memory.floating_pollution/1500)
 
 	local wave_size_multiplier = 1
 	local rng1 = Math.random(100)
