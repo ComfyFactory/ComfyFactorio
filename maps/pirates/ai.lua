@@ -516,10 +516,10 @@ function Public.generate_main_attack_target()
     local fractioncharged = 0
     if (not destination.dynamic_data.rocketlaunched) and destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid and destination.dynamic_data.rocketsilos[1].destructible and destination.dynamic_data.rocketsiloenergyconsumed and destination.dynamic_data.rocketsiloenergyneeded and destination.dynamic_data.rocketsiloenergyneeded > 0 then
         fractioncharged = destination.dynamic_data.rocketsiloenergyconsumed / destination.dynamic_data.rocketsiloenergyneeded
-    end
 
-    if memory.overworldx > 40*22 then --chance of biters going directly to silo
-        fractioncharged = fractioncharged + 0.025
+        if memory.overworldx > 40*22 then --chance of biters going directly to silo
+            fractioncharged = fractioncharged + 0.03
+        end
     end
 
     local rng = Math.random()

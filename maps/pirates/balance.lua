@@ -298,13 +298,15 @@ function Public.evolution_per_nest_kill() --it's important to have evo go up wit
 	if destination and destination.dynamic_data and destination.dynamic_data.timer and destination.dynamic_data.timer > 0 and destination.dynamic_data.initial_spawner_count and destination.dynamic_data.initial_spawner_count > 0 then
 
 		local initial_spawner_count = destination.dynamic_data.initial_spawner_count
+		local base_evo_jump = 0.04 * (1/initial_spawner_count) --extra friction to make them hard to mow through, even at late times
+
 		local time = destination.dynamic_data.timer
 		-- local time_to_jump_to = Public.expected_time_on_island() * ((1/Public.expected_time_fraction)^(2/3))
 		local time_to_jump_to = Public.max_time_on_island_formula()
-		if time > time_to_jump_to then return 0
+		if time > time_to_jump_to then return base_evo_jump
 		else
 			-- evo it 'would have' contributed:
-			return (1/initial_spawner_count) * Public.expected_time_evo() * (time_to_jump_to - time)/time_to_jump_to
+			return (1/initial_spawner_count) * Public.expected_time_evo() * (time_to_jump_to - time)/time_to_jump_to + base_evo_jump
 		end
 	else
 		return 0
@@ -378,12 +380,14 @@ end
 
 function Public.island_richness_avg_multiplier()
 	local ret
-	-- local base = 0.7 + 0.1 * (Common.overworldx()/40)^(7/10) --tuned tbh
-	local base = 0.73 + 0.120 * (Common.overworldx()/40)^(65/100) --tuned tbh
+	local base = 0.73
+	local additional = 0.120 * Math.clamp(0, 7, (Common.overworldx()/40)^(65/100) * Math.sloped(Public.crew_scale(), 1/40)) --tuned tbh
 
-	ret = base * Math.sloped(Public.crew_scale(), 1/40) --we don't really have resources scaling by player count in this resource-constrained scenario, but we scale a little, to accommodate each player filling their inventory with useful tools. also, I would do higher than 1/40, but we go even slightly lower because we're applying this somewhat sooner than players actually get there.
+	-- now clamped, because it takes way too long to mine that many more resources
 
-	return ret
+	--we don't really have resources scaling by player count in this resource-constrained scenario, but we scale a little, to accommodate each player filling their inventory with useful tools. also, I would do higher than 1/40, but we go even slightly lower because we're applying this somewhat sooner than players actually get there.
+
+	return base + additional
 end
 
 function Public.resource_quest_multiplier()
@@ -443,7 +447,7 @@ function Public.sandworm_evo_increase_per_spawn()
 end
 
 function Public.kraken_kill_reward_items()
-	return {{name = 'coin', count = 800}, {name = 'utility-science-pack', count = 10}}
+	return {{name = 'coin', count = 800}, {name = 'utility-science-pack', count = 8}}
 end
 function Public.kraken_kill_reward_fuel()
 	return 150
