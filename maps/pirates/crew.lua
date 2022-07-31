@@ -849,6 +849,7 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.laboratory_productivity_bonus = 0
 	crew_force.ghost_time_to_live = 12 * 60 * 60
 	crew_force.worker_robots_speed_modifier = 0.5
+	crew_force.research_queue_enabled = true
 
 	for k, v in pairs(Balance.player_ammo_damage_modifiers()) do
 		crew_force.set_ammo_damage_modifier(k, v)

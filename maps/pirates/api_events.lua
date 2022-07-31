@@ -1245,10 +1245,12 @@ local function event_on_research_finished(event)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
 
-	-- using a localised string means we have to write this out (recall that "" signals concatenation)
-	memory.force.print({"", '>> ', {'pirates.research_notification', research.localised_name}}, CoreData.colors.notify_force_light)
-
-    Server.to_discord_embed_raw({'', '[' .. memory.name .. '] ', {'pirates.research_notification', game.technology_prototypes[research.name].localised_name}}, true)
+	if (not (memory.game_lost)) then --this condition should prevent discord messages being fired when the crew disbands and gets reset
+		-- using a localised string means we have to write this out (recall that "" signals concatenation)
+		memory.force.print({"", '>> ', {'pirates.research_notification', research.localised_name}}, CoreData.colors.notify_force_light)
+	
+		Server.to_discord_embed_raw({'', '[' .. memory.name .. '] ', {'pirates.research_notification', game.technology_prototypes[research.name].localised_name}}, true)
+	end
 
 	Public.apply_flamer_nerfs()
 	Public.research_apply_buffs(event) -- this is broken right now

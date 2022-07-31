@@ -44,7 +44,7 @@ local RADIOACTIVE = Surfaces.Island.enum.RADIOACTIVE
 local HORSESHOE = Surfaces.Island.enum.HORSESHOE
 local STANDARD_VARIANT = Surfaces.Island.enum.STANDARD_VARIANT
 
-local A = {NIL, NIL, STANDARD_VARIANT, RED_DESERT, HORSESHOE, WALKWAYS}
+local A = {STANDARD_VARIANT, RED_DESERT, HORSESHOE, WALKWAYS}
 local B = {NIL, NIL, NIL, STANDARD, STANDARD_VARIANT, RED_DESERT, HORSESHOE, WALKWAYS}
 local C = {STANDARD, STANDARD_VARIANT, RED_DESERT, HORSESHOE, WALKWAYS}
 local D = {NIL, NIL, NIL, STANDARD, STANDARD_VARIANT, RED_DESERT, HORSESHOE, WALKWAYS, SWAMP}
@@ -54,7 +54,7 @@ local destinationScheme = {
 	[1] = {HORSESHOE, HORSESHOE, HORSESHOE}, --map where you break rocks
 	[2] = {STANDARD_VARIANT, STANDARD_VARIANT, STANDARD_VARIANT}, --aesthetically different to previous map
 	[3] = {DOCK, NIL, NIL},
-	[4] = {A, A, A},
+	[4] = {A, A, NIL},
 	[5] = {STANDARD, STANDARD, STANDARD}, --biter boats appear. large island works well so players run off
 	[6] = {MAZE, MAZE, MAZE},
 	[7] = {DOCK, B, B},

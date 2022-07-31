@@ -126,7 +126,6 @@ local function on_init()
 		local crew_force = game.create_force(Common.get_crew_force_name(id))
 
 		Crew.reset_crew_and_enemy_force(id)
-		crew_force.research_queue_enabled = true
 	end
 
 	-- Delay.global_add(Delay.global_enum.PLACE_LOBBY_JETTY_AND_BOATS)
