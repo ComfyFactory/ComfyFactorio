@@ -152,6 +152,8 @@ function Public.full_update(player)
 			button.sprite = 'entity/big-biter'
 		elseif evolution_total >= 0.4 then
 			button.sprite = 'entity/medium-spitter'
+		elseif evolution_total >= 0.25 then
+			button.sprite = 'entity/small-spitter'
 		elseif evolution_total >= 0.2 then
 			button.sprite = 'entity/medium-biter'
 		else

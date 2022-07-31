@@ -125,7 +125,8 @@ function Public.try_lose(loss_reason)
 	if (not memory.game_lost) then
 	-- if (not memory.game_lost) and (not memory.game_won) then
 		memory.game_lost = true
-		memory.crew_disband_tick = game.tick + 360
+		memory.crew_disband_tick_message = game.tick + 60*10
+		memory.crew_disband_tick = game.tick + 60*40
 
 		local playtimetext = Utils.time_longform((memory.age or 0)/60)
 
@@ -848,6 +849,7 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.laboratory_productivity_bonus = 0
 	crew_force.ghost_time_to_live = 12 * 60 * 60
 	crew_force.worker_robots_speed_modifier = 0.5
+	crew_force.research_queue_enabled = true
 
 	for k, v in pairs(Balance.player_ammo_damage_modifiers()) do
 		crew_force.set_ammo_damage_modifier(k, v)

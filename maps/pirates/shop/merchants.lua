@@ -21,7 +21,7 @@ function Public.generate_merchant_trades(market)
 	if market and market.valid then
 
 		local game_completion_progress = Common.game_completion_progress()
-		if game_completion_progress <= 1 then
+		if game_completion_progress < 0.96 then
 			market.add_market_item{price = {{'coin', 8000}, {'raw-fish', 100}}, offer = {type = 'give-item', item = 'modular-armor', count = 1}}
 			market.add_market_item{price = {{'coin', 5000}, {'raw-fish', 10}}, offer = {type = 'give-item', item = 'battery-equipment', count = 1}}
 			market.add_market_item{price = {{'coin', 2000}, {'raw-fish', 10}}, offer = {type = 'give-item', item = 'solar-panel-equipment', count = 5}}

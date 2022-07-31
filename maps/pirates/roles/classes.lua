@@ -31,8 +31,8 @@ local enum = {
 	DREDGER = 'dredger',
 	SMOLDERING = 'smoldering',
 	GOURMET = 'gourmet',
-	CHIEF = 'chief',
-	ROC_EATER = 'roc_eater',
+	CHEF = 'chef',
+	ROCK_EATER = 'rock_eater',
 	SOLDIER = 'soldier',
 	VETERAN = 'veteran',
 }
@@ -64,8 +64,8 @@ Public.eng_form = {
 	[enum.DREDGER] = 'Dredger',
 	[enum.SMOLDERING] = 'Smoldering',
 	[enum.GOURMET] = 'Gourmet',
-	[enum.CHIEF] = 'Chief',
-	[enum.ROC_EATER] = 'Roc Eater',
+	[enum.CHEF] = 'Chef',
+	[enum.ROCK_EATER] = 'Rock Eater',
 	[enum.SOLDIER] = 'Soldier',
 	[enum.VETERAN] = 'Veteran',
 }
@@ -128,8 +128,8 @@ function Public.explanation(class, add_is_class_obtainable)
 		local received_damage = Public.percentage_points_difference_from_100_percent(Balance.iron_leg_damage_taken_multiplier)
 		local iron_ore_required = Balance.iron_leg_iron_ore_required
 		full_explanation = {'', {explanation, received_damage, iron_ore_required}}
-	elseif class == enum.ROC_EATER then
-		local received_damage = Public.percentage_points_difference_from_100_percent(Balance.roc_eater_damage_taken_multiplier)
+	elseif class == enum.ROCK_EATER then
+		local received_damage = Public.percentage_points_difference_from_100_percent(Balance.rock_eater_damage_taken_multiplier)
 		full_explanation = {'', {explanation, received_damage}}
 	elseif class == enum.SOLDIER then
 		local chance = Balance.soldier_defender_summon_chance * 100
@@ -190,9 +190,7 @@ Public.class_purchase_requirement = {
 
 function Public.initial_class_pool()
 	return {
-		enum.DECKHAND,
 		enum.DECKHAND, --good for afk players
-		enum.SHORESMAN,
 		enum.SHORESMAN,
 		enum.QUARTERMASTER,
 		enum.FISHERMAN,
@@ -205,8 +203,8 @@ function Public.initial_class_pool()
 		enum.IRON_LEG,
 		-- enum.SMOLDERING, --tedious
 		enum.GOURMET,
-		enum.CHIEF,
-		enum.ROC_EATER,
+		enum.CHEF,
+		enum.ROCK_EATER,
 		enum.SOLDIER,
 	}
 end
@@ -379,16 +377,16 @@ local function class_on_player_used_capsule(event)
 			if multiplier > 0 then
 				local timescale = 60*30 * Math.max((Balance.game_slowness_scale())^(2/3),0.8)
 				if memory.gourmet_recency_tick then
-					multiplier = multiplier *Math.clamp(0.2, 5, (1/5)^((memory.gourmet_recency_tick - game.tick)/(60*300)))
+					multiplier = multiplier * Math.clamp(0.2, 5, (1/5)^((memory.gourmet_recency_tick - game.tick)/(60*300)))
 					memory.gourmet_recency_tick = Math.max(memory.gourmet_recency_tick, game.tick - timescale*10) + timescale
 				else
 					multiplier = multiplier * 5
 					memory.gourmet_recency_tick = game.tick - timescale*10 + timescale
 				end
-				Public.class_ore_grant(player, 10 * multiplier, Balance.gourmet_ore_scaling_enabled)
+				Public.class_ore_grant(player, 15 * multiplier, Balance.gourmet_ore_scaling_enabled)
 			end
-		elseif class == Public.enum.ROC_EATER then
-			local required_count = Balance.roc_eater_required_stone_furnace_to_heal_count
+		elseif class == Public.enum.ROCK_EATER then
+			local required_count = Balance.rock_eater_required_stone_furnace_to_heal_count
 			if player.get_item_count('stone-furnace') >= required_count then
 				player.remove_item({name='stone-furnace', count=required_count})
 				player.insert({name='raw-fish', count=1})

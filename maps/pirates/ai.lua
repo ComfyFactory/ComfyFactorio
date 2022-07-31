@@ -129,7 +129,7 @@ end
 function Public.wave_size_rng() -- random variance in attack sizes
 	local memory = Memory.get_crew_memory()
 
-    local wave_percentage_chance = Math.clamp(0, 36, 11 + 8 * memory.floating_pollution/1500)
+    local wave_percentage_chance = Math.clamp(0, 44, 11 + 9 * memory.floating_pollution/1500)
 
 	local wave_size_multiplier = 1
 	local rng1 = Math.random(100)
@@ -510,12 +510,16 @@ end
 --=== Misc Functions
 
 function Public.generate_main_attack_target()
-	-- local memory = Memory.get_crew_memory()
+	local memory = Memory.get_crew_memory()
     local destination = Common.current_destination()
     local target
     local fractioncharged = 0
     if (not destination.dynamic_data.rocketlaunched) and destination.dynamic_data.rocketsilos and destination.dynamic_data.rocketsilos[1] and destination.dynamic_data.rocketsilos[1].valid and destination.dynamic_data.rocketsilos[1].destructible and destination.dynamic_data.rocketsiloenergyconsumed and destination.dynamic_data.rocketsiloenergyneeded and destination.dynamic_data.rocketsiloenergyneeded > 0 then
         fractioncharged = destination.dynamic_data.rocketsiloenergyconsumed / destination.dynamic_data.rocketsiloenergyneeded
+
+        if memory.overworldx > 40*22 then --chance of biters going directly to silo
+            fractioncharged = fractioncharged + 0.03
+        end
     end
 
     local rng = Math.random()
@@ -788,7 +792,7 @@ function Public.revenge_group(surface, p, target, type, bonus_evo, amount_multip
 		if name == 'small-spitter' then
 			count = 7
 		elseif name == 'medium-spitter' then
-			count = 5
+			count = 4
 		elseif name == 'big-spitter' then
 			count = 3
 		elseif name == 'behemoth-spitter' then
