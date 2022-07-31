@@ -232,6 +232,8 @@ function Public.boat_passive_pollution_per_minute(time)
 		else
 			boost = 1
 		end
+	else
+		boost = 1
 	end
 
 	return boost * (

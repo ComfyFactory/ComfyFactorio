@@ -608,7 +608,7 @@ function Public.process_etaframe_update(player, flow1, bools)
 			-- local caption
 			if bools.atsea_loading_bool then
 				-- @TODO: Fix magic numbers here
-				if memory.overworldx >= Balance.rockets_needed_x and (not memory.overworldx == 21 * 40) then --bools.eta_bool is not helpful yet
+				if memory.overworldx >= Balance.rockets_needed_x and (not (memory.overworldx == 21 * 40)) then --bools.eta_bool is not helpful yet
 					flow2.etaframe_label_3.caption = {'pirates.gui_etaframe_nest_escape_cost'}
 					if bools.cost_includes_rocket_launch_bool then
 						tooltip = {'pirates.resources_needed_tooltip_0_rocketvariant'}

@@ -451,7 +451,7 @@ function Public.generate_overworld_destination(p)
 	elseif macro_p.x == 10 then
 		kraken_count = 1
 	elseif macro_p.x == 22 then
-		kraken_count = 1
+		kraken_count = 2
 	end
 
 	-- if _DEBUG then

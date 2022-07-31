@@ -146,10 +146,10 @@ function Public.kraken_tick(crew_id, kraken_id, step, substep)
 		local summoned_biter_amount
 		if crewCount <= 12 then
 			firing_period = 4
-			summoned_biter_amount = 3
+			summoned_biter_amount = 4
 		else
 			firing_period = 3
-			summoned_biter_amount = 4
+			summoned_biter_amount = 6
 		-- elseif crewCount <= 24 then
 		-- 	firing_period = 3
 		-- else
@@ -395,7 +395,7 @@ function Public.kraken_die(kraken_id)
 	local message = {'pirates.granted_3', {'pirates.granted_kraken_kill'}, reward_items[1].count .. ' [item=coin]', reward_fuel .. ' [item=coal]', reward_items[2].count .. ' [item=utility-science-pack]'}
 	Common.notify_force_light(memory.force,message)
 
-	memory.playtesting_stats.coins_gained_by_krakens = memory.playtesting_stats.coins_gained_by_krakens + reward_items[2].count
+	memory.playtesting_stats.coins_gained_by_krakens = memory.playtesting_stats.coins_gained_by_krakens + reward_items[1].count
 end
 
 local event = require 'utils.event'
