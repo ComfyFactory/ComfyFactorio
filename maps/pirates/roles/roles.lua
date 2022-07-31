@@ -348,7 +348,7 @@ function Public.assign_captain_based_on_priorities(excluded_player_index)
 	local captain_name = nil
 
 	-- Prefer officers for a captain (if there are any)
-	for _, player_index in pairs(memory.officers_table) do
+	for player_index, _ in pairs(memory.officers_table) do
 		local player = game.players[player_index]
 		local player_active = Utils.contains(Common.crew_get_nonafk_crew_members(), player)
 
