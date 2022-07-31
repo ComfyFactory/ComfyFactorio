@@ -335,8 +335,8 @@ local function damage_to_players_changes(event)
 				damage_multiplier = damage_multiplier * Balance.samurai_damage_taken_multiplier
 			elseif class == Classes.enum.HATAMOTO then
 				damage_multiplier = damage_multiplier * Balance.hatamoto_damage_taken_multiplier
-			elseif class == Classes.enum.ROC_EATER then
-				damage_multiplier = damage_multiplier * Balance.roc_eater_damage_taken_multiplier
+			elseif class == Classes.enum.ROCK_EATER then
+				damage_multiplier = damage_multiplier * Balance.rock_eater_damage_taken_multiplier
 			elseif class == Classes.enum.IRON_LEG then
 				if memory.class_auxiliary_data[player_index] and memory.class_auxiliary_data[player_index].iron_leg_active then
 					damage_multiplier = damage_multiplier * Balance.iron_leg_damage_taken_multiplier
@@ -997,12 +997,12 @@ local function base_kill_rewards(event)
 		class = memory.classes_table[revenge_target.player.index]
 	end
 
-	local class_is_chief = (class and class == Classes.enum.CHIEF) and true or false
+	local class_is_chef = (class and class == Classes.enum.CHEF) and true or false
 
 
-	-- no worm loot in the maze except for chiefs:
+	-- no worm loot in the maze except for chefs:
 	local maze = (destination.subtype and destination.subtype == Islands.enum.MAZE)
-	if maze and not (entity_name == 'biter-spawner' or entity_name == 'spitter-spawner') and not (class_is_chief) then return end
+	if maze and not (entity_name == 'biter-spawner' or entity_name == 'spitter-spawner') and not (class_is_chef) then return end
 
 	local iron_amount
 	local coin_amount
@@ -1011,12 +1011,12 @@ local function base_kill_rewards(event)
 	if entity_name == 'small-worm-turret' then
 		iron_amount = 5
 		coin_amount = 50
-		fish_amount = 1 * Balance.chief_fish_received_for_worm_kill
+		fish_amount = 1 * Balance.chef_fish_received_for_worm_kill
 		memory.playtesting_stats.coins_gained_by_nests_and_worms = memory.playtesting_stats.coins_gained_by_nests_and_worms + coin_amount
 	elseif entity_name == 'medium-worm-turret' then
 		iron_amount = 20
 		coin_amount = 90
-		fish_amount = 1 * Balance.chief_fish_received_for_worm_kill
+		fish_amount = 2 * Balance.chef_fish_received_for_worm_kill
 		memory.playtesting_stats.coins_gained_by_nests_and_worms = memory.playtesting_stats.coins_gained_by_nests_and_worms + coin_amount
 	elseif entity_name == 'biter-spawner' or entity_name == 'spitter-spawner' then
 		iron_amount = 30
@@ -1026,12 +1026,12 @@ local function base_kill_rewards(event)
 	elseif entity_name == 'big-worm-turret' then
 		iron_amount = 30
 		coin_amount = 140
-		fish_amount = 2 * Balance.chief_fish_received_for_worm_kill
+		fish_amount = 2 * Balance.chef_fish_received_for_worm_kill
 		memory.playtesting_stats.coins_gained_by_nests_and_worms = memory.playtesting_stats.coins_gained_by_nests_and_worms + coin_amount
 	elseif entity_name == 'behemoth-worm-turret' then
 		iron_amount = 50
 		coin_amount = 260
-		fish_amount = 3 * Balance.chief_fish_received_for_worm_kill
+		fish_amount = 3 * Balance.chef_fish_received_for_worm_kill
 		memory.playtesting_stats.coins_gained_by_nests_and_worms = memory.playtesting_stats.coins_gained_by_nests_and_worms + coin_amount
 	elseif memory.overworldx > 0 then --avoid coin farming on first island
 		if entity_name == 'small-biter' then
@@ -1039,35 +1039,35 @@ local function base_kill_rewards(event)
 			-- 	coin_amount = 1
 			-- end
 			coin_amount = 1
-			fish_amount = 1 * Balance.chief_fish_received_for_biter_kill
+			fish_amount = 0 * Balance.chef_fish_received_for_biter_kill
 			memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
 		elseif entity_name == 'small-spitter' then
 			coin_amount = 1
-			fish_amount = 1 * Balance.chief_fish_received_for_biter_kill
+			fish_amount = 0 * Balance.chef_fish_received_for_biter_kill
 			memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
 		elseif entity_name == 'medium-biter' then
 			coin_amount = 2
-			fish_amount = 1 * Balance.chief_fish_received_for_biter_kill
+			fish_amount = 1 * Balance.chef_fish_received_for_biter_kill
 			memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
 		elseif entity_name == 'medium-spitter' then
 			coin_amount = 2
-			fish_amount = 1 * Balance.chief_fish_received_for_biter_kill
+			fish_amount = 1 * Balance.chef_fish_received_for_biter_kill
 			memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
 		elseif entity_name == 'big-biter' then
 			coin_amount = 4
-			fish_amount = 2 * Balance.chief_fish_received_for_biter_kill
+			fish_amount = 2 * Balance.chef_fish_received_for_biter_kill
 			memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
 		elseif entity_name == 'big-spitter' then
 			coin_amount = 4
-			fish_amount = 2 * Balance.chief_fish_received_for_biter_kill
+			fish_amount = 2 * Balance.chef_fish_received_for_biter_kill
 			memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
 		elseif entity_name == 'behemoth-biter' then
 			coin_amount = 8
-			fish_amount = 3 * Balance.chief_fish_received_for_biter_kill
+			fish_amount = 3 * Balance.chef_fish_received_for_biter_kill
 			memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
 		elseif entity_name == 'behemoth-spitter' then
 			coin_amount = 8
-			fish_amount = 3 * Balance.chief_fish_received_for_biter_kill
+			fish_amount = 3 * Balance.chef_fish_received_for_biter_kill
 			memory.playtesting_stats.coins_gained_by_biters = memory.playtesting_stats.coins_gained_by_biters + coin_amount
 		end
 	end
@@ -1082,7 +1082,7 @@ local function base_kill_rewards(event)
 		stack[#stack + 1] = {name = 'coin', count = coin_amount}
 	end
 
-	if class_is_chief and fish_amount and fish_amount > 0 then
+	if class_is_chef and fish_amount and fish_amount > 0 then
 		stack[#stack + 1] = {name = 'raw-fish', count = fish_amount}
 	end
 

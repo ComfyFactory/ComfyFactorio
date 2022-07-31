@@ -70,9 +70,9 @@ local destinationScheme = {
 	[17] = {B, B, B},
 	[18] = {C, C, C}, --first showing of robot frame cost
 	[19] = {DOCK, B, B},
-	[20] = {NIL, NIL, NIL},
-	[21] = {WALKWAYS, WALKWAYS, WALKWAYS}, --rocket launch cost begins
-	[22] = {SWAMP, RED_DESERT, STANDARD_VARIANT}, -- uniquely, this has a rocket launch cost, but still has an auto-undock timer
+	[20] = {WALKWAYS, WALKWAYS, WALKWAYS}, --rocket launch cost begins
+	[21] = {SWAMP, RED_DESERT, STANDARD_VARIANT}, -- uniquely, this has a rocket launch cost, but still has an auto-undock timer
+	[22] = {NIL, NIL, NIL},
 	[23] = {C, C, C},
 	[24] = {MAZE, MAZE, MAZE}, -- current 'boss map'
 	[25] = {NIL, NIL, NIL},
@@ -197,14 +197,14 @@ function Public.generate_destination_base_cost_to_undock(p, subtype)
 		end
 	elseif macro_p.x == 18 then --a super small amount of flying-robot-frame on a relatively early level so that they see they need lubricant
 		base_cost_to_undock = base_cost_2b
-	elseif macro_p.x <= 20 then
+	elseif macro_p.x <= 19 then
 		if macro_p.x % 3 == 0 then
 			base_cost_to_undock = nil
 		else
 			base_cost_to_undock = base_cost_2
 		end
-		-- after this point, mandatory. except for 22
-	elseif macro_p.x == 22 then
+		-- after this point, mandatory to pay. except for 21
+	elseif macro_p.x == 21 then
 		base_cost_to_undock = base_cost_2
 	elseif macro_p.x <= 23 then
 		base_cost_to_undock = base_cost_3
@@ -449,6 +449,8 @@ function Public.generate_overworld_destination(p)
 	if macro_p.x < 10 then
 		kraken_count = 0
 	elseif macro_p.x == 10 then
+		kraken_count = 1
+	elseif macro_p.x == 22 then
 		kraken_count = 1
 	end
 

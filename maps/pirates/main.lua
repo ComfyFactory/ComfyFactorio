@@ -279,7 +279,7 @@ local function crew_tick()
 		if memory.crew_disband_tick_message < tick then
 			memory.crew_disband_tick_message = nil
 
-			local message1 = {'pirates.crew_disband_tick_message', 25}
+			local message1 = {'pirates.crew_disband_tick_message', 30}
 	
 			Common.notify_force(memory.force, message1)
 	

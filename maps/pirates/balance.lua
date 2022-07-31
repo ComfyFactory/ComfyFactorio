@@ -67,10 +67,10 @@ Public.rocket_launch_coin_reward = 5000
  Public.dredger_reach_bonus = 16
  Public.dredger_fish_bonus = 2
  Public.gourmet_ore_scaling_enabled = false
- Public.chief_fish_received_for_biter_kill = 1
- Public.chief_fish_received_for_worm_kill = 3
- Public.roc_eater_damage_taken_multiplier = 0.8
- Public.roc_eater_required_stone_furnace_to_heal_count = 1
+ Public.chef_fish_received_for_biter_kill = 1
+ Public.chef_fish_received_for_worm_kill = 3
+ Public.rock_eater_damage_taken_multiplier = 0.8
+ Public.rock_eater_required_stone_furnace_to_heal_count = 1
  Public.soldier_defender_summon_chance = 0.2
  Public.veteran_destroyer_summon_chance = 0.2
  Public.veteran_on_hit_slow_chance = 0.1
@@ -157,12 +157,12 @@ function Public.max_time_on_island_formula() --always >0  --tuned
 end
 
 
-Public.rockets_needed_x = 40*21
+Public.rockets_needed_x = 40*20
 
 
 function Public.max_time_on_island()
 	local x = Common.overworldx()
-	if x == 0 or (x >= Public.rockets_needed_x and x ~= 40*22) then
+	if x == 0 or (x >= Public.rockets_needed_x and x ~= 40*21) then
 	-- if Common.overworldx() == 0 or ((Common.overworldx()/40) > 20 and (Common.overworldx()/40) < 25) then
 		return -1
 	else
