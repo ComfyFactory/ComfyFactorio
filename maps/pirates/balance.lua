@@ -31,49 +31,49 @@ Public.technology_price_multiplier = 1
 
 Public.rocket_launch_coin_reward = 5000
 
- Public.base_caught_fish_amount = 3
- Public.class_reward_tick_rate_in_seconds = 7
- Public.poison_damage_multiplier = 1.85
- Public.every_nth_tree_gives_coins = 6
+Public.base_caught_fish_amount = 3
+Public.class_reward_tick_rate_in_seconds = 7
+Public.poison_damage_multiplier = 1.85
+Public.every_nth_tree_gives_coins = 6
 
- Public.samurai_damage_taken_multiplier = 0.26
- Public.samurai_damage_dealt_when_not_melee_multiplier = 0.75
- Public.samurai_damage_dealt_with_melee = 25
- Public.hatamoto_damage_taken_multiplier = 0.16
- Public.hatamoto_damage_dealt_when_not_melee_multiplier = 0.75
- Public.hatamoto_damage_dealt_with_melee = 45
- Public.iron_leg_damage_taken_multiplier = 0.18
- Public.iron_leg_iron_ore_required = 3000
- Public.deckhand_extra_speed = 1.25
- Public.deckhand_ore_grant_multiplier = 2
- Public.deckhand_ore_scaling_enabled = true
- Public.boatswain_extra_speed = 1.25
- Public.boatswain_ore_grant_multiplier = 4
- Public.boatswain_ore_scaling_enabled = true
- Public.shoresman_extra_speed = 1.1
- Public.shoresman_ore_grant_multiplier = 2
- Public.shoresman_ore_scaling_enabled = true
- Public.quartermaster_range = 19
- Public.quartermaster_bonus_physical_damage = 1.3
- Public.quartermaster_ore_scaling_enabled = false
- Public.scout_extra_speed = 1.3
- Public.scout_damage_taken_multiplier = 1.25
- Public.scout_damage_dealt_multiplier = 0.6
- Public.fisherman_reach_bonus = 10
- Public.lumberjack_coins_from_tree = 12
- Public.master_angler_reach_bonus = 16
- Public.master_angler_fish_bonus = 2
- Public.master_angler_coin_bonus = 20
- Public.dredger_reach_bonus = 16
- Public.dredger_fish_bonus = 2
- Public.gourmet_ore_scaling_enabled = false
- Public.chef_fish_received_for_biter_kill = 1
- Public.chef_fish_received_for_worm_kill = 3
- Public.rock_eater_damage_taken_multiplier = 0.8
- Public.rock_eater_required_stone_furnace_to_heal_count = 1
- Public.soldier_defender_summon_chance = 0.2
- Public.veteran_destroyer_summon_chance = 0.2
- Public.veteran_on_hit_slow_chance = 0.1
+Public.samurai_damage_taken_multiplier = 0.26
+Public.samurai_damage_dealt_when_not_melee_multiplier = 0.75
+Public.samurai_damage_dealt_with_melee = 25
+Public.hatamoto_damage_taken_multiplier = 0.16
+Public.hatamoto_damage_dealt_when_not_melee_multiplier = 0.75
+Public.hatamoto_damage_dealt_with_melee = 45
+Public.iron_leg_damage_taken_multiplier = 0.18
+Public.iron_leg_iron_ore_required = 3000
+Public.deckhand_extra_speed = 1.25
+Public.deckhand_ore_grant_multiplier = 2
+Public.deckhand_ore_scaling_enabled = true
+Public.boatswain_extra_speed = 1.25
+Public.boatswain_ore_grant_multiplier = 4
+Public.boatswain_ore_scaling_enabled = true
+Public.shoresman_extra_speed = 1.1
+Public.shoresman_ore_grant_multiplier = 2
+Public.shoresman_ore_scaling_enabled = true
+Public.quartermaster_range = 19
+Public.quartermaster_bonus_physical_damage = 1.3
+Public.quartermaster_ore_scaling_enabled = false
+Public.scout_extra_speed = 1.3
+Public.scout_damage_taken_multiplier = 1.25
+Public.scout_damage_dealt_multiplier = 0.6
+Public.fisherman_reach_bonus = 10
+Public.lumberjack_coins_from_tree = 12
+Public.master_angler_reach_bonus = 16
+Public.master_angler_fish_bonus = 2
+Public.master_angler_coin_bonus = 20
+Public.dredger_reach_bonus = 16
+Public.dredger_fish_bonus = 2
+Public.gourmet_ore_scaling_enabled = false
+Public.chef_fish_received_for_biter_kill = 1
+Public.chef_fish_received_for_worm_kill = 3
+Public.rock_eater_damage_taken_multiplier = 0.8
+Public.rock_eater_required_stone_furnace_to_heal_count = 1
+Public.soldier_defender_summon_chance = 0.2
+Public.veteran_destroyer_summon_chance = 0.2
+Public.veteran_on_hit_slow_chance = 0.1
 
 
 function Public.starting_boatEEIpower_production_MW()
@@ -208,17 +208,13 @@ function Public.silo_total_pollution()
 end
 
 function Public.boat_passive_pollution_per_minute(time)
-	local boost = 1
 	local T = Public.max_time_on_island_formula()
 	if (Common.overworldx()/40) > 25 then T = T * 0.9 end
 
-	if time then
-		if time >= 160/100 * T then
-		boost = 40
-		elseif time >= 130/100 * T then
-			boost = 30
-		elseif time >= 100/100 * T then --will still happen regularly, on islands without an auto-undock timer
-			boost = 20
+	local boost
+	if time then --sharp rise approaching T, steady increase thereafter
+		if time > T then
+			boost = 20 + 10 * (time - T) / (30/100 * T)
 		elseif time >= 95/100 * T then
 			boost = 16
 		elseif time >= 90/100 * T then
@@ -233,6 +229,8 @@ function Public.boat_passive_pollution_per_minute(time)
 			boost = 2
 		elseif time >= 50/100 * T then
 			boost = 1.5
+		else
+			boost = 1
 		end
 	end
 
