@@ -1200,6 +1200,10 @@ function Public.get_current_date(pretty)
     end
 
     local date = Public.convertFromEpoch(s)
+    if not date then
+        return
+    end
+
     if pretty then
         return tonumber(date.year .. '-' .. date.month .. '-' .. date.day)
     else
@@ -1216,6 +1220,9 @@ function Public.get_current_date_with_time()
     end
 
     local date = Public.convertFromEpoch(s)
+    if not date then
+        return
+    end
     return date.year .. '-' .. date.month .. '-' .. date.day .. ' ' .. date.hours .. ':' .. date.minutes
 end
 
