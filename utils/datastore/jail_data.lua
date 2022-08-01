@@ -445,7 +445,7 @@ local function validate_server_args(data)
     end
 
     if not type(griefer) == 'string' then
-        Utils.print_to(player, 'Invalid name.')
+        print(module_name .. 'Invalid name.')
         return false
     end
 
