@@ -8,6 +8,8 @@ local Event = require 'utils.event'
 local Utils = require 'utils.core'
 local table = require 'utils.table'
 
+local module_name = '[Jail-data] '
+
 local jailed_data_set = 'jailed'
 local revoked_permissions_set = 'revoked_permissions_jailed'
 local jailed = {}
@@ -216,6 +218,18 @@ local function get_gulag_permission_group()
     return gulag
 end
 
+local function get_super_gulag_permission_group()
+    local gulag = game.permissions.get_group('super_gulag')
+    if not gulag then
+        gulag = game.permissions.create_group('super_gulag')
+        for action_name, _ in pairs(defines.input_action) do
+            gulag.set_allows_action(defines.input_action[action_name], false)
+        end
+    end
+
+    return gulag
+end
+
 local function create_gulag_surface()
     local surface = game.surfaces['gulag']
     if not surface then
@@ -363,6 +377,16 @@ local function validate_args(data)
         return false
     end
 
+    if cmd == 'jail' and jailed[get_griefer_player.name] then
+        print(module_name .. 'Player is already jailed.')
+        return false
+    end
+
+    if cmd == 'free' and not jailed[get_griefer_player.name] then
+        print(module_name .. 'Player is not jailed.')
+        return false
+    end
+
     if votejail[player.name] and not player.admin then
         Utils.print_to(player, 'You are currently being investigated since you have griefed.')
         return false
@@ -379,12 +403,12 @@ local function validate_args(data)
     end
 
     if player.name == griefer and not player.admin then
-        Utils.print_to(player, 'You can´t select yourself.')
+        Utils.print_to(player, 'You can´t jail yourself.')
         return false
     end
 
     if get_griefer_player.admin and not player.admin then
-        Utils.print_to(player, 'You can´t select an admin.')
+        Utils.print_to(player, 'You can´t jail an admin.')
         return false
     end
 
@@ -405,6 +429,65 @@ local function validate_args(data)
 
     if cmd == 'jail' and message and string.len(message) <= 10 then
         Utils.print_to(player, 'Reason is too short.')
+        return false
+    end
+
+    return true
+end
+
+local function validate_server_args(data)
+    local griefer = data.griefer
+    local message = data.message
+    local cmd = data.cmd
+
+    if not griefer then
+        return
+    end
+
+    if not type(griefer) == 'string' then
+        Utils.print_to(player, 'Invalid name.')
+        return false
+    end
+
+    local get_griefer_player = game.get_player(griefer)
+
+    if not validate_entity(get_griefer_player) then
+        print(module_name .. 'Invalid name.')
+        return false
+    end
+
+    if not griefer or not get_griefer_player then
+        print(module_name .. 'Invalid name.')
+        return false
+    end
+
+    if cmd == 'jail' and jailed[get_griefer_player.name] then
+        print(module_name .. 'Player is already jailed.')
+        return false
+    end
+
+    if cmd == 'free' and not jailed[get_griefer_player.name] then
+        print(module_name .. 'Player is not jailed.')
+        return false
+    end
+
+    if cmd == 'jail' and get_griefer_player.admin then
+        print(module_name .. 'You can´t jail an admin.')
+        return false
+    end
+
+    if not message then
+        print(module_name .. 'No valid reason was given.')
+        return false
+    end
+
+    if cmd == 'jail' and message and string.len(message) <= 0 then
+        print(module_name .. 'No valid reason was given.')
+        return false
+    end
+
+    if cmd == 'jail' and message and string.len(message) <= 10 then
+        print(module_name .. 'Reason is too short.')
         return false
     end
 
@@ -470,7 +553,7 @@ local function vote_to_free(player, griefer)
     return
 end
 
-local function jail(player, griefer, msg, raised)
+local function jail(player, griefer, msg, raised, mute)
     player = player or 'script'
 
     if jailed[griefer] then
@@ -489,8 +572,13 @@ local function jail(player, griefer, msg, raised)
 
     teleport_player_to_gulag(to_jail_player, 'jail')
 
-    local gulag = get_gulag_permission_group()
-    gulag.add_player(griefer)
+    if mute then
+        local gulag = get_super_gulag_permission_group()
+        gulag.add_player(griefer)
+    else
+        local gulag = get_gulag_permission_group()
+        gulag.add_player(griefer)
+    end
 
     local date = Server.get_current_date_with_time()
 
@@ -566,8 +654,9 @@ local update_jailed =
         local value = data.value or false
         local player = data.player or 'script'
         local message = data.message
+        local mute = data.mute or false
         if value then
-            jail(player, key, message)
+            jail(player, key, message, nil, mute)
         else
             free(player, key)
         end
@@ -593,7 +682,8 @@ end
 -- @param value boolean
 -- @param player LuaPlayer or <script>
 -- @param message string
-function Public.try_ul_data(key, value, player, message)
+-- @param mute boolean
+function Public.try_ul_data(key, value, player, message, mute)
     if type(key) == 'table' then
         key = key.name
     end
@@ -604,7 +694,8 @@ function Public.try_ul_data(key, value, player, message)
         key = key,
         value = value,
         player = player,
-        message = message
+        message = message,
+        mute = mute or false
     }
 
     Task.set_timeout_in_ticks(1, update_jailed, data)
@@ -836,13 +927,13 @@ Event.add(
             local trusted = validate_trusted(player)
 
             if is_revoked(player.name) then
-                Utils.warning(player, 'You have abused your trusted permissions and therefore')
+                Utils.warning(player, module_name .. 'You have abused your trusted permissions and therefore')
                 Utils.warning(player, 'your permissions have been revoked!')
                 return
             end
 
             if not param then
-                return Utils.print_to(player, 'No valid reason given.')
+                return Utils.print_to(player, module_name .. 'No valid reason given.')
             end
 
             local message
@@ -881,10 +972,10 @@ Event.add(
             if trusted and playtime >= settings.playtime_for_vote and playtime < settings.playtime_for_instant_jail and not player.admin then
                 if cmd == 'jail' then
                     if not terms_tbl[player.name] then
-                        Utils.warning(player, 'Abusing the jail command will lead to revoked permissions. Jailing someone in case of disagreement is _NEVER_ OK!')
+                        Utils.warning(player, module_name .. 'Abusing the jail command will lead to revoked permissions. Jailing someone in case of disagreement is _NEVER_ OK!')
                         Utils.warning(player, "Jailing someone because they're afk or other stupid reasons is NOT valid!")
                         Utils.warning(player, 'Run this command again to if you really want to do this!')
-                        for i = 1, 4 do
+                        for _ = 1, 4 do
                             Task.set_timeout_in_ticks(delay, play_alert_sound, {name = player.name})
                             delay = delay + 30
                         end
@@ -892,6 +983,7 @@ Event.add(
                         Task.set_timeout_in_ticks(settings.clear_terms_tbl, clear_terms_tbl, {player = player.name})
                         return
                     end
+
                     Utils.warning(player, 'Logging your actions.')
                     vote_to_jail(player, griefer, message)
                     return
@@ -904,9 +996,10 @@ Event.add(
             if player.admin or playtime >= settings.playtime_for_instant_jail then
                 if cmd == 'jail' then
                     if not terms_tbl[player.name] then
-                        Utils.warning(player, 'Abusing the jail command will lead to revoked permissions. Jailing someone in case of disagreement is _NEVER_ OK!')
+                        Utils.warning(player, module_name .. 'Abusing the jail command will lead to revoked permissions. Jailing someone in case of disagreement is _NEVER_ OK!')
+                        Utils.warning(player, "Jailing someone because they're afk or other stupid reasons is NOT valid!")
                         Utils.warning(player, 'Run this command again to if you really want to do this!')
-                        for i = 1, 4 do
+                        for _ = 1, 4 do
                             Task.set_timeout_in_ticks(delay, play_alert_sound, {name = player.name})
                             delay = delay + 30
                         end
@@ -914,6 +1007,7 @@ Event.add(
                         Task.set_timeout_in_ticks(settings.clear_terms_tbl, clear_terms_tbl, {player = player.name})
                         return
                     end
+
                     Utils.warning(player, 'Logging your actions.')
                     Public.try_ul_data(griefer, true, player.name, message)
                     return
@@ -921,6 +1015,55 @@ Event.add(
                     Public.try_ul_data(griefer, false, player.name)
                     return
                 end
+            end
+        else
+            if not param then
+                return print(module_name .. 'No valid reason given.')
+            end
+
+            local message
+            local t = {}
+
+            for i in string.gmatch(param, '%S+') do
+                t[#t + 1] = i
+            end
+
+            local griefer = t[1]
+            table.remove(t, 1)
+
+            message = concat(t, ' ')
+
+            local data = {
+                griefer = griefer,
+                message = message,
+                cmd = cmd
+            }
+
+            local success = validate_server_args(data)
+
+            if not success then
+                return
+            end
+
+            if game.get_player(griefer) then
+                griefer = game.get_player(griefer).name
+            end
+
+            if cmd == 'jail' then
+                if not terms_tbl['script'] then
+                    print(module_name .. 'Abusing the jail command will lead to revoked permissions. Jailing someone in case of disagreement is _NEVER_ OK!')
+                    print(module_name .. 'Run this command again to if you really want to do this!')
+                    terms_tbl['script'] = true
+                    Task.set_timeout_in_ticks(settings.clear_terms_tbl, clear_terms_tbl, {player = 'script'})
+                    return
+                end
+
+                print(module_name .. 'Logging your actions.')
+                Public.try_ul_data(griefer, true, 'script', message)
+                return
+            elseif cmd == 'free' then
+                Public.try_ul_data(griefer, false, 'script')
+                return
             end
         end
     end
