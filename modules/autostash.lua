@@ -9,7 +9,7 @@ local Gui = require 'utils.gui'
 local floor = math.floor
 local print_color = {r = 120, g = 255, b = 0}
 
-local auto_stash_button_name = Gui.uid()
+local auto_stash_button_name = Gui.uid_name()
 
 local this = {
     floating_text_y_offsets = {},
@@ -570,9 +570,6 @@ local function create_gui_button(player)
     else
         tooltip = 'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.'
     end
-    if player.gui.top.auto_stash then
-        return
-    end
     if this.bottom_button then
         local data = BottomFrame.get('bottom_quickbar_button')
         -- save it for later use
@@ -581,7 +578,7 @@ local function create_gui_button(player)
 
         if data and data[player.index] then
             local f = data[player.index]
-            if f.frame and f.frame.valid then
+            if f and f.frame and f.frame.valid then
                 f.frame.sprite = 'item/wooden-chest'
                 f.frame.tooltip = tooltip
             end
@@ -598,6 +595,10 @@ local function create_gui_button(player)
                 }
             )
         else
+            local tb = player.gui.top[auto_stash_button_name]
+            if tb and tb.valid then
+                return
+            end
             local b =
                 player.gui.top.add(
                 {
