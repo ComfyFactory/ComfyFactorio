@@ -1,4 +1,4 @@
-name: 'auto-release'
+name: 'Auto-release'
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the develop branch
