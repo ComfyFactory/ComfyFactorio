@@ -1,0 +1,19 @@
+name: 'auto-release'
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the develop branch
+on:
+  push:
+    branches: [develop]
+
+jobs:
+  auto-release:
+    name: 'Auto Release'
+    runs-on: 'ubuntu-latest'
+
+    steps:
+      - uses: 'marvinpinto/action-automatic-releases@latest'
+        with:
+          repo_token: '${{ secrets.GITHUB_TOKEN }}'
+          automatic_release_tag: 'stable-latest'
+          prerelease: true
