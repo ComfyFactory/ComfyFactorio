@@ -1042,8 +1042,8 @@ local function on_entity_died(event)
 
     local entity_limits = Public.get('entity_limits')
 
-    if entity_limits[event.entity.name] then
-        entity_limits[event.entity.name].placed = entity_limits[event.entity.name].placed - 1
+    if entity_limits[event.entity.type] then
+        entity_limits[event.entity.type].placed = entity_limits[event.entity.type].placed - 1
         update_fd_stats()
     end
 end
@@ -1121,16 +1121,16 @@ local function on_built_entity(event)
         return
     end
     local entity_limits = Public.get('entity_limits')
-    if entity_limits[entity.name] then
+    if entity_limits[entity.type] then
         local surface = entity.surface
 
-        if entity_limits[entity.name].placed < entity_limits[entity.name].limit then
-            entity_limits[entity.name].placed = entity_limits[entity.name].placed + 1
+        if entity_limits[entity.type].placed < entity_limits[entity.type].limit then
+            entity_limits[entity.type].placed = entity_limits[entity.type].placed + 1
             surface.create_entity(
                 {
                     name = 'flying-text',
                     position = entity.position,
-                    text = entity_limits[entity.name].placed .. ' / ' .. entity_limits[entity.name].limit .. ' ' .. entity_limits[entity.name].str .. 's',
+                    text = entity_limits[entity.type].placed .. ' / ' .. entity_limits[entity.type].limit .. ' ' .. entity_limits[entity.type].str .. 's',
                     color = {r = 0.98, g = 0.66, b = 0.22}
                 }
             )
@@ -1140,7 +1140,7 @@ local function on_built_entity(event)
                 {
                     name = 'flying-text',
                     position = entity.position,
-                    text = entity_limits[entity.name].str .. ' limit reached.',
+                    text = entity_limits[entity.type].str .. ' limit reached.',
                     color = {r = 0.82, g = 0.11, b = 0.11}
                 }
             )
@@ -1166,15 +1166,15 @@ local function on_robot_built_entity(event)
 
     local entity_limits = Public.get('entity_limits')
 
-    if entity_limits[entity.name] then
+    if entity_limits[entity.type] then
         local surface = entity.surface
-        if entity_limits[entity.name].placed < entity_limits[entity.name].limit then
-            entity_limits[entity.name].placed = entity_limits[entity.name].placed + 1
+        if entity_limits[entity.type].placed < entity_limits[entity.type].limit then
+            entity_limits[entity.type].placed = entity_limits[entity.type].placed + 1
             surface.create_entity(
                 {
                     name = 'flying-text',
                     position = entity.position,
-                    text = entity_limits[entity.name].placed .. ' / ' .. entity_limits[entity.name].limit .. ' ' .. entity_limits[entity.name].str .. 's',
+                    text = entity_limits[entity.type].placed .. ' / ' .. entity_limits[entity.type].limit .. ' ' .. entity_limits[entity.type].str .. 's',
                     color = {r = 0.98, g = 0.66, b = 0.22}
                 }
             )
@@ -1184,7 +1184,7 @@ local function on_robot_built_entity(event)
                 {
                     name = 'flying-text',
                     position = entity.position,
-                    text = entity_limits[entity.name].str .. ' limit reached.',
+                    text = entity_limits[entity.type].str .. ' limit reached.',
                     color = {r = 0.82, g = 0.11, b = 0.11}
                 }
             )
@@ -1219,8 +1219,8 @@ end
 local function on_player_mined_entity(event)
     local entity_limits = Public.get('entity_limits')
 
-    if entity_limits[event.entity.name] then
-        entity_limits[event.entity.name].placed = entity_limits[event.entity.name].placed - 1
+    if entity_limits[event.entity.type] then
+        entity_limits[event.entity.type].placed = entity_limits[event.entity.type].placed - 1
         update_fd_stats()
     end
 end
@@ -1228,8 +1228,8 @@ end
 local function on_robot_mined_entity(event)
     local entity_limits = Public.get('entity_limits')
 
-    if entity_limits[event.entity.name] then
-        entity_limits[event.entity.name].placed = entity_limits[event.entity.name].placed - 1
+    if entity_limits[event.entity.type] then
+        entity_limits[event.entity.type].placed = entity_limits[event.entity.type].placed - 1
         update_fd_stats()
     end
 end
