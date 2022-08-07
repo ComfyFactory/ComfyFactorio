@@ -211,11 +211,13 @@ local function add_fd_stats_button(player)
         player.gui.top[button_id].destroy()
     end
 
-    player.gui.top.add {
+    local b =
+        player.gui.top.add {
         type = 'sprite-button',
         name = button_id,
         sprite = 'item/submachine-gun'
     }
+    b.style.maximal_height = 38
 end
 
 local function on_gui_click(event)
