@@ -10,10 +10,25 @@ jobs:
   auto-release:
     name: 'Auto Release'
     runs-on: 'ubuntu-latest'
-
     steps:
-      - uses: 'marvinpinto/action-automatic-releases@latest'
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Changelog
+        uses: scottbrenner/generate-changelog-action@master
+        id: Changelog
+        env:
+          REPO: ${{ github.repository }}
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          repo_token: '${{ secrets.GITHUB_TOKEN }}'
-          automatic_release_tag: 'latest'
+          tag_name: ${{ github.ref }}
+          release_name: Main Scenario
+          body: |
+            This is the main release of the stable version of Factorio.
+            Check out the [wiki](https://github.com/ComfyFactory/ComfyFactorio/wiki) for getting started.
+            ${{ steps.Changelog.outputs.changelog }}
+          draft: false
           prerelease: false
