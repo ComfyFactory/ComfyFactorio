@@ -49,10 +49,10 @@ function Public.reset_table()
     this.boss_biters = {}
     this.acid_lines_delay = {}
     this.entity_limits = {
-        ['gun-turret'] = {placed = 1, limit = 6, str = 'gun turret', slot_price = 70},
-        ['laser-turret'] = {placed = 0, limit = 1, str = 'laser turret', slot_price = 300},
+        ['ammo-turret'] = {placed = 1, limit = 6, str = 'gun turret', slot_price = 70},
+        ['electric-turret'] = {placed = 0, limit = 1, str = 'laser turret', slot_price = 300},
         ['artillery-turret'] = {placed = 0, limit = 1, str = 'artillery turret', slot_price = 500},
-        ['flamethrower-turret'] = {placed = 0, limit = 0, str = 'flamethrower turret', slot_price = 50000},
+        ['fluid-turret'] = {placed = 0, limit = 0, str = 'flamethrower turret', slot_price = 50000},
         ['land-mine'] = {placed = 0, limit = 1, str = 'mine', slot_price = 20}
     }
     this.difficulties_votes = {
