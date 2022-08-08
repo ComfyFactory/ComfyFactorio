@@ -5,12 +5,17 @@ local cell_size = 15 -- size of each territory to unlock
 local chance_to_receive_token = 0.35 -- chance of a hungry chest, dropping a token after unlocking, can be above 1 for multiple
 
 require 'modules.satellite_score'
+require 'modules.backpack_research'
 
 local Event = require 'utils.event'
 local Functions = require 'maps.expanse.functions'
 local GetNoise = require 'utils.get_noise'
 local Global = require 'utils.global'
 local Map_info = require 'modules.map_info'
+local Gui = require 'utils.gui'
+local format_number = require 'util'.format_number
+local Random = require 'maps.chronosphere.random'
+local Autostash = require 'modules.autostash'
 
 local expanse = {}
 Global.register(
@@ -19,6 +24,31 @@ Global.register(
         expanse = tbl
     end
 )
+expanse.events = {
+    gui_update = Event.generate_event_name('expanse_gui_update'),
+    invasion_warn = Event.generate_event_name('invasion_warn'),
+    invasion_detonate = Event.generate_event_name('invasion_detonate'),
+    invasion_trigger = Event.generate_event_name('invasion_trigger'),
+}
+
+local main_button_name = Gui.uid_name()
+local main_frame_name = Gui.uid_name()
+
+local function create_button(player)
+    if not player.gui.top[main_button_name] then
+        local b =
+            player.gui.top.add(
+            {
+                type = 'sprite-button',
+                name = main_button_name,
+                sprite = 'item/logistic-chest-requester',
+                tooltip = 'Show Expanse statistics!'
+            }
+        )
+        b.style.minimal_height = 38
+        b.style.maximal_height = 38
+    end
+end
 
 local function set_nauvis()
     local surface = game.surfaces[1]
@@ -43,6 +73,11 @@ end
 local function reset()
     expanse.grid = {}
     expanse.containers = {}
+    expanse.cost_stats = {}
+    expanse.invasion_candidates = {}
+    expanse.schedule = {}
+    expanse.size = 1
+    Autostash.insert_into_furnace(true)
 
     local map_gen_settings = {
         ['water'] = 0,
@@ -171,6 +206,21 @@ local function container_opened(event)
         local colored_player_name =
             table.concat({'[color=', player.color.r * 0.6 + 0.35, ',', player.color.g * 0.6 + 0.35, ',', player.color.b * 0.6 + 0.35, ']', player.name, '[/color]'})
         game.print(colored_player_name .. ' unlocked new grounds! [gps=' .. math.floor(expansion_position.x) .. ',' .. math.floor(expansion_position.y) .. ',expanse]')
+        expanse.size = (expanse.size or 1) + 1
+        if math.random(1, 4) == 1 then
+            if player.surface.count_tiles_filtered({position = expansion_position, radius = 6, collision_mask = 'water-tile'}) > 40 then
+                return
+            end
+            local render = rendering.draw_sprite{
+                sprite = 'utility/danger_icon',
+                surface = player.surface,
+                target = expansion_position,
+                x_scale = 2,
+                y_scale = 2
+            }
+            table.insert(expanse.invasion_candidates, {surface = player.surface, position = expansion_position, render = render})
+            Functions.check_invasion(expanse)
+        end
     end
 end
 
@@ -200,8 +250,8 @@ local function infini_tree(entity)
         return
     end
     local a = math.floor(expanse.square_size * 0.5)
-    if entity.position.x == a and entity.position.y == a - 1 then
-        entity.surface.create_entity({name = 'tree-0' .. math.random(1, 9), position = {a, a - 1}})
+    if entity.position.x == a and entity.position.y == a - 3 then
+        entity.surface.create_entity({name = 'tree-0' .. math.random(1, 9), position = {a, a - 3}})
     end
 end
 
@@ -220,9 +270,10 @@ local function on_player_joined_game(event)
         local surface = game.surfaces.expanse
         player.teleport(surface.find_non_colliding_position('character', {expanse.square_size * 0.5, expanse.square_size * 0.5}, 32, 0.5), surface)
     end
+    create_button(player)
 end
 
-local function on_player_left_game(event)
+local function on_pre_player_left_game(event)
     local player = game.players[event.player_index]
     if not player.character then
         return
@@ -234,10 +285,10 @@ local function on_player_left_game(event)
     if not inventory then
         return
     end
-    local removed_count = inventory.remove({name = 'small-plane', count = 999})
+    local removed_count = inventory.remove({name = 'coin', count = 999999})
     if removed_count > 0 then
         for _ = 1, removed_count, 1 do
-            player.surface.spill_item_stack(player.position, {name = 'small-plane', count = 1}, false, nil, false)
+            player.surface.spill_item_stack(player.position, {name = 'coin', count = 1}, false, nil, false)
         end
         game.print(player.name .. ' dropped their tokens! [gps=' .. math.floor(player.position.x) .. ',' .. math.floor(player.position.y) .. ',' .. player.surface.name .. ']')
     end
@@ -285,12 +336,85 @@ local function on_init()
     reset()
 end
 
+local function on_tick()
+    if not next(expanse.schedule) then return end
+    for index, stuff in pairs(expanse.schedule) do
+        if game.tick >= stuff.tick then
+            script.raise_event(expanse.events[stuff.event], stuff.parameters)
+            expanse.schedule[index] = nil
+        end
+    end
+end
+
+local function resource_stats(parent, name, count)
+    local button = parent.add({type = 'sprite-button', name = name .. '_sprite', sprite = 'item/' .. name, enabled = false})
+    local label = parent.add({type = 'label', name = name .. '_label', caption = format_number(tonumber(count), true), tooltip = count})
+    label.style.width = 40
+    return button, label
+end
+
+local function create_main_frame(player)
+    local frame = player.gui.screen.add({type = 'frame', name = main_frame_name, caption = 'Expanse hungry chest stats', direction = 'vertical'})
+    frame.location = {x = 10, y = 40}
+    frame.style.maximal_height = 600
+    local evo = game.forces.enemy.evolution_factor
+    frame.add({type = 'label', name = 'size', caption = 'Total size unlocked: ' .. expanse.size or 1})
+    frame.add({type = 'label', name = 'biters', caption = 'Biter attack: ' .. 3 + math.floor(7 * evo) .. ' positions, ' .. 1 + math.floor(evo * 4) .. ' armies'})
+    local scroll = frame.add({type = 'scroll-pane', name = 'scroll_pane', horizontal_scroll_policy = 'never', vertical_scroll_policy = 'auto-and-reserve-space'})
+    local frame_table = scroll.add({type = 'table', name = 'resource_stats', column_count = 8})
+    for name, count in Random.spairs(expanse.cost_stats, function(t,a,b) return t[a] > t[b] end) do
+        resource_stats(frame_table, name, count)
+    end
+end
+
+local function update_resource_gui(event)
+    for _, player in pairs(game.connected_players) do
+        if player.gui.screen[main_frame_name] then
+            local frame = player.gui.screen[main_frame_name]
+            local evo = game.forces.enemy.evolution_factor
+            frame['size'].caption = 'Total size unlocked: ' .. expanse.size or 1
+            frame['biters'].caption = 'Biter attack: ' .. 3 + math.floor(evo * 10) .. ' positions, ' .. 1 + math.floor(evo * 4) .. ' armies'
+            local frame_table = frame['scroll_pane']['resource_stats']
+            local count = expanse.cost_stats[event.item] or 0
+            if not frame_table[event.item .. '_label'] then
+                resource_stats(frame_table, event.item, count)
+            else
+                frame_table[event.item .. '_label'].caption = format_number(tonumber(count), true)
+                frame_table[event.item .. '_label'].tooltip = count
+            end
+        end
+    end
+end
+
+local function on_gui_click(event)
+    local element = event.element
+    if not element.valid then
+        return
+    end
+    local name = element.name
+
+    if name == main_button_name then
+        local player = game.players[event.player_index]
+        if player.gui.screen[main_frame_name] then
+            player.gui.screen[main_frame_name].destroy()
+        else
+            create_main_frame(player)
+        end
+    end
+end
+
 Event.on_init(on_init)
+Event.on_nth_tick(60, on_tick)
 Event.add(defines.events.on_chunk_generated, on_chunk_generated)
 Event.add(defines.events.on_entity_died, infini_resource)
 Event.add(defines.events.on_gui_closed, on_gui_closed)
 Event.add(defines.events.on_gui_opened, on_gui_opened)
+Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
-Event.add(defines.events.on_player_left_game, on_player_left_game)
+Event.add(defines.events.on_pre_player_left_game, on_pre_player_left_game)
 Event.add(defines.events.on_pre_player_mined_item, infini_resource)
 Event.add(defines.events.on_robot_pre_mined, infini_resource)
+Event.add(expanse.events.gui_update, update_resource_gui)
+Event.add(expanse.events.invasion_warn, Functions.invasion_warn)
+Event.add(expanse.events.invasion_detonate, Functions.invasion_detonate)
+Event.add(expanse.events.invasion_trigger, Functions.invasion_trigger)
