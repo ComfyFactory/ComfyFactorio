@@ -17,19 +17,20 @@ local format_number = require 'util'.format_number
 local Random = require 'maps.chronosphere.random'
 local Autostash = require 'modules.autostash'
 
-local expanse = {}
+local expanse = {
+    events = {
+        gui_update = Event.generate_event_name('expanse_gui_update'),
+        invasion_warn = Event.generate_event_name('invasion_warn'),
+        invasion_detonate = Event.generate_event_name('invasion_detonate'),
+        invasion_trigger = Event.generate_event_name('invasion_trigger')
+    }
+}
 Global.register(
     expanse,
     function(tbl)
         expanse = tbl
     end
 )
-expanse.events = {
-    gui_update = Event.generate_event_name('expanse_gui_update'),
-    invasion_warn = Event.generate_event_name('invasion_warn'),
-    invasion_detonate = Event.generate_event_name('invasion_detonate'),
-    invasion_trigger = Event.generate_event_name('invasion_trigger'),
-}
 
 local main_button_name = Gui.uid_name()
 local main_frame_name = Gui.uid_name()
