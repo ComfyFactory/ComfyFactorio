@@ -211,9 +211,6 @@ local function create_entity(data)
                     local e = surface.create_entity({name = self.entityName, position = pos, force = force})
                     e.direction = player.character.direction
                     Public.remove_mana(player, self.mana_cost)
-                else
-                    Public.cast_spell(player, true)
-                    return false
                 end
             end
         end
@@ -235,10 +232,23 @@ end
 local function insert_onto(data)
     local self = data.self
     local player = data.player
+    local rpg_t = data.rpg_t
 
-    player.insert({name = self.entityName, count = self.amount})
+    if self.aoe then
+        for _ = 1, self.amount do
+            if self.mana_cost > rpg_t.mana then
+                break
+            end
+
+            player.insert({name = self.entityName, count = self.amount})
+            Public.remove_mana(player, self.mana_cost)
+        end
+    else
+        player.insert({name = self.entityName, count = self.amount})
+        Public.remove_mana(player, self.mana_cost)
+    end
+
     Public.cast_spell(player)
-    Public.remove_mana(player, self.mana_cost)
     return true
 end
 
@@ -429,7 +439,7 @@ spells[#spells + 1] = {
     entityName = 'sand-rock-big',
     level = 60,
     type = 'entity',
-    mana_cost = 80,
+    mana_cost = 120,
     cooldown = 350,
     aoe = true,
     enabled = true,
@@ -841,6 +851,7 @@ spells[#spells + 1] = {
     entityName = 'explosives',
     target = false,
     amount = 3,
+    aoe = true,
     capsule = true,
     damage = false,
     range = 30,
@@ -1232,6 +1243,22 @@ function Public.rebuild_spells()
 
     for i = 1, #spells do
         if spells[i].enabled then
+            new_spells[#new_spells + 1] = spells[i]
+            spell_names[#spell_names + 1] = spells[i].name
+        end
+    end
+
+    return new_spells, spell_names
+end
+
+--- This rebuilds all spells. Make sure to make changes on_init if you don't
+--  want all spells enabled.
+function Public.get_all_spells_filtered(rpg_t)
+    local new_spells = {}
+    local spell_names = {}
+
+    for i = 1, #spells do
+        if spells[i].enabled and rpg_t and rpg_t.level >= spells[i].level then
             new_spells[#new_spells + 1] = spells[i]
             spell_names[#spell_names + 1] = spells[i].name
         end

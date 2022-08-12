@@ -7,6 +7,7 @@ local Event = require 'utils.event'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Color = require 'utils.color_presets'
+local BasicMarkets = require 'maps.mountain_fortress_v3.basic_markets'
 
 local raise_event = script.raise_event
 local floor = math.floor
@@ -69,6 +70,7 @@ local first_player_to_zone =
         local breached_wall = data.breached_wall
         local message = ({'breached_wall.first_to_reach', player.name, breached_wall})
         Alert.alert_all_players(10, message)
+        BasicMarkets.shuffle_prices()
     end
 )
 

@@ -81,6 +81,7 @@ function Public.reset_wave_defense()
     this.random_group = nil
     this.unit_group_command_delay = 3600 * 20
     this.unit_group_command_step_length = 15
+    this.search_side_targets = {'simple-entity', 'tree', 'car', 'spider-vehicle', 'character'}
     this.wave_interval = 3600
     this.wave_enforced = false
     this.wave_number = 0

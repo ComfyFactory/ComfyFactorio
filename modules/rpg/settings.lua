@@ -72,7 +72,7 @@ end
 
 function Public.update_spell_gui(player, spell_index)
     local rpg_t = Public.get_value_from_player(player.index)
-    local spells, names = Public.rebuild_spells()
+    local spells, names = Public.get_all_spells_filtered(rpg_t)
     local main_frame = player.gui.screen[spell_gui_frame_name]
     if not main_frame then
         return
@@ -123,7 +123,7 @@ end
 
 function Public.spell_gui_settings(player)
     local rpg_t = Public.get_value_from_player(player.index)
-    local spells, names = Public.rebuild_spells()
+    local spells, names = Public.get_all_spells_filtered(rpg_t)
     local main_frame = player.gui.screen[spell_gui_frame_name]
     if not main_frame or not main_frame.valid then
         main_frame =
@@ -530,11 +530,11 @@ function Public.extra_settings(player)
             {
                 type = 'label',
                 caption = ({'rpg_settings.magic_spell'}),
-                tooltip = 'Check the info button at upper right for more information'
+                tooltip = 'Check the info button at upper right for more information\nOnly spells that you can cast are listed here.'
             }
         )
 
-        local spells, names = Public.rebuild_spells()
+        local spells, names = Public.get_all_spells_filtered(rpg_t)
 
         local conjure_label_style = conjure_label.style
         conjure_label_style.horizontally_stretchable = true

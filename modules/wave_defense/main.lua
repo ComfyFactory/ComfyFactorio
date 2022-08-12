@@ -675,6 +675,7 @@ end
 
 local function get_side_targets(group)
     local unit_group_command_step_length = Public.get('unit_group_command_step_length')
+    local search_side_targets = Public.get('search_side_targets')
 
     local commands = {}
     local group_position = {x = group.position.x, y = group.position.y}
@@ -691,7 +692,7 @@ local function get_side_targets(group)
             group.surface.find_entities_filtered {
             position = old_position,
             radius = step_length * 2,
-            type = {'simple-entity', 'tree'},
+            type = search_side_targets,
             limit = 100
         }
         if obstacles then
