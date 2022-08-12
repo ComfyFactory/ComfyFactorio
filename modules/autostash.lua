@@ -700,6 +700,10 @@ Event.add(
     BottomFrame.events.bottom_quickbar_button_name,
     function(data)
         local event = data.event
+        if not event then
+            return
+        end
+
         local player = event.player
         auto_stash(player, event)
     end
