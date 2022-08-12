@@ -1,5 +1,7 @@
 local Price_raffle = require 'maps.expanse.price_raffle'
 local BiterRaffle = require 'functions.biter_raffle'
+local Task = require 'utils.task'
+local Token = require 'utils.token'
 local Public = {}
 
 local ores = {'copper-ore', 'iron-ore', 'stone', 'coal'}
@@ -17,6 +19,18 @@ local price_modifiers = {
     ['water-mud'] = -6,
     ['water-shallow'] = -6
 }
+
+--- Some mods like to destroy the infini tree.
+--- So we solve it by delaying the creation.
+local delay_infini_tree_token =
+    Token.register(
+    function(event)
+        local surface = event.surface
+        local position = event.position
+
+        surface.create_entity({name = 'tree-0' .. math.random(1, 9), position = position})
+    end
+)
 
 local function reward_tokens(expanse, entity)
     local chance = expanse.token_chance % 1
@@ -318,8 +332,9 @@ function Public.expand(expanse, left_top)
             end
         end
         surface.create_entity({name = 'crude-oil', position = {a - 5, a}, amount = 1500000})
+
+        Task.set_timeout_in_ticks(30, delay_infini_tree_token, {surface = surface, position = {a, a - 3}})
         surface.create_entity({name = 'rock-big', position = {a, a}})
-        surface.create_entity({name = 'tree-0' .. math.random(1, 9), position = {a, a - 3}})
         surface.spill_item_stack({a, a + 2}, {name = 'coin', count = 1}, false, nil, false)
         surface.spill_item_stack({a + 0.5, a + 2.5}, {name = 'coin', count = 1}, false, nil, false)
         surface.spill_item_stack({a - 0.5, a + 2.5}, {name = 'coin', count = 1}, false, nil, false)
