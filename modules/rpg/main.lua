@@ -851,7 +851,6 @@ local function on_player_used_capsule(event)
         return
     end
 
-    local conjure_items = Public.all_spells
     local projectile_types = Public.get_projectiles
 
     local player = game.get_player(event.player_index)
@@ -894,7 +893,7 @@ local function on_player_used_capsule(event)
     local mana = rpg_t.mana
     local surface = player.surface
 
-    local spell = conjure_items[rpg_t.dropdown_select_index]
+    local spell = Public.get_spell_by_name(rpg_t, rpg_t.dropdown_select_name)
     if not spell then
         return
     end

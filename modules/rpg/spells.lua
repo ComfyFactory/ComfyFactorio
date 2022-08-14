@@ -1137,6 +1137,36 @@ Public.projectile_types = {
 Public.get_projectiles = Public.projectile_types
 Public.all_spells = spells
 
+--- Gets a spell by index.
+---@param rpg_t table
+---@param spell_name string
+---@return int|boolean
+function Public.get_spell_by_index(rpg_t, spell_name)
+    local _spells = Public.get_all_spells_filtered(rpg_t)
+    for index, data in pairs(_spells) do
+        if data and data.name[1] == spell_name then
+            return index
+        end
+    end
+
+    return false
+end
+
+--- Gets a spell by name.
+---@param rpg_t table
+---@param spell_name string
+---@return table|boolean
+function Public.get_spell_by_name(rpg_t, spell_name)
+    local _spells = Public.get_all_spells_filtered(rpg_t)
+    for _, data in pairs(_spells) do
+        if data and data.name[1] == spell_name then
+            return data
+        end
+    end
+
+    return false
+end
+
 --- Retrieves the spells table or a given spell.
 ---@param key string
 function Public.get_spells(key)
@@ -1258,8 +1288,7 @@ function Public.get_all_spells_filtered(rpg_t)
     local spell_names = {}
 
     for i = 1, #spells do
-        -- if spells[i].enabled and rpg_t and rpg_t.level >= spells[i].level then -- this needs fixing.
-        if spells[i].enabled then
+        if spells[i].enabled and rpg_t and rpg_t.level >= spells[i].level then
             new_spells[#new_spells + 1] = spells[i]
             spell_names[#spell_names + 1] = spells[i].name
         end
