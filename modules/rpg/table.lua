@@ -196,7 +196,7 @@ end
 
 --- Sets a new table to rpg_t table
 ---@param key string
----@param tbl string
+---@param tbl table
 function Public.set_new_player_tbl(key, tbl)
     if key and tbl then
         if type(tbl) ~= 'table' then
