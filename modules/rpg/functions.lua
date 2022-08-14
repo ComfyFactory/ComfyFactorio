@@ -1066,7 +1066,7 @@ function Public.rpg_reset_player(player, one_time_reset)
                 dropdown_select_name_3 = Public.all_spells[1].name[1],
                 allocate_index = 1,
                 explosive_bullets = false,
-                enable_entity_spawn = true,
+                enable_entity_spawn = false,
                 health_bar = rpg_t.health_bar,
                 mana_bar = rpg_t.mana_bar,
                 points_left = 0,
@@ -1091,18 +1091,17 @@ function Public.rpg_reset_player(player, one_time_reset)
         rpg_t.xp = round(old_xp)
         rpg_t.level = old_level
     else
-        player.insert({name = 'raw-fish', count = 500})
         Public.set_new_player_tbl(
             player.index,
             {
-                level = 30,
+                level = 1,
                 xp = 0,
                 strength = 10,
-                magicka = 900,
+                magicka = 10,
                 dexterity = 10,
                 vitality = 10,
-                mana = 5000,
-                mana_max = 5000,
+                mana = 0,
+                mana_max = 0,
                 last_spawned = 0,
                 dropdown_select_index = 1,
                 dropdown_select_name = Public.all_spells[1].name[1],
@@ -1114,7 +1113,7 @@ function Public.rpg_reset_player(player, one_time_reset)
                 dropdown_select_name_3 = Public.all_spells[1].name[1],
                 allocate_index = 1,
                 explosive_bullets = false,
-                enable_entity_spawn = true,
+                enable_entity_spawn = false,
                 points_left = 0,
                 last_floaty_text = visuals_delay,
                 xp_since_last_floaty_text = 0,

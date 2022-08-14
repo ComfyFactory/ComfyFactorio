@@ -1288,8 +1288,7 @@ function Public.get_all_spells_filtered(rpg_t)
     local spell_names = {}
 
     for i = 1, #spells do
-        if spells[i].enabled and rpg_t and rpg_t.level >= spells[i].level then -- this needs fixing.
-            -- if spells[i].enabled then
+        if spells[i].enabled and rpg_t and rpg_t.level >= spells[i].level then
             new_spells[#new_spells + 1] = spells[i]
             spell_names[#spell_names + 1] = spells[i].name
         end
