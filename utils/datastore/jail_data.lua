@@ -32,8 +32,6 @@ local settings = {
 local set_data = Server.set_data
 local try_get_data = Server.try_get_data
 local concat = table.concat
-local gmatch = string.match
-local insert = table.insert
 
 local release_player_from_temporary_prison_token
 local remove_notice
