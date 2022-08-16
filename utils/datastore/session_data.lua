@@ -48,20 +48,20 @@ local Public = {
 local try_download_data_token =
     Token.register(
     function(data)
-        local key = data.key
+        local player_index = data.player_index
         local value = data.value
         if value then
-            session[key] = value
+            session[player_index] = value
             if value > settings.trusted_value then
-                trusted[key] = true
+                trusted[player_index] = true
             end
         else
-            local player = game.get_player(key)
-            session[key] = 0
-            trusted[key] = false
+            local player = game.get_player(player_index)
+            session[player_index] = 0
+            trusted[player_index] = false
             -- we don't want to clutter the database with players less than 10 minutes played.
             if player.online_time >= settings.required_only_time_to_save_time then
-                set_data(session_data_set, key, session[key])
+                set_data(session_data_set, player_index, session[player_index])
             end
         end
     end
@@ -70,9 +70,9 @@ local try_download_data_token =
 local try_upload_data_token =
     Token.register(
     function(data)
-        local key = data.key
+        local player_index = data.player_index
         local value = data.value
-        local player = game.get_player(key)
+        local player = game.get_player(player_index)
         if value then
             -- we don't want to clutter the database with players less than 10 minutes played.
             if player.online_time <= settings.required_only_time_to_save_time then
@@ -81,33 +81,36 @@ local try_upload_data_token =
 
             local old_time_ingame = value
 
-            if not online_track[key] then
-                online_track[key] = 0
+            if not online_track[player_index] then
+                online_track[player_index] = 0
             end
 
-            if online_track[key] > player.online_time then
+            if online_track[player_index] > player.online_time then
                 -- instance has been reset but scenario owner did not clear the player.
                 -- so we clear it here and return.
-                online_track[key] = 0
+                online_track[player_index] = 0
                 return
             end
 
-            local new_time = old_time_ingame + player.online_time - online_track[key]
+            local new_time = old_time_ingame + player.online_time - online_track[player_index]
             if new_time <= 0 then
                 new_time = old_time_ingame + player.online_time
-                online_track[key] = 0
-                print('[ERROR] ' .. key .. ' had new time set as negative value: ' .. new_time)
+                online_track[player_index] = 0
+                print('[ERROR] ' .. player_index .. ' had new time set as negative value: ' .. new_time)
                 return
             end
-            set_data(session_data_set, key, new_time)
-            session[key] = new_time
-            online_track[key] = player.online_time
+            if new_time > settings.trusted_value then
+                trusted[player_index] = true
+            end
+            set_data(session_data_set, player_index, new_time)
+            session[player_index] = new_time
+            online_track[player_index] = player.online_time
         else
             if player.online_time >= settings.required_only_time_to_save_time then
-                if not session[key] then
-                    session[key] = 0
+                if not session[player_index] then
+                    session[player_index] = 0
                 end
-                set_data(session_data_set, key, session[key])
+                set_data(session_data_set, player_index, session[player_index])
             end
         end
     end
@@ -123,18 +126,18 @@ local get_total_playtime_token =
             return
         end
 
-        local key = data.key
+        local player_index = data.key
         local value = data.value
         local to_print = data.to_print
         local player = game.get_player(to_print)
         if player and player.valid then
-            if key then
+            if player_index then
                 if value then
                     player.play_sound {path = 'utility/scenario_message', volume_modifier = 1}
-                    player.print('[color=blue]' .. key .. '[/color] has a total playtime of: ' .. Core.get_formatted_playtime(value))
+                    player.print('[color=blue]' .. player_index .. '[/color] has a total playtime of: ' .. Core.get_formatted_playtime(value))
                 else
                     player.play_sound {path = 'utility/cannot_build', volume_modifier = 1}
-                    player.print('[color=red]' .. key .. '[/color] was not found.')
+                    player.print('[color=red]' .. player_index .. '[/color] was not found.')
                 end
             end
         end
@@ -164,7 +167,9 @@ local function upload_data()
 end
 
 --- Prints out game.tick to real hour/minute
----@param int
+---@param ticks int
+---@param h int
+---@param m int
 function Public.format_time(ticks, h, m)
     local seconds = ticks / 60
     local minutes = math.floor((seconds) / 60)
@@ -180,16 +185,16 @@ function Public.format_time(ticks, h, m)
 end
 
 --- Tries to get data from the webpanel and prints it out to the player
--- @param <LuaPlayer>
--- @param <TargetPlayer>
-function Public.get_and_print_to_player(player, TargetPlayer)
+---@param player LuaPlayer
+---@param target_player string
+function Public.get_and_print_to_player(player, target_player)
     if not (player and player.valid) then
         return
     end
 
     local p = player.print
 
-    if not TargetPlayer then
+    if not target_player then
         p('[ERROR] No player was provided.', Color.fail)
         return
     end
@@ -203,38 +208,38 @@ function Public.get_and_print_to_player(player, TargetPlayer)
     if secs == nil then
         return
     else
-        try_get_data_and_print(session_data_set, TargetPlayer, player.name, get_total_playtime_token)
+        try_get_data_and_print(session_data_set, target_player, player.name, get_total_playtime_token)
     end
 end
 
 --- Tries to get data from the webpanel and updates the local table with values.
--- @param data_set player token
-function Public.try_dl_data(key)
-    key = tostring(key)
+---@param player_index string
+function Public.try_dl_data(player_index)
+    player_index = tostring(player_index)
     local secs = Server.get_current_time()
     if secs == nil then
-        session[key] = game.players[key].online_time
+        session[player_index] = game.players[player_index].online_time
         return
     else
-        try_get_data(session_data_set, key, try_download_data_token)
+        try_get_data(session_data_set, player_index, try_download_data_token)
     end
 end
 
 --- Tries to get data from the webpanel and updates the local table with values.
--- @param data_set player token
-function Public.try_ul_data(key)
-    key = tostring(key)
+---@param player_index string
+function Public.try_ul_data(player_index)
+    player_index = tostring(player_index)
     local secs = Server.get_current_time()
     if secs == nil then
         return
     else
-        try_get_data(session_data_set, key, try_upload_data_token)
+        try_get_data(session_data_set, player_index, try_upload_data_token)
     end
 end
 
 --- Checks if a player exists within the table
--- @param player_name <string>
--- @return <boolean>
+---@param player_name string
+---@return boolean
 function Public.exists(player_name)
     return session[player_name] ~= nil
 end
@@ -252,32 +257,32 @@ function Public.print_sessions()
 end
 
 --- Returns the table of session
--- @return <table>
+---@return table
 function Public.get_session_table()
     return session
 end
 
 --- Returns the table of online_track
--- @return <table>
+---@return table
 function Public.get_tracker_table()
     return online_track
 end
 
 --- Returns the table of trusted
--- @return <table>
+---@return table
 function Public.get_trusted_table()
     return trusted
 end
 
 --- Returns the table of trusted
--- @param LuaPlayer
--- @return <table>
+---@param player LuaPlayer
+---@return table|boolean
 function Public.get_trusted_player(player)
     return trusted and player and player.valid and trusted[player.name] or false
 end
 
 --- Set a player as trusted
--- @param LuaPlayer
+---@param player LuaPlayer
 function Public.set_trusted_player(player)
     if trusted and player and player.valid then
         trusted[player.name] = true
@@ -285,7 +290,7 @@ function Public.set_trusted_player(player)
 end
 
 --- Set a player as untrusted
--- @param LuaPlayer
+---@param player LuaPlayer
 function Public.set_untrusted_player(player)
     if trusted and player and player.valid then
         trusted[player.name] = nil
@@ -293,20 +298,20 @@ function Public.set_untrusted_player(player)
 end
 
 --- Returns the table of session
--- @param LuaPlayer
--- @return <table>
+---@param player LuaPlayer
+---@return table|boolean
 function Public.get_session_player(player)
     return session and player and player.valid and session[player.name] or false
 end
 
 --- Returns the table of settings
--- @return <table>
+---@return table
 function Public.get_settings_table()
     return settings
 end
 
 --- Clears a given player from the session tables.
--- @param LuaPlayer
+---@param player LuaPlayer
 function Public.clear_player(player)
     if player and player.valid then
         local name = player.name
@@ -327,7 +332,7 @@ function Public.clear_player(player)
 end
 
 --- Resets a given player from the online_track table.
--- @param LuaPlayer
+---@param player LuaPlayer
 function Public.reset_online_track(player)
     local name = player.name
     if online_track[name] then
@@ -376,14 +381,14 @@ Event.on_nth_tick(settings.nth_tick, upload_data)
 Server.on_data_set_changed(
     session_data_set,
     function(data)
-        local player = game.get_player(data.key)
+        local player = game.get_player(data.player_index)
         if player and player.valid then
-            session[data.key] = data.value
+            session[data.player_index] = data.value
             if data.value > settings.trusted_value then
-                trusted[data.key] = true
+                trusted[data.player_index] = true
             else
-                if trusted[data.key] then
-                    trusted[data.key] = false
+                if trusted[data.player_index] then
+                    trusted[data.player_index] = false
                 end
             end
         end
