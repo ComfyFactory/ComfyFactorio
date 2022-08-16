@@ -381,12 +381,14 @@ local function validate_args(data)
     local get_offender_player = game.get_player(offender)
 
     if not validate_entity(get_offender_player) then
-        Utils.print_to(player, module_name .. 'Invalid name.')
+        Utils.print_to(player, module_name .. 'No valid player given. Reason is no longer required.')
+        Utils.print_to(player, module_name .. 'Valid input: /jail ' .. player.name)
         return false
     end
 
     if not offender or not get_offender_player then
-        Utils.print_to(player, module_name .. 'Invalid name.')
+        Utils.print_to(player, module_name .. 'No valid player given. Reason is no longer required.')
+        Utils.print_to(player, module_name .. 'Valid input: /jail ' .. player.name)
         return false
     end
 
@@ -669,6 +671,8 @@ local function jail_temporary(player, offender, msg, mute)
     end
 
     offender.clear_console()
+
+    draw_notice_frame(offender)
 
     Task.set_timeout_in_ticks(10800, release_player_from_temporary_prison_token, {offender_name = offender.name, actor_name = player.name})
     return true
@@ -1167,7 +1171,7 @@ Event.add(
             end
 
             if not offender then
-                return Utils.print_to(player, module_name .. 'No valid player given.')
+                return Utils.print_to(player, module_name .. 'Valid input: /jail ' .. player.name)
             end
 
             local data = {
@@ -1216,7 +1220,7 @@ Event.add(
                     return
                 end
             end
-            if player.admin then
+            if not player.admin then
                 if cmd == 'jail' then
                     Utils.warning(player, 'Logging your actions.')
                     Public.try_ul_data(offender, true, player.name, message)
@@ -1225,7 +1229,7 @@ Event.add(
                     Public.try_ul_data(offender, false, player.name)
                     return
                 end
-            elseif playtime >= settings.playtime_for_instant_jail then
+            elseif playtime <= settings.playtime_for_instant_jail then
                 if cmd == 'jail' then
                     if not terms_tbl[player.name] then
                         Utils.warning(player, module_name .. 'Abusing the jail command will lead to revoked permissions. Jailing someone in cases of disagreement is _NEVER_ OK!')
