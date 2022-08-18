@@ -48,7 +48,7 @@ local Public = {
 local try_download_data_token =
     Token.register(
     function(data)
-        local player_index = data.player_index
+        local player_index = data.key
         local value = data.value
         if value then
             session[player_index] = value
@@ -70,7 +70,10 @@ local try_download_data_token =
 local try_upload_data_token =
     Token.register(
     function(data)
-        local player_index = data.player_index
+        local player_index = data.key
+        if not player_index then
+            return
+        end
         local value = data.value
         local player = game.get_player(player_index)
         if value then
@@ -381,7 +384,7 @@ Event.on_nth_tick(settings.nth_tick, upload_data)
 Server.on_data_set_changed(
     session_data_set,
     function(data)
-        local player = game.get_player(data.player_index)
+        local player = game.get_player(data.key)
         if player and player.valid then
             session[data.player_index] = data.value
             if data.value > settings.trusted_value then
