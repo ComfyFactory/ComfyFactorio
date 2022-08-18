@@ -371,7 +371,7 @@ local function init_container(expanse, entity, budget)
     local item_stacks = {}
     local roll_count = 3
     for _ = 1, roll_count, 1 do
-        for _, stack in pairs(Price_raffle.roll(math.floor(cell_value / roll_count), 3, nil, cell_value / (roll_count * 3))) do
+        for _, stack in pairs(Price_raffle.roll(math.floor(cell_value / roll_count), 3, nil, cell_value / (roll_count * 6))) do
             if not item_stacks[stack.name] then
                 item_stacks[stack.name] = stack.count
             else
