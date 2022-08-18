@@ -386,12 +386,12 @@ Server.on_data_set_changed(
     function(data)
         local player = game.get_player(data.key)
         if player and player.valid then
-            session[data.player_index] = data.value
+            session[data.key] = data.value
             if data.value > settings.trusted_value then
-                trusted[data.player_index] = true
+                trusted[data.key] = true
             else
-                if trusted[data.player_index] then
-                    trusted[data.player_index] = false
+                if trusted[data.key] then
+                    trusted[data.key] = false
                 end
             end
         end
