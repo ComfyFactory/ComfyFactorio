@@ -180,6 +180,25 @@ local function remove_old_renders(container)
     end
 end
 
+function Public.spawn_units(spawner)
+    local evolution = game.forces.enemy.evolution_factor
+    local position = spawner.position
+    for i = 1, 4 + math.floor(8 * evolution), 1 do
+        local biter_roll = BiterRaffle.roll('mixed', evolution)
+        local free_pos = spawner.surface.find_non_colliding_position(biter_roll, {x = position.x + math.random(-8,8), y = position.y + math.random(-8,8)}, 12, 0.05)
+        spawner.surface.create_entity({name = biter_roll, position = free_pos or position, force = 'enemy'})
+    end
+end
+
+function Public.get_item_tooltip(name)
+    return {'expanse.stats_item_tooltip', game.item_prototypes[name].localised_name, Price_raffle.get_item_worth(name)}
+end
+
+function Public.invasion_numbers()
+    local evo = game.forces.enemy.evolution_factor
+    return {candidates = 3 + math.floor(evo * 10), groups =  1 + math.floor(evo * 4)}
+end
+
 function Public.invasion_warn(event)
     local seconds = (120 * 60 - event.delay) / 60
     game.print({'expanse.biters_invasion_warning', seconds, event.size}, {r = 0.88, g = 0.22, b = 0.22})
@@ -211,7 +230,7 @@ function Public.invasion_trigger(event)
     local biters = {}
     for i = 1, 5 + math.floor(30 * evolution) + round * 5, 1 do
         local biter_roll = BiterRaffle.roll('mixed', evolution)
-        local free_pos = surface.find_non_colliding_position(biter_roll, position, 12, 0.05)
+        local free_pos = surface.find_non_colliding_position(biter_roll, {x = position.x + math.random(-8,8), y = position.y + math.random(-8,8)}, 12, 0.05)
         biters[#biters + 1] = surface.create_entity({name = biter_roll, position = free_pos or position, force = 'enemy'})
     end
     local group = surface.create_unit_group{position = position, force = 'enemy'}
@@ -222,7 +241,7 @@ function Public.invasion_trigger(event)
     group.start_moving()
     local worm_roll = BiterRaffle.roll('worm', evolution)
     for i = 1, 3 + math.floor(7 * evolution), 1 do
-        local worm_pos = surface.find_non_colliding_position(worm_roll, {x = position.x + math.random(-6,6), y = position.y + math.random(-6,6)}, 12, 0.1)
+        local worm_pos = surface.find_non_colliding_position(worm_roll, {x = position.x + math.random(-12,12), y = position.y + math.random(-12,12)}, 12, 0.1)
         if worm_pos then
             surface.create_entity({name = worm_roll, position = worm_pos, force = 'enemy'})
         end
@@ -247,15 +266,14 @@ local function schedule_biters(expanse, surface, position, delay, round)
     table.insert(expanse.schedule, {tick = game.tick + delay + 120 * 60, event = 'invasion_trigger', parameters = {surface = surface, position = position, round = round}})
 end
 
-local function plan_invasion(expanse, evolution)
+local function plan_invasion(expanse, invasion_numbers)
     local candidates = expanse.invasion_candidates
     table.shuffle_table(candidates)
-    local size = 1 + math.floor(evolution * 4)
-    schedule_warning(expanse, size, 0)
-    schedule_warning(expanse, size, 60 * 60)
-    schedule_warning(expanse, size, 90 * 60)
-    local rounds = 4 + math.random(1, 4)
-    for i = 1, size, 1 do
+    schedule_warning(expanse, invasion_numbers.groups, 0)
+    schedule_warning(expanse, invasion_numbers.groups, 60 * 60)
+    schedule_warning(expanse, invasion_numbers.groups, 90 * 60)
+    local rounds = 4 + math.random(1, 8)
+    for i = 1, invasion_numbers.groups, 1 do
         local surface = candidates[i].surface
         local position = candidates[i].position
         schedule_detonation(expanse, surface, position)
@@ -264,16 +282,16 @@ local function plan_invasion(expanse, evolution)
         end
         rendering.set_time_to_live(candidates[i].render, 122 * 60 + rounds * 300)
     end
-    for j = size + 1, #candidates, 1 do
+    for j = invasion_numbers.groups + 1, #candidates, 1 do
         rendering.set_time_to_live(candidates[j].render, 122 * 60)
     end
     expanse.invasion_candidates = {}
 end
 
 function Public.check_invasion(expanse)
-    local evolution = game.forces.enemy.evolution_factor
-    if #expanse.invasion_candidates >= 3 + math.floor(evolution * 10) then
-        plan_invasion(expanse, evolution)
+    local invasion_numbers = Public.invasion_numbers()
+    if #expanse.invasion_candidates >= invasion_numbers.candidates then
+        plan_invasion(expanse, invasion_numbers)
     end
 end
 
@@ -305,10 +323,6 @@ function Public.expand(expanse, left_top)
         }
     )
 
-    for _, e in pairs(source_surface.find_entities(area)) do
-        e.destroy()
-    end
-
     local positions = {
         {x = left_top.x + math.random(1, square_size - 2), y = left_top.y},
         {x = left_top.x, y = left_top.y + math.random(1, square_size - 2)},
@@ -328,13 +342,12 @@ function Public.expand(expanse, left_top)
         local a = math.floor(expanse.square_size * 0.5)
         for x = 1, 3, 1 do
             for y = 1, 3, 1 do
-                surface.set_tiles({{name = 'water', position = {a + x + 2, a + y - 2}}}, true)
+                surface.set_tiles({{name = 'water', position = {a + x + 2, a + y + 2}}}, true)
             end
         end
-        surface.create_entity({name = 'crude-oil', position = {a - 5, a}, amount = 1500000})
-
-        Task.set_timeout_in_ticks(30, delay_infini_tree_token, {surface = surface, position = {a, a - 3}})
-        surface.create_entity({name = 'rock-big', position = {a, a}})
+        surface.create_entity({name = 'crude-oil', position = {a - 4, a - 4}, amount = 1500000})
+        Task.set_timeout_in_ticks(30, delay_infini_tree_token, {surface = surface, position = {a - 4, a + 4}})
+        surface.create_entity({name = 'rock-big', position = {a + 4, a - 4}})
         surface.spill_item_stack({a, a + 2}, {name = 'coin', count = 1}, false, nil, false)
         surface.spill_item_stack({a + 0.5, a + 2.5}, {name = 'coin', count = 1}, false, nil, false)
         surface.spill_item_stack({a - 0.5, a + 2.5}, {name = 'coin', count = 1}, false, nil, false)
@@ -349,18 +362,16 @@ function Public.expand(expanse, left_top)
     end
 end
 
-local function init_container(expanse, entity)
+local function init_container(expanse, entity, budget)
     local left_top = get_left_top(expanse, entity.position)
     if not left_top then
         return
     end
-
-    local cell_value = get_cell_value(expanse, left_top)
-
+    local cell_value = budget or get_cell_value(expanse, left_top)
     local item_stacks = {}
-    local roll_count = 2
+    local roll_count = 3
     for _ = 1, roll_count, 1 do
-        for _, stack in pairs(Price_raffle.roll(math.floor(cell_value / roll_count), 2)) do
+        for _, stack in pairs(Price_raffle.roll(math.floor(cell_value / roll_count), 3, nil, cell_value / (roll_count * 6))) do
             if not item_stacks[stack.name] then
                 item_stacks[stack.name] = stack.count
             else
@@ -370,7 +381,7 @@ local function init_container(expanse, entity)
     end
 
     local price = {}
-    local offset = -2
+    local offset = -3
     for k, v in pairs(item_stacks) do
         table.insert(price, {name = k, count = v, render = create_costs_render(entity, k, offset)})
         offset = offset + 1
@@ -378,6 +389,14 @@ local function init_container(expanse, entity)
 
     local containers = expanse.containers
     containers[entity.unit_number] = {entity = entity, left_top = left_top, price = price}
+end
+
+local function get_remaining_budget(container)
+    local budget = 0
+    for _, item_stack in pairs(container.price) do
+        budget = budget + (item_stack.count * Price_raffle.get_item_worth(item_stack.name))
+    end
+    return budget
 end
 
 function Public.set_container(expanse, entity)
@@ -404,10 +423,14 @@ function Public.set_container(expanse, entity)
                 expanse.cost_stats['coin'] = (expanse.cost_stats['coin'] or 0) + count_removed
                 script.raise_event(expanse.events.gui_update, {item = 'coin'})
                 remove_old_renders(container)
-                init_container(expanse, entity)
+                init_container(expanse, entity, get_remaining_budget(container))
                 container = expanse.containers[entity.unit_number]
-                game.print("The hungry chest has renewed it's offer! [gps=" .. math.floor(entity.position.x) .. ',' .. math.floor(entity.position.y) .. ',expanse]')
+                game.print({'expanse.chest_reset', {'expanse.gps', math.floor(entity.position.x), math.floor(entity.position.y), 'expanse'}})
             end
+        end
+        if contents['infinity-chest'] then
+            remove_old_renders(container)
+            container.price = {}
         end
     end
 
