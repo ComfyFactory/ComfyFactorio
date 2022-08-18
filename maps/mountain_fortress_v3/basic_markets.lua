@@ -313,11 +313,13 @@ function Public.shuffle_prices()
         this.market_default_settings = table.deepcopy(this.market_settings)
     end
 
-    for _, data in pairs(this.market_settings) do
+    for market_index, data in pairs(this.market_settings) do
+        local ref_data = this.market_default_settings[market_index]
         if data and type(data) == 'table' then
-            for _, category in pairs(data) do
-                local max = math.round(category.value * 1.5)
-                local min = math.round(category.value * 0.5)
+            for recipe_index, category in pairs(data) do
+                local ref_category = ref_data[recipe_index]
+                local max = math.round(ref_category.value * 1.5)
+                local min = math.round(ref_category.value * 0.5)
                 local v = random(min, max)
                 if v then
                     category.value = v
