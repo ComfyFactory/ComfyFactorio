@@ -316,6 +316,9 @@ end
 
 local function teleport_player_to_gulag(player, action)
     local p_data = get_player_data(player)
+    if not p_data then
+        return
+    end
 
     if action == 'jail' then
         local gulag = game.surfaces['gulag']
@@ -1220,7 +1223,7 @@ Event.add(
                     return
                 end
             end
-            if not player.admin then
+            if player.admin then
                 if cmd == 'jail' then
                     Utils.warning(player, 'Logging your actions.')
                     Public.try_ul_data(offender, true, player.name, message)
@@ -1229,7 +1232,7 @@ Event.add(
                     Public.try_ul_data(offender, false, player.name)
                     return
                 end
-            elseif playtime <= settings.playtime_for_instant_jail then
+            elseif playtime >= settings.playtime_for_instant_jail then
                 if cmd == 'jail' then
                     if not terms_tbl[player.name] then
                         Utils.warning(player, module_name .. 'Abusing the jail command will lead to revoked permissions. Jailing someone in cases of disagreement is _NEVER_ OK!')
