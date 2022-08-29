@@ -440,7 +440,7 @@ function Public.migrate_new_rpg_tbl(player)
     if rpg_t then
         rpg_t.flame_boots = nil
         rpg_t.one_punch = nil
-        rpg_t.points_left = rpg_t.points_to_distribute or 0
+        rpg_t.points_left = rpg_t.points_to_distribute or rpg_t.points_left or 0
         rpg_t.points_to_distribute = nil
 
         rpg_t.aoe_punch = false
@@ -461,13 +461,12 @@ function Public.migrate_new_rpg_tbl(player)
 end
 
 function Public.migrate_to_new_version()
-    Public.reset_table(true)
+    -- Public.reset_table(true)
     if this.rpg_spells then
         this.rpg_spells = nil
     end
 
     local players = game.players
-
     for _, player in pairs(players) do
         Public.migrate_new_rpg_tbl(player)
     end
