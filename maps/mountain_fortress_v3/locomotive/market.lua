@@ -1010,6 +1010,9 @@ local function gui_click(event)
         this.locomotive_health = this.locomotive_health + health_per_upgrade
         this.locomotive_max_health = this.locomotive_max_health + health_per_upgrade
 
+        if this.locomotive_health >= this.locomotive_max_health then
+            this.locomotive_health = this.locomotive_max_health
+        end
         --[[
         this.locomotive_max_health = this.locomotive_max_health + (this.locomotive_max_health * 0.5)
         This exists as a reminder to never ever screw up health pool ever again.
