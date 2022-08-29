@@ -1006,7 +1006,9 @@ local function gui_click(event)
             }
         )
 
-        this.locomotive_max_health = this.locomotive_max_health + 20000
+        local health_per_upgrade = 20000
+        this.locomotive_health = this.locomotive_health + health_per_upgrade
+        this.locomotive_max_health = this.locomotive_max_health + health_per_upgrade
 
         --[[
         this.locomotive_max_health = this.locomotive_max_health + (this.locomotive_max_health * 0.5)
