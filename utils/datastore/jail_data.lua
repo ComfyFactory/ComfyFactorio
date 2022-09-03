@@ -223,8 +223,10 @@ local function get_gulag_permission_group()
     if not gulag then
         gulag = game.permissions.create_group('gulag')
         for action_name, _ in pairs(defines.input_action) do
+            ---@diagnostic disable-next-line: need-check-nil
             gulag.set_allows_action(defines.input_action[action_name], false)
         end
+        ---@diagnostic disable-next-line: need-check-nil
         gulag.set_allows_action(defines.input_action.write_to_console, true)
     end
 
@@ -236,6 +238,7 @@ local function get_super_gulag_permission_group()
     if not gulag then
         gulag = game.permissions.create_group('super_gulag')
         for action_name, _ in pairs(defines.input_action) do
+            ---@diagnostic disable-next-line: need-check-nil
             gulag.set_allows_action(defines.input_action[action_name], false)
         end
     end
@@ -351,8 +354,13 @@ local function teleport_player_to_gulag(player, action)
 
         local p = p_data.position
         local p_group = game.permissions.get_group(p_data.p_group_id)
+        if not p_group then
+            return
+        end
+
         p_group.add_player(player)
         local pos = {x = p.x, y = p.y}
+        ---@diagnostic disable-next-line: missing-parameter
         local get_tile = surface.get_tile(pos)
         if get_tile.valid and get_tile.name == 'out-of-map' then
             player.teleport(surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 128, 1), surface.name)
@@ -587,6 +595,9 @@ local function jail(player, offender, msg, raised, mute)
     end
 
     local to_jail_player = game.get_player(offender)
+    if not to_jail_player then
+        return
+    end
 
     draw_notice_frame(to_jail_player)
 
@@ -956,8 +967,8 @@ function Public.print_jailed()
         result[#result + 1] = k
     end
 
-    result = concat(result, ', ')
-    Game.player_print(result)
+    local final = concat(result, ', ')
+    Game.player_print(final)
 end
 
 --- Returns the table of jailed
@@ -1112,6 +1123,10 @@ commands.add_command(
             return Utils.print_to(player, 'No player was provided.')
         end
 
+        if not revoke_player then
+            return
+        end
+
         if is_revoked(revoke_player.name) then
             remove_revoked(revoke_player.name)
             Utils.print_to(player, revoke_player.name .. ' can now utilize jail commands once again!')
@@ -1164,6 +1179,9 @@ Event.add(
 
         if event.player_index then
             local player = game.get_player(event.player_index)
+            if not player or not player.valid then
+                return
+            end
             local playtime = validate_playtime(player)
             local trusted = validate_trusted(player)
 
@@ -1371,7 +1389,7 @@ Gui.on_text_changed(
         local offender = data.offender
 
         if textfield and textfield.valid then
-            if string.len(textfield.text) >= 1000 then
+            if string.len(textfield.text) >= 2000 then
                 textfield.text = ''
                 return
             end
@@ -1414,6 +1432,12 @@ Gui.on_click(
 
         Utils.print_to(player, module_name .. 'Jail data has been submitted!')
         Utils.print_to(nil, module_name .. offender .. ' was jailed by ' .. player.name .. '.')
+
+        local jail_data = Server.build_embed_data()
+        jail_data.username = offender
+        jail_data.admin = player.name
+        jail_data.reason = jailed[offender].reason
+        Server.to_unjailed_named_embed(jail_data)
 
         if frame and frame.valid then
             remove_target_frame(frame)
