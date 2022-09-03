@@ -61,6 +61,8 @@ local discord_jailed_tag = '[DISCORD-JAILED]'
 local discord_jailed_embed_tag = '[DISCORD-JAILED-EMBED]'
 local discord_unjailed_tag = '[DISCORD-UNJAILED]'
 local discord_unjailed_embed_tag = '[DISCORD-UNJAILED-EMBED]'
+local discord_jailed_named_embed_tag = '[DISCORD-JAILED-NAMED-EMBED]'
+local discord_unjailed_named_embed_tag = '[DISCORD-UNJAILED-NAMED-EMBED]'
 local discord_admin_raw_tag = '[DISCORD-ADMIN-RAW]'
 local discord_embed_parsed_tag = '[DISCORD-EMBED-PARSED]'
 local discord_embed_tag = '[DISCORD-EMBED]'
@@ -418,6 +420,31 @@ function Public.to_jailed_embed(message, locale)
     end
 end
 
+--- Sends a embed message to the jailed discord channel. The message is sanitized of markdown server side.
+-- @param  message<tbl> the content of the embed.
+-- @param  locale<boolean> if the message should be handled as localized.
+function Public.to_jailed_named_embed(message, locale)
+    local table_to_json = game.table_to_json
+    if not type(message) == 'table' then
+        return
+    end
+
+    if locale then
+        print(message, discord_jailed_named_embed_tag)
+    else
+        if not message.username then
+            return
+        end
+        if not message.reason then
+            return
+        end
+        if not message.admin then
+            return
+        end
+        raw_print(discord_jailed_named_embed_tag .. table_to_json(message))
+    end
+end
+
 --- Sends a embed message to the linked connected discord channel. The message is sanitized of markdown server side.
 -- @param  message<tbl> the content of the embed.
 -- @param  locale<boolean> if the message should be handled as localized.
@@ -436,6 +463,27 @@ function Public.to_unjailed_embed(message, locale)
             return
         end
         raw_print(discord_unjailed_embed_tag .. table_to_json(message))
+    end
+end
+
+--- Sends a embed message to the linked connected discord channel. The message is sanitized of markdown server side.
+-- @param  message<tbl> the content of the embed.
+-- @param  locale<boolean> if the message should be handled as localized.
+function Public.to_unjailed_named_embed(message, locale)
+    local table_to_json = game.table_to_json
+    if not type(message) == 'table' then
+        return
+    end
+    if locale then
+        print(message, discord_unjailed_named_embed_tag)
+    else
+        if not message.username then
+            return
+        end
+        if not message.admin then
+            return
+        end
+        raw_print(discord_unjailed_named_embed_tag .. table_to_json(message))
     end
 end
 
