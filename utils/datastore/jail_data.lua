@@ -714,6 +714,7 @@ local function free(player, offender)
     data.username = offender
     data.admin = player
     Server.to_unjailed_embed(data)
+    Server.to_unjailed_named_embed(data)
     offender = game.get_player(offender)
     remove_notice(offender)
     return true
@@ -1437,7 +1438,7 @@ Gui.on_click(
         jail_data.username = offender
         jail_data.admin = player.name
         jail_data.reason = jailed[offender].reason
-        Server.to_unjailed_named_embed(jail_data)
+        Server.to_jailed_named_embed(jail_data)
 
         if frame and frame.valid then
             remove_target_frame(frame)
