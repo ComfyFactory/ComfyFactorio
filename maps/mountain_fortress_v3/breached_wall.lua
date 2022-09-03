@@ -294,6 +294,9 @@ end
 
 local function on_player_changed_position(event)
     local player = game.get_player(event.player_index)
+    if not player or not player.valid then
+        return
+    end
     local surface_name = player.surface.name
     local map_name = 'mtn_v3'
 
