@@ -52,6 +52,7 @@ function Public.reset_wave_defense()
     this.debug_health = false
     this.log_wave_to_discord = true
     this.paused = false
+    this.pause_without_votes = true
     this.game_lost = false
     this.get_random_close_spawner_attempts = 5
     this.group_size = 2
