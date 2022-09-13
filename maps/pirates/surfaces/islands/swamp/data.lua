@@ -9,10 +9,10 @@ local Public = {}
 
 Public.display_names = {{'pirates.location_displayname_swamp_1'}}
 
-Public.terraingen_frame_width = 325
-Public.terraingen_frame_height = 325
+Public.terraingen_frame_width = 400
+Public.terraingen_frame_height = 400
 Public.static_params_default = {
-	starting_time_of_day = 0.35,
+	starting_time_of_day = 0.26,
 	daynightcycletype = 1,
 	brightness_visual_weights = {0, 0, 0},
 	default_decoratives = true,
@@ -26,7 +26,7 @@ function Public.base_ores()
 	return {
 		['copper-ore'] = 2.9,
 		['iron-ore'] = 3.6,
-		['coal'] = 4.8,
+		['coal'] = 5.8,
 		['stone'] = 0.5,
 		['crude-oil'] = 80,
 	}

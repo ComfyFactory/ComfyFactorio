@@ -54,6 +54,7 @@ local Crew = require 'maps.pirates.crew'
 local Roles = require 'maps.pirates.roles.roles'
 local Structures = require 'maps.pirates.structures.structures'
 local Surfaces = require 'maps.pirates.surfaces.surfaces'
+local Kraken = require 'maps.pirates.surfaces.sea.kraken'
 local PiratesApiEvents = require 'maps.pirates.api_events'
 require 'maps.pirates.structures.boats.boats'
 local Progression = require 'maps.pirates.progression'
@@ -66,6 +67,7 @@ require 'maps.pirates.shop.shop'
 require 'maps.pirates.boat_upgrades'
 local Token = require 'utils.token'
 local Task = require 'utils.task'
+local Server = require 'utils.server'
 
 require 'utils.profiler'
 
@@ -117,14 +119,11 @@ local function on_init()
 
 	game.create_force('environment')
 	for id = 1, 3, 1 do
-		game.create_force(string.format('enemy-%03d', id))
-		game.create_force(string.format('ancient-friendly-%03d', id))
-		game.create_force(string.format('ancient-hostile-%03d', id))
-
-		local crew_force = game.create_force(string.format('crew-%03d', id))
+		game.create_force(Common.get_enemy_force_name(id))
+		game.create_force(Common.get_ancient_friendly_force_name(id))
+		game.create_force(Common.get_ancient_hostile_force_name(id))
 
 		Crew.reset_crew_and_enemy_force(id)
-		crew_force.research_queue_enabled = true
 	end
 
 	-- Delay.global_add(Delay.global_enum.PLACE_LOBBY_JETTY_AND_BOATS)
@@ -160,9 +159,9 @@ local function crew_tick()
 	if tick % 10 == 0 then
 		PiratesApiOnTick.prevent_disembark(10)
 		PiratesApiOnTick.prevent_unbarreling_off_ship(10)
-		PiratesApiOnTick.shop_ratelimit_tick(10)
+		-- PiratesApiOnTick.shop_ratelimit_tick(10)
 		PiratesApiOnTick.pick_up_tick(10)
-		QuestStructures.tick_quest_structure_entry_price_check(10)
+		QuestStructures.tick_quest_structure_entry_price_check()
 		PiratesApiOnTick.update_boat_stored_resources(10)
 
 		if tick % 30 == 0 then
@@ -175,13 +174,16 @@ local function crew_tick()
 			if tick % 60 == 0 then
 				PiratesApiOnTick.captain_warn_afk(60)
 				PiratesApiOnTick.ship_deplete_fuel(60)
-				if memory.boat and memory.boat.state == Structures.Boats.enum_state.ATSEA_SAILING then
-					PiratesApiOnTick.crowsnest_natural_move(60)
-				end
+				PiratesApiOnTick.crowsnest_natural_move(60)
 				PiratesApiOnTick.slower_boat_tick(60)
 				PiratesApiOnTick.raft_raids(60)
 				PiratesApiOnTick.place_cached_structures(60)
-
+				PiratesApiOnTick.update_alert_sound_frequency_tracker()
+				PiratesApiOnTick.check_for_cliff_explosives_in_hold_wooden_chests()
+				PiratesApiOnTick.equalise_fluid_storages() -- Made the update less often for small performance gain, but frequency can be increased if players complain
+				PiratesApiOnTick.revealed_buried_treasure_distance_check()
+				PiratesApiOnTick.victory_continue_reminder()
+				Kraken.overall_kraken_tick()
 
 				if destination.dynamic_data.timer then
 					destination.dynamic_data.timer = destination.dynamic_data.timer + 1
@@ -256,19 +258,30 @@ local function crew_tick()
 	end
 
 	if tick % 60 == 15 or tick % 60 == 45 then
+		-- @TODO move this ugly check to function?
 		if memory.boat and memory.boat.state == Structures.Boats.enum_state.ATSEA_SAILING then
 			PiratesApiOnTick.overworld_check_collisions(120)
 		end
 	end
 
 	if tick % 60 == 30 then
-		if memory.boat and memory.boat.state == Structures.Boats.enum_state.ATSEA_SAILING then
-			PiratesApiOnTick.crowsnest_steer(120)
-		end
+		PiratesApiOnTick.crowsnest_steer(120)
 	end
 
 	if tick % Common.loading_interval == 0 then
 		PiratesApiOnTick.loading_update(Common.loading_interval)
+	end
+
+	if memory.crew_disband_tick_message then
+		if memory.crew_disband_tick_message < tick then
+			memory.crew_disband_tick_message = nil
+
+			local message1 = {'pirates.crew_disband_tick_message', 30}
+
+			Common.notify_force(memory.force, message1)
+
+			Server.to_discord_embed_raw({'', '[' .. memory.name .. '] ', message1}, true)
+		end
 	end
 
 	if memory.crew_disband_tick then
@@ -276,7 +289,6 @@ local function crew_tick()
 			memory.crew_disband_tick = nil
 			Crew.disband_crew()
 		end
-		return
 	end
 end
 
@@ -291,8 +303,7 @@ local function global_tick()
 
 	if tick % 30 == 0 then
 		for _, player in pairs(game.connected_players) do
-			-- figure out which crew this is about:
-			local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or 0
+			local crew_id = Common.get_id_from_force_name(player.force.name)
 			Memory.set_working_id(crew_id)
 			Roles.update_tags(player)
 		end

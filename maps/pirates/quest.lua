@@ -49,7 +49,7 @@ function Public.quest_reward()
 	elseif rng <= 0.6 then
 		ret = {name = 'steel-plate', count = Math.ceil(380 * multiplier), display_sprite = '[item=steel-plate]', display_amount = string.format('%.0f', 380 * multiplier), chat_name = '[item=steel-plate]'}
 	elseif rng <= 0.7 then
-		ret = {name = 'raw-fish', count = Math.ceil(420 * (multiplier^(1/2))), display_sprite = '[item=raw-fish]', display_amount = string.format('%.1fk', 0.42 * (multiplier^(1/2))), chat_name = '[item=raw-fish]'}
+		ret = {name = 'raw-fish', count = Math.ceil(420 * (multiplier^(1/2))), display_sprite = '[item=raw-fish]', display_amount = string.format('%.0f', 420 * (multiplier^(1/2))), chat_name = '[item=raw-fish]'}
 	elseif rng <= 0.85 then
 		ret = {name = 'piercing-rounds-magazine', count = Math.ceil(250 * multiplier), display_sprite = '[item=piercing-rounds-magazine]', display_amount = string.format('%.0f', Math.ceil(250 * multiplier)), chat_name = '[item=piercing-rounds-magazine]'}
 	elseif rng <= 0.94 then

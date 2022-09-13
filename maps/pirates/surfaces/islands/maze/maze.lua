@@ -260,8 +260,8 @@ end
 -- end
 
 
-function Public.generate_silo_setup_position()
-	return Hunt.silo_setup_position(0.5)
+function Public.generate_silo_setup_position(points_to_avoid)
+	return Hunt.silo_setup_position(points_to_avoid, 0.5)
 end
 
 

@@ -74,17 +74,17 @@ function Public.unmake_officer(captain, player)
 	end
 end
 
-function Public.revoke_class(captain, player)
-	local memory = Memory.get_crew_memory()
-	local force = memory.force
+-- function Public.revoke_class(captain, player)
+-- 	local memory = Memory.get_crew_memory()
+-- 	local force = memory.force
 
-	if force and force.valid and player.index and memory.classes_table[player.index] then
-		memory.spare_classes[#memory.spare_classes + 1] = memory.classes_table[player.index]
-		memory.classes_table[player.index] = nil
+-- 	if force and force.valid and player.index and memory.classes_table[player.index] then
+-- 		memory.spare_classes[#memory.spare_classes + 1] = memory.classes_table[player.index]
+-- 		memory.classes_table[player.index] = nil
 
-		Common.notify_force_light(captain,{'pirates.class_revoke', captain.name, Classes.display_form(memory.classes_table[player.index]), player.name})
-	end
-end
+-- 		Common.notify_force_light(captain,{'pirates.class_revoke', captain.name, Classes.display_form(memory.classes_table[player.index]), player.name})
+-- 	end
+-- end
 
 function Public.tag_text(player)
 	local memory = Memory.get_crew_memory()
@@ -92,7 +92,7 @@ function Public.tag_text(player)
 	local str = ''
 	local tags = {}
 
-	if memory.id ~= 0 and Common.is_captain(player) then
+	if Common.is_id_valid(memory.id) and Common.is_captain(player) then
 		tags[#tags + 1] = 'Cap\'n'
 	elseif player.controller_type == defines.controllers.spectator then
 		tags[#tags + 1] = 'Spectating'
@@ -131,16 +131,11 @@ end
 -- 	return str
 -- end
 
-function Public.get_class_print_string(class, full)
+function Public.get_class_print_string(class, add_is_class_obstainable)
 
 	for _, class2 in pairs(Classes.enum) do
 		if Classes.eng_form[class2]:lower() == class:lower() or class2 == class:lower() then
-			local explanation
-			if full then
-				explanation = Classes.explanation_advanced(class2)
-			else
-				explanation = Classes.explanation(class2)
-			end
+			local explanation = Classes.explanation(class2, add_is_class_obstainable)
 
 			if Classes.class_purchase_requirement[class2] then
 				return {'pirates.class_explanation_upgraded_class', Classes.display_form(class2), Classes.display_form(Classes.class_purchase_requirement[class2]), explanation}
@@ -164,7 +159,7 @@ end
 function Public.player_privilege_level(player)
 	local memory = Memory.get_crew_memory()
 
-	if memory.id ~= 0 and Common.is_captain(player) then
+	if Common.is_id_valid(memory.id) and Common.is_captain(player) then
 		return Public.privilege_levels.CAPTAIN
 	elseif memory.officers_table and memory.officers_table[player.index] then
 		return Public.privilege_levels.OFFICER
@@ -215,18 +210,31 @@ end
 function Public.player_left_so_redestribute_roles(player)
 	-- local memory = Memory.get_crew_memory()
 
-	if player and player.index then
-		if Common.is_captain(player) then
-			Public.assign_captain_based_on_priorities()
-		end
+	if not (player and player.index) then return end
 
-		-- no need to do this, as long as officers get reset when the captainhood changes hands
-		-- if memory.officers_table and memory.officers_table[player.index] then
-		-- 	memory.officers_table[player.index] = nil
-		-- end
+	if Common.is_captain(player) then
+		Public.assign_captain_based_on_priorities()
 	end
 
-	Classes.try_renounce_class(player, false, true)
+	-- no need to do this, as long as officers get reset when the captainhood changes hands
+	-- if memory.officers_table and memory.officers_table[player.index] then
+	-- 	memory.officers_table[player.index] = nil
+	-- end
+
+	local memory = Memory.get_crew_memory()
+
+	-- free up the class
+	if memory.classes_table and memory.classes_table[player.index] then
+		memory.spare_classes[#memory.spare_classes + 1] = memory.classes_table[player.index]
+		memory.classes_table[player.index] = nil
+
+		for _, class_entry in ipairs(memory.unlocked_classes) do
+			if class_entry.taken_by == player.index then
+				class_entry.taken_by = nil
+				break
+			end
+		end
+	end
 end
 
 
@@ -274,7 +282,7 @@ function Public.confirm_captain_exists(player_to_make_captain_otherwise)
 	local memory = Memory.get_crew_memory()
 	-- Currently this catches an issue where a crew drops to zero players, and then someone else joins.
 
-	if (memory.id and memory.id > 0 and memory.crewstatus and memory.crewstatus == 'adventuring') and (not (memory.playerindex_captain and game.players[memory.playerindex_captain] and Common.validate_player(game.players[memory.playerindex_captain]))) then --fixme: enum hacked
+	if (Common.is_id_valid(memory.id) and memory.crewstatus and memory.crewstatus == 'adventuring') and (not (memory.playerindex_captain and game.players[memory.playerindex_captain] and Common.validate_player(game.players[memory.playerindex_captain]))) then --fixme: enum hacked
 		if player_to_make_captain_otherwise then
 			Public.make_captain(player_to_make_captain_otherwise)
 			-- game.print('Auto-reassigning captain.')
@@ -339,22 +347,37 @@ function Public.assign_captain_based_on_priorities(excluded_player_index)
 	local captain_index = nil
 	local captain_name = nil
 
-	for _, player_index in pairs(crew_members) do
+	-- Prefer officers for a captain (if there are any)
+	for player_index, _ in pairs(memory.officers_table) do
 		local player = game.players[player_index]
+		local player_active = Utils.contains(Common.crew_get_nonafk_crew_members(), player)
 
-		if Common.validate_player(player) and not (player.index == excluded_player_index) then
+		if player_active then
+			captain_index = player_index
+			captain_name = player.name
+			break
+		end
+	end
 
-			local player_active = Utils.contains(Common.crew_get_nonafk_crew_members(), player)
+	-- No officers (or all officers afk), try pass captain to oldest crew member
+	if not captain_index then
+		for _, player_index in pairs(crew_members) do
+			local player = game.players[player_index]
 
-			-- prefer non-afk players:
-			if only_found_afk_players or player_active then
-				only_found_afk_players = player_active
+			if Common.validate_player(player) and not (player.index == excluded_player_index) then
 
-				local player_priority = global_memory.playerindex_to_captainhood_priority[player_index]
-				if player_priority and player_priority > best_priority_so_far then
-					best_priority_so_far = player_priority
-					captain_index = player_index
-					captain_name = player.name
+				local player_active = Utils.contains(Common.crew_get_nonafk_crew_members(), player)
+
+				-- prefer non-afk players:
+				if only_found_afk_players or player_active then
+					only_found_afk_players = player_active
+
+					local player_priority = global_memory.playerindex_to_captainhood_priority[player_index]
+					if player_priority and player_priority > best_priority_so_far then
+						best_priority_so_far = player_priority
+						captain_index = player_index
+						captain_name = player.name
+					end
 				end
 			end
 		end
@@ -363,6 +386,7 @@ function Public.assign_captain_based_on_priorities(excluded_player_index)
 	local force = memory.force
 	if not (force and force.valid) then return end
 
+	-- if all crew members afk (or if by some chance failed to pass captain), just give captain to first crew member
 	if not captain_index then
 		captain_index = crew_members[1]
 		captain_name = game.players[captain_index].name
@@ -487,33 +511,7 @@ function Public.captain_tax(captain_index)
 end
 
 
-
-function Public.add_player_to_permission_group(player, group_override)
-    -- local jailed = Jailed.get_jailed_table()
-    -- local enable_permission_group_disconnect = WPT.get('disconnect_wagon')
-    local session = Session.get_session_table()
-    local AG = Antigrief.get()
-
-    local gulag = game.permissions.get_group('gulag')
-    local tbl = gulag and gulag.players
-    for i = 1, #tbl do
-        if tbl[i].index == player.index then
-            return
-        end
-    end
-
-    -- if player.admin then
-    --     return
-    -- end
-
-    local playtime = player.online_time
-    if session and session[player.name] then
-        playtime = player.online_time + session[player.name]
-    end
-
-    -- if jailed[player.name] then
-    --     return
-    -- end
+function Public.try_create_permissions_groups()
 
     if not game.permissions.get_group('restricted_area') then
 		local group = game.permissions.create_group('restricted_area')
@@ -545,10 +543,45 @@ function Public.add_player_to_permission_group(player, group_override)
 			group.set_allows_action(defines.input_action.import_blueprint_string, false)
 			group.set_allows_action(defines.input_action.import_blueprint, false)
 		end
-
-        group.set_allows_action(defines.input_action.open_gui, false)
         group.set_allows_action(defines.input_action.fast_entity_transfer, false)
         group.set_allows_action(defines.input_action.fast_entity_split, false)
+    end
+
+    if not game.permissions.get_group('super_restricted_area') then
+		local group = game.permissions.create_group('super_restricted_area')
+        group.set_allows_action(defines.input_action.edit_permission_group, false)
+        group.set_allows_action(defines.input_action.import_permissions_string, false)
+        group.set_allows_action(defines.input_action.delete_permission_group, false)
+        group.set_allows_action(defines.input_action.add_permission_group, false)
+        group.set_allows_action(defines.input_action.admin_action, false)
+
+        group.set_allows_action(defines.input_action.cancel_craft, false)
+        group.set_allows_action(defines.input_action.drop_item, false)
+        group.set_allows_action(defines.input_action.drop_blueprint_record, false)
+        group.set_allows_action(defines.input_action.build, false)
+        group.set_allows_action(defines.input_action.build_rail, false)
+        group.set_allows_action(defines.input_action.build_terrain, false)
+        group.set_allows_action(defines.input_action.begin_mining, false)
+        group.set_allows_action(defines.input_action.begin_mining_terrain, false)
+        -- group.set_allows_action(defines.input_action.deconstruct, false) --pick up dead players
+        group.set_allows_action(defines.input_action.activate_copy, false)
+        group.set_allows_action(defines.input_action.activate_cut, false)
+        group.set_allows_action(defines.input_action.activate_paste, false)
+        group.set_allows_action(defines.input_action.upgrade, false)
+
+		group.set_allows_action(defines.input_action.grab_blueprint_record, false)
+		if not CoreData.blueprint_library_allowed then
+			group.set_allows_action(defines.input_action.open_blueprint_library_gui, false)
+		end
+		if not CoreData.blueprint_importing_allowed then
+			group.set_allows_action(defines.input_action.import_blueprint_string, false)
+			group.set_allows_action(defines.input_action.import_blueprint, false)
+		end
+
+        group.set_allows_action(defines.input_action.fast_entity_transfer, false)
+        group.set_allows_action(defines.input_action.fast_entity_split, false)
+
+        group.set_allows_action(defines.input_action.open_gui, false)
     end
 
     if not game.permissions.get_group('restricted_area_privileged') then
@@ -636,6 +669,38 @@ function Public.add_player_to_permission_group(player, group_override)
 			not_trusted.set_allows_action(defines.input_action.import_blueprint, false)
 		end
     end
+end
+
+
+
+function Public.add_player_to_permission_group(player, group_override)
+    -- local jailed = Jailed.get_jailed_table()
+    -- local enable_permission_group_disconnect = WPT.get('disconnect_wagon')
+    local session = Session.get_session_table()
+    local AG = Antigrief.get()
+
+    local gulag = game.permissions.get_group('gulag')
+    local tbl = gulag and gulag.players
+    for i = 1, #tbl do
+        if tbl[i].index == player.index then
+            return
+        end
+    end
+
+    -- if player.admin then
+    --     return
+    -- end
+
+    local playtime = player.online_time
+    if session and session[player.name] then
+        playtime = player.online_time + session[player.name]
+    end
+
+    -- if jailed[player.name] then
+    --     return
+    -- end
+
+	Public.try_create_permissions_groups()
 
 	local group
 	if group_override then
@@ -651,11 +716,19 @@ function Public.add_player_to_permission_group(player, group_override)
 end
 
 function Public.update_privileges(player)
+	Public.try_create_permissions_groups()
+
     if not Common.validate_player_and_character(player) then
         return
     end
 
-    if string.sub(player.surface.name, 9, 17) == 'Crowsnest' or string.sub(player.surface.name, 9, 13) == 'Cabin' then
+	if string.sub(player.surface.name, 9, 17) == 'Crowsnest' then
+		if Public.player_privilege_level(player) >= Public.privilege_levels.OFFICER then
+			return Public.add_player_to_permission_group(player, 'restricted_area_privileged')
+		else
+			return Public.add_player_to_permission_group(player, 'super_restricted_area')
+		end
+	elseif string.sub(player.surface.name, 9, 13) == 'Cabin' then
 		if Public.player_privilege_level(player) >= Public.privilege_levels.OFFICER then
 			return Public.add_player_to_permission_group(player, 'restricted_area_privileged')
 		else
@@ -663,7 +736,7 @@ function Public.update_privileges(player)
 		end
     else
         return Public.add_player_to_permission_group(player)
-    end
+	end
 end
 
 

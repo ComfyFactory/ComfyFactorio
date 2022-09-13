@@ -7,55 +7,73 @@ local Math = require 'maps.pirates.math'
 -- local Memory = require 'maps.pirates.memory'
 local Common = require 'maps.pirates.common'
 -- local Utils = require 'maps.pirates.utils_local'
-local _inspect = require 'utils.inspect'.inspect
+-- local _inspect = require 'utils.inspect'.inspect
 
 -- this file is an API to all the balance tuning knobs
 
 
-Public.base_extra_character_speed = 1.44
-Public.respawn_speed_boost = 1.75
+-- Kraken related parameters
+Public.biter_swim_speed = 1
+Public.kraken_biter_spawn_radius = 6 -- only used during non automatic forced spawning during kraken's "special ability"
+Public.kraken_spit_targeting_player_chance = 0
 
-Public.cannon_starting_hp = 2000--too low, and crew is too fragile. too high, and the run survives when we should put it out of its misery. But this should go up later in the game.
+Public.base_extra_character_speed = 1.44
+Public.respawn_speed_boost = 1.85
+
+-- maximum rate at which alert sound can be played when important buildings are damaged (like silo or cannons)
+-- NOTE: frequency can sometimes be faster by 1 second than denoted, but accuracy doesn't really matter here
+Public.alert_sound_max_frequency_in_seconds = 3
+
+Public.cannon_extra_hp_for_upgrade = 1000
+Public.cannon_starting_hp = 2000
 Public.cannon_resistance_factor = 2
 Public.technology_price_multiplier = 1
 
 Public.rocket_launch_coin_reward = 5000
 
- Public.base_caught_fish_amount = 3
- Public.class_reward_tick_rate_in_seconds = 7
- Public.poison_damage_multiplier = 1.85
- Public.every_nth_tree_gives_coins = 6
+Public.base_caught_fish_amount = 3
+Public.class_reward_tick_rate_in_seconds = 7
+Public.poison_damage_multiplier = 1.85
+Public.every_nth_tree_gives_coins = 6
 
- Public.samurai_damage_taken_multiplier = 0.26
- Public.samurai_damage_dealt_when_not_melee_multiplier = 0.75
- Public.samurai_damage_dealt_with_melee = 25
- Public.hatamoto_damage_taken_multiplier = 0.16
- Public.hatamoto_damage_dealt_when_not_melee_multiplier = 0.75
- Public.hatamoto_damage_dealt_with_melee = 45
- Public.iron_leg_damage_taken_multiplier = 0.18
- Public.iron_leg_iron_ore_required = 3000
- Public.deckhand_extra_speed = 1.25
- Public.deckhand_ore_grant_multiplier = 2
- Public.deckhand_ore_scaling_enabled = true
- Public.boatswain_extra_speed = 1.25
- Public.boatswain_ore_grant_multiplier = 4
- Public.boatswain_ore_scaling_enabled = true
- Public.shoresman_extra_speed = 1.1
- Public.shoresman_ore_grant_multiplier = 2
- Public.shoresman_ore_scaling_enabled = true
- Public.quartermaster_range = 19
- Public.quartermaster_bonus_physical_damage = 0.1
- Public.quartermaster_ore_scaling_enabled = false
- Public.scout_extra_speed = 1.3
- Public.scout_damage_taken_multiplier = 1.25
- Public.scout_damage_dealt_multiplier = 0.6
- Public.fisherman_reach_bonus = 10
- Public.master_angler_reach_bonus = 16
- Public.master_angler_fish_bonus = 1
- Public.master_angler_coin_bonus = 10
- Public.dredger_reach_bonus = 16
- Public.dredger_fish_bonus = 1
- Public.gourmet_ore_scaling_enabled = false
+Public.samurai_damage_taken_multiplier = 0.26
+Public.samurai_damage_dealt_when_not_melee_multiplier = 0.75
+Public.samurai_damage_dealt_with_melee = 25
+Public.hatamoto_damage_taken_multiplier = 0.16
+Public.hatamoto_damage_dealt_when_not_melee_multiplier = 0.75
+Public.hatamoto_damage_dealt_with_melee = 45
+Public.iron_leg_damage_taken_multiplier = 0.18
+Public.iron_leg_iron_ore_required = 3000
+Public.deckhand_extra_speed = 1.25
+Public.deckhand_ore_grant_multiplier = 2
+Public.deckhand_ore_scaling_enabled = true
+Public.boatswain_extra_speed = 1.25
+Public.boatswain_ore_grant_multiplier = 4
+Public.boatswain_ore_scaling_enabled = true
+Public.shoresman_extra_speed = 1.1
+Public.shoresman_ore_grant_multiplier = 2
+Public.shoresman_ore_scaling_enabled = true
+Public.quartermaster_range = 19
+Public.quartermaster_bonus_physical_damage = 1.3
+Public.quartermaster_ore_scaling_enabled = false
+Public.scout_extra_speed = 1.3
+Public.scout_damage_taken_multiplier = 1.25
+Public.scout_damage_dealt_multiplier = 0.6
+Public.fisherman_reach_bonus = 10
+Public.lumberjack_coins_from_tree = 12
+Public.master_angler_reach_bonus = 16
+Public.master_angler_fish_bonus = 2
+Public.master_angler_coin_bonus = 20
+Public.dredger_reach_bonus = 16
+Public.dredger_fish_bonus = 2
+Public.gourmet_ore_scaling_enabled = false
+Public.chef_fish_received_for_biter_kill = 1
+Public.chef_fish_received_for_worm_kill = 3
+Public.rock_eater_damage_taken_multiplier = 0.8
+Public.rock_eater_required_stone_furnace_to_heal_count = 1
+Public.soldier_defender_summon_chance = 0.2
+Public.veteran_destroyer_summon_chance = 0.2
+Public.veteran_on_hit_slow_chance = 0.1
 
 
 function Public.starting_boatEEIpower_production_MW()
@@ -139,12 +157,12 @@ function Public.max_time_on_island_formula() --always >0  --tuned
 end
 
 
-Public.rockets_needed_x = 40*21
+Public.rockets_needed_x = 40*20
 
 
 function Public.max_time_on_island()
 	local x = Common.overworldx()
-	if x == 0 or (x >= Public.rockets_needed_x) then
+	if x == 0 or (x >= Public.rockets_needed_x and x ~= 40*21) then
 	-- if Common.overworldx() == 0 or ((Common.overworldx()/40) > 20 and (Common.overworldx()/40) < 25) then
 		return -1
 	else
@@ -169,7 +187,7 @@ function Public.fuel_depletion_rate_static()
 
 	local rate
 	if Common.overworldx() > 0 then
-		rate = 575 * (0 + (Common.overworldx()/40)^(9/10)) * Public.crew_scale()^(1/8) * Math.sloped(Common.difficulty_scale(), 65/100) / T --most of the crewsize dependence is through T, i.e. the coal cost per island stays the same... but the extra player dependency accounts for the fact that even in compressed time, more players seem to get more resources per island
+		rate = 570 * (0 + (Common.overworldx()/40)^(9/10)) * Public.crew_scale()^(1/8) * Math.sloped(Common.difficulty_scale(), 65/100) / T --most of the crewsize dependence is through T, i.e. the coal cost per island stays the same... but the extra player dependency accounts for the fact that even in compressed time, more players seem to get more resources per island
 	else
 		rate = 0
 	end
@@ -180,7 +198,7 @@ end
 function Public.fuel_depletion_rate_sailing()
 	if (not Common.overworldx()) then return 0 end
 
-	return - 7.65 * (1 + 0.135 * (Common.overworldx()/40)^(100/100)) * Math.sloped(Common.difficulty_scale(), 1/20) --shouldn't depend on difficulty much if at all, as available resources don't depend much on difficulty
+	return - 7.75 * (1 + 0.135 * (Common.overworldx()/40)^(100/100)) * Math.sloped(Common.difficulty_scale(), 1/20) --shouldn't depend on difficulty much if at all, as available resources don't depend much on difficulty
 end
 
 function Public.silo_total_pollution()
@@ -190,17 +208,13 @@ function Public.silo_total_pollution()
 end
 
 function Public.boat_passive_pollution_per_minute(time)
-	local boost = 1
 	local T = Public.max_time_on_island_formula()
 	if (Common.overworldx()/40) > 25 then T = T * 0.9 end
 
-	if time then
-		if time >= 160/100 * T then
-		boost = 40
-		elseif time >= 130/100 * T then
-			boost = 30
-		elseif time >= 100/100 * T then --will still happen regularly, on islands without an auto-undock timer
-			boost = 20
+	local boost
+	if time then --sharp rise approaching T, steady increase thereafter
+		if time > T then
+			boost = 20 + 10 * (time - T) / (30/100 * T)
 		elseif time >= 95/100 * T then
 			boost = 16
 		elseif time >= 90/100 * T then
@@ -215,7 +229,11 @@ function Public.boat_passive_pollution_per_minute(time)
 			boost = 2
 		elseif time >= 50/100 * T then
 			boost = 1.5
+		else
+			boost = 1
 		end
+	else
+		boost = 1
 	end
 
 	return boost * (
@@ -244,7 +262,7 @@ function Public.base_evolution_leagues(leagues)
 end
 
 function Public.expected_time_evo()
-	return 0.14
+	return 0.125 --tuned
 end
 
 function Public.evolution_per_second()
@@ -280,13 +298,15 @@ function Public.evolution_per_nest_kill() --it's important to have evo go up wit
 	if destination and destination.dynamic_data and destination.dynamic_data.timer and destination.dynamic_data.timer > 0 and destination.dynamic_data.initial_spawner_count and destination.dynamic_data.initial_spawner_count > 0 then
 
 		local initial_spawner_count = destination.dynamic_data.initial_spawner_count
+		local base_evo_jump = 0.04 * (1/initial_spawner_count) --extra friction to make them hard to mow through, even at late times
+
 		local time = destination.dynamic_data.timer
 		-- local time_to_jump_to = Public.expected_time_on_island() * ((1/Public.expected_time_fraction)^(2/3))
 		local time_to_jump_to = Public.max_time_on_island_formula()
-		if time > time_to_jump_to then return 0
+		if time > time_to_jump_to then return base_evo_jump
 		else
 			-- evo it 'would have' contributed:
-			return (1/initial_spawner_count) * Public.expected_time_evo() * (time_to_jump_to - time)/time_to_jump_to
+			return (1/initial_spawner_count) * Public.expected_time_evo() * (time_to_jump_to - time)/time_to_jump_to + base_evo_jump
 		end
 	else
 		return 0
@@ -359,26 +379,30 @@ function Public.quest_reward_multiplier()
 end
 
 function Public.island_richness_avg_multiplier()
-	local ret
-	-- local base = 0.7 + 0.1 * (Common.overworldx()/40)^(7/10) --tuned tbh
-	local base = 0.73 + 0.120 * (Common.overworldx()/40)^(65/100) --tuned tbh
+	local base = 0.73
+	local additional = 0.120 * Math.clamp(0, 7, (Common.overworldx()/40)^(65/100) * Math.sloped(Public.crew_scale(), 1/40)) --tuned tbh
 
-	ret = base * Math.sloped(Public.crew_scale(), 1/40) --we don't really have resources scaling by player count in this resource-constrained scenario, but we scale a little, to accommodate each player filling their inventory with useful tools. also, I would do higher than 1/40, but we go even slightly lower because we're applying this somewhat sooner than players actually get there.
+	-- now clamped, because it takes way too long to mine that many more resources
 
-	return ret
+	--we don't really have resources scaling by player count in this resource-constrained scenario, but we scale a little, to accommodate each player filling their inventory with useful tools. also, I would do higher than 1/40, but we go even slightly lower because we're applying this somewhat sooner than players actually get there.
+
+	return base + additional
 end
 
 function Public.resource_quest_multiplier()
 	return (1.0 + 0.075 * (Common.overworldx()/40)^(8/10)) * Math.sloped(Common.difficulty_scale(), 1/5) * (Public.crew_scale())^(1/10)
 end
 
-function Public.quest_structure_entry_price_scale()
-	return 0.85 * (1 + 0.033 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty_scale(), 1/2) --whilst the scenario philosophy says that resource scales tend to be independent of crew size, we account slightly for the fact that more players tend to handcraft more
+function Public.quest_market_entry_price_scale()
+	return 0.85 * (1 + 0.030 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty_scale(), 1/2) --whilst the scenario philosophy says that resource scales tend to be independent of crew size, we account slightly for the fact that more players tend to handcraft more
 end
 
+function Public.quest_furnace_entry_price_scale()
+	return 0.85 * (1 + 0.010 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty_scale(), 1/2) --slower increase with time, because this is more time-constrained than resource-constrained
+end
 
 function Public.apply_crew_buffs_per_league(force, leagues_travelled)
-	force.laboratory_productivity_bonus = force.laboratory_productivity_bonus + Math.max(0, 6/100 * leagues_travelled/40)
+	force.laboratory_productivity_bonus = force.laboratory_productivity_bonus + Math.max(0, 7/100 * leagues_travelled/40)
 end
 
 function Public.class_cost(at_dock)
@@ -402,10 +426,15 @@ Public.silo_resistance_factor = 7
 
 function Public.pistol_damage_multiplier() return 2.25 end --2.0 slightly too low, 2.5 causes players to yell at each other for not using pistol
 
-Public.kraken_spawns_base_extra_evo = 0.35
+Public.kraken_static_evo = 0.35
 
 function Public.kraken_evo_increase_per_shot()
-	return 1/100 * 0.07
+	-- return 1/100 * 0.08
+	return 0
+end
+
+function Public.kraken_evo_increase_per_second()
+	return 1/100 / 20
 end
 
 function Public.sandworm_evo_increase_per_spawn()
@@ -417,10 +446,10 @@ function Public.sandworm_evo_increase_per_spawn()
 end
 
 function Public.kraken_kill_reward_items()
-	return {{name = 'sulfuric-acid-barrel', count = 5}, {name = 'coin', count = 800}}
+	return {{name = 'coin', count = 800}, {name = 'utility-science-pack', count = 8}}
 end
 function Public.kraken_kill_reward_fuel()
-	return 200
+	return 150
 end
 
 function Public.kraken_health()
@@ -477,10 +506,10 @@ end
 
 Public.research_buffs = { --currently disabled anyway
 	-- these already give .1 productivity so we're adding .1 to get to 20%
-	['mining-productivity-1'] = {['mining-drill-productivity-bonus'] = .1},
-	['mining-productivity-2'] = {['mining-drill-productivity-bonus'] = .1},
-	['mining-productivity-3'] = {['mining-drill-productivity-bonus'] = .1},
-	['mining-productivity-4'] = {['mining-drill-productivity-bonus'] = .1},
+	['mining-productivity-1'] = {['mining_drill_productivity_bonus'] = .1},
+	['mining-productivity-2'] = {['mining_drill_productivity_bonus'] = .1},
+	['mining-productivity-3'] = {['mining_drill_productivity_bonus'] = .1},
+	['mining-productivity-4'] = {['mining_drill_productivity_bonus'] = .1},
 	-- -- these already give .1 productivity so we're adding .1 to get to 20%
 	-- ['mining-productivity-1'] = {['mining-drill-productivity-bonus'] = .1, ['character-inventory-slots-bonus'] = 5},
 	-- ['mining-productivity-2'] = {['mining-drill-productivity-bonus'] = .1, ['character-inventory-slots-bonus'] = 5},
@@ -572,18 +601,44 @@ function Public.starting_items_crew_downstairs()
 	}
 end
 
+function Public.pick_random_drilling_ore()
+	local number = Math.random(10)
+	if number <= 4 then -- 40%
+		return 'iron-ore'
+	elseif number <= 7 then -- 30%
+		return 'copper-ore'
+	elseif number <= 9 then -- 20%
+		return 'coal'
+	else -- 10%
+		return 'stone'
+	end
+end
 
 
+-- Current formula returns [50 - 200] + random(1, [10 - 40]) depending on completion progress
+-- Formula is "a(100x)^(1/2) + random(1, 0.2a(100x)^(1/2))" where
+-- x: progress in range [0-1] (when leagues are in 0-1000)
+-- a: scaling
+-- When the formula needs adjustments, I suggest changing scaling variable
+function Public.pick_drilling_ore_amount()
+	local scaling = 20
+	local amount = scaling * Math.sqrt(100 * Common.game_completion_progress())
+	local extra_random_amount = Math.random(Math.ceil(0.2 * amount))
+	return amount + extra_random_amount
+end
 
 
-
-
-
-
-
-
-
-
-
+-- Current formula returns [15000 - 50000] + random(1, [3000 - 10000]) depending on completion progress
+-- Formula is "a(1000000x)^(1/2) + random(1, 0.2a(1000000x)^(1/2))" where
+-- x: progress in range [0-1] (when leagues are in 0-1000)
+-- a: scaling
+-- When the formula needs adjustments, I suggest changing scaling variable
+-- Note: 3333 crude oil amount ~= 1% = 0.1/sec
+function Public.pick_special_pumpjack_oil_amount()
+	local scaling = 50
+	local amount = scaling * Math.sqrt(1000000 * Common.game_completion_progress())
+	local extra_random_amount = Math.random(Math.ceil(0.2 * amount))
+	return amount + extra_random_amount
+end
 
 return Public

@@ -78,7 +78,11 @@ function Public.initialise_crew_memory(id) --mostly serves as a dev reference of
 	memory.boat = nil
 
 	memory.available_classes_pool = nil
+	-- Duplicating unlocked classes data for consistency reasons (this way, entries will remain in the same order when unlocked class data changes)
+	-- @TODO Might have to consider sacrificing consistency(or find a way to retain consistency) to reduce the chance of contradicting data which results in weird bugs (this happened once already)
+	memory.unlocked_classes = nil
 
+	memory.seconds_until_alert_sound_can_be_played_again = 0
 	memory.crewplayerindices = nil
 	memory.spectatorplayerindices = nil
 	memory.tempbanned_from_joining_data = nil
@@ -115,6 +119,9 @@ function Public.initialise_crew_memory(id) --mostly serves as a dev reference of
 	memory.floating_pollution = nil
 
 	memory.playtesting_stats = nil
+
+	memory.cliff_explosives_acquired_once = false -- used to give tip by parrot what to do with them(only triggers from buying it in captain's cabin)
+	memory.hold_surface_destroyable_wooden_chests = nil
 end
 
 function Public.fallthrough_crew_memory() --could make this a metatable, but metatables and factorio global seem not to play nicely

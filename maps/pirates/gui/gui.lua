@@ -9,6 +9,7 @@ local GuiEvo = require 'maps.pirates.gui.evo'
 local GuiProgress = require 'maps.pirates.gui.progress'
 local GuiRuns = require 'maps.pirates.gui.runs'
 local GuiCrew = require 'maps.pirates.gui.crew'
+local GuiClasses = require 'maps.pirates.gui.classes'
 local GuiFuel = require 'maps.pirates.gui.fuel'
 local GuiMinimap = require 'maps.pirates.gui.minimap'
 local GuiInfo = require 'maps.pirates.gui.info'
@@ -32,10 +33,12 @@ ComfyGui.set_disabled_tab('Groups', true)
 
 
 local Public = {}
+-- this seems to be never used
 local enum = {
 	PROGRESS = 'progress',
 	RUNS = 'runs',
 	CREW = 'crew',
+	CLASSES = 'classes',
 	FUEL = 'fuel',
 	MINIMAP = 'minimap',
 	INFO = 'info',
@@ -45,6 +48,7 @@ Public.enum = enum
 Public.progress = require 'maps.pirates.gui.progress'
 Public.runs = require 'maps.pirates.gui.runs'
 Public.crew = require 'maps.pirates.gui.crew'
+Public.classes = require 'maps.pirates.gui.classes'
 Public.fuel = require 'maps.pirates.gui.fuel'
 Public.minimap = require 'maps.pirates.gui.minimap'
 Public.info = require 'maps.pirates.gui.info'
@@ -52,6 +56,8 @@ Public.color = require 'maps.pirates.gui.color'
 
 
 function Public.update_crew_gui(which_gui)
+	if not Public[which_gui] then return end
+
 	local players = Common.crew_get_crew_members_and_spectators()
 
 	for _, player in pairs(players) do
@@ -100,6 +106,9 @@ local function create_gui(player)
 	-- flow2.sprite = 'utility/spawn_flag'
 	flow2 = GuiCommon.flow_add_floating_sprite_button(flow1, 'crew_piratebutton')
 	flow2.sprite = 'utility/spawn_flag'
+
+	flow2 = GuiCommon.flow_add_floating_sprite_button(flow1, 'classes_piratebutton')
+	flow2.sprite = 'item/light-armor'
 
 	-- flow2 = GuiCommon.flow_add_floating_sprite_button(flow1, 'lives_piratebutton')
 	-- flow2.tooltip = 'Lives\n\nWhen a silo is destroyed before its rocket is launched, you lose a life.\n\nLosing all your lives is one way to lose the game.'
@@ -598,7 +607,8 @@ function Public.process_etaframe_update(player, flow1, bools)
 
 			-- local caption
 			if bools.atsea_loading_bool then
-				if memory.overworldx >= Balance.rockets_needed_x then --bools.eta_bool is not helpful yet
+				-- @TODO: Fix magic numbers here
+				if memory.overworldx >= Balance.rockets_needed_x and (not (memory.overworldx == 21 * 40)) then --bools.eta_bool is not helpful yet
 					flow2.etaframe_label_3.caption = {'pirates.gui_etaframe_nest_escape_cost'}
 					if bools.cost_includes_rocket_launch_bool then
 						tooltip = {'pirates.resources_needed_tooltip_0_rocketvariant'}
@@ -902,7 +912,7 @@ function Public.update_gui(player)
 
 	flow1 = pirates_flow.crew_piratebutton_frame.crew_piratebutton
 
-	if memory.id and memory.id ~= 0 then
+	if Common.is_id_valid(memory.id) then
 		flow1.tooltip = {'pirates.gui_crew_tooltip_1'}
 		flow1.mouse_button_filter = {'left','right'}
 	else
@@ -913,10 +923,24 @@ function Public.update_gui(player)
 		end
 	end
 
+	flow1 = pirates_flow.classes_piratebutton_frame.classes_piratebutton
+
+	if Common.is_id_valid(memory.id) then
+		flow1.tooltip = {'pirates.gui_classes_tooltip_1'}
+		flow1.mouse_button_filter = {'left','right'}
+	else
+		flow1.tooltip = {'pirates.gui_classes_tooltip_2'}
+		flow1.mouse_button_filter = {'middle'} --hack to avoid press visual
+		if player.gui.screen['classes_piratewindow'] then
+			player.gui.screen['classes_piratewindow'].destroy()
+		end
+	end
+
 	if GuiEvo.full_update then GuiEvo.full_update(player) end
 	if GuiProgress.regular_update then GuiProgress.regular_update(player) end --moved to event
 	if GuiRuns.full_update then GuiRuns.full_update(player) end
 	if GuiCrew.full_update then GuiCrew.full_update(player) end
+	if GuiClasses.full_update then GuiClasses.full_update(player) end
 	if GuiFuel.regular_update then GuiFuel.regular_update(player) end --moved to event
 	if GuiMinimap.full_update then GuiMinimap.full_update(player) end
 	if GuiInfo.full_update then GuiInfo.full_update(player) end
@@ -961,7 +985,7 @@ function Public.update_gui(player)
 	flow1 = pirates_flow.progress_piratebutton_frame.progress_piratebutton
 
 	flow1.number = (memory.overworldx or 0)
-	flow1.caption = {'pirates.gui_progress_tooltip', memory.overworldx or 0, CoreData.victory_x}
+	flow1.tooltip = {'pirates.gui_progress_tooltip', memory.overworldx or 0, CoreData.victory_x}
 	-- pirates_flow.destination_piratebutton_frame.destination_piratebutton.number = memory.destinationsvisited_indices and #memory.destinationsvisited_indices or 0
 
 
@@ -1164,7 +1188,7 @@ local function on_gui_click(event)
 
 	local player = game.players[event.element.player_index]
 
-	local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+	local crew_id = Common.get_id_from_force_name(player.force.name)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
 
@@ -1201,6 +1225,7 @@ local function on_gui_click(event)
 	else
 		if GuiRuns.click then GuiRuns.click(event) end
 		if GuiCrew.click then GuiCrew.click(event) end
+		if GuiClasses.click then GuiClasses.click(event) end
 		if GuiFuel.click then GuiFuel.click(event) end
 		if GuiMinimap.click then GuiMinimap.click(event) end
 		if GuiInfo.click then GuiInfo.click(event) end

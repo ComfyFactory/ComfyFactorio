@@ -258,6 +258,33 @@ function Public.stone_furnace_loot()
 		{name = 'coal', count = 50},
 	}
 end
+
+function Public.assembling_machine_loot()
+	-- not sure if similar table exists already, but I couldn't find any
+	local loot_table = {
+		'transport-belt',
+		'underground-belt',
+		'splitter',
+		'inserter',
+		'long-handed-inserter',
+		'fast-inserter',
+		'small-electric-pole',
+		'medium-electric-pole',
+		'pipe',
+		'pipe-to-ground',
+		'small-lamp',
+		'repair-pack',
+		'iron-stick',
+		'iron-gear-wheel',
+		'stone-wall',
+	}
+
+	local index = Math.random(#loot_table)
+
+	-- even though count is bigger than the stack size, it will automatically delete excess items
+	return {name = loot_table[index], count = 200}
+end
+
 function Public.storage_tank_fluid_loot(force_type)
 	local ret
 	local rng = Math.random(10)
@@ -281,7 +308,7 @@ end
 
 function Public.swamp_storage_tank_fluid_loot()
 	local ret
-	ret = {name = 'sulfuric-acid', amount = Math.random(500, 1500)}
+	ret = {name = 'sulfuric-acid', amount = 100*Math.ceil(Math.random(5^2, 40^2)^(1/2))}
     return ret
 end
 
@@ -414,35 +441,35 @@ function Public.maze_treasure_loot()
 end
 
 Public.dredger_loot_raw = {
-	{8, 0, 1, false, 'iron-plate', 1, 1},
-	{8, 0, 1, false, 'copper-plate', 1, 1},
-	{8, 0, 1, false, 'coal', 1, 1},
-	{10, 0, 1, false, 'coin', 1, 1},
+	{8, 0, 1, false, 'iron-plate', 5, 80},
+	{8, 0, 1, false, 'copper-plate', 5, 80},
+	{8, 0, 1, false, 'coal', 5, 50},
+	{10, 0, 1, false, 'coin', 10, 100},
 
-	{2, 0, 1, false, 'small-electric-pole', 1, 1},
-	{1, 0, 1, false, 'medium-electric-pole', 1, 1},
-	{0.1, 0, 1, false, 'big-electric-pole', 1, 1},
+	{2, 0, 1, false, 'small-electric-pole', 2, 10},
+	{1, 0, 1, false, 'medium-electric-pole', 1, 5},
+	{0.1, 0, 1, false, 'big-electric-pole', 1, 3},
 
-	{0.2, 0, 1, false, 'poison-capsule', 1, 1},
-	{0.2, 0, 1, false, 'slowdown-capsule', 1, 1},
-	{0.1, 0, 1, false, 'destroyer-capsule', 1, 1},
-	{0.2, 0, 1, false, 'defender-capsule', 1, 1},
-	{0.2, 0, 1, false, 'distractor-capsule', 1, 1},
+	{0.2, 0, 1, false, 'poison-capsule', 1, 4},
+	{0.2, 0, 1, false, 'slowdown-capsule', 1, 4},
+	{0.1, 0, 1, false, 'destroyer-capsule', 1, 3},
+	{0.2, 0, 1, false, 'defender-capsule', 1, 4},
+	{0.2, 0, 1, false, 'distractor-capsule', 1, 3},
 
 
-	{0.05, 0, 1, false, 'speed-module-3', 1, 1},
-	{0.05, 0, 1, false, 'effectivity-module-3', 1, 1},
-	{0.05, 0, 1, false, 'productivity-module-2', 1, 1}, --3s are banned because of game mech
+	{0.05, 0, 1, false, 'speed-module-3', 1, 2},
+	{0.05, 0, 1, false, 'effectivity-module-3', 1, 2},
+	{0.05, 0, 1, false, 'productivity-module-2', 1, 2}, --3s are banned because of game mech
 
-	{0.1, 0, 1, false, 'rocket', 1, 1},
-	{0.01, 0, 1, false, 'explosive-rocket', 1, 1},
+	{0.1, 0, 1, false, 'rocket', 1, 3},
+	{0.01, 0, 1, false, 'explosive-rocket', 1, 2},
 
-	{4, 0, 1, false, 'automation-science-pack', 1, 1},
-	{4, 0, 1, false, 'logistic-science-pack', 1, 1},
-	{2, 0, 1, false, 'military-science-pack', 1, 1},
-	{1, 0, 1, false, 'chemical-science-pack', 1, 1},
-	{1, 0, 1, false, 'production-science-pack', 1, 1},
-	{0.5, 0, 1, false, 'utility-science-pack', 1, 1},
+	{4, 0, 1, false, 'automation-science-pack', 4, 15},
+	{4, 0, 1, false, 'logistic-science-pack', 4, 15},
+	{2, 0, 1, false, 'military-science-pack', 2, 10},
+	{1, 0, 1, false, 'chemical-science-pack', 2, 8},
+	{1, 0, 1, false, 'production-science-pack', 1, 5},
+	{0.5, 0, 1, false, 'utility-science-pack', 1, 4},
 
 	{0.012, 0, 0.8, false, 'night-vision-equipment', 1, 1},
 	{0.01, 0, 1, false, 'exoskeleton-equipment', 1, 1},

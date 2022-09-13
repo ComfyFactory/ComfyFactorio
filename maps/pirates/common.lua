@@ -112,7 +112,7 @@ end
 function Public.activecrewcount()
 	local global_memory = Memory.get_global_memory()
 	local memory = Memory.get_crew_memory()
-	if memory.id == 0 then return 0 end
+	if not Public.is_id_valid(memory.id) then return 0 end
 
 	local count = 0
 	for _, id in pairs(memory.crewplayerindices) do
@@ -585,7 +585,7 @@ end
 
 
 
-
+-- This function assumes you're placing obstacle boxes in the hold
 function Public.surface_place_random_obstacle_boxes(surface, center, width, height, spacing_entity, box_size_table, contents)
 	contents = contents or {}
 
@@ -605,8 +605,9 @@ function Public.surface_place_random_obstacle_boxes(surface, center, width, heig
 				placed = placed + 1
 				local p = boxposition()
 				for j = 1, size^2 do
-					local p2 = surface.find_non_colliding_position('wooden-chest', p, 5, 0.1, true)
+					local p2 = surface.find_non_colliding_position('wooden-chest', p, 5, 0.1, true) or p
 					local e = surface.create_entity{name = 'wooden-chest', position = p2, force = memory.force_name, create_build_effect_smoke = false}
+					memory.hold_surface_destroyable_wooden_chests[#memory.hold_surface_destroyable_wooden_chests + 1] = e
 					e.destructible = false
 					e.minable = false
 					e.rotatable = false
@@ -814,7 +815,7 @@ end
 
 function Public.crew_get_crew_members()
 	local memory = Memory.get_crew_memory()
-	if memory.id == 0 then return {} end
+	if not Public.is_id_valid(memory.id) then return {} end
 
 	local playerlist = {}
 	for _, id in pairs(memory.crewplayerindices) do
@@ -827,7 +828,7 @@ end
 
 function Public.crew_get_crew_members_and_spectators()
 	local memory = Memory.get_crew_memory()
-	if memory.id == 0 then return {} end
+	if not Public.is_id_valid(memory.id) then return {} end
 
 	local playerlist = {}
 	for _, id in pairs(memory.crewplayerindices) do
@@ -847,7 +848,7 @@ end
 function Public.crew_get_nonafk_crew_members()
 	local global_memory = Memory.get_global_memory()
 	local memory = Memory.get_crew_memory()
-	if memory.id == 0 then return {} end
+	if not Public.is_id_valid(memory.id) then return {} end
 
 	local playerlist = {}
 	for _, id in pairs(memory.crewplayerindices) do
@@ -867,18 +868,31 @@ function Public.destroy_decoratives_in_area(surface, area, offset)
 	surface.destroy_decoratives{area = area2}
 end
 
-function Public.can_place_silo_setup(surface, p, silo_count, generous, build_check_type_name)
+function Public.can_place_silo_setup(surface, p, points_to_avoid, silo_count, generous, build_check_type_name)
+
+	-- game.print('checking silo pos: ' .. p.x .. ', ' .. p.y)
+
+	points_to_avoid = points_to_avoid or {}
 
 	Public.ensure_chunks_at(surface, p, 0.2)
 
 	build_check_type_name = build_check_type_name or 'manual'
 	local build_check_type = defines.build_check_type[build_check_type_name]
 	local s = true
+	local allowed = true
 	for i=1,silo_count do
-		s = (surface.can_place_entity{name = 'rocket-silo', position = {p.x + 9 * (i-1), p.y}, build_check_type = build_check_type} or (generous and i>2)) and s
+		local pos = {x = p.x + 9 * (i-1), y = p.y}
+		s = (surface.can_place_entity{name = 'rocket-silo', position = pos, build_check_type = build_check_type} or (generous and i>2)) and s
+
+		for _, pa in pairs(points_to_avoid) do
+			if Math.distance({x = pa.x, y = pa.y}, pos) < pa.r then
+				allowed = false
+				break
+			end
+		end
 	end
 
-	return s
+	return s and allowed
 end
 
 function Public.ensure_chunks_at(surface, pos, radius) --WARNING: THIS DOES NOT PLAY NICELY WITH DELAYED TASKS. log(_inspect{global_memory.working_id}) was observed to vary before and after this function.
@@ -1472,5 +1486,36 @@ function Public.init_game_settings(technology_price_multiplier)
 	game.forces.enemy.evolution_factor = 0
 end
 
+-- prefer memory.force_name if possible
+function Public.get_crew_force_name(id)
+	return string.format('crew-%03d', id)
+end
+
+-- prefer memory.enemy_force_name if possible
+function Public.get_enemy_force_name(id)
+	return string.format('enemy-%03d', id)
+end
+
+-- prefer memory.ancient_friendly_force_name if possible
+function Public.get_ancient_friendly_force_name(id)
+	return string.format('ancient-friendly-%03d', id)
+end
+
+-- prefer memory.ancient_enemy_force_name if possible
+function Public.get_ancient_hostile_force_name(id)
+	return string.format('ancient-hostile-%03d', id)
+end
+
+function Public.get_id_from_force_name(force_name)
+	return tonumber(string.sub(force_name, -3, -1)) or nil
+end
+
+function Public.is_id_valid(id)
+	if id and id ~= 0 then
+		return true
+	else
+		return false
+	end
+end
 
 return Public

@@ -68,7 +68,7 @@ function Public.terrain(args)
 			args.specials[#args.specials + 1] = {name = 'chest', position = args.p}
 		else
 			if noises.forest_abs(p) > 0.15 then
-				local treedensity = 0.08 * Math.slopefromto(noises.forest_abs_suppressed(p), 0.45, 0.6) + 0.3 * Math.slopefromto(noises.forest_abs_suppressed(p), 0.65, 1.0)
+				local treedensity = 0.3 * Math.slopefromto(noises.forest_abs_suppressed(p), 0.8, 1.0)
 				if noises.forest(p) > 1.3 then
 					if Math.random(1,100) < treedensity*100 then args.entities[#args.entities + 1] = {name = 'tree-09-brown', position = args.p} end
 				else
@@ -129,8 +129,8 @@ function Public.chunk_structures(args)
 			placeable = noises.farness(p) > 0.3,
 			-- spawners_indestructible = noises.farness(p) > 0.75,
 			spawners_indestructible = false,
-			spawners_density_perchunk = 90 * Math.slopefromto(noises.mood(p), 0.7, 0.5) * Math.slopefromto(noises.farness(p), 0.35, 1)^2 * args.biter_base_density_scale,
-			worms_density_perchunk = 30 * Math.slopefromto(noises.mood(p), 0.7, 0.5) * Math.slopefromto(noises.farness(p), 0.25, 1)^2 * args.biter_base_density_scale,
+			spawners_density_perchunk = 81 * Math.slopefromto(noises.mood(p), 0.7, 0.5) * Math.slopefromto(noises.farness(p), 0.35, 1)^(1.8) * args.biter_base_density_scale,
+			worms_density_perchunk = 27 * Math.slopefromto(noises.mood(p), 0.7, 0.5) * Math.slopefromto(noises.farness(p), 0.25, 1)^(1.8) * args.biter_base_density_scale,
 		}
 	end
 
@@ -140,7 +140,8 @@ function Public.chunk_structures(args)
 		local noises = Public.noises{p = p, noise_generator = args.noise_generator, static_params = args.static_params, seed = args.seed}
 
 		return {
-			placeable = noises.height(p) > 0.05,
+			placeable_strict = noises.height(p) > 0.05,
+			placeable_optional = true,
 			chanceperchunk = 0.25 * Math.slopefromto(noises.farness(p), 0.05, 0.15),
 		}
 	end
@@ -163,7 +164,7 @@ function Public.swamp_structures(args, spec)
 		struct = Structures.IslandStructures.ROC.swamp_lonely_storage_tank
 
 		if struct then
-			Structures.try_place(struct, args.specials, left_top, 64, 64, function(p) return spec(p).placeable end)
+			Structures.try_place(struct, args.specials, left_top, 64, 64, function(p) return spec(p).placeable_strict end, function(p) return spec(p).placeable_optional end)
 		end
 	end
 end
@@ -175,8 +176,8 @@ function Public.break_rock(surface, p, entity_name)
 end
 
 
-function Public.generate_silo_setup_position()
-	return Hunt.silo_setup_position()
+function Public.generate_silo_setup_position(points_to_avoid)
+	return Hunt.silo_setup_position(points_to_avoid)
 end
 
 

@@ -25,10 +25,10 @@ Public.Minimarket = require 'maps.pirates.shop.dock'
 
 
 
-function Public.print_transaction(player, offer_itemname, offer_itemcount, price)
+function Public.print_transaction(player, multiplier, offer_itemname, offer_itemcount, price)
 	local type = 'traded away'
 	local s2 = {''}
-	local s3 = offer_itemcount .. ' ' .. offer_itemname
+	local s3 = offer_itemcount * multiplier .. ' ' .. offer_itemname
 	if offer_itemname == 'coin' then type = 'sold' end
 	for i, p in pairs(price) do
 		local p2 = {name = p.name, amount = p.amount}
@@ -44,7 +44,7 @@ function Public.print_transaction(player, offer_itemname, offer_itemcount, price
 				s2[#s2+1] = {'pirates.separator_1'}
 			end
 		end
-		s2[#s2+1] = p2.amount
+		s2[#s2+1] = p2.amount * multiplier
 		s2[#s2+1] = ' '
 		s2[#s2+1] = p2.name
 	end
@@ -128,13 +128,51 @@ local function purchaseData(market, player, offer_index)
 end
 
 
+function Public.refund_items(player, price, price_multiplier, item_purchased_name, item_purchased_count)
+
+	local inv = player.get_inventory(defines.inventory.character_main)
+	if not inv then return end
+
+	for _, p in pairs(price) do
+		inv.insert{name = p.name, count = p.amount * price_multiplier}
+	end
+
+	if item_purchased_name and item_purchased_count then
+		local removed = inv.remove{name = item_purchased_name, count = item_purchased_count}
+		if removed < item_purchased_count then
+			local nearby_floor_items = player.surface.find_entities_filtered{area = {{player.position.x - 20, player.position.y - 20}, {player.position.x + 20, player.position.y + 20}}, name = 'item-on-ground'}
+			local whilesafety = 2000
+			local i = 1
+			while removed < item_purchased_count and i <= #nearby_floor_items and i < whilesafety do
+				if nearby_floor_items[i].stack and nearby_floor_items[i].stack.name and nearby_floor_items[i].stack.count and nearby_floor_items[i].stack.name == item_purchased_name then
+					nearby_floor_items[i].destroy()
+					removed = removed + 1
+					-- local removed_count = nearby_floor_items[i].stack.count
+					-- if removed_count > item_purchased_count - removed then
+					-- 	removed_count = item_purchased_count - removed
+					-- end
+					-- if removed_count == nearby_floor_items[i].stack.count then
+					-- 	nearby_floor_items[i].destroy()
+					-- else
+					-- 	nearby_floor_items[i].stack.count = nearby_floor_items[i].stack.count - removed_count
+					-- end
+					-- removed = removed + removed_count
+				end
+				i = i + 1
+			end
+			if i == whilesafety then log('ERROR: whilesafety reached') end
+		end
+	end
+end
+
+
 
 function Public.event_on_market_item_purchased(event)
     local player_index, market, offer_index, trade_count = event.player_index, event.market, event.offer_index, event.count
 	local player = game.players[player_index]
 	if not (market and market.valid and offer_index and Common.validate_player(player)) then return end
 
-	local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+	local crew_id = Common.get_id_from_force_name(player.force.name)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
@@ -147,13 +185,10 @@ function Public.event_on_market_item_purchased(event)
 
 	-- Normally we want to disallow multi-purchases in this game (with the exception of static trades for items), so refund any additional purchases:
 	if (thisPurchaseData.decay_type ~= 'static' or thisPurchaseData.offer_type == 'nothing') and player and trade_count and trade_count > 1 then
-		inv = player.get_inventory(defines.inventory.character_main)
-		if not inv then return end
-		for _, p in pairs(thisPurchaseData.price) do
-			inv.insert{name = p.name, count = p.amount * (trade_count - 1)}
-		end
 		if thisPurchaseData.offer_type == 'give-item' then
-			inv.remove{name = thisPurchaseData.offer_giveitem_name, count = thisPurchaseData.offer_giveitem_count * (trade_count - 1)}
+			Public.refund_items(player, thisPurchaseData.price, (trade_count - 1), thisPurchaseData.offer_giveitem_name, thisPurchaseData.offer_giveitem_count * (trade_count - 1))
+		else
+			Public.refund_items(player, thisPurchaseData.price, (trade_count - 1))
 		end
 		refunds = refunds + (trade_count - 1)
 	end
@@ -168,13 +203,10 @@ function Public.event_on_market_item_purchased(event)
 			end
 
 			if thisPurchaseData.permission_level_fail then
+				refunds = trade_count
 				Common.notify_player_error(player, {'pirates.market_error_not_captain'})
 				-- refund:
-				inv = player.get_inventory(defines.inventory.character_main)
-				if not inv then return end
-				for _, p in pairs(thisPurchaseData.price) do
-					inv.insert{name = p.name, count = p.amount}
-				end
+				Public.refund_items(player, thisPurchaseData.price, 1)
 				refunds = refunds + 1
 			else
 				if thisPurchaseData.offer_type == 'give-item' then
@@ -185,13 +217,14 @@ function Public.event_on_market_item_purchased(event)
 
 						local healthbar = memory.boat.healthbars[unit_number]
 						if healthbar then
+							healthbar.max_health = healthbar.max_health + Balance.cannon_extra_hp_for_upgrade
 							healthbar.health = healthbar.max_health
 							Common.update_healthbar_rendering(healthbar, healthbar.max_health)
 						else
 							log('error: healthbar ' .. unit_number .. ' not found')
 						end
 					end
-					Common.notify_force(force,{'pirates.repaired_cannons', player.name})
+					Common.notify_force(force,{'pirates.upgraded_cannons', player.name})
 					market.remove_market_item(offer_index)
 				else
 					local upgrade_type = Common.current_destination().static_params.upgrade_for_sale
@@ -210,34 +243,13 @@ function Public.event_on_market_item_purchased(event)
 				-- if not class_for_sale then return end
 				local required_class = Classes.class_purchase_requirement[class_for_sale]
 
-				local ok = true
-				-- check if they have the required class to buy it
-				if required_class then
-					if not (memory.classes_table and memory.classes_table[player.index] and memory.classes_table[player.index] == required_class) then
-						ok = false
-						Common.notify_force_error(force, {'pirates.class_purchase_error_prerequisite_class',Classes.display_form(required_class)})
-					end
-				end
+				local ok = Classes.try_unlock_class(class_for_sale, player, false)
 
 				if ok then
-					if required_class then
-						if force and force.valid then
-							local message = {'pirates.class_upgrade', player.name, Classes.display_form(required_class), Classes.display_form(class_for_sale), Classes.explanation(class_for_sale)}
-							Common.notify_force_light(force,message)
-						end
-					else
-						-- check if they have a role already - renounce it if so
-						if memory.classes_table and memory.classes_table[player.index] then
-							Classes.try_renounce_class(player, false)
-						end
-
-						if force and force.valid then
-							local message = {'pirates.class_purchase', player.name, Classes.display_form(class_for_sale), Classes.explanation(class_for_sale)}
-							Common.notify_force_light(force, message)
-						end
+					if force and force.valid then
+						local message = {'pirates.class_purchase', player.name, Classes.display_form(class_for_sale), Classes.explanation(class_for_sale)}
+						Common.notify_force_light(force, message)
 					end
-
-					memory.classes_table[player.index] = class_for_sale
 
 					memory.available_classes_pool = Utils.ordered_table_with_single_value_removed(memory.available_classes_pool, class_for_sale)
 
@@ -252,14 +264,15 @@ function Public.event_on_market_item_purchased(event)
 							memory.available_classes_pool[#memory.available_classes_pool + 1] = upgrade
 						end
 					end
-				else
-					--refund
-					inv = player.get_inventory(defines.inventory.character_main)
-					if not inv then return end
-					for _, p in pairs(thisPurchaseData.price) do
-						inv.insert{name = p.name, count = p.amount}
+				else -- if this happens, I believe there is something wrong with code
+					if force and force.valid then
+						Common.notify_force_error(force, {'pirates.class_purchase_error_prerequisite_class', Classes.display_form(required_class)})
 					end
+
+					--refund
 					refunds = refunds + 1
+					Public.refund_items(player, thisPurchaseData.price, 1)
+					log('Error purchasing class: ' .. class_for_sale)
 				end
 			else
 				Common.notify_force_light(player.force, {'pirates.market_event_buy', player.name, thisPurchaseData.offer_giveitem_count .. ' ' .. thisPurchaseData.offer_giveitem_name, thisPurchaseData.price[1].amount .. ' ' .. thisPurchaseData.price[1].name})
@@ -272,15 +285,21 @@ function Public.event_on_market_item_purchased(event)
 		if thisPurchaseData.in_captains_cabin and thisPurchaseData.permission_level_fail then
 			Common.notify_player_error(player, {'pirates.market_error_not_captain_or_officer'})
 			-- refund:
-			inv = player.get_inventory(defines.inventory.character_main)
-			if not inv then return end
-			for _, p in pairs(thisPurchaseData.price) do
-				inv.insert{name = p.name, count = p.amount}
+			if thisPurchaseData.decay_type == 'static' then
+				if thisPurchaseData.offer_type == 'give-item' then
+					Public.refund_items(player, thisPurchaseData.price, trade_count, thisPurchaseData.offer_giveitem_name, thisPurchaseData.offer_giveitem_count * trade_count)
+				else
+					Public.refund_items(player, thisPurchaseData.price, trade_count)
+				end
+				refunds = refunds + trade_count
+			else
+				if thisPurchaseData.offer_type == 'give-item' then
+					Public.refund_items(player, thisPurchaseData.price, 1, thisPurchaseData.offer_giveitem_name, thisPurchaseData.offer_giveitem_count)
+				else
+					Public.refund_items(player, thisPurchaseData.price, 1)
+				end
+				refunds = refunds + 1
 			end
-			if thisPurchaseData.offer_type == 'give-item' then
-				inv.remove{name = thisPurchaseData.offer_giveitem_name, count = thisPurchaseData.offer_giveitem_count}
-			end
-			refunds = refunds + 1
 		else
 			-- print:
 			if (thisPurchaseData.price and thisPurchaseData.price[1]) then
@@ -288,7 +307,7 @@ function Public.event_on_market_item_purchased(event)
 					if thisPurchaseData.in_captains_cabin and thisPurchaseData.offer_type == 'nothing' then
 						Common.notify_force_light(player.force, {'pirates.market_event_buy', player.name, {'pirates.extra_time_at_sea'}, thisPurchaseData.price[1].amount .. ' ' .. thisPurchaseData.price[1].name})
 					else
-						Public.print_transaction(player, thisPurchaseData.offer_giveitem_name, thisPurchaseData.offer_giveitem_count, thisPurchaseData.price)
+						Public.print_transaction(player, trade_count - refunds, thisPurchaseData.offer_giveitem_name, thisPurchaseData.offer_giveitem_count, thisPurchaseData.price)
 					end
 				end
 			end
@@ -298,11 +317,7 @@ function Public.event_on_market_item_purchased(event)
 				if not success then
 					Common.notify_player_error(player, {'pirates.market_error_maximum_loading_time'})
 					-- refund:
-					inv = player.get_inventory(defines.inventory.character_main)
-					if not inv then return end
-					for _, p in pairs(thisPurchaseData.price) do
-						inv.insert{name = p.name, count = p.amount}
-					end
+					Public.refund_items(player, thisPurchaseData.price, 1)
 					refunds = refunds + 1
 				end
 			else
@@ -339,6 +354,11 @@ function Public.event_on_market_item_purchased(event)
 
 	if thisPurchaseData.offer_giveitem_name and thisPurchaseData.offer_giveitem_name == 'coin' and refunds < trade_count then
 		memory.playtesting_stats.coins_gained_by_markets = memory.playtesting_stats.coins_gained_by_markets + thisPurchaseData.offer_giveitem_count
+	end
+
+	if (not memory.cliff_explosives_acquired_once) and thisPurchaseData.offer_type == 'give-item' and thisPurchaseData.offer_giveitem_name == 'cliff-explosives' and refunds < trade_count then
+		memory.cliff_explosives_acquired_once = true
+		Common.parrot_speak(memory.force, {'pirates.parrot_cliff_explosive_tip'})
 	end
 end
 

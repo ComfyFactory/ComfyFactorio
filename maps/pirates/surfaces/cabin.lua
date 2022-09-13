@@ -34,11 +34,11 @@ Public.Data.cabin_whitebelts_lrtp_order = {
 
 Public.Data.car_pos = {x = 9, y = 0}
 
-Public.Data.market_position = {x = 4.5, y = 3.5}
+Public.Data.market_position = {x = 3.5, y = -0.5}
 
 Public.Data.static_entities_bp = [[0eNqlmu9u2jAUxd8ln2HK9X/zKlM10RJ1kWiCkrAVVX33hVJtXcuJfcwnhEh+XF+fY8e596W63x+bw9B2U7V5qcZue1hP/fpxaHfn78/VRsKqOlUbZV5XVfvQd2O1+T5f2D522/35kul0aKpN1U7NU7Wquu3T+dvvvt813frhZzNO1fnGbtecWa+r5K3N82FoxnE9HvbtNDXDh9vV692qarqpndrmEsbbl9OP7vh0P1+5kesBrKpDP8439d37mOpv9m1Q8+frOaRPGJWJkWWMzsSoZYzJxOhljM3EmGWMy8TYZYzPxLhlTMjE+GVMzMSEZYzUmZyY4OTqWBJClmwlJ6QsuVqWhJglV82SkLPk6lkSgpZcRUtC0pKraUmIWgK5jCnAiSRHwHJYf1mcp2HbjYd+mNb3zX5hLQKRKaGJJkFUpPUQR5MclLN/Ot8OU7vfN8NpPR2HoVmS6Jy2ebfbtUPzcPnZXUNbVmcoRseCUNI8KTQDOKzwNeBEWl6yTNR1MRGMVfMWUAmiKjYVGrX+Qtz32938E9ynzf/6nV3w/pDXH6fD8fws+PVfTPa/+Bv+xZLGRll2JAfllt4tECiwIDQydrtw4Hm1JjkWcKTYc4ioiolorLrYxYhoiolo1LZ4+0YxumIiitEXr10oxkATbYLI7yruAzG5r1v29ADitEJywJxYxS4sCKRZEBqZIVeWADiW5HjAccXrCSL6YiIaayheT1CMsdhZ/rMP1LU3DHX+8wCg/n0eaDvwOOBYk4D0OvbcAZLqaI8gkGFBaGSsSQS9MXIkKAJOuTdgaOWbRMySciSlHAuk7Nl9A2XDs54AE+XpjQOBsk3hU0OjXQFJtC3AodmzthBwjPc3+ALFVu6LtyiTxvCsMa5g084ItDNAPgLrDDRXQbGTDg5rQbMgcHwMplw9KDZbrh6do57gWPXoEvV4dtJRPgILQnMV6VUMhBRremUFMUWhY0Ik2hvgmBBpb4CDS7zBGyi2G7xhc7wRaW/YAm9E2hsoH7Q30Fzx3rCoilfTKIdQbEVaAiLR7vCIpMtVDaMz5bLOOhRKbVldlxwLpWZf7+KU0BaBE0a/4cUo3iVofMK+5lWw2k2bJCJS+QteHJ0ur1VCpmGrlZDEljVw7lxJxfItsOSrTeFr4zhO2g04eWzFQ6FKu6LNIIgk5cV2yCyvDGImWyjHuaPNAGOiK+MYxdfG4fjY6rjSiBTIxjRMimRvGiTpmmxPwyQhO9QwSZFNapikyT41TDJkqxomsUs+Jjmy7w2TPNtohlGBbX7DqMg2m0FUdlFbko4xwjacYZRim+Awii5AXFB3q0v/7uZDI/Gq+tUM4+WZO4jxUXlrZt3W8/V/ACz9dUA=]]
 
-Public.Data.operable_entities_bp = [[0eNqVkeFqwzAMhN9Fv51Ru8nS+lVKGWkjOkMiG0vZGkrefbZXRhljbX+Jg7vPJ/kCh2HCEB0J2AswdaESX52i67M+gzUrBXMa9aLAHT0x2F0yuhN1Q7bIHBAsOMERFFA3ZvXpfY9UHd+RBXKQekwsvai7UTyHiMwVh8GJYLyJm2WvAEmcOPyuUcT8RtN4SE6rfygsiMP1fQXBc8p4uq6kX1+aslSaS670C2MexLT/Y9ZPtmn/xtRPtimYdKhyVnvzvwo+MHJJmI2u261pm1qvm1XyfwG7QKjd]]
+-- Public.Data.operable_entities_bp = [[0eNqVkeFqwzAMhN9Fv51Ru8nS+lVKGWkjOkMiG0vZGkrefbZXRhljbX+Jg7vPJ/kCh2HCEB0J2AswdaESX52i67M+gzUrBXMa9aLAHT0x2F0yuhN1Q7bIHBAsOMERFFA3ZvXpfY9UHd+RBXKQekwsvai7UTyHiMwVh8GJYLyJm2WvAEmcOPyuUcT8RtN4SE6rfygsiMP1fQXBc8p4uq6kX1+aslSaS670C2MexLT/Y9ZPtmn/xtRPtimYdKhyVnvzvwo+MHJJmI2u261pm1qvm1XyfwG7QKjd]]
 
 Public.Data.cabin_splitters = {
 	{x = -7, y = 9.5, direction = defines.direction.north, type = 0},
@@ -99,7 +99,7 @@ Public.Data.surfacename_rendering_pos = {x = -0.5, y = -15}
 
 Public.cabin_shop_data = {
 	{
-		price = {{'coin', 400}, {'coal', 20}, {'iron-plate', 10}},--should be inefficient on resources to merely buy arty to shoot nests
+		price = {{'coin', 400}, {'coal', 10}, {'iron-plate', 20}},--should be inefficient on resources to merely buy arty to shoot nests
 		offer = {type='give-item', item = 'artillery-shell', count = 5},
 	},
 	{
@@ -107,8 +107,12 @@ Public.cabin_shop_data = {
 		offer = {type='give-item', item = 'rail-signal', count = 100},
 	},
 	{
-		price = {{'coin', 2000}, {'stone-brick', 30}},
+		price = {{'coin', 1000}, {'stone-brick', 50}},
 		offer = {type='give-item', item = 'uranium-238', count = 10},
+	},
+	{
+		price = {{'coin', 800}, {'explosives', 4}},
+		offer = {type='give-item', item = 'cliff-explosives', count = 1},
 	},
 	--disabled now that we can wait after any destination:
 	-- {
@@ -238,14 +242,14 @@ function Public.create_cabin_surface()
 				e2.operable = false
 			end
 		end
-		local es2 = Common.build_from_blueprint(Public.Data.operable_entities_bp, surface, {x=5, y=-4}, boat.force_name)
-		for _, e2 in pairs(es2) do
-			if e2 and e2.valid then
-				e2.destructible = false
-				e2.minable = false
-				e2.rotatable = false
-			end
-		end
+		-- local es2 = Common.build_from_blueprint(Public.Data.operable_entities_bp, surface, {x=5, y=-4}, boat.force_name)
+		-- for _, e2 in pairs(es2) do
+		-- 	if e2 and e2.valid then
+		-- 		e2.destructible = false
+		-- 		e2.minable = false
+		-- 		e2.rotatable = false
+		-- 	end
+		-- end
 		e = surface.create_entity({name = 'car', position = Public.Data.car_pos, force = boat.force_name, create_build_effect_smoke = false})
 		if e and e.valid then
 			e.get_inventory(defines.inventory.fuel).insert({name = 'wood', count = 16})
@@ -265,6 +269,18 @@ function Public.create_cabin_surface()
 				e.add_market_item(offer)
 			end
 		end
+
+		rendering.draw_text(
+		{
+			color = {60, 255, 124},
+			scale = 1.6,
+			render_layer = 'light-effect',
+			target = e,
+			target_offset = {0, -2.7},
+			surface = e.surface,
+			alignment = 'center',
+			text = "Captain's Market"
+		})
 
 		rendering.draw_text{
 			text = {'pirates.surface_label_cabin'},

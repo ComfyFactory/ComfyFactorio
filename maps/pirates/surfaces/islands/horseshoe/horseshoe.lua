@@ -125,6 +125,21 @@ function Public.chunk_structures(args)
 
 	IslandsCommon.enemies_1(args, spec)
 
+	-- Make testing easier by spawning special structures on 2nd island
+	if _DEBUG then
+		local spec2 = function(p)
+			local noises = Public.noises{p = p, noise_generator = args.noise_generator, static_params = args.static_params, seed = args.seed}
+
+			return {
+				-- placeable = noises.height(p) >= 0 and noises.forest_abs_suppressed(p) < 0.3 + Math.max(0, 0.2 - noises.height(p)),
+				placeable_strict = noises.height(p) >= 0.05,
+				placeable_optional = noises.forest_abs_suppressed(p) < 0.3 + Math.max(0, 0.2 - noises.height(p)),
+				chanceper4chunks = 0.4 * Math.slopefromto(noises.farness(p), 0.1, 0.4) * Math.slopefromto(noises.mood(p), 0, 0.25),
+			}
+		end
+		IslandsCommon.assorted_structures_1(args, spec2)
+	end
+
 	-- local spec2 = function(p)
 	-- 	local noises = Public.noises{p = p, noise_generator = args.noise_generator, static_params = args.static_params, seed = args.seed}
 
@@ -142,8 +157,8 @@ function Public.break_rock(surface, p, entity_name)
 end
 
 
-function Public.generate_silo_setup_position()
-	return Hunt.silo_setup_position(0, 30)
+function Public.generate_silo_setup_position(points_to_avoid)
+	return Hunt.silo_setup_position(points_to_avoid, 0, 30)
 end
 
 

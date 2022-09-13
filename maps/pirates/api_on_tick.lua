@@ -163,7 +163,7 @@ function Public.ship_deplete_fuel(tickinterval)
 	if memory.game_lost then return end
 	if not (memory.stored_fuel and memory.boat.input_chests and memory.boat.input_chests[1]) then return end
 
-	local rate = Progression.fuel_depletion_rate()
+	local rate = Progression.get_fuel_depletion_rate_once_per_second()
 
 	memory.fuel_depletion_rate_memoized = rate
 
@@ -187,6 +187,17 @@ function Public.ship_deplete_fuel(tickinterval)
 
 	if memory.stored_fuel < 0 then
 		Crew.try_lose({'pirates.loss_out_of_fuel'})
+	end
+end
+
+function Public.victory_continue_reminder()
+	local memory = Memory.get_crew_memory()
+
+	if memory.victory_continue_reminder and game.tick >= memory.victory_continue_reminder then
+		memory.victory_continue_reminder = nil
+		if memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL then
+			Common.notify_force(memory.force, {'pirates.victory_continue_reminder'}, CoreData.colors.notify_victory)
+		end
 	end
 end
 
@@ -425,6 +436,22 @@ local function cached_structure_delete_existing_entities_if_needed(surface, posi
 	end
 end
 
+local function cached_structure_delete_existing_unwalkable_tiles_if_needed(surface, position, special)
+	local area = {left_top = {position.x - special.width/2, position.y - special.height/2}, right_bottom = {position.x + special.width/2 + 0.5, position.y + special.height/2 + 0.5}}
+	local existing = surface.find_tiles_filtered{area = area, collision_mask = "water-tile"}
+	if existing then
+		local tiles = {}
+
+		for _, t in pairs(existing) do
+			tiles[#tiles + 1] = {name = "landfill", position = t.position}
+		end
+
+		if #tiles > 0 then
+			surface.set_tiles(tiles, true)
+		end
+	end
+end
+
 function Public.interpret_shorthanded_force_name(shorthanded_name)
 	local memory = Memory.get_crew_memory()
 
@@ -460,17 +487,36 @@ function Public.place_cached_structures(tickinterval)
 	local surface = game.surfaces[surface_name]
 
 	local structures = destination.dynamic_data.structures_waiting_to_be_placed
-	local num = #structures
-	for i = num, 1, -1 do
+
+	for i = #structures, 1, -1 do
 		local structure = structures[i]
 
 		if game.tick > structure.tick + 5 then
 			local special = structure.data
 			local position = special.position
 
+			-- game.print(special.name)
+
+			-- Since this structure has cliffs, the positions need to be snapped and floored to nearest set of elements for x and y accordingly:
+			-- x: {..., -4, 0, 4, 8, ...}
+			-- y: {..., -4, 0, 4, 8, ...}
+			-- This is assuming that "cliff.position + offset" already has snapped positions as such:
+			-- x: {..., -2, 2, 6, ...}
+			-- y: {..., -1.5, 2.5, 6.5, ...}
+			-- The position would be corrected in "try_place" function, but it gets adjusted later with "terraingen_coordinates_offset", so have to do it here
+			if special.name == 'small_cliff_base' then
+				position.x = position.x - position.x % 4
+				position.y = position.y - position.y % 4
+
+				-- add a small bias to avoid situations such as 7.999999999993
+				position.x = position.x + 0.01
+				position.y = position.y + 0.01
+			end
+
 			Common.ensure_chunks_at(surface, position, Common.structure_ensure_chunk_radius)
 
 			cached_structure_delete_existing_entities_if_needed(surface, position, special)
+			cached_structure_delete_existing_unwalkable_tiles_if_needed(surface, position, special)
 
 			local saved_components = {}
 			for k = 1, #special.components do
@@ -488,12 +534,58 @@ function Public.place_cached_structures(tickinterval)
 						surface.set_tiles(tiles, true)
 					end
 
+				elseif c.type == 'water_tiles' then
+					local tiles = {}
+					for _, p in pairs(c.positions) do
+						tiles[#tiles + 1] = {name = c.tile_name, position = Utils.psum{position, p, c.offset}}
+					end
+					if #tiles > 0 then
+						surface.set_tiles(tiles, true)
+					end
+
+				elseif c.type == 'cliffs' then
+					--local c2 = {type = c.type, force_name = force_name, built_entities = {}}
+
+					for _, e in pairs(c.instances) do
+						local p = Utils.psum{position, e.position, c.offset}
+						local e2 = surface.create_entity{name = c.name, position = p, cliff_orientation = e.cliff_orientation}
+						-- c2.built_entities[#c2.built_entities + 1] = e2
+					end
+
+					--saved_components[#saved_components + 1] = c2
+
 				elseif c.type == 'entities' or c.type == 'entities_minable' then
 					local c2 = {type = c.type, force_name = force_name, built_entities = {}}
 
 					for _, e in pairs(c.instances) do
 						local p = Utils.psum{position, e.position, c.offset}
+						if c.type == 'entities_minable' then
+							surface.create_entity{
+								name = Balance.pick_random_drilling_ore(),
+								position = p,
+								direction = e.direction,
+								force = force_name,
+								amount = Balance.pick_drilling_ore_amount()
+							}
+						elseif c.name == 'pumpjack' then
+							surface.create_entity{
+								name = 'crude-oil',
+								position = p,
+								amount = Balance.pick_special_pumpjack_oil_amount()
+							}
+						end
 						local e2 = surface.create_entity{name = c.name, position = p, direction = e.direction, force = force_name, amount = c.amount}
+						c2.built_entities[#c2.built_entities + 1] = e2
+					end
+
+					saved_components[#saved_components + 1] = c2
+
+				elseif c.type == 'vehicles' then
+					local c2 = {type = c.type, force_name = force_name, built_entities = {}}
+
+					for _, e in pairs(c.instances) do
+						local p = Utils.psum{position, e.position, c.offset}
+						local e2 = surface.create_entity{name = c.name, position = p, direction = e.direction}
 						c2.built_entities[#c2.built_entities + 1] = e2
 					end
 
@@ -608,21 +700,26 @@ end
 
 
 function Public.buried_treasure_check(tickinterval)
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 
 	local remaining = destination.dynamic_data.treasure_remaining
 
-	if remaining and remaining > 0 and destination.surface_name and destination.dynamic_data.buried_treasure and #destination.dynamic_data.buried_treasure > 0 then
-		local surface = game.surfaces[destination.surface_name]
-		local treasure_table = destination.dynamic_data.buried_treasure
+	if not (remaining and remaining > 0 and destination.surface_name and destination.dynamic_data.buried_treasure and #destination.dynamic_data.buried_treasure > 0) then
+		return
+	end
 
-		for i = 1, #treasure_table do
-			local treasure = treasure_table[i]
-			if not treasure then break end
+	local surface = game.surfaces[destination.surface_name]
+	local treasure_table = destination.dynamic_data.buried_treasure
+
+	for i = 1, #treasure_table do
+		local treasure = treasure_table[i]
+		if not treasure then break end
+
+		local t = treasure.treasure
+
+		if t then
 			local p = treasure.position
-
-
 			local free = surface.can_place_entity{name = 'wooden-chest', position = p}
 
 			if free then
@@ -657,13 +754,6 @@ function Public.buried_treasure_check(tickinterval)
 
 					if inserters[j] and inserters[j][1] then
 						local ins = inserters[j][1]
-
-						local t = treasure.treasure
-						-- if #treasure.treasure > 0 then
-						-- 	t = treasure.treasure
-						-- 	-- t = treasure.treasure[1]
-						-- end
-						if not t then break end
 
 						if destination.dynamic_data.treasure_remaining > 0 and ins.held_stack.count == 0 and ins.status == defines.entity_status.waiting_for_source_items then
 							surface.create_entity{name = 'item-on-ground', position = p, stack = {name = t.name, count = 1}}
@@ -793,11 +883,11 @@ end
 function Public.crowsnest_natural_move(tickinterval)
 	local memory = Memory.get_crew_memory()
 
-	if not memory.loadingticks then
-		if not Public.overworld_check_collisions() then
-			Overworld.try_overworld_move_v2{x = 1, y = 0}
-		end
-	end
+	if not (memory.boat and memory.boat.state == Structures.Boats.enum_state.ATSEA_SAILING) then return end
+	if memory.loadingticks then return end
+	if Public.overworld_check_collisions() then return end
+
+	Overworld.try_overworld_move_v2{x = 1, y = 0}
 end
 
 
@@ -813,8 +903,6 @@ end
 
 
 
-
-
 function Public.loading_update(tickinterval)
 	local memory = Memory.get_crew_memory()
 	if memory.game_lost then return end
@@ -826,7 +914,17 @@ function Public.loading_update(tickinterval)
 	local destination_index = memory.mapbeingloadeddestination_index
 	if not destination_index then memory.loadingticks = nil return end
 
-	if (not memory.boat.state) or (not (memory.boat.state == Boats.enum_state.LANDED or memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP or memory.boat.state == Boats.enum_state.LEAVING_DOCK or (memory.boat.state == Boats.enum_state.APPROACHING and destination_index == 1))) then return end
+	-- if (not memory.boat.state) or (not (memory.boat.state == Boats.enum_state.LANDED or memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP or memory.boat.state == Boats.enum_state.LEAVING_DOCK or (memory.boat.state == Boats.enum_state.APPROACHING and destination_index == 1))) then return end
+
+	if not memory.boat.state then return end
+
+	local needs_loading_update = false
+	if memory.boat.state == Boats.enum_state.LANDED then needs_loading_update = true end
+	if memory.boat.state == Boats.enum_state.ATSEA_LOADING_MAP then needs_loading_update = true end
+	if memory.boat.state == Boats.enum_state.LEAVING_DOCK then needs_loading_update = true end
+	if memory.boat.state == Boats.enum_state.APPROACHING and destination_index == 1 then needs_loading_update = true end
+
+	if not needs_loading_update then return end
 
 	memory.loadingticks = memory.loadingticks + tickinterval
 
@@ -919,9 +1017,11 @@ function Public.loading_update(tickinterval)
 
 			local eta_ticks = total - (memory.loadingticks - (memory.extra_time_at_sea or 0))
 
-			-- log(_inspect{eta_ticks, (memory.active_sea_enemies.krakens and #memory.active_sea_enemies.krakens or 'nil'), memory.loadingticks})
-
-			if eta_ticks < 60*20 and memory.active_sea_enemies and (memory.active_sea_enemies.krakens and #memory.active_sea_enemies.krakens > 0) then
+			if eta_ticks < 60*20 and
+				memory.active_sea_enemies and
+				memory.active_sea_enemies.kraken_count and
+				memory.active_sea_enemies.kraken_count > 0
+			then
 				memory.loadingticks = memory.loadingticks - tickinterval --reverse the change
 			else
 				local fraction = memory.loadingticks / (total + (memory.extra_time_at_sea or 0))
@@ -947,38 +1047,46 @@ function Public.loading_update(tickinterval)
 end
 
 
-
-
-
-
 function Public.crowsnest_steer(tickinterval)
 	local memory = Memory.get_crew_memory()
+
 	if memory.game_lost then return end
 
-	if memory.boat and memory.boat.state == Structures.Boats.enum_state.ATSEA_SAILING and memory.game_lost == false and memory.boat.crowsneststeeringchests then
-		local leftchest, rightchest = memory.boat.crowsneststeeringchests.left, memory.boat.crowsneststeeringchests.right
-		if leftchest and leftchest.valid and rightchest and rightchest.valid then
-			local inv_left = leftchest.get_inventory(defines.inventory.chest)
-			local inv_right = rightchest.get_inventory(defines.inventory.chest)
-			local count_left = inv_left.get_item_count("rail-signal")
-			local count_right = inv_right.get_item_count("rail-signal")
+	if not 
+		(
+			memory.boat and
+			memory.boat.state and
+			memory.boat.state == Structures.Boats.enum_state.ATSEA_SAILING and
+			memory.game_lost == false and
+			memory.boat.crowsneststeeringchests
+		) 
+	then 
+		return
+	end
 
-			if count_left >= 100 and count_right < 100 and memory.overworldy > -24 then
-				if Overworld.try_overworld_move_v2{x = 0, y = -24} then
-					local force = memory.force
-					Common.notify_force(force, {'pirates.steer_left'})
-					inv_left.remove({name = "rail-signal", count = 100})
-				end
-				return
-			elseif count_right >= 100 and count_left < 100 and memory.overworldy < 24 then
-				if Overworld.try_overworld_move_v2{x = 0, y = 24} then
-					local force = memory.force
-					Common.notify_force(force, {'pirates.steer_right'})
-					inv_right.remove({name = "rail-signal", count = 100})
-				end
-				return
-			end
+	local leftchest = memory.boat.crowsneststeeringchests.left
+	local rightchest = memory.boat.crowsneststeeringchests.right
+	if not (leftchest and leftchest.valid and rightchest and rightchest.valid) then return end
+
+	local inv_left = leftchest.get_inventory(defines.inventory.chest)
+	local inv_right = rightchest.get_inventory(defines.inventory.chest)
+	local count_left = inv_left.get_item_count("rail-signal")
+	local count_right = inv_right.get_item_count("rail-signal")
+
+	if count_left >= 100 and count_right < 100 and memory.overworldy > -24 then
+		if Overworld.try_overworld_move_v2{x = 0, y = -24} then
+			local force = memory.force
+			Common.notify_force(force, {'pirates.steer_left'})
+			inv_left.remove({name = "rail-signal", count = 100})
 		end
+		return
+	elseif count_right >= 100 and count_left < 100 and memory.overworldy < 24 then
+		if Overworld.try_overworld_move_v2{x = 0, y = 24} then
+			local force = memory.force
+			Common.notify_force(force, {'pirates.steer_right'})
+			inv_right.remove({name = "rail-signal", count = 100})
+		end
+		return
 	end
 end
 
@@ -1142,7 +1250,7 @@ function Public.Kraken_Destroyed_Backup_check(tickinterval) -- a server became s
 	local boat = memory.boat
 
 	if boat and boat.surface_name and boat.state and boat.state == Boats.enum_state.ATSEA_LOADING_MAP then
-		if (memory.active_sea_enemies and memory.active_sea_enemies.krakens and #memory.active_sea_enemies.krakens > 0) then
+		if (memory.active_sea_enemies and memory.active_sea_enemies.krakens and memory.active_sea_enemies.kraken_count and memory.active_sea_enemies.kraken_count > 0) then
 
 			local surface = game.surfaces[boat.surface_name]
 
@@ -1299,12 +1407,11 @@ end
 
 
 function Public.update_player_guis(tickinterval)
-	local global_memory = Memory.get_global_memory()
+	-- local global_memory = Memory.get_global_memory()
     local players = game.connected_players
 
 	for _, player in pairs(players) do
-		-- figure out which crew this is about:
-		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+		local crew_id = Common.get_id_from_force_name(player.force.name)
 		Memory.set_working_id(crew_id)
 
 		Gui.update_gui(player)
@@ -1335,7 +1442,7 @@ function Public.update_players_second()
 	end
 
 	for _, player in pairs(connected_players) do
-		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+		local crew_id = Common.get_id_from_force_name(player.force.name)
 		Memory.set_working_id(crew_id)
 
 		if player.afk_time < Common.afk_time then
@@ -1370,12 +1477,125 @@ function Public.update_players_second()
 
 	for _, index in pairs(afk_player_indices) do
 		local player = game.players[index]
-		local crew_id = tonumber(string.sub(player.force.name, -3, -1)) or nil
+		local crew_id = Common.get_id_from_force_name(player.force.name)
 		Memory.set_working_id(crew_id)
 		Roles.afk_player_tick(player)
 	end
 end
 
+function Public.update_alert_sound_frequency_tracker()
+	local memory = Memory.get_crew_memory()
+	if memory.seconds_until_alert_sound_can_be_played_again and memory.seconds_until_alert_sound_can_be_played_again > 0 then
+		memory.seconds_until_alert_sound_can_be_played_again = memory.seconds_until_alert_sound_can_be_played_again - 1
+		memory.seconds_until_alert_sound_can_be_played_again = Math.max(0, memory.seconds_until_alert_sound_can_be_played_again)
+	end
+end
 
+function Public.check_for_cliff_explosives_in_hold_wooden_chests()
+	local memory = Memory.get_crew_memory()
+	local input_chests = memory.hold_surface_destroyable_wooden_chests
+
+	if not input_chests then return end
+
+	for i, chest in ipairs(input_chests) do
+		if chest and chest.valid then
+			local item_count = chest.get_item_count('cliff-explosives')
+			if item_count and item_count > 0 then
+				local surface = chest.surface
+				local explosion = {
+					name = 'wooden-chest-explosion',
+					position = chest.position
+				}
+				local remnants = {
+					name = 'wooden-chest-remnants',
+					position = chest.position
+				}
+
+				chest.destroy()
+				surface.create_entity(explosion)
+				surface.create_entity(remnants)
+
+				table.fast_remove(memory.hold_surface_destroyable_wooden_chests, i)
+			end
+		end
+	end
+end
+
+-- Code taken from Mountain fortress
+local function equalise_fluid_storage_pair(storage1, storage2)
+	if not storage1.valid then
+        return
+    end
+    if not storage2.valid then
+        return
+    end
+
+    local source_fluid = storage1.fluidbox[1]
+    if not source_fluid then
+        return
+    end
+
+    local target_fluid = storage2.fluidbox[1]
+    local source_fluid_amount = source_fluid.amount
+
+    local amount
+    if target_fluid then
+        amount = source_fluid_amount - ((target_fluid.amount + source_fluid_amount) * 0.5)
+    else
+        amount = source_fluid.amount * 0.5
+    end
+
+    if amount <= 0 then
+        return
+    end
+
+    local inserted_amount = storage2.insert_fluid({name = source_fluid.name, amount = amount, temperature = source_fluid.temperature})
+    if inserted_amount > 0 then
+        storage1.remove_fluid({name = source_fluid.name, amount = inserted_amount})
+    end
+end
+
+-- This function assumes that there is equal amount of special storage tanks on deck and every hold.
+-- NOTE: This function only equalises adjacent storage tank pairs. That is "Deck - 1st Hold" and "Nth Hold - (N+1)th Hold" pairs
+function Public.equalise_fluid_storages()
+	local memory = Memory.get_crew_memory()
+	local boat = memory.boat
+
+	if boat.upstairs_fluid_storages and boat.downstairs_fluid_storages then
+		-- Iterate every chain of together connected storages from deck and all holds
+		for i = 1, #boat.upstairs_fluid_storages do
+			local storages = {}
+			storages[1] = boat.upstairs_fluid_storages[i]
+
+			for j = 1, memory.hold_surface_count do
+				storages[j + 1] = boat.downstairs_fluid_storages[j][i]
+			end
+
+			for j = 2, #storages do
+				equalise_fluid_storage_pair(storages[j], storages[j-1])
+				equalise_fluid_storage_pair(storages[j-1], storages[j])
+			end
+		end
+	end
+end
+
+function Public.revealed_buried_treasure_distance_check()
+	local destination = Common.current_destination()
+
+	if destination.dynamic_data.some_player_was_close_to_buried_treasure then return end
+
+	local maps = destination.dynamic_data.treasure_maps or {}
+	for _, map in pairs(maps) do
+		if map.state == 'picked_up' then
+			for _, player in pairs(Common.crew_get_crew_members()) do
+				if player.character and player.character.valid then
+					if Math.distance(player.character.position, map.buried_treasure_position) <= 20 then
+						destination.dynamic_data.some_player_was_close_to_buried_treasure = true
+					end
+				end
+			end
+		end
+	end
+end
 
 return Public

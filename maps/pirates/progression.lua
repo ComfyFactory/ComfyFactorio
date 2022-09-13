@@ -36,18 +36,26 @@ local ShopDock = require 'maps.pirates.shop.dock'
 
 
 
-function Public.fuel_depletion_rate()
+function Public.get_fuel_depletion_rate_once_per_second()
 	local memory = Memory.get_crew_memory()
 	local state = memory.boat.state
 
 	if state == Boats.enum_state.ATSEA_SAILING or state == Boats.enum_state.APPROACHING then
-		return Balance.fuel_depletion_rate_sailing()
+		local ret = Balance.fuel_depletion_rate_sailing()
+		memory.playtesting_stats.fuel_spent_at_sea = memory.playtesting_stats.fuel_spent_at_sea + ret
+		return ret
 	elseif state == Boats.enum_state.LEAVING_DOCK then
-		return Balance.fuel_depletion_rate_sailing() * 1.25
+		local ret = Balance.fuel_depletion_rate_sailing() * 1.25
+		memory.playtesting_stats.fuel_spent_at_destinations_while_moving = memory.playtesting_stats.fuel_spent_at_destinations_while_moving + ret
+		return ret
 	elseif state == Boats.enum_state.RETREATING then
-		return Balance.fuel_depletion_rate_sailing() / 4
+		local ret = Balance.fuel_depletion_rate_sailing() / 4
+		memory.playtesting_stats.fuel_spent_at_destinations_while_moving = memory.playtesting_stats.fuel_spent_at_destinations_while_moving + ret
+		return ret
 	elseif state == Boats.enum_state.LANDED then
-		return Balance.fuel_depletion_rate_static()
+		local ret = Balance.fuel_depletion_rate_static()
+		memory.playtesting_stats.fuel_spent_at_destinations_passively = memory.playtesting_stats.fuel_spent_at_destinations_passively + ret
+		return ret
 	elseif state == Boats.enum_state.DOCKED then
 		return -0.1
 	else
@@ -233,7 +241,7 @@ function Public.progress_to_destination(destination_index)
 		-- memory.mainshop_availability_bools.buy_fast_loader = true
 		-- memory.mainshop_availability_bools.sell_copper = true
 
-		memory.mainshop_availability_bools.repair_cannons = true
+		memory.mainshop_availability_bools.upgrade_cannons = true
 
 		local boat_for_sale_type = Common.current_destination().static_params.boat_for_sale_type
 		if boat_for_sale_type then
@@ -412,7 +420,7 @@ function Public.check_for_end_of_boat_movement(boat)
 			memory.mainshop_availability_bools.buy_copper = false
 			-- memory.mainshop_availability_bools.buy_fast_loader = false
 			-- memory.mainshop_availability_bools.sell_copper = false
-			memory.mainshop_availability_bools.repair_cannons = false
+			memory.mainshop_availability_bools.upgrade_cannons = false
 
 			memory.mainshop_availability_bools.extra_hold = false
 			memory.mainshop_availability_bools.upgrade_power = false
@@ -533,7 +541,13 @@ function Public.at_sea_begin_to_set_sail()
 
 	local force = memory.force
 	if not (force and force.valid) then return end
-	Common.notify_force(force, {'pirates.ship_set_off_to_next_island'})
+
+	if memory.victory_continue_message then
+		memory.victory_continue_message = false
+		Common.notify_force(force, {'pirates.crew_continue_on_freeplay'}, CoreData.colors.notify_victory)
+	else
+		Common.notify_force(force, {'pirates.ship_set_off_to_next_island'})
+	end
 end
 
 
@@ -546,7 +560,7 @@ local parrot_set_sail_advice =
 		Memory.set_working_id(crew_id)
 
 		local memory = Memory.get_crew_memory()
-		if not (memory.id and memory.id > 0) then return end --check if crew disbanded
+		if not Common.is_id_valid(memory.id) then return end --check if crew disbanded
 		if memory.game_lost then return end
 
 		if memory.boat and memory.boat.state and memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL then
@@ -605,7 +619,7 @@ function Public.go_from_currentdestination_to_sea()
 	--@FIX: This doesn't change the evo during sea travel, which is relevant now that krakens are in the game:
 	local base_evo = Balance.base_evolution_leagues(memory.overworldx)
 	Common.set_evo(base_evo)
-	memory.kraken_evo = 0
+	memory.dynamic_kraken_evo = 0
 
 	memory.loadingticks = nil
 	memory.mapbeingloadeddestination_index = nil
@@ -615,6 +629,18 @@ function Public.go_from_currentdestination_to_sea()
 	Crowsnest.paint_around_destination(destination.destination_index, 'deepwater')
 
 	Overworld.try_overworld_move_v2{x = d, y = 0}
+
+
+	-- If crew revealed treasure, but couldn't figure out how to dig it, give them tip
+	if destination.dynamic_data.some_player_was_close_to_buried_treasure then
+		local maps = destination.dynamic_data.treasure_maps or {}
+		for _, map in pairs(maps) do
+			if map.state == 'picked_up' then
+				Common.parrot_speak(memory.force, {'pirates.parrot_burried_treasure_tip'})
+				break
+			end
+		end
+	end
 
 
 	local players_marooned_count = 0

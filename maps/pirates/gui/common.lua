@@ -323,7 +323,7 @@ function Public.flow_add_close_button(flow, close_button_name)
 	flow4 = flow3.add({
 		type = 'button',
 		name = close_button_name,
-		caption = 'Close',
+		caption = {'pirates.gui_close_button'},
 	})
 	flow4.style = 'back_button'
 	flow4.style.minimal_width = 90

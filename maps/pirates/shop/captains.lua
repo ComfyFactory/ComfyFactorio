@@ -28,8 +28,8 @@ local Public = {}
 
 -- WARNING: The Crowsnest caption pulls data from this data. But the actual dock market pulls from boat_upgrades.lua.
 Public.main_shop_data_1 = {
-	repair_cannons = {
-		tooltip = 'Repair the cannons.',
+	upgrade_cannons = {
+		tooltip = 'Increase cannons max health. This will also repair them.',
 		what_you_get_sprite_buttons = {['item/artillery-turret'] = false},
 		base_cost = {coins = 1000},
 	},
@@ -139,7 +139,7 @@ function Public.initialise_captains_shop()
 		new_boat_cutter_with_hold = false,
 		new_boat_cutter = false,
 		buy_iron = false,
-		repair_cannons = false,
+		upgrade_cannons = false,
 		-- sell_iron = false,
 		-- buy_fast_loader = true,
 		-- sell_copper = false,
