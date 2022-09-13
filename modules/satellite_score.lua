@@ -2,10 +2,19 @@
 
 local Event = require 'utils.event'
 local Server = require 'utils.server'
+local Global = require 'utils.global'
+
+local this = {}
+Global.register(
+    this,
+    function(tbl)
+        this = tbl
+    end
+)
 
 local function get_rank()
-    for i = #global.satellite_score, 1, -1 do
-        if global.satellites_in_space >= global.satellite_score[i].goal then
+    for i = #this.satellite_score, 1, -1 do
+        if this.satellites_in_space >= this.satellite_score[i].goal then
             return i
         end
     end
@@ -18,6 +27,7 @@ local function satellite_score_toggle_button(player)
     local button = player.gui.top.add {name = 'satellite_score_toggle_button', type = 'sprite-button', sprite = 'item/satellite', tooltip = 'Satellites in Space'}
     button.style.font = 'default-bold'
     button.style.minimal_height = 38
+    button.style.maximal_height = 38
     button.style.minimal_width = 38
     button.style.padding = 1
 end
@@ -48,24 +58,24 @@ local function satellites_in_space_gui(player)
     local label = frame.add({type = 'label', caption = 'Satellites launched: '})
     label.style.font_color = {r = 0.11, g = 0.8, b = 0.44}
 
-    local progress = (global.satellites_in_space - global.satellite_score[i].goal) / (global.satellite_score[i + 1].goal - global.satellite_score[i].goal)
+    local progress = (this.satellites_in_space - this.satellite_score[i].goal) / (this.satellite_score[i + 1].goal - this.satellite_score[i].goal)
     if progress > 1 then
         progress = 1
     end
     local progressbar = frame.add({type = 'progressbar', value = progress})
+    progressbar.style = 'achievement_progressbar'
     progressbar.style.minimal_width = 100
     progressbar.style.maximal_width = 100
-    progressbar.style.top_padding = 10
 
-    label = frame.add({type = 'label', caption = global.satellites_in_space .. '/' .. tostring(global.satellite_score[i + 1].goal)})
+    label = frame.add({type = 'label', caption = this.satellites_in_space .. '/' .. tostring(this.satellite_score[i + 1].goal)})
     label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 
-    if global.satellite_score[i].rank then
+    if this.satellite_score[i].rank then
         label = frame.add({type = 'label', caption = '  ~Rank~'})
         label.style.font_color = {r = 0.75, g = 0.75, b = 0.75}
-        label = frame.add({type = 'label', caption = global.satellite_score[i].rank})
+        label = frame.add({type = 'label', caption = this.satellite_score[i].rank})
         label.style.font = 'default-bold'
-        label.style.font_color = global.satellite_score[i].color
+        label.style.font_color = this.satellite_score[i].color
     end
 end
 
@@ -75,7 +85,7 @@ local function on_rocket_launched(event)
     if c == 0 then
         return
     end
-    global.satellites_in_space = global.satellites_in_space + c
+    this.satellites_in_space = this.satellites_in_space + c
 
     local i = get_rank()
 
@@ -83,23 +93,23 @@ local function on_rocket_launched(event)
         satellites_in_space_gui(player)
     end
 
-    if not global.satellite_score[i].achieved then
+    if not this.satellite_score[i].achieved then
         for _, player in pairs(game.connected_players) do
             player.play_sound {path = 'utility/game_won', volume_modifier = 0.9}
             --level_up_popup(player)
         end
-        global.satellite_score[i].achieved = true
+        this.satellite_score[i].achieved = true
     end
-    if (global.satellites_in_space < 10) or ((global.satellites_in_space < 50) and ((global.satellites_in_space % 5) == 0)) or ((global.satellites_in_space % 25) == 0) then
-        local message = 'A satellite has been launched! Total count: ' .. global.satellites_in_space
+    if (this.satellites_in_space < 10) or ((this.satellites_in_space < 50) and ((this.satellites_in_space % 5) == 0)) or ((this.satellites_in_space % 25) == 0) then
+        local message = 'A satellite has been launched! Total count: ' .. this.satellites_in_space
         game.print(message)
         Server.to_discord_embed(message)
     end
 end
 
 local function init()
-    global.satellites_in_space = 0
-    global.satellite_score = {
+    this.satellites_in_space = 0
+    this.satellite_score = {
         {goal = 0, rank = false, achieved = true},
         {goal = 1, rank = 'Copper', color = {r = 201, g = 133, b = 6}, msg = '', msg2 = '', achieved = false},
         {goal = 10, rank = 'Iron', color = {r = 219, g = 216, b = 206}, msg = '', msg2 = '', achieved = false},
@@ -123,13 +133,13 @@ local function init()
 end
 
 local function on_player_joined_game(event)
-    if not global.satellites_in_space then
+    if not this.satellites_in_space then
         init()
     end
     local player = game.players[event.player_index]
     satellite_score_toggle_button(player)
 
-    if player.gui.left['satellites_in_space'] or global.satellites_in_space > 0 then
+    if player.gui.left['satellites_in_space'] or this.satellites_in_space > 0 then
         satellites_in_space_gui(player)
     end
 end

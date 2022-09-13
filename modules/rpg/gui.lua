@@ -631,16 +631,38 @@ Gui.on_click(
                 end
             end
             if conjure_gui_input and conjure_gui_input.valid and conjure_gui_input.selected_index then
+                local items = conjure_gui_input.items
+                local spell_name = items[conjure_gui_input.selected_index]
+                if spell_name and spell_name[1] then
+                    rpg_t.dropdown_select_name = spell_name[1]
+                end
                 rpg_t.dropdown_select_index = conjure_gui_input.selected_index
             end
             if spell_gui_input1 and spell_gui_input1.valid and spell_gui_input1.selected_index then
-                rpg_t.dropdown_select_index1 = spell_gui_input1.selected_index
+                local items = spell_gui_input1.items
+                local spell_name = items[spell_gui_input1.selected_index]
+
+                if spell_name and spell_name[1] then
+                    rpg_t.dropdown_select_name_1 = spell_name[1]
+                end
+                rpg_t.dropdown_select_index_1 = spell_gui_input1.selected_index
             end
             if spell_gui_input2 and spell_gui_input2.valid and spell_gui_input2.selected_index then
-                rpg_t.dropdown_select_index2 = spell_gui_input2.selected_index
+                local items = spell_gui_input2.items
+                local spell_name = items[spell_gui_input2.selected_index]
+
+                if spell_name and spell_name[1] then
+                    rpg_t.dropdown_select_name_2 = spell_name[1]
+                end
+                rpg_t.dropdown_select_index_2 = spell_gui_input2.selected_index
             end
             if spell_gui_input3 and spell_gui_input3.valid and spell_gui_input3.selected_index then
-                rpg_t.dropdown_select_index3 = spell_gui_input3.selected_index
+                local items = spell_gui_input3.items
+                local spell_name = items[spell_gui_input3.selected_index]
+                if spell_name and spell_name[1] then
+                    rpg_t.dropdown_select_name_3 = spell_name[1]
+                end
+                rpg_t.dropdown_select_index_3 = spell_gui_input3.selected_index
             end
             if player.gui.screen[spell_gui_frame_name] then
                 Public.update_spell_gui(player, nil)

@@ -50,9 +50,11 @@ local this = {
     damage_entity_threshold = 20,
     explosive_threshold = 16,
     enable_jail_when_decon = true,
+    enable_jail_on_long_texts = true,
     filtered_types_on_decon = {},
     decon_surface_blacklist = 'nauvis',
     players_warn_when_decon = {},
+    players_warn_on_long_texts = {},
     on_cancelled_deconstruction = {tick = 0, count = 0},
     limit = 2000
 }
@@ -91,6 +93,17 @@ local clear_player_decon_warnings =
         local player_index = event.player_index
         if this.players_warn_when_decon[player_index] then
             this.players_warn_when_decon[player_index] = nil
+        end
+    end
+)
+
+-- Clears the player from players_warn_on_long_texts tbl.
+local clear_players_warn_on_long_texts =
+    Token.register(
+    function(event)
+        local player_index = event.player_index
+        if this.players_warn_on_long_texts[player_index] then
+            this.players_warn_on_long_texts[player_index] = nil
         end
     end
 )
@@ -687,6 +700,30 @@ local function on_console_chat(event)
     str = str .. player.name .. ' said: '
     str = str .. '[color=yellow]' .. message .. '[/color]'
     increment(this.message_history, str)
+
+    local message_length = string.len(message) >= 500
+    if message_length then
+        if this.enable_jail_on_long_texts and not player.admin then
+            if not this.players_warn_on_long_texts[player.index] then
+                this.players_warn_on_long_texts[player.index] = 1
+                local r = random(7200, 18000)
+                Task.set_timeout_in_ticks(r, clear_players_warn_on_long_texts, {player_index = player.index})
+            end
+            local warnings = this.players_warn_on_long_texts[player.index]
+            if warnings then
+                if warnings == 1 or warnings == 2 then
+                    Utils.print_to(player, '[Spam] Warning! Do not type long sentences!')
+                    this.players_warn_on_long_texts[player.index] = this.players_warn_on_long_texts[player.index] + 1
+                elseif warnings == 3 then
+                    Utils.print_to(player, '[Spam] Warning! Do not type long sentences! This is your final warning!')
+                    this.players_warn_on_long_texts[player.index] = this.players_warn_on_long_texts[player.index] + 1
+                else
+                    Jail.try_ul_data(player, true, 'script', 'Spammed ' .. this.players_warn_on_long_texts[player.index] .. ' times. Has been warned multiple times before getting jailed and muted.', true)
+                    this.players_warn_on_long_texts[player.index] = nil
+                end
+            end
+        end
+    end
 end
 
 local function on_player_cursor_stack_changed(event)
@@ -1082,6 +1119,13 @@ end
 function Public.enable_jail_when_decon(value)
     this.enable_jail_when_decon = value or false
     return this.enable_jail_when_decon
+end
+
+--- If the script should jail a person whenever they type long texts multiple times.
+---@param value boolean
+function Public.enable_jail_on_long_texts(value)
+    this.enable_jail_on_long_texts = value or false
+    return this.enable_jail_on_long_texts
 end
 
 --- If the script should jail a person whenever they deconstruct multiple times.

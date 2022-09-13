@@ -52,6 +52,7 @@ function Public.reset_wave_defense()
     this.debug_health = false
     this.log_wave_to_discord = true
     this.paused = false
+    this.pause_without_votes = true
     this.game_lost = false
     this.get_random_close_spawner_attempts = 5
     this.group_size = 2
@@ -81,6 +82,7 @@ function Public.reset_wave_defense()
     this.random_group = nil
     this.unit_group_command_delay = 3600 * 20
     this.unit_group_command_step_length = 15
+    this.search_side_targets = {'simple-entity', 'tree', 'car', 'spider-vehicle', 'character'}
     this.wave_interval = 3600
     this.wave_enforced = false
     this.wave_number = 0

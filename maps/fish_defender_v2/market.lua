@@ -2,10 +2,10 @@ local Event = require 'utils.event'
 local Public = require 'maps.fish_defender_v2.table'
 
 local slot_upgrade_offers = {
-    [1] = {'gun-turret', 'gun turret'},
-    [2] = {'laser-turret', 'laser turret'},
+    [1] = {'ammo-turret', 'gun turret'},
+    [2] = {'electric-turret', 'laser turret'},
     [3] = {'artillery-turret', 'artillery turret'},
-    [4] = {'flamethrower-turret', 'flamethrower turret'},
+    [4] = {'fluid-turret', 'flamethrower turret'},
     [5] = {'land-mine', 'land mine'}
 }
 
@@ -33,20 +33,20 @@ local function refresh_market_offers()
 
     local entity_limits = Public.get('entity_limits')
 
-    local str1 = 'Gun Turret Slot for ' .. tostring(entity_limits['gun-turret'].limit * entity_limits['gun-turret'].slot_price)
+    local str1 = 'Gun Turret Slot for ' .. tostring(entity_limits['ammo-turret'].limit * entity_limits['ammo-turret'].slot_price)
     str1 = str1 .. ' Coins.'
 
-    local str2 = 'Laser Turret Slot for ' .. tostring(entity_limits['laser-turret'].limit * entity_limits['laser-turret'].slot_price)
+    local str2 = 'Laser Turret Slot for ' .. tostring(entity_limits['electric-turret'].limit * entity_limits['electric-turret'].slot_price)
     str2 = str2 .. ' Coins.'
 
     local str3 = 'Artillery Slot for ' .. tostring(entity_limits['artillery-turret'].limit * entity_limits['artillery-turret'].slot_price)
     str3 = str3 .. ' Coins.'
 
     local current_limit = 1
-    if entity_limits['flamethrower-turret'].limit ~= 0 then
-        current_limit = current_limit + entity_limits['flamethrower-turret'].limit
+    if entity_limits['fluid-turret'].limit ~= 0 then
+        current_limit = current_limit + entity_limits['fluid-turret'].limit
     end
-    local str4 = 'Flamethrower Turret Slot for ' .. tostring(current_limit * entity_limits['flamethrower-turret'].slot_price)
+    local str4 = 'Flamethrower Turret Slot for ' .. tostring(current_limit * entity_limits['fluid-turret'].slot_price)
     str4 = str4 .. ' Coins.'
 
     local str5 = 'Landmine Slot for ' .. tostring(math.ceil((entity_limits['land-mine'].limit / 3) * entity_limits['land-mine'].slot_price))
@@ -160,16 +160,17 @@ end
 
 local function slot_upgrade(player, offer_index)
     local entity_limits = Public.get('entity_limits')
-    local price = entity_limits[slot_upgrade_offers[offer_index][1]].limit * entity_limits[slot_upgrade_offers[offer_index][1]].slot_price
+    local entry = entity_limits[slot_upgrade_offers[offer_index][1]]
+    local price = entry.limit * entry.slot_price
 
     local gain = 1
     if offer_index == 5 then
-        price = math.ceil((entity_limits[slot_upgrade_offers[offer_index][1]].limit / 3) * entity_limits[slot_upgrade_offers[offer_index][1]].slot_price)
+        price = math.ceil((entry.limit / 3) * entry.slot_price)
         gain = 3
     end
 
-    if slot_upgrade_offers[offer_index][1] == 'flamethrower-turret' then
-        price = (entity_limits[slot_upgrade_offers[offer_index][1]].limit + 1) * entity_limits[slot_upgrade_offers[offer_index][1]].slot_price
+    if slot_upgrade_offers[offer_index][1] == 'fluid-turret' then
+        price = (entry.limit + 1) * entry.slot_price
     end
 
     local coins_removed = player.remove_item({name = 'coin', count = price})

@@ -157,6 +157,10 @@ local function update_alert(id, frame, tick)
     end
 
     local data = Gui.get_data(frame)
+    if not data then
+        return
+    end
+
     local end_tick = data.end_tick
 
     if tick > end_tick then
@@ -188,9 +192,9 @@ on_tick =
 ---Message a specific player, template is a callable that receives a LuaGuiElement
 ---to add contents to and a player as second argument.
 ---@param player LuaPlayer
----@param duration table
+---@param duration number
 ---@param template function
----@param sound string sound to play, nil to not play anything
+---@param sound string|nil sound to play, nil to not play anything
 function Public.alert_player_template(player, duration, template, sound, volume)
     sound = sound or 'utility/new_objective'
     local container = alert_to(player, duration, sound, volume)
@@ -218,7 +222,7 @@ end
 ---to add contents to and a player as second argument.
 ---@param duration number
 ---@param template function
----@param sound string sound to play, nil to not play anything
+---@param sound string|nil sound to play, nil to not play anything
 function Public.alert_all_players_template(duration, template, sound)
     sound = sound or 'utility/new_objective'
     local players = game.connected_players
@@ -230,7 +234,7 @@ end
 
 ---Message all players at a given location
 ---@param player LuaPlayer
----@param message string
+---@param message string|table
 ---@param color string|nil
 function Public.alert_all_players_location(player, message, color, duration)
     local length = duration or 15
@@ -263,7 +267,7 @@ end
 ---Message to a specific player
 ---@param player LuaPlayer
 ---@param duration number
----@param message string
+---@param message string|table
 ---@param color string|nil
 function Public.alert_player(player, duration, message, color, sprite, volume)
     Public.alert_player_template(
@@ -288,7 +292,7 @@ end
 ---@param player LuaPlayer
 ---@param duration number
 ---@param message string
----@param color string
+---@param color string|nil
 function Public.alert_player_warning(player, duration, message, color)
     Public.alert_player_template(
         player,
@@ -320,7 +324,7 @@ end
 
 ---Message to all players
 ---@param duration number
----@param message string
+---@param message string|table
 ---@param color string|nil
 function Public.alert_all_players(duration, message, color, sprite, volume)
     local players = game.connected_players

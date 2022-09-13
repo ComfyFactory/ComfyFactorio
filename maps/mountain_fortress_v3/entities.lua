@@ -950,7 +950,7 @@ local function on_player_repaired_entity(event)
     if carriages_numbers[entity.unit_number] then
         local player = game.get_player(event.player_index)
         local repair_speed = RPG.get_magicka(player)
-        if repair_speed <= 0 then
+        if repair_speed <= 1 then
             set_train_final_health(-1, true)
             return
         else

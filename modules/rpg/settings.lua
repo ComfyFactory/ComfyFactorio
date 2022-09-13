@@ -72,7 +72,6 @@ end
 
 function Public.update_spell_gui(player, spell_index)
     local rpg_t = Public.get_value_from_player(player.index)
-    local spells, names = Public.rebuild_spells()
     local main_frame = player.gui.screen[spell_gui_frame_name]
     if not main_frame then
         return
@@ -80,41 +79,51 @@ function Public.update_spell_gui(player, spell_index)
     local spell_table = main_frame['spell_table']
     if spell_index then
         if spell_index == 1 then
-            rpg_t.dropdown_select_index = rpg_t.dropdown_select_index1
+            rpg_t.dropdown_select_name = rpg_t.dropdown_select_name_1
+            rpg_t.dropdown_select_index = rpg_t.dropdown_select_index_1
         elseif spell_index == 2 then
-            rpg_t.dropdown_select_index = rpg_t.dropdown_select_index2
+            rpg_t.dropdown_select_name = rpg_t.dropdown_select_name_2
+            rpg_t.dropdown_select_index = rpg_t.dropdown_select_index_2
         elseif spell_index == 3 then
-            rpg_t.dropdown_select_index = rpg_t.dropdown_select_index3
+            rpg_t.dropdown_select_name = rpg_t.dropdown_select_name_3
+            rpg_t.dropdown_select_index = rpg_t.dropdown_select_index_3
         end
     end
-    spell_table[spell1_button_name].tooltip = names[rpg_t.dropdown_select_index1] or '---'
-    spell_table[spell1_button_name].sprite = spells[rpg_t.dropdown_select_index1].sprite
-    spell_table[spell2_button_name].tooltip = names[rpg_t.dropdown_select_index2] or '---'
-    spell_table[spell2_button_name].sprite = spells[rpg_t.dropdown_select_index2].sprite
-    spell_table[spell3_button_name].tooltip = names[rpg_t.dropdown_select_index3] or '---'
-    spell_table[spell3_button_name].sprite = spells[rpg_t.dropdown_select_index3].sprite
-    if rpg_t.dropdown_select_index1 == rpg_t.dropdown_select_index then
+
+    local spell_1_data = Public.get_spell_by_name(rpg_t, rpg_t.dropdown_select_name_1)
+    local spell_2_data = Public.get_spell_by_name(rpg_t, rpg_t.dropdown_select_name_2)
+    local spell_3_data = Public.get_spell_by_name(rpg_t, rpg_t.dropdown_select_name_3)
+
+    spell_table[spell1_button_name].tooltip = spell_1_data and spell_1_data.name or '---'
+    spell_table[spell1_button_name].sprite = spell_1_data and spell_1_data.sprite
+    spell_table[spell2_button_name].tooltip = spell_2_data and spell_2_data.name or '---'
+    spell_table[spell2_button_name].sprite = spell_2_data.sprite
+    spell_table[spell3_button_name].tooltip = spell_3_data and spell_3_data.name or '---'
+    spell_table[spell3_button_name].sprite = spell_3_data.sprite
+
+    if rpg_t.dropdown_select_index_1 == rpg_t.dropdown_select_index then
         spell_table[spell1_button_name].enabled = false
         spell_table[spell1_button_name].number = 1
     else
         spell_table[spell1_button_name].enabled = true
         spell_table[spell1_button_name].number = nil
     end
-    if rpg_t.dropdown_select_index2 == rpg_t.dropdown_select_index then
+    if rpg_t.dropdown_select_index_2 == rpg_t.dropdown_select_index then
         spell_table[spell2_button_name].enabled = false
         spell_table[spell2_button_name].number = 1
     else
         spell_table[spell2_button_name].enabled = true
         spell_table[spell2_button_name].number = nil
     end
-    if rpg_t.dropdown_select_index3 == rpg_t.dropdown_select_index then
+    if rpg_t.dropdown_select_index_3 == rpg_t.dropdown_select_index then
         spell_table[spell3_button_name].enabled = false
         spell_table[spell3_button_name].number = 1
     else
         spell_table[spell3_button_name].enabled = true
         spell_table[spell3_button_name].number = nil
     end
-    spell_table['mana-cost'].caption = spells[rpg_t.dropdown_select_index].mana_cost
+    local active_spell = Public.get_spell_by_name(rpg_t, rpg_t.dropdown_select_name)
+    spell_table['mana-cost'].caption = active_spell.mana_cost
     spell_table['mana'].caption = math.floor(rpg_t.mana)
     spell_table['maxmana'].caption = math.floor(rpg_t.mana_max)
 
@@ -123,7 +132,7 @@ end
 
 function Public.spell_gui_settings(player)
     local rpg_t = Public.get_value_from_player(player.index)
-    local spells, names = Public.rebuild_spells()
+    local spells, names = Public.get_all_spells_filtered(rpg_t)
     local main_frame = player.gui.screen[spell_gui_frame_name]
     if not main_frame or not main_frame.valid then
         main_frame =
@@ -148,25 +157,25 @@ function Public.spell_gui_settings(player)
         table.add(
             {
                 type = 'sprite-button',
-                sprite = spells[rpg_t.dropdown_select_index1].sprite,
+                sprite = spells[rpg_t.dropdown_select_index_1].sprite,
                 name = spell1_button_name,
-                tooltip = names[rpg_t.dropdown_select_index1] or '---'
+                tooltip = names[rpg_t.dropdown_select_index_1] or '---'
             }
         )
         table.add(
             {
                 type = 'sprite-button',
-                sprite = spells[rpg_t.dropdown_select_index2].sprite,
+                sprite = spells[rpg_t.dropdown_select_index_2].sprite,
                 name = spell2_button_name,
-                tooltip = names[rpg_t.dropdown_select_index2] or '---'
+                tooltip = names[rpg_t.dropdown_select_index_2] or '---'
             }
         )
         table.add(
             {
                 type = 'sprite-button',
-                sprite = spells[rpg_t.dropdown_select_index3].sprite,
+                sprite = spells[rpg_t.dropdown_select_index_3].sprite,
                 name = spell3_button_name,
-                tooltip = names[rpg_t.dropdown_select_index3] or '---'
+                tooltip = names[rpg_t.dropdown_select_index_3] or '---'
             }
         )
 
@@ -530,11 +539,11 @@ function Public.extra_settings(player)
             {
                 type = 'label',
                 caption = ({'rpg_settings.magic_spell'}),
-                tooltip = 'Check the info button at upper right for more information'
+                tooltip = 'Check the info button at upper right for more information\nOnly spells that you can cast are listed here.'
             }
         )
 
-        local spells, names = Public.rebuild_spells()
+        local spells, names = Public.get_all_spells_filtered(rpg_t)
 
         local conjure_label_style = conjure_label.style
         conjure_label_style.horizontally_stretchable = true
@@ -545,25 +554,41 @@ function Public.extra_settings(player)
         local conjure_input_style = conjure_input.style
         conjure_input_style.height = 35
         conjure_input_style.vertical_align = 'center'
-        conjure_gui_input = create_input_element(conjure_input, 'dropdown', false, names, rpg_t.dropdown_select_index)
+        local index = Public.get_spell_by_index(rpg_t, rpg_t.dropdown_select_name)
+        if not index then
+            index = rpg_t.dropdown_select_index
+        end
+        conjure_gui_input = create_input_element(conjure_input, 'dropdown', false, names, index)
 
-        if not spells[rpg_t.dropdown_select_index1] then
-            rpg_t.dropdown_select_index1 = 1
+        if not spells[rpg_t.dropdown_select_index_1] then
+            rpg_t.dropdown_select_index_1 = 1
         end
-        if not spells[rpg_t.dropdown_select_index2] then
-            rpg_t.dropdown_select_index2 = 1
+        if not spells[rpg_t.dropdown_select_index_2] then
+            rpg_t.dropdown_select_index_2 = 1
         end
-        if not spells[rpg_t.dropdown_select_index3] then
-            rpg_t.dropdown_select_index3 = 1
+        if not spells[rpg_t.dropdown_select_index_3] then
+            rpg_t.dropdown_select_index_3 = 1
         end
 
         mana_frame.add({type = 'label', caption = {'rpg_settings.spell_gui_setup'}, tooltip = {'rpg_settings.spell_gui_tooltip'}})
         local spell_grid = mana_frame.add({type = 'table', column_count = 4, name = 'spell_grid_table'})
-        spell_gui_input1 = create_input_element(spell_grid, 'dropdown', false, names, rpg_t.dropdown_select_index1)
+        local index1 = Public.get_spell_by_index(rpg_t, rpg_t.dropdown_select_name_1)
+        if not index1 then
+            index1 = rpg_t.dropdown_select_index_1
+        end
+        spell_gui_input1 = create_input_element(spell_grid, 'dropdown', false, names, index1)
         spell_gui_input1.style.maximal_width = 135
-        spell_gui_input2 = create_input_element(spell_grid, 'dropdown', false, names, rpg_t.dropdown_select_index2)
+        local index2 = Public.get_spell_by_index(rpg_t, rpg_t.dropdown_select_name_2)
+        if not index2 then
+            index2 = rpg_t.dropdown_select_index_2
+        end
+        spell_gui_input2 = create_input_element(spell_grid, 'dropdown', false, names, index2)
         spell_gui_input2.style.maximal_width = 135
-        spell_gui_input3 = create_input_element(spell_grid, 'dropdown', false, names, rpg_t.dropdown_select_index3)
+        local index3 = Public.get_spell_by_index(rpg_t, rpg_t.dropdown_select_name_3)
+        if not index3 then
+            index3 = rpg_t.dropdown_select_index_3
+        end
+        spell_gui_input3 = create_input_element(spell_grid, 'dropdown', false, names, index3)
         spell_gui_input3.style.maximal_width = 135
         spell_grid.add({type = 'sprite-button', name = spell_gui_button_name, sprite = 'item/raw-fish'})
     end
