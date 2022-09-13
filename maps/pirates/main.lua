@@ -123,8 +123,6 @@ local function on_init()
 		game.create_force(Common.get_ancient_friendly_force_name(id))
 		game.create_force(Common.get_ancient_hostile_force_name(id))
 
-		local crew_force = game.create_force(Common.get_crew_force_name(id))
-
 		Crew.reset_crew_and_enemy_force(id)
 	end
 
@@ -279,9 +277,9 @@ local function crew_tick()
 			memory.crew_disband_tick_message = nil
 
 			local message1 = {'pirates.crew_disband_tick_message', 30}
-	
+
 			Common.notify_force(memory.force, message1)
-	
+
 			Server.to_discord_embed_raw({'', '[' .. memory.name .. '] ', message1}, true)
 		end
 	end

@@ -129,7 +129,6 @@ Public.market_sales = {
 
 
 function Public.create_dock_markets(surface, p)
-	local memory = Memory.get_crew_memory()
     local destination = Common.current_destination()
 
 	if not (surface and p) then return end

@@ -71,12 +71,12 @@ function Public.full_update(player)
 
 		local destination = Common.current_destination()
 
-		local evolution_leagues
-		local evolution_kraken
-		local evolution_time
-		local evolution_silo
-		local evolution_nests
-		local evolution_sandwurms
+		local evolution_leagues = 0
+		local evolution_kraken = 0
+		local evolution_time = 0
+		local evolution_silo = 0
+		local evolution_nests = 0
+		local evolution_sandwurms = 0
 		local evolution_total
 
 		local types = {'leagues', 'kraken', 'time', 'silo', 'nests', 'sandwurms'}
@@ -143,7 +143,7 @@ function Public.full_update(player)
 
 		button.number = evolution_total
 		button.tooltip = str
-		
+
 		if evolution_total > 1.0 then
 			button.sprite = 'entity/behemoth-worm-turret'
 		elseif evolution_total >= 0.9 then

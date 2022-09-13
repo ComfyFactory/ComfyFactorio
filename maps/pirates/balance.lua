@@ -379,7 +379,6 @@ function Public.quest_reward_multiplier()
 end
 
 function Public.island_richness_avg_multiplier()
-	local ret
 	local base = 0.73
 	local additional = 0.120 * Math.clamp(0, 7, (Common.overworldx()/40)^(65/100) * Math.sloped(Public.crew_scale(), 1/40)) --tuned tbh
 
