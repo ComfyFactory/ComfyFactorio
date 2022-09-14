@@ -144,9 +144,11 @@ local function fish_in_space_gui(player)
         progress = 1
     end
     local progressbar = frame.add({type = 'progressbar', value = progress})
-    progressbar.style.minimal_width = 100
-    progressbar.style.maximal_width = 100
-    progressbar.style.top_padding = 10
+    progressbar.style = 'achievement_progressbar'
+    progressbar.style.minimal_width = 96
+    progressbar.style.maximal_width = 96
+    progressbar.style.padding = -1
+    progressbar.style.top_padding = 1
 
     label = frame.add({type = 'label', caption = global.fish_in_space .. '/' .. tostring(global.catplanet_goals[i + 1].goal)})
     label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
