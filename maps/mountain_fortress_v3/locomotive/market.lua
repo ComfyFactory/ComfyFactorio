@@ -96,7 +96,7 @@ local function get_items()
             value = 'coin',
             price = chests_outside_cost,
             tooltip = ({'locomotive.limit_reached'}),
-            sprite = 'achievement/so-long-and-thanks-for-all-the-fish',
+            sprite = 'entity.steel-chest',
             enabled = false,
             upgrade = true,
             static = true
@@ -107,7 +107,7 @@ local function get_items()
             value = 'coin',
             price = chests_outside_cost,
             tooltip = ({'main_market.chest', upgrades.chests_outside_upgrades, market_limits.chests_outside_limit}),
-            sprite = 'achievement/so-long-and-thanks-for-all-the-fish',
+            sprite = 'entity.steel-chest',
             enabled = true,
             upgrade = true,
             static = true
@@ -154,7 +154,7 @@ local function get_items()
             stack = 1,
             value = 'coin',
             price = aura_cost,
-            tooltip = ({'main_market.locomotive_aura_radius', upgrades.locomotive_aura_radius, market_limits.aura_limit}),
+            tooltip = ({'main_market.locomotive_aura_radius', upgrades.aura_upgrades, upgrades.aura_upgrades_max}),
             sprite = 'achievement/tech-maniac',
             enabled = true,
             upgrade = true,

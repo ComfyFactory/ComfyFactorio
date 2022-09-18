@@ -146,6 +146,7 @@ function Public.reset_table()
         explosive_bullets_purchased = false,
         xp_points_upgrade = 0,
         aura_upgrades = 0,
+        aura_upgrades_max = 12, -- = (aura_limit - locomotive_aura_radius) / 5
         locomotive_aura_radius = 40,
         train_upgrades = 0,
         xp_points = 0,
