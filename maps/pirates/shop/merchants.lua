@@ -44,7 +44,7 @@ function Public.generate_merchant_trades(market)
 			market.add_market_item{price = {{'coin', 10000}, {'raw-fish', 10}}, offer = {type = 'give-item', item = 'personal-laser-defense-equipment', count = 1}}
 		end
 		if game_completion_progress >= 2 then
-				market.add_market_item{price = {{'coin', 24000}, {'raw-fish', 100}}, offer = {type = 'give-item', item = 'power-armor-mk2', count = 1}}
+				market.add_market_item{price = {{'coin', 30000}, {'raw-fish', 100}}, offer = {type = 'give-item', item = 'power-armor-mk2', count = 1}}
 		end
 	end
 end
