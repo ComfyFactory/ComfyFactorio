@@ -986,7 +986,7 @@ local function gui_click(event)
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
-                player.name .. ' has bought the chest limit upgrade for ' .. format_number(item.price, true) .. ' coins.'
+                player.name .. ' has upgraded the chest limit for ' .. format_number(item.price, true) .. ' coins.'
             }
         )
         this.upgrades.chests_outside_upgrades = this.upgrades.chests_outside_upgrades + item.stack
@@ -1004,7 +1004,7 @@ local function gui_click(event)
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
-                player.name .. ' has bought the locomotive health modifier for ' .. format_number(item.price, true) .. ' coins.'
+                player.name .. ' has upgraded the train health for ' .. format_number(item.price, true) .. ' coins.'
             }
         )
 
@@ -1058,7 +1058,7 @@ local function gui_click(event)
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
-                player.name .. ' has bought the locomotive xp aura modifier for ' .. format_number(item.price, true) .. ' coins.'
+                player.name .. ' has upgraded the train aura radius for ' .. format_number(item.price, true) .. ' coins.'
             }
         )
         this.upgrades.locomotive_aura_radius = this.upgrades.locomotive_aura_radius + 5
@@ -1098,7 +1098,7 @@ local function gui_click(event)
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
-                player.name .. ' has bought the XP points modifier for ' .. format_number(item.price) .. ' coins.'
+                player.name .. ' has upgraded the train aura XP modifier for ' .. format_number(item.price) .. ' coins.'
             }
         )
         this.upgrades.xp_points = this.upgrades.xp_points + 0.5
