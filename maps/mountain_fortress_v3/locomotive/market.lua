@@ -967,6 +967,7 @@ local function gui_click(event)
         local force = game.forces.player
 
         force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + this.pickaxe_speed_per_purchase
+        this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + item.price
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
@@ -989,6 +990,7 @@ local function gui_click(event)
             }
         )
         this.upgrades.chests_outside_upgrades = this.upgrades.chests_outside_upgrades + item.stack
+        this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + item.price
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
@@ -1034,7 +1036,7 @@ local function gui_click(event)
             end
         end
 
-        this.upgrades.train_upgrades = this.upgrades.train_upgrades + item.stack
+        this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + item.price
         this.upgrades.health_upgrades = this.upgrades.health_upgrades + item.stack
         rendering.set_text(this.health_text, 'HP: ' .. round(this.locomotive_health) .. ' / ' .. round(this.locomotive_max_health))
 
@@ -1061,7 +1063,7 @@ local function gui_click(event)
         )
         this.upgrades.locomotive_aura_radius = this.upgrades.locomotive_aura_radius + 5
         this.upgrades.aura_upgrades = this.upgrades.aura_upgrades + item.stack
-        this.upgrades.train_upgrades = this.upgrades.train_upgrades + item.stack
+        this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + item.price
 
         if this.circle then
             rendering.destroy(this.circle)
@@ -1101,7 +1103,7 @@ local function gui_click(event)
         )
         this.upgrades.xp_points = this.upgrades.xp_points + 0.5
         this.upgrades.xp_points_upgrade = this.upgrades.xp_points_upgrade + item.stack
-        this.upgrades.train_upgrades = this.upgrades.train_upgrades + item.stack
+        this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + item.stack
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
