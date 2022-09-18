@@ -1103,7 +1103,7 @@ local function gui_click(event)
         )
         this.upgrades.xp_points = this.upgrades.xp_points + 0.5
         this.upgrades.xp_points_upgrade = this.upgrades.xp_points_upgrade + item.stack
-        this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + item.stack
+        this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + item.price
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
