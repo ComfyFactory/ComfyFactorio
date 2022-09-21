@@ -127,7 +127,7 @@ local function create_main_frame(player)
     line.style.left_padding = 4
     line.style.right_padding = 4
 
-    label = frame.add({type = 'label', caption = ' ', name = 'train_upgrades'})
+    label = frame.add({type = 'label', caption = ' ', name = 'train_upgrade_contribution'})
     label.style.font_color = {r = 0.88, g = 0.88, b = 0.88}
     label.style.font = 'default-bold'
     label.style.right_padding = 4
@@ -425,6 +425,10 @@ function Public.update_gui(player)
     local pickaxe_upgrades = WPT.pickaxe_upgrades
     local pick_tier = pickaxe_upgrades[upgrades.pickaxe_tier]
     local speed = math.round((player.force.manual_mining_speed_modifier + player.character_mining_speed_modifier + 1) * 100)
+    local train_upgrade_contribution = upgrades.train_upgrade_contribution
+    if upgrades.train_upgrade_contribution > 0 then
+        train_upgrade_contribution = upgrades.train_upgrade_contribution / 1000
+    end
 
     gui.pickaxe_tier.caption = ' [img=item.dummy-steel-axe]: ' .. pick_tier .. ' (' .. upgrades.pickaxe_tier .. ')'
     gui.pickaxe_tier.tooltip = ({'gui.current_pickaxe_tier', pick_tier, speed})
@@ -438,8 +442,8 @@ function Public.update_gui(player)
     gui.flame_turret.caption = ' [img=entity.flamethrower-turret]: ' .. format_number(upgrades.flame_turret.built, true) .. ' / ' .. format_number(upgrades.flame_turret.limit, true)
     gui.flame_turret.tooltip = ({'gui.flamethrowers_placed'})
 
-    gui.train_upgrades.caption = ' [img=entity.locomotive]: ' .. format_number(upgrades.train_upgrades, true)
-    gui.train_upgrades.tooltip = ({'gui.train_upgrades'})
+    gui.train_upgrade_contribution.caption = ' [img=entity.locomotive]: ' .. train_upgrade_contribution .. 'k'
+    gui.train_upgrade_contribution.tooltip = ({'gui.train_upgrade_contribution'})
 
     gui.chest_upgrades.caption = ' [img=entity.steel-chest]: ' .. format_number(upgrades.chests_outside_upgrades, true)
     gui.chest_upgrades.tooltip = ({'gui.chest_placed'})

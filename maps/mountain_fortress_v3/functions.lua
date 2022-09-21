@@ -1207,6 +1207,7 @@ function Public.boost_difficulty()
         )
         local upgrades = WPT.get('upgrades')
         upgrades.locomotive_aura_radius = upgrades.locomotive_aura_radius + 20
+        upgrades.aura_upgrades_max = upgrades.aura_upgrades_max - 4
         if WPT.get('circle') then
             rendering.destroy(WPT.get('circle'))
         end

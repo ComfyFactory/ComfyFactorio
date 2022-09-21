@@ -96,7 +96,7 @@ local function get_items()
             value = 'coin',
             price = chests_outside_cost,
             tooltip = ({'locomotive.limit_reached'}),
-            sprite = 'achievement/so-long-and-thanks-for-all-the-fish',
+            sprite = 'entity.steel-chest',
             enabled = false,
             upgrade = true,
             static = true
@@ -107,7 +107,7 @@ local function get_items()
             value = 'coin',
             price = chests_outside_cost,
             tooltip = ({'main_market.chest', upgrades.chests_outside_upgrades, market_limits.chests_outside_limit}),
-            sprite = 'achievement/so-long-and-thanks-for-all-the-fish',
+            sprite = 'entity.steel-chest',
             enabled = true,
             upgrade = true,
             static = true
@@ -154,7 +154,7 @@ local function get_items()
             stack = 1,
             value = 'coin',
             price = aura_cost,
-            tooltip = ({'main_market.locomotive_aura_radius', upgrades.locomotive_aura_radius, market_limits.aura_limit}),
+            tooltip = ({'main_market.locomotive_aura_radius', upgrades.aura_upgrades, upgrades.aura_upgrades_max}),
             sprite = 'achievement/tech-maniac',
             enabled = true,
             upgrade = true,
@@ -967,6 +967,7 @@ local function gui_click(event)
         local force = game.forces.player
 
         force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + this.pickaxe_speed_per_purchase
+        this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + item.price
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
@@ -985,10 +986,11 @@ local function gui_click(event)
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
-                player.name .. ' has bought the chest limit upgrade for ' .. format_number(item.price, true) .. ' coins.'
+                player.name .. ' has upgraded the chest limit for ' .. format_number(item.price, true) .. ' coins.'
             }
         )
         this.upgrades.chests_outside_upgrades = this.upgrades.chests_outside_upgrades + item.stack
+        this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + item.price
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
@@ -1002,7 +1004,7 @@ local function gui_click(event)
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
-                player.name .. ' has bought the locomotive health modifier for ' .. format_number(item.price, true) .. ' coins.'
+                player.name .. ' has upgraded the train health for ' .. format_number(item.price, true) .. ' coins.'
             }
         )
 
@@ -1034,7 +1036,7 @@ local function gui_click(event)
             end
         end
 
-        this.upgrades.train_upgrades = this.upgrades.train_upgrades + item.stack
+        this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + item.price
         this.upgrades.health_upgrades = this.upgrades.health_upgrades + item.stack
         rendering.set_text(this.health_text, 'HP: ' .. round(this.locomotive_health) .. ' / ' .. round(this.locomotive_max_health))
 
@@ -1056,12 +1058,12 @@ local function gui_click(event)
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
-                player.name .. ' has bought the locomotive xp aura modifier for ' .. format_number(item.price, true) .. ' coins.'
+                player.name .. ' has upgraded the train aura radius for ' .. format_number(item.price, true) .. ' coins.'
             }
         )
         this.upgrades.locomotive_aura_radius = this.upgrades.locomotive_aura_radius + 5
         this.upgrades.aura_upgrades = this.upgrades.aura_upgrades + item.stack
-        this.upgrades.train_upgrades = this.upgrades.train_upgrades + item.stack
+        this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + item.price
 
         if this.circle then
             rendering.destroy(this.circle)
@@ -1096,12 +1098,12 @@ local function gui_click(event)
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
-                player.name .. ' has bought the XP points modifier for ' .. format_number(item.price) .. ' coins.'
+                player.name .. ' has upgraded the train aura XP modifier for ' .. format_number(item.price) .. ' coins.'
             }
         )
         this.upgrades.xp_points = this.upgrades.xp_points + 0.5
         this.upgrades.xp_points_upgrade = this.upgrades.xp_points_upgrade + item.stack
-        this.upgrades.train_upgrades = this.upgrades.train_upgrades + item.stack
+        this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + item.price
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
