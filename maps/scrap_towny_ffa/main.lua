@@ -92,6 +92,11 @@ end
 
 local function init_score_board(player)
     local ffatable = Table.get_table()
+    local saved_frame = ffatable.score_gui_frame[player.index]
+    if saved_frame and saved_frame.valid then
+        return
+    end
+
     local flow = mod_gui.get_frame_flow(player)
     local frame = flow.add {type = 'frame', style = mod_gui.frame_style, caption = 'Town survival', direction = 'vertical'}
     frame.style.vertically_stretchable = false
