@@ -56,6 +56,9 @@ local main_frame_name = Public.uid_name()
 local main_button_name = Public.uid_name()
 local close_button_name = Public.uid_name()
 
+Public.top_main_gui_button = main_button_name
+Public.main_frame_name = main_frame_name
+
 --- Verifies if a frame is valid and destroys it.
 ---@param align userdata
 ---@param frame userdata

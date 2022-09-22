@@ -32,6 +32,8 @@ local Spawn = require 'modules.scrap_towny_ffa.spawn'
 local Radar = require 'modules.scrap_towny_ffa.limited_radar'
 local Evolution = require 'modules.scrap_towny_ffa.evolution'
 local mod_gui = require('mod-gui')
+local Gui = require 'utils.gui'
+local Color = require 'utils.color_presets'
 
 -- for testing purposes only!!!
 local testing_mode = false
@@ -133,7 +135,7 @@ local function update_score()
                 if town_center ~= nil then
                     local age = game.tick - town_center.creation_tick
                     town_ages[town_center] = age
-                    log('XDB age ' .. town_center.town_name .. ': ' .. age)
+                -- log('XDB age ' .. town_center.town_name .. ': ' .. age)
                 end
             end
 
@@ -145,7 +147,7 @@ local function update_score()
                     return t[b] < t[a]
                 end
             ) do
-                log('XDB age sorted ' .. town_center.town_name .. ' ' .. age)
+                -- log('XDB age sorted ' .. town_center.town_name .. ' ' .. age)
                 local position = information_table.add {type = 'label', caption = '#' .. rank}
                 if town_center == ffatable.town_centers[player.force.name] then
                     position.style.font = 'default-semibold'
@@ -364,3 +366,28 @@ Event.add(defines.events.on_player_respawned, on_player_respawned)
 Event.add(defines.events.on_player_died, on_player_died)
 Event.on_nth_tick(60 * 30, ui_smell_evolution)
 Event.on_nth_tick(60, update_score)
+
+--Disable the comfy main gui since we good too many goodies there.
+Event.add(
+    defines.events.on_gui_click,
+    function(event)
+        local element = event.element
+        if not element or not element.valid then
+            return
+        end
+        local fish_button = Gui.top_main_gui_button
+        local main_frame_name = Gui.main_frame_name
+        local player = game.get_player(event.player_index)
+        if not player or not player.valid then
+            return
+        end
+        if element.name == fish_button then
+            if not player.admin then
+                if player.gui.left[main_frame_name] and player.gui.left[main_frame_name].valid then
+                    player.gui.left[main_frame_name].destroy()
+                end
+                return player.print('Comfy panel is disabled in this scenario.', Color.fail)
+            end
+        end
+    end
+)
