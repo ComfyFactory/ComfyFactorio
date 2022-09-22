@@ -15,7 +15,7 @@ local Color = require 'utils.color_presets'
 
 local town_radius = 27
 local radius_between_towns = 64
-local ore_amount = 1000 * (200 / 168.5)
+local ore_amount = 500 * (200 / 168.5)
 
 local colors = {}
 local c1 = 250
@@ -120,17 +120,16 @@ end
 --}
 
 local starter_supplies = {
-    {name = 'raw-fish', count = 3},
-    {name = 'grenade', count = 3},
-    {name = 'stone', count = 32},
+    {name = 'raw-fish', count = 20},
+    {name = 'grenade', count = 5},
+    {name = 'stone', count = 100},
     {name = 'land-mine', count = 4},
     {name = 'iron-gear-wheel', count = 16},
-    {name = 'iron-plate', count = 32},
-    {name = 'copper-plate', count = 16},
+    {name = 'iron-plate', count = 200},
     {name = 'shotgun', count = 1},
     {name = 'shotgun-shell', count = 8},
-    {name = 'firearm-magazine', count = 16},
-    {name = 'gun-turret', count = 2}
+    {name = 'firearm-magazine', count = 20},
+    {name = 'gun-turret', count = 4}
 }
 
 local function count_nearby_ore(surface, position, ore_name)
@@ -188,7 +187,7 @@ local function draw_town_spawn(player_name)
     table_shuffle(ores)
 
     for i = 1, 4, 1 do
-        if count_nearby_ore(surface, position, ores[i]) < 200000 then
+        if count_nearby_ore(surface, position, ores[i]) < 100000 then
             for _, vector in pairs(resource_vectors[i]) do
                 local p = {position.x + vector[1], position.y + vector[2]}
                 p = surface.find_non_colliding_position(ores[i], p, 64, 1)
@@ -244,7 +243,7 @@ local function draw_town_spawn(player_name)
         local x = position.x + vector[1] + 0.5
         local y = position.y + vector[2] + 0.5
         local p = {x = x, y = y}
-        if math_random(1, 5) == 1 then
+        if math_random(1, 3) == 1 then
             if surface.can_place_entity({name = 'fish', position = p}) then
                 surface.create_entity({name = 'water-splash', position = p})
                 surface.create_entity({name = 'fish', position = p})
@@ -445,16 +444,6 @@ local function found_town(event)
         return
     end
 
-    -- does player have 100 coins?
-    local inventory = character.get_main_inventory()
-    if inventory == nil or inventory.get_item_count('coin') < 100 then
-        player.print('Towns cost 100 coins!', {255, 255, 0})
-        player.insert({name = 'stone-furnace', count = 1})
-        return
-    else
-        inventory.remove({name = 'coin', count = 100})
-    end
-
     local force = Team.add_new_force(force_name)
 
     ffatable.town_centers[force_name] = {}
@@ -475,7 +464,7 @@ local function found_town(event)
     town_center.upgrades.mining_speed = 0
     town_center.upgrades.crafting_speed = 0
     town_center.upgrades.laser_turret = {}
-    town_center.upgrades.laser_turret.slots = 0
+    town_center.upgrades.laser_turret.slots = 4
     town_center.upgrades.laser_turret.locations = 0
     town_center.evolution = {}
     town_center.evolution.biters = 0
@@ -527,7 +516,7 @@ local function found_town(event)
 
     ffatable.number_of_towns = ffatable.number_of_towns + 1
 
-    Enemy.clear_enemies(position, surface, town_radius * 2)
+    Enemy.clear_enemies(position, surface, town_radius * 5)
     draw_town_spawn(force_name)
 
     -- set the spawn point

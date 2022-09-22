@@ -13,21 +13,21 @@ local function initialize_nauvis()
     local mgs = surface.map_gen_settings
     mgs.default_enable_all_autoplace_controls = true -- don't mess with this!
     mgs.autoplace_controls = {
-        coal = {frequency = 'none', size = 1, richness = 'normal'},
-        stone = {frequency = 'none', size = 1, richness = 'normal'},
-        ['copper-ore'] = {frequency = 'none', size = 1, richness = 'normal'},
-        ['iron-ore'] = {frequency = 'none', size = 1, richness = 'normal'},
+        coal = {frequency = 2, size = 0.1, richness = 'very-low'},
+        stone = {frequency = 2, size = 0.1, richness = 'very-low'},
+        ['copper-ore'] = {frequency = 7, size = 0.1, richness = 'very-low'},
+        ['iron-ore'] = {frequency = 7, size = 0.1, richness = 'very-low'},
         ['uranium-ore'] = {frequency = 'none', size = 1, richness = 'normal'},
-        ['crude-oil'] = {frequency = 'very-low', size = 'very-small', richness = 'normal'},
+        ['crude-oil'] = {frequency = 2, size = 0.05, richness = 'very-low'},
         trees = {frequency = 2, size = 'normal', richness = 'normal'},
         ['enemy-base'] = {frequency = 'very-high', size = 2, richness = 'normal'}
     }
     mgs.autoplace_settings = {
         entity = {
             settings = {
-                ['rock-huge'] = {frequency = 2, size = 12, richness = 'very-high'},
-                ['rock-big'] = {frequency = 3, size = 12, richness = 'very-high'},
-                ['sand-rock-big'] = {frequency = 3, size = 12, richness = 1, 'very-high'}
+                ['rock-huge'] = {frequency = 2, size = 3, richness = 'very-high'},
+                ['rock-big'] = {frequency = 2, size = 3, richness = 'very-high'},
+                ['sand-rock-big'] = {frequency = 2, size = 3, richness = 1, 'very-high'}
             }
         },
         decorative = {

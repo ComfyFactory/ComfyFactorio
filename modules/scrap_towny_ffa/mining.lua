@@ -43,10 +43,11 @@ local function mining_sound(player)
     if target == nil or not target.valid then
         return
     end
-    local surface = target.surface
-    local position = target.position
-    local path = 'entity-mining/' .. target.name
-    surface.play_sound({path = path, position = position, volume_modifier = 1, override_sound_type = 'game-effect'})
+    -- local surface = target.surface
+    -- local position = target.position
+    -- local path = 'entity-mining/' .. target.name
+    -- TODO: find the right sound
+    --surface.play_sound({path = path, position = position, volume_modifier = 1, override_sound_type = 'game-effect'})
 end
 
 local function on_tick()

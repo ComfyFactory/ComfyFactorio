@@ -30,6 +30,8 @@ local Info = require 'modules.scrap_towny_ffa.info'
 local Team = require 'modules.scrap_towny_ffa.team'
 local Spawn = require 'modules.scrap_towny_ffa.spawn'
 local Radar = require 'modules.scrap_towny_ffa.limited_radar'
+local Evolution = require 'modules.scrap_towny_ffa.evolution'
+local mod_gui = require('mod-gui')
 
 -- for testing purposes only!!!
 local testing_mode = false
@@ -62,13 +64,108 @@ local function load_buffs(player)
     end
 end
 
+local function spairs(t, order)
+    local keys = {}
+    for k in pairs(t) do
+        keys[#keys + 1] = k
+    end
+    if order then
+        table.sort(
+            keys,
+            function(a, b)
+                return order(t, a, b)
+            end
+        )
+    else
+        table.sort(keys)
+    end
+    local i = 0
+    return function()
+        i = i + 1
+        if keys[i] then
+            return keys[i], t[keys[i]]
+        end
+    end
+end
+
+local function init_score_board(player)
+    local ffatable = Table.get_table()
+    local flow = mod_gui.get_frame_flow(player)
+    local frame = flow.add {type = 'frame', style = mod_gui.frame_style, caption = 'Town survival', direction = 'vertical'}
+    frame.style.vertically_stretchable = false
+    ffatable.score_gui_frame[player.index] = frame
+end
+
+local function update_score()
+    local ffatable = Table.get_table()
+
+    for _, player in pairs(game.connected_players) do
+        local frame = ffatable.score_gui_frame[player.index]
+        if not (frame and frame.valid) then
+            init_score_board(player)
+        end
+        frame.clear()
+
+        local inner_frame = frame.add {type = 'frame', style = 'inside_shallow_frame', direction = 'vertical'}
+
+        local subheader = inner_frame.add {type = 'frame', style = 'subheader_frame'}
+        subheader.style.horizontally_stretchable = true
+        subheader.style.vertical_align = 'center'
+
+        subheader.add {type = 'label', style = 'subheader_label', caption = {'', 'Survive 3 days (72h) to win!'}}
+
+        if not next(subheader.children) then
+            subheader.destroy()
+        end
+
+        local information_table = inner_frame.add {type = 'table', column_count = 3, style = 'bordered_table'}
+        information_table.style.margin = 4
+        information_table.style.column_alignments[3] = 'right'
+
+        for _, caption in pairs({'Rank', 'Town', 'Survival time'}) do
+            local label = information_table.add {type = 'label', caption = caption}
+            label.style.font = 'default-bold'
+        end
+
+        local town_ages = {}
+        for _, town_center in pairs(ffatable.town_centers) do
+            if town_center ~= nil then
+                local age = game.tick - town_center.creation_tick
+                town_ages[town_center] = age
+                log('XDB age ' .. town_center.town_name .. ': ' .. age)
+            end
+        end
+
+        local rank = 1
+
+        for town_center, age in spairs(
+            town_ages,
+            function(t, a, b)
+                return t[b] < t[a]
+            end
+        ) do
+            log('XDB age sorted ' .. town_center.town_name .. ' ' .. age)
+            local position = information_table.add {type = 'label', caption = '#' .. rank}
+            if town_center == ffatable.town_centers[player.force.name] then
+                position.style.font = 'default-semibold'
+                position.style.font_color = {r = 1, g = 1}
+            end
+            local label = information_table.add {type = 'label', caption = town_center.town_name}
+            label.style.font = 'default-semibold'
+            label.style.font_color = town_center.color
+            local age_hours = age / 60 / 3600
+            information_table.add {type = 'label', caption = string.format('%.1f', age_hours) .. 'h'}
+
+            rank = rank + 1
+        end
+    end
+end
+
 local function on_player_joined_game(event)
     local ffatable = Table.get_table()
     local player = game.players[event.player_index]
     local surface = game.surfaces['nauvis']
 
-    player.game_view_settings.show_minimap = false
-    player.game_view_settings.show_map_view_options = false
     player.game_view_settings.show_entity_info = true
     player.map_view_settings = {
         ['show-logistic-network'] = false,
@@ -80,8 +177,9 @@ local function on_player_joined_game(event)
         ['show-networkless-logistic-members'] = false,
         ['show-non-standard-map-info'] = false
     }
-    player.show_on_map = false
     --player.game_view_settings.show_side_menu = false
+
+    init_score_board(player)
 
     Info.toggle_button(player)
     Team.set_player_color(player)
@@ -103,14 +201,13 @@ local function on_player_joined_game(event)
         player.teleport({0, 0}, game.surfaces['limbo'])
         Team.set_player_to_outlander(player)
         Team.give_player_items(player)
-        player.insert {name = 'coin', count = '100'}
-        player.insert {name = 'stone-furnace', count = '1'}
         Team.give_key(player.index)
         if (testing_mode == true) then
             player.cheat_mode = true
             player.force.research_all_technologies()
-            player.insert {name = 'coin', count = '9900'}
+            player.insert {name = 'coin', count = 9900}
         end
+
         -- first time spawn point
         local spawn_point = Spawn.get_new_spawn_point(player, surface)
         ffatable.strikes[player.name] = 0
@@ -128,6 +225,19 @@ local function on_player_joined_game(event)
     end
     if player.character then
         if player.character.valid then
+            local inventories = {
+                player.get_inventory(defines.inventory.character_main),
+                player.get_inventory(defines.inventory.character_guns),
+                player.get_inventory(defines.inventory.character_ammo),
+                player.get_inventory(defines.inventory.character_armor),
+                player.get_inventory(defines.inventory.character_vehicle),
+                player.get_inventory(defines.inventory.character_trash)
+            }
+
+            for _, i in pairs(inventories) do
+                i.clear()
+            end
+
             player.character.die()
         end
     end
@@ -186,6 +296,7 @@ local function on_init()
     ffatable.last_respawn = {}
     ffatable.last_death = {}
     ffatable.strikes = {}
+    ffatable.score_gui_frame = {}
     ffatable.testing_mode = testing_mode
     ffatable.spawn_point = {}
     ffatable.buffs = {}
@@ -220,6 +331,28 @@ local function on_nth_tick(event)
     tick_actions[seconds]()
 end
 
+local function ui_smell_evolution()
+    for _, player in pairs(game.connected_players) do
+        -- Only for non-townies
+        if player.force.index == game.forces.player.index or player.force.index == game.forces['rogue'].index then
+            local e = Evolution.get_evolution(player.position)
+            local extra
+            if e < 0.1 then
+                extra = 'A good place to found a town. Build a furnace to get started.'
+            else
+                extra = 'Not good to start a new town. Maybe somewhere else?'
+            end
+            player.create_local_flying_text(
+                {
+                    position = {x = player.position.x, y = player.position.y},
+                    text = 'You smell the evolution around here: ' .. string.format('%.0f', e * 100) .. '%. ' .. extra,
+                    color = {r = 1, g = 1, b = 1}
+                }
+            )
+        end
+    end
+end
+
 local Event = require 'utils.event'
 
 Event.on_init(on_init)
@@ -227,3 +360,5 @@ Event.on_nth_tick(60, on_nth_tick) -- once every second
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_respawned, on_player_respawned)
 Event.add(defines.events.on_player_died, on_player_died)
+Event.on_nth_tick(60 * 30, ui_smell_evolution)
+Event.on_nth_tick(60, update_score)

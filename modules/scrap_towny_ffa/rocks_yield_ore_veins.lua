@@ -12,11 +12,11 @@ local valid_entities = {
 }
 
 local size_raffle = {
-    {'giant', 1024, 2048},
-    {'huge', 512, 1024},
-    {'big', 256, 510},
-    {'small', 126, 256},
-    {'tiny', 64, 128}
+    {'giant', 500, 1000},
+    {'huge', 300, 500},
+    {'big', 150, 300},
+    {'small', 80, 150},
+    {'tiny', 50, 80}
 }
 
 local function get_chances()
@@ -42,9 +42,7 @@ local function set_raffle()
 end
 
 local function get_amount()
-    local base = 256 + 2 ^ 8
-    local max = 2 ^ 12
-    return math_random(math_random(256, base), math_random(base, max))
+    return math_random(100, 1000)
 end
 
 local function draw_chain(surface, count, ore, ore_entities, ore_positions)

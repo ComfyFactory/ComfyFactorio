@@ -2,18 +2,38 @@ local Public = {}
 
 local Table = require 'modules.scrap_towny_ffa.table'
 
-local info =
-    [[You are an "outlander" stuck on this god-forsaken planet with a bunch of other desolate fools. You can choose to join
-an existing town if accepted, or go at it alone, building your own outpost or living as an "outlander".
+local info = [[You wake up on this god-forsaken planet with a bunch of other desolate fools. Who will survive?
 
-The local inhabitants are indifferent to you at first, so long as you don't build or pollute, but become increasingly aggressive
-by foreign technology.  In fact, they get quite aggressive at the scent of it. If you were to hurt any of the natives you will be
-brandished a rogue until your untimely death or until you find better digs.
+You better found a town and start producing and defending yourself!
 
-To create a new town simply place a furnace down in a suitable spot that is not near any other towns or obstructed.
-The world seems to be limited in size with uninhabitable zones on four sides.  News towns can only be built within these
-borders and you must leave room for the town's size (radius of 27) when placing a new town.  Each town costs 100 coins.
-TIP: It's best to find a spot far from existing towns and pollution, as enemies will become aggressive once you form a town.
+Have fun and be comfy ^.^
+]]
+
+local info_adv =
+    [[
+# Goal of the game
+
+Survive as long as you can. Raid other towns. Defend your town.
+
+
+# Advanced tips and tricks
+
+It's best to found new towns far from existing towns, as enemies will become aggressive with town's research.
+
+Are you out of ore patches? Make sure you researched steel processing,
+then hand mine a few big rocks to find ore patches under them!
+
+The town market is the heart of your town. If it is destroyed, you lose everything.
+So protect it well, repair it whenever possible, and if you can afford, increase its health by purchasing upgrades.
+
+It's possible to automate trading with the town center! How cool is that?!! Try it out.
+
+When building your town, note that you may only build nearby existing structures such as your town market and walls and
+any other structure you have placed. Beware that biters and spitters become more aggressive towards towns that are
+advanced in research. Their evolution will scale around technology progress in any nearby towns and pollution levels.
+
+
+# Alliances
 
 Once a town is formed, members may invite other players and teams using a coin. To invite another player, drop a coin
 on that player (with the Z key). To accept an invite, offer a coin in return to the member. To leave a town, simply drop coal
@@ -21,25 +41,13 @@ on the market. As a member of a town, your respawn point will change to that of 
 
 To form any alliance with another town, drop a coin on a member or their market. If they agree they can reciprocate with a
 coin offering.
-
-The town market is the heart of your town.  If it is destroyed, your town is destroyed and you will lose all research. So
-protect it well, repair it whenever possible, and if you can afford, increase its health by purchasing upgrades. If your
-town falls, members will be disbanded, and all buildings will become neutral and lootable.
-
-When building your town, note that you may only build nearby existing structures such as your town market and walls and
-any other structure you have placed. Beware that biters and spitters become more aggressive towards towns that are
-advanced in research. Their evolution will scale around technology progress in any nearby towns and pollution levels.
-
-This is a FFA ("Free-For-All") world.  Short of bullying and derogatory remarks, anything goes. Griefing is encouraged,
-so best to setup proper defenses for your town or outpost to fend off enemies when you are there and away.
-
-Have fun and be comfy ^.^]]
+]]
 
 function Public.toggle_button(player)
     if player.gui.top['towny_map_intro_button'] then
         return
     end
-    local b = player.gui.top.add({type = 'sprite-button', caption = 'Towny', name = 'towny_map_intro_button', tooltip = 'Show Info'})
+    local b = player.gui.top.add({type = 'sprite-button', caption = 'Info', name = 'towny_map_intro_button', tooltip = 'Show Info'})
     b.style.font_color = {r = 0.5, g = 0.3, b = 0.99}
     b.style.font = 'heading-1'
     b.style.minimal_height = 38
@@ -50,7 +58,7 @@ function Public.toggle_button(player)
     b.style.bottom_padding = 1
 end
 
-function Public.show(player)
+function Public.show(player, info_type)
     local ffatable = Table.get_table()
     if player.gui.center['towny_map_intro_frame'] then
         player.gui.center['towny_map_intro_frame'].destroy()
@@ -81,12 +89,11 @@ function Public.show(player)
     end
 
     frame.add {type = 'line'}
-
-    local l = frame.add {type = 'label', caption = 'Instructions:'}
-    l.style.font = 'heading-1'
-    l.style.font_color = {r = 0.85, g = 0.85, b = 0.85}
-
-    local l2 = frame.add {type = 'label', caption = info}
+    local cap = info
+    if info_type == 'adv' then
+        cap = info_adv
+    end
+    local l2 = frame.add {type = 'label', caption = cap}
     l2.style.single_line = false
     l2.style.font = 'heading-2'
     l2.style.font_color = {r = 0.8, g = 0.7, b = 0.99}
@@ -124,7 +131,7 @@ function Public.toggle(event)
         if player.gui.center['towny_map_intro_frame'] then
             player.gui.center['towny_map_intro_frame'].destroy()
         else
-            Public.show(player)
+            Public.show(player, 'adv')
         end
     end
 end
