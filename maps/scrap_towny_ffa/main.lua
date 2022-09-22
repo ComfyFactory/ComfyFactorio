@@ -104,59 +104,61 @@ local function update_score()
         if not (frame and frame.valid) then
             init_score_board(player)
         end
-        frame.clear()
+        if frame and frame.valid then
+            frame.clear()
 
-        local inner_frame = frame.add {type = 'frame', style = 'inside_shallow_frame', direction = 'vertical'}
+            local inner_frame = frame.add {type = 'frame', style = 'inside_shallow_frame', direction = 'vertical'}
 
-        local subheader = inner_frame.add {type = 'frame', style = 'subheader_frame'}
-        subheader.style.horizontally_stretchable = true
-        subheader.style.vertical_align = 'center'
+            local subheader = inner_frame.add {type = 'frame', style = 'subheader_frame'}
+            subheader.style.horizontally_stretchable = true
+            subheader.style.vertical_align = 'center'
 
-        subheader.add {type = 'label', style = 'subheader_label', caption = {'', 'Survive 3 days (72h) to win!'}}
+            subheader.add {type = 'label', style = 'subheader_label', caption = {'', 'Survive 3 days (72h) to win!'}}
 
-        if not next(subheader.children) then
-            subheader.destroy()
-        end
-
-        local information_table = inner_frame.add {type = 'table', column_count = 3, style = 'bordered_table'}
-        information_table.style.margin = 4
-        information_table.style.column_alignments[3] = 'right'
-
-        for _, caption in pairs({'Rank', 'Town', 'Survival time'}) do
-            local label = information_table.add {type = 'label', caption = caption}
-            label.style.font = 'default-bold'
-        end
-
-        local town_ages = {}
-        for _, town_center in pairs(ffatable.town_centers) do
-            if town_center ~= nil then
-                local age = game.tick - town_center.creation_tick
-                town_ages[town_center] = age
-                log('XDB age ' .. town_center.town_name .. ': ' .. age)
+            if not next(subheader.children) then
+                subheader.destroy()
             end
-        end
 
-        local rank = 1
+            local information_table = inner_frame.add {type = 'table', column_count = 3, style = 'bordered_table'}
+            information_table.style.margin = 4
+            information_table.style.column_alignments[3] = 'right'
 
-        for town_center, age in spairs(
-            town_ages,
-            function(t, a, b)
-                return t[b] < t[a]
+            for _, caption in pairs({'Rank', 'Town', 'Survival time'}) do
+                local label = information_table.add {type = 'label', caption = caption}
+                label.style.font = 'default-bold'
             end
-        ) do
-            log('XDB age sorted ' .. town_center.town_name .. ' ' .. age)
-            local position = information_table.add {type = 'label', caption = '#' .. rank}
-            if town_center == ffatable.town_centers[player.force.name] then
-                position.style.font = 'default-semibold'
-                position.style.font_color = {r = 1, g = 1}
-            end
-            local label = information_table.add {type = 'label', caption = town_center.town_name}
-            label.style.font = 'default-semibold'
-            label.style.font_color = town_center.color
-            local age_hours = age / 60 / 3600
-            information_table.add {type = 'label', caption = string.format('%.1f', age_hours) .. 'h'}
 
-            rank = rank + 1
+            local town_ages = {}
+            for _, town_center in pairs(ffatable.town_centers) do
+                if town_center ~= nil then
+                    local age = game.tick - town_center.creation_tick
+                    town_ages[town_center] = age
+                    log('XDB age ' .. town_center.town_name .. ': ' .. age)
+                end
+            end
+
+            local rank = 1
+
+            for town_center, age in spairs(
+                town_ages,
+                function(t, a, b)
+                    return t[b] < t[a]
+                end
+            ) do
+                log('XDB age sorted ' .. town_center.town_name .. ' ' .. age)
+                local position = information_table.add {type = 'label', caption = '#' .. rank}
+                if town_center == ffatable.town_centers[player.force.name] then
+                    position.style.font = 'default-semibold'
+                    position.style.font_color = {r = 1, g = 1}
+                end
+                local label = information_table.add {type = 'label', caption = town_center.town_name}
+                label.style.font = 'default-semibold'
+                label.style.font_color = town_center.color
+                local age_hours = age / 60 / 3600
+                information_table.add {type = 'label', caption = string.format('%.1f', age_hours) .. 'h'}
+
+                rank = rank + 1
+            end
         end
     end
 end
