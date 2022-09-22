@@ -41,6 +41,35 @@ local destroy_robot_types = {
     ['logistic-robot'] = true
 }
 
+-- hand craftable
+local player_force_disabled_recipes = {
+    'lab',
+    'automation-science-pack',
+    'steel-furnace',
+    'electric-furnace',
+    'stone-wall',
+    'stone-brick',
+    'radar'
+}
+local player_force_enabled_recipes = {
+    'submachine-gun',
+    'assembling-machine-1',
+    'small-lamp',
+    'shotgun',
+    'shotgun-shell',
+    'underground-belt',
+    'splitter',
+    'steel-plate',
+    'car',
+    'tank',
+    'engine-unit',
+    'constant-combinator',
+    'green-wire',
+    'red-wire',
+    'arithmetic-combinator',
+    'decider-combinator'
+}
+
 local function min_slots(slots)
     local min = 0
     for i = 1, 3, 1 do
@@ -192,6 +221,7 @@ end
 function Public.give_player_items(player)
     player.clear_items_inside()
     player.insert({name = 'raw-fish', count = 3})
+    player.insert({name = 'stone-furnace', count = 1})
 end
 
 function Public.set_player_to_outlander(player)
@@ -399,10 +429,7 @@ local function declare_war(player, item)
     requesting_force.set_friend(target_force, false)
     target_force.set_friend(requesting_force, false)
 
-    game.print(
-        '>> ' .. player.name .. ' has dropped the coal! Town ' .. target_force.name .. ' and ' .. requesting_force.name .. ' are now at war!',
-        {255, 255, 0}
-    )
+    game.print('>> ' .. player.name .. ' has dropped the coal! Town ' .. target_force.name .. ' and ' .. requesting_force.name .. ' are now at war!', {255, 255, 0})
 end
 
 local function delete_chart_tag_for_all_forces(market)
@@ -547,7 +574,8 @@ local function disable_deconstruct(permission_group)
     end
 end
 
-local function enable_artillery(force, permission_group)
+-- not in use
+--[[ local function enable_artillery(force, permission_group)
     permission_group.set_allows_action(defines.input_action.use_artillery_remote, true)
     force.technologies['artillery'].enabled = true
     force.technologies['artillery-shell-range-1'].enabled = true
@@ -556,8 +584,7 @@ local function enable_artillery(force, permission_group)
     force.recipes['artillery-wagon'].enabled = false
     force.recipes['artillery-targeting-remote'].enabled = false
     force.recipes['artillery-shell'].enabled = false
-end
-
+end ]]
 local function disable_artillery(force, permission_group)
     permission_group.set_allows_action(defines.input_action.use_artillery_remote, false)
     force.technologies['artillery'].enabled = false
@@ -622,7 +649,7 @@ function Public.add_new_force(force_name)
     reset_permissions(permission_group)
     enable_blueprints(permission_group)
     enable_deconstruct(permission_group)
-    enable_artillery(force, permission_group)
+    disable_artillery(force, permission_group)
     disable_spidertron(force, permission_group)
     disable_rockets(force)
     disable_nukes(force)
@@ -637,6 +664,11 @@ function Public.add_new_force(force_name)
     -- balance initial combat
     force.set_ammo_damage_modifier('landmine', -0.75)
     force.set_ammo_damage_modifier('grenade', -0.5)
+    --Give townys same tech as outlanders
+    local recipes = force.recipes
+    for _, recipe_name in pairs(player_force_enabled_recipes) do
+        recipes[recipe_name].enabled = true
+    end
     if (ffatable.testing_mode == true) then
         local e_force = game.forces['enemy']
         e_force.set_friend(force, true) -- team force should not be attacked by turrets
@@ -701,9 +733,7 @@ local function kill_force(force_name, cause)
         end
     end
     local r = 27
-    for _, e in pairs(
-        surface.find_entities_filtered({area = {{position.x - r, position.y - r}, {position.x + r, position.y + r}}, force = 'neutral', type = 'resource'})
-    ) do
+    for _, e in pairs(surface.find_entities_filtered({area = {{position.x - r, position.y - r}, {position.x + r, position.y + r}}, force = 'neutral', type = 'resource'})) do
         if e.name ~= 'crude-oil' then
             e.destroy()
         end
@@ -758,35 +788,6 @@ local function kill_force(force_name, cause)
         end
     end
 end
-
--- hand craftable
-local player_force_disabled_recipes = {
-    'lab',
-    'automation-science-pack',
-    'steel-furnace',
-    'electric-furnace',
-    'stone-wall',
-    'stone-brick',
-    'radar'
-}
-local player_force_enabled_recipes = {
-    'submachine-gun',
-    'assembling-machine-1',
-    'small-lamp',
-    'shotgun',
-    'shotgun-shell',
-    'underground-belt',
-    'splitter',
-    'steel-plate',
-    'car',
-    'tank',
-    'engine-unit',
-    'constant-combinator',
-    'green-wire',
-    'red-wire',
-    'arithmetic-combinator',
-    'decider-combinator'
-}
 
 local function setup_neutral_force()
     local force = game.forces['neutral']
@@ -930,6 +931,7 @@ local function on_entity_damaged(event)
                 local player = cause.player
                 if player ~= nil and force.index == game.forces['player'].index then
                     -- set the force of the player to rogue until they die or create a town
+                    player.print('You have broken the peace with the biters. They will seek revenge!')
                     set_player_to_rogue(player)
                 end
             end

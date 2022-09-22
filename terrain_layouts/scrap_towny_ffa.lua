@@ -6,22 +6,8 @@ local math_abs = math.abs
 local get_noise = require 'utils.get_noise'
 local Table = require 'modules.scrap_towny_ffa.table'
 local Scrap = require 'modules.scrap_towny_ffa.scrap'
-require 'modules.no_deconstruction_of_neutral_entities'
 
 local scrap_entities = {
-    -- simple entity
-    {name = 'small-ship-wreck'}, -- these are not mineable normally
-    {name = 'small-ship-wreck'}, -- these are not mineable normally
-    {name = 'small-ship-wreck'}, -- these are not mineable normally
-    {name = 'small-ship-wreck'}, -- these are not mineable normally
-    {name = 'small-ship-wreck'}, -- these are not mineable normally
-    {name = 'small-ship-wreck'}, -- these are not mineable normally
-    {name = 'small-ship-wreck'}, -- these are not mineable normally
-    {name = 'small-ship-wreck'}, -- these are not mineable normally
-    {name = 'medium-ship-wreck'}, -- these are not mineable normally
-    {name = 'medium-ship-wreck'}, -- these are not mineable normally
-    {name = 'medium-ship-wreck'}, -- these are not mineable normally
-    {name = 'medium-ship-wreck'}, -- these are not mineable normally
     -- simple entity with owner
     {name = 'crash-site-spaceship-wreck-small-1'}, -- these do not have mining animation
     {name = 'crash-site-spaceship-wreck-small-1'}, -- these do not have mining animation
@@ -200,24 +186,6 @@ local function place_scrap(surface, position)
             e.insert({name = 'piercing-rounds-magazine', count = 100})
             return
         end
-    end
-
-    -- place market spaceship
-    if math_random(1, 4096) == 1 then
-        local spaceship = {}
-        if surface.can_place_entity({name = 'crash-site-spaceship-market', position = position, force = 'neutral'}) then
-            spaceship.market = surface.create_entity({name = 'crash-site-spaceship-market', position = position, force = 'neutral'})
-            spaceship.market.minable = false
-            spaceship.max_health = 300
-            spaceship.health = spaceship.max_health
-            if spaceship.market and spaceship.market.valid then
-                if ffatable.spaceships[position.x] == nil then
-                    ffatable.spaceships[position.x] = {}
-                end
-                ffatable.spaceships[position.x][position.y] = spaceship
-            end
-        end
-        return
     end
 
     -- place scrap containers with loot

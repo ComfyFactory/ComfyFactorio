@@ -4,11 +4,12 @@ local math_floor = math.floor
 local table_insert = table.insert
 local table_size = table.size
 local Table = require 'modules.scrap_towny_ffa.table'
-
+--[[
 local town_radius = 27
-local connection_radius = 7
-
+local connection_radius = 15
+ ]]
 local blacklist_entity_types = {
+    ['tank'] = true,
     ['car'] = true,
     ['character'] = true,
     ['combat-robot'] = true,
@@ -36,10 +37,19 @@ local neutral_whitelist = {
     ['stack-inserter'] = true,
     ['steel-chest'] = true,
     ['tank'] = true,
-    ['wooden-chest'] = true
+    ['wooden-chest'] = true,
+    ['transport-belt'] = true,
+    ['fast-transport-belt'] = true,
+    ['express-transport-belt'] = true,
+    ['underground-belt'] = true,
+    ['fast-underground-belt'] = true,
+    ['express-underground-belt'] = true,
+    ['splitter'] = true,
+    ['fast-splitter'] = true,
+    ['express-splitter'] = true
 }
 
--- these should be allowed to place outside any base by town players
+--[[ -- these should be allowed to place outside any base by town players
 local team_whitelist = {
     ['burner-inserter'] = true,
     ['car'] = true,
@@ -67,9 +77,18 @@ local team_whitelist = {
     ['straight-rail'] = true,
     ['tank'] = true,
     ['train-stop'] = true,
-    ['wooden-chest'] = true
-}
-
+    ['wooden-chest'] = true,
+    ['transport-belt'] = true,
+    ['fast-transport-belt'] = true,
+    ['express-transport-belt'] = true,
+    ['underground-belt'] = true,
+    ['fast-underground-belt'] = true,
+    ['express-underground-belt'] = true,
+    ['splitter'] = true,
+    ['fast-splitter'] = true,
+    ['express-splitter'] = true
+} ]]
+--[[
 -- these need to be prototypes
 local team_entities = {
     ['accumulator'] = true,
@@ -122,8 +141,8 @@ local team_entities = {
     ['transport-belt'] = true,
     ['underground-belt'] = true,
     ['wall'] = true
-}
-
+} ]]
+--[[
 local function isolated(surface, force, position)
     local position_x = position.x
     local position_y = position.y
@@ -141,7 +160,7 @@ local function isolated(surface, force, position)
 
     return true
 end
-
+ ]]
 local function refund_item(event, item_name)
     if item_name == 'blueprint' then
         return
@@ -250,6 +269,7 @@ function Public.near_another_town(force_name, position, surface, radius)
                 if entity_force_name ~= nil then
                     if entity_force_name ~= force_name then
                         if blacklist_entity_types[e.type] ~= true then
+                            log('XDB prevent_entity, e.type:' .. e.type)
                             fail = true
                             break
                         end
@@ -263,7 +283,7 @@ function Public.near_another_town(force_name, position, surface, radius)
     end
     return false
 end
-
+--[[
 local function in_own_town(force, position)
     local ffatable = Table.get_table()
     local town_center = ffatable.town_centers[force.name]
@@ -279,8 +299,7 @@ local function in_own_town(force, position)
         end
     end
     return false
-end
-
+end ]]
 function Public.in_restricted_zone(surface, position)
     if surface.name ~= 'nauvis' then
         return false
@@ -321,40 +340,6 @@ local function prevent_entity_in_restricted_zone(event)
     end
 end
 
-local function prevent_unconnected_town_entities(event)
-    local player_index = event.player_index or nil
-    local entity = event.created_entity
-    if entity == nil or not entity.valid then
-        return
-    end
-    local name = entity.name
-    local surface = entity.surface
-    local position = entity.position
-    local force = entity.force
-    if force.index == game.forces.player.index or force.index == game.forces['rogue'].index then
-        -- no town restrictions if outlander or rogue
-        return
-    end
-    local error = false
-    if name ~= 'entity-ghost' then
-        if not in_own_town(force, position) and isolated(surface, force, position) and not team_whitelist[name] then
-            error = true
-            entity.destroy()
-            local item = event.item
-            if item ~= nil then
-                refund_item(event, item.name)
-            end
-        end
-    end
-    if error == true then
-        if player_index ~= nil then
-            local player = game.players[player_index]
-            player.play_sound({path = 'utility/cannot_build', position = player.position, volume_modifier = 0.75})
-        end
-        error_floaty(surface, position, 'Building is not connected to your town!')
-    end
-end
-
 local function prevent_landfill_in_restricted_zone(event)
     local player_index = event.player_index or nil
     local tile = event.tile
@@ -381,45 +366,6 @@ local function prevent_landfill_in_restricted_zone(event)
         error_floaty(surface, position, 'Can not build in restricted zone!')
     end
     return fail
-end
-
-local function prevent_unconnected_town_tiles(event)
-    local player_index = event.player_index or nil
-    local tile = event.tile
-    if tile == nil or not tile.valid then
-        return
-    end
-    local surface = game.surfaces[event.surface_index]
-    local tiles = event.tiles
-    local force
-    if player_index ~= nil then
-        force = game.players[player_index].force
-    else
-        force = event.robot.force
-    end
-    local fail = false
-    local position
-    for _, t in pairs(tiles) do
-        local old_tile = t.old_tile
-        position = t.position
-        if tile.name ~= 'tile-ghost' then
-            if not in_own_town(force, position) and isolated(surface, force, position) then
-                fail = true
-                surface.set_tiles({{name = old_tile.name, position = position}}, true)
-                if tile.name == 'stone-path' then
-                    tile.name = 'stone-brick'
-                end
-                refund_item(event, tile.name)
-            end
-        end
-    end
-    if fail == true then
-        if player_index ~= nil then
-            local player = game.players[player_index]
-            player.play_sound({path = 'utility/cannot_build', position = player.position, volume_modifier = 0.75})
-        end
-        error_floaty(surface, position, 'Tile is not connected to town!')
-    end
 end
 
 local function prevent_entities_near_towns(event)
@@ -513,74 +459,42 @@ local function prevent_tiles_near_towns(event)
     return fail
 end
 
-local function prevent_neutral_deconstruct(event)
-    local player = game.players[event.player_index] or nil
-    local entity = event.entity
-    if entity.to_be_deconstructed() and entity.force.name == 'neutral' then
-        for _, f in pairs(game.forces) do
-            if entity.is_registered_for_deconstruction(f) then
-                entity.cancel_deconstruction(f, player)
-            end
-        end
-    end
-end
-
 -- called when a player places an item, or a ghost
 local function on_built_entity(event)
-    local player = game.players[event.player_index]
     if prevent_entity_in_restricted_zone(event) then
         return
     end
     if prevent_entities_near_towns(event) then
         return
-    end
-    if player.force.index ~= game.forces['player'].index and player.force.index ~= game.forces['rogue'].index then
-        prevent_unconnected_town_entities(event)
     end
 end
 
 local function on_robot_built_entity(event)
-    local robot = event.robot
     if prevent_entity_in_restricted_zone(event) then
         return
     end
     if prevent_entities_near_towns(event) then
         return
-    end
-    if robot.force.index ~= game.forces['player'].index and robot.force.index ~= game.forces['rogue'].index then
-        prevent_unconnected_town_entities(event)
     end
 end
 
 -- called when a player places landfill
 local function on_player_built_tile(event)
-    local player = game.players[event.player_index]
     if prevent_landfill_in_restricted_zone(event) then
         return
     end
     if prevent_tiles_near_towns(event) then
         return
-    end
-    if player.force.index ~= game.forces['player'].index and player.force.index ~= game.forces['rogue'].index then
-        prevent_unconnected_town_tiles(event)
     end
 end
 
 local function on_robot_built_tile(event)
-    local robot = event.robot
     if prevent_landfill_in_restricted_zone(event) then
         return
     end
     if prevent_tiles_near_towns(event) then
         return
     end
-    if robot.force.index ~= game.forces['player'].index and robot.force.index ~= game.forces['rogue'].index then
-        prevent_unconnected_town_tiles(event)
-    end
-end
-
-local function on_marked_for_deconstruction(event)
-    prevent_neutral_deconstruct(event)
 end
 
 local Event = require 'utils.event'
@@ -588,6 +502,5 @@ Event.add(defines.events.on_built_entity, on_built_entity)
 Event.add(defines.events.on_player_built_tile, on_player_built_tile)
 Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 Event.add(defines.events.on_robot_built_tile, on_robot_built_tile)
-Event.add(defines.events.on_marked_for_deconstruction, on_marked_for_deconstruction)
 
 return Public
