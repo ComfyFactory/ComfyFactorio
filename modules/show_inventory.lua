@@ -4,7 +4,8 @@ local SpamProtection = require 'utils.spam_protection'
 local Event = require 'utils.event'
 
 local this = {
-    data = {}
+    data = {},
+    module_disabled = false
 }
 local Public = {}
 
@@ -464,6 +465,10 @@ commands.add_command(
     function(cmd)
         local player = game.player
 
+        if this.module_disabled then
+            return
+        end
+
         if validate_player(player) then
             if not cmd.parameter then
                 return
@@ -504,6 +509,12 @@ function Public.get(key)
     else
         return this
     end
+end
+
+--- Disables the module.
+---@param state boolean
+function Public.module_disabled(state)
+    this.module_disabled = state or false
 end
 
 Event.add(defines.events.on_player_main_inventory_changed, update_gui)
