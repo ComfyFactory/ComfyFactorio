@@ -1,7 +1,7 @@
 require 'modules.custom_death_messages'
 require 'modules.flashlight_toggle_button'
 require 'modules.global_chat_toggle'
-require 'modules.worms_create_oil_patches'
+require 'modules.scrap_towny_ffa.worms_create_oil_patches'
 require 'modules.biters_yield_coins'
 require 'modules.scrap_towny_ffa.mining'
 require 'modules.scrap_towny_ffa.on_tick_schedule'
