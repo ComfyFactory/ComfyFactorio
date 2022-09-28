@@ -63,7 +63,6 @@ function Public.toggle_button(player)
 end
 
 function Public.show(player, info_type)
-    local ffatable = Table.get_table()
     if player.gui.center['towny_map_intro_frame'] then
         player.gui.center['towny_map_intro_frame'].destroy()
     end
