@@ -1,7 +1,5 @@
 local Public = {}
 
-local Table = require 'modules.scrap_towny_ffa.table'
-
 local info = [[You wake up on this god-forsaken planet with a bunch of other desolate fools. Who will survive?
 
 You can either
