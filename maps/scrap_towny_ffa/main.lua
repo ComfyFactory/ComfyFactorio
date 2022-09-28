@@ -122,7 +122,7 @@ local function update_score()
             subheader.style.horizontally_stretchable = true
             subheader.style.vertical_align = 'center'
 
-            subheader.add {type = 'label', style = 'subheader_label', caption = {'', 'Survive 3 days (72h) to win!'}}
+            subheader.add {type = 'label', style = 'subheader_label', caption = {'', 'Survive 2 days (48h) to win!'}}
 
             if not next(subheader.children) then
                 subheader.destroy()
@@ -132,7 +132,7 @@ local function update_score()
             information_table.style.margin = 4
             information_table.style.column_alignments[3] = 'right'
 
-            for _, caption in pairs({'Rank', 'Town', 'Survival time'}) do
+            for _, caption in pairs({'Rank', 'Town (players online/total)', 'Survival time'}) do
                 local label = information_table.add {type = 'label', caption = caption}
                 label.style.font = 'default-bold'
             end
@@ -142,7 +142,6 @@ local function update_score()
                 if town_center ~= nil then
                     local age = game.tick - town_center.creation_tick
                     town_ages[town_center] = age
-                -- log('XDB age ' .. town_center.town_name .. ': ' .. age)
                 end
             end
 
@@ -154,13 +153,14 @@ local function update_score()
                     return t[b] < t[a]
                 end
             ) do
-                -- log('XDB age sorted ' .. town_center.town_name .. ' ' .. age)
                 local position = information_table.add {type = 'label', caption = '#' .. rank}
                 if town_center == ffatable.town_centers[player.force.name] then
                     position.style.font = 'default-semibold'
                     position.style.font_color = {r = 1, g = 1}
                 end
-                local label = information_table.add {type = 'label', caption = town_center.town_name}
+                local label = information_table.add {type = 'label', caption = town_center.town_name ..
+                        " (" .. #town_center.market.force.connected_players ..
+                        "/" .. #town_center.market.force.players..")"}
                 label.style.font = 'default-semibold'
                 label.style.font_color = town_center.color
                 local age_hours = age / 60 / 3600
@@ -168,6 +168,17 @@ local function update_score()
 
                 rank = rank + 1
             end
+
+            -- Outlander section
+            information_table.add {type = 'label', caption = '-'}
+            local outlander_on = #game.forces["player"].connected_players + #game.forces["rogue"].connected_players
+            local outlander_total = #game.forces["player"].players + #game.forces["rogue"].players
+
+            local label = information_table.add {type = 'label', caption = 'Outlanders' .. " (" .. outlander_on ..
+                    "/" .. outlander_total ..")"}
+            label.style.font_color = {170, 170, 170}
+            information_table.add {type = 'label', caption = '-'}
+
         end
     end
 end

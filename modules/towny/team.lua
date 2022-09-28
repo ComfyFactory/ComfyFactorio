@@ -10,7 +10,7 @@ local function can_force_accept_member(force)
     local townytable = Table.get_table()
     local town_centers = townytable.town_centers
     local size_of_town_centers = townytable.size_of_town_centers
-    local member_limit = 0
+    local member_limit = 3
 
     if size_of_town_centers <= 1 then
         return true

@@ -1,10 +1,12 @@
 local Public = {}
 
-local Table = require 'modules.scrap_towny_ffa.table'
-
 local info = [[You wake up on this god-forsaken planet with a bunch of other desolate fools. Who will survive?
 
-You better found a town and start producing and defending yourself!
+You can either
+ - Found a new town or join an existing one
+ - Stay as an Outlander and fight towns side-by-side with the biters
+
+Click on the "Info" button for full intro/help.
 
 Have fun and be comfy ^.^
 ]]
@@ -59,7 +61,6 @@ function Public.toggle_button(player)
 end
 
 function Public.show(player, info_type)
-    local ffatable = Table.get_table()
     if player.gui.center['towny_map_intro_frame'] then
         player.gui.center['towny_map_intro_frame'].destroy()
     end
@@ -68,25 +69,11 @@ function Public.show(player, info_type)
 
     local t = frame.add {type = 'table', column_count = 2}
 
-    local label = t.add {type = 'label', caption = 'Active Factions:'}
+    local label = t.add {type = 'label', caption = 'COMFY Towny: Wasteland survival'}
     label.style.font = 'heading-1'
     label.style.font_color = {r = 0.85, g = 0.85, b = 0.85}
     label.style.right_padding = 8
 
-    t = t.add {type = 'table', column_count = 4}
-
-    local label2 = t.add {type = 'label', caption = 'Outlander' .. ':' .. #game.forces.player.connected_players .. ' '}
-    label2.style.font_color = {170, 170, 170}
-    label2.style.font = 'heading-3'
-    label2.style.minimal_width = 80
-
-    for _, town_center in pairs(ffatable.town_centers) do
-        local force = town_center.market.force
-        local label3 = t.add {type = 'label', caption = force.name .. ':' .. #force.connected_players .. ' '}
-        label3.style.font = 'heading-3'
-        label3.style.minimal_width = 80
-        label3.style.font_color = town_center.color
-    end
 
     frame.add {type = 'line'}
     local cap = info
