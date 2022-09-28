@@ -20,19 +20,21 @@ Survive as long as you can. Raid other towns. Defend your town.
 
 # Advanced tips and tricks
 
-It's best to found new towns far from existing towns, as enemies will become aggressive with town's research.
+- It's best to found new towns far from existing towns, as enemies will become aggressive with town's research.
+    Biters and spitters become more aggressive towards towns that are advanced in research.
+    Their evolution will scale around technology progress in any nearby towns and pollution levels.
 
-Are you out of ore patches? Make sure you researched steel processing,
-then hand mine a few big rocks to find ore patches under them!
+- Are you out of ore patches? Make sure you researched steel processing,
+    then hand mine a few big rocks to find ore patches under them!
 
-The town market is the heart of your town. If it is destroyed, you lose everything.
-So protect it well, repair it whenever possible, and if you can afford, increase its health by purchasing upgrades.
+- The town market is the heart of your town. If it is destroyed, you lose everything.
+    So protect it well, repair it whenever possible, and if you can afford, increase its health by purchasing upgrades.
 
-It's possible to automate trading with the town center! How cool is that?!! Try it out.
+- It's possible to automate trading with the town center! How cool is that?!! Try it out.
 
-When building your town, note that you may only build nearby existing structures such as your town market and walls and
-any other structure you have placed. Beware that biters and spitters become more aggressive towards towns that are
-advanced in research. Their evolution will scale around technology progress in any nearby towns and pollution levels.
+- Fishes procreate near towns (the more fishes, the quicker they multiply)
+
+- Use /rename-town (chat command) to rename your town
 
 
 # Alliances
