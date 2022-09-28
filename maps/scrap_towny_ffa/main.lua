@@ -122,7 +122,7 @@ local function update_score()
             subheader.style.horizontally_stretchable = true
             subheader.style.vertical_align = 'center'
 
-            subheader.add {type = 'label', style = 'subheader_label', caption = {'', 'Survive 3 days (72h) to win!'}}
+            subheader.add {type = 'label', style = 'subheader_label', caption = {'', 'Survive 2 days (48h) to win!'}}
 
             if not next(subheader.children) then
                 subheader.destroy()
