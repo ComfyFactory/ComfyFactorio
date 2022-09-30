@@ -1,70 +1,70 @@
 local table_insert = table.insert
 
-local Table = require 'modules.scrap_towny_ffa.table'
-
+local ScenarioTable = require 'maps.scrap_towny_ffa.table'
+local Event = require 'utils.event'
 local upgrade_functions = {
     -- Upgrade Backpack
     [1] = function(player)
-        local ffatable = Table.get_table()
+        local this = ScenarioTable.get_table()
         local surface = player.surface
         if player.character.character_inventory_slots_bonus + 5 > 100 then
             return false
         end
         player.character.character_inventory_slots_bonus = player.character.character_inventory_slots_bonus + 5
-        if not ffatable.buffs[player.index] then
-            ffatable.buffs[player.index] = {}
+        if not this.buffs[player.index] then
+            this.buffs[player.index] = {}
         end
-        if not ffatable.buffs[player.index].character_inventory_slots_bonus then
-            ffatable.buffs[player.index].character_inventory_slots_bonus = 0
+        if not this.buffs[player.index].character_inventory_slots_bonus then
+            this.buffs[player.index].character_inventory_slots_bonus = 0
         end
-        ffatable.buffs[player.index].character_inventory_slots_bonus = player.character.character_inventory_slots_bonus
+        this.buffs[player.index].character_inventory_slots_bonus = player.character.character_inventory_slots_bonus
         surface.play_sound({path = 'utility/achievement_unlocked', position = player.position, volume_modifier = 1})
         return true
     end,
     -- Upgrade Pickaxe Speed
     [2] = function(player)
-        local ffatable = Table.get_table()
+        local this = ScenarioTable.get_table()
         local surface = player.surface
         if player.character.character_mining_speed_modifier + 0.1 > 1 then
             return false
         end
         player.character.character_mining_speed_modifier = player.character.character_mining_speed_modifier + 0.1
-        if not ffatable.buffs[player.index] then
-            ffatable.buffs[player.index] = {}
+        if not this.buffs[player.index] then
+            this.buffs[player.index] = {}
         end
-        if not ffatable.buffs[player.index].character_mining_speed_modifier then
-            ffatable.buffs[player.index].character_mining_speed_modifier = 0
+        if not this.buffs[player.index].character_mining_speed_modifier then
+            this.buffs[player.index].character_mining_speed_modifier = 0
         end
-        ffatable.buffs[player.index].character_mining_speed_modifier = player.character.character_mining_speed_modifier
+        this.buffs[player.index].character_mining_speed_modifier = player.character.character_mining_speed_modifier
         surface.play_sound({path = 'utility/achievement_unlocked', position = player.position, volume_modifier = 1})
         return true
     end,
     -- Upgrade Crafting Speed
     [3] = function(player)
-        local ffatable = Table.get_table()
+        local this = ScenarioTable.get_table()
         local surface = player.surface
         if player.character.character_crafting_speed_modifier + 0.1 > 1 then
             return false
         end
         player.character.character_crafting_speed_modifier = player.character.character_crafting_speed_modifier + 0.1
-        if not ffatable.buffs[player.index] then
-            ffatable.buffs[player.index] = {}
+        if not this.buffs[player.index] then
+            this.buffs[player.index] = {}
         end
-        if not ffatable.buffs[player.index].character_crafting_speed_modifier then
-            ffatable.buffs[player.index].character_crafting_speed_modifier = 0
+        if not this.buffs[player.index].character_crafting_speed_modifier then
+            this.buffs[player.index].character_crafting_speed_modifier = 0
         end
-        ffatable.buffs[player.index].character_crafting_speed_modifier = player.character.character_crafting_speed_modifier
+        this.buffs[player.index].character_crafting_speed_modifier = player.character.character_crafting_speed_modifier
         surface.play_sound({path = 'utility/achievement_unlocked', position = player.position, volume_modifier = 1})
         return true
     end,
     -- Set Spawn Point
     [4] = function(player)
-        local ffatable = Table.get_table()
+        local this = ScenarioTable.get_table()
         local surface = player.surface
         local position = player.position
         position = surface.find_non_colliding_position('character', position, 0, 0.25)
         if position ~= nil and player ~= nil then
-            ffatable.spawn_point[player.name] = {x = position.x, y = position.y}
+            this.spawn_point[player.name] = {x = position.x, y = position.y}
             surface.play_sound({path = 'utility/scenario_message', position = player.position, volume_modifier = 1})
         else
             surface.create_entity(
@@ -168,7 +168,7 @@ local function refresh_offers(event)
         return
     end
     local player = game.players[event.player_index]
-    local ffatable = Table.get_table()
+    local this = ScenarioTable.get_table()
     local market = event.entity or event.market
     if not market then
         return
@@ -180,7 +180,7 @@ local function refresh_offers(event)
         return
     end
     local position = market.position
-    local spaceship = ffatable.spaceships[position.x][position.y]
+    local spaceship = this.spaceships[position.x][position.y]
     if not spaceship then
         return
     end
@@ -189,7 +189,7 @@ local function refresh_offers(event)
 end
 
 local function offer_purchased(event)
-    local ffatable = Table.get_table()
+    local this = ScenarioTable.get_table()
     local player = game.players[event.player_index]
     local market = event.market
     local offer_index = event.offer_index
@@ -197,7 +197,7 @@ local function offer_purchased(event)
     if not upgrade_functions[offer_index] then
         return
     end
-    local spaceship = ffatable.spaceships[market.position.x][market.position.y]
+    local spaceship = this.spaceships[market.position.x][market.position.y]
     if not spaceship then
         return
     end
@@ -242,10 +242,10 @@ local function on_market_item_purchased(event)
 end
 
 local function kill_spaceship(entity)
-    local ffatable = Table.get_table()
-    local spaceship = ffatable.spaceships[entity.position.x][entity.position.y]
+    local this = ScenarioTable.get_table()
+    local spaceship = this.spaceships[entity.position.x][entity.position.y]
     if spaceship ~= nil then
-        ffatable.spaceships[entity.position.x][entity.position.y] = nil
+        this.spaceships[entity.position.x][entity.position.y] = nil
     end
 end
 
@@ -256,13 +256,6 @@ local function on_entity_died(event)
     end
 end
 
-local on_init = function()
-    local ffatable = Table.get_table()
-    ffatable.spaceships = {}
-end
-
-local Event = require 'utils.event'
-Event.on_init(on_init)
 Event.add(defines.events.on_gui_opened, on_gui_opened)
 Event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
 Event.add(defines.events.on_entity_died, on_entity_died)

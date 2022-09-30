@@ -4,8 +4,8 @@ local math_floor = math.floor
 local math_abs = math.abs
 
 local get_noise = require 'utils.get_noise'
-local Table = require 'modules.scrap_towny_ffa.table'
-local Scrap = require 'modules.scrap_towny_ffa.scrap'
+local ScenarioTable = require 'maps.scrap_towny_ffa.table'
+local Scrap = require 'maps.scrap_towny_ffa.scrap'
 
 local scrap_entities = {
     -- simple entity with owner
@@ -173,9 +173,9 @@ end
 local size_of_scrap_raffle = #scrap_raffle
 
 local function place_scrap(surface, position)
-    local ffatable = Table.get_table()
-    if ffatable.spaceships == nil then
-        ffatable.spaceships = {}
+    local this = ScenarioTable.get_table()
+    if this.spaceships == nil then
+        this.spaceships = {}
     end
     -- place turrets
     if math_random(1, 700) == 1 then
@@ -331,7 +331,7 @@ local function on_chunk_generated(event)
         end
     end
     move_away_biteys(surface, event.area)
-    --ffatable.chunk_generated[key] = true
+    --this.chunk_generated[key] = true
 end
 
 local function on_chunk_charted(event)
@@ -345,8 +345,8 @@ local function on_chunk_charted(event)
 end
 
 -- local on_init = function ()
--- 	local ffatable = Table.get_table()
---  ffatable.chunk_generated = {}
+-- 	local this = ScenarioTable.get_table()
+--  this.chunk_generated = {}
 -- end
 
 local Event = require 'utils.event'

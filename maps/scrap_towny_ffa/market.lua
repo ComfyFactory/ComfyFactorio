@@ -1,7 +1,7 @@
 local table_insert = table.insert
 
-local Table = require 'modules.scrap_towny_ffa.table'
-local Town_center = require 'modules.scrap_towny_ffa.town_center'
+local ScenarioTable = require 'maps.scrap_towny_ffa.table'
+local Town_center = require 'maps.scrap_towny_ffa.town_center'
 
 local upgrade_functions = {
     -- Upgrade Town Center Health
@@ -78,12 +78,12 @@ local upgrade_functions = {
     end,
     -- Set Spawn Point
     [7] = function(town_center, player)
-        local ffatable = Table.get_table()
+        local this = ScenarioTable.get_table()
         local market = town_center.market
         local force = market.force
         local surface = market.surface
         local spawn_point = force.get_spawn_position(surface)
-        ffatable.spawn_point[player.name] = spawn_point
+        this.spawn_point[player.name] = spawn_point
         surface.play_sound({path = 'utility/scenario_message', position = player.position, volume_modifier = 1})
         return false
     end
@@ -169,7 +169,7 @@ local function set_offers(town_center)
 end
 
 local function refresh_offers(event)
-    local ffatable = Table.get_table()
+    local this = ScenarioTable.get_table()
     local player = game.players[event.player_index]
     local market = event.entity or event.market
     if not market then
@@ -181,7 +181,7 @@ local function refresh_offers(event)
     if market.name ~= 'market' then
         return
     end
-    local town_center = ffatable.town_centers[market.force.name]
+    local town_center = this.town_centers[market.force.name]
     if not town_center then
         return
     end
@@ -192,19 +192,19 @@ local function refresh_offers(event)
         if player.opened ~= nil then
             player.opened = nil
             player.surface.create_entity(
-                    {
-                        name = 'flying-text',
-                        position = {market.position.x - 1.75, market.position.y},
-                        text = 'Sorry, we are closed.',
-                        color = {r = 1, g = 0.68, b = 0.26}
-                    }
+                {
+                    name = 'flying-text',
+                    position = {market.position.x - 1.75, market.position.y},
+                    text = 'Sorry, we are closed.',
+                    color = {r = 1, g = 0.68, b = 0.26}
+                }
             )
         end
     end
 end
 
 local function offer_purchased(event)
-    local ffatable = Table.get_table()
+    local this = ScenarioTable.get_table()
     local player = game.players[event.player_index]
     local market = event.market
     local offer_index = event.offer_index
@@ -212,7 +212,7 @@ local function offer_purchased(event)
     if not upgrade_functions[offer_index] then
         return
     end
-    local town_center = ffatable.town_centers[market.force.name]
+    local town_center = this.town_centers[market.force.name]
     if not town_center then
         return
     end
@@ -272,26 +272,34 @@ local function is_loader(entity)
 end
 
 local function is_filtered_inserter(entity)
-    return entity.name == 'filter-inserter' or entity.name == "stack-filter-inserter"
+    return entity.name == 'filter-inserter' or entity.name == 'stack-filter-inserter'
 end
 
 local function max_stack_size(entity)
-    if is_loader(entity) then return 1 end
-    if (entity.name == "stack-inserter" or entity.name == "stack-filter-inserter") then
+    if is_loader(entity) then
+        return 1
+    end
+    if (entity.name == 'stack-inserter' or entity.name == 'stack-filter-inserter') then
         local override = entity.inserter_stack_size_override
-        if override > 0 then return override end
+        if override > 0 then
+            return override
+        end
         local capacity = entity.force.stack_inserter_capacity_bonus
         return 1 + capacity
     else
         local override = entity.inserter_stack_size_override
-        if override > 0 then return override end
+        if override > 0 then
+            return override
+        end
         local bonus = entity.force.inserter_stack_size_bonus
         return 1 + bonus
     end
 end
 
 local function get_connected_entities(market)
-    if not market.valid then return {} end
+    if not market.valid then
+        return {}
+    end
     local items = {
         'burner-inserter',
         'inserter',
@@ -305,7 +313,7 @@ local function get_connected_entities(market)
         'express-loader'
     }
     local items2 = {
-        'long-handed-inserter',
+        'long-handed-inserter'
     }
     local bb = market.bounding_box
     local s = market.surface
@@ -313,7 +321,7 @@ local function get_connected_entities(market)
     local entities = s.find_entities_filtered({area = area, name = items})
     local area2 = {left_top = {bb.left_top.x - 2, bb.left_top.y - 2}, right_bottom = {bb.right_bottom.x + 2, bb.right_bottom.y + 2}}
     local entities2 = s.find_entities_filtered({area = area2, name = items2})
-    for k,v in pairs(entities2) do
+    for k, v in pairs(entities2) do
         entities[k] = v
     end
     return entities
@@ -335,19 +343,19 @@ end
 
 local function get_loader_market_position(entity)
     -- gets the position of the market relative to the loader
-    local position = {x=entity.position.x, y=entity.position.y}
+    local position = {x = entity.position.x, y = entity.position.y}
     local orientation = entity.orientation
     local type = entity.loader_type
-    if (orientation == 0.0 and type == "input") or (orientation == 0.5 and type == "output") then
+    if (orientation == 0.0 and type == 'input') or (orientation == 0.5 and type == 'output') then
         position.y = position.y - 1.5
     end
-    if (orientation == 0.25 and type == "input") or (orientation == 0.75 and type == "output") then
+    if (orientation == 0.25 and type == 'input') or (orientation == 0.75 and type == 'output') then
         position.x = position.x + 1.5
     end
-    if (orientation == 0.5 and type == "input") or (orientation == 0.0 and type == "output") then
+    if (orientation == 0.5 and type == 'input') or (orientation == 0.0 and type == 'output') then
         position.y = position.y + 1.5
     end
-    if (orientation == 0.75 and type == "input") or (orientation == 0.25 and type == "output") then
+    if (orientation == 0.75 and type == 'input') or (orientation == 0.25 and type == 'output') then
         position.x = position.x - 1.5
     end
     return position
@@ -405,7 +413,7 @@ local function trade_coin_for_items(town_center, market, trade)
         town_center.output_buffer[item] = 0
     end
     while town_center.coin_balance - price >= 0 do
-        if town_center.output_buffer[item] == 0  then
+        if town_center.output_buffer[item] == 0 then
             town_center.coin_balance = town_center.coin_balance - price
             town_center.output_buffer[item] = town_center.output_buffer[item] + count
         else
@@ -419,7 +427,9 @@ local function handle_loader_output(town_center, market, entity, index)
     local line = entity.get_transport_line(index)
     -- get loader filters
     local filter = get_loader_filter(entity, index)
-    if filter == nil then return end
+    if filter == nil then
+        return
+    end
     if filter == 'coin' then
         -- output for coins
         while town_center.coin_balance > 0 and line.can_insert_at_back() do
@@ -451,12 +461,16 @@ end
 local function handle_inserter_output(town_center, market, entity)
     -- get inserter filter
     local filter = get_inserter_filter(entity)
-    if filter == nil then return end
+    if filter == nil then
+        return
+    end
     local amount = max_stack_size(entity)
     local stack = {name = 'coin', count = amount}
     if filter == 'coin' then
         -- output coins
-        if amount > town_center.coin_balance then amount = town_center.coin_balance end
+        if amount > town_center.coin_balance then
+            amount = town_center.coin_balance
+        end
         stack.count = amount
         if town_center.coin_balance > 0 then
             town_center.coin_balance = town_center.coin_balance - amount
@@ -622,26 +636,26 @@ local function get_entity_mode(market, entity)
         if inside(ppos, bb) then
             return 'output'
         end
-        return "none"
+        return 'none'
     end
 end
 
 local function handle_connected_entity(town_center, market, entity)
     local mode = get_entity_mode(market, entity)
-    if mode == "input" then
+    if mode == 'input' then
         handle_market_input(town_center, market, entity)
     end
-    if mode == "output" then
+    if mode == 'output' then
         handle_market_output(town_center, market, entity)
     end
 end
 
 local function on_tick(_)
-    local ffatable = Table.get_table()
-    if not ffatable.town_centers then
+    local this = ScenarioTable.get_table()
+    if not this.town_centers then
         return
     end
-    for _, town_center in pairs(ffatable.town_centers) do
+    for _, town_center in pairs(this.town_centers) do
         -- get connected entities on markets
         local market = town_center.market
         local entities = get_connected_entities(market)

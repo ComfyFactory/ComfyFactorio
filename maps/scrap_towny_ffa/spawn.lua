@@ -8,9 +8,9 @@ local math_sin = math.sin
 local math_cos = math.cos
 local math_floor = math.floor
 
-local Table = require 'modules.scrap_towny_ffa.table'
-local Enemy = require 'modules.scrap_towny_ffa.enemy'
-local Building = require 'modules.scrap_towny_ffa.building'
+local ScenarioTable = require 'maps.scrap_towny_ffa.table'
+local Enemy = require 'maps.scrap_towny_ffa.enemy'
+local Building = require 'maps.scrap_towny_ffa.building'
 
 -- don't spawn if town is within this range
 local spawn_point_town_buffer = 256
@@ -55,9 +55,9 @@ end
 
 -- is the position already used
 local function in_use(position)
-    local ffatable = Table.get_table()
+    local this = ScenarioTable.get_table()
     local result = false
-    for _, v in pairs(ffatable.spawn_point) do
+    for _, v in pairs(this.spawn_point) do
         if v == position then
             result = true
         end
@@ -95,7 +95,7 @@ end
 
 -- finds a valid spawn point that is not near a town and not in a polluted area
 local function find_valid_spawn_point(force_name, surface)
-    local ffatable = Table.get_table()
+    local this = ScenarioTable.get_table()
 
     -- check center of map first if valid
     local position = {x = 0, y = 0}
@@ -114,13 +114,13 @@ local function find_valid_spawn_point(force_name, surface)
     end
     -- otherwise find a nearby town
     local keyset = {}
-    for town_name, _ in pairs(ffatable.town_centers) do
+    for town_name, _ in pairs(this.town_centers) do
         table_insert(keyset, town_name)
     end
     local count = table_size(keyset)
     if count > 0 then
         local town_name = keyset[math_random(1, count)]
-        local town_center = ffatable.town_centers[town_name]
+        local town_center = this.town_centers[town_name]
         if town_center ~= nil then
             position = town_center.market.position
         end
@@ -161,7 +161,7 @@ local function find_valid_spawn_point(force_name, surface)
 end
 
 function Public.get_new_spawn_point(player, surface)
-    local ffatable = Table.get_table()
+    local this = ScenarioTable.get_table()
     -- get a new spawn point
     local position = {0, 0}
     if player ~= nil then
@@ -172,17 +172,17 @@ function Public.get_new_spawn_point(player, surface)
         end
     end
     -- should never be invalid or blocked
-    ffatable.spawn_point[player.name] = position
+    this.spawn_point[player.name] = position
     --log("player " .. player.name .. " assigned new spawn point at {" .. position.x .. "," .. position.y .. "}")
     return position
 end
 
 -- gets a new or existing spawn point for the player
 function Public.get_spawn_point(player, surface)
-    local ffatable = Table.get_table()
-    local position = ffatable.spawn_point[player.name]
+    local this = ScenarioTable.get_table()
+    local position = this.spawn_point[player.name]
     -- if there is a spawn point and less than three strikes
-    if position ~= nil and ffatable.strikes[player.name] < 3 then
+    if position ~= nil and this.strikes[player.name] < 3 then
         -- check that the spawn point is not blocked
         if surface.can_place_entity({name = 'character', position = position}) then
             --log("player " .. player.name .. "using existing spawn point at {" .. position.x .. "," .. position.y .. "}")

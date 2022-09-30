@@ -3,8 +3,9 @@
 local math_min = math.min
 local math_random = math.random
 
-local Table = require 'modules.scrap_towny_ffa.table'
-local Pollution = require 'modules.scrap_towny_ffa.pollution'
+local ScenarioTable = require 'maps.scrap_towny_ffa.table'
+local Pollution = require 'maps.scrap_towny_ffa.pollution'
+local Event = require 'utils.event'
 
 --local damage_per_explosive = 100
 local damage_per_explosive = 50
@@ -1676,18 +1677,18 @@ local circle_coordinates = {
 }
 
 local function process_explosion_tile(pos, explosion_index, current_radius)
-    local ffatable = Table.get_table()
-    local surface = game.surfaces[ffatable.explosion_schedule[explosion_index].surface]
+    local this = ScenarioTable.get_table()
+    local surface = game.surfaces[this.explosion_schedule[explosion_index].surface]
     local target_entities = surface.find_entities_filtered({area = {{pos.x - 0.5, pos.y - 0.5}, {pos.x + 0.499, pos.y + 0.499}}})
     local explosion_animation = 'explosion'
 
     local tile = surface.get_tile(pos)
     if tile.name == 'out-of-map' then
-        if ffatable.explosion_schedule[explosion_index].damage_remaining >= out_of_map_tile_health then
+        if this.explosion_schedule[explosion_index].damage_remaining >= out_of_map_tile_health then
             explosion_animation = 'big-explosion'
             surface.set_tiles({{name = 'dirt-5', position = pos}}, true)
         end
-        ffatable.explosion_schedule[explosion_index].damage_remaining = ffatable.explosion_schedule[explosion_index].damage_remaining - out_of_map_tile_health
+        this.explosion_schedule[explosion_index].damage_remaining = this.explosion_schedule[explosion_index].damage_remaining - out_of_map_tile_health
     else
         local decay_explosion = true
         for _, entity in pairs(target_entities) do
@@ -1696,35 +1697,35 @@ local function process_explosion_tile(pos, explosion_index, current_radius)
             end
         end
         if decay_explosion then
-            ffatable.explosion_schedule[explosion_index].damage_remaining = ffatable.explosion_schedule[explosion_index].damage_remaining - empty_tile_damage_decay
+            this.explosion_schedule[explosion_index].damage_remaining = this.explosion_schedule[explosion_index].damage_remaining - empty_tile_damage_decay
         end
     end
 
     for _, entity in pairs(target_entities) do
         if entity.valid then
             if entity.health then
-                if entity.health < ffatable.explosion_schedule[explosion_index].damage_remaining then
+                if entity.health < this.explosion_schedule[explosion_index].damage_remaining then
                     explosion_animation = 'big-explosion'
                     if entity.health > 500 then
                         explosion_animation = 'big-artillery-explosion'
                     end
-                    ffatable.explosion_schedule[explosion_index].damage_remaining = ffatable.explosion_schedule[explosion_index].damage_remaining - entity.health
+                    this.explosion_schedule[explosion_index].damage_remaining = this.explosion_schedule[explosion_index].damage_remaining - entity.health
                     if entity.name ~= 'character' then
                         entity.damage(2097152, 'player', 'explosion')
                     else
                         entity.die('player')
                     end
                 else
-                    entity.damage(ffatable.explosion_schedule[explosion_index].damage_remaining, 'player', 'explosion')
+                    entity.damage(this.explosion_schedule[explosion_index].damage_remaining, 'player', 'explosion')
                     if entity.valid then
-                        ffatable.explosion_schedule[explosion_index].damage_remaining = ffatable.explosion_schedule[explosion_index].damage_remaining - entity.health
+                        this.explosion_schedule[explosion_index].damage_remaining = this.explosion_schedule[explosion_index].damage_remaining - entity.health
                     end
                 end
             end
         end
     end
 
-    if ffatable.explosion_schedule[explosion_index].damage_remaining > 5000 and current_radius < 2 then
+    if this.explosion_schedule[explosion_index].damage_remaining > 5000 and current_radius < 2 then
         if math_random(1, 2) == 1 then
             explosion_animation = 'big-explosion'
         else
@@ -1735,7 +1736,7 @@ local function process_explosion_tile(pos, explosion_index, current_radius)
     surface.create_entity({name = explosion_animation, position = pos})
     Pollution.explosion(pos, surface, explosion_animation)
 
-    if ffatable.explosion_schedule[explosion_index].damage_remaining <= 0 then
+    if this.explosion_schedule[explosion_index].damage_remaining <= 0 then
         return false
     end
 
@@ -1752,7 +1753,7 @@ local function volatility(inventory)
 end
 
 local function create_explosion_schedule(entity)
-    local ffatable = Table.get_table()
+    local this = ScenarioTable.get_table()
     local inventory = defines.inventory.chest
     if entity.type == 'car' then
         inventory = defines.inventory.car_trunk
@@ -1764,22 +1765,22 @@ local function create_explosion_schedule(entity)
     end
     local center_position = entity.position
 
-    if not ffatable.explosion_schedule then
-        ffatable.explosion_schedule = {}
+    if not this.explosion_schedule then
+        this.explosion_schedule = {}
     end
-    ffatable.explosion_schedule[#ffatable.explosion_schedule + 1] = {}
-    ffatable.explosion_schedule[#ffatable.explosion_schedule].surface = entity.surface.name
-    ffatable.explosion_schedule[#ffatable.explosion_schedule].damage_remaining = damage_per_explosive * explosives_amount
+    this.explosion_schedule[#this.explosion_schedule + 1] = {}
+    this.explosion_schedule[#this.explosion_schedule].surface = entity.surface.name
+    this.explosion_schedule[#this.explosion_schedule].damage_remaining = damage_per_explosive * explosives_amount
 
     for current_radius = 1, 23, 1 do
-        ffatable.explosion_schedule[#ffatable.explosion_schedule][current_radius] = {}
-        ffatable.explosion_schedule[#ffatable.explosion_schedule][current_radius].trigger_tick = game.tick + (current_radius * 8)
+        this.explosion_schedule[#this.explosion_schedule][current_radius] = {}
+        this.explosion_schedule[#this.explosion_schedule][current_radius].trigger_tick = game.tick + (current_radius * 8)
 
         local circle_coords = circle_coordinates[current_radius]
 
         for index, tile_position in pairs(circle_coords) do
             local pos = {x = center_position.x + tile_position.x, y = center_position.y + tile_position.y}
-            ffatable.explosion_schedule[#ffatable.explosion_schedule][current_radius][index] = {x = pos.x, y = pos.y}
+            this.explosion_schedule[#this.explosion_schedule][current_radius][index] = {x = pos.x, y = pos.y}
         end
     end
     entity.die('player')
@@ -1816,24 +1817,24 @@ local function on_entity_damaged(event)
 end
 
 local function on_tick(event)
-    local ffatable = Table.get_table()
+    local this = ScenarioTable.get_table()
     local tick = event.tick
-    if ffatable.explosion_schedule then
+    if this.explosion_schedule then
         local explosion_schedule_is_alive = false
-        for explosion_index = 1, #ffatable.explosion_schedule, 1 do
-            if #ffatable.explosion_schedule[explosion_index] > 0 then
+        for explosion_index = 1, #this.explosion_schedule, 1 do
+            if #this.explosion_schedule[explosion_index] > 0 then
                 explosion_schedule_is_alive = true
-                for radius = 1, #ffatable.explosion_schedule[explosion_index], 1 do
-                    if ffatable.explosion_schedule[explosion_index][radius].trigger_tick == tick then
-                        for tile_index = 1, #ffatable.explosion_schedule[explosion_index][radius], 1 do
-                            local continue_explosion = process_explosion_tile(ffatable.explosion_schedule[explosion_index][radius][tile_index], explosion_index, radius)
+                for radius = 1, #this.explosion_schedule[explosion_index], 1 do
+                    if this.explosion_schedule[explosion_index][radius].trigger_tick == tick then
+                        for tile_index = 1, #this.explosion_schedule[explosion_index][radius], 1 do
+                            local continue_explosion = process_explosion_tile(this.explosion_schedule[explosion_index][radius][tile_index], explosion_index, radius)
                             if not continue_explosion then
-                                ffatable.explosion_schedule[explosion_index] = {}
+                                this.explosion_schedule[explosion_index] = {}
                                 break
                             end
                         end
-                        if radius == #ffatable.explosion_schedule[explosion_index] then
-                            ffatable.explosion_schedule[explosion_index] = {}
+                        if radius == #this.explosion_schedule[explosion_index] then
+                            this.explosion_schedule[explosion_index] = {}
                         end
                         break
                     end
@@ -1841,17 +1842,10 @@ local function on_tick(event)
             end
         end
         if not explosion_schedule_is_alive then
-            ffatable.explosion_schedule = nil
+            this.explosion_schedule = nil
         end
     end
 end
 
-local on_init = function()
-    local ffatable = Table.get_table()
-    ffatable.explosion_schedule = {}
-end
-
-local Event = require 'utils.event'
-Event.on_init(on_init)
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.add(defines.events.on_tick, on_tick)

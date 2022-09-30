@@ -1,10 +1,12 @@
 local Public = {}
 
-local Table = require 'modules.scrap_towny_ffa.table'
+local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 
 function Public.reset()
-    local ffatable = Table.get_table()
-    if ffatable.testing_mode then return end
+    local this = ScenarioTable.get_table()
+    if this.testing_mode then
+        return
+    end
     for index = 1, table.size(game.forces), 1 do
         local force = game.forces[index]
         if force ~= nil then
@@ -16,7 +18,9 @@ end
 local function add_force(id, force_name)
     local forces = rendering.get_forces(id)
     for _, force in ipairs(forces) do
-        if force.name == force_name or force == force_name then return end
+        if force.name == force_name or force == force_name then
+            return
+        end
     end
     forces[#forces + 1] = force_name
     rendering.set_forces(id, forces)
@@ -40,8 +44,12 @@ local function on_chunk_charted(event)
     local markets = surface.find_entities_filtered({area = area, name = 'market'})
     for _, market in pairs(markets) do
         local force_name = market.force.name
-        local ffatable = Table.get_table()
-        local town_center = ffatable.town_centers[force_name]
+        local this = ScenarioTable.get_table()
+        local town_center = this.town_centers[force_name]
+        if not town_center then
+            return
+        end
+
         -- town caption
         local town_caption = town_center.town_caption
         update_forces(town_caption)

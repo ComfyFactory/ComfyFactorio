@@ -6,8 +6,8 @@ local string_match = string.match
 local string_lower = string.lower
 
 local Server = require 'utils.server'
-local Map = require 'modules.scrap_towny_ffa.map'
-local Table = require 'modules.scrap_towny_ffa.table'
+local Map = require 'maps.scrap_towny_ffa.map'
+local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 
 local outlander_color = {150, 150, 150}
 local outlander_chat_color = {170, 170, 170}
@@ -41,35 +41,6 @@ local destroy_robot_types = {
     ['logistic-robot'] = true
 }
 
--- hand craftable
-local player_force_disabled_recipes = {
-    'lab',
-    'automation-science-pack',
-    'steel-furnace',
-    'electric-furnace',
-    'stone-wall',
-    'stone-brick',
-    'radar'
-}
-local player_force_enabled_recipes = {
-    'submachine-gun',
-    'assembling-machine-1',
-    'small-lamp',
-    'shotgun',
-    'shotgun-shell',
-    'underground-belt',
-    'splitter',
-    'steel-plate',
-    'car',
-    'tank',
-    'engine-unit',
-    'constant-combinator',
-    'green-wire',
-    'red-wire',
-    'arithmetic-combinator',
-    'decider-combinator'
-}
-
 local function min_slots(slots)
     local min = 0
     for i = 1, 3, 1 do
@@ -81,10 +52,14 @@ local function min_slots(slots)
 end
 
 local function can_force_accept_member(force)
-    local ffatable = Table.get_table()
-    local town_centers = ffatable.town_centers
-    if ffatable.member_limit == nil then
-        ffatable.member_limit = 1
+    if not force or not force.valid then
+        log('force nil or not valid!')
+        return
+    end
+    local this = ScenarioTable.get_table()
+    local town_centers = this.town_centers
+    if this.member_limit == nil then
+        this.member_limit = 1
     end
 
     -- get the members of each force name into a table
@@ -105,7 +80,7 @@ local function can_force_accept_member(force)
     end
     -- get the min of all slots
     local member_limit = min_slots(slots) + 1
-    ffatable.member_limit = member_limit
+    this.member_limit = member_limit
 
     if #force.connected_players >= member_limit then
         game.print('>> Town ' .. force.name .. ' has too many settlers! Current limit (' .. member_limit .. ')', {255, 255, 0})
@@ -114,53 +89,63 @@ local function can_force_accept_member(force)
     return true
 end
 
-local function is_towny(force)
-    if force.index == game.forces['player'].index or force.index == game.forces['rogue'].index then
-        return false
-    end
-    return true
+function Public.is_rogue(force)
+    return force.name == 'rogue'
+end
+
+function Public.is_outlander(force)
+    return force.name == 'player'
+end
+
+function Public.is_towny(force)
+    return force.name ~= 'rogue' and force.name ~= 'player'
 end
 
 function Public.has_key(index)
-    local ffatable = Table.get_table()
-    if ffatable.key == nil then
-        ffatable.key = {}
+    local this = ScenarioTable.get_table()
+    if this.key == nil then
+        this.key = {}
     end
-    if ffatable.key[index] ~= nil then
-        return ffatable.key[index]
+    if this.key[index] ~= nil then
+        return this.key[index]
     end
     return false
 end
 
 function Public.give_key(index)
-    local ffatable = Table.get_table()
-    if ffatable.key == nil then
-        ffatable.key = {}
+    local this = ScenarioTable.get_table()
+    if this.key == nil then
+        this.key = {}
     end
-    ffatable.key[index] = true
+    this.key[index] = true
 end
 
 function Public.remove_key(index)
-    local ffatable = Table.get_table()
-    if ffatable.key == nil then
-        ffatable.key = {}
+    local this = ScenarioTable.get_table()
+    if this.key == nil then
+        this.key = {}
     end
-    ffatable.key[index] = false
+    this.key[index] = false
 end
 
 function Public.set_player_color(player)
-    local ffatable = Table.get_table()
-    if player.force.index == game.forces['player'].index then
+    if not player or not player.valid then
+        log('player nil or not valid!')
+        return
+    end
+    local this = ScenarioTable.get_table()
+    local force_name = player.force.name
+    if force_name == 'player' then
         player.color = outlander_color
         player.chat_color = outlander_chat_color
         return
     end
-    if player.force.index == game.forces['rogue'].index then
+    if force_name == 'rogue' then
         player.color = rogue_color
         player.chat_color = rogue_chat_color
         return
     end
-    local town_center = ffatable.town_centers[player.force.name]
+    local town_center = this.town_centers[player.force.name]
     if not town_center then
         return
     end
@@ -169,13 +154,13 @@ function Public.set_player_color(player)
 end
 
 local function set_town_color(event)
-    local ffatable = Table.get_table()
+    local this = ScenarioTable.get_table()
     if event.command ~= 'color' then
         return
     end
     local player = game.players[event.player_index]
     local force = player.force
-    local town_center = ffatable.town_centers[force.name]
+    local town_center = this.town_centers[force.name]
     if not town_center then
         Public.set_player_color(player)
         return
@@ -194,6 +179,10 @@ function Public.set_all_player_colors()
 end
 
 local function reset_player(player)
+    if not player or not player.valid then
+        log('player nil or not valid!')
+        return
+    end
     if player.character ~= nil then
         local character = player.character
         character.character_crafting_speed_modifier = 0.0
@@ -203,14 +192,22 @@ local function reset_player(player)
 end
 
 function Public.add_player_to_town(player, town_center)
-    local ffatable = Table.get_table()
+    if not player or not player.valid then
+        log('player nil or not valid!')
+        return
+    end
+    if not town_center then
+        log('town_center nil!')
+        return
+    end
+    local this = ScenarioTable.get_table()
     local market = town_center.market
     local force = market.force
     local surface = market.surface
     reset_player(player)
     player.force = market.force
     Public.remove_key(player.index)
-    ffatable.spawn_point[player.name] = force.get_spawn_position(surface)
+    this.spawn_point[player.index] = force.get_spawn_position(surface)
     game.permissions.get_group(force.name).add_player(player)
     player.tag = ''
     Map.enable_world_map(player)
@@ -219,13 +216,17 @@ end
 
 -- given to player upon respawn
 function Public.give_player_items(player)
+    if not player or not player.valid then
+        log('player nil or not valid!')
+        return
+    end
     player.clear_items_inside()
     player.insert({name = 'raw-fish', count = 3})
-    player.insert({name = 'stone-furnace', count = 1})
 end
 
 function Public.set_player_to_outlander(player)
-    if player == nil then
+    if not player or not player.valid then
+        log('player nil or not valid!')
         return
     end
     player.force = game.forces.player
@@ -240,42 +241,52 @@ function Public.set_player_to_outlander(player)
 end
 
 local function set_player_to_rogue(player)
-    if player == nil then
+    if not player or not player.valid then
+        log('player nil or not valid!')
         return
     end
     player.force = 'rogue'
-    if game.permissions.get_group('rogue') == nil then
-        game.permissions.create_group('rogue')
+    local group = game.permissions.get_group('rogue')
+    if group == nil then
+        group = game.permissions.create_group('rogue')
     end
-    game.permissions.get_group('rogue').add_player(player)
+    group.add_player(player)
     player.tag = '[Rogue]'
     Map.disable_world_map(player)
     Public.set_player_color(player)
 end
 
 local function ally_outlander(player, target)
-    local ffatable = Table.get_table()
+    if not player or not player.valid then
+        log('player nil or not valid!')
+        return
+    end
+    if not target or not target.valid then
+        log('target nil or not valid!')
+        return
+    end
+    local this = ScenarioTable.get_table()
     local requesting_force = player.force
     local target_force = target.force
 
     -- don't handle if towns not yet enabled
-    if not ffatable.towns_enabled then
+    if not this.towns_enabled then
         player.print('You must wait for more players to join!', {255, 255, 0})
         return false
     end
     -- don't handle request if target is not a town
-    if not is_towny(requesting_force) and not is_towny(target_force) then
+    if not Public.is_towny(requesting_force) and not Public.is_towny(target_force) then
         return false
     end
 
     -- don't handle request to  another town if already in a town
-    if is_towny(requesting_force) and is_towny(target_force) then
+    if Public.is_towny(requesting_force) and Public.is_towny(target_force) then
         return false
     end
 
     -- handle the request
-    if not is_towny(requesting_force) and is_towny(target_force) then
-        ffatable.requests[player.index] = target_force.name
+    if not Public.is_towny(requesting_force) and Public.is_towny(target_force) then
+        this.requests[player.index] = target_force.name
 
         local target_player
         if target.type == 'character' then
@@ -285,14 +296,14 @@ local function ally_outlander(player, target)
         end
 
         if target_player then
-            if ffatable.requests[target_player.index] then
-                if ffatable.requests[target_player.index] == player.name then
-                    if ffatable.town_centers[target_force.name] then
+            if this.requests[target_player.index] then
+                if this.requests[target_player.index] == player.name then
+                    if this.town_centers[target_force.name] then
                         if not can_force_accept_member(target_force) then
                             return true
                         end
                         game.print('>> ' .. player.name .. ' has settled in ' .. target_force.name .. "'s Town!", {255, 255, 0})
-                        Public.add_player_to_town(player, ffatable.town_centers[target_force.name])
+                        Public.add_player_to_town(player, this.town_centers[target_force.name])
                         return true
                     end
                 end
@@ -304,7 +315,7 @@ local function ally_outlander(player, target)
     end
 
     -- handle the approval
-    if is_towny(requesting_force) and not is_towny(target_force) then
+    if Public.is_towny(requesting_force) and not Public.is_towny(target_force) then
         if target.type ~= 'character' then
             return true
         end
@@ -312,10 +323,10 @@ local function ally_outlander(player, target)
         if not target_player then
             return true
         end
-        ffatable.requests[player.index] = target_player.name
+        this.requests[player.index] = target_player.name
 
-        if ffatable.requests[target_player.index] then
-            if ffatable.requests[target_player.index] == player.force.name then
+        if this.requests[target_player.index] then
+            if this.requests[target_player.index] == player.force.name then
                 if not can_force_accept_member(player.force) then
                     return true
                 end
@@ -324,7 +335,7 @@ local function ally_outlander(player, target)
                 else
                     game.print('>> ' .. player.name .. ' has accepted ' .. target_player.name .. ' into' .. player.force.name .. "'s Town!", {255, 255, 0})
                 end
-                Public.add_player_to_town(target_player, ffatable.town_centers[player.force.name])
+                Public.add_player_to_town(target_player, this.town_centers[player.force.name])
                 return true
             end
         end
@@ -339,6 +350,14 @@ local function ally_outlander(player, target)
 end
 
 local function ally_neighbour_towns(player, target)
+    if not player or not player.valid then
+        log('player nil or not valid!')
+        return
+    end
+    if not target or not target.valid then
+        log('target nil or not valid!')
+        return
+    end
     local requesting_force = player.force
     local target_force = target.force
 
@@ -355,6 +374,10 @@ local function ally_neighbour_towns(player, target)
 end
 
 local function ally_town(player, item)
+    if not player or not player.valid then
+        log('player nil or not valid!')
+        return
+    end
     local position = item.position
     local surface = player.surface
     local area = {{position.x - item_drop_radius, position.y - item_drop_radius}, {position.x + item_drop_radius, position.y + item_drop_radius}}
@@ -382,7 +405,11 @@ local function ally_town(player, item)
 end
 
 local function declare_war(player, item)
-    local ffatable = Table.get_table()
+    if not player or not player.valid then
+        log('player nil or not valid!')
+        return
+    end
+    local this = ScenarioTable.get_table()
     local position = item.position
     local surface = player.surface
     local area = {{position.x - item_drop_radius, position.y - item_drop_radius}, {position.x + item_drop_radius, position.y + item_drop_radius}}
@@ -394,7 +421,7 @@ local function declare_war(player, item)
         return
     end
     local target_force = target.force
-    if not is_towny(target_force) then
+    if not Public.is_towny(target_force) then
         return
     end
 
@@ -402,7 +429,7 @@ local function declare_war(player, item)
         if player.name ~= target.force.name then
             Public.set_player_to_outlander(player)
             game.print('>> ' .. player.name .. ' has abandoned ' .. target_force.name .. "'s Town!", {255, 255, 0})
-            ffatable.requests[player.index] = nil
+            this.requests[player.index] = nil
         end
         if player.name == target.force.name then
             if target.type ~= 'character' then
@@ -417,12 +444,12 @@ local function declare_war(player, item)
             end
             Public.set_player_to_outlander(target_player)
             game.print('>> ' .. player.name .. ' has banished ' .. target_player.name .. ' from their Town!', {255, 255, 0})
-            ffatable.requests[player.index] = nil
+            this.requests[player.index] = nil
         end
         return
     end
 
-    if not is_towny(requesting_force) then
+    if not Public.is_towny(requesting_force) then
         return
     end
 
@@ -433,6 +460,10 @@ local function declare_war(player, item)
 end
 
 local function delete_chart_tag_for_all_forces(market)
+    if not market or not market.valid then
+        log('market nil or not valid!')
+        return
+    end
     local forces = game.forces
     local position = market.position
     local surface = market.surface
@@ -448,6 +479,10 @@ local function delete_chart_tag_for_all_forces(market)
 end
 
 function Public.add_chart_tag(town_center)
+    if not town_center then
+        log('town_center nil or not valid!')
+        return
+    end
     local market = town_center.market
     local force = market.force
     local position = market.position
@@ -459,8 +494,8 @@ function Public.add_chart_tag(town_center)
 end
 
 function Public.update_town_chart_tags()
-    local ffatable = Table.get_table()
-    local town_centers = ffatable.town_centers
+    local this = ScenarioTable.get_table()
+    local town_centers = this.town_centers
     local forces = game.forces
     for _, town_center in pairs(town_centers) do
         local market = town_center.market
@@ -574,8 +609,7 @@ local function disable_deconstruct(permission_group)
     end
 end
 
--- not in use
---[[ local function enable_artillery(force, permission_group)
+local function enable_artillery(force, permission_group)
     permission_group.set_allows_action(defines.input_action.use_artillery_remote, true)
     force.technologies['artillery'].enabled = true
     force.technologies['artillery-shell-range-1'].enabled = true
@@ -584,7 +618,8 @@ end
     force.recipes['artillery-wagon'].enabled = false
     force.recipes['artillery-targeting-remote'].enabled = false
     force.recipes['artillery-shell'].enabled = false
-end ]]
+end
+
 local function disable_artillery(force, permission_group)
     permission_group.set_allows_action(defines.input_action.use_artillery_remote, false)
     force.technologies['artillery'].enabled = false
@@ -642,14 +677,14 @@ end
 
 -- setup a team force
 function Public.add_new_force(force_name)
-    local ffatable = Table.get_table()
+    local this = ScenarioTable.get_table()
     -- disable permissions
     local force = game.create_force(force_name)
     local permission_group = game.permissions.create_group(force_name)
     reset_permissions(permission_group)
     enable_blueprints(permission_group)
     enable_deconstruct(permission_group)
-    disable_artillery(force, permission_group)
+    enable_artillery(force, permission_group)
     disable_spidertron(force, permission_group)
     disable_rockets(force)
     disable_nukes(force)
@@ -664,12 +699,7 @@ function Public.add_new_force(force_name)
     -- balance initial combat
     force.set_ammo_damage_modifier('landmine', -0.75)
     force.set_ammo_damage_modifier('grenade', -0.5)
-    --Give townys same tech as outlanders
-    local recipes = force.recipes
-    for _, recipe_name in pairs(player_force_enabled_recipes) do
-        recipes[recipe_name].enabled = true
-    end
-    if (ffatable.testing_mode == true) then
+    if (this.testing_mode == true) then
         local e_force = game.forces['enemy']
         e_force.set_friend(force, true) -- team force should not be attacked by turrets
         e_force.set_cease_fire(force, true) -- team force should not be attacked by units
@@ -679,10 +709,23 @@ function Public.add_new_force(force_name)
     return force
 end
 
+function Public.reset_all_forces()
+    for _, force in pairs(game.forces) do
+        if force and force.valid then
+            if force.name ~= 'enemy' and force.name ~= 'player' and force.name ~= 'neutral' and force.name ~= 'rogue' then
+                game.merge_forces(force.name, 'player')
+            end
+        end
+    end
+    game.forces['enemy'].reset()
+    game.forces['neutral'].reset()
+    game.forces['player'].reset()
+end
+
 local function kill_force(force_name, cause)
-    local ffatable = Table.get_table()
+    local this = ScenarioTable.get_table()
     local force = game.forces[force_name]
-    local town_center = ffatable.town_centers[force_name]
+    local town_center = this.town_centers[force_name]
     local market = town_center.market
     local position = market.position
     local surface = market.surface
@@ -690,14 +733,16 @@ local function kill_force(force_name, cause)
     local town_name = town_center.town_name
     surface.create_entity({name = 'big-artillery-explosion', position = position})
     for _, player in pairs(force.players) do
-        ffatable.spawn_point[player.name] = nil
-        ffatable.cooldowns_town_placement[player.index] = game.tick + 3600 * 15
+        this.spawn_point[player.index] = nil
+        this.cooldowns_town_placement[player.index] = game.tick + 3600 * 5
+        this.buffs[player.index] = {}
         if player.character then
             player.character.die()
         else
-            ffatable.requests[player.index] = 'kill-character'
+            this.requests[player.index] = 'kill-character'
         end
         player.force = game.forces.player
+        Map.disable_world_map(player)
         Public.set_player_color(player)
         Public.give_key(player.index)
     end
@@ -740,18 +785,18 @@ local function kill_force(force_name, cause)
     end
 
     game.merge_forces(force_name, 'neutral')
-    ffatable.town_centers[force_name] = nil
-    ffatable.number_of_towns = ffatable.number_of_towns - 1
+    this.town_centers[force_name] = nil
+    this.number_of_towns = this.number_of_towns - 1
     delete_chart_tag_for_all_forces(market)
     -- reward the killer
     if cause == nil or not cause.valid then
-        Server.to_discord_embed(town_name .. ' has fallen!')
-        game.print('>> ' .. town_name .. ' has fallen!', {255, 255, 0})
+        Server.to_discord_embed(town_name .. ' has fallen to the biters!')
+        game.print('>> ' .. town_name .. ' has fallen to the biters!', {255, 255, 0})
         return
     end
     if cause.force == nil then
-        Server.to_discord_embed(town_name .. ' has fallen!')
-        game.print('>> ' .. town_name .. ' has fallen!', {255, 255, 0})
+        Server.to_discord_embed(town_name .. ' has fallen to the biters!')
+        game.print('>> ' .. town_name .. ' has fallen to the biters!', {255, 255, 0})
         return
     end
     if cause.force.name == 'player' or cause.force.name == 'rogue' then
@@ -774,8 +819,8 @@ local function kill_force(force_name, cause)
         end
     else
         if cause.force.name ~= 'enemy' then
-            if ffatable.town_centers[cause.force.name] ~= nil then
-                local killer_town_center = ffatable.town_centers[cause.force.name]
+            if this.town_centers[cause.force.name] ~= nil then
+                local killer_town_center = this.town_centers[cause.force.name]
                 if balance > 0 then
                     killer_town_center.coin_balance = killer_town_center.coin_balance + balance
                 end
@@ -788,6 +833,35 @@ local function kill_force(force_name, cause)
         end
     end
 end
+
+-- hand craftable
+local player_force_disabled_recipes = {
+    'lab',
+    'automation-science-pack',
+    'steel-furnace',
+    'electric-furnace',
+    'stone-wall',
+    'stone-brick',
+    'radar'
+}
+local player_force_enabled_recipes = {
+    'submachine-gun',
+    'assembling-machine-1',
+    'small-lamp',
+    'shotgun',
+    'shotgun-shell',
+    'underground-belt',
+    'splitter',
+    'steel-plate',
+    'car',
+    'tank',
+    'engine-unit',
+    'constant-combinator',
+    'green-wire',
+    'red-wire',
+    'arithmetic-combinator',
+    'decider-combinator'
+}
 
 local function setup_neutral_force()
     local force = game.forces['neutral']
@@ -807,7 +881,7 @@ end
 
 -- setup the player force (this is the default for Outlanders)
 local function setup_player_force()
-    local ffatable = Table.get_table()
+    local this = ScenarioTable.get_table()
     local force = game.forces.player
     local permission_group = game.permissions.create_group('outlander')
     -- disable permissions
@@ -837,16 +911,18 @@ local function setup_player_force()
     end
     force.set_ammo_damage_modifier('landmine', -0.75)
     force.set_ammo_damage_modifier('grenade', -0.5)
-    if (ffatable.testing_mode == true) then
+    if (this.testing_mode == true) then
         force.enable_all_prototypes()
     end
 end
 
 local function setup_rogue_force()
-    local ffatable = Table.get_table()
-    local force_name = 'rogue'
-    local force = game.create_force(force_name)
-    local permission_group = game.permissions.create_group(force_name)
+    local this = ScenarioTable.get_table()
+    local force = game.forces['rogue']
+    if game.forces['rogue'] == nil then
+        force = game.create_force('rogue')
+    end
+    local permission_group = game.permissions.create_group('rogue')
     -- disable permissions
     reset_permissions(permission_group)
     disable_blueprints(permission_group)
@@ -874,24 +950,36 @@ local function setup_rogue_force()
     end
     force.set_ammo_damage_modifier('landmine', -0.75)
     force.set_ammo_damage_modifier('grenade', -0.5)
-    if (ffatable.testing_mode == true) then
+    if (this.testing_mode == true) then
         force.enable_all_prototypes()
     end
 end
 
 local function setup_enemy_force()
-    local ffatable = Table.get_table()
+    local this = ScenarioTable.get_table()
     local e_force = game.forces['enemy']
     e_force.evolution_factor = 1 -- this should never change since we are changing biter types on spawn
     e_force.set_friend(game.forces.player, true) -- outlander force (player) should not be attacked by turrets
     e_force.set_cease_fire(game.forces.player, true) -- outlander force (player) should not be attacked by units
-    if (ffatable.testing_mode == true) then
+    if (this.testing_mode == true) then
         e_force.set_friend(game.forces['rogue'], true) -- rogue force (rogue) should not be attacked by turrets
         e_force.set_cease_fire(game.forces['rogue'], true) -- rogue force (rogue) should not be attacked by units
     else
         -- note, these don't prevent an outlander or rogue from attacking a unit or spawner, we need to handle separately
         e_force.set_friend(game.forces['rogue'], false) -- rogue force (rogue) should be attacked by turrets
         e_force.set_cease_fire(game.forces['rogue'], false) -- rogue force (rogue) should be attacked by units
+    end
+end
+
+local function reset_forces()
+    local players = game.players
+    local forces = game.forces
+    for i = 1, #players do
+        local player = players[i]
+        local force = forces[player.name]
+        if force then
+            game.merge_forces(force, 'player')
+        end
     end
 end
 
@@ -918,7 +1006,7 @@ end
 
 local function on_entity_damaged(event)
     local entity = event.entity
-    if not entity.valid then
+    if not entity or not entity.valid then
         return
     end
     local cause = event.cause
@@ -929,41 +1017,67 @@ local function on_entity_damaged(event)
         if cause ~= nil then
             if cause.type == 'character' and force.index == game.forces['player'].index then
                 local player = cause.player
-                if player ~= nil and force.index == game.forces['player'].index then
+                if player and player.valid and force.index == game.forces['player'].index then
                     -- set the force of the player to rogue until they die or create a town
-                    player.print('You have broken the peace with the biters. They will seek revenge!')
                     set_player_to_rogue(player)
                 end
             end
             -- cars and tanks
             if cause.type == 'car' or cause.type == 'tank' then
                 local driver = cause.get_driver()
-                if driver ~= nil and driver.force.index == game.forces['player'].index then
-                    -- set the force of the player to rogue until they die or create a town
-                    set_player_to_rogue(driver)
+                if driver and driver.valid then
+                    -- driver may be LuaEntity or LuaPlayer
+                    local player = driver
+                    if driver.object_name == 'LuaEntity' then
+                        player = driver.player
+                    end
+                    if player and player.valid and player.force.index == game.forces['player'].index then
+                        -- set the force of the player to rogue until they die or create a town
+                        set_player_to_rogue(player)
+                    end
                 end
+
                 local passenger = cause.get_passenger()
-                if passenger ~= nil and passenger.force.index == game.forces['player'].index then
-                    -- set the force of the player to rogue until they die or create a town
-                    set_player_to_rogue(passenger)
+                if passenger and passenger.valid then
+                    -- passenger may be LuaEntity or LuaPlayer
+                    local player = passenger
+                    if passenger.object_name == 'LuaEntity' then
+                        player = passenger.player
+                    end
+                    if player and player.valid and player.force.index == game.forces['player'].index then
+                        -- set the force of the player to rogue until they die or create a town
+                        set_player_to_rogue(player)
+                    end
                 end
+                -- set the vehicle to rogue
+                cause.force = game.forces['rogue']
             end
             -- trains
             if cause.type == 'locomotive' or cause.type == 'cargo-wagon' or cause.type == 'fluid-wagon' or cause.type == 'artillery-wagon' then
                 local train = cause.train
                 for _, passenger in pairs(train.passengers) do
-                    if passenger ~= nil and passenger.force.index == game.forces['player'].index then
-                        set_player_to_rogue(passenger)
+                    if passenger and passenger.valid then
+                        -- passenger may be LuaEntity or LuaPlayer
+                        local player = passenger
+                        if passenger.object_name == 'LuaEntity' then
+                            player = passenger.player
+                        end
+                        if player and player.valid and player.force.index == game.forces['player'].index then
+                            set_player_to_rogue(player)
+                        end
                     end
                 end
+                cause.force = game.forces['rogue']
             end
             -- combat robots
             if cause.type == 'combat-robot' then
-                local owner = cause.last_user
-                if owner ~= nil and owner.force == game.forces['player]'] then
+                local owner = cause.combat_robot_owner
+                if owner and owner.valid and owner.force == game.forces['player'] then
                     -- set the force of the player to rogue until they die or create a town
                     set_player_to_rogue(owner)
                 end
+                -- set the robot to rogue
+                cause.force = game.forces['rogue']
             end
         end
     end
@@ -972,7 +1086,7 @@ end
 local function on_entity_died(event)
     local entity = event.entity
     local cause = event.cause
-    if entity ~= nil and entity.valid and entity.name == 'market' then
+    if entity and entity.valid and entity.name == 'market' then
         kill_force(entity.force.name, cause)
     end
 end
@@ -1006,21 +1120,14 @@ local function on_console_chat(event)
 end
 
 function Public.initialize()
+    reset_forces()
     setup_neutral_force()
     setup_player_force()
     setup_rogue_force()
     setup_enemy_force()
 end
 
-local on_init = function()
-    local ffatable = Table.get_table()
-    ffatable.key = {}
-    ffatable.spawn_point = {}
-    ffatable.requests = {}
-end
-
 local Event = require 'utils.event'
-Event.on_init(on_init)
 Event.add(defines.events.on_player_dropped_item, on_player_dropped_item)
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.add(defines.events.on_entity_died, on_entity_died)

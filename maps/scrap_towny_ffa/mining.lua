@@ -1,4 +1,5 @@
-local Table = require 'modules.scrap_towny_ffa.table'
+local Event = require 'utils.event'
+local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 
 local crash_site = {
     -- simple entity with owner
@@ -51,12 +52,12 @@ local function mining_sound(player)
 end
 
 local function on_tick()
-    local ffatable = Table.get_table()
+    local this = ScenarioTable.get_table()
     for index, player in pairs(game.players) do
         if player.character ~= nil then
             local mining = player.mining_state.mining
-            if ffatable.mining[index] ~= mining then
-                ffatable.mining[index] = mining
+            if this.mining[index] ~= mining then
+                this.mining[index] = mining
                 -- state change
                 if mining == true then
                     --log(player.name .. " started mining")
@@ -68,14 +69,14 @@ local function on_tick()
                         if is_crash_site(target) then
                             -- mining crash site
                             mining_sound(player)
-                            ffatable.mining_target[index] = target
+                            this.mining_target[index] = target
                         end
                     end
                 else
                     --log(player.name .. " stopped mining")
-                    local target = ffatable.mining_target[index]
+                    local target = this.mining_target[index]
                     if target ~= nil then
-                        ffatable.mining_target[index] = nil
+                        this.mining_target[index] = nil
                     end
                 end
             else
@@ -95,13 +96,4 @@ local function on_tick()
     end
 end
 
-local on_init = function()
-    local ffatable = Table.get_table()
-    ffatable.mining = {}
-    ffatable.mining_entity = {}
-    ffatable.mining_target = {}
-end
-
-local Event = require 'utils.event'
-Event.on_init(on_init)
 Event.add(defines.events.on_tick, on_tick)

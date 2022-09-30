@@ -1,8 +1,8 @@
 local Public = {}
 local math_random = math.random
 
-local Table = require 'modules.scrap_towny_ffa.table'
-local Scrap = require 'modules.scrap_towny_ffa.scrap'
+local ScenarioTable = require 'maps.scrap_towny_ffa.table'
+local Scrap = require 'maps.scrap_towny_ffa.scrap'
 
 local pollution_index = {
     ['small-biter'] = {min = 0.1, max = 0.1},
@@ -46,11 +46,11 @@ local pollution_index = {
 }
 
 function Public.market_scent()
-    local ffatable = Table.get_table()
-    if ffatable.testing_mode then
+    local this = ScenarioTable.get_table()
+    if this.testing_mode then
         return
     end
-    local town_centers = ffatable.town_centers
+    local town_centers = this.town_centers
     if town_centers == nil then
         return
     end
