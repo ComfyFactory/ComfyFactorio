@@ -1263,7 +1263,9 @@ local function show_mvps(player)
                 }
             }
             if server_name_matches then
-                Server.to_discord_named_parsed_embed(send_ping_to_channel, text)
+                if wave >= 1000 then
+                    Server.to_discord_named_parsed_embed(send_ping_to_channel, text)
+                end
             else
                 Server.to_discord_embed_parsed(text)
             end
