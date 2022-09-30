@@ -402,6 +402,7 @@ stds.factorio_control = {
                 'server_save',
                 'set_game_state',
                 'reset_time_played',
+                'reset_game_state',
                 'show_message_dialog',
                 'table_to_json',
                 'encode_string',
