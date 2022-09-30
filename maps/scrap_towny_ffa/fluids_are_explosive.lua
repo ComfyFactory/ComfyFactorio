@@ -3,8 +3,9 @@
 local math_random = math.random
 local math_floor = math.floor
 
-local Table = require 'modules.scrap_towny_ffa.table'
-local Pollution = require 'modules.scrap_towny_ffa.pollution'
+local ScenarioTable = require 'maps.scrap_towny_ffa.table'
+local Pollution = require 'maps.scrap_towny_ffa.pollution'
+local Event = require 'utils.event'
 
 local empty_tile_damage_decay = 50
 local out_of_map_tile_health = 1500
@@ -35,18 +36,18 @@ local function shuffle(tbl)
 end
 
 local function process_explosion_tile(pos, explosion_index, current_radius)
-    local ffatable = Table.get_table()
-    local surface = game.surfaces[ffatable.fluid_explosion_schedule[explosion_index].surface]
+    local this = ScenarioTable.get_table()
+    local surface = game.surfaces[this.fluid_explosion_schedule[explosion_index].surface]
     local target_entities = surface.find_entities_filtered({area = {{pos.x - 0.5, pos.y - 0.5}, {pos.x + 0.499, pos.y + 0.499}}})
     local explosion_animation = 'explosion'
 
     local tile = surface.get_tile(pos)
     if tile.name == 'out-of-map' then
-        if ffatable.fluid_explosion_schedule[explosion_index].damage_remaining >= out_of_map_tile_health then
+        if this.fluid_explosion_schedule[explosion_index].damage_remaining >= out_of_map_tile_health then
             explosion_animation = 'big-explosion'
             surface.set_tiles({{name = 'dirt-5', position = pos}}, true)
         end
-        ffatable.fluid_explosion_schedule[explosion_index].damage_remaining = ffatable.fluid_explosion_schedule[explosion_index].damage_remaining - out_of_map_tile_health
+        this.fluid_explosion_schedule[explosion_index].damage_remaining = this.fluid_explosion_schedule[explosion_index].damage_remaining - out_of_map_tile_health
     else
         local decay_explosion = true
         for _, entity in pairs(target_entities) do
@@ -55,33 +56,33 @@ local function process_explosion_tile(pos, explosion_index, current_radius)
             end
         end
         if decay_explosion then
-            ffatable.fluid_explosion_schedule[explosion_index].damage_remaining = ffatable.fluid_explosion_schedule[explosion_index].damage_remaining - empty_tile_damage_decay
+            this.fluid_explosion_schedule[explosion_index].damage_remaining = this.fluid_explosion_schedule[explosion_index].damage_remaining - empty_tile_damage_decay
         end
     end
 
     for _, entity in pairs(target_entities) do
         if entity.valid then
             if entity.health then
-                if entity.health <= ffatable.fluid_explosion_schedule[explosion_index].damage_remaining then
+                if entity.health <= this.fluid_explosion_schedule[explosion_index].damage_remaining then
                     explosion_animation = 'big-explosion'
                     if entity.health > 500 then
                         explosion_animation = 'big-artillery-explosion'
                     end
-                    ffatable.fluid_explosion_schedule[explosion_index].damage_remaining = ffatable.fluid_explosion_schedule[explosion_index].damage_remaining - entity.health
+                    this.fluid_explosion_schedule[explosion_index].damage_remaining = this.fluid_explosion_schedule[explosion_index].damage_remaining - entity.health
                     if entity.name ~= 'character' then
                         entity.damage(2097152, 'player', 'explosion')
                     else
                         entity.die('player')
                     end
                 else
-                    entity.damage(ffatable.fluid_explosion_schedule[explosion_index].damage_remaining, 'player', 'explosion')
-                    ffatable.fluid_explosion_schedule[explosion_index].damage_remaining = 0
+                    entity.damage(this.fluid_explosion_schedule[explosion_index].damage_remaining, 'player', 'explosion')
+                    this.fluid_explosion_schedule[explosion_index].damage_remaining = 0
                 end
             end
         end
     end
 
-    if ffatable.fluid_explosion_schedule[explosion_index].damage_remaining > 5000 and current_radius < 2 then
+    if this.fluid_explosion_schedule[explosion_index].damage_remaining > 5000 and current_radius < 2 then
         if math_random(1, 2) == 1 then
             explosion_animation = 'big-explosion'
         else
@@ -92,7 +93,7 @@ local function process_explosion_tile(pos, explosion_index, current_radius)
     surface.create_entity({name = explosion_animation, position = pos})
     Pollution.explosion(pos, surface, explosion_animation)
 
-    if ffatable.fluid_explosion_schedule[explosion_index].damage_remaining <= 0 then
+    if this.fluid_explosion_schedule[explosion_index].damage_remaining <= 0 then
         return false
     end
 
@@ -100,7 +101,7 @@ local function process_explosion_tile(pos, explosion_index, current_radius)
 end
 
 local function create_explosion_schedule(entity)
-    local ffatable = Table.get_table()
+    local this = ScenarioTable.get_table()
     local explosives_amount = math_floor(entity.fluidbox[1].amount)
 
     if explosives_amount < 1 then
@@ -108,13 +109,13 @@ local function create_explosion_schedule(entity)
     end
     local center_position = entity.position
 
-    if not ffatable.fluid_explosion_schedule then
-        ffatable.fluid_explosion_schedule = {}
+    if not this.fluid_explosion_schedule then
+        this.fluid_explosion_schedule = {}
     end
-    ffatable.fluid_explosion_schedule[#ffatable.fluid_explosion_schedule + 1] = {}
-    ffatable.fluid_explosion_schedule[#ffatable.fluid_explosion_schedule].surface = entity.surface.name
+    this.fluid_explosion_schedule[#this.fluid_explosion_schedule + 1] = {}
+    this.fluid_explosion_schedule[#this.fluid_explosion_schedule].surface = entity.surface.name
 
-    ffatable.fluid_explosion_schedule[#ffatable.fluid_explosion_schedule].damage_remaining = fluid_damages[entity.fluidbox[1].name] * explosives_amount
+    this.fluid_explosion_schedule[#this.fluid_explosion_schedule].damage_remaining = fluid_damages[entity.fluidbox[1].name] * explosives_amount
 
     local circle_coordinates = {
         [1] = {{x = 0, y = 0}},
@@ -890,15 +891,15 @@ local function create_explosion_schedule(entity)
     }
 
     for current_radius = 1, 16, 1 do
-        ffatable.fluid_explosion_schedule[#ffatable.fluid_explosion_schedule][current_radius] = {}
-        ffatable.fluid_explosion_schedule[#ffatable.fluid_explosion_schedule][current_radius].trigger_tick = game.tick + (current_radius * 8)
+        this.fluid_explosion_schedule[#this.fluid_explosion_schedule][current_radius] = {}
+        this.fluid_explosion_schedule[#this.fluid_explosion_schedule][current_radius].trigger_tick = game.tick + (current_radius * 8)
 
         local circle_coords = circle_coordinates[current_radius]
         circle_coords = shuffle(circle_coords)
 
         for index, tile_position in pairs(circle_coords) do
             local pos = {x = center_position.x + tile_position.x, y = center_position.y + tile_position.y}
-            ffatable.fluid_explosion_schedule[#ffatable.fluid_explosion_schedule][current_radius][index] = {x = pos.x, y = pos.y}
+            this.fluid_explosion_schedule[#this.fluid_explosion_schedule][current_radius][index] = {x = pos.x, y = pos.y}
         end
     end
     entity.die('player')
@@ -932,24 +933,24 @@ local function on_entity_damaged(event)
 end
 
 local function on_tick(event)
-    local ffatable = Table.get_table()
+    local this = ScenarioTable.get_table()
     local tick = event.tick
-    if ffatable.fluid_explosion_schedule then
+    if this.fluid_explosion_schedule then
         local explosion_schedule_is_alive = false
-        for explosion_index = 1, #ffatable.fluid_explosion_schedule, 1 do
-            if #ffatable.fluid_explosion_schedule[explosion_index] > 0 then
+        for explosion_index = 1, #this.fluid_explosion_schedule, 1 do
+            if #this.fluid_explosion_schedule[explosion_index] > 0 then
                 explosion_schedule_is_alive = true
-                for radius = 1, #ffatable.fluid_explosion_schedule[explosion_index], 1 do
-                    if ffatable.fluid_explosion_schedule[explosion_index][radius].trigger_tick == tick then
-                        for tile_index = 1, #ffatable.fluid_explosion_schedule[explosion_index][radius], 1 do
-                            local continue_explosion = process_explosion_tile(ffatable.fluid_explosion_schedule[explosion_index][radius][tile_index], explosion_index, radius)
+                for radius = 1, #this.fluid_explosion_schedule[explosion_index], 1 do
+                    if this.fluid_explosion_schedule[explosion_index][radius].trigger_tick == tick then
+                        for tile_index = 1, #this.fluid_explosion_schedule[explosion_index][radius], 1 do
+                            local continue_explosion = process_explosion_tile(this.fluid_explosion_schedule[explosion_index][radius][tile_index], explosion_index, radius)
                             if not continue_explosion then
-                                ffatable.fluid_explosion_schedule[explosion_index] = {}
+                                this.fluid_explosion_schedule[explosion_index] = {}
                                 break
                             end
                         end
-                        if radius == #ffatable.fluid_explosion_schedule[explosion_index] then
-                            ffatable.fluid_explosion_schedule[explosion_index] = {}
+                        if radius == #this.fluid_explosion_schedule[explosion_index] then
+                            this.fluid_explosion_schedule[explosion_index] = {}
                         end
                         break
                     end
@@ -957,17 +958,10 @@ local function on_tick(event)
             end
         end
         if not explosion_schedule_is_alive then
-            ffatable.fluid_explosion_schedule = nil
+            this.fluid_explosion_schedule = nil
         end
     end
 end
 
-local on_init = function()
-    local ffatable = Table.get_table()
-    ffatable.fluid_explosion_schedule = {}
-end
-
-local Event = require 'utils.event'
-Event.on_init(on_init)
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.add(defines.events.on_tick, on_tick)

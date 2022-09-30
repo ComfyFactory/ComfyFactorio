@@ -2,7 +2,7 @@ local Public = {}
 
 local table_shuffle = table.shuffle_table
 
-local Table = require 'modules.scrap_towny_ffa.table'
+local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local Color = require 'utils.color_presets'
 
 local colors = {}
@@ -151,8 +151,8 @@ local function is_color_used(color, town_centers)
 end
 
 function Public.get_random_color()
-    local ffatable = Table.get_table()
-    local town_centers = ffatable.town_centers
+    local this = ScenarioTable.get_table()
+    local town_centers = this.town_centers
     local rgb
     local color = {}
     local name
@@ -187,8 +187,8 @@ local function random_color(cmd)
         player.print('You are not member of a town!', Color.fail)
         return
     end
-    local ffatable = Table.get_table()
-    local town_center = ffatable.town_centers[force.name]
+    local this = ScenarioTable.get_table()
+    local town_center = this.town_centers[force.name]
 
     local crayon = Public.get_random_color()
 

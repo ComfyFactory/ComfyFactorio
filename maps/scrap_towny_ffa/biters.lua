@@ -8,6 +8,7 @@ local table_insert = table.insert
 local table_remove = table.remove
 local table_shuffle = table.shuffle_table
 
+local Event = require 'utils.event'
 local Global = require 'utils.global'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 
@@ -19,8 +20,8 @@ Global.register(
     end
 )
 
-local Table = require 'modules.scrap_towny_ffa.table'
-local Evolution = require 'modules.scrap_towny_ffa.evolution'
+local ScenarioTable = require 'maps.scrap_towny_ffa.table'
+local Evolution = require 'maps.scrap_towny_ffa.evolution'
 
 local function get_commmands(target, group)
     local commands = {}
@@ -67,8 +68,8 @@ local function get_commmands(target, group)
 end
 
 local function roll_market()
-    local ffatable = Table.get_table()
-    local town_centers = ffatable.town_centers
+    local this = ScenarioTable.get_table()
+    local town_centers = this.town_centers
     if town_centers == nil or table_size(town_centers) == 0 then
         return
     end
@@ -116,23 +117,23 @@ local function is_swarm_valid(swarm)
 end
 
 function Public.validate_swarms()
-    local ffatable = Table.get_table()
-    if ffatable.testing_mode then
+    local this = ScenarioTable.get_table()
+    if this.testing_mode then
         return
     end
-    for k, swarm in pairs(ffatable.swarms) do
+    for k, swarm in pairs(this.swarms) do
         if not is_swarm_valid(swarm) then
-            table_remove(ffatable.swarms, k)
+            table_remove(this.swarms, k)
         end
     end
 end
 
 function Public.unit_groups_start_moving()
-    local ffatable = Table.get_table()
-    if ffatable.testing_mode then
+    local this = ScenarioTable.get_table()
+    if this.testing_mode then
         return
     end
-    for _, swarm in pairs(ffatable.swarms) do
+    for _, swarm in pairs(this.swarms) do
         if swarm.group then
             if swarm.group.valid then
                 swarm.group.start_moving()
@@ -156,8 +157,8 @@ function Public.swarm(town_center, radius)
     if town_center == nil then
         return
     end
-    local ffatable = Table.get_table()
-    if ffatable.testing_mode then
+    local this = ScenarioTable.get_table()
+    if this.testing_mode then
         return
     end
     local r = radius or 32
@@ -170,8 +171,8 @@ function Public.swarm(town_center, radius)
         return
     end
     -- skip if we have to many swarms already
-    local count = table_size(ffatable.swarms)
-    local towns = table_size(ffatable.town_centers)
+    local count = table_size(this.swarms)
+    local towns = table_size(this.town_centers)
     if count > 3 * towns then
         return
     end
@@ -255,7 +256,7 @@ function Public.swarm(town_center, radius)
             commands = get_commmands(market, unit_group)
         }
     )
-    table_insert(ffatable.swarms, {group = unit_group, timeout = game.tick + 36000})
+    table_insert(this.swarms, {group = unit_group, timeout = game.tick + 36000})
 end
 
 local function on_unit_group_finished_gathering(event)
@@ -265,8 +266,8 @@ local function on_unit_group_finished_gathering(event)
     local target = entities[1]
     if target ~= nil then
         local force = target.force
-        local ffatable = Table.get_table()
-        local town_centers = ffatable.town_centers
+        local this = ScenarioTable.get_table()
+        local town_centers = this.town_centers
         local town_center = town_centers[force.name]
         -- cancel if relatively new town
         if new_town(town_center) then
@@ -297,13 +298,10 @@ local function on_tick()
 end
 
 local on_init = function()
-    local ffatable = Table.get_table()
-    ffatable.swarms = {}
     BiterHealthBooster.acid_nova(true)
     BiterHealthBooster.check_on_entity_died(true)
 end
 
-local Event = require 'utils.event'
 Event.on_init(on_init)
 Event.add(defines.events.on_tick, on_tick)
 Event.add(defines.events.on_unit_group_finished_gathering, on_unit_group_finished_gathering)

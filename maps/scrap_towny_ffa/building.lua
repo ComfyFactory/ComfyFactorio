@@ -3,7 +3,7 @@ local Public = {}
 local math_floor = math.floor
 local table_insert = table.insert
 local table_size = table.size
-local Table = require 'modules.scrap_towny_ffa.table'
+local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 --[[
 local town_radius = 27
 local connection_radius = 15
@@ -231,12 +231,12 @@ function Public.near_another_town(force_name, position, surface, radius)
     if force_name == nil then
         return false
     end
-    local ffatable = Table.get_table()
+    local this = ScenarioTable.get_table()
     local forces = {}
     -- check for nearby town centers
     local fail = false
-    if table_size(ffatable.town_centers) > 0 then
-        for _, town_center in pairs(ffatable.town_centers) do
+    if table_size(this.town_centers) > 0 then
+        for _, town_center in pairs(this.town_centers) do
             if town_center ~= nil then
                 local market = town_center.market
                 if market ~= nil and market.valid then
@@ -285,8 +285,8 @@ function Public.near_another_town(force_name, position, surface, radius)
 end
 --[[
 local function in_own_town(force, position)
-    local ffatable = Table.get_table()
-    local town_center = ffatable.town_centers[force.name]
+    local this = ScenarioTable.get_table()
+    local town_center = this.town_centers[force.name]
     if town_center ~= nil then
         local market = town_center.market
         if market ~= nil then

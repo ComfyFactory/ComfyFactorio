@@ -1,10 +1,10 @@
 local math_random = math.random
-local Evolution = require 'modules.scrap_towny_ffa.evolution'
-local Town_center = require 'modules.scrap_towny_ffa.town_center'
-local Scrap = require 'modules.scrap_towny_ffa.scrap'
-local unearthing_worm = require 'modules.scrap_towny_ffa.unearthing_worm'
-local unearthing_biters = require 'modules.scrap_towny_ffa.unearthing_biters'
-local tick_tack_trap = require 'modules.scrap_towny_ffa.tick_tack_trap'
+local Evolution = require 'maps.scrap_towny_ffa.evolution'
+local Town_center = require 'maps.scrap_towny_ffa.town_center'
+local Scrap = require 'maps.scrap_towny_ffa.scrap'
+local unearthing_worm = require 'functions.unearthing_worm'
+local unearthing_biters = require 'functions.unearthing_biters'
+local tick_tack_trap = require 'functions.tick_tack_trap'
 
 local function trap(entity)
     -- check if within 32 blocks of market

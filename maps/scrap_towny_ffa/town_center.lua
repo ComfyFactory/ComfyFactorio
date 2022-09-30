@@ -5,12 +5,13 @@ local table_insert = table.insert
 local math_floor = math.floor
 local table_shuffle = table.shuffle_table
 
+local Event = require 'utils.event'
 local Server = require 'utils.server'
-local Table = require 'modules.scrap_towny_ffa.table'
-local Team = require 'modules.scrap_towny_ffa.team'
-local Building = require 'modules.scrap_towny_ffa.building'
-local Colors = require 'modules.scrap_towny_ffa.colors'
-local Enemy = require 'modules.scrap_towny_ffa.enemy'
+local ScenarioTable = require 'maps.scrap_towny_ffa.table'
+local Team = require 'maps.scrap_towny_ffa.team'
+local Building = require 'maps.scrap_towny_ffa.building'
+local Colors = require 'maps.scrap_towny_ffa.colors'
+local Enemy = require 'maps.scrap_towny_ffa.enemy'
 local Color = require 'utils.color_presets'
 
 local town_radius = 27
@@ -135,17 +136,15 @@ local starter_supplies = {
 local function count_nearby_ore(surface, position, ore_name)
     local count = 0
     local r = town_radius + 8
-    for _, e in pairs(
-        surface.find_entities_filtered({area = {{position.x - r, position.y - r}, {position.x + r, position.y + r}}, force = 'neutral', name = ore_name})
-    ) do
+    for _, e in pairs(surface.find_entities_filtered({area = {{position.x - r, position.y - r}, {position.x + r, position.y + r}}, force = 'neutral', name = ore_name})) do
         count = count + e.amount
     end
     return count
 end
 
 local function draw_town_spawn(player_name)
-    local ffatable = Table.get_table()
-    local market = ffatable.town_centers[player_name].market
+    local this = ScenarioTable.get_table()
+    local market = this.town_centers[player_name].market
     local position = market.position
     local surface = market.surface
 
@@ -275,7 +274,7 @@ local function draw_town_spawn(player_name)
 end
 
 local function is_valid_location(force_name, surface, position)
-    local ffatable = Table.get_table()
+    local this = ScenarioTable.get_table()
     if not surface.can_place_entity({name = 'market', position = position}) then
         surface.create_entity(
             {
@@ -303,7 +302,7 @@ local function is_valid_location(force_name, surface, position)
         end
     end
 
-    if ffatable.number_of_towns > 48 then
+    if this.number_of_towns > 48 then
         surface.create_entity(
             {
                 name = 'flying-text',
@@ -331,8 +330,8 @@ local function is_valid_location(force_name, surface, position)
 end
 
 function Public.in_any_town(position)
-    local ffatable = Table.get_table()
-    local town_centers = ffatable.town_centers
+    local this = ScenarioTable.get_table()
+    local town_centers = this.town_centers
     for _, town_center in pairs(town_centers) do
         local market = town_center.market
         if market ~= nil then
@@ -345,14 +344,14 @@ function Public.in_any_town(position)
 end
 
 function Public.update_town_name(force)
-    local ffatable = Table.get_table()
-    local town_center = ffatable.town_centers[force.name]
+    local this = ScenarioTable.get_table()
+    local town_center = this.town_centers[force.name]
     rendering.set_text(town_center.town_caption, town_center.town_name)
 end
 
 function Public.set_market_health(entity, final_damage_amount)
-    local ffatable = Table.get_table()
-    local town_center = ffatable.town_centers[entity.force.name]
+    local this = ScenarioTable.get_table()
+    local town_center = this.town_centers[entity.force.name]
     town_center.health = math_floor(town_center.health - final_damage_amount)
     if town_center.health > town_center.max_health then
         town_center.health = town_center.max_health
@@ -363,8 +362,8 @@ function Public.set_market_health(entity, final_damage_amount)
 end
 
 function Public.update_coin_balance(force)
-    local ffatable = Table.get_table()
-    local town_center = ffatable.town_centers[force.name]
+    local this = ScenarioTable.get_table()
+    local town_center = this.town_centers[force.name]
     rendering.set_text(town_center.coins_text, 'Coins: ' .. town_center.coin_balance)
 end
 
@@ -402,8 +401,8 @@ local function found_town(event)
     entity.destroy()
 
     -- are towns enabled?
-    local ffatable = Table.get_table()
-    if not ffatable.towns_enabled then
+    local this = ScenarioTable.get_table()
+    if not this.towns_enabled then
         player.print('You must wait for more players to join!', {255, 255, 0})
         player.insert({name = 'stone-furnace', count = 1})
         return
@@ -423,13 +422,13 @@ local function found_town(event)
     end
 
     -- is town placement on cooldown?
-    if ffatable.cooldowns_town_placement[player.index] then
-        if game.tick < ffatable.cooldowns_town_placement[player.index] then
+    if this.cooldowns_town_placement[player.index] then
+        if game.tick < this.cooldowns_town_placement[player.index] then
             surface.create_entity(
                 {
                     name = 'flying-text',
                     position = position,
-                    text = 'Town founding is on cooldown for ' .. math.ceil((ffatable.cooldowns_town_placement[player.index] - game.tick) / 3600) .. ' minutes.',
+                    text = 'Town founding is on cooldown for ' .. math.ceil((this.cooldowns_town_placement[player.index] - game.tick) / 3600) .. ' minutes.',
                     color = {r = 0.77, g = 0.0, b = 0.0}
                 }
             )
@@ -446,8 +445,8 @@ local function found_town(event)
 
     local force = Team.add_new_force(force_name)
 
-    ffatable.town_centers[force_name] = {}
-    local town_center = ffatable.town_centers[force_name]
+    this.town_centers[force_name] = {}
+    local town_center = this.town_centers[force_name]
     town_center.town_name = player.name .. "'s Town"
     town_center.market = surface.create_entity({name = 'market', position = position, force = force_name})
     town_center.chunk_position = {math.floor(town_center.market.position.x / 32), math.floor(town_center.market.position.y / 32)}
@@ -514,7 +513,7 @@ local function found_town(event)
         scale_with_zoom = false
     }
 
-    ffatable.number_of_towns = ffatable.number_of_towns + 1
+    this.number_of_towns = this.number_of_towns + 1
 
     Enemy.clear_enemies(position, surface, town_radius * 5)
     draw_town_spawn(force_name)
@@ -561,13 +560,6 @@ local function on_entity_damaged(event)
     end
 end
 
-local on_init = function()
-    local ffatable = Table.get_table()
-    ffatable.town_centers = {}
-    ffatable.number_of_towns = 0
-    ffatable.cooldowns_town_placement = {}
-end
-
 local function rename_town(cmd)
     local player = game.players[cmd.player_index]
     if not player or not player.valid then
@@ -583,8 +575,8 @@ local function rename_town(cmd)
         player.print('Must specify new town name!', Color.fail)
         return
     end
-    local ffatable = Table.get_table()
-    local town_center = ffatable.town_centers[force.name]
+    local this = ScenarioTable.get_table()
+    local town_center = this.town_centers[force.name]
     local old_name = town_center.town_name
     town_center.town_name = name
     Public.update_town_name(force)
@@ -610,8 +602,6 @@ commands.add_command(
     end
 )
 
-local Event = require 'utils.event'
-Event.on_init(on_init)
 Event.add(defines.events.on_built_entity, on_built_entity)
 Event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)
 --Event.add(defines.events.on_robot_repaired_entity, on_robot_repaired_entity)
