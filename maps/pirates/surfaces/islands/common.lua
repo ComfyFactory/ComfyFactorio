@@ -22,6 +22,8 @@ local enum = {
 	HORSESHOE = '7',
 	SWAMP = '8',
 	MAZE = '9',
+	CAVE = '10',
+	CAVE_SOURCE = '11', -- Used as extra layer for cave island
 }
 Public.enum = enum
 

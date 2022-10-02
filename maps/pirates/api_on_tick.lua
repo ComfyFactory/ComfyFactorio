@@ -571,7 +571,7 @@ function Public.place_cached_structures(tickinterval)
 							surface.create_entity{
 								name = 'crude-oil',
 								position = p,
-								amount = Balance.pick_special_pumpjack_oil_amount()
+								amount = Balance.pick_default_oil_amount()
 							}
 						end
 						local e2 = surface.create_entity{name = c.name, position = p, direction = e.direction, force = force_name, amount = c.amount}
@@ -818,7 +818,7 @@ function Public.boat_movement_tick(tickinterval)
 				Structures.Boats.currentdestination_move_boat_natural()
 			end
 		elseif boat.speedticker2 >= Common.boat_steps_at_a_time then
-			if surface_type and surface_type == Surfaces.enum.ISLAND and boat and boat.state and boat.state ==  Boats.enum_state.APPROACHING then
+			if surface_type == Surfaces.enum.ISLAND and boat and boat.state == Boats.enum_state.APPROACHING then
 				Structures.Boats.currentdestination_try_move_boat_steered()
 			end
 			boat.speedticker2 = 0
@@ -1030,7 +1030,10 @@ function Public.loading_update(tickinterval)
 					Progression.progress_to_destination(destination_index)
 					memory.loadingticks = 0
 				else
-					PiratesApiEvents.load_some_map_chunks_random_order(destination_index, fraction) --random order is good for maze world
+					PiratesApiEvents.load_some_map_chunks_random_order(surface, currentdestination, fraction) --random order is good for maze world
+					if currentdestination.subtype == Surfaces.Island.enum.CAVE then
+						PiratesApiEvents.load_some_map_chunks_random_order(currentdestination.dynamic_data.cave_miner.cave_surface, currentdestination, fraction)
+					end
 				end
 			end
 

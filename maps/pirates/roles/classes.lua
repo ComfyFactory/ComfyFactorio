@@ -375,6 +375,7 @@ local function class_on_player_used_capsule(event)
 				end
 			end
 			if multiplier > 0 then
+				-- Idea behind this: A diminishing return for ore granted every time fish is eaten. But slowly "reset" the diminishing return overtime
 				local timescale = 60*30 * Math.max((Balance.game_slowness_scale())^(2/3),0.8)
 				if memory.gourmet_recency_tick then
 					multiplier = multiplier * Math.clamp(0.2, 5, (1/5)^((memory.gourmet_recency_tick - game.tick)/(60*300)))

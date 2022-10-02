@@ -21,6 +21,8 @@ local enum = {
 	RESOURCEFLOW = 'Resource_Flow',
 	RESOURCECOUNT = 'Resource_Count',
 	WORMS = 'Worms',
+	FISH = 'Fish',
+	COMPILATRON = 'Compilatron', -- compilatron is robot that looks like sheep
 }
 Public.enum = enum
 
@@ -31,6 +33,8 @@ Public.quest_icons = {
 	[enum.FIND] = '[img=utility.ghost_time_to_live_modifier_icon]',
 	[enum.RESOURCEFLOW] = '',
 	[enum.RESOURCECOUNT] = '',
+	[enum.FISH] = '[item=raw-fish]',
+	[enum.COMPILATRON] = '[entity=compilatron]',
 }
 
 
@@ -86,10 +90,14 @@ function Public.initialise_random_quest()
 	-- Public.initialise_time_quest()
 end
 
-
-
-
-
+function Public.initialise_random_cave_island_quest()
+	local rng = Math.random(100)
+	if rng <= 50 then
+		Public.initialise_fish_quest()
+	else
+		Public.initialise_compilatron_quest()
+	end
+end
 
 function Public.initialise_time_quest()
 	local destination = Common.current_destination()
@@ -128,7 +136,7 @@ end
 function Public.initialise_nodamage_quest()
 	local destination = Common.current_destination()
 
-	if not destination and destination.dynamic_data and destination.dynamic_data.rocketsilomaxhp then return end
+	if not destination and destination.dynamic_data and destination.dynamic_data.rocketsilomaxhp then return false end
 
 	destination.dynamic_data.quest_type = enum.NODAMAGE
 	destination.dynamic_data.quest_reward = Public.quest_reward()
@@ -142,7 +150,7 @@ end
 function Public.initialise_resourceflow_quest()
 	local destination = Common.current_destination()
 
-	if not destination and destination.dynamic_data and destination.dynamic_data.rocketsilomaxhp then return end
+	if not destination and destination.dynamic_data and destination.dynamic_data.rocketsilomaxhp then return false end
 
 	destination.dynamic_data.quest_type = enum.RESOURCEFLOW
 	destination.dynamic_data.quest_reward = Public.quest_reward()
@@ -192,7 +200,7 @@ end
 function Public.initialise_worms_quest()
 	local destination = Common.current_destination()
 
-	if not (destination.surface_name and game.surfaces[destination.surface_name]) then return end
+	if not (destination.surface_name and game.surfaces[destination.surface_name]) then return false end
 
 	local surface = game.surfaces[destination.surface_name]
 
@@ -231,6 +239,33 @@ function Public.initialise_worms_quest()
 	end
 end
 
+-- Catch amount of fish (currently Cave island exclusive, because it's hard to calculate "quest_progressneeded")
+function Public.initialise_fish_quest()
+	local destination = Common.current_destination()
+
+	if not destination and destination.dynamic_data then return false end
+
+	destination.dynamic_data.quest_type = enum.FISH
+	destination.dynamic_data.quest_reward = Public.quest_reward()
+	destination.dynamic_data.quest_progress = 0
+	destination.dynamic_data.quest_progressneeded = Math.random(300, 450) -- assuming that base caught fish amount is 3
+
+	return true
+end
+
+-- Rescue compilatrons under the heavy rocks (currently Cave island exclusive, because it's hard to calculate "quest_progressneeded")
+function Public.initialise_compilatron_quest()
+	local destination = Common.current_destination()
+
+	if not destination and destination.dynamic_data then return false end
+
+	destination.dynamic_data.quest_type = enum.COMPILATRON
+	destination.dynamic_data.quest_reward = Public.quest_reward()
+	destination.dynamic_data.quest_progress = 0
+	destination.dynamic_data.quest_progressneeded = Math.random(30, 40) -- assuming that chance to find compilatron is 1/20
+
+	return true
+end
 
 
 function Public.try_resolve_quest()

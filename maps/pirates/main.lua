@@ -279,9 +279,9 @@ local function crew_tick()
 			memory.crew_disband_tick_message = nil
 
 			local message1 = {'pirates.crew_disband_tick_message', 30}
-	
+
 			Common.notify_force(memory.force, message1)
-	
+
 			Server.to_discord_embed_raw({'', '[' .. memory.name .. '] ', message1}, true)
 		end
 	end

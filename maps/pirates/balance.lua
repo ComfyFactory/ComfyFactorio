@@ -635,10 +635,10 @@ end
 -- a: scaling
 -- When the formula needs adjustments, I suggest changing scaling variable
 -- Note: 3333 crude oil amount ~= 1% = 0.1/sec
-function Public.pick_special_pumpjack_oil_amount()
+function Public.pick_default_oil_amount()
 	local scaling = 50
 	local amount = scaling * Math.sqrt(1000000 * Common.game_completion_progress())
-	local extra_random_amount = Math.random(Math.ceil(0.2 * amount))
+	local extra_random_amount = Math.random(Math.max(1, Math.ceil(0.2 * amount)))
 	return amount + extra_random_amount
 end
 

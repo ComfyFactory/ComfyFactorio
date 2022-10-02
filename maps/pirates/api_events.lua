@@ -34,6 +34,7 @@ local Loot = require 'maps.pirates.loot'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Classes = require 'maps.pirates.roles.classes'
+local Ores = require 'maps.pirates.ores'
 
 local Server = require 'utils.server'
 -- local Modifers = require 'player_modifiers'
@@ -690,15 +691,9 @@ end
 
 
 
-function Public.load_some_map_chunks_random_order(destination_index, fraction) -- The reason we might want to do this is because of algorithms like the labyrinth code, which make directionally biased patterns if you don't generate chunks in a random order
-	local memory = Memory.get_crew_memory()
-
-	local destination_data = memory.destinations[destination_index]
-	if not destination_data then return end
-	local surface_name = destination_data.surface_name
-	if not surface_name then return end
-	local surface = game.surfaces[surface_name]
+function Public.load_some_map_chunks_random_order(surface, destination_data, fraction) -- The reason we might want to do this is because of algorithms like the labyrinth code, which make directionally biased patterns if you don't generate chunks in a random order
 	if not surface then return end
+	if not destination_data then return end
 
 	local shuffled_chunks
 	if not destination_data.dynamic_data then destination_data.dynamic_data = {} end
@@ -754,15 +749,17 @@ end
 
 local function event_on_player_mined_entity(event)
 	if not event.player_index then return end
+
 	local player = game.players[event.player_index]
 	if not player.valid then return end
+
+	local entity = event.entity
+	if not entity.valid then return end
+
 	local crew_id = Common.get_id_from_force_name(player.force.name)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
-
-	local entity = event.entity
-	if not entity.valid then return end
 
 	if player.surface.name == 'gulag' then
 		event.buffer.clear()
@@ -843,15 +840,31 @@ local function event_on_player_mined_entity(event)
 	elseif entity.type == 'fish' then
         if not event.buffer then return end
 
+		local fish_amount = 0
+		local to_give = {}
 
 		if memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.MASTER_ANGLER then
-			Common.give(player, {{name = 'raw-fish', count = Balance.base_caught_fish_amount + Balance.master_angler_fish_bonus}, {name = 'coin', count = Balance.master_angler_coin_bonus}}, entity.position)
+			fish_amount = Balance.base_caught_fish_amount + Balance.master_angler_fish_bonus
+			to_give[#to_give + 1] = {name = 'raw-fish', count = fish_amount}
+			to_give[#to_give + 1] = {name = 'coin', count = Balance.master_angler_coin_bonus}
+
 		elseif memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.DREDGER then
-			local to_give = {{name = 'raw-fish', count = Balance.base_caught_fish_amount + Balance.dredger_fish_bonus}}
+			fish_amount = Balance.base_caught_fish_amount + Balance.dredger_fish_bonus
+			to_give[#to_give + 1] = {name = 'raw-fish', count = fish_amount}
 			to_give[#to_give + 1] = Loot.dredger_loot()[1]
-			Common.give(player, to_give, entity.position)
+
 		else
-			Common.give(player, {{name = 'raw-fish', count = Balance.base_caught_fish_amount}}, entity.position)
+			fish_amount = Balance.base_caught_fish_amount
+			to_give[#to_give + 1] = {name = 'raw-fish', count = fish_amount}
+		end
+
+		Common.give(player, to_give, entity.position)
+
+		if destination and destination.dynamic_data and destination.dynamic_data.quest_type and (not destination.dynamic_data.quest_complete) then
+			if destination.dynamic_data.quest_type == Quest.enum.FISH then
+				destination.dynamic_data.quest_progress = destination.dynamic_data.quest_progress + fish_amount
+				Quest.try_resolve_quest()
+			end
 		end
 
 		event.buffer.clear()
@@ -903,12 +916,35 @@ local function event_on_player_mined_entity(event)
 		-- local starting = destination.static_params.starting_rock_material
 
 		if available and destination.type == Surfaces.enum.ISLAND then
-
-			if destination and destination.subtype and destination.subtype == Islands.enum.MAZE then
+			if destination.subtype == Islands.enum.MAZE then
 				if Math.random(1, 35) == 1 then
 					tick_tack_trap(memory.enemy_force_name, entity.surface, entity.position)
-					return
 				end
+
+			elseif destination.subtype == Islands.enum.CAVE then
+				Ores.try_give_ore(player, entity.position, entity.name)
+
+				if Math.random(1, 35) == 1 then
+					tick_tack_trap(memory.enemy_force_name, entity.surface, entity.position)
+
+				elseif Math.random(1, 20) == 1 then
+					entity.surface.create_entity({name = 'compilatron', position = entity.position, force = memory.force})
+
+					if destination and destination.dynamic_data and destination.dynamic_data.quest_type and (not destination.dynamic_data.quest_complete) then
+						if destination.dynamic_data.quest_type == Quest.enum.COMPILATRON then
+							destination.dynamic_data.quest_progress = destination.dynamic_data.quest_progress + 1
+							Quest.try_resolve_quest()
+						end
+					end
+
+				elseif Math.random(1, 10) == 1 then
+					if Math.random(1, 4) == 1 then
+						entity.surface.create_entity{name = Common.get_random_worm_type(memory.evolution_factor), position = entity.position, force = memory.enemy_force_name}
+					else
+						entity.surface.create_entity{name = Common.get_random_unit_type(memory.evolution_factor), position = entity.position, force = memory.enemy_force_name}
+					end
+				end
+
 			else
 				local c = event.buffer.get_contents()
 				table.sort(c, function(a,b) return a.name < b.name end)
@@ -1322,6 +1358,7 @@ local function event_on_player_joined_game(event)
 
 	if _DEBUG then
 		game.print('Debug mode on. Use /go to get started, /1 /4 /32 etc to change game speed.')
+		game.print('Current version: ' .. CoreData.version_string)
 	end
 
 	local crew_to_put_back_in = nil
@@ -1632,7 +1669,7 @@ function Public.event_on_chunk_generated(event)
 	local memory = Memory.get_crew_memory()
 	if type == Surfaces.enum.ISLAND and memory.destinations and memory.destinations[chunk_destination_index] then
 		local destination = memory.destinations[chunk_destination_index]
-		scope = Surfaces.get_scope(destination)
+		scope = Surfaces.get_scope(surface_name_decoded)
 		static_params = destination.static_params
 		other_map_generation_data = destination.dynamic_data.other_map_generation_data or {}
 		terraingen_coordinates_offset = static_params.terraingen_coordinates_offset
@@ -1738,11 +1775,11 @@ function Public.event_on_chunk_generated(event)
 			-- recoordinatize:
 			special.position = Utils.psum{special.position, {-1, terraingen_coordinates_offset}}
 
-			if special.name and special.name == 'buried-treasure' then
+			if special.name == 'buried-treasure' then
 				if destination.dynamic_data.buried_treasure and crewid ~= 0 then
 					destination.dynamic_data.buried_treasure[#destination.dynamic_data.buried_treasure + 1] = {treasure = Loot.buried_treasure_loot(), position = special.position}
 				end
-			elseif special.name and special.name == 'chest' then
+			elseif special.name == 'chest' then
 				local e = surface.create_entity{name = 'wooden-chest', position = special.position, force = memory.ancient_friendly_force_name}
 				if e and e.valid then
 					e.minable = false
@@ -1762,6 +1799,17 @@ function Public.event_on_chunk_generated(event)
 					for i = 1, #loot do
 						local l = loot[i]
 						inv.insert(l)
+					end
+				end
+			elseif special.name == 'market' then
+				local e = surface.create_entity{name = 'market', position = special.position, force = memory.ancient_friendly_force_name}
+				if e and e.valid then
+					e.minable = false
+					e.rotatable = false
+					e.destructible = false
+
+					for _, o in pairs(special.offers) do
+						e.add_market_item(o)
 					end
 				end
 			end

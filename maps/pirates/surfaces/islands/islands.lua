@@ -31,6 +31,8 @@ Public[enum.RED_DESERT] = require 'maps.pirates.surfaces.islands.red_desert.red_
 Public[enum.HORSESHOE] = require 'maps.pirates.surfaces.islands.horseshoe.horseshoe'
 Public[enum.SWAMP] = require 'maps.pirates.surfaces.islands.swamp.swamp'
 Public[enum.MAZE] = require 'maps.pirates.surfaces.islands.maze.maze'
+Public[enum.CAVE] = require 'maps.pirates.surfaces.islands.cave.cave'
+Public[enum.CAVE_SOURCE] = require 'maps.pirates.surfaces.islands.cave.cave_source'  -- Used as extra layer for cave island
 Public['IslandsCommon'] = require 'maps.pirates.surfaces.islands.common'
 
 

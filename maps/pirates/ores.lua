@@ -13,7 +13,57 @@ local simplex_noise = require 'utils.simplex_noise'.d2
 
 local Public = {}
 
+-- Gives less and less ore with every call, until given amount slowly converges to 1
+-- For now used just for Cave island to give players ore when mining rocks
+-- NOTE: Also gives some coins
+function Public.try_give_ore(player, realp, source_name)
+	local destination = Common.current_destination()
+	local choices = destination.dynamic_data.hidden_ore_remaining_abstract
 
+	if choices and Utils.length(choices) > 0 then
+		local choices_possible = {}
+		local choices_to_prioitise = {}
+		local total_ore_left = 0
+
+		for k, v in pairs(choices) do
+			if v>0 then choices_possible[k] = v end
+
+			total_ore_left = total_ore_left + v
+
+			if (not destination.dynamic_data.ore_types_spawned[k]) then
+				choices_to_prioitise[#choices_to_prioitise + 1] = k
+			end
+		end
+
+		if Utils.length(choices_possible) > 0 then
+			local choice
+			if Utils.length(choices_to_prioitise) > 0 then
+				choice = choices_to_prioitise[Math.random(Utils.length(choices_to_prioitise))]
+			else
+				choice = Raffle.raffle2(choices_possible)
+			end
+
+			if not choice then return end
+
+			local coin_amount = 4 + Math.random(4)
+			local real_amount = Math.max(Common.minimum_ore_placed_per_tile, Common.ore_abstract_to_real(total_ore_left))
+
+			local given_amount = Math.ceil(real_amount * Math.random_float_in_range(0.004, 0.006))
+
+			if source_name == 'rock-huge' then
+				given_amount = given_amount * 1.5
+				coin_amount = coin_amount * 2
+			end
+
+			local to_give = {}
+			to_give[#to_give+1] = {name = choice, count = Math.ceil(given_amount)}
+			to_give[#to_give+1] = {name = 'coin', count = Math.ceil(coin_amount)}
+			Common.give(player, to_give, realp)
+
+			choices[choice] = Math.max(0, choices[choice] - Common.ore_real_to_abstract(given_amount))
+		end
+	end
+end
 
 function Public.try_ore_spawn(surface, realp, source_name, density_bonus)
 	density_bonus = density_bonus or 0

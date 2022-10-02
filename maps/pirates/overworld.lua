@@ -8,7 +8,7 @@ local Balance = require 'maps.pirates.balance'
 local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
 local Utils = require 'maps.pirates.utils_local'
-local _inspect = require 'utils.inspect'.inspect
+-- local _inspect = require 'utils.inspect'.inspect
 -- local Server = require 'utils.server'
 
 -- local Structures = require 'maps.pirates.structures.structures'
@@ -16,7 +16,7 @@ local Boats = require 'maps.pirates.structures.boats.boats'
 local Surfaces = require 'maps.pirates.surfaces.surfaces'
 local Crowsnest = require 'maps.pirates.surfaces.crowsnest'
 local Dock = require 'maps.pirates.surfaces.dock'
--- local Islands = require 'maps.pirates.surfaces.islands.islands'
+local Islands = require 'maps.pirates.surfaces.islands.islands'
 -- local Sea = require 'maps.pirates.surfaces.sea.sea'
 local Crew = require 'maps.pirates.crew'
 -- local Roles = require 'maps.pirates.roles.roles'
@@ -43,11 +43,12 @@ local MAZE = Surfaces.Island.enum.MAZE
 local RADIOACTIVE = Surfaces.Island.enum.RADIOACTIVE
 local HORSESHOE = Surfaces.Island.enum.HORSESHOE
 local STANDARD_VARIANT = Surfaces.Island.enum.STANDARD_VARIANT
+local CAVE = Surfaces.Island.enum.CAVE
 
-local A = {STANDARD_VARIANT, RED_DESERT, HORSESHOE, WALKWAYS}
-local B = {NIL, NIL, NIL, STANDARD, STANDARD_VARIANT, RED_DESERT, HORSESHOE, WALKWAYS}
-local C = {STANDARD, STANDARD_VARIANT, RED_DESERT, HORSESHOE, WALKWAYS}
-local D = {NIL, NIL, NIL, STANDARD, STANDARD_VARIANT, RED_DESERT, HORSESHOE, WALKWAYS, SWAMP}
+local A = {STANDARD_VARIANT, RED_DESERT, HORSESHOE, WALKWAYS, CAVE}
+local B = {NIL, NIL, NIL, STANDARD, STANDARD_VARIANT, RED_DESERT, HORSESHOE, WALKWAYS, CAVE}
+local C = {STANDARD, STANDARD_VARIANT, RED_DESERT, HORSESHOE, WALKWAYS, CAVE}
+local D = {NIL, NIL, NIL, STANDARD, STANDARD_VARIANT, RED_DESERT, HORSESHOE, WALKWAYS, SWAMP, CAVE}
 
 local destinationScheme = {
 	[0] = {DOCK, FIRST, NIL},
@@ -123,7 +124,8 @@ function Public.generate_destination_type_and_subtype(overworld_position)
 		type2 = Surfaces.enum.ISLAND
 	end
 
-	return {type = type2, subtype = subtype}
+	return {type = Surfaces.enum.ISLAND, subtype = Surfaces.Island.enum.CAVE}
+	--return {type = type2, subtype = subtype}
 end
 
 
@@ -598,6 +600,8 @@ function Public.cleanup_old_destination_data() --we do actually access destinati
 	local memory = Memory.get_crew_memory()
 	for i, destination_data in pairs(memory.destinations) do
 		if destination_data.overworld_position.x < memory.overworldx then
+			Islands[Islands.enum.CAVE].cleanup_cave_surface(memory.destinations[i])
+
 			memory.destinations[i] = nil
 		end
 	end
