@@ -21,6 +21,7 @@ Global.register(
 )
 
 local Public = {events = {remove_surface = Event.generate_event_name('remove_surface')}}
+local remove = table.remove
 
 function Public.remove_offline_players()
     if not this.settings.offline_players_enabled then
@@ -35,6 +36,9 @@ function Public.remove_offline_players()
         return error('An active surface index must be set', 2)
     end
     local surface = game.get_surface(this.settings.active_surface_index)
+    if not surface or not surface.valid then
+        return
+    end
     local player_inv = {}
     local items = {}
     if #this.offline_players > 0 then
@@ -43,7 +47,7 @@ function Public.remove_offline_players()
                 local target = game.get_player(this.offline_players[i].index)
                 if target and target.valid then
                     if target.connected then
-                        this.offline_players[i] = nil
+                        remove(this.offline_players, i)
                     else
                         if this.offline_players[i].tick < tick then
                             local name = this.offline_players[i].name
@@ -57,7 +61,7 @@ function Public.remove_offline_players()
                             end
 
                             if target.get_item_count() == 0 then -- if the player has zero items, don't do anything
-                                this.offline_players[i] = nil
+                                remove(this.offline_players, i)
                                 goto final
                             end
 
@@ -70,7 +74,16 @@ function Public.remove_offline_players()
                                     force = 'neutral'
                                 }
                             )
+                            if not e or not e.valid then
+                                break
+                            end
+
                             local inv = e.get_inventory(defines.inventory.character_main)
+                            if not inv then
+                                break
+                            end
+
+                            ---@diagnostic disable-next-line: assign-type-mismatch
                             e.character_inventory_slots_bonus = #player_inv[1]
                             for ii = 1, 5, 1 do
                                 if player_inv[ii].valid then
@@ -104,7 +117,8 @@ function Public.remove_offline_players()
                                     player_inv[ii].clear()
                                 end
                             end
-                            this.offline_players[i] = nil
+
+                            remove(this.offline_players, i)
                             break
                         end
                         ::final::
@@ -146,7 +160,7 @@ Event.add(
 
         local player = game.get_player(event.player_index)
         local ticker = game.tick
-        if player.online_time >= this.settings.required_online_time then
+        if player and player.online_time >= this.settings.required_online_time then
             if player.character then
                 this.offline_players[#this.offline_players + 1] = {
                     index = event.player_index,
