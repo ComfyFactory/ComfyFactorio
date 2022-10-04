@@ -881,18 +881,22 @@ function Public.reset_crew_and_enemy_force(id)
 	--as prerequisites for uranium ammo and automation 3:
 	crew_force.technologies['speed-module'].researched = true
 	crew_force.technologies['tank'].researched = true
+	crew_force.technologies['automobilism'].researched = true
+	crew_force.technologies['concrete'].researched = true
 	crew_force.recipes['speed-module'].enabled = false
 	crew_force.recipes['tank'].enabled = false
 	crew_force.recipes['cannon-shell'].enabled = false
 	crew_force.recipes['explosive-cannon-shell'].enabled = false
+	crew_force.recipes['concrete'].enabled = false
+	crew_force.recipes['hazard-concrete'].enabled = false
+	crew_force.recipes['refined-concrete'].enabled = false
+	crew_force.recipes['refined-hazard-concrete'].enabled = false
 
 
 
 	--@TRYING this out:
 	crew_force.technologies['coal-liquefaction'].enabled = true
 	crew_force.technologies['coal-liquefaction'].researched = true
-
-	crew_force.technologies['automobilism'].enabled = false
 
 	crew_force.technologies['toolbelt'].enabled = false --trying this. we don't actually want players to carry too many things manually, and in fact in a resource-tight scenario that's problematic
 
@@ -925,7 +929,6 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['logistic-system'].enabled = false
 
 
-	crew_force.technologies['tank'].enabled = false
 	crew_force.technologies['rocketry'].enabled = false
 	crew_force.technologies['artillery'].enabled = false
 	crew_force.technologies['destroyer'].enabled = false
@@ -987,7 +990,6 @@ function Public.reset_crew_and_enemy_force(id)
 
 	crew_force.technologies['steel-axe'].enabled = false
 
-	crew_force.technologies['concrete'].enabled = false
 	crew_force.technologies['nuclear-power'].enabled = false
 
 	crew_force.technologies['effect-transmission'].enabled = true

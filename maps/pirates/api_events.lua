@@ -1343,6 +1343,11 @@ local function event_on_research_finished(event)
 	-- and since we can't build tanks anyway, let's disable this for later:
 	p_force.recipes['uranium-cannon-shell'].enabled = false
 	p_force.recipes['explosive-uranium-cannon-shell'].enabled = false
+
+	p_force.recipes['concrete'].enabled = false
+	p_force.recipes['hazard-concrete'].enabled = false
+	p_force.recipes['refined-concrete'].enabled = false
+	p_force.recipes['refined-hazard-concrete'].enabled = false
 end
 
 local function event_on_player_joined_game(event)
