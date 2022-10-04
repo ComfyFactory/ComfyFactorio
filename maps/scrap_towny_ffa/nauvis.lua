@@ -81,14 +81,14 @@ function Public.initialize()
     local mgs = surface.map_gen_settings
     mgs.default_enable_all_autoplace_controls = true -- don't mess with this!
     mgs.autoplace_controls = {
-        coal = {frequency = 'none', size = 1, richness = 'normal'},
-        stone = {frequency = 'none', size = 1, richness = 'normal'},
-        ['copper-ore'] = {frequency = 'none', size = 1, richness = 'normal'},
-        ['iron-ore'] = {frequency = 'none', size = 1, richness = 'normal'},
-        ['uranium-ore'] = {frequency = 'none', size = 1, richness = 'normal'},
-        ['crude-oil'] = {frequency = 'very-low', size = 'very-small', richness = 'normal'},
-        trees = {frequency = 2, size = 'normal', richness = 'normal'},
-        ['enemy-base'] = {frequency = 'very-high', size = 2, richness = 'normal'}
+        coal = {frequency = 2, size = 0.1, richness = 0.2},
+        stone = {frequency = 2, size = 0.1, richness = 0.2},
+        ['copper-ore'] = {frequency = 5, size = 0.1, richness = 0.2},
+        ['iron-ore'] = {frequency = 5, size = 0.1, richness = 0.2},
+        ['uranium-ore'] = {frequency = 1, size = 0.1, richness = 0.2},
+        ['crude-oil'] = {frequency = 5, size = 0.05, richness = 0.5},
+        trees = {frequency = 2, size = 1, richness = 1},
+        ['enemy-base'] = {frequency = 2, size = 2, richness = 1}
     }
     mgs.autoplace_settings = {
         entity = {

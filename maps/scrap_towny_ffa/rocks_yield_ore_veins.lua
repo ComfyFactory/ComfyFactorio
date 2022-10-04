@@ -42,7 +42,7 @@ local function set_raffle()
 end
 
 local function get_amount()
-    return math_random(100, 1000)
+    return math_random(20, 200)
 end
 
 local function draw_chain(surface, count, ore, ore_entities, ore_positions)
@@ -193,7 +193,7 @@ local function on_player_mined_entity(event)
     if not valid_entities[event.entity.name] then
         return
     end
-    if math_random(1, rocks_yield_ore_veins.chance) ~= 1 then
+    if math_random(1, rocks_yield_ore_veins.chance) ~= 1 and not ScenarioTable.get('testing_mode') then
         return
     end
     ore_vein(event)

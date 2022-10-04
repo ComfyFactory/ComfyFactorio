@@ -828,8 +828,8 @@ local function kill_force(force_name, cause)
                 game.print('>> ' .. town_name .. ' has fallen to ' .. killer_town_center.town_name .. '!', {255, 255, 0})
             end
         else
-            Server.to_discord_embed(town_name .. ' has fallen!')
-            game.print('>> ' .. town_name .. ' has fallen!', {255, 255, 0})
+            Server.to_discord_embed(town_name .. ' has fallen to the biters!')
+            game.print('>> ' .. town_name .. ' has fallen to the biters!', {255, 255, 0})
         end
     end
 end

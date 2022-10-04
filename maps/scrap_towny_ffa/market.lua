@@ -116,7 +116,7 @@ local function set_offers(town_center)
         special_offers[2] = {{}, 'Maximum Backpack upgrades reached!'}
     end
     if town_center.upgrades.mining_prod + 1 <= 10 then
-        special_offers[3] = {{{'coin', (town_center.upgrades.mining_prod + 1) * 1000}}, 'Upgrade Mining Productivity +10%'}
+        special_offers[3] = {{{'coin', (town_center.upgrades.mining_prod + 1) * 1000}}, 'Upgrade Mining Productivity +10% (Drills, Pumps, Scrap)'}
     else
         special_offers[3] = {{}, 'Maximum Productivity upgrades reached!'}
     end

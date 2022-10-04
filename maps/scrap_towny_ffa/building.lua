@@ -269,7 +269,8 @@ function Public.near_another_town(force_name, position, surface, radius)
                 if entity_force_name ~= nil then
                     if entity_force_name ~= force_name then
                         if blacklist_entity_types[e.type] ~= true then
-                            -- log('XDB prevent_entity, e.type:' .. e.type)
+                            -- find another solution to log, since this fills the logfile.
+                            --log('XDB prevent_entity, e.type:' .. e.type)
                             fail = true
                             break
                         end

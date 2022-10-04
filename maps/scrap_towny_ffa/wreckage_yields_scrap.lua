@@ -141,7 +141,8 @@ local function on_player_mined_entity(event)
 
     local scrap = scrap_raffle[math.random(1, size_of_scrap_raffle)]
 
-    local amount_bonus = (game.forces.enemy.evolution_factor * 2) + (game.forces.player.mining_drill_productivity_bonus * 2)
+    local scrap_amount_modifier = 3
+    local amount_bonus = scrap_amount_modifier * (game.forces.enemy.evolution_factor * 2) + (game.forces.player.mining_drill_productivity_bonus * 2)
     local amount
     if entity_loot_amounts[scrap] <= 0 then
         amount = math.abs(entity_loot_amounts[scrap])
