@@ -354,7 +354,7 @@ function Public.maze_camp_loot()
 	end
 end
 
-Public.maze_lab_loot_data_raw = {
+Public.lab_loot_data_raw = {
 	{8, -0.5, 0.5, true, 'automation-science-pack', 5, 20},
 	{8, -0.6, 0.6, true, 'logistic-science-pack', 5, 20},
 	{6, -0.1, 1, true, 'military-science-pack', 5, 18},
@@ -365,8 +365,8 @@ Public.maze_lab_loot_data_raw = {
 	-- {10, 0.5, 1.5, true, 'space-science-pack', 16, 32},
 }
 
-function Public.maze_lab_loot()
-	return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.maze_lab_loot_data_raw), 1, Math.clamp(0, 1, Math.sloped(Common.difficulty_scale(),1/2) * (Common.game_completion_progress())))
+function Public.lab_loot()
+	return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.lab_loot_data_raw), 1, Math.clamp(0, 1, Math.sloped(Common.difficulty_scale(),1/2) * (Common.game_completion_progress())))
 end
 
 Public.maze_treasure_data_raw = {
