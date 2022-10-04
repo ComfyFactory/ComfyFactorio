@@ -245,10 +245,16 @@ local function set_player_to_rogue(player)
         log('player nil or not valid!')
         return
     end
+
     player.force = 'rogue'
     local group = game.permissions.get_group('rogue')
     if group == nil then
         group = game.permissions.create_group('rogue')
+    end
+
+    if not player.object_name == 'LuaPlayer' then
+        log('Given object is not of LuaPlayer!')
+        return
     end
     group.add_player(player)
     player.tag = '[Rogue]'
