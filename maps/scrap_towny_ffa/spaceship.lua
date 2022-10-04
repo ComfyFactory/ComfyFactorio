@@ -2,6 +2,11 @@ local table_insert = table.insert
 
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local Event = require 'utils.event'
+
+local function position_tostring(position)
+    return '[x=' .. position.x .. ',y=' .. position.y .. ']'
+end
+
 local upgrade_functions = {
     -- Upgrade Backpack
     [1] = function(player)
@@ -64,7 +69,7 @@ local upgrade_functions = {
         local position = player.position
         position = surface.find_non_colliding_position('character', position, 0, 0.25)
         if position ~= nil and player ~= nil then
-            this.spawn_point[player.name] = {x = position.x, y = position.y}
+            this.spawn_point[player.index] = {x = position.x, y = position.y}
             surface.play_sound({path = 'utility/scenario_message', position = player.position, volume_modifier = 1})
         else
             surface.create_entity(
@@ -179,8 +184,9 @@ local function refresh_offers(event)
     if market.name ~= 'crash-site-spaceship-market' then
         return
     end
-    local position = market.position
-    local spaceship = this.spaceships[position.x][position.y]
+
+    local key = position_tostring(market.position)
+    local spaceship = this.spaceships[key]
     if not spaceship then
         return
     end
@@ -197,7 +203,8 @@ local function offer_purchased(event)
     if not upgrade_functions[offer_index] then
         return
     end
-    local spaceship = this.spaceships[market.position.x][market.position.y]
+    local key = position_tostring(market.position)
+    local spaceship = this.spaceships[key]
     if not spaceship then
         return
     end
@@ -243,9 +250,10 @@ end
 
 local function kill_spaceship(entity)
     local this = ScenarioTable.get_table()
-    local spaceship = this.spaceships[entity.position.x][entity.position.y]
+    local key = position_tostring(entity.position)
+    local spaceship = this.spaceships[key]
     if spaceship ~= nil then
-        this.spaceships[entity.position.x][entity.position.y] = nil
+        this.spaceships[key] = nil
     end
 end
 

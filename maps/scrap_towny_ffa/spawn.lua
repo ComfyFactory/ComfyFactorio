@@ -172,7 +172,7 @@ function Public.get_new_spawn_point(player, surface)
         end
     end
     -- should never be invalid or blocked
-    this.spawn_point[player.name] = position
+    this.spawn_point[player.index] = position
     --log("player " .. player.name .. " assigned new spawn point at {" .. position.x .. "," .. position.y .. "}")
     return position
 end
@@ -180,7 +180,7 @@ end
 -- gets a new or existing spawn point for the player
 function Public.get_spawn_point(player, surface)
     local this = ScenarioTable.get_table()
-    local position = this.spawn_point[player.name]
+    local position = this.spawn_point[player.index]
     -- if there is a spawn point and less than three strikes
     if position ~= nil and this.strikes[player.name] < 3 then
         -- check that the spawn point is not blocked

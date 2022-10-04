@@ -83,7 +83,7 @@ local upgrade_functions = {
         local force = market.force
         local surface = market.surface
         local spawn_point = force.get_spawn_position(surface)
-        this.spawn_point[player.name] = spawn_point
+        this.spawn_point[player.index] = spawn_point
         surface.play_sound({path = 'utility/scenario_message', position = player.position, volume_modifier = 1})
         return false
     end
