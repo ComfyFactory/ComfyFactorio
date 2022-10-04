@@ -783,7 +783,12 @@ local function kill_force(force_name, cause)
             e.destroy()
         end
     end
-
+    for _, e in pairs(surface.find_entities_filtered({force = force_name, type = "entity-ghost"})) do
+        if e.valid then
+            e.destroy()
+        end
+    end
+    
     game.merge_forces(force_name, 'neutral')
     this.town_centers[force_name] = nil
     this.number_of_towns = this.number_of_towns - 1
