@@ -288,7 +288,7 @@ function Public.periodic_free_resources(tickinterval)
 	if memory.game_lost then return end
 	local destination = Common.current_destination()
 	local boat = memory.boat
-	if not (destination and destination.type and destination.type == Surfaces.enum.ISLAND and boat and boat.surface_name and boat.surface_name == destination.surface_name) then return end
+	if not (destination and destination.type == Surfaces.enum.ISLAND and boat and boat.surface_name == destination.surface_name) then return end
 
 	Common.give_items_to_crew(Balance.periodic_free_resources_per_destination_5_seconds())
 
@@ -297,7 +297,7 @@ function Public.periodic_free_resources(tickinterval)
 		Common.give_items_to_crew{{name = 'sulfuric-acid-barrel', count = count}}
 		local force = memory.force
 		if not (force and force.valid) then return end
-		local message = {'pirates.granted_1', {'pirates.granted_periodic_barrel'}, count .. ' [item=sulfuric-acid-barrel]'}
+		local message = {'pirates.granted_1', {'pirates.granted_periodic_resource'}, count .. ' [item=sulfuric-acid-barrel]'}
 		Common.notify_force_light(force, message)
 	end
 end
