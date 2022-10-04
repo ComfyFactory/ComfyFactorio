@@ -788,7 +788,7 @@ local function kill_force(force_name, cause)
             e.destroy()
         end
     end
-    
+
     game.merge_forces(force_name, 'neutral')
     this.town_centers[force_name] = nil
     this.number_of_towns = this.number_of_towns - 1
