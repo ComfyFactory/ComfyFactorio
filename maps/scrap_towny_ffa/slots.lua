@@ -1,8 +1,8 @@
-local Table = require 'modules.scrap_towny_ffa.table'
+local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 
 -- called whenever a player places an item
 local function on_built_entity(event)
-    local ffatable = Table.get_table()
+    local this = ScenarioTable.get_table()
     local entity = event.created_entity
     if not entity.valid then
         return
@@ -12,7 +12,7 @@ local function on_built_entity(event)
     end
     local player = game.players[event.player_index]
     local force = player.force
-    local town_center = ffatable.town_centers[force.name]
+    local town_center = this.town_centers[force.name]
     local surface = entity.surface
     if force.index == game.forces['player'].index or force.index == game.forces['rogue'].index or town_center == nil then
         surface.create_entity(
@@ -44,10 +44,10 @@ local function on_built_entity(event)
         return
     end
     local key = script.register_on_entity_destroyed(entity)
-    if (ffatable.laser_turrets == nil) then
-        ffatable.laser_turrets = {}
+    if (this.laser_turrets == nil) then
+        this.laser_turrets = {}
     end
-    ffatable.laser_turrets[key] = force.index
+    this.laser_turrets[key] = force.index
     locations = locations + 1
     town_center.upgrades.laser_turret.locations = locations
     surface.create_entity(
@@ -62,7 +62,7 @@ end
 
 -- called whenever a robot places an item
 local function on_robot_built_entity(event)
-    local ffatable = Table.get_table()
+    local this = ScenarioTable.get_table()
     local entity = event.created_entity
     if not entity.valid then
         return
@@ -72,7 +72,7 @@ local function on_robot_built_entity(event)
     end
     local robot = event.robot
     local force = robot.force
-    local town_center = ffatable.town_centers[force.name]
+    local town_center = this.town_centers[force.name]
     local surface = entity.surface
     if force.index == game.forces['player'].index or force.index == game.forces['rogue'].index or town_center == nil then
         surface.create_entity(
@@ -103,10 +103,10 @@ local function on_robot_built_entity(event)
         return
     end
     local key = script.register_on_entity_destroyed(entity)
-    if (ffatable.laser_turrets == nil) then
-        ffatable.laser_turrets = {}
+    if (this.laser_turrets == nil) then
+        this.laser_turrets = {}
     end
-    ffatable.laser_turrets[key] = force.index
+    this.laser_turrets[key] = force.index
     locations = locations + 1
     town_center.upgrades.laser_turret.locations = locations
     surface.create_entity(
@@ -122,15 +122,15 @@ end
 -- called whenever a laser-turret is removed from the map
 local function on_entity_destroyed(event)
     local key = event.registration_number
-    local ffatable = Table.get_table()
-    if (ffatable.laser_turrets == nil) then
+    local this = ScenarioTable.get_table()
+    if (this.laser_turrets == nil) then
         return
     end
-    if (ffatable.laser_turrets[key] ~= nil) then
-        local index = ffatable.laser_turrets[key]
+    if (this.laser_turrets[key] ~= nil) then
+        local index = this.laser_turrets[key]
         local force = game.forces[index]
         if force ~= nil then
-            local town_center = ffatable.town_centers[force.name]
+            local town_center = this.town_centers[force.name]
             if town_center ~= nil then
                 if force.index == game.forces['player'].index or force.index == game.forces['rogue'].index or town_center == nil then
                     return

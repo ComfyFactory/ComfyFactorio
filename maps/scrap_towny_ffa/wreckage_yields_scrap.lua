@@ -1,7 +1,7 @@
 --wreckage yields scrap
 local table_insert = table.insert
 
-local Scrap = require 'modules.scrap_towny_ffa.scrap'
+local Scrap = require 'maps.scrap_towny_ffa.scrap'
 
 -- loot chances and amounts for scrap entities
 

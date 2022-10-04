@@ -3,7 +3,7 @@ local math_floor = math.floor
 local table_insert = table.insert
 local table_shuffle = table.shuffle_table
 
-local Table = require 'modules.scrap_towny_ffa.table'
+local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 
 local valid_entities = {
     ['rock-big'] = true,
@@ -31,14 +31,14 @@ local function get_chances()
 end
 
 local function set_raffle()
-    local ffatable = Table.get_table()
-    ffatable.rocks_yield_ore_veins.raffle = {}
+    local this = ScenarioTable.get_table()
+    this.rocks_yield_ore_veins.raffle = {}
     for _, t in pairs(get_chances()) do
         for _ = 1, t[2], 1 do
-            table_insert(ffatable.rocks_yield_ore_veins.raffle, t[1])
+            table_insert(this.rocks_yield_ore_veins.raffle, t[1])
         end
     end
-    ffatable.rocks_yield_ore_veins.mixed_ores = {'iron-ore', 'copper-ore', 'stone', 'coal'}
+    this.rocks_yield_ore_veins.mixed_ores = {'iron-ore', 'copper-ore', 'stone', 'coal'}
 end
 
 local function get_amount()
@@ -46,7 +46,7 @@ local function get_amount()
 end
 
 local function draw_chain(surface, count, ore, ore_entities, ore_positions)
-    local ffatable = Table.get_table()
+    local this = ScenarioTable.get_table()
     local vectors = {{0, -0.75}, {-0.75, 0}, {0.75, 0}, {0, 0.75}}
     local r = math_random(1, #ore_entities)
     local position = {x = ore_entities[r].ore.position.x, y = ore_entities[r].ore.position.y}
@@ -61,7 +61,7 @@ local function draw_chain(surface, count, ore, ore_entities, ore_positions)
 
             local name = ore
             if ore == 'mixed' then
-                name = ffatable.rocks_yield_ore_veins.mixed_ores[math_random(1, #ffatable.rocks_yield_ore_veins.mixed_ores)]
+                name = this.rocks_yield_ore_veins.mixed_ores[math_random(1, #this.rocks_yield_ore_veins.mixed_ores)]
             end
             if surface.can_place_entity({name = name, position = p, force = 'neutral'}) then
                 if math_random(1, 2) == 1 then
@@ -95,10 +95,10 @@ local function draw_chain(surface, count, ore, ore_entities, ore_positions)
 end
 
 local function ore_vein(event)
-    local ffatable = Table.get_table()
+    local this = ScenarioTable.get_table()
     local surface = event.entity.surface
     local size = size_raffle[math_random(1, #size_raffle)]
-    local ore = ffatable.rocks_yield_ore_veins.raffle[math_random(1, #ffatable.rocks_yield_ore_veins.raffle)]
+    local ore = this.rocks_yield_ore_veins.raffle[math_random(1, #this.rocks_yield_ore_veins.raffle)]
     local icon
     if game.entity_prototypes[ore] then
         icon = '[img=entity/' .. ore .. ']'
@@ -141,7 +141,7 @@ local function ore_vein(event)
         ore_entities = {
             {
                 ore = {
-                    name = ffatable.rocks_yield_ore_veins.mixed_ores[math_random(1, #ffatable.rocks_yield_ore_veins.mixed_ores)],
+                    name = this.rocks_yield_ore_veins.mixed_ores[math_random(1, #this.rocks_yield_ore_veins.mixed_ores)],
                     position = {x = position.x, y = position.y}
                 },
                 amount = get_amount()
@@ -178,7 +178,7 @@ local function ore_vein(event)
 end
 
 local function on_player_mined_entity(event)
-    local rocks_yield_ore_veins = Table.get('rocks_yield_ore_veins')
+    local rocks_yield_ore_veins = ScenarioTable.get('rocks_yield_ore_veins')
     if not rocks_yield_ore_veins then
         return
     end
@@ -200,11 +200,11 @@ local function on_player_mined_entity(event)
 end
 
 local function on_init()
-    local ffatable = Table.get_table()
-    ffatable.rocks_yield_ore_veins = {}
-    ffatable.rocks_yield_ore_veins.raffle = {}
-    ffatable.rocks_yield_ore_veins.mixed_ores = {}
-    ffatable.rocks_yield_ore_veins.chance = 10
+    local this = ScenarioTable.get_table()
+    this.rocks_yield_ore_veins = {}
+    this.rocks_yield_ore_veins.raffle = {}
+    this.rocks_yield_ore_veins.mixed_ores = {}
+    this.rocks_yield_ore_veins.chance = 10
     set_raffle()
 end
 

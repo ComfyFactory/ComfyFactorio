@@ -1,7 +1,7 @@
 -- spawners release biters on death -- by mewmew
 local math_random = math.random
 
-local Evolution = require 'modules.scrap_towny_ffa.evolution'
+local Evolution = require 'maps.scrap_towny_ffa.evolution'
 
 local biter_building_inhabitants = {
     [1] = {{'small-biter', 8, 16}},

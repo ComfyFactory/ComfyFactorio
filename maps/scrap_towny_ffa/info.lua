@@ -1,6 +1,7 @@
 local Public = {}
 
-local info = [[You wake up on this god-forsaken planet with a bunch of other desolate fools. Who will survive?
+local info =
+    [[You wake up on this god-forsaken planet with a bunch of other desolate fools. Who will survive?
 
 You can either
  - Found a new town or join an existing one
@@ -75,7 +76,6 @@ function Public.show(player, info_type)
     label.style.font = 'heading-1'
     label.style.font_color = {r = 0.85, g = 0.85, b = 0.85}
     label.style.right_padding = 8
-
 
     frame.add {type = 'line'}
     local cap = info

@@ -126,7 +126,7 @@ local function spawn_worm(surface, position, evolution_index)
     surface.create_entity({name = worm_name, position = position})
 end
 
-local function unearthing_worm(surface, position)
+local function unearthing_worm(surface, position, relative_evolution)
     if not surface then
         return
     end
@@ -144,6 +144,10 @@ local function unearthing_worm(surface, position)
     end
 
     local evolution_index = math.ceil(game.forces.enemy.evolution_factor * 10)
+
+    if relative_evolution then
+        evolution_index = math.ceil(relative_evolution * 10)
+    end
     if evolution_index < 1 then
         evolution_index = 1
     end

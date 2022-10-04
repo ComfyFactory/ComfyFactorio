@@ -2,7 +2,7 @@ local Public = {}
 local math_floor = math.floor
 local math_log10 = math.log10
 
-local Table = require 'modules.scrap_towny_ffa.table'
+local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 
 local biters = {
     [1] = 'small-biter',
@@ -358,7 +358,7 @@ local function get_unit_size(evolution)
     if (evolution >= 0.90 and evolution < 1) then
         local r = math.random()
         if r < 0.5 then
-           return 3
+            return 3
         end
         return 4
     end
@@ -381,20 +381,26 @@ local function calculate_relative_evolution(evolution_factor, distance_factor)
     -- distance factor will be from 0.0 to 1.0 but drop off dramatically towards zero
     local log_distance_factor = math_log10(distance_factor * 10 + 1)
     local evo = log_distance_factor * evolution_factor
-    if evo < 0.0 then evo = 0.0 end
-    if evo > 1.0 then evo = 1.0 end
+    if evo < 0.0 then
+        evo = 0.0
+    end
+    if evo > 1.0 then
+        evo = 1.0
+    end
     return evo
 end
 
 local function get_relative_biter_evolution(position)
-    local ffatable = Table.get_table()
+    local this = ScenarioTable.get_table()
     local relative_evolution = 0.0
     local max_d2 = max_evolution_distance * max_evolution_distance
     -- for all of the teams
-    local teams = ffatable.town_centers
+    local teams = this.town_centers
     for _, town_center in pairs(teams) do
         local market = town_center.market
-        if market == nil or not market.valid then return relative_evolution end
+        if market == nil or not market.valid then
+            return relative_evolution
+        end
         -- calculate the distance squared
         local d2 = distance_squared(position, market.position)
         if d2 < max_d2 then
@@ -416,14 +422,16 @@ local function get_relative_biter_evolution(position)
 end
 
 local function get_relative_spitter_evolution(position)
-    local ffatable = Table.get_table()
+    local this = ScenarioTable.get_table()
     local relative_evolution = 0.0
     local max_d2 = max_evolution_distance * max_evolution_distance
     -- for all of the teams
-    local teams = ffatable.town_centers
+    local teams = this.town_centers
     for _, town_center in pairs(teams) do
         local market = town_center.market
-        if market == nil or not market.valid then return relative_evolution end
+        if market == nil or not market.valid then
+            return relative_evolution
+        end
         -- calculate the distance squared
         local d2 = distance_squared(position, market.position)
         if d2 < max_d2 then
@@ -445,14 +453,16 @@ local function get_relative_spitter_evolution(position)
 end
 
 local function get_relative_worm_evolution(position)
-    local ffatable = Table.get_table()
+    local this = ScenarioTable.get_table()
     local relative_evolution = 0.0
     local max_d2 = max_evolution_distance * max_evolution_distance
     -- for all of the teams
-    local teams = ffatable.town_centers
+    local teams = this.town_centers
     for _, town_center in pairs(teams) do
         local market = town_center.market
-        if market == nil or not market.valid then return relative_evolution end
+        if market == nil or not market.valid then
+            return relative_evolution
+        end
         -- calculate the distance squared
         local d2 = distance_squared(position, market.position)
         if d2 < max_d2 then
@@ -636,8 +646,8 @@ local function update_evolution(force_name, technology)
     if technology == nil then
         return
     end
-    local ffatable = Table.get_table()
-    local town_center = ffatable.town_centers[force_name]
+    local this = ScenarioTable.get_table()
+    local town_center = this.town_centers[force_name]
     -- town_center is a reference to a global table
     if not town_center then
         return
