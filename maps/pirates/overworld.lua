@@ -45,9 +45,9 @@ local HORSESHOE = Surfaces.Island.enum.HORSESHOE
 local STANDARD_VARIANT = Surfaces.Island.enum.STANDARD_VARIANT
 local CAVE = Surfaces.Island.enum.CAVE
 
-local A = {STANDARD_VARIANT, RED_DESERT, HORSESHOE, WALKWAYS, CAVE}
+local A = {STANDARD_VARIANT, RED_DESERT, HORSESHOE, WALKWAYS}
 local B = {NIL, NIL, NIL, STANDARD, STANDARD_VARIANT, RED_DESERT, HORSESHOE, WALKWAYS, CAVE}
-local C = {STANDARD, STANDARD_VARIANT, RED_DESERT, HORSESHOE, WALKWAYS, CAVE}
+local C = {STANDARD, STANDARD_VARIANT, RED_DESERT, HORSESHOE, WALKWAYS}
 local D = {NIL, NIL, NIL, STANDARD, STANDARD_VARIANT, RED_DESERT, HORSESHOE, WALKWAYS, SWAMP, CAVE}
 
 local destinationScheme = {
@@ -124,8 +124,7 @@ function Public.generate_destination_type_and_subtype(overworld_position)
 		type2 = Surfaces.enum.ISLAND
 	end
 
-	return {type = Surfaces.enum.ISLAND, subtype = Surfaces.Island.enum.CAVE}
-	--return {type = type2, subtype = subtype}
+	return {type = type2, subtype = subtype}
 end
 
 

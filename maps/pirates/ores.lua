@@ -115,6 +115,8 @@ function Public.try_ore_spawn(surface, realp, source_name, density_bonus)
 					ret = true
 				end
 			else
+				if not choice then return false end
+
 				local real_amount = Math.max(Common.minimum_ore_placed_per_tile, Common.ore_abstract_to_real(choices[choice]))
 
 				local density = (density_bonus + 17 + 4 * Math.random()) -- not too big, and not too much variation; it makes players have to stay longer

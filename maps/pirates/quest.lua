@@ -147,26 +147,27 @@ function Public.initialise_nodamage_quest()
 end
 
 
-function Public.initialise_resourceflow_quest()
-	local destination = Common.current_destination()
+-- @UNUSED
+-- function Public.initialise_resourceflow_quest()
+-- 	local destination = Common.current_destination()
 
-	if not destination and destination.dynamic_data and destination.dynamic_data.rocketsilomaxhp then return false end
+-- 	if not destination and destination.dynamic_data and destination.dynamic_data.rocketsilomaxhp then return false end
 
-	destination.dynamic_data.quest_type = enum.RESOURCEFLOW
-	destination.dynamic_data.quest_reward = Public.quest_reward()
-	destination.dynamic_data.quest_progress = 0
+-- 	destination.dynamic_data.quest_type = enum.RESOURCEFLOW
+-- 	destination.dynamic_data.quest_reward = Public.quest_reward()
+-- 	destination.dynamic_data.quest_progress = 0
 
-	local generated_flow_quest = Public.generate_flow_quest()
-	if not generated_flow_quest then return false end
+-- 	local generated_flow_quest = Public.generate_flow_quest()
+-- 	if not generated_flow_quest then return false end
 
-	destination.dynamic_data.quest_params = {item = generated_flow_quest.item}
+-- 	destination.dynamic_data.quest_params = {item = generated_flow_quest.item}
 
-	local progressneeded_before_rounding = generated_flow_quest.base_rate * Balance.resource_quest_multiplier()
+-- 	local progressneeded_before_rounding = generated_flow_quest.base_rate * Balance.resource_quest_multiplier()
 
-	destination.dynamic_data.quest_progressneeded = Math.ceil(progressneeded_before_rounding/10) * 10
+-- 	destination.dynamic_data.quest_progressneeded = Math.ceil(progressneeded_before_rounding/10) * 10
 
-	return true
-end
+-- 	return true
+-- end
 
 
 function Public.initialise_resourcecount_quest()
