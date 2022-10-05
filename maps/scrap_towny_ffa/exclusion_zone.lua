@@ -1,17 +1,9 @@
 local Public = {}
 
-local math_random = math.random
 local table_insert = table.insert
-local math_floor = math.floor
-local atan2 = math.atan2
 
 local Event = require 'utils.event'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
-local Team = require 'maps.scrap_towny_ffa.team'
-local Building = require 'maps.scrap_towny_ffa.building'
-local Colors = require 'maps.scrap_towny_ffa.colors'
-local Enemy = require 'maps.scrap_towny_ffa.enemy'
-local Color = require 'utils.color_presets'
 local CommonFunctions = require 'utils.common'
 
 local zone_size = 80
