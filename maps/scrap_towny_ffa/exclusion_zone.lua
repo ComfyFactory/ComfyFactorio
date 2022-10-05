@@ -6,6 +6,7 @@ local CommonFunctions = require 'utils.common'
 
 local zone_size = 80
 local beam_type = 'electric-beam-no-sound'
+local lifetime_ticks = 5 * 60 -- TODO 4 * 60 * 60 * 60
 
 local function draw_borders(zone)
     local surface = zone.surface
@@ -36,7 +37,7 @@ function Public.add_zone(surface, force, center)
 
     local box = {left_top = {x = center.x - zone_size / 2, y = center.y - zone_size / 2},
                 right_bottom = {x = center.x + zone_size / 2, y = center.y + zone_size / 2}}
-    local zone = {surface = surface, force = force, center = center, box = box}
+    local zone = {surface = surface, force = force, center = center, box = box, lifetime_end = game.tick + lifetime_ticks}
     this.exclusion_zones[force.name] = zone
 
     draw_borders(zone)
@@ -46,11 +47,20 @@ function Public.remove_zone(zone)
     local this = ScenarioTable.get_table()
 
     remove_drawn_borders(zone)
-    this.town_centers[zone.force.name] = nil
+    this.exclusion_zones[zone.force.name] = nil
 end
 
 local function vector_norm(vector)
     return math.sqrt(vector.x ^ 2 + vector.y ^ 2)
+end
+
+local function update_zone_lifecycle()
+    local this = ScenarioTable.get_table()
+    for _, zone in pairs(this.exclusion_zones) do
+        if game.tick > zone.lifetime_end then
+            Public.remove_zone(zone)
+        end
+    end
 end
 
 local function on_player_changed_position(event)
@@ -86,5 +96,6 @@ local function on_player_changed_position(event)
 end
 
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)
+Event.on_nth_tick(60, update_zone_lifecycle)
 
 return Public
