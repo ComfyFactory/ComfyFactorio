@@ -223,6 +223,9 @@ function Public.give_player_items(player)
     end
     player.clear_items_inside()
     player.insert({name = 'raw-fish', count = 3})
+    if player.force.name == 'rogue' or player.force.name == 'player' then
+        player.insert {name = 'stone-furnace', count = '1'}
+    end
 end
 
 function Public.set_player_to_outlander(player)

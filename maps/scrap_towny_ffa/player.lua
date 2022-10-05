@@ -34,8 +34,6 @@ function Public.initialize(player)
     player.teleport({0, 0}, game.surfaces['limbo'])
     Team.set_player_to_outlander(player)
     Team.give_player_items(player)
-    player.insert {name = 'coin', count = '100'}
-    player.insert {name = 'stone-furnace', count = '1'}
     Team.give_key(player.index)
     local this = ScenarioTable.get()
     if (this.testing_mode == true) then
