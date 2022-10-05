@@ -37,6 +37,7 @@ function Public.reset_table()
     this.mining_entity = {}
     this.mining_target = {}
     this.spaceships = {}
+    this.exclusion_zones = {}
 end
 
 function Public.get_table()

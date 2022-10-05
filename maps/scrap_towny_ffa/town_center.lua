@@ -13,6 +13,7 @@ local Building = require 'maps.scrap_towny_ffa.building'
 local Colors = require 'maps.scrap_towny_ffa.colors'
 local Enemy = require 'maps.scrap_towny_ffa.enemy'
 local Color = require 'utils.color_presets'
+local ExclusionZone = require 'maps.scrap_towny_ffa.exclusion_zone'
 
 local town_radius = 27
 local radius_between_towns = 64
@@ -180,6 +181,8 @@ local function draw_town_spawn(player_name)
             surface.create_entity({name = 'stone-wall', position = p, force = player_name})
         end
     end
+
+    ExclusionZone.add_zone(surface, force, position)
 
     -- ore patches
     local ores = {'iron-ore', 'copper-ore', 'stone', 'coal'}
