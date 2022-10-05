@@ -368,6 +368,18 @@ function Public.update_coin_balance(force)
     rendering.set_text(town_center.coins_text, 'Coins: ' .. town_center.coin_balance)
 end
 
+function Public.update_protection_display(force)
+    local this = ScenarioTable.get_table()
+    local town_center = this.town_centers[force.name]
+    local zone = this.exclusion_zones[force.name]
+    if zone then
+        info = string.format("%.0f", (zone.lifetime_end - game.tick) / 60 / 60) .. ' minutes'
+    else
+        info = "Expired"
+    end
+    rendering.set_text(town_center.zone_text, 'Protection: ' .. info)
+end
+
 local function found_town(event)
     local entity = event.created_entity
     -- is a valid entity placed?
@@ -514,11 +526,25 @@ local function found_town(event)
         scale_with_zoom = false
     }
 
+    town_center.zone_text = rendering.draw_text {
+        text = 'Town protection: (..)',
+        surface = surface,
+        forces = {force_name},
+        target = town_center.market,
+        target_offset = {0, -2.25},
+        color = {200, 200, 200},
+        scale = 1.00,
+        font = 'default-game',
+        alignment = 'center',
+        scale_with_zoom = false
+    }
+
     this.number_of_towns = this.number_of_towns + 1
 
     Enemy.clear_enemies(position, surface, town_radius * 5)
     draw_town_spawn(force_name)
-    ExclusionZone.add_zone(surface, force, position)
+    ExclusionZone.add_zone(surface, force, position, Public.update_protection_display)
+    Public.update_protection_display(force)
 
     -- set the spawn point
     local pos = {x = town_center.market.position.x, y = town_center.market.position.y + 4}

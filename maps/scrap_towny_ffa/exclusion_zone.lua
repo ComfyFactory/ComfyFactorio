@@ -6,7 +6,7 @@ local CommonFunctions = require 'utils.common'
 
 local zone_size = 80
 local beam_type = 'electric-beam-no-sound'
-local lifetime_ticks = 5 * 60 -- TODO 4 * 60 * 60 * 60
+local lifetime_ticks = 4 * 60 * 60 * 60
 
 local function draw_borders(zone)
     local surface = zone.surface
@@ -32,12 +32,13 @@ local function remove_drawn_borders(zone)
     end
 end
 
-function Public.add_zone(surface, force, center)
+function Public.add_zone(surface, force, center, lifetime_update_callback)
     local this = ScenarioTable.get_table()
 
     local box = {left_top = {x = center.x - zone_size / 2, y = center.y - zone_size / 2},
                 right_bottom = {x = center.x + zone_size / 2, y = center.y + zone_size / 2}}
-    local zone = {surface = surface, force = force, center = center, box = box, lifetime_end = game.tick + lifetime_ticks}
+    local zone = {surface = surface, force = force, center = center, box = box,
+                  lifetime_end = game.tick + lifetime_ticks, lifetime_update_callback = lifetime_update_callback}
     this.exclusion_zones[force.name] = zone
 
     draw_borders(zone)
@@ -54,12 +55,13 @@ local function vector_norm(vector)
     return math.sqrt(vector.x ^ 2 + vector.y ^ 2)
 end
 
-local function update_zone_lifecycle()
+local function update_zone_lifetime()
     local this = ScenarioTable.get_table()
     for _, zone in pairs(this.exclusion_zones) do
         if game.tick > zone.lifetime_end then
             Public.remove_zone(zone)
         end
+        zone.lifetime_update_callback(zone.force)
     end
 end
 
@@ -78,13 +80,13 @@ local function on_player_changed_position(event)
             center_diff.y = center_diff.y / vector_norm(center_diff)
             player.teleport({ player.position.x + center_diff.x, player.position.y + center_diff.y}, surface)
 
-            -- Kick players out of vehicles if they try to drive in
-            if player.character.driving then
-                player.character.driving = false
-            end
-
-            -- Damage player
             if player.character then
+                -- Kick players out of vehicles if they try to drive in
+                if player.character.driving then
+                    player.character.driving = false
+                end
+
+                -- Damage player
                 player.character.health = player.character.health - 25
                 player.character.surface.create_entity({name = 'water-splash', position = player.position})
                 if player.character.health <= 0 then
@@ -96,6 +98,6 @@ local function on_player_changed_position(event)
 end
 
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)
-Event.on_nth_tick(60, update_zone_lifecycle)
+Event.on_nth_tick(60, update_zone_lifetime)
 
 return Public
