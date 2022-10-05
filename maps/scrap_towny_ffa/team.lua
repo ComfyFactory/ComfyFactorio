@@ -617,16 +617,16 @@ local function disable_deconstruct(permission_group)
     end
 end
 
-local function enable_artillery(force, permission_group)
-    permission_group.set_allows_action(defines.input_action.use_artillery_remote, true)
-    force.technologies['artillery'].enabled = true
-    force.technologies['artillery-shell-range-1'].enabled = true
-    force.technologies['artillery-shell-speed-1'].enabled = true
-    force.recipes['artillery-turret'].enabled = false
-    force.recipes['artillery-wagon'].enabled = false
-    force.recipes['artillery-targeting-remote'].enabled = false
-    force.recipes['artillery-shell'].enabled = false
-end
+--local function enable_artillery(force, permission_group)
+--    permission_group.set_allows_action(defines.input_action.use_artillery_remote, true)
+--    force.technologies['artillery'].enabled = true
+--    force.technologies['artillery-shell-range-1'].enabled = true
+--    force.technologies['artillery-shell-speed-1'].enabled = true
+--    force.recipes['artillery-turret'].enabled = false
+--    force.recipes['artillery-wagon'].enabled = false
+--    force.recipes['artillery-targeting-remote'].enabled = false
+--    force.recipes['artillery-shell'].enabled = false
+--end
 
 local function disable_artillery(force, permission_group)
     permission_group.set_allows_action(defines.input_action.use_artillery_remote, false)
@@ -692,7 +692,7 @@ function Public.add_new_force(force_name)
     reset_permissions(permission_group)
     enable_blueprints(permission_group)
     enable_deconstruct(permission_group)
-    enable_artillery(force, permission_group)
+    disable_artillery(force, permission_group)
     disable_spidertron(force, permission_group)
     disable_rockets(force)
     disable_nukes(force)
