@@ -32,13 +32,13 @@ local function remove_drawn_borders(zone)
     end
 end
 
-function Public.add_zone(surface, force, center, lifetime_update_callback)
+function Public.add_zone(surface, force, center)
     local this = ScenarioTable.get_table()
 
     local box = {left_top = {x = center.x - zone_size / 2, y = center.y - zone_size / 2},
                 right_bottom = {x = center.x + zone_size / 2, y = center.y + zone_size / 2}}
     local zone = {surface = surface, force = force, center = center, box = box,
-                  lifetime_end = game.tick + lifetime_ticks, lifetime_update_callback = lifetime_update_callback}
+                  lifetime_end = game.tick + lifetime_ticks}
     this.exclusion_zones[force.name] = zone
 
     draw_borders(zone)
@@ -61,7 +61,6 @@ local function update_zone_lifetime()
         if game.tick > zone.lifetime_end then
             Public.remove_zone(zone)
         end
-        zone.lifetime_update_callback(zone.force)
     end
 end
 
