@@ -4,7 +4,7 @@ local Event = require 'utils.event'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local CommonFunctions = require 'utils.common'
 
-local zone_size = 80
+local zone_size = 100
 local beam_type = 'electric-beam-no-sound'
 local lifetime_ticks = 4 * 60 * 60 * 60
 
