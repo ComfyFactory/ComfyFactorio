@@ -293,9 +293,7 @@ local function on_chunk_generated(event)
             for x = 0, 31, 1 do
                 for y = 0, 31, 1 do
                     position = {x = left_top_x + x, y = left_top_y + y}
-                    if not surface.get_tile(position).collides_with('water-tile') then
-                        surface.set_tiles({{name = 'water-shallow', position = position}}, true)
-                    end
+                    surface.set_tiles({{name = 'water-shallow', position = position}}, true)
                 end
             end
             return

@@ -108,10 +108,10 @@ end
 
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
-    Public.settings(player)
     Info.toggle_button(player)
     Team.set_player_color(player)
     if player.online_time == 0 then
+        Public.settings(player)
         Public.increment()
         Public.initialize(player)
         Public.spawn(player)

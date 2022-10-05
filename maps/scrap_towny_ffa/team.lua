@@ -246,6 +246,7 @@ local function set_player_to_rogue(player)
         return
     end
 
+    player.print("You have broken the peace with the biters. They will seek revenge!")
     player.force = 'rogue'
     local group = game.permissions.get_group('rogue')
     if group == nil then
@@ -786,6 +787,11 @@ local function kill_force(force_name, cause)
     local r = 27
     for _, e in pairs(surface.find_entities_filtered({area = {{position.x - r, position.y - r}, {position.x + r, position.y + r}}, force = 'neutral', type = 'resource'})) do
         if e.name ~= 'crude-oil' then
+            e.destroy()
+        end
+    end
+    for _, e in pairs(surface.find_entities_filtered({force = force_name, type = "entity-ghost"})) do
+        if e.valid then
             e.destroy()
         end
     end
