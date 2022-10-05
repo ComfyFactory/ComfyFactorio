@@ -245,6 +245,7 @@ local function set_player_to_rogue(player)
         log('player nil or not valid!')
         return
     end
+    player.print("You have broken the peace with the biters. They will seek revenge!")
     player.force = 'rogue'
     local group = game.permissions.get_group('rogue')
     if group == nil then
