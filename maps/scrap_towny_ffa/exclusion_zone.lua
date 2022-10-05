@@ -1,12 +1,11 @@
 local Public = {}
 
-local table_insert = table.insert
-
 local Event = require 'utils.event'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local CommonFunctions = require 'utils.common'
 
 local zone_size = 80
+local beam_type = 'electric-beam-no-sound'
 
 local function draw_borders(zone)
     local surface = zone.surface
@@ -14,7 +13,6 @@ local function draw_borders(zone)
     local left = zone.box.left_top.x
     local top = zone.box.left_top.y
     local bottom = zone.box.right_bottom.y
-    local beam_type = 'electric-beam-no-sound'
     surface.create_entity({name = beam_type, position = {right, top},
                            source = {right, top}, target = {right, bottom + 1}})    -- intentional offset here to correct visual appearance
     surface.create_entity({name = beam_type, position = {right, bottom},
@@ -25,16 +23,30 @@ local function draw_borders(zone)
                            source = {left, top}, target = {right, top}})
 end
 
+local function remove_drawn_borders(zone)
+    for _, e in pairs(zone.surface.find_entities_filtered({area = zone.box, name = beam_type})) do
+        if e.valid then
+            e.destroy()
+        end
+    end
+end
+
 function Public.add_zone(surface, force, center)
     local this = ScenarioTable.get_table()
 
-    -- Init zone geometry
     local box = {left_top = {x = center.x - zone_size / 2, y = center.y - zone_size / 2},
                 right_bottom = {x = center.x + zone_size / 2, y = center.y + zone_size / 2}}
     local zone = {surface = surface, force = force, center = center, box = box}
+    this.exclusion_zones[force.name] = zone
 
-    table_insert(this.exclusion_zones, zone)
     draw_borders(zone)
+end
+
+function Public.remove_zone(zone)
+    local this = ScenarioTable.get_table()
+
+    remove_drawn_borders(zone)
+    this.town_centers[zone.force.name] = nil
 end
 
 local function vector_norm(vector)
@@ -42,7 +54,6 @@ local function vector_norm(vector)
 end
 
 local function on_player_changed_position(event)
-    --TODO: fast 1st level check: count_entities(beam) around zone_size?
     local player = game.get_player(event.player_index)
     local surface = player.surface
     if not surface or not surface.valid then
@@ -57,6 +68,12 @@ local function on_player_changed_position(event)
             center_diff.y = center_diff.y / vector_norm(center_diff)
             player.teleport({ player.position.x + center_diff.x, player.position.y + center_diff.y}, surface)
 
+            -- Kick players out of vehicles if they try to drive in
+            if player.character.driving then
+                player.character.driving = false
+            end
+
+            -- Damage player
             if player.character then
                 player.character.health = player.character.health - 25
                 player.character.surface.create_entity({name = 'water-splash', position = player.position})

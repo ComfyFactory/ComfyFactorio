@@ -182,8 +182,6 @@ local function draw_town_spawn(player_name)
         end
     end
 
-    ExclusionZone.add_zone(surface, force, position)
-
     -- ore patches
     local ores = {'iron-ore', 'copper-ore', 'stone', 'coal'}
     table_shuffle(ores)
@@ -520,6 +518,7 @@ local function found_town(event)
 
     Enemy.clear_enemies(position, surface, town_radius * 5)
     draw_town_spawn(force_name)
+    ExclusionZone.add_zone(surface, force, position)
 
     -- set the spawn point
     local pos = {x = town_center.market.position.x, y = town_center.market.position.y + 4}
