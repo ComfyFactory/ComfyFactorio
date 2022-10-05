@@ -74,23 +74,25 @@ local function on_player_changed_position(event)
 
     local this = ScenarioTable.get_table()
     for _, zone in pairs(this.exclusion_zones) do
-        if CommonFunctions.point_in_bounding_box(player.position, zone.box) then
-            local center_diff = { x = player.position.x - zone.center.x, y = player.position.y - zone.center.y}
-            center_diff.x = center_diff.x / vector_norm(center_diff)
-            center_diff.y = center_diff.y / vector_norm(center_diff)
-            player.teleport({ player.position.x + center_diff.x, player.position.y + center_diff.y}, surface)
+        if not (zone.force == player.force or zone.force.get_friend(player.force)) then
+            if CommonFunctions.point_in_bounding_box(player.position, zone.box) then
+                local center_diff = { x = player.position.x - zone.center.x, y = player.position.y - zone.center.y}
+                center_diff.x = center_diff.x / vector_norm(center_diff)
+                center_diff.y = center_diff.y / vector_norm(center_diff)
+                player.teleport({ player.position.x + center_diff.x, player.position.y + center_diff.y}, surface)
 
-            if player.character then
-                -- Kick players out of vehicles if they try to drive in
-                if player.character.driving then
-                    player.character.driving = false
-                end
+                if player.character then
+                    -- Kick players out of vehicles if they try to drive in
+                    if player.character.driving then
+                        player.character.driving = false
+                    end
 
-                -- Damage player
-                player.character.health = player.character.health - 25
-                player.character.surface.create_entity({name = 'water-splash', position = player.position})
-                if player.character.health <= 0 then
-                    player.character.die('enemy')
+                    -- Damage player
+                    player.character.health = player.character.health - 25
+                    player.character.surface.create_entity({name = 'water-splash', position = player.position})
+                    if player.character.health <= 0 then
+                        player.character.die('enemy')
+                    end
                 end
             end
         end
