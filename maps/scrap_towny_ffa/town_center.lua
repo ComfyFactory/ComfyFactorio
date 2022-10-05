@@ -368,17 +368,18 @@ function Public.update_coin_balance(force)
     rendering.set_text(town_center.coins_text, 'Coins: ' .. town_center.coin_balance)
 end
 
-function Public.update_protection_display(force)
+local function update_protection_display()
     local this = ScenarioTable.get_table()
-    local town_center = this.town_centers[force.name]
-    local zone = this.exclusion_zones[force.name]
-    local info
-    if zone then
-        info = string.format("%.0f", (zone.lifetime_end - game.tick) / 60 / 60) .. ' minutes'
-    else
-        info = "Expired"
+    for _, zone in pairs(this.exclusion_zones) do
+        local town_center = this.town_centers[zone.force.name]
+        local info
+        if zone then
+            info = string.format("%.0f", (zone.lifetime_end - game.tick) / 60 / 60) .. ' minutes'
+        else
+            info = "Expired"
+        end
+        rendering.set_text(town_center.zone_text, 'Protection: ' .. info)
     end
-    rendering.set_text(town_center.zone_text, 'Protection: ' .. info)
 end
 
 local function found_town(event)
@@ -545,7 +546,7 @@ local function found_town(event)
     Enemy.clear_enemies(position, surface, town_radius * 5)
     draw_town_spawn(force_name)
     ExclusionZone.add_zone(surface, force, position, Public.update_protection_display)
-    Public.update_protection_display(force)
+    update_protection_display()
 
     -- set the spawn point
     local pos = {x = town_center.market.position.x, y = town_center.market.position.y + 4}
@@ -633,6 +634,7 @@ commands.add_command(
 
 Event.add(defines.events.on_built_entity, on_built_entity)
 Event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)
+Event.on_nth_tick(60, update_protection_display)    -- TODO: use callback from exclusion_zones instead
 --Event.add(defines.events.on_robot_repaired_entity, on_robot_repaired_entity)
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 
