@@ -372,6 +372,7 @@ function Public.update_protection_display(force)
     local this = ScenarioTable.get_table()
     local town_center = this.town_centers[force.name]
     local zone = this.exclusion_zones[force.name]
+    local info
     if zone then
         info = string.format("%.0f", (zone.lifetime_end - game.tick) / 60 / 60) .. ' minutes'
     else
