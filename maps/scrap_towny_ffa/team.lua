@@ -42,6 +42,35 @@ local destroy_robot_types = {
     ['logistic-robot'] = true
 }
 
+-- hand craftable
+local player_force_disabled_recipes = {
+    'lab',
+    'automation-science-pack',
+    'steel-furnace',
+    'electric-furnace',
+    'stone-wall',
+    'stone-brick',
+    'radar'
+}
+local all_force_enabled_recipes = {
+    'submachine-gun',
+    'assembling-machine-1',
+    'small-lamp',
+    'shotgun',
+    'shotgun-shell',
+    'underground-belt',
+    'splitter',
+    'steel-plate',
+    'car',
+    'tank',
+    'engine-unit',
+    'constant-combinator',
+    'green-wire',
+    'red-wire',
+    'arithmetic-combinator',
+    'decider-combinator'
+}
+
 local function min_slots(slots)
     local min = 0
     for i = 1, 3, 1 do
@@ -223,6 +252,9 @@ function Public.give_player_items(player)
     end
     player.clear_items_inside()
     player.insert({name = 'raw-fish', count = 3})
+    if player.force.name == 'rogue' or player.force.name == 'player' then
+        player.insert {name = 'stone-furnace', count = '1'}
+    end
 end
 
 function Public.set_player_to_outlander(player)
@@ -703,6 +735,9 @@ function Public.add_new_force(force_name)
     -- friendly fire
     force.friendly_fire = true
     -- disable technologies
+    for _, recipe_name in pairs(all_force_enabled_recipes) do
+        force.recipes[recipe_name].enabled = true
+    end
     force.research_queue_enabled = true
     -- balance initial combat
     force.set_ammo_damage_modifier('landmine', -0.75)
@@ -797,7 +832,9 @@ local function kill_force(force_name, cause)
         end
     end
 
-    ExclusionZone.remove_zone(this.exclusion_zones[force_name])
+    if this.exclusion_zones[force_name] then
+        ExclusionZone.remove_zone(this.exclusion_zones[force_name])
+    end
     game.merge_forces(force_name, 'neutral')
     this.town_centers[force_name] = nil
     this.number_of_towns = this.number_of_towns - 1
@@ -848,34 +885,6 @@ local function kill_force(force_name, cause)
     end
 end
 
--- hand craftable
-local player_force_disabled_recipes = {
-    'lab',
-    'automation-science-pack',
-    'steel-furnace',
-    'electric-furnace',
-    'stone-wall',
-    'stone-brick',
-    'radar'
-}
-local player_force_enabled_recipes = {
-    'submachine-gun',
-    'assembling-machine-1',
-    'small-lamp',
-    'shotgun',
-    'shotgun-shell',
-    'underground-belt',
-    'splitter',
-    'steel-plate',
-    'car',
-    'tank',
-    'engine-unit',
-    'constant-combinator',
-    'green-wire',
-    'red-wire',
-    'arithmetic-combinator',
-    'decider-combinator'
-}
 
 local function setup_neutral_force()
     local force = game.forces['neutral']
@@ -920,7 +929,7 @@ local function setup_player_force()
     for _, recipe_name in pairs(player_force_disabled_recipes) do
         recipes[recipe_name].enabled = false
     end
-    for _, recipe_name in pairs(player_force_enabled_recipes) do
+    for _, recipe_name in pairs(all_force_enabled_recipes) do
         recipes[recipe_name].enabled = true
     end
     force.set_ammo_damage_modifier('landmine', -0.75)
@@ -959,7 +968,7 @@ local function setup_rogue_force()
     for _, recipe_name in pairs(player_force_disabled_recipes) do
         recipes[recipe_name].enabled = false
     end
-    for _, recipe_name in pairs(player_force_enabled_recipes) do
+    for _, recipe_name in pairs(all_force_enabled_recipes) do
         recipes[recipe_name].enabled = true
     end
     force.set_ammo_damage_modifier('landmine', -0.75)
