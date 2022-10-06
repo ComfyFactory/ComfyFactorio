@@ -832,7 +832,9 @@ local function kill_force(force_name, cause)
         end
     end
 
-    ExclusionZone.remove_zone(this.exclusion_zones[force_name])
+    if this.exclusion_zones[force_name] then
+        ExclusionZone.remove_zone(this.exclusion_zones[force_name])
+    end
     game.merge_forces(force_name, 'neutral')
     this.town_centers[force_name] = nil
     this.number_of_towns = this.number_of_towns - 1
