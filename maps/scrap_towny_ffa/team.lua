@@ -42,6 +42,35 @@ local destroy_robot_types = {
     ['logistic-robot'] = true
 }
 
+-- hand craftable
+local player_force_disabled_recipes = {
+    'lab',
+    'automation-science-pack',
+    'steel-furnace',
+    'electric-furnace',
+    'stone-wall',
+    'stone-brick',
+    'radar'
+}
+local all_force_enabled_recipes = {
+    'submachine-gun',
+    'assembling-machine-1',
+    'small-lamp',
+    'shotgun',
+    'shotgun-shell',
+    'underground-belt',
+    'splitter',
+    'steel-plate',
+    'car',
+    'tank',
+    'engine-unit',
+    'constant-combinator',
+    'green-wire',
+    'red-wire',
+    'arithmetic-combinator',
+    'decider-combinator'
+}
+
 local function min_slots(slots)
     local min = 0
     for i = 1, 3, 1 do
@@ -706,6 +735,9 @@ function Public.add_new_force(force_name)
     -- friendly fire
     force.friendly_fire = true
     -- disable technologies
+    for _, recipe_name in pairs(all_force_enabled_recipes) do
+        force.recipes[recipe_name].enabled = true
+    end
     force.research_queue_enabled = true
     -- balance initial combat
     force.set_ammo_damage_modifier('landmine', -0.75)
@@ -851,34 +883,6 @@ local function kill_force(force_name, cause)
     end
 end
 
--- hand craftable
-local player_force_disabled_recipes = {
-    'lab',
-    'automation-science-pack',
-    'steel-furnace',
-    'electric-furnace',
-    'stone-wall',
-    'stone-brick',
-    'radar'
-}
-local player_force_enabled_recipes = {
-    'submachine-gun',
-    'assembling-machine-1',
-    'small-lamp',
-    'shotgun',
-    'shotgun-shell',
-    'underground-belt',
-    'splitter',
-    'steel-plate',
-    'car',
-    'tank',
-    'engine-unit',
-    'constant-combinator',
-    'green-wire',
-    'red-wire',
-    'arithmetic-combinator',
-    'decider-combinator'
-}
 
 local function setup_neutral_force()
     local force = game.forces['neutral']
@@ -923,7 +927,7 @@ local function setup_player_force()
     for _, recipe_name in pairs(player_force_disabled_recipes) do
         recipes[recipe_name].enabled = false
     end
-    for _, recipe_name in pairs(player_force_enabled_recipes) do
+    for _, recipe_name in pairs(all_force_enabled_recipes) do
         recipes[recipe_name].enabled = true
     end
     force.set_ammo_damage_modifier('landmine', -0.75)
@@ -962,7 +966,7 @@ local function setup_rogue_force()
     for _, recipe_name in pairs(player_force_disabled_recipes) do
         recipes[recipe_name].enabled = false
     end
-    for _, recipe_name in pairs(player_force_enabled_recipes) do
+    for _, recipe_name in pairs(all_force_enabled_recipes) do
         recipes[recipe_name].enabled = true
     end
     force.set_ammo_damage_modifier('landmine', -0.75)
