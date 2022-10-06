@@ -370,15 +370,15 @@ end
 
 local function update_protection_display()
     local this = ScenarioTable.get_table()
-    for _, zone in pairs(this.exclusion_zones) do
-        local town_center = this.town_centers[zone.force.name]
+    for _, town_center in pairs(this.town_centers) do
+        local zone = this.exclusion_zones[town_center.market.force.name]
         local info
         if zone then
-            info = string.format("%.0f", (zone.lifetime_end - game.tick) / 60 / 60) .. ' minutes'
+            info = 'Protection: ' .. string.format("%.0f", (zone.lifetime_end - game.tick) / 60 / 60) .. ' minutes'
         else
-            info = "Expired"
+            info = ''
         end
-        rendering.set_text(town_center.zone_text, 'Protection: ' .. info)
+        rendering.set_text(town_center.zone_text, info)
     end
 end
 
