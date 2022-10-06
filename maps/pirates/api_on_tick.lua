@@ -85,21 +85,39 @@ function Public.prevent_disembark(tickinterval)
 	local destination = Common.current_destination()
 	local boat = memory.boat
 
-	if boat and boat.state and (boat.state == Boats.enum_state.RETREATING or (boat.state == Boats.enum_state.LEAVING_DOCK and (not (memory.crewstatus and memory.crewstatus == Crew.enum.LEAVING_INITIAL_DOCK)))) then
+	if boat and (boat.state == Boats.enum_state.RETREATING or (boat.state == Boats.enum_state.LEAVING_DOCK and memory.crewstatus ~= Crew.enum.LEAVING_INITIAL_DOCK)) then
 
 		if not destination.dynamic_data.cant_disembark_players then destination.dynamic_data.cant_disembark_players = {} end
 		local ps = destination.dynamic_data.cant_disembark_players
 
 		for _, player in pairs(game.connected_players) do
-			if player.surface and player.surface.valid and boat.surface_name and player.surface.name == boat.surface_name and Boats.on_boat(boat, player.position) then
+			if player.surface and player.surface.valid and player.surface.name == boat.surface_name and Boats.on_boat(boat, player.position) then
 				ps[player.index] = true
 			end
 		end
 
 		for _, player in pairs(game.connected_players) do
-			if player.surface and player.surface.valid and boat.surface_name and player.surface.name == boat.surface_name and ps[player.index] and (not Boats.on_boat(boat, player.position)) and (not (player.controller_type == defines.controllers.spectator)) then
+			if player.surface and player.surface.valid and player.surface.name == boat.surface_name and ps[player.index] and (not Boats.on_boat(boat, player.position)) and player.controller_type ~= defines.controllers.spectator then
 				Common.notify_player_error(player, {'pirates.error_disembark'})
-				-- player.teleport(memory.spawnpoint)
+
+				if player.driving then
+					local vehicle = player.vehicle
+					if vehicle then
+						local passenger = vehicle.get_passenger()
+						if passenger then
+							vehicle.set_passenger(nil)
+							local p = passenger.surface.find_non_colliding_position('character', memory.spawnpoint, 5, 0.1)
+							if p then
+								passenger.teleport(p)
+							else
+								passenger.teleport(memory.spawnpoint)
+							end
+						end
+
+						vehicle.set_driver(nil)
+					end
+				end
+
 				local p = player.surface.find_non_colliding_position('character', memory.spawnpoint, 5, 0.1)
 				if p then
 					player.teleport(p)
@@ -582,6 +600,10 @@ function Public.place_cached_structures(tickinterval)
 
 				elseif c.type == 'vehicles' then
 					local c2 = {type = c.type, force_name = force_name, built_entities = {}}
+
+					if memory.overworldx >= 1000 then
+						c.name = 'tank'
+					end
 
 					for _, e in pairs(c.instances) do
 						local p = Utils.psum{position, e.position, c.offset}

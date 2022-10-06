@@ -314,7 +314,8 @@ function Public.terrain(args)
 
     -- fallback case when no tiles were placed
     if #args.tiles == 0 then
-        args.tiles[#args.tiles + 1] = {name = 'dirt-7', position = args.p}
+        -- args.tiles[#args.tiles + 1] = {name = 'dirt-7', position = args.p}
+        args.tiles[#args.tiles + 1] = {name = 'concrete', position = args.p}
     end
 end
 

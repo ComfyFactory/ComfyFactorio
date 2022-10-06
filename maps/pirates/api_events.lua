@@ -1323,31 +1323,7 @@ local function event_on_research_finished(event)
 		end
 	end
 
-	-- even after research, force disable these:
-	-- p_force.recipes['underground-belt'].enabled = false
-	-- p_force.recipes['fast-underground-belt'].enabled = false
-	-- p_force.recipes['express-underground-belt'].enabled = false
-	p_force.recipes['pistol'].enabled = false
-	p_force.recipes['centrifuge'].enabled = false
-	-- p_force.recipes['flamethrower-turret'].enabled = false
-	p_force.recipes['locomotive'].enabled = false
-	p_force.recipes['car'].enabled = false
-	p_force.recipes['cargo-wagon'].enabled = false
-	p_force.recipes['slowdown-capsule'].enabled = false
-	p_force.recipes['nuclear-fuel'].enabled = false
-	-- p_force.recipes['rail'].enabled = false
-	p_force.recipes['speed-module'].enabled = false
-	p_force.recipes['tank'].enabled = false
-	p_force.recipes['cannon-shell'].enabled = false
-	p_force.recipes['explosive-cannon-shell'].enabled = false
-	-- and since we can't build tanks anyway, let's disable this for later:
-	p_force.recipes['uranium-cannon-shell'].enabled = false
-	p_force.recipes['explosive-uranium-cannon-shell'].enabled = false
-
-	p_force.recipes['concrete'].enabled = false
-	p_force.recipes['hazard-concrete'].enabled = false
-	p_force.recipes['refined-concrete'].enabled = false
-	p_force.recipes['refined-hazard-concrete'].enabled = false
+	Crew.disable_recipes(p_force)
 end
 
 local function event_on_player_joined_game(event)
@@ -1595,7 +1571,7 @@ function Public.player_entered_vehicle(player, vehicle)
 	local surfacedata = Surfaces.SurfacesCommon.decode_surface_name(player.surface.name)
 
 	if vehicle.name == 'car' then
-		-- a way to make simple cars work
+		-- A way to make player driven vehicles work
 		if vehicle.minable then
 			return
 		end
@@ -1616,6 +1592,8 @@ function Public.player_entered_vehicle(player, vehicle)
 		end
 		vehicle.color = {148, 106, 52}
 
+		player.driving = false
+
 	elseif vehicle.name == 'locomotive' then
 
 		if surfacedata.type ~= Surfaces.enum.HOLD and surfacedata.type ~= Surfaces.enum.LOBBY and Math.abs(player_boat_relative_pos.y) < 8 then --<8 in order not to enter holds of boats you haven't bought yet
@@ -1630,9 +1608,9 @@ function Public.player_entered_vehicle(player, vehicle)
 			end
 			player.play_sound{path = "utility/picked_up_item"}
 		end
-	end
 
-	player.driving = false
+		player.driving = false
+	end
 end
 
 local function event_on_player_driving_changed_state(event)

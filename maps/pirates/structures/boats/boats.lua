@@ -841,7 +841,7 @@ local function process_entity_on_boat_teleportable(memory, boat, newsurface, new
 		local p = Utils.deepcopy(e.position)
 		local p2 = {x = p.x + vector.x, y = p.y + vector.y}
 
-		if e.type and e.type == 'electric-pole' then
+		if e.type == 'electric-pole' then
 			for k, v in pairs(e.neighbours or {}) do
 				if k == 'copper' then --red and green cases handled by circuit_neighbours_matrix
 					if not electric_pole_neighbours_matrix[k] then electric_pole_neighbours_matrix[k] = {} end
@@ -878,17 +878,25 @@ local function process_entity_on_boat_teleportable(memory, boat, newsurface, new
 			end
 		end
 
-		local ee = e.clone{position = p2, surface = newsurface, create_build_effect_smoke = false}
+		-- Special case for vehicles, because currently they can be exclusively teleported between surfaces
+		local ee
+		if e.name == 'car' or e.name == 'tank' or e.name == 'spidertron' then
+			e.teleport(p2, newsurface)
+		else
+			ee = e.clone{position = p2, surface = newsurface, create_build_effect_smoke = false}
+		end
 
 		if boat.upstairs_pole and e == boat.upstairs_pole then
 			boat.upstairs_pole = ee
 			Public.try_connect_upstairs_and_downstairs_poles(boat)
 		end
 
-		e.destroy()
+		if not (e.name == 'car' or e.name == 'tank' or e.name == 'spidertron') then
+			e.destroy()
+		end
 
 		-- Right now in the game we don't expect any non-player characters, so let's kill them to make a point:
-		if ee and ee.valid and ee.name and ee.name == 'character' and (not ee.player) then
+		if ee and ee.valid and ee.name == 'character' and (not ee.player) then
 			ee.die()
 		end
 
@@ -980,7 +988,7 @@ local function process_entity_on_boat(memory, boat, newsurface, newposition, vec
 		unique_entities_list[#unique_entities_list + 1] = e
 		local name = e.name
 
-		if name and name == 'item-on-ground' then
+		if name == 'item-on-ground' then
 			Common.give_items_to_crew{{name = e.stack.name, count = e.stack.count}}
 			e.destroy()
 		else

@@ -881,17 +881,7 @@ function Public.reset_crew_and_enemy_force(id)
 	--as prerequisites for uranium ammo and automation 3:
 	crew_force.technologies['speed-module'].researched = true
 	crew_force.technologies['tank'].researched = true
-	crew_force.technologies['automobilism'].researched = true
 	crew_force.technologies['concrete'].researched = true
-	crew_force.recipes['speed-module'].enabled = false
-	crew_force.recipes['tank'].enabled = false
-	crew_force.recipes['cannon-shell'].enabled = false
-	crew_force.recipes['explosive-cannon-shell'].enabled = false
-	crew_force.recipes['concrete'].enabled = false
-	crew_force.recipes['hazard-concrete'].enabled = false
-	crew_force.recipes['refined-concrete'].enabled = false
-	crew_force.recipes['refined-hazard-concrete'].enabled = false
-
 
 
 	--@TRYING this out:
@@ -900,25 +890,7 @@ function Public.reset_crew_and_enemy_force(id)
 
 	crew_force.technologies['toolbelt'].enabled = false --trying this. we don't actually want players to carry too many things manually, and in fact in a resource-tight scenario that's problematic
 
-	-- note: many of these recipes are overwritten after tech researched!!!!!!! like pistol. check elsewhere in code
-
-	crew_force.recipes['pistol'].enabled = false
-
-	-- these are redundant I think...?:
-	crew_force.recipes['centrifuge'].enabled = false
-	crew_force.recipes['flamethrower-turret'].enabled = false
-
 	crew_force.technologies['railway'].researched = true --needed for purple sci
-	crew_force.recipes['rail'].enabled = true --needed for purple sci
-	crew_force.recipes['locomotive'].enabled = false
-	crew_force.recipes['car'].enabled = false
-	crew_force.recipes['cargo-wagon'].enabled = false
-
-	crew_force.recipes['nuclear-fuel'].enabled = false -- reduce clutter
-
-	-- crew_force.recipes['underground-belt'].enabled = false
-	-- crew_force.recipes['fast-underground-belt'].enabled = false
-	-- crew_force.recipes['express-underground-belt'].enabled = false
 
 	crew_force.technologies['land-mine'].enabled = false
 	crew_force.technologies['landfill'].enabled = false
@@ -990,7 +962,7 @@ function Public.reset_crew_and_enemy_force(id)
 
 	crew_force.technologies['steel-axe'].enabled = false
 
-	crew_force.technologies['nuclear-power'].enabled = false
+	crew_force.technologies['nuclear-power'].enabled = true
 
 	crew_force.technologies['effect-transmission'].enabled = true
 
@@ -1011,7 +983,7 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['space-science-pack'].enabled = false
 	crew_force.technologies['mining-productivity-4'].enabled = false
 	crew_force.technologies['logistics-3'].enabled = true
-	crew_force.technologies['nuclear-fuel-reprocessing'].enabled = false
+	crew_force.technologies['nuclear-fuel-reprocessing'].enabled = true
 
 	-- crew_force.technologies['railway'].enabled = false
 	crew_force.technologies['automated-rail-transportation'].enabled = false
@@ -1047,7 +1019,33 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['distractor'].enabled = false
 	crew_force.technologies['military-4'].enabled = true
 	crew_force.technologies['uranium-ammo'].enabled = true
+
+	Public.disable_recipes(crew_force)
 end
 
+
+function Public.disable_recipes(crew_force)
+	crew_force.recipes['pistol'].enabled = false
+	-- crew_force.recipes['centrifuge'].enabled = false
+	-- crew_force.recipes['flamethrower-turret'].enabled = false
+	crew_force.recipes['locomotive'].enabled = false
+	-- crew_force.recipes['car'].enabled = false
+	crew_force.recipes['cargo-wagon'].enabled = false
+	crew_force.recipes['slowdown-capsule'].enabled = false
+	-- crew_force.recipes['nuclear-fuel'].enabled = false
+	-- crew_force.recipes['rail'].enabled = false
+	crew_force.recipes['speed-module'].enabled = false
+	crew_force.recipes['tank'].enabled = false
+	crew_force.recipes['cannon-shell'].enabled = false
+	crew_force.recipes['explosive-cannon-shell'].enabled = false
+	-- and since we can't build tanks anyway, let's disable this for later:
+	crew_force.recipes['uranium-cannon-shell'].enabled = false
+	crew_force.recipes['explosive-uranium-cannon-shell'].enabled = false
+
+	crew_force.recipes['concrete'].enabled = false
+	crew_force.recipes['hazard-concrete'].enabled = false
+	crew_force.recipes['refined-concrete'].enabled = false
+	crew_force.recipes['refined-hazard-concrete'].enabled = false
+end
 
 return Public

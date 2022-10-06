@@ -24,6 +24,7 @@ function Public.base_ores()
 		['iron-ore'] = 5.9,
 		['coal'] = 4.4,
 		['stone'] = 1.0,
+		['uranium-ore'] = 0.5,
 	}
 end
 
