@@ -374,7 +374,7 @@ local function update_protection_display()
         local zone = this.exclusion_zones[town_center.market.force.name]
         local info
         if zone then
-            info = 'Protection: ' .. string.format("%.0f", (zone.lifetime_end - game.tick) / 60 / 60) .. ' minutes'
+            info = 'PvP Shield: ' .. string.format("%.0f", (zone.lifetime_end - game.tick) / 60 / 60) .. ' minutes'
         else
             info = ''
         end
@@ -529,7 +529,7 @@ local function found_town(event)
     }
 
     town_center.zone_text = rendering.draw_text {
-        text = 'Town protection: (..)',
+        text = 'PvP Shield: (..)',
         surface = surface,
         forces = {force_name},
         target = town_center.market,

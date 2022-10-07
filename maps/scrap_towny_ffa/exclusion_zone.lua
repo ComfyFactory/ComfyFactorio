@@ -49,7 +49,7 @@ function Public.remove_zone(zone)
 
     remove_drawn_borders(zone)
     this.exclusion_zones[zone.force.name] = nil
-    zone.force.print("Your protection zone has expired")
+    zone.force.print("Your PvP Shield has expired", {r = 1, g = 0, b = 0})
 end
 
 local function vector_norm(vector)
