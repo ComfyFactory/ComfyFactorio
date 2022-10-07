@@ -131,7 +131,7 @@ local function set_offers(town_center)
         special_offers[5] = {{}, 'Maximum Crafting Speed upgrades reached!'}
     end
     local laser_turret = 'Laser Turret Slot [#' .. tostring(town_center.upgrades.laser_turret.slots + 1) .. ']'
-    special_offers[6] = {{{'coin', 2000 + (town_center.upgrades.laser_turret.slots * 200)}}, laser_turret}
+    special_offers[6] = {{{'coin', (town_center.upgrades.laser_turret.slots * 150)}}, laser_turret}
     local spawn_point = 'Set Spawn Point'
     special_offers[7] = {{}, spawn_point}
     for _, v in pairs(special_offers) do
