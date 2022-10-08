@@ -832,18 +832,12 @@ local function kill_force(force_name, cause)
     this.town_centers[force_name] = nil
     this.number_of_towns = this.number_of_towns - 1
     delete_chart_tag_for_all_forces(market)
+
     -- reward the killer
-    if cause == nil or not cause.valid then
-        Server.to_discord_embed(town_name .. ' has fallen to the biters!')
-        game.print('>> ' .. town_name .. ' has fallen to the biters!', {255, 255, 0})
-        return
-    end
-    if cause.force == nil then
-        Server.to_discord_embed(town_name .. ' has fallen to the biters!')
-        game.print('>> ' .. town_name .. ' has fallen to the biters!', {255, 255, 0})
-        return
-    end
-    if cause.force.name == 'player' or cause.force.name == 'rogue' then
+    local message
+    if cause == nil or not cause.valid or cause.force == nil then
+        message = town_name .. ' has fallen!'
+    elseif cause.force.name == 'player' or cause.force.name == 'rogue' then
         local items = {name = 'coin', count = balance}
         town_center.coin_balance = 0
         if balance > 0 then
@@ -854,28 +848,28 @@ local function kill_force(force_name, cause)
                 chest.insert(items)
             end
         end
-        if cause.force.name == 'player' then
-            Server.to_discord_embed(town_name .. ' has fallen to outlanders!')
-            game.print('>> ' .. town_name .. ' has fallen to outlanders!', {255, 255, 0})
+        if cause.name then
+            message = town_name .. ' has fallen to ' .. cause.name .. '!'
+        elseif cause.force.name == 'player' then
+            message = town_name .. ' has fallen to outlanders!'
         else
-            Server.to_discord_embed(town_name .. ' has fallen to rogues!')
-            game.print('>> ' .. town_name .. ' has fallen to rogues!', {255, 255, 0})
+            message = town_name .. ' has fallen to rogues!'
+        end
+    elseif cause.force.name ~= 'enemy' then
+        if this.town_centers[cause.force.name] ~= nil then
+            local killer_town_center = this.town_centers[cause.force.name]
+            if balance > 0 then
+                killer_town_center.coin_balance = killer_town_center.coin_balance + balance
+                cause.force.print(balance .. " coins have been transferred to your town")
+            end
+            message = town_name .. ' has fallen to ' .. killer_town_center.town_name .. '!'
         end
     else
-        if cause.force.name ~= 'enemy' then
-            if this.town_centers[cause.force.name] ~= nil then
-                local killer_town_center = this.town_centers[cause.force.name]
-                if balance > 0 then
-                    killer_town_center.coin_balance = killer_town_center.coin_balance + balance
-                end
-                Server.to_discord_embed(town_name .. ' has fallen to ' .. killer_town_center.town_name .. '!')
-                game.print('>> ' .. town_name .. ' has fallen to ' .. killer_town_center.town_name .. '!', {255, 255, 0})
-            end
-        else
-            Server.to_discord_embed(town_name .. ' has fallen to the biters!')
-            game.print('>> ' .. town_name .. ' has fallen to the biters!', {255, 255, 0})
-        end
+        message = town_name .. ' has fallen to the biters!'
     end
+
+    Server.to_discord_embed(message)
+    game.print('>> ' .. message, {255, 255, 0})
 end
 
 local function on_forces_merged()
