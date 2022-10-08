@@ -93,9 +93,9 @@ function Public.initialize()
     mgs.autoplace_settings = {
         entity = {
             settings = {
-                ['rock-huge'] = {frequency = 2, size = 12, richness = 'very-high'},
-                ['rock-big'] = {frequency = 3, size = 12, richness = 'very-high'},
-                ['sand-rock-big'] = {frequency = 3, size = 12, richness = 1, 'very-high'}
+                ['rock-huge'] = {frequency = 2, size = 3, richness = 'very-high'},
+                ['rock-big'] = {frequency = 2, size = 3, richness = 'very-high'},
+                ['sand-rock-big'] = {frequency = 2, size = 3, richness = 1, 'very-high'}
             }
         },
         decorative = {
