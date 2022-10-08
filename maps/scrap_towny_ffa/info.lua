@@ -32,6 +32,7 @@ Survive as long as you can. Raid other towns. Defend your town.
     So protect it well, repair it whenever possible, and if you can afford, increase its health by purchasing upgrades.
 
 - It's possible to automate trading with the town center! How cool is that?!! Try it out.
+    Tip: use filter inserters with to get coins/iron/.. out of the market
 
 - Fishes procreate near towns (the more fishes, the quicker they multiply)
 
