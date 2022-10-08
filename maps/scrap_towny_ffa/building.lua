@@ -4,22 +4,10 @@ local math_floor = math.floor
 local table_insert = table.insert
 local table_size = table.size
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
---[[
-local town_radius = 27
-local connection_radius = 15
- ]]
-local blacklist_entity_types = {
-    ['tank'] = true,
-    ['car'] = true,
-    ['character'] = true,
-    ['combat-robot'] = true,
-    ['construction-robot'] = true,
-    ['logistic-robot'] = true,
-    ['entity-ghost'] = true,
-    ['character-corpse'] = true,
-    ['corpse'] = true
-}
--- these should be allowed to place inside any base by outlanders as neutral
+
+local town_zoning_entity_types = { "wall", "electric-pole", "ammo-turret", "electric-turret", "fluid-turret"}
+
+-- these should be allowed to place inside any base by anyone as neutral
 local neutral_whitelist = {
     ['burner-inserter'] = true,
     ['car'] = true,
@@ -49,118 +37,6 @@ local neutral_whitelist = {
     ['express-splitter'] = true
 }
 
---[[ -- these should be allowed to place outside any base by town players
-local team_whitelist = {
-    ['burner-inserter'] = true,
-    ['car'] = true,
-    ['cargo-wagon'] = true,
-    ['coin'] = true,
-    ['curved-rail'] = true,
-    ['electric-pole'] = true,
-    ['express-loader'] = true,
-    ['fast-inserter'] = true,
-    ['fast-loader'] = true,
-    ['filter-inserter'] = true,
-    ['inserter'] = true,
-    ['fluid-wagon'] = true,
-    ['iron-chest'] = true,
-    ['loader'] = true,
-    ['long-handed-inserter'] = true,
-    ['locomotive'] = true,
-    ['rail'] = true,
-    ['rail-chain-signal'] = true,
-    ['rail-signal'] = true,
-    ['raw-fish'] = true,
-    ['stack-filter-inserter'] = true,
-    ['stack-inserter'] = true,
-    ['steel-chest'] = true,
-    ['straight-rail'] = true,
-    ['tank'] = true,
-    ['train-stop'] = true,
-    ['wooden-chest'] = true,
-    ['transport-belt'] = true,
-    ['fast-transport-belt'] = true,
-    ['express-transport-belt'] = true,
-    ['underground-belt'] = true,
-    ['fast-underground-belt'] = true,
-    ['express-underground-belt'] = true,
-    ['splitter'] = true,
-    ['fast-splitter'] = true,
-    ['express-splitter'] = true
-} ]]
---[[
--- these need to be prototypes
-local team_entities = {
-    ['accumulator'] = true,
-    ['ammo-turret'] = true,
-    ['arithmetic-combinator'] = true,
-    ['artillery-turret'] = true,
-    ['assembling-machine'] = true,
-    ['beacon'] = true,
-    ['boiler'] = true,
-    ['burner-generator'] = true,
-    ['constant-combinator'] = true,
-    ['container'] = true,
-    ['decider-combinator'] = true,
-    ['electric-energy-interface'] = true,
-    ['electric-pole'] = true,
-    ['electric-turret'] = true,
-    ['fluid-turret'] = true,
-    ['furnace'] = true,
-    ['gate'] = true,
-    ['generator'] = true,
-    ['heat-interface'] = true,
-    ['heat-pipe'] = true,
-    ['infinity-container'] = true,
-    ['infinity-pipe'] = true,
-    ['inserter'] = true,
-    ['lab'] = true,
-    ['lamp'] = true,
-    ['land-mine'] = true,
-    ['linked-belt'] = true,
-    ['linked-container'] = true,
-    ['loader'] = true,
-    ['loader-1x1'] = true,
-    ['logistic-container'] = true,
-    ['market'] = true,
-    ['mining-drill'] = true,
-    ['offshore-pump'] = true,
-    ['pipe'] = true,
-    ['pipe-to-ground'] = true,
-    ['player-port'] = true,
-    ['power-switch'] = true,
-    ['programmable-speaker'] = true,
-    ['pump'] = true,
-    ['radar'] = true,
-    ['reactor'] = true,
-    ['roboport'] = true,
-    ['rocket-silo'] = true,
-    ['solar-panel'] = true,
-    ['splitter'] = true,
-    ['storage-tank'] = true,
-    ['transport-belt'] = true,
-    ['underground-belt'] = true,
-    ['wall'] = true
-} ]]
---[[
-local function isolated(surface, force, position)
-    local position_x = position.x
-    local position_y = position.y
-    local area = {{position_x - connection_radius, position_y - connection_radius}, {position_x + connection_radius, position_y + connection_radius}}
-    local count = 0
-
-    for _, e in pairs(surface.find_entities_filtered({area = area, force = force.name})) do
-        if team_entities[e.type] then
-            count = count + 1
-            if count > 1 then
-                return false
-            end -- are there more than one team entities in the area?
-        end
-    end
-
-    return true
-end
- ]]
 local function refund_item(event, item_name)
     if item_name == 'blueprint' then
         return
@@ -243,8 +119,8 @@ function Public.near_another_town(force_name, position, surface, radius)
                     local market_force = market.force
                     if market_force ~= nil then
                         if market_force.name ~= nil then
-                            table_insert(forces, market_force.name)
                             if force_name ~= market_force.name then
+                                table_insert(forces, market_force.name)
                                 if Public.in_range(position, market.position, radius) == true then
                                     fail = true
                                     break
@@ -259,48 +135,17 @@ function Public.near_another_town(force_name, position, surface, radius)
             return true
         end
     end
+
     -- check for nearby town entities
     if table.size(forces) > 0 then
-        local entities = surface.find_entities_filtered({position = position, radius = radius, force = forces})
-        for _, e in pairs(entities) do
-            if e.valid and e.force ~= nil then
-                local entity_force_name = e.force.name
-                --if force_name ~= force.name and force_name ~= 'enemy' and force_name ~= 'neutral' and force_name ~= 'player' and force_name ~= 'rogue' then
-                if entity_force_name ~= nil then
-                    if entity_force_name ~= force_name then
-                        if blacklist_entity_types[e.type] ~= true then
-                            -- find another solution to log, since this fills the logfile.
-                            --log('XDB prevent_entity, e.type:' .. e.type)
-                            fail = true
-                            break
-                        end
-                    end
-                end
-            end
-        end
-        if fail == true then
+        if surface.count_entities_filtered({position = position, radius = radius,
+                                            force = forces, type=town_zoning_entity_types}) > 0 then
             return true
         end
     end
     return false
 end
---[[
-local function in_own_town(force, position)
-    local this = ScenarioTable.get_table()
-    local town_center = this.town_centers[force.name]
-    if town_center ~= nil then
-        local market = town_center.market
-        if market ~= nil then
-            local center = market.position
-            if position.x >= center.x - town_radius and position.x <= center.x + town_radius then
-                if position.y >= center.y - town_radius and position.y <= center.y + town_radius then
-                    return true
-                end
-            end
-        end
-    end
-    return false
-end ]]
+
 function Public.in_restricted_zone(surface, position)
     if surface.name ~= 'nauvis' then
         return false
