@@ -27,7 +27,7 @@ Survive as long as you can. Raid other towns. Defend your town.
 
 - How to get more ores? Make sure you researched steel processing,
     then hand mine a few big rocks to find ore patches under them!
-    
+
 - How to get more oil? Kill worms - some of them will leave you a oil patch
 
 - The town market is the heart of your town. If it is destroyed, you lose everything.
