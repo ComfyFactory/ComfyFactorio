@@ -16,7 +16,7 @@ local Color = require 'utils.color_presets'
 local ExclusionZone = require 'maps.scrap_towny_ffa.exclusion_zone'
 
 local town_radius = 27
-local radius_between_towns = 64
+local radius_between_towns = 120
 local ore_amount = 500 * (200 / 168.5)
 
 local colors = {}
