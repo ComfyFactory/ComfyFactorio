@@ -48,7 +48,7 @@ end
 function Public.add_zone(surface, force, center)
     local this = ScenarioTable.get_table()
 
-    local zone = {surface = surface, force = force, center = center, box = box, lifetime_start = game.tick}
+    local zone = {surface = surface, force = force, center = center, lifetime_start = game.tick}
     scale_size_and_box(zone)
     this.pvp_shields[force.name] = zone
 end
