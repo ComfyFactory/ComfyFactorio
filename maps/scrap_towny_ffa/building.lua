@@ -139,7 +139,7 @@ function Public.near_another_town(force_name, position, surface, radius)
     -- check for nearby town entities
     if table.size(forces) > 0 then
         if surface.count_entities_filtered({position = position, radius = radius,
-                                            force = forces, type=town_zoning_entity_types}) > 0 then
+                                            force = forces, type=town_zoning_entity_types, limit = 1}) > 0 then
             return true
         end
     end
