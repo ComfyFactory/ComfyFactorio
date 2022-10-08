@@ -1070,10 +1070,10 @@ local function on_entity_damaged(event)
                     if player and player.valid and player.force.index == game.forces['player'].index then
                         -- set the force of the player to rogue until they die or create a town
                         set_player_to_rogue(player)
+                        -- set the vehicle to rogue
+                        cause.force = game.forces['rogue']
                     end
                 end
-                -- set the vehicle to rogue
-                cause.force = game.forces['rogue']
             end
             -- trains
             if cause.type == 'locomotive' or cause.type == 'cargo-wagon' or cause.type == 'fluid-wagon' or cause.type == 'artillery-wagon' then
@@ -1087,10 +1087,11 @@ local function on_entity_damaged(event)
                         end
                         if player and player.valid and player.force.index == game.forces['player'].index then
                             set_player_to_rogue(player)
+                            -- set the vehicle to rogue
+                            cause.force = game.forces['rogue']
                         end
                     end
                 end
-                cause.force = game.forces['rogue']
             end
             -- combat robots
             if cause.type == 'combat-robot' then
@@ -1098,9 +1099,9 @@ local function on_entity_damaged(event)
                 if owner and owner.valid and owner.force == game.forces['player'] then
                     -- set the force of the player to rogue until they die or create a town
                     set_player_to_rogue(owner)
+                    -- set the robot to rogue
+                    cause.force = game.forces['rogue']
                 end
-                -- set the robot to rogue
-                cause.force = game.forces['rogue']
             end
         end
     end
