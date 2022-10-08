@@ -809,7 +809,9 @@ local function kill_force(force_name, cause)
     for _, e in pairs(surface.find_entities_filtered({force = force_name})) do
         if e.valid then
             e.force = game.forces['neutral']
-            e.create_ghost_on_death = false
+            if e.create_ghost_on_death ~= nil then
+                e.create_ghost_on_death = false
+            end
             local damage = math_random() * 2.5 - 0.5
             if damage > 0 then
                 if damage >= 1 or e.health == nil then

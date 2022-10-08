@@ -5,7 +5,7 @@ local table_insert = table.insert
 local table_size = table.size
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 
-local town_zoning_entity_types = { "wall", "electric-pole", "ammo-turret", "electric-turret", "fluid-turret"}
+local town_zoning_entity_types = { "wall", "gate", "electric-pole", "ammo-turret", "electric-turret", "fluid-turret"}
 
 -- these should be allowed to place inside any base by anyone as neutral
 local neutral_whitelist = {
