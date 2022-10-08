@@ -808,10 +808,6 @@ local function kill_force(force_name, cause)
     end
     for _, e in pairs(surface.find_entities_filtered({force = force_name})) do
         if e.valid then
-            e.force = game.forces['neutral']
-            if e.create_ghost_on_death ~= nil then
-                e.create_ghost_on_death = false
-            end
             local damage = math_random() * 2.5 - 0.5
             if damage > 0 then
                 if damage >= 1 or e.health == nil then
@@ -882,6 +878,14 @@ local function kill_force(force_name, cause)
     end
 end
 
+local function on_forces_merged()
+    -- Remove any ghosts that have been moved into neutral after a town is destroyed. This caused desyncs before.
+    for _, e in pairs(game.surfaces.nauvis.find_entities_filtered({force = 'neutral', type = "entity-ghost"})) do
+        if e.valid then
+            e.destroy()
+        end
+    end
+end
 
 local function setup_neutral_force()
     local force = game.forces['neutral']
@@ -1155,5 +1159,5 @@ Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_post_entity_died, on_post_entity_died)
 Event.add(defines.events.on_console_command, on_console_command)
 Event.add(defines.events.on_console_chat, on_console_chat)
-
+Event.add(defines.events.on_forces_merged, on_forces_merged)
 return Public
