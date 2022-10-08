@@ -22,7 +22,7 @@ local upgrade_functions = {
         local market = town_center.market
         local force = market.force
         local surface = market.surface
-        if force.character_inventory_slots_bonus + 5 > 100 then
+        if force.character_inventory_slots_bonus + 5 > 50 then
             return false
         end
         force.character_inventory_slots_bonus = force.character_inventory_slots_bonus + 5
@@ -110,7 +110,7 @@ local function set_offers(town_center)
     else
         special_offers[1] = {{}, 'Maximum Health upgrades reached!'}
     end
-    if force.character_inventory_slots_bonus + 5 <= 100 then
+    if force.character_inventory_slots_bonus + 5 <= 50 then
         special_offers[2] = {{{'coin', (force.character_inventory_slots_bonus / 5 + 1) * 50}}, 'Upgrade Backpack +5 Slot'}
     else
         special_offers[2] = {{}, 'Maximum Backpack upgrades reached!'}
