@@ -8,7 +8,7 @@ local string_lower = string.lower
 local Server = require 'utils.server'
 local Map = require 'maps.scrap_towny_ffa.map'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
-local ExclusionZone = require 'maps.scrap_towny_ffa.exclusion_zone'
+local PvPShield = require 'maps.scrap_towny_ffa.pvp_shield'
 
 local outlander_color = {150, 150, 150}
 local outlander_chat_color = {170, 170, 170}
@@ -832,8 +832,8 @@ local function kill_force(force_name, cause)
         end
     end
 
-    if this.exclusion_zones[force_name] then
-        ExclusionZone.remove_zone(this.exclusion_zones[force_name])
+    if this.pvp_shields[force_name] then
+        PvPShield.remove_zone(this.pvp_shields[force_name])
     end
     game.merge_forces(force_name, 'neutral')
     this.town_centers[force_name] = nil

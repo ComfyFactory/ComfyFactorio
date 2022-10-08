@@ -13,7 +13,7 @@ local Building = require 'maps.scrap_towny_ffa.building'
 local Colors = require 'maps.scrap_towny_ffa.colors'
 local Enemy = require 'maps.scrap_towny_ffa.enemy'
 local Color = require 'utils.color_presets'
-local ExclusionZone = require 'maps.scrap_towny_ffa.exclusion_zone'
+local PvPShield = require 'maps.scrap_towny_ffa.pvp_shield'
 
 local town_radius = 27
 local radius_between_towns = 120
@@ -371,10 +371,10 @@ end
 local function update_protection_display()
     local this = ScenarioTable.get_table()
     for _, town_center in pairs(this.town_centers) do
-        local zone = this.exclusion_zones[town_center.market.force.name]
+        local zone = this.pvp_shields[town_center.market.force.name]
         local info
         if zone then
-            info = 'PvP Shield: ' .. string.format("%.0f", (zone.lifetime_end - game.tick) / 60 / 60) .. ' minutes'
+            info = 'PvP Shield: ' .. string.format("%.0f", (PvPShield.remaining_lifetime(zone)) / 60 / 60) .. ' minutes'
         else
             info = ''
         end
@@ -490,7 +490,7 @@ local function found_town(event)
         rendering.draw_text {
         text = town_center.town_name,
         surface = surface,
-        forces = {force_name},
+        forces = {force_name, game.forces.player, game.forces.rogue},
         target = town_center.market,
         target_offset = {0, -4.25},
         color = town_center.color,
@@ -504,7 +504,7 @@ local function found_town(event)
         rendering.draw_text {
         text = 'HP: ' .. town_center.health .. ' / ' .. town_center.max_health,
         surface = surface,
-        forces = {force_name},
+        forces = {force_name, game.forces.player, game.forces.rogue},
         target = town_center.market,
         target_offset = {0, -3.25},
         color = {200, 200, 200},
@@ -531,7 +531,7 @@ local function found_town(event)
     town_center.zone_text = rendering.draw_text {
         text = 'PvP Shield: (..)',
         surface = surface,
-        forces = {force_name},
+        forces = {force_name, game.forces.player, game.forces.rogue},
         target = town_center.market,
         target_offset = {0, -2.25},
         color = {200, 200, 200},
@@ -545,7 +545,7 @@ local function found_town(event)
 
     Enemy.clear_enemies(position, surface, town_radius * 5)
     draw_town_spawn(force_name)
-    ExclusionZone.add_zone(surface, force, position, Public.update_protection_display)
+    PvPShield.add_zone(surface, force, { x = position.x + 0.5, y = position.y + 0.5})   -- Market center is slightly shifted
     update_protection_display()
 
     -- set the spawn point
@@ -634,7 +634,7 @@ commands.add_command(
 
 Event.add(defines.events.on_built_entity, on_built_entity)
 Event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)
-Event.on_nth_tick(60, update_protection_display)    -- TODO: use callback from exclusion_zones instead
+Event.on_nth_tick(60, update_protection_display)
 --Event.add(defines.events.on_robot_repaired_entity, on_robot_repaired_entity)
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 
