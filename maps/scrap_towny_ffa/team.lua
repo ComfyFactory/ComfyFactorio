@@ -8,7 +8,7 @@ local string_lower = string.lower
 local Server = require 'utils.server'
 local Map = require 'maps.scrap_towny_ffa.map'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
-local ExclusionZone = require 'maps.scrap_towny_ffa.exclusion_zone'
+local PvPShield = require 'maps.scrap_towny_ffa.pvp_shield'
 
 local outlander_color = {150, 150, 150}
 local outlander_chat_color = {170, 170, 170}
@@ -808,7 +808,6 @@ local function kill_force(force_name, cause)
     end
     for _, e in pairs(surface.find_entities_filtered({force = force_name})) do
         if e.valid then
-            e.force = game.forces['neutral']
             local damage = math_random() * 2.5 - 0.5
             if damage > 0 then
                 if damage >= 1 or e.health == nil then
@@ -826,31 +825,19 @@ local function kill_force(force_name, cause)
             e.destroy()
         end
     end
-    for _, e in pairs(surface.find_entities_filtered({force = force_name, type = "entity-ghost"})) do
-        if e.valid then
-            e.destroy()
-        end
-    end
-
-    if this.exclusion_zones[force_name] then
-        ExclusionZone.remove_zone(this.exclusion_zones[force_name])
+    if this.pvp_shields[force_name] then
+        PvPShield.remove_zone(this.pvp_shields[force_name])
     end
     game.merge_forces(force_name, 'neutral')
     this.town_centers[force_name] = nil
     this.number_of_towns = this.number_of_towns - 1
     delete_chart_tag_for_all_forces(market)
+
     -- reward the killer
-    if cause == nil or not cause.valid then
-        Server.to_discord_embed(town_name .. ' has fallen to the biters!')
-        game.print('>> ' .. town_name .. ' has fallen to the biters!', {255, 255, 0})
-        return
-    end
-    if cause.force == nil then
-        Server.to_discord_embed(town_name .. ' has fallen to the biters!')
-        game.print('>> ' .. town_name .. ' has fallen to the biters!', {255, 255, 0})
-        return
-    end
-    if cause.force.name == 'player' or cause.force.name == 'rogue' then
+    local message
+    if cause == nil or not cause.valid or cause.force == nil then
+        message = town_name .. ' has fallen!'
+    elseif cause.force.name == 'player' or cause.force.name == 'rogue' then
         local items = {name = 'coin', count = balance}
         town_center.coin_balance = 0
         if balance > 0 then
@@ -861,30 +848,38 @@ local function kill_force(force_name, cause)
                 chest.insert(items)
             end
         end
-        if cause.force.name == 'player' then
-            Server.to_discord_embed(town_name .. ' has fallen to outlanders!')
-            game.print('>> ' .. town_name .. ' has fallen to outlanders!', {255, 255, 0})
+        if cause.name then
+            message = town_name .. ' has fallen to ' .. cause.name .. '!'
+        elseif cause.force.name == 'player' then
+            message = town_name .. ' has fallen to outlanders!'
         else
-            Server.to_discord_embed(town_name .. ' has fallen to rogues!')
-            game.print('>> ' .. town_name .. ' has fallen to rogues!', {255, 255, 0})
+            message = town_name .. ' has fallen to rogues!'
+        end
+    elseif cause.force.name ~= 'enemy' then
+        if this.town_centers[cause.force.name] ~= nil then
+            local killer_town_center = this.town_centers[cause.force.name]
+            if balance > 0 then
+                killer_town_center.coin_balance = killer_town_center.coin_balance + balance
+                cause.force.print(balance .. " coins have been transferred to your town")
+            end
+            message = town_name .. ' has fallen to ' .. killer_town_center.town_name .. '!'
         end
     else
-        if cause.force.name ~= 'enemy' then
-            if this.town_centers[cause.force.name] ~= nil then
-                local killer_town_center = this.town_centers[cause.force.name]
-                if balance > 0 then
-                    killer_town_center.coin_balance = killer_town_center.coin_balance + balance
-                end
-                Server.to_discord_embed(town_name .. ' has fallen to ' .. killer_town_center.town_name .. '!')
-                game.print('>> ' .. town_name .. ' has fallen to ' .. killer_town_center.town_name .. '!', {255, 255, 0})
-            end
-        else
-            Server.to_discord_embed(town_name .. ' has fallen to the biters!')
-            game.print('>> ' .. town_name .. ' has fallen to the biters!', {255, 255, 0})
+        message = town_name .. ' has fallen to the biters!'
+    end
+
+    Server.to_discord_embed(message)
+    game.print('>> ' .. message, {255, 255, 0})
+end
+
+local function on_forces_merged()
+    -- Remove any ghosts that have been moved into neutral after a town is destroyed. This caused desyncs before.
+    for _, e in pairs(game.surfaces.nauvis.find_entities_filtered({force = 'neutral', type = "entity-ghost"})) do
+        if e.valid then
+            e.destroy()
         end
     end
 end
-
 
 local function setup_neutral_force()
     local force = game.forces['neutral']
@@ -1070,10 +1065,10 @@ local function on_entity_damaged(event)
                     if player and player.valid and player.force.index == game.forces['player'].index then
                         -- set the force of the player to rogue until they die or create a town
                         set_player_to_rogue(player)
+                        -- set the vehicle to rogue
+                        cause.force = game.forces['rogue']
                     end
                 end
-                -- set the vehicle to rogue
-                cause.force = game.forces['rogue']
             end
             -- trains
             if cause.type == 'locomotive' or cause.type == 'cargo-wagon' or cause.type == 'fluid-wagon' or cause.type == 'artillery-wagon' then
@@ -1087,10 +1082,11 @@ local function on_entity_damaged(event)
                         end
                         if player and player.valid and player.force.index == game.forces['player'].index then
                             set_player_to_rogue(player)
+                            -- set the vehicle to rogue
+                            cause.force = game.forces['rogue']
                         end
                     end
                 end
-                cause.force = game.forces['rogue']
             end
             -- combat robots
             if cause.type == 'combat-robot' then
@@ -1098,9 +1094,9 @@ local function on_entity_damaged(event)
                 if owner and owner.valid and owner.force == game.forces['player'] then
                     -- set the force of the player to rogue until they die or create a town
                     set_player_to_rogue(owner)
+                    -- set the robot to rogue
+                    cause.force = game.forces['rogue']
                 end
-                -- set the robot to rogue
-                cause.force = game.forces['rogue']
             end
         end
     end
@@ -1157,5 +1153,5 @@ Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_post_entity_died, on_post_entity_died)
 Event.add(defines.events.on_console_command, on_console_command)
 Event.add(defines.events.on_console_chat, on_console_chat)
-
+Event.add(defines.events.on_forces_merged, on_forces_merged)
 return Public

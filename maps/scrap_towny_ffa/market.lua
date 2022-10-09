@@ -22,7 +22,7 @@ local upgrade_functions = {
         local market = town_center.market
         local force = market.force
         local surface = market.surface
-        if force.character_inventory_slots_bonus + 5 > 100 then
+        if force.character_inventory_slots_bonus + 5 > 50 then
             return false
         end
         force.character_inventory_slots_bonus = force.character_inventory_slots_bonus + 5
@@ -110,7 +110,7 @@ local function set_offers(town_center)
     else
         special_offers[1] = {{}, 'Maximum Health upgrades reached!'}
     end
-    if force.character_inventory_slots_bonus + 5 <= 100 then
+    if force.character_inventory_slots_bonus + 5 <= 50 then
         special_offers[2] = {{{'coin', (force.character_inventory_slots_bonus / 5 + 1) * 50}}, 'Upgrade Backpack +5 Slot'}
     else
         special_offers[2] = {{}, 'Maximum Backpack upgrades reached!'}
@@ -146,7 +146,7 @@ local function set_offers(town_center)
     table_insert(market_items, {price = {{'coin', 1}}, offer = {type = 'give-item', item = 'stone', count = 6}})
     table_insert(market_items, {price = {{'coin', 1}}, offer = {type = 'give-item', item = 'coal', count = 6}})
     table_insert(market_items, {price = {{'coin', 1}}, offer = {type = 'give-item', item = 'uranium-ore', count = 2}})
-    table_insert(market_items, {price = {{'coin', 1000}}, offer = {type = 'give-item', item = 'laser-turret', count = 1}})
+    table_insert(market_items, {price = {{'coin', 500}}, offer = {type = 'give-item', item = 'laser-turret', count = 1}})
     table_insert(market_items, {price = {{'coin', 300}}, offer = {type = 'give-item', item = 'loader', count = 1}})
     table_insert(market_items, {price = {{'coin', 600}}, offer = {type = 'give-item', item = 'fast-loader', count = 1}})
     table_insert(market_items, {price = {{'coin', 900}}, offer = {type = 'give-item', item = 'express-loader', count = 1}})

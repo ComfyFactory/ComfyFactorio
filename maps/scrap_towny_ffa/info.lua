@@ -25,13 +25,16 @@ Survive as long as you can. Raid other towns. Defend your town.
     Biters and spitters become more aggressive towards towns that are advanced in research.
     Their evolution will scale around technology progress in any nearby towns and pollution levels.
 
-- Are you out of ore patches? Make sure you researched steel processing,
+- How to get more ores? Make sure you researched steel processing,
     then hand mine a few big rocks to find ore patches under them!
+
+- How to get more oil? Kill worms - some of them will leave you a oil patch
 
 - The town market is the heart of your town. If it is destroyed, you lose everything.
     So protect it well, repair it whenever possible, and if you can afford, increase its health by purchasing upgrades.
 
 - It's possible to automate trading with the town center! How cool is that?!! Try it out.
+    Tip: use filter inserters with to get coins/iron/.. out of the market
 
 - Fishes procreate near towns (the more fishes, the quicker they multiply)
 
