@@ -94,9 +94,7 @@ function Public.requests(player)
                     player.get_inventory(defines.inventory.character_trash)
                 }
                 for _, i in pairs(inventories) do
-                    if i.valid then
-                        i.clear()
-                    end
+                    i.clear()
                 end
 
                 player.character.die()
