@@ -38,6 +38,7 @@ function Public.reset_table()
     this.mining_target = {}
     this.spaceships = {}
     this.pvp_shields = {}
+    this.pvp_shield_warned = {}
 end
 
 function Public.get_table()

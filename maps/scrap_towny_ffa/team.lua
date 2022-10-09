@@ -826,7 +826,7 @@ local function kill_force(force_name, cause)
         end
     end
     if this.pvp_shields[force_name] then
-        PvPShield.remove_zone(this.pvp_shields[force_name])
+        PvPShield.remove_shield(this.pvp_shields[force_name])
     end
     game.merge_forces(force_name, 'neutral')
     this.town_centers[force_name] = nil

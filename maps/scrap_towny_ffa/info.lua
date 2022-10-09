@@ -10,6 +10,13 @@ You can either
 Click on the "Info" button for full intro/help.
 
 Have fun and be comfy ^.^
+
+
+Changelog (9th October 2022):
+ - Towns have an initial PvP protection shield for 2h
+ - Temporary PvP shield available in market for breaks / AFK
+ - Improved base defenses and offline survivability
+ - Fixed some freezes / desyncs
 ]]
 
 local info_adv =
