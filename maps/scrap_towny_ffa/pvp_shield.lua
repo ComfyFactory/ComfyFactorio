@@ -63,7 +63,13 @@ function Public.add_shield(surface, force, center, lifetime_ticks, time_to_full_
     if is_pause_mode then
         -- Freeze players to avoid AFK abuse
         shield.force.character_running_speed_modifier = -1
-        game.print("Your AFK PvP shield is now rolling out. You will be frozen until it expires in " ..
+        -- Kick players out of vehicles if needed
+        for _, player in pairs(force.connected_players) do
+            if player.character.driving then
+                player.character.driving = false
+            end
+        end
+        shield.force.print("Your AFK PvP shield is now rolling out. You will be frozen until it expires in " ..
                 string.format("%.0f", (Public.remaining_lifetime(shield)) / 60 / 60) .. ' minutes')
     end
 
@@ -123,7 +129,7 @@ function Public.push_enemies_out(player)
                     center_diff.y = center_diff.y / vector_norm(center_diff)
                     player.teleport({ player.position.x + center_diff.x, player.position.y + center_diff.y}, player.surface)
 
-                    -- Kick players out of vehicles if they try to drive in
+                    -- Kick players out of vehicles if needed
                     if player.character.driving then
                         player.character.driving = false
                     end
@@ -150,6 +156,27 @@ local function on_player_changed_position(event)
     Public.push_enemies_out(player)
 end
 
+local function on_player_driving_changed_state(event)
+    local player = game.players[event.player_index]
+    if not player or not player.valid then
+        return
+    end
+    local this = ScenarioTable.get_table()
+    for _, shield in pairs(this.pvp_shields) do
+        if shield.force == player.force and shield.is_pause_mode then
+            local vehicle = player.vehicle
+            if vehicle and vehicle.valid then
+                -- Kick players out of vehicles if needed
+                if player.character.driving then
+                    player.character.driving = false
+                    player.print("Can't drive around while AFK PvP Shield is active")
+                end
+            end
+        end
+    end
+end
+
+Event.add(defines.events.on_player_driving_changed_state, on_player_driving_changed_state)
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)
 Event.on_nth_tick(60, update_shield_lifetime)
 
