@@ -581,6 +581,24 @@ local function found_town(event)
     player.print('Your town color is ' .. crayola.name, crayola.color)
 end
 
+local Token = require 'utils.token'
+local Task = require 'utils.task'
+
+local do_something_token =
+    Token.register(
+    function(event)
+        local player_index = event.player_index
+        local player = game.get_player(player_index)
+        if not player or not player.valid then
+            return
+        end
+    end
+)
+
+local function some_event_that_fires_the_callback()
+    Task.set_timeout_in_ticks(do_something_token, params)
+end
+
 local function on_built_entity(event)
     found_town(event)
 end

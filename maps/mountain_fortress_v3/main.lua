@@ -166,6 +166,7 @@ function Public.reset_map()
 
     OfflinePlayers.set_active_surface_index(this.active_surface_index)
     OfflinePlayers.set_offline_players_enabled(true)
+    OfflinePlayers.clear_offline_players()
     -- OfflinePlayers.set_offline_players_surface_removal(true)
 
     RPG.rpg_reset_all_players()
