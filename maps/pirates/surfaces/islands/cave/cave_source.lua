@@ -309,17 +309,18 @@ local function get_biome(args)
 end
 
 function Public.terrain(args)
+    local tiles_placed = #args.tiles
 	local biome, square_distance, noise = get_biome(args)
 	biome(args, square_distance, noise)
 
-    -- fallback case when no tiles were placed
-    if #args.tiles == 0 then
-        -- args.tiles[#args.tiles + 1] = {name = 'dirt-7', position = args.p}
-        args.tiles[#args.tiles + 1] = {name = 'concrete', position = args.p}
+    -- fallback case when tile wasn't placed
+    if tiles_placed == #args.tiles then
+        args.tiles[#args.tiles + 1] = {name = 'dirt-7', position = args.p}
     end
 end
 
 
+-- Finding a spot for structures is very hard (it might cause structures to spawn in weird locations, like ship)
 function Public.chunk_structures(args)
 
 end

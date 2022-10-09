@@ -128,7 +128,7 @@ function Public.roll_source_surface(destination_data)
 
     cave_miner.cave_surface = game.create_surface(cave_surface_name, map_gen_settings)
     cave_miner.cave_surface.request_to_generate_chunks({x = 0, y = 0}, 2)
-    cave_miner.cave_surface.force_generate_chunk_requests()
+    -- cave_miner.cave_surface.force_generate_chunk_requests() -- Figure out if this is needed at all since it causes issues
 end
 
 function Public.cleanup_cave_surface(destination_data)
