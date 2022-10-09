@@ -63,7 +63,7 @@ function Public.add_shield(surface, force, center, lifetime_ticks, time_to_full_
     if is_pause_mode then
         -- Freeze players to avoid AFK abuse
         shield.force.character_running_speed_modifier = -1
-        game.print("Your AFK PvP shield is now rolling out. You will be frozen until it expires in " ..
+        shield.force.print("Your AFK PvP shield is now rolling out. You will be frozen until it expires in " ..
                 string.format("%.0f", (Public.remaining_lifetime(shield)) / 60 / 60) .. ' minutes')
     end
 
