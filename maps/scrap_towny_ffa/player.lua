@@ -82,23 +82,21 @@ end
 function Public.requests(player)
     local this = ScenarioTable.get()
     if this.requests[player.index] and this.requests[player.index] == 'kill-character' then
-        if player.character then
-            if player.character.valid then
-                -- Clear inventories to avoid people easily getting back their stuff after a town dies offline
-                local inventories = {
-                    player.get_inventory(defines.inventory.character_main),
-                    player.get_inventory(defines.inventory.character_guns),
-                    player.get_inventory(defines.inventory.character_ammo),
-                    player.get_inventory(defines.inventory.character_armor),
-                    player.get_inventory(defines.inventory.character_vehicle),
-                    player.get_inventory(defines.inventory.character_trash)
-                }
-                for _, i in pairs(inventories) do
-                    i.clear()
-                end
-
-                player.character.die()
+        if player.character and player.character.valid then
+            -- Clear inventories to avoid people easily getting back their stuff after a town dies offline
+            local inventories = {
+                player.get_inventory(defines.inventory.character_main),
+                player.get_inventory(defines.inventory.character_guns),
+                player.get_inventory(defines.inventory.character_ammo),
+                player.get_inventory(defines.inventory.character_armor),
+                player.get_inventory(defines.inventory.character_vehicle),
+                player.get_inventory(defines.inventory.character_trash)
+            }
+            for _, i in pairs(inventories) do
+                i.clear()
             end
+
+            player.character.die()
         end
         this.requests[player.index] = nil
     end
