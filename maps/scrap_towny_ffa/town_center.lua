@@ -3,6 +3,7 @@ local Public = {}
 local math_random = math.random
 local table_insert = table.insert
 local math_floor = math.floor
+local math_sqrt = math.sqrt
 local table_shuffle = table.shuffle_table
 
 local Event = require 'utils.event'
@@ -368,17 +369,35 @@ function Public.update_coin_balance(force)
     rendering.set_text(town_center.coins_text, 'Coins: ' .. town_center.coin_balance)
 end
 
-local function update_protection_display()
+function Public.enemy_players_nearby(town_center, max_radius)
+    local own_force = town_center.market.force
+    local town_position = town_center.market.position
+
+    for _, player in pairs(game.connected_players) do
+        if player.surface == town_center.market.surface then
+            local distance = math_floor(math_sqrt((player.position.x - town_position.x) ^ 2
+                    + (player.position.y - town_position.y) ^ 2))
+            if distance < max_radius then
+                if player.force ~= "enemy" and (own_force ~= player.force and not own_force.get_friend(player.force)) then
+                    return true
+                end
+            end
+        end
+    end
+    return false
+end
+
+local function update_pvp_shields_display()
     local this = ScenarioTable.get_table()
     for _, town_center in pairs(this.town_centers) do
-        local zone = this.pvp_shields[town_center.market.force.name]
+        local shield = this.pvp_shields[town_center.market.force.name]
         local info
-        if zone then
-            info = 'PvP Shield: ' .. string.format("%.0f", (PvPShield.remaining_lifetime(zone)) / 60 / 60) .. ' minutes'
+        if shield then
+            info = 'PvP Shield: ' .. string.format("%.0f", (PvPShield.remaining_lifetime(shield)) / 60 / 60) .. ' minutes'
         else
             info = ''
         end
-        rendering.set_text(town_center.zone_text, info)
+        rendering.set_text(town_center.shield_text, info)
     end
 end
 
@@ -528,7 +547,7 @@ local function found_town(event)
         scale_with_zoom = false
     }
 
-    town_center.zone_text = rendering.draw_text {
+    town_center.shield_text = rendering.draw_text {
         text = 'PvP Shield: (..)',
         surface = surface,
         forces = {force_name, game.forces.player, game.forces.rogue},
@@ -545,8 +564,8 @@ local function found_town(event)
 
     Enemy.clear_enemies(position, surface, town_radius * 5)
     draw_town_spawn(force_name)
-    PvPShield.add_zone(surface, force, { x = position.x + 0.5, y = position.y + 0.5})   -- Market center is slightly shifted
-    update_protection_display()
+    PvPShield.add_shield(surface, force, { x = position.x + 0.5, y = position.y + 0.5})   -- Market center is slightly shifted
+    update_pvp_shields_display()
 
     -- set the spawn point
     local pos = {x = town_center.market.position.x, y = town_center.market.position.y + 4}
@@ -634,7 +653,7 @@ commands.add_command(
 
 Event.add(defines.events.on_built_entity, on_built_entity)
 Event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)
-Event.on_nth_tick(60, update_protection_display)
+Event.on_nth_tick(60, update_pvp_shields_display)
 --Event.add(defines.events.on_robot_repaired_entity, on_robot_repaired_entity)
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 
