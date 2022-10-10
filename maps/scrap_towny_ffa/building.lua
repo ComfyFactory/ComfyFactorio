@@ -214,7 +214,7 @@ local function prevent_landfill_in_restricted_zone(event)
     return fail
 end
 
-local function prevent_entities_near_towns(event)
+local function process_built_entities(event)
     local player_index = event.player_index or nil
     local entity = event.created_entity
     if entity == nil or not entity.valid then
@@ -241,10 +241,12 @@ local function prevent_entities_near_towns(event)
             end
         end
     end
+
     if Public.near_another_town(force_name, position, surface, 32) == true then
         if neutral_whitelist[name] then
             entity.force = game.forces['neutral']
         else
+            -- Prevent entities from being built near towns
             entity.destroy()
             if player_index ~= nil then
                 local player = game.players[player_index]
@@ -256,6 +258,10 @@ local function prevent_entities_near_towns(event)
             end
             return
         end
+    end
+
+    if force_name == 'player' or force_name == 'rogue' then
+        entity.force = game.forces['neutral']
     end
 end
 
@@ -310,7 +316,7 @@ local function on_built_entity(event)
     if prevent_entity_in_restricted_zone(event) then
         return
     end
-    if prevent_entities_near_towns(event) then
+    if process_built_entities(event) then
         return
     end
 end
@@ -319,7 +325,7 @@ local function on_robot_built_entity(event)
     if prevent_entity_in_restricted_zone(event) then
         return
     end
-    if prevent_entities_near_towns(event) then
+    if process_built_entities(event) then
         return
     end
 end
