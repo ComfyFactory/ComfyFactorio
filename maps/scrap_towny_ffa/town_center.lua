@@ -305,7 +305,9 @@ local function is_valid_location(force_name, surface, position)
         end
     end
 
-    if this.number_of_towns > 48 then
+    town_count = 0
+    for _ in pairs(this.town_centers) do town_count = town_count + 1 end
+    if town_count > 48 then
         surface.create_entity(
             {
                 name = 'flying-text',
@@ -576,8 +578,6 @@ local function found_town(event)
         alignment = 'center',
         scale_with_zoom = false
     }
-
-    this.number_of_towns = this.number_of_towns + 1
 
     Enemy.clear_enemies(position, surface, town_radius * 5)
     draw_town_spawn(force_name)

@@ -18,7 +18,6 @@ function Public.reset_table()
     this.rocket_launches = {}
     this.requests = {}
     this.town_centers = {}
-    this.number_of_towns = 0
     this.cooldowns_town_placement = {}
     this.last_respawn = {}
     this.last_death = {}

@@ -825,7 +825,6 @@ local function kill_force(force_name, cause)
     end
     game.merge_forces(force_name, 'neutral')
     this.town_centers[force_name] = nil
-    this.number_of_towns = this.number_of_towns - 1
     delete_chart_tag_for_all_forces(market)
 
     -- reward the killer
