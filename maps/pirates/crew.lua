@@ -720,6 +720,9 @@ function Public.initialise_crew(accepted_proposal)
 	memory.difficulty = CoreData.difficulty_options[accepted_proposal.difficulty_option].value
 	memory.capacity = CoreData.capacity_options[accepted_proposal.capacity_option].value
 	-- memory.mode = CoreData.mode_options[accepted_proposal.mode_option].value
+	memory.run_is_private = accepted_proposal.run_is_private
+	memory.private_run_password = accepted_proposal.private_run_password
+	memory.private_run_lock_timer = 60 * 60 * 60 * CoreData.private_run_lock_amount_hr
 
 	memory.destinationsvisited_indices = {}
 	memory.stored_fuel = Balance.starting_fuel

@@ -1384,7 +1384,7 @@ local function event_on_player_joined_game(event)
 		local ages = {}
 		for _, memory in pairs(global_memory.crew_memories) do
 			if Common.is_id_valid(memory.id)
-				and memory.crewstatus
+				and (not memory.run_is_private)
 				and memory.crewstatus == Crew.enum.ADVENTURING
 				and memory.capacity
 				and memory.crewplayerindices

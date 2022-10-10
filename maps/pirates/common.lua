@@ -19,6 +19,7 @@ local Public = {}
 
 -- Public.active_crews_cap = 1
 Public.activeCrewsCap = 2
+Public.private_run_cap = 1
 Public.minimumCapacitySliderValue = 1
 Public.minimum_run_capacity_to_enforce_space_for = 22
 -- auto-disbanding when there are no players left in the crew:

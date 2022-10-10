@@ -1623,4 +1623,22 @@ function Public.revealed_buried_treasure_distance_check()
 	end
 end
 
+function Public.update_private_run_lock_timer(tickinterval)
+	local memory = Memory.get_crew_memory()
+	if memory.run_is_private then
+		if Common.activecrewcount() <= 0 then
+			if memory.private_run_lock_timer > 0 then
+				memory.private_run_lock_timer = memory.private_run_lock_timer - tickinterval
+
+				if memory.private_run_lock_timer <= 0 then
+					Common.notify_game({'pirates.private_run_lock_expired', memory.name})
+					memory.run_is_private = false
+				end
+			end
+		else
+			memory.private_run_lock_timer = 60 * 60 * 60 * CoreData.private_run_lock_amount_hr
+		end
+	end
+end
+
 return Public

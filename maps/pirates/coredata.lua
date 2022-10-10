@@ -20,6 +20,8 @@ Public.total_max_biters = 2000
 
 Public.lobby_surface_name = '000-000-Lobby'
 
+Public.private_run_lock_amount_hr = 24 -- how many hours need to pass, when crew is empty or inactive, until private run becomes public
+
 Public.colors = {
 	coal = {r=0.5, g=0.5, b=0.5},
 	wood = {r=204, g=158, b=67},

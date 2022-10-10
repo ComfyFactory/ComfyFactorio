@@ -403,6 +403,9 @@ end
 
 
 function Public.click(event)
+	-- This is only needed since we call click on every single GUI element and if element gets destroyed, it's no good (these checks wouldn't be needed (I think) if GUI was purely event driven)
+	if not event.element then return end
+	if not event.element.valid then return end
 
 	local player = game.players[event.element.player_index]
 
