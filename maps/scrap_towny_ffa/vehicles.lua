@@ -8,6 +8,9 @@ local function on_player_driving_changed_state(event)
         return
     end
     local vehicle = player.vehicle
+    if player.force.name ~= 'player' and player.force.name ~= 'rogue' then
+        return
+    end
     if vehicle and vehicle.valid then
         -- player entered a vehicle
         if vehicle.name == 'locomotive' or vehicle.name == 'cargo-wagon' or vehicle.name == 'fluid-wagon' then

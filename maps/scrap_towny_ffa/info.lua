@@ -12,11 +12,12 @@ Click on the "Info" button for full intro/help.
 Have fun and be comfy ^.^
 
 
-Changelog (9th October 2022):
- - Towns have an initial PvP protection shield for 2h
+
+Changelog (10th October 2022):
+ - Towns have an initial PvP protection shield, size and duration is scaled with the biggest town size
  - Temporary PvP shield available in market for breaks / AFK
  - Improved base defenses and offline survivability
- - Fixed some freezes / desyncs
+ - Loads of bugfixes including freezes and desyncs
 ]]
 
 local info_adv =
@@ -43,7 +44,7 @@ Survive as long as you can. Raid other towns. Defend your town.
 - It's possible to automate trading with the town center! How cool is that?!! Try it out.
     Tip: use filter inserters with to get coins/iron/.. out of the market
 
-- Fishes procreate near towns (the more fishes, the quicker they multiply)
+- Fishes procreate near towns. The more fishes, the quicker they multiply. Automated fish farm, anyone?
 
 - Use /rename-town (chat command) to rename your town
 

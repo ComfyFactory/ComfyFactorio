@@ -42,6 +42,11 @@ local destroy_robot_types = {
     ['logistic-robot'] = true
 }
 
+local storage_types = {
+    ['container'] = true,
+    ['logistic-container'] = true,
+    ['storage-tank'] = true
+}
 -- hand craftable
 local player_force_disabled_recipes = {
     'lab',
@@ -775,6 +780,9 @@ local function kill_force(force_name, cause)
     local balance = town_center.coin_balance
     local town_name = town_center.town_name
     surface.create_entity({name = 'big-artillery-explosion', position = position})
+
+    local is_suicide = force_name == cause.force.name
+
     for _, player in pairs(force.players) do
         this.spawn_point[player.index] = nil
         this.cooldowns_town_placement[player.index] = game.tick + 3600 * 5
@@ -794,27 +802,17 @@ local function kill_force(force_name, cause)
             if destroy_military_types[e.type] == true then
                 surface.create_entity({name = 'big-artillery-explosion', position = position})
                 e.die()
-            else
-                if destroy_robot_types[e.type] == true then
-                    surface.create_entity({name = 'explosion', position = position})
+            elseif destroy_robot_types[e.type] == true then
+                surface.create_entity({name = 'explosion', position = position})
+                e.die()
+            elseif destroy_wall_types[e.type] == true then
+                e.die()
+            elseif storage_types[e.type] ~= true then   -- spare chests
+                local random = math_random()
+                if random > 0.5 or e.health == nil then
                     e.die()
-                else
-                    if destroy_wall_types[e.type] == true then
-                        e.die()
-                    end
-                end
-            end
-        end
-    end
-    for _, e in pairs(surface.find_entities_filtered({force = force_name})) do
-        if e.valid then
-            local damage = math_random() * 2.5 - 0.5
-            if damage > 0 then
-                if damage >= 1 or e.health == nil then
-                    e.die()
-                else
-                    local health = e.health
-                    e.health = health * damage
+                elseif random < 0.25 then
+                    e.health = e.health * math_random()
                 end
             end
         end
@@ -828,15 +826,17 @@ local function kill_force(force_name, cause)
     if this.pvp_shields[force_name] then
         PvPShield.remove_shield(this.pvp_shields[force_name])
     end
+
     game.merge_forces(force_name, 'neutral')
     this.town_centers[force_name] = nil
-    this.number_of_towns = this.number_of_towns - 1
     delete_chart_tag_for_all_forces(market)
 
     -- reward the killer
     local message
-    if cause == nil or not cause.valid or cause.force == nil then
-        message = town_name .. ' has fallen!'
+    if is_suicide then
+        message = town_name .. ' has given up'
+    elseif cause == nil or not cause.valid or cause.force == nil then
+        message = town_name .. ' has fallen to an unknown entity (FIXME ID0)!' -- TODO: remove after some testing
     elseif cause.force.name == 'player' or cause.force.name == 'rogue' then
         local items = {name = 'coin', count = balance}
         town_center.coin_balance = 0
@@ -848,12 +848,14 @@ local function kill_force(force_name, cause)
                 chest.insert(items)
             end
         end
-        if cause.name then
-            message = town_name .. ' has fallen to ' .. cause.name .. '!'
+        if cause.player then
+            message = town_name .. ' has fallen to ' .. cause.player.name .. '!'
         elseif cause.force.name == 'player' then
             message = town_name .. ' has fallen to outlanders!'
-        else
+        elseif cause.force.name == 'rogue' then
             message = town_name .. ' has fallen to rogues!'
+        else
+            message = town_name .. ' has fallen to an unknown entity (FIXME ID1)!' -- TODO: remove after some testing
         end
     elseif cause.force.name ~= 'enemy' then
         if this.town_centers[cause.force.name] ~= nil then
@@ -862,7 +864,13 @@ local function kill_force(force_name, cause)
                 killer_town_center.coin_balance = killer_town_center.coin_balance + balance
                 cause.force.print(balance .. " coins have been transferred to your town")
             end
-            message = town_name .. ' has fallen to ' .. killer_town_center.town_name .. '!'
+            if cause.player then
+                message = town_name .. ' has fallen to ' .. cause.player.name .. ' from '  .. killer_town_center.town_name .. '!'
+            else
+                message = town_name .. ' has fallen to ' .. killer_town_center.town_name .. '!'
+            end
+        else
+            message = town_name .. ' has fallen to an unknown entity (FIXME ID2)!' -- TODO: remove after some testing
         end
     else
         message = town_name .. ' has fallen to the biters!'
@@ -1013,14 +1021,6 @@ local function on_player_dropped_item(event)
         return
     end
 end
-
----- when a player dies, reveal their base to everyone
---local function on_player_died(event)
---	local player = game.players[event.player_index]
---	if not player.character then return end
---	if not player.character.valid then return end
---	reveal_entity_to_all(player.character)
---end
 
 local function on_entity_damaged(event)
     local entity = event.entity

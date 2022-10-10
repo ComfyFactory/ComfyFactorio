@@ -100,7 +100,7 @@ local upgrade_functions = {
             -- Double-check with the player to prevent accidental clicks
             if this.pvp_shield_warned[player.force.name] ~= nil and game.tick - this.pvp_shield_warned[player.force.name] < 60 * 60 then
                 if not Town_center.enemy_players_nearby(town_center, 100) then
-                    PvPShield.add_shield(surface, force, market.position, shield_lifetime_ticks, 2 * 60 * 60, true)
+                    PvPShield.add_shield(surface, force, market.position, 120, shield_lifetime_ticks, 2 * 60 * 60, true)
                     surface.play_sound({path = 'utility/scenario_message', position = player.position, volume_modifier = 1})
                     this.pvp_shield_warned[player.force.name] = nil
                 else
