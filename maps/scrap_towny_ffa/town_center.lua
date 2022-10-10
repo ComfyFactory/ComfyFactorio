@@ -403,7 +403,7 @@ local function update_pvp_shields_display()
 end
 
 local function add_pvp_shield_scaled(position, force, surface)
-    local evo = Evolution.get_highest_evolution(position)
+    local evo = Evolution.get_highest_evolution()
 
     local min_size = 60
     local max_size = 120

@@ -484,12 +484,11 @@ local function get_relative_worm_evolution(position)
     return relative_evolution
 end
 
-function Public.get_highest_evolution(position)
+function Public.get_highest_evolution()
     local this = ScenarioTable.get_table()
     local relative_evolution = 0.0
     local max_evo = 0
     for _, town_center in pairs(this.town_centers) do
-        local market = town_center.market
         town_center.evolution.worms = math_max(town_center.evolution.worms, max_evo)
     end
     return relative_evolution
