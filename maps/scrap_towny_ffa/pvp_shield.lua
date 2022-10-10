@@ -7,8 +7,6 @@ local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local CommonFunctions = require 'utils.common'
 
 local beam_type = 'electric-beam-no-sound'
-local default_lifetime_ticks = 2 * 60
-local default_time_to_full_size_ticks = 60 * 60
 
 local function draw_borders(shield)
     local surface = shield.surface
