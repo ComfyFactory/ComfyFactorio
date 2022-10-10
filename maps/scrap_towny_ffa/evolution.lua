@@ -485,7 +485,6 @@ end
 
 function Public.get_highest_evolution()
     local this = ScenarioTable.get_table()
-    local relative_evolution = 0.0
     local max_evo = 0
     for _, town_center in pairs(this.town_centers) do
 		if town_center.evolution.worms > max_evo then
