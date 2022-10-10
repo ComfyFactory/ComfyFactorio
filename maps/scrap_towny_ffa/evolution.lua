@@ -489,7 +489,7 @@ function Public.get_highest_evolution()
     local relative_evolution = 0.0
     local max_evo = 0
     for _, town_center in pairs(this.town_centers) do
-        town_center.evolution.worms = math_max(town_center.evolution.worms, max_evo)
+        max_evo = math_max(town_center.evolution.worms, max_evo)
     end
     return relative_evolution
 end
