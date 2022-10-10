@@ -42,6 +42,11 @@ local destroy_robot_types = {
     ['logistic-robot'] = true
 }
 
+local storage_types = {
+    ['container'] = true,
+    ['logistic-container'] = true,
+    ['storage-tank'] = true
+}
 -- hand craftable
 local player_force_disabled_recipes = {
     'lab',
@@ -794,27 +799,23 @@ local function kill_force(force_name, cause)
             if destroy_military_types[e.type] == true then
                 surface.create_entity({name = 'big-artillery-explosion', position = position})
                 e.die()
+            elseif destroy_robot_types[e.type] == true then
+                surface.create_entity({name = 'explosion', position = position})
+                e.die()
+            elseif destroy_wall_types[e.type] == true then
+                e.die()
+            elseif storage_types[e.type] == true then
+                -- spare chests
             else
-                if destroy_robot_types[e.type] == true then
-                    surface.create_entity({name = 'explosion', position = position})
-                    e.die()
-                else
-                    if destroy_wall_types[e.type] == true then
+                game.print(e.type)
+                local damage = math_random() * 2.5 - 0.5
+                if damage > 0 then
+                    if damage >= 1 or e.health == nil then
                         e.die()
+                    else
+                        local health = e.health
+                        e.health = health * damage
                     end
-                end
-            end
-        end
-    end
-    for _, e in pairs(surface.find_entities_filtered({force = force_name})) do
-        if e.valid then
-            local damage = math_random() * 2.5 - 0.5
-            if damage > 0 then
-                if damage >= 1 or e.health == nil then
-                    e.die()
-                else
-                    local health = e.health
-                    e.health = health * damage
                 end
             end
         end
