@@ -163,13 +163,24 @@ end
 
 
 function Public.toggle_window(player)
+	local window
 	local flow, flow2, flow3, flow4, flow5
 
 	--*** OVERALL FLOW ***--
 	if player.gui.screen[window_name .. '_piratewindow'] then player.gui.screen[window_name .. '_piratewindow'].destroy() return end
 
-	flow = GuiCommon.new_window(player, window_name)
-	flow.caption = {'pirates.gui_runs_play'}
+	window = GuiCommon.new_window(player, window_name)
+	window.caption = {'pirates.gui_runs_play'}
+
+	flow = window.add {
+        type = 'scroll-pane',
+        name = 'scroll_pane',
+        direction = 'vertical',
+        horizontal_scroll_policy = 'never',
+        vertical_scroll_policy = 'auto'
+    }
+    flow.style.maximal_height = 500
+	flow.style.bottom_padding = 20
 
 	--*** ONGOING RUNS ***--
 
@@ -480,7 +491,7 @@ function Public.full_update(player)
 	local memory = Memory.get_crew_memory()
 
 	if not player.gui.screen['runs_piratewindow'] then return end
-	local flow = player.gui.screen['runs_piratewindow']
+	local flow = player.gui.screen['runs_piratewindow'].scroll_pane
 	local playercrew_status = GuiCommon.crew_overall_state_bools(player.index)
 	if not playercrew_status then return end
 
@@ -645,7 +656,7 @@ function Public.click(event)
 	local eventname = event.element.name
 
 	if not player.gui.screen[window_name .. '_piratewindow'] then return end
-	local flow = player.gui.screen[window_name .. '_piratewindow']
+	local flow = player.gui.screen[window_name .. '_piratewindow'].scroll_pane
 
 	local global_memory = Memory.get_global_memory()
 	-- local memory = Memory.get_crew_memory()
