@@ -30,20 +30,21 @@ local Upgrades = require 'maps.pirates.boat_upgrades'
 local Kraken = require 'maps.pirates.surfaces.sea.kraken'
 local Highscore = require 'maps.pirates.highscore'
 local CustomEvents = require 'maps.pirates.custom_events'
+local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 
 
 local NIL = 'none'
 local DOCK = 'dock'
-local FIRST = Surfaces.Island.enum.FIRST
-local RED_DESERT = Surfaces.Island.enum.RED_DESERT
-local SWAMP = Surfaces.Island.enum.SWAMP
-local STANDARD = Surfaces.Island.enum.STANDARD
-local WALKWAYS = Surfaces.Island.enum.WALKWAYS
-local MAZE = Surfaces.Island.enum.MAZE
-local RADIOACTIVE = Surfaces.Island.enum.RADIOACTIVE
-local HORSESHOE = Surfaces.Island.enum.HORSESHOE
-local STANDARD_VARIANT = Surfaces.Island.enum.STANDARD_VARIANT
-local CAVE = Surfaces.Island.enum.CAVE
+local FIRST = IslandEnum.enum.FIRST
+local RED_DESERT = IslandEnum.enum.RED_DESERT
+local SWAMP = IslandEnum.enum.SWAMP
+local STANDARD = IslandEnum.enum.STANDARD
+local WALKWAYS = IslandEnum.enum.WALKWAYS
+local MAZE = IslandEnum.enum.MAZE
+local RADIOACTIVE = IslandEnum.enum.RADIOACTIVE
+local HORSESHOE = IslandEnum.enum.HORSESHOE
+local STANDARD_VARIANT = IslandEnum.enum.STANDARD_VARIANT
+local CAVE = IslandEnum.enum.CAVE
 
 local A = {STANDARD_VARIANT, RED_DESERT, HORSESHOE, WALKWAYS}
 local B = {NIL, NIL, NIL, STANDARD, STANDARD_VARIANT, RED_DESERT, HORSESHOE, WALKWAYS, CAVE}
@@ -226,7 +227,7 @@ function Public.generate_destination_base_cost_to_undock(p, subtype)
 		end
 	end
 	-- override:
-	if subtype == Surfaces.Island.enum.RADIOACTIVE then
+	if subtype == IslandEnum.enum.RADIOACTIVE then
 		base_cost_to_undock = {
 			['uranium-235'] = Math.ceil(Math.ceil(80 + (macro_p.x - 1))),
 			-- ['uranium-235'] = Math.ceil(Math.ceil(80 + (macro_p.x)/2)), --tried adding beacons instead of this
@@ -599,7 +600,7 @@ function Public.cleanup_old_destination_data() --we do actually access destinati
 	local memory = Memory.get_crew_memory()
 	for i, destination_data in pairs(memory.destinations) do
 		if destination_data.overworld_position.x < memory.overworldx then
-			Islands[Islands.enum.CAVE].cleanup_cave_surface(memory.destinations[i])
+			Islands[IslandEnum.enum.CAVE].cleanup_cave_surface(memory.destinations[i])
 
 			memory.destinations[i] = nil
 		end

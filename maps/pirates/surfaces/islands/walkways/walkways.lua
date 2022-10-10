@@ -12,6 +12,7 @@ local _inspect = require 'utils.inspect'.inspect
 -- local Data = require 'maps.pirates.surfaces.islands.walkways.data'
 local Ores = require 'maps.pirates.ores'
 local IslandsCommon = require 'maps.pirates.surfaces.islands.common'
+local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 local Hunt = require 'maps.pirates.surfaces.islands.hunt'
 
 local Public = {}
@@ -144,7 +145,7 @@ local function walkways_tick()
 		local memory = Memory.get_crew_memory()
 		local destination = Common.current_destination()
 
-		if destination.subtype and destination.subtype == IslandsCommon.enum.WALKWAYS then
+		if destination.subtype == IslandEnum.enum.WALKWAYS then
 			for _, player in pairs(game.connected_players) do
 				if player.force.name == memory.force_name and player.surface == game.surfaces[destination.surface_name] and player.character and player.character.valid and game.surfaces[destination.surface_name].get_tile(player.position).name == 'water-shallow' then
 					player.character.damage(12, game.forces['environment'], 'fire')

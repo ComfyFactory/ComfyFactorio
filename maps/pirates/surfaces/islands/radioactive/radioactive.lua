@@ -12,6 +12,7 @@ local Utils = require 'maps.pirates.utils_local'
 local _inspect = require 'utils.inspect'.inspect
 -- local Ores = require 'maps.pirates.ores'
 local IslandsCommon = require 'maps.pirates.surfaces.islands.common'
+local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 -- local Hunt = require 'maps.pirates.surfaces.islands.hunt'
 
 local Public = {}
@@ -269,7 +270,7 @@ local function radioactive_tick()
 
 		local tickinterval = 60
 
-		if destination.subtype == IslandsCommon.enum.RADIOACTIVE then
+		if destination.subtype == IslandEnum.enum.RADIOACTIVE then
 			-- faster evo (doesn't need difficulty scaling as higher difficulties have higher base evo):
 			local extra_evo = 0.22 * tickinterval/60 / Balance.expected_time_on_island()
 			Common.increment_evo(extra_evo)

@@ -12,6 +12,7 @@ local Server = require 'utils.server'
 local Utils = require 'maps.pirates.utils_local'
 local Surfaces = require 'maps.pirates.surfaces.surfaces'
 local Islands = require 'maps.pirates.surfaces.islands.islands'
+local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 -- local Structures = require 'maps.pirates.structures.structures'
 local Boats = require 'maps.pirates.structures.boats.boats'
 local Crowsnest = require 'maps.pirates.surfaces.crowsnest'
@@ -594,7 +595,7 @@ function Public.disband_crew(donotprint)
 			game.delete_surface(game.surfaces[destination.surface_name])
 		end
 
-		Islands[Islands.enum.CAVE].cleanup_cave_surface(destination)
+		Islands[IslandEnum.enum.CAVE].cleanup_cave_surface(destination)
 	end
 
 	global_memory.crew_memories[id] = nil

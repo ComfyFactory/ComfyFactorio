@@ -14,7 +14,7 @@ local _inspect = require 'utils.inspect'.inspect
 local Boats = require 'maps.pirates.structures.boats.boats'
 local Surfaces = require 'maps.pirates.surfaces.surfaces'
 local Islands = require 'maps.pirates.surfaces.islands.islands'
-local IslandsCommon = require 'maps.pirates.surfaces.islands.common'
+local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 -- local Sea = require 'maps.pirates.surfaces.sea.sea'
 -- local Crew = require 'maps.pirates.crew'
 -- local Quest = require 'maps.pirates.quest'
@@ -61,7 +61,7 @@ function Public.Tick_actions(tickinterval)
 	end
 
 
-    -- if destination.subtype and destination.subtype == Islands.enum.RED_DESERT then return end -- This was a hack to stop biter boats causing attacks, but, it has the even worse effect of stopping all floating_pollution gathering.
+    -- if destination.subtype and destination.subtype == IslandEnum.enum.RED_DESERT then return end -- This was a hack to stop biter boats causing attacks, but, it has the even worse effect of stopping all floating_pollution gathering.
 
 
     local minute_cycle = {-- warning: use even seconds only
@@ -114,7 +114,7 @@ function Public.eat_up_fraction_of_all_pollution(surface, fraction_of_global_pol
 
         surface.pollute(p, - pollution_to_eat)
 		-- Radioactive world doesn't absorb map pollution:
-		if not (Common.current_destination().subtype and Common.current_destination().subtype == Islands.enum.RADIOACTIVE) then
+		if not (Common.current_destination().subtype and Common.current_destination().subtype == IslandEnum.enum.RADIOACTIVE) then
 			pollution_available = pollution_available + pollution_to_eat
 		end
     end
@@ -411,7 +411,7 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 		if initial_spawner_count > 0 then
 			local spawnerscount = Common.spawner_count(surface)
 			if spawnerscount > 0 then
-				-- if Common.current_destination().subtype and Common.current_destination().subtype == Islands.enum.RADIOACTIVE then
+				-- if Common.current_destination().subtype and Common.current_destination().subtype == IslandEnum.enum.RADIOACTIVE then
 				-- 	-- destroying spawners doesn't do quite as much here:
 				-- 	base_pollution_cost_multiplier = (initial_spawner_count/spawnerscount)^(1/3)
 				-- else
@@ -439,11 +439,11 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 
 	map_pollution_cost_multiplier = map_pollution_cost_multiplier * base_scripted_biters_pollution_cost_multiplier
 
-	if destination.subtype and destination.subtype == IslandsCommon.enum.SWAMP then
+	if destination.subtype and destination.subtype == IslandEnum.enum.SWAMP then
 		map_pollution_cost_multiplier = map_pollution_cost_multiplier * 0.95 --biters 5% more aggressive
 	end
 
-	-- if destination.subtype and destination.subtype == IslandsCommon.enum.MAZE then
+	-- if destination.subtype and destination.subtype == IslandEnum.enum.MAZE then
 	-- 	base_pollution_cost_multiplier = base_pollution_cost_multiplier * 1.2 --biters 20% less aggressive
 	-- end
 

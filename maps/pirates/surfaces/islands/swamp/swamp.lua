@@ -10,6 +10,7 @@ local Common = require 'maps.pirates.common'
 local _inspect = require 'utils.inspect'.inspect
 local Ores = require 'maps.pirates.ores'
 local IslandsCommon = require 'maps.pirates.surfaces.islands.common'
+local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 local Hunt = require 'maps.pirates.surfaces.islands.hunt'
 
 local Public = {}
@@ -187,7 +188,7 @@ local function swamp_tick()
 		local memory = Memory.get_crew_memory()
 		local destination = Common.current_destination()
 
-		if destination.subtype and destination.subtype == IslandsCommon.enum.SWAMP then
+		if destination.subtype == IslandEnum.enum.SWAMP then
 			if memory.boat and memory.boat.surface_name and memory.boat.surface_name == destination.surface_name then
 				local surface = game.surfaces[destination.surface_name]
 				if not (surface and surface.valid) then return end

@@ -9,7 +9,6 @@ local Boats = require 'maps.pirates.structures.boats.boats'
 local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
 local Utils = require 'maps.pirates.utils_local'
-local IslandsCommon = require 'maps.pirates.surfaces.islands.common'
 local Hunt = require 'maps.pirates.surfaces.islands.hunt'
 local Ores = require 'maps.pirates.ores'
 local Quest = require 'maps.pirates.quest'
@@ -17,10 +16,10 @@ local _inspect = require 'utils.inspect'.inspect
 local Token = require 'utils.token'
 local Task = require 'utils.task'
 local QuestStructures = require 'maps.pirates.structures.quest_structures.quest_structures'
+local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 
 local Public = {}
-local enum = IslandsCommon.enum
-Public.enum = enum
+local enum = IslandEnum.enum
 
 Public[enum.FIRST] = require 'maps.pirates.surfaces.islands.first.first'
 Public[enum.STANDARD] = require 'maps.pirates.surfaces.islands.standard.standard'

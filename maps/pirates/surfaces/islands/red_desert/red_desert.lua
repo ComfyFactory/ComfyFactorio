@@ -12,6 +12,7 @@ local Utils = require 'maps.pirates.utils_local'
 local _inspect = require 'utils.inspect'.inspect
 -- local Ores = require 'maps.pirates.ores'
 local IslandsCommon = require 'maps.pirates.surfaces.islands.common'
+local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 local Hunt = require 'maps.pirates.surfaces.islands.hunt'
 
 local Public = {}
@@ -226,7 +227,7 @@ local function red_desert_tick()
 		local memory = Memory.get_crew_memory()
 		local destination = Common.current_destination()
 
-		if destination.subtype == IslandsCommon.enum.RED_DESERT then
+		if destination.subtype == IslandEnum.enum.RED_DESERT then
 			if memory.boat and memory.boat.surface_name and memory.boat.surface_name == destination.surface_name then
 
 				Public.underground_worms_ai()

@@ -9,7 +9,7 @@ local Ai = require 'maps.pirates.ai'
 local Structures = require 'maps.pirates.structures.structures'
 local Boats = require 'maps.pirates.structures.boats.boats'
 local Islands = require 'maps.pirates.surfaces.islands.islands'
-local IslandsCommon = require 'maps.pirates.surfaces.islands.common'
+local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 local Surfaces = require 'maps.pirates.surfaces.surfaces'
 local PiratesApiEvents = require 'maps.pirates.api_events'
 local Roles = require 'maps.pirates.roles.roles'
@@ -134,7 +134,7 @@ function Public.check_all_spawners_dead(tickinterval)
 	local destination = Common.current_destination()
 	local boat = memory.boat
 
-	if destination.static_params and destination.static_params.base_cost_to_undock and (not (destination.subtype and destination.subtype == Islands.enum.RED_DESERT)) then
+	if destination.static_params and destination.static_params.base_cost_to_undock and (not (destination.subtype and destination.subtype == IslandEnum.enum.RED_DESERT)) then
 		if boat and boat.surface_name and boat.surface_name == destination.surface_name then
 			local surface = game.surfaces[destination.surface_name]
 			if not (surface and surface.valid) then return end
@@ -310,7 +310,7 @@ function Public.periodic_free_resources(tickinterval)
 
 	Common.give_items_to_crew(Balance.periodic_free_resources_per_destination_5_seconds())
 
-	if game.tick % (300*30) == 0 and (destination and destination.subtype and destination.subtype == Islands.enum.RADIOACTIVE) then -- every 150 seconds
+	if game.tick % (300*30) == 0 and (destination and destination.subtype and destination.subtype == IslandEnum.enum.RADIOACTIVE) then -- every 150 seconds
 		local count = 2
 		Common.give_items_to_crew{{name = 'sulfuric-acid-barrel', count = count}}
 		local force = memory.force
@@ -1033,7 +1033,7 @@ function Public.loading_update(tickinterval)
 			local total = Common.map_loading_ticks_atsea
 			if currentdestination.type == Surfaces.enum.DOCK then
 				total = Common.map_loading_ticks_atsea_dock
-			elseif currentdestination.type == Surfaces.enum.ISLAND and currentdestination.subtype == Surfaces.Island.enum.MAZE then
+			elseif currentdestination.type == Surfaces.enum.ISLAND and currentdestination.subtype == IslandEnum.enum.MAZE then
 				total = Common.map_loading_ticks_atsea_maze
 			end
 
@@ -1053,7 +1053,7 @@ function Public.loading_update(tickinterval)
 					memory.loadingticks = 0
 				else
 					PiratesApiEvents.load_some_map_chunks_random_order(surface, currentdestination, fraction) --random order is good for maze world
-					if currentdestination.subtype == Surfaces.Island.enum.CAVE then
+					if currentdestination.subtype == IslandEnum.enum.CAVE then
 						PiratesApiEvents.load_some_map_chunks_random_order(currentdestination.dynamic_data.cave_miner.cave_surface, currentdestination, fraction)
 					end
 				end
@@ -1192,7 +1192,7 @@ function Public.slower_boat_tick(tickinterval)
 	end
 
 	local p = memory.boat.position
-	if p and (not (destination.subtype and destination.subtype == IslandsCommon.enum.RADIOACTIVE)) and destination.surface_name and game.surfaces[destination.surface_name] and game.surfaces[destination.surface_name].valid then --no locomotive pollute on radioactive islands
+	if p and (not (destination.subtype and destination.subtype == IslandEnum.enum.RADIOACTIVE)) and destination.surface_name and game.surfaces[destination.surface_name] and game.surfaces[destination.surface_name].valid then --no locomotive pollute on radioactive islands
 		local pollution = Balance.boat_passive_pollution_per_minute(destination.dynamic_data.timer) / 3600 * tickinterval
 
 		game.surfaces[destination.surface_name].pollute(p, pollution)
@@ -1240,7 +1240,7 @@ function Public.minimap_jam(tickinterval)
 
 	if memory.overworldx == Common.maze_minimap_jam_league and memory.boat and memory.boat.state == Boats.enum_state.LANDED then
 		local destination = Common.current_destination()
-		if destination.type == Surfaces.enum.ISLAND and destination.subtype == Surfaces.Island.enum.MAZE then
+		if destination.type == Surfaces.enum.ISLAND and destination.subtype == IslandEnum.enum.MAZE then
 			if not destination.surface_name then return end
 			local surface = game.surfaces[destination.surface_name]
 			local force = memory.force

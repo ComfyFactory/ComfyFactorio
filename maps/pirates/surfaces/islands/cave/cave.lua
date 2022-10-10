@@ -8,6 +8,7 @@ local Utils = require 'maps.pirates.utils_local'
 local SurfacesCommon = require 'maps.pirates.surfaces.common'
 local BoatData = require 'maps.pirates.structures.boats.sloop.data'
 local Event = require 'utils.event'
+local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 
 local Public = {}
 Public.Data = require 'maps.pirates.surfaces.islands.cave.data'
@@ -123,8 +124,7 @@ function Public.roll_source_surface(destination_data)
     local cave_miner = destination_data.dynamic_data.cave_miner
 
     local island_surface_name = SurfacesCommon.decode_surface_name(destination_data.surface_name)
-    -- @FIXME: magic number (cave source island enum)
-    local cave_surface_name = SurfacesCommon.encode_surface_name(island_surface_name.crewid, island_surface_name.destination_index, island_surface_name.type, '11')
+    local cave_surface_name = SurfacesCommon.encode_surface_name(island_surface_name.crewid, island_surface_name.destination_index, island_surface_name.type, IslandEnum.enum.CAVE_SOURCE)
 
     cave_miner.cave_surface = game.create_surface(cave_surface_name, map_gen_settings)
     cave_miner.cave_surface.request_to_generate_chunks({x = 0, y = 0}, 2)
@@ -211,8 +211,7 @@ local function on_player_changed_position(event)
     local destination_data = Common.current_destination()
     if destination_data.surface_name ~= player.surface.name then return end
 
-    -- @FIXME: magic number (cave island enum)
-    if not (destination_data and destination_data.subtype == '10') then return end
+    if not (destination_data and destination_data.subtype == IslandEnum.enum.CAVE) then return end
 
     local cave_miner = destination_data.dynamic_data.cave_miner
 

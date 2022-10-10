@@ -9,6 +9,7 @@ local Math = require 'maps.pirates.math'
 local Raffle = require 'maps.pirates.raffle'
 -- local Loot = require 'maps.pirates.loot'
 local CoreData = require 'maps.pirates.coredata'
+local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 local _inspect = require 'utils.inspect'.inspect
 
 
@@ -113,8 +114,7 @@ end
 function Public.initialise_find_quest()
 	local destination = Common.current_destination()
 
-	-- @FIXME: Magic numbers
-	if destination.subtype and destination.subtype == '1' or destination.subtype == '5' or destination.subtype == '6' then
+	if destination.subtype == IslandEnum.enum.STANDARD or destination.subtype == IslandEnum.enum.RADIOACTIVE or destination.subtype == IslandEnum.enum.STANDARD_VARIANT then
 
 		destination.dynamic_data.quest_type = enum.FIND
 		destination.dynamic_data.quest_reward = Public.quest_reward()
@@ -136,6 +136,7 @@ end
 function Public.initialise_nodamage_quest()
 	local destination = Common.current_destination()
 
+	-- @FIXME: this if check looks ill-formed when destination is nil
 	if not destination and destination.dynamic_data and destination.dynamic_data.rocketsilomaxhp then return false end
 
 	destination.dynamic_data.quest_type = enum.NODAMAGE

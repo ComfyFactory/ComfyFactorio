@@ -14,7 +14,7 @@ local Ai = require 'maps.pirates.ai'
 local Boats = require 'maps.pirates.structures.boats.boats'
 local Surfaces = require 'maps.pirates.surfaces.surfaces'
 -- local Progression = require 'maps.pirates.progression'
-local Islands = require 'maps.pirates.surfaces.islands.islands'
+local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 local Roles = require 'maps.pirates.roles.roles'
 local Gui = require 'maps.pirates.gui.gui'
 -- local Sea = require 'maps.pirates.surfaces.sea.sea'
@@ -109,7 +109,7 @@ local function biters_chew_stuff_faster(event)
 
 	if (event.entity.force.index == 3 or event.entity.force.name == 'environment') then
 		event.entity.health = event.entity.health - event.final_damage_amount * 5
-		if destination and destination.type and destination.subtype and destination.type == Surfaces.enum.ISLAND and destination.subtype == Islands.enum.MAZE then
+		if destination and destination.type and destination.subtype and destination.type == Surfaces.enum.ISLAND and destination.subtype == IslandEnum.enum.MAZE then
 			event.entity.health = event.entity.health - event.final_damage_amount * 10
 		end
 	elseif event.entity.name == 'pipe' then
@@ -528,7 +528,7 @@ local function swamp_resist_poison(event)
 	if not (event.damage_type.name and event.damage_type.name == 'poison') then return end
 
 	local destination = Common.current_destination()
-	if not (destination and destination.subtype and destination.subtype == Islands.enum.SWAMP) then return end
+	if not (destination and destination.subtype and destination.subtype == IslandEnum.enum.SWAMP) then return end
 
 	if not (destination.surface_name == entity.surface.name) then return end
 
@@ -546,7 +546,7 @@ local function maze_walls_resistance(event)
 	if not entity.valid then return end
 
 	local destination = Common.current_destination()
-	if not (destination and destination.subtype and destination.subtype == Islands.enum.MAZE) then return end
+	if not (destination and destination.subtype and destination.subtype == IslandEnum.enum.MAZE) then return end
 
 	if not (destination.surface_name == entity.surface.name) then return end
 
@@ -773,7 +773,7 @@ local function event_on_player_mined_entity(event)
 
 		if available and destination.type == Surfaces.enum.ISLAND then
 
-			if destination and destination.subtype and destination.subtype == Islands.enum.MAZE then
+			if destination and destination.subtype and destination.subtype == IslandEnum.enum.MAZE then
 				if Math.random(1, 38) == 1 then
 					tick_tack_trap(memory.enemy_force_name, entity.surface, entity.position)
 					return
@@ -916,12 +916,12 @@ local function event_on_player_mined_entity(event)
 		-- local starting = destination.static_params.starting_rock_material
 
 		if available and destination.type == Surfaces.enum.ISLAND then
-			if destination.subtype == Islands.enum.MAZE then
+			if destination.subtype == IslandEnum.enum.MAZE then
 				if Math.random(1, 35) == 1 then
 					tick_tack_trap(memory.enemy_force_name, entity.surface, entity.position)
 				end
 
-			elseif destination.subtype == Islands.enum.CAVE then
+			elseif destination.subtype == IslandEnum.enum.CAVE then
 				Ores.try_give_ore(player, entity.position, entity.name)
 
 				if Math.random(1, 35) == 1 then
@@ -1037,7 +1037,7 @@ local function base_kill_rewards(event)
 
 
 	-- no worm loot in the maze except for chefs:
-	local maze = (destination.subtype and destination.subtype == Islands.enum.MAZE)
+	local maze = (destination.subtype and destination.subtype == IslandEnum.enum.MAZE)
 	if maze and not (entity_name == 'biter-spawner' or entity_name == 'spitter-spawner') and not (class_is_chef) then return end
 
 	local iron_amount
