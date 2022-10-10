@@ -1,7 +1,6 @@
 local Public = {}
 local math_floor = math.floor
 local math_log10 = math.log10
-local math_max = math.max
 
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 
