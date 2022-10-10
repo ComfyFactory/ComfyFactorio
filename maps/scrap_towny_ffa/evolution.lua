@@ -492,7 +492,7 @@ function Public.get_highest_evolution()
 			max_evo = town_center.evolution.worms
 		end
     end
-    return relative_evolution
+    return max_evo
 end
 
 function Public.get_evolution(position)
