@@ -305,7 +305,7 @@ local function is_valid_location(force_name, surface, position)
         end
     end
 
-    town_count = 0
+    local town_count = 0
     for _ in pairs(this.town_centers) do town_count = town_count + 1 end
     if town_count > 48 then
         surface.create_entity(
