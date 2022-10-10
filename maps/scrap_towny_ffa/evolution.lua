@@ -1,6 +1,7 @@
 local Public = {}
 local math_floor = math.floor
 local math_log10 = math.log10
+local math_max = math.max
 
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 
@@ -479,6 +480,17 @@ local function get_relative_worm_evolution(position)
             -- get the highest of the relative evolutions of each town
             relative_evolution = math.max(relative_evolution, evo)
         end
+    end
+    return relative_evolution
+end
+
+function Public.get_highest_evolution(position)
+    local this = ScenarioTable.get_table()
+    local relative_evolution = 0.0
+    local max_evo = 0
+    for _, town_center in pairs(this.town_centers) do
+        local market = town_center.market
+        town_center.evolution.worms = math_max(town_center.evolution.worms, max_evo)
     end
     return relative_evolution
 end
