@@ -1,7 +1,6 @@
 local Public = {}
 
 local math_random = math.random
-local math_min = math.min
 local table_size = table.size
 local string_match = string.match
 local string_lower = string.lower
@@ -805,9 +804,7 @@ local function kill_force(force_name, cause)
                 e.die()
             elseif destroy_wall_types[e.type] == true then
                 e.die()
-            elseif storage_types[e.type] == true then
-                -- spare chests
-            else
+            elseif storage_types[e.type] ~= true then   -- spare chests
                 local random = math_random()
                 if random > 0.5 or e.health == nil then
                     e.die()
