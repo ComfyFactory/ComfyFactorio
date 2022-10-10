@@ -1014,14 +1014,6 @@ local function on_player_dropped_item(event)
     end
 end
 
----- when a player dies, reveal their base to everyone
---local function on_player_died(event)
---	local player = game.players[event.player_index]
---	if not player.character then return end
---	if not player.character.valid then return end
---	reveal_entity_to_all(player.character)
---end
-
 local function on_entity_damaged(event)
     local entity = event.entity
     if not entity or not entity.valid then
