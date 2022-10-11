@@ -768,7 +768,7 @@ local function kill_force(force_name, cause)
     local town_name = town_center.town_name
     surface.create_entity({name = 'big-artillery-explosion', position = position})
 
-    local is_suicide = force_name == cause.force.name
+    local is_suicide = cause and force_name == cause.force.name
 
     for _, player in pairs(force.players) do
         this.spawn_point[player.index] = nil
