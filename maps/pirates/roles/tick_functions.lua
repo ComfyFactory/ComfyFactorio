@@ -26,8 +26,7 @@ function Public.class_update_auxiliary_data(tickinterval)
 
 	for _, player in pairs(crew) do
 		local player_index = player.index
-		local class = memory.classes_table[player_index]
-		if class and class == Classes.enum.IRON_LEG then
+		if Classes.get_class(player_index) == Classes.enum.IRON_LEG then
 			if (not class_auxiliary_data[player_index]) then class_auxiliary_data[player_index] = {} end
 			local data = class_auxiliary_data[player_index]
 			processed_players[player_index] = true
@@ -68,7 +67,7 @@ function Public.class_renderings(tickinterval)
 
 	for _, player in pairs(crew) do
 		local player_index = player.index
-		local class = memory.classes_table[player_index]
+		local class = Classes.get_class(player_index)
 		if class then
 			if not class_renderings[player_index] then class_renderings[player_index] = {} end
 			local rendering_data = class_renderings[player_index]
@@ -166,7 +165,7 @@ function Public.update_character_properties(tickinterval)
 		if Common.validate_player_and_character(player) then
 			local player_index = player.index
 			local character = player.character
-			local class = memory.classes_table and memory.classes_table[player_index] or nil
+			local class = Classes.get_class(player_index)
 			if class then
 				--local max_reach_bonus = 0
 				-- if memory.classes_table[player_index] == Classes.enum.DECKHAND then
@@ -185,6 +184,35 @@ function Public.update_character_properties(tickinterval)
 				else
 					character.character_reach_distance_bonus = 0
 				end
+
+
+				local speed_boost = Balance.base_extra_character_speed
+
+				if memory.speed_boost_characters and memory.speed_boost_characters[player_index] then
+					speed_boost = speed_boost * Balance.respawn_speed_boost
+				elseif class == Classes.enum.SCOUT then
+					speed_boost = speed_boost * Balance.scout_extra_speed
+				elseif (class == Classes.enum.DECKHAND) or (class == Classes.enum.BOATSWAIN) or (class == Classes.enum.SHORESMAN) then
+					local surfacedata = Surfaces.SurfacesCommon.decode_surface_name(player.surface.name)
+					local type = surfacedata.type
+					local on_ship_bool = (type == Surfaces.enum.HOLD) or (type == Surfaces.enum.CABIN) or (type == Surfaces.enum.CROWSNEST) or (player.surface.name == memory.boat.surface_name and Boats.on_boat(memory.boat, player.position))
+					local hold_bool = (type == Surfaces.enum.HOLD)
+
+					if class == Classes.enum.DECKHAND then
+						if on_ship_bool and (not hold_bool) then
+							speed_boost = speed_boost * Balance.deckhand_extra_speed
+						end
+					elseif class == Classes.enum.BOATSWAIN then
+						if hold_bool then
+							speed_boost = speed_boost * Balance.boatswain_extra_speed
+						end
+					elseif class == Classes.enum.SHORESMAN then
+						if not on_ship_bool then
+							speed_boost = speed_boost * Balance.shoresman_extra_speed
+						end
+					end
+				end
+				character.character_running_speed_modifier = speed_boost - 1
 
 				--character.character_reach_distance_bonus = max_reach_bonus
 			end
@@ -217,36 +245,6 @@ function Public.update_character_properties(tickinterval)
 			-- 		player.character_inventory_slots_bonus = 0
 			-- 	end
 			-- end
-
-			local speed_boost = Balance.base_extra_character_speed
-
-			if memory.speed_boost_characters and memory.speed_boost_characters[player_index] then
-				speed_boost = speed_boost * Balance.respawn_speed_boost
-			elseif memory.classes_table and memory.classes_table[player_index] then
-				if class == Classes.enum.SCOUT then
-					speed_boost = speed_boost * Balance.scout_extra_speed
-				elseif (class == Classes.enum.DECKHAND) or (class == Classes.enum.BOATSWAIN) or (class == Classes.enum.SHORESMAN) then
-					local surfacedata = Surfaces.SurfacesCommon.decode_surface_name(player.surface.name)
-					local type = surfacedata.type
-					local on_ship_bool = (type == Surfaces.enum.HOLD) or (type == Surfaces.enum.CABIN) or (type == Surfaces.enum.CROWSNEST) or (player.surface.name == memory.boat.surface_name and Boats.on_boat(memory.boat, player.position))
-					local hold_bool = (type == Surfaces.enum.HOLD)
-
-					if class == Classes.enum.DECKHAND then
-						if on_ship_bool and (not hold_bool) then
-							speed_boost = speed_boost * Balance.deckhand_extra_speed
-						end
-					elseif class == Classes.enum.BOATSWAIN then
-						if hold_bool then
-							speed_boost = speed_boost * Balance.boatswain_extra_speed
-						end
-					elseif class == Classes.enum.SHORESMAN then
-						if not on_ship_bool then
-							speed_boost = speed_boost * Balance.shoresman_extra_speed
-						end
-					end
-				end
-			end
-			character.character_running_speed_modifier = speed_boost - 1
 		end
 	end
 end
@@ -257,40 +255,37 @@ function Public.class_rewards_tick(tickinterval)
 	local crew = Common.crew_get_crew_members()
 
 	for _, player in pairs(crew) do
+		local class = Classes.get_class(player.index)
 		if Common.validate_player_and_character(player) and
 			game.tick % tickinterval == 0 and
-			memory.classes_table and
-			memory.classes_table[player.index]
-		then
-			local class = memory.classes_table[player.index]
+			class and
+			not Boats.is_boat_at_sea() and --it is possible to spend infinite time here, so don't give out freebies
+			(
+				class == Classes.enum.DECKHAND or
+				class == Classes.enum.SHORESMAN or
+				class == Classes.enum.BOATSWAIN or
+				class == Classes.enum.QUARTERMASTER
+			)
+		then --watch out for this line! (why?)
+			local surfacedata = Surfaces.SurfacesCommon.decode_surface_name(player.surface.name)
+			local type = surfacedata.type
+			local on_ship_bool = (type == Surfaces.enum.HOLD) or (type == Surfaces.enum.CABIN) or (type == Surfaces.enum.CROWSNEST) or (player.surface.name == memory.boat.surface_name and Boats.on_boat(memory.boat, player.position))
+			local hold_bool = (type == Surfaces.enum.HOLD)
 
-			if not Boats.is_boat_at_sea() and --it is possible to spend infinite time here, so don't give out freebies
-				(
-					class == Classes.enum.DECKHAND or
-					class == Classes.enum.SHORESMAN or
-					class == Classes.enum.BOATSWAIN or
-					class == Classes.enum.QUARTERMASTER
-				)
-			then --watch out for this line! (why?)
-				local surfacedata = Surfaces.SurfacesCommon.decode_surface_name(player.surface.name)
-				local type = surfacedata.type
-				local on_ship_bool = (type == Surfaces.enum.HOLD) or (type == Surfaces.enum.CABIN) or (type == Surfaces.enum.CROWSNEST) or (player.surface.name == memory.boat.surface_name and Boats.on_boat(memory.boat, player.position))
-				local hold_bool = (type == Surfaces.enum.HOLD)
+			if class == Classes.enum.DECKHAND and on_ship_bool and (not hold_bool) then
+				Classes.class_ore_grant(player, Balance.deckhand_ore_grant_multiplier, Balance.deckhand_ore_scaling_enabled)
+			elseif class == Classes.enum.BOATSWAIN and hold_bool then
+				Classes.class_ore_grant(player, Balance.boatswain_ore_grant_multiplier, Balance.boatswain_ore_scaling_enabled)
+			elseif class == Classes.enum.SHORESMAN and (not on_ship_bool) then
+				Classes.class_ore_grant(player, Balance.shoresman_ore_grant_multiplier, Balance.shoresman_ore_scaling_enabled)
+			elseif class == Classes.enum.QUARTERMASTER then
+				local nearby_players = #player.surface.find_entities_filtered{position = player.position, radius = Balance.quartermaster_range, name = 'character'}
 
-				if class == Classes.enum.DECKHAND and on_ship_bool and (not hold_bool) then
-					Classes.class_ore_grant(player, Balance.deckhand_ore_grant_multiplier, Balance.deckhand_ore_scaling_enabled)
-				elseif class == Classes.enum.BOATSWAIN and hold_bool then
-					Classes.class_ore_grant(player, Balance.boatswain_ore_grant_multiplier, Balance.boatswain_ore_scaling_enabled)
-				elseif class == Classes.enum.SHORESMAN and (not on_ship_bool) then
-					Classes.class_ore_grant(player, Balance.shoresman_ore_grant_multiplier, Balance.shoresman_ore_scaling_enabled)
-				elseif class == Classes.enum.QUARTERMASTER then
-					local nearby_players = #player.surface.find_entities_filtered{position = player.position, radius = Balance.quartermaster_range, name = 'character'}
-
-					if nearby_players > 1 then
-						Classes.class_ore_grant(player, nearby_players - 1, Balance.quartermaster_ore_scaling_enabled)
-					end
+				if nearby_players > 1 then
+					Classes.class_ore_grant(player, nearby_players - 1, Balance.quartermaster_ore_scaling_enabled)
 				end
 			end
+		end
 
 			-- Smoldering class is disabled
 			-- if memory.classes_table and memory.classes_table[player.index] then
@@ -312,7 +307,6 @@ function Public.class_rewards_tick(tickinterval)
 			-- 		end
 			-- 	end
 			-- end
-		end
 	end
 end
 

@@ -327,98 +327,96 @@ end
 
 local function class_on_player_used_capsule(event)
 
-    local player = game.players[event.player_index]
-    if not player or not player.valid then
-        return
-    end
-	local player_index = player.index
+	if not event.player_index then return end
+
+	local player = game.players[event.player_index]
+	if not player then return end
+	if not player.valid then return end
+	if not player.character then return end
+	if not player.character.valid then return end
+
+	if not event.item then return end
+	if event.item.name ~= 'raw-fish' then return end
+
+	local class = Public.get_class(player.index)
+	if not class then return end
 
 	local crew_id = Common.get_id_from_force_name(player.force.name)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
 
-    if not (player.character and player.character.valid) then
-        return
-    end
-
-    local item = event.item
-    if not (item and item.name and item.name == 'raw-fish') then return end
-
 	local global_memory = Memory.get_global_memory()
 	global_memory.last_players_health[event.player_index] = player.character.health
 
-	if memory.classes_table and memory.classes_table[player_index] then
-		local class = memory.classes_table[player_index]
-		if class == Public.enum.GOURMET then
-			local multiplier = 0
-			local surfacedata = SurfacesCommon.decode_surface_name(player.surface.name)
-			if surfacedata.type == SurfacesCommon.enum.CABIN then
-				multiplier = 0.25
-			elseif surfacedata.type == SurfacesCommon.enum.CROWSNEST then
-				multiplier = 0.15
+	if class == Public.enum.GOURMET then
+		local multiplier = 0
+		local surfacedata = SurfacesCommon.decode_surface_name(player.surface.name)
+		if surfacedata.type == SurfacesCommon.enum.CABIN then
+			multiplier = 0.25
+		elseif surfacedata.type == SurfacesCommon.enum.CROWSNEST then
+			multiplier = 0.15
+		else
+			local tile = player.surface.get_tile(player.position)
+			if tile.valid then
+				if tile.name == CoreData.world_concrete_tile then
+					multiplier = 1.5
+				elseif tile.name == 'cyan-refined-concrete' then
+					multiplier = 1.6
+				elseif tile.name == CoreData.walkway_tile then
+					multiplier = 1
+				elseif tile.name == 'orange-refined-concrete' then
+					multiplier = 0.5
+				elseif tile.name == CoreData.enemy_landing_tile then
+					multiplier = 0.3
+				elseif tile.name == CoreData.static_boat_floor then
+					multiplier = 0.1
+				end
+			end
+		end
+		if multiplier > 0 then
+			-- Idea behind this: A diminishing return for ore granted every time fish is eaten. But slowly "reset" the diminishing return overtime
+			local timescale = 60*30 * Math.max((Balance.game_slowness_scale())^(2/3),0.8)
+			if memory.gourmet_recency_tick then
+				multiplier = multiplier * Math.clamp(0.2, 5, (1/5)^((memory.gourmet_recency_tick - game.tick)/(60*300)))
+				memory.gourmet_recency_tick = Math.max(memory.gourmet_recency_tick, game.tick - timescale*10) + timescale
 			else
-				local tile = player.surface.get_tile(player.position)
-				if tile.valid then
-					if tile.name == CoreData.world_concrete_tile then
-						multiplier = 1.5
-					elseif tile.name == 'cyan-refined-concrete' then
-						multiplier = 1.6
-					elseif tile.name == CoreData.walkway_tile then
-						multiplier = 1
-					elseif tile.name == 'orange-refined-concrete' then
-						multiplier = 0.5
-					elseif tile.name == CoreData.enemy_landing_tile then
-						multiplier = 0.3
-					elseif tile.name == CoreData.static_boat_floor then
-						multiplier = 0.1
-					end
-				end
+				multiplier = multiplier * 5
+				memory.gourmet_recency_tick = game.tick - timescale*10 + timescale
 			end
-			if multiplier > 0 then
-				-- Idea behind this: A diminishing return for ore granted every time fish is eaten. But slowly "reset" the diminishing return overtime
-				local timescale = 60*30 * Math.max((Balance.game_slowness_scale())^(2/3),0.8)
-				if memory.gourmet_recency_tick then
-					multiplier = multiplier * Math.clamp(0.2, 5, (1/5)^((memory.gourmet_recency_tick - game.tick)/(60*300)))
-					memory.gourmet_recency_tick = Math.max(memory.gourmet_recency_tick, game.tick - timescale*10) + timescale
-				else
-					multiplier = multiplier * 5
-					memory.gourmet_recency_tick = game.tick - timescale*10 + timescale
-				end
-				Public.class_ore_grant(player, 15 * multiplier, Balance.gourmet_ore_scaling_enabled)
+			Public.class_ore_grant(player, 15 * multiplier, Balance.gourmet_ore_scaling_enabled)
+		end
+	elseif class == Public.enum.ROCK_EATER then
+		local required_count = Balance.rock_eater_required_stone_furnace_to_heal_count
+		if player.get_item_count('stone-furnace') >= required_count then
+			player.remove_item({name='stone-furnace', count=required_count})
+			player.insert({name='raw-fish', count=1})
+		end
+	elseif class == Public.enum.SOLDIER then
+		local chance = Balance.soldier_defender_summon_chance
+		if Math.random() < chance then
+			local random_vec = Math.random_vec(3)
+			local e = player.surface.create_entity{
+				name = 'defender',
+				position = Utils.psum{player.character.position, random_vec},
+				speed = 1.5,
+				force = player.force
+			}
+			if e and e.valid then
+				e.combat_robot_owner = player.character
 			end
-		elseif class == Public.enum.ROCK_EATER then
-			local required_count = Balance.rock_eater_required_stone_furnace_to_heal_count
-			if player.get_item_count('stone-furnace') >= required_count then
-				player.remove_item({name='stone-furnace', count=required_count})
-				player.insert({name='raw-fish', count=1})
-			end
-		elseif class == Public.enum.SOLDIER then
-			local chance = Balance.soldier_defender_summon_chance
-			if Math.random() < chance then
-				local random_vec = Math.random_vec(3)
-				local e = player.surface.create_entity{
-					name = 'defender',
-					position = Utils.psum{player.character.position, random_vec},
-					speed = 1.5,
-					force = player.force
-				}
-				if e and e.valid then
-					e.combat_robot_owner = player.character
-				end
-			end
-		elseif class == Public.enum.VETERAN then
-			local chance = Balance.veteran_destroyer_summon_chance
-			if Math.random() < chance then
-				local random_vec = Math.random_vec(3)
-				local e = player.surface.create_entity{
-					name = 'destroyer',
-					position = Utils.psum{player.character.position, random_vec},
-					speed = 1.5,
-					force = player.force
-				}
-				if e and e.valid then
-					e.combat_robot_owner = player.character
-				end
+		end
+	elseif class == Public.enum.VETERAN then
+		local chance = Balance.veteran_destroyer_summon_chance
+		if Math.random() < chance then
+			local random_vec = Math.random_vec(3)
+			local e = player.surface.create_entity{
+				name = 'destroyer',
+				position = Utils.psum{player.character.position, random_vec},
+				speed = 1.5,
+				force = player.force
+			}
+			if e and e.valid then
+				e.combat_robot_owner = player.character
 			end
 		end
 	end
@@ -453,6 +451,8 @@ function Public.try_unlock_class(class_for_sale, player, force_unlock)
 	if not (memory.classes_table and memory.spare_classes) then
 		return false
 	end
+
+	if not Public.class_is_obtainable(class_for_sale) then return false end
 
 	if required_class then
 		-- check if pre-requisite class is taken by someone

@@ -499,7 +499,7 @@ local function damage_dealt_by_players_changes(event)
 		for _, p2 in pairs(nearby_players) do
 			if p2.player and p2.player.valid then
 				local p2_index = p2.player.index
-				if event.entity.valid and player_index ~= p2_index and memory.classes_table[p2_index] and memory.classes_table[p2_index] == Classes.enum.QUARTERMASTER then
+				if event.entity.valid and player_index ~= p2_index and Classes.get_class(p2_index) == Classes.enum.QUARTERMASTER then
 					event.entity.damage((Balance.quartermaster_bonus_physical_damage - 1) * event.final_damage_amount, character.force, 'impact', character) --triggers this function again, but not physical this time
 				end
 			end
@@ -766,6 +766,8 @@ local function event_on_player_mined_entity(event)
 		return
 	end
 
+	local class = Classes.get_class(event.player_index)
+
     if entity.type == 'tree' then
         if not event.buffer then return end
 		local available = destination.dynamic_data.wood_remaining
@@ -773,29 +775,16 @@ local function event_on_player_mined_entity(event)
 
 		if available and destination.type == Surfaces.enum.ISLAND then
 
-			if destination and destination.subtype and destination.subtype == IslandEnum.enum.MAZE then
+			if destination.subtype == IslandEnum.enum.MAZE then
 				if Math.random(1, 38) == 1 then
 					tick_tack_trap(memory.enemy_force_name, entity.surface, entity.position)
 					return
 				end
 
 				local give = {}
-				if memory.classes_table and memory.classes_table[event.player_index] then
-					if memory.classes_table[event.player_index] == Classes.enum.LUMBERJACK then
-						give[#give + 1] = {name = 'wood', count = 1}
-						Classes.lumberjack_bonus_items(give)
-					-- wood lord is disabled
-					-- elseif memory.classes_table[event.player_index] == Classes.enum.WOOD_LORD then
-					-- 	give[#give + 1] = {name = 'wood', count = 1}
-					-- 	give[#give + 1] = {name = 'iron-ore', count = 1}
-					-- 	give[#give + 1] = {name = 'copper-ore', count = 1}
-					-- 	give[#give + 1] = {name = 'coal', count = 1}
-					-- 	if Math.random(every_nth_tree_gives_coins) == 1 then
-					-- 		local a = 12
-					-- 		give[#give + 1] = {name = 'coin', count = a}
-					-- 		memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
-					-- 	end
-					end
+				if class == Classes.enum.LUMBERJACK then
+					give[#give + 1] = {name = 'wood', count = 1}
+					Classes.lumberjack_bonus_items(give)
 				end
 
 				if #give > 0 then
@@ -810,19 +799,9 @@ local function event_on_player_mined_entity(event)
 
 				destination.dynamic_data.wood_remaining = destination.dynamic_data.wood_remaining - amount
 
-				if memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.LUMBERJACK then
+				if class == Classes.enum.LUMBERJACK then
 					give[#give + 1] = {name = 'wood', count = amount}
 					Classes.lumberjack_bonus_items(give)
-				-- elseif memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.WOOD_LORD then
-				-- 	give[#give + 1] = {name = 'wood', count = amount + 3}
-				-- 	give[#give + 1] = {name = 'iron-ore', count = 1}
-				-- 	give[#give + 1] = {name = 'copper-ore', count = 1}
-				-- 	give[#give + 1] = {name = 'coal', count = 1}
-				-- 	if Math.random(every_nth_tree_gives_coins) == 1 then
-				-- 		local a = 12
-				-- 		give[#give + 1] = {name = 'coin', count = a}
-				-- 		memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
-				-- 	end
 				else
 					give[#give + 1] = {name = 'wood', count = amount}
 					if Math.random(Balance.every_nth_tree_gives_coins) == 1 then --tuned
@@ -843,12 +822,12 @@ local function event_on_player_mined_entity(event)
 		local fish_amount = 0
 		local to_give = {}
 
-		if memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.MASTER_ANGLER then
+		if class == Classes.enum.MASTER_ANGLER then
 			fish_amount = Balance.base_caught_fish_amount + Balance.master_angler_fish_bonus
 			to_give[#to_give + 1] = {name = 'raw-fish', count = fish_amount}
 			to_give[#to_give + 1] = {name = 'coin', count = Balance.master_angler_coin_bonus}
 
-		elseif memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.DREDGER then
+		elseif class == Classes.enum.DREDGER then
 			fish_amount = Balance.base_caught_fish_amount + Balance.dredger_fish_bonus
 			to_give[#to_give + 1] = {name = 'raw-fish', count = fish_amount}
 			to_give[#to_give + 1] = Loot.dredger_loot()[1]
@@ -1022,22 +1001,19 @@ local function base_kill_rewards(event)
 		end
 	end
 
-	local class
+	local class_is_chef = false
+
 	if revenge_target and
 		revenge_target.valid and
 		revenge_target.player and
-		revenge_target.player.index and
-		memory.classes_table and
-		memory.classes_table[revenge_target.player.index]
+		revenge_target.player.index
 	then
-		class = memory.classes_table[revenge_target.player.index]
+		class_is_chef = Classes.get_class(revenge_target.player.index) == Classes.enum.CHEF
 	end
-
-	local class_is_chef = (class and class == Classes.enum.CHEF) and true or false
 
 
 	-- no worm loot in the maze except for chefs:
-	local maze = (destination.subtype and destination.subtype == IslandEnum.enum.MAZE)
+	local maze = destination.subtype == IslandEnum.enum.MAZE
 	if maze and not (entity_name == 'biter-spawner' or entity_name == 'spitter-spawner') and not (class_is_chef) then return end
 
 	local iron_amount

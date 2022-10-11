@@ -100,9 +100,9 @@ function Public.tag_text(player)
 		tags[#tags + 1] = 'Officer'
 	end
 
-	local classes_table = memory.classes_table
-	if classes_table and classes_table[player.index] then
-		tags[#tags + 1] = Classes.eng_form[classes_table[player.index]]
+	local class = Classes.get_class(player.index)
+	if class then
+		tags[#tags + 1] = Classes.eng_form[class]
 	end
 
 	for i, t in ipairs(tags) do
@@ -223,9 +223,11 @@ function Public.player_left_so_redestribute_roles(player)
 
 	local memory = Memory.get_crew_memory()
 
+	local class = Classes.get_class(player.index)
+
 	-- free up the class
-	if memory.classes_table and memory.classes_table[player.index] then
-		memory.spare_classes[#memory.spare_classes + 1] = memory.classes_table[player.index]
+	if class then
+		memory.spare_classes[#memory.spare_classes + 1] = class
 		memory.classes_table[player.index] = nil
 
 		for _, class_entry in ipairs(memory.unlocked_classes) do
