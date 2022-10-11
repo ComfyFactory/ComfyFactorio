@@ -14,6 +14,9 @@ local Public = {}
 
 local window_name = 'crew'
 
+local function get_selected_player_index(flow)
+	return tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])
+end
 
 function Public.toggle_window(player)
 	local memory = Memory.get_crew_memory()
@@ -318,9 +321,11 @@ function Public.full_update(player)
 
 	flow.difficulty_vote.visible = memory.overworldx and memory.overworldx == 0
 
-	flow.members.body.officer_resign.visible = memory.officers_table and memory.officers_table[player.index]
+	flow.members.body.officer_resign.visible = Common.is_officer(player.index)
 
-	local other_player_selected = flow.members.body.members_listbox.selected_index ~= 0 and tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2]) ~= player.index
+
+	local selected_player_index = get_selected_player_index(flow)
+	local other_player_selected = flow.members.body.members_listbox.selected_index ~= 0 and selected_player_index ~= player.index
 
 	flow.captain.visible = Common.is_captain(player)
 	flow.undock_tip.visible = Common.is_captain(player)
@@ -328,8 +333,8 @@ function Public.full_update(player)
 	flow.captain.body.capn_pass.visible = other_player_selected
 	flow.captain.body.capn_plank.visible = flow.captain.body.capn_pass.visible
 
-	flow.captain.body.make_officer.visible = other_player_selected and (not (memory.officers_table and memory.officers_table[tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])]))
-	flow.captain.body.unmake_officer.visible = other_player_selected and ((memory.officers_table and memory.officers_table[tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])]))
+	flow.captain.body.make_officer.visible = other_player_selected and (not Common.is_officer(selected_player_index))
+	flow.captain.body.unmake_officer.visible = other_player_selected and Common.is_officer(selected_player_index)
 
 	-- flow.captain.body.capn_undock_normal.visible = memory.boat and memory.boat.state and ((memory.boat.state == Boats.enum_state.LANDED) or (memory.boat.state == Boats.enum_state.APPROACHING) or (memory.boat.state == Boats.enum_state.DOCKED))
 
@@ -505,25 +510,25 @@ function Public.click(event)
 	end
 
 	if eventname == 'capn_pass' then
-		local other_id = tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])
+		local other_id = get_selected_player_index(flow)
 		Roles.pass_captainhood(player, game.players[other_id])
 		return
 	end
 
 	if eventname == 'make_officer' then
-		local other_id = tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])
+		local other_id = get_selected_player_index(flow)
 		Roles.make_officer(player, game.players[other_id])
 		return
 	end
 
 	if eventname == 'unmake_officer' then
-		local other_id = tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])
+		local other_id = get_selected_player_index(flow)
 		Roles.unmake_officer(player, game.players[other_id])
 		return
 	end
 
 	if eventname == 'capn_plank' then
-		local other_id = tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])
+		local other_id = get_selected_player_index(flow)
 
 		Crew.plank(player, game.players[other_id])
 		return

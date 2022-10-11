@@ -393,9 +393,8 @@ function(cmd)
 	local player = game.players[cmd.player_index]
 	local param = tostring(cmd.parameter)
 	if check_captain_or_admin(cmd) then
-		local memory = Memory.get_crew_memory()
 		if param and game.players[param] and game.players[param].index then
-			if memory.officers_table and memory.officers_table[game.players[param].index] then
+			if Common.is_officer(game.players[param].index) then
 				Roles.unmake_officer(player, game.players[param])
 			else
 				Roles.make_officer(player, game.players[param])
