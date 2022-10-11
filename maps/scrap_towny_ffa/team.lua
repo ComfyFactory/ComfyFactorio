@@ -47,32 +47,20 @@ local storage_types = {
     ['logistic-container'] = true,
     ['storage-tank'] = true
 }
--- hand craftable
+
 local player_force_disabled_recipes = {
     'lab',
     'automation-science-pack',
-    'steel-furnace',
-    'electric-furnace',
-    'stone-wall',
     'stone-brick',
     'radar'
 }
 local all_force_enabled_recipes = {
     'submachine-gun',
-    'assembling-machine-1',
     'small-lamp',
     'shotgun',
     'shotgun-shell',
     'underground-belt',
     'splitter',
-    'steel-plate',
-    'car',
-    'engine-unit',
-    'constant-combinator',
-    'green-wire',
-    'red-wire',
-    'arithmetic-combinator',
-    'decider-combinator'
 }
 
 local function min_slots(slots)
