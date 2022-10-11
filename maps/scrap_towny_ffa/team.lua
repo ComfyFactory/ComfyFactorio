@@ -67,7 +67,6 @@ local all_force_enabled_recipes = {
     'splitter',
     'steel-plate',
     'car',
-    'tank',
     'engine-unit',
     'constant-combinator',
     'green-wire',
