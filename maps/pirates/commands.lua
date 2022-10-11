@@ -1171,11 +1171,12 @@ if _DEBUG then
 
 			player.insert{name='substation', count = 50}
 			player.insert{name='solar-panel', count = 50}
-			player.insert{name='submachine-gun', count = 1}
+			player.insert{name='vehicle-machine-gun', count = 1}
 			player.insert{name='uranium-rounds-magazine', count = 200}
 			player.insert{name='raw-fish', count = 100}
 			player.insert{name='coin', count = 50000}
-			player.insert{name='rail-signal', count = 300}
+			player.insert{name='grenade', count = 100}
+			player.insert{name='steel-chest', count = 50}
 		end
 	end)
 

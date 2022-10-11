@@ -61,6 +61,7 @@ Public.scout_damage_taken_multiplier = 1.25
 Public.scout_damage_dealt_multiplier = 0.6
 Public.fisherman_reach_bonus = 10
 Public.lumberjack_coins_from_tree = 12
+Public.lumberjack_ore_base_amount = 4
 Public.master_angler_reach_bonus = 16
 Public.master_angler_fish_bonus = 2
 Public.master_angler_coin_bonus = 20
