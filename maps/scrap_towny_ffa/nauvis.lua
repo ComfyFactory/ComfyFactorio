@@ -83,8 +83,8 @@ function Public.initialize()
     mgs.autoplace_controls = {
         coal = {frequency = 2, size = 0.1, richness = 0.2},
         stone = {frequency = 2, size = 0.1, richness = 0.2},
-        ['copper-ore'] = {frequency = 5, size = 0.1, richness = 0.2},
-        ['iron-ore'] = {frequency = 5, size = 0.1, richness = 0.2},
+        ['copper-ore'] = {frequency = 5, size = 0.1, richness = 0.1},
+        ['iron-ore'] = {frequency = 5, size = 0.1, richness = 0.1},
         ['uranium-ore'] = {frequency = 0, size = 0.1, richness = 0.2},
         ['crude-oil'] = {frequency = 5, size = 0.05, richness = 0.5},
         trees = {frequency = 2, size = 1, richness = 1},
@@ -93,9 +93,9 @@ function Public.initialize()
     mgs.autoplace_settings = {
         entity = {
             settings = {
-                ['rock-huge'] = {frequency = 2, size = 3, richness = 'very-high'},
-                ['rock-big'] = {frequency = 2, size = 3, richness = 'very-high'},
-                ['sand-rock-big'] = {frequency = 2, size = 3, richness = 1, 'very-high'}
+                ['rock-huge'] = {frequency = 2, size = 1, richness = 1},
+                ['rock-big'] = {frequency = 2, size = 1, richness = 1},
+                ['sand-rock-big'] = {frequency = 2, size = 1, richness = 1}
             }
         },
         decorative = {
