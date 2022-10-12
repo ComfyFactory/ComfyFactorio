@@ -146,7 +146,9 @@ end
 
 function Public.game_slowness_scale()
 	-- return 1 / Public.crew_scale()^(55/100) / Math.sloped(Common.difficulty_scale(), 1/4) --changed crew_scale factor significantly to help smaller crews
-	return 1 / Public.crew_scale()^(50/100) / Math.sloped(Common.difficulty_scale(), 1/4) --changed crew_scale factor significantly to help smaller crews
+	-- return 1 / (Public.crew_scale()^(50/100) / Math.sloped(Common.difficulty_scale(), 1/4)) --changed crew_scale factor significantly to help smaller crews
+
+	return Math.sloped(Common.difficulty_scale(), 1/4) / Public.crew_scale()^(50/100)
 end
 
 
@@ -184,16 +186,20 @@ end
 function Public.fuel_depletion_rate_static()
 	if (not Common.overworldx()) then return 0 end
 
-	local T = Public.expected_time_on_island()
-
-	local rate
 	if Common.overworldx() > 0 then
-		rate = 570 * (0 + (Common.overworldx()/40)^(9/10)) * Public.crew_scale()^(1/8) * Math.sloped(Common.difficulty_scale(), 65/100) / T --most of the crewsize dependence is through T, i.e. the coal cost per island stays the same... but the extra player dependency accounts for the fact that even in compressed time, more players seem to get more resources per island
-	else
-		rate = 0
-	end
+		-- With this formula coal consumption becomes 1x, 2x, 3x and 4x with 1, 3, 6, 9 crew members respectively
+		-- most of the crewsize dependence is through T, i.e. the coal cost per island stays the same... but the extra player dependency accounts for the fact that even in compressed time, more players seem to get more resources per island
+		-- rate = 570 * ((Common.overworldx()/40)^(9/10)) * Public.crew_scale()^(1/8) * Math.sloped(Common.difficulty_scale(), 65/100) / T
 
-	return -rate
+		-- With this formula coal consumption becomes 1x, 1.24x, 1.44x and 1.57x with 1, 3, 6, 9 crew members respectively.
+		-- Coal consumption should scale slowly because:
+		-- - More people doesn't necessarily mean faster progression: people just focus on other things (and on some islands it's hard to "employ" every crew member to be productive, due to lack of activities).
+		-- - Although more players can setup miners faster, miners don't dig ore faster.
+		-- - It's not fun being punished when noobs(or just your casual friends) join game and don't contribute "enough" to make up for increased coal consumption (among other things).
+		return -0.2 * ((Common.overworldx()/40)^(9/10)) * Public.crew_scale()^(1/5) * Math.sloped(Common.difficulty_scale(), 40/100)
+	else
+		return 0
+	end
 end
 
 function Public.fuel_depletion_rate_sailing()
@@ -380,7 +386,6 @@ function Public.quest_reward_multiplier()
 end
 
 function Public.island_richness_avg_multiplier()
-	local ret
 	local base = 0.73
 	local additional = 0.120 * Math.clamp(0, 7, (Common.overworldx()/40)^(65/100) * Math.sloped(Public.crew_scale(), 1/40)) --tuned tbh
 
