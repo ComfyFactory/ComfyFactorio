@@ -5,6 +5,7 @@ local table_insert = table.insert
 local math_floor = math.floor
 local math_sqrt = math.sqrt
 local table_shuffle = table.shuffle_table
+local table_size = table.size
 
 local Event = require 'utils.event'
 local Server = require 'utils.server'
@@ -305,9 +306,7 @@ local function is_valid_location(force_name, surface, position)
         end
     end
 
-    local town_count = 0
-    for _ in pairs(this.town_centers) do town_count = town_count + 1 end
-    if town_count > 48 then
+    if table_size(this.town_centers) > 48 then
         surface.create_entity(
             {
                 name = 'flying-text',
