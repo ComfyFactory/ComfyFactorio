@@ -396,11 +396,35 @@ function Public.resource_quest_multiplier()
 end
 
 function Public.quest_market_entry_price_scale()
-	return 0.85 * (1 + 0.030 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty_scale(), 1/2) --whilst the scenario philosophy says that resource scales tend to be independent of crew size, we account slightly for the fact that more players tend to handcraft more
+	-- Whilst the scenario philosophy says that resource scales tend to be independent of crew size, we account slightly for the fact that more players tend to handcraft more
+	-- Idea behind formula: small scale for early islands, but scale linearly ~3-4 times every 25 islands (scaling and starting scale is more aggressive for higher difficulties)
+
+	-- Returned value examples
+	-- Assuming parameters:
+	-- crew_size = 3
+	-- difficulty = easy (0.5)
+	-- @NOTE: assuming starting island is 0th island
+	-- x = 40   (1st island): 0.419
+	-- x = 200  (5th island): 0.582
+	-- x = 600  (15th island): 0.992
+	-- x = 1000 (25th island): 1.401
+	return (1 + 0.05 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty_scale(), 1/2) - 0.4
 end
 
 function Public.quest_furnace_entry_price_scale()
-	return 0.85 * (1 + 0.010 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty_scale(), 1/2) --slower increase with time, because this is more time-constrained than resource-constrained
+	-- Slower increase with time, because this is more time-constrained than resource-constrained
+	-- Idea behind formula: small scale for early islands, but scale linearly ~2-3 times every 25 islands (scaling and starting scale is more aggressive for higher difficulties)
+
+	-- Returned value examples
+	-- Assuming parameters:
+	-- crew_size = 3
+	-- difficulty = easy (0.5)
+	-- @NOTE: assuming starting island is 0th island
+	-- x = 40   (1st island): 0.419
+	-- x = 200  (5th island): 0.517
+	-- x = 600  (15th island): 0.762
+	-- x = 1000 (25th island): 1.008
+	return (1 + 0.03 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty_scale(), 1/2) - 0.4
 end
 
 function Public.apply_crew_buffs_per_league(force, leagues_travelled)

@@ -15,7 +15,11 @@ local Public = {}
 local window_name = 'crew'
 
 local function get_selected_player_index(flow)
-	return tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])
+	if flow.members.body.members_listbox.selected_index ~= 0 then
+		return tonumber(flow.members.body.members_listbox.get_item(flow.members.body.members_listbox.selected_index)[2])
+	else
+		return nil
+	end
 end
 
 function Public.toggle_window(player)
@@ -331,7 +335,7 @@ function Public.full_update(player)
 	flow.undock_tip.visible = Common.is_captain(player)
 
 	flow.captain.body.capn_pass.visible = other_player_selected
-	flow.captain.body.capn_plank.visible = flow.captain.body.capn_pass.visible
+	flow.captain.body.capn_plank.visible = other_player_selected
 
 	flow.captain.body.make_officer.visible = other_player_selected and (not Common.is_officer(selected_player_index))
 	flow.captain.body.unmake_officer.visible = other_player_selected and Common.is_officer(selected_player_index)
