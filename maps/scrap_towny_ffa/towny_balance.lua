@@ -21,8 +21,8 @@
 local player_gun_speed_modifiers = {
     ['artillery-shell'] = -0.75,
     ['biological'] = -0.5,
-    ['bullet'] = -0.55,
-    ['cannon-shell'] = -0.75,
+    ['bullet'] = -0.5,
+    ['cannon-shell'] = -0.5,
     ['capsule'] = -0.5,
     ['combat-robot-beam'] = -0.5,
     ['combat-robot-laser'] = -0.5,
@@ -30,18 +30,18 @@ local player_gun_speed_modifiers = {
     ['flamethrower'] = -0.75,
     ['grenade'] = -0.5,
     ['landmine'] = -0.33,
-    ['laser-turret'] = -0.75,
+    ['laser-turret'] = -0.5,
     ['melee'] = 1,
     ['railgun'] = 0,
     ['rocket'] = -0.75,
-    ['shotgun-shell'] = -0.50
+    ['shotgun-shell'] = -0.5
 }
 
 local player_ammo_research_modifiers = {
     ['artillery-shell'] = -0.75,
     ['biological'] = -0.5,
     ['bullet'] = -0.5,
-    ['cannon-shell'] = -0.85,
+    ['cannon-shell'] = -0.75,
     ['capsule'] = -0.5,
     ['combat-robot-beam'] = -0.5,
     ['combat-robot-laser'] = -0.5,
@@ -49,18 +49,18 @@ local player_ammo_research_modifiers = {
     ['flamethrower'] = -0.75,
     ['grenade'] = -0.5,
     ['landmine'] = -0.5,
-    ['laser-turret'] = -0.75,
+    ['laser-turret'] = -0.5,
     ['melee'] = -0.5,
     ['railgun'] = -0.5,
     ['rocket'] = -0.5,
     ['shotgun-shell'] = -0.20
 }
 
-local player_turrets_research_modifiers = {
-    ['gun-turret'] = -0.75,
-    ['laser-turret'] = -0.75,
-    ['flamethrower-turret'] = -0.75
-}
+--local player_turrets_research_modifiers = {
+--    ['gun-turret'] = -0.75,
+--    ['laser-turret'] = -0.75,
+--    ['flamethrower-turret'] = -0.75
+--}
 
 local enemy_ammo_starting_modifiers = {
     ['artillery-shell'] = 0,
@@ -147,15 +147,15 @@ local function research_finished(event)
                 local m = e.modifier
                 p_force.set_ammo_damage_modifier(category, current_m + factor * m)
             end
-        elseif t == 'turret-attack' then
-            local category = e.turret_id
-            local factor = player_turrets_research_modifiers[category]
-
-            if factor then
-                local current_m = p_force.get_turret_attack_modifier(category)
-                local m = e.modifier
-                p_force.set_turret_attack_modifier(category, current_m + factor * m)
-            end
+        --elseif t == 'turret-attack' then
+        --    local category = e.turret_id
+        --    local factor = player_turrets_research_modifiers[category]
+        --
+        --    if factor then
+        --        local current_m = p_force.get_turret_attack_modifier(category)
+        --        local m = e.modifier
+        --        p_force.set_turret_attack_modifier(category, current_m + factor * m)
+        --    end
         elseif t == 'gun-speed' then
             local category = e.ammo_category
             local factor = player_gun_speed_modifiers[category]
