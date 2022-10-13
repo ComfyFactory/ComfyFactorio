@@ -619,7 +619,7 @@ function Public.surface_place_random_obstacle_boxes(surface, center, width, heig
 				for j = 1, size^2 do
 					local p2 = surface.find_non_colliding_position('wooden-chest', p, 5, 0.1, true) or p
 					local e = surface.create_entity{name = 'wooden-chest', position = p2, force = memory.force_name, create_build_effect_smoke = false}
-					memory.hold_surface_destroyable_wooden_chests[#memory.hold_surface_destroyable_wooden_chests + 1] = e
+					memory.hold_surface_destroyable_wooden_chests[e.unit_number] = e
 					e.destructible = false
 					e.minable = false
 					e.rotatable = false

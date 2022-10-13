@@ -1516,35 +1516,76 @@ function Public.update_alert_sound_frequency_tracker()
 	end
 end
 
+-- Check for cliff explosives in chest.
 function Public.check_for_cliff_explosives_in_hold_wooden_chests()
 	local memory = Memory.get_crew_memory()
 	local input_chests = memory.hold_surface_destroyable_wooden_chests
+	local queued_chests_timers = memory.hold_surface_timers_of_wooden_chests_queued_for_destruction
+	local tick_tack_timer = 5 -- how long it takes before chests detonate
 
 	if not input_chests then return end
 
-	for i, chest in ipairs(input_chests) do
+	-- check which chests have cliff explosives in them
+	for i, chest in pairs(input_chests) do
+		-- @TODO: decide what to do when chest is invalid (perhaps it was destroyed by some future feature)
 		if chest and chest.valid then
 			local item_count = chest.get_item_count('cliff-explosives')
 			if item_count and item_count > 0 then
-				local surface = chest.surface
-				local explosion = {
-					name = 'wooden-chest-explosion',
-					position = chest.position
-				}
-				local remnants = {
-					name = 'wooden-chest-remnants',
-					position = chest.position
-				}
-
-				chest.destroy()
-				surface.create_entity(explosion)
-				surface.create_entity(remnants)
-
-				table.fast_remove(memory.hold_surface_destroyable_wooden_chests, i)
+				if not queued_chests_timers[i] then
+					queued_chests_timers[i] = tick_tack_timer
+				end
 			end
 		end
 	end
+
+	-- update chest timers and when timer reaches 0 explode them
+	for i, _ in pairs(queued_chests_timers) do
+		local chest = input_chests[i]
+		if chest and chest.valid then
+			local surface = chest.surface
+			queued_chests_timers[i] = queued_chests_timers[i] - 1
+			local timer = queued_chests_timers[i]
+
+			if timer <= 0 then
+				-- check if sneaky players didn't decide to remove the explosives just before the explosion
+				local item_count = chest.get_item_count('cliff-explosives')
+				if item_count and item_count > 0 then
+					local explosion = {
+						name = 'wooden-chest-explosion',
+						position = chest.position
+					}
+					local remnants = {
+						name = 'wooden-chest-remnants',
+						position = chest.position
+					}
+
+					chest.destroy()
+					surface.create_entity(explosion)
+					surface.create_entity(remnants)
+
+					input_chests[i] = nil
+				end
+
+				queued_chests_timers[i] = nil
+			else
+				local tick_tacks = {'*tick*', '*tick*', '*tack*', '*tak*', '*tik*', '*tok*'}
+				surface.create_entity(
+					{
+						name = 'flying-text',
+						position = chest.position,
+						text = tick_tacks[Math.random(#tick_tacks)],
+						color = {r = 0.75, g = 0.75, b = 0.75}
+					}
+				)
+			end
+		else
+			-- we probably don't want to have it in the queue anymore if it's invalid now, do we?
+			queued_chests_timers[i] = nil
+		end
+	end
 end
+
+
 
 -- Code taken from Mountain fortress
 local function equalise_fluid_storage_pair(storage1, storage2)

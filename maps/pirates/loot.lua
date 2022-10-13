@@ -51,6 +51,8 @@ Public.chest_loot_data_raw = {
 	{12, 0, 1, false, 'artillery-shell', 1, 1},
 	{4, 0, 0.8, false, 'pistol', 1, 3},
 	{3, 0, 0.2, false, 'storage-tank', 2, 4},
+	{2, 0.1, 1, false, 'explosives', 5, 9},
+	{2, 0.2, 1, false, 'cliff-explosives', 2, 4},
 	{0.25, 0, 0.5, false, 'uranium-238', 5, 8},
 
 	{8, 0, 1.2, true, 'steel-chest', 4, 12},

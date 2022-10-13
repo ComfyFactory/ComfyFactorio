@@ -757,6 +757,7 @@ function Public.initialise_crew(accepted_proposal)
 	memory.overworldy = 0
 
 	memory.hold_surface_destroyable_wooden_chests = {}
+	memory.hold_surface_timers_of_wooden_chests_queued_for_destruction = {}
 
 	memory.seaname = SurfacesCommon.encode_surface_name(memory.id, 0, SurfacesCommon.enum.SEA, enum.DEFAULT)
 
