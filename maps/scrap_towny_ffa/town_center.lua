@@ -407,7 +407,7 @@ end
 local function add_pvp_shield_scaled(position, force, surface)
     local evo = Evolution.get_highest_evolution()
 
-    local min_size = 60
+    local min_size = 70
     local max_size = 140
     local min_duration = 0.5 * 60 * 60 * 60
     local max_duration =   8 * 60 * 60 * 60
