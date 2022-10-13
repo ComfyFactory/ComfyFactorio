@@ -4,7 +4,9 @@ local math_random = math.random
 local table_insert = table.insert
 local math_floor = math.floor
 local math_sqrt = math.sqrt
+local math_min = math.min
 local table_shuffle = table.shuffle_table
+local table_size = table.size
 
 local Event = require 'utils.event'
 local Server = require 'utils.server'
@@ -305,9 +307,7 @@ local function is_valid_location(force_name, surface, position)
         end
     end
 
-    local town_count = 0
-    for _ in pairs(this.town_centers) do town_count = town_count + 1 end
-    if town_count > 48 then
+    if table_size(this.town_centers) > 48 then
         surface.create_entity(
             {
                 name = 'flying-text',
@@ -407,12 +407,12 @@ end
 local function add_pvp_shield_scaled(position, force, surface)
     local evo = Evolution.get_highest_evolution()
 
-    local min_size = 60
-    local max_size = 120
+    local min_size = 70
+    local max_size = 140
     local min_duration = 0.5 * 60 * 60 * 60
     local max_duration =   8 * 60 * 60 * 60
     local lifetime_ticks = min_duration + evo * (max_duration - min_duration)
-    local size = min_size + evo * (max_size - min_size)
+    local size = math_min(min_size + 2 * evo * (max_size - min_size), max_size) -- Size grows quicker but is still capped
 
     PvPShield.add_shield(surface, force, position, size, lifetime_ticks, 60 * 60)
     update_pvp_shields_display()

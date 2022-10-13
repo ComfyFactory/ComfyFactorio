@@ -191,6 +191,8 @@ local function set_offers(town_center)
     table_insert(market_items, {price = {{'iron-gear-wheel', 3}}, offer = {type = 'give-item', item = 'coin', count = 1}})
     table_insert(market_items, {price = {{'iron-stick', 12}}, offer = {type = 'give-item', item = 'coin', count = 1}})
     table_insert(market_items, {price = {{'empty-barrel', 1}}, offer = {type = 'give-item', item = 'coin', count = 1}})
+    table_insert(market_items, {price = {{'car', 1}}, offer = {type = 'give-item', item = 'coin', count = 10}})
+    table_insert(market_items, {price = {{'tank', 1}}, offer = {type = 'give-item', item = 'coin', count = 50}})
 
     for _, item in pairs(market_items) do
         market.add_market_item(item)

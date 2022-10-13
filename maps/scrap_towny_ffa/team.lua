@@ -73,16 +73,13 @@ local function min_slots(slots)
     return min
 end
 
-local function can_force_accept_member(force)
+local function update_member_limit(force)
     if not force or not force.valid then
         log('force nil or not valid!')
         return
     end
     local this = ScenarioTable.get_table()
     local town_centers = this.town_centers
-    if this.member_limit == nil then
-        this.member_limit = 1
-    end
 
     -- get the members of each force name into a table
     local slots = {0, 0, 0}
@@ -101,11 +98,19 @@ local function can_force_accept_member(force)
         end
     end
     -- get the min of all slots
-    local member_limit = min_slots(slots) + 1
-    this.member_limit = member_limit
+    this.member_limit = min_slots(slots) + 1
+end
 
-    if #force.connected_players >= member_limit then
-        game.print('>> Town ' .. force.name .. ' has too many settlers! Current limit (' .. member_limit .. ')', {255, 255, 0})
+local function can_force_accept_member(force)
+    if not force or not force.valid then
+        log('force nil or not valid!')
+        return
+    end
+    local this = ScenarioTable.get_table()
+    update_member_limit(force)
+
+    if #force.players >= this.member_limit then
+        game.print('>> Town ' .. force.name .. ' has too many settlers! Current limit (' .. this.member_limit .. ')', {255, 255, 0})
         return false
     end
     return true
@@ -234,6 +239,9 @@ function Public.add_player_to_town(player, town_center)
     player.tag = ''
     Map.enable_world_map(player)
     Public.set_player_color(player)
+
+    update_member_limit(force)
+    game.print('>> The new member limit for all towns is now: (' .. this.member_limit .. ')', {255, 255, 0})
 end
 
 -- given to player upon respawn
@@ -823,7 +831,7 @@ local function kill_force(force_name, cause)
     if is_suicide then
         message = town_name .. ' has given up'
     elseif cause == nil or not cause.valid or cause.force == nil then
-        message = town_name .. ' has fallen to an unknown entity (FIXME ID0)!' -- TODO: remove after some testing
+        message = town_name .. ' has fallen to an unknown entity (DEBUG ID 0)!' -- TODO: remove after some testing
     elseif cause.force.name == 'player' or cause.force.name == 'rogue' then
         local items = {name = 'coin', count = balance}
         town_center.coin_balance = 0
@@ -842,7 +850,7 @@ local function kill_force(force_name, cause)
         elseif cause.force.name == 'rogue' then
             message = town_name .. ' has fallen to rogues!'
         else
-            message = town_name .. ' has fallen to an unknown entity (FIXME ID1)!' -- TODO: remove after some testing
+            message = town_name .. ' has fallen to an unknown entity (DEBUG ID 1)!' -- TODO: remove after some testing
         end
     elseif cause.force.name ~= 'enemy' then
         if this.town_centers[cause.force.name] ~= nil then
@@ -857,7 +865,8 @@ local function kill_force(force_name, cause)
                 message = town_name .. ' has fallen to ' .. killer_town_center.town_name .. '!'
             end
         else
-            message = town_name .. ' has fallen to an unknown entity (FIXME ID2)!' -- TODO: remove after some testing
+            message = town_name .. ' has fallen to an unknown entity (DEBUG ID 2)!' -- TODO: remove after some testing
+            log("cause.force.name=" .. cause.force.name)
         end
     else
         message = town_name .. ' has fallen to the biters!'
