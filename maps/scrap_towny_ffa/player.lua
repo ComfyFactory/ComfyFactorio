@@ -96,6 +96,7 @@ function Public.requests(player)
                 i.clear()
             end
 
+            player.print("Your town has fallen since you last played. Good luck next time!", {r = 1, g = 0, b = 0})
             player.character.die()
         end
         this.requests[player.index] = nil

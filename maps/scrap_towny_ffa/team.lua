@@ -4,11 +4,13 @@ local math_random = math.random
 local table_size = table.size
 local string_match = string.match
 local string_lower = string.lower
+local math_min = math.min
 
 local Server = require 'utils.server'
 local Map = require 'maps.scrap_towny_ffa.map'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local PvPShield = require 'maps.scrap_towny_ffa.pvp_shield'
+local CombatBalance = require 'maps.scrap_towny_ffa.combat_balance'
 
 local outlander_color = {150, 150, 150}
 local outlander_chat_color = {170, 170, 170}
@@ -56,11 +58,8 @@ local player_force_disabled_recipes = {
 }
 local all_force_enabled_recipes = {
     'submachine-gun',
-    'small-lamp',
     'shotgun',
     'shotgun-shell',
-    'underground-belt',
-    'splitter',
 }
 
 local function min_slots(slots)
@@ -81,7 +80,6 @@ local function update_member_limit(force)
     local this = ScenarioTable.get_table()
     local town_centers = this.town_centers
 
-    -- get the members of each force name into a table
     local slots = {0, 0, 0}
     for _, town_center in pairs(town_centers) do
         local players = table_size(town_center.market.force.players)
@@ -97,8 +95,8 @@ local function update_member_limit(force)
             end
         end
     end
-    -- get the min of all slots
-    this.member_limit = min_slots(slots) + 1
+    -- get the min of all slots -- TODO: without the hard limit, the soft limit increases too much so it never applies
+    this.member_limit = math_min(min_slots(slots) + 1, 3)
 end
 
 local function can_force_accept_member(force)
@@ -241,7 +239,7 @@ function Public.add_player_to_town(player, town_center)
     Public.set_player_color(player)
 
     update_member_limit(force)
-    game.print('>> The new member limit for all towns is now: (' .. this.member_limit .. ')', {255, 255, 0})
+    game.print('>> The new member limit for all towns is now ' .. this.member_limit, {255, 255, 0})
 end
 
 -- given to player upon respawn
@@ -740,8 +738,7 @@ function Public.add_new_force(force_name)
     end
     force.research_queue_enabled = true
     -- balance initial combat
-    force.set_ammo_damage_modifier('landmine', -0.75)
-    force.set_ammo_damage_modifier('grenade', -0.5)
+    CombatBalance.init_player_weapon_damage(force)
     if (this.testing_mode == true) then
         local e_force = game.forces['enemy']
         e_force.set_friend(force, true) -- team force should not be attacked by turrets
@@ -931,8 +928,7 @@ local function setup_player_force()
     for _, recipe_name in pairs(all_force_enabled_recipes) do
         recipes[recipe_name].enabled = true
     end
-    force.set_ammo_damage_modifier('landmine', -0.75)
-    force.set_ammo_damage_modifier('grenade', -0.5)
+    CombatBalance.init_player_weapon_damage(force)
     if (this.testing_mode == true) then
         force.enable_all_prototypes()
     end
@@ -970,8 +966,7 @@ local function setup_rogue_force()
     for _, recipe_name in pairs(all_force_enabled_recipes) do
         recipes[recipe_name].enabled = true
     end
-    force.set_ammo_damage_modifier('landmine', -0.75)
-    force.set_ammo_damage_modifier('grenade', -0.5)
+    CombatBalance.init_player_weapon_damage(force)
     if (this.testing_mode == true) then
         force.enable_all_prototypes()
     end
