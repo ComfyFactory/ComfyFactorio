@@ -840,7 +840,7 @@ local function kill_force(force_name, cause)
                 chest.insert(items)
             end
         end
-        if cause.player then
+        if cause.name == 'character' then
             message = town_name .. ' has fallen to ' .. cause.player.name .. '!'
         elseif cause.force.name == 'player' then
             message = town_name .. ' has fallen to outlanders!'
@@ -856,7 +856,7 @@ local function kill_force(force_name, cause)
                 killer_town_center.coin_balance = killer_town_center.coin_balance + balance
                 cause.force.print(balance .. " coins have been transferred to your town")
             end
-            if cause.player then
+            if cause.name == 'character' then
                 message = town_name .. ' has fallen to ' .. cause.player.name .. ' from '  .. killer_town_center.town_name .. '!'
             else
                 message = town_name .. ' has fallen to ' .. killer_town_center.town_name .. '!'
