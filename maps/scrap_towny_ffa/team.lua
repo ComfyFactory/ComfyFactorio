@@ -57,11 +57,8 @@ local player_force_disabled_recipes = {
 }
 local all_force_enabled_recipes = {
     'submachine-gun',
-    'small-lamp',
     'shotgun',
     'shotgun-shell',
-    'underground-belt',
-    'splitter',
 }
 
 local function min_slots(slots)
