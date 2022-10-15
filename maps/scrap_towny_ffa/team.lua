@@ -306,6 +306,7 @@ local function ally_outlander(player, target)
     local this = ScenarioTable.get_table()
     local requesting_force = player.force
     local target_force = target.force
+    local target_town_center = this.town_centers[target_force.name]
 
     -- don't handle if towns not yet enabled
     if not this.towns_enabled then
@@ -336,19 +337,17 @@ local function ally_outlander(player, target)
         if target_player then
             if this.requests[target_player.index] then
                 if this.requests[target_player.index] == player.name then
-                    if this.town_centers[target_force.name] then
-                        if not can_force_accept_member(target_force) then
-                            return true
-                        end
-                        game.print('>> ' .. player.name .. ' has settled in ' .. target_force.name .. "'s Town!", {255, 255, 0})
-                        Public.add_player_to_town(player, this.town_centers[target_force.name])
+                    if not can_force_accept_member(target_force) then
                         return true
                     end
+                    game.print('>> ' .. player.name .. ' has settled in ' .. target_town_center.town_name, {255, 255, 0})
+                    Public.add_player_to_town(player, target_town_center)
+                    return true
                 end
             end
         end
 
-        game.print('>> ' .. player.name .. ' wants to settle in ' .. target_force.name .. ' Town!', {255, 255, 0})
+        game.print('>> ' .. player.name .. ' wants to settle in ' .. target_town_center.town_name, {255, 255, 0})
         return true
     end
 
@@ -365,24 +364,19 @@ local function ally_outlander(player, target)
 
         if this.requests[target_player.index] then
             if this.requests[target_player.index] == player.force.name then
-                if not can_force_accept_member(player.force) then
+                if target_town_center then
+                    if not can_force_accept_member(player.force) then
+                        return true
+                    end
+                    game.print('>> ' .. player.name .. ' has accepted ' .. target_player.name .. ' into' .. target_town_center.town_name, {255, 255, 0})
+                    Public.add_player_to_town(target_player, this.town_centers[player.force.name])
                     return true
                 end
-                if player.force.name == player.name then
-                    game.print('>> ' .. player.name .. ' has accepted ' .. target_player.name .. ' into their Town!', {255, 255, 0})
-                else
-                    game.print('>> ' .. player.name .. ' has accepted ' .. target_player.name .. ' into' .. player.force.name .. "'s Town!", {255, 255, 0})
-                end
-                Public.add_player_to_town(target_player, this.town_centers[player.force.name])
-                return true
             end
         end
 
-        if player.force.name == player.name then
-            game.print('>> ' .. player.name .. ' is inviting ' .. target_player.name .. ' into their Town!', {255, 255, 0})
-        else
-            game.print('>> ' .. player.name .. ' is inviting ' .. target_player.name .. ' into ' .. player.force.name .. "'s Town!", {255, 255, 0})
-        end
+        local target_town_center_player = this.town_centers[player.force.name]
+        game.print('>> ' .. player.name .. ' is inviting ' .. target_player.name .. ' into ' .. target_town_center_player.town_name, {255, 255, 0})
         return true
     end
 end
@@ -840,7 +834,7 @@ local function kill_force(force_name, cause)
                 chest.insert(items)
             end
         end
-        if cause.player then
+        if cause.name == 'character' then
             message = town_name .. ' has fallen to ' .. cause.player.name .. '!'
         elseif cause.force.name == 'player' then
             message = town_name .. ' has fallen to outlanders!'
@@ -856,7 +850,7 @@ local function kill_force(force_name, cause)
                 killer_town_center.coin_balance = killer_town_center.coin_balance + balance
                 cause.force.print(balance .. " coins have been transferred to your town")
             end
-            if cause.player then
+            if cause.name == 'character' then
                 message = town_name .. ' has fallen to ' .. cause.player.name .. ' from '  .. killer_town_center.town_name .. '!'
             else
                 message = town_name .. ' has fallen to ' .. killer_town_center.town_name .. '!'
