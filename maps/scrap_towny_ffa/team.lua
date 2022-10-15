@@ -80,23 +80,25 @@ local function update_member_limit(force)
     local this = ScenarioTable.get_table()
     local town_centers = this.town_centers
 
-    local slots = {0, 0, 0}
-    for _, town_center in pairs(town_centers) do
-        local players = table_size(town_center.market.force.players)
-        -- get min value for all slots
-        local min = min_slots(slots)
-        -- if our value greater than min of all three replace that slot
-        if players > min then
-            for i = 1, 3, 1 do
-                if slots[i] == min then
-                    slots[i] = players
-                    break
-                end
+    -- Limit is increased by counting towns that are the limit
+    -- This will ensure no single town has many more players than another
+    local limit = 1
+    while true do
+        local towns_near_limit = 0
+        for _, town_center in pairs(town_centers) do
+            local players = table_size(town_center.market.force.players)
+            if players >= limit then
+                towns_near_limit = towns_near_limit + 1
             end
         end
+        if towns_near_limit >= 2 then
+            limit = limit + 1
+        else
+            break
+        end
     end
-    -- get the min of all slots -- TODO: without the hard limit, the soft limit increases too much so it never applies
-    this.member_limit = math_min(min_slots(slots) + 1, 3)
+
+    this.member_limit = math_min(limit, 3)
 end
 
 local function can_force_accept_member(force)
@@ -108,7 +110,8 @@ local function can_force_accept_member(force)
     update_member_limit(force)
 
     if #force.players >= this.member_limit then
-        game.print('>> Town ' .. force.name .. ' has too many settlers! Current limit (' .. this.member_limit .. ')', {255, 255, 0})
+        game.print('>> Town ' .. force.name .. ' has too many settlers! Current limit: ' .. this.member_limit .. '.'
+                .. ' The limit will increase once other towns have more settlers.', {255, 255, 0})
         return false
     end
     return true
@@ -239,7 +242,7 @@ function Public.add_player_to_town(player, town_center)
     Public.set_player_color(player)
 
     update_member_limit(force)
-    game.print('>> The new member limit for all towns is now ' .. this.member_limit, {255, 255, 0})
+    game.print('>> The member limit for all towns is now: ' .. this.member_limit, {255, 255, 0})
 end
 
 -- given to player upon respawn
