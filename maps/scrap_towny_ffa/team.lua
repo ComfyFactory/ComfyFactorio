@@ -10,6 +10,7 @@ local Server = require 'utils.server'
 local Map = require 'maps.scrap_towny_ffa.map'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local PvPShield = require 'maps.scrap_towny_ffa.pvp_shield'
+local CombatBalance = require 'maps.scrap_towny_ffa.combat_balance'
 
 local outlander_color = {150, 150, 150}
 local outlander_chat_color = {170, 170, 170}
@@ -737,8 +738,7 @@ function Public.add_new_force(force_name)
     end
     force.research_queue_enabled = true
     -- balance initial combat
-    force.set_ammo_damage_modifier('landmine', -0.75)
-    force.set_ammo_damage_modifier('grenade', -0.5)
+    CombatBalance.init_player_weapon_damage(force)
     if (this.testing_mode == true) then
         local e_force = game.forces['enemy']
         e_force.set_friend(force, true) -- team force should not be attacked by turrets
@@ -928,8 +928,7 @@ local function setup_player_force()
     for _, recipe_name in pairs(all_force_enabled_recipes) do
         recipes[recipe_name].enabled = true
     end
-    force.set_ammo_damage_modifier('landmine', -0.75)
-    force.set_ammo_damage_modifier('grenade', -0.5)
+    CombatBalance.init_player_weapon_damage(force)
     if (this.testing_mode == true) then
         force.enable_all_prototypes()
     end
@@ -967,8 +966,7 @@ local function setup_rogue_force()
     for _, recipe_name in pairs(all_force_enabled_recipes) do
         recipes[recipe_name].enabled = true
     end
-    force.set_ammo_damage_modifier('landmine', -0.75)
-    force.set_ammo_damage_modifier('grenade', -0.5)
+    CombatBalance.init_player_weapon_damage(force)
     if (this.testing_mode == true) then
         force.enable_all_prototypes()
     end
