@@ -460,7 +460,8 @@ local function declare_war(player, item)
     if requesting_force.name == target_force.name then
         if player.name ~= target.force.name then
             Public.set_player_to_outlander(player)
-            game.print('>> ' .. player.name .. ' has abandoned ' .. target_force.name .. "'s Town!", {255, 255, 0})
+            local town_center = this.town_centers[target_force.name]
+            game.print('>> ' .. player.name .. ' has abandoned ' .. town_center.town_name, {255, 255, 0})
             this.requests[player.index] = nil
         end
         if player.name == target.force.name then
@@ -475,7 +476,8 @@ local function declare_war(player, item)
                 return
             end
             Public.set_player_to_outlander(target_player)
-            game.print('>> ' .. player.name .. ' has banished ' .. target_player.name .. ' from their Town!', {255, 255, 0})
+            local town_center = this.town_centers[player.force.name]
+            game.print('>> ' .. player.name .. ' has banished ' .. target_player.name .. ' from ' .. town_center.town_name, {255, 255, 0})
             this.requests[player.index] = nil
         end
         return
