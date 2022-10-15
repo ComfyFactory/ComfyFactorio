@@ -15,6 +15,7 @@ Have fun and be comfy ^.^
 
 Changelog (10th-15th October 2022):
  - Combat balance overhaul
+ - Town player limit fixes
  - Towns have an initial PvP protection shield, size and duration is scaled with the biggest town size
  - Temporary PvP shield available in market for breaks / AFK
  - Improved base defenses and offline survivability
