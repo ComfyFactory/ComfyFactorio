@@ -33,7 +33,7 @@ local function remove_drawn_borders(shield)
     end
 end
 
-local function scale_size_and_box(shield)
+local function scale_size_by_lifetime(shield)
     local time_scale = math.min(1, (game.tick - shield.lifetime_start) / shield.time_to_full_size_ticks)
     local scaled_size = time_scale * shield.max_size
 
@@ -63,7 +63,7 @@ function Public.add_shield(surface, force, center, max_size, lifetime_ticks, tim
                 string.format("%.0f", (Public.remaining_lifetime(shield)) / 60 / 60) .. ' minutes')
     end
 
-    scale_size_and_box(shield)
+    scale_size_by_lifetime(shield)
     this.pvp_shields[force.name] = shield
 end
 
@@ -89,7 +89,7 @@ local function update_shield_lifetime()
         if Public.remaining_lifetime(shield) > 0 then
             if shield.size < shield.max_size then
                 remove_drawn_borders(shield)
-                scale_size_and_box(shield)
+                scale_size_by_lifetime(shield)
                 draw_borders(shield)
 
                 -- Push everyone out as we grow (even if they're just standing)
@@ -105,6 +105,18 @@ end
 
 local function vector_norm(vector)
     return math_sqrt(vector.x ^ 2 + vector.y ^ 2)
+end
+
+function Public.in_other_zones(surface, position, force)
+    local this = ScenarioTable.get_table()
+    for _, shield in pairs(this.pvp_shields) do
+        if not (shield.force == force or surface ~= shield.surface) then
+            if CommonFunctions.point_in_bounding_box(position, shield.box) then
+                return true
+            end
+        end
+    end
+    return false
 end
 
 function Public.push_enemies_out(player)

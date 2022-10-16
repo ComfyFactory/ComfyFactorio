@@ -419,7 +419,7 @@ local function add_pvp_shield_scaled(position, force, surface)
     force.print("Based on the highest tech on map, your town deploys a PvP shield of "
             .. string.format("%.0f", size) .. " tiles"
             .. " for " .. string.format("%.0f", lifetime_ticks/60/60)  .. " minutes."
-            .. " Enemy players will not be able to enter the shielded area.")
+            .. " Enemy players will not be able to enter and build in the shielded area.")
 end
 
 local function found_town(event)

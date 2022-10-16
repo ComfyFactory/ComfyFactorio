@@ -37,6 +37,9 @@ Survive as long as you can. Raid other towns. Defend your town.
     Tip: use filter inserters with to get coins/iron/.. out of the market
 - Fishes procreate near towns. The more fishes, the quicker they multiply. Automated fish farm, anyone?
 - Use /rename-town (chat command) to rename your town
+- PvP shields prevent players from entering and building inside, but they can still shoot inside!
+- Your town has a AFK PvP shield that you can use to safely take a quick break
+    without other players killing your town. Deploy it from the market.
 
 # Town members and alliances
 - Once a town is formed, members may invite other players and teams using a coin. To invite another player, drop a coin
