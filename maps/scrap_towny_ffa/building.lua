@@ -4,6 +4,7 @@ local math_floor = math.floor
 local table_insert = table.insert
 local table_size = table.size
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
+local PvPShield = require 'maps.scrap_towny_ffa.pvp_shield'
 
 local town_zoning_entity_types = { "wall", "gate", "electric-pole", "ammo-turret", "electric-turret", "fluid-turret"}
 
@@ -223,26 +224,19 @@ local function process_built_entities(event)
     local name = entity.name
     local surface = entity.surface
     local position = entity.position
+    local force
     local force_name
     if player_index ~= nil then
         local player = game.players[player_index]
-        if player ~= nil then
-            local force = player.force
-            if force ~= nil then
-                force_name = force.name
-            end
-        end
+        force = player.force
+        force_name = force.name
     else
         local robot = event.robot
-        if robot ~= nil then
-            local force = robot.force
-            if force ~= nil then
-                force_name = force.name
-            end
-        end
+        force = robot.force
+        force_name = force.name
     end
 
-    if Public.near_another_town(force_name, position, surface, 32) == true then
+    if PvPShield.in_other_zones(surface, position, force) or Public.near_another_town(force_name, position, surface, 32) == true then
         if neutral_whitelist[name] then
             entity.force = game.forces['neutral']
         else
@@ -333,6 +327,9 @@ end
 -- called when a player places landfill
 local function on_player_built_tile(event)
     if prevent_landfill_in_restricted_zone(event) then
+        return
+    end
+    if process_built_entities(event) then
         return
     end
     if prevent_tiles_near_towns(event) then

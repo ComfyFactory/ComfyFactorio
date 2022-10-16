@@ -408,18 +408,18 @@ local function add_pvp_shield_scaled(position, force, surface)
     local evo = Evolution.get_highest_evolution()
 
     local min_size = 70
-    local max_size = 140
+    local max_size = 150
     local min_duration = 0.5 * 60 * 60 * 60
     local max_duration =   8 * 60 * 60 * 60
-    local lifetime_ticks = min_duration + evo * (max_duration - min_duration)
-    local size = math_min(min_size + 2 * evo * (max_size - min_size), max_size) -- Size grows quicker but is still capped
+    local lifetime_ticks = math_min(min_duration + 2 * evo * (max_duration - min_duration), max_duration)
+    local size = math_min(min_size + 2 * evo * (max_size - min_size), max_size)
 
     PvPShield.add_shield(surface, force, position, size, lifetime_ticks, 60 * 60)
     update_pvp_shields_display()
     force.print("Based on the highest tech on map, your town deploys a PvP shield of "
             .. string.format("%.0f", size) .. " tiles"
             .. " for " .. string.format("%.0f", lifetime_ticks/60/60)  .. " minutes."
-            .. " Enemy players will not be able to enter the shielded area.")
+            .. " Enemy players will not be able to enter and build in the shielded area.")
 end
 
 local function found_town(event)

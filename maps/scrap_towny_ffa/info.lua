@@ -1,64 +1,53 @@
 local Public = {}
 
 local info =
-    [[You wake up on this god-forsaken planet with a bunch of other desolate fools. Who will survive?
+    [[This is the wasteland. Who will survive?
 
 You can either
  - Found a new town or join an existing one
- - Stay as an Outlander and fight towns side-by-side with the biters
+ - Stay as outlander and fight towns together with the biters
 
-Click on the "Info" button for full intro/help.
+Click on the "Info" button for full intro, help and changelog.
 
-Have fun and be comfy ^.^
-
-
-
-Changelog (10th-15th October 2022):
- - Combat balance overhaul
- - Towns have an initial PvP protection shield, size and duration is scaled with the biggest town size
- - Temporary PvP shield available in market for breaks / AFK
- - Improved base defenses and offline survivability
- - Loads of bugfixes including freezes and desyncs
-]]
+Have fun and be comfy ^.^]]
 
 local info_adv =
     [[
-# Goal of the game
+# Changelog (10th-16th October 2022):
+ - PvP shields now prevent building inside
+ - Combat balance overhaul
+ - Town player limit fixes
+ - Towns have an initial PvP protection shield - size and duration is scaled with the biggest town size
+ - Temporary PvP shield available in market for breaks / AFK
+ - Improved base defenses and offline survivability
+ - Loads of bugfixes including freezes and desyncs
 
+# Goal of the game
 Survive as long as you can. Raid other towns. Defend your town.
 
-
 # Advanced tips and tricks
-
 - It's best to found new towns far from existing towns, as enemies will become aggressive with town's research.
     Biters and spitters become more aggressive towards towns that are advanced in research.
     Their evolution will scale around technology progress in any nearby towns and pollution levels.
-
 - How to get more ores? Make sure you researched steel processing,
     then hand mine a few big rocks to find ore patches under them!
-
-- How to get more oil? Kill worms - some of them will leave you a oil patch
-
+- How to get more oil? Kill worms - some of them will leave you an oil patch
 - The town market is the heart of your town. If it is destroyed, you lose everything.
-    So protect it well, repair it whenever possible, and if you can afford, increase its health by purchasing upgrades.
-
+    So protect it well, repair it whenever possible, and increase its health by purchasing upgrades.
 - It's possible to automate trading with the town center! How cool is that?!! Try it out.
     Tip: use filter inserters with to get coins/iron/.. out of the market
-
 - Fishes procreate near towns. The more fishes, the quicker they multiply. Automated fish farm, anyone?
-
 - Use /rename-town (chat command) to rename your town
+- PvP shields prevent players from entering and building inside, but they can still shoot inside!
+- Your town has a AFK PvP shield that you can use to safely take a quick break
+    without other players killing your town. Deploy it from the market.
 
-
-# Alliances
-
-Once a town is formed, members may invite other players and teams using a coin. To invite another player, drop a coin
+# Town members and alliances
+- Once a town is formed, members may invite other players and teams using a coin. To invite another player, drop a coin
 on that player (with the Z key). To accept an invite, offer a coin in return to the member. To leave a town, simply drop coal
-on the market. As a member of a town, your respawn point will change to that of the town.
-
-To form any alliance with another town, drop a coin on a member or their market. If they agree they can reciprocate with a
-coin offering.
-]]
+on the market.
+- To form any alliance with another town, drop a coin on a member or their market. If they agree they can reciprocate with a
+coin offering.]]
 
 function Public.toggle_button(player)
     if player.gui.top['towny_map_intro_button'] then

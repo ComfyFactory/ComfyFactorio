@@ -62,16 +62,6 @@ local all_force_enabled_recipes = {
     'shotgun-shell',
 }
 
-local function min_slots(slots)
-    local min = 0
-    for i = 1, 3, 1 do
-        if slots[i] > min then
-            min = slots[i]
-        end
-    end
-    return min
-end
-
 local function update_member_limit(force)
     if not force or not force.valid then
         log('force nil or not valid!')
@@ -80,23 +70,25 @@ local function update_member_limit(force)
     local this = ScenarioTable.get_table()
     local town_centers = this.town_centers
 
-    local slots = {0, 0, 0}
-    for _, town_center in pairs(town_centers) do
-        local players = table_size(town_center.market.force.players)
-        -- get min value for all slots
-        local min = min_slots(slots)
-        -- if our value greater than min of all three replace that slot
-        if players > min then
-            for i = 1, 3, 1 do
-                if slots[i] == min then
-                    slots[i] = players
-                    break
-                end
+    -- Limit is increased by counting towns that are the limit
+    -- This will ensure no single town has many more players than another
+    local limit = 1
+    while true do
+        local towns_near_limit = 0
+        for _, town_center in pairs(town_centers) do
+            local players = table_size(town_center.market.force.players)
+            if players >= limit then
+                towns_near_limit = towns_near_limit + 1
             end
         end
+        if towns_near_limit >= 2 then
+            limit = limit + 1
+        else
+            break
+        end
     end
-    -- get the min of all slots -- TODO: without the hard limit, the soft limit increases too much so it never applies
-    this.member_limit = math_min(min_slots(slots) + 1, 3)
+
+    this.member_limit = math_min(limit, 3)
 end
 
 local function can_force_accept_member(force)
@@ -108,7 +100,8 @@ local function can_force_accept_member(force)
     update_member_limit(force)
 
     if #force.players >= this.member_limit then
-        game.print('>> Town ' .. force.name .. ' has too many settlers! Current limit (' .. this.member_limit .. ')', {255, 255, 0})
+        game.print('>> Town ' .. force.name .. ' has too many settlers! Current limit: ' .. this.member_limit .. '.'
+                .. ' The limit will increase once other towns have more settlers.', {255, 255, 0})
         return false
     end
     return true
@@ -239,7 +232,7 @@ function Public.add_player_to_town(player, town_center)
     Public.set_player_color(player)
 
     update_member_limit(force)
-    game.print('>> The new member limit for all towns is now ' .. this.member_limit, {255, 255, 0})
+    game.print('>> The member limit for all towns is now: ' .. this.member_limit, {255, 255, 0})
 end
 
 -- given to player upon respawn
@@ -277,7 +270,6 @@ local function set_player_to_rogue(player)
         return
     end
 
-    player.print("You have broken the peace with the biters. They will seek revenge!")
     player.force = 'rogue'
     local group = game.permissions.get_group('rogue')
     if group == nil then
@@ -288,6 +280,7 @@ local function set_player_to_rogue(player)
         log('Given object is not of LuaPlayer!')
         return
     end
+    player.print("You have broken the peace with the biters. They will seek revenge!")
     group.add_player(player)
     player.tag = '[Rogue]'
     Map.disable_world_map(player)
@@ -460,7 +453,8 @@ local function declare_war(player, item)
     if requesting_force.name == target_force.name then
         if player.name ~= target.force.name then
             Public.set_player_to_outlander(player)
-            game.print('>> ' .. player.name .. ' has abandoned ' .. target_force.name .. "'s Town!", {255, 255, 0})
+            local town_center = this.town_centers[target_force.name]
+            game.print('>> ' .. player.name .. ' has abandoned ' .. town_center.town_name, {255, 255, 0})
             this.requests[player.index] = nil
         end
         if player.name == target.force.name then
@@ -475,7 +469,8 @@ local function declare_war(player, item)
                 return
             end
             Public.set_player_to_outlander(target_player)
-            game.print('>> ' .. player.name .. ' has banished ' .. target_player.name .. ' from their Town!', {255, 255, 0})
+            local town_center = this.town_centers[player.force.name]
+            game.print('>> ' .. player.name .. ' has banished ' .. target_player.name .. ' from ' .. town_center.town_name, {255, 255, 0})
             this.requests[player.index] = nil
         end
         return
