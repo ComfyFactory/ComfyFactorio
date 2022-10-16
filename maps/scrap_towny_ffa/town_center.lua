@@ -518,7 +518,7 @@ local function found_town(event)
     town_center.upgrades.mining_speed = 0
     town_center.upgrades.crafting_speed = 0
     town_center.upgrades.laser_turret = {}
-    town_center.upgrades.laser_turret.slots = 20
+    town_center.upgrades.laser_turret.slots = 8
     town_center.upgrades.laser_turret.locations = 0
     town_center.evolution = {}
     town_center.evolution.biters = 0
