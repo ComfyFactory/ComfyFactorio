@@ -11,7 +11,7 @@ local info_adv =
     [[
 # Changelog (10th-16th October 2022):
  - PvP shields now prevent building inside
- - Combat balance overhaul
+ - Combat balance overhaul (see "Bonuses" button top right to check modifiers)
  - Town player limit fixes
  - Towns have an initial PvP protection shield - size and duration is scaled with the biggest town size
  - Temporary PvP shield available in market for breaks / AFK
