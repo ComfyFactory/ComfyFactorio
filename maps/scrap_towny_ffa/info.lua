@@ -3,11 +3,7 @@ local Public = {}
 local info =
     [[This is the wasteland. Who will survive?
 
-You can either
- - Found a new town or join an existing one
- - Stay as outlander and fight towns together with the biters
-
-Click on the "Info" button for full intro, help and changelog.
+In this mode, players build towns and fight against other towns and the biters.
 
 Have fun and be comfy ^.^]]
 
