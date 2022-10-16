@@ -62,16 +62,6 @@ local all_force_enabled_recipes = {
     'shotgun-shell',
 }
 
-local function min_slots(slots)
-    local min = 0
-    for i = 1, 3, 1 do
-        if slots[i] > min then
-            min = slots[i]
-        end
-    end
-    return min
-end
-
 local function update_member_limit(force)
     if not force or not force.valid then
         log('force nil or not valid!')
