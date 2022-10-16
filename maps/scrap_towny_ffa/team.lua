@@ -280,7 +280,6 @@ local function set_player_to_rogue(player)
         return
     end
 
-    player.print("You have broken the peace with the biters. They will seek revenge!")
     player.force = 'rogue'
     local group = game.permissions.get_group('rogue')
     if group == nil then
@@ -291,6 +290,7 @@ local function set_player_to_rogue(player)
         log('Given object is not of LuaPlayer!')
         return
     end
+    player.print("You have broken the peace with the biters. They will seek revenge!")
     group.add_player(player)
     player.tag = '[Rogue]'
     Map.disable_world_map(player)
