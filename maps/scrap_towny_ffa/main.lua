@@ -18,7 +18,6 @@ require 'maps.scrap_towny_ffa.fluids_are_explosive'
 require 'maps.scrap_towny_ffa.trap'
 require 'maps.scrap_towny_ffa.turrets_drop_ammo'
 require 'maps.scrap_towny_ffa.vehicles'
-require 'utils.commands.suicide'
 
 local Event = require 'utils.event'
 local Autostash = require 'modules.autostash'
@@ -38,6 +37,7 @@ local Gui = require 'utils.gui'
 local Color = require 'utils.color_presets'
 local Where = require 'utils.commands.where'
 local Inventory = require 'modules.show_inventory'
+local Suicide = require 'maps.scrap_towny_ffa.suicide'
 
 local function spairs(t, order)
     local keys = {}
@@ -183,6 +183,7 @@ local tick_actions = {
     [60 * 5] = Team.update_town_chart_tags, -- each minute, at 05 seconds
     [60 * 10] = Team.set_all_player_colors, -- each minute, at 10 seconds
     [60 * 15] = Fish.reproduce, -- each minute, at 15 seconds
+    [60 * 20] = Suicide.check, -- each minute, at 20 seconds
     [60 * 25] = Biters.unit_groups_start_moving, -- each minute, at 25 seconds
     [60 * 30] = Radar.reset, -- each minute, at 30 seconds
     [60 * 45] = Biters.validate_swarms, -- each minute, at 45 seconds

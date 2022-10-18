@@ -38,6 +38,7 @@ function Public.reset_table()
     this.spaceships = {}
     this.pvp_shields = {}
     this.pvp_shield_warned = {}
+    this.suicides = {}
 end
 
 function Public.get_table()
