@@ -1,7 +1,7 @@
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 
-local yellow = {r = 200, g = 200, b = 0}
-local minutes_to_die = 3
+local yellow = { r = 200, g = 200, b = 0 }
+local minutes_to_die = 10
 local one_minute = 60 * 60
 
 commands.add_command(
@@ -14,10 +14,16 @@ commands.add_command(
             if not player or not player.valid then
                 return
             end
+
+            if this.suicides[player.name] then
+                player.print("You are already dying!", yellow)
+                return
+            end
+
             -- Schedule death for 30 seconds less than the average. Death is checked every minute, so this keeps
             -- the average correct.
             this.suicides[player.name] = game.tick + (one_minute * minutes_to_die - (one_minute * 0.5))
-            player.print("You ate a poison pill. You will die in approximately ".. minutes_to_die .. " minutes.", yellow)
+            player.print("You ate a poison pill. You will die in approximately " .. minutes_to_die .. " minutes.", yellow)
         end
 )
 
@@ -26,7 +32,7 @@ local Public = {}
 function Public.check()
     local this = ScenarioTable.get_table()
     for name, death_time in pairs(this.suicides) do
-        local remaining_time =  death_time - game.tick
+        local remaining_time = death_time - game.tick
         local player = game.get_player(name)
         if not player or not player.valid then
             return
@@ -46,9 +52,9 @@ function Public.check()
                 else
                     player.print(remaining_minutes .. " minutes remaining until death.", yellow)
                 end
+            end
         end
     end
-
 end
 
 return Public
