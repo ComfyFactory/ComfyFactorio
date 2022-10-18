@@ -3,11 +3,7 @@ local Public = {}
 local info =
     [[This is the wasteland. Who will survive?
 
-You can either
- - Found a new town or join an existing one
- - Stay as outlander and fight towns together with the biters
-
-Click on the "Info" button for full intro, help and changelog.
+In this mode, players build towns and fight against other towns and the biters.
 
 Have fun and be comfy ^.^]]
 
@@ -15,7 +11,7 @@ local info_adv =
     [[
 # Changelog (10th-16th October 2022):
  - PvP shields now prevent building inside
- - Combat balance overhaul
+ - Combat balance overhaul (see "Bonuses" button top right to check modifiers)
  - Town player limit fixes
  - Towns have an initial PvP protection shield - size and duration is scaled with the biggest town size
  - Temporary PvP shield available in market for breaks / AFK
@@ -37,7 +33,7 @@ Survive as long as you can. Raid other towns. Defend your town.
 - It's possible to automate trading with the town center! How cool is that?!! Try it out.
     Tip: use filter inserters with to get coins/iron/.. out of the market
 - Fishes procreate near towns. The more fishes, the quicker they multiply. Automated fish farm, anyone?
-- Use /rename-town (chat command) to rename your town
+- Use /rename-town NEWNAME (chat command) to rename your town
 - PvP shields prevent players from entering and building inside, but they can still shoot inside!
 - Your town has a AFK PvP shield that you can use to safely take a quick break
     without other players killing your town. Deploy it from the market.
