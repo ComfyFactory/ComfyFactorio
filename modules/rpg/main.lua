@@ -90,7 +90,7 @@ local function on_gui_click(event)
         elseif event.button == defines.mouse_button_type.right then
             local left = rpg_t.points_left / 2
             if left > 2 then
-                for _ = 1, left, 1 do
+                for _ = 2, left, 1 do -- for _ = 1 results in uneven distribution
                     if rpg_t.points_left <= 0 then
                         Public.toggle(player, true)
                         return
