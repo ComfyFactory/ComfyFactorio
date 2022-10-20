@@ -475,6 +475,7 @@ local function zone_14(x, y, data, _, adjusted_zones)
     local entities = data.entities
     local buildings = data.buildings
     local treasure = data.treasure
+    data.forest_zone = true
 
     local small_caves = get_perlin('small_caves', p, seed)
     local noise_cave_ponds = get_perlin('cave_ponds', p, seed)

@@ -33,7 +33,7 @@ local entity_loot_chance = {
     {name = 'land-mine', chance = 3},
     {name = 'light-oil-barrel', chance = 20},
     {name = 'lubricant-barrel', chance = 20},
-    {name = "nuclear-fuel", chance = 5},
+    {name = "nuclear-fuel", chance = 2},
     {name = 'petroleum-gas-barrel', chance = 30},
     {name = 'pipe', chance = 100},
     {name = 'pipe-to-ground', chance = 10},
@@ -41,7 +41,7 @@ local entity_loot_chance = {
     {name = 'processing-unit', chance = 2},
     --{name = "rocket", chance = 3},
     --{name = "rocket-control-unit", chance = 1},
-    --{name = "rocket-fuel", chance = 3},
+    {name = "rocket-fuel", chance = 5},
     {name = 'solid-fuel', chance = 100},
     {name = 'steel-plate', chance = 150},
     {name = 'sulfuric-acid-barrel', chance = 15},
@@ -49,7 +49,7 @@ local entity_loot_chance = {
     {name = "uranium-fuel-cell", chance = 1},
     --{name = "used-up-uranium-fuel-cell", chance = 1},
     {name = 'water-barrel', chance = 10},
-    {name = 'tank', chance = 2},
+    {name = 'tank', chance = 5},
     {name = 'car', chance = 30}
 }
 
@@ -93,7 +93,7 @@ local entity_loot_amounts = {
     ['red-wire'] = 8,
     --["rocket"] = 2,
     --["rocket-control-unit"] = 0.3,
-    --["rocket-fuel"] = 0.3,
+    ["rocket-fuel"] = 0.3,
     ['solid-fuel'] = 4,
     ['steel-plate'] = 4,
     ['sulfuric-acid-barrel'] = 3,
