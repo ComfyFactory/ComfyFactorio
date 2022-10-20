@@ -6,7 +6,8 @@ local yellow = { r = 200, g = 200, b = 0 }
 
 -- Must be at least 1 minute
 local minutes_to_die = 10
-local one_minute = 60 * 10 -- 60 * 60
+
+local one_minute = 60 * 60
 
 local function on_player_died(event)
     local this = ScenarioTable.get_table()
