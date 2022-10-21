@@ -141,7 +141,11 @@ end
 -- function()
 --      Server.try_get_all_data('regulars', callback)
 -- end)
-Public.events = {on_server_started = Event.generate_event_name('on_server_started')}
+-- Event.add(Server.events.on_changes_detected,
+-- function()
+--      Trigger some sort of automated restart whenever the game ends.
+-- end)
+Public.events = {on_server_started = Event.generate_event_name('on_server_started'), on_changes_detected = Event.generate_event_name('on_changes_detected')}
 
 --- Sends a message to the linked discord channel. The message is sanitized of markdown server side.
 -- @param  message<string> message to send.

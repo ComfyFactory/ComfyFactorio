@@ -1,20 +1,20 @@
 local Public = {}
 
-local info =
-    [[This is the wasteland. Who will survive?
+local info = [[This is the wasteland. Who will survive?
 
 In this mode, players build towns and fight against other towns and the biters.
+The Comfy gui has been disabled since it contains too many goodies.
 
 Have fun and be comfy ^.^]]
 
 local info_adv =
     [[
-# Changelog (10th-16th October 2022):
- - PvP shields now prevent building inside
+# Changelog (21th October 2022):
+ - Suicide command has been added. The poison pill will kill the character after 3 minutes
+ - Game will automatically reset whenever a town reaches 48h of survival time
+ - PvP Shield has been removed
  - Combat balance overhaul (see "Bonuses" button top right to check modifiers)
  - Town player limit fixes
- - Towns have an initial PvP protection shield - size and duration is scaled with the biggest town size
- - Temporary PvP shield available in market for breaks / AFK
  - Improved base defenses and offline survivability
  - Loads of bugfixes including freezes and desyncs
 
@@ -34,9 +34,6 @@ Survive as long as you can. Raid other towns. Defend your town.
     Tip: use filter inserters with to get coins/iron/.. out of the market
 - Fishes procreate near towns. The more fishes, the quicker they multiply. Automated fish farm, anyone?
 - Use /rename-town NEWNAME (chat command) to rename your town
-- PvP shields prevent players from entering and building inside, but they can still shoot inside!
-- Your town has a AFK PvP shield that you can use to safely take a quick break
-    without other players killing your town. Deploy it from the market.
 
 # Town members and alliances
 - Once a town is formed, members may invite other players and teams using a coin. To invite another player, drop a coin

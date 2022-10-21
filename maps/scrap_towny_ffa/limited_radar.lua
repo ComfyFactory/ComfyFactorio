@@ -58,10 +58,6 @@ local function on_chunk_charted(event)
         local health_text = town_center.health_text
         update_forces(health_text)
         add_force(health_text, force.name)
-        -- protection text
-        local shield_text = town_center.shield_text
-        update_forces(shield_text)
-        add_force(shield_text, force.name)
     end
 end
 

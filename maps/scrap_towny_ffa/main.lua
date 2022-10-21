@@ -21,6 +21,7 @@ require 'maps.scrap_towny_ffa.vehicles'
 require 'maps.scrap_towny_ffa.suicide'
 
 local Event = require 'utils.event'
+local Alert = require 'utils.alert'
 local Autostash = require 'modules.autostash'
 local MapDefaults = require 'maps.scrap_towny_ffa.map_defaults'
 local BottomFrame = require 'utils.gui.bottom_frame'
@@ -36,24 +37,21 @@ local Evolution = require 'maps.scrap_towny_ffa.evolution'
 local mod_gui = require('mod-gui')
 local Gui = require 'utils.gui'
 local Color = require 'utils.color_presets'
+local Server = require 'utils.server'
 local Where = require 'utils.commands.where'
 local Inventory = require 'modules.show_inventory'
 
-local function spairs(t, order)
+local function spairs(t)
     local keys = {}
     for k in pairs(t) do
         keys[#keys + 1] = k
     end
-    if order then
-        table.sort(
-            keys,
-            function(a, b)
-                return order(t, a, b)
-            end
-        )
-    else
-        table.sort(keys)
-    end
+    table.sort(
+        keys,
+        function(a, b)
+            return t[b] < t[a]
+        end
+    )
     local i = 0
     return function()
         i = i + 1
@@ -78,6 +76,50 @@ end
 
 local function update_score()
     local this = ScenarioTable.get_table()
+
+    if this.winner then
+        if not this.game_won then
+            this.game_won = true
+            this.game_reset_tick = 5400
+            Alert.alert_all_players(900, 'Winner winner chicken dinner!\n[color=red]' .. this.winner.name .. '[/color] has won the game!', Color.white, 'restart_required', 1.0)
+            for _, player in pairs(game.connected_players) do
+                player.play_sound {path = 'utility/game_won', volume_modifier = 0.75}
+            end
+            local winner = this.winner
+            local message = {
+                title = 'Game over',
+                description = 'Town statistics is below',
+                color = 'success',
+                field1 = {
+                    text1 = 'Town won:',
+                    text2 = winner.name,
+                    inline = 'false'
+                },
+                field2 = {
+                    text1 = 'Town researched:',
+                    text2 = winner.name .. ' with a score of ' .. winner.research_counter .. ' techs!',
+                    inline = 'false'
+                },
+                field3 = {
+                    text1 = 'Town upgrades:',
+                    text2 = winner.name .. ' upgraded their town with:\nCrafting speed:' .. winner.upgrades.crafting_speed .. '\nMining speed:' .. winner.upgrades.mining_speed,
+                    inline = 'false'
+                },
+                field4 = {
+                    text1 = 'Town health:',
+                    text2 = winner.name .. ' had a health of ' .. winner.health .. ' left!',
+                    inline = 'false'
+                },
+                field5 = {
+                    text1 = 'Town coins:',
+                    text2 = winner.name .. ' had ' .. winner.coin_balance .. ' coins stashed!',
+                    inline = 'false'
+                }
+            }
+            Server.to_discord_embed_parsed(message)
+        end
+        return
+    end
 
     for _, player in pairs(game.connected_players) do
         local frame = this.score_gui_frame[player.index]
@@ -118,12 +160,7 @@ local function update_score()
 
             local rank = 1
 
-            for town_center, age in spairs(
-                town_ages,
-                function(t, a, b)
-                    return t[b] < t[a]
-                end
-            ) do
+            for town_center, age in spairs(town_ages) do
                 local position = information_table.add {type = 'label', caption = '#' .. rank}
                 if town_center == this.town_centers[player.force.name] then
                     position.style.font = 'default-semibold'
@@ -137,9 +174,20 @@ local function update_score()
                 label.style.font = 'default-semibold'
                 label.style.font_color = town_center.color
                 local age_hours = age / 60 / 3600
-                information_table.add {type = 'label', caption = string.format('%.1f', age_hours) .. 'h'}
+                local total_age = string.format('%.1f', age_hours)
+                information_table.add {type = 'label', caption = total_age .. 'h'}
 
                 rank = rank + 1
+
+                if tonumber(total_age) >= this.required_time_to_win then
+                    this.winner = {
+                        name = town_center.town_name,
+                        research_counter = town_center.research_counter,
+                        upgrades = town_center.upgrades,
+                        health = town_center.health,
+                        coin_balance = town_center.coin_balance
+                    }
+                end
             end
 
             -- Outlander section
@@ -202,6 +250,12 @@ local function on_nth_tick(event)
     tick_actions[seconds]()
 end
 
+local function handle_changes()
+    ScenarioTable.set('restart', true)
+    ScenarioTable.set('soft_reset', false)
+    print('Received new changes from backend.')
+end
+
 local function ui_smell_evolution()
     for _, player in pairs(game.connected_players) do
         -- Only for non-townies
@@ -228,8 +282,9 @@ Event.on_init(on_init)
 Event.on_nth_tick(60, on_nth_tick) -- once every second
 Event.on_nth_tick(60 * 30, ui_smell_evolution)
 Event.on_nth_tick(60, update_score)
+Event.add(Server.events.on_changes_detected, handle_changes)
 
---Disable the comfy main gui since we good too many goodies there.
+--Disable the comfy main gui since we got too many goodies there.
 Event.add(
     defines.events.on_gui_click,
     function(event)
