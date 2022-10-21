@@ -33,7 +33,7 @@ local entity_loot_chance = {
     {name = 'land-mine', chance = 3},
     {name = 'light-oil-barrel', chance = 20},
     {name = 'lubricant-barrel', chance = 20},
-    {name = "nuclear-fuel", chance = 2},
+    {name = 'nuclear-fuel', chance = 2},
     {name = 'petroleum-gas-barrel', chance = 30},
     {name = 'pipe', chance = 100},
     {name = 'pipe-to-ground', chance = 10},
@@ -41,16 +41,14 @@ local entity_loot_chance = {
     {name = 'processing-unit', chance = 2},
     --{name = "rocket", chance = 3},
     --{name = "rocket-control-unit", chance = 1},
-    {name = "rocket-fuel", chance = 5},
+    {name = 'rocket-fuel', chance = 5},
     {name = 'solid-fuel', chance = 100},
     {name = 'steel-plate', chance = 150},
     {name = 'sulfuric-acid-barrel', chance = 15},
     --{name = "uranium-cannon-shell", chance = 1},
-    {name = "uranium-fuel-cell", chance = 1},
+    {name = 'uranium-fuel-cell', chance = 1},
     --{name = "used-up-uranium-fuel-cell", chance = 1},
-    {name = 'water-barrel', chance = 10},
-    {name = 'tank', chance = 5},
-    {name = 'car', chance = 30}
+    {name = 'water-barrel', chance = 10}
 }
 
 -- positive numbers can scale, 0 is disabled, and negative numbers are fixed absolute values
@@ -84,7 +82,7 @@ local entity_loot_amounts = {
     ['land-mine'] = 6,
     ['light-oil-barrel'] = 3,
     ['lubricant-barrel'] = 3,
-    ["nuclear-fuel"] = 0.1,
+    ['nuclear-fuel'] = 0.1,
     ['petroleum-gas-barrel'] = 3,
     ['pipe'] = 8,
     ['pipe-to-ground'] = 1,
@@ -93,16 +91,14 @@ local entity_loot_amounts = {
     ['red-wire'] = 8,
     --["rocket"] = 2,
     --["rocket-control-unit"] = 0.3,
-    ["rocket-fuel"] = 0.3,
+    ['rocket-fuel'] = 0.3,
     ['solid-fuel'] = 4,
     ['steel-plate'] = 4,
     ['sulfuric-acid-barrel'] = 3,
     --["uranium-cannon-shell"] = 2,
-    ["uranium-fuel-cell"] = 0.3,
+    ['uranium-fuel-cell'] = 0.3,
     --["used-up-uranium-fuel-cell"] = 1,
-    ['water-barrel'] = 3,
-    ['tank'] = -1,
-    ['car'] = -1
+    ['water-barrel'] = 3
 }
 
 local scrap_raffle = {}
