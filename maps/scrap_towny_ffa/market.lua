@@ -100,7 +100,7 @@ local upgrade_functions = {
             -- Double-check with the player to prevent accidental clicks
             if this.pvp_shield_warned[player.force.name] ~= nil and game.tick - this.pvp_shield_warned[player.force.name] < 60 * 60 then
                 if not Town_center.enemy_players_nearby(town_center, 100) then
-                    PvPShield.add_shield(surface, force, market.position, shield_lifetime_ticks, 2 * 60 * 60, true)
+                    PvPShield.add_shield(surface, force, market.position, 120, shield_lifetime_ticks, 2 * 60 * 60, true)
                     surface.play_sound({path = 'utility/scenario_message', position = player.position, volume_modifier = 1})
                     this.pvp_shield_warned[player.force.name] = nil
                 else
@@ -159,7 +159,7 @@ local function set_offers(town_center)
         special_offers[5] = {{}, 'Maximum Crafting Speed upgrades reached!'}
     end
     local laser_turret = 'Laser Turret Slot [#' .. tostring(town_center.upgrades.laser_turret.slots + 1) .. ']'
-    special_offers[6] = {{{'coin', (town_center.upgrades.laser_turret.slots * 150)}}, laser_turret}
+    special_offers[6] = {{{'coin', (town_center.upgrades.laser_turret.slots * 200)}}, laser_turret}
     local spawn_point = 'Set Spawn Point'
     special_offers[7] = {{}, spawn_point}
     special_offers[8] = {{}, 'Temporary PvP Shield for pause/AFK'}
@@ -175,13 +175,13 @@ local function set_offers(town_center)
     table_insert(market_items, {price = {{'coin', 1}}, offer = {type = 'give-item', item = 'stone', count = 6}})
     table_insert(market_items, {price = {{'coin', 1}}, offer = {type = 'give-item', item = 'coal', count = 6}})
     table_insert(market_items, {price = {{'coin', 1}}, offer = {type = 'give-item', item = 'uranium-ore', count = 2}})
-    table_insert(market_items, {price = {{'coin', 500}}, offer = {type = 'give-item', item = 'laser-turret', count = 1}})
+    table_insert(market_items, {price = {{'coin', 1000}}, offer = {type = 'give-item', item = 'laser-turret', count = 1}})
     table_insert(market_items, {price = {{'coin', 300}}, offer = {type = 'give-item', item = 'loader', count = 1}})
     table_insert(market_items, {price = {{'coin', 600}}, offer = {type = 'give-item', item = 'fast-loader', count = 1}})
     table_insert(market_items, {price = {{'coin', 900}}, offer = {type = 'give-item', item = 'express-loader', count = 1}})
     -- item selling
-    table_insert(market_items, {price = {{'raw-fish', 1}}, offer = {type = 'give-item', item = 'coin', count = 20}})
-    table_insert(market_items, {price = {{'wood', 1}}, offer = {type = 'give-item', item = 'coin', count = 5}})
+    table_insert(market_items, {price = {{'raw-fish', 1}}, offer = {type = 'give-item', item = 'coin', count = 15}})
+    table_insert(market_items, {price = {{'wood', 1}}, offer = {type = 'give-item', item = 'coin', count = 3}})
     table_insert(market_items, {price = {{'iron-ore', 7}}, offer = {type = 'give-item', item = 'coin', count = 1}})
     table_insert(market_items, {price = {{'copper-ore', 7}}, offer = {type = 'give-item', item = 'coin', count = 1}})
     table_insert(market_items, {price = {{'stone', 7}}, offer = {type = 'give-item', item = 'coin', count = 1}})
@@ -191,6 +191,8 @@ local function set_offers(town_center)
     table_insert(market_items, {price = {{'iron-gear-wheel', 3}}, offer = {type = 'give-item', item = 'coin', count = 1}})
     table_insert(market_items, {price = {{'iron-stick', 12}}, offer = {type = 'give-item', item = 'coin', count = 1}})
     table_insert(market_items, {price = {{'empty-barrel', 1}}, offer = {type = 'give-item', item = 'coin', count = 1}})
+    table_insert(market_items, {price = {{'car', 1}}, offer = {type = 'give-item', item = 'coin', count = 10}})
+    table_insert(market_items, {price = {{'tank', 1}}, offer = {type = 'give-item', item = 'coin', count = 50}})
 
     for _, item in pairs(market_items) do
         market.add_market_item(item)

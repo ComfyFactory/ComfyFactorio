@@ -4,11 +4,13 @@ local math_random = math.random
 local table_size = table.size
 local string_match = string.match
 local string_lower = string.lower
+local math_min = math.min
 
 local Server = require 'utils.server'
 local Map = require 'maps.scrap_towny_ffa.map'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local PvPShield = require 'maps.scrap_towny_ffa.pvp_shield'
+local CombatBalance = require 'maps.scrap_towny_ffa.combat_balance'
 
 local outlander_color = {150, 150, 150}
 local outlander_chat_color = {170, 170, 170}
@@ -42,43 +44,51 @@ local destroy_robot_types = {
     ['logistic-robot'] = true
 }
 
--- hand craftable
+local storage_types = {
+    ['container'] = true,
+    ['logistic-container'] = true,
+    ['storage-tank'] = true
+}
+
 local player_force_disabled_recipes = {
     'lab',
     'automation-science-pack',
-    'steel-furnace',
-    'electric-furnace',
-    'stone-wall',
     'stone-brick',
     'radar'
 }
 local all_force_enabled_recipes = {
     'submachine-gun',
-    'assembling-machine-1',
-    'small-lamp',
     'shotgun',
     'shotgun-shell',
-    'underground-belt',
-    'splitter',
-    'steel-plate',
-    'car',
-    'tank',
-    'engine-unit',
-    'constant-combinator',
-    'green-wire',
-    'red-wire',
-    'arithmetic-combinator',
-    'decider-combinator'
 }
 
-local function min_slots(slots)
-    local min = 0
-    for i = 1, 3, 1 do
-        if slots[i] > min then
-            min = slots[i]
+local function update_member_limit(force)
+    if not force or not force.valid then
+        log('force nil or not valid!')
+        return
+    end
+    local this = ScenarioTable.get_table()
+    local town_centers = this.town_centers
+
+    -- Limit is increased by counting towns that are the limit
+    -- This will ensure no single town has many more players than another
+    local limit = 1
+    while true do
+        local towns_near_limit = 0
+        for _, town_center in pairs(town_centers) do
+            local players = table_size(town_center.market.force.players)
+            if players >= limit then
+                towns_near_limit = towns_near_limit + 1
+            end
+        end
+        if towns_near_limit >= 2 then
+            limit = limit + 1
+        else
+            break
         end
     end
-    return min
+
+    this.member_limit = math_min(limit, 3)
 end
 
 local function can_force_accept_member(force)
@@ -87,33 +97,11 @@ local function can_force_accept_member(force)
         return
     end
     local this = ScenarioTable.get_table()
-    local town_centers = this.town_centers
-    if this.member_limit == nil then
-        this.member_limit = 1
-    end
+    update_member_limit(force)
 
-    -- get the members of each force name into a table
-    local slots = {0, 0, 0}
-    for _, town_center in pairs(town_centers) do
-        local players = table_size(town_center.market.force.players)
-        -- get min value for all slots
-        local min = min_slots(slots)
-        -- if our value greater than min of all three replace that slot
-        if players > min then
-            for i = 1, 3, 1 do
-                if slots[i] == min then
-                    slots[i] = players
-                    break
-                end
-            end
-        end
-    end
-    -- get the min of all slots
-    local member_limit = min_slots(slots) + 1
-    this.member_limit = member_limit
-
-    if #force.connected_players >= member_limit then
-        game.print('>> Town ' .. force.name .. ' has too many settlers! Current limit (' .. member_limit .. ')', {255, 255, 0})
+    if #force.players >= this.member_limit then
+        game.print('>> Town ' .. force.name .. ' has too many settlers! Current limit: ' .. this.member_limit .. '.'
+                .. ' The limit will increase once other towns have more settlers.', {255, 255, 0})
         return false
     end
     return true
@@ -242,6 +230,9 @@ function Public.add_player_to_town(player, town_center)
     player.tag = ''
     Map.enable_world_map(player)
     Public.set_player_color(player)
+
+    update_member_limit(force)
+    game.print('>> The member limit for all towns is now: ' .. this.member_limit, {255, 255, 0})
 end
 
 -- given to player upon respawn
@@ -279,7 +270,6 @@ local function set_player_to_rogue(player)
         return
     end
 
-    player.print("You have broken the peace with the biters. They will seek revenge!")
     player.force = 'rogue'
     local group = game.permissions.get_group('rogue')
     if group == nil then
@@ -290,6 +280,7 @@ local function set_player_to_rogue(player)
         log('Given object is not of LuaPlayer!')
         return
     end
+    player.print("You have broken the peace with the biters. They will seek revenge!")
     group.add_player(player)
     player.tag = '[Rogue]'
     Map.disable_world_map(player)
@@ -308,6 +299,7 @@ local function ally_outlander(player, target)
     local this = ScenarioTable.get_table()
     local requesting_force = player.force
     local target_force = target.force
+    local target_town_center = this.town_centers[target_force.name]
 
     -- don't handle if towns not yet enabled
     if not this.towns_enabled then
@@ -338,19 +330,17 @@ local function ally_outlander(player, target)
         if target_player then
             if this.requests[target_player.index] then
                 if this.requests[target_player.index] == player.name then
-                    if this.town_centers[target_force.name] then
-                        if not can_force_accept_member(target_force) then
-                            return true
-                        end
-                        game.print('>> ' .. player.name .. ' has settled in ' .. target_force.name .. "'s Town!", {255, 255, 0})
-                        Public.add_player_to_town(player, this.town_centers[target_force.name])
+                    if not can_force_accept_member(target_force) then
                         return true
                     end
+                    game.print('>> ' .. player.name .. ' has settled in ' .. target_town_center.town_name, {255, 255, 0})
+                    Public.add_player_to_town(player, target_town_center)
+                    return true
                 end
             end
         end
 
-        game.print('>> ' .. player.name .. ' wants to settle in ' .. target_force.name .. ' Town!', {255, 255, 0})
+        game.print('>> ' .. player.name .. ' wants to settle in ' .. target_town_center.town_name, {255, 255, 0})
         return true
     end
 
@@ -367,24 +357,19 @@ local function ally_outlander(player, target)
 
         if this.requests[target_player.index] then
             if this.requests[target_player.index] == player.force.name then
-                if not can_force_accept_member(player.force) then
+                if target_town_center then
+                    if not can_force_accept_member(player.force) then
+                        return true
+                    end
+                    game.print('>> ' .. player.name .. ' has accepted ' .. target_player.name .. ' into' .. target_town_center.town_name, {255, 255, 0})
+                    Public.add_player_to_town(target_player, this.town_centers[player.force.name])
                     return true
                 end
-                if player.force.name == player.name then
-                    game.print('>> ' .. player.name .. ' has accepted ' .. target_player.name .. ' into their Town!', {255, 255, 0})
-                else
-                    game.print('>> ' .. player.name .. ' has accepted ' .. target_player.name .. ' into' .. player.force.name .. "'s Town!", {255, 255, 0})
-                end
-                Public.add_player_to_town(target_player, this.town_centers[player.force.name])
-                return true
             end
         end
 
-        if player.force.name == player.name then
-            game.print('>> ' .. player.name .. ' is inviting ' .. target_player.name .. ' into their Town!', {255, 255, 0})
-        else
-            game.print('>> ' .. player.name .. ' is inviting ' .. target_player.name .. ' into ' .. player.force.name .. "'s Town!", {255, 255, 0})
-        end
+        local target_town_center_player = this.town_centers[player.force.name]
+        game.print('>> ' .. player.name .. ' is inviting ' .. target_player.name .. ' into ' .. target_town_center_player.town_name, {255, 255, 0})
         return true
     end
 end
@@ -468,7 +453,8 @@ local function declare_war(player, item)
     if requesting_force.name == target_force.name then
         if player.name ~= target.force.name then
             Public.set_player_to_outlander(player)
-            game.print('>> ' .. player.name .. ' has abandoned ' .. target_force.name .. "'s Town!", {255, 255, 0})
+            local town_center = this.town_centers[target_force.name]
+            game.print('>> ' .. player.name .. ' has abandoned ' .. town_center.town_name, {255, 255, 0})
             this.requests[player.index] = nil
         end
         if player.name == target.force.name then
@@ -483,7 +469,8 @@ local function declare_war(player, item)
                 return
             end
             Public.set_player_to_outlander(target_player)
-            game.print('>> ' .. player.name .. ' has banished ' .. target_player.name .. ' from their Town!', {255, 255, 0})
+            local town_center = this.town_centers[player.force.name]
+            game.print('>> ' .. player.name .. ' has banished ' .. target_player.name .. ' from ' .. town_center.town_name, {255, 255, 0})
             this.requests[player.index] = nil
         end
         return
@@ -740,8 +727,7 @@ function Public.add_new_force(force_name)
     end
     force.research_queue_enabled = true
     -- balance initial combat
-    force.set_ammo_damage_modifier('landmine', -0.75)
-    force.set_ammo_damage_modifier('grenade', -0.5)
+    CombatBalance.init_player_weapon_damage(force)
     if (this.testing_mode == true) then
         local e_force = game.forces['enemy']
         e_force.set_friend(force, true) -- team force should not be attacked by turrets
@@ -775,6 +761,9 @@ local function kill_force(force_name, cause)
     local balance = town_center.coin_balance
     local town_name = town_center.town_name
     surface.create_entity({name = 'big-artillery-explosion', position = position})
+
+    local is_suicide = cause and force_name == cause.force.name
+
     for _, player in pairs(force.players) do
         this.spawn_point[player.index] = nil
         this.cooldowns_town_placement[player.index] = game.tick + 3600 * 5
@@ -794,27 +783,17 @@ local function kill_force(force_name, cause)
             if destroy_military_types[e.type] == true then
                 surface.create_entity({name = 'big-artillery-explosion', position = position})
                 e.die()
-            else
-                if destroy_robot_types[e.type] == true then
-                    surface.create_entity({name = 'explosion', position = position})
+            elseif destroy_robot_types[e.type] == true then
+                surface.create_entity({name = 'explosion', position = position})
+                e.die()
+            elseif destroy_wall_types[e.type] == true then
+                e.die()
+            elseif storage_types[e.type] ~= true then   -- spare chests
+                local random = math_random()
+                if random > 0.5 or e.health == nil then
                     e.die()
-                else
-                    if destroy_wall_types[e.type] == true then
-                        e.die()
-                    end
-                end
-            end
-        end
-    end
-    for _, e in pairs(surface.find_entities_filtered({force = force_name})) do
-        if e.valid then
-            local damage = math_random() * 2.5 - 0.5
-            if damage > 0 then
-                if damage >= 1 or e.health == nil then
-                    e.die()
-                else
-                    local health = e.health
-                    e.health = health * damage
+                elseif random < 0.25 then
+                    e.health = e.health * math_random()
                 end
             end
         end
@@ -828,15 +807,17 @@ local function kill_force(force_name, cause)
     if this.pvp_shields[force_name] then
         PvPShield.remove_shield(this.pvp_shields[force_name])
     end
+
     game.merge_forces(force_name, 'neutral')
     this.town_centers[force_name] = nil
-    this.number_of_towns = this.number_of_towns - 1
     delete_chart_tag_for_all_forces(market)
 
     -- reward the killer
     local message
-    if cause == nil or not cause.valid or cause.force == nil then
-        message = town_name .. ' has fallen!'
+    if is_suicide then
+        message = town_name .. ' has given up'
+    elseif cause == nil or not cause.valid or cause.force == nil then
+        message = town_name .. ' has fallen to an unknown entity (DEBUG ID 0)!' -- TODO: remove after some testing
     elseif cause.force.name == 'player' or cause.force.name == 'rogue' then
         local items = {name = 'coin', count = balance}
         town_center.coin_balance = 0
@@ -848,12 +829,14 @@ local function kill_force(force_name, cause)
                 chest.insert(items)
             end
         end
-        if cause.name then
-            message = town_name .. ' has fallen to ' .. cause.name .. '!'
+        if cause.name == 'character' then
+            message = town_name .. ' has fallen to ' .. cause.player.name .. '!'
         elseif cause.force.name == 'player' then
             message = town_name .. ' has fallen to outlanders!'
-        else
+        elseif cause.force.name == 'rogue' then
             message = town_name .. ' has fallen to rogues!'
+        else
+            message = town_name .. ' has fallen to an unknown entity (DEBUG ID 1)!' -- TODO: remove after some testing
         end
     elseif cause.force.name ~= 'enemy' then
         if this.town_centers[cause.force.name] ~= nil then
@@ -862,7 +845,14 @@ local function kill_force(force_name, cause)
                 killer_town_center.coin_balance = killer_town_center.coin_balance + balance
                 cause.force.print(balance .. " coins have been transferred to your town")
             end
-            message = town_name .. ' has fallen to ' .. killer_town_center.town_name .. '!'
+            if cause.name == 'character' then
+                message = town_name .. ' has fallen to ' .. cause.player.name .. ' from '  .. killer_town_center.town_name .. '!'
+            else
+                message = town_name .. ' has fallen to ' .. killer_town_center.town_name .. '!'
+            end
+        else
+            message = town_name .. ' has fallen to an unknown entity (DEBUG ID 2)!' -- TODO: remove after some testing
+            log("cause.force.name=" .. cause.force.name)
         end
     else
         message = town_name .. ' has fallen to the biters!'
@@ -927,8 +917,7 @@ local function setup_player_force()
     for _, recipe_name in pairs(all_force_enabled_recipes) do
         recipes[recipe_name].enabled = true
     end
-    force.set_ammo_damage_modifier('landmine', -0.75)
-    force.set_ammo_damage_modifier('grenade', -0.5)
+    CombatBalance.init_player_weapon_damage(force)
     if (this.testing_mode == true) then
         force.enable_all_prototypes()
     end
@@ -966,8 +955,7 @@ local function setup_rogue_force()
     for _, recipe_name in pairs(all_force_enabled_recipes) do
         recipes[recipe_name].enabled = true
     end
-    force.set_ammo_damage_modifier('landmine', -0.75)
-    force.set_ammo_damage_modifier('grenade', -0.5)
+    CombatBalance.init_player_weapon_damage(force)
     if (this.testing_mode == true) then
         force.enable_all_prototypes()
     end
@@ -1013,14 +1001,6 @@ local function on_player_dropped_item(event)
         return
     end
 end
-
----- when a player dies, reveal their base to everyone
---local function on_player_died(event)
---	local player = game.players[event.player_index]
---	if not player.character then return end
---	if not player.character.valid then return end
---	reveal_entity_to_all(player.character)
---end
 
 local function on_entity_damaged(event)
     local entity = event.entity
@@ -1130,11 +1110,8 @@ end
 local function on_console_chat(event)
     local player = game.players[event.player_index]
     if string_match(string_lower(event.message), '%[armor%=') then
-        if string_match(event.message, player.name) then
-            return
-        end
         player.clear_console()
-        game.print('>> ' .. player.name .. ' is trying to gain an unfair advantage!')
+        game.print('Viewing player armor is disabled')
     end
 end
 

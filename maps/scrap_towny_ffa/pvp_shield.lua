@@ -6,10 +6,7 @@ local Event = require 'utils.event'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local CommonFunctions = require 'utils.common'
 
-local max_size = 120
 local beam_type = 'electric-beam-no-sound'
-local default_lifetime_ticks = 2 * 60 * 60 * 60
-local default_time_to_full_size_ticks = 60 * 60
 
 local function draw_borders(shield)
     local surface = shield.surface
@@ -36,9 +33,9 @@ local function remove_drawn_borders(shield)
     end
 end
 
-local function scale_size_and_box(shield)
+local function scale_size_by_lifetime(shield)
     local time_scale = math.min(1, (game.tick - shield.lifetime_start) / shield.time_to_full_size_ticks)
-    local scaled_size = time_scale * max_size
+    local scaled_size = time_scale * shield.max_size
 
     local center = shield.center
     local box = {left_top = { x = center.x - scaled_size / 2, y = center.y - scaled_size / 2},
@@ -47,17 +44,10 @@ local function scale_size_and_box(shield)
     shield.size = scaled_size
 end
 
-function Public.add_shield(surface, force, center, lifetime_ticks, time_to_full_size_ticks, is_pause_mode)
+function Public.add_shield(surface, force, center, max_size, lifetime_ticks, time_to_full_size_ticks, is_pause_mode)
     local this = ScenarioTable.get_table()
 
-    if not lifetime_ticks then
-        lifetime_ticks = default_lifetime_ticks
-    end
-    if not time_to_full_size_ticks then
-        time_to_full_size_ticks = default_time_to_full_size_ticks
-    end
-
-    local shield = {surface = surface, force = force, center = center, max_lifetime_ticks = lifetime_ticks,
+    local shield = {surface = surface, force = force, center = center, max_size = max_size, max_lifetime_ticks = lifetime_ticks,
                   time_to_full_size_ticks = time_to_full_size_ticks, lifetime_start = game.tick, is_pause_mode = is_pause_mode}
 
     if is_pause_mode then
@@ -73,7 +63,7 @@ function Public.add_shield(surface, force, center, lifetime_ticks, time_to_full_
                 string.format("%.0f", (Public.remaining_lifetime(shield)) / 60 / 60) .. ' minutes')
     end
 
-    scale_size_and_box(shield)
+    scale_size_by_lifetime(shield)
     this.pvp_shields[force.name] = shield
 end
 
@@ -97,9 +87,9 @@ local function update_shield_lifetime()
     local this = ScenarioTable.get_table()
     for _, shield in pairs(this.pvp_shields) do
         if Public.remaining_lifetime(shield) > 0 then
-            if shield.size < max_size then
+            if shield.size < shield.max_size then
                 remove_drawn_borders(shield)
-                scale_size_and_box(shield)
+                scale_size_by_lifetime(shield)
                 draw_borders(shield)
 
                 -- Push everyone out as we grow (even if they're just standing)
@@ -115,6 +105,18 @@ end
 
 local function vector_norm(vector)
     return math_sqrt(vector.x ^ 2 + vector.y ^ 2)
+end
+
+function Public.in_other_zones(surface, position, force)
+    local this = ScenarioTable.get_table()
+    for _, shield in pairs(this.pvp_shields) do
+        if not (shield.force == force or surface ~= shield.surface) then
+            if CommonFunctions.point_in_bounding_box(position, shield.box) then
+                return true
+            end
+        end
+    end
+    return false
 end
 
 function Public.push_enemies_out(player)

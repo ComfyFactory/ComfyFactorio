@@ -4,7 +4,9 @@ local math_random = math.random
 local table_insert = table.insert
 local math_floor = math.floor
 local math_sqrt = math.sqrt
+local math_min = math.min
 local table_shuffle = table.shuffle_table
+local table_size = table.size
 
 local Event = require 'utils.event'
 local Server = require 'utils.server'
@@ -15,6 +17,7 @@ local Colors = require 'maps.scrap_towny_ffa.colors'
 local Enemy = require 'maps.scrap_towny_ffa.enemy'
 local Color = require 'utils.color_presets'
 local PvPShield = require 'maps.scrap_towny_ffa.pvp_shield'
+local Evolution = require 'maps.scrap_towny_ffa.evolution'
 
 local town_radius = 27
 local radius_between_towns = 120
@@ -304,7 +307,7 @@ local function is_valid_location(force_name, surface, position)
         end
     end
 
-    if this.number_of_towns > 48 then
+    if table_size(this.town_centers) > 48 then
         surface.create_entity(
             {
                 name = 'flying-text',
@@ -399,6 +402,24 @@ local function update_pvp_shields_display()
         end
         rendering.set_text(town_center.shield_text, info)
     end
+end
+
+local function add_pvp_shield_scaled(position, force, surface)
+    local evo = Evolution.get_highest_evolution()
+
+    local min_size = 70
+    local max_size = 150
+    local min_duration = 0.5 * 60 * 60 * 60
+    local max_duration =   8 * 60 * 60 * 60
+    local lifetime_ticks = math_min(min_duration + 2 * evo * (max_duration - min_duration), max_duration)
+    local size = math_min(min_size + 2 * evo * (max_size - min_size), max_size)
+
+    PvPShield.add_shield(surface, force, position, size, lifetime_ticks, 60 * 60)
+    update_pvp_shields_display()
+    force.print("Based on the highest tech on map, your town deploys a PvP shield of "
+            .. string.format("%.0f", size) .. " tiles"
+            .. " for " .. string.format("%.0f", lifetime_ticks/60/60)  .. " minutes."
+            .. " Enemy players will not be able to enter and build in the shielded area.")
 end
 
 local function found_town(event)
@@ -497,7 +518,7 @@ local function found_town(event)
     town_center.upgrades.mining_speed = 0
     town_center.upgrades.crafting_speed = 0
     town_center.upgrades.laser_turret = {}
-    town_center.upgrades.laser_turret.slots = 20
+    town_center.upgrades.laser_turret.slots = 8
     town_center.upgrades.laser_turret.locations = 0
     town_center.evolution = {}
     town_center.evolution.biters = 0
@@ -560,12 +581,8 @@ local function found_town(event)
         scale_with_zoom = false
     }
 
-    this.number_of_towns = this.number_of_towns + 1
-
     Enemy.clear_enemies(position, surface, town_radius * 5)
     draw_town_spawn(force_name)
-    PvPShield.add_shield(surface, force, { x = position.x + 0.5, y = position.y + 0.5})   -- Market center is slightly shifted
-    update_pvp_shields_display()
 
     -- set the spawn point
     local pos = {x = town_center.market.position.x, y = town_center.market.position.y + 4}
@@ -575,6 +592,7 @@ local function found_town(event)
     Team.add_player_to_town(player, town_center)
     Team.remove_key(player.index)
     Team.add_chart_tag(town_center)
+    add_pvp_shield_scaled({ x = position.x + 0.5, y = position.y + 0.5}, force, surface)    -- Market center is slightly shifted
 
     game.print('>> ' .. player.name .. ' has founded a new town!', {255, 255, 0})
     Server.to_discord_embed(player.name .. ' has founded a new town!')
