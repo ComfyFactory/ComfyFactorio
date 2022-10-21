@@ -52,7 +52,7 @@ end)
 commands.add_command(
         'suicide',
         'Kills the player',
-        function(cmd)
+        function()
             local this = ScenarioTable.get_table()
             local player = game.player
 
