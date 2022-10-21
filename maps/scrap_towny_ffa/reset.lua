@@ -47,6 +47,48 @@ local function armageddon()
     end
 end
 
+local function do_soft_reset()
+    local this = ScenarioTable.get_table()
+    for _, player in pairs(game.players) do
+        local frame = this.score_gui_frame[player.index]
+        if frame and frame.valid then
+            frame.destroy()
+        end
+    end
+    this.game_reset_tick = nil
+    this.game_won = false
+    ScenarioTable.reset_table()
+    local surface = game.surfaces['nauvis']
+    if get_victorious_force() then
+        surface.play_sound({path = 'utility/game_won', volume_modifier = 1})
+    else
+        surface.play_sound({path = 'utility/game_lost', volume_modifier = 1})
+    end
+    game.reset_time_played()
+    game.reset_game_state()
+    for _, player in pairs(game.players) do
+        player.teleport({0, 0}, game.surfaces['limbo'])
+    end
+    Nauvis.initialize()
+    Team.initialize()
+    if game.forces['rogue'] == nil then
+        log('rogue force is missing!')
+    end
+    for _, player in pairs(game.players) do
+        Player.increment()
+        Player.initialize(player)
+        Team.set_player_color(player)
+        Player.spawn(player)
+        Player.load_buffs(player)
+        Player.requests(player)
+    end
+
+    Alert.alert_all_players(5, 'The world has been reset!', Color.white, 'restart_required', 1.0)
+    game.print('The world has been reset!', {r = 0.22, g = 0.88, b = 0.22})
+
+    Server.to_discord_embed('*** The world has been reset! ***')
+end
+
 local function has_the_game_ended()
     local game_reset_tick = ScenarioTable.get('game_reset_tick')
     if game_reset_tick then
@@ -72,44 +114,7 @@ local function has_the_game_ended()
             end
 
             if this.soft_reset and this.game_reset_tick == 0 then
-                for _, player in pairs(game.players) do
-                    local frame = this.score_gui_frame[player.index]
-                    if frame and frame.valid then
-                        frame.destroy()
-                    end
-                end
-                this.game_reset_tick = nil
-                this.game_won = false
-                ScenarioTable.reset_table()
-                local surface = game.surfaces['nauvis']
-                if get_victorious_force() then
-                    surface.play_sound({path = 'utility/game_won', volume_modifier = 1})
-                else
-                    surface.play_sound({path = 'utility/game_lost', volume_modifier = 1})
-                end
-                game.reset_time_played()
-                game.reset_game_state()
-                for _, player in pairs(game.players) do
-                    player.teleport({0, 0}, game.surfaces['limbo'])
-                end
-                Nauvis.initialize()
-                Team.initialize()
-                if game.forces['rogue'] == nil then
-                    log('rogue force is missing!')
-                end
-                for _, player in pairs(game.players) do
-                    Player.increment()
-                    Player.initialize(player)
-                    Team.set_player_color(player)
-                    Player.spawn(player)
-                    Player.load_buffs(player)
-                    Player.requests(player)
-                end
-
-                Alert.alert_all_players(5, 'The world has been reset!', Color.white, 'restart_required', 1.0)
-                game.print('The world has been reset!', {r = 0.22, g = 0.88, b = 0.22})
-
-                Server.to_discord_embed('*** The world has been reset! ***')
+                do_soft_reset()
                 return
             end
 
@@ -242,44 +247,7 @@ commands.add_command(
             else
                 game.print(mapkeeper .. ' server, has reset the game!', {r = 0.98, g = 0.66, b = 0.22})
             end
-            for _, player in pairs(game.players) do
-                local frame = this.score_gui_frame[player.index]
-                if frame and frame.valid then
-                    frame.destroy()
-                end
-            end
-            this.game_reset_tick = nil
-            this.game_won = false
-            ScenarioTable.reset_table()
-            local surface = game.surfaces['nauvis']
-            if get_victorious_force() then
-                surface.play_sound({path = 'utility/game_won', volume_modifier = 1})
-            else
-                surface.play_sound({path = 'utility/game_lost', volume_modifier = 1})
-            end
-            game.reset_time_played()
-            game.reset_game_state()
-            for _, player in pairs(game.players) do
-                player.teleport({0, 0}, game.surfaces['limbo'])
-            end
-            Nauvis.initialize()
-            Team.initialize()
-            if game.forces['rogue'] == nil then
-                log('rogue force is missing!')
-            end
-            for _, player in pairs(game.players) do
-                Player.increment()
-                Player.initialize(player)
-                Team.set_player_color(player)
-                Player.spawn(player)
-                Player.load_buffs(player)
-                Player.requests(player)
-            end
-
-            Alert.alert_all_players(5, 'The world has been reset!', Color.white, 'restart_required', 1.0)
-            game.print('The world has been reset!', {r = 0.22, g = 0.88, b = 0.22})
-
-            Server.to_discord_embed('*** The world has been reset! ***')
+            do_soft_reset()
             p('[WARNING] Game has been reset!')
             return
         end
