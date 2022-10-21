@@ -1771,6 +1771,27 @@ function Public.event_on_chunk_generated(event)
 						e.add_market_item(o)
 					end
 				end
+			elseif special.name == 'big-ship-wreck-2' or special.name == 'big-ship-wreck-1' then
+				local e = surface.create_entity{name = special.name, position = special.position, force = memory.ancient_friendly_force_name}
+				if e and e.valid then
+					e.minable = false
+					e.rotatable = false
+					e.destructible = false
+
+					local inv = e.get_inventory(defines.inventory.chest)
+
+					local loot
+					if Math.random(3) == 1 then
+						loot = Loot.iron_chest_loot()
+					else
+						loot = Loot.wooden_chest_loot()
+					end
+
+					for i = 1, #loot do
+						local l = loot[i]
+						inv.insert(l)
+					end
+				end
 			end
 
 			if special.components then

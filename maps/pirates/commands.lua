@@ -1107,14 +1107,17 @@ if _DEBUG then
 			local player = game.players[cmd.player_index]
 			local memory = Memory.get_crew_memory()
 			if not Common.is_id_valid(memory.id) then return end
+
 			local boat = memory.boat
 			local scope = Boats.get_scope(boat)
+			local surface = game.surfaces[boat.surface_name]
+			if not surface then return end
 
 			if scope.Data.cannons then
 				for i = -2, 2 do
 					local p1 = scope.Data.cannons[1]
 					local p2 = {x = boat.position.x + p1.x + i * 2, y = boat.position.y + p1.y - 4}
-					local e = player.surface.create_entity({name = 'gun-turret', position = p2, force = boat.force_name, create_build_effect_smoke = false})
+					local e = surface.create_entity({name = 'gun-turret', position = p2, force = boat.force_name, create_build_effect_smoke = false})
 					if e and e.valid then
 						e.insert({name = "uranium-rounds-magazine", count = 200})
 					end
@@ -1122,7 +1125,7 @@ if _DEBUG then
 				for i = -2, 2 do
 					local p1 = scope.Data.cannons[2]
 					local p2 = {x = boat.position.x + p1.x + i * 2, y = boat.position.y + p1.y + 4}
-					local e = player.surface.create_entity({name = 'gun-turret', position = p2, force = boat.force_name, create_build_effect_smoke = false})
+					local e = surface.create_entity({name = 'gun-turret', position = p2, force = boat.force_name, create_build_effect_smoke = false})
 					if e and e.valid then
 						e.insert({name = "uranium-rounds-magazine", count = 200})
 					end

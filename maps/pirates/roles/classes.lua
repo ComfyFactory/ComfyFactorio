@@ -503,6 +503,8 @@ function Public.try_unlock_class(class_for_sale, player, force_unlock)
 				-- update GUI data
 				memory.unlocked_classes[#memory.unlocked_classes + 1] = {class = class_for_sale}
 			end
+
+			return true
 		end
 	else -- there is no required class
 		-- if player who unlocked class doesn't have one equipped, equip it for him

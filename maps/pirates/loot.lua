@@ -3,7 +3,7 @@
 
 local Math = require 'maps.pirates.math'
 -- local Memory = require 'maps.pirates.memory'
--- local Balance = require 'maps.pirates.balance'
+local Balance = require 'maps.pirates.balance'
 -- local CoreData = require 'maps.pirates.coredata'
 local Common = require 'maps.pirates.common'
 local _inspect = require 'utils.inspect'.inspect
@@ -310,15 +310,16 @@ end
 
 function Public.swamp_storage_tank_fluid_loot()
 	local ret
-	ret = {name = 'sulfuric-acid', amount = 100*Math.ceil(Math.random(5^2, 40^2)^(1/2))}
+	-- ret = {name = 'sulfuric-acid', amount = 100*Math.ceil(Math.random(5^2, 40^2)^(1/2))} -- don't know why this formula made best amount most common, but lowest amount least common (was this intentional?).
+	ret = {name = 'sulfuric-acid', amount = 100*Math.ceil(Math.random(10, 40) * Balance.island_richness_avg_multiplier())}
     return ret
 end
 
 function Public.roboport_bots_loot()
     return {
-		{name = 'logistic-robot', count = 8},
+		{name = 'logistic-robot', count = Math.ceil((10 + Math.random(5)) * Balance.island_richness_avg_multiplier())},
+		{name = 'construction-robot', count = Math.ceil((5 + Math.random(5)) * Balance.island_richness_avg_multiplier())},
 	}
-    -- construction robots
 end
 
 function Public.random_plates(multiplier)

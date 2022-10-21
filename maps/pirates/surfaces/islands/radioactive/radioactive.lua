@@ -130,7 +130,7 @@ function Public.chunk_structures(args)
 			-- we need some indestructible spawners, because otherwise you can clear, stay here forever, make infinite resources...
 			spawners_indestructible = noises.farness(p) > 0.63,
 			-- spawners_indestructible = false,
-			density_perchunk = 25 * Math.slopefromto(noises.farness(p), 0.3, 1)^2 * args.biter_base_density_scale,
+			density_perchunk = 20 * Math.slopefromto(noises.farness(p), 0.3, 1)^2 * args.biter_base_density_scale,
 		}
 	end
 
