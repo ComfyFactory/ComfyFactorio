@@ -70,8 +70,8 @@ local function update_member_limit(force)
     local this = ScenarioTable.get_table()
     local town_centers = this.town_centers
 
-    -- Limit is increased by counting towns that are the limit
-    -- This will ensure no single town has many more players than another
+    -- Limit is increased by counting towns that are at the limit
+    -- This ensures no single town gets a lot more players than another
     local limit = 1
     while true do
         local towns_near_limit = 0
@@ -81,7 +81,7 @@ local function update_member_limit(force)
                 towns_near_limit = towns_near_limit + 1
             end
         end
-        if towns_near_limit >= 2 then
+        if towns_near_limit >= limit + 1 then
             limit = limit + 1
         else
             break
