@@ -5,6 +5,7 @@ local Team = require 'maps.scrap_towny_ffa.team'
 local Event = require 'utils.event'
 local Spawn = require 'maps.scrap_towny_ffa.spawn'
 local Info = require 'maps.scrap_towny_ffa.info'
+local Tutorial = require 'maps.scrap_towny_ffa.tutorial'
 
 -- how long in ticks between spawn and death will be considered spawn kill (10 seconds)
 local max_ticks_between_spawns = 60 * 10
@@ -126,6 +127,7 @@ local function on_player_joined_game(event)
         Public.initialize(player)
         Public.spawn(player)
         Info.show(player)
+        Tutorial.register_for_tutorial(player)
     end
     Public.load_buffs(player)
     Public.requests(player)

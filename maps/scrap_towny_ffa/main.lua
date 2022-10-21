@@ -208,9 +208,9 @@ local function ui_smell_evolution()
             local e = Evolution.get_evolution(player.position)
             local extra
             if e < 0.1 then
-                extra = 'A good place to found a town. Build a furnace to get started.'
+                extra = 'Could be a good place to found a town.'
             else
-                extra = 'Not good to start a new town. Maybe somewhere else?'
+                extra = 'Not a safe place to start a new town. Maybe somewhere else?'
             end
             player.create_local_flying_text(
                 {
