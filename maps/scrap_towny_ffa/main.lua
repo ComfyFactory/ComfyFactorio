@@ -18,6 +18,7 @@ require 'maps.scrap_towny_ffa.fluids_are_explosive'
 require 'maps.scrap_towny_ffa.trap'
 require 'maps.scrap_towny_ffa.turrets_drop_ammo'
 require 'maps.scrap_towny_ffa.vehicles'
+require 'maps.scrap_towny_ffa.suicide'
 
 local Event = require 'utils.event'
 local Autostash = require 'modules.autostash'
