@@ -468,6 +468,12 @@ local collapse_after_wave_200 = function()
     end
 end
 
+local handle_changes = function()
+    WPT.set('restart', true)
+    WPT.set('soft_reset', false)
+    print('Received new changes from backend.')
+end
+
 local on_tick = function()
     local update_gui = Gui_mf.update_gui
     local tick = game.tick
@@ -532,6 +538,8 @@ local on_init = function()
     Explosives.set_whitelist_entity('car')
     Explosives.set_whitelist_entity('tank')
 end
+
+Event.add(Server.events.on_changes_detected, handle_changes)
 
 Event.on_nth_tick(10, on_tick)
 Event.on_init(on_init)

@@ -250,6 +250,12 @@ local function on_nth_tick(event)
     tick_actions[seconds]()
 end
 
+local function handle_changes()
+    ScenarioTable.set('restart', true)
+    ScenarioTable.set('soft_reset', false)
+    print('Received new changes from backend.')
+end
+
 local function ui_smell_evolution()
     for _, player in pairs(game.connected_players) do
         -- Only for non-townies
@@ -276,6 +282,7 @@ Event.on_init(on_init)
 Event.on_nth_tick(60, on_nth_tick) -- once every second
 Event.on_nth_tick(60 * 30, ui_smell_evolution)
 Event.on_nth_tick(60, update_score)
+Event.add(Server.events.on_changes_detected, handle_changes)
 
 --Disable the comfy main gui since we got too many goodies there.
 Event.add(
