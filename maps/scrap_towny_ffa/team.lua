@@ -9,7 +9,6 @@ local math_min = math.min
 local Server = require 'utils.server'
 local Map = require 'maps.scrap_towny_ffa.map'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
-local PvPShield = require 'maps.scrap_towny_ffa.pvp_shield'
 local CombatBalance = require 'maps.scrap_towny_ffa.combat_balance'
 
 local outlander_color = {150, 150, 150}
@@ -803,9 +802,6 @@ local function kill_force(force_name, cause)
         if e.name ~= 'crude-oil' then
             e.destroy()
         end
-    end
-    if this.pvp_shields[force_name] then
-        PvPShield.remove_shield(this.pvp_shields[force_name])
     end
 
     game.merge_forces(force_name, 'neutral')

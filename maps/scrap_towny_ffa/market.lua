@@ -2,7 +2,6 @@ local table_insert = table.insert
 
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local Town_center = require 'maps.scrap_towny_ffa.town_center'
-local PvPShield = require 'maps.scrap_towny_ffa.pvp_shield'
 
 local upgrade_functions = {
     -- Upgrade Town Center Health
@@ -87,33 +86,6 @@ local upgrade_functions = {
         this.spawn_point[player.index] = spawn_point
         surface.play_sound({path = 'utility/scenario_message', position = player.position, volume_modifier = 1})
         return false
-    end,
-    -- Pause-mode PvP Shield
-    [8] = function(town_center, player)
-        local this = ScenarioTable.get_table()
-        local market = town_center.market
-        local force = market.force
-        local surface = market.surface
-        local shield_lifetime_ticks = 10 * 60 * 60
-
-        if not this.pvp_shields[player.force.name] then
-            -- Double-check with the player to prevent accidental clicks
-            if this.pvp_shield_warned[player.force.name] ~= nil and game.tick - this.pvp_shield_warned[player.force.name] < 60 * 60 then
-                if not Town_center.enemy_players_nearby(town_center, 100) then
-                    PvPShield.add_shield(surface, force, market.position, 120, shield_lifetime_ticks, 2 * 60 * 60, true)
-                    surface.play_sound({path = 'utility/scenario_message', position = player.position, volume_modifier = 1})
-                    this.pvp_shield_warned[player.force.name] = nil
-                else
-                    player.print("Enemy players are too close, can't deploy PvP shield")
-                end
-            else
-                player.force.print('You have requested a temporary PvP shield. This will freeze all players in your town for ' .. string.format("%.0f", shield_lifetime_ticks / 60 / 60) .. ' minutes to take a break. Click again to confirm.')
-                this.pvp_shield_warned[player.force.name] = game.tick
-            end
-        else
-            player.print("Your town already has a PvP shield")
-        end
-        return false
     end
 }
 
@@ -162,7 +134,6 @@ local function set_offers(town_center)
     special_offers[6] = {{{'coin', (town_center.upgrades.laser_turret.slots * 200)}}, laser_turret}
     local spawn_point = 'Set Spawn Point'
     special_offers[7] = {{}, spawn_point}
-    special_offers[8] = {{}, 'Temporary PvP Shield for pause/AFK'}
     for _, v in pairs(special_offers) do
         table_insert(market_items, {price = v[1], offer = {type = 'nothing', effect_description = v[2]}})
     end

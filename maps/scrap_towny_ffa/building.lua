@@ -4,7 +4,6 @@ local math_floor = math.floor
 local table_insert = table.insert
 local table_size = table.size
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
-local PvPShield = require 'maps.scrap_towny_ffa.pvp_shield'
 
 local town_zoning_entity_types = { "wall", "gate", "electric-pole", "ammo-turret", "electric-turret", "fluid-turret"}
 
@@ -236,11 +235,10 @@ local function process_built_entities(event)
         force_name = force.name
     end
 
-    if PvPShield.in_other_zones(surface, position, force) or Public.near_another_town(force_name, position, surface, 32) == true then
+    if Public.near_another_town(force_name, position, surface, 32) == true then
         if neutral_whitelist[name] then
             entity.force = game.forces['neutral']
         else
-            -- Prevent entities from being built near towns
             entity.destroy()
             if player_index ~= nil then
                 local player = game.players[player_index]

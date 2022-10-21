@@ -4,7 +4,6 @@ local math_random = math.random
 local table_insert = table.insert
 local math_floor = math.floor
 local math_sqrt = math.sqrt
-local math_min = math.min
 local table_shuffle = table.shuffle_table
 local table_size = table.size
 
@@ -16,8 +15,6 @@ local Building = require 'maps.scrap_towny_ffa.building'
 local Colors = require 'maps.scrap_towny_ffa.colors'
 local Enemy = require 'maps.scrap_towny_ffa.enemy'
 local Color = require 'utils.color_presets'
-local PvPShield = require 'maps.scrap_towny_ffa.pvp_shield'
-local Evolution = require 'maps.scrap_towny_ffa.evolution'
 
 local town_radius = 27
 local radius_between_towns = 120
@@ -378,48 +375,15 @@ function Public.enemy_players_nearby(town_center, max_radius)
 
     for _, player in pairs(game.connected_players) do
         if player.surface == town_center.market.surface then
-            local distance = math_floor(math_sqrt((player.position.x - town_position.x) ^ 2
-                    + (player.position.y - town_position.y) ^ 2))
+            local distance = math_floor(math_sqrt((player.position.x - town_position.x) ^ 2 + (player.position.y - town_position.y) ^ 2))
             if distance < max_radius then
-                if player.force ~= "enemy" and (own_force ~= player.force and not own_force.get_friend(player.force)) then
+                if player.force ~= 'enemy' and (own_force ~= player.force and not own_force.get_friend(player.force)) then
                     return true
                 end
             end
         end
     end
     return false
-end
-
-local function update_pvp_shields_display()
-    local this = ScenarioTable.get_table()
-    for _, town_center in pairs(this.town_centers) do
-        local shield = this.pvp_shields[town_center.market.force.name]
-        local info
-        if shield then
-            info = 'PvP Shield: ' .. string.format("%.0f", (PvPShield.remaining_lifetime(shield)) / 60 / 60) .. ' minutes'
-        else
-            info = ''
-        end
-        rendering.set_text(town_center.shield_text, info)
-    end
-end
-
-local function add_pvp_shield_scaled(position, force, surface)
-    local evo = Evolution.get_highest_evolution()
-
-    local min_size = 70
-    local max_size = 150
-    local min_duration = 0.5 * 60 * 60 * 60
-    local max_duration =   8 * 60 * 60 * 60
-    local lifetime_ticks = math_min(min_duration + 2 * evo * (max_duration - min_duration), max_duration)
-    local size = math_min(min_size + 2 * evo * (max_size - min_size), max_size)
-
-    PvPShield.add_shield(surface, force, position, size, lifetime_ticks, 60 * 60)
-    update_pvp_shields_display()
-    force.print("Based on the highest tech on map, your town deploys a PvP shield of "
-            .. string.format("%.0f", size) .. " tiles"
-            .. " for " .. string.format("%.0f", lifetime_ticks/60/60)  .. " minutes."
-            .. " Enemy players will not be able to enter and build in the shielded area.")
 end
 
 local function found_town(event)
@@ -568,19 +532,6 @@ local function found_town(event)
         scale_with_zoom = false
     }
 
-    town_center.shield_text = rendering.draw_text {
-        text = 'PvP Shield: (..)',
-        surface = surface,
-        forces = {force_name, game.forces.player, game.forces.rogue},
-        target = town_center.market,
-        target_offset = {0, -2.25},
-        color = {200, 200, 200},
-        scale = 1.00,
-        font = 'default-game',
-        alignment = 'center',
-        scale_with_zoom = false
-    }
-
     Enemy.clear_enemies(position, surface, town_radius * 5)
     draw_town_spawn(force_name)
 
@@ -592,29 +543,10 @@ local function found_town(event)
     Team.add_player_to_town(player, town_center)
     Team.remove_key(player.index)
     Team.add_chart_tag(town_center)
-    add_pvp_shield_scaled({ x = position.x + 0.5, y = position.y + 0.5}, force, surface)    -- Market center is slightly shifted
 
     game.print('>> ' .. player.name .. ' has founded a new town!', {255, 255, 0})
     Server.to_discord_embed(player.name .. ' has founded a new town!')
     player.print('Your town color is ' .. crayola.name, crayola.color)
-end
-
-local Token = require 'utils.token'
-local Task = require 'utils.task'
-
-local do_something_token =
-    Token.register(
-    function(event)
-        local player_index = event.player_index
-        local player = game.get_player(player_index)
-        if not player or not player.valid then
-            return
-        end
-    end
-)
-
-local function some_event_that_fires_the_callback()
-    Task.set_timeout_in_ticks(do_something_token, params)
 end
 
 local function on_built_entity(event)
@@ -689,7 +621,6 @@ commands.add_command(
 
 Event.add(defines.events.on_built_entity, on_built_entity)
 Event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)
-Event.on_nth_tick(60, update_pvp_shields_display)
 --Event.add(defines.events.on_robot_repaired_entity, on_robot_repaired_entity)
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 

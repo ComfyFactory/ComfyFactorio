@@ -36,9 +36,11 @@ function Public.reset_table()
     this.mining_entity = {}
     this.mining_target = {}
     this.spaceships = {}
-    this.pvp_shields = {}
-    this.pvp_shield_warned = {}
     this.suicides = {}
+    this.required_time_to_win = 48
+    this.announced_message = nil
+    this.soft_reset = true
+    this.winner = nil
 end
 
 function Public.get_table()

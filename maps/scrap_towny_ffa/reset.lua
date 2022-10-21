@@ -47,57 +47,106 @@ local function armageddon()
     end
 end
 
-local function reset_map()
-    local this = ScenarioTable.get_table()
+local function has_the_game_ended()
+    local game_reset_tick = ScenarioTable.get('game_reset_tick')
+    if game_reset_tick then
+        if game_reset_tick < 0 then
+            return
+        end
 
-    if this.shutdown then
-        Server.to_discord_bold('*** Soft-reset is disabled! Server will shutdown. Most likely because of updates. ***', true)
-        return Server.stop_scenario()
-    end
+        local this = ScenarioTable.get_table()
 
-    if this.restart then
-        Server.to_discord_bold('*** Soft-reset is disabled! Server will restart to load new changes. ***', true)
-        return Server.start_scenario('Towny')
-    end
+        this.game_reset_tick = this.game_reset_tick - 30
+        if this.game_reset_tick % 1800 == 0 then
+            if this.game_reset_tick > 0 then
+                local cause_msg
+                if this.restart then
+                    cause_msg = 'restart'
+                elseif this.shutdown then
+                    cause_msg = 'shutdown'
+                elseif this.soft_reset then
+                    cause_msg = 'soft-reset'
+                end
 
-    for _, player in pairs(game.players) do
-        local frame = this.score_gui_frame[player.index]
-        if frame and frame.valid then
-            frame.destroy()
+                game.print(({'main.reset_in', cause_msg, this.game_reset_tick / 60}), {r = 0.22, g = 0.88, b = 0.22})
+            end
+
+            if this.soft_reset and this.game_reset_tick == 0 then
+                for _, player in pairs(game.players) do
+                    local frame = this.score_gui_frame[player.index]
+                    if frame and frame.valid then
+                        frame.destroy()
+                    end
+                end
+                this.game_reset_tick = nil
+                this.game_won = false
+                ScenarioTable.reset_table()
+                local surface = game.surfaces['nauvis']
+                if get_victorious_force() then
+                    surface.play_sound({path = 'utility/game_won', volume_modifier = 1})
+                else
+                    surface.play_sound({path = 'utility/game_lost', volume_modifier = 1})
+                end
+                game.reset_time_played()
+                game.reset_game_state()
+                for _, player in pairs(game.players) do
+                    player.teleport({0, 0}, game.surfaces['limbo'])
+                end
+                Nauvis.initialize()
+                Team.initialize()
+                if game.forces['rogue'] == nil then
+                    log('rogue force is missing!')
+                end
+                for _, player in pairs(game.players) do
+                    Player.increment()
+                    Player.initialize(player)
+                    Team.set_player_color(player)
+                    Player.spawn(player)
+                    Player.load_buffs(player)
+                    Player.requests(player)
+                end
+
+                Alert.alert_all_players(5, 'The world has been reset!', Color.white, 'restart_required', 1.0)
+                game.print('The world has been reset!', {r = 0.22, g = 0.88, b = 0.22})
+
+                Server.to_discord_embed('*** The world has been reset! ***')
+                return
+            end
+
+            if this.restart and this.game_reset_tick == 0 then
+                if not this.announced_message then
+                    game.print(({'entity.notify_restart'}), {r = 0.22, g = 0.88, b = 0.22})
+                    local message = 'Soft-reset is disabled! Server will restart from scenario to load new changes.'
+                    Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
+                    Server.start_scenario('Towny')
+                    this.announced_message = true
+                    return
+                end
+            end
+            if this.shutdown and this.game_reset_tick == 0 then
+                if not this.announced_message then
+                    game.print(({'entity.notify_shutdown'}), {r = 0.22, g = 0.88, b = 0.22})
+                    local message = 'Soft-reset is disabled! Server will shutdown. Most likely because of updates.'
+                    Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
+                    Server.stop_scenario()
+                    this.announced_message = true
+                    return
+                end
+            end
         end
     end
-    ScenarioTable.reset_table()
-    local surface = game.surfaces['nauvis']
-    if get_victorious_force() then
-        surface.play_sound({path = 'utility/game_won', volume_modifier = 1})
-    else
-        surface.play_sound({path = 'utility/game_lost', volume_modifier = 1})
-    end
-    game.reset_time_played()
-    game.reset_game_state()
-    for _, player in pairs(game.players) do
-        player.teleport({0, 0}, game.surfaces['limbo'])
-    end
-    Nauvis.initialize()
-    Team.initialize()
-    if game.forces['rogue'] == nil then
-        log('rogue force is missing!')
-    end
-    for _, player in pairs(game.players) do
-        Player.increment()
-        Player.initialize(player)
-        Team.set_player_color(player)
-        Player.spawn(player)
-        Player.load_buffs(player)
-        Player.requests(player)
-    end
-    Alert.alert_all_players(5, 'The world has been reset!', Color.white, 'restart_required', 1.0)
-    Server.to_discord_embed('*** The world has been reset! ***')
 end
 
 local function on_tick()
     local tick = game.tick
     if tick > 0 then
+        if tick % 40 == 0 then
+            local game_won = ScenarioTable.get('game_won')
+            if game_won then
+                has_the_game_ended()
+            end
+        end
+
         if (tick + armageddon_duration + warning_duration) % game_duration == 0 then
             warning()
         end
@@ -109,7 +158,7 @@ local function on_tick()
             Team.reset_all_forces()
         end
         if tick % game_duration == 0 then
-            reset_map()
+            has_the_game_ended()
         end
     end
 end
@@ -193,12 +242,12 @@ commands.add_command(
             else
                 game.print(mapkeeper .. ' server, has reset the game!', {r = 0.98, g = 0.66, b = 0.22})
             end
-            reset_map()
+            has_the_game_ended()
             p('[WARNING] Game has been reset!')
             return
         end
     end
 )
 
-Event.add(defines.events.on_tick, on_tick)
+Event.on_nth_tick(10, on_tick)
 Event.add(defines.events.on_rocket_launched, on_rocket_launched)
