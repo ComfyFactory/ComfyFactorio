@@ -1,10 +1,12 @@
-local math_random = math.random
+local Event = require 'utils.event'
 local Evolution = require 'maps.scrap_towny_ffa.evolution'
 local Town_center = require 'maps.scrap_towny_ffa.town_center'
 local Scrap = require 'maps.scrap_towny_ffa.scrap'
 local unearthing_worm = require 'functions.unearthing_worm'
 local unearthing_biters = require 'functions.unearthing_biters'
 local tick_tack_trap = require 'functions.tick_tack_trap'
+
+local math_random = math.random
 
 local function trap(entity)
     -- check if within 32 blocks of market
@@ -28,5 +30,4 @@ local function on_player_mined_entity(event)
     end
 end
 
-local Event = require 'utils.event'
 Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)

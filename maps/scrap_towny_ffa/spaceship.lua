@@ -1,7 +1,7 @@
-local table_insert = table.insert
-
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local Event = require 'utils.event'
+
+local table_insert = table.insert
 
 local function position_tostring(position)
     return '[x=' .. position.x .. ',y=' .. position.y .. ']'

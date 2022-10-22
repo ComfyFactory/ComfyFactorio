@@ -1,3 +1,7 @@
+local ScenarioTable = require 'maps.scrap_towny_ffa.table'
+local Enemy = require 'maps.scrap_towny_ffa.enemy'
+local Building = require 'maps.scrap_towny_ffa.building'
+
 local Public = {}
 
 local table_size = table.size
@@ -7,10 +11,6 @@ local math_rad = math.rad
 local math_sin = math.sin
 local math_cos = math.cos
 local math_floor = math.floor
-
-local ScenarioTable = require 'maps.scrap_towny_ffa.table'
-local Enemy = require 'maps.scrap_towny_ffa.enemy'
-local Building = require 'maps.scrap_towny_ffa.building'
 
 -- don't spawn if town is within this range
 local spawn_point_town_buffer = 256
@@ -57,6 +57,10 @@ end
 local function in_use(position)
     local this = ScenarioTable.get_table()
     local result = false
+    if position.x == 0 and position.y == 0 then
+        return true
+    end
+
     for _, v in pairs(this.spawn_point) do
         if v == position then
             result = true
@@ -64,6 +68,26 @@ local function in_use(position)
     end
     --log("in_use = " .. tostring(result))
     return result
+end
+
+local function is_position_near(area)
+    local status = false
+    local function inside(pos)
+        local lt = area.left_top
+        local rb = area.right_bottom
+
+        return pos.x >= lt.x and pos.y >= lt.y and pos.x <= rb.x and pos.y <= rb.y
+    end
+
+    local players = game.connected_players
+    for i = 1, #players do
+        local player = players[i]
+        if inside(player.position) then
+            status = true
+        end
+    end
+
+    return status
 end
 
 -- is the position empty
@@ -94,7 +118,7 @@ local function is_empty(position, surface)
 end
 
 -- finds a valid spawn point that is not near a town and not in a polluted area
-local function find_valid_spawn_point(force_name, surface)
+local function find_valid_spawn_point(player, force_name, surface)
     local this = ScenarioTable.get_table()
 
     -- check center of map first if valid
@@ -103,7 +127,7 @@ local function find_valid_spawn_point(force_name, surface)
     force_load(position, surface, 1)
 
     -- is the point near any buildings
-    if in_use(position) == false then
+    if not in_use(position) then
         if Building.near_another_town(force_name, position, surface, spawn_point_town_buffer) == false then
             -- force load the position
             if is_empty(position, surface) == true then
@@ -112,6 +136,20 @@ local function find_valid_spawn_point(force_name, surface)
             end
         end
     end
+
+    -- is the point near any other players
+    local radius = 50
+    local area = {
+        left_top = {x = player.position.x - radius, y = player.position.y - radius},
+        right_bottom = {x = player.position.x + radius, y = player.position.y + radius}
+    }
+
+    if not is_position_near(area) then
+        if is_empty(position, surface) == true then
+            return position
+        end
+    end
+
     -- otherwise find a nearby town
     local keyset = {}
     for town_name, _ in pairs(this.town_centers) do
@@ -168,7 +206,7 @@ function Public.get_new_spawn_point(player, surface)
         local force = player.force
         if force ~= nil then
             local force_name = force.name
-            position = find_valid_spawn_point(force_name, surface)
+            position = find_valid_spawn_point(player, force_name, surface)
         end
     end
     -- should never be invalid or blocked

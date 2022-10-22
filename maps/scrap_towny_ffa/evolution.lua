@@ -1,8 +1,9 @@
+local Event = require 'utils.event'
+local ScenarioTable = require 'maps.scrap_towny_ffa.table'
+
 local Public = {}
 local math_floor = math.floor
 local math_log10 = math.log10
-
-local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 
 local biters = {
     [1] = 'small-biter',
@@ -487,9 +488,9 @@ function Public.get_highest_evolution()
     local this = ScenarioTable.get_table()
     local max_evo = 0
     for _, town_center in pairs(this.town_centers) do
-		if town_center.evolution.worms > max_evo then
-			max_evo = town_center.evolution.worms
-		end
+        if town_center.evolution.worms > max_evo then
+            max_evo = town_center.evolution.worms
+        end
     end
     return max_evo
 end
@@ -715,7 +716,6 @@ local function on_biter_base_built(event)
     end
 end
 
-local Event = require 'utils.event'
 Event.add(defines.events.on_research_finished, on_research_finished)
 Event.add(defines.events.on_entity_spawned, on_entity_spawned)
 Event.add(defines.events.on_biter_base_built, on_biter_base_built)

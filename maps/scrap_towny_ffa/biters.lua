@@ -1,3 +1,7 @@
+local Event = require 'utils.event'
+local Global = require 'utils.global'
+local BiterHealthBooster = require 'modules.biter_health_booster_v2'
+
 local Public = {}
 local math_random = math.random
 local math_floor = math.floor
@@ -8,15 +12,11 @@ local table_insert = table.insert
 local table_remove = table.remove
 local table_shuffle = table.shuffle_table
 
-local Event = require 'utils.event'
-local Global = require 'utils.global'
-local BiterHealthBooster = require 'modules.biter_health_booster_v2'
-
-local tick_schedule = {}
+local this = {}
 Global.register(
-    tick_schedule,
+    this,
     function(t)
-        tick_schedule = t
+        this = t
     end
 )
 
@@ -186,10 +186,10 @@ function Public.swarm(town_center, radius)
         r = r + 16
         local future = game.tick + 1
         -- schedule to run this method again with a higher radius on next tick
-        if not tick_schedule[future] then
-            tick_schedule[future] = {}
+        if not this[future] then
+            this[future] = {}
         end
-        tick_schedule[future][#tick_schedule[future] + 1] = {
+        this[future][#this[future] + 1] = {
             callback = 'swarm',
             params = {tc, r}
         }
@@ -284,17 +284,17 @@ local function on_unit_group_finished_gathering(event)
 end
 
 local function on_tick()
-    if not tick_schedule[game.tick] then
+    if not this[game.tick] then
         return
     end
-    for _, token in pairs(tick_schedule[game.tick]) do
+    for _, token in pairs(this[game.tick]) do
         local callback = token.callback
         local params = token.params
         if callback == 'swarm' then
             Public.swarm(params[1], params[2])
         end
     end
-    tick_schedule[game.tick] = nil
+    this[game.tick] = nil
 end
 
 local on_init = function()

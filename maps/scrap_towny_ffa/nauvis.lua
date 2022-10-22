@@ -2,7 +2,6 @@ local Event = require 'utils.event'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 
 local math_random = math.random
-local math_abs = math.abs
 local table_shuffle = table.shuffle_table
 
 local Public = {}
@@ -61,13 +60,6 @@ function Public.armageddon()
             params = {position}
         }
     end
-end
-
-local function get_seed()
-    local max = 4294967296
-    local salt = game.surfaces[1].map_gen_settings.seed
-    local seed = math_abs(salt + math_random(1, max)) % max + 1
-    return seed
 end
 
 function Public.initialize()
@@ -184,7 +176,7 @@ function Public.initialize()
         -- this will make and average base radius around 12 tiles
         ['enemy-base-radius'] = 12
     }
-    mgs.seed = get_seed(game.surfaces[1].map_gen_settings.seed)
+    mgs.seed = math_random(10000, 999999)
     surface.map_gen_settings = mgs
     surface.peaceful_mode = false
     surface.always_day = false

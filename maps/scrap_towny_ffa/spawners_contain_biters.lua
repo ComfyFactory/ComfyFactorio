@@ -1,7 +1,8 @@
 -- spawners release biters on death -- by mewmew
-local math_random = math.random
-
+local Event = require 'utils.event'
 local Evolution = require 'maps.scrap_towny_ffa.evolution'
+
+local math_random = math.random
 
 local biter_building_inhabitants = {
     [1] = {{'small-biter', 8, 16}},
@@ -37,5 +38,4 @@ local function on_entity_died(event)
     end
 end
 
-local Event = require 'utils.event'
 Event.add(defines.events.on_entity_died, on_entity_died)

@@ -1,3 +1,4 @@
+local Event = require 'utils.event'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 
 -- called whenever a player places an item
@@ -146,7 +147,6 @@ local function on_entity_destroyed(event)
     end
 end
 
-local Event = require 'utils.event'
 Event.add(defines.events.on_built_entity, on_built_entity)
 Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 Event.add(defines.events.on_entity_destroyed, on_entity_destroyed)

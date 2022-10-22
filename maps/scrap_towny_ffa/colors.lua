@@ -1,9 +1,9 @@
+local ScenarioTable = require 'maps.scrap_towny_ffa.table'
+local Color = require 'utils.color_presets'
+
 local Public = {}
 
 local table_shuffle = table.shuffle_table
-
-local ScenarioTable = require 'maps.scrap_towny_ffa.table'
-local Color = require 'utils.color_presets'
 
 local colors = {}
 colors[1] = {name = 'Almond', rgb = {239, 222, 205}}

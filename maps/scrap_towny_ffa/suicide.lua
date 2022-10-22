@@ -1,6 +1,6 @@
+local Event = require 'utils.event'
 local Scheduler = require 'utils.scheduler'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
-local Event = require 'utils.event'
 
 local yellow = {r = 200, g = 200, b = 0}
 

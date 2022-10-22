@@ -1,6 +1,7 @@
-local Public = {}
-
+local Event = require 'utils.event'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
+
+local Public = {}
 
 function Public.reset()
     local this = ScenarioTable.get_table()
@@ -61,7 +62,6 @@ local function on_chunk_charted(event)
     end
 end
 
-local Event = require 'utils.event'
 Event.add(defines.events.on_chunk_charted, on_chunk_charted)
 
 return Public

@@ -1,11 +1,12 @@
 --This will add a new game mechanic so that containers with certain fluids explode when they get damaged or are destroyed.
 --Made by MewMew
-local math_random = math.random
-local math_floor = math.floor
 
+local Event = require 'utils.event'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local Pollution = require 'maps.scrap_towny_ffa.pollution'
-local Event = require 'utils.event'
+
+local math_random = math.random
+local math_floor = math.floor
 
 local empty_tile_damage_decay = 50
 local out_of_map_tile_health = 1500

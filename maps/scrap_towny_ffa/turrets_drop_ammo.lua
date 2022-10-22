@@ -1,3 +1,5 @@
+local Event = require 'utils.event'
+
 local math_random = math.random
 local math_min = math.min
 
@@ -12,5 +14,4 @@ local function on_entity_died(event)
     end
 end
 
-local Event = require 'utils.event'
 Event.add(defines.events.on_entity_died, on_entity_died)

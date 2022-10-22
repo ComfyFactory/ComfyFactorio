@@ -1,10 +1,9 @@
-local Public = {}
-
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local Team = require 'maps.scrap_towny_ffa.team'
 local Event = require 'utils.event'
 local Spawn = require 'maps.scrap_towny_ffa.spawn'
 local Info = require 'maps.scrap_towny_ffa.info'
+local Public = {}
 
 -- how long in ticks between spawn and death will be considered spawn kill (10 seconds)
 local max_ticks_between_spawns = 60 * 10
@@ -53,7 +52,12 @@ function Public.spawn(player)
     -- reset cooldown
     this.cooldowns_town_placement[player.index] = 0
     this.last_respawn[player.name] = 0
-    player.teleport(spawn_point, surface)
+    local position = surface.find_non_colliding_position('character', spawn_point, 50, 1)
+    if position then
+        player.teleport(position, surface)
+    else
+        player.teleport(spawn_point, surface)
+    end
 end
 
 function Public.load_buffs(player)
@@ -96,7 +100,7 @@ function Public.requests(player)
                 i.clear()
             end
 
-            player.print("Your town has fallen since you last played. Good luck next time!", {r = 1, g = 0, b = 0})
+            player.print('Your town has fallen since you last played. Good luck next time!', {r = 1, g = 0, b = 0})
             player.character.die()
         end
         this.requests[player.index] = nil
@@ -148,7 +152,12 @@ local function on_player_respawned(event)
 
     -- reset cooldown
     this.last_respawn[player.name] = game.tick
-    player.teleport(spawn_point, surface)
+    local position = surface.find_non_colliding_position('character', spawn_point, 50, 1)
+    if position then
+        player.teleport(position, surface)
+    else
+        player.teleport(spawn_point, surface)
+    end
     Public.load_buffs(player)
 end
 
