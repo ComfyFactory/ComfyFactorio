@@ -136,7 +136,6 @@ local function on_player_mined_entity(event)
         amount = random(r1, r2)
     end
 
-    local player = game.players[event.player_index]
     local inserted_count = player.insert({name = scrap, count = amount})
 
     if inserted_count ~= amount then
