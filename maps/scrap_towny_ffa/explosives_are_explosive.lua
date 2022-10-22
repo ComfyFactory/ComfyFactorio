@@ -1,11 +1,12 @@
 --This will add a new game mechanic so that containers with explosives actually go boom when they get damaged.
 --Made by MewMew
-local math_min = math.min
-local math_random = math.random
 
+local Event = require 'utils.event'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local Pollution = require 'maps.scrap_towny_ffa.pollution'
-local Event = require 'utils.event'
+
+local math_min = math.min
+local math_random = math.random
 
 --local damage_per_explosive = 100
 local damage_per_explosive = 50

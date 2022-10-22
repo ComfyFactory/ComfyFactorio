@@ -1,11 +1,12 @@
+local Event = require 'utils.event'
+local get_noise = require 'utils.get_noise'
+local ScenarioTable = require 'maps.scrap_towny_ffa.table'
+local Scrap = require 'maps.scrap_towny_ffa.scrap'
+
 local table_insert = table.insert
 local math_random = math.random
 local math_floor = math.floor
 local math_abs = math.abs
-
-local get_noise = require 'utils.get_noise'
-local ScenarioTable = require 'maps.scrap_towny_ffa.table'
-local Scrap = require 'maps.scrap_towny_ffa.scrap'
 
 local scrap_entities = {
     -- simple entity with owner
@@ -87,7 +88,7 @@ local container_loot_chance = {
     {name = 'logistic-robot', chance = 1},
     {name = 'low-density-structure', chance = 1},
     {name = 'lubricant-barrel', chance = 20},
-    {name = "nuclear-fuel", chance = 1},
+    {name = 'nuclear-fuel', chance = 1},
     {name = 'petroleum-gas-barrel', chance = 30},
     {name = 'pipe', chance = 100},
     {name = 'pipe-to-ground', chance = 10},
@@ -100,7 +101,7 @@ local container_loot_chance = {
     {name = 'steel-plate', chance = 150},
     {name = 'sulfuric-acid-barrel', chance = 15},
     --{name = "uranium-cannon-shell", chance = 1},
-    {name = "uranium-fuel-cell", chance = 1},
+    {name = 'uranium-fuel-cell', chance = 1},
     --{name = "used-up-uranium-fuel-cell", chance = 1},
     {name = 'water-barrel', chance = 10}
 }
@@ -138,7 +139,7 @@ local container_loot_amounts = {
     ['logistic-robot'] = 0.3,
     ['low-density-structure'] = 0.3,
     ['lubricant-barrel'] = 3,
-    ["nuclear-fuel"] = 0.1,
+    ['nuclear-fuel'] = 0.1,
     ['petroleum-gas-barrel'] = 3,
     ['pipe'] = 8,
     ['pipe-to-ground'] = 1,
@@ -152,9 +153,9 @@ local container_loot_amounts = {
     ['steel-plate'] = 4,
     ['sulfuric-acid-barrel'] = 3,
     --["uranium-cannon-shell"] = 2,
-    ["uranium-fuel-cell"] = 0.3,
+    ['uranium-fuel-cell'] = 0.3,
     --["used-up-uranium-fuel-cell"] = 1,
-    ['water-barrel'] = 3,
+    ['water-barrel'] = 3
 }
 
 local scrap_raffle = {}
@@ -341,7 +342,6 @@ end
 --  this.chunk_generated = {}
 -- end
 
-local Event = require 'utils.event'
 -- Event.on_init(on_init)
 Event.add(defines.events.on_chunk_generated, on_chunk_generated)
 Event.add(defines.events.on_chunk_charted, on_chunk_charted)

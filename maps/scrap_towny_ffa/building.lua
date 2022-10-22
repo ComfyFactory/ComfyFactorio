@@ -1,11 +1,13 @@
+local Event = require 'utils.event'
+local ScenarioTable = require 'maps.scrap_towny_ffa.table'
+
 local Public = {}
 
 local math_floor = math.floor
 local table_insert = table.insert
 local table_size = table.size
-local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 
-local town_zoning_entity_types = { "wall", "gate", "electric-pole", "ammo-turret", "electric-turret", "fluid-turret"}
+local town_zoning_entity_types = {'wall', 'gate', 'electric-pole', 'ammo-turret', 'electric-turret', 'fluid-turret'}
 
 -- these should be allowed to place inside any base by anyone as neutral
 local neutral_whitelist = {
@@ -41,14 +43,16 @@ local function refund_item(event, item_name)
     if item_name == 'blueprint' then
         return
     end
-    if event.player_index ~= nil then
-        game.players[event.player_index].insert({name = item_name, count = 1})
+    local player = game.get_player(event.player_index)
+    local robot = event.robot
+    if player and player.valid then
+        player.insert({name = item_name, count = 1})
         return
     end
 
     -- return item to robot, but don't replace ghost (otherwise might loop)
-    if event.robot ~= nil then
-        local inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
+    if robot and robot.valid then
+        local inventory = robot.get_inventory(defines.inventory.robot_cargo)
         inventory.insert({name = item_name, count = 1})
         return
     end
@@ -138,8 +142,17 @@ function Public.near_another_town(force_name, position, surface, radius)
 
     -- check for nearby town entities
     if table.size(forces) > 0 then
-        if surface.count_entities_filtered({position = position, radius = radius,
-                                            force = forces, type=town_zoning_entity_types, limit = 1}) > 0 then
+        if
+            surface.count_entities_filtered(
+                {
+                    position = position,
+                    radius = radius,
+                    force = forces,
+                    type = town_zoning_entity_types,
+                    limit = 1
+                }
+            ) > 0
+         then
             return true
         end
     end
@@ -179,7 +192,7 @@ local function prevent_entity_in_restricted_zone(event)
     end
     if error == true then
         if player_index ~= nil then
-            local player = game.players[player_index]
+            local player = game.get_player(player_index)
             player.play_sound({path = 'utility/cannot_build', position = player.position, volume_modifier = 0.75})
         end
         error_floaty(surface, position, 'Can not build in restricted zone!')
@@ -201,12 +214,11 @@ local function prevent_landfill_in_restricted_zone(event)
         if Public.in_restricted_zone(surface, position) then
             fail = true
             surface.set_tiles({{name = old_tile.name, position = position}}, true)
-            refund_item(event, tile.name)
         end
     end
     if fail == true then
         if player_index ~= nil then
-            local player = game.players[player_index]
+            local player = game.get_player(player_index)
             player.play_sound({path = 'utility/cannot_build', position = player.position, volume_modifier = 0.75})
         end
         error_floaty(surface, position, 'Can not build in restricted zone!')
@@ -226,7 +238,7 @@ local function process_built_entities(event)
     local force
     local force_name
     if player_index ~= nil then
-        local player = game.players[player_index]
+        local player = game.get_player(player_index)
         force = player.force
         force_name = force.name
     else
@@ -241,7 +253,7 @@ local function process_built_entities(event)
         else
             entity.destroy()
             if player_index ~= nil then
-                local player = game.players[player_index]
+                local player = game.get_player(player_index)
                 player.play_sound({path = 'utility/cannot_build', position = player.position, volume_modifier = 0.75})
             end
             error_floaty(surface, position, "Can't build near town!")
@@ -266,7 +278,7 @@ local function prevent_tiles_near_towns(event)
     local surface = game.surfaces[event.surface_index]
     local force_name
     if player_index ~= nil then
-        local player = game.players[player_index]
+        local player = game.get_player(player_index)
         if player ~= nil then
             local force = player.force
             if force ~= nil then
@@ -290,12 +302,11 @@ local function prevent_tiles_near_towns(event)
         if Public.near_another_town(force_name, position, surface, 32) == true then
             fail = true
             surface.set_tiles({{name = old_tile.name, position = position}}, true)
-            refund_item(event, tile.name)
         end
     end
     if fail == true then
         if player_index ~= nil then
-            local player = game.players[player_index]
+            local player = game.get_player(player_index)
             player.play_sound({path = 'utility/cannot_build', position = player.position, volume_modifier = 0.75})
         end
         error_floaty(surface, position, "Can't build near town!")
@@ -344,7 +355,6 @@ local function on_robot_built_tile(event)
     end
 end
 
-local Event = require 'utils.event'
 Event.add(defines.events.on_built_entity, on_built_entity)
 Event.add(defines.events.on_player_built_tile, on_player_built_tile)
 Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)

@@ -1,3 +1,5 @@
+local Event = require 'utils.event'
+
 local Public = {}
 
 local info = [[This is the wasteland. Who will survive?
@@ -10,6 +12,9 @@ Have fun and be comfy ^.^]]
 local info_adv =
     [[
 # Changelog (21th October 2022):
+ - Fixed player spawn issue
+ - Fixed map random seed
+ - Made tank and car extremely rare to get via scrap
  - Suicide command has been added. The poison pill will kill the character after 3 minutes
  - Game will automatically reset whenever a town reaches 48h of survival time
  - PvP Shield has been removed
@@ -124,7 +129,6 @@ local function on_gui_click(event)
     Public.toggle(event)
 end
 
-local Event = require 'utils.event'
 Event.add(defines.events.on_gui_click, on_gui_click)
 
 return Public

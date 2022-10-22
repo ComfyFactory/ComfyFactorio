@@ -1,11 +1,13 @@
+local Event = require 'utils.event'
+local Global = require 'utils.global'
+
 local math_random = math.random
 
-local Global = require 'utils.global'
-local tick_schedule = {}
+local this = {}
 Global.register(
-    tick_schedule,
+    this,
     function(t)
-        tick_schedule = t
+        this = t
     end
 )
 
@@ -65,27 +67,27 @@ local function process_worm(entity)
     local surface = entity.surface
 
     local tick1 = game.tick + death_animation_ticks
-    if not tick_schedule[tick1] then
-        tick_schedule[tick1] = {}
+    if not this[tick1] then
+        this[tick1] = {}
     end
-    tick_schedule[tick1][#tick_schedule[tick1] + 1] = {
+    this[tick1][#this[tick1] + 1] = {
         callback = 'destroy_worm',
         params = {name, position, surface}
     }
     local tick2 = game.tick + death_animation_ticks + decay_ticks
-    if not tick_schedule[tick2] then
-        tick_schedule[tick2] = {}
+    if not this[tick2] then
+        this[tick2] = {}
     end
-    tick_schedule[tick2][#tick_schedule[tick2] + 1] = {
+    this[tick2][#this[tick2] + 1] = {
         callback = 'remove_corpse',
         params = {name, position, surface}
     }
     if math_random(1, 10) == 1 then
         local tick3 = game.tick + death_animation_ticks + decay_ticks + 1
-        if not tick_schedule[tick3] then
-            tick_schedule[tick3] = {}
+        if not this[tick3] then
+            this[tick3] = {}
         end
-        tick_schedule[tick3][#tick_schedule[tick3] + 1] = {
+        this[tick3][#this[tick3] + 1] = {
             callback = 'create_oil_patch',
             params = {name, position, surface}
         }
@@ -106,10 +108,10 @@ local function on_entity_died(event)
 end
 
 local function on_tick()
-    if not tick_schedule[game.tick] then
+    if not this[game.tick] then
         return
     end
-    for _, token in pairs(tick_schedule[game.tick]) do
+    for _, token in pairs(this[game.tick]) do
         local callback = token.callback
         local params = token.params
         if callback == 'destroy_worm' then
@@ -122,9 +124,8 @@ local function on_tick()
             create_oil_patch(params[1], params[2], params[3])
         end
     end
-    tick_schedule[game.tick] = nil
+    this[game.tick] = nil
 end
 
-local Event = require 'utils.event'
 Event.add(defines.events.on_tick, on_tick)
 Event.add(defines.events.on_entity_died, on_entity_died)

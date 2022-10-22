@@ -1,3 +1,9 @@
+local Event = require 'utils.event'
+local Server = require 'utils.server'
+local Map = require 'maps.scrap_towny_ffa.map'
+local ScenarioTable = require 'maps.scrap_towny_ffa.table'
+local CombatBalance = require 'maps.scrap_towny_ffa.combat_balance'
+
 local Public = {}
 
 local math_random = math.random
@@ -5,12 +11,6 @@ local table_size = table.size
 local string_match = string.match
 local string_lower = string.lower
 local math_min = math.min
-
-local Server = require 'utils.server'
-local Map = require 'maps.scrap_towny_ffa.map'
-local ScenarioTable = require 'maps.scrap_towny_ffa.table'
-local CombatBalance = require 'maps.scrap_towny_ffa.combat_balance'
-
 local outlander_color = {150, 150, 150}
 local outlander_chat_color = {170, 170, 170}
 local rogue_color = {150, 150, 150}
@@ -58,7 +58,7 @@ local player_force_disabled_recipes = {
 local all_force_enabled_recipes = {
     'submachine-gun',
     'shotgun',
-    'shotgun-shell',
+    'shotgun-shell'
 }
 
 local function update_member_limit(force)
@@ -99,8 +99,7 @@ local function can_force_accept_member(force)
     update_member_limit(force)
 
     if #force.players >= this.member_limit then
-        game.print('>> Town ' .. force.name .. ' has too many settlers! Current limit: ' .. this.member_limit .. '.'
-                .. ' The limit will increase once other towns have more settlers.', {255, 255, 0})
+        game.print('>> Town ' .. force.name .. ' has too many settlers! Current limit: ' .. this.member_limit .. '.' .. ' The limit will increase once other towns have more settlers.', {255, 255, 0})
         return false
     end
     return true
@@ -279,7 +278,7 @@ local function set_player_to_rogue(player)
         log('Given object is not of LuaPlayer!')
         return
     end
-    player.print("You have broken the peace with the biters. They will seek revenge!")
+    player.print('You have broken the peace with the biters. They will seek revenge!')
     group.add_player(player)
     player.tag = '[Rogue]'
     Map.disable_world_map(player)
@@ -787,7 +786,7 @@ local function kill_force(force_name, cause)
                 e.die()
             elseif destroy_wall_types[e.type] == true then
                 e.die()
-            elseif storage_types[e.type] ~= true then   -- spare chests
+            elseif storage_types[e.type] ~= true then -- spare chests
                 local random = math_random()
                 if random > 0.5 or e.health == nil then
                     e.die()
@@ -839,16 +838,16 @@ local function kill_force(force_name, cause)
             local killer_town_center = this.town_centers[cause.force.name]
             if balance > 0 then
                 killer_town_center.coin_balance = killer_town_center.coin_balance + balance
-                cause.force.print(balance .. " coins have been transferred to your town")
+                cause.force.print(balance .. ' coins have been transferred to your town')
             end
             if cause.name == 'character' then
-                message = town_name .. ' has fallen to ' .. cause.player.name .. ' from '  .. killer_town_center.town_name .. '!'
+                message = town_name .. ' has fallen to ' .. cause.player.name .. ' from ' .. killer_town_center.town_name .. '!'
             else
                 message = town_name .. ' has fallen to ' .. killer_town_center.town_name .. '!'
             end
         else
             message = town_name .. ' has fallen to an unknown entity (DEBUG ID 2)!' -- TODO: remove after some testing
-            log("cause.force.name=" .. cause.force.name)
+            log('cause.force.name=' .. cause.force.name)
         end
     else
         message = town_name .. ' has fallen to the biters!'
@@ -860,7 +859,7 @@ end
 
 local function on_forces_merged()
     -- Remove any ghosts that have been moved into neutral after a town is destroyed. This caused desyncs before.
-    for _, e in pairs(game.surfaces.nauvis.find_entities_filtered({force = 'neutral', type = "entity-ghost"})) do
+    for _, e in pairs(game.surfaces.nauvis.find_entities_filtered({force = 'neutral', type = 'entity-ghost'})) do
         if e.valid then
             e.destroy()
         end
@@ -1119,7 +1118,6 @@ function Public.initialize()
     setup_enemy_force()
 end
 
-local Event = require 'utils.event'
 Event.add(defines.events.on_player_dropped_item, on_player_dropped_item)
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.add(defines.events.on_entity_died, on_entity_died)

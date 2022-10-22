@@ -1,8 +1,9 @@
-local Public = {}
-local math_random = math.random
-
+local Event = require 'utils.event'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local Scrap = require 'maps.scrap_towny_ffa.scrap'
+
+local Public = {}
+local math_random = math.random
 
 local pollution_index = {
     ['small-biter'] = {min = 0.1, max = 0.1},
@@ -109,7 +110,6 @@ local function on_entity_died(event)
     entity.surface.pollute(entity.position, amount)
 end
 
-local Event = require 'utils.event'
 Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.add(defines.events.on_entity_died, on_entity_died)

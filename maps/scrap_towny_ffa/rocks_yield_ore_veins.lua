@@ -1,9 +1,11 @@
+local Event = require 'utils.event'
+local ScenarioTable = require 'maps.scrap_towny_ffa.table'
+
 local math_random = math.random
 local math_floor = math.floor
 local table_insert = table.insert
 local table_shuffle = table.shuffle_table
 
-local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 
 local valid_entities = {
     ['rock-big'] = true,
@@ -208,6 +210,5 @@ local function on_init()
     set_raffle()
 end
 
-local Event = require 'utils.event'
 Event.on_init(on_init)
 Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)

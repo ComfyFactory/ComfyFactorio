@@ -1,12 +1,3 @@
-local Public = {}
-
-local math_random = math.random
-local table_insert = table.insert
-local math_floor = math.floor
-local math_sqrt = math.sqrt
-local table_shuffle = table.shuffle_table
-local table_size = table.size
-
 local Event = require 'utils.event'
 local Server = require 'utils.server'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
@@ -16,6 +7,14 @@ local Colors = require 'maps.scrap_towny_ffa.colors'
 local Enemy = require 'maps.scrap_towny_ffa.enemy'
 local Color = require 'utils.color_presets'
 
+local Public = {}
+
+local math_random = math.random
+local table_insert = table.insert
+local math_floor = math.floor
+local math_sqrt = math.sqrt
+local table_shuffle = table.shuffle_table
+local table_size = table.size
 local town_radius = 27
 local radius_between_towns = 120
 local ore_amount = 500 * (200 / 168.5)
@@ -621,7 +620,6 @@ commands.add_command(
 
 Event.add(defines.events.on_built_entity, on_built_entity)
 Event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)
---Event.add(defines.events.on_robot_repaired_entity, on_robot_repaired_entity)
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 
 return Public

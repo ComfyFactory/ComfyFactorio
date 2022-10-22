@@ -1,3 +1,7 @@
+local Event = require 'utils.event'
+local Global = require 'utils.global'
+local BiterHealthBooster = require 'modules.biter_health_booster_v2'
+
 local Public = {}
 local math_random = math.random
 local math_floor = math.floor
@@ -7,10 +11,6 @@ local table_size = table.size
 local table_insert = table.insert
 local table_remove = table.remove
 local table_shuffle = table.shuffle_table
-
-local Event = require 'utils.event'
-local Global = require 'utils.global'
-local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 
 local tick_schedule = {}
 Global.register(

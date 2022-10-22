@@ -1,7 +1,8 @@
-local table_insert = table.insert
-
+local Event = require 'utils.event'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local Town_center = require 'maps.scrap_towny_ffa.town_center'
+
+local table_insert = table.insert
 
 local upgrade_functions = {
     -- Upgrade Town Center Health
@@ -670,7 +671,6 @@ local function on_tick(_)
     end
 end
 
-local Event = require 'utils.event'
 Event.add(defines.events.on_tick, on_tick)
 Event.add(defines.events.on_gui_opened, on_gui_opened)
 Event.add(defines.events.on_market_item_purchased, on_market_item_purchased)
