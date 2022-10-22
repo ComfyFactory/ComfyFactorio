@@ -12,11 +12,11 @@ local table_insert = table.insert
 local table_remove = table.remove
 local table_shuffle = table.shuffle_table
 
-local this = {}
+local tick_schedule = {}
 Global.register(
-    this,
+    tick_schedule,
     function(t)
-        this = t
+        tick_schedule = t
     end
 )
 
@@ -186,10 +186,10 @@ function Public.swarm(town_center, radius)
         r = r + 16
         local future = game.tick + 1
         -- schedule to run this method again with a higher radius on next tick
-        if not this[future] then
-            this[future] = {}
+        if not tick_schedule[future] then
+            tick_schedule[future] = {}
         end
-        this[future][#this[future] + 1] = {
+        tick_schedule[future][#tick_schedule[future] + 1] = {
             callback = 'swarm',
             params = {tc, r}
         }
@@ -284,17 +284,17 @@ local function on_unit_group_finished_gathering(event)
 end
 
 local function on_tick()
-    if not this[game.tick] then
+    if not tick_schedule[game.tick] then
         return
     end
-    for _, token in pairs(this[game.tick]) do
+    for _, token in pairs(tick_schedule[game.tick]) do
         local callback = token.callback
         local params = token.params
         if callback == 'swarm' then
             Public.swarm(params[1], params[2])
         end
     end
-    this[game.tick] = nil
+    tick_schedule[game.tick] = nil
 end
 
 local on_init = function()

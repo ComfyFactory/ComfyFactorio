@@ -138,10 +138,10 @@ local function find_valid_spawn_point(player, force_name, surface)
     end
 
     -- is the point near any other players
-    local radius = 50
+    local r = 50
     local area = {
-        left_top = {x = player.position.x - radius, y = player.position.y - radius},
-        right_bottom = {x = player.position.x + radius, y = player.position.y + radius}
+        left_top = {x = player.position.x - r, y = player.position.y - r},
+        right_bottom = {x = player.position.x + r, y = player.position.y + r}
     }
 
     if not is_position_near(area) then
