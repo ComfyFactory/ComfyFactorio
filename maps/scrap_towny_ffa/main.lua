@@ -208,6 +208,7 @@ end
 
 local function on_init()
     Autostash.insert_into_furnace(true)
+    Autostash.insert_to_neutral_chests(true)
     Autostash.insert_into_wagon(true)
     Autostash.bottom_button(true)
     BottomFrame.reset()
