@@ -147,6 +147,11 @@ function Public.set_active_surface_index(value)
     this.settings.active_surface_index = value or nil
 end
 
+--- Clears the offline table
+function Public.clear_offline_players()
+    this.offline_players = {}
+end
+
 local remove_offline_players = Public.remove_offline_players
 
 Event.on_nth_tick(200, remove_offline_players)
