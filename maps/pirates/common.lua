@@ -8,6 +8,8 @@ local Utils = require 'maps.pirates.utils_local'
 local CoreData = require 'maps.pirates.coredata'
 local Memory = require 'maps.pirates.memory'
 local _inspect = require 'utils.inspect'.inspect
+
+local LootRaffle = require 'functions.loot_raffle'
 -- local simplex_noise = require 'utils.simplex_noise'.d2
 -- local perlin_noise = require 'utils.perlin_noise'
 -- local Force_health_booster = require 'modules.force_health_booster'
@@ -1528,6 +1530,63 @@ function Public.is_id_valid(id)
 	else
 		return false
 	end
+end
+
+-- NOTE: Items here are either unobtainable or hard to find/get
+-- Connected with crew.lua recipe and technology disables
+function Public.get_item_blacklist(tier)
+    local blacklist = LootRaffle.get_tech_blacklist(tier)
+	blacklist['landfill'] = true
+	blacklist['concrete'] = true
+	blacklist['hazard-concrete'] = true
+	blacklist['locomotive'] = true
+	blacklist['cargo-wagon'] = true
+	blacklist['fluid-wagon'] = true
+	blacklist['train-stop'] = true
+	blacklist['rail-signal'] = true
+	blacklist['rail-chain-signal'] = true
+	blacklist['refined-concrete'] = true
+	blacklist['refined-hazard-concrete'] = true
+	blacklist['flamethrower-turret'] = true
+	blacklist['tank'] = true
+	blacklist['cannon-shell'] = true
+	blacklist['explosive-cannon-shell'] = true
+	blacklist['speed-module-3'] = true
+	blacklist['productivity-module-3'] = true
+	blacklist['effectivity-module-3'] = true
+	blacklist['space-science-pack'] = true
+	blacklist['rocket-control-unit'] = true
+	blacklist['artillery-wagon'] = true
+	blacklist['artillery-turret'] = true
+	blacklist['artillery-targeting-remote'] = true
+	blacklist['uranium-cannon-shell'] = true
+	blacklist['explosive-uranium-cannon-shell'] = true
+	blacklist['satellite'] = true
+	blacklist['rocket-silo'] = true
+	blacklist['destroyer-capsule'] = true
+	blacklist['spidertron'] = true
+	blacklist['discharge-defense-remote'] = true
+	blacklist['discharge-defense-equipment'] = true
+    blacklist['express-loader'] = true
+	blacklist['land-mine'] = true
+	blacklist['wood'] = true -- too easy to acquire
+
+    return blacklist
+end
+
+-- tier: affects amount of items and rarity returned
+-- scale: final result of formula with tier scaled
+-- tech_tier: float in range [0; 1]; 1 = everything unlocked
+function Public.pick_random_price(tier, scale, tech_tier)
+	if tier < 0 or scale < 0 then return end
+
+	local item_stacks = LootRaffle.roll(math.floor(scale * (tier ^ 2 + 10 * tier)), 100, Public.get_item_blacklist(tech_tier))
+	local price = {}
+	for _, item_stack in pairs(item_stacks) do
+		price[#price+1] = {name = item_stack.name, amount = item_stack.count}
+	end
+
+	return price
 end
 
 return Public

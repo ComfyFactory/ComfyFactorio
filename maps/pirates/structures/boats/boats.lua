@@ -157,7 +157,7 @@ end
 
 
 function Public.update_EEIs(boat)
-	local EEI_stage = boat.EEI_stage or 1
+	local EEI_stage = boat.EEI_stage
 
 	local multiplier
 	if EEI_stage > #Balance.EEI_stages then --sensible out of bounds behaviour:

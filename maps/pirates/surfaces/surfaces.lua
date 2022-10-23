@@ -519,6 +519,7 @@ function Public.generate_detailed_island_data(destination)
 						tiles = tiles3,
 						entities = entities3,
 						decoratives = {},
+						specials = {},
 						seed = destination.seed,
 						iconized_generation = true
 					}
@@ -631,6 +632,7 @@ function Public.generate_detailed_island_data(destination)
 				tiles = tiles3,
 				entities = {},
 				decoratives = {},
+				specials = {},
 				seed = destination.seed,
 				iconized_generation = true
 			}

@@ -4,7 +4,7 @@
 local Memory = require 'maps.pirates.memory'
 -- local Roles = require 'maps.pirates.roles.roles'
 local Classes = require 'maps.pirates.roles.classes'
-local Crew = require 'maps.pirates.crew'
+-- local Crew = require 'maps.pirates.crew'
 -- local Boats = require 'maps.pirates.structures.boats.boats'
 -- local Dock = require 'maps.pirates.surfaces.dock'
 local Balance = require 'maps.pirates.balance'
@@ -15,6 +15,7 @@ local Math = require 'maps.pirates.math'
 local _inspect = require 'utils.inspect'.inspect
 local SurfacesCommon = require 'maps.pirates.surfaces.common'
 local Upgrades = require 'maps.pirates.boat_upgrades'
+local Cabin = require 'maps.pirates.surfaces.cabin'
 -- local Upgrades = require 'maps.pirates.boat_upgrades'
 
 local Public = {}
@@ -302,25 +303,36 @@ function Public.event_on_market_item_purchased(event)
 			end
 		else
 			-- print:
-			if (thisPurchaseData.price and thisPurchaseData.price[1]) then
-				if not (thisPurchaseData.price[1].name and thisPurchaseData.price[1].name == 'burner-mining-drill') then --this one is too boring to announce
-					if thisPurchaseData.in_captains_cabin and thisPurchaseData.offer_type == 'nothing' then
-						Common.notify_force_light(player.force, {'pirates.market_event_buy', player.name, {'pirates.extra_time_at_sea'}, thisPurchaseData.price[1].amount .. ' ' .. thisPurchaseData.price[1].name})
-					else
-						Public.print_transaction(player, trade_count - refunds, thisPurchaseData.offer_giveitem_name, thisPurchaseData.offer_giveitem_count, thisPurchaseData.price)
-					end
-				end
-			end
+			-- if (thisPurchaseData.price and thisPurchaseData.price[1]) then
+			-- 	if not (thisPurchaseData.price[1].name and thisPurchaseData.price[1].name == 'burner-mining-drill') then --this one is too boring to announce
+			-- 		if thisPurchaseData.in_captains_cabin and thisPurchaseData.offer_type == 'nothing' then
+			-- 			Common.notify_force_light(player.force, {'pirates.market_event_buy', player.name, {'pirates.extra_time_at_sea'}, thisPurchaseData.price[1].amount .. ' ' .. thisPurchaseData.price[1].name})
+			-- 		else
+			-- 			Public.print_transaction(player, trade_count - refunds, thisPurchaseData.offer_giveitem_name, thisPurchaseData.offer_giveitem_count, thisPurchaseData.price)
+			-- 		end
+			-- 	end
+			-- end
 
 			if thisPurchaseData.in_captains_cabin and thisPurchaseData.offer_type == 'nothing' then
-				local success = Crew.try_add_extra_time_at_sea(60 * 60)
-				if not success then
-					Common.notify_player_error(player, {'pirates.market_error_maximum_loading_time'})
-					-- refund:
-					Public.refund_items(player, thisPurchaseData.price, 1)
-					refunds = refunds + 1
+				if offer_index == Cabin.enum.SLOT_EXTRA_HOLD then
+					Upgrades.execute_upgade(Upgrades.enum.EXTRA_HOLD, player)
+				elseif offer_index == Cabin.enum.SLOT_MORE_POWER then
+					Upgrades.execute_upgade(Upgrades.enum.MORE_POWER, player)
 				end
+
+				Cabin.handle_purchase(market, offer_index)
+
+				-- local success = Crew.try_add_extra_time_at_sea(60 * 60)
+				-- if not success then
+				-- 	Common.notify_player_error(player, {'pirates.market_error_maximum_loading_time'})
+				-- 	-- refund:
+				-- 	Public.refund_items(player, thisPurchaseData.price, 1)
+				-- 	refunds = refunds + 1
+				-- end
 			else
+				if thisPurchaseData.price and thisPurchaseData.price[1] then
+					Public.print_transaction(player, trade_count - refunds, thisPurchaseData.offer_giveitem_name, thisPurchaseData.offer_giveitem_count, thisPurchaseData.price)
+				end
 
 				if thisPurchaseData.decay_type == 'static' then
 					if not inv then return end

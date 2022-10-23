@@ -349,18 +349,20 @@ function Public.generate_overworld_destination(p)
 		-- end
 		boat_for_sale_type = Boats.enum.SLOOP
 
-		local upgrade_for_sale
-		if macro_p.x == 0 then
-			upgrade_for_sale = nil
-		elseif macro_p.x == 3 then
-			upgrade_for_sale = Upgrades.enum.MORE_POWER
-		elseif macro_p.x == 7 then
-			upgrade_for_sale = Upgrades.enum.EXTRA_HOLD
-		elseif macro_p.x % 16 < 8 then
-			upgrade_for_sale = Upgrades.enum.MORE_POWER
-		else
-			upgrade_for_sale = Upgrades.enum.EXTRA_HOLD
-		end --upgrades like UNLOCK_MERCHANTS will slot themselves in when necessary, due to .overwrite_a_dock_upgrade()
+		local upgrade_for_sale = nil
+		-- These upgrades have been made to be exclusive purchase at captain's cabin
+		-- local upgrade_for_sale
+		-- if macro_p.x == 0 then
+		-- 	upgrade_for_sale = nil
+		-- elseif macro_p.x == 3 then
+		-- 	upgrade_for_sale = Upgrades.enum.MORE_POWER
+		-- elseif macro_p.x == 7 then
+		-- 	upgrade_for_sale = Upgrades.enum.EXTRA_HOLD
+		-- elseif macro_p.x % 16 < 8 then
+		-- 	upgrade_for_sale = Upgrades.enum.MORE_POWER
+		-- else
+		-- 	upgrade_for_sale = Upgrades.enum.EXTRA_HOLD
+		-- end --upgrades like UNLOCK_MERCHANTS will slot themselves in when necessary, due to .overwrite_a_dock_upgrade()
 		-- one day it's worth making this system more readable
 
 		local static_params = Utils.deepcopy(Dock.Data.static_params_default)

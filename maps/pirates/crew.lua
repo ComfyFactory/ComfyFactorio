@@ -806,7 +806,7 @@ function Public.summon_crew()
 	end
 end
 
-
+-- NOTE: Connected with common.lua item blacklist
 function Public.reset_crew_and_enemy_force(id)
 	local crew_force = game.forces[Common.get_crew_force_name(id)]
 	local enemy_force = game.forces[Common.get_enemy_force_name(id)]
@@ -979,7 +979,7 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['speed-module'].enabled = true
 	crew_force.technologies['speed-module-2'].enabled = false
 	crew_force.technologies['speed-module-3'].enabled = false
-	crew_force.technologies['effectivity-module'].enabled = false
+	crew_force.technologies['effectivity-module'].enabled = true
 	crew_force.technologies['effectivity-module-2'].enabled = false
 	crew_force.technologies['effectivity-module-3'].enabled = false
 	crew_force.technologies['automation-3'].enabled = true
@@ -1028,7 +1028,7 @@ function Public.reset_crew_and_enemy_force(id)
 	Public.disable_recipes(crew_force)
 end
 
-
+-- NOTE: Connected with common.lua item blacklist
 function Public.disable_recipes(crew_force)
 	crew_force.recipes['pistol'].enabled = false
 	-- crew_force.recipes['centrifuge'].enabled = false

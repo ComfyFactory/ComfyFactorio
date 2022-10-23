@@ -11,8 +11,12 @@ local _inspect = require 'utils.inspect'.inspect
 local SurfacesCommon = require 'maps.pirates.surfaces.common'
 
 local Public = {}
+
 local enum = {
 	DEFAULT = 'Default',
+	SLOT_EXTRA_HOLD = 5,
+	SLOT_MORE_POWER = 6,
+	SLOT_REROLL_PRICES = 7,
 }
 Public.enum = enum
 
@@ -95,7 +99,7 @@ Public.Data.input_chests = {
 
 Public.Data.surfacename_rendering_pos = {x = -0.5, y = -15}
 
-
+Public.market_price_scale = 300
 
 Public.cabin_shop_data = {
 	{
@@ -113,6 +117,18 @@ Public.cabin_shop_data = {
 	{
 		price = {{'coin', 1000}, {'explosives', 5}},
 		offer = {type='give-item', item = 'cliff-explosives', count = 5},
+	},
+	{
+		price = {}, -- price set later
+		offer = {type='nothing', effect_description={'pirates.market_description_upgrade_hold'}}
+	},
+	{
+		price = {}, -- price set later
+		offer = {type='nothing', effect_description={'pirates.market_description_upgrade_power'}}
+	},
+	{
+		price = {{'coin', 100}, {'raw-fish', 1}},
+		offer = {type='nothing', effect_description={'pirates.market_description_reroll_prices'}}
 	},
 	--disabled now that we can wait after any destination:
 	-- {
@@ -265,7 +281,8 @@ function Public.create_cabin_surface()
 			e.destructible = false
 			e.minable = false
 			e.rotatable = false
-			for _, offer in pairs(Public.cabin_shop_data) do
+			for i, offer in pairs(Public.cabin_shop_data) do
+				offer.price = Public.get_market_random_price(i) or offer.price
 				e.add_market_item(offer)
 			end
 		end
@@ -330,6 +347,31 @@ function Public.terrain(args)
 end
 
 function Public.chunk_structures()
+	return nil
+end
+
+function Public.handle_purchase(market, slot)
+	local offers = market.get_market_items()
+    market.clear_market_items()
+    for i, offer in pairs(offers) do
+        if i == slot or slot == enum.SLOT_REROLL_PRICES then
+			offer.price = Public.get_market_random_price(i) or offer.price
+        end
+		market.add_market_item(offer)
+    end
+end
+
+function Public.get_market_random_price(slot)
+	local memory = Memory.get_crew_memory()
+
+	if slot == enum.SLOT_EXTRA_HOLD then
+		local tier = memory.hold_surface_count
+		return Common.pick_random_price(tier, Public.market_price_scale, math.min(0.8, 0.05 + tier * 0.2))
+	elseif slot == enum.SLOT_MORE_POWER then
+		local tier = memory.boat.EEI_stage
+		return Common.pick_random_price(tier, 0.5*Public.market_price_scale, math.min(0.8, 0.05 + tier * 0.2))
+	end
+
 	return nil
 end
 
