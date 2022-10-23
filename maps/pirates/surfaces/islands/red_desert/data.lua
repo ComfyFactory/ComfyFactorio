@@ -10,7 +10,7 @@ local Public = {}
 
 Public.display_names = {{'pirates.location_displayname_red_desert_1'}}
 
-Public.discord_emoji = CoreData.comfy_emojis.mjau
+Public.discord_emoji = CoreData.comfy_emojis.hype
 
 Public.terraingen_frame_width = 700
 Public.terraingen_frame_height = 700

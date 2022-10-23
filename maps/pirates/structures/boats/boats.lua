@@ -988,6 +988,7 @@ local function process_entity_on_boat(memory, boat, newsurface, newposition, vec
 		unique_entities_list[#unique_entities_list + 1] = e
 		local name = e.name
 
+		-- NOTE: This sometimes causes items on belts to be sent to cabin, which maybe could be fixed?
 		if name == 'item-on-ground' then
 			Common.give_items_to_crew{{name = e.stack.name, count = e.stack.count}}
 			e.destroy()

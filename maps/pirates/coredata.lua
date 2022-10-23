@@ -86,18 +86,20 @@ Public.unteleportable_names = {'transport-belt', 'underground-belt', 'splitter',
 
 
 Public.comfy_emojis = {
-	monkas = '<:monkas:555120573752279056>',
+	-- monkas = '<:monkas:555120573752279056>', -- deprecated, all occurences replaced with despair
+	despair = '<:despair:1004858546044805241>',
 	trashbin = '<:trashbin:835887736253710396>',
 	pogkot = '<:pogkot:763854655612518420>',
 	goldenobese = '<:goldenobese:491135683508043786>',
-	wut = '<:wut:493320605592977443>',
-	smolfish = '<:smolfish:673942701682589731>',
-	mjau = '<:mjau:789611417132073010>',
+	-- wut = '<:wut:493320605592977443>', -- deprecated, all occurences replaced with hype
+	hype = '<:hype:1024006040624308274>',
+	-- smolfish = '<:smolfish:673942701682589731>', -- deprecated, all occurences replaced with hype
+	-- mjau = '<:mjau:789611417132073010>', -- deprecated, all occurences replaced with hype
 	spurdo = '<:spurdo:669546779360100382>',
 	loops = '<:loops:783508194755346462>',
 	ree1 = '<:ree1:555118905090244618>',
 	derp = '<:derp:527570293850505266>',
-	doge = '<:doge:491152224681066496>',
+	-- doge = '<:doge:491152224681066496>', -- deprecated
 	yum1 = '<:yum1:740341272451219517>',
 	feel = '<:feel:491147760553164800>',
 	kewl = '<:kewl:837016976937189418>',

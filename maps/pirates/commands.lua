@@ -1092,7 +1092,7 @@ if _DEBUG then
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
 			local player = game.players[cmd.player_index]
-			Server.to_discord_embed_raw(CoreData.comfy_emojis.monkas)
+			Server.to_discord_embed_raw(CoreData.comfy_emojis.despair)
 		end
 	end)
 

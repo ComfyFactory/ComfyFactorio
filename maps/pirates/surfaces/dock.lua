@@ -19,7 +19,7 @@ local Public = {}
 
 Public.Data = {}
 Public.Data.display_names = {{'pirates.location_displayname_dock_1'}}
-Public.Data.discord_emoji = CoreData.comfy_emojis.smolfish
+Public.Data.discord_emoji = CoreData.comfy_emojis.hype
 Public.Data.width = 296
 Public.Data.height = 98
 

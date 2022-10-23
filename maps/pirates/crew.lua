@@ -132,11 +132,11 @@ function Public.try_lose(loss_reason)
 
 		local playtimetext = Utils.time_longform((memory.age or 0)/60)
 
-		local message = {'',loss_reason,' ',{'pirates.loss_rest_of_message_long', playtimetext, Public.get_crewmembers_printable_string()}}
+		local message = {'',loss_reason,' ',{'pirates.loss_rest_of_message_long', playtimetext, memory.overworldx, Public.get_crewmembers_printable_string()}}
 
 		Server.to_discord_embed_raw({'',CoreData.comfy_emojis.trashbin .. '[' .. memory.name .. '] ', message}, true)
 
-		local message2 = {'',loss_reason,' ',{'pirates.loss_rest_of_message_short', '[font=default-large-semibold]' .. playtimetext .. '[/font]'}}
+		local message2 = {'',loss_reason,' ',{'pirates.loss_rest_of_message_short', '[font=default-large-semibold]' .. playtimetext .. '[/font]', memory.overworldx}}
 
 		Common.notify_game({'', '[' .. memory.name .. '] ',message2}, CoreData.colors.notify_gameover)
 
@@ -490,7 +490,7 @@ function Public.plank(captain, player)
 
 	if Utils.contains(Common.crew_get_crew_members(), player) then
 		if (not (captain.index == player.index)) then
-			Server.to_discord_embed_raw(CoreData.comfy_emojis.monkas .. string.format("%s planked %s!", captain.name, player.name))
+			Server.to_discord_embed_raw(CoreData.comfy_emojis.despair .. string.format("%s planked %s!", captain.name, player.name))
 
 			Common.notify_force(player.force, {'pirates.plank', captain.name, player.name})
 
@@ -527,7 +527,7 @@ function Public.disband_crew(donotprint)
 
 		local message = {'pirates.crew_disband', memory.name, Utils.time_longform((memory.real_age or 0)/60)}
 		Common.notify_game(message)
-		Server.to_discord_embed_raw({'', CoreData.comfy_emojis.monkas, message}, true)
+		Server.to_discord_embed_raw({'', CoreData.comfy_emojis.despair, message}, true)
 
 		-- if memory.game_won then
 		--		 game.print({'chronosphere.message_game_won_restart'}, {r=0.98, g=0.66, b=0.22})
