@@ -7,9 +7,7 @@ local mapkeeper = '[color=blue]Mapkeeper:[/color]'
 
 local function show_all_gui(player)
     for _, child in pairs(player.gui.top.children) do
-        if child.name ~= spectate_button_name then
-            child.visible = true
-        end
+        child.visible = true
     end
 end
 
