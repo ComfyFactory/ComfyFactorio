@@ -1,9 +1,5 @@
-local Event = require 'utils.event'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
-
-local Public = {}
-
-Public.events = {breached_wall = Event.generate_event_name('breached_wall')}
+local Public = require 'maps.mountain_fortress_v3.table'
 
 function Public.init_enemy_weapon_damage()
     local data = {
@@ -34,7 +30,7 @@ function Public.init_enemy_weapon_damage()
     end
 end
 
-local function enemy_weapon_damage()
+function Public.enemy_weapon_damage()
     local e = game.forces.enemy
 
     local data = {
@@ -58,7 +54,5 @@ local function enemy_weapon_damage()
         e.set_ammo_damage_modifier(k, new + e_old)
     end
 end
-
-Event.add(Public.events.breached_wall, enemy_weapon_damage)
 
 return Public

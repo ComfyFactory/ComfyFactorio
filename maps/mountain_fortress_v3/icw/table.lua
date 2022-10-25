@@ -12,7 +12,7 @@ local Public = {}
 
 function Public.reset()
     if this.surfaces then
-        for k, surface in pairs(this.surfaces) do
+        for _, surface in pairs(this.surfaces) do
             if surface and surface.valid then
                 game.delete_surface(surface)
             end

@@ -1,3 +1,4 @@
+local Public = require 'maps.mountain_fortress_v3.table'
 local Functions = require 'maps.mountain_fortress_v3.functions'
 
 local random = math.random
@@ -604,7 +605,7 @@ if testing then
     }
 end
 
-local function spawn_random_buildings(entities, p, depth)
+function Public.spawn_random_buildings(entities, p, depth)
     local randomizer = random(1, #buildings)
     local low = random(1, 2)
     local medium = random(2, 3)
@@ -650,4 +651,4 @@ local function spawn_random_buildings(entities, p, depth)
     end
 end
 
-return spawn_random_buildings
+return Public

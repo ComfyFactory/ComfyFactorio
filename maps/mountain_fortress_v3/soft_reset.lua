@@ -1,11 +1,9 @@
 local Server = require 'utils.server'
 local Session = require 'utils.datastore.session_data'
 local Modifers = require 'utils.player_modifiers'
-local WPT = require 'maps.mountain_fortress_v3.table'
+local Public = require 'maps.mountain_fortress_v3.table'
 
 local mapkeeper = '[color=blue]Mapkeeper:[/color]'
-
-local Public = {}
 
 local function reset_forces(new_surface, old_surface)
     for _, f in pairs(game.forces) do
@@ -61,7 +59,7 @@ local function equip_players(player_starting_items, data)
 end
 
 function Public.soft_reset_map(old_surface, map_gen_settings, player_starting_items)
-    local this = WPT.get()
+    local this = Public.get()
 
     if not this.soft_reset_counter then
         this.soft_reset_counter = 0

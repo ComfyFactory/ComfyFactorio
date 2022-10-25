@@ -1,17 +1,12 @@
 local Event = require 'utils.event'
-local Market = require 'maps.mountain_fortress_v3.basic_markets'
-local LocomotiveMarket = require 'maps.mountain_fortress_v3.locomotive.market'
+local Public = require 'maps.mountain_fortress_v3.table'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
-local WPT = require 'maps.mountain_fortress_v3.table'
 local ICFunctions = require 'maps.mountain_fortress_v3.ic.functions'
 local Session = require 'utils.datastore.session_data'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 local RPG = require 'modules.rpg.main'
 local Gui = require 'utils.gui'
 local Alert = require 'utils.alert'
-local PermissionGroups = require 'maps.mountain_fortress_v3.locomotive.permission_groups'
-
-local Public = {}
 
 local rpg_main_frame = RPG.main_frame_name
 local random = math.random
@@ -40,8 +35,8 @@ local non_valid_vehicles = {
 }
 
 local function add_random_loot_to_main_market(rarity)
-    local main_market_items = WPT.get('main_market_items')
-    local items = Market.get_random_item(rarity, true, false)
+    local main_market_items = Public.get('main_market_items')
+    local items = Public.get_random_item(rarity, true, false)
     if not items then
         return false
     end
@@ -118,7 +113,7 @@ local function hurt_players_outside_of_aura()
     if not Diff then
         return
     end
-    local difficulty_set = WPT.get('difficulty_set')
+    local difficulty_set = Public.get('difficulty_set')
     if not difficulty_set then
         return
     end
@@ -129,14 +124,14 @@ local function hurt_players_outside_of_aura()
         death_mode = true
     end
 
-    local loco_surface = WPT.get('loco_surface')
+    local loco_surface = Public.get('loco_surface')
     if not (loco_surface and loco_surface.valid) then
         return
     end
-    local locomotive = WPT.get('locomotive')
+    local locomotive = Public.get('locomotive')
     local loco = locomotive.position
 
-    local upgrades = WPT.get('upgrades')
+    local upgrades = Public.get('upgrades')
 
     local players = game.connected_players
     for i = 1, #players do
@@ -207,12 +202,12 @@ end
 local function give_passive_xp(data)
     local xp_floating_text_color = {r = 188, g = 201, b = 63}
     local visuals_delay = 1800
-    local loco_surface = WPT.get('loco_surface')
+    local loco_surface = Public.get('loco_surface')
     if not (loco_surface and loco_surface.valid) then
         return
     end
-    local upgrades = WPT.get('upgrades')
-    local locomotive = WPT.get('locomotive')
+    local upgrades = Public.get('upgrades')
+    local locomotive = Public.get('locomotive')
     local rpg = data.rpg
     local loco = locomotive.position
 
@@ -225,12 +220,12 @@ local function give_passive_xp(data)
         if player.afk_time < 200 and not RPG.get_last_spell_cast(player) then
             if inside or player.surface.index == loco_surface.index then
                 if player.surface.index == loco_surface.index then
-                    PermissionGroups.add_player_to_permission_group(player, 'limited')
+                    Public.add_player_to_permission_group(player, 'limited')
                 elseif ICFunctions.get_player_surface(player) then
-                    PermissionGroups.add_player_to_permission_group(player, 'limited')
+                    Public.add_player_to_permission_group(player, 'limited')
                     goto pre_exit
                 else
-                    PermissionGroups.add_player_to_permission_group(player, 'near_locomotive')
+                    Public.add_player_to_permission_group(player, 'near_locomotive')
                 end
 
                 local pos = player.position
@@ -254,11 +249,11 @@ local function give_passive_xp(data)
                     end
                 end
             else
-                local active_surface_index = WPT.get('active_surface_index')
+                local active_surface_index = Public.get('active_surface_index')
                 local surface = game.surfaces[active_surface_index]
                 if surface and surface.valid then
                     if player.surface.index == surface.index then
-                        PermissionGroups.add_player_to_permission_group(player, 'main_surface')
+                        Public.add_player_to_permission_group(player, 'main_surface')
                     end
                 end
             end
@@ -268,7 +263,7 @@ local function give_passive_xp(data)
 end
 
 local function fish_tag()
-    local locomotive_cargo = WPT.get('locomotive_cargo')
+    local locomotive_cargo = Public.get('locomotive_cargo')
     if not (locomotive_cargo and locomotive_cargo.valid) then
         return
     end
@@ -276,7 +271,7 @@ local function fish_tag()
         return
     end
 
-    local locomotive_tag = WPT.get('locomotive_tag')
+    local locomotive_tag = Public.get('locomotive_tag')
 
     if locomotive_tag then
         if locomotive_tag.valid then
@@ -286,7 +281,7 @@ local function fish_tag()
             locomotive_tag.destroy()
         end
     end
-    WPT.set(
+    Public.set(
         'locomotive_tag',
         locomotive_cargo.force.add_chart_tag(
             locomotive_cargo.surface,
@@ -300,7 +295,7 @@ local function fish_tag()
 end
 
 local function set_player_spawn()
-    local locomotive = WPT.get('locomotive')
+    local locomotive = Public.get('locomotive')
     if not locomotive then
         return
     end
@@ -316,7 +311,7 @@ local function set_player_spawn()
 end
 
 local function refill_fish()
-    local locomotive_cargo = WPT.get('locomotive_cargo')
+    local locomotive_cargo = Public.get('locomotive_cargo')
     if not locomotive_cargo then
         return
     end
@@ -327,7 +322,7 @@ local function refill_fish()
 end
 
 local function set_carriages()
-    local locomotive = WPT.get('locomotive')
+    local locomotive = Public.get('locomotive')
     if not locomotive or not locomotive.valid then
         return
     end
@@ -345,8 +340,8 @@ local function set_carriages()
         end
     end
 
-    WPT.set('carriages_numbers', t)
-    WPT.set('carriages', locomotive.train.carriages)
+    Public.set('carriages_numbers', t)
+    Public.set('carriages', locomotive.train.carriages)
 end
 
 local function get_driver_action(entity)
@@ -388,17 +383,17 @@ local function get_driver_action(entity)
 end
 
 local function set_locomotive_health()
-    local locomotive_health = WPT.get('locomotive_health')
-    local locomotive_max_health = WPT.get('locomotive_max_health')
-    local locomotive = WPT.get('locomotive')
+    local locomotive_health = Public.get('locomotive_health')
+    local locomotive_max_health = Public.get('locomotive_max_health')
+    local locomotive = Public.get('locomotive')
 
     local function check_health()
         local m = locomotive_health / locomotive_max_health
         if locomotive_health > locomotive_max_health then
-            WPT.set('locomotive_health', locomotive_max_health)
+            Public.set('locomotive_health', locomotive_max_health)
         end
-        rendering.set_text(WPT.get('health_text'), 'HP: ' .. round(locomotive_health) .. ' / ' .. round(locomotive_max_health))
-        local carriages = WPT.get('carriages')
+        rendering.set_text(Public.get('health_text'), 'HP: ' .. round(locomotive_health) .. ' / ' .. round(locomotive_max_health))
+        local carriages = Public.get('carriages')
         if carriages then
             for i = 1, #carriages do
                 local entity = carriages[i]
@@ -424,7 +419,7 @@ local function set_locomotive_health()
 end
 
 local function validate_index()
-    local locomotive = WPT.get('locomotive')
+    local locomotive = Public.get('locomotive')
     if not locomotive then
         return
     end
@@ -433,12 +428,12 @@ local function validate_index()
     end
 
     local icw_table = ICW.get_table()
-    local icw_locomotive = WPT.get('icw_locomotive')
+    local icw_locomotive = Public.get('icw_locomotive')
     local loco_surface = icw_locomotive.surface
     local unit_surface = locomotive.unit_number
     local locomotive_surface = game.surfaces[icw_table.wagons[unit_surface].surface.index]
     if loco_surface.valid then
-        WPT.set('loco_surface', locomotive_surface)
+        Public.set('loco_surface', locomotive_surface)
     end
 end
 
@@ -459,21 +454,21 @@ local function on_research_finished(event)
         Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac', 0.1)
     end
 
-    local locomotive = WPT.get('locomotive')
+    local locomotive = Public.get('locomotive')
     if not locomotive or not locomotive.valid then
         return
     end
 
-    local market_announce = WPT.get('market_announce')
+    local market_announce = Public.get('market_announce')
     if market_announce > game.tick then
         return
     end
 
-    local breached_wall = WPT.get('breached_wall')
+    local breached_wall = Public.get('breached_wall')
     add_random_loot_to_main_market(breached_wall)
     local message = ({'locomotive.new_items_at_market'})
     Alert.alert_all_players(5, message, nil, 'achievement/tech-maniac', 0.1)
-    LocomotiveMarket.refresh_gui()
+    Public.refresh_gui()
 end
 
 local function on_player_changed_surface(event)
@@ -482,7 +477,7 @@ local function on_player_changed_surface(event)
         return
     end
 
-    local active_surface = WPT.get('active_surface_index')
+    local active_surface = Public.get('active_surface_index')
     local surface = game.surfaces[active_surface]
     if not surface or not surface.valid then
         return
@@ -511,14 +506,14 @@ local function on_player_changed_surface(event)
         end
     end
 
-    local locomotive_surface = WPT.get('loco_surface')
+    local locomotive_surface = Public.get('loco_surface')
 
     if locomotive_surface and locomotive_surface.valid and player.surface.index == locomotive_surface.index then
-        return PermissionGroups.add_player_to_permission_group(player, 'limited')
+        return Public.add_player_to_permission_group(player, 'limited')
     elseif ICFunctions.get_player_surface(player) then
-        return PermissionGroups.add_player_to_permission_group(player, 'limited')
+        return Public.add_player_to_permission_group(player, 'limited')
     elseif player.surface.index == surface.index then
-        return PermissionGroups.add_player_to_permission_group(player, 'main_surface')
+        return Public.add_player_to_permission_group(player, 'main_surface')
     end
 end
 
@@ -537,7 +532,7 @@ local function on_player_driving_changed_state(event)
         return
     end
 
-    local locomotive = WPT.get('locomotive')
+    local locomotive = Public.get('locomotive')
     if not locomotive or not locomotive.valid then
         return
     end
@@ -553,11 +548,11 @@ end
 
 function Public.boost_players_around_train()
     local rpg = RPG.get('rpg_t')
-    local active_surface_index = WPT.get('active_surface_index')
+    local active_surface_index = Public.get('active_surface_index')
     if not active_surface_index then
         return
     end
-    local locomotive = WPT.get('locomotive')
+    local locomotive = Public.get('locomotive')
     if not (locomotive and locomotive.valid) then
         return
     end
@@ -575,8 +570,8 @@ function Public.boost_players_around_train()
 end
 
 function Public.is_around_train(entity)
-    local locomotive = WPT.get('locomotive')
-    local active_surface_index = WPT.get('active_surface_index')
+    local locomotive = Public.get('locomotive')
+    local active_surface_index = Public.get('active_surface_index')
 
     if not active_surface_index then
         return false
@@ -593,7 +588,7 @@ function Public.is_around_train(entity)
     end
 
     local surface = game.surfaces[active_surface_index]
-    local upgrades = WPT.get('upgrades')
+    local upgrades = Public.get('upgrades')
 
     local data = {
         locomotive = locomotive,
@@ -607,15 +602,15 @@ function Public.is_around_train(entity)
 end
 
 function Public.render_train_hp()
-    local active_surface_index = WPT.get('active_surface_index')
+    local active_surface_index = Public.get('active_surface_index')
     local surface = game.surfaces[active_surface_index]
 
-    local locomotive_health = WPT.get('locomotive_health')
-    local locomotive_max_health = WPT.get('locomotive_max_health')
-    local locomotive = WPT.get('locomotive')
-    local upgrades = WPT.get('upgrades')
+    local locomotive_health = Public.get('locomotive_health')
+    local locomotive_max_health = Public.get('locomotive_max_health')
+    local locomotive = Public.get('locomotive')
+    local upgrades = Public.get('upgrades')
 
-    WPT.set(
+    Public.set(
         'health_text',
         rendering.draw_text {
             text = 'HP: ' .. locomotive_health .. ' / ' .. locomotive_max_health,
@@ -630,7 +625,7 @@ function Public.render_train_hp()
         }
     )
 
-    WPT.set(
+    Public.set(
         'caption',
         rendering.draw_text {
             text = 'Comfy Choo Choo',
@@ -645,7 +640,7 @@ function Public.render_train_hp()
         }
     )
 
-    WPT.set(
+    Public.set(
         'circle',
         rendering.draw_circle {
             surface = surface,
@@ -659,18 +654,18 @@ function Public.render_train_hp()
 end
 
 function Public.transfer_pollution()
-    local locomotive = WPT.get('locomotive')
+    local locomotive = Public.get('locomotive')
     if not locomotive or not locomotive.valid then
         return
     end
 
-    local active_surface_index = WPT.get('active_surface_index')
+    local active_surface_index = Public.get('active_surface_index')
     local active_surface = game.surfaces[active_surface_index]
     if not active_surface or not active_surface.valid then
         return
     end
 
-    local icw_locomotive = WPT.get('icw_locomotive')
+    local icw_locomotive = Public.get('icw_locomotive')
     local surface = icw_locomotive.surface
     if not surface or not surface.valid then
         return

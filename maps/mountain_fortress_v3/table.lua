@@ -8,7 +8,10 @@ local this = {
 }
 local Public = {}
 
-Public.events = {reset_map = Event.generate_event_name('reset_map')}
+Public.events = {
+    reset_map = Event.generate_event_name('reset_map'),
+    on_entity_mined = Event.generate_event_name('on_entity_mined')
+}
 
 Global.register(
     this,
@@ -174,6 +177,7 @@ function Public.reset_table()
     this.bonus_xp_on_join = 250
     this.main_market_items = {}
     this.spill_items_to_surface = false
+    this.spectate = {}
     this.outside_chests = {}
     this.chests_linked_to = {}
     this.placed_trains_in_zone = {

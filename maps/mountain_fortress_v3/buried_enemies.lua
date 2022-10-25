@@ -1,8 +1,8 @@
 local Event = require 'utils.event'
+local Public = require 'maps.mountain_fortress_v3.table'
 local Global = require 'utils.global'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local WD = require 'modules.wave_defense.table'
-local WPT = require 'maps.mountain_fortress_v3.table'
 
 local this = {}
 
@@ -13,7 +13,6 @@ Global.register(
     end
 )
 
-local Public = {}
 local round = math.round
 local floor = math.floor
 local random = math.random
@@ -66,7 +65,7 @@ local function spawn_biters(data)
     local position = data.position
     local h = floor(abs(position.y))
 
-    local max_biters = WPT.get('biters')
+    local max_biters = Public.get('biters')
 
     if max_biters.amount >= max_biters.limit then
         return false
@@ -116,7 +115,7 @@ end
 local function spawn_worms(data)
     local modified_unit_health = WD.get('modified_unit_health')
     local modified_boss_unit_health = WD.get('modified_boss_unit_health')
-    local max_biters = WPT.get('biters')
+    local max_biters = Public.get('biters')
 
     if max_biters.amount >= max_biters.limit then
         return
