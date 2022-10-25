@@ -11,6 +11,12 @@ local function show_all_gui(player)
     end
 end
 
+local function clear_spec_tag(player)
+    if player.tag == '[Spectator]' then
+        player.tag = ''
+    end
+end
+
 local function reset_forces(new_surface, old_surface)
     for _, f in pairs(game.forces) do
         local spawn = {
@@ -57,6 +63,7 @@ local function equip_players(player_starting_items, data)
                 player.insert({name = item, count = amount})
             end
             show_all_gui(player)
+            clear_spec_tag(player)
         else
             data.players[player.index] = nil
             Session.clear_player(player)
