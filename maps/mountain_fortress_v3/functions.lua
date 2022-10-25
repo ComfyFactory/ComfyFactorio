@@ -1575,6 +1575,11 @@ function Public.set_player_to_god(player)
         return false
     end
 
+    if not player.character and player.controller_type ~= defines.controllers.spectator then
+        player.print('[color=blue][Spectate][/color] It seems that you are not in the realm of the living.', Color.warning)
+        return false
+    end
+
     local spectate = Public.get('spectate')
 
     if spectate[player.index] and spectate[player.index].delay and spectate[player.index].delay > game.tick then
@@ -1608,6 +1613,8 @@ function Public.set_player_to_god(player)
         }
     )
 
+    player.tag = ''
+
     game.print('[color=blue][Spectate][/color] ' .. player.name .. ' is no longer spectating!')
     Server.to_discord_bold(table.concat {'*** ', '[Spectate] ' .. player.name .. ' is no longer spectating!', ' ***'})
     return true
@@ -1634,6 +1641,7 @@ function Public.set_player_to_spectator(player)
 
     player.character = nil
     player.spectator = true
+    player.tag = '[Spectator]'
     player.set_controller({type = defines.controllers.spectator})
     game.print('[color=blue][Spectate][/color] ' .. player.name .. ' is now spectating.')
     Server.to_discord_bold(table.concat {'*** ', '[Spectate] ' .. player.name .. ' is now spectating.', ' ***'})
