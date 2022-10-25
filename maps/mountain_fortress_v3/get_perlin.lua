@@ -1,3 +1,4 @@
+local Public = require 'maps.mountain_fortress_v3.table'
 local simplex_noise = require 'utils.simplex_noise'.d2
 
 --add or use noise templates from here
@@ -125,7 +126,7 @@ local noises = {
 }
 
 --returns a float number between -1 and 1
-local function get_noise(name, pos, seed)
+function Public.get_noise(name, pos, seed)
     local noise = 0
     local d = 0
     for i = 1, #noises[name] do
@@ -138,4 +139,4 @@ local function get_noise(name, pos, seed)
     return noise
 end
 
-return get_noise
+return Public

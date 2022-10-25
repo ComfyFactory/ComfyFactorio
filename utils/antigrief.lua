@@ -1164,7 +1164,7 @@ function Public.damage_entity_threshold(value)
 end
 
 --- Returns the table.
----@param key string
+---@param key string|nil
 function Public.get(key)
     if key then
         return this[key]

@@ -1,4 +1,4 @@
-local WPT = require 'maps.mountain_fortress_v3.table'
+local Public = require 'maps.mountain_fortress_v3.table'
 local Session = require 'utils.datastore.session_data'
 local Jailed = require 'utils.datastore.jail_data'
 
@@ -6,17 +6,23 @@ local Antigrief = require 'utils.antigrief'
 
 local required_playtime = 5184000 -- 24 hours
 
-local Public = {}
-
 function Public.add_player_to_permission_group(player, group, forced)
     local jailed = Jailed.get_jailed_table()
-    local enable_permission_group_disconnect = WPT.get('disconnect_wagon')
+    local enable_permission_group_disconnect = Public.get('disconnect_wagon')
     local session = Session.get_session_table()
     local AG = Antigrief.get()
-    local allow_decon = WPT.get('allow_decon')
-    local allow_decon_main_surface = WPT.get('allow_decon_main_surface')
+    if not AG then
+        return
+    end
+
+    local allow_decon = Public.get('allow_decon')
+    local allow_decon_main_surface = Public.get('allow_decon_main_surface')
 
     local default_group = game.permissions.get_group('Default')
+    if not default_group then
+        return
+    end
+
     default_group.set_allows_action(defines.input_action.activate_cut, false)
     if allow_decon_main_surface then
         default_group.set_allows_action(defines.input_action.deconstruct, true)
@@ -26,6 +32,9 @@ function Public.add_player_to_permission_group(player, group, forced)
 
     if not game.permissions.get_group('limited') then
         local limited_group = game.permissions.create_group('limited')
+        if not limited_group then
+            return
+        end
         limited_group.set_allows_action(defines.input_action.cancel_craft, false)
         limited_group.set_allows_action(defines.input_action.drop_item, false)
         if allow_decon then
@@ -38,6 +47,9 @@ function Public.add_player_to_permission_group(player, group, forced)
 
     if not game.permissions.get_group('near_locomotive') then
         local near_locomotive_group = game.permissions.create_group('near_locomotive')
+        if not near_locomotive_group then
+            return
+        end
         near_locomotive_group.set_allows_action(defines.input_action.cancel_craft, false)
         near_locomotive_group.set_allows_action(defines.input_action.drop_item, false)
         if allow_decon_main_surface then
@@ -50,6 +62,9 @@ function Public.add_player_to_permission_group(player, group, forced)
 
     if not game.permissions.get_group('main_surface') then
         local main_surface_group = game.permissions.create_group('main_surface')
+        if not main_surface_group then
+            return
+        end
         if allow_decon_main_surface then
             main_surface_group.set_allows_action(defines.input_action.deconstruct, true)
         else
@@ -60,6 +75,9 @@ function Public.add_player_to_permission_group(player, group, forced)
 
     if not game.permissions.get_group('not_trusted') then
         local not_trusted = game.permissions.create_group('not_trusted')
+        if not not_trusted then
+            return
+        end
         not_trusted.set_allows_action(defines.input_action.cancel_craft, false)
         not_trusted.set_allows_action(defines.input_action.edit_permission_group, false)
         not_trusted.set_allows_action(defines.input_action.import_permissions_string, false)
@@ -149,18 +167,33 @@ function Public.add_player_to_permission_group(player, group, forced)
 
     if playtime < required_playtime then
         local not_trusted = game.permissions.get_group('not_trusted')
+        if not not_trusted then
+            return
+        end
+
         if not player.admin then
             not_trusted.add_player(player)
         end
     else
         if group == 'limited' then
             local limited_group = game.permissions.get_group('limited')
+            if not limited_group then
+                return
+            end
             limited_group.add_player(player)
         elseif group == 'main_surface' then
             local main_surface_group = game.permissions.get_group('main_surface')
+            if not main_surface_group then
+                return
+            end
+
             main_surface_group.add_player(player)
         elseif group == 'near_locomotive' then
             local near_locomotive_group = game.permissions.get_group('near_locomotive')
+            if not near_locomotive_group then
+                return
+            end
+
             near_locomotive_group.add_player(player)
         elseif group == 'default' then
             default_group.add_player(player)

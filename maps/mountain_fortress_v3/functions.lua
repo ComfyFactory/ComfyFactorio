@@ -1,12 +1,12 @@
+local Event = require 'utils.event'
+local Public = require 'maps.mountain_fortress_v3.table'
 local Server = require 'utils.server'
 local Token = require 'utils.token'
 local Task = require 'utils.task'
 local Color = require 'utils.color_presets'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
-local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Alert = require 'utils.alert'
-local WPT = require 'maps.mountain_fortress_v3.table'
 local WD = require 'modules.wave_defense.table'
 local RPG = require 'modules.rpg.main'
 local Collapse = require 'modules.collapse'
@@ -16,7 +16,9 @@ local math2d = require 'math2d'
 local Misc = require 'utils.commands.misc'
 local Core = require 'utils.core'
 local Beams = require 'modules.render_beam'
-local zone_settings = WPT.zone_settings
+local BottomFrame = require 'utils.gui.bottom_frame'
+
+local zone_settings = Public.zone_settings
 
 local this = {
     power_sources = {index = 1},
@@ -69,8 +71,6 @@ Global.register(
     end
 )
 
-local Public = {}
-
 local random = math.random
 local floor = math.floor
 local round = math.round
@@ -100,7 +100,7 @@ local artillery_target_entities = {
 }
 
 local function debug_str(msg)
-    local debug = WPT.get('debug')
+    local debug = Public.get('debug')
     if not debug then
         return
     end
@@ -296,7 +296,7 @@ local artillery_target_callback =
 )
 
 local function difficulty_and_adjust_prices()
-    local fixed_prices = WPT.get('marked_fixed_prices')
+    local fixed_prices = Public.get('marked_fixed_prices')
     local difficulty_index = Difficulty.get('index')
 
     for index, price in pairs(fixed_prices) do
@@ -310,7 +310,7 @@ end
 
 local function do_beams_away()
     local wave_number = WD.get_wave()
-    local orbital_strikes = WPT.get('orbital_strikes')
+    local orbital_strikes = Public.get('orbital_strikes')
     if not orbital_strikes.enabled then
         return
     end
@@ -327,7 +327,7 @@ local function do_beams_away()
         end
 
         if wave_number % wave_nth == 0 then
-            local active_surface_index = WPT.get('active_surface_index')
+            local active_surface_index = Public.get('active_surface_index')
             local surface = game.get_surface(active_surface_index)
 
             if not orbital_strikes[wave_number] then
@@ -751,7 +751,7 @@ end
 
 local function calc_players()
     local players = game.connected_players
-    local check_afk_players = WPT.get('check_afk_players')
+    local check_afk_players = Public.get('check_afk_players')
     if not check_afk_players then
         return #players
     end
@@ -849,7 +849,7 @@ local boost_movement_speed_on_respawn =
 )
 
 function Public.set_difficulty()
-    local game_lost = WPT.get('game_lost')
+    local game_lost = Public.get('game_lost')
     if game_lost then
         return
     end
@@ -858,13 +858,13 @@ function Public.set_difficulty()
         return
     end
     local wave_defense_table = WD.get_table()
-    local check_if_threat_below_zero = WPT.get('check_if_threat_below_zero')
-    local collapse_amount = WPT.get('collapse_amount')
-    local collapse_speed = WPT.get('collapse_speed')
-    local difficulty = WPT.get('difficulty')
-    local mining_bonus_till_wave = WPT.get('mining_bonus_till_wave')
-    local mining_bonus = WPT.get('mining_bonus')
-    local disable_mining_boost = WPT.get('disable_mining_boost')
+    local check_if_threat_below_zero = Public.get('check_if_threat_below_zero')
+    local collapse_amount = Public.get('collapse_amount')
+    local collapse_speed = Public.get('collapse_speed')
+    local difficulty = Public.get('difficulty')
+    local mining_bonus_till_wave = Public.get('mining_bonus_till_wave')
+    local mining_bonus = Public.get('mining_bonus')
+    local disable_mining_boost = Public.get('disable_mining_boost')
     local wave_number = WD.get_wave()
     local player_count = calc_players()
 
@@ -971,17 +971,17 @@ function Public.set_difficulty()
                 mining_bonus = 0 -- back to 0% with more than 11 players
             end
             force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + mining_bonus
-            WPT.set('mining_bonus', mining_bonus) -- Setting mining_bonus globally so it remembers how much to reduce
+            Public.set('mining_bonus', mining_bonus) -- Setting mining_bonus globally so it remembers how much to reduce
         else
             force.manual_mining_speed_modifier = force.manual_mining_speed_modifier - mining_bonus
-            WPT.set('disable_mining_boost', true)
+            Public.set('disable_mining_boost', true)
         end
     end
 end
 
 function Public.render_direction(surface)
-    local counter = WPT.get('soft_reset_counter')
-    local winter_mode = WPT.get('winter_mode')
+    local counter = Public.get('soft_reset_counter')
+    local winter_mode = Public.get('winter_mode')
     local text = 'Welcome to Mountain Fortress v3!'
     if winter_mode then
         text = 'Welcome to Wintery Mountain Fortress v3!'
@@ -1081,12 +1081,12 @@ function Public.render_direction(surface)
 end
 
 function Public.boost_difficulty()
-    local difficulty_set = WPT.get('difficulty_set')
+    local difficulty_set = Public.get('difficulty_set')
     if difficulty_set then
         return
     end
 
-    local breached_wall = WPT.get('breached_wall')
+    local breached_wall = Public.get('breached_wall')
 
     local difficulty = Difficulty.get()
     if not difficulty then
@@ -1102,51 +1102,51 @@ function Public.boost_difficulty()
 
     local message = ({'main.diff_set', name})
     local data = {
-        position = WPT.get('locomotive').position
+        position = Public.get('locomotive').position
     }
     Alert.alert_all_players_location(data, message)
 
     local force = game.forces.player
 
-    local active_surface_index = WPT.get('active_surface_index')
+    local active_surface_index = Public.get('active_surface_index')
     local surface = game.get_surface(active_surface_index)
 
     if index == 1 then
         force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 0.5
         force.character_running_speed_modifier = 0.15
         force.manual_crafting_speed_modifier = 0.15
-        WPT.set('coin_amount', 1)
-        WPT.set('upgrades').flame_turret.limit = 12
-        WPT.set('upgrades').landmine.limit = 50
-        WPT.set('locomotive_health', 10000)
-        WPT.set('locomotive_max_health', 10000)
-        WPT.set('bonus_xp_on_join', 500)
+        Public.set('coin_amount', 1)
+        Public.set('upgrades').flame_turret.limit = 12
+        Public.set('upgrades').landmine.limit = 50
+        Public.set('locomotive_health', 10000)
+        Public.set('locomotive_max_health', 10000)
+        Public.set('bonus_xp_on_join', 500)
         WD.set('next_wave', game.tick + 3600 * 15)
-        WPT.set('spidertron_unlocked_at_zone', 10)
+        Public.set('spidertron_unlocked_at_zone', 10)
         WD.set_normal_unit_current_health(1.0)
         WD.set_unit_health_increment_per_wave(0.15)
         WD.set_boss_unit_current_health(2)
         WD.set_boss_health_increment_per_wave(1.5)
         WD.set('death_mode', false)
-        WPT.set('difficulty_set', true)
+        Public.set('difficulty_set', true)
     elseif index == 2 then
         force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 0.25
         force.character_running_speed_modifier = 0.1
         force.manual_crafting_speed_modifier = 0.1
-        WPT.set('coin_amount', 2)
-        WPT.set('upgrades').flame_turret.limit = 10
-        WPT.set('upgrades').landmine.limit = 50
-        WPT.set('locomotive_health', 7000)
-        WPT.set('locomotive_max_health', 7000)
-        WPT.set('bonus_xp_on_join', 300)
+        Public.set('coin_amount', 2)
+        Public.set('upgrades').flame_turret.limit = 10
+        Public.set('upgrades').landmine.limit = 50
+        Public.set('locomotive_health', 7000)
+        Public.set('locomotive_max_health', 7000)
+        Public.set('bonus_xp_on_join', 300)
         WD.set('next_wave', game.tick + 3600 * 8)
-        WPT.set('spidertron_unlocked_at_zone', 8)
+        Public.set('spidertron_unlocked_at_zone', 8)
         WD.set_normal_unit_current_health(1.4)
         WD.set_unit_health_increment_per_wave(0.3)
         WD.set_boss_unit_current_health(3)
         WD.set_boss_health_increment_per_wave(3)
         WD.set('death_mode', false)
-        WPT.set('difficulty_set', true)
+        Public.set('difficulty_set', true)
         local damage_warning = ({'main.damage_mode_warning'})
         Alert.alert_all_players_location(data, damage_warning)
         Core.iter_players(
@@ -1160,12 +1160,12 @@ function Public.boost_difficulty()
                 end
             end
         )
-        local upgrades = WPT.get('upgrades')
-        if WPT.get('circle') then
-            rendering.destroy(WPT.get('circle'))
+        local upgrades = Public.get('upgrades')
+        if Public.get('circle') then
+            rendering.destroy(Public.get('circle'))
         end
-        local locomotive = WPT.get('locomotive')
-        WPT.set(
+        local locomotive = Public.get('locomotive')
+        Public.set(
             'circle',
             rendering.draw_circle {
                 surface = active_surface_index,
@@ -1180,20 +1180,20 @@ function Public.boost_difficulty()
     elseif index == 3 then
         force.character_running_speed_modifier = 0
         force.manual_crafting_speed_modifier = 0
-        WPT.set('coin_amount', 4)
-        WPT.set('upgrades').flame_turret.limit = 3
-        WPT.set('upgrades').landmine.limit = 10
-        WPT.set('locomotive_health', 5000)
-        WPT.set('locomotive_max_health', 5000)
-        WPT.set('bonus_xp_on_join', 50)
+        Public.set('coin_amount', 4)
+        Public.set('upgrades').flame_turret.limit = 3
+        Public.set('upgrades').landmine.limit = 10
+        Public.set('locomotive_health', 5000)
+        Public.set('locomotive_max_health', 5000)
+        Public.set('bonus_xp_on_join', 50)
         WD.set('next_wave', game.tick + 3600 * 5)
-        WPT.set('spidertron_unlocked_at_zone', 6)
+        Public.set('spidertron_unlocked_at_zone', 6)
         WD.set_normal_unit_current_health(1.6)
         WD.set_unit_health_increment_per_wave(0.5)
         WD.set_boss_unit_current_health(4)
         WD.set_boss_health_increment_per_wave(6)
         WD.set('death_mode', true)
-        WPT.set('difficulty_set', true)
+        Public.set('difficulty_set', true)
         Core.iter_players(
             function(player)
                 local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
@@ -1205,14 +1205,14 @@ function Public.boost_difficulty()
                 end
             end
         )
-        local upgrades = WPT.get('upgrades')
+        local upgrades = Public.get('upgrades')
         upgrades.locomotive_aura_radius = upgrades.locomotive_aura_radius + 20
         upgrades.aura_upgrades_max = upgrades.aura_upgrades_max - 4
-        if WPT.get('circle') then
-            rendering.destroy(WPT.get('circle'))
+        if Public.get('circle') then
+            rendering.destroy(Public.get('circle'))
         end
-        local locomotive = WPT.get('locomotive')
-        WPT.set(
+        local locomotive = Public.get('locomotive')
+        Public.set(
             'circle',
             rendering.draw_circle {
                 surface = active_surface_index,
@@ -1233,7 +1233,7 @@ end
 
 function Public.set_spawn_position()
     local collapse_pos = Collapse.get_position()
-    local locomotive = WPT.get('locomotive')
+    local locomotive = Public.get('locomotive')
     if not locomotive or not locomotive.valid then
         return
     end
@@ -1259,17 +1259,17 @@ function Public.set_spawn_position()
 
     ::retry::
 
-    local y_value_position = WPT.get('y_value_position')
-    local locomotive_positions = WPT.get('locomotive_pos')
+    local y_value_position = Public.get('y_value_position')
+    local locomotive_positions = Public.get('locomotive_pos')
     local total_pos = #locomotive_positions.tbl
 
-    local active_surface_index = WPT.get('active_surface_index')
+    local active_surface_index = Public.get('active_surface_index')
     local surface = game.surfaces[active_surface_index]
     if not (surface and surface.valid) then
         return
     end
 
-    local spawn_near_collapse = WPT.get('spawn_near_collapse')
+    local spawn_near_collapse = Public.get('spawn_near_collapse')
 
     if spawn_near_collapse.active then
         local collapse_position = surface.find_non_colliding_position('rocket-silo', collapse_pos, 64, 2)
@@ -1344,8 +1344,8 @@ function Public.set_spawn_position()
 end
 
 function Public.on_player_joined_game(event)
-    local active_surface_index = WPT.get('active_surface_index')
-    local players = WPT.get('players')
+    local active_surface_index = Public.get('active_surface_index')
+    local players = Public.get('players')
     local player = game.players[event.player_index]
     local surface = game.surfaces[active_surface_index]
 
@@ -1359,7 +1359,7 @@ function Public.on_player_joined_game(event)
         end
         local message = ({'main.greeting', player.name})
         Alert.alert_player(player, 15, message)
-        if WPT.get('death_mode') then
+        if Public.get('death_mode') then
             local death_message = ({'main.death_mode_warning'})
             Alert.alert_player(player, 15, death_message)
         end
@@ -1389,7 +1389,7 @@ function Public.on_player_joined_game(event)
         end
     end
 
-    local locomotive = WPT.get('locomotive')
+    local locomotive = Public.get('locomotive')
 
     if not locomotive or not locomotive.valid then
         return
@@ -1432,11 +1432,19 @@ function Public.on_player_respawned(event)
 end
 
 function Public.on_player_changed_position(event)
-    local active_surface_index = WPT.get('active_surface_index')
+    local active_surface_index = Public.get('active_surface_index')
     if not active_surface_index then
         return
     end
     local player = game.players[event.player_index]
+    if not player or not player.valid then
+        return
+    end
+
+    if player.controller_type == defines.controllers.spectator then
+        return
+    end
+
     local map_name = 'mtn_v3'
 
     if string.sub(player.surface.name, 0, #map_name) ~= map_name then
@@ -1447,7 +1455,7 @@ function Public.on_player_changed_position(event)
     local surface = game.surfaces[active_surface_index]
 
     local p = {x = player.position.x, y = player.position.y}
-    local config_tile = WPT.get('void_or_tile')
+    local config_tile = Public.get('void_or_tile')
     if config_tile == 'lab-dark-2' then
         local get_tile = surface.get_tile(p)
         if get_tile.valid and get_tile.name == 'lab-dark-2' then
@@ -1529,7 +1537,7 @@ function Public.on_research_finished(event)
 
     local technology_prototypes = game.technology_prototypes
 
-    if WPT.get('print_tech_to_discord') and force.name == 'player' then
+    if Public.get('print_tech_to_discord') and force.name == 'player' then
         Server.to_discord_bold({'functions.researched_complete', technology_prototypes[research_name].localised_name}, true)
     end
 
@@ -1548,7 +1556,7 @@ function Public.on_research_finished(event)
     if not force_name then
         return
     end
-    local flamethrower_damage = WPT.get('flamethrower_damage')
+    local flamethrower_damage = Public.get('flamethrower_damage')
     flamethrower_damage[force_name] = -0.85
     if research.name == 'military' then
         game.forces[force_name].set_turret_attack_modifier('flamethrower-turret', flamethrower_damage[force_name])
@@ -1562,6 +1570,89 @@ function Public.on_research_finished(event)
     end
 end
 
+function Public.set_player_to_god(player)
+    if player.character and player.character.valid then
+        return false
+    end
+
+    if not player.character and player.controller_type ~= defines.controllers.spectator then
+        player.print('[color=blue][Spectate][/color] It seems that you are not in the realm of the living.', Color.warning)
+        return false
+    end
+
+    local spectate = Public.get('spectate')
+
+    if spectate[player.index] and spectate[player.index].delay and spectate[player.index].delay > game.tick then
+        local cooldown = floor((spectate[player.index].delay - game.tick) / 60) + 1 .. ' seconds!'
+        player.print('[color=blue][Spectate][/color] Retry again in ' .. cooldown, Color.warning)
+        return false
+    end
+
+    spectate[player.index] = nil
+
+    player.set_controller({type = defines.controllers.god})
+    player.create_character()
+    local active_surface_index = Public.get('active_surface_index')
+    local surface = game.get_surface(active_surface_index)
+    if not surface or not surface.valid then
+        return false
+    end
+
+    local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
+    if pos then
+        player.teleport(pos, surface)
+    else
+        pos = game.forces.player.get_spawn_position(surface)
+        player.teleport(pos, surface)
+    end
+
+    Event.raise(
+        BottomFrame.events.bottom_quickbar_respawn_raise,
+        {
+            player_index = player.index
+        }
+    )
+
+    player.tag = ''
+
+    game.print('[color=blue][Spectate][/color] ' .. player.name .. ' is no longer spectating!')
+    Server.to_discord_bold(table.concat {'*** ', '[Spectate] ' .. player.name .. ' is no longer spectating!', ' ***'})
+    return true
+end
+
+function Public.set_player_to_spectator(player)
+    if player.in_combat then
+        player.print('[color=blue][Spectate][/color] You are in combat. Try again soon.', Color.warning)
+        return false
+    end
+    local spectate = Public.get('spectate')
+
+    if not spectate[player.index] then
+        spectate[player.index] = {
+            verify = false
+        }
+        player.print('[color=blue][Spectate][/color] Please click the spectate button again if you really want to this.', Color.warning)
+        return false
+    end
+
+    if player.character and player.character.valid then
+        player.character.die()
+    end
+
+    player.character = nil
+    player.spectator = true
+    player.tag = '[Spectator]'
+    player.set_controller({type = defines.controllers.spectator})
+    game.print('[color=blue][Spectate][/color] ' .. player.name .. ' is now spectating.')
+    Server.to_discord_bold(table.concat {'*** ', '[Spectate] ' .. player.name .. ' is now spectating.', ' ***'})
+
+    if spectate[player.index] and not spectate[player.index].delay then
+        spectate[player.index].verify = true
+        spectate[player.index].delay = game.tick + 18000
+    end
+    return true
+end
+
 Public.firearm_magazine_ammo = {name = 'firearm-magazine', count = 200}
 Public.piercing_rounds_magazine_ammo = {name = 'piercing-rounds-magazine', count = 200}
 Public.uranium_rounds_magazine_ammo = {name = 'uranium-rounds-magazine', count = 200}
@@ -1569,7 +1660,7 @@ Public.light_oil_ammo = {name = 'light-oil', amount = 100}
 Public.artillery_shell_ammo = {name = 'artillery-shell', count = 15}
 Public.laser_turrent_power_source = {buffer_size = 2400000, power_production = 40000}
 
-function Public.reset_table()
+function Public.reset_func_table()
     this.power_sources = {index = 1}
     this.refill_turrets = {index = 1}
     this.magic_crafters = {index = 1}

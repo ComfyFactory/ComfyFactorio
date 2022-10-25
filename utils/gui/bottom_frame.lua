@@ -19,7 +19,10 @@ Global.register(
 
 local Public = {}
 
-Public.events = {bottom_quickbar_button_name = Event.generate_event_name('bottom_quickbar_button_name')}
+Public.events = {
+    bottom_quickbar_button_name = Event.generate_event_name('bottom_quickbar_button_name'),
+    bottom_quickbar_respawn_raise = Event.generate_event_name('bottom_quickbar_respawn_raise')
+}
 
 local main_frame_name = Gui.uid_name()
 local clear_corpse_button_name = Gui.uid_name()
@@ -324,5 +327,20 @@ end
 Public.main_frame_name = main_frame_name
 Public.set_location = set_location
 Gui.screen_to_bypass(main_frame_name)
+
+Event.add(
+    Public.events.bottom_quickbar_respawn_raise,
+    function(event)
+        if not event or not event.player_index then
+            return
+        end
+
+        if this.activate_custom_buttons then
+            local player = game.get_player(event.player_index)
+            local data = Public.get_player_data(player)
+            set_location(player, data.state)
+        end
+    end
+)
 
 return Public

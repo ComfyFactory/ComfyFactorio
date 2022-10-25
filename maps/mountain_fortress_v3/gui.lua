@@ -1,6 +1,6 @@
 local Event = require 'utils.event'
+local Public = require 'maps.mountain_fortress_v3.table'
 local RPG = require 'modules.rpg.main'
-local WPT = require 'maps.mountain_fortress_v3.table'
 local IC_Gui = require 'maps.mountain_fortress_v3.ic.gui'
 local IC_Minimap = require 'maps.mountain_fortress_v3.ic.minimap'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
@@ -9,10 +9,8 @@ local SpamProtection = require 'utils.spam_protection'
 
 local format_number = require 'util'.format_number
 
-local Public = {}
-Public.events = {reset_map = Event.generate_event_name('reset_map')}
-
 local main_button_name = Gui.uid_name()
+local spectate_button_name = Gui.uid_name()
 local main_frame_name = Gui.uid_name()
 local floor = math.floor
 
@@ -54,6 +52,22 @@ local function create_button(player)
         }
     )
     b.style.minimal_height = 38
+    b.style.maximal_height = 38
+end
+
+local function spectate_button(player)
+    if player.gui.top[spectate_button_name] then
+        return
+    end
+
+    local b =
+        player.gui.top.add {
+        type = 'sprite-button',
+        name = spectate_button_name,
+        sprite = 'utility/ghost_time_to_live_modifier_icon',
+        tooltip = 'Spectate!\nThis will kill your character.'
+    }
+
     b.style.maximal_height = 38
 end
 
@@ -142,6 +156,22 @@ local function create_main_frame(player)
     label.style.right_padding = 4
 end
 
+local function hide_all_gui(player)
+    for _, child in pairs(player.gui.top.children) do
+        if child.name ~= spectate_button_name then
+            child.visible = false
+        end
+    end
+end
+
+local function show_all_gui(player)
+    for _, child in pairs(player.gui.top.children) do
+        if child.name ~= spectate_button_name then
+            child.visible = true
+        end
+    end
+end
+
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
     if not player then
@@ -150,6 +180,10 @@ local function on_player_joined_game(event)
 
     if not player.gui.top[main_button_name] then
         create_button(player)
+    end
+
+    if not player.gui.top[spectate_button_name] then
+        spectate_button(player)
     end
 end
 
@@ -171,7 +205,7 @@ local function on_gui_click(event)
             return
         end
 
-        local locomotive = WPT.get('locomotive')
+        local locomotive = Public.get('locomotive')
         if not validate_entity(locomotive) then
             return
         end
@@ -249,11 +283,12 @@ local function on_player_changed_surface(event)
     local rpg_button = RPG.draw_main_frame_name
     local rpg_frame = RPG.main_frame_name
     local rpg_settings = RPG.settings_frame_name
-    local main = WPT.get('locomotive')
-    local icw_locomotive = WPT.get('icw_locomotive')
+    local main = Public.get('locomotive')
+    local icw_locomotive = Public.get('icw_locomotive')
     local wagon_surface = icw_locomotive.surface
     local info = player.gui.top[main_button_name]
     local wd = player.gui.top['wave_defense']
+    local spectate = player.gui.top[spectate_button_name]
     local rpg_b = player.gui.top[rpg_button]
     local rpg_f = player.gui.screen[rpg_frame]
     local rpg_s = player.gui.screen[rpg_settings]
@@ -299,6 +334,9 @@ local function on_player_changed_surface(event)
         if wd and not wd.visible then
             wd.visible = true
         end
+        if spectate and not spectate.visible then
+            spectate.visible = true
+        end
         if charging and not charging.visible then
             charging.visible = true
         end
@@ -310,6 +348,9 @@ local function on_player_changed_surface(event)
     elseif player.surface == wagon_surface then
         if wd then
             wd.visible = false
+        end
+        if spectate then
+            spectate.visible = false
         end
         if rpg_b then
             rpg_b.visible = false
@@ -356,6 +397,7 @@ local function enable_guis(event)
     local rpg_button = RPG.draw_main_frame_name
     local info = player.gui.top[main_button_name]
     local wd = player.gui.top['wave_defense']
+    local spectate = player.gui.top[spectate_button_name]
     local rpg_b = player.gui.top[rpg_button]
     local diff = player.gui.top[Difficulty.top_button_name]
     local charging = player.gui.top['charging_station']
@@ -382,6 +424,9 @@ local function enable_guis(event)
     if wd and not wd.visible then
         wd.visible = true
     end
+    if spectate and not spectate.visible then
+        spectate.visible = true
+    end
     if charging and not charging.visible then
         charging.visible = true
     end
@@ -407,9 +452,9 @@ function Public.update_gui(player)
     local gui = player.gui.top[main_frame_name]
 
     local rpg_extra = RPG.get('rpg_extra')
-    local mined_scrap = WPT.get('mined_scrap')
-    local biters_killed = WPT.get('biters_killed')
-    local upgrades = WPT.get('upgrades')
+    local mined_scrap = Public.get('mined_scrap')
+    local biters_killed = Public.get('biters_killed')
+    local upgrades = Public.get('upgrades')
 
     if rpg_extra.global_pool == 0 then
         gui.global_pool.caption = 'XP: 0'
@@ -422,7 +467,7 @@ function Public.update_gui(player)
     gui.scrap_mined.caption = ' [img=entity.tree-01][img=entity.rock-huge]: ' .. format_number(mined_scrap, true)
     gui.scrap_mined.tooltip = ({'gui.amount_harvested'})
 
-    local pickaxe_upgrades = WPT.pickaxe_upgrades
+    local pickaxe_upgrades = Public.pickaxe_upgrades
     local pick_tier = pickaxe_upgrades[upgrades.pickaxe_tier]
     local speed = math.round((player.force.manual_mining_speed_modifier + player.character_mining_speed_modifier + 1) * 100)
     local train_upgrade_contribution = upgrades.train_upgrade_contribution
@@ -453,5 +498,32 @@ Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_changed_surface, on_player_changed_surface)
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(Public.events.reset_map, enable_guis)
+
+Gui.on_click(
+    spectate_button_name,
+    function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Mtn v3 Spectate Button')
+        if is_spamming then
+            return
+        end
+
+        local player = event.player
+        if not player or not player.valid then
+            return
+        end
+
+        if player.character and player.character.valid then
+            local success = Public.set_player_to_spectator(player)
+            if success then
+                hide_all_gui(player)
+            end
+        else
+            local success = Public.set_player_to_god(player)
+            if success then
+                show_all_gui(player)
+            end
+        end
+    end
+)
 
 return Public

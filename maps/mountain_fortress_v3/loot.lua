@@ -1,6 +1,5 @@
 local LootRaffle = require 'functions.loot_raffle'
-
-local Public = {}
+local Public = require 'maps.mountain_fortress_v3.table'
 local random = math.random
 local abs = math.abs
 local floor = math.floor
@@ -27,7 +26,7 @@ function Public.get_distance(position)
     return difficulty
 end
 
-function Public.add(surface, position, chest)
+function Public.add_loot(surface, position, chest)
     local budget = 48 + abs(position.y) * 1.75
     budget = budget * random(25, 175) * 0.01
 
@@ -79,7 +78,7 @@ function Public.add(surface, position, chest)
     end
 end
 
-function Public.add_rare(surface, position, chest, magic)
+function Public.add_loot_rare(surface, position, chest, magic)
     local budget = magic * 48 + abs(position.y) * 1.75
     budget = budget * random(25, 175) * 0.01
 
