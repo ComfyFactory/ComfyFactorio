@@ -7,7 +7,7 @@ local function shoo(event)
     local icw_locomotive = Public.get('icw_locomotive')
     local loco_surface = icw_locomotive.surface
 
-    if not loco_surface.valid then
+    if not loco_surface or not loco_surface.valid then
         return
     end
 

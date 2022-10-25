@@ -5,6 +5,14 @@ local Public = require 'maps.mountain_fortress_v3.table'
 
 local mapkeeper = '[color=blue]Mapkeeper:[/color]'
 
+local function show_all_gui(player)
+    for _, child in pairs(player.gui.top.children) do
+        if child.name ~= spectate_button_name then
+            child.visible = true
+        end
+    end
+end
+
 local function reset_forces(new_surface, old_surface)
     for _, f in pairs(game.forces) do
         local spawn = {
@@ -50,6 +58,7 @@ local function equip_players(player_starting_items, data)
             for item, amount in pairs(player_starting_items) do
                 player.insert({name = item, count = amount})
             end
+            show_all_gui(player)
         else
             data.players[player.index] = nil
             Session.clear_player(player)
@@ -70,7 +79,7 @@ function Public.soft_reset_map(old_surface, map_gen_settings, player_starting_it
     this.soft_reset_counter = this.soft_reset_counter + 1
 
     local new_surface = game.create_surface(this.original_surface_name .. '_' .. tostring(this.soft_reset_counter), map_gen_settings)
-    new_surface.request_to_generate_chunks({0, 0}, 0.5)
+    new_surface.request_to_generate_chunks({0, 0}, 0.1)
     new_surface.force_generate_chunk_requests()
 
     reset_forces(new_surface, old_surface)

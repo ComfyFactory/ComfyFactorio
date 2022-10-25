@@ -1577,8 +1577,8 @@ function Public.set_player_to_god(player)
 
     local spectate = Public.get('spectate')
 
-    if spectate[player.index] and spectate[player.index] > game.tick then
-        local cooldown = floor((spectate[player.index] - game.tick) / 60) + 1 .. ' seconds!'
+    if spectate[player.index] and spectate[player.index].delay and spectate[player.index].delay > game.tick then
+        local cooldown = floor((spectate[player.index].delay - game.tick) / 60) + 1 .. ' seconds!'
         player.print('[color=blue][Spectate][/color] Retry again in ' .. cooldown, Color.warning)
         return false
     end
@@ -1609,13 +1609,22 @@ function Public.set_player_to_god(player)
     )
 
     game.print('[color=blue][Spectate][/color] ' .. player.name .. ' is no longer spectating!')
-    Server.to_discord_bold(table.concat {'*** ', '[Spectate] ' .. player.name .. ' is no longer in spectating-mode!', ' ***'})
+    Server.to_discord_bold(table.concat {'*** ', '[Spectate] ' .. player.name .. ' is no longer spectating!', ' ***'})
     return true
 end
 
 function Public.set_player_to_spectator(player)
     if player.in_combat then
-        player.print('[color=blue][Spectate][/color] You are in combat. Try again soon.')
+        player.print('[color=blue][Spectate][/color] You are in combat. Try again soon.', Color.warning)
+        return false
+    end
+    local spectate = Public.get('spectate')
+
+    if not spectate[player.index] then
+        spectate[player.index] = {
+            verify = false
+        }
+        player.print('[color=blue][Spectate][/color] Please click the spectate button again if you really want to this.', Color.warning)
         return false
     end
 
@@ -1627,12 +1636,11 @@ function Public.set_player_to_spectator(player)
     player.spectator = true
     player.set_controller({type = defines.controllers.spectator})
     game.print('[color=blue][Spectate][/color] ' .. player.name .. ' is now spectating.')
-    Server.to_discord_bold(table.concat {'*** ', '[Spectate] ' .. player.name .. ' is now in spectating-mode.', ' ***'})
+    Server.to_discord_bold(table.concat {'*** ', '[Spectate] ' .. player.name .. ' is now spectating.', ' ***'})
 
-    local spectate = Public.get('spectate')
-
-    if not spectate[player.index] then
-        spectate[player.index] = game.tick + 18000
+    if spectate[player.index] and not spectate[player.index].delay then
+        spectate[player.index].verify = true
+        spectate[player.index].delay = game.tick + 18000
     end
     return true
 end
@@ -1644,7 +1652,7 @@ Public.light_oil_ammo = {name = 'light-oil', amount = 100}
 Public.artillery_shell_ammo = {name = 'artillery-shell', count = 15}
 Public.laser_turrent_power_source = {buffer_size = 2400000, power_production = 40000}
 
-function Public.reset_table()
+function Public.reset_func_table()
     this.power_sources = {index = 1}
     this.refill_turrets = {index = 1}
     this.magic_crafters = {index = 1}

@@ -132,14 +132,14 @@ function Public.reset_map()
     Autostash.bottom_button(true)
     BottomFrame.reset()
     BottomFrame.activate_custom_buttons(true)
-    Public.reset()
+    Public.reset_buried_biters()
     Poll.reset()
     ICW.reset()
     IC.reset()
     IC.allowed_surface(game.surfaces[this.active_surface_index].name)
-    Public.reset_table()
+    Public.reset_func_table()
     game.reset_time_played()
-    Public.reset_table()
+    Public.reset_main_table()
 
     OfflinePlayers.set_active_surface_index(this.active_surface_index)
     OfflinePlayers.set_offline_players_enabled(true)
@@ -275,7 +275,7 @@ function Public.reset_map()
 
     -- Public.get_scores()
 
-    this.chunk_load_tick = game.tick + 200
+    this.chunk_load_tick = game.tick + 400
     this.force_chunk = true
     this.market_announce = game.tick + 1200
     this.game_lost = false
@@ -285,7 +285,7 @@ end
 
 local is_locomotive_valid = function()
     local locomotive = Public.get('locomotive')
-    if not locomotive.valid then
+    if not locomotive or not locomotive.valid then
         Public.set('game_lost', true)
         Public.loco_died(true)
     end

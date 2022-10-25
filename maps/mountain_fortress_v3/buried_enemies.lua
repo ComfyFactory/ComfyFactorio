@@ -236,7 +236,7 @@ local function on_tick()
     this[t] = nil
 end
 
-function Public.reset()
+function Public.reset_buried_biters()
     for k, _ in pairs(this) do
         this[k] = nil
     end

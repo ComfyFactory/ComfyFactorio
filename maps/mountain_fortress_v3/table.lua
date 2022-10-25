@@ -87,7 +87,7 @@ Public.pickaxe_upgrades = {
     'Luminite'
 }
 
-function Public.reset_table()
+function Public.reset_main_table()
     -- @start
     -- these 3 are in case of stop/start/reloading the instance.
     this.soft_reset = true
@@ -293,6 +293,6 @@ function Public.remove(key, sub_key)
     end
 end
 
-Event.on_init(Public.reset_table)
+Event.on_init(Public.reset_main_table)
 
 return Public

@@ -654,6 +654,10 @@ function Public.call_existing_tab(player, name)
     if not frame then
         return
     end
+    if not inside_frame then
+        return
+    end
+
     local tabbed_pane = inside_frame.tabbed_pane
     for key, v in pairs(tabbed_pane.tabs) do
         if v.tab.caption == name then
