@@ -1562,6 +1562,25 @@ function Public.on_research_finished(event)
     end
 end
 
+function Public.set_player_to_god(player)
+    if player.character and player.character.valid then
+        return
+    end
+
+    player.set_controller({type = defines.controllers.god})
+    player.create_character()
+end
+
+function Public.set_player_to_spectator(player)
+    if player.character and player.character.valid then
+        player.character.die()
+    end
+    player.force = game.forces.spectator
+    player.character = nil
+    player.spectator = true
+    player.set_controller({type = defines.controllers.spectator})
+end
+
 Public.firearm_magazine_ammo = {name = 'firearm-magazine', count = 200}
 Public.piercing_rounds_magazine_ammo = {name = 'piercing-rounds-magazine', count = 200}
 Public.uranium_rounds_magazine_ammo = {name = 'uranium-rounds-magazine', count = 200}

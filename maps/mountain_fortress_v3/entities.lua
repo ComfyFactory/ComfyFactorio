@@ -1284,6 +1284,7 @@ function Public.unstuck_player(index)
     end
     player.teleport(position, surface)
 end
+
 function Public.loco_died(invalid_locomotive)
     local game_lost = WPT.get('game_lost')
     if not game_lost then

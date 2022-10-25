@@ -13,6 +13,7 @@ local Public = {}
 Public.events = {reset_map = Event.generate_event_name('reset_map')}
 
 local main_button_name = Gui.uid_name()
+local spectate_button_name = Gui.uid_name()
 local main_frame_name = Gui.uid_name()
 local floor = math.floor
 
@@ -54,6 +55,22 @@ local function create_button(player)
         }
     )
     b.style.minimal_height = 38
+    b.style.maximal_height = 38
+end
+
+local function spectate_button(player)
+    if player.gui.top[spectate_button_name] then
+        return
+    end
+
+    local b =
+        player.gui.top.add {
+        type = 'sprite-button',
+        name = spectate_button_name,
+        sprite = 'virtual-signal/signal-S',
+        tooltip = 'Spectate!\nThis will destroy your character and all items with it.'
+    }
+
     b.style.maximal_height = 38
 end
 
@@ -150,6 +167,10 @@ local function on_player_joined_game(event)
 
     if not player.gui.top[main_button_name] then
         create_button(player)
+    end
+
+    if not player.gui.top[spectate_button_name] then
+        spectate_button(player)
     end
 end
 
@@ -453,5 +474,23 @@ Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_changed_surface, on_player_changed_surface)
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(Public.events.reset_map, enable_guis)
+
+Gui.on_click(
+    spectate_button_name,
+    function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Mtn v3 Spectate Button')
+        if is_spamming then
+            return
+        end
+
+        local player = event.player
+        if not player or not player.valid then
+            return
+        end
+
+        if player.character and player.character.valid then
+        end
+    end
+)
 
 return Public
