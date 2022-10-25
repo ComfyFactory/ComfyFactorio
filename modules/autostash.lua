@@ -622,10 +622,10 @@ local function do_whitelist()
     this.whitelist = {}
     for k, _ in pairs(resources) do
         if resources[k] and resources[k].type == 'resource' and resources[k].mineable_properties then
-            if resources[k].mineable_properties.products[1] then
+            if resources[k].mineable_properties.products and resources[k].mineable_properties.products[1] then
                 local r = resources[k].mineable_properties.products[1].name
                 this.whitelist[r] = true
-            elseif resources[k].mineable_properties.products[2] then
+            elseif resources[k].mineable_properties.products and resources[k].mineable_properties.products[2] then
                 local r = resources[k].mineable_properties.products[2].name
                 this.whitelist[r] = true
             end
