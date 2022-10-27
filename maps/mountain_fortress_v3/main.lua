@@ -38,6 +38,7 @@ local OfflinePlayers = require 'modules.clear_vacant_players'
 require 'modules.shotgun_buff'
 require 'modules.no_deconstruction_of_neutral_entities'
 require 'modules.spawners_contain_biters'
+require 'maps.mountain_fortress_v3.ic.main'
 require 'modules.wave_defense.main'
 require 'modules.charging_station'
 
