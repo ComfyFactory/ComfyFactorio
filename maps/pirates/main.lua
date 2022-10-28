@@ -125,8 +125,6 @@ local function on_init()
 		game.create_force(Common.get_ancient_friendly_force_name(id))
 		game.create_force(Common.get_ancient_hostile_force_name(id))
 
-		local crew_force = game.create_force(Common.get_crew_force_name(id))
-
 		Crew.reset_crew_and_enemy_force(id)
 	end
 

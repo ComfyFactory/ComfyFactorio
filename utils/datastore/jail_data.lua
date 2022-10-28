@@ -7,6 +7,9 @@ local Server = require 'utils.server'
 local Event = require 'utils.event'
 local Utils = require 'utils.core'
 local table = require 'utils.table'
+local Gui = require 'utils.gui'
+
+local module_name = '[Jail handler] '
 
 local jailed_data_set = 'jailed'
 local revoked_permissions_set = 'revoked_permissions_jailed'
@@ -18,9 +21,10 @@ local votefree = {}
 local revoked_permissions = {}
 local settings = {
     playtime_for_vote = 25920000, -- 5 days
-    playtime_for_instant_jail = 103680000, -- 20 days
+    playtime_for_instant_jail = 207360000, -- 40 days
+    -- playtime_for_instant_jail = 103680000, -- 20 days
     clear_voted_player = 36000, -- remove player from vote-tbl after 10 minutes
-    clear_terms_tbl = 3600,
+    clear_terms_tbl = 300,
     votejail_count = 5,
     valid_surface = 'nauvis'
 }
@@ -28,6 +32,17 @@ local settings = {
 local set_data = Server.set_data
 local try_get_data = Server.try_get_data
 local concat = table.concat
+
+local release_player_from_temporary_prison_token
+local remove_notice
+local remove_action_needed
+local draw_notice_frame
+
+local jail_frame_name = Gui.uid_name()
+local notice_frame_name = Gui.uid_name()
+local placeholder_jail_text_box = Gui.uid_name()
+local save_button_name = Gui.uid_name()
+local discard_button_name = Gui.uid_name()
 
 local valid_commands = {
     ['free'] = true,
@@ -138,18 +153,18 @@ local play_alert_sound =
 local clear_jail_data_token =
     Token.register(
     function(data)
-        local griefer = data.griefer
-        if not griefer then
+        local offender = data.offender
+        if not offender then
             return
         end
-        if votejail[griefer] and votejail[griefer].jailed then
+        if votejail[offender] and votejail[offender].jailed then
             return
         end
 
         local msg_two = 'You have been cleared of all accusations because not enough players voted against you.'
-        Utils.print_to(griefer, msg_two)
-        votejail[griefer] = nil
-        votefree[griefer] = nil
+        Utils.print_to(offender, msg_two)
+        votejail[offender] = nil
+        votefree[offender] = nil
     end
 )
 
@@ -208,9 +223,24 @@ local function get_gulag_permission_group()
     if not gulag then
         gulag = game.permissions.create_group('gulag')
         for action_name, _ in pairs(defines.input_action) do
+            ---@diagnostic disable-next-line: need-check-nil
             gulag.set_allows_action(defines.input_action[action_name], false)
         end
+        ---@diagnostic disable-next-line: need-check-nil
         gulag.set_allows_action(defines.input_action.write_to_console, true)
+    end
+
+    return gulag
+end
+
+local function get_super_gulag_permission_group()
+    local gulag = game.permissions.get_group('super_gulag')
+    if not gulag then
+        gulag = game.permissions.create_group('super_gulag')
+        for action_name, _ in pairs(defines.input_action) do
+            ---@diagnostic disable-next-line: need-check-nil
+            gulag.set_allows_action(defines.input_action[action_name], false)
+        end
     end
 
     return gulag
@@ -289,6 +319,9 @@ end
 
 local function teleport_player_to_gulag(player, action)
     local p_data = get_player_data(player)
+    if not p_data then
+        return
+    end
 
     if action == 'jail' then
         local gulag = game.surfaces['gulag']
@@ -321,8 +354,13 @@ local function teleport_player_to_gulag(player, action)
 
         local p = p_data.position
         local p_group = game.permissions.get_group(p_data.p_group_id)
+        if not p_group then
+            return
+        end
+
         p_group.add_player(player)
         local pos = {x = p.x, y = p.y}
+        ---@diagnostic disable-next-line: missing-parameter
         local get_tile = surface.get_tile(pos)
         if get_tile.valid and get_tile.name == 'out-of-map' then
             player.teleport(surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 128, 1), surface.name)
@@ -336,144 +374,215 @@ end
 
 local function validate_args(data)
     local player = data.player
-    local griefer = data.griefer
+    local offender = data.offender
     local trusted = data.trusted
     local playtime = data.playtime
     local message = data.message
     local cmd = data.cmd
 
-    if not griefer then
+    if not offender then
         return
     end
 
-    if not type(griefer) == 'string' then
+    if not type(offender) == 'string' then
         Utils.print_to(player, 'Invalid name.')
         return false
     end
 
-    local get_griefer_player = game.get_player(griefer)
+    local get_offender_player = game.get_player(offender)
 
-    if not validate_entity(get_griefer_player) then
-        Utils.print_to(player, 'Invalid name.')
+    if not validate_entity(get_offender_player) then
+        Utils.print_to(player, module_name .. 'No valid player given. Reason is no longer required.')
+        Utils.print_to(player, module_name .. 'Valid input: /jail ' .. player.name)
         return false
     end
 
-    if not griefer or not get_griefer_player then
-        Utils.print_to(player, 'Invalid name.')
+    if not offender or not get_offender_player then
+        Utils.print_to(player, module_name .. 'No valid player given. Reason is no longer required.')
+        Utils.print_to(player, module_name .. 'Valid input: /jail ' .. player.name)
+        return false
+    end
+
+    if cmd == 'jail' and jailed[get_offender_player.name] then
+        Utils.print_to(player, module_name .. 'Player is already jailed.')
+        return false
+    end
+
+    if cmd == 'free' and not jailed[get_offender_player.name] then
+        Utils.print_to(player, module_name .. 'Player is not jailed.')
         return false
     end
 
     if votejail[player.name] and not player.admin then
-        Utils.print_to(player, 'You are currently being investigated since you have griefed.')
+        Utils.print_to(player, module_name .. 'You are currently being investigated since you have griefed.')
         return false
     end
 
     if votefree[player.name] and not player.admin then
-        Utils.print_to(player, 'You are currently being investigated since you have griefed.')
+        Utils.print_to(player, module_name .. 'You are currently being investigated since you have griefed.')
         return false
     end
 
     if jailed[player.name] and not player.admin then
-        Utils.print_to(player, 'You are jailed, you can´t run this command.')
+        Utils.print_to(player, module_name .. 'You are jailed, you can´t run this command.')
         return false
     end
 
-    if player.name == griefer and not player.admin then
-        Utils.print_to(player, 'You can´t select yourself.')
+    if player.name == offender and not player.admin then
+        Utils.print_to(player, module_name .. 'You can´t jail yourself.')
         return false
     end
 
-    if get_griefer_player.admin and not player.admin then
-        Utils.print_to(player, 'You can´t select an admin.')
+    if get_offender_player.admin and not player.admin then
+        Utils.print_to(player, module_name .. 'You can´t jail an admin.')
         return false
     end
 
     if not trusted and not player.admin or playtime <= settings.playtime_for_vote and not player.admin then
-        Utils.print_to(player, 'You are not trusted enough to run this command.')
+        Utils.print_to(player, module_name .. 'You are not trusted enough to run this command.')
         return false
     end
 
     if not message then
-        Utils.print_to(player, 'No valid reason was given.')
+        Utils.print_to(player, module_name .. 'No valid reason was given.')
         return false
     end
 
     if cmd == 'jail' and message and string.len(message) <= 0 then
-        Utils.print_to(player, 'No valid reason was given.')
+        Utils.print_to(player, module_name .. 'No valid reason was given.')
         return false
     end
 
     if cmd == 'jail' and message and string.len(message) <= 10 then
-        Utils.print_to(player, 'Reason is too short.')
+        Utils.print_to(player, module_name .. 'Reason is too short.')
         return false
     end
 
     return true
 end
 
-local function vote_to_jail(player, griefer, msg)
-    if not griefer then
+local function validate_server_args(data)
+    local offender = data.offender
+    local message = data.message
+    local cmd = data.cmd
+
+    if not offender then
         return
     end
 
-    if type(griefer) == 'table' then
-        griefer = griefer.name
+    if not type(offender) == 'string' then
+        print(module_name .. 'Invalid name.')
+        return false
     end
 
-    if not votejail[griefer] then
-        votejail[griefer] = {index = 0, actor = player.name}
-        local message = player.name .. ' has started a vote to jail player ' .. griefer
+    local get_offender_player = game.get_player(offender)
+
+    if not validate_entity(get_offender_player) then
+        print(module_name .. 'Invalid name.')
+        return false
+    end
+
+    if not offender or not get_offender_player then
+        print(module_name .. 'Invalid name.')
+        return false
+    end
+
+    if cmd == 'jail' and jailed[get_offender_player.name] then
+        print(module_name .. 'Player is already jailed.')
+        return false
+    end
+
+    if cmd == 'free' and not jailed[get_offender_player.name] then
+        print(module_name .. 'Player is not jailed.')
+        return false
+    end
+
+    if cmd == 'jail' and get_offender_player.admin then
+        print(module_name .. 'You can´t jail an admin.')
+        return false
+    end
+
+    if not message then
+        print(module_name .. 'No valid reason was given.')
+        return false
+    end
+
+    if cmd == 'jail' and message and string.len(message) <= 0 then
+        print(module_name .. 'No valid reason was given.')
+        return false
+    end
+
+    if cmd == 'jail' and message and string.len(message) <= 10 then
+        print(module_name .. 'Reason is too short.')
+        return false
+    end
+
+    return true
+end
+
+local function vote_to_jail(player, offender, msg)
+    if not offender then
+        return
+    end
+
+    if type(offender) == 'table' then
+        offender = offender.name
+    end
+
+    if not votejail[offender] then
+        votejail[offender] = {index = 0, actor = player.name}
+        local message = player.name .. ' has started a vote to jail player ' .. offender
         Utils.print_to(nil, message)
-        Task.set_timeout_in_ticks(settings.clear_voted_player, clear_jail_data_token, {griefer = griefer})
+        Task.set_timeout_in_ticks(settings.clear_voted_player, clear_jail_data_token, {offender = offender})
     end
 
-    if not votejail[griefer][player.name] then
-        votejail[griefer][player.name] = true
-        votejail[griefer].index = votejail[griefer].index + 1
-        Utils.print_to(player, 'You have voted to jail player ' .. griefer .. '.')
-        if votejail[griefer].index >= settings.votejail_count or (votejail[griefer].index == #game.connected_players - 1 and #game.connected_players > votejail[griefer].index) then
-            Public.try_ul_data(griefer, true, votejail[griefer].actor, msg)
+    if not votejail[offender][player.name] then
+        votejail[offender][player.name] = true
+        votejail[offender].index = votejail[offender].index + 1
+        Utils.print_to(player, 'You have voted to jail player ' .. offender .. '.')
+        if votejail[offender].index >= settings.votejail_count or (votejail[offender].index == #game.connected_players - 1 and #game.connected_players > votejail[offender].index) then
+            Public.try_ul_data(offender, true, votejail[offender].actor, msg)
         end
     else
-        Utils.print_to(player, 'You have already voted to kick ' .. griefer .. '.')
+        Utils.print_to(player, 'You have already voted to kick ' .. offender .. '.')
     end
 end
 
-local function vote_to_free(player, griefer)
-    if not griefer then
+local function vote_to_free(player, offender)
+    if not offender then
         return
     end
 
-    if type(griefer) == 'table' then
-        griefer = griefer.name
+    if type(offender) == 'table' then
+        offender = offender.name
     end
 
-    if not votefree[griefer] then
-        votefree[griefer] = {index = 0, actor = player.name}
-        local message = player.name .. ' has started a vote to free player ' .. griefer
+    if not votefree[offender] then
+        votefree[offender] = {index = 0, actor = player.name}
+        local message = player.name .. ' has started a vote to free player ' .. offender
         Utils.print_to(nil, message)
     end
 
-    if not votefree[griefer][player.name] then
-        votefree[griefer][player.name] = true
-        votefree[griefer].index = votefree[griefer].index + 1
+    if not votefree[offender][player.name] then
+        votefree[offender][player.name] = true
+        votefree[offender].index = votefree[offender].index + 1
 
-        Utils.print_to(player, 'You have voted to free player ' .. griefer .. '.')
-        if votefree[griefer].index >= settings.votejail_count or (votefree[griefer].index == #game.connected_players - 1 and #game.connected_players > votefree[griefer].index) then
-            Public.try_ul_data(griefer, false, votefree[griefer].actor)
-            votejail[griefer] = nil
-            votefree[griefer] = nil
+        Utils.print_to(player, 'You have voted to free player ' .. offender .. '.')
+        if votefree[offender].index >= settings.votejail_count or (votefree[offender].index == #game.connected_players - 1 and #game.connected_players > votefree[offender].index) then
+            Public.try_ul_data(offender, false, votefree[offender].actor)
+            votejail[offender] = nil
+            votefree[offender] = nil
         end
     else
-        Utils.print_to(player, 'You have already voted to free ' .. griefer .. '.')
+        Utils.print_to(player, 'You have already voted to free ' .. offender .. '.')
     end
     return
 end
 
-local function jail(player, griefer, msg, raised)
+local function jail(player, offender, msg, raised, mute)
     player = player or 'script'
 
-    if jailed[griefer] then
+    if jailed[offender] then
         return false
     end
 
@@ -481,68 +590,133 @@ local function jail(player, griefer, msg, raised)
         msg = 'Jailed by script'
     end
 
-    if not game.get_player(griefer) then
+    if not game.get_player(offender) then
         return
     end
 
-    local to_jail_player = game.get_player(griefer)
+    local to_jail_player = game.get_player(offender)
+    if not to_jail_player then
+        return
+    end
 
-    teleport_player_to_gulag(to_jail_player, 'jail')
-
-    local gulag = get_gulag_permission_group()
-    gulag.add_player(griefer)
-
-    local date = Server.get_current_date_with_time()
-
-    local message = griefer .. ' has been jailed by ' .. player .. '. Cause: ' .. msg
+    draw_notice_frame(to_jail_player)
 
     if to_jail_player.character and to_jail_player.character.valid and to_jail_player.character.driving then
         to_jail_player.character.driving = false
     end
 
-    jailed[griefer] = {jailed = true, actor = player, reason = msg}
+    teleport_player_to_gulag(to_jail_player, 'jail')
+
+    if mute then
+        local gulag = get_super_gulag_permission_group()
+        gulag.add_player(offender)
+    else
+        local gulag = get_gulag_permission_group()
+        gulag.add_player(offender)
+    end
+
+    local date = Server.get_current_date_with_time()
+
+    local message = offender .. ' has been jailed by ' .. player .. '. Cause: ' .. msg
+
+    jailed[offender] = {jailed = true, actor = player, reason = msg}
     if not raised then
-        set_data(jailed_data_set, griefer, {jailed = true, actor = player, reason = msg, date = date})
+        set_data(jailed_data_set, offender, {jailed = true, actor = player, reason = msg, date = date})
     end
 
     Utils.print_to(nil, message)
     local data = Server.build_embed_data()
-    data.username = griefer
+    data.username = offender
     data.admin = player
     data.reason = msg
     Server.to_jailed_embed(data)
 
-    if votejail[griefer] then
-        votejail[griefer].jailed = true
+    if votejail[offender] then
+        votejail[offender].jailed = true
     end
 
     to_jail_player.clear_console()
-    Utils.print_to(griefer, message)
+    Utils.print_to(offender, message)
     return true
 end
 
-local function free(player, griefer)
-    player = player or 'script'
-    if not jailed[griefer] then
+--- Jails a player temporary
+---@param player LuaPlayer
+---@param offender LuaPlayer
+---@param msg string
+---@param mute boolean
+---@return boolean
+local function jail_temporary(player, offender, msg, mute)
+    if jailed[offender.name] then
         return false
     end
 
-    if not game.get_player(griefer) then
-        return
+    if not msg then
+        msg = 'Jailed by script'
     end
 
-    local to_jail_player = game.get_player(griefer)
-    teleport_player_to_gulag(to_jail_player, 'free')
+    if offender.character and offender.character.valid and offender.character.driving then
+        offender.character.driving = false
+    end
 
-    local message = griefer .. ' was set free from jail by ' .. player .. '.'
+    teleport_player_to_gulag(offender, 'jail')
 
-    set_data(jailed_data_set, griefer, nil)
+    if mute then
+        local gulag = get_super_gulag_permission_group()
+        gulag.add_player(offender)
+    else
+        local gulag = get_gulag_permission_group()
+        gulag.add_player(offender)
+    end
+
+    local message = offender.name .. ' has been temporary jailed by ' .. player.name .. '.'
+
+    jailed[offender.name] = {jailed = true, actor = player.name, reason = msg, temporary = true}
 
     Utils.print_to(nil, message)
     local data = Server.build_embed_data()
-    data.username = griefer
+    data.username = offender.name
+    data.admin = player.name
+    data.reason = msg
+    Server.to_jailed_embed(data)
+
+    if votejail[offender.name] then
+        votejail[offender.name].jailed = true
+    end
+
+    offender.clear_console()
+
+    draw_notice_frame(offender)
+
+    Task.set_timeout_in_ticks(10800, release_player_from_temporary_prison_token, {offender_name = offender.name, actor_name = player.name})
+    return true
+end
+
+local function free(player, offender)
+    player = player or 'script'
+    if not jailed[offender] then
+        return false
+    end
+
+    if not game.get_player(offender) then
+        return
+    end
+
+    local to_jail_player = game.get_player(offender)
+    teleport_player_to_gulag(to_jail_player, 'free')
+
+    local message = offender .. ' was set free from jail by ' .. player .. '.'
+
+    set_data(jailed_data_set, offender, nil)
+
+    Utils.print_to(nil, message)
+    local data = Server.build_embed_data()
+    data.username = offender
     data.admin = player
     Server.to_unjailed_embed(data)
+    Server.to_unjailed_named_embed(data)
+    offender = game.get_player(offender)
+    remove_notice(offender)
     return true
 end
 
@@ -559,6 +733,172 @@ local is_jailed =
     end
 )
 
+--! start gui handler
+
+release_player_from_temporary_prison_token =
+    Token.register(
+    function(event)
+        local actor_name = event.actor_name
+        local offender_name = event.offender_name
+
+        if jailed[offender_name] and jailed[offender_name].temporary then
+            free('script', offender_name)
+            Utils.print_to(nil, module_name .. 'If you find someone abusing their jail permissions - report them to the admins of Comfy!')
+
+            local actor = game.get_player(actor_name)
+            remove_action_needed(actor)
+        end
+    end
+)
+
+local function remove_target_frame(target_frame)
+    Gui.remove_data_recursively(target_frame)
+    target_frame.destroy()
+end
+
+local function draw_main_frame(player, offender)
+    local main_frame, inside_table = Gui.add_main_frame_with_toolbar(player, 'screen', jail_frame_name, nil, nil, 'Jail in progress', true)
+
+    if not main_frame or not inside_table then
+        return
+    end
+
+    local main_frame_style = main_frame.style
+    main_frame_style.width = 500
+    main_frame.auto_center = true
+
+    local warning_message =
+        concat {
+        '[font=heading-2]You have jailed player: [color=yellow]',
+        offender.name,
+        '\n[/color][/font]'
+    }
+
+    local info_warning_text = inside_table.add({type = 'label', caption = warning_message})
+    local info_warning_text_style = info_warning_text.style
+    info_warning_text_style.single_line = false
+    info_warning_text_style.width = 470
+    info_warning_text_style.horizontal_align = 'center'
+    info_warning_text_style.vertical_align = 'center'
+    info_warning_text_style.top_padding = 4
+    info_warning_text_style.left_padding = 4
+    info_warning_text_style.right_padding = 4
+    info_warning_text_style.bottom_padding = 4
+
+    local abuse_message =
+        concat {
+        'Jailing is [color=red]NOT[/color] allowed to solve personal disputes, talk to each other instead of jailing!\n',
+        'Jail is only a temporary solution, the jailed offender will be released in less than one week automatically.\n',
+        'If the actions done by the offender was serious, report the offender to the admins on [color=yellow]https://getcomfy.eu/discord[/color]\n',
+        'Providing NO reason will free the offender after 3 minutes or if you close this window - note - this will log your actions to our admins.\n\n',
+        '[color=yellow]Explain why you jailed ' .. offender.name .. '[/color]'
+    }
+
+    local info_warning_text_extended = inside_table.add({type = 'label', caption = abuse_message})
+    local info_warning_text_extended_style = info_warning_text_extended.style
+    info_warning_text_extended_style.single_line = false
+    info_warning_text_extended_style.font = 'heading-2'
+    info_warning_text_extended_style.horizontal_align = 'center'
+    info_warning_text_extended_style.vertical_align = 'center'
+    info_warning_text_extended_style.top_padding = 4
+    info_warning_text_extended_style.left_padding = 4
+    info_warning_text_extended_style.right_padding = 4
+    info_warning_text_extended_style.bottom_padding = 4
+
+    local placeholder_text = inside_table.add({type = 'text-box', text = '', name = placeholder_jail_text_box})
+    local placeholder_text_style = placeholder_text.style
+    placeholder_text_style.width = 470
+    placeholder_text_style.height = 200
+    placeholder_text_style.vertically_stretchable = false
+    placeholder_text_style.horizontally_stretchable = false
+    placeholder_text_style.vertically_stretchable = false
+    placeholder_text_style.horizontally_squashable = false
+    placeholder_text_style.vertically_squashable = false
+
+    local bottom_flow = main_frame.add({type = 'flow', direction = 'horizontal'})
+
+    local left_flow = bottom_flow.add({type = 'flow'})
+    left_flow.style.horizontal_align = 'left'
+    left_flow.style.horizontally_stretchable = true
+
+    local close_button = left_flow.add({type = 'button', name = discard_button_name, caption = 'Discard report'})
+    close_button.style = 'back_button'
+
+    local right_flow = bottom_flow.add({type = 'flow'})
+    right_flow.style.horizontal_align = 'right'
+
+    local save_button = right_flow.add({type = 'button', name = save_button_name, caption = 'Save report'})
+    save_button.style = 'confirm_button'
+
+    local data = {
+        offender = offender.name
+    }
+
+    Gui.set_data(placeholder_text, data)
+    Gui.set_data(save_button, data)
+    Gui.set_data(close_button, data)
+
+    player.opened = main_frame
+end
+
+remove_notice = function(player)
+    local screen = player.gui.screen
+    local notice = screen[notice_frame_name]
+
+    if notice and notice.valid then
+        notice.destroy()
+    end
+end
+
+remove_action_needed = function(player)
+    local screen = player.gui.screen
+    local action_needed = screen[jail_frame_name]
+
+    if action_needed and action_needed.valid then
+        action_needed.destroy()
+    end
+end
+
+draw_notice_frame = function(player)
+    local main_frame, inside_table = Gui.add_main_frame_with_toolbar(player, 'screen', notice_frame_name, nil, nil, 'Notice', true, 2)
+
+    if not main_frame or not inside_table then
+        return
+    end
+
+    local main_frame_style = main_frame.style
+    main_frame_style.width = 400
+    main_frame.auto_center = true
+
+    local content_flow = inside_table.add {type = 'flow', direction = 'horizontal'}
+    content_flow.style.top_padding = 16
+    content_flow.style.bottom_padding = 16
+    content_flow.style.left_padding = 24
+    content_flow.style.right_padding = 24
+    content_flow.style.horizontally_stretchable = false
+
+    local sprite_flow = content_flow.add {type = 'flow'}
+    sprite_flow.style.vertical_align = 'center'
+    sprite_flow.style.vertically_stretchable = false
+
+    sprite_flow.add {type = 'sprite', sprite = 'utility/warning_icon'}
+
+    local label_flow = content_flow.add {type = 'flow'}
+    label_flow.style.horizontal_align = 'left'
+    label_flow.style.top_padding = 10
+    label_flow.style.left_padding = 24
+
+    local warning_message = '[font=heading-2]You have been jailed.[/font]\nPlease respond to questions if you are asked something.'
+
+    label_flow.style.horizontally_stretchable = false
+    local label = label_flow.add {type = 'label', caption = warning_message}
+    label.style.single_line = false
+
+    player.opened = main_frame
+end
+
+--! end gui handler
+
 local update_jailed =
     Token.register(
     function(data)
@@ -566,8 +906,9 @@ local update_jailed =
         local value = data.value or false
         local player = data.player or 'script'
         local message = data.message
+        local mute = data.mute or false
         if value then
-            jail(player, key, message)
+            jail(player, key, message, nil, mute)
         else
             free(player, key)
         end
@@ -593,7 +934,8 @@ end
 -- @param value boolean
 -- @param player LuaPlayer or <script>
 -- @param message string
-function Public.try_ul_data(key, value, player, message)
+-- @param mute boolean
+function Public.try_ul_data(key, value, player, message, mute)
     if type(key) == 'table' then
         key = key.name
     end
@@ -604,7 +946,8 @@ function Public.try_ul_data(key, value, player, message)
         key = key,
         value = value,
         player = player,
-        message = message
+        message = message,
+        mute = mute or false
     }
 
     Task.set_timeout_in_ticks(1, update_jailed, data)
@@ -625,8 +968,8 @@ function Public.print_jailed()
         result[#result + 1] = k
     end
 
-    result = concat(result, ', ')
-    Game.player_print(result)
+    local final = concat(result, ', ')
+    Game.player_print(final)
 end
 
 --- Returns the table of jailed
@@ -723,7 +1066,7 @@ Server.on_data_set_changed(
 
 commands.add_command(
     'jail',
-    'Sends the player to gulag! Valid arguments are:\n/jail <LuaPlayer> <reason>',
+    'Sends the player to gulag! Valid arguments are:\n/jail <LuaPlayer>',
     function()
     end
 )
@@ -781,6 +1124,10 @@ commands.add_command(
             return Utils.print_to(player, 'No player was provided.')
         end
 
+        if not revoke_player then
+            return
+        end
+
         if is_revoked(revoke_player.name) then
             remove_revoked(revoke_player.name)
             Utils.print_to(player, revoke_player.name .. ' can now utilize jail commands once again!')
@@ -828,38 +1175,30 @@ Event.add(
             return
         end
 
-        local param = event.parameters
+        local offender = event.parameters
+        local message = 'Temporary jail. Lasts at most 1 week.'
 
         if event.player_index then
             local player = game.get_player(event.player_index)
+            if not player or not player.valid then
+                return
+            end
             local playtime = validate_playtime(player)
             local trusted = validate_trusted(player)
 
             if is_revoked(player.name) then
-                Utils.warning(player, 'You have abused your trusted permissions and therefore')
+                Utils.warning(player, module_name .. 'You have abused your trusted permissions and therefore')
                 Utils.warning(player, 'your permissions have been revoked!')
                 return
             end
 
-            if not param then
-                return Utils.print_to(player, 'No valid reason given.')
+            if not offender then
+                return Utils.print_to(player, module_name .. 'Valid input: /jail ' .. player.name)
             end
-
-            local message
-            local t = {}
-
-            for i in string.gmatch(param, '%S+') do
-                t[#t + 1] = i
-            end
-
-            local griefer = t[1]
-            table.remove(t, 1)
-
-            message = concat(t, ' ')
 
             local data = {
                 player = player,
-                griefer = griefer,
+                offender = offender,
                 trusted = trusted,
                 playtime = playtime,
                 message = message,
@@ -874,17 +1213,19 @@ Event.add(
 
             local delay = 30
 
-            if game.get_player(griefer) then
-                griefer = game.get_player(griefer).name
+            offender = game.get_player(offender)
+
+            if not offender or not offender.valid then
+                return
             end
 
             if trusted and playtime >= settings.playtime_for_vote and playtime < settings.playtime_for_instant_jail and not player.admin then
                 if cmd == 'jail' then
                     if not terms_tbl[player.name] then
-                        Utils.warning(player, 'Abusing the jail command will lead to revoked permissions. Jailing someone in case of disagreement is _NEVER_ OK!')
+                        Utils.warning(player, module_name .. 'Abusing the jail command will lead to revoked permissions. Jailing someone in cases of disagreement is _NEVER_ OK!')
                         Utils.warning(player, "Jailing someone because they're afk or other stupid reasons is NOT valid!")
                         Utils.warning(player, 'Run this command again to if you really want to do this!')
-                        for i = 1, 4 do
+                        for _ = 1, 4 do
                             Task.set_timeout_in_ticks(delay, play_alert_sound, {name = player.name})
                             delay = delay + 30
                         end
@@ -892,21 +1233,31 @@ Event.add(
                         Task.set_timeout_in_ticks(settings.clear_terms_tbl, clear_terms_tbl, {player = player.name})
                         return
                     end
+
                     Utils.warning(player, 'Logging your actions.')
-                    vote_to_jail(player, griefer, message)
+                    vote_to_jail(player, offender, message)
                     return
                 elseif cmd == 'free' then
-                    vote_to_free(player, griefer)
+                    vote_to_free(player, offender)
                     return
                 end
             end
-
-            if player.admin or playtime >= settings.playtime_for_instant_jail then
+            if player.admin then
+                if cmd == 'jail' then
+                    Utils.warning(player, 'Logging your actions.')
+                    Public.try_ul_data(offender, true, player.name, message)
+                    return
+                elseif cmd == 'free' then
+                    Public.try_ul_data(offender, false, player.name)
+                    return
+                end
+            elseif playtime >= settings.playtime_for_instant_jail then
                 if cmd == 'jail' then
                     if not terms_tbl[player.name] then
-                        Utils.warning(player, 'Abusing the jail command will lead to revoked permissions. Jailing someone in case of disagreement is _NEVER_ OK!')
+                        Utils.warning(player, module_name .. 'Abusing the jail command will lead to revoked permissions. Jailing someone in cases of disagreement is _NEVER_ OK!')
+                        Utils.warning(player, "Jailing someone because they're afk or other stupid reasons is NOT valid!")
                         Utils.warning(player, 'Run this command again to if you really want to do this!')
-                        for i = 1, 4 do
+                        for _ = 1, 4 do
                             Task.set_timeout_in_ticks(delay, play_alert_sound, {name = player.name})
                             delay = delay + 30
                         end
@@ -914,13 +1265,53 @@ Event.add(
                         Task.set_timeout_in_ticks(settings.clear_terms_tbl, clear_terms_tbl, {player = player.name})
                         return
                     end
+
                     Utils.warning(player, 'Logging your actions.')
-                    Public.try_ul_data(griefer, true, player.name, message)
+                    jail_temporary(player, offender, message, false)
+                    draw_main_frame(player, offender)
+
                     return
                 elseif cmd == 'free' then
-                    Public.try_ul_data(griefer, false, player.name)
+                    Public.try_ul_data(offender, false, player.name)
                     return
                 end
+            end
+        else
+            if not offender then
+                return print(module_name .. 'No valid player given.')
+            end
+
+            local data = {
+                offender = offender,
+                message = message,
+                cmd = cmd
+            }
+
+            local success = validate_server_args(data)
+
+            if not success then
+                return
+            end
+
+            if game.get_player(offender) then
+                offender = game.get_player(offender).name
+            end
+
+            if cmd == 'jail' then
+                if not terms_tbl['script'] then
+                    print(module_name .. 'Abusing the jail command will lead to revoked permissions. Jailing someone in case of disagreement is _NEVER_ OK!')
+                    print(module_name .. 'Run this command again to if you really want to do this!')
+                    terms_tbl['script'] = true
+                    Task.set_timeout_in_ticks(settings.clear_terms_tbl, clear_terms_tbl, {player = 'script'})
+                    return
+                end
+
+                print(module_name .. 'Logging your actions.')
+                Public.try_ul_data(offender, true, 'script', message)
+                return
+            elseif cmd == 'free' then
+                Public.try_ul_data(offender, false, 'script')
+                return
             end
         end
     end
@@ -975,7 +1366,110 @@ Event.add(
             local p_data = get_player_data(player)
             if jailed[player.name] and p_data and p_data.locked then
                 teleport_player_to_gulag(player, 'jail')
+                draw_notice_frame(player)
             end
+        end
+    end
+)
+
+Gui.on_text_changed(
+    placeholder_jail_text_box,
+    function(event)
+        local player = event.player
+        if not player or not player.valid then
+            return
+        end
+
+        local textfield = event.element
+        local data = Gui.get_data(textfield)
+
+        if not data then
+            return
+        end
+
+        local offender = data.offender
+
+        if textfield and textfield.valid then
+            if string.len(textfield.text) >= 2000 then
+                textfield.text = ''
+                return
+            end
+            if jailed[offender] then
+                jailed[offender].reason = textfield.text
+            end
+        end
+    end
+)
+
+Gui.on_click(
+    save_button_name,
+    function(event)
+        local player = event.player
+        if not player or not player.valid then
+            return
+        end
+
+        local screen = player.gui.screen
+        local frame = screen[jail_frame_name]
+        local data = Gui.get_data(event.element)
+        if not data then
+            return
+        end
+
+        local offender = data.offender
+        local date = Server.get_current_date_with_time()
+
+        if jailed[offender] and jailed[offender].temporary then
+            jailed[offender].temporary = false
+        end
+
+        if jailed[offender] and jailed[offender].reason then
+            if string.len(jailed[offender].reason) <= 40 then
+                return Utils.print_to(player, module_name .. 'Reason is too short. Explain thoroughly why you jailed ' .. offender .. '!')
+            end
+
+            set_data(jailed_data_set, offender, {jailed = true, actor = player.name, reason = jailed[offender].reason, date = date})
+        end
+
+        Utils.print_to(player, module_name .. 'Jail data has been submitted!')
+        Utils.print_to(nil, module_name .. offender .. ' was jailed by ' .. player.name .. '.')
+
+        local jail_data = Server.build_embed_data()
+        jail_data.username = offender
+        jail_data.admin = player.name
+        jail_data.reason = jailed[offender].reason
+        Server.to_jailed_named_embed(jail_data)
+
+        if frame and frame.valid then
+            remove_target_frame(frame)
+        end
+    end
+)
+
+Gui.on_click(
+    discard_button_name,
+    function(event)
+        local player = event.player
+        local screen = player.gui.screen
+        local frame = screen[jail_frame_name]
+        if not player or not player.valid then
+            return
+        end
+        local data = Gui.get_data(event.element)
+        if not data then
+            return
+        end
+
+        local offender = data.offender
+
+        if jailed[offender] and jailed[offender].temporary then
+            jailed[offender].temporary = false
+        end
+
+        free(player.name, offender)
+
+        if frame and frame.valid then
+            remove_target_frame(frame)
         end
     end
 )

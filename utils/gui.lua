@@ -56,6 +56,16 @@ local main_frame_name = Public.uid_name()
 local main_button_name = Public.uid_name()
 local close_button_name = Public.uid_name()
 
+--- Verifies if a frame is valid and destroys it.
+---@param align userdata
+---@param frame userdata
+local function validate_frame_and_destroy(align, frame)
+    local get_frame = align[frame]
+    if get_frame and get_frame.valid then
+        get_frame.destroy()
+    end
+end
+
 -- Associates data with the LuaGuiElement. If data is nil then removes the data
 function Public.set_data(element, value)
     local player_index = element.player_index
@@ -99,16 +109,19 @@ function Public.get_data(element)
 end
 
 -- Adds a gui that is alike the factorio native gui.
-function Public.add_main_frame_with_toolbar(player, align, set_frame_name, set_settings_button_name, close_main_frame_name, name, info)
+function Public.add_main_frame_with_toolbar(player, align, set_frame_name, set_settings_button_name, close_main_frame_name, name, info, inside_table_count)
     if not align then
         return
     end
     local main_frame
     if align == 'left' then
+        validate_frame_and_destroy(player.gui.left, set_frame_name)
         main_frame = player.gui.left.add {type = 'frame', name = set_frame_name, direction = 'vertical'}
     elseif align == 'center' then
+        validate_frame_and_destroy(player.gui.center, set_frame_name)
         main_frame = player.gui.center.add {type = 'frame', name = set_frame_name, direction = 'vertical'}
     elseif align == 'screen' then
+        validate_frame_and_destroy(player.gui.screen, set_frame_name)
         main_frame = player.gui.screen.add {type = 'frame', name = set_frame_name, direction = 'vertical'}
     end
 
@@ -194,7 +207,7 @@ function Public.add_main_frame_with_toolbar(player, align, set_frame_name, set_s
     local inside_table =
         inside_frame.add {
         type = 'table',
-        column_count = 1,
+        column_count = 1 or inside_table_count,
         name = 'inside_frame'
     }
     inside_table.style.padding = 3

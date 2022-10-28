@@ -1,7 +1,7 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 
-local Memory = require 'maps.pirates.memory'
+-- local Memory = require 'maps.pirates.memory'
 -- local Roles = require 'maps.pirates.roles.roles'
 -- local CoreData = require 'maps.pirates.coredata'
 local Classes = require 'maps.pirates.roles.classes'
@@ -129,7 +129,6 @@ Public.market_sales = {
 
 
 function Public.create_dock_markets(surface, p)
-	local memory = Memory.get_crew_memory()
     local destination = Common.current_destination()
 
 	if not (surface and p) then return end

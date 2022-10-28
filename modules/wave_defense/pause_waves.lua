@@ -5,6 +5,7 @@ local Token = require 'utils.token'
 local Task = require 'utils.task'
 local Server = require 'utils.server'
 local SpamProtection = require 'utils.spam_protection'
+local Alert = require 'utils.alert'
 
 local main_frame_name = Gui.uid_name()
 local save_button_name = Gui.uid_name()
@@ -112,7 +113,8 @@ end
 
 local function pause_waves_state(state)
     if state then
-        game.print('[color=blue][Wave Defense][/color] New waves will not spawn for 5 minutes!', {r = 0.98, g = 0.66, b = 0.22})
+        local message = ({'wave_defense.pause_waves'})
+        Alert.alert_all_players(30, message, nil, 'achievement/tech-maniac', 0.75)
         Public.set('paused', true)
         Public.set('last_pause', game.tick)
         Public.set('paused_waves_for', game.tick + 18000)
@@ -120,7 +122,8 @@ local function pause_waves_state(state)
         local next_wave = Public.get('next_wave')
         Public.set('next_wave', next_wave + 18000)
     else
-        game.print('[color=blue][Wave Defense][/color] Waves will spawn normally again.', {r = 0.98, g = 0.66, b = 0.22})
+        local message = ({'wave_defense.start_waves'})
+        Alert.alert_all_players(30, message, nil, 'achievement/tech-maniac', 0.75)
         Public.set('paused', false)
         Public.set('paused_waves_for', nil)
         Public.set('last_pause', nil)
@@ -137,6 +140,17 @@ function Public.toggle_pause_wave()
         local player = players[i]
         Public.display_pause_wave(player, greeting)
     end
+end
+
+function Public.toggle_pause_wave_without_votes()
+    local paused = Public.get('paused')
+    if paused then
+        return
+    end
+
+    Public.set('pause_waves', {index = 0})
+    pause_waves_state(true)
+    Task.set_timeout_in_ticks(18000, pause_waves_state_token, false) -- 5 minutes
 end
 
 Gui.on_click(
@@ -225,7 +239,12 @@ Event.on_nth_tick(
             return
         end
 
-        Public.toggle_pause_wave()
+        local pause_without_votes = Public.get('pause_without_votes')
+        if pause_without_votes then
+            Public.toggle_pause_wave_without_votes()
+        else
+            Public.toggle_pause_wave()
+        end
     end
 )
 
@@ -251,5 +270,34 @@ commands.add_command(
         end
     end
 )
+
+commands.add_command(
+    'wave_defense_force_pause_waves',
+    'Usable only for admins - pauses the wave defense waves!',
+    function()
+        local player = game.player
+
+        if player and player.valid then
+            if not player.admin then
+                return
+            end
+
+            local paused = Public.get('paused')
+            if paused then
+                return
+            end
+
+            print('[Wave Defense] ' .. player.name .. ' paused wave defense.')
+
+            Public.toggle_pause_wave_without_votes()
+        end
+    end
+)
+
+--- Toggles if we should show a gui or just pause the waves without votes.
+---@param state boolean
+function Public.pause_without_votes(state)
+    Public.set('pause_without_votes', state or true)
+end
 
 return Public

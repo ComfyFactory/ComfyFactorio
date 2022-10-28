@@ -66,6 +66,7 @@ local item_worths = {
     ['power-switch'] = 16,
     ['programmable-speaker'] = 32,
     ['stone-brick'] = 2,
+    ['landfill'] = 12,
     ['concrete'] = 4,
     ['hazard-concrete'] = 4,
     ['refined-concrete'] = 16,
@@ -207,6 +208,10 @@ for k, _ in pairs(item_worths) do
 end
 local size_of_item_names = #item_names
 
+function Public.get_item_worth(name)
+    return item_worths[name] or 0
+end
+
 local function get_raffle_keys()
     local raffle_keys = {}
     for i = 1, size_of_item_names, 1 do
@@ -216,7 +221,7 @@ local function get_raffle_keys()
     return raffle_keys
 end
 
-function Public.roll_item_stack(remaining_budget, blacklist)
+function Public.roll_item_stack(remaining_budget, blacklist, value_blacklist)
     if remaining_budget <= 0 then
         return
     end
@@ -226,7 +231,7 @@ function Public.roll_item_stack(remaining_budget, blacklist)
     for _, index in pairs(raffle_keys) do
         item_name = item_names[index]
         item_worth = item_worths[item_name]
-        if not blacklist[item_name] and item_worth <= remaining_budget then
+        if not blacklist[item_name] and item_worth <= remaining_budget and item_worth <= value_blacklist then
             break
         end
     end
@@ -247,7 +252,7 @@ function Public.roll_item_stack(remaining_budget, blacklist)
     return {name = item_name, count = item_count}
 end
 
-local function roll_item_stacks(remaining_budget, max_slots, blacklist)
+local function roll_item_stacks(remaining_budget, max_slots, blacklist, value_blacklist)
     local item_stack_set = {}
     local item_stack_set_worth = 0
 
@@ -255,7 +260,7 @@ local function roll_item_stacks(remaining_budget, max_slots, blacklist)
         if remaining_budget <= 0 then
             break
         end
-        local item_stack = Public.roll_item_stack(remaining_budget, blacklist)
+        local item_stack = Public.roll_item_stack(remaining_budget, blacklist, value_blacklist)
         item_stack_set[i] = item_stack
         remaining_budget = remaining_budget - item_stack.count * item_worths[item_stack.name]
         item_stack_set_worth = item_stack_set_worth + item_stack.count * item_worths[item_stack.name]
@@ -264,7 +269,7 @@ local function roll_item_stacks(remaining_budget, max_slots, blacklist)
     return item_stack_set, item_stack_set_worth
 end
 
-function Public.roll(budget, max_slots, blacklist)
+function Public.roll(budget, max_slots, blacklist, value_blacklist)
     if not budget then
         return
     end
@@ -272,11 +277,16 @@ function Public.roll(budget, max_slots, blacklist)
         return
     end
 
-    local b
+    local b, vb
     if not blacklist then
         b = {}
     else
         b = blacklist
+    end
+    if not value_blacklist then
+        vb = 65536
+    else
+        vb = value_blacklist
     end
 
     budget = math_floor(budget)
@@ -288,7 +298,7 @@ function Public.roll(budget, max_slots, blacklist)
     local final_stack_set_worth = 0
 
     for _ = 1, 5, 1 do
-        local item_stack_set, item_stack_set_worth = roll_item_stacks(budget, max_slots, b)
+        local item_stack_set, item_stack_set_worth = roll_item_stacks(budget, max_slots, b, vb)
         if item_stack_set_worth > final_stack_set_worth or item_stack_set_worth == budget then
             final_stack_set = item_stack_set
             final_stack_set_worth = item_stack_set_worth

@@ -272,6 +272,8 @@ local restore_mining_speed_token =
         if mc_rewards.temp_boosts.mining then
             force.manual_mining_speed_modifier = force.manual_mining_speed_modifier - 0.5
             mc_rewards.temp_boosts.mining = nil
+            local message = ({'locomotive.mining_bonus_end'})
+            Alert.alert_all_players(10, message, nil, 'achievement/tech-maniac')
         end
     end
 )
@@ -284,6 +286,8 @@ local restore_movement_speed_token =
         if mc_rewards.temp_boosts.movement then
             force.character_running_speed_modifier = force.character_running_speed_modifier - 0.2
             mc_rewards.temp_boosts.movement = nil
+            local message = ({'locomotive.movement_bonus_end'})
+            Alert.alert_all_players(10, message, nil, 'achievement/tech-maniac')
         end
     end
 )

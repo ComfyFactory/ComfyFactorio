@@ -18,6 +18,7 @@ local random = math.random
 local floor = math.floor
 local round = math.round
 local sub = string.sub
+local playtime_required_to_drive_train = 108000 --30 minutes
 
 local clear_items_upon_surface_entry = {
     ['entity-ghost'] = true,
@@ -361,6 +362,16 @@ local function get_driver_action(entity)
     local player = driver.player
     if not player or not player.valid then
         return
+    end
+
+    if Session.get_session_player(player) then
+        local total_time = player.online_time + Session.get_session_player(player)
+
+        if total_time and total_time < playtime_required_to_drive_train then
+            player.print('[color=blue][Locomotive][/color] Not enough playtime acquired to drive train.')
+            driver.driving = false
+            return
+        end
     end
 
     if player.cursor_stack and player.cursor_stack.valid_for_read and player.cursor_stack.name == 'raw-fish' then
