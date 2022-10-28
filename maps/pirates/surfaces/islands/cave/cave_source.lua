@@ -23,7 +23,7 @@ local function spawn_market(args, is_main)
     --if not (destination_data and destination_data.dynamic_data and destination_data.dynamic_data.cave_miner) then return end
     if not (destination_data and destination_data.dynamic_data) then return end
 
-    local offers = {}
+    local offers
     if is_main then
         offers = ShopCovered.market_generate_coin_offers(6)
         if destination_data.static_params.class_for_sale then
@@ -53,7 +53,7 @@ end
 
 local biomes = {}
 
-function biomes.oasis(args, square_distance, noise)
+function biomes.oasis(args, noise)
 	local seed = args.seed
 	local position = args.p
     if noise > 0.83 then
@@ -81,7 +81,7 @@ function biomes.void(args)
 	args.tiles[#args.tiles + 1] = {name = 'out-of-map', position = args.p}
 end
 
-function biomes.pond_cave(args, square_distance, noise)
+function biomes.pond_cave(args, noise)
 	local seed = args.seed
 	local position = args.p
     local noise_2 = GetNoise('cm_ponds', position, seed)
@@ -128,7 +128,7 @@ function biomes.spawn(args, square_distance)
     end
 end
 
-function biomes.ocean(args, square_distance, noise)
+function biomes.ocean(args, noise)
     if noise > 0.66 then
 		args.tiles[#args.tiles + 1] = {name = 'deepwater', position = args.p}
         Public.Data.spawn_fish(args);
@@ -143,7 +143,7 @@ function biomes.ocean(args, square_distance, noise)
     place_rock(args)
 end
 
-function biomes.worm_desert(args, square_distance, noise)
+function biomes.worm_desert(args, noise)
 	local seed = args.seed
 	local position = args.p
 
@@ -178,7 +178,7 @@ function biomes.worm_desert(args, square_distance, noise)
     end
 end
 
-function biomes.cave(args, square_distance, noise)
+function biomes.cave(args, square_distance)
 	local seed = args.seed
 	local position = args.p
 
@@ -278,31 +278,31 @@ local function get_biome(args)
 	-- Actual cave generation below
     local cm_ocean = GetNoise('cm_ocean', position, args.seed + 100000)
     if cm_ocean > 0.6 then
-        return biomes.ocean, d, cm_ocean
+        return biomes.ocean, cm_ocean
     end
 
     local noise = GetNoise('cave_miner_01', position, args.seed)
     local abs_noise = Math.abs(noise)
     if abs_noise < 0.075 then
-        return biomes.cave, d, noise
+        return biomes.cave, d
     end
 
     if abs_noise > 0.25 then
         noise = GetNoise('cave_rivers', position, args.seed)
         if noise > 0.72 then
-            return biomes.oasis, d, noise
+            return biomes.oasis, noise
         end
         if cm_ocean < -0.6 then
-            return biomes.worm_desert, d, cm_ocean
+            return biomes.worm_desert, cm_ocean
         end
         if noise < -0.5 then
-            return biomes.pond_cave, d, noise
+            return biomes.pond_cave, noise
         end
     end
 
     noise = GetNoise('cave_miner_02', position, args.seed)
     if Math.abs(noise) < 0.085 then
-        return biomes.cave, d, noise
+        return biomes.cave, d
     end
 
     return biomes.void
@@ -321,14 +321,14 @@ end
 
 
 -- Finding a spot for structures is very hard (it might cause structures to spawn in weird locations, like ship)
-function Public.chunk_structures(args)
+-- function Public.chunk_structures(args)
 
-end
+-- end
 
 -- Launching rocket in caves sounds silly (as well as hard to pick position for rocket)
-function Public.generate_silo_setup_position(points_to_avoid)
+-- function Public.generate_silo_setup_position(points_to_avoid)
 
-end
+-- end
 
 
 return Public

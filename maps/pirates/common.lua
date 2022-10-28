@@ -1589,4 +1589,20 @@ function Public.pick_random_price(tier, scale, tech_tier)
 	return price
 end
 
+-- This method should exist in table but it doesn't for some reason on comfy repo so I copied it to here
+function Public.get_random_dictionary_entry(t, key)
+    local target_index = Math.random(1, table_size(t))
+    local count = 1
+    for k, v in pairs(t) do
+        if target_index == count then
+            if key then
+                return k
+            else
+                return v
+            end
+        end
+        count = count + 1
+    end
+end
+
 return Public

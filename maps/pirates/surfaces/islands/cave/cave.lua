@@ -19,11 +19,10 @@ Public.Data = require 'maps.pirates.surfaces.islands.cave.data'
 --lab-dark-1 > position has been copied
 --lab-dark-2 > position has been visited
 function Public.reveal(cave_miner, surface, source_surface, position, brushsize)
-    local tile = source_surface.get_tile(position)
-    if not tile.valid then return end
-    if tile.name == 'lab-dark-2' then
-        return
-    end
+    local source_tile = source_surface.get_tile(position)
+    if not source_tile.valid then return end
+    if source_tile.name == 'lab-dark-2' then return end
+
     local tiles = {}
     local copied_tiles = {}
     local i = 0
@@ -51,7 +50,7 @@ function Public.reveal(cave_miner, surface, source_surface, position, brushsize)
 
             local boat_height = Math.max(BoatData.height, 15) -- even if boat height is smaller, we need to be at least 10+ just so formulas below play out nicely
             local spawn_radius = boat_height + 15
-            local entrance_radius = boat_height + 45
+            -- local entrance_radius = boat_height + 45
             local river_width = boat_height + 40
 
             -- Don't copy river upon which ship arrives + ship entrance
@@ -187,14 +186,14 @@ function Public.terrain(args)
 end
 
 
-function Public.chunk_structures(args)
+-- function Public.chunk_structures(args)
 
-end
+-- end
 
 -- Launching rocket in caves sounds silly
-function Public.generate_silo_setup_position(points_to_avoid)
+-- function Public.generate_silo_setup_position(points_to_avoid)
 
-end
+-- end
 
 local function on_player_changed_position(event)
     if not event.player_index then return end

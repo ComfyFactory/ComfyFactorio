@@ -111,7 +111,7 @@ local function on_init()
 
 	global_memory.active_crews_cap = Common.activeCrewsCap
 	global_memory.private_run_cap = Common.private_run_cap
-	
+
 	global_memory.minimumCapacitySliderValue = Common.minimumCapacitySliderValue
 
 	Surfaces.Lobby.create_starting_dock_surface()

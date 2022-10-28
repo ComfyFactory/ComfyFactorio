@@ -278,7 +278,7 @@ function Public.entry_price()
 	local item = Raffle.LambdaRaffle(Public.entry_price_data_raw, lambda)
 
 	if not item then
-		item = table.get_random_dictionary_entry(Public.entry_price_data_raw, true)
+		item = Common.get_random_dictionary_entry(Public.entry_price_data_raw, true)
 	end
 
 	local batchSize = Public.entry_price_data_raw[item].itemBatchSize

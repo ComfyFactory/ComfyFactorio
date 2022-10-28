@@ -819,7 +819,7 @@ local function event_on_player_mined_entity(event)
 	elseif entity.type == 'fish' then
         if not event.buffer then return end
 
-		local fish_amount = 0
+		local fish_amount
 		local to_give = {}
 
 		if class == Classes.enum.MASTER_ANGLER then
@@ -1694,17 +1694,19 @@ function Public.event_on_chunk_generated(event)
 		end
 	end
 
-	chunk_structures_fn{
-		true_left_top = chunk_left_top,
-		left_top = Utils.psum{chunk_left_top, {1, terraingen_coordinates_offset}},
-		noise_generator = noise_generator,
-		static_params = static_params,
-		specials = specials,
-		entities = entities,
-		seed = seed,
-		other_map_generation_data = other_map_generation_data,
-		biter_base_density_scale = Balance.biter_base_density_scale()
-	}
+	if chunk_structures_fn then
+		chunk_structures_fn{
+			true_left_top = chunk_left_top,
+			left_top = Utils.psum{chunk_left_top, {1, terraingen_coordinates_offset}},
+			noise_generator = noise_generator,
+			static_params = static_params,
+			specials = specials,
+			entities = entities,
+			seed = seed,
+			other_map_generation_data = other_map_generation_data,
+			biter_base_density_scale = Balance.biter_base_density_scale()
+		}
+	end
 
 	local tiles_corrected = {}
 	for i = 1, #tiles do

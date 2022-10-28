@@ -275,6 +275,8 @@ function Public.spawn_silo_setup(points_to_avoid)
 	local subtype = destination.subtype
 	local force = memory.force
 
+	if not Public[subtype].generate_silo_setup_position then return end
+
 	local p_silo = Public[subtype].generate_silo_setup_position(points_to_avoid)
 	if not p_silo then return end
 	-- log(string.format("placing silo at x=%f, y = %f", p_silo.x, p_silo.y))

@@ -1043,7 +1043,7 @@ local function teleport_handle_wake_tiles(boat, dummyboat, newsurface_name, olds
 			for _, area in pairs(wakeareas) do
 				for _, p in pairs(Common.central_positions_within_area(area, adjustednewposition)) do
 					local t = old_water_tile
-					if static_params and static_params.deepwater_xposition and (p.x <= static_params.deepwater_xposition - 0.5) then 
+					if static_params and static_params.deepwater_xposition and (p.x <= static_params.deepwater_xposition - 0.5) then
 						if t == 'water' then
 							t = 'deepwater'
 						else

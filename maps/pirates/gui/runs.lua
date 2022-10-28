@@ -346,7 +346,7 @@ function Public.toggle_window(player)
 
 	-- PRIVATE RUN ELEMENTS --
 
-	flow5 = flow4.add({
+	flow4.add({
 		name = 'private_checkbox',
 		type = 'checkbox',
 		caption = {'pirates.gui_runs_proposal_maker_private'},
