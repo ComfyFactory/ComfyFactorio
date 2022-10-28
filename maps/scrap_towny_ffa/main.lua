@@ -1,197 +1,228 @@
 require 'modules.custom_death_messages'
 require 'modules.flashlight_toggle_button'
 require 'modules.global_chat_toggle'
-require 'modules.worms_create_oil_patches'
 require 'modules.biters_yield_coins'
-require 'modules.scrap_towny_ffa.mining'
-require 'modules.scrap_towny_ffa.on_tick_schedule'
-require 'modules.scrap_towny_ffa.building'
-require 'modules.scrap_towny_ffa.spaceship'
-require 'modules.scrap_towny_ffa.town_center'
-require 'modules.scrap_towny_ffa.market'
-require 'modules.scrap_towny_ffa.slots'
-require 'modules.scrap_towny_ffa.wreckage_yields_scrap'
-require 'modules.scrap_towny_ffa.rocks_yield_ore_veins'
-require 'modules.scrap_towny_ffa.spawners_contain_biters'
-require 'modules.scrap_towny_ffa.explosives_are_explosive'
-require 'modules.scrap_towny_ffa.fluids_are_explosive'
-require 'modules.scrap_towny_ffa.trap'
-require 'modules.scrap_towny_ffa.turrets_drop_ammo'
-require 'modules.scrap_towny_ffa.combat_balance'
+require 'maps.scrap_towny_ffa.reset'
+require 'maps.scrap_towny_ffa.mining'
+require 'maps.scrap_towny_ffa.building'
+require 'maps.scrap_towny_ffa.spaceship'
+require 'maps.scrap_towny_ffa.town_center'
+require 'maps.scrap_towny_ffa.market'
+require 'maps.scrap_towny_ffa.slots'
+require 'maps.scrap_towny_ffa.wreckage_yields_scrap'
+require 'maps.scrap_towny_ffa.rocks_yield_ore_veins'
+require 'maps.scrap_towny_ffa.worms_create_oil_patches'
+require 'maps.scrap_towny_ffa.spawners_contain_biters'
+require 'maps.scrap_towny_ffa.explosives_are_explosive'
+require 'maps.scrap_towny_ffa.fluids_are_explosive'
+require 'maps.scrap_towny_ffa.trap'
+require 'maps.scrap_towny_ffa.turrets_drop_ammo'
+require 'maps.scrap_towny_ffa.vehicles'
+require 'maps.scrap_towny_ffa.suicide'
 
+local Event = require 'utils.event'
+local Alert = require 'utils.alert'
 local Autostash = require 'modules.autostash'
+local MapDefaults = require 'maps.scrap_towny_ffa.map_defaults'
 local BottomFrame = require 'utils.gui.bottom_frame'
-local Table = require 'modules.scrap_towny_ffa.table'
-local Nauvis = require 'modules.scrap_towny_ffa.nauvis'
-local Biters = require 'modules.scrap_towny_ffa.biters'
-local Pollution = require 'modules.scrap_towny_ffa.pollution'
-local Fish = require 'modules.scrap_towny_ffa.fish_reproduction'
-local Info = require 'modules.scrap_towny_ffa.info'
-local Team = require 'modules.scrap_towny_ffa.team'
-local Spawn = require 'modules.scrap_towny_ffa.spawn'
-local Radar = require 'modules.scrap_towny_ffa.limited_radar'
+local ScenarioTable = require 'maps.scrap_towny_ffa.table'
+local Nauvis = require 'maps.scrap_towny_ffa.nauvis'
+local Biters = require 'maps.scrap_towny_ffa.biters'
+local Pollution = require 'maps.scrap_towny_ffa.pollution'
+local Fish = require 'maps.scrap_towny_ffa.fish_reproduction'
+local Team = require 'maps.scrap_towny_ffa.team'
+local Radar = require 'maps.scrap_towny_ffa.limited_radar'
+local Limbo = require 'maps.scrap_towny_ffa.limbo'
+local Evolution = require 'maps.scrap_towny_ffa.evolution'
+local mod_gui = require('mod-gui')
+local Gui = require 'utils.gui'
+local Color = require 'utils.color_presets'
+local Server = require 'utils.server'
+local Where = require 'utils.commands.where'
+local Inventory = require 'modules.show_inventory'
 
--- for testing purposes only!!!
-local testing_mode = false
-
--- how long in ticks between spawn and death will be considered spawn kill (10 seconds)
-local max_ticks_between_spawns = 60 * 10
--- how many players must login before teams are teams_enabled
-local min_players_for_enabling_towns = 0
-
-local function load_buffs(player)
-    if player.force.name ~= 'player' and player.force.name ~= 'rogue' then
-        return
+local function spairs(t)
+    local keys = {}
+    for k in pairs(t) do
+        keys[#keys + 1] = k
     end
-    local ffatable = Table.get_table()
-    local player_index = player.index
-    if player.character == nil then
-        return
-    end
-    if ffatable.buffs[player_index] == nil then
-        ffatable.buffs[player_index] = {}
-    end
-    if ffatable.buffs[player_index].character_inventory_slots_bonus ~= nil then
-        player.character.character_inventory_slots_bonus = ffatable.buffs[player_index].character_inventory_slots_bonus
-    end
-    if ffatable.buffs[player_index].character_mining_speed_modifier ~= nil then
-        player.character.character_mining_speed_modifier = ffatable.buffs[player_index].character_mining_speed_modifier
-    end
-    if ffatable.buffs[player_index].character_crafting_speed_modifier ~= nil then
-        player.character.character_crafting_speed_modifier = ffatable.buffs[player_index].character_crafting_speed_modifier
+    table.sort(
+        keys,
+        function(a, b)
+            return t[b] < t[a]
+        end
+    )
+    local i = 0
+    return function()
+        i = i + 1
+        if keys[i] then
+            return keys[i], t[keys[i]]
+        end
     end
 end
 
-local function on_player_joined_game(event)
-    local ffatable = Table.get_table()
-    local player = game.players[event.player_index]
-    local surface = game.surfaces['nauvis']
-
-    player.game_view_settings.show_minimap = false
-    player.game_view_settings.show_map_view_options = false
-    player.game_view_settings.show_entity_info = true
-    player.map_view_settings = {
-        ['show-logistic-network'] = false,
-        ['show-electric-network'] = false,
-        ['show-turret-range'] = false,
-        ['show-pollution'] = false,
-        ['show-train-station-names'] = false,
-        ['show-player-names'] = false,
-        ['show-networkless-logistic-members'] = false,
-        ['show-non-standard-map-info'] = false
-    }
-    player.show_on_map = false
-    --player.game_view_settings.show_side_menu = false
-
-    Info.toggle_button(player)
-    Team.set_player_color(player)
-    if player.force ~= game.forces.player then
+local function init_score_board(player)
+    local this = ScenarioTable.get_table()
+    local saved_frame = this.score_gui_frame[player.index]
+    if saved_frame and saved_frame.valid then
         return
     end
 
-    if player.online_time == 0 then
-        Info.show(player)
-        if testing_mode then
-            ffatable.towns_enabled = true
-        else
-            ffatable.players = ffatable.players + 1
-            if ffatable.players >= min_players_for_enabling_towns then
-                ffatable.towns_enabled = true
+    local flow = mod_gui.get_frame_flow(player)
+    local frame = flow.add {type = 'frame', style = mod_gui.frame_style, caption = 'Town survival', direction = 'vertical'}
+    frame.style.vertically_stretchable = false
+    this.score_gui_frame[player.index] = frame
+end
+
+local function update_score()
+    local this = ScenarioTable.get_table()
+
+    if this.winner then
+        if not this.game_won then
+            this.game_won = true
+            this.game_reset_tick = 5400
+            Alert.alert_all_players(900, 'Winner winner chicken dinner!\n[color=red]' .. this.winner.name .. '[/color] has won the game!', Color.white, 'restart_required', 1.0)
+            for _, player in pairs(game.connected_players) do
+                player.play_sound {path = 'utility/game_won', volume_modifier = 0.75}
             end
+            local winner = this.winner
+            local message = {
+                title = 'Game over',
+                description = 'Town statistics is below',
+                color = 'success',
+                field1 = {
+                    text1 = 'Town won:',
+                    text2 = winner.name,
+                    inline = 'false'
+                },
+                field2 = {
+                    text1 = 'Town researched:',
+                    text2 = winner.name .. ' with a score of ' .. winner.research_counter .. ' techs!',
+                    inline = 'false'
+                },
+                field3 = {
+                    text1 = 'Town upgrades:',
+                    text2 = winner.name .. ' upgraded their town with:\nCrafting speed:' .. winner.upgrades.crafting_speed .. '\nMining speed:' .. winner.upgrades.mining_speed,
+                    inline = 'false'
+                },
+                field4 = {
+                    text1 = 'Town health:',
+                    text2 = winner.name .. ' had a health of ' .. winner.health .. ' left!',
+                    inline = 'false'
+                },
+                field5 = {
+                    text1 = 'Town coins:',
+                    text2 = winner.name .. ' had ' .. winner.coin_balance .. ' coins stashed!',
+                    inline = 'false'
+                }
+            }
+            Server.to_discord_embed_parsed(message)
         end
-
-        player.teleport({0, 0}, game.surfaces['limbo'])
-        Team.set_player_to_outlander(player)
-        Team.give_player_items(player)
-        player.insert {name = 'coin', count = '100'}
-        player.insert {name = 'stone-furnace', count = '1'}
-        Team.give_key(player.index)
-        if (testing_mode == true) then
-            player.cheat_mode = true
-            player.force.research_all_technologies()
-            player.insert {name = 'coin', count = '9900'}
-        end
-        -- first time spawn point
-        local spawn_point = Spawn.get_new_spawn_point(player, surface)
-        ffatable.strikes[player.name] = 0
-        Spawn.clear_spawn_point(spawn_point, surface)
-        -- reset cooldown
-        ffatable.cooldowns_town_placement[player.index] = 0
-        ffatable.last_respawn[player.name] = 0
-        player.teleport(spawn_point, surface)
         return
     end
-    load_buffs(player)
 
-    if not ffatable.requests[player.index] or ffatable.requests[player.index] ~= 'kill-character' then
-        return
-    end
-    if player.character then
-        if player.character.valid then
-            player.character.die()
+    for _, player in pairs(game.connected_players) do
+        local frame = this.score_gui_frame[player.index]
+        if not (frame and frame.valid) then
+            init_score_board(player)
         end
-    end
-    ffatable.requests[player.index] = nil
-end
+        if frame and frame.valid then
+            frame.clear()
 
-local function on_player_respawned(event)
-    local ffatable = Table.get_table()
-    local player = game.players[event.player_index]
-    local surface = player.surface
-    Team.give_player_items(player)
-    if player.force == game.forces['rogue'] then
-        Team.set_player_to_outlander(player)
-    end
-    if player.force == game.forces['player'] then
-        Team.give_key(player.index)
-    end
+            local inner_frame = frame.add {type = 'frame', style = 'inside_shallow_frame', direction = 'vertical'}
 
-    -- get_spawn_point will always return a valid spawn
-    local spawn_point = Spawn.get_spawn_point(player, surface)
+            local subheader = inner_frame.add {type = 'frame', style = 'subheader_frame'}
+            subheader.style.horizontally_stretchable = true
+            subheader.style.vertical_align = 'center'
 
-    -- reset cooldown
-    ffatable.last_respawn[player.name] = game.tick
-    player.teleport(spawn_point, surface)
-    load_buffs(player)
-end
+            subheader.add {type = 'label', style = 'subheader_label', caption = {'', 'Survive 2 days (48h) to win!'}}
 
-local function on_player_died(event)
-    local ffatable = Table.get_table()
-    local player = game.players[event.player_index]
-    if ffatable.strikes[player.name] == nil then
-        ffatable.strikes[player.name] = 0
-    end
+            if not next(subheader.children) then
+                subheader.destroy()
+            end
 
-    local ticks_elapsed = game.tick - ffatable.last_respawn[player.name]
-    if ticks_elapsed < max_ticks_between_spawns then
-        ffatable.strikes[player.name] = ffatable.strikes[player.name] + 1
-    else
-        ffatable.strikes[player.name] = 0
+            local information_table = inner_frame.add {type = 'table', column_count = 3, style = 'bordered_table'}
+            information_table.style.margin = 4
+            information_table.style.column_alignments[3] = 'right'
+
+            for _, caption in pairs({'Rank', 'Town (players online/total)', 'Survival time'}) do
+                local label = information_table.add {type = 'label', caption = caption}
+                label.style.font = 'default-bold'
+            end
+
+            local town_ages = {}
+            for _, town_center in pairs(this.town_centers) do
+                if town_center ~= nil then
+                    local age = game.tick - town_center.creation_tick
+                    town_ages[town_center] = age
+                end
+            end
+
+            local rank = 1
+
+            for town_center, age in spairs(town_ages) do
+                local position = information_table.add {type = 'label', caption = '#' .. rank}
+                if town_center == this.town_centers[player.force.name] then
+                    position.style.font = 'default-semibold'
+                    position.style.font_color = {r = 1, g = 1}
+                end
+                local label =
+                    information_table.add {
+                    type = 'label',
+                    caption = town_center.town_name .. ' (' .. #town_center.market.force.connected_players .. '/' .. #town_center.market.force.players .. ')'
+                }
+                label.style.font = 'default-semibold'
+                label.style.font_color = town_center.color
+                local age_hours = age / 60 / 3600
+                local total_age = string.format('%.1f', age_hours)
+                information_table.add {type = 'label', caption = total_age .. 'h'}
+
+                rank = rank + 1
+
+                if tonumber(total_age) >= this.required_time_to_win then
+                    this.winner = {
+                        name = town_center.town_name,
+                        research_counter = town_center.research_counter,
+                        upgrades = town_center.upgrades,
+                        health = town_center.health,
+                        coin_balance = town_center.coin_balance
+                    }
+                end
+            end
+
+            -- Outlander section
+            information_table.add {type = 'label', caption = '-'}
+            local outlander_on = #game.forces['player'].connected_players + #game.forces['rogue'].connected_players
+            local outlander_total = #game.forces['player'].players + #game.forces['rogue'].players
+
+            local label =
+                information_table.add {
+                type = 'label',
+                caption = 'Outlanders' .. ' (' .. outlander_on .. '/' .. outlander_total .. ')'
+            }
+            label.style.font_color = {170, 170, 170}
+            information_table.add {type = 'label', caption = '-'}
+        end
     end
 end
 
 local function on_init()
     Autostash.insert_into_furnace(true)
+    Autostash.insert_to_neutral_chests(true)
     Autostash.insert_into_wagon(true)
     Autostash.bottom_button(true)
     BottomFrame.reset()
     BottomFrame.activate_custom_buttons(true)
+    Where.module_disabled(true)
+    Inventory.module_disabled(true)
 
     --log("on_init")
     game.enemy_has_vision_on_land_mines = false
     game.draw_resource_selection = true
     game.disable_tutorial_triggers()
 
-    local ffatable = Table.get_table()
-    ffatable.last_respawn = {}
-    ffatable.last_death = {}
-    ffatable.strikes = {}
-    ffatable.testing_mode = testing_mode
-    ffatable.spawn_point = {}
-    ffatable.buffs = {}
-    ffatable.players = 0
-    ffatable.towns_enabled = true
-
+    MapDefaults.initialize()
+    Limbo.initialize()
     Nauvis.initialize()
     Team.initialize()
 end
@@ -220,10 +251,63 @@ local function on_nth_tick(event)
     tick_actions[seconds]()
 end
 
-local Event = require 'utils.event'
+local function handle_changes()
+    ScenarioTable.set('restart', true)
+    ScenarioTable.set('soft_reset', false)
+    print('Received new changes from backend.')
+end
+
+local function ui_smell_evolution()
+    for _, player in pairs(game.connected_players) do
+        -- Only for non-townies
+        if player.force.index == game.forces.player.index or player.force.index == game.forces['rogue'].index then
+            local e = Evolution.get_evolution(player.position)
+            local extra
+            if e < 0.1 then
+                extra = 'A good place to found a town. Build a furnace to get started.'
+            else
+                extra = 'Not good to start a new town. Maybe somewhere else?'
+            end
+            player.create_local_flying_text(
+                {
+                    position = {x = player.position.x, y = player.position.y},
+                    text = 'You smell the evolution around here: ' .. string.format('%.0f', e * 100) .. '%. ' .. extra,
+                    color = {r = 1, g = 1, b = 1}
+                }
+            )
+        end
+    end
+end
 
 Event.on_init(on_init)
 Event.on_nth_tick(60, on_nth_tick) -- once every second
-Event.add(defines.events.on_player_joined_game, on_player_joined_game)
-Event.add(defines.events.on_player_respawned, on_player_respawned)
-Event.add(defines.events.on_player_died, on_player_died)
+Event.on_nth_tick(60 * 30, ui_smell_evolution)
+Event.on_nth_tick(60, update_score)
+Event.add(Server.events.on_changes_detected, handle_changes)
+
+--Disable the comfy main gui since we got too many goodies there.
+Event.add(
+    defines.events.on_gui_click,
+    function(event)
+        local element = event.element
+        if not element or not element.valid then
+            return
+        end
+        local fish_button = Gui.top_main_gui_button
+        local main_frame_name = Gui.main_frame_name
+        local player = game.get_player(event.player_index)
+        if not player or not player.valid then
+            return
+        end
+        if element.name == fish_button then
+            if not player.admin then
+                if player.gui.left[main_frame_name] and player.gui.left[main_frame_name].valid then
+                    player.gui.left[main_frame_name].destroy()
+                end
+                return player.print('Comfy panel is disabled in this scenario.', Color.fail)
+            end
+        end
+    end
+)
+
+require 'maps.scrap_towny_ffa.scrap_towny_ffa_layout'

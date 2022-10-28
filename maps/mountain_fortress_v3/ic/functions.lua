@@ -10,7 +10,6 @@ local Event = require 'utils.event'
 
 local Public = {}
 local main_tile_name = 'black-refined-concrete'
-local raise_event = script.raise_event
 local round = math.round
 local floor = math.floor
 
@@ -140,7 +139,7 @@ local function get_entity_from_player_surface(cars, player)
 end
 
 local function get_owner_car_surface(cars, player, target)
-    for k, car in pairs(cars) do
+    for _, car in pairs(cars) do
         if car.owner == player.index then
             local surface_index = car.surface
             local surface = game.surfaces[surface_index]
@@ -173,7 +172,7 @@ end
 
 local function get_player_entity(player)
     local cars = IC.get('cars')
-    for k, car in pairs(cars) do
+    for _, car in pairs(cars) do
         if car.owner == player.index and type(car.entity) == 'boolean' then
             return car.name, true
         elseif car.owner == player.index then
@@ -187,7 +186,7 @@ local function get_owner_car_name(player)
     local cars = IC.get('cars')
     local saved_surfaces = IC.get('saved_surfaces')
     local index = saved_surfaces[player.index]
-    for k, car in pairs(cars) do
+    for _, car in pairs(cars) do
         if not index then
             return false
         end
@@ -819,6 +818,10 @@ function Public.kill_car(entity)
 
     local renders = IC.get('renders')
 
+    if not owner then
+        return
+    end
+
     if renders[owner.index] then
         rendering.destroy(renders[owner.index])
         renders[owner.index] = nil
@@ -890,6 +893,10 @@ function Public.kill_car_but_save_surface(entity)
                 trust_system[owner.index] = nil
             end
         end
+    end
+
+    if not owner then
+        return
     end
 
     local renders = IC.get('renders')
@@ -1246,7 +1253,7 @@ function Public.use_door_with_entity(player, door)
         local surface_index = car.surface
         local surface = game.surfaces[surface_index]
         if validate_entity(car.entity) and car.owner == player.index then
-            raise_event(
+            Event.raise(
                 IC.events.used_car_door,
                 {
                     player = player,
@@ -1277,7 +1284,7 @@ function Public.use_door_with_entity(player, door)
         player_data.surface = surface.index
     else
         if validate_entity(car.entity) and car.owner == player.index then
-            raise_event(
+            Event.raise(
                 IC.events.used_car_door,
                 {
                     player = player,

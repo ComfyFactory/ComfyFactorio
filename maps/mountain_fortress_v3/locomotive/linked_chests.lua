@@ -1,8 +1,6 @@
 local Event = require 'utils.event'
+local Public = require 'maps.mountain_fortress_v3.table'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
-local WPT = require 'maps.mountain_fortress_v3.table'
-
-local Public = {}
 
 local function contains_positions(area)
     local function inside(pos)
@@ -52,9 +50,9 @@ local function on_built_entity(event)
         return
     end
 
-    local outside_chests = WPT.get('outside_chests')
-    local chests_linked_to = WPT.get('chests_linked_to')
-    local upgrades = WPT.get('upgrades')
+    local outside_chests = Public.get('outside_chests')
+    local chests_linked_to = Public.get('chests_linked_to')
+    local upgrades = Public.get('upgrades')
     local chest_created
     local increased = false
 
@@ -124,8 +122,8 @@ local function on_player_and_robot_mined_entity(event)
         return
     end
 
-    local outside_chests = WPT.get('outside_chests')
-    local chests_linked_to = WPT.get('chests_linked_to')
+    local outside_chests = Public.get('outside_chests')
+    local chests_linked_to = Public.get('chests_linked_to')
 
     if outside_chests[entity.unit_number] then
         for k, data in pairs(chests_linked_to) do
@@ -144,8 +142,8 @@ local function on_player_and_robot_mined_entity(event)
 end
 
 local function divide_contents()
-    local outside_chests = WPT.get('outside_chests')
-    local chests_linked_to = WPT.get('chests_linked_to')
+    local outside_chests = Public.get('outside_chests')
+    local chests_linked_to = Public.get('chests_linked_to')
     local target_chest
 
     if not next(outside_chests) then

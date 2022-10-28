@@ -45,10 +45,11 @@ local remove = table.remove
 local speed = 0.06
 
 --- Draws a new render.
----@return integer
+---@return table
 function Public:new_render()
     local surface = game.get_surface(self.surface_id)
     self.render_id = rendering.draw_sprite {target = self.position, sprite = self.sprite, surface = surface}
+    return self
 end
 
 --- Sets a new target for a given render.

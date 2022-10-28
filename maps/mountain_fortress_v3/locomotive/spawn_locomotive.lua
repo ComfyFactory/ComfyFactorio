@@ -1,11 +1,8 @@
-local Generate = require 'maps.mountain_fortress_v3.generate'
+local Public = require 'maps.mountain_fortress_v3.table'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
-local WPT = require 'maps.mountain_fortress_v3.table'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
 local MapFunctions = require 'tools.map_functions'
-
-local Public = {}
 
 local random = math.random
 
@@ -113,7 +110,7 @@ local set_loco_tiles =
 )
 
 function Public.locomotive_spawn(surface, position)
-    local this = WPT.get()
+    local this = Public.get()
     for y = -6, 6, 2 do
         surface.create_entity({name = 'straight-rail', position = {position.x, position.y + y}, force = 'player', direction = 0})
     end
@@ -123,7 +120,7 @@ function Public.locomotive_spawn(surface, position)
     this.locomotive_cargo = surface.create_entity({name = 'cargo-wagon', position = {position.x, position.y + 3}, force = 'player'})
     this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({name = 'raw-fish', count = 8})
 
-    local winter_mode_locomotive = Generate.wintery(this.locomotive, 5.5)
+    local winter_mode_locomotive = Public.wintery(this.locomotive, 5.5)
     if not winter_mode_locomotive then
         rendering.draw_light(
             {
@@ -141,7 +138,7 @@ function Public.locomotive_spawn(surface, position)
         )
     end
 
-    local winter_mode_cargo = Generate.wintery(this.locomotive_cargo, 5.5)
+    local winter_mode_cargo = Public.wintery(this.locomotive_cargo, 5.5)
 
     if not winter_mode_cargo then
         rendering.draw_light(
@@ -165,7 +162,7 @@ function Public.locomotive_spawn(surface, position)
         position = position
     }
 
-    Task.set_timeout_in_ticks(100, set_loco_tiles, data)
+    Task.set_timeout_in_ticks(150, set_loco_tiles, data)
 
     for y = -1, 0, 0.05 do
         local scale = random(50, 100) * 0.01
@@ -190,6 +187,10 @@ function Public.locomotive_spawn(surface, position)
     this.locomotive_cargo.operable = true
 
     local locomotive = ICW.register_wagon(this.locomotive)
+    if not locomotive then
+        return
+    end
+
     ICW.register_wagon(this.locomotive_cargo)
 
     this.icw_locomotive = locomotive

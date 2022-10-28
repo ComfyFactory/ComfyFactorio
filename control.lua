@@ -78,7 +78,7 @@ require 'utils.freeplay'
 --require 'modules.wave_defense.main'
 --require 'modules.fjei.main'
 --require 'modules.charging_station'
---require 'modules.nuclear_landmines'
+--require 'modules.landmine_effects'
 --require 'modules.crawl_into_pipes'
 --require 'modules.no_acid_puddles'
 --require 'modules.simple_tags'
@@ -252,7 +252,6 @@ require 'utils.freeplay'
 --require 'terrain_layouts.scrap_02'
 --require 'terrain_layouts.watery_world'
 --require 'terrain_layouts.tree_01'
---require 'terrain_layouts.scrap_towny_ffa'
 ---------------------------------------------------------------
 
 --- this file exists only for the panel to sync and start from within the panel

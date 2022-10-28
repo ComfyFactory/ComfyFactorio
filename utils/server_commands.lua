@@ -26,6 +26,10 @@ function ServerCommands.server_started()
     script.raise_event(Server.events.on_server_started, {})
 end
 
+function ServerCommands.changes_detected()
+    script.raise_event(Server.events.on_changes_detected, {})
+end
+
 ServerCommands.set_time = Server.set_time
 ServerCommands.set_ups = Server.set_ups
 ServerCommands.get_ups = Server.get_ups

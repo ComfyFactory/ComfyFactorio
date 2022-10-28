@@ -31,7 +31,6 @@ local auto_upgrade_name = Gui.uid_name()
 local kick_player_name = Gui.uid_name()
 local destroy_surface_name = Gui.uid_name()
 
-local raise_event = script.raise_event
 local add_toolbar
 local remove_toolbar
 
@@ -869,7 +868,7 @@ Gui.on_click(
             if player_list.players[name] then
                 player.print('[IC] ' .. name .. ' was removed from your vehicle.', Color.info)
                 decrement(player_list.players, name)
-                raise_event(
+                Event.raise(
                     ICT.events.on_player_kicked_from_surface,
                     {
                         player = player,
