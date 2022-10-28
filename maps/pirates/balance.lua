@@ -397,7 +397,7 @@ function Public.island_richness_avg_multiplier()
 end
 
 function Public.resource_quest_multiplier()
-	return (1.0 + 0.075 * (Common.overworldx()/40)^(8/10)) * Math.sloped(Common.difficulty_scale(), 1/5) * (Public.crew_scale())^(1/10)
+	return (0.9 + 0.075 * (Common.overworldx()/40)^(8/10)) * Math.sloped(Common.difficulty_scale(), 1/5) * (Public.crew_scale())^(1/10)
 end
 
 function Public.quest_market_entry_price_scale()

@@ -1,7 +1,7 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 
-local SurfacesCommon = require 'maps.pirates.surfaces.common'
+-- local SurfacesCommon = require 'maps.pirates.surfaces.common'
 local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
 local Balance = require 'maps.pirates.balance'
@@ -11,6 +11,7 @@ local Hold = require 'maps.pirates.surfaces.hold'
 -- local Parrot = require 'maps.pirates.parrot'
 local Cabin = require 'maps.pirates.surfaces.cabin'
 local Utils = require 'maps.pirates.utils_local'
+local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 -- local _inspect = require 'utils.inspect'.inspect
 
 -- DEV NOTE: If making boat designs that have rails, make sure the boat is placed at odd co-ordinates before blueprinting.
@@ -64,12 +65,17 @@ function Public.currentdestination_move_boat_natural()
 
 	if (destination and destination.dynamic_data and destination.dynamic_data.timer) and (not (destination.dynamic_data.timer >= 1)) then return end
 
+	local water_type = 'water'
+	if destination and destination.subtype == IslandEnum.enum.RADIOACTIVE then
+		water_type = 'water-green'
+	end
+
 	if boat and boat.state == enum_state.LEAVING_DOCK or boat.state == enum_state.APPROACHING then
 		local newp = {x = boat.position.x + Common.boat_steps_at_a_time, y = boat.position.y}
-		Public.teleport_boat(boat, nil, newp)
+		Public.teleport_boat(boat, nil, newp, nil, water_type)
 	elseif boat and boat.state == enum_state.RETREATING then
 		local newp = {x = boat.position.x - Common.boat_steps_at_a_time, y = boat.position.y}
-		Public.teleport_boat(boat, nil, newp)
+		Public.teleport_boat(boat, nil, newp, nil, water_type)
 	end
 end
 
@@ -1037,7 +1043,14 @@ local function teleport_handle_wake_tiles(boat, dummyboat, newsurface_name, olds
 			for _, area in pairs(wakeareas) do
 				for _, p in pairs(Common.central_positions_within_area(area, adjustednewposition)) do
 					local t = old_water_tile
-					if static_params and static_params.deepwater_xposition and (p.x <= static_params.deepwater_xposition - 0.5) then t = 'deepwater' end
+					if static_params and static_params.deepwater_xposition and (p.x <= static_params.deepwater_xposition - 0.5) then 
+						if t == 'water' then
+							t = 'deepwater'
+						else
+							t = 'deepwater-green'
+						end
+					end
+
 					if friendlyboat_bool and boat.state == enum_state.RETREATING and vector.x < 0 then --in this case we need to place some landing tiles, as the cannon juts out
 						if (p.x >= boat.dockedposition.x + scope.Data.leftmost_gate_position) and (p.y <= scope.Data.upmost_gate_position or p.y >= scope.Data.downmost_gate_position) then t = CoreData.landing_tile end
 					end

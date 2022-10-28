@@ -40,10 +40,10 @@ function Public.terrain(args)
 	local p = args.p
 
 
-	if IslandsCommon.place_water_tile(args) then return end
+	if IslandsCommon.place_water_tile(args, true) then return end
 
 	if noises.height(p) < 0 then
-		args.tiles[#args.tiles + 1] = {name = 'water', position = args.p}
+		args.tiles[#args.tiles + 1] = {name = 'water-green', position = args.p}
 		return
 	end
 
@@ -109,7 +109,7 @@ function Public.terrain(args)
 			args.entities[#args.entities + 1] = {name = 'stone', position = args.p, amount = 1000}
 		elseif noises.ore(p) < 0.005 and noises.ore(p) > -0.005 then
 			if noises.ore(p) > 0 then
-				args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = 10}
+				args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = 20}
 			else
 				args.entities[#args.entities + 1] = {name = 'copper-ore', position = args.p, amount = 100}
 			end
@@ -130,7 +130,7 @@ function Public.chunk_structures(args)
 			-- we need some indestructible spawners, because otherwise you can clear, stay here forever, make infinite resources...
 			spawners_indestructible = noises.farness(p) > 0.63,
 			-- spawners_indestructible = false,
-			density_perchunk = 20 * Math.slopefromto(noises.farness(p), 0.3, 1)^2 * args.biter_base_density_scale,
+			density_perchunk = 20 * Math.slopefromto(noises.farness(p), 0.3, 1.08)^2 * args.biter_base_density_scale,
 		}
 	end
 

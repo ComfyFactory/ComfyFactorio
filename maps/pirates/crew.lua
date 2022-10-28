@@ -535,6 +535,7 @@ function Public.disband_crew(donotprint)
 	end
 
 
+	memory.game_lost = true -- only necessary to avoid printing research notifications
 	Public.reset_crew_and_enemy_force(id)
 
 	local lobby = game.surfaces[CoreData.lobby_surface_name]

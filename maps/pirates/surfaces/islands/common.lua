@@ -16,11 +16,19 @@ local Public = {}
 
 Public.enum = IslandEnum.enum
 
-function Public.place_water_tile(args)
+function Public.place_water_tile(args, place_green_water)
+	local water_names = {}
+	if place_green_water then
+		water_names[#water_names+1] = 'water-green'
+		water_names[#water_names+1] = 'deepwater-green'
+	else
+		water_names[#water_names+1] = 'water'
+		water_names[#water_names+1] = 'deepwater'
+	end
 
 	if args.static_params and args.static_params.deepwater_terraingenframe_xposition and args.p.x <= args.static_params.deepwater_terraingenframe_xposition - 0.5
 	then
-		args.tiles[#args.tiles + 1] = {name = 'deepwater', position = args.p}
+		args.tiles[#args.tiles + 1] = {name = water_names[2], position = args.p}
 
 		local fishrng = Math.random(350)
 		if fishrng == 350 then
@@ -33,7 +41,7 @@ function Public.place_water_tile(args)
 
 	local height_noise = args.noise_generator['height'](args.p)
 	if height_noise < 0 then
-		args.tiles[#args.tiles + 1] = {name = 'water', position = args.p}
+		args.tiles[#args.tiles + 1] = {name = water_names[1], position = args.p}
 
 		local fishrng = Math.random(350)
 		if fishrng == 350 then
