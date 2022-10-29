@@ -58,7 +58,7 @@ function Public.unmake_officer(captain, player)
 	local force = memory.force
 
 	if Utils.contains(Common.crew_get_crew_members(), player) then
-		if memory.officers_table[player.index] then
+		if Common.is_officer(player.index) then
 			memory.officers_table[player.index] = nil
 
 			Common.notify_force_light(force,{'pirates.roles_unmake_officer', captain.name, player.name})
@@ -96,13 +96,13 @@ function Public.tag_text(player)
 		tags[#tags + 1] = 'Cap\'n'
 	elseif player.controller_type == defines.controllers.spectator then
 		tags[#tags + 1] = 'Spectating'
-	elseif memory.officers_table and memory.officers_table[player.index] then
+	elseif Common.is_officer(player.index) then
 		tags[#tags + 1] = 'Officer'
 	end
 
-	local classes_table = memory.classes_table
-	if classes_table and classes_table[player.index] then
-		tags[#tags + 1] = Classes.eng_form[classes_table[player.index]]
+	local class = Classes.get_class(player.index)
+	if class then
+		tags[#tags + 1] = Classes.eng_form[class]
 	end
 
 	for i, t in ipairs(tags) do
@@ -161,7 +161,7 @@ function Public.player_privilege_level(player)
 
 	if Common.is_id_valid(memory.id) and Common.is_captain(player) then
 		return Public.privilege_levels.CAPTAIN
-	elseif memory.officers_table and memory.officers_table[player.index] then
+	elseif Common.is_officer(player.index) then
 		return Public.privilege_levels.OFFICER
 	else
 		return Public.privilege_levels.NORMAL
@@ -217,15 +217,17 @@ function Public.player_left_so_redestribute_roles(player)
 	end
 
 	-- no need to do this, as long as officers get reset when the captainhood changes hands
-	-- if memory.officers_table and memory.officers_table[player.index] then
+	-- if Common.is_officer(player.index) then
 	-- 	memory.officers_table[player.index] = nil
 	-- end
 
 	local memory = Memory.get_crew_memory()
 
+	local class = Classes.get_class(player.index)
+
 	-- free up the class
-	if memory.classes_table and memory.classes_table[player.index] then
-		memory.spare_classes[#memory.spare_classes + 1] = memory.classes_table[player.index]
+	if class then
+		memory.spare_classes[#memory.spare_classes + 1] = class
 		memory.classes_table[player.index] = nil
 
 		for _, class_entry in ipairs(memory.unlocked_classes) do
@@ -263,7 +265,7 @@ function Public.resign_as_officer(player)
 	local memory = Memory.get_crew_memory()
 	local force = memory.force
 
-	if memory.officers_table and memory.officers_table[player.index] then
+	if Common.is_officer(player.index) then
 		memory.officers_table[player.index] = nil
 
 
@@ -441,7 +443,7 @@ function Public.captain_tax(captain_index)
 		for _, player_index in pairs(crew_members) do
 			if player_index ~= captain_index then
 				local player = game.players[player_index]
-				if player and player.valid and not (memory.officers_table and memory.officers_table[player.index]) then
+				if player and player.valid and not (Common.is_officer(player.index)) then
 					local inv = player.get_inventory(defines.inventory.character_main)
 					if inv and inv.valid then
 						for _, i in pairs(items_to_req) do

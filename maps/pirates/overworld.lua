@@ -8,7 +8,7 @@ local Balance = require 'maps.pirates.balance'
 local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
 local Utils = require 'maps.pirates.utils_local'
-local _inspect = require 'utils.inspect'.inspect
+-- local _inspect = require 'utils.inspect'.inspect
 -- local Server = require 'utils.server'
 
 -- local Structures = require 'maps.pirates.structures.structures'
@@ -16,7 +16,7 @@ local Boats = require 'maps.pirates.structures.boats.boats'
 local Surfaces = require 'maps.pirates.surfaces.surfaces'
 local Crowsnest = require 'maps.pirates.surfaces.crowsnest'
 local Dock = require 'maps.pirates.surfaces.dock'
--- local Islands = require 'maps.pirates.surfaces.islands.islands'
+local Islands = require 'maps.pirates.surfaces.islands.islands'
 -- local Sea = require 'maps.pirates.surfaces.sea.sea'
 local Crew = require 'maps.pirates.crew'
 -- local Roles = require 'maps.pirates.roles.roles'
@@ -30,24 +30,26 @@ local Upgrades = require 'maps.pirates.boat_upgrades'
 local Kraken = require 'maps.pirates.surfaces.sea.kraken'
 local Highscore = require 'maps.pirates.highscore'
 local CustomEvents = require 'maps.pirates.custom_events'
+local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 
 
 local NIL = 'none'
 local DOCK = 'dock'
-local FIRST = Surfaces.Island.enum.FIRST
-local RED_DESERT = Surfaces.Island.enum.RED_DESERT
-local SWAMP = Surfaces.Island.enum.SWAMP
-local STANDARD = Surfaces.Island.enum.STANDARD
-local WALKWAYS = Surfaces.Island.enum.WALKWAYS
-local MAZE = Surfaces.Island.enum.MAZE
-local RADIOACTIVE = Surfaces.Island.enum.RADIOACTIVE
-local HORSESHOE = Surfaces.Island.enum.HORSESHOE
-local STANDARD_VARIANT = Surfaces.Island.enum.STANDARD_VARIANT
+local FIRST = IslandEnum.enum.FIRST
+local RED_DESERT = IslandEnum.enum.RED_DESERT
+local SWAMP = IslandEnum.enum.SWAMP
+local STANDARD = IslandEnum.enum.STANDARD
+local WALKWAYS = IslandEnum.enum.WALKWAYS
+local MAZE = IslandEnum.enum.MAZE
+local RADIOACTIVE = IslandEnum.enum.RADIOACTIVE
+local HORSESHOE = IslandEnum.enum.HORSESHOE
+local STANDARD_VARIANT = IslandEnum.enum.STANDARD_VARIANT
+local CAVE = IslandEnum.enum.CAVE
 
 local A = {STANDARD_VARIANT, RED_DESERT, HORSESHOE, WALKWAYS}
-local B = {NIL, NIL, NIL, STANDARD, STANDARD_VARIANT, RED_DESERT, HORSESHOE, WALKWAYS}
+local B = {NIL, NIL, NIL, STANDARD, STANDARD_VARIANT, RED_DESERT, HORSESHOE, WALKWAYS, CAVE}
 local C = {STANDARD, STANDARD_VARIANT, RED_DESERT, HORSESHOE, WALKWAYS}
-local D = {NIL, NIL, NIL, STANDARD, STANDARD_VARIANT, RED_DESERT, HORSESHOE, WALKWAYS, SWAMP}
+local D = {NIL, NIL, NIL, STANDARD, STANDARD_VARIANT, RED_DESERT, HORSESHOE, WALKWAYS, SWAMP, CAVE}
 
 local destinationScheme = {
 	[0] = {DOCK, FIRST, NIL},
@@ -225,7 +227,7 @@ function Public.generate_destination_base_cost_to_undock(p, subtype)
 		end
 	end
 	-- override:
-	if subtype == Surfaces.Island.enum.RADIOACTIVE then
+	if subtype == IslandEnum.enum.RADIOACTIVE then
 		base_cost_to_undock = {
 			['uranium-235'] = Math.ceil(Math.ceil(80 + (macro_p.x - 1))),
 			-- ['uranium-235'] = Math.ceil(Math.ceil(80 + (macro_p.x)/2)), --tried adding beacons instead of this
@@ -347,18 +349,20 @@ function Public.generate_overworld_destination(p)
 		-- end
 		boat_for_sale_type = Boats.enum.SLOOP
 
-		local upgrade_for_sale
-		if macro_p.x == 0 then
-			upgrade_for_sale = nil
-		elseif macro_p.x == 3 then
-			upgrade_for_sale = Upgrades.enum.MORE_POWER
-		elseif macro_p.x == 7 then
-			upgrade_for_sale = Upgrades.enum.EXTRA_HOLD
-		elseif macro_p.x % 16 < 8 then
-			upgrade_for_sale = Upgrades.enum.MORE_POWER
-		else
-			upgrade_for_sale = Upgrades.enum.EXTRA_HOLD
-		end --upgrades like UNLOCK_MERCHANTS will slot themselves in when necessary, due to .overwrite_a_dock_upgrade()
+		local upgrade_for_sale = nil
+		-- These upgrades have been made to be exclusive purchase at captain's cabin
+		-- local upgrade_for_sale
+		-- if macro_p.x == 0 then
+		-- 	upgrade_for_sale = nil
+		-- elseif macro_p.x == 3 then
+		-- 	upgrade_for_sale = Upgrades.enum.MORE_POWER
+		-- elseif macro_p.x == 7 then
+		-- 	upgrade_for_sale = Upgrades.enum.EXTRA_HOLD
+		-- elseif macro_p.x % 16 < 8 then
+		-- 	upgrade_for_sale = Upgrades.enum.MORE_POWER
+		-- else
+		-- 	upgrade_for_sale = Upgrades.enum.EXTRA_HOLD
+		-- end --upgrades like UNLOCK_MERCHANTS will slot themselves in when necessary, due to .overwrite_a_dock_upgrade()
 		-- one day it's worth making this system more readable
 
 		local static_params = Utils.deepcopy(Dock.Data.static_params_default)
@@ -598,6 +602,8 @@ function Public.cleanup_old_destination_data() --we do actually access destinati
 	local memory = Memory.get_crew_memory()
 	for i, destination_data in pairs(memory.destinations) do
 		if destination_data.overworld_position.x < memory.overworldx then
+			Islands[IslandEnum.enum.CAVE].cleanup_cave_surface(memory.destinations[i])
+
 			memory.destinations[i] = nil
 		end
 	end

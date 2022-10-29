@@ -90,6 +90,7 @@ function Public.configure_structure_entities(special_name, components)
 						local l = loot[i]
 						inv.insert(l)
 					end
+
 				elseif e.name == 'stone-furnace' then
 					local inv = e.get_inventory(defines.inventory.fuel)
 					local loot = Loot.stone_furnace_loot()
@@ -97,6 +98,7 @@ function Public.configure_structure_entities(special_name, components)
 						local l = loot[i]
 						inv.insert(l)
 					end
+
 				elseif e.name == 'roboport' then
 					local inv = e.get_inventory(defines.inventory.roboport_robot)
 					local loot = Loot.roboport_bots_loot()
@@ -104,44 +106,55 @@ function Public.configure_structure_entities(special_name, components)
 						local l = loot[i]
 						inv.insert(l)
 					end
+
 				elseif e.name == 'centrifuge' then
 					local inv = e.get_inventory(defines.inventory.assembling_machine_input)
 					e.set_recipe('kovarex-enrichment-process')
 					inv.insert{name = 'uranium-235', count = 20}
+
 				elseif e.name == 'gun-turret' and special_name == 'small_radioactive_centrifuge' then
 					e.force = memory.force
+
 				elseif e.name == 'fast-splitter' and special_name == 'small_radioactive_centrifuge' then
 					e.splitter_output_priority = 'left'
 					e.splitter_filter = 'uranium-235'
+
 				elseif e.name == 'storage-tank' and special_name == 'swamp_lonely_storage_tank' then
 					e.insert_fluid(Loot.swamp_storage_tank_fluid_loot())
+
 				elseif e.name == 'storage-tank' and special_name == 'small_oilrig_base' then
 					e.insert_fluid(Loot.storage_tank_fluid_loot('crude-oil'))
+
 				elseif e.name == 'storage-tank' and special_name == 'small_abandoned_refinery' then
 					e.insert_fluid(Loot.storage_tank_fluid_loot('petroleum-gas'))
+
 				elseif e.name == 'storage-tank' and (not (special_name == 'small_radioactive_reactor')) then
 					e.insert_fluid(Loot.storage_tank_fluid_loot())
-				elseif (special_name == 'maze_labs') and e.name == 'lab' then
+
+				elseif e.name == 'lab' and (special_name == 'maze_labs' or special_name == 'small_radioactive_lab') then
 					local inv = e.get_inventory(defines.inventory.lab_input)
-					local loot = Loot.maze_lab_loot()
+					local loot = Loot.lab_loot()
 					for i = 1, #loot do
 						local l = loot[i]
 						inv.insert(l)
 					end
-				elseif (special_name == 'maze_treasure') and e.name == 'steel-chest' then
+
+				elseif e.name == 'steel-chest' and special_name == 'maze_treasure' then
 					local inv = e.get_inventory(defines.inventory.chest)
 					local loot = Loot.maze_treasure_loot()
 					for i = 1, #loot do
 						local l = loot[i]
 						inv.insert(l)
 					end
-				elseif (special_name == 'maze_defended_camp' or special_name == 'maze_undefended_camp') and e.name == 'wooden-chest' then
+
+				elseif e.name == 'wooden-chest' and (special_name == 'maze_defended_camp' or special_name == 'maze_undefended_camp') then
 					local inv = e.get_inventory(defines.inventory.chest)
 					local loot = Loot.maze_camp_loot()
 					for i = 1, #loot do
 						local l = loot[i]
 						inv.insert(l)
 					end
+
 				elseif special_name == 'small_cliff_base' then
 					-- this is to make friendly gun turrets work
 					e.force = memory.force
@@ -165,7 +178,7 @@ function Public.configure_structure_entities(special_name, components)
 					end
 				end
 
-				if force_name and string.sub(force_name, 1, 15) and string.sub(force_name, 1, 15) == 'ancient-hostile' then
+				if force_name and string.sub(force_name, 1, 15) == 'ancient-hostile' then
 					if e.name == 'gun-turret' then
 						if memory.overworldx < 800 then
 							e.insert({name = "piercing-rounds-magazine", count = 64})
@@ -173,7 +186,8 @@ function Public.configure_structure_entities(special_name, components)
 							e.insert({name = "uranium-rounds-magazine", count = 64})
 						end
 					end
-				elseif force_name and string.sub(force_name, 1, 16) and string.sub(force_name, 1, 16) == 'ancient-friendly' then
+
+				elseif force_name and string.sub(force_name, 1, 16) == 'ancient-friendly' then
 					if e.name == 'oil-refinery' then
 						e.set_recipe('advanced-oil-processing')
 					end

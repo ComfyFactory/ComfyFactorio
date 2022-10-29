@@ -9,7 +9,7 @@ local Ai = require 'maps.pirates.ai'
 local Structures = require 'maps.pirates.structures.structures'
 local Boats = require 'maps.pirates.structures.boats.boats'
 local Islands = require 'maps.pirates.surfaces.islands.islands'
-local IslandsCommon = require 'maps.pirates.surfaces.islands.common'
+local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 local Surfaces = require 'maps.pirates.surfaces.surfaces'
 local PiratesApiEvents = require 'maps.pirates.api_events'
 local Roles = require 'maps.pirates.roles.roles'
@@ -85,21 +85,39 @@ function Public.prevent_disembark(tickinterval)
 	local destination = Common.current_destination()
 	local boat = memory.boat
 
-	if boat and boat.state and (boat.state == Boats.enum_state.RETREATING or (boat.state == Boats.enum_state.LEAVING_DOCK and (not (memory.crewstatus and memory.crewstatus == Crew.enum.LEAVING_INITIAL_DOCK)))) then
+	if boat and (boat.state == Boats.enum_state.RETREATING or (boat.state == Boats.enum_state.LEAVING_DOCK and memory.crewstatus ~= Crew.enum.LEAVING_INITIAL_DOCK)) then
 
 		if not destination.dynamic_data.cant_disembark_players then destination.dynamic_data.cant_disembark_players = {} end
 		local ps = destination.dynamic_data.cant_disembark_players
 
 		for _, player in pairs(game.connected_players) do
-			if player.surface and player.surface.valid and boat.surface_name and player.surface.name == boat.surface_name and Boats.on_boat(boat, player.position) then
+			if player.surface and player.surface.valid and player.surface.name == boat.surface_name and Boats.on_boat(boat, player.position) then
 				ps[player.index] = true
 			end
 		end
 
 		for _, player in pairs(game.connected_players) do
-			if player.surface and player.surface.valid and boat.surface_name and player.surface.name == boat.surface_name and ps[player.index] and (not Boats.on_boat(boat, player.position)) and (not (player.controller_type == defines.controllers.spectator)) then
+			if player.surface and player.surface.valid and player.surface.name == boat.surface_name and ps[player.index] and (not Boats.on_boat(boat, player.position)) and player.controller_type ~= defines.controllers.spectator then
 				Common.notify_player_error(player, {'pirates.error_disembark'})
-				-- player.teleport(memory.spawnpoint)
+
+				if player.driving then
+					local vehicle = player.vehicle
+					if vehicle then
+						local passenger = vehicle.get_passenger()
+						if passenger then
+							vehicle.set_passenger(nil)
+							local p = passenger.surface.find_non_colliding_position('character', memory.spawnpoint, 5, 0.1)
+							if p then
+								passenger.teleport(p)
+							else
+								passenger.teleport(memory.spawnpoint)
+							end
+						end
+
+						vehicle.set_driver(nil)
+					end
+				end
+
 				local p = player.surface.find_non_colliding_position('character', memory.spawnpoint, 5, 0.1)
 				if p then
 					player.teleport(p)
@@ -116,7 +134,7 @@ function Public.check_all_spawners_dead(tickinterval)
 	local destination = Common.current_destination()
 	local boat = memory.boat
 
-	if destination.static_params and destination.static_params.base_cost_to_undock and (not (destination.subtype and destination.subtype == Islands.enum.RED_DESERT)) then
+	if destination.static_params and destination.static_params.base_cost_to_undock and (not (destination.subtype and destination.subtype == IslandEnum.enum.RED_DESERT)) then
 		if boat and boat.surface_name and boat.surface_name == destination.surface_name then
 			local surface = game.surfaces[destination.surface_name]
 			if not (surface and surface.valid) then return end
@@ -288,16 +306,16 @@ function Public.periodic_free_resources(tickinterval)
 	if memory.game_lost then return end
 	local destination = Common.current_destination()
 	local boat = memory.boat
-	if not (destination and destination.type and destination.type == Surfaces.enum.ISLAND and boat and boat.surface_name and boat.surface_name == destination.surface_name) then return end
+	if not (destination and destination.type == Surfaces.enum.ISLAND and boat and boat.surface_name == destination.surface_name) then return end
 
 	Common.give_items_to_crew(Balance.periodic_free_resources_per_destination_5_seconds())
 
-	if game.tick % (300*30) == 0 and (destination and destination.subtype and destination.subtype == Islands.enum.RADIOACTIVE) then -- every 150 seconds
+	if game.tick % (300*30) == 0 and (destination and destination.subtype and destination.subtype == IslandEnum.enum.RADIOACTIVE) then -- every 150 seconds
 		local count = 2
 		Common.give_items_to_crew{{name = 'sulfuric-acid-barrel', count = count}}
 		local force = memory.force
 		if not (force and force.valid) then return end
-		local message = {'pirates.granted_1', {'pirates.granted_periodic_barrel'}, count .. ' [item=sulfuric-acid-barrel]'}
+		local message = {'pirates.granted_1', {'pirates.granted_periodic_resource'}, count .. ' [item=sulfuric-acid-barrel]'}
 		Common.notify_force_light(force, message)
 	end
 end
@@ -571,7 +589,7 @@ function Public.place_cached_structures(tickinterval)
 							surface.create_entity{
 								name = 'crude-oil',
 								position = p,
-								amount = Balance.pick_special_pumpjack_oil_amount()
+								amount = Balance.pick_default_oil_amount()
 							}
 						end
 						local e2 = surface.create_entity{name = c.name, position = p, direction = e.direction, force = force_name, amount = c.amount}
@@ -582,6 +600,10 @@ function Public.place_cached_structures(tickinterval)
 
 				elseif c.type == 'vehicles' then
 					local c2 = {type = c.type, force_name = force_name, built_entities = {}}
+
+					if memory.overworldx >= 1000 then
+						c.name = 'tank'
+					end
 
 					for _, e in pairs(c.instances) do
 						local p = Utils.psum{position, e.position, c.offset}
@@ -818,7 +840,7 @@ function Public.boat_movement_tick(tickinterval)
 				Structures.Boats.currentdestination_move_boat_natural()
 			end
 		elseif boat.speedticker2 >= Common.boat_steps_at_a_time then
-			if surface_type and surface_type == Surfaces.enum.ISLAND and boat and boat.state and boat.state ==  Boats.enum_state.APPROACHING then
+			if surface_type == Surfaces.enum.ISLAND and boat and boat.state == Boats.enum_state.APPROACHING then
 				Structures.Boats.currentdestination_try_move_boat_steered()
 			end
 			boat.speedticker2 = 0
@@ -1011,7 +1033,7 @@ function Public.loading_update(tickinterval)
 			local total = Common.map_loading_ticks_atsea
 			if currentdestination.type == Surfaces.enum.DOCK then
 				total = Common.map_loading_ticks_atsea_dock
-			elseif currentdestination.type == Surfaces.enum.ISLAND and currentdestination.subtype == Surfaces.Island.enum.MAZE then
+			elseif currentdestination.type == Surfaces.enum.ISLAND and currentdestination.subtype == IslandEnum.enum.MAZE then
 				total = Common.map_loading_ticks_atsea_maze
 			end
 
@@ -1030,7 +1052,10 @@ function Public.loading_update(tickinterval)
 					Progression.progress_to_destination(destination_index)
 					memory.loadingticks = 0
 				else
-					PiratesApiEvents.load_some_map_chunks_random_order(destination_index, fraction) --random order is good for maze world
+					PiratesApiEvents.load_some_map_chunks_random_order(surface, currentdestination, fraction) --random order is good for maze world
+					if currentdestination.subtype == IslandEnum.enum.CAVE then
+						PiratesApiEvents.load_some_map_chunks_random_order(currentdestination.dynamic_data.cave_miner.cave_surface, currentdestination, fraction)
+					end
 				end
 			end
 
@@ -1167,7 +1192,7 @@ function Public.slower_boat_tick(tickinterval)
 	end
 
 	local p = memory.boat.position
-	if p and (not (destination.subtype and destination.subtype == IslandsCommon.enum.RADIOACTIVE)) and destination.surface_name and game.surfaces[destination.surface_name] and game.surfaces[destination.surface_name].valid then --no locomotive pollute on radioactive islands
+	if p and (not (destination.subtype and destination.subtype == IslandEnum.enum.RADIOACTIVE)) and destination.surface_name and game.surfaces[destination.surface_name] and game.surfaces[destination.surface_name].valid then --no locomotive pollute on radioactive islands
 		local pollution = Balance.boat_passive_pollution_per_minute(destination.dynamic_data.timer) / 3600 * tickinterval
 
 		game.surfaces[destination.surface_name].pollute(p, pollution)
@@ -1215,7 +1240,7 @@ function Public.minimap_jam(tickinterval)
 
 	if memory.overworldx == Common.maze_minimap_jam_league and memory.boat and memory.boat.state == Boats.enum_state.LANDED then
 		local destination = Common.current_destination()
-		if destination.type == Surfaces.enum.ISLAND and destination.subtype == Surfaces.Island.enum.MAZE then
+		if destination.type == Surfaces.enum.ISLAND and destination.subtype == IslandEnum.enum.MAZE then
 			if not destination.surface_name then return end
 			local surface = game.surfaces[destination.surface_name]
 			local force = memory.force
@@ -1491,35 +1516,76 @@ function Public.update_alert_sound_frequency_tracker()
 	end
 end
 
+-- Check for cliff explosives in chest.
 function Public.check_for_cliff_explosives_in_hold_wooden_chests()
 	local memory = Memory.get_crew_memory()
 	local input_chests = memory.hold_surface_destroyable_wooden_chests
+	local queued_chests_timers = memory.hold_surface_timers_of_wooden_chests_queued_for_destruction
+	local tick_tack_timer = 5 -- how long it takes before chests detonate
 
 	if not input_chests then return end
 
-	for i, chest in ipairs(input_chests) do
+	-- check which chests have cliff explosives in them
+	for i, chest in pairs(input_chests) do
+		-- @TODO: decide what to do when chest is invalid (perhaps it was destroyed by some future feature)
 		if chest and chest.valid then
 			local item_count = chest.get_item_count('cliff-explosives')
 			if item_count and item_count > 0 then
-				local surface = chest.surface
-				local explosion = {
-					name = 'wooden-chest-explosion',
-					position = chest.position
-				}
-				local remnants = {
-					name = 'wooden-chest-remnants',
-					position = chest.position
-				}
-
-				chest.destroy()
-				surface.create_entity(explosion)
-				surface.create_entity(remnants)
-
-				table.fast_remove(memory.hold_surface_destroyable_wooden_chests, i)
+				if not queued_chests_timers[i] then
+					queued_chests_timers[i] = tick_tack_timer
+				end
 			end
 		end
 	end
+
+	-- update chest timers and when timer reaches 0 explode them
+	for i, _ in pairs(queued_chests_timers) do
+		local chest = input_chests[i]
+		if chest and chest.valid then
+			local surface = chest.surface
+			queued_chests_timers[i] = queued_chests_timers[i] - 1
+			local timer = queued_chests_timers[i]
+
+			if timer <= 0 then
+				-- check if sneaky players didn't decide to remove the explosives just before the explosion
+				local item_count = chest.get_item_count('cliff-explosives')
+				if item_count and item_count > 0 then
+					local explosion = {
+						name = 'wooden-chest-explosion',
+						position = chest.position
+					}
+					local remnants = {
+						name = 'wooden-chest-remnants',
+						position = chest.position
+					}
+
+					chest.destroy()
+					surface.create_entity(explosion)
+					surface.create_entity(remnants)
+
+					input_chests[i] = nil
+				end
+
+				queued_chests_timers[i] = nil
+			else
+				local tick_tacks = {'*tick*', '*tick*', '*tack*', '*tak*', '*tik*', '*tok*'}
+				surface.create_entity(
+					{
+						name = 'flying-text',
+						position = chest.position,
+						text = tick_tacks[Math.random(#tick_tacks)],
+						color = {r = 0.75, g = 0.75, b = 0.75}
+					}
+				)
+			end
+		else
+			-- we probably don't want to have it in the queue anymore if it's invalid now, do we?
+			queued_chests_timers[i] = nil
+		end
+	end
 end
+
+
 
 -- Code taken from Mountain fortress
 local function equalise_fluid_storage_pair(storage1, storage2)
@@ -1594,6 +1660,24 @@ function Public.revealed_buried_treasure_distance_check()
 					end
 				end
 			end
+		end
+	end
+end
+
+function Public.update_private_run_lock_timer(tickinterval)
+	local memory = Memory.get_crew_memory()
+	if memory.run_is_private then
+		if Common.activecrewcount() <= 0 then
+			if memory.private_run_lock_timer > 0 then
+				memory.private_run_lock_timer = memory.private_run_lock_timer - tickinterval
+
+				if memory.private_run_lock_timer <= 0 then
+					Common.notify_game({'pirates.private_run_lock_expired', memory.name})
+					memory.run_is_private = false
+				end
+			end
+		else
+			memory.private_run_lock_timer = 60 * 60 * 60 * CoreData.private_run_lock_amount_hr
 		end
 	end
 end

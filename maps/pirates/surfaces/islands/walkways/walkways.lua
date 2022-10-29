@@ -3,7 +3,7 @@
 
 local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
--- local Balance = require 'maps.pirates.balance'
+local Balance = require 'maps.pirates.balance'
 -- local Structures = require 'maps.pirates.structures.structures'
 local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
@@ -12,6 +12,7 @@ local _inspect = require 'utils.inspect'.inspect
 -- local Data = require 'maps.pirates.surfaces.islands.walkways.data'
 local Ores = require 'maps.pirates.ores'
 local IslandsCommon = require 'maps.pirates.surfaces.islands.common'
+local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 local Hunt = require 'maps.pirates.surfaces.islands.hunt'
 
 local Public = {}
@@ -75,7 +76,8 @@ function Public.terrain(args)
 			end
 
 			if noises.height(p) > 0.12 and noises.walkways(p) < 0.1 and noises.rock_abs(p) < 0.07 then
-				args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = 14}
+				local amount = Math.ceil(150 * Math.min(noises.height(p), 0.2) * Balance.island_richness_avg_multiplier() * Math.random_float_in_range(0.8, 1.2))
+				args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = amount}
 			end
 
 		else
@@ -91,7 +93,7 @@ function Public.chunk_structures(args)
 
 		return {
 			placeable = noises.walkways(p) < 0.30,
-			density_perchunk = 20 * (noises.farness(p) - 0.1)^3 * args.biter_base_density_scale,
+			density_perchunk = 15 * (noises.farness(p) - 0.1)^3 * args.biter_base_density_scale,
 			spawners_indestructible = true,
 		}
 	end
@@ -144,7 +146,7 @@ local function walkways_tick()
 		local memory = Memory.get_crew_memory()
 		local destination = Common.current_destination()
 
-		if destination.subtype and destination.subtype == IslandsCommon.enum.WALKWAYS then
+		if destination.subtype == IslandEnum.enum.WALKWAYS then
 			for _, player in pairs(game.connected_players) do
 				if player.force.name == memory.force_name and player.surface == game.surfaces[destination.surface_name] and player.character and player.character.valid and game.surfaces[destination.surface_name].get_tile(player.position).name == 'water-shallow' then
 					player.character.damage(12, game.forces['environment'], 'fire')

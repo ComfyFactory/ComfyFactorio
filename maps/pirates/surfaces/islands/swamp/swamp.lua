@@ -10,6 +10,7 @@ local Common = require 'maps.pirates.common'
 local _inspect = require 'utils.inspect'.inspect
 local Ores = require 'maps.pirates.ores'
 local IslandsCommon = require 'maps.pirates.surfaces.islands.common'
+local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 local Hunt = require 'maps.pirates.surfaces.islands.hunt'
 
 local Public = {}
@@ -129,8 +130,8 @@ function Public.chunk_structures(args)
 			placeable = noises.farness(p) > 0.3,
 			-- spawners_indestructible = noises.farness(p) > 0.75,
 			spawners_indestructible = false,
-			spawners_density_perchunk = 81 * Math.slopefromto(noises.mood(p), 0.7, 0.5) * Math.slopefromto(noises.farness(p), 0.35, 1)^(1.8) * args.biter_base_density_scale,
-			worms_density_perchunk = 27 * Math.slopefromto(noises.mood(p), 0.7, 0.5) * Math.slopefromto(noises.farness(p), 0.25, 1)^(1.8) * args.biter_base_density_scale,
+			spawners_density_perchunk = 54 * Math.slopefromto(noises.mood(p), 0.7, 0.5) * Math.slopefromto(noises.farness(p), 0.35, 1.1)^(1.8) * args.biter_base_density_scale,
+			worms_density_perchunk = 18 * Math.slopefromto(noises.mood(p), 0.7, 0.5) * Math.slopefromto(noises.farness(p), 0.25, 1.1)^(1.8) * args.biter_base_density_scale,
 		}
 	end
 
@@ -187,7 +188,7 @@ local function swamp_tick()
 		local memory = Memory.get_crew_memory()
 		local destination = Common.current_destination()
 
-		if destination.subtype and destination.subtype == IslandsCommon.enum.SWAMP then
+		if destination.subtype == IslandEnum.enum.SWAMP then
 			if memory.boat and memory.boat.surface_name and memory.boat.surface_name == destination.surface_name then
 				local surface = game.surfaces[destination.surface_name]
 				if not (surface and surface.valid) then return end

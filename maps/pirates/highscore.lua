@@ -528,12 +528,10 @@ end
 local score_gui_token = Token.register(score_gui)
 
 local function on_gui_click(event)
-    local element = event.element
-    if not element or not element.valid then
-        return
-    end
+	if not event.element then return end
+	if not event.element.valid then return end
 
-    local player = game.get_player(element.player_index)
+    local player = game.get_player(event.element.player_index)
 
     local frame = Gui.get_player_active_frame(player)
     if not frame then
