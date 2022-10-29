@@ -1,11 +1,10 @@
 local Color = require 'utils.color_presets'
 local Event = require 'utils.event'
-local WPT = require 'maps.mountain_fortress_v3.table'
+local Public = require 'maps.mountain_fortress_v3.table'
 local RPG = require 'modules.rpg.main'
 local Alert = require 'utils.alert'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
-local Public = {}
 
 local shuffle = table.shuffle_table
 local random = math.random
@@ -267,7 +266,7 @@ end
 local restore_mining_speed_token =
     Token.register(
     function()
-        local mc_rewards = WPT.get('mc_rewards')
+        local mc_rewards = Public.get('mc_rewards')
         local force = game.forces.player
         if mc_rewards.temp_boosts.mining then
             force.manual_mining_speed_modifier = force.manual_mining_speed_modifier - 0.5
@@ -281,7 +280,7 @@ local restore_mining_speed_token =
 local restore_movement_speed_token =
     Token.register(
     function()
-        local mc_rewards = WPT.get('mc_rewards')
+        local mc_rewards = Public.get('mc_rewards')
         local force = game.forces.player
         if mc_rewards.temp_boosts.movement then
             force.character_running_speed_modifier = force.character_running_speed_modifier - 0.2
@@ -333,7 +332,7 @@ local mc_random_rewards = {
         color = {r = 0.00, g = 0.25, b = 0.00},
         tooltip = 'Selecting this will grant the team a bonus movement speed for 15 minutes!',
         func = (function(player)
-            local mc_rewards = WPT.get('mc_rewards')
+            local mc_rewards = Public.get('mc_rewards')
             local force = game.forces.player
             if mc_rewards.temp_boosts.movement then
                 return false, '[Rewards] Movement bonus is already applied. Please choose another reward.'
@@ -355,7 +354,7 @@ local mc_random_rewards = {
         color = {r = 0.00, g = 0.00, b = 0.25},
         tooltip = 'Selecting this will grant the team a bonus mining speed for 15 minutes!',
         func = (function(player)
-            local mc_rewards = WPT.get('mc_rewards')
+            local mc_rewards = Public.get('mc_rewards')
             local force = game.forces.player
             if mc_rewards.temp_boosts.mining then
                 return false, '[Rewards] Mining bonus is already applied. Please choose another reward.'
@@ -376,8 +375,8 @@ local mc_random_rewards = {
         color = {r = 0.00, g = 0.00, b = 0.25},
         tooltip = 'Selecting this will heal the main locomotive to full health!',
         func = (function(player)
-            local locomotive_max_health = WPT.get('locomotive_max_health')
-            WPT.set('locomotive_health', locomotive_max_health)
+            local locomotive_max_health = Public.get('locomotive_max_health')
+            Public.set('locomotive_health', locomotive_max_health)
             local message = ({'locomotive.locomotive_health', player.name})
             Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
             return true
@@ -397,7 +396,7 @@ local function mystical_chest_reward(player)
     frame = frame.add {type = 'frame', name = 'reward_system_1', direction = 'vertical', style = 'inside_shallow_frame'}
     frame.style.padding = 4
 
-    local mc_rewards = WPT.get('mc_rewards')
+    local mc_rewards = Public.get('mc_rewards')
     mc_rewards.current = {}
 
     for i = 1, 3 do
@@ -437,7 +436,7 @@ local function container_opened(event)
         return
     end
 
-    local mystical_chest = WPT.get('mystical_chest')
+    local mystical_chest = Public.get('mystical_chest')
     if not mystical_chest then
         return
     end
@@ -480,7 +479,7 @@ local function on_gui_click(event)
     end
     local i = tonumber(element.name)
 
-    local mc_rewards = WPT.get('mc_rewards')
+    local mc_rewards = Public.get('mc_rewards')
     local current = mc_rewards.current
 
     local player = game.get_player(element.player_index)
@@ -566,7 +565,7 @@ function Public.roll(budget, max_slots, blacklist)
 end
 
 function Public.add_mystical_chest(player)
-    local locomotive = WPT.get('locomotive')
+    local locomotive = Public.get('locomotive')
     if not locomotive then
         return
     end
@@ -574,7 +573,7 @@ function Public.add_mystical_chest(player)
         return
     end
 
-    local mystical_chest = WPT.get('mystical_chest')
+    local mystical_chest = Public.get('mystical_chest')
     if not (mystical_chest.entity and mystical_chest.entity.valid) then
         return
     end

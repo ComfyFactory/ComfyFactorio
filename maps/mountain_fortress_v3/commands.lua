@@ -1,7 +1,7 @@
 local Color = require 'utils.color_presets'
+local Public = require 'maps.mountain_fortress_v3.table'
 local Task = require 'utils.task'
 local Server = require 'utils.server'
-local WPT = require 'maps.mountain_fortress_v3.table'
 local Collapse = require 'modules.collapse'
 local WD = require 'modules.wave_defense.table'
 
@@ -23,8 +23,7 @@ commands.add_command(
             end
         end
 
-        local this = WPT.get()
-        local reset_map = require 'maps.mountain_fortress_v3.main'.reset_map
+        local this = Public.get()
         local param = cmd.parameter
 
         if param == 'restart' or param == 'shutdown' or param == 'reset' or param == 'restartnow' then
@@ -87,7 +86,7 @@ commands.add_command(
             else
                 game.print(mapkeeper .. ' server, has reset the game!', {r = 0.98, g = 0.66, b = 0.22})
             end
-            reset_map()
+            Public.reset_map()
             p('[WARNING] Game has been reset!')
             return
         end
@@ -135,7 +134,7 @@ commands.add_command(
             return
         end
 
-        local this = WPT.get()
+        local this = Public.get()
         local tbl = WD.get()
 
         if not this.disable_biters_are_you_sure then
@@ -170,7 +169,7 @@ commands.add_command(
             return
         end
 
-        local this = WPT.get()
+        local this = Public.get()
 
         if not this.orbital_strikes_are_you_sure then
             this.orbital_strikes_are_you_sure = true
@@ -240,3 +239,5 @@ if _DEBUG then
         end
     )
 end
+
+return Public

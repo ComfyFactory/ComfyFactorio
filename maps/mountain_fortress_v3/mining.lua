@@ -1,10 +1,8 @@
-local WPT = require 'maps.mountain_fortress_v3.table'
+local Public = require 'maps.mountain_fortress_v3.table'
 local RPG = require 'modules.rpg.main'
 local Event = require 'utils.event'
 local Ai = require 'modules.ai'
 require 'modules.check_fullness'
-
-local Public = {events = {on_entity_mined = Event.generate_event_name('on_entity_mined')}}
 
 local random = math.random
 local floor = math.floor
@@ -219,7 +217,7 @@ local size_of_scrap_raffle = #scrap_raffle
 
 local function get_amount(data)
     local entity = data.entity
-    local mining_utils = WPT.get('mining_utils')
+    local mining_utils = Public.get('mining_utils')
     local t_modifier = mining_utils.type_modifier
     local rocks_yield_ore_distance_modifier = mining_utils.rocks_yield_ore_distance_modifier
     local rocks_yield_ore_base_amount = mining_utils.rocks_yield_ore_base_amount
@@ -286,7 +284,7 @@ end
 local function randomness(data)
     local entity = data.entity
     local player = data.player
-    local spill_items_to_surface = WPT.get('spill_items_to_surface')
+    local spill_items_to_surface = Public.get('spill_items_to_surface')
     local harvest
     local harvest_amount
 
@@ -351,7 +349,7 @@ end
 local function randomness_scrap(data)
     local entity = data.entity
     local player = data.player
-    local spill_items_to_surface = WPT.get('spill_items_to_surface')
+    local spill_items_to_surface = Public.get('spill_items_to_surface')
 
     local harvest = scrap_raffle[random(1, size_of_scrap_raffle)]
     local amount_bonus = game.forces.player.mining_drill_productivity_bonus * 2

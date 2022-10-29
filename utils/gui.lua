@@ -56,6 +56,9 @@ local main_frame_name = Public.uid_name()
 local main_button_name = Public.uid_name()
 local close_button_name = Public.uid_name()
 
+Public.top_main_gui_button = main_button_name
+Public.main_frame_name = main_frame_name
+
 --- Verifies if a frame is valid and destroys it.
 ---@param align userdata
 ---@param frame userdata
@@ -651,6 +654,10 @@ function Public.call_existing_tab(player, name)
     if not frame then
         return
     end
+    if not inside_frame then
+        return
+    end
+
     local tabbed_pane = inside_frame.tabbed_pane
     for key, v in pairs(tabbed_pane.tabs) do
         if v.tab.caption == name then

@@ -1,4 +1,5 @@
 local Event = require 'utils.event'
+local Public = require 'maps.mountain_fortress_v3.table'
 local Global = require 'utils.global'
 
 local random = math.random
@@ -181,3 +182,5 @@ end
 
 Event.on_init(on_init)
 Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
+
+return Public

@@ -1,10 +1,7 @@
 local Global = require 'utils.global'
 local surface_name = 'mtn_v3'
-local WPT = require 'maps.mountain_fortress_v3.table'
-local Reset = require 'maps.mountain_fortress_v3.soft_reset'
-local zone_settings = WPT.zone_settings
-
-local Public = {}
+local Public = require 'maps.mountain_fortress_v3.table'
+local zone_settings = Public.zone_settings
 
 local this = {
     active_surface_index = nil,
@@ -59,10 +56,10 @@ function Public.create_surface()
     if not this.active_surface_index then
         this.active_surface_index = game.create_surface(surface_name, map_gen_settings).index
     else
-        this.active_surface_index = Reset.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings, starting_items).index
+        this.active_surface_index = Public.soft_reset_map(game.surfaces[this.active_surface_index], map_gen_settings, starting_items).index
     end
 
-    -- this.soft_reset_counter = Reset.get_reset_counter()
+    -- this.soft_reset_counter = Public.get_reset_counter()
 
     if not this.cleared_nauvis then
         local mgs = game.surfaces['nauvis'].map_gen_settings
@@ -89,14 +86,6 @@ end
 --- Returns the amount of times the server has soft restarted.
 function Public.get_reset_counter()
     return this.soft_reset_counter
-end
-
-function Public.get(key)
-    if key then
-        return this[key]
-    else
-        return this
-    end
 end
 
 return Public

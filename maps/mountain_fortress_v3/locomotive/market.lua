@@ -1,7 +1,6 @@
 local Event = require 'utils.event'
-local Generate = require 'maps.mountain_fortress_v3.generate'
+local Public = require 'maps.mountain_fortress_v3.table'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
-local WPT = require 'maps.mountain_fortress_v3.table'
 local WD = require 'modules.wave_defense.table'
 local Session = require 'utils.datastore.session_data'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
@@ -11,12 +10,9 @@ local Server = require 'utils.server'
 local Alert = require 'utils.alert'
 local Math2D = require 'math2d'
 local SpamProtection = require 'utils.spam_protection'
-local MysticalChest = require 'maps.mountain_fortress_v3.mystical_chest'
-local FriendlyPet = require 'maps.mountain_fortress_v3.locomotive.friendly_pet'
 
 local format_number = require 'util'.format_number
 
-local Public = {}
 local concat = table.concat
 
 local main_frame_name = Gui.uid_name()
@@ -45,11 +41,11 @@ local function add_space(frame)
 end
 
 local function get_items()
-    local market_limits = WPT.get('market_limits')
-    local main_market_items = WPT.get('main_market_items')
-    local flame_turret = WPT.get('upgrades').flame_turret.bought
-    local upgrades = WPT.get('upgrades')
-    local fixed_prices = WPT.get('marked_fixed_prices')
+    local market_limits = Public.get('market_limits')
+    local main_market_items = Public.get('main_market_items')
+    local flame_turret = Public.get('upgrades').flame_turret.bought
+    local upgrades = Public.get('upgrades')
+    local fixed_prices = Public.get('marked_fixed_prices')
 
     local chests_outside_cost = round(fixed_prices.chests_outside_cost * (1 + upgrades.chests_outside_upgrades))
     local health_cost = round(fixed_prices.health_cost * (1 + upgrades.health_upgrades))
@@ -62,7 +58,7 @@ local function get_items()
     local land_mine_cost = round(fixed_prices.land_mine_cost * (1 + upgrades.landmine.bought))
     local car_health_upgrade_pool = fixed_prices.car_health_upgrade_pool_cost
 
-    local pickaxe_upgrades = WPT.pickaxe_upgrades
+    local pickaxe_upgrades = Public.pickaxe_upgrades
 
     local offer = pickaxe_upgrades[upgrades.pickaxe_tier]
 
@@ -96,7 +92,7 @@ local function get_items()
             value = 'coin',
             price = chests_outside_cost,
             tooltip = ({'locomotive.limit_reached'}),
-            sprite = 'achievement/so-long-and-thanks-for-all-the-fish',
+            sprite = 'entity.steel-chest',
             enabled = false,
             upgrade = true,
             static = true
@@ -107,7 +103,7 @@ local function get_items()
             value = 'coin',
             price = chests_outside_cost,
             tooltip = ({'main_market.chest', upgrades.chests_outside_upgrades, market_limits.chests_outside_limit}),
-            sprite = 'achievement/so-long-and-thanks-for-all-the-fish',
+            sprite = 'entity.steel-chest',
             enabled = true,
             upgrade = true,
             static = true
@@ -154,7 +150,7 @@ local function get_items()
             stack = 1,
             value = 'coin',
             price = aura_cost,
-            tooltip = ({'main_market.locomotive_aura_radius', upgrades.locomotive_aura_radius, market_limits.aura_limit}),
+            tooltip = ({'main_market.locomotive_aura_radius', upgrades.aura_upgrades, upgrades.aura_upgrades_max}),
             sprite = 'achievement/tech-maniac',
             enabled = true,
             upgrade = true,
@@ -493,7 +489,7 @@ local function validate_player(player)
 end
 
 local function close_market_gui(player)
-    local players = WPT.get('players')
+    local players = Public.get('players')
 
     local element = player.gui.screen
     local data = players[player.index].data
@@ -512,7 +508,7 @@ local function redraw_market_items(gui, player, search_text)
     if not validate_player(player) then
         return
     end
-    local players = WPT.get('players')
+    local players = Public.get('players')
     if not players then
         return
     end
@@ -630,7 +626,7 @@ local function redraw_market_items(gui, player, search_text)
                     enabled = data.enabled
                 }
             )
-            if WPT.get('trusted_only_car_tanks') then
+            if Public.get('trusted_only_car_tanks') then
                 local trustedPlayer = Session.get_trusted_player(player)
                 if not trustedPlayer then
                     if item == 'tank' then
@@ -683,7 +679,7 @@ end
 
 local function slider_changed(event)
     local player = game.players[event.player_index]
-    local players = WPT.get('players')
+    local players = Public.get('players')
     if not players then
         return
     end
@@ -726,7 +722,7 @@ local function text_changed(event)
         return
     end
 
-    local players = WPT.get('players')
+    local players = Public.get('players')
     if not players then
         return
     end
@@ -771,7 +767,7 @@ local function text_changed(event)
 end
 
 local function gui_opened(event)
-    local market = WPT.get('market')
+    local market = Public.get('market')
 
     if not event.gui_type == defines.gui_type.entity then
         return
@@ -795,7 +791,7 @@ local function gui_opened(event)
     local inventory = player.get_main_inventory()
     local player_item_count = inventory.get_item_count('coin')
 
-    local players = WPT.get('players')
+    local players = Public.get('players')
     if not players then
         return
     end
@@ -889,7 +885,7 @@ local function gui_opened(event)
 end
 
 local function gui_click(event)
-    local players = WPT.get('players')
+    local players = Public.get('players')
     if not players then
         return
     end
@@ -941,13 +937,13 @@ local function gui_click(event)
     local cost = (item.price * slider_value)
     local item_count = item.stack * slider_value
 
-    local this = WPT.get()
+    local this = Public.get()
     if name == 'upgrade_pickaxe' then
         player.remove_item({name = item.value, count = item.price})
 
         this.upgrades.pickaxe_tier = this.upgrades.pickaxe_tier + item.stack
 
-        local pickaxe_upgrades = WPT.pickaxe_upgrades
+        local pickaxe_upgrades = Public.pickaxe_upgrades
         local offer = pickaxe_upgrades[this.upgrades.pickaxe_tier]
 
         local message = ({
@@ -967,6 +963,7 @@ local function gui_click(event)
         local force = game.forces.player
 
         force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + this.pickaxe_speed_per_purchase
+        this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + item.price
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
@@ -985,10 +982,11 @@ local function gui_click(event)
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
-                player.name .. ' has bought the chest limit upgrade for ' .. format_number(item.price, true) .. ' coins.'
+                player.name .. ' has upgraded the chest limit for ' .. format_number(item.price, true) .. ' coins.'
             }
         )
         this.upgrades.chests_outside_upgrades = this.upgrades.chests_outside_upgrades + item.stack
+        this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + item.price
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
@@ -1002,7 +1000,7 @@ local function gui_click(event)
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
-                player.name .. ' has bought the locomotive health modifier for ' .. format_number(item.price, true) .. ' coins.'
+                player.name .. ' has upgraded the train health for ' .. format_number(item.price, true) .. ' coins.'
             }
         )
 
@@ -1034,7 +1032,7 @@ local function gui_click(event)
             end
         end
 
-        this.upgrades.train_upgrades = this.upgrades.train_upgrades + item.stack
+        this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + item.price
         this.upgrades.health_upgrades = this.upgrades.health_upgrades + item.stack
         rendering.set_text(this.health_text, 'HP: ' .. round(this.locomotive_health) .. ' / ' .. round(this.locomotive_max_health))
 
@@ -1056,12 +1054,12 @@ local function gui_click(event)
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
-                player.name .. ' has bought the locomotive xp aura modifier for ' .. format_number(item.price, true) .. ' coins.'
+                player.name .. ' has upgraded the train aura radius for ' .. format_number(item.price, true) .. ' coins.'
             }
         )
         this.upgrades.locomotive_aura_radius = this.upgrades.locomotive_aura_radius + 5
         this.upgrades.aura_upgrades = this.upgrades.aura_upgrades + item.stack
-        this.upgrades.train_upgrades = this.upgrades.train_upgrades + item.stack
+        this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + item.price
 
         if this.circle then
             rendering.destroy(this.circle)
@@ -1096,12 +1094,12 @@ local function gui_click(event)
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
-                player.name .. ' has bought the XP points modifier for ' .. format_number(item.price) .. ' coins.'
+                player.name .. ' has upgraded the train aura XP modifier for ' .. format_number(item.price) .. ' coins.'
             }
         )
         this.upgrades.xp_points = this.upgrades.xp_points + 0.5
         this.upgrades.xp_points_upgrade = this.upgrades.xp_points_upgrade + item.stack
-        this.upgrades.train_upgrades = this.upgrades.train_upgrades + item.stack
+        this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + item.price
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
@@ -1120,7 +1118,7 @@ local function gui_click(event)
             }
         )
 
-        MysticalChest.init_price_check(this.locomotive, this.mystical_chest)
+        Public.init_price_check(this.locomotive, this.mystical_chest)
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
@@ -1272,7 +1270,7 @@ end
 
 local function gui_closed(event)
     local player = game.players[event.player_index]
-    local players = WPT.get('players')
+    local players = Public.get('players')
     if not players then
         return
     end
@@ -1289,7 +1287,7 @@ local function gui_closed(event)
 end
 
 local function on_player_changed_position(event)
-    local players = WPT.get('players')
+    local players = Public.get('players')
     if not players then
         return
     end
@@ -1299,7 +1297,7 @@ local function on_player_changed_position(event)
     end
     local data = players[player.index].data
 
-    local market = WPT.get('market')
+    local market = Public.get('market')
 
     if not (market and market.valid) then
         return
@@ -1323,7 +1321,7 @@ end
 
 local function create_market(data, rebuild)
     local surface = data.surface
-    local this = WPT.get()
+    local this = Public.get()
 
     if not this.locomotive then
         return
@@ -1396,7 +1394,7 @@ local function create_market(data, rebuild)
         this.mystical_chest.entity.minable = false
         this.mystical_chest.entity.destructible = false
         if not this.mystical_chest.price then
-            MysticalChest.add_mystical_chest()
+            Public.add_mystical_chest()
         end
         rendering.draw_text {
             text = 'Mystical chest',
@@ -1409,7 +1407,7 @@ local function create_market(data, rebuild)
         }
     end
 
-    Generate.wintery(this.market, 5.5)
+    Public.wintery(this.market, 5.5)
 
     rendering.draw_text {
         text = 'Market',
@@ -1423,7 +1421,7 @@ local function create_market(data, rebuild)
 
     this.market.destructible = false
 
-    FriendlyPet.spawn_biter()
+    Public.spawn_biter()
 
     for x = center_position.x - 5, center_position.x + 5, 1 do
         for y = center_position.y - 5, center_position.y + 5, 1 do
@@ -1444,7 +1442,7 @@ local function create_market(data, rebuild)
 end
 
 local function place_market()
-    local locomotive = WPT.get('locomotive')
+    local locomotive = Public.get('locomotive')
     if not locomotive then
         return
     end
@@ -1456,7 +1454,7 @@ local function place_market()
     local icw_table = ICW.get_table()
     local unit_surface = locomotive.unit_number
     local surface = game.surfaces[icw_table.wagons[unit_surface].surface.index]
-    local market = WPT.get('market')
+    local market = Public.get('market')
 
     local data = {
         surface = surface
@@ -1486,7 +1484,7 @@ function Public.refresh_gui()
         local gui = player.gui
         local screen = gui.screen
 
-        local player_data = WPT.get('players')
+        local player_data = Public.get('players')
         if not players then
             return
         end

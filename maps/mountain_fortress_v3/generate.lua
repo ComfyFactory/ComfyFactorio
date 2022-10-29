@@ -1,14 +1,9 @@
-local Market = require 'maps.mountain_fortress_v3.basic_markets'
-local WPT = require 'maps.mountain_fortress_v3.table'
-local Loot = require 'maps.mountain_fortress_v3.loot'
+local Event = require 'utils.event'
+local Public = require 'maps.mountain_fortress_v3.table'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
-local Event = require 'utils.event'
-local Terrain = require 'maps.mountain_fortress_v3.terrain'
 local WD = require 'modules.wave_defense.table'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
-
-local Public = {}
 
 local random = math.random
 local abs = math.abs
@@ -18,7 +13,8 @@ local queue_task = Task.queue_task
 local tiles_per_call = 8
 local total_calls = ceil(1024 / tiles_per_call)
 local regen_decoratives = false
-local generate_map = Terrain.heavy_functions
+local generate_map = Public.heavy_functions
+
 local winter_mode = false
 local wintery_type = {
     ['simple-entity'] = true,
@@ -211,7 +207,7 @@ local function do_place_treasure(data)
         if random(1, 6) == 1 then
             e.chest = 'iron-chest'
         end
-        Loot.add(surface, e.position, e.chest)
+        Public.add_loot(surface, e.position, e.chest)
     end
 end
 
@@ -231,7 +227,7 @@ local function do_place_markets(data)
             limit = 1
         } == 0
      then
-        local market = Market.mountain_market(surface, pos, abs(pos.y) * 0.004)
+        local market = Public.mountain_market(surface, pos, abs(pos.y) * 0.004)
         market.destructible = false
     end
 end
@@ -618,11 +614,12 @@ local do_chunk = Public.do_chunk
 local schedule_chunk = Public.schedule_chunk
 
 local function on_chunk(event)
-    local force_chunk = WPT.get('force_chunk')
-    local stop_chunk = WPT.get('stop_chunk')
+    local force_chunk = Public.get('force_chunk')
+    local stop_chunk = Public.get('stop_chunk')
     if stop_chunk then
         return
     end
+
     if force_chunk then
         do_chunk(event)
     else

@@ -75,7 +75,7 @@ local function spawn_biter(surface, position, evolution)
     end
 end
 
-local function unearthing_biters(surface, position, amount)
+local function unearthing_biters(surface, position, amount, relative_evolution)
     if not surface then
         return
     end
@@ -94,6 +94,10 @@ local function unearthing_biters(surface, position, amount)
 
     local evolution = game.forces.enemy.evolution_factor
 
+    if relative_evolution then
+        evolution = relative_evolution
+    end
+
     local ticks = amount * 40
     ticks = ticks + 80
     for t = 4, ticks, 4 do
@@ -111,7 +115,7 @@ local function unearthing_biters(surface, position, amount)
             if t % 40 == 36 then
                 traps[tick][#traps[tick] + 1] = {
                     callback = 'spawn_biter',
-                    params = {surface, {x = position.x, y = position.y}, evolution}
+                    params = {surface, {x = position.x, y = position.y}, evolution, relative_evolution}
                 }
             end
         end
