@@ -1100,7 +1100,8 @@ local function base_kill_rewards(event)
 
 	local short_form = (not iron_amount) and true or false
 
-	if revenge_target then
+	-- revenge_target.player can be nil if player kills itself
+	if revenge_target and revenge_target.player then
 		Common.give(revenge_target.player, stack, revenge_target.player.position, short_form, entity.surface, entity.position)
 	else
 		if event.cause and event.cause.valid and event.cause.position then

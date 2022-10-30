@@ -191,6 +191,27 @@ function Public.update_EEIs(boat)
 end
 
 
+function Public.upgrade_cannons()
+	local memory = Memory.get_crew_memory()
+	local destination = Common.current_destination()
+
+	local cannons = game.surfaces[destination.surface_name].find_entities_filtered({type = 'artillery-turret'})
+	for _, c in pairs(cannons) do
+		local unit_number = c.unit_number
+
+		local healthbar = memory.boat.healthbars[unit_number]
+		if healthbar then
+			healthbar.max_health = healthbar.max_health + Balance.cannon_extra_hp_for_upgrade
+			healthbar.health = healthbar.max_health
+			Common.update_healthbar_rendering(healthbar, healthbar.max_health)
+		else
+			-- TODO: Upgrade works fine, just seems that redundant artilleries are added to healthbar list which get invalid after surface teleportation (?). Not critical, but would be cool if this was fixed some time.
+			log('Error (non-critical): artillery\'s healthbar ' .. unit_number .. ' not found')
+		end
+	end
+end
+
+
 function Public.upgrade_chests(boat, new_chest)
 	local scope = Public.get_scope(boat)
 	local surface = game.surfaces[boat.surface_name]

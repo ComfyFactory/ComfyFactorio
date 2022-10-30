@@ -205,32 +205,13 @@ function Public.event_on_market_item_purchased(event)
 				Public.refund_items(player, thisPurchaseData.price, 1)
 				refunds = refunds + 1
 			else
-				if thisPurchaseData.offer_type == 'nothing' then
-					-- heal and upgrade all ship's artilerry turrets:
-					local cannons = game.surfaces[destination.surface_name].find_entities_filtered({type = 'artillery-turret'})
-					for _, c in pairs(cannons) do
-						local unit_number = c.unit_number
-
-						local healthbar = memory.boat.healthbars[unit_number]
-						if healthbar then
-							healthbar.max_health = healthbar.max_health + Balance.cannon_extra_hp_for_upgrade
-							healthbar.health = healthbar.max_health
-							Common.update_healthbar_rendering(healthbar, healthbar.max_health)
-						else
-							log('error: healthbar ' .. unit_number .. ' not found')
-						end
-					end
-					Common.notify_force(force,{'pirates.upgraded_cannons', player.name})
-					market.remove_market_item(offer_index)
-				-- else
-
-					-- extra hold and power upgrade is disabled at dock
-					-- local upgrade_type = Common.current_destination().static_params.upgrade_for_sale
-					-- if upgrade_type then
-					-- 	Upgrades.execute_upgade(upgrade_type, player)
-					-- end
-					-- market.remove_market_item(offer_index)
+				local upgrade_type = Common.current_destination().static_params.upgrade_for_sale
+				if upgrade_type then
+					Upgrades.execute_upgade(upgrade_type, player)
+				else
+					log('Error purchasing upgrade at dock')
 				end
+				market.remove_market_item(offer_index)
 			end
 
 		else

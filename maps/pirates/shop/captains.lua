@@ -28,11 +28,11 @@ local Public = {}
 
 -- WARNING: The Crowsnest caption pulls data from this data. But the actual dock market pulls from boat_upgrades.lua.
 Public.main_shop_data_1 = {
-	upgrade_cannons = {
-		tooltip = 'Increase cannons max health. This will also repair them.',
-		what_you_get_sprite_buttons = {['item/artillery-turret'] = false},
-		base_cost = {coins = 1000},
-	},
+	-- upgrade_cannons = {
+	-- 	tooltip = 'Increase cannons max health. This will also repair them.',
+	-- 	what_you_get_sprite_buttons = {['item/artillery-turret'] = false},
+	-- 	base_cost = {coins = 1000},
+	-- },
 	new_boat_cutter = {
 		tooltip = 'Purchase a cutter.',
 		what_you_get_sprite_buttons = {['utility/spawn_flag'] = false},
@@ -70,24 +70,29 @@ Public.main_shop_data_1 = {
 	-- },
 	-- as as initial pass let's try making the fuel values half of the old gold values...
 	[Upgrades.enum.MORE_POWER] = {
-		tooltip = 'Upgrade the ship\'s power.',
+		tooltip = {'pirates.market_description_upgrade_power'},
 		what_you_get_sprite_buttons = {['utility/status_working'] = false},
 		base_cost = {coins = 7000, fuel = 500},
 	},
 	[Upgrades.enum.EXTRA_HOLD] = {
-		tooltip = 'Upgrade the ship\'s hold.',
+		tooltip = {'pirates.market_description_upgrade_hold'},
 		what_you_get_sprite_buttons = {['item/steel-chest'] = false},
 		base_cost = {coins = 7000, fuel = 500},
 	},
 	[Upgrades.enum.UNLOCK_MERCHANTS] = {
-		tooltip = 'Unlock merchant ships.',
+		tooltip = {'pirates.market_description_upgrade_merchants'},
 		what_you_get_sprite_buttons = {['entity/market'] = false},
 		base_cost = {coins = 14000, fuel = 1000},
 	},
 	[Upgrades.enum.ROCKETS_FOR_SALE] = {
-		tooltip = 'Unlock rockets for sale at covered-up markets.',
+		tooltip = {'pirates.market_description_upgrade_rockets'},
 		what_you_get_sprite_buttons = {['item/rocket-launcher'] = false},
 		base_cost = {coins = 21000, fuel = 1000},
+	},
+	[Upgrades.enum.UPGRADE_CANNONS] = {
+		tooltip = {'pirates.market_description_upgrade_turrets'},
+		what_you_get_sprite_buttons = {['item/artillery-turret'] = false},
+		base_cost = {coins = 5000, fuel = 800},
 	},
 }
 

@@ -166,6 +166,13 @@ function Public.update_character_properties(tickinterval)
 			local player_index = player.index
 			local character = player.character
 			local class = Classes.get_class(player_index)
+
+			local speed_boost = Balance.base_extra_character_speed
+
+			if memory.speed_boost_characters and memory.speed_boost_characters[player_index] then
+				speed_boost = speed_boost * Balance.respawn_speed_boost
+			end
+
 			if class then
 				--local max_reach_bonus = 0
 				-- if memory.classes_table[player_index] == Classes.enum.DECKHAND then
@@ -185,12 +192,7 @@ function Public.update_character_properties(tickinterval)
 					character.character_reach_distance_bonus = 0
 				end
 
-
-				local speed_boost = Balance.base_extra_character_speed
-
-				if memory.speed_boost_characters and memory.speed_boost_characters[player_index] then
-					speed_boost = speed_boost * Balance.respawn_speed_boost
-				elseif class == Classes.enum.SCOUT then
+				if class == Classes.enum.SCOUT then
 					speed_boost = speed_boost * Balance.scout_extra_speed
 				elseif (class == Classes.enum.DECKHAND) or (class == Classes.enum.BOATSWAIN) or (class == Classes.enum.SHORESMAN) then
 					local surfacedata = Surfaces.SurfacesCommon.decode_surface_name(player.surface.name)
@@ -212,12 +214,13 @@ function Public.update_character_properties(tickinterval)
 						end
 					end
 				end
-				character.character_running_speed_modifier = speed_boost - 1
-
-				--character.character_reach_distance_bonus = max_reach_bonus
 			end
 
+			character.character_running_speed_modifier = speed_boost - 1
+
+
 			local health_boost = 0 -- base health is 250
+			character.character_health_bonus = health_boost
 
 			-- moved to damage resistance:
 			-- if memory.classes_table and memory.classes_table[player_index] then
@@ -233,7 +236,6 @@ function Public.update_character_properties(tickinterval)
 			-- if Common.is_captain(player) then
 			-- 	health_boost = health_boost + 50
 			-- end
-			character.character_health_bonus = health_boost
 
 			-- == DO NOT DO THIS!: Removing inventory slots is evil. The player can spill inventory
 			-- if Common.is_captain(player) then
