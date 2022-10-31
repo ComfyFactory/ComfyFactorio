@@ -7,7 +7,7 @@ local _inspect = require 'utils.inspect'.inspect
 local Public = {}
 
 Public.scenario_id_name = 'pirates'
-Public.version_string = '1.4.0' --major.minor.patch versioning, to match factorio mod portal
+Public.version_string = '1.4.1' --major.minor.patch versioning, to match factorio mod portal
 
 Public.blueprint_library_allowed = true
 Public.blueprint_importing_allowed = true
@@ -98,7 +98,7 @@ Public.comfy_emojis = {
 	spurdo = '<:spurdo:669546779360100382>',
 	loops = '<:loops:783508194755346462>',
 	ree1 = '<:ree1:555118905090244618>',
-	derp = '<:derp:527570293850505266>',
+	derp = '<:derp:1024006042360742028>',
 	-- doge = '<:doge:491152224681066496>', -- deprecated
 	yum1 = '<:yum1:740341272451219517>',
 	feel = '<:feel:491147760553164800>',

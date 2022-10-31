@@ -362,8 +362,19 @@ function Public.generate_overworld_destination(p)
 		-- 	upgrade_for_sale = Upgrades.enum.MORE_POWER
 		-- else
 		-- 	upgrade_for_sale = Upgrades.enum.EXTRA_HOLD
-		-- end --upgrades like UNLOCK_MERCHANTS will slot themselves in when necessary, due to .overwrite_a_dock_upgrade()
+		-- end --upgrades like UNLOCK_MERCHANTS will slot themselves in when necessary, due to .overwrite_a_dock_upgrade() (not anymore)
 		-- one day it's worth making this system more readable
+
+		-- NOTE: When DOCK frequency changes, this needs to change too (kinda bad design, but w/e)
+		-- NOTE: I couldn't manage to make upgrade overwriting to work so I made it fixed here (although I prefer having fixed for less rng)
+		-- TODO: Perhaps always have something special to sell (or remove the upgrade market if it has no offers?)
+		if macro_p.x == 15 then
+			upgrade_for_sale = Upgrades.enum.ROCKETS_FOR_SALE
+		elseif macro_p.x == 19 then
+			upgrade_for_sale = Upgrades.enum.UNLOCK_MERCHANTS
+		elseif (macro_p.x % 8) == 3 then
+			upgrade_for_sale = Upgrades.enum.UPGRADE_CANNONS
+		end
 
 		local static_params = Utils.deepcopy(Dock.Data.static_params_default)
 		static_params.upgrade_for_sale = upgrade_for_sale
@@ -626,7 +637,7 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 		Public.ensure_lane_generated_up_to(0, memory.overworldx + Crowsnest.Data.visibilitywidth)
 		Public.ensure_lane_generated_up_to(24, memory.overworldx + Crowsnest.Data.visibilitywidth)
 		Public.ensure_lane_generated_up_to(-24, memory.overworldx + Crowsnest.Data.visibilitywidth)
-		Public.overwrite_a_dock_upgrade()
+		-- Public.overwrite_a_dock_upgrade()
 	end
 
 	if not Public.is_position_free_to_move_to{x = memory.overworldx + vector.x, y = memory.overworldy+ vector.y} then
@@ -684,20 +695,21 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 end
 
 
-
+-- UNUSED
 function Public.overwrite_a_dock_upgrade()
 	local memory = Memory.get_crew_memory()
 
 	if (memory.overworldx % (40*8)) == (40*4-1) then -- pick a point that _must_ be visited, i.e. right before a destination
-		if (memory.overworldx) == (40*4-1) then -- LEAVE A GAP at x=40*11, because we haven't developed an upgrade to put there yet
-			for _, dest in pairs(memory.destinations) do
-				if dest.type == Surfaces.enum.DOCK then
-					if dest.overworld_position.x == memory.overworldx + 1 + (40*7) then
-						dest.static_params.upgrade_for_sale = Upgrades.enum.MORE_POWER
-					end
-				end
-			end
-		else
+		-- POWER upgrade is disabled at docks
+		-- if (memory.overworldx) == (40*4-1) then -- LEAVE A GAP at x=40*11, because we haven't developed an upgrade to put there yet
+			-- for _, dest in pairs(memory.destinations) do
+			-- 	if dest.type == Surfaces.enum.DOCK then
+			-- 		if dest.overworld_position.x == memory.overworldx + 1 + (40*7) then
+			-- 			dest.static_params.upgrade_for_sale = Upgrades.enum.MORE_POWER
+			-- 		end
+			-- 	end
+			-- end
+		-- else
 			local upgrade_to_overwrite_with
 
 			if not memory.dock_overwrite_variable then memory.dock_overwrite_variable = 1 end
@@ -730,7 +742,7 @@ function Public.overwrite_a_dock_upgrade()
 					end
 				end
 			end
-		end
+		-- end
 	end
 end
 
