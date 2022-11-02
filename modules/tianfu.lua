@@ -18,46 +18,13 @@ function(tbl)
 end
 )
 
-local function check_tick(player,skill)
-   --game.print('检查技能冷却')
-    if not this.tick_skill[player.name..skill] then
-        this.tick_skill[player.name..skill]=0
-    end
-   -- game.print('技能名'..skill)
-    local nap
-    if not this.time_skills[skill] then 
-        nap=this.trigger_skills[skill].time
-    --   game.print('扳机天赋')
-    else
-        
-        nap=this.time_skills[skill].time
-   --     game.print('周期天赋')
-    end
-   --game.print('要求间隔为'..nap)
---
- if this.tick_skill[player.name..skill]==0 then 
-    this.tick_skill[player.name..skill]=game.tick
-    return true 
-
-end
-
-
-
-    if game.tick-this.tick_skill[player.name..skill]>nap then 
-        this.tick_skill[player.name..skill]=game.tick
-
-        return true
-    else
-        return false
-    end
-end
-
 
 
 
 --一次性代码
 local function rich_son(player)
     player.insert({name = 'coin', count = 2000})
+    player.print({'tianfu.rich_son_over'})
     return true
 end
 
@@ -74,6 +41,7 @@ local function shit_luck(player)
     
     local msg = {'amap.whatopen'}
     Alert.alert_player(player, 5, msg)
+    player.print({'tianfu.shit_luck_over'})
     return true
 end
 
@@ -93,7 +61,8 @@ local function boom_player(player)
               player=player
             }
         )
-       
+        
+        player.print({'tianfu.boom_player_over'})
     end
     end
     return true
@@ -122,7 +91,9 @@ end
 
 local function fish(player)
     if check_tick(player,'fish') then 
-    player.insert({name = 'raw-fish', count = 2})
+    local count = math.random(1,4)
+    player.insert({name = 'raw-fish', count = count})
+    player.print({'tianfu.fish_over',count})
     end
     return true
 end
@@ -131,6 +102,7 @@ local function zrsc(player)
     if check_tick(player,'zrsc') then 
     local rpg_t = rpgtable.get('rpg_t')
     rpg_t[player.index].vitality = rpg_t[player.index].vitality +1
+    player.print({'tianfu.zrsc_over'})
     end
     return true
 end
@@ -166,7 +138,7 @@ local function dutu(player)
             end
         end
 
-        if ok then 
+        if ok and math.random(1,6)==1 then 
             player.remove_item{name='coin', count = qian}
 
             local luck = math.floor(math.random(1,150))
@@ -176,7 +148,10 @@ local function dutu(player)
             
             local msg = {'amap.whatopen'}
             Alert.alert_player(player, 5, msg)
+            player.print({'tianfu.dutu_over'})
         end
+        
+   
     end
     return true
 end
@@ -184,8 +159,10 @@ end
 local function chishang(player)
     for l, player1 in pairs(game.connected_players) do
         player1.insert({name = 'coin', count = 1000})
+        player1.print({'tianfu.chishang_over',player.name})
     end
     player.remove_item{name='coin', count = 1000}
+
     return true
 end
 
@@ -222,13 +199,14 @@ local function fali(player)
         end
 
     end
-
+    game.print({'tianfu.fali_over'})
     end
     return true
 end
 local function rs(player)
     local rpg_t = rpgtable.get('rpg_t')
     rpg_t[player.index].vitality = rpg_t[player.index].vitality +30
+    player.print({'tianfu.rs_over'})
     return true
 end
 
@@ -279,9 +257,11 @@ end
 
 local xiuxing_k =
 Token.register(
-function(v)
+function(player)
     local rpg_t = rpgtable.get('rpg_t')
     rpg_t[player.index].xp = rpg_t[player.index].xp+2000
+    player.print({'tianfu.xiuxing_over'})
+    
 end
 )
 
@@ -342,6 +322,8 @@ local function zhs(player)
             }
             forces[#forces+1]=e
         end
+        player.print({'tianfu.zhs_over'})
+        
         Task.set_timeout_in_ticks(60*30, kill_forces, forces)
 end
     return true
@@ -378,6 +360,8 @@ local function biter(player)
         alignment = 'center',
         scale_with_zoom = false
     }
+    player.print({'tianfu.biter_over'})
+    
     return true
 end
 
@@ -433,11 +417,14 @@ local function shiyou(player)
         if count >0 then 
             player.insert({name = 'coin', count = count*8})
         end
+        player.print({'tianfu.shiyou_over',count})
     end
     return true
 end
 local function tank(player)
     player.insert({name = 'tank', count = 1})
+    
+    player.print({'tianfu.tank_over'})
 end
 
 
@@ -445,26 +432,37 @@ end
 local function jingong(player)
     if check_tick(player,'jingong') then 
         player.insert({name = 'destroyer-capsule', count = 1})
+        player.print({'tianfu.jingong_over'})
     end
+ 
     return true
 end
 local function junhuo(player)
     if check_tick(player,'junhuo') then 
         player.insert({name = 'firearm-magazine', count = 10})
+        player.print({'tianfu.junhuo_over'})
+        
     end
     return true
 end
 local function genben(player)
     if check_tick(player,'genben') then 
         player.insert({name = ' defender-capsule', count = 1})
+        
+        player.print({'tianfu.genben_over'})
     end
     return true
 end
 
+local turret_name={
+'gun-turret','laser-turret','flamethrower-turret','artillery-turret'
+
+}
+
 local function wxs(player)
     if check_tick(player,'wxs') then 
         local position=player.position
-        local entities = player.surface.find_entities_filtered {force = player.force, area = {{position.x - 16, position.y - 16}, {position.x + 16, position.y + 16}}}
+        local entities = player.surface.find_entities_filtered {name = turret_name,force = player.force, area = {{position.x - 16, position.y - 16}, {position.x + 16, position.y + 16}}}
         local count = 0
         for i = 1, #entities do
           local e = entities[i]
@@ -472,6 +470,8 @@ local function wxs(player)
             e.health= e.health+e.prototype.max_health*0.1
           end
         end
+        player.print({'tianfu.wxs_over'})
+        
     end
     return true
 end
@@ -543,61 +543,98 @@ local function zdfs(player)
     return true
 end
 
+
+local time_skills={
+    ['boom_player']={name=boom_player,time=600},
+    ['small_buss']={name=small_buss,time=60*30},
+    ['zrsc']={name=zrsc,time=60*10*5},
+    ['zhs']={name=zhs,time=60*30},
+    ['wolf']={name=wolf,time=60*10},
+    ['dutu']={name=dutu,time=60*10*6},
+    ['wxs']={name=wxs,time=60*30},
+    ['junhuo']={name=junhuo,time=60*30},
+    ['genben']={name=genben,time=60*40},
+    ['fish']={name=fish,time=60*60},
+    ['zdfs']={name=zdfs,time=60*10},
+    ['shiyou']={name=shiyou,time=60*30},
+    ['jingong']={name=jingong,time=60*60*5},
+    ['hd']={name=hd,time=60*60*10},
+    ['fali']={name=fali,time=60*30},
+   
+}
+local once_skills={
+    ['rich_son']={name=rich_son},
+    ['high_debt']={name=high_debt},
+    ['shit_luck']={name=shit_luck},
+    ['rs']={name=rs},
+    ['tsxf']={name=tsxf},
+    ['biter']={name=biter},
+    ['tank']={name=tank},
+    ['bulider']={name=bulider},
+    ['chishang']={name=chishang},
+    ['quanneng']={name=quanneng},
+    ['onlytishu']={name=onlytishu},
+    ['xiuxing']={name=xiuxing}
+}
+local trigger_skills={
+    ['relife']={name=relife,time=60*60*60},
+    ['kuangong']={name=kuangong},
+    ['yhw']={name=yhw,time=60*40},
+    ['ruchong']={name=ruchong,time=60*60*5},
+    ['taobing']={name=taobing},
+    ['xueshu']={name=xueshu},
+}
+
+function check_tick(player,skill)
+    --game.print('检查技能冷却')
+     if not this.tick_skill[player.name..skill] then
+         this.tick_skill[player.name..skill]=0
+     end
+    -- game.print('技能名'..skill)
+     local nap
+     if not time_skills[skill] then 
+         nap=trigger_skills[skill].time
+     --   game.print('扳机天赋')
+     else
+         
+         nap=time_skills[skill].time
+    --     game.print('周期天赋')
+     end
+    --game.print('要求间隔为'..nap)
+ --
+  if this.tick_skill[player.name..skill]==0 then 
+     this.tick_skill[player.name..skill]=game.tick
+     return true 
+ 
+ end
+ 
+ 
+ 
+     if game.tick-this.tick_skill[player.name..skill]>nap then 
+         this.tick_skill[player.name..skill]=game.tick
+ 
+         return true
+     else
+         return false
+     end
+ end
+
+
 function Public.reset_table()
     this.all_skill={}
     this.tick_skill={}
     this.choise_skill={}
     this.qiankuang={}
     this.tishu={}
-    this.time_skills={
-        ['boom_player']={name=boom_player,time=600},
-        ['small_buss']={name=small_buss,time=60*30},
-        ['zrsc']={name=zrsc,time=60*10*5},
-        ['zhs']={name=zhs,time=60*30},
-        ['wolf']={name=wolf,time=60*10},
-        ['dutu']={name=dutu,time=60*10*6},
-        ['wxs']={name=wxs,time=60*30},
-        ['junhuo']={name=junhuo,time=60*30},
-        ['genben']={name=genben,time=60*40},
-        ['fish']={name=fish,time=60*30},
-        ['zdfs']={name=zdfs,time=60*10},
-        ['shiyou']={name=shiyou,time=60*30},
-        ['jingong']={name=jingong,time=60*60*5},
-        ['hd']={name=hd,time=60*60*10},
-        ['fali']={name=fali,time=60*30},
-       
-    }
-    this.once_skills={
-        ['rich_son']={name=rich_son},
-        ['high_debt']={name=high_debt},
-        ['shit_luck']={name=shit_luck},
-        ['rs']={name=rs},
-        ['tsxf']={name=tsxf},
-        ['biter']={name=biter},
-        ['tank']={name=tank},
-        ['bulider']={name=bulider},
-        ['chishang']={name=chishang},
-        ['quanneng']={name=quanneng},
-        ['onlytishu']={name=onlytishu},
-        ['xiuxing']={name=xiuxing}
-    }
-    this.trigger_skills={
-        ['relife']={name=relife,time=60*60*60},
-        ['kuangong']={name=kuangong},
-        ['yhw']={name=yhw,time=60*40},
-        ['ruchong']={name=ruchong,time=60*60*5},
-        ['taobing']={name=taobing},
-        ['xueshu']={name=xueshu},
-    }
 
-    for _, v in pairs (this.time_skills) do
+    for _, v in pairs (time_skills) do
     this.all_skill[#this.all_skill+1]=_
     this[_]={}
     end
-    for _, v in pairs (this.once_skills) do
+    for _, v in pairs (once_skills) do
     this.all_skill[#this.all_skill+1]=_
     end
-    for _, v in pairs (this.trigger_skills) do
+    for _, v in pairs (trigger_skills) do
         this.all_skill[#this.all_skill+1]=_
         this[_]={}
     end
@@ -692,10 +729,10 @@ local function on_gui_click(event)
     local player = game.players[event.element.player_index]
     game.print({'tianfu.choise_skill_msg', player.name, {'tianfu.'..event.element.name}})
     this.choise_skill[player.name]=true
-    if  not this.once_skills[event.element.name] then 
+    if  not once_skills[event.element.name] then 
         this[event.element.name][#this[event.element.name]+1]=player.name
     else
-        this.once_skills[event.element.name].name(player)
+        once_skills[event.element.name].name(player)
     end
     event.element.parent.destroy()
 end
@@ -708,14 +745,15 @@ end
 
 local function on_tick()
 
-    for _, v in pairs (this.time_skills) do
-       -- game.print('检查技能名'.._)
+    for _, v in pairs (time_skills) do
+       --game.print('检查技能名'.._)
         for name ,k in pairs(this[_]) do 
-          --  game.print('学习改技能的玩家'..k)
+         --  game.print('学习改技能的玩家'..k)
             for l, player in pairs(game.connected_players) do
                if player.name == k then 
-           --    game.print('释放技能'..player.name)
-                this.time_skills[_].name(player)
+           --     game.print('释放技能'..player.name)
+                time_skills[_].name(player)
+             --   game.print('释放技能结束'..player.name)
                end
             end
         end
@@ -752,6 +790,14 @@ local function on_tick()
        
 
     end
+
+    for k, player in pairs(game.connected_players) do
+        if not this.choise_skill[player.name] then
+            choise_skill(player)
+        end
+        this.choise_skill[player.name]=true
+ end
+
 
 end
 
@@ -791,6 +837,7 @@ end
 
 local function taobing(player)
     player.character_running_speed_modifier=player.character_running_speed_modifier+1
+    player.print({'tianfu.taobing_over'})
     Task.set_timeout_in_ticks(60*3, lowdowm, player)
 end
 
@@ -803,6 +850,7 @@ local function ruchong(player)
               force = 'player',
             }
         )
+        player.print({'tianfu.ruchong_over'})
         Task.set_timeout_in_ticks(60*60*5, kill, e)
     end
 end
@@ -821,6 +869,7 @@ local function yhw(player,target)
               player=player
             }
         )
+        player.print({'tianfu.yhw_over'})
     end
 end
 
