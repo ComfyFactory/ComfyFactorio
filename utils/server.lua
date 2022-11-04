@@ -1225,7 +1225,9 @@ function Public.convertFromEpoch(epoch)
     local year, month, day = date(unixTime)
 
     month = tonumber(month)
-    month = 0 .. month
+    if month < 10 then
+        month = 0 .. month
+    end
 
     day = tonumber(day)
     if day < 10 then
