@@ -26,6 +26,7 @@ local Surfaces = require 'maps.pirates.surfaces.surfaces'
 local Roles = require 'maps.pirates.roles.roles'
 local Event = require 'utils.event'
 local CustomEvents = require 'maps.pirates.custom_events'
+local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 
 local ComfyGui = require 'utils.gui'
 ComfyGui.set_disabled_tab('Scoreboard', true)
@@ -565,7 +566,7 @@ function Public.process_etaframe_update(player, flow1, bools)
 			local total = Common.map_loading_ticks_atsea
 			if destination.type == Surfaces.enum.DOCK then
 				total = Common.map_loading_ticks_atsea_dock
-			elseif destination.type == Surfaces.enum.ISLAND and destination.subtype == Surfaces.Island.enum.MAZE then
+			elseif destination.type == Surfaces.enum.ISLAND and destination.subtype == IslandEnum.enum.MAZE then
 				total = Common.map_loading_ticks_atsea_maze
 			end
 
@@ -876,6 +877,12 @@ function Public.process_siloframe_and_questframe_updates(flowsilo, flowquest, bo
 							flow1.quest_label_3.caption = {'pirates.gui_questframe_fail'}
 							flow1.quest_label_3.style.font_color = GuiCommon.insufficient_font_color
 						end
+
+					elseif quest_type == Quest.enum.FISH then
+						if tooltip == '' then tooltip = {'pirates.gui_questframe_fish'} end
+
+					elseif quest_type == Quest.enum.COMPILATRON then
+						if tooltip == '' then tooltip = {'pirates.gui_questframe_compilatron'} end
 					end
 				end
 

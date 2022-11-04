@@ -1,6 +1,7 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 
+-- local SurfacesCommon = require 'maps.pirates.surfaces.common'
 local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
 local Balance = require 'maps.pirates.balance'
@@ -10,7 +11,8 @@ local Hold = require 'maps.pirates.surfaces.hold'
 -- local Parrot = require 'maps.pirates.parrot'
 local Cabin = require 'maps.pirates.surfaces.cabin'
 local Utils = require 'maps.pirates.utils_local'
-local _inspect = require 'utils.inspect'.inspect
+local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
+-- local _inspect = require 'utils.inspect'.inspect
 
 -- DEV NOTE: If making boat designs that have rails, make sure the boat is placed at odd co-ordinates before blueprinting.
 
@@ -63,12 +65,17 @@ function Public.currentdestination_move_boat_natural()
 
 	if (destination and destination.dynamic_data and destination.dynamic_data.timer) and (not (destination.dynamic_data.timer >= 1)) then return end
 
+	local water_type = 'water'
+	if destination and destination.subtype == IslandEnum.enum.RADIOACTIVE then
+		water_type = 'water-green'
+	end
+
 	if boat and boat.state == enum_state.LEAVING_DOCK or boat.state == enum_state.APPROACHING then
 		local newp = {x = boat.position.x + Common.boat_steps_at_a_time, y = boat.position.y}
-		Public.teleport_boat(boat, nil, newp)
+		Public.teleport_boat(boat, nil, newp, nil, water_type)
 	elseif boat and boat.state == enum_state.RETREATING then
 		local newp = {x = boat.position.x - Common.boat_steps_at_a_time, y = boat.position.y}
-		Public.teleport_boat(boat, nil, newp)
+		Public.teleport_boat(boat, nil, newp, nil, water_type)
 	end
 end
 
@@ -156,7 +163,7 @@ end
 
 
 function Public.update_EEIs(boat)
-	local EEI_stage = boat.EEI_stage or 1
+	local EEI_stage = boat.EEI_stage
 
 	local multiplier
 	if EEI_stage > #Balance.EEI_stages then --sensible out of bounds behaviour:
@@ -181,6 +188,27 @@ function Public.update_EEIs(boat)
 		end
 	end
 	Public.draw_power_renderings(boat)
+end
+
+
+function Public.upgrade_cannons()
+	local memory = Memory.get_crew_memory()
+	local destination = Common.current_destination()
+
+	local cannons = game.surfaces[destination.surface_name].find_entities_filtered({type = 'artillery-turret'})
+	for _, c in pairs(cannons) do
+		local unit_number = c.unit_number
+
+		local healthbar = memory.boat.healthbars[unit_number]
+		if healthbar then
+			healthbar.max_health = healthbar.max_health + Balance.cannon_extra_hp_for_upgrade
+			healthbar.health = healthbar.max_health
+			Common.update_healthbar_rendering(healthbar, healthbar.max_health)
+		else
+			-- TODO: Upgrade works fine, just seems that redundant artilleries are added to healthbar list which get invalid after surface teleportation (?). Not critical, but would be cool if this was fixed some time.
+			log('Error (non-critical): artillery\'s healthbar ' .. unit_number .. ' not found')
+		end
+	end
 end
 
 
@@ -840,7 +868,7 @@ local function process_entity_on_boat_teleportable(memory, boat, newsurface, new
 		local p = Utils.deepcopy(e.position)
 		local p2 = {x = p.x + vector.x, y = p.y + vector.y}
 
-		if e.type and e.type == 'electric-pole' then
+		if e.type == 'electric-pole' then
 			for k, v in pairs(e.neighbours or {}) do
 				if k == 'copper' then --red and green cases handled by circuit_neighbours_matrix
 					if not electric_pole_neighbours_matrix[k] then electric_pole_neighbours_matrix[k] = {} end
@@ -877,17 +905,25 @@ local function process_entity_on_boat_teleportable(memory, boat, newsurface, new
 			end
 		end
 
-		local ee = e.clone{position = p2, surface = newsurface, create_build_effect_smoke = false}
+		-- Special case for vehicles, because currently they can be exclusively teleported between surfaces
+		local ee
+		if e.name == 'car' or e.name == 'tank' or e.name == 'spidertron' then
+			e.teleport(p2, newsurface)
+		else
+			ee = e.clone{position = p2, surface = newsurface, create_build_effect_smoke = false}
+		end
 
 		if boat.upstairs_pole and e == boat.upstairs_pole then
 			boat.upstairs_pole = ee
 			Public.try_connect_upstairs_and_downstairs_poles(boat)
 		end
 
-		e.destroy()
+		if not (e.name == 'car' or e.name == 'tank' or e.name == 'spidertron') then
+			e.destroy()
+		end
 
 		-- Right now in the game we don't expect any non-player characters, so let's kill them to make a point:
-		if ee and ee.valid and ee.name and ee.name == 'character' and (not ee.player) then
+		if ee and ee.valid and ee.name == 'character' and (not ee.player) then
 			ee.die()
 		end
 
@@ -979,7 +1015,8 @@ local function process_entity_on_boat(memory, boat, newsurface, newposition, vec
 		unique_entities_list[#unique_entities_list + 1] = e
 		local name = e.name
 
-		if name and name == 'item-on-ground' then
+		-- NOTE: This sometimes causes items on belts to be sent to cabin, which maybe could be fixed?
+		if name == 'item-on-ground' then
 			Common.give_items_to_crew{{name = e.stack.name, count = e.stack.count}}
 			e.destroy()
 		else
@@ -1027,7 +1064,14 @@ local function teleport_handle_wake_tiles(boat, dummyboat, newsurface_name, olds
 			for _, area in pairs(wakeareas) do
 				for _, p in pairs(Common.central_positions_within_area(area, adjustednewposition)) do
 					local t = old_water_tile
-					if static_params and static_params.deepwater_xposition and (p.x <= static_params.deepwater_xposition - 0.5) then t = 'deepwater' end
+					if static_params and static_params.deepwater_xposition and (p.x <= static_params.deepwater_xposition - 0.5) then
+						if t == 'water' then
+							t = 'deepwater'
+						else
+							t = 'deepwater-green'
+						end
+					end
+
 					if friendlyboat_bool and boat.state == enum_state.RETREATING and vector.x < 0 then --in this case we need to place some landing tiles, as the cannon juts out
 						if (p.x >= boat.dockedposition.x + scope.Data.leftmost_gate_position) and (p.y <= scope.Data.upmost_gate_position or p.y >= scope.Data.downmost_gate_position) then t = CoreData.landing_tile end
 					end

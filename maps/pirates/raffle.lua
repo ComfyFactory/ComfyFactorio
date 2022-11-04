@@ -4,6 +4,7 @@ local Math = require 'maps.pirates.math'
 
 local Public = {}
 
+-- @NOTE: Beware this function may return nil when there is at least 1 negative weight and guaranteed to return nil with all negative weights
 function Public.raffle(values, weights) --arguments of the form {[a] = A, [b] = B, ...} and {[a] = a_weight, [b] = b_weight, ...} or just {a,b,c,...} and {1,2,3...}
 
 	local total_weight = 0
@@ -27,6 +28,7 @@ function Public.raffle(values, weights) --arguments of the form {[a] = A, [b] = 
 	end
 end
 
+-- @NOTE: Beware this function may return nil when there is at least 1 negative weight and guaranteed to return nil with all negative weights
 function Public.raffle2(table) --arguments of the form {v1 = w1, v2 = w2, ...}
 
 	local total_weight = 0

@@ -12,6 +12,7 @@ local Utils = require 'maps.pirates.utils_local'
 local _inspect = require 'utils.inspect'.inspect
 -- local Ores = require 'maps.pirates.ores'
 local IslandsCommon = require 'maps.pirates.surfaces.islands.common'
+local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 local Hunt = require 'maps.pirates.surfaces.islands.hunt'
 
 local Public = {}
@@ -81,9 +82,9 @@ function Public.terrain(args)
 				elseif rng < 0.001 then
 					args.entities[#args.entities + 1] = {name = 'medium-ship-wreck', position = args.p}
 				elseif rng < 0.0013 then
-					args.entities[#args.entities + 1] = {name = 'big-ship-wreck-2', position = args.p}
+					args.specials[#args.specials + 1] = {name = 'big-ship-wreck-2', position = args.p}
 				elseif rng < 0.0014 then
-					args.entities[#args.entities + 1] = {name = 'big-ship-wreck-1', position = args.p}
+					args.specials[#args.specials + 1] = {name = 'big-ship-wreck-1', position = args.p}
 				end
 			end
 		end
@@ -117,23 +118,24 @@ function Public.terrain(args)
 	end
 
 	if noises.forest_abs_suppressed(p) < 0.8 and noises.mood(p) > -0.3 then
+		local amount = Math.ceil(70 * noises.height(p) * Balance.island_richness_avg_multiplier() * Math.random_float_in_range(0.9, 1.1))
 		if noises.height(p) > 0.27 then
 			if noises.ore(p) > 1.5 then
 				local name = 'iron-ore'
 				if (args.p.x + args.p.y) % 2 < 1 then
 					name = 'copper-ore'
 				end
-				args.entities[#args.entities + 1] = {name = name, position = args.p, amount = 20}
+				args.entities[#args.entities + 1] = {name = name, position = args.p, amount = amount}
 			elseif noises.ore(p) < -1.6 then
-				args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = 20}
+				args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = amount}
 			elseif noises.ore(p) < 0.041 and noises.ore(p) > -0.041 then
-				args.entities[#args.entities + 1] = {name = 'stone', position = args.p, amount = 10}
+				args.entities[#args.entities + 1] = {name = 'stone', position = args.p, amount = amount}
 			end
 		elseif noises.height(p) < 0.19 then
 			if noises.ore(p) > 2.1 then
-				args.entities[#args.entities + 1] = {name = 'copper-ore', position = args.p, amount = 10}
+				args.entities[#args.entities + 1] = {name = 'copper-ore', position = args.p, amount = amount}
 			elseif noises.ore(p) < -2.1 then
-				args.entities[#args.entities + 1] = {name = 'iron-ore', position = args.p, amount = 10}
+				args.entities[#args.entities + 1] = {name = 'iron-ore', position = args.p, amount = amount}
 			-- elseif noises.ore(p) < 0.010 and noises.ore(p) > -0.010 then
 			-- 	args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = 5}
 			end
@@ -226,7 +228,7 @@ local function red_desert_tick()
 		local memory = Memory.get_crew_memory()
 		local destination = Common.current_destination()
 
-		if destination.subtype == IslandsCommon.enum.RED_DESERT then
+		if destination.subtype == IslandEnum.enum.RED_DESERT then
 			if memory.boat and memory.boat.surface_name and memory.boat.surface_name == destination.surface_name then
 
 				Public.underground_worms_ai()
