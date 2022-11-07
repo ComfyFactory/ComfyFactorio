@@ -46,7 +46,12 @@ local function on_gui_closed(event)
     if not icw.wagons[entity.unit_number] then
         return
     end
-    Functions.kill_minimap(game.players[event.player_index])
+    local player = game.get_player(event.player_index)
+    if not player or not player.valid then
+        return
+    end
+
+    Functions.kill_minimap(player)
 end
 
 local function on_gui_opened(event)
@@ -66,9 +71,14 @@ local function on_gui_opened(event)
         return
     end
 
+    local player = game.get_player(event.player_index)
+    if not player or not player.valid then
+        return
+    end
+
     Functions.draw_minimap(
         icw,
-        game.players[event.player_index],
+        player,
         wagon.surface,
         {
             wagon.area.left_top.x + (wagon.area.right_bottom.x - wagon.area.left_top.x) * 0.5,
@@ -78,7 +88,8 @@ local function on_gui_opened(event)
 end
 
 local function on_player_died(event)
-    Functions.kill_minimap(game.players[event.player_index])
+    local player = game.get_player(event.player_index)
+    Functions.kill_minimap(player)
 end
 
 local function on_train_created()

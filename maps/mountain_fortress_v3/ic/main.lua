@@ -133,7 +133,16 @@ local function on_gui_closed(event)
         return
     end
 
-    Minimap.kill_minimap(game.players[event.player_index])
+    local player = game.get_player(event.player_index)
+    if not player or not player.valid then
+        return
+    end
+
+    if player.controller_type == defines.controllers.spectator then
+        return
+    end
+
+    Minimap.kill_minimap(player)
 end
 
 local function on_gui_opened(event)
@@ -151,6 +160,15 @@ local function on_gui_opened(event)
         return
     end
 
+    local player = game.get_player(event.player_index)
+    if not player or not player.valid then
+        return
+    end
+
+    if player.controller_type == defines.controllers.spectator then
+        return
+    end
+
     local surface_index = car.surface
     local surface = game.surfaces[surface_index]
     if not surface or not surface.valid then
@@ -158,7 +176,7 @@ local function on_gui_opened(event)
     end
 
     Minimap.minimap(
-        game.players[event.player_index],
+        player,
         surface,
         {
             car.area.left_top.x + (car.area.right_bottom.x - car.area.left_top.x) * 0.5,

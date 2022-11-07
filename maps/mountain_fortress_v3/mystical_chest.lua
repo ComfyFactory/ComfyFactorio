@@ -453,6 +453,10 @@ local function container_opened(event)
         return
     end
 
+    if player.controller_type == defines.controllers.spectator then
+        return
+    end
+
     Public.add_mystical_chest(player)
 end
 

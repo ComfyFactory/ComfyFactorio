@@ -1625,6 +1625,11 @@ function Public.set_player_to_spectator(player)
         player.print('[color=blue][Spectate][/color] You are in combat. Try again soon.', Color.warning)
         return false
     end
+
+    if player.driving then
+        return player.print('[color=blue][Spectate][/color] Please exit the vehicle before continuing', Color.warning)
+    end
+
     local spectate = Public.get('spectate')
 
     if not spectate[player.index] then
@@ -1641,14 +1646,14 @@ function Public.set_player_to_spectator(player)
 
     player.character = nil
     player.spectator = true
-    player.tag = '[Spectator]'
+    player.tag = '[img=utility/ghost_time_to_live_modifier_icon]'
     player.set_controller({type = defines.controllers.spectator})
     game.print('[color=blue][Spectate][/color] ' .. player.name .. ' is now spectating.')
     Server.to_discord_bold(table.concat {'*** ', '[Spectate] ' .. player.name .. ' is now spectating.', ' ***'})
 
     if spectate[player.index] and not spectate[player.index].delay then
         spectate[player.index].verify = true
-        spectate[player.index].delay = game.tick + 18000
+        spectate[player.index].delay = game.tick + 3600
     end
     return true
 end
