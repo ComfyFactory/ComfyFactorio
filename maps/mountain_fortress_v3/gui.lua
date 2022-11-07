@@ -158,7 +158,7 @@ end
 
 local function hide_all_gui(player)
     for _, child in pairs(player.gui.top.children) do
-        if child.name ~= spectate_button_name then
+        if child.name ~= spectate_button_name and child.name ~= 'minimap_button' then
             child.visible = false
         end
     end
@@ -166,7 +166,7 @@ end
 
 local function show_all_gui(player)
     for _, child in pairs(player.gui.top.children) do
-        if child.name ~= spectate_button_name then
+        if child.name ~= spectate_button_name and child.name ~= 'minimap_button' then
             child.visible = true
         end
     end
@@ -178,12 +178,12 @@ local function on_player_joined_game(event)
         return
     end
 
-    if not player.gui.top[main_button_name] then
-        create_button(player)
-    end
-
     if not player.gui.top[spectate_button_name] then
         spectate_button(player)
+    end
+
+    if not player.gui.top[main_button_name] then
+        create_button(player)
     end
 end
 
@@ -289,6 +289,7 @@ local function on_player_changed_surface(event)
     local info = player.gui.top[main_button_name]
     local wd = player.gui.top['wave_defense']
     local spectate = player.gui.top[spectate_button_name]
+    local minimap_button = player.gui.top['minimap_button']
     local rpg_b = player.gui.top[rpg_button]
     local rpg_f = player.gui.screen[rpg_frame]
     local rpg_s = player.gui.screen[rpg_settings]
@@ -325,6 +326,9 @@ local function on_player_changed_surface(event)
         if rpg_b and not rpg_b.visible then
             rpg_b.visible = true
         end
+        if minimap_button and not minimap_button.visible then
+            minimap_button.visible = false
+        end
         if spell_cast_buttons and not spell_cast_buttons.visible then
             spell_cast_buttons.visible = true
         end
@@ -351,6 +355,9 @@ local function on_player_changed_surface(event)
         end
         if spectate then
             spectate.visible = false
+        end
+        if minimap_button and not minimap_button.visible then
+            minimap_button.visible = false
         end
         if rpg_b then
             rpg_b.visible = false
