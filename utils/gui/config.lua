@@ -413,7 +413,7 @@ local pirates_functions = {
                     gui.destroy()
                 end
             end
-            get_actor(event, '[Disband]', 'has enabled the ability to disband crews.')
+            get_actor(event, '[Pirates]', 'has enabled the ability to disband crews.')
         else
             Memory.disband_crews = false
             for _, player in pairs(players) do
@@ -422,7 +422,7 @@ local pirates_functions = {
                     gui.destroy()
                 end
             end
-            get_actor(event, '[Disband]', 'has disabled the ability to disband crews.')
+            get_actor(event, '[Pirates]', 'has disabled the ability to disband crews.')
         end
     end
 }
