@@ -596,6 +596,10 @@ local function on_gui_opened(event)
         return
     end
 
+    if player.controller_type == defines.controllers.spectator then
+        return
+    end
+
     local corpse_content = #event.entity.get_inventory(defines.inventory.character_corpse)
     if corpse_content <= 0 then
         return

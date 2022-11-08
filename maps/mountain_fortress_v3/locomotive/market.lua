@@ -782,7 +782,13 @@ local function gui_opened(event)
         return
     end
 
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
+    if not player or not player.valid then
+        return
+    end
+    if player.controller_type == defines.controllers.spectator then
+        return
+    end
 
     if not validate_player(player) then
         return
