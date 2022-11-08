@@ -401,6 +401,32 @@ local fortress_functions = {
     end
 }
 
+local pirates_functions = {
+    ['toggle_disband'] = function(event)
+        local players = game.players
+        local Memory = global.tokens.maps_pirates_memory
+        if event.element.switch_state == 'left' then
+            Memory.disband_crews = true
+            for _, player in pairs(players) do
+                local gui = player.gui.screen['crew_piratewindow']
+                if gui and gui.valid then
+                    gui.destroy()
+                end
+            end
+            get_actor(event, '[Disband]', 'has enabled the ability to disband crews.')
+        else
+            Memory.disband_crews = false
+            for _, player in pairs(players) do
+                local gui = player.gui.screen['crew_piratewindow']
+                if gui and gui.valid then
+                    gui.destroy()
+                end
+            end
+            get_actor(event, '[Disband]', 'has disabled the ability to disband crews.')
+        end
+    end
+}
+
 local function add_switch(element, switch_state, name, description_main, description)
     local t = element.add({type = 'table', column_count = 5})
     local on_label = t.add({type = 'label', caption = 'ON'})
@@ -718,6 +744,24 @@ local function build_config_gui(data)
             add_switch(scroll_pane, switch_state, 'christmas_mode', 'Wintery Mode', 'On = Enables wintery mode.\nOff = Disables wintery mode.')
             scroll_pane.add({type = 'line'})
         end
+
+        if global.tokens.maps_pirates_memory then
+            label = scroll_pane.add({type = 'label', caption = 'Pirates Settings'})
+            label.style.font = 'default-bold'
+            label.style.padding = 0
+            label.style.left_padding = 10
+            label.style.top_padding = 10
+            label.style.horizontal_align = 'left'
+            label.style.vertical_align = 'bottom'
+            label.style.font_color = Color.green
+
+            local Memory = global.tokens.maps_pirates_memory
+            switch_state = 'right'
+            if Memory.disband_crews then
+                switch_state = 'left'
+            end
+            add_switch(scroll_pane, switch_state, 'toggle_disband', 'Disband Crews', 'On = Enables crew disband.\nOff = Disables crew disband.')
+        end
     end
     for _, e in pairs(scroll_pane.children) do
         if e.type == 'line' then
@@ -762,6 +806,13 @@ local function on_gui_switch_state_changed(event)
             return
         end
         fortress_functions[event.element.name](event)
+        return
+    elseif pirates_functions[event.element.name] then
+        local is_spamming = SpamProtection.is_spamming(player, nil, 'Config Pirates Elem')
+        if is_spamming then
+            return
+        end
+        pirates_functions[event.element.name](event)
         return
     elseif is_loaded('utils.gui.poll') then
         local is_spamming = SpamProtection.is_spamming(player, nil, 'Config Poll Elem')
