@@ -129,7 +129,7 @@ end
 function Public.wave_size_rng() -- random variance in attack sizes
 	local memory = Memory.get_crew_memory()
 
-    local wave_percentage_chance = Math.clamp(0, 44, 11 + 9 * memory.floating_pollution/1500)
+    local wave_percentage_chance = Math.clamp(0, 50, 11 + 8 * memory.floating_pollution/1500)
 
 	local wave_size_multiplier = 1
 	local rng1 = Math.random(100)
@@ -162,7 +162,7 @@ function Public.try_main_attack()
 		log('Attacks: ' .. 'Aborted by chance.')
 		return nil
 	else
-		local group = Public.spawn_group_of_scripted_biters(2/3, 6, 180, wave_size_multiplier)
+		local group = Public.spawn_group_of_scripted_biters(2/3, 6, 350, wave_size_multiplier)
 		local target = Public.generate_main_attack_target()
 		if not group or not group.valid or not target or not target.valid then return end
 
@@ -185,7 +185,7 @@ function Public.try_secondary_attack()
 	else
 		local surface = game.surfaces[Common.current_destination().surface_name]
 
-		local group = Public.spawn_group_of_scripted_biters(2/3, 12, 180, wave_size_multiplier)
+		local group = Public.spawn_group_of_scripted_biters(2/3, 12, 275, wave_size_multiplier)
 		if not (group and group.valid) then return end
 
 		local target
@@ -215,7 +215,7 @@ function Public.try_rogue_attack()
 	else
 		local surface = game.surfaces[Common.current_destination().surface_name]
 
-		local group = Public.spawn_group_of_scripted_biters(1/2, 6, 180, wave_size_multiplier)
+		local group = Public.spawn_group_of_scripted_biters(1/2, 6, 200, wave_size_multiplier)
 		if not (group and group.valid) then return end
 		local target = Public.generate_side_attack_target(surface, group.position)
         if (not target) or (not target.valid) then return end
@@ -381,7 +381,7 @@ end
 
 
 function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spawnposition, fraction_of_floating_pollution, minimum_avg_units, maximum_units, wave_size_multiplier, enforce_type)
-    maximum_units = maximum_units or 256
+    maximum_units = maximum_units or 400
 
 	-- log('ai spawning attempt params: ' .. (fraction_of_floating_pollution or '') .. ' ' .. (minimum_avg_units or '') .. ' ' .. (maximum_units or '') .. ' ' .. (unit_pollutioncost_multiplier or '') .. ' ' .. (enforce_type or ''))
 

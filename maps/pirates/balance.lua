@@ -320,7 +320,7 @@ function Public.evolution_per_full_silo_charge()
 	-- return 0.05
 	-- observed x=2000 run, changed this to:
 	-- return 0.05 + 0.03 * Common.overworldx()/1000
-	return 0.05 + 0.02 * Common.overworldx()/1000
+	return 0.06 + 0.025 * Common.overworldx()/1000
 end
 
 -- function Public.bonus_damage_to_humans()
