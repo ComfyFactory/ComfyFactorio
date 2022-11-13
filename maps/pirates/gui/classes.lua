@@ -235,6 +235,9 @@ end
 
 
 function Public.click(event)
+	if not event.element then return end
+	if not event.element.valid then return end
+
 	local player = game.players[event.element.player_index]
 	if not player.gui.screen[window_name .. '_piratewindow'] then return end
 

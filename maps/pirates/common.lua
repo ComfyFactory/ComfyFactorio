@@ -8,6 +8,8 @@ local Utils = require 'maps.pirates.utils_local'
 local CoreData = require 'maps.pirates.coredata'
 local Memory = require 'maps.pirates.memory'
 local _inspect = require 'utils.inspect'.inspect
+
+local LootRaffle = require 'functions.loot_raffle'
 -- local simplex_noise = require 'utils.simplex_noise'.d2
 -- local perlin_noise = require 'utils.perlin_noise'
 -- local Force_health_booster = require 'modules.force_health_booster'
@@ -19,6 +21,7 @@ local Public = {}
 
 -- Public.active_crews_cap = 1
 Public.activeCrewsCap = 2
+Public.private_run_cap = 1
 Public.minimumCapacitySliderValue = 1
 Public.minimum_run_capacity_to_enforce_space_for = 22
 -- auto-disbanding when there are no players left in the crew:
@@ -405,6 +408,17 @@ function Public.is_captain(player)
 	end
 end
 
+
+function Public.is_officer(player_index)
+	local memory = Memory.get_crew_memory()
+
+	if memory.officers_table and memory.officers_table[player_index] then
+		return true
+	else
+		return false
+	end
+end
+
 -- lifted shamelessly from biter battles, since I haven't done balancing work on this:
 function Public.surplus_evo_biter_damage_modifier(surplus_evo)
 	return Math.floor(surplus_evo/2*1000)/1000 --is this floor needed?
@@ -607,7 +621,7 @@ function Public.surface_place_random_obstacle_boxes(surface, center, width, heig
 				for j = 1, size^2 do
 					local p2 = surface.find_non_colliding_position('wooden-chest', p, 5, 0.1, true) or p
 					local e = surface.create_entity{name = 'wooden-chest', position = p2, force = memory.force_name, create_build_effect_smoke = false}
-					memory.hold_surface_destroyable_wooden_chests[#memory.hold_surface_destroyable_wooden_chests + 1] = e
+					memory.hold_surface_destroyable_wooden_chests[e.unit_number] = e
 					e.destructible = false
 					e.minable = false
 					e.rotatable = false
@@ -1516,6 +1530,79 @@ function Public.is_id_valid(id)
 	else
 		return false
 	end
+end
+
+-- NOTE: Items here are either unobtainable or hard to find/get
+-- Connected with crew.lua recipe and technology disables
+function Public.get_item_blacklist(tier)
+    local blacklist = LootRaffle.get_tech_blacklist(tier)
+	blacklist['landfill'] = true
+	blacklist['concrete'] = true
+	blacklist['hazard-concrete'] = true
+	blacklist['locomotive'] = true
+	blacklist['cargo-wagon'] = true
+	blacklist['fluid-wagon'] = true
+	blacklist['train-stop'] = true
+	blacklist['rail-signal'] = true
+	blacklist['rail-chain-signal'] = true
+	blacklist['refined-concrete'] = true
+	blacklist['refined-hazard-concrete'] = true
+	blacklist['flamethrower-turret'] = true
+	blacklist['tank'] = true
+	blacklist['cannon-shell'] = true
+	blacklist['explosive-cannon-shell'] = true
+	blacklist['speed-module-3'] = true
+	blacklist['productivity-module-3'] = true
+	blacklist['effectivity-module-3'] = true
+	blacklist['space-science-pack'] = true
+	blacklist['rocket-control-unit'] = true
+	blacklist['artillery-wagon'] = true
+	blacklist['artillery-turret'] = true
+	blacklist['artillery-targeting-remote'] = true
+	blacklist['uranium-cannon-shell'] = true
+	blacklist['explosive-uranium-cannon-shell'] = true
+	blacklist['satellite'] = true
+	blacklist['rocket-silo'] = true
+	blacklist['destroyer-capsule'] = true
+	blacklist['spidertron'] = true
+	blacklist['discharge-defense-remote'] = true
+	blacklist['discharge-defense-equipment'] = true
+    blacklist['express-loader'] = true
+	blacklist['land-mine'] = true
+	blacklist['wood'] = true -- too easy to acquire
+
+    return blacklist
+end
+
+-- tier: affects amount of items and rarity returned
+-- scale: final result of formula with tier scaled
+-- tech_tier: float in range [0; 1]; 1 = everything unlocked
+function Public.pick_random_price(tier, scale, tech_tier)
+	if tier < 0 or scale < 0 then return end
+
+	local item_stacks = LootRaffle.roll(math.floor(scale * (tier ^ 2 + 10 * tier)), 100, Public.get_item_blacklist(tech_tier))
+	local price = {}
+	for _, item_stack in pairs(item_stacks) do
+		price[#price+1] = {name = item_stack.name, amount = item_stack.count}
+	end
+
+	return price
+end
+
+-- This method should exist in table but it doesn't for some reason on comfy repo so I copied it to here
+function Public.get_random_dictionary_entry(t, key)
+    local target_index = Math.random(1, table_size(t))
+    local count = 1
+    for k, v in pairs(t) do
+        if target_index == count then
+            if key then
+                return k
+            else
+                return v
+            end
+        end
+        count = count + 1
+    end
 end
 
 return Public

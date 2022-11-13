@@ -149,6 +149,8 @@ end
 
 
 function Public.click(event)
+	if not event.element then return end
+	if not event.element.valid then return end
 
 	local player = game.players[event.element.player_index]
 

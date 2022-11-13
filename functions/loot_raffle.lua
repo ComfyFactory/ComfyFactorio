@@ -424,11 +424,11 @@ local size_of_item_names = #item_names
 function Public.TweakItemWorth(updates)
     item_names = {}
     for k, v in pairs(updates) do
-	item_worths[k] = v
+        item_worths[k] = v
     end
     item_names = {}
     for k, _ in pairs(item_worths) do
-	table_insert(item_names, k)
+        table_insert(item_names, k)
     end
 
     size_of_item_names = #item_names
@@ -532,9 +532,14 @@ end
 
 --tier = float 0-1; 1 = everything unlocked
 function Public.get_tech_blacklist(tier)
+    if not tier then
+        return
+    end
+
     local blacklist = {}
     local size_of_tech_tier_list = #tech_tier_list
-    local min_index = math_floor(size_of_tech_tier_list * tier)
+    tier = math.clamp(tier, 0, 1)
+    local min_index = math_floor(size_of_tech_tier_list * tier) + 1
     for i = size_of_tech_tier_list, min_index, -1 do
         blacklist[tech_tier_list[i]] = true
     end

@@ -1,5 +1,5 @@
 local Event = require 'utils.event'
-local WPT = require 'maps.mountain_fortress_v3.table'
+local Public = require 'maps.mountain_fortress_v3.table'
 
 local random = math.random
 
@@ -85,7 +85,7 @@ local function create_kaboom(surface, position, name)
     )
 end
 
-local function tick_tack_trap(surface, position)
+function Public.tick_tack_trap(surface, position)
     if not surface then
         return
     end
@@ -101,7 +101,7 @@ local function tick_tack_trap(surface, position)
     if not position.y then
         return
     end
-    local traps = WPT.get('traps')
+    local traps = Public.get('traps')
     local tick_tack_count = random(5, 9)
     for t = 60, tick_tack_count * 60, 60 do
         if not traps[game.tick + t] then
@@ -130,7 +130,7 @@ local function tick_tack_trap(surface, position)
 end
 
 local function on_tick()
-    local traps = WPT.get('traps')
+    local traps = Public.get('traps')
     if not traps[game.tick] then
         return
     end
@@ -148,4 +148,4 @@ end
 
 Event.add(defines.events.on_tick, on_tick)
 
-return tick_tack_trap
+return Public

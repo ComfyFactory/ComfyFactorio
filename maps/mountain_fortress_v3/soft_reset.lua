@@ -1,11 +1,21 @@
 local Server = require 'utils.server'
 local Session = require 'utils.datastore.session_data'
 local Modifers = require 'utils.player_modifiers'
-local WPT = require 'maps.mountain_fortress_v3.table'
+local Public = require 'maps.mountain_fortress_v3.table'
 
 local mapkeeper = '[color=blue]Mapkeeper:[/color]'
 
-local Public = {}
+local function show_all_gui(player)
+    for _, child in pairs(player.gui.top.children) do
+        child.visible = true
+    end
+end
+
+local function clear_spec_tag(player)
+    if player.tag == '[Spectator]' then
+        player.tag = ''
+    end
+end
 
 local function reset_forces(new_surface, old_surface)
     for _, f in pairs(game.forces) do
@@ -52,6 +62,8 @@ local function equip_players(player_starting_items, data)
             for item, amount in pairs(player_starting_items) do
                 player.insert({name = item, count = amount})
             end
+            show_all_gui(player)
+            clear_spec_tag(player)
         else
             data.players[player.index] = nil
             Session.clear_player(player)
@@ -61,7 +73,7 @@ local function equip_players(player_starting_items, data)
 end
 
 function Public.soft_reset_map(old_surface, map_gen_settings, player_starting_items)
-    local this = WPT.get()
+    local this = Public.get()
 
     if not this.soft_reset_counter then
         this.soft_reset_counter = 0
@@ -72,7 +84,7 @@ function Public.soft_reset_map(old_surface, map_gen_settings, player_starting_it
     this.soft_reset_counter = this.soft_reset_counter + 1
 
     local new_surface = game.create_surface(this.original_surface_name .. '_' .. tostring(this.soft_reset_counter), map_gen_settings)
-    new_surface.request_to_generate_chunks({0, 0}, 0.5)
+    new_surface.request_to_generate_chunks({0, 0}, 0.1)
     new_surface.force_generate_chunk_requests()
 
     reset_forces(new_surface, old_surface)

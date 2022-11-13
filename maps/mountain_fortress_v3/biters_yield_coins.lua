@@ -1,4 +1,5 @@
 local Event = require 'utils.event'
+local Public = require 'maps.mountain_fortress_v3.table'
 local RPG = require 'modules.rpg.main'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local insert = table.insert
@@ -137,3 +138,5 @@ local function on_entity_died(event)
 end
 
 Event.add(defines.events.on_entity_died, on_entity_died)
+
+return Public

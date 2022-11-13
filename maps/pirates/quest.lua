@@ -9,6 +9,7 @@ local Math = require 'maps.pirates.math'
 local Raffle = require 'maps.pirates.raffle'
 -- local Loot = require 'maps.pirates.loot'
 local CoreData = require 'maps.pirates.coredata'
+local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 local _inspect = require 'utils.inspect'.inspect
 
 
@@ -21,6 +22,8 @@ local enum = {
 	RESOURCEFLOW = 'Resource_Flow',
 	RESOURCECOUNT = 'Resource_Count',
 	WORMS = 'Worms',
+	FISH = 'Fish',
+	COMPILATRON = 'Compilatron', -- compilatron is robot that looks like sheep
 }
 Public.enum = enum
 
@@ -31,6 +34,8 @@ Public.quest_icons = {
 	[enum.FIND] = '[img=utility.ghost_time_to_live_modifier_icon]',
 	[enum.RESOURCEFLOW] = '',
 	[enum.RESOURCECOUNT] = '',
+	[enum.FISH] = '[item=raw-fish]',
+	[enum.COMPILATRON] = '[entity=compilatron]',
 }
 
 
@@ -86,10 +91,14 @@ function Public.initialise_random_quest()
 	-- Public.initialise_time_quest()
 end
 
-
-
-
-
+function Public.initialise_random_cave_island_quest()
+	local rng = Math.random(100)
+	if rng <= 50 then
+		Public.initialise_fish_quest()
+	else
+		Public.initialise_compilatron_quest()
+	end
+end
 
 function Public.initialise_time_quest()
 	local destination = Common.current_destination()
@@ -105,8 +114,7 @@ end
 function Public.initialise_find_quest()
 	local destination = Common.current_destination()
 
-	-- @FIXME: Magic numbers
-	if destination.subtype and destination.subtype == '1' or destination.subtype == '5' or destination.subtype == '6' then
+	if destination.subtype == IslandEnum.enum.STANDARD or destination.subtype == IslandEnum.enum.RADIOACTIVE or destination.subtype == IslandEnum.enum.STANDARD_VARIANT then
 
 		destination.dynamic_data.quest_type = enum.FIND
 		destination.dynamic_data.quest_reward = Public.quest_reward()
@@ -128,7 +136,8 @@ end
 function Public.initialise_nodamage_quest()
 	local destination = Common.current_destination()
 
-	if not destination and destination.dynamic_data and destination.dynamic_data.rocketsilomaxhp then return end
+	-- @FIXME: this if check looks ill-formed when destination is nil
+	if not destination and destination.dynamic_data and destination.dynamic_data.rocketsilomaxhp then return false end
 
 	destination.dynamic_data.quest_type = enum.NODAMAGE
 	destination.dynamic_data.quest_reward = Public.quest_reward()
@@ -139,26 +148,27 @@ function Public.initialise_nodamage_quest()
 end
 
 
-function Public.initialise_resourceflow_quest()
-	local destination = Common.current_destination()
+-- @UNUSED
+-- function Public.initialise_resourceflow_quest()
+-- 	local destination = Common.current_destination()
 
-	if not destination and destination.dynamic_data and destination.dynamic_data.rocketsilomaxhp then return end
+-- 	if not destination and destination.dynamic_data and destination.dynamic_data.rocketsilomaxhp then return false end
 
-	destination.dynamic_data.quest_type = enum.RESOURCEFLOW
-	destination.dynamic_data.quest_reward = Public.quest_reward()
-	destination.dynamic_data.quest_progress = 0
+-- 	destination.dynamic_data.quest_type = enum.RESOURCEFLOW
+-- 	destination.dynamic_data.quest_reward = Public.quest_reward()
+-- 	destination.dynamic_data.quest_progress = 0
 
-	local generated_flow_quest = Public.generate_flow_quest()
-	if not generated_flow_quest then return false end
+-- 	local generated_flow_quest = Public.generate_flow_quest()
+-- 	if not generated_flow_quest then return false end
 
-	destination.dynamic_data.quest_params = {item = generated_flow_quest.item}
+-- 	destination.dynamic_data.quest_params = {item = generated_flow_quest.item}
 
-	local progressneeded_before_rounding = generated_flow_quest.base_rate * Balance.resource_quest_multiplier()
+-- 	local progressneeded_before_rounding = generated_flow_quest.base_rate * Balance.resource_quest_multiplier()
 
-	destination.dynamic_data.quest_progressneeded = Math.ceil(progressneeded_before_rounding/10) * 10
+-- 	destination.dynamic_data.quest_progressneeded = Math.ceil(progressneeded_before_rounding/10) * 10
 
-	return true
-end
+-- 	return true
+-- end
 
 
 function Public.initialise_resourcecount_quest()
@@ -192,7 +202,7 @@ end
 function Public.initialise_worms_quest()
 	local destination = Common.current_destination()
 
-	if not (destination.surface_name and game.surfaces[destination.surface_name]) then return end
+	if not (destination.surface_name and game.surfaces[destination.surface_name]) then return false end
 
 	local surface = game.surfaces[destination.surface_name]
 
@@ -231,6 +241,33 @@ function Public.initialise_worms_quest()
 	end
 end
 
+-- Catch amount of fish (currently Cave island exclusive, because it's hard to calculate "quest_progressneeded")
+function Public.initialise_fish_quest()
+	local destination = Common.current_destination()
+
+	if not destination and destination.dynamic_data then return false end
+
+	destination.dynamic_data.quest_type = enum.FISH
+	destination.dynamic_data.quest_reward = Public.quest_reward()
+	destination.dynamic_data.quest_progress = 0
+	destination.dynamic_data.quest_progressneeded = Math.random(300, 450) -- assuming that base caught fish amount is 3
+
+	return true
+end
+
+-- Rescue compilatrons under the heavy rocks (currently Cave island exclusive, because it's hard to calculate "quest_progressneeded")
+function Public.initialise_compilatron_quest()
+	local destination = Common.current_destination()
+
+	if not destination and destination.dynamic_data then return false end
+
+	destination.dynamic_data.quest_type = enum.COMPILATRON
+	destination.dynamic_data.quest_reward = Public.quest_reward()
+	destination.dynamic_data.quest_progress = 0
+	destination.dynamic_data.quest_progressneeded = Math.random(30, 40) -- assuming that chance to find compilatron is 1/20
+
+	return true
+end
 
 
 function Public.try_resolve_quest()

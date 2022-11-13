@@ -45,14 +45,14 @@ Public.hatamoto_damage_dealt_with_melee = 45
 Public.iron_leg_damage_taken_multiplier = 0.18
 Public.iron_leg_iron_ore_required = 3000
 Public.deckhand_extra_speed = 1.25
-Public.deckhand_ore_grant_multiplier = 2
-Public.deckhand_ore_scaling_enabled = true
+Public.deckhand_ore_grant_multiplier = 5
+Public.deckhand_ore_scaling_enabled = false
 Public.boatswain_extra_speed = 1.25
-Public.boatswain_ore_grant_multiplier = 4
-Public.boatswain_ore_scaling_enabled = true
+Public.boatswain_ore_grant_multiplier = 8
+Public.boatswain_ore_scaling_enabled = false
 Public.shoresman_extra_speed = 1.1
-Public.shoresman_ore_grant_multiplier = 2
-Public.shoresman_ore_scaling_enabled = true
+Public.shoresman_ore_grant_multiplier = 5
+Public.shoresman_ore_scaling_enabled = false
 Public.quartermaster_range = 19
 Public.quartermaster_bonus_physical_damage = 1.3
 Public.quartermaster_ore_scaling_enabled = false
@@ -61,6 +61,7 @@ Public.scout_damage_taken_multiplier = 1.25
 Public.scout_damage_dealt_multiplier = 0.6
 Public.fisherman_reach_bonus = 10
 Public.lumberjack_coins_from_tree = 12
+Public.lumberjack_ore_base_amount = 4
 Public.master_angler_reach_bonus = 16
 Public.master_angler_fish_bonus = 2
 Public.master_angler_coin_bonus = 20
@@ -145,7 +146,9 @@ end
 
 function Public.game_slowness_scale()
 	-- return 1 / Public.crew_scale()^(55/100) / Math.sloped(Common.difficulty_scale(), 1/4) --changed crew_scale factor significantly to help smaller crews
-	return 1 / Public.crew_scale()^(50/100) / Math.sloped(Common.difficulty_scale(), 1/4) --changed crew_scale factor significantly to help smaller crews
+	-- return 1 / (Public.crew_scale()^(50/100) / Math.sloped(Common.difficulty_scale(), 1/4)) --changed crew_scale factor significantly to help smaller crews
+
+	return Math.sloped(Common.difficulty_scale(), 1/4) / Public.crew_scale()^(50/100)
 end
 
 
@@ -183,16 +186,20 @@ end
 function Public.fuel_depletion_rate_static()
 	if (not Common.overworldx()) then return 0 end
 
-	local T = Public.expected_time_on_island()
-
-	local rate
 	if Common.overworldx() > 0 then
-		rate = 570 * (0 + (Common.overworldx()/40)^(9/10)) * Public.crew_scale()^(1/8) * Math.sloped(Common.difficulty_scale(), 65/100) / T --most of the crewsize dependence is through T, i.e. the coal cost per island stays the same... but the extra player dependency accounts for the fact that even in compressed time, more players seem to get more resources per island
-	else
-		rate = 0
-	end
+		-- With this formula coal consumption becomes 1x, 2x, 3x and 4x with 1, 3, 6, 9 crew members respectively
+		-- most of the crewsize dependence is through T, i.e. the coal cost per island stays the same... but the extra player dependency accounts for the fact that even in compressed time, more players seem to get more resources per island
+		-- rate = 570 * ((Common.overworldx()/40)^(9/10)) * Public.crew_scale()^(1/8) * Math.sloped(Common.difficulty_scale(), 65/100) / T
 
-	return -rate
+		-- With this formula coal consumption becomes 1x, 1.24x, 1.44x and 1.57x with 1, 3, 6, 9 crew members respectively.
+		-- Coal consumption should scale slowly because:
+		-- - More people doesn't necessarily mean faster progression: people just focus on other things (and on some islands it's hard to "employ" every crew member to be productive, due to lack of activities).
+		-- - Although more players can setup miners faster, miners don't dig ore faster.
+		-- - It's not fun being punished when noobs(or just your casual friends) join game and don't contribute "enough" to make up for increased coal consumption (among other things).
+		return -0.2 * ((Common.overworldx()/40)^(9/10)) * Public.crew_scale()^(1/5) * Math.sloped(Common.difficulty_scale(), 40/100)
+	else
+		return 0
+	end
 end
 
 function Public.fuel_depletion_rate_sailing()
@@ -390,15 +397,39 @@ function Public.island_richness_avg_multiplier()
 end
 
 function Public.resource_quest_multiplier()
-	return (1.0 + 0.075 * (Common.overworldx()/40)^(8/10)) * Math.sloped(Common.difficulty_scale(), 1/5) * (Public.crew_scale())^(1/10)
+	return (0.9 + 0.075 * (Common.overworldx()/40)^(8/10)) * Math.sloped(Common.difficulty_scale(), 1/5) * (Public.crew_scale())^(1/10)
 end
 
 function Public.quest_market_entry_price_scale()
-	return 0.85 * (1 + 0.030 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty_scale(), 1/2) --whilst the scenario philosophy says that resource scales tend to be independent of crew size, we account slightly for the fact that more players tend to handcraft more
+	-- Whilst the scenario philosophy says that resource scales tend to be independent of crew size, we account slightly for the fact that more players tend to handcraft more
+	-- Idea behind formula: small scale for early islands, but scale linearly ~3-4 times every 25 islands (scaling and starting scale is more aggressive for higher difficulties)
+
+	-- Returned value examples
+	-- Assuming parameters:
+	-- crew_size = 3
+	-- difficulty = easy (0.5)
+	-- @NOTE: assuming starting island is 0th island
+	-- x = 40   (1st island): 0.419
+	-- x = 200  (5th island): 0.582
+	-- x = 600  (15th island): 0.992
+	-- x = 1000 (25th island): 1.401
+	return (1 + 0.05 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty_scale(), 1/2) - 0.4
 end
 
 function Public.quest_furnace_entry_price_scale()
-	return 0.85 * (1 + 0.010 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty_scale(), 1/2) --slower increase with time, because this is more time-constrained than resource-constrained
+	-- Slower increase with time, because this is more time-constrained than resource-constrained
+	-- Idea behind formula: small scale for early islands, but scale linearly ~2-3 times every 25 islands (scaling and starting scale is more aggressive for higher difficulties)
+
+	-- Returned value examples
+	-- Assuming parameters:
+	-- crew_size = 3
+	-- difficulty = easy (0.5)
+	-- @NOTE: assuming starting island is 0th island
+	-- x = 40   (1st island): 0.419
+	-- x = 200  (5th island): 0.517
+	-- x = 600  (15th island): 0.762
+	-- x = 1000 (25th island): 1.008
+	return (1 + 0.03 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty_scale(), 1/2) - 0.4
 end
 
 function Public.apply_crew_buffs_per_league(force, leagues_travelled)
@@ -434,14 +465,14 @@ function Public.kraken_evo_increase_per_shot()
 end
 
 function Public.kraken_evo_increase_per_second()
-	return 1/100 / 20
+	return (1/100) / 20
 end
 
 function Public.sandworm_evo_increase_per_spawn()
 	if _DEBUG then
 		return 1/100
 	else
-		return 1/100 * 1/7 * Math.sloped(Common.difficulty_scale(), 3/5)
+		return (1/100) * (1/7) * Math.sloped(Common.difficulty_scale(), 3/5)
 	end
 end
 
@@ -573,9 +604,31 @@ function Public.player_gun_speed_modifiers()
 end
 
 
-Public.starting_items_player = {['pistol'] = 1, ['firearm-magazine'] = 20, ['raw-fish'] = 4, ['medium-electric-pole'] = 20, ['iron-plate'] = 50, ['copper-plate'] = 20, ['iron-gear-wheel'] = 6, ['copper-cable'] = 20, ['burner-inserter'] = 2, ['gun-turret'] = 1}
+Public.starting_items_player = {
+	['pistol'] = 1,
+	['firearm-magazine'] = 20,
+	['raw-fish'] = 4,
+	['medium-electric-pole'] = 20,
+	['iron-plate'] = 50,
+	['copper-plate'] = 20,
+	['iron-gear-wheel'] = 6,
+	['copper-cable'] = 20,
+	['burner-inserter'] = 2,
+	['gun-turret'] = 1
+}
 
-Public.starting_items_player_late = {['pistol'] = 1, ['firearm-magazine'] = 10, ['raw-fish'] = 4, ['small-electric-pole'] = 20, ['iron-plate'] = 50, ['copper-plate'] = 20, ['iron-gear-wheel'] = 6, ['copper-cable'] = 20, ['burner-inserter'] = 2, ['gun-turret'] = 1}
+Public.starting_items_player_late = {
+	['pistol'] = 1,
+	['firearm-magazine'] = 10,
+	['raw-fish'] = 4,
+	['small-electric-pole'] = 20,
+	['iron-plate'] = 50,
+	['copper-plate'] = 20,
+	['iron-gear-wheel'] = 6,
+	['copper-cable'] = 20,
+	['burner-inserter'] = 2,
+	['gun-turret'] = 1
+}
 
 function Public.starting_items_crew_upstairs()
 	return {
@@ -634,10 +687,10 @@ end
 -- a: scaling
 -- When the formula needs adjustments, I suggest changing scaling variable
 -- Note: 3333 crude oil amount ~= 1% = 0.1/sec
-function Public.pick_special_pumpjack_oil_amount()
+function Public.pick_default_oil_amount()
 	local scaling = 50
 	local amount = scaling * Math.sqrt(1000000 * Common.game_completion_progress())
-	local extra_random_amount = Math.random(Math.ceil(0.2 * amount))
+	local extra_random_amount = Math.random(Math.max(1, Math.ceil(0.2 * amount)))
 	return amount + extra_random_amount
 end
 

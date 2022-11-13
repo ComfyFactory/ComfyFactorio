@@ -158,8 +158,6 @@ function Public.create_dock_markets(surface, p)
 		-- 	e.add_market_item{price = {{'repair-pack', 20}, {'coin', 1000}}, offer = {type = 'give-item', item = 'artillery-turret', count = 1}}
 		-- end
 
-		e.add_market_item{price = {{'repair-pack', 20}, {'coin', 1000}}, offer = {type = 'give-item', item = 'artillery-turret', count = 1}}
-
 		local upgrade_for_sale = Common.current_destination().static_params.upgrade_for_sale
 		if upgrade_for_sale then
 			e.add_market_item(Upgrades.market_offer_form[upgrade_for_sale])

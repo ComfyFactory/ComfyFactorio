@@ -9,23 +9,19 @@ local Server = require 'utils.server'
 local Math = require 'maps.pirates.math'
 local Ai = require 'maps.pirates.ai'
 local Memory = require 'maps.pirates.memory'
-local Gui = require 'maps.pirates.gui.gui'
 local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
 local PlayerColors = require 'maps.pirates.player_colors'
 local Utils = require 'maps.pirates.utils_local'
 
-local Balance = require 'maps.pirates.balance'
 local Crew = require 'maps.pirates.crew'
 local Roles = require 'maps.pirates.roles.roles'
-local Structures = require 'maps.pirates.structures.structures'
 local Boats = require 'maps.pirates.structures.boats.boats'
 local Surfaces = require 'maps.pirates.surfaces.surfaces'
 local Overworld = require 'maps.pirates.overworld'
 local Islands = require 'maps.pirates.surfaces.islands.islands'
 local Progression = require 'maps.pirates.progression'
 local Crowsnest = require 'maps.pirates.surfaces.crowsnest'
-local Hold = require 'maps.pirates.surfaces.hold'
 local PiratesApiEvents = require 'maps.pirates.api_events'
 local Upgrades = require 'maps.pirates.boat_upgrades'
 local Effects = require 'maps.pirates.effects'
@@ -39,7 +35,6 @@ local CustomEvents = require 'maps.pirates.custom_events'
 local Classes = require 'maps.pirates.roles.classes'
 
 local Gui = require 'maps.pirates.gui.gui'
-local GUIcolor = require 'maps.pirates.gui.color'
 
 
 
@@ -232,27 +227,6 @@ end)
 -- 	player.print('[color=gray]' .. Roles.get_classes_print_string() .. '[/color]')
 -- end)
 
--- commands.add_command(
--- 'classinfo',
--- {'pirates.cmd_explain_classinfo'},
--- function(cmd)
--- 	local param = tostring(cmd.parameter)
--- 	local player = game.players[cmd.player_index]
--- 	if not Common.validate_player(player) then return end
-
--- 	if param and param ~= 'nil' then
--- 		local string = Roles.get_class_print_string(param, false)
--- 		if string then
--- 			Common.notify_player_expected(player, {'', {'pirates.class_definition_for'}, ' ', string})
--- 		else
--- 			Common.notify_player_error(player, {'pirates.cmd_error_invalid_class_name', param})
--- 		end
--- 	else
--- 		--Common.notify_player_expected(player, '/classinfo {classname} returns the definition of the named class.')
--- 		Common.notify_player_expected(player, {'', '/classinfo ', {'pirates.cmd_explain_classinfo'}})
--- 	end
--- end)
-
 commands.add_command(
 'classinfo',
 {'pirates.cmd_explain_classinfo'},
@@ -419,9 +393,8 @@ function(cmd)
 	local player = game.players[cmd.player_index]
 	local param = tostring(cmd.parameter)
 	if check_captain_or_admin(cmd) then
-		local memory = Memory.get_crew_memory()
 		if param and game.players[param] and game.players[param].index then
-			if memory.officers_table and memory.officers_table[game.players[param].index] then
+			if Common.is_officer(game.players[param].index) then
 				Roles.unmake_officer(player, game.players[param])
 			else
 				Roles.make_officer(player, game.players[param])
@@ -481,24 +454,6 @@ function(cmd)
 		if not Common.validate_player(player) then return end
 		Highscore.dump_highscores()
 		player.print('Highscores dumped.')
-	end
-end)
-
--- Equip a class passed in parameter (although I think this command is redundant since there is /take command?)
-commands.add_command(
-'setclass',
-{'pirates.cmd_explain_dev'},
-function(cmd)
-	cmd_set_memory(cmd)
-
-	local param = tostring(cmd.parameter)
-	if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-		local memory = Memory.get_crew_memory()
-		if not Common.validate_player(player) then return end
-		if not memory.classes_table then memory.classes_table = {} end
-		memory.classes_table[player.index] = param
-		player.print('Set own class to ' .. param .. '.')
 	end
 end)
 
@@ -621,7 +576,9 @@ function(cmd)
 		local memory = Memory.get_crew_memory()
 		if not Common.is_id_valid(memory.id) then return end
 		local player = game.players[cmd.player_index]
-		Classes.try_unlock_class(param, player, true)
+		if not Classes.try_unlock_class(param, player, true) then
+			Common.notify_player_error(player, {'pirates.cmd_error_invalid_class_name', param})
+		end
 	end
 end)
 
@@ -1135,7 +1092,7 @@ if _DEBUG then
 		local param = tostring(cmd.parameter)
 		if check_admin(cmd) then
 			local player = game.players[cmd.player_index]
-			Server.to_discord_embed_raw(CoreData.comfy_emojis.monkas)
+			Server.to_discord_embed_raw(CoreData.comfy_emojis.despair)
 		end
 	end)
 
@@ -1150,14 +1107,17 @@ if _DEBUG then
 			local player = game.players[cmd.player_index]
 			local memory = Memory.get_crew_memory()
 			if not Common.is_id_valid(memory.id) then return end
+
 			local boat = memory.boat
 			local scope = Boats.get_scope(boat)
+			local surface = game.surfaces[boat.surface_name]
+			if not surface then return end
 
 			if scope.Data.cannons then
 				for i = -2, 2 do
 					local p1 = scope.Data.cannons[1]
 					local p2 = {x = boat.position.x + p1.x + i * 2, y = boat.position.y + p1.y - 4}
-					local e = player.surface.create_entity({name = 'gun-turret', position = p2, force = boat.force_name, create_build_effect_smoke = false})
+					local e = surface.create_entity({name = 'gun-turret', position = p2, force = boat.force_name, create_build_effect_smoke = false})
 					if e and e.valid then
 						e.insert({name = "uranium-rounds-magazine", count = 200})
 					end
@@ -1165,7 +1125,7 @@ if _DEBUG then
 				for i = -2, 2 do
 					local p1 = scope.Data.cannons[2]
 					local p2 = {x = boat.position.x + p1.x + i * 2, y = boat.position.y + p1.y + 4}
-					local e = player.surface.create_entity({name = 'gun-turret', position = p2, force = boat.force_name, create_build_effect_smoke = false})
+					local e = surface.create_entity({name = 'gun-turret', position = p2, force = boat.force_name, create_build_effect_smoke = false})
 					if e and e.valid then
 						e.insert({name = "uranium-rounds-magazine", count = 200})
 					end
@@ -1214,11 +1174,12 @@ if _DEBUG then
 
 			player.insert{name='substation', count = 50}
 			player.insert{name='solar-panel', count = 50}
-			player.insert{name='submachine-gun', count = 1}
+			player.insert{name='vehicle-machine-gun', count = 1}
 			player.insert{name='uranium-rounds-magazine', count = 200}
 			player.insert{name='raw-fish', count = 100}
 			player.insert{name='coin', count = 50000}
-			player.insert{name='rail-signal', count = 300}
+			player.insert{name='grenade', count = 100}
+			player.insert{name='steel-chest', count = 50}
 		end
 	end)
 

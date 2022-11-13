@@ -1,14 +1,12 @@
-local WPT = require 'maps.mountain_fortress_v3.table'
+local Public = require 'maps.mountain_fortress_v3.table'
 
 local random = math.random
 local rad = math.rad
 local sin = math.sin
 local cos = math.cos
 
-local Public = {}
-
 local function create_defense_system(position, name, target)
-    local active_surface_index = WPT.get('active_surface_index')
+    local active_surface_index = Public.get('active_surface_index')
     local surface = game.surfaces[active_surface_index]
 
     local random_angles = {
@@ -78,7 +76,7 @@ local function create_defense_system(position, name, target)
 end
 
 function Public.enable_poison_defense(pos)
-    local locomotive = WPT.get('locomotive')
+    local locomotive = Public.get('locomotive')
     if not locomotive then
         return
     end
@@ -90,7 +88,7 @@ function Public.enable_poison_defense(pos)
 end
 
 function Public.enable_robotic_defense(pos)
-    local locomotive = WPT.get('locomotive')
+    local locomotive = Public.get('locomotive')
     if not locomotive then
         return
     end

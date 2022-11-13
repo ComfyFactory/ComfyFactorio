@@ -14,6 +14,7 @@ local auto_stash_button_name = Gui.uid_name()
 local this = {
     floating_text_y_offsets = {},
     whitelist = {},
+    insert_to_neutral_chests = false,
     insert_into_furnace = false,
     insert_into_wagon = false,
     bottom_button = false,
@@ -167,20 +168,15 @@ local function get_nearby_chests(player, a, furnace, wagon)
         inventory_type = defines.inventory.cargo_wagon
     end
 
-    for _, e in pairs(player.surface.find_entities_filtered({type = container_type, area = area, force = player.force})) do
+    local forces = player.force
+    if this.insert_to_neutral_chests then
+        forces = {player.force, 'neutral'}
+    end
+
+    for _, e in pairs(player.surface.find_entities_filtered({type = container_type, area = area, force = forces})) do
         if ((player.position.x - e.position.x) ^ 2 + (player.position.y - e.position.y) ^ 2) <= r_square then
             i = i + 1
             containers[i] = e
-        end
-    end
-    if #containers <= 0 then
-        if is_mod_loaded('Krastorio2') then
-            for _, e in pairs(player.surface.find_entities_filtered({type = 'assembling-machine', area = area, force = player.force})) do
-                if ((player.position.x - e.position.x) ^ 2 + (player.position.y - e.position.y) ^ 2) <= r_square then
-                    i = i + 1
-                    containers[i] = e
-                end
-            end
         end
     end
 
@@ -626,10 +622,10 @@ local function do_whitelist()
     this.whitelist = {}
     for k, _ in pairs(resources) do
         if resources[k] and resources[k].type == 'resource' and resources[k].mineable_properties then
-            if resources[k].mineable_properties.products[1] then
+            if resources[k].mineable_properties.products and resources[k].mineable_properties.products[1] then
                 local r = resources[k].mineable_properties.products[1].name
                 this.whitelist[r] = true
-            elseif resources[k].mineable_properties.products[2] then
+            elseif resources[k].mineable_properties.products and resources[k].mineable_properties.products[2] then
                 local r = resources[k].mineable_properties.products[2].name
                 this.whitelist[r] = true
             end
@@ -665,27 +661,19 @@ Gui.on_click(
 )
 
 function Public.insert_into_furnace(value)
-    if value then
-        this.insert_into_furnace = value
-    else
-        this.insert_into_furnace = false
-    end
+    this.insert_into_furnace = value or false
 end
 
 function Public.insert_into_wagon(value)
-    if value then
-        this.insert_into_wagon = value
-    else
-        this.insert_into_wagon = false
-    end
+    this.insert_into_wagon = value or false
 end
 
 function Public.bottom_button(value)
-    if value then
-        this.bottom_button = value
-    else
-        this.bottom_button = false
-    end
+    this.bottom_button = value or false
+end
+
+function Public.insert_to_neutral_chests(value)
+    this.insert_to_neutral_chests = value or false
 end
 
 function Public.set_dungeons_initial_level(value)

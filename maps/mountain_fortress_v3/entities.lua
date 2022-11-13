@@ -1,39 +1,26 @@
 require 'modules.rocks_broken_paint_tiles'
 
 local Event = require 'utils.event'
+local Public = require 'maps.mountain_fortress_v3.table'
 local Server = require 'utils.server'
-local BuriedEnemies = require 'maps.mountain_fortress_v3.buried_enemies'
-local Loot = require 'maps.mountain_fortress_v3.loot'
 local RPG = require 'modules.rpg.main'
-local Callbacks = require 'maps.mountain_fortress_v3.functions'
-local Mining = require 'maps.mountain_fortress_v3.mining'
-local Traps = require 'maps.mountain_fortress_v3.traps'
-local Locomotive = require 'maps.mountain_fortress_v3.locomotive'
-local DefenseSystem = require 'maps.mountain_fortress_v3.locomotive.defense_system'
 local Collapse = require 'modules.collapse'
 local Alert = require 'utils.alert'
 local Task = require 'utils.task'
 local Score = require 'utils.gui.score'
 local Token = require 'utils.token'
--- local HS = require 'maps.mountain_fortress_v3.highscore'
 local Discord = require 'utils.discord'
 local Core = require 'utils.core'
 local Diff = require 'modules.difficulty_vote_by_amount'
 local format_number = require 'util'.format_number
 local RPG_Progression = require 'utils.datastore.rpg_data'
-
--- tables
-local WPT = require 'maps.mountain_fortress_v3.table'
 local WD = require 'modules.wave_defense.table'
-local zone_settings = WPT.zone_settings
 
--- module
-local Public = {}
+local zone_settings = Public.zone_settings
 local random = math.random
 local floor = math.floor
 local abs = math.abs
 local round = math.round
-local raise_event = script.raise_event
 
 -- Use these settings for live
 local send_ping_to_channel = Discord.channel_names.mtn_channel
@@ -98,20 +85,20 @@ local reset_game =
     function(data)
         local this = data.this
         if this.soft_reset then
-            -- HS.set_scores()
+            -- Public.set_scores()
             this.game_reset_tick = nil
-            raise_event(WPT.events.reset_map, {})
+            Public.reset_map()
             return
         end
         if this.restart then
-            -- HS.set_scores()
+            -- Public.set_scores()
             local message = ({'entity.reset_game'})
             Server.to_discord_bold(message, true)
             Server.start_scenario('Mountain_Fortress_v3')
             return
         end
         if this.shutdown then
-            -- HS.set_scores()
+            -- Public.set_scores()
             local message = ({'entity.shutdown_game'})
             Server.to_discord_bold(message, true)
             Server.stop_scenario()
@@ -141,7 +128,7 @@ end
 
 local function on_entity_removed(data)
     local entity = data.entity
-    local upgrades = WPT.get('upgrades')
+    local upgrades = Public.get('upgrades')
 
     local built = {
         ['land-mine'] = upgrades.landmine.built,
@@ -164,11 +151,11 @@ local function on_entity_removed(data)
 end
 
 local function check_health()
-    local locomotive_health = WPT.get('locomotive_health')
-    local locomotive_max_health = WPT.get('locomotive_max_health')
-    local carriages = WPT.get('carriages')
+    local locomotive_health = Public.get('locomotive_health')
+    local locomotive_max_health = Public.get('locomotive_max_health')
+    local carriages = Public.get('carriages')
     if locomotive_health <= 0 then
-        WPT.set('locomotive_health', 0)
+        Public.set('locomotive_health', 0)
     end
     local m = locomotive_health / locomotive_max_health
     if carriages then
@@ -188,7 +175,7 @@ local function check_health()
 end
 
 local function check_health_final_damage(final_damage_amount)
-    local carriages = WPT.get('carriages')
+    local carriages = Public.get('carriages')
     if carriages then
         for i = 1, #carriages do
             local entity = carriages[i]
@@ -205,17 +192,17 @@ local function set_train_final_health(final_damage_amount, repair)
         return
     end
 
-    local locomotive = WPT.get('locomotive')
+    local locomotive = Public.get('locomotive')
     if not (locomotive and locomotive.valid) then
         return
     end
 
-    local locomotive_health = WPT.get('locomotive_health')
-    local locomotive_max_health = WPT.get('locomotive_max_health')
+    local locomotive_health = Public.get('locomotive_health')
+    local locomotive_max_health = Public.get('locomotive_max_health')
 
     if not repair then
-        local poison_deployed = WPT.get('poison_deployed')
-        local robotics_deployed = WPT.get('robotics_deployed')
+        local poison_deployed = Public.get('poison_deployed')
+        local robotics_deployed = Public.get('robotics_deployed')
 
         local lower_high = locomotive_max_health * 0.4
         local higher_high = locomotive_max_health * 0.5
@@ -224,12 +211,12 @@ local function set_train_final_health(final_damage_amount, repair)
 
         if locomotive_health >= lower_high and locomotive_health <= higher_high then
             if not poison_deployed then
-                local carriages = WPT.get('carriages')
+                local carriages = Public.get('carriages')
 
                 if carriages then
                     for i = 1, #carriages do
                         local entity = carriages[i]
-                        DefenseSystem.enable_poison_defense(entity.position)
+                        Public.enable_poison_defense(entity.position)
                     end
                 end
 
@@ -238,16 +225,16 @@ local function set_train_final_health(final_damage_amount, repair)
                 }
                 local msg = ({'entity.train_taking_damage'})
                 Alert.alert_all_players_location(p, msg)
-                WPT.set().poison_deployed = true
+                Public.set().poison_deployed = true
             end
         elseif locomotive_health >= lower_low and locomotive_health <= higher_low then
             if not robotics_deployed then
-                local carriages = WPT.get('carriages')
+                local carriages = Public.get('carriages')
 
                 if carriages then
                     for i = 1, #carriages do
                         local entity = carriages[i]
-                        DefenseSystem.enable_robotic_defense(entity.position)
+                        Public.enable_robotic_defense(entity.position)
                     end
                 end
                 local p = {
@@ -255,17 +242,17 @@ local function set_train_final_health(final_damage_amount, repair)
                 }
                 local msg = ({'entity.train_taking_damage'})
                 Alert.alert_all_players_location(p, msg)
-                WPT.set().robotics_deployed = true
+                Public.set().robotics_deployed = true
             end
         elseif locomotive_health >= locomotive_max_health then
-            WPT.set().poison_deployed = false
+            Public.set().poison_deployed = false
         end
     end
 
     if locomotive_health <= 0 or locomotive.health <= 5 then
         locomotive.destructible = false
         locomotive.health = 1
-        WPT.set('game_lost', true)
+        Public.set('game_lost', true)
         Public.loco_died()
     end
 
@@ -274,15 +261,15 @@ local function set_train_final_health(final_damage_amount, repair)
         return
     end
 
-    WPT.set('locomotive_health', floor(locomotive_health - final_damage_amount))
+    Public.set('locomotive_health', floor(locomotive_health - final_damage_amount))
     if locomotive_health > locomotive_max_health then
-        WPT.set('locomotive_health', locomotive_max_health)
+        Public.set('locomotive_health', locomotive_max_health)
     end
-    locomotive_health = WPT.get('locomotive_health')
+    locomotive_health = Public.get('locomotive_health')
 
     check_health()
 
-    local health_text = WPT.get('health_text')
+    local health_text = Public.get('health_text')
 
     rendering.set_text(health_text, 'HP: ' .. round(locomotive_health) .. ' / ' .. round(locomotive_max_health))
 end
@@ -297,7 +284,7 @@ local function protect_entities(data)
         return
     end
 
-    local check_heavy_damage = WPT.get('check_heavy_damage')
+    local check_heavy_damage = Public.get('check_heavy_damage')
 
     if check_heavy_damage then
         if entity.type == 'simple-entity' and dmg >= 500 then
@@ -321,7 +308,7 @@ local function protect_entities(data)
         return false
     end
 
-    local carriages_numbers = WPT.get('carriages_numbers')
+    local carriages_numbers = Public.get('carriages_numbers')
     if is_protected(entity) then
         if (cause and cause.valid) then
             if cause.force.index == 2 then
@@ -360,12 +347,12 @@ local function hidden_treasure(player, entity)
     if magic >= 50 then
         local msg = rare_treasure_chest_messages[random(1, #rare_treasure_chest_messages)]
         Alert.alert_player(player, 5, msg)
-        Loot.add_rare(entity.surface, entity.position, 'wooden-chest', magic)
+        Public.add_loot_rare(entity.surface, entity.position, 'wooden-chest', magic)
         return
     end
     local msg = treasure_chest_messages[random(1, #treasure_chest_messages)]
     Alert.alert_player(player, 5, msg, nil, nil, 0.3)
-    Loot.add(entity.surface, entity.position, chests[random(1, size_chests)])
+    Public.add_loot(entity.surface, entity.position, chests[random(1, size_chests)])
 end
 
 local function biters_chew_rocks_faster(data)
@@ -400,10 +387,10 @@ local function angry_tree(entity, cause, player)
         return
     end
     if random(1, 6) == 1 then
-        BuriedEnemies.buried_biter(entity.surface, entity.position)
+        Public.buried_biter(entity.surface, entity.position)
     end
     if random(1, 8) == 1 then
-        BuriedEnemies.buried_worm(entity.surface, entity.position)
+        Public.buried_worm(entity.surface, entity.position)
     end
     if random(1, 32) ~= 1 then
         return
@@ -420,8 +407,8 @@ local function angry_tree(entity, cause, player)
     if player then
         local forest_zone = RPG.get_value_from_player(player.index, 'forest_zone')
         if forest_zone and random(1, 32) == 1 then
-            local cbl = Callbacks.refill_turret_callback
-            local data = {callback_data = Callbacks.piercing_rounds_magazine_ammo}
+            local cbl = Public.refill_turret_callback
+            local data = {callback_data = Public.piercing_rounds_magazine_ammo}
             local e =
                 entity.surface.create_entity(
                 {
@@ -430,8 +417,8 @@ local function angry_tree(entity, cause, player)
                     force = 'enemy'
                 }
             )
-            if e.can_insert(Callbacks.piercing_rounds_magazine_ammo) then
-                e.insert(Callbacks.piercing_rounds_magazine_ammo)
+            if e.can_insert(Public.piercing_rounds_magazine_ammo) then
+                e.insert(Public.piercing_rounds_magazine_ammo)
             end
             local callback = Token.get(cbl)
             callback(e, data)
@@ -453,8 +440,8 @@ local function angry_tree(entity, cause, player)
 end
 
 local function give_coin(player)
-    local coin_amount = WPT.get('coin_amount')
-    local coin_override = WPT.get('coin_override')
+    local coin_amount = Public.get('coin_amount')
+    local coin_override = Public.get('coin_override')
     local forest_zone = RPG.get_value_from_player(player.index, 'forest_zone')
 
     if forest_zone then
@@ -504,12 +491,12 @@ local mining_events = {
     },
     {
         function(entity)
-            if Locomotive.is_around_train(entity) then
+            if Public.is_around_train(entity) then
                 entity.destroy()
                 return
             end
 
-            BuriedEnemies.buried_biter(entity.surface, entity.position)
+            Public.buried_biter(entity.surface, entity.position)
             entity.destroy()
         end,
         4096,
@@ -517,12 +504,12 @@ local mining_events = {
     },
     {
         function(entity)
-            if Locomotive.is_around_train(entity) then
+            if Public.is_around_train(entity) then
                 entity.destroy()
                 return
             end
 
-            BuriedEnemies.buried_biter(entity.surface, entity.position)
+            Public.buried_biter(entity.surface, entity.position)
             entity.destroy()
         end,
         512,
@@ -530,12 +517,12 @@ local mining_events = {
     },
     {
         function(entity)
-            if Locomotive.is_around_train(entity) then
+            if Public.is_around_train(entity) then
                 entity.destroy()
                 return
             end
 
-            BuriedEnemies.buried_worm(entity.surface, entity.position)
+            Public.buried_worm(entity.surface, entity.position)
             entity.destroy()
         end,
         2048,
@@ -543,12 +530,12 @@ local mining_events = {
     },
     {
         function(entity)
-            if Locomotive.is_around_train(entity) then
+            if Public.is_around_train(entity) then
                 entity.destroy()
                 return
             end
 
-            Traps(entity.surface, entity.position)
+            Public.tick_tack_trap(entity.surface, entity.position)
             entity.destroy()
         end,
         2048,
@@ -556,7 +543,7 @@ local mining_events = {
     },
     {
         function(entity, index)
-            if Locomotive.is_around_train(entity) then
+            if Public.is_around_train(entity) then
                 entity.destroy()
                 return
             end
@@ -629,7 +616,7 @@ local mining_events = {
     },
     {
         function(entity, index)
-            if Locomotive.is_around_train(entity) then
+            if Public.is_around_train(entity) then
                 entity.destroy()
                 return
             end
@@ -649,7 +636,7 @@ local mining_events = {
     },
     {
         function(entity, index)
-            if Locomotive.is_around_train(entity) then
+            if Public.is_around_train(entity) then
                 entity.destroy()
                 return
             end
@@ -678,7 +665,7 @@ local mining_events = {
     },
     {
         function(entity)
-            if Locomotive.is_around_train(entity) then
+            if Public.is_around_train(entity) then
                 entity.destroy()
                 return
             end
@@ -744,11 +731,11 @@ local function on_player_mined_entity(event)
         return
     end
 
-    local mined_scrap = WPT.get('mined_scrap')
+    local mined_scrap = Public.get('mined_scrap')
 
     if entity.type == 'simple-entity' or entity.type == 'simple-entity-with-owner' or entity.type == 'tree' then
-        WPT.set().mined_scrap = mined_scrap + 1
-        Mining.on_player_mined_entity(event)
+        Public.set().mined_scrap = mined_scrap + 1
+        Public.on_player_mined_entity(event)
         if entity.type == 'tree' then
             if random(1, 3) == 1 then
                 give_coin(player)
@@ -912,7 +899,7 @@ local function on_entity_damaged(event)
 
     local wave_number = WD.get_wave()
     local boss_wave_warning = WD.get_alert_boss_wave()
-    local munch_time = WPT.get('munch_time')
+    local munch_time = Public.get('munch_time')
 
     local data = {
         cause = cause,
@@ -945,7 +932,7 @@ local function on_player_repaired_entity(event)
         return
     end
     local entity = event.entity
-    local carriages_numbers = WPT.get('carriages_numbers')
+    local carriages_numbers = Public.get('carriages_numbers')
 
     if carriages_numbers[entity.unit_number] then
         local player = game.get_player(event.player_index)
@@ -998,20 +985,20 @@ local function on_entity_died(event)
         return
     end
 
-    local biters_killed = WPT.get('biters_killed')
-    local biters = WPT.get('biters')
+    local biters_killed = Public.get('biters_killed')
+    local biters = Public.get('biters')
 
     if entity.type == 'unit' or entity.type == 'unit-spawner' then
-        WPT.set().biters_killed = biters_killed + 1
+        Public.set().biters_killed = biters_killed + 1
         biters.amount = biters.amount - 1
         if biters.amount <= 0 then
             biters.amount = 0
         end
-        if Locomotive.is_around_train(entity) then
+        if Public.is_around_train(entity) then
             return
         end
         if random(1, 512) == 1 then
-            Traps(entity.surface, entity.position)
+            Public.tick_tack_trap(entity.surface, entity.position)
             return
         end
     end
@@ -1033,7 +1020,7 @@ local function on_entity_died(event)
                 return
             end
         end
-        if Locomotive.is_around_train(entity) then
+        if Public.is_around_train(entity) then
             return
         end
         angry_tree(entity, cause, player)
@@ -1041,22 +1028,22 @@ local function on_entity_died(event)
     end
 
     if entity.type == 'simple-entity' then
-        if Locomotive.is_around_train(entity) then
+        if Public.is_around_train(entity) then
             entity.destroy()
             return
         end
         if random(1, 32) == 1 then
-            BuriedEnemies.buried_biter(entity.surface, entity.position)
+            Public.buried_biter(entity.surface, entity.position)
             entity.destroy()
             return
         end
         if random(1, 64) == 1 then
-            BuriedEnemies.buried_worm(entity.surface, entity.position)
+            Public.buried_worm(entity.surface, entity.position)
             entity.destroy()
             return
         end
         if random(1, 512) == 1 then
-            Traps(entity.surface, entity.position)
+            Public.tick_tack_trap(entity.surface, entity.position)
             return
         end
         entity.destroy()
@@ -1159,7 +1146,7 @@ local function show_mvps(player)
         miners_label_text.style.font = 'default-bold'
         miners_label_text.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 
-        local sent_to_discord = WPT.get('sent_to_discord')
+        local sent_to_discord = Public.get('sent_to_discord')
 
         if not sent_to_discord then
             local message = {
@@ -1199,12 +1186,12 @@ local function show_mvps(player)
             end
             local time_played = Core.format_time(game.ticks_played)
             local total_players = #game.players
-            local pickaxe_upgrades = WPT.pickaxe_upgrades
-            local upgrades = WPT.get('upgrades')
+            local pickaxe_upgrades = Public.pickaxe_upgrades
+            local upgrades = Public.get('upgrades')
             local pick_tier = pickaxe_upgrades[upgrades.pickaxe_tier]
 
             local server_name_matches = Server.check_server_name('Mtn Fortress')
-            if WPT.get('prestige_system_enabled') then
+            if Public.get('prestige_system_enabled') then
                 RPG_Progression.save_all_players()
             end
             local date = Server.get_start_time()
@@ -1263,12 +1250,14 @@ local function show_mvps(player)
                 }
             }
             if server_name_matches then
-                Server.to_discord_named_parsed_embed(send_ping_to_channel, text)
+                if wave >= 1000 then
+                    Server.to_discord_named_parsed_embed(send_ping_to_channel, text)
+                end
             else
                 Server.to_discord_embed_parsed(text)
             end
 
-            WPT.set('sent_to_discord', true)
+            Public.set('sent_to_discord', true)
         end
     end
 end
@@ -1282,19 +1271,20 @@ function Public.unstuck_player(index)
     end
     player.teleport(position, surface)
 end
+
 function Public.loco_died(invalid_locomotive)
-    local game_lost = WPT.get('game_lost')
+    local game_lost = Public.get('game_lost')
     if not game_lost then
         return
     end
 
-    local announced_message = WPT.get('announced_message')
+    local announced_message = Public.get('announced_message')
     if announced_message then
         return
     end
 
-    local active_surface_index = WPT.get('active_surface_index')
-    local locomotive = WPT.get('locomotive')
+    local active_surface_index = Public.get('active_surface_index')
+    local locomotive = Public.get('locomotive')
     local surface = game.surfaces[active_surface_index]
     local wave_defense_table = WD.get_table()
     if wave_defense_table.game_lost and not invalid_locomotive then
@@ -1308,7 +1298,7 @@ function Public.loco_died(invalid_locomotive)
     end
 
     if not locomotive.valid then
-        local this = WPT.get()
+        local this = Public.get()
 
         local data = {}
         if this.locomotive and this.locomotive.valid then
@@ -1349,7 +1339,7 @@ function Public.loco_died(invalid_locomotive)
         return
     end
 
-    local this = WPT.get()
+    local this = Public.get()
 
     this.locomotive_health = 0
     this.locomotive.color = {0.49, 0, 255, 1}
@@ -1428,7 +1418,7 @@ local function on_built_entity(event)
         return
     end
 
-    local upgrades = WPT.get('upgrades')
+    local upgrades = Public.get('upgrades')
 
     local upg = upgrades
     local surface = entity.surface
@@ -1524,7 +1514,7 @@ local function on_robot_built_entity(event)
         return
     end
 
-    local upgrades = WPT.get('upgrades')
+    local upgrades = Public.get('upgrades')
 
     local upg = upgrades
     local surface = entity.surface

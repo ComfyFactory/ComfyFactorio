@@ -199,52 +199,6 @@ local function input_filtered(wagon_inventory, chest, chest_inventory, free_slot
     end
 end
 
-local remove_lights_token =
-    Token.register(
-    function(data)
-        local id = data.id
-        if id then
-            rendering.destroy(id)
-        end
-    end
-)
-
-function Public.glimpse_of_lights()
-    local surface = WPT.get('loco_surface')
-    if not surface or not surface.valid then
-        return
-    end
-
-    local icw = ICW.get()
-
-    local hazardous_debris = icw.hazardous_debris
-    if not hazardous_debris then
-        return
-    end
-
-    local text = rendering.draw_text
-    local position = fallout_debris[random(1, size_of_debris)]
-
-    local p = {x = position[1], y = position[2]}
-    local get_tile = surface.get_tile(p)
-    if get_tile.valid and get_tile.name == 'out-of-map' then
-        local id =
-            text {
-            text = '★',
-            surface = surface,
-            target = position,
-            color = {r = 1, g = 1, b = 0},
-            orientation = random(0, 100) * 0.01,
-            scale = 0.4,
-            font = 'heading-1',
-            alignment = 'center',
-            scale_with_zoom = false
-        }
-
-        Task.set_timeout_in_ticks(300, remove_lights_token, {id = id})
-    end
-end
-
 function Public.hazardous_debris()
     local surface = WPT.get('loco_surface')
     if not surface or not surface.valid then

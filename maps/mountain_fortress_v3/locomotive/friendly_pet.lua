@@ -1,15 +1,13 @@
 local Event = require 'utils.event'
-local WPT = require 'maps.mountain_fortress_v3.table'
+local Public = require 'maps.mountain_fortress_v3.table'
 
 local random = math.random
 
-local Public = {}
-
 local function shoo(event)
-    local icw_locomotive = WPT.get('icw_locomotive')
+    local icw_locomotive = Public.get('icw_locomotive')
     local loco_surface = icw_locomotive.surface
 
-    if not loco_surface.valid then
+    if not loco_surface or not loco_surface.valid then
         return
     end
 
@@ -21,7 +19,7 @@ local function shoo(event)
         end
     end
 
-    local locomotive_biter = WPT.get('locomotive_biter')
+    local locomotive_biter = Public.get('locomotive_biter')
     local surface = player.surface
     local message = event.message
     message = string.lower(message)
@@ -49,7 +47,7 @@ local function shoo(event)
                 }
                 surface.create_entity(explosion)
                 locomotive_biter.destroy()
-                WPT.set().locomotive_biter = nil
+                Public.set().locomotive_biter = nil
             end
             return
         end
@@ -57,7 +55,7 @@ local function shoo(event)
 end
 
 function Public.spawn_biter()
-    local this = WPT.get()
+    local this = Public.get()
     local loco_surface = this.icw_locomotive.surface
 
     if not loco_surface.valid then

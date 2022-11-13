@@ -1,10 +1,10 @@
 local Event = require 'utils.event'
+local Public = require 'maps.mountain_fortress_v3.table'
 local Global = require 'utils.global'
 local Server = require 'utils.server'
 local Token = require 'utils.token'
 local Gui = require 'utils.gui'
 local Score = require 'utils.gui.score'
-local WPT = require 'maps.mountain_fortress_v3.table'
 local WD = require 'modules.wave_defense.table'
 local Core = require 'utils.core'
 local SpamProtection = require 'utils.spam_protection'
@@ -15,7 +15,6 @@ local score_key = 'mountain_fortress_v3_scores'
 local set_data = Server.set_data
 local try_get_data = Server.try_get_data
 
-local Public = {}
 local insert = table.insert
 local random = math.random
 local this = {
@@ -291,7 +290,7 @@ end
 
 local function write_additional_stats(key, difficulty)
     local player = game.forces.player
-    local new_breached_zone = WPT.get('breached_wall')
+    local new_breached_zone = Public.get('breached_wall')
     local new_wave_number = WD.get('wave_number')
     local new_biters_killed = get_total_biter_killcount(player)
     local new_rockets_launched = player.rockets_launched

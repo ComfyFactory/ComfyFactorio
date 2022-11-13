@@ -1,40 +1,37 @@
-local Collapse = require 'modules.collapse'
-local Balance = require 'maps.mountain_fortress_v3.balance'
-local RPG = require 'modules.rpg.main'
-local WPT = require 'maps.mountain_fortress_v3.table'
-local Alert = require 'utils.alert'
 local Event = require 'utils.event'
+local Public = require 'maps.mountain_fortress_v3.table'
+local Collapse = require 'modules.collapse'
+local RPG = require 'modules.rpg.main'
+local Alert = require 'utils.alert'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Color = require 'utils.color_presets'
-local BasicMarkets = require 'maps.mountain_fortress_v3.basic_markets'
 
-local raise_event = script.raise_event
 local floor = math.floor
 local abs = math.abs
 local random = math.random
 local sub = string.sub
 local sqrt = math.sqrt
-local zone_settings = WPT.zone_settings
+local zone_settings = Public.zone_settings
 
 local clear_breach_text_and_render = function()
-    local beam1 = WPT.get('zone1_beam1')
+    local beam1 = Public.get('zone1_beam1')
     if beam1 and beam1.valid then
         beam1.destroy()
     end
-    local beam2 = WPT.get('zone1_beam2')
+    local beam2 = Public.get('zone1_beam2')
     if beam2 and beam2.valid then
         beam2.destroy()
     end
-    local zone1_text1 = WPT.get('zone1_text1')
+    local zone1_text1 = Public.get('zone1_text1')
     if zone1_text1 then
         rendering.set_text(zone1_text1, 'Collapse has started!')
     end
-    local zone1_text2 = WPT.get('zone1_text2')
+    local zone1_text2 = Public.get('zone1_text2')
     if zone1_text2 then
         rendering.set_text(zone1_text2, 'Collapse has started!')
     end
-    local zone1_text3 = WPT.get('zone1_text3')
+    local zone1_text3 = Public.get('zone1_text3')
     if zone1_text3 then
         rendering.set_text(zone1_text3, 'Collapse has started!')
     end
@@ -70,7 +67,7 @@ local first_player_to_zone =
         local breached_wall = data.breached_wall
         local message = ({'breached_wall.first_to_reach', player.name, breached_wall})
         Alert.alert_all_players(10, message)
-        BasicMarkets.shuffle_prices()
+        Public.shuffle_prices()
     end
 )
 
@@ -94,19 +91,19 @@ local spidertron_too_far =
 local check_distance_between_player_and_locomotive = function(player)
     local surface = player.surface
     local position = player.position
-    local locomotive = WPT.get('locomotive')
+    local locomotive = Public.get('locomotive')
     if not locomotive or not locomotive.valid then
         return
     end
 
-    local gap_between_locomotive = WPT.get('gap_between_locomotive')
+    local gap_between_locomotive = Public.get('gap_between_locomotive')
 
     if not gap_between_locomotive.highest_pos then
         gap_between_locomotive.highest_pos = locomotive.position
     end
 
     gap_between_locomotive.highest_pos = locomotive.position
-    gap_between_locomotive = WPT.get('gap_between_locomotive')
+    gap_between_locomotive = Public.get('gap_between_locomotive')
 
     local c_y = position.y
     local t_y = gap_between_locomotive.highest_pos.y
@@ -127,7 +124,7 @@ end
 local compare_player_pos = function(player)
     local p = player.position
     local index = player.index
-    local adjusted_zones = WPT.get('adjusted_zones')
+    local adjusted_zones = Public.get('adjusted_zones')
     if not adjusted_zones.size then
         return
     end
@@ -166,14 +163,14 @@ local compare_player_and_train = function(player, entity)
     end
 
     local position = player.position
-    local locomotive = WPT.get('locomotive')
+    local locomotive = Public.get('locomotive')
     if not locomotive or not locomotive.valid then
         return
     end
 
-    local gap_between_zones = WPT.get('gap_between_zones')
+    local gap_between_zones = Public.get('gap_between_zones')
     gap_between_zones.highest_pos = locomotive.position
-    gap_between_zones = WPT.get('gap_between_zones')
+    gap_between_zones = Public.get('gap_between_zones')
 
     local c_y = position.y
     local t_y = gap_between_zones.highest_pos.y
@@ -207,13 +204,13 @@ local function distance(player)
     local index = player.index
     local bonus = RPG.get_value_from_player(index, 'bonus')
     local rpg_extra = RPG.get('rpg_extra')
-    local breached_wall = WPT.get('breached_wall')
-    local bonus_xp_on_join = WPT.get('bonus_xp_on_join')
-    local enable_arties = WPT.get('enable_arties')
+    local breached_wall = Public.get('breached_wall')
+    local bonus_xp_on_join = Public.get('bonus_xp_on_join')
+    local enable_arties = Public.get('enable_arties')
 
     local p = player.position
 
-    local validate_spider = WPT.get('validate_spider')
+    local validate_spider = Public.get('validate_spider')
     if validate_spider[index] then
         local e = validate_spider[index]
         if not (e and e.valid) then
@@ -236,16 +233,16 @@ local function distance(player)
     local max_times = location >= max
     if max_times then
         if breach_max_times then
-            local placed_trains_in_zone = WPT.get('placed_trains_in_zone')
-            local biters = WPT.get('biters')
+            local placed_trains_in_zone = Public.get('placed_trains_in_zone')
+            local biters = Public.get('biters')
             rpg_extra.breached_walls = rpg_extra.breached_walls + 1
             rpg_extra.reward_new_players = bonus_xp_on_join * rpg_extra.breached_walls
-            WPT.set('breached_wall', breached_wall + 1)
+            Public.set('breached_wall', breached_wall + 1)
             biters.amount = 0
             placed_trains_in_zone.randomized = false
-            raise_event(Balance.events.breached_wall, {})
-            if WPT.get('breached_wall') == WPT.get('spidertron_unlocked_at_zone') then
-                local main_market_items = WPT.get('main_market_items')
+            Public.enemy_weapon_damage()
+            if Public.get('breached_wall') == Public.get('spidertron_unlocked_at_zone') then
+                local main_market_items = Public.get('main_market_items')
                 if not main_market_items['spidertron'] then
                     local rng = random(70000, 120000)
                     main_market_items['spidertron'] = {
@@ -297,6 +294,9 @@ local function on_player_changed_position(event)
     if not player or not player.valid then
         return
     end
+    if player.controller_type == defines.controllers.spectator then
+        return
+    end
     local surface_name = player.surface.name
     local map_name = 'mtn_v3'
 
@@ -322,7 +322,7 @@ local function on_player_driving_changed_state(event)
     if not (entity and entity.valid) then
         return
     end
-    local s = WPT.get('validate_spider')
+    local s = Public.get('validate_spider')
     if entity.name == 'spidertron' then
         if not s[player.index] then
             s[player.index] = entity
@@ -336,3 +336,5 @@ end
 
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)
 Event.add(defines.events.on_player_driving_changed_state, on_player_driving_changed_state)
+
+return Public

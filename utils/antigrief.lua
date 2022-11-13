@@ -22,7 +22,7 @@ local format = string.format
 local floor = math.floor
 local random = math.random
 local abs = math.abs
-local max_count_decon = 500
+local max_count_decon = 1500
 
 local this = {
     enabled = true,
@@ -596,6 +596,10 @@ local function on_gui_opened(event)
         return
     end
 
+    if player.controller_type == defines.controllers.spectator then
+        return
+    end
+
     local corpse_content = #event.entity.get_inventory(defines.inventory.character_corpse)
     if corpse_content <= 0 then
         return
@@ -1164,7 +1168,7 @@ function Public.damage_entity_threshold(value)
 end
 
 --- Returns the table.
----@param key string
+---@param key string|nil
 function Public.get(key)
     if key then
         return this[key]

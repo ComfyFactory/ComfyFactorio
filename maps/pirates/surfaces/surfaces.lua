@@ -22,6 +22,7 @@ local ShopMerchants = require 'maps.pirates.shop.merchants'
 local SurfacesCommon = require 'maps.pirates.surfaces.common'
 -- local Roles = require 'maps.pirates.roles.roles'
 local Classes = require 'maps.pirates.roles.classes'
+local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 
 local Server = require 'utils.server'
 
@@ -116,9 +117,19 @@ function Public.on_surface_generation(destination)
 		destination.dynamic_data.silocharged = false
 		destination.dynamic_data.rocketlaunched = false
 
-		if subtype ~= Islands.enum.STANDARD and subtype ~= Islands.enum.STANDARD_VARIANT and subtype ~= Islands.enum.RADIOACTIVE and subtype ~= Islands.enum.RED_DESERT then
+		if subtype ~= IslandEnum.enum.STANDARD and subtype ~= IslandEnum.enum.STANDARD_VARIANT and subtype ~= IslandEnum.enum.RADIOACTIVE and subtype ~= IslandEnum.enum.RED_DESERT then
 			destination.dynamic_data.hidden_ore_remaining_abstract = Utils.deepcopy(destination.static_params.abstract_ore_amounts)
 		end
+
+		if subtype == IslandEnum.enum.CAVE then
+			if not destination.dynamic_data.cave_miner then
+				destination.dynamic_data.cave_miner = {}
+				destination.dynamic_data.cave_miner.reveal_queue = {}
+				destination.dynamic_data.cave_miner.cave_surface = nil
+				Islands[IslandEnum.enum.CAVE].roll_source_surface(destination)
+			end
+		end
+
 		destination.dynamic_data.wood_remaining = destination.static_params.starting_wood
 		destination.dynamic_data.rock_material_remaining = destination.static_params.starting_rock_material
 		destination.dynamic_data.treasure_remaining = destination.static_params.starting_treasure
@@ -162,10 +173,13 @@ function Public.destination_on_collide(destination)
 
 
 
-		if destination.subtype == Islands.enum.RADIOACTIVE then
+		if destination.subtype == IslandEnum.enum.RADIOACTIVE then
 			Common.parrot_speak(memory.force, {'pirates.parrot_radioactive_tip_1'})
-		else
 
+		elseif destination.subtype == IslandEnum.enum.CAVE then
+			Common.parrot_speak(memory.force, {'pirates.parrot_cave_tip_1'})
+
+		else
 			local scheduled_raft_raids
 			-- temporarily placed this back here, as moving it to shorehit broke things:
 			local playercount = Common.activecrewcount()
@@ -192,39 +206,42 @@ function Public.destination_on_collide(destination)
 				end
 			end
 
-			if memory.overworldx > 200 then
-				scheduled_raft_raids = {}
-				local times = {600, 360, 215, 210, 120, 30, 10, 5}
-				for i = 1, #times do
-					local t = times[i]
-					if Math.random(6) == 1 and #scheduled_raft_raids < 6 then
+
+			-- Currently biter boats don't spawn properly for cave island, so disabling it for now
+			if destination.subtype ~= IslandEnum.enum.CAVE then
+				if memory.overworldx > 200 then
+					scheduled_raft_raids = {}
+					local times = {600, 360, 215, 210, 120, 30, 10, 5}
+					for i = 1, #times do
+						local t = times[i]
+						if Math.random(6) == 1 and #scheduled_raft_raids < 6 then
+							scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_evo = max_evo}
+							-- scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_bonus_evolution = 0.52}
+						end
+					end
+				elseif memory.overworldx == 200 then
+					local times
+					if playercount <= 2 then
+						times = {1, 5, 10, 15, 20}
+					elseif playercount <= 8 then
+						times = {1, 5, 10, 15, 20, 25}
+					elseif playercount <= 15 then
+						times = {1, 5, 10, 15, 20, 25, 30}
+					elseif playercount <= 21 then
+						times = {1, 5, 10, 15, 20, 25, 30, 35}
+					else
+						times = {1, 5, 10, 15, 20, 25, 30, 35, 40}
+					end
+					scheduled_raft_raids = {}
+					for _, t in pairs(times) do
+						-- scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_bonus_evolution = 0.62}
 						scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_evo = max_evo}
-						-- scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_bonus_evolution = 0.52}
 					end
 				end
-			elseif memory.overworldx == 200 then
-				local times
-				if playercount <= 2 then
-					times = {1, 5, 10, 15, 20}
-				elseif playercount <= 8 then
-					times = {1, 5, 10, 15, 20, 25}
-				elseif playercount <= 15 then
-					times = {1, 5, 10, 15, 20, 25, 30}
-				elseif playercount <= 21 then
-					times = {1, 5, 10, 15, 20, 25, 30, 35}
-				else
-					times = {1, 5, 10, 15, 20, 25, 30, 35, 40}
-				end
-				scheduled_raft_raids = {}
-				for _, t in pairs(times) do
-					-- scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_bonus_evolution = 0.62}
-					scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_evo = max_evo}
-				end
+
+				destination.static_params.scheduled_raft_raids = scheduled_raft_raids
 			end
-
-			destination.static_params.scheduled_raft_raids = scheduled_raft_raids
 		end
-
 	end
 
 	if memory.overworldx == 40*5 then
@@ -256,17 +273,21 @@ function Public.destination_on_arrival(destination)
 		destination.dynamic_data.rocketsiloenergyneeded = Balance.silo_energy_needed_MJ() * 1000000
 		destination.dynamic_data.rocketcoalreward = Balance.rocket_launch_fuel_reward()
 
-		if destination.subtype == Islands.enum.RADIOACTIVE then
+		if destination.subtype == IslandEnum.enum.RADIOACTIVE then
 			destination.dynamic_data.time_remaining = -1
-		elseif destination.subtype == Islands.enum.MAZE then --more time
+		elseif destination.subtype == IslandEnum.enum.MAZE then --more time
 			destination.dynamic_data.time_remaining = Math.ceil(1.05 * Balance.max_time_on_island())
 		else
 			destination.dynamic_data.time_remaining = Math.ceil(Balance.max_time_on_island())
 		end
 
-		if destination.subtype ~= Islands.enum.FIRST and destination.subtype ~= Islands.enum.RADIOACTIVE and destination.destination_index ~= 2 then
+		if destination.subtype ~= IslandEnum.enum.FIRST and destination.subtype ~= IslandEnum.enum.RADIOACTIVE and destination.destination_index ~= 2 then
 			-- if not destination.overworld_position.x ~= Common.first_cost_to_leave_macrox * 40 then
-			Quest.initialise_random_quest()
+			if destination.subtype == IslandEnum.enum.CAVE then
+				Quest.initialise_random_cave_island_quest()
+			else
+				Quest.initialise_random_quest()
+			end
 		-- else
 			-- if _DEBUG then
 			-- 	Quest.initialise_random_quest()
@@ -278,12 +299,12 @@ function Public.destination_on_arrival(destination)
 		Common.set_evo(base_evo)
 		destination.dynamic_data.evolution_accrued_leagues = base_evo
 		destination.dynamic_data.evolution_accrued_time = 0
-		if destination.subtype == Islands.enum.RED_DESERT then
+		if destination.subtype == IslandEnum.enum.RED_DESERT then
 			destination.dynamic_data.evolution_accrued_sandwurms = 0
 		else
 			destination.dynamic_data.evolution_accrued_nests = 0
 		end
-		if destination.subtype ~= Islands.enum.RADIOACTIVE then
+		if destination.subtype ~= IslandEnum.enum.RADIOACTIVE then
 			destination.dynamic_data.evolution_accrued_silo = 0
 		end
 
@@ -291,8 +312,8 @@ function Public.destination_on_arrival(destination)
 		memory.scripted_unit_groups = {}
 		memory.floating_pollution = 0
 
-		if destination.subtype == Islands.enum.RADIOACTIVE then
-			Islands[Islands.enum.RADIOACTIVE].spawn_structures()
+		if destination.subtype == IslandEnum.enum.RADIOACTIVE then
+			Islands[IslandEnum.enum.RADIOACTIVE].spawn_structures()
 		end
 		-- -- invulnerable bases on islands 21-25
 		-- if memory.overworldx >= 21 and memory.overworldx < 25 then
@@ -323,7 +344,7 @@ function Public.destination_on_arrival(destination)
 	local name = destination.static_params.name and destination.static_params.name or 'NameNotFound'
 	local message = {'pirates.approaching_destination', memory.destinationsvisited_indices and #memory.destinationsvisited_indices or 0, name}
 	if not (#memory.destinationsvisited_indices and #memory.destinationsvisited_indices == 1) then --don't need to notify for the first island
-		Server.to_discord_embed_raw({'',(destination.static_params.discord_emoji or CoreData.comfy_emojis.wut) .. '[' .. memory.name .. '] Approaching ', name, ', ' .. memory.overworldx .. ' leagues.'}, true)
+		Server.to_discord_embed_raw({'',(destination.static_params.discord_emoji or CoreData.comfy_emojis.hype) .. '[' .. memory.name .. '] Approaching ', name, ', ' .. memory.overworldx .. ' leagues.'}, true)
 	end
 	-- if destination.static_params.name == 'Dock' then
 	-- 	message = message .. ' ' .. 'New trades are available in the Captain\'s Store.'
@@ -349,8 +370,18 @@ function Public.destination_on_arrival(destination)
 			end
 		end
 
+		if (memory.overworldx >= Balance.quest_structures_first_appear_at and destination.subtype ~= IslandEnum.enum.RADIOACTIVE) or _DEBUG then
+			local class_for_sale = Classes.generate_class_for_sale()
+			destination.static_params.class_for_sale = class_for_sale
+		end
+
+		-- Caves won't have these fancy things for now, because starting place for this island is so small, weird stuff happens (like quest structure spawning on ship)
+		if destination.subtype == IslandEnum.enum.CAVE then
+			return
+		end
+
 		-- game.print('spawning silo')
-		if destination.subtype ~= Islands.enum.RADIOACTIVE then
+		if destination.subtype ~= IslandEnum.enum.RADIOACTIVE then
 			local silo_position = Islands.spawn_silo_setup(points_to_avoid)
 			if silo_position then
 				points_to_avoid[#points_to_avoid + 1] = {x = silo_position.x, y = silo_position.y, r = 22}
@@ -359,10 +390,7 @@ function Public.destination_on_arrival(destination)
 
 		Islands.spawn_ores_on_arrival(destination, points_to_avoid)
 
-		if (memory.overworldx >= Balance.quest_structures_first_appear_at and destination.subtype ~= Islands.enum.RADIOACTIVE) or _DEBUG then
-			local class_for_sale = Classes.generate_class_for_sale()
-			destination.static_params.class_for_sale = class_for_sale
-
+		if (memory.overworldx >= Balance.quest_structures_first_appear_at and destination.subtype ~= IslandEnum.enum.RADIOACTIVE) or _DEBUG then
 			local covered = Islands.spawn_quest_structure(destination, points_to_avoid)
 			if covered then
 				points_to_avoid[#points_to_avoid + 1] = {x = covered.x, y = covered.y, r = 25}
@@ -372,7 +400,7 @@ function Public.destination_on_arrival(destination)
 		Islands.spawn_treasure_maps(destination, points_to_avoid)
 		Islands.spawn_ghosts(destination, points_to_avoid)
 
-		if destination.subtype and destination.subtype == Islands.enum.MAZE then
+		if destination.subtype == IslandEnum.enum.MAZE then
 			local force = memory.force
 			force.manual_mining_speed_modifier = 1
 		end
@@ -389,7 +417,7 @@ function Public.destination_on_departure(destination)
 		Common.parrot_speak(memory.force, {'pirates.parrot_kraken_warning'})
 	end
 
-	if destination.subtype and destination.subtype == Islands.enum.MAZE then
+	if destination.subtype and destination.subtype == IslandEnum.enum.MAZE then
 		local force = memory.force
 		force.manual_mining_speed_modifier = 3 --put back to normal
 	end
@@ -418,7 +446,7 @@ function Public.destination_on_crewboat_hits_shore(destination)
 			Common.parrot_speak(memory.force, {'pirates.parrot_night_warning'})
 		end
 
-		if destination.subtype == Islands.enum.RADIOACTIVE then
+		if destination.subtype == IslandEnum.enum.RADIOACTIVE then
 			-- replace all miners, so that they sit on uranium properly:
 			local surface = game.surfaces[destination.surface_name]
 			local miners = surface.find_entities_filtered({name = 'electric-mining-drill'})
@@ -430,11 +458,11 @@ function Public.destination_on_crewboat_hits_shore(destination)
 			end
 
 			Common.parrot_speak(memory.force, {'pirates.parrot_radioactive_tip_2'})
-		elseif destination.subtype == Islands.enum.MAZE and memory.overworldx == Common.maze_minimap_jam_league then
+		elseif destination.subtype == IslandEnum.enum.MAZE and memory.overworldx == Common.maze_minimap_jam_league then
 			Common.parrot_speak(memory.force, {'pirates.parrot_maze_tip_1'})
 		end
 
-		if memory.merchant_ships_unlocked or _DEBUG then
+		if (memory.merchant_ships_unlocked or _DEBUG) and destination.subtype ~= IslandEnum.enum.CAVE then
 			Islands.spawn_merchant_ship(destination)
 
 			ShopMerchants.generate_merchant_trades(destination.dynamic_data.merchant_market)
@@ -484,7 +512,17 @@ function Public.generate_detailed_island_data(destination)
 					local p2 = {x = chunk_frameposition_topleft.x + x2, y = chunk_frameposition_topleft.y + y2}
 
 					local tiles3, entities3 = {}, {}
-					terrain_fn{p = p2, noise_generator = noise_generator, static_params = destination.static_params, tiles = tiles3, entities = entities3, decoratives = {}, seed = destination.seed, iconized_generation = true}
+					terrain_fn{
+						p = p2,
+						noise_generator = noise_generator,
+						static_params = destination.static_params,
+						tiles = tiles3,
+						entities = entities3,
+						decoratives = {},
+						specials = {},
+						seed = destination.seed,
+						iconized_generation = true
+					}
 					local tile = tiles3[1]
 					if modalcounts[tile.name] then
 						modalcounts[tile.name] = modalcounts[tile.name] + 1
@@ -583,11 +621,21 @@ function Public.generate_detailed_island_data(destination)
 	-- get more precise understanding of left-hand shore
 	local xcorrection = 0
 	for ystep = -10, 10, 10 do
-		for xstep = 0,300,3 do
+		for xstep = 0, 300, 3 do
 			local x = leftboundary * 32 + 16 + xstep
 			local y = (topboundary*32 + bottomboundary*32)/2 + ystep
 			local tiles3 = {}
-			terrain_fn{p = {x = x, y = y}, noise_generator = noise_generator, static_params = destination.static_params, tiles = tiles3, entities = {}, decoratives = {}, seed = destination.seed, iconized_generation = true}
+			terrain_fn{
+				p = {x = x, y = y},
+				noise_generator = noise_generator,
+				static_params = destination.static_params,
+				tiles = tiles3,
+				entities = {},
+				decoratives = {},
+				specials = {},
+				seed = destination.seed,
+				iconized_generation = true
+			}
 			local tile = tiles3[1]
 			if (not Utils.contains(CoreData.water_tile_names, tile.name)) then
 				xcorrection = Math.max(xcorrection, xstep + Math.abs(ystep))
@@ -712,6 +760,8 @@ function Public.clean_up(destination)
 			player.teleport(memory.spawnpoint, seasurface)
 		end
 	end
+
+	Islands[IslandEnum.enum.CAVE].cleanup_cave_surface(destination)
 
 	destination.dynamic_data = {}
 

@@ -9,7 +9,6 @@ local Boats = require 'maps.pirates.structures.boats.boats'
 local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
 local Utils = require 'maps.pirates.utils_local'
-local IslandsCommon = require 'maps.pirates.surfaces.islands.common'
 local Hunt = require 'maps.pirates.surfaces.islands.hunt'
 local Ores = require 'maps.pirates.ores'
 local Quest = require 'maps.pirates.quest'
@@ -17,10 +16,10 @@ local _inspect = require 'utils.inspect'.inspect
 local Token = require 'utils.token'
 local Task = require 'utils.task'
 local QuestStructures = require 'maps.pirates.structures.quest_structures.quest_structures'
+local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 
 local Public = {}
-local enum = IslandsCommon.enum
-Public.enum = enum
+local enum = IslandEnum.enum
 
 Public[enum.FIRST] = require 'maps.pirates.surfaces.islands.first.first'
 Public[enum.STANDARD] = require 'maps.pirates.surfaces.islands.standard.standard'
@@ -31,6 +30,8 @@ Public[enum.RED_DESERT] = require 'maps.pirates.surfaces.islands.red_desert.red_
 Public[enum.HORSESHOE] = require 'maps.pirates.surfaces.islands.horseshoe.horseshoe'
 Public[enum.SWAMP] = require 'maps.pirates.surfaces.islands.swamp.swamp'
 Public[enum.MAZE] = require 'maps.pirates.surfaces.islands.maze.maze'
+Public[enum.CAVE] = require 'maps.pirates.surfaces.islands.cave.cave'
+Public[enum.CAVE_SOURCE] = require 'maps.pirates.surfaces.islands.cave.cave_source'  -- Used as extra layer for cave island
 Public['IslandsCommon'] = require 'maps.pirates.surfaces.islands.common'
 
 
@@ -273,6 +274,8 @@ function Public.spawn_silo_setup(points_to_avoid)
 	local surface = game.surfaces[destination.surface_name]
 	local subtype = destination.subtype
 	local force = memory.force
+
+	if not Public[subtype].generate_silo_setup_position then return end
 
 	local p_silo = Public[subtype].generate_silo_setup_position(points_to_avoid)
 	if not p_silo then return end

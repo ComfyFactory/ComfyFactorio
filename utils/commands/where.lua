@@ -7,7 +7,8 @@ local Gui = require 'utils.gui'
 local SpamProtection = require 'utils.spam_protection'
 
 local this = {
-    players = {}
+    players = {},
+    module_disabled = false
 }
 
 Global.register(
@@ -128,6 +129,10 @@ commands.add_command(
                 return
             end
 
+            if this.module_disabled then
+                return
+            end
+
             local target = game.get_player(cmd.parameter)
 
             if validate_player(target) then
@@ -190,6 +195,12 @@ Gui.on_click(
         remove_camera_frame(event.player)
     end
 )
+
+--- Disables the module.
+---@param state boolean
+function Public.module_disabled(state)
+    this.module_disabled = state or false
+end
 
 Public.create_mini_camera_gui = create_mini_camera_gui
 Public.remove_camera_frame = remove_camera_frame

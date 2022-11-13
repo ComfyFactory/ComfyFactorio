@@ -8,7 +8,10 @@ local this = {
 }
 local Public = {}
 
-Public.events = {reset_map = Event.generate_event_name('reset_map')}
+Public.events = {
+    reset_map = Event.generate_event_name('reset_map'),
+    on_entity_mined = Event.generate_event_name('on_entity_mined')
+}
 
 Global.register(
     this,
@@ -84,7 +87,7 @@ Public.pickaxe_upgrades = {
     'Luminite'
 }
 
-function Public.reset_table()
+function Public.reset_main_table()
     -- @start
     -- these 3 are in case of stop/start/reloading the instance.
     this.soft_reset = true
@@ -146,8 +149,9 @@ function Public.reset_table()
         explosive_bullets_purchased = false,
         xp_points_upgrade = 0,
         aura_upgrades = 0,
+        aura_upgrades_max = 12, -- = (aura_limit - locomotive_aura_radius) / 5
         locomotive_aura_radius = 40,
-        train_upgrades = 0,
+        train_upgrade_contribution = 0,
         xp_points = 0,
         health_upgrades = 0,
         pickaxe_tier = 1,
@@ -173,6 +177,7 @@ function Public.reset_table()
     this.bonus_xp_on_join = 250
     this.main_market_items = {}
     this.spill_items_to_surface = false
+    this.spectate = {}
     this.outside_chests = {}
     this.chests_linked_to = {}
     this.placed_trains_in_zone = {
@@ -288,6 +293,6 @@ function Public.remove(key, sub_key)
     end
 end
 
-Event.on_init(Public.reset_table)
+Event.on_init(Public.reset_main_table)
 
 return Public

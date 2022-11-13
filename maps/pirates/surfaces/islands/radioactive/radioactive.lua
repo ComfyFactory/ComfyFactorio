@@ -12,6 +12,7 @@ local Utils = require 'maps.pirates.utils_local'
 local _inspect = require 'utils.inspect'.inspect
 -- local Ores = require 'maps.pirates.ores'
 local IslandsCommon = require 'maps.pirates.surfaces.islands.common'
+local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 -- local Hunt = require 'maps.pirates.surfaces.islands.hunt'
 
 local Public = {}
@@ -39,10 +40,10 @@ function Public.terrain(args)
 	local p = args.p
 
 
-	if IslandsCommon.place_water_tile(args) then return end
+	if IslandsCommon.place_water_tile(args, true) then return end
 
 	if noises.height(p) < 0 then
-		args.tiles[#args.tiles + 1] = {name = 'water', position = args.p}
+		args.tiles[#args.tiles + 1] = {name = 'water-green', position = args.p}
 		return
 	end
 
@@ -108,7 +109,7 @@ function Public.terrain(args)
 			args.entities[#args.entities + 1] = {name = 'stone', position = args.p, amount = 1000}
 		elseif noises.ore(p) < 0.005 and noises.ore(p) > -0.005 then
 			if noises.ore(p) > 0 then
-				args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = 10}
+				args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = 20}
 			else
 				args.entities[#args.entities + 1] = {name = 'copper-ore', position = args.p, amount = 100}
 			end
@@ -129,7 +130,7 @@ function Public.chunk_structures(args)
 			-- we need some indestructible spawners, because otherwise you can clear, stay here forever, make infinite resources...
 			spawners_indestructible = noises.farness(p) > 0.63,
 			-- spawners_indestructible = false,
-			density_perchunk = 25 * Math.slopefromto(noises.farness(p), 0.3, 1)^2 * args.biter_base_density_scale,
+			density_perchunk = 20 * Math.slopefromto(noises.farness(p), 0.3, 1.08)^2 * args.biter_base_density_scale,
 		}
 	end
 
@@ -269,7 +270,7 @@ local function radioactive_tick()
 
 		local tickinterval = 60
 
-		if destination.subtype == IslandsCommon.enum.RADIOACTIVE then
+		if destination.subtype == IslandEnum.enum.RADIOACTIVE then
 			-- faster evo (doesn't need difficulty scaling as higher difficulties have higher base evo):
 			local extra_evo = 0.22 * tickinterval/60 / Balance.expected_time_on_island()
 			Common.increment_evo(extra_evo)

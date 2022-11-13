@@ -11,6 +11,8 @@ local CoreData = require 'maps.pirates.coredata'
 local Server = require 'utils.server'
 local Utils = require 'maps.pirates.utils_local'
 local Surfaces = require 'maps.pirates.surfaces.surfaces'
+local Islands = require 'maps.pirates.surfaces.islands.islands'
+local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 -- local Structures = require 'maps.pirates.structures.structures'
 local Boats = require 'maps.pirates.structures.boats.boats'
 local Crowsnest = require 'maps.pirates.surfaces.crowsnest'
@@ -130,11 +132,11 @@ function Public.try_lose(loss_reason)
 
 		local playtimetext = Utils.time_longform((memory.age or 0)/60)
 
-		local message = {'',loss_reason,' ',{'pirates.loss_rest_of_message_long', playtimetext, Public.get_crewmembers_printable_string()}}
+		local message = {'',loss_reason,' ',{'pirates.loss_rest_of_message_long', playtimetext, memory.overworldx, Public.get_crewmembers_printable_string()}}
 
 		Server.to_discord_embed_raw({'',CoreData.comfy_emojis.trashbin .. '[' .. memory.name .. '] ', message}, true)
 
-		local message2 = {'',loss_reason,' ',{'pirates.loss_rest_of_message_short', '[font=default-large-semibold]' .. playtimetext .. '[/font]'}}
+		local message2 = {'',loss_reason,' ',{'pirates.loss_rest_of_message_short', '[font=default-large-semibold]' .. playtimetext .. '[/font]', memory.overworldx}}
 
 		Common.notify_game({'', '[' .. memory.name .. '] ',message2}, CoreData.colors.notify_gameover)
 
@@ -488,7 +490,7 @@ function Public.plank(captain, player)
 
 	if Utils.contains(Common.crew_get_crew_members(), player) then
 		if (not (captain.index == player.index)) then
-			Server.to_discord_embed_raw(CoreData.comfy_emojis.monkas .. string.format("%s planked %s!", captain.name, player.name))
+			Server.to_discord_embed_raw(CoreData.comfy_emojis.despair .. string.format("%s planked %s!", captain.name, player.name))
 
 			Common.notify_force(player.force, {'pirates.plank', captain.name, player.name})
 
@@ -525,7 +527,7 @@ function Public.disband_crew(donotprint)
 
 		local message = {'pirates.crew_disband', memory.name, Utils.time_longform((memory.real_age or 0)/60)}
 		Common.notify_game(message)
-		Server.to_discord_embed_raw({'', CoreData.comfy_emojis.monkas, message}, true)
+		Server.to_discord_embed_raw({'', CoreData.comfy_emojis.despair, message}, true)
 
 		-- if memory.game_won then
 		--		 game.print({'chronosphere.message_game_won_restart'}, {r=0.98, g=0.66, b=0.22})
@@ -533,6 +535,7 @@ function Public.disband_crew(donotprint)
 	end
 
 
+	memory.game_lost = true -- only necessary to avoid printing research notifications
 	Public.reset_crew_and_enemy_force(id)
 
 	local lobby = game.surfaces[CoreData.lobby_surface_name]
@@ -589,7 +592,11 @@ function Public.disband_crew(donotprint)
 	if game.surfaces[crowsnestname] then game.delete_surface(game.surfaces[crowsnestname]) end
 
 	for _, destination in pairs(memory.destinations) do
-		if game.surfaces[destination.surface_name] then game.delete_surface(game.surfaces[destination.surface_name]) end
+		if game.surfaces[destination.surface_name] then
+			game.delete_surface(game.surfaces[destination.surface_name])
+		end
+
+		Islands[IslandEnum.enum.CAVE].cleanup_cave_surface(destination)
 	end
 
 	global_memory.crew_memories[id] = nil
@@ -715,6 +722,9 @@ function Public.initialise_crew(accepted_proposal)
 	memory.difficulty = CoreData.difficulty_options[accepted_proposal.difficulty_option].value
 	memory.capacity = CoreData.capacity_options[accepted_proposal.capacity_option].value
 	-- memory.mode = CoreData.mode_options[accepted_proposal.mode_option].value
+	memory.run_is_private = accepted_proposal.run_is_private
+	memory.private_run_password = accepted_proposal.private_run_password
+	memory.private_run_lock_timer = 60 * 60 * 60 * CoreData.private_run_lock_amount_hr
 
 	memory.destinationsvisited_indices = {}
 	memory.stored_fuel = Balance.starting_fuel
@@ -748,6 +758,7 @@ function Public.initialise_crew(accepted_proposal)
 	memory.overworldy = 0
 
 	memory.hold_surface_destroyable_wooden_chests = {}
+	memory.hold_surface_timers_of_wooden_chests_queued_for_destruction = {}
 
 	memory.seaname = SurfacesCommon.encode_surface_name(memory.id, 0, SurfacesCommon.enum.SEA, enum.DEFAULT)
 
@@ -796,7 +807,7 @@ function Public.summon_crew()
 	end
 end
 
-
+-- NOTE: Connected with common.lua item blacklist
 function Public.reset_crew_and_enemy_force(id)
 	local crew_force = game.forces[Common.get_crew_force_name(id)]
 	local enemy_force = game.forces[Common.get_enemy_force_name(id)]
@@ -876,40 +887,16 @@ function Public.reset_crew_and_enemy_force(id)
 	--as prerequisites for uranium ammo and automation 3:
 	crew_force.technologies['speed-module'].researched = true
 	crew_force.technologies['tank'].researched = true
-	crew_force.recipes['speed-module'].enabled = false
-	crew_force.recipes['tank'].enabled = false
-	crew_force.recipes['cannon-shell'].enabled = false
-	crew_force.recipes['explosive-cannon-shell'].enabled = false
-
+	crew_force.technologies['concrete'].researched = true
 
 
 	--@TRYING this out:
 	crew_force.technologies['coal-liquefaction'].enabled = true
 	crew_force.technologies['coal-liquefaction'].researched = true
 
-	crew_force.technologies['automobilism'].enabled = false
-
 	crew_force.technologies['toolbelt'].enabled = false --trying this. we don't actually want players to carry too many things manually, and in fact in a resource-tight scenario that's problematic
 
-	-- note: many of these recipes are overwritten after tech researched!!!!!!! like pistol. check elsewhere in code
-
-	crew_force.recipes['pistol'].enabled = false
-
-	-- these are redundant I think...?:
-	crew_force.recipes['centrifuge'].enabled = false
-	crew_force.recipes['flamethrower-turret'].enabled = false
-
 	crew_force.technologies['railway'].researched = true --needed for purple sci
-	crew_force.recipes['rail'].enabled = true --needed for purple sci
-	crew_force.recipes['locomotive'].enabled = false
-	crew_force.recipes['car'].enabled = false
-	crew_force.recipes['cargo-wagon'].enabled = false
-
-	crew_force.recipes['nuclear-fuel'].enabled = false -- reduce clutter
-
-	-- crew_force.recipes['underground-belt'].enabled = false
-	-- crew_force.recipes['fast-underground-belt'].enabled = false
-	-- crew_force.recipes['express-underground-belt'].enabled = false
 
 	crew_force.technologies['land-mine'].enabled = false
 	crew_force.technologies['landfill'].enabled = false
@@ -920,7 +907,6 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['logistic-system'].enabled = false
 
 
-	crew_force.technologies['tank'].enabled = false
 	crew_force.technologies['rocketry'].enabled = false
 	crew_force.technologies['artillery'].enabled = false
 	crew_force.technologies['destroyer'].enabled = false
@@ -982,8 +968,7 @@ function Public.reset_crew_and_enemy_force(id)
 
 	crew_force.technologies['steel-axe'].enabled = false
 
-	crew_force.technologies['concrete'].enabled = false
-	crew_force.technologies['nuclear-power'].enabled = false
+	crew_force.technologies['nuclear-power'].enabled = true
 
 	crew_force.technologies['effect-transmission'].enabled = true
 
@@ -995,7 +980,7 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['speed-module'].enabled = true
 	crew_force.technologies['speed-module-2'].enabled = false
 	crew_force.technologies['speed-module-3'].enabled = false
-	crew_force.technologies['effectivity-module'].enabled = false
+	crew_force.technologies['effectivity-module'].enabled = true
 	crew_force.technologies['effectivity-module-2'].enabled = false
 	crew_force.technologies['effectivity-module-3'].enabled = false
 	crew_force.technologies['automation-3'].enabled = true
@@ -1004,7 +989,7 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['space-science-pack'].enabled = false
 	crew_force.technologies['mining-productivity-4'].enabled = false
 	crew_force.technologies['logistics-3'].enabled = true
-	crew_force.technologies['nuclear-fuel-reprocessing'].enabled = false
+	crew_force.technologies['nuclear-fuel-reprocessing'].enabled = true
 
 	-- crew_force.technologies['railway'].enabled = false
 	crew_force.technologies['automated-rail-transportation'].enabled = false
@@ -1040,7 +1025,33 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['distractor'].enabled = false
 	crew_force.technologies['military-4'].enabled = true
 	crew_force.technologies['uranium-ammo'].enabled = true
+
+	Public.disable_recipes(crew_force)
 end
 
+-- NOTE: Connected with common.lua item blacklist
+function Public.disable_recipes(crew_force)
+	crew_force.recipes['pistol'].enabled = false
+	-- crew_force.recipes['centrifuge'].enabled = false
+	-- crew_force.recipes['flamethrower-turret'].enabled = false
+	crew_force.recipes['locomotive'].enabled = false
+	-- crew_force.recipes['car'].enabled = false
+	crew_force.recipes['cargo-wagon'].enabled = false
+	crew_force.recipes['slowdown-capsule'].enabled = false
+	-- crew_force.recipes['nuclear-fuel'].enabled = false
+	-- crew_force.recipes['rail'].enabled = false
+	crew_force.recipes['speed-module'].enabled = false
+	crew_force.recipes['tank'].enabled = false
+	crew_force.recipes['cannon-shell'].enabled = false
+	crew_force.recipes['explosive-cannon-shell'].enabled = false
+	-- and since we can't build tanks anyway, let's disable this for later:
+	crew_force.recipes['uranium-cannon-shell'].enabled = false
+	crew_force.recipes['explosive-uranium-cannon-shell'].enabled = false
+
+	crew_force.recipes['concrete'].enabled = false
+	crew_force.recipes['hazard-concrete'].enabled = false
+	crew_force.recipes['refined-concrete'].enabled = false
+	crew_force.recipes['refined-hazard-concrete'].enabled = false
+end
 
 return Public

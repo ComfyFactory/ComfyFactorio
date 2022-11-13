@@ -134,6 +134,7 @@ function Public.go_from_starting_dock_to_first_destination()
 		Shop.Captains.initialise_captains_shop()
 
 		Hold.create_hold_surface(1)
+		boat.EEI_stage = 1
 		Cabin.create_cabin_surface()
 
 		local items = Balance.starting_items_crew_upstairs()
@@ -169,7 +170,6 @@ function Public.go_from_starting_dock_to_first_destination()
 		-- go:
 		-- Public.progress_to_destination(1) --index of first destination
 
-		boat.EEI_stage = 1
 		Boats.update_EEIs(boat)
 
 		-- if Common.difficulty_scale() == 1 then

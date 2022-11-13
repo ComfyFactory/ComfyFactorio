@@ -5,30 +5,20 @@ Mountain Fortress v3 is maintained by Gerkiz and hosted by Comfy.
 Want to host it? Ask Gerkiz#0001 at discord!
 
 ]]
-local Functions = require 'maps.mountain_fortress_v3.functions'
-local BuriedEnemies = require 'maps.mountain_fortress_v3.buried_enemies'
-
--- local HS = require 'maps.mountain_fortress_v3.highscore'
+local Event = require 'utils.event'
+local Public = require 'maps.mountain_fortress_v3.core'
 local Discord = require 'utils.discord'
 local IC = require 'maps.mountain_fortress_v3.ic.table'
 local ICMinimap = require 'maps.mountain_fortress_v3.ic.minimap'
 local Autostash = require 'modules.autostash'
 local Group = require 'utils.gui.group'
 local PL = require 'utils.gui.player_list'
-local CS = require 'maps.mountain_fortress_v3.surface'
 local Server = require 'utils.server'
 local Explosives = require 'modules.explosives'
-local Balance = require 'maps.mountain_fortress_v3.balance'
-local Entities = require 'maps.mountain_fortress_v3.entities'
-local Gui_mf = require 'maps.mountain_fortress_v3.gui'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
 local WD = require 'modules.wave_defense.table'
 local Map = require 'modules.map_info'
 local RPG = require 'modules.rpg.main'
-local Event = require 'utils.event'
-local WPT = require 'maps.mountain_fortress_v3.table'
-local Locomotive = require 'maps.mountain_fortress_v3.locomotive'
-local SpawnLocomotive = require 'maps.mountain_fortress_v3.locomotive.spawn_locomotive'
 local Score = require 'utils.gui.score'
 local Poll = require 'utils.gui.poll'
 local Collapse = require 'modules.collapse'
@@ -45,19 +35,10 @@ local JailData = require 'utils.datastore.jail_data'
 local RPG_Progression = require 'utils.datastore.rpg_data'
 local OfflinePlayers = require 'modules.clear_vacant_players'
 
-require 'maps.mountain_fortress_v3.locomotive.market'
-require 'maps.mountain_fortress_v3.locomotive.linked_chests'
-require 'maps.mountain_fortress_v3.rocks_yield_ore_veins'
-
-require 'maps.mountain_fortress_v3.generate'
-require 'maps.mountain_fortress_v3.commands'
-require 'maps.mountain_fortress_v3.breached_wall'
-require 'maps.mountain_fortress_v3.ic.main'
-require 'maps.mountain_fortress_v3.biters_yield_coins'
-
 require 'modules.shotgun_buff'
 require 'modules.no_deconstruction_of_neutral_entities'
 require 'modules.spawners_contain_biters'
+require 'maps.mountain_fortress_v3.ic.main'
 require 'modules.wave_defense.main'
 require 'modules.charging_station'
 
@@ -69,9 +50,6 @@ local role_to_mention = Discord.role_mentions.mtn_fortress
 -- local send_ping_to_channel = Discord.channel_names.bot_quarters
 -- local role_to_mention = Discord.role_mentions.test_role
 
-local Public = {}
-
-local raise_event = script.raise_event
 local floor = math.floor
 local remove = table.remove
 RPG.disable_cooldowns_on_spells()
@@ -142,30 +120,31 @@ local announce_new_map =
 )
 
 function Public.reset_map()
-    local this = WPT.get()
+    local this = Public.get()
     local wave_defense_table = WD.get_table()
     Misc.set('creative_are_you_sure', false)
     Misc.set('creative_enabled', false)
 
-    this.active_surface_index = CS.create_surface()
-    -- this.soft_reset_counter = CS.get_reset_counter()
+    this.active_surface_index = Public.create_surface()
+    -- this.soft_reset_counter = Public.get_reset_counter()
 
     Autostash.insert_into_furnace(true)
     Autostash.insert_into_wagon(true)
     Autostash.bottom_button(true)
     BottomFrame.reset()
     BottomFrame.activate_custom_buttons(true)
-    BuriedEnemies.reset()
+    Public.reset_buried_biters()
     Poll.reset()
     ICW.reset()
     IC.reset()
     IC.allowed_surface(game.surfaces[this.active_surface_index].name)
-    Functions.reset_table()
+    Public.reset_func_table()
     game.reset_time_played()
-    WPT.reset_table()
+    Public.reset_main_table()
 
     OfflinePlayers.set_active_surface_index(this.active_surface_index)
     OfflinePlayers.set_offline_players_enabled(true)
+    OfflinePlayers.clear_offline_players()
     -- OfflinePlayers.set_offline_players_surface_removal(true)
 
     RPG.rpg_reset_all_players()
@@ -184,14 +163,14 @@ function Public.reset_map()
     RPG_Progression.toggle_module(false)
     RPG_Progression.set_dataset('mtn_v3_rpg_prestige')
 
-    if WPT.get('prestige_system_enabled') then
+    if Public.get('prestige_system_enabled') then
         RPG_Progression.restore_xp_on_reset()
     end
 
     Group.reset_groups()
     Group.alphanumeric_only(false)
 
-    Functions.disable_tech()
+    Public.disable_tech()
     init_protectors_force()
     init_bonus_drill_force()
 
@@ -218,7 +197,7 @@ function Public.reset_map()
     BiterHealthBooster.enable_boss_loot(false)
     BiterHealthBooster.enable_randomize_stun_and_slowdown_sticker(true)
 
-    Balance.init_enemy_weapon_damage()
+    Public.init_enemy_weapon_damage()
 
     AntiGrief.whitelist_types('tree', true)
     AntiGrief.enable_capsule_warning(false)
@@ -244,7 +223,7 @@ function Public.reset_map()
             player.gui.left['mvps'].destroy()
         end
         ICMinimap.kill_minimap(player)
-        raise_event(Gui_mf.events.reset_map, {player_index = player.index})
+        Event.raise(Public.events.reset_map, {player_index = player.index})
     end
 
     Difficulty.reset_difficulty_poll({closing_timeout = game.tick + 36000})
@@ -264,9 +243,9 @@ function Public.reset_map()
     this.locomotive_health = 10000
     this.locomotive_max_health = 10000
 
-    SpawnLocomotive.locomotive_spawn(surface, {x = -18, y = 25})
-    Locomotive.render_train_hp()
-    Functions.render_direction(surface)
+    Public.locomotive_spawn(surface, {x = -18, y = 25})
+    Public.render_train_hp()
+    Public.render_direction(surface)
 
     WD.reset_wave_defense()
     wave_defense_table.surface_index = this.active_surface_index
@@ -283,8 +262,8 @@ function Public.reset_map()
     WD.increase_damage_per_wave(true)
     WD.increase_health_per_wave(true)
 
-    Functions.set_difficulty()
-    Functions.disable_creative()
+    Public.set_difficulty()
+    Public.disable_creative()
 
     if not surface.is_chunk_generated({-20, 22}) then
         surface.request_to_generate_chunks({-20, 22}, 0.1)
@@ -295,9 +274,9 @@ function Public.reset_map()
 
     Task.set_queue_speed(16)
 
-    -- HS.get_scores()
+    -- Public.get_scores()
 
-    this.chunk_load_tick = game.tick + 200
+    this.chunk_load_tick = game.tick + 400
     this.force_chunk = true
     this.market_announce = game.tick + 1200
     this.game_lost = false
@@ -306,10 +285,10 @@ function Public.reset_map()
 end
 
 local is_locomotive_valid = function()
-    local locomotive = WPT.get('locomotive')
-    if not locomotive.valid then
-        WPT.set('game_lost', true)
-        Entities.loco_died(true)
+    local locomotive = Public.get('locomotive')
+    if not locomotive or not locomotive.valid then
+        Public.set('game_lost', true)
+        Public.loco_died(true)
     end
 end
 
@@ -325,13 +304,13 @@ local is_player_valid = function()
 end
 
 local has_the_game_ended = function()
-    local game_reset_tick = WPT.get('game_reset_tick')
+    local game_reset_tick = Public.get('game_reset_tick')
     if game_reset_tick then
         if game_reset_tick < 0 then
             return
         end
 
-        local this = WPT.get()
+        local this = Public.get()
 
         this.game_reset_tick = this.game_reset_tick - 30
         if this.game_reset_tick % 1800 == 0 then
@@ -352,14 +331,14 @@ local has_the_game_ended = function()
 
             if this.soft_reset and this.game_reset_tick == 0 then
                 this.game_reset_tick = nil
-                -- HS.set_scores(diff_name)
+                -- Public.set_scores(diff_name)
                 Public.reset_map()
                 return
             end
 
             if this.restart and this.game_reset_tick == 0 then
                 if not this.announced_message then
-                    -- HS.set_scores(diff_name)
+                    -- Public.set_scores(diff_name)
                     game.print(({'entity.notify_restart'}), {r = 0.22, g = 0.88, b = 0.22})
                     local message = 'Soft-reset is disabled! Server will restart from scenario to load new changes.'
                     Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
@@ -370,7 +349,7 @@ local has_the_game_ended = function()
             end
             if this.shutdown and this.game_reset_tick == 0 then
                 if not this.announced_message then
-                    -- HS.set_scores(diff_name)
+                    -- Public.set_scores(diff_name)
                     game.print(({'entity.notify_shutdown'}), {r = 0.22, g = 0.88, b = 0.22})
                     local message = 'Soft-reset is disabled! Server will shutdown. Most likely because of updates.'
                     Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
@@ -384,12 +363,12 @@ local has_the_game_ended = function()
 end
 
 local chunk_load = function()
-    local chunk_load_tick = WPT.get('chunk_load_tick')
+    local chunk_load_tick = Public.get('chunk_load_tick')
     local tick = game.tick
     if chunk_load_tick then
         if chunk_load_tick < tick then
-            WPT.set('force_chunk', false)
-            WPT.remove('chunk_load_tick')
+            Public.set('force_chunk', false)
+            Public.remove('chunk_load_tick')
             Task.set_queue_speed(8)
         end
     end
@@ -408,12 +387,12 @@ local collapse_message =
 )
 
 local lock_locomotive_positions = function()
-    local locomotive = WPT.get('locomotive')
+    local locomotive = Public.get('locomotive')
     if not locomotive or not locomotive.valid then
         return
     end
 
-    local locomotive_positions = WPT.get('locomotive_pos')
+    local locomotive_positions = Public.get('locomotive_pos')
     local success = is_position_near_tbl(locomotive.position, locomotive_positions.tbl)
     local p = locomotive.position
     if not success then
@@ -428,7 +407,7 @@ end
 
 local compare_collapse_and_train = function()
     local collapse_pos = Collapse.get_position()
-    local locomotive = WPT.get('locomotive')
+    local locomotive = Public.get('locomotive')
     if not (locomotive and locomotive.valid) then
         return
     end
@@ -436,10 +415,10 @@ local compare_collapse_and_train = function()
     local c_y = collapse_pos.y
     local t_y = locomotive.position.y
 
-    local gap_between_zones = WPT.get('gap_between_zones')
+    local gap_between_zones = Public.get('gap_between_zones')
 
     if c_y - t_y <= gap_between_zones.gap then
-        Functions.set_difficulty()
+        Public.set_difficulty()
     else
         Collapse.set_speed(1)
         Collapse.set_amount(4)
@@ -447,7 +426,7 @@ local compare_collapse_and_train = function()
 end
 
 local collapse_after_wave_200 = function()
-    local collapse_grace = WPT.get('collapse_grace')
+    local collapse_grace = Public.get('collapse_grace')
     if not collapse_grace then
         return
     end
@@ -467,8 +446,14 @@ local collapse_after_wave_200 = function()
     end
 end
 
+local handle_changes = function()
+    Public.set('restart', true)
+    Public.set('soft_reset', false)
+    print('Received new changes from backend.')
+end
+
 local on_tick = function()
-    local update_gui = Gui_mf.update_gui
+    local update_gui = Public.update_gui
     local tick = game.tick
     local players = game.connected_players
 
@@ -486,14 +471,14 @@ local on_tick = function()
 
     if tick % 250 == 0 then
         compare_collapse_and_train()
-        Functions.set_spawn_position()
-        Functions.boost_difficulty()
+        Public.set_spawn_position()
+        Public.boost_difficulty()
     end
 
     if tick % 1000 == 0 then
         collapse_after_wave_200()
-        Functions.set_difficulty()
-        Functions.is_creativity_mode_on()
+        Public.set_difficulty()
+        Public.is_creativity_mode_on()
     end
 end
 
@@ -532,8 +517,9 @@ local on_init = function()
     Explosives.set_whitelist_entity('tank')
 end
 
+Event.add(Server.events.on_changes_detected, handle_changes)
+
 Event.on_nth_tick(10, on_tick)
 Event.on_init(on_init)
-Event.add(WPT.events.reset_map, Public.reset_map)
 
 return Public

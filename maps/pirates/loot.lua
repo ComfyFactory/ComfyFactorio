@@ -3,7 +3,7 @@
 
 local Math = require 'maps.pirates.math'
 -- local Memory = require 'maps.pirates.memory'
--- local Balance = require 'maps.pirates.balance'
+local Balance = require 'maps.pirates.balance'
 -- local CoreData = require 'maps.pirates.coredata'
 local Common = require 'maps.pirates.common'
 local _inspect = require 'utils.inspect'.inspect
@@ -51,6 +51,8 @@ Public.chest_loot_data_raw = {
 	{12, 0, 1, false, 'artillery-shell', 1, 1},
 	{4, 0, 0.8, false, 'pistol', 1, 3},
 	{3, 0, 0.2, false, 'storage-tank', 2, 4},
+	{2, 0.1, 1, false, 'explosives', 5, 9},
+	{2, 0.2, 1, false, 'cliff-explosives', 2, 4},
 	{0.25, 0, 0.5, false, 'uranium-238', 5, 8},
 
 	{8, 0, 1.2, true, 'steel-chest', 4, 12},
@@ -308,15 +310,16 @@ end
 
 function Public.swamp_storage_tank_fluid_loot()
 	local ret
-	ret = {name = 'sulfuric-acid', amount = 100*Math.ceil(Math.random(5^2, 40^2)^(1/2))}
+	-- ret = {name = 'sulfuric-acid', amount = 100*Math.ceil(Math.random(5^2, 40^2)^(1/2))} -- don't know why this formula made best amount most common, but lowest amount least common (was this intentional?).
+	ret = {name = 'sulfuric-acid', amount = 100*Math.ceil(Math.random(10, 40) * Balance.island_richness_avg_multiplier())}
     return ret
 end
 
 function Public.roboport_bots_loot()
     return {
-		{name = 'logistic-robot', count = 8},
+		{name = 'logistic-robot', count = Math.ceil((10 + Math.random(5)) * Balance.island_richness_avg_multiplier())},
+		{name = 'construction-robot', count = Math.ceil((5 + Math.random(5)) * Balance.island_richness_avg_multiplier())},
 	}
-    -- construction robots
 end
 
 function Public.random_plates(multiplier)
@@ -354,7 +357,7 @@ function Public.maze_camp_loot()
 	end
 end
 
-Public.maze_lab_loot_data_raw = {
+Public.lab_loot_data_raw = {
 	{8, -0.5, 0.5, true, 'automation-science-pack', 5, 20},
 	{8, -0.6, 0.6, true, 'logistic-science-pack', 5, 20},
 	{6, -0.1, 1, true, 'military-science-pack', 5, 18},
@@ -365,8 +368,8 @@ Public.maze_lab_loot_data_raw = {
 	-- {10, 0.5, 1.5, true, 'space-science-pack', 16, 32},
 }
 
-function Public.maze_lab_loot()
-	return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.maze_lab_loot_data_raw), 1, Math.clamp(0, 1, Math.sloped(Common.difficulty_scale(),1/2) * (Common.game_completion_progress())))
+function Public.lab_loot()
+	return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.lab_loot_data_raw), 1, Math.clamp(0, 1, Math.sloped(Common.difficulty_scale(),1/2) * (Common.game_completion_progress())))
 end
 
 Public.maze_treasure_data_raw = {
