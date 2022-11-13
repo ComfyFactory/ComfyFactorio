@@ -153,7 +153,7 @@ function Public.generate_destination_base_cost_to_undock(p, subtype)
 	}
 	local base_cost_2b = {
 		['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*200),
-		['flying-robot-frame'] = 3,
+		['flying-robot-frame'] = 5,
 	}
 	local base_cost_3 = {
 		['electronic-circuit'] = Math.ceil(((macro_p.x-2)^(2/3))*160),
