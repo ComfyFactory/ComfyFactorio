@@ -1031,11 +1031,41 @@ function Public.wipe_offline_players(journey)
 	journey.game_state = "set_unique_modifiers"
 end
 
+function Public.notify_discord(journey)
+    if journey.disable_discord_notifications then
+        return
+    end
+    local caption = 'World ' .. journey.world_number .. ' | ' .. Constants.unique_world_traits[journey.world_trait][1]
+    local message = {
+        title = 'World advanced',
+        description = 'Arriving at target destination!',
+        color = 'warning',
+        field1 = {
+            text1 = 'World level:',
+            text2 = caption,
+            inline = 'true'
+        },
+        field2 = {
+            text1 = 'World description:',
+            text2 = Constants.unique_world_traits[journey.world_trait][2],
+            inline = 'true'
+        },
+        field3 = {
+            text1 = 'Fuel cells in mothership cargo:',
+            text2 = journey.mothership_cargo['uranium-fuel-cell'],
+            inline = 'false'
+        }
+    }
+    Server.to_discord_embed_parsed(message)
+end
+
+
 function Public.set_unique_modifiers(journey)
 	local unique_modifier = Unique_modifiers[journey.world_trait]
 	local on_world_start = unique_modifier.on_world_start
 	if on_world_start then on_world_start(journey) end
 	Public.draw_gui(journey)
+	Public.notify_discord(journey)
 	journey.game_state = "place_teleporter_into_world"
 end
 
