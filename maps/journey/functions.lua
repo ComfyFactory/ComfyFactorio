@@ -1003,7 +1003,11 @@ function Public.create_the_world(journey)
 	journey.rocket_silos = {}
 	journey.mothership_cargo["uranium-fuel-cell"] = 0
 	journey.world_number = journey.world_number + 1
-	journey.mothership_cargo_space["satellite"] = math_floor(journey.world_number * 0.334) + 1
+	local max_satellites = math_floor(journey.world_number * 0.334) + 1
+	if max_satellites > 3 then
+		max_satellites = Constants.max_satellites
+	end
+	journey.mothership_cargo_space["satellite"] = max_satellites
 	journey.mothership_cargo_space["uranium-fuel-cell"] = journey.mothership_cargo_space["uranium-fuel-cell"] + journey.world_selectors[journey.selected_world].fuel_requirement
 	
 	game.forces.enemy.reset_evolution()
