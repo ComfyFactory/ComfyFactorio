@@ -982,8 +982,9 @@ function Public.create_the_world(journey)
 		if name == "ageing" then			
 			game.map_settings.pollution.ageing = game.map_settings.pollution.ageing * m
 		end
-		if name == "diffusion_ratio" then			
-			game.map_settings.pollution.diffusion_ratio = game.map_settings.pollution.diffusion_ratio * m
+		if name == "diffusion_ratio" then
+			--recommended to keep the diffusion at 0 to 50%. Going over 100% eventually gives corrupted map due to pollution value overflows so needs to be capped
+			game.map_settings.pollution.diffusion_ratio = math.min(0.5, math.max(0, game.map_settings.pollution.diffusion_ratio * m))
 		end
 		if name == "tree_durability" then
 			game.map_settings.pollution.min_pollution_to_damage_trees = game.map_settings.pollution.min_pollution_to_damage_trees * m
