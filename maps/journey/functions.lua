@@ -1004,7 +1004,7 @@ function Public.create_the_world(journey)
 	journey.mothership_cargo["uranium-fuel-cell"] = 0
 	journey.world_number = journey.world_number + 1
 	local max_satellites = math_floor(journey.world_number * 0.334) + 1
-	if max_satellites > 3 then
+	if max_satellites > Constants.max_satellites then
 		max_satellites = Constants.max_satellites
 	end
 	journey.mothership_cargo_space["satellite"] = max_satellites
