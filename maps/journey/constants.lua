@@ -20,6 +20,7 @@ Public.size_of_particle_spawn_vectors = #Public.particle_spawn_vectors
 
 Public.world_selector_width = 6
 Public.world_selector_height = 8
+Public.max_satellites = 3
 
 local area = {
 	left_top = {x = -3, y = math.floor(Public.mothership_radius * 0.5) * -1},
