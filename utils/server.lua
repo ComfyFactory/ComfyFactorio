@@ -1213,30 +1213,22 @@ function Public.convertFromEpoch(epoch)
         local mp = floor((5 * doy + 2) / 153)
         local d = ceil(doy - (153 * mp + 2) / 5 + 1)
         local m = floor(mp + (mp < 10 and 3 or -9))
-        return y + (m <= 2 and 1 or 0), m, d
+        return y + (m <= 2 and 1 or 0), tonumber(m), tonumber(d)
     end
 
     local unixTime = floor(epoch) - (60 * 60 * (-2))
 
-    local hours = floor(unixTime / 3600 % 12)
+    local hours = floor(unixTime / 3600 % 24) - 1
     local minutes = floor(unixTime / 60 % 60)
     local seconds = floor(unixTime % 60)
 
     local year, month, day = date(unixTime)
 
-    month = tonumber(month)
-    month = 0 .. month
-
-    day = tonumber(day)
-    if day < 10 then
-        day = 0 .. day
-    end
-
     return {
         year = year,
-        month = month,
-        day = day,
-        hours = hours,
+        month = month < 10 and '0' .. month or month,
+        day = day < 10 and '0' .. day or day,
+        hours = hours < 10 and '0' .. hours or hours,
         minutes = minutes < 10 and '0' .. minutes or minutes,
         seconds = seconds < 10 and '0' .. seconds or seconds
     }
