@@ -83,6 +83,7 @@ require 'utils.freeplay'
 --require 'modules.no_acid_puddles'
 --require 'modules.simple_tags'
 --require 'modules.turret_filler'
+--require 'modules.clear_vacant_players'
 ---------------------------------------------------------------
 
 ---------------- ENABLE MAPS HERE ----------------
