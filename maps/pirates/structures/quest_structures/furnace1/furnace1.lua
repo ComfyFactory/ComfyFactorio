@@ -172,7 +172,7 @@ Public.entry_price_data_raw = {-- choose things which make interesting minifacto
 	},
 	['fast-splitter'] = {
 		overallWeight = 1,
-		minLambda = -1,
+		minLambda = -0.6,
 		maxLambda = 1,
 		shape = 'bump',
 		enabled = true,
@@ -212,7 +212,7 @@ Public.entry_price_data_raw = {-- choose things which make interesting minifacto
 	},
 	['pump'] = {
 		overallWeight = 1,
-		minLambda = 0.05,
+		minLambda = 0.1,
 		maxLambda = 1,
 		shape = 'density',
 		enabled = true,
