@@ -11,6 +11,7 @@ local this = {
         active_surface_index = nil, -- needs to be set else this will fail
         required_online_time = 18000, -- nearest prime to 5 minutes in ticks
         clear_player_after_tick = 108000 -- nearest prime to 30 minutes in ticks
+        surfaces_to_ignore = {},
     },
     offline_players = {}
 }
@@ -136,12 +137,14 @@ end
 --- Initializes the module with blank state, receiving all required parameters.
 --- <br />The module starts **disabled** by default.
 --- @param active_surface_index number The index of the active surface.
+--- @param surfaces_to_ignore table|nil The ids or names of special surfaces to ignore. Players on those surfaces will not have their invontgory dumped if they leave.
 ---@param is_enabled boolean|nil Optional: when passed, sets the module to be enabled or disabled.
-function Public.init(active_surface_index, is_enabled)
+function Public.init(active_surface_index, surfaces_to_ignore, is_enabled)
     if not active_surface_index then
         return error('An active surface index must be set', 2)
     end
     this.settings.active_surface_index = active_surface_index
+    this.settings.surfaces_to_ignore = surfaces_to_ignore or {}
     if is_enabled ~= nil then
         this.settings.is_enabled = is_enabled
     end
@@ -181,6 +184,16 @@ function Public.clear_offline_players()
 end
 
 local function should_ignore_surface(surface)
+    if not this.settings.surfaces_to_ignore then
+        return false
+    end
+    for _, item in ipairs(this.settings.surfaces_to_ignore) do
+        if item == surface.index or item == surface.name then
+            return true
+        end
+    end
+    return false
+end
 
 Event.on_nth_tick(tick_frequency, Public.dump_expired_players)
 
@@ -194,12 +207,14 @@ Event.add(
         local player = game.get_player(event.player_index)
         local ticker = game.tick
         if player and player.online_time >= this.settings.required_online_time then
-            if player.character then
-                insert(this.offline_players, {
-                    index = event.player_index,
-                    name = player.name,
-                    tick = ticker + this.settings.clear_player_after_tick
-                })
+            if not should_ignore_surface(player.surface) then
+                if player.character then
+                    insert(this.offline_players, {
+                        index = event.player_index,
+                        name = player.name,
+                        tick = ticker + this.settings.clear_player_after_tick
+                    })
+                end
             end
         end
     end

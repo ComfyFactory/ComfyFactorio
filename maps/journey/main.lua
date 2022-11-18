@@ -23,7 +23,9 @@ Global.register(
 -- Init and share within Journey the module ClearVacantPlayers.
 if ClearVacantPlayers then
 	local base_surface_id = 1 -- sending "Nauvis" also works.
-	ClearVacantPlayers.init(base_surface_id, true)
+	local surfaces_to_ignore = { "mothership" }
+	ClearVacantPlayers.init(base_surface_id, surfaces_to_ignore)
+	ClearVacantPlayers.set_enabled(true)
 
 	journey.clear_vacant_players = ClearVacantPlayers
 end
