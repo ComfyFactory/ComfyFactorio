@@ -13,7 +13,7 @@ local simplex_noise = require 'utils.simplex_noise'.d2
 
 local Public = {}
 
--- Gives less and less ore with every call, until given amount slowly converges to 1
+-- Gives less and less ore with every call, until given amount slowly converges to 2
 -- For now used just for Cave island to give players ore when mining rocks
 -- NOTE: Also gives some coins
 function Public.try_give_ore(player, realp, source_name)
@@ -46,21 +46,24 @@ function Public.try_give_ore(player, realp, source_name)
 			if not choice then return end
 
 			local coin_amount = 4 + Math.random(4)
-			local real_amount = Math.max(Common.minimum_ore_placed_per_tile, Common.ore_abstract_to_real(total_ore_left))
+			local real_amount = Common.ore_abstract_to_real(choices[choice])
 
 			local given_amount = Math.ceil(real_amount * Math.random_float_in_range(0.004, 0.006))
 
 			if source_name == 'rock-huge' then
-				given_amount = given_amount * 1.5
+				given_amount = given_amount * 2
 				coin_amount = coin_amount * 2
 			end
+
+			given_amount = Math.max(2, given_amount)
 
 			local to_give = {}
 			to_give[#to_give+1] = {name = choice, count = Math.ceil(given_amount)}
 			to_give[#to_give+1] = {name = 'coin', count = Math.ceil(coin_amount)}
 			Common.give(player, to_give, realp)
 
-			choices[choice] = Math.max(0, choices[choice] - Common.ore_real_to_abstract(given_amount))
+			-- 1 here indicates that ore type should still be given
+			choices[choice] = Math.max(1, choices[choice] - Common.ore_real_to_abstract(given_amount))
 		end
 	end
 end

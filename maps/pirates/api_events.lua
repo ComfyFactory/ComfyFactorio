@@ -2000,7 +2000,7 @@ local boost_movement_speed_on_respawn =
 		if memory.game_lost then return end
 		memory.speed_boost_characters[player.index] = true
 
-        Task.set_timeout_in_ticks(1050, remove_boost_movement_speed_on_respawn, {player = player, crew_id = crew_id})
+        Task.set_timeout_in_ticks(1200, remove_boost_movement_speed_on_respawn, {player = player, crew_id = crew_id})
 		Common.notify_player_expected(player, {'pirates.respawn_speed_bonus_applied'})
     end
 )

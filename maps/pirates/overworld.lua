@@ -126,6 +126,7 @@ function Public.generate_destination_type_and_subtype(overworld_position)
 	end
 
 	return {type = type2, subtype = subtype}
+	-- return {type = Surfaces.enum.ISLAND, subtype = IslandEnum.enum.CAVE}
 end
 
 

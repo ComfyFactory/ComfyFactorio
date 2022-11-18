@@ -87,7 +87,9 @@ function Public.update_difficulty()
 		Common.notify_force(memory.force, message1)
 
 		-- local message2 = 'Difficulty changed to ' .. CoreData.difficulty_options[modal_id].text .. '.'
-		Server.to_discord_embed_raw({'', CoreData.comfy_emojis.kewl .. '[' .. memory.name .. '] ', message1}, true)
+
+		-- why print this? if enabling it again, print message to discord without [color] tags (they don't work there)
+		-- Server.to_discord_embed_raw({'', CoreData.comfy_emojis.kewl .. '[' .. memory.name .. '] ', message1}, true)
 
 		memory.difficulty_option = modal_id
 		memory.difficulty = CoreData.difficulty_options[modal_id].value
@@ -887,7 +889,7 @@ function Public.reset_crew_and_enemy_force(id)
 	--as prerequisites for uranium ammo and automation 3:
 	crew_force.technologies['speed-module'].researched = true
 	crew_force.technologies['tank'].researched = true
-	crew_force.technologies['concrete'].researched = true
+	crew_force.technologies['concrete'].researched = false
 
 
 	--@TRYING this out:
@@ -1048,10 +1050,11 @@ function Public.disable_recipes(crew_force)
 	crew_force.recipes['uranium-cannon-shell'].enabled = false
 	crew_force.recipes['explosive-uranium-cannon-shell'].enabled = false
 
-	crew_force.recipes['concrete'].enabled = false
-	crew_force.recipes['hazard-concrete'].enabled = false
-	crew_force.recipes['refined-concrete'].enabled = false
-	crew_force.recipes['refined-hazard-concrete'].enabled = false
+	-- need these for nuclear related buildings
+	-- crew_force.recipes['concrete'].enabled = false
+	-- crew_force.recipes['hazard-concrete'].enabled = false
+	-- crew_force.recipes['refined-concrete'].enabled = false
+	-- crew_force.recipes['refined-hazard-concrete'].enabled = false
 end
 
 return Public

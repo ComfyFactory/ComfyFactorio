@@ -32,7 +32,22 @@ local function spawn_market(args, is_main)
         offers[#offers+1] = {price = {{'coin', 200}}, offer = {type = 'give-item', item = 'small-lamp', count = 100}}
     else
         -- This doesn't really prevent markets spawning near each other, since markets aren't spawned immediately for a given chunk, but it helps a bit
-        local surface = destination_data.dynamic_data.cave_miner.cave_surface
+        local cave_miner = destination_data.dynamic_data.cave_miner
+        if not cave_miner then
+            -- this can be null if cave island is first and run is launched using proposal
+            -- should probably investigate this some time
+            local message = 'ERROR: cave_miner is nil'
+            if _DEBUG then
+                game.print(message)
+            else
+                log(message)
+            end
+
+            return
+        end
+        local surface = cave_miner.cave_surface
+        if not surface then return end
+
         local r = 64
         if surface.count_entities_filtered({name = 'market', area = {{args.p.x - r, args.p.y - r}, {args.p.x + r, args.p.y + r}}}) > 0 then
             return
@@ -248,7 +263,7 @@ function biomes.cave(args, square_distance)
     end
 end
 
-local function get_biome(args)
+local function pick_biome(args)
 	local position = args.p
     local d = position.x ^ 2 + position.y ^ 2
 
@@ -260,58 +275,66 @@ local function get_biome(args)
 
 	-- Spawn location for market
     if d < spawn_radius ^ 2 then
-        return biomes.spawn, d
+        biomes.spawn(args, d)
+        return
     end
 
 	-- River upon which ship arrives + ship entrance
 	if position.x < 0 and 2 * Math.abs(position.y) < river_width then
-		return biomes.void
+        biomes.void(args)
+        return
 	end
 
 	-- Prevent cave expansion in west direction
     -- NOTE: although "river_width ^ 2 - entrance_radius ^ 2" should never be "< 0", it's a small safe check
     -- NOTE: the complex calculation here calculates wanted intersection of river and spawn area (or in other words line and circle intersection)
 	if position.x < 0 and -position.x + (river_width - Math.sqrt(Math.max(0, river_width ^ 2 - entrance_radius ^ 2))) > Math.abs(2 * position.y) then
-		return biomes.void
+        biomes.void(args)
+        return
 	end
 
 	-- Actual cave generation below
     local cm_ocean = GetNoise('cm_ocean', position, args.seed + 100000)
     if cm_ocean > 0.6 then
-        return biomes.ocean, cm_ocean
+        biomes.ocean(args, cm_ocean)
+        return
     end
 
     local noise = GetNoise('cave_miner_01', position, args.seed)
     local abs_noise = Math.abs(noise)
     if abs_noise < 0.075 then
-        return biomes.cave, d
+        biomes.cave(args, d)
+        return
     end
 
     if abs_noise > 0.25 then
         noise = GetNoise('cave_rivers', position, args.seed)
         if noise > 0.72 then
-            return biomes.oasis, noise
+            biomes.oasis(args, noise)
+            return
         end
         if cm_ocean < -0.6 then
-            return biomes.worm_desert, cm_ocean
+            biomes.worm_desert(args, cm_ocean)
+            return
         end
         if noise < -0.5 then
-            return biomes.pond_cave, noise
+            biomes.pond_cave(args, noise)
+            return
         end
     end
 
     noise = GetNoise('cave_miner_02', position, args.seed)
     if Math.abs(noise) < 0.085 then
-        return biomes.cave, d
+        biomes.cave(args, d)
+        return
     end
 
-    return biomes.void
+    biomes.void(args)
 end
 
 function Public.terrain(args)
     local tiles_placed = #args.tiles
-	local biome, square_distance, noise = get_biome(args)
-	biome(args, square_distance, noise)
+    pick_biome(args)
 
     -- fallback case when tile wasn't placed
     if tiles_placed == #args.tiles then

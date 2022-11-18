@@ -100,6 +100,7 @@ end
 function Public.roll_source_surface(destination_data)
     local map_gen_settings = {
         ['water'] = 0,
+        ['seed'] = Math.random(1, 1000000),
         ['starting_area'] = 1,
         ['cliff_settings'] = {cliff_elevation_interval = 0, cliff_elevation_0 = 0},
         ['default_enable_all_autoplace_controls'] = false,

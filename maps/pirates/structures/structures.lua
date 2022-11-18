@@ -61,7 +61,7 @@ function Public.configure_structure_entities(special_name, components)
 			for _, e in pairs(c.built_entities) do
 				if e and e.valid then
 					e.minable = false
-					e.rotatable = false
+					-- e.rotatable = false -- don't see why it shouldn't be rotatable
 					e.destructible = false
 				end
 			end
