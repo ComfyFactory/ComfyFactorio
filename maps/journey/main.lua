@@ -11,6 +11,7 @@ local Functions = require 'maps.journey.functions'
 local Unique_modifiers = require 'maps.journey.unique_modifiers'
 local Map = require 'modules.map_info'
 local Global = require 'utils.global'
+local ClearVacantPlayers = require 'modules.clear_vacant_players'
 
 local journey = {}
 Global.register(
@@ -19,6 +20,13 @@ Global.register(
         journey = tbl
     end
 )
+-- Init and share within Journey the module ClearVacantPlayers.
+if ClearVacantPlayers then
+	local base_surface_id = 1 -- sending "Nauvis" also works.
+	ClearVacantPlayers.init(base_surface_id, true)
+
+	journey.clear_vacant_players = ClearVacantPlayers
+end
 
 local function on_chunk_generated(event)
 	local surface = event.surface

@@ -422,6 +422,9 @@ function Public.create_mothership(journey)
 	surface.request_to_generate_chunks({x = 0, y = 0}, 6)
 	surface.force_generate_chunk_requests()
 	surface.freeze_daytime = true
+	if journey.clear_vacant_players then
+		journey.clear_vacant_players.reset()
+	end
 	journey.game_state = "draw_mothership"
 end
 
@@ -557,6 +560,9 @@ end
 
 function Public.teleport_players_to_mothership(journey)
 	local surface = game.surfaces.mothership
+	if journey.clear_vacant_players then
+		journey.clear_vacant_players.reset();
+	end
 	for _, player in pairs(game.connected_players) do
 		if player.surface.name ~= "mothership" then
 			Public.clear_player(player)
@@ -1027,6 +1033,9 @@ function Public.create_the_world(journey)
 end
 
 function Public.wipe_offline_players(journey)
+	if journey.clear_vacant_players then
+		journey.clear_vacant_players.clear_offline_players()
+	end
 	remove_offline_players(168)
 	for _, player in pairs(game.players) do
 		if not player.connected then
