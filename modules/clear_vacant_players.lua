@@ -23,7 +23,7 @@ Global.register(
     end
 )
 
-local Public = {events = {remove_surface = Event.generate_event_name('remove_surface')}}
+local Public = { events = { remove_surface = Event.generate_event_name('remove_surface') } }
 local remove = table.remove
 local insert = table.insert
 
@@ -62,7 +62,7 @@ function Public.clear_vacant_players()
                             player_inv[4] = target.get_inventory(defines.inventory.character_ammo)
                             player_inv[5] = target.get_inventory(defines.inventory.character_trash)
                             if this.offline_players_surface_removal then
-                                Event.raise(this.events.remove_surface, {target = target})
+                                Event.raise(this.events.remove_surface, { target = target })
                             end
 
                             if target.get_item_count() == 0 then -- if the player has zero items, don't do anything
@@ -72,7 +72,7 @@ function Public.clear_vacant_players()
 
                             local pos = game.forces.player.get_spawn_position(surface)
                             local e =
-                                surface.create_entity(
+                            surface.create_entity(
                                 {
                                     name = 'character',
                                     position = pos,
@@ -106,7 +106,7 @@ function Public.clear_vacant_players()
                                     end
                                 end
 
-                                local message = ({'main.cleaner', name})
+                                local message = ({ 'main.cleaner', name })
                                 local data = {
                                     position = pos
                                 }
@@ -182,6 +182,7 @@ end
 function Public.reset()
     Public.clear_offline_players();
 end
+
 --- Clears the offline table
 function Public.clear_offline_players()
     this.offline_players = {}
