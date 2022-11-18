@@ -1136,12 +1136,16 @@ end
 
 function Public.update_minimap()
     local icw = ICW.get()
-    for k, player in pairs(game.connected_players) do
-        local player_data = get_player_data(icw, player)
-        if player.character and player.character.valid then
-            local wagon = get_wagon_for_entity(icw, player.character)
-            if wagon and player_data.auto then
-                Public.draw_minimap(icw, player, wagon.entity.surface, wagon.entity.position)
+    for _, player in pairs(game.connected_players) do
+        if player and player.valid then
+            local player_data = get_player_data(icw, player)
+            if player.character and player.character.valid then
+                local wagon = get_wagon_for_entity(icw, player.character)
+                if wagon and player_data.auto then
+                    if wagon and wagon.entity and wagon.entity.valid then
+                        Public.draw_minimap(icw, player, wagon.entity.surface, wagon.entity.position)
+                    end
+                end
             end
         end
     end
