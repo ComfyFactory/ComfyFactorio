@@ -191,7 +191,7 @@ function Public.clear_offline_players()
     this.offline_players = {}
 end
 
-local clear_vacant_players = Public.clear_vacant_players
+local function should_ignore_surface(surface)
     if not this.settings.surfaces_to_ignore then
         return false
     end
@@ -203,7 +203,7 @@ local clear_vacant_players = Public.clear_vacant_players
     return false
 end
 
-Event.on_nth_tick(tick_frequency, clear_vacant_players)
+Event.on_nth_tick(tick_frequency, Public.clear_vacant_players)
 
 Event.add(
     defines.events.on_pre_player_left_game,
