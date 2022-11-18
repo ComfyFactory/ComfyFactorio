@@ -23,7 +23,8 @@ Global.register(
 -- Init and share within Journey the module ClearVacantPlayers.
 if ClearVacantPlayers then
 	local base_surface_id = 1 -- sending "Nauvis" also works.
-	ClearVacantPlayers.init(base_surface_id, true)
+	ClearVacantPlayers.init(base_surface_id)
+    ClearVacantPlayers.set_enabled(true)
 
 	journey.clear_vacant_players = ClearVacantPlayers
 end
