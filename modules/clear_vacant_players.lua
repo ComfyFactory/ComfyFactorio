@@ -24,6 +24,7 @@ Global.register(
 
 local Public = {events = {remove_surface = Event.generate_event_name('remove_surface')}}
 local remove = table.remove
+local insert = table.insert
 
 function Public.clear_vacant_players()
     if not this.settings.is_enabled then
@@ -92,7 +93,7 @@ function Public.clear_vacant_players()
                                 if player_inv[ii].valid then
                                     for iii = 1, #player_inv[ii], 1 do
                                         if player_inv[ii][iii].valid then
-                                            items[#items + 1] = player_inv[ii][iii]
+                                            insert(items, player_inv[ii][iii])
                                         end
                                     end
                                 end
@@ -193,11 +194,11 @@ Event.add(
         local ticker = game.tick
         if player and player.online_time >= this.settings.required_online_time then
             if player.character then
-                this.offline_players[#this.offline_players + 1] = {
+                insert(this.offline_players, {
                     index = event.player_index,
                     name = player.name,
                     tick = ticker + this.settings.clear_player_after_tick
-                }
+                })
             end
         end
     end
