@@ -907,7 +907,6 @@ end
 
 
 function Public.update_gui(player)
-	-- game.print('update_gui' .. Math.random(1000000))
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 
@@ -1146,7 +1145,6 @@ function Public.update_gui(player)
 	end
 
 	if flow1 then
-		-- game.print('flow1' .. Math.random(1000000))
 		flow1.visible = false
 		flow1.location = {x = 8, y = 48}
 		if bools.on_deck_standing_near_loco_bool then
@@ -1164,7 +1162,6 @@ function Public.update_gui(player)
 			flow1.style.minimal_width = 280
 			flow1.position = {x=0,y=-1}
 		elseif bools.on_deck_standing_near_crowsnest_bool then
-			-- game.print('on_deck_standing_near_crowsnest_bool' .. Math.random(1000000))
 			flow1.visible = true
 			flow1.surface_index = Crowsnest.get_crowsnest_surface().index
 			flow1.zoom = 0.21
