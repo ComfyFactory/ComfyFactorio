@@ -158,7 +158,6 @@ function(cmd)
 	--local param = tostring(cmd.parameter)
 	if check_admin(cmd) then
 		--local player = game.players[cmd.player_index]
-		local memory = Memory.get_crew_memory()
 		Crew.summon_crew()
 		if memory.boat.state == Boats.enum_state.ATSEA_WAITING_TO_SAIL then
 			Progression.at_sea_begin_to_set_sail()
@@ -417,7 +416,6 @@ function(cmd)
 	--local param = tostring(cmd.parameter)
 	if check_captain_or_admin(cmd) then
 		local player = game.players[cmd.player_index]
-		local memory = Memory.get_crew_memory()
 		if memory.boat.state == Boats.enum_state.DOCKED then
 			Progression.undock_from_dock(true)
 		elseif memory.boat.state == Boats.enum_state.LANDED then
@@ -438,8 +436,35 @@ function(cmd)
 	--local param = tostring(cmd.parameter)
 	if check_captain(cmd) then
 		--local player = game.players[cmd.player_index]
-		local memory = Memory.get_crew_memory()
 		Roles.captain_tax(memory.playerindex_captain)
+	end --@TODO: else
+end)
+
+commands.add_command(
+'clear_north_tanks',
+{'pirates.cmd_explain_clear_north_tanks'},
+function(cmd)
+	cmd_set_memory(cmd)
+
+	local memory = Memory.get_crew_memory()
+	if not Common.is_id_valid(memory.id) then return end
+
+	if check_captain(cmd) then
+		Boats.clear_fluid_from_ship_tanks(1)
+	end --@TODO: else
+end)
+
+commands.add_command(
+'clear_south_tanks',
+{'pirates.cmd_explain_clear_south_tanks'},
+function(cmd)
+	cmd_set_memory(cmd)
+
+	local memory = Memory.get_crew_memory()
+	if not Common.is_id_valid(memory.id) then return end
+
+	if check_captain(cmd) then
+		Boats.clear_fluid_from_ship_tanks(2)
 	end --@TODO: else
 end)
 

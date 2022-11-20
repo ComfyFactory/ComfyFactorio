@@ -1434,4 +1434,21 @@ function Public.is_boat_at_sea()
 	end
 end
 
+function Public.clear_fluid_from_ship_tanks(idx)
+	local memory = Memory.get_crew_memory()
+	local boat = memory.boat
+
+	if boat.upstairs_fluid_storages and boat.upstairs_fluid_storages[idx] and boat.upstairs_fluid_storages[idx].valid then
+		boat.upstairs_fluid_storages[idx].clear_fluid_inside()
+	end
+
+	if boat.downstairs_fluid_storages then
+		for j = 1, memory.hold_surface_count do
+			if boat.downstairs_fluid_storages[j] and boat.downstairs_fluid_storages[j][idx] and boat.downstairs_fluid_storages[j][idx].valid then
+				boat.downstairs_fluid_storages[j][idx].clear_fluid_inside()
+			end
+		end
+	end
+end
+
 return Public
