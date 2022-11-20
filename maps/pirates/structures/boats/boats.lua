@@ -330,7 +330,9 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 					e.rotatable = false
 					if i == 1 then
 						boat.upstairs_pole = e
-						Public.try_connect_upstairs_and_downstairs_poles(boat)
+						if boat.downstairs_poles and boat.downstairs_poles[1] then
+							Common.force_connect_poles(boat.upstairs_pole, boat.downstairs_poles[1][1])
+						end
 					end
 				end
 			end
@@ -729,17 +731,6 @@ end
 -- 	end
 -- end
 
-
-function Public.try_connect_upstairs_and_downstairs_poles(boat)
-	-- local memory = Memory.get_crew_memory()
-
-	if not (boat and boat.upstairs_pole and boat.upstairs_pole.valid and boat.downstairs_poles and boat.downstairs_poles[1] and boat.downstairs_poles[1][1] and boat.downstairs_poles[1][1].valid) then return end
-
-	boat.upstairs_pole.connect_neighbour(boat.downstairs_poles[1][1])
-end
-
-
-
 local function process_entity_on_boat_unteleportable(memory, boat, newsurface, vector, players_just_offside, oldsurface_name, newsurface_name, e, name)
 
 	local un = e.unit_number
@@ -913,9 +904,11 @@ local function process_entity_on_boat_teleportable(memory, boat, newsurface, new
 			ee = e.clone{position = p2, surface = newsurface, create_build_effect_smoke = false}
 		end
 
-		if boat.upstairs_pole and e == boat.upstairs_pole then
+		if e == boat.upstairs_pole then
 			boat.upstairs_pole = ee
-			Public.try_connect_upstairs_and_downstairs_poles(boat)
+			if boat.downstairs_poles and boat.downstairs_poles[1] then
+				Common.force_connect_poles(boat.upstairs_pole, boat.downstairs_poles[1][1])
+			end
 		end
 
 		if not (e.name == 'car' or e.name == 'tank' or e.name == 'spidertron') then

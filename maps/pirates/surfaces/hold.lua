@@ -210,9 +210,7 @@ function Public.create_hold_surface(nth)
 		end
 	end
 	if nth >= 2 then
-		if boat.downstairs_poles[nth][1] and boat.downstairs_poles[nth][1].valid and boat.downstairs_poles[nth-1][2] and boat.downstairs_poles[nth-1][2].valid then
-			boat.downstairs_poles[nth][1].connect_neighbour(boat.downstairs_poles[nth-1][2])
-		end
+		Common.force_connect_poles(boat.downstairs_poles[nth][1], boat.downstairs_poles[nth-1][2])
 	end
 
 	if not boat.downstairs_fluid_storages then boat.downstairs_fluid_storages = {} end
