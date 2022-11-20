@@ -751,6 +751,7 @@ function Public.initialise_crew(accepted_proposal)
 	memory.officers_table = {}
 	memory.spare_classes = {}
 	memory.unlocked_classes = {}
+	memory.class_entry_count = 0 -- used to track whether new class entries should be added during "full_update"
 
 	memory.healthbars = {}
 	memory.overworld_krakens = {}
