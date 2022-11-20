@@ -20,6 +20,10 @@ Maybe i should inspect...
 ]]
 
 local function create_map_intro(player)
+    if player.gui.left.map_intro_frame and player.gui.left.map_intro_frame.valid then
+        return
+    end
+
     local frame = player.gui.left.add {type = 'frame', name = 'map_intro_frame', direction = 'vertical'}
     local t = frame.add {type = 'table', column_count = 1}
 
