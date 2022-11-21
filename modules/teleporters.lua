@@ -290,7 +290,7 @@ local function on_player_changed_position(event)
         return
     end
     local player = game.players[event.player_index]
-    if player.character.driving == true then
+    if not player.character or player.character.driving == true then
         return
     end
     --if game.tick % 2 == 1 then return end
