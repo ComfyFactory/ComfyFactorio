@@ -19,7 +19,7 @@ function Public.global_reset_memory()
     end
 
     pirates_global_memory.config = {}
-    pirates_global_memory.disband_crews = true
+    pirates_global_memory.disband_crews = false -- false = disband crew button hidden by default
     pirates_global_memory.afk_player_indices = {}
     pirates_global_memory.playerindex_to_time_played_continuously = {}
     pirates_global_memory.playerindex_to_captainhood_priority = {}

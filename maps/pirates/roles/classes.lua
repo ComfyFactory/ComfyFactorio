@@ -103,7 +103,8 @@ function Public.explanation(class, add_is_class_obtainable)
 		full_explanation = {'', {explanation, range, extra_physical}}
 	elseif class == enum.FISHERMAN then
 		local extra_range = Balance.fisherman_reach_bonus
-		full_explanation = {'', {explanation, extra_range}}
+		local extra_fish = Balance.fisherman_fish_bonus
+		full_explanation = {'', {explanation, extra_range, extra_fish}}
 	elseif class == enum.MASTER_ANGLER then
 		local extra_range = Balance.master_angler_reach_bonus
 		local extra_fish = Balance.master_angler_fish_bonus

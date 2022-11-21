@@ -32,7 +32,7 @@ Public.buried_treasure_loot_data_raw = {
 	{10, 0, 1, false, 'production-science-pack', 12, 24},
 	{10, 0, 1, false, 'utility-science-pack', 4, 4},
 	{5, 0, 1, false, 'modular-armor', 1, 1},
-	{5, 0, 1, false, 'laser-turret', 1, 1},
+	{5, 0, 1, false, 'laser-turret', 2, 3},
 	{5, 0, 1, false, 'cannon-shell', 5, 10},
 	{50, 0, 1, false, 'artillery-shell', 4, 8},
 	{50, 0, 1, false, 'express-transport-belt', 8, 20},
@@ -40,6 +40,7 @@ Public.buried_treasure_loot_data_raw = {
 	{35, 0, 1, false, 'express-splitter', 4, 11},
 	{50, 0, 1, false, 'stack-inserter', 4, 12},
 	{0.1, 0, 1, false, 'atomic-bomb', 1, 1},
+	{1, 0, 1, false, 'nuclear-reactor', 1, 1},
 }
 
 Public.chest_loot_data_raw = {
@@ -106,6 +107,9 @@ Public.chest_loot_data_raw = {
 	{5, 0, 1, true, 'steel-furnace', 4, 8},
 	{4, 0, 2, true, 'electric-furnace', 1, 3},
 	{3, 0.2, 1, true, 'chemical-plant', 1, 3},
+	{0.2, 0.3, 1, false, 'heat-exchanger', 1, 3},
+	{0.1, 0.3, 1, false, 'nuclear-reactor', 1, 1},
+	{0.2, 0.2, 2, true, 'concrete', 10, 40},
 
 	{50, -1, 0.5, true, 'speed-module', 1, 3},
 	{25, 0, 1.5, true, 'speed-module-2', 1, 2},
@@ -115,6 +119,8 @@ Public.chest_loot_data_raw = {
 	{4, 0, 2, true, 'effectivity-module-3', 1, 1},
 	{3, 0, 1, false, 'productivity-module', 1, 1}, --not many of these, merely to make them availabile for future features
 
+	{0.2, 0.2, 2, true, 'car', 1, 1},
+	{0.01, 0.2, 2, true, 'tank', 1, 1},
 	{4, 0, 0.1, false, 'light-armor', 1, 1},
 	{2, 0, 0.5, true, 'heavy-armor', 1, 1},
 	{2, 0, 0.1, false, 'submachine-gun', 1, 1},

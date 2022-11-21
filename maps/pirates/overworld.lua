@@ -126,6 +126,7 @@ function Public.generate_destination_type_and_subtype(overworld_position)
 	end
 
 	return {type = type2, subtype = subtype}
+	-- return {type = Surfaces.enum.ISLAND, subtype = IslandEnum.enum.CAVE}
 end
 
 
@@ -368,9 +369,9 @@ function Public.generate_overworld_destination(p)
 		-- NOTE: When DOCK frequency changes, this needs to change too (kinda bad design, but w/e)
 		-- NOTE: I couldn't manage to make upgrade overwriting to work so I made it fixed here (although I prefer having fixed for less rng)
 		-- TODO: Perhaps always have something special to sell (or remove the upgrade market if it has no offers?)
-		if macro_p.x == 15 then
+		if macro_p.x % 16 == 15 and (not memory.rockets_for_sale) then
 			upgrade_for_sale = Upgrades.enum.ROCKETS_FOR_SALE
-		elseif macro_p.x == 19 then
+		elseif macro_p.x % 16 == 3 and macro_p.x > 16 and (not memory.merchant_ships_unlocked) then
 			upgrade_for_sale = Upgrades.enum.UNLOCK_MERCHANTS
 		elseif (macro_p.x % 8) == 3 then
 			upgrade_for_sale = Upgrades.enum.UPGRADE_CANNONS

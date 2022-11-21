@@ -819,21 +819,24 @@ local function event_on_player_mined_entity(event)
 	elseif entity.type == 'fish' then
         if not event.buffer then return end
 
-		local fish_amount
+		local fish_amount = Balance.base_caught_fish_amount
 		local to_give = {}
 
-		if class == Classes.enum.MASTER_ANGLER then
-			fish_amount = Balance.base_caught_fish_amount + Balance.master_angler_fish_bonus
+		if class == Classes.enum.FISHERMAN then
+			fish_amount = fish_amount + Balance.fisherman_fish_bonus
+			to_give[#to_give + 1] = {name = 'raw-fish', count = fish_amount}
+
+		elseif class == Classes.enum.MASTER_ANGLER then
+			fish_amount = fish_amount + Balance.master_angler_fish_bonus
 			to_give[#to_give + 1] = {name = 'raw-fish', count = fish_amount}
 			to_give[#to_give + 1] = {name = 'coin', count = Balance.master_angler_coin_bonus}
 
 		elseif class == Classes.enum.DREDGER then
-			fish_amount = Balance.base_caught_fish_amount + Balance.dredger_fish_bonus
+			fish_amount = fish_amount + Balance.dredger_fish_bonus
 			to_give[#to_give + 1] = {name = 'raw-fish', count = fish_amount}
 			to_give[#to_give + 1] = Loot.dredger_loot()[1]
 
 		else
-			fish_amount = Balance.base_caught_fish_amount
 			to_give[#to_give + 1] = {name = 'raw-fish', count = fish_amount}
 		end
 
@@ -1783,12 +1786,7 @@ function Public.event_on_chunk_generated(event)
 
 					local inv = e.get_inventory(defines.inventory.chest)
 
-					local loot
-					if Math.random(3) == 1 then
-						loot = Loot.iron_chest_loot()
-					else
-						loot = Loot.wooden_chest_loot()
-					end
+					local loot = Loot.iron_chest_loot()
 
 					for i = 1, #loot do
 						local l = loot[i]
@@ -1939,6 +1937,7 @@ local function event_on_console_chat(event)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
 
+	-- NOTE: This check to see if player is in a crew is not reliable and can sometimes cause errors!
     if player.force.name == 'player' then
 		local other_force_indices = global_memory.crew_active_ids
 
@@ -1947,7 +1946,13 @@ local function event_on_console_chat(event)
 			game.forces[recipient_force_name].print(player.name .. tag .. ' [LOBBY]: ' .. event.message, color)
 		end
 	else
-		game.forces.player.print(player.name .. tag .. ' [' .. memory.name .. ']: ' .. event.message, color)
+		-- NOTE: For some reason memory.name(or player.name?) can be nil so need this check. It was observed it happened after crew died and resetted, then I said something in lobby before launching new run. That's the only recorded occurence so far.
+		if memory.name then
+			game.forces.player.print(player.name .. tag .. ' [' .. memory.name .. ']: ' .. event.message, color)
+		else
+			game.forces.player.print(player.name .. tag .. event.message, color)
+			log('Error (non-critical): memory.name is nil')
+		end
 	end
 end
 
@@ -1995,7 +2000,7 @@ local boost_movement_speed_on_respawn =
 		if memory.game_lost then return end
 		memory.speed_boost_characters[player.index] = true
 
-        Task.set_timeout_in_ticks(1050, remove_boost_movement_speed_on_respawn, {player = player, crew_id = crew_id})
+        Task.set_timeout_in_ticks(1200, remove_boost_movement_speed_on_respawn, {player = player, crew_id = crew_id})
 		Common.notify_player_expected(player, {'pirates.respawn_speed_bonus_applied'})
     end
 )

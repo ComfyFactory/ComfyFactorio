@@ -87,7 +87,9 @@ function Public.update_difficulty()
 		Common.notify_force(memory.force, message1)
 
 		-- local message2 = 'Difficulty changed to ' .. CoreData.difficulty_options[modal_id].text .. '.'
-		Server.to_discord_embed_raw({'', CoreData.comfy_emojis.kewl .. '[' .. memory.name .. '] ', message1}, true)
+
+		-- why print this? if enabling it again, print message to discord without [color] tags (they don't work there)
+		-- Server.to_discord_embed_raw({'', CoreData.comfy_emojis.kewl .. '[' .. memory.name .. '] ', message1}, true)
 
 		memory.difficulty_option = modal_id
 		memory.difficulty = CoreData.difficulty_options[modal_id].value
@@ -749,6 +751,7 @@ function Public.initialise_crew(accepted_proposal)
 	memory.officers_table = {}
 	memory.spare_classes = {}
 	memory.unlocked_classes = {}
+	memory.class_entry_count = 0 -- used to track whether new class entries should be added during "full_update"
 
 	memory.healthbars = {}
 	memory.overworld_krakens = {}
@@ -887,12 +890,12 @@ function Public.reset_crew_and_enemy_force(id)
 	--as prerequisites for uranium ammo and automation 3:
 	crew_force.technologies['speed-module'].researched = true
 	crew_force.technologies['tank'].researched = true
-	crew_force.technologies['concrete'].researched = true
+	crew_force.technologies['concrete'].researched = false
 
 
 	--@TRYING this out:
 	crew_force.technologies['coal-liquefaction'].enabled = true
-	crew_force.technologies['coal-liquefaction'].researched = true
+	-- crew_force.technologies['coal-liquefaction'].researched = true -- don't see why this should be researched by default
 
 	crew_force.technologies['toolbelt'].enabled = false --trying this. we don't actually want players to carry too many things manually, and in fact in a resource-tight scenario that's problematic
 
@@ -1048,10 +1051,11 @@ function Public.disable_recipes(crew_force)
 	crew_force.recipes['uranium-cannon-shell'].enabled = false
 	crew_force.recipes['explosive-uranium-cannon-shell'].enabled = false
 
-	crew_force.recipes['concrete'].enabled = false
-	crew_force.recipes['hazard-concrete'].enabled = false
-	crew_force.recipes['refined-concrete'].enabled = false
-	crew_force.recipes['refined-hazard-concrete'].enabled = false
+	-- need these for nuclear related buildings
+	-- crew_force.recipes['concrete'].enabled = false
+	-- crew_force.recipes['hazard-concrete'].enabled = false
+	-- crew_force.recipes['refined-concrete'].enabled = false
+	-- crew_force.recipes['refined-hazard-concrete'].enabled = false
 end
 
 return Public
