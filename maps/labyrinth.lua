@@ -1021,54 +1021,57 @@ local function on_player_built_tile(event)
 end
 
 local function on_entity_died(event)
+    local entity = event.entity
+    if not entity or not entity.valid then return end
+    local name = entity.name
+    local position = entity.position
+    local evolution = game.forces.enemy.evolution_factor
+    local surface = entity.surface
     for _, fragment in pairs(biter_fragmentation) do
-        if event.entity.name == fragment[1] then
+        if name == fragment[1] then
             for _ = 1, math.random(fragment[3], fragment[4]), 1 do
-                local p = event.entity.surface.find_non_colliding_position(fragment[2], event.entity.position, 2, 1)
+                local p = surface.find_non_colliding_position(fragment[2], position, 2, 1)
                 if p then
-                    event.entity.surface.create_entity {name = fragment[2], position = p}
+                    surface.create_entity {name = fragment[2], position = p}
                 end
             end
-            return
+            break
         end
     end
 
-    if event.entity.name == 'biter-spawner' or event.entity.name == 'spitter-spawner' then
-        local e = math.ceil(game.forces.enemy.evolution_factor * 10, 0)
+    if name == 'biter-spawner' or name == 'spitter-spawner' then
+        local e = math.ceil(evolution * 10, 0)
         for _, t in pairs(biter_building_inhabitants[e]) do
             for _ = 1, math.random(t[2], t[3]), 1 do
-                local p = event.entity.surface.find_non_colliding_position(t[1], event.entity.position, 6, 1)
+                local p = surface.find_non_colliding_position(t[1], position, 6, 1)
                 if p then
-                    event.entity.surface.create_entity {name = t[1], position = p}
+                    surface.create_entity{name = t[1], position = p}
                 end
             end
         end
     end
 
-    if entity_drop_amount[event.entity.name] then
-        if game.forces.enemy.evolution_factor < 0.5 then
-            local evolution_drop_modifier = (0.1 - game.forces.enemy.evolution_factor) * 10
+    if entity_drop_amount[name] then
+        if evolution < 0.5 then
+            local evolution_drop_modifier = (0.1 - evolution) * 10
             if evolution_drop_modifier > 0 then
-                local amount = math.ceil(math.random(entity_drop_amount[event.entity.name].low, entity_drop_amount[event.entity.name].high) * evolution_drop_modifier)
-                event.entity.surface.spill_item_stack(event.entity.position, {name = ore_spill_raffle[math.random(1, #ore_spill_raffle)], count = amount}, true)
+                local amount = math.ceil(math.random(entity_drop_amount[name].low, entity_drop_amount[name].high) * evolution_drop_modifier)
+                surface.spill_item_stack(position, {name = ore_spill_raffle[math.random(1, #ore_spill_raffle)], count = amount}, true)
             end
         end
         return
     end
 
-    if event.entity.name == 'sand-rock-big' or event.entity.name == 'rock-big' or event.entity.name == 'rock-huge' then
-        local pos = {x = event.entity.position.x, y = event.entity.position.y}
-        local surface = event.entity.surface
-        if event.entity.name == 'rock-huge' then
+    if name == 'sand-rock-big' or name == 'rock-big' or name == 'rock-huge' then
+        local pos = {x = position.x, y = position.y}
+        if name == 'rock-huge' then
             spawn_infinity_chest(pos, surface)
-        end
-        if event.entity.name == 'rock-big' then
+        elseif name == 'rock-big' then
             treasure_chest(pos, surface)
-        end
-        if event.entity.name == 'sand-rock-big' then
+        elseif name == 'sand-rock-big' then
             local n = ore_spawn_raffle[math.random(1, #ore_spawn_raffle)]
             --local amount_modifier = 1 + ((this.settings.labyrinth_size / labyrinth_difficulty_curve) * 10)
-            local amount_modifier = math.ceil(1 + game.forces.enemy.evolution_factor * 5)
+            local amount_modifier = math.ceil(1 + evolution * 5)
 
             if n == 'crude-oil' then
                 map_functions.draw_oil_circle(pos, n, surface, 6, 100000 * amount_modifier)
@@ -1076,7 +1079,7 @@ local function on_entity_died(event)
                 map_functions.draw_smoothed_out_ore_circle(pos, n, surface, 9 + amount_modifier, 200 * amount_modifier)
             end
         end
-        event.entity.destroy()
+        entity.destroy()
         local chunk_position = get_entity_chunk_position(pos)
         local b = is_chunk_allowed_to_grow(chunk_position, surface)
         if b == true then
