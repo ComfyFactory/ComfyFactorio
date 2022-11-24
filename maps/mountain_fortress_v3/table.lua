@@ -115,6 +115,7 @@ function Public.reset_main_table()
         highest_pos = nil
     }
     this.force_chunk = false
+    this.bw = false
     this.allow_decon = true
     this.allow_decon_main_surface = true
     this.flamethrower_damage = {}
@@ -217,6 +218,7 @@ function Public.reset_main_table()
         distance_from = 2
     }
     this.spidertron_unlocked_at_zone = 11
+    this.spidertron_unlocked_enabled = false
     -- this.void_or_tile = 'lab-dark-2'
     this.void_or_tile = 'out-of-map'
     this.validate_spider = {}
@@ -260,6 +262,10 @@ function Public.reset_main_table()
     for k, _ in pairs(this.players) do
         this.players[k] = {}
     end
+end
+
+function Public.enable_bw(state)
+    this.bw = state or false
 end
 
 function Public.get(key)
