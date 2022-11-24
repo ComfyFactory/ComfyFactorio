@@ -37,6 +37,7 @@ ServerCommands.export_stats = Server.export_stats
 ServerCommands.set_start_data = Server.set_start_data
 ServerCommands.set_instances = Server.set_instances
 ServerCommands.query_online_players = Server.query_online_players
+ServerCommands.ban_handler = Server.ban_handler
 
 local SC_Interface = {
     get_ups = function()
