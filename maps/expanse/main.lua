@@ -66,7 +66,7 @@ local function set_nauvis()
     }
     map_gen_settings.water = 0.25
     map_gen_settings.terrain_segmentation = 12
-    map_gen_settings.starting_area = 0.05
+    map_gen_settings.starting_area = 0.08
     surface.map_gen_settings = map_gen_settings
     for chunk in surface.get_chunks() do
         surface.delete_chunk({chunk.x, chunk.y})
@@ -382,7 +382,9 @@ local function on_init()
     game.map_settings.enemy_expansion.min_expansion_cooldown = 1800
     game.map_settings.enemy_expansion.settler_group_max_size = 8
     game.map_settings.enemy_expansion.settler_group_min_size = 16
-    game.map_settings.enemy_evolution.destroy_factor = 0.005
+    game.map_settings.enemy_evolution.destroy_factor = 0.003 --default game: 0.002
+    game.map_settings.enemy_evolution.pollution_factor = 6e-07 --default game: 9e-07
+    game.map_settings.enemy_evolution.time_factor = 2e-06 --default game: 4e-06
 
     --Settings for cave miner
     --[[
