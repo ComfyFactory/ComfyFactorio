@@ -1,5 +1,8 @@
 local tick_frequency = 200
 
+local default_required_online_time = 5 * 3600 -- nearest prime to 5 minutes in ticks
+local default_clear_player_after_tick = 30 * 3600 -- nearest prime to 30 minutes in ticks
+
 local Global = require 'utils.global'
 local Alert = require 'utils.alert'
 local Event = require 'utils.event'
@@ -8,9 +11,9 @@ local this = {
     settings = {
         is_enabled = false,
         offline_players_surface_removal = false,
-        active_surface_index = nil, -- needs to be set else this will fail
-        required_online_time = 18000, -- nearest prime to 5 minutes in ticks
-        clear_player_after_tick = 108000 -- nearest prime to 30 minutes in ticks
+        active_surface_index = nil, -- needs to be set else this will fail, remember to call "init()".
+        required_online_time = default_required_online_time,
+        clear_player_after_tick = default_clear_player_after_tick,
         surfaces_to_ignore = {},
     },
     offline_players = {}
@@ -160,6 +163,16 @@ end
 ---@param value boolean
 function Public.set_enabled(value)
     this.settings.is_enabled = value or false
+end
+
+--- Sets the required online time.
+---@param value number The required online time. Resets if anything is sent other than a natural number.
+function Public.set_required_online_time(value)
+    if value >= 0 then
+        this.settings.required_online_time = value
+    else
+        this.settings.required_online_time = default_required_online_time
+    end
 end
 
 --- Activates the surface removal for the module IC

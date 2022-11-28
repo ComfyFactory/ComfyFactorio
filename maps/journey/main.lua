@@ -26,6 +26,8 @@ if ClearVacantPlayers then
     local surfaces_to_ignore = { "mothership" }
     ClearVacantPlayers.init(base_surface_id, surfaces_to_ignore)
     ClearVacantPlayers.set_enabled(true)
+    -- We want players to drop their body even if they didn't stay long.
+    ClearVacantPlayers.set_required_online_time(0)
 
     journey.clear_vacant_players = ClearVacantPlayers
 end
