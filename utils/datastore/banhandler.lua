@@ -8,6 +8,11 @@ local ban_by_join_enabled = false
 
 local try_get_ban = Server.try_get_ban
 
+local valid_commands = {
+    ['ban'] = true,
+    ['unban'] = true
+}
+
 local try_get_is_banned_token =
     Token.register(
     function(data)
@@ -52,7 +57,9 @@ Event.add(
 Event.add(
     defines.events.on_console_command,
     function(event)
-        Server.ban_handler(event)
+        if valid_commands[event.command] then
+            Server.ban_handler(event)
+        end
     end
 )
 

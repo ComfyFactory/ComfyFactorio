@@ -1330,11 +1330,10 @@ function Public.ban_handler(event)
         return
     end
 
-    if len(user) <= 2 then
+    if len(user) <= 1 then
         return
     end
 
-    local player_index
     local reason
     local str = ''
 
@@ -1343,36 +1342,26 @@ function Public.ban_handler(event)
         insert(t, i)
     end
 
-    player_index = t[1]
+    local target = t[1]
 
     for i = 2, #t do
         str = str .. t[i] .. ' '
         reason = str
     end
 
-    if not player_index then
-        return print('[on_console_command] - player_index was undefined.')
-    end
-
-    local target
-    if game.get_player(player_index) then
-        target = game.get_player(player_index)
-        if not target or not target.valid then
-            return
-        end
-    else
-        return
+    if not target then
+        return print('[on_console_command] - target was undefined.')
     end
 
     if event.player_index then
         local player = game.get_player(event.player_index)
         if player and player.valid and player.admin then
             local data = Public.build_embed_data()
-            data.username = target.name
+            data.username = target
             data.admin = player.name
 
             if cmd == 'ban' then
-                Public.set_data(jailed_data_set, target.name, nil) -- this is added here since we don't want to clutter the jail dataset.
+                Public.set_data(jailed_data_set, target, nil) -- this is added here since we don't want to clutter the jail dataset.
                 if not reason then
                     data.reason = 'Not specified.'
                     Public.to_banned_embed(data)
@@ -1389,7 +1378,7 @@ function Public.ban_handler(event)
         end
     else
         local data = Public.build_embed_data()
-        data.username = target.name
+        data.username = target
         data.admin = '<server>'
 
         if event.user_override then
@@ -1397,7 +1386,7 @@ function Public.ban_handler(event)
         end
 
         if cmd == 'ban' then
-            Public.set_data(jailed_data_set, target.name, nil) -- this is added here since we don't want to clutter the jail dataset.
+            Public.set_data(jailed_data_set, target, nil) -- this is added here since we don't want to clutter the jail dataset.
             if not reason then
                 data.reason = 'Not specified.'
                 Public.to_banned_embed(data)
