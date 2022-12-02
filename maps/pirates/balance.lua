@@ -37,13 +37,13 @@ Public.class_reward_tick_rate_in_seconds = 7
 Public.poison_damage_multiplier = 1.85
 Public.every_nth_tree_gives_coins = 6
 
-Public.samurai_damage_taken_multiplier = 0.40
+Public.samurai_damage_taken_multiplier = 0.38
 Public.samurai_damage_dealt_when_not_melee_multiplier = 0.75
 Public.samurai_damage_dealt_with_melee = 25
-Public.hatamoto_damage_taken_multiplier = 0.25
+Public.hatamoto_damage_taken_multiplier = 0.24
 Public.hatamoto_damage_dealt_when_not_melee_multiplier = 0.75
 Public.hatamoto_damage_dealt_with_melee = 45
-Public.iron_leg_damage_taken_multiplier = 0.20
+Public.iron_leg_damage_taken_multiplier = 0.21
 Public.iron_leg_iron_ore_required = 3000
 Public.deckhand_extra_speed = 1.25
 Public.deckhand_ore_grant_multiplier = 5
