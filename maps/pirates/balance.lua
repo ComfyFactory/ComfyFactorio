@@ -212,7 +212,7 @@ end
 
 function Public.silo_total_pollution()
 	return (
-		365 * (Common.difficulty_scale()^(1.2)) * Public.crew_scale()^(3/10) * (3.2 + 0.7 * (Common.overworldx()/40)^(1.6)) / Math.sloped(Common.difficulty_scale(), 1/5) --shape of the curve with x is tuned. Final factor of difficulty is to offset a change made to scripted_biters_pollution_cost_multiplier
+		365 * (Common.difficulty_scale()^(1.2)) * Public.crew_scale()^(3/10) * (3.2 + 0.7 * (Common.overworldx()/40)^(1.6)) --shape of the curve with x is tuned.
 )
 end
 
@@ -247,7 +247,7 @@ function Public.boat_passive_pollution_per_minute(time)
 
 	return boost * (
 			2.73 * (Common.difficulty_scale()^(1.1)) * (Common.overworldx()/40)^(1.8) * (Public.crew_scale())^(52/100)-- There is no _explicit_ T dependence, but it depends almost the same way on the crew_scale as T does.
-	 ) / Math.sloped(Common.difficulty_scale(), 1/5) --Final factor of difficulty is to offset a change made to scripted_biters_pollution_cost_multiplier
+	 )
 end
 
 
