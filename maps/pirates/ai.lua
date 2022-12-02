@@ -144,9 +144,9 @@ function Public.wave_size_rng() -- random variance in attack sizes
 		elseif rng2 <= 985 then
 			wave_size_multiplier = 2
 		elseif rng2 <= 995 then
-			wave_size_multiplier = 2.75
+			wave_size_multiplier = 3
 		else
-			wave_size_multiplier = 3.5
+			wave_size_multiplier = 4
 		end
 	end
 
