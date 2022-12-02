@@ -6,6 +6,7 @@ local Math = require 'maps.pirates.math'
 -- local Raffle = require 'maps.pirates.raffle'
 -- local Memory = require 'maps.pirates.memory'
 local Common = require 'maps.pirates.common'
+local CoreData = require 'maps.pirates.coredata'
 -- local Utils = require 'maps.pirates.utils_local'
 -- local _inspect = require 'utils.inspect'.inspect
 
@@ -258,6 +259,13 @@ function Public.base_evolution_leagues(leagues)
 		evo = 0
 	else
 		evo = (0.0201 * (overworldx/40)) * Math.sloped(Common.difficulty_scale(), 1/5)
+
+		local difficulty_name = CoreData.get_difficulty_option_informal_name_from_value(Common.difficulty_scale())
+		if difficulty_name == 'hard' then
+			evo = evo + 0.02
+		elseif difficulty_name == 'nightmare' then
+			evo = evo + 0.04
+		end
 
 		if overworldx > 600 and overworldx < 1000 then
 			evo = evo + (0.0025 * (overworldx - 600)/40)
