@@ -1089,11 +1089,13 @@ local function deny_building(event)
 
     if entity.position.x >= 254 then
         if entity.name ~= 'entity-ghost' then
-            if event.player_index then
-                game.get_player(event.player_index).insert({name = entity.name, count = 1})
-            else
-                local inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
-                inventory.insert({name = entity.name, count = 1})
+            if not string.match(entity.name, 'rail') then
+                if event.player_index then
+                    game.get_player(event.player_index).insert({name = entity.name, count = 1})
+                else
+                    local inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
+                    inventory.insert({name = entity.name, count = 1})
+                end
             end
         end
 
