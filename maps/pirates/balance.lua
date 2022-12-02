@@ -212,7 +212,7 @@ end
 
 function Public.silo_total_pollution()
 	return (
-		365 * (Common.difficulty_scale()^(1.2)) * Public.crew_scale()^(3/10) * (3.2 + 0.7 * (Common.overworldx()/40)^(1.6)) --shape of the curve with x is tuned.
+		365 * (Common.difficulty_scale()^(1.1)) * Public.crew_scale()^(3/10) * (3.2 + 0.7 * (Common.overworldx()/40)^(1.6)) --shape of the curve with x is tuned.
 )
 end
 
