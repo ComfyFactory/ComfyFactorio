@@ -261,7 +261,9 @@ function Public.base_evolution_leagues(leagues)
 		evo = (0.0201 * (overworldx/40)) * Math.sloped(Common.difficulty_scale(), 1/5)
 
 		local difficulty_name = CoreData.get_difficulty_option_informal_name_from_value(Common.difficulty_scale())
-		if difficulty_name == 'hard' then
+		if difficulty_name == 'normal' then
+			evo = evo + 0.01
+		elseif difficulty_name == 'hard' then
 			evo = evo + 0.02
 		elseif difficulty_name == 'nightmare' then
 			evo = evo + 0.04
