@@ -169,7 +169,7 @@ function Public.spawn_ores_on_arrival(destination, points_to_avoid)
 			noise_generator = Utils.noise_generator({}, 0),
 		}
 
-		local farness_low, farness_high = 0.08, 0.28
+		local farness_low, farness_high = 0.08, 0.29
 		if destination.subtype == enum.MAZE then
 			farness_low = 0.14
 			farness_high = 0.44
