@@ -169,15 +169,15 @@ function Public.spawn_ores_on_arrival(destination, points_to_avoid)
 			noise_generator = Utils.noise_generator({}, 0),
 		}
 
-		local farness_boost_low, farness_boost_high = 0, 0
+		local farness_low, farness_high = 0.08, 0.28
 		if destination.subtype == enum.MAZE then
-			farness_boost_low = 0.08
-			farness_boost_high = 0.25
+			farness_low = 0.14
+			farness_high = 0.44
 		end
 
 		for _, ore in pairs(ores) do
 			if destination.static_params.abstract_ore_amounts[ore] then
-				local p = Hunt.close_position_try_avoiding_entities(args, points_to_avoid, farness_boost_low, farness_boost_high)
+				local p = Hunt.close_position_try_avoiding_entities(args, points_to_avoid, farness_low, farness_high)
 				if p then
 					points_to_avoid[#points_to_avoid + 1] = {x=p.x, y=p.y, r=11}
 
