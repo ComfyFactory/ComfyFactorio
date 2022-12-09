@@ -6,6 +6,7 @@ local Math = require 'maps.pirates.math'
 -- local Raffle = require 'maps.pirates.raffle'
 -- local Memory = require 'maps.pirates.memory'
 local Common = require 'maps.pirates.common'
+local CoreData = require 'maps.pirates.coredata'
 -- local Utils = require 'maps.pirates.utils_local'
 -- local _inspect = require 'utils.inspect'.inspect
 
@@ -36,13 +37,13 @@ Public.class_reward_tick_rate_in_seconds = 7
 Public.poison_damage_multiplier = 1.85
 Public.every_nth_tree_gives_coins = 6
 
-Public.samurai_damage_taken_multiplier = 0.26
+Public.samurai_damage_taken_multiplier = 0.32
 Public.samurai_damage_dealt_when_not_melee_multiplier = 0.75
 Public.samurai_damage_dealt_with_melee = 25
-Public.hatamoto_damage_taken_multiplier = 0.16
+Public.hatamoto_damage_taken_multiplier = 0.21
 Public.hatamoto_damage_dealt_when_not_melee_multiplier = 0.75
 Public.hatamoto_damage_dealt_with_melee = 45
-Public.iron_leg_damage_taken_multiplier = 0.18
+Public.iron_leg_damage_taken_multiplier = 0.24
 Public.iron_leg_iron_ore_required = 3000
 Public.deckhand_extra_speed = 1.25
 Public.deckhand_ore_grant_multiplier = 5
@@ -93,7 +94,7 @@ Public.EEI_stages = { --multipliers
 
 function Public.scripted_biters_pollution_cost_multiplier()
 
-	return 1.45 / Math.sloped(Common.difficulty_scale(), 1/3) * (1 + 1.2 / ((1 + (Common.overworldx()/40))^(1.5+Common.difficulty_scale()))) -- the complicated factor just makes the early-game easier; in particular the first island, but on easier difficulties the next few islands as well
+	return 1.25 / Math.sloped(Common.difficulty_scale(), 1/2) * (1 + 1.2 / ((1 + (Common.overworldx()/40))^(1.5+Common.difficulty_scale()))) -- the complicated factor just makes the early-game easier; in particular the first island, but on easier difficulties the next few islands as well
 end
 
 function Public.cost_to_leave_multiplier()
@@ -211,7 +212,7 @@ end
 
 function Public.silo_total_pollution()
 	return (
-		365 * (Common.difficulty_scale()^(1.2)) * Public.crew_scale()^(3/10) * (3.2 + 0.7 * (Common.overworldx()/40)^(1.6)) / Math.sloped(Common.difficulty_scale(), 1/5) --shape of the curve with x is tuned. Final factor of difficulty is to offset a change made to scripted_biters_pollution_cost_multiplier
+		347 * (Common.difficulty_scale()^(1.0)) * Public.crew_scale()^(3/10) * (3.2 + 0.7 * (Common.overworldx()/40)^(1.6)) --shape of the curve with x is tuned.
 )
 end
 
@@ -245,8 +246,8 @@ function Public.boat_passive_pollution_per_minute(time)
 	end
 
 	return boost * (
-			2.73 * (Common.difficulty_scale()^(1.1)) * (Common.overworldx()/40)^(1.8) * (Public.crew_scale())^(52/100)-- There is no _explicit_ T dependence, but it depends almost the same way on the crew_scale as T does.
-	 ) / Math.sloped(Common.difficulty_scale(), 1/5) --Final factor of difficulty is to offset a change made to scripted_biters_pollution_cost_multiplier
+			2.60 * (Common.difficulty_scale()^(0.8)) * (Common.overworldx()/40)^(1.8) * (Public.crew_scale())^(52/100)-- There is no _explicit_ T dependence, but it depends almost the same way on the crew_scale as T does.
+	 )
 end
 
 
@@ -258,6 +259,15 @@ function Public.base_evolution_leagues(leagues)
 		evo = 0
 	else
 		evo = (0.0201 * (overworldx/40)) * Math.sloped(Common.difficulty_scale(), 1/5)
+
+		local difficulty_name = CoreData.get_difficulty_option_informal_name_from_value(Common.difficulty_scale())
+		if difficulty_name == 'normal' then
+			evo = evo + 0.01
+		elseif difficulty_name == 'hard' then
+			evo = evo + 0.02
+		elseif difficulty_name == 'nightmare' then
+			evo = evo + 0.04
+		end
 
 		if overworldx > 600 and overworldx < 1000 then
 			evo = evo + (0.0025 * (overworldx - 600)/40)

@@ -141,9 +141,9 @@ end
 
 
 
-function Public.close_position_try_avoiding_entities(args, points_to_avoid, farness_boost_low, farness_boost_high)
-	farness_boost_low = farness_boost_low or 0
-	farness_boost_high = farness_boost_high or 0
+function Public.close_position_try_avoiding_entities(args, points_to_avoid, farness_low, farness_high)
+	farness_low = farness_low or 0.06
+	farness_high = farness_high or 0.19
 	points_to_avoid = points_to_avoid or {}
 
 	-- local memory = Memory.get_crew_memory()
@@ -168,7 +168,7 @@ function Public.close_position_try_avoiding_entities(args, points_to_avoid, farn
             if (not Utils.contains(CoreData.tiles_that_conflict_with_resource_layer, tile.name)) and (not Utils.contains(CoreData.edgemost_tile_names, tile.name)) then
                 local p3 = {x = p2.x + args.static_params.terraingen_coordinates_offset.x, y = p2.y + args.static_params.terraingen_coordinates_offset.y}
 
-				if IslandsCommon.island_farness_1(args)(p3) > 0.06 + farness_boost_low and IslandsCommon.island_farness_1(args)(p3) < 0.19 + farness_boost_high then
+				if IslandsCommon.island_farness_1(args)(p3) > farness_low and IslandsCommon.island_farness_1(args)(p3) < farness_high then
 					local allowed = true
 					if tries < 40 and #surface.find_entities({{p2.x - 8, p2.y - 8}, {p2.x + 8, p2.y + 8}}) > 0 then
 						allowed = false
