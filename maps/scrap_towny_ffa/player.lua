@@ -50,7 +50,6 @@ function Public.spawn(player)
         return
     end
     local spawn_point = Spawn.get_new_spawn_point(player, surface)
-    local this = ScenarioTable.get()
     this.strikes[player.name] = 0
     Spawn.clear_spawn_point(spawn_point, surface)
     -- reset cooldown

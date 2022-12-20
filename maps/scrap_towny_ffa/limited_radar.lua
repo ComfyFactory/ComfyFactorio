@@ -53,7 +53,6 @@ local function on_chunk_charted(event)
     local markets = surface.find_entities_filtered({area = area, name = 'market'})
     for _, market in pairs(markets) do
         local force_name = market.force.name
-        local this = ScenarioTable.get_table()
         local town_center = this.town_centers[force_name]
         if not town_center then
             return
