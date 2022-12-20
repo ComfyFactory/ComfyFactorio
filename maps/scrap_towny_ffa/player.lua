@@ -44,7 +44,11 @@ end
 
 function Public.spawn(player)
     -- first time spawn point
-    local surface = game.surfaces['nauvis']
+    local this = ScenarioTable.get_table()
+    local surface = game.get_surface(this.active_surface_index)
+    if not surface or not surface.valid then
+        return
+    end
     local spawn_point = Spawn.get_new_spawn_point(player, surface)
     local this = ScenarioTable.get()
     this.strikes[player.name] = 0

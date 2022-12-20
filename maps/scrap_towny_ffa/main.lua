@@ -97,22 +97,22 @@ local function update_score()
                 },
                 field2 = {
                     text1 = 'Town researched:',
-                    text2 = winner.name .. ' with a score of ' .. winner.research_counter .. ' techs!',
+                    text2 = winner.research_counter .. ' techs!',
                     inline = 'false'
                 },
                 field3 = {
                     text1 = 'Town upgrades:',
-                    text2 = winner.name .. ' upgraded their town with:\nCrafting speed:' .. winner.upgrades.crafting_speed .. '\nMining speed:' .. winner.upgrades.mining_speed,
+                    text2 = 'Crafting speed:' .. winner.upgrades.crafting_speed .. '\nMining speed:' .. winner.upgrades.mining_speed,
                     inline = 'false'
                 },
                 field4 = {
                     text1 = 'Town health:',
-                    text2 = winner.name .. ' had a health of ' .. winner.health .. ' left!',
+                    text2 = winner.health .. 'hp left!',
                     inline = 'false'
                 },
                 field5 = {
                     text1 = 'Town coins:',
-                    text2 = winner.name .. ' had ' .. winner.coin_balance .. ' coins stashed!',
+                    text2 = winner.coin_balance .. ' coins stashed!',
                     inline = 'false'
                 }
             }
@@ -135,7 +135,9 @@ local function update_score()
             subheader.style.horizontally_stretchable = true
             subheader.style.vertical_align = 'center'
 
-            subheader.add {type = 'label', style = 'subheader_label', caption = {'', 'Survive 2 days (48h) to win!'}}
+            local days = this.required_time_to_win / 24
+
+            subheader.add {type = 'label', style = 'subheader_label', caption = {'', 'Survive for ' .. days .. ' days (' .. this.required_time_to_win .. 'h) to win!'}}
 
             if not next(subheader.children) then
                 subheader.destroy()
@@ -246,8 +248,6 @@ local function on_nth_tick(event)
     if not tick_actions[seconds] then
         return
     end
-    --game.surfaces['nauvis'].play_sound({path = 'utility/alert_destroyed', volume_modifier = 1})
-    --log('seconds = ' .. seconds)
     tick_actions[seconds]()
 end
 

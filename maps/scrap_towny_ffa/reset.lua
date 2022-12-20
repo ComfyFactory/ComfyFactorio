@@ -11,7 +11,6 @@ local table_insert = table.insert
 -- game duration in ticks
 -- 7d * 24h * 60m * 60s * 60t
 -- local game_duration = 36288000
-local game_duration = 36288000
 local armageddon_duration = 3600
 local warning_duration = 600
 local mapkeeper = '[color=blue]Mapkeeper:[/color]'
@@ -58,7 +57,10 @@ local function do_soft_reset()
     this.game_reset_tick = nil
     this.game_won = false
     ScenarioTable.reset_table()
-    local surface = game.surfaces['nauvis']
+    local surface = game.get_surface(this.active_surface_index)
+    if not surface or not surface.valid then
+        return
+    end
     if get_victorious_force() then
         surface.play_sound({path = 'utility/game_won', volume_modifier = 1})
     else
@@ -152,17 +154,19 @@ local function on_tick()
             end
         end
 
-        if (tick + armageddon_duration + warning_duration) % game_duration == 0 then
+        local required_time_to_win_in_ticks = ScenarioTable.get('required_time_to_win_in_ticks')
+
+        if (tick + armageddon_duration + warning_duration) % required_time_to_win_in_ticks == 0 then
             warning()
         end
-        if (tick + armageddon_duration) % game_duration == 0 then
+        if (tick + armageddon_duration) % required_time_to_win_in_ticks == 0 then
             armageddon()
         end
-        if (tick + 1) % game_duration == 0 then
+        if (tick + 1) % required_time_to_win_in_ticks == 0 then
             Nauvis.clear_nuke_schedule()
             Team.reset_all_forces()
         end
-        if tick % game_duration == 0 then
+        if tick % required_time_to_win_in_ticks == 0 then
             has_the_game_ended()
         end
     end
