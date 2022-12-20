@@ -266,7 +266,12 @@ end
 local function on_chunk_generated(event)
     --log("scrap_towny_ffa::on_chunk_generated")
     local surface = event.surface
-    if (surface.name ~= 'nauvis') then
+    local this = ScenarioTable.get_table()
+    local map_surface = game.get_surface(this.active_surface_index)
+    if not map_surface or not map_surface.valid then
+        return
+    end
+    if (surface.name ~= map_surface.name) then
         return
     end
     local seed = surface.map_gen_settings.seed
@@ -329,7 +334,11 @@ end
 
 local function on_chunk_charted(event)
     local force = event.force
-    local surface = game.surfaces[event.surface_index]
+    local this = ScenarioTable.get_table()
+    local surface = game.get_surface(this.active_surface_index)
+    if not surface or not surface.valid then
+        return
+    end
     if force.valid then
         if force == game.forces['player'] or force == game.forces['rogue'] then
             force.clear_chart(surface)

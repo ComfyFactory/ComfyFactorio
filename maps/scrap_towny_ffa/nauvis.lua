@@ -1,5 +1,6 @@
 local Event = require 'utils.event'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
+local SoftReset = require 'functions.soft_reset'
 
 local math_random = math.random
 local table_shuffle = table.shuffle_table
@@ -11,8 +12,12 @@ local map_width = 2560
 local map_height = 2560
 
 function Public.nuke(position)
-    local surface = game.surfaces['nauvis']
-    surface.create_entity({name = 'atomic-rocket', position = position, target = position, speed = 0.5})
+    local this = ScenarioTable.get_table()
+    local map_surface = game.get_surface(this.active_surface_index)
+    if not map_surface or not map_surface.valid then
+        return
+    end
+    map_surface.create_entity({name = 'atomic-rocket', position = position, target = position, speed = 0.5})
 end
 
 function Public.armageddon()
@@ -63,14 +68,10 @@ function Public.armageddon()
 end
 
 function Public.initialize()
-    if game.surfaces['nauvis'] then
-        -- clear the surface
-        game.surfaces['nauvis'].clear(false)
-    end
-    local surface = game.surfaces['nauvis']
-
+    local this = ScenarioTable.get_table()
+    local surface_seed = game.surfaces['nauvis']
     -- this overrides what is in the map_gen_settings.json file
-    local mgs = surface.map_gen_settings
+    local mgs = surface_seed.map_gen_settings
     mgs.default_enable_all_autoplace_controls = true -- don't mess with this!
     mgs.autoplace_controls = {
         coal = {frequency = 2, size = 0.1, richness = 0.2},
@@ -106,10 +107,6 @@ function Public.initialize()
         cliff_elevation_interval = 10,
         richness = 0.4
     }
-    -- water = 0 means no water allowed
-    -- water = 1 means elevation is not reduced when calculating water tiles (elevation < 0)
-    -- water = 2 means elevation is reduced by 10 when calculating water tiles (elevation < 0)
-    --			or rather, the water table is 10 above the normal elevation
     mgs.water = 0.5
     mgs.peaceful_mode = false
     mgs.starting_area = 'none'
@@ -120,56 +117,10 @@ function Public.initialize()
     --mgs.starting_points = {
     --	{x = 0, y = 0}
     --}
-    -- here we put the named noise expressions for the specific noise-layer if we want to override them
     mgs.property_expression_names = {
-        -- here we are overriding the moisture noise-layer with a fixed value of 0 to keep moisture consistently dry across the map
-        -- it allows to free up the moisture noise expression
-        -- low moisture
-        --moisture = 0,
-
-        -- here we are overriding the aux noise-layer with a fixed value to keep aux consistent across the map
-        -- it allows to free up the aux noise expression
-        -- aux should be not sand, nor red sand
-        --aux = 0.5,
-
-        -- here we are overriding the temperature noise-layer with a fixed value to keep temperature consistent across the map
-        -- it allows to free up the temperature noise expression
-        -- temperature should be 20C or 68F
-        --temperature = 20,
-
-        -- here we are overriding the cliffiness noise-layer with a fixed value of 0 to disable cliffs
-        -- it allows to free up the cliffiness noise expression (which may or may not be useful)
-        -- disable cliffs
-        --cliffiness = 0,
-
-        -- we can disable starting lakes two ways, one by setting starting-lake-noise-amplitude = 0
-        -- or by making the elevation a very large number
-        -- make sure starting lake amplitude is 0 to disable starting lakes
         ['starting-lake-noise-amplitude'] = 0,
         -- allow enemies to get up close on spawn
         ['starting-area'] = 0,
-        -- this accepts a string representing a named noise expression
-        -- or number to determine the elevation based on x, y and distance from starting points
-        -- we can not add a named noise expression at this point, we can only reference existing ones
-        -- if we have any custom noise expressions defined from a mod, we will be able to use them here
-        -- setting it to a fixed number would mean a flat map
-        -- elevation < 0 means there is water unless the water table has been changed
-        --elevation = -1,
-        --elevation = 0,
-        --elevation-persistence = 0,
-
-        -- testing
-        --["control-setting:moisture:bias"] = 0.5,
-        --["control-setting:moisture:frequency:multiplier"] = 0,
-        --["control-setting:aux:bias"] = 0.5,
-        --["control-setting:aux:frequency:multiplier"] = 1,
-        --["control-setting:temperature:bias"] = 0.01,
-        --["control-setting:temperature:frequency:multiplier"] = 100,
-
-        --["tile:water:probability"] = -1000,
-        --["tile:deep-water:probability"] = -1000,
-
-        -- a constant intensity means base distribution will be consistent with regard to distance
         ['enemy-base-intensity'] = 1,
         -- adjust this value to set how many nests spawn per tile
         ['enemy-base-frequency'] = 0.4,
@@ -177,6 +128,23 @@ function Public.initialize()
         ['enemy-base-radius'] = 12
     }
     mgs.seed = math_random(10000, 999999)
+
+    if not this.active_surface_index then
+        this.active_surface_index = game.create_surface('towny', mgs).index
+    else
+        this.active_surface_index = SoftReset.soft_reset_map(game.surfaces[this.active_surface_index], mgs, nil).index
+    end
+
+    local surface = game.get_surface(this.active_surface_index)
+    if not surface or not surface.valid then
+        return
+    end
+
+    if math.random(1, 32) == 1 then
+        this.required_time_to_win = 168
+        this.required_time_to_win_in_ticks = 36288000
+    end
+
     surface.map_gen_settings = mgs
     surface.peaceful_mode = false
     surface.always_day = false
@@ -184,11 +152,6 @@ function Public.initialize()
     surface.clear(true)
     surface.regenerate_entity({'rock-huge', 'rock-big', 'sand-rock-big'})
     surface.regenerate_decorative()
-    -- this will force generate the entire map
-    --Server.to_discord_embed('ScrapTownyFFA Map Regeneration in Progress')
-    --surface.request_to_generate_chunks({x=0,y=0},64)
-    --surface.force_generate_chunk_requests()
-    --Server.to_discord_embed('Regeneration Complete')
 end
 
 local function on_tick()
