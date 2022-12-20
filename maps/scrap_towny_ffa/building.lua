@@ -160,7 +160,13 @@ function Public.near_another_town(force_name, position, surface, radius)
 end
 
 function Public.in_restricted_zone(surface, position)
-    if surface.name ~= 'nauvis' then
+    local this = ScenarioTable.get_table()
+    local map_surface = game.get_surface(this.active_surface_index)
+    if not map_surface or not map_surface.valid then
+        return
+    end
+
+    if surface.name ~= map_surface.name then
         return false
     end
     local chunk_position = {}
@@ -205,7 +211,11 @@ local function prevent_landfill_in_restricted_zone(event)
     if tile == nil or not tile.valid then
         return
     end
-    local surface = game.surfaces[event.surface_index]
+    local this = ScenarioTable.get_table()
+    local surface = game.get_surface(this.active_surface_index)
+    if not surface or not surface.valid then
+        return
+    end
     local fail = false
     local position
     for _, t in pairs(event.tiles) do
@@ -275,7 +285,11 @@ local function prevent_tiles_near_towns(event)
     if tile == nil or not tile.valid then
         return
     end
-    local surface = game.surfaces[event.surface_index]
+    local this = ScenarioTable.get_table()
+    local surface = game.get_surface(this.active_surface_index)
+    if not surface or not surface.valid then
+        return
+    end
     local force_name
     if player_index ~= nil then
         local player = game.get_player(player_index)
