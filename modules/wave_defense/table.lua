@@ -105,7 +105,7 @@ function Public.reset_wave_defense()
     this.fill_tiles_so_biter_can_path = true
     this.modified_unit_health = {
         current_value = 1.2,
-        limit_value = 90,
+        limit_value = 150,
         health_increase_per_boss_wave = 0.5 -- wave % 25 == 0 at wave 2k boost is at 41.2
     }
     this.modified_boss_unit_health = {
