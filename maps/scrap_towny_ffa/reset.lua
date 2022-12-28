@@ -8,9 +8,11 @@ local Player = require 'maps.scrap_towny_ffa.player'
 local Color = require 'utils.color_presets'
 local table_insert = table.insert
 
+local Public = {}
+
 -- game duration in ticks
 -- 7d * 24h * 60m * 60s * 60t
--- local game_duration = 36288000
+local game_duration = 36288000
 local armageddon_duration = 3600
 local warning_duration = 600
 local mapkeeper = '[color=blue]Mapkeeper:[/color]'
@@ -77,6 +79,9 @@ local function do_soft_reset()
         log('rogue force is missing!')
     end
     for _, player in pairs(game.players) do
+        if player.gui.left['mvps'] then
+            player.gui.left['mvps'].destroy()
+        end
         Player.increment()
         Player.initialize(player)
         Team.set_player_color(player)
@@ -151,23 +156,112 @@ local function on_tick()
             local game_won = ScenarioTable.get('game_won')
             if game_won then
                 has_the_game_ended()
+                return
             end
         end
 
-        local required_time_to_win_in_ticks = ScenarioTable.get('required_time_to_win_in_ticks')
-
-        if (tick + armageddon_duration + warning_duration) % required_time_to_win_in_ticks == 0 then
+        if (tick + armageddon_duration + warning_duration) % game_duration == 0 then
             warning()
         end
-        if (tick + armageddon_duration) % required_time_to_win_in_ticks == 0 then
+        if (tick + armageddon_duration) % game_duration == 0 then
             armageddon()
         end
-        if (tick + 1) % required_time_to_win_in_ticks == 0 then
+        if (tick + 1) % game_duration == 0 then
             Nauvis.clear_nuke_schedule()
             Team.reset_all_forces()
         end
-        if tick % required_time_to_win_in_ticks == 0 then
+        if tick % game_duration == 0 then
             has_the_game_ended()
+        end
+    end
+end
+
+function Public.show_mvps(player)
+    if player.gui.left['mvps'] then
+        return
+    end
+    local frame = player.gui.left.add({type = 'frame', name = 'mvps', direction = 'vertical'})
+    local l = frame.add({type = 'label', caption = 'MVPs:'})
+    l.style.font = 'default-listbox'
+    l.style.font_color = {r = 0.55, g = 0.55, b = 0.99}
+
+    local t = frame.add({type = 'table', column_count = 2})
+    local this = ScenarioTable.get()
+    if this.winner then
+        local town_won = t.add({type = 'label', caption = 'Town won >> '})
+        town_won.style.font = 'default-listbox'
+        town_won.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
+        local town_won_text = t.add({type = 'label', caption = this.winner.name})
+        town_won_text.style.font = 'default-bold'
+        town_won_text.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+
+        local town_researched = t.add({type = 'label', caption = 'Town researched >> '})
+        town_researched.style.font = 'default-listbox'
+        town_researched.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
+        local town_researched_text = t.add({type = 'label', caption = this.winner.research_counter .. ' techs!'})
+        town_researched_text.style.font = 'default-bold'
+        town_researched_text.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+
+        local town_upgrades = t.add({type = 'label', caption = 'Town upgrades >> '})
+        town_upgrades.style.font = 'default-listbox'
+        town_upgrades.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
+        local town_upgrades_text = t.add({type = 'label', caption = 'Crafting speed: ' .. this.winner.upgrades.crafting_speed .. '\nMining speed: ' .. this.winner.upgrades.mining_speed})
+        town_upgrades_text.style.font = 'default-bold'
+        town_upgrades_text.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+
+        local town_health = t.add({type = 'label', caption = 'Town health >> '})
+        town_health.style.font = 'default-listbox'
+        town_health.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
+        local town_health_text = t.add({type = 'label', caption = this.winner.health .. 'hp left!'})
+        town_health_text.style.font = 'default-bold'
+        town_health_text.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+
+        local town_coins = t.add({type = 'label', caption = 'Town coins >> '})
+        town_coins.style.font = 'default-listbox'
+        town_coins.style.font_color = {r = 0.22, g = 0.77, b = 0.44}
+        local town_coins_text = t.add({type = 'label', caption = this.winner.coin_balance .. ' coins stashed!'})
+        town_coins_text.style.font = 'default-bold'
+        town_coins_text.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
+
+        if not this.game_won then
+            this.game_won = true
+            this.game_reset_tick = 5400
+            Alert.alert_all_players(900, 'Winner winner chicken dinner!\n[color=red]' .. this.winner.name .. '[/color] has won the game!', nil, 'restart_required', 1.0)
+            for _, player in pairs(game.connected_players) do
+                player.play_sound {path = 'utility/game_won', volume_modifier = 0.75}
+            end
+            local message = {
+                title = 'Game over',
+                description = 'Town statistics is below',
+                color = 'success',
+                field1 = {
+                    text1 = 'Town won:',
+                    text2 = this.winner.name,
+                    inline = 'false'
+                },
+                field2 = {
+                    text1 = 'Town researched:',
+                    text2 = this.winner.research_counter .. ' techs!',
+                    inline = 'false'
+                },
+                field3 = {
+                    text1 = 'Town upgrades:',
+                    text2 = 'Crafting speed:' .. this.winner.upgrades.crafting_speed .. '\nMining speed:' .. this.winner.upgrades.mining_speed,
+                    inline = 'false'
+                },
+                field4 = {
+                    text1 = 'Town health:',
+                    text2 = this.winner.health .. 'hp left!',
+                    inline = 'false'
+                },
+                field5 = {
+                    text1 = 'Town coins:',
+                    text2 = this.winner.coin_balance .. ' coins stashed!',
+                    inline = 'false'
+                }
+            }
+            Server.to_discord_embed_parsed(message)
+            this.sent_to_discord = true
         end
     end
 end
@@ -260,3 +354,5 @@ commands.add_command(
 
 Event.on_nth_tick(10, on_tick)
 Event.add(defines.events.on_rocket_launched, on_rocket_launched)
+
+return Public
