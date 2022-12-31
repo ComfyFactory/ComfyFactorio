@@ -17,6 +17,7 @@ local Misc = require 'utils.commands.misc'
 local Core = require 'utils.core'
 local Beams = require 'modules.render_beam'
 local BottomFrame = require 'utils.gui.bottom_frame'
+local Modifiers = require 'utils.player_modifiers'
 
 local zone_settings = Public.zone_settings
 
@@ -1545,6 +1546,12 @@ function Public.on_research_finished(event)
     bonus_drill.mining_drill_productivity_bonus = bonus_drill.mining_drill_productivity_bonus + 0.03
     if bonus_drill.mining_drill_productivity_bonus >= 3 then
         bonus_drill.mining_drill_productivity_bonus = 3
+    end
+
+    local players = game.connected_players
+    for i = 1, #players do
+        local player = players[i]
+        Modifiers.update_player_modifiers(player)
     end
 
     if research.name == 'steel-axe' then
