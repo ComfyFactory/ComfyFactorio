@@ -1550,8 +1550,8 @@ function Public.on_research_finished(event)
 
     local players = game.connected_players
     for i = 1, #players do
-        local player = players[i]
-        Modifiers.update_player_modifiers(player)
+        local p = players[i]
+        Modifiers.update_player_modifiers(p)
     end
 
     if research.name == 'steel-axe' then

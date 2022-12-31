@@ -227,8 +227,8 @@ function Public.show_mvps(player)
             this.game_won = true
             this.game_reset_tick = 5400
             Alert.alert_all_players(900, 'Winner winner chicken dinner!\n[color=red]' .. this.winner.name .. '[/color] has won the game!', nil, 'restart_required', 1.0)
-            for _, player in pairs(game.connected_players) do
-                player.play_sound {path = 'utility/game_won', volume_modifier = 0.75}
+            for _, p in pairs(game.connected_players) do
+                p.play_sound {path = 'utility/game_won', volume_modifier = 0.75}
             end
             local message = {
                 title = 'Game over',
