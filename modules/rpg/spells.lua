@@ -194,13 +194,19 @@ local function create_entity(data)
     Public.set_last_spell_cast(player, position)
 
     if self.biter then
-        local e = surface.create_entity({name = self.entityName, position = position, force = force})
-        tame_unit_effects(player, e)
-        Public.remove_mana(player, self.mana_cost)
-        return true
+        if surface.can_place_entity {name = self.entityName, position = position} then
+            local e = surface.create_entity({name = self.entityName, position = position, force = force})
+            tame_unit_effects(player, e)
+            Public.remove_mana(player, self.mana_cost)
+            return true
+        else
+            Public.cast_spell(player, true)
+            return false
+        end
     end
 
     if self.aoe then
+        local has_cast = false
         for x = 1, -1, -1 do
             for y = 1, -1, -1 do
                 local pos = {x = position.x + x, y = position.y + y}
@@ -209,10 +215,17 @@ local function create_entity(data)
                         break
                     end
                     local e = surface.create_entity({name = self.entityName, position = pos, force = force})
+                    has_cast = true
                     e.direction = player.character.direction
                     Public.remove_mana(player, self.mana_cost)
                 end
             end
+        end
+        if has_cast then
+            return true
+        else
+            Public.cast_spell(player, true)
+            return false
         end
     else
         if surface.can_place_entity {name = self.entityName, position = position} then
