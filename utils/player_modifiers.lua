@@ -5,6 +5,7 @@ local Event = require 'utils.event'
 local Global = require 'utils.global'
 
 local round = math.round
+local min = math.min
 
 local this = {
     modifiers = {},
@@ -81,6 +82,11 @@ function Public.update_player_modifiers(player)
     end
 end
 
+local function maximum_inventory_slots_bonus(player)
+    print('max bonus value  '.. serpent.block(this.rpg_inventory_slot_limit - player.force.character_inventory_slots_bonus))
+   return this.rpg_inventory_slot_limit - player.force.character_inventory_slots_bonus
+end
+
 function Public.update_single_modifier(player, modifier, category, value)
     local player_modifiers = this.modifiers[player.index]
     if not player_modifiers then
@@ -97,14 +103,24 @@ function Public.update_single_modifier(player, modifier, category, value)
                 end
                 player_modifiers[k][category] = value
 
-                if category == 'rpg' and modifiers[k] == 'character_inventory_slots_bonus' and player_modifiers[k][category] >= this.rpg_inventory_slot_limit then
-                    player_modifiers[k][category] = this.rpg_inventory_slot_limit - player.force.character_inventory_slots_bonus
+                if category == 'rpg' and modifiers[k] == 'character_inventory_slots_bonus'  then
+                    player_modifiers[k][category] = min(player_modifiers[k][category], maximum_inventory_slots_bonus(player))
                 end
             else
                 player_modifiers[k] = value
             end
         end
     end
+end
+
+function Public.refresh_inventory_slots_bonus(player)
+    local modifier = 'character_inventory_slots_bonus'
+    local category = 'rpg'
+
+    local value = Public.get_single_modifier(player, modifier, category)
+
+    Public.update_single_modifier(player, modifier, category, value)
+    Public.update_player_modifiers(player)
 end
 
 function Public.disable_single_modifier(player, modifier, value)

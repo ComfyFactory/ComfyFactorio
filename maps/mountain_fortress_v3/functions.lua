@@ -17,6 +17,7 @@ local Misc = require 'utils.commands.misc'
 local Core = require 'utils.core'
 local Beams = require 'modules.render_beam'
 local BottomFrame = require 'utils.gui.bottom_frame'
+local PlayerModifiers = require 'utils.player_modifiers'
 
 local zone_settings = Public.zone_settings
 
@@ -1542,6 +1543,11 @@ function Public.on_research_finished(event)
     end
 
     research.force.character_inventory_slots_bonus = player.mining_drill_productivity_bonus * 50 -- +5 Slots /
+
+    for _, force_player in pairs(force.players) do
+        PlayerModifiers.refresh_inventory_slots_bonus(force_player)
+    end
+
     bonus_drill.mining_drill_productivity_bonus = bonus_drill.mining_drill_productivity_bonus + 0.03
     if bonus_drill.mining_drill_productivity_bonus >= 3 then
         bonus_drill.mining_drill_productivity_bonus = 3
