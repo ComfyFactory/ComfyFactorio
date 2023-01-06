@@ -9,7 +9,7 @@ require 'modules.satellite_score'
 require 'modules.spawners_contain_biters'
 require 'modules.biter_noms_you'
 require 'modules.rpg'
-require 'modules.hunger'
+local Hunger = require 'modules.hunger'
 
 local enable_fishbank_terminal = false
 local simplex_noise = require 'utils.simplex_noise'
@@ -1168,7 +1168,7 @@ local function on_pre_player_mined_item(event)
             tile_distance_to_center = 1450
         end
         if math_random(1, 3) == 1 then
-            hunger_update(player, -1)
+            Hunger.hunger_update(player, -1)
         end
 
         surface.spill_item_stack(player.position, {name = 'raw-fish', count = math_random(1, 3)}, true)
