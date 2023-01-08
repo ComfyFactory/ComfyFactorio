@@ -284,8 +284,12 @@ function Public.join_spectators(player, crewid)
 		Common.notify_force(force, {'pirates.lobby_to_spectator', player.name})
 		Common.notify_lobby({'pirates.lobby_to_spectator_2', player.name, memory.name})
 	end
+
 	memory.spectatorplayerindices[#memory.spectatorplayerindices + 1] = player.index
-	memory.tempbanned_from_joining_data[player.index] = game.tick
+
+	if not _DEBUG then
+		memory.tempbanned_from_joining_data[player.index] = game.tick
+	end
 	-- if #Common.crew_get_crew_members() == 0 then
 	-- 	memory.crew_disband_tick = game.tick + 30
 	-- 	-- memory.crew_disband_tick = game.tick + 60*60*2 --give players time to log back in after a crash or save

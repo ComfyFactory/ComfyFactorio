@@ -16,20 +16,20 @@ local Roles = require 'maps.pirates.roles.roles'
 local Progression = require 'maps.pirates.progression'
 local Crowsnest = require 'maps.pirates.surfaces.crowsnest'
 local Hold = require 'maps.pirates.surfaces.hold'
-local Cabin = require 'maps.pirates.surfaces.cabin'
+-- local Cabin = require 'maps.pirates.surfaces.cabin'
 local Balance = require 'maps.pirates.balance'
 local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
 local Overworld = require 'maps.pirates.overworld'
 local Utils = require 'maps.pirates.utils_local'
 local Crew = require 'maps.pirates.crew'
-local Parrot = require 'maps.pirates.parrot'
+-- local Parrot = require 'maps.pirates.parrot'
 local Math = require 'maps.pirates.math'
 local _inspect = require 'utils.inspect'.inspect
 local Kraken = require 'maps.pirates.surfaces.sea.kraken'
 
 local Quest = require 'maps.pirates.quest'
-local ShopDock = require 'maps.pirates.shop.dock'
+-- local ShopDock = require 'maps.pirates.shop.dock'
 local QuestStructures = require 'maps.pirates.structures.quest_structures.quest_structures'
 
 local Public = {}
@@ -436,40 +436,6 @@ function Public.pick_up_tick(tickinterval)
 	end
 end
 
-local function cached_structure_delete_existing_entities_if_needed(surface, position, special)
-	if (not special.doNotDestroyExistingEntities) then
-		-- destroy existing entities
-		local area = {left_top = {position.x - special.width/2, position.y - special.height/2}, right_bottom = {position.x + special.width/2 + 0.5, position.y + special.height/2 + 0.5}}
-		surface.destroy_decoratives{area=area}
-		local existing = surface.find_entities_filtered{area = area}
-		if existing then
-			for _, e in pairs(existing) do
-				if not (((special.name == 'small_primitive_mining_base' or special.name == 'small_mining_base') and (e.name == 'iron-ore' or e.name == 'copper-ore' or e.name == 'stone')) or (special.name == 'uranium_miners' and e.name == 'uranium-ore')) then
-					if not (e.name and e.name == 'rocket-silo') then
-						e.destroy()
-					end
-				end
-			end
-		end
-	end
-end
-
-local function cached_structure_delete_existing_unwalkable_tiles_if_needed(surface, position, special)
-	local area = {left_top = {position.x - special.width/2, position.y - special.height/2}, right_bottom = {position.x + special.width/2 + 0.5, position.y + special.height/2 + 0.5}}
-	local existing = surface.find_tiles_filtered{area = area, collision_mask = "water-tile"}
-	if existing then
-		local tiles = {}
-
-		for _, t in pairs(existing) do
-			tiles[#tiles + 1] = {name = "landfill", position = t.position}
-		end
-
-		if #tiles > 0 then
-			surface.set_tiles(tiles, true)
-		end
-	end
-end
-
 function Public.interpret_shorthanded_force_name(shorthanded_name)
 	local memory = Memory.get_crew_memory()
 
@@ -533,8 +499,10 @@ function Public.place_cached_structures(tickinterval)
 
 			Common.ensure_chunks_at(surface, position, Common.structure_ensure_chunk_radius)
 
-			cached_structure_delete_existing_entities_if_needed(surface, position, special)
-			cached_structure_delete_existing_unwalkable_tiles_if_needed(surface, position, special)
+			if not special.doNotDestroyExistingEntities then
+				Common.delete_entities(surface, position, special.width, special.height)
+			end
+			Common.replace_unwalkable_tiles(surface, position, special.width, special.height)
 
 			local saved_components = {}
 			for k = 1, #special.components do

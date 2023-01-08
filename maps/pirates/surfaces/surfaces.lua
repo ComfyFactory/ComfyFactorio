@@ -382,9 +382,13 @@ function Public.destination_on_arrival(destination)
 
 		-- game.print('spawning silo')
 		if destination.subtype ~= IslandEnum.enum.RADIOACTIVE then
-			local silo_position = Islands.spawn_silo_setup(points_to_avoid)
-			if silo_position then
-				points_to_avoid[#points_to_avoid + 1] = {x = silo_position.x, y = silo_position.y, r = 22}
+			local first_silo_pos = Islands.spawn_silo_setup(points_to_avoid)
+			if first_silo_pos then
+				local silo_count = Balance.silo_count()
+				for i = 1, silo_count do
+					local avoid_pos = {x = first_silo_pos.x + 9 * (i-1), y = first_silo_pos.y}
+					points_to_avoid[#points_to_avoid + 1] = {x = avoid_pos.x, y = avoid_pos.y, r = 22}
+				end
 			end
 		end
 
