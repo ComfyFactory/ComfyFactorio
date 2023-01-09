@@ -821,6 +821,10 @@ Gui.on_click(
             local cars = ICT.get('cars')
             local c = Functions.get_owner_car_object(cars, player)
             local car = cars[c]
+            if not car then
+                return
+            end
+
             local entity = car.entity
             if entity and entity.valid then
                 Functions.kill_car_but_save_surface(entity)
