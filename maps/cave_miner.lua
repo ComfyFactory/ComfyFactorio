@@ -910,14 +910,13 @@ local function spawn_cave_inhabitant(pos, target_position)
     end
     local entity_name = rock_inhabitants[rock_inhabitants_index][math_random(1, #rock_inhabitants[rock_inhabitants_index])]
     local p = surface.find_non_colliding_position(entity_name, pos, 6, 0.5)
-    local biter = 1
-    if p then
-        biter = surface.create_entity {name = entity_name, position = p}
+    if not p then
+        return
     end
+    local biter = surface.create_entity {name = entity_name, position = p}
     if target_position then
         biter.set_command({type = defines.command.attack_area, destination = target_position, radius = 5, distraction = defines.distraction.by_anything})
-    end
-    if not target_position then
+    else
         biter.set_command(
             {type = defines.command.attack_area, destination = game.forces['player'].get_spawn_position(surface), radius = 5, distraction = defines.distraction.by_anything}
         )
