@@ -636,7 +636,7 @@ function Public.go_from_currentdestination_to_sea()
 		local maps = destination.dynamic_data.treasure_maps or {}
 		for _, map in pairs(maps) do
 			if map.state == 'picked_up' then
-				Common.parrot_speak(memory.force, {'pirates.parrot_burried_treasure_tip'})
+				Common.parrot_speak(memory.force, {'pirates.parrot_buried_treasure_tip'})
 				break
 			end
 		end

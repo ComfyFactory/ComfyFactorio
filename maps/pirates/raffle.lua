@@ -4,7 +4,9 @@ local Math = require 'maps.pirates.math'
 
 local Public = {}
 
--- @NOTE: Beware this function may return nil when there is at least 1 negative weight and guaranteed to return nil with all negative weights
+-- NOTE: This function:
+-- - MAY return random equally distributed item from "values" when there is at least 1 weight <= 0 and
+-- - WILL with all weights <= 0
 function Public.raffle(values, weights) --arguments of the form {[a] = A, [b] = B, ...} and {[a] = a_weight, [b] = b_weight, ...} or just {a,b,c,...} and {1,2,3...}
 
 	local total_weight = 0
@@ -15,7 +17,12 @@ function Public.raffle(values, weights) --arguments of the form {[a] = A, [b] = 
 		end
 		-- negative weights treated as zero
 	end
-	if (not (total_weight > 0)) then return nil end
+
+	-- Fallback case
+	if (not (total_weight > 0)) then
+		local index = Math.random(1, table_size(values))
+		return values[index]
+	end
 
 	local cumulative_probability = 0
 	local rng = Math.random()
@@ -26,6 +33,10 @@ function Public.raffle(values, weights) --arguments of the form {[a] = A, [b] = 
 			return v
 		end
 	end
+
+	-- Fallback case
+	local index = Math.random(1, table_size(values))
+	return values[index]
 end
 
 -- @NOTE: Beware this function may return nil when there is at least 1 negative weight and guaranteed to return nil with all negative weights

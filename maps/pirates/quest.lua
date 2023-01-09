@@ -344,36 +344,37 @@ end
 -- 	return ret
 -- end
 
-function Public.generate_flow_quest()
-	--@TODO: Ensure this function cannot return nil
-	--@TODO: This is related to a more general problem with raffles — how they handle game_completion being above 1. As of May '22, we cap game_completion at 1 before passing it to the raffle
+-- @UNUSED
+-- function Public.generate_flow_quest()
+-- 	--@TODO: Ensure this function cannot return nil
+-- 	--@TODO: This is related to a more general problem with raffles — how they handle game_completion being above 1. As of May '22, we cap game_completion at 1 before passing it to the raffle
 
-	local game_completion_progress = Common.game_completion_progress_capped()
+-- 	local game_completion_progress = Common.game_completion_progress_capped()
 
-	local data = Public.flow_quest_data()
-    local v, w = {}, {}
+-- 	local data = Public.flow_quest_data()
+--     local v, w = {}, {}
 
-    for i = 1, #data, 1 do
-        table.insert(v, {item = data[i].item, base_rate = data[i].base_rate})
+--     for i = 1, #data, 1 do
+--         table.insert(v, {item = data[i].item, base_rate = data[i].base_rate})
 
-		local destination = Common.current_destination()
-		if not (destination and destination.subtype and data[i].map_subtype and data[i].map_subtype == destination.subtype) then
-			if data[i].scaling then -- scale down weights away from the midpoint 'peak' (without changing the mean)
-				local midpoint = (data[i].game_completion_progress_max + data[i].game_completion_progress_min) / 2
-				local difference = (data[i].game_completion_progress_max - data[i].game_completion_progress_min)
-				table.insert(w, data[i].weight * Math.max(0, 1 - (Math.abs(game_completion_progress - midpoint) / (difference / 2))))
-			else -- no scaling
-				if data[i].game_completion_progress_min <= game_completion_progress and data[i].game_completion_progress_max >= game_completion_progress then
-					table.insert(w, data[i].weight)
-				else
-					table.insert(w, 0)
-				end
-			end
-		end
-    end
+-- 		local destination = Common.current_destination()
+-- 		if not (destination and destination.subtype and data[i].map_subtype and data[i].map_subtype == destination.subtype) then
+-- 			if data[i].scaling then -- scale down weights away from the midpoint 'peak' (without changing the mean)
+-- 				local midpoint = (data[i].game_completion_progress_max + data[i].game_completion_progress_min) / 2
+-- 				local difference = (data[i].game_completion_progress_max - data[i].game_completion_progress_min)
+-- 				table.insert(w, data[i].weight * Math.max(0, 1 - (Math.abs(game_completion_progress - midpoint) / (difference / 2))))
+-- 			else -- no scaling
+-- 				if data[i].game_completion_progress_min <= game_completion_progress and data[i].game_completion_progress_max >= game_completion_progress then
+-- 					table.insert(w, data[i].weight)
+-- 				else
+-- 					table.insert(w, 0)
+-- 				end
+-- 			end
+-- 		end
+--     end
 
-	return Raffle.raffle(v, w)
-end
+-- 	return Raffle.raffle(v, w)
+-- end
 
 
 
