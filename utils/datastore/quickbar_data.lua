@@ -142,7 +142,7 @@ function Public.save_logistics(player)
 
     local slots = {}
 
-    for i = 1, 49 do
+    for i = 1, 100 do
         local slot = player.get_personal_logistic_slot(i)
         if slot and slot.name then
             slots[i] = {name = slot.name, min = slot.min, max = slot.max}
