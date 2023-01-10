@@ -1605,4 +1605,69 @@ function Public.get_random_dictionary_entry(t, key)
     end
 end
 
+-- mainly used to connect multi-surface poles
+function Public.force_connect_poles(pole1, pole2)
+	if not pole1 then return end
+	if not pole1.valid then return end
+	if not pole2 then return end
+	if not pole2.valid then return end
+
+	-- force connections for testing (by placing many poles around the substations)
+	-- for _, e in pairs(pole1.surface.find_entities_filtered{type="electric-pole", position = pole1.position, radius = 10}) do
+	-- 	pole1.connect_neighbour(e)
+	-- end
+
+	-- for _, e in pairs(pole2.surface.find_entities_filtered{type="electric-pole", position = pole2.position, radius = 10}) do
+	-- 	pole2.connect_neighbour(e)
+	-- end
+
+	local success = pole1.connect_neighbour(pole2)
+	if success then return end
+
+	local pole1_neighbours = pole1.neighbours['copper']
+	local pole2_neighbours = pole2.neighbours['copper']
+
+	-- try avoiding disconnecting more poles than needed
+	local disconnect_from_pole1 = false
+	local disconnect_from_pole2 = false
+
+	if #pole1_neighbours >= #pole2_neighbours then
+		disconnect_from_pole1 = true
+	end
+
+	if #pole2_neighbours >= #pole1_neighbours then
+		disconnect_from_pole2 = true
+	end
+
+	if disconnect_from_pole1 then
+		-- Prioritise disconnecting last connections as those are most likely redundant (at least for holds, although even then it's not always the case)
+		for i = #pole1_neighbours, 1, -1 do
+			local e = pole1_neighbours[i]
+			-- only disconnect poles from same surface
+			if e and e.valid and e.surface.name == pole1.surface.name then
+				pole1.disconnect_neighbour(e)
+				break
+			end
+		end
+	end
+
+	if disconnect_from_pole2 then
+		-- Prioritise disconnecting last connections as those are most likely redundant (at least for holds, although even then it's not always the case)
+		for i = #pole2_neighbours, 1, -1 do
+			local e = pole2_neighbours[i]
+			-- only disconnect poles from same surface
+			if e and e.valid and e.surface.name == pole2.surface.name then
+				pole2.disconnect_neighbour(e)
+				break
+			end
+		end
+	end
+
+	local success2 = pole1.connect_neighbour(pole2)
+	if not success2 then
+		-- This can happen if in future pole reach connection limit(5) with poles from other surfaces
+		log("Error: power fix didn't work")
+	end
+end
+
 return Public

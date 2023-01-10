@@ -55,7 +55,7 @@ Public.market_offer_form = {
 	[enum.EXTRA_HOLD] = {price = {{'coin', 7000}, {'coal', 500}}, offer = {type='nothing', effect_description={'pirates.market_description_upgrade_hold'}}},
 	[enum.UNLOCK_MERCHANTS] = {price = {{'coin', 14000}, {'coal', 1000}}, offer = {type='nothing', effect_description={'pirates.market_description_upgrade_merchants'}}},
 	[enum.ROCKETS_FOR_SALE] = {price = {{'coin', 21000}, {'coal', 1000}}, offer = {type='nothing', effect_description={'pirates.market_description_upgrade_rockets'}}},
-	[enum.UPGRADE_CANNONS] = {price = {{'repair-pack', 20}, {'coin', 5000}, {'coal', 800}}, offer = {type='nothing', effect_description={'pirates.market_description_upgrade_rockets'}}},
+	[enum.UPGRADE_CANNONS] = {price = {{'repair-pack', 20}, {'coin', 5000}, {'coal', 800}}, offer = {type='nothing', effect_description={'pirates.market_description_upgrade_turrets'}}},
 }
 
 function Public.execute_upgade(upgrade_type, player)

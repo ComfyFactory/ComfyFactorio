@@ -17,6 +17,7 @@ local Misc = require 'utils.commands.misc'
 local Core = require 'utils.core'
 local Beams = require 'modules.render_beam'
 local BottomFrame = require 'utils.gui.bottom_frame'
+local Modifiers = require 'utils.player_modifiers'
 
 local zone_settings = Public.zone_settings
 
@@ -1123,8 +1124,8 @@ function Public.boost_difficulty()
         Public.set('bonus_xp_on_join', 500)
         WD.set('next_wave', game.tick + 3600 * 15)
         Public.set('spidertron_unlocked_at_zone', 10)
-        WD.set_normal_unit_current_health(1.0)
-        WD.set_unit_health_increment_per_wave(0.15)
+        WD.set_normal_unit_current_health(1.2)
+        WD.set_unit_health_increment_per_wave(0.35)
         WD.set_boss_unit_current_health(2)
         WD.set_boss_health_increment_per_wave(1.5)
         WD.set('death_mode', false)
@@ -1142,7 +1143,7 @@ function Public.boost_difficulty()
         WD.set('next_wave', game.tick + 3600 * 8)
         Public.set('spidertron_unlocked_at_zone', 8)
         WD.set_normal_unit_current_health(1.4)
-        WD.set_unit_health_increment_per_wave(0.3)
+        WD.set_unit_health_increment_per_wave(0.55)
         WD.set_boss_unit_current_health(3)
         WD.set_boss_health_increment_per_wave(3)
         WD.set('death_mode', false)
@@ -1189,7 +1190,7 @@ function Public.boost_difficulty()
         WD.set('next_wave', game.tick + 3600 * 5)
         Public.set('spidertron_unlocked_at_zone', 6)
         WD.set_normal_unit_current_health(1.6)
-        WD.set_unit_health_increment_per_wave(0.5)
+        WD.set_unit_health_increment_per_wave(0.7)
         WD.set_boss_unit_current_health(4)
         WD.set_boss_health_increment_per_wave(6)
         WD.set('death_mode', true)
@@ -1545,6 +1546,12 @@ function Public.on_research_finished(event)
     bonus_drill.mining_drill_productivity_bonus = bonus_drill.mining_drill_productivity_bonus + 0.03
     if bonus_drill.mining_drill_productivity_bonus >= 3 then
         bonus_drill.mining_drill_productivity_bonus = 3
+    end
+
+    local players = game.connected_players
+    for i = 1, #players do
+        local p = players[i]
+        Modifiers.update_player_modifiers(p)
     end
 
     if research.name == 'steel-axe' then

@@ -213,10 +213,12 @@ local function set_train_final_health(final_damage_amount, repair)
             if not poison_deployed then
                 local carriages = Public.get('carriages')
 
-                if carriages then
-                    for i = 1, #carriages do
-                        local entity = carriages[i]
-                        Public.enable_poison_defense(entity.position)
+                if WD.get('wave_number') < 501 then
+                    if carriages then
+                        for i = 1, #carriages do
+                            local entity = carriages[i]
+                            Public.enable_poison_defense(entity.position)
+                        end
                     end
                 end
 

@@ -57,6 +57,9 @@ local try_download_data_token =
             end
         else
             local player = game.get_player(player_index)
+            if not player or not player.valid then
+                return
+            end
             session[player_index] = 0
             trusted[player_index] = false
             -- we don't want to clutter the database with players less than 10 minutes played.
@@ -76,6 +79,10 @@ local try_upload_data_token =
         end
         local value = data.value
         local player = game.get_player(player_index)
+        if not player or not player.valid then
+            return
+        end
+
         if value then
             -- we don't want to clutter the database with players less than 10 minutes played.
             if player.online_time <= settings.required_only_time_to_save_time then
@@ -314,7 +321,7 @@ function Public.get_settings_table()
 end
 
 --- Clears a given player from the session tables.
----@param player LuaPlayer
+---@param player LuaPlayer?
 function Public.clear_player(player)
     if player and player.valid then
         local name = player.name

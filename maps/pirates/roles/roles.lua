@@ -315,7 +315,8 @@ function Public.afk_player_tick(player)
 	-- local global_memory = Memory.get_global_memory()
 	local memory = Memory.get_crew_memory()
 
-	if Common.is_captain(player) and #Common.crew_get_nonafk_crew_members() > 0 then
+	if Common.is_captain(player) and #Common.crew_get_nonafk_crew_members() >= 6 then
+		-- in this case, lose captainhood
 
 		local force = memory.force
 		if force and force.valid then

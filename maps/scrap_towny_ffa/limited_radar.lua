@@ -8,10 +8,14 @@ function Public.reset()
     if this.testing_mode then
         return
     end
+    local map_surface = game.get_surface(this.active_surface_index)
+    if not map_surface or not map_surface.valid then
+        return
+    end
     for index = 1, table.size(game.forces), 1 do
         local force = game.forces[index]
         if force ~= nil then
-            force.clear_chart('nauvis')
+            force.clear_chart(map_surface.name)
         end
     end
 end
@@ -39,13 +43,16 @@ local function update_forces(id)
 end
 
 local function on_chunk_charted(event)
-    local surface = game.surfaces[event.surface_index]
+    local this = ScenarioTable.get_table()
+    local surface = game.get_surface(this.active_surface_index)
+    if not surface or not surface.valid then
+        return
+    end
     local force = event.force
     local area = event.area
     local markets = surface.find_entities_filtered({area = area, name = 'market'})
     for _, market in pairs(markets) do
         local force_name = market.force.name
-        local this = ScenarioTable.get_table()
         local town_center = this.town_centers[force_name]
         if not town_center then
             return

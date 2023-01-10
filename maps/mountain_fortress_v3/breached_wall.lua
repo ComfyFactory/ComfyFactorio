@@ -51,9 +51,14 @@ local collapse_message =
 
 local spidertron_unlocked =
     Token.register(
-    function()
-        local message = ({'breached_wall.spidertron_unlocked'})
-        Alert.alert_all_players(30, message, nil, 'achievement/tech-maniac', 0.1)
+    function(event)
+        if event then
+            local message = ({'breached_wall.spidertron_unlocked'})
+            if event.bw then
+                message = ({'breached_wall.spidertron_unlocked_bw'})
+            end
+            Alert.alert_all_players(30, message, nil, 'achievement/tech-maniac', 0.1)
+        end
     end
 )
 
@@ -241,19 +246,29 @@ local function distance(player)
             biters.amount = 0
             placed_trains_in_zone.randomized = false
             Public.enemy_weapon_damage()
-            if Public.get('breached_wall') == Public.get('spidertron_unlocked_at_zone') then
+            local spidertron_unlocked_enabled = Public.get('spidertron_unlocked_enabled')
+            if Public.get('breached_wall') >= Public.get('spidertron_unlocked_at_zone') and not spidertron_unlocked_enabled then
+                Public.set('spidertron_unlocked_enabled', true)
                 local main_market_items = Public.get('main_market_items')
                 if not main_market_items['spidertron'] then
-                    local rng = random(70000, 120000)
+                    local bw = Public.get('bw')
+                    local spider_tooltip = 'BiterStunner 9000'
+                    local rng
+                    if bw then
+                        rng = random(30000, 80000)
+                        spider_tooltip = spider_tooltip .. ' (Exclusive sale!)'
+                    else
+                        rng = random(70000, 120000)
+                    end
                     main_market_items['spidertron'] = {
                         stack = 1,
                         value = 'coin',
                         price = rng,
-                        tooltip = 'BiterStunner 9000',
+                        tooltip = spider_tooltip,
                         upgrade = false,
                         static = true
                     }
-                    Task.set_timeout_in_ticks(150, spidertron_unlocked)
+                    Task.set_timeout_in_ticks(150, spidertron_unlocked, {bw = bw})
                 end
             end
 

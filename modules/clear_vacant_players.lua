@@ -111,7 +111,7 @@ function Public.clear_vacant_players()
                                 local data = {
                                     position = pos
                                 }
-                                Alert.alert_all_players_location(data, message)
+                                Alert.alert_all_players_location(data, message, nil, 20)
 
                                 e.die('neutral')
                                 if this.settings.dumped_inventories_do_not_expire == true then

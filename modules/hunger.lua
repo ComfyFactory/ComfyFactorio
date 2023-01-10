@@ -1,5 +1,5 @@
 -- hunger module by mewmew --
-
+local Public = {}
 local P = require 'utils.player_modifiers'
 
 local starve_messages = {' ran out of foodstamps.', ' starved.', ' should not have skipped breakfast today.'}
@@ -103,7 +103,7 @@ local function update_hunger_gui(player)
     player.gui.top['hunger_frame'].style.font_color = player_hunger_color_list[global.player_hunger[player.name]]
 end
 
-local function hunger_update(player, food_value)
+function Public.hunger_update(player, food_value)
     if not player.character then
         return
     end
@@ -166,7 +166,7 @@ local function on_player_joined_game(event)
     end
     if player.online_time == 0 then
         global.player_hunger[player.name] = player_hunger_spawn_value
-        hunger_update(player, 0)
+        Public.hunger_update(player, 0)
     end
     update_hunger_gui(player)
 end
@@ -177,7 +177,7 @@ local function on_player_used_capsule(event)
         if player.character.health < player.character.prototype.max_health + player.character_health_bonus + player.force.character_health_bonus then
             return
         end
-        hunger_update(player, player_hunger_fish_food_value)
+        Public.hunger_update(player, player_hunger_fish_food_value)
         player.play_sound {path = 'utility/armor_insert', volume_modifier = 0.9}
     end
 end
@@ -185,13 +185,13 @@ end
 local function on_player_respawned(event)
     local player = game.players[event.player_index]
     global.player_hunger[player.name] = player_hunger_spawn_value
-    hunger_update(player, 0)
+    Public.hunger_update(player, 0)
 end
 
 local function on_tick()
     for _, player in pairs(game.connected_players) do
         if player.afk_time < 18000 then
-            hunger_update(player, -1)
+            Public.hunger_update(player, -1)
         end
     end
 end
@@ -201,3 +201,5 @@ event.on_nth_tick(3600, on_tick)
 event.add(defines.events.on_player_respawned, on_player_respawned)
 event.add(defines.events.on_player_used_capsule, on_player_used_capsule)
 event.add(defines.events.on_player_joined_game, on_player_joined_game)
+
+return Public

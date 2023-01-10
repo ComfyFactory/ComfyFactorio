@@ -925,6 +925,7 @@ end
 
 local function on_entity_damaged(event)
     local entity = event.entity
+    if not entity.valid then return end
     if not entity.health then
         return
     end

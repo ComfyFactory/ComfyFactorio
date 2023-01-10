@@ -38,6 +38,7 @@ function Public.reset_table()
     this.spaceships = {}
     this.suicides = {}
     this.required_time_to_win = 48
+    this.required_time_to_win_in_ticks = 10368000
     this.announced_message = nil
     this.soft_reset = true
     this.winner = nil

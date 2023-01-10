@@ -75,7 +75,16 @@ function Public.update_player_modifiers(player)
             if disabled_modifiers and disabled_modifiers[k] then
                 player[modifier] = 0
             else
-                player[modifier] = round(sum_value, 4)
+                if modifiers[k] == 'character_inventory_slots_bonus' then
+                    local inv = player.get_inventory(defines.inventory.character_main)
+                    if inv and #inv > this.rpg_inventory_slot_limit + 80 then
+                        player[modifier] = this.rpg_inventory_slot_limit - 20
+                    else
+                        player[modifier] = round(sum_value, 4)
+                    end
+                else
+                    player[modifier] = round(sum_value, 4)
+                end
             end
         end
     end

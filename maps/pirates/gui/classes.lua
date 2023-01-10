@@ -15,9 +15,6 @@ widths['available_classes'] = 150
 widths['taken_by'] = 150
 widths['action_buttons'] = 100
 
--- used to track whether new class entries should be added during "full_update"
-local entry_count = 0
-
 local function add_class_entry(player, class, taken_by_player_index, index)
 	if not player.gui.screen[window_name .. '_piratewindow'] then return end
 	local flow
@@ -161,7 +158,7 @@ function Public.toggle_window(player)
 		add_class_entry(player, class_entry.class, class_entry.taken_by, i)
 	end
 
-	entry_count = #memory.unlocked_classes
+	memory.class_entry_count = #memory.unlocked_classes
 
 	GuiCommon.flow_add_close_button(flow, window_name .. '_piratebutton')
 end
@@ -188,7 +185,7 @@ function Public.full_update(player, force_refresh)
 	-- Currently assuming class list size never decreases
 
 	-- Update current content table
-	for i = 1, entry_count do
+	for i = 1, memory.class_entry_count do
 		local label = class_list_panel_table['player_label' .. i]
 		local class_entry = memory.unlocked_classes[i]
 		label.caption = class_entry.taken_by and game.players[class_entry.taken_by].name or ''
@@ -223,13 +220,13 @@ function Public.full_update(player, force_refresh)
 
 
 	-- If new entries were added since last update, add them to GUI
-	if entry_count ~= #memory.unlocked_classes then
-		for i = entry_count + 1, #memory.unlocked_classes do
+	if memory.class_entry_count ~= #memory.unlocked_classes then
+		for i = memory.class_entry_count + 1, #memory.unlocked_classes do
 			local class_entry = memory.unlocked_classes[i]
 			add_class_entry(player, class_entry.class, class_entry.taken_by, i)
 		end
 
-		entry_count = #memory.unlocked_classes
+		memory.class_entry_count = #memory.unlocked_classes
 	end
 end
 

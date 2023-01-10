@@ -200,11 +200,11 @@ local function get_coords(group, source_player)
         local y = tonumber(source_player.gui.screen['biter_panel']['coords']['coord_y'].text)
         if x == nil or x == 'nil' then
             x = group.position.x
-            source_player.gui.screen['biter_panel']['coords']['coord_x'].text = group.position.x
+            source_player.gui.screen['biter_panel']['coords']['coord_x'].text = tostring(group.position.x)
         end
         if y == nil or y == 'nil' then
             y = group.position.y
-            source_player.gui.screen['biter_panel']['coords']['coord_y'].text = group.position.y
+            source_player.gui.screen['biter_panel']['coords']['coord_y'].text = tostring(group.position.y)
         end
         position = {x = x, y = y}
     end
@@ -366,8 +366,8 @@ local function set_directions(changedx, changedy, source_player)
         end
         x = x + changedx
         y = y + changedy
-        source_player.gui.screen['biter_panel']['coords']['coord_x'].text = x
-        source_player.gui.screen['biter_panel']['coords']['coord_y'].text = y
+        source_player.gui.screen['biter_panel']['coords']['coord_x'].text = tostring(x)
+        source_player.gui.screen['biter_panel']['coords']['coord_y'].text = tostring(y)
     end
 end
 
@@ -405,8 +405,8 @@ end
 
 local function center(group, source_player)
     if source_player.gui.screen['biter_panel'] then
-        source_player.gui.screen['biter_panel']['coords']['coord_x'].text = group.position.x
-        source_player.gui.screen['biter_panel']['coords']['coord_y'].text = group.position.y
+        source_player.gui.screen['biter_panel']['coords']['coord_x'].text = tostring(group.position.x)
+        source_player.gui.screen['biter_panel']['coords']['coord_y'].text = tostring(group.position.y)
     end
 end
 

@@ -303,6 +303,8 @@ local function grow_cell(chunk_position, surface) -- luacheck: ignore
 
     if #valid_chunks > 0 then
         this.settings.labyrinth_size = this.settings.labyrinth_size + 1
+    else
+        return
     end
     local evolution = this.settings.labyrinth_size / labyrinth_difficulty_curve
     if evolution > 1 then
@@ -726,8 +728,6 @@ local function treasure_chest(position, surface)
         {{name = 'firearm-magazine', count = math_random(32, 128)}, weight = 10, evolution_min = 0, evolution_max = 0.3},
         {{name = 'piercing-rounds-magazine', count = math_random(32, 128)}, weight = 10, evolution_min = 0.1, evolution_max = 0.8},
         {{name = 'uranium-rounds-magazine', count = math_random(32, 128)}, weight = 10, evolution_min = 0.5, evolution_max = 1},
-        {{name = 'railgun', count = 1}, weight = 1, evolution_min = 0.2, evolution_max = 1},
-        {{name = 'railgun-dart', count = math_random(16, 32)}, weight = 3, evolution_min = 0.2, evolution_max = 0.7},
         {{name = 'defender-capsule', count = math_random(8, 16)}, weight = 10, evolution_min = 0.0, evolution_max = 0.7},
         {{name = 'distractor-capsule', count = math_random(8, 16)}, weight = 10, evolution_min = 0.2, evolution_max = 1},
         {{name = 'destroyer-capsule', count = math_random(8, 16)}, weight = 10, evolution_min = 0.3, evolution_max = 1},
@@ -1021,54 +1021,57 @@ local function on_player_built_tile(event)
 end
 
 local function on_entity_died(event)
+    local entity = event.entity
+    if not entity or not entity.valid then return end
+    local name = entity.name
+    local position = entity.position
+    local evolution = game.forces.enemy.evolution_factor
+    local surface = entity.surface
     for _, fragment in pairs(biter_fragmentation) do
-        if event.entity.name == fragment[1] then
+        if name == fragment[1] then
             for _ = 1, math.random(fragment[3], fragment[4]), 1 do
-                local p = event.entity.surface.find_non_colliding_position(fragment[2], event.entity.position, 2, 1)
+                local p = surface.find_non_colliding_position(fragment[2], position, 2, 1)
                 if p then
-                    event.entity.surface.create_entity {name = fragment[2], position = p}
+                    surface.create_entity {name = fragment[2], position = p}
                 end
             end
-            return
+            break
         end
     end
 
-    if event.entity.name == 'biter-spawner' or event.entity.name == 'spitter-spawner' then
-        local e = math.ceil(game.forces.enemy.evolution_factor * 10, 0)
+    if name == 'biter-spawner' or name == 'spitter-spawner' then
+        local e = math.ceil(evolution * 10, 0)
         for _, t in pairs(biter_building_inhabitants[e]) do
             for _ = 1, math.random(t[2], t[3]), 1 do
-                local p = event.entity.surface.find_non_colliding_position(t[1], event.entity.position, 6, 1)
+                local p = surface.find_non_colliding_position(t[1], position, 6, 1)
                 if p then
-                    event.entity.surface.create_entity {name = t[1], position = p}
+                    surface.create_entity{name = t[1], position = p}
                 end
             end
         end
     end
 
-    if entity_drop_amount[event.entity.name] then
-        if game.forces.enemy.evolution_factor < 0.5 then
-            local evolution_drop_modifier = (0.1 - game.forces.enemy.evolution_factor) * 10
+    if entity_drop_amount[name] then
+        if evolution < 0.5 then
+            local evolution_drop_modifier = (0.1 - evolution) * 10
             if evolution_drop_modifier > 0 then
-                local amount = math.ceil(math.random(entity_drop_amount[event.entity.name].low, entity_drop_amount[event.entity.name].high) * evolution_drop_modifier)
-                event.entity.surface.spill_item_stack(event.entity.position, {name = ore_spill_raffle[math.random(1, #ore_spill_raffle)], count = amount}, true)
+                local amount = math.ceil(math.random(entity_drop_amount[name].low, entity_drop_amount[name].high) * evolution_drop_modifier)
+                surface.spill_item_stack(position, {name = ore_spill_raffle[math.random(1, #ore_spill_raffle)], count = amount}, true)
             end
         end
         return
     end
 
-    if event.entity.name == 'sand-rock-big' or event.entity.name == 'rock-big' or event.entity.name == 'rock-huge' then
-        local pos = {x = event.entity.position.x, y = event.entity.position.y}
-        local surface = event.entity.surface
-        if event.entity.name == 'rock-huge' then
+    if name == 'sand-rock-big' or name == 'rock-big' or name == 'rock-huge' then
+        local pos = {x = position.x, y = position.y}
+        if name == 'rock-huge' then
             spawn_infinity_chest(pos, surface)
-        end
-        if event.entity.name == 'rock-big' then
+        elseif name == 'rock-big' then
             treasure_chest(pos, surface)
-        end
-        if event.entity.name == 'sand-rock-big' then
+        elseif name == 'sand-rock-big' then
             local n = ore_spawn_raffle[math.random(1, #ore_spawn_raffle)]
             --local amount_modifier = 1 + ((this.settings.labyrinth_size / labyrinth_difficulty_curve) * 10)
-            local amount_modifier = math.ceil(1 + game.forces.enemy.evolution_factor * 5)
+            local amount_modifier = math.ceil(1 + evolution * 5)
 
             if n == 'crude-oil' then
                 map_functions.draw_oil_circle(pos, n, surface, 6, 100000 * amount_modifier)
@@ -1076,7 +1079,7 @@ local function on_entity_died(event)
                 map_functions.draw_smoothed_out_ore_circle(pos, n, surface, 9 + amount_modifier, 200 * amount_modifier)
             end
         end
-        event.entity.destroy()
+        entity.destroy()
         local chunk_position = get_entity_chunk_position(pos)
         local b = is_chunk_allowed_to_grow(chunk_position, surface)
         if b == true then
@@ -1216,65 +1219,74 @@ local function on_player_joined_game(event)
     create_labyrinth_difficulty_gui(player)
 end
 
-local inserters = {'inserter', 'long-handed-inserter', 'burner-inserter', 'fast-inserter', 'filter-inserter', 'stack-filter-inserter', 'stack-inserter'}
-local loaders = {'loader', 'fast-loader', 'express-loader'}
+local inserter_list = {'inserter', 'long-handed-inserter', 'burner-inserter', 'fast-inserter', 'filter-inserter', 'stack-filter-inserter', 'stack-inserter'}
+local inserters = {
+    ['inserter'] = true,
+    ['long-handed-inserter'] = true,
+    ['burner-inserter'] = true,
+    ['fast-inserter'] = true,
+    ['filter-inserter'] = true,
+    ['stack-filter-inserter'] = true,
+    ['stack-inserter'] = true
+}
+local loaders = {
+    ['loader'] = true,
+    ['fast-loader'] = true,
+    ['express-loader'] = true
+}
 local function on_built_entity(event)
+    if not event.created_entity or not event.created_entity.valid then return end
     local get_score = Score.get_table().score_table
-    for _, e in pairs(inserters) do
-        if e == event.created_entity.name then
-            local surface = event.created_entity.surface
-            local a = {
-                left_top = {x = event.created_entity.position.x - 2, y = event.created_entity.position.y - 2},
-                right_bottom = {x = event.created_entity.position.x + 2, y = event.created_entity.position.y + 2}
-            }
-            local chest = surface.find_entities_filtered {area = a, name = 'infinity-chest', limit = 1}
-            if not chest[1] then
-                return
-            end
-            local _ = {
-                left_top = {x = chest[1].position.x - 2, y = chest[1].position.y - 2},
-                right_bottom = {x = chest[1].position.x + 2, y = chest[1].position.y + 2}
-            }
-            local i = surface.find_entities_filtered {area = a, name = inserters}
-            if not i[1] then
-                return
-            end
-            if #i > 1 then
-                if math.random(1, 11) == 1 then
-                    break
-                else
-                    for _, x in pairs(i) do
-                        x.die('enemy')
-                    end
-                    if event.player_index then
-                        local player = game.players[event.player_index]
-                        player.print('The mysterious chest noticed your greed and devoured your devices.', {r = 0.75, g = 0.0, b = 0.0})
-                    end
-                end
-            end
-            break
+    local name = event.created_entity.name
+    if inserters[name] then
+        local surface = event.created_entity.surface
+        local a = {
+            left_top = {x = event.created_entity.position.x - 2, y = event.created_entity.position.y - 2},
+            right_bottom = {x = event.created_entity.position.x + 2, y = event.created_entity.position.y + 2}
+        }
+        local chest = surface.find_entities_filtered {area = a, name = 'infinity-chest', limit = 1}
+        if not chest[1] then
+            return
         end
-    end
-
-    for _, e in pairs(loaders) do
-        if e == event.created_entity.name then
-            local surface = event.created_entity.surface
-            local a = {
-                left_top = {x = event.created_entity.position.x - 2, y = event.created_entity.position.y - 2},
-                right_bottom = {x = event.created_entity.position.x + 2, y = event.created_entity.position.y + 2}
-            }
-            local found = surface.find_entities_filtered {area = a, name = 'infinity-chest'}
-            if found[1] then
-                event.created_entity.die('enemy')
+        local _ = {
+            left_top = {x = chest[1].position.x - 2, y = chest[1].position.y - 2},
+            right_bottom = {x = chest[1].position.x + 2, y = chest[1].position.y + 2}
+        }
+        local i = surface.find_entities_filtered {area = a, name = inserter_list}
+        if not i[1] then
+            return
+        end
+        if #i > 1 then
+            if math.random(1, 11) > 1 then
+                for _, x in pairs(i) do
+                    x.die('enemy')
+                end
                 if event.player_index then
                     local player = game.players[event.player_index]
-                    player.print('The mysterious chest noticed your greed and devoured your device.', {r = 0.75, g = 0.0, b = 0.0})
+                    player.print('The mysterious chest noticed your greed and devoured your devices.', {r = 0.75, g = 0.0, b = 0.0})
                 end
             end
         end
+        return
     end
 
-    local name = event.created_entity.name
+    if loaders[name] then
+        local surface = event.created_entity.surface
+        local a = {
+            left_top = {x = event.created_entity.position.x - 2, y = event.created_entity.position.y - 2},
+            right_bottom = {x = event.created_entity.position.x + 2, y = event.created_entity.position.y + 2}
+        }
+        local found = surface.find_entities_filtered {area = a, name = 'infinity-chest'}
+        if found[1] then
+            event.created_entity.die('enemy')
+            if event.player_index then
+                local player = game.players[event.player_index]
+                player.print('The mysterious chest noticed your greed and devoured your device.', {r = 0.75, g = 0.0, b = 0.0})
+            end
+        end
+        return
+    end
+
     if name == 'flamethrower-turret' or name == 'laser-turret' then
         if event.created_entity.position.y < 0 then
             if event.player_index then
@@ -1297,6 +1309,7 @@ local function on_built_entity(event)
                 end
             end
         end
+        return
     end
 
     if name == 'gun-turret' then
