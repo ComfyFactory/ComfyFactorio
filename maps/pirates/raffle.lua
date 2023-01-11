@@ -4,6 +4,7 @@ local Math = require 'maps.pirates.math'
 
 local Public = {}
 
+-- Returns random value from values, with given probability weights. Both table parameters are expected to be arrays.
 -- NOTE: This function:
 -- - MAY return random equally distributed item from "values" when there is at least 1 weight <= 0 and
 -- - WILL with all weights <= 0
@@ -39,25 +40,49 @@ function Public.raffle(values, weights) --arguments of the form {[a] = A, [b] = 
 	return values[index]
 end
 
--- @NOTE: Beware this function may return nil when there is at least 1 negative weight and guaranteed to return nil with all negative weights
+-- Returns random key from table, with given probability values. Works with all types of keys.
+-- NOTE: This function:
+-- - MAY return random equally distributed item from "values" when there is at least 1 weight <= 0 and
+-- - WILL with all weights <= 0
 function Public.raffle2(table) --arguments of the form {v1 = w1, v2 = w2, ...}
 
 	local total_weight = 0
-	for k,w in pairs(table) do
+	for _, w in pairs(table) do
 		if w > 0 then
 			total_weight = total_weight + w
 		end
 		-- negative weights treated as zero
 	end
-	if (not (total_weight > 0)) then return nil end
+
+	-- Fallback case
+	if (not (total_weight > 0)) then
+		local index = Math.random(1, table_size(table))
+		for k, _ in pairs(table) do
+			if index == 1 then
+				return k
+			end
+
+			index = index - 1
+		end
+	end
 
 	local cumulative_probability = 0
 	local rng = Math.random()
-	for k,v in pairs(table) do
-		cumulative_probability = cumulative_probability + v/total_weight
+	for k, w in pairs(table) do
+		cumulative_probability = cumulative_probability + w/total_weight
 		if rng <= cumulative_probability then
 			return k
 		end
+	end
+
+	-- Fallback case
+	local index = Math.random(1, table_size(table))
+	for k, _ in pairs(table) do
+		if index == 1 then
+			return k
+		end
+
+		index = index - 1
 	end
 end
 
