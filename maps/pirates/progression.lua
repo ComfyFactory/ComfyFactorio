@@ -613,6 +613,7 @@ function Public.go_from_currentdestination_to_sea()
 	memory.boat.speed = 0
 	memory.boat.position = new_boatposition
 	memory.boat.surface_name = seaname
+	memory.boat.fish_caught_while_at_sea = 0 -- how many times a fish was caught, rather than amount of fish caught in total
 
 	memory.enemy_force.reset_evolution()
 

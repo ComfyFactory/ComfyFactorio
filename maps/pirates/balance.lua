@@ -78,6 +78,8 @@ Public.soldier_defender_summon_chance = 0.2
 Public.veteran_destroyer_summon_chance = 0.2
 Public.veteran_on_hit_slow_chance = 0.1
 
+Public.maximum_fish_allowed_to_catch_at_sea = 30
+
 
 function Public.starting_boatEEIpower_production_MW()
 	-- return 3 * Math.sloped(Common.capacity_scale(), 1/2) / 2 --/2 as we have 2

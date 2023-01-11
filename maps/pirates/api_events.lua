@@ -819,34 +819,49 @@ local function event_on_player_mined_entity(event)
 	elseif entity.type == 'fish' then
         if not event.buffer then return end
 
-		local fish_amount = Balance.base_caught_fish_amount
-		local to_give = {}
-
-		if class == Classes.enum.FISHERMAN then
-			fish_amount = fish_amount + Balance.fisherman_fish_bonus
-			to_give[#to_give + 1] = {name = 'raw-fish', count = fish_amount}
-
-		elseif class == Classes.enum.MASTER_ANGLER then
-			fish_amount = fish_amount + Balance.master_angler_fish_bonus
-			to_give[#to_give + 1] = {name = 'raw-fish', count = fish_amount}
-			to_give[#to_give + 1] = {name = 'coin', count = Balance.master_angler_coin_bonus}
-
-		elseif class == Classes.enum.DREDGER then
-			fish_amount = fish_amount + Balance.dredger_fish_bonus
-			to_give[#to_give + 1] = {name = 'raw-fish', count = fish_amount}
-			to_give[#to_give + 1] = Loot.dredger_loot()[1]
-
-		else
-			to_give[#to_give + 1] = {name = 'raw-fish', count = fish_amount}
+		-- Prevent dull strategy being staying in sea for long time catching as many fish as possible (as there is kind of infinite amount there)
+		local boat_is_at_sea = Boats.is_boat_at_sea()
+		local fish_caught_while_at_sea = -1
+		if boat_is_at_sea and memory.boat and memory.boat.fish_caught_while_at_sea then
+			fish_caught_while_at_sea = memory.boat.fish_caught_while_at_sea
 		end
 
-		Common.give(player, to_give, entity.position)
-
-		if destination and destination.dynamic_data and destination.dynamic_data.quest_type and (not destination.dynamic_data.quest_complete) then
-			if destination.dynamic_data.quest_type == Quest.enum.FISH then
-				destination.dynamic_data.quest_progress = destination.dynamic_data.quest_progress + fish_amount
-				Quest.try_resolve_quest()
+		if (not boat_is_at_sea) or (boat_is_at_sea and fish_caught_while_at_sea < Balance.maximum_fish_allowed_to_catch_at_sea) then
+			if fish_caught_while_at_sea ~= -1 then
+				memory.boat.fish_caught_while_at_sea = memory.boat.fish_caught_while_at_sea + 1
 			end
+
+			local fish_amount = Balance.base_caught_fish_amount
+			local to_give = {}
+
+			if class == Classes.enum.FISHERMAN then
+				fish_amount = fish_amount + Balance.fisherman_fish_bonus
+				to_give[#to_give + 1] = {name = 'raw-fish', count = fish_amount}
+
+			elseif class == Classes.enum.MASTER_ANGLER then
+				fish_amount = fish_amount + Balance.master_angler_fish_bonus
+				to_give[#to_give + 1] = {name = 'raw-fish', count = fish_amount}
+				to_give[#to_give + 1] = {name = 'coin', count = Balance.master_angler_coin_bonus}
+
+			elseif class == Classes.enum.DREDGER then
+				fish_amount = fish_amount + Balance.dredger_fish_bonus
+				to_give[#to_give + 1] = {name = 'raw-fish', count = fish_amount}
+				to_give[#to_give + 1] = Loot.dredger_loot()[1]
+
+			else
+				to_give[#to_give + 1] = {name = 'raw-fish', count = fish_amount}
+			end
+
+			Common.give(player, to_give, entity.position)
+
+			if destination and destination.dynamic_data and destination.dynamic_data.quest_type and (not destination.dynamic_data.quest_complete) then
+				if destination.dynamic_data.quest_type == Quest.enum.FISH then
+					destination.dynamic_data.quest_progress = destination.dynamic_data.quest_progress + fish_amount
+					Quest.try_resolve_quest()
+				end
+			end
+		else
+			Common.notify_player_error(player, {'pirates.cant_catch_fish'})
 		end
 
 		event.buffer.clear()
@@ -1188,7 +1203,7 @@ local function event_on_entity_died(event)
 	end
 
 	if event.entity and event.entity.valid and event.entity.force and event.entity.force.name == memory.force_name then
-		if memory.boat and memory.boat.cannonscount and entity.name and entity.name == 'artillery-turret' then
+		if memory.boat and memory.boat.cannonscount and entity.name == 'artillery-turret' then
 			memory.boat.cannonscount = memory.boat.cannonscount - 1
 			-- if memory.boat.cannonscount <= 0 then
 			-- 	Crew.try_lose()
