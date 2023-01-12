@@ -105,7 +105,7 @@ function Public.remove_offline_players()
                                 local data = {
                                     position = pos
                                 }
-                                Alert.alert_all_players_location(data, message)
+                                Alert.alert_all_players_location(data, message, nil, 20)
 
                                 e.die('neutral')
                             else

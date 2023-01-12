@@ -1676,8 +1676,8 @@ local function process_explosion_tile(pos, explosion_index, current_radius)
                 global.explosion_schedule[explosion_index].damage_remaining = global.explosion_schedule[explosion_index].damage_remaining - entity.health
                 entity.damage(999999, 'player', 'explosion')
             else
-                entity.damage(global.explosion_schedule[explosion_index].damage_remaining, 'player', 'explosion')
                 global.explosion_schedule[explosion_index].damage_remaining = global.explosion_schedule[explosion_index].damage_remaining - entity.health
+                entity.damage(global.explosion_schedule[explosion_index].damage_remaining, 'player', 'explosion')
             end
         end
     end

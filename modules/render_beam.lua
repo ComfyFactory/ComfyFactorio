@@ -3,7 +3,23 @@ local Global = require 'utils.global'
 local Gui = require 'utils.gui'
 
 local this = {
-    renders = {}
+    renders = {},
+    valid_targets = {
+        'character',
+        'tank',
+        'car',
+        'lab',
+        'locomotive',
+        'cargo-wagon',
+        'fluid-wagon',
+        'artillery-wagon',
+        'artillery-turret',
+        'laser-turret',
+        'gun-turret',
+        'flamethrower-turret',
+        'silo',
+        'spidertron'
+    }
 }
 
 local Public = {}
@@ -19,25 +35,6 @@ Global.register(
         end
     end
 )
-
-local target_entities = {
-    'character',
-    'tank',
-    'car',
-    'radar',
-    'lab',
-    'furnace',
-    'locomotive',
-    'cargo-wagon',
-    'fluid-wagon',
-    'artillery-wagon',
-    'artillery-turret',
-    'laser-turret',
-    'gun-turret',
-    'flamethrower-turret',
-    'silo',
-    'spidertron'
-}
 
 local sqrt = math.sqrt
 local random = math.random
@@ -58,7 +55,7 @@ end
 function Public:new_target()
     local surface = game.get_surface(self.surface_id)
     local position
-    local entities = surface.find_entities_filtered {type = target_entities}
+    local entities = surface.find_entities_filtered {type = this.valid_targets}
     if entities and #entities > 0 then
         position = entities[random(#entities)].position
     end

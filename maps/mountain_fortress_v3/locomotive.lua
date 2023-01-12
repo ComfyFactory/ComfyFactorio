@@ -129,6 +129,10 @@ local function hurt_players_outside_of_aura()
         return
     end
     local locomotive = Public.get('locomotive')
+    if not locomotive or not locomotive.valid then
+        return
+    end
+
     local loco = locomotive.position
 
     local upgrades = Public.get('upgrades')
@@ -208,6 +212,9 @@ local function give_passive_xp(data)
     end
     local upgrades = Public.get('upgrades')
     local locomotive = Public.get('locomotive')
+    if not locomotive or not locomotive.valid then
+        return
+    end
     local rpg = data.rpg
     local loco = locomotive.position
 
@@ -386,6 +393,10 @@ local function set_locomotive_health()
     local locomotive_health = Public.get('locomotive_health')
     local locomotive_max_health = Public.get('locomotive_max_health')
     local locomotive = Public.get('locomotive')
+
+    if not locomotive or not locomotive.valid then
+        return
+    end
 
     local function check_health()
         local m = locomotive_health / locomotive_max_health
@@ -609,6 +620,9 @@ function Public.render_train_hp()
     local locomotive_max_health = Public.get('locomotive_max_health')
     local locomotive = Public.get('locomotive')
     local upgrades = Public.get('upgrades')
+    if not locomotive or not locomotive.valid then
+        return
+    end
 
     Public.set(
         'health_text',

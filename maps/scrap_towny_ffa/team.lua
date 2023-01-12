@@ -532,11 +532,15 @@ function Public.update_town_chart_tags()
             end
         end
     end
+    local surface = game.get_surface(this.active_surface_index)
+    if not surface or not surface.valid then
+        return
+    end
     if game.forces['player'] ~= nil then
-        game.forces['player'].clear_chart(game.surfaces['nauvis'])
+        game.forces['player'].clear_chart(surface)
     end
     if game.forces['rogue'] ~= nil then
-        game.forces['rogue'].clear_chart(game.surfaces['nauvis'])
+        game.forces['rogue'].clear_chart(surface)
     end
 end
 
@@ -680,16 +684,16 @@ local function disable_cluster_grenades(force)
     force.recipes['cluster-grenade'].enabled = false
 end
 
-local function enable_radar(force)
+local function enable_radar(surface, force)
     force.recipes['radar'].enabled = true
     force.share_chart = true
-    force.clear_chart('nauvis')
+    force.clear_chart(surface.name)
 end
 
-local function disable_radar(force)
+local function disable_radar(surface, force)
     force.recipes['radar'].enabled = false
     force.share_chart = false
-    force.clear_chart('nauvis')
+    force.clear_chart(surface.name)
 end
 
 local function disable_achievements(permission_group)
@@ -705,6 +709,10 @@ function Public.add_new_force(force_name)
     local this = ScenarioTable.get_table()
     -- disable permissions
     local force = game.create_force(force_name)
+    local surface = game.get_surface(this.active_surface_index)
+    if not surface or not surface.valid then
+        return
+    end
     local permission_group = game.permissions.create_group(force_name)
     reset_permissions(permission_group)
     enable_blueprints(permission_group)
@@ -714,7 +722,7 @@ function Public.add_new_force(force_name)
     disable_rockets(force)
     disable_nukes(force)
     disable_cluster_grenades(force)
-    enable_radar(force)
+    enable_radar(surface, force)
     disable_achievements(permission_group)
     disable_tips_and_tricks(permission_group)
     -- friendly fire
@@ -858,8 +866,13 @@ local function kill_force(force_name, cause)
 end
 
 local function on_forces_merged()
+    local this = ScenarioTable.get_table()
+    local map_surface = game.get_surface(this.active_surface_index)
+    if not map_surface or not map_surface.valid then
+        return
+    end
     -- Remove any ghosts that have been moved into neutral after a town is destroyed. This caused desyncs before.
-    for _, e in pairs(game.surfaces.nauvis.find_entities_filtered({force = 'neutral', type = 'entity-ghost'})) do
+    for _, e in pairs(map_surface.find_entities_filtered({force = 'neutral', type = 'entity-ghost'})) do
         if e.valid then
             e.destroy()
         end
@@ -888,6 +901,10 @@ local function setup_player_force()
     local force = game.forces.player
     local permission_group = game.permissions.create_group('outlander')
     -- disable permissions
+    local surface = game.get_surface(this.active_surface_index)
+    if not surface or not surface.valid then
+        return
+    end
     reset_permissions(permission_group)
     disable_blueprints(permission_group)
     disable_deconstruct(permission_group)
@@ -896,7 +913,7 @@ local function setup_player_force()
     disable_rockets(force)
     disable_nukes(force)
     disable_cluster_grenades(force)
-    disable_radar(force)
+    disable_radar(surface, force)
     disable_achievements(permission_group)
     disable_tips_and_tricks(permission_group)
     -- disable research
@@ -926,6 +943,10 @@ local function setup_rogue_force()
     end
     local permission_group = game.permissions.create_group('rogue')
     -- disable permissions
+    local surface = game.get_surface(this.active_surface_index)
+    if not surface or not surface.valid then
+        return
+    end
     reset_permissions(permission_group)
     disable_blueprints(permission_group)
     disable_deconstruct(permission_group)
@@ -934,7 +955,7 @@ local function setup_rogue_force()
     disable_rockets(force)
     disable_nukes(force)
     disable_cluster_grenades(force)
-    disable_radar(force)
+    disable_radar(surface, force)
     disable_achievements(permission_group)
     disable_tips_and_tricks(permission_group)
     -- disable research
@@ -1090,7 +1111,12 @@ local function on_post_entity_died(event)
     if prototype ~= 'character' then
         return
     end
-    local entities = game.surfaces[event.surface_index].find_entities_filtered({position = event.position, radius = 1})
+    local this = ScenarioTable.get_table()
+    local surface = game.get_surface(this.active_surface_index)
+    if not surface or not surface.valid then
+        return
+    end
+    local entities = surface.find_entities_filtered({position = event.position, radius = 1})
     for _, e in pairs(entities) do
         if e.type == 'character-corpse' then
             Public.remove_key(e.character_corpse_player_index)

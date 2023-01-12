@@ -34,6 +34,12 @@ local function create_player_data(player)
 end
 
 local function remove_player_data(player)
+    if not player then
+        return
+    end
+    if not player.index then
+        return
+    end
     local player_data = this.players[player.index]
     if player_data then
         this.players[player.index] = nil

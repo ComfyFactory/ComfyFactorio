@@ -178,15 +178,17 @@ local function teleport_players(surface, small_force_chunk)
 end
 
 local function equip_players(player_starting_items)
-    for k, player in pairs(game.connected_players) do
+    for _, player in pairs(game.connected_players) do
         if player.character then
             player.character.destroy()
         end
         player.character = nil
         player.set_controller({type = defines.controllers.god})
         player.create_character()
-        for item, amount in pairs(player_starting_items) do
-            player.insert({name = item, count = amount})
+        if player_starting_items then
+            for item, amount in pairs(player_starting_items) do
+                player.insert({name = item, count = amount})
+            end
         end
         Modifiers.update_player_modifiers(player)
     end
@@ -261,10 +263,10 @@ function Public.get_reset_counter()
 end
 
 --- Customizes the message with the mapkeeper param.
----@param boolean <true/false>
-function Public.enable_mapkeeper(boolean)
-    if boolean and type(boolean) == 'boolean' then
-        this.enable_mapkeeper = boolean or false
+---@param state boolean
+function Public.enable_mapkeeper(state)
+    if state and type(state) == 'boolean' then
+        this.enable_mapkeeper = state or false
     end
 end
 

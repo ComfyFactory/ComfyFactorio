@@ -2,7 +2,7 @@ require 'modules.custom_death_messages'
 require 'modules.flashlight_toggle_button'
 require 'modules.global_chat_toggle'
 require 'modules.biters_yield_coins'
-require 'maps.scrap_towny_ffa.reset'
+local Reset = require 'maps.scrap_towny_ffa.reset'
 require 'maps.scrap_towny_ffa.mining'
 require 'maps.scrap_towny_ffa.building'
 require 'maps.scrap_towny_ffa.spaceship'
@@ -21,7 +21,6 @@ require 'maps.scrap_towny_ffa.vehicles'
 require 'maps.scrap_towny_ffa.suicide'
 
 local Event = require 'utils.event'
-local Alert = require 'utils.alert'
 local Autostash = require 'modules.autostash'
 local MapDefaults = require 'maps.scrap_towny_ffa.map_defaults'
 local BottomFrame = require 'utils.gui.bottom_frame'
@@ -77,131 +76,93 @@ end
 local function update_score()
     local this = ScenarioTable.get_table()
 
-    if this.winner then
-        if not this.game_won then
-            this.game_won = true
-            this.game_reset_tick = 5400
-            Alert.alert_all_players(900, 'Winner winner chicken dinner!\n[color=red]' .. this.winner.name .. '[/color] has won the game!', Color.white, 'restart_required', 1.0)
-            for _, player in pairs(game.connected_players) do
-                player.play_sound {path = 'utility/game_won', volume_modifier = 0.75}
-            end
-            local winner = this.winner
-            local message = {
-                title = 'Game over',
-                description = 'Town statistics is below',
-                color = 'success',
-                field1 = {
-                    text1 = 'Town won:',
-                    text2 = winner.name,
-                    inline = 'false'
-                },
-                field2 = {
-                    text1 = 'Town researched:',
-                    text2 = winner.name .. ' with a score of ' .. winner.research_counter .. ' techs!',
-                    inline = 'false'
-                },
-                field3 = {
-                    text1 = 'Town upgrades:',
-                    text2 = winner.name .. ' upgraded their town with:\nCrafting speed:' .. winner.upgrades.crafting_speed .. '\nMining speed:' .. winner.upgrades.mining_speed,
-                    inline = 'false'
-                },
-                field4 = {
-                    text1 = 'Town health:',
-                    text2 = winner.name .. ' had a health of ' .. winner.health .. ' left!',
-                    inline = 'false'
-                },
-                field5 = {
-                    text1 = 'Town coins:',
-                    text2 = winner.name .. ' had ' .. winner.coin_balance .. ' coins stashed!',
-                    inline = 'false'
-                }
-            }
-            Server.to_discord_embed_parsed(message)
-        end
-        return
-    end
-
     for _, player in pairs(game.connected_players) do
-        local frame = this.score_gui_frame[player.index]
-        if not (frame and frame.valid) then
-            init_score_board(player)
-        end
-        if frame and frame.valid then
-            frame.clear()
-
-            local inner_frame = frame.add {type = 'frame', style = 'inside_shallow_frame', direction = 'vertical'}
-
-            local subheader = inner_frame.add {type = 'frame', style = 'subheader_frame'}
-            subheader.style.horizontally_stretchable = true
-            subheader.style.vertical_align = 'center'
-
-            subheader.add {type = 'label', style = 'subheader_label', caption = {'', 'Survive 2 days (48h) to win!'}}
-
-            if not next(subheader.children) then
-                subheader.destroy()
+        if this.winner then
+            Reset.show_mvps(player)
+        else
+            local frame = this.score_gui_frame[player.index]
+            if not (frame and frame.valid) then
+                init_score_board(player)
             end
+            if frame and frame.valid then
+                frame.clear()
 
-            local information_table = inner_frame.add {type = 'table', column_count = 3, style = 'bordered_table'}
-            information_table.style.margin = 4
-            information_table.style.column_alignments[3] = 'right'
+                local inner_frame = frame.add {type = 'frame', style = 'inside_shallow_frame', direction = 'vertical'}
 
-            for _, caption in pairs({'Rank', 'Town (players online/total)', 'Survival time'}) do
-                local label = information_table.add {type = 'label', caption = caption}
-                label.style.font = 'default-bold'
-            end
+                local subheader = inner_frame.add {type = 'frame', style = 'subheader_frame'}
+                subheader.style.horizontally_stretchable = true
+                subheader.style.vertical_align = 'center'
 
-            local town_ages = {}
-            for _, town_center in pairs(this.town_centers) do
-                if town_center ~= nil then
-                    local age = game.tick - town_center.creation_tick
-                    town_ages[town_center] = age
+                local days = this.required_time_to_win / 24
+
+                subheader.add {type = 'label', style = 'subheader_label', caption = {'', 'Survive for ' .. days .. ' days (' .. this.required_time_to_win .. 'h) to win!'}}
+
+                if not next(subheader.children) then
+                    subheader.destroy()
                 end
-            end
 
-            local rank = 1
+                local information_table = inner_frame.add {type = 'table', column_count = 3, style = 'bordered_table'}
+                information_table.style.margin = 4
+                information_table.style.column_alignments[3] = 'right'
 
-            for town_center, age in spairs(town_ages) do
-                local position = information_table.add {type = 'label', caption = '#' .. rank}
-                if town_center == this.town_centers[player.force.name] then
-                    position.style.font = 'default-semibold'
-                    position.style.font_color = {r = 1, g = 1}
+                for _, caption in pairs({'Rank', 'Town (players online/total)', 'Survival time'}) do
+                    local label = information_table.add {type = 'label', caption = caption}
+                    label.style.font = 'default-bold'
                 end
+
+                local town_ages = {}
+                for _, town_center in pairs(this.town_centers) do
+                    if town_center ~= nil then
+                        local age = game.tick - town_center.creation_tick
+                        town_ages[town_center] = age
+                    end
+                end
+
+                local rank = 1
+
+                for town_center, age in spairs(town_ages) do
+                    local position = information_table.add {type = 'label', caption = '#' .. rank}
+                    if town_center == this.town_centers[player.force.name] then
+                        position.style.font = 'default-semibold'
+                        position.style.font_color = {r = 1, g = 1}
+                    end
+                    local label =
+                        information_table.add {
+                        type = 'label',
+                        caption = town_center.town_name .. ' (' .. #town_center.market.force.connected_players .. '/' .. #town_center.market.force.players .. ')'
+                    }
+                    label.style.font = 'default-semibold'
+                    label.style.font_color = town_center.color
+                    local age_hours = age / 60 / 3600
+                    local total_age = string.format('%.1f', age_hours)
+                    information_table.add {type = 'label', caption = total_age .. 'h'}
+
+                    rank = rank + 1
+
+                    if tonumber(total_age) >= this.required_time_to_win then
+                        this.winner = {
+                            name = town_center.town_name,
+                            research_counter = town_center.research_counter,
+                            upgrades = town_center.upgrades,
+                            health = town_center.health,
+                            coin_balance = town_center.coin_balance
+                        }
+                    end
+                end
+
+                -- Outlander section
+                information_table.add {type = 'label', caption = '-'}
+                local outlander_on = #game.forces['player'].connected_players + #game.forces['rogue'].connected_players
+                local outlander_total = #game.forces['player'].players + #game.forces['rogue'].players
+
                 local label =
                     information_table.add {
                     type = 'label',
-                    caption = town_center.town_name .. ' (' .. #town_center.market.force.connected_players .. '/' .. #town_center.market.force.players .. ')'
+                    caption = 'Outlanders' .. ' (' .. outlander_on .. '/' .. outlander_total .. ')'
                 }
-                label.style.font = 'default-semibold'
-                label.style.font_color = town_center.color
-                local age_hours = age / 60 / 3600
-                local total_age = string.format('%.1f', age_hours)
-                information_table.add {type = 'label', caption = total_age .. 'h'}
-
-                rank = rank + 1
-
-                if tonumber(total_age) >= this.required_time_to_win then
-                    this.winner = {
-                        name = town_center.town_name,
-                        research_counter = town_center.research_counter,
-                        upgrades = town_center.upgrades,
-                        health = town_center.health,
-                        coin_balance = town_center.coin_balance
-                    }
-                end
+                label.style.font_color = {170, 170, 170}
+                information_table.add {type = 'label', caption = '-'}
             end
-
-            -- Outlander section
-            information_table.add {type = 'label', caption = '-'}
-            local outlander_on = #game.forces['player'].connected_players + #game.forces['rogue'].connected_players
-            local outlander_total = #game.forces['player'].players + #game.forces['rogue'].players
-
-            local label =
-                information_table.add {
-                type = 'label',
-                caption = 'Outlanders' .. ' (' .. outlander_on .. '/' .. outlander_total .. ')'
-            }
-            label.style.font_color = {170, 170, 170}
-            information_table.add {type = 'label', caption = '-'}
         end
     end
 end
@@ -246,8 +207,6 @@ local function on_nth_tick(event)
     if not tick_actions[seconds] then
         return
     end
-    --game.surfaces['nauvis'].play_sound({path = 'utility/alert_destroyed', volume_modifier = 1})
-    --log('seconds = ' .. seconds)
     tick_actions[seconds]()
 end
 
