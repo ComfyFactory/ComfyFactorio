@@ -1080,13 +1080,18 @@ local function teleport_handle_wake_tiles(boat, dummyboat, newsurface_name, olds
 		oldsurface.set_tiles(newtiles, true, false, true)
 
 		-- but since players don't die instantly, they can get stuck in water, this prevents this (even though it let's you walk in front of ship while ship is departing)
-		for _, player in pairs(Common.crew_get_crew_members()) do
-			if player.character and player.character.valid then
-				local tile = oldsurface.get_tile(player.character.position.x, player.character.position.y)
-				if Utils.contains(CoreData.water_tile_names, tile.name) then
-					local new_pos = oldsurface.find_non_colliding_position('character', player.character.position, 20, 0.1, true)
-					if new_pos then
-						player.character.teleport(new_pos)
+		-- NOTE: this will need to be changed, when ship doesn't necessarily arrive from the left
+		if vector.x < 0 then
+			for _, player in pairs(Common.crew_get_crew_members()) do
+				if player.character and player.character.valid then
+					local tile = oldsurface.get_tile(player.character.position.x, player.character.position.y)
+					if tile.valid then
+						if Utils.contains(CoreData.water_tile_names, tile.name) then
+							local new_pos = oldsurface.find_non_colliding_position('character', player.character.position, 20, 0.1, true)
+							if new_pos then
+								player.character.teleport(new_pos)
+							end
+						end
 					end
 				end
 			end
@@ -1465,6 +1470,15 @@ function Public.clear_fluid_from_ship_tanks(idx)
 				boat.downstairs_fluid_storages[j][idx].clear_fluid_inside()
 			end
 		end
+	end
+end
+
+function Public.need_resources_to_undock()
+	local destination = Common.current_destination()
+	if destination and destination.dynamic_data and destination.dynamic_data.time_remaining == -1 then
+		return true
+	else
+		return false
 	end
 end
 

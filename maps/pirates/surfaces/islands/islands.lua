@@ -161,7 +161,7 @@ function Public.spawn_ores_on_arrival(destination, points_to_avoid)
 	local surface = game.surfaces[destination.surface_name]
 	if not surface and surface.valid then return end
 
-	if (destination.subtype and (destination.subtype == enum.STANDARD or destination.subtype == enum.STANDARD_VARIANT or destination.subtype == enum.MAZE)) then
+	if destination.subtype == enum.STANDARD or destination.subtype == enum.STANDARD_VARIANT or destination.subtype == enum.MAZE then
 		local ores = {'iron-ore', 'copper-ore', 'stone', 'coal', 'crude-oil'}
 
 		local args = {

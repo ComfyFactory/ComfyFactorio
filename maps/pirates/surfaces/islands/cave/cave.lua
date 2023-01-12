@@ -9,6 +9,7 @@ local SurfacesCommon = require 'maps.pirates.surfaces.common'
 local BoatData = require 'maps.pirates.structures.boats.sloop.data'
 local Event = require 'utils.event'
 local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
+local Balance = require 'maps.pirates.balance'
 
 local Public = {}
 Public.Data = require 'maps.pirates.surfaces.islands.cave.data'
@@ -63,32 +64,44 @@ function Public.reveal(cave_miner, surface, source_surface, position, brushsize)
     source_surface.set_tiles(copied_tiles, false, false, false, false)
 
     for _, entity in pairs(source_surface.find_entities_filtered({area = {{position.x - brushsize, position.y - brushsize}, {position.x + brushsize, position.y + brushsize}}})) do
-        local entity_position = entity.position
-        if (position.x - entity_position.x) ^ 2 + (position.y - entity_position.y) ^ 2 < brushsize_square then
-            local e = entity.clone({position = entity_position, surface = surface})
-            if e.name == 'market' then
-                rendering.draw_light(
-                    {
-                        sprite = 'utility/light_medium',
-                        scale = 7,
-                        intensity = 0.8,
-                        minimum_darkness = 0,
-                        oriented = true,
-                        color = {255, 255, 255},
-                        target = e,
-                        surface = surface,
-                        visible = true,
-                        only_in_alt_mode = false
-                    }
-                )
-            end
+        if entity.valid then
+            local entity_position = entity.position
+            if (position.x - entity_position.x) ^ 2 + (position.y - entity_position.y) ^ 2 < brushsize_square then
+                local e = entity.clone({position = entity_position, surface = surface})
+                if e.name == 'market' then
+                    rendering.draw_light(
+                        {
+                            sprite = 'utility/light_medium',
+                            scale = 7,
+                            intensity = 0.8,
+                            minimum_darkness = 0,
+                            oriented = true,
+                            color = {255, 255, 255},
+                            target = e,
+                            surface = surface,
+                            visible = true,
+                            only_in_alt_mode = false
+                        }
+                    )
+                end
 
-            if entity.force.index == 2 then
-                e.active = true
-                table.insert(cave_miner.reveal_queue, {entity.type, entity.position.x, entity.position.y})
-            end
+                if entity.force.index == 2 then
+                    e.active = true
+                    table.insert(cave_miner.reveal_queue, {entity.type, entity.position.x, entity.position.y})
+                end
 
-            entity.destroy()
+                entity.destroy()
+
+                -- make revealing a spawner recursively reveal nearby ones too
+                if e.name == 'biter-spawner' or e.name == 'spitter-spawner' then
+                    -- prevent spawners immediately spawning tons of biters for a while to give player a chance to clear them or run away
+                    if destination.dynamic_data and destination.dynamic_data.disabled_wave_timer then
+                        destination.dynamic_data.disabled_wave_timer = Balance.prevent_waves_from_spawning_in_cave_timer_length
+                    end
+
+                    Public.reveal(cave_miner, surface, source_surface, entity_position, 15)
+                end
+            end
         end
     end
 

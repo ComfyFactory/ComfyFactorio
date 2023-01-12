@@ -134,7 +134,7 @@ function Public.check_all_spawners_dead(tickinterval)
 	local destination = Common.current_destination()
 	local boat = memory.boat
 
-	if destination.static_params and destination.static_params.base_cost_to_undock and (not (destination.subtype and destination.subtype == IslandEnum.enum.RED_DESERT)) then
+	if destination.static_params and destination.static_params.base_cost_to_undock and (not (destination.subtype == IslandEnum.enum.RED_DESERT or destination.subtype == IslandEnum.enum.CAVE)) then
 		if boat and boat.surface_name and boat.surface_name == destination.surface_name then
 			local surface = game.surfaces[destination.surface_name]
 			if not (surface and surface.valid) then return end
@@ -310,7 +310,7 @@ function Public.periodic_free_resources(tickinterval)
 
 	Common.give_items_to_crew(Balance.periodic_free_resources_per_destination_5_seconds())
 
-	if game.tick % (300*30) == 0 and (destination and destination.subtype and destination.subtype == IslandEnum.enum.RADIOACTIVE) then -- every 150 seconds
+	if game.tick % (300*30) == 0 and (destination and destination.subtype == IslandEnum.enum.RADIOACTIVE) then -- every 150 seconds
 		local count = 2
 		Common.give_items_to_crew{{name = 'sulfuric-acid-barrel', count = count}}
 		local force = memory.force
@@ -1160,7 +1160,7 @@ function Public.slower_boat_tick(tickinterval)
 	end
 
 	local p = memory.boat.position
-	if p and (not (destination.subtype and destination.subtype == IslandEnum.enum.RADIOACTIVE)) and destination.surface_name and game.surfaces[destination.surface_name] and game.surfaces[destination.surface_name].valid then --no locomotive pollute on radioactive islands
+	if p and destination.subtype ~= IslandEnum.enum.RADIOACTIVE and destination.surface_name and game.surfaces[destination.surface_name] and game.surfaces[destination.surface_name].valid then --no locomotive pollute on radioactive islands
 		local pollution = Balance.boat_passive_pollution_per_minute(destination.dynamic_data.timer) / 3600 * tickinterval
 
 		game.surfaces[destination.surface_name].pollute(p, pollution)

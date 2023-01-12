@@ -80,6 +80,8 @@ Public.veteran_on_hit_slow_chance = 0.1
 
 Public.maximum_fish_allowed_to_catch_at_sea = 30
 
+Public.prevent_waves_from_spawning_in_cave_timer_length = 10 -- in seconds
+
 
 function Public.starting_boatEEIpower_production_MW()
 	-- return 3 * Math.sloped(Common.capacity_scale(), 1/2) / 2 --/2 as we have 2

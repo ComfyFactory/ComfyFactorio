@@ -59,10 +59,12 @@ function Public.silo_die()
 			if CoreData.rocket_silo_death_causes_loss then
 				-- Crew.lose_life()
 				Crew.try_lose({'pirates.loss_silo_destroyed'})
-			elseif (not destination.dynamic_data.rocketlaunched) and destination.static_params and destination.static_params.base_cost_to_undock and destination.static_params.base_cost_to_undock['launch_rocket'] and destination.static_params.base_cost_to_undock['launch_rocket'] == true and (not (destination.dynamic_data.time_remaining and destination.dynamic_data.time_remaining > 0)) then
-				Crew.try_lose({'pirates.loss_silo_destroyed_before_necessary_launch'})
 			elseif (not destination.dynamic_data.rocketlaunched) then
-				Common.notify_force(force, {'pirates.silo_destroyed'})
+				if destination.static_params and destination.static_params.base_cost_to_undock and destination.static_params.base_cost_to_undock['launch_rocket'] == true and Boats.need_resources_to_undock() then
+					Crew.try_lose({'pirates.loss_silo_destroyed_before_necessary_launch'})
+				else
+					Common.notify_force(force, {'pirates.silo_destroyed'})
+				end
 			end
 		end
 
@@ -109,7 +111,7 @@ local function biters_chew_stuff_faster(event)
 
 	if (event.entity.force.index == 3 or event.entity.force.name == 'environment') then
 		event.entity.health = event.entity.health - event.final_damage_amount * 5
-		if destination and destination.type and destination.subtype and destination.type == Surfaces.enum.ISLAND and destination.subtype == IslandEnum.enum.MAZE then
+		if destination and destination.type == Surfaces.enum.ISLAND and destination.subtype == IslandEnum.enum.MAZE then
 			event.entity.health = event.entity.health - event.final_damage_amount * 10
 		end
 	elseif event.entity.name == 'pipe' then
@@ -528,7 +530,7 @@ local function swamp_resist_poison(event)
 	if not (event.damage_type.name and event.damage_type.name == 'poison') then return end
 
 	local destination = Common.current_destination()
-	if not (destination and destination.subtype and destination.subtype == IslandEnum.enum.SWAMP) then return end
+	if not (destination and destination.subtype == IslandEnum.enum.SWAMP) then return end
 
 	if not (destination.surface_name == entity.surface.name) then return end
 
@@ -546,7 +548,7 @@ local function maze_walls_resistance(event)
 	if not entity.valid then return end
 
 	local destination = Common.current_destination()
-	if not (destination and destination.subtype and destination.subtype == IslandEnum.enum.MAZE) then return end
+	if not (destination and destination.subtype == IslandEnum.enum.MAZE) then return end
 
 	if not (destination.surface_name == entity.surface.name) then return end
 
