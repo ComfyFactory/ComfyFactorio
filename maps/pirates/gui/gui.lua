@@ -27,6 +27,7 @@ local Roles = require 'maps.pirates.roles.roles'
 local Event = require 'utils.event'
 local CustomEvents = require 'maps.pirates.custom_events'
 local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
+local Kraken = require 'maps.pirates.surfaces.sea.kraken'
 
 local ComfyGui = require 'utils.gui'
 ComfyGui.set_disabled_tab('Scoreboard', true)
@@ -558,22 +559,31 @@ function Public.process_etaframe_update(player, flow1, bools)
 			flow2.etaframe_label_2.caption = Utils.standard_string_form_of_time_in_seconds(passive_eta)
 
 		elseif bools.atsea_loading_bool then
-			flow2.etaframe_label_1.visible = true
-			flow2.etaframe_label_2.visible = true
+			if Kraken.get_active_kraken_count() > 0 then
+				flow2.etaframe_label_1.visible = true
+				flow2.etaframe_label_2.visible = false
 
-			tooltip = {'pirates.atsea_loading_tooltip'}
+				tooltip = {'pirates.defeat_krakens_tooltip'}
 
-			local total = Common.map_loading_ticks_atsea
-			if destination.type == Surfaces.enum.DOCK then
-				total = Common.map_loading_ticks_atsea_dock
-			elseif destination.type == Surfaces.enum.ISLAND and destination.subtype == IslandEnum.enum.MAZE then
-				total = Common.map_loading_ticks_atsea_maze
+				flow2.etaframe_label_1.caption = {'pirates.gui_etaframe_defeat_krakens'}
+			else
+				flow2.etaframe_label_1.visible = true
+				flow2.etaframe_label_2.visible = true
+
+				tooltip = {'pirates.atsea_loading_tooltip'}
+
+				local total = Common.map_loading_ticks_atsea
+				if destination.type == Surfaces.enum.DOCK then
+					total = Common.map_loading_ticks_atsea_dock
+				elseif destination.type == Surfaces.enum.ISLAND and destination.subtype == IslandEnum.enum.MAZE then
+					total = Common.map_loading_ticks_atsea_maze
+				end
+
+				local eta_ticks = total + (memory.extra_time_at_sea or 0) - memory.loadingticks
+
+				flow2.etaframe_label_1.caption = {'pirates.gui_etaframe_arriving_in'}
+				flow2.etaframe_label_2.caption = Utils.standard_string_form_of_time_in_seconds(eta_ticks / 60)
 			end
-
-			local eta_ticks = total + (memory.extra_time_at_sea or 0) - memory.loadingticks
-
-			flow2.etaframe_label_1.caption = {'pirates.gui_etaframe_arriving_in'}
-			flow2.etaframe_label_2.caption = Utils.standard_string_form_of_time_in_seconds(eta_ticks / 60)
 
 		elseif bools.atsea_waiting_bool then
 			flow2.etaframe_label_1.visible = true
@@ -593,7 +603,7 @@ function Public.process_etaframe_update(player, flow1, bools)
 			flow2.etaframe_label_2.caption = {'pirates.gui_etaframe_anytime'}
 		end
 
-		if bools.cost_bool then
+		if bools.cost_bool and Kraken.get_active_kraken_count() == 0 then
 			local costs = destination.static_params.base_cost_to_undock
 			local adjusted_costs = Common.time_adjusted_departure_cost(costs)
 
@@ -608,8 +618,7 @@ function Public.process_etaframe_update(player, flow1, bools)
 
 			-- local caption
 			if bools.atsea_loading_bool then
-				-- @TODO: Fix magic numbers here
-				if Boats.need_resources_to_undock() then --bools.eta_bool is not helpful yet
+				if Balance.need_resources_to_undock() then
 					flow2.etaframe_label_3.caption = {'pirates.gui_etaframe_next_escape_cost'}
 					if bools.cost_includes_rocket_launch_bool then
 						tooltip = {'pirates.resources_needed_tooltip_0_rocketvariant'}

@@ -60,7 +60,7 @@ function Public.silo_die()
 				-- Crew.lose_life()
 				Crew.try_lose({'pirates.loss_silo_destroyed'})
 			elseif (not destination.dynamic_data.rocketlaunched) then
-				if destination.static_params and destination.static_params.base_cost_to_undock and destination.static_params.base_cost_to_undock['launch_rocket'] == true and Boats.need_resources_to_undock() then
+				if destination.static_params and destination.static_params.base_cost_to_undock and destination.static_params.base_cost_to_undock['launch_rocket'] == true and Balance.need_resources_to_undock() then
 					Crew.try_lose({'pirates.loss_silo_destroyed_before_necessary_launch'})
 				else
 					Common.notify_force(force, {'pirates.silo_destroyed'})

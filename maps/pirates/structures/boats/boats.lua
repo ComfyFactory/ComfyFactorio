@@ -1473,13 +1473,4 @@ function Public.clear_fluid_from_ship_tanks(idx)
 	end
 end
 
-function Public.need_resources_to_undock()
-	local destination = Common.current_destination()
-	if destination and destination.dynamic_data and destination.dynamic_data.time_remaining == -1 then
-		return true
-	else
-		return false
-	end
-end
-
 return Public

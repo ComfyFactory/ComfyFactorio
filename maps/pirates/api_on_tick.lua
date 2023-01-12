@@ -1005,14 +1005,10 @@ function Public.loading_update(tickinterval)
 				total = Common.map_loading_ticks_atsea_maze
 			end
 
-			local eta_ticks = total - (memory.loadingticks - (memory.extra_time_at_sea or 0))
+			-- local eta_ticks = total - (memory.loadingticks - (memory.extra_time_at_sea or 0))
 
-			if eta_ticks < 60*20 and
-				memory.active_sea_enemies and
-				memory.active_sea_enemies.kraken_count and
-				memory.active_sea_enemies.kraken_count > 0
-			then
-				memory.loadingticks = memory.loadingticks - tickinterval --reverse the change
+			if Kraken.get_active_kraken_count() > 0 then
+				memory.loadingticks = memory.loadingticks - tickinterval --reverse the change to avoid causing lag from map loading during fight
 			else
 				local fraction = memory.loadingticks / (total + (memory.extra_time_at_sea or 0))
 
@@ -1243,7 +1239,7 @@ function Public.Kraken_Destroyed_Backup_check(tickinterval) -- a server became s
 	local boat = memory.boat
 
 	if boat and boat.surface_name and boat.state and boat.state == Boats.enum_state.ATSEA_LOADING_MAP then
-		if (memory.active_sea_enemies and memory.active_sea_enemies.krakens and memory.active_sea_enemies.kraken_count and memory.active_sea_enemies.kraken_count > 0) then
+		if Kraken.get_active_kraken_count() > 0 then
 
 			local surface = game.surfaces[boat.surface_name]
 
