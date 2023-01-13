@@ -9,6 +9,7 @@ local Common = require 'maps.pirates.common'
 local Utils = require 'maps.pirates.utils_local'
 local CoreData = require 'maps.pirates.coredata'
 local SurfacesCommon = require 'maps.pirates.surfaces.common'
+local Boats = require 'maps.pirates.structures.boats.boats'
 -- local Server = require 'utils.server'
 
 local Public = {}
@@ -110,6 +111,10 @@ function Public.explanation(class, add_is_class_obtainable)
 		local extra_fish = Balance.master_angler_fish_bonus
 		local extra_coins = Balance.master_angler_coin_bonus
 		full_explanation = {'', {explanation, extra_range, extra_fish, extra_coins}}
+	elseif class == enum.DREDGER then
+		local extra_range = Balance.dredger_reach_bonus
+		local extra_fish = Balance.dredger_fish_bonus
+		full_explanation = {'', {explanation, extra_range, extra_fish}}
 	elseif class == enum.SCOUT then
 		local extra_speed = Public.percentage_points_difference_from_100_percent(Balance.scout_extra_speed)
 		local received_damage = Public.percentage_points_difference_from_100_percent(Balance.scout_damage_taken_multiplier)
@@ -349,7 +354,7 @@ local function class_on_player_used_capsule(event)
 	local global_memory = Memory.get_global_memory()
 	global_memory.last_players_health[event.player_index] = player.character.health
 
-	if class == Public.enum.GOURMET then
+	if class == Public.enum.GOURMET and (not Boats.is_boat_at_sea()) then
 		local multiplier = 0
 		local surfacedata = SurfacesCommon.decode_surface_name(player.surface.name)
 		if surfacedata.type == SurfacesCommon.enum.CABIN then

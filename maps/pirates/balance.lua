@@ -14,7 +14,7 @@ local CoreData = require 'maps.pirates.coredata'
 
 
 -- Kraken related parameters
-Public.biter_swim_speed = 1
+Public.biter_swim_speed = 1.5
 Public.kraken_biter_spawn_radius = 6 -- only used during non automatic forced spawning during kraken's "special ability"
 Public.kraken_spit_targeting_player_chance = 0
 
@@ -77,6 +77,10 @@ Public.rock_eater_required_stone_furnace_to_heal_count = 1
 Public.soldier_defender_summon_chance = 0.2
 Public.veteran_destroyer_summon_chance = 0.2
 Public.veteran_on_hit_slow_chance = 0.1
+
+Public.maximum_fish_allowed_to_catch_at_sea = 30
+
+Public.prevent_waves_from_spawning_in_cave_timer_length = 10 -- in seconds
 
 
 function Public.starting_boatEEIpower_production_MW()
@@ -164,10 +168,19 @@ end
 
 Public.rockets_needed_x = 40*20
 
+-- Returns true if resources are mandatory to escape from island. Returns false, when resources are needed to just undock early.
+function Public.need_resources_to_undock()
+	local x = Common.overworldx()
+	if x >= Public.rockets_needed_x and x ~= 40*21 then
+		return true
+	else
+		return false
+	end
+end
 
 function Public.max_time_on_island()
 	local x = Common.overworldx()
-	if x == 0 or (x >= Public.rockets_needed_x and x ~= 40*21) then
+	if x == 0 or Public.need_resources_to_undock() then
 	-- if Common.overworldx() == 0 or ((Common.overworldx()/40) > 20 and (Common.overworldx()/40) < 25) then
 		return -1
 	else

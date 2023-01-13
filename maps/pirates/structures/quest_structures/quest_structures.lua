@@ -105,6 +105,7 @@ function Public.initialise_cached_quest_structure(position, quest_structure_type
 			rendering2 = rendering2,
 			rendering3 = rendering3,
 			rendering4 = rendering4,
+			completion_counter = 0,
 		}
 
 	elseif quest_structure_type == enum.FURNACE1 then
@@ -242,20 +243,21 @@ function Public.tick_quest_structure_entry_price_check()
 
 		local entry_price = quest_structure_data.entry_price
 
-		local got = 0
 		for k, v in pairs(blue_contents) do
 			if quest_structure_data.state == 'covered' and k == entry_price.name then
-				got = v
+				quest_structure_data.completion_counter = quest_structure_data.completion_counter + v
 			else
 				-- @FIX: power armor loses components, items lose health!
+				-- @Piratux: ^ bro what?
+
 				red_inv.insert({name = k, count = v});
-				blue_inv.remove({name = k, count = v});
 			end
+
+			blue_inv.remove({name = k, count = v});
 		end
 
 		if quest_structure_data.state == 'covered' then
-			if got >= entry_price.count then
-				blue_inv.remove({name = entry_price.name, count = entry_price.count});
+			if quest_structure_data.completion_counter >= entry_price.count then
 				quest_structure_data.state = 'uncovered'
 				rendering.destroy(quest_structure_data.rendering1)
 				rendering.destroy(quest_structure_data.rendering2)
@@ -268,7 +270,7 @@ function Public.tick_quest_structure_entry_price_check()
 				destination.dynamic_data.structures_waiting_to_be_placed[#destination.dynamic_data.structures_waiting_to_be_placed + 1] = {data = special, tick = game.tick}
 			else
 				if quest_structure_data.rendering1 then
-					rendering.set_text(quest_structure_data.rendering1, {'pirates.quest_structure_market_1', entry_price.count - got})
+					rendering.set_text(quest_structure_data.rendering1, {'pirates.quest_structure_market_1', entry_price.count - quest_structure_data.completion_counter})
 				end
 			end
 		end
