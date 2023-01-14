@@ -613,6 +613,7 @@ function Public.go_from_currentdestination_to_sea()
 	memory.boat.speed = 0
 	memory.boat.position = new_boatposition
 	memory.boat.surface_name = seaname
+	memory.boat.fish_caught_while_at_sea = 0 -- how many times a fish was caught, rather than amount of fish caught in total
 
 	memory.enemy_force.reset_evolution()
 
@@ -636,7 +637,7 @@ function Public.go_from_currentdestination_to_sea()
 		local maps = destination.dynamic_data.treasure_maps or {}
 		for _, map in pairs(maps) do
 			if map.state == 'picked_up' then
-				Common.parrot_speak(memory.force, {'pirates.parrot_burried_treasure_tip'})
+				Common.parrot_speak(memory.force, {'pirates.parrot_buried_treasure_tip'})
 				break
 			end
 		end

@@ -351,6 +351,7 @@ function Public.assign_captain_based_on_priorities(excluded_player_index)
 	local captain_name = nil
 
 	-- Prefer officers for a captain (if there are any)
+	-- NOTE: this will try offering captain role to officer just once. It won't necessarily offer captain role to 2nd officer in the list if 1st officer rejects it.
 	for player_index, _ in pairs(memory.officers_table) do
 		local player = game.players[player_index]
 		local player_active = Utils.contains(Common.crew_get_nonafk_crew_members(), player)

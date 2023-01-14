@@ -16,20 +16,20 @@ local Roles = require 'maps.pirates.roles.roles'
 local Progression = require 'maps.pirates.progression'
 local Crowsnest = require 'maps.pirates.surfaces.crowsnest'
 local Hold = require 'maps.pirates.surfaces.hold'
-local Cabin = require 'maps.pirates.surfaces.cabin'
+-- local Cabin = require 'maps.pirates.surfaces.cabin'
 local Balance = require 'maps.pirates.balance'
 local Common = require 'maps.pirates.common'
 local CoreData = require 'maps.pirates.coredata'
 local Overworld = require 'maps.pirates.overworld'
 local Utils = require 'maps.pirates.utils_local'
 local Crew = require 'maps.pirates.crew'
-local Parrot = require 'maps.pirates.parrot'
+-- local Parrot = require 'maps.pirates.parrot'
 local Math = require 'maps.pirates.math'
 local _inspect = require 'utils.inspect'.inspect
 local Kraken = require 'maps.pirates.surfaces.sea.kraken'
 
 local Quest = require 'maps.pirates.quest'
-local ShopDock = require 'maps.pirates.shop.dock'
+-- local ShopDock = require 'maps.pirates.shop.dock'
 local QuestStructures = require 'maps.pirates.structures.quest_structures.quest_structures'
 
 local Public = {}
@@ -134,7 +134,7 @@ function Public.check_all_spawners_dead(tickinterval)
 	local destination = Common.current_destination()
 	local boat = memory.boat
 
-	if destination.static_params and destination.static_params.base_cost_to_undock and (not (destination.subtype and destination.subtype == IslandEnum.enum.RED_DESERT)) then
+	if destination.static_params and destination.static_params.base_cost_to_undock and (not (destination.subtype == IslandEnum.enum.RED_DESERT or destination.subtype == IslandEnum.enum.CAVE)) then
 		if boat and boat.surface_name and boat.surface_name == destination.surface_name then
 			local surface = game.surfaces[destination.surface_name]
 			if not (surface and surface.valid) then return end
@@ -310,7 +310,7 @@ function Public.periodic_free_resources(tickinterval)
 
 	Common.give_items_to_crew(Balance.periodic_free_resources_per_destination_5_seconds())
 
-	if game.tick % (300*30) == 0 and (destination and destination.subtype and destination.subtype == IslandEnum.enum.RADIOACTIVE) then -- every 150 seconds
+	if game.tick % (300*30) == 0 and (destination and destination.subtype == IslandEnum.enum.RADIOACTIVE) then -- every 150 seconds
 		local count = 2
 		Common.give_items_to_crew{{name = 'sulfuric-acid-barrel', count = count}}
 		local force = memory.force
@@ -436,40 +436,6 @@ function Public.pick_up_tick(tickinterval)
 	end
 end
 
-local function cached_structure_delete_existing_entities_if_needed(surface, position, special)
-	if (not special.doNotDestroyExistingEntities) then
-		-- destroy existing entities
-		local area = {left_top = {position.x - special.width/2, position.y - special.height/2}, right_bottom = {position.x + special.width/2 + 0.5, position.y + special.height/2 + 0.5}}
-		surface.destroy_decoratives{area=area}
-		local existing = surface.find_entities_filtered{area = area}
-		if existing then
-			for _, e in pairs(existing) do
-				if not (((special.name == 'small_primitive_mining_base' or special.name == 'small_mining_base') and (e.name == 'iron-ore' or e.name == 'copper-ore' or e.name == 'stone')) or (special.name == 'uranium_miners' and e.name == 'uranium-ore')) then
-					if not (e.name and e.name == 'rocket-silo') then
-						e.destroy()
-					end
-				end
-			end
-		end
-	end
-end
-
-local function cached_structure_delete_existing_unwalkable_tiles_if_needed(surface, position, special)
-	local area = {left_top = {position.x - special.width/2, position.y - special.height/2}, right_bottom = {position.x + special.width/2 + 0.5, position.y + special.height/2 + 0.5}}
-	local existing = surface.find_tiles_filtered{area = area, collision_mask = "water-tile"}
-	if existing then
-		local tiles = {}
-
-		for _, t in pairs(existing) do
-			tiles[#tiles + 1] = {name = "landfill", position = t.position}
-		end
-
-		if #tiles > 0 then
-			surface.set_tiles(tiles, true)
-		end
-	end
-end
-
 function Public.interpret_shorthanded_force_name(shorthanded_name)
 	local memory = Memory.get_crew_memory()
 
@@ -533,8 +499,10 @@ function Public.place_cached_structures(tickinterval)
 
 			Common.ensure_chunks_at(surface, position, Common.structure_ensure_chunk_radius)
 
-			cached_structure_delete_existing_entities_if_needed(surface, position, special)
-			cached_structure_delete_existing_unwalkable_tiles_if_needed(surface, position, special)
+			if not special.doNotDestroyExistingEntities then
+				Common.delete_entities(surface, position, special.width, special.height)
+			end
+			Common.replace_unwalkable_tiles(surface, position, special.width, special.height)
 
 			local saved_components = {}
 			for k = 1, #special.components do
@@ -1037,14 +1005,10 @@ function Public.loading_update(tickinterval)
 				total = Common.map_loading_ticks_atsea_maze
 			end
 
-			local eta_ticks = total - (memory.loadingticks - (memory.extra_time_at_sea or 0))
+			-- local eta_ticks = total - (memory.loadingticks - (memory.extra_time_at_sea or 0))
 
-			if eta_ticks < 60*20 and
-				memory.active_sea_enemies and
-				memory.active_sea_enemies.kraken_count and
-				memory.active_sea_enemies.kraken_count > 0
-			then
-				memory.loadingticks = memory.loadingticks - tickinterval --reverse the change
+			if Kraken.get_active_kraken_count() > 0 then
+				memory.loadingticks = memory.loadingticks - tickinterval --reverse the change to avoid causing lag from map loading during fight
 			else
 				local fraction = memory.loadingticks / (total + (memory.extra_time_at_sea or 0))
 
@@ -1192,7 +1156,7 @@ function Public.slower_boat_tick(tickinterval)
 	end
 
 	local p = memory.boat.position
-	if p and (not (destination.subtype and destination.subtype == IslandEnum.enum.RADIOACTIVE)) and destination.surface_name and game.surfaces[destination.surface_name] and game.surfaces[destination.surface_name].valid then --no locomotive pollute on radioactive islands
+	if p and destination.subtype ~= IslandEnum.enum.RADIOACTIVE and destination.surface_name and game.surfaces[destination.surface_name] and game.surfaces[destination.surface_name].valid then --no locomotive pollute on radioactive islands
 		local pollution = Balance.boat_passive_pollution_per_minute(destination.dynamic_data.timer) / 3600 * tickinterval
 
 		game.surfaces[destination.surface_name].pollute(p, pollution)
@@ -1275,7 +1239,7 @@ function Public.Kraken_Destroyed_Backup_check(tickinterval) -- a server became s
 	local boat = memory.boat
 
 	if boat and boat.surface_name and boat.state and boat.state == Boats.enum_state.ATSEA_LOADING_MAP then
-		if (memory.active_sea_enemies and memory.active_sea_enemies.krakens and memory.active_sea_enemies.kraken_count and memory.active_sea_enemies.kraken_count > 0) then
+		if Kraken.get_active_kraken_count() > 0 then
 
 			local surface = game.surfaces[boat.surface_name]
 

@@ -161,7 +161,7 @@ function Public.spawn_ores_on_arrival(destination, points_to_avoid)
 	local surface = game.surfaces[destination.surface_name]
 	if not surface and surface.valid then return end
 
-	if (destination.subtype and (destination.subtype == enum.STANDARD or destination.subtype == enum.STANDARD_VARIANT or destination.subtype == enum.MAZE)) then
+	if destination.subtype == enum.STANDARD or destination.subtype == enum.STANDARD_VARIANT or destination.subtype == enum.MAZE then
 		local ores = {'iron-ore', 'copper-ore', 'stone', 'coal', 'crude-oil'}
 
 		local args = {
@@ -288,8 +288,13 @@ function Public.spawn_silo_setup(points_to_avoid)
 		if silo_count >= 2 then game.print('debug - silo count: ' .. silo_count) end
 	end
 
-	for i=1,silo_count do
-		local silo = surface.create_entity({name = 'rocket-silo', position = {p_silo.x + 9*(i-1), p_silo.y}, force = force, create_build_effect_smoke = false})
+	for i = 1, silo_count do
+		local pos = {x = p_silo.x + 9*(i-1), y = p_silo.y}
+
+		Common.delete_entities(surface, pos, 11, 11)
+		Common.replace_unwalkable_tiles(surface, pos, 11, 11)
+
+		local silo = surface.create_entity({name = 'rocket-silo', position = pos, force = force, create_build_effect_smoke = false})
 		if silo and silo.valid then
 			if not destination.dynamic_data.rocketsilos then destination.dynamic_data.rocketsilos = {} end
 			destination.dynamic_data.rocketsilos[#destination.dynamic_data.rocketsilos + 1]= silo
