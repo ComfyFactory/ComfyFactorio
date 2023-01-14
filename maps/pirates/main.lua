@@ -69,6 +69,8 @@ local Token = require 'utils.token'
 local Task = require 'utils.task'
 local Server = require 'utils.server'
 
+local Math = require 'maps.pirates.math'
+
 require 'utils.profiler'
 
 local Public = {}
@@ -223,6 +225,10 @@ local function crew_tick()
 							end
 						end
 					end
+				end
+
+				if destination.dynamic_data.disabled_wave_timer then
+					destination.dynamic_data.disabled_wave_timer = Math.max(0, destination.dynamic_data.disabled_wave_timer - 1)
 				end
 
 				if tick % 120 == 0 then

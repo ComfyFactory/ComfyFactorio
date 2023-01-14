@@ -1670,4 +1670,37 @@ function Public.force_connect_poles(pole1, pole2)
 	end
 end
 
+
+-- position here refers to middle position
+function Public.delete_entities(surface, position, width, height)
+	local area = {left_top = {position.x - width/2, position.y - height/2}, right_bottom = {position.x + width/2 + 0.5, position.y + height/2 + 0.5}}
+	surface.destroy_decoratives{area = area}
+	local existing = surface.find_entities_filtered{area = area}
+	if not existing then return end
+
+	for _, e in pairs(existing) do
+		if not (e.name == 'iron-ore' or e.name == 'copper-ore' or e.name == 'stone' or e.name == 'uranium-ore' or e.name == 'crude-oil') then
+			if not (e.name == 'rocket-silo') then
+				e.destroy()
+			end
+		end
+	end
+end
+
+function Public.replace_unwalkable_tiles(surface, position, width, height)
+	local area = {left_top = {position.x - width/2, position.y - height/2}, right_bottom = {position.x + width/2 + 0.5, position.y + height/2 + 0.5}}
+	local existing = surface.find_tiles_filtered{area = area, collision_mask = "water-tile"}
+	if not existing then return end
+
+	local tiles = {}
+
+	for _, t in pairs(existing) do
+		tiles[#tiles + 1] = {name = "landfill", position = t.position}
+	end
+
+	if #tiles > 0 then
+		surface.set_tiles(tiles, true)
+	end
+end
+
 return Public

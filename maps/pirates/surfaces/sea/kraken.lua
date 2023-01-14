@@ -50,17 +50,29 @@ local swimming_biters_tick_token =
 	end
 )
 
+function Public.get_active_kraken_count()
+	local memory = Memory.get_crew_memory()
+	if memory.active_sea_enemies and memory.active_sea_enemies.kraken_count then
+		return memory.active_sea_enemies.kraken_count
+	else
+		return 0
+	end
+end
+
 -- should only be used during kraken encounter
 function Public.swimming_biters_tick(crew_id, kraken_id)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
 	if not Common.is_id_valid(memory.id) then return end --check if crew disbanded
 	if memory.game_lost then return end
-	local kraken_data = memory.active_sea_enemies.krakens[kraken_id]
-	if not kraken_data then return end --check if kraken died
-	local surface = game.surfaces[memory.sea_name]
 
+	if not Boats.is_boat_at_sea() then return end
+
+	local surface = game.surfaces[memory.sea_name]
 	local spawners_biters = surface.find_entities_filtered{force = memory.enemy_force_name}
+
+	if Public.get_active_kraken_count() == 0 and #spawners_biters == 0 then return end
+
 	for _, biter in pairs(spawners_biters) do
 		if biter and biter.valid then
 			if biter.name ~= 'biter-spawner' then -- might need to be changed if kraken battle one day will involve worms too
@@ -266,7 +278,7 @@ end
 function Public.overall_kraken_tick()
 	local memory = Memory.get_crew_memory()
 
-	if memory.active_sea_enemies and memory.active_sea_enemies.kraken_count and memory.active_sea_enemies.kraken_count > 0 then
+	if Public.get_active_kraken_count() > 0 then
 		local evo_increase = Balance.kraken_evo_increase_per_second()
 		if evo_increase > 0 then
 			if not memory.dynamic_kraken_evo then memory.dynamic_kraken_evo = 0 end
@@ -306,7 +318,11 @@ function Public.try_spawn_kraken()
 		memory.active_sea_enemies.kraken_count = memory.active_sea_enemies.kraken_count + 1
 
 		Task.set_timeout_in_ticks(10, kraken_tick_token, {crew_id = memory.id, kraken_id = kraken_id, step = 1, substep = 1})
-		Task.set_timeout_in_ticks(10, swimming_biters_tick_token, {crew_id = memory.id, kraken_id = kraken_id})
+
+		-- creating multiple swim tick tokens, causes biters to swim faster
+		if Public.get_active_kraken_count() == 1 then
+			Task.set_timeout_in_ticks(10, swimming_biters_tick_token, {crew_id = memory.id, kraken_id = kraken_id})
+		end
 	end
 end
 
