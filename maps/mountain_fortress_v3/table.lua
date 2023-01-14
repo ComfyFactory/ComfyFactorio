@@ -96,6 +96,7 @@ function Public.reset_main_table()
     this.announced_message = false
     this.game_saved = false
     -- @end
+    this.breach_wall_warning = false
     this.icw_locomotive = nil
     this.game_lost = false
     this.death_mode = false
