@@ -355,11 +355,11 @@ local function wall(p, data)
                             Public.set(
                                 'zone1_text1',
                                 rendering.draw_text {
-                                    text = 'Breaching the far side wall will start collapse.',
+                                    text = ({'breached_wall.warning'}),
                                     surface = surface,
                                     target = {0, p.y + 35},
-                                    color = {r = 0.98, g = 0.66, b = 0.22},
-                                    scale = 8,
+                                    color = {r = 255, g = 106, b = 0},
+                                    scale = 10,
                                     font = 'heading-1',
                                     alignment = 'center',
                                     scale_with_zoom = false
@@ -368,11 +368,11 @@ local function wall(p, data)
                             Public.set(
                                 'zone1_text2',
                                 rendering.draw_text {
-                                    text = 'Breaching the far side wall will start collapse',
+                                    text = ({'breached_wall.warning'}),
                                     surface = surface,
                                     target = {-180, p.y + 35},
-                                    color = {r = 0.98, g = 0.66, b = 0.22},
-                                    scale = 8,
+                                    color = {r = 255, g = 106, b = 0},
+                                    scale = 10,
                                     font = 'heading-1',
                                     alignment = 'center',
                                     scale_with_zoom = false
@@ -381,11 +381,11 @@ local function wall(p, data)
                             Public.set(
                                 'zone1_text3',
                                 rendering.draw_text {
-                                    text = 'Breaching the far side wall will start collapse',
+                                    text = ({'breached_wall.warning'}),
                                     surface = surface,
                                     target = {180, p.y + 35},
-                                    color = {r = 0.98, g = 0.66, b = 0.22},
-                                    scale = 8,
+                                    color = {r = 255, g = 106, b = 0},
+                                    scale = 10,
                                     font = 'heading-1',
                                     alignment = 'center',
                                     scale_with_zoom = false

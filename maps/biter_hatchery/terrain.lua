@@ -10,7 +10,7 @@ local function get_replacement_tile(surface, position)
     for i = 1, 128, 1 do
         local vectors = {{0, i}, {0, i * -1}, {i, 0}, {i * -1, 0}}
         table.shuffle_table(vectors)
-        for k, v in pairs(vectors) do
+        for _, v in pairs(vectors) do
             local tile = surface.get_tile(position.x + v[1], position.y + v[2])
             if not tile.collides_with('resource-layer') then
                 return tile.name
@@ -58,6 +58,7 @@ end
 function Public.reset_nauvis(hatchery)
     local surface = game.surfaces.nauvis
     local mgs = surface.map_gen_settings
+    ---@diagnostic disable-next-line: assign-type-mismatch
     mgs.seed = math_random(1, 99999999)
     mgs.water = 1
     mgs.starting_area = 1
@@ -70,6 +71,7 @@ function Public.reset_nauvis(hatchery)
         ['iron-ore'] = {frequency = 8, size = 0.7, richness = 1},
         ['uranium-ore'] = {frequency = 5, size = 0.5, richness = 0.5},
         ['crude-oil'] = {frequency = 5, size = 1, richness = 1},
+        ---@diagnostic disable-next-line: assign-type-mismatch
         ['trees'] = {frequency = math.random(4, 32) * 0.1, size = math.random(4, 16) * 0.1, richness = math.random(1, 10) * 0.1},
         ['enemy-base'] = {frequency = 0, size = 0, richness = 0}
     }
@@ -79,7 +81,7 @@ function Public.reset_nauvis(hatchery)
         surface.delete_chunk({chunk.x, chunk.y})
     end
     hatchery.gamestate = 'prepare_east'
-    game.print('preparing east', {150, 150, 150})
+    -- game.print('preparing east', {150, 150, 150})
     print(hatchery.gamestate)
 end
 
@@ -109,7 +111,7 @@ function Public.prepare_east(hatchery)
     end
     draw_spawn_ore(surface, {x = 240, y = 0})
     hatchery.gamestate = 'clear_west'
-    game.print('clearing west chunks', {150, 150, 150})
+    -- game.print('clearing west chunks', {150, 150, 150})
     print(hatchery.gamestate)
 end
 
@@ -125,7 +127,7 @@ function Public.clear_west(hatchery)
     end
     hatchery.mirror_queue = {}
     hatchery.gamestate = 'prepare_west'
-    game.print('preparing west chunks', {150, 150, 150})
+    -- game.print('preparing west chunks', {150, 150, 150})
     print(hatchery.gamestate)
 end
 
@@ -147,11 +149,14 @@ function Public.draw_team_nests(hatchery)
     if game.tick % 90 ~= 0 then
         return
     end
-    game.print('placing nests', {150, 150, 150})
+    -- game.print('placing nests', {150, 150, 150})
     local surface = game.surfaces.nauvis
     local x = hatchery_position.x
 
     local e = surface.create_entity({name = 'biter-spawner', position = {x * -1, 0}, force = 'west'})
+    if not e or not e.valid then
+        return
+    end
     for _, p in pairs({{x * -1 + 6, 0}, {x * -1 + 3, 6}, {x * -1 + 3, -5}}) do
         surface.create_entity({name = 'small-worm-turret', position = p, force = 'west'})
         surface.create_decoratives {check_collision = false, decoratives = {{name = 'enemy-decal', position = p, amount = 1}}}
@@ -162,6 +167,9 @@ function Public.draw_team_nests(hatchery)
     surface.create_decoratives {check_collision = false, decoratives = {{name = 'enemy-decal', position = e.position, amount = 3}}}
 
     local e = surface.create_entity({name = 'biter-spawner', position = {x, 0}, force = 'east'})
+    if not e or not e.valid then
+        return
+    end
     for _, p in pairs({{x - 6, 0}, {x - 3, 6}, {x - 3, -5}}) do
         surface.create_entity({name = 'small-worm-turret', position = p, force = 'east'})
         surface.create_decoratives {check_collision = false, decoratives = {{name = 'enemy-decal', position = p, amount = 1}}}
