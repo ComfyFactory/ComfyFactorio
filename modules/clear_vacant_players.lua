@@ -180,8 +180,6 @@ function Public.clear_offline_players()
     this.offline_players = {}
 end
 
-local function should_ignore_surface(surface)
-
 Event.on_nth_tick(tick_frequency, Public.dump_expired_players)
 
 Event.add(
