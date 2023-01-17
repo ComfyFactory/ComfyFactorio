@@ -18,6 +18,7 @@ local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 -- local Sea = require 'maps.pirates.surfaces.sea.sea'
 -- local Crew = require 'maps.pirates.crew'
 -- local Quest = require 'maps.pirates.quest'
+local SurfacesCommon = require 'maps.pirates.surfaces.common'
 
 local Public = {}
 
@@ -61,7 +62,7 @@ function Public.Tick_actions(tickinterval)
 	end
 
 
-    -- if destination.subtype and destination.subtype == IslandEnum.enum.RED_DESERT then return end -- This was a hack to stop biter boats causing attacks, but, it has the even worse effect of stopping all floating_pollution gathering.
+    -- if destination.subtype == IslandEnum.enum.RED_DESERT then return end -- This was a hack to stop biter boats causing attacks, but, it has the even worse effect of stopping all floating_pollution gathering.
 
 
     local minute_cycle = {-- warning: use even seconds only
@@ -114,7 +115,7 @@ function Public.eat_up_fraction_of_all_pollution(surface, fraction_of_global_pol
 
         surface.pollute(p, - pollution_to_eat)
 		-- Radioactive world doesn't absorb map pollution:
-		if not (Common.current_destination().subtype and Common.current_destination().subtype == IslandEnum.enum.RADIOACTIVE) then
+		if not (Common.current_destination().subtype == IslandEnum.enum.RADIOACTIVE) then
 			pollution_available = pollution_available + pollution_to_eat
 		end
     end
@@ -128,6 +129,14 @@ end
 
 function Public.wave_size_rng() -- random variance in attack sizes
 	local memory = Memory.get_crew_memory()
+    local destination = Common.current_destination()
+
+    -- prevent situation where when player reveals spawner, he immediately gets surrounded by massive amount of biters (especially late game)
+    if destination and destination.type == SurfacesCommon.enum.ISLAND then
+        if destination.dynamic_data and destination.dynamic_data.disabled_wave_timer and destination.dynamic_data.disabled_wave_timer > 0 then
+            return 0
+        end
+    end
 
     local wave_percentage_chance = Math.clamp(0, 50, 11 + 8 * memory.floating_pollution/1500)
 
@@ -439,11 +448,11 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 
 	map_pollution_cost_multiplier = map_pollution_cost_multiplier * base_scripted_biters_pollution_cost_multiplier
 
-	if destination.subtype and destination.subtype == IslandEnum.enum.SWAMP then
+	if destination.subtype == IslandEnum.enum.SWAMP then
 		map_pollution_cost_multiplier = map_pollution_cost_multiplier * 0.95 --biters 5% more aggressive
 	end
 
-	-- if destination.subtype and destination.subtype == IslandEnum.enum.MAZE then
+	-- if destination.subtype == IslandEnum.enum.MAZE then
 	-- 	base_pollution_cost_multiplier = base_pollution_cost_multiplier * 1.2 --biters 20% less aggressive
 	-- end
 

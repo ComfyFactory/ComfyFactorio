@@ -350,7 +350,7 @@ function Public.chest_loot(number_of_items, game_completion_progress)
 end
 
 function Public.buried_treasure_loot()
-	local ret = Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.buried_treasure_loot_data_raw), 1, Math.sloped(Common.difficulty_scale(),1/2) * Common.game_completion_progress_capped())
+	local ret = Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.buried_treasure_loot_data_raw), 1, Math.clamp(0, 1, Math.sloped(Common.difficulty_scale(),1/2) * Common.game_completion_progress_capped()))
 
 	if ret and ret[1] then return ret[1] end
 end

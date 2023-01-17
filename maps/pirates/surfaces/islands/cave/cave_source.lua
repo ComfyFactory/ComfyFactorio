@@ -14,6 +14,7 @@ local Classes = require 'maps.pirates.roles.classes'
 local Public = {}
 Public.Data = require 'maps.pirates.surfaces.islands.cave.data'
 
+local math_random = Math.random
 
 -- Code imported from cave_miner_v2 scenario for cave generation
 
@@ -60,8 +61,8 @@ local function spawn_market(args, is_main)
 end
 
 local function place_rock(args)
-    local a = (-49 + Math.random(0, 98)) * 0.01
-    local b = (-49 + Math.random(0, 98)) * 0.01
+    local a = (-49 + math_random(0, 98)) * 0.01
+    local b = (-49 + math_random(0, 98)) * 0.01
 
     args.entities[#args.entities + 1] = IslandsCommon.random_rock_1({x = args.p.x + a, y = args.p.y + b})
 end
@@ -70,7 +71,7 @@ local function place_spawner(args)
     local memory = Memory.get_crew_memory()
 
     local name
-    if Math.random(1, 2) == 1 then
+    if math_random(1, 2) == 1 then
         name = 'biter-spawner'
     else
         name = 'spitter-spawner'
@@ -98,11 +99,11 @@ function biomes.oasis(args, noise)
 
     local noise_decoratives = GetNoise('decoratives', position, seed + 50000)
 	args.tiles[#args.tiles + 1] = {name = 'grass-1', position = args.p}
-    if Math.random(1, 16) == 1 and Math.abs(noise_decoratives) > 0.17 then
+    if math_random(1, 16) == 1 and Math.abs(noise_decoratives) > 0.17 then
 		args.entities[#args.entities + 1] = {name = 'tree-04', position = args.p}
     end
 
-    if Math.random(1, 100) == 1 then
+    if math_random(1, 100) == 1 then
         args.entities[#args.entities + 1] = {name = 'crude-oil', position = args.p, amount = Balance.pick_default_oil_amount() * 4}
     end
 
@@ -128,13 +129,13 @@ function biomes.pond_cave(args, noise)
 
     args.tiles[#args.tiles + 1] = {name = 'dirt-7', position = args.p}
 
-    if Math.random(1, 512) == 1 then
+    if math_random(1, 512) == 1 then
         args.specials[#args.specials + 1] = {name = 'chest', position = args.p}
         return
     end
 
     if Math.abs(noise_2) > 0.25 then
-        if Math.random(1, 64) == 1 then
+        if math_random(1, 64) == 1 then
             place_spawner(args)
         else
             place_rock(args)
@@ -143,7 +144,7 @@ function biomes.pond_cave(args, noise)
         return
     end
 
-    if Math.random(1, 32) == 1 then
+    if math_random(1, 32) == 1 then
         place_spawner(args)
         return
     end
@@ -152,7 +153,7 @@ function biomes.pond_cave(args, noise)
         place_rock(args)
         return
     else
-        if Math.random(1, 1024) == 1 then
+        if math_random(1, 1024) == 1 then
             spawn_market(args)
             return
         end
@@ -214,21 +215,21 @@ function biomes.worm_desert(args, noise)
         return
     end
 
-    if Math.random(1, 64) == 1 then
+    if math_random(1, 64) == 1 then
         place_worm(args)
         return
     end
 
-    if Math.random(1, 32) == 1 then
+    if math_random(1, 32) == 1 then
         local n = GetNoise('decoratives', position, seed + 10000)
         if n > 0.2 then
             local trees = {'dead-grey-trunk', 'dead-grey-trunk', 'dry-tree'}
-			args.entities[#args.entities + 1] = {name = trees[Math.random(1, 3)], position = args.p}
+			args.entities[#args.entities + 1] = {name = trees[math_random(1, 3)], position = args.p}
             return
         end
     end
 
-    if Math.random(1, 512) == 1 then
+    if math_random(1, 512) == 1 then
         args.specials[#args.specials + 1] = {name = 'chest', position = args.p}
     end
 end
@@ -250,7 +251,7 @@ function biomes.cave(args, square_distance)
     local no_rocks_2 = GetNoise('no_rocks_2', position, seed)
     if no_rocks_2 > 0.7 then
         if no_rocks_2 > 0.73 then
-            if Math.random(1, 256) == 1 then
+            if math_random(1, 256) == 1 then
                 spawn_market(args)
             end
         end
@@ -280,8 +281,8 @@ function biomes.cave(args, square_distance)
         -- add nest obstacles in these rings on "main" wide cave roads
         if (square_distance > ring1_start and square_distance < ring1_end) or
             (square_distance > ring2_start and square_distance < ring2_end) then
-            if Math.random(1, 32) == 1 then
-                if Math.random(1, 3) == 1 then
+            if math_random(1, 32) == 1 then
+                if math_random(1, 3) == 1 then
                     place_worm(args)
                 else
                     place_spawner(args)
@@ -289,18 +290,18 @@ function biomes.cave(args, square_distance)
                 return
             end
 
-            if Math.random(1, 512) == 1 then
+            if math_random(1, 512) == 1 then
                 args.specials[#args.specials + 1] = {name = 'chest', position = args.p}
                 return
             end
 
-            if Math.random(1, 16) == 1 then
+            if math_random(1, 16) == 1 then
                 place_rock(args)
                 return
             end
         end
 
-        if Math.random(1, 1024) == 1 then
+        if math_random(1, 1024) == 1 then
             args.specials[#args.specials + 1] = {name = 'chest', position = args.p}
             return
         end
@@ -313,13 +314,13 @@ function biomes.cave(args, square_distance)
         return
     end
 
-    if Math.random(1, 8192) == 1 then
+    if math_random(1, 8192) == 1 then
         spawn_market(args)
         return
     end
 
-    if Math.random(1, 16) == 1 then
-        if Math.random(1, 3) == 1 then
+    if math_random(1, 16) == 1 then
+        if math_random(1, 3) == 1 then
             place_worm(args)
             return
         else

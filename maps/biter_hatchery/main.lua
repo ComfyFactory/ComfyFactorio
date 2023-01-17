@@ -1,12 +1,12 @@
 --luacheck: ignore
 require 'modules.no_turrets'
 require 'modules.no_acid_puddles'
-local Gui = require 'utils.gui'
+local CoreGui = require 'utils.gui'
+require 'maps.biter_hatchery.share_chat'
 local Map_score = require 'utils.gui.map_score'
 local unit_raffle = require 'maps.biter_hatchery.raffle_tables'
 local Terrain = require 'maps.biter_hatchery.terrain'
 local Gui = require 'maps.biter_hatchery.gui'
-require 'maps.biter_hatchery.share_chat'
 local Team = require 'maps.biter_hatchery.team'
 local Unit_health_booster = require 'modules.biter_health_booster'
 local Map = require 'modules.map_info'
@@ -95,7 +95,7 @@ local function spawn_units(belt, food_item, removed_item_count)
         end
     end
     if math_random(1, 8) == 1 then
-        spawn_worm_turret(belt.surface, belt.force.name, food_item)
+        spawn_worm_turret(belt.surface, belt.force.name)
     end
 end
 
@@ -117,7 +117,7 @@ local function feed_floaty_text(entity)
     entity.surface.create_entity({name = 'flying-text', position = entity.position, text = nom_msg[math_random(1, 4)], color = {math_random(50, 100), 0, 255}})
     local position = {x = entity.position.x - 0.75, y = entity.position.y - 1}
     local b = 1.35
-    for a = 1, math_random(0, 2), 1 do
+    for _ = 1, math_random(0, 2), 1 do
         local p = {(position.x + 0.4) + (b * -1 + math_random(0, b * 20) * 0.1), position.y + (b * -1 + math_random(0, b * 20) * 0.1)}
         entity.surface.create_entity({name = 'flying-text', position = p, text = '♥', color = {math_random(150, 255), 0, 255}})
     end
@@ -126,7 +126,7 @@ end
 local function eat_food_from_belt(belt)
     for i = 1, 2, 1 do
         local line = belt.get_transport_line(i)
-        for food_item, raffle in pairs(unit_raffle) do
+        for food_item, _ in pairs(unit_raffle) do
             if global.map_forces[belt.force.name].unit_count > global.map_forces[belt.force.name].max_unit_count then
                 return
             end
@@ -140,8 +140,7 @@ local function eat_food_from_belt(belt)
 end
 
 local function nom()
-    local surface = game.surfaces.nauvis
-    for key, force in pairs(global.map_forces) do
+    for _, force in pairs(global.map_forces) do
         if not force.hatchery then
             return
         end
@@ -310,7 +309,7 @@ local function on_entity_died(event)
         for _, child in pairs(player.gui.left.children) do
             child.destroy()
         end
-        Gui.call_existing_tab(player, 'Map Scores')
+        CoreGui.call_existing_tab(player, 'Map Scores')
     end
 
     for _, e in pairs(entity.surface.find_entities_filtered({type = 'unit'})) do
@@ -320,7 +319,6 @@ end
 
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
-    local surface = game.surfaces.nauvis
 
     Gui.unit_health_buttons(player)
     Gui.spectate_button(player)

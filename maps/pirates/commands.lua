@@ -1203,8 +1203,10 @@ if _DEBUG then
 			player.insert{name='uranium-rounds-magazine', count = 200}
 			player.insert{name='raw-fish', count = 100}
 			player.insert{name='coin', count = 50000}
-			player.insert{name='grenade', count = 100}
+			player.insert{name='cluster-grenade', count = 100}
 			player.insert{name='steel-chest', count = 50}
+			player.insert{name='express-loader', count = 50}
+			player.insert{name='burner-inserter', count = 50}
 		end
 	end)
 

@@ -277,6 +277,10 @@ function Public.destination_on_arrival(destination)
 			destination.dynamic_data.time_remaining = -1
 		elseif destination.subtype == IslandEnum.enum.MAZE then --more time
 			destination.dynamic_data.time_remaining = Math.ceil(1.05 * Balance.max_time_on_island())
+		elseif destination.subtype == IslandEnum.enum.CAVE then -- supposed to be chill island
+			destination.dynamic_data.time_remaining = Math.ceil(0.8 * Balance.max_time_on_island_formula())
+		elseif destination.subtype == IslandEnum.enum.RED_DESERT then --this island has big amount of resources so rather high risk (need time to mine resources) and high reward (lots of iron/copper/stone), also try prevent infinite stay (on late game this island becomes too easy)
+			destination.dynamic_data.time_remaining = Math.ceil(0.8 * Balance.max_time_on_island_formula())
 		else
 			destination.dynamic_data.time_remaining = Math.ceil(Balance.max_time_on_island())
 		end
@@ -382,9 +386,13 @@ function Public.destination_on_arrival(destination)
 
 		-- game.print('spawning silo')
 		if destination.subtype ~= IslandEnum.enum.RADIOACTIVE then
-			local silo_position = Islands.spawn_silo_setup(points_to_avoid)
-			if silo_position then
-				points_to_avoid[#points_to_avoid + 1] = {x = silo_position.x, y = silo_position.y, r = 22}
+			local first_silo_pos = Islands.spawn_silo_setup(points_to_avoid)
+			if first_silo_pos then
+				local silo_count = Balance.silo_count()
+				for i = 1, silo_count do
+					local avoid_pos = {x = first_silo_pos.x + 9 * (i-1), y = first_silo_pos.y}
+					points_to_avoid[#points_to_avoid + 1] = {x = avoid_pos.x, y = avoid_pos.y, r = 22}
+				end
 			end
 		end
 
@@ -417,7 +425,7 @@ function Public.destination_on_departure(destination)
 		Common.parrot_speak(memory.force, {'pirates.parrot_kraken_warning'})
 	end
 
-	if destination.subtype and destination.subtype == IslandEnum.enum.MAZE then
+	if destination.subtype == IslandEnum.enum.MAZE then
 		local force = memory.force
 		force.manual_mining_speed_modifier = 3 --put back to normal
 	end

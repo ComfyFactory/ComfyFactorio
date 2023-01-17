@@ -1066,14 +1066,36 @@ local function teleport_handle_wake_tiles(boat, dummyboat, newsurface_name, olds
 					end
 
 					if friendlyboat_bool and boat.state == enum_state.RETREATING and vector.x < 0 then --in this case we need to place some landing tiles, as the cannon juts out
-						if (p.x >= boat.dockedposition.x + scope.Data.leftmost_gate_position) and (p.y <= scope.Data.upmost_gate_position or p.y >= scope.Data.downmost_gate_position) then t = CoreData.landing_tile end
+						if (p.x >= boat.dockedposition.x + scope.Data.leftmost_gate_position) and (p.y <= scope.Data.upmost_gate_position or p.y >= scope.Data.downmost_gate_position) then
+							t = CoreData.landing_tile
+						end
 					end
+
 					newtiles[#newtiles + 1] = {name = t, position = {x = p.x, y = p.y}}
 				end
 			end
 		end
 
-		oldsurface.set_tiles(newtiles, true, true, true)
+		-- prevent instant death when players stand in front of ship
+		oldsurface.set_tiles(newtiles, true, false, true)
+
+		-- but since players don't die instantly, they can get stuck in water, this prevents this (even though it let's you walk in front of ship while ship is departing)
+		-- NOTE: this will need to be changed, when ship doesn't necessarily arrive from the left
+		if vector.x < 0 then
+			for _, player in pairs(Common.crew_get_crew_members()) do
+				if player.character and player.character.valid then
+					local tile = oldsurface.get_tile(player.character.position.x, player.character.position.y)
+					if tile.valid then
+						if Utils.contains(CoreData.water_tile_names, tile.name) then
+							local new_pos = oldsurface.find_non_colliding_position('character', player.character.position, 20, 0.1, true)
+							if new_pos then
+								player.character.teleport(new_pos)
+							end
+						end
+					end
+				end
+			end
+		end
 
 	else
 
