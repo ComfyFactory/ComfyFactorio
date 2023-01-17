@@ -98,9 +98,12 @@ require 'utils.freeplay'
 --require 'maps.amap.main'
 
 --![[Guide a Train through rough terrain, while defending it from the biters]]--
---require 'maps.mountain_fortress_v3.main'
+require 'maps.mountain_fortress_v3.main'
 --require 'maps.mountain_fortress_v2.main'
 --require 'maps.mountain_fortress'
+
+--![[Tower defense system]]--
+--require 'maps.tower_defense.main'
 
 --![[Defend the market against waves of biters]]--
 --require 'maps.pidgeotto.main'
@@ -164,7 +167,7 @@ require 'utils.freeplay'
 --require 'maps.deep_jungle.main'
 
 --![[You fell in a dark cave, will you survive?]]--
---require 'maps.cave_choppy.main'
+-- require 'maps.cave_choppy.main'
 --require 'maps.cave_miner'
 --require 'maps.cave_miner_v2.main'
 

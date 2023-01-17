@@ -172,7 +172,7 @@ function Public.set_active_surface_index(value)
 end
 
 function Public.reset()
-    Public.clear_offline_players();
+    Public.clear_offline_players()
 end
 
 --- Clears the offline table
@@ -193,11 +193,14 @@ Event.add(
         local ticker = game.tick
         if player and player.online_time >= this.settings.required_online_time then
             if player.character then
-                insert(this.offline_players, {
-                    index = event.player_index,
-                    name = player.name,
-                    tick = ticker + this.settings.clear_player_after_tick
-                })
+                insert(
+                    this.offline_players,
+                    {
+                        index = event.player_index,
+                        name = player.name,
+                        tick = ticker + this.settings.clear_player_after_tick
+                    }
+                )
             end
         end
     end
