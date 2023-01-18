@@ -91,7 +91,7 @@ local breach_wall_warning_teleport = function(player)
     end
 
     local wave_number = WD.get('wave_number')
-    if wave_number > 200 then
+    if wave_number >= 200 then
         return
     end
 
