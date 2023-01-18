@@ -275,6 +275,7 @@ spells[#spells + 1] = {
     aoe = true,
     enabled = true,
     sprite = 'recipe/stone-wall',
+    tooltip = 'Spawns some walls',
     callback = function(data)
         return create_entity(data)
     end
@@ -289,6 +290,7 @@ spells[#spells + 1] = {
     aoe = true,
     enabled = true,
     sprite = 'recipe/wooden-chest',
+    tooltip = 'Spawns some wooden chests',
     callback = function(data)
         return create_entity(data)
     end
@@ -303,6 +305,7 @@ spells[#spells + 1] = {
     aoe = true,
     enabled = true,
     sprite = 'recipe/iron-chest',
+    tooltip = 'Spawns some iron chests',
     callback = function(data)
         return create_entity(data)
     end
@@ -317,6 +320,7 @@ spells[#spells + 1] = {
     aoe = true,
     enabled = true,
     sprite = 'recipe/steel-chest',
+    tooltip = 'Spawns some steel chests',
     callback = function(data)
         return create_entity(data)
     end
@@ -331,6 +335,7 @@ spells[#spells + 1] = {
     aoe = true,
     enabled = true,
     sprite = 'recipe/transport-belt',
+    tooltip = 'Spawns some transport belts',
     callback = function(data)
         return create_entity(data)
     end
@@ -345,6 +350,7 @@ spells[#spells + 1] = {
     aoe = true,
     enabled = true,
     sprite = 'recipe/fast-transport-belt',
+    tooltip = 'Spawns some fast transport belts',
     callback = function(data)
         return create_entity(data)
     end
@@ -359,6 +365,7 @@ spells[#spells + 1] = {
     aoe = true,
     enabled = true,
     sprite = 'recipe/express-transport-belt',
+    tooltip = 'Spawns some express transport belts',
     callback = function(data)
         return create_entity(data)
     end
@@ -373,6 +380,7 @@ spells[#spells + 1] = {
     aoe = true,
     enabled = true,
     sprite = 'recipe/underground-belt',
+    tooltip = 'Spawns some underground belts',
     callback = function(data)
         return create_entity(data)
     end
@@ -387,6 +395,7 @@ spells[#spells + 1] = {
     aoe = true,
     enabled = true,
     sprite = 'recipe/fast-underground-belt',
+    tooltip = 'Spawns some fast underground belts',
     callback = function(data)
         return create_entity(data)
     end
@@ -401,6 +410,7 @@ spells[#spells + 1] = {
     aoe = true,
     enabled = true,
     sprite = 'recipe/express-underground-belt',
+    tooltip = 'Spawns some express underground belts',
     callback = function(data)
         return create_entity(data)
     end
@@ -415,6 +425,7 @@ spells[#spells + 1] = {
     aoe = true,
     enabled = true,
     sprite = 'recipe/pipe',
+    tooltip = 'Spawns some pipes',
     callback = function(data)
         return create_entity(data)
     end
@@ -429,6 +440,7 @@ spells[#spells + 1] = {
     aoe = true,
     enabled = true,
     sprite = 'recipe/pipe-to-ground',
+    tooltip = 'Spawns some pipe to ground',
     callback = function(data)
         return create_entity(data)
     end
@@ -443,6 +455,7 @@ spells[#spells + 1] = {
     aoe = true,
     enabled = true,
     sprite = 'entity/tree-05',
+    tooltip = 'Spawns some trees',
     callback = function(data)
         return create_entity(data)
     end
@@ -457,6 +470,7 @@ spells[#spells + 1] = {
     aoe = true,
     enabled = true,
     sprite = 'entity/sand-rock-big',
+    tooltip = 'Spawns some sandy rocks',
     callback = function(data)
         return create_entity(data)
     end
@@ -471,6 +485,7 @@ spells[#spells + 1] = {
     cooldown = 200,
     enabled = true,
     sprite = 'entity/small-biter',
+    tooltip = 'Spawns a small biter',
     callback = function(data)
         return create_entity(data)
     end
@@ -485,6 +500,7 @@ spells[#spells + 1] = {
     cooldown = 200,
     enabled = true,
     sprite = 'entity/small-spitter',
+    tooltip = 'Spawns a small spitter',
     callback = function(data)
         return create_entity(data)
     end
@@ -499,6 +515,7 @@ spells[#spells + 1] = {
     cooldown = 300,
     enabled = true,
     sprite = 'entity/medium-biter',
+    tooltip = 'Spawns a medium biter',
     callback = function(data)
         return create_entity(data)
     end
@@ -513,6 +530,7 @@ spells[#spells + 1] = {
     cooldown = 300,
     enabled = true,
     sprite = 'entity/medium-spitter',
+    tooltip = 'Spawns a medium spitter',
     callback = function(data)
         return create_entity(data)
     end
@@ -528,6 +546,7 @@ spells[#spells + 1] = {
     enabled = false,
     log_spell = true,
     sprite = 'entity/biter-spawner',
+    tooltip = 'Spawns a biter spawner',
     callback = function(data)
         return create_entity(data)
     end
@@ -543,6 +562,7 @@ spells[#spells + 1] = {
     enabled = false,
     log_spell = true,
     sprite = 'entity/spitter-spawner',
+    tooltip = 'Spawns a spitter spawner',
     callback = function(data)
         return create_entity(data)
     end
@@ -562,6 +582,7 @@ spells[#spells + 1] = {
     enabled = true,
     log_spell = true,
     sprite = 'recipe/shotgun-shell',
+    tooltip = 'Spawns some shotgun shells',
     callback = function(data)
         return create_projectiles(data)
     end
@@ -580,6 +601,7 @@ spells[#spells + 1] = {
     enabled = true,
     log_spell = true,
     sprite = 'recipe/grenade',
+    tooltip = 'Spawns a nade where the mouse cursor is at',
     callback = function(data)
         return create_projectiles(data)
     end
@@ -598,6 +620,7 @@ spells[#spells + 1] = {
     enabled = true,
     log_spell = true,
     sprite = 'recipe/cluster-grenade',
+    tooltip = 'Spawns a cluster nade where the mouse cursor is at',
     callback = function(data)
         return create_projectiles(data)
     end
@@ -616,6 +639,7 @@ spells[#spells + 1] = {
     enabled = true,
     log_spell = true,
     sprite = 'recipe/cannon-shell',
+    tooltip = 'Spawns a cannon shell where the mouse cursor is at',
     callback = function(data)
         return create_projectiles(data)
     end
@@ -634,6 +658,7 @@ spells[#spells + 1] = {
     enabled = true,
     log_spell = true,
     sprite = 'recipe/explosive-cannon-shell',
+    tooltip = 'Spawns a explosive cannon shell where the mouse cursor is at',
     callback = function(data)
         return create_projectiles(data)
     end
@@ -652,6 +677,7 @@ spells[#spells + 1] = {
     enabled = true,
     log_spell = true,
     sprite = 'recipe/uranium-cannon-shell',
+    tooltip = 'Spawns a uranium cannon shell where the mouse cursor is at',
     callback = function(data)
         return create_projectiles(data)
     end
@@ -671,6 +697,7 @@ spells[#spells + 1] = {
     enabled = true,
     log_spell = true,
     sprite = 'recipe/rocket',
+    tooltip = 'Spawns a rocket where the mouse cursor is at',
     callback = function(data)
         return create_projectiles(data)
     end
@@ -691,6 +718,7 @@ spells[#spells + 1] = {
     log_spell = true,
     sprite = 'recipe/explosives',
     special_sprite = 'recipe=explosives',
+    tooltip = 'Spawns a pointy explosive',
     callback = function(data)
         local self = data.self
         local player = data.player
@@ -736,6 +764,7 @@ spells[#spells + 1] = {
     log_spell = true,
     sprite = 'recipe/repair-pack',
     special_sprite = 'recipe=repair-pack',
+    tooltip = 'Repairs multiple entities in a range',
     callback = function(data)
         local self = data.self
         local rpg_t = data.rpg_t
@@ -781,6 +810,7 @@ spells[#spells + 1] = {
     enforce_cooldown = true,
     sprite = 'virtual-signal/signal-S',
     special_sprite = 'virtual-signal=signal-S',
+    tooltip = 'Creates a puddle of acid stream',
     callback = function(data)
         local self = data.self
         local player = data.player
@@ -817,6 +847,7 @@ spells[#spells + 1] = {
     enabled = false,
     sprite = 'entity/tank',
     special_sprite = 'entity=tank',
+    tooltip = 'Spawns a tank',
     callback = function(data)
         return create_entity(data)
     end
@@ -835,6 +866,7 @@ spells[#spells + 1] = {
     log_spell = true,
     sprite = 'entity/spidertron',
     special_sprite = 'entity=spidertron',
+    tooltip = 'Spawns a spidertron',
     callback = function(data)
         return create_entity(data)
     end
@@ -855,6 +887,7 @@ spells[#spells + 1] = {
     enabled = true,
     sprite = 'item/raw-fish',
     special_sprite = 'item=raw-fish',
+    tooltip = 'Spawns some fishies',
     callback = function(data)
         return insert_onto(data)
     end
@@ -876,6 +909,7 @@ spells[#spells + 1] = {
     enabled = true,
     sprite = 'item/explosives',
     special_sprite = 'item=explosives',
+    tooltip = 'Spawns some explosives',
     callback = function(data)
         return insert_onto(data)
     end
@@ -896,6 +930,7 @@ spells[#spells + 1] = {
     log_spell = true,
     sprite = 'entity/compilatron',
     special_sprite = 'entity=compilatron',
+    tooltip = 'Spawns a suicide comfylatron',
     callback = function(data)
         local self = data.self
         local player = data.player
@@ -923,6 +958,7 @@ spells[#spells + 1] = {
     enabled = true,
     sprite = 'recipe/distractor-capsule',
     special_sprite = 'recipe=distractor-capsule',
+    tooltip = 'Spawns disctractors',
     callback = function(data)
         return create_projectiles(data)
     end
@@ -940,6 +976,7 @@ spells[#spells + 1] = {
     log_spell = true,
     sprite = 'virtual-signal/signal-W',
     special_sprite = 'virtual-signal=signal-W',
+    tooltip = 'Warps you back to base',
     callback = function(data)
         local player = data.player
         local surface = data.surface
@@ -972,6 +1009,7 @@ spells[#spells + 1] = {
     log_spell = true,
     sprite = 'virtual-signal/signal-info',
     special_sprite = 'virtual-signal=signal-info',
+    tooltip = 'Gives you a temporary movement boost.',
     callback = function(data)
         local self = data.self
         local player = data.player
@@ -997,13 +1035,13 @@ spells[#spells + 1] = {
     level = 200,
     type = 'special',
     mana_cost = 350,
-    cooldown = 2000,
-    enabled = false,
-    enforce_cooldown = false,
+    cooldown = 1000,
+    enabled = true,
+    enforce_cooldown = true,
     log_spell = true,
     sprite = 'virtual-signal/signal-info',
     special_sprite = 'virtual-signal=signal-info',
-    tooltip = 'Damages enemies in radius when cast.',
+    tooltip = 'Damages enemies in radius when cast. This is a WIP spell that might get disabled.',
     callback = function(data)
         local self = data.self
         local player = data.player
@@ -1064,12 +1102,12 @@ spells[#spells + 1] = {
     type = 'special',
     mana_cost = 1000,
     cooldown = 18000,
-    enabled = false,
+    enabled = true,
     enforce_cooldown = true,
     log_spell = true,
     sprite = 'virtual-signal/signal-info',
     special_sprite = 'virtual-signal=signal-info',
-    tooltip = 'Creates a drone that searches for enemies and destroys them.',
+    tooltip = 'Creates a drone that searches for enemies and destroys them. This is a WIP spell that might get disabled.',
     callback = function(data)
         local self = data.self
         local player = data.player
@@ -1090,12 +1128,12 @@ spells[#spells + 1] = {
     type = 'special',
     mana_cost = 1000,
     cooldown = 18000,
-    enabled = false,
+    enabled = true,
     enforce_cooldown = true,
     log_spell = true,
     sprite = 'virtual-signal/signal-info',
     special_sprite = 'virtual-signal=signal-info',
-    tooltip = 'Creates a drone mines entities around you.',
+    tooltip = 'Creates a drone that mines entities around you. This is a WIP spell that might get disabled.',
     callback = function(data)
         local self = data.self
         local player = data.player
@@ -1153,16 +1191,19 @@ Public.all_spells = spells
 --- Gets a spell by index.
 ---@param rpg_t table
 ---@param spell_name string
----@return int|boolean
+---@return int|boolean, table|boolean
 function Public.get_spell_by_index(rpg_t, spell_name)
     local _spells = Public.get_all_spells_filtered(rpg_t)
     for index, data in pairs(_spells) do
         if data and data.name[1] == spell_name then
-            return index
+            return index, data
+        end
+        if data and data.name == spell_name then
+            return index, data
         end
     end
 
-    return false
+    return false, false
 end
 
 --- Gets a spell by name.
@@ -1175,9 +1216,27 @@ function Public.get_spell_by_name(rpg_t, spell_name)
         if data and data.name[1] == spell_name then
             return data
         end
+        if data and data.name == spell_name then
+            return data
+        end
     end
 
     return false
+end
+
+--- Gets a spell by name.
+---@param rpg_t table
+---@param spell_index string
+---@return int|boolean, table|boolean
+function Public.match_spell_by_index(rpg_t, spell_index)
+    local _spells = Public.get_all_spells_filtered(rpg_t)
+    for index, data in pairs(_spells) do
+        if index == spell_index then
+            return index, data
+        end
+    end
+
+    return false, false
 end
 
 --- Retrieves the spells table or a given spell.
@@ -1235,16 +1294,16 @@ function Public.set_new_spell(tbl)
             return error('A spell requires an object to create. <string>', 2)
         end
         if not tbl.target then
-            return error('A spell requires position. <boolean>', 2)
+            tbl.target = false
         end
         if not tbl.amount then
-            return error('A spell requires an amount of creation. <integer>', 2)
+            tbl.amount = 1
         end
         if not tbl.range then
-            return error('A spell requires a range. <integer>', 2)
+            tbl.range = 0
         end
         if not tbl.damage then
-            return error('A spell requires damage. <damage-area=true/false>', 2)
+            tbl.damage = 0
         end
         if not tbl.force then
             return error('A spell requires a force. <string>', 2)
@@ -1255,23 +1314,29 @@ function Public.set_new_spell(tbl)
         if not tbl.type then
             return error('A spell requires a type. <item/entity/special>', 2)
         end
+        if not tbl.sprite then
+            return error('A spell requires a sprite. <string>', 2)
+        end
         if not tbl.mana_cost then
-            return error('A spell requires mana_cost. <integer>', 2)
+            tbl.mana_cost = 100
         end
         if not tbl.cooldown then
-            return error('A spell requires cooldown. <integer>', 2)
+            tbl.cooldown = 0
         end
         if not tbl.enforce_cooldown then
-            return error('A spell requires enforce_cooldown. <boolean>', 2)
+            tbl.enforce_cooldown = false
         end
         if not tbl.enabled then
-            return error('A spell requires enabled. <boolean>', 2)
+            tbl.enabled = false
         end
         if not tbl.log_spell then
-            return error('A spell requires log_spell. <boolean>', 2)
+            tbl.log_spell = false
         end
         if not tbl.check_if_active then
-            return error('A spell requires check_if_active. <boolean>', 2)
+            tbl.check_if_active = false
+        end
+        if not tbl.callback then
+            return error('A spell requires a callback. <function>', 2)
         end
 
         Public.all_spells[#Public.all_spells + 1] = tbl
