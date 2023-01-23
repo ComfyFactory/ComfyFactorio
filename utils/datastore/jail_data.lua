@@ -26,7 +26,8 @@ local settings = {
     clear_voted_player = 36000, -- remove player from vote-tbl after 10 minutes
     clear_terms_tbl = 300,
     votejail_count = 5,
-    valid_surface = 'nauvis'
+    valid_surface = 'nauvis',
+    normies_can_jail = true -- states that normal players with enough playtime can jail
 }
 
 local set_data = Server.set_data
@@ -1036,6 +1037,13 @@ function Public.sync_revoked_permissions()
     Server.try_get_all_data(revoked_permissions_set, sync_revoked_permissions_callback)
 end
 
+---
+--- This toggles normal players ability to jail other players (non admins)
+---@param value boolean
+function Public.normies_can_jail(value)
+    settings.normies_can_jail = value or false
+end
+
 Server.on_data_set_changed(
     jailed_data_set,
     function(data)
@@ -1219,7 +1227,7 @@ Event.add(
                 return
             end
 
-            if trusted and playtime >= settings.playtime_for_vote and playtime < settings.playtime_for_instant_jail and not player.admin then
+            if settings.normies_can_jail and trusted and playtime >= settings.playtime_for_vote and playtime < settings.playtime_for_instant_jail and not player.admin then
                 if cmd == 'jail' then
                     if not terms_tbl[player.name] then
                         Utils.warning(player, module_name .. 'Abusing the jail command will lead to revoked permissions. Jailing someone in cases of disagreement is _NEVER_ OK!')
@@ -1251,7 +1259,7 @@ Event.add(
                     Public.try_ul_data(offender, false, player.name)
                     return
                 end
-            elseif playtime >= settings.playtime_for_instant_jail then
+            elseif settings.normies_can_jail and playtime >= settings.playtime_for_instant_jail then
                 if cmd == 'jail' then
                     if not terms_tbl[player.name] then
                         Utils.warning(player, module_name .. 'Abusing the jail command will lead to revoked permissions. Jailing someone in cases of disagreement is _NEVER_ OK!')
