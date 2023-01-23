@@ -250,13 +250,22 @@ commands.add_command(
         game.print('[CREATIVE] ' .. player.name .. ' has activated creative-mode!', Color.warning)
         Server.to_discord_bold(table.concat {'[Creative] ' .. player.name .. ' has activated creative-mode!'})
 
-        for k, _player in pairs(game.connected_players) do
-            if _player.character ~= nil then
-                if _player.get_inventory(defines.inventory.character_armor) then
-                    _player.get_inventory(defines.inventory.character_armor).clear()
+        for _, iter_player in pairs(game.connected_players) do
+            if iter_player.character ~= nil then
+                if iter_player.get_inventory(defines.inventory.character_armor) then
+                    iter_player.get_inventory(defines.inventory.character_armor).clear()
                 end
-                _player.insert {name = 'power-armor-mk2', count = 1}
-                local p_armor = _player.get_inventory(5)[1].grid
+                Modifiers.update_single_modifier(player, 'character_mining_speed_modifier', 'creative', 50)
+                Modifiers.update_single_modifier(player, 'character_health_bonus', 'creative', 2000)
+                Modifiers.update_single_modifier(player, 'character_crafting_speed_modifier', 'creative', 50)
+                Modifiers.update_single_modifier(player, 'character_inventory_slots_bonus', 'creative', #game.item_prototypes)
+                ---@diagnostic disable-next-line: assign-type-mismatch
+                iter_player.character_inventory_slots_bonus = Modifiers.get_single_modifier(player, 'character_inventory_slots_bonus', 'creative')
+                Modifiers.update_player_modifiers(player)
+
+                iter_player.insert {name = 'power-armor-mk2', count = 1}
+                ---@diagnostic disable-next-line: param-type-mismatch
+                local p_armor = iter_player.get_inventory(5)[1].grid
                 if p_armor and p_armor.valid then
                     p_armor.put({name = 'fusion-reactor-equipment'})
                     p_armor.put({name = 'fusion-reactor-equipment'})
@@ -274,20 +283,12 @@ commands.add_command(
                     p_armor.put({name = 'battery-mk2-equipment'})
                 end
                 local item = game.item_prototypes
-                local i = 0
                 for _k, _v in pairs(item) do
-                    i = i + 1
                     if _k and _v.type ~= 'mining-tool' then
-                        Modifiers.update_single_modifier(player, 'character_inventory_slots_bonus', 'creative', tonumber(i))
-                        Modifiers.update_single_modifier(player, 'character_mining_speed_modifier', 'creative', 50)
-                        Modifiers.update_single_modifier(player, 'character_health_bonus', 'creative', 2000)
-                        Modifiers.update_single_modifier(player, 'character_crafting_speed_modifier', 'creative', 50)
-                        _player.character_inventory_slots_bonus = Modifiers.get_single_modifier(player, 'character_inventory_slots_bonus', 'creative')
-                        _player.insert {name = _k, count = _v.stack_size}
-                        _player.print('[CREATIVE] Inserted all base items.', Color.success)
-                        Modifiers.update_player_modifiers(player)
+                        iter_player.insert {name = _k, count = _v.stack_size}
                     end
                 end
+                iter_player.print('[CREATIVE] Inserted all base items.', Color.success)
                 this.creative_enabled = true
             end
         end
