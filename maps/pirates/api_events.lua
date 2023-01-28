@@ -822,6 +822,7 @@ local function event_on_player_mined_entity(event)
         if not event.buffer then return end
 
 		-- Prevent dull strategy being staying in sea for long time catching as many fish as possible (as there is kind of infinite amount there)
+		-- NOTE: This however doesn't prevent catching fish with inserters, but that shouldn't matter much?
 		local boat_is_at_sea = Boats.is_boat_at_sea()
 		local fish_caught_while_at_sea = -1
 		if boat_is_at_sea and memory.boat and memory.boat.fish_caught_while_at_sea then

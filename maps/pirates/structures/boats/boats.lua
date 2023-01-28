@@ -907,6 +907,8 @@ local function process_entity_on_boat_teleportable(memory, boat, newsurface, new
 		if e == boat.upstairs_pole then
 			boat.upstairs_pole = ee
 			if boat.downstairs_poles and boat.downstairs_poles[1] then
+				-- Remove previous connection, before connecting it with the new clone to avoid sometimes having to remove wire connection because of limit
+				e.disconnect_neighbour(boat.downstairs_poles[1][1])
 				Common.force_connect_poles(boat.upstairs_pole, boat.downstairs_poles[1][1])
 			end
 		end
@@ -1468,6 +1470,30 @@ function Public.clear_fluid_from_ship_tanks(idx)
 		for j = 1, memory.hold_surface_count do
 			if boat.downstairs_fluid_storages[j] and boat.downstairs_fluid_storages[j][idx] and boat.downstairs_fluid_storages[j][idx].valid then
 				boat.downstairs_fluid_storages[j][idx].clear_fluid_inside()
+			end
+		end
+	end
+end
+
+-- Players can brick power by removing wire connections themselves (even between surfaces) with "shift + LMB" when clicking on pole
+function Public.force_reconnect_boat_poles()
+	local memory = Memory.get_crew_memory()
+	local boat = memory.boat
+
+	if boat.downstairs_poles then
+		if boat.downstairs_poles[1] then
+			Common.force_connect_poles(boat.upstairs_pole, boat.downstairs_poles[1][1])
+
+			-- Optional connection
+			boat.downstairs_poles[1][1].connect_neighbour(boat.downstairs_poles[1][2])
+		end
+
+		for i = 2, memory.hold_surface_count do
+			if boat.downstairs_poles[i] then
+				Common.force_connect_poles(boat.downstairs_poles[i][1], boat.downstairs_poles[i-1][2])
+
+				-- Optional connection
+				boat.downstairs_poles[i][1].connect_neighbour(boat.downstairs_poles[i][2])
 			end
 		end
 	end

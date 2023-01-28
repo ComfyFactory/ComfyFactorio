@@ -1605,7 +1605,7 @@ function Public.get_random_dictionary_entry(t, key)
     end
 end
 
--- mainly used to connect multi-surface poles
+-- Used to connect multi-surface poles
 function Public.force_connect_poles(pole1, pole2)
 	if not pole1 then return end
 	if not pole1.valid then return end
@@ -1621,6 +1621,8 @@ function Public.force_connect_poles(pole1, pole2)
 	-- 	pole2.connect_neighbour(e)
 	-- end
 
+	-- NOTE: "connect_neighbour" returns false when the entities are already connected as well
+	pole1.disconnect_neighbour(pole2)
 	local success = pole1.connect_neighbour(pole2)
 	if success then return end
 
