@@ -167,7 +167,7 @@ function Public.update_EEIs(boat)
 
 	local multiplier
 	if EEI_stage > #Balance.EEI_stages then --sensible out of bounds behaviour:
-		multiplier = Balance.EEI_stages[#Balance.EEI_stages] + 5 * (EEI_stage - #Balance.EEI_stages)
+		multiplier = Balance.EEI_stages[#Balance.EEI_stages] + 4 * (EEI_stage - #Balance.EEI_stages)
 	else
 		multiplier = Balance.EEI_stages[EEI_stage]
 	end

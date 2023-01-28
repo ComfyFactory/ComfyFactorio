@@ -278,9 +278,9 @@ function Public.destination_on_arrival(destination)
 		elseif destination.subtype == IslandEnum.enum.MAZE then --more time
 			destination.dynamic_data.time_remaining = Math.ceil(1.05 * Balance.max_time_on_island())
 		elseif destination.subtype == IslandEnum.enum.CAVE then -- supposed to be chill island
-			destination.dynamic_data.time_remaining = Math.ceil(0.8 * Balance.max_time_on_island_formula())
+			destination.dynamic_data.time_remaining = Math.ceil(0.9 * Balance.max_time_on_island_formula())
 		elseif destination.subtype == IslandEnum.enum.RED_DESERT then --this island has big amount of resources so rather high risk (need time to mine resources) and high reward (lots of iron/copper/stone), also try prevent infinite stay (on late game this island becomes too easy)
-			destination.dynamic_data.time_remaining = Math.ceil(0.8 * Balance.max_time_on_island_formula())
+			destination.dynamic_data.time_remaining = Math.ceil(0.9 * Balance.max_time_on_island_formula())
 		else
 			destination.dynamic_data.time_remaining = Math.ceil(Balance.max_time_on_island())
 		end

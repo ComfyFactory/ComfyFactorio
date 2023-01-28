@@ -92,7 +92,7 @@ function Public.starting_boatEEIelectric_buffer_size_MJ() --maybe needs to be at
 	return 3/2
 end
 Public.EEI_stages = { --multipliers
-	1,2,4,7,11
+	1,2,4,6,8,11,14
 }
 
 
@@ -150,19 +150,25 @@ function Public.silo_count()
 end
 
 
+-- Higher scale = slower game
 function Public.game_slowness_scale()
 	-- return 1 / Public.crew_scale()^(55/100) / Math.sloped(Common.difficulty_scale(), 1/4) --changed crew_scale factor significantly to help smaller crews
 	-- return 1 / (Public.crew_scale()^(50/100) / Math.sloped(Common.difficulty_scale(), 1/4)) --changed crew_scale factor significantly to help smaller crews
 
-	return Math.sloped(Common.difficulty_scale(), 1/4) / Public.crew_scale()^(50/100)
+	local scale = 0.3 + Math.sloped(Common.difficulty_scale(), -0.15) / (Public.crew_scale()^(1/8))
+	return Math.max(1, scale)
 end
 
 
+-- In seconds
 function Public.max_time_on_island_formula() --always >0  --tuned
-	return 60 * (
-			-- (32 + 2.2 * (Common.overworldx()/40)^(1/3))
-			(33 + 0.2 * (Common.overworldx()/40)^(1/3)) --based on observing x=2000, lets try killing the extra time
-	) * Public.game_slowness_scale()
+	-- return 60 * (
+	-- 		-- (32 + 2.2 * (Common.overworldx()/40)^(1/3))
+	-- 		(33 + 0.2 * (Common.overworldx()/40)^(1/3)) --based on observing x=2000, lets try killing the extra time
+	-- ) * Public.game_slowness_scale()
+
+	local minimum_mins_on_island = 40
+	return 60 * minimum_mins_on_island * Public.game_slowness_scale()
 end
 
 
@@ -178,6 +184,7 @@ function Public.need_resources_to_undock()
 	end
 end
 
+-- In seconds
 function Public.max_time_on_island()
 	local x = Common.overworldx()
 	if x == 0 or Public.need_resources_to_undock() then
@@ -185,14 +192,14 @@ function Public.max_time_on_island()
 		return -1
 	else
 		if x == 40 then
-			return 1.1 * Math.ceil(Public.max_time_on_island_formula()) --it's important for this island to be somewhat chill, so that it's not such a shock to go here from the first lobby chill island
+			return 1.2 * Math.ceil(Public.max_time_on_island_formula()) --it's important for this island to be somewhat chill, so that it's not such a shock to go here from the first lobby chill island
 		else
 			return Math.ceil(Public.max_time_on_island_formula())
 		end
 	end
 end
 
-Public.expected_time_fraction = 3/5
+Public.expected_time_fraction = 0.7
 
 function Public.expected_time_on_island() --always >0
 	return Public.expected_time_fraction * Public.max_time_on_island_formula()

@@ -1575,7 +1575,7 @@ end
 function Public.pick_random_price(tier, scale, tech_tier)
 	if tier < 0 or scale < 0 then return end
 
-	local item_stacks = LootRaffle.roll(math.floor(scale * (tier ^ 2 + 10 * tier)), 100, Public.get_item_blacklist(tech_tier))
+	local item_stacks = LootRaffle.roll(math.floor(scale * (tier ^ 2 + 10 * tier)), 20, Public.get_item_blacklist(tech_tier))
 	local price = {}
 	for _, item_stack in pairs(item_stacks) do
 		price[#price+1] = {name = item_stack.name, amount = item_stack.count}
