@@ -248,7 +248,7 @@ function Public.tick_quest_structure_entry_price_check()
 				quest_structure_data.completion_counter = quest_structure_data.completion_counter + v
 			else
 				-- @FIX: power armor loses components, items lose health!
-				-- @Piratux: ^ bro what?
+				-- Clarification: putting items in quest structure input chests, "repairs" them. For ex.: inserting ammo restores full stack (giving slight amount of ammo for free). Inserting broken items, repairs them, etc.
 
 				red_inv.insert({name = k, count = v});
 			end

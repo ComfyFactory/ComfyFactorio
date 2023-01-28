@@ -208,7 +208,7 @@ function Public.initial_class_pool()
 		enum.LUMBERJACK,
 		enum.IRON_LEG,
 		-- enum.SMOLDERING, --tedious
-		enum.GOURMET,
+		-- enum.GOURMET, -- @Piratux: Hard to balance around, when one can acquire tons of fish from chef class. In addition its ore generations sometimes bugs out (I have a save for that).
 		enum.CHEF,
 		enum.ROCK_EATER,
 		enum.SOLDIER,
@@ -354,44 +354,45 @@ local function class_on_player_used_capsule(event)
 	local global_memory = Memory.get_global_memory()
 	global_memory.last_players_health[event.player_index] = player.character.health
 
-	if class == Public.enum.GOURMET and (not Boats.is_boat_at_sea()) then
-		local multiplier = 0
-		local surfacedata = SurfacesCommon.decode_surface_name(player.surface.name)
-		if surfacedata.type == SurfacesCommon.enum.CABIN then
-			multiplier = 0.25
-		elseif surfacedata.type == SurfacesCommon.enum.CROWSNEST then
-			multiplier = 0.15
-		else
-			local tile = player.surface.get_tile(player.position)
-			if tile.valid then
-				if tile.name == CoreData.world_concrete_tile then
-					multiplier = 1.5
-				elseif tile.name == 'cyan-refined-concrete' then
-					multiplier = 1.6
-				elseif tile.name == CoreData.walkway_tile then
-					multiplier = 1
-				elseif tile.name == 'orange-refined-concrete' then
-					multiplier = 0.5
-				elseif tile.name == CoreData.enemy_landing_tile then
-					multiplier = 0.3
-				elseif tile.name == CoreData.static_boat_floor then
-					multiplier = 0.1
-				end
-			end
-		end
-		if multiplier > 0 then
-			-- Idea behind this: A diminishing return for ore granted every time fish is eaten. But slowly "reset" the diminishing return overtime
-			local timescale = 60*30 * Math.max((Balance.game_slowness_scale())^(2/3),0.8)
-			if memory.gourmet_recency_tick then
-				multiplier = multiplier * Math.clamp(0.2, 5, (1/5)^((memory.gourmet_recency_tick - game.tick)/(60*300)))
-				memory.gourmet_recency_tick = Math.max(memory.gourmet_recency_tick, game.tick - timescale*10) + timescale
-			else
-				multiplier = multiplier * 5
-				memory.gourmet_recency_tick = game.tick - timescale*10 + timescale
-			end
-			Public.class_ore_grant(player, 15 * multiplier, Balance.gourmet_ore_scaling_enabled)
-		end
-	elseif class == Public.enum.ROCK_EATER then
+	-- Currently disabled
+	-- if class == Public.enum.GOURMET and (not Boats.is_boat_at_sea()) then
+	-- 	local multiplier = 0
+	-- 	local surfacedata = SurfacesCommon.decode_surface_name(player.surface.name)
+	-- 	if surfacedata.type == SurfacesCommon.enum.CABIN then
+	-- 		multiplier = 0.25
+	-- 	elseif surfacedata.type == SurfacesCommon.enum.CROWSNEST then
+	-- 		multiplier = 0.15
+	-- 	else
+	-- 		local tile = player.surface.get_tile(player.position)
+	-- 		if tile.valid then
+	-- 			if tile.name == CoreData.world_concrete_tile then
+	-- 				multiplier = 1.5
+	-- 			elseif tile.name == 'cyan-refined-concrete' then
+	-- 				multiplier = 1.6
+	-- 			elseif tile.name == CoreData.walkway_tile then
+	-- 				multiplier = 1
+	-- 			elseif tile.name == 'orange-refined-concrete' then
+	-- 				multiplier = 0.5
+	-- 			elseif tile.name == CoreData.enemy_landing_tile then
+	-- 				multiplier = 0.3
+	-- 			elseif tile.name == CoreData.static_boat_floor then
+	-- 				multiplier = 0.1
+	-- 			end
+	-- 		end
+	-- 	end
+	-- 	if multiplier > 0 then
+	-- 		-- Idea behind this: A diminishing return for ore granted every time fish is eaten. But slowly "reset" the diminishing return overtime
+	-- 		local timescale = 60*30 * Math.max((Balance.game_slowness_scale())^(2/3),0.8)
+	-- 		if memory.gourmet_recency_tick then
+	-- 			multiplier = multiplier * Math.clamp(0.2, 5, (1/5)^((memory.gourmet_recency_tick - game.tick)/(60*300)))
+	-- 			memory.gourmet_recency_tick = Math.max(memory.gourmet_recency_tick, game.tick - timescale*10) + timescale
+	-- 		else
+	-- 			multiplier = multiplier * 5
+	-- 			memory.gourmet_recency_tick = game.tick - timescale*10 + timescale
+	-- 		end
+	-- 		Public.class_ore_grant(player, 15 * multiplier, Balance.gourmet_ore_scaling_enabled)
+	-- 	end
+	if class == Public.enum.ROCK_EATER then
 		local required_count = Balance.rock_eater_required_stone_furnace_to_heal_count
 		if player.get_item_count('stone-furnace') >= required_count then
 			player.remove_item({name='stone-furnace', count=required_count})
