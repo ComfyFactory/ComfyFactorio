@@ -901,7 +901,9 @@ local function process_entity_on_boat_teleportable(memory, boat, newsurface, new
 		if e.name == 'car' or e.name == 'tank' or e.name == 'spidertron' then
 			e.teleport(p2, newsurface)
 		else
-			ee = e.clone{position = p2, surface = newsurface, create_build_effect_smoke = false}
+			if string.sub(e.name, 1, 14) ~= 'spidertron-leg' then
+				ee = e.clone{position = p2, surface = newsurface, create_build_effect_smoke = false}
+			end
 		end
 
 		if e == boat.upstairs_pole then
@@ -913,7 +915,8 @@ local function process_entity_on_boat_teleportable(memory, boat, newsurface, new
 			end
 		end
 
-		if not (e.name == 'car' or e.name == 'tank' or e.name == 'spidertron') then
+		-- We don't want to destroy spidertron leg, because otherwise it will destroy whole spidertron. Funny huh?
+		if not (e.name == 'car' or e.name == 'tank' or e.name == 'spidertron' or string.sub(e.name, 1, 14) == 'spidertron-leg') then
 			e.destroy()
 		end
 
