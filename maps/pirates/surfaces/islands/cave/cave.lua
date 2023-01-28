@@ -68,38 +68,40 @@ function Public.reveal(cave_miner, surface, source_surface, position, brushsize)
             local entity_position = entity.position
             if (position.x - entity_position.x) ^ 2 + (position.y - entity_position.y) ^ 2 < brushsize_square then
                 local e = entity.clone({position = entity_position, surface = surface})
-                if e.name == 'market' then
-                    rendering.draw_light(
-                        {
-                            sprite = 'utility/light_medium',
-                            scale = 7,
-                            intensity = 0.8,
-                            minimum_darkness = 0,
-                            oriented = true,
-                            color = {255, 255, 255},
-                            target = e,
-                            surface = surface,
-                            visible = true,
-                            only_in_alt_mode = false
-                        }
-                    )
-                end
-
-                if entity.force.index == 2 then
-                    e.active = true
-                    table.insert(cave_miner.reveal_queue, {entity.type, entity.position.x, entity.position.y})
-                end
-
-                entity.destroy()
-
-                -- make revealing a spawner recursively reveal nearby ones too
-                if e.name == 'biter-spawner' or e.name == 'spitter-spawner' then
-                    -- prevent spawners immediately spawning tons of biters for a while to give player a chance to clear them or run away
-                    if destination.dynamic_data and destination.dynamic_data.disabled_wave_timer then
-                        destination.dynamic_data.disabled_wave_timer = Balance.prevent_waves_from_spawning_in_cave_timer_length
+                if e and e.valid then
+                    if e.name == 'market' then
+                        rendering.draw_light(
+                            {
+                                sprite = 'utility/light_medium',
+                                scale = 7,
+                                intensity = 0.8,
+                                minimum_darkness = 0,
+                                oriented = true,
+                                color = {255, 255, 255},
+                                target = e,
+                                surface = surface,
+                                visible = true,
+                                only_in_alt_mode = false
+                            }
+                        )
                     end
 
-                    Public.reveal(cave_miner, surface, source_surface, entity_position, 15)
+                    if entity.force.index == 2 then
+                        e.active = true
+                        table.insert(cave_miner.reveal_queue, {entity.type, entity.position.x, entity.position.y})
+                    end
+
+                    entity.destroy()
+
+                    -- make revealing a spawner recursively reveal nearby ones too
+                    if e.name == 'biter-spawner' or e.name == 'spitter-spawner' then
+                        -- prevent spawners immediately spawning tons of biters for a while to give player a chance to clear them or run away
+                        if destination.dynamic_data and destination.dynamic_data.disabled_wave_timer then
+                            destination.dynamic_data.disabled_wave_timer = Balance.prevent_waves_from_spawning_in_cave_timer_length
+                        end
+
+                        Public.reveal(cave_miner, surface, source_surface, entity_position, 15)
+                    end
                 end
             end
         end
