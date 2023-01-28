@@ -120,7 +120,7 @@ function Public.activecrewcount()
 	local count = 0
 	for _, id in pairs(memory.crewplayerindices) do
 		local player = game.players[id]
-		if player and player.valid and not Utils.contains(global_memory.afk_player_indices, player.index) then
+		if player and player.valid and (not Utils.contains(global_memory.afk_player_indices, player.index)) and (not Utils.contains(memory.spectatorplayerindices, player.index)) then
 			count = count + 1
 		end
 	end
