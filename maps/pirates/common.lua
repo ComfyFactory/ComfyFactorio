@@ -9,6 +9,8 @@ local CoreData = require 'maps.pirates.coredata'
 local Memory = require 'maps.pirates.memory'
 local _inspect = require 'utils.inspect'.inspect
 
+local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
+
 local LootRaffle = require 'functions.loot_raffle'
 -- local simplex_noise = require 'utils.simplex_noise'.d2
 -- local perlin_noise = require 'utils.perlin_noise'
@@ -506,7 +508,7 @@ function Public.time_adjusted_departure_cost(cost)
 		local timer = dynamic_data.timer
 		local time_remaining = dynamic_data.time_remaining
 
-		if timer and time_remaining and timer >= 0 and time_remaining >= 0 then
+		if timer and time_remaining and timer >= 0 and time_remaining >= 0 and destination.static_params.undock_cost_decreases == true then
 			local total_time = timer + time_remaining
 			local elapsed_fraction = timer / total_time
 			local cost_fraction = 1 - elapsed_fraction

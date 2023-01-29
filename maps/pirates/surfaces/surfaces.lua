@@ -273,17 +273,7 @@ function Public.destination_on_arrival(destination)
 		destination.dynamic_data.rocketsiloenergyneeded = Balance.silo_energy_needed_MJ() * 1000000
 		destination.dynamic_data.rocketcoalreward = Balance.rocket_launch_fuel_reward()
 
-		if destination.subtype == IslandEnum.enum.RADIOACTIVE then
-			destination.dynamic_data.time_remaining = -1
-		elseif destination.subtype == IslandEnum.enum.MAZE then --more time
-			destination.dynamic_data.time_remaining = Math.ceil(1.05 * Balance.max_time_on_island())
-		elseif destination.subtype == IslandEnum.enum.CAVE then -- supposed to be chill island
-			destination.dynamic_data.time_remaining = Math.ceil(0.9 * Balance.max_time_on_island_formula())
-		elseif destination.subtype == IslandEnum.enum.RED_DESERT then --this island has big amount of resources so rather high risk (need time to mine resources) and high reward (lots of iron/copper/stone), also try prevent infinite stay (on late game this island becomes too easy)
-			destination.dynamic_data.time_remaining = Math.ceil(0.9 * Balance.max_time_on_island_formula())
-		else
-			destination.dynamic_data.time_remaining = Math.ceil(Balance.max_time_on_island())
-		end
+		destination.dynamic_data.time_remaining = Balance.max_time_on_island(destination.subtype)
 
 		if destination.subtype ~= IslandEnum.enum.FIRST and destination.subtype ~= IslandEnum.enum.RADIOACTIVE and destination.destination_index ~= 2 then
 			-- if not destination.overworld_position.x ~= Common.first_cost_to_leave_macrox * 40 then

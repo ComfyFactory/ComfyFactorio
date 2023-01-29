@@ -10,6 +10,8 @@ local CoreData = require 'maps.pirates.coredata'
 -- local Utils = require 'maps.pirates.utils_local'
 -- local _inspect = require 'utils.inspect'.inspect
 
+local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
+
 -- this file is an API to all the balance tuning knobs
 
 
@@ -168,16 +170,13 @@ function Public.max_time_on_island_formula() --always >0  --tuned
 	-- ) * Public.game_slowness_scale()
 
 	local minimum_mins_on_island = 40
-	return 60 * minimum_mins_on_island * Public.game_slowness_scale()
+	return Math.ceil(60 * minimum_mins_on_island * Public.game_slowness_scale())
 end
 
 
-Public.rockets_needed_x = 40*20
-
--- Returns true if resources are mandatory to escape from island. Returns false, when resources are needed to just undock early.
-function Public.need_resources_to_undock()
-	local x = Common.overworldx()
-	if x >= Public.rockets_needed_x and x ~= 40*21 then
+-- Returns true if uncollected resources will cause the crew to lose.
+function Public.need_resources_to_undock(overworldx)
+	if overworldx >= 40*20 then
 		return true
 	else
 		return false
@@ -185,17 +184,24 @@ function Public.need_resources_to_undock()
 end
 
 -- In seconds
-function Public.max_time_on_island()
+function Public.max_time_on_island(island_subtype)
 	local x = Common.overworldx()
-	if x == 0 or Public.need_resources_to_undock() then
+	if x == 0 then
 	-- if Common.overworldx() == 0 or ((Common.overworldx()/40) > 20 and (Common.overworldx()/40) < 25) then
 		return -1
 	else
-		if x == 40 then
-			return 1.2 * Math.ceil(Public.max_time_on_island_formula()) --it's important for this island to be somewhat chill, so that it's not such a shock to go here from the first lobby chill island
-		else
-			return Math.ceil(Public.max_time_on_island_formula())
+		local time = Public.max_time_on_island_formula()
+
+		if x == 40 then -- it's important for this island to be somewhat chill, so that it's not such a shock to go here from the first lobby chill island
+			time = time * 1.2
+		elseif island_subtype == IslandEnum.enum.MAZE then --more time
+			time = time * 1.05
+		elseif island_subtype == IslandEnum.enum.CAVE then -- supposed to be chill island
+			time = time * 0.9
+		elseif island_subtype == IslandEnum.enum.RED_DESERT then --this island has big amount of resources so rather high risk (need time to mine resources) and high reward (lots of iron/copper/stone)
+			time = time * 0.9
 		end
+		return Math.ceil(time)
 	end
 end
 

@@ -618,22 +618,27 @@ function Public.process_etaframe_update(player, flow1, bools)
 
 			-- local caption
 			if bools.atsea_loading_bool then
-				if Balance.need_resources_to_undock() then
-					flow2.etaframe_label_3.caption = {'pirates.gui_etaframe_next_escape_cost'}
+				flow2.etaframe_label_3.caption = {'pirates.gui_etaframe_next_escape_cost'}
+				if Balance.need_resources_to_undock(Common.overworldx()) then
 					if bools.cost_includes_rocket_launch_bool then
-						tooltip = {'pirates.resources_needed_tooltip_0_rocketvariant'}
+						tooltip = {'pirates.resources_needed_tooltip_4_rocketvariant'}
 					else
-						tooltip = {'pirates.resources_needed_tooltip_0'}
+						tooltip = {'pirates.resources_needed_tooltip_4'}
 					end
-				else
-					flow2.etaframe_label_3.caption = {'pirates.gui_etaframe_next_escape_cost'}
+				elseif destination.static_params.undock_cost_decreases == true then
 					if bools.cost_includes_rocket_launch_bool then
 						tooltip = {'pirates.resources_needed_tooltip_1_rocketvariant'}
 					else
 						tooltip = {'pirates.resources_needed_tooltip_1'}
 					end
+				else
+					if bools.cost_includes_rocket_launch_bool then
+						tooltip = {'pirates.resources_needed_tooltip_0a_rocketvariant'}
+					else
+						tooltip = {'pirates.resources_needed_tooltip_0a'}
+					end
 				end
-			elseif (not bools.eta_bool) then
+			elseif (not bools.eta_bool) then -- Shown when ship doesn't have auto undock timer
 				flow2.etaframe_label_3.visible = false
 				flow2.etaframe_label_1.visible = true
 				flow2.etaframe_label_1.caption = {'pirates.gui_etaframe_to_escape_store'}
@@ -643,15 +648,31 @@ function Public.process_etaframe_update(player, flow1, bools)
 				else
 					tooltip = {'pirates.resources_needed_tooltip_3'}
 				end
-			else
-				flow2.etaframe_label_3.caption = {'pirates.gui_etaframe_or_store'}
+			else -- Shown when at island
+				if Balance.need_resources_to_undock(Common.overworldx()) == true then
+					flow2.etaframe_label_3.visible = false
 
-				local adjusted_costs_resources_strings = Common.time_adjusted_departure_cost_resources_strings(memory)
-				if bools.cost_includes_rocket_launch_bool then
-					tooltip = {'pirates.resources_needed_tooltip_2_rocketvariant', adjusted_costs_resources_strings[1], adjusted_costs_resources_strings[2]}
+					if bools.cost_includes_rocket_launch_bool then
+						tooltip = {'pirates.resources_needed_tooltip_5_rocketvariant'}
+					else
+						tooltip = {'pirates.resources_needed_tooltip_5'}
+					end
+				elseif destination.static_params.undock_cost_decreases == true then
+					flow2.etaframe_label_3.caption = {'pirates.gui_etaframe_or_store'}
+
+					local adjusted_costs_resources_strings = Common.time_adjusted_departure_cost_resources_strings(memory)
+					if bools.cost_includes_rocket_launch_bool then
+						tooltip = {'pirates.resources_needed_tooltip_2_rocketvariant', adjusted_costs_resources_strings[1], adjusted_costs_resources_strings[2]}
+					else
+						--@Future reference: localisation handling
+						tooltip = {'pirates.resources_needed_tooltip_2', adjusted_costs_resources_strings[1], adjusted_costs_resources_strings[2]}
+					end
 				else
-					--@Future reference: localisation handling
-					tooltip = {'pirates.resources_needed_tooltip_2', adjusted_costs_resources_strings[1], adjusted_costs_resources_strings[2]}
+					if bools.cost_includes_rocket_launch_bool then
+						tooltip = {'pirates.resources_needed_tooltip_3_rocketvariant'}
+					else
+						tooltip = {'pirates.resources_needed_tooltip_3'}
+					end
 				end
 			end
 

@@ -234,8 +234,6 @@ function Public.generate_destination_base_cost_to_undock(p, subtype)
 			['uranium-235'] = Math.ceil(Math.ceil(80 + (macro_p.x - 1))),
 			-- ['uranium-235'] = Math.ceil(Math.ceil(80 + (macro_p.x)/2)), --tried adding beacons instead of this
 		}
-	elseif subtype == IslandEnum.enum.CAVE then
-		base_cost_to_undock = nil -- make it a more chill island
 	elseif subtype == IslandEnum.enum.RED_DESERT then
 		if base_cost_to_undock and base_cost_to_undock['launch_rocket'] == true then
 			base_cost_to_undock['launch_rocket'] = false -- some extra variety
@@ -291,6 +289,10 @@ function Public.generate_overworld_destination(p)
 		local static_params = Utils.deepcopy(scope.Data.static_params_default)
 
 		static_params.base_cost_to_undock = Public.generate_destination_base_cost_to_undock(p, subtype) -- Multiplication by Balance.cost_to_leave_multiplier() happens later, in destination_on_collide.
+		static_params.undock_cost_decreases = true
+		if Balance.need_resources_to_undock(p.x) == true or subtype == IslandEnum.enum.RADIOACTIVE then
+			static_params.undock_cost_decreases = false
+		end
 
 		--scheduled raft raids moved to destination_on_arrival
 

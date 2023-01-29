@@ -219,7 +219,11 @@ local function crew_tick()
 							local surface_name_decoded = Surfaces.SurfacesCommon.decode_surface_name(memory.boat.surface_name)
 							local type = surface_name_decoded.type
 							if type == Surfaces.enum.ISLAND then
-								Progression.retreat_from_island(false)
+								if destination.static_params and destination.static_params.base_cost_to_undock and Balance.need_resources_to_undock(Common.overworldx()) == true then
+									Crew.try_lose({'pirates.loss_resources_were_not_collected_in_time'})
+								else
+									Progression.retreat_from_island(false)
+								end
 							elseif type == Surfaces.enum.DOCK then
 								Progression.undock_from_dock(false)
 							end
@@ -235,7 +239,7 @@ local function crew_tick()
 					Ai.Tick_actions(120)
 
 					if tick % 240 == 0 then
-						PiratesApiOnTick.check_all_spawners_dead(240)
+						-- PiratesApiOnTick.check_all_spawners_dead(240) -- incentivises killing all spawners too much
 						if memory.max_players_recorded then
 							local count_now = #Common.crew_get_crew_members()
 							if count_now and count_now > memory.max_players_recorded then
