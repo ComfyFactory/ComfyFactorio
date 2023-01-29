@@ -173,9 +173,11 @@ function Public.max_time_on_island_formula() --always >0  --tuned
 end
 
 
+Public.need_resources_to_undock_x = 40*20
+
 -- Returns true if uncollected resources will cause the crew to lose.
 function Public.need_resources_to_undock(overworldx)
-	if overworldx >= 40*20 then
+	if overworldx >= Public.need_resources_to_undock_x then
 		return true
 	else
 		return false

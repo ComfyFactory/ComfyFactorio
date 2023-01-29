@@ -246,8 +246,8 @@ function Public.destination_on_collide(destination)
 
 	if memory.overworldx == 40*5 then
 		Common.parrot_speak(memory.force, {'pirates.parrot_boats_warning'})
-	-- elseif memory.overworldx == 800 then
-	-- 	Parrot.parrot_800_tip()
+	elseif memory.overworldx == Balance.need_resources_to_undock_x then
+		Common.parrot_speak(memory.force, {'pirates.parrot_need_resources_to_undock_warning'})
 	end
 end
 
