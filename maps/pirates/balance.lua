@@ -108,7 +108,9 @@ function Public.cost_to_leave_multiplier()
 	-- return Math.sloped(Common.difficulty_scale(), 9/10)
 
 	-- extra factor now that the cost scales with time:
-	return Math.sloped(Common.difficulty_scale(), 8/10)
+	-- return Math.sloped(Common.difficulty_scale(), 8/10)
+
+	return Math.sloped(Common.difficulty_scale(), 0.5)
 end
 
 function Public.crew_scale()
