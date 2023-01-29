@@ -1829,7 +1829,10 @@ function Public.event_on_chunk_generated(event)
 		local e2 = e
 		-- e2.build_check_type = defines.build_check_type.ghost_revive
 		-- log(_inspect(e2))
-		if surface.can_place_entity(e2) then
+
+		-- Allow placing worms in water in walkways
+		-- NOTE: Tile check there is to prevent worms from spawning outside island
+		if surface.can_place_entity(e2) or (destination.subtype == IslandEnum.enum.WALKWAYS and string.sub(e.name, -11) == 'worm-turret' and surface.get_tile(e.position.x, e.position.y).name == 'water-shallow') then
 			local ee = surface.create_entity(e)
 			if e.indestructible then
 				ee.destructible = false
