@@ -332,7 +332,8 @@ function Public.generate_overworld_destination(p)
 
 		local rng = 0.5 + 1 * Math.random()
 		static_params.starting_treasure_maps = Math.ceil((static_params.base_starting_treasure_maps or 0) * rng)
-		static_params.starting_wood = Math.ceil(static_params.base_starting_wood or 1000)
+		static_params.starting_wood = static_params.base_starting_wood or 1000
+		static_params.starting_wood = Math.ceil(static_params.starting_wood * Balance.island_richness_avg_multiplier())
 		static_params.starting_rock_material = Math.ceil(static_params.base_starting_rock_material or 300) * Balance.island_richness_avg_multiplier()
 
 		rng = 0.5 + 1 * Math.random()
@@ -673,11 +674,12 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 			-- end
 
 			-- other freebies:
-			for i=1,vector.x do
-				Common.give_items_to_crew(Balance.periodic_free_resources_per_x())
-			end
+			-- for i=1,vector.x do
+			-- 	Common.give_items_to_crew(Balance.periodic_free_resources_per_x())
+			-- end
 
-			Balance.apply_crew_buffs_per_league(memory.force, vector.x)
+			-- Makes game hard to balance around this when productivity bonus is not constant.
+			-- Balance.apply_crew_buffs_per_league(memory.force, vector.x)
 
 			-- add some evo: (this will get reset upon arriving at a destination anyway, so this is just relevant for sea monsters and the like:)
 			local extra_evo = Balance.base_evolution_leagues(memory.overworldx) - Balance.base_evolution_leagues(memory.overworldx - vector.x)

@@ -78,7 +78,7 @@ function Public.create_step2_entities()
 		-- quest_structure_data.market.add_market_item{price={{'burner-mining-drill', 1}}, offer={type = 'give-item', item = 'iron-plate', count = 9}}
 
 		local how_many_coin_offers = 5
-		if Balance.crew_scale() >= 1.2 then how_many_coin_offers = 6 end
+		if Balance.crew_scale() >= 1 then how_many_coin_offers = 6 end
 
 		-- Thinking of not having these offers available always (if it's bad design decision can always change it back)
 		if Math.random(4) == 1 then
@@ -271,7 +271,7 @@ Public.entry_price_data_raw = {
 	},
 	['plastic-bar'] = {
 		overallWeight = 1,
-		minLambda = 0.2,
+		minLambda = 0.3,
 		maxLambda = 1,
 		shape = false,
 		base_amount = 400,
@@ -279,7 +279,7 @@ Public.entry_price_data_raw = {
 	},
 	['sulfur'] = {
 		overallWeight = 1,
-		minLambda = 0.2,
+		minLambda = 0.3,
 		maxLambda = 1,
 		shape = false,
 		base_amount = 400,

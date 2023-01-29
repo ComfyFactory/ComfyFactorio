@@ -275,16 +275,16 @@ function Public.class_rewards_tick(tickinterval)
 			local hold_bool = (type == Surfaces.enum.HOLD)
 
 			if class == Classes.enum.DECKHAND and on_ship_bool and (not hold_bool) then
-				Classes.class_ore_grant(player, Balance.deckhand_ore_grant_multiplier, Balance.deckhand_ore_scaling_enabled)
+				Classes.class_ore_grant(player, Balance.deckhand_ore_grant_multiplier)
 			elseif class == Classes.enum.BOATSWAIN and hold_bool then
-				Classes.class_ore_grant(player, Balance.boatswain_ore_grant_multiplier, Balance.boatswain_ore_scaling_enabled)
+				Classes.class_ore_grant(player, Balance.boatswain_ore_grant_multiplier)
 			elseif class == Classes.enum.SHORESMAN and (not on_ship_bool) then
-				Classes.class_ore_grant(player, Balance.shoresman_ore_grant_multiplier, Balance.shoresman_ore_scaling_enabled)
+				Classes.class_ore_grant(player, Balance.shoresman_ore_grant_multiplier)
 			elseif class == Classes.enum.QUARTERMASTER then
 				local nearby_players = #player.surface.find_entities_filtered{position = player.position, radius = Balance.quartermaster_range, name = 'character'}
 
 				if nearby_players > 1 then
-					Classes.class_ore_grant(player, nearby_players - 1, Balance.quartermaster_ore_scaling_enabled)
+					Classes.class_ore_grant(player, nearby_players - 1)
 				end
 			end
 		end

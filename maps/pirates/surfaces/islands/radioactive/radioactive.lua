@@ -100,18 +100,22 @@ function Public.terrain(args)
 
 	if noises.forest_abs_suppressed(p) < 0.8 and noises.height(p) > 0.35 then
 		if noises.ore(p) > 1 then
-			args.entities[#args.entities + 1] = {name = 'uranium-ore', position = args.p, amount = 2000}
+			local amount = Math.ceil(300 * noises.height(p) * Balance.island_richness_avg_multiplier())
+			args.entities[#args.entities + 1] = {name = 'uranium-ore', position = args.p, amount = amount}
 		end
 	end
 
 	if noises.forest_abs_suppressed(p) < 0.8 and noises.height(p) < 0.35 and noises.height(p) > 0.05 then
 		if noises.ore(p) < -1.5 then
-			args.entities[#args.entities + 1] = {name = 'stone', position = args.p, amount = 1000}
+			local amount = Math.ceil(500 * noises.height(p) * Balance.island_richness_avg_multiplier())
+			args.entities[#args.entities + 1] = {name = 'stone', position = args.p, amount = amount}
 		elseif noises.ore(p) < 0.005 and noises.ore(p) > -0.005 then
 			if noises.ore(p) > 0 then
-				args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = 20}
+				local amount = Math.ceil(100 * noises.height(p) * Balance.island_richness_avg_multiplier())
+				args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = amount}
 			else
-				args.entities[#args.entities + 1] = {name = 'copper-ore', position = args.p, amount = 100}
+				local amount = Math.ceil(200 * noises.height(p) * Balance.island_richness_avg_multiplier())
+				args.entities[#args.entities + 1] = {name = 'copper-ore', position = args.p, amount = amount}
 			end
 		end
 	end
@@ -285,7 +289,7 @@ local function radioactive_tick()
 			local pollution = 0
 			local timer = destination.dynamic_data.timer
 			if timer and timer > 15 then
-				pollution = 10.0 * (Common.difficulty_scale()^(1.1) * (memory.overworldx/40)^(18/10) * (Balance.crew_scale())^(0.55)) / 3600 * tickinterval * (1 + (Common.difficulty_scale()-1)*0.2 + 0.001 * timer)
+				pollution = 6 * (Common.difficulty_scale()^(1.1) * (memory.overworldx/40)^(18/10) * (Balance.crew_scale())^(1/5)) / 3600 * tickinterval * (1 + (Common.difficulty_scale()-1)*0.2 + 0.001 * timer)
 			end
 
 			if pollution > 0 then

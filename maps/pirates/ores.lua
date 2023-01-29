@@ -1,6 +1,6 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
--- local Balance = require 'maps.pirates.balance'
+local Balance = require 'maps.pirates.balance'
 -- local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
 local Raffle = require 'maps.pirates.raffle'
@@ -55,7 +55,7 @@ function Public.try_give_ore(player, realp, source_name)
 				coin_amount = coin_amount * 2
 			end
 
-			given_amount = Math.max(2, given_amount)
+			given_amount = Math.max(4 * Balance.island_richness_avg_multiplier(), given_amount)
 
 			local to_give = {}
 			to_give[#to_give+1] = {name = choice, count = Math.ceil(given_amount)}

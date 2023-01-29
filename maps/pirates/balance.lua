@@ -49,16 +49,12 @@ Public.iron_leg_damage_taken_multiplier = 0.24
 Public.iron_leg_iron_ore_required = 3000
 Public.deckhand_extra_speed = 1.25
 Public.deckhand_ore_grant_multiplier = 5
-Public.deckhand_ore_scaling_enabled = false
 Public.boatswain_extra_speed = 1.25
 Public.boatswain_ore_grant_multiplier = 8
-Public.boatswain_ore_scaling_enabled = false
 Public.shoresman_extra_speed = 1.1
 Public.shoresman_ore_grant_multiplier = 5
-Public.shoresman_ore_scaling_enabled = false
 Public.quartermaster_range = 19
 Public.quartermaster_bonus_physical_damage = 1.3
-Public.quartermaster_ore_scaling_enabled = false
 Public.scout_extra_speed = 1.3
 Public.scout_damage_taken_multiplier = 1.25
 Public.scout_damage_dealt_multiplier = 0.6
@@ -113,6 +109,7 @@ function Public.cost_to_leave_multiplier()
 	return Math.sloped(Common.difficulty_scale(), 0.5)
 end
 
+-- Avoid using e >= 1/4 in calculations "crew_scale()^(e)" to strictly avoid situations where people want to have less people in the crew
 function Public.crew_scale()
 	local ret = Common.activecrewcount()/10
 	if ret == 0 then ret = 1/10 end --if all players are afk
@@ -274,7 +271,7 @@ function Public.boat_passive_pollution_per_minute(time)
 	end
 
 	return boost * (
-			2.60 * (Common.difficulty_scale()^(0.8)) * (Common.overworldx()/40)^(1.8) * (Public.crew_scale())^(52/100)-- There is no _explicit_ T dependence, but it depends almost the same way on the crew_scale as T does.
+			2 * (Common.difficulty_scale()^(0.8)) * (Common.overworldx()/40)^(1.8) * (Public.crew_scale())^(1/5)-- There is no _explicit_ T dependence, but it depends almost the same way on the crew_scale as T does.
 	 )
 end
 
@@ -383,27 +380,23 @@ function Public.biter_timeofday_bonus_damage(darkness) -- a surface having min_b
 end
 
 
-function Public.periodic_free_resources_per_x()
-	return {
-	}
-	-- return {
-	-- 	{name = 'iron-plate', count = Math.ceil(5 * (Common.overworldx()/40)^(2/3))},
-	-- 	{name = 'copper-plate', count = Math.ceil(1 * (Common.overworldx()/40)^(2/3))},
-	-- }
-end
+-- function Public.periodic_free_resources_per_x()
+-- 	return {
+-- 	}
+-- 	-- return {
+-- 	-- 	{name = 'iron-plate', count = Math.ceil(5 * (Common.overworldx()/40)^(2/3))},
+-- 	-- 	{name = 'copper-plate', count = Math.ceil(1 * (Common.overworldx()/40)^(2/3))},
+-- 	-- }
+-- end
 
-function Public.periodic_free_resources_per_destination_5_seconds()
-	return {
-	}
-	-- return {
-	-- 	{name = 'iron-ore', count = Math.ceil(7 * (Common.overworldx()/40)^(0.6))},
-	-- 	{name = 'copper-ore', count = Math.ceil(3 * (Common.overworldx()/40)^(0.6))},
-	-- }
-end
-
-function Public.class_resource_scale()
-	return 1 / (Public.crew_scale()^(2/5)) --already helped by longer timescales
-end
+-- function Public.periodic_free_resources_per_destination_5_seconds()
+-- 	return {
+-- 	}
+-- 	-- return {
+-- 	-- 	{name = 'iron-ore', count = Math.ceil(7 * (Common.overworldx()/40)^(0.6))},
+-- 	-- 	{name = 'copper-ore', count = Math.ceil(3 * (Common.overworldx()/40)^(0.6))},
+-- 	-- }
+-- end
 
 function Public.biter_base_density_scale()
 	local p = Public.crew_scale()
@@ -426,7 +419,7 @@ end
 
 function Public.island_richness_avg_multiplier()
 	local base = 0.73
-	local additional = 0.120 * Math.clamp(0, 7, (Common.overworldx()/40)^(65/100) * Math.sloped(Public.crew_scale(), 1/40)) --tuned tbh
+	local additional = 0.120 * Math.clamp(0, 10, (Common.overworldx()/40)^(65/100) * Math.sloped(Public.crew_scale(), 1/40)) --tuned tbh
 
 	-- now clamped, because it takes way too long to mine that many more resources
 
@@ -452,7 +445,10 @@ function Public.quest_market_entry_price_scale()
 	-- x = 200  (5th island): 0.582
 	-- x = 600  (15th island): 0.992
 	-- x = 1000 (25th island): 1.401
-	return (1 + 0.05 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty_scale(), 1/2) - 0.4
+	-- return (1 + 0.05 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty_scale(), 1/2) - 0.4
+
+
+	return (1 + 0.05 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/4)) * Math.sloped(Common.difficulty_scale(), 1/2) - 0.4
 end
 
 function Public.quest_furnace_entry_price_scale()
@@ -468,12 +464,14 @@ function Public.quest_furnace_entry_price_scale()
 	-- x = 200  (5th island): 0.517
 	-- x = 600  (15th island): 0.762
 	-- x = 1000 (25th island): 1.008
-	return (1 + 0.03 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty_scale(), 1/2) - 0.4
+	-- return (1 + 0.03 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty_scale(), 1/2) - 0.4
+
+	return (1 + 0.03 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/4)) * Math.sloped(Common.difficulty_scale(), 1/2) - 0.4
 end
 
-function Public.apply_crew_buffs_per_league(force, leagues_travelled)
-	force.laboratory_productivity_bonus = force.laboratory_productivity_bonus + Math.max(0, 7/100 * leagues_travelled/40)
-end
+-- function Public.apply_crew_buffs_per_league(force, leagues_travelled)
+-- 	force.laboratory_productivity_bonus = force.laboratory_productivity_bonus + Math.max(0, 7/100 * leagues_travelled/40)
+-- end
 
 function Public.class_cost(at_dock)
 	if at_dock then
@@ -523,8 +521,10 @@ function Public.kraken_kill_reward_fuel()
 end
 
 function Public.kraken_health()
-	return Math.ceil(3500 * Math.max(1, 1 + 0.075 * (Common.overworldx()/40)^(13/10)) * (Public.crew_scale()^(4/8)) * Math.sloped(Common.difficulty_scale(), 3/4))
+	-- return Math.ceil(3500 * Math.max(1, 1 + 0.075 * (Common.overworldx()/40)^(13/10)) * (Public.crew_scale()^(4/8)) * Math.sloped(Common.difficulty_scale(), 3/4))
 	-- return Math.ceil(3500 * Math.max(1, 1 + 0.08 * ((Common.overworldx()/40)^(13/10)-6)) * (Public.crew_scale()^(5/8)) * Math.sloped(Common.difficulty_scale(), 3/4))
+
+	return Math.ceil(2000 * Math.max(1, 1 + 0.075 * (Common.overworldx()/40)^(13/10)) * (Public.crew_scale()^(1/5)) * Math.sloped(Common.difficulty_scale(), 3/4))
 end
 
 Public.kraken_regen_scale = 0.1 --starting off low
@@ -557,6 +557,9 @@ function Public.krakens_per_free_slot(overworldx)
 	end
 end
 
+function Public.biter_boat_health()
+	return Math.ceil(800 * Math.max(1, 1 + 0.075 * (Common.overworldx()/40)^(13/10)) * (Public.crew_scale()^(1/5)) * Math.sloped(Common.difficulty_scale(), 3/4))
+end
 
 function Public.main_shop_cost_multiplier()
 	return 1
@@ -593,7 +596,7 @@ function Public.flamers_tech_multipliers()
 end
 
 function Public.flamers_base_nerf()
-	return -0.2
+	return -0.3
 end
 
 

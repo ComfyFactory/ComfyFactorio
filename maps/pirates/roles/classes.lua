@@ -85,17 +85,17 @@ function Public.explanation(class, add_is_class_obtainable)
 
 	if class == enum.DECKHAND then
 		local extra_speed = Public.percentage_points_difference_from_100_percent(Balance.deckhand_extra_speed)
-		local ore_amount = Public.ore_grant_amount(Balance.deckhand_ore_grant_multiplier, Balance.deckhand_ore_scaling_enabled)
+		local ore_amount = Public.ore_grant_amount(Balance.deckhand_ore_grant_multiplier)
 		local tick_rate = Balance.class_reward_tick_rate_in_seconds
 		full_explanation = {'', {explanation, extra_speed, ore_amount, tick_rate}}
 	elseif class == enum.BOATSWAIN then
 		local extra_speed = Public.percentage_points_difference_from_100_percent(Balance.boatswain_extra_speed)
-		local ore_amount = Public.ore_grant_amount(Balance.boatswain_ore_grant_multiplier, Balance.boatswain_ore_scaling_enabled)
+		local ore_amount = Public.ore_grant_amount(Balance.boatswain_ore_grant_multiplier)
 		local tick_rate = Balance.class_reward_tick_rate_in_seconds
 		full_explanation = {'', {explanation, extra_speed, ore_amount, tick_rate}}
 	elseif class == enum.SHORESMAN then
 		local extra_speed = Public.percentage_points_difference_from_100_percent(Balance.shoresman_extra_speed)
-		local ore_amount = Public.ore_grant_amount(Balance.shoresman_ore_grant_multiplier, Balance.shoresman_ore_scaling_enabled)
+		local ore_amount = Public.ore_grant_amount(Balance.shoresman_ore_grant_multiplier)
 		local tick_rate = Balance.class_reward_tick_rate_in_seconds
 		full_explanation = {'', {explanation, extra_speed, ore_amount, tick_rate}}
 	elseif class == enum.QUARTERMASTER then
@@ -311,8 +311,8 @@ end
 
 
 
-function Public.class_ore_grant(player, how_much, enable_scaling)
-	local count = Public.ore_grant_amount(how_much, enable_scaling)
+function Public.class_ore_grant(player, how_much)
+	local count = Public.ore_grant_amount(how_much)
 
 	if Math.random(4) == 1 then
 		Common.flying_text_small(player.surface, player.position, '[color=0.85,0.58,0.37]+' .. count .. '[/color]')
@@ -323,12 +323,8 @@ function Public.class_ore_grant(player, how_much, enable_scaling)
 	end
 end
 
-function Public.ore_grant_amount(how_much, enable_scaling)
-	if enable_scaling then
-		return Math.ceil(how_much * Balance.class_resource_scale())
-	else
-		return Math.ceil(how_much)
-	end
+function Public.ore_grant_amount(how_much)
+	return Math.ceil(how_much)
 end
 
 local function class_on_player_used_capsule(event)
@@ -390,7 +386,7 @@ local function class_on_player_used_capsule(event)
 	-- 			multiplier = multiplier * 5
 	-- 			memory.gourmet_recency_tick = game.tick - timescale*10 + timescale
 	-- 		end
-	-- 		Public.class_ore_grant(player, 15 * multiplier, Balance.gourmet_ore_scaling_enabled)
+	-- 		Public.class_ore_grant(player, 15 * multiplier)
 	-- 	end
 	if class == Public.enum.ROCK_EATER then
 		local required_count = Balance.rock_eater_required_stone_furnace_to_heal_count

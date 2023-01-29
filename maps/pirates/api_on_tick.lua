@@ -308,7 +308,7 @@ function Public.periodic_free_resources(tickinterval)
 	local boat = memory.boat
 	if not (destination and destination.type == Surfaces.enum.ISLAND and boat and boat.surface_name == destination.surface_name) then return end
 
-	Common.give_items_to_crew(Balance.periodic_free_resources_per_destination_5_seconds())
+	-- Common.give_items_to_crew(Balance.periodic_free_resources_per_destination_5_seconds())
 
 	if game.tick % (300*30) == 0 and (destination and destination.subtype == IslandEnum.enum.RADIOACTIVE) then -- every 150 seconds
 		local count = 2

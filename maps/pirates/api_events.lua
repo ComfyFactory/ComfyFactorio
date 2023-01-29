@@ -797,7 +797,7 @@ local function event_on_player_mined_entity(event)
 
 				local baseamount = 4
 				--minimum 1 wood
-				local amount = Math.clamp(1, Math.max(1, Math.ceil(available)), Math.ceil(baseamount * available/starting))
+				local amount = Math.clamp(1, Math.max(1, Math.ceil(available)), Math.ceil(baseamount * Balance.island_richness_avg_multiplier() * available/starting))
 
 				destination.dynamic_data.wood_remaining = destination.dynamic_data.wood_remaining - amount
 
@@ -970,9 +970,9 @@ local function event_on_player_mined_entity(event)
 
 				for k, v in pairs(c) do
 					if k == 'coal' and #c2 <= 1 then --if oil, then no coal
-						c2[#c2 + 1] = {name = k, count = v, color = CoreData.colors.coal}
+						c2[#c2 + 1] = {name = k, count = Math.ceil(v * Balance.island_richness_avg_multiplier()), color = CoreData.colors.coal}
 					elseif k == 'stone' then
-						c2[#c2 + 1] = {name = k, count = v, color = CoreData.colors.stone}
+						c2[#c2 + 1] = {name = k, count = Math.ceil(v * Balance.island_richness_avg_multiplier()), color = CoreData.colors.stone}
 					end
 				end
 				Common.give(player, c2, entity.position)
@@ -1287,7 +1287,7 @@ local function event_on_research_finished(event)
 	end
 
 	Public.apply_flamer_nerfs()
-	Public.research_apply_buffs(event) -- this is broken right now
+	-- Public.research_apply_buffs(event) -- this is broken right now
 
 	for _, e in ipairs(research.effects) do
 	local t = e.type
