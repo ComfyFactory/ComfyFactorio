@@ -795,8 +795,6 @@ function Public.boat_movement_tick(tickinterval)
 	local boat = memory.boat
 	if boat and boat.surface_name and game.surfaces[boat.surface_name] and game.surfaces[boat.surface_name].valid and boat.speed and boat.speed > 0 and memory.game_lost == false then
 
-		local surface_type = destination.type
-
 		local ticker_increase = boat.speed / 60 * tickinterval
 		boat.speedticker1 = boat.speedticker1 + ticker_increase
 		boat.speedticker2 = boat.speedticker2 + ticker_increase
@@ -808,7 +806,7 @@ function Public.boat_movement_tick(tickinterval)
 				Structures.Boats.currentdestination_move_boat_natural()
 			end
 		elseif boat.speedticker2 >= Common.boat_steps_at_a_time then
-			if surface_type == Surfaces.enum.ISLAND and boat and boat.state == Boats.enum_state.APPROACHING then
+			if destination.type == Surfaces.enum.ISLAND and destination.subtype ~= IslandEnum.enum.CAVE and boat and boat.state == Boats.enum_state.APPROACHING then
 				Structures.Boats.currentdestination_try_move_boat_steered()
 			end
 			boat.speedticker2 = 0
@@ -1062,18 +1060,18 @@ function Public.crowsnest_steer(tickinterval)
 	local count_left = inv_left.get_item_count("rail-signal")
 	local count_right = inv_right.get_item_count("rail-signal")
 
-	if count_left >= 100 and count_right < 100 and memory.overworldy > -24 then
+	if count_left >= 50 and count_right < 50 and memory.overworldy > -24 then
 		if Overworld.try_overworld_move_v2{x = 0, y = -24} then
 			local force = memory.force
 			Common.notify_force(force, {'pirates.steer_left'})
-			inv_left.remove({name = "rail-signal", count = 100})
+			inv_left.remove({name = "rail-signal", count = 50})
 		end
 		return
-	elseif count_right >= 100 and count_left < 100 and memory.overworldy < 24 then
+	elseif count_right >= 50 and count_left < 50 and memory.overworldy < 24 then
 		if Overworld.try_overworld_move_v2{x = 0, y = 24} then
 			local force = memory.force
 			Common.notify_force(force, {'pirates.steer_right'})
-			inv_right.remove({name = "rail-signal", count = 100})
+			inv_right.remove({name = "rail-signal", count = 50})
 		end
 		return
 	end

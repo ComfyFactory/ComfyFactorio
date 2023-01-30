@@ -245,8 +245,8 @@ function Public.chunk_structures(args)
 
 		return {
 			placeable = noises.farness(p) > 0.66,
-			spawners_indestructible = noises.farness(p) > 0.7,
-			-- spawners_indestructible = true,
+			-- spawners_indestructible = noises.farness(p) > 0.7,
+			spawners_indestructible = false,
 			density_perchunk = 150 * Math.slopefromto(noises.farness(p), 0.3, 0.9)^2 * args.biter_base_density_scale,
 		}
 	end

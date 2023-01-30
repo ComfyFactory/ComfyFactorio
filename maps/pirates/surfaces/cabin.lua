@@ -107,8 +107,8 @@ Public.cabin_shop_data = {
 		offer = {type='give-item', item = 'artillery-shell', count = 5},
 	},
 	{
-		price = {{'coin', 1000}, {'electronic-circuit', 25}},
-		offer = {type='give-item', item = 'rail-signal', count = 100},
+		price = {{'coin', 1000}, {'electronic-circuit', 20}},
+		offer = {type='give-item', item = 'rail-signal', count = 50},
 	},
 	{
 		price = {{'coin', 1000}, {'stone-brick', 50}},

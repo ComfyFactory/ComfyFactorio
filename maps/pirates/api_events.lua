@@ -782,38 +782,53 @@ local function event_on_player_mined_entity(event)
 					tick_tack_trap(memory.enemy_force_name, entity.surface, entity.position)
 					return
 				end
+			end
 
-				local give = {}
-				if class == Classes.enum.LUMBERJACK then
-					give[#give + 1] = {name = 'wood', count = 1}
-					Classes.lumberjack_bonus_items(give)
-				end
+			local give = {}
 
-				if #give > 0 then
-					Common.give(player, give, entity.position)
-				end
+			local baseamount = 4
+			--minimum 1 wood
+			local amount = Math.clamp(1, Math.max(1, Math.ceil(available)), Math.ceil(baseamount * Balance.island_richness_avg_multiplier() * available/starting))
+
+			destination.dynamic_data.wood_remaining = destination.dynamic_data.wood_remaining - amount
+
+			if class == Classes.enum.LUMBERJACK then
+				give[#give + 1] = {name = 'wood', count = amount}
+				Classes.lumberjack_bonus_items(give)
 			else
-				local give = {}
+				give[#give + 1] = {name = 'wood', count = amount}
+				if Math.random(Balance.every_nth_tree_gives_coins) == 1 then --tuned
+					local a = 5
+					give[#give + 1] = {name = 'coin', count = a}
+					memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
+				end
+			end
 
-				local baseamount = 4
-				--minimum 1 wood
-				local amount = Math.clamp(1, Math.max(1, Math.ceil(available)), Math.ceil(baseamount * Balance.island_richness_avg_multiplier() * available/starting))
+			Common.give(player, give, entity.position)
 
-				destination.dynamic_data.wood_remaining = destination.dynamic_data.wood_remaining - amount
+			if destination.subtype ~= IslandEnum.enum.FIRST then
+				if Math.random(1024) == 1 then
+					local placed = Ores.try_ore_spawn(entity.surface, entity.position, entity.name, 0, true)
+					if placed then
+						Common.notify_player_expected(player, {'pirates.ore_discovered'})
+					end
+				elseif Math.random(2048) == 1 then
+					local e = entity.surface.create_entity{name = 'wooden-chest', position = entity.position, force = memory.ancient_friendly_force_name}
+					if e and e.valid then
+						e.minable = false
+						e.rotatable = false
+						e.destructible = false
 
-				if class == Classes.enum.LUMBERJACK then
-					give[#give + 1] = {name = 'wood', count = amount}
-					Classes.lumberjack_bonus_items(give)
-				else
-					give[#give + 1] = {name = 'wood', count = amount}
-					if Math.random(Balance.every_nth_tree_gives_coins) == 1 then --tuned
-						local a = 5
-						give[#give + 1] = {name = 'coin', count = a}
-						memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
+						local inv = e.get_inventory(defines.inventory.chest)
+						local loot = Loot.wooden_chest_loot()
+						for i = 1, #loot do
+							local l = loot[i]
+							inv.insert(l)
+						end
+
+						Common.notify_player_expected(player, {'pirates.chest_discovered'})
 					end
 				end
-
-				Common.give(player, give, entity.position)
 			end
 		end
 		event.buffer.clear()
@@ -920,8 +935,9 @@ local function event_on_player_mined_entity(event)
 				if Math.random(1, 35) == 1 then
 					tick_tack_trap(memory.enemy_force_name, entity.surface, entity.position)
 				end
+			end
 
-			elseif destination.subtype == IslandEnum.enum.CAVE then
+			if destination.subtype == IslandEnum.enum.CAVE then
 				Ores.try_give_ore(player, entity.position, entity.name)
 
 				if Math.random(1, 35) == 1 then
@@ -980,7 +996,23 @@ local function event_on_player_mined_entity(event)
 				destination.dynamic_data.rock_material_remaining = available
 
 				if Surfaces.get_scope(destination).break_rock then
-					Surfaces.get_scope(destination).break_rock(entity.surface, entity.position, entity.name)
+					destination.dynamic_data.ore_spawn_points_to_avoid = destination.dynamic_data.ore_spawn_points_to_avoid or {}
+					local points_to_avoid = destination.dynamic_data.ore_spawn_points_to_avoid
+					local can_place_ores = true
+
+					for _, pos in ipairs(points_to_avoid) do
+						if Math.distance(pos, entity.position) < Balance.min_ore_spawn_distance then
+							can_place_ores = false
+							break
+						end
+					end
+
+					if can_place_ores then
+						local placed = Surfaces.get_scope(destination).break_rock(entity.surface, entity.position, entity.name)
+						if placed then
+							points_to_avoid[#points_to_avoid + 1] = {x = entity.position.x, y = entity.position.y}
+						end
+					end
 				end
 			end
 		end
@@ -1032,10 +1064,6 @@ local function base_kill_rewards(event)
 		class_is_chef = Classes.get_class(revenge_target.player.index) == Classes.enum.CHEF
 	end
 
-
-	-- no worm loot in the maze except for chefs:
-	local maze = destination.subtype == IslandEnum.enum.MAZE
-	if maze and not (entity_name == 'biter-spawner' or entity_name == 'spitter-spawner') and not (class_is_chef) then return end
 
 	local iron_amount
 	local coin_amount
@@ -1855,6 +1883,20 @@ local function event_on_rocket_launched(event)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
+
+	local rocket_launched_belongs_to_island = false
+	if destination.dynamic_data.rocketsilos then
+		for i = 1, #destination.dynamic_data.rocketsilos do
+			if event.rocket_silo == destination.dynamic_data.rocketsilos[i] then
+				rocket_launched_belongs_to_island = true
+				break
+			end
+		end
+	end
+
+	-- We don't want to do anything if rocket was launched by silo that doesn't belong to island
+	-- NOTE: On rare occasions if rocket was launched but the silo died in the meantime, this will not give rewards to the crew (idk how to fix it though)
+	if not rocket_launched_belongs_to_island then return end
 
 	destination.dynamic_data.rocketlaunched = true
 	if memory.stored_fuel and destination.dynamic_data and destination.dynamic_data.rocketcoalreward then

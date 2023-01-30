@@ -375,7 +375,7 @@ function Public.spawn_enemy_boat(type)
 			boat.spawner = e
 
 			local max_health = Balance.biter_boat_health()
-			Common.new_healthbar(true, e, max_health, nil, 900, 0.5)
+			Common.new_healthbar(true, e, max_health, nil, max_health, 0.5)
 		end
 
 		return enemyboats[#enemyboats]

@@ -68,11 +68,16 @@ function Public.try_give_ore(player, realp, source_name)
 	end
 end
 
-function Public.try_ore_spawn(surface, realp, source_name, density_bonus)
+function Public.try_ore_spawn(surface, realp, source_name, density_bonus, from_tree)
 	density_bonus = density_bonus or 0
+	from_tree = from_tree or false
 	-- local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 	local choices = destination.dynamic_data.hidden_ore_remaining_abstract
+
+	if from_tree then
+		choices = destination.static_params.abstract_ore_amounts
+	end
 
 	local ret = false
 
@@ -120,7 +125,11 @@ function Public.try_ore_spawn(surface, realp, source_name, density_bonus)
 			else
 				if not choice then return false end
 
-				local real_amount = Math.max(Common.minimum_ore_placed_per_tile, Common.ore_abstract_to_real(choices[choice]))
+				local real_amount = Common.ore_abstract_to_real(choices[choice])
+				if from_tree then
+					real_amount = Math.ceil(real_amount * 0.1)
+				end
+				real_amount = Math.max(Common.minimum_ore_placed_per_tile, real_amount)
 
 				local density = (density_bonus + 17 + 4 * Math.random()) -- not too big, and not too much variation; it makes players have to stay longer
 
