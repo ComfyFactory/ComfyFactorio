@@ -734,7 +734,6 @@ function Public.initialise_crew(accepted_proposal)
 
 	memory.destinationsvisited_indices = {}
 	memory.stored_fuel = Balance.starting_fuel
-	memory.available_classes_pool = Classes.initial_class_pool()
 	memory.playtesting_stats = {
 		coins_gained_by_biters = 0,
 		coins_gained_by_nests_and_worms = 0,
@@ -751,10 +750,13 @@ function Public.initialise_crew(accepted_proposal)
 	memory.captain_accrued_time_data = {}
 	memory.max_players_recorded = 0
 
-	memory.classes_table = {}
 	memory.officers_table = {}
-	memory.spare_classes = {}
-	memory.unlocked_classes = {}
+
+	memory.classes_table = {} -- stores all unlocked untaken classes
+	memory.spare_classes = {} -- stores all unlocked taken classes
+	memory.recently_purchased_classes = {} -- stores recently unlocked classes to add it back to available class pool list later
+	memory.unlocked_classes = {} -- stores all unlocked classes just for GUI (to have consistent order)
+	memory.available_classes_pool = Classes.initial_class_pool() -- stores classes that can be randomly picked for unlocking
 	memory.class_entry_count = 0 -- used to track whether new class entries should be added during "full_update"
 
 	memory.healthbars = {}

@@ -75,6 +75,14 @@ Public.rock_eater_required_stone_furnace_to_heal_count = 1
 Public.soldier_defender_summon_chance = 0.2
 Public.veteran_destroyer_summon_chance = 0.2
 Public.veteran_on_hit_slow_chance = 0.1
+Public.medic_heal_radius = 15
+Public.medic_heal_percentage_amount = 0.1
+Public.doctor_heal_radius = 20
+Public.doctor_heal_percentage_amount = 0.15
+Public.shaman_energy_required_per_summon = 1000000
+Public.shaman_max_charge = 30000000
+
+Public.class_cycle_count = 5 -- How many classes should be purchased to have a chance to buy the same class again
 
 Public.maximum_fish_allowed_to_catch_at_sea = 30
 
@@ -107,7 +115,7 @@ function Public.cost_to_leave_multiplier()
 	-- extra factor now that the cost scales with time:
 	-- return Math.sloped(Common.difficulty_scale(), 8/10)
 
-	return Math.sloped(Common.difficulty_scale(), 0.5)
+	return 0.6 * Math.sloped(Common.difficulty_scale(), 0.4)
 end
 
 -- Avoid using e >= 1/4 in calculations "crew_scale()^(e)" to strictly avoid situations where people want to have less people in the crew
@@ -561,7 +569,7 @@ function Public.krakens_per_free_slot(overworldx)
 end
 
 function Public.biter_boat_health()
-	return Math.ceil(800 * Math.max(1, 1 + 0.075 * (Common.overworldx()/40)^(13/10)) * (Public.crew_scale()^(1/5)) * Math.sloped(Common.difficulty_scale(), 3/4))
+	return Math.ceil(700 * Math.max(1, 1 + 0.075 * (Common.overworldx()/40)^(13/10)) * (Public.crew_scale()^(1/5)) * Math.sloped(Common.difficulty_scale(), 3/4))
 end
 
 function Public.main_shop_cost_multiplier()

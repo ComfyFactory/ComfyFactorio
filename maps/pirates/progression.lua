@@ -135,6 +135,7 @@ function Public.go_from_starting_dock_to_first_destination()
 
 		Hold.create_hold_surface(1)
 		boat.EEI_stage = 1
+		boat.random_class_purchase_count = 0
 		Cabin.create_cabin_surface()
 
 		local items = Balance.starting_items_crew_upstairs()

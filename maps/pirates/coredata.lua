@@ -45,8 +45,10 @@ Public.colors = {
 	notify_gameover = {r=249, g=84, b=84},
 	renderingtext_green = {r=88, g=219, b=88},
 	renderingtext_yellow = {r=79, g=136, b=209},
-	quartermaster_rendering = {r=237, g=157, b=45, a=0.15},
+	quartermaster_rendering = {r=237, g=157, b=45, a=0.2},
+	healing_radius_rendering = {r=255, g=91, b=138, a=0.2},
 	toughness_rendering = {r=40, g=40, b=40, a=0.5},
+	shaman_charge_rendering = {r=0, g=100, b=255, a=0.6},
 }
 
 Public.static_boat_floor = 'brown-refined-concrete'

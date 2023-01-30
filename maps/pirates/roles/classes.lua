@@ -36,6 +36,9 @@ local enum = {
 	ROCK_EATER = 'rock_eater',
 	SOLDIER = 'soldier',
 	VETERAN = 'veteran',
+	MEDIC = 'medic',
+	DOCTOR = 'doctor',
+	SHAMAN = 'shaman',
 }
 Public.enum = enum
 
@@ -69,6 +72,9 @@ Public.eng_form = {
 	[enum.ROCK_EATER] = 'Rock Eater',
 	[enum.SOLDIER] = 'Soldier',
 	[enum.VETERAN] = 'Veteran',
+	[enum.MEDIC] = 'Medic',
+	[enum.DOCTOR] = 'Doctor',
+	[enum.SHAMAN] = 'Shaman',
 }
 
 function Public.display_form(class)
@@ -144,6 +150,14 @@ function Public.explanation(class, add_is_class_obtainable)
 		local chance = Balance.veteran_destroyer_summon_chance * 100
 		local chance2 = Balance.veteran_on_hit_slow_chance * 100
 		full_explanation = {'', {explanation, chance, chance2}}
+	elseif class == enum.MEDIC then
+		local radius = Balance.medic_heal_radius
+		local heal_percentage = Math.ceil(Balance.medic_heal_percentage_amount * 100)
+		full_explanation = {'', {explanation, radius, heal_percentage}}
+	elseif class == enum.DOCTOR then
+		local radius = Balance.doctor_heal_radius
+		local heal_percentage = Math.ceil(Balance.doctor_heal_percentage_amount * 100)
+		full_explanation = {'', {explanation, radius, heal_percentage}}
 	else
 		full_explanation = {'', {explanation}}
 	end
@@ -183,6 +197,7 @@ Public.class_unlocks = {
 	[enum.SAMURAI] = {enum.HATAMOTO},
 	[enum.MASTER_ANGLER] = {enum.DREDGER},
 	[enum.SOLDIER] = {enum.VETERAN},
+	[enum.MEDIC] = {enum.DOCTOR},
 }
 
 Public.class_purchase_requirement = {
@@ -192,18 +207,19 @@ Public.class_purchase_requirement = {
 	[enum.HATAMOTO] = enum.SAMURAI,
 	[enum.DREDGER] = enum.MASTER_ANGLER,
 	[enum.VETERAN] = enum.SOLDIER,
+	[enum.DOCTOR] = enum.MEDIC,
 }
 
 function Public.initial_class_pool()
 	return {
-		enum.DECKHAND, --good for afk players
+		-- enum.DECKHAND, --good for afk players, but it's boring and bloats class pool
 		enum.SHORESMAN,
 		enum.QUARTERMASTER,
 		enum.FISHERMAN,
 		enum.SCOUT,
 		enum.SAMURAI,
 		-- enum.MERCHANT, --not interesting, breaks coin economy
-		enum.BOATSWAIN,
+		-- enum.BOATSWAIN, -- boring and bloats class pool
 		-- enum.PROSPECTOR, --lumberjack is just more fun
 		enum.LUMBERJACK,
 		enum.IRON_LEG,
@@ -212,6 +228,8 @@ function Public.initial_class_pool()
 		enum.CHEF,
 		enum.ROCK_EATER,
 		enum.SOLDIER,
+		enum.MEDIC,
+		enum.SHAMAN,
 	}
 end
 
@@ -295,18 +313,24 @@ end
 
 function Public.generate_class_for_sale()
 	local memory = Memory.get_crew_memory()
+	local destination = Common.current_destination()
 
 	-- if #memory.available_classes_pool == 0 then
 	-- 	-- memory.available_classes_pool = Public.initial_class_pool() --reset to initial state
 	-- 	-- turned off as this makes too many classes
 	-- end
 
-	local class
-	if #memory.available_classes_pool > 0 then
-		class = memory.available_classes_pool[Math.random(#memory.available_classes_pool)]
+	if #memory.available_classes_pool > 1 then
+		-- Avoid situations where you can purchase same class twice in a row (or faster than Balance.class_cycle_count) when purchasing random class from cabin and then from quest market
+		while true do
+			local class = memory.available_classes_pool[Math.random(#memory.available_classes_pool)]
+			if not (destination and destination.static_params and destination.static_params.class_for_sale == class) then
+				return class
+			end
+		end
+	else
+		return memory.available_classes_pool[1]
 	end
-
-	return class
 end
 
 
@@ -422,6 +446,56 @@ local function class_on_player_used_capsule(event)
 				e.combat_robot_owner = player.character
 			end
 		end
+	elseif class == Public.enum.MEDIC then
+		for _, member in pairs(Common.crew_get_crew_members()) do
+			if Math.distance(player.position, member.position) <= Balance.medic_heal_radius then
+				if member.character then
+					local amount = Math.ceil(member.character.prototype.max_health * Balance.medic_heal_percentage_amount)
+					game.print('amount: ' .. tostring(amount))
+					game.print('healing')
+					member.character.health = member.character.health + amount
+				end
+			end
+		end
+	elseif class == Public.enum.DOCTOR then
+		for _, member in pairs(Common.crew_get_crew_members()) do
+			if Math.distance(player.position, member.position) <= Balance.doctor_heal_radius then
+				if member.character then
+					local amount = Math.ceil(member.character.prototype.max_health * Balance.doctor_heal_percentage_amount)
+					game.print('amount: ' .. tostring(amount))
+					game.print('healing')
+					member.character.health = member.character.health + amount
+				end
+			end
+		end
+	elseif class == Public.enum.SHAMAN then
+		local data = memory.class_auxiliary_data[player.index]
+		if data and data.shaman_charge then
+			for _ = 1, 3 do
+				if data.shaman_charge < Balance.shaman_energy_required_per_summon then break end
+
+				local pos = Math.vector_sum(player.position, Math.random_vec(2))
+				local name = Common.get_random_unit_type(Math.clamp(0, 1, memory.evolution_factor))
+
+				if player.surface.can_place_entity{name = name, position = pos, force = memory.force} then
+					local e = player.surface.create_entity{name = name, position = pos, force = memory.force}
+					if e and e.valid then
+						data.shaman_charge = data.shaman_charge - Balance.shaman_energy_required_per_summon
+						rendering.draw_text {
+							text = '~' .. player.name .. "'s minion~",
+							surface = player.surface,
+							target = e,
+							target_offset = {0, -2.6},
+							color = player.force.color,
+							scale = 1.05,
+							font = 'default-large-semibold',
+							alignment = 'center',
+							scale_with_zoom = false
+						}
+					end
+				end
+			end
+		end
 	end
 end
 
@@ -458,6 +532,24 @@ function Public.try_unlock_class(class_for_sale, player, force_unlock)
 	end
 
 	if not Public.class_is_obtainable(class_for_sale) then return false end
+
+	if player.force and player.force.valid then
+		local message
+		if required_class then
+			message = {'pirates.class_upgrade', player.name, Public.display_form(required_class), Public.display_form(class_for_sale), Public.explanation(class_for_sale)}
+		else
+			message = {'pirates.class_purchase', player.name, Public.display_form(class_for_sale), Public.explanation(class_for_sale)}
+		end
+		Common.notify_force_light(player.force, message)
+	end
+
+	memory.available_classes_pool = Utils.ordered_table_with_single_value_removed(memory.available_classes_pool, class_for_sale)
+
+	if Public.class_unlocks[class_for_sale] then
+		for _, upgrade in pairs(Public.class_unlocks[class_for_sale]) do
+			memory.available_classes_pool[#memory.available_classes_pool + 1] = upgrade
+		end
+	end
 
 	if required_class then
 		-- check if pre-requisite class is taken by someone
@@ -522,6 +614,14 @@ function Public.try_unlock_class(class_for_sale, player, force_unlock)
 			-- update GUI data
 			memory.unlocked_classes[#memory.unlocked_classes + 1] = {class = class_for_sale}
 		end
+
+		memory.recently_purchased_classes[#memory.recently_purchased_classes + 1] = class_for_sale
+
+		if #memory.recently_purchased_classes >= Balance.class_cycle_count then
+			local class_removed = table.remove(memory.recently_purchased_classes, 1)
+			memory.available_classes_pool[#memory.available_classes_pool + 1] = class_removed
+		end
+
 		return true
 	end
 

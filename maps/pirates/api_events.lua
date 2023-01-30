@@ -1042,6 +1042,11 @@ local function base_kill_rewards(event)
 	if not (event.force and event.force.valid) then return end
 	local entity_name = entity.name
 
+	-- Don't give coins for friendly biter death
+	if Utils.contains(CoreData.enemy_units, entity_name) and entity.force and entity.force.name == memory.force_name then
+		return
+	end
+
 	local revenge_target
 	if event.cause and event.cause.valid and event.cause.name == 'character' then
 		revenge_target = event.cause
