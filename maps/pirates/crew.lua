@@ -434,7 +434,7 @@ function Public.leave_crew(player, to_lobby, quiet)
 			Common.send_important_items_from_player_to_crew(player, true)
 			char.die(memory.force_name)
 		else
-			Common.send_important_items_from_player_to_crew(player)
+			Common.send_important_items_from_player_to_crew(player, true)
 			memory.temporarily_logged_off_characters[player.index] = game.tick
 		end
 	-- else

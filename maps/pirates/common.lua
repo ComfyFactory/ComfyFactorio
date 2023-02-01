@@ -1292,6 +1292,7 @@ function Public.validate_player_and_character(player)
 end
 
 
+-- Players complained that when "all_items" is false, the items dissapear (perhaps code sending items from dead character to cabin is wrong?).
 function Public.send_important_items_from_player_to_crew(player, all_items)
 	local player_inv = {}
 	player_inv[1] = game.players[player.index].get_inventory(defines.inventory.character_main)

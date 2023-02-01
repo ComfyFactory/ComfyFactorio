@@ -311,8 +311,6 @@ function Public.flow_add_close_button(flow, close_button_name)
 		type = 'flow',
 		direction = 'vertical',
 	})
-	flow2.style.top_margin = -3
-	flow2.style.bottom_margin = -3
 
 	flow3 = flow2.add{type="flow", name='hflow', direction="horizontal"}
     flow3.style.vertical_align = 'center'

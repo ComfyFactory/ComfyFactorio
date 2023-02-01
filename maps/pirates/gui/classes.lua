@@ -147,7 +147,7 @@ function Public.toggle_window(player)
         vertical_scroll_policy = 'auto'
     }
     scroll_pane.style.maximal_height = 500
-	scroll_pane.style.bottom_padding = 20
+	scroll_pane.style.bottom_margin = 10
 
 	scroll_pane.add{
 		type = 'table',

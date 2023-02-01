@@ -810,11 +810,11 @@ local function event_on_player_mined_entity(event)
 
 			destination.dynamic_data.wood_remaining = destination.dynamic_data.wood_remaining - amount
 
+			give[#give + 1] = {name = 'wood', count = amount}
+
 			if class == Classes.enum.LUMBERJACK then
-				give[#give + 1] = {name = 'wood', count = amount}
 				Classes.lumberjack_bonus_items(give)
 			else
-				give[#give + 1] = {name = 'wood', count = amount}
 				if Math.random(Balance.every_nth_tree_gives_coins) == 1 then --tuned
 					local a = 5
 					give[#give + 1] = {name = 'coin', count = a}

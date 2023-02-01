@@ -180,7 +180,7 @@ function Public.toggle_window(player)
         vertical_scroll_policy = 'auto'
     }
     flow.style.maximal_height = 500
-	flow.style.bottom_padding = 20
+	flow.style.bottom_margin = 10
 
 	--*** ONGOING RUNS ***--
 
@@ -474,7 +474,7 @@ function Public.toggle_window(player)
 	flow4.style.font_color = {r=0.10, g=0.10, b=0.10}
 
 
-	GuiCommon.flow_add_close_button(flow, window_name .. '_piratebutton')
+	GuiCommon.flow_add_close_button(window, window_name .. '_piratebutton')
 end
 
 
@@ -695,6 +695,11 @@ function Public.click(event)
 	end
 
 	if eventname == 'propose_crew' then
+		if #global_memory.crew_active_ids >= global_memory.active_crews_cap then
+			Common.notify_player_error(player, {'pirates.gui_runs_launch_error_5'})
+			return
+		end
+
 		-- If proposal was set as private
 		local run_is_private = flow.proposals.body.proposal_maker.body.private_checkbox.state
 		if run_is_private then

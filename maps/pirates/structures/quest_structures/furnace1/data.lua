@@ -11,8 +11,8 @@ Public.step1 = {
 		{
 			type = 'tiles',
 			tile_name = 'orange-refined-concrete',
-			offset = {x = 0, y = 0},
-			bp_string = [[0eNqVmM1qwkAYRd9l1ink+5n8vUpxYXWQAU1CTEtF8u412kUXbfGsQuB4E7gH7phreDu+p3HK/Ry6azj32/FlHl4OU96v95+hEy/C5XaJSxHybujPoXu9gfnQb48rMl/GFLqQ53QKRei3p/Xuxu2mNKew/qjfpzVn2RRhzsf0CBiHc57z0H8/pXw8ZPkt4Q9YCWwEdgJHAlcErgncELglsJSIRh0KKlGebFHudElgIbASGL2zEzgSuCJwTeCGwC0qhVWIOhRUIjNPnqxRiadKPFXiqRJPlXiqxFMlnirxVImnSjxV5KkiTxV5qshTRZ4a8dSIp0Y8NeKpEU+NeGrEUyOeGvHUiKeGPDXkqSFPDXlqyFMn6jlRz4l6TtRzop6Tzh117qhzR5076jySFiOKrkh0haJrEl2j6IZENyi6JdEtOwqhv3QCT/js1A4PceioJWx5Be2joIEUtJCCJlLQRgoaSUErKWgmBe2ksKEUtpTCplL+28pN8fjk0v34gFOEjzSd7wHaiNet1tHFYhmX5QubhLg2]],
+			offset = {x = -1, y = 0},
+			bp_string = [[0eNqV2M1Kw0AUhuF7mXUKPT+Tv1sRF1WHMlCTkExFkdy7iXXhQsV3UUrh60npOQ+cmffwcLmmac5DCf17WIbTdCjj4Tznp/3za+glVuFte2vWKpwelvFyLemw56Y8nENf5muqQn4chyX0d1uFfB5Ol/275W1KoQ+5pOdQheH0vH/aco9zKils1fLwlPYHrPdVKPmSbgWmccklj8PX44+3p68/VfglrCRsJOwkHEm4JuGGhFsS7khYjiiNeiioiYK6KKiN8s8+ymf6SMJCwkrCRsJOwujfqEm4IeGWhDvUFNZC1ENBTRTURUFtZFMt/2ykEgNKDCgxoMSAEgNKDCgxoMSAEgNKDCgyoMiAIgOKDCgyoMiAIgNGDBgxYMSAEQNGDBgxYMSAEQNGDBgxYMiAIQOGDBgyYMiAIQOGDDgx4MSAEwNODDgx4MSAEwNODDgx4MSAIwOODDgy4MiAIwOODDgyEImBSAxEYiASA5EYiMRAJAYiGr6Ihi+i4Yto+CIavoiGL6Lhq8mI1OhnN6R0g0q3pHSLSnekdMcOVOjWSdgdhLDDPzwKolOVsB1b0LoqbHkRtAcIWgQEbQKCVgFBu4CgZUDQNiBoHRC2DwhbCIRtBMJWAvlrJ7ivbhfU/bd78Cq8pHn5LKCteNNpU8ftJc26fgDbkmjB]],
 		},
 		{
 			type = 'tiles',

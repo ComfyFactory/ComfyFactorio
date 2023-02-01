@@ -47,7 +47,7 @@ function Public.toggle_window(player)
         vertical_scroll_policy = 'auto'
     }
     flow.style.maximal_height = 500
-    flow.style.bottom_padding = 20
+    flow.style.bottom_margin = 10
 
     --*** PARAMETERS OF RUN ***--
 
