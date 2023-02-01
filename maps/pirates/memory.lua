@@ -90,7 +90,6 @@ function Public.initialise_crew_memory(id) --mostly serves as a dev reference of
 
     memory.speed_boost_characters = nil
 
-    memory.enemyboats = nil
     memory.overworld_krakens = nil
     memory.active_sea_enemies = nil
     memory.kraken_stream_registrations = nil

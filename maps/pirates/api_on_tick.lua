@@ -813,9 +813,9 @@ function Public.boat_movement_tick(tickinterval)
 		end
 	end
 
-	if memory.enemyboats then
-		for i = 1, #memory.enemyboats do
-			local eboat = memory.enemyboats[i]
+	if destination.dynamic_data.enemyboats then
+		for i = 1, #destination.dynamic_data.enemyboats do
+			local eboat = destination.dynamic_data.enemyboats[i]
 			if eboat and eboat.surface_name and game.surfaces[eboat.surface_name] and game.surfaces[eboat.surface_name].valid then
 				if eboat.state == Boats.enum_state.APPROACHING and eboat.speed and eboat.speed > 0 and memory.game_lost == false then
 					local ticker_increase = eboat.speed / 60 * tickinterval
@@ -860,7 +860,7 @@ function Public.boat_movement_tick(tickinterval)
 					do end
 				end
 			else
-				memory.enemyboats[i] = nil
+				destination.dynamic_data.enemyboats[i] = nil
 			end
 		end
 	end
@@ -1161,17 +1161,17 @@ function Public.slower_boat_tick(tickinterval)
 		game.pollution_statistics.on_flow('locomotive', pollution)
 	end
 
-	if memory.enemyboats then
-		for i = 1, #memory.enemyboats do
-			local b = memory.enemyboats[i]
+	-- if memory.enemyboats then
+	-- 	for i = 1, #memory.enemyboats do
+	-- 		local b = memory.enemyboats[i]
 
-			-- if b.landing_time and destination.dynamic_data.timer and destination.dynamic_data.timer >= b.landing_time and b.spawner and b.spawner.valid then
-			-- -- if b.landing_time and destination.dynamic_data.timer and destination.dynamic_data.timer >= b.landing_time + 3 and b.spawner and b.spawner.valid then
-			-- 	b.spawner.destructible = true
-			-- 	b.landing_time = nil
-			-- end
-		end
-	end
+	-- 		-- if b.landing_time and destination.dynamic_data.timer and destination.dynamic_data.timer >= b.landing_time and b.spawner and b.spawner.valid then
+	-- 		-- -- if b.landing_time and destination.dynamic_data.timer and destination.dynamic_data.timer >= b.landing_time + 3 and b.spawner and b.spawner.valid then
+	-- 		-- 	b.spawner.destructible = true
+	-- 		-- 	b.landing_time = nil
+	-- 		-- end
+	-- 	end
+	-- end
 end
 
 function Public.LOS_tick(tickinterval)

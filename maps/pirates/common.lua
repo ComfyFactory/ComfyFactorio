@@ -744,6 +744,7 @@ end
 function Public.transfer_healthbar(old_unit_number, new_entity, location_override)
 	location_override = location_override or Memory.get_crew_memory()
 	if not location_override.healthbars then return end
+
 	local old_healthbar = location_override.healthbars[old_unit_number]
 	-- local new_unit_number = new_entity.unit_number
 
@@ -771,11 +772,12 @@ end
 
 function Public.entity_damage_healthbar(entity, damage, location_override)
 	location_override = location_override or Memory.get_crew_memory()
-	local unit_number = entity.unit_number
+
 	if not (location_override.healthbars) then return end
 
+	local unit_number = entity.unit_number
 	local healthbar = location_override.healthbars[unit_number]
-	if not healthbar then return 0 end
+	if not healthbar then return end
 
 	local new_health = healthbar.health - damage
 	healthbar.health = new_health
@@ -783,6 +785,10 @@ function Public.entity_damage_healthbar(entity, damage, location_override)
 
 	if entity and entity.valid then
 		entity.health = entity.prototype.max_health
+	end
+
+	if healthbar.health <= 0 then
+		location_override.healthbars[unit_number] = nil
 	end
 
 	return healthbar.health
@@ -1703,6 +1709,51 @@ function Public.replace_unwalkable_tiles(surface, position, width, height)
 	if #tiles > 0 then
 		surface.set_tiles(tiles, true)
 	end
+end
+
+function Public.get_valid_spawners(surface)
+	local memory = Memory.get_crew_memory()
+	local destination = Public.current_destination()
+
+    local spawners = surface.find_entities_filtered({type = 'unit-spawner', force = memory.enemy_force_name})
+
+    local boat_spawners = {}
+
+	if destination.dynamic_data.enemyboats and #destination.dynamic_data.enemyboats > 0 then
+        for i = 1, #destination.dynamic_data.enemyboats do
+            local eb = destination.dynamic_data.enemyboats[i]
+            if eb.spawner and eb.spawner.valid then
+                boat_spawners[#boat_spawners + 1] = eb.spawner
+            end
+        end
+    end
+
+    local valid_spawners = {}
+    for i = 1, #spawners do
+        local s = spawners[i]
+        local valid = true
+        for j = 1, #boat_spawners do
+            local bs = boat_spawners[j]
+            if s == bs then
+                valid = false
+                break
+            end
+        end
+        if valid and s.valid then
+            valid_spawners[#valid_spawners + 1] = s
+        end
+    end
+
+    return valid_spawners
+end
+
+function Public.get_random_valid_spawner(surface)
+
+    local spawners = Public.get_valid_spawners(surface)
+
+    if #spawners == 0 then return end
+
+	return spawners[Math.random(#spawners)]
 end
 
 return Public

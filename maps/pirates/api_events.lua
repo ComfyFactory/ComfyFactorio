@@ -160,7 +160,7 @@ local function damage_to_silo(event)
 			destination.dynamic_data.rocketsilos[1].valid and
 			entity == Common.current_destination().dynamic_data.rocketsilos[1]
 		then
-			if string.sub(event.cause.force.name, 1, 4) ~= 'crew' then
+			if string.sub(event.cause.force.name, 1, 4) ~= 'crew' then -- @Piratux: wonder why this is needed
 
 				-- play alert sound for all crew members
 				if memory.seconds_until_alert_sound_can_be_played_again <= 0 then
@@ -172,10 +172,12 @@ local function damage_to_silo(event)
 					end
 				end
 
-				if Common.entity_damage_healthbar(entity, event.original_damage_amount / Balance.silo_resistance_factor * (1 + Balance.biter_timeofday_bonus_damage(event.cause.surface.darkness))) <= 0 then
+				local damage = event.original_damage_amount / Balance.silo_resistance_factor * (1 + Balance.biter_timeofday_bonus_damage(event.cause.surface.darkness))
+				local remaining_health = Common.entity_damage_healthbar(entity, damage, destination.dynamic_data)
+				if remaining_health and remaining_health <= 0 then
 					Public.silo_die()
 				else
-					destination.dynamic_data.rocketsilohp = memory.healthbars[entity.unit_number].health
+					destination.dynamic_data.rocketsilohp = remaining_health
 				end
 			else
 				entity.health = entity.prototype.max_health
@@ -187,29 +189,52 @@ end
 
 local function damage_to_enemyboat_spawners(event)
 	local memory = Memory.get_crew_memory()
+	local destination = Common.current_destination()
 
-	if memory.enemyboats and
-		#memory.enemyboats > 0 and
+	if destination.dynamic_data.enemyboats and
+		#destination.dynamic_data.enemyboats > 0 and
 		event.cause and
 		event.cause.valid and
 		event.entity and
 		event.entity.valid and
 		event.entity.force.name == memory.enemy_force_name
 	then
-		for i = 1, #memory.enemyboats do
-			local eb = memory.enemyboats[i]
+		for i = 1, #destination.dynamic_data.enemyboats do
+			local eb = destination.dynamic_data.enemyboats[i]
 			if eb.spawner and eb.spawner.valid and event.entity == eb.spawner then
 			-- if eb.spawner and eb.spawner.valid and event.entity == eb.spawner and eb.state == Structures.Boats.enum_state.APPROACHING then
 				local damage = event.final_damage_amount
-				local adjusted_damage = damage
+				local remaining_health = Common.entity_damage_healthbar(event.entity, damage, destination.dynamic_data)
 
-				adjusted_damage = adjusted_damage / 2.6
+				if remaining_health and remaining_health <= 0 then
+					event.entity.die()
+				end
+			end
+		end
+	end
+end
 
-				-- if event.cause.name == 'artillery-turret' then
-				-- 	adjusted_damage = adjusted_damage / 1
-				-- end
+-- Does not include krakens or biter boat spawners
+local function damage_to_elite_spawners(event)
+	local memory = Memory.get_crew_memory()
+	local destination = Common.current_destination()
 
-				if Common.entity_damage_healthbar(event.entity, adjusted_damage) <= 0 then
+	if destination.dynamic_data.elite_spawners and
+		#destination.dynamic_data.elite_spawners > 0 and
+		event.cause and
+		event.cause.valid and
+		event.entity and
+		event.entity.valid and
+		event.entity.force.name == memory.enemy_force_name
+	then
+		for i = 1, #destination.dynamic_data.elite_spawners do
+			local spawner = destination.dynamic_data.elite_spawners[i]
+			if spawner and spawner.valid and event.entity == spawner then
+				local damage = event.final_damage_amount
+
+				local remaining_health = Common.entity_damage_healthbar(event.entity, damage, destination.dynamic_data)
+
+				if remaining_health and remaining_health <= 0 then
 					event.entity.die()
 				end
 			end
@@ -224,15 +249,7 @@ local function damage_to_artillery(event)
 	if not event.cause.valid then return end
 	if not event.cause.name then return end
 
-	if (event.cause.name == 'small-biter')
-		or (event.cause.name == 'small-spitter')
-		or (event.cause.name == 'medium-biter')
-		or (event.cause.name == 'medium-spitter')
-		or (event.cause.name == 'big-biter')
-		or (event.cause.name == 'big-spitter')
-		or (event.cause.name == 'behemoth-biter')
-		or (event.cause.name == 'behemoth-spitter')
-	then
+	if Utils.contains(CoreData.enemy_units, event.cause.name) then
 		if event.cause.force.name ~= memory.enemy_force_name then return end
 
 		-- play alert sound for all crew members
@@ -248,7 +265,11 @@ local function damage_to_artillery(event)
 		-- remove resistances:
 		-- event.entity.health = event.entity.health + event.final_damage_amount - event.original_damage_amount
 
-		if Common.entity_damage_healthbar(event.entity, event.original_damage_amount / Balance.cannon_resistance_factor * (1 + Balance.biter_timeofday_bonus_damage(event.cause.surface.darkness)), Memory.get_crew_memory().boat) <= 0 then
+		local damage = event.original_damage_amount / Balance.cannon_resistance_factor
+		damage = damage * (1 + Balance.biter_timeofday_bonus_damage(event.cause.surface.darkness))
+		local remaining_health = Common.entity_damage_healthbar(event.entity, damage, memory.boat)
+
+		if remaining_health and remaining_health <= 0 then
 			event.entity.die()
 		end
 	else
@@ -279,7 +300,6 @@ local function damage_to_krakens(event)
 	local adjusted_damage = damage
 
 	if event.damage_type.name and event.damage_type.name == 'poison' then
-	-- if event.cause.name == 'artillery-turret' then
 		adjusted_damage = adjusted_damage / 1.25
 	elseif event.damage_type.name and (event.damage_type.name == 'explosion') then
 		adjusted_damage = adjusted_damage / 1.5
@@ -295,8 +315,13 @@ local function damage_to_krakens(event)
 		adjusted_damage = adjusted_damage / 7 --laser turrets are in range. give some resistance
 	end
 
-	if Common.entity_damage_healthbar(event.entity, adjusted_damage) <= 0 then
-		Kraken.kraken_die(memory.healthbars[unit_number].id)
+	-- There should be a better way to do it than this...
+	if memory.healthbars and memory.healthbars[unit_number] then
+		local kraken_id = memory.healthbars[unit_number].id
+		local remaining_health = Common.entity_damage_healthbar(event.entity, adjusted_damage)
+		if remaining_health and remaining_health <= 0 then
+			Kraken.kraken_die(kraken_id)
+		end
 	end
 end
 
@@ -346,17 +371,9 @@ local function damage_to_players_changes(event)
 				end
 			elseif class == Classes.enum.VETERAN then
 				local chance = Balance.veteran_on_hit_slow_chance
-				if Math.random() < chance then
+				if Math.random() <= chance then
 					-- only certain targets accept stickers
-					if event.cause.name == 'small-biter' or
-						event.cause.name == 'small-spitter' or
-						event.cause.name == 'medium-biter' or
-						event.cause.name == 'medium-spitter' or
-						event.cause.name == 'big-biter' or
-						event.cause.name == 'big-spitter' or
-						event.cause.name == 'behemoth-biter' or
-						event.cause.name == 'behemoth-spitter'
-					then
+					if Utils.contains(CoreData.enemy_units, event.cause.name) then
 						player.surface.create_entity{
 							name = 'slowdown-sticker',
 							position = player.character.position,
@@ -616,6 +633,7 @@ local function event_on_entity_damaged(event)
 	damage_to_silo(event)
 	damage_to_krakens(event)
 	damage_to_enemyboat_spawners(event)
+	damage_to_elite_spawners(event)
 
 	if event.entity and event.entity.valid and event.entity.name and event.entity.name == 'artillery-turret' then
 		damage_to_artillery(event)
@@ -1000,10 +1018,13 @@ local function event_on_player_mined_entity(event)
 					local points_to_avoid = destination.dynamic_data.ore_spawn_points_to_avoid
 					local can_place_ores = true
 
-					for _, pos in ipairs(points_to_avoid) do
-						if Math.distance(pos, entity.position) < Balance.min_ore_spawn_distance then
-							can_place_ores = false
-							break
+					-- Sometimes there can be very little amount of rocks here, so it probably isn't bad idea to spawn ore on top of another
+					if destination.subtype ~= IslandEnum.enum.WALKWAYS then
+						for _, pos in ipairs(points_to_avoid) do
+							if Math.distance(pos, entity.position) < Balance.min_ore_spawn_distance then
+								can_place_ores = false
+								break
+							end
 						end
 					end
 
@@ -1168,9 +1189,9 @@ local function base_kill_rewards(event)
 	if (entity_name == 'biter-spawner' or entity_name == 'spitter-spawner') and entity.position and entity.surface and entity.surface.valid then
 		--check if its a boat biter entity
 		local boat_spawner = false
-		if memory.enemyboats then
-			for i = 1, #memory.enemyboats do
-				local eb = memory.enemyboats[i]
+		if destination.dynamic_data.enemyboats then
+			for i = 1, #destination.dynamic_data.enemyboats do
+				local eb = destination.dynamic_data.enemyboats[i]
 				if eb.spawner and eb.spawner.valid and event.entity == eb.spawner then
 					boat_spawner = true
 					break
@@ -1194,9 +1215,9 @@ local function spawner_died(event)
 	if (destination and destination.type and destination.type == Surfaces.enum.ISLAND) then
 
 		local not_boat = true
-		if memory.enemyboats and #memory.enemyboats > 0 then
-			for i = 1, #memory.enemyboats do
-				local eb = memory.enemyboats[i]
+		if destination.dynamic_data.enemyboats and #destination.dynamic_data.enemyboats > 0 then
+			for i = 1, #destination.dynamic_data.enemyboats do
+				local eb = destination.dynamic_data.enemyboats[i]
 				if eb.spawner and eb.spawner.valid and event.entity and event.entity.valid and event.entity == eb.spawner then
 					not_boat = false
 					break

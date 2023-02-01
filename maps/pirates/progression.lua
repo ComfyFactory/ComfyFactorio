@@ -283,8 +283,6 @@ function Public.progress_to_destination(destination_index)
 	boat.state = destination_data.init_boat_state
 	boat.dockedposition = nil
 
-	memory.enemyboats = {}
-
 	local old_water = 'deepwater'
 	if old_type == Surfaces.enum.LOBBY or old_type == Surfaces.enum.DOCK then old_water = 'water' end
 
@@ -312,6 +310,10 @@ function Public.progress_to_destination(destination_index)
 
 	destination.dynamic_data.timer = 0
 	destination.dynamic_data.timeratlandingtime = nil
+	destination.dynamic_data.enemyboats = {}
+	destination.dynamic_data.elite_spawners = {}
+
+	destination.dynamic_data.healthbars = {}
 
 	memory.extra_time_at_sea = 0
 

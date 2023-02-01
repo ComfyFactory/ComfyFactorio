@@ -180,9 +180,9 @@ function Public.destination_on_collide(destination)
 			Common.parrot_speak(memory.force, {'pirates.parrot_cave_tip_1'})
 
 		else
-			local scheduled_raft_raids
+			local scheduled_raft_raids = {}
 			-- temporarily placed this back here, as moving it to shorehit broke things:
-			local playercount = Common.activecrewcount()
+			-- local playercount = Common.activecrewcount()
 			local max_evo
 
 			local difficulty_name = CoreData.get_difficulty_option_informal_name_from_value(Common.difficulty_scale())
@@ -209,34 +209,53 @@ function Public.destination_on_collide(destination)
 
 			-- Currently biter boats don't spawn properly for cave island, so disabling it for now
 			if destination.subtype ~= IslandEnum.enum.CAVE then
-				if memory.overworldx > 200 then
-					scheduled_raft_raids = {}
-					local times = {600, 360, 215, 210, 120, 30, 10, 5}
-					for i = 1, #times do
-						local t = times[i]
-						if Math.random(6) == 1 and #scheduled_raft_raids < 6 then
-							scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_evo = max_evo}
-							-- scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_bonus_evolution = 0.52}
+				-- if memory.overworldx > 200 then
+				-- 	scheduled_raft_raids = {}
+				-- 	local times = {600, 360, 215, 210, 120, 30, 10, 5}
+				-- 	for i = 1, #times do
+				-- 		local t = times[i]
+				-- 		if Math.random(6) == 1 and #scheduled_raft_raids < 6 then
+				-- 			scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_evo = max_evo}
+				-- 			-- scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_bonus_evolution = 0.52}
+				-- 		end
+				-- 	end
+				-- elseif memory.overworldx == 200 then
+				-- 	local times
+				-- 	if playercount <= 2 then
+				-- 		times = {1, 5, 10, 15, 20}
+				-- 	elseif playercount <= 8 then
+				-- 		times = {1, 5, 10, 15, 20, 25}
+				-- 	elseif playercount <= 15 then
+				-- 		times = {1, 5, 10, 15, 20, 25, 30}
+				-- 	elseif playercount <= 21 then
+				-- 		times = {1, 5, 10, 15, 20, 25, 30, 35}
+				-- 	else
+				-- 		times = {1, 5, 10, 15, 20, 25, 30, 35, 40}
+				-- 	end
+				-- 	scheduled_raft_raids = {}
+				-- 	for _, t in pairs(times) do
+				-- 		-- scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_bonus_evolution = 0.62}
+				-- 		scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_evo = max_evo}
+				-- 	end
+				-- end
+
+				-- NOTE: No need to scale boat count as boat spawner health already scales
+				local max_time = Balance.max_time_on_island(destination.subtype)
+				local boat_count = Math.floor(max_time / Balance.biter_boat_average_arrival_rate) - 2 -- avoid spawning biter boats at very last seconds
+
+				for i = 1, boat_count do
+					local spawn_time = Math.random((i-1) * Balance.biter_boat_average_arrival_rate, (i+1) * Balance.biter_boat_average_arrival_rate)
+					spawn_time = spawn_time + 5
+
+					if memory.overworldx == 200 then
+						if i == 1 then
+							spawn_time = 5
+						elseif i == 2 then
+							spawn_time = 15
 						end
 					end
-				elseif memory.overworldx == 200 then
-					local times
-					if playercount <= 2 then
-						times = {1, 5, 10, 15, 20}
-					elseif playercount <= 8 then
-						times = {1, 5, 10, 15, 20, 25}
-					elseif playercount <= 15 then
-						times = {1, 5, 10, 15, 20, 25, 30}
-					elseif playercount <= 21 then
-						times = {1, 5, 10, 15, 20, 25, 30, 35}
-					else
-						times = {1, 5, 10, 15, 20, 25, 30, 35, 40}
-					end
-					scheduled_raft_raids = {}
-					for _, t in pairs(times) do
-						-- scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_bonus_evolution = 0.62}
-						scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_evo = max_evo}
-					end
+
+					scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = spawn_time, max_evo = max_evo}
 				end
 
 				destination.static_params.scheduled_raft_raids = scheduled_raft_raids
@@ -464,6 +483,25 @@ function Public.destination_on_crewboat_hits_shore(destination)
 			Islands.spawn_merchant_ship(destination)
 
 			ShopMerchants.generate_merchant_trades(destination.dynamic_data.merchant_market)
+		end
+
+
+		if CoreData.get_difficulty_option_from_value(memory.difficulty) >= 3 and
+			destination.subtype ~= IslandEnum.enum.FIRST
+		then
+			local surface = game.surfaces[destination.surface_name]
+			local spawner = Common.get_random_valid_spawner(surface)
+    		if spawner then
+				local max_health = Balance.elite_spawner_health()
+				Common.new_healthbar(true, spawner, max_health, nil, max_health, 0.8, nil, destination.dynamic_data)
+
+				local elite_spawners = destination.dynamic_data.elite_spawners
+				if elite_spawners then
+					elite_spawners[#elite_spawners + 1] = spawner
+				end
+
+				spawner.destructible = true
+			end
 		end
 	end
 end

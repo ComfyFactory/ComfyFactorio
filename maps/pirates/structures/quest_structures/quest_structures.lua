@@ -31,14 +31,16 @@ function Public.choose_quest_structure_type()
     local destination = Common.current_destination()
 	local subtype = destination.subtype
 
-	local rng = Math.random(3)
+	if subtype == IslandEnum.enum.WALKWAYS then
+		return enum.MARKET1
+	end
 
 	-- Furnace quests are more interesting after that rather than collecting stone furnaces
 	if Common.overworldx() >= 600 then
 		return enum.FURNACE1
 	end
 
-	if rng == 1 or subtype and subtype == IslandEnum.enum.WALKWAYS then
+	if Math.random(3) == 1 then
 		return enum.MARKET1
 	else
 		return enum.FURNACE1

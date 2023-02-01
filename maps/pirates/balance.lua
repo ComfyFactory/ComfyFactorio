@@ -90,6 +90,8 @@ Public.prevent_waves_from_spawning_in_cave_timer_length = 10 -- in seconds
 
 Public.min_ore_spawn_distance = 20
 
+Public.biter_boat_average_arrival_rate = 8*60 -- in seconds
+
 function Public.starting_boatEEIpower_production_MW()
 	-- return 3 * Math.sloped(Common.capacity_scale(), 1/2) / 2 --/2 as we have 2
 	return 3/2
@@ -569,7 +571,11 @@ function Public.krakens_per_free_slot(overworldx)
 end
 
 function Public.biter_boat_health()
-	return Math.ceil(700 * Math.max(1, 1 + 0.075 * (Common.overworldx()/40)^(13/10)) * (Public.crew_scale()^(1/5)) * Math.sloped(Common.difficulty_scale(), 3/4))
+	return Math.ceil(1500 * Math.max(1, 1 + 0.075 * (Common.overworldx()/40)^(13/10)) * (Public.crew_scale()^(1/5)) * Math.sloped(Common.difficulty_scale(), 3/4))
+end
+
+function Public.elite_spawner_health()
+	return Math.ceil(5000 * Math.max(1, 1 + 0.075 * (Common.overworldx()/40)^(13/10)) * (Public.crew_scale()^(1/5)) * Math.sloped(Common.difficulty_scale(), 3/4))
 end
 
 function Public.main_shop_cost_multiplier()

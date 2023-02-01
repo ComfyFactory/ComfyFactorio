@@ -256,7 +256,7 @@ Public.entry_price_data_raw = {
 	['steel-chest'] = {
 		overallWeight = 0.5,
 		minLambda = 0.2,
-		maxLambda = 0.7,
+		maxLambda = 1,
 		shape = false,
 		base_amount = 125,
 		raw_materials = {{name = 'steel-plate', count = 1000}}
@@ -264,7 +264,7 @@ Public.entry_price_data_raw = {
 	['rail'] = {
 		overallWeight = 1,
 		minLambda = 0.2,
-		maxLambda = 0.8,
+		maxLambda = 1,
 		shape = false,
 		base_amount = 400,
 		raw_materials = {{name = 'iron-plate', count = 1100}}

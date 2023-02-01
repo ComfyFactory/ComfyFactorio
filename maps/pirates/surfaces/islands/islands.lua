@@ -303,7 +303,7 @@ function Public.spawn_silo_setup(points_to_avoid)
 			silo.operable = false
 			if i == 1 then
 				silo.auto_launch = true
-				Common.new_healthbar(true, silo, Balance.silo_max_hp, nil, Balance.silo_max_hp, 0.6, -2)
+				Common.new_healthbar(true, silo, Balance.silo_max_hp, nil, Balance.silo_max_hp, 0.6, -2, destination.dynamic_data)
 			else
 				silo.destructible = false
 			end
@@ -345,20 +345,21 @@ end
 
 
 
-
+-- NOTE: Currently the boats can trigger landing early if 2 boats spawn in same lane in short interval. Too lazy to fix.
+-- NOTE: As well as biter boats can miss the island on smaller ones when boat is steered
 function Public.spawn_enemy_boat(type)
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 	local surface = game.surfaces[destination.surface_name]
-	local offsets = {50, -50, 63, -63}
+	local offsets = {50, -50, 63, -63, 76, -76, 89, -89}
 
-	local enemyboats = memory.enemyboats
+	local enemyboats = destination.dynamic_data.enemyboats
 	if enemyboats then
 		local boat = {
 			state = Boats.enum_state.APPROACHING,
 			type = type,
 			speed = 4,
-			position = {x = - surface.map_gen_settings.width/2 + 23.5, y = (memory.boat.dockedposition or memory.boat.position).y + offsets[Math.random(4)]},
+			position = {x = - surface.map_gen_settings.width/2 + 23.5, y = (memory.boat.dockedposition or memory.boat.position).y + offsets[Math.random(#offsets)]},
 			force_name = memory.enemy_force_name,
 			surface_name = surface.name,
 			unit_group = nil,
@@ -375,7 +376,7 @@ function Public.spawn_enemy_boat(type)
 			boat.spawner = e
 
 			local max_health = Balance.biter_boat_health()
-			Common.new_healthbar(true, e, max_health, nil, max_health, 0.5)
+			Common.new_healthbar(true, e, max_health, nil, max_health, 0.5, nil, destination.dynamic_data)
 		end
 
 		return enemyboats[#enemyboats]
