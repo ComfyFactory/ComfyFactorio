@@ -216,7 +216,7 @@ function Public.upgrade_chests(boat, new_chest)
 	local scope = Public.get_scope(boat)
 	local surface = game.surfaces[boat.surface_name]
 
-	local ps = Common.entity_positions_from_blueprint(scope.Data.upgrade_chests.bp_str, Math.vector_sum(boat.position, scope.Data.upgrade_chests.pos))
+	local ps = Common.entity_positions_from_blueprint(scope.Data.entities.static.bp_str, Math.vector_sum(boat.position, scope.Data.upgrade_chests.pos))
 
 	for _, p in pairs(ps) do
 		local es = surface.find_entities_filtered{name = 'wooden-chest', position = p, radius = 0.05}

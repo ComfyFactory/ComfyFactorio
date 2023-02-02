@@ -340,17 +340,17 @@ function Public.afk_player_tick(player)
 	if Common.is_captain(player) and (not memory.run_is_protected) then
 		-- in this case, lose captainhood
 
-		local force = memory.force
-		if force and force.valid then
-			local message = {'pirates.roles_lose_captainhood_by_afk', player.name}
-
-			Common.notify_force(force, message)
-			Server.to_discord_embed_raw({'',CoreData.comfy_emojis.loops .. '[' .. memory.name .. '] ',message}, true)
-		end
-
 		if #Common.crew_get_nonafk_crew_members() == 1 then --don't need to bounce it around
 			Public.make_captain(Common.crew_get_nonafk_crew_members()[1])
 		else
+			local force = memory.force
+			if force and force.valid then
+				local message = {'pirates.roles_lose_captainhood_by_afk', player.name}
+
+				Common.notify_force(force, message)
+				Server.to_discord_embed_raw({'',CoreData.comfy_emojis.loops .. '[' .. memory.name .. '] ',message}, true)
+			end
+
 			Public.assign_captain_based_on_priorities()
 		end
 	end
