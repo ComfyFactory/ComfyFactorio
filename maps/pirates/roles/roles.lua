@@ -33,7 +33,7 @@ function Public.make_officer(captain, player)
 	local force = memory.force
 
 	if Utils.contains(Common.crew_get_crew_members(), player) then
-		if (not (captain.index == player.index)) then
+		if captain.index ~= player.index then
 			if Common.validate_player(player) then
 				memory.officers_table[player.index] = true
 
@@ -188,7 +188,7 @@ function Public.player_confirm_captainhood(player)
 	local memory = Memory.get_crew_memory()
 	local captain_index = memory.playerindex_captain
 
-	if not (player.index == captain_index) then
+	if player.index ~= captain_index then
 		Common.notify_player_error(player,{'pirates.roles_confirm_captain_error_1'})
 	else
 		if memory.captain_acceptance_timer then
@@ -208,20 +208,25 @@ function Public.player_confirm_captainhood(player)
 end
 
 function Public.player_left_so_redestribute_roles(player)
-	-- local memory = Memory.get_crew_memory()
-
 	if not (player and player.index) then return end
 
+	local memory = Memory.get_crew_memory()
+
 	if Common.is_captain(player) then
-		Public.assign_captain_based_on_priorities()
+		if memory.run_is_protected then
+			if memory.crewplayerindices and #memory.crewplayerindices > 0 then
+				Common.parrot_speak(memory.force, {'pirates.parrot_captain_left_protected_run'})
+				Common.parrot_speak(memory.force, {'pirates.parrot_create_new_crew_tip'})
+			end
+		else
+			Public.assign_captain_based_on_priorities()
+		end
 	end
 
 	-- no need to do this, as long as officers get reset when the captainhood changes hands
 	-- if Common.is_officer(player.index) then
 	-- 	memory.officers_table[player.index] = nil
 	-- end
-
-	local memory = Memory.get_crew_memory()
 
 	local class = Classes.get_class(player.index)
 
@@ -278,13 +283,30 @@ function Public.resign_as_officer(player)
 	end
 end
 
+function Public.captain_exists()
+	local memory = Memory.get_crew_memory()
+
+	if Common.is_id_valid(memory.id) and
+		memory.crewstatus == 'adventuring' and --@fixme: enum hacked
+		memory.playerindex_captain and
+		game.players[memory.playerindex_captain] and
+		Common.validate_player(game.players[memory.playerindex_captain])
+	then
+		local crew_members = Common.crew_get_crew_members()
+		for _, player in pairs(crew_members) do
+			if player.index == memory.playerindex_captain then
+				return true
+			end
+		end
+	end
+
+	return false
+end
 
 
 function Public.confirm_captain_exists(player_to_make_captain_otherwise)
-	local memory = Memory.get_crew_memory()
 	-- Currently this catches an issue where a crew drops to zero players, and then someone else joins.
-
-	if (Common.is_id_valid(memory.id) and memory.crewstatus and memory.crewstatus == 'adventuring') and (not (memory.playerindex_captain and game.players[memory.playerindex_captain] and Common.validate_player(game.players[memory.playerindex_captain]))) then --fixme: enum hacked
+	if not Public.captain_exists() then
 		if player_to_make_captain_otherwise then
 			Public.make_captain(player_to_make_captain_otherwise)
 			-- game.print('Auto-reassigning captain.')
@@ -315,7 +337,7 @@ function Public.afk_player_tick(player)
 	-- local global_memory = Memory.get_global_memory()
 	local memory = Memory.get_crew_memory()
 
-	if Common.is_captain(player) and #Common.crew_get_nonafk_crew_members() >= 6 then
+	if Common.is_captain(player) and (not memory.run_is_protected) then
 		-- in this case, lose captainhood
 
 		local force = memory.force
@@ -426,6 +448,8 @@ end
 
 
 function Public.captain_tax(captain_index)
+	if not captain_index then return end
+
 	local memory = Memory.get_crew_memory()
 	local any_taken = false
 

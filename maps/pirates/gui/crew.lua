@@ -44,7 +44,7 @@ function Public.toggle_window(player)
         name = 'scroll_pane',
         direction = 'vertical',
         horizontal_scroll_policy = 'never',
-        vertical_scroll_policy = 'auto'
+        vertical_scroll_policy = 'auto-and-reserve-space'
     }
     flow.style.maximal_height = 500
     flow.style.bottom_margin = 10
@@ -162,7 +162,7 @@ function Public.toggle_window(player)
             type = 'list-box'
         }
     )
-    flow3.style.margin = 2
+    flow3.style.margin = 5
     flow3.style.maximal_height = 350
 
     flow3 =
@@ -433,7 +433,7 @@ function Public.full_update(player)
             end
         end
     end
-    flow.membership_buttons.spectator_join_crew.visible = playercrew_status.spectating and (not (count >= memory.capacity))
+    flow.membership_buttons.spectator_join_crew.visible = playercrew_status.spectating and (not (count >= memory.capacity)) and (not memory.run_is_private)
 
     flow.membership_buttons.leave_crew.visible = playercrew_status.adventuring
     -- flow.membership_buttons.crewmember_join_spectators.visible = playercrew_status.adventuring
@@ -513,6 +513,11 @@ function Public.click(event)
 
     if eventname == 'spectator_join_crew' then
         Crew.join_crew(player, memory.id)
+
+        if memory.run_is_protected and (not Roles.captain_exists()) then
+            Common.parrot_speak(memory.force, {'pirates.parrot_player_joins_protected_run_with_no_captain'})
+            Common.parrot_speak(memory.force, {'pirates.parrot_create_new_crew_tip'})
+        end
         return
     end
 

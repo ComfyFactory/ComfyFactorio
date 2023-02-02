@@ -21,9 +21,9 @@ local LootRaffle = require 'functions.loot_raffle'
 
 local Public = {}
 
--- Public.active_crews_cap = 1
-Public.activeCrewsCap = 2
+Public.activeCrewsCap = 3
 Public.private_run_cap = 1
+Public.protected_run_cap = 1 -- more precisely protected, but not private run cap
 Public.minimumCapacitySliderValue = 1
 Public.minimum_run_capacity_to_enforce_space_for = 22
 -- auto-disbanding when there are no players left in the crew:
@@ -850,7 +850,9 @@ end
 
 function Public.crew_get_crew_members_and_spectators()
 	local memory = Memory.get_crew_memory()
-	if not Public.is_id_valid(memory.id) then return {} end
+	if not Public.is_id_valid(memory.id) then
+		return {}
+	end
 
 	local playerlist = {}
 	for _, id in pairs(memory.crewplayerindices) do
@@ -862,6 +864,30 @@ function Public.crew_get_crew_members_and_spectators()
 		if player and player.valid then playerlist[#playerlist + 1] = player end
 	end
 	return playerlist
+end
+
+function Public.is_spectator(player)
+	local global_memory = Memory.get_global_memory()
+	local previous_id = global_memory.working_id
+
+	local player_crew_id = Public.get_id_from_force_name(player.force.name)
+	if not player_crew_id then
+		return false
+	end
+
+	Memory.set_working_id(player_crew_id)
+	local memory = Memory.get_crew_memory()
+
+	local spectating = false
+	for _, playerindex in pairs(memory.spectatorplayerindices) do
+		if player.index == playerindex then
+			spectating = true
+			break
+		end
+	end
+
+	Memory.set_working_id(previous_id)
+	return spectating
 end
 
 

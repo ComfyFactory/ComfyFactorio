@@ -1406,7 +1406,7 @@ local function event_on_player_joined_game(event)
 		Crew.join_crew(player, crew_to_put_back_in, true)
 
 		local memory = global_memory.crew_memories[crew_to_put_back_in]
-		if #memory.crewplayerindices <= 1 then
+		if (not memory.run_is_protected) and #memory.crewplayerindices <= 1 then
 			memory.playerindex_captain = player.index
 		end
 
@@ -1463,7 +1463,7 @@ local function event_on_player_joined_game(event)
 			Crew.join_crew(player, ages[1].id)
 
 			local memory = global_memory.crew_memories[ages[1].id]
-			if #memory.crewplayerindices <= 1 then
+			if (not memory.run_is_protected) and #memory.crewplayerindices <= 1 then
 				memory.playerindex_captain = player.index
 			end
 
@@ -1473,6 +1473,11 @@ local function event_on_player_joined_game(event)
 				else
 					Common.notify_player_announce(player, {'pirates.goto_oldest_crew'})
 				end
+			end
+
+			if memory.run_is_protected and (not Roles.captain_exists()) then
+				Common.parrot_speak(memory.force, {'pirates.parrot_player_joins_protected_run_with_no_captain'})
+				Common.parrot_speak(memory.force, {'pirates.parrot_create_new_crew_tip'})
 			end
 		end
 	end

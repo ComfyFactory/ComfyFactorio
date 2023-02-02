@@ -394,7 +394,9 @@ function Public.join_crew(player, crewid, rejoin)
 		end
 	end
 
-	Roles.confirm_captain_exists(player)
+	if not memory.run_is_protected then
+		Roles.confirm_captain_exists(player)
+	end
 
 	if #Common.crew_get_crew_members() == 1 and memory.crew_disband_tick then
 		memory.crew_disband_tick = nil --to prevent disbanding the crew after saving the game (booting everyone) and loading it again (joining the crew as the only member)
@@ -495,7 +497,7 @@ function Public.plank(captain, player)
 	local memory = Memory.get_crew_memory()
 
 	if Utils.contains(Common.crew_get_crew_members(), player) then
-		if (not (captain.index == player.index)) then
+		if captain.index ~= player.index then
 			Server.to_discord_embed_raw(CoreData.comfy_emojis.despair .. string.format("%s planked %s!", captain.name, player.name))
 
 			Common.notify_force(player.force, {'pirates.plank', captain.name, player.name})
@@ -728,6 +730,8 @@ function Public.initialise_crew(accepted_proposal)
 	memory.difficulty = CoreData.difficulty_options[accepted_proposal.difficulty_option].value
 	memory.capacity = CoreData.capacity_options[accepted_proposal.capacity_option].value
 	-- memory.mode = CoreData.mode_options[accepted_proposal.mode_option].value
+	memory.run_is_protected = accepted_proposal.run_is_protected
+	memory.protected_run_lock_timer = 60 * 60 * 60 * CoreData.protected_run_lock_amount_hr
 	memory.run_is_private = accepted_proposal.run_is_private
 	memory.private_run_password = accepted_proposal.private_run_password
 	memory.private_run_lock_timer = 60 * 60 * 60 * CoreData.private_run_lock_amount_hr

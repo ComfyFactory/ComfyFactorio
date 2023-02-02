@@ -1626,6 +1626,25 @@ function Public.revealed_buried_treasure_distance_check()
 	end
 end
 
+function Public.update_protected_run_lock_timer(tickinterval)
+	local memory = Memory.get_crew_memory()
+	if memory.run_is_protected then
+		if Common.activecrewcount() <= 0 then
+			if memory.protected_run_lock_timer > 0 then
+				memory.protected_run_lock_timer = memory.protected_run_lock_timer - tickinterval
+
+				if memory.protected_run_lock_timer <= 0 then
+					Common.notify_game({'pirates.protected_run_lock_expired', memory.name})
+					memory.run_is_protected = false
+					Roles.assign_captain_based_on_priorities()
+				end
+			end
+		else
+			memory.protected_run_lock_timer = 60 * 60 * 60 * CoreData.protected_run_lock_amount_hr
+		end
+	end
+end
+
 function Public.update_private_run_lock_timer(tickinterval)
 	local memory = Memory.get_crew_memory()
 	if memory.run_is_private then

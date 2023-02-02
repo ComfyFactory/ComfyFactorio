@@ -112,6 +112,7 @@ local function on_init()
 	Common.init_game_settings(Balance.technology_price_multiplier)
 
 	global_memory.active_crews_cap = Common.activeCrewsCap
+	global_memory.protected_run_cap = Common.protected_run_cap
 	global_memory.private_run_cap = Common.private_run_cap
 
 	global_memory.minimumCapacitySliderValue = Common.minimumCapacitySliderValue
@@ -188,6 +189,7 @@ local function crew_tick()
 				PiratesApiOnTick.check_for_cliff_explosives_in_hold_wooden_chests()
 				PiratesApiOnTick.equalise_fluid_storages() -- Made the update less often for small performance gain, but frequency can be increased if players complain
 				PiratesApiOnTick.revealed_buried_treasure_distance_check()
+				PiratesApiOnTick.update_protected_run_lock_timer(60)
 				PiratesApiOnTick.update_private_run_lock_timer(60)
 				PiratesApiOnTick.victory_continue_reminder()
 				Kraken.overall_kraken_tick()
