@@ -849,118 +849,162 @@ local function process_entity_on_boat_unteleportable(memory, boat, newsurface, v
 	end
 end
 
-
+-- @TODO: Rocket silo that is prepared to launch the rocket needs to be cloned with clone_entities instead. See: https://forums.factorio.com/viewtopic.php?f=23&t=105073&p=580968
 local function process_entity_on_boat_teleportable(memory, boat, newsurface, newposition, vector, oldsurface_name, newsurface_name, electric_pole_neighbours_matrix, circuit_neighbours_matrix, e)
 
 	if oldsurface_name == newsurface_name then
 		e.teleport(vector.x, vector.y)
 		e.update_connections()
-	else
-		local p = Utils.deepcopy(e.position)
-		local p2 = {x = p.x + vector.x, y = p.y + vector.y}
+		return
+	end
 
-		if e.type == 'electric-pole' then
-			for k, v in pairs(e.neighbours or {}) do
-				if k == 'copper' then --red and green cases handled by circuit_neighbours_matrix
-					if not electric_pole_neighbours_matrix[k] then electric_pole_neighbours_matrix[k] = {} end
-					for _, v2 in pairs(v) do
-						if v2 and v2.valid and v2.position then
-							local v2p = v2.position
-							if not electric_pole_neighbours_matrix[k][v2p.x] then
-								electric_pole_neighbours_matrix[k][v2p.x] = {}
-							end
-							if not electric_pole_neighbours_matrix[k][v2p.x][v2p.y] then
-								electric_pole_neighbours_matrix[k][v2p.x][v2p.y] = {}
-							end
-							electric_pole_neighbours_matrix[k][v2p.x][v2p.y][#electric_pole_neighbours_matrix[k][v2p.x][v2p.y] + 1] = {name = e.name, pos = p}
+
+	local p = Utils.deepcopy(e.position)
+	local p2 = {x = p.x + vector.x, y = p.y + vector.y}
+
+	if e.type == 'electric-pole' then
+		for k, v in pairs(e.neighbours or {}) do
+			if k == 'copper' then --red and green cases handled by circuit_neighbours_matrix
+				if not electric_pole_neighbours_matrix[k] then electric_pole_neighbours_matrix[k] = {} end
+				for _, v2 in pairs(v) do
+					if v2 and v2.valid and v2.position then
+						local v2p = v2.position
+						if not electric_pole_neighbours_matrix[k][v2p.x] then
+							electric_pole_neighbours_matrix[k][v2p.x] = {}
 						end
+						if not electric_pole_neighbours_matrix[k][v2p.x][v2p.y] then
+							electric_pole_neighbours_matrix[k][v2p.x][v2p.y] = {}
+						end
+						electric_pole_neighbours_matrix[k][v2p.x][v2p.y][#electric_pole_neighbours_matrix[k][v2p.x][v2p.y] + 1] = {name = e.name, pos = p}
 					end
 				end
 			end
 		end
+	end
 
-		for _, v in pairs(e.circuit_connection_definitions or {}) do
-			local e2 = v.target_entity
-			local wire = v.wire
-			local source_circuit_id = v.source_circuit_id
-			local target_circuit_id = v.target_circuit_id
-			if e2 and e2.valid and e2.position and (wire == defines.wire_type.red or wire == defines.wire_type.green) then --observed an error "Expected source_wire_id for entities with more than one wire connection" in the .connect_neighbour() function called later, so putting the red/green wire check in to try and catch it
-				local e2p = e2.position
-				if not circuit_neighbours_matrix[e2p.x] then
-					circuit_neighbours_matrix[e2p.x] = {}
+	for _, v in pairs(e.circuit_connection_definitions or {}) do
+		local e2 = v.target_entity
+		local wire = v.wire
+		local source_circuit_id = v.source_circuit_id
+		local target_circuit_id = v.target_circuit_id
+		if e2 and e2.valid and e2.position and (wire == defines.wire_type.red or wire == defines.wire_type.green) then --observed an error "Expected source_wire_id for entities with more than one wire connection" in the .connect_neighbour() function called later, so putting the red/green wire check in to try and catch it
+			local e2p = e2.position
+			if not circuit_neighbours_matrix[e2p.x] then
+				circuit_neighbours_matrix[e2p.x] = {}
+			end
+			if not circuit_neighbours_matrix[e2p.x][e2p.y] then
+				circuit_neighbours_matrix[e2p.x][e2p.y] = {}
+			end
+			circuit_neighbours_matrix[e2p.x][e2p.y][#circuit_neighbours_matrix[e2p.x][e2p.y] + 1] = {name = e.name, pos = p, wire = wire, source_circuit_id = target_circuit_id, target_circuit_id = source_circuit_id} --flip since we will read these backwards
+		end
+	end
+
+	-- Special case for vehicles, because currently they can be exclusively teleported between surfaces
+	local ee
+	if e.name == 'car' or e.name == 'tank' or e.name == 'spidertron' then
+		e.teleport(p2, newsurface)
+	else
+		if string.sub(e.name, 1, 14) ~= 'spidertron-leg' then
+			ee = e.clone{position = p2, surface = newsurface, create_build_effect_smoke = false}
+		end
+	end
+
+	if e == boat.upstairs_pole then
+		boat.upstairs_pole = ee
+		if boat.downstairs_poles and boat.downstairs_poles[1] then
+			-- Remove previous connection, before connecting it with the new clone to avoid sometimes having to remove wire connection because of limit
+			e.disconnect_neighbour(boat.downstairs_poles[1][1])
+			Common.force_connect_poles(boat.upstairs_pole, boat.downstairs_poles[1][1])
+		end
+	end
+
+
+	local pet_biter_data = memory.pet_biters[e.unit_number]
+	if pet_biter_data then
+		local owner = pet_biter_data.pet_owner
+		rendering.draw_text {
+			text = '~' .. owner.name .. "'s minion~",
+			surface = newsurface,
+			target = ee,
+			target_offset = {0, -2.6},
+			color = owner.force.color,
+			scale = 1.05,
+			font = 'default-large-semibold',
+			alignment = 'center',
+			scale_with_zoom = false
+		}
+		memory.pet_biters[ee.unit_number] = {pet_owner = owner, pet = ee, time_to_live = pet_biter_data.time_to_live}
+		memory.pet_biters[e.unit_number] = nil
+	end
+
+	-- We don't want to destroy spidertron leg, because otherwise it will destroy whole spidertron. Funny huh?
+	if not (e.name == 'car' or e.name == 'tank' or e.name == 'spidertron' or string.sub(e.name, 1, 14) == 'spidertron-leg') then
+		e.destroy()
+	end
+
+	-- Right now in the game we don't expect any non-player characters, so let's kill them to make a point:
+	if ee and ee.valid and ee.name == 'character' and (not ee.player) then
+		ee.die()
+	end
+
+	if not (ee and ee.valid and ee.name) then
+		return
+	end
+
+	if ee.name == 'blue-chest' then
+		if p2.y < newposition.y then
+			memory.boat.decksteeringchests.left = ee
+			-- --attach parrot to this:
+			-- if boat.parrot then
+			-- 	local r = rendering.draw_sprite{
+			-- 		sprite = "file/parrot/parrot_idle_fly_1.png",
+			-- 		surface = newsurface,
+			-- 		target = ee,
+			-- 		target_offset = Utils.psum{boat.parrot.position_relative_to_boat, boat.parrot.sprite_extra_offset},
+			-- 		x_scale = 2.8,
+			-- 		y_scale = 2.8,
+			-- 	}
+			-- 	local r2 = rendering.draw_text{
+			-- 		text = 'Parrot',
+			-- 		color = CoreData.colors.parrot,
+			-- 		surface = newsurface,
+			-- 		target = ee,
+			-- 		target_offset = Utils.psum{boat.parrot.position_relative_to_boat, boat.parrot.text_extra_offset},
+			-- 		alignment = 'center',
+			-- 	}
+			-- 	rendering.destroy(boat.parrot.render)
+			-- 	rendering.destroy(boat.parrot.render_name)
+			-- 	boat.parrot.frame = 1
+			-- 	boat.parrot.state = Parrot.enum.FLY
+			-- 	boat.parrot.render = r
+			-- 	boat.parrot.render_name = r2
+			-- end
+		elseif p2.y > newposition.y then
+			memory.boat.decksteeringchests.right = ee
+		end
+	end
+
+	if circuit_neighbours_matrix[p.x] and circuit_neighbours_matrix[p.x][p.y] then
+		for _, v2 in pairs(circuit_neighbours_matrix[p.x][p.y]) do
+			local p3 = {x = v2.pos.x + vector.x, y = v2.pos.y + vector.y}
+			local e3s = newsurface.find_entities_filtered{
+				name = v2.name,
+				position = p3,
+				radius = 0.01,
+			}
+			if e3s and #e3s>0 then
+				local e3 = e3s[1]
+				if e3 and e3.valid then
+					ee.connect_neighbour{wire = v2.wire, target_entity = e3, source_circuit_id = v2.source_circuit_id, target_circuit_id = v2.target_circuit_id}
 				end
-				if not circuit_neighbours_matrix[e2p.x][e2p.y] then
-					circuit_neighbours_matrix[e2p.x][e2p.y] = {}
-				end
-				circuit_neighbours_matrix[e2p.x][e2p.y][#circuit_neighbours_matrix[e2p.x][e2p.y] + 1] = {name = e.name, pos = p, wire = wire, source_circuit_id = target_circuit_id, target_circuit_id = source_circuit_id} --flip since we will read these backwards
 			end
 		end
+	end
 
-		-- Special case for vehicles, because currently they can be exclusively teleported between surfaces
-		local ee
-		if e.name == 'car' or e.name == 'tank' or e.name == 'spidertron' then
-			e.teleport(p2, newsurface)
-		else
-			if string.sub(e.name, 1, 14) ~= 'spidertron-leg' then
-				ee = e.clone{position = p2, surface = newsurface, create_build_effect_smoke = false}
-			end
-		end
-
-		if e == boat.upstairs_pole then
-			boat.upstairs_pole = ee
-			if boat.downstairs_poles and boat.downstairs_poles[1] then
-				-- Remove previous connection, before connecting it with the new clone to avoid sometimes having to remove wire connection because of limit
-				e.disconnect_neighbour(boat.downstairs_poles[1][1])
-				Common.force_connect_poles(boat.upstairs_pole, boat.downstairs_poles[1][1])
-			end
-		end
-
-		-- We don't want to destroy spidertron leg, because otherwise it will destroy whole spidertron. Funny huh?
-		if not (e.name == 'car' or e.name == 'tank' or e.name == 'spidertron' or string.sub(e.name, 1, 14) == 'spidertron-leg') then
-			e.destroy()
-		end
-
-		-- Right now in the game we don't expect any non-player characters, so let's kill them to make a point:
-		if ee and ee.valid and ee.name == 'character' and (not ee.player) then
-			ee.die()
-		end
-
-		if ee and ee.valid and ee.name then
-			if ee.name == 'blue-chest' then
-				if p2.y < newposition.y then
-					memory.boat.decksteeringchests.left = ee
-					-- --attach parrot to this:
-					-- if boat.parrot then
-					-- 	local r = rendering.draw_sprite{
-					-- 		sprite = "file/parrot/parrot_idle_fly_1.png",
-					-- 		surface = newsurface,
-					-- 		target = ee,
-					-- 		target_offset = Utils.psum{boat.parrot.position_relative_to_boat, boat.parrot.sprite_extra_offset},
-					-- 		x_scale = 2.8,
-					-- 		y_scale = 2.8,
-					-- 	}
-					-- 	local r2 = rendering.draw_text{
-					-- 		text = 'Parrot',
-					-- 		color = CoreData.colors.parrot,
-					-- 		surface = newsurface,
-					-- 		target = ee,
-					-- 		target_offset = Utils.psum{boat.parrot.position_relative_to_boat, boat.parrot.text_extra_offset},
-					-- 		alignment = 'center',
-					-- 	}
-					-- 	rendering.destroy(boat.parrot.render)
-					-- 	rendering.destroy(boat.parrot.render_name)
-					-- 	boat.parrot.frame = 1
-					-- 	boat.parrot.state = Parrot.enum.FLY
-					-- 	boat.parrot.render = r
-					-- 	boat.parrot.render_name = r2
-					-- end
-				elseif p2.y > newposition.y then
-					memory.boat.decksteeringchests.right = ee
-				end
-			end
-
-			if circuit_neighbours_matrix[p.x] and circuit_neighbours_matrix[p.x][p.y] then
-				for _, v2 in pairs(circuit_neighbours_matrix[p.x][p.y]) do
+	if ee.type == 'electric-pole' then
+		for k, v in pairs(electric_pole_neighbours_matrix or {}) do
+			if v[p.x] and v[p.x][p.y] then
+				for _, v2 in pairs(v[p.x][p.y]) do
 					local p3 = {x = v2.pos.x + vector.x, y = v2.pos.y + vector.y}
 					local e3s = newsurface.find_entities_filtered{
 						name = v2.name,
@@ -970,33 +1014,12 @@ local function process_entity_on_boat_teleportable(memory, boat, newsurface, new
 					if e3s and #e3s>0 then
 						local e3 = e3s[1]
 						if e3 and e3.valid then
-							ee.connect_neighbour{wire = v2.wire, target_entity = e3, source_circuit_id = v2.source_circuit_id, target_circuit_id = v2.target_circuit_id}
-						end
-					end
-				end
-			end
-
-			if ee.type and ee.type == 'electric-pole' then
-				for k, v in pairs(electric_pole_neighbours_matrix or {}) do
-					if v[p.x] and v[p.x][p.y] then
-						for _, v2 in pairs(v[p.x][p.y]) do
-							local p3 = {x = v2.pos.x + vector.x, y = v2.pos.y + vector.y}
-							local e3s = newsurface.find_entities_filtered{
-								name = v2.name,
-								position = p3,
-								radius = 0.01,
-							}
-							if e3s and #e3s>0 then
-								local e3 = e3s[1]
-								if e3 and e3.valid then
-									if k == 'copper' then
-										ee.connect_neighbour(e3)
-									-- elseif k == 'red' then
-									-- 	ee.connect_neighbour{wire = defines.wire_type.red, target_entity = e3}
-									-- elseif k == 'green' then
-									-- 	ee.connect_neighbour{wire = defines.wire_type.green, target_entity = e3}
-									end
-								end
+							if k == 'copper' then
+								ee.connect_neighbour(e3)
+							-- elseif k == 'red' then
+							-- 	ee.connect_neighbour{wire = defines.wire_type.red, target_entity = e3}
+							-- elseif k == 'green' then
+							-- 	ee.connect_neighbour{wire = defines.wire_type.green, target_entity = e3}
 							end
 						end
 					end
@@ -1088,7 +1111,7 @@ local function teleport_handle_wake_tiles(boat, dummyboat, newsurface_name, olds
 		-- NOTE: this will need to be changed, when ship doesn't necessarily arrive from the left
 		if vector.x < 0 then
 			for _, player in pairs(Common.crew_get_crew_members()) do
-				if player.character and player.character.valid then
+				if player.character and player.character.valid and player.surface.name == oldsurface_name then
 					local tile = oldsurface.get_tile(player.character.position.x, player.character.position.y)
 					if tile.valid then
 						if Utils.contains(CoreData.water_tile_names, tile.name) then
@@ -1101,7 +1124,6 @@ local function teleport_handle_wake_tiles(boat, dummyboat, newsurface_name, olds
 				end
 			end
 		end
-
 	else
 
 		local p = dummyboat.position

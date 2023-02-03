@@ -81,6 +81,7 @@ Public.doctor_heal_radius = 20
 Public.doctor_heal_percentage_amount = 0.15
 Public.shaman_energy_required_per_summon = 1000000
 Public.shaman_max_charge = 30000000
+Public.shaman_summoned_biter_time_to_live = 60 * 5 -- in seconds
 
 Public.class_cycle_count = 5 -- How many classes should be purchased to have a chance to buy the same class again
 
@@ -206,8 +207,8 @@ function Public.max_time_on_island(island_subtype)
 
 		if x == 40 then -- it's important for this island to be somewhat chill, so that it's not such a shock to go here from the first lobby chill island
 			time = time * 1.2
-		elseif island_subtype == IslandEnum.enum.MAZE then --more time
-			time = time * 1.05
+		-- elseif island_subtype == IslandEnum.enum.MAZE then --more time
+		-- 	time = time * 1.05
 		elseif island_subtype == IslandEnum.enum.CAVE then -- supposed to be chill island
 			time = time * 0.9
 		elseif island_subtype == IslandEnum.enum.RED_DESERT then --this island has big amount of resources so rather high risk (need time to mine resources) and high reward (lots of iron/copper/stone)

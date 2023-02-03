@@ -1215,6 +1215,7 @@ if _DEBUG then
 			player.insert{name='steel-chest', count = 50}
 			player.insert{name='express-loader', count = 50}
 			player.insert{name='burner-inserter', count = 50}
+			player.insert{name='accumulator', count = 50}
 		end
 	end)
 

@@ -234,9 +234,9 @@ function Public.generate_destination_base_cost_to_undock(p, subtype)
 			['uranium-235'] = Math.ceil(Math.ceil(80 + (macro_p.x - 1))),
 			-- ['uranium-235'] = Math.ceil(Math.ceil(80 + (macro_p.x)/2)), --tried adding beacons instead of this
 		}
-	elseif subtype == IslandEnum.enum.RED_DESERT then
+	elseif subtype == IslandEnum.enum.RED_DESERT or subtype == IslandEnum.enum.CAVE then
 		if base_cost_to_undock and base_cost_to_undock['launch_rocket'] == true then
-			base_cost_to_undock['launch_rocket'] = false -- some extra variety
+			base_cost_to_undock['launch_rocket'] = false
 		end
 	end
 

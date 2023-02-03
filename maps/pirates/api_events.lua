@@ -449,6 +449,7 @@ local function damage_dealt_by_players_changes(event)
 	if not event.cause.valid then return end
 	if not event.entity.valid then return end
 	if event.cause.name ~= 'character' then return end
+	if event.entity.name == 'character' then return end
 
 	local character = event.cause
 	local player = character.player
@@ -459,78 +460,78 @@ local function damage_dealt_by_players_changes(event)
 	local player_index = player.index
 	local class = Classes.get_class(player_index)
 
-	if class and class == Classes.enum.SCOUT and event.final_health > 0 then --lethal damage must be unaffected
-		event.entity.health = event.entity.health + (1 - Balance.scout_damage_dealt_multiplier) * event.final_damage_amount
-	elseif class and (class == Classes.enum.SAMURAI or class == Classes.enum.HATAMOTO) then
-		local samurai = class == Classes.enum.SAMURAI
-		local hatamoto = class == Classes.enum.HATAMOTO
+	-- Lethal damage must be unaffected, otherwise enemy will never die.
+	-- @Future reference: when implementing damage changes for mobs with healthbar, make this check with healthbar health too
+	if event.final_health > 0 then
+		if class and class == Classes.enum.SCOUT then
+			event.entity.health = event.entity.health + (1 - Balance.scout_damage_dealt_multiplier) * event.final_damage_amount
+		elseif class and (class == Classes.enum.SAMURAI or class == Classes.enum.HATAMOTO) then
+			local samurai = class == Classes.enum.SAMURAI
+			local hatamoto = class == Classes.enum.HATAMOTO
 
-		--==Note this! (what the hell is this)
-		if not (samurai or hatamoto) then return end
+			local no_weapon = (not (character.get_inventory(defines.inventory.character_guns) and character.get_inventory(defines.inventory.character_guns)[character.selected_gun_index] and character.get_inventory(defines.inventory.character_guns)[character.selected_gun_index].valid_for_read))
 
-		local no_weapon = (not (character.get_inventory(defines.inventory.character_guns) and character.get_inventory(defines.inventory.character_guns)[character.selected_gun_index] and character.get_inventory(defines.inventory.character_guns)[character.selected_gun_index].valid_for_read))
+			local melee = (physical or acid) and no_weapon
 
-		local melee = (physical or acid) and no_weapon
+			local extra_damage_to_deal = 0
 
-		local extra_damage_to_deal = 0
+			local big_number = 1000
 
-		local big_number = 1000
+			local extra_physical_damage_from_research_multiplier = 1 + memory.force.get_ammo_damage_modifier('bullet')
 
-		local extra_physical_damage_from_research_multiplier = 1 + memory.force.get_ammo_damage_modifier('bullet')
-
-		if melee and event.final_health > 0 then
-			if physical then
-				if samurai then
-					extra_damage_to_deal = Balance.samurai_damage_dealt_with_melee * extra_physical_damage_from_research_multiplier
-				elseif hatamoto then
-					extra_damage_to_deal = Balance.hatamoto_damage_dealt_with_melee * extra_physical_damage_from_research_multiplier
+			if melee then
+				if physical then
+					if samurai then
+						extra_damage_to_deal = Balance.samurai_damage_dealt_with_melee * extra_physical_damage_from_research_multiplier
+					elseif hatamoto then
+						extra_damage_to_deal = Balance.hatamoto_damage_dealt_with_melee * extra_physical_damage_from_research_multiplier
+					end
+				elseif acid then --this hacky stuff is to implement repeated spillover splash damage, whilst getting around the fact that if ovekill damage takes something to zero health, we can't tell in that event how much double-overkill damage should be dealt by reading off its HP. This code assumes that characters only deal acid damage via this function.
+					extra_damage_to_deal = event.original_damage_amount * big_number
 				end
-			elseif acid then --this hacky stuff is to implement repeated spillover splash damage, whilst getting around the fact that if ovekill damage takes something to zero health, we can't tell in that event how much double-overkill damage should be dealt by reading off its HP. This code assumes that characters only deal acid damage via this function.
-				extra_damage_to_deal = event.original_damage_amount * big_number
-			end
-		elseif (not melee) and event.final_health > 0 then
-			if samurai then
-				event.entity.health = event.entity.health + (1 - Balance.samurai_damage_dealt_when_not_melee_multiplier) * event.final_damage_amount
-			elseif hatamoto then
-				event.entity.health = event.entity.health + (1 - Balance.hatamoto_damage_dealt_when_not_melee_multiplier) * event.final_damage_amount
-			end
-		end
-
-		if extra_damage_to_deal > 0 then
-			if event.entity.health >= extra_damage_to_deal then
-				event.entity.damage(extra_damage_to_deal, character.force, 'impact', character) --using .damage rather than subtracting from health directly plays better with entities which use healthbars
 			else
-				local surplus = (extra_damage_to_deal - event.entity.health)*0.8
-				event.entity.die(character.force, character)
-				local nearest = player.surface.find_nearest_enemy{position = player.position, max_distance = 2, force = player.force}
-				if nearest and nearest.valid then
-					nearest.damage(surplus/big_number, character.force, 'acid', character)
+				if samurai then
+					event.entity.health = event.entity.health + (1 - Balance.samurai_damage_dealt_when_not_melee_multiplier) * event.final_damage_amount
+				elseif hatamoto then
+					event.entity.health = event.entity.health + (1 - Balance.hatamoto_damage_dealt_when_not_melee_multiplier) * event.final_damage_amount
+				end
+			end
+
+			if extra_damage_to_deal > 0 then
+				if event.entity.health >= extra_damage_to_deal then
+					event.entity.damage(extra_damage_to_deal, character.force, 'impact', character) --using .damage rather than subtracting from health directly plays better with entities which use healthbars
+				else
+					local surplus = (extra_damage_to_deal - event.entity.health)*0.8
+					event.entity.die(character.force, character)
+					local nearest = player.surface.find_nearest_enemy{position = player.position, max_distance = 2, force = player.force}
+					if nearest and nearest.valid then
+						nearest.damage(surplus/big_number, character.force, 'acid', character)
+					end
 				end
 			end
 		end
-	end
 
-	if physical then
+		if physical then
 
-		-- QUARTERMASTER BUFFS
-		local nearby_players = player.surface.find_entities_filtered{position = player.position, radius = Balance.quartermaster_range, type = {'character'}}
+			-- QUARTERMASTER BUFFS
+			local nearby_players = player.surface.find_entities_filtered{position = player.position, radius = Balance.quartermaster_range, type = {'character'}}
 
-		for _, p2 in pairs(nearby_players) do
-			if p2.player and p2.player.valid then
-				local p2_index = p2.player.index
-				if event.entity.valid and player_index ~= p2_index and Classes.get_class(p2_index) == Classes.enum.QUARTERMASTER then
-					event.entity.damage((Balance.quartermaster_bonus_physical_damage - 1) * event.final_damage_amount, character.force, 'impact', character) --triggers this function again, but not physical this time
+			for _, p2 in pairs(nearby_players) do
+				if p2.player and p2.player.valid then
+					local p2_index = p2.player.index
+					if event.entity.valid and player_index ~= p2_index and Classes.get_class(p2_index) == Classes.enum.QUARTERMASTER then
+						event.entity.damage((Balance.quartermaster_bonus_physical_damage - 1) * event.final_damage_amount, character.force, 'impact', character) --triggers this function again, but not physical this time
+					end
 				end
 			end
-		end
 
-
-		-- PISTOL BUFFS
-		if character.shooting_state.state ~= defines.shooting.not_shooting then
-			local weapon = character.get_inventory(defines.inventory.character_guns)[character.selected_gun_index]
-			local ammo = character.get_inventory(defines.inventory.character_ammo)[character.selected_gun_index]
-			if event.entity.valid and weapon.valid_for_read and ammo.valid_for_read and weapon.name == 'pistol' and (ammo.name == 'firearm-magazine' or ammo.name == 'piercing-rounds-magazine' or ammo.name == 'uranium-rounds-magazine') then
-				event.entity.damage(event.final_damage_amount * (Balance.pistol_damage_multiplier() - 1), character.force, 'impact', character) --triggers this function again, but not physical this time
+			-- PISTOL BUFFS
+			if character.shooting_state.state ~= defines.shooting.not_shooting then
+				local weapon = character.get_inventory(defines.inventory.character_guns)[character.selected_gun_index]
+				local ammo = character.get_inventory(defines.inventory.character_ammo)[character.selected_gun_index]
+				if event.entity.valid and weapon.valid_for_read and ammo.valid_for_read and weapon.name == 'pistol' and (ammo.name == 'firearm-magazine' or ammo.name == 'piercing-rounds-magazine' or ammo.name == 'uranium-rounds-magazine') then
+					event.entity.damage(event.final_damage_amount * (Balance.pistol_damage_multiplier() - 1), character.force, 'impact', character) --triggers this function again, but not physical this time
+				end
 			end
 		end
 	end

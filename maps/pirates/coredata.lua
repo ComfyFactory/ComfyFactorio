@@ -123,11 +123,11 @@ Public.difficulty_options = {
 	--For the value of Easy difficulty, we are pulled in two directions: We wish to make the game comfy to play for those who haven't played it, but we also wish to represent the game mechanics faithfully so that Normal is not a crazy distance away.
 	{value = 0.5, icon = 'item/firearm-magazine', text = {'pirates.difficulty_easy'}, associated_color = {r = 50, g = 255, b = 50}},
 
-	{value = 0.95, icon = 'item/piercing-rounds-magazine', text = {'pirates.difficulty_normal'}, associated_color = {r = 255, g = 255, b = 50}},
+	{value = 1.0, icon = 'item/piercing-rounds-magazine', text = {'pirates.difficulty_normal'}, associated_color = {r = 255, g = 255, b = 50}},
 
 	{value = 1.5, icon = 'item/uranium-rounds-magazine', text = {'pirates.difficutly_hard'}, associated_color = {r = 255, g = 50, b = 50}},
 
-	{value = 2.2, icon = 'item/atomic-bomb', text = {'pirates.difficulty_nightmare'}, associated_color = {r = 170, g = 60, b = 60}},
+	{value = 2.0, icon = 'item/atomic-bomb', text = {'pirates.difficulty_nightmare'}, associated_color = {r = 170, g = 60, b = 60}},
 }
 function Public.get_difficulty_option_from_value(difficulty_value)
 	-- given a difficulty value, key in to the closesy entry in the above table. (organising things this way allows us to make changes to the 'value' keys in the above table without disrupting e.g. past highscores data)

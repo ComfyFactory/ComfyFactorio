@@ -10,6 +10,7 @@ local BoatData = require 'maps.pirates.structures.boats.sloop.data'
 local Event = require 'utils.event'
 local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 local Balance = require 'maps.pirates.balance'
+local CoreData = require 'maps.pirates.coredata'
 
 local Public = {}
 Public.Data = require 'maps.pirates.surfaces.islands.cave.data'
@@ -100,6 +101,8 @@ function Public.reveal(cave_miner, surface, source_surface, position, brushsize)
                             destination.dynamic_data.disabled_wave_timer = Balance.prevent_waves_from_spawning_in_cave_timer_length
                         end
 
+                        Public.try_make_spawner_elite(e, destination)
+
                         Public.reveal(cave_miner, surface, source_surface, entity_position, 15)
                     end
                 end
@@ -109,6 +112,22 @@ function Public.reveal(cave_miner, surface, source_surface, position, brushsize)
 
     source_surface.set_tiles({{name = 'lab-dark-2', position = position}}, false)
     source_surface.request_to_generate_chunks(position, 3)
+end
+
+function Public.try_make_spawner_elite(spawner, destination)
+    local memory = Memory.get_crew_memory()
+
+    if spawner and CoreData.get_difficulty_option_from_value(memory.difficulty) >= 3 then
+        if Math.random(20) == 1 then
+            local max_health = Balance.elite_spawner_health()
+            Common.new_healthbar(true, spawner, max_health, nil, max_health, 0.8, nil, destination.dynamic_data)
+
+            local elite_spawners = destination.dynamic_data.elite_spawners
+            if elite_spawners then
+                elite_spawners[#elite_spawners + 1] = spawner
+            end
+        end
+    end
 end
 
 

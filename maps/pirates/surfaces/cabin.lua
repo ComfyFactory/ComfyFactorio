@@ -168,7 +168,7 @@ function Public.create_cabin_surface()
 
 		local surface = game.create_surface(cabinname, map_gen_settings)
 		surface.freeze_daytime = true
-		surface.daytime = 0
+		surface.daytime = 0.3
 		surface.show_clouds = false
 
         -- more here

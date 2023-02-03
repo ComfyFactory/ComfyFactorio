@@ -469,29 +469,37 @@ local function class_on_player_used_capsule(event)
 			end
 		end
 	elseif class == Public.enum.SHAMAN then
-		local data = memory.class_auxiliary_data[player.index]
-		if data and data.shaman_charge then
-			for _ = 1, 3 do
-				if data.shaman_charge < Balance.shaman_energy_required_per_summon then break end
+		local player_surface_type = SurfacesCommon.decode_surface_name(player.surface.name).type
 
-				local pos = Math.vector_sum(player.position, Math.random_vec(2))
-				local name = Common.get_random_unit_type(Math.clamp(0, 1, memory.evolution_factor))
+		if player_surface_type == SurfacesCommon.enum.ISLAND or player_surface_type == SurfacesCommon.enum.SEA then
+			local data = memory.class_auxiliary_data[player.index]
+			if data and data.shaman_charge then
+				for _ = 1, 2 do
+					if data.shaman_charge < Balance.shaman_energy_required_per_summon then break end
 
-				if player.surface.can_place_entity{name = name, position = pos, force = memory.force} then
-					local e = player.surface.create_entity{name = name, position = pos, force = memory.force}
-					if e and e.valid then
-						data.shaman_charge = data.shaman_charge - Balance.shaman_energy_required_per_summon
-						rendering.draw_text {
-							text = '~' .. player.name .. "'s minion~",
-							surface = player.surface,
-							target = e,
-							target_offset = {0, -2.6},
-							color = player.force.color,
-							scale = 1.05,
-							font = 'default-large-semibold',
-							alignment = 'center',
-							scale_with_zoom = false
-						}
+					local spawn_range = 2
+					local pos = Math.vector_sum(player.position, Math.random_vec(spawn_range))
+					local name = Common.get_random_unit_type(Math.clamp(0, 1, memory.evolution_factor))
+					local spawn_pos = player.surface.find_non_colliding_position(name, pos, spawn_range + 1, 0.5)
+
+					if spawn_pos then
+						local e = player.surface.create_entity{name = name, position = spawn_pos, force = memory.force}
+						if e and e.valid then
+							data.shaman_charge = data.shaman_charge - Balance.shaman_energy_required_per_summon
+							rendering.draw_text {
+								text = '~' .. player.name .. "'s minion~",
+								surface = player.surface,
+								target = e,
+								target_offset = {0, -2.6},
+								color = player.force.color,
+								scale = 1.05,
+								font = 'default-large-semibold',
+								alignment = 'center',
+								scale_with_zoom = false
+							}
+
+							memory.pet_biters[e.unit_number] = {pet_owner = player, pet = e, time_to_live = Balance.shaman_summoned_biter_time_to_live}
+						end
 					end
 				end
 			end

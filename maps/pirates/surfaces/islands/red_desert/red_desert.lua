@@ -233,7 +233,7 @@ local function red_desert_tick()
 
 				Public.underground_worms_ai()
 
-				if game.tick % 360 == 0 and destination.dynamic_data.timer and destination.dynamic_data.timer > 60 then
+				if game.tick % 300 == 0 and destination.dynamic_data.timer and destination.dynamic_data.timer > 60 then
 					Public.custom_biter_ai()
 				end
 			end
@@ -387,7 +387,7 @@ function Public.custom_biter_ai()
 		local units_created = {}
 
 		local name = Common.get_random_unit_type(evolution)
-		local unittype_pollutioncost = CoreData.biterPollutionValues[name] * 1.1 * Balance.scripted_biters_pollution_cost_multiplier()
+		local unittype_pollutioncost = CoreData.biterPollutionValues[name] * Balance.scripted_biters_pollution_cost_multiplier()
 
 		local function spawn(name2)
 			units_created_count = units_created_count + 1

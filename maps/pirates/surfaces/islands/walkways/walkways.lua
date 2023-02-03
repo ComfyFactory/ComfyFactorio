@@ -83,7 +83,7 @@ function Public.terrain(args)
 		else
 			args.tiles[#args.tiles + 1] = {name = 'water-shallow', position = p}
 
-			if math.random(1, 1024) == 1 then
+			if math.random(1, 512) == 1 then
 				local name = Common.get_random_worm_type(memory.evolution_factor)
 				local force = memory.enemy_force_name
 				args.entities[#args.entities + 1] = {name = name, position = p, force = force}
