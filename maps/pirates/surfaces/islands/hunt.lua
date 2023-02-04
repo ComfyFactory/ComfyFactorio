@@ -41,24 +41,25 @@ function Public.silo_setup_position(points_to_avoid, x_fractional_offset, x_abso
 			Math.floor(boatposition.x + difficulty_offset + (island_center.x - boatposition.x) * 3/5) - 0.5,
 			Math.floor(boatposition.x + 175) - 0.5
 		) + (island_center.x - boatposition.x) * x_fractional_offset + x_absolute_offset,
-		y = Math.floor(boatposition.y + (island_center.y - boatposition.y) * 3/5) - 0.5
+		y = 0.5
+		-- y = Math.floor(boatposition.y + (island_center.y - boatposition.y) * 3/5) - 0.5
 	}
 
 	local tries = 0
 	local p_ret = nil
 	local p2
 	while p_ret == nil and tries < 200 do
-		p2 = {x = p.x + Math.random(-30, 0), y = p.y + Math.random(-70, 70)}
+		p2 = {x = p.x + Math.random(-30, 10), y = p.y + Math.random(-100, 100)}
 		if p2.x >= boatposition.x+5 and Common.can_place_silo_setup(surface, p2, points_to_avoid, silo_count) then p_ret = p2 end
 		tries = tries + 1
 	end
 	while p_ret == nil and tries < 400 do
-		p2 = {x = p.x + Math.random(-60, 10), y = p.y + Math.random(-90, 90)}
+		p2 = {x = p.x + Math.random(-60, 30), y = p.y + Math.random(-120, 120)}
 		if p2.x >= boatposition.x+5 and Common.can_place_silo_setup(surface, p2, points_to_avoid, silo_count, true) then p_ret = p2 end
 		tries = tries + 1
 	end
 	while p_ret == nil and tries < 1200 do
-		p2 = {x = p.x + Math.random(-90, 20), y = p.y + Math.random(-130, 130)}
+		p2 = {x = p.x + Math.random(-90, 50), y = p.y + Math.random(-150, 150)}
 		if p2.x >= boatposition.x+5 and Common.can_place_silo_setup(surface, p2, points_to_avoid, silo_count, true) then p_ret = p2 end
 		tries = tries + 1
 	end
