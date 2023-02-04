@@ -470,6 +470,7 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 			end
 
             local biter = surface.create_entity({name = name2, force = enemy_force_name, position = p})
+            Common.try_make_biter_elite(biter)
 
             units_created[#units_created + 1] = biter
             memory.scripted_biters[biter.unit_number] = {entity = biter, created_at = game.tick}
@@ -772,6 +773,7 @@ function Public.revenge_group(surface, p, target, type, bonus_evo, amount_multip
 		local p2 = surface.find_non_colliding_position('wooden-chest', p, 5, 0.5)
 		if p2 then
             local biter = surface.create_entity({name = name, force = enemy_force_name, position = p})
+            Common.try_make_biter_elite(biter)
             -- local biter = surface.create_entity({name = name, force = enemy_force_name, position = p2})
             units[#units + 1] = biter
         end
@@ -816,6 +818,7 @@ function Public.spawn_boat_biters(boat, max_evo, count, width)
 		local p2 = surface.find_non_colliding_position('wooden-chest', p, 8, 0.5) --needs to be wooden-chest for collisions to work properly
 		if p2 then
             local biter = surface.create_entity({name = name, force = enemy_force_name, position = p2})
+            Common.try_make_biter_elite(biter)
 
             memory.scripted_biters[biter.unit_number] = {entity = biter, created_at = game.tick}
 

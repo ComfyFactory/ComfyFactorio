@@ -396,6 +396,7 @@ function Public.custom_biter_ai()
 			if not p then return end
 
 			local biter = surface.create_entity({name = name2, force = enemy_force_name, position = p})
+			Common.try_make_biter_elite(biter)
 
 			units_created[#units_created + 1] = biter
 			memory.scripted_biters[biter.unit_number] = {entity = biter, created_at = game.tick}

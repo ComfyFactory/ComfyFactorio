@@ -178,7 +178,8 @@ function Public.kraken_tick(crew_id, kraken_id, step, substep)
 						random_dir_vec = Math.vector_norm(random_dir_vec)
 						random_dir_vec = Math.vector_scale(random_dir_vec, Balance.kraken_biter_spawn_radius)
 						local spawn_pos = Math.vector_sum(kraken_spawner_entity.position, random_dir_vec)
-						surface.create_entity{name = name, position = spawn_pos, force = memory.enemy_force_name}
+						local biter = surface.create_entity{name = name, position = spawn_pos, force = memory.enemy_force_name}
+						Common.try_make_biter_elite(biter)
 					end
 				end
 			end
@@ -263,7 +264,8 @@ local function on_entity_destroyed(event)
 		local p2 = surface.find_non_colliding_position('medium-biter', p, 10, 0.2)
 		if not p2 then return end
 		local name = Common.get_random_unit_type(memory.evolution_factor + Balance.kraken_static_evo)
-		surface.create_entity{name = name, position = p2, force = memory.enemy_force_name}
+		local biter = surface.create_entity{name = name, position = p2, force = memory.enemy_force_name}
+		Common.try_make_biter_elite(biter)
 		Effects.kraken_effect_2(surface, p2)
 
 		local evo_increase = Balance.kraken_evo_increase_per_shot()

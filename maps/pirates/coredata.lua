@@ -117,6 +117,7 @@ Public.capacity_options = {
 	-- {value = 64, icon = 'item/storage-tank', text = '64'},
 }
 
+-- Prefer not to change difficulty values if possible, since even tiny value change can have big effect on some formulas that rely on it.
 Public.difficulty_options = {
 	-- The difficulty values we currently offer
 

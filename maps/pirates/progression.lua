@@ -299,6 +299,14 @@ function Public.progress_to_destination(destination_index)
 
 	if old_type == Surfaces.enum.SEA then
 		game.delete_surface(oldsurface)
+
+		if memory.elite_biters then
+			for id, elite_biter in pairs(memory.elite_biters) do
+				if not elite_biter.valid then
+					memory.elite_biters[id] = nil
+				end
+			end
+		end
 	end
 
 	memory.destinationsvisited_indices[#memory.destinationsvisited_indices + 1] = destination_index

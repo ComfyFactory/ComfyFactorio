@@ -242,6 +242,30 @@ local function damage_to_elite_spawners(event)
 	end
 end
 
+local function damage_to_elite_biters(event)
+	local memory = Memory.get_crew_memory()
+
+	local elite_biters = memory.elite_biters
+	if elite_biters and
+		event.cause and
+		event.cause.valid and
+		event.entity and
+		event.entity.valid and
+		event.entity.force.name == memory.enemy_force_name
+	then
+		if elite_biters[event.entity.unit_number] then
+			local damage = event.final_damage_amount
+
+			local remaining_health = Common.entity_damage_healthbar(event.entity, damage)
+
+			if remaining_health and remaining_health <= 0 then
+				memory.elite_biters[event.entity.unit_number] = nil
+				event.entity.die()
+			end
+		end
+	end
+end
+
 local function damage_to_artillery(event)
 	local memory = Memory.get_crew_memory()
 
@@ -635,6 +659,7 @@ local function event_on_entity_damaged(event)
 	damage_to_krakens(event)
 	damage_to_enemyboat_spawners(event)
 	damage_to_elite_spawners(event)
+	damage_to_elite_biters(event)
 
 	if event.entity and event.entity.valid and event.entity.name and event.entity.name == 'artillery-turret' then
 		damage_to_artillery(event)
@@ -976,7 +1001,8 @@ local function event_on_player_mined_entity(event)
 					if Math.random(1, 4) == 1 then
 						entity.surface.create_entity{name = Common.get_random_worm_type(memory.evolution_factor), position = entity.position, force = memory.enemy_force_name}
 					else
-						entity.surface.create_entity{name = Common.get_random_unit_type(memory.evolution_factor), position = entity.position, force = memory.enemy_force_name}
+						local biter = entity.surface.create_entity{name = Common.get_random_unit_type(memory.evolution_factor), position = entity.position, force = memory.enemy_force_name}
+						Common.try_make_biter_elite(biter)
 					end
 				end
 
@@ -2127,6 +2153,22 @@ local function event_on_player_respawned(event)
 	end
 end
 
+local function event_on_entity_spawned(event)
+	local entity = event.entity
+	if not entity then return end
+	if not entity.valid then return end
+
+	local surface = entity.surface
+	if not surface then return end
+	if not surface.valid then return end
+
+	local crew_id = SurfacesCommon.decode_surface_name(surface.name).crewid
+	if not Common.is_id_valid(crew_id) then return end
+
+	Memory.set_working_id(crew_id)
+	Common.try_make_biter_elite(entity, event.spawner)
+end
+
 
 local event = require 'utils.event'
 event.add(defines.events.on_built_entity, event_on_built_entity)
@@ -2148,6 +2190,6 @@ event.add(defines.events.on_rocket_launched, event_on_rocket_launched)
 event.add(defines.events.on_console_chat, event_on_console_chat)
 event.add(defines.events.on_market_item_purchased, event_on_market_item_purchased)
 event.add(defines.events.on_player_respawned, event_on_player_respawned)
-
+event.add(defines.events.on_entity_spawned, event_on_entity_spawned)
 
 return Public

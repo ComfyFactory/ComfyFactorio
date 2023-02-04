@@ -937,6 +937,13 @@ local function process_entity_on_boat_teleportable(memory, boat, newsurface, new
 		memory.pet_biters[e.unit_number] = nil
 	end
 
+	local elite_biter_data = memory.elite_biters[e.unit_number]
+	if elite_biter_data then
+		Common.transfer_healthbar(e.unit_number, ee)
+		memory.elite_biters[ee.unit_number] = ee
+		memory.elite_biters[e.unit_number] = nil
+	end
+
 	-- We don't want to destroy spidertron leg, because otherwise it will destroy whole spidertron. Funny huh?
 	if not (e.name == 'car' or e.name == 'tank' or e.name == 'spidertron' or string.sub(e.name, 1, 14) == 'spidertron-leg') then
 		e.destroy()
@@ -1464,7 +1471,6 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 	teleport_handle_wake_tiles(boat, dummyboat, newsurface_name, oldsurface_name, oldsurface, newposition, vector, scope, vectordirection, vectorlength, old_water_tile, friendlyboat_bool)
 
 	teleport_handle_renderings(boat, oldsurface_name, newsurface_name, vector, scope, memory, newsurface)
-
 end
 
 function Public.is_boat_at_sea()

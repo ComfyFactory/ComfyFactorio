@@ -763,7 +763,7 @@ function Public.transfer_healthbar(old_unit_number, new_entity, location_overrid
 	if rendering.is_valid(old_healthbar.render1) then
 		rendering.destroy(old_healthbar.render1)
 	end
-	if rendering.is_valid(old_healthbar.render2) then
+	if old_healthbar.render2 and rendering.is_valid(old_healthbar.render2) then
 		rendering.destroy(old_healthbar.render2)
 	end
 
@@ -1781,6 +1781,58 @@ function Public.get_random_valid_spawner(surface)
     if #spawners == 0 then return end
 
 	return spawners[Math.random(#spawners)]
+end
+
+function Public.try_make_biter_elite(entity, spawner)
+	local memory = Memory.get_crew_memory()
+	local destination = Public.current_destination()
+
+	local difficulty_index = CoreData.get_difficulty_option_from_value(memory.difficulty)
+	if difficulty_index < 3 then return end
+
+	if Public.overworldx() == 0 then return end
+
+	local from_elite_spawner = false
+	if spawner and
+		spawner.valid and
+		destination.dynamic_data.elite_spawners and
+		#destination.dynamic_data.elite_spawners > 0
+	then
+		for i = 1, #destination.dynamic_data.elite_spawners do
+			local elite_spawner = destination.dynamic_data.elite_spawners[i]
+			if spawner == elite_spawner then
+				from_elite_spawner = true
+				break
+			end
+		end
+	end
+
+	local make_biter_elite = false
+	if from_elite_spawner then
+		if Math.random(1, 16) == 1 then
+			make_biter_elite = true
+		end
+	elseif Math.random(1, 32) == 1 then
+		make_biter_elite = true
+	end
+
+	if make_biter_elite then
+		local health_multiplier = 1
+
+		if difficulty_index == 3 then
+			health_multiplier = 5
+		else
+			health_multiplier = 10
+		end
+
+		local max_hp = Math.ceil(entity.prototype.max_health * health_multiplier)
+		Public.new_healthbar(false, entity, max_hp, nil, max_hp, 0.4, -1)
+
+		local elite_biters = memory.elite_biters
+		if elite_biters then
+			elite_biters[entity.unit_number] = entity
+		end
+	end
 end
 
 return Public

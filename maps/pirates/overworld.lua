@@ -231,7 +231,8 @@ function Public.generate_destination_base_cost_to_undock(p, subtype)
 	-- override:
 	if subtype == IslandEnum.enum.RADIOACTIVE then
 		base_cost_to_undock = {
-			['uranium-235'] = Math.ceil(Math.ceil(80 + (macro_p.x - 1))),
+			['uranium-235'] = Math.ceil(Math.ceil(65 + 2 * (macro_p.x - 1))), -- people now have access to uranium tech and can make it on ship
+			-- ['uranium-235'] = Math.ceil(Math.ceil(80 + (macro_p.x - 1))),
 			-- ['uranium-235'] = Math.ceil(Math.ceil(80 + (macro_p.x)/2)), --tried adding beacons instead of this
 		}
 	elseif subtype == IslandEnum.enum.RED_DESERT or subtype == IslandEnum.enum.CAVE then

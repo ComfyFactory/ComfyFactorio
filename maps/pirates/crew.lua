@@ -718,6 +718,7 @@ function Public.initialise_crew(accepted_proposal)
 	memory.class_renderings = {}
 	memory.class_auxiliary_data = {}
 
+	memory.elite_biters = {}
 	memory.pet_biters = {}
 
 	memory.hold_surface_count = 1
