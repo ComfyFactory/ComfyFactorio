@@ -256,6 +256,7 @@ local function crew_tick()
 				if tick % 300 == 0 then
 					PiratesApiOnTick.periodic_free_resources(300)
 					PiratesApiOnTick.update_recentcrewmember_list(300)
+					PiratesApiOnTick.update_pet_biter_lifetime(300)
 
 					if tick % 1800 == 0 then
 						PiratesApiOnTick.transfer_pollution(1800)

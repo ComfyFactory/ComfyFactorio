@@ -89,7 +89,7 @@ Public.maximum_fish_allowed_to_catch_at_sea = 30
 
 Public.prevent_waves_from_spawning_in_cave_timer_length = 10 -- in seconds
 
-Public.min_ore_spawn_distance = 20
+Public.min_ore_spawn_distance = 10
 
 Public.biter_boat_average_arrival_rate = 8*60 -- in seconds
 

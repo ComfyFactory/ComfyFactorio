@@ -1663,4 +1663,21 @@ function Public.update_private_run_lock_timer(tickinterval)
 	end
 end
 
+function Public.update_pet_biter_lifetime(tickinterval)
+	local memory = Memory.get_crew_memory()
+	if memory.pet_biters then
+		for id, pet_biter in pairs(memory.pet_biters) do
+			if pet_biter.pet and pet_biter.pet.valid then
+				pet_biter.time_to_live = pet_biter.time_to_live - tickinterval
+				if pet_biter.time_to_live <= 0 then
+					memory.pet_biters[id].pet.die()
+					memory.pet_biters[id] = nil
+				end
+			else
+				memory.pet_biters[id] = nil
+			end
+		end
+	end
+end
+
 return Public

@@ -158,6 +158,9 @@ function Public.explanation(class, add_is_class_obtainable)
 		local radius = Balance.doctor_heal_radius
 		local heal_percentage = Math.ceil(Balance.doctor_heal_percentage_amount * 100)
 		full_explanation = {'', {explanation, radius, heal_percentage}}
+	elseif class == enum.SHAMAN then
+		local live_time = Math.ceil(Balance.shaman_summoned_biter_time_to_live / 60)
+		full_explanation = {'', {explanation, live_time}}
 	else
 		full_explanation = {'', {explanation}}
 	end
@@ -498,7 +501,7 @@ local function class_on_player_used_capsule(event)
 								scale_with_zoom = false
 							}
 
-							memory.pet_biters[e.unit_number] = {pet_owner = player, pet = e, time_to_live = Balance.shaman_summoned_biter_time_to_live}
+							memory.pet_biters[e.unit_number] = {pet_owner = player, pet = e, time_to_live = 60 * Balance.shaman_summoned_biter_time_to_live}
 						end
 					end
 				end

@@ -377,8 +377,8 @@ function Public.generate_overworld_destination(p)
 		-- end --upgrades like UNLOCK_MERCHANTS will slot themselves in when necessary, due to .overwrite_a_dock_upgrade() (not anymore)
 		-- one day it's worth making this system more readable
 
-		-- NOTE: When DOCK frequency changes, this needs to change too (kinda bad design, but w/e)
-		-- NOTE: I couldn't manage to make upgrade overwriting to work so I made it fixed here (although I prefer having fixed for less rng)
+		-- NOTE: When DOCK frequency changes, this needs to change too (kinda bad design, but whatever)
+		-- NOTE: I couldn't manage to make upgrade overwriting to work so I made it here
 		-- TODO: Perhaps always have something special to sell (or remove the upgrade market if it has no offers?)
 		if macro_p.x % 16 == 15 and (not memory.rockets_for_sale) then
 			upgrade_for_sale = Upgrades.enum.ROCKETS_FOR_SALE
