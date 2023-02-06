@@ -969,7 +969,13 @@ local function on_player_used_capsule(event)
         rpg_t = rpg_t
     }
 
-    local cast_spell = spell.callback(data)
+    local funcs = {
+        remove_mana = Public.remove_mana,
+        damage_player_over_time = Public.damage_player_over_time,
+        cast_spell = Public.cast_spell
+    }
+
+    local cast_spell = spell.callback(data, funcs)
     if not cast_spell then
         return
     end

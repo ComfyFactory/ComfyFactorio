@@ -43,14 +43,17 @@ local function refund_item(event, item_name)
     if item_name == 'blueprint' then
         return
     end
-    local player = game.get_player(event.player_index)
-    local robot = event.robot
-    if player and player.valid then
-        player.insert({name = item_name, count = 1})
-        return
+
+    if event.player_index then
+        local player = game.get_player(event.player_index)
+        if player and player.valid then
+            player.insert({name = item_name, count = 1})
+            return
+        end
     end
 
     -- return item to robot, but don't replace ghost (otherwise might loop)
+    local robot = event.robot
     if robot and robot.valid then
         local inventory = robot.get_inventory(defines.inventory.robot_cargo)
         inventory.insert({name = item_name, count = 1})
@@ -102,6 +105,31 @@ function Public.in_area(position, area_center, area_radius)
             return true
         end
     end
+    return false
+end
+
+function Public.is_another_character_near(surface, position, force)
+    if not surface then
+        return
+    end
+    if not position then
+        return
+    end
+    if not force then
+        return
+    end
+
+    local ents = surface.find_entities_filtered {position = position, radius = 15, type = 'character'}
+    if ents and #ents >= 1 then
+        for _, ent in pairs(ents) do
+            if ent and ent.valid then
+                if ent.force.name ~= force.name and not ent.force.get_friend(force.name) and not force.get_friend(ent.force.name) then
+                    return true
+                end
+            end
+        end
+    end
+
     return false
 end
 
@@ -237,7 +265,7 @@ local function prevent_landfill_in_restricted_zone(event)
 end
 
 local function process_built_entities(event)
-    local player_index = event.player_index or nil
+    local player_index = event.player_index
     local entity = event.created_entity
     if entity == nil or not entity.valid then
         return
@@ -249,12 +277,42 @@ local function process_built_entities(event)
     local force_name
     if player_index ~= nil then
         local player = game.get_player(player_index)
+        if not player or not player.valid then
+            return
+        end
+
         force = player.force
         force_name = force.name
+
+        local is_another_character_near = Public.is_another_character_near(player.surface, player.position, force)
+        if is_another_character_near then
+            entity.destroy()
+
+            player.play_sound({path = 'utility/cannot_build', position = player.position, volume_modifier = 0.75})
+            error_floaty(surface, position, "Can't build near other characters!")
+            if name ~= 'entity-ghost' then
+                if event.stack and event.stack.valid_for_read then
+                    refund_item(event, event.stack.name)
+                end
+            end
+            return
+        end
     else
         local robot = event.robot
         force = robot.force
         force_name = force.name
+
+        local is_another_character_near = Public.is_another_character_near(robot.surface, robot.position, robot.force)
+        if is_another_character_near then
+            entity.destroy()
+            error_floaty(surface, position, "Can't build near other characters!")
+            if name ~= 'entity-ghost' then
+                if event.stack and event.stack.valid_for_read then
+                    refund_item(event, event.stack.name)
+                end
+            end
+            return
+        end
     end
 
     if Public.near_another_town(force_name, position, surface, 32) == true then
@@ -262,13 +320,19 @@ local function process_built_entities(event)
             entity.force = game.forces['neutral']
         else
             entity.destroy()
-            if player_index ~= nil then
+            if player_index then
                 local player = game.get_player(player_index)
+                if not player or not player.valid then
+                    return
+                end
+
                 player.play_sound({path = 'utility/cannot_build', position = player.position, volume_modifier = 0.75})
             end
             error_floaty(surface, position, "Can't build near town!")
             if name ~= 'entity-ghost' then
-                refund_item(event, event.stack.name)
+                if event.stack and event.stack.valid_for_read then
+                    refund_item(event, event.stack.name)
+                end
             end
             return
         end

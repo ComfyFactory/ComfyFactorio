@@ -97,24 +97,21 @@ commands.add_command(
     'set_queue_speed',
     'Usable only for admins - sets the queue speed of this map!',
     function(cmd)
-        local p
         local player = game.player
         local param = tonumber(cmd.parameter)
 
         if player and player.valid then
-            p = player.print
             if not player.admin then
-                p("[ERROR] You're not admin!", Color.fail)
+                player.print("[ERROR] You're not admin!", Color.fail)
                 return
             end
             if not param then
                 return
             end
-            p('Queue speed set to: ' .. param)
+            player.print('Queue speed set to: ' .. param)
             Task.set_queue_speed(param)
         else
-            p = log
-            p('Queue speed set to: ' .. param)
+            log('Queue speed set to: ' .. param)
             Task.set_queue_speed(param)
         end
     end
@@ -126,7 +123,7 @@ commands.add_command(
     function()
         local player = game.player
 
-        if not player and player.valid then
+        if not player or not player.valid then
             return
         end
         if not player.admin then
@@ -160,8 +157,7 @@ commands.add_command(
     'Usable only for admins - toggles orbital strikes!',
     function()
         local player = game.player
-
-        if not player and player.valid then
+        if not player or not player.valid then
             return
         end
         if not player.admin then
@@ -210,34 +206,34 @@ commands.add_command(
     end
 )
 
-if _DEBUG then
-    commands.add_command(
-        'start_collapse',
-        'Enabled only on SP',
-        function()
-            local p
-            local player = game.player
+commands.add_command(
+    'toggle_collapse',
+    'Toggles the collapse feature',
+    function()
+        local player = game.player
 
-            if game.is_multiplayer() then
+        if player and player.valid then
+            if not player.admin then
+                player.print("[ERROR] You're not admin!", Color.fail)
                 return
             end
-
-            if player and player.valid then
-                p = player.print
-                if not player.admin then
-                    p("[ERROR] You're not admin!", Color.fail)
-                    return
-                end
-                if not Collapse.start_now() then
-                    Collapse.start_now(true)
-                    p('Collapse started!')
-                else
-                    Collapse.start_now(false)
-                    p('Collapse stopped!')
-                end
+            if not Collapse.start_now() then
+                Collapse.start_now(true)
+                game.print(mapkeeper .. ' ' .. player.name .. ', has started collapse!', {r = 0.98, g = 0.66, b = 0.22})
+            else
+                Collapse.start_now(false)
+                game.print(mapkeeper .. ' ' .. player.name .. ', has stopped collapse!', {r = 0.98, g = 0.66, b = 0.22})
+            end
+        else
+            if not Collapse.start_now() then
+                Collapse.start_now(true)
+                log('Collapse has started.')
+            else
+                Collapse.start_now(false)
+                log('Collapse has stopped.')
             end
         end
-    )
-end
+    end
+)
 
 return Public

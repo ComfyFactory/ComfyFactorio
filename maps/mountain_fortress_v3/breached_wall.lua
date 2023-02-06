@@ -2,6 +2,7 @@ local Event = require 'utils.event'
 local Public = require 'maps.mountain_fortress_v3.table'
 local Collapse = require 'modules.collapse'
 local RPG = require 'modules.rpg.main'
+local WD = require 'modules.wave_defense.table'
 local Alert = require 'utils.alert'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
@@ -25,15 +26,15 @@ local clear_breach_text_and_render = function()
     end
     local zone1_text1 = Public.get('zone1_text1')
     if zone1_text1 then
-        rendering.set_text(zone1_text1, 'Collapse has started!')
+        rendering.set_text(zone1_text1, 'Collapse has begun!')
     end
     local zone1_text2 = Public.get('zone1_text2')
     if zone1_text2 then
-        rendering.set_text(zone1_text2, 'Collapse has started!')
+        rendering.set_text(zone1_text2, 'Collapse has begun!')
     end
     local zone1_text3 = Public.get('zone1_text3')
     if zone1_text3 then
-        rendering.set_text(zone1_text3, 'Collapse has started!')
+        rendering.set_text(zone1_text3, 'Collapse has begun!')
     end
 end
 
@@ -83,6 +84,27 @@ local artillery_warning =
         Alert.alert_all_players(10, message)
     end
 )
+
+local breach_wall_warning_teleport = function(player)
+    if not player or not player.valid then
+        return
+    end
+
+    local wave_number = WD.get('wave_number')
+    if wave_number >= 200 then
+        return
+    end
+
+    local message = ({'breached_wall.warning_teleport', player.name})
+    Alert.alert_all_players(40, message)
+    local pos = player.surface.find_non_colliding_position('character', player.force.get_spawn_position(player.surface), 3, 0)
+    if pos then
+        player.teleport(pos, player.surface)
+    else
+        pos = game.forces.player.get_spawn_position(player.surface)
+        player.teleport(pos, player.surface)
+    end
+end
 
 local spidertron_too_far =
     Token.register(
@@ -232,11 +254,18 @@ local function distance(player)
         return
     end
 
+    local breach_wall_warning = Public.get('breach_wall_warning')
+
     local max = zone_settings.zone_depth * bonus
     local breach_max = zone_settings.zone_depth * breached_wall
     local breach_max_times = location >= breach_max
     local max_times = location >= max
     if max_times then
+        if not breach_wall_warning then
+            Public.set('breach_wall_warning', true)
+            breach_wall_warning_teleport(player)
+            return
+        end
         if breach_max_times then
             local placed_trains_in_zone = Public.get('placed_trains_in_zone')
             local biters = Public.get('biters')

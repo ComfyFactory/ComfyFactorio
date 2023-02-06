@@ -158,7 +158,7 @@ end
 
 local function hide_all_gui(player)
     for _, child in pairs(player.gui.top.children) do
-        if child.name ~= spectate_button_name and child.name ~= 'minimap_button' then
+        if child.name ~= spectate_button_name and child.name ~= 'minimap_button' and child.name ~= 'wave_defense' then
             child.visible = false
         end
     end
