@@ -793,7 +793,275 @@ end
 -- 	-- end
 -- end
 
+local function player_mined_tree(event)
+	local memory = Memory.get_crew_memory()
+	local destination = Common.current_destination()
+	local player = game.players[event.player_index]
+	local entity = event.entity
+	local class = Classes.get_class(event.player_index)
+
+	local available = destination.dynamic_data.wood_remaining
+	local starting = destination.static_params.starting_wood
+
+	if not (available and destination.type == Surfaces.enum.ISLAND) then return end
+
+	if destination.subtype == IslandEnum.enum.MAZE then
+		if Math.random(1, 38) == 1 then
+			tick_tack_trap(memory.enemy_force_name, entity.surface, entity.position)
+			return
+		end
+	end
+
+	local give = {}
+
+	local baseamount = 4
+	--minimum 1 wood
+	local amount = Math.clamp(1, Math.max(1, Math.ceil(available)), Math.ceil(baseamount * Balance.island_richness_avg_multiplier() * available/starting))
+
+	destination.dynamic_data.wood_remaining = destination.dynamic_data.wood_remaining - amount
+
+	give[#give + 1] = {name = 'wood', count = amount}
+
+	if class == Classes.enum.LUMBERJACK then
+		Classes.lumberjack_bonus_items(give)
+	else
+		if Math.random(Balance.every_nth_tree_gives_coins) == 1 then --tuned
+			local a = 5
+			give[#give + 1] = {name = 'coin', count = a}
+			memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
+		end
+	end
+
+	Common.give(player, give, entity.position)
+
+	if destination.subtype ~= IslandEnum.enum.FIRST then
+		if Math.random(1024) == 1 then
+			local placed = Ores.try_ore_spawn(entity.surface, entity.position, entity.name, 0, true)
+			if placed then
+				Common.notify_player_expected(player, {'pirates.ore_discovered'})
+			end
+		elseif Math.random(2048) == 1 then
+			local e = entity.surface.create_entity{name = 'wooden-chest', position = entity.position, force = memory.ancient_friendly_force_name}
+			if e and e.valid then
+				e.minable = false
+				e.rotatable = false
+				e.destructible = false
+
+				local inv = e.get_inventory(defines.inventory.chest)
+				local loot = Loot.wooden_chest_loot()
+				for i = 1, #loot do
+					local l = loot[i]
+					inv.insert(l)
+				end
+
+				Common.notify_player_expected(player, {'pirates.chest_discovered'})
+			end
+		end
+	end
+end
+
+local function player_mined_fish(event)
+	local memory = Memory.get_crew_memory()
+	local destination = Common.current_destination()
+	local player = game.players[event.player_index]
+	local entity = event.entity
+	local class = Classes.get_class(event.player_index)
+
+	-- Prevent dull strategy being staying in sea for long time catching as many fish as possible (as there is kind of infinite amount there)
+	-- NOTE: This however doesn't prevent catching fish with inserters, but that shouldn't matter much?
+	local boat_is_at_sea = Boats.is_boat_at_sea()
+	local fish_caught_while_at_sea = -1
+	if boat_is_at_sea and memory.boat and memory.boat.fish_caught_while_at_sea then
+		fish_caught_while_at_sea = memory.boat.fish_caught_while_at_sea
+	end
+
+	if (not boat_is_at_sea) or (boat_is_at_sea and fish_caught_while_at_sea < Balance.maximum_fish_allowed_to_catch_at_sea) then
+		if fish_caught_while_at_sea ~= -1 then
+			memory.boat.fish_caught_while_at_sea = memory.boat.fish_caught_while_at_sea + 1
+		end
+
+		local fish_amount = Balance.base_caught_fish_amount
+		local to_give = {}
+
+		if class == Classes.enum.FISHERMAN then
+			fish_amount = fish_amount + Balance.fisherman_fish_bonus
+			to_give[#to_give + 1] = {name = 'raw-fish', count = fish_amount}
+
+		elseif class == Classes.enum.MASTER_ANGLER then
+			fish_amount = fish_amount + Balance.master_angler_fish_bonus
+			to_give[#to_give + 1] = {name = 'raw-fish', count = fish_amount}
+			to_give[#to_give + 1] = {name = 'coin', count = Balance.master_angler_coin_bonus}
+
+		elseif class == Classes.enum.DREDGER then
+			fish_amount = fish_amount + Balance.dredger_fish_bonus
+			to_give[#to_give + 1] = {name = 'raw-fish', count = fish_amount}
+			to_give[#to_give + 1] = Loot.dredger_loot()[1]
+
+		else
+			to_give[#to_give + 1] = {name = 'raw-fish', count = fish_amount}
+		end
+
+		Common.give(player, to_give, entity.position)
+
+		if destination and destination.dynamic_data and destination.dynamic_data.quest_type and (not destination.dynamic_data.quest_complete) then
+			if destination.dynamic_data.quest_type == Quest.enum.FISH then
+				destination.dynamic_data.quest_progress = destination.dynamic_data.quest_progress + fish_amount
+				Quest.try_resolve_quest()
+			end
+		end
+	else
+		Common.notify_player_error(player, {'pirates.cant_catch_fish'})
+	end
+end
+
+local function player_mined_resource(event)
+	local memory = Memory.get_crew_memory()
+	-- local destination = Common.current_destination()
+	local player = game.players[event.player_index]
+	local entity = event.entity
+	-- local class = Classes.get_class(event.player_index)
+
+	local give = {}
+
+	-- prospector and chief excavator are disabled
+	-- if memory.overworldx > 0 then --no coins on first map, else the optimal strategy is to handmine everything there
+	-- 	if memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.PROSPECTOR then
+	-- 		local a = 3
+	-- 		give[#give + 1] = {name = 'coin', count = a}
+	-- 		memory.playtesting_stats.coins_gained_by_ore = memory.playtesting_stats.coins_gained_by_ore + a
+	-- 		give[#give + 1] = {name = entity.name, count = 6}
+	-- 	elseif memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.CHIEF_EXCAVATOR then
+	-- 		local a = 4
+	-- 		give[#give + 1] = {name = 'coin', count = a}
+	-- 		memory.playtesting_stats.coins_gained_by_ore = memory.playtesting_stats.coins_gained_by_ore + a
+	-- 		give[#give + 1] = {name = entity.name, count = 12}
+	-- 	else
+	-- 		if memory.overworldx > 0 then
+	-- 			local a = 1
+	-- 			give[#give + 1] = {name = 'coin', count = a}
+	-- 			memory.playtesting_stats.coins_gained_by_ore = memory.playtesting_stats.coins_gained_by_ore + a
+	-- 		end
+	-- 		give[#give + 1] = {name = entity.name, count = 2}
+	-- 	end
+	-- else
+	-- 	give[#give + 1] = {name = entity.name, count = 2}
+	-- end
+
+	if memory.overworldx > 0 then --no coins on first map, else the optimal strategy is to handmine everything there
+		local a = 1
+		give[#give + 1] = {name = 'coin', count = a}
+		memory.playtesting_stats.coins_gained_by_ore = memory.playtesting_stats.coins_gained_by_ore + a
+	end
+
+	give[#give + 1] = {name = entity.name, count = 2}
+
+	Common.give(player, give, entity.position)
+end
+
+local function player_mined_rock(event)
+	local memory = Memory.get_crew_memory()
+	local destination = Common.current_destination()
+	local player = game.players[event.player_index]
+	local entity = event.entity
+	-- local class = Classes.get_class(event.player_index)
+
+	local available = destination.dynamic_data.rock_material_remaining
+	-- local starting = destination.static_params.starting_rock_material
+
+	if not (available and destination.type == Surfaces.enum.ISLAND) then return end
+
+	if destination.subtype == IslandEnum.enum.MAZE then
+		if Math.random(1, 35) == 1 then
+			tick_tack_trap(memory.enemy_force_name, entity.surface, entity.position)
+		end
+	end
+
+	if destination.subtype == IslandEnum.enum.CAVE then
+		Ores.try_give_ore(player, entity.position, entity.name)
+
+		if Math.random(1, 35) == 1 then
+			tick_tack_trap(memory.enemy_force_name, entity.surface, entity.position)
+
+		elseif Math.random(1, 20) == 1 then
+			entity.surface.create_entity({name = 'compilatron', position = entity.position, force = memory.force})
+
+			if destination and destination.dynamic_data and destination.dynamic_data.quest_type and (not destination.dynamic_data.quest_complete) then
+				if destination.dynamic_data.quest_type == Quest.enum.COMPILATRON then
+					destination.dynamic_data.quest_progress = destination.dynamic_data.quest_progress + 1
+					Quest.try_resolve_quest()
+				end
+			end
+
+		elseif Math.random(1, 10) == 1 then
+			if Math.random(1, 4) == 1 then
+				entity.surface.create_entity{name = Common.get_random_worm_type(memory.evolution_factor), position = entity.position, force = memory.enemy_force_name}
+			else
+				local biter = entity.surface.create_entity{name = Common.get_random_unit_type(memory.evolution_factor), position = entity.position, force = memory.enemy_force_name}
+				Common.try_make_biter_elite(biter)
+			end
+		end
+
+	else
+		local c = event.buffer.get_contents()
+		table.sort(c, function(a,b) return a.name < b.name end)
+		local c2 = {}
+
+		if memory.overworldx >= 0 then --used to be only later levels
+			if entity.name == 'rock-huge' then
+				local a = 55
+				c2[#c2 + 1] = {name = 'coin', count = a, color = CoreData.colors.coin}
+				memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
+				if Math.random(1, 35) == 1 then
+					c2[#c2 + 1] = {name = 'crude-oil-barrel', count = 1, color = CoreData.colors.oil}
+				end
+			else
+				local a = 35
+				c2[#c2 + 1] = {name = 'coin', count = a, color = CoreData.colors.coin}
+				memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
+				if Math.random(1, 35*3) == 1 then
+					c2[#c2 + 1] = {name = 'crude-oil-barrel', count = 1, color = CoreData.colors.oil}
+				end
+			end
+		end
+
+		for k, v in pairs(c) do
+			if k == 'coal' and #c2 <= 1 then --if oil, then no coal
+				c2[#c2 + 1] = {name = k, count = Math.ceil(v * Balance.island_richness_avg_multiplier()), color = CoreData.colors.coal}
+			elseif k == 'stone' then
+				c2[#c2 + 1] = {name = k, count = Math.ceil(v * Balance.island_richness_avg_multiplier()), color = CoreData.colors.stone}
+			end
+		end
+		Common.give(player, c2, entity.position)
+
+		destination.dynamic_data.rock_material_remaining = available
+
+		if Surfaces.get_scope(destination).break_rock then
+			destination.dynamic_data.ore_spawn_points_to_avoid = destination.dynamic_data.ore_spawn_points_to_avoid or {}
+			local points_to_avoid = destination.dynamic_data.ore_spawn_points_to_avoid
+			local can_place_ores = true
+
+			-- Sometimes there can be very little amount of rocks here, so it probably isn't bad idea to spawn ore on top of another
+			if destination.subtype ~= IslandEnum.enum.WALKWAYS then
+				for _, pos in ipairs(points_to_avoid) do
+					if Math.distance(pos, entity.position) < Balance.min_ore_spawn_distance then
+						can_place_ores = false
+						break
+					end
+				end
+			end
+
+			if can_place_ores then
+				local placed = Surfaces.get_scope(destination).break_rock(entity.surface, entity.position, entity.name)
+				if placed then
+					points_to_avoid[#points_to_avoid + 1] = {x = entity.position.x, y = entity.position.y}
+				end
+			end
+		end
+	end
+end
+
 local function event_on_player_mined_entity(event)
+	if not event.buffer then return end
 	if not event.player_index then return end
 
 	local player = game.players[event.player_index]
@@ -804,269 +1072,26 @@ local function event_on_player_mined_entity(event)
 
 	local crew_id = Common.get_id_from_force_name(player.force.name)
 	Memory.set_working_id(crew_id)
-	local memory = Memory.get_crew_memory()
-	local destination = Common.current_destination()
 
 	if player.surface.name == 'gulag' then
 		event.buffer.clear()
 		return
 	end
 
-	local class = Classes.get_class(event.player_index)
-
     if entity.type == 'tree' then
-        if not event.buffer then return end
-		local available = destination.dynamic_data.wood_remaining
-		local starting = destination.static_params.starting_wood
-
-		if available and destination.type == Surfaces.enum.ISLAND then
-
-			if destination.subtype == IslandEnum.enum.MAZE then
-				if Math.random(1, 38) == 1 then
-					tick_tack_trap(memory.enemy_force_name, entity.surface, entity.position)
-					return
-				end
-			end
-
-			local give = {}
-
-			local baseamount = 4
-			--minimum 1 wood
-			local amount = Math.clamp(1, Math.max(1, Math.ceil(available)), Math.ceil(baseamount * Balance.island_richness_avg_multiplier() * available/starting))
-
-			destination.dynamic_data.wood_remaining = destination.dynamic_data.wood_remaining - amount
-
-			give[#give + 1] = {name = 'wood', count = amount}
-
-			if class == Classes.enum.LUMBERJACK then
-				Classes.lumberjack_bonus_items(give)
-			else
-				if Math.random(Balance.every_nth_tree_gives_coins) == 1 then --tuned
-					local a = 5
-					give[#give + 1] = {name = 'coin', count = a}
-					memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
-				end
-			end
-
-			Common.give(player, give, entity.position)
-
-			if destination.subtype ~= IslandEnum.enum.FIRST then
-				if Math.random(1024) == 1 then
-					local placed = Ores.try_ore_spawn(entity.surface, entity.position, entity.name, 0, true)
-					if placed then
-						Common.notify_player_expected(player, {'pirates.ore_discovered'})
-					end
-				elseif Math.random(2048) == 1 then
-					local e = entity.surface.create_entity{name = 'wooden-chest', position = entity.position, force = memory.ancient_friendly_force_name}
-					if e and e.valid then
-						e.minable = false
-						e.rotatable = false
-						e.destructible = false
-
-						local inv = e.get_inventory(defines.inventory.chest)
-						local loot = Loot.wooden_chest_loot()
-						for i = 1, #loot do
-							local l = loot[i]
-							inv.insert(l)
-						end
-
-						Common.notify_player_expected(player, {'pirates.chest_discovered'})
-					end
-				end
-			end
-		end
-		event.buffer.clear()
+        player_mined_tree(event)
 
 	elseif entity.type == 'fish' then
-        if not event.buffer then return end
-
-		-- Prevent dull strategy being staying in sea for long time catching as many fish as possible (as there is kind of infinite amount there)
-		-- NOTE: This however doesn't prevent catching fish with inserters, but that shouldn't matter much?
-		local boat_is_at_sea = Boats.is_boat_at_sea()
-		local fish_caught_while_at_sea = -1
-		if boat_is_at_sea and memory.boat and memory.boat.fish_caught_while_at_sea then
-			fish_caught_while_at_sea = memory.boat.fish_caught_while_at_sea
-		end
-
-		if (not boat_is_at_sea) or (boat_is_at_sea and fish_caught_while_at_sea < Balance.maximum_fish_allowed_to_catch_at_sea) then
-			if fish_caught_while_at_sea ~= -1 then
-				memory.boat.fish_caught_while_at_sea = memory.boat.fish_caught_while_at_sea + 1
-			end
-
-			local fish_amount = Balance.base_caught_fish_amount
-			local to_give = {}
-
-			if class == Classes.enum.FISHERMAN then
-				fish_amount = fish_amount + Balance.fisherman_fish_bonus
-				to_give[#to_give + 1] = {name = 'raw-fish', count = fish_amount}
-
-			elseif class == Classes.enum.MASTER_ANGLER then
-				fish_amount = fish_amount + Balance.master_angler_fish_bonus
-				to_give[#to_give + 1] = {name = 'raw-fish', count = fish_amount}
-				to_give[#to_give + 1] = {name = 'coin', count = Balance.master_angler_coin_bonus}
-
-			elseif class == Classes.enum.DREDGER then
-				fish_amount = fish_amount + Balance.dredger_fish_bonus
-				to_give[#to_give + 1] = {name = 'raw-fish', count = fish_amount}
-				to_give[#to_give + 1] = Loot.dredger_loot()[1]
-
-			else
-				to_give[#to_give + 1] = {name = 'raw-fish', count = fish_amount}
-			end
-
-			Common.give(player, to_give, entity.position)
-
-			if destination and destination.dynamic_data and destination.dynamic_data.quest_type and (not destination.dynamic_data.quest_complete) then
-				if destination.dynamic_data.quest_type == Quest.enum.FISH then
-					destination.dynamic_data.quest_progress = destination.dynamic_data.quest_progress + fish_amount
-					Quest.try_resolve_quest()
-				end
-			end
-		else
-			Common.notify_player_error(player, {'pirates.cant_catch_fish'})
-		end
-
-		event.buffer.clear()
+        player_mined_fish(event)
 
 	elseif entity.name == 'coal' or entity.name == 'stone' or entity.name == 'copper-ore' or entity.name == 'iron-ore' then
-        if not event.buffer then return end
-
-		local give = {}
-
-		-- prospector and chief excavator are disabled
-		-- if memory.overworldx > 0 then --no coins on first map, else the optimal strategy is to handmine everything there
-		-- 	if memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.PROSPECTOR then
-		-- 		local a = 3
-		-- 		give[#give + 1] = {name = 'coin', count = a}
-		-- 		memory.playtesting_stats.coins_gained_by_ore = memory.playtesting_stats.coins_gained_by_ore + a
-		-- 		give[#give + 1] = {name = entity.name, count = 6}
-		-- 	elseif memory.classes_table and memory.classes_table[event.player_index] and memory.classes_table[event.player_index] == Classes.enum.CHIEF_EXCAVATOR then
-		-- 		local a = 4
-		-- 		give[#give + 1] = {name = 'coin', count = a}
-		-- 		memory.playtesting_stats.coins_gained_by_ore = memory.playtesting_stats.coins_gained_by_ore + a
-		-- 		give[#give + 1] = {name = entity.name, count = 12}
-		-- 	else
-		-- 		if memory.overworldx > 0 then
-		-- 			local a = 1
-		-- 			give[#give + 1] = {name = 'coin', count = a}
-		-- 			memory.playtesting_stats.coins_gained_by_ore = memory.playtesting_stats.coins_gained_by_ore + a
-		-- 		end
-		-- 		give[#give + 1] = {name = entity.name, count = 2}
-		-- 	end
-		-- else
-		-- 	give[#give + 1] = {name = entity.name, count = 2}
-		-- end
-
-		if memory.overworldx > 0 then --no coins on first map, else the optimal strategy is to handmine everything there
-			local a = 1
-			give[#give + 1] = {name = 'coin', count = a}
-			memory.playtesting_stats.coins_gained_by_ore = memory.playtesting_stats.coins_gained_by_ore + a
-		end
-
-		give[#give + 1] = {name = entity.name, count = 2}
-
-		Common.give(player, give, entity.position)
-		event.buffer.clear()
+        player_mined_resource(event)
 
 	elseif entity.name == 'rock-huge' or entity.name == 'rock-big' or entity.name == 'sand-rock-big' then
-        if not event.buffer then return end
-
-		local available = destination.dynamic_data.rock_material_remaining
-		-- local starting = destination.static_params.starting_rock_material
-
-		if available and destination.type == Surfaces.enum.ISLAND then
-			if destination.subtype == IslandEnum.enum.MAZE then
-				if Math.random(1, 35) == 1 then
-					tick_tack_trap(memory.enemy_force_name, entity.surface, entity.position)
-				end
-			end
-
-			if destination.subtype == IslandEnum.enum.CAVE then
-				Ores.try_give_ore(player, entity.position, entity.name)
-
-				if Math.random(1, 35) == 1 then
-					tick_tack_trap(memory.enemy_force_name, entity.surface, entity.position)
-
-				elseif Math.random(1, 20) == 1 then
-					entity.surface.create_entity({name = 'compilatron', position = entity.position, force = memory.force})
-
-					if destination and destination.dynamic_data and destination.dynamic_data.quest_type and (not destination.dynamic_data.quest_complete) then
-						if destination.dynamic_data.quest_type == Quest.enum.COMPILATRON then
-							destination.dynamic_data.quest_progress = destination.dynamic_data.quest_progress + 1
-							Quest.try_resolve_quest()
-						end
-					end
-
-				elseif Math.random(1, 10) == 1 then
-					if Math.random(1, 4) == 1 then
-						entity.surface.create_entity{name = Common.get_random_worm_type(memory.evolution_factor), position = entity.position, force = memory.enemy_force_name}
-					else
-						local biter = entity.surface.create_entity{name = Common.get_random_unit_type(memory.evolution_factor), position = entity.position, force = memory.enemy_force_name}
-						Common.try_make_biter_elite(biter)
-					end
-				end
-
-			else
-				local c = event.buffer.get_contents()
-				table.sort(c, function(a,b) return a.name < b.name end)
-				local c2 = {}
-
-				if memory.overworldx >= 0 then --used to be only later levels
-					if entity.name == 'rock-huge' then
-						local a = 55
-						c2[#c2 + 1] = {name = 'coin', count = a, color = CoreData.colors.coin}
-						memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
-						if Math.random(1, 35) == 1 then
-							c2[#c2 + 1] = {name = 'crude-oil-barrel', count = 1, color = CoreData.colors.oil}
-						end
-					else
-						local a = 35
-						c2[#c2 + 1] = {name = 'coin', count = a, color = CoreData.colors.coin}
-						memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
-						if Math.random(1, 35*3) == 1 then
-							c2[#c2 + 1] = {name = 'crude-oil-barrel', count = 1, color = CoreData.colors.oil}
-						end
-					end
-				end
-
-				for k, v in pairs(c) do
-					if k == 'coal' and #c2 <= 1 then --if oil, then no coal
-						c2[#c2 + 1] = {name = k, count = Math.ceil(v * Balance.island_richness_avg_multiplier()), color = CoreData.colors.coal}
-					elseif k == 'stone' then
-						c2[#c2 + 1] = {name = k, count = Math.ceil(v * Balance.island_richness_avg_multiplier()), color = CoreData.colors.stone}
-					end
-				end
-				Common.give(player, c2, entity.position)
-
-				destination.dynamic_data.rock_material_remaining = available
-
-				if Surfaces.get_scope(destination).break_rock then
-					destination.dynamic_data.ore_spawn_points_to_avoid = destination.dynamic_data.ore_spawn_points_to_avoid or {}
-					local points_to_avoid = destination.dynamic_data.ore_spawn_points_to_avoid
-					local can_place_ores = true
-
-					-- Sometimes there can be very little amount of rocks here, so it probably isn't bad idea to spawn ore on top of another
-					if destination.subtype ~= IslandEnum.enum.WALKWAYS then
-						for _, pos in ipairs(points_to_avoid) do
-							if Math.distance(pos, entity.position) < Balance.min_ore_spawn_distance then
-								can_place_ores = false
-								break
-							end
-						end
-					end
-
-					if can_place_ores then
-						local placed = Surfaces.get_scope(destination).break_rock(entity.surface, entity.position, entity.name)
-						if placed then
-							points_to_avoid[#points_to_avoid + 1] = {x = entity.position.x, y = entity.position.y}
-						end
-					end
-				end
-			end
-		end
-
-		event.buffer.clear()
+        player_mined_rock(event)
 	end
+
+	event.buffer.clear()
 end
 
 local function shred_nearby_simple_entities(entity)
@@ -1236,7 +1261,7 @@ local function base_kill_rewards(event)
 end
 
 local function spawner_died(event)
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 
 	if (destination and destination.type and destination.type == Surfaces.enum.ISLAND) then

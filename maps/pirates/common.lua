@@ -9,7 +9,7 @@ local CoreData = require 'maps.pirates.coredata'
 local Memory = require 'maps.pirates.memory'
 local _inspect = require 'utils.inspect'.inspect
 
-local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
+-- local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 
 local LootRaffle = require 'functions.loot_raffle'
 -- local simplex_noise = require 'utils.simplex_noise'.d2
@@ -1817,7 +1817,7 @@ function Public.try_make_biter_elite(entity, spawner)
 	end
 
 	if make_biter_elite then
-		local health_multiplier = 1
+		local health_multiplier
 
 		if difficulty_index == 3 then
 			health_multiplier = 5

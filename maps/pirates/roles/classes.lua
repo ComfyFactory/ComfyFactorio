@@ -7,9 +7,9 @@ local Memory = require 'maps.pirates.memory'
 local Math = require 'maps.pirates.math'
 local Common = require 'maps.pirates.common'
 local Utils = require 'maps.pirates.utils_local'
-local CoreData = require 'maps.pirates.coredata'
+-- local CoreData = require 'maps.pirates.coredata'
 local SurfacesCommon = require 'maps.pirates.surfaces.common'
-local Boats = require 'maps.pirates.structures.boats.boats'
+-- local Boats = require 'maps.pirates.structures.boats.boats'
 -- local Server = require 'utils.server'
 
 local Public = {}
