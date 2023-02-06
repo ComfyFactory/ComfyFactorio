@@ -245,6 +245,7 @@ end
 function Public.captain_warn_afk(tickinterval)
 	local memory = Memory.get_crew_memory()
 	if memory.game_lost then return end
+	if memory.run_is_protected then return end
 
 	if memory.playerindex_captain then
 		for _, player in pairs(game.connected_players) do
