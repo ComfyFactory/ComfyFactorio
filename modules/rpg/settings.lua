@@ -50,18 +50,21 @@ end
 local function create_custom_label_element(frame, sprite, localised_string, value, tooltip)
     local t = frame.add({type = 'flow'})
     t.add({type = 'label', caption = '[' .. sprite .. ']'})
+
     local heading = t.add({type = 'label', caption = localised_string})
+    heading.tooltip = tooltip or ''
     heading.style.font = 'default-listbox'
     local subheading = t.add({type = 'label', caption = value})
     subheading.style.font = 'default-listbox'
-
-    t.tooltip = tooltip or ''
 
     return subheading
 end
 
 function Public.update_spell_gui_indicator(player)
     local rpg_t = Public.get_value_from_player(player.index)
+    if not rpg_t then
+        return
+    end
     local main_frame = player.gui.screen[spell_gui_frame_name]
     if not main_frame then
         return
@@ -72,6 +75,9 @@ end
 
 function Public.update_spell_gui(player, spell_index)
     local rpg_t = Public.get_value_from_player(player.index)
+    if not rpg_t then
+        return
+    end
     local main_frame = player.gui.screen[spell_gui_frame_name]
     if not main_frame then
         return
@@ -132,6 +138,9 @@ end
 
 function Public.spell_gui_settings(player)
     local rpg_t = Public.get_value_from_player(player.index)
+    if not rpg_t then
+        return
+    end
     local spells, names = Public.get_all_spells_filtered(rpg_t)
     local main_frame = player.gui.screen[spell_gui_frame_name]
     if not main_frame or not main_frame.valid then
@@ -195,9 +204,18 @@ end
 function Public.extra_settings(player)
     local rpg_extra = Public.get('rpg_extra')
     local rpg_t = Public.get_value_from_player(player.index)
+    if not rpg_t then
+        return
+    end
     local trusted = Session.get_trusted_table()
 
     local main_frame, inside_table = Gui.add_main_frame_with_toolbar(player, 'screen', settings_frame_name, settings_tooltip_name, nil, 'RPG Settings', true)
+    if not main_frame then
+        return
+    end
+    if not inside_table then
+        return
+    end
 
     local main_frame_style = main_frame.style
     main_frame_style.width = 500
@@ -698,6 +716,12 @@ function Public.settings_tooltip(player)
     local rpg_extra = Public.get('rpg_extra')
 
     local main_frame, inside_table = Gui.add_main_frame_with_toolbar(player, 'center', settings_tooltip_frame, nil, close_settings_tooltip_frame, 'Spell info')
+    if not main_frame then
+        return
+    end
+    if not inside_table then
+        return
+    end
 
     local inside_table_style = inside_table.style
     inside_table_style.width = 530

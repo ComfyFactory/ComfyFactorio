@@ -635,6 +635,8 @@ Gui.on_click(
                 local spell_name = items[conjure_gui_input.selected_index]
                 if spell_name and spell_name[1] then
                     rpg_t.dropdown_select_name = spell_name[1]
+                elseif spell_name then
+                    rpg_t.dropdown_select_name = spell_name
                 end
                 rpg_t.dropdown_select_index = conjure_gui_input.selected_index
             end
@@ -644,6 +646,8 @@ Gui.on_click(
 
                 if spell_name and spell_name[1] then
                     rpg_t.dropdown_select_name_1 = spell_name[1]
+                elseif spell_name then
+                    rpg_t.dropdown_select_name_1 = spell_name
                 end
                 rpg_t.dropdown_select_index_1 = spell_gui_input1.selected_index
             end
@@ -653,6 +657,8 @@ Gui.on_click(
 
                 if spell_name and spell_name[1] then
                     rpg_t.dropdown_select_name_2 = spell_name[1]
+                elseif spell_name then
+                    rpg_t.dropdown_select_name_2 = spell_name
                 end
                 rpg_t.dropdown_select_index_2 = spell_gui_input2.selected_index
             end
@@ -661,6 +667,8 @@ Gui.on_click(
                 local spell_name = items[spell_gui_input3.selected_index]
                 if spell_name and spell_name[1] then
                     rpg_t.dropdown_select_name_3 = spell_name[1]
+                elseif spell_name then
+                    rpg_t.dropdown_select_name_3 = spell_name
                 end
                 rpg_t.dropdown_select_index_3 = spell_gui_input3.selected_index
             end

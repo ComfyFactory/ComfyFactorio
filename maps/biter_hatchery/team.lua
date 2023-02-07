@@ -119,8 +119,7 @@ function Public.spawn_players(hatchery)
     if game.tick % 90 ~= 0 then
         return
     end
-    game.print('spawning characters', {150, 150, 150})
-    local surface = game.surfaces.nauvis
+    -- game.print('spawning characters', {150, 150, 150})
     for _, player in pairs(game.connected_players) do
         if player.force.name ~= 'spectator' then
             Public.assign_force_to_player(player)

@@ -39,6 +39,7 @@ local Color = require 'utils.color_presets'
 local Server = require 'utils.server'
 local Where = require 'utils.commands.where'
 local Inventory = require 'modules.show_inventory'
+local JailData = require 'utils.datastore.jail_data'
 
 local function spairs(t)
     local keys = {}
@@ -168,6 +169,7 @@ local function update_score()
 end
 
 local function on_init()
+    JailData.normies_can_jail(false)
     Autostash.insert_into_furnace(true)
     Autostash.insert_to_neutral_chests(true)
     Autostash.insert_into_wagon(true)

@@ -197,6 +197,24 @@ local functions = {
             get_actor(event, '[Blueprints]', 'has disabled blueprints!')
         end
     end,
+    ['vacant_toggle'] = function(event)
+        local vacant = is_loaded('modules.clear_vacant_players')
+        if not vacant then
+            log("Error: toggle related to clear_vacant_players was activated, but the module does not seem to be loaded.")
+            return
+        end
+
+        local is_toggled, message
+        if event.element.switch_state == 'left' then
+            is_toggled = true
+            message = 'has enabled Clear Vacant Players!'
+        else
+            is_toggled = false
+            message = 'has disabled Clear Vacant Players!'
+        end
+        vacant.set_enabled(is_toggled)
+        get_actor(event, '[Clear Vacant Players]', message, true)
+    end,
     ['spaghett_toggle'] = function(event)
         if event.element.switch_state == 'left' then
             this.gui_config.spaghett.enabled = true
@@ -587,6 +605,17 @@ local function build_config_gui(data)
         add_switch(scroll_pane, switch_state, 'blueprint_toggle', 'Blueprint Library', 'Toggles the usage of blueprint strings and the library.')
 
         scroll_pane.add({type = 'line'})
+
+        local vacant = is_loaded('modules.clear_vacant_players')
+        if vacant then
+            switch_state = 'right'
+            if vacant.is_enabled() then
+                switch_state = 'left'
+            end
+            add_switch(scroll_pane, switch_state, 'vacant_toggle', 'Clear Vacant Players', 'Toggles offline players dropping their inventories on spawn.')
+
+            scroll_pane.add({type = 'line'})
+        end
 
         switch_state = 'right'
         if Gui.get_disable_clear_invalid_data() then

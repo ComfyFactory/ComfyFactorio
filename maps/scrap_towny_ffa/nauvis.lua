@@ -140,9 +140,9 @@ function Public.initialize()
         return
     end
 
-    if math.random(1, 32) == 1 then
-        this.required_time_to_win = 168
-        this.required_time_to_win_in_ticks = 36288000
+    if this.shuffle_random_victory_time and math.random(1, 32) == 1 then
+        this.required_time_to_win = 48
+        this.required_time_to_win_in_ticks = 10368000
     end
 
     surface.map_gen_settings = mgs

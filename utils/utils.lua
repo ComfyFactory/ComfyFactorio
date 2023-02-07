@@ -117,11 +117,19 @@ Module.format_time = function(ticks)
     return table.concat(result, ' ')
 end
 
-function Module.inside(pos, area)
+--- Compares positions
+---@param position table
+---@param area table
+---@return boolean
+function Module.inside(position, area)
+    if not position then
+        return false
+    end
+
     local lt = area.left_top
     local rb = area.right_bottom
 
-    return pos.x >= lt.x and pos.y >= lt.y and pos.x <= rb.x and pos.y <= rb.y
+    return position.x >= lt.x and position.y >= lt.y and position.x <= rb.x and position.y <= rb.y
 end
 
 return Module

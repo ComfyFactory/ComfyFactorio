@@ -102,6 +102,9 @@ require 'utils.freeplay'
 --require 'maps.mountain_fortress_v2.main'
 --require 'maps.mountain_fortress'
 
+--![[Tower defense system]]--
+--require 'maps.tower_defense.main'
+
 --![[Defend the market against waves of biters]]--
 --require 'maps.pidgeotto.main'
 --require 'maps.fish_defender_v2.main'
@@ -113,7 +116,7 @@ require 'utils.freeplay'
 --require 'maps.chronosphere.main'
 
 --![[Adventure as a crew of pirates]]--
--- require 'maps.pirates.main'
+--require 'maps.pirates.main'
 
 --![[Launch rockets in increasingly harder getting worlds.]]--
 --require 'maps.journey.main'
