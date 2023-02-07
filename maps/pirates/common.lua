@@ -909,6 +909,19 @@ function Public.crew_get_nonafk_crew_members()
 	return playerlist
 end
 
+function Public.crew_get_officers()
+	local officers = {}
+
+	local members = Public.crew_get_crew_members()
+	for _, player in pairs(members) do
+		if Public.is_officer(player.index) then
+			officers[#officers + 1] = player
+		end
+	end
+
+	return officers
+end
+
 
 function Public.destroy_decoratives_in_area(surface, area, offset)
 	local area2 = {{area[1][1] + offset.x, area[1][2] + offset.y}, {area[2][1] + offset.x, area[2][2] + offset.y}}
@@ -1809,10 +1822,10 @@ function Public.try_make_biter_elite(entity, spawner)
 
 	local make_biter_elite = false
 	if from_elite_spawner then
-		if Math.random(1, 16) == 1 then
+		if Math.random(1, 8) == 1 then
 			make_biter_elite = true
 		end
-	elseif Math.random(1, 32) == 1 then
+	elseif Math.random(1, 16) == 1 then
 		make_biter_elite = true
 	end
 

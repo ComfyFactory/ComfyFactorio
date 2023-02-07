@@ -81,7 +81,7 @@ Public.doctor_heal_radius = 20
 Public.doctor_heal_percentage_amount = 0.15
 Public.shaman_energy_required_per_summon = 1000000
 Public.shaman_max_charge = 30000000
-Public.shaman_summoned_biter_time_to_live = 60 * 5 -- in seconds
+Public.shaman_summoned_biter_time_to_live = 60 * 2 -- in seconds
 
 Public.class_cycle_count = 5 -- How many classes should be purchased to have a chance to buy the same class again
 

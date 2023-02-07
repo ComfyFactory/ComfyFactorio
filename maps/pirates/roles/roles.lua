@@ -213,7 +213,7 @@ function Public.player_left_so_redestribute_roles(player)
 	local memory = Memory.get_crew_memory()
 
 	if Common.is_captain(player) then
-		if memory.run_is_protected then
+		if memory.run_is_protected and #Common.crew_get_officers() == 0 then
 			if memory.crewplayerindices and #memory.crewplayerindices > 0 then
 				Common.parrot_speak(memory.force, {'pirates.parrot_captain_left_protected_run'})
 				Common.parrot_speak(memory.force, {'pirates.parrot_create_new_crew_tip'})
@@ -339,7 +339,7 @@ function Public.afk_player_tick(player)
 
 	local non_afk_members = Common.crew_get_nonafk_crew_members()
 
-	if Common.is_captain(player) and (not memory.run_is_protected) and #non_afk_members >= 1 then
+	if Common.is_captain(player) and #non_afk_members >= 1 and ((not memory.run_is_protected) or #Common.crew_get_officers() > 0)  then
 		if #non_afk_members == 1 then --don't need to bounce it around
 			Public.make_captain(non_afk_members[1])
 		else
