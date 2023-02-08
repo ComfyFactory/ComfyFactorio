@@ -1080,18 +1080,20 @@ local function event_on_player_mined_entity(event)
 
     if entity.type == 'tree' then
         player_mined_tree(event)
+		event.buffer.clear()
 
 	elseif entity.type == 'fish' then
         player_mined_fish(event)
+		event.buffer.clear()
 
 	elseif entity.name == 'coal' or entity.name == 'stone' or entity.name == 'copper-ore' or entity.name == 'iron-ore' then
         player_mined_resource(event)
+		event.buffer.clear()
 
 	elseif entity.name == 'rock-huge' or entity.name == 'rock-big' or entity.name == 'sand-rock-big' then
         player_mined_rock(event)
+		event.buffer.clear()
 	end
-
-	event.buffer.clear()
 end
 
 local function shred_nearby_simple_entities(entity)
@@ -1587,7 +1589,7 @@ local function event_on_pre_player_left_game(event)
 		end
 	end
 
-	if not crew_id then
+	if not Common.is_id_valid(crew_id) then
 		if player.character and player.character.valid then
 			player.character.destroy()
 		end

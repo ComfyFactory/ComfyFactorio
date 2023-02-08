@@ -367,12 +367,12 @@ local function class_on_player_used_capsule(event)
 	if not event.item then return end
 	if event.item.name ~= 'raw-fish' then return end
 
-	local class = Public.get_class(player.index)
-	if not class then return end
-
 	local crew_id = Common.get_id_from_force_name(player.force.name)
 	Memory.set_working_id(crew_id)
 	local memory = Memory.get_crew_memory()
+
+	local class = Public.get_class(player.index)
+	if not class then return end
 
 	local global_memory = Memory.get_global_memory()
 	global_memory.last_players_health[event.player_index] = player.character.health
@@ -454,8 +454,6 @@ local function class_on_player_used_capsule(event)
 			if Math.distance(player.position, member.position) <= Balance.medic_heal_radius then
 				if member.character then
 					local amount = Math.ceil(member.character.prototype.max_health * Balance.medic_heal_percentage_amount)
-					game.print('amount: ' .. tostring(amount))
-					game.print('healing')
 					member.character.health = member.character.health + amount
 				end
 			end
@@ -465,8 +463,6 @@ local function class_on_player_used_capsule(event)
 			if Math.distance(player.position, member.position) <= Balance.doctor_heal_radius then
 				if member.character then
 					local amount = Math.ceil(member.character.prototype.max_health * Balance.doctor_heal_percentage_amount)
-					game.print('amount: ' .. tostring(amount))
-					game.print('healing')
 					member.character.health = member.character.health + amount
 				end
 			end
