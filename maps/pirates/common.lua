@@ -1610,7 +1610,6 @@ function Public.get_item_blacklist(tier)
 	-- blacklist['spidertron'] = true
 	blacklist['discharge-defense-remote'] = true
 	blacklist['discharge-defense-equipment'] = true
-	blacklist['artillery-targeting-remote'] = true
 	blacklist['loader'] = true
 	blacklist['fast-loader'] = true
     blacklist['express-loader'] = true

@@ -179,7 +179,7 @@ function Public.destination_on_collide(destination)
 		elseif destination.subtype == IslandEnum.enum.CAVE then
 			Common.parrot_speak(memory.force, {'pirates.parrot_cave_tip_1'})
 
-		else
+		elseif memory.overworldx >= Balance.biter_boats_start_arrive_x then
 			local scheduled_raft_raids = {}
 			-- temporarily placed this back here, as moving it to shorehit broke things:
 			-- local playercount = Common.activecrewcount()
@@ -207,63 +207,60 @@ function Public.destination_on_collide(destination)
 			end
 
 
-			-- Currently biter boats don't spawn properly for cave island, so disabling it for now
-			if destination.subtype ~= IslandEnum.enum.CAVE then
-				-- if memory.overworldx > 200 then
-				-- 	scheduled_raft_raids = {}
-				-- 	local times = {600, 360, 215, 210, 120, 30, 10, 5}
-				-- 	for i = 1, #times do
-				-- 		local t = times[i]
-				-- 		if Math.random(6) == 1 and #scheduled_raft_raids < 6 then
-				-- 			scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_evo = max_evo}
-				-- 			-- scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_bonus_evolution = 0.52}
-				-- 		end
-				-- 	end
-				-- elseif memory.overworldx == 200 then
-				-- 	local times
-				-- 	if playercount <= 2 then
-				-- 		times = {1, 5, 10, 15, 20}
-				-- 	elseif playercount <= 8 then
-				-- 		times = {1, 5, 10, 15, 20, 25}
-				-- 	elseif playercount <= 15 then
-				-- 		times = {1, 5, 10, 15, 20, 25, 30}
-				-- 	elseif playercount <= 21 then
-				-- 		times = {1, 5, 10, 15, 20, 25, 30, 35}
-				-- 	else
-				-- 		times = {1, 5, 10, 15, 20, 25, 30, 35, 40}
-				-- 	end
-				-- 	scheduled_raft_raids = {}
-				-- 	for _, t in pairs(times) do
-				-- 		-- scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_bonus_evolution = 0.62}
-				-- 		scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_evo = max_evo}
-				-- 	end
-				-- end
+			-- if memory.overworldx > 200 then
+			-- 	scheduled_raft_raids = {}
+			-- 	local times = {600, 360, 215, 210, 120, 30, 10, 5}
+			-- 	for i = 1, #times do
+			-- 		local t = times[i]
+			-- 		if Math.random(6) == 1 and #scheduled_raft_raids < 6 then
+			-- 			scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_evo = max_evo}
+			-- 			-- scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_bonus_evolution = 0.52}
+			-- 		end
+			-- 	end
+			-- elseif memory.overworldx == 200 then
+			-- 	local times
+			-- 	if playercount <= 2 then
+			-- 		times = {1, 5, 10, 15, 20}
+			-- 	elseif playercount <= 8 then
+			-- 		times = {1, 5, 10, 15, 20, 25}
+			-- 	elseif playercount <= 15 then
+			-- 		times = {1, 5, 10, 15, 20, 25, 30}
+			-- 	elseif playercount <= 21 then
+			-- 		times = {1, 5, 10, 15, 20, 25, 30, 35}
+			-- 	else
+			-- 		times = {1, 5, 10, 15, 20, 25, 30, 35, 40}
+			-- 	end
+			-- 	scheduled_raft_raids = {}
+			-- 	for _, t in pairs(times) do
+			-- 		-- scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_bonus_evolution = 0.62}
+			-- 		scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = t, max_evo = max_evo}
+			-- 	end
+			-- end
 
-				-- NOTE: No need to scale boat count as boat spawner health already scales
-				local max_time = Balance.max_time_on_island(destination.subtype)
-				local boat_count = Math.floor(max_time / Balance.biter_boat_average_arrival_rate) - 2 -- avoid spawning biter boats at very last seconds
+			local max_time = Balance.max_time_on_island(destination.subtype)
+			local arrival_rate = Balance.biter_boat_average_arrival_rate()
+			local boat_count = Math.floor(max_time / arrival_rate) - 2 -- avoid spawning biter boats at very last seconds
 
-				for i = 1, boat_count do
-					local spawn_time = Math.random((i-1) * Balance.biter_boat_average_arrival_rate, (i+1) * Balance.biter_boat_average_arrival_rate)
-					spawn_time = spawn_time + 5
+			for i = 1, boat_count do
+				local spawn_time = Math.random((i-1) * arrival_rate, (i+1) * arrival_rate)
+				spawn_time = spawn_time + 5
 
-					if memory.overworldx == 200 then
-						if i == 1 then
-							spawn_time = 5
-						elseif i == 2 then
-							spawn_time = 15
-						end
+				if memory.overworldx == Balance.biter_boats_start_arrive_x then
+					if i == 1 then
+						spawn_time = 5
+					elseif i == 2 then
+						spawn_time = 15
 					end
-
-					scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = spawn_time, max_evo = max_evo}
 				end
 
-				destination.static_params.scheduled_raft_raids = scheduled_raft_raids
+				scheduled_raft_raids[#scheduled_raft_raids + 1] = {timeinseconds = spawn_time, max_evo = max_evo}
 			end
+
+			destination.static_params.scheduled_raft_raids = scheduled_raft_raids
 		end
 	end
 
-	if memory.overworldx == 40*5 then
+	if memory.overworldx == Balance.biter_boats_start_arrive_x then
 		Common.parrot_speak(memory.force, {'pirates.parrot_boats_warning'})
 	elseif memory.overworldx == Balance.need_resources_to_undock_x then
 		Common.parrot_speak(memory.force, {'pirates.parrot_need_resources_to_undock_warning'})

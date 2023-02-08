@@ -91,7 +91,8 @@ Public.prevent_waves_from_spawning_in_cave_timer_length = 10 -- in seconds
 
 Public.min_ore_spawn_distance = 10
 
-Public.biter_boat_average_arrival_rate = 8*60 -- in seconds
+Public.biter_boats_start_arrive_x = 40 * 5
+Public.need_resources_to_undock_x = 40 * 20
 
 function Public.starting_boatEEIpower_production_MW()
 	-- return 3 * Math.sloped(Common.capacity_scale(), 1/2) / 2 --/2 as we have 2
@@ -184,8 +185,6 @@ function Public.max_time_on_island_formula() --always >0  --tuned
 	return Math.ceil(60 * minimum_mins_on_island * Public.game_slowness_scale())
 end
 
-
-Public.need_resources_to_undock_x = 40*20
 
 -- Returns true if uncollected resources will cause the crew to lose.
 function Public.need_resources_to_undock(overworldx)
@@ -752,6 +751,11 @@ function Public.pick_default_oil_amount()
 	local amount = scaling * Math.sqrt(1000000 * Common.game_completion_progress())
 	local extra_random_amount = Math.random(Math.max(1, Math.ceil(0.2 * amount)))
 	return amount + extra_random_amount
+end
+
+ -- Returns frequency in seconds
+function Public.biter_boat_average_arrival_rate()
+	return Math.ceil((7.5 * 60) / Math.sloped(Common.difficulty_scale(), 0.5))
 end
 
 return Public
