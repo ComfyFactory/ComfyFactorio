@@ -104,7 +104,7 @@ Public.market_price_scale = 300
 
 Public.cabin_shop_data = {
 	{
-		price = {{'coin', 400}, {'coal', 10}, {'iron-plate', 20}},--should be inefficient on resources to merely buy arty to shoot nests
+		price = {{'coin', 4000}, {'coal', 20}, {'iron-plate', 20}},--should be inefficient on resources to merely buy arty to shoot nests
 		offer = {type='give-item', item = 'artillery-shell', count = 5},
 	},
 	{

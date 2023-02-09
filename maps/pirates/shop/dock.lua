@@ -1,9 +1,9 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 
-local Memory = require 'maps.pirates.memory'
+-- local Memory = require 'maps.pirates.memory'
 -- local Roles = require 'maps.pirates.roles.roles'
-local CoreData = require 'maps.pirates.coredata'
+-- local CoreData = require 'maps.pirates.coredata'
 local Classes = require 'maps.pirates.roles.classes'
 -- local Crew = require 'maps.pirates.crew'
 -- local Boats = require 'maps.pirates.structures.boats.boats'
@@ -52,6 +52,7 @@ Public.market_permanent_offers = {
 	{price = {{'coin', 4200}}, offer = {type = 'give-item', item = 'speed-module-2', count = 2}},
 	{price = {{'coin', 4200}}, offer = {type = 'give-item', item = 'productivity-module', count = 2}},
 	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'explosives', count = 50}},
+	{price = {{'coin', 30000}}, offer = {type = 'give-item', item = 'artillery-targeting-remote', count = 1}},
 }
 
 -- cheap but one-off
@@ -128,7 +129,7 @@ Public.market_sales = {
 
 
 function Public.create_dock_markets(surface, p)
-	local memory = Memory.get_crew_memory()
+	-- local memory = Memory.get_crew_memory()
     local destination = Common.current_destination()
 
 	if not (surface and p) then return end
@@ -179,10 +180,6 @@ function Public.create_dock_markets(surface, p)
 		local toaddcount
 
 		local salescopy = Utils.deepcopy(Public.market_permanent_offers)
-
-		if CoreData.get_difficulty_option_from_value(memory.difficulty) < 3 then
-			salescopy[#salescopy + 1] = {price = {{'coin', 28000}}, offer = {type = 'give-item', item = 'artillery-targeting-remote', count = 1}}
-		end
 
 		toaddcount = 3 + Math.random(0, 2)
 		while toaddcount>0 and #salescopy > 0 do
