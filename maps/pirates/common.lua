@@ -44,7 +44,7 @@ Public.structure_ensure_chunk_radius = 2
 
 Public.allow_barreling_off_ship = true
 
-Public.coin_tax_percentage = 10
+Public.coin_tax_percentage = 25
 
 Public.fraction_of_map_loaded_at_sea = 1
 Public.map_loading_ticks_atsea = 68 * 60
@@ -1361,7 +1361,8 @@ function Public.send_important_items_from_player_to_crew(player, all_items)
 			if #to_remove > 0 then
 				for iii = 1, #to_remove, 1 do
 					if to_remove[iii].valid_for_read then
-						Public.give_items_to_crew{{name = to_remove[iii].name, count = to_remove[iii].count}}
+						-- Public.give_items_to_crew{{name = to_remove[iii].name, count = to_remove[iii].count}}
+						Public.give_items_to_crew(to_remove[iii])
 						to_remove[iii].clear()
 					end
 				end
@@ -1373,6 +1374,49 @@ function Public.send_important_items_from_player_to_crew(player, all_items)
 	return any
 end
 
+function Public.temporarily_store_logged_off_character_items(player)
+	local memory = Memory.get_crew_memory()
+
+	memory.temporarily_logged_off_characters_items[player.index] = game.create_inventory(150)
+	local temp_inv = memory.temporarily_logged_off_characters_items[player.index]
+
+	local player_inv = {}
+	player_inv[1] = game.players[player.index].get_inventory(defines.inventory.character_main)
+	player_inv[2] = game.players[player.index].get_inventory(defines.inventory.character_armor)
+	player_inv[3] = game.players[player.index].get_inventory(defines.inventory.character_guns)
+	player_inv[4] = game.players[player.index].get_inventory(defines.inventory.character_ammo)
+	player_inv[5] = game.players[player.index].get_inventory(defines.inventory.character_trash)
+
+	for ii = 1, 5, 1 do
+		if player_inv[ii].valid then
+			for iii = 1, #player_inv[ii], 1 do
+				if player_inv[ii] and player_inv[ii][iii].valid and player_inv[ii][iii].valid_for_read then
+					temp_inv.insert(player_inv[ii][iii])
+					player_inv[ii][iii].clear()
+				end
+			end
+		end
+	end
+end
+
+function Public.give_back_items_to_temporarily_logged_off_player(player)
+	local memory = Memory.get_crew_memory()
+
+	if not memory.temporarily_logged_off_characters_items[player.index] then
+		return
+	end
+
+	local temp_inv = memory.temporarily_logged_off_characters_items[player.index]
+
+	for i = 1, #temp_inv, 1 do
+		if temp_inv and temp_inv[i].valid and temp_inv[i].valid_for_read then
+			player.insert(temp_inv[i])
+		end
+	end
+
+	temp_inv.destroy()
+	memory.temporarily_logged_off_characters_items[player.index] = nil
+end
 
 function Public.give_items_to_crew(items)
 	local memory = Memory.get_crew_memory()
@@ -1615,6 +1659,9 @@ function Public.get_item_blacklist(tier)
     blacklist['express-loader'] = true
 	-- blacklist['land-mine'] = true
 	blacklist['wood'] = true -- too easy to acquire
+
+	blacklist['speed-module-2'] = true
+	blacklist['speed-module-3'] = true
 
     return blacklist
 end

@@ -82,10 +82,11 @@ Public.doctor_heal_percentage_amount = 0.15
 Public.shaman_energy_required_per_summon = 1000000
 Public.shaman_max_charge = 30000000
 Public.shaman_summoned_biter_time_to_live = 60 * 2 -- in seconds
+Public.shaman_passive_charge = 200000 -- each second
 
 Public.class_cycle_count = 5 -- How many classes should be purchased to have a chance to buy the same class again
 
-Public.maximum_fish_allowed_to_catch_at_sea = 30
+Public.maximum_fish_allowed_to_catch_at_sea = 40
 
 Public.prevent_waves_from_spawning_in_cave_timer_length = 10 -- in seconds
 
@@ -461,7 +462,8 @@ function Public.quest_market_entry_price_scale()
 	-- return (1 + 0.05 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty_scale(), 1/2) - 0.4
 
 
-	return (1 + 0.05 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/4)) * Math.sloped(Common.difficulty_scale(), 1/2) - 0.4
+	local scale = (1 + 0.05 * (Common.overworldx()/40 - 1)) * ((0.6 + Public.crew_scale())^(1/8)) * Math.sloped(Common.difficulty_scale(), 1/2) - 0.5
+	return Math.max(0.1, scale)
 end
 
 function Public.quest_furnace_entry_price_scale()
@@ -479,7 +481,8 @@ function Public.quest_furnace_entry_price_scale()
 	-- x = 1000 (25th island): 1.008
 	-- return (1 + 0.03 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/3)) * Math.sloped(Common.difficulty_scale(), 1/2) - 0.4
 
-	return (1 + 0.03 * (Common.overworldx()/40 - 1)) * ((1 + Public.crew_scale())^(1/4)) * Math.sloped(Common.difficulty_scale(), 1/2) - 0.4
+	local scale = (1 + 0.03 * (Common.overworldx()/40 - 1)) * ((0.6 + Public.crew_scale())^(1/8)) * Math.sloped(Common.difficulty_scale(), 1/2) - 0.5
+	return Math.max(0.1, scale)
 end
 
 -- function Public.apply_crew_buffs_per_league(force, leagues_travelled)
@@ -498,7 +501,7 @@ end
 
 Public.quest_structures_first_appear_at = 40
 
-Public.coin_sell_amount = 500
+Public.coin_sell_amount = 300
 
 Public.starting_fuel = 4000
 

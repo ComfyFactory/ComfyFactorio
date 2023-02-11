@@ -835,12 +835,12 @@ local function player_mined_tree(event)
 	Common.give(player, give, entity.position)
 
 	if destination.subtype ~= IslandEnum.enum.FIRST then
-		if Math.random(1024) == 1 then
+		if Math.random(512) == 1 then
 			local placed = Ores.try_ore_spawn(entity.surface, entity.position, entity.name, 0, true)
 			if placed then
 				Common.notify_player_expected(player, {'pirates.ore_discovered'})
 			end
-		elseif Math.random(2048) == 1 then
+		elseif Math.random(1024) == 1 then
 			local e = entity.surface.create_entity{name = 'wooden-chest', position = entity.position, force = memory.ancient_friendly_force_name}
 			if e and e.valid then
 				e.minable = false

@@ -111,7 +111,7 @@ Public.chest_loot_data_raw = {
 	{0.1, 0.3, 1, false, 'nuclear-reactor', 1, 1},
 	{0.2, 0.2, 2, true, 'concrete', 10, 40},
 
-	{50, -1, 0.5, true, 'speed-module', 1, 3},
+	{50, -1, 1, true, 'speed-module', 1, 3},
 	{25, 0, 1.5, true, 'speed-module-2', 1, 2},
 	{12, 0, 2, true, 'speed-module-3', 1, 1},
 	{4, -1, 1, true, 'effectivity-module', 1, 3},

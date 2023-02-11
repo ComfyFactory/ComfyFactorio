@@ -264,41 +264,72 @@ function Public.prune_offline_characters_list(tickinterval)
 
 	for player_index, tick in pairs(memory.temporarily_logged_off_characters) do
 		if player_index and game.players[player_index] and game.players[player_index].connected then
-			--game.print("deleting already online character from list")
 			memory.temporarily_logged_off_characters[player_index] = nil
+			if memory.temporarily_logged_off_characters_items[player_index] then
+				memory.temporarily_logged_off_characters_items[player_index].destroy()
+			end
+			memory.temporarily_logged_off_characters_items[player_index] = nil
 		else
 			if player_index and tick < game.tick - 60 * 60 * Common.logged_off_items_preserved_minutes then
-				local player_inv = {}
-				player_inv[1] = game.players[player_index].get_inventory(defines.inventory.character_main)
-				player_inv[2] = game.players[player_index].get_inventory(defines.inventory.character_armor)
-				player_inv[3] = game.players[player_index].get_inventory(defines.inventory.character_ammo)
-				player_inv[4] = game.players[player_index].get_inventory(defines.inventory.character_guns)
-				player_inv[5] = game.players[player_index].get_inventory(defines.inventory.character_trash)
-
 				local any = false
-				for ii = 1, 5, 1 do
-					if player_inv[ii] and player_inv[ii].valid then
-						for iii = 1, #player_inv[ii], 1 do
-							if player_inv[ii][iii] and player_inv[ii][iii].valid and player_inv[ii][iii].valid_for_read then
-								-- items[#items + 1] = player_inv[ii][iii]
-								Common.give_items_to_crew(player_inv[ii][iii])
-								any = true
-							end
+				local temp_inv = memory.temporarily_logged_off_characters_items[player_index]
+				if temp_inv then
+					for i = 1, #temp_inv, 1 do
+						if temp_inv[i] and temp_inv[i].valid and temp_inv[i].valid_for_read then
+							Common.give_items_to_crew(temp_inv[i])
+							any = true
 						end
 					end
-				end
-				if any then
-					Common.notify_force_light(memory.force, {'pirates.recover_offline_player_items'})
-				end
-				for ii = 1, 5, 1 do
-					if player_inv[ii].valid then
-						player_inv[ii].clear()
+					if any then
+						Common.notify_force_light(memory.force, {'pirates.recover_offline_player_items'})
 					end
+
+					temp_inv.destroy()
 				end
+
 				memory.temporarily_logged_off_characters[player_index] = nil
+				memory.temporarily_logged_off_characters_items[player_index] = nil
 			end
 		end
 	end
+
+	-- for player_index, tick in pairs(memory.temporarily_logged_off_characters) do
+	-- 	if player_index and game.players[player_index] and game.players[player_index].connected then
+	-- 		--game.print("deleting already online character from list")
+	-- 		memory.temporarily_logged_off_characters[player_index] = nil
+	-- 	else
+	-- 		if player_index and tick < game.tick - 60 * 60 * Common.logged_off_items_preserved_minutes then
+	-- 			local player_inv = {}
+	-- 			player_inv[1] = game.players[player_index].get_inventory(defines.inventory.character_main)
+	-- 			player_inv[2] = game.players[player_index].get_inventory(defines.inventory.character_armor)
+	-- 			player_inv[3] = game.players[player_index].get_inventory(defines.inventory.character_ammo)
+	-- 			player_inv[4] = game.players[player_index].get_inventory(defines.inventory.character_guns)
+	-- 			player_inv[5] = game.players[player_index].get_inventory(defines.inventory.character_trash)
+
+	-- 			local any = false
+	-- 			for ii = 1, 5, 1 do
+	-- 				if player_inv[ii] and player_inv[ii].valid then
+	-- 					for iii = 1, #player_inv[ii], 1 do
+	-- 						if player_inv[ii][iii] and player_inv[ii][iii].valid and player_inv[ii][iii].valid_for_read then
+	-- 							-- items[#items + 1] = player_inv[ii][iii]
+	-- 							Common.give_items_to_crew(player_inv[ii][iii])
+	-- 							any = true
+	-- 						end
+	-- 					end
+	-- 				end
+	-- 			end
+	-- 			if any then
+	-- 				Common.notify_force_light(memory.force, {'pirates.recover_offline_player_items'})
+	-- 			end
+	-- 			for ii = 1, 5, 1 do
+	-- 				if player_inv[ii].valid then
+	-- 					player_inv[ii].clear()
+	-- 				end
+	-- 			end
+	-- 			memory.temporarily_logged_off_characters[player_index] = nil
+	-- 		end
+	-- 	end
+	-- end
 end
 
 
@@ -1630,7 +1661,7 @@ end
 function Public.update_protected_run_lock_timer(tickinterval)
 	local memory = Memory.get_crew_memory()
 	if memory.run_is_protected then
-		if Common.activecrewcount() <= 0 then
+		if not Roles.captain_exists() then
 			if memory.protected_run_lock_timer > 0 then
 				memory.protected_run_lock_timer = memory.protected_run_lock_timer - tickinterval
 

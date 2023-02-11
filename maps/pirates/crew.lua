@@ -353,7 +353,7 @@ function Public.join_crew(player, crewid, rejoin)
 
 	-- local adventuring = false
 	local spectating = false
-	if memory.crewstatus and memory.crewstatus == enum.ADVENTURING then
+	if memory.crewstatus == enum.ADVENTURING then
 		-- for _, playerindex in pairs(memory.crewplayerindices) do
 		-- 	if player.index == playerindex then adventuring = true end
 		-- end
@@ -379,8 +379,10 @@ function Public.join_crew(player, crewid, rejoin)
 		player.force = memory.force
 		player.teleport(surface.find_non_colliding_position('character', memory.spawnpoint, 32, 0.5) or memory.spawnpoint, surface)
 
-	Common.notify_lobby({'pirates.lobby_to_crew_2', player.name, memory.name})
+		Common.notify_lobby({'pirates.lobby_to_crew_2', player.name, memory.name})
 	end
+
+	Common.give_back_items_to_temporarily_logged_off_player(player)
 
 	Common.notify_force(player.force, {'pirates.lobby_to_crew', player.name})
 	-- Server.to_discord_embed_raw(CoreData.comfy_emojis.yum1 .. '[' .. memory.name .. '] ' .. message)
@@ -432,13 +434,34 @@ function Public.leave_crew(player, to_lobby, quiet)
 		-- 	-- Server.to_discord_embed_raw(CoreData.comfy_emojis.feel .. '[' .. memory.name .. '] ' .. message)
 		-- end
 
+		-- @TODO: figure out why surface_name can be nil
+		-- When player remains in island when ship leaves, prevent him from getting items back
+		local save_items = true
+		if player.surface and
+			player.surface.valid and
+			memory.boat and
+			memory.boat.surface_name
+		then
+			local player_surface_type = SurfacesCommon.decode_surface_name(player.surface.name).type
+			local boat_surface_type = SurfacesCommon.decode_surface_name(memory.boat.surface_name).type
+
+			if player_surface_type == Surfaces.enum.ISLAND and boat_surface_type == Surfaces.enum.SEA then
+				save_items = false
+			end
+		end
+
 		if to_lobby then
-			Common.send_important_items_from_player_to_crew(player, true)
+			if save_items then
+				Common.send_important_items_from_player_to_crew(player, true)
+			end
 			char.die(memory.force_name)
 		else
-			Common.send_important_items_from_player_to_crew(player, true)
+			if save_items then
+				Common.temporarily_store_logged_off_character_items(player)
+			end
 			memory.temporarily_logged_off_characters[player.index] = game.tick
 		end
+
 	-- else
 	-- 	if not quiet then
 	-- 		-- local message = player.name .. ' left the crew.'
@@ -715,6 +738,7 @@ function Public.initialise_crew(accepted_proposal)
 	memory.tempbanned_from_joining_data = {}
 	memory.destinations = {}
 	memory.temporarily_logged_off_characters = {}
+	memory.temporarily_logged_off_characters_items = {}
 	memory.class_renderings = {}
 	memory.class_auxiliary_data = {}
 
@@ -919,15 +943,15 @@ function Public.reset_crew_and_enemy_force(id)
 
 	crew_force.technologies['rail-signals'].enabled = false
 
-	-- crew_force.technologies['logistic-system'].enabled = false
+	crew_force.technologies['logistic-system'].enabled = false
 
 
-	-- crew_force.technologies['rocketry'].enabled = false
+	crew_force.technologies['rocketry'].enabled = false
 	crew_force.technologies['artillery'].enabled = false
 	-- crew_force.technologies['destroyer'].enabled = false
-	-- crew_force.technologies['spidertron'].enabled = false
+	crew_force.technologies['spidertron'].enabled = false
 	crew_force.technologies['atomic-bomb'].enabled = false
-	-- crew_force.technologies['explosive-rocketry'].enabled = false
+	crew_force.technologies['explosive-rocketry'].enabled = false
 
 	-- crew_force.technologies['research-speed-1'].enabled = false
 	-- crew_force.technologies['research-speed-2'].enabled = false
@@ -996,7 +1020,7 @@ function Public.reset_crew_and_enemy_force(id)
 	-- crew_force.technologies['effectivity-module'].enabled = true
 	-- crew_force.technologies['effectivity-module-2'].enabled = false
 	-- crew_force.technologies['effectivity-module-3'].enabled = false
-	-- crew_force.technologies['automation-3'].enabled = true
+	crew_force.technologies['automation-3'].enabled = false
 	-- crew_force.technologies['rocket-control-unit'].enabled = false
 	-- crew_force.technologies['rocket-silo'].enabled = false
 	-- crew_force.technologies['space-scienkce-pack'].enabled = false
@@ -1019,21 +1043,21 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['production-science-pack'].enabled = true
 	crew_force.technologies['utility-science-pack'].enabled = true
 
-	-- crew_force.technologies['modular-armor'].enabled = false
-	-- crew_force.technologies['power-armor'].enabled = false
-	-- crew_force.technologies['solar-panel-equipment'].enabled = false
-	-- crew_force.technologies['personal-roboport-equipment'].enabled = false
-	-- crew_force.technologies['personal-laser-defense-equipment'].enabled = false
-	-- crew_force.technologies['night-vision-equipment'].enabled = false
-	-- crew_force.technologies['energy-shield-equipment'].enabled = false
-	-- crew_force.technologies['belt-immunity-equipment'].enabled = false
-	-- crew_force.technologies['exoskeleton-equipment'].enabled = false
-	-- crew_force.technologies['battery-equipment'].enabled = false
-	-- crew_force.technologies['fusion-reactor-equipment'].enabled = false
-	-- crew_force.technologies['power-armor-mk2'].enabled = false
-	-- crew_force.technologies['energy-shield-mk2-equipment'].enabled = false
-	-- crew_force.technologies['personal-roboport-mk2-equipment'].enabled = false
-	-- crew_force.technologies['battery-mk2-equipment'].enabled = false
+	crew_force.technologies['modular-armor'].enabled = false
+	crew_force.technologies['power-armor'].enabled = false
+	crew_force.technologies['solar-panel-equipment'].enabled = false
+	crew_force.technologies['personal-roboport-equipment'].enabled = false
+	crew_force.technologies['personal-laser-defense-equipment'].enabled = false
+	crew_force.technologies['night-vision-equipment'].enabled = false
+	crew_force.technologies['energy-shield-equipment'].enabled = false
+	crew_force.technologies['belt-immunity-equipment'].enabled = false
+	crew_force.technologies['exoskeleton-equipment'].enabled = false
+	crew_force.technologies['battery-equipment'].enabled = false
+	crew_force.technologies['fusion-reactor-equipment'].enabled = false
+	crew_force.technologies['power-armor-mk2'].enabled = false
+	crew_force.technologies['energy-shield-mk2-equipment'].enabled = false
+	crew_force.technologies['personal-roboport-mk2-equipment'].enabled = false
+	crew_force.technologies['battery-mk2-equipment'].enabled = false
 	crew_force.technologies['discharge-defense-equipment'].enabled = false
 
 	-- crew_force.technologies['distractor'].enabled = false
@@ -1067,6 +1091,9 @@ function Public.disable_recipes(crew_force)
 	-- crew_force.recipes['hazard-concrete'].enabled = false
 	-- crew_force.recipes['refined-concrete'].enabled = false
 	-- crew_force.recipes['refined-hazard-concrete'].enabled = false
+
+	crew_force.recipes['speed-module-2'].enabled = false
+	crew_force.recipes['speed-module-3'].enabled = false
 end
 
 return Public

@@ -83,9 +83,14 @@ function Public.class_update_auxiliary_data(tickinterval)
 			processed_players[player_index] = true
 
 			if data.shaman_charge < Balance.shaman_max_charge then
+				-- charge from accumulators
 				local power_need = Balance.shaman_max_charge - data.shaman_charge
 				local energy = discharge_accumulators(player.surface, player.position, memory.force, power_need)
 				data.shaman_charge = data.shaman_charge + energy
+
+				-- charge from sun pasively
+				data.shaman_charge = data.shaman_charge + (1 - player.surface.daytime) * Balance.shaman_passive_charge * (tickinterval / 60)
+				data.shaman_charge = Math.min(data.shaman_charge, Balance.shaman_max_charge)
 			end
 		end
 	end
