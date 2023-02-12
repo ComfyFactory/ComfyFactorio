@@ -303,7 +303,7 @@ function Public.spawn_silo_setup(points_to_avoid)
 			silo.operable = false
 			if i == 1 then
 				silo.auto_launch = true
-				Common.new_healthbar(true, silo, Balance.silo_max_hp, nil, Balance.silo_max_hp, 0.6, -2)
+				Common.new_healthbar(true, silo, Balance.silo_max_hp, nil, Balance.silo_max_hp, 0.6, -2, destination.dynamic_data)
 			else
 				silo.destructible = false
 			end
@@ -331,7 +331,7 @@ function Public.spawn_silo_setup(points_to_avoid)
 	-- 	eei.power_usage = 0
 	-- end
 
-	if CoreData.rocket_silo_death_causes_loss or (destination.static_params and destination.static_params.base_cost_to_undock and destination.static_params.base_cost_to_undock['launch_rocket'] and destination.static_params.base_cost_to_undock['launch_rocket'] == true) then
+	if CoreData.rocket_silo_death_causes_loss or (destination.static_params and destination.static_params.base_cost_to_undock and destination.static_params.base_cost_to_undock['launch_rocket'] == true) then
 		-- we need to know where it is
 		force.chart(surface, {{p_silo.x - 4, p_silo.y - 4},{p_silo.x + 4, p_silo.y + 4}})
 		Task.set_timeout_in_ticks(2, silo_chart_tag, {p_silo = p_silo, surface_name = destination.surface_name, crew_id = memory.id})
@@ -345,20 +345,21 @@ end
 
 
 
-
+-- NOTE: Currently the boats can trigger landing early if 2 boats spawn in same lane in short interval. Too lazy to fix.
+-- NOTE: As well as biter boats can miss the island on smaller ones when boat is steered
 function Public.spawn_enemy_boat(type)
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 	local surface = game.surfaces[destination.surface_name]
-	local offsets = {50, -50, 63, -63}
+	local offsets = {50, -50, 63, -63, 76, -76, 89, -89}
 
-	local enemyboats = memory.enemyboats
+	local enemyboats = destination.dynamic_data.enemyboats
 	if enemyboats then
 		local boat = {
 			state = Boats.enum_state.APPROACHING,
 			type = type,
 			speed = 4,
-			position = {x = - surface.map_gen_settings.width/2 + 23.5, y = (memory.boat.dockedposition or memory.boat.position).y + offsets[Math.random(4)]},
+			position = {x = - surface.map_gen_settings.width/2 + 23.5, y = (memory.boat.dockedposition or memory.boat.position).y + offsets[Math.random(#offsets)]},
 			force_name = memory.enemy_force_name,
 			surface_name = surface.name,
 			unit_group = nil,
@@ -374,7 +375,8 @@ function Public.spawn_enemy_boat(type)
 			-- e.destructible = false
 			boat.spawner = e
 
-			Common.new_healthbar(true, e, 900, nil, 900, 0.5)
+			local max_health = Balance.biter_boat_health()
+			Common.new_healthbar(true, e, max_health, nil, max_health, 0.5, nil, destination.dynamic_data)
 		end
 
 		return enemyboats[#enemyboats]

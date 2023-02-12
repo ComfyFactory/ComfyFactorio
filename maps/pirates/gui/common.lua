@@ -45,6 +45,10 @@ Public.default_window_positions = {
 	color = {x = 160, y = 96},
 }
 
+-- Player who created the proposal is already an endorser
+function Public.proposal_endorsers_required()
+	return Math.min(4, Math.ceil((#game.connected_players or 0)/5))
+end
 
 function Public.new_window(player, name)
 
@@ -280,6 +284,7 @@ function Public.flow_add_section(flow, name, caption)
 		direction = 'vertical',
 	})
 	flow3.style.left_margin = 5
+	flow3.style.right_margin = 5
 
 	return flow3
 end
@@ -311,8 +316,6 @@ function Public.flow_add_close_button(flow, close_button_name)
 		type = 'flow',
 		direction = 'vertical',
 	})
-	flow2.style.top_margin = -3
-	flow2.style.bottom_margin = -3
 
 	flow3 = flow2.add{type="flow", name='hflow', direction="horizontal"}
     flow3.style.vertical_align = 'center'
@@ -378,7 +381,7 @@ function Public.crew_overall_state_bools(player_index)
 					ret.crew_count_capped = true
 				elseif global_memory.active_crews_cap > 1 and #global_memory.crew_active_ids == (global_memory.active_crews_cap - 1) and not ((global_memory.crew_memories[1] and global_memory.crew_memories[1].capacity >= Common.minimum_run_capacity_to_enforce_space_for) or (global_memory.crew_memories[2] and global_memory.crew_memories[2].capacity >= Common.minimum_run_capacity_to_enforce_space_for) or (global_memory.crew_memories[3] and global_memory.crew_memories[3].capacity >= Common.minimum_run_capacity_to_enforce_space_for)) and not (CoreData.capacity_options[proposal.capacity_option].value >= Common.minimum_run_capacity_to_enforce_space_for) then
 					ret.needs_more_capacity = true
-				elseif proposal.endorserindices and #global_memory.crew_active_ids > 0 and #proposal.endorserindices < Math.min(4, Math.ceil((#game.connected_players or 0)/5)) then
+				elseif proposal.endorserindices and #global_memory.crew_active_ids > 0 and #proposal.endorserindices < Public.proposal_endorsers_required() then
 					ret.needs_more_endorsers = true
 				end
 				if (not (ret.sloops_full or ret.needs_more_capacity or ret.needs_more_endorsers or ret.crew_count_capped)) then

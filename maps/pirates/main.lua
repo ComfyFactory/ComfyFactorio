@@ -112,6 +112,7 @@ local function on_init()
 	Common.init_game_settings(Balance.technology_price_multiplier)
 
 	global_memory.active_crews_cap = Common.activeCrewsCap
+	global_memory.protected_run_cap = Common.protected_run_cap
 	global_memory.private_run_cap = Common.private_run_cap
 
 	global_memory.minimumCapacitySliderValue = Common.minimumCapacitySliderValue
@@ -188,6 +189,7 @@ local function crew_tick()
 				PiratesApiOnTick.check_for_cliff_explosives_in_hold_wooden_chests()
 				PiratesApiOnTick.equalise_fluid_storages() -- Made the update less often for small performance gain, but frequency can be increased if players complain
 				PiratesApiOnTick.revealed_buried_treasure_distance_check()
+				PiratesApiOnTick.update_protected_run_lock_timer(60)
 				PiratesApiOnTick.update_private_run_lock_timer(60)
 				PiratesApiOnTick.victory_continue_reminder()
 				Kraken.overall_kraken_tick()
@@ -219,7 +221,11 @@ local function crew_tick()
 							local surface_name_decoded = Surfaces.SurfacesCommon.decode_surface_name(memory.boat.surface_name)
 							local type = surface_name_decoded.type
 							if type == Surfaces.enum.ISLAND then
-								Progression.retreat_from_island(false)
+								if destination.static_params and destination.static_params.base_cost_to_undock and Balance.need_resources_to_undock(Common.overworldx()) == true then
+									Crew.try_lose({'pirates.loss_resources_were_not_collected_in_time'})
+								else
+									Progression.retreat_from_island(false)
+								end
 							elseif type == Surfaces.enum.DOCK then
 								Progression.undock_from_dock(false)
 							end
@@ -235,7 +241,7 @@ local function crew_tick()
 					Ai.Tick_actions(120)
 
 					if tick % 240 == 0 then
-						PiratesApiOnTick.check_all_spawners_dead(240)
+						-- PiratesApiOnTick.check_all_spawners_dead(240) -- incentivises killing all spawners too much
 						if memory.max_players_recorded then
 							local count_now = #Common.crew_get_crew_members()
 							if count_now and count_now > memory.max_players_recorded then
@@ -250,6 +256,7 @@ local function crew_tick()
 				if tick % 300 == 0 then
 					PiratesApiOnTick.periodic_free_resources(300)
 					PiratesApiOnTick.update_recentcrewmember_list(300)
+					PiratesApiOnTick.update_pet_biter_lifetime(300)
 
 					if tick % 1800 == 0 then
 						PiratesApiOnTick.transfer_pollution(1800)

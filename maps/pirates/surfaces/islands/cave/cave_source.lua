@@ -35,7 +35,7 @@ local function spawn_market(args, is_main)
         -- This doesn't really prevent markets spawning near each other, since markets aren't spawned immediately for a given chunk, but it helps a bit
         local cave_miner = destination_data.dynamic_data.cave_miner
         if not cave_miner then
-            -- this can be null if cave island is first and run is launched using proposal
+            -- this can be nil if cave island is first and run is launched using proposal
             -- should probably investigate this some time
             local message = 'ERROR: cave_miner is nil'
             if _DEBUG then

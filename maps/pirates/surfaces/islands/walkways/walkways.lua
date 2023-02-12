@@ -32,7 +32,7 @@ function Public.noises(args)
 end
 
 function Public.terrain(args)
-	-- local memory = Memory.get_crew_memory()
+	local memory = Memory.get_crew_memory()
 	local noises = Public.noises(args)
 	local p = args.p
 
@@ -82,6 +82,14 @@ function Public.terrain(args)
 
 		else
 			args.tiles[#args.tiles + 1] = {name = 'water-shallow', position = p}
+
+			if math.random(1, 512) == 1 then
+				local name = Common.get_random_worm_type(memory.evolution_factor)
+				local force = memory.enemy_force_name
+				args.entities[#args.entities + 1] = {name = name, position = p, force = force}
+			elseif math.random(1, 256) == 1 then
+				args.entities[#args.entities + 1] = {name = 'fish', position = p}
+			end
 		end
 	end
 end
@@ -118,19 +126,23 @@ function Public.generate_silo_setup_position(points_to_avoid)
 	local destination = Common.current_destination()
 	local surface = game.surfaces[destination.surface_name]
 
-	local p_silo = Hunt.silo_setup_position(points_to_avoid, 0.2)
+	local first_silo_pos = Hunt.silo_setup_position(points_to_avoid, 0.2)
 
-	if p_silo then
-		local tiles = {}
-		for x = -6.5, 6.5, 1 do
-			for y = -6.5, 6.5, 1 do
-				tiles[#tiles + 1] = {name = CoreData.world_concrete_tile, position = {x = p_silo.x + x, y = p_silo.y + y}}
+	local silo_count = Balance.silo_count()
+	if first_silo_pos then
+		for i = 1, silo_count do
+			local tiles = {}
+			local silo_pos = {x = first_silo_pos.x + 9 * (i-1), y = first_silo_pos.y}
+			for x = -7.5, 7.5, 1 do
+				for y = -7.5, 7.5, 1 do
+					tiles[#tiles + 1] = {name = CoreData.world_concrete_tile, position = {x = silo_pos.x + x, y = silo_pos.y + y}}
+				end
 			end
+			Common.ensure_chunks_at(surface, first_silo_pos, 1)
+			surface.set_tiles(tiles, true)
 		end
-		Common.ensure_chunks_at(surface, p_silo, 1)
-		surface.set_tiles(tiles, true)
 
-		return p_silo
+		return first_silo_pos
 	end
 end
 

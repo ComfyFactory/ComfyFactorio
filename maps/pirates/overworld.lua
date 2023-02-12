@@ -231,14 +231,13 @@ function Public.generate_destination_base_cost_to_undock(p, subtype)
 	-- override:
 	if subtype == IslandEnum.enum.RADIOACTIVE then
 		base_cost_to_undock = {
-			['uranium-235'] = Math.ceil(Math.ceil(80 + (macro_p.x - 1))),
+			['uranium-235'] = Math.ceil(Math.ceil(65 + 2 * (macro_p.x - 1))), -- people now have access to uranium tech and can make it on ship
+			-- ['uranium-235'] = Math.ceil(Math.ceil(80 + (macro_p.x - 1))),
 			-- ['uranium-235'] = Math.ceil(Math.ceil(80 + (macro_p.x)/2)), --tried adding beacons instead of this
 		}
-	elseif subtype == IslandEnum.enum.CAVE then
-		base_cost_to_undock = nil -- make it a more chill island
-	elseif subtype == IslandEnum.enum.RED_DESERT then
+	elseif subtype == IslandEnum.enum.RED_DESERT or subtype == IslandEnum.enum.CAVE then
 		if base_cost_to_undock and base_cost_to_undock['launch_rocket'] == true then
-			base_cost_to_undock['launch_rocket'] = false -- some extra variety
+			base_cost_to_undock['launch_rocket'] = false
 		end
 	end
 
@@ -291,6 +290,10 @@ function Public.generate_overworld_destination(p)
 		local static_params = Utils.deepcopy(scope.Data.static_params_default)
 
 		static_params.base_cost_to_undock = Public.generate_destination_base_cost_to_undock(p, subtype) -- Multiplication by Balance.cost_to_leave_multiplier() happens later, in destination_on_collide.
+		static_params.undock_cost_decreases = true
+		if Balance.need_resources_to_undock(p.x) == true or subtype == IslandEnum.enum.RADIOACTIVE then
+			static_params.undock_cost_decreases = false
+		end
 
 		--scheduled raft raids moved to destination_on_arrival
 
@@ -330,7 +333,8 @@ function Public.generate_overworld_destination(p)
 
 		local rng = 0.5 + 1 * Math.random()
 		static_params.starting_treasure_maps = Math.ceil((static_params.base_starting_treasure_maps or 0) * rng)
-		static_params.starting_wood = Math.ceil(static_params.base_starting_wood or 1000)
+		static_params.starting_wood = static_params.base_starting_wood or 1000
+		static_params.starting_wood = Math.ceil(static_params.starting_wood * Balance.island_richness_avg_multiplier())
 		static_params.starting_rock_material = Math.ceil(static_params.base_starting_rock_material or 300) * Balance.island_richness_avg_multiplier()
 
 		rng = 0.5 + 1 * Math.random()
@@ -373,8 +377,8 @@ function Public.generate_overworld_destination(p)
 		-- end --upgrades like UNLOCK_MERCHANTS will slot themselves in when necessary, due to .overwrite_a_dock_upgrade() (not anymore)
 		-- one day it's worth making this system more readable
 
-		-- NOTE: When DOCK frequency changes, this needs to change too (kinda bad design, but w/e)
-		-- NOTE: I couldn't manage to make upgrade overwriting to work so I made it fixed here (although I prefer having fixed for less rng)
+		-- NOTE: When DOCK frequency changes, this needs to change too (kinda bad design, but whatever)
+		-- NOTE: I couldn't manage to make upgrade overwriting to work so I made it here
 		-- TODO: Perhaps always have something special to sell (or remove the upgrade market if it has no offers?)
 		if macro_p.x % 16 == 15 and (not memory.rockets_for_sale) then
 			upgrade_for_sale = Upgrades.enum.ROCKETS_FOR_SALE
@@ -671,11 +675,12 @@ function Public.try_overworld_move_v2(vector) --islands stay, crowsnest moves
 			-- end
 
 			-- other freebies:
-			for i=1,vector.x do
-				Common.give_items_to_crew(Balance.periodic_free_resources_per_x())
-			end
+			-- for i=1,vector.x do
+			-- 	Common.give_items_to_crew(Balance.periodic_free_resources_per_x())
+			-- end
 
-			Balance.apply_crew_buffs_per_league(memory.force, vector.x)
+			-- Makes game hard to balance around this when productivity bonus is not constant.
+			-- Balance.apply_crew_buffs_per_league(memory.force, vector.x)
 
 			-- add some evo: (this will get reset upon arriving at a destination anyway, so this is just relevant for sea monsters and the like:)
 			local extra_evo = Balance.base_evolution_leagues(memory.overworldx) - Balance.base_evolution_leagues(memory.overworldx - vector.x)

@@ -245,6 +245,7 @@ end
 function Public.captain_warn_afk(tickinterval)
 	local memory = Memory.get_crew_memory()
 	if memory.game_lost then return end
+	if memory.run_is_protected then return end
 
 	if memory.playerindex_captain then
 		for _, player in pairs(game.connected_players) do
@@ -263,41 +264,72 @@ function Public.prune_offline_characters_list(tickinterval)
 
 	for player_index, tick in pairs(memory.temporarily_logged_off_characters) do
 		if player_index and game.players[player_index] and game.players[player_index].connected then
-			--game.print("deleting already online character from list")
 			memory.temporarily_logged_off_characters[player_index] = nil
+			if memory.temporarily_logged_off_characters_items[player_index] then
+				memory.temporarily_logged_off_characters_items[player_index].destroy()
+			end
+			memory.temporarily_logged_off_characters_items[player_index] = nil
 		else
 			if player_index and tick < game.tick - 60 * 60 * Common.logged_off_items_preserved_minutes then
-				local player_inv = {}
-				player_inv[1] = game.players[player_index].get_inventory(defines.inventory.character_main)
-				player_inv[2] = game.players[player_index].get_inventory(defines.inventory.character_armor)
-				player_inv[3] = game.players[player_index].get_inventory(defines.inventory.character_ammo)
-				player_inv[4] = game.players[player_index].get_inventory(defines.inventory.character_guns)
-				player_inv[5] = game.players[player_index].get_inventory(defines.inventory.character_trash)
-
 				local any = false
-				for ii = 1, 5, 1 do
-					if player_inv[ii] and player_inv[ii].valid then
-						for iii = 1, #player_inv[ii], 1 do
-							if player_inv[ii][iii] and player_inv[ii][iii].valid and player_inv[ii][iii].valid_for_read then
-								-- items[#items + 1] = player_inv[ii][iii]
-								Common.give_items_to_crew(player_inv[ii][iii])
-								any = true
-							end
+				local temp_inv = memory.temporarily_logged_off_characters_items[player_index]
+				if temp_inv then
+					for i = 1, #temp_inv, 1 do
+						if temp_inv[i] and temp_inv[i].valid and temp_inv[i].valid_for_read then
+							Common.give_items_to_crew(temp_inv[i])
+							any = true
 						end
 					end
-				end
-				if any then
-					Common.notify_force_light(memory.force, {'pirates.recover_offline_player_items'})
-				end
-				for ii = 1, 5, 1 do
-					if player_inv[ii].valid then
-						player_inv[ii].clear()
+					if any then
+						Common.notify_force_light(memory.force, {'pirates.recover_offline_player_items'})
 					end
+
+					temp_inv.destroy()
 				end
+
 				memory.temporarily_logged_off_characters[player_index] = nil
+				memory.temporarily_logged_off_characters_items[player_index] = nil
 			end
 		end
 	end
+
+	-- for player_index, tick in pairs(memory.temporarily_logged_off_characters) do
+	-- 	if player_index and game.players[player_index] and game.players[player_index].connected then
+	-- 		--game.print("deleting already online character from list")
+	-- 		memory.temporarily_logged_off_characters[player_index] = nil
+	-- 	else
+	-- 		if player_index and tick < game.tick - 60 * 60 * Common.logged_off_items_preserved_minutes then
+	-- 			local player_inv = {}
+	-- 			player_inv[1] = game.players[player_index].get_inventory(defines.inventory.character_main)
+	-- 			player_inv[2] = game.players[player_index].get_inventory(defines.inventory.character_armor)
+	-- 			player_inv[3] = game.players[player_index].get_inventory(defines.inventory.character_ammo)
+	-- 			player_inv[4] = game.players[player_index].get_inventory(defines.inventory.character_guns)
+	-- 			player_inv[5] = game.players[player_index].get_inventory(defines.inventory.character_trash)
+
+	-- 			local any = false
+	-- 			for ii = 1, 5, 1 do
+	-- 				if player_inv[ii] and player_inv[ii].valid then
+	-- 					for iii = 1, #player_inv[ii], 1 do
+	-- 						if player_inv[ii][iii] and player_inv[ii][iii].valid and player_inv[ii][iii].valid_for_read then
+	-- 							-- items[#items + 1] = player_inv[ii][iii]
+	-- 							Common.give_items_to_crew(player_inv[ii][iii])
+	-- 							any = true
+	-- 						end
+	-- 					end
+	-- 				end
+	-- 			end
+	-- 			if any then
+	-- 				Common.notify_force_light(memory.force, {'pirates.recover_offline_player_items'})
+	-- 			end
+	-- 			for ii = 1, 5, 1 do
+	-- 				if player_inv[ii].valid then
+	-- 					player_inv[ii].clear()
+	-- 				end
+	-- 			end
+	-- 			memory.temporarily_logged_off_characters[player_index] = nil
+	-- 		end
+	-- 	end
+	-- end
 end
 
 
@@ -308,7 +340,7 @@ function Public.periodic_free_resources(tickinterval)
 	local boat = memory.boat
 	if not (destination and destination.type == Surfaces.enum.ISLAND and boat and boat.surface_name == destination.surface_name) then return end
 
-	Common.give_items_to_crew(Balance.periodic_free_resources_per_destination_5_seconds())
+	-- Common.give_items_to_crew(Balance.periodic_free_resources_per_destination_5_seconds())
 
 	if game.tick % (300*30) == 0 and (destination and destination.subtype == IslandEnum.enum.RADIOACTIVE) then -- every 150 seconds
 		local count = 2
@@ -795,8 +827,6 @@ function Public.boat_movement_tick(tickinterval)
 	local boat = memory.boat
 	if boat and boat.surface_name and game.surfaces[boat.surface_name] and game.surfaces[boat.surface_name].valid and boat.speed and boat.speed > 0 and memory.game_lost == false then
 
-		local surface_type = destination.type
-
 		local ticker_increase = boat.speed / 60 * tickinterval
 		boat.speedticker1 = boat.speedticker1 + ticker_increase
 		boat.speedticker2 = boat.speedticker2 + ticker_increase
@@ -808,16 +838,16 @@ function Public.boat_movement_tick(tickinterval)
 				Structures.Boats.currentdestination_move_boat_natural()
 			end
 		elseif boat.speedticker2 >= Common.boat_steps_at_a_time then
-			if surface_type == Surfaces.enum.ISLAND and boat and boat.state == Boats.enum_state.APPROACHING then
+			if destination.type == Surfaces.enum.ISLAND and destination.subtype ~= IslandEnum.enum.CAVE and boat and boat.state == Boats.enum_state.APPROACHING then
 				Structures.Boats.currentdestination_try_move_boat_steered()
 			end
 			boat.speedticker2 = 0
 		end
 	end
 
-	if memory.enemyboats then
-		for i = 1, #memory.enemyboats do
-			local eboat = memory.enemyboats[i]
+	if destination.dynamic_data.enemyboats then
+		for i = 1, #destination.dynamic_data.enemyboats do
+			local eboat = destination.dynamic_data.enemyboats[i]
 			if eboat and eboat.surface_name and game.surfaces[eboat.surface_name] and game.surfaces[eboat.surface_name].valid then
 				if eboat.state == Boats.enum_state.APPROACHING and eboat.speed and eboat.speed > 0 and memory.game_lost == false then
 					local ticker_increase = eboat.speed / 60 * tickinterval
@@ -862,7 +892,7 @@ function Public.boat_movement_tick(tickinterval)
 					do end
 				end
 			else
-				memory.enemyboats[i] = nil
+				destination.dynamic_data.enemyboats[i] = nil
 			end
 		end
 	end
@@ -1062,18 +1092,18 @@ function Public.crowsnest_steer(tickinterval)
 	local count_left = inv_left.get_item_count("rail-signal")
 	local count_right = inv_right.get_item_count("rail-signal")
 
-	if count_left >= 100 and count_right < 100 and memory.overworldy > -24 then
+	if count_left >= 50 and count_right < 50 and memory.overworldy > -24 then
 		if Overworld.try_overworld_move_v2{x = 0, y = -24} then
 			local force = memory.force
 			Common.notify_force(force, {'pirates.steer_left'})
-			inv_left.remove({name = "rail-signal", count = 100})
+			inv_left.remove({name = "rail-signal", count = 50})
 		end
 		return
-	elseif count_right >= 100 and count_left < 100 and memory.overworldy < 24 then
+	elseif count_right >= 50 and count_left < 50 and memory.overworldy < 24 then
 		if Overworld.try_overworld_move_v2{x = 0, y = 24} then
 			local force = memory.force
 			Common.notify_force(force, {'pirates.steer_right'})
-			inv_right.remove({name = "rail-signal", count = 100})
+			inv_right.remove({name = "rail-signal", count = 50})
 		end
 		return
 	end
@@ -1163,17 +1193,17 @@ function Public.slower_boat_tick(tickinterval)
 		game.pollution_statistics.on_flow('locomotive', pollution)
 	end
 
-	if memory.enemyboats then
-		for i = 1, #memory.enemyboats do
-			local b = memory.enemyboats[i]
+	-- if memory.enemyboats then
+	-- 	for i = 1, #memory.enemyboats do
+	-- 		local b = memory.enemyboats[i]
 
-			-- if b.landing_time and destination.dynamic_data.timer and destination.dynamic_data.timer >= b.landing_time and b.spawner and b.spawner.valid then
-			-- -- if b.landing_time and destination.dynamic_data.timer and destination.dynamic_data.timer >= b.landing_time + 3 and b.spawner and b.spawner.valid then
-			-- 	b.spawner.destructible = true
-			-- 	b.landing_time = nil
-			-- end
-		end
-	end
+	-- 		-- if b.landing_time and destination.dynamic_data.timer and destination.dynamic_data.timer >= b.landing_time and b.spawner and b.spawner.valid then
+	-- 		-- -- if b.landing_time and destination.dynamic_data.timer and destination.dynamic_data.timer >= b.landing_time + 3 and b.spawner and b.spawner.valid then
+	-- 		-- 	b.spawner.destructible = true
+	-- 		-- 	b.landing_time = nil
+	-- 		-- end
+	-- 	end
+	-- end
 end
 
 function Public.LOS_tick(tickinterval)
@@ -1190,7 +1220,7 @@ function Public.LOS_tick(tickinterval)
 		force.chart(surface, {{p.x - BoatData.width/2 - 70, p.y - 80},{p.x - BoatData.width/2 + 70, p.y + 80}})
 	end
 
-	if CoreData.rocket_silo_death_causes_loss or (destination.static_params and destination.static_params.base_cost_to_undock and destination.static_params.base_cost_to_undock['launch_rocket'] and destination.static_params.base_cost_to_undock['launch_rocket'] == true) then
+	if CoreData.rocket_silo_death_causes_loss or (destination.static_params and destination.static_params.base_cost_to_undock and destination.static_params.base_cost_to_undock['launch_rocket'] == true) then
 		local silos = destination.dynamic_data.rocketsilos
 		if silos and silos[1] and silos[1].valid then
 			local p = silos[1].position
@@ -1628,6 +1658,25 @@ function Public.revealed_buried_treasure_distance_check()
 	end
 end
 
+function Public.update_protected_run_lock_timer(tickinterval)
+	local memory = Memory.get_crew_memory()
+	if memory.run_is_protected then
+		if not Roles.captain_exists() then
+			if memory.protected_run_lock_timer > 0 then
+				memory.protected_run_lock_timer = memory.protected_run_lock_timer - tickinterval
+
+				if memory.protected_run_lock_timer <= 0 then
+					Common.notify_game({'pirates.protected_run_lock_expired', memory.name})
+					memory.run_is_protected = false
+					Roles.assign_captain_based_on_priorities()
+				end
+			end
+		else
+			memory.protected_run_lock_timer = 60 * 60 * 60 * CoreData.protected_run_lock_amount_hr
+		end
+	end
+end
+
 function Public.update_private_run_lock_timer(tickinterval)
 	local memory = Memory.get_crew_memory()
 	if memory.run_is_private then
@@ -1642,6 +1691,23 @@ function Public.update_private_run_lock_timer(tickinterval)
 			end
 		else
 			memory.private_run_lock_timer = 60 * 60 * 60 * CoreData.private_run_lock_amount_hr
+		end
+	end
+end
+
+function Public.update_pet_biter_lifetime(tickinterval)
+	local memory = Memory.get_crew_memory()
+	if memory.pet_biters then
+		for id, pet_biter in pairs(memory.pet_biters) do
+			if pet_biter.pet and pet_biter.pet.valid then
+				pet_biter.time_to_live = pet_biter.time_to_live - tickinterval
+				if pet_biter.time_to_live <= 0 then
+					memory.pet_biters[id].pet.die()
+					memory.pet_biters[id] = nil
+				end
+			else
+				memory.pet_biters[id] = nil
+			end
 		end
 	end
 end

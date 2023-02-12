@@ -61,6 +61,10 @@ function Public.terrain(args)
 		else
 			args.tiles[#args.tiles + 1] = {name = 'water-mud', position = args.p}
 			land = false
+
+			if math.random(1, 256) == 1 then
+				args.entities[#args.entities + 1] = {name = 'fish', position = args.p}
+			end
 		end
 	end
 

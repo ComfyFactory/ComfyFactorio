@@ -307,7 +307,7 @@ function Public.create_mail_delivery_biters() --these travel cross-map between b
 	local surface = game.surfaces[Common.current_destination().surface_name]
 	local enemy_force_name = memory.enemy_force_name
 
-    local spawners = Public.get_valid_spawners(surface)
+    local spawners = Common.get_valid_spawners(surface)
 
     local try_how_many_groups = Math.clamp(0, 4, (#spawners - 8) / 100)
 
@@ -360,7 +360,7 @@ function Public.spawn_group_of_scripted_biters(fraction_of_floating_pollution, m
 	local surface = game.surfaces[Common.current_destination().surface_name]
 	local enemy_force_name = memory.enemy_force_name
 
-    local spawner = Public.get_random_valid_spawner(surface)
+    local spawner = Common.get_random_valid_spawner(surface)
     if not spawner then log('no spawner found') return end
 
 	local nearby_units_to_bring
@@ -470,6 +470,7 @@ function Public.try_spawner_spend_fraction_of_available_pollution_on_biters(spaw
 			end
 
             local biter = surface.create_entity({name = name2, force = enemy_force_name, position = p})
+            Common.try_make_biter_elite(biter)
 
             units_created[#units_created + 1] = biter
             memory.scripted_biters[biter.unit_number] = {entity = biter, created_at = game.tick}
@@ -586,50 +587,6 @@ end
 --     end
 --     return false
 -- end
-
-function Public.get_valid_spawners(surface)
-	local memory = Memory.get_crew_memory()
-
-    local spawners = surface.find_entities_filtered({type = 'unit-spawner', force = memory.enemy_force_name})
-
-    local boat_spawners = {}
-
-	if memory.enemyboats and #memory.enemyboats > 0 then
-        for i = 1, #memory.enemyboats do
-            local eb = memory.enemyboats[i]
-            if eb.spawner and eb.spawner.valid then
-                boat_spawners[#boat_spawners + 1] = eb.spawner
-            end
-        end
-    end
-
-    local valid_spawners = {}
-    for i = 1, #spawners do
-        local s = spawners[i]
-        local valid = true
-        for j = 1, #boat_spawners do
-            local bs = boat_spawners[j]
-            if s == bs then
-                valid = false
-                break
-            end
-        end
-        if valid then
-            valid_spawners[#valid_spawners + 1] = s
-        end
-    end
-
-    return valid_spawners
-end
-
-function Public.get_random_valid_spawner(surface)
-
-    local spawners = Public.get_valid_spawners(surface)
-
-    if #spawners == 0 then return end
-
-	return spawners[Math.random(#spawners)]
-end
 
 function Public.is_biter_inactive(biter)
     if (not biter.entity) or (not biter.entity.valid) then
@@ -816,6 +773,7 @@ function Public.revenge_group(surface, p, target, type, bonus_evo, amount_multip
 		local p2 = surface.find_non_colliding_position('wooden-chest', p, 5, 0.5)
 		if p2 then
             local biter = surface.create_entity({name = name, force = enemy_force_name, position = p})
+            Common.try_make_biter_elite(biter)
             -- local biter = surface.create_entity({name = name, force = enemy_force_name, position = p2})
             units[#units + 1] = biter
         end
@@ -860,6 +818,7 @@ function Public.spawn_boat_biters(boat, max_evo, count, width)
 		local p2 = surface.find_non_colliding_position('wooden-chest', p, 8, 0.5) --needs to be wooden-chest for collisions to work properly
 		if p2 then
             local biter = surface.create_entity({name = name, force = enemy_force_name, position = p2})
+            Common.try_make_biter_elite(biter)
 
             memory.scripted_biters[biter.unit_number] = {entity = biter, created_at = game.tick}
 

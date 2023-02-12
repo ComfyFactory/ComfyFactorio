@@ -98,9 +98,9 @@ Public.main_shop_data_1 = {
 
 Public.main_shop_data_2 = {
 	rail_signal = {
-		tooltip = "100 signals, used to steer the boat one space in the Crow's Nest View.",
-		what_you_get_sprite_buttons = {['item/rail-signal'] = 100},
-		base_cost = {coins = 600, fuel = 50},
+		tooltip = "50 signals, used to steer the boat one space in the Crow's Nest View.",
+		what_you_get_sprite_buttons = {['item/rail-signal'] = 50},
+		base_cost = {coins = 500, fuel = 50},
 	},
 	artillery_shell = {
 		tooltip = '8 cannon shells.',

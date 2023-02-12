@@ -16,7 +16,8 @@ local enum = {
 	DEFAULT = 'Default',
 	SLOT_EXTRA_HOLD = 5,
 	SLOT_MORE_POWER = 6,
-	SLOT_REROLL_PRICES = 7,
+	SLOT_RANDOM_CLASS = 7,
+	SLOT_REROLL_PRICES = 8,
 }
 Public.enum = enum
 
@@ -103,12 +104,12 @@ Public.market_price_scale = 300
 
 Public.cabin_shop_data = {
 	{
-		price = {{'coin', 400}, {'coal', 10}, {'iron-plate', 20}},--should be inefficient on resources to merely buy arty to shoot nests
+		price = {{'coin', 4000}, {'coal', 20}, {'iron-plate', 20}},--should be inefficient on resources to merely buy arty to shoot nests
 		offer = {type='give-item', item = 'artillery-shell', count = 5},
 	},
 	{
-		price = {{'coin', 1000}, {'electronic-circuit', 25}},
-		offer = {type='give-item', item = 'rail-signal', count = 100},
+		price = {{'coin', 1000}, {'electronic-circuit', 20}},
+		offer = {type='give-item', item = 'rail-signal', count = 50},
 	},
 	{
 		price = {{'coin', 1000}, {'stone-brick', 50}},
@@ -125,6 +126,10 @@ Public.cabin_shop_data = {
 	{
 		price = {}, -- price set later
 		offer = {type='nothing', effect_description={'pirates.market_description_upgrade_power'}}
+	},
+	{
+		price = {}, -- price set later
+		offer = {type='nothing', effect_description={'pirates.market_description_random_class'}}
 	},
 	{
 		price = {{'coin', 100}, {'raw-fish', 1}},
@@ -163,7 +168,7 @@ function Public.create_cabin_surface()
 
 		local surface = game.create_surface(cabinname, map_gen_settings)
 		surface.freeze_daytime = true
-		surface.daytime = 0
+		surface.daytime = 0.3
 		surface.show_clouds = false
 
         -- more here
@@ -366,10 +371,13 @@ function Public.get_market_random_price(slot)
 
 	if slot == enum.SLOT_EXTRA_HOLD then
 		local tier = memory.hold_surface_count
-		return Common.pick_random_price(tier, Public.market_price_scale, math.min(0.8, 0.05 + tier * 0.2))
+		return Common.pick_random_price(tier, Public.market_price_scale, math.min(1, 0.05 + tier * 0.15))
 	elseif slot == enum.SLOT_MORE_POWER then
 		local tier = memory.boat.EEI_stage
-		return Common.pick_random_price(tier, 0.5*Public.market_price_scale, math.min(0.8, 0.05 + tier * 0.2))
+		return Common.pick_random_price(tier, 0.5*Public.market_price_scale, math.min(1, 0.05 + tier * 0.15))
+	elseif slot == enum.SLOT_RANDOM_CLASS then
+		local tier = memory.boat.random_class_purchase_count + 1
+		return Common.pick_random_price(tier, Public.market_price_scale, math.min(1, 0.05 + tier * 0.15))
 	end
 
 	return nil

@@ -7,6 +7,7 @@ local Classes = require 'maps.pirates.roles.classes'
 local GuiCommon = require 'maps.pirates.gui.common'
 local Public = {}
 
+local _inspect = require 'utils.inspect'.inspect
 
 local window_name = 'classes'
 
@@ -146,7 +147,7 @@ function Public.toggle_window(player)
         vertical_scroll_policy = 'auto'
     }
     scroll_pane.style.maximal_height = 500
-	scroll_pane.style.bottom_padding = 20
+	scroll_pane.style.bottom_margin = 10
 
 	scroll_pane.add{
 		type = 'table',
@@ -187,34 +188,45 @@ function Public.full_update(player, force_refresh)
 	-- Update current content table
 	for i = 1, memory.class_entry_count do
 		local label = class_list_panel_table['player_label' .. i]
-		local class_entry = memory.unlocked_classes[i]
-		label.caption = class_entry.taken_by and game.players[class_entry.taken_by].name or ''
+		if label then
+			local class_entry = memory.unlocked_classes[i]
+			label.caption = class_entry.taken_by and game.players[class_entry.taken_by].name or ''
 
-		local black = {r=0, g=0, b=0}
-		local red = {r=1, g=0, b=0}
+			local black = {r=0, g=0, b=0}
+			local red = {r=1, g=0, b=0}
 
-		local button = class_list_panel_table['button' .. i]
-		if not class_entry.taken_by then
-			button.caption = {'pirates.gui_classes_take'}
-			button.tooltip = {'pirates.gui_classes_take_enabled_tooltip'}
-			button.style.font_color = black
-			button.style.hovered_font_color = black
-			button.style.clicked_font_color = black
-			button.enabled = true
-		elseif class_entry.taken_by == player.index then
-			button.caption = {'pirates.gui_classes_drop'}
-			button.tooltip = {'pirates.gui_classes_drop_tooltip'}
-			button.style.font_color = red
-			button.style.hovered_font_color = red
-			button.style.clicked_font_color = red
-			button.enabled = true
+			local button = class_list_panel_table['button' .. i]
+			if not class_entry.taken_by then
+				button.caption = {'pirates.gui_classes_take'}
+				button.tooltip = {'pirates.gui_classes_take_enabled_tooltip'}
+				button.style.font_color = black
+				button.style.hovered_font_color = black
+				button.style.clicked_font_color = black
+				button.enabled = true
+			elseif class_entry.taken_by == player.index then
+				button.caption = {'pirates.gui_classes_drop'}
+				button.tooltip = {'pirates.gui_classes_drop_tooltip'}
+				button.style.font_color = red
+				button.style.hovered_font_color = red
+				button.style.clicked_font_color = red
+				button.enabled = true
+			else
+				button.caption = {'pirates.gui_classes_take'}
+				button.tooltip = {'pirates.gui_classes_take_disabled_tooltip'}
+				button.style.font_color = black
+				button.style.hovered_font_color = black
+				button.style.clicked_font_color = black
+				button.enabled = false
+			end
+
+			if Common.is_spectator(player) then
+				button.enabled = false
+			end
 		else
-			button.caption = {'pirates.gui_classes_take'}
-			button.tooltip = {'pirates.gui_classes_take_disabled_tooltip'}
-			button.style.font_color = black
-			button.style.hovered_font_color = black
-			button.style.clicked_font_color = black
-			button.enabled = false
+			log('Error: Non-existant label index, here some debug info.')
+			log(_inspect(class_list_panel_table))
+			log(memory.class_entry_count)
+			log(memory.unlocked_classes)
 		end
 	end
 

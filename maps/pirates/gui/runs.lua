@@ -6,7 +6,7 @@ local CoreData = require 'maps.pirates.coredata'
 local Utils = require 'maps.pirates.utils_local'
 local Math = require 'maps.pirates.math'
 -- local Surfaces = require 'maps.pirates.surfaces.surfaces'
--- local Roles = require 'maps.pirates.roles.roles'
+local Roles = require 'maps.pirates.roles.roles'
 local Crew = require 'maps.pirates.crew'
 local Progression = require 'maps.pirates.progression'
 -- local Structures = require 'maps.pirates.structures.structures'
@@ -177,10 +177,10 @@ function Public.toggle_window(player)
         name = 'scroll_pane',
         direction = 'vertical',
         horizontal_scroll_policy = 'never',
-        vertical_scroll_policy = 'auto'
+		vertical_scroll_policy = 'auto-and-reserve-space'
     }
     flow.style.maximal_height = 500
-	flow.style.bottom_padding = 20
+	flow.style.bottom_margin = 10
 
 	--*** ONGOING RUNS ***--
 
@@ -200,10 +200,19 @@ function Public.toggle_window(player)
 		type = 'list-box',
 	})
 	flow3.style.margin = 2
+	flow3.style.right_margin = 5
 	flow3.style.horizontally_stretchable = true
 
 	flow3 = flow2.add({
-		name = 'join_crew_info',
+		name = 'join_protected_crew_info',
+		type = 'label',
+		caption = {'pirates.gui_join_protected_run_info', 0, 0, 0},
+		visible = false,
+	})
+	flow3.style.single_line = false
+
+	flow3 = flow2.add({
+		name = 'join_private_crew_info',
 		type = 'label',
 		caption = {'pirates.gui_join_private_run_info', 0, 0, 0},
 		visible = false,
@@ -277,6 +286,8 @@ function Public.toggle_window(player)
 		type = 'list-box',
 	})
 	flow3.style.margin = 2
+	flow3.style.right_margin = 5
+	flow3.style.horizontally_stretchable = true
 
 	flow3 = flow2.add({
 		name = 'flow_buttons',
@@ -343,6 +354,16 @@ function Public.toggle_window(player)
 	flow5.style.height = 24
 	flow5.style.top_margin = -3
 	flow5.style.bottom_margin = 3
+
+	-- PROTECTED RUN ELEMENTS --
+
+	flow4.add({
+		name = 'protected_checkbox',
+		type = 'checkbox',
+		caption = {'pirates.gui_runs_proposal_maker_protected'},
+		state = false,
+		tooltip = {'pirates.gui_runs_proposal_maker_protected_tooltip', CoreData.protected_run_lock_amount_hr}
+	})
 
 	-- PRIVATE RUN ELEMENTS --
 
@@ -474,7 +495,7 @@ function Public.toggle_window(player)
 	flow4.style.font_color = {r=0.10, g=0.10, b=0.10}
 
 
-	GuiCommon.flow_add_close_button(flow, window_name .. '_piratebutton')
+	GuiCommon.flow_add_close_button(window, window_name .. '_piratebutton')
 end
 
 
@@ -525,11 +546,12 @@ function Public.full_update(player)
 
 		flow.ongoing_runs.body.leaving_prompt.visible = playercrew_status.leaving
 
+		local show_protected_info = crewid and global_memory.crew_memories[crewid].run_is_protected
+		flow.ongoing_runs.body.join_protected_crew_info.visible = show_protected_info
 
-		local show_password_info = crewid and global_memory.crew_memories[crewid].run_is_private
-
-		flow.ongoing_runs.body.join_crew_info.visible = show_password_info
-		flow.ongoing_runs.body.password_namefield.visible = show_password_info
+		local show_private_info = crewid and global_memory.crew_memories[crewid].run_is_private
+		flow.ongoing_runs.body.join_private_crew_info.visible = show_private_info
+		flow.ongoing_runs.body.password_namefield.visible = show_private_info
 	end
 
 	flow.proposals.visible = (memory.crewstatus == nil and not playercrew_status.leaving)
@@ -598,13 +620,22 @@ function Public.full_update(player)
 			crewid = tonumber((flow.ongoing_runs.body.ongoing_runs_listbox.get_item(flow.ongoing_runs.body.ongoing_runs_listbox.selected_index))[2])
 		end
 
+		-- Update timer when captain protection expires
+		if crewid and flow.ongoing_runs.body.join_protected_crew_info.visible then
+			local lock_timer = global_memory.crew_memories[crewid].protected_run_lock_timer
+			local sec = Math.floor((lock_timer / (60)) % 60)
+			local min = Math.floor((lock_timer / (60 * 60)) % 60)
+			local hrs = Math.floor((lock_timer / (60 * 60 * 60)) % 60)
+			flow.ongoing_runs.body.join_protected_crew_info.caption = {'pirates.gui_join_protected_run_info', hrs, min, sec}
+		end
+
 		-- Update timer when run will become public
-		if crewid and flow.ongoing_runs.body.join_crew_info.visible then
+		if crewid and flow.ongoing_runs.body.join_private_crew_info.visible then
 			local lock_timer = global_memory.crew_memories[crewid].private_run_lock_timer
 			local sec = Math.floor((lock_timer / (60)) % 60)
 			local min = Math.floor((lock_timer / (60 * 60)) % 60)
 			local hrs = Math.floor((lock_timer / (60 * 60 * 60)) % 60)
-			flow.ongoing_runs.body.join_crew_info.caption = {'pirates.gui_join_private_run_info', hrs, min, sec}
+			flow.ongoing_runs.body.join_private_crew_info.caption = {'pirates.gui_join_private_run_info', hrs, min, sec}
 		end
 	end
 
@@ -678,34 +709,59 @@ function Public.click(event)
 		local listbox = flow.ongoing_runs.body.ongoing_runs_listbox
 		local crewid = tonumber(listbox.get_item(listbox.selected_index)[2])
 
+		local memory = global_memory.crew_memories[crewid]
+
 		-- If run is private
 		if global_memory.crew_memories[crewid].run_is_private then
 			if global_memory.crew_memories[crewid].private_run_password == flow.ongoing_runs.body.password_namefield.text then
 				Crew.join_crew(player, crewid)
-				flow.ongoing_runs.body.join_crew_info.visible = false
+				flow.ongoing_runs.body.join_private_crew_info.visible = false
 				flow.ongoing_runs.body.password_namefield.visible = false
+
+				if memory.run_is_protected and (not Roles.captain_exists()) then
+					Common.parrot_speak(memory.force, {'pirates.parrot_player_joins_protected_run_with_no_captain'})
+					Common.parrot_speak(memory.force, {'pirates.parrot_create_new_crew_tip'})
+				end
 			else
 				Common.notify_player_error(player, {'pirates.gui_join_private_run_error_wrong_password'})
 			end
 		else
 			Crew.join_crew(player, crewid)
+
+			if memory.run_is_protected and (not Roles.captain_exists()) then
+				Common.parrot_speak(memory.force, {'pirates.parrot_player_joins_protected_run_with_no_captain'})
+				Common.parrot_speak(memory.force, {'pirates.parrot_create_new_crew_tip'})
+			end
 		end
 
 		return
 	end
 
 	if eventname == 'propose_crew' then
-		-- If proposal was set as private
+		if #global_memory.crew_active_ids >= global_memory.active_crews_cap then
+			Common.notify_player_error(player, {'pirates.gui_runs_launch_error_5'})
+			return
+		end
+
+		-- Count private runs
+		local private_run_count = 0
+		for _, id in pairs(global_memory.crew_active_ids) do
+			if global_memory.crew_memories[id].run_is_private then
+				private_run_count = private_run_count + 1
+			end
+		end
+
+		-- Count protected but not private runs
+		local protected_but_not_private_run_count = 0
+		for _, id in pairs(global_memory.crew_active_ids) do
+			if global_memory.crew_memories[id].run_is_protected and (not global_memory.crew_memories[id].run_is_private) then
+				protected_but_not_private_run_count = protected_but_not_private_run_count + 1
+			end
+		end
+
+		local run_is_protected = flow.proposals.body.proposal_maker.body.protected_checkbox.state
 		local run_is_private = flow.proposals.body.proposal_maker.body.private_checkbox.state
 		if run_is_private then
-			-- Count private runs
-			local private_run_count = 0
-			for _, id in pairs(global_memory.crew_active_ids) do
-				if global_memory.crew_memories[id].run_is_private then
-					private_run_count = private_run_count + 1
-				end
-			end
-
 			-- Make sure private run can be created
 			if private_run_count >= global_memory.private_run_cap then
 				Common.notify_player_error(player, {'pirates.gui_runs_proposal_maker_error_private_run_limit'})
@@ -721,6 +777,12 @@ function Public.click(event)
 			-- Check if passwords aren't empty
 			if flow.proposals.body.proposal_maker.body.password_namefield.text == '' then
 				Common.notify_player_error(player, {'pirates.gui_runs_proposal_maker_error_private_run_password_empty'})
+				return
+			end
+		elseif run_is_protected then
+			-- Make sure protected run can be created
+			if protected_but_not_private_run_count >= global_memory.protected_run_cap then
+				Common.notify_player_error(player, {'pirates.gui_runs_proposal_maker_error_protected_run_limit'})
 				return
 			end
 		end
@@ -773,6 +835,7 @@ function Public.click(event)
 			capacity_option = capacity_option,
 			-- mode_option = mode_option,
 			endorserindices = {player.index},
+			run_is_protected = run_is_protected,
 			run_is_private = run_is_private,
 			private_run_password = private_run_password,
 		}
@@ -835,6 +898,18 @@ function Public.click(event)
 							Common.notify_player_error(player, {'pirates.gui_runs_proposal_maker_error_private_run_limit'})
 							return
 						end
+					elseif proposal.run_is_protected then
+						local protected_but_not_private_run_count = 0
+						for _, id in pairs(global_memory.crew_active_ids) do
+							if global_memory.crew_memories[id].run_is_protected and (not global_memory.crew_memories[id].run_is_private) then
+								protected_but_not_private_run_count = protected_but_not_private_run_count + 1
+							end
+						end
+
+						if protected_but_not_private_run_count >= global_memory.protected_run_cap then
+							Common.notify_player_error(player, {'pirates.gui_runs_proposal_maker_error_protected_run_limit'})
+							return
+						end
 					end
 
 					Crew.initialise_crew(proposal)
@@ -846,7 +921,6 @@ function Public.click(event)
 			end
 		end
 	end
-
 end
 
 return Public

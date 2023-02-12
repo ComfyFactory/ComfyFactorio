@@ -353,7 +353,7 @@ function Public.join_crew(player, crewid, rejoin)
 
 	-- local adventuring = false
 	local spectating = false
-	if memory.crewstatus and memory.crewstatus == enum.ADVENTURING then
+	if memory.crewstatus == enum.ADVENTURING then
 		-- for _, playerindex in pairs(memory.crewplayerindices) do
 		-- 	if player.index == playerindex then adventuring = true end
 		-- end
@@ -379,8 +379,10 @@ function Public.join_crew(player, crewid, rejoin)
 		player.force = memory.force
 		player.teleport(surface.find_non_colliding_position('character', memory.spawnpoint, 32, 0.5) or memory.spawnpoint, surface)
 
-	Common.notify_lobby({'pirates.lobby_to_crew_2', player.name, memory.name})
+		Common.notify_lobby({'pirates.lobby_to_crew_2', player.name, memory.name})
 	end
+
+	Common.give_back_items_to_temporarily_logged_off_player(player)
 
 	Common.notify_force(player.force, {'pirates.lobby_to_crew', player.name})
 	-- Server.to_discord_embed_raw(CoreData.comfy_emojis.yum1 .. '[' .. memory.name .. '] ' .. message)
@@ -394,7 +396,9 @@ function Public.join_crew(player, crewid, rejoin)
 		end
 	end
 
-	Roles.confirm_captain_exists(player)
+	if not memory.run_is_protected then
+		Roles.confirm_captain_exists(player)
+	end
 
 	if #Common.crew_get_crew_members() == 1 and memory.crew_disband_tick then
 		memory.crew_disband_tick = nil --to prevent disbanding the crew after saving the game (booting everyone) and loading it again (joining the crew as the only member)
@@ -430,13 +434,34 @@ function Public.leave_crew(player, to_lobby, quiet)
 		-- 	-- Server.to_discord_embed_raw(CoreData.comfy_emojis.feel .. '[' .. memory.name .. '] ' .. message)
 		-- end
 
+		-- @TODO: figure out why surface_name can be nil
+		-- When player remains in island when ship leaves, prevent him from getting items back
+		local save_items = true
+		if player.surface and
+			player.surface.valid and
+			memory.boat and
+			memory.boat.surface_name
+		then
+			local player_surface_type = SurfacesCommon.decode_surface_name(player.surface.name).type
+			local boat_surface_type = SurfacesCommon.decode_surface_name(memory.boat.surface_name).type
+
+			if player_surface_type == Surfaces.enum.ISLAND and boat_surface_type == Surfaces.enum.SEA then
+				save_items = false
+			end
+		end
+
 		if to_lobby then
-			Common.send_important_items_from_player_to_crew(player, true)
+			if save_items then
+				Common.send_important_items_from_player_to_crew(player, true)
+			end
 			char.die(memory.force_name)
 		else
-			Common.send_important_items_from_player_to_crew(player)
+			if save_items then
+				Common.temporarily_store_logged_off_character_items(player)
+			end
 			memory.temporarily_logged_off_characters[player.index] = game.tick
 		end
+
 	-- else
 	-- 	if not quiet then
 	-- 		-- local message = player.name .. ' left the crew.'
@@ -495,7 +520,7 @@ function Public.plank(captain, player)
 	local memory = Memory.get_crew_memory()
 
 	if Utils.contains(Common.crew_get_crew_members(), player) then
-		if (not (captain.index == player.index)) then
+		if captain.index ~= player.index then
 			Server.to_discord_embed_raw(CoreData.comfy_emojis.despair .. string.format("%s planked %s!", captain.name, player.name))
 
 			Common.notify_force(player.force, {'pirates.plank', captain.name, player.name})
@@ -713,8 +738,12 @@ function Public.initialise_crew(accepted_proposal)
 	memory.tempbanned_from_joining_data = {}
 	memory.destinations = {}
 	memory.temporarily_logged_off_characters = {}
+	memory.temporarily_logged_off_characters_items = {}
 	memory.class_renderings = {}
 	memory.class_auxiliary_data = {}
+
+	memory.elite_biters = {}
+	memory.pet_biters = {}
 
 	memory.hold_surface_count = 1
 
@@ -728,13 +757,14 @@ function Public.initialise_crew(accepted_proposal)
 	memory.difficulty = CoreData.difficulty_options[accepted_proposal.difficulty_option].value
 	memory.capacity = CoreData.capacity_options[accepted_proposal.capacity_option].value
 	-- memory.mode = CoreData.mode_options[accepted_proposal.mode_option].value
+	memory.run_is_protected = accepted_proposal.run_is_protected
+	memory.protected_run_lock_timer = 60 * 60 * 60 * CoreData.protected_run_lock_amount_hr
 	memory.run_is_private = accepted_proposal.run_is_private
 	memory.private_run_password = accepted_proposal.private_run_password
 	memory.private_run_lock_timer = 60 * 60 * 60 * CoreData.private_run_lock_amount_hr
 
 	memory.destinationsvisited_indices = {}
 	memory.stored_fuel = Balance.starting_fuel
-	memory.available_classes_pool = Classes.initial_class_pool()
 	memory.playtesting_stats = {
 		coins_gained_by_biters = 0,
 		coins_gained_by_nests_and_worms = 0,
@@ -751,10 +781,13 @@ function Public.initialise_crew(accepted_proposal)
 	memory.captain_accrued_time_data = {}
 	memory.max_players_recorded = 0
 
-	memory.classes_table = {}
 	memory.officers_table = {}
-	memory.spare_classes = {}
-	memory.unlocked_classes = {}
+
+	memory.classes_table = {} -- stores all unlocked untaken classes
+	memory.spare_classes = {} -- stores all unlocked taken classes
+	memory.recently_purchased_classes = {} -- stores recently unlocked classes to add it back to available class pool list later
+	memory.unlocked_classes = {} -- stores all unlocked classes just for GUI (to have consistent order)
+	memory.available_classes_pool = Classes.initial_class_pool() -- stores classes that can be randomly picked for unlocking
 	memory.class_entry_count = 0 -- used to track whether new class entries should be added during "full_update"
 
 	memory.healthbars = {}
@@ -879,33 +912,32 @@ function Public.reset_crew_and_enemy_force(id)
 		crew_force.set_turret_attack_modifier(k, v)
 	end
 
-	crew_force.technologies['circuit-network'].researched = true
-	crew_force.technologies['uranium-processing'].researched = true
-	crew_force.technologies['kovarex-enrichment-process'].researched = true
-	crew_force.technologies['gun-turret'].researched = true
-	crew_force.technologies['electric-energy-distribution-1'].researched = true
-	crew_force.technologies['electric-energy-distribution-2'].researched = true
-	crew_force.technologies['advanced-material-processing'].researched = true
-	crew_force.technologies['advanced-material-processing-2'].researched = true
-	crew_force.technologies['solar-energy'].researched = true
-	crew_force.technologies['inserter-capacity-bonus-1'].researched = true --needed to make stack inserters different to fast inserters
+	-- crew_force.technologies['circuit-network'].researched = true
+	-- crew_force.technologies['uranium-processing'].researched = true
+	-- crew_force.technologies['kovarex-enrichment-process'].researched = true
+	-- crew_force.technologies['gun-turret'].researched = true
+	-- crew_force.technologies['electric-energy-distribution-1'].researched = true
+	-- crew_force.technologies['electric-energy-distribution-2'].researched = true
+	-- crew_force.technologies['advanced-material-processing'].researched = true
+	-- crew_force.technologies['advanced-material-processing-2'].researched = true
+	-- crew_force.technologies['solar-energy'].researched = true
+	-- crew_force.technologies['inserter-capacity-bonus-1'].researched = true --needed to make stack inserters different to fast inserters
 	-- crew_force.technologies['inserter-capacity-bonus-2'].researched = true
 
 	--as prerequisites for uranium ammo and automation 3:
-	crew_force.technologies['speed-module'].researched = true
-	crew_force.technologies['tank'].researched = true
-	crew_force.technologies['concrete'].researched = false
+	-- crew_force.technologies['speed-module'].researched = true
+	-- crew_force.technologies['tank'].researched = true
 
 
 	--@TRYING this out:
 	crew_force.technologies['coal-liquefaction'].enabled = true
 	-- crew_force.technologies['coal-liquefaction'].researched = true -- don't see why this should be researched by default
 
-	crew_force.technologies['toolbelt'].enabled = false --trying this. we don't actually want players to carry too many things manually, and in fact in a resource-tight scenario that's problematic
+	-- crew_force.technologies['toolbelt'].enabled = false --trying this. we don't actually want players to carry too many things manually, and in fact in a resource-tight scenario that's problematic
 
-	crew_force.technologies['railway'].researched = true --needed for purple sci
+	-- crew_force.technologies['railway'].researched = true --needed for purple sci
 
-	crew_force.technologies['land-mine'].enabled = false
+	-- crew_force.technologies['land-mine'].enabled = false
 	crew_force.technologies['landfill'].enabled = false
 	crew_force.technologies['cliff-explosives'].enabled = false
 
@@ -916,17 +948,17 @@ function Public.reset_crew_and_enemy_force(id)
 
 	crew_force.technologies['rocketry'].enabled = false
 	crew_force.technologies['artillery'].enabled = false
-	crew_force.technologies['destroyer'].enabled = false
+	-- crew_force.technologies['destroyer'].enabled = false
 	crew_force.technologies['spidertron'].enabled = false
 	crew_force.technologies['atomic-bomb'].enabled = false
 	crew_force.technologies['explosive-rocketry'].enabled = false
 
-	crew_force.technologies['research-speed-1'].enabled = false
-	crew_force.technologies['research-speed-2'].enabled = false
-	crew_force.technologies['research-speed-3'].enabled = false
-	crew_force.technologies['research-speed-4'].enabled = false
-	crew_force.technologies['research-speed-5'].enabled = false
-	crew_force.technologies['research-speed-6'].enabled = false
+	-- crew_force.technologies['research-speed-1'].enabled = false
+	-- crew_force.technologies['research-speed-2'].enabled = false
+	-- crew_force.technologies['research-speed-3'].enabled = false
+	-- crew_force.technologies['research-speed-4'].enabled = false
+	-- crew_force.technologies['research-speed-5'].enabled = false
+	-- crew_force.technologies['research-speed-6'].enabled = false
 	-- crew_force.technologies['follower-robot-count-1'].enabled = false
 	-- crew_force.technologies['follower-robot-count-2'].enabled = false
 	-- crew_force.technologies['follower-robot-count-3'].enabled = false
@@ -940,40 +972,38 @@ function Public.reset_crew_and_enemy_force(id)
 	-- crew_force.technologies['refined-flammables-4'].enabled = false
 	-- crew_force.technologies['refined-flammables-5'].enabled = false
 
-	crew_force.technologies['mining-productivity-3'].enabled = false --huge trap. even the earlier ones are a trap?
-
 	-- for lategame balance:
 	-- crew_force.technologies['worker-robots-storage-1'].enabled = false
-	crew_force.technologies['worker-robots-storage-2'].enabled = false
-	crew_force.technologies['worker-robots-storage-3'].enabled = false
-	crew_force.technologies['worker-robots-speed-5'].enabled = false
-	crew_force.technologies['worker-robots-speed-6'].enabled = false
-	crew_force.technologies['follower-robot-count-5'].enabled = false
-	crew_force.technologies['follower-robot-count-6'].enabled = false
-	crew_force.technologies['follower-robot-count-7'].enabled = false
-	crew_force.technologies['inserter-capacity-bonus-6'].enabled = false
-	crew_force.technologies['inserter-capacity-bonus-7'].enabled = false
+	-- crew_force.technologies['worker-robots-storage-2'].enabled = false
+	-- crew_force.technologies['worker-robots-storage-3'].enabled = false
+	-- crew_force.technologies['worker-robots-speed-5'].enabled = false
+	-- crew_force.technologies['worker-robots-speed-6'].enabled = false
+	-- crew_force.technologies['follower-robot-count-5'].enabled = false
+	-- crew_force.technologies['follower-robot-count-6'].enabled = false
+	-- crew_force.technologies['follower-robot-count-7'].enabled = false
+	-- crew_force.technologies['inserter-capacity-bonus-6'].enabled = false
+	-- crew_force.technologies['inserter-capacity-bonus-7'].enabled = false
 
-	crew_force.technologies['weapon-shooting-speed-6'].enabled = false
-	crew_force.technologies['laser-shooting-speed-6'].enabled = false
-	crew_force.technologies['laser-shooting-speed-7'].enabled = false
-	crew_force.technologies['refined-flammables-5'].enabled = false
-	crew_force.technologies['refined-flammables-6'].enabled = false
-	crew_force.technologies['refined-flammables-7'].enabled = false
-	crew_force.technologies['energy-weapons-damage-5'].enabled = false --5 makes krakens too easy
-	crew_force.technologies['energy-weapons-damage-6'].enabled = false
-	crew_force.technologies['energy-weapons-damage-7'].enabled = false
-	crew_force.technologies['physical-projectile-damage-5'].enabled = false
-	crew_force.technologies['physical-projectile-damage-6'].enabled = false
-	crew_force.technologies['physical-projectile-damage-7'].enabled = false
-	crew_force.technologies['stronger-explosives-5'].enabled = false
-	crew_force.technologies['stronger-explosives-6'].enabled = false
-	crew_force.technologies['stronger-explosives-7'].enabled = false
+	-- crew_force.technologies['weapon-shooting-speed-6'].enabled = false
+	-- crew_force.technologies['laser-shooting-speed-6'].enabled = false
+	-- crew_force.technologies['laser-shooting-speed-7'].enabled = false
+	-- crew_force.technologies['refined-flammables-5'].enabled = false
+	-- crew_force.technologies['refined-flammables-6'].enabled = false
+	-- crew_force.technologies['refined-flammables-7'].enabled = false
+	-- crew_force.technologies['energy-weapons-damage-5'].enabled = false --5 makes krakens too easy
+	-- crew_force.technologies['energy-weapons-damage-6'].enabled = false
+	-- crew_force.technologies['energy-weapons-damage-7'].enabled = false
+	-- crew_force.technologies['physical-projectile-damage-5'].enabled = false
+	-- crew_force.technologies['physical-projectile-damage-6'].enabled = false
+	-- crew_force.technologies['physical-projectile-damage-7'].enabled = false
+	-- crew_force.technologies['stronger-explosives-5'].enabled = false
+	-- crew_force.technologies['stronger-explosives-6'].enabled = false
+	-- crew_force.technologies['stronger-explosives-7'].enabled = false
 	-- these require 2000 white sci each:
 	crew_force.technologies['artillery-shell-range-1'].enabled = false --infinite techs
 	crew_force.technologies['artillery-shell-speed-1'].enabled = false --infinite techs
 
-	crew_force.technologies['steel-axe'].enabled = false
+	-- crew_force.technologies['steel-axe'].enabled = false
 
 	crew_force.technologies['nuclear-power'].enabled = true
 
@@ -982,21 +1012,22 @@ function Public.reset_crew_and_enemy_force(id)
 	-- exploit?:
 	crew_force.technologies['gate'].enabled = true
 
-	crew_force.technologies['productivity-module-2'].enabled = true
-	crew_force.technologies['productivity-module-3'].enabled = false
-	crew_force.technologies['speed-module'].enabled = true
-	crew_force.technologies['speed-module-2'].enabled = false
-	crew_force.technologies['speed-module-3'].enabled = false
-	crew_force.technologies['effectivity-module'].enabled = true
-	crew_force.technologies['effectivity-module-2'].enabled = false
-	crew_force.technologies['effectivity-module-3'].enabled = false
-	crew_force.technologies['automation-3'].enabled = true
-	crew_force.technologies['rocket-control-unit'].enabled = false
-	crew_force.technologies['rocket-silo'].enabled = false
-	crew_force.technologies['space-science-pack'].enabled = false
+	-- crew_force.technologies['productivity-module-2'].enabled = true
+	-- crew_force.technologies['productivity-module-3'].enabled = false
+	-- crew_force.technologies['speed-module'].enabled = true
+	-- crew_force.technologies['speed-module-2'].enabled = false
+	-- crew_force.technologies['speed-module-3'].enabled = false
+	-- crew_force.technologies['effectivity-module'].enabled = true
+	-- crew_force.technologies['effectivity-module-2'].enabled = false
+	-- crew_force.technologies['effectivity-module-3'].enabled = false
+	crew_force.technologies['automation-3'].enabled = false
+	-- crew_force.technologies['rocket-control-unit'].enabled = false
+	-- crew_force.technologies['rocket-silo'].enabled = false
+	-- crew_force.technologies['space-scienkce-pack'].enabled = false
+	crew_force.technologies['mining-productivity-3'].enabled = false --huge trap. even the earlier ones are a trap?
 	crew_force.technologies['mining-productivity-4'].enabled = false
-	crew_force.technologies['logistics-3'].enabled = true
-	crew_force.technologies['nuclear-fuel-reprocessing'].enabled = true
+	-- crew_force.technologies['logistics-3'].enabled = true
+	-- crew_force.technologies['nuclear-fuel-reprocessing'].enabled = true
 
 	-- crew_force.technologies['railway'].enabled = false
 	crew_force.technologies['automated-rail-transportation'].enabled = false
@@ -1029,9 +1060,9 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['battery-mk2-equipment'].enabled = false
 	crew_force.technologies['discharge-defense-equipment'].enabled = false
 
-	crew_force.technologies['distractor'].enabled = false
-	crew_force.technologies['military-4'].enabled = true
-	crew_force.technologies['uranium-ammo'].enabled = true
+	-- crew_force.technologies['distractor'].enabled = false
+	-- crew_force.technologies['military-4'].enabled = true
+	-- crew_force.technologies['uranium-ammo'].enabled = true
 
 	Public.disable_recipes(crew_force)
 end
@@ -1044,22 +1075,25 @@ function Public.disable_recipes(crew_force)
 	crew_force.recipes['locomotive'].enabled = false
 	-- crew_force.recipes['car'].enabled = false
 	crew_force.recipes['cargo-wagon'].enabled = false
-	crew_force.recipes['slowdown-capsule'].enabled = false
+	-- crew_force.recipes['slowdown-capsule'].enabled = false
 	-- crew_force.recipes['nuclear-fuel'].enabled = false
 	-- crew_force.recipes['rail'].enabled = false
-	crew_force.recipes['speed-module'].enabled = false
-	crew_force.recipes['tank'].enabled = false
-	crew_force.recipes['cannon-shell'].enabled = false
-	crew_force.recipes['explosive-cannon-shell'].enabled = false
+	-- crew_force.recipes['speed-module'].enabled = false
+	-- crew_force.recipes['tank'].enabled = false
+	-- crew_force.recipes['cannon-shell'].enabled = false
+	-- crew_force.recipes['explosive-cannon-shell'].enabled = false
 	-- and since we can't build tanks anyway, let's disable this for later:
-	crew_force.recipes['uranium-cannon-shell'].enabled = false
-	crew_force.recipes['explosive-uranium-cannon-shell'].enabled = false
+	-- crew_force.recipes['uranium-cannon-shell'].enabled = false
+	-- crew_force.recipes['explosive-uranium-cannon-shell'].enabled = false
 
 	-- need these for nuclear related buildings
 	-- crew_force.recipes['concrete'].enabled = false
 	-- crew_force.recipes['hazard-concrete'].enabled = false
 	-- crew_force.recipes['refined-concrete'].enabled = false
 	-- crew_force.recipes['refined-hazard-concrete'].enabled = false
+
+	crew_force.recipes['speed-module-2'].enabled = false
+	crew_force.recipes['speed-module-3'].enabled = false
 end
 
 return Public

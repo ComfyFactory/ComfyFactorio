@@ -78,7 +78,7 @@ function Public.create_step2_entities()
 		-- quest_structure_data.market.add_market_item{price={{'burner-mining-drill', 1}}, offer={type = 'give-item', item = 'iron-plate', count = 9}}
 
 		local how_many_coin_offers = 5
-		if Balance.crew_scale() >= 1.2 then how_many_coin_offers = 6 end
+		if Balance.crew_scale() >= 1 then how_many_coin_offers = 6 end
 
 		-- Thinking of not having these offers available always (if it's bad design decision can always change it back)
 		if Math.random(4) == 1 then
@@ -160,7 +160,7 @@ Public.entry_price_data_raw = {
 	['iron-stick'] = {
 		overallWeight = 1,
 		minLambda = 0,
-		maxLambda = 1,
+		maxLambda = 0.4,
 		shape = false,
 		base_amount = 1500,
 		raw_materials = {{name = 'iron-plate', count = 750}}
@@ -168,7 +168,7 @@ Public.entry_price_data_raw = {
 	['copper-cable'] = {
 		overallWeight = 0.85,
 		minLambda = 0,
-		maxLambda = 1,
+		maxLambda = 0.4,
 		shape = false,
 		base_amount = 1500,
 		raw_materials = {{name = 'copper-plate', count = 750}}
@@ -184,15 +184,15 @@ Public.entry_price_data_raw = {
 	['assembling-machine-1'] = {
 		overallWeight = 1,
 		minLambda = 0.1,
-		maxLambda = 1,
+		maxLambda = 0.6,
 		shape = false,
 		base_amount = 80,
 		raw_materials = {{name = 'iron-plate', count = 1760}, {name = 'copper-plate', count = 360}}
 	},
 	['burner-mining-drill'] = {
 		overallWeight = 0.25,
-		minLambda = 0,
-		maxLambda = 0.15,
+		minLambda = 0.1,
+		maxLambda = 0.4,
 		shape = false,
 		base_amount = 150,
 		raw_materials = {{name = 'iron-plate', count = 1350}}
@@ -200,7 +200,7 @@ Public.entry_price_data_raw = {
 	['burner-inserter'] = {
 		overallWeight = 0.75,
 		minLambda = 0,
-		maxLambda = 0.6,
+		maxLambda = 0.3,
 		shape = false,
 		base_amount = 300,
 		raw_materials = {{name = 'iron-plate', count = 900}}
@@ -208,7 +208,7 @@ Public.entry_price_data_raw = {
 	['small-lamp'] = {
 		overallWeight = 1,
 		minLambda = 0.05,
-		maxLambda = 0.7,
+		maxLambda = 0.4,
 		shape = false,
 		base_amount = 300,
 		raw_materials = {{name = 'iron-plate', count = 600}, {name = 'copper-plate', count = 900}}
@@ -216,7 +216,7 @@ Public.entry_price_data_raw = {
 	['firearm-magazine'] = {
 		overallWeight = 1,
 		minLambda = 0,
-		maxLambda = 1,
+		maxLambda = 0.4,
 		shape = false,
 		base_amount = 700,
 		raw_materials = {{name = 'iron-plate', count = 2800}}
@@ -224,55 +224,87 @@ Public.entry_price_data_raw = {
 	['constant-combinator'] = {
 		overallWeight = 0.6,
 		minLambda = 0,
-		maxLambda = 1,
+		maxLambda = 0.4,
 		shape = false,
 		base_amount = 276,
 		raw_materials = {{name = 'iron-plate', count = 552}, {name = 'copper-plate', count = 1518}}
 	},
 	['stone-furnace'] = {
 		overallWeight = 1,
-		minLambda = 0.05,
-		maxLambda = 1,
+		minLambda = 0,
+		maxLambda = 0.4,
 		shape = false,
 		base_amount = 250,
 		raw_materials = {{name = 'stone', count = 1250}}
 	},
-	['advanced-circuit'] = {
-		overallWeight = 1,
-		minLambda = 0.4,
-		maxLambda = 1.6,
-		shape = true,
-		base_amount = 180,
-		raw_materials = {{name = 'iron-plate', count = 360}, {name = 'copper-plate', count = 900}, {name = 'plastic-bar', count = 360}}
-	},
 	['wooden-chest'] = {
 		overallWeight = 0.5,
-		minLambda = -0.5,
-		maxLambda = 0.5,
-		shape = true,
+		minLambda = 0,
+		maxLambda = 0.4,
+		shape = false,
 		base_amount = 400,
 		raw_materials = {}
 	},
 	['iron-chest'] = {
 		overallWeight = 0.5,
-		minLambda = 0,
-		maxLambda = 1,
-		shape = true,
+		minLambda = 0.1,
+		maxLambda = 0.5,
+		shape = false,
 		base_amount = 250,
 		raw_materials = {{name = 'iron-plate', count = 2000}}
 	},
 	['steel-chest'] = {
 		overallWeight = 0.5,
-		minLambda = 0.25,
-		maxLambda = 1.75,
-		shape = true,
+		minLambda = 0.2,
+		maxLambda = 1,
+		shape = false,
 		base_amount = 125,
 		raw_materials = {{name = 'steel-plate', count = 1000}}
+	},
+	['rail'] = {
+		overallWeight = 1,
+		minLambda = 0.2,
+		maxLambda = 1,
+		shape = false,
+		base_amount = 400,
+		raw_materials = {{name = 'iron-plate', count = 1100}}
+	},
+	['plastic-bar'] = {
+		overallWeight = 1,
+		minLambda = 0.3,
+		maxLambda = 1,
+		shape = false,
+		base_amount = 400,
+		raw_materials = {{name = 'coal', count = 200}, {name = 'petroleum-gas-barrel', count = 80}}
+	},
+	['sulfur'] = {
+		overallWeight = 1,
+		minLambda = 0.3,
+		maxLambda = 1,
+		shape = false,
+		base_amount = 400,
+		raw_materials = {{name = 'petroleum-gas-barrel', count = 120}}
+	},
+	['electronic-circuit'] = {
+		overallWeight = 1,
+		minLambda = 0.1,
+		maxLambda = 0.5,
+		shape = false,
+		base_amount = 700,
+		raw_materials = {{name = 'iron-plate', count = 700}, {name = 'copper-plate', count = 1050}}
+	},
+	['advanced-circuit'] = {
+		overallWeight = 1,
+		minLambda = 0.4,
+		maxLambda = 1,
+		shape = false,
+		base_amount = 180,
+		raw_materials = {{name = 'iron-plate', count = 360}, {name = 'copper-plate', count = 900}, {name = 'plastic-bar', count = 360}}
 	},
 }
 
 function Public.entry_price()
-	local lambda = Math.clamp(0, 1, Math.sloped(Common.difficulty_scale(),1/2) * Common.game_completion_progress())
+	local lambda = Math.clamp(0, 1, Math.sloped(Common.difficulty_scale(), 0.4) * Common.game_completion_progress())
 
 	local item = Raffle.LambdaRaffle(Public.entry_price_data_raw, lambda)
 

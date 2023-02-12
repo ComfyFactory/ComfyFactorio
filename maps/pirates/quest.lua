@@ -250,7 +250,7 @@ function Public.initialise_fish_quest()
 	destination.dynamic_data.quest_type = enum.FISH
 	destination.dynamic_data.quest_reward = Public.quest_reward()
 	destination.dynamic_data.quest_progress = 0
-	destination.dynamic_data.quest_progressneeded = Math.random(300, 450) -- assuming that base caught fish amount is 3
+	destination.dynamic_data.quest_progressneeded = Math.random(350, 500) -- assuming that base caught fish amount is 3
 
 	return true
 end
@@ -264,7 +264,7 @@ function Public.initialise_compilatron_quest()
 	destination.dynamic_data.quest_type = enum.COMPILATRON
 	destination.dynamic_data.quest_reward = Public.quest_reward()
 	destination.dynamic_data.quest_progress = 0
-	destination.dynamic_data.quest_progressneeded = Math.random(30, 40) -- assuming that chance to find compilatron is 1/20
+	destination.dynamic_data.quest_progressneeded = Math.random(50, 80) -- assuming that chance to find compilatron is 1/20
 
 	return true
 end

@@ -51,8 +51,8 @@ Public.market_permanent_offers = {
 	{price = {{'coin', 6200}}, offer = {type = 'give-item', item = 'beacon', count = 2}},
 	{price = {{'coin', 4200}}, offer = {type = 'give-item', item = 'speed-module-2', count = 2}},
 	{price = {{'coin', 4200}}, offer = {type = 'give-item', item = 'productivity-module', count = 2}},
-	{price = {{'coin', 28000}}, offer = {type = 'give-item', item = 'artillery-targeting-remote', count = 1}},
 	{price = {{'coin', 3000}}, offer = {type = 'give-item', item = 'explosives', count = 50}},
+	{price = {{'coin', 30000}}, offer = {type = 'give-item', item = 'artillery-targeting-remote', count = 1}},
 }
 
 -- cheap but one-off
@@ -129,6 +129,7 @@ Public.market_sales = {
 
 
 function Public.create_dock_markets(surface, p)
+	-- local memory = Memory.get_crew_memory()
     local destination = Common.current_destination()
 
 	if not (surface and p) then return end
@@ -179,6 +180,7 @@ function Public.create_dock_markets(surface, p)
 		local toaddcount
 
 		local salescopy = Utils.deepcopy(Public.market_permanent_offers)
+
 		toaddcount = 3 + Math.random(0, 2)
 		while toaddcount>0 and #salescopy > 0 do
 			local index = Math.random(#salescopy)

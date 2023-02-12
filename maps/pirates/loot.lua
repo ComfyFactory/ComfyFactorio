@@ -83,9 +83,9 @@ Public.chest_loot_data_raw = {
 	{2, 0, 1, false, 'fast-underground-belt', 6, 6},
 	{3, 0, 2, true, 'express-underground-belt', 4, 4},
 
-	{0.5, 0, 0.1, false, 'loader', 1, 1},
-	{0.5, 0.1, 0.5, false, 'fast-loader', 1, 1},
-	{0.5, 0.5, 1, false, 'express-loader', 1, 1},
+	{0.5, 0, 1, false, 'loader', 1, 1},
+	{0.5, 0.2, 1, false, 'fast-loader', 1, 1},
+	{0.5, 0.7, 1, false, 'express-loader', 1, 1},
 
 	{4, -0.3, 0.3, true, 'inserter', 8, 20},
 	{4, 0, 1, true, 'fast-inserter', 2, 12},
@@ -111,11 +111,11 @@ Public.chest_loot_data_raw = {
 	{0.1, 0.3, 1, false, 'nuclear-reactor', 1, 1},
 	{0.2, 0.2, 2, true, 'concrete', 10, 40},
 
-	{50, -1, 0.5, true, 'speed-module', 1, 3},
+	{50, -1, 1, true, 'speed-module', 1, 3},
 	{25, 0, 1.5, true, 'speed-module-2', 1, 2},
 	{12, 0, 2, true, 'speed-module-3', 1, 1},
 	{4, -1, 1, true, 'effectivity-module', 1, 3},
-	-- {4, 0, 1, true, 'effectivity-module-2', 1, 3}, --disabled to reduce 'avalanche of crap' effect
+	{4, 0, 1, true, 'effectivity-module-2', 1, 3},
 	{4, 0, 2, true, 'effectivity-module-3', 1, 1},
 	{3, 0, 1, false, 'productivity-module', 1, 1}, --not many of these, merely to make them availabile for future features
 

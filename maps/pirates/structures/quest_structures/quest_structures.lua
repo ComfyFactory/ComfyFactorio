@@ -31,12 +31,18 @@ function Public.choose_quest_structure_type()
     local destination = Common.current_destination()
 	local subtype = destination.subtype
 
-	local rng = Math.random(3)
+	if subtype == IslandEnum.enum.WALKWAYS then
+		return enum.MARKET1
+	end
 
-	if rng == 1 or subtype and subtype == IslandEnum.enum.WALKWAYS then
+	-- Furnace quests are more interesting after that rather than collecting stone furnaces
+	if Common.overworldx() >= 600 then
+		return enum.FURNACE1
+	end
+
+	if Math.random(3) == 1 then
 		return enum.MARKET1
 	else
-
 		return enum.FURNACE1
 	end
 end
@@ -248,7 +254,7 @@ function Public.tick_quest_structure_entry_price_check()
 				quest_structure_data.completion_counter = quest_structure_data.completion_counter + v
 			else
 				-- @FIX: power armor loses components, items lose health!
-				-- @Piratux: ^ bro what?
+				-- Clarification: putting items in quest structure input chests, "repairs" them. For ex.: inserting ammo restores full stack (giving slight amount of ammo for free). Inserting broken items, repairs them, etc.
 
 				red_inv.insert({name = k, count = v});
 			end

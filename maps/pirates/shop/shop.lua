@@ -9,7 +9,7 @@ local Classes = require 'maps.pirates.roles.classes'
 -- local Dock = require 'maps.pirates.surfaces.dock'
 local Balance = require 'maps.pirates.balance'
 local Common = require 'maps.pirates.common'
-local Utils = require 'maps.pirates.utils_local'
+-- local Utils = require 'maps.pirates.utils_local'
 local Roles = require 'maps.pirates.roles.roles'
 local Math = require 'maps.pirates.math'
 local _inspect = require 'utils.inspect'.inspect
@@ -225,24 +225,7 @@ function Public.event_on_market_item_purchased(event)
 				local ok = Classes.try_unlock_class(class_for_sale, player, false)
 
 				if ok then
-					if force and force.valid then
-						local message = {'pirates.class_purchase', player.name, Classes.display_form(class_for_sale), Classes.explanation(class_for_sale)}
-						Common.notify_force_light(force, message)
-					end
-
-					memory.available_classes_pool = Utils.ordered_table_with_single_value_removed(memory.available_classes_pool, class_for_sale)
-
-					-- if destination.dynamic_data and destination.dynamic_data.market_class_offer_rendering then
-					-- 	rendering.destroy(destination.dynamic_data.market_class_offer_rendering)
-					-- end
-
 					market.remove_market_item(offer_index)
-
-					if Classes.class_unlocks[class_for_sale] then
-						for _, upgrade in pairs(Classes.class_unlocks[class_for_sale]) do
-							memory.available_classes_pool[#memory.available_classes_pool + 1] = upgrade
-						end
-					end
 				else -- if this happens, I believe there is something wrong with code
 					if force and force.valid then
 						Common.notify_force_error(force, {'pirates.class_purchase_error_prerequisite_class', Classes.display_form(required_class)})
@@ -296,6 +279,16 @@ function Public.event_on_market_item_purchased(event)
 					Upgrades.execute_upgade(Upgrades.enum.EXTRA_HOLD, player)
 				elseif offer_index == Cabin.enum.SLOT_MORE_POWER then
 					Upgrades.execute_upgade(Upgrades.enum.MORE_POWER, player)
+				elseif offer_index == Cabin.enum.SLOT_RANDOM_CLASS then
+					local class = Classes.generate_class_for_sale()
+					local ok = Classes.try_unlock_class(class, player, false)
+					if ok then
+						memory.boat.random_class_purchase_count = memory.boat.random_class_purchase_count + 1
+					else
+						if player.force and player.force.valid then
+							Common.notify_force_error(player.force, 'Oops, something went wrong trying to purchase a class!')
+						end
+					end
 				end
 
 				Cabin.handle_purchase(market, offer_index)

@@ -100,7 +100,7 @@ function Public.random_float_in_range(from, to)
 end
 
 -- Returns vector in random direction.
--- scalar: sets returned vector length. If null, 1 will be chosen
+-- scalar: sets returned vector length. If nil, 1 will be chosen
 function Public.random_vec(scalar)
 	scalar = scalar or 1
 	local random_angle = Public.random_float_in_range(0, 2 * Public.pi)

@@ -87,10 +87,10 @@ function Public.initialise_crew_memory(id) --mostly serves as a dev reference of
     memory.captain_accrued_time_data = nil
     memory.max_players_recorded = nil
     memory.temporarily_logged_off_characters = nil
+    memory.temporarily_logged_off_characters_items = nil
 
     memory.speed_boost_characters = nil
 
-    memory.enemyboats = nil
     memory.overworld_krakens = nil
     memory.active_sea_enemies = nil
     memory.kraken_stream_registrations = nil

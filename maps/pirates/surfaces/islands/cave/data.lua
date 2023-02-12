@@ -22,7 +22,7 @@ Public.static_params_default = {
 -- Here we set values somewhat higher, because getting all resources requires work and bit of luck (island needs enough rock)
 function Public.base_ores()
 	return {
-		['copper-ore'] = 1.5,
+		['copper-ore'] = 3,
 		['iron-ore'] = 7,
 		['coal'] = 6,
 		['stone'] = 3,

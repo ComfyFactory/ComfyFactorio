@@ -9,6 +9,8 @@ local CoreData = require 'maps.pirates.coredata'
 local Memory = require 'maps.pirates.memory'
 local _inspect = require 'utils.inspect'.inspect
 
+-- local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
+
 local LootRaffle = require 'functions.loot_raffle'
 -- local simplex_noise = require 'utils.simplex_noise'.d2
 -- local perlin_noise = require 'utils.perlin_noise'
@@ -19,9 +21,9 @@ local LootRaffle = require 'functions.loot_raffle'
 
 local Public = {}
 
--- Public.active_crews_cap = 1
-Public.activeCrewsCap = 2
+Public.activeCrewsCap = 3
 Public.private_run_cap = 1
+Public.protected_run_cap = 1 -- more precisely protected, but not private run cap
 Public.minimumCapacitySliderValue = 1
 Public.minimum_run_capacity_to_enforce_space_for = 22
 -- auto-disbanding when there are no players left in the crew:
@@ -42,7 +44,7 @@ Public.structure_ensure_chunk_radius = 2
 
 Public.allow_barreling_off_ship = true
 
-Public.coin_tax_percentage = 10
+Public.coin_tax_percentage = 25
 
 Public.fraction_of_map_loaded_at_sea = 1
 Public.map_loading_ticks_atsea = 68 * 60
@@ -120,7 +122,7 @@ function Public.activecrewcount()
 	local count = 0
 	for _, id in pairs(memory.crewplayerindices) do
 		local player = game.players[id]
-		if player and player.valid and not Utils.contains(global_memory.afk_player_indices, player.index) then
+		if player and player.valid and (not Utils.contains(global_memory.afk_player_indices, player.index)) and (not Utils.contains(memory.spectatorplayerindices, player.index)) then
 			count = count + 1
 		end
 	end
@@ -506,7 +508,7 @@ function Public.time_adjusted_departure_cost(cost)
 		local timer = dynamic_data.timer
 		local time_remaining = dynamic_data.time_remaining
 
-		if timer and time_remaining and timer >= 0 and time_remaining >= 0 then
+		if timer and time_remaining and timer >= 0 and time_remaining >= 0 and destination.static_params.undock_cost_decreases == true then
 			local total_time = timer + time_remaining
 			local elapsed_fraction = timer / total_time
 			local cost_fraction = 1 - elapsed_fraction
@@ -742,6 +744,7 @@ end
 function Public.transfer_healthbar(old_unit_number, new_entity, location_override)
 	location_override = location_override or Memory.get_crew_memory()
 	if not location_override.healthbars then return end
+
 	local old_healthbar = location_override.healthbars[old_unit_number]
 	-- local new_unit_number = new_entity.unit_number
 
@@ -760,7 +763,7 @@ function Public.transfer_healthbar(old_unit_number, new_entity, location_overrid
 	if rendering.is_valid(old_healthbar.render1) then
 		rendering.destroy(old_healthbar.render1)
 	end
-	if rendering.is_valid(old_healthbar.render2) then
+	if old_healthbar.render2 and rendering.is_valid(old_healthbar.render2) then
 		rendering.destroy(old_healthbar.render2)
 	end
 
@@ -769,11 +772,12 @@ end
 
 function Public.entity_damage_healthbar(entity, damage, location_override)
 	location_override = location_override or Memory.get_crew_memory()
-	local unit_number = entity.unit_number
+
 	if not (location_override.healthbars) then return end
 
+	local unit_number = entity.unit_number
 	local healthbar = location_override.healthbars[unit_number]
-	if not healthbar then return 0 end
+	if not healthbar then return end
 
 	local new_health = healthbar.health - damage
 	healthbar.health = new_health
@@ -781,6 +785,10 @@ function Public.entity_damage_healthbar(entity, damage, location_override)
 
 	if entity and entity.valid then
 		entity.health = entity.prototype.max_health
+	end
+
+	if healthbar.health <= 0 then
+		location_override.healthbars[unit_number] = nil
 	end
 
 	return healthbar.health
@@ -842,7 +850,9 @@ end
 
 function Public.crew_get_crew_members_and_spectators()
 	local memory = Memory.get_crew_memory()
-	if not Public.is_id_valid(memory.id) then return {} end
+	if not Public.is_id_valid(memory.id) then
+		return {}
+	end
 
 	local playerlist = {}
 	for _, id in pairs(memory.crewplayerindices) do
@@ -854,6 +864,30 @@ function Public.crew_get_crew_members_and_spectators()
 		if player and player.valid then playerlist[#playerlist + 1] = player end
 	end
 	return playerlist
+end
+
+function Public.is_spectator(player)
+	local global_memory = Memory.get_global_memory()
+	local previous_id = global_memory.working_id
+
+	local player_crew_id = Public.get_id_from_force_name(player.force.name)
+	if not player_crew_id then
+		return false
+	end
+
+	Memory.set_working_id(player_crew_id)
+	local memory = Memory.get_crew_memory()
+
+	local spectating = false
+	for _, playerindex in pairs(memory.spectatorplayerindices) do
+		if player.index == playerindex then
+			spectating = true
+			break
+		end
+	end
+
+	Memory.set_working_id(previous_id)
+	return spectating
 end
 
 
@@ -873,6 +907,19 @@ function Public.crew_get_nonafk_crew_members()
 	end
 
 	return playerlist
+end
+
+function Public.crew_get_officers()
+	local officers = {}
+
+	local members = Public.crew_get_crew_members()
+	for _, player in pairs(members) do
+		if Public.is_officer(player.index) then
+			officers[#officers + 1] = player
+		end
+	end
+
+	return officers
 end
 
 
@@ -1284,6 +1331,7 @@ function Public.validate_player_and_character(player)
 end
 
 
+-- Players complained that when "all_items" is false, the items dissapear (perhaps code sending items from dead character to cabin is wrong?).
 function Public.send_important_items_from_player_to_crew(player, all_items)
 	local player_inv = {}
 	player_inv[1] = game.players[player.index].get_inventory(defines.inventory.character_main)
@@ -1313,7 +1361,8 @@ function Public.send_important_items_from_player_to_crew(player, all_items)
 			if #to_remove > 0 then
 				for iii = 1, #to_remove, 1 do
 					if to_remove[iii].valid_for_read then
-						Public.give_items_to_crew{{name = to_remove[iii].name, count = to_remove[iii].count}}
+						-- Public.give_items_to_crew{{name = to_remove[iii].name, count = to_remove[iii].count}}
+						Public.give_items_to_crew(to_remove[iii])
 						to_remove[iii].clear()
 					end
 				end
@@ -1325,6 +1374,49 @@ function Public.send_important_items_from_player_to_crew(player, all_items)
 	return any
 end
 
+function Public.temporarily_store_logged_off_character_items(player)
+	local memory = Memory.get_crew_memory()
+
+	memory.temporarily_logged_off_characters_items[player.index] = game.create_inventory(150)
+	local temp_inv = memory.temporarily_logged_off_characters_items[player.index]
+
+	local player_inv = {}
+	player_inv[1] = game.players[player.index].get_inventory(defines.inventory.character_main)
+	player_inv[2] = game.players[player.index].get_inventory(defines.inventory.character_armor)
+	player_inv[3] = game.players[player.index].get_inventory(defines.inventory.character_guns)
+	player_inv[4] = game.players[player.index].get_inventory(defines.inventory.character_ammo)
+	player_inv[5] = game.players[player.index].get_inventory(defines.inventory.character_trash)
+
+	for ii = 1, 5, 1 do
+		if player_inv[ii].valid then
+			for iii = 1, #player_inv[ii], 1 do
+				if player_inv[ii] and player_inv[ii][iii].valid and player_inv[ii][iii].valid_for_read then
+					temp_inv.insert(player_inv[ii][iii])
+					player_inv[ii][iii].clear()
+				end
+			end
+		end
+	end
+end
+
+function Public.give_back_items_to_temporarily_logged_off_player(player)
+	local memory = Memory.get_crew_memory()
+
+	if not memory.temporarily_logged_off_characters_items[player.index] then
+		return
+	end
+
+	local temp_inv = memory.temporarily_logged_off_characters_items[player.index]
+
+	for i = 1, #temp_inv, 1 do
+		if temp_inv and temp_inv[i].valid and temp_inv[i].valid_for_read then
+			player.insert(temp_inv[i])
+		end
+	end
+
+	temp_inv.destroy()
+	memory.temporarily_logged_off_characters_items[player.index] = nil
+end
 
 function Public.give_items_to_crew(items)
 	local memory = Memory.get_crew_memory()
@@ -1537,39 +1629,39 @@ end
 function Public.get_item_blacklist(tier)
     local blacklist = LootRaffle.get_tech_blacklist(tier)
 	blacklist['landfill'] = true
-	blacklist['concrete'] = true
-	blacklist['hazard-concrete'] = true
 	blacklist['locomotive'] = true
 	blacklist['cargo-wagon'] = true
 	blacklist['fluid-wagon'] = true
 	blacklist['train-stop'] = true
 	blacklist['rail-signal'] = true
 	blacklist['rail-chain-signal'] = true
-	blacklist['refined-concrete'] = true
-	blacklist['refined-hazard-concrete'] = true
-	blacklist['flamethrower-turret'] = true
-	blacklist['tank'] = true
-	blacklist['cannon-shell'] = true
-	blacklist['explosive-cannon-shell'] = true
-	blacklist['speed-module-3'] = true
-	blacklist['productivity-module-3'] = true
-	blacklist['effectivity-module-3'] = true
-	blacklist['space-science-pack'] = true
-	blacklist['rocket-control-unit'] = true
+	-- blacklist['tank'] = true
+	-- blacklist['cannon-shell'] = true
+	-- blacklist['explosive-cannon-shell'] = true
+	-- blacklist['speed-module-3'] = true
+	-- blacklist['productivity-module-3'] = true
+	-- blacklist['effectivity-module-3'] = true
+	-- blacklist['space-science-pack'] = true
+	-- blacklist['rocket-control-unit'] = true
 	blacklist['artillery-wagon'] = true
 	blacklist['artillery-turret'] = true
 	blacklist['artillery-targeting-remote'] = true
-	blacklist['uranium-cannon-shell'] = true
-	blacklist['explosive-uranium-cannon-shell'] = true
+	-- blacklist['uranium-cannon-shell'] = true
+	-- blacklist['explosive-uranium-cannon-shell'] = true
 	blacklist['satellite'] = true
 	blacklist['rocket-silo'] = true
-	blacklist['destroyer-capsule'] = true
-	blacklist['spidertron'] = true
+	-- blacklist['destroyer-capsule'] = true
+	-- blacklist['spidertron'] = true
 	blacklist['discharge-defense-remote'] = true
 	blacklist['discharge-defense-equipment'] = true
+	blacklist['loader'] = true
+	blacklist['fast-loader'] = true
     blacklist['express-loader'] = true
-	blacklist['land-mine'] = true
+	-- blacklist['land-mine'] = true
 	blacklist['wood'] = true -- too easy to acquire
+
+	blacklist['speed-module-2'] = true
+	blacklist['speed-module-3'] = true
 
     return blacklist
 end
@@ -1580,7 +1672,7 @@ end
 function Public.pick_random_price(tier, scale, tech_tier)
 	if tier < 0 or scale < 0 then return end
 
-	local item_stacks = LootRaffle.roll(math.floor(scale * (tier ^ 2 + 10 * tier)), 100, Public.get_item_blacklist(tech_tier))
+	local item_stacks = LootRaffle.roll(math.floor(scale * (tier ^ 2 + 10 * tier)), 20, Public.get_item_blacklist(tech_tier))
 	local price = {}
 	for _, item_stack in pairs(item_stacks) do
 		price[#price+1] = {name = item_stack.name, amount = item_stack.count}
@@ -1605,7 +1697,7 @@ function Public.get_random_dictionary_entry(t, key)
     end
 end
 
--- mainly used to connect multi-surface poles
+-- Used to connect multi-surface poles
 function Public.force_connect_poles(pole1, pole2)
 	if not pole1 then return end
 	if not pole1.valid then return end
@@ -1621,6 +1713,8 @@ function Public.force_connect_poles(pole1, pole2)
 	-- 	pole2.connect_neighbour(e)
 	-- end
 
+	-- NOTE: "connect_neighbour" returns false when the entities are already connected as well
+	pole1.disconnect_neighbour(pole2)
 	local success = pole1.connect_neighbour(pole2)
 	if success then return end
 
@@ -1700,6 +1794,103 @@ function Public.replace_unwalkable_tiles(surface, position, width, height)
 
 	if #tiles > 0 then
 		surface.set_tiles(tiles, true)
+	end
+end
+
+function Public.get_valid_spawners(surface)
+	local memory = Memory.get_crew_memory()
+	local destination = Public.current_destination()
+
+    local spawners = surface.find_entities_filtered({type = 'unit-spawner', force = memory.enemy_force_name})
+
+    local boat_spawners = {}
+
+	if destination.dynamic_data.enemyboats and #destination.dynamic_data.enemyboats > 0 then
+        for i = 1, #destination.dynamic_data.enemyboats do
+            local eb = destination.dynamic_data.enemyboats[i]
+            if eb.spawner and eb.spawner.valid then
+                boat_spawners[#boat_spawners + 1] = eb.spawner
+            end
+        end
+    end
+
+    local valid_spawners = {}
+    for i = 1, #spawners do
+        local s = spawners[i]
+        local valid = true
+        for j = 1, #boat_spawners do
+            local bs = boat_spawners[j]
+            if s == bs then
+                valid = false
+                break
+            end
+        end
+        if valid and s.valid then
+            valid_spawners[#valid_spawners + 1] = s
+        end
+    end
+
+    return valid_spawners
+end
+
+function Public.get_random_valid_spawner(surface)
+
+    local spawners = Public.get_valid_spawners(surface)
+
+    if #spawners == 0 then return end
+
+	return spawners[Math.random(#spawners)]
+end
+
+function Public.try_make_biter_elite(entity, spawner)
+	local memory = Memory.get_crew_memory()
+	local destination = Public.current_destination()
+
+	local difficulty_index = CoreData.get_difficulty_option_from_value(memory.difficulty)
+	if difficulty_index < 3 then return end
+
+	if Public.overworldx() == 0 then return end
+
+	local from_elite_spawner = false
+	if spawner and
+		spawner.valid and
+		destination.dynamic_data.elite_spawners and
+		#destination.dynamic_data.elite_spawners > 0
+	then
+		for i = 1, #destination.dynamic_data.elite_spawners do
+			local elite_spawner = destination.dynamic_data.elite_spawners[i]
+			if spawner == elite_spawner then
+				from_elite_spawner = true
+				break
+			end
+		end
+	end
+
+	local make_biter_elite = false
+	if from_elite_spawner then
+		if Math.random(1, 8) == 1 then
+			make_biter_elite = true
+		end
+	elseif Math.random(1, 16) == 1 then
+		make_biter_elite = true
+	end
+
+	if make_biter_elite then
+		local health_multiplier
+
+		if difficulty_index == 3 then
+			health_multiplier = 5
+		else
+			health_multiplier = 10
+		end
+
+		local max_hp = Math.ceil(entity.prototype.max_health * health_multiplier)
+		Public.new_healthbar(false, entity, max_hp, nil, max_hp, 0.4, -1)
+
+		local elite_biters = memory.elite_biters
+		if elite_biters then
+			elite_biters[entity.unit_number] = entity
+		end
 	end
 end
 

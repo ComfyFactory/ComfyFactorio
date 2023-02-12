@@ -14,6 +14,31 @@ local _inspect = require 'utils.inspect'.inspect
 
 local Public = {}
 
+-- Copied from modules
+local function discharge_accumulators(surface, position, force, power_needs)
+    local accumulators = surface.find_entities_filtered {name = 'accumulator', force = force, position = position, radius = 13}
+    local power_drained = 0
+    power_needs = power_needs
+    for _, accu in pairs(accumulators) do
+        if accu.valid then
+            if accu.energy > 3000000 and power_needs > 0 then
+                if power_needs >= 1000000 then
+                    power_drained = power_drained + 1000000
+                    accu.energy = accu.energy - 1000000
+                    power_needs = power_needs - 1000000
+                else
+                    power_drained = power_drained + power_needs
+                    accu.energy = accu.energy - power_needs
+                end
+            elseif power_needs <= 0 then
+                break
+            end
+        end
+    end
+    return power_drained
+end
+
+-- NOTE: You can currently switch between classes shaman -> iron leg -> shaman, without losing your shaman charge, but I'm too lazy to fix.
 function Public.class_update_auxiliary_data(tickinterval)
 	local memory = Memory.get_crew_memory()
 	if not memory.classes_table then return end
@@ -27,7 +52,10 @@ function Public.class_update_auxiliary_data(tickinterval)
 	for _, player in pairs(crew) do
 		local player_index = player.index
 		if Classes.get_class(player_index) == Classes.enum.IRON_LEG then
-			if (not class_auxiliary_data[player_index]) then class_auxiliary_data[player_index] = {} end
+			if (not class_auxiliary_data[player_index]) then
+				class_auxiliary_data[player_index] = {}
+			end
+
 			local data = class_auxiliary_data[player_index]
 			processed_players[player_index] = true
 			local check
@@ -44,6 +72,25 @@ function Public.class_update_auxiliary_data(tickinterval)
 				data.iron_leg_active = true
 			else
 				data.iron_leg_active = false
+			end
+		elseif Classes.get_class(player_index) == Classes.enum.SHAMAN then
+			if (not class_auxiliary_data[player_index]) then
+				class_auxiliary_data[player_index] = {}
+				class_auxiliary_data[player_index].shaman_charge = 0
+			end
+
+			local data = class_auxiliary_data[player_index]
+			processed_players[player_index] = true
+
+			if data.shaman_charge < Balance.shaman_max_charge then
+				-- charge from accumulators
+				local power_need = Balance.shaman_max_charge - data.shaman_charge
+				local energy = discharge_accumulators(player.surface, player.position, memory.force, power_need)
+				data.shaman_charge = data.shaman_charge + energy
+
+				-- charge from sun pasively
+				data.shaman_charge = data.shaman_charge + (1 - player.surface.daytime) * Balance.shaman_passive_charge * (tickinterval / 60)
+				data.shaman_charge = Math.min(data.shaman_charge, Balance.shaman_max_charge)
 			end
 		end
 	end
@@ -74,7 +121,9 @@ function Public.class_renderings(tickinterval)
 			local r = rendering_data.rendering
 			local c = rendering_data.class
 			processed_players[player_index] = true
-			if Common.validate_player_and_character(player) and (c ~= Classes.enum.IRON_LEG or (memory.class_auxiliary_data[player_index] and memory.class_auxiliary_data[player_index].iron_leg_active)) then
+			local data = memory.class_auxiliary_data[player_index]
+			-- if Common.validate_player_and_character(player) and (c ~= Classes.enum.IRON_LEG or (memory.class_auxiliary_data[player_index] and memory.class_auxiliary_data[player_index].iron_leg_active)) then
+			if Common.validate_player_and_character(player) then
 				if class == c then
 					if r and rendering.is_valid(r) then
 						rendering.set_target(r, player.character)
@@ -102,7 +151,7 @@ function Public.class_renderings(tickinterval)
 								target = player.character,
 								color = CoreData.colors.toughness_rendering,
 								filled = false,
-								radius = (1 - Balance.samurai_damage_taken_multiplier)^2,
+								radius = 1 - Balance.samurai_damage_taken_multiplier,
 								only_in_alt_mode = false,
 								draw_on_ground = true,
 							}
@@ -114,19 +163,57 @@ function Public.class_renderings(tickinterval)
 								target = player.character,
 								color = CoreData.colors.toughness_rendering,
 								filled = false,
-								radius = (1 - Balance.hatamoto_damage_taken_multiplier)^2,
+								radius = 1 - Balance.hatamoto_damage_taken_multiplier,
 								only_in_alt_mode = false,
 								draw_on_ground = true,
 							}
 						}
-					elseif class == Classes.enum.IRON_LEG and memory.class_auxiliary_data[player_index] and memory.class_auxiliary_data[player_index].iron_leg_active then
+					elseif class == Classes.enum.IRON_LEG and data and data.iron_leg_active then
 						class_renderings[player_index] = {
 							rendering = rendering.draw_circle{
 								surface = player.surface,
 								target = player.character,
 								color = CoreData.colors.toughness_rendering,
 								filled = false,
-								radius = (1 - Balance.iron_leg_damage_taken_multiplier)^2,
+								radius = 1 - Balance.iron_leg_damage_taken_multiplier,
+								only_in_alt_mode = false,
+								draw_on_ground = true,
+							}
+						}
+					elseif class == Classes.enum.MEDIC then
+						class_renderings[player_index] = {
+							rendering = rendering.draw_circle{
+								surface = player.surface,
+								target = player.character,
+								color = CoreData.colors.healing_radius_rendering,
+								filled = false,
+								radius = Balance.medic_heal_radius,
+								only_in_alt_mode = true,
+								draw_on_ground = true,
+							}
+						}
+					elseif class == Classes.enum.DOCTOR then
+						class_renderings[player_index] = {
+							rendering = rendering.draw_circle{
+								surface = player.surface,
+								target = player.character,
+								color = CoreData.colors.healing_radius_rendering,
+								filled = false,
+								radius = Balance.doctor_heal_radius,
+								only_in_alt_mode = true,
+								draw_on_ground = true,
+							}
+						}
+					elseif class == Classes.enum.SHAMAN and data and data.shaman_charge and data.shaman_charge > 0 then
+						local max_render_radius = 3
+						local radius = max_render_radius * (data.shaman_charge / Balance.shaman_max_charge)
+						class_renderings[player_index] = {
+							rendering = rendering.draw_circle{
+								surface = player.surface,
+								target = player.character,
+								color = CoreData.colors.shaman_charge_rendering,
+								filled = true,
+								radius = radius,
 								only_in_alt_mode = false,
 								draw_on_ground = true,
 							}
@@ -275,16 +362,16 @@ function Public.class_rewards_tick(tickinterval)
 			local hold_bool = (type == Surfaces.enum.HOLD)
 
 			if class == Classes.enum.DECKHAND and on_ship_bool and (not hold_bool) then
-				Classes.class_ore_grant(player, Balance.deckhand_ore_grant_multiplier, Balance.deckhand_ore_scaling_enabled)
+				Classes.class_ore_grant(player, Balance.deckhand_ore_grant_multiplier)
 			elseif class == Classes.enum.BOATSWAIN and hold_bool then
-				Classes.class_ore_grant(player, Balance.boatswain_ore_grant_multiplier, Balance.boatswain_ore_scaling_enabled)
+				Classes.class_ore_grant(player, Balance.boatswain_ore_grant_multiplier)
 			elseif class == Classes.enum.SHORESMAN and (not on_ship_bool) then
-				Classes.class_ore_grant(player, Balance.shoresman_ore_grant_multiplier, Balance.shoresman_ore_scaling_enabled)
+				Classes.class_ore_grant(player, Balance.shoresman_ore_grant_multiplier)
 			elseif class == Classes.enum.QUARTERMASTER then
 				local nearby_players = #player.surface.find_entities_filtered{position = player.position, radius = Balance.quartermaster_range, name = 'character'}
 
 				if nearby_players > 1 then
-					Classes.class_ore_grant(player, nearby_players - 1, Balance.quartermaster_ore_scaling_enabled)
+					Classes.class_ore_grant(player, nearby_players - 1)
 				end
 			end
 		end

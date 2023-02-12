@@ -135,6 +135,7 @@ function Public.go_from_starting_dock_to_first_destination()
 
 		Hold.create_hold_surface(1)
 		boat.EEI_stage = 1
+		boat.random_class_purchase_count = 0
 		Cabin.create_cabin_surface()
 
 		local items = Balance.starting_items_crew_upstairs()
@@ -282,8 +283,6 @@ function Public.progress_to_destination(destination_index)
 	boat.state = destination_data.init_boat_state
 	boat.dockedposition = nil
 
-	memory.enemyboats = {}
-
 	local old_water = 'deepwater'
 	if old_type == Surfaces.enum.LOBBY or old_type == Surfaces.enum.DOCK then old_water = 'water' end
 
@@ -300,6 +299,14 @@ function Public.progress_to_destination(destination_index)
 
 	if old_type == Surfaces.enum.SEA then
 		game.delete_surface(oldsurface)
+
+		if memory.elite_biters then
+			for id, elite_biter in pairs(memory.elite_biters) do
+				if not elite_biter.valid then
+					memory.elite_biters[id] = nil
+				end
+			end
+		end
 	end
 
 	memory.destinationsvisited_indices[#memory.destinationsvisited_indices + 1] = destination_index
@@ -311,6 +318,10 @@ function Public.progress_to_destination(destination_index)
 
 	destination.dynamic_data.timer = 0
 	destination.dynamic_data.timeratlandingtime = nil
+	destination.dynamic_data.enemyboats = {}
+	destination.dynamic_data.elite_spawners = {}
+
+	destination.dynamic_data.healthbars = {}
 
 	memory.extra_time_at_sea = 0
 

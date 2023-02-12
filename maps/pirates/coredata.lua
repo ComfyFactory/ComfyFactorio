@@ -7,7 +7,7 @@ local _inspect = require 'utils.inspect'.inspect
 local Public = {}
 
 Public.scenario_id_name = 'pirates'
-Public.version_string = '1.4.3' --major.minor.patch versioning, to match factorio mod portal
+Public.version_string = '1.5.0' --major.minor.patch versioning, to match factorio mod portal
 
 Public.blueprint_library_allowed = true
 Public.blueprint_importing_allowed = true
@@ -21,6 +21,7 @@ Public.total_max_biters = 2200
 Public.lobby_surface_name = '000-000-Lobby'
 
 Public.private_run_lock_amount_hr = 24 -- how many hours need to pass, when crew is empty or inactive, until private run becomes public
+Public.protected_run_lock_amount_hr = 24 -- how many hours need to pass, when crew is empty or inactive, until captain protection expires
 
 Public.colors = {
 	coal = {r=0.5, g=0.5, b=0.5},
@@ -45,8 +46,10 @@ Public.colors = {
 	notify_gameover = {r=249, g=84, b=84},
 	renderingtext_green = {r=88, g=219, b=88},
 	renderingtext_yellow = {r=79, g=136, b=209},
-	quartermaster_rendering = {r=237, g=157, b=45, a=0.15},
+	quartermaster_rendering = {r=237, g=157, b=45, a=0.2},
+	healing_radius_rendering = {r=255, g=91, b=138, a=0.2},
 	toughness_rendering = {r=40, g=40, b=40, a=0.5},
+	shaman_charge_rendering = {r=0, g=100, b=255, a=0.6},
 }
 
 Public.static_boat_floor = 'brown-refined-concrete'
@@ -114,17 +117,18 @@ Public.capacity_options = {
 	-- {value = 64, icon = 'item/storage-tank', text = '64'},
 }
 
+-- Prefer not to change difficulty values if possible, since even tiny value change can have big effect on some formulas that rely on it.
 Public.difficulty_options = {
 	-- The difficulty values we currently offer
 
 	--For the value of Easy difficulty, we are pulled in two directions: We wish to make the game comfy to play for those who haven't played it, but we also wish to represent the game mechanics faithfully so that Normal is not a crazy distance away.
 	{value = 0.5, icon = 'item/firearm-magazine', text = {'pirates.difficulty_easy'}, associated_color = {r = 50, g = 255, b = 50}},
 
-	{value = 0.95, icon = 'item/piercing-rounds-magazine', text = {'pirates.difficulty_normal'}, associated_color = {r = 255, g = 255, b = 50}},
+	{value = 1.0, icon = 'item/piercing-rounds-magazine', text = {'pirates.difficulty_normal'}, associated_color = {r = 255, g = 255, b = 50}},
 
 	{value = 1.5, icon = 'item/uranium-rounds-magazine', text = {'pirates.difficutly_hard'}, associated_color = {r = 255, g = 50, b = 50}},
 
-	{value = 2.2, icon = 'item/atomic-bomb', text = {'pirates.difficulty_nightmare'}, associated_color = {r = 170, g = 60, b = 60}},
+	{value = 2.0, icon = 'item/atomic-bomb', text = {'pirates.difficulty_nightmare'}, associated_color = {r = 170, g = 60, b = 60}},
 }
 function Public.get_difficulty_option_from_value(difficulty_value)
 	-- given a difficulty value, key in to the closesy entry in the above table. (organising things this way allows us to make changes to the 'value' keys in the above table without disrupting e.g. past highscores data)
