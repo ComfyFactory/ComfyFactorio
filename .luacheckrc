@@ -367,6 +367,7 @@ stds.factorio_control = {
                 'create_force',
                 'create_profiler',
                 'create_random_generator',
+                'create_inventory',
                 'create_surface',
                 'delete_surface',
                 'desync_players',
