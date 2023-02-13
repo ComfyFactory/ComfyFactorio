@@ -465,6 +465,9 @@ function Public.try_retreat_from_island(player, manual) -- Assumes the cost can 
 	local memory = Memory.get_crew_memory()
 	if memory.game_lost then return end
 	local destination = Common.current_destination()
+	local boat = memory.boat
+
+	if boat.state and boat.state == Boats.enum_state.RETREATING then return end
 
 	if Common.query_can_pay_cost_to_leave() then
 		if destination.dynamic_data.timeratlandingtime and destination.dynamic_data.timer < destination.dynamic_data.timeratlandingtime + 10 then

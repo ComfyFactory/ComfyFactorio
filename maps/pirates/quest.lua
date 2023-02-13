@@ -191,7 +191,7 @@ function Public.initialise_resourcecount_quest()
 		destination.dynamic_data.quest_params.initial_count = force.item_production_statistics.get_flow_count{name = generated_production_quest.item, input = true, precision_index = defines.flow_precision_index.one_thousand_hours, count = true}
 	end
 
-	local progressneeded_before_rounding = generated_production_quest.base_rate * Balance.resource_quest_multiplier() * Common.difficulty_scale()
+	local progressneeded_before_rounding = generated_production_quest.base_rate * Balance.resource_quest_multiplier()
 
 	destination.dynamic_data.quest_progressneeded = Math.ceil(progressneeded_before_rounding/10)*10
 

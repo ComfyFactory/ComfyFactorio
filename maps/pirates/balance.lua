@@ -428,7 +428,7 @@ function Public.rocket_launch_fuel_reward()
 end
 
 function Public.quest_reward_multiplier()
-	return (0.4 + 0.08 * (Common.overworldx()/40)^(8/10)) * Math.sloped(Common.difficulty_scale(), 1/3) * (Public.crew_scale())^(1/8)
+	return (0.4 + 0.1 * (Common.overworldx()/40)^(7/10)) * Math.sloped(Common.difficulty_scale(), 1/3) * (Public.crew_scale())^(1/10)
 end
 
 function Public.island_richness_avg_multiplier()
@@ -442,8 +442,9 @@ function Public.island_richness_avg_multiplier()
 	return base + additional
 end
 
+-- Should preferably match "quest_reward_multiplier()" as close as possible for easier balance
 function Public.resource_quest_multiplier()
-	return (0.9 + 0.075 * (Common.overworldx()/40)^(8/10)) * Math.sloped(Common.difficulty_scale(), 1/5) * (Public.crew_scale())^(1/10)
+	return (0.9 + 0.1 * (Common.overworldx()/40)^(7/10)) * Math.sloped(Common.difficulty_scale(), 1/3) * (Public.crew_scale())^(1/10)
 end
 
 function Public.quest_market_entry_price_scale()
