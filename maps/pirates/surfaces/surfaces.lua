@@ -124,7 +124,6 @@ function Public.on_surface_generation(destination)
 		if subtype == IslandEnum.enum.CAVE then
 			if not destination.dynamic_data.cave_miner then
 				destination.dynamic_data.cave_miner = {}
-				destination.dynamic_data.cave_miner.reveal_queue = {}
 				destination.dynamic_data.cave_miner.cave_surface = nil
 				Islands[IslandEnum.enum.CAVE].roll_source_surface(destination)
 			end

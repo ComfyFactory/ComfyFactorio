@@ -61,8 +61,8 @@ local function spawn_market(args, is_main)
 end
 
 local function place_rock(args)
-    local a = (-49 + math_random(0, 98)) * 0.01
-    local b = (-49 + math_random(0, 98)) * 0.01
+    local a = math_random(-49, 49) * 0.01
+    local b = math_random(-49, 49) * 0.01
 
     args.entities[#args.entities + 1] = IslandsCommon.random_rock_1({x = args.p.x + a, y = args.p.y + b})
 end
