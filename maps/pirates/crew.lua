@@ -134,13 +134,13 @@ function Public.try_lose(loss_reason)
 
 		local playtimetext = Utils.time_longform((memory.age or 0)/60)
 
-		local message = {'',loss_reason,' ',{'pirates.loss_rest_of_message_long', playtimetext, memory.overworldx, Public.get_crewmembers_printable_string()}}
+		local message = {'', loss_reason, ' ', {'pirates.loss_rest_of_message_long', playtimetext, memory.overworldx, Public.get_crewmembers_printable_string()}}
 
-		Server.to_discord_embed_raw({'',CoreData.comfy_emojis.trashbin .. '[' .. memory.name .. '] ', message}, true)
+		Server.to_discord_embed_raw({'', CoreData.comfy_emojis.trashbin .. '[' .. memory.name .. '] ', message}, true)
 
-		local message2 = {'',loss_reason,' ',{'pirates.loss_rest_of_message_short', '[font=default-large-semibold]' .. playtimetext .. '[/font]', memory.overworldx}}
+		local message2 = {'', loss_reason, ' ', {'pirates.loss_rest_of_message_short', '[font=default-large-semibold]' .. playtimetext .. '[/font]', memory.overworldx}}
 
-		Common.notify_game({'', '[' .. memory.name .. '] ',message2}, CoreData.colors.notify_gameover)
+		Common.notify_game({'', '[' .. memory.name .. '] ', message2}, CoreData.colors.notify_gameover)
 
 		local force = memory.force
 		if not (force and force.valid) then return end
@@ -163,7 +163,7 @@ function Public.try_win()
 
 		Server.to_discord_embed_raw({'', CoreData.comfy_emojis.goldenobese .. '[' .. memory.name .. '] Victory, on v' .. CoreData.version_string .. ', ', CoreData.difficulty_options[memory.difficulty_option].text, ', capacity ' .. CoreData.capacity_options[memory.capacity_option].text3 .. '. Playtime: ' .. speedrun_time_str .. ' since 1st island. Crewmembers: ' .. Public.get_crewmembers_printable_string()}, true)
 
-		Common.notify_game({'','[' .. memory.name .. '] ',{'pirates.victory',CoreData.version_string, CoreData.difficulty_options[memory.difficulty_option].text, CoreData.capacity_options[memory.capacity_option].text3, speedrun_time_str, Public.get_crewmembers_printable_string()}}, CoreData.colors.notify_victory)
+		Common.notify_game({'', '[' .. memory.name .. '] ', {'pirates.victory',CoreData.version_string, CoreData.difficulty_options[memory.difficulty_option].text, CoreData.capacity_options[memory.capacity_option].text3, speedrun_time_str, Public.get_crewmembers_printable_string()}}, CoreData.colors.notify_victory)
 
 		game.play_sound{path='utility/game_won', volume_modifier=0.9}
 
@@ -810,7 +810,7 @@ function Public.initialise_crew(accepted_proposal)
 	local message = {'pirates.crew_launch', accepted_proposal.name}
 	Common.notify_game(message)
 	-- Server.to_discord_embed_raw(CoreData.comfy_emojis.pogkot .. message .. ' Difficulty: ' .. CoreData.difficulty_options[memory.difficulty_option].text .. ', Capacity: ' .. CoreData.capacity_options[memory.capacity_option].text3 .. '.')
-	Server.to_discord_embed_raw({'',CoreData.comfy_emojis.pogkot,message,' Capacity: ',CoreData.capacity_options[memory.capacity_option].text3,'.'}, true)
+	Server.to_discord_embed_raw({'', CoreData.comfy_emojis.pogkot, message, ' Capacity: ', CoreData.capacity_options[memory.capacity_option].text3, '.'}, true)
 	game.surfaces[CoreData.lobby_surface_name].play_sound{path='utility/new_objective', volume_modifier=0.75}
 
 	memory.boat = global_memory.lobby_boats[new_id]

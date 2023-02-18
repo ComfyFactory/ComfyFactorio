@@ -50,8 +50,8 @@ function Public.Tick_actions(tickinterval)
 	local memory = Memory.get_crew_memory()
     local destination = Common.current_destination()
 
-	if (not destination.type) or (not destination.type == Surfaces.enum.ISLAND) then return end
-	if (not memory.boat.state) or (not (memory.boat.state == Boats.enum_state.LANDED or memory.boat.state == Boats.enum_state.RETREATING)) then return end
+	if destination.type ~= Surfaces.enum.ISLAND then return end
+    if memory.boat.state ~= Boats.enum_state.LANDED and memory.boat.state ~= Boats.enum_state.RETREATING then return end
 
     if (memory.game_lost) or (destination.dynamic_data.timeratlandingtime and destination.dynamic_data.timer < destination.dynamic_data.timeratlandingtime + Common.seconds_after_landing_to_enable_AI) then return end
 
@@ -89,7 +89,6 @@ end
 
 
 function Public.eat_up_fraction_of_all_pollution_wrapped()
-	-- local memory = Memory.get_crew_memory()
     local surface = game.surfaces[Common.current_destination().surface_name]
     Public.eat_up_fraction_of_all_pollution(surface, 0.05)
 end
@@ -173,9 +172,6 @@ function Public.try_main_attack()
 	else
 		local group = Public.spawn_group_of_scripted_biters(2/3, 6, 350, wave_size_multiplier)
 		local target = Public.generate_main_attack_target()
-		if not group or not group.valid or not target or not target.valid then return end
-
-		-- group.set_command(Public.attack_target(target))
 
 		Public.group_set_commands(group, Public.attack_target(target))
 
@@ -203,9 +199,6 @@ function Public.try_secondary_attack()
 		else
 			target = Public.generate_side_attack_target(surface, group.position)
 		end
-		if not group or not group.valid or not target or not target.valid then log('target invalid') return end
-
-		-- group.set_command(Public.attack_target(target))
 
 		Public.group_set_commands(group, Public.attack_target(target))
 
@@ -227,9 +220,6 @@ function Public.try_rogue_attack()
 		local group = Public.spawn_group_of_scripted_biters(1/2, 6, 200, wave_size_multiplier)
 		if not (group and group.valid) then return end
 		local target = Public.generate_side_attack_target(surface, group.position)
-        if (not target) or (not target.valid) then return end
-
-		-- group.set_command(Public.attack_target(target))
 
 		Public.group_set_commands(group, Public.attack_target(target))
 
@@ -261,7 +251,6 @@ function Public.tell_biters_near_silo_to_attack_it()
             }
         )
     end
-
 end
 
 function Public.poke_script_groups()
@@ -294,9 +283,7 @@ function Public.poke_inactive_scripted_biters()
             memory.scripted_biters[unit_number] = nil
             if biter.entity and biter.entity.valid then
                 local target = Public.nearest_target()
-                if target and target.valid then
-                    Public.group_set_commands(biter.entity, Public.attack_target(target))
-                end
+                Public.group_set_commands(biter.entity, Public.attack_target(target))
             end
         end
     end
@@ -335,6 +322,8 @@ function Public.create_mail_delivery_biters() --these travel cross-map between b
                 local start_p = surface.find_non_colliding_position('rocket-silo', s1.position, 256, 2) or s1.position
 
                 local unit_group = surface.create_unit_group({position = start_p, force = enemy_force_name})
+                if not (unit_group and unit_group.valid) then return end
+
                 for _, unit in pairs(units) do
                     unit_group.add_member(unit)
                 end
@@ -633,7 +622,7 @@ function Public.move_to(position)
 end
 
 function Public.attack_target_entity(target)
-    if not target and target.valid then return end
+    if not (target and target.valid) then return end
     local command = {
         type = defines.command.attack,
         target = target,
@@ -687,6 +676,8 @@ function Public.wander_around(ticks_to_wait) --wander individually inside group 
 end
 
 function Public.group_set_commands(group, commands)
+    if not (group and group.valid) then return end
+
     if #commands > 0 then
         local command = {
             type = defines.command.compound,
@@ -698,7 +689,7 @@ function Public.group_set_commands(group, commands)
 end
 
 function Public.attack_target(target)
-	if not target then return end
+	if not (target and target.valid) then return end
 
     local commands
 	if target.name == 'boatarea' then
@@ -781,13 +772,13 @@ function Public.revenge_group(surface, p, target, type, bonus_evo, amount_multip
 
 	if #units > 0 then
 		local unit_group = surface.create_unit_group({position = p, force = enemy_force_name})
+        if not (unit_group and unit_group.valid) then return end
+
 		for _, unit in pairs(units) do
 			unit_group.add_member(unit)
 		end
 
-		if target and target.valid then
-			Public.group_set_commands(unit_group, Public.attack_target(target))
-		end
+        Public.group_set_commands(unit_group, Public.attack_target(target))
 		unit_group.set_autonomous()
 	end
 end

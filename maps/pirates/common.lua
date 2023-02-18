@@ -909,10 +909,10 @@ function Public.crew_get_nonafk_crew_members()
 	return playerlist
 end
 
-function Public.crew_get_officers()
+function Public.crew_get_non_afk_officers()
 	local officers = {}
 
-	local members = Public.crew_get_crew_members()
+	local members = Public.crew_get_nonafk_crew_members()
 	for _, player in pairs(members) do
 		if Public.is_officer(player.index) then
 			officers[#officers + 1] = player
@@ -1843,6 +1843,8 @@ function Public.get_random_valid_spawner(surface)
 end
 
 function Public.try_make_biter_elite(entity, spawner)
+	if not (entity and entity.valid) then return end
+
 	local memory = Memory.get_crew_memory()
 	local destination = Public.current_destination()
 

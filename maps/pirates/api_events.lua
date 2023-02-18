@@ -1450,7 +1450,7 @@ local function event_on_player_joined_game(event)
 
 	local crew_to_put_back_in = nil
 	for _, memory in pairs(global_memory.crew_memories) do
-		if Common.is_id_valid(memory.id) and memory.crewstatus and memory.crewstatus == Crew.enum.ADVENTURING and memory.temporarily_logged_off_characters[player.index] then
+		if Common.is_id_valid(memory.id) and memory.crewstatus == Crew.enum.ADVENTURING and memory.temporarily_logged_off_characters[player.index] then
 			crew_to_put_back_in = memory.id
 			break
 		end
@@ -1461,7 +1461,7 @@ local function event_on_player_joined_game(event)
 
 		local memory = global_memory.crew_memories[crew_to_put_back_in]
 		if (not memory.run_is_protected) and #memory.crewplayerindices <= 1 then
-			memory.playerindex_captain = player.index
+			Roles.make_captain(player)
 		end
 
 		if _DEBUG then log('putting player back in their old crew') end
@@ -1518,7 +1518,7 @@ local function event_on_player_joined_game(event)
 
 			local memory = global_memory.crew_memories[ages[1].id]
 			if (not memory.run_is_protected) and #memory.crewplayerindices <= 1 then
-				memory.playerindex_captain = player.index
+				Roles.make_captain(player)
 			end
 
 			if ages[2] then

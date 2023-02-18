@@ -1712,4 +1712,34 @@ function Public.update_pet_biter_lifetime(tickinterval)
 	end
 end
 
+function Public.update_time_remaining()
+	local memory = Memory.get_crew_memory()
+	local destination = Common.current_destination()
+
+	if not (destination.dynamic_data.time_remaining and destination.dynamic_data.time_remaining > 0) then return end
+	destination.dynamic_data.time_remaining = destination.dynamic_data.time_remaining - 1
+
+	if destination.dynamic_data.time_remaining ~= 0 then return end
+
+	if not memory.boat then return end
+	if memory.boat.state == Boats.enum_state.RETREATING then return end
+	if not memory.boat.surface_name then return end
+
+	local surface_name_decoded = Surfaces.SurfacesCommon.decode_surface_name(memory.boat.surface_name)
+	local type = surface_name_decoded.type
+	if type == Surfaces.enum.ISLAND then
+		if destination.static_params and destination.static_params.base_cost_to_undock and Balance.need_resources_to_undock(Common.overworldx()) == true and (not Common.query_can_pay_cost_to_leave()) then
+			Crew.try_lose({'pirates.loss_resources_were_not_collected_in_time'})
+		else
+			if Balance.need_resources_to_undock(Common.overworldx()) == true then
+				Progression.try_retreat_from_island(false)
+			else
+				Progression.retreat_from_island(false)
+			end
+		end
+	elseif type == Surfaces.enum.DOCK then
+		Progression.undock_from_dock(false)
+	end
+end
+
 return Public
