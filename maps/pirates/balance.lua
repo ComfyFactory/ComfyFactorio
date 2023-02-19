@@ -6,7 +6,7 @@ local Math = require 'maps.pirates.math'
 -- local Raffle = require 'maps.pirates.raffle'
 -- local Memory = require 'maps.pirates.memory'
 local Common = require 'maps.pirates.common'
-local CoreData = require 'maps.pirates.coredata'
+-- local CoreData = require 'maps.pirates.coredata'
 -- local Utils = require 'maps.pirates.utils_local'
 -- local _inspect = require 'utils.inspect'.inspect
 
@@ -132,7 +132,7 @@ function Public.crew_scale()
 end
 
 function Public.silo_base_est_time()
-	local T = Public.expected_time_on_island() * Public.crew_scale()^(2/10) --to undo some of the time scaling
+	local T = Public.expected_time_on_island() * Public.crew_scale()^(1/5) --to undo some of the time scaling
 	local est_secs
 	if T > 0 then
 		est_secs = T/6
@@ -235,7 +235,7 @@ function Public.fuel_depletion_rate_static()
 		-- - More people doesn't necessarily mean faster progression: people just focus on other things (and on some islands it's hard to "employ" every crew member to be productive, due to lack of activities).
 		-- - Although more players can setup miners faster, miners don't dig ore faster.
 		-- - It's not fun being punished when noobs(or just your casual friends) join game and don't contribute "enough" to make up for increased coal consumption (among other things).
-		return -0.2 * ((Common.overworldx()/40)^(9/10)) * Public.crew_scale()^(1/5) * Math.sloped(Common.difficulty_scale(), 40/100)
+		return -0.2 * ((Common.overworldx()/40)^(9/10)) * Public.crew_scale()^(1/5) * Math.sloped(Common.difficulty_scale(), 4/10)
 	else
 		return 0
 	end
@@ -249,7 +249,7 @@ end
 
 function Public.silo_total_pollution()
 	return (
-		347 * (Common.difficulty_scale()^(1.0)) * Public.crew_scale()^(3/10) * (3.2 + 0.7 * (Common.overworldx()/40)^(1.6)) --shape of the curve with x is tuned.
+		310 * Common.difficulty_scale() * Public.crew_scale()^(1/5) * (3.2 + 0.7 * (Common.overworldx()/40)^(1.6)) --shape of the curve with x is tuned.
 )
 end
 
@@ -434,7 +434,7 @@ function Public.rocket_launch_coin_reward()
 end
 
 function Public.quest_reward_multiplier()
-	return Public.island_richness_avg_multiplier() * (Public.crew_scale())^(1/10)
+	return 0.9 * Public.island_richness_avg_multiplier()
 end
 
 function Public.island_richness_avg_multiplier(overworldx)
@@ -555,7 +555,7 @@ function Public.kraken_health()
 	-- return Math.ceil(3500 * Math.max(1, 1 + 0.075 * (Common.overworldx()/40)^(13/10)) * (Public.crew_scale()^(4/8)) * Math.sloped(Common.difficulty_scale(), 3/4))
 	-- return Math.ceil(3500 * Math.max(1, 1 + 0.08 * ((Common.overworldx()/40)^(13/10)-6)) * (Public.crew_scale()^(5/8)) * Math.sloped(Common.difficulty_scale(), 3/4))
 
-	return Math.ceil(2000 * Math.max(1, 1 + 0.075 * (Common.overworldx()/40)^(13/10)) * (Public.crew_scale()^(1/5)) * Math.sloped(Common.difficulty_scale(), 3/4))
+	return Math.ceil(2200 * Math.max(1, 1 + 0.075 * (Common.overworldx()/40)^(13/10)) * (Public.crew_scale()^(1/5)) * Math.sloped(Common.difficulty_scale(), 3/4))
 end
 
 Public.kraken_regen_scale = 0.1 --starting off low
