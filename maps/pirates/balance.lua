@@ -32,8 +32,6 @@ Public.cannon_starting_hp = 2000
 Public.cannon_resistance_factor = 2
 Public.technology_price_multiplier = 1
 
-Public.rocket_launch_coin_reward = 5000
-
 Public.base_caught_fish_amount = 3
 Public.class_reward_tick_rate_in_seconds = 7
 Public.poison_damage_multiplier = 1.85
@@ -394,7 +392,7 @@ end
 
 
 function Public.biter_timeofday_bonus_damage(darkness) -- a surface having min_brightness of 0.2 will cap darkness at 0.8
-	return 0.1 * darkness
+	return 0.5 * darkness
 end
 
 
@@ -427,12 +425,16 @@ end
 
 
 function Public.rocket_launch_fuel_reward()
-	return Math.ceil(1250 * (1 + 0.13 * (Common.overworldx()/40)^(9/10)) * Math.sloped(Common.difficulty_scale(), 1/3))
+	return Math.ceil(2000 * Public.island_richness_avg_multiplier())
 	-- return Math.ceil(1000 * (1 + 0.1 * (Common.overworldx()/40)^(8/10)) / Math.sloped(Common.difficulty_scale(), 1/4))
 end
 
+function Public.rocket_launch_coin_reward()
+	return Math.ceil(3000 * Public.island_richness_avg_multiplier())
+end
+
 function Public.quest_reward_multiplier()
-	return (0.4 + 0.1 * (Common.overworldx()/40)^(7/10)) * Math.sloped(Common.difficulty_scale(), 1/3) * (Public.crew_scale())^(1/10)
+	return Public.island_richness_avg_multiplier() * (Public.crew_scale())^(1/10)
 end
 
 function Public.island_richness_avg_multiplier(overworldx)
@@ -451,7 +453,6 @@ function Public.island_richness_avg_multiplier(overworldx)
 	return Math.clamp(base, 1.5, base + additional)
 end
 
--- Should preferably match "quest_reward_multiplier()" as close as possible for easier balance
 function Public.resource_quest_multiplier()
 	return (0.9 + 0.1 * (Common.overworldx()/40)^(7/10)) * Math.sloped(Common.difficulty_scale(), 1/3) * (Public.crew_scale())^(1/10)
 end
@@ -540,10 +541,14 @@ function Public.sandworm_evo_increase_per_spawn()
 end
 
 function Public.kraken_kill_reward_items()
-	return {{name = 'coin', count = 800}, {name = 'utility-science-pack', count = 8}}
+	return {
+		{name = 'coin', count = Math.ceil(800 * Public.island_richness_avg_multiplier())},
+		{name = 'utility-science-pack', count = Math.ceil(8 * Public.island_richness_avg_multiplier())}
+	}
 end
+
 function Public.kraken_kill_reward_fuel()
-	return 150
+	return Math.ceil(150 * Public.island_richness_avg_multiplier())
 end
 
 function Public.kraken_health()
@@ -740,31 +745,16 @@ function Public.pick_random_drilling_ore()
 end
 
 
--- Current formula returns [50 - 200] + random(1, [10 - 40]) depending on completion progress
--- Formula is "a(100x)^(1/2) + random(1, 0.2a(100x)^(1/2))" where
--- x: progress in range [0-1] (when leagues are in 0-1000)
--- a: scaling
--- When the formula needs adjustments, I suggest changing scaling variable
 function Public.pick_drilling_ore_amount()
-	local scaling = 20
-	local amount = scaling * Math.sqrt(100 * Common.game_completion_progress())
-	local extra_random_amount = Math.random(Math.ceil(0.2 * amount))
-	return amount + extra_random_amount
+	return Math.ceil(100 * Public.island_richness_avg_multiplier() * Math.random_float_in_range(0.9, 1.1))
 end
 
 
--- Current formula returns [15000 - 50000] + random(1, [3000 - 10000]) depending on completion progress
--- Formula is "a(1000000x)^(1/2) + random(1, 0.2a(1000000x)^(1/2))" where
--- x: progress in range [0-1] (when leagues are in 0-1000)
--- a: scaling
--- When the formula needs adjustments, I suggest changing scaling variable
 -- Note: 3333 crude oil amount ~= 1% = 0.1/sec
 function Public.pick_default_oil_amount()
-	local scaling = 50
-	local amount = scaling * Math.sqrt(1000000 * Common.game_completion_progress())
-	local extra_random_amount = Math.random(Math.max(1, Math.ceil(0.2 * amount)))
-	return amount + extra_random_amount
+	return Math.ceil(30000 * Public.island_richness_avg_multiplier() * Math.random_float_in_range(0.9, 1.1))
 end
+
 
  -- Returns frequency in seconds
 function Public.biter_boat_average_arrival_rate()

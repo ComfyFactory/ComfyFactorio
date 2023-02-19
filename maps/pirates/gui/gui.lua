@@ -754,7 +754,10 @@ function Public.process_siloframe_and_questframe_updates(flowsilo, flowquest, bo
 					-- flow1.silo_label_1.caption = string.format('Launched for %.0f[item=coal] , ' .. Balance.rocket_launch_coin_reward .. '[item=coin]', dynamic_data.rocketcoalreward)
 					flow1.silo_label_1.style.font_color = GuiCommon.achieved_font_color
 
-					flow1.silo_label_3.caption = Math.floor(dynamic_data.rocketcoalreward/100)/10 .. 'k[item=coal], ' .. Math.floor(Balance.rocket_launch_coin_reward/100)/10 .. 'k[item=coin]'
+					local rocket_launch_coal_reward = Balance.rocket_launch_fuel_reward()
+					local rocket_launch_coin_reward = Balance.rocket_launch_coin_reward()
+
+					flow1.silo_label_3.caption = Math.floor(rocket_launch_coal_reward/100)/10 .. 'k[item=coal], ' .. Math.floor(rocket_launch_coin_reward/100)/10 .. 'k[item=coin]'
 
 					local tooltip = {'pirates.gui_etaframe_launched_tooltip'}
 					flow1.tooltip = tooltip

@@ -1986,16 +1986,18 @@ local function event_on_rocket_launched(event)
 	-- NOTE: On rare occasions if rocket was launched but the silo died in the meantime, this will not give rewards to the crew (idk how to fix it though)
 	if not rocket_launched_belongs_to_island then return end
 
+	local rocket_launch_coal_reward = Balance.rocket_launch_fuel_reward()
+	local rocket_launch_coin_reward = Balance.rocket_launch_coin_reward()
+
 	destination.dynamic_data.rocketlaunched = true
-	if memory.stored_fuel and destination.dynamic_data and destination.dynamic_data.rocketcoalreward then
-		memory.stored_fuel = memory.stored_fuel + destination.dynamic_data.rocketcoalreward
-		local a = Balance.rocket_launch_coin_reward
-		Common.give_items_to_crew({{name = 'coin', count = a}})
-		memory.playtesting_stats.coins_gained_by_rocket_launches = memory.playtesting_stats.coins_gained_by_rocket_launches + a
+	if memory.stored_fuel then
+		memory.stored_fuel = memory.stored_fuel + rocket_launch_coal_reward
+		Common.give_items_to_crew({{name = 'coin', count = rocket_launch_coin_reward}})
+		memory.playtesting_stats.coins_gained_by_rocket_launches = memory.playtesting_stats.coins_gained_by_rocket_launches + rocket_launch_coin_reward
 	end
 
 	local force = memory.force
-	local message = {'pirates.granted_2', {'pirates.granted_rocket_launch'}, Math.floor(Balance.rocket_launch_coin_reward/100)/10 .. 'k [item=coin]', Math.floor(destination.dynamic_data.rocketcoalreward/100)/10 .. 'k [item=coal]'}
+	local message = {'pirates.granted_2', {'pirates.granted_rocket_launch'}, Math.floor(rocket_launch_coin_reward/100)/10 .. 'k [item=coin]', Math.floor(rocket_launch_coal_reward/100)/10 .. 'k [item=coal]'}
 	Common.notify_force_light(force,message)
 
 	if destination.dynamic_data.quest_type == Quest.enum.TIME and (not destination.dynamic_data.quest_complete) then

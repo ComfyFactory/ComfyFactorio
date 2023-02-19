@@ -103,8 +103,8 @@ function biomes.oasis(args, noise)
 		args.entities[#args.entities + 1] = {name = 'tree-04', position = args.p}
     end
 
-    if math_random(1, 100) == 1 then
-        args.entities[#args.entities + 1] = {name = 'crude-oil', position = args.p, amount = Balance.pick_default_oil_amount() * 4}
+    if math_random(1, 64) == 1 then
+        args.entities[#args.entities + 1] = {name = 'crude-oil', position = args.p, amount = Balance.pick_default_oil_amount() * 2}
     end
 
     if noise < 0.73 then
