@@ -237,7 +237,7 @@ function Public.generate_destination_base_cost_to_undock(p, subtype)
 		}
 	elseif subtype == IslandEnum.enum.RED_DESERT or subtype == IslandEnum.enum.CAVE then
 		if base_cost_to_undock and base_cost_to_undock['launch_rocket'] == true then
-			base_cost_to_undock['launch_rocket'] = false
+			base_cost_to_undock['launch_rocket'] = nil
 		end
 	end
 
@@ -278,6 +278,7 @@ function Public.generate_overworld_destination(p)
 	local memory = Memory.get_crew_memory()
 
 	local macro_p = {x = p.x/40, y = p.y/24}
+	game.print(macro_p)
 
 	local type_data = Public.generate_destination_type_and_subtype(p)
 	local type = type_data.type
@@ -307,7 +308,8 @@ function Public.generate_overworld_destination(p)
 		local rngcount = 0
 		for k, _ in pairs(base_ores) do
 			if k ~= 'coal' then
-				local rng = 2*Math.random()
+				local rng = Math.random_float_in_range(0.5, 1.5)
+				-- local rng = 2*Math.random() -- such huge variance hard to reason and balance around, considering resources aren't equally worth.
 				-- local rng = 1 + ((2*Math.random() - 1)^3) --lower variances
 				rngs[k] = rng
 				rngsum = rngsum + rng

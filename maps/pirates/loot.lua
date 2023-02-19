@@ -67,7 +67,7 @@ Public.chest_loot_data_raw = {
 	{4, 0.2, 1.4, true, 'advanced-circuit', 10, 40},
 
 	{8, -0.3, 0.3, true, 'small-electric-pole', 16, 30},
-	{30, 0, 1, false, 'medium-electric-pole', 2, 10},
+	{20, 0, 1, false, 'medium-electric-pole', 2, 10},
 	{3, 0.2, 1.4, true, 'big-electric-pole', 4, 8},
 	{1, 0.2, 1.8, true, 'substation', 1, 3},
 	{5, 0, 1.2, true, 'accumulator', 1, 4},
@@ -100,8 +100,8 @@ Public.chest_loot_data_raw = {
 	{60, -1, 1, true, 'piercing-rounds-magazine', 8, 16},
 	{10, 0, 1, false, 'uranium-rounds-magazine', 3, 7},
 
-	{1, -0.3, 0.3, true, 'assembling-machine-1', 2, 4},
-	{20, 0, 0.9, false, 'assembling-machine-2', 1, 3},
+	{2, -0.3, 0.5, true, 'assembling-machine-1', 2, 4},
+	{10, 0, 0.9, false, 'assembling-machine-2', 1, 3},
 	{2, 0, 1, false, 'electric-mining-drill', 2, 4},
 	{3, 0.25, 1.75, true, 'assembling-machine-3', 2, 4},
 	{5, 0, 1, true, 'steel-furnace', 4, 8},
@@ -111,12 +111,12 @@ Public.chest_loot_data_raw = {
 	{0.1, 0.3, 1, false, 'nuclear-reactor', 1, 1},
 	{0.2, 0.2, 2, true, 'concrete', 10, 40},
 
-	{50, -1, 1, true, 'speed-module', 1, 3},
-	{25, 0, 1.5, true, 'speed-module-2', 1, 2},
-	{12, 0, 2, true, 'speed-module-3', 1, 1},
-	{4, -1, 1, true, 'effectivity-module', 1, 3},
-	{4, 0, 1, true, 'effectivity-module-2', 1, 3},
-	{4, 0, 2, true, 'effectivity-module-3', 1, 1},
+	{15, -1, 1, true, 'speed-module', 1, 3},
+	{5, 0, 1.5, true, 'speed-module-2', 1, 2},
+	{2, 0, 2, true, 'speed-module-3', 1, 1},
+	{5, -1, 1, true, 'effectivity-module', 1, 3},
+	{3, 0, 1, true, 'effectivity-module-2', 1, 3},
+	{1, 0, 2, true, 'effectivity-module-3', 1, 1},
 	{3, 0, 1, false, 'productivity-module', 1, 1}, --not many of these, merely to make them availabile for future features
 
 	{0.2, 0.2, 2, true, 'car', 1, 1},
@@ -330,13 +330,17 @@ end
 
 function Public.random_plates(multiplier)
 	multiplier = multiplier or 1
+	multiplier = multiplier * Balance.island_richness_avg_multiplier()
+	multiplier = multiplier * Math.random_float_in_range(0.9, 1.1)
+
 	local platesrng = Math.random(5)
+
 	if platesrng <= 2 then
-		return {name = 'iron-plate', count = 120 * multiplier}
+		return {name = 'iron-plate', count = Math.ceil(60 * multiplier)}
 	elseif platesrng <= 4 then
-		return {name = 'copper-plate', count = 120 * multiplier}
+		return {name = 'copper-plate', count = Math.ceil(60 * multiplier)}
 	else
-		return {name = 'steel-plate', count = 20 * multiplier}
+		return {name = 'steel-plate', count = Math.ceil(10 * multiplier)}
 	end
 end
 

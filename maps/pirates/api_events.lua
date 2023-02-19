@@ -2193,7 +2193,7 @@ local function event_on_entity_spawned(event)
 	if not Common.is_id_valid(crew_id) then return end
 
 	Memory.set_working_id(crew_id)
-	Common.try_make_biter_elite(entity, event.spawner)
+	Common.try_make_biter_elite(entity)
 end
 
 

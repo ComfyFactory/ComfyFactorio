@@ -297,22 +297,26 @@ function Public.base_evolution_leagues(leagues)
 	if overworldx == 0 then
 		evo = 0
 	else
-		evo = (0.0201 * (overworldx/40)) * Math.sloped(Common.difficulty_scale(), 1/5)
+		-- evo = (0.0201 * (overworldx/40)) * Math.sloped(Common.difficulty_scale(), 1/5)
 
-		local difficulty_name = CoreData.get_difficulty_option_informal_name_from_value(Common.difficulty_scale())
-		if difficulty_name == 'normal' then
-			evo = evo + 0.01
-		elseif difficulty_name == 'hard' then
-			evo = evo + 0.02
-		elseif difficulty_name == 'nightmare' then
-			evo = evo + 0.04
-		end
+		-- local difficulty_name = CoreData.get_difficulty_option_informal_name_from_value(Common.difficulty_scale())
+		-- if difficulty_name == 'normal' then
+		-- 	evo = evo + 0.01
+		-- elseif difficulty_name == 'hard' then
+		-- 	evo = evo + 0.02
+		-- elseif difficulty_name == 'nightmare' then
+		-- 	evo = evo + 0.04
+		-- end
 
-		if overworldx > 600 and overworldx < 1000 then
-			evo = evo + (0.0025 * (overworldx - 600)/40)
-		elseif overworldx >= 1000 then
-			evo = evo + 0.0025 * 10
-		end --extra slope from 600 to 1000 adds 2.5% evo
+		-- if overworldx > 600 and overworldx < 1000 then
+		-- 	evo = evo + (0.0025 * (overworldx - 600)/40)
+		-- elseif overworldx >= 1000 then
+		-- 	evo = evo + 0.0025 * 10
+		-- end --extra slope from 600 to 1000 adds 2.5% evo
+
+
+		evo = (0.0201 * (overworldx/40)) * Math.sloped(Common.difficulty_scale(), 0.4)
+		evo = evo + 0.02 * Common.difficulty_scale()
 	end
 
 	return evo
@@ -613,11 +617,11 @@ Public.research_buffs = { --currently disabled anyway
 
 
 function Public.flamers_tech_multipliers()
-	return 0.8
+	return 0.7
 end
 
 function Public.flamers_base_nerf()
-	return -0.3
+	return -0.4
 end
 
 

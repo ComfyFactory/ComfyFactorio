@@ -678,7 +678,7 @@ end
 function Public.group_set_commands(group, commands)
     if not (group and group.valid) then return end
 
-    if #commands > 0 then
+    if commands and #commands > 0 then
         local command = {
             type = defines.command.compound,
             structure_type = defines.compound_command.return_last,
