@@ -61,7 +61,7 @@ Public.scout_damage_dealt_multiplier = 0.6
 Public.fisherman_fish_bonus = 2
 Public.fisherman_reach_bonus = 10
 Public.lumberjack_coins_from_tree = 12
-Public.lumberjack_ore_base_amount = 4
+Public.lumberjack_ore_base_amount = 5
 Public.master_angler_reach_bonus = 16
 Public.master_angler_fish_bonus = 4
 Public.master_angler_coin_bonus = 20
@@ -435,15 +435,20 @@ function Public.quest_reward_multiplier()
 	return (0.4 + 0.1 * (Common.overworldx()/40)^(7/10)) * Math.sloped(Common.difficulty_scale(), 1/3) * (Public.crew_scale())^(1/10)
 end
 
-function Public.island_richness_avg_multiplier()
-	local base = 0.73
-	local additional = 0.120 * Math.clamp(0, 10, (Common.overworldx()/40)^(65/100) * Math.sloped(Public.crew_scale(), 1/40)) --tuned tbh
+function Public.island_richness_avg_multiplier(overworldx)
+	overworldx = overworldx or Common.overworldx()
+	-- local base = 0.73
+	-- local additional = 0.120 * Math.clamp(0, 10, (overworldx/40)^(65/100) * Math.sloped(Public.crew_scale(), 1/40)) --tuned tbh
+
+	local base = 0.5
+	local additional = 0.032 * (overworldx/40)
 
 	-- now clamped, because it takes way too long to mine that many more resources
 
 	--we don't really have resources scaling by player count in this resource-constrained scenario, but we scale a little, to accommodate each player filling their inventory with useful tools. also, I would do higher than 1/40, but we go even slightly lower because we're applying this somewhat sooner than players actually get there.
 
-	return base + additional
+	-- return base + additional
+	return Math.clamp(base, 1.5, base + additional)
 end
 
 -- Should preferably match "quest_reward_multiplier()" as close as possible for easier balance

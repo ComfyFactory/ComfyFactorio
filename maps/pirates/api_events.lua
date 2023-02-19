@@ -814,7 +814,7 @@ local function player_mined_tree(event)
 
 	local give = {}
 
-	local baseamount = 4
+	local baseamount = 5
 	--minimum 1 wood
 	local amount = Math.clamp(1, Math.max(1, Math.ceil(available)), Math.ceil(baseamount * Balance.island_richness_avg_multiplier() * available/starting))
 
@@ -1759,6 +1759,7 @@ function Public.event_on_chunk_generated(event)
 	local static_params = {}
 	local other_map_generation_data = {}
 	local scope
+	local overworldx = 0
 
 	local memory = Memory.get_crew_memory()
 	if type == Surfaces.enum.ISLAND and memory.destinations and memory.destinations[chunk_destination_index] then
@@ -1769,6 +1770,7 @@ function Public.event_on_chunk_generated(event)
 		terraingen_coordinates_offset = static_params.terraingen_coordinates_offset
 		width = static_params.width
 		height = static_params.height
+		overworldx = destination.overworld_position.x
 	end
 
 	if not scope then
@@ -1821,7 +1823,8 @@ function Public.event_on_chunk_generated(event)
 					specials = specials,
 					seed = seed,
 					other_map_generation_data = other_map_generation_data,
-					iconized_generation = false
+					iconized_generation = false,
+					overworldx = overworldx,
 				}
 			else
 				tiles[#tiles + 1] = {name = 'out-of-map', position = Utils.psum{p, {1, terraingen_coordinates_offset}}}

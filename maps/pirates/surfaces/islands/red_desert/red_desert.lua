@@ -118,7 +118,7 @@ function Public.terrain(args)
 	end
 
 	if noises.forest_abs_suppressed(p) < 0.8 and noises.mood(p) > -0.3 then
-		local amount = Math.ceil(70 * noises.height(p) * Balance.island_richness_avg_multiplier() * Math.random_float_in_range(0.9, 1.1))
+		local amount = Math.ceil(80 * noises.height(p) * Balance.island_richness_avg_multiplier(args.overworldx) * Math.random_float_in_range(0.9, 1.1))
 		if noises.height(p) > 0.27 then
 			if noises.ore(p) > 1.5 then
 				local name = 'iron-ore'

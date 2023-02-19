@@ -317,14 +317,14 @@ end
 function Public.swamp_storage_tank_fluid_loot()
 	local ret
 	-- ret = {name = 'sulfuric-acid', amount = 100*Math.ceil(Math.random(5^2, 40^2)^(1/2))} -- don't know why this formula made best amount most common, but lowest amount least common (was this intentional?).
-	ret = {name = 'sulfuric-acid', amount = 100*Math.ceil(Math.random(10, 40) * Balance.island_richness_avg_multiplier())}
+	ret = {name = 'sulfuric-acid', amount = Math.ceil(2000 * Math.random_float_in_range(0.8, 1.2) * Balance.island_richness_avg_multiplier())}
     return ret
 end
 
 function Public.roboport_bots_loot()
     return {
-		{name = 'logistic-robot', count = Math.ceil((10 + Math.random(5)) * Balance.island_richness_avg_multiplier())},
-		{name = 'construction-robot', count = Math.ceil((5 + Math.random(5)) * Balance.island_richness_avg_multiplier())},
+		{name = 'logistic-robot', count = Math.ceil((15 + Math.random(5)) * Balance.island_richness_avg_multiplier())},
+		{name = 'construction-robot', count = Math.ceil((10 + Math.random(5)) * Balance.island_richness_avg_multiplier())},
 	}
 end
 
@@ -336,11 +336,11 @@ function Public.random_plates(multiplier)
 	local platesrng = Math.random(5)
 
 	if platesrng <= 2 then
-		return {name = 'iron-plate', count = Math.ceil(60 * multiplier)}
+		return {name = 'iron-plate', count = Math.ceil(80 * multiplier)}
 	elseif platesrng <= 4 then
-		return {name = 'copper-plate', count = Math.ceil(60 * multiplier)}
+		return {name = 'copper-plate', count = Math.ceil(80 * multiplier)}
 	else
-		return {name = 'steel-plate', count = Math.ceil(10 * multiplier)}
+		return {name = 'steel-plate', count = Math.ceil(12 * multiplier)}
 	end
 end
 

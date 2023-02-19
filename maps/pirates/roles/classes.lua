@@ -515,7 +515,7 @@ function Public.lumberjack_bonus_items(give_table)
 		give_table[#give_table + 1] = {name = 'coin', count = a}
 		memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
 	elseif Math.random(2) == 1 then
-		local multiplier = Balance.island_richness_avg_multiplier() * Math.random_float_in_range(1, 1.5)
+		local multiplier = Balance.island_richness_avg_multiplier() * Math.random_float_in_range(0.6, 1.4)
 		local amount = Math.ceil(Balance.lumberjack_ore_base_amount * multiplier)
 		if Math.random(4) == 1 then
 			give_table[#give_table + 1] = {name = 'copper-ore', count = amount}

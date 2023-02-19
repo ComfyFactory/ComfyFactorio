@@ -55,7 +55,7 @@ function Public.try_give_ore(player, realp, source_name)
 				coin_amount = coin_amount * 2
 			end
 
-			given_amount = Math.max(4 * Balance.island_richness_avg_multiplier(), given_amount)
+			given_amount = Math.max(5 * Balance.island_richness_avg_multiplier(), given_amount)
 
 			local to_give = {}
 			to_give[#to_give+1] = {name = choice, count = Math.ceil(given_amount)}

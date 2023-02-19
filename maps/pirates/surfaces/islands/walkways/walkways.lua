@@ -76,7 +76,7 @@ function Public.terrain(args)
 			end
 
 			if noises.height(p) > 0.12 and noises.walkways(p) < 0.1 and noises.rock_abs(p) < 0.07 then
-				local amount = Math.ceil(150 * Math.min(noises.height(p), 0.2) * Balance.island_richness_avg_multiplier() * Math.random_float_in_range(0.8, 1.2))
+				local amount = Math.ceil(180 * Math.min(noises.height(p), 0.2) * Balance.island_richness_avg_multiplier(args.overworldx) * Math.random_float_in_range(0.8, 1.2))
 				args.entities[#args.entities + 1] = {name = 'coal', position = args.p, amount = amount}
 			end
 

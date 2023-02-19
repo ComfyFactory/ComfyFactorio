@@ -553,7 +553,8 @@ function Public.generate_detailed_island_data(destination)
 						decoratives = {},
 						specials = {},
 						seed = destination.seed,
-						iconized_generation = true
+						iconized_generation = true,
+						overworldx = destination.overworld_position.x,
 					}
 					local tile = tiles3[1]
 					if modalcounts[tile.name] then
@@ -666,7 +667,8 @@ function Public.generate_detailed_island_data(destination)
 				decoratives = {},
 				specials = {},
 				seed = destination.seed,
-				iconized_generation = true
+				iconized_generation = true,
+				overworldx = destination.overworld_position.x,
 			}
 			local tile = tiles3[1]
 			if (not Utils.contains(CoreData.water_tile_names, tile.name)) then

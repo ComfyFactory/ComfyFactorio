@@ -25,7 +25,7 @@ Public.enum = enum
 
 Public.Data = {}
 Public.Data.chartingdistance = 130
-Public.Data.visibilitywidth = 400
+Public.Data.visibilitywidth = 240
 Public.Data.width = 10000 --minimap won't chart beyond this point
 Public.Data.height = 72
 Public.platformwidth = 7
