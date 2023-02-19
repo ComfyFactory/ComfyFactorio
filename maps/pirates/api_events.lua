@@ -826,7 +826,7 @@ local function player_mined_tree(event)
 		Classes.lumberjack_bonus_items(give)
 	else
 		if Math.random(Balance.every_nth_tree_gives_coins) == 1 then --tuned
-			local a = 5
+			local a = Balance.coin_amount_from_tree()
 			give[#give + 1] = {name = 'coin', count = a}
 			memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
 		end
@@ -1008,14 +1008,14 @@ local function player_mined_rock(event)
 
 		if memory.overworldx >= 0 then --used to be only later levels
 			if entity.name == 'rock-huge' then
-				local a = 55
+				local a = Math.ceil(1.5 * Balance.coin_amount_from_rock())
 				c2[#c2 + 1] = {name = 'coin', count = a, color = CoreData.colors.coin}
 				memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
 				if Math.random(1, 35) == 1 then
 					c2[#c2 + 1] = {name = 'crude-oil-barrel', count = 1, color = CoreData.colors.oil}
 				end
 			else
-				local a = 35
+				local a = Balance.coin_amount_from_rock()
 				c2[#c2 + 1] = {name = 'coin', count = a, color = CoreData.colors.coin}
 				memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
 				if Math.random(1, 35*3) == 1 then

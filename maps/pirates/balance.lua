@@ -35,7 +35,7 @@ Public.technology_price_multiplier = 1
 Public.base_caught_fish_amount = 3
 Public.class_reward_tick_rate_in_seconds = 7
 Public.poison_damage_multiplier = 1.85
-Public.every_nth_tree_gives_coins = 6
+Public.every_nth_tree_gives_coins = 10
 
 Public.samurai_damage_taken_multiplier = 0.32
 Public.samurai_damage_dealt_when_not_melee_multiplier = 0.75
@@ -58,8 +58,8 @@ Public.scout_damage_taken_multiplier = 1.25
 Public.scout_damage_dealt_multiplier = 0.6
 Public.fisherman_fish_bonus = 2
 Public.fisherman_reach_bonus = 10
-Public.lumberjack_coins_from_tree = 12
-Public.lumberjack_ore_base_amount = 5
+Public.lumberjack_coins_from_tree_multiplier = 2
+Public.lumberjack_ore_base_amount = 8
 Public.master_angler_reach_bonus = 16
 Public.master_angler_fish_bonus = 4
 Public.master_angler_coin_bonus = 20
@@ -759,6 +759,14 @@ end
  -- Returns frequency in seconds
 function Public.biter_boat_average_arrival_rate()
 	return Math.ceil((7.5 * 60) / Math.sloped(Common.difficulty_scale(), 0.5))
+end
+
+function Public.coin_amount_from_tree()
+	return Math.ceil(8 * Public.island_richness_avg_multiplier() * Math.random_float_in_range(0.7, 1.3))
+end
+
+function Public.coin_amount_from_rock()
+	return Math.ceil(35 * Public.island_richness_avg_multiplier() * Math.random_float_in_range(0.8, 1.2))
 end
 
 return Public

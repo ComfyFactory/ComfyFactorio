@@ -221,20 +221,37 @@ Public.chest_loot_data_raw = {
 function Public.wooden_chest_loot()
 	local num = 1
 
-	return Public.chest_loot(num,
-	Math.clamp(0, 1, Math.sloped(Common.difficulty_scale(),1/2) * Common.game_completion_progress())
+	-- return Public.chest_loot(
+	-- 	num,
+	-- 	Math.clamp(0, 1, Math.sloped(Common.difficulty_scale(),1/2) * Common.game_completion_progress())
+	-- )
+
+	return Public.chest_loot(
+		num,
+		Math.clamp(0, 1, Common.game_completion_progress())
 	)
 end
 
 function Public.iron_chest_loot()
 	local num = 2
 
-	local loot = Public.chest_loot(num,
-		Math.clamp(0, 1, Math.sloped(Common.difficulty_scale(),1/2) * (5/100 + Common.game_completion_progress()))
-	) --reward higher difficulties with better loot
-	loot[#loot + 1] = {name = 'coin', count = Math.random(500,1500)}
+	-- local loot = Public.chest_loot(
+	-- 	num,
+	-- 	Math.clamp(0, 1, Math.sloped(Common.difficulty_scale(),1/2) * (5/100 + Common.game_completion_progress()))
+	-- ) --reward higher difficulties with better loot
+
+	local loot = Public.chest_loot(
+		num,
+		Math.clamp(0, 1, 5/100 + Common.game_completion_progress())
+	)
+
+	loot[#loot + 1] = {name = 'coin', count = Math.ceil(1000 * Balance.island_richness_avg_multiplier() * Math.random_float_in_range(0.8, 1.2))}
 
     return loot
+end
+
+function Public.quest_structure_coin_loot()
+	return Math.ceil(2000 * Balance.island_richness_avg_multiplier() * Math.random_float_in_range(0.8, 1.2))
 end
 
 function Public.covered_wooden_chest_loot()
@@ -250,15 +267,18 @@ end
 function Public.covered_wooden_chest_loot_1()
 
     return {
-		{name = 'iron-plate', count = 650},
-		{name = 'copper-plate', count = 200}
+		{name = 'iron-plate', count = Math.ceil(600 * Balance.island_richness_avg_multiplier())},
+		{name = 'copper-plate', count = Math.ceil(200 * Balance.island_richness_avg_multiplier())}
 	}
 end
 
 function Public.covered_wooden_chest_loot_2()
 
-    return Common.raffle_from_processed_loot_data(Common.processed_loot_data(Public.chest_loot_data_raw), 2,
-		Math.clamp(0, 1, Math.sloped(Common.difficulty_scale(),1/2) * (10/100 + Common.game_completion_progress())))
+    return Common.raffle_from_processed_loot_data(
+		Common.processed_loot_data(Public.chest_loot_data_raw),
+		2,
+		Math.clamp(0, 1, 0.15 + Common.game_completion_progress())
+	)
 end
 
 function Public.stone_furnace_loot()
