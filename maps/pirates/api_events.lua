@@ -965,10 +965,10 @@ local function player_mined_rock(event)
 	local entity = event.entity
 	-- local class = Classes.get_class(event.player_index)
 
-	local available = destination.dynamic_data.rock_material_remaining
+	-- local available = destination.dynamic_data.rock_material_remaining
 	-- local starting = destination.static_params.starting_rock_material
 
-	if not (available and destination.type == Surfaces.enum.ISLAND) then return end
+	-- if not (available and destination.type == Surfaces.enum.ISLAND) then return end
 
 	if destination.subtype == IslandEnum.enum.MAZE then
 		if Math.random(1, 35) == 1 then
@@ -1033,7 +1033,7 @@ local function player_mined_rock(event)
 		end
 		Common.give(player, c2, entity.position)
 
-		destination.dynamic_data.rock_material_remaining = available
+		-- destination.dynamic_data.rock_material_remaining = available
 
 		if Surfaces.get_scope(destination).break_rock then
 			destination.dynamic_data.ore_spawn_points_to_avoid = destination.dynamic_data.ore_spawn_points_to_avoid or {}

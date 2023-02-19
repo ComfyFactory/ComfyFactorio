@@ -130,7 +130,7 @@ function Public.on_surface_generation(destination)
 		end
 
 		destination.dynamic_data.wood_remaining = destination.static_params.starting_wood
-		destination.dynamic_data.rock_material_remaining = destination.static_params.starting_rock_material
+		-- destination.dynamic_data.rock_material_remaining = destination.static_params.starting_rock_material
 		destination.dynamic_data.treasure_remaining = destination.static_params.starting_treasure
 		destination.dynamic_data.ore_types_spawned = {}
 
