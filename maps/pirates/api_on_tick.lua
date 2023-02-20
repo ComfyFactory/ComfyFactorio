@@ -854,37 +854,18 @@ function Public.boat_movement_tick(tickinterval)
 					eboat.speedticker1 = eboat.speedticker1 + ticker_increase
 					if eboat.speedticker1 >= 1 then
 						eboat.speedticker1 = 0
-						if eboat.state == Boats.enum_state.APPROACHING then
-							if Progression.check_for_end_of_boat_movement(eboat) then
-								-- if boat.unit_group and boat.unit_group.ref and boat.unit_group.ref.valid then boat.unit_group.ref.set_command({
-								-- 	type = defines.command.attack_area,
-								-- 	destination = ({memory.boat.position.x - 32, memory.boat.position.y} or {0,0}),
-								-- 	radius = 32,
-								-- 	distraction = defines.distraction.by_enemy
-								-- }) end
+						if not Progression.check_for_end_of_boat_movement(eboat) then
+							-- if boat.unit_group and boat.unit_group.ref and boat.unit_group.ref.valid then boat.unit_group.ref.set_command({
+							-- 	type = defines.command.attack_area,
+							-- 	destination = ({memory.boat.position.x - 32, memory.boat.position.y} or {0,0}),
+							-- 	radius = 32,
+							-- 	distraction = defines.distraction.by_enemy
+							-- }) end
 
-								local units = game.surfaces[eboat.surface_name].find_units{area = {{eboat.position.x - 12, eboat.position.y - 12}, {eboat.position.x + 12, eboat.position.y + 12}}, force = enemy_force_name, condition = 'same'}
-
-								if #units > 0 then
-									local unit_group = game.surfaces[eboat.surface_name].create_unit_group({position = eboat.position, force = enemy_force_name})
-									for _, unit in pairs(units) do
-										unit_group.add_member(unit)
-									end
-									boat.unit_group = {ref = unit_group, script_type = 'landing-party'}
-
-									boat.unit_group.ref.set_command({
-										type = defines.command.attack_area,
-										destination = ({memory.boat.position.x - 32, memory.boat.position.y} or {0,0}),
-										radius = 32,
-										distraction = defines.distraction.by_enemy
-									})
-								end
-							else
-								local p = {x = eboat.position.x + 1, y = eboat.position.y}
-								Boats.teleport_boat(eboat, nil, p, CoreData.static_boat_floor)
-								if p.x % 7 < 1 then
-									Ai.update_landing_party_unit_groups(eboat, 7)
-								end
+							local p = {x = eboat.position.x + 1, y = eboat.position.y}
+							Boats.teleport_boat(eboat, nil, p, CoreData.static_boat_floor)
+							if p.x % 7 < 1 then
+								Ai.update_landing_party_unit_groups(eboat, 7)
 							end
 						end
 					end

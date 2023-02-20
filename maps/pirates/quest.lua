@@ -217,7 +217,7 @@ function Public.initialise_worms_quest()
 	end
 
 	local needed = Math.ceil(
-		1 + 9 * Math.slopefromto(count, 0, 20) + 10 * Math.slopefromto(count, 20, 70)
+		15 * Math.slopefromto(count, 0, 20) + 12 * Math.slopefromto(count, 20, 80)
 	)
 
 	if destination.subtype == IslandEnum.enum.RED_DESERT then
