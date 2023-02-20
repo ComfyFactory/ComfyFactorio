@@ -193,8 +193,6 @@ local function damage_to_enemyboat_spawners(event)
 
 	if destination.dynamic_data.enemyboats and
 		#destination.dynamic_data.enemyboats > 0 and
-		event.cause and
-		event.cause.valid and
 		event.entity and
 		event.entity.valid and
 		event.entity.force.name == memory.enemy_force_name
@@ -221,8 +219,6 @@ local function damage_to_elite_spawners(event)
 
 	if destination.dynamic_data.elite_spawners and
 		#destination.dynamic_data.elite_spawners > 0 and
-		event.cause and
-		event.cause.valid and
 		event.entity and
 		event.entity.valid and
 		event.entity.force.name == memory.enemy_force_name
@@ -247,8 +243,6 @@ local function damage_to_elite_biters(event)
 
 	local elite_biters = memory.elite_biters
 	if elite_biters and
-		event.cause and
-		event.cause.valid and
 		event.entity and
 		event.entity.valid and
 		event.entity.force.name == memory.enemy_force_name
@@ -308,10 +302,6 @@ local function damage_to_krakens(event)
 	if not event.entity.name then return end
 	if event.entity.name ~= 'biter-spawner' then return end
 
-	if not event.cause then return end
-	if not event.cause.valid then return end
-	if not event.cause.name then return end
-
 	local memory = Memory.get_crew_memory()
 
 	if event.entity.force.name ~= memory.enemy_force_name then return end
@@ -331,7 +321,7 @@ local function damage_to_krakens(event)
 		adjusted_damage = adjusted_damage / 1.25
 	end
 	-- and additionally:
-	if event.cause.name == 'artillery-turret' then
+	if event.cause and event.cause.valid and event.cause.name == 'artillery-turret' then
 		adjusted_damage = adjusted_damage / 1.5
 	end
 
@@ -641,7 +631,8 @@ end
 -- 	-- end
 -- end
 
-
+-- NOTE: "event.cause" may not always be provided.
+-- However, special care needs to be taken when "event.cause" is nil and entity has healthbar (better not ignore such damage or it can cause issues, such as needing to handle their death on "entity_died" functions as opposed to here)
 local function event_on_entity_damaged(event)
 
 	local crew_id = nil
@@ -1266,7 +1257,7 @@ local function spawner_died(event)
 	-- local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 
-	if (destination and destination.type and destination.type == Surfaces.enum.ISLAND) then
+	if (destination and destination.type == Surfaces.enum.ISLAND and destination.dynamic_data) then
 
 		local not_boat = true
 		if destination.dynamic_data.enemyboats and #destination.dynamic_data.enemyboats > 0 then
@@ -1283,9 +1274,7 @@ local function spawner_died(event)
 			local extra_evo = Balance.evolution_per_nest_kill()
 			Common.increment_evo(extra_evo)
 
-			if destination.dynamic_data then
-				destination.dynamic_data.evolution_accrued_nests = destination.dynamic_data.evolution_accrued_nests + extra_evo
-			end
+			destination.dynamic_data.evolution_accrued_nests = destination.dynamic_data.evolution_accrued_nests + extra_evo
 		end
 	end
 end
