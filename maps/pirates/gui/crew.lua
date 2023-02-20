@@ -515,8 +515,8 @@ function Public.click(event)
         Crew.join_crew(player, memory.id)
 
         if memory.run_is_protected and (not Roles.captain_exists()) then
-            Common.parrot_speak(memory.force, {'pirates.parrot_player_joins_protected_run_with_no_captain'})
-            Common.parrot_speak(memory.force, {'pirates.parrot_create_new_crew_tip'})
+            Common.notify_player_expected(player, {'pirates.player_joins_protected_run_with_no_captain'})
+            Common.notify_player_expected(player, {'pirates.create_new_crew_tip'})
         end
         return
     end

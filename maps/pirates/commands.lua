@@ -109,24 +109,25 @@ local function check_captain_or_admin(cmd)
 end
 
 
-local function check_trusted(cmd)
-	local Session = require 'utils.datastore.session_data'
-	local player = game.players[cmd.player_index]
-	local trusted = Session.get_trusted_table()
-	local p
-	if player then
-		if player ~= nil then
-			p = player.print
-			if not (trusted[player.name] or player.admin) then
-				p('[ERROR] Only admins and trusted weebs are allowed to run this command!', Color.fail)
-				return false
-			end
-		else
-			p = log
-		end
-	end
-	return true
-end
+-- @UNUSED
+-- local function check_trusted(cmd)
+-- 	local Session = require 'utils.datastore.session_data'
+-- 	local player = game.players[cmd.player_index]
+-- 	local trusted = Session.get_trusted_table()
+-- 	local p
+-- 	if player then
+-- 		if player ~= nil then
+-- 			p = player.print
+-- 			if not (trusted[player.name] or player.admin) then
+-- 				p('[ERROR] Only admins and trusted weebs are allowed to run this command!', Color.fail)
+-- 				return false
+-- 			end
+-- 		else
+-- 			p = log
+-- 		end
+-- 	end
+-- 	return true
+-- end
 
 
 
@@ -630,10 +631,12 @@ function(cmd)
 
 		if not Gui.classes then return end
 
-		memory.spare_classes = {}
 		memory.classes_table = {}
+		memory.spare_classes = {}
+		memory.recently_purchased_classes = {}
 		memory.unlocked_classes = {}
 		memory.available_classes_pool = Classes.initial_class_pool()
+		memory.class_entry_count = 0
 
 		local players = Common.crew_get_crew_members_and_spectators()
 
@@ -875,19 +878,6 @@ if _DEBUG then
 			local player = game.players[cmd.player_index]
 			local memory = Memory.get_crew_memory()
 			memory.stored_fuel = memory.stored_fuel + 20000
-		end
-	end)
-
-	commands.add_command(
-	'bld',
-	{'pirates.cmd_explain_dev'},
-	function(cmd)
-		cmd_set_memory(cmd)
-		local param = tostring(cmd.parameter)
-		if check_admin(cmd) then
-			local player = game.players[cmd.player_index]
-			local memory = Memory.get_crew_memory()
-			memory.classes_table = {[1] = 1}
 		end
 	end)
 
