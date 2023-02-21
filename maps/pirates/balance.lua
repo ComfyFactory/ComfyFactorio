@@ -107,8 +107,7 @@ Public.EEI_stages = { --multipliers
 
 
 function Public.scripted_biters_pollution_cost_multiplier()
-
-	return 1.25 / Math.sloped(Common.difficulty_scale(), 1/2) * (1 + 1.2 / ((1 + (Common.overworldx()/40))^(1.5+Common.difficulty_scale()))) -- the complicated factor just makes the early-game easier; in particular the first island, but on easier difficulties the next few islands as well
+	return (1.1 / Math.sloped(Common.difficulty_scale(), 0.7)) * (1 + 1.2 / ((1 + (Common.overworldx()/40))^(1.5+Common.difficulty_scale()))) -- the complicated factor just makes the early-game easier; in particular the first island, but on easier difficulties the next few islands as well
 end
 
 function Public.cost_to_leave_multiplier()
@@ -261,19 +260,19 @@ function Public.boat_passive_pollution_per_minute(time)
 	if time then --sharp rise approaching T, steady increase thereafter
 		if time > T then
 			boost = 20 + 10 * (time - T) / (30/100 * T)
-		elseif time >= 95/100 * T then
-			boost = 16
 		elseif time >= 90/100 * T then
-			boost = 12
+			boost = 16
 		elseif time >= 85/100 * T then
-			boost = 8
+			boost = 12
 		elseif time >= 80/100 * T then
-			boost = 5
+			boost = 8
 		elseif time >= 70/100 * T then
-			boost = 3
+			boost = 5
 		elseif time >= 60/100 * T then
-			boost = 2
+			boost = 3
 		elseif time >= 50/100 * T then
+			boost = 2
+		elseif time >= 40/100 * T then
 			boost = 1.5
 		else
 			boost = 1
@@ -283,7 +282,7 @@ function Public.boat_passive_pollution_per_minute(time)
 	end
 
 	return boost * (
-			2 * (Common.difficulty_scale()^(0.8)) * (Common.overworldx()/40)^(1.8) * (Public.crew_scale())^(1/5)-- There is no _explicit_ T dependence, but it depends almost the same way on the crew_scale as T does.
+			2 * Common.difficulty_scale() * (Common.overworldx()/40)^(1.8) * (Public.crew_scale())^(1/5)-- There is no _explicit_ T dependence, but it depends almost the same way on the crew_scale as T does.
 	 )
 end
 
