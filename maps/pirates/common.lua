@@ -1842,6 +1842,7 @@ function Public.get_random_valid_spawner(surface)
 	return spawners[Math.random(#spawners)]
 end
 
+-- @TODO move this somewhere else, so that health multiplier formula can be put to balance
 function Public.try_make_biter_elite(entity)
 	if not (entity and entity.valid) then return end
 
@@ -1861,6 +1862,14 @@ function Public.try_make_biter_elite(entity)
 		health_multiplier = 5
 	else
 		health_multiplier = 10
+	end
+
+	-- 1000 leagues = 1x
+	-- 2000 leagues = 2x
+	-- 3000 leagues = 4x
+	-- etc.
+	if Public.overworldx() > 1000 then
+		health_multiplier = health_multiplier * 2 ^ ((Public.overworldx() - 1000) / 1000)
 	end
 
 	local max_hp = Math.ceil(entity.prototype.max_health * health_multiplier)

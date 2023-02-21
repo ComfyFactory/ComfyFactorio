@@ -1111,20 +1111,24 @@ local function teleport_handle_wake_tiles(boat, dummyboat, newsurface_name, olds
 			end
 		end
 
-		-- prevent instant death when players stand in front of ship
+		-- Prevent instant death when players stand in front of ship
 		oldsurface.set_tiles(newtiles, true, false, true)
 
-		-- but since players don't die instantly, they can get stuck in water, this prevents this (even though it let's you walk in front of ship while ship is departing)
-		-- NOTE: this will need to be changed, when ship doesn't necessarily arrive from the left
+		-- ..but since players don't die instantly, they can get stuck in water, this prevents this (even though it let's you walk in front of ship while ship is departing)
+		-- NOTE: this will need to be changed, when ship doesn't necessarily arrive from the left.
+		-- Side effect: if players happen to be on water tile during this tick and not too far from ship, they will be teleported to nearest non water tile.
 		if vector.x < 0 then
 			for _, player in pairs(Common.crew_get_crew_members()) do
 				if player.character and player.character.valid and player.surface.name == oldsurface_name then
-					local tile = oldsurface.get_tile(player.character.position.x, player.character.position.y)
-					if tile.valid then
-						if Utils.contains(CoreData.water_tile_names, tile.name) then
-							local new_pos = oldsurface.find_non_colliding_position('character', player.character.position, 20, 0.1, true)
-							if new_pos then
-								player.character.teleport(new_pos)
+					-- @TODO: instead of checking 50 radius, check only smaller area around boat
+					if Math.distance(boat.position, player.character.position) < 50 then
+						local tile = oldsurface.get_tile(player.character.position.x, player.character.position.y)
+						if tile.valid then
+							if Utils.contains(CoreData.water_tile_names, tile.name) then
+								local new_pos = oldsurface.find_non_colliding_position('character', player.character.position, 20, 0.1, true)
+								if new_pos then
+									player.character.teleport(new_pos)
+								end
 							end
 						end
 					end
