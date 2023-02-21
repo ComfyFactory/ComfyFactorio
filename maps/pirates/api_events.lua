@@ -263,11 +263,7 @@ end
 local function damage_to_artillery(event)
 	local memory = Memory.get_crew_memory()
 
-	if not event.cause then return end
-	if not event.cause.valid then return end
-	if not event.cause.name then return end
-
-	if Utils.contains(CoreData.enemy_units, event.cause.name) then
+	if event.cause and event.cause.valid and event.cause.name and Utils.contains(CoreData.enemy_units, event.cause.name) then
 		if event.cause.force.name ~= memory.enemy_force_name then return end
 
 		-- play alert sound for all crew members
