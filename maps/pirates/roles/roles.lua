@@ -172,6 +172,12 @@ function Public.make_captain(player)
 	local global_memory = Memory.get_global_memory()
 	local memory = Memory.get_crew_memory()
 
+	local make_previous_captain_officer = false
+	local previous_captain_index = memory.playerindex_captain
+	if Common.is_officer(player.index) then
+		make_previous_captain_officer = true
+	end
+
 	if memory.playerindex_captain then
 		Public.update_privileges(game.players[memory.playerindex_captain])
 	end
@@ -180,7 +186,14 @@ function Public.make_captain(player)
 	global_memory.playerindex_to_captainhood_priority[player.index] = nil
 	memory.captain_acceptance_timer = nil
 
-	Public.reset_officers()
+	if make_previous_captain_officer then
+		-- WARNING: don't use "make_officer()" as it checks if player is connected
+		memory.officers_table[previous_captain_index] = true
+	end
+
+	-- don't use "unmake_officer" as it prints additional messages
+	memory.officers_table[player.index] = nil
+
     Public.update_privileges(player)
 
 	local force = player.force

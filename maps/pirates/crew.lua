@@ -396,7 +396,7 @@ function Public.join_crew(player, crewid, rejoin)
 		end
 	end
 
-	if not memory.run_is_protected then
+	if (not memory.run_is_protected) or Common.is_officer(player.index) then
 		Roles.confirm_captain_exists(player)
 	end
 
