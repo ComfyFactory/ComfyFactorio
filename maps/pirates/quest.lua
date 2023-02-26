@@ -8,7 +8,7 @@ local Common = require 'maps.pirates.common'
 local Math = require 'maps.pirates.math'
 local Raffle = require 'maps.pirates.raffle'
 -- local Loot = require 'maps.pirates.loot'
-local CoreData = require 'maps.pirates.coredata'
+-- local CoreData = require 'maps.pirates.coredata'
 local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 local _inspect = require 'utils.inspect'.inspect
 
