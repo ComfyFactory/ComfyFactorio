@@ -216,6 +216,18 @@ function Public.ordered_table_with_index_removed(tbl, index)
 	return to_keep
 end
 
+-- Implementation of table.fast_remove
+function Public.fast_remove(tbl, index)
+    local count = #tbl
+    if index > count then
+        return
+    elseif index < count then
+        tbl[index] = tbl[count]
+    end
+
+    tbl[count] = nil
+end
+
 function Public.length(tbl)
 	local count = 0
 	for k, _ in pairs(tbl) do

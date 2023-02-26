@@ -19,6 +19,7 @@ local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 -- local Crew = require 'maps.pirates.crew'
 -- local Quest = require 'maps.pirates.quest'
 local SurfacesCommon = require 'maps.pirates.surfaces.common'
+local Utils = require 'maps.pirates.utils_local'
 
 local Public = {}
 
@@ -895,7 +896,7 @@ function Public.try_boat_biters_attack()
 				Public.send_boat_biters_for_attack(eboat)
 			end
 		else
-			destination.dynamic_data.enemyboats[i] = nil
+			Utils.fast_remove(destination.dynamic_data.enemyboats, i)
 		end
 	end
 end

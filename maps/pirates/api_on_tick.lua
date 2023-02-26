@@ -873,7 +873,7 @@ function Public.boat_movement_tick(tickinterval)
 					do end
 				end
 			else
-				destination.dynamic_data.enemyboats[i] = nil
+				Utils.fast_remove(destination.dynamic_data.enemyboats, i)
 			end
 		end
 	end
