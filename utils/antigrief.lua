@@ -27,6 +27,7 @@ local max_count_decon = 1500
 local this = {
     enabled = true,
     landfill_history = {},
+    tile_history = {},
     capsule_history = {},
     friendly_fire_history = {},
     mining_history = {},
@@ -281,22 +282,46 @@ local function on_player_built_tile(event)
         return
     end
     local placed_tiles = event.tiles
-    if placed_tiles[1].old_tile.name ~= 'deepwater' and placed_tiles[1].old_tile.name ~= 'water' and placed_tiles[1].old_tile.name ~= 'water-green' then
-        return
-    end
+    
     local player = game.get_player(event.player_index)
 
-    local surface = event.surface_index
-
-    --landfill history--
-
-    if not this.landfill_history then
-        this.landfill_history = {}
+    local surface = game.surfaces[event.surface_index]
+    
+    if not surface then
+        return
     end
 
-    if #this.landfill_history > this.limit then
-        overflow(this.landfill_history)
+    -- This does not catch landfill placed partially over land
+    --if placed_tiles[1].old_tile.name ~= 'deepwater' and placed_tiles[1].old_tile.name ~= 'water' and placed_tiles[1].old_tile.name ~= 'water-green' then
+    local is_landfill
+    if event.tile.name == "landfill" then
+        is_landfill = true
+    else    
+        is_landfill = false
+    end    
+        
+    if is_landfill then
+        --landfill history--
+
+        if not this.landfill_history then
+            this.landfill_history = {}
+        end
+
+        if #this.landfill_history > this.limit then
+            overflow(this.landfill_history)
+        end
+    else
+        --tile history (other floor tiles)--
+
+        if not this.landfill_history then
+            this.tile_history = {}
+        end
+
+        if #this.tile_history > this.limit then
+            overflow(this.tile_history)
+        end
     end
+    
     local t = abs(floor((game.tick) / 60))
     t = FancyTime.short_fancy_time(t)
     local str = '[' .. t .. '] '
@@ -305,8 +330,15 @@ local function on_player_built_tile(event)
     str = str .. ' Y:'
     str = str .. placed_tiles[1].position.y
     str = str .. ' '
-    str = str .. 'surface:' .. surface
-    increment(this.landfill_history, str)
+    str = str .. 'on ' .. surface.name
+    str = str .. ' '
+    str = str .. 'surface:' .. surface.index
+    
+    if is_landfill then
+        increment(this.landfill_history, str)
+    else
+        increment(this.tile_history, str)
+    end
 end
 
 local function on_built_entity(event)
@@ -408,7 +440,8 @@ local function on_player_used_capsule(event)
         str = str .. ' Y:'
         str = str .. floor(position.y)
         str = str .. ' '
-        str = str .. 'surface:' .. player.surface.index
+        str = str .. 'on ' .. surface.name
+        str = str .. ' surface:' .. surface.index
         increment(this.capsule_history, str)
     end
 end
@@ -466,7 +499,8 @@ local function on_entity_died(event)
         str = str .. ' Y:'
         str = str .. floor(event.entity.position.y)
         str = str .. ' '
-        str = str .. 'surface:' .. event.entity.surface.index
+        str = str .. 'on ' .. event.entity.surface.name
+        str = str .. ' surface:' .. event.entity.surface.index
         increment(this.friendly_fire_history, str)
     elseif not blacklisted_types[event.entity.type] and this.whitelist_types[event.entity.type] then
         if cause then
@@ -495,7 +529,8 @@ local function on_entity_died(event)
         str = str .. ' Y:'
         str = str .. floor(event.entity.position.y)
         str = str .. ' '
-        str = str .. 'surface:' .. event.entity.surface.index
+        str = str .. 'on ' .. event.entity.surface.name
+        str = str .. ' surface:' .. event.entity.surface.index
 
         if cause and cause.name == 'character' and cause.player then
             increment(this.friendly_fire_history, str)
@@ -537,7 +572,8 @@ local function on_player_mined_entity(event)
         str = str .. ' Y:'
         str = str .. floor(entity.position.y)
         str = str .. ' '
-        str = str .. 'surface:' .. entity.surface.index
+        str = str .. 'on ' .. entity.surface.name
+        str = str .. ' surface:' .. entity.surface.index
         increment(this.whitelist_mining_history, str)
         return
     end
@@ -572,7 +608,8 @@ local function on_player_mined_entity(event)
     str = str .. ' Y:'
     str = str .. floor(event.entity.position.y)
     str = str .. ' '
-    str = str .. 'surface:' .. event.entity.surface.index
+    str = str .. 'on ' .. event.entity.surface.name
+    str = str .. ' surface:' .. event.entity.surface.index
     increment(this.mining_history, str)
 end
 
@@ -624,7 +661,8 @@ local function on_gui_opened(event)
         str = str .. ' Y:'
         str = str .. floor(event.entity.position.y)
         str = str .. ' '
-        str = str .. 'surface:' .. event.entity.surface.index
+        str = str .. 'on ' .. event.entity.surface.name
+        str = str .. ' surface:' .. event.entity.surface.index
         increment(this.corpse_history, str)
     end
 end
@@ -679,7 +717,8 @@ local function on_pre_player_mined_item(event)
         str = str .. ' Y:'
         str = str .. floor(entity.position.y)
         str = str .. ' '
-        str = str .. 'surface:' .. entity.surface.index
+        str = str .. 'on ' .. entity.surface.name
+        str = str .. ' surface:' .. entity.surface.index
         increment(this.corpse_history, str)
     end
 end
@@ -813,7 +852,8 @@ local function on_player_cancelled_crafting(event)
         str = str .. ' Y:'
         str = str .. floor(player.position.y)
         str = str .. ' '
-        str = str .. 'surface:' .. player.surface.index
+        str = str .. 'on ' .. player.surface.name
+        str = str .. ' surface:' .. player.surface.index
         increment(this.cancel_crafting_history, str)
     end
 end
@@ -933,7 +973,9 @@ local function on_player_deconstructed_area(event)
         str = str .. ' at rb_y:'
         str = str .. floor(area.right_bottom.y)
         str = str .. ' '
-        str = str .. 'surface:' .. player.surface.index
+        str = str .. 'on ' .. surface.name
+        str = str .. ' surface:' .. surface.index
+        
         increment(this.deconstruct_history, str)
 
         if this.enable_jail_when_decon and not player.admin then
@@ -1063,13 +1105,15 @@ function Public.insert_into_capsule_history(player, position, msg)
     str = str .. ' Y:'
     str = str .. floor(position.y)
     str = str .. ' '
-    str = str .. 'surface:' .. player.surface.index
+    str = str .. 'on ' .. player.surface.name
+    str = str .. ' surface:' .. player.surface.index
     increment(this.capsule_history, str)
 end
 
 --- This will reset the table of antigrief
 function Public.reset_tables()
     this.landfill_history = {}
+    this.tile_history = {}
     this.capsule_history = {}
     this.friendly_fire_history = {}
     this.mining_history = {}
@@ -1086,7 +1130,6 @@ function Public.whitelist_types(key, value)
     if key and value then
         this.whitelist_types[key] = value
     end
-
     return this.whitelist_types[key]
 end
 

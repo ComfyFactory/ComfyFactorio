@@ -246,6 +246,7 @@ local function draw_events(data)
         ['Mining History'] = antigrief.mining_history,
         ['Mining Override History'] = antigrief.whitelist_mining_history,
         ['Landfill History'] = antigrief.landfill_history,
+        ['Tile History'] = antigrief.tile_history,
         ['Corpse Looting History'] = antigrief.corpse_history,
         ['Cancel Crafting History'] = antigrief.cancel_crafting_history,
         ['Deconstruct History'] = antigrief.deconstruct_history
@@ -506,6 +507,9 @@ local function create_admin_panel(data)
     end
     if antigrief.landfill_history then
         table.insert(histories, 'Landfill History')
+    end
+    if antigrief.tile_history then
+        table.insert(histories, 'Tile History')
     end
     if antigrief.corpse_history then
         table.insert(histories, 'Corpse Looting History')
