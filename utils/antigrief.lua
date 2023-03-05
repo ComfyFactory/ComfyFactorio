@@ -282,11 +282,11 @@ local function on_player_built_tile(event)
         return
     end
     local placed_tiles = event.tiles
-    
+
     local player = game.get_player(event.player_index)
 
     local surface = game.surfaces[event.surface_index]
-    
+
     if not surface then
         return
     end
@@ -296,10 +296,10 @@ local function on_player_built_tile(event)
     local is_landfill
     if event.tile.name == "landfill" then
         is_landfill = true
-    else    
+    else
         is_landfill = false
-    end    
-        
+    end
+
     if is_landfill then
         --landfill history--
 
@@ -321,7 +321,7 @@ local function on_player_built_tile(event)
             overflow(this.tile_history)
         end
     end
-    
+
     local t = abs(floor((game.tick) / 60))
     t = FancyTime.short_fancy_time(t)
     local str = '[' .. t .. '] '
@@ -333,7 +333,7 @@ local function on_player_built_tile(event)
     str = str .. 'on ' .. surface.name
     str = str .. ' '
     str = str .. 'surface:' .. surface.index
-    
+
     if is_landfill then
         increment(this.landfill_history, str)
     else
@@ -975,7 +975,7 @@ local function on_player_deconstructed_area(event)
         str = str .. ' '
         str = str .. 'on ' .. surface.name
         str = str .. ' surface:' .. surface.index
-        
+
         increment(this.deconstruct_history, str)
 
         if this.enable_jail_when_decon and not player.admin then
