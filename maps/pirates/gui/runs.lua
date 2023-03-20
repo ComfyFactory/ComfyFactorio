@@ -719,8 +719,8 @@ function Public.click(event)
 				flow.ongoing_runs.body.password_namefield.visible = false
 
 				if memory.run_is_protected and (not Roles.captain_exists()) then
-					Common.parrot_speak(memory.force, {'pirates.parrot_player_joins_protected_run_with_no_captain'})
-					Common.parrot_speak(memory.force, {'pirates.parrot_create_new_crew_tip'})
+					Common.notify_player_expected(player, {'pirates.player_joins_protected_run_with_no_captain'})
+					Common.notify_player_expected(player, {'pirates.create_new_crew_tip'})
 				end
 			else
 				Common.notify_player_error(player, {'pirates.gui_join_private_run_error_wrong_password'})
@@ -729,8 +729,8 @@ function Public.click(event)
 			Crew.join_crew(player, crewid)
 
 			if memory.run_is_protected and (not Roles.captain_exists()) then
-				Common.parrot_speak(memory.force, {'pirates.parrot_player_joins_protected_run_with_no_captain'})
-				Common.parrot_speak(memory.force, {'pirates.parrot_create_new_crew_tip'})
+				Common.notify_player_expected(player, {'pirates.player_joins_protected_run_with_no_captain'})
+				Common.notify_player_expected(player, {'pirates.create_new_crew_tip'})
 			end
 		end
 

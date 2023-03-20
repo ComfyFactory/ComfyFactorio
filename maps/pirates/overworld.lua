@@ -237,7 +237,7 @@ function Public.generate_destination_base_cost_to_undock(p, subtype)
 		}
 	elseif subtype == IslandEnum.enum.RED_DESERT or subtype == IslandEnum.enum.CAVE then
 		if base_cost_to_undock and base_cost_to_undock['launch_rocket'] == true then
-			base_cost_to_undock['launch_rocket'] = false
+			base_cost_to_undock['launch_rocket'] = nil
 		end
 	end
 
@@ -297,8 +297,7 @@ function Public.generate_overworld_destination(p)
 
 		--scheduled raft raids moved to destination_on_arrival
 
-		local ores_multiplier = Balance.island_richness_avg_multiplier()
-		if macro_p.x == 0 then ores_multiplier = 0.9 end
+		local ores_multiplier = Balance.island_richness_avg_multiplier(p.x)
 
 		local base_ores = scope.Data.base_ores()
 
@@ -307,8 +306,18 @@ function Public.generate_overworld_destination(p)
 		local rngcount = 0
 		for k, _ in pairs(base_ores) do
 			if k ~= 'coal' then
-				local rng = 2*Math.random()
+				-- It's preferred to create variance with different island types, rather than this, as it's important to have low variance in early islands for easier balance and predictable early gameplay.
+				-- Here we increase "rng" element on later islands as that's when "rng" shouldn't matter too much once players got solid start.
+				local rng
+				if p.x <= 400 then
+					rng = Math.random_float_in_range(0.8, 1.2)
+				else
+					rng = Math.random_float_in_range(0.5, 1.5)
+				end
+
+				-- local rng = 2*Math.random() -- such huge variance hard to reason and balance around, considering resources aren't equally worth.
 				-- local rng = 1 + ((2*Math.random() - 1)^3) --lower variances
+
 				rngs[k] = rng
 				rngsum = rngsum + rng
 				rngcount = rngcount + 1
@@ -334,11 +343,11 @@ function Public.generate_overworld_destination(p)
 		local rng = 0.5 + 1 * Math.random()
 		static_params.starting_treasure_maps = Math.ceil((static_params.base_starting_treasure_maps or 0) * rng)
 		static_params.starting_wood = static_params.base_starting_wood or 1000
-		static_params.starting_wood = Math.ceil(static_params.starting_wood * Balance.island_richness_avg_multiplier())
-		static_params.starting_rock_material = Math.ceil(static_params.base_starting_rock_material or 300) * Balance.island_richness_avg_multiplier()
+		static_params.starting_wood = Math.ceil(static_params.starting_wood * Balance.island_richness_avg_multiplier(p.x))
+		static_params.starting_rock_material = Math.ceil(static_params.base_starting_rock_material or 300) * Balance.island_richness_avg_multiplier(p.x)
 
 		rng = 0.5 + 1 * Math.random()
-		static_params.starting_treasure = Math.ceil((static_params.base_starting_treasure or 1000) * Balance.island_richness_avg_multiplier() * rng)
+		static_params.starting_treasure = Math.ceil((static_params.base_starting_treasure or 1000) * Balance.island_richness_avg_multiplier(p.x) * rng)
 
 		static_params.name = scope.Data.display_names[Math.random(#scope.Data.display_names)]
 

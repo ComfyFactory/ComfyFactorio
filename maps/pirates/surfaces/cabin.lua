@@ -371,13 +371,13 @@ function Public.get_market_random_price(slot)
 
 	if slot == enum.SLOT_EXTRA_HOLD then
 		local tier = memory.hold_surface_count
-		return Common.pick_random_price(tier, Public.market_price_scale, math.min(1, 0.05 + tier * 0.15))
+		return Common.pick_random_price(tier, 0.9*Public.market_price_scale, math.min(1, 0.05 + tier * 0.15))
 	elseif slot == enum.SLOT_MORE_POWER then
 		local tier = memory.boat.EEI_stage
 		return Common.pick_random_price(tier, 0.5*Public.market_price_scale, math.min(1, 0.05 + tier * 0.15))
 	elseif slot == enum.SLOT_RANDOM_CLASS then
 		local tier = memory.boat.random_class_purchase_count + 1
-		return Common.pick_random_price(tier, Public.market_price_scale, math.min(1, 0.05 + tier * 0.15))
+		return Common.pick_random_price(tier, 0.9*Public.market_price_scale, math.min(1, 0.05 + tier * 0.15))
 	end
 
 	return nil

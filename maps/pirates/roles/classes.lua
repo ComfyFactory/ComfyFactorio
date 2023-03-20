@@ -213,6 +213,7 @@ Public.class_purchase_requirement = {
 	[enum.DOCTOR] = enum.MEDIC,
 }
 
+-- NOTE: If deckhand/boatswain/gourmet classes were to be enabled back, "class_ore_grant()" would need to be adjusted to avoid crashing server with evil spilling.
 function Public.initial_class_pool()
 	return {
 		-- enum.DECKHAND, --good for afk players, but it's boring and bloats class pool
@@ -341,12 +342,16 @@ end
 function Public.class_ore_grant(player, how_much)
 	local count = Public.ore_grant_amount(how_much)
 
+	-- Even though this can cause server crash when used in evil manner, I still think giving ore directly to inventory is more intuitive.
+	-- This would need to be reverted or adjusted if deckhand/boatswain/gourmet classes were to be enabled back.
 	if Math.random(4) == 1 then
-		Common.flying_text_small(player.surface, player.position, '[color=0.85,0.58,0.37]+' .. count .. '[/color]')
-		Common.give_items_to_crew{{name = 'copper-ore', count = count}}
+		-- Common.flying_text_small(player.surface, player.position, '[color=0.85,0.58,0.37]+' .. count .. '[/color]')
+		-- Common.give_items_to_crew{{name = 'copper-ore', count = count}}
+		Common.give(player, {{name = 'copper-ore', count = count}}, player.position)
 	else
-		Common.flying_text_small(player.surface, player.position, '[color=0.7,0.8,0.8]+' .. count .. '[/color]')
-		Common.give_items_to_crew{{name = 'iron-ore', count = count}}
+		-- Common.flying_text_small(player.surface, player.position, '[color=0.7,0.8,0.8]+' .. count .. '[/color]')
+		-- Common.give_items_to_crew{{name = 'iron-ore', count = count}}
+		Common.give(player, {{name = 'iron-ore', count = count}}, player.position)
 	end
 end
 
@@ -511,11 +516,11 @@ function Public.lumberjack_bonus_items(give_table)
 	local memory = Memory.get_crew_memory()
 
 	if Math.random(Balance.every_nth_tree_gives_coins) == 1 then
-		local a = Balance.lumberjack_coins_from_tree
+		local a = Math.ceil(Balance.coin_amount_from_tree() * Balance.lumberjack_coins_from_tree_multiplier)
 		give_table[#give_table + 1] = {name = 'coin', count = a}
 		memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
-	elseif Math.random(2) == 1 then
-		local multiplier = Balance.island_richness_avg_multiplier() * Math.random_float_in_range(1, 1.5)
+	elseif Math.random(4) == 1 then
+		local multiplier = Balance.island_richness_avg_multiplier() * Math.random_float_in_range(0.6, 1.4)
 		local amount = Math.ceil(Balance.lumberjack_ore_base_amount * multiplier)
 		if Math.random(4) == 1 then
 			give_table[#give_table + 1] = {name = 'copper-ore', count = amount}

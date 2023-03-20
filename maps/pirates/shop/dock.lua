@@ -28,17 +28,18 @@ Public.market_barters = {
 	--repeating these:
 	{price = {{'iron-plate', 300}}, offer = {type = 'give-item', item = 'copper-plate', count = 500}},
 	{price = {{'copper-plate', 300}}, offer = {type = 'give-item', item = 'iron-plate', count = 500}},
+
 	{price = {{'steel-plate', 40}}, offer = {type = 'give-item', item = 'copper-plate', count = 500}},
 	{price = {{'steel-plate', 40}}, offer = {type = 'give-item', item = 'iron-plate', count = 500}},
-	{price = {{'raw-fish', 50}}, offer = {type = 'give-item', item = 'coal', count = 500}},
-	{price = {{'raw-fish', 50}}, offer = {type = 'give-item', item = 'iron-plate', count = 750}},
-	{price = {{'raw-fish', 50}}, offer = {type = 'give-item', item = 'copper-plate', count = 750}},
-	{price = {{'raw-fish', 50}}, offer = {type = 'give-item', item = 'steel-plate', count = 125}},
+	{price = {{'raw-fish', 80}}, offer = {type = 'give-item', item = 'coal', count = 500}},
+	{price = {{'raw-fish', 80}}, offer = {type = 'give-item', item = 'iron-plate', count = 750}},
+	{price = {{'raw-fish', 80}}, offer = {type = 'give-item', item = 'copper-plate', count = 750}},
+	{price = {{'raw-fish', 80}}, offer = {type = 'give-item', item = 'steel-plate', count = 150}},
 	{price = {{'wood', 200}}, offer = {type = 'give-item', item = 'coin', count = 360}},
 	{price = {{'wood', 150}}, offer = {type = 'give-item', item = 'coal', count = 150}},
-	{price = {{'stone-brick', 100}}, offer = {type = 'give-item', item = 'iron-plate', count = 200}},
-	{price = {{'stone-brick', 100}}, offer = {type = 'give-item', item = 'copper-plate', count = 200}},
-	{price = {{'stone-brick', 100}}, offer = {type = 'give-item', item = 'steel-plate', count = 100}},
+	{price = {{'stone-brick', 200}}, offer = {type = 'give-item', item = 'iron-plate', count = 500}},
+	{price = {{'stone-brick', 200}}, offer = {type = 'give-item', item = 'copper-plate', count = 500}},
+	{price = {{'stone-brick', 200}}, offer = {type = 'give-item', item = 'steel-plate', count = 160}},
 }
 
 -- permanent means you can buy more than once (but only some items???)

@@ -172,6 +172,12 @@ function Public.make_captain(player)
 	local global_memory = Memory.get_global_memory()
 	local memory = Memory.get_crew_memory()
 
+	local make_previous_captain_officer = false
+	local previous_captain_index = memory.playerindex_captain
+	if Common.is_officer(player.index) then
+		make_previous_captain_officer = true
+	end
+
 	if memory.playerindex_captain then
 		Public.update_privileges(game.players[memory.playerindex_captain])
 	end
@@ -180,8 +186,25 @@ function Public.make_captain(player)
 	global_memory.playerindex_to_captainhood_priority[player.index] = nil
 	memory.captain_acceptance_timer = nil
 
-	Public.reset_officers()
+	if make_previous_captain_officer then
+		-- WARNING: don't use "make_officer()" as it checks if player is connected
+		memory.officers_table[previous_captain_index] = true
+	end
+
+	-- don't use "unmake_officer" as it prints additional messages
+	memory.officers_table[player.index] = nil
+
     Public.update_privileges(player)
+
+	local force = player.force
+	if force and force.valid then
+		local message = {'pirates.roles_new_captain', player.name}
+
+		Common.notify_force(force, message)
+		Server.to_discord_embed_raw({'', CoreData.comfy_emojis.derp .. '[' .. memory.name .. '] ', message}, true)
+	end
+
+	log('INFO: ' .. (player.name or 'noname') .. ' is now new captain.')
 end
 
 function Public.player_confirm_captainhood(player)
@@ -189,20 +212,20 @@ function Public.player_confirm_captainhood(player)
 	local captain_index = memory.playerindex_captain
 
 	if player.index ~= captain_index then
-		Common.notify_player_error(player,{'pirates.roles_confirm_captain_error_1'})
+		Common.notify_player_error(player, {'pirates.roles_confirm_captain_error_1'})
 	else
 		if memory.captain_acceptance_timer then
-			memory.captain_acceptance_timer = nil
-
 			local force = player.force
 			if force and force.valid then
 				local message = {'pirates.roles_confirm_captain', player.name}
 
 				Common.notify_force(force, message)
-				Server.to_discord_embed_raw({'',CoreData.comfy_emojis.derp .. '[' .. memory.name .. '] ',message}, true)
+				Server.to_discord_embed_raw({'', CoreData.comfy_emojis.derp .. '[' .. memory.name .. '] ', message}, true)
 			end
+
+			Public.make_captain(player)
 		else
-			Common.notify_player_error(player,{'pirates.roles_confirm_captain_error_2'})
+			Common.notify_player_error(player, {'pirates.roles_confirm_captain_error_2'})
 		end
 	end
 end
@@ -213,11 +236,14 @@ function Public.player_left_so_redestribute_roles(player)
 	local memory = Memory.get_crew_memory()
 
 	if Common.is_captain(player) then
-		if memory.run_is_protected and #Common.crew_get_officers() == 0 then
+		local officers = Common.crew_get_non_afk_officers()
+		if memory.run_is_protected and #officers == 0 then
 			if memory.crewplayerindices and #memory.crewplayerindices > 0 then
 				Common.parrot_speak(memory.force, {'pirates.parrot_captain_left_protected_run'})
 				Common.parrot_speak(memory.force, {'pirates.parrot_create_new_crew_tip'})
 			end
+		elseif memory.run_is_protected then
+			Public.make_captain(officers[1])
 		else
 			Public.assign_captain_based_on_priorities()
 		end
@@ -250,7 +276,7 @@ function Public.renounce_captainhood(player)
 	local memory = Memory.get_crew_memory()
 
 	if #Common.crew_get_crew_members() == 1 then
-		Common.notify_player_error(player,{'pirates.roles_renounce_captain_error_1'})
+		Common.notify_player_error(player, {'pirates.roles_renounce_captain_error_1'})
 	else
 
 		local force = memory.force
@@ -259,7 +285,7 @@ function Public.renounce_captainhood(player)
 			local message = {'pirates.roles_renounce_captain', player.name}
 
 			Common.notify_force(force, message)
-			Server.to_discord_embed_raw({'',CoreData.comfy_emojis.ree1 .. '[' .. memory.name .. '] ',message}, true)
+			Server.to_discord_embed_raw({'', CoreData.comfy_emojis.ree1 .. '[' .. memory.name .. '] ', message}, true)
 		end
 
 		Public.assign_captain_based_on_priorities(player.index)
@@ -277,7 +303,7 @@ function Public.resign_as_officer(player)
 		local message = {'pirates.roles_resign_officer', player.name}
 
 		Common.notify_force(force, message)
-		Server.to_discord_embed_raw({'',CoreData.comfy_emojis.ree1 .. '[' .. memory.name .. '] ',message}, true)
+		Server.to_discord_embed_raw({'', CoreData.comfy_emojis.ree1 .. '[' .. memory.name .. '] ', message}, true)
 	else
 		log('Error: player tried to resign as officer despite not being one.')
 	end
@@ -328,7 +354,7 @@ function Public.pass_captainhood(player, player_to_pass_to)
 	local message = {'pirates.roles_pass_captainhood', player.name, player_to_pass_to.name}
 
 	Common.notify_force(force, message)
-	Server.to_discord_embed_raw({'',CoreData.comfy_emojis.spurdo .. '[' .. memory.name .. '] ',message}, true)
+	Server.to_discord_embed_raw({'', CoreData.comfy_emojis.spurdo .. '[' .. memory.name .. '] ', message}, true)
 
 	Public.make_captain(player_to_pass_to)
 end
@@ -338,8 +364,9 @@ function Public.afk_player_tick(player)
 	local memory = Memory.get_crew_memory()
 
 	local non_afk_members = Common.crew_get_nonafk_crew_members()
+	local officers = Common.crew_get_non_afk_officers()
 
-	if Common.is_captain(player) and #non_afk_members >= 1 and ((not memory.run_is_protected) or #Common.crew_get_officers() > 0)  then
+	if Common.is_captain(player) and #non_afk_members >= 1 and ((not memory.run_is_protected) or #officers > 0) then
 		if #non_afk_members == 1 then --don't need to bounce it around
 			Public.make_captain(non_afk_members[1])
 		else
@@ -348,10 +375,14 @@ function Public.afk_player_tick(player)
 				local message = {'pirates.roles_lose_captainhood_by_afk', player.name}
 
 				Common.notify_force(force, message)
-				Server.to_discord_embed_raw({'',CoreData.comfy_emojis.loops .. '[' .. memory.name .. '] ',message}, true)
+				Server.to_discord_embed_raw({'', CoreData.comfy_emojis.loops .. '[' .. memory.name .. '] ', message}, true)
 			end
 
-			Public.assign_captain_based_on_priorities()
+			if memory.run_is_protected then
+				Public.make_captain(officers[1])
+			else
+				Public.assign_captain_based_on_priorities()
+			end
 		end
 	end
 end

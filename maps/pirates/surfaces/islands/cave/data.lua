@@ -22,16 +22,16 @@ Public.static_params_default = {
 -- Here we set values somewhat higher, because getting all resources requires work and bit of luck (island needs enough rock)
 function Public.base_ores()
 	return {
-		['copper-ore'] = 3,
-		['iron-ore'] = 7,
-		['coal'] = 6,
-		['stone'] = 3,
-		['uranium-ore'] = 0.5,
+		['copper-ore'] = 3.3,
+		['iron-ore'] = 7.7,
+		['coal'] = 5.5,
+		['stone'] = 3.3,
+		['uranium-ore'] = 0.6,
 	}
 end
 
 function Public.spawn_fish(args)
-	if math.random(1, 16) == 1 then
+	if math.random(1, 32) == 1 then
 		args.entities[#args.entities + 1] = {name = 'fish', position = args.p}
 	end
 end

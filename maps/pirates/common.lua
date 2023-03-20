@@ -584,7 +584,7 @@ function Public.query_can_pay_cost_to_leave()
 
 	local can_leave = true
 	for name, count in pairs(adjusted_cost) do
-		if name == 'launch_rocket' then
+		if name == 'launch_rocket' and count == true then
 			if not destination.dynamic_data.rocketlaunched then
 				can_leave = false
 			end
@@ -909,10 +909,10 @@ function Public.crew_get_nonafk_crew_members()
 	return playerlist
 end
 
-function Public.crew_get_officers()
+function Public.crew_get_non_afk_officers()
 	local officers = {}
 
-	local members = Public.crew_get_crew_members()
+	local members = Public.crew_get_nonafk_crew_members()
 	for _, player in pairs(members) do
 		if Public.is_officer(player.index) then
 			officers[#officers + 1] = player
@@ -1842,55 +1842,42 @@ function Public.get_random_valid_spawner(surface)
 	return spawners[Math.random(#spawners)]
 end
 
-function Public.try_make_biter_elite(entity, spawner)
+-- @TODO move this somewhere else, so that health multiplier formula can be put to balance
+function Public.try_make_biter_elite(entity)
+	if not (entity and entity.valid) then return end
+
 	local memory = Memory.get_crew_memory()
-	local destination = Public.current_destination()
 
 	local difficulty_index = CoreData.get_difficulty_option_from_value(memory.difficulty)
 	if difficulty_index < 3 then return end
 
 	if Public.overworldx() == 0 then return end
 
-	local from_elite_spawner = false
-	if spawner and
-		spawner.valid and
-		destination.dynamic_data.elite_spawners and
-		#destination.dynamic_data.elite_spawners > 0
-	then
-		for i = 1, #destination.dynamic_data.elite_spawners do
-			local elite_spawner = destination.dynamic_data.elite_spawners[i]
-			if spawner == elite_spawner then
-				from_elite_spawner = true
-				break
-			end
-		end
+	-- chance to turn biter elite
+	if Math.random(1, 8) ~= 1 then return end
+
+	local health_multiplier
+
+	if difficulty_index == 3 then
+		health_multiplier = 5
+	else
+		health_multiplier = 10
 	end
 
-	local make_biter_elite = false
-	if from_elite_spawner then
-		if Math.random(1, 8) == 1 then
-			make_biter_elite = true
-		end
-	elseif Math.random(1, 16) == 1 then
-		make_biter_elite = true
+	-- 1000 leagues = 1x
+	-- 2000 leagues = 2x
+	-- 3000 leagues = 4x
+	-- etc.
+	if Public.overworldx() > 1000 then
+		health_multiplier = health_multiplier * 2 ^ ((Public.overworldx() - 1000) / 1000)
 	end
 
-	if make_biter_elite then
-		local health_multiplier
+	local max_hp = Math.ceil(entity.prototype.max_health * health_multiplier)
+	Public.new_healthbar(false, entity, max_hp, nil, max_hp, 0.4, -1)
 
-		if difficulty_index == 3 then
-			health_multiplier = 5
-		else
-			health_multiplier = 10
-		end
-
-		local max_hp = Math.ceil(entity.prototype.max_health * health_multiplier)
-		Public.new_healthbar(false, entity, max_hp, nil, max_hp, 0.4, -1)
-
-		local elite_biters = memory.elite_biters
-		if elite_biters then
-			elite_biters[entity.unit_number] = entity
-		end
+	local elite_biters = memory.elite_biters
+	if elite_biters then
+		elite_biters[entity.unit_number] = entity
 	end
 end
 

@@ -124,14 +124,13 @@ function Public.on_surface_generation(destination)
 		if subtype == IslandEnum.enum.CAVE then
 			if not destination.dynamic_data.cave_miner then
 				destination.dynamic_data.cave_miner = {}
-				destination.dynamic_data.cave_miner.reveal_queue = {}
 				destination.dynamic_data.cave_miner.cave_surface = nil
 				Islands[IslandEnum.enum.CAVE].roll_source_surface(destination)
 			end
 		end
 
 		destination.dynamic_data.wood_remaining = destination.static_params.starting_wood
-		destination.dynamic_data.rock_material_remaining = destination.static_params.starting_rock_material
+		-- destination.dynamic_data.rock_material_remaining = destination.static_params.starting_rock_material
 		destination.dynamic_data.treasure_remaining = destination.static_params.starting_treasure
 		destination.dynamic_data.ore_types_spawned = {}
 
@@ -287,7 +286,6 @@ function Public.destination_on_arrival(destination)
 	if destination.type == enum.ISLAND then
 
 		destination.dynamic_data.rocketsiloenergyneeded = Balance.silo_energy_needed_MJ() * 1000000
-		destination.dynamic_data.rocketcoalreward = Balance.rocket_launch_fuel_reward()
 
 		destination.dynamic_data.time_remaining = Balance.max_time_on_island(destination.subtype)
 
@@ -354,7 +352,7 @@ function Public.destination_on_arrival(destination)
 	local name = destination.static_params.name and destination.static_params.name or 'NameNotFound'
 	local message = {'pirates.approaching_destination', memory.destinationsvisited_indices and #memory.destinationsvisited_indices or 0, name}
 	if not (#memory.destinationsvisited_indices and #memory.destinationsvisited_indices == 1) then --don't need to notify for the first island
-		Server.to_discord_embed_raw({'',(destination.static_params.discord_emoji or CoreData.comfy_emojis.hype) .. '[' .. memory.name .. '] Approaching ', name, ', ' .. memory.overworldx .. ' leagues.'}, true)
+		Server.to_discord_embed_raw({'', (destination.static_params.discord_emoji or CoreData.comfy_emojis.hype) .. '[' .. memory.name .. '] Approaching ', name, ', ' .. memory.overworldx .. ' leagues.'}, true)
 	end
 	-- if destination.static_params.name == 'Dock' then
 	-- 	message = message .. ' ' .. 'New trades are available in the Captain\'s Store.'
@@ -554,7 +552,8 @@ function Public.generate_detailed_island_data(destination)
 						decoratives = {},
 						specials = {},
 						seed = destination.seed,
-						iconized_generation = true
+						iconized_generation = true,
+						overworldx = destination.overworld_position.x,
 					}
 					local tile = tiles3[1]
 					if modalcounts[tile.name] then
@@ -667,7 +666,8 @@ function Public.generate_detailed_island_data(destination)
 				decoratives = {},
 				specials = {},
 				seed = destination.seed,
-				iconized_generation = true
+				iconized_generation = true,
+				overworldx = destination.overworld_position.x,
 			}
 			local tile = tiles3[1]
 			if (not Utils.contains(CoreData.water_tile_names, tile.name)) then

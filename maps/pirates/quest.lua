@@ -8,7 +8,7 @@ local Common = require 'maps.pirates.common'
 local Math = require 'maps.pirates.math'
 local Raffle = require 'maps.pirates.raffle'
 -- local Loot = require 'maps.pirates.loot'
-local CoreData = require 'maps.pirates.coredata'
+-- local CoreData = require 'maps.pirates.coredata'
 local IslandEnum = require 'maps.pirates.surfaces.islands.island_enum'
 local _inspect = require 'utils.inspect'.inspect
 
@@ -93,8 +93,10 @@ end
 
 function Public.initialise_random_cave_island_quest()
 	local rng = Math.random(100)
-	if rng <= 50 then
+	if rng <= 30 then
 		Public.initialise_fish_quest()
+	elseif rng <= 60 then
+		Public.initialise_worms_quest()
 	else
 		Public.initialise_compilatron_quest()
 	end
@@ -191,7 +193,7 @@ function Public.initialise_resourcecount_quest()
 		destination.dynamic_data.quest_params.initial_count = force.item_production_statistics.get_flow_count{name = generated_production_quest.item, input = true, precision_index = defines.flow_precision_index.one_thousand_hours, count = true}
 	end
 
-	local progressneeded_before_rounding = generated_production_quest.base_rate * Balance.resource_quest_multiplier() * Common.difficulty_scale()
+	local progressneeded_before_rounding = generated_production_quest.base_rate * Balance.resource_quest_multiplier()
 
 	destination.dynamic_data.quest_progressneeded = Math.ceil(progressneeded_before_rounding/10)*10
 
@@ -215,20 +217,27 @@ function Public.initialise_worms_quest()
 	end
 
 	local needed = Math.ceil(
-		1 + 9 * Math.slopefromto(count, 0, 20) + 10 * Math.slopefromto(count, 20, 70)
+		15 * Math.slopefromto(count, 0, 20) + 12 * Math.slopefromto(count, 20, 80)
 	)
 
-	if  Common.difficulty_scale() < 1 then needed = Math.max(1, needed - 3) end
-	if  Common.difficulty_scale() > 1 then needed = Math.max(1, needed + 2) end
-
-	local difficulty_name = CoreData.get_difficulty_option_informal_name_from_value(Common.difficulty_scale())
-	if difficulty_name == 'easy' then
-		needed = Math.max(1, needed - 3)
-	elseif difficulty_name ~= 'normal' then
-		needed = Math.max(1, needed + 2)
+	if destination.subtype == IslandEnum.enum.RED_DESERT then
+		needed = Math.random(20, 30)
+	elseif destination.subtype == IslandEnum.enum.CAVE then
+		needed = Math.random(15, 25)
 	end
 
-	if needed >= 5 then
+	-- These extra difficulty formulas don't work when there is very little amount of worms
+	-- if  Common.difficulty_scale() < 1 then needed = Math.max(1, needed - 3) end
+	-- if  Common.difficulty_scale() > 1 then needed = Math.max(1, needed + 2) end
+
+	-- local difficulty_name = CoreData.get_difficulty_option_informal_name_from_value(Common.difficulty_scale())
+	-- if difficulty_name == 'easy' then
+	-- 	needed = Math.max(1, needed - 3)
+	-- elseif difficulty_name ~= 'normal' then
+	-- 	needed = Math.max(1, needed + 2)
+	-- end
+
+	if needed >= 10 then
 		destination.dynamic_data.quest_type = enum.WORMS
 		destination.dynamic_data.quest_reward = Public.quest_reward()
 		destination.dynamic_data.quest_progress = 0

@@ -6,7 +6,7 @@ local Math = require 'maps.pirates.math'
 -- local Raffle = require 'maps.pirates.raffle'
 -- local Memory = require 'maps.pirates.memory'
 local Common = require 'maps.pirates.common'
-local CoreData = require 'maps.pirates.coredata'
+-- local CoreData = require 'maps.pirates.coredata'
 -- local Utils = require 'maps.pirates.utils_local'
 -- local _inspect = require 'utils.inspect'.inspect
 
@@ -32,12 +32,10 @@ Public.cannon_starting_hp = 2000
 Public.cannon_resistance_factor = 2
 Public.technology_price_multiplier = 1
 
-Public.rocket_launch_coin_reward = 5000
-
 Public.base_caught_fish_amount = 3
 Public.class_reward_tick_rate_in_seconds = 7
 Public.poison_damage_multiplier = 1.85
-Public.every_nth_tree_gives_coins = 6
+Public.every_nth_tree_gives_coins = 10
 
 Public.samurai_damage_taken_multiplier = 0.32
 Public.samurai_damage_dealt_when_not_melee_multiplier = 0.75
@@ -52,7 +50,7 @@ Public.deckhand_ore_grant_multiplier = 5
 Public.boatswain_extra_speed = 1.25
 Public.boatswain_ore_grant_multiplier = 8
 Public.shoresman_extra_speed = 1.1
-Public.shoresman_ore_grant_multiplier = 5
+Public.shoresman_ore_grant_multiplier = 3
 Public.quartermaster_range = 19
 Public.quartermaster_bonus_physical_damage = 1.3
 Public.scout_extra_speed = 1.3
@@ -60,8 +58,8 @@ Public.scout_damage_taken_multiplier = 1.25
 Public.scout_damage_dealt_multiplier = 0.6
 Public.fisherman_fish_bonus = 2
 Public.fisherman_reach_bonus = 10
-Public.lumberjack_coins_from_tree = 12
-Public.lumberjack_ore_base_amount = 4
+Public.lumberjack_coins_from_tree_multiplier = 2
+Public.lumberjack_ore_base_amount = 8
 Public.master_angler_reach_bonus = 16
 Public.master_angler_fish_bonus = 4
 Public.master_angler_coin_bonus = 20
@@ -109,8 +107,7 @@ Public.EEI_stages = { --multipliers
 
 
 function Public.scripted_biters_pollution_cost_multiplier()
-
-	return 1.25 / Math.sloped(Common.difficulty_scale(), 1/2) * (1 + 1.2 / ((1 + (Common.overworldx()/40))^(1.5+Common.difficulty_scale()))) -- the complicated factor just makes the early-game easier; in particular the first island, but on easier difficulties the next few islands as well
+	return (1.1 / Math.sloped(Common.difficulty_scale(), 0.7)) * (1 + 1.2 / ((1 + (Common.overworldx()/40))^(1.5+Common.difficulty_scale()))) -- the complicated factor just makes the early-game easier; in particular the first island, but on easier difficulties the next few islands as well
 end
 
 function Public.cost_to_leave_multiplier()
@@ -134,7 +131,7 @@ function Public.crew_scale()
 end
 
 function Public.silo_base_est_time()
-	local T = Public.expected_time_on_island() * Public.crew_scale()^(2/10) --to undo some of the time scaling
+	local T = Public.expected_time_on_island() * Public.crew_scale()^(1/5) --to undo some of the time scaling
 	local est_secs
 	if T > 0 then
 		est_secs = T/6
@@ -237,7 +234,7 @@ function Public.fuel_depletion_rate_static()
 		-- - More people doesn't necessarily mean faster progression: people just focus on other things (and on some islands it's hard to "employ" every crew member to be productive, due to lack of activities).
 		-- - Although more players can setup miners faster, miners don't dig ore faster.
 		-- - It's not fun being punished when noobs(or just your casual friends) join game and don't contribute "enough" to make up for increased coal consumption (among other things).
-		return -0.2 * ((Common.overworldx()/40)^(9/10)) * Public.crew_scale()^(1/5) * Math.sloped(Common.difficulty_scale(), 40/100)
+		return -0.2 * ((Common.overworldx()/40)^(9/10)) * Public.crew_scale()^(1/5) * Math.sloped(Common.difficulty_scale(), 4/10)
 	else
 		return 0
 	end
@@ -251,7 +248,7 @@ end
 
 function Public.silo_total_pollution()
 	return (
-		347 * (Common.difficulty_scale()^(1.0)) * Public.crew_scale()^(3/10) * (3.2 + 0.7 * (Common.overworldx()/40)^(1.6)) --shape of the curve with x is tuned.
+		310 * Common.difficulty_scale() * Public.crew_scale()^(1/5) * (3.2 + 0.7 * (Common.overworldx()/40)^(1.6)) --shape of the curve with x is tuned.
 )
 end
 
@@ -263,19 +260,19 @@ function Public.boat_passive_pollution_per_minute(time)
 	if time then --sharp rise approaching T, steady increase thereafter
 		if time > T then
 			boost = 20 + 10 * (time - T) / (30/100 * T)
-		elseif time >= 95/100 * T then
-			boost = 16
 		elseif time >= 90/100 * T then
-			boost = 12
+			boost = 16
 		elseif time >= 85/100 * T then
-			boost = 8
+			boost = 12
 		elseif time >= 80/100 * T then
-			boost = 5
+			boost = 8
 		elseif time >= 70/100 * T then
-			boost = 3
+			boost = 5
 		elseif time >= 60/100 * T then
-			boost = 2
+			boost = 3
 		elseif time >= 50/100 * T then
+			boost = 2
+		elseif time >= 40/100 * T then
 			boost = 1.5
 		else
 			boost = 1
@@ -285,7 +282,7 @@ function Public.boat_passive_pollution_per_minute(time)
 	end
 
 	return boost * (
-			2 * (Common.difficulty_scale()^(0.8)) * (Common.overworldx()/40)^(1.8) * (Public.crew_scale())^(1/5)-- There is no _explicit_ T dependence, but it depends almost the same way on the crew_scale as T does.
+			2 * Common.difficulty_scale() * (Common.overworldx()/40)^(1.8) * (Public.crew_scale())^(1/5)-- There is no _explicit_ T dependence, but it depends almost the same way on the crew_scale as T does.
 	 )
 end
 
@@ -297,22 +294,26 @@ function Public.base_evolution_leagues(leagues)
 	if overworldx == 0 then
 		evo = 0
 	else
-		evo = (0.0201 * (overworldx/40)) * Math.sloped(Common.difficulty_scale(), 1/5)
+		-- evo = (0.0201 * (overworldx/40)) * Math.sloped(Common.difficulty_scale(), 1/5)
 
-		local difficulty_name = CoreData.get_difficulty_option_informal_name_from_value(Common.difficulty_scale())
-		if difficulty_name == 'normal' then
-			evo = evo + 0.01
-		elseif difficulty_name == 'hard' then
-			evo = evo + 0.02
-		elseif difficulty_name == 'nightmare' then
-			evo = evo + 0.04
-		end
+		-- local difficulty_name = CoreData.get_difficulty_option_informal_name_from_value(Common.difficulty_scale())
+		-- if difficulty_name == 'normal' then
+		-- 	evo = evo + 0.01
+		-- elseif difficulty_name == 'hard' then
+		-- 	evo = evo + 0.02
+		-- elseif difficulty_name == 'nightmare' then
+		-- 	evo = evo + 0.04
+		-- end
 
-		if overworldx > 600 and overworldx < 1000 then
-			evo = evo + (0.0025 * (overworldx - 600)/40)
-		elseif overworldx >= 1000 then
-			evo = evo + 0.0025 * 10
-		end --extra slope from 600 to 1000 adds 2.5% evo
+		-- if overworldx > 600 and overworldx < 1000 then
+		-- 	evo = evo + (0.0025 * (overworldx - 600)/40)
+		-- elseif overworldx >= 1000 then
+		-- 	evo = evo + 0.0025 * 10
+		-- end --extra slope from 600 to 1000 adds 2.5% evo
+
+
+		evo = (0.0201 * (overworldx/40)) * Math.sloped(Common.difficulty_scale(), 0.4)
+		evo = evo + 0.02 * Common.difficulty_scale()
 	end
 
 	return evo
@@ -390,7 +391,7 @@ end
 
 
 function Public.biter_timeofday_bonus_damage(darkness) -- a surface having min_brightness of 0.2 will cap darkness at 0.8
-	return 0.1 * darkness
+	return 0.5 * darkness
 end
 
 
@@ -423,27 +424,36 @@ end
 
 
 function Public.rocket_launch_fuel_reward()
-	return Math.ceil(1250 * (1 + 0.13 * (Common.overworldx()/40)^(9/10)) * Math.sloped(Common.difficulty_scale(), 1/3))
+	return Math.ceil(2000 * Public.island_richness_avg_multiplier())
 	-- return Math.ceil(1000 * (1 + 0.1 * (Common.overworldx()/40)^(8/10)) / Math.sloped(Common.difficulty_scale(), 1/4))
 end
 
-function Public.quest_reward_multiplier()
-	return (0.4 + 0.08 * (Common.overworldx()/40)^(8/10)) * Math.sloped(Common.difficulty_scale(), 1/3) * (Public.crew_scale())^(1/8)
+function Public.rocket_launch_coin_reward()
+	return Math.ceil(3000 * Public.island_richness_avg_multiplier())
 end
 
-function Public.island_richness_avg_multiplier()
-	local base = 0.73
-	local additional = 0.120 * Math.clamp(0, 10, (Common.overworldx()/40)^(65/100) * Math.sloped(Public.crew_scale(), 1/40)) --tuned tbh
+function Public.quest_reward_multiplier()
+	return 0.9 * Public.island_richness_avg_multiplier()
+end
+
+function Public.island_richness_avg_multiplier(overworldx)
+	overworldx = overworldx or Common.overworldx()
+	-- local base = 0.73
+	-- local additional = 0.120 * Math.clamp(0, 10, (overworldx/40)^(65/100) * Math.sloped(Public.crew_scale(), 1/40)) --tuned tbh
+
+	local base = 0.5
+	local additional = 0.032 * (overworldx/40)
 
 	-- now clamped, because it takes way too long to mine that many more resources
 
 	--we don't really have resources scaling by player count in this resource-constrained scenario, but we scale a little, to accommodate each player filling their inventory with useful tools. also, I would do higher than 1/40, but we go even slightly lower because we're applying this somewhat sooner than players actually get there.
 
-	return base + additional
+	-- return base + additional
+	return Math.clamp(base, 1.5, base + additional)
 end
 
 function Public.resource_quest_multiplier()
-	return (0.9 + 0.075 * (Common.overworldx()/40)^(8/10)) * Math.sloped(Common.difficulty_scale(), 1/5) * (Public.crew_scale())^(1/10)
+	return (0.9 + 0.1 * (Common.overworldx()/40)^(7/10)) * Math.sloped(Common.difficulty_scale(), 1/3) * (Public.crew_scale())^(1/10)
 end
 
 function Public.quest_market_entry_price_scale()
@@ -530,17 +540,21 @@ function Public.sandworm_evo_increase_per_spawn()
 end
 
 function Public.kraken_kill_reward_items()
-	return {{name = 'coin', count = 800}, {name = 'utility-science-pack', count = 8}}
+	return {
+		{name = 'coin', count = Math.ceil(800 * Public.island_richness_avg_multiplier())},
+		{name = 'utility-science-pack', count = Math.ceil(8 * Public.island_richness_avg_multiplier())}
+	}
 end
+
 function Public.kraken_kill_reward_fuel()
-	return 150
+	return Math.ceil(150 * Public.island_richness_avg_multiplier())
 end
 
 function Public.kraken_health()
 	-- return Math.ceil(3500 * Math.max(1, 1 + 0.075 * (Common.overworldx()/40)^(13/10)) * (Public.crew_scale()^(4/8)) * Math.sloped(Common.difficulty_scale(), 3/4))
 	-- return Math.ceil(3500 * Math.max(1, 1 + 0.08 * ((Common.overworldx()/40)^(13/10)-6)) * (Public.crew_scale()^(5/8)) * Math.sloped(Common.difficulty_scale(), 3/4))
 
-	return Math.ceil(2000 * Math.max(1, 1 + 0.075 * (Common.overworldx()/40)^(13/10)) * (Public.crew_scale()^(1/5)) * Math.sloped(Common.difficulty_scale(), 3/4))
+	return Math.ceil(2200 * Math.max(1, 1 + 0.075 * (Common.overworldx()/40)^(13/10)) * (Public.crew_scale()^(1/5)) * Math.sloped(Common.difficulty_scale(), 3/4))
 end
 
 Public.kraken_regen_scale = 0.1 --starting off low
@@ -612,11 +626,11 @@ Public.research_buffs = { --currently disabled anyway
 
 
 function Public.flamers_tech_multipliers()
-	return 0.8
+	return 0.7
 end
 
 function Public.flamers_base_nerf()
-	return -0.3
+	return -0.4
 end
 
 
@@ -730,35 +744,28 @@ function Public.pick_random_drilling_ore()
 end
 
 
--- Current formula returns [50 - 200] + random(1, [10 - 40]) depending on completion progress
--- Formula is "a(100x)^(1/2) + random(1, 0.2a(100x)^(1/2))" where
--- x: progress in range [0-1] (when leagues are in 0-1000)
--- a: scaling
--- When the formula needs adjustments, I suggest changing scaling variable
 function Public.pick_drilling_ore_amount()
-	local scaling = 20
-	local amount = scaling * Math.sqrt(100 * Common.game_completion_progress())
-	local extra_random_amount = Math.random(Math.ceil(0.2 * amount))
-	return amount + extra_random_amount
+	return Math.ceil(100 * Public.island_richness_avg_multiplier() * Math.random_float_in_range(0.9, 1.1))
 end
 
 
--- Current formula returns [15000 - 50000] + random(1, [3000 - 10000]) depending on completion progress
--- Formula is "a(1000000x)^(1/2) + random(1, 0.2a(1000000x)^(1/2))" where
--- x: progress in range [0-1] (when leagues are in 0-1000)
--- a: scaling
--- When the formula needs adjustments, I suggest changing scaling variable
 -- Note: 3333 crude oil amount ~= 1% = 0.1/sec
 function Public.pick_default_oil_amount()
-	local scaling = 50
-	local amount = scaling * Math.sqrt(1000000 * Common.game_completion_progress())
-	local extra_random_amount = Math.random(Math.max(1, Math.ceil(0.2 * amount)))
-	return amount + extra_random_amount
+	return Math.ceil(30000 * Public.island_richness_avg_multiplier() * Math.random_float_in_range(0.9, 1.1))
 end
+
 
  -- Returns frequency in seconds
 function Public.biter_boat_average_arrival_rate()
 	return Math.ceil((7.5 * 60) / Math.sloped(Common.difficulty_scale(), 0.5))
+end
+
+function Public.coin_amount_from_tree()
+	return Math.ceil(8 * Public.island_richness_avg_multiplier() * Math.random_float_in_range(0.7, 1.3))
+end
+
+function Public.coin_amount_from_rock()
+	return Math.ceil(35 * Public.island_richness_avg_multiplier() * Math.random_float_in_range(0.8, 1.2))
 end
 
 return Public

@@ -854,37 +854,18 @@ function Public.boat_movement_tick(tickinterval)
 					eboat.speedticker1 = eboat.speedticker1 + ticker_increase
 					if eboat.speedticker1 >= 1 then
 						eboat.speedticker1 = 0
-						if eboat.state == Boats.enum_state.APPROACHING then
-							if Progression.check_for_end_of_boat_movement(eboat) then
-								-- if boat.unit_group and boat.unit_group.ref and boat.unit_group.ref.valid then boat.unit_group.ref.set_command({
-								-- 	type = defines.command.attack_area,
-								-- 	destination = ({memory.boat.position.x - 32, memory.boat.position.y} or {0,0}),
-								-- 	radius = 32,
-								-- 	distraction = defines.distraction.by_enemy
-								-- }) end
+						if not Progression.check_for_end_of_boat_movement(eboat) then
+							-- if boat.unit_group and boat.unit_group.ref and boat.unit_group.ref.valid then boat.unit_group.ref.set_command({
+							-- 	type = defines.command.attack_area,
+							-- 	destination = ({memory.boat.position.x - 32, memory.boat.position.y} or {0,0}),
+							-- 	radius = 32,
+							-- 	distraction = defines.distraction.by_enemy
+							-- }) end
 
-								local units = game.surfaces[eboat.surface_name].find_units{area = {{eboat.position.x - 12, eboat.position.y - 12}, {eboat.position.x + 12, eboat.position.y + 12}}, force = enemy_force_name, condition = 'same'}
-
-								if #units > 0 then
-									local unit_group = game.surfaces[eboat.surface_name].create_unit_group({position = eboat.position, force = enemy_force_name})
-									for _, unit in pairs(units) do
-										unit_group.add_member(unit)
-									end
-									boat.unit_group = {ref = unit_group, script_type = 'landing-party'}
-
-									boat.unit_group.ref.set_command({
-										type = defines.command.attack_area,
-										destination = ({memory.boat.position.x - 32, memory.boat.position.y} or {0,0}),
-										radius = 32,
-										distraction = defines.distraction.by_enemy
-									})
-								end
-							else
-								local p = {x = eboat.position.x + 1, y = eboat.position.y}
-								Boats.teleport_boat(eboat, nil, p, CoreData.static_boat_floor)
-								if p.x % 7 < 1 then
-									Ai.update_landing_party_unit_groups(eboat, 7)
-								end
+							local p = {x = eboat.position.x + 1, y = eboat.position.y}
+							Boats.teleport_boat(eboat, nil, p, CoreData.static_boat_floor)
+							if p.x % 7 < 1 then
+								Ai.update_landing_party_unit_groups(eboat, 7)
 							end
 						end
 					end
@@ -892,7 +873,7 @@ function Public.boat_movement_tick(tickinterval)
 					do end
 				end
 			else
-				destination.dynamic_data.enemyboats[i] = nil
+				Utils.fast_remove(destination.dynamic_data.enemyboats, i)
 			end
 		end
 	end
@@ -1709,6 +1690,36 @@ function Public.update_pet_biter_lifetime(tickinterval)
 				memory.pet_biters[id] = nil
 			end
 		end
+	end
+end
+
+function Public.update_time_remaining()
+	local memory = Memory.get_crew_memory()
+	local destination = Common.current_destination()
+
+	if not (destination.dynamic_data.time_remaining and destination.dynamic_data.time_remaining > 0) then return end
+	destination.dynamic_data.time_remaining = destination.dynamic_data.time_remaining - 1
+
+	if destination.dynamic_data.time_remaining ~= 0 then return end
+
+	if not memory.boat then return end
+	if memory.boat.state == Boats.enum_state.RETREATING then return end
+	if not memory.boat.surface_name then return end
+
+	local surface_name_decoded = Surfaces.SurfacesCommon.decode_surface_name(memory.boat.surface_name)
+	local type = surface_name_decoded.type
+	if type == Surfaces.enum.ISLAND then
+		if destination.static_params and destination.static_params.base_cost_to_undock and Balance.need_resources_to_undock(Common.overworldx()) == true and (not Common.query_can_pay_cost_to_leave()) then
+			Crew.try_lose({'pirates.loss_resources_were_not_collected_in_time'})
+		else
+			if Balance.need_resources_to_undock(Common.overworldx()) == true then
+				Progression.try_retreat_from_island(false)
+			else
+				Progression.retreat_from_island(false)
+			end
+		end
+	elseif type == Surfaces.enum.DOCK then
+		Progression.undock_from_dock(false)
 	end
 end
 

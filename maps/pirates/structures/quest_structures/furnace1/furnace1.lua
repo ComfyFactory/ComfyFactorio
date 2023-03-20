@@ -138,7 +138,7 @@ function Public.create_step2_entities()
 
 			local inv = e.get_inventory(defines.inventory.chest)
 			if k==1 then
-				inv.insert({name = 'coin', count = 2000})
+				inv.insert({name = 'coin', count = Loot.quest_structure_coin_loot()})
 			elseif k==4 then
 				local loot = Loot.covered_wooden_chest_loot_1()
 				for j = 1, #loot do

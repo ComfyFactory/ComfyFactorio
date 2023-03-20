@@ -193,8 +193,6 @@ local function damage_to_enemyboat_spawners(event)
 
 	if destination.dynamic_data.enemyboats and
 		#destination.dynamic_data.enemyboats > 0 and
-		event.cause and
-		event.cause.valid and
 		event.entity and
 		event.entity.valid and
 		event.entity.force.name == memory.enemy_force_name
@@ -221,8 +219,6 @@ local function damage_to_elite_spawners(event)
 
 	if destination.dynamic_data.elite_spawners and
 		#destination.dynamic_data.elite_spawners > 0 and
-		event.cause and
-		event.cause.valid and
 		event.entity and
 		event.entity.valid and
 		event.entity.force.name == memory.enemy_force_name
@@ -247,8 +243,6 @@ local function damage_to_elite_biters(event)
 
 	local elite_biters = memory.elite_biters
 	if elite_biters and
-		event.cause and
-		event.cause.valid and
 		event.entity and
 		event.entity.valid and
 		event.entity.force.name == memory.enemy_force_name
@@ -269,11 +263,7 @@ end
 local function damage_to_artillery(event)
 	local memory = Memory.get_crew_memory()
 
-	if not event.cause then return end
-	if not event.cause.valid then return end
-	if not event.cause.name then return end
-
-	if Utils.contains(CoreData.enemy_units, event.cause.name) then
+	if event.cause and event.cause.valid and event.cause.name and Utils.contains(CoreData.enemy_units, event.cause.name) then
 		if event.cause.force.name ~= memory.enemy_force_name then return end
 
 		-- play alert sound for all crew members
@@ -308,10 +298,6 @@ local function damage_to_krakens(event)
 	if not event.entity.name then return end
 	if event.entity.name ~= 'biter-spawner' then return end
 
-	if not event.cause then return end
-	if not event.cause.valid then return end
-	if not event.cause.name then return end
-
 	local memory = Memory.get_crew_memory()
 
 	if event.entity.force.name ~= memory.enemy_force_name then return end
@@ -331,7 +317,7 @@ local function damage_to_krakens(event)
 		adjusted_damage = adjusted_damage / 1.25
 	end
 	-- and additionally:
-	if event.cause.name == 'artillery-turret' then
+	if event.cause and event.cause.valid and event.cause.name == 'artillery-turret' then
 		adjusted_damage = adjusted_damage / 1.5
 	end
 
@@ -641,7 +627,8 @@ end
 -- 	-- end
 -- end
 
-
+-- NOTE: "event.cause" may not always be provided.
+-- However, special care needs to be taken when "event.cause" is nil and entity has healthbar (better not ignore such damage or it can cause issues, such as needing to handle their death on "entity_died" functions as opposed to here)
 local function event_on_entity_damaged(event)
 
 	local crew_id = nil
@@ -814,7 +801,7 @@ local function player_mined_tree(event)
 
 	local give = {}
 
-	local baseamount = 4
+	local baseamount = 5
 	--minimum 1 wood
 	local amount = Math.clamp(1, Math.max(1, Math.ceil(available)), Math.ceil(baseamount * Balance.island_richness_avg_multiplier() * available/starting))
 
@@ -826,7 +813,7 @@ local function player_mined_tree(event)
 		Classes.lumberjack_bonus_items(give)
 	else
 		if Math.random(Balance.every_nth_tree_gives_coins) == 1 then --tuned
-			local a = 5
+			local a = Balance.coin_amount_from_tree()
 			give[#give + 1] = {name = 'coin', count = a}
 			memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
 		end
@@ -965,10 +952,10 @@ local function player_mined_rock(event)
 	local entity = event.entity
 	-- local class = Classes.get_class(event.player_index)
 
-	local available = destination.dynamic_data.rock_material_remaining
+	-- local available = destination.dynamic_data.rock_material_remaining
 	-- local starting = destination.static_params.starting_rock_material
 
-	if not (available and destination.type == Surfaces.enum.ISLAND) then return end
+	-- if not (available and destination.type == Surfaces.enum.ISLAND) then return end
 
 	if destination.subtype == IslandEnum.enum.MAZE then
 		if Math.random(1, 35) == 1 then
@@ -1008,14 +995,14 @@ local function player_mined_rock(event)
 
 		if memory.overworldx >= 0 then --used to be only later levels
 			if entity.name == 'rock-huge' then
-				local a = 55
+				local a = Math.ceil(1.5 * Balance.coin_amount_from_rock())
 				c2[#c2 + 1] = {name = 'coin', count = a, color = CoreData.colors.coin}
 				memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
 				if Math.random(1, 35) == 1 then
 					c2[#c2 + 1] = {name = 'crude-oil-barrel', count = 1, color = CoreData.colors.oil}
 				end
 			else
-				local a = 35
+				local a = Balance.coin_amount_from_rock()
 				c2[#c2 + 1] = {name = 'coin', count = a, color = CoreData.colors.coin}
 				memory.playtesting_stats.coins_gained_by_trees_and_rocks = memory.playtesting_stats.coins_gained_by_trees_and_rocks + a
 				if Math.random(1, 35*3) == 1 then
@@ -1033,7 +1020,7 @@ local function player_mined_rock(event)
 		end
 		Common.give(player, c2, entity.position)
 
-		destination.dynamic_data.rock_material_remaining = available
+		-- destination.dynamic_data.rock_material_remaining = available
 
 		if Surfaces.get_scope(destination).break_rock then
 			destination.dynamic_data.ore_spawn_points_to_avoid = destination.dynamic_data.ore_spawn_points_to_avoid or {}
@@ -1266,7 +1253,7 @@ local function spawner_died(event)
 	-- local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 
-	if (destination and destination.type and destination.type == Surfaces.enum.ISLAND) then
+	if (destination and destination.type == Surfaces.enum.ISLAND and destination.dynamic_data) then
 
 		local not_boat = true
 		if destination.dynamic_data.enemyboats and #destination.dynamic_data.enemyboats > 0 then
@@ -1283,9 +1270,7 @@ local function spawner_died(event)
 			local extra_evo = Balance.evolution_per_nest_kill()
 			Common.increment_evo(extra_evo)
 
-			if destination.dynamic_data then
-				destination.dynamic_data.evolution_accrued_nests = destination.dynamic_data.evolution_accrued_nests + extra_evo
-			end
+			destination.dynamic_data.evolution_accrued_nests = destination.dynamic_data.evolution_accrued_nests + extra_evo
 		end
 	end
 end
@@ -1450,7 +1435,7 @@ local function event_on_player_joined_game(event)
 
 	local crew_to_put_back_in = nil
 	for _, memory in pairs(global_memory.crew_memories) do
-		if Common.is_id_valid(memory.id) and memory.crewstatus and memory.crewstatus == Crew.enum.ADVENTURING and memory.temporarily_logged_off_characters[player.index] then
+		if Common.is_id_valid(memory.id) and memory.crewstatus == Crew.enum.ADVENTURING and memory.temporarily_logged_off_characters[player.index] then
 			crew_to_put_back_in = memory.id
 			break
 		end
@@ -1461,7 +1446,7 @@ local function event_on_player_joined_game(event)
 
 		local memory = global_memory.crew_memories[crew_to_put_back_in]
 		if (not memory.run_is_protected) and #memory.crewplayerindices <= 1 then
-			memory.playerindex_captain = player.index
+			Roles.make_captain(player)
 		end
 
 		if _DEBUG then log('putting player back in their old crew') end
@@ -1486,54 +1471,58 @@ local function event_on_player_joined_game(event)
 			Common.ensure_chunks_at(surface, spawnpoint, 5)
 		end
 
+		Common.notify_player_expected(player, {'pirates.player_join_game_info'})
+
+		-- It was suggested to always spawn players in lobby, in hopes that they may want to create their crew increasing the popularity of scenario.
+
 		-- Auto-join the oldest crew:
-		local ages = {}
-		for _, memory in pairs(global_memory.crew_memories) do
-			if Common.is_id_valid(memory.id)
-				and (not memory.run_is_private)
-				and memory.crewstatus == Crew.enum.ADVENTURING
-				and memory.capacity
-				and memory.crewplayerindices
-				and #memory.crewplayerindices < memory.capacity
-				and (not (memory.tempbanned_from_joining_data
-					and memory.tempbanned_from_joining_data[player.index]
-					and game.tick < memory.tempbanned_from_joining_data[player.index] + Common.ban_from_rejoining_crew_ticks)) then
-				ages[#ages+1] = {id = memory.id, age = memory.age, large = (memory.capacity >= Common.minimum_run_capacity_to_enforce_space_for)}
-			end
-		end
-		table.sort(
-			ages,
-			function(a, b) --true if a should be to the left of b
-				if a.large and (not b.large) then
-					return true
-				elseif (not a.large) and b.large then
-					return false
-				else
-					return a.age > b.age
-				end
-			end
-		)
-		if ages[1] then
-			Crew.join_crew(player, ages[1].id)
+		-- local ages = {}
+		-- for _, memory in pairs(global_memory.crew_memories) do
+		-- 	if Common.is_id_valid(memory.id)
+		-- 		and (not memory.run_is_private)
+		-- 		and memory.crewstatus == Crew.enum.ADVENTURING
+		-- 		and memory.capacity
+		-- 		and memory.crewplayerindices
+		-- 		and #memory.crewplayerindices < memory.capacity
+		-- 		and (not (memory.tempbanned_from_joining_data
+		-- 			and memory.tempbanned_from_joining_data[player.index]
+		-- 			and game.tick < memory.tempbanned_from_joining_data[player.index] + Common.ban_from_rejoining_crew_ticks)) then
+		-- 		ages[#ages+1] = {id = memory.id, age = memory.age, large = (memory.capacity >= Common.minimum_run_capacity_to_enforce_space_for)}
+		-- 	end
+		-- end
+		-- table.sort(
+		-- 	ages,
+		-- 	function(a, b) --true if a should be to the left of b
+		-- 		if a.large and (not b.large) then
+		-- 			return true
+		-- 		elseif (not a.large) and b.large then
+		-- 			return false
+		-- 		else
+		-- 			return a.age > b.age
+		-- 		end
+		-- 	end
+		-- )
+		-- if ages[1] then
+		-- 	Crew.join_crew(player, ages[1].id)
 
-			local memory = global_memory.crew_memories[ages[1].id]
-			if (not memory.run_is_protected) and #memory.crewplayerindices <= 1 then
-				memory.playerindex_captain = player.index
-			end
+		-- 	local memory = global_memory.crew_memories[ages[1].id]
+		-- 	if (not memory.run_is_protected) and #memory.crewplayerindices <= 1 then
+		-- 		Roles.make_captain(player)
+		-- 	end
 
-			if ages[2] then
-				if ages[1].large and (not ages[#ages].large) then
-					Common.notify_player_announce(player, {'pirates.goto_oldest_crew_with_large_capacity'})
-				else
-					Common.notify_player_announce(player, {'pirates.goto_oldest_crew'})
-				end
-			end
+		-- 	if ages[2] then
+		-- 		if ages[1].large and (not ages[#ages].large) then
+		-- 			Common.notify_player_announce(player, {'pirates.goto_oldest_crew_with_large_capacity'})
+		-- 		else
+		-- 			Common.notify_player_announce(player, {'pirates.goto_oldest_crew'})
+		-- 		end
+		-- 	end
 
-			if memory.run_is_protected and (not Roles.captain_exists()) then
-				Common.parrot_speak(memory.force, {'pirates.parrot_player_joins_protected_run_with_no_captain'})
-				Common.parrot_speak(memory.force, {'pirates.parrot_create_new_crew_tip'})
-			end
-		end
+		-- 	if memory.run_is_protected and (not Roles.captain_exists()) then
+		-- 		Common.notify_player_expected(player, {'pirates.player_joins_protected_run_with_no_captain'})
+		-- 		Common.notify_player_expected(player, {'pirates.create_new_crew_tip'})
+		-- 	end
+		-- end
 	end
 
 	if not _DEBUG then
@@ -1759,6 +1748,7 @@ function Public.event_on_chunk_generated(event)
 	local static_params = {}
 	local other_map_generation_data = {}
 	local scope
+	local overworldx = 0
 
 	local memory = Memory.get_crew_memory()
 	if type == Surfaces.enum.ISLAND and memory.destinations and memory.destinations[chunk_destination_index] then
@@ -1769,6 +1759,7 @@ function Public.event_on_chunk_generated(event)
 		terraingen_coordinates_offset = static_params.terraingen_coordinates_offset
 		width = static_params.width
 		height = static_params.height
+		overworldx = destination.overworld_position.x
 	end
 
 	if not scope then
@@ -1821,7 +1812,8 @@ function Public.event_on_chunk_generated(event)
 					specials = specials,
 					seed = seed,
 					other_map_generation_data = other_map_generation_data,
-					iconized_generation = false
+					iconized_generation = false,
+					overworldx = overworldx,
 				}
 			else
 				tiles[#tiles + 1] = {name = 'out-of-map', position = Utils.psum{p, {1, terraingen_coordinates_offset}}}
@@ -1983,16 +1975,18 @@ local function event_on_rocket_launched(event)
 	-- NOTE: On rare occasions if rocket was launched but the silo died in the meantime, this will not give rewards to the crew (idk how to fix it though)
 	if not rocket_launched_belongs_to_island then return end
 
+	local rocket_launch_coal_reward = Balance.rocket_launch_fuel_reward()
+	local rocket_launch_coin_reward = Balance.rocket_launch_coin_reward()
+
 	destination.dynamic_data.rocketlaunched = true
-	if memory.stored_fuel and destination.dynamic_data and destination.dynamic_data.rocketcoalreward then
-		memory.stored_fuel = memory.stored_fuel + destination.dynamic_data.rocketcoalreward
-		local a = Balance.rocket_launch_coin_reward
-		Common.give_items_to_crew({{name = 'coin', count = a}})
-		memory.playtesting_stats.coins_gained_by_rocket_launches = memory.playtesting_stats.coins_gained_by_rocket_launches + a
+	if memory.stored_fuel then
+		memory.stored_fuel = memory.stored_fuel + rocket_launch_coal_reward
+		Common.give_items_to_crew({{name = 'coin', count = rocket_launch_coin_reward}})
+		memory.playtesting_stats.coins_gained_by_rocket_launches = memory.playtesting_stats.coins_gained_by_rocket_launches + rocket_launch_coin_reward
 	end
 
 	local force = memory.force
-	local message = {'pirates.granted_2', {'pirates.granted_rocket_launch'}, Math.floor(Balance.rocket_launch_coin_reward/100)/10 .. 'k [item=coin]', Math.floor(destination.dynamic_data.rocketcoalreward/100)/10 .. 'k [item=coal]'}
+	local message = {'pirates.granted_2', {'pirates.granted_rocket_launch'}, Math.floor(rocket_launch_coin_reward/100)/10 .. 'k [item=coin]', Math.floor(rocket_launch_coal_reward/100)/10 .. 'k [item=coal]'}
 	Common.notify_force_light(force,message)
 
 	if destination.dynamic_data.quest_type == Quest.enum.TIME and (not destination.dynamic_data.quest_complete) then
@@ -2193,7 +2187,7 @@ local function event_on_entity_spawned(event)
 	if not Common.is_id_valid(crew_id) then return end
 
 	Memory.set_working_id(crew_id)
-	Common.try_make_biter_elite(entity, event.spawner)
+	Common.try_make_biter_elite(entity)
 end
 
 

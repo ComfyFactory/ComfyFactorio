@@ -465,6 +465,9 @@ function Public.try_retreat_from_island(player, manual) -- Assumes the cost can 
 	local memory = Memory.get_crew_memory()
 	if memory.game_lost then return end
 	local destination = Common.current_destination()
+	local boat = memory.boat
+
+	if boat.state == Boats.enum_state.RETREATING then return end
 
 	if Common.query_can_pay_cost_to_leave() then
 		if destination.dynamic_data.timeratlandingtime and destination.dynamic_data.timer < destination.dynamic_data.timeratlandingtime + 10 then
@@ -492,7 +495,7 @@ function Public.retreat_from_island(manual)
 	local memory = Memory.get_crew_memory()
 	local boat = memory.boat
 
-	if boat.state and boat.state == Boats.enum_state.RETREATING then return end
+	if boat.state == Boats.enum_state.RETREATING then return end
 
 	boat.state = Boats.enum_state.RETREATING
 	boat.speed = 1.25
@@ -596,6 +599,7 @@ function Public.go_from_currentdestination_to_sea()
 
 	local boat = memory.boat
 
+	local old_boatposition = memory.boat.position
 	local new_boatposition = Utils.snap_coordinates_for_rails({x = Boats.get_scope(memory.boat).Data.width / 2, y = 0})
 
 	Boats.teleport_boat(boat, seaname, new_boatposition, CoreData.static_boat_floor, 'water')
@@ -656,9 +660,24 @@ function Public.go_from_currentdestination_to_sea()
 
 
 	local players_marooned_count = 0
-	for _, player in pairs(game.connected_players) do
+	for _, player in pairs(Common.crew_get_crew_members()) do
 		if (player.surface == oldsurface and player.character and player.character.valid) then
 			players_marooned_count = players_marooned_count + 1
+
+			-- When players are "hanging in front of ship" when boat departs, teleport them inside ship.
+			-- Side effect: if players happen to be on water tile during this tick and not too far from ship, they will be teleported to the boat.
+			-- @TODO: instead of checking 50 radius, check only smaller area around boat
+			if Math.distance(old_boatposition, player.character.position) < 50 then
+				local tile = oldsurface.get_tile(player.character.position.x, player.character.position.y)
+				if tile.valid then
+					if Utils.contains(CoreData.water_tile_names, tile.name) then
+						local newsurface = game.surfaces[seaname]
+						if newsurface and newsurface.valid then
+							player.teleport(newsurface.find_non_colliding_position('character', memory.spawnpoint, 32, 0.5) or memory.spawnpoint, newsurface)
+						end
+					end
+				end
+			end
 		end
 	end
 	if players_marooned_count == 0 then

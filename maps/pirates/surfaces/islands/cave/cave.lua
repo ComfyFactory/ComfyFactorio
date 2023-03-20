@@ -87,11 +87,6 @@ function Public.reveal(cave_miner, surface, source_surface, position, brushsize)
                         )
                     end
 
-                    if entity.force.index == 2 then
-                        e.active = true
-                        table.insert(cave_miner.reveal_queue, {entity.type, entity.position.x, entity.position.y})
-                    end
-
                     entity.destroy()
 
                     -- make revealing a spawner recursively reveal nearby ones too
@@ -251,15 +246,6 @@ local function on_player_changed_position(event)
 
     -- TODO: make more reliable way to get island surface
     Public.reveal(cave_miner, player.surface, cave_miner.cave_surface, {x = Math.floor(player.position.x), y = Math.floor(player.position.y)}, 11)
-
-    local reveal = cave_miner.reveal_queue[1]
-    if not reveal then
-        return
-    end
-
-    local brush_size = 5
-    Public.reveal(cave_miner, player.surface, cave_miner.cave_surface, {x = reveal[2], y = reveal[3]}, brush_size)
-    table.remove(cave_miner.reveal_queue, 1)
 end
 
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)

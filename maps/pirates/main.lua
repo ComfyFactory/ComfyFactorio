@@ -57,7 +57,7 @@ local Surfaces = require 'maps.pirates.surfaces.surfaces'
 local Kraken = require 'maps.pirates.surfaces.sea.kraken'
 local PiratesApiEvents = require 'maps.pirates.api_events'
 require 'maps.pirates.structures.boats.boats'
-local Progression = require 'maps.pirates.progression'
+-- local Progression = require 'maps.pirates.progression'
 local QuestStructures = require 'maps.pirates.structures.quest_structures.quest_structures'
 local Ai = require 'maps.pirates.ai'
 require 'maps.pirates.ores'
@@ -213,25 +213,7 @@ local function crew_tick()
 					end
 				end
 
-				if destination.dynamic_data.time_remaining and destination.dynamic_data.time_remaining > 0 then
-					destination.dynamic_data.time_remaining = destination.dynamic_data.time_remaining - 1
-
-					if destination.dynamic_data.time_remaining == 0 then
-						if memory.boat and memory.boat.surface_name then
-							local surface_name_decoded = Surfaces.SurfacesCommon.decode_surface_name(memory.boat.surface_name)
-							local type = surface_name_decoded.type
-							if type == Surfaces.enum.ISLAND then
-								if destination.static_params and destination.static_params.base_cost_to_undock and Balance.need_resources_to_undock(Common.overworldx()) == true then
-									Crew.try_lose({'pirates.loss_resources_were_not_collected_in_time'})
-								else
-									Progression.retreat_from_island(false)
-								end
-							elseif type == Surfaces.enum.DOCK then
-								Progression.undock_from_dock(false)
-							end
-						end
-					end
-				end
+				PiratesApiOnTick.update_time_remaining()
 
 				if destination.dynamic_data.disabled_wave_timer then
 					destination.dynamic_data.disabled_wave_timer = Math.max(0, destination.dynamic_data.disabled_wave_timer - 1)
