@@ -133,6 +133,8 @@ function Public.wave_size_rng() -- random variance in attack sizes
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 
+	local rng_scale = Common.crew_scale()^(1/4) -- slightly dampen wave variance for small crews as they can't handle it
+
 	-- prevent situation where when player reveals spawner, he immediately gets surrounded by massive amount of biters (especially late game)
 	if destination and destination.type == SurfacesCommon.enum.ISLAND then
 		if destination.dynamic_data and destination.dynamic_data.disabled_wave_timer and destination.dynamic_data.disabled_wave_timer > 0 then
@@ -144,17 +146,18 @@ function Public.wave_size_rng() -- random variance in attack sizes
 
 	local wave_size_multiplier = 1
 	local rng1 = Math.random(100)
+	
 	if rng1 > wave_percentage_chance then
 		wave_size_multiplier = 0
 	elseif memory.overworldx > 0 then
 		local rng2 = Math.random(1000)
-		if rng2 <= 890 then
+		if rng2 >= 110 * rng_scale then
 			wave_size_multiplier = 1
-		elseif rng2 <= 970 then
+		elseif rng2 >= 30 * rng_scale then
 			wave_size_multiplier = 1.5
-		elseif rng2 <= 985 then
+		elseif rng2 >= 15 * rng_scale then
 			wave_size_multiplier = 2
-		elseif rng2 <= 995 then
+		elseif rng2 >= 5 * rng_scale then
 			wave_size_multiplier = 3
 		else
 			wave_size_multiplier = 4
