@@ -622,8 +622,8 @@ local function increase_unit_group_size()
 end
 
 local function increase_max_active_unit_groups()
-    local increase_max_active_unit_groups = Public.get('increase_max_active_unit_groups')
-    if not increase_max_active_unit_groups then
+    local _increase_max_active_unit_groups = Public.get('increase_max_active_unit_groups')
+    if not _increase_max_active_unit_groups then
         return
     end
 
