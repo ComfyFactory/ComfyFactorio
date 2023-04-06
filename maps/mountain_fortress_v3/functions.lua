@@ -320,11 +320,11 @@ local function do_beams_away()
         local difficulty_index = Difficulty.get('index')
         local wave_nth = 9999
         if difficulty_index == 1 then
-            wave_nth = 1000
-        elseif difficulty_index == 2 then
             wave_nth = 500
-        elseif difficulty_index == 3 then
+        elseif difficulty_index == 2 then
             wave_nth = 250
+        elseif difficulty_index == 3 then
+            wave_nth = 100
         end
 
         if wave_number % wave_nth == 0 then
