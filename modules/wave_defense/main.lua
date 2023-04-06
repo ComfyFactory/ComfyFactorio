@@ -376,7 +376,9 @@ local function set_group_spawn_position(surface)
     end
     Public.set('spawn_position', {x = position.x, y = position.y})
     local spawn_position = get_spawn_pos()
-    debug_print('set_group_spawn_position -- Changed position to x' .. spawn_position.x .. ' y' .. spawn_position.y .. '.')
+    if spawn_position then
+        debug_print('set_group_spawn_position -- Changed position to x' .. spawn_position.x .. ' y' .. spawn_position.y .. '.')
+    end
 end
 
 local function set_enemy_evolution()
@@ -481,6 +483,16 @@ local function spawn_biter(surface, position, forceSpawn, is_boss_biter, unit_se
     end
 
     local old_position = position
+
+    local enable_random_spawn_positions = Public.get('enable_random_spawn_positions')
+
+    if enable_random_spawn_positions then
+        if random(1, 3) == 1 then
+            position = {x = (-1 * (position.x + random(1, 10))), y = (position.y + random(1, 10))}
+        else
+            position = {x = (position.x + random(1, 10)), y = (position.y + random(1, 10))}
+        end
+    end
 
     position = surface.find_non_colliding_position('steel-chest', position, 3, 1)
     if not position then
@@ -587,6 +599,50 @@ local function increase_biters_health()
     Public.set('modified_boss_unit_health').current_value = modified_boss_unit_health.current_value + modified_boss_unit_health.health_increase_per_boss_wave
 end
 
+local function increase_unit_group_size()
+    local increase_average_unit_group_size = Public.get('increase_average_unit_group_size')
+    if not increase_average_unit_group_size then
+        return
+    end
+
+    local boost_spawner_sizes_wave_is_above = Public.get('boost_spawner_sizes_wave_is_above')
+    local wave_number = Public.get('wave_number')
+
+    if (wave_number >= boost_spawner_sizes_wave_is_above) then
+        local average_unit_group_size = Public.get('average_unit_group_size')
+        local new_average_unit_group_size = average_unit_group_size + 1
+
+        if new_average_unit_group_size > 128 then
+            new_average_unit_group_size = 128
+        end
+
+        Public.set('average_unit_group_size', new_average_unit_group_size)
+        debug_print_health('average_unit_group_size - ' .. new_average_unit_group_size)
+    end
+end
+
+local function increase_max_active_unit_groups()
+    local _increase_max_active_unit_groups = Public.get('increase_max_active_unit_groups')
+    if not _increase_max_active_unit_groups then
+        return
+    end
+
+    local boost_spawner_sizes_wave_is_above = Public.get('boost_spawner_sizes_wave_is_above')
+    local wave_number = Public.get('wave_number')
+
+    if (wave_number >= boost_spawner_sizes_wave_is_above) then
+        local max_active_unit_groups = Public.get('max_active_unit_groups')
+        local new_max_active_unit_groups = max_active_unit_groups + 1
+
+        if new_max_active_unit_groups > 64 then
+            new_max_active_unit_groups = 64
+        end
+
+        Public.set('max_active_unit_groups', new_max_active_unit_groups)
+        debug_print_health('max_active_unit_groups - ' .. new_max_active_unit_groups)
+    end
+end
+
 local function set_next_wave()
     local wave_number = Public.get('wave_number')
     Public.set('wave_number', wave_number + 1)
@@ -594,9 +650,17 @@ local function set_next_wave()
 
     local threat_gain_multiplier = Public.get('threat_gain_multiplier')
     local threat_gain = wave_number * threat_gain_multiplier
+
     if wave_number > 1000 then
         threat_gain = threat_gain * (wave_number * 0.001)
     end
+    if wave_number % 50 == 0 then
+        increase_unit_group_size()
+    end
+    if wave_number % 200 == 0 then
+        increase_max_active_unit_groups()
+    end
+
     if wave_number % 25 == 0 then
         increase_biter_damage()
         increase_biters_health()

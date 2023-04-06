@@ -246,7 +246,6 @@ function Public.reset_main_table()
     this.adjusted_zones = {
         scrap = {},
         forest = {},
-        slow_movement = {},
         size = nil,
         shuffled_zones = nil
     }
