@@ -12,7 +12,10 @@ local Unique_modifiers = require 'maps.journey.unique_modifiers'
 local Map = require 'modules.map_info'
 local Global = require 'utils.global'
 
-local journey = {}
+local journey = {
+	announce_capsules = true
+}
+
 Global.register(
     journey,
     function(tbl)
@@ -22,14 +25,14 @@ Global.register(
 
 local function on_chunk_generated(event)
 	local surface = event.surface
-	
+
 	if surface.index == 1 then
 		Functions.place_mixed_ore(event, journey)
 		local unique_modifier = Unique_modifiers[journey.world_trait]
 		if unique_modifier.on_chunk_generated then unique_modifier.on_chunk_generated(event, journey) end
 		return
 	end
-	
+
 	if surface.name ~= "mothership" then return end
 	Functions.on_mothership_chunk_generated(event)
 end
@@ -59,7 +62,7 @@ local function on_player_joined_game(event)
 	if player.surface.name == "mothership" then
 		journey.characters_in_mothership = journey.characters_in_mothership + 1
 	end
-	
+
 	if player.force.name == "enemy" then
 		Functions.clear_player(player)
 		player.force = game.forces.player
@@ -69,13 +72,13 @@ local function on_player_joined_game(event)
 		else
 			player.teleport({0,0}, game.surfaces.nauvis)
 		end
-	end	
+	end
 end
 
 local function on_player_left_game(event)
     local player = game.players[event.player_index]
 	Functions.draw_gui(journey)
-	
+
 	if player.surface.name == "mothership" then
 		journey.characters_in_mothership = journey.characters_in_mothership - 1
 	end
@@ -129,11 +132,11 @@ local function on_rocket_launched(event)
 		if journey.mothership_cargo_space[slot.name] then
 			if journey.mothership_cargo[slot.name] > journey.mothership_cargo_space[slot.name] then
 				journey.mothership_cargo[slot.name] = journey.mothership_cargo_space[slot.name]
-			end		
+			end
 			if slot.name == "uranium-fuel-cell" then
 				Server.to_discord_embed("Refueling progress: " .. journey.mothership_cargo[slot.name] .. "/" .. journey.mothership_cargo_space[slot.name])
 			end
-		end	
+		end
 	end
 	Functions.draw_gui(journey)
 end
@@ -148,9 +151,9 @@ local function on_init()
     T.localised_category = 'journey'
     T.main_caption_color = {r = 100, g = 20, b = 255}
     T.sub_caption_color = {r = 100, g = 100, b = 100}
-	
+
 	game.permissions.get_group('Default').set_allows_action(defines.input_action.set_auto_launch_rocket, false)
-	
+
 	Functions.hard_reset(journey)
 end
 
@@ -161,7 +164,7 @@ commands.add_command(
 		local player = game.player
         if not (player and player.valid) then
             return
-        end 
+        end
         if not player.admin then
             player.print("You are not an admin!")
             return
@@ -178,7 +181,7 @@ commands.add_command(
 		local player = game.player
         if not (player and player.valid) then
             return
-        end 
+        end
         if not player.admin then
             player.print("You are not an admin!")
             return
