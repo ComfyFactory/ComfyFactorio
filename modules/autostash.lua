@@ -30,6 +30,11 @@ Global.register(
     end
 )
 
+local bps_blacklist = {
+    ['blueprint-book'] = true,
+    ['blueprint'] = true
+}
+
 local function create_floaty_text(surface, position, name, count)
     if this.floating_text_y_offsets[position.x .. '_' .. position.y] then
         this.floating_text_y_offsets[position.x .. '_' .. position.y] = this.floating_text_y_offsets[position.x .. '_' .. position.y] - 0.5
@@ -508,8 +513,7 @@ local function auto_stash(player, event)
         end
         local name = inventory[i].name
         local is_resource = this.whitelist[name]
-
-        if not hotbar_items[name] then
+        if not hotbar_items[name] and not bps_blacklist[name] then
             if ctrl and this.insert_into_furnace then
                 if button == defines.mouse_button_type.right then
                     if is_resource then
