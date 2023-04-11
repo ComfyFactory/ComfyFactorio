@@ -163,9 +163,9 @@ local function on_tick()
         if (tick + armageddon_duration + warning_duration) % game_duration == 0 then
             warning()
         end
-        if (tick + armageddon_duration) % game_duration == 0 then
-            armageddon()
-        end
+        -- if (tick + armageddon_duration) % game_duration == 0 then
+        --     armageddon()
+        -- end
         if (tick + 1) % game_duration == 0 then
             Nauvis.clear_nuke_schedule()
             Team.reset_all_forces()
