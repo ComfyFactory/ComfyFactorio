@@ -42,11 +42,11 @@ local function warning()
     Alert.alert_all_players(5, 'The world is ending!', Color.white, 'warning-white', 1.0)
 end
 
-local function armageddon()
-    if not get_victorious_force() then
-        Nauvis.armageddon()
-    end
-end
+-- local function armageddon()
+--     if not get_victorious_force() then
+--         Nauvis.armageddon()
+--     end
+-- end
 
 local function do_soft_reset()
     local this = ScenarioTable.get_table()
