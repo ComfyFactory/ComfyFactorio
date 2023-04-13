@@ -138,6 +138,10 @@ local function on_string_translated(event)
     end
 
     localised_string = localised_string[1]
+    if not localised_string then
+        return
+    end
+
     localised_string = string.match(localised_string, '[^.]*$')
 
     Functions.set_translated_data(player, result, localised_string)

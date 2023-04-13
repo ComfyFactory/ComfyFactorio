@@ -183,6 +183,20 @@ local function add_recipe_to_whitelist(item_whitelist, recipe)
     for key, ingredient in pairs(recipe.ingredients) do
         item_whitelist[ingredient.name] = true
     end
+
+    --Adding "place_result" in case the inventory item can turn into a differently named entity after placement on the map.
+    for key, product in pairs(recipe.products) do
+        local p = game.item_prototypes[product.name]
+        if p and p.place_result then
+            item_whitelist[p.place_result.name] = true
+        end
+    end
+    for key, ingredient in pairs(recipe.ingredients) do
+        local p = game.item_prototypes[ingredient.name]
+        if p and p.place_result then
+            item_whitelist[p.place_result.name] = true
+        end
+    end
 end
 
 function Public.add_research_to_whitelist(force, effects)
