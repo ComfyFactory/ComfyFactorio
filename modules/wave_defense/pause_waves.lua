@@ -149,8 +149,9 @@ function Public.toggle_pause_wave_without_votes()
     end
 
     Public.set('pause_waves', {index = 0})
+    local pause_wave_in_ticks = Public.get('pause_wave_in_ticks')
     pause_waves_state(true)
-    Task.set_timeout_in_ticks(18000, pause_waves_state_token, false) -- 5 minutes
+    Task.set_timeout_in_ticks(pause_wave_in_ticks, pause_waves_state_token, false) -- 5 minutes
 end
 
 Gui.on_click(

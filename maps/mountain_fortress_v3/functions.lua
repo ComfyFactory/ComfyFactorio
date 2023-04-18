@@ -903,6 +903,8 @@ function Public.set_difficulty()
         amount = difficulty.highest -- lowered from 20 to 10
     end
 
+    local wave = WD.get('wave_number')
+
     local threat_check = nil
 
     if check_if_threat_below_zero then
@@ -910,26 +912,27 @@ function Public.set_difficulty()
     end
 
     if Diff.index == 1 then
-        if player_count < 10 then
+        if wave < 1000 then
             wave_defense_table.wave_interval = 4500
         else
             wave_defense_table.wave_interval = 3600 - player_count * 60
         end
-        if wave_defense_table.wave_interval < 2200 or threat_check then
-            wave_defense_table.wave_interval = 2200
+
+        if wave_defense_table.wave_interval < 2000 or threat_check then
+            wave_defense_table.wave_interval = 2000
         end
     elseif Diff.index == 2 then
-        if player_count < 10 then
+        if wave < 1000 then
             wave_defense_table.wave_interval = 3000
         else
             wave_defense_table.wave_interval = 2600 - player_count * 60
         end
-        if wave_defense_table.wave_interval < 1900 or threat_check then
-            wave_defense_table.wave_interval = 1900
+        if wave_defense_table.wave_interval < 1800 or threat_check then
+            wave_defense_table.wave_interval = 1800
         end
     elseif Diff.index == 3 then
-        if player_count < 10 then
-            wave_defense_table.wave_interval = 2000
+        if wave < 1000 then
+            wave_defense_table.wave_interval = 3000
         else
             wave_defense_table.wave_interval = 1600 - player_count * 60
         end

@@ -54,6 +54,7 @@ function Public.reset_wave_defense()
     this.log_wave_to_discord = true
     this.paused = false
     this.pause_without_votes = true
+    this.pause_wave_in_ticks = 18000 -- 5 minutes
     this.game_lost = false
     this.get_random_close_spawner_attempts = 5
     this.group_size = 2
@@ -375,6 +376,12 @@ end
 -- @param <int> in ticks
 function Public.set_tick_to_spawn_unit_groups(int)
     this.tick_to_spawn_unit_groups = int or 200
+end
+
+--- Sets the pause length in ticks.
+-- @param <int> in ticks
+function Public.set_pause_wave_in_ticks(int)
+    this.pause_wave_in_ticks = int or 18000
 end
 
 --- Pauses the wave defense module
