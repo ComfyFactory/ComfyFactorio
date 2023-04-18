@@ -726,6 +726,7 @@ function Public.draw_top_toggle_button(player)
     button_flow.style.maximal_height = 38
     button_flow.style.minimal_width = 40
     button_flow.style.padding = -2
+    button_flow.style.font_color = {222, 222, 222}
 end
 
 function Public.open_recipe(element, player, button)

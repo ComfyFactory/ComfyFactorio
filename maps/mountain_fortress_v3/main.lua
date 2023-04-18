@@ -273,6 +273,7 @@ function Public.reset_map()
     end
 
     game.forces.player.set_spawn_position({-27, 25}, surface)
+    game.speed = 1
 
     Task.set_queue_speed(16)
 

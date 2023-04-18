@@ -200,7 +200,7 @@ local functions = {
     ['vacant_toggle'] = function(event)
         local vacant = is_loaded('modules.clear_vacant_players')
         if not vacant then
-            log("Error: toggle related to clear_vacant_players was activated, but the module does not seem to be loaded.")
+            log('Error: toggle related to clear_vacant_players was activated, but the module does not seem to be loaded.')
             return
         end
 
@@ -844,11 +844,11 @@ local function on_gui_switch_state_changed(event)
         pirates_functions[event.element.name](event)
         return
     elseif is_loaded('utils.gui.poll') then
-        local is_spamming = SpamProtection.is_spamming(player, nil, 'Config Poll Elem')
-        if is_spamming then
-            return
-        end
         if poll_function[event.element.name] then
+            local is_spamming = SpamProtection.is_spamming(player, nil, 'Config Poll Elem')
+            if is_spamming then
+                return
+            end
             poll_function[event.element.name](event)
             return
         end
