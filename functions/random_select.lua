@@ -3,6 +3,7 @@
 -- Functions
 -- get_Total -> used for adding all the weights of a list
 -- roll -> used for selecting an item randomly accordingly to the weights
+local Public = {}
 
 local math_random = math.random
 
@@ -47,3 +48,5 @@ function Public.roll(list,blacklist)
         end
     end
 end
+
+return Public
