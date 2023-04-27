@@ -912,7 +912,7 @@ function Public.set_difficulty()
     end
 
     if Diff.index == 1 then
-        if wave < 1000 then
+        if wave < 100 then
             wave_defense_table.wave_interval = 4500
         else
             wave_defense_table.wave_interval = 3600 - player_count * 60
@@ -922,7 +922,7 @@ function Public.set_difficulty()
             wave_defense_table.wave_interval = 2000
         end
     elseif Diff.index == 2 then
-        if wave < 1000 then
+        if wave < 100 then
             wave_defense_table.wave_interval = 3000
         else
             wave_defense_table.wave_interval = 2600 - player_count * 60
@@ -931,7 +931,7 @@ function Public.set_difficulty()
             wave_defense_table.wave_interval = 1800
         end
     elseif Diff.index == 3 then
-        if wave < 1000 then
+        if wave < 100 then
             wave_defense_table.wave_interval = 3000
         else
             wave_defense_table.wave_interval = 1600 - player_count * 60
