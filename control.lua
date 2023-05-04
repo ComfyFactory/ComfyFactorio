@@ -41,6 +41,7 @@ require 'utils.gui.server_select'
 require 'utils.freeplay'
 
 ---------------- !ENABLE MODULES HERE ----------------
+--require 'modules.rpg.main'
 --require 'modules.admins_operate_biters'
 --require 'modules.the_floor_is_lava'
 --require 'modules.biters_landfill_on_death'
@@ -240,7 +241,6 @@ require 'utils.freeplay'
 ---------------- MORE MODULES HERE ----------------
 --require 'modules.hidden_dimension.main'
 --require 'modules.towny.main'
---require 'modules.rpg.main'
 --require 'modules.rpg'
 --require 'modules.trees_grow'
 --require 'modules.trees_randomly_die'

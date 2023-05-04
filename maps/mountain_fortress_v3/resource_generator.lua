@@ -409,7 +409,8 @@ local testing_callback = {
     data = {
         loot = testing_loot,
         weights = testing_weights,
-        testing = true
+        testing = true,
+        destructible = true
     }
 }
 
@@ -417,7 +418,8 @@ local science_callback = {
     callback = Functions.magic_item_crafting_callback_weighted,
     data = {
         loot = science_loot,
-        weights = science_weights
+        weights = science_weights,
+        destructible = true
     }
 }
 
@@ -425,7 +427,8 @@ local building_callback = {
     callback = Functions.magic_item_crafting_callback_weighted,
     data = {
         loot = ammo_loot,
-        weights = building_weights
+        weights = building_weights,
+        destructible = true
     }
 }
 
@@ -433,7 +436,8 @@ local oil_callback = {
     callback = Functions.magic_item_crafting_callback_weighted,
     data = {
         loot = oil_loot,
-        weights = oil_weights
+        weights = oil_weights,
+        destructible = true
     }
 }
 
@@ -441,7 +445,8 @@ local oil_prod_callback = {
     callback = Functions.magic_item_crafting_callback_weighted,
     data = {
         loot = oil_prod_loot,
-        weights = oil_prod_weights
+        weights = oil_prod_weights,
+        destructible = true
     }
 }
 
@@ -449,7 +454,8 @@ local resource_callback = {
     callback = Functions.magic_item_crafting_callback_weighted,
     data = {
         loot = resource_loot,
-        weights = resource_weights
+        weights = resource_weights,
+        destructible = true
     }
 }
 
@@ -457,7 +463,8 @@ local furnace_callback = {
     callback = Functions.magic_item_crafting_callback_weighted,
     data = {
         loot = furnace_loot,
-        weights = furnace_weights
+        weights = furnace_weights,
+        destructible = true
     }
 }
 

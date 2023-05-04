@@ -37,6 +37,10 @@ function Public.add_player_to_permission_group(player, group, forced)
         end
         limited_group.set_allows_action(defines.input_action.cancel_craft, false)
         limited_group.set_allows_action(defines.input_action.drop_item, false)
+        limited_group.set_allows_action(defines.input_action.upgrade, false) -- fixes factorio base issue
+        limited_group.set_allows_action(defines.input_action.upgrade_opened_blueprint_by_item, false)
+        limited_group.set_allows_action(defines.input_action.upgrade_opened_blueprint_by_record, false)
+        limited_group.set_allows_action(defines.input_action.cancel_upgrade, false)
         if allow_decon then
             limited_group.set_allows_action(defines.input_action.deconstruct, true)
         else

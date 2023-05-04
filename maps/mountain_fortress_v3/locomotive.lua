@@ -494,8 +494,8 @@ local function on_player_changed_surface(event)
         return
     end
 
-    local itemGhost = player.cursor_ghost
-    if itemGhost then
+    local item_ghost = player.cursor_ghost
+    if item_ghost then
         player.cursor_ghost = nil
     end
 
