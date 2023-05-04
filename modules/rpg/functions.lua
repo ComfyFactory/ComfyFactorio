@@ -20,6 +20,12 @@ local floor = math.floor
 local random = math.random
 local abs = math.abs
 local sub = string.sub
+local angle_multipler = 2 * math.pi
+local start_angle = -angle_multipler / 4
+local update_rate = 4
+local time_to_live = update_rate + 1
+
+local draw_arc = rendering.draw_arc
 
 --RPG Frames
 local main_frame_name = Public.main_frame_name
@@ -980,6 +986,51 @@ end
 function Public.get_magicka(player)
     local rpg_t = Public.get_value_from_player(player.index)
     return (rpg_t.magicka - 10) * 0.10
+end
+
+local show_cooldown
+show_cooldown =
+    Token.register(
+    function(event)
+        local player_index = event.player_index
+        local player = game.get_player(player_index)
+        if not player or not player.valid then
+            return
+        end
+
+        local tick = event.tick
+        local now = game.tick
+        if now >= tick then
+            return
+        end
+
+        local fade = ((now - tick) / event.delay) + 1
+
+        if not player.character then
+            return
+        end
+
+        draw_arc(
+            {
+                color = {1 - fade, fade, 0},
+                max_radius = 0.5,
+                min_radius = 0.4,
+                start_angle = start_angle,
+                angle = fade * angle_multipler,
+                target = player.character,
+                target_offset = {x = 0, y = -2},
+                surface = player.surface,
+                time_to_live = time_to_live
+            }
+        )
+
+        Task.set_timeout_in_ticks(update_rate, show_cooldown, event)
+    end
+)
+Public.show_cooldown = show_cooldown
+
+function Public.register_cooldown_for_player(player, spell)
+    Task.set_timeout_in_ticks(update_rate, show_cooldown, {player_index = player.index, tick = game.tick + spell.cooldown, delay = spell.cooldown})
 end
 
 --- Gives connected player some bonus xp if the map was preemptively shut down.

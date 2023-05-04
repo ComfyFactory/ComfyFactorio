@@ -52,6 +52,7 @@ local role_to_mention = Discord.role_mentions.mtn_fortress
 
 local floor = math.floor
 local remove = table.remove
+local random = math.random
 RPG.disable_cooldowns_on_spells()
 
 local collapse_kill = {
@@ -263,6 +264,7 @@ function Public.reset_map()
     WD.increase_average_unit_group_size(true)
     WD.increase_max_active_unit_groups(true)
     WD.enable_random_spawn_positions(true)
+    WD.set_pause_wave_in_ticks(random(18000, 54000))
 
     Public.set_difficulty()
     Public.disable_creative()

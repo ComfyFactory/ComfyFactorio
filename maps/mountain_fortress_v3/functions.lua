@@ -635,12 +635,16 @@ Public.magic_item_crafting_callback_weighted =
             return
         end
 
-        entity.minable = false
-        entity.destructible = false
-        entity.operable = false
-
         local weights = callback_data.weights
         local loot = callback_data.loot
+        local destructible = callback_data.destructible
+
+        if not destructible then
+            entity.destructible = false
+        end
+
+        entity.minable = false
+        entity.operable = false
 
         local p = entity.position
 
