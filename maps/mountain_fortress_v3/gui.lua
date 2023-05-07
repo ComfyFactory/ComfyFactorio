@@ -154,6 +154,15 @@ local function create_main_frame(player)
     label.style.font_color = {r = 0.88, g = 0.88, b = 0.88}
     label.style.font = 'default-bold'
     label.style.right_padding = 4
+
+    line = frame.add({type = 'line', direction = 'vertical'})
+    line.style.left_padding = 4
+    line.style.right_padding = 4
+
+    label = frame.add({type = 'label', caption = ' ', name = 'defense_enabled'})
+    label.style.font_color = {r = 0.88, g = 0.88, b = 0.88}
+    label.style.font = 'default-bold'
+    label.style.right_padding = 4
 end
 
 local function hide_all_gui(player)
@@ -499,6 +508,16 @@ function Public.update_gui(player)
 
     gui.chest_upgrades.caption = ' [img=entity.steel-chest]: ' .. format_number(upgrades.chests_outside_upgrades, true)
     gui.chest_upgrades.tooltip = ({'gui.chest_placed'})
+
+    local robotics_deployed = Public.get('robotics_deployed')
+
+    if robotics_deployed then
+        gui.defense_enabled.caption = ' [img=item.destroyer-capsule]: Deployed'
+        gui.defense_enabled.tooltip = ({'gui.robotics_deployed'})
+    else
+        gui.defense_enabled.caption = ' [img=item.destroyer-capsule]: Standby'
+        gui.defense_enabled.tooltip = ({'gui.robotics_standby'})
+    end
 end
 
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)

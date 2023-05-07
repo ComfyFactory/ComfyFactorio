@@ -85,20 +85,20 @@ local reset_game =
     function(data)
         local this = data.this
         if this.soft_reset then
-            -- Public.set_scores()
+            Public.set_scores()
             this.game_reset_tick = nil
             Public.reset_map()
             return
         end
         if this.restart then
-            -- Public.set_scores()
+            Public.set_scores()
             local message = ({'entity.reset_game'})
             Server.to_discord_bold(message, true)
             Server.start_scenario('Mountain_Fortress_v3')
             return
         end
         if this.shutdown then
-            -- Public.set_scores()
+            Public.set_scores()
             local message = ({'entity.shutdown_game'})
             Server.to_discord_bold(message, true)
             Server.stop_scenario()
@@ -213,7 +213,7 @@ local function set_train_final_health(final_damage_amount, repair)
             if not poison_deployed then
                 local carriages = Public.get('carriages')
 
-                if WD.get('wave_number') < 501 then
+                if WD.get('wave_number') <= 800 then
                     if carriages then
                         for i = 1, #carriages do
                             local entity = carriages[i]
@@ -1149,8 +1149,9 @@ local function show_mvps(player)
         miners_label_text.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 
         local sent_to_discord = Public.get('sent_to_discord')
+        local server_name_matches = Server.check_server_name('Mtn Fortress')
 
-        if not sent_to_discord then
+        if not sent_to_discord and server_name_matches then
             local message = {
                 title = 'Game over',
                 description = 'Player statistics is below',
@@ -1192,7 +1193,6 @@ local function show_mvps(player)
             local upgrades = Public.get('upgrades')
             local pick_tier = pickaxe_upgrades[upgrades.pickaxe_tier]
 
-            local server_name_matches = Server.check_server_name('Mtn Fortress')
             if Public.get('prestige_system_enabled') then
                 RPG_Progression.save_all_players()
             end

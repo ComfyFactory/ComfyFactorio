@@ -1,15 +1,48 @@
 local Event = require 'utils.event'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local SoftReset = require 'functions.soft_reset'
-
+local Server = require 'utils.server'
+local Token = require 'utils.token'
 local math_random = math.random
 local table_shuffle = table.shuffle_table
 
+local dataset = 'scenario_settings'
+local dataset_key = 'scrap_towny_ffa'
+
 local Public = {}
 
---local Server = require 'utils.server'
 local map_width = 2560
 local map_height = 2560
+
+local set_victory_length_token =
+    Token.register(
+    function(data)
+        local this = ScenarioTable.get_table()
+        local settings = {}
+
+        if not data or not data.value then
+            if this.shuffle_random_victory_time and math.random(1, 32) == 1 then
+                this.required_time_to_win = 48
+                this.required_time_to_win_in_ticks = 10368000
+            end
+        else
+            local value = data.value
+            local required_time_to_win = value.required_time_to_win
+            if required_time_to_win == 48 then
+                this.required_time_to_win = 168
+                this.required_time_to_win_in_ticks = 36288000
+            else
+                this.required_time_to_win = 48
+                this.required_time_to_win_in_ticks = 10368000
+            end
+        end
+
+        settings.required_time_to_win = this.required_time_to_win
+        settings.required_time_to_win_in_ticks = this.required_time_to_win_in_ticks
+
+        Server.set_data(dataset, dataset_key, settings)
+    end
+)
 
 function Public.nuke(position)
     local this = ScenarioTable.get_table()
@@ -140,10 +173,7 @@ function Public.initialize()
         return
     end
 
-    if this.shuffle_random_victory_time and math.random(1, 32) == 1 then
-        this.required_time_to_win = 48
-        this.required_time_to_win_in_ticks = 10368000
-    end
+    Server.try_get_data(dataset, dataset_key, set_victory_length_token)
 
     surface.map_gen_settings = mgs
     surface.peaceful_mode = false

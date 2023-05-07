@@ -42,11 +42,11 @@ local function warning()
     Alert.alert_all_players(5, 'The world is ending!', Color.white, 'warning-white', 1.0)
 end
 
-local function armageddon()
-    if not get_victorious_force() then
-        Nauvis.armageddon()
-    end
-end
+-- local function armageddon()
+--     if not get_victorious_force() then
+--         Nauvis.armageddon()
+--     end
+-- end
 
 local function do_soft_reset()
     local this = ScenarioTable.get_table()
@@ -163,9 +163,9 @@ local function on_tick()
         if (tick + armageddon_duration + warning_duration) % game_duration == 0 then
             warning()
         end
-        if (tick + armageddon_duration) % game_duration == 0 then
-            armageddon()
-        end
+        -- if (tick + armageddon_duration) % game_duration == 0 then
+        --     armageddon()
+        -- end
         if (tick + 1) % game_duration == 0 then
             Nauvis.clear_nuke_schedule()
             Team.reset_all_forces()

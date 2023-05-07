@@ -41,6 +41,7 @@ Public.group_size_modifier_raffle_size = #Public.group_size_modifier_raffle
 function Public.reset_wave_defense()
     this.boss_wave = false
     this.boss_wave_warning = false
+    this.boost_spawner_sizes_wave_is_above = 1000
     this.boost_units_when_wave_is_above = 200
     this.boost_bosses_when_wave_is_above = 50
     this.side_target_count = 0
@@ -53,6 +54,7 @@ function Public.reset_wave_defense()
     this.log_wave_to_discord = true
     this.paused = false
     this.pause_without_votes = true
+    this.pause_wave_in_ticks = 18000 -- 5 minutes
     this.game_lost = false
     this.get_random_close_spawner_attempts = 5
     this.group_size = 2
@@ -94,6 +96,7 @@ function Public.reset_wave_defense()
     this.pause_waves = {
         index = 0
     }
+    this.enable_random_spawn_positions = false
     this.enable_side_target = false
     this.enable_threat_log = true
     this.disable_threat_below_zero = false
@@ -101,6 +104,8 @@ function Public.reset_wave_defense()
     this.resolve_pathing = true
     this.increase_damage_per_wave = false
     this.increase_boss_health_per_wave = true
+    this.increase_average_unit_group_size = false
+    this.increase_max_active_unit_groups = false
     this.increase_health_per_wave = false
     this.fill_tiles_so_biter_can_path = true
     this.modified_unit_health = {
@@ -144,8 +149,8 @@ function Public.reset_wave_defense()
             ['artillery-turret'] = 0.25, -- not active as of now
             ['small-worm-turret'] = 0.8,
             ['medium-worm-turret'] = 0.6,
-            ['big-worm-turret'] = 0.4,
-            ['behemoth-worm-turret'] = 0.2
+            ['big-worm-turret'] = 0.3,
+            ['behemoth-worm-turret'] = 0.3
         }
     }
 end
@@ -252,6 +257,15 @@ function Public.enable_threat_log(boolean)
     return this.enable_threat_log
 end
 
+--- This sets if random spawn positions should be enabled.
+-- @param <boolean>
+function Public.enable_random_spawn_positions(boolean)
+    if (boolean or boolean == false) then
+        this.enable_random_spawn_positions = boolean
+    end
+    return this.enable_random_spawn_positions
+end
+
 --- This sets if we should spawn the unit near collapse
 -- That is, if collapse module is enabled
 -- @param <boolean>
@@ -278,6 +292,24 @@ function Public.increase_health_per_wave(boolean)
         this.increase_health_per_wave = boolean
     end
     return this.increase_health_per_wave
+end
+
+--- This sets if the average unit group size should increase.
+-- @param <boolean>
+function Public.increase_average_unit_group_size(boolean)
+    if (boolean or boolean == false) then
+        this.increase_average_unit_group_size = boolean
+    end
+    return this.increase_average_unit_group_size
+end
+
+--- This sets if the max unit groups should increase.
+-- @param <boolean>
+function Public.increase_max_active_unit_groups(boolean)
+    if (boolean or boolean == false) then
+        this.increase_max_active_unit_groups = boolean
+    end
+    return this.increase_max_active_unit_groups
 end
 
 --- This sets if the bosses health should increase.
@@ -344,6 +376,12 @@ end
 -- @param <int> in ticks
 function Public.set_tick_to_spawn_unit_groups(int)
     this.tick_to_spawn_unit_groups = int or 200
+end
+
+--- Sets the pause length in ticks.
+-- @param <int> in ticks
+function Public.set_pause_wave_in_ticks(int)
+    this.pause_wave_in_ticks = int or 18000
 end
 
 --- Pauses the wave defense module

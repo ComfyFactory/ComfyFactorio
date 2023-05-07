@@ -980,6 +980,10 @@ local function on_player_used_capsule(event)
         return
     end
 
+    if spell.enforce_cooldown then
+        Public.register_cooldown_for_player(player, spell)
+    end
+
     rpg_t.last_spawned = game.tick + spell.cooldown
     Public.update_mana(player)
 
@@ -1052,5 +1056,26 @@ Event.add(
         Public.clear_settings_frames(player)
     end
 )
+
+if _DEBUG then
+    Public.disable_cooldowns_on_spells()
+
+    Event.on_init(
+        function()
+            Public.rpg_reset_all_players()
+            Public.enable_health_and_mana_bars(true)
+            Public.enable_wave_defense(true)
+            Public.enable_mana(true)
+            Public.personal_tax_rate(0.4)
+            Public.enable_stone_path(true)
+            Public.enable_aoe_punch(true)
+            Public.enable_aoe_punch_globally(false)
+            Public.enable_range_buffs(true)
+            Public.enable_auto_allocate(true)
+            Public.enable_explosive_bullets_globally(true)
+            Public.enable_explosive_bullets(false)
+        end
+    )
+end
 
 return Public

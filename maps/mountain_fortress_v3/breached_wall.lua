@@ -138,6 +138,9 @@ local check_distance_between_player_and_locomotive = function(player)
     if c_y - t_y <= gap_between_locomotive.neg_gap then
         player.teleport({position.x, locomotive.position.y + gap_between_locomotive.neg_gap + 2}, surface)
         player.print(({'breached_wall.hinder'}), Color.warning)
+        if player.driving then
+            player.driving = false
+        end
         if player.character then
             player.character.health = player.character.health - 5
             player.character.surface.create_entity({name = 'water-splash', position = position})

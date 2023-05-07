@@ -158,6 +158,16 @@ local function is_position_near(area, table_to_check)
 end
 
 local function place_wagon(data, adjusted_zones)
+    local x_min = (-zone_settings.zone_width / 2) + 10
+    local x_max = (zone_settings.zone_width / 2) - 10
+
+    if data.x < x_min then
+        return
+    end
+    if data.x > x_max then
+        return
+    end
+
     local placed_trains_in_zone = Public.get('placed_trains_in_zone')
     if not placed_trains_in_zone.randomized then
         placed_trains_in_zone.limit = random(1, 2)

@@ -11,6 +11,7 @@ local main_frame_name = Gui.uid_name()
 local save_button_name = Gui.uid_name()
 local discard_button_name = Gui.uid_name()
 local random = math.random
+local floor = math.floor
 
 local random_greetings = {
     'Dear defender',
@@ -113,11 +114,14 @@ end
 
 local function pause_waves_state(state)
     if state then
-        local message = ({'wave_defense.pause_waves'})
-        Alert.alert_all_players(30, message, nil, 'achievement/tech-maniac', 0.75)
+        local pause_wave_in_ticks = Public.get('pause_wave_in_ticks')
+
         Public.set('paused', true)
         Public.set('last_pause', game.tick)
-        Public.set('paused_waves_for', game.tick + 18000)
+        Public.set('paused_waves_for', game.tick + pause_wave_in_ticks)
+        local pause_for = floor(pause_wave_in_ticks / 60 / 60)
+        local message = ({'wave_defense.pause_waves', pause_for})
+        Alert.alert_all_players(30, message, nil, 'achievement/tech-maniac', 0.75)
 
         local next_wave = Public.get('next_wave')
         Public.set('next_wave', next_wave + 18000)
@@ -149,8 +153,9 @@ function Public.toggle_pause_wave_without_votes()
     end
 
     Public.set('pause_waves', {index = 0})
+    local pause_wave_in_ticks = Public.get('pause_wave_in_ticks')
     pause_waves_state(true)
-    Task.set_timeout_in_ticks(18000, pause_waves_state_token, false) -- 5 minutes
+    Task.set_timeout_in_ticks(pause_wave_in_ticks, pause_waves_state_token, false) -- 5 minutes
 end
 
 Gui.on_click(

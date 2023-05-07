@@ -52,6 +52,7 @@ local role_to_mention = Discord.role_mentions.mtn_fortress
 
 local floor = math.floor
 local remove = table.remove
+local random = math.random
 RPG.disable_cooldowns_on_spells()
 
 local collapse_kill = {
@@ -260,6 +261,10 @@ function Public.reset_map()
     WD.increase_boss_health_per_wave(true)
     WD.increase_damage_per_wave(true)
     WD.increase_health_per_wave(true)
+    WD.increase_average_unit_group_size(true)
+    WD.increase_max_active_unit_groups(true)
+    WD.enable_random_spawn_positions(true)
+    WD.set_pause_wave_in_ticks(random(18000, 54000))
 
     Public.set_difficulty()
     Public.disable_creative()
@@ -270,10 +275,11 @@ function Public.reset_map()
     end
 
     game.forces.player.set_spawn_position({-27, 25}, surface)
+    game.speed = 1
 
     Task.set_queue_speed(16)
 
-    -- Public.get_scores()
+    Public.get_scores()
 
     this.chunk_load_tick = game.tick + 400
     this.force_chunk = true
@@ -326,18 +332,18 @@ local has_the_game_ended = function()
                 game.print(({'main.reset_in', cause_msg, this.game_reset_tick / 60}), {r = 0.22, g = 0.88, b = 0.22})
             end
 
-            -- local diff_name = Difficulty.get('name')
+            local diff_name = Difficulty.get('name')
 
             if this.soft_reset and this.game_reset_tick == 0 then
                 this.game_reset_tick = nil
-                -- Public.set_scores(diff_name)
+                Public.set_scores(diff_name)
                 Public.reset_map()
                 return
             end
 
             if this.restart and this.game_reset_tick == 0 then
                 if not this.announced_message then
-                    -- Public.set_scores(diff_name)
+                    Public.set_scores(diff_name)
                     game.print(({'entity.notify_restart'}), {r = 0.22, g = 0.88, b = 0.22})
                     local message = 'Soft-reset is disabled! Server will restart from scenario to load new changes.'
                     Server.to_discord_bold(table.concat {'*** ', message, ' ***'})
@@ -348,7 +354,7 @@ local has_the_game_ended = function()
             end
             if this.shutdown and this.game_reset_tick == 0 then
                 if not this.announced_message then
-                    -- Public.set_scores(diff_name)
+                    Public.set_scores(diff_name)
                     game.print(({'entity.notify_shutdown'}), {r = 0.22, g = 0.88, b = 0.22})
                     local message = 'Soft-reset is disabled! Server will shutdown. Most likely because of updates.'
                     Server.to_discord_bold(table.concat {'*** ', message, ' ***'})

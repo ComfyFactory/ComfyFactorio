@@ -1,6 +1,7 @@
 -- This file is part of thesixthroc's Pirate Ship softmod, licensed under GPLv3 and stored at https://github.com/danielmartin0/ComfyFactorio-Pirates.
 
 
+local Event = require 'utils.event'
 local Balance = require 'maps.pirates.balance'
 local _inspect = require 'utils.inspect'.inspect
 local Memory = require 'maps.pirates.memory'
@@ -24,6 +25,7 @@ local Classes = require 'maps.pirates.roles.classes'
 local Token = require 'utils.token'
 local Task = require 'utils.task'
 local SurfacesCommon = require 'maps.pirates.surfaces.common'
+local BottomFrame = require 'utils.gui.bottom_frame'
 
 local Public = {}
 local enum = {
@@ -475,6 +477,7 @@ function Public.leave_crew(player, to_lobby, quiet)
 		player.teleport(surface.find_non_colliding_position('character', Common.lobby_spawnpoint, 32, 0.5) or Common.lobby_spawnpoint, surface)
 		player.force = 'player'
 		player.create_character()
+		Event.raise(BottomFrame.events.bottom_quickbar_respawn_raise, {player_index = player.index})
 	end
 
 	memory.crewplayerindices = Utils.ordered_table_with_values_removed(memory.crewplayerindices, player.index)

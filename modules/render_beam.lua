@@ -42,18 +42,23 @@ local remove = table.remove
 local speed = 0.06
 
 --- Draws a new render.
----@return table
+---@return table|nil
 function Public:new_render()
     local surface = game.get_surface(self.surface_id)
+    if not surface or not surface.valid then
+        return
+    end
     self.render_id = rendering.draw_sprite {target = self.position, sprite = self.sprite, surface = surface}
     return self
 end
 
 --- Sets a new target for a given render.
----@return table
----@return table
+---@return table|nil, table|nil
 function Public:new_target()
     local surface = game.get_surface(self.surface_id)
+    if not surface or not surface.valid then
+        return
+    end
     local position
     local entities = surface.find_entities_filtered {type = this.valid_targets}
     if entities and #entities > 0 then
@@ -92,6 +97,7 @@ function Public:set_render_scalar_size()
         }
     )
 end
+
 --- Gets a random position.
 ---@return table
 function Public:random_position()
@@ -128,6 +134,9 @@ function Public:switch_position()
         self.target_position = self:random_position()
     else
         local surface = game.get_surface(self.surface_id)
+        if not surface or not surface.valid then
+            return
+        end
         local chunk = surface.get_random_chunk()
         self.target_position = {x = (chunk.x + math.random()) * 32, y = (chunk.y + math.random()) * 32}
     end
@@ -138,6 +147,10 @@ function Public:notify_new_beam()
     if not self.notify then
         self.notify = true
         local surface = game.get_surface(self.surface_id)
+        if not surface or not surface.valid then
+            return
+        end
+
         game.print('[Orbital] A new orbital strike has been spotted at: [gps=' .. self.position.x .. ',' .. self.position.y .. ',' .. surface.name .. ']')
     end
 end
@@ -149,6 +162,10 @@ function Public:render_chart()
     end
 
     local surface = game.get_surface(self.surface_id)
+    if not surface or not surface.valid then
+        return
+    end
+
     self.chart =
         game.forces[self.force].add_chart_tag(
         surface,
@@ -182,9 +199,19 @@ end
 function Public:render_fire_damage()
     if random(1, 15) == 1 then
         local surface = game.get_surface(self.surface_id)
+        if not surface or not surface.valid then
+            return
+        end
+
         surface.create_entity({name = 'fire-flame', position = {x = self.position.x, y = self.position.y + 5}})
         if random(1, 5) == 1 then
-            surface.create_entity({name = 'medium-scorchmark', position = {x = self.position.x, y = self.position.y + 5}, force = 'neutral'})
+            surface.create_entity(
+                {
+                    name = 'medium-scorchmark',
+                    position = {x = self.position.x, y = self.position.y + 5},
+                    force = 'neutral'
+                }
+            )
         end
     end
 end
@@ -193,8 +220,20 @@ end
 function Public:damage_entities_nearby()
     if random(1, 3) == 1 then
         local surface = game.get_surface(self.surface_id)
+        if not surface or not surface.valid then
+            return
+        end
+
         local damage = random(10, 15)
-        local entities = surface.find_entities_filtered({position = self.position, radius = 20, type = 'simple-entity', invert = true})
+        local entities =
+            surface.find_entities_filtered(
+            {
+                position = self.position,
+                radius = 20,
+                type = 'simple-entity',
+                invert = true
+            }
+        )
         for _, entity in pairs(entities) do
             if entity.valid then
                 if entity.health then

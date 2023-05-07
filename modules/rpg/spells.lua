@@ -606,6 +606,30 @@ spells[#spells + 1] = {
         return create_projectiles(data)
     end
 }
+if _DEBUG then
+    spells[#spells + 1] = {
+        name = 'Kewl Nade',
+        entityName = 'cluster-grenade',
+        target = true,
+        amount = 20,
+        damage = true,
+        aoe = true,
+        force = 'player',
+        level = 1,
+        type = 'item',
+        mana_cost = -1,
+        cooldown = 0,
+        enabled = true,
+        log_spell = false,
+        sprite = 'recipe/cluster-grenade',
+        tooltip = 'Spawns a cluster nade where the mouse cursor is at',
+        callback = function(data)
+            local player = data.player
+            player.insert({name = 'raw-fish'})
+            return create_projectiles(data)
+        end
+    }
+end
 spells[#spells + 1] = {
     name = {'item-name.cluster-grenade'},
     entityName = 'cluster-grenade',

@@ -22,14 +22,14 @@ local function debug_text(str)
     if not this.debug_text then
         return
     end
-    print(main_text .. str)
+    log(main_text .. str)
 end
 
 local function debug_spam(str)
     if not this.debug_spam then
         return
     end
-    print(main_text .. str)
+    log(main_text .. str)
 end
 
 function Public.reset_spam_table()
@@ -62,6 +62,10 @@ function Public.is_spamming(player, value_to_compare, text)
 
     if game.tick_paused then
         return false -- game is paused - shoo
+    end
+
+    if this.debug_spam then
+        log(serpent.block(debug.traceback()))
     end
 
     local tick = game.tick
@@ -105,6 +109,9 @@ Event.add(
     defines.events.on_player_joined_game,
     function(event)
         local player = game.get_player(event.player_index)
+        if not player then
+            return
+        end
 
         if not this.prevent_spam[player.index] then
             this.prevent_spam[player.index] = game.tick

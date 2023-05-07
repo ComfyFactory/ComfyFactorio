@@ -277,6 +277,20 @@ local restore_mining_speed_token =
     end
 )
 
+local restore_crafting_speed_token =
+    Token.register(
+    function()
+        local mc_rewards = Public.get('mc_rewards')
+        local force = game.forces.player
+        if mc_rewards.temp_boosts.crafting then
+            force.manual_crafting_speed_modifier = force.manual_crafting_speed_modifier - 1
+            mc_rewards.temp_boosts.crafting = nil
+            local message = ({'locomotive.crafting_bonus_end'})
+            Alert.alert_all_players(10, message, nil, 'achievement/tech-maniac')
+        end
+    end
+)
+
 local restore_movement_speed_token =
     Token.register(
     function()
@@ -371,13 +385,21 @@ local mc_random_rewards = {
         512
     },
     {
-        name = 'Heal Locomotive',
+        name = 'Crafting speed bonus',
         color = {r = 0.00, g = 0.00, b = 0.25},
-        tooltip = 'Selecting this will heal the main locomotive to full health!',
+        tooltip = 'Selecting this will grant all players 100% crafting bonus for 15 minutes!',
         func = (function(player)
-            local locomotive_max_health = Public.get('locomotive_max_health')
-            Public.set('locomotive_health', locomotive_max_health)
-            local message = ({'locomotive.locomotive_health', player.name})
+            local mc_rewards = Public.get('mc_rewards')
+            local force = game.forces.player
+            if mc_rewards.temp_boosts.crafting then
+                return false, '[Rewards] Crafting bonus is already applied. Please choose another reward.'
+            end
+
+            mc_rewards.temp_boosts.crafting = true
+
+            Task.set_timeout_in_ticks(54000, restore_crafting_speed_token)
+            force.manual_crafting_speed_modifier = force.manual_crafting_speed_modifier + 1
+            local message = ({'locomotive.crafting_bonus', player.name})
             Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac')
             return true
         end),
