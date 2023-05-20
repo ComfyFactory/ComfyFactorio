@@ -1191,10 +1191,23 @@ end
 function Public.teleporters(journey, player)
 	if not player.character then return end
 	if not player.character.valid then return end
-	local surface = player.surface	
-	if surface.get_tile(player.position).name ~= Constants.teleporter_tile then return end
+	local surface = player.surface
+
+	-- This check disables teleporter if players place stone-brick or other tiles on top
+	-- if surface.get_tile(player.position).name ~= Constants.teleporter_tile then return end
+
+	-- Check if player entered teleporter
+	-- NOTE: We assume that teleporters always get placed at "Constants.mothership_teleporter_position" position
+	if not (
+		math.abs(player.position.x - Constants.mothership_teleporter_position.x) <= 1 and
+		math.abs(player.position.y - Constants.mothership_teleporter_position.y) <= 1
+	)
+	then
+		return
+	end
+
 	local base_position = {0,0}
-	if surface.index == 1 then		
+	if surface.index == 1 then
 		drop_player_items(player)
 		local position = game.surfaces.mothership.find_non_colliding_position("character", base_position, 32, 0.5)
 		if position then
@@ -1213,7 +1226,7 @@ function Public.teleporters(journey, player)
 		else
 			player.teleport(base_position, game.surfaces.nauvis)
 		end
-		
+
 		journey.characters_in_mothership = journey.characters_in_mothership - 1
 		return
 	end
