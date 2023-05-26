@@ -7,6 +7,7 @@ local this = {
     traps = {}
 }
 local Public = {}
+local random = math.random
 
 Public.events = {
     reset_map = Event.generate_event_name('reset_map'),
@@ -23,6 +24,12 @@ Global.register(
 Public.zone_settings = {
     zone_depth = 704,
     zone_width = 510
+}
+
+Public.valid_enemy_forces = {
+    ['enemy'] = true,
+    ['aggressors'] = true,
+    ['aggressors_frenzy'] = true
 }
 
 Public.pickaxe_upgrades = {
@@ -226,6 +233,7 @@ function Public.reset_main_table()
     this.check_afk_players = true
     this.winter_mode = false
     this.sent_to_discord = false
+    this.random_seed = random(23849829, 1283989182)
     this.difficulty = {
         multiply = 0.25,
         highest = 10,

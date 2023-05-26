@@ -8,35 +8,47 @@ local random = math.random
 
 local function initial_cargo_boxes()
     return {
-        {name = 'loader', count = 2},
+        {name = 'loader', count = 1},
+        {name = 'stone-furnace', count = 2},
         {name = 'coal', count = random(32, 64)},
         {name = 'coal', count = random(32, 64)},
+        {name = 'loader', count = 1},
         {name = 'iron-ore', count = random(32, 128)},
         {name = 'copper-ore', count = random(32, 128)},
-        {name = 'empty-barrel', count = random(16, 32)},
+        {name = 'submachine-gun', count = 1},
+        {name = 'loader', count = 1},
         {name = 'submachine-gun', count = 1},
         {name = 'submachine-gun', count = 1},
+        {name = 'stone-furnace', count = 2},
         {name = 'submachine-gun', count = 1},
         {name = 'submachine-gun', count = 1},
+        {name = 'loader', count = 1},
         {name = 'submachine-gun', count = 1},
+        {name = 'automation-science-pack', count = random(4, 32)},
         {name = 'submachine-gun', count = 1},
-        {name = 'submachine-gun', count = 1},
+        {name = 'stone-wall', count = random(4, 32)},
         {name = 'shotgun', count = 1},
         {name = 'shotgun', count = 1},
         {name = 'shotgun', count = 1},
+        {name = 'stone-wall', count = random(4, 32)},
         {name = 'gun-turret', count = 1},
         {name = 'gun-turret', count = 1},
         {name = 'gun-turret', count = 1},
+        {name = 'gun-turret', count = 1},
+        {name = 'stone-wall', count = random(4, 32)},
         {name = 'shotgun-shell', count = random(4, 5)},
         {name = 'shotgun-shell', count = random(4, 5)},
         {name = 'shotgun-shell', count = random(4, 5)},
+        {name = 'gun-turret', count = 1},
         {name = 'land-mine', count = random(6, 18)},
         {name = 'grenade', count = random(2, 7)},
         {name = 'grenade', count = random(2, 8)},
+        {name = 'gun-turret', count = 1},
         {name = 'grenade', count = random(2, 7)},
         {name = 'light-armor', count = random(2, 4)},
         {name = 'iron-gear-wheel', count = random(7, 15)},
         {name = 'iron-gear-wheel', count = random(7, 15)},
+        {name = 'gun-turret', count = 1},
         {name = 'iron-gear-wheel', count = random(7, 15)},
         {name = 'iron-gear-wheel', count = random(7, 15)},
         {name = 'iron-plate', count = random(15, 23)},
@@ -72,7 +84,7 @@ local set_loco_tiles =
         ---@diagnostic disable-next-line: count-down-loop
         for x = position.x - 5, 1, 3 do
             for y = 1, position.y + 5, 2 do
-                if random(1, 4) == 1 then
+                if random(1, 3) == 1 then
                     p[#p + 1] = {x = x, y = y}
                 end
             end
@@ -94,10 +106,10 @@ local set_loco_tiles =
             if not p[i] then
                 break
             end
-            local name = 'wooden-chest'
+            local name = 'crash-site-chest-1'
 
             if random(1, 3) == 1 then
-                name = 'iron-chest'
+                name = 'crash-site-chest-2'
             end
             if surface.can_place_entity({name = name, position = p[i]}) then
                 local e = surface.create_entity({name = name, position = p[i], force = 'player', create_build_effect_smoke = false})
@@ -125,7 +137,7 @@ function Public.locomotive_spawn(surface, position)
         rendering.draw_light(
             {
                 sprite = 'utility/light_medium',
-                scale = 5.5,
+                scale = 6.5,
                 intensity = 1,
                 minimum_darkness = 0,
                 oriented = true,
@@ -168,7 +180,7 @@ function Public.locomotive_spawn(surface, position)
         local scale = random(50, 100) * 0.01
         rendering.draw_sprite(
             {
-                sprite = 'item/raw-fish',
+                sprite = 'entity/small-biter',
                 orientation = random(0, 100) * 0.01,
                 x_scale = scale,
                 y_scale = scale,
@@ -181,7 +193,7 @@ function Public.locomotive_spawn(surface, position)
         )
     end
 
-    this.locomotive.color = {0, 255, random(60, 255)}
+    this.locomotive.color = {random(2, 255), random(60, 255), random(60, 255)}
     this.locomotive.minable = false
     this.locomotive_cargo.minable = false
     this.locomotive_cargo.operable = true
