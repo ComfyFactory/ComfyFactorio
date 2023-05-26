@@ -710,6 +710,7 @@ function Public.extra_settings(player)
     Gui.set_data(save_button, data)
 
     player.opened = main_frame
+    main_frame.auto_center = true
 end
 
 function Public.settings_tooltip(player)
