@@ -49,7 +49,7 @@ local function add_random_loot_to_main_market(rarity)
         end
     end
 
-    for k, v in pairs(items) do
+    for _, v in pairs(items) do
         local price = v.price[1][2] + random(1, 15) * rarity
         local value = v.price[1][1]
         local stack = 1

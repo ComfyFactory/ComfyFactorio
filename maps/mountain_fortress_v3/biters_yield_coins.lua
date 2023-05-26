@@ -9,17 +9,17 @@ local random = math.random
 local coin_yield = {
     ['behemoth-biter'] = 5,
     ['behemoth-spitter'] = 5,
-    ['behemoth-worm-turret'] = 20,
+    ['behemoth-worm-turret'] = 10,
     ['big-biter'] = 3,
     ['big-spitter'] = 3,
     ['big-worm-turret'] = 16,
     ['biter-spawner'] = 32,
     ['medium-biter'] = 2,
     ['medium-spitter'] = 2,
-    ['medium-worm-turret'] = 12,
+    ['medium-worm-turret'] = 4,
     ['small-biter'] = 1,
     ['small-spitter'] = 1,
-    ['small-worm-turret'] = 8,
+    ['small-worm-turret'] = 2,
     ['spitter-spawner'] = 32
 }
 
@@ -67,7 +67,7 @@ local function on_entity_died(event)
     if not entity.valid then
         return
     end
-    if entity.force.index ~= 2 then
+    if not Public.valid_enemy_forces[entity.force.name] then
         return
     end
 

@@ -410,7 +410,7 @@ local testing_callback = {
         loot = testing_loot,
         weights = testing_weights,
         testing = true,
-        destructible = true
+        destructible = false
     }
 }
 
@@ -419,7 +419,7 @@ local science_callback = {
     data = {
         loot = science_loot,
         weights = science_weights,
-        destructible = true
+        destructible = false
     }
 }
 
@@ -428,7 +428,7 @@ local building_callback = {
     data = {
         loot = ammo_loot,
         weights = building_weights,
-        destructible = true
+        destructible = false
     }
 }
 
@@ -437,7 +437,7 @@ local oil_callback = {
     data = {
         loot = oil_loot,
         weights = oil_weights,
-        destructible = true
+        destructible = false
     }
 }
 
@@ -446,7 +446,7 @@ local oil_prod_callback = {
     data = {
         loot = oil_prod_loot,
         weights = oil_prod_weights,
-        destructible = true
+        destructible = false
     }
 }
 
@@ -455,7 +455,7 @@ local resource_callback = {
     data = {
         loot = resource_loot,
         weights = resource_weights,
-        destructible = true
+        destructible = false
     }
 }
 
@@ -464,7 +464,7 @@ local furnace_callback = {
     data = {
         loot = furnace_loot,
         weights = furnace_weights,
-        destructible = true
+        destructible = false
     }
 }
 

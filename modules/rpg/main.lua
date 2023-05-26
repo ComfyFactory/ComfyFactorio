@@ -519,7 +519,7 @@ local function on_entity_damaged(event)
         )
     end
 
-    local get_health_pool = Public.has_health_boost(entity, damage, final_damage_amount, cause)
+    local get_health_pool = Public.has_health_boost(entity, damage, final_damage_amount, cause, true)
 
     --Cause a one punch.
     if enable_aoe_punch then

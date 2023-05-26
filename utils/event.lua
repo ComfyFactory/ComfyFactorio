@@ -112,6 +112,7 @@ local raise_event = script.raise_event
 local script_on_event = script.on_event
 local script_on_nth_tick = script.on_nth_tick
 local generate_event_name = script.generate_event_name
+local get_event_filter = script.get_event_filter
 
 local function_table = function_table
 local function_nth_tick_table = function_nth_tick_table
@@ -162,13 +163,12 @@ end
 -- See documentation at top of file for details on using events.
 -- @param event_name<number>
 -- @param handler<function>
--- @optional param filters<table>
-function Event.add(event_name, handler, filters)
+function Event.add(event_name, handler)
     if _LIFECYCLE == 8 then
         error('Calling Event.add after on_init() or on_load() has run is a desync risk.', 2)
     end
 
-    core_add(event_name, handler, filters)
+    core_add(event_name, handler)
 end
 
 --- Register a handler for the script.on_init event.
@@ -528,7 +528,7 @@ function Event.generate_event_name(name)
 end
 
 function Event.add_event_filter(event, filter)
-    local current_filters = script.get_event_filter(event)
+    local current_filters = get_event_filter(event)
 
     if not current_filters then
         current_filters = {filter}
@@ -550,7 +550,7 @@ local function add_handlers()
     for event_name, tokens in pairs(token_handlers) do
         for i = 1, #tokens do
             local handler = Token.get(tokens[i])
-            core_add(event_name, handler)
+            core_add(event_name, handler.data, handler.filter)
         end
     end
 
