@@ -20,6 +20,9 @@ local immunity_spawner =
 local function is_boss(entity)
     local unit_number = entity.unit_number
     local biter_health_boost_units = BiterHealthBooster.get('biter_health_boost_units')
+    if not biter_health_boost_units then
+        return
+    end
     local unit = biter_health_boost_units[unit_number]
     if unit and unit[3] and unit[3].healthbar_id then
         return true
@@ -36,6 +39,10 @@ local function remove_unit(entity)
     end
     local m = 1
     local biter_health_boost_units = BiterHealthBooster.get('biter_health_boost_units')
+    if not biter_health_boost_units then
+        return
+    end
+
     if biter_health_boost_units[unit_number] then
         m = 1 / biter_health_boost_units[unit_number][2]
     end
@@ -144,7 +151,8 @@ function Public.build_worm()
     if threat < 512 then
         return
     end
-    local worm_building_chance = Public.get('worm_building_chance')
+    local worm_building_chance = Public.get('worm_building_chance') --[[@as integer]]
+
     if math_random(1, worm_building_chance) ~= 1 then
         return
     end
@@ -296,10 +304,28 @@ local function on_entity_died(event)
     end
 
     local disable_threat_below_zero = Public.get('disable_threat_below_zero')
-    local biter_health_boost = BiterHealthBooster.get('biter_health_boost')
+    local valid_enemy_forces = Public.get('valid_enemy_forces')
+    if not valid_enemy_forces then
+        return
+    end
+
+    local modified_unit_health = Public.get('modified_unit_health')
+    if not modified_unit_health then
+        return
+    end
+    local modified_boss_unit_health = Public.get('modified_boss_unit_health')
+    if not modified_boss_unit_health then
+        return
+    end
+
+    local boss = is_boss(entity)
+
+    local boost_value = modified_unit_health.current_value
+    if boss then
+        boost_value = modified_boss_unit_health.current_value / 2
+    end
 
     if entity.type == 'unit' then
-        --acid_nova(entity)
         if not Public.threat_values[entity.name] then
             return
         end
@@ -310,19 +336,19 @@ local function on_entity_died(event)
                 remove_unit(entity)
                 return
             end
-            Public.set('threat', math.round(threat - Public.threat_values[entity.name] * biter_health_boost, 2))
+            Public.set('threat', math.round(threat - Public.threat_values[entity.name] * boost_value, 2))
             remove_unit(entity)
         else
             local threat = Public.get('threat')
-            Public.set('threat', math.round(threat - Public.threat_values[entity.name] * biter_health_boost, 2))
+            Public.set('threat', math.round(threat - Public.threat_values[entity.name] * boost_value, 2))
             remove_unit(entity)
         end
     else
-        if entity.force.index == 2 then
+        if valid_enemy_forces[entity.force.name] then
             if entity.health then
                 if Public.threat_values[entity.name] then
                     local threat = Public.get('threat')
-                    Public.set('threat', math.round(threat - Public.threat_values[entity.name] * biter_health_boost, 2))
+                    Public.set('threat', math.round(threat - Public.threat_values[entity.name] * boost_value, 2))
                 end
                 spawn_unit_spawner_inhabitants(entity)
             end

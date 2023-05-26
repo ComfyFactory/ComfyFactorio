@@ -59,6 +59,7 @@ end
 local function spawn_biters(data)
     local surface = data.surface
     local position = data.position
+    local entity_name = data.entity_name
     local h = floor(abs(position.y))
 
     if not position then
@@ -75,6 +76,10 @@ local function spawn_biters(data)
         unit_to_create = Public.wave_defense_roll_spitter_name()
     else
         unit_to_create = Public.wave_defense_roll_biter_name()
+    end
+
+    if entity_name then
+        unit_to_create = entity_name
     end
 
     local modified_unit_health = Public.get('modified_unit_health')
@@ -119,7 +124,7 @@ local function spawn_worms(data)
     end
 end
 
-function Public.buried_biter(surface, position, max)
+function Public.buried_biter(surface, position, max, entity_name)
     if not surface then
         return
     end
@@ -137,6 +142,7 @@ function Public.buried_biter(surface, position, max)
     end
 
     local amount = 8
+
     local a = 0
     max = max or random(4, 6)
 
@@ -157,7 +163,7 @@ function Public.buried_biter(surface, position, max)
                 a = a + 1
                 this[game.tick + t][#this[game.tick + t] + 1] = {
                     callback = 'spawn_biters',
-                    data = {surface = surface, position = {x = position.x, y = position.y}}
+                    data = {surface = surface, position = {x = position.x, y = position.y}, entity_name = entity_name}
                 }
                 if a >= max then
                     break

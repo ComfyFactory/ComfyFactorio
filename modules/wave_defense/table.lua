@@ -3,6 +3,14 @@ local Event = require 'utils.event'
 
 local this = {}
 local Public = {}
+Public.events = {
+    on_wave_created = Event.generate_event_name('on_wave_created'),
+    on_unit_group_created = Event.generate_event_name('on_unit_group_created'),
+    on_evolution_factor_changed = Event.generate_event_name('on_evolution_factor_changed'),
+    on_game_reset = Event.generate_event_name('on_game_reset'),
+    on_target_aquired = Event.generate_event_name('on_target_aquired'),
+    on_entity_created = Event.generate_event_name('on_entity_created')
+}
 local insert = table.insert
 
 Global.register(
@@ -152,6 +160,11 @@ function Public.reset_wave_defense()
             ['big-worm-turret'] = 0.3,
             ['behemoth-worm-turret'] = 0.3
         }
+    }
+    this.valid_enemy_forces = {
+        ['enemy'] = true,
+        ['aggressors'] = true,
+        ['aggressors_frenzy'] = true
     }
 end
 

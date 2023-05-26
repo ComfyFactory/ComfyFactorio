@@ -18,26 +18,41 @@ commands.add_command(
             return
         end
 
-        if param == 'spawn_wave' then
-            return Public.spawn_unit_group(true, true)
+        if param == 'skip' then
+            Public.get('enable_grace_time').enabled = false
+            return
         end
 
-        if param == 'set_next_wave' then
-            for _ = 1, 100 do
+        if param == 'spawn_wave' then
+            Public.spawn_unit_group(true, true)
+            return
+        end
+
+        if param == 'next_wave' then
+            Public.set_next_wave()
+            Public.spawn_unit_group(true, true)
+            return
+        end
+
+        if param == 'set_next_50' then
+            for _ = 1, 50 do
                 Public.set_next_wave()
             end
-            return Public.spawn_unit_group(true, true)
+            Public.spawn_unit_group(true, true)
+            return
         end
 
         if param == 'set_wave_1500' then
             for _ = 1, 1500 do
                 Public.set_next_wave()
             end
-            return Public.spawn_unit_group(true, true)
+            Public.spawn_unit_group(true, true)
+            return
         end
 
         if param == 'log_all' then
-            return Public.toggle_debug()
+            Public.toggle_debug()
+            return
         end
 
         if param == 'debug_health' then

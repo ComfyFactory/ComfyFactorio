@@ -1,5 +1,8 @@
 local Public = require 'modules.wave_defense.table'
 
+local Enemy_states = require 'modules.wave_defense.enemy_states'
+Public.enemy_states = Enemy_states
+
 local Biter_Rolls = require 'modules.wave_defense.biter_rolls'
 Public.biter_rolls = Biter_Rolls
 
