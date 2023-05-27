@@ -742,10 +742,12 @@ local function on_player_mined_entity(event)
             if random(1, 3) == 1 then
                 give_coin(player)
             end
-        else
+        elseif entity.type == 'simple-entity-with-owner' then
             if random(1, 6) == 1 then
                 give_coin(player)
             end
+        else
+            give_coin(player)
         end
         if rpg_char.stone_path then
             entity.surface.set_tiles({{name = 'stone-path', position = entity.position}}, true)
