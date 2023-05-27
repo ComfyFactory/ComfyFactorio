@@ -1093,7 +1093,6 @@ local function spawn_unit_group(fs, only_bosses)
         event_data.spawn_count = count
         for _ = 1, count, 1 do
             local biter = spawn_biter(surface, spawn_position, fs, true, unit_settings)
-            game.print(serpent.block(biter and biter.unit_number))
             if not biter then
                 debug_print('spawn_unit_group - No biter was found?')
                 break
