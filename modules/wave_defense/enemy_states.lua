@@ -12,6 +12,7 @@ local random = math.random
 local abs = math.abs
 local floor = math.floor
 local set_timeout_in_ticks = Task.set_timeout_in_ticks
+local deepcopy = table.deepcopy
 
 local this = {
     states = {},
@@ -117,6 +118,21 @@ local restore_force_token =
         end
     end
 )
+
+local function is_closer(pos1, pos2, pos)
+    return ((pos1.x - pos.x) ^ 2 + (pos1.y - pos.y) ^ 2) < ((pos2.x - pos.x) ^ 2 + (pos2.y - pos.y) ^ 2)
+end
+
+local function shuffle_distance(tbl, position)
+    local size = #tbl
+    for i = size, 1, -1 do
+        local rand = random(size)
+        if is_closer(tbl[i].position, tbl[rand].position, position) and i > rand then
+            tbl[i], tbl[rand] = tbl[rand], tbl[i]
+        end
+    end
+    return tbl
+end
 
 local function aoe_punch(entity, target, damage)
     if not (target and target.valid) then
@@ -263,7 +279,17 @@ local function set_commands()
         commands[#commands + 1] = {
             type = defines.command.attack_area,
             destination = {x = unit.position.x, y = unit.position.y},
-            radius = 12,
+            radius = 15,
+            distraction = defines.distraction.by_enemy
+        }
+        commands[#commands + 1] = {
+            type = defines.command.build_base,
+            destination = {x = unit.position.x, y = unit.position.y}
+        }
+        commands[#commands + 1] = {
+            type = defines.command.attack_area,
+            destination = {x = unit.position.x, y = unit.position.y},
+            radius = 15,
             distraction = defines.distraction.by_enemy
         }
         commands[#commands + 1] = {
@@ -271,12 +297,42 @@ local function set_commands()
             destination = {x = unit.position.x, y = unit.position.y}
         }
     else
-        this.target_settings.last_set_target = 'main'
         commands[#commands + 1] = {
             type = defines.command.attack,
             target = unit,
             distraction = defines.distraction.by_anything
         }
+        commands[#commands + 1] = {
+            type = defines.command.attack_area,
+            destination = {x = unit.position.x, y = unit.position.y},
+            radius = 15,
+            distraction = defines.distraction.by_enemy
+        }
+        commands[#commands + 1] = {
+            type = defines.command.build_base,
+            destination = {x = unit.position.x, y = unit.position.y}
+        }
+        commands[#commands + 1] = {
+            type = defines.command.attack,
+            target = unit,
+            distraction = defines.distraction.by_anything
+        }
+        commands[#commands + 1] = {
+            type = defines.command.attack_area,
+            destination = {x = unit.position.x, y = unit.position.y},
+            radius = 15,
+            distraction = defines.distraction.by_enemy
+        }
+        commands[#commands + 1] = {
+            type = defines.command.build_base,
+            destination = {x = unit.position.x, y = unit.position.y}
+        }
+        commands[#commands + 1] = {
+            type = defines.command.attack,
+            target = unit,
+            distraction = defines.distraction.by_anything
+        }
+        this.target_settings.last_set_target = 'main'
     end
 
     local command = {
@@ -288,7 +344,34 @@ local function set_commands()
     local surface = unit.surface
 
     surface.set_multi_command({command = command, unit_count = 5000, force = 'aggressors'})
-    this.target_settings.commands = command
+    this.target_settings.commands = commands
+end
+
+local function set_forces()
+    local aggressors = game.forces.aggressors
+    local aggressors_frenzy = game.forces.aggressors_frenzy
+    local enemy = game.forces.enemy
+    if not aggressors then
+        aggressors = game.create_force('aggressors')
+    end
+    if not aggressors_frenzy then
+        aggressors_frenzy = game.create_force('aggressors_frenzy')
+    end
+
+    aggressors.set_friend('aggressors_frenzy', true)
+    aggressors.set_cease_fire('aggressors_frenzy', true)
+    aggressors.set_friend('enemy', true)
+    aggressors.set_cease_fire('enemy', true)
+
+    aggressors_frenzy.set_friend('aggressors', true)
+    aggressors_frenzy.set_cease_fire('aggressors', true)
+    aggressors_frenzy.set_friend('enemy', true)
+    aggressors_frenzy.set_cease_fire('enemy', true)
+
+    enemy.set_friend('aggressors', true)
+    enemy.set_cease_fire('aggressors', true)
+    enemy.set_friend('aggressors_frenzy', true)
+    enemy.set_cease_fire('aggressors_frenzy', true)
 end
 
 local function on_init()
@@ -301,29 +384,7 @@ local function on_init()
     }
     this.target_settings = {}
 
-    local aggressors = game.forces.aggressors
-    local aggressors_frenzy = game.forces.aggressors_frenzy
-    local enemy = game.forces.enemy
-
-    if not aggressors then
-        aggressors = game.create_force('aggressors')
-    end
-    if not aggressors_frenzy then
-        aggressors_frenzy = game.create_force('aggressors_frenzy')
-    end
-
-    aggressors.set_gun_speed_modifier('biological', 1)
-    aggressors.set_gun_speed_modifier('melee', 0.2)
-    aggressors.set_friend('aggressors_frenzy', true)
-    aggressors.set_friend('enemy', true)
-
-    aggressors_frenzy.set_gun_speed_modifier('biological', 10)
-    aggressors_frenzy.set_gun_speed_modifier('melee', 5)
-    aggressors_frenzy.set_friend('aggressors', true)
-    aggressors_frenzy.set_friend('enemy', true)
-
-    enemy.set_friend('aggressors', true)
-    enemy.set_friend('aggressors_frenzy', true)
+    set_forces()
 end
 
 local function on_wave_created(event)
@@ -634,7 +695,7 @@ function Public._esp:unit_group(unit_group)
 end
 
 --- Creates a fire entity.
-function Public._esp:fire_damage()
+function Public._esp:spew_damage()
     local entity = self.entity
     if not entity or not entity.valid then
         return
@@ -642,7 +703,7 @@ function Public._esp:fire_damage()
 
     local position = {entity.position.x + (-5 + random(0, 10)), entity.position.y + (-5 + random(0, 10))}
 
-    entity.surface.create_entity({name = 'fire-flame', position = position})
+    entity.surface.create_entity({name = 'acid-stream-spitter-medium', position = position, target = position, source = position})
     if random(1, 5) == 1 then
         entity.surface.create_entity(
             {
@@ -715,27 +776,92 @@ function Public._esp:area_of_spit_attack(range)
     )
 end
 
+function Public._esp:find_targets()
+    local entity = self.entity
+    if not entity or not entity.valid then
+        return
+    end
+
+    local unit_group_command_step_length = Public.get('unit_group_command_step_length')
+    local step_length = unit_group_command_step_length
+
+    local obstacles =
+        entity.surface.find_entities_filtered {
+        position = entity.position,
+        radius = step_length / 2,
+        type = {'simple-entity', 'tree'},
+        limit = 50
+    }
+    if obstacles then
+        shuffle_distance(obstacles, entity.position)
+        self.commands = self.commands or {}
+        for ii = 1, #obstacles, 1 do
+            if obstacles[ii].valid then
+                self.commands[#self.commands + 1] = {
+                    type = defines.command.attack,
+                    target = obstacles[ii],
+                    distraction = defines.distraction.by_anything
+                }
+            end
+        end
+    end
+end
+
 --- Attack target
 function Public._esp:attack_target()
     local entity = self.entity
     if not entity or not entity.valid then
         return
     end
+
     local tick = game.tick
     local orders = self.moving_to_attack_target
-    if not orders then
-        self.moving_to_attack_target = tick + 300
-        orders = self.moving_to_attack_target
+
+    if this.target_settings.commands and this.target_settings.commands.commands then
+        this.target_settings.commands = nil
+        return
     end
 
-    -- if entity.distraction_command and entity.distraction_command.target.name then
-    --     log(serpent.block(entity.distraction_command.target.name))
-    -- end
+    if not this.target_settings.commands then
+        return
+    end
+
+    local compound_commands = deepcopy(this.target_settings.commands)
+
+    if not orders then
+        self:find_targets()
+        self.moving_to_attack_target = tick + 200
+        orders = self.moving_to_attack_target
+        if self.commands and next(self.commands) then
+            for _, entry in pairs(self.commands) do
+                compound_commands[#compound_commands + 1] = entry
+            end
+        end
+        local command = {
+            type = defines.command.compound,
+            structure_type = defines.compound_command.return_last,
+            commands = compound_commands
+        }
+        entity.set_command(command)
+    end
 
     if tick > orders then
-        self.moving_to_attack_target = tick + 300
-        entity.set_command(this.target_settings.commands)
+        self:find_targets()
+        self.moving_to_attack_target = tick + 200
+        if self.commands and next(self.commands) then
+            for _, entry in pairs(self.commands) do
+                compound_commands[#compound_commands + 1] = entry
+            end
+        end
+
+        local command = {
+            type = defines.command.compound,
+            structure_type = defines.compound_command.return_last,
+            commands = compound_commands
+        }
+        entity.set_command(command)
     end
+    self.commands = nil
 end
 
 -- Sets the attack speed for the given force
@@ -817,16 +943,16 @@ function Public._esp:work(tick)
         end
     end
 
+    self:attack_target()
+
     if self.boss_unit then
         if random(1, 20) == 1 then
-            self:fire_damage()
+            self:spew_damage()
         elseif random(1, 30) == 1 then
             self:set_burst_frenzy()
         elseif random(1, 50) == 1 then
             self:fire_projectile()
         elseif random(1, 100) == 1 then
-            self:attack_target()
-        elseif random(1, 200) == 1 then
             if this.settings.wave_number >= 1000 then
                 self:area_of_spit_attack()
             end
@@ -837,11 +963,9 @@ function Public._esp:work(tick)
         end
     elseif tick < self.ttl then
         if random(1, 20) == 1 then
-            self:fire_damage()
+            self:spew_damage()
         elseif random(1, 50) == 1 then
             self:set_burst_frenzy()
-        elseif random(1, 100) == 1 then
-            self:attack_target()
         end
     else
         self:remove()

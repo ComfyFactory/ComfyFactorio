@@ -73,16 +73,6 @@ local collapse_kill = {
     enabled = true
 }
 
-local init_protectors_force = function()
-    local protectors = game.forces.protectors
-    local enemy = game.forces.enemy
-    if not protectors then
-        protectors = game.create_force('protectors')
-    end
-    protectors.set_friend('enemy', true)
-    enemy.set_friend('protectors', true)
-end
-
 local init_bonus_drill_force = function()
     local bonus_drill = game.forces.bonus_drill
     local player = game.forces.player
@@ -172,7 +162,6 @@ function Public.reset_map()
     Group.alphanumeric_only(false)
 
     Public.disable_tech()
-    init_protectors_force()
     init_bonus_drill_force()
 
     local surface = game.surfaces[this.active_surface_index]
