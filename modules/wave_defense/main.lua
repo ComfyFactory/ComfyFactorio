@@ -63,8 +63,8 @@ local function find_initial_spot(surface, position)
         if random(1, 2) == 1 then
             local random_pos = {
                 {x = pos.x - 10, y = pos.y - 5},
-                {x = pos.x + 10, y = pos.y + 5},
-                {x = pos.x - 10, y = pos.y + 5},
+                {x = pos.x + 10, y = pos.y - 5},
+                {x = pos.x - 10, y = pos.y - 5},
                 {x = pos.x + 10, y = pos.y - 5}
             }
             local actual_pos = shuffle(random_pos)
@@ -183,6 +183,12 @@ local function get_spawn_pos()
     ::retry::
 
     local initial_position = Public.get('spawn_position')
+
+    if random(1, 2) == 1 then
+        initial_position = {x = initial_position.x, y = initial_position.y - 30}
+    else
+        initial_position = {x = initial_position.x, y = initial_position.y - 20}
+    end
 
     local located_position = find_initial_spot(surface, initial_position)
     local valid_position = surface.find_non_colliding_position('stone-furnace', located_position, 32, 1)

@@ -5,6 +5,7 @@ local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Public = require 'modules.wave_defense.table'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
+local Beams = require 'modules.render_beam'
 
 local de = defines.events
 local ev = Public.events
@@ -20,7 +21,8 @@ local this = {
     settings = {
         frenzy_length = 3600,
         frenzy_burst_length = 160,
-        update_rate = 60
+        update_rate = 60,
+        enabled = false
     },
     target_settings = {}
 }
@@ -145,8 +147,6 @@ local function aoe_punch(entity, target, damage)
     vector[1] = vector[1] * 1000
     vector[2] = vector[2] * 1000
 
-    entity.surface.create_entity({name = 'blood-explosion-huge', position = target.position})
-
     if abs(vector[1]) > abs(vector[2]) then
         local d = abs(vector[1])
         if abs(vector[1]) > 0 then
@@ -266,6 +266,12 @@ local function area_of_effect(entity, radius, callback, find_entities)
     end
 end
 
+local function shoot_laser(surface, source, enemy)
+    local force = source.force
+    surface.create_entity {name = 'laser-beam', position = source.position, force = 'player', target = enemy, source = source, max_length = 32, duration = 60}
+    enemy.damage(20 * (1 + force.get_ammo_damage_modifier('laser') + force.get_gun_speed_modifier('laser')), force, 'laser', source)
+end
+
 local function set_commands()
     local unit = this.target_settings.main_target
     if not unit or not unit.valid then
@@ -377,17 +383,19 @@ end
 local function on_init()
     this.states = {}
     this.state_count = 0
-    this.settings = {
-        frenzy_length = 3600,
-        frenzy_burst_length = 160,
-        update_rate = 60
-    }
+    this.settings.frenzy_length = 3600
+    this.settings.frenzy_burst_length = 160
+    this.settings.update_rate = 60
     this.target_settings = {}
 
     set_forces()
 end
 
 local function on_wave_created(event)
+    if not this.settings.enabled then
+        return
+    end
+
     local wave_number = event.wave_number
     if not wave_number then
         return
@@ -408,6 +416,10 @@ local function on_wave_created(event)
 end
 
 local function on_unit_group_created(event)
+    if not this.settings.enabled then
+        return
+    end
+
     local unit_group = event.unit_group
     if not unit_group or not unit_group.valid then
         return
@@ -425,6 +437,10 @@ local function on_unit_group_created(event)
 end
 
 local function on_target_aquired(event)
+    if not this.settings.enabled then
+        return
+    end
+
     local target = event.target
     if not target or not target.valid then
         return
@@ -452,6 +468,10 @@ local function on_target_aquired(event)
 end
 
 local function on_entity_created(event)
+    if not this.settings.enabled then
+        return
+    end
+
     local entity = event.entity
     if not entity or not entity.valid then
         return
@@ -476,6 +496,10 @@ local function on_entity_created(event)
 end
 
 local function on_evolution_factor_changed(event)
+    if not this.settings.enabled then
+        return
+    end
+
     local evolution_factor = event.evolution_factor
     if not evolution_factor then
         return
@@ -488,6 +512,10 @@ local function on_evolution_factor_changed(event)
 end
 
 local function on_entity_died(event)
+    if not this.settings.enabled then
+        return
+    end
+
     local entity = event.entity
     if not entity.valid then
         return
@@ -500,6 +528,9 @@ local function on_entity_died(event)
 end
 
 local function on_entity_damaged(event)
+    if not this.settings.enabled then
+        return
+    end
     local entity = event.entity
     if not (entity and entity.valid) then
         return
@@ -515,7 +546,8 @@ local function on_entity_damaged(event)
         state:spawn_children()
     end
 
-    if entity.health <= max / 2 and state.teleported < 5 then
+    if state.boss_unit and entity.health <= max / 2 and state.teleported < 5 then
+        state.teleported = state.teleported + 1
         if random(1, 4) == 1 then
             state:switch_position()
         end
@@ -694,7 +726,40 @@ function Public._esp:unit_group(unit_group)
     self.unit_group = unit_group
 end
 
---- Creates a fire entity.
+--- Creates a beam.
+function Public._esp:beam()
+    local entity = self.entity
+    if not entity or not entity.valid then
+        return
+    end
+
+    Beams.new_beam_delayed(entity.surface, random(500, 3000))
+end
+
+--- Creates a laser.
+function Public._esp:laser(boss)
+    local entity = self.entity
+    if not entity or not entity.valid then
+        return
+    end
+
+    local limit = boss or 3
+
+    local surface = entity.surface
+
+    local enemies = surface.find_entities_filtered {radius = 10, limit = limit, force = 'player', position = entity.position}
+    if enemies == nil or #enemies == 0 then
+        return
+    end
+    for i = 1, #enemies, 1 do
+        local enemy = enemies[i]
+        if enemy and enemy.valid and enemy.health and enemy.health > 0 and enemy.destructible then
+            shoot_laser(surface, entity, enemy)
+        end
+    end
+end
+
+--- Creates spew.
 function Public._esp:spew_damage()
     local entity = self.entity
     if not entity or not entity.valid then
@@ -704,15 +769,6 @@ function Public._esp:spew_damage()
     local position = {entity.position.x + (-5 + random(0, 10)), entity.position.y + (-5 + random(0, 10))}
 
     entity.surface.create_entity({name = 'acid-stream-spitter-medium', position = position, target = position, source = position})
-    if random(1, 5) == 1 then
-        entity.surface.create_entity(
-            {
-                name = 'medium-scorchmark',
-                position = position,
-                force = 'aggressors'
-            }
-        )
-    end
 end
 
 --- Creates a projectile.
@@ -888,7 +944,7 @@ function Public._esp:switch_position()
         return
     end
 
-    local position = {entity.position.x + (-5 + random(0, 15)), entity.position.y + (-5 + random(0, 15))}
+    local position = {entity.position.x + (-5 + random(0, 15)), entity.position.y + (5 + random(0, 15))}
 
     local rand = entity.surface.find_non_colliding_position(entity.name, position, 0.2, 0.5)
     if rand then
@@ -920,11 +976,14 @@ function Public._esp:set_boss()
         return
     end
 
+    local tick = game.tick
+
     self.boss_unit = true
 
-    if this.settings.wave_number > 499 then
+    if this.settings.wave_number > 1499 then
         if this.settings.wave_number % 100 == 0 then
             self.go_havoc = true
+            self.havoc_interval = tick + 50
         end
     end
 end
@@ -934,10 +993,15 @@ function Public._esp:work(tick)
         self:set_frenzy()
     end
 
-    if self.go_havoc then
-        self:fire_projectile()
-        self:area_of_spit_attack()
-        self:aoe_attack()
+    if self.go_havoc and self.clear_go_havoc > tick then
+        if tick > self.havoc_interval then
+            self:fire_projectile()
+            self:area_of_spit_attack()
+            if random(1, 10) == 1 then
+                self:aoe_attack()
+            end
+            self.havoc_interval = tick + 50
+        end
         if not self.clear_go_havoc then
             self.clear_go_havoc = game.tick + 3600
         end
@@ -952,24 +1016,33 @@ function Public._esp:work(tick)
             self:set_burst_frenzy()
         elseif random(1, 50) == 1 then
             self:fire_projectile()
-        elseif random(1, 100) == 1 then
+        elseif random(1, 60) == 1 then
+            self:laser(6)
+        elseif random(1, 80) == 1 then
             if this.settings.wave_number >= 1000 then
                 self:area_of_spit_attack()
             end
-        elseif random(1, 300) == 1 then
+        elseif random(1, 100) == 1 then
             if this.settings.wave_number >= 1000 then
                 self:aoe_attack()
             end
         end
     elseif tick < self.ttl then
-        if random(1, 20) == 1 then
+        if random(1, 40) == 1 then
             self:spew_damage()
         elseif random(1, 50) == 1 then
             self:set_burst_frenzy()
+        elseif random(1, 60) == 1 then
+            self:laser()
         end
     else
         self:remove()
     end
+end
+
+Public.set_module_status = function()
+    on_init()
+    this.settings.enabled = not this.settings.enabled
 end
 
 Event.on_init(on_init)
@@ -981,3 +1054,5 @@ Event.add(ev.on_entity_created, on_entity_created)
 Event.add(ev.on_target_aquired, on_target_aquired)
 Event.add(ev.on_evolution_factor_changed, on_evolution_factor_changed)
 Event.add(ev.on_game_reset, on_init)
+
+return Public
