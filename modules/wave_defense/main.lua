@@ -9,6 +9,7 @@ local random = math.random
 local floor = math.floor
 local sqrt = math.sqrt
 local round = math.round
+local raise = Event.raise
 
 local function debug_print(msg)
     local debug = Public.get('debug')
@@ -62,8 +63,8 @@ local function find_initial_spot(surface, position)
         if random(1, 2) == 1 then
             local random_pos = {
                 {x = pos.x - 10, y = pos.y - 5},
-                {x = pos.x + 10, y = pos.y + 5},
-                {x = pos.x - 10, y = pos.y + 5},
+                {x = pos.x + 10, y = pos.y - 5},
+                {x = pos.x - 10, y = pos.y - 5},
                 {x = pos.x + 10, y = pos.y - 5}
             }
             local actual_pos = shuffle(random_pos)
@@ -183,6 +184,12 @@ local function get_spawn_pos()
 
     local initial_position = Public.get('spawn_position')
 
+    if random(1, 2) == 1 then
+        initial_position = {x = initial_position.x, y = initial_position.y - 30}
+    else
+        initial_position = {x = initial_position.x, y = initial_position.y - 20}
+    end
+
     local located_position = find_initial_spot(surface, initial_position)
     local valid_position = surface.find_non_colliding_position('stone-furnace', located_position, 32, 1)
     local debug = Public.get('debug')
@@ -228,10 +235,6 @@ local function is_unit_valid(biter)
         debug_print('is_unit_valid - unit destroyed - invalid')
         return false
     end
-    if not biter.entity.unit_group then
-        debug_print('is_unit_valid - unit destroyed - no unitgroup')
-        return false
-    end
     if biter.spawn_tick + max_biter_age < game.tick then
         debug_print('is_unit_valid - unit destroyed - timed out')
         return false
@@ -264,6 +267,7 @@ local function time_out_biters()
     local generated_units = Public.get('generated_units')
     local active_biter_count = Public.get('active_biter_count')
     local active_biter_threat = Public.get('active_biter_threat')
+    local valid_enemy_forces = Public.get('valid_enemy_forces')
 
     if active_biter_count >= 100 and #generated_units.active_biters <= 10 then
         Public.set('active_biter_count', 50)
@@ -274,15 +278,14 @@ local function time_out_biters()
     for k, biter in pairs(generated_units.active_biters) do
         if not is_unit_valid(biter) then
             Public.set('active_biter_count', active_biter_count - 1)
-            if biter.entity then
-                if biter.entity.valid then
-                    Public.set('active_biter_threat', active_biter_threat - round(Public.threat_values[biter.entity.name] * biter_health_boost, 2))
-                    if biter.entity.force.index == 2 then
-                        biter.entity.destroy()
-                    end
-                    debug_print('time_out_biters: ' .. k .. ' got deleted.')
+            local entity = biter.entity
+            if entity and entity.valid then
+                Public.set('active_biter_threat', active_biter_threat - round(Public.threat_values[entity.name] * biter_health_boost, 2))
+                if valid_enemy_forces[entity.force.name] then
+                    entity.destroy()
                 end
             end
+            debug_print('time_out_biters: ' .. k .. ' got deleted.')
             generated_units.active_biters[k] = nil
         end
     end
@@ -343,6 +346,7 @@ local function set_main_target()
     local target = Public.get('target')
     if target then
         if target.valid then
+            raise(Public.events.on_target_aquired, {target = target})
             return
         end
     end
@@ -358,10 +362,12 @@ local function set_main_target()
         sec_target = get_random_character()
     end
     if not sec_target then
+        raise(Public.events.on_target_aquired, {target = target})
         return
     end
 
     Public.set('target', sec_target)
+    raise(Public.events.on_target_aquired, {target = target})
     debug_print('set_main_target -- New main target ' .. sec_target.name .. ' at position x' .. sec_target.position.x .. ' y' .. sec_target.position.y .. ' selected.')
 end
 
@@ -408,6 +414,7 @@ local function set_enemy_evolution()
     end
 
     enemy.evolution_factor = evolution_factor
+    raise(Public.events.on_evolution_factor_changed, {evolution_factor = evolution_factor})
 end
 
 local function can_units_spawn()
@@ -519,14 +526,18 @@ local function spawn_biter(surface, position, forceSpawn, is_boss_biter, unit_se
         BiterHealthBooster.add_unit(biter, final_health)
     end
 
-    if is_boss_biter and (wave_number >= boost_bosses_when_wave_is_above) then
-        local increase_boss_health_per_wave = Public.get('increase_boss_health_per_wave')
-        if increase_boss_health_per_wave then
-            local modified_boss_unit_health = Public.get('modified_boss_unit_health')
-            BiterHealthBooster.add_boss_unit(biter, modified_boss_unit_health.current_value, 0.55)
+    if is_boss_biter then
+        if (wave_number >= boost_bosses_when_wave_is_above) then
+            local increase_boss_health_per_wave = Public.get('increase_boss_health_per_wave')
+            if increase_boss_health_per_wave then
+                local modified_boss_unit_health = Public.get('modified_boss_unit_health')
+                BiterHealthBooster.add_boss_unit(biter, modified_boss_unit_health.current_value, 0.55)
+            else
+                local sum = boosted_health * 5
+                BiterHealthBooster.add_boss_unit(biter, sum, 0.55)
+            end
         else
             local sum = boosted_health * 5
-            debug_print('Boss Health Boosted: ' .. sum)
             BiterHealthBooster.add_boss_unit(biter, sum, 0.55)
         end
     end
@@ -567,9 +578,6 @@ local function increase_biters_health()
         return
     end
 
-    -- local boosted_health = BiterHealthBooster.get('biter_health_boost')
-    -- local wave_number = Public.get('wave_number')
-
     -- this sets normal units health
     local modified_unit_health = Public.get('modified_unit_health')
     if modified_unit_health.current_value > modified_unit_health.limit_value then
@@ -577,18 +585,6 @@ local function increase_biters_health()
     end
     debug_print_health('modified_unit_health.current_value: ' .. modified_unit_health.current_value)
     Public.set('modified_unit_health').current_value = modified_unit_health.current_value + modified_unit_health.health_increase_per_boss_wave
-
-    -- this sets boss units health
-    -- if boosted_health == 1 then
-    --     boosted_health = 1.25
-    -- end
-
-    -- boosted_health = round(boosted_health * (wave_number * 0.04), 3)
-    -- debug_print_health('boosted_health: ' .. boosted_health)
-    -- if boosted_health >= 300 then
-    --     boosted_health = 300
-    -- end
-    -- Public.set('modified_boss_unit_health', boosted_health)
 
     -- this sets boss units health
     local modified_boss_unit_health = Public.get('modified_boss_unit_health')
@@ -648,6 +644,8 @@ local function set_next_wave()
     Public.set('wave_number', wave_number + 1)
     wave_number = Public.get('wave_number')
 
+    local event_data = {}
+
     local threat_gain_multiplier = Public.get('threat_gain_multiplier')
     local threat_gain = wave_number * threat_gain_multiplier
 
@@ -661,10 +659,13 @@ local function set_next_wave()
         increase_max_active_unit_groups()
     end
 
-    if wave_number % 25 == 0 then
+    event_data.wave_number = wave_number
+
+    if wave_number % 50 == 0 then
         increase_biter_damage()
         increase_biters_health()
         Public.set('boss_wave', true)
+        event_data.boss_wave = true
         Public.set('boss_wave_warning', true)
         local alert_boss_wave = Public.get('alert_boss_wave')
         local spawn_position = get_spawn_pos()
@@ -695,10 +696,15 @@ local function set_next_wave()
     local wave_enforced = Public.get('wave_enforced')
     local next_wave = Public.get('next_wave')
     local wave_interval = Public.get('wave_interval')
+    event_data.next_wave = next_wave
+    event_data.wave_interval = wave_interval
+    event_data.threat_gain = threat_gain
     if not wave_enforced then
         Public.set('last_wave', next_wave)
         Public.set('next_wave', game.tick + wave_interval)
     end
+
+    raise(Public.events.on_wave_created, event_data)
 end
 
 local function reform_group(group)
@@ -746,6 +752,9 @@ local function get_side_targets(group)
     local step_length = unit_group_command_step_length
 
     local side_target = Public.get_side_target()
+    if not side_target then
+        return
+    end
     local target_position = side_target.position
     local distance_to_target = floor(sqrt((target_position.x - group_position.x) ^ 2 + (target_position.y - group_position.y) ^ 2))
     local steps = floor(distance_to_target / step_length) + 1
@@ -929,6 +938,9 @@ local function command_to_side_target(group)
     end
 
     local commands = get_side_targets(group)
+    if not commands then
+        return
+    end
 
     group.set_command(
         {
@@ -1042,14 +1054,26 @@ local function spawn_unit_group(fs, only_bosses)
 
     debug_print('Spawning unit group at x' .. spawn_position.x .. ' y' .. spawn_position.y)
 
+    local event_data = {}
+
     local generated_units = Public.get('generated_units')
     local unit_group = surface.create_unit_group({position = spawn_position, force = 'enemy'})
+
+    event_data.unit_group = unit_group
+
     generated_units.unit_group_pos.index = generated_units.unit_group_pos.index + 1
     generated_units.unit_group_pos.positions[unit_group.group_number] = {position = unit_group.position, index = 0}
     local average_unit_group_size = Public.get('average_unit_group_size')
     local unit_settings = Public.get('unit_settings')
+    event_data.unit_settings = unit_settings
+
     local group_size = floor(average_unit_group_size * Public.group_size_modifier_raffle[random(1, Public.group_size_modifier_raffle_size)])
-    if not only_bosses then
+
+    event_data.group_size = group_size
+    event_data.boss_wave = false
+
+    local boss_wave = Public.get('boss_wave')
+    if not boss_wave and not only_bosses then
         for _ = 1, group_size, 1 do
             local biter = spawn_biter(surface, spawn_position, fs, false, unit_settings)
             if not biter then
@@ -1058,26 +1082,29 @@ local function spawn_unit_group(fs, only_bosses)
             end
             unit_group.add_member(biter)
 
+            raise(Public.events.on_entity_created, {entity = biter, boss_unit = false, target = target})
             -- command_to_side_target(unit_group)
         end
     end
 
-    local boss_wave = Public.get('boss_wave')
     if boss_wave or only_bosses then
+        event_data.boss_wave = true
         local count = random(1, floor(wave_number * 0.01) + 2)
         if count > 16 then
             count = 16
         end
-        if count <= 1 then
+        if count <= 4 then
             count = 4
         end
+        event_data.spawn_count = count
         for _ = 1, count, 1 do
             local biter = spawn_biter(surface, spawn_position, fs, true, unit_settings)
             if not biter then
-                debug_print('spawn_unit_group - No biters were found?')
+                debug_print('spawn_unit_group - No biter was found?')
                 break
             end
             unit_group.add_member(biter)
+            raise(Public.events.on_entity_created, {entity = biter, boss_unit = true, target = target})
         end
         Public.set('boss_wave', false)
     end
@@ -1089,10 +1116,16 @@ local function spawn_unit_group(fs, only_bosses)
         Public.set('random_group', unit_group)
     end
     Public.set('spot', 'nil')
+    raise(Public.events.on_unit_group_created, event_data)
     return true
 end
 
 local function check_group_positions()
+    local resolve_pathing = Public.get('resolve_pathing')
+    if not resolve_pathing then
+        return
+    end
+
     local generated_units = Public.get('generated_units')
     local target = Public.get('target')
     if not valid(target) then
@@ -1126,6 +1159,11 @@ local function check_group_positions()
 end
 
 local function log_threat()
+    local enable_threat_log = Public.get('enable_threat_log')
+    if not enable_threat_log then
+        return
+    end
+
     local threat_log_index = Public.get('threat_log_index')
     Public.set('threat_log_index', threat_log_index + 1)
     local threat_log = Public.get('threat_log')
@@ -1140,9 +1178,14 @@ end
 local tick_tasks = {
     [30] = set_main_target,
     [60] = set_enemy_evolution,
+    [90] = check_group_positions,
     [120] = give_main_command_to_group,
-    [150] = Public.build_nest,
-    [180] = Public.build_worm,
+    [150] = log_threat,
+    [180] = Public.build_nest,
+    [210] = Public.build_worm
+}
+
+local tick_tasks_t2 = {
     [1200] = give_side_commands_to_group,
     [3600] = time_out_biters,
     [7200] = refresh_active_unit_threat
@@ -1187,23 +1230,11 @@ Event.on_nth_tick(
         if tick_tasks[t] then
             tick_tasks[t]()
         end
-        if tick_tasks[t2] then
-            tick_tasks[t2]()
+
+        if tick_tasks_t2[t2] then
+            tick_tasks_t2[t2]()
         end
 
-        local resolve_pathing = Public.get('resolve_pathing')
-        if resolve_pathing then
-            if tick % 60 == 0 then
-                check_group_positions()
-            end
-        end
-
-        local enable_threat_log = Public.get('enable_threat_log')
-        if enable_threat_log then
-            if tick % 60 == 0 then
-                log_threat()
-            end
-        end
         local players = game.connected_players
         for _, player in pairs(players) do
             Public.update_gui(player)

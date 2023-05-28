@@ -853,6 +853,18 @@ local boost_movement_speed_on_respawn =
     end
 )
 
+local function on_wave_created(event)
+    if not event or not event.wave_number then
+        return
+    end
+
+    local wave_number = event.wave_number
+
+    if wave_number % 50 == 0 then
+        WD.set_pause_wave_in_ticks(random(18000, 54000))
+    end
+end
+
 function Public.set_difficulty()
     local game_lost = Public.get('game_lost')
     if game_lost then
@@ -1698,5 +1710,6 @@ Event.add(defines.events.on_research_finished, on_research_finished)
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)
 Event.add(defines.events.on_player_respawned, on_player_respawned)
 Event.on_nth_tick(10, tick)
+Event.add(WD.events.on_wave_created, on_wave_created)
 
 return Public

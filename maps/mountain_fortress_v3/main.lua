@@ -52,7 +52,6 @@ local role_to_mention = Discord.role_mentions.mtn_fortress
 
 local floor = math.floor
 local remove = table.remove
-local random = math.random
 RPG.disable_cooldowns_on_spells()
 
 local collapse_kill = {
@@ -73,16 +72,6 @@ local collapse_kill = {
     },
     enabled = true
 }
-
-local init_protectors_force = function()
-    local protectors = game.forces.protectors
-    local enemy = game.forces.enemy
-    if not protectors then
-        protectors = game.create_force('protectors')
-    end
-    protectors.set_friend('enemy', true)
-    enemy.set_friend('protectors', true)
-end
 
 local init_bonus_drill_force = function()
     local bonus_drill = game.forces.bonus_drill
@@ -125,6 +114,8 @@ function Public.reset_map()
     local wave_defense_table = WD.get_table()
     Misc.set('creative_are_you_sure', false)
     Misc.set('creative_enabled', false)
+
+    Event.raise(WD.events.on_game_reset, {})
 
     this.active_surface_index = Public.create_surface()
     -- this.soft_reset_counter = Public.get_reset_counter()
@@ -171,7 +162,6 @@ function Public.reset_map()
     Group.alphanumeric_only(false)
 
     Public.disable_tech()
-    init_protectors_force()
     init_bonus_drill_force()
 
     local surface = game.surfaces[this.active_surface_index]
@@ -264,7 +254,6 @@ function Public.reset_map()
     WD.increase_average_unit_group_size(true)
     WD.increase_max_active_unit_groups(true)
     WD.enable_random_spawn_positions(true)
-    WD.set_pause_wave_in_ticks(random(18000, 54000))
 
     Public.set_difficulty()
     Public.disable_creative()

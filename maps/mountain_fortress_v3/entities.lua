@@ -289,7 +289,7 @@ local function protect_entities(data)
     local check_heavy_damage = Public.get('check_heavy_damage')
 
     if check_heavy_damage then
-        if entity.type == 'simple-entity' and dmg >= 500 then
+        if (entity.type == 'simple-entity' or entity.type == 'simple-entity-with-owner') and dmg >= 500 then
             entity.health = entity.health + dmg
         end
     end
@@ -313,7 +313,7 @@ local function protect_entities(data)
     local carriages_numbers = Public.get('carriages_numbers')
     if is_protected(entity) then
         if (cause and cause.valid) then
-            if cause.force.index == 2 then
+            if Public.valid_enemy_forces[cause.force.name] then
                 if carriages_numbers and carriages_numbers[entity.unit_number] then
                     set_train_final_health(dmg, false)
                     return
@@ -323,7 +323,7 @@ local function protect_entities(data)
                 end
             end
         elseif not (cause and cause.valid) then
-            if force and force.index == 2 then
+            if force and Public.valid_enemy_forces[force.name] then
                 if carriages_numbers and carriages_numbers[entity.unit_number] then
                     set_train_final_health(dmg, false)
                     return
@@ -742,6 +742,10 @@ local function on_player_mined_entity(event)
             if random(1, 3) == 1 then
                 give_coin(player)
             end
+        elseif entity.type == 'simple-entity-with-owner' then
+            if random(1, 6) == 1 then
+                give_coin(player)
+            end
         else
             give_coin(player)
         end
@@ -970,13 +974,14 @@ local function on_entity_died(event)
     on_entity_removed(d)
 
     local player
+    local valid_enemy_forces = Public.valid_enemy_forces
 
     if cause then
         if cause.valid then
             if (cause and cause.name == 'character' and cause.player) then
                 player = cause.player
             end
-            if cause.force.index == 2 or cause.force.index == 3 then
+            if valid_enemy_forces[cause.force.name] or cause.force.index == 3 then
                 entity.destroy()
                 return
             end
