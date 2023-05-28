@@ -984,6 +984,7 @@ function Public._esp:set_boss()
         if this.settings.wave_number % 100 == 0 then
             self.go_havoc = true
             self.havoc_interval = tick + 50
+            self.clear_go_havoc = tick + 3600
         end
     end
 end
@@ -1001,9 +1002,6 @@ function Public._esp:work(tick)
                 self:aoe_attack()
             end
             self.havoc_interval = tick + 50
-        end
-        if not self.clear_go_havoc then
-            self.clear_go_havoc = game.tick + 3600
         end
     end
 
