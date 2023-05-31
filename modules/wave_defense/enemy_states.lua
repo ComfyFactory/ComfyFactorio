@@ -13,7 +13,6 @@ local random = math.random
 local abs = math.abs
 local floor = math.floor
 local set_timeout_in_ticks = Task.set_timeout_in_ticks
-local deepcopy = table.deepcopy
 
 local this = {
     states = {},
@@ -22,7 +21,8 @@ local this = {
         frenzy_length = 3600,
         frenzy_burst_length = 160,
         update_rate = 60,
-        enabled = false
+        enabled = true,
+        track_bosses_only = true
     },
     target_settings = {}
 }
@@ -385,7 +385,7 @@ local function on_init()
     this.state_count = 0
     this.settings.frenzy_length = 3600
     this.settings.frenzy_burst_length = 160
-    this.settings.update_rate = 60
+    this.settings.update_rate = 120
     this.target_settings = {}
 
     set_forces()
@@ -417,6 +417,10 @@ end
 
 local function on_unit_group_created(event)
     if not this.settings.enabled then
+        return
+    end
+
+    if not this.settings.enabled_ug then
         return
     end
 
@@ -483,14 +487,19 @@ local function on_entity_created(event)
         local data = {
             entity = entity
         }
-        state = Public.new(data)
-        state:set_burst_frenzy()
-        if event.boss_unit then
-            state:set_boss()
-        end
-    else
-        if event.boss_unit then
-            state:set_boss()
+
+        if this.settings.track_bosses_only then
+            if event.boss_unit then
+                state = Public.new(data)
+                state:set_burst_frenzy()
+                state:set_boss()
+            end
+        else
+            state = Public.new(data)
+            state:set_burst_frenzy()
+            if event.boss_unit then
+                state:set_boss()
+            end
         end
     end
 end
@@ -506,6 +515,10 @@ local function on_evolution_factor_changed(event)
     end
 
     local forces = game.forces
+
+    if forces.aggressors.evolution_factor == 1 and evolution_factor == 1 then
+        return
+    end
 
     forces.aggressors.evolution_factor = evolution_factor
     forces.aggressors_frenzy.evolution_factor = evolution_factor
@@ -882,16 +895,13 @@ function Public._esp:attack_target()
         return
     end
 
-    local compound_commands = deepcopy(this.target_settings.commands)
+    local compound_commands = this.target_settings.commands
 
     if not orders then
-        self:find_targets()
         self.moving_to_attack_target = tick + 200
         orders = self.moving_to_attack_target
         if self.commands and next(self.commands) then
-            for _, entry in pairs(self.commands) do
-                compound_commands[#compound_commands + 1] = entry
-            end
+            compound_commands = self.commands
         end
         local command = {
             type = defines.command.compound,
@@ -902,12 +912,9 @@ function Public._esp:attack_target()
     end
 
     if tick > orders then
-        self:find_targets()
         self.moving_to_attack_target = tick + 200
         if self.commands and next(self.commands) then
-            for _, entry in pairs(self.commands) do
-                compound_commands[#compound_commands + 1] = entry
-            end
+            compound_commands = self.commands
         end
 
         local command = {
@@ -1012,6 +1019,8 @@ function Public._esp:work(tick)
             self:spew_damage()
         elseif random(1, 30) == 1 then
             self:set_burst_frenzy()
+        elseif random(1, 40) == 1 then
+            self:find_targets()
         elseif random(1, 50) == 1 then
             self:fire_projectile()
         elseif random(1, 60) == 1 then
@@ -1026,7 +1035,9 @@ function Public._esp:work(tick)
             end
         end
     elseif tick < self.ttl then
-        if random(1, 40) == 1 then
+        if random(1, 30) == 1 then
+            self:find_targets()
+        elseif random(1, 40) == 1 then
             self:spew_damage()
         elseif random(1, 50) == 1 then
             self:set_burst_frenzy()
@@ -1043,6 +1054,10 @@ Public.set_module_status = function()
     this.settings.enabled = not this.settings.enabled
 end
 
+Public.set_track_bosses_only = function()
+    this.settings.track_bosses_only = not this.settings.track_bosses_only
+end
+
 Event.on_init(on_init)
 Event.add(de.on_entity_died, on_entity_died)
 Event.add(de.on_entity_damaged, on_entity_damaged)
@@ -1052,5 +1067,34 @@ Event.add(ev.on_entity_created, on_entity_created)
 Event.add(ev.on_target_aquired, on_target_aquired)
 Event.add(ev.on_evolution_factor_changed, on_evolution_factor_changed)
 Event.add(ev.on_game_reset, on_init)
+
+--- This gets values from our table
+-- @param key <string>
+function Public.get_es(key)
+    if key then
+        return this[key]
+    else
+        return this
+    end
+end
+
+--- This sets values to our table
+-- use with caution.
+-- @param key <string>
+-- @param value <string/boolean/int>
+function Public.set_es(key, value)
+    if key and (value or value == false or value == 'nil') then
+        if value == 'nil' then
+            this[key] = nil
+        else
+            this[key] = value
+        end
+        return this[key]
+    elseif key then
+        return this[key]
+    else
+        return this
+    end
+end
 
 return Public

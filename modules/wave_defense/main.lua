@@ -393,6 +393,7 @@ local function set_enemy_evolution()
     local threat = Public.get('threat')
     local evolution_factor = wave_number * 0.001
     local enemy = game.forces.enemy
+
     local biter_health_boost = 1
 
     if evolution_factor > 1 then
@@ -414,6 +415,7 @@ local function set_enemy_evolution()
     end
 
     enemy.evolution_factor = evolution_factor
+
     raise(Public.events.on_evolution_factor_changed, {evolution_factor = evolution_factor})
 end
 
@@ -506,7 +508,14 @@ local function spawn_biter(surface, position, forceSpawn, is_boss_biter, unit_se
         position = old_position
     end
 
-    local biter = surface.create_entity({name = name, position = position, force = 'enemy'})
+    local force = 'enemy'
+    local es_settings = Public.get_es('settings')
+
+    if es_settings.enabled then
+        force = 'aggressors'
+    end
+
+    local biter = surface.create_entity({name = name, position = position, force = force})
     biter.ai_settings.allow_destroy_when_commands_fail = true
     biter.ai_settings.allow_try_return_to_spawner = false
     biter.ai_settings.do_separation = true
@@ -1056,8 +1065,15 @@ local function spawn_unit_group(fs, only_bosses)
 
     local event_data = {}
 
+    local es_settings = Public.get_es('settings')
+
+    local force = 'enemy'
+    if es_settings.enabled then
+        force = 'aggressors'
+    end
+
     local generated_units = Public.get('generated_units')
-    local unit_group = surface.create_unit_group({position = spawn_position, force = 'enemy'})
+    local unit_group = surface.create_unit_group({position = spawn_position, force = force})
 
     event_data.unit_group = unit_group
 

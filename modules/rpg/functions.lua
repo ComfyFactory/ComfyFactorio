@@ -166,7 +166,7 @@ local function level_up(player)
     Public.level_up_effects(player)
 end
 
-local function has_health_boost(entity, damage, final_damage_amount, cause, callback_func)
+local function has_health_boost(entity, damage, final_damage_amount, cause)
     local biter_health_boost = BiterHealthBooster.get('biter_health_boost')
     local biter_health_boost_units = BiterHealthBooster.get('biter_health_boost_units')
 
@@ -194,9 +194,7 @@ local function has_health_boost(entity, damage, final_damage_amount, cause, call
 
             if health_pool[1] <= 0 then
                 local entity_number = entity.unit_number
-                if not callback_func then
-                    entity.die(entity.force.name, cause)
-                end
+                entity.die(entity.force.name, cause)
 
                 if biter_health_boost_units[entity_number] then
                     biter_health_boost_units[entity_number] = nil
@@ -206,9 +204,7 @@ local function has_health_boost(entity, damage, final_damage_amount, cause, call
             entity.health = entity.health + final_damage_amount
             entity.health = entity.health - damage
             if entity.health <= 0 then
-                if not callback_func then
-                    entity.die(cause.force.name, cause)
-                end
+                entity.die(cause.force.name, cause)
             end
         end
     else
@@ -216,9 +212,7 @@ local function has_health_boost(entity, damage, final_damage_amount, cause, call
         entity.health = entity.health + final_damage_amount
         entity.health = entity.health - damage
         if entity.health <= 0 then
-            if not callback_func then
-                entity.die(cause.force.name, cause)
-            end
+            entity.die(cause.force.name, cause)
         end
     end
 
@@ -648,18 +642,25 @@ function Public.log_aoe_punch(callback)
 end
 
 --Melee damage modifier
-function Public.aoe_punch(entity, target, damage, get_health_pool)
-    if not (target and target.valid) then
+function Public.aoe_punch(cause, entity, damage, final_damage_amount)
+    if not (entity and entity.valid) then
+        return
+    end
+    if not (cause and cause.valid) then
         return
     end
 
-    local base_vector = {target.position.x - entity.position.x, target.position.y - entity.position.y}
+    local ent_position = entity.position
+
+    local get_health_pool = has_health_boost(entity, damage, final_damage_amount, cause)
+
+    local base_vector = {ent_position.x - cause.position.x, ent_position.y - cause.position.y}
 
     local vector = {base_vector[1], base_vector[2]}
     vector[1] = vector[1] * 1000
     vector[2] = vector[2] * 1000
 
-    entity.surface.create_entity({name = 'blood-explosion-huge', position = target.position})
+    cause.surface.create_entity({name = 'blood-explosion-huge', position = ent_position})
 
     if abs(vector[1]) > abs(vector[2]) then
         local d = abs(vector[1])
@@ -684,8 +685,8 @@ function Public.aoe_punch(entity, target, damage, get_health_pool)
 
     local a = 0.20
 
-    local cs = entity.surface
-    local cp = entity.position
+    local cs = cause.surface
+    local cp = cause.position
 
     for i = 1, 16, 1 do
         for x = i * -1 * a, i * a, 1 do
@@ -696,7 +697,7 @@ function Public.aoe_punch(entity, target, damage, get_health_pool)
                     if e.valid then
                         if e.health then
                             if e.destructible and e.minable and e.force.index ~= 3 then
-                                if e.force.index ~= entity.force.index then
+                                if e.force.index ~= cause.force.index then
                                     if get_health_pool then
                                         local max_unit_health = floor(get_health_pool * 0.00015)
                                         if max_unit_health <= 0 then
@@ -706,15 +707,12 @@ function Public.aoe_punch(entity, target, damage, get_health_pool)
                                             max_unit_health = 10
                                         end
                                         local final = floor(damage * max_unit_health)
-                                        set_health_boost(e, final, entity)
-                                        if e.valid and e.health <= 0 and get_health_pool <= 0 then
-                                            e.die(e.force.name, entity)
-                                        end
+                                        set_health_boost(e, final, cause)
                                     else
                                         if e.valid then
                                             e.health = e.health - damage * 0.05
                                             if e.health <= 0 then
-                                                e.die(e.force.name, entity)
+                                                e.die(e.force.name, cause)
                                             end
                                         end
                                     end

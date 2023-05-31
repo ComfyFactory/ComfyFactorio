@@ -1394,7 +1394,13 @@ function Public.on_player_joined_game(event)
     -- end
 
     if player.surface.index ~= active_surface_index then
-        player.teleport(surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5), surface)
+        local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
+        if pos then
+            player.teleport(pos, surface)
+        else
+            pos = game.forces.player.get_spawn_position(surface)
+            player.teleport(pos, surface)
+        end
     else
         local p = {x = player.position.x, y = player.position.y}
         local get_tile = surface.get_tile(p)
@@ -1415,7 +1421,13 @@ function Public.on_player_joined_game(event)
         return
     end
     if player.position.y > locomotive.position.y then
-        player.teleport(surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5), surface)
+        local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
+        if pos then
+            player.teleport(pos, surface)
+        else
+            pos = game.forces.player.get_spawn_position(surface)
+            player.teleport(pos, surface)
+        end
     end
 end
 

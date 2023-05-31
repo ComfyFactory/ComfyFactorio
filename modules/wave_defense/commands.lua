@@ -34,20 +34,26 @@ commands.add_command(
             return
         end
 
-        if param == 'spawn_wave' then
+        if param == 'toggle_es_boss' then
+            Public.set_track_bosses_only()
+            p(module_name .. ' ES bosses has been toggled!')
+            return
+        end
+
+        if param == 'spawn' then
             Public.spawn_unit_group(true, true)
             p(module_name .. ' wave spawned!')
             return
         end
 
-        if param == 'next_wave' then
+        if param == 'next' then
             Public.set_next_wave()
             Public.spawn_unit_group(true, true)
             p(module_name .. ' wave spawned!')
             return
         end
 
-        if param == 'set_next_50' then
+        if param == 'next_50' then
             for _ = 1, 50 do
                 Public.set_next_wave()
             end
@@ -56,7 +62,7 @@ commands.add_command(
             return
         end
 
-        if param == 'set_wave_1500' then
+        if param == 'next_1500' then
             for _ = 1, 1500 do
                 Public.set_next_wave()
             end

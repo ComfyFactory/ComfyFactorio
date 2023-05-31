@@ -519,7 +519,10 @@ local function on_entity_damaged(event)
         )
     end
 
-    local get_health_pool = Public.has_health_boost(entity, damage, final_damage_amount, cause, true)
+    local is_explosive_bullets_enabled = Public.get_explosive_bullets()
+    if is_explosive_bullets_enabled then
+        Public.explosive_bullets(event)
+    end
 
     --Cause a one punch.
     if enable_aoe_punch then
@@ -537,16 +540,14 @@ local function on_entity_damaged(event)
                 end
             )
             if success then
-                Public.aoe_punch(cause, entity, damage, get_health_pool) -- only kill the biters if their health is below or equal to zero
+                Public.aoe_punch(cause, entity, damage, final_damage_amount) -- only kill the biters if their health is below or equal to zero
                 return
             end
         end
     end
 
-    local is_explosive_bullets_enabled = Public.get_explosive_bullets()
-    if is_explosive_bullets_enabled then
-        Public.explosive_bullets(event)
-    end
+    --Handle vanilla damage.
+    Public.has_health_boost(entity, damage, final_damage_amount, cause)
 end
 
 local function on_player_repaired_entity(event)
