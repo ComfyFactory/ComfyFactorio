@@ -331,7 +331,8 @@ local function on_entity_died(event)
         end
         if disable_threat_below_zero then
             local threat = Public.get('threat')
-            if threat <= 0 then
+            local sub = math.round(threat - Public.threat_values[entity.name] * boost_value, 2)
+            if sub <= 0 or threat <= 0 then
                 Public.set('threat', 0)
                 remove_unit(entity)
                 return
