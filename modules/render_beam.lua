@@ -8,16 +8,11 @@ local this = {
         'character',
         'tank',
         'car',
-        'lab',
         'locomotive',
         'cargo-wagon',
         'fluid-wagon',
         'artillery-wagon',
         'artillery-turret',
-        'laser-turret',
-        'gun-turret',
-        'flamethrower-turret',
-        'silo',
         'spidertron'
     }
 }

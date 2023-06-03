@@ -309,21 +309,7 @@ local function on_entity_died(event)
         return
     end
 
-    local modified_unit_health = Public.get('modified_unit_health')
-    if not modified_unit_health then
-        return
-    end
-    local modified_boss_unit_health = Public.get('modified_boss_unit_health')
-    if not modified_boss_unit_health then
-        return
-    end
-
-    local boss = is_boss(entity)
-
-    local boost_value = modified_unit_health.current_value
-    if boss then
-        boost_value = modified_boss_unit_health.current_value / 2
-    end
+    local biter_health_boost = BiterHealthBooster.get('biter_health_boost')
 
     if entity.type == 'unit' then
         if not Public.threat_values[entity.name] then
@@ -331,17 +317,18 @@ local function on_entity_died(event)
         end
         if disable_threat_below_zero then
             local threat = Public.get('threat')
-            local sub = math.round(threat - Public.threat_values[entity.name] * boost_value, 2)
+            local sub = math.round(threat - Public.threat_values[entity.name] * biter_health_boost, 2)
+
             if sub <= 0 or threat <= 0 then
                 Public.set('threat', 0)
                 remove_unit(entity)
                 return
             end
-            Public.set('threat', math.round(threat - Public.threat_values[entity.name] * boost_value, 2))
+            Public.set('threat', math.round(threat - Public.threat_values[entity.name] * biter_health_boost, 2))
             remove_unit(entity)
         else
             local threat = Public.get('threat')
-            Public.set('threat', math.round(threat - Public.threat_values[entity.name] * boost_value, 2))
+            Public.set('threat', math.round(threat - Public.threat_values[entity.name] * biter_health_boost, 2))
             remove_unit(entity)
         end
     else
@@ -349,7 +336,7 @@ local function on_entity_died(event)
             if entity.health then
                 if Public.threat_values[entity.name] then
                     local threat = Public.get('threat')
-                    Public.set('threat', math.round(threat - Public.threat_values[entity.name] * boost_value, 2))
+                    Public.set('threat', math.round(threat - Public.threat_values[entity.name] * biter_health_boost, 2))
                 end
                 spawn_unit_spawner_inhabitants(entity)
             end
