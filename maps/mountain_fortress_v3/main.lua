@@ -115,8 +115,6 @@ function Public.reset_map()
     Misc.set('creative_are_you_sure', false)
     Misc.set('creative_enabled', false)
 
-    Event.raise(WD.events.on_game_reset, {})
-
     this.active_surface_index = Public.create_surface()
     -- this.soft_reset_counter = Public.get_reset_counter()
 
@@ -254,6 +252,7 @@ function Public.reset_map()
     WD.increase_average_unit_group_size(true)
     WD.increase_max_active_unit_groups(true)
     WD.enable_random_spawn_positions(true)
+    Event.raise(WD.events.on_game_reset, {})
 
     Public.set_difficulty()
     Public.disable_creative()
