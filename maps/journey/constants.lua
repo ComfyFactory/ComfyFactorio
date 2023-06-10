@@ -13,7 +13,7 @@ for x = Public.mothership_radius * -1 - 32, Public.mothership_radius + 32, 1 do
 		local distance = math.sqrt(position.x ^ 2 + position.y ^ 2)
 		if distance > Public.mothership_radius then
 			table.insert(Public.particle_spawn_vectors, {position.x, position.y})
-		end		
+		end
 	end
 end
 Public.size_of_particle_spawn_vectors = #Public.particle_spawn_vectors
@@ -23,8 +23,8 @@ Public.world_selector_height = 8
 Public.max_satellites = 3
 
 local area = {
-	left_top = {x = -3, y = math.floor(Public.mothership_radius * 0.5) * -1},
-	right_bottom = {x = 3, y = math.floor(Public.mothership_radius * 0.5) * -1 + Public.world_selector_height},
+	left_top = {x = -3, y = 4 + math.floor(Public.mothership_radius * 0.5) * -1},
+	right_bottom = {x = 3, y = 4 + math.floor(Public.mothership_radius * 0.5) * -1 + Public.world_selector_height},
 }
 
 Public.world_selector_areas = {
@@ -96,10 +96,10 @@ Public.mothership_gen_settings = {
 	},
 }
 
-Public.modifiers = {	
+Public.modifiers_old = {
 	["trees"] = {-20, -10, "Trees"},
 	["tree_durability"] = {-30, -15, "Tree Durability"},
-	["cliff_settings"] = {20, 40, "Cliffs"},	
+	["cliff_settings"] = {20, 40, "Cliffs"},
 	["water"] = {-20, -10, "Water"},
 	["coal"] = {-20, -10, "Coal"},
 	["stone"] = {-20, -10, "Stone"},
@@ -111,18 +111,41 @@ Public.modifiers = {
 	["enemy-base"] = {10, 20, "Nests"},
 	["expansion_cooldown"] = {-30, -15, "Nest Expansion Cooldown"},
 	["enemy_attack_pollution_consumption_modifier"] = {-20, -10, "Nest Pollution Consumption"},
-	["max_unit_group_size"] = {15, 30, "Biter Group Size Maximum"},	
+	["max_unit_group_size"] = {15, 30, "Biter Group Size Maximum"},
 	["time_factor"] = {15, 30, "Evolution Time Factor"},
 	["destroy_factor"] = {15, 30, "Evolution Destroy Factor"},
-	["pollution_factor"] = {15, 30, "Evolution Pollution Factor"},	
+	["pollution_factor"] = {15, 30, "Evolution Pollution Factor"},
 	["ageing"] = {-20, -10, "Terrain Pollution Consumption"},
 	["diffusion_ratio"] = {10, 20, "Pollution Diffusion"},
-	["technology_price_multiplier"] = {10, 20, "Technology Price"},	
+	["technology_price_multiplier"] = {10, 20, "Technology Price"},
+}
+Public.modifiers = {
+	["trees"] = {min = 0.01, max = 10, base = 1, dmin = -20, dmax = -10, name = "Trees"},
+	["tree_durability"] = {min = 0.01, max = 10, base = 1, dmin = -30, dmax =-15, name = "Tree Durability"},
+	["cliff_settings"] = {min = 0.01, max = 10, base = 1, dmin = 20, dmax = 40, name = "Cliffs"},
+	["water"] = {min = 0.01, max = 10, base = 1, dmin = -20, dmax = -10, name = "Water"},
+	["coal"] = {min = 0.01, max = 10, base = 1, dmin = -20, dmax = -10, name = "Coal"},
+	["stone"] = {min = 0.01, max = 10, base = 1, dmin = -20, dmax = -10, name = "Stone"},
+	["iron-ore"] = {min = 0.01, max = 10, base = 1, dmin = -20, dmax = -10, name = "Iron Ore"},
+	["copper-ore"] = {min = 0.01, max = 10, base = 1, dmin = -20, dmax = -10, name = "Copper Ore"},
+	["crude-oil"] = {min = 0.01, max = 10, base = 1, dmin = -20, dmax = -10, name = "Oil"},
+	["uranium-ore"] = {min = 0.01, max = 10, base = 1, dmin = -20, dmax = -10, name = "Uranium Ore"},
+	["mixed_ore"] = {min = 0.01, max = 10, base = 1, dmin = -20, dmax = -10, name = "Mixed Ore"},
+	["enemy-base"] = {min = 0.01, max = 10, base = 1, dmin = 10, dmax = 20, name = "Nests"},
+	["expansion_cooldown"] = {min = 3600, max = 28800, base = 14400, dmin = -20, dmax = -10, name = "Nest Expansion Cooldown"},
+	["enemy_attack_pollution_consumption_modifier"] = {min = 0.2, max = 10, base = 1, dmin = -10, dmax = -5, name = "Nest Pollution Consumption"},
+	["max_unit_group_size"] = {min = 10, max = 500, base = 100, dmin = 10, dmax = 20, name = "Biter Group Size Maximum"},
+	["time_factor"] = {min = 0.000001, max = 0.0001, base = 0.000004, dmin = 15, dmax = 30, name = "Evolution Time Factor"},
+	["destroy_factor"] = {min = 0.0002, max = 0.2, base = 0.002, dmin = 15, dmax = 30, name = "Evolution Destroy Factor"},
+	["pollution_factor"] = {min = 0.00000009, max = 0.00009, base = 0.0000009, dmin = 15, dmax = 30, name = "Evolution Pollution Factor"},
+	["ageing"] = {min = 0.01, max = 4, base = 1, dmin = -20, dmax = -10, name = "Terrain Pollution Consumption"},
+	["diffusion_ratio"] = {min = 0.01, max = 0.1, base = 0.02, dmin = 10, dmax = 20, name = "Pollution Diffusion"},
+	["technology_price_multiplier"] = {min = 0.5, max = 10, base = 1, dmin = 10, dmax = 20, name = "Technology Price"},
 }
 
 Public.starter_goods_pool = {
 	{"accumulator", 8, 16},
-	{"big-electric-pole", 8, 16},	
+	{"big-electric-pole", 8, 16},
 	{"burner-inserter", 64, 128},
 	{"burner-mining-drill", 8, 16},
 	{"car", 2, 4},
@@ -168,32 +191,32 @@ Public.build_type_whitelist = {
 	["pipe"] = true,
 	["pipe-to-ground"] = true,
 	["programmable-speaker"] = true,
-	["transport-belt"] = true,	
+	["transport-belt"] = true,
 	["wall"] = true,
 }
 
-Public.unique_world_traits = {	
-	["lush"] = {"Lush", "Pure Vanilla."},	
-	["abandoned_library"] = {"Abandoned Library", "No blueprints to be found."},
-	["lazy_bastard"] = {"Lazy Bastard", "The machine does the job."},		
-	["oceanic"] = {"Oceanic", "Arrrr, the flame turrets seem to malfunction in this climate."},
-	["ribbon"] = {"Ribbon", "Go right. (or left)"},
-	["wasteland"] = {"Wasteland", "Rusty treasures."},
-	["infested"] = {"Infested", "They lurk inside."},
-	["pitch_black"] = {"Pitch Black", "No light may reach this realm."},
-	["volcanic"] = {"Volcanic", "The floor is (almost) lava."},
-	["matter_anomaly"] = {"Matter Anomaly", "Why can't i hold all these ores.\nThe laser turret structures seem to malfunction."},
-	["mountainous"] = {"Mountainous", "Diggy diggy hole!"},
-	["eternal_night"] = {"Eternal Night", "This world seems to be missing a sun."},
-	["dense_atmosphere"] = {"Dense Atmosphere", "Your roboport structures seem to malfunction."},
-	["undead_plague"] = {"Undead Plague", "The dead are restless."},
-	["swamps"] = {"Swamps", "No deep water to be found in this world."},	
-	["chaotic_resources"] = {"Chaotic Resources", "Something to sort out."},	
-	["low_mass"] = {"Low Mass", "You feel light footed and the robots are buzzing."},	
-	["eternal_day"] = {"Eternal Day", "The sun never moves."},	
-	["quantum_anomaly"] = {"Quantum Anomaly", "Research complete."},
-	["replicant_fauna"] = {"Replicant Fauna", "The biters feed on your structures."},
-	["tarball"] = {"Tarball", "Door stuck, Door stuck..."},
+Public.unique_world_traits = {
+	["lush"] = {"Lush", "Pure Vanilla.", 1},
+	["abandoned_library"] = {"Abandoned Library", "No blueprints to be found.", 3},
+	["lazy_bastard"] = {"Lazy Bastard", "The machine does the job.", 4},
+	["oceanic"] = {"Oceanic", "Arrrr, the flame turrets seem to malfunction in this climate.", 2},
+	["ribbon"] = {"Ribbon", "Go right. (or left)", 4},
+	["wasteland"] = {"Wasteland", "Rusty treasures.", 2},
+	["infested"] = {"Infested", "They lurk inside.", 4},
+	["pitch_black"] = {"Pitch Black", "No light may reach this realm.", 2},
+	["volcanic"] = {"Volcanic", "The floor is (almost) lava.", 4},
+	["matter_anomaly"] = {"Matter Anomaly", "Why can't i hold all these ores.\nThe laser turret structures seem to malfunction.", 2},
+	["mountainous"] = {"Mountainous", "Diggy diggy hole!", 2},
+	["eternal_night"] = {"Eternal Night", "This world seems to be missing a sun.", 2},
+	["dense_atmosphere"] = {"Dense Atmosphere", "Your roboport structures seem to malfunction.", 3},
+	["undead_plague"] = {"Undead Plague", "The dead are restless.", 4},
+	["swamps"] = {"Swamps", "No deep water to be found in this world.", 3},
+	["chaotic_resources"] = {"Chaotic Resources", "Something to sort out.", 2},
+	["low_mass"] = {"Low Mass", "You feel light footed and the robots are buzzing.", 2},
+	["eternal_day"] = {"Eternal Day", "The sun never moves.", 1},
+	["quantum_anomaly"] = {"Quantum Anomaly", "Research complete.", 2},
+	["replicant_fauna"] = {"Replicant Fauna", "The biters feed on your structures.", 4},
+	["tarball"] = {"Tarball", "Door stuck, Door stuck...", 4},
 	--[[
 	]]
 }

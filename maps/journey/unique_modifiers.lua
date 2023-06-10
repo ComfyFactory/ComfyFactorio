@@ -134,7 +134,7 @@ Public.mountainous = {
 		local ore_amount = math_floor(count * 0.85)
 		local stone_amount = math_floor(count * 0.15)
 		surface.spill_item_stack(entity.position, {name = ore, count = ore_amount}, true)
-		surface.spill_item_stack(entity.position, {name = 'stone', count = stone_amount}, true)   
+		surface.spill_item_stack(entity.position, {name = 'stone', count = stone_amount}, true)
 	end,
 	on_chunk_generated = function(event, journey)
 		local surface = event.surface
@@ -171,7 +171,7 @@ Public.replicant_fauna = {
 	end,
 }
 
-Public.tarball = {	
+Public.tarball = {
 	on_robot_built_entity = function(event)
 		local entity = event.created_entity
 		if not entity.valid then return end
@@ -206,28 +206,28 @@ Public.tarball = {
 }
 
 Public.swamps = {
-	on_chunk_generated = function(event, journey)	
+	on_chunk_generated = function(event, journey)
 		local surface = event.surface
 		local seed = surface.map_gen_settings.seed
 		local left_top_x = event.area.left_top.x
 		local left_top_y = event.area.left_top.y
-		
+
 		local tiles = {}
 		for _, tile in pairs(surface.find_tiles_filtered({name = {"water", "deepwater"}, area = event.area})) do
 			table.insert(tiles, {name = "water-shallow", position = tile.position})
 		end
 		surface.set_tiles(tiles, true, false, false, false)
-		
+
 		local tiles = {}
 		for x = 0, 31, 1 do
-			for y = 0, 31, 1 do				
+			for y = 0, 31, 1 do
 				local position = {x = left_top_x + x, y = left_top_y + y}
 				local noise = Get_noise('journey_swamps', position, seed)
-				if noise > 0.45 or noise < -0.65 then table.insert(tiles, {name = "water-shallow", position = {x = position.x, y = position.y}}) end							
+				if noise > 0.45 or noise < -0.65 then table.insert(tiles, {name = "water-shallow", position = {x = position.x, y = position.y}}) end
 			end
 		end
 		surface.set_tiles(tiles, true, false, false, false)
-		
+
 		for _, tile in pairs(tiles) do
 			if math_random(1, 32) == 1 then
 				surface.create_entity({name = "fish", position = tile.position})
@@ -237,11 +237,11 @@ Public.swamps = {
 }
 
 Public.wasteland = {
-	on_chunk_generated = function(event, journey)	
+	on_chunk_generated = function(event, journey)
 		local surface = event.surface
 		local seed = surface.map_gen_settings.seed
 		local left_top_x = event.area.left_top.x
-		local left_top_y = event.area.left_top.y		
+		local left_top_y = event.area.left_top.y
 		local tiles = {}
 		for _, tile in pairs(surface.find_tiles_filtered({name = {"water"}, area = event.area})) do
 			table.insert(tiles, {name = "water-green", position = tile.position})
@@ -263,7 +263,7 @@ Public.wasteland = {
 					for _, item_stack in pairs(item_stacks) do e.insert(item_stack) end
 				end
 			end
-		end	
+		end
 	end,
 	on_world_start = function(journey)
 		local surface = game.surfaces.nauvis
@@ -398,7 +398,7 @@ Public.low_mass = {
 	on_world_start = function(journey)
 		local force = game.forces.player
 		force.character_running_speed_modifier = 0.5
-		for i = 1, 6, 1 do force.technologies['worker-robots-speed-' .. i].researched = true end		
+		for i = 1, 6, 1 do force.technologies['worker-robots-speed-' .. i].researched = true end
 	end,
 }
 

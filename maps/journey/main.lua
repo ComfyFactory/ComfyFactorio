@@ -115,6 +115,16 @@ local function on_robot_mined_entity(event)
 	if unique_modifier.on_robot_mined_entity then unique_modifier.on_robot_mined_entity(event, journey) end
 end
 
+local function on_entity_damaged(event)
+	local entity = event.entity
+	if not entity or not entity.valid then return end
+	if entity ~= journey.beacon_objective then return end
+	if event.force and event.force.name == 'enemy' then
+		Functions.deal_damage_to_beacon(journey, event.final_damage_amount)
+	end
+	entity.health = 200
+end
+
 local function on_entity_died(event)
     local unique_modifier = Unique_modifiers[journey.world_trait]
 	if unique_modifier.on_entity_died then unique_modifier.on_entity_died(event, journey) end
@@ -133,7 +143,7 @@ local function on_rocket_launched(event)
 			if journey.mothership_cargo[slot.name] > journey.mothership_cargo_space[slot.name] then
 				journey.mothership_cargo[slot.name] = journey.mothership_cargo_space[slot.name]
 			end
-			if slot.name == "uranium-fuel-cell" then
+			if slot.name == "uranium-fuel-cell" or slot.name == 'nuclear-fuel' then
 				Server.to_discord_embed("Refueling progress: " .. journey.mothership_cargo[slot.name] .. "/" .. journey.mothership_cargo_space[slot.name])
 			end
 		end
@@ -144,6 +154,7 @@ end
 local function on_nth_tick()
 	Functions[journey.game_state](journey)
 	Functions.mothership_message_queue(journey)
+	Functions.lure_biters(journey)
 end
 
 local function on_init()
@@ -156,38 +167,48 @@ local function on_init()
 
 	Functions.hard_reset(journey)
 end
+local function cmd_handler()
+	local player = game.player
+	local p
+	if not (player and player.valid) then
+		p = log
+	else
+		p = player.print
+	end
+	if player and not player.admin then
+		p("You are not an admin!")
+		return
+	end
+	return player or {name = 'Server'}, p
+end
 
 commands.add_command(
-    'reset-journey',
+    'journey-reset',
     'Fully resets the journey map.',
     function()
-		local player = game.player
-        if not (player and player.valid) then
-            return
-        end
-        if not player.admin then
-            player.print("You are not an admin!")
-            return
-        end
+		local player = cmd_handler()
 		Functions.hard_reset(journey)
 		game.print(player.name .. " has reset the map.")
 	end
 )
 
 commands.add_command(
-    'skip-world',
+    'journey-skip-world',
     'Instantly wins and skips the current world.',
     function()
-		local player = game.player
-        if not (player and player.valid) then
-            return
-        end
-        if not player.admin then
-            player.print("You are not an admin!")
-            return
-        end
+		cmd_handler()
 		if journey.game_state ~= "dispatch_goods" and journey.game_state ~= "world" then return end
 		journey.game_state = "set_world_selectors"
+	end
+)
+
+commands.add_command(
+	'journey-update',
+	'Restarts the server with newest version of Journey scenario code during next map reset',
+	function()
+		local _, p = cmd_handler()
+		journey.restart_from_scenario = not journey.restart_from_scenario
+		p('Journey marking for full restart with updates on next reset was switched to ' .. tostring(journey.restart_from_scenario))
 	end
 )
 
@@ -204,4 +225,5 @@ Event.add(defines.events.on_built_entity, on_built_entity)
 Event.add(defines.events.on_robot_mined_entity, on_robot_mined_entity)
 Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 Event.add(defines.events.on_entity_died, on_entity_died)
+Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.add(defines.events.on_console_chat, on_console_chat)
