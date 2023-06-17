@@ -2,6 +2,8 @@ require 'utils.data_stages'
 _LIFECYCLE = _STAGE.control -- Control stage
 _DEBUG = false
 _DUMP_ENV = false
+_PROFILE = false
+_PROFILE_ON_INIT = false
 
 require 'utils.server'
 require 'utils.server_commands'
@@ -264,6 +266,9 @@ require 'map_loader'
 
 if _DUMP_ENV then
     require 'utils.dump_env'
+end
+
+if _PROFILE then
     require 'utils.profiler'
 end
 

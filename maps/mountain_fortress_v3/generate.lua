@@ -25,9 +25,6 @@ local wintery_type = {
     ['cargo-wagon'] = true
 }
 
--- Set to false by modules that want to control the on_chunk_generated event themselves.
-Public.enable_register_events = true
-
 -- Simple "loop" that is UPS friendly.
 local function get_position(data)
     data.yv = data.yv + 1
@@ -518,7 +515,7 @@ local map_gen_action_token = Token.register(map_gen_action)
 
 --- Adds generation of a Chunk of the map to the queue
 -- @param event <table> the event table from on_chunk_generated
-function Public.schedule_chunk(event)
+local function schedule_chunk(event)
     local surface = event.surface
     local shape = generate_map
 
@@ -563,7 +560,7 @@ end
 
 --- Generates a Chunk of map when called
 -- @param event <table> the event table from on_chunk_generated
-function Public.do_chunk(event)
+local function do_chunk(event)
     local surface = event.surface
     local shape = generate_map
 
@@ -609,9 +606,6 @@ function Public.do_chunk(event)
     do_place_markets(data)
     do_place_treasure(data)
 end
-
-local do_chunk = Public.do_chunk
-local schedule_chunk = Public.schedule_chunk
 
 local function on_chunk(event)
     local force_chunk = Public.get('force_chunk')

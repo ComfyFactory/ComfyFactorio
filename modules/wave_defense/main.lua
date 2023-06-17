@@ -4,28 +4,14 @@ local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 local Alert = require 'utils.alert'
 local Server = require 'utils.server'
+local Collapse = require 'modules.collapse'
+Collapse.read_tables_only = true
 
 local random = math.random
 local floor = math.floor
 local sqrt = math.sqrt
 local round = math.round
 local raise = Event.raise
-
-local function debug_print(msg)
-    local debug = Public.get('debug')
-    if not debug then
-        return
-    end
-    print('WaveDefense: ' .. msg)
-end
-
-local function debug_print_health(msg)
-    local debug = Public.get('debug_health')
-    if not debug then
-        return
-    end
-    print('[HEALTHBOOSTER]: ' .. msg)
-end
 
 local function valid(userdata)
     if not (userdata and userdata.valid) then
@@ -168,14 +154,14 @@ local function fill_tiles(entity, size)
             surface.set_tiles({{name = 'sand-1', position = tile.position}}, true)
         end
     end
-    debug_print('fill_tiles - filled tiles cause we found non-placable tiles.')
+    Public.debug_print('fill_tiles - filled tiles cause we found non-placable tiles.')
 end
 
 local function get_spawn_pos()
     local surface_index = Public.get('surface_index')
     local surface = game.surfaces[surface_index]
     if not surface then
-        return debug_print('get_spawn_pos - surface was not valid?')
+        return Public.debug_print('get_spawn_pos - surface was not valid?')
     end
 
     local c = 0
@@ -183,11 +169,14 @@ local function get_spawn_pos()
     ::retry::
 
     local initial_position = Public.get('spawn_position')
+    local target = Public.get('target')
 
-    if random(1, 2) == 1 then
-        initial_position = {x = initial_position.x, y = initial_position.y - 30}
-    else
-        initial_position = {x = initial_position.x, y = initial_position.y - 20}
+    if initial_position.y - target.position.y > 10 then
+        if random(1, 2) == 1 then
+            initial_position = {x = initial_position.x, y = initial_position.y - 30}
+        else
+            initial_position = {x = initial_position.x, y = initial_position.y - 20}
+        end
     end
 
     local located_position = find_initial_spot(surface, initial_position)
@@ -206,21 +195,21 @@ local function get_spawn_pos()
         if remove_entities then
             c = c + 1
             valid_position = Public.get('spawn_position')
-            debug_print(serpent.block('valid_position - x:' .. valid_position.x .. ' y:' .. valid_position.y))
+            Public.debug_print(serpent.block('valid_position - x:' .. valid_position.x .. ' y:' .. valid_position.y))
             remove_trees({surface = surface, position = valid_position, valid = true})
             remove_rocks({surface = surface, position = valid_position, valid = true})
             fill_tiles({surface = surface, position = valid_position, valid = true})
             Public.set('spot', 'nil')
             if c == 5 then
-                return debug_print('get_spawn_pos - we could not find a spawning pos?')
+                return Public.debug_print('get_spawn_pos - we could not find a spawning pos?')
             end
             goto retry
         else
-            return debug_print('get_spawn_pos - we could not find a spawning pos?')
+            return Public.debug_print('get_spawn_pos - we could not find a spawning pos?')
         end
     end
 
-    debug_print(serpent.block('valid_position - x:' .. valid_position.x .. ' y:' .. valid_position.y))
+    Public.debug_print(serpent.block('valid_position - x:' .. valid_position.x .. ' y:' .. valid_position.y))
 
     return valid_position
 end
@@ -228,15 +217,15 @@ end
 local function is_unit_valid(biter)
     local max_biter_age = Public.get('max_biter_age')
     if not biter.entity then
-        debug_print('is_unit_valid - unit destroyed - does no longer exist')
+        Public.debug_print('is_unit_valid - unit destroyed - does no longer exist')
         return false
     end
     if not biter.entity.valid then
-        debug_print('is_unit_valid - unit destroyed - invalid')
+        Public.debug_print('is_unit_valid - unit destroyed - invalid')
         return false
     end
     if biter.spawn_tick + max_biter_age < game.tick then
-        debug_print('is_unit_valid - unit destroyed - timed out')
+        Public.debug_print('is_unit_valid - unit destroyed - timed out')
         return false
     end
     return true
@@ -245,7 +234,7 @@ end
 local function refresh_active_unit_threat()
     local active_biter_threat = Public.get('active_biter_threat')
     local generated_units = Public.get('generated_units')
-    debug_print('refresh_active_unit_threat - current value ' .. active_biter_threat)
+    Public.debug_print('refresh_active_unit_threat - current value ' .. active_biter_threat)
     local biter_threat = 0
     for k, biter in pairs(generated_units.active_biters) do
         if valid(biter.entity) then
@@ -256,7 +245,7 @@ local function refresh_active_unit_threat()
     end
     local biter_health_boost = BiterHealthBooster.get('biter_health_boost')
     Public.set('active_biter_threat', round(biter_threat * biter_health_boost, 2))
-    debug_print('refresh_active_unit_threat - new value ' .. active_biter_threat)
+    Public.debug_print('refresh_active_unit_threat - new value ' .. active_biter_threat)
     if generated_units.unit_group_pos.index > 500 then
         generated_units.unit_group_pos.positions = {}
         generated_units.unit_group_pos.index = 0
@@ -285,7 +274,7 @@ local function time_out_biters()
                     entity.destroy()
                 end
             end
-            debug_print('time_out_biters: ' .. k .. ' got deleted.')
+            Public.debug_print('time_out_biters: ' .. k .. ' got deleted.')
             generated_units.active_biters[k] = nil
         end
     end
@@ -316,7 +305,7 @@ local function get_random_close_spawner()
         if not spawner or (center.x - spawner_2.position.x) ^ 2 + (center.y - spawner_2.position.y) ^ 2 < (center.x - spawner.position.x) ^ 2 + (center.y - spawner.position.y) ^ 2 then
             spawner = spawner_2
             if spawner and spawner.position then
-                debug_print('get_random_close_spawner - Found at x' .. spawner.position.x .. ' y' .. spawner.position.y)
+                Public.debug_print('get_random_close_spawner - Found at x' .. spawner.position.x .. ' y' .. spawner.position.y)
             end
         end
     end
@@ -368,7 +357,7 @@ local function set_main_target()
 
     Public.set('target', sec_target)
     raise(Public.events.on_target_aquired, {target = target})
-    debug_print('set_main_target -- New main target ' .. sec_target.name .. ' at position x' .. sec_target.position.x .. ' y' .. sec_target.position.y .. ' selected.')
+    Public.debug_print('set_main_target -- New main target ' .. sec_target.name .. ' at position x' .. sec_target.position.x .. ' y' .. sec_target.position.y .. ' selected.')
 end
 
 local function set_group_spawn_position(surface)
@@ -383,7 +372,7 @@ local function set_group_spawn_position(surface)
     Public.set('spawn_position', {x = position.x, y = position.y})
     local spawn_position = get_spawn_pos()
     if spawn_position then
-        debug_print('set_group_spawn_position -- Changed position to x' .. spawn_position.x .. ' y' .. spawn_position.y .. '.')
+        Public.debug_print('set_group_spawn_position -- Changed position to x' .. spawn_position.x .. ' y' .. spawn_position.y .. '.')
     end
 end
 
@@ -423,7 +412,7 @@ local function can_units_spawn()
     local threat = Public.get('threat')
 
     if threat <= 0 then
-        debug_print('can_units_spawn - threat too low')
+        Public.debug_print('can_units_spawn - threat too low')
         time_out_biters()
         return false
     end
@@ -431,14 +420,14 @@ local function can_units_spawn()
     local active_biter_count = Public.get('active_biter_count')
     local max_active_biters = Public.get('max_active_biters')
     if active_biter_count >= max_active_biters then
-        debug_print('can_units_spawn - active biter count too high')
+        Public.debug_print('can_units_spawn - active biter count too high')
         time_out_biters()
         return false
     end
 
     local active_biter_threat = Public.get('active_biter_threat')
     if active_biter_threat >= threat then
-        debug_print('can_units_spawn - active biter threat too high (' .. active_biter_threat .. ')')
+        Public.debug_print('can_units_spawn - active biter threat too high (' .. active_biter_threat .. ')')
         time_out_biters()
         return false
     end
@@ -469,7 +458,7 @@ local function get_active_unit_groups_count()
             end
         end
     end
-    debug_print('Active unit group count: ' .. count)
+    Public.debug_print('Active unit group count: ' .. count)
     return count
 end
 
@@ -531,7 +520,7 @@ local function spawn_biter(surface, position, forceSpawn, is_boss_biter, unit_se
         if final_health < 1 then
             final_health = 1
         end
-        debug_print_health('final_health - unit: ' .. biter.name .. ' with h-m: ' .. final_health)
+        Public.debug_print_health('final_health - unit: ' .. biter.name .. ' with h-m: ' .. final_health)
         BiterHealthBooster.add_unit(biter, final_health)
     end
 
@@ -574,8 +563,8 @@ local function increase_biter_damage()
     local e_old_melee = e.get_ammo_damage_modifier('melee')
     local e_old_biological = e.get_ammo_damage_modifier('biological')
 
-    debug_print('Melee: ' .. melee + e_old_melee)
-    debug_print('Biological: ' .. bio + e_old_biological)
+    Public.debug_print('Melee: ' .. melee + e_old_melee)
+    Public.debug_print('Biological: ' .. bio + e_old_biological)
 
     e.set_ammo_damage_modifier('melee', melee + e_old_melee)
     e.set_ammo_damage_modifier('biological', bio + e_old_biological)
@@ -592,7 +581,7 @@ local function increase_biters_health()
     if modified_unit_health.current_value > modified_unit_health.limit_value then
         modified_unit_health.current_value = modified_unit_health.limit_value
     end
-    debug_print_health('modified_unit_health.current_value: ' .. modified_unit_health.current_value)
+    Public.debug_print_health('modified_unit_health.current_value: ' .. modified_unit_health.current_value)
     Public.set('modified_unit_health').current_value = modified_unit_health.current_value + modified_unit_health.health_increase_per_boss_wave
 
     -- this sets boss units health
@@ -600,7 +589,7 @@ local function increase_biters_health()
     if modified_boss_unit_health.current_value > modified_boss_unit_health.limit_value then
         modified_boss_unit_health.current_value = modified_boss_unit_health.limit_value
     end
-    debug_print_health('modified_boss_unit_health.current_value: ' .. modified_boss_unit_health.current_value)
+    Public.debug_print_health('modified_boss_unit_health.current_value: ' .. modified_boss_unit_health.current_value)
     Public.set('modified_boss_unit_health').current_value = modified_boss_unit_health.current_value + modified_boss_unit_health.health_increase_per_boss_wave
 end
 
@@ -622,7 +611,7 @@ local function increase_unit_group_size()
         end
 
         Public.set('average_unit_group_size', new_average_unit_group_size)
-        debug_print_health('average_unit_group_size - ' .. new_average_unit_group_size)
+        Public.debug_print_health('average_unit_group_size - ' .. new_average_unit_group_size)
     end
 end
 
@@ -644,7 +633,7 @@ local function increase_max_active_unit_groups()
         end
 
         Public.set('max_active_unit_groups', new_max_active_unit_groups)
-        debug_print_health('max_active_unit_groups - ' .. new_max_active_unit_groups)
+        Public.debug_print_health('max_active_unit_groups - ' .. new_max_active_unit_groups)
     end
 end
 
@@ -727,14 +716,14 @@ local function reform_group(group)
         for _, biter in pairs(group.members) do
             new_group.add_member(biter)
         end
-        debug_print('Creating new unit group, because old one was stuck.')
+        Public.debug_print('Creating new unit group, because old one was stuck.')
         generated_units.unit_groups[new_group.group_number] = new_group
         local unit_groups_size = Public.get('unit_groups_size')
         Public.set('unit_groups_size', unit_groups_size + 1)
 
         return new_group
     else
-        debug_print('Destroying stuck group.')
+        Public.debug_print('Destroying stuck group.')
         if generated_units.unit_groups[group.group_number] then
             if generated_units.unit_group_last_command[group.group_number] then
                 generated_units.unit_group_last_command[group.group_number] = nil
@@ -810,7 +799,7 @@ local function get_main_command(group)
         return
     end
 
-    debug_print('get_main_command - starting')
+    Public.debug_print('get_main_command - starting')
 
     local target_position = target.position
     local distance_to_target = floor(sqrt((target_position.x - group_position.x) ^ 2 + (target_position.y - group_position.y) ^ 2))
@@ -820,9 +809,9 @@ local function get_main_command(group)
         round((target_position.y - group_position.y) / steps, 3)
     }
 
-    debug_print('get_commmands - to main target x' .. target_position.x .. ' y' .. target_position.y)
-    debug_print('get_commmands - distance_to_target:' .. distance_to_target .. ' steps:' .. steps)
-    debug_print('get_commmands - vector ' .. vector[1] .. '_' .. vector[2])
+    Public.debug_print('get_commmands - to main target x' .. target_position.x .. ' y' .. target_position.y)
+    Public.debug_print('get_commmands - distance_to_target:' .. distance_to_target .. ' steps:' .. steps)
+    Public.debug_print('get_commmands - vector ' .. vector[1] .. '_' .. vector[2])
 
     for _ = 1, steps, 1 do
         local old_position = group_position
@@ -907,7 +896,7 @@ local function command_to_main_target(group, bypass)
 
     local commands = get_main_command(group)
 
-    debug_print('get_main_command - got commands')
+    Public.debug_print('get_main_command - got commands')
 
     local surface_index = Public.get('surface_index')
 
@@ -922,7 +911,7 @@ local function command_to_main_target(group, bypass)
             commands = commands
         }
     )
-    debug_print('get_main_command - sent commands')
+    Public.debug_print('get_main_command - sent commands')
     if valid(group) then
         generated_units.unit_group_last_command[group.group_number] = game.tick
     end
@@ -1007,25 +996,25 @@ end
 
 local function spawn_unit_group(fs, only_bosses)
     if fs then
-        debug_print('spawn_unit_group - forcing new biters')
+        Public.debug_print('spawn_unit_group - forcing new biters')
     else
         if not can_units_spawn() then
-            debug_print('spawn_unit_group - Cant spawn units?')
+            Public.debug_print('spawn_unit_group - Cant spawn units?')
             return
         end
     end
     local target = Public.get('target')
     if not valid(target) then
-        debug_print('spawn_unit_group - Target was not valid?')
+        Public.debug_print('spawn_unit_group - Target was not valid?')
         return
     end
 
     local max_active_unit_groups = Public.get('max_active_unit_groups')
     if fs then
-        debug_print('spawn_unit_group - forcing new biters')
+        Public.debug_print('spawn_unit_group - forcing new biters')
     else
         if get_active_unit_groups_count() >= max_active_unit_groups then
-            debug_print('spawn_unit_group - unit_groups at max')
+            Public.debug_print('spawn_unit_group - unit_groups at max')
             return
         end
     end
@@ -1047,7 +1036,7 @@ local function spawn_unit_group(fs, only_bosses)
     }
     for _, v in pairs(surface.find_entities_filtered {area = area, name = 'land-mine'}) do
         if v and v.valid then
-            debug_print('spawn_unit_group - found land-mines')
+            Public.debug_print('spawn_unit_group - found land-mines')
             v.die()
         end
     end
@@ -1061,7 +1050,7 @@ local function spawn_unit_group(fs, only_bosses)
     local wave_number = Public.get('wave_number')
     Public.wave_defense_set_unit_raffle(wave_number)
 
-    debug_print('Spawning unit group at x' .. spawn_position.x .. ' y' .. spawn_position.y)
+    Public.debug_print('Spawning unit group at x' .. spawn_position.x .. ' y' .. spawn_position.y)
 
     local event_data = {}
 
@@ -1093,7 +1082,7 @@ local function spawn_unit_group(fs, only_bosses)
         for _ = 1, group_size, 1 do
             local biter = spawn_biter(surface, spawn_position, fs, false, unit_settings)
             if not biter then
-                debug_print('spawn_unit_group - No biters were found?')
+                Public.debug_print('spawn_unit_group - No biters were found?')
                 break
             end
             unit_group.add_member(biter)
@@ -1116,7 +1105,7 @@ local function spawn_unit_group(fs, only_bosses)
         for _ = 1, count, 1 do
             local biter = spawn_biter(surface, spawn_position, fs, true, unit_settings)
             if not biter then
-                debug_print('spawn_unit_group - No biter was found?')
+                Public.debug_print('spawn_unit_group - No biter was found?')
                 break
             end
             unit_group.add_member(biter)
@@ -1191,14 +1180,19 @@ local function log_threat()
     end
 end
 
+local function normalize_spawn_position()
+    local collapse_spawn_position = Collapse.get_position()
+    Public.set_spawn_position({x = collapse_spawn_position.x, y = collapse_spawn_position.y - 25})
+end
+
 local tick_tasks = {
     [30] = set_main_target,
     [60] = set_enemy_evolution,
     [90] = check_group_positions,
     [120] = give_main_command_to_group,
     [150] = log_threat,
-    [180] = Public.build_nest,
-    [210] = Public.build_worm
+    [180] = Public.build_worm,
+    [210] = Public.build_nest
 }
 
 local tick_tasks_t2 = {
@@ -1283,5 +1277,6 @@ Event.on_nth_tick(
 )
 
 Public.set_next_wave = set_next_wave
+Public.normalize_spawn_position = normalize_spawn_position
 
 return Public

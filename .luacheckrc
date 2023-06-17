@@ -33,9 +33,9 @@
 -------------------------------------------------------------------------------
 --[Set Defaults]--
 -------------------------------------------------------------------------------
-local LINE_LENGTH = false -- It is 2017 limits on length are a waste
-local IGNORE = {'21./%w+_$', '21./^_%w+$', '213/[ijk]', '213/index', '213/key'}
-local NOT_GLOBALS = {'coroutine', 'io', 'socket', 'dofile', 'loadfile'} -- These globals are not available to the factorio API
+local LINE_LENGTH = false                                                 -- It is 2017 limits on length are a waste
+local IGNORE = { '21./%w+_$', '21./^_%w+$', '213/[ijk]', '213/index', '213/key' }
+local NOT_GLOBALS = { 'coroutine', 'io', 'socket', 'dofile', 'loadfile' } -- These globals are not available to the factorio API
 
 local STD_CONTROL = 'lua52c+factorio+factorio_control+stdlib+factorio_defines'
 local STD_DATA = 'lua52c+factorio+factorio_data+stdlib+stdlib_data+factorio_defines'
@@ -51,6 +51,8 @@ std = STD_CONTROL
 globals = {
     'print',
     '_DEBUG',
+    '_PROFILE',
+    '_PROFILE_ON_INIT',
     '_CHEATS',
     '_DUMP_ENV',
     'ServerCommands',
@@ -59,6 +61,7 @@ globals = {
     '_STAGE',
     'get_game_version',
     'is_loaded',
+    'is_loaded_bool',
     'is_game_modded',
     'is_mod_loaded',
     'require'
@@ -104,32 +107,35 @@ files['**/settings/'].std = STD_DATA
 local base_scenarios = {
     std = STD_BASE_CONTROL .. '+factorio_base_scenarios+factorio_base_story',
     --ignore = {'212/event', '111', '112', '113', '211', '212', '213', '311', '411', '412', '421', '422', '423', '431', '432', '512'}
-    ignore = {'...'}
+    ignore = { '...' }
 }
 files['**/base/scenarios/'] = base_scenarios
 files['**/base/tutorials/'] = base_scenarios
 files['**/base/campaigns/'] = base_scenarios
 files['**/wip-scenario/'] = base_scenarios
 
-files['**/base/migrations/'] = {std = STD_BASE_CONTROL}
+files['**/base/migrations/'] = { std = STD_BASE_CONTROL }
 
-files['**/core/lualib/'] = {std = STD_BASE_CONTROL}
-files['**/core/lualib/util.lua'] = {globals = {'util', 'table'}, ignore = {'432/object'}}
-files['**/core/lualib/silo-script.lua'] = {globals = {'silo_script'}, ignore = {'4../player'}}
-files['**/core/lualib/production-score.lua'] = {globals = {'production_score', 'get_price_recursive'}, ignore = {'4../player'}}
-files['**/core/lualib/story*'] = {std = '+factorio_base_story', ignore = {'42./k', '42./filter'}}
-files['**/core/lualib/mod-gui.lua'] = {globals = {'mod_gui'}}
-files['**/core/lualib/camera.lua'] = {globals = {'camera'}}
-files['**/core/lualib/builder.lua'] = {globals = {'Builder', 'builder', 'action', 'down', 'right'}}
+files['**/core/lualib/'] = { std = STD_BASE_CONTROL }
+files['**/core/lualib/util.lua'] = { globals = { 'util', 'table' }, ignore = { '432/object' } }
+files['**/core/lualib/silo-script.lua'] = { globals = { 'silo_script' }, ignore = { '4../player' } }
+files['**/core/lualib/production-score.lua'] = {
+    globals = { 'production_score', 'get_price_recursive' },
+    ignore = { '4../player' }
+}
+files['**/core/lualib/story*'] = { std = '+factorio_base_story', ignore = { '42./k', '42./filter' } }
+files['**/core/lualib/mod-gui.lua'] = { globals = { 'mod_gui' } }
+files['**/core/lualib/camera.lua'] = { globals = { 'camera' } }
+files['**/core/lualib/builder.lua'] = { globals = { 'Builder', 'builder', 'action', 'down', 'right' } }
 
-files['**/core/lualib/bonus-gui-ordering/'] = {std = STD_BASE_DATA}
-files['**/core/lualib/dataloader.lua'] = {globals = {'data'}}
-files['**/core/lualib/circuit-connector-*'] = {std = STD_BASE_DATA .. '+factorio_circuit_connector_generated'}
-files['**/core/lualib/bonus-gui-ordering.lua'] = {globals = {'bonus_gui_ordering'}}
+files['**/core/lualib/bonus-gui-ordering/'] = { std = STD_BASE_DATA }
+files['**/core/lualib/dataloader.lua'] = { globals = { 'data' } }
+files['**/core/lualib/circuit-connector-*'] = { std = STD_BASE_DATA .. '+factorio_circuit_connector_generated' }
+files['**/core/lualib/bonus-gui-ordering.lua'] = { globals = { 'bonus_gui_ordering' } }
 
-files['**/base/prototypes/'] = {std = STD_BASE_DATA}
-files['**/core/prototypes/'] = {std = STD_BASE_DATA}
-files['**/core/prototypes/noise-programs.lua'] = {ignore = {'212/x', '212/y', '212/tile', '212/map'}}
+files['**/base/prototypes/'] = { std = STD_BASE_DATA }
+files['**/core/prototypes/'] = { std = STD_BASE_DATA }
+files['**/core/prototypes/noise-programs.lua'] = { ignore = { '212/x', '212/y', '212/tile', '212/map' } }
 
 --(( stdlib ))--
 local stdlib_control = {
@@ -153,7 +159,7 @@ files['**/stdlib/data/'] = stdlib_data
 
 -- STDLIB Busted Spec
 files['**/spec/**'] = {
-    globals = {'serpent', 'log', 'SLOG', 'RESET'},
+    globals = { 'serpent', 'log', 'SLOG', 'RESET' },
     std = 'lua52c+busted+factorio_defines+factorio_control+stdlib'
 } --))
 
@@ -220,9 +226,9 @@ stds.factorio_control = {
         settings = {
             fields = {
                 'get_player_settings',
-                startup = {read_only = false, other_fields = true},
-                global = {read_only = false, other_fields = true},
-                player = {read_only = false, other_fields = true}
+                startup = { read_only = false, other_fields = true },
+                global = { read_only = false, other_fields = true },
+                player = { read_only = false, other_fields = true }
             }
         },
         -- @script@: Provides an interface for registering event handlers.
@@ -247,7 +253,7 @@ stds.factorio_control = {
         -- (http://lua-api.factorio.com/latest/LuaRemote.html)
         remote = {
             fields = {
-                interfaces = {read_only = false, other_fields = true},
+                interfaces = { read_only = false, other_fields = true },
                 'add_interface',
                 'remove_interface',
                 'call'
@@ -256,7 +262,7 @@ stds.factorio_control = {
             other_fields = false
         },
         rcon = {
-            fields = {'print'}
+            fields = { 'print' }
         },
         commands = {
             fields = {
@@ -413,42 +419,42 @@ stds.factorio_control = {
                 'unban_player',
                 'unmute_player',
                 'write_file',
-                active_mods = {read_only = true, other_fields = true},
-                ammo_category_prototypes = {read_only = true, other_fields = true},
-                autoplace_control_prototypes = {read_only = true, other_fields = true},
-                backer_names = {read_only = true, other_fields = true},
-                connected_players = {read_only = true, other_fields = true},
-                custom_input_prototypes = {read_only = true, other_fields = true},
-                damage_prototypes = {read_only = true, other_fields = true},
-                decorative_prototypes = {read_only = true, other_fields = true},
-                default_map_gen_settings = {read_only = true, other_fields = true},
-                difficulty = {read_only = true, other_fields = true},
-                difficulty_settings = {read_only = true, other_fields = true},
-                enemy_has_vision_on_land_mines = {read_only = false, other_fields = false},
-                entity_prototypes = {read_only = true, other_fields = true},
-                equipment_grid_prototypes = {read_only = true, other_fields = true},
-                equipment_prototypes = {read_only = true, other_fields = true},
-                finished = {read_only = true, other_fields = true},
-                fluid_prototypes = {read_only = true, other_fields = true},
-                forces = {read_only = true, other_fields = true},
-                item_prototypes = {read_only = true, other_fields = true},
-                map_settings = {read_only = true, other_fields = true},
-                mod_setting_prototypes = {read_only = true, other_fields = true},
-                noise_layer_prototypes = {read_only = true, other_fields = true},
-                permissions = {read_only = true, other_fields = true},
-                player = {read_only = true, other_fields = true},
-                players = {read_only = true, other_fields = true},
-                recipe_prototypes = {read_only = true, other_fields = true},
-                speed = {read_only = false, other_fields = false},
-                styles = {read_only = true, other_fields = true},
-                surfaces = {read_only = true, other_fields = true},
-                technology_prototypes = {read_only = true, other_fields = true},
-                tick = {read_only = true, other_fields = true},
-                tick_paused = {read_only = false, other_fields = false},
-                ticks_played = {read_only = true, other_fields = true},
-                ticks_to_run = {read_only = false, other_fields = false},
-                tile_prototypes = {read_only = true, other_fields = true},
-                virtual_signal_prototypes = {read_only = true, other_fields = true}
+                active_mods = { read_only = true, other_fields = true },
+                ammo_category_prototypes = { read_only = true, other_fields = true },
+                autoplace_control_prototypes = { read_only = true, other_fields = true },
+                backer_names = { read_only = true, other_fields = true },
+                connected_players = { read_only = true, other_fields = true },
+                custom_input_prototypes = { read_only = true, other_fields = true },
+                damage_prototypes = { read_only = true, other_fields = true },
+                decorative_prototypes = { read_only = true, other_fields = true },
+                default_map_gen_settings = { read_only = true, other_fields = true },
+                difficulty = { read_only = true, other_fields = true },
+                difficulty_settings = { read_only = true, other_fields = true },
+                enemy_has_vision_on_land_mines = { read_only = false, other_fields = false },
+                entity_prototypes = { read_only = true, other_fields = true },
+                equipment_grid_prototypes = { read_only = true, other_fields = true },
+                equipment_prototypes = { read_only = true, other_fields = true },
+                finished = { read_only = true, other_fields = true },
+                fluid_prototypes = { read_only = true, other_fields = true },
+                forces = { read_only = true, other_fields = true },
+                item_prototypes = { read_only = true, other_fields = true },
+                map_settings = { read_only = true, other_fields = true },
+                mod_setting_prototypes = { read_only = true, other_fields = true },
+                noise_layer_prototypes = { read_only = true, other_fields = true },
+                permissions = { read_only = true, other_fields = true },
+                player = { read_only = true, other_fields = true },
+                players = { read_only = true, other_fields = true },
+                recipe_prototypes = { read_only = true, other_fields = true },
+                speed = { read_only = false, other_fields = false },
+                styles = { read_only = true, other_fields = true },
+                surfaces = { read_only = true, other_fields = true },
+                technology_prototypes = { read_only = true, other_fields = true },
+                tick = { read_only = true, other_fields = true },
+                tick_paused = { read_only = false, other_fields = false },
+                ticks_played = { read_only = true, other_fields = true },
+                ticks_to_run = { read_only = false, other_fields = false },
+                tile_prototypes = { read_only = true, other_fields = true },
+                virtual_signal_prototypes = { read_only = true, other_fields = true }
             }
         }
     },
@@ -496,7 +502,7 @@ stds.factorio_data = {
 
 --(( Factorio Globals are bad mkay ))--
 stds.factorio_base_control = {
-    read_globals = {'silo_script', 'mod_gui', 'camera'}
+    read_globals = { 'silo_script', 'mod_gui', 'camera' }
 }
 
 stds.factorio_base_scenarios = {
@@ -1221,12 +1227,12 @@ stds.factorio_defines = {
                         'not_enough_repair_packs'
                     }
                 },
-                anticolor = {other_fields = true},
-                behavior_result = {fields = {'success', 'in_progress', 'deleted', 'fail'}},
-                build_check_type = {fields = {'script', 'manual', 'ghost_revive', 'ghost_place'}},
-                chain_signal_state = {fields = {'partially_open', 'none_open', 'none', 'all_open'}},
+                anticolor = { other_fields = true },
+                behavior_result = { fields = { 'success', 'in_progress', 'deleted', 'fail' } },
+                build_check_type = { fields = { 'script', 'manual', 'ghost_revive', 'ghost_place' } },
+                chain_signal_state = { fields = { 'partially_open', 'none_open', 'none', 'all_open' } },
                 chunk_generated_status = {
-                    fields = {'basic_tiles', 'corrected_tiles', 'entities', 'nothing', 'tiles', 'custom_tiles'}
+                    fields = { 'basic_tiles', 'corrected_tiles', 'entities', 'nothing', 'tiles', 'custom_tiles' }
                 },
                 circuit_condition_index = {
                     fields = {
@@ -1260,7 +1266,7 @@ stds.factorio_defines = {
                         'container'
                     }
                 },
-                color = {other_fields = true},
+                color = { other_fields = true },
                 command = {
                     fields = {
                         'attack',
@@ -1274,7 +1280,7 @@ stds.factorio_defines = {
                         'flee'
                     }
                 },
-                compound_command = {fields = {'return_last', 'logical_and', 'logical_or'}},
+                compound_command = { fields = { 'return_last', 'logical_and', 'logical_or' } },
                 control_behavior = {
                     fields = {
                         inserter = {
@@ -1288,15 +1294,15 @@ stds.factorio_defines = {
                                         'enable_disable'
                                     }
                                 },
-                                hand_read_mode = {fields = {'hold', 'pulse'}}
+                                hand_read_mode = { fields = { 'hold', 'pulse' } }
                             }
                         },
-                        lamp = {fields = {circuit_mode_of_operation = {fields = {'use_colors'}}}},
+                        lamp = { fields = { circuit_mode_of_operation = { fields = { 'use_colors' } } } },
                         logistic_container = {
-                            fields = {circuit_mode_of_operation = {fields = {'set_requests', 'send_contents'}}}
+                            fields = { circuit_mode_of_operation = { fields = { 'set_requests', 'send_contents' } } }
                         },
-                        mining_drill = {fields = {resource_read_mode = {fields = {'this_miner', 'entire_patch'}}}},
-                        transport_belt = {fields = {content_read_mode = {fields = {'hold', 'pulse'}}}},
+                        mining_drill = { fields = { resource_read_mode = { fields = { 'this_miner', 'entire_patch' } } } },
+                        transport_belt = { fields = { content_read_mode = { fields = { 'hold', 'pulse' } } } },
                         type = {
                             fields = {
                                 'rail_chain_signal',
@@ -1321,23 +1327,23 @@ stds.factorio_defines = {
                         }
                     }
                 },
-                controllers = {fields = {'spectator', 'character', 'god', 'cutscene', 'editor', 'ghost'}},
+                controllers = { fields = { 'spectator', 'character', 'god', 'cutscene', 'editor', 'ghost' } },
                 deconstruction_item = {
                     fields = {
-                        entity_filter_mode = {fields = {'whitelist', 'blacklist'}},
-                        tile_filter_mode = {fields = {'whitelist', 'blacklist'}},
-                        tile_selection_mode = {fields = {'only', 'never', 'always', 'normal'}}
+                        entity_filter_mode = { fields = { 'whitelist', 'blacklist' } },
+                        tile_filter_mode = { fields = { 'whitelist', 'blacklist' } },
+                        tile_selection_mode = { fields = { 'only', 'never', 'always', 'normal' } }
                     }
                 },
-                difficulty = {fields = {'hard', 'easy', 'normal'}},
+                difficulty = { fields = { 'hard', 'easy', 'normal' } },
                 difficulty_settings = {
                     fields = {
-                        recipe_difficulty = {fields = {'normal', 'expensive'}},
-                        technology_difficulty = {fields = {'normal', 'expensive'}}
+                        recipe_difficulty = { fields = { 'normal', 'expensive' } },
+                        technology_difficulty = { fields = { 'normal', 'expensive' } }
                     }
                 },
                 direction = {
-                    fields = {'southwest', 'north', 'northeast', 'west', 'east', 'northwest', 'south', 'southeast'}
+                    fields = { 'southwest', 'north', 'northeast', 'west', 'east', 'northwest', 'south', 'southeast' }
                 },
                 disconnect_reason = {
                     fields = {
@@ -1354,7 +1360,7 @@ stds.factorio_defines = {
                         'reconnect'
                     }
                 },
-                distraction = {fields = {'by_damage', 'by_anything', 'by_enemy', 'none'}},
+                distraction = { fields = { 'by_damage', 'by_anything', 'by_enemy', 'none' } },
                 entity_status = {
                     fields = {
                         'no_power',
@@ -1881,7 +1887,7 @@ stds.factorio_defines = {
                         'cargo_wagon'
                     }
                 },
-                lightcolor = {other_fields = true},
+                lightcolor = { other_fields = true },
                 logistic_member_index = {
                     fields = {
                         'character_provider',
@@ -1893,12 +1899,12 @@ stds.factorio_defines = {
                     }
                 },
                 logistic_mode = {
-                    fields = {'passive_provider', 'active_provider', 'requester', 'storage', 'buffer', 'none'}
+                    fields = { 'passive_provider', 'active_provider', 'requester', 'storage', 'buffer', 'none' }
                 },
-                mouse_button_type = {fields = {'left', 'middle', 'right', 'none'}},
-                rail_connection_direction = {fields = {'left', 'straight', 'right', 'none'}},
-                rail_direction = {fields = {'back', 'front'}},
-                relative_gui_position = {fields = {'bottom', 'top', 'left', 'right'}},
+                mouse_button_type = { fields = { 'left', 'middle', 'right', 'none' } },
+                rail_connection_direction = { fields = { 'left', 'straight', 'right', 'none' } },
+                rail_direction = { fields = { 'back', 'front' } },
+                relative_gui_position = { fields = { 'bottom', 'top', 'left', 'right' } },
                 relative_gui_type = {
                     fields = {
                         'blueprint_library_gui',
@@ -1966,17 +1972,17 @@ stds.factorio_defines = {
                         'entity_variations_gui'
                     }
                 },
-                render_mode = {fields = {'chart_zoomed_in', 'game', 'chart'}},
-                rich_text_setting = {fields = {'disabled', 'enabled', 'highlight'}},
+                render_mode = { fields = { 'chart_zoomed_in', 'game', 'chart' } },
+                rich_text_setting = { fields = { 'disabled', 'enabled', 'highlight' } },
                 riding = {
                     fields = {
-                        acceleration = {fields = {'reversing', 'accelerating', 'nothing', 'braking'}},
-                        direction = {fields = {'left', 'straight', 'right'}}
+                        acceleration = { fields = { 'reversing', 'accelerating', 'nothing', 'braking' } },
+                        direction = { fields = { 'left', 'straight', 'right' } }
                     }
                 },
-                shooting = {fields = {'shooting_selected', 'not_shooting', 'shooting_enemies'}},
-                signal_state = {fields = {'reserved_by_circuit_network', 'reserved', 'closed', 'open'}},
-                time = {fields = {'hour', 'week', 'year', 'month', 'minute', 'second', 'day'}},
+                shooting = { fields = { 'shooting_selected', 'not_shooting', 'shooting_enemies' } },
+                signal_state = { fields = { 'reserved_by_circuit_network', 'reserved', 'closed', 'open' } },
+                time = { fields = { 'hour', 'week', 'year', 'month', 'minute', 'second', 'day' } },
                 train_state = {
                     fields = {
                         'no_path',
@@ -2005,8 +2011,8 @@ stds.factorio_defines = {
                         'right_split_line'
                     }
                 },
-                wire_connection_id = {fields = {'power_switch_right', 'power_switch_left', 'electric_pole'}},
-                wire_type = {fields = {'copper', 'green', 'red'}}
+                wire_connection_id = { fields = { 'power_switch_right', 'power_switch_left', 'electric_pole' } },
+                wire_type = { fields = { 'copper', 'green', 'red' } }
             }
         }
     }

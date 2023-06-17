@@ -70,9 +70,18 @@ function is_loaded(module)
     local res = _G.package.loaded[module]
     if res then
         return res
-    else
-        return false
     end
+
+    return false
+end
+
+function is_loaded_bool(module)
+    local res = _G.package.loaded[module]
+    if res then
+        return true
+    end
+
+    return false
 end
 
 function is_game_modded()

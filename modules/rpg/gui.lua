@@ -442,12 +442,7 @@ function Public.draw_level_text(player)
         rpg_t.text = nil
     end
 
-    local players = {}
-    for _, p in pairs(game.players) do
-        if p.index ~= player.index then -- todo maybe remove this so the player also sees their level?
-            players[#players + 1] = p.index
-        end
-    end
+    local players = game.connected_players
     if #players == 0 then
         return
     end

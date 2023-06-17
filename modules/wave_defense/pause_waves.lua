@@ -128,6 +128,7 @@ local function pause_waves_state(state)
     else
         local message = ({'wave_defense.start_waves'})
         Alert.alert_all_players(30, message, nil, 'achievement/tech-maniac', 0.75)
+        Public.normalize_spawn_position()
         Public.set('paused', false)
         Public.set('paused_waves_for', nil)
         Public.set('last_pause', nil)
