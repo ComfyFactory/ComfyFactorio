@@ -73,7 +73,7 @@ if is_loaded_bool('maps.mountain_fortress_v3.table') then
             return
         end
 
-        local disable_spawn_near_target = Public.get('spawn_near_target')
+        local disable_spawn_near_target = Public.get('disable_spawn_near_target')
 
         local generated_units = Public.get('generated_units')
         local group = generated_units.unit_groups[random_group.group_number]
@@ -412,9 +412,9 @@ local function on_entity_died(event)
         goto continue
     end
 
-    local biter_health_boost = BiterHealthBooster.get('biter_health_boost')
-
     if entity.type == 'unit' then
+        local biter_health_boost = BiterHealthBooster.get('biter_health_boost')
+
         if not Public.threat_values[entity.name] then
             goto continue
         end
@@ -435,6 +435,8 @@ local function on_entity_died(event)
             remove_unit(entity)
         end
     else
+        local biter_health_boost = BiterHealthBooster.get('biter_health_boost')
+
         if valid_enemy_forces[entity.force.name] then
             if entity.health then
                 if Public.threat_values[entity.name] then

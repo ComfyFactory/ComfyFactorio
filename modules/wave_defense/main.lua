@@ -12,6 +12,7 @@ local floor = math.floor
 local sqrt = math.sqrt
 local round = math.round
 local raise = Event.raise
+local check_if_near_target
 
 local function valid(userdata)
     if not (userdata and userdata.valid) then
@@ -27,6 +28,13 @@ local function shuffle(tbl)
         tbl[i], tbl[rand] = tbl[rand], tbl[i]
     end
     return tbl
+end
+
+local function normalize_spawn_position()
+    local collapse_spawn_position = Collapse.get_position()
+    local new_pos = {x = 0, y = collapse_spawn_position.y - 40}
+    Public.set_spawn_position(new_pos)
+    return new_pos
 end
 
 local function find_initial_spot(surface, position)
@@ -1029,6 +1037,15 @@ local function spawn_unit_group(fs, only_bosses)
         return
     end
 
+    if check_if_near_target(spawn_position) then
+        spawn_position = normalize_spawn_position()
+        Public.debug_print('spawn_unit_group - cannot spawn unit group near target')
+        if not spawn_position then
+            Public.debug_print('spawn_unit_group - spawn_position was invalid')
+            return
+        end
+    end
+
     local radius = 10
     local area = {
         left_top = {spawn_position.x - radius, spawn_position.y - radius},
@@ -1180,9 +1197,27 @@ local function log_threat()
     end
 end
 
-local function normalize_spawn_position()
-    local collapse_spawn_position = Collapse.get_position()
-    Public.set_spawn_position({x = collapse_spawn_position.x, y = collapse_spawn_position.y - 25})
+if is_loaded_bool('maps.mountain_fortress_v3.table') then
+    local Core = require 'maps.mountain_fortress_v3.core'
+
+    check_if_near_target = function(position)
+        local entity = {
+            valid = true,
+            position = position
+        }
+        local disable_spawn_near_target = Public.get('disable_spawn_near_target')
+
+        if Core.is_around_train(entity) and disable_spawn_near_target then
+            Public.debug_print('check_if_near_target  - cannot spawn inside locomotive aura')
+            return true
+        end
+
+        return false
+    end
+else
+    check_if_near_target = function()
+        return false
+    end
 end
 
 local tick_tasks = {
@@ -1278,5 +1313,6 @@ Event.on_nth_tick(
 
 Public.set_next_wave = set_next_wave
 Public.normalize_spawn_position = normalize_spawn_position
+Public.check_if_near_target = check_if_near_target
 
 return Public
