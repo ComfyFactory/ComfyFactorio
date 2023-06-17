@@ -20,6 +20,7 @@ local BottomFrame = require 'utils.gui.bottom_frame'
 local Modifiers = require 'utils.player_modifiers'
 
 local zone_settings = Public.zone_settings
+local de = defines.events
 
 local this = {
     power_sources = {index = 1},
@@ -1716,11 +1717,11 @@ local on_research_finished = Public.on_research_finished
 local on_player_changed_position = Public.on_player_changed_position
 local on_player_respawned = Public.on_player_respawned
 
-Event.add(defines.events.on_player_joined_game, on_player_joined_game)
-Event.add(defines.events.on_player_left_game, on_player_left_game)
-Event.add(defines.events.on_research_finished, on_research_finished)
-Event.add(defines.events.on_player_changed_position, on_player_changed_position)
-Event.add(defines.events.on_player_respawned, on_player_respawned)
+Event.add(de.on_player_joined_game, on_player_joined_game)
+Event.add(de.on_player_left_game, on_player_left_game)
+Event.add(de.on_research_finished, on_research_finished)
+Event.add(de.on_player_changed_position, on_player_changed_position)
+Event.add(de.on_player_respawned, on_player_respawned)
 Event.on_nth_tick(10, tick)
 Event.add(WD.events.on_wave_created, on_wave_created)
 

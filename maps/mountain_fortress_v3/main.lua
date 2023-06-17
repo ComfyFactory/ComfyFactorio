@@ -177,6 +177,8 @@ function Public.reset_map()
     game.forces.player.set_spawn_position({-27, 25}, surface)
     game.forces.player.manual_mining_speed_modifier = 0
     game.forces.player.set_ammo_damage_modifier('artillery-shell', -0.95)
+    game.forces.player.worker_robots_battery_modifier = 4
+    game.forces.player.worker_robots_storage_bonus = 15
 
     BiterHealthBooster.set_active_surface(tostring(surface.name))
     BiterHealthBooster.acid_nova(true)
@@ -394,7 +396,7 @@ local lock_locomotive_positions = function()
 
     local total_pos = #locomotive_positions.tbl
     if total_pos > 50 then
-        remove(locomotive_positions.tbl, total_pos - total_pos + 1)
+        remove(locomotive_positions.tbl, 1)
     end
 end
 
