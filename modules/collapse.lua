@@ -322,7 +322,9 @@ local function on_tick()
     progress()
 end
 
-Event.on_init(on_init)
-Event.add(defines.events.on_tick, on_tick)
+if not Public.read_tables_only then
+    Event.on_init(on_init)
+    Event.add(defines.events.on_tick, on_tick)
+end
 
 return Public
