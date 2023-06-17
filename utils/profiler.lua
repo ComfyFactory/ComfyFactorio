@@ -3,12 +3,23 @@ local string_rep = string.rep
 local string_format = string.format
 local debug_getinfo = debug.getinfo
 local Color = require 'utils.color_presets'
+local Task = require 'utils.task'
+local Token = require 'utils.token'
+local Event = require 'utils.event'
 
-local Profiler = {
-    --	Call
-    CallTree = nil,
-    IsRunning = false
+local Public = {
+    call_tree = nil,
+    is_running = false
 }
+
+local stop_profiler_token =
+    Token.register(
+    function()
+        Public.stop()
+        game.print('[PROFILER] Stopped!')
+        log('[PROFILER] Stopped!')
+    end
+)
 
 -- we can have this on runtime,
 -- but never ever can a player run this without notifying us.
@@ -17,15 +28,15 @@ local allowed = {
     ['mewmew'] = true
 }
 
-local ignoredFunctions = {
+local ignored_functions = {
     [debug.sethook] = true
 }
 
-local namedSources = {
+local named_sources = {
     ['[string "local n, v = "serpent", "0.30" -- (C) 2012-17..."]'] = 'serpent'
 }
 
-local function startCommand(command)
+local function start_command(command)
     local player = game.player
     if player then
         if player ~= nil then
@@ -35,15 +46,15 @@ local function startCommand(command)
                 return
             else
                 if allowed[player.name] then
-                    Profiler.Start(command.parameter ~= nil)
+                    Public.start(command.parameter ~= nil)
                 elseif _DEBUG then
-                    Profiler.Start(command.parameter ~= nil)
+                    Public.start(command.parameter ~= nil)
                 end
             end
         end
     end
 end
-local function stopCommand(command)
+local function stop_command(command)
     local player = game.player
     if player then
         if player ~= nil then
@@ -53,44 +64,44 @@ local function stopCommand(command)
                 return
             else
                 if allowed[player.name] then
-                    Profiler.Stop(command.parameter ~= nil, nil)
+                    Public.stop(command.parameter ~= nil, nil)
                 elseif _DEBUG then
-                    Profiler.Stop(command.parameter ~= nil, nil)
+                    Public.stop(command.parameter ~= nil, nil)
                 end
             end
         end
     end
 end
-ignoredFunctions[startCommand] = true
-ignoredFunctions[stopCommand] = true
+ignored_functions[start_command] = true
+ignored_functions[stop_command] = true
 
-commands.add_command('startProfiler', 'Starts profiling', startCommand)
-commands.add_command('stopProfiler', 'Stops profiling', stopCommand)
+commands.add_command('start_profiler', 'Starts profiling', start_command)
+commands.add_command('stop_profiler', 'Stops profiling', stop_command)
 
 --local assert_raw = assert
 --function assert(expr, ...)
 --	if not expr then
---		Profiler.Stop(false, "Assertion failed")
+--		Public.stop(false, "Assertion failed")
 --	end
 --	assert_raw(expr, ...)
 --end
 local error_raw = error
 --luacheck: ignore error
 function error(...)
-    Profiler.Stop(false, 'Error raised')
+    Public.stop(false, 'Error raised')
     error_raw(...)
 end
 
-function Profiler.Start(excludeCalledMs)
-    if Profiler.IsRunning then
+function Public.start(exclude_called_ms)
+    if Public.is_running then
         return
     end
 
     local create_profiler = game.create_profiler
 
-    Profiler.IsRunning = true
+    Public.is_running = true
 
-    Profiler.CallTree = {
+    Public.call_tree = {
         name = 'root',
         calls = 0,
         profiler = create_profiler(),
@@ -98,21 +109,21 @@ function Profiler.Start(excludeCalledMs)
     }
 
     --	Array of Call
-    local stack = {[0] = Profiler.CallTree}
+    local stack = {[0] = Public.call_tree}
     local stack_count = 0
 
     debug.sethook(
         function(event)
             local info = debug_getinfo(2, 'nSf')
 
-            if ignoredFunctions[info.func] then
+            if ignored_functions[info.func] then
                 return
             end
 
             if event == 'call' or event == 'tail call' then
-                local prevCall = stack[stack_count]
-                if excludeCalledMs then
-                    prevCall.profiler.stop()
+                local prev_call = stack[stack_count]
+                if exclude_called_ms and prev_call then
+                    prev_call.profiler.stop()
                 end
 
                 local what = info.what
@@ -121,7 +132,7 @@ function Profiler.Start(excludeCalledMs)
                     name = string_format('C function %q', info.name or 'anonymous')
                 else
                     local source = info.short_src
-                    local namedSource = namedSources[source]
+                    local namedSource = named_sources[source]
                     if namedSource ~= nil then
                         source = namedSource
                     elseif string.sub(source, 1, 1) == '@' then
@@ -130,13 +141,13 @@ function Profiler.Start(excludeCalledMs)
                     name = string_format('%q in %q, line %d', info.name or 'anonymous', source, info.linedefined)
                 end
 
-                local prevCall_next = prevCall.next
-                if prevCall_next == nil then
-                    prevCall_next = {}
-                    prevCall.next = prevCall_next
+                local prev_call_next = prev_call.next
+                if prev_call_next == nil then
+                    prev_call_next = {}
+                    prev_call.next = prev_call_next
                 end
 
-                local currCall = prevCall_next[name]
+                local currCall = prev_call_next[name]
                 local profilerStartFunc
                 if currCall == nil then
                     local prof = create_profiler()
@@ -145,7 +156,7 @@ function Profiler.Start(excludeCalledMs)
                         calls = 1,
                         profiler = prof
                     }
-                    prevCall_next[name] = currCall
+                    prev_call_next[name] = currCall
                     profilerStartFunc = prof.reset
                 else
                     currCall.calls = currCall.calls + 1
@@ -164,7 +175,7 @@ function Profiler.Start(excludeCalledMs)
                     stack[stack_count] = nil
                     stack_count = stack_count - 1
 
-                    if excludeCalledMs then
+                    if exclude_called_ms then
                         stack[stack_count].profiler.restart()
                     end
                 end
@@ -173,9 +184,9 @@ function Profiler.Start(excludeCalledMs)
         'cr'
     )
 end
-ignoredFunctions[Profiler.Start] = true
+ignored_functions[Public.start] = true
 
-local function DumpTree(averageMs)
+local function dump_tree(averageMs)
     local function sort_Call(a, b)
         return a.calls > b.calls
     end
@@ -216,28 +227,39 @@ local function DumpTree(averageMs)
             end
         end
     end
-    if Profiler.CallTree.next ~= nil then
-        recurse(Profiler.CallTree.next, 0)
+    if Public.call_tree.next ~= nil then
+        recurse(Public.call_tree.next, 0)
         return fullStr
     end
     return 'No calls'
 end
 
-function Profiler.Stop(averageMs, message)
-    if not Profiler.IsRunning then
+function Public.stop(averageMs, message)
+    if not Public.is_running then
         return
     end
 
     debug.sethook()
 
-    local text = {'', '\n\n----------PROFILER DUMP----------\n', DumpTree(averageMs), '\n\n----------PROFILER STOPPED----------\n'}
+    local text = {'', '\n\n----------PROFILER DUMP----------\n', dump_tree(averageMs), '\n\n----------PROFILER STOPPED----------\n'}
     if message ~= nil then
         text[#text + 1] = string.format('Reason: %s\n', message)
     end
     log(text)
-    Profiler.CallTree = nil
-    Profiler.IsRunning = false
+    Public.call_tree = nil
+    Public.is_running = false
 end
-ignoredFunctions[Profiler.Stop] = true
+ignored_functions[Public.stop] = true
 
-return Profiler
+Event.on_init(
+    function()
+        if _PROFILE and _PROFILE_ON_INIT then
+            game.print('[PROFILER] Started!')
+            log('[PROFILER] Started!')
+            Public.start()
+            Task.set_timeout_in_ticks(3600, stop_profiler_token)
+        end
+    end
+)
+
+return Public

@@ -704,9 +704,9 @@ local function build_config_gui(data)
             label.style.font_color = Color.green
 
             local Fullness = is_loaded('modules.check_fullness')
-            local full = Fullness.get()
+            local Module = Fullness.get()
             switch_state = 'right'
-            if full.fullness_enabled then
+            if Module.fullness_enabled then
                 switch_state = 'left'
             end
             add_switch(scroll_pane, switch_state, 'disable_fullness', 'Inventory Fullness', 'On = Enables inventory fullness.\nOff = Disables inventory fullness.')
