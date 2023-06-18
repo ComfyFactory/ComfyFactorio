@@ -57,7 +57,7 @@ function Public.reset_wave_defense()
     this.active_biter_threat = 0
     this.average_unit_group_size = 24
     this.biter_raffle = {}
-    this.debug = true
+    this.debug = false
     this.debug_health = false
     this.disable_spawn_near_target = true
     this.log_wave_to_discord = true
