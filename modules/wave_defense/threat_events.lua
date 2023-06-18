@@ -139,8 +139,6 @@ if is_loaded_bool('maps.mountain_fortress_v3.table') then
         generated_units.nests[#generated_units.nests + 1] = spawner
         unit.surface.create_entity({name = 'blood-explosion-huge', position = position})
         unit.surface.create_entity({name = 'blood-explosion-huge', position = unit.position})
-        local msg = 'A spawner was spawned!'
-        Alert.alert_all_players_location(spawner.position, msg, {r = 0.8, g = 0.1, b = 0.1})
         remove_unit(unit)
         unit.destroy()
         local threat = Public.get('threat')
