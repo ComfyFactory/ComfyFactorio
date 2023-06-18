@@ -196,99 +196,7 @@ local function on_player_joined_game(event)
     end
 end
 
-local function on_gui_click(event)
-    local element = event.element
-    if not element.valid then
-        return
-    end
-
-    local name = element.name
-
-    if name == main_button_name then
-        local player = game.players[event.player_index]
-        if not validate_player(player) then
-            return
-        end
-        local is_spamming = SpamProtection.is_spamming(player, nil, 'Mtn Gui Click')
-        if is_spamming then
-            return
-        end
-
-        local locomotive = Public.get('locomotive')
-        if not validate_entity(locomotive) then
-            return
-        end
-
-        if not player or not player.valid then
-            return
-        end
-        if not player.surface or not player.surface.valid then
-            return
-        end
-        if player.surface ~= locomotive.surface then
-            local minimap = player.gui.left.icw_main_frame
-            if minimap and minimap.visible then
-                minimap.visible = false
-                return
-            elseif minimap and not minimap.visible then
-                minimap.visible = true
-                return
-            end
-            return
-        end
-        if player.gui.top[main_frame_name] then
-            local info = player.gui.top[main_frame_name]
-            local wd = player.gui.top['wave_defense']
-            local diff = player.gui.top[Difficulty.top_button_name]
-
-            if info and info.visible then
-                if wd then
-                    wd.visible = false
-                end
-                if diff then
-                    diff.visible = false
-                end
-                info.visible = false
-                return
-            elseif wd and not wd.visible then
-                for _, child in pairs(player.gui.left.children) do
-                    child.destroy()
-                end
-                if wd then
-                    wd.visible = true
-                end
-                if diff then
-                    diff.visible = true
-                end
-                return
-            elseif info and not info.visible then
-                for _, child in pairs(player.gui.left.children) do
-                    child.destroy()
-                end
-                if wd then
-                    wd.visible = true
-                end
-                if diff then
-                    diff.visible = true
-                end
-                info.visible = true
-                return
-            end
-        else
-            for _, child in pairs(player.gui.left.children) do
-                child.destroy()
-            end
-            create_main_frame(player)
-        end
-    end
-end
-
-local function on_player_changed_surface(event)
-    local player = game.players[event.player_index]
-    if not validate_player(player) then
-        return
-    end
-
+local function changed_surface(player)
     local rpg_button = RPG.draw_main_frame_name
     local rpg_frame = RPG.main_frame_name
     local rpg_settings = RPG.settings_frame_name
@@ -402,6 +310,101 @@ local function on_player_changed_surface(event)
             info.visible = false
         end
     end
+end
+
+local function on_gui_click(event)
+    local element = event.element
+    if not element.valid then
+        return
+    end
+
+    local name = element.name
+
+    if name == main_button_name then
+        local player = game.players[event.player_index]
+        if not validate_player(player) then
+            return
+        end
+        local is_spamming = SpamProtection.is_spamming(player, nil, 'Mtn Gui Click')
+        if is_spamming then
+            return
+        end
+
+        local locomotive = Public.get('locomotive')
+        if not validate_entity(locomotive) then
+            return
+        end
+
+        if not player or not player.valid then
+            return
+        end
+        if not player.surface or not player.surface.valid then
+            return
+        end
+        if player.surface ~= locomotive.surface then
+            local minimap = player.gui.left.icw_main_frame
+            if minimap and minimap.visible then
+                minimap.visible = false
+                return
+            elseif minimap and not minimap.visible then
+                minimap.visible = true
+                return
+            end
+            return
+        end
+        if player.gui.top[main_frame_name] then
+            local info = player.gui.top[main_frame_name]
+            local wd = player.gui.top['wave_defense']
+            local diff = player.gui.top[Difficulty.top_button_name]
+
+            if info and info.visible then
+                if wd then
+                    wd.visible = false
+                end
+                if diff then
+                    diff.visible = false
+                end
+                info.visible = false
+                return
+            elseif wd and not wd.visible then
+                for _, child in pairs(player.gui.left.children) do
+                    child.destroy()
+                end
+                if wd then
+                    wd.visible = true
+                end
+                if diff then
+                    diff.visible = true
+                end
+                return
+            elseif info and not info.visible then
+                for _, child in pairs(player.gui.left.children) do
+                    child.destroy()
+                end
+                if wd then
+                    wd.visible = true
+                end
+                if diff then
+                    diff.visible = true
+                end
+                info.visible = true
+                return
+            end
+        else
+            for _, child in pairs(player.gui.left.children) do
+                child.destroy()
+            end
+            create_main_frame(player)
+        end
+    end
+end
+
+local function on_player_changed_surface(event)
+    local player = game.players[event.player_index]
+    if not validate_player(player) then
+        return
+    end
+    changed_surface(player)
 end
 
 local function enable_guis(event)
@@ -551,5 +554,7 @@ Gui.on_click(
         end
     end
 )
+
+Public.changed_surface = changed_surface
 
 return Public

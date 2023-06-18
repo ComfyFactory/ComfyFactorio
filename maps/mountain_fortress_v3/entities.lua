@@ -1202,7 +1202,7 @@ local function show_mvps(player)
                 RPG_Progression.save_all_players()
             end
             local date = Server.get_start_time()
-            game.server_save('Final_Mtn_Fortress_v3_' .. tostring(date))
+            game.server_save('Final_Mtn_v3_' .. tostring(date) .. '_wave' .. tostring(wave))
             local text = {
                 title = 'Game over!',
                 description = 'Game statistics from the game is below',

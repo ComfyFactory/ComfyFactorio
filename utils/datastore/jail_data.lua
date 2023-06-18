@@ -24,7 +24,7 @@ local settings = {
     playtime_for_instant_jail = 207360000, -- 40 days
     -- playtime_for_instant_jail = 103680000, -- 20 days
     clear_voted_player = 36000, -- remove player from vote-tbl after 10 minutes
-    clear_terms_tbl = 300,
+    clear_terms_tbl = 2000,
     votejail_count = 5,
     valid_surface = 'nauvis',
     normies_can_jail = true -- states that normal players with enough playtime can jail
@@ -429,7 +429,7 @@ local function validate_args(data)
         return false
     end
 
-    if player.name == offender and not player.admin then
+    if player.name == offender then
         Utils.print_to(player, module_name .. 'You can´t jail yourself.')
         return false
     end

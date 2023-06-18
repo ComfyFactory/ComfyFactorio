@@ -51,6 +51,38 @@ local ammo_loot = {
     },
     {
         stack = {
+            recipe = 'rocket',
+            tech = 'military-2',
+            output = {item = 'rocket', min_rate = 1 / 800, distance_factor = 1 / 8 / 60 / 20480}
+        },
+        weight = 0.95
+    },
+    {
+        stack = {
+            recipe = 'explosive-rocket',
+            tech = 'military-2',
+            output = {item = 'explosive-rocket', min_rate = 2 / 1800, distance_factor = 1 / 8 / 60 / 20480}
+        },
+        weight = 0.4
+    },
+    {
+        stack = {
+            recipe = 'defender-capsule',
+            tech = 'military-2',
+            output = {item = 'defender-capsule', min_rate = 2 / 1800, distance_factor = 1 / 8 / 60 / 20480}
+        },
+        weight = 0.95
+    },
+    {
+        stack = {
+            recipe = 'distractor-capsule',
+            tech = 'military-2',
+            output = {item = 'distractor-capsule', min_rate = 2 / 1800, distance_factor = 1 / 8 / 60 / 20480}
+        },
+        weight = 0.55
+    },
+    {
+        stack = {
             recipe = 'firearm-magazine',
             output = {item = 'firearm-magazine', min_rate = 2 / 800, distance_factor = 1 / 8 / 60 / 20480}
         },
@@ -194,10 +226,18 @@ local resource_loot = {
     {
         stack = {
             recipe = 'stone-wall',
-            tech = 'stone-walls',
+            tech = 'stone-wall',
             output = {item = 'stone-wall', min_rate = 0.6 / 60, distance_factor = 1 / 8 / 60 / 20480}
         },
         weight = 10
+    },
+    {
+        stack = {
+            recipe = 'rail',
+            tech = 'automated-rail-transportation',
+            output = {item = 'rail', min_rate = 1 / 4 / 60, distance_factor = 1 / 8 / 60 / 20480}
+        },
+        weight = 7
     },
     {
         stack = {

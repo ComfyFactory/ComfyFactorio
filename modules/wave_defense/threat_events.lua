@@ -1,10 +1,13 @@
 local Public = require 'modules.wave_defense.table'
 local Event = require 'utils.event'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
-local math_random = math.random
-local round = math.round
 local Token = require 'utils.token'
 local Task = require 'utils.task'
+local Alert = require 'utils.alert'
+
+local round = math.round
+local random = math.random
+local place_nest_near_unit_group
 
 local immunity_spawner =
     Token.register(
@@ -61,73 +64,156 @@ local function remove_unit(entity)
     end
 end
 
-local function place_nest_near_unit_group()
-    local random_group = Public.get('random_group')
-    if not (random_group and random_group.valid) then
-        return
-    end
+if is_loaded_bool('maps.mountain_fortress_v3.table') then
+    local Core = require 'maps.mountain_fortress_v3.core'
 
-    local generated_units = Public.get('generated_units')
-    local group = generated_units.unit_groups[random_group.group_number]
-    if not group then
-        return
-    end
-    if not group.valid then
-        return
-    end
-    if not group.members then
-        return
-    end
-    if not group.members[1] then
-        return
-    end
-    local unit = group.members[math_random(1, #group.members)]
-    if not unit.valid then
-        return
-    end
-    local name = 'biter-spawner'
-    if math_random(1, 3) == 1 then
-        name = 'spitter-spawner'
-    end
-    local position = unit.surface.find_non_colliding_position(name, unit.position, 12, 1)
-    if not position then
-        return
-    end
-    local r = Public.get('nest_building_density')
-    if
-        unit.surface.count_entities_filtered(
-            {
-                type = 'unit-spawner',
-                force = unit.force,
-                area = {{position.x - r, position.y - r}, {position.x + r, position.y + r}}
-            }
-        ) > 0
-     then
-        return
-    end
+    place_nest_near_unit_group = function()
+        local random_group = Public.get('random_group')
+        if not (random_group and random_group.valid) then
+            return
+        end
 
-    local boss = is_boss(unit)
+        local disable_spawn_near_target = Public.get('disable_spawn_near_target')
 
-    local modified_unit_health = Public.get('modified_unit_health')
-    local modified_boss_unit_health = Public.get('modified_boss_unit_health')
+        local generated_units = Public.get('generated_units')
+        local group = generated_units.unit_groups[random_group.group_number]
+        if not group then
+            return
+        end
+        if not group.valid then
+            return
+        end
+        if not group.members then
+            return
+        end
+        if not group.members[1] then
+            return
+        end
+        local unit = group.members[random(1, #group.members)]
+        if not unit.valid then
+            return
+        end
 
-    local spawner = unit.surface.create_entity({name = name, position = position, force = unit.force})
-    spawner.destructible = false
-    Task.set_timeout_in_ticks(200, immunity_spawner, {entity = spawner})
+        if Core.is_around_train(unit) and disable_spawn_near_target then
+            Public.debug_print('place_nest_near_unit_group  - cannot spawn inside locomotive aura')
+            return
+        end
 
-    if boss then
-        BiterHealthBooster.add_boss_unit(spawner, modified_boss_unit_health.current_value, 0.5)
-    else
-        BiterHealthBooster.add_unit(spawner, modified_unit_health.current_value)
+        local name = 'biter-spawner'
+        if random(1, 3) == 1 then
+            name = 'spitter-spawner'
+        end
+
+        local position = unit.surface.find_non_colliding_position(name, unit.position, 12, 1)
+        if not position then
+            return
+        end
+        local r = Public.get('nest_building_density')
+        if
+            unit.surface.count_entities_filtered(
+                {
+                    type = 'unit-spawner',
+                    force = unit.force,
+                    area = {{position.x - r, position.y - r}, {position.x + r, position.y + r}}
+                }
+            ) > 0
+         then
+            return
+        end
+
+        local boss = is_boss(unit)
+
+        local modified_unit_health = Public.get('modified_unit_health')
+        local modified_boss_unit_health = Public.get('modified_boss_unit_health')
+
+        local spawner = unit.surface.create_entity({name = name, position = position, force = unit.force})
+        spawner.destructible = false
+        local immunity_delay = random(100, 200)
+        Task.set_timeout_in_ticks(immunity_delay, immunity_spawner, {entity = spawner})
+
+        if boss then
+            BiterHealthBooster.add_boss_unit(spawner, modified_boss_unit_health.current_value, 0.5)
+        else
+            BiterHealthBooster.add_unit(spawner, modified_unit_health.current_value)
+        end
+        generated_units.nests[#generated_units.nests + 1] = spawner
+        unit.surface.create_entity({name = 'blood-explosion-huge', position = position})
+        unit.surface.create_entity({name = 'blood-explosion-huge', position = unit.position})
+        remove_unit(unit)
+        unit.destroy()
+        local threat = Public.get('threat')
+        Public.set('threat', threat - Public.threat_values[name])
+        return true
     end
-    generated_units.nests[#generated_units.nests + 1] = spawner
-    unit.surface.create_entity({name = 'blood-explosion-huge', position = position})
-    unit.surface.create_entity({name = 'blood-explosion-huge', position = unit.position})
-    remove_unit(unit)
-    unit.destroy()
-    local threat = Public.get('threat')
-    Public.set('threat', threat - Public.threat_values[name])
-    return true
+else
+    place_nest_near_unit_group = function()
+        local random_group = Public.get('random_group')
+        if not (random_group and random_group.valid) then
+            return
+        end
+
+        local generated_units = Public.get('generated_units')
+        local group = generated_units.unit_groups[random_group.group_number]
+        if not group then
+            return
+        end
+        if not group.valid then
+            return
+        end
+        if not group.members then
+            return
+        end
+        if not group.members[1] then
+            return
+        end
+        local unit = group.members[random(1, #group.members)]
+        if not unit.valid then
+            return
+        end
+        local name = 'biter-spawner'
+        if random(1, 3) == 1 then
+            name = 'spitter-spawner'
+        end
+        local position = unit.surface.find_non_colliding_position(name, unit.position, 12, 1)
+        if not position then
+            return
+        end
+        local r = Public.get('nest_building_density')
+        if
+            unit.surface.count_entities_filtered(
+                {
+                    type = 'unit-spawner',
+                    force = unit.force,
+                    area = {{position.x - r, position.y - r}, {position.x + r, position.y + r}}
+                }
+            ) > 0
+         then
+            return
+        end
+
+        local boss = is_boss(unit)
+
+        local modified_unit_health = Public.get('modified_unit_health')
+        local modified_boss_unit_health = Public.get('modified_boss_unit_health')
+
+        local spawner = unit.surface.create_entity({name = name, position = position, force = unit.force})
+        spawner.destructible = false
+        Task.set_timeout_in_ticks(100, immunity_spawner, {entity = spawner})
+
+        if boss then
+            BiterHealthBooster.add_boss_unit(spawner, modified_boss_unit_health.current_value, 0.5)
+        else
+            BiterHealthBooster.add_unit(spawner, modified_unit_health.current_value)
+        end
+        generated_units.nests[#generated_units.nests + 1] = spawner
+        unit.surface.create_entity({name = 'blood-explosion-huge', position = position})
+        unit.surface.create_entity({name = 'blood-explosion-huge', position = unit.position})
+        remove_unit(unit)
+        unit.destroy()
+        local threat = Public.get('threat')
+        Public.set('threat', threat - Public.threat_values[name])
+        return true
+    end
 end
 
 function Public.build_nest()
@@ -153,7 +239,7 @@ function Public.build_worm()
     end
     local worm_building_chance = Public.get('worm_building_chance') --[[@as integer]]
 
-    if math_random(1, worm_building_chance) ~= 1 then
+    if random(1, worm_building_chance) ~= 1 then
         return
     end
 
@@ -180,7 +266,7 @@ function Public.build_worm()
     if not group.members[1] then
         return
     end
-    local unit = group.members[math_random(1, #group.members)]
+    local unit = group.members[random(1, #group.members)]
     if not unit.valid then
         return
     end
@@ -232,14 +318,17 @@ end
 
 local function shred_simple_entities(entity)
     local threat = Public.get('threat')
-    if threat < 25000 then
+    if threat < 5000 then
         return
     end
     local simple_entities =
         entity.surface.find_entities_filtered(
         {
             type = 'simple-entity',
-            area = {{entity.position.x - 3, entity.position.y - 3}, {entity.position.x + 3, entity.position.y + 3}}
+            area = {
+                {entity.position.x - 3, entity.position.y - 3},
+                {entity.position.x + 3, entity.position.y + 3}
+            }
         }
     )
     if #simple_entities == 0 then
@@ -290,9 +379,21 @@ local function spawn_unit_spawner_inhabitants(entity)
     for _ = 1, count, 1 do
         local position = {entity.position.x + (-4 + math.random(0, 8)), entity.position.y + (-4 + math.random(0, 8))}
         if math.random(1, 4) == 1 then
-            entity.surface.create_entity({name = Public.wave_defense_roll_spitter_name(), position = position, force = 'enemy'})
+            entity.surface.create_entity(
+                {
+                    name = Public.wave_defense_roll_spitter_name(),
+                    position = position,
+                    force = 'enemy'
+                }
+            )
         else
-            entity.surface.create_entity({name = Public.wave_defense_roll_biter_name(), position = position, force = 'enemy'})
+            entity.surface.create_entity(
+                {
+                    name = Public.wave_defense_roll_biter_name(),
+                    position = position,
+                    force = 'enemy'
+                }
+            )
         end
     end
 end
@@ -306,14 +407,14 @@ local function on_entity_died(event)
     local disable_threat_below_zero = Public.get('disable_threat_below_zero')
     local valid_enemy_forces = Public.get('valid_enemy_forces')
     if not valid_enemy_forces then
-        return
+        goto continue
     end
 
-    local biter_health_boost = BiterHealthBooster.get('biter_health_boost')
-
     if entity.type == 'unit' then
+        local biter_health_boost = BiterHealthBooster.get('biter_health_boost')
+
         if not Public.threat_values[entity.name] then
-            return
+            goto continue
         end
         if disable_threat_below_zero then
             local threat = Public.get('threat')
@@ -322,7 +423,7 @@ local function on_entity_died(event)
             if sub <= 0 or threat <= 0 then
                 Public.set('threat', 0)
                 remove_unit(entity)
-                return
+                goto continue
             end
             Public.set('threat', math.round(threat - Public.threat_values[entity.name] * biter_health_boost, 2))
             remove_unit(entity)
@@ -332,6 +433,8 @@ local function on_entity_died(event)
             remove_unit(entity)
         end
     else
+        local biter_health_boost = BiterHealthBooster.get('biter_health_boost')
+
         if valid_enemy_forces[entity.force.name] then
             if entity.health then
                 if Public.threat_values[entity.name] then
@@ -342,6 +445,8 @@ local function on_entity_died(event)
             end
         end
     end
+
+    ::continue::
 
     if entity.force.index == 3 then
         if event.cause then

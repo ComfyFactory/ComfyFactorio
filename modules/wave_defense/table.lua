@@ -59,6 +59,7 @@ function Public.reset_wave_defense()
     this.biter_raffle = {}
     this.debug = false
     this.debug_health = false
+    this.disable_spawn_near_target = true
     this.log_wave_to_discord = true
     this.paused = false
     this.pause_without_votes = true
@@ -166,6 +167,20 @@ function Public.reset_wave_defense()
         ['aggressors'] = true,
         ['aggressors_frenzy'] = true
     }
+end
+
+function Public.debug_print(msg)
+    if not this.debug then
+        return
+    end
+    log('WaveDefense: ' .. msg)
+end
+
+function Public.debug_print_health(msg)
+    if not this.debug then
+        return
+    end
+    log('[HEALTHBOOSTER]: ' .. msg)
 end
 
 --- This gets values from our table

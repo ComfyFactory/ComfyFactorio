@@ -278,7 +278,7 @@ function Public.entity_died_randomness(data)
 
     surface.spill_item_stack(position, {name = harvest, count = random(1, 5)}, true)
     local particle = particles[harvest]
-    create_particles(surface, particle, position, 64, {x = entity.position.x, y = entity.position.y})
+    create_particles(surface, particle, position, 16, {x = entity.position.x, y = entity.position.y})
 end
 
 local function randomness(data)
@@ -340,9 +340,9 @@ local function randomness(data)
     local particle = particles[harvest]
 
     if data.script_character then
-        create_particles(player.surface, particle, position, 64, {x = data.script_character.position.x, y = data.script_character.position.y})
+        create_particles(player.surface, particle, position, 16, {x = data.script_character.position.x, y = data.script_character.position.y})
     else
-        create_particles(player.surface, particle, position, 64, {x = player.position.x, y = player.position.y})
+        create_particles(player.surface, particle, position, 16, {x = player.position.x, y = player.position.y})
     end
 end
 
