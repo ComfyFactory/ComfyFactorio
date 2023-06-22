@@ -220,8 +220,11 @@ end
 
 --- Sets value to table
 ---@param key string
-function Public.set(key)
-    if key then
+function Public.set(key, value)
+    if key and (value or value == false) then
+        this[key] = value
+        return this[key]
+    elseif key then
         return this[key]
     else
         return this

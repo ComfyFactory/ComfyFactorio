@@ -19,7 +19,7 @@
 --     end
 -- )
 --
--- ** Event.add_removable(event_name, token) **
+-- ** Event.add_removable(event_name, token, event_reference) **
 --
 -- For conditional event handlers. Event.add_removable can be safely called at runtime without desync risk.
 -- Only use this if you need to add the handler at runtime or need to remove the handler, otherwise use Event.add
@@ -42,10 +42,10 @@
 -- )
 --
 -- The below code would typically be inside another event or a custom command.
--- Event.add_removable(defines.events.on_built_entity, handler)
+-- Event.add_removable(defines.events.on_built_entity, handler, 'ref_to_find')
 --
 -- When you no longer need the handler.
--- Event.remove_removable(defines.events.on_built_entity, handler)
+-- Event.remove_removable(defines.events.on_built_entity, handler, 'ref_to_find')
 --
 -- It's not an error to register the same token multiple times to the same event, however when
 -- removing only the first occurrence is removed.
@@ -234,7 +234,8 @@ end
 -- See documentation at top of file for details on using events.
 -- @param  event_name<number>
 -- @param  token<number>
-function Event.add_removable(event_name, token)
+-- @param  event_reference<string>
+function Event.add_removable(event_name, token, event_reference)
     if type(token) ~= 'number' then
         error('token must be a number', 2)
     end
@@ -242,11 +243,12 @@ function Event.add_removable(event_name, token)
         error('cannot call during on_load', 2)
     end
 
-    local tokens = token_handlers[event_name]
+    local tokens = token_handlers[event_reference]
     if not tokens then
-        token_handlers[event_name] = {token}
-    else
-        tokens[#tokens + 1] = token
+        token_handlers[event_reference] = {
+            data = token,
+            event_name = event_name
+        }
     end
 
     if handlers_added then
@@ -260,11 +262,12 @@ end
 -- See documentation at top of file for details on using events.
 -- @param  event_name<number>
 -- @param  token<number>
-function Event.remove_removable(event_name, token)
+-- @param  event_reference<string>
+function Event.remove_removable(event_name, token, event_reference)
     if _LIFECYCLE == stage_load then
         error('cannot call during on_load', 2)
     end
-    local tokens = token_handlers[event_name]
+    local tokens = token_handlers[event_reference]
 
     if not tokens then
         return
@@ -550,7 +553,7 @@ local function add_handlers()
     for event_name, tokens in pairs(token_handlers) do
         for i = 1, #tokens do
             local handler = Token.get(tokens[i])
-            core_add(event_name, handler.data, handler.filter)
+            core_add(event_name, handler.data)
         end
     end
 

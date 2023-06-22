@@ -100,7 +100,7 @@ end
 local function on_tick()
     local tick = game.tick
 
-    if tick % 20 == 1 then
+    if tick % 30 == 1 then
         Functions.item_transfer()
         local upgrades = WPT.get('upgrades')
         if upgrades.has_upgraded_health_pool then

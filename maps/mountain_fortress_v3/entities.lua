@@ -276,6 +276,18 @@ local function set_train_final_health(final_damage_amount, repair)
     rendering.set_text(health_text, 'HP: ' .. round(locomotive_health) .. ' / ' .. round(locomotive_max_health))
 end
 
+local function is_protected(e)
+    local map_name = 'mtn_v3'
+
+    if string.sub(e.surface.name, 0, #map_name) ~= map_name then
+        return true
+    end
+    if protect_types[e.type] then
+        return true
+    end
+    return false
+end
+
 local function protect_entities(data)
     local cause = data.cause
     local entity = data.entity
@@ -296,18 +308,6 @@ local function protect_entities(data)
 
     if entity.force.index ~= 1 then
         return
-    end
-
-    local function is_protected(e)
-        local map_name = 'mtn_v3'
-
-        if string.sub(e.surface.name, 0, #map_name) ~= map_name then
-            return true
-        end
-        if protect_types[e.type] then
-            return true
-        end
-        return false
     end
 
     local carriages_numbers = Public.get('carriages_numbers')

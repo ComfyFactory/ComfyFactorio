@@ -598,6 +598,7 @@ function Public.is_around_train(entity)
         return false
     end
 
+
     local surface = game.surfaces[active_surface_index]
     local upgrades = Public.get('upgrades')
 
