@@ -3,7 +3,6 @@ local Event = require 'utils.event'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local Token = require 'utils.token'
 local Task = require 'utils.task'
-local Alert = require 'utils.alert'
 
 local round = math.round
 local random = math.random

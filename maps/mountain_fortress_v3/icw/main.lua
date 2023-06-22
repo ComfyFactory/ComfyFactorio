@@ -104,7 +104,7 @@ end
 
 local function on_tick()
     local tick = game.tick
-    if tick % 10 == 0 then
+    if tick % 20 == 0 then
         Functions.item_transfer()
         Functions.hazardous_debris()
     end

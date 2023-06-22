@@ -21,7 +21,8 @@ local data = {}
 local element_map = {}
 local settings = {
     mod_gui_top_frame = false,
-    disabled_tabs = {}
+    disabled_tabs = {},
+    disable_clear_invalid_data = true
 }
 
 Public.token =

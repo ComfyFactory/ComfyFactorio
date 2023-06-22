@@ -222,8 +222,7 @@ local function get_spawn_pos()
     return valid_position
 end
 
-local function is_unit_valid(biter)
-    local max_biter_age = Public.get('max_biter_age')
+local function is_unit_valid(biter, max_biter_age, tick)
     if not biter.entity then
         Public.debug_print('is_unit_valid - unit destroyed - does no longer exist')
         return false
@@ -232,7 +231,7 @@ local function is_unit_valid(biter)
         Public.debug_print('is_unit_valid - unit destroyed - invalid')
         return false
     end
-    if biter.spawn_tick + max_biter_age < game.tick then
+    if biter.spawn_tick + max_biter_age < tick then
         Public.debug_print('is_unit_valid - unit destroyed - timed out')
         return false
     end
@@ -263,17 +262,24 @@ end
 local function time_out_biters()
     local generated_units = Public.get('generated_units')
     local active_biter_count = Public.get('active_biter_count')
+    local max_active_biters = Public.get('max_active_biters')
     local active_biter_threat = Public.get('active_biter_threat')
     local valid_enemy_forces = Public.get('valid_enemy_forces')
 
-    if active_biter_count >= 100 and #generated_units.active_biters <= 10 then
-        Public.set('active_biter_count', 50)
+    if active_biter_count < 0 then
+        Public.set('active_biter_count', 0)
+        Public.debug_print('Resetting active_biter_count')
+    elseif active_biter_count > max_active_biters then
+        Public.set('active_biter_count', max_active_biters)
+        Public.debug_print('Resetting active_biter_count')
     end
 
     local biter_health_boost = BiterHealthBooster.get('biter_health_boost')
+    local max_biter_age = Public.get('max_biter_age')
+    local tick = game.tick
 
     for k, biter in pairs(generated_units.active_biters) do
-        if not is_unit_valid(biter) then
+        if not is_unit_valid(biter, max_biter_age, tick) then
             Public.set('active_biter_count', active_biter_count - 1)
             local entity = biter.entity
             if entity and entity.valid then

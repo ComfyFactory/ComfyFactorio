@@ -890,16 +890,18 @@ function Public.set_difficulty()
         Diff.value = 0.1
     end
 
-    if Diff.index == 1 then
-        wave_defense_table.max_active_biters = 768 + player_count * (90 * Diff.value)
-    elseif Diff.index == 2 then
-        wave_defense_table.max_active_biters = 845 + player_count * (90 * Diff.value)
-    elseif Diff.index == 3 then
-        wave_defense_table.max_active_biters = 1000 + player_count * (90 * Diff.value)
-    end
+    if not wave_defense_table.enforce_max_active_biters then
+        if Diff.index == 1 then
+            wave_defense_table.max_active_biters = 768 + player_count * (90 * Diff.value)
+        elseif Diff.index == 2 then
+            wave_defense_table.max_active_biters = 845 + player_count * (90 * Diff.value)
+        elseif Diff.index == 3 then
+            wave_defense_table.max_active_biters = 1000 + player_count * (90 * Diff.value)
+        end
 
-    if wave_defense_table.max_active_biters >= 4000 then
-        wave_defense_table.max_active_biters = 4000
+        if wave_defense_table.max_active_biters >= 4000 then
+            wave_defense_table.max_active_biters = 4000
+        end
     end
 
     -- threat gain / wave
