@@ -953,7 +953,7 @@ function Public.reset_crew_and_enemy_force(id)
 	crew_force.technologies['artillery'].enabled = false
 	-- crew_force.technologies['destroyer'].enabled = false
 	crew_force.technologies['spidertron'].enabled = false
-	crew_force.technologies['atomic-bomb'].enabled = false
+	-- crew_force.technologies['atomic-bomb'].enabled = false -- experimenting
 	crew_force.technologies['explosive-rocketry'].enabled = false
 
 	-- crew_force.technologies['research-speed-1'].enabled = false
