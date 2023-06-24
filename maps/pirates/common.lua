@@ -688,6 +688,16 @@ function Public.spend_stored_resources(to_spend)
 	Public.update_boat_stored_resources()
 end
 
+function Public.consume_undock_cost_resources()
+	local destination = Public.current_destination()
+	local cost = destination.static_params.base_cost_to_undock
+
+	if cost then
+		local adjusted_cost = Public.time_adjusted_departure_cost(cost)
+
+		Public.spend_stored_resources(adjusted_cost)
+	end
+end
 
 function Public.new_healthbar(text, target_entity, max_health, optional_id, health, size, extra_offset, location_override)
 	health = health or max_health

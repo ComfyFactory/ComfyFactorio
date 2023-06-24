@@ -619,7 +619,7 @@ function Public.process_etaframe_update(player, flow1, bools)
 			-- local caption
 			if bools.atsea_loading_bool then
 				flow2.etaframe_label_3.caption = {'pirates.gui_etaframe_next_escape_cost'}
-				if Balance.need_resources_to_undock(Common.overworldx()) then
+				if Boats.need_resources_to_undock(Common.overworldx(), destination.subtype) then
 					if bools.cost_includes_rocket_launch_bool then
 						tooltip = {'pirates.resources_needed_tooltip_4_rocketvariant'}
 					else
@@ -649,7 +649,7 @@ function Public.process_etaframe_update(player, flow1, bools)
 					tooltip = {'pirates.resources_needed_tooltip_3'}
 				end
 			else -- Shown when at island
-				if Balance.need_resources_to_undock(Common.overworldx()) == true then
+				if Boats.need_resources_to_undock(Common.overworldx(), destination.subtype) then
 					flow2.etaframe_label_3.visible = false
 
 					if bools.cost_includes_rocket_launch_bool then

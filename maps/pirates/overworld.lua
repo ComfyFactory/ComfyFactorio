@@ -291,7 +291,7 @@ function Public.generate_overworld_destination(p)
 
 		static_params.base_cost_to_undock = Public.generate_destination_base_cost_to_undock(p, subtype) -- Multiplication by Balance.cost_to_leave_multiplier() happens later, in destination_on_collide.
 		static_params.undock_cost_decreases = true
-		if Balance.need_resources_to_undock(p.x) == true or subtype == IslandEnum.enum.RADIOACTIVE then
+		if Boats.need_resources_to_undock(p.x, subtype) then
 			static_params.undock_cost_decreases = false
 		end
 

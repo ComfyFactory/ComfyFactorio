@@ -183,16 +183,6 @@ function Public.max_time_on_island_formula() --always >0  --tuned
 	return Math.ceil(60 * minimum_mins_on_island * Public.game_slowness_scale())
 end
 
-
--- Returns true if uncollected resources will cause the crew to lose.
-function Public.need_resources_to_undock(overworldx)
-	if overworldx >= Public.need_resources_to_undock_x then
-		return true
-	else
-		return false
-	end
-end
-
 -- In seconds
 function Public.max_time_on_island(island_subtype)
 	local x = Common.overworldx()

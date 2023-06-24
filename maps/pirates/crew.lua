@@ -915,9 +915,9 @@ function Public.reset_crew_and_enemy_force(id)
 		crew_force.set_turret_attack_modifier(k, v)
 	end
 
+	crew_force.technologies['kovarex-enrichment-process'].researched = true -- needed for radioactive island
 	-- crew_force.technologies['circuit-network'].researched = true
 	-- crew_force.technologies['uranium-processing'].researched = true
-	-- crew_force.technologies['kovarex-enrichment-process'].researched = true
 	-- crew_force.technologies['gun-turret'].researched = true
 	-- crew_force.technologies['electric-energy-distribution-1'].researched = true
 	-- crew_force.technologies['electric-energy-distribution-2'].researched = true
