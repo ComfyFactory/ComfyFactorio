@@ -1198,7 +1198,6 @@ function Public.teleporters(journey, player)
 	if surface.get_tile(player.position).name ~= Constants.teleporter_tile then return end
 	local base_position = {0,0}
 	if surface.index == 1 then
-	if surface.index == 1 then
 		drop_player_items(player)
 		local position = game.surfaces.mothership.find_non_colliding_position("character", base_position, 32, 0.5)
 		if position then
@@ -1217,7 +1216,6 @@ function Public.teleporters(journey, player)
 		else
 			player.teleport(base_position, game.surfaces.nauvis)
 		end
-
 
 		journey.characters_in_mothership = journey.characters_in_mothership - 1
 		return
