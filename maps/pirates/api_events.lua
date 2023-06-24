@@ -592,8 +592,10 @@ local function maze_walls_resistance(event)
 			if e2.valid then e2.destroy() end
 		end
 	else
-		if string.sub(event.cause.force.name, 1, 4) == 'crew' then --player damage only
-			event.entity.health = event.entity.health + damage * 0.9
+		if event.cause and event.cause.valid then
+			if string.sub(event.cause.force.name, 1, 4) == 'crew' then --player damage only
+				event.entity.health = event.entity.health + damage * 0.9
+			end
 		end
 	end
 end

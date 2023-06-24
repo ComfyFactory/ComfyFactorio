@@ -133,7 +133,7 @@ function Public.wave_size_rng() -- random variance in attack sizes
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 
-	local rng_scale = Common.crew_scale()^(1/4) -- slightly dampen wave variance for small crews as they can't handle it
+	local rng_scale = Balance.crew_scale()^(1/4) -- slightly dampen wave variance for small crews as they can't handle it
 
 	-- prevent situation where when player reveals spawner, he immediately gets surrounded by massive amount of biters (especially late game)
 	if destination and destination.type == SurfacesCommon.enum.ISLAND then

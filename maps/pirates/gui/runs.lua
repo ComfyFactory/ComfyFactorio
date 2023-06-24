@@ -707,34 +707,39 @@ function Public.click(event)
 
 	if eventname == 'join_crew' then
 		local listbox = flow.ongoing_runs.body.ongoing_runs_listbox
-		local crewid = tonumber(listbox.get_item(listbox.selected_index)[2])
 
-		local memory = global_memory.crew_memories[crewid]
+		-- It was observed that "listbox.get_item(listbox.selected_index)" can produce "Index out of range error"
+		-- This is to prevent that error.
+		if listbox.selected_index >= 1 and listbox.selected_index <= #listbox.items then
+			local crewid = tonumber(listbox.get_item(listbox.selected_index)[2])
 
-		-- If run is private
-		if global_memory.crew_memories[crewid].run_is_private then
-			if global_memory.crew_memories[crewid].private_run_password == flow.ongoing_runs.body.password_namefield.text then
+			local memory = global_memory.crew_memories[crewid]
+
+			-- If run is private
+			if global_memory.crew_memories[crewid].run_is_private then
+				if global_memory.crew_memories[crewid].private_run_password == flow.ongoing_runs.body.password_namefield.text then
+					Crew.join_crew(player, crewid)
+					flow.ongoing_runs.body.join_private_crew_info.visible = false
+					flow.ongoing_runs.body.password_namefield.visible = false
+
+					if memory.run_is_protected and (not Roles.captain_exists()) then
+						Common.notify_player_expected(player, {'pirates.player_joins_protected_run_with_no_captain'})
+						Common.notify_player_expected(player, {'pirates.create_new_crew_tip'})
+					end
+				else
+					Common.notify_player_error(player, {'pirates.gui_join_private_run_error_wrong_password'})
+				end
+			else
 				Crew.join_crew(player, crewid)
-				flow.ongoing_runs.body.join_private_crew_info.visible = false
-				flow.ongoing_runs.body.password_namefield.visible = false
 
 				if memory.run_is_protected and (not Roles.captain_exists()) then
 					Common.notify_player_expected(player, {'pirates.player_joins_protected_run_with_no_captain'})
 					Common.notify_player_expected(player, {'pirates.create_new_crew_tip'})
 				end
-			else
-				Common.notify_player_error(player, {'pirates.gui_join_private_run_error_wrong_password'})
 			end
-		else
-			Crew.join_crew(player, crewid)
 
-			if memory.run_is_protected and (not Roles.captain_exists()) then
-				Common.notify_player_expected(player, {'pirates.player_joins_protected_run_with_no_captain'})
-				Common.notify_player_expected(player, {'pirates.create_new_crew_tip'})
-			end
+			return
 		end
-
-		return
 	end
 
 	if eventname == 'propose_crew' then
