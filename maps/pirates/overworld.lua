@@ -495,22 +495,15 @@ function Public.generate_overworld_destination(p)
 	-- end
 
 	if position_candidates then
-		local positions_placed = {}
-		local whilesafety = 0
-		while whilesafety < 10 and (#positions_placed < Math.min(kraken_count, 10)) do
-			local p_chosen, p_kraken
-			local whilesafety2 = 0
-			while whilesafety2 < 50 and ((not p_kraken) or Utils.contains(positions_placed, p_chosen)) do
-				p_chosen = position_candidates[Math.random(#position_candidates)]
-				p_kraken = Utils.psum{p_chosen, p}
-				whilesafety2 = whilesafety2 + 1
+		local random_indices = Math.random_unique_array_indices(#position_candidates, Math.min(kraken_count, 10))
+		if random_indices then
+			for _, idx in ipairs(random_indices) do
+				local p_chosen = position_candidates[idx]
+				local p_kraken = Utils.psum{p_chosen, p}
+				Crowsnest.draw_kraken(p_kraken)
+				memory.overworld_krakens[#memory.overworld_krakens + 1] = p_kraken
 			end
-			Crowsnest.draw_kraken(p_kraken)
-			positions_placed[#positions_placed + 1] = p_kraken
-			memory.overworld_krakens[#memory.overworld_krakens + 1] = p_kraken
-			whilesafety = whilesafety + 1
 		end
-		-- game.print(#positions_placed .. ' krakens placed for' .. macro_p.x .. ', ' .. macro_p.y)
 	end
 end
 
@@ -577,16 +570,15 @@ end
 
 function Public.check_for_kraken_collisions()
 	local memory = Memory.get_crew_memory()
-	local krakens = memory.overworld_krakens
 
-	for i, k in ipairs(krakens) do
-
+	for i = #memory.overworld_krakens, 1, -1 do
+		local k = memory.overworld_krakens[i]
 		local relativex = Crowsnest.platformrightmostedge + k.x - memory.overworldx
 		local relativey = k.y - memory.overworldy
 
 		if (relativex <= 3.5 and relativex >= -3.5 and relativey >= -4 and relativey <= 4) then
 			Kraken.try_spawn_kraken()
-			memory.overworld_krakens = Utils.ordered_table_with_index_removed(krakens, i)
+			memory.overworld_krakens = Utils.ordered_table_with_index_removed(memory.overworld_krakens, i)
 		end
 	end
 end

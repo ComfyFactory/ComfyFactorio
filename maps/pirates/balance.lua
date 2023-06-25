@@ -569,7 +569,7 @@ function Public.krakens_per_free_slot(overworldx)
 	if rng < 0.0025 * multiplier then
 		return 3
 	elseif rng < 0.075 * multiplier then
-		return 1
+		return 2
 	elseif rng < 0.5 * multiplier then
 		return 1
 	else

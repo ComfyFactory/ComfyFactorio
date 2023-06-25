@@ -100,7 +100,7 @@ function Public.random_float_in_range(from, to)
 end
 
 -- Returns vector in random direction.
--- scalar: sets returned vector length. If nil, 1 will be chosen
+-- scalar: returned vector length. If nil, 1 will be chosen.
 function Public.random_vec(scalar)
 	scalar = scalar or 1
 	local random_angle = Public.random_float_in_range(0, 2 * Public.pi)
@@ -108,6 +108,41 @@ function Public.random_vec(scalar)
 		x = Public.sin(random_angle) * scalar,
 		y = Public.cos(random_angle) * scalar
 	}
+end
+
+-- Returns unique contiguous array indices.
+-- array_size: size of contiguous array.
+-- count: amount of unique indices to take from the array (elements are taken in range [1, array_size]).
+--
+-- Example with {array_size = 5, count = 3}:
+-- - Possible return value: {4, 1, 5}
+--
+-- Idea taken from this big brained stranger https://stackoverflow.com/a/2380705
+function Public.random_unique_array_indices(array_size, count)
+	if count > array_size then
+		return nil
+	end
+
+	local modified_indices = {}
+	local result_indices = {}
+	for i = 0, count - 1 do
+		local curr_array_size = array_size - i
+		local num = Public.random(curr_array_size)
+
+		if modified_indices[num] == nil then
+			result_indices[#result_indices + 1] = num
+		else
+			result_indices[#result_indices + 1] = modified_indices[num]
+		end
+
+		if modified_indices[curr_array_size] == nil then
+			modified_indices[num] = curr_array_size
+		else
+			modified_indices[num] = modified_indices[curr_array_size]
+		end
+	end
+
+	return result_indices
 end
 
 function Public.snap_to_grid(point)
