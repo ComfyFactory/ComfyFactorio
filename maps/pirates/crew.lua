@@ -95,6 +95,8 @@ function Public.update_difficulty()
 
 		memory.difficulty_option = modal_id
 		memory.difficulty = CoreData.difficulty_options[modal_id].value
+
+		Cabin.update_captains_market_offers_based_on_difficulty(memory.difficulty_option)
 	end
 end
 
