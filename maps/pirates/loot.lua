@@ -45,7 +45,7 @@ Public.buried_treasure_loot_data_raw = {
 
 Public.chest_loot_data_raw = {
 	{80, 0, 1, false, 'coin', 400, 700},
-	{30, 0, 1, false, 'rail-signal', 50, 50},
+	{10, 0, 1, false, 'rail-signal', 50, 50},
 	{1, 0.2, 1, false, 'electric-engine-unit', 1, 2},
 	{3, 0, 1, false, 'small-lamp', 4, 16},
 	{10, 0, 1, false, 'coal', 60, 100},
@@ -412,7 +412,7 @@ Public.maze_treasure_data_raw = {
 
 	{2, 0, 1, false, 'uranium-rounds-magazine', 15, 25},
 	{2, 0, 1, false, 'artillery-shell', 5, 7},
-	{2, 0, 1, false, 'rail-signal', 400, 400},
+	{2, 0, 1, false, 'rail-signal', 250, 250},
 	{2, 0, 1, false, 'electric-engine-unit', 3, 4},
 	{2, 0, 1, false, 'cluster-grenade', 8, 12},
 
