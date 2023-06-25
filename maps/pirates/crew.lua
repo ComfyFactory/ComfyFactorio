@@ -381,20 +381,43 @@ function Public.join_crew(player, crewid, rejoin)
 	else
 		Public.player_abandon_endorsements(player)
 		player.force = memory.force
-		player.teleport(surface.find_non_colliding_position('character', memory.spawnpoint, 32, 0.5) or memory.spawnpoint, surface)
 
 		Common.notify_lobby({'pirates.lobby_to_crew_2', player.name, memory.name})
-	end
 
-	Common.give_back_items_to_temporarily_logged_off_player(player)
+		player.teleport(surface.find_non_colliding_position('character', memory.spawnpoint, 32, 0.5) or memory.spawnpoint, surface)
+
+		if rejoin then
+			if memory.temporarily_logged_off_player_data[player.index] then
+				local rejoin_data = memory.temporarily_logged_off_player_data[player.index]
+				local rejoin_surface = game.surfaces[rejoin_data.surface_name]
+
+				-- If surface where player left the game still exists, place him there.
+				if rejoin_surface and rejoin_surface.valid then
+					-- Edge case: if player left the game while he was on the boat, it could be that boat position
+					-- changed when he left the game vs when he came back. In that case we do nothing.
+					if not rejoin_data.on_boat then
+						player.teleport(rejoin_surface.find_non_colliding_position('character', rejoin_data.position, 32, 0.5) or memory.spawnpoint, rejoin_surface)
+					end
+				end
+
+				-- We shouldn't give back items when player was on island, but that island is gone.
+				if not (rejoin_data.on_island and (not (rejoin_surface and rejoin_surface.valid))) then
+					Common.give_back_items_to_temporarily_logged_off_player(player)
+				end
+
+				memory.temporarily_logged_off_player_data[player.index] = nil
+			end
+		end
+	end
 
 	Common.notify_force(player.force, {'pirates.lobby_to_crew', player.name})
 	-- Server.to_discord_embed_raw(CoreData.comfy_emojis.yum1 .. '[' .. memory.name .. '] ' .. message)
 
 	memory.crewplayerindices[#memory.crewplayerindices + 1] = player.index
 
-	-- don't give them items if they've been in the crew recently:
-	if not (memory.tempbanned_from_joining_data and memory.tempbanned_from_joining_data[player.index]) and (not rejoin) then --just using tempbanned_from_joining_data as a quick proxy for whether the player has ever been in this run before
+	-- don't give them items if they've been in the crew recently
+	-- just using tempbanned_from_joining_data as a quick proxy for whether the player has ever been in this run before
+	if not (memory.tempbanned_from_joining_data and memory.tempbanned_from_joining_data[player.index]) and (not rejoin) then
 		for item, amount in pairs(Balance.starting_items_player_late) do
 			player.insert({name = item, count = amount})
 		end
@@ -438,6 +461,9 @@ function Public.leave_crew(player, to_lobby, quiet)
 		-- 	-- Server.to_discord_embed_raw(CoreData.comfy_emojis.feel .. '[' .. memory.name .. '] ' .. message)
 		-- end
 
+		local player_surface_type = SurfacesCommon.decode_surface_name(player.surface.name).type
+		local boat_surface_type = SurfacesCommon.decode_surface_name(memory.boat.surface_name).type
+
 		-- @TODO: figure out why surface_name can be nil
 		-- When player remains in island when ship leaves, prevent him from getting items back
 		local save_items = true
@@ -446,9 +472,6 @@ function Public.leave_crew(player, to_lobby, quiet)
 			memory.boat and
 			memory.boat.surface_name
 		then
-			local player_surface_type = SurfacesCommon.decode_surface_name(player.surface.name).type
-			local boat_surface_type = SurfacesCommon.decode_surface_name(memory.boat.surface_name).type
-
 			if player_surface_type == Surfaces.enum.ISLAND and boat_surface_type == Surfaces.enum.SEA then
 				save_items = false
 			end
@@ -460,6 +483,15 @@ function Public.leave_crew(player, to_lobby, quiet)
 			end
 			char.die(memory.force_name)
 		else
+			if not memory.temporarily_logged_off_player_data then memory.temporarily_logged_off_player_data = {} end
+
+			memory.temporarily_logged_off_player_data[player.index] = {
+				on_island = (player_surface_type == Surfaces.enum.ISLAND),
+				on_boat = (player_surface_type == boat_surface_type) and Boats.on_boat(memory.boat, player.character.position),
+				surface_name = player.surface.name,
+				position = player.character.position
+			}
+
 			if save_items then
 				Common.temporarily_store_logged_off_character_items(player)
 			end

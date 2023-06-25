@@ -63,7 +63,7 @@ Public.ban_from_rejoining_crew_ticks = 45 * 60 --to prevent observing map and re
 
 Public.afk_time = 60 * 60 * 5
 Public.afk_warning_time = 60 * 60 * 4.5
-Public.logged_off_items_preserved_minutes = 5
+Public.logged_off_items_preserved_minutes = 1
 Public.logout_unprotected_items = {'uranium-235', 'uranium-238', 'fluid-wagon', 'coal', 'electric-engine-unit', 'flying-robot-frame', 'advanced-circuit', 'beacon', 'speed-module-3', 'speed-module-2', 'roboport', 'construction-robot'} --internal inventories of these will not be preserved
 
 -- Public.mainshop_rate_limit_ticks = 11

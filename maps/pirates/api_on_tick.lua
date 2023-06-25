@@ -269,6 +269,7 @@ function Public.prune_offline_characters_list(tickinterval)
 				memory.temporarily_logged_off_characters_items[player_index].destroy()
 			end
 			memory.temporarily_logged_off_characters_items[player_index] = nil
+			memory.temporarily_logged_off_player_data[player_index] = nil
 		else
 			if player_index and tick < game.tick - 60 * 60 * Common.logged_off_items_preserved_minutes then
 				local any = false
@@ -289,6 +290,7 @@ function Public.prune_offline_characters_list(tickinterval)
 
 				memory.temporarily_logged_off_characters[player_index] = nil
 				memory.temporarily_logged_off_characters_items[player_index] = nil
+				memory.temporarily_logged_off_player_data[player_index] = nil
 			end
 		end
 	end

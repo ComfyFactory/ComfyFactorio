@@ -401,7 +401,6 @@ function Public.update_captains_market_offers_based_on_difficulty(difficulty_opt
 
     for i, offer in pairs(offers) do
 		if i == enum.SLOT_ARTILLERY_SHELLS then
-			game.print(_inspect(offer))
 			for _, price in pairs(offer.price) do
 				if price.name == "coin" then
 					price.amount = difficulty_option * 1000

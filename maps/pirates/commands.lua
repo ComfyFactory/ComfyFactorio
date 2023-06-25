@@ -36,6 +36,8 @@ local Classes = require 'maps.pirates.roles.classes'
 
 local Gui = require 'maps.pirates.gui.gui'
 
+-- local Session = require 'utils.datastore.session_data'
+
 
 
 local function cmd_set_memory(cmd)
@@ -46,7 +48,6 @@ end
 
 
 local function check_admin(cmd)
-	local Session = require 'utils.datastore.session_data'
 	local player = game.players[cmd.player_index]
 	--local trusted = Session.get_trusted_table()
 	local p
