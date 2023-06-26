@@ -262,34 +262,34 @@ function Public.prune_offline_characters_list(tickinterval)
 
     if memory.game_lost then return end
 
-	for player_index, tick in pairs(memory.temporarily_logged_off_characters) do
-		if player_index and game.players[player_index] and game.players[player_index].connected then
-			memory.temporarily_logged_off_characters[player_index] = nil
-			if memory.temporarily_logged_off_characters_items[player_index] then
-				memory.temporarily_logged_off_characters_items[player_index].destroy()
-			end
-			memory.temporarily_logged_off_characters_items[player_index] = nil
+	for player_index, data in pairs(memory.temporarily_logged_off_player_data) do
+		if game.players[player_index] and game.players[player_index].connected then
+			-- memory.temporarily_logged_off_characters[player_index] = nil
+			-- if memory.temporarily_logged_off_characters_items[player_index] then
+			-- 	memory.temporarily_logged_off_characters_items[player_index].destroy()
+			-- end
+			-- memory.temporarily_logged_off_characters_items[player_index] = nil
 			memory.temporarily_logged_off_player_data[player_index] = nil
 		else
-			if player_index and tick < game.tick - 60 * 60 * Common.logged_off_items_preserved_minutes then
-				local any = false
-				local temp_inv = memory.temporarily_logged_off_characters_items[player_index]
-				if temp_inv then
-					for i = 1, #temp_inv, 1 do
-						if temp_inv[i] and temp_inv[i].valid and temp_inv[i].valid_for_read then
-							Common.give_items_to_crew(temp_inv[i])
-							any = true
-						end
-					end
-					if any then
-						Common.notify_force_light(memory.force, {'pirates.recover_offline_player_items'})
-					end
+			local tick = data.tick
+			if tick < game.tick - 60 * 60 * Common.temporarily_logged_off_player_data_preservation_minutes then
+				-- local any = false
+				-- local temp_inv = memory.temporarily_logged_off_characters_items[player_index]
+				-- if temp_inv then
+				-- 	for i = 1, #temp_inv, 1 do
+				-- 		if temp_inv[i] and temp_inv[i].valid and temp_inv[i].valid_for_read then
+				-- 			Common.give_items_to_crew(temp_inv[i])
+				-- 			any = true
+				-- 		end
+				-- 	end
 
-					temp_inv.destroy()
-				end
+				-- 	if any then
+				-- 		Common.notify_force_light(memory.force, {'pirates.recover_offline_player_items'})
+				-- 	end
 
-				memory.temporarily_logged_off_characters[player_index] = nil
-				memory.temporarily_logged_off_characters_items[player_index] = nil
+				-- 	temp_inv.destroy()
+				-- end
+
 				memory.temporarily_logged_off_player_data[player_index] = nil
 			end
 		end

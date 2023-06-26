@@ -268,7 +268,7 @@ function Public.join_spectators(player, crewid)
 			player.set_controller{type = defines.controllers.spectator}
 		end
 
-		local c = surface.create_entity{name = 'character', position = surface.find_non_colliding_position('character', Common.lobby_spawnpoint, 32, 0.5) or Common.lobby_spawnpoint, force = 'player'}
+		local c = surface.create_entity{name = 'character', position = surface.find_non_colliding_position('character', Common.lobby_spawnpoint, 32, 0.5) or Common.lobby_spawnpoint, force = Common.lobby_force_name}
 
 		player.associate_character(c)
 
@@ -333,14 +333,11 @@ function Public.leave_spectators(player, quiet)
 		if _DEBUG then memory.crew_disband_tick = game.tick + 30*60*60 end
 	end
 
-	player.force = 'player'
+	player.force = Common.lobby_force_name
 end
 
 
-function Public.join_crew(player, crewid, rejoin)
-	if not crewid then return end
-
-	Memory.set_working_id(crewid)
+function Public.join_crew(player, rejoin)
 	local memory = Memory.get_crew_memory()
 
 	if not Common.validate_player(player) then return end
@@ -369,7 +366,7 @@ function Public.join_crew(player, crewid, rejoin)
 	if spectating then
 		local chars = player.get_associated_characters()
 		for _, char in pairs(chars) do
-				char.destroy()
+			char.destroy()
 		end
 
 		player.teleport(surface.find_non_colliding_position('character', memory.spawnpoint, 32, 0.5) or memory.spawnpoint, surface)
@@ -379,6 +376,11 @@ function Public.join_crew(player, crewid, rejoin)
 
 		memory.spectatorplayerindices = Utils.ordered_table_with_values_removed(memory.spectatorplayerindices, player.index)
 	else
+		if not (player.character and player.character.valid) then
+			player.set_controller{type = defines.controllers.god}
+			player.create_character()
+		end
+
 		Public.player_abandon_endorsements(player)
 		player.force = memory.force
 
@@ -394,16 +396,17 @@ function Public.join_crew(player, crewid, rejoin)
 				-- If surface where player left the game still exists, place him there.
 				if rejoin_surface and rejoin_surface.valid then
 					-- Edge case: if player left the game while he was on the boat, it could be that boat position
-					-- changed when he left the game vs when he came back. In that case we do nothing.
-					if not rejoin_data.on_boat then
+					-- changed when he left the game vs when he came back.
+					if not (rejoin_data.on_boat and rejoin_data.on_island) then
 						player.teleport(rejoin_surface.find_non_colliding_position('character', rejoin_data.position, 32, 0.5) or memory.spawnpoint, rejoin_surface)
 					end
 				end
 
 				-- We shouldn't give back items when player was on island, but that island is gone.
-				if not (rejoin_data.on_island and (not (rejoin_surface and rejoin_surface.valid))) then
-					Common.give_back_items_to_temporarily_logged_off_player(player)
-				end
+				-- Left in case we decide to store player inventory in offline character instead of in the corpse.
+				-- if not (rejoin_data.on_island and (not (rejoin_surface and rejoin_surface.valid))) then
+				-- 	Common.give_back_items_to_temporarily_logged_off_player(player)
+				-- end
 
 				memory.temporarily_logged_off_player_data[player.index] = nil
 			end
@@ -466,22 +469,24 @@ function Public.leave_crew(player, to_lobby, quiet)
 
 		-- @TODO: figure out why surface_name can be nil
 		-- When player remains in island when ship leaves, prevent him from getting items back
-		local save_items = true
-		if player.surface and
-			player.surface.valid and
-			memory.boat and
-			memory.boat.surface_name
-		then
-			if player_surface_type == Surfaces.enum.ISLAND and boat_surface_type == Surfaces.enum.SEA then
-				save_items = false
-			end
-		end
+		-- local save_items = true
+		-- if player.surface and
+		-- 	player.surface.valid and
+		-- 	memory.boat and
+		-- 	memory.boat.surface_name
+		-- then
+		-- 	if player_surface_type == Surfaces.enum.ISLAND and boat_surface_type == Surfaces.enum.SEA then
+		-- 		save_items = false
+		-- 	end
+		-- end
 
+		-- Code regarding item saving is left here if we decide it's better to store items in
+		-- logged off character as opposed to in the character corpse.
 		if to_lobby then
-			if save_items then
-				Common.send_important_items_from_player_to_crew(player, true)
-			end
-			char.die(memory.force_name)
+			-- if save_items then
+			-- 	Common.send_important_items_from_player_to_crew(player, true)
+			-- end
+			-- char.die(memory.force_name)
 		else
 			if not memory.temporarily_logged_off_player_data then memory.temporarily_logged_off_player_data = {} end
 
@@ -489,14 +494,17 @@ function Public.leave_crew(player, to_lobby, quiet)
 				on_island = (player_surface_type == Surfaces.enum.ISLAND),
 				on_boat = (player_surface_type == boat_surface_type) and Boats.on_boat(memory.boat, player.character.position),
 				surface_name = player.surface.name,
-				position = player.character.position
+				position = player.character.position,
+				tick = game.tick
 			}
 
-			if save_items then
-				Common.temporarily_store_logged_off_character_items(player)
-			end
-			memory.temporarily_logged_off_characters[player.index] = game.tick
+			-- if save_items then
+			-- 	Common.temporarily_store_logged_off_character_items(player)
+			-- end
+			-- memory.temporarily_logged_off_characters[player.index] = game.tick
 		end
+
+		char.die(memory.force_name)
 
 	-- else
 	-- 	if not quiet then
@@ -509,7 +517,7 @@ function Public.leave_crew(player, to_lobby, quiet)
 		player.set_controller{type = defines.controllers.god}
 
 		player.teleport(surface.find_non_colliding_position('character', Common.lobby_spawnpoint, 32, 0.5) or Common.lobby_spawnpoint, surface)
-		player.force = 'player'
+		player.force = Common.lobby_force_name
 		player.create_character()
 		Event.raise(BottomFrame.events.bottom_quickbar_respawn_raise, {player_index = player.index})
 	end
@@ -588,7 +596,7 @@ function Public.disband_crew(donotprint)
 
 	for _,player in pairs(players) do
 		if player.controller_type == defines.controllers.editor then player.toggle_map_editor() end
-		player.force = 'player'
+		player.force = Common.lobby_force_name
 	end
 
 	if (not donotprint) then
@@ -774,8 +782,9 @@ function Public.initialise_crew(accepted_proposal)
 	memory.spectatorplayerindices = {}
 	memory.tempbanned_from_joining_data = {}
 	memory.destinations = {}
-	memory.temporarily_logged_off_characters = {}
-	memory.temporarily_logged_off_characters_items = {}
+	-- memory.temporarily_logged_off_characters = {}
+	-- memory.temporarily_logged_off_characters_items = {}
+	memory.temporarily_logged_off_player_data = {}
 	memory.class_renderings = {}
 	memory.class_auxiliary_data = {}
 
@@ -820,8 +829,8 @@ function Public.initialise_crew(accepted_proposal)
 
 	memory.officers_table = {}
 
-	memory.classes_table = {} -- stores all unlocked untaken classes
-	memory.spare_classes = {} -- stores all unlocked taken classes
+	memory.classes_table = {} -- stores all unlocked taken classes
+	memory.spare_classes = {} -- stores all unlocked untaken classes
 	memory.recently_purchased_classes = {} -- stores recently unlocked classes to add it back to available class pool list later
 	memory.unlocked_classes = {} -- stores all unlocked classes just for GUI (to have consistent order)
 	memory.available_classes_pool = Classes.initial_class_pool() -- stores classes that can be randomly picked for unlocking
@@ -909,8 +918,8 @@ function Public.reset_crew_and_enemy_force(id)
 
 
 
-	crew_force.set_friend('player', true)
-	game.forces['player'].set_friend(crew_force, true)
+	crew_force.set_friend(Common.lobby_force_name, true)
+	game.forces[Common.lobby_force_name].set_friend(crew_force, true)
 	crew_force.set_friend(ancient_friendly_force, true)
 	ancient_friendly_force.set_friend(crew_force, true)
 	enemy_force.set_friend(ancient_friendly_force, true)

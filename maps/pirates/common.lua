@@ -63,8 +63,10 @@ Public.ban_from_rejoining_crew_ticks = 45 * 60 --to prevent observing map and re
 
 Public.afk_time = 60 * 60 * 5
 Public.afk_warning_time = 60 * 60 * 4.5
-Public.logged_off_items_preserved_minutes = 1
+Public.temporarily_logged_off_player_data_preservation_minutes = 1
 Public.logout_unprotected_items = {'uranium-235', 'uranium-238', 'fluid-wagon', 'coal', 'electric-engine-unit', 'flying-robot-frame', 'advanced-circuit', 'beacon', 'speed-module-3', 'speed-module-2', 'roboport', 'construction-robot'} --internal inventories of these will not be preserved
+
+Public.lobby_force_name = 'player'
 
 -- Public.mainshop_rate_limit_ticks = 11
 
@@ -138,7 +140,7 @@ end
 
 function Public.notify_lobby(message, color_override)
 	color_override = color_override or CoreData.colors.notify_lobby
-	game.forces['player'].print({"", '>> ',  message}, color_override)
+	game.forces[Public.lobby_force_name].print({"", '>> ',  message}, color_override)
 end
 
 function Public.notify_force(force, message, color_override)

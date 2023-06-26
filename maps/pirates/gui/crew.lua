@@ -512,7 +512,7 @@ function Public.click(event)
     end
 
     if eventname == 'spectator_join_crew' then
-        Crew.join_crew(player, memory.id)
+        Crew.join_crew(player)
 
         if memory.run_is_protected and (not Roles.captain_exists()) then
             Common.notify_player_expected(player, {'pirates.player_joins_protected_run_with_no_captain'})

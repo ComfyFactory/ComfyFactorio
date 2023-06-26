@@ -1437,22 +1437,26 @@ local function event_on_player_joined_game(event)
 
 	local crew_to_put_back_in = nil
 	for _, memory in pairs(global_memory.crew_memories) do
-		if Common.is_id_valid(memory.id) and memory.crewstatus == Crew.enum.ADVENTURING and memory.temporarily_logged_off_characters[player.index] then
+		if Common.is_id_valid(memory.id) and memory.crewstatus == Crew.enum.ADVENTURING and memory.temporarily_logged_off_player_data[player.index] then
 			crew_to_put_back_in = memory.id
 			break
 		end
 	end
 
 	if crew_to_put_back_in then
-		Crew.join_crew(player, crew_to_put_back_in, true)
+		log('INFO: ' .. player.name .. ' (crew ID: ' .. crew_to_put_back_in .. ') joined the game')
 
-		local memory = global_memory.crew_memories[crew_to_put_back_in]
+		Memory.set_working_id(crew_to_put_back_in)
+		Crew.join_crew(player, true)
+
+		local memory = Memory.get_crew_memory()
 		if (not memory.run_is_protected) and #memory.crewplayerindices <= 1 then
 			Roles.make_captain(player)
 		end
 
 		if _DEBUG then log('putting player back in their old crew') end
 	else
+		log('INFO: ' .. player.name .. ' (crew ID: NONE) joined the game')
 		if player.character and player.character.valid then
 			player.character.destroy()
 		end
@@ -1474,6 +1478,8 @@ local function event_on_player_joined_game(event)
 		end
 
 		Common.notify_player_expected(player, {'pirates.player_join_game_info'})
+
+		player.force = Common.lobby_force_name
 
 		-- It was suggested to always spawn players in lobby, in hopes that they may want to create their crew increasing the popularity of scenario.
 
@@ -1505,7 +1511,7 @@ local function event_on_player_joined_game(event)
 		-- 	end
 		-- )
 		-- if ages[1] then
-		-- 	Crew.join_crew(player, ages[1].id)
+		-- 	Crew.join_crew(player)
 
 		-- 	local memory = global_memory.crew_memories[ages[1].id]
 		-- 	if (not memory.run_is_protected) and #memory.crewplayerindices <= 1 then
@@ -1565,6 +1571,11 @@ local function event_on_pre_player_left_game(event)
 	local global_memory = Memory.get_global_memory()
 	-- figure out which crew this is about:
 	local crew_id = Common.get_id_from_force_name(player.force.name)
+	if crew_id then
+		log('INFO: ' .. player.name .. ' (crew ID: ' .. crew_id .. ') left the game')
+	else
+		log('INFO: ' .. player.name .. ' (crew ID: NONE) left the game')
+	end
 
 	for k, proposal in pairs(global_memory.crewproposals) do
 		if proposal and proposal.endorserindices then
@@ -2082,7 +2093,7 @@ local function event_on_console_chat(event)
 	local memory = Memory.get_crew_memory()
 
 	-- NOTE: This check to see if player is in a crew is not reliable and can sometimes cause errors!
-    if player.force.name == 'player' then
+    if player.force.name == Common.lobby_force_name then
 		local other_force_indices = global_memory.crew_active_ids
 
 		for _, index in pairs(other_force_indices) do

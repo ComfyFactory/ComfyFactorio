@@ -696,7 +696,11 @@ function Public.click(event)
 	if eventname == 'join_spectators' then
 		local listbox = flow.ongoing_runs.body.ongoing_runs_listbox
 
-		Crew.join_spectators(player, tonumber(listbox.get_item(listbox.selected_index)[2]))
+		-- It was observed that "listbox.get_item(listbox.selected_index)" can produce "Index out of range error"
+		-- This is to prevent that error.
+		if listbox.selected_index >= 1 and listbox.selected_index <= #listbox.items then
+			Crew.join_spectators(player, tonumber(listbox.get_item(listbox.selected_index)[2]))
+		end
 		return
 	end
 
@@ -713,12 +717,13 @@ function Public.click(event)
 		if listbox.selected_index >= 1 and listbox.selected_index <= #listbox.items then
 			local crewid = tonumber(listbox.get_item(listbox.selected_index)[2])
 
-			local memory = global_memory.crew_memories[crewid]
+			Memory.set_working_id(crewid)
+			local memory = Memory.get_crew_memory()
 
 			-- If run is private
-			if global_memory.crew_memories[crewid].run_is_private then
-				if global_memory.crew_memories[crewid].private_run_password == flow.ongoing_runs.body.password_namefield.text then
-					Crew.join_crew(player, crewid)
+			if memory.run_is_private then
+				if memory.private_run_password == flow.ongoing_runs.body.password_namefield.text then
+					Crew.join_crew(player)
 					flow.ongoing_runs.body.join_private_crew_info.visible = false
 					flow.ongoing_runs.body.password_namefield.visible = false
 
@@ -730,7 +735,7 @@ function Public.click(event)
 					Common.notify_player_error(player, {'pirates.gui_join_private_run_error_wrong_password'})
 				end
 			else
-				Crew.join_crew(player, crewid)
+				Crew.join_crew(player)
 
 				if memory.run_is_protected and (not Roles.captain_exists()) then
 					Common.notify_player_expected(player, {'pirates.player_joins_protected_run_with_no_captain'})
