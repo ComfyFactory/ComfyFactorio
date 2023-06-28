@@ -20,7 +20,7 @@ Public.Data = require 'maps.pirates.surfaces.islands.cave.data'
 
 --lab-dark-1 > position has been copied
 --lab-dark-2 > position has been visited
-function Public.reveal(cave_miner, surface, source_surface, position, brushsize)
+function Public.reveal(surface, source_surface, position, brushsize)
     local source_tile = source_surface.get_tile(position)
     if not source_tile.valid then return end
     if source_tile.name == 'lab-dark-2' then return end
@@ -66,7 +66,7 @@ function Public.reveal(cave_miner, surface, source_surface, position, brushsize)
 
     for _, entity in pairs(source_surface.find_entities_filtered({area = {{position.x - brushsize, position.y - brushsize}, {position.x + brushsize, position.y + brushsize}}})) do
         if entity.valid then
-            local entity_position = entity.position
+            local entity_position = {x = entity.position.x, y = entity.position.y}
             if (position.x - entity_position.x) ^ 2 + (position.y - entity_position.y) ^ 2 < brushsize_square then
                 local e = entity.clone({position = entity_position, surface = surface})
                 if e and e.valid then
@@ -98,7 +98,7 @@ function Public.reveal(cave_miner, surface, source_surface, position, brushsize)
 
                         Public.try_make_spawner_elite(e, destination)
 
-                        Public.reveal(cave_miner, surface, source_surface, entity_position, 15)
+                        Public.reveal(surface, source_surface, entity_position, 15)
                     end
                 end
             end
@@ -245,7 +245,7 @@ local function on_player_changed_position(event)
     local cave_miner = destination_data.dynamic_data.cave_miner
 
     -- TODO: make more reliable way to get island surface
-    Public.reveal(cave_miner, player.surface, cave_miner.cave_surface, {x = Math.floor(player.position.x), y = Math.floor(player.position.y)}, 11)
+    Public.reveal(player.surface, cave_miner.cave_surface, {x = Math.floor(player.position.x), y = Math.floor(player.position.y)}, 11)
 end
 
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)
