@@ -167,7 +167,8 @@ function Public.game_slowness_scale()
 	-- return 1 / Public.crew_scale()^(55/100) / Math.sloped(Common.difficulty_scale(), 1/4) --changed crew_scale factor significantly to help smaller crews
 	-- return 1 / (Public.crew_scale()^(50/100) / Math.sloped(Common.difficulty_scale(), 1/4)) --changed crew_scale factor significantly to help smaller crews
 
-	local scale = 0.3 + Math.sloped(Common.difficulty_scale(), -0.15) / (Public.crew_scale()^(1/8))
+	-- local scale = 0.3 + Math.sloped(Common.difficulty_scale(), -0.15) / (Public.crew_scale()^(1/8))
+	local scale = 2.6 * Math.sloped(Common.difficulty_scale(), -0.2) - Public.crew_scale()^(1/4)
 	return Math.max(1, scale)
 end
 
@@ -179,7 +180,7 @@ function Public.max_time_on_island_formula() --always >0  --tuned
 	-- 		(33 + 0.2 * (Common.overworldx()/40)^(1/3)) --based on observing x=2000, lets try killing the extra time
 	-- ) * Public.game_slowness_scale()
 
-	local minimum_mins_on_island = 40
+	local minimum_mins_on_island = 30
 	return Math.ceil(60 * minimum_mins_on_island * Public.game_slowness_scale())
 end
 
