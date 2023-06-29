@@ -1220,7 +1220,7 @@ end
 
 
 
-
+-- ATTENTION: Giving same names to GUI elements can cause issues, because click events are dispatched to all GUI windows!
 local function on_gui_click(event)
 	if not event then return end
 	if not event.element then return end

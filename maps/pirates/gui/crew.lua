@@ -114,17 +114,18 @@ function Public.toggle_window(player)
     flow3.style.font_color = {r = 0.10, g = 0.10, b = 0.10}
     flow3.tooltip = {'pirates.gui_crew_window_buttons_quit_crew_tooltip'}
 
-    flow3 =
-        flow2.add(
-        {
-            name = 'leave_spectators',
-            type = 'button',
-            caption = {'pirates.gui_crew_window_buttons_quit_spectators'}
-        }
-    )
-    flow3.style.minimal_width = 95
-    flow3.style.font = 'default-bold'
-    flow3.style.font_color = {r = 0.10, g = 0.10, b = 0.10}
+    -- Runs window already has a button to leave spectators.
+    -- flow3 =
+    --     flow2.add(
+    --     {
+    --         name = 'crewmember_leave_spectators',
+    --         type = 'button',
+    --         caption = {'pirates.gui_crew_window_buttons_quit_spectators'}
+    --     }
+    -- )
+    -- flow3.style.minimal_width = 95
+    -- flow3.style.font = 'default-bold'
+    -- flow3.style.font_color = {r = 0.10, g = 0.10, b = 0.10}
 
     flow3 =
         flow2.add(
@@ -138,18 +139,19 @@ function Public.toggle_window(player)
     flow3.style.font = 'default-bold'
     flow3.style.font_color = {r = 0.10, g = 0.10, b = 0.10}
 
-    flow3 =
-        flow2.add(
-        {
-            name = 'crewmember_join_spectators',
-            type = 'button',
-            caption = {'pirates.gui_crew_window_buttons_join_spectators'}
-        }
-    )
-    flow3.style.minimal_width = 95
-    flow3.style.font = 'default-bold'
-    flow3.style.font_color = {r = 0.10, g = 0.10, b = 0.10}
-    flow3.tooltip = {'pirates.gui_crew_window_buttons_join_spectators_tooltip'}
+    -- Disabled spectators for now... might not play well with maze world
+    -- flow3 =
+    --     flow2.add(
+    --     {
+    --         name = 'crewmember_join_spectators',
+    --         type = 'button',
+    --         caption = {'pirates.gui_crew_window_buttons_join_spectators'}
+    --     }
+    -- )
+    -- flow3.style.minimal_width = 95
+    -- flow3.style.font = 'default-bold'
+    -- flow3.style.font_color = {r = 0.10, g = 0.10, b = 0.10}
+    -- flow3.tooltip = {'pirates.gui_crew_window_buttons_join_spectators_tooltip'}
 
     --*** MEMBERS AND SPECTATORS ***--
 
@@ -437,8 +439,7 @@ function Public.full_update(player)
 
     flow.membership_buttons.leave_crew.visible = playercrew_status.adventuring
     -- flow.membership_buttons.crewmember_join_spectators.visible = playercrew_status.adventuring
-    flow.membership_buttons.crewmember_join_spectators.visible = false --disabled spectators for now... might not play well with maze world
-    flow.membership_buttons.leave_spectators.visible = playercrew_status.spectating
+    -- flow.membership_buttons.leave_spectators.visible = playercrew_status.spectating
 
     flow.membership_buttons.spectator_join_crew.visible =
         flow.membership_buttons.spectator_join_crew.visible and (not (memory.tempbanned_from_joining_data[player.index] and game.tick < memory.tempbanned_from_joining_data[player.index] + Common.ban_from_rejoining_crew_ticks))
@@ -501,15 +502,15 @@ function Public.click(event)
 
     local memory = Memory.get_crew_memory()
 
-    if eventname == 'crewmember_join_spectators' then
-        Crew.join_spectators(player, memory.id)
-        return
-    end
+    -- if eventname == 'crewmember_join_spectators' then
+    --     Crew.join_spectators(player, memory.id)
+    --     return
+    -- end
 
-    if eventname == 'leave_spectators' then
-        Crew.leave_spectators(player)
-        return
-    end
+    -- if eventname == 'crewmember_leave_spectators' then
+    --     Crew.leave_spectators(player)
+    --     return
+    -- end
 
     if eventname == 'spectator_join_crew' then
         Crew.join_crew(player)
