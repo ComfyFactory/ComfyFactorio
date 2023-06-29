@@ -905,7 +905,39 @@ function Public.try_boat_biters_attack()
 end
 
 
+local function on_entity_destroyed(event)
+	local registration_number = event.registration_number
 
+	local p
+	local biter_name
+	local surface_name
+	local memory
+	for i = 1,3 do
+		Memory.set_working_id(i)
+		memory = Memory.get_crew_memory()
+		if memory.elite_biters_stream_registrations then
+			for j, r in pairs(memory.elite_biters_stream_registrations) do
+				if r.number == registration_number then
+					p = r.position
+					biter_name = r.biter_name
+					surface_name = r.surface_name
+					memory.elite_biters_stream_registrations = Utils.ordered_table_with_index_removed(memory.elite_biters_stream_registrations, j)
+					break
+				end
+			end
+		end
+		if p then break end
+	end
+	if p then
+		local surface = game.surfaces[surface_name]
+		if not (surface and surface.valid) then return end
+
+		local p2 = surface.find_non_colliding_position('medium-biter', p, 10, 0.2)
+		if not p2 then return end
+
+		surface.create_entity{name = biter_name, position = p2, force = memory.enemy_force_name}
+	end
+end
 
 
 -- function Public.destroy_inactive_scripted_biters()
@@ -923,6 +955,9 @@ end
 
 --=== Data
 
+
+local event = require 'utils.event'
+event.add(defines.events.on_entity_destroyed, on_entity_destroyed)
 
 
 return Public

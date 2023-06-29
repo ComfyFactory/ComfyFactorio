@@ -93,6 +93,8 @@ Public.min_ore_spawn_distance = 10
 Public.biter_boats_start_arrive_x = 40 * 5
 Public.need_resources_to_undock_x = 40 * 20
 
+Public.biters_spawned_on_elite_biter_death = 4
+
 function Public.starting_boatEEIpower_production_MW()
 	-- return 3 * Math.sloped(Common.capacity_scale(), 1/2) / 2 --/2 as we have 2
 	return 3/2

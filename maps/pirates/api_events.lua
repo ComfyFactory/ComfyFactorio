@@ -253,6 +253,34 @@ local function damage_to_elite_biters(event)
 			local remaining_health = Common.entity_damage_healthbar(event.entity, damage)
 
 			if remaining_health and remaining_health <= 0 then
+				local surface = event.entity.surface
+				if surface and surface.valid then
+					-- Shoot spit around and spawn biters where spit lands
+					local arc_size = (2 * Math.pi) / Balance.biters_spawned_on_elite_biter_death
+					for i = 1, Balance.biters_spawned_on_elite_biter_death, 1 do
+						local offset = Math.random_vec_in_arc(Math.random(4, 8), arc_size * i, arc_size)
+						local target_pos = Math.vector_sum(event.entity.position, offset)
+
+						local stream = surface.create_entity{
+							name = 'acid-stream-spitter-big',
+							position = event.entity.position,
+							force = memory.enemy_force_name,
+							source = event.entity.position,
+							target = target_pos,
+							max_range = 500,
+							speed = 0.1
+						}
+
+						if not memory.elite_biters_stream_registrations then memory.elite_biters_stream_registrations = {} end
+						memory.elite_biters_stream_registrations[#memory.elite_biters_stream_registrations + 1] = {
+							number = script.register_on_entity_destroyed(stream),
+							position = target_pos,
+							biter_name = event.entity.name,
+							surface_name = surface.name -- surface name is needed to know where biter died
+						}
+					end
+				end
+
 				memory.elite_biters[event.entity.unit_number] = nil
 				event.entity.die()
 			end

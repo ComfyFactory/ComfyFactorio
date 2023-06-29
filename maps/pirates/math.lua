@@ -105,8 +105,21 @@ function Public.random_vec(scalar)
 	scalar = scalar or 1
 	local random_angle = Public.random_float_in_range(0, 2 * Public.pi)
 	return {
-		x = Public.sin(random_angle) * scalar,
-		y = Public.cos(random_angle) * scalar
+		x = Public.cos(random_angle) * scalar,
+		y = Public.sin(random_angle) * scalar
+	}
+end
+
+-- Returns vector in random direction in arc: [arc_offset, arc_offset + arc_size], starting at {x=1, y=1} and going anti-clockwise.
+-- scalar: returned vector length. If nil, 1 will be chosen.
+-- arc_offset: offset of arc in radians.
+-- arc_size: size of arc in radians. Result is undefined with negative arc_size
+function Public.random_vec_in_arc(scalar, arc_offset, arc_size)
+	scalar = scalar or 1
+	local random_angle = Public.random_float_in_range(arc_offset, arc_offset + arc_size)
+	return {
+		x = Public.cos(random_angle) * scalar,
+		y = Public.sin(random_angle) * scalar
 	}
 end
 

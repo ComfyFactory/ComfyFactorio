@@ -1861,7 +1861,7 @@ function Public.try_make_biter_elite(entity)
 	local memory = Memory.get_crew_memory()
 
 	local difficulty_index = CoreData.get_difficulty_option_from_value(memory.difficulty)
-	if difficulty_index < 3 then return end
+	if difficulty_index < 3 and Public.overworldx() < 800 then return end
 
 	if Public.overworldx() == 0 then return end
 
@@ -1870,7 +1870,7 @@ function Public.try_make_biter_elite(entity)
 
 	local health_multiplier
 
-	if difficulty_index == 3 then
+	if difficulty_index <= 3 then
 		health_multiplier = 5
 	else
 		health_multiplier = 10
