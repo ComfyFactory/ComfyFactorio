@@ -484,7 +484,7 @@ local function damage_dealt_by_players_changes(event)
 			for _, p2 in pairs(nearby_players) do
 				if p2.player and p2.player.valid then
 					local p2_index = p2.player.index
-					if event.entity.valid and player_index ~= p2_index and Classes.get_class(p2_index) == Classes.enum.QUARTERMASTER then
+					if event.entity.valid and Classes.get_class(p2_index) == Classes.enum.QUARTERMASTER then
 						-- event.entity.damage((Balance.quartermaster_bonus_physical_damage - 1) * event.final_damage_amount, character.force, 'impact', character) --triggers this function again, but not physical this time
 						Common.damage_hostile_entity(event.entity, (Balance.quartermaster_bonus_physical_damage - 1) * event.final_damage_amount)
 						event.final_damage_amount = event.final_damage_amount * Balance.quartermaster_bonus_physical_damage

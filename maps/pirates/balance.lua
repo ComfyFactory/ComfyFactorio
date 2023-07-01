@@ -37,12 +37,12 @@ Public.class_reward_tick_rate_in_seconds = 7
 Public.poison_damage_multiplier = 1.85
 Public.every_nth_tree_gives_coins = 10
 
-Public.samurai_damage_taken_multiplier = 0.32
+Public.samurai_damage_taken_multiplier = 0.45
 Public.samurai_damage_dealt_when_not_melee_multiplier = 0.75
-Public.samurai_damage_dealt_with_melee = 25
-Public.hatamoto_damage_taken_multiplier = 0.21
+Public.samurai_damage_dealt_with_melee = 30
+Public.hatamoto_damage_taken_multiplier = 0.3
 Public.hatamoto_damage_dealt_when_not_melee_multiplier = 0.75
-Public.hatamoto_damage_dealt_with_melee = 45
+Public.hatamoto_damage_dealt_with_melee = 50
 Public.iron_leg_damage_taken_multiplier = 0.24
 Public.iron_leg_iron_ore_required = 3000
 Public.deckhand_extra_speed = 1.25
@@ -94,6 +94,8 @@ Public.biter_boats_start_arrive_x = 40 * 5
 Public.need_resources_to_undock_x = 40 * 20
 
 Public.biters_spawned_on_elite_biter_death = 4
+
+Public.walkways_frozen_pool_damage = 12
 
 function Public.starting_boatEEIpower_production_MW()
 	-- return 3 * Math.sloped(Common.capacity_scale(), 1/2) / 2 --/2 as we have 2
