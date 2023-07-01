@@ -454,7 +454,6 @@ local function other_enemy_damage_bonuses(event)
 end
 
 
--- @TODO: Fix elite biters getting one shotted by Samurai/Hatamoto classes (it doesn't play well with virtual health) as well as check for other inconsistencies/issues when damaging entities with virtual health
 local function damage_dealt_by_players_changes(event)
 	local memory = Memory.get_crew_memory()
 
