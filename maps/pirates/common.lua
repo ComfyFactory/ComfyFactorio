@@ -785,11 +785,11 @@ end
 function Public.entity_damage_healthbar(entity, damage, location_override)
 	location_override = location_override or Memory.get_crew_memory()
 
-	if not (location_override.healthbars) then return end
+	if not (location_override.healthbars) then return nil end
 
 	local unit_number = entity.unit_number
 	local healthbar = location_override.healthbars[unit_number]
-	if not healthbar then return end
+	if not healthbar then return nil end
 
 	local new_health = healthbar.health - damage
 	healthbar.health = new_health
@@ -799,11 +799,17 @@ function Public.entity_damage_healthbar(entity, damage, location_override)
 		entity.health = entity.prototype.max_health
 	end
 
+	if healthbar.health > healthbar.max_health then
+		healthbar.health = healthbar.max_health
+	end
+
+	local final_health = healthbar.health
+
 	if healthbar.health <= 0 then
 		location_override.healthbars[unit_number] = nil
 	end
 
-	return healthbar.health
+	return final_health
 end
 
 function Public.update_healthbar_rendering(new_healthbar, health)
@@ -1890,6 +1896,28 @@ function Public.try_make_biter_elite(entity)
 	local elite_biters = memory.elite_biters
 	if elite_biters then
 		elite_biters[entity.unit_number] = entity
+	end
+end
+
+-- This function is meant to handle damage adjustment cases that automatically damages/heals either entity or its virtual health.
+-- NOTE: This is only meant for hostile entities (for now at least), as friendly units with healthbars are more difficult to handle
+-- NOTE: "damage" can also be negative, which will heal the entity (but not past maximum health)
+function Public.damage_hostile_entity(entity, damage)
+	if not (entity and entity.valid) then return end
+
+	local remaining_health = Public.entity_damage_healthbar(entity, damage)
+
+	-- Does entity have virtual healthbar
+	if remaining_health then
+		if remaining_health <= 0 then
+			entity.die()
+		end
+	else -- Not, so treat it as simple entity
+		-- Note: According to docs, health is automatically clamped to [0, max_health] so we don't need to do it
+		entity.health = entity.health - damage
+		if entity.health <= 0 then
+			entity.die()
+		end
 	end
 end
 

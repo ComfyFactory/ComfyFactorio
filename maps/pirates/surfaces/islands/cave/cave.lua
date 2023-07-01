@@ -115,7 +115,7 @@ function Public.try_make_spawner_elite(spawner, destination)
     if spawner and CoreData.get_difficulty_option_from_value(memory.difficulty) >= 3 then
         if Math.random(20) == 1 then
             local max_health = Balance.elite_spawner_health()
-            Common.new_healthbar(true, spawner, max_health, nil, max_health, 0.8, nil, destination.dynamic_data)
+            Common.new_healthbar(true, spawner, max_health, nil, max_health, 0.8, nil)
 
             local elite_spawners = destination.dynamic_data.elite_spawners
             if elite_spawners then

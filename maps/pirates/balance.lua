@@ -511,6 +511,9 @@ Public.starting_fuel = 4000
 Public.silo_max_hp = 5000
 Public.silo_resistance_factor = 7
 
+-- Pistol shooting speed = 4/s
+-- Submachine gun shooting speed = 10/s
+-- Pistol damage multiplier shouldn't be >= 2.5, otherwise Submachine gun isn't worth using.
 function Public.pistol_damage_multiplier() return 2.25 end --2.0 slightly too low, 2.5 causes players to yell at each other for not using pistol
 
 Public.kraken_static_evo = 0.35
