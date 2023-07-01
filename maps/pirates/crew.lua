@@ -482,12 +482,13 @@ function Public.leave_crew(player, to_lobby, quiet)
 
 		-- Code regarding item saving is left here if we decide it's better to store items in
 		-- logged off character as opposed to in the character corpse.
-		if to_lobby then
+		-- if to_lobby then
 			-- if save_items then
 			-- 	Common.send_important_items_from_player_to_crew(player, true)
 			-- end
 			-- char.die(memory.force_name)
-		else
+		-- else
+		if not to_lobby then
 			if not memory.temporarily_logged_off_player_data then memory.temporarily_logged_off_player_data = {} end
 
 			memory.temporarily_logged_off_player_data[player.index] = {
