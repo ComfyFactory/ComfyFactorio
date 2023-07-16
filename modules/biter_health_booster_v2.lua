@@ -465,7 +465,7 @@ end
 --- Use this function to add a new boss unit (with healthbar)
 ---@param unit userdata
 ---@param health_multiplier number
----@param health_bar_size number
+---@param health_bar_size number|nil
 function Public.add_boss_unit(unit, health_multiplier, health_bar_size)
     if not health_multiplier then
         health_multiplier = this.biter_health_boost
