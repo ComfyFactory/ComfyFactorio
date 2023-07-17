@@ -143,6 +143,10 @@ function Public.unit_groups_start_moving()
 end
 
 local function new_town(town_center)
+    if not town_center then
+        return false
+    end
+
     -- cooldown for swarms on new towns is 15 minutes
     local cooldown_ticks = 15 * 3600
     local elapsed_ticks = game.tick - town_center.creation_tick
@@ -167,13 +171,17 @@ function Public.swarm(town_center, radius)
         return
     end
     -- cancel if relatively new town
-    if new_town(tc) then
+    if tc and new_town(tc) then
         return
     end
     -- skip if we have to many swarms already
     local count = table_size(this.swarms)
     local towns = table_size(this.town_centers)
     if count > 3 * towns then
+        return
+    end
+
+    if not tc then
         return
     end
 
@@ -269,6 +277,9 @@ local function on_unit_group_finished_gathering(event)
         local this = ScenarioTable.get_table()
         local town_centers = this.town_centers
         local town_center = town_centers[force.name]
+        if not town_center then
+            return
+        end
         -- cancel if relatively new town
         if new_town(town_center) then
             return
