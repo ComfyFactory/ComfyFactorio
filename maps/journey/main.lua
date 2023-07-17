@@ -143,8 +143,8 @@ local function on_rocket_launched(event)
 			if journey.mothership_cargo[slot.name] > journey.mothership_cargo_space[slot.name] then
 				journey.mothership_cargo[slot.name] = journey.mothership_cargo_space[slot.name]
 			end
-			if slot.name == "uranium-fuel-cell" or slot.name == 'nuclear-fuel' then
-				Server.to_discord_embed("Refueling progress: " .. journey.mothership_cargo[slot.name] .. "/" .. journey.mothership_cargo_space[slot.name])
+			if slot.name == 'uranium-fuel-cell' or slot.name == 'nuclear-reactor' then
+				Server.to_discord_embed('Refueling progress: ' .. slot.name .. ': ' .. journey.mothership_cargo[slot.name] .. '/' .. journey.mothership_cargo_space[slot.name])
 			end
 		end
 	end

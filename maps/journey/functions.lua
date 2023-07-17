@@ -450,9 +450,11 @@ function Public.hard_reset(journey)
 	journey.beacon_objective_health = 10000
 	journey.beacon_objective_resistance = 0.9
 	journey.world_number = 0
-	journey.world_trait = "lush"
+	journey.world_trait = 'lush'
 	journey.world_modifiers = {}
-	journey.game_state = "create_mothership"
+	journey.emergency_triggered = false
+	journey.emergency_selected = false
+	journey.game_state = 'create_mothership'
 	journey.mothership_messages_last_damage = game.tick
 	for k, modifier in pairs(Constants.modifiers) do
 		journey.world_modifiers[k] = modifier.base
@@ -907,19 +909,27 @@ function Public.mothership_world_selection(journey)
 	local reroll_selector_activation_level = get_activation_level(surface, Constants.reroll_selector_area)
 	journey.reroll_selector.activation_level = reroll_selector_activation_level
 
-	journey.selected_world = false
-	for i = 1, 3, 1 do
-		local activation_level = get_activation_level(surface, Constants.world_selector_areas[i])
-		journey.world_selectors[i].activation_level = activation_level
-		if activation_level > 1 then
-			journey.selected_world = i
+	if journey.emergency_triggered then
+		if not journey.emergency_selected then
+			journey.selected_world = math.random(1, 3)
+			table.insert(journey.mothership_messages, "Emergency destination selected..")
+			table.insert(journey.mothership_messages, "Some reactors were damaged due to unplanned circumstances..")
+			journey.emergency_selected = true
 		end
-	end
-
-	if reroll_selector_activation_level > 1 and journey.mothership_speed == 0.35 and journey.mothership_cargo.satellite > 0 then
-		journey.game_state = "reroll_worlds"
-		table.insert(journey.mothership_messages, "Dispatching satellite..")
-		return
+	else
+		journey.selected_world = false
+		for i = 1, 3, 1 do
+			local activation_level = get_activation_level(surface, Constants.world_selector_areas[i])
+			journey.world_selectors[i].activation_level = activation_level
+			if activation_level > 1 then
+				journey.selected_world = i
+			end
+		end
+		if reroll_selector_activation_level > 1 and journey.mothership_speed == 0.35 and journey.mothership_cargo.satellite > 0 then
+			journey.game_state = "reroll_worlds"
+			table.insert(journey.mothership_messages, "Dispatching satellite..")
+			return
+		end
 	end
 
 	if journey.selected_world then
@@ -978,7 +988,8 @@ function Public.mothership_arrives_at_world(journey)
 		journey.mothership_speed = 0.15
 	end
 	journey.beacon_objective_resistance = 0.90 - (0.03 * journey.world_number)
-
+	journey.emergency_triggered = false
+	journey.emergency_selected = false
 	draw_background(journey, surface)
 	Public.update_tooltips(journey)
 end
@@ -1060,7 +1071,7 @@ function Public.create_the_world(journey)
 			game.map_settings.pollution.diffusion_ratio = journey.world_modifiers[name]
 		end
 		if name == "tree_durability" then
-			game.map_settings.pollution.min_pollution_to_damage_trees = journey.world_modifiers[name]
+			game.map_settings.pollution.min_pollution_to_damage_trees = journey.world_modifiers[name] * 6
 			game.map_settings.pollution.pollution_restored_per_tree_damage = journey.world_modifiers[name]
 		end
 		if name == "max_unit_group_size" then
@@ -1238,15 +1249,13 @@ function Public.world(journey)
 			table.remove(journey.rocket_silos, k)
 			break
 		end
-		local inventory = silo.get_inventory(defines.inventory.rocket_silo_rocket)
-		if inventory then
-			local fuel_cells_required = journey.mothership_cargo_space['uranium-fuel-cell'] - journey.mothership_cargo['uranium-fuel-cell']
-			if fuel_cells_required > 50 then fuel_cells_required = 50 end
-			local reactors_required = journey.mothership_cargo_space['nuclear-reactor'] - journey.mothership_cargo['nuclear-reactor']
-			if reactors_required > 10 then reactors_required = 10 end
-			if inventory.get_item_count('satellite') == 1 or inventory.get_item_count('uranium-fuel-cell') >= fuel_cells_required or inventory.get_item_count('nuclear-reactor') >= reactors_required then
+		local inventory = silo.get_inventory(defines.inventory.rocket_silo_rocket) or {}
+		local slot = inventory[1]
+		if slot and slot.valid and slot.valid_for_read then
+			local needs = (journey.mothership_cargo_space[slot.name] or 0) - (journey.mothership_cargo[slot.name] or 0)
+			if needs > 0 and slot.count >= math.min(game.item_prototypes[slot.name].stack_size, needs) then
 				if silo.launch_rocket() then
-					table.insert(journey.mothership_messages, "Launching rocket [gps=" .. silo.position.x .. "," .. silo.position.y .. ",nauvis]")
+					table.insert(journey.mothership_messages, {'journey.message_rocket_launched', slot.count, slot.name, silo.position.x, silo.position.y})
 				end
 			end
 		end
@@ -1319,6 +1328,7 @@ function Public.deal_damage_to_beacon(journey, incoming_damage)
 			end
 			Public.hard_reset(journey)
 		else
+			journey.emergency_triggered = true
 			journey.game_state = "set_world_selectors"
 			Public.update_tooltips(journey)
 			Public.draw_gui(journey)
