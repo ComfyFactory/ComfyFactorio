@@ -2611,21 +2611,21 @@ local function starting_zone(x, y, data, void_or_lab, adjusted_zones)
 end
 
 local zones = {
-    zone_1 = {fn = zone_1, weight = 100, tags = {'default'}},
-    zone_2 = {fn = zone_2, weight = 100, tags = {'default'}},
-    zone_3 = {fn = zone_3, weight = 100, tags = {'default'}},
-    zone_4 = {fn = zone_4, weight = 100, tags = {'default'}},
-    zone_5 = {fn = zone_5, weight = 100, tags = {'default'}},
+    zone_1 = {fn = zone_1, weight = 100, tags = {'zone_1'}},
+    zone_2 = {fn = zone_2, weight = 100, tags = {'zone_2'}},
+    zone_3 = {fn = zone_3, weight = 100, tags = {'zone_3'}},
+    zone_4 = {fn = zone_4, weight = 100, tags = {'zone_4'}},
+    zone_5 = {fn = zone_5, weight = 100, tags = {'zone_5'}},
     zone_forest_1 = {fn = zone_forest_1, weight = 100, tags = {'forest'}},
     zone_forest_2 = {fn = zone_forest_2, weight = 100, tags = {'forest'}},
     zone_scrap_1 = {fn = zone_scrap_1, weight = 100, tags = {'scrap'}},
     zone_scrap_2 = {fn = zone_scrap_2, weight = 100, tags = {'scrap'}},
-    zone_7 = {fn = zone_7, weight = 100, tags = {'default'}},
-    zone_9 = {fn = zone_9, weight = 100, tags = {'default'}},
+    zone_7 = {fn = zone_7, weight = 100, tags = {'zone_7'}},
+    zone_9 = {fn = zone_9, weight = 100, tags = {'zone_8'}},
     zone_10 = {fn = zone_10, weight = 100, tags = {'forest'}},
-    zone_11 = {fn = zone_11, weight = 100, tags = {'default'}},
-    zone_12 = {fn = zone_12, weight = 100, tags = {'default'}},
-    zone_13 = {fn = zone_13, weight = 100, tags = {'default'}},
+    zone_11 = {fn = zone_11, weight = 100, tags = {'zone_11'}},
+    zone_12 = {fn = zone_12, weight = 100, tags = {'zone_12'}},
+    zone_13 = {fn = zone_13, weight = 100, tags = {'zone_13'}},
     zone_14 = {fn = zone_14, weight = 100, tags = {'forest'}}
 }
 
