@@ -393,17 +393,18 @@ function Public.tick_quest_structure_entry_price_check()
 			if removed > 0 then
 				local count = 1
 				for k, v in pairs(entry_price.batchRawMaterials) do
-					red_invs[count].insert({name = k, count = v * removed / entry_price.batchSize});
-					count = count + 1
+					local item_count = v * removed / entry_price.batchSize
+					if item_count > 0 then
+						red_invs[count].insert({name = k, count = item_count});
+						count = count + 1
+					else
+						log('Error (non-critical): item_count is not positive. v: ' .. v .. '; removed: ' .. removed .. '; entry_price.batchSize: ' .. entry_price.batchSize)
+					end
 				end
 			end
 		end
 	end
 end
-
-
-
-
 
 
 return Public

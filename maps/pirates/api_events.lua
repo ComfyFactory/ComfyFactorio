@@ -109,17 +109,23 @@ local function biters_chew_stuff_faster(event)
 	if not (event.cause and event.cause.valid and event.cause.force and event.cause.force.name and event.entity and event.entity.valid and event.entity.force and event.entity.force.name) then return end
 	if event.cause.force.name ~= memory.enemy_force_name then return end --Enemy Forces only
 
+	-- @TODO: "event.entity.force.index == 3" looks suspicious (and probably doesn't work?), investigate it
 	if (event.entity.force.index == 3 or event.entity.force.name == 'environment') then
 		event.entity.health = event.entity.health - event.final_damage_amount * 5
+		event.final_damage_amount = event.final_damage_amount * 6
 		if destination and destination.type == Surfaces.enum.ISLAND and destination.subtype == IslandEnum.enum.MAZE then
-			event.entity.health = event.entity.health - event.final_damage_amount * 10
+			event.entity.health = event.entity.health - event.final_damage_amount
+			event.final_damage_amount = event.final_damage_amount * 2
 		end
 	elseif event.entity.name == 'pipe' then
 		event.entity.health = event.entity.health - event.final_damage_amount * 0.5
+		event.final_damage_amount = event.final_damage_amount * 1.5
 	elseif event.entity.name == 'stone-furnace' then
 		event.entity.health = event.entity.health - event.final_damage_amount * 0.5
+		event.final_damage_amount = event.final_damage_amount * 1.5
 	elseif event.entity.name == 'wooden-chest' or event.entity.name == 'stone-chest' or event.entity.name == 'steel-chest' then
 		event.entity.health = event.entity.health - event.final_damage_amount * 0.5
+		event.final_damage_amount = event.final_damage_amount * 1.5
 	end
 end
 
@@ -202,7 +208,7 @@ local function damage_to_enemyboat_spawners(event)
 			if eb.spawner and eb.spawner.valid and event.entity == eb.spawner then
 			-- if eb.spawner and eb.spawner.valid and event.entity == eb.spawner and eb.state == Structures.Boats.enum_state.APPROACHING then
 				local damage = event.final_damage_amount
-				local remaining_health = Common.entity_damage_healthbar(event.entity, damage, destination.dynamic_data)
+				local remaining_health = Common.entity_damage_healthbar(event.entity, damage)
 
 				if remaining_health and remaining_health <= 0 then
 					event.entity.die()
@@ -228,7 +234,7 @@ local function damage_to_elite_spawners(event)
 			if spawner and spawner.valid and event.entity == spawner then
 				local damage = event.final_damage_amount
 
-				local remaining_health = Common.entity_damage_healthbar(event.entity, damage, destination.dynamic_data)
+				local remaining_health = Common.entity_damage_healthbar(event.entity, damage)
 
 				if remaining_health and remaining_health <= 0 then
 					event.entity.die()
@@ -253,7 +259,6 @@ local function damage_to_elite_biters(event)
 			local remaining_health = Common.entity_damage_healthbar(event.entity, damage)
 
 			if remaining_health and remaining_health <= 0 then
-				memory.elite_biters[event.entity.unit_number] = nil
 				event.entity.die()
 			end
 		end
@@ -306,29 +311,27 @@ local function damage_to_krakens(event)
 	if not (surface_name == memory.sea_name) then return end
 
     local unit_number = event.entity.unit_number
-	local damage = event.final_damage_amount
-	local adjusted_damage = damage
 
 	if event.damage_type.name and event.damage_type.name == 'poison' then
-		adjusted_damage = adjusted_damage / 1.25
+		event.final_damage_amount = event.final_damage_amount / 1.25
 	elseif event.damage_type.name and (event.damage_type.name == 'explosion') then
-		adjusted_damage = adjusted_damage / 1.5
+		event.final_damage_amount = event.final_damage_amount / 1.5
 	elseif event.damage_type.name and (event.damage_type.name == 'fire') then
-		adjusted_damage = adjusted_damage / 1.25
+		event.final_damage_amount = event.final_damage_amount / 1.25
 	end
 	-- and additionally:
 	if event.cause and event.cause.valid and event.cause.name == 'artillery-turret' then
-		adjusted_damage = adjusted_damage / 1.5
+		event.final_damage_amount = event.final_damage_amount / 1.5
 	end
 
 	if event.damage_type.name and (event.damage_type.name == 'laser') then
-		adjusted_damage = adjusted_damage / 7 --laser turrets are in range. give some resistance
+		event.final_damage_amount = event.final_damage_amount / 7 --laser turrets are in range. give some resistance
 	end
 
 	-- There should be a better way to do it than this...
 	if memory.healthbars and memory.healthbars[unit_number] then
 		local kraken_id = memory.healthbars[unit_number].id
-		local remaining_health = Common.entity_damage_healthbar(event.entity, adjusted_damage)
+		local remaining_health = Common.entity_damage_healthbar(event.entity, event.final_damage_amount)
 		if remaining_health and remaining_health <= 0 then
 			Kraken.kraken_die(kraken_id)
 		end
@@ -451,7 +454,6 @@ local function other_enemy_damage_bonuses(event)
 end
 
 
--- @TODO: Fix elite biters getting one shotted by Samurai/Hatamoto classes (it doesn't play well with virtual health) as well as check for other inconsistencies/issues when damaging entities with virtual health
 local function damage_dealt_by_players_changes(event)
 	local memory = Memory.get_crew_memory()
 
@@ -473,8 +475,38 @@ local function damage_dealt_by_players_changes(event)
 	-- Lethal damage must be unaffected, otherwise enemy will never die.
 	-- @Future reference: when implementing damage changes for mobs with healthbar, make this check with healthbar health too
 	if event.final_health > 0 then
+		if physical then
+
+			-- QUARTERMASTER BUFFS
+			local nearby_players = player.surface.find_entities_filtered{position = player.position, radius = Balance.quartermaster_range, type = {'character'}}
+
+			for _, p2 in pairs(nearby_players) do
+				if p2.player and p2.player.valid then
+					local p2_index = p2.player.index
+					if event.entity.valid and Classes.get_class(p2_index) == Classes.enum.QUARTERMASTER then
+						-- event.entity.damage((Balance.quartermaster_bonus_physical_damage - 1) * event.final_damage_amount, character.force, 'impact', character) --triggers this function again, but not physical this time
+						Common.damage_hostile_entity(event.entity, (Balance.quartermaster_bonus_physical_damage - 1) * event.final_damage_amount)
+						event.final_damage_amount = event.final_damage_amount * Balance.quartermaster_bonus_physical_damage
+					end
+				end
+			end
+
+			-- PISTOL BUFFS
+			if character.shooting_state.state ~= defines.shooting.not_shooting then
+				local weapon = character.get_inventory(defines.inventory.character_guns)[character.selected_gun_index]
+				local ammo = character.get_inventory(defines.inventory.character_ammo)[character.selected_gun_index]
+				if event.entity.valid and weapon.valid_for_read and ammo.valid_for_read and weapon.name == 'pistol' and (ammo.name == 'firearm-magazine' or ammo.name == 'piercing-rounds-magazine' or ammo.name == 'uranium-rounds-magazine') then
+					-- event.entity.damage((Balance.pistol_damage_multiplier() - 1) * event.final_damage_amount, character.force, 'impact', character) --triggers this function again, but not physical this time
+					Common.damage_hostile_entity(event.entity, (Balance.pistol_damage_multiplier() - 1) * event.final_damage_amount)
+					event.final_damage_amount = event.final_damage_amount * Balance.pistol_damage_multiplier()
+				end
+			end
+		end
+
 		if class and class == Classes.enum.SCOUT then
-			event.entity.health = event.entity.health + (1 - Balance.scout_damage_dealt_multiplier) * event.final_damage_amount
+			-- event.entity.health = event.entity.health + (1 - Balance.scout_damage_dealt_multiplier) * event.final_damage_amount
+			Common.damage_hostile_entity(event.entity, -(1 - Balance.scout_damage_dealt_multiplier) * event.final_damage_amount)
+			event.final_damage_amount = event.final_damage_amount * Balance.scout_damage_dealt_multiplier
 		elseif class and (class == Classes.enum.SAMURAI or class == Classes.enum.HATAMOTO) then
 			local samurai = class == Classes.enum.SAMURAI
 			local hatamoto = class == Classes.enum.HATAMOTO
@@ -496,20 +528,28 @@ local function damage_dealt_by_players_changes(event)
 					elseif hatamoto then
 						extra_damage_to_deal = Balance.hatamoto_damage_dealt_with_melee * extra_physical_damage_from_research_multiplier
 					end
-				elseif acid then --this hacky stuff is to implement repeated spillover splash damage, whilst getting around the fact that if ovekill damage takes something to zero health, we can't tell in that event how much double-overkill damage should be dealt by reading off its HP. This code assumes that characters only deal acid damage via this function.
+				elseif acid then --this hacky stuff is to implement repeated spillover splash damage, whilst getting around the fact that if overkill damage takes something to zero health, we can't tell in that event how much double-overkill damage should be dealt by reading off its HP. This code assumes that characters only deal acid damage via this function.
 					extra_damage_to_deal = event.original_damage_amount * big_number
 				end
 			else
 				if samurai then
-					event.entity.health = event.entity.health + (1 - Balance.samurai_damage_dealt_when_not_melee_multiplier) * event.final_damage_amount
+					-- event.entity.health = event.entity.health + (1 - Balance.samurai_damage_dealt_when_not_melee_multiplier) * event.final_damage_amount
+					Common.damage_hostile_entity(event.entity, -(1 - Balance.samurai_damage_dealt_when_not_melee_multiplier) * event.final_damage_amount)
+					event.final_damage_amount = event.final_damage_amount * Balance.samurai_damage_dealt_when_not_melee_multiplier
 				elseif hatamoto then
-					event.entity.health = event.entity.health + (1 - Balance.hatamoto_damage_dealt_when_not_melee_multiplier) * event.final_damage_amount
+					-- event.entity.health = event.entity.health + (1 - Balance.hatamoto_damage_dealt_when_not_melee_multiplier) * event.final_damage_amount
+					Common.damage_hostile_entity(event.entity, -(1 - Balance.hatamoto_damage_dealt_when_not_melee_multiplier) * event.final_damage_amount)
+					event.final_damage_amount = event.final_damage_amount * Balance.hatamoto_damage_dealt_when_not_melee_multiplier
 				end
 			end
 
+			-- @TODO: This should preferably be reworked, so that "event_on_entity_damaged()" could be simpler by just returning multiplier, although doing AoE is quite fun.
+			-- @TODO: "event.entity.health >= extra_damage_to_deal" is pointless when enemy has virtual healthbar
 			if extra_damage_to_deal > 0 then
 				if event.entity.health >= extra_damage_to_deal then
-					event.entity.damage(extra_damage_to_deal, character.force, 'impact', character) --using .damage rather than subtracting from health directly plays better with entities which use healthbars
+					-- event.entity.damage(extra_damage_to_deal, character.force, 'impact', character) --using .damage rather than subtracting from health directly plays better with entities which use healthbars
+					Common.damage_hostile_entity(event.entity, extra_damage_to_deal)
+					event.final_damage_amount = event.final_damage_amount + extra_damage_to_deal
 				else
 					local surplus = (extra_damage_to_deal - event.entity.health)*0.8
 					event.entity.die(character.force, character)
@@ -517,30 +557,6 @@ local function damage_dealt_by_players_changes(event)
 					if nearest and nearest.valid then
 						nearest.damage(surplus/big_number, character.force, 'acid', character)
 					end
-				end
-			end
-		end
-
-		if physical then
-
-			-- QUARTERMASTER BUFFS
-			local nearby_players = player.surface.find_entities_filtered{position = player.position, radius = Balance.quartermaster_range, type = {'character'}}
-
-			for _, p2 in pairs(nearby_players) do
-				if p2.player and p2.player.valid then
-					local p2_index = p2.player.index
-					if event.entity.valid and player_index ~= p2_index and Classes.get_class(p2_index) == Classes.enum.QUARTERMASTER then
-						event.entity.damage((Balance.quartermaster_bonus_physical_damage - 1) * event.final_damage_amount, character.force, 'impact', character) --triggers this function again, but not physical this time
-					end
-				end
-			end
-
-			-- PISTOL BUFFS
-			if character.shooting_state.state ~= defines.shooting.not_shooting then
-				local weapon = character.get_inventory(defines.inventory.character_guns)[character.selected_gun_index]
-				local ammo = character.get_inventory(defines.inventory.character_ammo)[character.selected_gun_index]
-				if event.entity.valid and weapon.valid_for_read and ammo.valid_for_read and weapon.name == 'pistol' and (ammo.name == 'firearm-magazine' or ammo.name == 'piercing-rounds-magazine' or ammo.name == 'uranium-rounds-magazine') then
-					event.entity.damage(event.final_damage_amount * (Balance.pistol_damage_multiplier() - 1), character.force, 'impact', character) --triggers this function again, but not physical this time
 				end
 			end
 		end
@@ -564,8 +580,8 @@ local function swamp_resist_poison(event)
 
 	if not ((entity.type and entity.type == 'tree') or (event.entity.force and event.entity.force.name == memory.enemy_force_name)) then return end
 
-	local damage = event.final_damage_amount
-	event.entity.health = event.entity.health + damage
+	event.entity.health = event.entity.health + event.final_damage_amount
+	event.final_damage_amount = 0
 end
 
 
@@ -582,18 +598,20 @@ local function maze_walls_resistance(event)
 
 	if not ((entity.type and entity.type == 'tree') or entity.name == 'rock-huge' or entity.name == 'rock-big' or entity.name == 'sand-rock-big') then return end
 
-	local damage = event.final_damage_amount
-
 	if (event.damage_type.name and (event.damage_type.name == 'explosion' or event.damage_type.name == 'poison')) then
-		event.entity.health = event.entity.health + damage
+		event.entity.health = event.entity.health + event.final_damage_amount
+		event.final_damage_amount = 0
 	elseif event.damage_type.name and event.damage_type.name == 'fire' then
 		-- put out forest fires:
 		for _, e2 in pairs(entity.surface.find_entities_filtered({area = {{entity.position.x - 4, entity.position.y - 4},{entity.position.x + 4, entity.position.y + 4}}, name = "fire-flame-on-tree"})) do
 			if e2.valid then e2.destroy() end
 		end
 	else
-		if string.sub(event.cause.force.name, 1, 4) == 'crew' then --player damage only
-			event.entity.health = event.entity.health + damage * 0.9
+		if event.cause and event.cause.valid then
+			if string.sub(event.cause.force.name, 1, 4) == 'crew' then --player damage only
+				event.entity.health = event.entity.health + event.final_damage_amount * 0.9
+				event.final_damage_amount = event.final_damage_amount * 0.1
+			end
 		end
 	end
 end
@@ -627,6 +645,9 @@ end
 -- 	-- end
 -- end
 
+
+-- Piratux: I feel sorry for whoever needs to lay eyes on this. Bottle of bleach is adviced to have by your side.
+-- @TODO: Possible rework solution: "event_on_entity_damaged()" should accumulate final damage dealt multiplier, and "fix" entity health or deal proper damage to virtual healthbar at the very end of the function. Entity deaths should be handled at "event_on_entity_died()" instead, to avoid the mess.
 -- NOTE: "event.cause" may not always be provided.
 -- However, special care needs to be taken when "event.cause" is nil and entity has healthbar (better not ignore such damage or it can cause issues, such as needing to handle their death on "entity_died" functions as opposed to here)
 local function event_on_entity_damaged(event)
@@ -1314,12 +1335,47 @@ local function event_on_entity_died(event)
 			-- I think the only reason krakens don't trigger this right now is that they are destroyed rather than .die()
 		else
 			local destination = Common.current_destination()
-			if not (destination and destination.dynamic_data and destination.dynamic_data.quest_type and (not destination.dynamic_data.quest_complete)) then return end
-			if destination.dynamic_data.quest_type == Quest.enum.WORMS and entity.type == 'turret' then
-				destination.dynamic_data.quest_progress = destination.dynamic_data.quest_progress + 1
-				Quest.try_resolve_quest()
+			if destination and destination.dynamic_data and destination.dynamic_data.quest_type and (not destination.dynamic_data.quest_complete) then
+				if destination.dynamic_data.quest_type == Quest.enum.WORMS and entity.type == 'turret' then
+					destination.dynamic_data.quest_progress = destination.dynamic_data.quest_progress + 1
+					Quest.try_resolve_quest()
+				end
 			end
 		end
+	end
+
+	-- elite biter death
+	local elite_biters = memory.elite_biters
+	if elite_biters and entity and entity.valid and entity.force.name == memory.enemy_force_name and elite_biters and elite_biters[entity.unit_number] then
+		local surface = entity.surface
+		if surface and surface.valid then
+			-- Shoot spit around and spawn biters where spit lands
+			local arc_size = (2 * Math.pi) / Balance.biters_spawned_on_elite_biter_death
+			for i = 1, Balance.biters_spawned_on_elite_biter_death, 1 do
+				local offset = Math.random_vec_in_arc(Math.random(4, 8), arc_size * i, arc_size)
+				local target_pos = Math.vector_sum(entity.position, offset)
+
+				local stream = surface.create_entity{
+					name = 'acid-stream-spitter-big',
+					position = entity.position,
+					force = memory.enemy_force_name,
+					source = entity.position,
+					target = target_pos,
+					max_range = 500,
+					speed = 0.1
+				}
+
+				if not memory.elite_biters_stream_registrations then memory.elite_biters_stream_registrations = {} end
+				memory.elite_biters_stream_registrations[#memory.elite_biters_stream_registrations + 1] = {
+					number = script.register_on_entity_destroyed(stream),
+					position = target_pos,
+					biter_name = entity.name,
+					surface_name = surface.name -- surface name is needed to know where biter died
+				}
+			end
+		end
+
+		memory.elite_biters[entity.unit_number] = nil
 	end
 end
 
@@ -1435,22 +1491,26 @@ local function event_on_player_joined_game(event)
 
 	local crew_to_put_back_in = nil
 	for _, memory in pairs(global_memory.crew_memories) do
-		if Common.is_id_valid(memory.id) and memory.crewstatus == Crew.enum.ADVENTURING and memory.temporarily_logged_off_characters[player.index] then
+		if Common.is_id_valid(memory.id) and memory.crewstatus == Crew.enum.ADVENTURING and memory.temporarily_logged_off_player_data[player.index] then
 			crew_to_put_back_in = memory.id
 			break
 		end
 	end
 
 	if crew_to_put_back_in then
-		Crew.join_crew(player, crew_to_put_back_in, true)
+		log('INFO: ' .. player.name .. ' (crew ID: ' .. crew_to_put_back_in .. ') joined the game')
 
-		local memory = global_memory.crew_memories[crew_to_put_back_in]
+		Memory.set_working_id(crew_to_put_back_in)
+		Crew.join_crew(player, true)
+
+		local memory = Memory.get_crew_memory()
 		if (not memory.run_is_protected) and #memory.crewplayerindices <= 1 then
 			Roles.make_captain(player)
 		end
 
 		if _DEBUG then log('putting player back in their old crew') end
 	else
+		log('INFO: ' .. player.name .. ' (crew ID: NONE) joined the game')
 		if player.character and player.character.valid then
 			player.character.destroy()
 		end
@@ -1472,6 +1532,8 @@ local function event_on_player_joined_game(event)
 		end
 
 		Common.notify_player_expected(player, {'pirates.player_join_game_info'})
+
+		player.force = Common.lobby_force_name
 
 		-- It was suggested to always spawn players in lobby, in hopes that they may want to create their crew increasing the popularity of scenario.
 
@@ -1503,7 +1565,7 @@ local function event_on_player_joined_game(event)
 		-- 	end
 		-- )
 		-- if ages[1] then
-		-- 	Crew.join_crew(player, ages[1].id)
+		-- 	Crew.join_crew(player)
 
 		-- 	local memory = global_memory.crew_memories[ages[1].id]
 		-- 	if (not memory.run_is_protected) and #memory.crewplayerindices <= 1 then
@@ -1563,6 +1625,11 @@ local function event_on_pre_player_left_game(event)
 	local global_memory = Memory.get_global_memory()
 	-- figure out which crew this is about:
 	local crew_id = Common.get_id_from_force_name(player.force.name)
+	if crew_id then
+		log('INFO: ' .. player.name .. ' (crew ID: ' .. crew_id .. ') left the game')
+	else
+		log('INFO: ' .. player.name .. ' (crew ID: NONE) left the game')
+	end
 
 	for k, proposal in pairs(global_memory.crewproposals) do
 		if proposal and proposal.endorserindices then
@@ -2080,7 +2147,7 @@ local function event_on_console_chat(event)
 	local memory = Memory.get_crew_memory()
 
 	-- NOTE: This check to see if player is in a crew is not reliable and can sometimes cause errors!
-    if player.force.name == 'player' then
+    if player.force.name == Common.lobby_force_name then
 		local other_force_indices = global_memory.crew_active_ids
 
 		for _, index in pairs(other_force_indices) do

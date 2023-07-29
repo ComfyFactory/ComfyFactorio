@@ -1534,4 +1534,13 @@ function Public.force_reconnect_boat_poles()
 	end
 end
 
+-- Returns true if uncollected resources will cause the crew to lose.
+function Public.need_resources_to_undock(overworldx, island_subtype)
+	if overworldx >= Balance.need_resources_to_undock_x or island_subtype == IslandEnum.enum.RADIOACTIVE then
+		return true
+	else
+		return false
+	end
+end
+
 return Public

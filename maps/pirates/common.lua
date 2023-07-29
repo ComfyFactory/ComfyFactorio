@@ -63,8 +63,10 @@ Public.ban_from_rejoining_crew_ticks = 45 * 60 --to prevent observing map and re
 
 Public.afk_time = 60 * 60 * 5
 Public.afk_warning_time = 60 * 60 * 4.5
-Public.logged_off_items_preserved_minutes = 5
+Public.temporarily_logged_off_player_data_preservation_minutes = 1
 Public.logout_unprotected_items = {'uranium-235', 'uranium-238', 'fluid-wagon', 'coal', 'electric-engine-unit', 'flying-robot-frame', 'advanced-circuit', 'beacon', 'speed-module-3', 'speed-module-2', 'roboport', 'construction-robot'} --internal inventories of these will not be preserved
+
+Public.lobby_force_name = 'player'
 
 -- Public.mainshop_rate_limit_ticks = 11
 
@@ -138,7 +140,7 @@ end
 
 function Public.notify_lobby(message, color_override)
 	color_override = color_override or CoreData.colors.notify_lobby
-	game.forces['player'].print({"", '>> ',  message}, color_override)
+	game.forces[Public.lobby_force_name].print({"", '>> ',  message}, color_override)
 end
 
 function Public.notify_force(force, message, color_override)
@@ -688,6 +690,16 @@ function Public.spend_stored_resources(to_spend)
 	Public.update_boat_stored_resources()
 end
 
+function Public.consume_undock_cost_resources()
+	local destination = Public.current_destination()
+	local cost = destination.static_params.base_cost_to_undock
+
+	if cost then
+		local adjusted_cost = Public.time_adjusted_departure_cost(cost)
+
+		Public.spend_stored_resources(adjusted_cost)
+	end
+end
 
 function Public.new_healthbar(text, target_entity, max_health, optional_id, health, size, extra_offset, location_override)
 	health = health or max_health
@@ -773,11 +785,11 @@ end
 function Public.entity_damage_healthbar(entity, damage, location_override)
 	location_override = location_override or Memory.get_crew_memory()
 
-	if not (location_override.healthbars) then return end
+	if not (location_override.healthbars) then return nil end
 
 	local unit_number = entity.unit_number
 	local healthbar = location_override.healthbars[unit_number]
-	if not healthbar then return end
+	if not healthbar then return nil end
 
 	local new_health = healthbar.health - damage
 	healthbar.health = new_health
@@ -787,11 +799,17 @@ function Public.entity_damage_healthbar(entity, damage, location_override)
 		entity.health = entity.prototype.max_health
 	end
 
+	if healthbar.health > healthbar.max_health then
+		healthbar.health = healthbar.max_health
+	end
+
+	local final_health = healthbar.health
+
 	if healthbar.health <= 0 then
 		location_override.healthbars[unit_number] = nil
 	end
 
-	return healthbar.health
+	return final_health
 end
 
 function Public.update_healthbar_rendering(new_healthbar, health)
@@ -1849,7 +1867,7 @@ function Public.try_make_biter_elite(entity)
 	local memory = Memory.get_crew_memory()
 
 	local difficulty_index = CoreData.get_difficulty_option_from_value(memory.difficulty)
-	if difficulty_index < 3 then return end
+	if difficulty_index < 3 and Public.overworldx() < 800 then return end
 
 	if Public.overworldx() == 0 then return end
 
@@ -1858,7 +1876,7 @@ function Public.try_make_biter_elite(entity)
 
 	local health_multiplier
 
-	if difficulty_index == 3 then
+	if difficulty_index <= 3 then
 		health_multiplier = 5
 	else
 		health_multiplier = 10
@@ -1878,6 +1896,28 @@ function Public.try_make_biter_elite(entity)
 	local elite_biters = memory.elite_biters
 	if elite_biters then
 		elite_biters[entity.unit_number] = entity
+	end
+end
+
+-- This function is meant to handle damage adjustment cases that automatically damages/heals either entity or its virtual health.
+-- NOTE: This is only meant for hostile entities (for now at least), as friendly units with healthbars are more difficult to handle
+-- NOTE: "damage" can also be negative, which will heal the entity (but not past maximum health)
+function Public.damage_hostile_entity(entity, damage)
+	if not (entity and entity.valid) then return end
+
+	local remaining_health = Public.entity_damage_healthbar(entity, damage)
+
+	-- Does entity have virtual healthbar
+	if remaining_health then
+		if remaining_health <= 0 then
+			entity.die()
+		end
+	else -- Not, so treat it as simple entity
+		-- Note: According to docs, health is automatically clamped to [0, max_health] so we don't need to do it
+		entity.health = entity.health - damage
+		if entity.health <= 0 then
+			entity.die()
+		end
 	end
 end
 

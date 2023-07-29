@@ -71,7 +71,7 @@ local Server = require 'utils.server'
 
 local Math = require 'maps.pirates.math'
 
-require 'utils.profiler'
+-- require 'utils.profiler'
 
 local Public = {}
 
