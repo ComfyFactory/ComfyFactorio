@@ -117,7 +117,7 @@ function Public.reset_main_table()
     this.gap_between_locomotive = {
         hinders = {},
         gap = 900,
-        neg_gap = -2112,
+        neg_gap = -3520, -- earlier 2112 (3 zones, whereas 704 is one zone)
         highest_pos = nil
     }
     this.force_chunk = false
