@@ -36,6 +36,8 @@ local Classes = require 'maps.pirates.roles.classes'
 
 local Gui = require 'maps.pirates.gui.gui'
 
+-- local Session = require 'utils.datastore.session_data'
+
 
 
 local function cmd_set_memory(cmd)
@@ -46,7 +48,6 @@ end
 
 
 local function check_admin(cmd)
-	local Session = require 'utils.datastore.session_data'
 	local player = game.players[cmd.player_index]
 	--local trusted = Session.get_trusted_table()
 	local p
@@ -415,6 +416,7 @@ function(cmd)
 	end
 end)
 
+-- Try undock from an island or dock
 commands.add_command(
 'undock',
 {'pirates.cmd_explain_undock'},
@@ -434,6 +436,27 @@ function(cmd)
 		end
 	end
 end)
+
+-- Force undock from an island or dock
+commands.add_command(
+'ret',
+{'pirates.cmd_explain_dev'},
+function(cmd)
+	cmd_set_memory(cmd)
+
+	local memory = Memory.get_crew_memory()
+	if not Common.is_id_valid(memory.id) then return end
+
+	-- local param = tostring(cmd.parameter)
+	if check_admin(cmd) then
+		if memory.boat.state == Boats.enum_state.DOCKED then
+			Progression.undock_from_dock(true)
+		elseif memory.boat.state == Boats.enum_state.LANDED then
+			Progression.retreat_from_island(true)
+		end
+	end
+end)
+
 
 commands.add_command(
 'tax',
@@ -527,20 +550,6 @@ function(cmd)
 			end
 		end
 		player.print('nearby entities made modifiable')
-	end
-end)
-
--- Undock from an island or dock
-commands.add_command(
-'ret',
-{'pirates.cmd_explain_dev'},
-function(cmd)
-	cmd_set_memory(cmd)
-
-	local param = tostring(cmd.parameter)
-	if check_admin(cmd) then
-		local player = game.players[cmd.player_index]
-		Progression.retreat_from_island(true)
 	end
 end)
 

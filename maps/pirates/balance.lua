@@ -37,12 +37,12 @@ Public.class_reward_tick_rate_in_seconds = 7
 Public.poison_damage_multiplier = 1.85
 Public.every_nth_tree_gives_coins = 10
 
-Public.samurai_damage_taken_multiplier = 0.32
+Public.samurai_damage_taken_multiplier = 0.45
 Public.samurai_damage_dealt_when_not_melee_multiplier = 0.75
-Public.samurai_damage_dealt_with_melee = 25
-Public.hatamoto_damage_taken_multiplier = 0.21
+Public.samurai_damage_dealt_with_melee = 30
+Public.hatamoto_damage_taken_multiplier = 0.3
 Public.hatamoto_damage_dealt_when_not_melee_multiplier = 0.75
-Public.hatamoto_damage_dealt_with_melee = 45
+Public.hatamoto_damage_dealt_with_melee = 50
 Public.iron_leg_damage_taken_multiplier = 0.24
 Public.iron_leg_iron_ore_required = 3000
 Public.deckhand_extra_speed = 1.25
@@ -92,6 +92,10 @@ Public.min_ore_spawn_distance = 10
 
 Public.biter_boats_start_arrive_x = 40 * 5
 Public.need_resources_to_undock_x = 40 * 20
+
+Public.biters_spawned_on_elite_biter_death = 4
+
+Public.walkways_frozen_pool_damage = 12
 
 function Public.starting_boatEEIpower_production_MW()
 	-- return 3 * Math.sloped(Common.capacity_scale(), 1/2) / 2 --/2 as we have 2
@@ -167,7 +171,8 @@ function Public.game_slowness_scale()
 	-- return 1 / Public.crew_scale()^(55/100) / Math.sloped(Common.difficulty_scale(), 1/4) --changed crew_scale factor significantly to help smaller crews
 	-- return 1 / (Public.crew_scale()^(50/100) / Math.sloped(Common.difficulty_scale(), 1/4)) --changed crew_scale factor significantly to help smaller crews
 
-	local scale = 0.3 + Math.sloped(Common.difficulty_scale(), -0.15) / (Public.crew_scale()^(1/8))
+	-- local scale = 0.3 + Math.sloped(Common.difficulty_scale(), -0.15) / (Public.crew_scale()^(1/8))
+	local scale = 2.6 * Math.sloped(Common.difficulty_scale(), -0.2) - Public.crew_scale()^(1/4)
 	return Math.max(1, scale)
 end
 
@@ -179,18 +184,8 @@ function Public.max_time_on_island_formula() --always >0  --tuned
 	-- 		(33 + 0.2 * (Common.overworldx()/40)^(1/3)) --based on observing x=2000, lets try killing the extra time
 	-- ) * Public.game_slowness_scale()
 
-	local minimum_mins_on_island = 40
+	local minimum_mins_on_island = 30
 	return Math.ceil(60 * minimum_mins_on_island * Public.game_slowness_scale())
-end
-
-
--- Returns true if uncollected resources will cause the crew to lose.
-function Public.need_resources_to_undock(overworldx)
-	if overworldx >= Public.need_resources_to_undock_x then
-		return true
-	else
-		return false
-	end
 end
 
 -- In seconds
@@ -518,6 +513,9 @@ Public.starting_fuel = 4000
 Public.silo_max_hp = 5000
 Public.silo_resistance_factor = 7
 
+-- Pistol shooting speed = 4/s
+-- Submachine gun shooting speed = 10/s
+-- Pistol damage multiplier shouldn't be >= 2.5, otherwise Submachine gun isn't worth using.
 function Public.pistol_damage_multiplier() return 2.25 end --2.0 slightly too low, 2.5 causes players to yell at each other for not using pistol
 
 Public.kraken_static_evo = 0.35
@@ -579,7 +577,7 @@ function Public.krakens_per_free_slot(overworldx)
 	if rng < 0.0025 * multiplier then
 		return 3
 	elseif rng < 0.075 * multiplier then
-		return 1
+		return 2
 	elseif rng < 0.5 * multiplier then
 		return 1
 	else

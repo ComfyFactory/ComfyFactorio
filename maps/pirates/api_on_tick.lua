@@ -262,33 +262,35 @@ function Public.prune_offline_characters_list(tickinterval)
 
     if memory.game_lost then return end
 
-	for player_index, tick in pairs(memory.temporarily_logged_off_characters) do
-		if player_index and game.players[player_index] and game.players[player_index].connected then
-			memory.temporarily_logged_off_characters[player_index] = nil
-			if memory.temporarily_logged_off_characters_items[player_index] then
-				memory.temporarily_logged_off_characters_items[player_index].destroy()
-			end
-			memory.temporarily_logged_off_characters_items[player_index] = nil
+	for player_index, data in pairs(memory.temporarily_logged_off_player_data) do
+		if game.players[player_index] and game.players[player_index].connected then
+			-- memory.temporarily_logged_off_characters[player_index] = nil
+			-- if memory.temporarily_logged_off_characters_items[player_index] then
+			-- 	memory.temporarily_logged_off_characters_items[player_index].destroy()
+			-- end
+			-- memory.temporarily_logged_off_characters_items[player_index] = nil
+			memory.temporarily_logged_off_player_data[player_index] = nil
 		else
-			if player_index and tick < game.tick - 60 * 60 * Common.logged_off_items_preserved_minutes then
-				local any = false
-				local temp_inv = memory.temporarily_logged_off_characters_items[player_index]
-				if temp_inv then
-					for i = 1, #temp_inv, 1 do
-						if temp_inv[i] and temp_inv[i].valid and temp_inv[i].valid_for_read then
-							Common.give_items_to_crew(temp_inv[i])
-							any = true
-						end
-					end
-					if any then
-						Common.notify_force_light(memory.force, {'pirates.recover_offline_player_items'})
-					end
+			local tick = data.tick
+			if tick < game.tick - 60 * 60 * Common.temporarily_logged_off_player_data_preservation_minutes then
+				-- local any = false
+				-- local temp_inv = memory.temporarily_logged_off_characters_items[player_index]
+				-- if temp_inv then
+				-- 	for i = 1, #temp_inv, 1 do
+				-- 		if temp_inv[i] and temp_inv[i].valid and temp_inv[i].valid_for_read then
+				-- 			Common.give_items_to_crew(temp_inv[i])
+				-- 			any = true
+				-- 		end
+				-- 	end
 
-					temp_inv.destroy()
-				end
+				-- 	if any then
+				-- 		Common.notify_force_light(memory.force, {'pirates.recover_offline_player_items'})
+				-- 	end
 
-				memory.temporarily_logged_off_characters[player_index] = nil
-				memory.temporarily_logged_off_characters_items[player_index] = nil
+				-- 	temp_inv.destroy()
+				-- end
+
+				memory.temporarily_logged_off_player_data[player_index] = nil
 			end
 		end
 	end
@@ -1706,19 +1708,14 @@ function Public.update_time_remaining()
 	if memory.boat.state == Boats.enum_state.RETREATING then return end
 	if not memory.boat.surface_name then return end
 
-	local surface_name_decoded = Surfaces.SurfacesCommon.decode_surface_name(memory.boat.surface_name)
-	local type = surface_name_decoded.type
-	if type == Surfaces.enum.ISLAND then
-		if destination.static_params and destination.static_params.base_cost_to_undock and Balance.need_resources_to_undock(Common.overworldx()) == true and (not Common.query_can_pay_cost_to_leave()) then
+	if destination.type == Surfaces.enum.ISLAND then
+		if destination.static_params and destination.static_params.base_cost_to_undock and Boats.need_resources_to_undock(Common.overworldx(), destination.subtype) and (not Common.query_can_pay_cost_to_leave()) then
 			Crew.try_lose({'pirates.loss_resources_were_not_collected_in_time'})
 		else
-			if Balance.need_resources_to_undock(Common.overworldx()) == true then
-				Progression.try_retreat_from_island(false)
-			else
-				Progression.retreat_from_island(false)
-			end
+			Common.consume_undock_cost_resources()
+			Progression.retreat_from_island(false)
 		end
-	elseif type == Surfaces.enum.DOCK then
+	elseif destination.type == Surfaces.enum.DOCK then
 		Progression.undock_from_dock(false)
 	end
 end

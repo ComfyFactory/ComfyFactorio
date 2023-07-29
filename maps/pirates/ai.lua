@@ -133,6 +133,8 @@ function Public.wave_size_rng() -- random variance in attack sizes
 	local memory = Memory.get_crew_memory()
 	local destination = Common.current_destination()
 
+	local rng_scale = Balance.crew_scale()^(1/4) -- slightly dampen wave variance for small crews as they can't handle it
+
 	-- prevent situation where when player reveals spawner, he immediately gets surrounded by massive amount of biters (especially late game)
 	if destination and destination.type == SurfacesCommon.enum.ISLAND then
 		if destination.dynamic_data and destination.dynamic_data.disabled_wave_timer and destination.dynamic_data.disabled_wave_timer > 0 then
@@ -144,17 +146,18 @@ function Public.wave_size_rng() -- random variance in attack sizes
 
 	local wave_size_multiplier = 1
 	local rng1 = Math.random(100)
+
 	if rng1 > wave_percentage_chance then
 		wave_size_multiplier = 0
 	elseif memory.overworldx > 0 then
 		local rng2 = Math.random(1000)
-		if rng2 <= 890 then
+		if rng2 >= 110 * rng_scale then
 			wave_size_multiplier = 1
-		elseif rng2 <= 970 then
+		elseif rng2 >= 30 * rng_scale then
 			wave_size_multiplier = 1.5
-		elseif rng2 <= 985 then
+		elseif rng2 >= 15 * rng_scale then
 			wave_size_multiplier = 2
-		elseif rng2 <= 995 then
+		elseif rng2 >= 5 * rng_scale then
 			wave_size_multiplier = 3
 		else
 			wave_size_multiplier = 4
@@ -902,7 +905,39 @@ function Public.try_boat_biters_attack()
 end
 
 
+local function on_entity_destroyed(event)
+	local registration_number = event.registration_number
 
+	local p
+	local biter_name
+	local surface_name
+	local memory
+	for i = 1,3 do
+		Memory.set_working_id(i)
+		memory = Memory.get_crew_memory()
+		if memory.elite_biters_stream_registrations then
+			for j, r in pairs(memory.elite_biters_stream_registrations) do
+				if r.number == registration_number then
+					p = r.position
+					biter_name = r.biter_name
+					surface_name = r.surface_name
+					memory.elite_biters_stream_registrations = Utils.ordered_table_with_index_removed(memory.elite_biters_stream_registrations, j)
+					break
+				end
+			end
+		end
+		if p then break end
+	end
+	if p then
+		local surface = game.surfaces[surface_name]
+		if not (surface and surface.valid) then return end
+
+		local p2 = surface.find_non_colliding_position('medium-biter', p, 10, 0.2)
+		if not p2 then return end
+
+		surface.create_entity{name = biter_name, position = p2, force = memory.enemy_force_name}
+	end
+end
 
 
 -- function Public.destroy_inactive_scripted_biters()
@@ -920,6 +955,9 @@ end
 
 --=== Data
 
+
+local event = require 'utils.event'
+event.add(defines.events.on_entity_destroyed, on_entity_destroyed)
 
 
 return Public

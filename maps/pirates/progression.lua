@@ -475,13 +475,7 @@ function Public.try_retreat_from_island(player, manual) -- Assumes the cost can 
 				Common.notify_player_error(player, {'pirates.error_undock_too_early'})
 			end
 		else
-			local cost = destination.static_params.base_cost_to_undock
-
-			if cost then
-				local adjusted_cost = Common.time_adjusted_departure_cost(cost)
-
-				Common.spend_stored_resources(adjusted_cost)
-			end
+			Common.consume_undock_cost_resources()
 			Public.retreat_from_island(manual)
 		end
 	else
