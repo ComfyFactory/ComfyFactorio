@@ -171,24 +171,24 @@ local function generate_with_tags_and_weights(variants)
         return result
     end
 
-    function next_value_provider()
+    local function next_value_provider()
         local candidates = {}
-        local totalWeight = 0
+        local total_weight = 0
 
         for _, variant in pairs(variants) do
             if #intersect(variant.tags, prev_tags) == 0 then
                 table.insert(candidates, variant)
-                totalWeight = totalWeight + variant.inner_weight
+                total_weight = total_weight + variant.inner_weight
             end
         end
 
         if #candidates == 0 then
-            --no candidates found, so getting all the settings to prevent empty result
+            --no candidates found, so getting all the variants to prevent empty result
             candidates = variants
         end
 
         local chosen = candidates[1]
-        local selection = math.random(0, totalWeight)
+        local selection = math.random(0, total_weight)
 
         for _, candidate in pairs(candidates) do
             selection = selection - candidate.inner_weight
@@ -2614,16 +2614,16 @@ local function starting_zone(x, y, data, void_or_lab, adjusted_zones)
 end
 
 local zones = {
-    zone_1 = { fn = zone_1, weight = 100, tags = { "void" } },
-    zone_2 = { fn = zone_2, weight = 100, tags = { "void" } },
-    zone_3 = { fn = zone_3, weight = 100, tags = { "void" } },
-    zone_4 = { fn = zone_4, weight = 100, tags = { "void" } },
-    zone_5 = { fn = zone_5, weight = 100, tags = { "void" } },
-    zone_forest_1 = { fn = zone_forest_1, weight = 100, tags = { "forest" } },
-    zone_forest_2 = { fn = zone_forest_2, weight = 100, tags = { "forest" } },
-    zone_scrap_1 = { fn = zone_scrap_1, weight = 100, tags = { "void" } },
-    zone_scrap_2 = { fn = zone_scrap_2, weight = 100, tags = { "void" } },
-    zone_7 = { fn = zone_7, weight = 100, tags = { "void" } },
+    zone_1 = { fn = zone_1, weight = 100, tags = { 'void' } },
+    zone_2 = { fn = zone_2, weight = 100, tags = { 'void' } },
+    zone_3 = { fn = zone_3, weight = 100, tags = { 'void' } },
+    zone_4 = { fn = zone_4, weight = 100, tags = { 'void' } },
+    zone_5 = { fn = zone_5, weight = 100, tags = { 'void' } },
+    zone_forest_1 = { fn = zone_forest_1, weight = 100, tags = { 'forest' } },
+    zone_forest_2 = { fn = zone_forest_2, weight = 100, tags = { 'forest' } },
+    zone_scrap_1 = { fn = zone_scrap_1, weight = 100, tags = { 'void' } },
+    zone_scrap_2 = { fn = zone_scrap_2, weight = 100, tags = { 'void' } },
+    zone_7 = { fn = zone_7, weight = 100, tags = { 'void' } },
     zone_9 = { fn = zone_9, weight = 100, tags = { } },
     zone_10 = { fn = zone_10, weight = 100, tags = { } },
     zone_11 = { fn = zone_11, weight = 100, tags = { } },
