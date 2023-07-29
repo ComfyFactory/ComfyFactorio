@@ -58,6 +58,9 @@ local function do_soft_reset()
     end
     this.game_reset_tick = nil
     this.game_won = false
+    game.reset_time_played()
+    game.reset_game_state()
+    game.remove_offline_players()
     ScenarioTable.reset_table()
     local surface = game.get_surface(this.active_surface_index)
     if not surface or not surface.valid then
@@ -68,8 +71,7 @@ local function do_soft_reset()
     else
         surface.play_sound({path = 'utility/game_lost', volume_modifier = 1})
     end
-    game.reset_time_played()
-    game.reset_game_state()
+
     for _, player in pairs(game.players) do
         player.teleport({0, 0}, game.surfaces['limbo'])
     end
