@@ -146,6 +146,78 @@ local function shuffle(tbl)
     return tbl
 end
 
+--- Returns a function that will generate the next value each time it is called.
+--- It is configured by the list of such elements {value = '...', tags = {}, weight = 100}.
+--- It ensures that consecutive values do not have the same tags (if such variants exist).
+--- The probability of generating the next value is calculated based on the weight parameter.
+local function generate_with_tags_and_weights(variants)
+    local prev_tags = {}
+
+    for _, variant in pairs(variants) do
+        -- Inner weight set to 0 every time we generate the corresponding value.
+        -- Each iteration it grows up to its originally weight.
+        variant.inner_weight = variant.weight
+    end
+
+    local function intersect(arr1, arr2)
+        local result = {}
+        for _, i1 in pairs(arr1) do
+            for _, i2 in pairs(arr2) do
+                if i1 == i2 then
+                    table.insert(result, i1)
+                end
+            end
+        end
+        return result
+    end
+
+    function next_value_provider()
+        local candidates = {}
+        local totalWeight = 0
+
+        for _, variant in pairs(variants) do
+            if #intersect(variant.tags, prev_tags) == 0 then
+                table.insert(candidates, variant)
+                totalWeight = totalWeight + variant.inner_weight
+            end
+        end
+
+        if #candidates == 0 then
+            --no candidates found, so getting all the settings to prevent empty result
+            candidates = variants
+        end
+
+        local chosen = candidates[1]
+        local selection = math.random(0, totalWeight)
+
+        for _, candidate in pairs(candidates) do
+            selection = selection - candidate.inner_weight
+            if selection <= 0 then
+                chosen = candidate
+                goto chosen_found
+            end
+        end
+
+        :: chosen_found ::
+
+        for _, variant in pairs(variants) do
+            if variant.inner_weight < variant.weight then
+                variant.inner_weight = math.min(
+                        variant.weight,
+                        math.floor(variant.inner_weight + variant.weight / #variants)
+                )
+            end
+        end
+
+        prev_tags = chosen.tags
+        chosen.inner_weight = 0
+
+        return chosen.value
+    end
+
+    return next_value_provider
+end
+
 local function is_position_near(area, table_to_check)
     local status = false
     local function inside(pos)
@@ -2542,22 +2614,22 @@ local function starting_zone(x, y, data, void_or_lab, adjusted_zones)
 end
 
 local zones = {
-    ['zone_1'] = zone_1,
-    ['zone_2'] = zone_2,
-    ['zone_3'] = zone_3,
-    ['zone_4'] = zone_4,
-    ['zone_5'] = zone_5,
-    ['zone_forest_1'] = zone_forest_1,
-    ['zone_forest_2'] = zone_forest_2,
-    ['zone_scrap_1'] = zone_scrap_1,
-    ['zone_scrap_2'] = zone_scrap_2,
-    ['zone_7'] = zone_7,
-    ['zone_9'] = zone_9,
-    ['zone_10'] = zone_10,
-    ['zone_11'] = zone_11,
-    ['zone_12'] = zone_12,
-    ['zone_13'] = zone_13,
-    ['zone_14'] = zone_14
+    zone_1 = { fn = zone_1, weight = 100, tags = { "void" } },
+    zone_2 = { fn = zone_2, weight = 100, tags = { "void" } },
+    zone_3 = { fn = zone_3, weight = 100, tags = { "void" } },
+    zone_4 = { fn = zone_4, weight = 100, tags = { "void" } },
+    zone_5 = { fn = zone_5, weight = 100, tags = { "void" } },
+    zone_forest_1 = { fn = zone_forest_1, weight = 100, tags = { "forest" } },
+    zone_forest_2 = { fn = zone_forest_2, weight = 100, tags = { "forest" } },
+    zone_scrap_1 = { fn = zone_scrap_1, weight = 100, tags = { "void" } },
+    zone_scrap_2 = { fn = zone_scrap_2, weight = 100, tags = { "void" } },
+    zone_7 = { fn = zone_7, weight = 100, tags = { "void" } },
+    zone_9 = { fn = zone_9, weight = 100, tags = { } },
+    zone_10 = { fn = zone_10, weight = 100, tags = { } },
+    zone_11 = { fn = zone_11, weight = 100, tags = { } },
+    zone_12 = { fn = zone_12, weight = 100, tags = { } },
+    zone_13 = { fn = zone_13, weight = 100, tags = { } },
+    zone_14 = { fn = zone_14, weight = 100, tags = { } }
 }
 
 local function shuffle_terrains(adjusted_zones, new_zone)
@@ -2584,30 +2656,27 @@ local function init_terrain(adjusted_zones)
         return
     end
 
-    local count = 1
-    local shuffled_zones = {}
-
-    for zone_name, _ in pairs(zones) do
-        shuffled_zones[count] = zone_name
-        count = count + 1
+    local zones_to_generate = {}
+    for zone_name, zone_data in pairs(zones) do
+        table.insert(zones_to_generate, {
+            value = zone_name,
+            tags = zone_data.tags,
+            weight = zone_data.weight
+        })
     end
 
-    count = count - 1
-
-    local shuffle_again = {}
+    local generated_zones = {}
+    local next_provider = generate_with_tags_and_weights(zones_to_generate)
 
     local size = 132
-
-    for inc = 1, size do
-        local map = shuffled_zones[random(1, count)]
-        if map then
-            shuffle_again[inc] = map
-        end
+    for i = 1, size do
+        local next = next_provider()
+        generated_zones[i] = next
+        -- print(next)
     end
-    shuffle_again = shuffle(shuffle_again)
 
     adjusted_zones.size = size
-    adjusted_zones.shuffled_zones = shuffle_again
+    adjusted_zones.shuffled_zones = generated_zones
     adjusted_zones.init_terrain = true
 end
 
@@ -2622,9 +2691,9 @@ local function process_bits(p, data, adjusted_zones)
     if left_top_y >= -zone_settings.zone_depth then
         generate_zone = starting_zone
     else
-        generate_zone = zones[adjusted_zones.shuffled_zones[index]]
+        generate_zone = zones[adjusted_zones.shuffled_zones[index]].fn
         if not generate_zone then
-            generate_zone = zones[adjusted_zones.shuffled_zones[adjusted_zones.size]]
+            generate_zone = zones[adjusted_zones.shuffled_zones[adjusted_zones.size]].fn
         end
     end
 
