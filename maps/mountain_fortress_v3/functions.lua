@@ -340,6 +340,24 @@ local function do_beams_away()
     end
 end
 
+local function do_clear_enemy_spawners()
+    local tick = game.tick
+    if tick % 1000 ~= 0 then
+        return
+    end
+
+    local enemy_spawners = Public.get('enemy_spawners')
+    if not enemy_spawners.enabled then
+        return
+    end
+
+    for unit_number, spawner in pairs(enemy_spawners.spawners) do
+        if not spawner.entity or not spawner.entity.valid then
+            enemy_spawners.spawners[unit_number] = nil
+        end
+    end
+end
+
 local function do_artillery_turrets_targets()
     local art_table = this.art_table
     local index = art_table.index
@@ -428,6 +446,7 @@ local function tick()
     do_magic_fluid_crafters()
     do_artillery_turrets_targets()
     do_beams_away()
+    do_clear_enemy_spawners()
 end
 
 Public.deactivate_callback =

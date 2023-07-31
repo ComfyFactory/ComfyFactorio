@@ -134,6 +134,10 @@ function Public.reset_main_table()
     --!grief prevention
     this.enable_arties = 6 -- default to callback 6
     --!snip
+    this.enemy_spawners = {
+        spawners = {},
+        enabled = false
+    }
     this.poison_deployed = false
     this.robotics_deployed = false
     this.upgrades = {

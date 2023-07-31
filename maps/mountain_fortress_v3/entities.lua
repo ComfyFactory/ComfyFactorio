@@ -959,6 +959,8 @@ local function on_entity_died(event)
         return
     end
 
+    local unit_number = entity.unit_number
+
     local cause = event.cause
 
     local map_name = 'mtn_v3'
@@ -970,6 +972,11 @@ local function on_entity_died(event)
     local d = {
         entity = entity
     }
+
+    local enemy_spawners = Public.get('enemy_spawners')
+    if enemy_spawners.spawners[unit_number] then
+        enemy_spawners.spawners[unit_number] = nil
+    end
 
     on_entity_removed(d)
 
@@ -1383,6 +1390,40 @@ function Public.loco_died(invalid_locomotive)
     end
 end
 
+local function on_entity_spawned(event)
+    local enemy_spawners = Public.get('enemy_spawners')
+    if not enemy_spawners.enabled then
+        return
+    end
+
+    local spawner = event.spawner
+    if not spawner or not spawner.valid then
+        return
+    end
+
+    local unit_number = spawner.unit_number
+    local position = spawner.position
+    if not enemy_spawners.spawners[unit_number] then
+        enemy_spawners.spawners[unit_number] = {
+            entity = spawner,
+            count = 0
+        }
+    end
+
+    local surface = spawner.surface
+
+    enemy_spawners.spawners[unit_number].count = enemy_spawners.spawners[unit_number].count + 1
+
+    if enemy_spawners.spawners[unit_number].count >= 100 then
+        local entity = enemy_spawners.spawners[unit_number].entity
+        if entity and entity.valid then
+            surface.create_entity({name = 'explosion', position = position})
+            entity.destroy()
+            enemy_spawners.spawners[unit_number] = nil
+        end
+    end
+end
+
 local function on_built_entity(event)
     local entity = event.created_entity
     if not entity.valid then
@@ -1614,6 +1655,7 @@ Public.get_random_weighted = get_random_weighted
 
 Event.add_event_filter(defines.events.on_entity_damaged, {filter = 'final-damage-amount', comparison = '>', value = 0})
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
+Event.add(defines.events.on_entity_spawned, on_entity_spawned)
 Event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)
 Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 Event.add(defines.events.on_robot_mined_entity, on_robot_mined_entity)
