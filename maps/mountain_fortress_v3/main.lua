@@ -120,6 +120,7 @@ function Public.reset_map()
 
     Autostash.insert_into_furnace(true)
     Autostash.insert_into_wagon(true)
+    Autostash.collect_items_for_quick_bar(true)
     Autostash.bottom_button(true)
     BottomFrame.reset()
     BottomFrame.activate_custom_buttons(true)

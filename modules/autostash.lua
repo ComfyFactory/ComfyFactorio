@@ -14,6 +14,7 @@ local auto_stash_button_name = Gui.uid_name()
 local this = {
     floating_text_y_offsets = {},
     whitelist = {},
+    collect_items_for_quick_bar = false,
     insert_to_neutral_chests = false,
     insert_into_furnace = false,
     insert_into_wagon = false,
@@ -150,7 +151,7 @@ local function sort_entities_by_distance(position, entities)
     end
 end
 
-local function get_nearby_chests(player, a, furnace, wagon)
+local function get_nearby_chests(player, a, furnace, wagon, any)
     local r = player.force.character_reach_distance_bonus + 10
     local r_square = r * r
     local chests, inventories = {}, {}
@@ -171,6 +172,19 @@ local function get_nearby_chests(player, a, furnace, wagon)
     if wagon then
         container_type = {'cargo-wagon'}
         inventory_type = defines.inventory.cargo_wagon
+    end
+    if any then
+        container_type = {
+            'furnace',
+            'assembling-machine',
+            'cargo-wagon',
+            'car',
+            'spider-vehicle',
+            'container',
+            'logistic-container',
+            'linked-container',
+            'infinity-container'
+        }
     end
 
     local forces = player.force
@@ -442,6 +456,126 @@ local function insert_item_into_chest(stack, chests, filtered_chests, name, floa
     end
 end
 
+local function collect_from(sources, player_inventory, quick_bar_request, floaty_text_list)
+    for _, source in pairs(sources) do
+        if table.size(quick_bar_request) == 0 then
+            return
+        end
+
+        if not source.inventory then
+            goto next_chest
+        end
+
+        local source_contents = source.inventory.get_contents()
+
+        for name, request_count in pairs(quick_bar_request) do
+            local chest_count = source_contents[name]
+            if chest_count == nil or chest_count == 0 then
+                goto next_item
+            end
+
+            local count_to_insert = math.min(chest_count, request_count)
+            local actually_inserted = player_inventory.insert({ name = name, count = count_to_insert })
+            source.inventory.remove({ name = name, count = actually_inserted })
+
+            local new_count = quick_bar_request[name] - actually_inserted
+            if new_count <= 0 then
+                new_count = nil
+            end
+            quick_bar_request[name] = new_count
+
+            prepare_floaty_text(floaty_text_list, source.surface, source.position, name, actually_inserted)
+
+            ::next_item::
+        end
+        ::next_chest::
+    end
+end
+
+local function collect_items_for_quick_bar(player)
+    local quick_bar_request = {}
+
+    for i = 1, 100, 1 do
+        local prototype = player.get_quick_bar_slot(i)
+        if prototype then
+            quick_bar_request[prototype.name] = (quick_bar_request[prototype.name] or 0) + prototype.stack_size
+        end
+    end
+
+    if table.size(quick_bar_request) == 0 then
+        return
+    end
+
+    local player_inventory = player.get_main_inventory()
+    local player_contents = player_inventory.get_contents()
+    for name, count in pairs(player_contents) do
+        if quick_bar_request[name] then
+            local new_count = quick_bar_request[name] - count
+            if new_count <= 0 then
+                new_count = nil
+            end
+            quick_bar_request[name] = new_count
+        end
+    end
+
+    local sources = get_nearby_chests(player, nil, nil, nil, true)
+
+    local productions = {}
+    local containers = {}
+    local cars = {}
+
+    for chestnr, chest in pairs(sources.chest) do
+        if 'furnace' == chest.prototype.type then
+            table.insert(productions, {
+                position = chest.position,
+                surface = chest.surface,
+                inventory = chest.get_inventory(defines.inventory.furnace_result)
+            })
+        elseif 'assembling-machine' == chest.prototype.type then
+            table.insert(productions, {
+                position = chest.position,
+                surface = chest.surface,
+                inventory = chest.get_inventory(defines.inventory.assembling_machine_output)
+            })
+        elseif 'car' == chest.prototype.type then
+            table.insert(cars, {
+                position = chest.position,
+                surface = chest.surface,
+                inventory = chest.get_inventory(defines.inventory.car_trunk)
+            })
+        elseif 'spider-vehicle' == chest.prototype.type then
+            table.insert(cars, {
+                position = chest.position,
+                surface = chest.surface,
+                inventory = chest.get_inventory(defines.inventory.spider_trunk)
+            })
+        else
+            table.insert(containers, {
+                position = chest.position,
+                surface = chest.surface,
+                inventory = sources.inventory[chestnr]
+            })
+        end
+    end
+
+    local floaty_text_list = {}
+
+    collect_from(productions, player_inventory, quick_bar_request, floaty_text_list)
+    collect_from(containers, player_inventory, quick_bar_request, floaty_text_list)
+    collect_from(cars, player_inventory, quick_bar_request, floaty_text_list)
+
+    for _, texts in pairs(floaty_text_list) do
+        for name, text in pairs(texts) do
+            create_floaty_text(text.surface, text.position, name, text.count)
+        end
+    end
+
+    local c = this.floating_text_y_offsets
+    for k, _ in pairs(c) do
+        this.floating_text_y_offsets[k] = nil
+    end
+end
+
 local function auto_stash(player, event)
     local button = event.button
     local ctrl = event.control
@@ -454,6 +588,12 @@ local function auto_stash(player, event)
         player.print('It seems that you are not in the realm of the living.', print_color)
         return
     end
+
+    if this.collect_items_for_quick_bar and ctrl and button == defines.mouse_button_type.left then
+        collect_items_for_quick_bar(player)
+        return
+    end
+
     local inventory = player.get_main_inventory()
     if inventory.is_empty() then
         player.print('Inventory is empty.', print_color)
@@ -559,17 +699,18 @@ local function auto_stash(player, event)
 end
 
 local function create_gui_button(player)
-    local tooltip
-    if this.insert_into_furnace and this.insert_into_wagon then
-        tooltip =
-            'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.\nCTRL+RMB: Fill nearby furnaces.\nSHIFT+LMB: Everything onto filtered slots to wagon.\nSHIFT+RMB: Only ores to wagon'
-    elseif this.insert_into_furnace then
-        tooltip = 'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.\nCTRL+RMB: Fill nearby furnaces.'
-    elseif this.insert_into_wagon then
-        tooltip = 'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.\nSHIFT+LMB: Everything onto filtered slots to wagon.\nSHIFT+RMB: Only ores to wagon'
-    else
-        tooltip = 'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.'
+    local tooltip = 'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.'
+
+    if this.collect_items_for_quick_bar then
+        tooltip = tooltip .. '\nCTRL+LMB: Collect quickbar items from nearby sources.'
     end
+    if this.insert_into_furnace then
+        tooltip = tooltip .. '\nCTRL+RMB: Fill nearby furnaces.'
+    end
+    if this.insert_into_wagon then
+        tooltip = tooltip .. '\nSHIFT+LMB: Everything onto filtered slots to wagon.\nSHIFT+RMB: Only ores to wagon.'
+    end
+
     if this.bottom_button then
         local data = BottomFrame.get('bottom_quickbar_button')
         -- save it for later use
@@ -663,6 +804,10 @@ Gui.on_click(
         auto_stash(event.player, event)
     end
 )
+
+function Public.collect_items_for_quick_bar(value)
+    this.collect_items_for_quick_bar = value or false
+end
 
 function Public.insert_into_furnace(value)
     this.insert_into_furnace = value or false
