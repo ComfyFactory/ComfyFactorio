@@ -160,7 +160,7 @@ function Public.initialize()
         -- this will make and average base radius around 12 tiles
         ['enemy-base-radius'] = 12
     }
-    mgs.seed = math_random(10000, 999999)
+    mgs.seed = math_random(100000, 9999999)
 
     if not this.active_surface_index then
         this.active_surface_index = game.create_surface('towny', mgs).index
