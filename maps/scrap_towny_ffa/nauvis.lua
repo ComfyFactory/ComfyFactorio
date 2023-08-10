@@ -143,7 +143,7 @@ function Public.initialize()
     mgs.water = 0.5
     mgs.peaceful_mode = false
     mgs.starting_area = 'none'
-    mgs.terrain_segmentation = 8
+    mgs.terrain_segmentation = 3
     -- terrain size is 64 x 64 chunks, water size is 80 x 80
     mgs.width = map_width
     mgs.height = map_height
@@ -158,10 +158,15 @@ function Public.initialize()
         -- adjust this value to set how many nests spawn per tile
         ['enemy-base-frequency'] = 0.4,
         -- this will make and average base radius around 12 tiles
-        ['enemy-base-radius'] = 12
+        ['enemy-base-radius'] = 12,
+        ['control-setting:aux:bias'] = '-0.300000',
+        ['control-setting:aux:frequency:multiplier'] = '1.333333',
+        ['control-setting:moisture:bias'] = '-0.200000',
+        ['control-setting:moisture:frequency:multiplier'] = '1.333333'
     }
     mgs.seed = math_random(100000, 9999999)
 
+    log(serpent.block(mgs))
     if not this.active_surface_index then
         this.active_surface_index = game.create_surface('towny', mgs).index
     else
@@ -179,6 +184,7 @@ function Public.initialize()
     surface.peaceful_mode = false
     surface.always_day = false
     surface.freeze_daytime = false
+    surface.map_gen_settings.water = 0.5
     surface.clear(true)
     surface.regenerate_entity({'rock-huge', 'rock-big', 'sand-rock-big'})
     surface.regenerate_decorative()
