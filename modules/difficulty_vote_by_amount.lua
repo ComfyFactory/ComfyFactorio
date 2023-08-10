@@ -50,6 +50,7 @@ local this = {
         [2] = '',
         [3] = ''
     },
+    show_gui = true,
     value = 0.75,
     index = 1,
     fair_vote = false,
@@ -58,6 +59,7 @@ local this = {
     gui_width = 108,
     name = "I'm too young to die",
     strength_modifier = 1.00,
+    boss_modifier = 6.0,
     button_tooltip = nil
 }
 
@@ -266,6 +268,9 @@ function Public.reset_difficulty_poll(tbl)
 end
 
 local function on_player_joined_game(event)
+    if not this.show_gui then
+        return
+    end
     local player = game.get_player(event.player_index)
     if game.tick < this.closing_timeout then
         if not this.all_votes[player.name] then
@@ -278,6 +283,9 @@ local function on_player_joined_game(event)
 end
 
 local function on_player_left_game(event)
+    if not this.show_gui then
+        return
+    end
     if game.tick > this.closing_timeout then
         return
     end
@@ -323,6 +331,10 @@ end
 
 function Public.set_fair_vote(value)
     this.fair_vote = value or false
+end
+
+function Public.show_gui(state)
+    this.show_gui = state or false
 end
 
 function Public.get(key)

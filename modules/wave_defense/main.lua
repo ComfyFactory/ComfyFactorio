@@ -1064,7 +1064,7 @@ local function spawn_unit_group(fs, only_bosses)
         end
     end
 
-    if remove_entities then
+    if remove_entities and not (fs and fs.bypass) then
         remove_trees({surface = surface, position = spawn_position, valid = true})
         remove_rocks({surface = surface, position = spawn_position, valid = true})
         fill_tiles({surface = surface, position = spawn_position, valid = true})
@@ -1292,6 +1292,16 @@ Event.on_nth_tick(
         end
     end
 )
+
+Event.add(
+    Public.events.on_biters_evolved,
+    function()
+        increase_biter_damage()
+        increase_biters_health()
+    end
+)
+
+Event.add(Public.events.on_spawn_unit_group, spawn_unit_group)
 
 Event.on_nth_tick(
     50,

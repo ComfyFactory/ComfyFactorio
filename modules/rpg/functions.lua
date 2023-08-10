@@ -1060,7 +1060,7 @@ function Public.check_is_surface_valid(player)
     local surface_name = Public.get('rpg_extra').surface_name
     if type(surface_name) == 'table' then
         for _, tbl_surface in pairs(surface_name) do
-            if sub(player.surface.name, 0, #surface_name) == tbl_surface then
+            if sub(player.surface.name, 0, #tbl_surface) == tbl_surface then
                 is_surface_valid = true
             end
         end

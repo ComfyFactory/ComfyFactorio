@@ -259,9 +259,11 @@ function Public.debug_log(str)
 end
 
 --- Sets surface name for rpg_v2 to use
----@param name string
+---@param name string|table
 function Public.set_surface_name(name)
-    if name then
+    if name and type(name) == 'string' then
+        this.rpg_extra.surface_name = name
+    elseif name and type(name) == 'table' then
         this.rpg_extra.surface_name = name
     else
         return error('No surface name given.', 2)
@@ -385,7 +387,7 @@ function Public.enable_range_buffs(value)
 end
 
 --- Enables/disabled personal tax.
----@param value boolean
+---@param value number
 function Public.personal_tax_rate(value)
     this.rpg_extra.personal_tax_rate = value or false
 

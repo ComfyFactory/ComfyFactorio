@@ -150,7 +150,7 @@ local function turn_off_global_speakers(player)
         for i, speaker in pairs(speakers) do
             if speaker.parameters.playback_globally == true then
                 speaker.surface.create_entity({name = 'massive-explosion', position = speaker.position})
-                speaker.die('player')
+                speaker.destroy()
                 counter = counter + 1
             end
         end

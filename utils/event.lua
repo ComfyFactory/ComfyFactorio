@@ -187,11 +187,11 @@ end
 function Event.raise(handler, data)
     if data then
         if not type(data) == 'table' then
-            return
+            return error('When raising an event, data must be of type table')
         end
     end
 
-    raise_event(handler, data)
+    raise_event(handler, data or {})
 end
 
 --- Register a handler for the script.on_load event.
