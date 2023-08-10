@@ -2801,17 +2801,17 @@ end
 function Public.heavy_functions(data)
     local top_y = data.top_y
     local surface = data.surface
-    local p = data.position
-    local get_tile = surface.get_tile(p)
-
-    local adjusted_zones = Public.get('adjusted_zones')
-    init_terrain(adjusted_zones)
-
     local map_name = 'mtn_v3'
 
     if string.sub(surface.name, 0, #map_name) ~= map_name then
         return
     end
+
+    local p = data.position
+    local get_tile = surface.get_tile(p)
+
+    local adjusted_zones = Public.get('adjusted_zones')
+    init_terrain(adjusted_zones)
 
     if not data.seed then
         data.seed = Public.get('random_seed')

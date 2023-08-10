@@ -5,6 +5,9 @@ Mountain Fortress v3 is maintained by Gerkiz and hosted by Comfy.
 Want to host it? Ask Gerkiz#0001 at discord!
 
 ]]
+-- develop setting
+local _DEV_MODE = true
+
 local Event = require 'utils.event'
 local Public = require 'maps.mountain_fortress_v3.core'
 local Discord = require 'utils.discord'
@@ -137,7 +140,7 @@ function Public.reset_map()
     -- OfflinePlayers.set_offline_players_surface_removal(true)
 
     RPG.rpg_reset_all_players()
-    RPG.set_surface_name(game.surfaces[this.active_surface_index].name)
+    RPG.set_surface_name({game.surfaces[this.active_surface_index].name, 'boss_room'})
     RPG.enable_health_and_mana_bars(true)
     RPG.enable_wave_defense(true)
     RPG.enable_mana(true)
@@ -174,7 +177,7 @@ function Public.reset_map()
     Explosives.set_surface_whitelist({[surface.name] = true})
     Explosives.check_growth_below_void(true)
 
-    game.forces.player.set_spawn_position({-27, 25}, surface)
+    game.forces.player.set_spawn_position({x = -27, y = 25}, surface)
     game.forces.player.manual_mining_speed_modifier = 0
     game.forces.player.set_ammo_damage_modifier('artillery-shell', -0.95)
     game.forces.player.worker_robots_battery_modifier = 4
@@ -218,6 +221,7 @@ function Public.reset_map()
 
     Difficulty.reset_difficulty_poll({closing_timeout = game.tick + 36000})
     Difficulty.set_gui_width(20)
+    Difficulty.show_gui(false)
 
     Collapse.set_kill_entities(false)
     Collapse.set_kill_specific_entities(collapse_kill)
@@ -259,12 +263,12 @@ function Public.reset_map()
     Public.set_difficulty()
     Public.disable_creative()
 
-    if not surface.is_chunk_generated({-20, 22}) then
-        surface.request_to_generate_chunks({-20, 22}, 0.1)
+    if not surface.is_chunk_generated({x = -20, y = 22}) then
+        surface.request_to_generate_chunks({x = -20, y = 22}, 0.1)
         surface.force_generate_chunk_requests()
     end
 
-    game.forces.player.set_spawn_position({-27, 25}, surface)
+    game.forces.player.set_spawn_position({x = -27, y = 25}, surface)
     game.speed = 1
 
     Task.set_queue_speed(16)
@@ -275,6 +279,14 @@ function Public.reset_map()
     this.force_chunk = true
     this.market_announce = game.tick + 1200
     this.game_lost = false
+
+    Public.stateful.enable(true)
+    Public.stateful.create()
+
+    if _DEV_MODE then
+        Collapse.disable_collapse(true)
+        WD.disable_spawning_biters(true)
+    end
 
     Task.set_timeout_in_ticks(25, announce_new_map)
 end

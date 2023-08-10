@@ -1658,12 +1658,21 @@ function Public.set_player_to_god(player)
         return false
     end
 
-    local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
-    if pos then
-        player.teleport(pos, surface)
+    if string.sub(player.surface.name, 0, #surface.name) == surface.name then
+        local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
+        if pos then
+            player.teleport(pos, surface)
+        else
+            pos = game.forces.player.get_spawn_position(surface)
+            player.teleport(pos, surface)
+        end
     else
-        pos = game.forces.player.get_spawn_position(surface)
-        player.teleport(pos, surface)
+        local pos = player.surface.find_non_colliding_position('character', {0, 0}, 3, 0, 5)
+        if pos then
+            player.teleport(pos, player.surface)
+        else
+            player.teleport({pos}, player.surface)
+        end
     end
 
     Event.raise(

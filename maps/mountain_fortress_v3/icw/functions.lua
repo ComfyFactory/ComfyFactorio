@@ -6,6 +6,7 @@ local Task = require 'utils.task'
 local Token = require 'utils.token'
 local SpamProtection = require 'utils.spam_protection'
 
+local deepcopy = table.deepcopy
 local random = math.random
 local sqrt = math.sqrt
 
@@ -805,6 +806,35 @@ function Public.create_wagon(icw, created_entity, delay_surface)
 
     Public.request_reconstruction(icw)
     return wagon
+end
+
+function Public.migrate_wagon(icw, source, target)
+    if not validate_entity(target) then
+        return
+    end
+
+    local target_wagon = target.unit_number
+    local source_wagon = source.unit_number
+
+    for door_id, entity_id in pairs(icw.doors) do
+        if entity_id == source_wagon then
+            icw.doors[door_id] = target_wagon
+        end
+    end
+    for _, surface_data in pairs(icw.surfaces) do
+        if surface_data.name == source_wagon then
+            surface_data.name = tostring(target_wagon)
+        end
+    end
+
+    for unit_number, unit_data in pairs(icw.wagons) do
+        if unit_number == source_wagon then
+            unit_data.surface.name = tostring(target_wagon)
+            unit_data.entity = target
+            icw.wagons[target_wagon] = deepcopy(unit_data)
+            return icw.wagons[target_wagon]
+        end
+    end
 end
 
 function Public.use_cargo_wagon_door_with_entity(icw, player, door)

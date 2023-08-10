@@ -207,7 +207,7 @@ commands.add_command(
 )
 
 commands.add_command(
-    'toggle_collapse',
+    'disable_collapse',
     'Toggles the collapse feature',
     function()
         local player = game.player
@@ -217,19 +217,21 @@ commands.add_command(
                 player.print("[ERROR] You're not admin!", Color.fail)
                 return
             end
-            if not Collapse.start_now() then
-                Collapse.start_now(true)
-                game.print(mapkeeper .. ' ' .. player.name .. ', has started collapse!', {r = 0.98, g = 0.66, b = 0.22})
+            if Collapse.get_disable_state() then
+                Collapse.disable_collapse(false)
+                game.print(mapkeeper .. ' ' .. player.name .. ', has enabled collapse!', {r = 0.98, g = 0.66, b = 0.22})
+                log(player.name .. ', has enabled collapse!')
             else
-                Collapse.start_now(false)
-                game.print(mapkeeper .. ' ' .. player.name .. ', has stopped collapse!', {r = 0.98, g = 0.66, b = 0.22})
+                Collapse.disable_collapse(true)
+                game.print(mapkeeper .. ' ' .. player.name .. ', has disabled collapse!', {r = 0.98, g = 0.66, b = 0.22})
+                log(player.name .. ', has disabled collapse!')
             end
         else
-            if not Collapse.start_now() then
-                Collapse.start_now(true)
+            if Collapse.get_disable_state() then
+                Collapse.disable_collapse(false)
                 log('Collapse has started.')
             else
-                Collapse.start_now(false)
+                Collapse.disable_collapse(true)
                 log('Collapse has stopped.')
             end
         end

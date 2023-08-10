@@ -173,6 +173,7 @@ function Public.reset_main_table()
     }
     this.pickaxe_speed_per_purchase = 0.07
     this.breached_wall = 1
+    this.final_battle = false
     this.left_top = {
         x = 0,
         y = 0
@@ -247,6 +248,7 @@ function Public.reset_main_table()
     this.market_announce = game.tick + 1200
     this.check_heavy_damage = true
     this.prestige_system_enabled = false
+    this.mystical_chest_completed = 0
     this.mystical_chest_enabled = true
     this.check_if_threat_below_zero = true
     this.mc_rewards = {

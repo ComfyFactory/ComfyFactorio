@@ -139,6 +139,11 @@ function Public.register_wagon(wagon_entity)
     return Functions.create_wagon(icw, wagon_entity)
 end
 
+function Public.migrate_wagon(source, target)
+    local icw = ICW.get()
+    return Functions.migrate_wagon(icw, source, target)
+end
+
 local on_player_or_robot_built_tile = Functions.on_player_or_robot_built_tile
 
 Event.on_init(on_init)

@@ -282,9 +282,17 @@ local function is_protected(e)
     if string.sub(e.surface.name, 0, #map_name) ~= map_name then
         return true
     end
+
+    local boss_map_name = 'boss_room'
+
+    if string.sub(e.surface.name, 0, #boss_map_name) ~= boss_map_name then
+        return true
+    end
+
     if protect_types[e.type] then
         return true
     end
+
     return false
 end
 

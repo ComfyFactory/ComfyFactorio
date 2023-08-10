@@ -370,7 +370,7 @@ local function get_driver_action(entity)
         local total_time = player.online_time + Session.get_session_player(player)
 
         if total_time and total_time < playtime_required_to_drive_train then
-            player.print('[color=blue][Locomotive][/color] Not enough playtime acquired to drive train.')
+            player.print('[color=blue][Locomotive][/color] Not enough playtime acquired to drive the train.')
             driver.driving = false
             return
         end
@@ -598,7 +598,6 @@ function Public.is_around_train(entity)
         return false
     end
 
-
     local surface = game.surfaces[active_surface_index]
     local upgrades = Public.get('upgrades')
 
@@ -623,6 +622,12 @@ function Public.render_train_hp()
     local upgrades = Public.get('upgrades')
     if not locomotive or not locomotive.valid then
         return
+    end
+
+    local health_text = Public.get('health_text')
+
+    if health_text then
+        rendering.destroy(health_text)
     end
 
     Public.set(
@@ -724,6 +729,7 @@ local function tick()
 end
 
 Event.on_nth_tick(5, tick)
+Event.on_nth_tick(150, set_carriages)
 
 Event.add(defines.events.on_research_finished, on_research_finished)
 Event.add(defines.events.on_player_changed_surface, on_player_changed_surface)

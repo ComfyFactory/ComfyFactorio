@@ -28,5 +28,6 @@ Public.linked_chests = require 'maps.mountain_fortress_v3.locomotive.linked_ches
 Public.market = require 'maps.mountain_fortress_v3.locomotive.market'
 Public.permission_groups = require 'maps.mountain_fortress_v3.locomotive.permission_groups'
 Public.spawn_locomotive = require 'maps.mountain_fortress_v3.locomotive.spawn_locomotive'
+Public.stateful = require 'maps.mountain_fortress_v3.stateful.main'
 
 return Public

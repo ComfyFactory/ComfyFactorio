@@ -5,6 +5,7 @@ local IC_Gui = require 'maps.mountain_fortress_v3.ic.gui'
 local IC_Minimap = require 'maps.mountain_fortress_v3.ic.minimap'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 local Gui = require 'utils.gui'
+local Color = require 'utils.color_presets'
 local SpamProtection = require 'utils.spam_protection'
 
 local format_number = require 'util'.format_number
@@ -57,6 +58,10 @@ end
 
 local function spectate_button(player)
     if player.gui.top[spectate_button_name] then
+        return
+    end
+
+    if Public.get('final_battle') then
         return
     end
 
@@ -539,6 +544,10 @@ Gui.on_click(
         local player = event.player
         if not player or not player.valid then
             return
+        end
+
+        if Public.get('final_battle') then
+            return player.print('Not possible during the final battle.', Color.warning)
         end
 
         if player.character and player.character.valid then
