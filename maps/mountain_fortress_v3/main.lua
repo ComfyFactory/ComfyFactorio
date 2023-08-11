@@ -6,7 +6,7 @@ Want to host it? Ask Gerkiz#0001 at discord!
 
 ]]
 -- develop setting
-local _DEV_MODE = true
+local _DEV_MODE = false
 
 local Event = require 'utils.event'
 local Public = require 'maps.mountain_fortress_v3.core'
@@ -282,6 +282,7 @@ function Public.reset_map()
 
     Public.stateful.enable(true)
     Public.stateful.create()
+    Public.stateful.reset_stateful()
 
     if _DEV_MODE then
         Collapse.disable_collapse(true)

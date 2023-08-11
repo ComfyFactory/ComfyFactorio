@@ -70,6 +70,7 @@ function Public.reset_wave_defense()
     this.get_random_close_spawner_attempts = 5
     this.group_size = 2
     this.last_wave = game.tick
+    this.final_boss = false
     this.max_active_biters = 1280
     this.max_active_unit_groups = 32
     this.max_biter_age = 3600 * 60

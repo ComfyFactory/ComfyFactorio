@@ -1252,6 +1252,7 @@ Event.on_nth_tick(
         if game_lost then
             return
         end
+        local final_boss = Public.get('final_boss')
 
         local paused = Public.get('paused')
         if paused then
@@ -1286,6 +1287,10 @@ Event.on_nth_tick(
             tick_tasks_t2[t2]()
         end
 
+        if final_boss then
+            return
+        end
+
         local players = game.connected_players
         for _, player in pairs(players) do
             Public.update_gui(player)
@@ -1306,6 +1311,11 @@ Event.add(Public.events.on_spawn_unit_group, spawn_unit_group)
 Event.on_nth_tick(
     50,
     function()
+        local final_boss = Public.get('final_boss')
+        if final_boss then
+            return
+        end
+
         local tick_to_spawn_unit_groups = Public.get('tick_to_spawn_unit_groups')
         local tick = game.tick
         local will_not_spawn = tick % tick_to_spawn_unit_groups ~= 0

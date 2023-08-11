@@ -3,8 +3,10 @@ local Public = {}
 local ICW = require 'maps.mountain_fortress_v3.icw.table'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local Task = require 'utils.task'
+local Gui = require 'utils.gui'
 local Token = require 'utils.token'
 local SpamProtection = require 'utils.spam_protection'
+local Core = require 'utils.core'
 
 local deepcopy = table.deepcopy
 local random = math.random
@@ -202,6 +204,22 @@ local function input_filtered(wagon_inventory, chest, chest_inventory, free_slot
     end
 end
 
+function Public.disable_auto_minimap()
+    local icw = ICW.get()
+
+    Core.iter_connected_players(
+        function(player)
+            local data = Public.get_player_data(icw, player)
+            if not data then
+                return
+            end
+            Gui.clear_all_active_frames(player)
+            data.auto = false
+            Public.kill_minimap(player)
+        end
+    )
+end
+
 function Public.hazardous_debris()
     local surface = WPT.get('loco_surface')
     if not surface or not surface.valid then
@@ -209,6 +227,7 @@ function Public.hazardous_debris()
     end
     local icw = ICW.get()
     local speed = icw.speed
+    local final_battle = icw.final_battle
 
     local hazardous_debris = icw.hazardous_debris
     if not hazardous_debris then
@@ -217,55 +236,109 @@ function Public.hazardous_debris()
 
     local create = surface.create_entity
 
-    for _ = 1, 16 * speed, 1 do
-        local position = fallout_debris[random(1, size_of_debris)]
-        local p = {x = position[1], y = position[2]}
-        local get_tile = surface.get_tile(p)
-        if get_tile.valid and get_tile.name == 'out-of-map' then
-            create({name = 'shotgun-pellet', position = position, force = 'neutral', target = {position[1], position[2] + fallout_width * 2}, speed = speed})
+    if final_battle then
+        for _ = 1, 16 * speed, 1 do
+            local position = fallout_debris[random(1, size_of_debris)]
+            local p = {x = position[1], y = position[2]}
+            local get_tile = surface.get_tile(p)
+            if get_tile.valid and get_tile.name == 'out-of-map' then
+                create({name = 'slowdown-capsule', position = position, force = 'neutral', target = {position[1], position[2] + fallout_width * 2}, speed = speed})
+            end
         end
-    end
 
-    for _ = 1, 6 * speed, 1 do
-        local position = fallout_debris[random(1, size_of_debris)]
-        local p = {x = position[1], y = position[2]}
-        local get_tile = surface.get_tile(p)
-        if get_tile.valid and get_tile.name == 'out-of-map' then
-            create({name = 'cannon-projectile', position = position, force = 'neutral', target = {position[1], position[2] + fallout_width * 2}, speed = speed})
+        for _ = 1, 6 * speed, 1 do
+            local position = fallout_debris[random(1, size_of_debris)]
+            local p = {x = position[1], y = position[2]}
+            local get_tile = surface.get_tile(p)
+            if get_tile.valid and get_tile.name == 'out-of-map' then
+                create({name = 'slowdown-capsule', position = position, force = 'neutral', target = {position[1], position[2] + fallout_width * 2}, speed = speed})
+            end
         end
-    end
 
-    for _ = 1, 4 * speed, 1 do
-        local position = fallout_debris[random(1, size_of_debris)]
-        local p = {x = position[1], y = position[2]}
-        local get_tile = surface.get_tile(p)
-        if get_tile.valid and get_tile.name == 'out-of-map' then
-            create(
-                {
-                    name = 'atomic-bomb-wave-spawns-nuke-shockwave-explosion',
-                    position = position,
-                    force = 'neutral',
-                    target = {position[1], position[2] + fallout_width * 2},
-                    speed = speed
-                }
-            )
+        for _ = 1, 4 * speed, 1 do
+            local position = fallout_debris[random(1, size_of_debris)]
+            local p = {x = position[1], y = position[2]}
+            local get_tile = surface.get_tile(p)
+            if get_tile.valid and get_tile.name == 'out-of-map' then
+                create(
+                    {
+                        name = 'atomic-bomb-wave-spawns-nuke-shockwave-explosion',
+                        position = position,
+                        force = 'neutral',
+                        target = {position[1], position[2] + fallout_width * 2},
+                        speed = speed
+                    }
+                )
+            end
         end
-    end
 
-    for _ = 1, 6 * speed, 1 do
-        local position = fallout_debris[random(1, size_of_debris)]
-        local p = {x = position[1], y = position[2]}
-        local get_tile = surface.get_tile(p)
-        if get_tile.valid and get_tile.name == 'out-of-map' then
-            create(
-                {
-                    name = 'uranium-cannon-projectile',
-                    position = position,
-                    force = 'neutral',
-                    target = {position[1], position[2] + fallout_width * 2},
-                    speed = speed
-                }
-            )
+        for _ = 1, 6 * speed, 1 do
+            local position = fallout_debris[random(1, size_of_debris)]
+            local p = {x = position[1], y = position[2]}
+            local get_tile = surface.get_tile(p)
+            if get_tile.valid and get_tile.name == 'out-of-map' then
+                create(
+                    {
+                        name = 'slowdown-capsule',
+                        position = position,
+                        force = 'neutral',
+                        target = {position[1], position[2] + fallout_width * 2},
+                        speed = speed
+                    }
+                )
+            end
+        end
+    else
+        for _ = 1, 16 * speed, 1 do
+            local position = fallout_debris[random(1, size_of_debris)]
+            local p = {x = position[1], y = position[2]}
+            local get_tile = surface.get_tile(p)
+            if get_tile.valid and get_tile.name == 'out-of-map' then
+                create({name = 'shotgun-pellet', position = position, force = 'neutral', target = {position[1], position[2] + fallout_width * 2}, speed = speed})
+            end
+        end
+
+        for _ = 1, 6 * speed, 1 do
+            local position = fallout_debris[random(1, size_of_debris)]
+            local p = {x = position[1], y = position[2]}
+            local get_tile = surface.get_tile(p)
+            if get_tile.valid and get_tile.name == 'out-of-map' then
+                create({name = 'cannon-projectile', position = position, force = 'neutral', target = {position[1], position[2] + fallout_width * 2}, speed = speed})
+            end
+        end
+
+        for _ = 1, 4 * speed, 1 do
+            local position = fallout_debris[random(1, size_of_debris)]
+            local p = {x = position[1], y = position[2]}
+            local get_tile = surface.get_tile(p)
+            if get_tile.valid and get_tile.name == 'out-of-map' then
+                create(
+                    {
+                        name = 'atomic-bomb-wave-spawns-nuke-shockwave-explosion',
+                        position = position,
+                        force = 'neutral',
+                        target = {position[1], position[2] + fallout_width * 2},
+                        speed = speed
+                    }
+                )
+            end
+        end
+
+        for _ = 1, 6 * speed, 1 do
+            local position = fallout_debris[random(1, size_of_debris)]
+            local p = {x = position[1], y = position[2]}
+            local get_tile = surface.get_tile(p)
+            if get_tile.valid and get_tile.name == 'out-of-map' then
+                create(
+                    {
+                        name = 'uranium-cannon-projectile',
+                        position = position,
+                        force = 'neutral',
+                        target = {position[1], position[2] + fallout_width * 2},
+                        speed = speed
+                    }
+                )
+            end
         end
     end
 end
@@ -812,6 +885,8 @@ function Public.migrate_wagon(icw, source, target)
     if not validate_entity(target) then
         return
     end
+
+    target.minable = false
 
     local target_wagon = target.unit_number
     local source_wagon = source.unit_number

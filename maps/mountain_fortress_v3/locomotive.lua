@@ -460,6 +460,7 @@ local function on_research_finished(event)
         local message = ({'locomotive.discharge_unlocked'})
         Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac', 0.1)
     end
+
     if name == 'artillery' then
         local message = ({'locomotive.artillery_unlocked'})
         Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac', 0.1)

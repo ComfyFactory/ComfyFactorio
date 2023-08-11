@@ -608,6 +608,11 @@ local function do_chunk(event)
 end
 
 local function on_chunk(event)
+    local final_battle = Public.get('final_battle')
+    if final_battle then
+        return
+    end
+
     local force_chunk = Public.get('force_chunk')
     local stop_chunk = Public.get('stop_chunk')
     if stop_chunk then

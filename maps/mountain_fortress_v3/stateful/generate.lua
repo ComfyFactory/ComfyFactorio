@@ -409,13 +409,16 @@ local function do_chunk(event)
 end
 
 local function on_chunk(event)
+    local force_chunk_until = Public.get_stateful('force_chunk_until')
     local force_chunk = Public.get_stateful('force_chunk')
     local stop_chunk = Public.get_stateful('stop_chunk')
     if stop_chunk then
         return
     end
 
-    if force_chunk then
+    local tick = game.tick
+
+    if force_chunk and force_chunk_until > tick then
         do_chunk(event)
     else
         schedule_chunk(event)

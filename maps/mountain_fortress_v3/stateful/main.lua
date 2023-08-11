@@ -38,18 +38,31 @@ Event.on_nth_tick(
             return
         end
 
-        Public.set('final_battle', true)
         Public.allocate()
 
-        local spawn_positions = Public.stateful_spawn_points
-        local sizeof = Public.sizeof_stateful_spawn_points
+        local collection = Public.get_stateful('collection')
+        if not collection then
+            return
+        end
 
-        local area = spawn_positions[random(1, sizeof)]
+        if collection.time_until_attack and collection.time_until_attack <= 0 and collection.survive_for > 0 then
+            local spawn_positions = Public.stateful_spawn_points
+            local sizeof = Public.sizeof_stateful_spawn_points
 
-        shuffle(area)
+            local area = spawn_positions[random(1, sizeof)]
 
-        WD.set_spawn_position(area[1])
-        Event.raise(WD.events.on_spawn_unit_group, {fs = true, bypass = true})
+            shuffle(area)
+
+            WD.set_spawn_position(area[1])
+            Event.raise(WD.events.on_spawn_unit_group, {fs = true, bypass = true})
+            return
+        end
+
+        if collection.time_until_attack and collection.survive_for and collection.survive_for == 0 then
+            if not collection.game_won then
+                collection.game_won = true
+            end
+        end
     end
 )
 

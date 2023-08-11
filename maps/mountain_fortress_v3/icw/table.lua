@@ -24,6 +24,7 @@ function Public.reset()
     this.doors = {}
     this.wagons = {}
     this.speed = 0.1
+    this.final_battle = false
     this.hazardous_debris = true
     this.current_wagon_index = nil
     this.trains = {}
@@ -47,6 +48,17 @@ end
 
 function Public.get(key)
     if key then
+        return this[key]
+    else
+        return this
+    end
+end
+
+function Public.set(key, value)
+    if key and (value or value == false) then
+        this[key] = value
+        return this[key]
+    elseif key then
         return this[key]
     else
         return this

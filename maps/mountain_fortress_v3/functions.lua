@@ -1415,6 +1415,11 @@ function Public.on_player_joined_game(event)
     --     top['mod_gui_top_frame'].destroy()
     -- end
 
+    local final_battle = Public.get('final_battle')
+    if final_battle then
+        return
+    end
+
     if player.surface.index ~= active_surface_index then
         local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
         if pos then

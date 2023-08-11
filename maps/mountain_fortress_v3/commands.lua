@@ -186,6 +186,36 @@ commands.add_command(
 )
 
 commands.add_command(
+    'toggle_end_game',
+    'Usable only for admins - initiates the final battle!',
+    function()
+        local player = game.player
+        if not player or not player.valid then
+            return
+        end
+        if not player.admin then
+            player.print("[ERROR] You're not admin!", Color.fail)
+            return
+        end
+
+        local this = Public.get()
+
+        if not this.final_battle_are_you_sure then
+            this.final_battle_are_you_sure = true
+            player.print('[WARNING] This command will trigger the final battle, ONLY run this command again if you really want to do this!', Color.warning)
+            return
+        end
+
+        Public.stateful.set_stateful('final_battle', true)
+        Public.set('final_battle', true)
+
+        game.print(mapkeeper .. ' ' .. player.name .. ', has triggered the final battle sequence!', {r = 0.98, g = 0.66, b = 0.22})
+
+        this.final_battle_are_you_sure = nil
+    end
+)
+
+commands.add_command(
     'get_queue_speed',
     'Usable only for admins - gets the queue speed of this map!',
     function()
