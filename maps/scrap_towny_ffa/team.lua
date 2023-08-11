@@ -994,12 +994,9 @@ local function setup_enemy_force()
 end
 
 local function reset_forces()
-    local players = game.players
     local forces = game.forces
-    for i = 1, #players do
-        local player = players[i]
-        local force = forces[player.name]
-        if force then
+    for name, force in pairs(forces) do
+        if name ~= 'rogue' and name ~= 'player' and name ~= 'enemy' and name ~= 'neutral' then
             game.merge_forces(force, 'player')
         end
     end

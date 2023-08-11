@@ -86,8 +86,7 @@ function Public.initialise_crew_memory(id) --mostly serves as a dev reference of
     memory.playerindex_captain = nil
     memory.captain_accrued_time_data = nil
     memory.max_players_recorded = nil
-    memory.temporarily_logged_off_characters = nil
-    memory.temporarily_logged_off_characters_items = nil
+    memory.temporarily_logged_off_player_data = nil
 
     memory.speed_boost_characters = nil
 
@@ -125,7 +124,7 @@ function Public.fallthrough_crew_memory() --could make this a metatable, but met
     return {
         id = 0,
         difficulty = 1,
-        force_name = 'player',
+        force_name = 'player', -- should match Common.lobby_force_name
         boat = {},
         destinations = {},
         spectatorplayerindices = {},

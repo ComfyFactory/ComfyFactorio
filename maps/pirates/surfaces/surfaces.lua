@@ -488,7 +488,7 @@ function Public.destination_on_crewboat_hits_shore(destination)
 			local spawner = Common.get_random_valid_spawner(surface)
 			if spawner then
 				local max_health = Balance.elite_spawner_health()
-				Common.new_healthbar(true, spawner, max_health, nil, max_health, 0.8, nil, destination.dynamic_data)
+				Common.new_healthbar(true, spawner, max_health, nil, max_health, 0.8, nil)
 
 				local elite_spawners = destination.dynamic_data.elite_spawners
 				if elite_spawners then

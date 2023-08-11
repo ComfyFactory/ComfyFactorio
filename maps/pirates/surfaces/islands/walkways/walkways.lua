@@ -161,7 +161,7 @@ local function walkways_tick()
 		if destination.subtype == IslandEnum.enum.WALKWAYS then
 			for _, player in pairs(game.connected_players) do
 				if player.force.name == memory.force_name and player.surface == game.surfaces[destination.surface_name] and player.character and player.character.valid and game.surfaces[destination.surface_name].get_tile(player.position).name == 'water-shallow' then
-					player.character.damage(12, game.forces['environment'], 'fire')
+					player.character.damage(Balance.walkways_frozen_pool_damage, game.forces['environment'], 'fire')
 					if not (player.character and player.character.valid) then
 						Common.notify_force(player.force, {'pirates.death_froze',player.name})
 					end

@@ -117,7 +117,7 @@ function Public.reset_main_table()
     this.gap_between_locomotive = {
         hinders = {},
         gap = 900,
-        neg_gap = -2112,
+        neg_gap = -3520, -- earlier 2112 (3 zones, whereas 704 is one zone)
         highest_pos = nil
     }
     this.force_chunk = false
@@ -134,6 +134,10 @@ function Public.reset_main_table()
     --!grief prevention
     this.enable_arties = 6 -- default to callback 6
     --!snip
+    this.enemy_spawners = {
+        spawners = {},
+        enabled = false
+    }
     this.poison_deployed = false
     this.robotics_deployed = false
     this.upgrades = {

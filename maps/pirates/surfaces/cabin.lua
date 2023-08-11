@@ -14,6 +14,7 @@ local Public = {}
 
 local enum = {
 	DEFAULT = 'Default',
+	SLOT_ARTILLERY_SHELLS = 1,
 	SLOT_EXTRA_HOLD = 5,
 	SLOT_MORE_POWER = 6,
 	SLOT_RANDOM_CLASS = 7,
@@ -104,11 +105,12 @@ Public.market_price_scale = 300
 
 Public.cabin_shop_data = {
 	{
+		-- Note: coin price for this offer changes based on difficulty.
 		price = {{'coin', 4000}, {'coal', 20}, {'iron-plate', 20}},--should be inefficient on resources to merely buy arty to shoot nests
 		offer = {type='give-item', item = 'artillery-shell', count = 5},
 	},
 	{
-		price = {{'coin', 1000}, {'electronic-circuit', 20}},
+		price = {{'coin', 2000}, {'electronic-circuit', 50}},
 		offer = {type='give-item', item = 'rail-signal', count = 50},
 	},
 	{
@@ -292,6 +294,8 @@ function Public.create_cabin_surface()
 			end
 		end
 
+		Public.update_captains_market_offers_based_on_difficulty(memory.difficulty_option)
+
 		rendering.draw_text(
 		{
 			color = {60, 255, 124},
@@ -381,6 +385,31 @@ function Public.get_market_random_price(slot)
 	end
 
 	return nil
+end
+
+function Public.get_captains_market()
+	local surface = game.surfaces[Public.get_cabin_surface_name()]
+	return surface.find_entity('market', Public.Data.market_position)
+end
+
+function Public.update_captains_market_offers_based_on_difficulty(difficulty_option)
+	local market = Public.get_captains_market()
+	if market == nil then return end
+
+	local offers = market.get_market_items()
+    market.clear_market_items()
+
+    for i, offer in pairs(offers) do
+		if i == enum.SLOT_ARTILLERY_SHELLS then
+			for _, price in pairs(offer.price) do
+				if price.name == "coin" then
+					price.amount = difficulty_option * 1000
+				end
+			end
+		end
+
+		market.add_market_item(offer)
+    end
 end
 
 return Public

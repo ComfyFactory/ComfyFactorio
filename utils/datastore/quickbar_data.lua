@@ -142,7 +142,7 @@ function Public.save_logistics(player)
 
     local slots = {}
 
-    for i = 1, 100 do
+    for i = 1, 400 do
         local slot = player.get_personal_logistic_slot(i)
         if slot and slot.name then
             slots[i] = {name = slot.name, min = slot.min, max = slot.max}
@@ -220,6 +220,7 @@ commands.add_command(
             return
         end
         local success, _ = pcall(save_logistics, player)
+        player.print('Notice: only the first 400 slots are saved.', Color.warning)
         if not success then
             player.print('An error occured while trying to save your logistics slots.', Color.warning)
         end

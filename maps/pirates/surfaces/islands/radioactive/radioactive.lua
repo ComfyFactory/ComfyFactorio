@@ -274,32 +274,36 @@ local function radioactive_tick()
 		local tickinterval = 60
 
 		if destination.subtype == IslandEnum.enum.RADIOACTIVE then
-			-- faster evo (doesn't need difficulty scaling as higher difficulties have higher base evo):
-			local extra_evo = 0.22 * tickinterval/60 / Balance.expected_time_on_island()
-			Common.increment_evo(extra_evo)
-			if (not destination.dynamic_data.evolution_accrued_time) then
-				destination.dynamic_data.evolution_accrued_time = 0
-			end
-			destination.dynamic_data.evolution_accrued_time = destination.dynamic_data.evolution_accrued_time + extra_evo
+			-- Stop increasing evo when boat left the island
+			local surface_name = memory.boat and memory.boat.surface_name
+			if surface_name ~= memory.sea_name then
+				-- faster evo (doesn't need difficulty scaling as higher difficulties have higher base evo):
+				local extra_evo = 0.22 * tickinterval/60 / Balance.expected_time_on_island()
+				Common.increment_evo(extra_evo)
+				if (not destination.dynamic_data.evolution_accrued_time) then
+					destination.dynamic_data.evolution_accrued_time = 0
+				end
+				destination.dynamic_data.evolution_accrued_time = destination.dynamic_data.evolution_accrued_time + extra_evo
 
-			if not memory.floating_pollution then memory.floating_pollution = 0 end
+				if not memory.floating_pollution then memory.floating_pollution = 0 end
 
-			-- faster pollute:
-			local pollution = 0
-			local timer = destination.dynamic_data.timer
-			if timer and timer > 15 then
-				pollution = 6 * (Common.difficulty_scale()^(1.1) * (memory.overworldx/40)^(18/10) * (Balance.crew_scale())^(1/5)) / 3600 * tickinterval * (1 + (Common.difficulty_scale()-1)*0.2 + 0.001 * timer)
-			end
+				-- faster pollute:
+				local pollution = 0
+				local timer = destination.dynamic_data.timer
+				if timer and timer > 15 then
+					pollution = 6 * (Common.difficulty_scale()^(1.1) * (memory.overworldx/40)^(18/10) * (Balance.crew_scale())^(1/5)) / 3600 * tickinterval * (1 + (Common.difficulty_scale()-1)*0.2 + 0.001 * timer)
+				end
 
-			if pollution > 0 then
-				memory.floating_pollution = memory.floating_pollution + pollution
+				if pollution > 0 then
+					memory.floating_pollution = memory.floating_pollution + pollution
 
-				game.pollution_statistics.on_flow('uranium-ore', pollution)
-			end
+					game.pollution_statistics.on_flow('uranium-ore', pollution)
+				end
 
-			local surface = game.surfaces[destination.surface_name]
-			if surface and surface.valid and (not surface.freeze_daytime) and destination.dynamic_data.timer and destination.dynamic_data.timer >= CoreData.daynightcycle_types[Public.Data.static_params_default.daynightcycletype].ticksperday/60/2 then --once daytime, never go back to night
-				surface.freeze_daytime = true
+				local surface = game.surfaces[destination.surface_name]
+				if surface and surface.valid and (not surface.freeze_daytime) and destination.dynamic_data.timer and destination.dynamic_data.timer >= CoreData.daynightcycle_types[Public.Data.static_params_default.daynightcycletype].ticksperday/60/2 then --once daytime, never go back to night
+					surface.freeze_daytime = true
+				end
 			end
 		end
 	end
