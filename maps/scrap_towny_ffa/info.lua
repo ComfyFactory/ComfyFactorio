@@ -11,7 +11,9 @@ Have fun and be comfy ^.^]]
 
 local info_adv =
     [[
-# Changelog (21th October 2022):
+# Changelog (10th Aug 2023):
+ - Fixed that the map now has a random seed upon reset
+ - Fixed automatic server reset
  - Fixed player spawn issue
  - Fixed map random seed
  - Made tank and car extremely rare to get via scrap
