@@ -389,7 +389,7 @@ end
 --- Enables/disabled personal tax.
 ---@param value number
 function Public.personal_tax_rate(value)
-    this.rpg_extra.personal_tax_rate = value or false
+    this.rpg_extra.personal_tax_rate = value or 0
 
     return this.rpg_extra.personal_tax_rate
 end
