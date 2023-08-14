@@ -121,40 +121,77 @@ Public.modifiers = {
 }
 
 Public.starter_goods_pool = {
-	{'accumulator', 8, 16},
-	{'big-electric-pole', 8, 16},
-	{'burner-inserter', 64, 128},
-	{'burner-mining-drill', 8, 16},
-	{'car', 2, 4},
-	{'cliff-explosives', 10, 20},
-	{'copper-cable', 128, 256},
-	{'copper-plate', 64, 128},
-	{'electric-furnace', 4, 8},
-	{'electric-mining-drill', 4, 8},
-	{'firearm-magazine', 64, 128},
-	{'grenade', 8, 16},
-	{'gun-turret', 4, 8},
-	{'inserter', 32, 64},
-	{'iron-gear-wheel', 64, 128},
-	{'iron-plate', 64, 128},
-	{'lab', 2, 4},
-	{'long-handed-inserter', 32, 64},
-	{'medium-electric-pole', 16, 32},
-	{'pipe', 128, 256},
-	{'radar', 4, 8},
-	{'small-lamp', 64, 128},
-	{'solar-panel', 8, 16},
-	{'solid-fuel', 256, 512},
-	{'stack-inserter', 16, 32},
-	{'stack-filter-inserter', 16, 32},
-	{'steam-turbine', 4, 8},
-	{'steel-chest', 16, 32},
-	{'steel-furnace', 8, 16},
-	{'steel-plate', 32, 64},
-	{'stone-wall', 128, 256},
-	{'substation', 4, 8},
-	{'green-wire', 256, 512},
-	{'red-wire', 256, 512},
+    ['basic'] = {
+        {'copper-cable', 128, 256},
+        {'copper-plate', 64, 128},
+        {'iron-gear-wheel', 64, 128},
+        {'iron-plate', 64, 128},
+        {'petroleum-gas-barrel', 20, 40},
+        {'solid-fuel', 256, 512},
+        {'steel-plate', 32, 64},
+        {'electronic-circuit', 32, 64},
+    },
+    ['low'] = {
+        {'burner-inserter', 64, 128},
+        {'burner-mining-drill', 8, 16},
+        {'lab', 2, 4},
+        {'steel-furnace', 8, 16},
+        {'boiler', 2, 4},
+        {'steam-engine', 4, 8},
+    },
+    ['mil'] = {
+        {'cliff-explosives', 10, 20},
+        {'firearm-magazine', 64, 128},
+        {'grenade', 8, 16},
+        {'gun-turret', 4, 8},
+        {'radar', 4, 8},
+        {'stone-wall', 128, 256},
+        {'gate', 32, 64},
+        {'heavy-armor', 1, 1},
+        {'modular-armor', 1, 1},
+        {'shotgun-shell', 64, 128},
+        {'defender-capsule', 12, 24},
+        {'flamethrower-ammo', 20, 40},
+        {'slowdown-capsule', 10, 20},
+    },
+    ['inter'] = {
+        {'big-electric-pole', 8, 16},
+        {'car', 2, 4},
+        {'electric-mining-drill', 4, 8},
+        {'inserter', 32, 64},
+        {'lab', 2, 4},
+        {'long-handed-inserter', 32, 64},
+        {'medium-electric-pole', 16, 32},
+        {'pipe', 128, 256},
+        {'small-lamp', 64, 128},
+        {'steel-chest', 16, 32},
+        {'transport-belt', 32, 64},
+        {'pumpjack', 2, 4},
+    },
+    ['adv'] = {
+        {'accumulator', 8, 16},
+        {'electric-furnace', 4, 8},
+        {'solar-panel', 8, 16},
+        {'stack-inserter', 16, 32},
+        {'stack-filter-inserter', 16, 32},
+        {'steam-turbine', 4, 8},
+        {'substation', 4, 8},
+        {'chemical-plant', 3, 6},
+        {'oil-refinery', 1, 2},
+    },
+    ['rare'] = {
+        {'green-wire', 256, 512},
+        {'red-wire', 256, 512},
+        {'heat-exchanger', 1, 2},
+        {'heat-pipe', 10, 20},
+        {'nuclear-fuel', 4, 8},
+        {'nuclear-reactor', 1, 1},
+        {'advanced-circuit', 16, 32},
+        {'construction-robot', 16, 32},
+        {'personal-roboport-equipment', 1, 1},
+        {'solar-panel-equipment', 2, 4},
+        {'effectivity-module', 5, 10},
+    },
 }
 
 Public.build_type_whitelist = {
@@ -174,27 +211,144 @@ Public.build_type_whitelist = {
 }
 
 Public.unique_world_traits = {
-	['lush'] = {'Lush', 'Pure Vanilla.', 1},
-	['abandoned_library'] = {'Abandoned Library', 'No blueprints to be found.', 3},
-	['lazy_bastard'] = {'Lazy Bastard', 'The machine does the job.', 4},
-	['oceanic'] = {'Oceanic', 'Arrrr, the flame turrets seem to malfunction in this climate.', 2},
-	['ribbon'] = {'Ribbon', 'Go right. (or left)', 4},
-	['wasteland'] = {'Wasteland', 'Rusty treasures.', 2},
-	['infested'] = {'Infested', 'They lurk inside.', 4},
-	['pitch_black'] = {'Pitch Black', 'No light may reach this realm.', 2},
-	['volcanic'] = {'Volcanic', 'The floor is (almost) lava.', 4},
-	['matter_anomaly'] = {'Matter Anomaly', 'Why can\'t I hold all these ores.\nThe laser turret structures seem to malfunction.', 2},
-	['mountainous'] = {'Mountainous', 'Diggy diggy hole!', 2},
-	['eternal_night'] = {'Eternal Night', 'This world seems to be missing a sun.', 2},
-	['dense_atmosphere'] = {'Dense Atmosphere', 'Your roboport structures seem to malfunction.', 3},
-	['undead_plague'] = {'Undead Plague', 'The dead are restless.', 4},
-	['swamps'] = {'Swamps', 'No deep water to be found in this world.', 3},
-	['chaotic_resources'] = {'Chaotic Resources', 'Something to sort out.', 2},
-	['low_mass'] = {'Low Mass', 'You feel light footed and the robots are buzzing.', 2},
-	['eternal_day'] = {'Eternal Day', 'The sun never moves.', 1},
-	['quantum_anomaly'] = {'Quantum Anomaly', 'Research complete.', 2},
-	['replicant_fauna'] = {'Replicant Fauna', 'The biters feed on your structures.', 4},
-	['tarball'] = {'Tarball', 'Door stuck, Door stuck...', 4},
+	['lush'] = {
+        name = 'Lush',
+        desc = 'Pure Vanilla.',
+        mods = 1,
+        loot = {basic = {1, 1}, low = {1, 1}, mil = {0, 1}, inter = {0, 1}, adv = {0, 0}, rare = {0, 0}}
+    },
+	['abandoned_library'] = {
+        name = 'Abandoned Library',
+        desc = 'No blueprints to be found.',
+        mods = 3,
+        loot = {basic = {0, 1}, low = {0, 1}, mil = {0, 1}, inter = {0, 1}, adv = {1, 1}, rare = {1, 1}}
+    },
+	['lazy_bastard'] = {
+        name = 'Lazy Bastard',
+        desc = 'The machine does the job.',
+        mods = 4,
+        loot = {basic = {0, 0}, low = {0, 0}, mil = {0, 1}, inter = {0, 2}, adv = {0, 1}, rare = {1, 1}}
+    },
+	['oceanic'] = {
+        name = 'Oceanic',
+        desc = 'Arrrr, the flame turrets seem to malfunction in this climate.',
+        mods = 2,
+        loot = {basic = {1, 1}, low = {0, 0}, mil = {0, 2}, inter = {0, 1}, adv = {0, 1}, rare = {0, 1}}
+    },
+	['ribbon'] = {
+        name = 'Ribbon',
+        desc = 'Go right. (or left)',
+        mods = 4,
+        loot = {basic = {0, 0}, low = {0, 0}, mil = {0, 1}, inter = {0, 2}, adv = {0, 1}, rare = {1, 1}}
+    },
+	['wasteland'] = {
+        name = 'Wasteland',
+        desc = 'Rusty treasures.',
+        mods = 2,
+        loot = {basic = {0, 1}, low = {0, 1}, mil = {1, 1}, inter = {0, 1}, adv = {0, 1}, rare = {0, 1}}
+    },
+	['infested'] = {
+        name = 'Infested',
+        desc = 'They lurk inside.',
+        mods = 4,
+        loot = {basic = {0, 1}, low = {0, 0}, mil = {1, 1}, inter = {0, 2}, adv = {0, 2}, rare = {1, 1}}
+    },
+	['pitch_black'] = {
+        name = 'Pitch Black',
+        desc = 'No light may reach this realm.',
+        mods = 2,
+        loot = {basic = {1, 1}, low = {0, 1}, mil = {0, 1}, inter = {0, 1}, adv = {0, 1}, rare = {0, 1}}
+    },
+	['volcanic'] = {
+        name = 'Volcanic',
+        desc = 'The floor is (almost) lava.',
+        mods = 4,
+        loot = {basic = {0, 0}, low = {0, 0}, mil = {1, 1}, inter = {0, 2}, adv = {0, 2}, rare = {1, 1}}
+    },
+	['matter_anomaly'] = {
+        name = 'Matter Anomaly',
+        desc = 'Why can\'t I hold all these ores.\nThe laser turret structures seem to malfunction.',
+        mods = 2,
+        loot = {basic = {1, 1}, low = {0, 1}, mil = {1, 1}, inter = {0, 1}, adv = {0, 1}, rare = {0, 1}}
+    },
+	['mountainous'] = {
+        name = 'Mountainous',
+        desc = 'Diggy diggy hole!',
+        mods = 2,
+        loot = {basic = {1, 1}, low = {0, 1}, mil = {0, 1}, inter = {0, 1}, adv = {0, 1}, rare = {0, 1}}
+    },
+	['eternal_night'] = {
+        name = 'Eternal Night',
+        desc = 'This world seems to be missing a sun.',
+        mods = 2,
+        loot = {basic = {1, 1}, low = {0, 1}, mil = {0, 1}, inter = {0, 1}, adv = {0, 1}, rare = {0, 1}}
+    },
+	['dense_atmosphere'] = {
+        name = 'Dense Atmosphere',
+        desc = 'Your roboport structures seem to malfunction.',
+        mods = 3,
+        loot = {basic = {0, 1}, low = {0, 0}, mil = {0, 1}, inter = {1, 1}, adv = {0, 1}, rare = {1, 1}}
+    },
+	['undead_plague'] = {
+        name = 'Undead Plague',
+        desc = 'The dead are restless.',
+        mods = 4,
+        loot = {basic = {0, 0}, low = {0, 0}, mil = {1, 1}, inter = {0, 2}, adv = {0, 2}, rare = {1, 1}}
+    },
+	['swamps'] = {
+        name = 'Swamps',
+        desc = 'No deep water to be found in this world.',
+        mods = 3,
+        loot = {basic = {0, 1}, low = {0, 0}, mil = {0, 1}, inter = {0, 1}, adv = {0, 1}, rare = {0, 1}}
+    },
+	['chaotic_resources'] = {
+        name = 'Chaotic Resources',
+        desc = 'Something to sort out.',
+        mods = 2,
+        loot = {basic = {0, 1}, low = {0, 1}, mil = {0, 1}, inter = {0, 1}, adv = {0, 1}, rare = {0, 1}}
+    },
+	['low_mass'] = {
+        name = 'Low Mass',
+        desc = 'You feel light footed and the robots are buzzing.',
+        mods = 2,
+        loot = {basic = {0, 1}, low = {0, 1}, mil = {0, 0}, inter = {0, 2}, adv = {0, 1}, rare = {0, 1}}
+    },
+	['eternal_day'] = {
+        name = 'Eternal Day',
+        desc = 'The sun never moves.',
+        mods = 1,
+        loot = {basic = {1, 1}, low = {0, 1}, mil = {0, 0}, inter = {0, 1}, adv = {0, 1}, rare = {0, 1}}
+    },
+	['quantum_anomaly'] = {
+        name = 'Quantum Anomaly',
+        desc = 'Research complete.',
+        mods = 2,
+        loot = {basic = {0, 0}, low = {0, 0}, mil = {0, 1}, inter = {1, 1}, adv = {0, 1}, rare = {0, 1}}
+    },
+	['replicant_fauna'] = {
+        name = 'Replicant Fauna',
+        desc = 'The biters feed on your structures.',
+        mods = 4,
+        loot = {basic = {0, 0}, low = {0, 0}, mil = {1, 1}, inter = {0, 1}, adv = {0, 1}, rare = {1, 1}}
+    },
+	['tarball'] = {
+        name = 'Tarball',
+        desc = 'Door stuck, Door stuck...',
+        mods = 4,
+        loot = {basic = {0, 0}, low = {0, 0}, mil = {0, 1}, inter = {0, 2}, adv = {0, 2}, rare = {1, 1}}
+    },
+    ['railworld'] = {
+        name = 'Railworld',
+        desc = 'Long distances better travelled by train...',
+        mods = 3,
+        loot = {basic = {0, 1}, low = {0, 0}, mil = {0, 1}, inter = {0, 1}, adv = {0, 1}, rare = {0, 1}}
+    },
+    ['resupply_station'] = {
+        name = 'Resupply Station',
+        desc = 'Local Orbital Station requires immediate resupply.\n Faster the delivery, more they pay.',
+        mods = 2,
+        loot = {basic = {0, 0}, low = {0, 0}, mil = {0, 1}, inter = {0, 2}, adv = {0, 2}, rare = {1, 1}}
+    },
 }
 
 return Public
