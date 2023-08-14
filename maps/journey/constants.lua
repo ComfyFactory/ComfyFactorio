@@ -126,6 +126,7 @@ Public.starter_goods_pool = {
 	{'burner-inserter', 64, 128},
 	{'burner-mining-drill', 8, 16},
 	{'car', 2, 4},
+	{'cliff-explosives', 10, 20},
 	{'copper-cable', 128, 256},
 	{'copper-plate', 64, 128},
 	{'electric-furnace', 4, 8},

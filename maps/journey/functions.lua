@@ -364,9 +364,43 @@ function Public.on_mothership_chunk_generated(event)
 	surface.set_tiles(tiles, true)
 end
 
+function Public.export_journey(journey)
+	local data = {
+		world_number = journey.world_number,
+		world_modifiers = journey.world_modifiers,
+		bonus_goods = journey.bonus_goods,
+		world_selectors = journey.world_selectors,
+		mothership_cargo = journey.mothership_cargo,
+		mothership_cargo_space = journey.mothership_cargo_space,
+	}
+	local secs = Server.get_current_time()
+    if not secs then
+        return
+    else
+		Server.set_data('scenario_settings', 'journey_data', data)
+		game.print('Journey data exported...')
+	end
+end
+
+
+function Public.import_journey(journey)
+	local state = journey.game_state
+	if state == 'world' or state == 'dispatch_goods' or state = 'mothership_waiting_for_players' then
+		log('Can run import command only during world selection stages')
+		return
+	end
+	local secs = Server.get_current_time()
+    if not secs then
+        return
+    else
+		Server.try_get_data('scenario_settings', 'journey_data', journey.import)
+	end
+end
+
 function Public.hard_reset(journey)
 	if journey.restart_from_scenario then
 		game.print({'journey.cmd_server_restarting'}, {r = 255, g = 255, b = 0})
+		Public.export_journey(journey)
 		Server.start_scenario('Journey')
 		return
 	end
@@ -386,6 +420,8 @@ function Public.hard_reset(journey)
 	game.map_settings.pollution.enabled = true
 	game.map_settings.pollution.ageing = 1
 	game.map_settings.pollution.diffusion_ratio = 0.02
+	game.map_settings.pollution.min_to_diffuse = 75
+	game.map_settings.pollution.expected_max_per_chunk = 300
 	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 1
 	game.map_settings.pollution.min_pollution_to_damage_trees = 60
 	game.map_settings.pollution.pollution_restored_per_tree_damage = 10
@@ -397,6 +433,13 @@ function Public.hard_reset(journey)
 	game.map_settings.enemy_evolution.time_factor = 0.000004
 	game.map_settings.enemy_evolution.destroy_factor = 0.002
 	game.map_settings.enemy_evolution.pollution_factor = 0.0000009
+
+	game.map_settings.enemy_expansion.max_expansion_distance = 5 --default 7
+	game.map_settings.enemy_expansion.friendly_base_influence_radius = 1 --default 2
+	game.map_settings.enemy_expansion.enemy_building_influence_radius = 5 --default 2
+	game.map_settings.enemy_expansion.building_coefficient = 0.02 --default 0.1
+	game.map_settings.enemy_expansion.neighbouring_chunk_coefficient = 0.25 --defualt 0.5
+	game.map_settings.enemy_expansion.neighbouring_base_chunk_coefficient = 0.25 --default 0.4
 
 	local surface = game.surfaces[1]
 	local mgs = surface.map_gen_settings
@@ -455,6 +498,7 @@ function Public.hard_reset(journey)
 	journey.emergency_triggered = false
 	journey.emergency_selected = false
 	journey.game_state = 'create_mothership'
+	journey.vote_minimum = 1
 	journey.mothership_messages_last_damage = game.tick
 	for k, modifier in pairs(Constants.modifiers) do
 		journey.world_modifiers[k] = modifier.base
@@ -463,11 +507,11 @@ function Public.hard_reset(journey)
 end
 
 function Public.create_mothership(journey)
-	local surface = game.create_surface("mothership", Constants.mothership_gen_settings)
+	local surface = game.create_surface('mothership', Constants.mothership_gen_settings)
 	surface.request_to_generate_chunks({x = 0, y = 0}, 6)
 	surface.force_generate_chunk_requests()
 	surface.freeze_daytime = true
-	journey.game_state = "draw_mothership"
+	journey.game_state = 'draw_mothership'
 end
 
 function Public.draw_mothership(journey)
@@ -548,15 +592,15 @@ function Public.draw_mothership(journey)
 		local chest = surface.create_entity({name = 'infinity-chest', position = {-7 + k, Constants.mothership_radius - 3}, force = 'player'})
 		chest.set_infinity_container_filter(1, {name = item_name, count = game.item_prototypes[item_name].stack_size})
 		protect(chest, false)
-		local loader = surface.create_entity({name = "express-loader", position = {-7 + k, Constants.mothership_radius - 4}, force = "player"})
+		local loader = surface.create_entity({name = "express-loader", position = {-7 + k, Constants.mothership_radius - 4}, force = 'player'})
 		protect(loader, true)
 		loader.direction = 4
 	end
 
 	for m = -1, 1, 2 do
-		local inter = surface.create_entity({name = "electric-energy-interface", position = {11 * m, Constants.mothership_radius - 4}, force = "player"})
+		local inter = surface.create_entity({name = 'electric-energy-interface', position = {11 * m, Constants.mothership_radius - 4}, force = 'player'})
 		protect(inter, true)
-		local sub = surface.create_entity({name = "substation", position = {9 * m, Constants.mothership_radius - 4}, force = "player"})
+		local sub = surface.create_entity({name = 'substation', position = {9 * m, Constants.mothership_radius - 4}, force = 'player'})
 		protect(sub, true)
 	end
 
@@ -564,7 +608,7 @@ function Public.draw_mothership(journey)
 		local x = Constants.mothership_radius - 3
 		if m > 0 then x = x - 1 end
 		local y = Constants.mothership_radius * 0.5 - 7
-		local turret = surface.create_entity({name = "artillery-turret", position = {x * m, y}, force = "player"})
+		local turret = surface.create_entity({name = 'artillery-turret', position = {x * m, y}, force = 'player'})
 		turret.direction = 4
 		protect(turret, false)
 		local ins = surface.create_entity({name = "burner-inserter", position = {(x - 1) * m, y}, force = "player"})
@@ -600,9 +644,29 @@ function Public.teleport_players_to_mothership(journey)
 	end
 end
 
-local function get_activation_level(surface, area)
+function Public.set_minimum_to_vote(journey)
+	--server_id returns only on Comfy server
+	--therefore on Comfy, there is minimum of 3 players to vote for a world.
+	--in any multiplayer there is minimum of 2 players
+	--in singleplayer the minimum is 1
+	--this does change only behaviour if there is less players connected than the minimum
+	--the minimum should actualize on player join or when mothership builds the selectors
+	if Server.get_server_id() ~= '' then
+		journey.vote_minimum = 3
+	elseif game.is_multiplayer() then
+		journey.vote_minimum = 2
+	else
+		journey.vote_minimum = 1
+	end
+	local surface = game.surfaces.mothership
+	if #game.connected_players <= journey.vote_minimum and surface and surface.daytime <= 0.5 then
+		table.insert(journey.mothership_messages, {'journey.message_min_players', journey.vote_minimum})
+	end
+end
+
+local function get_activation_level(journey, surface, area)
 	local player_count_in_area = surface.count_entities_filtered({area = area, name = "character"})
-	local player_count_for_max_activation = #game.connected_players * 0.66
+	local player_count_for_max_activation = math.max(#game.connected_players, journey.vote_minimum) * 0.66
 	local level = player_count_in_area / player_count_for_max_activation
 	level = math.round(level, 2)
 	return level
@@ -698,12 +762,14 @@ function Public.set_world_selectors(journey)
 	table.shuffle_table(unique_world_traits)
 
 	for k, world_selector in pairs(journey.world_selectors) do
-		table.shuffle_table(bonus_goods_keys)
-		table.shuffle_table(modifier_names)
-		world_selector.modifiers = {}
-		world_selector.bonus_goods = {}
-		world_selector.world_trait = unique_world_traits[k]
-		world_selector.fuel_requirement = math.random(25, 50)
+		if not journey.importing then
+			table.shuffle_table(bonus_goods_keys)
+			table.shuffle_table(modifier_names)
+			world_selector.modifiers = {}
+			world_selector.bonus_goods = {}
+			world_selector.world_trait = unique_world_traits[k]
+			world_selector.fuel_requirement = math.random(25, 50)
+		end
 		local position = Constants.world_selector_areas[k].left_top
 		local texts = world_selector.texts
 		local modifiers = world_selector.modifiers
@@ -712,6 +778,7 @@ function Public.set_world_selectors(journey)
 		local limits = {6, Constants.unique_world_traits[world_selector.world_trait][3]}
 		local counts = {0, 0}
 		local i = 1
+		if journey.importing then goto skip_reroll end
 		while (limits[1] + limits[2] > counts[1] + counts[2]) and i < #modifier_names do
 			local modifier = modifier_names[i]
 			local data = Constants.modifiers[modifier]
@@ -754,6 +821,8 @@ function Public.set_world_selectors(journey)
 			end
 			i = i + 1
 		end
+
+		::skip_reroll::
 
 		table.insert(texts, rendering.draw_text{
 			text = Constants.unique_world_traits[world_selector.world_trait][1],
@@ -850,6 +919,8 @@ function Public.set_world_selectors(journey)
 	destroy_teleporter(journey, surface, Constants.mothership_teleporter_position)
 
 	Server.to_discord_embed("World " .. journey.world_number + 1 .. " selection has started!")
+	Public.set_minimum_to_vote(journey)
+	journey.importing = false
 
 	journey.game_state = "delete_nauvis_chunks"
 end
@@ -871,10 +942,10 @@ function Public.reroll_worlds(journey)
 	Public.teleport_players_to_mothership(journey)
 	draw_background(journey, surface)
 	animate_selectors(journey)
-	local reroll_selector_activation_level = get_activation_level(surface, Constants.reroll_selector_area)
+	local reroll_selector_activation_level = get_activation_level(journey, surface, Constants.reroll_selector_area)
 	journey.reroll_selector.activation_level = reroll_selector_activation_level
 	for i = 1, 3, 1 do
-		local activation_level = get_activation_level(surface, Constants.world_selector_areas[i])
+		local activation_level = get_activation_level(journey, surface, Constants.world_selector_areas[i])
 		journey.world_selectors[i].activation_level = activation_level
 	end
 	if reroll_selector_activation_level > 1 then
@@ -897,6 +968,18 @@ function Public.reroll_worlds(journey)
 	end
 end
 
+function Public.importing_world(journey)
+	local surface = game.surfaces.mothership
+	Public.teleport_players_to_mothership(journey)
+	draw_background(journey, surface)
+	animate_selectors(journey)
+	clear_selectors(journey)
+	Public.update_tooltips(journey)
+	Public.draw_gui(journey)
+	table.insert(journey.mothership_messages, "Restoring the last saved position...")
+	journey.game_state = "set_world_selectors"
+end
+
 function Public.mothership_world_selection(journey)
 	Public.teleport_players_to_mothership(journey)
 
@@ -906,20 +989,19 @@ function Public.mothership_world_selection(journey)
 	if daytime < 0 then daytime = 0 end
 	surface.daytime = daytime
 
-	local reroll_selector_activation_level = get_activation_level(surface, Constants.reroll_selector_area)
+	local reroll_selector_activation_level = get_activation_level(journey, surface, Constants.reroll_selector_area)
 	journey.reroll_selector.activation_level = reroll_selector_activation_level
 
 	if journey.emergency_triggered then
 		if not journey.emergency_selected then
 			journey.selected_world = math.random(1, 3)
 			table.insert(journey.mothership_messages, "Emergency destination selected..")
-			table.insert(journey.mothership_messages, "Some reactors were damaged due to unplanned circumstances..")
 			journey.emergency_selected = true
 		end
 	else
 		journey.selected_world = false
 		for i = 1, 3, 1 do
-			local activation_level = get_activation_level(surface, Constants.world_selector_areas[i])
+			local activation_level = get_activation_level(journey, surface, Constants.world_selector_areas[i])
 			journey.world_selectors[i].activation_level = activation_level
 			if activation_level > 1 then
 				journey.selected_world = i

@@ -1,4 +1,3 @@
---luacheck: ignore
 --[[
 Journey, launch a rocket in increasingly harder getting worlds. - MewMew
 ]]--
@@ -11,9 +10,15 @@ local Functions = require 'maps.journey.functions'
 local Unique_modifiers = require 'maps.journey.unique_modifiers'
 local Map = require 'modules.map_info'
 local Global = require 'utils.global'
+local Token = require 'utils.token'
+local Event = require 'utils.event'
 
 local journey = {
 	announce_capsules = true
+}
+
+local events = {
+	import = Event.generate_event_name('import'),
 }
 
 Global.register(
@@ -21,6 +26,15 @@ Global.register(
     function(tbl)
         journey = tbl
     end
+)
+
+journey.import = Token.register(
+	function(data)
+		if not data then
+            return
+        end
+		script.raise_event(events.import, data)
+	end
 )
 
 local function on_chunk_generated(event)
@@ -58,6 +72,7 @@ end
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
 	Functions.draw_gui(journey)
+	Functions.set_minimum_to_vote(journey)
 
 	if player.surface.name == "mothership" then
 		journey.characters_in_mothership = journey.characters_in_mothership + 1
@@ -151,6 +166,28 @@ local function on_rocket_launched(event)
 	Functions.draw_gui(journey)
 end
 
+local function make_import(data)
+	if not data then
+		return
+	end
+
+	if data.key ~= 'journey_data' then
+		return
+	end
+	local old_selectors = journey.world_selectors
+	for key, value in pairs(data.value) do
+		journey[key] = value
+	end
+	for k, selector in pairs(old_selectors) do
+		journey.world_selectors[k].border = selector.border
+		journey.world_selectors[k].texts = selector.texts
+		journey.world_selectors[k].rectangles = selector.rectangles
+	end
+	journey.importing = true
+	game.print('Journey data imported.')
+	journey.game_state = 'importing_world'
+end
+
 local function on_nth_tick()
 	Functions[journey.game_state](journey)
 	Functions.mothership_message_queue(journey)
@@ -167,6 +204,7 @@ local function on_init()
 
 	Functions.hard_reset(journey)
 end
+
 local function cmd_handler()
 	local player = game.player
 	local p
@@ -177,18 +215,20 @@ local function cmd_handler()
 	end
 	if player and not player.admin then
 		p("You are not an admin!")
-		return
+		return false
 	end
-	return player or {name = 'Server'}, p
+	return true, player or {name = 'Server'}, p
 end
 
 commands.add_command(
     'journey-reset',
     'Fully resets the journey map.',
     function()
-		local player = cmd_handler()
-		Functions.hard_reset(journey)
-		game.print(player.name .. " has reset the map.")
+		local s, player = cmd_handler()
+		if s then
+			Functions.hard_reset(journey)
+			game.print(player.name .. " has reset the map.")
+		end
 	end
 )
 
@@ -196,9 +236,12 @@ commands.add_command(
     'journey-skip-world',
     'Instantly wins and skips the current world.',
     function()
-		cmd_handler()
-		if journey.game_state ~= "dispatch_goods" and journey.game_state ~= "world" then return end
-		journey.game_state = "set_world_selectors"
+		local s, _, p = cmd_handler()
+		if s then
+			if journey.game_state ~= "dispatch_goods" and journey.game_state ~= "world" then return end
+			journey.game_state = "set_world_selectors"
+			p('The current world was skipped...')
+		end
 	end
 )
 
@@ -206,13 +249,38 @@ commands.add_command(
 	'journey-update',
 	'Restarts the server with newest version of Journey scenario code during next map reset',
 	function()
-		local _, p = cmd_handler()
-		journey.restart_from_scenario = not journey.restart_from_scenario
-		p('Journey marking for full restart with updates on next reset was switched to ' .. tostring(journey.restart_from_scenario))
+		local s, _, p = cmd_handler()
+		if s then
+			journey.restart_from_scenario = not journey.restart_from_scenario
+			p('Journey marking for full restart with updates on next reset was switched to ' .. tostring(journey.restart_from_scenario))
+		end
 	end
 )
 
-local Event = require 'utils.event'
+commands.add_command(
+	'journey-import',
+	'Sets the journey gamestate to the last exported one.',
+	function()
+		local s, _, p = cmd_handler()
+		if s then
+			Functions.import_journey(journey)
+			p('Journey world settings importing...')
+		end
+	end
+)
+
+commands.add_command(
+	'journey-export',
+	'Exports the journey gamestate to the server',
+	function()
+		local s, _, p = cmd_handler()
+		if s then
+			Functions.export_journey(journey)
+			p('Journey world settings exporting...')
+		end
+	end
+)
+
 Event.on_init(on_init)
 Event.on_nth_tick(10, on_nth_tick)
 Event.add(defines.events.on_chunk_generated, on_chunk_generated)
@@ -227,3 +295,4 @@ Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.add(defines.events.on_console_chat, on_console_chat)
+Event.add(events['import'], make_import)
