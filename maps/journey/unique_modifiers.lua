@@ -236,7 +236,6 @@ Public.swamps = {
 Public.wasteland = {
     on_chunk_generated = function(event, journey)
         local surface = event.surface
-        local seed = surface.map_gen_settings.seed
         local left_top_x = event.area.left_top.x
         local left_top_y = event.area.left_top.y
         local tiles = {}
@@ -250,7 +249,7 @@ Public.wasteland = {
         if math_random(1, 3) ~= 1 then return end
         for _ = 1, math_random(0, 5), 1 do
             local name = wrecks[math_random(1, size_of_wrecks)]
-            position = surface.find_non_colliding_position(name, {left_top_x + math_random(0, 31), left_top_y + math_random(0, 31)}, 16, 1)
+            local position = surface.find_non_colliding_position(name, {left_top_x + math_random(0, 31), left_top_y + math_random(0, 31)}, 16, 1)
             if position then
                 local e = surface.create_entity({name = name, position = position, force = 'neutral'})
                 if math_random(1, 4) == 1 then
