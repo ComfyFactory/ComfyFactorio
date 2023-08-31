@@ -1,3 +1,4 @@
+--luacheck: ignore 212/journey
 local Get_noise = require 'utils.get_noise'
 local BiterRaffle = require 'functions.biter_raffle'
 local LootRaffle = require 'functions.loot_raffle'
@@ -140,7 +141,6 @@ Public.mountainous = {
         local seed = surface.map_gen_settings.seed
         local left_top_x = event.area.left_top.x
         local left_top_y = event.area.left_top.y
-        local get_tile = surface.get_tile
         local position
         local noise
         for x = 0, 31, 1 do
@@ -215,9 +215,7 @@ Public.swamps = {
         for _, tile in pairs(surface.find_tiles_filtered({name = {'water', 'deepwater'}, area = event.area})) do
             table.insert(tiles, {name = 'water-shallow', position = tile.position})
         end
-        surface.set_tiles(tiles, true, false, false, false)
 
-        local tiles = {}
         for x = 0, 31, 1 do
             for y = 0, 31, 1 do
                 local position = {x = left_top_x + x, y = left_top_y + y}
