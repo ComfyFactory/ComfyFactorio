@@ -466,7 +466,6 @@ local apply_settings_token =
         local old_value = settings.current_date
         if old_value then
             old_value = tonumber(old_value)
-            local new_value = Server.get_current_date()
             local time_to_reset = (new_value - old_value)
             if time_to_reset then
                 if time_to_reset > this.reset_after then

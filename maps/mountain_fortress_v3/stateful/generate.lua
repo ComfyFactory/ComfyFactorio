@@ -14,7 +14,6 @@ local generate_map = require 'maps.mountain_fortress_v3.stateful.terrain'.heavy_
 -- Simple "loop" that is UPS friendly.
 local function get_position(data)
     data.yv = data.yv + 1
-    
     if data.yv == 32 then
         if data.xv == 32 then
             data.xv = 0
