@@ -265,6 +265,7 @@ function Public.reset_map()
 
     Public.set_difficulty()
     Public.disable_creative()
+    Public.boost_difficulty()
 
     if not surface.is_chunk_generated({x = -20, y = 22}) then
         surface.request_to_generate_chunks({x = -20, y = 22}, 0.1)
@@ -286,6 +287,7 @@ function Public.reset_map()
     Public.stateful.enable(true)
     Public.stateful.create()
     Public.stateful.reset_stateful()
+    Public.stateful.apply_startup_settings()
 
     if _DEV_MODE then
         Collapse.disable_collapse(true)
@@ -483,7 +485,6 @@ local on_tick = function()
     if tick % 250 == 0 then
         compare_collapse_and_train()
         Public.set_spawn_position()
-        Public.boost_difficulty()
     end
 
     if tick % 1000 == 0 then

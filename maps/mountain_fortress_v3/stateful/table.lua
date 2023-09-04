@@ -433,90 +433,92 @@ local function get_random_objectives()
     }
 end
 
-local apply_settings_token =
-    Token.register(
-    function(data)
-        local settings = data and data.value or nil
-        local new_value = Server.get_current_date()
-
-        if not settings then
-            settings = {
-                rounds_survived = 0
-            }
-
-            if new_value then
+local function apply_startup_settings(settings)
+    local new_value = Server.get_current_date()
+    if not new_value then
+        return
+    end
+    settings = settings or {}
+    local old_value = this.current_date
+    if old_value then
+        old_value = tonumber(old_value)
+        local time_to_reset = (new_value - old_value)
+        if time_to_reset then
+            if time_to_reset > this.reset_after then
                 settings.current_date = tonumber(new_value)
-            else
-                settings.current_date = 0
+                settings.test_mode = false
+                settings.rounds_survived = 0
+                settings.buffs = {}
+                this.buffs = {}
+                this.rounds_survived = 0
+                this.current_date = tonumber(new_value)
+                local message = ({'stateful.reset'})
+                local message_discord = ({'stateful.reset_discord'})
+                game.print(message)
+                Server.to_discord_embed(message_discord, true)
+
+                Server.set_data(dataset, dataset_key, settings)
             end
-
-            Server.set_data(dataset, dataset_key, settings)
-            return
         end
+    end
 
-        if not settings.current_date then
-            if new_value then
-                settings.current_date = tonumber(new_value)
-            else
-                settings.current_date = 0
-            end
-            Server.set_data(dataset, dataset_key, settings)
-        end
+    local starting_items = Public.get_func('starting_items')
 
-        local old_value = settings.current_date
-        if old_value then
-            old_value = tonumber(old_value)
-            local time_to_reset = (new_value - old_value)
-            if time_to_reset then
-                if time_to_reset > this.reset_after then
-                    if new_value then
-                        settings.current_date = tonumber(new_value)
-                    else
-                        settings.current_date = 0
-                    end
-                    settings.test_mode = false
-                    settings.rounds_survived = 0
-                    settings.buffs = {}
-                    local message = ({'stateful.reset'})
-                    local message_discord = ({'stateful.reset_discord'})
-                    game.print(message)
-                    Server.to_discord_embed(message_discord)
-
-                    Server.set_data(dataset, dataset_key, settings)
+    if this.buffs and next(this.buffs) then
+        local force = game.forces.player
+        for _, buff in pairs(this.buffs) do
+            if buff then
+                if buff.modifier == 'force' then
+                    force[buff.name] = force[buff.name] + buff.state
                 end
-            end
-        end
-
-        local rounds_survived = settings.rounds_survived
-
-        Public.increase_enemy_damage_and_health()
-
-        local starting_items = Public.get_func('starting_items')
-
-        if settings.buffs and next(settings.buffs) then
-            local force = game.forces.player
-            for _, buff in pairs(settings.buffs) do
-                if buff then
-                    if buff.modifier == 'force' then
-                        force[buff.name] = force[buff.name] + buff.state
-                    end
-                    if buff.modifier == 'rpg' then
-                        local rpg_extra = RPG.get('rpg_extra')
-                        rpg_extra.difficulty = buff.state
-                    end
-                    if buff.modifier == 'start' then
-                        for _, item in pairs(buff.items) do
-                            if item then
-                                starting_items[item.name] = item.count
-                            end
+                if buff.modifier == 'rpg' then
+                    local rpg_extra = RPG.get('rpg_extra')
+                    rpg_extra.difficulty = buff.state
+                end
+                if buff.modifier == 'start' then
+                    for _, item in pairs(buff.items) do
+                        if item then
+                            starting_items[item.name] = item.count
                         end
                     end
                 end
             end
         end
+    end
+    return settings
+end
 
+local apply_settings_token =
+    Token.register(
+    function(data)
+        local settings = data and data.value or nil
+        local new_value = Server.get_current_date()
+        if not new_value then
+            return
+        end
+
+        if not settings then
+            settings = {
+                rounds_survived = 0,
+                current_date = tonumber(new_value)
+            }
+            Server.set_data(dataset, dataset_key, settings)
+            return
+        end
+
+        if not settings.current_date then
+            settings.current_date = tonumber(new_value)
+            Server.set_data(dataset, dataset_key, settings)
+        end
+
+        this.current_date = settings.current_date
         this.buffs = settings.buffs
-        this.rounds_survived = rounds_survived
+
+        settings = apply_startup_settings(settings)
+
+        Public.increase_enemy_damage_and_health()
+
+        this.rounds_survived = settings.rounds_survived
         this.objectives_completed = {}
         this.objectives_completed_count = 0
         this.final_battle = false
@@ -811,6 +813,7 @@ Server.on_data_set_changed(
 Public.get_item_produced_count = get_item_produced_count
 Public.get_entity_mined_count = get_entity_mined_count
 Public.get_killed_enemies_count = get_killed_enemies_count
+Public.apply_startup_settings = apply_startup_settings
 Public.stateful_spawn_points = stateful_spawn_points
 Public.sizeof_stateful_spawn_points = #stateful_spawn_points
 
