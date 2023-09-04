@@ -80,6 +80,10 @@ local function clear_main_frame(player)
 end
 
 function Public.difficulty_gui()
+    if not this.show_gui then
+        return
+    end
+
     local tooltip = 'Current difficulty of the map is ' .. this.difficulties[this.index].name .. '.'
 
     for _, player in pairs(game.connected_players) do
@@ -148,6 +152,13 @@ end
 local function poll_difficulty(player)
     if player.gui.center[main_frame_name] then
         clear_main_frame(player)
+    end
+
+    if not this.show_gui then
+        if player.gui.center[main_frame_name] then
+            clear_main_frame(player)
+        end
+        return
     end
 
     if game.tick > this.closing_timeout then
@@ -283,9 +294,6 @@ local function on_player_joined_game(event)
 end
 
 local function on_player_left_game(event)
-    if not this.show_gui then
-        return
-    end
     if game.tick > this.closing_timeout then
         return
     end

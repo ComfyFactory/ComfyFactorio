@@ -279,6 +279,10 @@ function Public.start_now(state)
     return this.start_now
 end
 
+function Public.get_start_now()
+    return this.start_now
+end
+
 function Public.set_max_line_size(size)
     if not size then
         print_debug(22)

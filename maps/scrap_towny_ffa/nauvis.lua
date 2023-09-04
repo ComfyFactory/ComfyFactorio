@@ -166,7 +166,6 @@ function Public.initialize()
     }
     mgs.seed = math_random(100000, 9999999)
 
-    log(serpent.block(mgs))
     if not this.active_surface_index then
         this.active_surface_index = game.create_surface('towny', mgs).index
     else

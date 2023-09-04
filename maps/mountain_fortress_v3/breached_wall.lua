@@ -316,7 +316,7 @@ local function distance(player)
             end
         end
 
-        if not Collapse.start_now() then
+        if not Collapse.get_start_now() then
             clear_breach_text_and_render()
             Collapse.start_now(true)
             local data = {
@@ -325,7 +325,7 @@ local function distance(player)
             Task.set_timeout_in_ticks(550, collapse_message, data)
         end
 
-        if Collapse.start_now() then
+        if Collapse.get_start_now() then
             clear_breach_text_and_render()
         end
 
@@ -337,6 +337,11 @@ local function distance(player)
 end
 
 local function on_player_changed_position(event)
+    local final_battle = Public.get('final_battle')
+    if final_battle then
+        return
+    end
+
     local player = game.get_player(event.player_index)
     if not player or not player.valid then
         return
@@ -361,6 +366,11 @@ local function on_player_changed_position(event)
 end
 
 local function on_player_driving_changed_state(event)
+    local final_battle = Public.get('final_battle')
+    if final_battle then
+        return
+    end
+
     local player = game.players[event.player_index]
     if not (player and player.valid) then
         return

@@ -246,7 +246,7 @@ local function place_wagon(data, adjusted_zones)
 
     local placed_trains_in_zone = Public.get('placed_trains_in_zone')
     if not placed_trains_in_zone.randomized then
-        placed_trains_in_zone.limit = random(1, 2)
+        placed_trains_in_zone.limit = random(0, 1)
         placed_trains_in_zone.randomized = true
         placed_trains_in_zone = Public.get('placed_trains_in_zone')
     end

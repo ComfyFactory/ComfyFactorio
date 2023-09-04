@@ -12,10 +12,14 @@ local Core = require 'utils.core'
 local Public = require 'maps.mountain_fortress_v3.table'
 local Task = require 'utils.task'
 local Alert = require 'utils.alert'
+local IC = require 'maps.mountain_fortress_v3.ic.table'
+local RPG = require 'modules.rpg.table'
 
 local this = {
     enabled = false,
-    rounds_survived = 0
+    rounds_survived = 0,
+    buffs = {},
+    reset_after = 60
 }
 
 local random = math.random
@@ -57,6 +61,49 @@ local disabled_items = {
     ['fast-loader'] = true,
     ['express-loader'] = true
 }
+
+local function get_random_buff()
+    local buffs = {
+        {
+            name = 'character_running_speed_modifier',
+            modifier = 'force',
+            state = 0.04
+        },
+        {
+            name = 'manual_mining_speed_modifier',
+            modifier = 'force',
+            state = 0.05
+        },
+        {
+            name = 'character_reach_distance_bonus',
+            modifier = 'force',
+            state = 0.02
+        },
+        {
+            name = 'manual_crafting_speed_modifier',
+            modifier = 'force',
+            state = 0.04
+        },
+        {
+            name = 'xp_bonus',
+            modifier = 'rpg',
+            state = 0.02
+        },
+        {
+            name = 'items_startup',
+            modifier = 'start',
+            items = {
+                {name = 'iron-plate', count = 100},
+                {name = 'copper-plate', count = 100}
+            }
+        }
+    }
+
+    shuffle(buffs)
+    shuffle(buffs)
+
+    return buffs[1]
+end
 
 local function get_item_produced_count(item_name)
     local force = game.forces.player
@@ -242,6 +289,14 @@ local function get_random_items()
         [3] = {name = items[3].products[1].name, count = scale(random(100, 5000))}
     }
 
+    if this.test_mode then
+        container = {
+            [1] = {name = items[1].products[1].name, count = 1},
+            [2] = {name = items[2].products[1].name, count = 1},
+            [3] = {name = items[3].products[1].name, count = 1}
+        }
+    end
+
     return container
 end
 
@@ -260,6 +315,10 @@ local function get_random_item()
     shuffle(items)
     shuffle(items)
 
+    if this.test_mode then
+        return {name = items[10].products[1].name, count = 1}
+    end
+
     return {name = items[10].products[1].name, count = scale(random(5000, 100000), 40000000)}
 end
 
@@ -277,6 +336,10 @@ local function get_random_research_recipe()
 
     shuffle(research_level_list)
 
+    if this.test_mode then
+        return {name = research_level_list[1], count = 1}
+    end
+
     return {name = research_level_list[1], count = scale(random(10, 20), 40)}
 end
 
@@ -292,6 +355,12 @@ local function get_random_locomotive_tier()
     local pickaxe_count = scale(random(10, 20), 59)
     local health_count = scale(random(10, 40), 100)
     local xp_points_count = scale(random(10, 40), 100)
+
+    if this.test_mode then
+        pickaxe_count = 1
+        health_count = 1
+        xp_points_count = 1
+    end
 
     if tiers[1] == 'pickaxe' then
         return {
@@ -368,14 +437,82 @@ local apply_settings_token =
     Token.register(
     function(data)
         local settings = data and data.value or nil
+        local new_value = Server.get_current_date()
+
         if not settings then
+            settings = {
+                rounds_survived = 0
+            }
+
+            if new_value then
+                settings.current_date = tonumber(new_value)
+            else
+                settings.current_date = 0
+            end
+
+            Server.set_data(dataset, dataset_key, settings)
             return
+        end
+
+        if not settings.current_date then
+            if new_value then
+                settings.current_date = tonumber(new_value)
+            else
+                settings.current_date = 0
+            end
+            Server.set_data(dataset, dataset_key, settings)
+        end
+
+        local old_value = settings.current_date
+        if old_value then
+            old_value = tonumber(old_value)
+            local new_value = Server.get_current_date()
+            local time_to_reset = (new_value - old_value)
+            if time_to_reset then
+                if time_to_reset > this.reset_after then
+                    if new_value then
+                        settings.current_date = tonumber(new_value)
+                    else
+                        settings.current_date = 0
+                    end
+                    settings.test_mode = false
+                    settings.rounds_survived = 0
+                    settings.buffs = {}
+
+                    Server.set_data(dataset, dataset_key, settings)
+                end
+            end
         end
 
         local rounds_survived = settings.rounds_survived
 
         Public.increase_enemy_damage_and_health()
 
+        local starting_items = Public.get_func('starting_items')
+
+        if settings.buffs and next(settings.buffs) then
+            local force = game.forces.player
+            for _, buff in pairs(settings.buffs) do
+                if buff then
+                    if buff.modifier == 'force' then
+                        force[buff.name] = force[buff.name] + buff.state
+                    end
+                    if buff.modifier == 'rpg' then
+                        local rpg_extra = RPG.get('rpg_extra')
+                        rpg_extra.difficulty = buff.state
+                    end
+                    if buff.modifier == 'start' then
+                        for _, item in pairs(buff.items) do
+                            if item then
+                                starting_items[item.name] = item.count
+                            end
+                        end
+                    end
+                end
+            end
+        end
+
+        this.buffs = settings.buffs
         this.rounds_survived = rounds_survived
         this.objectives_completed = {}
         this.objectives_completed_count = 0
@@ -409,40 +546,63 @@ local apply_settings_token =
 )
 
 function Public.save_settings()
+    this.buffs[#this.buffs + 1] = get_random_buff()
+
     local settings = {
-        rounds_survived = this.rounds_survived
+        rounds_survived = this.rounds_survived,
+        test_mode = this.test_mode,
+        buffs = this.buffs
     }
 
     Server.set_data(dataset, dataset_key, settings)
 end
 
 function Public.reset_stateful()
+    this.test_mode = false
     this.objectives_completed = {}
     this.objectives_completed_count = 0
     this.final_battle = false
+
     this.selected_objectives = get_random_objectives()
-    this.objectives = {
-        randomized_zone = scale(random(7, 20), 40),
-        randomized_wave = scale(random(500, 2000), 4000),
-        supplies = get_random_items(),
-        single_item = get_random_item(),
-        killed_enemies = scale(random(500000, 3000000), 10000000),
-        complete_mystical_chest_amount = scale(random(10, 50), 500),
-        research_level_selection = get_random_research_recipe(),
-        research_level_count = 0,
-        locomotive_market_selection = get_random_locomotive_tier(),
-        trees_farmed = scale(random(5000, 100000), 400000),
-        rocks_farmed = scale(random(50000, 500000), 4000000),
-        rockets_launched = scale(random(100, 500), 5000)
-    }
+    if this.test_mode then
+        this.objectives = {
+            randomized_zone = 2,
+            randomized_wave = 2,
+            supplies = get_random_items(),
+            single_item = get_random_item(),
+            killed_enemies = 10,
+            complete_mystical_chest_amount = 1,
+            research_level_selection = get_random_research_recipe(),
+            research_level_count = 0,
+            locomotive_market_selection = get_random_locomotive_tier(),
+            trees_farmed = 10,
+            rocks_farmed = 10,
+            rockets_launched = 1
+        }
+    else
+        this.objectives = {
+            randomized_zone = scale(random(7, 20), 40),
+            randomized_wave = scale(random(500, 2000), 4000),
+            supplies = get_random_items(),
+            single_item = get_random_item(),
+            killed_enemies = scale(random(500000, 3000000), 10000000),
+            complete_mystical_chest_amount = scale(random(10, 50), 500),
+            research_level_selection = get_random_research_recipe(),
+            research_level_count = 0,
+            locomotive_market_selection = get_random_locomotive_tier(),
+            trees_farmed = scale(random(5000, 100000), 400000),
+            rocks_farmed = scale(random(50000, 500000), 4000000),
+            rockets_launched = scale(random(100, 500), 5000)
+        }
+    end
     this.collection = {
         time_until_attack = nil,
         time_until_attack_timer = nil,
         survive_for = nil,
         survive_for_timer = nil
     }
+    this.stateful_locomotive_migrated = false
     this.force_chunk = true
-    this.force_chunk_until = game.tick + 1000
 end
 
 function Public.migrate_and_create(locomotive)
@@ -518,6 +678,8 @@ function Public.allocate()
         ICWT.set('speed', 0.3)
         ICWT.set('final_battle', true)
 
+        IC.set('allowed_surface', 'boss_room')
+
         local collection = Public.get_stateful('collection')
         if not collection then
             return
@@ -552,6 +714,7 @@ function Public.set_target(target, icw_data)
     local wave_defense_table = WD.get()
     wave_defense_table.surface_index = game.get_surface('boss_room').index
     wave_defense_table.target = target
+    wave_defense_table.enable_side_target = false
     wave_defense_table.spawn_position = {x = -206, y = -80}
     Public.set('active_surface_index', game.get_surface('boss_room').index)
     Public.set('icw_locomotive', icw_data)
@@ -615,6 +778,30 @@ Event.add(
         this.settings_applied = true
 
         Server.try_get_data(dataset, dataset_key, apply_settings_token)
+    end
+)
+
+Server.on_data_set_changed(
+    dataset,
+    function(data)
+        if data.key ~= dataset_key then
+            return
+        end
+        if not data.value then
+            return
+        end
+
+        if data.value.test_mode then
+            Public.reset_stateful()
+            Public.stateful.clear_all_frames()
+            game.print('[Stateful] Test round settings received.')
+            this.test_mode = true
+        elseif data.value.test_mode == false then
+            Public.reset_stateful()
+            Public.stateful.clear_all_frames()
+            game.print('[Stateful] Test round settings has been disabled.')
+            this.test_mode = false
+        end
     end
 )
 

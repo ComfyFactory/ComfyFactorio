@@ -14,7 +14,7 @@ local generate_map = require 'maps.mountain_fortress_v3.stateful.terrain'.heavy_
 -- Simple "loop" that is UPS friendly.
 local function get_position(data)
     data.yv = data.yv + 1
-
+    
     if data.yv == 32 then
         if data.xv == 32 then
             data.xv = 0
@@ -216,6 +216,9 @@ local function do_place_entities(data)
                     if e.active ~= nil then
                         entity.active = e.active
                     end
+                    if e.destructible ~= nil then
+                        entity.destructible = e.destructible
+                    end
                     if e.force then
                         entity.force = e.force
                     end
@@ -236,6 +239,9 @@ local function do_place_entities(data)
                 end
                 if e.active ~= nil then
                     entity.active = e.active
+                end
+                if e.destructible ~= nil then
+                    entity.destructible = e.destructible
                 end
                 if e.force then
                     entity.force = e.force
@@ -409,16 +415,13 @@ local function do_chunk(event)
 end
 
 local function on_chunk(event)
-    local force_chunk_until = Public.get_stateful('force_chunk_until')
     local force_chunk = Public.get_stateful('force_chunk')
     local stop_chunk = Public.get_stateful('stop_chunk')
     if stop_chunk then
         return
     end
 
-    local tick = game.tick
-
-    if force_chunk and force_chunk_until > tick then
+    if force_chunk then
         do_chunk(event)
     else
         schedule_chunk(event)

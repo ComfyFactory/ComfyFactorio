@@ -112,8 +112,9 @@ local set_loco_tiles =
                 name = 'crash-site-chest-2'
             end
             if surface.can_place_entity({name = name, position = p[i]}) then
-                local e = surface.create_entity({name = name, position = p[i], force = 'player', create_build_effect_smoke = false})
+                local e = surface.create_entity({name = name, position = p[i], force = 'neutral', create_build_effect_smoke = false})
                 e.minable = false
+                e.destructible = true
                 local inventory = e.get_inventory(defines.inventory.chest)
                 inventory.insert(cargo_boxes[i])
             end

@@ -193,7 +193,7 @@ function Public.reset_main_table()
     this.outside_chests = {}
     this.chests_linked_to = {}
     this.placed_trains_in_zone = {
-        limit = 2,
+        limit = 1,
         randomized = false,
         zones = {}
     }

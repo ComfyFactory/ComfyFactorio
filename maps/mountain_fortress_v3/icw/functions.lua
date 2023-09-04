@@ -15,9 +15,9 @@ local sqrt = math.sqrt
 local fallout_width = 64
 local fallout_debris = {}
 
-for x = fallout_width * -1 - 32, fallout_width + 32, 1 do
+for x = fallout_width * -1 - 42, fallout_width + 42, 1 do
     if x < -31 or x > 31 then
-        for y = fallout_width * -1 - 32, fallout_width + 32, 1 do
+        for y = fallout_width * -1 - 42, fallout_width + 42, 1 do
             local position = {x = x, y = y}
             local fallout = sqrt(position.x ^ 2 + position.y ^ 2)
             if fallout > fallout_width then

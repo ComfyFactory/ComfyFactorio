@@ -216,6 +216,11 @@ else
 end
 
 function Public.build_nest()
+    local final_boss = Public.get('final_boss')
+    if final_boss then
+        return
+    end
+
     local threat = Public.get('threat')
     if threat < 1024 then
         return
@@ -232,8 +237,9 @@ function Public.build_nest()
 end
 
 function Public.build_worm()
+    local final_boss = Public.get('final_boss')
     local threat = Public.get('threat')
-    if threat < 512 then
+    if threat < 512 and not final_boss then
         return
     end
     local worm_building_chance = Public.get('worm_building_chance') --[[@as integer]]

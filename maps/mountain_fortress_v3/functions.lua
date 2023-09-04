@@ -28,15 +28,14 @@ local this = {
     magic_crafters = {index = 1},
     magic_fluid_crafters = {index = 1},
     art_table = {index = 1},
-    surface_cleared = false
-}
-
-local starting_items = {
-    ['pistol'] = 1,
-    ['firearm-magazine'] = 16,
-    ['rail'] = 16,
-    ['wood'] = 16,
-    ['explosives'] = 32
+    surface_cleared = false,
+    starting_items = {
+        ['pistol'] = 1,
+        ['firearm-magazine'] = 16,
+        ['rail'] = 16,
+        ['wood'] = 16,
+        ['explosives'] = 32
+    }
 }
 
 local random_respawn_messages = {
@@ -1405,7 +1404,7 @@ function Public.on_player_joined_game(event)
             local death_message = ({'main.death_mode_warning'})
             Alert.alert_player(player, 15, death_message)
         end
-        for item, amount in pairs(starting_items) do
+        for item, amount in pairs(this.starting_items) do
             player.insert({name = item, count = amount})
         end
     end
@@ -1417,6 +1416,19 @@ function Public.on_player_joined_game(event)
 
     local final_battle = Public.get('final_battle')
     if final_battle then
+        local boss_room = game.get_surface('boss_room')
+        if not boss_room or not boss_room.valid then
+            return
+        end
+        if player.surface.index ~= boss_room.index then
+            local pos = boss_room.find_non_colliding_position('character', game.forces.player.get_spawn_position(boss_room), 3, 0, 5)
+            if pos then
+                player.teleport(pos, boss_room)
+            else
+                pos = game.forces.player.get_spawn_position(boss_room)
+                player.teleport(pos, boss_room)
+            end
+        end
         return
     end
 
@@ -1738,6 +1750,14 @@ Public.uranium_rounds_magazine_ammo = {name = 'uranium-rounds-magazine', count =
 Public.light_oil_ammo = {name = 'light-oil', amount = 100}
 Public.artillery_shell_ammo = {name = 'artillery-shell', count = 15}
 Public.laser_turrent_power_source = {buffer_size = 2400000, power_production = 40000}
+
+function Public.get_func(key)
+    if key then
+        return this[key]
+    else
+        return this
+    end
+end
 
 function Public.reset_func_table()
     this.power_sources = {index = 1}

@@ -121,6 +121,8 @@ function Public.reset_map()
     this.active_surface_index = Public.create_surface()
     -- this.soft_reset_counter = Public.get_reset_counter()
 
+    Public.stateful.clear_all_frames()
+
     Autostash.insert_into_furnace(true)
     Autostash.insert_into_wagon(true)
     Autostash.bottom_button(true)
@@ -248,6 +250,7 @@ function Public.reset_map()
     wave_defense_table.game_lost = false
     wave_defense_table.spawn_position = {x = 0, y = 84}
     WD.alert_boss_wave(true)
+    WD.enable_side_target(true)
     WD.remove_entities(true)
     WD.enable_threat_log(false) -- creates waaaay to many entries in the global table
     WD.check_collapse_position(true)
@@ -438,7 +441,7 @@ local collapse_after_wave_200 = function()
     if not collapse_grace then
         return
     end
-    if Collapse.start_now() then
+    if Collapse.get_start_now() then
         return
     end
 

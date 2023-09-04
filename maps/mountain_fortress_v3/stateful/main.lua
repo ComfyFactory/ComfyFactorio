@@ -23,8 +23,7 @@ Event.add(
         if not objectives then
             return
         end
-
-        if name == objectives.research_level_selection then
+        if name == objectives.research_level_selection.name then
             objectives.research_level_count = objectives.research_level_count + 1
         end
     end

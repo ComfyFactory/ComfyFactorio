@@ -7,6 +7,7 @@ local Difficulty = require 'modules.difficulty_vote_by_amount'
 local Gui = require 'utils.gui'
 local Color = require 'utils.color_presets'
 local SpamProtection = require 'utils.spam_protection'
+local Polls = require 'utils.gui.poll'
 
 local format_number = require 'util'.format_number
 
@@ -202,6 +203,7 @@ local function on_player_joined_game(event)
 end
 
 local function changed_surface(player)
+    local poll_button = Polls.main_button_name
     local rpg_button = RPG.draw_main_frame_name
     local rpg_frame = RPG.main_frame_name
     local rpg_settings = RPG.settings_frame_name
@@ -213,6 +215,7 @@ local function changed_surface(player)
     local spectate = player.gui.top[spectate_button_name]
     local minimap_button = player.gui.top['minimap_button']
     local rpg_b = player.gui.top[rpg_button]
+    local poll_b = player.gui.top[poll_button]
     local rpg_f = player.gui.screen[rpg_frame]
     local rpg_s = player.gui.screen[rpg_settings]
     local diff = player.gui.top[Difficulty.top_button_name]
@@ -247,6 +250,9 @@ local function changed_surface(player)
         end
         if rpg_b and not rpg_b.visible then
             rpg_b.visible = true
+        end
+        if poll_b and not poll_b.visible then
+            poll_b.visible = true
         end
         if minimap_button and not minimap_button.visible then
             minimap_button.visible = false
@@ -284,6 +290,9 @@ local function changed_surface(player)
         if rpg_b then
             rpg_b.visible = false
         end
+        if poll_b then
+            poll_b.visible = false
+        end
         if spell_cast_buttons and spell_cast_buttons.visible then
             spell_cast_buttons.visible = false
         end
@@ -311,6 +320,15 @@ local function changed_surface(player)
             end
         end
     else
+        if poll_b then
+            poll_b.visible = false
+        end
+        if rpg_b then
+            rpg_b.visible = false
+        end
+        if spectate then
+            spectate.visible = false
+        end
         if info and info.visible then
             info.visible = false
         end
