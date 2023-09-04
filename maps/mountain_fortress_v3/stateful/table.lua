@@ -477,6 +477,10 @@ local apply_settings_token =
                     settings.test_mode = false
                     settings.rounds_survived = 0
                     settings.buffs = {}
+                    local message = ({'stateful.reset'})
+                    local message_discord = ({'stateful.reset_discord'})
+                    game.print(message)
+                    Server.to_discord_embed(message_discord)
 
                     Server.set_data(dataset, dataset_key, settings)
                 end
