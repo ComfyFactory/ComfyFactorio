@@ -11,8 +11,8 @@ local dataset_key = 'scrap_towny_ffa'
 
 local Public = {}
 
-local map_width = 2560
-local map_height = 2560
+local map_width = 3840
+local map_height = 3840
 
 local set_victory_length_token =
     Token.register(
@@ -143,7 +143,7 @@ function Public.initialize()
     mgs.water = 0.5
     mgs.peaceful_mode = false
     mgs.starting_area = 'none'
-    mgs.terrain_segmentation = 3
+    mgs.terrain_segmentation = 3.5
     -- terrain size is 64 x 64 chunks, water size is 80 x 80
     mgs.width = map_width
     mgs.height = map_height
@@ -166,7 +166,6 @@ function Public.initialize()
     }
     mgs.seed = math_random(100000, 9999999)
 
-    log(serpent.block(mgs))
     if not this.active_surface_index then
         this.active_surface_index = game.create_surface('towny', mgs).index
     else
