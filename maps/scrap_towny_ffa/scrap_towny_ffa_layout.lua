@@ -6,7 +6,21 @@ local Scrap = require 'maps.scrap_towny_ffa.scrap'
 local table_insert = table.insert
 local math_random = math.random
 local math_floor = math.floor
-local math_abs = math.abs
+
+local start_ground_tiles = {
+    'grass-1',
+    'grass-1',
+    'grass-2',
+    'sand-2',
+    'grass-1',
+    'grass-4',
+    'sand-2',
+    'grass-3',
+    'grass-4',
+    'grass-2',
+    'sand-3',
+    'grass-4'
+}
 
 local scrap_entities = {
     -- simple entity with owner
@@ -281,6 +295,28 @@ local function on_chunk_generated(event)
     local position
     local noise
 
+    for x = 0, 31, 1 do
+        for y = 0, 31, 1 do
+            position = {x = left_top_x + x, y = left_top_y + y}
+            if math_random(1, 3) > 1 then
+                local tile = surface.get_tile(position)
+                if not tile.collides_with('water-tile') then
+                    noise = get_noise('dungeon_sewer', position, seed)
+                    local index = math_floor(noise * 32) % 11 + 1
+                    surface.set_tiles({{name = start_ground_tiles[index], position = position}}, true)
+                end
+            end
+            if math_random(1, 3) > 1 then
+                if not surface.get_tile(position).collides_with('resource-layer') then
+                    noise = get_noise('scrap_towny_ffa', position, seed)
+                    if is_scrap_area(noise) then
+                        place_scrap(surface, position)
+                    end
+                end
+            end
+        end
+    end
+
     local chunk_position = event.position
     --log('chunk_position = {' .. chunk_position.x .. ',' .. chunk_position.y .. '}')
     if chunk_position.x >= -33 and chunk_position.x <= 32 and chunk_position.y >= -33 and chunk_position.y <= 32 then
@@ -299,6 +335,7 @@ local function on_chunk_generated(event)
             return
         end
     end
+
     if chunk_position.x < -33 or chunk_position.x > 32 or chunk_position.y < -33 or chunk_position.y > 32 then
         local area = {{x = left_top_x, y = left_top_y}, {x = left_top_x + 31, y = left_top_y + 31}}
         local entities = surface.find_entities(area)
@@ -314,20 +351,6 @@ local function on_chunk_generated(event)
         return
     end
 
-    for x = 0, 31, 1 do
-        for y = 0, 31, 1 do
-            if math_random(1, 3) > 1 then
-                position = {x = left_top_x + x, y = left_top_y + y}
-                if not surface.get_tile(position).collides_with('resource-layer') then
-                    noise = get_noise('scrap_towny_ffa', position, seed)
-                    if is_scrap_area(noise) then
-                        surface.set_tiles({{name = 'dirt-' .. math_floor(math_abs(noise) * 6) % 6 + 2, position = position}}, true)
-                        place_scrap(surface, position)
-                    end
-                end
-            end
-        end
-    end
     move_away_biteys(surface, event.area)
     --this.chunk_generated[key] = true
 end
