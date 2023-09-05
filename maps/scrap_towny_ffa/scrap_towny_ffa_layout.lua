@@ -6,7 +6,6 @@ local Scrap = require 'maps.scrap_towny_ffa.scrap'
 local table_insert = table.insert
 local math_random = math.random
 local math_floor = math.floor
-local math_abs = math.abs
 
 local start_ground_tiles = {
     'grass-1',
