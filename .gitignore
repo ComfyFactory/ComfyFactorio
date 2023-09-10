@@ -2,7 +2,9 @@
 .history/
 .git/
 maps/biter_battles_v3/
-
+# vim
+*.swp
+*.swo
 
 #==Mac ignores==
 # General
