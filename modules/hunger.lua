@@ -1,6 +1,7 @@
 -- hunger module by mewmew --
 local Public = {}
 local P = require 'utils.player_modifiers'
+local RPG = require 'modules.rpg.table'
 
 local starve_messages = {' ran out of foodstamps.', ' starved.', ' should not have skipped breakfast today.'}
 
@@ -175,6 +176,9 @@ local function on_player_used_capsule(event)
     if event.item.name == 'raw-fish' then
         local player = game.players[event.player_index]
         if player.character.health < player.character.prototype.max_health + player.character_health_bonus + player.force.character_health_bonus then
+            return
+        end
+        if RPG.get_value_from_player(player.index, 'enable_entity_spawn') then
             return
         end
         Public.hunger_update(player, player_hunger_fish_food_value)
