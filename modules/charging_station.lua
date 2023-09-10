@@ -28,6 +28,7 @@ local function discharge_accumulators(surface, position, force, power_needs)
                 else
                     power_drained = power_drained + power_needs
                     accu.energy = accu.energy - power_needs
+                    break
                 end
             elseif power_needs <= 0 then
                 break
