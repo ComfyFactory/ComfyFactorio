@@ -345,7 +345,7 @@ local function insert_item_into_chest(stack, chests, filtered_chests, name, floa
         ['logistic-container'] = true,
         ['linked-container'] = true
     }
-    --Attemp to store in chest that stored last same item
+    --Attempt to store in chest that stored last same item
     if previous_insert.name == name and previous_insert.full ~= nil then
         local chest_inventory = chests.inventory[previous_insert.full]
         if chest_inventory and chest_inventory.can_insert(stack) then
