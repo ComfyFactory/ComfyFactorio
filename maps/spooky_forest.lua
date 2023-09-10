@@ -15,7 +15,7 @@ require 'modules.biters_avoid_damage'
 require 'modules.biters_double_damage'
 require 'modules.spawners_contain_biters'
 require 'modules.rocks_broken_paint_tiles'
-require 'modules.rpg'
+local RPG = require 'modules.rpg.main'
 require 'modules.hunger'
 
 local shapes = require 'tools.shapes'
@@ -473,6 +473,7 @@ local function on_player_joined_game(event)
             ['enemy-base'] = {frequency = 'none', size = 'none', richness = 'none'}
         }
         game.create_surface('spooky_forest', map_gen_settings)
+        RPG.set_surface_name('spooky_forest')
         local surface = game.surfaces['spooky_forest']
         surface.daytime = 0.5
         surface.freeze_daytime = 1
