@@ -7,6 +7,7 @@ local Gui = require 'utils.gui'
 local Token = require 'utils.token'
 local SpamProtection = require 'utils.spam_protection'
 local Core = require 'utils.core'
+local LinkedChests = require 'maps.mountain_fortress_v3.icw.linked_chests'
 
 local deepcopy = table.deepcopy
 local random = math.random
@@ -343,7 +344,7 @@ function Public.hazardous_debris()
     end
 end
 
-local function input_cargo(wagon, chest)
+local function input_cargo(wagon, chest, wagon_inventory, chest_inventory)
     if not chest.request_from_buffers then
         goto continue
     end
@@ -354,12 +355,10 @@ local function input_cargo(wagon, chest)
         goto continue
     end
 
-    local wagon_inventory = wagon_entity.get_inventory(defines.inventory.cargo_wagon)
     if wagon_inventory.is_empty() then
         goto continue
     end
 
-    local chest_inventory = chest.get_inventory(defines.inventory.chest)
     local free_slots = 0
     if chest_inventory.supports_bar() then
         for i = 1, chest_inventory.get_bar() - 1, 1 do
@@ -390,7 +389,7 @@ local function input_cargo(wagon, chest)
     ::continue::
 end
 
-local function output_cargo(wagon, passive_chest)
+local function output_cargo(wagon, passive_chest, chest2, chest1)
     if not validate_entity(wagon.entity) then
         goto continue
     end
@@ -398,8 +397,6 @@ local function output_cargo(wagon, passive_chest)
     if not passive_chest.valid then
         goto continue
     end
-    local chest1 = passive_chest.get_inventory(defines.inventory.chest)
-    local chest2 = wagon.entity.get_inventory(defines.inventory.cargo_wagon)
     for i = 1, #chest1 do
         local t = chest1[i]
         if t and t.valid then
@@ -610,7 +607,7 @@ function Public.create_wagon_room(icw, wagon)
     local fishes = {}
 
     if wagon.entity.type == 'locomotive' then
-        for x = -3, 2, 1 do
+        for x = -6, 5, 1 do
             for y = 10, 12, 1 do
                 tiles[#tiles + 1] = {name = 'water', position = {x, y}}
                 fishes[#fishes + 1] = {name = 'fish', position = {x, y}}
@@ -700,6 +697,18 @@ function Public.create_wagon_room(icw, wagon)
             left_3.destructible = false
             left_3.minable = false
 
+            local left_4 =
+                surface.create_entity(
+                {
+                    name = 'logistic-chest-requester',
+                    position = {position1[1] - 3, position1[2]},
+                    force = 'neutral',
+                    create_build_effect_smoke = false
+                }
+            )
+            left_4.destructible = false
+            left_4.minable = false
+
             local right_1 =
                 surface.create_entity(
                 {
@@ -735,6 +744,18 @@ function Public.create_wagon_room(icw, wagon)
             )
             right_3.destructible = false
             right_3.minable = false
+
+            local right_4 =
+                surface.create_entity(
+                {
+                    name = 'logistic-chest-passive-provider',
+                    position = {position2[1] + 3, position2[2]},
+                    force = 'neutral',
+                    create_build_effect_smoke = false
+                }
+            )
+            right_4.destructible = false
+            right_4.minable = false
 
             local bottom_left_1 =
                 surface.create_entity(
@@ -772,6 +793,18 @@ function Public.create_wagon_room(icw, wagon)
             bottom_left_3.destructible = false
             bottom_left_3.minable = false
 
+            local bottom_left_4 =
+                surface.create_entity(
+                {
+                    name = 'logistic-chest-requester',
+                    position = {position3[1] - 3, position3[2]},
+                    force = 'neutral',
+                    create_build_effect_smoke = false
+                }
+            )
+            bottom_left_4.destructible = false
+            bottom_left_4.minable = false
+
             local bottom_right_1 =
                 surface.create_entity(
                 {
@@ -808,12 +841,38 @@ function Public.create_wagon_room(icw, wagon)
             bottom_right_3.destructible = false
             bottom_right_3.minable = false
 
+            local bottom_right_3 =
+                surface.create_entity(
+                {
+                    name = 'logistic-chest-passive-provider',
+                    position = {position4[1] + 2, position4[2]},
+                    force = 'neutral',
+                    create_build_effect_smoke = false
+                }
+            )
+            bottom_right_3.destructible = false
+            bottom_right_3.minable = false
+
+            local bottom_right_4 =
+                surface.create_entity(
+                {
+                    name = 'logistic-chest-passive-provider',
+                    position = {position4[1] + 3, position4[2]},
+                    force = 'neutral',
+                    create_build_effect_smoke = false
+                }
+            )
+            bottom_right_4.destructible = false
+            bottom_right_4.minable = false
+
             wagon.transfer_entities = {left_1, right_1}
             wagon.transfer_entities = {left_2, right_2}
             wagon.transfer_entities = {left_3, right_3}
+            wagon.transfer_entities = {left_4, right_4}
             wagon.transfer_entities = {bottom_left_1, bottom_right_1}
             wagon.transfer_entities = {bottom_left_2, bottom_right_2}
             wagon.transfer_entities = {bottom_left_3, bottom_right_3}
+            wagon.transfer_entities = {bottom_left_4, bottom_right_4}
         else
             local e1 =
                 surface.create_entity(
@@ -1185,15 +1244,18 @@ function Public.item_transfer()
     local icw = ICW.get()
     local wagon
     icw.current_wagon_index, wagon = next(icw.wagons, icw.current_wagon_index)
-    if not wagon then
+    if not wagon or not wagon.entity or not wagon.entity.valid or not wagon.transfer_entities then
         return
     end
-    if validate_entity(wagon.entity) and wagon.transfer_entities then
-        for k, e in pairs(wagon.transfer_entities) do
-            if validate_entity(e) then
-                transfer_functions[e.name](wagon, e)
-            end
+
+    local wagon_inventory = wagon.entity.get_inventory(defines.inventory.cargo_wagon)
+    for i = 1, #wagon.transfer_entities do
+        local chest = wagon.transfer_entities[i]
+        if not chest or not chest.valid then
+            break
         end
+        local chest_inventory = chest.get_inventory(defines.inventory.chest)
+        transfer_functions[chest.name](wagon, chest, wagon_inventory, chest_inventory)
     end
 end
 
