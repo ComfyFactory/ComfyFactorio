@@ -985,9 +985,10 @@ Event.on_nth_tick(
     120,
     function()
         local containers = this.main_containers
-        local loco_surface = WPT.get('loco_surface')
+        local active_surface_index = WPT.get('active_surface_index')
+
         for index, container in pairs(containers) do
-            if container and container.chest and container.chest.valid and container.chest.surface.index ~= loco_surface.index then
+            if container and container.chest and container.chest.valid and container.chest.surface.index == active_surface_index then
                 if not WPT.locomotive.is_around_train(container.chest) then
                     remove_chest(container.unit_number)
                 end
