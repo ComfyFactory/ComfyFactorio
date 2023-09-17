@@ -337,6 +337,9 @@ local function on_pre_player_mined_item(event)
     end
     refund_player(player, entity)
     remove_chest(entity.unit_number)
+    AG.append_scenario_history(player, entity, player.name .. ' mined chest (' .. entity.unit_number .. ')')
+    create_message(player, 'Mined chest', entity.position, nil)
+
     local data = this.linked_gui[player.name]
     if not data then
         return
@@ -966,6 +969,8 @@ function Public.migrate(source, destination)
 
     this.main_containers[destination.unit_number] = source_data
 
+    destination.minable = false
+    destination.destructible = false
     restore_link(source.unit_number, destination.unit_number)
 
     this.main_containers[source.unit_number] = nil
@@ -988,13 +993,20 @@ Event.on_nth_tick(
         local active_surface_index = WPT.get('active_surface_index')
 
         for index, container in pairs(containers) do
-            if container and container.chest and container.chest.valid and container.chest.surface.index == active_surface_index then
-                if not WPT.locomotive.is_around_train(container.chest) then
-                    remove_chest(container.unit_number)
+            if container then
+                if container.chest and container.chest.valid then
+                    if container.chest.surface.index == active_surface_index then
+                        if not WPT.locomotive.is_around_train(container.chest) then
+                            remove_chest(container.unit_number)
+                        end
+                    end
+                    if container.mode == 1 then
+                        container.chest.minable = false
+                    end
                 end
-            end
-            if container and not container.chest or not container.chest.valid then
-                containers[index] = nil
+                if not container.chest or not container.chest.valid then
+                    containers[index] = nil
+                end
             end
         end
     end
