@@ -898,10 +898,6 @@ local function on_entity_settings_pasted(event)
         return
     end
 
-    if source_container.linked_to and not destination_container.linked_to then
-        goto continue
-    end
-
     if source_container.mode == 1 and destination_container.mode == 1 then
         player.print(module_name .. 'Destination chest cannot be linked since source chest is of same mode.', Color.fail)
         destination_container.chest.link_id = destination_container.link_id
@@ -932,7 +928,11 @@ local function on_entity_settings_pasted(event)
         return
     end
 
-    ::continue::
+    if destination_container.mode == 1 then
+        player.print(module_name .. 'The destination chest cannot be linked.', Color.fail)
+        destination_container.chest.link_id = destination_container.link_id
+        return
+    end
 
     if source_share and source_share.name ~= '' then
         AG.append_scenario_history(player, destination_container.chest, player.name .. ' pasted settings from chest (' .. source_container.unit_number .. ') to chest (' .. destination_container.unit_number .. ')')
@@ -942,6 +942,8 @@ local function on_entity_settings_pasted(event)
         destination_container.link_id = source_link_id
         destination_container.chest.link_id = source_link_id
         destination_container.mode = 2
+        destination_container.chest.minable = false
+        destination_container.chest.destructible = false
     end
 
     player.print(module_name .. 'Successfully pasted settings.', Color.success)
