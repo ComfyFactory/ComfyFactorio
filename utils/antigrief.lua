@@ -35,6 +35,7 @@ local this = {
     message_history = {},
     cancel_crafting_history = {},
     deconstruct_history = {},
+    scenario_history = {},
     whitelist_types = {},
     permission_group_editing = {},
     players_warned = {},
@@ -1165,6 +1166,28 @@ function Public.damage_entity_threshold(value)
     end
 
     return this.damage_entity_threshold
+end
+
+--- Appends a new message to the scenario history tab in the admin panel.
+---@param message string
+function Public.append_scenario_history(player, entity, message)
+    if not this.scenario_history then
+        this.scenario_history = {}
+    end
+    if #this.scenario_history > this.limit + 8000 then
+        this.scenario_history = {}
+    end
+    local t = abs(floor((game.tick) / 60))
+    t = FancyTime.short_fancy_time(t)
+    local str = '[' .. t .. '] '
+    str = str .. '[color=yellow]' .. message .. '[/color]'
+    str = str .. ' at X:'
+    str = str .. floor(entity.position.x)
+    str = str .. ' Y:'
+    str = str .. floor(entity.position.y)
+    str = str .. ' '
+    str = str .. 'surface:' .. player.surface.index
+    increment(this.scenario_history, str)
 end
 
 --- Returns the table.

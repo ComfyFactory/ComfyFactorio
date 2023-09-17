@@ -42,13 +42,17 @@ local function remove_player_data(player)
     end
     local player_data = this.players[player.index]
     if player_data then
+        if player_data.render_object then
+            rendering.destroy(player_data.render_object)
+        end
+
         this.players[player.index] = nil
     end
 end
 
 local function remove_camera_frame(player)
-    if player.gui.center[locate_player_frame_name] then
-        player.gui.center[locate_player_frame_name].destroy()
+    if player.gui.screen[locate_player_frame_name] then
+        player.gui.screen[locate_player_frame_name].destroy()
         remove_player_data(player)
         return
     end
@@ -78,34 +82,56 @@ local function validate_frame(frame)
     return true
 end
 
-local function create_mini_camera_gui(player, target)
+local function create_mini_camera_gui(player, target, zoom, render)
     if not player or not player.valid then
         return
     end
 
-    if player.gui.center[locate_player_frame_name] then
-        player.gui.center[locate_player_frame_name].destroy()
+    if player.gui.screen[locate_player_frame_name] then
+        player.gui.screen[locate_player_frame_name].destroy()
         remove_player_data(player)
         return
     end
+    local player_data
 
     if validate_player(target) then
-        local player_data = create_player_data(player)
+        player_data = create_player_data(player)
         player_data.target = target
     else
         remove_player_data(player)
         return
     end
 
-    local frame = player.gui.center[locate_player_frame_name]
+    local frame = player.gui.screen[locate_player_frame_name]
     if not validate_frame(frame) then
-        frame = player.gui.center.add({type = 'frame', name = locate_player_frame_name, caption = target.name})
+        frame = player.gui.screen.add({type = 'frame', name = locate_player_frame_name, caption = target.name})
     end
+
+    frame.force_auto_center()
 
     local surface = tonumber(target.surface.index)
 
     if frame[player_frame_name] and frame[player_frame_name].valid then
         frame[player_frame_name].destroy()
+    end
+
+    if render then
+        local render_object =
+            rendering.draw_text {
+            text = '▼',
+            surface = target.surface,
+            target = {target.position.x, target.position.y - 3},
+            color = {r = 0.98, g = 0.66, b = 0.22},
+            scale = 3,
+            players = {player.index},
+            font = 'heading-1',
+            alignment = 'center',
+            scale_with_zoom = false
+        }
+
+        if player_data then
+            player_data.render_object = render_object
+        end
     end
 
     local camera =
@@ -114,7 +140,7 @@ local function create_mini_camera_gui(player, target)
             type = 'camera',
             name = player_frame_name,
             position = target.position,
-            zoom = 0.4,
+            zoom = zoom or 0.4,
             surface_index = surface
         }
     )

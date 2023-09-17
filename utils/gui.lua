@@ -58,6 +58,9 @@ local main_frame_name = Public.uid_name()
 local main_button_name = Public.uid_name()
 local close_button_name = Public.uid_name()
 
+Public.button_style = 'mod_gui_button'
+Public.frame_style = 'non_draggable_frame'
+
 Public.top_main_gui_button = main_button_name
 Public.main_frame_name = main_frame_name
 
