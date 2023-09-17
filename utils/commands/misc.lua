@@ -250,6 +250,8 @@ commands.add_command(
         game.print('[CREATIVE] ' .. player.name .. ' has activated creative-mode!', Color.warning)
         Server.to_discord_bold(table.concat {'[Creative] ' .. player.name .. ' has activated creative-mode!'})
 
+        Modifiers.set('creative_enabled', true)
+
         for _, iter_player in pairs(game.connected_players) do
             if iter_player.character ~= nil then
                 if iter_player.get_inventory(defines.inventory.character_armor) then
@@ -290,6 +292,7 @@ commands.add_command(
                 end
                 iter_player.print('[CREATIVE] Inserted all base items.', Color.success)
                 this.creative_enabled = true
+                this.creative_are_you_sure = false
             end
         end
     end
@@ -482,6 +485,7 @@ end
 
 Event.on_init(
     function()
+        Modifiers.set('creative_enabled', false)
         this.creative_are_you_sure = false
         this.creative_enabled = false
         this.spaghetti_are_you_sure = false
@@ -490,6 +494,7 @@ Event.on_init(
 )
 
 function Public.reset()
+    Modifiers.set('creative_enabled', false)
     this.creative_are_you_sure = false
     this.creative_enabled = false
     this.spaghetti_are_you_sure = false

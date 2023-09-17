@@ -15,6 +15,7 @@ local main_gui_tabs = {}
 local screen_elements = {}
 local on_visible_handlers = {}
 local on_pre_hidden_handlers = {}
+local remove_data_recursively
 
 -- global
 local data = {}
@@ -57,6 +58,9 @@ local main_frame_name = Public.uid_name()
 local main_button_name = Public.uid_name()
 local close_button_name = Public.uid_name()
 
+Public.button_style = 'mod_gui_button'
+Public.frame_style = 'non_draggable_frame'
+
 Public.top_main_gui_button = main_button_name
 Public.main_frame_name = main_frame_name
 
@@ -66,6 +70,7 @@ Public.main_frame_name = main_frame_name
 local function validate_frame_and_destroy(align, frame)
     local get_frame = align[frame]
     if get_frame and get_frame.valid then
+        remove_data_recursively(frame)
         get_frame.destroy()
     end
 end
@@ -219,7 +224,6 @@ function Public.add_main_frame_with_toolbar(player, align, set_frame_name, set_s
     return main_frame, inside_table
 end
 
-local remove_data_recursively
 -- Removes data associated with LuaGuiElement and its children recursively.
 function Public.remove_data_recursively(element)
     set_data(element, nil)
@@ -484,12 +488,14 @@ function Public.clear_main_frame(player)
     end
     local frame = Public.get_main_frame(player)
     if frame then
+        remove_data_recursively(frame)
         frame.destroy()
     end
 end
 
 function Public.clear_all_center_frames(player)
     for _, child in pairs(player.gui.center.children) do
+        remove_data_recursively(child)
         child.destroy()
     end
 end
@@ -497,6 +503,7 @@ end
 function Public.clear_all_screen_frames(player)
     for _, child in pairs(player.gui.screen.children) do
         if not screen_elements[child.name] then
+            remove_data_recursively(child)
             child.destroy()
         end
     end
@@ -504,10 +511,12 @@ end
 
 function Public.clear_all_active_frames(player)
     for _, child in pairs(player.gui.left.children) do
+        remove_data_recursively(child)
         child.destroy()
     end
     for _, child in pairs(player.gui.screen.children) do
         if not screen_elements[child.name] then
+            remove_data_recursively(child)
             child.destroy()
         end
     end
@@ -599,6 +608,7 @@ local function draw_main_frame(player)
     Public.clear_all_active_frames(player)
 
     if Public.get_main_frame(player) then
+        remove_data_recursively(Public.get_main_frame(player))
         Public.get_main_frame(player).destroy()
     end
 
@@ -794,6 +804,7 @@ Public.on_click(
         local player = event.player
         local frame = Public.get_parent_frame(player)
         if frame then
+            remove_data_recursively(frame)
             frame.destroy()
         else
             draw_main_frame(player)
@@ -811,6 +822,7 @@ Public.on_click(
         local player = event.player
         local frame = Public.get_parent_frame(player)
         if frame then
+            remove_data_recursively(frame)
             frame.destroy()
         end
     end

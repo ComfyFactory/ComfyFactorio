@@ -75,7 +75,7 @@ function Public.update_player_modifiers(player)
             if disabled_modifiers and disabled_modifiers[k] then
                 player[modifier] = 0
             else
-                if modifiers[k] == 'character_inventory_slots_bonus' then
+                if modifiers[k] == 'character_inventory_slots_bonus' and not this.creative_enabled then
                     local inv = player.get_inventory(defines.inventory.character_main)
                     if inv and #inv > this.rpg_inventory_slot_limit + 80 then
                         player[modifier] = this.rpg_inventory_slot_limit - 20
@@ -106,8 +106,10 @@ function Public.update_single_modifier(player, modifier, category, value)
                 end
                 player_modifiers[k][category] = value
 
-                if category == 'rpg' and modifiers[k] == 'character_inventory_slots_bonus' and player_modifiers[k][category] >= this.rpg_inventory_slot_limit then
-                    player_modifiers[k][category] = this.rpg_inventory_slot_limit - player.force.character_inventory_slots_bonus
+                if not this.creative_enabled then
+                    if category == 'rpg' and modifiers[k] == 'character_inventory_slots_bonus' and player_modifiers[k][category] >= this.rpg_inventory_slot_limit then
+                        player_modifiers[k][category] = this.rpg_inventory_slot_limit - player.force.character_inventory_slots_bonus
+                    end
                 end
             else
                 player_modifiers[k] = value

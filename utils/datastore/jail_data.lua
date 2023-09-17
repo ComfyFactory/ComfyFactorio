@@ -366,7 +366,12 @@ local function teleport_player_to_gulag(player, action)
         if get_tile.valid and get_tile.name == 'out-of-map' then
             player.teleport(surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 128, 1), surface.name)
         else
-            player.teleport(surface.find_non_colliding_position('character', p, 128, 1), surface.name)
+            local valid_to_teleport = surface.find_non_colliding_position('character', p, 128, 1)
+            if valid_to_teleport then
+                player.teleport(valid_to_teleport, surface.name)
+            else
+                player.teleport(game.forces.player.get_spawn_position(surface), surface.name)
+            end
         end
 
         get_player_data(player, true)

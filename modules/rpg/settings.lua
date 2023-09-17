@@ -709,6 +709,10 @@ function Public.extra_settings(player)
 
     Gui.set_data(save_button, data)
 
+    if not main_frame or not main_frame.valid then
+        return
+    end
+
     player.opened = main_frame
     main_frame.auto_center = true
 end

@@ -150,7 +150,7 @@ local function turn_off_global_speakers(player)
         for i, speaker in pairs(speakers) do
             if speaker.parameters.playback_globally == true then
                 speaker.surface.create_entity({name = 'massive-explosion', position = speaker.position})
-                speaker.die('player')
+                speaker.destroy()
                 counter = counter + 1
             end
         end
@@ -248,7 +248,8 @@ local function draw_events(data)
         ['Landfill History'] = antigrief.landfill_history,
         ['Corpse Looting History'] = antigrief.corpse_history,
         ['Cancel Crafting History'] = antigrief.cancel_crafting_history,
-        ['Deconstruct History'] = antigrief.deconstruct_history
+        ['Deconstruct History'] = antigrief.deconstruct_history,
+        ['Scenario History'] = antigrief.scenario_history
     }
 
     local scroll_pane
@@ -515,6 +516,9 @@ local function create_admin_panel(data)
     end
     if antigrief.deconstruct_history then
         table.insert(histories, 'Deconstruct History')
+    end
+    if antigrief.scenario_history then
+        table.insert(histories, 'Scenario History')
     end
 
     if #histories == 0 then

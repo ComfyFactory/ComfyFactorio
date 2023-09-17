@@ -123,6 +123,7 @@ function Public.reset_main_table()
     this.force_chunk = false
     this.bw = false
     this.allow_decon = true
+    this.block_non_trusted_opening_trains = true
     this.allow_decon_main_surface = true
     this.flamethrower_damage = {}
     this.mined_scrap = 0
@@ -165,14 +166,14 @@ function Public.reset_main_table()
         train_upgrade_contribution = 0,
         xp_points = 0,
         health_upgrades = 0,
-        pickaxe_tier = 1,
-        chests_outside_upgrades = 1
+        pickaxe_tier = 1
     }
     this.orbital_strikes = {
         enabled = true
     }
     this.pickaxe_speed_per_purchase = 0.07
     this.breached_wall = 1
+    this.final_battle = false
     this.left_top = {
         x = 0,
         y = 0
@@ -189,10 +190,8 @@ function Public.reset_main_table()
     this.main_market_items = {}
     this.spill_items_to_surface = false
     this.spectate = {}
-    this.outside_chests = {}
-    this.chests_linked_to = {}
     this.placed_trains_in_zone = {
-        limit = 2,
+        limit = 1,
         randomized = false,
         zones = {}
     }
@@ -247,6 +246,7 @@ function Public.reset_main_table()
     this.market_announce = game.tick + 1200
     this.check_heavy_damage = true
     this.prestige_system_enabled = false
+    this.mystical_chest_completed = 0
     this.mystical_chest_enabled = true
     this.check_if_threat_below_zero = true
     this.mc_rewards = {

@@ -7,6 +7,7 @@ local Difficulty = require 'modules.difficulty_vote_by_amount'
 local RPG = require 'modules.rpg.main'
 local Gui = require 'utils.gui'
 local Alert = require 'utils.alert'
+local Color = require 'utils.color_presets'
 
 local rpg_main_frame = RPG.main_frame_name
 local random = math.random
@@ -32,6 +33,12 @@ local valid_armors = {
 local non_valid_vehicles = {
     ['car'] = true,
     ['spider-vehicle'] = true
+}
+
+local denied_train_types = {
+    ['locomotive'] = true,
+    ['cargo-wagon'] = true,
+    ['artillery-wagon'] = true
 }
 
 local function add_random_loot_to_main_market(rarity)
@@ -97,7 +104,7 @@ local messages = {
 
 local function is_around_train(data)
     local entity = data.entity
-    local locomotive_aura_radius = data.locomotive_aura_radius + 20
+    local locomotive_aura_radius = data.locomotive_aura_radius
     local loco = data.locomotive.position
     local position = entity.position
     local inside = ((position.x - loco.x) ^ 2 + (position.y - loco.y) ^ 2) < locomotive_aura_radius ^ 2
@@ -370,7 +377,7 @@ local function get_driver_action(entity)
         local total_time = player.online_time + Session.get_session_player(player)
 
         if total_time and total_time < playtime_required_to_drive_train then
-            player.print('[color=blue][Locomotive][/color] Not enough playtime acquired to drive train.')
+            player.print('[color=blue][Locomotive][/color] Not enough playtime acquired to drive the train.')
             driver.driving = false
             return
         end
@@ -460,6 +467,7 @@ local function on_research_finished(event)
         local message = ({'locomotive.discharge_unlocked'})
         Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac', 0.1)
     end
+
     if name == 'artillery' then
         local message = ({'locomotive.artillery_unlocked'})
         Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac', 0.1)
@@ -557,6 +565,33 @@ local function on_player_driving_changed_state(event)
     end
 end
 
+local function on_gui_opened(event)
+    local player = game.players[event.player_index]
+    if not player or not player.valid then
+        return
+    end
+    local entity = event.entity
+    if not entity or not entity.valid then
+        return
+    end
+
+    if not denied_train_types[entity.type] then
+        return
+    end
+
+    local block_non_trusted_opening_trains = Public.get('block_non_trusted_opening_trains')
+    if not block_non_trusted_opening_trains then
+        return
+    end
+
+    local trusted_player = Session.get_trusted_player(player)
+
+    if not trusted_player then
+        player.print('[Antigrief] You have not grown accustomed to this technology yet.', Color.warning)
+        player.opened = nil
+    end
+end
+
 function Public.boost_players_around_train()
     local rpg = RPG.get('rpg_t')
     local active_surface_index = Public.get('active_surface_index')
@@ -598,7 +633,6 @@ function Public.is_around_train(entity)
         return false
     end
 
-
     local surface = game.surfaces[active_surface_index]
     local upgrades = Public.get('upgrades')
 
@@ -623,6 +657,12 @@ function Public.render_train_hp()
     local upgrades = Public.get('upgrades')
     if not locomotive or not locomotive.valid then
         return
+    end
+
+    local health_text = Public.get('health_text')
+
+    if health_text then
+        rendering.destroy(health_text)
     end
 
     Public.set(
@@ -724,10 +764,12 @@ local function tick()
 end
 
 Event.on_nth_tick(5, tick)
+Event.on_nth_tick(150, set_carriages)
 
 Event.add(defines.events.on_research_finished, on_research_finished)
 Event.add(defines.events.on_player_changed_surface, on_player_changed_surface)
 Event.add(defines.events.on_player_driving_changed_state, on_player_driving_changed_state)
 Event.add(defines.events.on_train_created, set_carriages)
+Event.add(defines.events.on_gui_opened, on_gui_opened)
 
 return Public

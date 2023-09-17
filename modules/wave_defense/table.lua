@@ -9,7 +9,9 @@ Public.events = {
     on_evolution_factor_changed = Event.generate_event_name('on_evolution_factor_changed'),
     on_game_reset = Event.generate_event_name('on_game_reset'),
     on_target_aquired = Event.generate_event_name('on_target_aquired'),
-    on_entity_created = Event.generate_event_name('on_entity_created')
+    on_entity_created = Event.generate_event_name('on_entity_created'),
+    on_biters_evolved = Event.generate_event_name('on_biters_evolved'),
+    on_spawn_unit_group = Event.generate_event_name('on_spawn_unit_group')
 }
 local insert = table.insert
 
@@ -68,6 +70,7 @@ function Public.reset_wave_defense()
     this.get_random_close_spawner_attempts = 5
     this.group_size = 2
     this.last_wave = game.tick
+    this.final_boss = false
     this.max_active_biters = 1280
     this.max_active_unit_groups = 32
     this.max_biter_age = 3600 * 60
@@ -416,6 +419,12 @@ end
 -- @param null
 function Public.pause(boolean)
     this.paused = boolean or false
+end
+
+--- Completely disables wave defense module
+-- @param null
+function Public.disable_spawning_biters(boolean)
+    this.game_lost = boolean or false
 end
 
 --- Toggle debug - when you need to troubleshoot.

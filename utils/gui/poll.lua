@@ -6,7 +6,7 @@ local session = require 'utils.datastore.session_data'
 local Config = require 'utils.gui.config'
 local SpamProtection = require 'utils.spam_protection'
 
-local Class = {}
+local Public = {}
 
 local insert = table.insert
 
@@ -1266,7 +1266,7 @@ Gui.on_click(
 
 Gui.on_click(poll_view_vote_name, vote)
 
-function Class.reset()
+function Public.reset()
     for k, _ in pairs(polls) do
         polls[k] = nil
     end
@@ -1286,11 +1286,11 @@ function Class.reset()
     end
 end
 
-function Class.get_no_notify_players()
+function Public.get_no_notify_players()
     return no_notify_players
 end
 
-function Class.validate(data)
+function Public.validate(data)
     if type(data) ~= 'table' then
         return false, 'argument must be of type table'
     end
@@ -1328,8 +1328,8 @@ function Class.validate(data)
     return true
 end
 
-function Class.poll(data)
-    local suc, error = Class.validate(data)
+function Public.poll(data)
+    local suc, error = Public.validate(data)
     if not suc then
         return false, error
     end
@@ -1383,7 +1383,7 @@ function Class.poll(data)
     return true, id
 end
 
-function Class.poll_result(id)
+function Public.poll_result(id)
     if type(id) ~= 'number' then
         return 'poll-id must be a number'
     end
@@ -1411,7 +1411,7 @@ function Class.poll_result(id)
     return table.concat {'poll #', id, ' not found'}
 end
 
-function Class.send_poll_result_to_discord(id)
+function Public.send_poll_result_to_discord(id)
     if type(id) ~= 'number' then
         Server.to_discord_embed('poll-id must be a number')
         return
@@ -1428,4 +1428,6 @@ function Class.send_poll_result_to_discord(id)
     Server.to_discord_embed(message)
 end
 
-return Class
+Public.main_button_name = main_button_name
+
+return Public

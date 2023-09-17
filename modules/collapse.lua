@@ -6,7 +6,8 @@ local math_floor = math.floor
 local table_shuffle_table = table.shuffle_table
 
 local this = {
-    debug = false
+    debug = false,
+    disabled = false
 }
 Global.register(
     this,
@@ -264,12 +265,21 @@ function Public.get_speed()
     return this.speed
 end
 
-function Public.start_now(status)
-    if status == true then
-        this.start_now = true
-    elseif status == false then
-        this.start_now = false
-    end
+function Public.get_disable_state()
+    return this.disabled
+end
+
+function Public.disable_collapse(state)
+    this.disabled = state or false
+end
+
+function Public.start_now(state)
+    this.start_now = state or false
+
+    return this.start_now
+end
+
+function Public.get_start_now()
     return this.start_now
 end
 
@@ -314,6 +324,10 @@ local function on_init()
 end
 
 local function on_tick()
+    if this.disabled then
+        return
+    end
+
     local tick = game.tick
     if tick % this.speed ~= 0 then
         return

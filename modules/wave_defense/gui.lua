@@ -66,10 +66,19 @@ local function get_threat_gain()
 end
 
 function Public.update_gui(player)
+    local final_boss = Public.get('final_boss')
+    if final_boss then
+        if player.gui.top.wave_defense and player.gui.top.wave_defense.valid then
+            player.gui.top.wave_defense.destroy()
+        end
+        return
+    end
+
     if not player.gui.top.wave_defense then
         create_gui(player)
     end
     local gui = player.gui.top.wave_defense
+
     local biter_health_boost = 1
     local biter_health_boosts = BiterHealthBooster.get('biter_health_boost')
     if biter_health_boost then
