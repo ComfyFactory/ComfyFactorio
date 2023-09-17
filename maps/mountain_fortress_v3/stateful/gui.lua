@@ -527,6 +527,7 @@ local function update_data()
     local players = game.connected_players
     local stateful = Public.get_stateful()
     local breached_wall = Public.get('breached_wall')
+    breached_wall = breached_wall - 1
     local wave_number = WD.get('wave_number')
     local converted_chests = LinkedChests.get('converted_chests')
     local collection = stateful.collection
@@ -549,7 +550,6 @@ local function update_data()
                 data.rounds_survived_label.caption = stateful.rounds_survived
             end
             if data.randomized_zone_label and data.randomized_zone_label.valid then
-                breached_wall = breached_wall - 1
                 if breached_wall >= stateful.objectives.randomized_zone then
                     data.randomized_zone_label.caption = breached_wall .. '/' .. stateful.objectives.randomized_zone .. ' [img=utility/check_mark_green]'
                     data.randomized_zone_label.tooltip = {'stateful.tooltip_completed'}
