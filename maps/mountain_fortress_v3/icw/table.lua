@@ -1,4 +1,5 @@
 local Global = require 'utils.global'
+local LinkedChests = require 'maps.mountain_fortress_v3.icw.linked_chests'
 
 local this = {}
 Global.register(
@@ -11,6 +12,7 @@ Global.register(
 local Public = {}
 
 function Public.reset()
+    LinkedChests.reset()
     if this.surfaces then
         for _, surface in pairs(this.surfaces) do
             if surface and surface.valid then

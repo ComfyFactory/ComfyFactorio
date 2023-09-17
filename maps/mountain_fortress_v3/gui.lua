@@ -156,15 +156,6 @@ local function create_main_frame(player)
     line.style.left_padding = 4
     line.style.right_padding = 4
 
-    label = frame.add({type = 'label', caption = ' ', name = 'chest_upgrades'})
-    label.style.font_color = {r = 0.88, g = 0.88, b = 0.88}
-    label.style.font = 'default-bold'
-    label.style.right_padding = 4
-
-    line = frame.add({type = 'line', direction = 'vertical'})
-    line.style.left_padding = 4
-    line.style.right_padding = 4
-
     label = frame.add({type = 'label', caption = ' ', name = 'defense_enabled'})
     label.style.font_color = {r = 0.88, g = 0.88, b = 0.88}
     label.style.font = 'default-bold'
@@ -531,9 +522,6 @@ function Public.update_gui(player)
 
     gui.train_upgrade_contribution.caption = ' [img=entity.locomotive]: ' .. train_upgrade_contribution .. 'k'
     gui.train_upgrade_contribution.tooltip = ({'gui.train_upgrade_contribution'})
-
-    gui.chest_upgrades.caption = ' [img=entity.steel-chest]: ' .. format_number(upgrades.chests_outside_upgrades, true)
-    gui.chest_upgrades.tooltip = ({'gui.chest_placed'})
 
     local robotics_deployed = Public.get('robotics_deployed')
 

@@ -526,6 +526,7 @@ local apply_settings_token =
         this.objectives = {
             randomized_zone = scale(random(7, 20), 40),
             randomized_wave = scale(random(500, 2000), 4000),
+            randomized_linked_chests = scale(random(2, 4), 20),
             supplies = get_random_items(),
             single_item = get_random_item(),
             killed_enemies = scale(random(500000, 3000000), 10000000),
@@ -573,6 +574,7 @@ function Public.reset_stateful()
         this.objectives = {
             randomized_zone = 2,
             randomized_wave = 2,
+            randomized_linked_chests = 2,
             supplies = get_random_items(),
             single_item = get_random_item(),
             killed_enemies = 10,
@@ -588,6 +590,7 @@ function Public.reset_stateful()
         this.objectives = {
             randomized_zone = scale(random(7, 20), 40),
             randomized_wave = scale(random(500, 2000), 4000),
+            randomized_linked_chests = scale(random(2, 4), 20),
             supplies = get_random_items(),
             single_item = get_random_item(),
             killed_enemies = scale(random(500000, 3000000), 10000000),

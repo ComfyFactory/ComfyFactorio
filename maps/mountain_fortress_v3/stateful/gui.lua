@@ -7,6 +7,7 @@ local Token = require 'utils.token'
 local Task = require 'utils.task'
 local Core = require 'utils.core'
 local Server = require 'utils.server'
+local LinkedChests = require 'maps.mountain_fortress_v3.icw.linked_chests'
 
 local main_button_name = Gui.uid_name()
 local main_frame_name = Gui.uid_name()
@@ -385,6 +386,7 @@ local function main_frame(player)
     local breached_wall = Public.get('breached_wall')
     breached_wall = breached_wall - 1
     local wave_number = WD.get('wave_number')
+    local converted_chests = LinkedChests.get('converted_chests')
 
     local frame = player.gui.screen.add {type = 'frame', name = main_frame_name, caption = {'stateful.win_conditions'}, direction = 'vertical', tooltip = {'stateful.win_conditions_tooltip'}}
     frame.location = {x = 1, y = 45}
@@ -477,8 +479,24 @@ local function main_frame(player)
         if wave_number >= stateful.objectives.randomized_wave then
             data.randomized_wave_label = wave_right_flow.add({type = 'label', caption = wave_number .. '/' .. stateful.objectives.randomized_wave .. ' [img=utility/check_mark_green]', tooltip = {'stateful.tooltip_completed'}})
         else
-            local randomized_wave = wave_right_flow.add({type = 'label', caption = wave_number .. '/' .. stateful.objectives.randomized_wave .. ' [img=utility/not_available]', tooltip = {'stateful.tooltip_not_completed'}})
-            data.randomized_wave_label = randomized_wave
+            data.randomized_wave_label = wave_right_flow.add({type = 'label', caption = wave_number .. '/' .. stateful.objectives.randomized_wave .. ' [img=utility/not_available]', tooltip = {'stateful.tooltip_not_completed'}})
+        end
+
+        -- new frame
+        local linked_left_flow = objective_tbl.add({type = 'flow'})
+        linked_left_flow.style.horizontal_align = 'left'
+        linked_left_flow.style.horizontally_stretchable = true
+
+        linked_left_flow.add({type = 'label', caption = {'stateful.linked'}, tooltip = {'stateful.linked_tooltip'}})
+        frame.add({type = 'line', direction = 'vertical'})
+        local linked_right_flow = objective_tbl.add({type = 'flow'})
+        linked_right_flow.style.horizontal_align = 'right'
+        linked_right_flow.style.horizontally_stretchable = true
+
+        if converted_chests >= stateful.objectives.randomized_linked_chests then
+            data.randomized_linked_label = linked_right_flow.add({type = 'label', caption = converted_chests .. '/' .. stateful.objectives.randomized_linked_chests .. ' [img=utility/check_mark_green]', tooltip = {'stateful.tooltip_completed'}})
+        else
+            data.randomized_linked_label = linked_right_flow.add({type = 'label', caption = converted_chests .. '/' .. stateful.objectives.randomized_linked_chests .. ' [img=utility/not_available]', tooltip = {'stateful.tooltip_not_completed'}})
         end
 
         --dynamic conditions
@@ -510,6 +528,7 @@ local function update_data()
     local stateful = Public.get_stateful()
     local breached_wall = Public.get('breached_wall')
     local wave_number = WD.get('wave_number')
+    local converted_chests = LinkedChests.get('converted_chests')
     local collection = stateful.collection
     local supplies = stateful.objectives.supplies
     local single_item = stateful.objectives.single_item
@@ -533,6 +552,7 @@ local function update_data()
                 breached_wall = breached_wall - 1
                 if breached_wall >= stateful.objectives.randomized_zone then
                     data.randomized_zone_label.caption = breached_wall .. '/' .. stateful.objectives.randomized_zone .. ' [img=utility/check_mark_green]'
+                    data.randomized_zone_label.tooltip = {'stateful.tooltip_completed'}
                 else
                     data.randomized_zone_label.caption = breached_wall .. '/' .. stateful.objectives.randomized_zone .. ' [img=utility/not_available]'
                 end
@@ -541,8 +561,18 @@ local function update_data()
             if data.randomized_wave_label and data.randomized_wave_label.valid then
                 if wave_number >= stateful.objectives.randomized_wave then
                     data.randomized_wave_label.caption = wave_number .. '/' .. stateful.objectives.randomized_wave .. ' [img=utility/check_mark_green]'
+                    data.randomized_wave_label.tooltip = {'stateful.tooltip_completed'}
                 else
                     data.randomized_wave_label.caption = wave_number .. '/' .. stateful.objectives.randomized_wave .. ' [img=utility/not_available]'
+                end
+            end
+
+            if data.randomized_linked_label and data.randomized_linked_label.valid then
+                if converted_chests >= stateful.objectives.randomized_linked_chests then
+                    data.randomized_linked_label.caption = converted_chests .. '/' .. stateful.objectives.randomized_linked_chests .. ' [img=utility/check_mark_green]'
+                    data.randomized_linked_label.tooltip = {'stateful.tooltip_completed'}
+                else
+                    data.randomized_linked_label.caption = converted_chests .. '/' .. stateful.objectives.randomized_linked_chests .. ' [img=utility/not_available]'
                 end
             end
 
@@ -673,6 +703,7 @@ local function update_raw()
     local stateful = Public.get_stateful()
     local breached_wall = Public.get('breached_wall')
     local wave_number = WD.get('wave_number')
+    local converted_chests = LinkedChests.get('converted_chests')
     local collection = stateful.collection
     local tick = game.tick
     local supplies = stateful.objectives.supplies
@@ -697,6 +728,15 @@ local function update_raw()
             stateful.objectives_completed.randomized_wave_label = true
             play_achievement_unlocked()
             Server.to_discord_embed('Objective: **survive until wave** has been complete!')
+            stateful.objectives_completed_count = stateful.objectives_completed_count + 1
+        end
+    end
+
+    if converted_chests >= stateful.objectives.randomized_linked_chests then
+        if not stateful.objectives_completed.randomized_linked_chests then
+            stateful.objectives_completed.randomized_linked_chests = true
+            play_achievement_unlocked()
+            Server.to_discord_embed('Objective: **convert chests** has been complete!')
             stateful.objectives_completed_count = stateful.objectives_completed_count + 1
         end
     end
@@ -819,7 +859,7 @@ local function update_raw()
         end
     end
 
-    if stateful.objectives_completed_count == 5 and not stateful.objectives_completed.boss_time then
+    if stateful.objectives_completed_count == 6 and not stateful.objectives_completed.boss_time then
         stateful.objectives_completed.boss_time = true
         Server.to_discord_embed('All objectives has been completed!')
         stateful.collection.gather_time = tick + 54000

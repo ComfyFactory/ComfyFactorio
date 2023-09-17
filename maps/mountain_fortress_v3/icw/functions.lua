@@ -17,7 +17,7 @@ local fallout_width = 64
 local fallout_debris = {}
 
 for x = fallout_width * -1 - 42, fallout_width + 42, 1 do
-    if x < -31 or x > 31 then
+    if x < -42 or x > 42 then
         for y = fallout_width * -1 - 42, fallout_width + 42, 1 do
             local position = {x = x, y = y}
             local fallout = sqrt(position.x ^ 2 + position.y ^ 2)
@@ -28,6 +28,84 @@ for x = fallout_width * -1 - 42, fallout_width + 42, 1 do
     end
 end
 local size_of_debris = #fallout_debris
+
+local add_chests_to_wagon_token =
+    Token.register(
+    function(data)
+        local wagon = data.wagon
+        local surface = data.surface
+        local wagon_areas = ICW.get('wagon_areas')
+        local cargo_wagon = wagon_areas['cargo-wagon']
+        local position1 = {cargo_wagon.left_top.x + 4, cargo_wagon.left_top.y + 1}
+        local position2 = {cargo_wagon.right_bottom.x - 5, cargo_wagon.left_top.y + 1}
+        local position3 = {cargo_wagon.left_top.x + 4, cargo_wagon.right_bottom.y - 2}
+        local position4 = {cargo_wagon.right_bottom.x - 5, cargo_wagon.right_bottom.y - 2}
+
+        local left_1 = LinkedChests.add(surface, position1, 'player', 'wagon_' .. wagon.entity.unit_number .. '_1')
+        left_1.destructible = false
+        left_1.minable = false
+
+        local left_2 = LinkedChests.add(surface, {position1[1] - 1, position1[2]}, 'player', 'wagon_' .. wagon.entity.unit_number .. '_2')
+        left_2.destructible = false
+        left_2.minable = false
+
+        local left_3 = LinkedChests.add(surface, {position1[1] - 2, position1[2]}, 'player', 'wagon_' .. wagon.entity.unit_number .. '_3')
+        left_3.destructible = false
+        left_3.minable = false
+
+        local left_4 = LinkedChests.add(surface, {position1[1] - 3, position1[2]}, 'player', 'wagon_' .. wagon.entity.unit_number .. '_4')
+        left_4.destructible = false
+        left_4.minable = false
+
+        local right_1 = LinkedChests.add(surface, position2, 'player', 'wagon_' .. wagon.entity.unit_number .. '_5')
+        right_1.destructible = false
+        right_1.minable = false
+
+        local right_2 = LinkedChests.add(surface, {position2[1] + 1, position2[2]}, 'player', 'wagon_' .. wagon.entity.unit_number .. '_6')
+        right_2.destructible = false
+        right_2.minable = false
+
+        local right_3 = LinkedChests.add(surface, {position2[1] + 2, position2[2]}, 'player', 'wagon_' .. wagon.entity.unit_number .. '_7')
+        right_3.destructible = false
+        right_3.minable = false
+
+        local right_4 = LinkedChests.add(surface, {position2[1] + 3, position2[2]}, 'player', 'wagon_' .. wagon.entity.unit_number .. '_8')
+        right_4.destructible = false
+        right_4.minable = false
+
+        local bottom_left_1 = LinkedChests.add(surface, position3, 'player', 'wagon_' .. wagon.entity.unit_number .. '_9')
+        bottom_left_1.destructible = false
+        bottom_left_1.minable = false
+
+        local bottom_left_2 = LinkedChests.add(surface, {position3[1] - 1, position3[2]}, 'player', 'wagon_' .. wagon.entity.unit_number .. '_10')
+        bottom_left_2.destructible = false
+        bottom_left_2.minable = false
+
+        local bottom_left_3 = LinkedChests.add(surface, {position3[1] - 2, position3[2]}, 'player', 'wagon_' .. wagon.entity.unit_number .. '_11')
+        bottom_left_3.destructible = false
+        bottom_left_3.minable = false
+
+        local bottom_left_4 = LinkedChests.add(surface, {position3[1] - 3, position3[2]}, 'player', 'wagon_' .. wagon.entity.unit_number .. '_12')
+        bottom_left_4.destructible = false
+        bottom_left_4.minable = false
+
+        local bottom_right_1 = LinkedChests.add(surface, position4, 'player', 'wagon_' .. wagon.entity.unit_number .. '_13')
+        bottom_right_1.destructible = false
+        bottom_right_1.minable = false
+
+        local bottom_right_2 = LinkedChests.add(surface, {position4[1] + 1, position4[2]}, 'player', 'wagon_' .. wagon.entity.unit_number .. '_14')
+        bottom_right_2.destructible = false
+        bottom_right_2.minable = false
+
+        local bottom_right_3 = LinkedChests.add(surface, {position4[1] + 2, position4[2]}, 'player', 'wagon_' .. wagon.entity.unit_number .. '_15')
+        bottom_right_3.destructible = false
+        bottom_right_3.minable = false
+
+        local bottom_right_4 = LinkedChests.add(surface, {position4[1] + 3, position4[2]}, 'player', 'wagon_' .. wagon.entity.unit_number .. '_16')
+        bottom_right_4.destructible = false
+        bottom_right_4.minable = false
+    end
+)
 
 local reconstruct_all_trains =
     Token.register(
@@ -178,33 +256,6 @@ local function divide_fluid(wagon, storage_tank)
     equal_fluid(storage_tank, fluid_wagon)
 end
 
-local function input_filtered(wagon_inventory, chest, chest_inventory, free_slots)
-    local request_stacks = {}
-    local prototypes = game.item_prototypes
-    for slot_index = 1, 30, 1 do
-        local stack = chest.get_request_slot(slot_index)
-        if stack then
-            request_stacks[stack.name] = 10 * prototypes[stack.name].stack_size
-        end
-    end
-    if wagon_inventory.supports_bar() then
-        for i = 1, wagon_inventory.get_bar() - 1, 1 do
-            if free_slots <= 0 then
-                return
-            end
-            local stack = wagon_inventory[i]
-            if stack.valid_for_read then
-                local request_stack = request_stacks[stack.name]
-                if request_stack and request_stack > chest_inventory.get_item_count(stack.name) then
-                    chest_inventory.insert(stack)
-                    stack.clear()
-                    free_slots = free_slots - 1
-                end
-            end
-        end
-    end
-end
-
 function Public.disable_auto_minimap()
     local icw = ICW.get()
 
@@ -344,75 +395,8 @@ function Public.hazardous_debris()
     end
 end
 
-local function input_cargo(wagon, chest, wagon_inventory, chest_inventory)
-    if not chest.request_from_buffers then
-        goto continue
-    end
-
-    local wagon_entity = wagon.entity
-    if not validate_entity(wagon_entity) then
-        wagon.transfer_entities = nil
-        goto continue
-    end
-
-    if wagon_inventory.is_empty() then
-        goto continue
-    end
-
-    local free_slots = 0
-    if chest_inventory.supports_bar() then
-        for i = 1, chest_inventory.get_bar() - 1, 1 do
-            if not chest_inventory[i].valid_for_read then
-                free_slots = free_slots + 1
-            end
-        end
-    end
-
-    if chest.get_request_slot(1) then
-        input_filtered(wagon_inventory, chest, chest_inventory, free_slots)
-        goto continue
-    end
-
-    if wagon_inventory.supports_bar() then
-        for i = 1, wagon_inventory.get_bar() - 1, 1 do
-            if free_slots <= 0 then
-                goto continue
-            end
-            if wagon_inventory[i].valid_for_read then
-                chest_inventory.insert(wagon_inventory[i])
-                wagon_inventory[i].clear()
-                free_slots = free_slots - 1
-            end
-        end
-    end
-
-    ::continue::
-end
-
-local function output_cargo(wagon, passive_chest, chest2, chest1)
-    if not validate_entity(wagon.entity) then
-        goto continue
-    end
-
-    if not passive_chest.valid then
-        goto continue
-    end
-    for i = 1, #chest1 do
-        local t = chest1[i]
-        if t and t.valid then
-            local c = chest2.insert(t)
-            if (c > 0) then
-                chest1[i].count = chest1[i].count - c
-            end
-        end
-    end
-    ::continue::
-end
-
 local transfer_functions = {
-    ['storage-tank'] = divide_fluid,
-    ['logistic-chest-requester'] = input_cargo,
-    ['logistic-chest-passive-provider'] = output_cargo
+    ['storage-tank'] = divide_fluid
 }
 
 local function get_wagon_for_entity(icw, entity)
@@ -652,253 +636,7 @@ function Public.create_wagon_room(icw, wagon)
     end
 
     if wagon.entity.type == 'cargo-wagon' then
-        local multiple_chests = ICW.get('multiple_chests')
-        local wagon_areas = ICW.get('wagon_areas')
-        local cargo_wagon = wagon_areas['cargo-wagon']
-        local position1 = {cargo_wagon.left_top.x + 4, cargo_wagon.left_top.y + 1}
-        local position2 = {cargo_wagon.right_bottom.x - 5, cargo_wagon.left_top.y + 1}
-        local position3 = {cargo_wagon.left_top.x + 4, cargo_wagon.right_bottom.y - 2}
-        local position4 = {cargo_wagon.right_bottom.x - 5, cargo_wagon.right_bottom.y - 2}
-
-        if multiple_chests then
-            local left_1 =
-                surface.create_entity(
-                {
-                    name = 'logistic-chest-requester',
-                    position = position1,
-                    force = 'neutral',
-                    create_build_effect_smoke = false
-                }
-            )
-            left_1.destructible = false
-            left_1.minable = false
-
-            local left_2 =
-                surface.create_entity(
-                {
-                    name = 'logistic-chest-requester',
-                    position = {position1[1] - 1, position1[2]},
-                    force = 'neutral',
-                    create_build_effect_smoke = false
-                }
-            )
-            left_2.destructible = false
-            left_2.minable = false
-
-            local left_3 =
-                surface.create_entity(
-                {
-                    name = 'logistic-chest-requester',
-                    position = {position1[1] - 2, position1[2]},
-                    force = 'neutral',
-                    create_build_effect_smoke = false
-                }
-            )
-            left_3.destructible = false
-            left_3.minable = false
-
-            local left_4 =
-                surface.create_entity(
-                {
-                    name = 'logistic-chest-requester',
-                    position = {position1[1] - 3, position1[2]},
-                    force = 'neutral',
-                    create_build_effect_smoke = false
-                }
-            )
-            left_4.destructible = false
-            left_4.minable = false
-
-            local right_1 =
-                surface.create_entity(
-                {
-                    name = 'logistic-chest-passive-provider',
-                    position = position2,
-                    force = 'neutral',
-                    create_build_effect_smoke = false
-                }
-            )
-            right_1.destructible = false
-            right_1.minable = false
-
-            local right_2 =
-                surface.create_entity(
-                {
-                    name = 'logistic-chest-passive-provider',
-                    position = {position2[1] + 1, position2[2]},
-                    force = 'neutral',
-                    create_build_effect_smoke = false
-                }
-            )
-            right_2.destructible = false
-            right_2.minable = false
-
-            local right_3 =
-                surface.create_entity(
-                {
-                    name = 'logistic-chest-passive-provider',
-                    position = {position2[1] + 2, position2[2]},
-                    force = 'neutral',
-                    create_build_effect_smoke = false
-                }
-            )
-            right_3.destructible = false
-            right_3.minable = false
-
-            local right_4 =
-                surface.create_entity(
-                {
-                    name = 'logistic-chest-passive-provider',
-                    position = {position2[1] + 3, position2[2]},
-                    force = 'neutral',
-                    create_build_effect_smoke = false
-                }
-            )
-            right_4.destructible = false
-            right_4.minable = false
-
-            local bottom_left_1 =
-                surface.create_entity(
-                {
-                    name = 'logistic-chest-requester',
-                    position = position3,
-                    force = 'neutral',
-                    create_build_effect_smoke = false
-                }
-            )
-            bottom_left_1.destructible = false
-            bottom_left_1.minable = false
-
-            local bottom_left_2 =
-                surface.create_entity(
-                {
-                    name = 'logistic-chest-requester',
-                    position = {position3[1] - 1, position3[2]},
-                    force = 'neutral',
-                    create_build_effect_smoke = false
-                }
-            )
-            bottom_left_2.destructible = false
-            bottom_left_2.minable = false
-
-            local bottom_left_3 =
-                surface.create_entity(
-                {
-                    name = 'logistic-chest-requester',
-                    position = {position3[1] - 2, position3[2]},
-                    force = 'neutral',
-                    create_build_effect_smoke = false
-                }
-            )
-            bottom_left_3.destructible = false
-            bottom_left_3.minable = false
-
-            local bottom_left_4 =
-                surface.create_entity(
-                {
-                    name = 'logistic-chest-requester',
-                    position = {position3[1] - 3, position3[2]},
-                    force = 'neutral',
-                    create_build_effect_smoke = false
-                }
-            )
-            bottom_left_4.destructible = false
-            bottom_left_4.minable = false
-
-            local bottom_right_1 =
-                surface.create_entity(
-                {
-                    name = 'logistic-chest-passive-provider',
-                    position = position4,
-                    force = 'neutral',
-                    create_build_effect_smoke = false
-                }
-            )
-            bottom_right_1.destructible = false
-            bottom_right_1.minable = false
-
-            local bottom_right_2 =
-                surface.create_entity(
-                {
-                    name = 'logistic-chest-passive-provider',
-                    position = {position4[1] + 1, position4[2]},
-                    force = 'neutral',
-                    create_build_effect_smoke = false
-                }
-            )
-            bottom_right_2.destructible = false
-            bottom_right_2.minable = false
-
-            local bottom_right_3 =
-                surface.create_entity(
-                {
-                    name = 'logistic-chest-passive-provider',
-                    position = {position4[1] + 2, position4[2]},
-                    force = 'neutral',
-                    create_build_effect_smoke = false
-                }
-            )
-            bottom_right_3.destructible = false
-            bottom_right_3.minable = false
-
-            local bottom_right_3 =
-                surface.create_entity(
-                {
-                    name = 'logistic-chest-passive-provider',
-                    position = {position4[1] + 2, position4[2]},
-                    force = 'neutral',
-                    create_build_effect_smoke = false
-                }
-            )
-            bottom_right_3.destructible = false
-            bottom_right_3.minable = false
-
-            local bottom_right_4 =
-                surface.create_entity(
-                {
-                    name = 'logistic-chest-passive-provider',
-                    position = {position4[1] + 3, position4[2]},
-                    force = 'neutral',
-                    create_build_effect_smoke = false
-                }
-            )
-            bottom_right_4.destructible = false
-            bottom_right_4.minable = false
-
-            wagon.transfer_entities = {left_1, right_1}
-            wagon.transfer_entities = {left_2, right_2}
-            wagon.transfer_entities = {left_3, right_3}
-            wagon.transfer_entities = {left_4, right_4}
-            wagon.transfer_entities = {bottom_left_1, bottom_right_1}
-            wagon.transfer_entities = {bottom_left_2, bottom_right_2}
-            wagon.transfer_entities = {bottom_left_3, bottom_right_3}
-            wagon.transfer_entities = {bottom_left_4, bottom_right_4}
-        else
-            local e1 =
-                surface.create_entity(
-                {
-                    name = 'logistic-chest-requester',
-                    position = position1,
-                    force = 'neutral',
-                    create_build_effect_smoke = false
-                }
-            )
-            e1.destructible = false
-            e1.minable = false
-
-            local e2 =
-                surface.create_entity(
-                {
-                    name = 'logistic-chest-passive-provider',
-                    position = position2,
-                    force = 'neutral',
-                    create_build_effect_smoke = false
-                }
-            )
-            e2.destructible = false
-            e2.minable = false
-            wagon.transfer_entities = {e1, e2}
-        end
+        Task.set_timeout_in_ticks(5, add_chests_to_wagon_token, {wagon = wagon, surface = surface})
     end
 end
 
@@ -1118,12 +856,6 @@ local function move_room_to_train(icw, train, wagon)
     for _, e in pairs(wagon.surface.find_entities_filtered({type = 'electric-pole', area = wagon.area})) do
         connect_power_pole(e, left_top_y)
     end
-
-    for _, e in pairs(wagon.surface.find_entities_filtered({area = wagon.area, force = 'neutral'})) do
-        if transfer_functions[e.name] then
-            wagon.transfer_entities[#wagon.transfer_entities + 1] = e
-        end
-    end
 end
 
 local function get_connected_rolling_stock(entity, direction, carriages)
@@ -1244,18 +976,15 @@ function Public.item_transfer()
     local icw = ICW.get()
     local wagon
     icw.current_wagon_index, wagon = next(icw.wagons, icw.current_wagon_index)
-    if not wagon or not wagon.entity or not wagon.entity.valid or not wagon.transfer_entities then
+    if not wagon then
         return
     end
-
-    local wagon_inventory = wagon.entity.get_inventory(defines.inventory.cargo_wagon)
-    for i = 1, #wagon.transfer_entities do
-        local chest = wagon.transfer_entities[i]
-        if not chest or not chest.valid then
-            break
+    if validate_entity(wagon.entity) and wagon.transfer_entities then
+        for _, e in pairs(wagon.transfer_entities) do
+            if validate_entity(e) then
+                transfer_functions[e.name](wagon, e)
+            end
         end
-        local chest_inventory = chest.get_inventory(defines.inventory.chest)
-        transfer_functions[chest.name](wagon, chest, wagon_inventory, chest_inventory)
     end
 end
 
@@ -1386,6 +1115,10 @@ function Public.on_player_or_robot_built_tile(event)
             surface.set_tiles({{name = 'water', position = v.position}}, true)
         end
     end
+end
+
+function Public.on_entity_cloned(source, destination)
+    LinkedChests.migrate(source, destination)
 end
 
 Public.get_player_data = get_player_data
