@@ -146,7 +146,7 @@ local function create_mini_camera_gui(player, target, zoom, render)
     )
     camera.style.minimal_width = 740
     camera.style.minimal_height = 580
-    local player_data = create_player_data(player)
+    player_data = create_player_data(player)
     player_data.camera_frame = camera
 end
 

@@ -533,7 +533,7 @@ local function refresh_main_frame(data)
                 for i = 1, #chests do
                     if chests then
                         local source_chest = chests[i]
-                        if type(chest) ~= 'string' and source_chest.share.name ~= '' and source_chest.share.name ~= source_chest.chest.unit_number then
+                        if type(source_chest) ~= 'string' and source_chest.share.name ~= '' and source_chest.share.name ~= source_chest.chest.unit_number then
                             local flowlinker = chestlinker.add {type = 'flow'}
                             local chestitem =
                                 flowlinker.add {
