@@ -8,3 +8,5 @@ todo/
 #==Mac ignores==
 # General
 .DS_Store
+
+todo/
