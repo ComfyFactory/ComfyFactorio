@@ -624,6 +624,8 @@ function Public.add_mystical_chest(player)
         init_price_check(locomotive, mystical_chest)
         if player and player.valid then
             mystical_chest_reward(player)
+            local mystical_chest_completed = Public.get('mystical_chest_completed')
+            Public.set('mystical_chest_completed', mystical_chest_completed + 1)
         end
         return true
     end

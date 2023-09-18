@@ -50,6 +50,7 @@ local this = {
         [2] = '',
         [3] = ''
     },
+    show_gui = true,
     value = 0.75,
     index = 1,
     fair_vote = false,
@@ -58,6 +59,7 @@ local this = {
     gui_width = 108,
     name = "I'm too young to die",
     strength_modifier = 1.00,
+    boss_modifier = 6.0,
     button_tooltip = nil
 }
 
@@ -78,6 +80,10 @@ local function clear_main_frame(player)
 end
 
 function Public.difficulty_gui()
+    if not this.show_gui then
+        return
+    end
+
     local tooltip = 'Current difficulty of the map is ' .. this.difficulties[this.index].name .. '.'
 
     for _, player in pairs(game.connected_players) do
@@ -146,6 +152,13 @@ end
 local function poll_difficulty(player)
     if player.gui.center[main_frame_name] then
         clear_main_frame(player)
+    end
+
+    if not this.show_gui then
+        if player.gui.center[main_frame_name] then
+            clear_main_frame(player)
+        end
+        return
     end
 
     if game.tick > this.closing_timeout then
@@ -266,6 +279,9 @@ function Public.reset_difficulty_poll(tbl)
 end
 
 local function on_player_joined_game(event)
+    if not this.show_gui then
+        return
+    end
     local player = game.get_player(event.player_index)
     if game.tick < this.closing_timeout then
         if not this.all_votes[player.name] then
@@ -323,6 +339,10 @@ end
 
 function Public.set_fair_vote(value)
     this.fair_vote = value or false
+end
+
+function Public.show_gui(state)
+    this.show_gui = state or false
 end
 
 function Public.get(key)

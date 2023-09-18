@@ -1,4 +1,5 @@
 local Global = require 'utils.global'
+local LinkedChests = require 'maps.mountain_fortress_v3.icw.linked_chests'
 
 local this = {}
 Global.register(
@@ -11,6 +12,7 @@ Global.register(
 local Public = {}
 
 function Public.reset()
+    LinkedChests.reset()
     if this.surfaces then
         for _, surface in pairs(this.surfaces) do
             if surface and surface.valid then
@@ -24,6 +26,7 @@ function Public.reset()
     this.doors = {}
     this.wagons = {}
     this.speed = 0.1
+    this.final_battle = false
     this.hazardous_debris = true
     this.current_wagon_index = nil
     this.trains = {}
@@ -38,15 +41,26 @@ function Public.reset()
     }
 
     this.wagon_areas = {
-        ['cargo-wagon'] = {left_top = {x = -30, y = 0}, right_bottom = {x = 30, y = 80}},
-        ['artillery-wagon'] = {left_top = {x = -30, y = 0}, right_bottom = {x = 30, y = 80}},
-        ['fluid-wagon'] = {left_top = {x = -30, y = 0}, right_bottom = {x = 30, y = 80}},
-        ['locomotive'] = {left_top = {x = -30, y = 0}, right_bottom = {x = 30, y = 80}}
+        ['cargo-wagon'] = {left_top = {x = -40, y = 0}, right_bottom = {x = 40, y = 100}},
+        ['artillery-wagon'] = {left_top = {x = -40, y = 0}, right_bottom = {x = 40, y = 100}},
+        ['fluid-wagon'] = {left_top = {x = -40, y = 0}, right_bottom = {x = 40, y = 100}},
+        ['locomotive'] = {left_top = {x = -40, y = 0}, right_bottom = {x = 40, y = 100}}
     }
 end
 
 function Public.get(key)
     if key then
+        return this[key]
+    else
+        return this
+    end
+end
+
+function Public.set(key, value)
+    if key and (value or value == false) then
+        this[key] = value
+        return this[key]
+    elseif key then
         return this[key]
     else
         return this

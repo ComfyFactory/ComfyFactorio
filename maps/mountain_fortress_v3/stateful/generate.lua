@@ -1,34 +1,19 @@
 local Event = require 'utils.event'
-local Public = require 'maps.mountain_fortress_v3.table'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
-local WD = require 'modules.wave_defense.table'
-local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 
-local random = math.random
-local abs = math.abs
+local Public = require 'maps.mountain_fortress_v3.stateful.table'
+
 local ceil = math.ceil
-local round = math.round
 local queue_task = Task.queue_task
 local tiles_per_call = 8
 local total_calls = ceil(1024 / tiles_per_call)
 local regen_decoratives = false
-local generate_map = Public.heavy_functions
-
-local winter_mode = false
-local wintery_type = {
-    ['simple-entity'] = true,
-    ['tree'] = true,
-    ['fish'] = true,
-    ['market'] = true,
-    ['locomotive'] = true,
-    ['cargo-wagon'] = true
-}
+local generate_map = require 'maps.mountain_fortress_v3.stateful.terrain'.heavy_functions
 
 -- Simple "loop" that is UPS friendly.
 local function get_position(data)
     data.yv = data.yv + 1
-
     if data.yv == 32 then
         if data.xv == 32 then
             data.xv = 0
@@ -86,26 +71,6 @@ local function do_tile(x, y, data, shape)
         if decoratives then
             for _, decorative in ipairs(decoratives) do
                 data.decoratives[#data.decoratives + 1] = decorative
-            end
-        end
-
-        local markets = tile.markets
-        if markets then
-            for _, t in ipairs(markets) do
-                if not t.position then
-                    t.position = pos
-                end
-                data.markets[#data.markets + 1] = t
-            end
-        end
-
-        local treasure = tile.treasure
-        if treasure then
-            for _, t in ipairs(treasure) do
-                if not t.position then
-                    t.position = pos
-                end
-                data.treasure[#data.treasure + 1] = t
             end
         end
     else
@@ -166,66 +131,9 @@ local function do_row(row, data, shape)
                     data.decoratives[#data.decoratives + 1] = decorative
                 end
             end
-
-            local markets = tile.markets
-            if markets then
-                for _, t in ipairs(markets) do
-                    if not t.position then
-                        t.position = pos
-                    end
-                    data.markets[#data.markets + 1] = t
-                end
-            end
-
-            local treasure = tile.treasure
-            if treasure then
-                for _, t in ipairs(treasure) do
-                    if not t.position then
-                        t.position = pos
-                    end
-                    data.treasure[#data.treasure + 1] = t
-                end
-            end
         else
             do_tile_inner(tiles, tile, pos)
         end
-    end
-end
-
-local function do_place_treasure(data)
-    local surface = data.surface
-    local treasure = data.treasure
-
-    if #treasure == 0 then
-        return
-    end
-
-    for _, e in ipairs(data.treasure) do
-        if random(1, 6) == 1 then
-            e.chest = 'iron-chest'
-        end
-        Public.add_loot(surface, e.position, e.chest)
-    end
-end
-
-local function do_place_markets(data)
-    local markets = data.markets
-    local surface = data.surface
-
-    if #markets == 0 then
-        return
-    end
-
-    local pos = markets[random(1, #markets)]
-    if
-        surface.count_entities_filtered {
-            area = {{pos.x - 96, pos.y - 96}, {pos.x + 96, pos.y + 96}},
-            name = 'market',
-            limit = 1
-        } == 0
-     then
-        local market = Public.mountain_market(surface, pos, abs(pos.y) * 0.004)
-        market.destructible = false
     end
 end
 
@@ -292,46 +200,6 @@ local function do_place_buildings(data)
     end
 end
 
-local function wintery(ent, extra_lights)
-    if not winter_mode then
-        return false
-    end
-    local colors = {{255, 0, 0}, {0, 255, 0}, {0, 0, 255}}
-    local function add_light(e)
-        local color = colors[math.random(1, 3)]
-        local scale = extra_lights or 1
-        rendering.draw_light(
-            {
-                sprite = 'utility/light_small',
-                orientation = 1,
-                scale = scale,
-                intensity = 1,
-                minimum_darkness = 0,
-                oriented = false,
-                color = color,
-                target = e,
-                target_offset = {0, -0.5},
-                surface = e.surface
-            }
-        )
-    end
-    if not (ent and ent.valid) then
-        return
-    end
-    if wintery_type[ent.type] then
-        if ent.type == 'simple-entity' then
-            if random(1, 64) == 1 then
-                return add_light(ent)
-            end
-        else
-            if random(1, 4) == 1 then
-                return add_light(ent)
-            end
-        end
-    end
-    return true
-end
-
 local function do_place_entities(data)
     local surface = data.surface
     local entity
@@ -341,17 +209,14 @@ local function do_place_entities(data)
             if surface.can_place_entity(e) then
                 entity = surface.create_entity(e)
                 if entity then
-                    if e.note then -- flamethrower-turret and artillery-turret are at default health, only gun-turret is modified
-                        local modified_unit_health = WD.get('modified_unit_health')
-                        local final_health = round(modified_unit_health.current_value * 0.5, 3)
-                        if final_health < 1 then
-                            final_health = 1
-                        end
-                        BiterHealthBooster.add_unit(entity, final_health)
-                    end
-                    wintery(entity)
                     if e.direction then
                         entity.direction = e.direction
+                    end
+                    if e.active ~= nil then
+                        entity.active = e.active
+                    end
+                    if e.destructible ~= nil then
+                        entity.destructible = e.destructible
                     end
                     if e.force then
                         entity.force = e.force
@@ -360,36 +225,22 @@ local function do_place_entities(data)
                         entity.amount = e.amount
                     end
                     if e.callback then
-                        local c = e.callback.callback
-                        if not c then
-                            return
-                        end
-                        local d = {callback_data = e.callback.data}
-                        if not d then
-                            callback = Token.get(c)
-                            callback(entity)
-                        else
-                            callback = Token.get(c)
-                            callback(entity, d)
-                        end
+                        callback = Token.get(e.callback)
+                        callback({entity = entity})
                     end
                 end
             end
         else
             entity = surface.create_entity(e)
             if entity then
-                if e.note then -- small-worm-turret, medium-worm-turret, big-worm-turret, behemoth-worm-turret
-                    local modified_unit_health = WD.get('modified_unit_health')
-                    local worm_unit_settings = WD.get('worm_unit_settings')
-                    local final_health = round(modified_unit_health.current_value * worm_unit_settings.scale_units_by_health[entity.name], 3)
-                    if final_health < 1 then
-                        final_health = 1
-                    end
-                    BiterHealthBooster.add_unit(entity, final_health)
-                end
-                wintery(entity)
                 if e.direction then
                     entity.direction = e.direction
+                end
+                if e.active ~= nil then
+                    entity.active = e.active
+                end
+                if e.destructible ~= nil then
+                    entity.destructible = e.destructible
                 end
                 if e.force then
                     entity.force = e.force
@@ -398,39 +249,11 @@ local function do_place_entities(data)
                     entity.amount = e.amount
                 end
                 if e.callback then
-                    local c = e.callback.callback
-                    if c then
-                        local d = {callback_data = e.callback.data}
-                        if not d then
-                            callback = Token.get(c)
-                            callback(entity)
-                        else
-                            callback = Token.get(c)
-                            callback(entity, d)
-                        end
-                    end
+                    callback = Token.get(e.callback)
+                    callback({entity = entity})
                 end
             end
         end
-    end
-end
-
-local function run_chart_update(data)
-    local x = data.top_x / 32
-    local y = data.top_y / 32
-    local surface = data.surface
-    if not surface or not surface.valid then
-        return
-    end
-    if game.forces.player.is_chunk_charted(surface, {x, y}) then
-        -- Don't use full area, otherwise adjacent chunks get charted
-        game.forces.player.chart(
-            surface,
-            {
-                {data.top_x, data.top_y},
-                {data.top_x + 1, data.top_y + 1}
-            }
-        )
     end
 end
 
@@ -490,23 +313,8 @@ local function map_gen_action(data)
         data.y = 35
         return true
     elseif state == 35 then
-        do_place_buildings(data)
-        data.y = 36
-        return true
-    elseif state == 36 then
-        do_place_markets(data)
-        data.y = 37
-        return true
-    elseif state == 37 then
-        do_place_treasure(data)
-        data.y = 38
-        return true
-    elseif state == 38 then
         do_place_decoratives(data)
-        data.y = 39
-        return true
-    elseif state == 39 then
-        run_chart_update(data)
+        data.y = 36
         return false
     end
 end
@@ -603,18 +411,11 @@ local function do_chunk(event)
     do_place_entities(data)
     do_place_buildings(data)
     do_place_decoratives(data)
-    do_place_markets(data)
-    do_place_treasure(data)
 end
 
 local function on_chunk(event)
-    local final_battle = Public.get('final_battle')
-    if final_battle then
-        return
-    end
-
-    local force_chunk = Public.get('force_chunk')
-    local stop_chunk = Public.get('stop_chunk')
+    local force_chunk = Public.get_stateful('force_chunk')
+    local stop_chunk = Public.get_stateful('stop_chunk')
     if stop_chunk then
         return
     end
@@ -627,7 +428,5 @@ local function on_chunk(event)
 end
 
 Event.add(defines.events.on_chunk_generated, on_chunk)
-
-Public.wintery = wintery
 
 return Public

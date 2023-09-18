@@ -28,15 +28,13 @@ local this = {
     magic_crafters = {index = 1},
     magic_fluid_crafters = {index = 1},
     art_table = {index = 1},
-    surface_cleared = false
-}
-
-local starting_items = {
-    ['pistol'] = 1,
-    ['firearm-magazine'] = 16,
-    ['rail'] = 16,
-    ['wood'] = 16,
-    ['explosives'] = 32
+    starting_items = {
+        ['pistol'] = 1,
+        ['firearm-magazine'] = 16,
+        ['rail'] = 16,
+        ['wood'] = 16,
+        ['explosives'] = 32
+    }
 }
 
 local random_respawn_messages = {
@@ -296,19 +294,6 @@ local artillery_target_callback =
         end
     end
 )
-
-local function difficulty_and_adjust_prices()
-    local fixed_prices = Public.get('marked_fixed_prices')
-    local difficulty_index = Difficulty.get('index')
-
-    for index, price in pairs(fixed_prices) do
-        if difficulty_index == 2 then
-            fixed_prices[index] = price * 1.5
-        elseif difficulty_index == 3 then
-            fixed_prices[index] = price * 2
-        end
-    end
-end
 
 local function do_beams_away()
     local wave_number = WD.get_wave()
@@ -1128,149 +1113,25 @@ function Public.boost_difficulty()
         return
     end
 
-    local breached_wall = Public.get('breached_wall')
-
-    local difficulty = Difficulty.get()
-    if not difficulty then
-        return
-    end
-
-    local index = difficulty.index
-    local name = difficulty.name
-
-    if game.tick < difficulty.closing_timeout and breached_wall <= 1 then
-        return
-    end
-
-    local message = ({'main.diff_set', name})
-    local data = {
-        position = Public.get('locomotive').position
-    }
-    Alert.alert_all_players_location(data, message)
-
     local force = game.forces.player
 
-    local active_surface_index = Public.get('active_surface_index')
-    local surface = game.get_surface(active_surface_index)
-
-    if index == 1 then
-        force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 0.5
-        force.character_running_speed_modifier = 0.15
-        force.manual_crafting_speed_modifier = 0.15
-        Public.set('coin_amount', 1)
-        Public.set('upgrades').flame_turret.limit = 12
-        Public.set('upgrades').landmine.limit = 50
-        Public.set('locomotive_health', 10000)
-        Public.set('locomotive_max_health', 10000)
-        Public.set('bonus_xp_on_join', 500)
-        WD.set('next_wave', game.tick + 3600 * 15)
-        Public.set('spidertron_unlocked_at_zone', 10)
-        WD.set_normal_unit_current_health(1.2)
-        WD.set_unit_health_increment_per_wave(0.35)
-        WD.set_boss_unit_current_health(2)
-        WD.set_boss_health_increment_per_wave(1.5)
-        WD.set('death_mode', false)
-        Public.set('difficulty_set', true)
-    elseif index == 2 then
-        force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 0.25
-        force.character_running_speed_modifier = 0.1
-        force.manual_crafting_speed_modifier = 0.1
-        Public.set('coin_amount', 2)
-        Public.set('upgrades').flame_turret.limit = 10
-        Public.set('upgrades').landmine.limit = 50
-        Public.set('locomotive_health', 7000)
-        Public.set('locomotive_max_health', 7000)
-        Public.set('bonus_xp_on_join', 300)
-        WD.set('next_wave', game.tick + 3600 * 8)
-        Public.set('spidertron_unlocked_at_zone', 8)
-        WD.set_normal_unit_current_health(1.4)
-        WD.set_unit_health_increment_per_wave(0.55)
-        WD.set_boss_unit_current_health(3)
-        WD.set_boss_health_increment_per_wave(3)
-        WD.set('death_mode', false)
-        Public.set('difficulty_set', true)
-        local damage_warning = ({'main.damage_mode_warning'})
-        Alert.alert_all_players_location(data, damage_warning)
-        Core.iter_players(
-            function(player)
-                local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
-                if pos then
-                    player.teleport(pos, surface)
-                else
-                    pos = game.forces.player.get_spawn_position(surface)
-                    player.teleport(pos, surface)
-                end
-            end
-        )
-        local upgrades = Public.get('upgrades')
-        if Public.get('circle') then
-            rendering.destroy(Public.get('circle'))
-        end
-        local locomotive = Public.get('locomotive')
-        Public.set(
-            'circle',
-            rendering.draw_circle {
-                surface = active_surface_index,
-                target = locomotive,
-                color = locomotive.color,
-                filled = false,
-                radius = upgrades.locomotive_aura_radius,
-                only_in_alt_mode = false
-            }
-        )
-        difficulty_and_adjust_prices()
-    elseif index == 3 then
-        force.character_running_speed_modifier = 0
-        force.manual_crafting_speed_modifier = 0
-        Public.set('coin_amount', 4)
-        Public.set('upgrades').flame_turret.limit = 3
-        Public.set('upgrades').landmine.limit = 10
-        Public.set('locomotive_health', 5000)
-        Public.set('locomotive_max_health', 5000)
-        Public.set('bonus_xp_on_join', 50)
-        WD.set('next_wave', game.tick + 3600 * 5)
-        Public.set('spidertron_unlocked_at_zone', 6)
-        WD.set_normal_unit_current_health(1.6)
-        WD.set_unit_health_increment_per_wave(0.7)
-        WD.set_boss_unit_current_health(4)
-        WD.set_boss_health_increment_per_wave(6)
-        WD.set('death_mode', true)
-        Public.set('difficulty_set', true)
-        Core.iter_players(
-            function(player)
-                local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
-                if pos then
-                    player.teleport(pos, surface)
-                else
-                    pos = game.forces.player.get_spawn_position(surface)
-                    player.teleport(pos, surface)
-                end
-            end
-        )
-        local upgrades = Public.get('upgrades')
-        upgrades.locomotive_aura_radius = upgrades.locomotive_aura_radius + 20
-        upgrades.aura_upgrades_max = upgrades.aura_upgrades_max - 4
-        if Public.get('circle') then
-            rendering.destroy(Public.get('circle'))
-        end
-        local locomotive = Public.get('locomotive')
-        Public.set(
-            'circle',
-            rendering.draw_circle {
-                surface = active_surface_index,
-                target = locomotive,
-                color = locomotive.color,
-                filled = false,
-                radius = upgrades.locomotive_aura_radius,
-                only_in_alt_mode = false
-            }
-        )
-        local aura_upgrade = ({'main.aura_upgrade_warning'})
-        Alert.alert_all_players_location(data, aura_upgrade)
-        local death_warning = ({'main.death_mode_warning'})
-        Alert.alert_all_players_location(data, death_warning)
-        difficulty_and_adjust_prices()
-    end
+    force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + 0.5
+    force.character_running_speed_modifier = 0.15
+    force.manual_crafting_speed_modifier = 0.15
+    Public.set('coin_amount', 1)
+    Public.set('upgrades').flame_turret.limit = 12
+    Public.set('upgrades').landmine.limit = 50
+    Public.set('locomotive_health', 10000)
+    Public.set('locomotive_max_health', 10000)
+    Public.set('bonus_xp_on_join', 500)
+    WD.set('next_wave', game.tick + 3600 * 15)
+    Public.set('spidertron_unlocked_at_zone', 10)
+    WD.set_normal_unit_current_health(1.2)
+    WD.set_unit_health_increment_per_wave(0.35)
+    WD.set_boss_unit_current_health(2)
+    WD.set_boss_health_increment_per_wave(1.5)
+    WD.set('death_mode', false)
+    Public.set('difficulty_set', true)
 end
 
 function Public.set_spawn_position()
@@ -1405,7 +1266,7 @@ function Public.on_player_joined_game(event)
             local death_message = ({'main.death_mode_warning'})
             Alert.alert_player(player, 15, death_message)
         end
-        for item, amount in pairs(starting_items) do
+        for item, amount in pairs(this.starting_items) do
             player.insert({name = item, count = amount})
         end
     end
@@ -1414,6 +1275,24 @@ function Public.on_player_joined_game(event)
     -- if top['mod_gui_top_frame'] then
     --     top['mod_gui_top_frame'].destroy()
     -- end
+
+    local final_battle = Public.get('final_battle')
+    if final_battle then
+        local boss_room = game.get_surface('boss_room')
+        if not boss_room or not boss_room.valid then
+            return
+        end
+        if player.surface.index ~= boss_room.index then
+            local pos = boss_room.find_non_colliding_position('character', game.forces.player.get_spawn_position(boss_room), 3, 0, 5)
+            if pos then
+                player.teleport(pos, boss_room)
+            else
+                pos = game.forces.player.get_spawn_position(boss_room)
+                player.teleport(pos, boss_room)
+            end
+        end
+        return
+    end
 
     if player.surface.index ~= active_surface_index then
         local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
@@ -1658,12 +1537,21 @@ function Public.set_player_to_god(player)
         return false
     end
 
-    local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
-    if pos then
-        player.teleport(pos, surface)
+    if string.sub(player.surface.name, 0, #surface.name) == surface.name then
+        local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0, 5)
+        if pos then
+            player.teleport(pos, surface)
+        else
+            pos = game.forces.player.get_spawn_position(surface)
+            player.teleport(pos, surface)
+        end
     else
-        pos = game.forces.player.get_spawn_position(surface)
-        player.teleport(pos, surface)
+        local pos = player.surface.find_non_colliding_position('character', {0, 0}, 3, 0, 5)
+        if pos then
+            player.teleport(pos, player.surface)
+        else
+            player.teleport({pos}, player.surface)
+        end
     end
 
     Event.raise(
@@ -1725,11 +1613,26 @@ Public.light_oil_ammo = {name = 'light-oil', amount = 100}
 Public.artillery_shell_ammo = {name = 'artillery-shell', count = 15}
 Public.laser_turrent_power_source = {buffer_size = 2400000, power_production = 40000}
 
+function Public.get_func(key)
+    if key then
+        return this[key]
+    else
+        return this
+    end
+end
+
 function Public.reset_func_table()
     this.power_sources = {index = 1}
     this.refill_turrets = {index = 1}
     this.magic_crafters = {index = 1}
     this.magic_fluid_crafters = {index = 1}
+    this.starting_items = {
+        ['pistol'] = 1,
+        ['firearm-magazine'] = 16,
+        ['rail'] = 16,
+        ['wood'] = 16,
+        ['explosives'] = 32
+    }
 end
 
 local on_player_joined_game = Public.on_player_joined_game

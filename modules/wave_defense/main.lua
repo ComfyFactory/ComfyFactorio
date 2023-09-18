@@ -827,37 +827,39 @@ local function get_main_command(group)
     Public.debug_print('get_commmands - distance_to_target:' .. distance_to_target .. ' steps:' .. steps)
     Public.debug_print('get_commmands - vector ' .. vector[1] .. '_' .. vector[2])
 
-    for _ = 1, steps, 1 do
-        local old_position = group_position
-        group_position.x = group_position.x + vector[1]
-        group_position.y = group_position.y + vector[2]
-        local obstacles =
-            group.surface.find_entities_filtered {
-            position = old_position,
-            radius = step_length / 2,
-            type = {'simple-entity', 'tree'},
-            limit = 50
-        }
-        if obstacles then
-            shuffle_distance(obstacles, old_position)
-            for ii = 1, #obstacles, 1 do
-                if obstacles[ii].valid then
-                    commands[#commands + 1] = {
-                        type = defines.command.attack,
-                        target = obstacles[ii],
-                        distraction = defines.distraction.by_anything
-                    }
+    if Public.get('enable_side_target') then
+        for _ = 1, steps, 1 do
+            local old_position = group_position
+            group_position.x = group_position.x + vector[1]
+            group_position.y = group_position.y + vector[2]
+            local obstacles =
+                group.surface.find_entities_filtered {
+                position = old_position,
+                radius = step_length / 2,
+                type = {'simple-entity', 'tree'},
+                limit = 50
+            }
+            if obstacles then
+                shuffle_distance(obstacles, old_position)
+                for ii = 1, #obstacles, 1 do
+                    if obstacles[ii].valid then
+                        commands[#commands + 1] = {
+                            type = defines.command.attack,
+                            target = obstacles[ii],
+                            distraction = defines.distraction.by_anything
+                        }
+                    end
                 end
             end
-        end
-        local position = group.surface.find_non_colliding_position('behemoth-biter', group_position, step_length, 1)
-        if position then
-            commands[#commands + 1] = {
-                type = defines.command.attack_area,
-                destination = {x = position.x, y = position.y},
-                radius = 16,
-                distraction = defines.distraction.by_anything
-            }
+            local position = group.surface.find_non_colliding_position('behemoth-biter', group_position, step_length, 1)
+            if position then
+                commands[#commands + 1] = {
+                    type = defines.command.attack_area,
+                    destination = {x = position.x, y = position.y},
+                    radius = 16,
+                    distraction = defines.distraction.by_anything
+                }
+            end
         end
     end
 
@@ -1064,7 +1066,7 @@ local function spawn_unit_group(fs, only_bosses)
         end
     end
 
-    if remove_entities then
+    if remove_entities and not (fs and fs.bypass) then
         remove_trees({surface = surface, position = spawn_position, valid = true})
         remove_rocks({surface = surface, position = spawn_position, valid = true})
         fill_tiles({surface = surface, position = spawn_position, valid = true})
@@ -1252,9 +1254,10 @@ Event.on_nth_tick(
         if game_lost then
             return
         end
+        local final_boss = Public.get('final_boss')
 
         local paused = Public.get('paused')
-        if paused then
+        if paused and not final_boss then
             local players = game.connected_players
             for _, player in pairs(players) do
                 Public.update_gui(player)
@@ -1286,6 +1289,10 @@ Event.on_nth_tick(
             tick_tasks_t2[t2]()
         end
 
+        if final_boss then
+            return
+        end
+
         local players = game.connected_players
         for _, player in pairs(players) do
             Public.update_gui(player)
@@ -1293,9 +1300,24 @@ Event.on_nth_tick(
     end
 )
 
+Event.add(
+    Public.events.on_biters_evolved,
+    function()
+        increase_biter_damage()
+        increase_biters_health()
+    end
+)
+
+Event.add(Public.events.on_spawn_unit_group, spawn_unit_group)
+
 Event.on_nth_tick(
     50,
     function()
+        local final_boss = Public.get('final_boss')
+        if final_boss then
+            return
+        end
+
         local tick_to_spawn_unit_groups = Public.get('tick_to_spawn_unit_groups')
         local tick = game.tick
         local will_not_spawn = tick % tick_to_spawn_unit_groups ~= 0

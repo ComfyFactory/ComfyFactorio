@@ -276,15 +276,27 @@ local function set_train_final_health(final_damage_amount, repair)
     rendering.set_text(health_text, 'HP: ' .. round(locomotive_health) .. ' / ' .. round(locomotive_max_health))
 end
 
-local function is_protected(e)
-    local map_name = 'mtn_v3'
+local function is_protected(data, e)
+    if data.final_battle then
+        local boss_map_name = 'boss_room'
+        if string.sub(e.surface.name, 0, #boss_map_name) ~= boss_map_name then
+            return true
+        end
 
-    if string.sub(e.surface.name, 0, #map_name) ~= map_name then
-        return true
+        if protect_types[e.type] then
+            return true
+        end
+    else
+        local map_name = 'mtn_v3'
+        if string.sub(e.surface.name, 0, #map_name) ~= map_name then
+            return true
+        end
+
+        if protect_types[e.type] then
+            return true
+        end
     end
-    if protect_types[e.type] then
-        return true
-    end
+
     return false
 end
 
@@ -311,7 +323,7 @@ local function protect_entities(data)
     end
 
     local carriages_numbers = Public.get('carriages_numbers')
-    if is_protected(entity) then
+    if is_protected(data, entity) then
         if (cause and cause.valid) then
             if Public.valid_enemy_forces[cause.force.name] then
                 if carriages_numbers and carriages_numbers[entity.unit_number] then
@@ -906,13 +918,15 @@ local function on_entity_damaged(event)
     local wave_number = WD.get_wave()
     local boss_wave_warning = WD.get_alert_boss_wave()
     local munch_time = Public.get('munch_time')
+    local final_battle = Public.get('final_battle')
 
     local data = {
         cause = cause,
         entity = entity,
         final_damage_amount = final_damage_amount,
         original_damage_amount = original_damage_amount,
-        force = force
+        force = force,
+        final_battle = final_battle
     }
 
     protect_entities(data)

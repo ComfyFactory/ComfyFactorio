@@ -104,8 +104,12 @@ end
 
 local function on_tick()
     local tick = game.tick
-    if tick % 20 == 0 then
+
+    if tick % 10 == 0 then
         Functions.item_transfer()
+    end
+
+    if tick % 20 == 0 then
         Functions.hazardous_debris()
     end
     if tick % 240 == 0 then
@@ -134,9 +138,20 @@ local function on_gui_switch_state_changed(event)
     end
 end
 
+local function on_entity_cloned(event)
+    local source = event.source
+    local destination = event.destination
+    Functions.on_entity_cloned(source, destination)
+end
+
 function Public.register_wagon(wagon_entity)
     local icw = ICW.get()
     return Functions.create_wagon(icw, wagon_entity)
+end
+
+function Public.migrate_wagon(source, target)
+    local icw = ICW.get()
+    return Functions.migrate_wagon(icw, source, target)
 end
 
 local on_player_or_robot_built_tile = Functions.on_player_or_robot_built_tile
@@ -154,5 +169,6 @@ Event.add(defines.events.on_gui_opened, on_gui_opened)
 Event.add(defines.events.on_player_built_tile, on_player_or_robot_built_tile)
 Event.add(defines.events.on_robot_built_tile, on_player_or_robot_built_tile)
 Event.add(defines.events.on_gui_switch_state_changed, on_gui_switch_state_changed)
+Event.add(defines.events.on_entity_cloned, on_entity_cloned)
 
 return Public

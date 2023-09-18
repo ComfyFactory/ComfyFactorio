@@ -15,9 +15,8 @@ Global.register(
     end
 )
 
-local starting_items = {['pistol'] = 1, ['firearm-magazine'] = 16, ['rail'] = 16, ['wood'] = 16, ['explosives'] = 32}
-
 function Public.create_surface()
+    local starting_items = Public.get_func('starting_items')
     local map_gen_settings = {
         ['seed'] = math.random(10000, 99999),
         ['width'] = zone_settings.zone_width,

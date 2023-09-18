@@ -240,6 +240,11 @@ Event.on_nth_tick(
             return
         end
 
+        local final_boss = Public.get('final_boss')
+        if final_boss then
+            return
+        end
+
         local paused = Public.get('paused')
         if paused then
             return

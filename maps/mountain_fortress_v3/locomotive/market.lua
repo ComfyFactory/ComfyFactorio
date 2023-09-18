@@ -47,7 +47,6 @@ local function get_items()
     local upgrades = Public.get('upgrades')
     local fixed_prices = Public.get('marked_fixed_prices')
 
-    local chests_outside_cost = round(fixed_prices.chests_outside_cost * (1 + upgrades.chests_outside_upgrades))
     local health_cost = round(fixed_prices.health_cost * (1 + upgrades.health_upgrades))
     local pickaxe_cost = round(fixed_prices.pickaxe_cost * (0.1 + upgrades.pickaxe_tier / 2))
     local aura_cost = round(fixed_prices.aura_cost * (1 + upgrades.aura_upgrades))
@@ -80,30 +79,6 @@ local function get_items()
             price = pickaxe_cost,
             tooltip = ({'main_market.purchase_pickaxe', offer, upgrades.pickaxe_tier, market_limits.pickaxe_tier_limit}),
             sprite = 'achievement/delivery-service',
-            enabled = true,
-            upgrade = true,
-            static = true
-        }
-    end
-
-    if upgrades.chests_outside_upgrades == market_limits.chests_outside_limit then
-        main_market_items['chest_limit_outside'] = {
-            stack = 1,
-            value = 'coin',
-            price = chests_outside_cost,
-            tooltip = ({'locomotive.limit_reached'}),
-            sprite = 'entity.steel-chest',
-            enabled = false,
-            upgrade = true,
-            static = true
-        }
-    else
-        main_market_items['chest_limit_outside'] = {
-            stack = 1,
-            value = 'coin',
-            price = chests_outside_cost,
-            tooltip = ({'main_market.chest', upgrades.chests_outside_upgrades, market_limits.chests_outside_limit}),
-            sprite = 'entity.steel-chest',
             enabled = true,
             upgrade = true,
             static = true
@@ -969,29 +944,6 @@ local function gui_click(event)
         local force = game.forces.player
 
         force.manual_mining_speed_modifier = force.manual_mining_speed_modifier + this.pickaxe_speed_per_purchase
-        this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + item.price
-
-        redraw_market_items(data.item_frame, player, data.search_text)
-        redraw_coins_left(data.coins_left, player)
-
-        return
-    end
-    if name == 'chest_limit_outside' then
-        if this.upgrades.chests_outside_upgrades == this.market_limits.chests_outside_limit then
-            redraw_market_items(data.item_frame, player, data.search_text)
-            player.print(({'locomotive.chests_full'}), {r = 0.98, g = 0.66, b = 0.22})
-            return
-        end
-        player.remove_item({name = item.value, count = item.price})
-
-        local message = ({'locomotive.chest_bought_info', shopkeeper, player.name, format_number(item.price, true)})
-        Alert.alert_all_players(5, message)
-        Server.to_discord_bold(
-            table.concat {
-                player.name .. ' has upgraded the chest limit for ' .. format_number(item.price, true) .. ' coins.'
-            }
-        )
-        this.upgrades.chests_outside_upgrades = this.upgrades.chests_outside_upgrades + item.stack
         this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + item.price
 
         redraw_market_items(data.item_frame, player, data.search_text)

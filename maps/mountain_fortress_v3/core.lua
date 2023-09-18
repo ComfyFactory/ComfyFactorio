@@ -24,9 +24,9 @@ Public.surface = require 'maps.mountain_fortress_v3.surface'
 Public.traps = require 'maps.mountain_fortress_v3.traps'
 Public.defense_system = require 'maps.mountain_fortress_v3.locomotive.defense_system'
 Public.friendly_pet = require 'maps.mountain_fortress_v3.locomotive.friendly_pet'
-Public.linked_chests = require 'maps.mountain_fortress_v3.locomotive.linked_chests'
 Public.market = require 'maps.mountain_fortress_v3.locomotive.market'
 Public.permission_groups = require 'maps.mountain_fortress_v3.locomotive.permission_groups'
 Public.spawn_locomotive = require 'maps.mountain_fortress_v3.locomotive.spawn_locomotive'
+Public.stateful = require 'maps.mountain_fortress_v3.stateful.main'
 
 return Public
