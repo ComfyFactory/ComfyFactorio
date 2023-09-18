@@ -55,11 +55,23 @@ local disabled_items = {
     ['spidertron'] = true,
     ['fluid-wagon'] = true,
     ['cliff-explosives'] = true,
+    ['artillery-shell'] = true,
+    ['artillery-turret'] = true,
     ['atomic-bomb'] = true,
     ['land-mine'] = true,
     ['loader'] = true,
     ['fast-loader'] = true,
-    ['express-loader'] = true
+    ['express-loader'] = true,
+    ['cargo-wagon'] = true,
+    ['locomotive'] = true,
+    ['artillery-wagon'] = true,
+    ['car'] = true,
+    ['tank'] = true,
+    ['artillery-targeting-remote'] = true,
+    ['spidertron-remote'] = true,
+    ['discharge-defense-equipment'] = true,
+    ['discharge-defense-remote'] = true,
+    ['pistol'] = true
 }
 
 local function get_random_buff()
@@ -340,7 +352,7 @@ local function get_random_research_recipe()
         return {name = research_level_list[1], count = 1}
     end
 
-    return {name = research_level_list[1], count = scale(random(10, 20), 40)}
+    return {name = research_level_list[1], count = scale(random(2, 7), 40)}
 end
 
 local function get_random_locomotive_tier()
@@ -524,8 +536,8 @@ local apply_settings_token =
         this.final_battle = false
         this.selected_objectives = get_random_objectives()
         this.objectives = {
-            randomized_zone = scale(random(7, 20), 40),
-            randomized_wave = scale(random(500, 2000), 4000),
+            randomized_zone = scale(random(5, 15), 40),
+            randomized_wave = scale(random(500, 1500), 4000),
             randomized_linked_chests = scale(random(2, 4), 20),
             supplies = get_random_items(),
             single_item = get_random_item(),
@@ -588,8 +600,8 @@ function Public.reset_stateful()
         }
     else
         this.objectives = {
-            randomized_zone = scale(random(7, 20), 40),
-            randomized_wave = scale(random(500, 2000), 4000),
+            randomized_zone = scale(random(5, 15), 40),
+            randomized_wave = scale(random(500, 1500), 4000),
             randomized_linked_chests = scale(random(2, 4), 20),
             supplies = get_random_items(),
             single_item = get_random_item(),
