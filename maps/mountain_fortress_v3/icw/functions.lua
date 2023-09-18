@@ -856,6 +856,12 @@ local function move_room_to_train(icw, train, wagon)
     for _, e in pairs(wagon.surface.find_entities_filtered({type = 'electric-pole', area = wagon.area})) do
         connect_power_pole(e, left_top_y)
     end
+
+    for _, e in pairs(wagon.surface.find_entities_filtered({area = wagon.area, force = 'neutral'})) do
+        if transfer_functions[e.name] then
+            wagon.transfer_entities[#wagon.transfer_entities + 1] = e
+        end
+    end
 end
 
 local function get_connected_rolling_stock(entity, direction, carriages)
