@@ -125,7 +125,7 @@ Public.modifiers = {
 	['ageing'] = {min = 0.01, max = 4, base = 1, dmin = -20, dmax = -10, name = 'Terrain Pollution Consumption'},
 	['diffusion_ratio'] = {min = 0.005, max = 0.05, base = 0.02, dmin = 10, dmax = 20, name = 'Pollution Diffusion'},
 	['technology_price_multiplier'] = {min = 0.05, max = 5, base = 0.5, dmin = 10, dmax = 20, name = 'Technology Price'},
-	['beacon_irritation'] = {min = 10, max = 120, base = 90, dmin = -20, dmax = -10, name = 'Biter Attack Cooldown'},
+	['beacon_irritation'] = {min = 100, max = 1200, base = 900, dmin = -20, dmax = -10, name = 'Biter Attack Cooldown', static = true},
 	['starting_area'] = {min = 1, max = 1, base = 1, dmin = 0, dmax = 0, name = 'Starting Area Size', static = true}
 }
 

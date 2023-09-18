@@ -198,7 +198,7 @@ local function on_nth_tick()
 
 	if tick % 3600 == 0 then
 		Functions.lure_far_biters(journey)
-	elseif tick % 60 == 0 then
+	elseif tick % 600 == 0 then
 		Functions.lure_biters(journey)
 	end
 end

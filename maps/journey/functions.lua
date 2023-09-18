@@ -187,7 +187,7 @@ local function set_map_modifiers(journey)
 	game.map_settings.enemy_evolution['destroy_factor'] = calc_modifier(journey, 'destroy_factor')
 	game.map_settings.enemy_evolution['pollution_factor'] = calc_modifier(journey, 'pollution_factor')
 	game.map_settings.enemy_expansion.min_expansion_cooldown = calc_modifier(journey, 'expansion_cooldown')
-	game.map_settings.enemy_expansion.max_expansion_cooldown = calc_modifier(journey, 'expansion_cooldown') * 4	
+	game.map_settings.enemy_expansion.max_expansion_cooldown = calc_modifier(journey, 'expansion_cooldown') * 4
 	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = calc_modifier(journey, 'enemy_attack_pollution_consumption_modifier')
 	game.map_settings.pollution.ageing = calc_modifier(journey, 'ageing')
 	game.map_settings.pollution.diffusion_ratio = calc_modifier(journey, 'diffusion_ratio')
@@ -687,7 +687,7 @@ end
 
 local function get_activation_level(journey, surface, area)
 	local player_count_in_area = surface.count_entities_filtered({area = area, name = 'character'})
-	local player_count_for_max_activation = math.max(#game.connected_players, journey.vote_minimum) * 0.66
+	local player_count_for_max_activation = math.max(#game.connected_players, journey.vote_minimum) * (2/3)
 	local level = player_count_in_area / player_count_for_max_activation
 	level = math.round(level, 2)
 	return level
@@ -1128,7 +1128,7 @@ function Public.create_the_world(journey)
 		local m = (100 + modifier.value) * 0.01
 		local name = modifier.name
 		local extremes = {Constants.modifiers[name].min, Constants.modifiers[name].max}
-		journey.world_modifiers[name] = math.min(extremes[2], math.max(extremes[1], journey.world_modifiers[name] * m))
+		journey.world_modifiers[name] = math.round(math.min(extremes[2], math.max(extremes[1], journey.world_modifiers[name] * m)), 5)
 	end
 	surface.map_gen_settings = mgs
 	set_map_modifiers(journey)
@@ -1430,27 +1430,29 @@ function Public.lure_biters(journey, position)
 	if journey.game_state ~= 'world' or not journey.beacon_objective.valid then return end
 	local beacon = journey.beacon_objective
 	local surface = beacon.surface
-	local biters = surface.find_entities_filtered{position = position or beacon.position, radius = 40, force = 'enemy', type = 'unit'}
-	local group = surface.create_unit_group({position = position or beacon.position, force = 'enemy'})
-	for _, biter in pairs(biters) do
-		group.add_member(biter)
-	end
-	group.set_command({type = defines.command.attack_area, destination = beacon.position, radius = 10, distraction = defines.distraction.by_anything})
-	return #biters or 0
+	local biters = surface.find_entities_filtered{position = position or beacon.position, radius = 80, force = 'enemy', type = 'unit'}
+	if #biters > 0 then
+		for _, biter in pairs(biters) do
+			 biter.set_command({type = defines.command.attack_area, destination = beacon.position, radius = 10, distraction = defines.distraction.by_anything})
+		end
+	 end
+	--return (#biters or 0)
 end
 
 function Public.lure_far_biters(journey)
-	if journey.game_state ~= 'world' or not journey.beacon_objective.valid then return end
-	if journey.beacon_timer < journey.world_modifiers['beacon_irritation'] then
-		journey.beacon_timer = journey.beacon_timer + 1
-		return
-	end
-
-	local chunk_position = surface.get_random_chunk()
-	local lured = 0
-	while lured < 100 do
-		lured = lured + Public.lure_biters(journey, chunk_position)
-	end
+	-- if journey.game_state ~= 'world' or not journey.beacon_objective.valid then return end
+	-- if journey.beacon_timer < journey.world_modifiers['beacon_irritation'] then
+	-- 	journey.beacon_timer = journey.beacon_timer + 10
+	-- 	return
+	-- end
+	-- local surface = journey.beacon_objective.surface
+	-- local chunk_position = surface.get_random_chunk()
+	-- local lured = 0
+	-- for _ = 1, 25, 1 do
+	-- 	lured = lured + Public.lure_biters(journey, {x = chunk_position.x * 32, y = chunk_position.y * 32})
+	-- end
+	-- game.print('lured ' .. lured .. 'biters at tick ' .. game.tick)
+	-- journey.beacon_timer = journey.beacon_timer - lured
 end
 
 return Public
