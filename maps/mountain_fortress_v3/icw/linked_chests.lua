@@ -11,20 +11,7 @@ local Session = require 'utils.datastore.session_data'
 local AG = require 'utils.antigrief'
 local Discord = require 'utils.discord_handler'
 
-local this = {
-    main_containers = {},
-    linked_gui = {},
-    valid_chests = {
-        ['linked-chest'] = true,
-        ['steel-chest'] = true,
-        ['iron-chest'] = true
-    },
-    enabled = true,
-    uid_counter = 0,
-    disable_normal_placement = true,
-    converted_chests = 0,
-    cost_to_convert = 500
-}
+local this = {}
 
 local chest_converter_frame_for_player_name = Gui.uid_name()
 local convert_chest_to_linked = Gui.uid_name()
@@ -212,7 +199,7 @@ local function fetch_link_id(id)
     return false
 end
 
-local function create_chest(entity, name, raised)
+local function create_chest(entity, name, mode)
     entity.active = false
     entity.destructible = false
     local unit_number = entity.unit_number
@@ -223,15 +210,15 @@ local function create_chest(entity, name, raised)
         local container = {
             chest = entity,
             unit_number = unit_number,
-            mode = 1,
+            mode = 2,
             link_id = entity.link_id,
             share = {
                 name = name or entity.unit_number
             }
         }
 
-        if raised then
-            container.mode = 2
+        if mode then
+            container.mode = mode
         end
 
         add_object(unit_number, container)
@@ -272,29 +259,6 @@ local function restore_link(unit_number, new_unit_number)
     end
 end
 
-local function built_entity_robot(event)
-    if this.disable_normal_placement then
-        return
-    end
-    local entity = event.created_entity
-    if not entity.valid then
-        return
-    end
-    if not this.valid_chests[entity.name] then
-        return
-    end
-
-    local robot = event.robot
-    if robot and robot.valid then
-        local created = event.created_entity
-        if created and created.valid then
-            local inventory = robot.get_inventory(defines.inventory.robot_cargo)
-            inventory.insert({name = created.name, count = 1})
-            created.destroy()
-        end
-    end
-end
-
 remove_chest = function(unit_number)
     restore_links(unit_number)
     remove_object(unit_number)
@@ -328,6 +292,9 @@ end
 
 local function on_pre_player_mined_item(event)
     local entity = event.entity
+    if not entity or not entity.valid then
+        return
+    end
     local player = game.get_player(event.player_index)
     if not player then
         return
@@ -335,7 +302,9 @@ local function on_pre_player_mined_item(event)
     if not this.valid_chests[entity.name] then
         return
     end
-    refund_player(player, entity)
+    if this.disable_normal_placement then
+        refund_player(player, entity)
+    end
     remove_chest(entity.unit_number)
     AG.append_scenario_history(player, entity, player.name .. ' mined chest (' .. entity.unit_number .. ')')
     create_message(player, 'Mined chest', entity.position, nil)
@@ -431,16 +400,6 @@ local function get_all_chests(unit_number)
     return t
 end
 
-local function get_share(entity)
-    local unit_number = entity.unit_number
-    local container = fetch_container(unit_number)
-    if not container.share then
-        create_chest(entity)
-    end
-
-    return container.share
-end
-
 local function refresh_main_frame(data)
     local player = data.player
     local unit_number = data.unit_number
@@ -472,7 +431,7 @@ local function refresh_main_frame(data)
 
         local share_two_label = share_one_bottom_flow.add({type = 'label', caption = 'Share Name: '})
         share_two_label.style.font = 'heading-2'
-        local share_two_text = share_one_bottom_flow.add({type = 'textfield', name = 'share_name', text = get_share(entity).name})
+        local share_two_text = share_one_bottom_flow.add({type = 'textfield', name = 'share_name', text = container.share.name})
         share_two_text.enabled = false
         share_two_text.style.width = 150
         share_two_text.allow_decimal = true
@@ -507,14 +466,18 @@ local function refresh_main_frame(data)
                     disconnect_button.tooltip = '[Antigrief] You have not grown accustomed to this technology yet.'
                 end
 
-                local link_label = linker.add({type = 'label', caption = 'Linked with:', tooltip = linker_tooltip})
-                link_label.style.font = 'heading-2'
+                local share_tbl = volatile_tbl.add {type = 'table', column_count = 8, name = 'share_tbl'}
+                local share_one_bottom_flow = share_tbl.add {type = 'flow'}
+                share_one_bottom_flow.style.minimal_width = 40
 
-                local chest_id = linker.add({type = 'label', caption = 'Chest Id:[color=yellow] ' .. linked_container.unit_number .. '[/color]'})
-                chest_id.style.font = 'heading-2'
-
-                local link_id = linker.add({type = 'label', caption = 'Link Id: [color=yellow] ' .. linked_container.link_id .. '[/color]'})
-                link_id.style.font = 'heading-2'
+                local share_two_label = share_one_bottom_flow.add({type = 'label', caption = 'Linked with: '})
+                share_two_label.style.font = 'heading-2'
+                local share_two_text = share_one_bottom_flow.add({type = 'textfield', text = linked_container.share.name})
+                share_two_text.enabled = false
+                share_two_text.style.width = 150
+                share_two_text.allow_decimal = true
+                share_two_text.allow_negative = false
+                share_two_text.style.minimal_width = 25
             else
                 local link_chest_label = linker.add({type = 'label', caption = 'Link with chest:\n', tooltip = linker_tooltip})
                 link_chest_label.style.font = 'heading-2'
@@ -628,20 +591,50 @@ local function gui_opened(event)
     refresh_main_frame({unit_number = unit_number, player = player})
 end
 
-local function on_built_entity(event, raised, bypass)
-    if this.disable_normal_placement and not raised then
+local function on_built_entity(event, mode, bypass)
+    if this.disable_normal_placement and not mode then
         return
     end
     local entity = event.created_entity
     if not entity.valid then
         return
     end
+
     if not this.valid_chests[entity.name] and not bypass then
         return
     end
+
+    if event.player_index then
+        local active_surface_index = WPT.get('active_surface_index')
+        local player = game.get_player(event.player_index)
+        if not player or not player.valid then
+            return
+        end
+
+        if player.surface.index ~= active_surface_index then
+            if entity.type ~= 'entity-ghost' then
+                player.insert({name = 'linked-chest', count = 1})
+            end
+            entity.destroy()
+            player.print(module_name .. 'Linked chests only work on the main surface.', Color.warning)
+            return
+        end
+
+        local trusted_player = Session.get_trusted_player(player)
+
+        if not trusted_player then
+            if entity.type ~= 'entity-ghost' then
+                player.insert({name = 'linked-chest', count = 1})
+            end
+            entity.destroy()
+            player.print('[Antigrief] You have not grown accustomed to this technology yet.', Color.warning)
+            return
+        end
+    end
+
     local surface = entity.surface
     local position = entity.position
-    if raised and entity.name ~= 'linked-chest' then
+    if mode and entity.name ~= 'linked-chest' then
         entity.destroy()
         entity = surface.create_entity {name = 'linked-chest', position = position, force = game.forces.player}
         event.entity = entity
@@ -650,9 +643,63 @@ local function on_built_entity(event, raised, bypass)
         return
     end
 
-    local s = create_chest(entity, nil, raised)
+    local s = create_chest(entity, nil, mode)
     if s then
         gui_opened(event)
+    end
+end
+
+local function built_entity_robot(event)
+    if this.disable_normal_placement then
+        return
+    end
+    local entity = event.created_entity
+    if not entity.valid then
+        return
+    end
+
+    if not this.valid_chests[entity.name] then
+        return
+    end
+
+    local robot = event.robot
+    if not robot or not robot.valid then
+        return
+    end
+
+    local net_point = robot.logistic_network
+    if net_point and net_point.storage_points and net_point.storage_points[1] and net_point.storage_points[1].owner and net_point.storage_points[1].owner.valid then
+        local player = net_point.storage_points[1].owner.player
+        if not player or not player.valid then
+            return
+        end
+
+        local active_surface_index = WPT.get('active_surface_index')
+
+        if player.surface.index ~= active_surface_index then
+            if entity.type ~= 'entity-ghost' then
+                player.insert({name = 'linked-chest', count = 1})
+            end
+            entity.destroy()
+            player.print(module_name .. 'Linked chests only work on the main surface.', Color.warning)
+            return
+        end
+
+        local trusted_player = Session.get_trusted_player(player)
+
+        if not trusted_player then
+            if entity.type ~= 'entity-ghost' then
+                player.insert({name = 'linked-chest', count = 1})
+            end
+            entity.destroy()
+            player.print('[Antigrief] You have not grown accustomed to this technology yet.', Color.warning)
+            return
+        end
+
+        local s = create_chest(entity)
+        if s then
+            gui_opened(event)
+        end
     end
 end
 
@@ -682,7 +729,7 @@ local function update_gui()
 
         frame.clear()
 
-        if mode ~= 1 then
+        if mode == 2 and not container.linked_to then
             return
         end
 
@@ -910,6 +957,12 @@ local function on_entity_settings_pasted(event)
         return
     end
 
+    if source_container.mode == 2 and not source_container.linked_to then
+        player.print(module_name .. 'The source chest is not linked to anything.', Color.fail)
+        destination_container.chest.link_id = destination_container.link_id
+        return
+    end
+
     if source_container.share.name == '' then
         player.print(module_name .. 'The source chest is not shared.', Color.fail)
         destination_container.chest.link_id = destination_container.link_id
@@ -949,13 +1002,15 @@ local function on_entity_settings_pasted(event)
     player.print(module_name .. 'Successfully pasted settings.', Color.success)
 end
 
-function Public.add(surface, position, force, name)
+function Public.add(surface, position, force, name, mode)
     local entity = surface.create_entity {name = 'linked-chest', position = position, force = force, create_build_effect_smoke = false}
     if not entity.valid then
         return
     end
 
-    create_chest(entity, name)
+    mode = mode or 1
+
+    create_chest(entity, name, mode)
     return entity
 end
 
@@ -1067,7 +1122,7 @@ Event.add(
         local panel = player.gui.relative
         local entity = event.entity
 
-        if entity and entity.valid and this.valid_chests[entity.name] then
+        if this.convert_enabled and entity and entity.valid and this.valid_chests[entity.name] then
             draw_convert_chest_button(panel, entity)
         end
 
@@ -1152,14 +1207,13 @@ function Public.reset()
     this.main_containers = {}
     this.linked_gui = {}
     this.valid_chests = {
-        ['linked-chest'] = true,
-        ['steel-chest'] = true,
-        ['iron-chest'] = true
+        ['linked-chest'] = true
     }
     this.enabled = true
-    this.converted_chests = 0
     this.uid_counter = 0
-    this.disable_normal_placement = true
+    this.disable_normal_placement = false
+    this.converted_chests = 0
+    this.convert_enabled = false
     this.cost_to_convert = 500
 end
 

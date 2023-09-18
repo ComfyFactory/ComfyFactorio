@@ -253,6 +253,15 @@ local function get_items()
             static = true
         }
     end
+    main_market_items['linked-chest'] = {
+        stack = 1,
+        value = 'coin',
+        price = 500,
+        tooltip = ({'entity-name.linked-chest'}),
+        upgrade = false,
+        static = true
+    }
+
     main_market_items['small-lamp'] = {
         stack = 1,
         value = 'coin',
