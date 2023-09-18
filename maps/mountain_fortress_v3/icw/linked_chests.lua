@@ -65,6 +65,10 @@ local remove_all_linked_items_token =
 )
 
 local function create_message(player, action, source_position, destination_position)
+    if not this.notify_discord then
+        return
+    end
+
     local data = {
         title = 'Mountain_fortress_v3',
         description = 'Linked chests action was triggered.',
@@ -1215,6 +1219,7 @@ function Public.reset()
     this.converted_chests = 0
     this.convert_enabled = false
     this.cost_to_convert = 500
+    this.notify_discord = false
 end
 
 Event.add(defines.events.on_built_entity, on_built_entity)
