@@ -115,10 +115,7 @@ Public.quantum_anomaly = {
     on_world_start = function(journey)
         local force = game.forces.player
         for i = 1, 6, 1 do force.technologies['research-speed-' .. i].researched = true end
-        game.difficulty_settings.technology_price_multiplier = game.difficulty_settings.technology_price_multiplier * 0.5
-    end,
-    clear = function(journey)
-        game.difficulty_settings.technology_price_multiplier = game.difficulty_settings.technology_price_multiplier * 2
+        journey.world_specials['technology_price_multiplier'] = 0.5
     end,
 }
 
@@ -205,6 +202,9 @@ end,
 }
 
 Public.swamps = {
+    on_world_start = function(journey)
+        journey.world_specials['water'] = 2
+    end,
     on_chunk_generated = function(event, journey)
         local surface = event.surface
         local seed = surface.map_gen_settings.seed
@@ -368,40 +368,32 @@ Public.infested = {
         }))
     end,
     on_world_start = function(journey)
-        local surface = game.surfaces.nauvis
-        local mgs = surface.map_gen_settings
-        local apc = mgs.autoplace_controls
-        mgs.autoplace_controls['trees'] = {apc['trees'].frequency * 2, size = apc['trees'].size * 2, richness = apc['trees'].richness * 4}
-        surface.map_gen_settings = mgs
-        surface.clear(true)
+        journey.world_specials['trees_size'] = 4
+        journey.world_specials['trees_richness'] = 2
+        journey.world_specials['trees_frequency'] = 2
     end,
     clear = function(journey)
-        local surface = game.surfaces.nauvis
-        local mgs = surface.map_gen_settings
-        local apc = mgs.autoplace_controls
-        mgs.autoplace_controls['trees'] = {apc['trees'].frequency / 2, size = apc['trees'].size / 2, richness = apc['trees'].richness / 4}
-        surface.map_gen_settings = mgs
-
         for _, id in pairs(journey.world_color_filters) do rendering.destroy(id) end
         journey.world_color_filters = {}
     end,
     on_entity_died = function(event)
         local entity = event.entity
-        if not entity.valid then	return end
+        if not entity.valid then return end
         if entity.force.index ~= 3 then return end
         if entity.type ~= 'simple-entity' and entity.type ~= 'tree' then return end
         entity.surface.create_entity({name = BiterRaffle.roll('mixed', game.forces.enemy.evolution_factor + 0.1), position = entity.position, force = 'enemy'})
     end,
     on_player_mined_entity = function(event)
+        if math_random(1,2) == 1 then return end
         local entity = event.entity
-        if not entity.valid then	return end
+        if not entity.valid then return end
         if entity.force.index ~= 3 then return end
         if entity.type ~= 'simple-entity' and entity.type ~= 'tree' then return end
         entity.surface.create_entity({name = BiterRaffle.roll('mixed', game.forces.enemy.evolution_factor + 0.1), position = entity.position, force = 'enemy'})
     end,
     on_robot_mined_entity = function(event)
         local entity = event.entity
-        if not entity.valid then	return end
+        if not entity.valid then return end
         if entity.force.index ~= 3 then return end
         if entity.type ~= 'simple-entity' and entity.type ~= 'tree' then return end
         entity.surface.create_entity({name = BiterRaffle.roll('mixed', game.forces.enemy.evolution_factor + 0.1), position = entity.position, force = 'enemy'})
@@ -541,43 +533,20 @@ Public.abandoned_library = {
 
 Public.railworld = {
     on_world_start = function(journey)
-        local surface = game.surfaces.nauvis
-        local mgs = surface.map_gen_settings
-        mgs.starting_area = 3
-        local apc = mgs.autoplace_controls
-        mgs.autoplace_controls = {
-            ['coal'] = {frequency = apc['coal'].frequency / 4, size = apc['coal'].size * 4, richness = apc['coal'].richness * 4},
-            ['stone'] = {frequency = apc['stone'].frequency / 4, size = apc['stone'].size * 4, richness = apc['stone'].richness * 4},
-            ['copper-ore'] = {frequency = apc['copper-ore'].frequency / 4, size = apc['copper-ore'].size * 4, richness = apc['copper-ore'].richness * 4},
-            ['iron-ore'] = {frequency = apc['iron-ore'].frequency / 4, size = apc['iron-ore'].size * 4, richness = apc['iron-ore'].richness * 4},
-            ['uranium-ore'] = {frequency = apc['uranium-ore'].frequency / 4, size = apc['uranium-ore'].size * 4, richness = apc['uranium-ore'].richness * 4},
-            ['crude-oil'] = {frequency = apc['crude-oil'].frequency / 4, size = apc['crude-oil'].size * 4, richness = apc['crude-oil'].richness * 4},
-            ['trees'] = apc['trees'],
-            ['enemy-base'] = {frequency = apc['enemy-base'].frequency / 4, size = apc['enemy-base'].size * 2, richness = apc['enemy-base'].richness * 2},
-        }
-        mgs.water = mgs.water + 1
-        surface.map_gen_settings = mgs
-        surface.clear(true)
+        journey.world_specials['ore_size'] = 4
+        journey.world_specials['ore_frequency'] = 0.25
+        journey.world_specials['coal'] = 4
+        journey.world_specials['stone'] = 4
+        journey.world_specials['copper-ore'] = 4
+        journey.world_specials['iron-ore'] = 4
+        journey.world_specials['uranium-ore'] = 4
+        journey.world_specials['crude-oil'] = 4
+        journey.world_specials['enemy_base_frequency'] = 0.25
+        journey.world_specials['enemy_base_size'] = 2
+        journey.world_specials['enemy_base_richness'] = 2
+        journey.world_specials['water'] = 1.5
+        journey.world_specials['starting_area'] = 3
     end,
-    clear = function(journey)
-        local surface = game.surfaces.nauvis
-        local mgs = surface.map_gen_settings
-        mgs.starting_area = 3
-        local apc = mgs.autoplace_controls
-        mgs.autoplace_controls = {
-            ['coal'] = {frequency = apc['coal'].frequency * 4, size = apc['coal'].size / 4, richness = apc['coal'].richness / 4},
-            ['stone'] = {frequency = apc['stone'].frequency * 4, size = apc['stone'].size / 4, richness = apc['stone'].richness / 4},
-            ['copper-ore'] = {frequency = apc['copper-ore'].frequency * 4, size = apc['copper-ore'].size / 4, richness = apc['copper-ore'].richness / 4},
-            ['iron-ore'] = {frequency = apc['iron-ore'].frequency * 4, size = apc['iron-ore'].size / 4, richness = apc['iron-ore'].richness / 4},
-            ['uranium-ore'] = {frequency = apc['uranium-ore'].frequency * 4, size = apc['uranium-ore'].size / 4, richness = apc['uranium-ore'].richness / 4},
-            ['crude-oil'] = {frequency = apc['crude-oil'].frequency * 4, size = apc['crude-oil'].size / 4, richness = apc['crude-oil'].richness / 4},
-            ['trees'] = apc['trees'],
-            ['enemy-base'] = {frequency = apc['enemy-base'].frequency * 4, size = apc['enemy-base'].size / 2, richness = apc['enemy-base'].richness / 2},
-        }
-        mgs.water = mgs.water - 1
-        surface.map_gen_settings = mgs
-    end,
-
 }
 
 local delivery_options = {

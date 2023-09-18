@@ -97,9 +97,14 @@ Public.mothership_gen_settings = {
 }
 
 Public.modifiers = {
-	['trees'] = {min = 0.01, max = 10, base = 1, dmin = -20, dmax = -10, name = 'Trees'},
-	['tree_durability'] = {min = 0.1, max = 50, base = 10, dmin = -30, dmax =-15, name = 'Tree Durability'},
-	['cliff_settings'] = {min = 0.01, max = 10, base = 1, dmin = 20, dmax = 40, name = 'Cliffs'},
+	['trees_size'] = {min = 0.01, max = 10, base = 1, dmin = -40, dmax = -20, name = 'Forest Sizes'},
+	['trees_richness'] = {min = 0.01, max = 10, base = 1, dmin = -40, dmax = -20, name = 'Amounts Of Trees'},
+	['trees_frequency'] = {min = 0.01, max = 10, base = 1, dmin = -40, dmax = -20, name = 'Forest Frequency'},
+	['tree_durability'] = {min = 0.1, max = 50, base = 30, dmin = -30, dmax =-15, name = 'Tree Durability'},
+	['ore_size'] = {min = 0.8, max = 10, base = 2, dmin = -10, dmax = -5, name = 'Ore Field Size'},
+	['ore_frequency'] = {min = 1, max = 1, base = 1, dmin = 0, dmax = 0, name = 'Ore Frequency', static = true},
+	['cliff_continuity'] = {min = 1, max = 10, base = 8, dmin = -30, dmax = -15, name = 'Cliff Continuity'},
+	['cliff_frequency'] = {min = 5, max = 80, base = 60, dmin = -30, dmax = -15, name = 'Cliff Frequency'},
 	['water'] = {min = 0.01, max = 10, base = 1, dmin = -20, dmax = -10, name = 'Water'},
 	['coal'] = {min = 0.01, max = 10, base = 1, dmin = -20, dmax = -10, name = 'Coal'},
 	['stone'] = {min = 0.01, max = 10, base = 1, dmin = -20, dmax = -10, name = 'Stone'},
@@ -108,7 +113,9 @@ Public.modifiers = {
 	['crude-oil'] = {min = 0.01, max = 10, base = 1, dmin = -20, dmax = -10, name = 'Oil'},
 	['uranium-ore'] = {min = 0.01, max = 10, base = 1, dmin = -20, dmax = -10, name = 'Uranium Ore'},
 	['mixed_ore'] = {min = 0.01, max = 10, base = 1, dmin = -20, dmax = -10, name = 'Mixed Ore'},
-	['enemy-base'] = {min = 0.01, max = 10, base = 1, dmin = 10, dmax = 20, name = 'Nests'},
+	['enemy_base_size'] = {min = 0.01, max = 10, base = 1, dmin = 20, dmax = 40, name = 'Nest Sizes'},
+	['enemy_base_richness'] = {min = 0.01, max = 10, base = 1, dmin = 20, dmax = 40, name = 'Nest Amounts'},
+	['enemy_base_frequency'] = {min = 0.01, max = 10, base = 1, dmin = 20, dmax = 40, name = 'Nest Frequency'},
 	['expansion_cooldown'] = {min = 3600, max = 28800, base = 14400, dmin = -20, dmax = -10, name = 'Nest Expansion Cooldown'},
 	['enemy_attack_pollution_consumption_modifier'] = {min = 0.25, max = 4, base = 1, dmin = -5, dmax = -2.5, name = 'Nest Pollution Consumption'},
 	['max_unit_group_size'] = {min = 10, max = 500, base = 100, dmin = 10, dmax = 20, name = 'Biter Group Size Maximum'},
@@ -118,6 +125,8 @@ Public.modifiers = {
 	['ageing'] = {min = 0.01, max = 4, base = 1, dmin = -20, dmax = -10, name = 'Terrain Pollution Consumption'},
 	['diffusion_ratio'] = {min = 0.005, max = 0.05, base = 0.02, dmin = 10, dmax = 20, name = 'Pollution Diffusion'},
 	['technology_price_multiplier'] = {min = 0.05, max = 5, base = 0.5, dmin = 10, dmax = 20, name = 'Technology Price'},
+	['beacon_irritation'] = {min = 10, max = 120, base = 90, dmin = -20, dmax = -10, name = 'Biter Attack Cooldown'},
+	['starting_area'] = {min = 1, max = 1, base = 1, dmin = 0, dmax = 0, name = 'Starting Area Size', static = true}
 }
 
 Public.starter_goods_pool = {

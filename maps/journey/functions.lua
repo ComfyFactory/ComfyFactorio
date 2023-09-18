@@ -160,24 +160,53 @@ local function remove_offline_players(maximum_age_in_hours)
 	game.remove_offline_players(players_to_remove)
 end
 
-local function get_current_modifier_percentage(name, journey)
+local function calc_modifier(journey, name)
+	return journey.world_modifiers[name] * (journey.world_specials[name] or 1)
+end
+
+local function set_map_modifiers(journey)
 	local mgs = game.surfaces.nauvis.map_gen_settings
-	for _, autoplace in pairs({'iron-ore', 'copper-ore', 'uranium-ore', 'coal', 'stone', 'crude-oil', 'stone', 'trees', 'enemy-base'}) do
-		if name == autoplace then return mgs.autoplace_controls[name].richness end
+	for _, name in pairs({'iron-ore', 'copper-ore', 'uranium-ore', 'coal', 'stone', 'crude-oil'}) do
+		mgs.autoplace_controls[name].richness = calc_modifier(journey, name)
+		mgs.autoplace_controls[name].size = calc_modifier(journey, 'ore_size')
+		mgs.autoplace_controls[name].frequency = calc_modifier(journey, 'ore_frequency')
 	end
-	if name == 'cliff_settings' then return 40 / mgs.cliff_settings.cliff_elevation_interval end
-	if name == 'water' then	return mgs.water end
-	if name == 'time_factor' then return game.map_settings.enemy_evolution.time_factor * 250000 end
-	if name == 'destroy_factor' then return game.map_settings.enemy_evolution.destroy_factor * 500 end
-	if name == 'pollution_factor' then return game.map_settings.enemy_evolution.pollution_factor * 1111000 end
-	if name == 'expansion_cooldown' then return (game.map_settings.enemy_expansion.min_expansion_cooldown / 144) * 0.01 end
-	if name == 'technology_price_multiplier' then return game.difficulty_settings.technology_price_multiplier * 2 end
-	if name == 'enemy_attack_pollution_consumption_modifier' then return game.map_settings.pollution.enemy_attack_pollution_consumption_modifier end
-	if name == 'ageing' then return game.map_settings.pollution.ageing end
-	if name == 'diffusion_ratio' then return game.map_settings.pollution.diffusion_ratio * 50 end
-	if name == 'tree_durability' then return game.map_settings.pollution.pollution_restored_per_tree_damage * 0.1 end
-	if name == 'max_unit_group_size' then return game.map_settings.unit_group.max_unit_group_size * 0.005 end
-	if name == 'mixed_ore' then return journey.mixed_ore_richness end
+	journey.mixed_ore_richness = calc_modifier(journey, 'mixed_ore')
+
+	mgs.autoplace_controls['trees'].richness = calc_modifier(journey, 'trees_richness')
+	mgs.autoplace_controls['trees'].size = calc_modifier(journey, 'trees_size')
+	mgs.autoplace_controls['trees'].frequency = calc_modifier(journey, 'trees_frequency')
+	mgs.autoplace_controls['enemy-base'].richness = calc_modifier(journey, 'enemy_base_richness')
+	mgs.autoplace_controls['enemy-base'].size = calc_modifier(journey, 'enemy_base_size')
+	mgs.autoplace_controls['enemy-base'].frequency = calc_modifier(journey, 'enemy_base_frequency')
+	mgs.starting_area = calc_modifier(journey, 'starting_area')
+	mgs.cliff_settings.cliff_elevation_interval = calc_modifier(journey, 'cliff_frequency')
+	mgs.cliff_settings.richness = calc_modifier(journey, 'cliff_continuity')
+	mgs.water = calc_modifier(journey, 'water')
+	game.map_settings.enemy_evolution['time_factor'] = calc_modifier(journey, 'time_factor')
+	game.map_settings.enemy_evolution['destroy_factor'] = calc_modifier(journey, 'destroy_factor')
+	game.map_settings.enemy_evolution['pollution_factor'] = calc_modifier(journey, 'pollution_factor')
+	game.map_settings.enemy_expansion.min_expansion_cooldown = calc_modifier(journey, 'expansion_cooldown')
+	game.map_settings.enemy_expansion.max_expansion_cooldown = calc_modifier(journey, 'expansion_cooldown') * 4	
+	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = calc_modifier(journey, 'enemy_attack_pollution_consumption_modifier')
+	game.map_settings.pollution.ageing = calc_modifier(journey, 'ageing')
+	game.map_settings.pollution.diffusion_ratio = calc_modifier(journey, 'diffusion_ratio')
+	game.map_settings.pollution.min_pollution_to_damage_trees = calc_modifier(journey, 'tree_durability') * 6
+	game.map_settings.pollution.pollution_restored_per_tree_damage = calc_modifier(journey, 'tree_durability')
+	game.map_settings.unit_group.max_unit_group_size = calc_modifier(journey, 'max_unit_group_size')
+	game.difficulty_settings.technology_price_multiplier = calc_modifier(journey, 'technology_price_multiplier')
+	game.surfaces.nauvis.map_gen_settings = mgs
+end
+
+--raw == true returns directly the number
+--raw == false returs ratio compared to default
+local function get_modifier(name, journey, raw)
+	local value = calc_modifier(journey, name)
+	if raw then
+		return value
+	else
+		return value * (1 / (Constants.modifiers[name].base or 1))
+	end
 end
 
 local function delete_nauvis_chunks(journey)
@@ -285,7 +314,7 @@ end
 function Public.update_tooltips(journey)
 	local modiftt = {''}
 	for k, v in pairs(Constants.modifiers) do
-		modiftt = {'', modiftt, {'journey.tooltip_modifier', v.name, math.round(get_current_modifier_percentage(k, journey) * 100)}}
+		modiftt = {'', modiftt, {'journey.tooltip_modifier', v.name, math.round(get_modifier(k, journey) * 100)}}
 	end
 	journey.tooltip_modifiers = modiftt
 
@@ -432,25 +461,10 @@ function Public.hard_reset(journey)
 	game.map_settings.enemy_expansion.max_expansion_distance = 20
 	game.map_settings.enemy_expansion.settler_group_min_size = 5
 	game.map_settings.enemy_expansion.settler_group_max_size = 50
-	game.map_settings.enemy_expansion.min_expansion_cooldown = 14400
-	game.map_settings.enemy_expansion.max_expansion_cooldown = 216000
 
 	game.map_settings.pollution.enabled = true
-	game.map_settings.pollution.ageing = 1
-	game.map_settings.pollution.diffusion_ratio = 0.02
 	game.map_settings.pollution.min_to_diffuse = 75
 	game.map_settings.pollution.expected_max_per_chunk = 300
-	game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 1
-	game.map_settings.pollution.min_pollution_to_damage_trees = 60
-	game.map_settings.pollution.pollution_restored_per_tree_damage = 10
-
-	game.map_settings.unit_group.max_unit_group_size = 200
-
-	game.difficulty_settings.technology_price_multiplier = 0.5
-
-	game.map_settings.enemy_evolution.time_factor = 0.000004
-	game.map_settings.enemy_evolution.destroy_factor = 0.002
-	game.map_settings.enemy_evolution.pollution_factor = 0.0000009
 
 	game.map_settings.enemy_expansion.max_expansion_distance = 5 --default 7
 	game.map_settings.enemy_expansion.friendly_base_influence_radius = 1 --default 2
@@ -460,21 +474,7 @@ function Public.hard_reset(journey)
 	game.map_settings.enemy_expansion.neighbouring_base_chunk_coefficient = 0.25 --default 0.4
 
 	local surface = game.surfaces[1]
-	local mgs = surface.map_gen_settings
-	mgs.water = 1
-	mgs.starting_area = 1
-	mgs.cliff_settings = {cliff_elevation_interval = 40, cliff_elevation_0 = 10, richness = 1}
-	mgs.autoplace_controls = {
-		['coal'] = {frequency = 1, size = 1, richness = 1},
-		['stone'] = {frequency = 1, size = 1, richness = 1},
-		['copper-ore'] = {frequency = 1, size = 1, richness = 1},
-		['iron-ore'] = {frequency = 1, size = 1, richness = 1},
-		['uranium-ore'] = {frequency = 1, size = 1, richness = 1},
-		['crude-oil'] = {frequency = 1, size = 1, richness = 1},
-		['trees'] = {frequency = 1, size = 1, richness = 1},
-		['enemy-base'] = {frequency = 1, size = 1, richness = 1},
-	}
-	surface.map_gen_settings = mgs
+
 	surface.clear(true)
 	surface.daytime = math.random(1, 100) * 0.01
 
@@ -510,9 +510,11 @@ function Public.hard_reset(journey)
 	journey.nauvis_chunk_positions = nil
 	journey.beacon_objective_health = 10000
 	journey.beacon_objective_resistance = 0.9
+	journey.beacon_timer = 0
 	journey.world_number = 0
 	journey.world_trait = 'lush'
 	journey.world_modifiers = {}
+	journey.world_specials = {}
 	journey.emergency_triggered = false
 	journey.emergency_selected = false
 	journey.game_state = 'create_mothership'
@@ -781,8 +783,10 @@ function Public.set_world_selectors(journey)
 	}
 
 	local modifier_names = {}
-	for k, _ in pairs(Constants.modifiers) do
-		table.insert(modifier_names, k)
+	for k, v in pairs(Constants.modifiers) do
+		if not v.static then
+			table.insert(modifier_names, k)
+		end
 	end
 
 	local unique_world_traits = {}
@@ -816,35 +820,35 @@ function Public.set_world_selectors(journey)
 					--at max, so we lower it as a positive modifier
 					v = math.floor(math.random(data.dmin, data.dmax) * -0.5)
 					counts[2] = counts[2] + 1
-					modifiers[i] = {modifier, v, false}
+					modifiers[i] = {name = modifier, value = v, neg = false}
 				elseif data.dmin < 0 and counts[1] < limits[1] then
 					--at max, but it is good modifier, so lower it as negative modifier
 					v = math.floor(math.random(data.dmin, data.dmax))
 					counts[1] = counts[1] + 1
-					modifiers[i] = {modifier, v, true}
+					modifiers[i] = {name = modifier, value = v, neg = true}
 				end
 			elseif journey.world_modifiers[modifier] <= data.min then
 				if data.dmin < 0 and counts[1] < limits[1] then
 					--at min, but good to have it min, so we grow it as negative modifier
 					v = math.floor(math.random(data.dmin, data.dmax))
 					counts[1] = counts[1] + 1
-					modifiers[i] = {modifier, v, true}
+					modifiers[i] = {name = modifier, value = v, neg = true}
 				elseif data.dmin > 0 and counts[2] < limits[2] then
 					--at min, but min is bad, so we grow it as positive modifier
 					v = math.floor(math.random(data.dmin, data.dmax) * -0.5)
 					counts[2] = counts[2] + 1
-					modifiers[i] = {modifier, v, false}
+					modifiers[i] = {name = modifier, value = v, neg = false}
 				end
 			else
 				--somewhere in middle, we first try to fill the positives then negatives. table is shuffled so it should be fine
 				if counts[2] < limits[2] then
 					v = math.floor(math.random(data.dmin, data.dmax) * -0.5)
 					counts[2] = counts[2] + 1
-					modifiers[i] = {modifier, v, false}
+					modifiers[i] = {name = modifier, value = v, neg = false}
 				elseif counts[1] < limits[1] then
 					v = math.floor(math.random(data.dmin, data.dmax))
 					counts[1] = counts[1] + 1
-					modifiers[i] = {modifier, v, true}
+					modifiers[i] = {name = modifier, value = v, neg = true}
 				end
 			end
 			i = i + 1
@@ -866,12 +870,12 @@ function Public.set_world_selectors(journey)
 		for k2, modifier in pairs(modifiers) do
 			y_modifier = y_modifier + 0.8
 			local text = ''
-			if modifier[2] > 0 then text = text .. '+' end
-			text = text .. modifier[2] .. '% '
-			text = text .. Constants.modifiers[modifier[1]].name
+			if modifier.value > 0 then text = text .. '+' end
+			text = text .. modifier.value .. '% '
+			text = text .. Constants.modifiers[modifier.name].name
 
 			local color
-			if modifier[3] then
+			if modifier.neg then
 				color = {200, 0, 0, 255}
 			else
 				color = {0, 200, 0, 255}
@@ -1102,7 +1106,7 @@ function Public.clear_modifiers(journey)
 	local unique_modifier = Unique_modifiers[journey.world_trait]
 	local clear = unique_modifier.clear
 	if clear then clear(journey) end
-
+	journey.world_specials = {}
 	local force = game.forces.player
 	force.reset()
 	force.reset_technologies()
@@ -1121,69 +1125,13 @@ function Public.create_the_world(journey)
 
 	local modifiers = journey.world_selectors[journey.selected_world].modifiers
 	for _, modifier in pairs(modifiers) do
-		local m = (100 + modifier[2]) * 0.01
-		local name = modifier[1]
-		local extremes = {Constants.modifiers[modifier[1]].min, Constants.modifiers[modifier[1]].max}
+		local m = (100 + modifier.value) * 0.01
+		local name = modifier.name
+		local extremes = {Constants.modifiers[name].min, Constants.modifiers[name].max}
 		journey.world_modifiers[name] = math.min(extremes[2], math.max(extremes[1], journey.world_modifiers[name] * m))
-		for _, autoplace in pairs({'iron-ore', 'copper-ore', 'uranium-ore', 'coal', 'stone', 'crude-oil'}) do
-			if name == autoplace then
-				mgs.autoplace_controls[name].richness = journey.world_modifiers[name]
-				break
-			end
-		end
-		if name == 'mixed_ore' then
-			journey.mixed_ore_richness = journey.world_modifiers[name]
-		end
-		for _, autoplace in pairs({'trees', 'enemy-base'}) do
-			if name == autoplace then
-				for k, v in pairs(mgs.autoplace_controls[name]) do
-					mgs.autoplace_controls[name][k] = journey.world_modifiers[name]
-				end
-				break
-			end
-		end
-		if name == 'cliff_settings' then
-			--smaller value = more cliffs
-			local m2 = (100 - modifier[2]) * 0.01
-			mgs.cliff_settings.cliff_elevation_interval = mgs.cliff_settings.cliff_elevation_interval * m2
-			mgs.cliff_settings.cliff_elevation_0 = mgs.cliff_settings.cliff_elevation_0 * m2
-		end
-		if name == 'water' then
-			mgs.water = journey.world_modifiers[name]
-		end
-		for _, evo in pairs({'time_factor', 'destroy_factor', 'pollution_factor'}) do
-			if name == evo then
-				game.map_settings.enemy_evolution[name] = journey.world_modifiers[name]
-				break
-			end
-		end
-		if name == 'expansion_cooldown' then
-			game.map_settings.enemy_expansion.min_expansion_cooldown = journey.world_modifiers[name]
-			game.map_settings.enemy_expansion.max_expansion_cooldown = journey.world_modifiers[name]
-		end
-		if name == 'technology_price_multiplier' then
-			game.difficulty_settings.technology_price_multiplier = journey.world_modifiers[name]
-		end
-		if name == 'enemy_attack_pollution_consumption_modifier' then
-			game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = journey.world_modifiers[name]
-		end
-		if name == 'ageing' then
-			game.map_settings.pollution.ageing = journey.world_modifiers[name]
-		end
-		if name == 'diffusion_ratio' then
-			--recommended to keep the diffusion at 0 to 50%. Going over 100% eventually gives corrupted map due to pollution value overflows so needs to be capped
-			game.map_settings.pollution.diffusion_ratio = journey.world_modifiers[name]
-		end
-		if name == 'tree_durability' then
-			game.map_settings.pollution.min_pollution_to_damage_trees = journey.world_modifiers[name] * 6
-			game.map_settings.pollution.pollution_restored_per_tree_damage = journey.world_modifiers[name]
-		end
-		if name == 'max_unit_group_size' then
-			game.map_settings.unit_group.max_unit_group_size = journey.world_modifiers[name]
-		end
 	end
-
 	surface.map_gen_settings = mgs
+	set_map_modifiers(journey)
 	surface.clear(false)
 
 	journey.world_trait = journey.world_selectors[journey.selected_world].world_trait
@@ -1478,13 +1426,30 @@ function Public.deal_damage_to_beacon(journey, incoming_damage)
 	end
 end
 
-function Public.lure_biters(journey)
+function Public.lure_biters(journey, position)
 	if journey.game_state ~= 'world' or not journey.beacon_objective.valid then return end
 	local beacon = journey.beacon_objective
 	local surface = beacon.surface
-	local biters = surface.find_entities_filtered{position = beacon.position, radius = 40, force = 'enemy', type = 'unit'}
+	local biters = surface.find_entities_filtered{position = position or beacon.position, radius = 40, force = 'enemy', type = 'unit'}
+	local group = surface.create_unit_group({position = position or beacon.position, force = 'enemy'})
 	for _, biter in pairs(biters) do
-		biter.set_command({type = defines.command.attack_area, destination = beacon.position, radius = 10, distraction = defines.distraction.by_anything})
+		group.add_member(biter)
+	end
+	group.set_command({type = defines.command.attack_area, destination = beacon.position, radius = 10, distraction = defines.distraction.by_anything})
+	return #biters or 0
+end
+
+function Public.lure_far_biters(journey)
+	if journey.game_state ~= 'world' or not journey.beacon_objective.valid then return end
+	if journey.beacon_timer < journey.world_modifiers['beacon_irritation'] then
+		journey.beacon_timer = journey.beacon_timer + 1
+		return
+	end
+
+	local chunk_position = surface.get_random_chunk()
+	local lured = 0
+	while lured < 100 do
+		lured = lured + Public.lure_biters(journey, chunk_position)
 	end
 end
 

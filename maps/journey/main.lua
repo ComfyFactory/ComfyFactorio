@@ -194,7 +194,13 @@ end
 local function on_nth_tick()
 	Functions[journey.game_state](journey)
 	Functions.mothership_message_queue(journey)
-	Functions.lure_biters(journey)
+	local tick = game.tick
+
+	if tick % 3600 == 0 then
+		Functions.lure_far_biters(journey)
+	elseif tick % 60 == 0 then
+		Functions.lure_biters(journey)
+	end
 end
 
 local function on_init()
