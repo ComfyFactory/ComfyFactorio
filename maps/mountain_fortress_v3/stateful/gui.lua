@@ -487,7 +487,13 @@ local function main_frame(player)
         linked_left_flow.style.horizontal_align = 'left'
         linked_left_flow.style.horizontally_stretchable = true
 
-        linked_left_flow.add({type = 'label', caption = {'stateful.linked'}, tooltip = {'stateful.linked_tooltip'}})
+        local convert_enabled = LinkedChests.get('convert_enabled')
+        if convert_enabled then
+            linked_left_flow.add({type = 'label', caption = {'stateful.linked'}, tooltip = {'stateful.linked_tooltip'}})
+        else
+            linked_left_flow.add({type = 'label', caption = {'stateful.linked_static'}, tooltip = {'stateful.linked_static_tooltip'}})
+        end
+
         frame.add({type = 'line', direction = 'vertical'})
         local linked_right_flow = objective_tbl.add({type = 'flow'})
         linked_right_flow.style.horizontal_align = 'right'
