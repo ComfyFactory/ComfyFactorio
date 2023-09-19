@@ -948,7 +948,7 @@ function Public.construct_train(icw, locomotive, carriages)
     local train = {surface = Public.create_room_surface(icw, unit_number), wagons = {}, top_y = 0}
     icw.trains[unit_number] = train
 
-    for k, carriage in pairs(carriages) do
+    for _, carriage in pairs(carriages) do
         move_room_to_train(icw, train, icw.wagons[carriage.unit_number])
     end
 end
@@ -1115,7 +1115,7 @@ function Public.on_player_or_robot_built_tile(event)
         return
     end
 
-    for k, v in pairs(tiles) do
+    for _, v in pairs(tiles) do
         local old_tile = v.old_tile
         if old_tile.name == 'water' then
             surface.set_tiles({{name = 'water', position = v.position}}, true)

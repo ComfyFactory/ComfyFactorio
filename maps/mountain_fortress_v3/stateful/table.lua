@@ -50,30 +50,6 @@ local stateful_spawn_points = {
     {{x = -190, y = -160}, {x = -160, y = 160}}
 }
 
-local disabled_items = {
-    ['landfill'] = true,
-    ['spidertron'] = true,
-    ['fluid-wagon'] = true,
-    ['cliff-explosives'] = true,
-    ['artillery-shell'] = true,
-    ['artillery-turret'] = true,
-    ['atomic-bomb'] = true,
-    ['land-mine'] = true,
-    ['loader'] = true,
-    ['fast-loader'] = true,
-    ['express-loader'] = true,
-    ['cargo-wagon'] = true,
-    ['locomotive'] = true,
-    ['artillery-wagon'] = true,
-    ['car'] = true,
-    ['tank'] = true,
-    ['artillery-targeting-remote'] = true,
-    ['spidertron-remote'] = true,
-    ['discharge-defense-equipment'] = true,
-    ['discharge-defense-remote'] = true,
-    ['pistol'] = true
-}
-
 local function get_random_buff()
     local buffs = {
         {
@@ -282,23 +258,29 @@ local function scale(setting, limit)
 end
 
 local function get_random_items()
-    local recipes = game.forces.player.recipes
-    local items = {}
-    local i = 0
+    local items = {
+        {'iron-plate', scale(random(5000000, 20000000))},
+        {'steel-plate', scale(random(400000, 1500000))},
+        {'copper-plate', scale(random(5000000, 20000000))},
+        {'iron-gear-wheel', scale(random(400000, 1000000))},
+        {'iron-stick', scale(random(100000, 300000))},
+        {'copper-cable', scale(random(20000000, 50000000))},
+        {'electronic-circuit', scale(random(5000000, 20000000))},
+        {'advanced-circuit', scale(random(1000000, 2000000))},
+        {'processing-unit', scale(random(100000, 400000))},
+        {'engine-unit', scale(random(100000, 300000))},
+        {'electric-engine-unit', scale(random(50000, 150000))},
+        {'rocket-control-unit', scale(random(100000, 200000))},
+        {'explosives', scale(random(1000000, 2000000))}
+    }
 
-    for _, recipe in pairs(recipes) do
-        if recipe.prototype.energy > 6 and not disabled_items[recipe.name] then
-            items[i] = recipe
-            i = i + 1
-        end
-    end
-
+    shuffle(items)
     shuffle(items)
 
     local container = {
-        [1] = {name = items[1].products[1].name, count = scale(random(100, 5000))},
-        [2] = {name = items[2].products[1].name, count = scale(random(100, 5000))},
-        [3] = {name = items[3].products[1].name, count = scale(random(100, 5000))}
+        [1] = {name = items[1][1], count = items[1][2]},
+        [2] = {name = items[2][1], count = items[2][2]},
+        [3] = {name = items[3][1], count = items[3][2]}
     }
 
     if this.test_mode then
@@ -313,25 +295,19 @@ local function get_random_items()
 end
 
 local function get_random_item()
-    local recipes = game.forces.player.recipes
-    local items = {}
-    local i = 0
-
-    for _, recipe in pairs(recipes) do
-        if recipe.prototype.energy > 1 and not disabled_items[recipe.name] then
-            items[i] = recipe
-            i = i + 1
-        end
-    end
+    local items = {
+        {'effectivity-module', scale(random(500, 4000))},
+        {'effectivity-module-2', scale(random(200, 1000))},
+        {'productivity-module', scale(random(50000, 100000))},
+        {'productivity-module-2', scale(random(5000, 20000))},
+        {'speed-module', scale(random(50000, 200000))},
+        {'speed-module-2', scale(random(5000, 25000))}
+    }
 
     shuffle(items)
     shuffle(items)
 
-    if this.test_mode then
-        return {name = items[10].products[1].name, count = 1}
-    end
-
-    return {name = items[10].products[1].name, count = scale(random(5000, 100000), 40000000)}
+    return {name = items[1][1], count = items[1][2]}
 end
 
 local function get_random_research_recipe()
@@ -537,18 +513,18 @@ local apply_settings_token =
         this.selected_objectives = get_random_objectives()
         this.objectives = {
             randomized_zone = scale(random(5, 15), 40),
-            randomized_wave = scale(random(500, 1500), 4000),
+            randomized_wave = scale(random(500, 1000), 4000),
             randomized_linked_chests = scale(random(2, 4), 20),
             supplies = get_random_items(),
             single_item = get_random_item(),
-            killed_enemies = scale(random(500000, 3000000), 10000000),
-            complete_mystical_chest_amount = scale(random(10, 50), 500),
+            killed_enemies = scale(random(500000, 1000000), 10000000),
+            complete_mystical_chest_amount = scale(random(10, 30), 500),
             research_level_selection = get_random_research_recipe(),
             research_level_count = 0,
             locomotive_market_selection = get_random_locomotive_tier(),
             trees_farmed = scale(random(5000, 100000), 400000),
             rocks_farmed = scale(random(50000, 500000), 4000000),
-            rockets_launched = scale(random(100, 500), 5000)
+            rockets_launched = scale(random(100, 200), 5000)
         }
         this.collection = {
             time_until_attack = nil,
@@ -601,18 +577,18 @@ function Public.reset_stateful()
     else
         this.objectives = {
             randomized_zone = scale(random(5, 15), 40),
-            randomized_wave = scale(random(500, 1500), 4000),
+            randomized_wave = scale(random(500, 1000), 4000),
             randomized_linked_chests = scale(random(2, 4), 20),
             supplies = get_random_items(),
             single_item = get_random_item(),
-            killed_enemies = scale(random(500000, 3000000), 10000000),
-            complete_mystical_chest_amount = scale(random(10, 50), 500),
+            killed_enemies = scale(random(500000, 1000000), 10000000),
+            complete_mystical_chest_amount = scale(random(10, 30), 500),
             research_level_selection = get_random_research_recipe(),
             research_level_count = 0,
             locomotive_market_selection = get_random_locomotive_tier(),
             trees_farmed = scale(random(5000, 100000), 400000),
             rocks_farmed = scale(random(50000, 500000), 4000000),
-            rockets_launched = scale(random(100, 500), 5000)
+            rockets_launched = scale(random(100, 200), 5000)
         }
     end
     this.collection = {

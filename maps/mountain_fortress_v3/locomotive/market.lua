@@ -10,6 +10,7 @@ local Server = require 'utils.server'
 local Alert = require 'utils.alert'
 local Math2D = require 'math2d'
 local SpamProtection = require 'utils.spam_protection'
+local LinkedChests = require 'maps.mountain_fortress_v3.icw.linked_chests'
 
 local format_number = require 'util'.format_number
 
@@ -928,6 +929,12 @@ local function gui_click(event)
     local item_count = item.stack * slider_value
 
     local this = Public.get()
+
+    if name == 'linked-chest' then
+        local converted_chests = LinkedChests.get('converted_chests')
+        LinkedChests.set('converted_chests', converted_chests + 1)
+    end
+
     if name == 'upgrade_pickaxe' then
         player.remove_item({name = item.value, count = item.price})
 

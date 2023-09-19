@@ -170,12 +170,6 @@ local function add_object(unit_number, state)
 end
 
 local function remove_object(unit_number)
-    local container = this.main_containers[unit_number]
-
-    if container and container.chest and container.chest.valid then
-        container.chest.destroy()
-    end
-
     this.main_containers[unit_number] = nil
 end
 
@@ -187,16 +181,6 @@ local function fetch_share(text)
     local containers = this.main_containers
     for unit_number, container in pairs(containers) do
         if container.share.name == text then
-            return true, unit_number, container
-        end
-    end
-    return false
-end
-
-local function fetch_link_id(id)
-    local containers = this.main_containers
-    for unit_number, container in pairs(containers) do
-        if container.link_id == id then
             return true, unit_number, container
         end
     end
@@ -309,82 +293,15 @@ local function on_pre_player_mined_item(event)
     if this.disable_normal_placement then
         refund_player(player, entity)
     end
-    remove_chest(entity.unit_number)
     AG.append_scenario_history(player, entity, player.name .. ' mined chest (' .. entity.unit_number .. ')')
     create_message(player, 'Mined chest', entity.position, nil)
+    remove_chest(entity.unit_number)
 
     local data = this.linked_gui[player.name]
     if not data then
         return
     end
     data.frame.destroy()
-end
-
-local function text_changed(event)
-    local element = event.element
-    if not element then
-        return
-    end
-    if not element.valid then
-        return
-    end
-
-    local player = game.get_player(event.player_index)
-
-    local data = this.linked_gui[player.name]
-    if not data then
-        return
-    end
-
-    local name = element.name
-
-    if not data.text_field or not data.text_field.valid then
-        return
-    end
-
-    if not data.text_field.text then
-        return
-    end
-
-    local entity = data.entity
-    if not entity or not entity.valid then
-        return
-    end
-
-    local unit_number = entity.unit_number
-    local container = fetch_container(unit_number)
-
-    if name and name == 'share_name' and element.text then
-        if string.len(element.text) > 2 then
-            if not fetch_share(element.text) then
-                container.share.name = element.text
-            else
-                player.print(module_name .. 'A share with name "' .. element.text .. '" already exists.', Color.fail)
-            end
-        end
-    end
-
-    local value = tonumber(element.text)
-    if not value then
-        return
-    end
-
-    if value ~= '' then
-        if name and name == 'link_id_label' then
-            if value > 4294967295 then
-                player.print(module_name .. 'The data type allows values from 0 to 4294967295.', Color.fail)
-                return
-            end
-
-            if value >= 0 and not fetch_link_id(value) then
-                container.chest.link_id = value
-                container.link_id = value
-            else
-                player.print(module_name .. 'A chest with link-id "' .. value .. '" already exists.', Color.fail)
-            end
-        end
-    end
-    this.linked_gui[player.name].updated = false
 end
 
 --- Iterates all chests.
@@ -1227,7 +1144,6 @@ Event.add(defines.events.on_robot_built_entity, built_entity_robot)
 Event.add(defines.events.on_pre_player_mined_item, on_pre_player_mined_item)
 Event.add(defines.events.on_gui_selection_state_changed, state_changed)
 Event.add(defines.events.on_entity_died, on_entity_died)
-Event.add(defines.events.on_gui_text_changed, text_changed)
 Event.add(defines.events.on_gui_checked_state_changed, on_gui_checked_state_changed)
 Event.add(defines.events.on_entity_settings_pasted, on_entity_settings_pasted)
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)

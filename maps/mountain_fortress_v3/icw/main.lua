@@ -105,7 +105,7 @@ end
 local function on_tick()
     local tick = game.tick
 
-    if tick % 10 == 0 then
+    if tick % 5 == 0 then
         Functions.item_transfer()
     end
 
