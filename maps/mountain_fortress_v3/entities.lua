@@ -1234,42 +1234,35 @@ local function show_mvps(player)
                     inline = 'true'
                 },
                 field2 = {
-                    text1 = 'Game Difficulty:',
-                    text2 = diff.name,
-                    inline = 'true',
-                    emptyField = 'true',
-                    emptyInline = 'true'
-                },
-                field3 = {
                     text1 = 'Highest wave:',
                     text2 = format_number(wave, true),
                     inline = 'true'
                 },
-                field4 = {
+                field3 = {
                     text1 = 'Total connected players:',
                     text2 = total_players,
                     inline = 'true',
                     emptyField = 'true',
                     emptyInline = 'true'
                 },
-                field5 = {
+                field4 = {
                     text1 = 'Threat:',
                     text2 = format_number(threat, true),
                     inline = 'true'
                 },
-                field6 = {
+                field5 = {
                     text1 = 'Pickaxe Upgrade:',
                     text2 = pick_tier .. ' (' .. upgrades.pickaxe_tier .. ')',
                     inline = 'true',
                     emptyField = 'true',
                     emptyInline = 'true'
                 },
-                field7 = {
+                field6 = {
                     text1 = 'Collapse Speed:',
                     text2 = collapse_speed,
                     inline = 'true'
                 },
-                field8 = {
+                field7 = {
                     text1 = 'Collapse Amount:',
                     text2 = collapse_amount,
                     inline = 'true',

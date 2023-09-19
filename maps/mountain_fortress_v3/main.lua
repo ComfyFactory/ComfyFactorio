@@ -113,6 +113,7 @@ local announce_new_map =
 )
 
 function Public.reset_map()
+    local wave = WD.get_wave()
     local this = Public.get()
     local wave_defense_table = WD.get_table()
     Misc.set('creative_are_you_sure', false)
@@ -294,7 +295,9 @@ function Public.reset_map()
         WD.disable_spawning_biters(true)
     end
 
-    Task.set_timeout_in_ticks(25, announce_new_map)
+    if wave >= 1000 then
+        Task.set_timeout_in_ticks(25, announce_new_map)
+    end
 end
 
 local is_locomotive_valid = function()
