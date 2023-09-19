@@ -295,7 +295,7 @@ function Public.reset_map()
         WD.disable_spawning_biters(true)
     end
 
-    if wave >= 1000 then
+    if wave >= 500 then
         Task.set_timeout_in_ticks(25, announce_new_map)
     end
 end
