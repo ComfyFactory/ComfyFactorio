@@ -341,8 +341,8 @@ local function get_random_locomotive_tier()
     shuffle(tiers)
 
     local pickaxe_count = scale(random(10, 20), 59)
-    local health_count = scale(random(10, 40), 100)
-    local xp_points_count = scale(random(10, 40), 100)
+    local health_count = scale(random(10, 20), 100)
+    local xp_points_count = scale(random(10, 20), 100)
 
     if this.test_mode then
         pickaxe_count = 1
