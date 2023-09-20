@@ -794,12 +794,12 @@ Server.on_data_set_changed(
         if data.value.test_mode then
             Public.reset_stateful()
             Public.stateful.clear_all_frames()
-            game.print('[Stateful] Test round settings received.')
+            log('[Stateful] new settings applied.')
             this.test_mode = true
         elseif data.value.test_mode == false then
             Public.reset_stateful()
             Public.stateful.clear_all_frames()
-            game.print('[Stateful] Test round settings has been disabled.')
+            log('[Stateful] new settings applied.')
             this.test_mode = false
         end
     end
