@@ -93,7 +93,7 @@ local function get_random_buff()
     shuffle(buffs)
     shuffle(buffs)
     shuffle(buffs)
-    shuffle(buffs)  
+    shuffle(buffs)
     shuffle(buffs)
     shuffle(buffs)
 
@@ -511,8 +511,6 @@ local apply_settings_token =
 
         settings = apply_startup_settings(settings)
 
-        Public.increase_enemy_damage_and_health()
-
         this.rounds_survived = settings.rounds_survived
         this.objectives_completed = {}
         this.objectives_completed_count = 0
@@ -541,6 +539,8 @@ local apply_settings_token =
         }
         this.force_chunk = true
         this.force_chunk_until = game.tick + 1000
+
+        Public.increase_enemy_damage_and_health()
 
         Server.set_data(dataset, dataset_key, settings)
     end
@@ -635,6 +635,10 @@ function Public.move_all_players()
     end
 
     local surface = market.surface
+    if not surface or not surface.valid then
+        return
+    end
+
     local spawn_pos = surface.find_non_colliding_position('character', market.position, 3, 0, 5)
 
     if spawn_pos then
@@ -727,10 +731,12 @@ end
 
 function Public.increase_enemy_damage_and_health()
     if this.rounds_survived == 1 then
-        Event.raise(WD.events.on_biters_evolved, {})
+        Event.raise(WD.events.on_biters_evolved, {force = game.forces.aggressors})
+        Event.raise(WD.events.on_biters_evolved, {force = game.forces.aggressors_frenzy})
     else
         for _ = 1, this.rounds_survived do
-            Event.raise(WD.events.on_biters_evolved, {})
+            Event.raise(WD.events.on_biters_evolved, {force = game.forces.aggressors})
+            Event.raise(WD.events.on_biters_evolved, {force = game.forces.aggressors_frenzy})
         end
     end
 end

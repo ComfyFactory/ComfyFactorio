@@ -8,6 +8,13 @@ Want to host it? Ask Gerkiz#0001 at discord!
 -- develop setting
 local _DEV_MODE = false
 
+require 'modules.shotgun_buff'
+require 'modules.no_deconstruction_of_neutral_entities'
+require 'modules.spawners_contain_biters'
+require 'maps.mountain_fortress_v3.ic.main'
+require 'modules.wave_defense.main'
+require 'modules.charging_station'
+
 local Event = require 'utils.event'
 local Public = require 'maps.mountain_fortress_v3.core'
 local Discord = require 'utils.discord'
@@ -37,13 +44,6 @@ local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local JailData = require 'utils.datastore.jail_data'
 local RPG_Progression = require 'utils.datastore.rpg_data'
 local OfflinePlayers = require 'modules.clear_vacant_players'
-
-require 'modules.shotgun_buff'
-require 'modules.no_deconstruction_of_neutral_entities'
-require 'modules.spawners_contain_biters'
-require 'maps.mountain_fortress_v3.ic.main'
-require 'modules.wave_defense.main'
-require 'modules.charging_station'
 
 -- Use these settings for live
 local send_ping_to_channel = Discord.channel_names.mtn_channel
@@ -113,14 +113,13 @@ local announce_new_map =
 )
 
 function Public.reset_map()
-    local wave = WD.get_wave()
     local this = Public.get()
     local wave_defense_table = WD.get_table()
     Misc.set('creative_are_you_sure', false)
     Misc.set('creative_enabled', false)
 
     this.active_surface_index = Public.create_surface()
-    -- this.soft_reset_counter = Public.get_reset_counter()
+    this.old_surface_index = this.active_surface_index
 
     Public.stateful.clear_all_frames()
 
@@ -295,7 +294,7 @@ function Public.reset_map()
         WD.disable_spawning_biters(true)
     end
 
-    if wave >= 500 then
+    if not this.disable_startup_notification then
         Task.set_timeout_in_ticks(25, announce_new_map)
     end
 end

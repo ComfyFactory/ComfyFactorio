@@ -66,9 +66,6 @@ local spread_particles_token =
 
 local function notify_won_to_discord()
     local server_name_matches = Server.check_server_name('Mtn Fortress')
-    if not server_name_matches then
-        return
-    end
 
     local stateful = Public.get_stateful()
 
@@ -91,40 +88,39 @@ local function notify_won_to_discord()
         field1 = {
             text1 = 'Time played:',
             text2 = time_played,
-            inline = 'true'
+            inline = 'false'
         },
         field2 = {
             text1 = 'Rounds survived:',
             text2 = stateful.rounds_survived,
-            inline = 'true'
+            inline = 'false'
         },
         field3 = {
             text1 = 'Total connected players:',
             text2 = total_players,
-            inline = 'true',
-            emptyField = 'true',
-            emptyInline = 'true'
+            inline = 'false'
         },
         field4 = {
             text1 = 'Threat:',
             text2 = format_number(threat, true),
-            inline = 'true'
+            inline = 'false'
         },
         field5 = {
             text1 = 'Pickaxe Upgrade:',
             text2 = pick_tier .. ' (' .. upgrades.pickaxe_tier .. ')',
-            inline = 'true'
+            inline = 'false'
         },
         field6 = {
             text1 = 'Connected players:',
             text2 = total_connected_players,
-            inline = 'true',
-            emptyField = 'true',
-            emptyInline = 'true'
+            inline = 'false'
         }
     }
-
-    Server.to_discord_named_parsed_embed(send_ping_to_channel, text)
+    if server_name_matches then
+        Server.to_discord_named_parsed_embed(send_ping_to_channel, text)
+    else
+        Server.to_discord_embed_parsed(text)
+    end
 end
 
 local function clear_all_frames()
