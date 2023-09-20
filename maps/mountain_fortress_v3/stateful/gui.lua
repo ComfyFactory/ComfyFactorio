@@ -944,6 +944,7 @@ local function update_raw()
         stateful.collection.gather_time_timer = tick + 54000
         play_achievement_unlocked()
         WD.disable_spawning_biters(true)
+        Public.stateful_blueprints.blueprint()
         WD.nuke_wave_gui()
 
         Core.iter_connected_players(
