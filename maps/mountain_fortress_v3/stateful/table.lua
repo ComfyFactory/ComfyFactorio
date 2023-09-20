@@ -35,19 +35,22 @@ Global.register(
 )
 
 local stateful_spawn_points = {
-    {{x = -186, y = -170}, {x = 177, y = 119}},
-    {{x = -190, y = -200}, {x = 160, y = -160}},
+    {{x = -186, y = -150}, {x = 177, y = 119}},
+    {{x = -190, y = -150}, {x = 160, y = -155}},
     {{x = -190, y = -0}, {x = 160, y = -0}},
-    {{x = -186, y = -170}, {x = 177, y = 119}},
-    {{x = -160, y = -200}, {x = 160, y = -160}},
-    {{x = 160, y = -200}, {x = 190, y = -160}},
+    {{x = -186, y = -150}, {x = 177, y = 119}},
+    {{x = -160, y = -150}, {x = 160, y = -155}},
+    {{x = 160, y = -150}, {x = 190, y = -155}},
     {{x = 160, y = 0}, {x = 190, y = 0}},
-    {{x = -186, y = -170}, {x = 177, y = 119}},
-    {{x = 160, y = -160}, {x = 190, y = 160}},
-    {{x = 160, y = 160}, {x = 190, y = 200}},
-    {{x = -160, y = 160}, {x = 160, y = 200}},
-    {{x = -190, y = 160}, {x = -160, y = 200}},
-    {{x = -190, y = -160}, {x = -160, y = 160}}
+    {{x = -186, y = -150}, {x = 177, y = 119}},
+    {{x = 160, y = 0}, {x = -160, y = 0}},
+    {{x = 160, y = -155}, {x = 190, y = 155}},
+    {{x = 160, y = 155}, {x = 190, y = 150}},
+    {{x = -160, y = 0}, {x = 160, y = 0}},
+    {{x = -160, y = 155}, {x = 160, y = 150}},
+    {{x = -190, y = 155}, {x = -160, y = 150}},
+    {{x = -160, y = 0}, {x = 160, y = 0}},
+    {{x = -190, y = -155}, {x = -160, y = 155}}
 }
 
 local function get_random_buff()
@@ -663,6 +666,7 @@ function Public.allocate()
     if stateful_locomotive and not stateful_locomotive_migrated then
         Task.set_timeout_in_ticks(100, move_all_players_token, {})
 
+        Public.soft_reset.add_schedule_to_delete_surface()
         Public.set_stateful('stateful_locomotive_migrated', true)
         local locomotive = Public.get('locomotive')
         local icw_data = ICW.migrate_wagon(locomotive, stateful_locomotive)
@@ -696,7 +700,7 @@ function Public.allocate()
 
         collection.time_until_attack = 54000 + game.tick
         collection.time_until_attack_timer = 54000 + game.tick
-        collection.survive_for = collection.time_until_attack_timer + scale(random(18000, 54000), 216000)
+        collection.survive_for = collection.time_until_attack_timer + scale(random(54000, 108000), 324000)
         collection.survive_for_timer = collection.survive_for
 
         Public.set_target(stateful_locomotive, icw_data)

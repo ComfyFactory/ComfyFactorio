@@ -1215,6 +1215,7 @@ local function show_mvps(player)
             end
             local time_played = Core.format_time(game.ticks_played)
             local total_players = #game.players
+            local total_connected_players = #game.connected_players
             local pickaxe_upgrades = Public.pickaxe_upgrades
             local upgrades = Public.get('upgrades')
             local pick_tier = pickaxe_upgrades[upgrades.pickaxe_tier]
@@ -1265,6 +1266,11 @@ local function show_mvps(player)
                 field7 = {
                     text1 = 'Collapse Amount:',
                     text2 = collapse_amount,
+                    inline = 'true'
+                },
+                field8 = {
+                    text1 = 'Connected players:',
+                    text2 = total_connected_players,
                     inline = 'true',
                     emptyField = 'true',
                     emptyInline = 'true'

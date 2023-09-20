@@ -2,6 +2,7 @@ local Server = require 'utils.server'
 local Session = require 'utils.datastore.session_data'
 local Modifers = require 'utils.player_modifiers'
 local Public = require 'maps.mountain_fortress_v3.table'
+local Event = require 'utils.event'
 
 local mapkeeper = '[color=blue]Mapkeeper:[/color]'
 
@@ -48,7 +49,7 @@ local function teleport_players(surface)
 end
 
 local function equip_players(player_starting_items, data)
-    for k, player in pairs(game.players) do
+    for _, player in pairs(game.players) do
         if player.character and player.character.valid then
             player.character.destroy()
         end
@@ -72,6 +73,55 @@ local function equip_players(player_starting_items, data)
     end
 end
 
+local function add_step(this)
+    if this.schedule_step ~= this.schedule_max_step then
+        this.schedule_step = this.schedule_step + 1
+    end
+end
+
+local function scheduled_surface_clearing()
+    local this = Public.get()
+    if not this.initial_tick then
+        return
+    end
+
+    if this.initial_tick > game.tick then
+        return
+    end
+    local step = this.schedule_step
+    local schedule = this.schedule
+    if schedule[step] then
+        local surface = schedule[step].surface
+        if not surface.valid then
+            schedule[step] = nil
+            add_step(this)
+            return
+        end
+        if schedule[step].operation == 'player_clearing' then
+            local ent = surface.find_entities_filtered {force = 'player', limit = 1000}
+            for _, e in pairs(ent) do
+                if e.valid then
+                    e.destroy()
+                end
+            end
+            schedule[step] = nil
+            add_step(this)
+        elseif schedule[step].operation == 'clear' then
+            surface.clear()
+            schedule[step] = nil
+            add_step(this)
+        elseif schedule[step].operation == 'delete' then
+            game.delete_surface(surface)
+            schedule[step] = nil
+            add_step(this)
+        elseif schedule[step].operation == 'done' then
+            game.print(mapkeeper .. ' Done clearing old surface.')
+            schedule[step] = nil
+            add_step(this)
+        end
+    end
+end
+
 function Public.soft_reset_map(old_surface, map_gen_settings, player_starting_items)
     local this = Public.get()
 
@@ -91,7 +141,7 @@ function Public.soft_reset_map(old_surface, map_gen_settings, player_starting_it
     teleport_players(new_surface)
     equip_players(player_starting_items, this)
 
-    game.delete_surface(old_surface)
+    Public.add_schedule_to_delete_surface(true)
 
     local radius = 512
     local area = {{x = -radius, y = -radius}, {x = radius, y = radius}}
@@ -122,5 +172,48 @@ function Public.soft_reset_map(old_surface, map_gen_settings, player_starting_it
 
     return new_surface
 end
+
+function Public.add_schedule_to_delete_surface(remove_surface)
+    local this = Public.get()
+    local surface = game.get_surface(this.active_surface_index)
+    if not surface or not surface.valid then
+        return
+    end
+
+    game.print(mapkeeper .. ' Preparing to remove old entites and clearing surface - this might lag the server a bit.')
+
+    local step = this.schedule_max_step
+
+    if not step then
+        this.schedule_step = 0
+        this.schedule_max_step = 0
+        this.schedule = {}
+        this.initial_tick = 0
+        step = this.schedule_max_step
+    end
+
+    local add = 1
+    local count_scrap = surface.count_entities_filtered {force = 'player'}
+    for _ = 1, count_scrap, 1000 do
+        this.schedule[step + add] = {operation = 'player_clearing', surface = surface}
+        add = add + 1
+    end
+    this.schedule[step + add] = {operation = 'clear', surface = surface}
+    add = add + 1
+    if remove_surface then
+        this.schedule[step + add] = {operation = 'delete', surface = surface}
+        add = add + 1
+    end
+    this.schedule[step + add] = {operation = 'done', surface = surface}
+    this.schedule_max_step = this.schedule_max_step + add
+    if this.schedule_step == step then
+        this.schedule_step = this.schedule_step + 1
+    end
+    if this.initial_tick <= game.tick then
+        this.initial_tick = game.tick + 500
+    end
+end
+
+Event.on_nth_tick(10, scheduled_surface_clearing)
 
 return Public

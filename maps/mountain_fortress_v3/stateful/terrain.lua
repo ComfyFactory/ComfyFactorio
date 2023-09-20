@@ -152,7 +152,7 @@ local function border_chunk(p, data)
             name = 'spitter-spawner'
         end
         if enemy_spawn_positions(p) then
-            entities[#entities + 1] = {name = name, position = pos, force = 'enemy', collision = true, active = false, destructible = false}
+            entities[#entities + 1] = {name = name, position = pos, force = 'enemy', collision = true, active = false, destructible = false, random_active = true}
         end
     end
 

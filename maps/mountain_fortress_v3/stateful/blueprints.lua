@@ -33,6 +33,16 @@ function Public.blueprint()
         return
     end
 
+    local spawners = surface.find_entities_filtered({type = 'unit-spawner', area = {{position.x - 70, position.y - 70}, {position.x + 70, position.y + 70}}})
+    if #spawners == 0 then
+        return
+    end
+    for _, e in pairs(spawners) do
+        if e and e.valid then
+            e.destroy()
+        end
+    end
+
     local success = item.stack.import_stack(bp)
     if success <= 0 then
         local ghosts = item.stack.build_blueprint {surface = surface, force = 'player', position = position, force_build = true}

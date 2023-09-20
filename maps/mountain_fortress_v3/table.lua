@@ -269,6 +269,11 @@ function Public.reset_main_table()
         rocks_yield_ore_distance_modifier = 0.020
     }
 
+    this.schedule_step = 0
+    this.schedule_max_step = 0
+    this.schedule = {}
+    this.initial_tick = 0
+
     for k, _ in pairs(this.players) do
         this.players[k] = {}
     end
