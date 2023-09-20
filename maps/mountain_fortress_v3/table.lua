@@ -4,7 +4,13 @@ local Event = require 'utils.event'
 
 local this = {
     players = {},
-    traps = {}
+    traps = {},
+    scheduler = {
+        start_after = 0,
+        surface = nil,
+        operation = nil,
+        next_operation = nil
+    }
 }
 local Public = {}
 local random = math.random

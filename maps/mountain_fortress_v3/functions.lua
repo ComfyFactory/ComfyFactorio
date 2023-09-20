@@ -1137,9 +1137,14 @@ end
 function Public.set_spawn_position()
     local collapse_pos = Collapse.get_position()
     local locomotive = Public.get('locomotive')
+    local final_battle = Public.get('final_battle')
+    if final_battle then
+        return
+    end
     if not locomotive or not locomotive.valid then
         return
     end
+    --TODO check if final battle
     local l = locomotive.position
 
     local retries = 0

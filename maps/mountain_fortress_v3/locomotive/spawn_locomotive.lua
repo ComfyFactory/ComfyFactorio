@@ -68,6 +68,22 @@ local function initial_cargo_boxes()
     }
 end
 
+local place_tiles_token =
+    Token.register(
+    function(event)
+        local surface = event.surface
+        if not surface or not surface.valid then
+            return
+        end
+        local position = event.position
+        if not position then
+            return
+        end
+
+        MapFunctions.draw_noise_tile_circle(position, 'hazard-concrete-right', surface, 12)
+    end
+)
+
 local set_loco_tiles =
     Token.register(
     function(data)
@@ -83,6 +99,12 @@ local set_loco_tiles =
 
         ---@diagnostic disable-next-line: count-down-loop
         for x = position.x - 5, 1, 3 do
+            if x == -1 then
+                x = x - 1
+            end
+            if x == 0 then
+                x = x + 1
+            end
             for y = 1, position.y + 5, 2 do
                 if random(1, 3) == 1 then
                     p[#p + 1] = {x = x, y = y}
@@ -90,17 +112,8 @@ local set_loco_tiles =
             end
         end
 
-        if random(1, 6) == 1 then
-            MapFunctions.draw_noise_tile_circle(position, 'blue-refined-concrete', surface, 12)
-        elseif random(1, 5) == 1 then
-            MapFunctions.draw_noise_tile_circle(position, 'black-refined-concrete', surface, 12)
-        elseif random(1, 4) == 1 then
-            MapFunctions.draw_noise_tile_circle(position, 'cyan-refined-concrete', surface, 12)
-        elseif random(1, 3) == 1 then
-            MapFunctions.draw_noise_tile_circle(position, 'hazard-concrete-right', surface, 12)
-        else
-            MapFunctions.draw_noise_tile_circle(position, 'blue-refined-concrete', surface, 12)
-        end
+        MapFunctions.draw_noise_tile_circle(position, 'hazard-concrete-right', surface, 12)
+        Task.set_timeout_in_ticks(300, place_tiles_token, {surface = surface, position = position})
 
         for i = 1, #cargo_boxes, 1 do
             if not p[i] then
@@ -175,7 +188,7 @@ function Public.locomotive_spawn(surface, position)
         position = position
     }
 
-    Task.set_timeout_in_ticks(150, set_loco_tiles, data)
+    Task.set_timeout_in_ticks(50, set_loco_tiles, data)
 
     for y = -1, 0, 0.05 do
         local scale = random(50, 100) * 0.01

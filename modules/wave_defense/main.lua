@@ -564,13 +564,13 @@ local function spawn_biter(surface, position, forceSpawn, is_boss_biter, unit_se
     return biter
 end
 
-local function increase_biter_damage()
+local function increase_biter_damage(force)
     local increase_damage_per_wave = Public.get('increase_damage_per_wave')
     if not increase_damage_per_wave then
         return
     end
 
-    local e = game.forces.enemy
+    local e = force or game.forces.enemy
     local new = Difficulty.get('value') * 0.04
     local melee = new
     local bio = new - 0.02
@@ -1302,8 +1302,12 @@ Event.on_nth_tick(
 
 Event.add(
     Public.events.on_biters_evolved,
-    function()
-        increase_biter_damage()
+    function(event)
+        if not event then
+            event = {force = game.forces.enemy}
+        end
+
+        increase_biter_damage(event.force)
         increase_biters_health()
     end
 )

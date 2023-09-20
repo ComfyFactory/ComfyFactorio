@@ -5,6 +5,7 @@ local Token = require 'utils.token'
 local Public = require 'maps.mountain_fortress_v3.stateful.table'
 
 local ceil = math.ceil
+local random = math.random
 local queue_task = Task.queue_task
 local tiles_per_call = 8
 local total_calls = ceil(1024 / tiles_per_call)
@@ -212,10 +213,19 @@ local function do_place_entities(data)
                     if e.direction then
                         entity.direction = e.direction
                     end
-                    if e.active ~= nil then
+                    if e.active ~= nil and e.random_active == nil then
                         entity.active = e.active
                     end
-                    if e.destructible ~= nil then
+                    if e.random_active ~= nil then
+                        if random(1, 10) == 1 then
+                            entity.active = true
+                            entity.destructible = true
+                        else
+                            entity.active = false
+                            entity.destructible = false
+                        end
+                    end
+                    if e.destructible ~= nil and e.random_active == nil then
                         entity.destructible = e.destructible
                     end
                     if e.force then

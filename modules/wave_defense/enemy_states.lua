@@ -387,7 +387,6 @@ local function on_init()
     this.settings.frenzy_burst_length = 160
     this.settings.update_rate = 120
     this.target_settings = {}
-
     set_forces()
 end
 

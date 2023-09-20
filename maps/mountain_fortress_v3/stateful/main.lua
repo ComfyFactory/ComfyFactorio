@@ -30,7 +30,7 @@ Event.add(
 )
 
 Event.on_nth_tick(
-    200,
+    100,
     function()
         local final_battle = Public.get_stateful('final_battle')
         if not final_battle then

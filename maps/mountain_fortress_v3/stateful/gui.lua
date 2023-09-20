@@ -8,7 +8,10 @@ local Task = require 'utils.task'
 local Core = require 'utils.core'
 local Server = require 'utils.server'
 local LinkedChests = require 'maps.mountain_fortress_v3.icw.linked_chests'
+local Discord = require 'utils.discord'
+local format_number = require 'util'.format_number
 
+local send_ping_to_channel = Discord.channel_names.mtn_channel
 local main_button_name = Gui.uid_name()
 local main_frame_name = Gui.uid_name()
 local boss_frame_name = Gui.uid_name()
@@ -60,6 +63,65 @@ local spread_particles_token =
         create_particles(player.surface, particle, player.position, 128)
     end
 )
+
+local function notify_won_to_discord()
+    local server_name_matches = Server.check_server_name('Mtn Fortress')
+
+    local stateful = Public.get_stateful()
+
+    local wave = WD.get_wave()
+    local date = Server.get_start_time()
+    game.server_save('Complete_Mtn_v3_' .. tostring(date) .. '_wave' .. tostring(wave))
+
+    local threat = WD.get('threat')
+    local time_played = Core.format_time(game.ticks_played)
+    local total_players = #game.players
+    local total_connected_players = #game.connected_players
+    local pickaxe_upgrades = Public.pickaxe_upgrades
+    local upgrades = Public.get('upgrades')
+    local pick_tier = pickaxe_upgrades[upgrades.pickaxe_tier]
+
+    local text = {
+        title = 'Game won!',
+        description = 'Game statistics from the game is below',
+        color = 'success',
+        field1 = {
+            text1 = 'Time played:',
+            text2 = time_played,
+            inline = 'false'
+        },
+        field2 = {
+            text1 = 'Rounds survived:',
+            text2 = stateful.rounds_survived,
+            inline = 'false'
+        },
+        field3 = {
+            text1 = 'Total connected players:',
+            text2 = total_players,
+            inline = 'false'
+        },
+        field4 = {
+            text1 = 'Threat:',
+            text2 = format_number(threat, true),
+            inline = 'false'
+        },
+        field5 = {
+            text1 = 'Pickaxe Upgrade:',
+            text2 = pick_tier .. ' (' .. upgrades.pickaxe_tier .. ')',
+            inline = 'false'
+        },
+        field6 = {
+            text1 = 'Connected players:',
+            text2 = total_connected_players,
+            inline = 'false'
+        }
+    }
+    if server_name_matches then
+        Server.to_discord_named_parsed_embed(send_ping_to_channel, text)
+    else
+        Server.to_discord_embed_parsed(text)
+    end
+end
 
 local function clear_all_frames()
     Core.iter_players(
@@ -181,7 +243,7 @@ local function objective_frames(stateful, player_frame, objective, data)
         right_flow.style.horizontal_align = 'right'
         right_flow.style.horizontally_stretchable = true
 
-        if stateful.objectives_completed.supplies then
+        if stateful.objectives_completed.supplies or stateful.objectives_completed.single_item then
             data.supply_completed = right_flow.add({type = 'label', caption = ' [img=utility/check_mark_green]', tooltip = {'stateful.tooltip_completed'}})
         else
             data.supply_completed = right_flow.add({type = 'label', caption = ' [img=utility/not_available]', tooltip = {'stateful.tooltip_not_completed'}})
@@ -620,7 +682,8 @@ local function update_data()
                         single_item.total = single_item.count
                     end
                     single_item.count = single_item.total - count
-                    if single_item.count == 0 then
+                    if single_item.count <= 0 then
+                        single_item.count = 0
                         frame.number = nil
                         frame.sprite = 'utility/check_mark_green'
                     else
@@ -779,7 +842,8 @@ local function update_raw()
                 single_item.total = single_item.count
             end
             single_item.count = single_item.total - count
-            if single_item.count == 0 then
+            if single_item.count <= 0 then
+                single_item.count = 0
                 if not stateful.objectives_completed.single_item then
                     stateful.objectives_completed.single_item = true
                     play_achievement_unlocked()
@@ -799,6 +863,8 @@ local function update_raw()
             if not collection.nuke_blueprint then
                 collection.nuke_blueprint = true
                 Public.stateful_blueprints.nuke_blueprint()
+                WD.disable_spawning_biters(false)
+                Server.to_discord_embed('Final battle starts now!')
                 refresh_boss_frame()
             end
         end
@@ -832,8 +898,10 @@ local function update_raw()
                 collection.game_won_notified = true
                 refresh_boss_frame()
                 play_game_won()
+                Server.to_discord_embed('Game won!')
                 stateful.rounds_survived = stateful.rounds_survived + 1
                 Public.stateful.save_settings()
+                notify_won_to_discord()
                 local locomotive = Public.get('locomotive')
                 if locomotive and locomotive.valid then
                     locomotive.surface.spill_item_stack(locomotive.position, {name = 'coin', count = 512}, false)
@@ -871,6 +939,9 @@ local function update_raw()
         stateful.collection.gather_time = tick + 54000
         stateful.collection.gather_time_timer = tick + 54000
         play_achievement_unlocked()
+        WD.disable_spawning_biters(true)
+        Public.stateful_blueprints.blueprint()
+        WD.nuke_wave_gui()
 
         Core.iter_connected_players(
             function(player)

@@ -115,6 +115,22 @@ local reconstruct_all_trains =
     end
 )
 
+local remove_non_migrated_doors_token =
+    Token.register(
+    function(data)
+        local icw = data.icw
+        for _, unit_data in pairs(icw.wagons) do
+            if not unit_data.migrated then
+                for _, door in pairs(unit_data.doors) do
+                    if door and door.valid then
+                        door.destroy()
+                    end
+                end
+            end
+        end
+    end
+)
+
 local function get_tile_name()
     -- local main_tile_name = 'tutorial-grid'
     -- local main_tile_name = 'stone-path'
@@ -703,10 +719,12 @@ function Public.migrate_wagon(icw, source, target)
         if unit_number == source_wagon then
             unit_data.surface.name = tostring(target_wagon)
             unit_data.entity = target
+            unit_data.migrated = true
             icw.wagons[target_wagon] = deepcopy(unit_data)
-            return icw.wagons[target_wagon]
         end
     end
+
+    Task.set_timeout_in_ticks(100, remove_non_migrated_doors_token, {icw = icw})
 end
 
 function Public.use_cargo_wagon_door_with_entity(icw, player, door)
@@ -954,6 +972,11 @@ function Public.construct_train(icw, locomotive, carriages)
 end
 
 function Public.reconstruct_all_trains(icw)
+    local final_battle = WPT.get('final_battle')
+    if final_battle then
+        return
+    end
+
     icw.trains = {}
     for unit_number, wagon in pairs(icw.wagons) do
         if not validate_entity(wagon.entity) then
