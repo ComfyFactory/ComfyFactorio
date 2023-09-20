@@ -442,6 +442,11 @@ local compare_collapse_and_train = function()
 end
 
 local collapse_after_wave_200 = function()
+    local final_battle = Public.get('final_battle')
+    if final_battle then
+        return
+    end
+
     local collapse_grace = Public.get('collapse_grace')
     if not collapse_grace then
         return
@@ -452,7 +457,7 @@ local collapse_after_wave_200 = function()
 
     local wave_number = WD.get_wave()
 
-    if wave_number >= 200 then
+    if wave_number >= 200 and not Collapse.get_start_now() then
         Collapse.start_now(true)
         local data = {
             position = Collapse.get_position()
