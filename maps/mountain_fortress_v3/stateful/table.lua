@@ -92,6 +92,10 @@ local function get_random_buff()
 
     shuffle(buffs)
     shuffle(buffs)
+    shuffle(buffs)
+    shuffle(buffs)  
+    shuffle(buffs)
+    shuffle(buffs)
 
     return buffs[1]
 end
