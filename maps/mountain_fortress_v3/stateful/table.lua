@@ -488,7 +488,12 @@ local function apply_startup_settings(settings)
             if buff then
                 if buff.modifier == 'force' then
                     force[buff.name] = force[buff.name] + buff.state
-                    this.buffs_collected[buff.name] = force[buff.name]
+
+                    if not this.buffs_collected[buff.name] then
+                        this.buffs_collected[buff.name] = buff.state
+                    else
+                        this.buffs_collected[buff.name] = this.buffs_collected[buff.name] + buff.state
+                    end
                 end
                 if buff.modifier == 'rpg' then
                     local rpg_extra = RPG.get('rpg_extra')
