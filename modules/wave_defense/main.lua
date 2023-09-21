@@ -1102,39 +1102,55 @@ local function spawn_unit_group(fs, only_bosses)
     event_data.group_size = group_size
     event_data.boss_wave = false
 
-    local boss_wave = Public.get('boss_wave')
-    if not boss_wave and not only_bosses then
-        for _ = 1, group_size, 1 do
-            local biter = spawn_biter(surface, spawn_position, fs, false, unit_settings)
-            if not biter then
-                Public.debug_print('spawn_unit_group - No biters were found?')
-                break
+    if not fs or not fs.random_bosses then
+        local boss_wave = Public.get('boss_wave')
+        if not boss_wave and not only_bosses then
+            for _ = 1, group_size, 1 do
+                local biter = spawn_biter(surface, spawn_position, fs, false, unit_settings)
+                if not biter then
+                    Public.debug_print('spawn_unit_group - No biters were found?')
+                    break
+                end
+                unit_group.add_member(biter)
+
+                raise(Public.events.on_entity_created, {entity = biter, boss_unit = false, target = target})
+                -- command_to_side_target(unit_group)
             end
-            unit_group.add_member(biter)
-
-            raise(Public.events.on_entity_created, {entity = biter, boss_unit = false, target = target})
-            -- command_to_side_target(unit_group)
         end
-    end
 
-    if boss_wave or only_bosses then
+        if boss_wave or only_bosses then
+            event_data.boss_wave = true
+            local count = random(1, floor(wave_number * 0.01) + 2)
+            if count > 16 then
+                count = 16
+            end
+            if count <= 4 then
+                count = 4
+            end
+            event_data.spawn_count = count
+            for _ = 1, count, 1 do
+                local biter = spawn_biter(surface, spawn_position, fs, true, unit_settings)
+                if not biter then
+                    Public.debug_print('spawn_unit_group - No biter was found?')
+                    break
+                end
+                unit_group.add_member(biter)
+                raise(Public.events.on_entity_created, {entity = biter, boss_unit = true, target = target})
+            end
+            Public.set('boss_wave', false)
+        end
+    else
         event_data.boss_wave = true
-        local count = random(1, floor(wave_number * 0.01) + 2)
-        if count > 16 then
-            count = 16
-        end
-        if count <= 4 then
-            count = 4
-        end
+        local count = 30
         event_data.spawn_count = count
         for _ = 1, count, 1 do
-            local biter = spawn_biter(surface, spawn_position, fs, true, unit_settings)
+            local random_boss = (random(1, 100) == 1)
+            local biter = spawn_biter(surface, spawn_position, fs, random_boss, unit_settings)
             if not biter then
                 Public.debug_print('spawn_unit_group - No biter was found?')
                 break
             end
             unit_group.add_member(biter)
-            raise(Public.events.on_entity_created, {entity = biter, boss_unit = true, target = target})
         end
         Public.set('boss_wave', false)
     end

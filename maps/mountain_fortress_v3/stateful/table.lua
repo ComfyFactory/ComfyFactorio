@@ -35,22 +35,35 @@ Global.register(
 )
 
 local stateful_spawn_points = {
-    {{x = -186, y = -150}, {x = 177, y = 119}},
-    {{x = -190, y = -150}, {x = 160, y = -155}},
-    {{x = -190, y = -0}, {x = 160, y = -0}},
-    {{x = -186, y = -150}, {x = 177, y = 119}},
-    {{x = -160, y = -150}, {x = 160, y = -155}},
-    {{x = 160, y = -150}, {x = 190, y = -155}},
-    {{x = 160, y = 0}, {x = 190, y = 0}},
-    {{x = -186, y = -150}, {x = 177, y = 119}},
-    {{x = 160, y = 0}, {x = -160, y = 0}},
-    {{x = 160, y = -155}, {x = 190, y = 155}},
-    {{x = 160, y = 155}, {x = 190, y = 150}},
-    {{x = -160, y = 0}, {x = 160, y = 0}},
-    {{x = -160, y = 155}, {x = 160, y = 150}},
-    {{x = -190, y = 155}, {x = -160, y = 150}},
-    {{x = -160, y = 0}, {x = 160, y = 0}},
-    {{x = -190, y = -155}, {x = -160, y = 155}}
+    {{x = -205, y = -37}, {x = 195, y = 37}},
+    {{x = -205, y = -112}, {x = 195, y = 112}},
+    {{x = -205, y = -146}, {x = 195, y = 146}},
+    {{x = -205, y = -112}, {x = 195, y = 112}},
+    {{x = -205, y = -72}, {x = 195, y = 72}},
+    {{x = -205, y = -146}, {x = 195, y = 146}},
+    {{x = -205, y = -37}, {x = 195, y = 37}},
+    {{x = -205, y = -5}, {x = 195, y = 5}},
+    {{x = -205, y = -23}, {x = 195, y = 23}},
+    {{x = -205, y = -5}, {x = 195, y = 5}},
+    {{x = -205, y = -72}, {x = 195, y = 72}},
+    {{x = -205, y = -23}, {x = 195, y = 23}},
+    {{x = -205, y = -54}, {x = 195, y = 54}},
+    {{x = -205, y = -80}, {x = 195, y = 80}},
+    {{x = -205, y = -54}, {x = 195, y = 54}},
+    {{x = -205, y = -80}, {x = 195, y = 80}},
+    {{x = -205, y = -103}, {x = 195, y = 103}},
+    {{x = -205, y = -150}, {x = 195, y = 150}},
+    {{x = -205, y = -103}, {x = 195, y = 103}},
+    {{x = -205, y = -150}, {x = 195, y = 150}}
+}
+
+local buff_to_string = {
+    ['starting_items'] = 'Starting items',
+    ['character_running_speed_modifier'] = 'Movement',
+    ['manual_mining_speed_modifier'] = 'Mining',
+    ['character_reach_distance_bonus'] = 'Reach',
+    ['manual_crafting_speed_modifier'] = 'Crafting',
+    ['xp_bonus'] = 'XP Bonus'
 }
 
 local function get_random_buff()
@@ -313,6 +326,8 @@ local function get_random_item()
 
     shuffle(items)
     shuffle(items)
+    shuffle(items)
+    shuffle(items)
 
     return {name = items[1][1], count = items[1][2]}
 end
@@ -346,10 +361,13 @@ local function get_random_locomotive_tier()
     }
 
     shuffle(tiers)
+    shuffle(tiers)
+    shuffle(tiers)
+    shuffle(tiers)
 
     local pickaxe_count = scale(random(10, 20), 59)
-    local health_count = scale(random(10, 20), 100)
-    local xp_points_count = scale(random(10, 20), 100)
+    local health_count = scale(random(5, 10), 100)
+    local xp_points_count = scale(random(4, 7), 100)
 
     if this.test_mode then
         pickaxe_count = 1
@@ -445,6 +463,7 @@ local function apply_startup_settings(settings)
                 settings.rounds_survived = 0
                 settings.buffs = {}
                 this.buffs = {}
+                this.buffs_collected = {}
                 this.rounds_survived = 0
                 this.current_date = tonumber(new_value)
                 local message = ({'stateful.reset'})
@@ -460,20 +479,46 @@ local function apply_startup_settings(settings)
     local starting_items = Public.get_func('starting_items')
 
     if this.buffs and next(this.buffs) then
+        if not this.buffs_collected then
+            this.buffs_collected = {}
+        end
+
         local force = game.forces.player
         for _, buff in pairs(this.buffs) do
             if buff then
                 if buff.modifier == 'force' then
                     force[buff.name] = force[buff.name] + buff.state
+                    this.buffs_collected[buff.name] = force[buff.name]
                 end
                 if buff.modifier == 'rpg' then
                     local rpg_extra = RPG.get('rpg_extra')
-                    rpg_extra.difficulty = buff.state
+                    if not rpg_extra.difficulty then
+                        rpg_extra.difficulty = buff.state
+                    else
+                        rpg_extra.difficulty = rpg_extra.difficulty + buff.state
+                    end
+                    if not this.buffs_collected['xp_bonus'] then
+                        this.buffs_collected['xp_bonus'] = buff.state
+                    else
+                        this.buffs_collected['xp_bonus'] = this.buffs_collected['xp_bonus'] + buff.state
+                    end
                 end
                 if buff.modifier == 'start' then
+                    if not this.buffs_collected['starting_items'] then
+                        this.buffs_collected['starting_items'] = {}
+                    end
                     for _, item in pairs(buff.items) do
                         if item then
-                            starting_items[item.name] = item.count
+                            if starting_items[item.name] then
+                                starting_items[item.name] = starting_items[item.name] + item.count
+                            else
+                                starting_items[item.name] = item.count
+                            end
+                            if not this.buffs_collected['starting_items'][item.name] then
+                                this.buffs_collected['starting_items'][item.name] = item.count
+                            else
+                                this.buffs_collected['starting_items'][item.name] = starting_items[item.name] + item.count
+                            end
                         end
                     end
                 end
@@ -563,6 +608,7 @@ function Public.reset_stateful()
     this.objectives_completed = {}
     this.objectives_completed_count = 0
     this.final_battle = false
+    this.buffs_collected = {}
 
     this.selected_objectives = get_random_objectives()
     if this.test_mode then
@@ -708,8 +754,6 @@ function Public.allocate()
 
         collection.time_until_attack = 54000 + game.tick
         collection.time_until_attack_timer = 54000 + game.tick
-        collection.survive_for = collection.time_until_attack_timer + scale(random(54000, 108000), 324000)
-        collection.survive_for_timer = collection.survive_for
 
         Public.set_target(stateful_locomotive, icw_data)
         game.forces.player.chart(surface, {{-358, -151}, {358, 151}})
@@ -815,10 +859,12 @@ Server.on_data_set_changed(
     end
 )
 
+Public.buff_to_string = buff_to_string
 Public.get_item_produced_count = get_item_produced_count
 Public.get_entity_mined_count = get_entity_mined_count
 Public.get_killed_enemies_count = get_killed_enemies_count
 Public.apply_startup_settings = apply_startup_settings
+Public.scale = scale
 Public.stateful_spawn_points = stateful_spawn_points
 Public.sizeof_stateful_spawn_points = #stateful_spawn_points
 

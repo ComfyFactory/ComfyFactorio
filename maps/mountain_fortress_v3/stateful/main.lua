@@ -30,7 +30,7 @@ Event.add(
 )
 
 Event.on_nth_tick(
-    100,
+    60,
     function()
         local final_battle = Public.get_stateful('final_battle')
         if not final_battle then
@@ -53,7 +53,7 @@ Event.on_nth_tick(
             shuffle(area)
 
             WD.set_spawn_position(area[1])
-            Event.raise(WD.events.on_spawn_unit_group, {fs = true, bypass = true})
+            Event.raise(WD.events.on_spawn_unit_group, {fs = true, bypass = true, random_bosses = true})
             return
         end
 

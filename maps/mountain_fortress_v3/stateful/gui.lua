@@ -3,6 +3,7 @@ local SpamProtection = require 'utils.spam_protection'
 local Public = require 'maps.mountain_fortress_v3.table'
 local Gui = require 'utils.gui'
 local WD = require 'modules.wave_defense.table'
+local Collapse = require 'modules.collapse'
 local Token = require 'utils.token'
 local Task = require 'utils.task'
 local Core = require 'utils.core'
@@ -370,10 +371,12 @@ local function boss_frame(player, alert)
         attack_right_flow.style.horizontal_align = 'right'
         attack_right_flow.style.horizontally_stretchable = true
 
-        local time_left = floor(collection.time_until_attack / 60 / 60) .. 'm'
+        local time_left
 
         if collection.time_until_attack / 60 / 60 <= 1 then
             time_left = floor(collection.time_until_attack / 60) .. 's'
+        else
+            time_left = floor(collection.time_until_attack / 60 / 60) .. 'm'
         end
 
         if collection.time_until_attack <= 0 then
@@ -452,7 +455,7 @@ local function main_frame(player)
 
     local frame = player.gui.screen.add {type = 'frame', name = main_frame_name, caption = {'stateful.win_conditions'}, direction = 'vertical', tooltip = {'stateful.win_conditions_tooltip'}}
     frame.location = {x = 1, y = 45}
-    frame.style.maximal_height = 500
+    frame.style.maximal_height = 700
     frame.style.minimal_width = 200
     frame.style.maximal_width = 400
     local rounds_survived_tbl = frame.add {type = 'table', column_count = 2}
@@ -472,6 +475,54 @@ local function main_frame(player)
     spacer(frame)
 
     frame.add({type = 'line'})
+
+    if stateful.buffs and next(stateful.buffs) then
+        local buff_tbl = frame.add {type = 'table', column_count = 2}
+        buff_tbl.style.horizontally_stretchable = true
+
+        local buff_left_flow = buff_tbl.add({type = 'flow'})
+        buff_left_flow.style.horizontal_align = 'left'
+        buff_left_flow.style.horizontally_stretchable = true
+
+        local buff_right_flow = buff_tbl.add({type = 'flow'})
+        buff_right_flow.style.horizontal_align = 'right'
+        buff_right_flow.style.horizontally_stretchable = true
+
+        local buffs = {'', 'Starting items:\n'}
+        if stateful.buffs_collected and next(stateful.buffs_collected) then
+            for _, item_data in pairs(stateful.buffs_collected) do
+                if type(item_data) == 'table' then
+                    for item_name, item_count in pairs(item_data) do
+                        buffs[#buffs + 1] = item_name .. ': ' .. item_count
+                        buffs[#buffs + 1] = '\n'
+                    end
+                end
+            end
+            buffs[#buffs + 1] = '\n'
+        end
+
+        buffs[#buffs + 1] = 'Force buffs:\n'
+        if stateful.buffs_collected and next(stateful.buffs_collected) then
+            for name, count in pairs(stateful.buffs_collected) do
+                if type(count) ~= 'table' then
+                    buffs[#buffs + 1] = Public.stateful.buff_to_string[name] .. ': ' .. (count * 100) .. '%'
+                    buffs[#buffs + 1] = '\n'
+                end
+            end
+        end
+
+        table.remove(buffs, #buffs)
+
+        buff_right_flow.add({type = 'label', caption = '[img=utility/center]', tooltip = buffs})
+
+        local buff_label = buff_left_flow.add({type = 'label', caption = {'stateful.buffs'}, tooltip = {'stateful.buff_tooltip'}})
+        buff_label.style.single_line = false
+        frame.add({type = 'line', direction = 'vertical'})
+
+        spacer(frame)
+
+        frame.add({type = 'line'})
+    end
 
     spacer(frame)
 
@@ -861,6 +912,8 @@ local function update_raw()
         elseif collection.time_until_attack and collection.time_until_attack < 0 then
             collection.time_until_attack = 0
             if not collection.nuke_blueprint then
+                collection.survive_for = game.tick + Public.stateful.scale(random(54000, 72000), 126000)
+                collection.survive_for_timer = collection.survive_for
                 collection.nuke_blueprint = true
                 Public.stateful_blueprints.nuke_blueprint()
                 WD.disable_spawning_biters(false)
@@ -940,6 +993,7 @@ local function update_raw()
         stateful.collection.gather_time_timer = tick + 54000
         play_achievement_unlocked()
         WD.disable_spawning_biters(true)
+        Collapse.disable_collapse(true)
         Public.stateful_blueprints.blueprint()
         WD.nuke_wave_gui()
 

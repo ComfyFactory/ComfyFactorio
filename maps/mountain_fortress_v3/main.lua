@@ -235,6 +235,7 @@ function Public.reset_map()
     Collapse.set_position({0, 130})
     Collapse.set_direction('north')
     Collapse.start_now(false)
+    Collapse.disable_collapse(false)
 
     this.locomotive_health = 10000
     this.locomotive_max_health = 10000

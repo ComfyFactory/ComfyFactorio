@@ -714,6 +714,9 @@ function Public.extra_settings(player)
     end
 
     player.opened = main_frame
+    if not main_frame or not main_frame.valid then
+        return
+    end
     main_frame.auto_center = true
 end
 
