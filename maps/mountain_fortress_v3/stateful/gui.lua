@@ -488,30 +488,30 @@ local function main_frame(player)
         buff_right_flow.style.horizontal_align = 'right'
         buff_right_flow.style.horizontally_stretchable = true
 
-        local buffs = {'', 'Starting items:\n'}
+        local buffs = {''}
         if stateful.buffs_collected and next(stateful.buffs_collected) then
-            for _, item_data in pairs(stateful.buffs_collected) do
-                if type(item_data) == 'table' then
-                    for item_name, item_count in pairs(item_data) do
-                        buffs[#buffs + 1] = item_name .. ': ' .. item_count
-                        buffs[#buffs + 1] = '\n'
+            if stateful.buffs_collected.starting_items then
+                buffs[#buffs + 1] = 'Starting items:\n'
+                for _, item_data in pairs(stateful.buffs_collected) do
+                    if type(item_data) == 'table' then
+                        for item_name, item_count in pairs(item_data) do
+                            buffs[#buffs + 1] = item_name .. ': ' .. item_count
+                            buffs[#buffs + 1] = '\n'
+                        end
                     end
                 end
+                buffs[#buffs + 1] = '\n'
             end
-            buffs[#buffs + 1] = '\n'
-        end
 
-        buffs[#buffs + 1] = 'Force buffs:\n'
-        if stateful.buffs_collected and next(stateful.buffs_collected) then
+            buffs[#buffs + 1] = 'Force buffs:\n'
             for name, count in pairs(stateful.buffs_collected) do
                 if type(count) ~= 'table' then
                     buffs[#buffs + 1] = Public.stateful.buff_to_string[name] .. ': ' .. (count * 100) .. '%'
                     buffs[#buffs + 1] = '\n'
                 end
             end
+            table.remove(buffs, #buffs)
         end
-
-        table.remove(buffs, #buffs)
 
         buff_right_flow.add({type = 'label', caption = '[img=utility/center]', tooltip = buffs})
 
