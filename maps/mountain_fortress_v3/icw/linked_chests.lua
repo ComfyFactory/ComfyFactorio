@@ -650,6 +650,9 @@ local function update_gui()
 
         local unit_number = entity.unit_number
         local container = fetch_container(unit_number)
+        if not container then
+            break
+        end
 
         local mode = container.mode
 
@@ -1121,15 +1124,17 @@ local function on_player_changed_position(event)
     end
 
     if data and data.frame and data.frame.valid then
-        local position = data.entity.position
-        local area = {
-            left_top = {x = position.x - 8, y = position.y - 8},
-            right_bottom = {x = position.x + 8, y = position.y + 8}
-        }
-        if Math2D.bounding_box.contains_point(area, player.position) then
-            return
+        if data.entity and data.entity.valid then
+            local position = data.entity.position
+            local area = {
+                left_top = {x = position.x - 8, y = position.y - 8},
+                right_bottom = {x = position.x + 8, y = position.y + 8}
+            }
+            if Math2D.bounding_box.contains_point(area, player.position) then
+                return
+            end
+            data.frame.destroy()
         end
-        data.frame.destroy()
     end
 end
 
