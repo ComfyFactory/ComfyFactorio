@@ -946,6 +946,7 @@ local function update_raw()
             collection.gather_time = 0
             if not collection.gather_time_done then
                 collection.gather_time_done = true
+                LinkedChests.clear_linked_frames()
                 stateful.final_battle = true
                 Public.set('final_battle', true)
             end

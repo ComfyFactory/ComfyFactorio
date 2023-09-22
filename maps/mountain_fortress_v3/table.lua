@@ -220,6 +220,7 @@ function Public.reset_main_table()
         redraw_mystical_chest_cost = 3000
     }
     this.collapse_grace = true
+    this.corpse_removal_disabled = false
     this.locomotive_biter = nil
     this.disconnect_wagon = false
     this.collapse_amount = false

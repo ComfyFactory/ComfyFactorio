@@ -9,6 +9,7 @@ local Math2D = require 'math2d'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local Session = require 'utils.datastore.session_data'
 local AG = require 'utils.antigrief'
+local Core = require 'utils.core'
 local Discord = require 'utils.discord_handler'
 
 local this = {}
@@ -434,7 +435,7 @@ local function refresh_main_frame(data)
                                 chestitem.enabled = false
                                 chestitem.tooltip = '[Antigrief] You have not grown accustomed to this technology yet.'
                             end
-                            Gui.set_data(chestitem, {name = nil, unit_number = unit_number, share = source_chest.share.name})
+                            Gui.set_data_parent(volatile_tbl, chestitem, {name = nil, unit_number = unit_number, share = source_chest.share.name})
                         end
                     end
                 end
@@ -724,7 +725,8 @@ local function gui_closed(event)
         if not data then
             return
         end
-        data.frame.destroy()
+        Gui.destroy(data.volatile_tbl)
+        Gui.destroy(data.frame)
         this.linked_gui[player.name] = nil
     end
 end
@@ -1084,10 +1086,24 @@ Event.add(
 Gui.on_click(
     item_name_frame_name,
     function(event)
-        local data = Gui.get_data(event.element)
+        local player = game.get_player(event.player_index)
+        local player_data = this.linked_gui[player.name]
+        local element = event.element
+        if not player_data then
+            Gui.remove_data_recursively(element)
+            return
+        end
+        local parent = player_data.volatile_tbl
+        if not parent or not parent.valid then
+            Gui.remove_data_recursively(element)
+            return
+        end
+
+        local data = Gui.get_data_parent(parent, element)
         if not data then
             return
         end
+
         local button = event.button
 
         local _, _unit_number, share_container = fetch_share(data.share)
@@ -1095,15 +1111,12 @@ Gui.on_click(
             local container = fetch_container(data.unit_number)
 
             if button == defines.mouse_button_type.right then
-                local player = game.get_player(event.player_index)
-                if player and player.valid then
-                    Where.create_mini_camera_gui(player, {valid = true, name = share_container.share.name, surface = share_container.chest.surface, position = share_container.chest.position}, 0.7, true)
-                end
+                Where.create_mini_camera_gui(player, {valid = true, name = share_container.share.name, surface = share_container.chest.surface, position = share_container.chest.position}, 0.7, true)
                 return
             end
 
-            AG.append_scenario_history(event.player, container.chest, event.player.name .. ' linked chest (' .. data.unit_number .. ') with: ' .. share_container.share.name)
-            create_message(event.player, 'Linked chest', container.chest.position, share_container.chest.position)
+            AG.append_scenario_history(player, container.chest, player.name .. ' linked chest (' .. data.unit_number .. ') with: ' .. share_container.share.name)
+            create_message(player, 'Linked chest', container.chest.position, share_container.chest.position)
             container.linked_to = _unit_number
             container.chest.link_id = share_container.link_id
             container.link_id = share_container.link_id
@@ -1112,6 +1125,9 @@ Gui.on_click(
 
             this.linked_gui[event.player.name].updated = false
             refresh_main_frame({unit_number = container.unit_number, player = event.player})
+            if element and element.valid then
+                Gui.remove_data_recursively(element)
+            end
         end
     end
 )
@@ -1136,6 +1152,18 @@ local function on_player_changed_position(event)
             data.frame.destroy()
         end
     end
+end
+
+function Public.clear_linked_frames()
+    Core.iter_connected_players(
+        function(player)
+            local data = this.linked_gui[player.name]
+            if data and data.frame and data.frame.valid then
+                data.frame.destroy()
+            end
+            this.linked_gui[player.name] = nil
+        end
+    )
 end
 
 function Public.reset()

@@ -181,7 +181,7 @@ local function remove_main_frame(main_frame, screen)
 
     local settings_frame = screen[settings_frame_name]
     if settings_frame and settings_frame.valid then
-        remove_target_frame(settings_frame)
+    -- remove_target_frame(settings_frame)
     end
 end
 
