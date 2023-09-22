@@ -8,8 +8,6 @@ local Event = require 'utils.event'
 local LootDrop = require 'modules.mobs_drop_loot'
 local WD = require 'modules.wave_defense.table'
 local Global = require 'utils.global'
-local Task = require 'utils.task'
-local Token = require 'utils.token'
 
 local floor = math.floor
 local insert = table.insert
@@ -89,20 +87,6 @@ local entity_types = {
     ['electric-turret'] = true,
     ['unit-spawner'] = true
 }
-
-local function clear_unit_from_tbl(unit_number)
-    if this.biter_health_boost_units[unit_number] then
-        this.biter_health_boost_units[unit_number] = nil
-    end
-end
-
-local removeUnit =
-    Token.register(
-    function(data)
-        local unit_number = data.unit_number
-        clear_unit_from_tbl(unit_number)
-    end
-)
 
 local function loaded_biters(event)
     local cause = event.cause
@@ -379,7 +363,7 @@ local function on_entity_died(event)
     local wave_count = WD.get_wave()
 
     if health_pool then
-        Task.set_timeout_in_ticks(30, removeUnit, {unit_number = unit_number})
+        this.biter_health_boost_units[unit_number] = nil
         if health_pool[3] and health_pool[3].healthbar_id then
             if this.enable_boss_loot then
                 if random(1, 128) == 1 then

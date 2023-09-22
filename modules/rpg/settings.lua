@@ -712,12 +712,8 @@ function Public.extra_settings(player)
     if not main_frame or not main_frame.valid then
         return
     end
-
-    player.opened = main_frame
-    if not main_frame or not main_frame.valid then
-        return
-    end
     main_frame.auto_center = true
+    player.opened = main_frame
 end
 
 function Public.settings_tooltip(player)

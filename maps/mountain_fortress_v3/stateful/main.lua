@@ -53,7 +53,7 @@ Event.on_nth_tick(
             shuffle(area)
 
             WD.set_spawn_position(area[1])
-            Event.raise(WD.events.on_spawn_unit_group, {fs = true, bypass = true, random_bosses = true})
+            Event.raise(WD.events.on_spawn_unit_group, {fs = true, bypass = true, random_bosses = true, scale = Public.stateful.scale(20, 100)})
             return
         end
 
@@ -64,5 +64,7 @@ Event.on_nth_tick(
         end
     end
 )
+
+Event.add(defines.events.on_pre_player_died, Public.on_pre_player_died)
 
 return Public

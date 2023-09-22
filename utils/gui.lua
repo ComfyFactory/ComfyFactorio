@@ -101,6 +101,35 @@ function Public.set_data(element, value)
 end
 local set_data = Public.set_data
 
+-- Associates data with the LuaGuiElement. If data is nil then removes the data
+function Public.set_data_parent(parent, element, value)
+    local player_index = parent.player_index
+    local values = data[player_index]
+
+    if value == nil then
+        if not values then
+            return
+        end
+
+        values[parent.index] = nil
+
+        if next(values) == nil then
+            data[player_index] = nil
+        end
+    else
+        if not values then
+            values = {}
+            data[player_index] = values
+        end
+
+        if not values[parent.index] then
+            values[parent.index] = {}
+        end
+
+        values[parent.index][element.index] = value
+    end
+end
+
 -- Gets the Associated data with this LuaGuiElement if any.
 function Public.get_data(element)
     if not element then
@@ -110,6 +139,30 @@ function Public.get_data(element)
     local player_index = element.player_index
 
     local values = data[player_index]
+    if not values then
+        return nil
+    end
+
+    return values[element.index]
+end
+
+-- Gets the Associated data with this LuaGuiElement if any.
+function Public.get_data_parent(parent, element)
+    if not parent then
+        return
+    end
+    if not element then
+        return
+    end
+
+    local player_index = parent.player_index
+
+    local values = data[player_index]
+    if not values then
+        return nil
+    end
+
+    values = values[parent.index]
     if not values then
         return nil
     end

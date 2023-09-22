@@ -158,6 +158,67 @@ local move_all_players_token =
     end
 )
 
+local search_corpse_token =
+    Token.register(
+    function(event)
+        local player_index = event.player_index
+        local player = game.get_player(player_index)
+
+        if not player or not player.valid then
+            return
+        end
+
+        local pos = player.position
+        local entities =
+            player.surface.find_entities_filtered {
+            area = {{pos.x - 0.5, pos.y - 0.5}, {pos.x + 0.5, pos.y + 0.5}},
+            name = 'character-corpse'
+        }
+
+        local entity
+        for _, e in ipairs(entities) do
+            if e.character_corpse_tick_of_death then
+                entity = e
+                break
+            end
+        end
+
+        if not entity or not entity.valid then
+            return
+        end
+
+        entity.destroy()
+
+        local text = player.name .. "'s corpse was consumed by the biters."
+
+        game.print(text)
+    end
+)
+
+local function on_pre_player_died(event)
+    local player_index = event.player_index
+    local player = game.get_player(player_index)
+
+    if not player or not player.valid then
+        return
+    end
+
+    local surface = player.surface
+
+    local map_name = 'boss_room'
+
+    local corpse_removal_disabled = Public.get('corpse_removal_disabled')
+    if corpse_removal_disabled then
+        return
+    end
+
+    if string.sub(surface.name, 0, #map_name) ~= map_name then
+        return
+    end
+
+    Task.set_timeout_in_ticks(5, search_corpse_token, {player_index = player.index})
+end
+
 local locomotive_market_pickaxe_token =
     Token.register(
     function(count)
@@ -667,14 +728,18 @@ function Public.migrate_and_create(locomotive)
         return
     end
     local position = locomotive.position
+    local inc = 6
+    local new_position = {x = position.x, y = position.y + inc}
 
-    for _, entity in pairs(carriages) do
-        if entity and entity.valid and entity.unit_number ~= locomotive.unit_number then
-            local new_position = {x = position.x, y = position.y + 5}
-            local new_wagon = surface.create_entity({name = entity.name, position = new_position, force = 'player', defines.direction.north})
-            if new_wagon and new_wagon.valid then
-                position = new_position
-                ICW.migrate_wagon(entity, new_wagon)
+    for index, entity in pairs(carriages) do
+        if index ~= 1 then
+            if entity and entity.valid and entity.unit_number ~= locomotive.unit_number then
+                local new_wagon = surface.create_entity({name = entity.name, position = new_position, force = 'player', defines.direction.north})
+                if new_wagon and new_wagon.valid then
+                    inc = inc + 7
+                    new_position = {x = position.x, y = position.y + inc}
+                    ICW.migrate_wagon(entity, new_wagon)
+                end
             end
         end
     end
@@ -874,5 +939,6 @@ Public.apply_startup_settings = apply_startup_settings
 Public.scale = scale
 Public.stateful_spawn_points = stateful_spawn_points
 Public.sizeof_stateful_spawn_points = #stateful_spawn_points
+Public.on_pre_player_died = on_pre_player_died
 
 return Public

@@ -108,7 +108,7 @@ local function void_tiles(p)
 end
 
 local function enemy_spawn_positions(p)
-    if p.x < 200 and p.x >= -212 then
+    if p.x < 230 and p.x >= -242 then
         return false
     end
     return true
@@ -233,9 +233,11 @@ function Public.heavy_functions(data)
         return
     end
 
-    border_chunk(p, data)
-    oozy_tiles(p, data.seed, data.tiles)
-    draw_rails(data)
+    if p.y < 250 then
+        border_chunk(p, data)
+        oozy_tiles(p, data.seed, data.tiles)
+        draw_rails(data)
+    end
 end
 
 return Public
