@@ -14,6 +14,7 @@ local Task = require 'utils.task'
 local Alert = require 'utils.alert'
 local IC = require 'maps.mountain_fortress_v3.ic.table'
 local RPG = require 'modules.rpg.table'
+local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 
 local this = {
     enabled = false,
@@ -774,6 +775,7 @@ function Public.set_target(target, icw_data)
     wave_defense_table.enable_side_target = false
     wave_defense_table.spawn_position = {x = -206, y = -80}
     Public.set('active_surface_index', game.get_surface('boss_room').index)
+    BiterHealthBooster.set('active_surface', game.get_surface('boss_room').name)
     Public.set('icw_locomotive', icw_data)
     Public.render_train_hp()
 end
