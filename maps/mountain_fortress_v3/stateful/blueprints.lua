@@ -33,11 +33,11 @@ function Public.blueprint()
         return
     end
 
-    local spawners = surface.find_entities_filtered({type = 'unit-spawner', area = {{position.x - 70, position.y - 70}, {position.x + 70, position.y + 70}}})
-    if #spawners == 0 then
+    local ents = surface.find_entities_filtered({area = {{position.x - 70, position.y - 70}, {position.x + 70, position.y + 70}}})
+    if #ents == 0 then
         return
     end
-    for _, e in pairs(spawners) do
+    for _, e in pairs(ents) do
         if e and e.valid then
             e.destroy()
         end
