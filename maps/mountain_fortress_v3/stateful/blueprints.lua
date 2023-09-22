@@ -33,7 +33,7 @@ function Public.blueprint()
         return
     end
 
-    local ents = surface.find_entities_filtered({area = {{position.x - 70, position.y - 70}, {position.x + 70, position.y + 70}}})
+    local ents = surface.find_entities_filtered({type = {'unit-spawner', 'tree'}, area = {{position.x - 70, position.y - 70}, {position.x + 70, position.y + 70}}})
     if #ents == 0 then
         return
     end
