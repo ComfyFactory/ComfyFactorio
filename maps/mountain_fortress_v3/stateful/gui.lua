@@ -244,10 +244,18 @@ local function objective_frames(stateful, player_frame, objective, data)
         right_flow.style.horizontal_align = 'right'
         right_flow.style.horizontally_stretchable = true
 
-        if stateful.objectives_completed.supplies or stateful.objectives_completed.single_item then
-            data.supply_completed = right_flow.add({type = 'label', caption = ' [img=utility/check_mark_green]', tooltip = {'stateful.tooltip_completed'}})
+        if objective_name == 'single_item' then
+            if stateful.objectives_completed.single_item then
+                data.single_item_complete = right_flow.add({type = 'label', caption = ' [img=utility/check_mark_green]', tooltip = {'stateful.tooltip_completed'}})
+            else
+                data.single_item_complete = right_flow.add({type = 'label', caption = ' [img=utility/not_available]', tooltip = {'stateful.tooltip_not_completed'}})
+            end
         else
-            data.supply_completed = right_flow.add({type = 'label', caption = ' [img=utility/not_available]', tooltip = {'stateful.tooltip_not_completed'}})
+            if stateful.objectives_completed.supplies then
+                data.supply_completed = right_flow.add({type = 'label', caption = ' [img=utility/check_mark_green]', tooltip = {'stateful.tooltip_completed'}})
+            else
+                data.supply_completed = right_flow.add({type = 'label', caption = ' [img=utility/not_available]', tooltip = {'stateful.tooltip_not_completed'}})
+            end
         end
         -- if objective[1]() then
         --     right_flow.add({type = 'label', caption = '[img=utility/check_mark_green]'})
@@ -475,6 +483,8 @@ local function main_frame(player)
     spacer(frame)
 
     frame.add({type = 'line'})
+
+    spacer(frame)
 
     if stateful.buffs and next(stateful.buffs) then
         local buff_tbl = frame.add {type = 'table', column_count = 2}
@@ -707,13 +717,14 @@ local function update_data()
                                 supplies_data.total = supplies_data.count
                             end
                             supplies_data.count = supplies_data.total - count
-                            if supplies_data.count == 0 then
+                            if supplies_data.count <= 0 then
+                                supplies_data.count = 0
                                 items_done = items_done + 1
                                 frame.number = nil
                                 frame.sprite = 'utility/check_mark_green'
                             else
                                 frame.number = supplies_data.count
-                                frame.tooltip = supplies_data.total .. ' / ' .. count
+                                frame.tooltip = count .. ' / ' .. supplies_data.total
                             end
                             if items_done == 3 then
                                 if data.supply_completed and data.supply_completed.valid then
@@ -737,9 +748,12 @@ local function update_data()
                         single_item.count = 0
                         frame.number = nil
                         frame.sprite = 'utility/check_mark_green'
+                        if data.single_item_complete and data.single_item_complete.valid then
+                            data.single_item_complete.caption = ' [img=utility/check_mark_green]'
+                        end
                     else
                         frame.number = single_item.count
-                        frame.tooltip = single_item.total .. ' / ' .. count
+                        frame.tooltip = count .. ' / ' .. single_item.total
                     end
                 end
             end
@@ -871,7 +885,8 @@ local function update_raw()
                     supplies_data.total = supplies_data.count
                 end
                 supplies_data.count = supplies_data.total - count
-                if supplies_data.count == 0 then
+                if supplies_data.count <= 0 then
+                    supplies_data.count = 0
                     items_done = items_done + 1
                 end
                 if items_done == 3 then
