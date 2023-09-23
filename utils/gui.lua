@@ -5,6 +5,7 @@ local mod_gui = require('__core__/lualib/mod-gui')
 local Server = require 'utils.server'
 local SpamProtection = require 'utils.spam_protection'
 
+local insert = table.insert
 local tostring = tostring
 local next = next
 
@@ -313,6 +314,9 @@ end
 remove_children_data = Public.remove_children_data
 
 function Public.destroy(element)
+    if not element then
+        return
+    end
     remove_data_recursively(element)
     element.destroy()
 end
@@ -371,16 +375,39 @@ local function handler_factory(event_id)
 
         event.player = player
 
-        handler(event)
+        if type(handler) == 'function' then
+            handler(event)
+        else
+            for i = 1, #handler do
+                local callback = handler[i]
+                if callback then
+                    callback(event)
+                end
+            end
+        end
     end
 
     return function(element_name, handler)
+        if not element_name then
+            return error('Element name is required when passing it onto the handler_factory.', 2)
+        end
+        if not handler or not type(handler) == 'function' then
+            return error('Handler is required when passing it onto the handler_factory and needs to be of type function.', 2)
+        end
+
         if not handlers then
             handlers = {}
             Event.add(event_id, on_event)
         end
 
-        handlers[element_name] = handler
+        if handlers[element_name] then
+            local old = handlers[element_name]
+            handlers[element_name] = {}
+            insert(handlers[element_name], old)
+            insert(handlers[element_name], handler)
+        else
+            handlers[element_name] = handler
+        end
     end
 end
 

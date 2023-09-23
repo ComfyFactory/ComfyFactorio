@@ -216,6 +216,8 @@ local function on_pre_player_died(event)
         return
     end
 
+    -- player.ticks_to_respawn = 1800 * (this.rounds_survived + 1)
+
     Task.set_timeout_in_ticks(5, search_corpse_token, {player_index = player.index})
 end
 
@@ -904,30 +906,6 @@ Event.add(
         this.settings_applied = true
 
         Server.try_get_data(dataset, dataset_key, apply_settings_token)
-    end
-)
-
-Server.on_data_set_changed(
-    dataset,
-    function(data)
-        if data.key ~= dataset_key then
-            return
-        end
-        if not data.value then
-            return
-        end
-
-        if data.value.test_mode then
-            Public.reset_stateful()
-            Public.stateful.clear_all_frames()
-            log('[Stateful] new settings applied.')
-            this.test_mode = true
-        elseif data.value.test_mode == false then
-            Public.reset_stateful()
-            Public.stateful.clear_all_frames()
-            log('[Stateful] new settings applied.')
-            this.test_mode = false
-        end
     end
 )
 

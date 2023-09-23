@@ -82,7 +82,7 @@ local function validate_frame(frame)
     return true
 end
 
-local function create_mini_camera_gui(player, target, zoom, render)
+local function create_mini_camera_gui(player, target, zoom, render, tooltip)
     if not player or not player.valid then
         return
     end
@@ -141,13 +141,15 @@ local function create_mini_camera_gui(player, target, zoom, render)
             name = player_frame_name,
             position = target.position,
             zoom = zoom or 0.4,
-            surface_index = surface
+            surface_index = surface,
+            tooltip = tooltip or ''
         }
     )
     camera.style.minimal_width = 740
     camera.style.minimal_height = 580
     player_data = create_player_data(player)
     player_data.camera_frame = camera
+    return frame
 end
 
 commands.add_command(
@@ -236,6 +238,8 @@ end
 
 Public.create_mini_camera_gui = create_mini_camera_gui
 Public.remove_camera_frame = remove_camera_frame
+Public.locate_player_frame_name = locate_player_frame_name
+Public.player_frame_name = player_frame_name
 
 Event.on_nth_tick(2, on_nth_tick)
 
