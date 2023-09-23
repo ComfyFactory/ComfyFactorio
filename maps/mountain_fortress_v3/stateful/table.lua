@@ -15,6 +15,7 @@ local Alert = require 'utils.alert'
 local IC = require 'maps.mountain_fortress_v3.ic.table'
 local RPG = require 'modules.rpg.table'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
+local Beam = require 'modules.render_beam'
 
 local this = {
     enabled = false,
@@ -788,6 +789,8 @@ function Public.allocate()
     if stateful_locomotive and not stateful_locomotive_migrated then
         Task.set_timeout_in_ticks(100, move_all_players_token, {})
 
+        Beam.new_valid_targets({'wall', 'turret', 'furnace', 'gate'})
+
         Public.soft_reset.add_schedule_to_delete_surface()
         Public.set_stateful('stateful_locomotive_migrated', true)
         local locomotive = Public.get('locomotive')
@@ -809,7 +812,7 @@ function Public.allocate()
 
         Server.to_discord_embed('Final boss wave is occuring soon!')
 
-        WD.set('final_boss', true)
+        WD.set('final_battle', true)
 
         Core.iter_connected_players(
             function(player)

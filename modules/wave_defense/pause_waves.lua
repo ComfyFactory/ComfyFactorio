@@ -240,8 +240,8 @@ Event.on_nth_tick(
             return
         end
 
-        local final_boss = Public.get('final_boss')
-        if final_boss then
+        local final_battle = Public.get('final_battle')
+        if final_battle then
             return
         end
 
