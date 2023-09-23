@@ -63,9 +63,20 @@ local buff_to_string = {
     ['starting_items'] = 'Starting items',
     ['character_running_speed_modifier'] = 'Movement',
     ['manual_mining_speed_modifier'] = 'Mining',
+    ['character_resource_reach_distance_bonus'] = 'Resource reach',
+    ['character_item_pickup_distance_bonus'] = 'Item pickup',
+    ['character_loot_pickup_distance_bonus'] = 'Loot pickup',
+    ['laboratory_speed_modifier'] = 'Laboratory speed',
+    ['laboratory_productivity_bonus'] = 'Laboratory productivity',
+    ['worker_robots_storage_bonus'] = 'Robot storage',
+    ['worker_robots_battery_modifier'] = 'Robot battery',
+    ['worker_robots_speed_modifier'] = 'Robot speed',
+    ['mining_drill_productivity_bonus'] = 'Mining drill speed',
+    ['character_health_bonus'] = 'Character health',
     ['character_reach_distance_bonus'] = 'Reach',
     ['manual_crafting_speed_modifier'] = 'Crafting',
-    ['xp_bonus'] = 'XP Bonus'
+    ['xp_bonus'] = 'XP Bonus',
+    ['xp_level'] = 'XP Level'
 }
 
 local function get_random_buff()
@@ -73,7 +84,7 @@ local function get_random_buff()
         {
             name = 'character_running_speed_modifier',
             modifier = 'force',
-            state = 0.04
+            state = 0.05
         },
         {
             name = 'manual_mining_speed_modifier',
@@ -81,9 +92,59 @@ local function get_random_buff()
             state = 0.05
         },
         {
+            name = 'character_resource_reach_distance_bonus',
+            modifier = 'force',
+            state = 0.05
+        },
+        {
+            name = 'character_item_pickup_distance_bonus',
+            modifier = 'force',
+            state = 0.05
+        },
+        {
+            name = 'character_loot_pickup_distance_bonus',
+            modifier = 'force',
+            state = 0.05
+        },
+        {
+            name = 'laboratory_speed_modifier',
+            modifier = 'force',
+            state = 0.05
+        },
+        {
+            name = 'laboratory_productivity_bonus',
+            modifier = 'force',
+            state = 0.05
+        },
+        {
+            name = 'worker_robots_storage_bonus',
+            modifier = 'force',
+            state = 0.05
+        },
+        {
+            name = 'worker_robots_battery_modifier',
+            modifier = 'force',
+            state = 0.05
+        },
+        {
+            name = 'worker_robots_speed_modifier',
+            modifier = 'force',
+            state = 0.05
+        },
+        {
+            name = 'mining_drill_productivity_bonus',
+            modifier = 'force',
+            state = 0.05
+        },
+        {
+            name = 'character_health_bonus',
+            modifier = 'force',
+            state = 50
+        },
+        {
             name = 'character_reach_distance_bonus',
             modifier = 'force',
-            state = 0.02
+            state = 1
         },
         {
             name = 'manual_crafting_speed_modifier',
@@ -96,11 +157,39 @@ local function get_random_buff()
             state = 0.02
         },
         {
+            name = 'xp_level',
+            modifier = 'rpg',
+            state = 1
+        },
+        {
             name = 'items_startup',
             modifier = 'start',
             items = {
                 {name = 'iron-plate', count = 100},
                 {name = 'copper-plate', count = 100}
+            }
+        },
+        {
+            name = 'items_startup',
+            modifier = 'start',
+            items = {
+                {name = 'gun-turret', count = 2},
+                {name = 'firearm-magazine', count = 100}
+            }
+        },
+        {
+            name = 'items_startup',
+            modifier = 'start',
+            items = {
+                {name = 'light-armor', count = 1},
+            }
+        },
+        {
+            name = 'items_startup',
+            modifier = 'start',
+            items = {
+                {name = 'stone-furnace', count = 4},
+                {name = 'coal', count = 100}
             }
         }
     }
@@ -562,15 +651,29 @@ local function apply_startup_settings(settings)
                 end
                 if buff.modifier == 'rpg' then
                     local rpg_extra = RPG.get('rpg_extra')
-                    if not rpg_extra.difficulty then
-                        rpg_extra.difficulty = buff.state
-                    else
-                        rpg_extra.difficulty = rpg_extra.difficulty + buff.state
+                    if buff.name == 'xp_bonus' then
+                        if not rpg_extra.difficulty then
+                            rpg_extra.difficulty = buff.state
+                        else
+                            rpg_extra.difficulty = rpg_extra.difficulty + buff.state
+                        end
+                        if not this.buffs_collected['xp_bonus'] then
+                            this.buffs_collected['xp_bonus'] = buff.state
+                        else
+                            this.buffs_collected['xp_bonus'] = this.buffs_collected['xp_bonus'] + buff.state
+                        end
                     end
-                    if not this.buffs_collected['xp_bonus'] then
-                        this.buffs_collected['xp_bonus'] = buff.state
-                    else
-                        this.buffs_collected['xp_bonus'] = this.buffs_collected['xp_bonus'] + buff.state
+                    if buff.name == 'xp_level' then
+                        if not rpg_extra.grant_xp_level then
+                            rpg_extra.grant_xp_level = buff.state
+                        else
+                            rpg_extra.grant_xp_level = rpg_extra.grant_xp_level + buff.state
+                        end
+                        if not this.buffs_collected['xp_level'] then
+                            this.buffs_collected['xp_level'] = buff.state
+                        else
+                            this.buffs_collected['xp_level'] = this.buffs_collected['xp_level'] + buff.state
+                        end
                     end
                 end
                 if buff.modifier == 'start' then
@@ -908,6 +1011,7 @@ Event.add(
 )
 
 Public.buff_to_string = buff_to_string
+Public.get_random_buff = get_random_buff
 Public.get_item_produced_count = get_item_produced_count
 Public.get_entity_mined_count = get_entity_mined_count
 Public.get_killed_enemies_count = get_killed_enemies_count

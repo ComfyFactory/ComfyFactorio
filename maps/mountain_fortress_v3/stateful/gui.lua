@@ -497,31 +497,35 @@ local function main_frame(player)
         buff_right_flow.style.horizontal_align = 'right'
         buff_right_flow.style.horizontally_stretchable = true
 
-        local buffs = {''}
+        local buffs = ''
         if stateful.buffs_collected and next(stateful.buffs_collected) then
             if stateful.buffs_collected.starting_items then
-                buffs[#buffs + 1] = 'Starting items:\n'
+                buffs = buffs .. 'Starting items:\n'
                 for _, item_data in pairs(stateful.buffs_collected) do
                     if type(item_data) == 'table' then
                         for item_name, item_count in pairs(item_data) do
-                            buffs[#buffs + 1] = item_name .. ': ' .. item_count
-                            buffs[#buffs + 1] = '\n'
+                            buffs = buffs .. item_name .. ': ' .. item_count
+                            buffs = buffs .. '\n'
                         end
                     end
                 end
-                buffs[#buffs + 1] = '\n'
+                buffs = buffs .. '\n'
             end
 
-            buffs[#buffs + 1] = 'Force buffs:\n'
+            buffs = buffs .. 'Force buffs:\n'
             for name, count in pairs(stateful.buffs_collected) do
                 if type(count) ~= 'table' then
-                    buffs[#buffs + 1] = Public.stateful.buff_to_string[name] .. ': ' .. (count * 100) .. '%'
-                    buffs[#buffs + 1] = '\n'
+                    if name == 'xp_level' or name == 'character_health_bonus' then
+                        buffs = buffs .. Public.stateful.buff_to_string[name] .. ': ' .. count
+                    else
+                        buffs = buffs .. Public.stateful.buff_to_string[name] .. ': ' .. (count * 100) .. '%'
+                    end
+                    buffs = buffs .. '\n'
                 end
             end
-            table.remove(buffs, #buffs)
         end
 
+        log(serpent.block(buffs))
         buff_right_flow.add({type = 'label', caption = '[img=utility/center]', tooltip = buffs})
 
         local buff_label = buff_left_flow.add({type = 'label', caption = {'stateful.buffs'}, tooltip = {'stateful.buff_tooltip'}})
