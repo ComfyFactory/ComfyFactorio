@@ -540,7 +540,15 @@ local on_init = function()
     Explosives.set_whitelist_entity('tank')
 end
 
-Event.add(Server.events.on_changes_detected, handle_changes)
+Server.on_scenario_changed(
+    'Mountain_Fortress_v3',
+    function(data)
+        local scenario = data.scenario
+        if scenario == 'Mountain_Fortress_v3' then
+            handle_changes()
+        end
+    end
+)
 
 Event.on_nth_tick(10, on_tick)
 Event.on_init(on_init)

@@ -100,6 +100,8 @@ local jailed_data_set = 'jailed'
 
 local data_set_handlers = {}
 
+local scenario_handlers = {}
+
 local function assert_non_empty_string_and_no_spaces(str, argument_name)
     if type(str) ~= 'string' then
         error(argument_name .. ' must be a string', 3)
@@ -928,6 +930,30 @@ local function data_set_changed(data)
     end
 end
 
+local function scenario_changed(data)
+    local handlers = scenario_handlers[data.scenario]
+    if handlers == nil then
+        return
+    end
+
+    if _DEBUG then
+        for _, handler in ipairs(handlers) do
+            local success, err = pcall(handler, data)
+            if not success then
+                log(err)
+                error(err, 2)
+            end
+        end
+    else
+        for _, handler in ipairs(handlers) do
+            local success, err = pcall(handler, data)
+            if not success then
+                log(err)
+            end
+        end
+    end
+end
+
 --- Register a handler to be called when the data_set changes.
 -- The handler is passed a table {data_set:string, key:string, value:any}
 -- If value is nil that means the key was removed.
@@ -964,8 +990,40 @@ function Public.on_data_set_changed(data_set, handler)
     end
 end
 
+--- Register a handler to be called when a scenarios changes.
+-- The handler is passed a table {scenario:string}
+-- @param  scenario<string>
+-- @param  handler<function>
+-- @usage
+-- local Server = require 'utils.server'
+-- Server.on_scenario_changed(
+--     'scenario name',
+--     function(data)
+--         local scenario = data.scenario
+--     end
+-- )
+function Public.on_scenario_changed(scenario, handler)
+    if _LIFECYCLE == _STAGE.runtime then
+        error('cannot call during runtime', 2)
+    end
+    if type(scenario) ~= 'string' then
+        error('scenario must be a string', 2)
+    end
+
+    local handlers = scenario_handlers[scenario]
+    if handlers == nil then
+        handlers = {handler}
+        scenario_handlers[scenario] = handlers
+    else
+        handlers[#handlers + 1] = handler
+    end
+end
+
 --- Called by the web server to notify the client that a data_set has changed.
 Public.raise_data_set = data_set_changed
+
+--- Called by the web server to notify the client that the subscribed scenario has changed.
+Public.raise_scenario_changed = scenario_changed
 
 --- Called by the web server to determine which data_sets are being tracked.
 function Public.get_tracked_data_sets()
@@ -986,6 +1044,26 @@ function Public.get_tracked_data_sets()
     end
 
     message[#message + 1] = ']'
+
+    message = concat(message)
+    raw_print(message)
+end
+
+--- Called by the web server to determine which scenarios is being tracked.
+function Public.get_tracked_scenario()
+    local message = {scenario_tag, ''}
+
+    for k, _ in pairs(scenario_handlers) do
+        k = double_escape(k)
+
+        local message_length = #message
+        message[message_length + 1] = k
+        message[message_length + 2] = ','
+    end
+
+    if message[#message] == ',' then
+        remove(message)
+    end
 
     message = concat(message)
     raw_print(message)

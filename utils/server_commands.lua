@@ -22,6 +22,9 @@ end
 ServerCommands.raise_data_set = Server.raise_data_set
 ServerCommands.get_tracked_data_sets = Server.get_tracked_data_sets
 
+ServerCommands.raise_scenario_changed = Server.raise_scenario_changed
+ServerCommands.get_tracked_scenario = Server.get_tracked_scenario
+
 function ServerCommands.server_started()
     script.raise_event(Server.events.on_server_started, {})
 end
