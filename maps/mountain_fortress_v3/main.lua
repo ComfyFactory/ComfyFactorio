@@ -44,6 +44,7 @@ local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local JailData = require 'utils.datastore.jail_data'
 local RPG_Progression = require 'utils.datastore.rpg_data'
 local OfflinePlayers = require 'modules.clear_vacant_players'
+local Beam = require 'modules.render_beam'
 
 -- Use these settings for live
 local send_ping_to_channel = Discord.channel_names.mtn_channel
@@ -178,6 +179,8 @@ function Public.reset_map()
 
     Explosives.set_surface_whitelist({[surface.name] = true})
     Explosives.check_growth_below_void(true)
+
+    Beam.reset_valid_targets()
 
     game.forces.player.set_spawn_position({x = -27, y = 25}, surface)
     game.forces.player.manual_mining_speed_modifier = 0

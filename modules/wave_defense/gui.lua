@@ -66,8 +66,8 @@ local function get_threat_gain()
 end
 
 function Public.update_gui(player)
-    local final_boss = Public.get('final_boss')
-    if final_boss then
+    local final_battle = Public.get('final_battle')
+    if final_battle then
         if player.gui.top.wave_defense and player.gui.top.wave_defense.valid then
             player.gui.top.wave_defense.destroy()
         end

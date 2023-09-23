@@ -14,6 +14,17 @@ local this = {
         'artillery-wagon',
         'artillery-turret',
         'spidertron'
+    },
+    backup_valid_targets = {
+        'character',
+        'tank',
+        'car',
+        'locomotive',
+        'cargo-wagon',
+        'fluid-wagon',
+        'artillery-wagon',
+        'artillery-turret',
+        'spidertron'
     }
 }
 
@@ -55,7 +66,7 @@ function Public:new_target()
         return
     end
     local position
-    local entities = surface.find_entities_filtered {type = this.valid_targets}
+    local entities = surface.find_entities_filtered {type = this.valid_targets, force = 'player'}
     if entities and #entities > 0 then
         position = entities[random(#entities)].position
     end
@@ -146,7 +157,7 @@ function Public:notify_new_beam()
             return
         end
 
-        game.print('[Orbital] A new orbital strike has been spotted at: [gps=' .. self.position.x .. ',' .. self.position.y .. ',' .. surface.name .. ']')
+        game.print('[color=yellow][Orbital][/color] A new orbital strike has been spotted at: [gps=' .. self.position.x .. ',' .. self.position.y .. ',' .. surface.name .. ']')
     end
 end
 
@@ -233,7 +244,7 @@ function Public:damage_entities_nearby()
             if entity.valid then
                 if entity.health then
                     if entity.force.name ~= 'enemy' then
-                        entity.damage(damage, 'enemy')
+                        entity.damage(damage, 'enemy', 'explosion')
                     end
                 end
             end
@@ -245,7 +256,8 @@ end
 ---@return boolean|integer
 function Public:validate()
     if not self.render_id then
-        return self:new_render()
+        self:new_render()
+        return false
     end
     if rendering.is_valid(self.render_id) then
         return true
@@ -297,7 +309,7 @@ end
 
 --- Creates a new render.
 ---@param sprite string
----@param surface userdata
+---@param surface LuaSurface
 ---@param ttl integer|nil
 ---@param scalar table|nil
 ---@param delayed number|nil
@@ -329,13 +341,30 @@ function Public.new(sprite, surface, ttl, scalar, delayed)
 end
 
 --- Creates a new defined beam
----@param surface userdata
-function Public.new_beam(surface)
-    Public.new(Gui.beam, surface)
+---@param surface LuaSurface
+---@param ttl number|nil
+function Public.new_beam(surface, ttl)
+    Public.new(Gui.beam, surface, ttl)
+end
+
+--- Defines new targets as valid targets
+---@param targets table
+function Public.new_valid_targets(targets)
+    if targets and type(targets) == 'table' then
+        this.backup_valid_targets = this.valid_targets
+        this.valid_targets = targets
+    else
+        error('New valid targets needs to be of type table', 2)
+    end
+end
+
+--- Defaults the valid targets
+function Public.reset_valid_targets()
+    this.valid_targets = this.backup_valid_targets
 end
 
 --- Creates a new defined beam with a delayed action
----@param surface userdata
+---@param surface LuaSurface
 ---@param time number
 function Public.new_beam_delayed(surface, time)
     Public.new(Gui.beam, surface, nil, nil, time)

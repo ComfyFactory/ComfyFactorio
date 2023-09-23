@@ -22,7 +22,8 @@ local this = {
         frenzy_burst_length = 160,
         update_rate = 60,
         enabled = true,
-        track_bosses_only = true
+        track_bosses_only = true,
+        wave_number = 0
     },
     target_settings = {}
 }
