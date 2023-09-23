@@ -74,7 +74,6 @@ local function notify_won_to_discord()
     local date = Server.get_start_time()
     game.server_save('Complete_Mtn_v3_' .. tostring(date) .. '_wave' .. tostring(wave))
 
-    local threat = WD.get('threat')
     local time_played = Core.format_time(game.ticks_played)
     local total_players = #game.players
     local total_connected_players = #game.connected_players
@@ -97,13 +96,13 @@ local function notify_won_to_discord()
             inline = 'false'
         },
         field3 = {
-            text1 = 'Total connected players:',
-            text2 = total_players,
+            text1 = 'Wave:',
+            text2 = format_number(wave, true),
             inline = 'false'
         },
         field4 = {
-            text1 = 'Threat:',
-            text2 = format_number(threat, true),
+            text1 = 'Total connected players:',
+            text2 = total_players,
             inline = 'false'
         },
         field5 = {

@@ -243,13 +243,6 @@ local functions = {
             global.bb_settings.only_admins_vote = false
             game.print('Admin-only difficulty voting has been disabled!')
         end
-    end,
-    ['disable_cleaning'] = function(event)
-        if event.element.switch_state == 'left' then
-            Gui.set_disable_clear_invalid_data(true)
-        else
-            Gui.set_disable_clear_invalid_data(false)
-        end
     end
 }
 
@@ -616,14 +609,6 @@ local function build_config_gui(data)
 
             scroll_pane.add({type = 'line'})
         end
-
-        switch_state = 'right'
-        if Gui.get_disable_clear_invalid_data() then
-            switch_state = 'left'
-        end
-        add_switch(scroll_pane, switch_state, 'disable_cleaning', {'gui.gui_data_cleaning'}, {'gui-description.gui_data_cleaning'})
-
-        scroll_pane.add({type = 'line'})
 
         switch_state = 'right'
         if this.gui_config.spaghett.enabled then
