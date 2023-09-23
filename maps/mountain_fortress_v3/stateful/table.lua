@@ -615,11 +615,6 @@ local apply_settings_token =
             return
         end
 
-        if not settings.current_date then
-            settings.current_date = tonumber(new_value)
-            Server.set_data(dataset, dataset_key, settings)
-        end
-
         this.current_date = settings.current_date
         this.buffs = settings.buffs
 
