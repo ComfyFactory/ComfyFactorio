@@ -525,7 +525,6 @@ local function main_frame(player)
             end
         end
 
-        log(serpent.block(buffs))
         buff_right_flow.add({type = 'label', caption = '[img=utility/center]', tooltip = buffs})
 
         local buff_label = buff_left_flow.add({type = 'label', caption = {'stateful.buffs'}, tooltip = {'stateful.buff_tooltip'}})
