@@ -730,8 +730,8 @@ local apply_settings_token =
         this.final_battle = false
         this.selected_objectives = get_random_objectives()
         this.objectives = {
-            randomized_zone = scale(5, 40),
-            randomized_wave = scale(500, 4000),
+            randomized_zone = scale(5, 30),
+            randomized_wave = scale(300, 2000),
             randomized_linked_chests = scale(2, 20),
             supplies = get_random_items(),
             single_item = get_random_item(),
@@ -798,8 +798,8 @@ function Public.reset_stateful()
         }
     else
         this.objectives = {
-            randomized_zone = scale(5, 40),
-            randomized_wave = scale(500, 4000),
+            randomized_zone = scale(5, 30),
+            randomized_wave = scale(300, 2000),
             randomized_linked_chests = scale(2, 20),
             supplies = get_random_items(),
             single_item = get_random_item(),
