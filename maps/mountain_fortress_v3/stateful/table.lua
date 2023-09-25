@@ -423,7 +423,7 @@ local rockets_launched_token =
 )
 
 local function scale(setting, limit)
-    local factor = 1.2
+    local factor = 1.1
     local scale_value = floor(setting * (factor ^ this.rounds_survived))
     if limit and scale_value >= limit then
         return limit
@@ -504,7 +504,7 @@ local function get_random_research_recipe()
         return {name = research_level_list[1], count = 1}
     end
 
-    return {name = research_level_list[1], count = scale(random(2, 7), 40)}
+    return {name = research_level_list[1], count = scale(2, 40)}
 end
 
 local function get_random_locomotive_tier()
@@ -519,9 +519,9 @@ local function get_random_locomotive_tier()
     shuffle(tiers)
     shuffle(tiers)
 
-    local pickaxe_count = scale(random(10, 20), 59)
-    local health_count = scale(random(5, 10), 100)
-    local xp_points_count = scale(random(4, 7), 100)
+    local pickaxe_count = scale(5, 59)
+    local health_count = scale(5, 100)
+    local xp_points_count = scale(5, 100)
 
     if this.test_mode then
         pickaxe_count = 1
@@ -730,19 +730,19 @@ local apply_settings_token =
         this.final_battle = false
         this.selected_objectives = get_random_objectives()
         this.objectives = {
-            randomized_zone = scale(random(5, 15), 40),
-            randomized_wave = scale(random(500, 1000), 4000),
-            randomized_linked_chests = scale(random(2, 4), 20),
+            randomized_zone = scale(5, 40),
+            randomized_wave = scale(500, 4000),
+            randomized_linked_chests = scale(2, 20),
             supplies = get_random_items(),
             single_item = get_random_item(),
-            killed_enemies = scale(random(500000, 1000000), 10000000),
-            complete_mystical_chest_amount = scale(random(10, 30), 500),
+            killed_enemies = scale(500000, 10000000),
+            complete_mystical_chest_amount = scale(3, 20),
             research_level_selection = get_random_research_recipe(),
             research_level_count = 0,
             locomotive_market_selection = get_random_locomotive_tier(),
-            trees_farmed = scale(random(5000, 100000), 400000),
-            rocks_farmed = scale(random(50000, 500000), 4000000),
-            rockets_launched = scale(random(100, 200), 5000)
+            trees_farmed = scale(10000, 400000),
+            rocks_farmed = scale(50000, 4000000),
+            rockets_launched = scale(100, 5000)
         }
         this.collection = {
             time_until_attack = nil,
@@ -798,19 +798,19 @@ function Public.reset_stateful()
         }
     else
         this.objectives = {
-            randomized_zone = scale(random(5, 15), 40),
-            randomized_wave = scale(random(500, 1000), 4000),
-            randomized_linked_chests = scale(random(2, 4), 20),
+            randomized_zone = scale(5, 40),
+            randomized_wave = scale(500, 4000),
+            randomized_linked_chests = scale(2, 20),
             supplies = get_random_items(),
             single_item = get_random_item(),
-            killed_enemies = scale(random(500000, 1000000), 10000000),
-            complete_mystical_chest_amount = scale(random(10, 30), 500),
+            killed_enemies = scale(500000, 10000000),
+            complete_mystical_chest_amount = scale(3, 20),
             research_level_selection = get_random_research_recipe(),
             research_level_count = 0,
             locomotive_market_selection = get_random_locomotive_tier(),
-            trees_farmed = scale(random(5000, 100000), 400000),
-            rocks_farmed = scale(random(50000, 500000), 4000000),
-            rockets_launched = scale(random(100, 200), 5000)
+            trees_farmed = scale(10000, 400000),
+            rocks_farmed = scale(50000, 4000000),
+            rockets_launched = scale(100, 5000)
         }
     end
     this.collection = {
