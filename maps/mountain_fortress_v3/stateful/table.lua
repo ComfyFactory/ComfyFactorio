@@ -742,7 +742,7 @@ local apply_settings_token =
             locomotive_market_selection = get_random_locomotive_tier(),
             trees_farmed = scale(10000, 400000),
             rocks_farmed = scale(50000, 4000000),
-            rockets_launched = scale(100, 5000)
+            rockets_launched = scale(40, 700)
         }
         this.collection = {
             time_until_attack = nil,
@@ -810,7 +810,7 @@ function Public.reset_stateful()
             locomotive_market_selection = get_random_locomotive_tier(),
             trees_farmed = scale(10000, 400000),
             rocks_farmed = scale(50000, 4000000),
-            rockets_launched = scale(100, 5000)
+            rockets_launched = scale(40, 700)
         }
     end
     this.collection = {
