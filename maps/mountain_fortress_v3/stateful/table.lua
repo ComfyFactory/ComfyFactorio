@@ -181,7 +181,7 @@ local function get_random_buff()
             name = 'items_startup',
             modifier = 'start',
             items = {
-                {name = 'light-armor', count = 1},
+                {name = 'light-armor', count = 1}
             }
         },
         {
@@ -433,19 +433,19 @@ end
 
 local function get_random_items()
     local items = {
-        {'iron-plate', scale(random(5000000, 20000000))},
-        {'steel-plate', scale(random(400000, 1500000))},
-        {'copper-plate', scale(random(5000000, 20000000))},
-        {'iron-gear-wheel', scale(random(400000, 1000000))},
-        {'iron-stick', scale(random(100000, 300000))},
-        {'copper-cable', scale(random(20000000, 50000000))},
-        {'electronic-circuit', scale(random(5000000, 20000000))},
-        {'advanced-circuit', scale(random(1000000, 2000000))},
-        {'processing-unit', scale(random(100000, 400000))},
-        {'engine-unit', scale(random(100000, 300000))},
-        {'electric-engine-unit', scale(random(50000, 150000))},
-        {'rocket-control-unit', scale(random(100000, 200000))},
-        {'explosives', scale(random(1000000, 2000000))}
+        {'iron-plate', random(5000000, 20000000)},
+        {'steel-plate', random(400000, 1500000)},
+        {'copper-plate', random(5000000, 20000000)},
+        {'iron-gear-wheel', random(400000, 1000000)},
+        {'iron-stick', random(100000, 300000)},
+        {'copper-cable', random(20000000, 50000000)},
+        {'electronic-circuit', random(5000000, 20000000)},
+        {'advanced-circuit', random(1000000, 2000000)},
+        {'processing-unit', random(100000, 400000)},
+        {'engine-unit', random(100000, 300000)},
+        {'electric-engine-unit', random(50000, 150000)},
+        {'rocket-control-unit', random(100000, 200000)},
+        {'explosives', random(1000000, 2000000)}
     }
 
     shuffle(items)
@@ -470,12 +470,12 @@ end
 
 local function get_random_item()
     local items = {
-        {'effectivity-module', scale(random(500, 4000))},
-        {'effectivity-module-2', scale(random(200, 1000))},
-        {'productivity-module', scale(random(50000, 100000))},
-        {'productivity-module-2', scale(random(5000, 20000))},
-        {'speed-module', scale(random(50000, 200000))},
-        {'speed-module-2', scale(random(5000, 25000))}
+        {'effectivity-module', random(500, 4000)},
+        {'effectivity-module-2', random(200, 1000)},
+        {'productivity-module', random(50000, 100000)},
+        {'productivity-module-2', random(5000, 20000)},
+        {'speed-module', random(50000, 200000)},
+        {'speed-module-2', random(5000, 25000)}
     }
 
     shuffle(items)
@@ -748,7 +748,8 @@ local apply_settings_token =
             time_until_attack = nil,
             time_until_attack_timer = nil,
             survive_for = nil,
-            survive_for_timer = nil
+            survive_for_timer = nil,
+            final_arena_disabled = true
         }
         this.force_chunk = true
         this.force_chunk_until = game.tick + 1000
@@ -816,7 +817,8 @@ function Public.reset_stateful()
         time_until_attack = nil,
         time_until_attack_timer = nil,
         survive_for = nil,
-        survive_for_timer = nil
+        survive_for_timer = nil,
+        final_arena_disabled = true
     }
     this.stateful_locomotive_migrated = false
     this.force_chunk = true
@@ -884,6 +886,12 @@ function Public.move_all_players()
             end
         end
     )
+end
+
+function Public.set_final_battle()
+    WD.set_es('final_battle', true)
+    this.final_battle = true
+    Public.set('final_battle', true)
 end
 
 function Public.allocate()

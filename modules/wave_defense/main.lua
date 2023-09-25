@@ -476,7 +476,7 @@ local function get_active_unit_groups_count()
     return count
 end
 
-local function spawn_biter(surface, position, force_spawn, is_boss_biter, unit_settings)
+local function spawn_biter(surface, position, force_spawn, is_boss_biter, unit_settings, final_battle)
     if not force_spawn then
         if not is_boss_biter then
             if not can_units_spawn() then
@@ -519,9 +519,9 @@ local function spawn_biter(surface, position, force_spawn, is_boss_biter, unit_s
     end
 
     local biter = surface.create_entity({name = name, position = position, force = force})
-    biter.ai_settings.allow_destroy_when_commands_fail = true
-    biter.ai_settings.allow_try_return_to_spawner = false
-    biter.ai_settings.do_separation = true
+    -- biter.ai_settings.allow_destroy_when_commands_fail = true
+    -- biter.ai_settings.allow_try_return_to_spawner = false
+    -- biter.ai_settings.do_separation = true
 
     local increase_health_per_wave = Public.get('increase_health_per_wave')
     local boost_units_when_wave_is_above = Public.get('boost_units_when_wave_is_above')
@@ -541,12 +541,18 @@ local function spawn_biter(surface, position, force_spawn, is_boss_biter, unit_s
     if is_boss_biter then
         if (wave_number >= boost_bosses_when_wave_is_above) then
             local increase_boss_health_per_wave = Public.get('increase_boss_health_per_wave')
-            if increase_boss_health_per_wave then
+            if final_battle then
                 local modified_boss_unit_health = Public.get('modified_boss_unit_health')
-                BiterHealthBooster.add_boss_unit(biter, modified_boss_unit_health.current_value, 0.55)
+                local add_value = modified_boss_unit_health.current_value * 0.5
+                BiterHealthBooster.add_boss_unit(biter, modified_boss_unit_health.current_value + add_value, 0.55)
             else
-                local sum = boosted_health * 5
-                BiterHealthBooster.add_boss_unit(biter, sum, 0.55)
+                if increase_boss_health_per_wave then
+                    local modified_boss_unit_health = Public.get('modified_boss_unit_health')
+                    BiterHealthBooster.add_boss_unit(biter, modified_boss_unit_health.current_value, 0.55)
+                else
+                    local sum = boosted_health * 5
+                    BiterHealthBooster.add_boss_unit(biter, sum, 0.55)
+                end
             end
         else
             local sum = boosted_health * 5
@@ -1109,6 +1115,7 @@ local function spawn_unit_group(fs, only_bosses)
     end
     local surface_index = Public.get('surface_index')
     local remove_entities = Public.get('remove_entities')
+    local final_battle = Public.get('final_battle')
 
     local surface = game.surfaces[surface_index]
     set_group_spawn_position(surface)
@@ -1160,6 +1167,7 @@ local function spawn_unit_group(fs, only_bosses)
     end
 
     local generated_units = Public.get('generated_units')
+
     local unit_group = surface.create_unit_group({position = spawn_position, force = force})
 
     event_data.unit_group = unit_group
@@ -1213,19 +1221,23 @@ local function spawn_unit_group(fs, only_bosses)
             Public.set('boss_wave', false)
         end
     else
-        local count = fs.scale or 30
+        if not es_settings.generated_units then
+            es_settings.generated_units = 0
+        end
+        if es_settings.generated_units > 100 then
+            return
+        end
+
+        local count = fs.scale or 1
         event_data.spawn_count = count
         for _ = 1, count, 1 do
-            local random_boss = (random(1, 60) == 1)
-            local biter = spawn_biter(surface, spawn_position, fs, random_boss, unit_settings)
+            local biter = spawn_biter(surface, spawn_position, fs, true, unit_settings, final_battle)
             if not biter then
                 Public.debug_print('spawn_unit_group - No biter was found?')
                 break
             end
             unit_group.add_member(biter)
-            if random_boss then
-                raise(Public.events.on_entity_created, {entity = biter, boss_unit = true, target = target})
-            end
+            raise(Public.events.on_entity_created, {entity = biter, boss_unit = true, target = target})
         end
     end
 

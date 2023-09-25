@@ -31,19 +31,24 @@ Event.add(
 )
 
 Event.on_nth_tick(
-    60,
+    120,
     function()
         local final_battle = Public.get_stateful('final_battle')
         if not final_battle then
             return
         end
 
-        Public.allocate()
-
         local collection = Public.get_stateful('collection')
         if not collection then
             return
         end
+
+        if collection.final_arena_disabled then
+            return
+        end
+
+        Public.allocate()
+        Public.set_final_battle()
 
         if collection.time_until_attack and collection.time_until_attack <= 0 and collection.survive_for > 0 then
             local surface = game.get_surface('boss_room')
@@ -53,7 +58,6 @@ Event.on_nth_tick(
 
             local spawn_positions = Public.stateful_spawn_points
             local sizeof = Public.sizeof_stateful_spawn_points
-            local rounds_survived = Public.get_stateful('rounds_survived')
 
             local area = spawn_positions[random(1, sizeof)]
 
@@ -62,7 +66,7 @@ Event.on_nth_tick(
             WD.build_worm_custom()
 
             WD.set_spawn_position(area[1])
-            Event.raise(WD.events.on_spawn_unit_group, {fs = true, bypass = true, random_bosses = true, scale = Public.stateful.scale(20 * (rounds_survived + 1), 100)})
+            Event.raise(WD.events.on_spawn_unit_group, {fs = true, bypass = true, random_bosses = true, scale = 4, force = 'aggressors_frenzy'})
             return
         end
 
@@ -76,7 +80,6 @@ Event.on_nth_tick(
 
 Event.on_nth_tick(
     14400,
-    -- 200,
     function()
         local final_battle = Public.get_stateful('final_battle')
         if not final_battle then
@@ -88,13 +91,17 @@ Event.on_nth_tick(
             return
         end
 
+        if collection.final_arena_disabled then
+            return
+        end
+
         local surface = game.get_surface('boss_room')
         if not surface or not surface.valid then
             return
         end
 
         if collection.time_until_attack and collection.time_until_attack <= 0 and collection.survive_for > 0 then
-            Beam.new_beam(surface, game.tick + 600)
+            Beam.new_beam(surface, game.tick + 150)
         end
     end
 )

@@ -922,7 +922,7 @@ local function update_raw()
         end
     end
 
-    if collection.time_until_attack then
+    if collection.time_until_attack and not collection.final_arena_disabled then
         collection.time_until_attack = collection.time_until_attack_timer - tick
         if collection.time_until_attack > 0 then
             collection.time_until_attack = collection.time_until_attack
@@ -1006,7 +1006,48 @@ local function update_raw()
 
     if stateful.objectives_completed_count == 6 and not stateful.objectives_completed.boss_time then
         stateful.objectives_completed.boss_time = true
+
         Server.to_discord_embed('All objectives has been completed!')
+
+        if stateful.collection.final_arena_disabled then
+            game.print('[color=yellow][Mtn v3][/color] Game won!')
+            game.print('[color=yellow][Mtn v3][/color] Final battle arena is currently disabled.')
+            collection.game_won = true
+            stateful.collection.time_until_attack = 0
+            stateful.collection.time_until_attack_timer = 0
+            stateful.collection.gather_time = 0
+            stateful.collection.gather_time_timer = 0
+            collection.survive_for = 0
+            collection.survive_for_timer = 0
+            Core.iter_connected_players(
+                function(player)
+                    local frame = player.gui.screen[main_frame_name]
+                    if frame then
+                        Gui.remove_data_recursively(frame)
+                        frame.destroy()
+                        main_frame(player)
+                    end
+                end
+            )
+
+            collection.game_won_notified = true
+            refresh_boss_frame()
+            play_game_won()
+            WD.disable_spawning_biters(true)
+            Collapse.disable_collapse(true)
+            WD.nuke_wave_gui()
+            Server.to_discord_embed('Game won!')
+            stateful.rounds_survived = stateful.rounds_survived + 1
+            Public.stateful.save_settings()
+            notify_won_to_discord()
+            local locomotive = Public.get('locomotive')
+            if locomotive and locomotive.valid then
+                locomotive.surface.spill_item_stack(locomotive.position, {name = 'coin', count = 512}, false)
+                Public.set('game_reset_tick', 5400)
+            end
+            return
+        end
+
         stateful.collection.gather_time = tick + 54000
         stateful.collection.gather_time_timer = tick + 54000
         play_achievement_unlocked()
