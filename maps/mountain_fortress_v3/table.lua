@@ -164,6 +164,7 @@ function Public.reset_main_table()
             flame_turret = {}
         },
         has_upgraded_health_pool = false,
+        has_upgraded_tile_when_mining = false,
         explosive_bullets_purchased = false,
         xp_points_upgrade = 0,
         aura_upgrades = 0,
@@ -217,6 +218,7 @@ function Public.reset_main_table()
         flamethrower_turrets_cost = 3000,
         land_mine_cost = 2,
         car_health_upgrade_pool_cost = 100000,
+        tile_when_mining_cost = random(45000, 70000),
         redraw_mystical_chest_cost = 3000
     }
     this.collapse_grace = true

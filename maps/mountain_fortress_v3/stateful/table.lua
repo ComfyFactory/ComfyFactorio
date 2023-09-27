@@ -162,34 +162,54 @@ local function get_random_buff()
             state = 1
         },
         {
-            name = 'items_startup',
-            modifier = 'start',
+            name = 'starting_items',
+            modifier = 'supplies',
+            limit = nil,
             items = {
                 {name = 'iron-plate', count = 100},
                 {name = 'copper-plate', count = 100}
             }
         },
         {
-            name = 'items_startup',
-            modifier = 'start',
+            name = 'starting_items',
+            modifier = 'defense',
+            limit = nil,
             items = {
                 {name = 'gun-turret', count = 2},
                 {name = 'firearm-magazine', count = 100}
             }
         },
         {
-            name = 'items_startup',
-            modifier = 'start',
+            name = 'starting_items',
+            modifier = 'armor',
+            limit = 1,
             items = {
-                {name = 'light-armor', count = 1}
+                {name = 'heavy-armor', count = 1}
             }
         },
         {
-            name = 'items_startup',
-            modifier = 'start',
+            name = 'starting_items',
+            modifier = 'production',
+            limit = nil,
             items = {
                 {name = 'stone-furnace', count = 4},
                 {name = 'coal', count = 100}
+            }
+        },
+        {
+            name = 'starting_items',
+            modifier = 'fast-startup',
+            limit = nil,
+            items = {
+                {name = 'assembling-machine', count = 1}
+            }
+        },
+        {
+            name = 'starting_items',
+            modifier = 'heal-thy-buildings',
+            limit = nil,
+            items = {
+                {name = 'repair-pack', count = 5}
             }
         }
     }
@@ -422,8 +442,8 @@ local rockets_launched_token =
     end
 )
 
-local function scale(setting, limit)
-    local factor = 1.1
+local function scale(setting, limit, factor)
+    factor = factor or 1.15
     local scale_value = floor(setting * (factor ^ this.rounds_survived))
     if limit and scale_value >= limit then
         return limit
@@ -554,40 +574,40 @@ end
 local function get_random_objectives()
     local items = {
         {
-            'supplies',
-            empty_token
+            name = 'supplies',
+            token = empty_token
         },
         {
-            'single_item',
-            empty_token
+            name = 'single_item',
+            token = empty_token
         },
         {
-            'killed_enemies',
-            killed_enemies_token
+            name = 'killed_enemies',
+            token = killed_enemies_token
         },
         {
-            'complete_mystical_chest_amount',
-            complete_mystical_chest_amount_token
+            name = 'complete_mystical_chest_amount',
+            token = complete_mystical_chest_amount_token
         },
         {
-            'research_level_selection',
-            research_level_selection_token
+            name = 'research_level_selection',
+            token = research_level_selection_token
         },
         {
-            'locomotive_market_selection',
-            empty_token
+            name = 'locomotive_market_selection',
+            token = empty_token
         },
         {
-            'trees_farmed',
-            trees_farmed_token
+            name = 'trees_farmed',
+            token = trees_farmed_token
         },
         {
-            'rocks_farmed',
-            rocks_farmed_token
+            name = 'rocks_farmed',
+            token = rocks_farmed_token
         },
         {
-            'rockets_launched',
-            rockets_launched_token
+            name = 'rockets_launched',
+            token = rockets_launched_token
         }
     }
 
@@ -600,38 +620,7 @@ local function get_random_objectives()
     }
 end
 
-local function apply_startup_settings(settings)
-    local new_value = Server.get_current_date()
-    if not new_value then
-        return
-    end
-    settings = settings or {}
-    local old_value = this.current_date
-    if old_value then
-        old_value = tonumber(old_value)
-        local time_to_reset = (new_value - old_value)
-        if time_to_reset then
-            if time_to_reset > this.reset_after then
-                settings.current_date = tonumber(new_value)
-                settings.test_mode = false
-                settings.rounds_survived = 0
-                settings.buffs = {}
-                this.buffs = {}
-                this.buffs_collected = {}
-                this.rounds_survived = 0
-                this.current_date = tonumber(new_value)
-                local message = ({'stateful.reset'})
-                local message_discord = ({'stateful.reset_discord'})
-                game.print(message)
-                Server.to_discord_embed(message_discord, true)
-
-                Server.set_data(dataset, dataset_key, settings)
-            end
-        end
-    end
-
-    local starting_items = Public.get_func('starting_items')
-
+local function apply_buffs(starting_items)
     if this.buffs and next(this.buffs) then
         if not this.buffs_collected then
             this.buffs_collected = {}
@@ -676,12 +665,16 @@ local function apply_startup_settings(settings)
                         end
                     end
                 end
-                if buff.modifier == 'start' then
+                if buff.modifier == 'starting_items' then
                     if not this.buffs_collected['starting_items'] then
                         this.buffs_collected['starting_items'] = {}
                     end
                     for _, item in pairs(buff.items) do
                         if item then
+                            if starting_items[item.name] and item.limit and item.limit == 1 then
+                                break -- break if the limit is 1
+                            end
+
                             if starting_items[item.name] then
                                 starting_items[item.name] = starting_items[item.name] + item.count
                             else
@@ -698,6 +691,41 @@ local function apply_startup_settings(settings)
             end
         end
     end
+end
+
+local function apply_startup_settings(settings)
+    local new_value = Server.get_current_date()
+    if not new_value then
+        return
+    end
+    settings = settings or {}
+    local old_value = this.current_date
+    if old_value then
+        old_value = tonumber(old_value)
+        local time_to_reset = (new_value - old_value)
+        if time_to_reset then
+            if time_to_reset > this.reset_after then
+                settings.current_date = tonumber(new_value)
+                settings.test_mode = false
+                settings.rounds_survived = 0
+                settings.buffs = {}
+                this.buffs = {}
+                this.buffs_collected = {}
+                this.rounds_survived = 0
+                this.current_date = tonumber(new_value)
+                local message = ({'stateful.reset'})
+                local message_discord = ({'stateful.reset_discord'})
+                game.print(message)
+                Server.to_discord_embed(message_discord, true)
+
+                Server.set_data(dataset, dataset_key, settings)
+            end
+        end
+    end
+
+    local starting_items = Public.get_func('starting_items')
+
+    apply_buffs(starting_items)
     return settings
 end
 
@@ -719,40 +747,14 @@ local apply_settings_token =
             return
         end
 
+        Public.reset_stateful()
+
         this.current_date = settings.current_date
         this.buffs = settings.buffs
 
         settings = apply_startup_settings(settings)
 
         this.rounds_survived = settings.rounds_survived
-        this.objectives_completed = {}
-        this.objectives_completed_count = 0
-        this.final_battle = false
-        this.selected_objectives = get_random_objectives()
-        this.objectives = {
-            randomized_zone = scale(5, 30),
-            randomized_wave = scale(300, 2000),
-            randomized_linked_chests = scale(2, 20),
-            supplies = get_random_items(),
-            single_item = get_random_item(),
-            killed_enemies = scale(500000, 10000000),
-            complete_mystical_chest_amount = scale(3, 20),
-            research_level_selection = get_random_research_recipe(),
-            research_level_count = 0,
-            locomotive_market_selection = get_random_locomotive_tier(),
-            trees_farmed = scale(10000, 400000),
-            rocks_farmed = scale(50000, 4000000),
-            rockets_launched = scale(40, 700)
-        }
-        this.collection = {
-            time_until_attack = nil,
-            time_until_attack_timer = nil,
-            survive_for = nil,
-            survive_for_timer = nil,
-            final_arena_disabled = true
-        }
-        this.force_chunk = true
-        this.force_chunk_until = game.tick + 1000
 
         Public.increase_enemy_damage_and_health()
 
@@ -772,7 +774,7 @@ function Public.save_settings()
     Server.set_data(dataset, dataset_key, settings)
 end
 
-function Public.reset_stateful()
+function Public.reset_stateful(refresh_gui)
     this.test_mode = false
     this.objectives_completed = {}
     this.objectives_completed_count = 0
@@ -798,12 +800,12 @@ function Public.reset_stateful()
         }
     else
         this.objectives = {
-            randomized_zone = scale(5, 30),
+            randomized_zone = scale(5, 30, 1.2),
             randomized_wave = scale(300, 2000),
             randomized_linked_chests = scale(2, 20),
             supplies = get_random_items(),
             single_item = get_random_item(),
-            killed_enemies = scale(500000, 10000000),
+            killed_enemies = scale(250000, 10000000),
             complete_mystical_chest_amount = scale(3, 20),
             research_level_selection = get_random_research_recipe(),
             research_level_count = 0,
@@ -822,6 +824,25 @@ function Public.reset_stateful()
     }
     this.stateful_locomotive_migrated = false
     this.force_chunk = true
+
+    local t = {
+        ['randomized_zone'] = this.objectives.randomized_zone,
+        ['randomized_wave'] = this.objectives.randomized_wave,
+        ['randomized_linked_chests'] = this.objectives.randomized_linked_chests,
+        ['research_level_count'] = this.objectives.research_level_count
+    }
+    for index = 1, #this.selected_objectives do
+        local objective = this.selected_objectives[index]
+        if not t[objective.name] then
+            t[objective.name] = this.objectives[objective.name]
+        end
+    end
+
+    this.objectives = t
+
+    if refresh_gui then
+        Public.refresh_frames()
+    end
 end
 
 function Public.migrate_and_create(locomotive)

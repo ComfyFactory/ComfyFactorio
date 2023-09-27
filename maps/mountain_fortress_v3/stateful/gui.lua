@@ -1,6 +1,7 @@
 local Event = require 'utils.event'
 local SpamProtection = require 'utils.spam_protection'
 local Public = require 'maps.mountain_fortress_v3.table'
+local Stateful = require 'maps.mountain_fortress_v3.stateful.table'
 local Gui = require 'utils.gui'
 local WD = require 'modules.wave_defense.table'
 local Collapse = require 'modules.collapse'
@@ -19,6 +20,7 @@ local boss_frame_name = Gui.uid_name()
 local close_button = Gui.uid_name()
 local random = math.random
 local floor = math.floor
+local main_frame
 
 local function create_particles(surface, name, position, amount, cause_position)
     local d1 = (-100 + random(0, 200)) * 0.0004
@@ -141,6 +143,19 @@ local function clear_all_frames()
     )
 end
 
+local function refresh_frames()
+    Core.iter_connected_players(
+        function(player)
+            local frame = player.gui.screen[main_frame_name]
+            if frame then
+                Gui.remove_data_recursively(frame)
+                frame.destroy()
+                main_frame(player)
+            end
+        end
+    )
+end
+
 local warn_player_sound_token =
     Token.register(
     function(event)
@@ -224,7 +239,7 @@ local function spacer(frame)
 end
 
 local function objective_frames(stateful, player_frame, objective, data)
-    local objective_name = objective[1]
+    local objective_name = objective.name
     if objective_name == 'supplies' or objective_name == 'single_item' then
         local supplies = stateful.objectives.supplies
         local tbl = player_frame.add {type = 'table', column_count = 2}
@@ -256,10 +271,6 @@ local function objective_frames(stateful, player_frame, objective, data)
                 data.supply_completed = right_flow.add({type = 'label', caption = ' [img=utility/not_available]', tooltip = {'stateful.tooltip_not_completed'}})
             end
         end
-        -- if objective[1]() then
-        --     right_flow.add({type = 'label', caption = '[img=utility/check_mark_green]'})
-        -- else
-        -- end
 
         data.supply = {}
 
@@ -299,7 +310,7 @@ local function objective_frames(stateful, player_frame, objective, data)
         return
     end
 
-    local callback = Token.get(objective[2])
+    local callback = Token.get(objective.token)
 
     local _, objective_locale_left, objective_locale_right, tooltip_left, tooltip_right = callback()
 
@@ -445,7 +456,7 @@ local function refresh_boss_frame()
     )
 end
 
-local function main_frame(player)
+main_frame = function(player)
     local main_player_frame = player.gui.screen[main_frame_name]
     if main_player_frame then
         Gui.remove_data_recursively(main_player_frame)
@@ -516,9 +527,9 @@ local function main_frame(player)
             for name, count in pairs(stateful.buffs_collected) do
                 if type(count) ~= 'table' then
                     if name == 'xp_level' or name == 'character_health_bonus' then
-                        buffs = buffs .. Public.stateful.buff_to_string[name] .. ': ' .. count
+                        buffs = buffs .. Stateful.buff_to_string[name] .. ': ' .. count
                     else
-                        buffs = buffs .. Public.stateful.buff_to_string[name] .. ': ' .. (count * 100) .. '%'
+                        buffs = buffs .. Stateful.buff_to_string[name] .. ': ' .. (count * 100) .. '%'
                     end
                     buffs = buffs .. '\n'
                 end
@@ -669,12 +680,6 @@ local function update_data()
     local wave_number = WD.get('wave_number')
     local converted_chests = LinkedChests.get('converted_chests')
     local collection = stateful.collection
-    local supplies = stateful.objectives.supplies
-    local single_item = stateful.objectives.single_item
-    local callback_token = stateful.objectives.locomotive_market_selection[1]
-    local callback_data = stateful.objectives.locomotive_market_selection[2]
-    local callback_locomotive = Token.get(callback_token)
-    local _, _, locale_right = callback_locomotive(callback_data)
 
     for i = 1, #players do
         local player = players[i]
@@ -687,7 +692,7 @@ local function update_data()
             if data.rounds_survived_label and data.rounds_survived_label.valid then
                 data.rounds_survived_label.caption = stateful.rounds_survived
             end
-            if data.randomized_zone_label and data.randomized_zone_label.valid then
+            if data.randomized_zone_label and data.randomized_zone_label.valid and stateful.objectives.randomized_zone then
                 if breached_wall >= stateful.objectives.randomized_zone then
                     data.randomized_zone_label.caption = breached_wall .. '/' .. stateful.objectives.randomized_zone .. ' [img=utility/check_mark_green]'
                     data.randomized_zone_label.tooltip = {'stateful.tooltip_completed'}
@@ -696,7 +701,7 @@ local function update_data()
                 end
             end
 
-            if data.randomized_wave_label and data.randomized_wave_label.valid then
+            if data.randomized_wave_label and data.randomized_wave_label.valid and stateful.objectives.randomized_wave then
                 if wave_number >= stateful.objectives.randomized_wave then
                     data.randomized_wave_label.caption = wave_number .. '/' .. stateful.objectives.randomized_wave .. ' [img=utility/check_mark_green]'
                     data.randomized_wave_label.tooltip = {'stateful.tooltip_completed'}
@@ -705,7 +710,7 @@ local function update_data()
                 end
             end
 
-            if data.randomized_linked_label and data.randomized_linked_label.valid then
+            if data.randomized_linked_label and data.randomized_linked_label.valid and stateful.objectives.randomized_linked_chests then
                 if converted_chests >= stateful.objectives.randomized_linked_chests then
                     data.randomized_linked_label.caption = converted_chests .. '/' .. stateful.objectives.randomized_linked_chests .. ' [img=utility/check_mark_green]'
                     data.randomized_linked_label.tooltip = {'stateful.tooltip_completed'}
@@ -716,28 +721,31 @@ local function update_data()
 
             if data.supply and next(data.supply) then
                 local items_done = 0
-                for index = 1, #data.supply do
-                    local frame = data.supply[index]
-                    if frame and frame.valid then
-                        local supplies_data = supplies[index]
-                        local count = Public.stateful.get_item_produced_count(supplies_data.name)
-                        if count then
-                            if not supplies_data.total then
-                                supplies_data.total = supplies_data.count
-                            end
-                            supplies_data.count = supplies_data.total - count
-                            if supplies_data.count <= 0 then
-                                supplies_data.count = 0
-                                items_done = items_done + 1
-                                frame.number = nil
-                                frame.sprite = 'utility/check_mark_green'
-                            else
-                                frame.number = supplies_data.count
-                                frame.tooltip = count .. ' / ' .. supplies_data.total
-                            end
-                            if items_done == 3 then
-                                if data.supply_completed and data.supply_completed.valid then
-                                    data.supply_completed.caption = ' [img=utility/check_mark_green]'
+                local supplies = stateful.objectives.supplies
+                if supplies then
+                    for index = 1, #data.supply do
+                        local frame = data.supply[index]
+                        if frame and frame.valid then
+                            local supplies_data = supplies[index]
+                            local count = Stateful.get_item_produced_count(supplies_data.name)
+                            if count then
+                                if not supplies_data.total then
+                                    supplies_data.total = supplies_data.count
+                                end
+                                supplies_data.count = supplies_data.total - count
+                                if supplies_data.count <= 0 then
+                                    supplies_data.count = 0
+                                    items_done = items_done + 1
+                                    frame.number = nil
+                                    frame.sprite = 'utility/check_mark_green'
+                                else
+                                    frame.number = supplies_data.count
+                                    frame.tooltip = count .. ' / ' .. supplies_data.total
+                                end
+                                if items_done == 3 then
+                                    if data.supply_completed and data.supply_completed.valid then
+                                        data.supply_completed.caption = ' [img=utility/check_mark_green]'
+                                    end
                                 end
                             end
                         end
@@ -746,29 +754,38 @@ local function update_data()
             end
 
             if data.single_item and data.single_item.valid then
-                local frame = data.single_item
-                local count = Public.stateful.get_item_produced_count(single_item.name)
-                if count then
-                    if not single_item.total then
-                        single_item.total = single_item.count
-                    end
-                    single_item.count = single_item.total - count
-                    if single_item.count <= 0 then
-                        single_item.count = 0
-                        frame.number = nil
-                        frame.sprite = 'utility/check_mark_green'
-                        if data.single_item_complete and data.single_item_complete.valid then
-                            data.single_item_complete.caption = ' [img=utility/check_mark_green]'
+                local single_item = stateful.objectives.single_item
+                if single_item then
+                    local frame = data.single_item
+                    local count = Stateful.get_item_produced_count(single_item.name)
+                    if count then
+                        if not single_item.total then
+                            single_item.total = single_item.count
                         end
-                    else
-                        frame.number = single_item.count
-                        frame.tooltip = count .. ' / ' .. single_item.total
+                        single_item.count = single_item.total - count
+                        if single_item.count <= 0 then
+                            single_item.count = 0
+                            frame.number = nil
+                            frame.sprite = 'utility/check_mark_green'
+                            if data.single_item_complete and data.single_item_complete.valid then
+                                data.single_item_complete.caption = ' [img=utility/check_mark_green]'
+                            end
+                        else
+                            frame.number = single_item.count
+                            frame.tooltip = count .. ' / ' .. single_item.total
+                        end
                     end
                 end
             end
 
             if data.locomotive_market and data.locomotive_market.valid then
-                data.locomotive_market.caption = locale_right
+                if stateful.objectives.locomotive_market_selection then
+                    local callback_token = stateful.objectives.locomotive_market_selection[1]
+                    local callback_data = stateful.objectives.locomotive_market_selection[2]
+                    local callback_locomotive = Token.get(callback_token)
+                    local _, _, locale_right = callback_locomotive(callback_data)
+                    data.locomotive_market.caption = locale_right
+                end
             end
 
             if stateful.collection.gather_time and data.gather_time_label and data.gather_time_label.valid then
@@ -787,8 +804,8 @@ local function update_data()
                     local frame = frame_data.frame
                     for objective_index = 1, #stateful.selected_objectives do
                         local objective = stateful.selected_objectives[objective_index]
-                        local objective_name = objective[1]
-                        local callback = Token.get(objective[2])
+                        local objective_name = objective.name
+                        local callback = Token.get(objective.token)
                         local _, _, objective_locale_right = callback()
                         if name == objective_name and frame and frame.valid then
                             frame.caption = objective_locale_right
@@ -849,46 +866,46 @@ local function update_raw()
     local converted_chests = LinkedChests.get('converted_chests')
     local collection = stateful.collection
     local tick = game.tick
-    local supplies = stateful.objectives.supplies
-    local single_item = stateful.objectives.single_item
-    local callback_token = stateful.objectives.locomotive_market_selection[1]
-    local callback_data = stateful.objectives.locomotive_market_selection[2]
-    local callback_locomotive = Token.get(callback_token)
-    local locomotive_completed, _, _ = callback_locomotive(callback_data)
 
     breached_wall = breached_wall - 1
-    if breached_wall >= stateful.objectives.randomized_zone then
-        if not stateful.objectives_completed.randomized_zone_label then
-            stateful.objectives_completed.randomized_zone_label = true
-            play_achievement_unlocked()
-            Server.to_discord_embed('Objective: **breach zone** has been complete!')
-            stateful.objectives_completed_count = stateful.objectives_completed_count + 1
+    if stateful.objectives.randomized_zone then
+        if breached_wall >= stateful.objectives.randomized_zone then
+            if not stateful.objectives_completed.randomized_zone_label then
+                stateful.objectives_completed.randomized_zone_label = true
+                play_achievement_unlocked()
+                Server.to_discord_embed('Objective: **breach zone** has been complete!')
+                stateful.objectives_completed_count = stateful.objectives_completed_count + 1
+            end
         end
     end
 
-    if wave_number >= stateful.objectives.randomized_wave then
-        if not stateful.objectives_completed.randomized_wave_label then
-            stateful.objectives_completed.randomized_wave_label = true
-            play_achievement_unlocked()
-            Server.to_discord_embed('Objective: **survive until wave** has been complete!')
-            stateful.objectives_completed_count = stateful.objectives_completed_count + 1
+    if stateful.objectives.randomized_wave then
+        if wave_number >= stateful.objectives.randomized_wave then
+            if not stateful.objectives_completed.randomized_wave_label then
+                stateful.objectives_completed.randomized_wave_label = true
+                play_achievement_unlocked()
+                Server.to_discord_embed('Objective: **survive until wave** has been complete!')
+                stateful.objectives_completed_count = stateful.objectives_completed_count + 1
+            end
         end
     end
 
-    if converted_chests >= stateful.objectives.randomized_linked_chests then
-        if not stateful.objectives_completed.randomized_linked_chests then
-            stateful.objectives_completed.randomized_linked_chests = true
-            play_achievement_unlocked()
-            Server.to_discord_embed('Objective: **convert chests** has been complete!')
-            stateful.objectives_completed_count = stateful.objectives_completed_count + 1
+    if stateful.objectives.randomized_linked_chests then
+        if converted_chests >= stateful.objectives.randomized_linked_chests then
+            if not stateful.objectives_completed.randomized_linked_chests then
+                stateful.objectives_completed.randomized_linked_chests = true
+                play_achievement_unlocked()
+                Server.to_discord_embed('Objective: **convert chests** has been complete!')
+                stateful.objectives_completed_count = stateful.objectives_completed_count + 1
+            end
         end
     end
 
-    if supplies and next(supplies) then
+    if stateful.objectives.supplies and next(stateful.objectives.supplies) then
         local items_done = 0
-        for index = 1, #supplies do
-            local supplies_data = supplies[index]
-            local count = Public.stateful.get_item_produced_count(supplies_data.name)
+        for index = 1, #stateful.objectives.supplies do
+            local supplies_data = stateful.objectives.supplies[index]
+            local count = Stateful.get_item_produced_count(supplies_data.name)
             if count then
                 if not supplies_data.total then
                     supplies_data.total = supplies_data.count
@@ -910,15 +927,15 @@ local function update_raw()
         end
     end
 
-    if single_item then
-        local count = Public.stateful.get_item_produced_count(single_item.name)
+    if stateful.objectives.single_item then
+        local count = Stateful.get_item_produced_count(stateful.objectives.single_item.name)
         if count then
-            if not single_item.total then
-                single_item.total = single_item.count
+            if not stateful.objectives.single_item.total then
+                stateful.objectives.single_item.total = stateful.objectives.single_item.count
             end
-            single_item.count = single_item.total - count
-            if single_item.count <= 0 then
-                single_item.count = 0
+            stateful.objectives.single_item.count = stateful.objectives.single_item.total - count
+            if stateful.objectives.single_item.count <= 0 then
+                stateful.objectives.single_item.count = 0
                 if not stateful.objectives_completed.single_item then
                     stateful.objectives_completed.single_item = true
                     play_achievement_unlocked()
@@ -936,10 +953,10 @@ local function update_raw()
         elseif collection.time_until_attack and collection.time_until_attack < 0 then
             collection.time_until_attack = 0
             if not collection.nuke_blueprint then
-                collection.survive_for = game.tick + Public.stateful.scale(random(54000, 72000), 126000)
+                collection.survive_for = game.tick + Stateful.scale(random(54000, 72000), 126000)
                 collection.survive_for_timer = collection.survive_for
                 collection.nuke_blueprint = true
-                Public.stateful_blueprints.nuke_blueprint()
+                Public.blueprints.nuke_blueprint()
                 WD.disable_spawning_biters(false)
                 Server.to_discord_embed('Final battle starts now!')
                 refresh_boss_frame()
@@ -978,7 +995,7 @@ local function update_raw()
                 play_game_won()
                 Server.to_discord_embed('Game won!')
                 stateful.rounds_survived = stateful.rounds_survived + 1
-                Public.stateful.save_settings()
+                Stateful.save_settings()
                 notify_won_to_discord()
                 local locomotive = Public.get('locomotive')
                 if locomotive and locomotive.valid then
@@ -989,19 +1006,25 @@ local function update_raw()
         end
     end
 
-    if locomotive_completed then
-        if not stateful.objectives_completed.locomotive_market then
-            stateful.objectives_completed.locomotive_market = true
-            Server.to_discord_embed('Objective: **locomotive purchase** has been completed!')
-            play_achievement_unlocked()
-            stateful.objectives_completed_count = stateful.objectives_completed_count + 1
+    if stateful.objectives.locomotive_market_selection then
+        local callback_token = stateful.objectives.locomotive_market_selection[1]
+        local callback_data = stateful.objectives.locomotive_market_selection[2]
+        local callback_locomotive = Token.get(callback_token)
+        local locomotive_completed, _, _ = callback_locomotive(callback_data)
+        if locomotive_completed then
+            if not stateful.objectives_completed.locomotive_market then
+                stateful.objectives_completed.locomotive_market = true
+                Server.to_discord_embed('Objective: **locomotive purchase** has been completed!')
+                play_achievement_unlocked()
+                stateful.objectives_completed_count = stateful.objectives_completed_count + 1
+            end
         end
     end
 
     for objective_index = 1, #stateful.selected_objectives do
         local objective = stateful.selected_objectives[objective_index]
-        local objective_name = objective[1]
-        local callback = Token.get(objective[2])
+        local objective_name = objective.name
+        local callback = Token.get(objective.token)
         local completed, _, _ = callback()
         if completed and completed == true and not stateful.objectives_completed[objective_name] then
             stateful.objectives_completed[objective_name] = true
@@ -1026,16 +1049,7 @@ local function update_raw()
             stateful.collection.gather_time_timer = 0
             collection.survive_for = 0
             collection.survive_for_timer = 0
-            Core.iter_connected_players(
-                function(player)
-                    local frame = player.gui.screen[main_frame_name]
-                    if frame then
-                        Gui.remove_data_recursively(frame)
-                        frame.destroy()
-                        main_frame(player)
-                    end
-                end
-            )
+            refresh_frames()
 
             collection.game_won_notified = true
             refresh_boss_frame()
@@ -1045,7 +1059,7 @@ local function update_raw()
             WD.nuke_wave_gui()
             Server.to_discord_embed('Game won!')
             stateful.rounds_survived = stateful.rounds_survived + 1
-            Public.stateful.save_settings()
+            Stateful.save_settings()
             notify_won_to_discord()
             local locomotive = Public.get('locomotive')
             if locomotive and locomotive.valid then
@@ -1060,19 +1074,10 @@ local function update_raw()
         play_achievement_unlocked()
         WD.disable_spawning_biters(true)
         Collapse.disable_collapse(true)
-        Public.stateful_blueprints.blueprint()
+        Public.blueprints.blueprint()
         WD.nuke_wave_gui()
 
-        Core.iter_connected_players(
-            function(player)
-                local frame = player.gui.screen[main_frame_name]
-                if frame then
-                    Gui.remove_data_recursively(frame)
-                    frame.destroy()
-                    main_frame(player)
-                end
-            end
-        )
+        refresh_frames()
     end
 end
 
@@ -1160,10 +1165,11 @@ Gui.on_click(
 )
 
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
-Event.on_nth_tick(60, update_data)
-Event.on_nth_tick(120, update_raw)
+Event.on_nth_tick(30, update_data)
+Event.on_nth_tick(30, update_raw)
 
 Public.boss_frame = boss_frame
 Public.clear_all_frames = clear_all_frames
+Stateful.refresh_frames = refresh_frames
 
 return Public
