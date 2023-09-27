@@ -57,6 +57,7 @@ local function get_items()
     local flamethrower_turrets_cost = round(fixed_prices.flamethrower_turrets_cost * (1 + flame_turret))
     local land_mine_cost = round(fixed_prices.land_mine_cost * (1 + upgrades.landmine.bought))
     local car_health_upgrade_pool = fixed_prices.car_health_upgrade_pool_cost
+    local upgraded_tile_when_mining_cost = fixed_prices.tile_when_mining_cost
 
     local pickaxe_upgrades = Public.pickaxe_upgrades
 
@@ -157,6 +158,31 @@ local function get_items()
             static = true
         }
     end
+
+    if upgrades.has_upgraded_tile_when_mining then
+        main_market_items['upgraded_tile_when_mining_cost'] = {
+            stack = 1,
+            value = 'coin',
+            price = upgraded_tile_when_mining_cost,
+            tooltip = ({'main_market.sold_out'}),
+            sprite = 'achievement/run-forrest-run',
+            enabled = false,
+            upgrade = true,
+            static = true
+        }
+    else
+        main_market_items['upgraded_tile_when_mining_cost'] = {
+            stack = 1,
+            value = 'coin',
+            price = upgraded_tile_when_mining_cost,
+            tooltip = ({'main_market.tile_when_mining'}),
+            sprite = 'achievement/run-forrest-run',
+            enabled = true,
+            upgrade = true,
+            static = true
+        }
+    end
+
     main_market_items['xp_points_boost'] = {
         stack = 1,
         value = 'coin',
@@ -1140,6 +1166,29 @@ local function gui_click(event)
             }
         )
         this.upgrades.has_upgraded_health_pool = true
+
+        redraw_market_items(data.item_frame, player, data.search_text)
+        redraw_coins_left(data.coins_left, player)
+
+        return
+    end
+
+    if name == 'upgraded_tile_when_mining_cost' then
+        player.remove_item({name = item.value, count = item.price})
+        local message = ({
+            'locomotive.tile_upgrade_bought_info',
+            shopkeeper,
+            player.name,
+            format_number(item.price, true)
+        })
+
+        Alert.alert_all_players(5, message)
+        Server.to_discord_bold(
+            table.concat {
+                player.name .. ' the global tile replacement from stone-path to concrete-tile for ' .. format_number(item.price) .. ' coins.'
+            }
+        )
+        this.upgrades.has_upgraded_tile_when_mining = true
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)

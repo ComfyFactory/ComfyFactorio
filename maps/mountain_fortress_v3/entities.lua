@@ -762,7 +762,12 @@ local function on_player_mined_entity(event)
             give_coin(player)
         end
         if rpg_char.stone_path then
-            entity.surface.set_tiles({{name = 'stone-path', position = entity.position}}, true)
+            local upgrades = Public.get('upgrades')
+            if not upgrades.has_upgraded_tile_when_mining then
+                entity.surface.set_tiles({{name = 'stone-path', position = entity.position}}, true)
+            else
+                entity.surface.set_tiles({{name = 'black-refined-concrete', position = entity.position}}, true)
+            end
         end
 
         local func = get_random_weighted(mining_events)
