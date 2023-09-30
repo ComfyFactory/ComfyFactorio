@@ -805,7 +805,7 @@ function Public.reset_stateful(refresh_gui)
             randomized_linked_chests = scale(2, 20),
             supplies = get_random_items(),
             single_item = get_random_item(),
-            killed_enemies = scale(250000, 10000000),
+            killed_enemies = scale(125000, 10000000),
             complete_mystical_chest_amount = scale(3, 20),
             research_level_selection = get_random_research_recipe(),
             research_level_count = 0,
