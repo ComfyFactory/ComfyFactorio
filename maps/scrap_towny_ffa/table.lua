@@ -37,8 +37,8 @@ function Public.reset_table()
     this.mining_target = {}
     this.spaceships = {}
     this.suicides = {}
-    this.required_time_to_win = 168
-    this.required_time_to_win_in_ticks = 36288000
+    this.required_time_to_win = 72
+    this.required_time_to_win_in_ticks = 15552000
     this.shuffle_random_victory_time = false
     this.announced_message = nil
     this.soft_reset = true

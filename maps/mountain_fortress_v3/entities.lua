@@ -1237,48 +1237,42 @@ local function show_mvps(player)
                 field1 = {
                     text1 = 'Time played:',
                     text2 = time_played,
-                    inline = 'true'
+                    inline = 'false'
                 },
                 field2 = {
                     text1 = 'Highest wave:',
-                    text2 = format_number(wave, true),
-                    inline = 'true'
+                    text2 = wave,
+                    inline = 'false'
                 },
                 field3 = {
                     text1 = 'Total connected players:',
                     text2 = total_players,
-                    inline = 'true',
-                    emptyField = 'true',
-                    emptyInline = 'true'
+                    inline = 'false'
                 },
                 field4 = {
                     text1 = 'Threat:',
                     text2 = format_number(threat, true),
-                    inline = 'true'
+                    inline = 'false'
                 },
                 field5 = {
                     text1 = 'Pickaxe Upgrade:',
                     text2 = pick_tier .. ' (' .. upgrades.pickaxe_tier .. ')',
-                    inline = 'true',
-                    emptyField = 'true',
-                    emptyInline = 'true'
+                    inline = 'false'
                 },
                 field6 = {
                     text1 = 'Collapse Speed:',
                     text2 = collapse_speed,
-                    inline = 'true'
+                    inline = 'false'
                 },
                 field7 = {
                     text1 = 'Collapse Amount:',
                     text2 = collapse_amount,
-                    inline = 'true'
+                    inline = 'false'
                 },
                 field8 = {
                     text1 = 'Connected players:',
                     text2 = total_connected_players,
-                    inline = 'true',
-                    emptyField = 'true',
-                    emptyInline = 'true'
+                    inline = 'false'
                 }
             }
             if server_name_matches then
