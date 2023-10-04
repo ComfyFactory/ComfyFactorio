@@ -1304,6 +1304,15 @@ function Public.clear_linked_frames()
 end
 
 function Public.reset()
+    if this.main_containers and next(this.main_containers) then
+        for _, container in pairs(this.main_containers) do
+            local chest = container.chest
+            if chest and chest.valid then
+                chest.get_inventory(defines.inventory.chest).clear()
+            end
+        end
+    end
+
     this.main_containers = {}
     this.linked_gui = {}
     this.valid_chests = {

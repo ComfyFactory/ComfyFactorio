@@ -786,13 +786,13 @@ local function kill_force(force_name, cause)
     end
     for _, e in pairs(surface.find_entities_filtered({force = force_name})) do
         if e.valid then
-            if destroy_military_types[e.type] == true then
+            if destroy_military_types[e.type] then
                 surface.create_entity({name = 'big-artillery-explosion', position = position})
                 e.die()
-            elseif destroy_robot_types[e.type] == true then
+            elseif destroy_robot_types[e.type] then
                 surface.create_entity({name = 'explosion', position = position})
                 e.die()
-            elseif destroy_wall_types[e.type] == true then
+            elseif destroy_wall_types[e.type] then
                 e.die()
             elseif storage_types[e.type] ~= true then -- spare chests
                 local random = math_random()
