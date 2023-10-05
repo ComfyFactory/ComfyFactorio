@@ -291,6 +291,7 @@ function Public.reset_map()
     Public.stateful.enable(true)
     Public.stateful.create()
     Public.stateful.reset_stateful()
+    Public.stateful.increase_enemy_damage_and_health()
     Public.stateful.apply_startup_settings()
 
     if _DEV_MODE then

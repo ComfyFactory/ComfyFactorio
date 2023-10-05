@@ -194,6 +194,9 @@ end
 
 local function do_place_treasure(data)
     local surface = data.surface
+    if not surface or not surface.valid then
+        return
+    end
     local treasure = data.treasure
 
     if #treasure == 0 then
@@ -211,6 +214,9 @@ end
 local function do_place_markets(data)
     local markets = data.markets
     local surface = data.surface
+    if not surface or not surface.valid then
+        return
+    end
 
     if #markets == 0 then
         return
@@ -231,16 +237,25 @@ end
 
 local function do_place_tiles(data)
     local surface = data.surface
+    if not surface or not surface.valid then
+        return
+    end
     surface.set_tiles(data.tiles, true)
 end
 
 local function do_place_hidden_tiles(data)
     local surface = data.surface
+    if not surface or not surface.valid then
+        return
+    end
     surface.set_tiles(data.hidden_tiles, true)
 end
 
 local function do_place_decoratives(data)
     local surface = data.surface
+    if not surface or not surface.valid then
+        return
+    end
     if regen_decoratives then
         surface.regenerate_decorative(nil, {{data.top_x / 32, data.top_y / 32}})
     end
@@ -253,6 +268,9 @@ end
 
 local function do_place_buildings(data)
     local surface = data.surface
+    if not surface or not surface.valid then
+        return
+    end
     local entity
     local callback
     for _, e in ipairs(data.buildings) do
@@ -334,6 +352,9 @@ end
 
 local function do_place_entities(data)
     local surface = data.surface
+    if not surface or not surface.valid then
+        return
+    end
     local entity
     local callback
     for _, e in ipairs(data.entities) do

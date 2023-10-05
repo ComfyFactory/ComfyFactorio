@@ -1,5 +1,6 @@
 local Global = require 'utils.global'
 local Event = require 'utils.event'
+local Utils = require 'utils.utils'
 local Server = require 'utils.server'
 local Token = require 'utils.token'
 local shuffle = table.shuffle_table
@@ -25,9 +26,11 @@ local this = {
 }
 
 local random = math.random
+local round = math.round
 local floor = math.floor
 local dataset = 'scenario_settings'
 local dataset_key = 'mtn_v3'
+local dataset_key_dev = 'mtn_v3_dev'
 
 Global.register(
     this,
@@ -74,6 +77,7 @@ local buff_to_string = {
     ['mining_drill_productivity_bonus'] = 'Mining drill speed',
     ['character_health_bonus'] = 'Character health',
     ['character_reach_distance_bonus'] = 'Reach',
+    ['distance'] = 'All distance modifiers',
     ['manual_crafting_speed_modifier'] = 'Crafting',
     ['xp_bonus'] = 'XP Bonus',
     ['xp_level'] = 'XP Level'
@@ -88,21 +92,6 @@ local function get_random_buff()
         },
         {
             name = 'manual_mining_speed_modifier',
-            modifier = 'force',
-            state = 0.05
-        },
-        {
-            name = 'character_resource_reach_distance_bonus',
-            modifier = 'force',
-            state = 0.05
-        },
-        {
-            name = 'character_item_pickup_distance_bonus',
-            modifier = 'force',
-            state = 0.05
-        },
-        {
-            name = 'character_loot_pickup_distance_bonus',
             modifier = 'force',
             state = 0.05
         },
@@ -142,9 +131,10 @@ local function get_random_buff()
             state = 50
         },
         {
-            name = 'character_reach_distance_bonus',
-            modifier = 'force',
-            state = 1
+            name = 'distance',
+            modifier = 'rpg_distance',
+            modifiers = {'character_resource_reach_distance_bonus', 'character_item_pickup_distance_bonus', 'character_loot_pickup_distance_bonus', 'character_reach_distance_bonus'},
+            state = 0.05
         },
         {
             name = 'manual_crafting_speed_modifier',
@@ -159,7 +149,7 @@ local function get_random_buff()
         {
             name = 'xp_level',
             modifier = 'rpg',
-            state = 1
+            state = 4
         },
         {
             name = 'starting_items',
@@ -331,42 +321,6 @@ local function on_pre_player_died(event)
     Task.set_timeout_in_ticks(5, search_corpse_token, {player_index = player.index})
 end
 
-local locomotive_market_pickaxe_token =
-    Token.register(
-    function(count)
-        local upgrades = Public.get('upgrades')
-        if upgrades.pickaxe_tier >= count then
-            return true, {'stateful.locomotive_market_pickaxe'}, {'stateful.done', count, count}, {'stateful.tooltip_completed'}
-        end
-
-        return false, {'stateful.locomotive_market_pickaxe'}, {'stateful.not_done', upgrades.pickaxe_tier, count}, {'stateful.tooltip_not_completed'}
-    end
-)
-
-local locomotive_market_health_token =
-    Token.register(
-    function(count)
-        local upgrades = Public.get('upgrades')
-        if upgrades.health_upgrades >= count then
-            return true, {'stateful.locomotive_market_health'}, {'stateful.done', count, count}, {'stateful.tooltip_completed'}
-        end
-
-        return false, {'stateful.locomotive_market_health'}, {'stateful.not_done', upgrades.health_upgrades, count}, {'stateful.tooltip_not_completed'}
-    end
-)
-
-local locomotive_market_xp_points_token =
-    Token.register(
-    function(count)
-        local upgrades = Public.get('upgrades')
-        if upgrades.xp_points_upgrade >= count then
-            return true, {'stateful.locomotive_market_xp_points'}, {'stateful.done', count, count}, {'stateful.tooltip_completed'}
-        end
-
-        return false, {'stateful.locomotive_market_xp_points'}, {'stateful.not_done', upgrades.xp_points_upgrade, count}, {'stateful.tooltip_not_completed'}
-    end
-)
-
 local empty_token =
     Token.register(
     function()
@@ -386,17 +340,6 @@ local killed_enemies_token =
     end
 )
 
-local complete_mystical_chest_amount_token =
-    Token.register(
-    function()
-        local mystical_chest_completed = Public.get('mystical_chest_completed')
-        if mystical_chest_completed >= this.objectives.complete_mystical_chest_amount then
-            return true, {'stateful.mystical_chest'}, {'stateful.done', this.objectives.complete_mystical_chest_amount, this.objectives.complete_mystical_chest_amount}, {'stateful.generic_tooltip'}, {'stateful.tooltip_completed'}
-        end
-        return false, {'stateful.mystical_chest'}, {'stateful.not_done', mystical_chest_completed, this.objectives.complete_mystical_chest_amount}, {'stateful.generic_tooltip'}, {'stateful.tooltip_not_completed'}
-    end
-)
-
 local research_level_selection_token =
     Token.register(
     function()
@@ -406,6 +349,19 @@ local research_level_selection_token =
             return true, {'stateful.research', this.objectives.research_level_selection.name}, {'stateful.done', expected, expected}, {'stateful.generic_tooltip'}, {'stateful.tooltip_completed'}
         end
         return false, {'stateful.research', this.objectives.research_level_selection.name}, {'stateful.not_done', actual, expected}, {'stateful.generic_tooltip'}, {'stateful.tooltip_not_completed'}
+    end
+)
+
+local locomotive_market_coins_spent_token =
+    Token.register(
+    function()
+        local coins = this.objectives.locomotive_market_coins_spent
+        local actual = coins.spent
+        local expected = coins.required
+        if actual >= expected then
+            return true, {'stateful.market_spent'}, {'stateful.done', format_number(expected, true), format_number(expected, true)}, {'stateful.generic_tooltip'}, {'stateful.tooltip_completed'}
+        end
+        return false, {'stateful.market_spent'}, {'stateful.not_done', format_number(actual, true), format_number(expected, true)}, {'stateful.generic_tooltip'}, {'stateful.tooltip_not_completed'}
     end
 )
 
@@ -448,7 +404,9 @@ local function scale(setting, limit, factor)
     if limit and scale_value >= limit then
         return limit
     end
-    return scale_value
+    local random_value = scale_value * 0.9
+    scale_value = random(random_value, scale_value)
+    return floor(scale_value)
 end
 
 local function get_random_items()
@@ -524,51 +482,7 @@ local function get_random_research_recipe()
         return {name = research_level_list[1], count = 1}
     end
 
-    return {name = research_level_list[1], count = scale(2, 40)}
-end
-
-local function get_random_locomotive_tier()
-    local tiers = {
-        'pickaxe',
-        'health',
-        'xp_point'
-    }
-
-    shuffle(tiers)
-    shuffle(tiers)
-    shuffle(tiers)
-    shuffle(tiers)
-
-    local pickaxe_count = scale(5, 59)
-    local health_count = scale(5, 100)
-    local xp_points_count = scale(5, 100)
-
-    if this.test_mode then
-        pickaxe_count = 1
-        health_count = 1
-        xp_points_count = 1
-    end
-
-    if tiers[1] == 'pickaxe' then
-        return {
-            locomotive_market_pickaxe_token,
-            pickaxe_count
-        }
-    end
-
-    if tiers[1] == 'health' then
-        return {
-            locomotive_market_health_token,
-            health_count
-        }
-    end
-
-    if tiers[1] == 'xp_point' then
-        return {
-            locomotive_market_xp_points_token,
-            xp_points_count
-        }
-    end
+    return {name = research_level_list[1], count = scale(2, 40, 1.08)}
 end
 
 local function get_random_objectives()
@@ -586,16 +500,12 @@ local function get_random_objectives()
             token = killed_enemies_token
         },
         {
-            name = 'complete_mystical_chest_amount',
-            token = complete_mystical_chest_amount_token
-        },
-        {
             name = 'research_level_selection',
             token = research_level_selection_token
         },
         {
-            name = 'locomotive_market_selection',
-            token = empty_token
+            name = 'locomotive_market_coins_spent',
+            token = locomotive_market_coins_spent_token
         },
         {
             name = 'trees_farmed',
@@ -629,6 +539,17 @@ local function apply_buffs(starting_items)
         local force = game.forces.player
         for _, buff in pairs(this.buffs) do
             if buff then
+                if buff.modifier == 'rpg_distance' then
+                    for _, buff_name in pairs(buff.modifiers) do
+                        force[buff_name] = force[buff_name] + buff.state
+
+                        if not this.buffs_collected[buff_name] then
+                            this.buffs_collected[buff_name] = buff.state
+                        else
+                            this.buffs_collected[buff_name] = this.buffs_collected[buff_name] + buff.state
+                        end
+                    end
+                end
                 if buff.modifier == 'force' then
                     force[buff.name] = force[buff.name] + buff.state
 
@@ -694,32 +615,47 @@ local function apply_buffs(starting_items)
 end
 
 local function apply_startup_settings(settings)
-    local new_value = Server.get_current_date()
-    if not new_value then
+    local current_date = Server.get_current_date(false, true)
+    if not current_date then
         return
     end
-    settings = settings or {}
-    local old_value = this.current_date
-    if old_value then
-        old_value = tonumber(old_value)
-        local time_to_reset = (new_value - old_value)
-        if time_to_reset then
-            if time_to_reset > this.reset_after then
-                settings.current_date = tonumber(new_value)
-                settings.test_mode = false
-                settings.rounds_survived = 0
-                settings.buffs = {}
-                this.buffs = {}
-                this.buffs_collected = {}
-                this.rounds_survived = 0
-                this.current_date = tonumber(new_value)
-                local message = ({'stateful.reset'})
-                local message_discord = ({'stateful.reset_discord'})
-                game.print(message)
-                Server.to_discord_embed(message_discord, true)
 
-                Server.set_data(dataset, dataset_key, settings)
-            end
+    local current_time = Server.get_current_time()
+    if not current_time then
+        return
+    end
+
+    current_date = round(Utils.convert_date(current_date.year, current_date.month, current_date.day))
+
+    local server_name_matches = Server.check_server_name('Mtn Fortress')
+
+    settings = settings or {}
+    local stored_date = this.current_date
+    if not stored_date then
+        return
+    end
+    local stored_date_raw = Server.get_current_date(false, true, stored_date)
+    local converted_stored_date = round(Utils.convert_date(stored_date_raw.year, stored_date_raw.month, stored_date_raw.day))
+
+    local time_to_reset = (current_date - converted_stored_date)
+    if time_to_reset and time_to_reset > this.reset_after then
+        settings.current_date = current_time
+        settings.test_mode = false
+        settings.rounds_survived = 0
+        settings.buffs = {}
+        this.buffs = {}
+        this.buffs_collected = {}
+        this.rounds_survived = 0
+        this.current_date = current_time
+        local message = ({'stateful.reset'})
+        local message_discord = ({'stateful.reset_discord'})
+        game.print(message)
+        Server.to_discord_embed(message_discord, true)
+
+        if server_name_matches then
+            Server.set_data(dataset, dataset_key, settings)
+        else
+            Server.set_data(dataset, dataset_key_dev, settings)
         end
     end
 
@@ -732,18 +668,23 @@ end
 local apply_settings_token =
     Token.register(
     function(data)
+        local server_name_matches = Server.check_server_name('Mtn Fortress')
         local settings = data and data.value or nil
-        local new_value = Server.get_current_date()
-        if not new_value then
+        local current_time = Server.get_current_time()
+        if not current_time then
             return
         end
 
         if not settings then
             settings = {
                 rounds_survived = 0,
-                current_date = tonumber(new_value)
+                current_date = tonumber(current_time)
             }
-            Server.set_data(dataset, dataset_key, settings)
+            if server_name_matches then
+                Server.set_data(dataset, dataset_key, settings)
+            else
+                Server.set_data(dataset, dataset_key_dev, settings)
+            end
             return
         end
 
@@ -755,10 +696,6 @@ local apply_settings_token =
         settings = apply_startup_settings(settings)
 
         this.rounds_survived = settings.rounds_survived
-
-        Public.increase_enemy_damage_and_health()
-
-        Server.set_data(dataset, dataset_key, settings)
     end
 )
 
@@ -771,7 +708,12 @@ function Public.save_settings()
         buffs = this.buffs
     }
 
-    Server.set_data(dataset, dataset_key, settings)
+    local server_name_matches = Server.check_server_name('Mtn Fortress')
+    if server_name_matches then
+        Server.set_data(dataset, dataset_key, settings)
+    else
+        Server.set_data(dataset, dataset_key_dev, settings)
+    end
 end
 
 function Public.reset_stateful(refresh_gui)
@@ -780,39 +722,41 @@ function Public.reset_stateful(refresh_gui)
     this.objectives_completed_count = 0
     this.final_battle = false
     this.buffs_collected = {}
+    this.enemies_boosted = false
+    this.tasks_required_to_win = 5
 
     this.selected_objectives = get_random_objectives()
     if this.test_mode then
         this.objectives = {
             randomized_zone = 2,
             randomized_wave = 2,
-            randomized_linked_chests = 2,
             supplies = get_random_items(),
             single_item = get_random_item(),
             killed_enemies = 10,
-            complete_mystical_chest_amount = 1,
             research_level_selection = get_random_research_recipe(),
             research_level_count = 0,
-            locomotive_market_selection = get_random_locomotive_tier(),
+            locomotive_market_coins_spent = 0,
+            locomotive_market_coins_spent_required = 1,
             trees_farmed = 10,
             rocks_farmed = 10,
             rockets_launched = 1
         }
     else
         this.objectives = {
-            randomized_zone = scale(5, 30, 1.2),
-            randomized_wave = scale(300, 2000),
-            randomized_linked_chests = scale(2, 20),
+            randomized_zone = random(scale(4, 30, 1.08), scale(5, 30, 1.1)),
+            randomized_wave = random(scale(180, 1000), scale(200, 1000)),
             supplies = get_random_items(),
             single_item = get_random_item(),
-            killed_enemies = scale(125000, 10000000),
-            complete_mystical_chest_amount = scale(3, 20),
+            killed_enemies = random(scale(80000, 10000000), scale(100000, 10000000)),
             research_level_selection = get_random_research_recipe(),
             research_level_count = 0,
-            locomotive_market_selection = get_random_locomotive_tier(),
-            trees_farmed = scale(10000, 400000),
-            rocks_farmed = scale(50000, 4000000),
-            rockets_launched = scale(40, 700)
+            locomotive_market_coins_spent = {
+                spent = 0,
+                required = random(scale(10000, 400000), scale(15000, 400000))
+            },
+            trees_farmed = random(scale(9500, 400000), scale(10500, 400000)),
+            rocks_farmed = random(scale(45000, 4000000), scale(55000, 4000000)),
+            rockets_launched = random(scale(30, 700), scale(45, 700))
         }
     end
     this.collection = {
@@ -828,7 +772,6 @@ function Public.reset_stateful(refresh_gui)
     local t = {
         ['randomized_zone'] = this.objectives.randomized_zone,
         ['randomized_wave'] = this.objectives.randomized_wave,
-        ['randomized_linked_chests'] = this.objectives.randomized_linked_chests,
         ['research_level_count'] = this.objectives.research_level_count
     }
     for index = 1, #this.selected_objectives do
@@ -978,15 +921,30 @@ function Public.set_target(target, icw_data)
 end
 
 function Public.increase_enemy_damage_and_health()
+    if this.enemies_boosted then
+        return
+    end
+
+    this.enemies_boosted = true
+
     if this.rounds_survived == 1 then
+        Event.raise(WD.events.on_biters_evolved, {force = game.forces.enemy})
         Event.raise(WD.events.on_biters_evolved, {force = game.forces.aggressors})
         Event.raise(WD.events.on_biters_evolved, {force = game.forces.aggressors_frenzy})
     else
         for _ = 1, this.rounds_survived do
+            Event.raise(WD.events.on_biters_evolved, {force = game.forces.enemy})
             Event.raise(WD.events.on_biters_evolved, {force = game.forces.aggressors})
             Event.raise(WD.events.on_biters_evolved, {force = game.forces.aggressors_frenzy})
         end
     end
+
+    if this.rounds_survived == 0 then
+        return
+    end
+
+    local message_discord = ({'stateful.warn_biters_boosted', this.rounds_survived})
+    Server.to_discord_embed(message_discord, true)
 end
 
 function Public.get_stateful(key)
@@ -1033,9 +991,16 @@ Event.add(
             return
         end
 
+        local server_name_matches = Server.check_server_name('Mtn Fortress')
+
         this.settings_applied = true
 
-        Server.try_get_data(dataset, dataset_key, apply_settings_token)
+        if server_name_matches then
+            Server.try_get_data(dataset, dataset_key, apply_settings_token)
+        else
+            Server.try_get_data(dataset, dataset_key_dev, apply_settings_token)
+            this.test_mode = true
+        end
     end
 )
 
