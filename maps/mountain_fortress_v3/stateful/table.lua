@@ -548,6 +548,11 @@ local function get_random_objectives()
 end
 
 local function apply_buffs(starting_items)
+    if this.buffs_applied then
+        return
+    end
+
+    this.buffs_applied = true
     if this.buffs and next(this.buffs) then
         if not this.buffs_collected then
             this.buffs_collected = {}
@@ -712,9 +717,7 @@ local apply_settings_token =
 
         this.rounds_survived = settings.rounds_survived
 
-        Public.reset_stateful()
-
-        apply_startup_settings(settings)
+        Public.reset_stateful(false, true)
         Public.increase_enemy_damage_and_health()
     end
 )
@@ -736,14 +739,17 @@ function Public.save_settings()
     end
 end
 
-function Public.reset_stateful(refresh_gui)
+function Public.reset_stateful(refresh_gui, clear_buffs)
     this.test_mode = false
     this.objectives_completed = {}
     this.objectives_completed_count = 0
     this.final_battle = false
-    this.buffs_collected = {}
+    if clear_buffs then
+        this.buffs_collected = {}
+    end
     this.enemies_boosted = false
     this.tasks_required_to_win = 5
+    this.buffs_applied = false
 
     this.selected_objectives = get_random_objectives()
     if this.test_mode then
