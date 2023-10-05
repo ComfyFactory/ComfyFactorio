@@ -288,28 +288,6 @@ local function objective_frames(stateful, player_frame, objective, data)
         return
     end
 
-    if objective_name == 'locomotive_market_selection' then
-        local callback_token = stateful.objectives.locomotive_market_selection[1]
-        local callback_data = stateful.objectives.locomotive_market_selection[2]
-        local callback = Token.get(callback_token)
-
-        local _, locale_left, locale_right, tooltip = callback(callback_data)
-        local tbl = player_frame.add {type = 'table', column_count = 2}
-        tbl.style.horizontally_stretchable = true
-        local left_flow = tbl.add({type = 'flow'})
-        left_flow.style.horizontal_align = 'left'
-        left_flow.style.horizontally_stretchable = true
-
-        left_flow.add({type = 'label', caption = locale_left, tooltip = {'stateful.locomotive_tooltip'}})
-        local right_flow = tbl.add({type = 'flow'})
-        right_flow.style.horizontal_align = 'right'
-        right_flow.style.horizontally_stretchable = true
-
-        local locomotive_market = right_flow.add({type = 'label', caption = locale_right, tooltip = tooltip})
-        data.locomotive_market = locomotive_market
-        return
-    end
-
     local callback = Token.get(objective.token)
 
     local _, objective_locale_left, objective_locale_right, tooltip_left, tooltip_right = callback()
@@ -618,28 +596,6 @@ main_frame = function(player)
             data.randomized_wave_label = wave_right_flow.add({type = 'label', caption = wave_number .. '/' .. stateful.objectives.randomized_wave .. ' [img=utility/not_available]', tooltip = {'stateful.tooltip_not_completed'}})
         end
 
-        -- new frame
-        local linked_left_flow = objective_tbl.add({type = 'flow'})
-        linked_left_flow.style.horizontal_align = 'left'
-        linked_left_flow.style.horizontally_stretchable = true
-
-        local convert_enabled = LinkedChests.get('convert_enabled')
-        if convert_enabled then
-            linked_left_flow.add({type = 'label', caption = {'stateful.linked'}, tooltip = {'stateful.linked_tooltip'}})
-        else
-            linked_left_flow.add({type = 'label', caption = {'stateful.linked_static'}, tooltip = {'stateful.linked_static_tooltip'}})
-        end
-
-        frame.add({type = 'line', direction = 'vertical'})
-        local linked_right_flow = objective_tbl.add({type = 'flow'})
-        linked_right_flow.style.horizontal_align = 'right'
-        linked_right_flow.style.horizontally_stretchable = true
-
-        if converted_chests >= stateful.objectives.randomized_linked_chests then
-            data.randomized_linked_label = linked_right_flow.add({type = 'label', caption = converted_chests .. '/' .. stateful.objectives.randomized_linked_chests .. ' [img=utility/check_mark_green]', tooltip = {'stateful.tooltip_completed'}})
-        else
-            data.randomized_linked_label = linked_right_flow.add({type = 'label', caption = converted_chests .. '/' .. stateful.objectives.randomized_linked_chests .. ' [img=utility/not_available]', tooltip = {'stateful.tooltip_not_completed'}})
-        end
 
         --dynamic conditions
         data.random_objectives = {}
@@ -710,15 +666,6 @@ local function update_data()
                 end
             end
 
-            if data.randomized_linked_label and data.randomized_linked_label.valid and stateful.objectives.randomized_linked_chests then
-                if converted_chests >= stateful.objectives.randomized_linked_chests then
-                    data.randomized_linked_label.caption = converted_chests .. '/' .. stateful.objectives.randomized_linked_chests .. ' [img=utility/check_mark_green]'
-                    data.randomized_linked_label.tooltip = {'stateful.tooltip_completed'}
-                else
-                    data.randomized_linked_label.caption = converted_chests .. '/' .. stateful.objectives.randomized_linked_chests .. ' [img=utility/not_available]'
-                end
-            end
-
             if data.supply and next(data.supply) then
                 local items_done = 0
                 local supplies = stateful.objectives.supplies
@@ -775,16 +722,6 @@ local function update_data()
                             frame.tooltip = count .. ' / ' .. single_item.total
                         end
                     end
-                end
-            end
-
-            if data.locomotive_market and data.locomotive_market.valid then
-                if stateful.objectives.locomotive_market_selection then
-                    local callback_token = stateful.objectives.locomotive_market_selection[1]
-                    local callback_data = stateful.objectives.locomotive_market_selection[2]
-                    local callback_locomotive = Token.get(callback_token)
-                    local _, _, locale_right = callback_locomotive(callback_data)
-                    data.locomotive_market.caption = locale_right
                 end
             end
 
@@ -885,17 +822,6 @@ local function update_raw()
                 stateful.objectives_completed.randomized_wave_label = true
                 play_achievement_unlocked()
                 Server.to_discord_embed('Objective: **survive until wave** has been complete!')
-                stateful.objectives_completed_count = stateful.objectives_completed_count + 1
-            end
-        end
-    end
-
-    if stateful.objectives.randomized_linked_chests then
-        if converted_chests >= stateful.objectives.randomized_linked_chests then
-            if not stateful.objectives_completed.randomized_linked_chests then
-                stateful.objectives_completed.randomized_linked_chests = true
-                play_achievement_unlocked()
-                Server.to_discord_embed('Objective: **convert chests** has been complete!')
                 stateful.objectives_completed_count = stateful.objectives_completed_count + 1
             end
         end
@@ -1006,21 +932,6 @@ local function update_raw()
         end
     end
 
-    if stateful.objectives.locomotive_market_selection then
-        local callback_token = stateful.objectives.locomotive_market_selection[1]
-        local callback_data = stateful.objectives.locomotive_market_selection[2]
-        local callback_locomotive = Token.get(callback_token)
-        local locomotive_completed, _, _ = callback_locomotive(callback_data)
-        if locomotive_completed then
-            if not stateful.objectives_completed.locomotive_market then
-                stateful.objectives_completed.locomotive_market = true
-                Server.to_discord_embed('Objective: **locomotive purchase** has been completed!')
-                play_achievement_unlocked()
-                stateful.objectives_completed_count = stateful.objectives_completed_count + 1
-            end
-        end
-    end
-
     for objective_index = 1, #stateful.selected_objectives do
         local objective = stateful.selected_objectives[objective_index]
         local objective_name = objective.name
@@ -1034,7 +945,7 @@ local function update_raw()
         end
     end
 
-    if stateful.objectives_completed_count == 6 and not stateful.objectives_completed.boss_time then
+    if stateful.objectives_completed_count == stateful.tasks_required_to_win and not stateful.objectives_completed.boss_time then
         stateful.objectives_completed.boss_time = true
 
         Server.to_discord_embed('All objectives has been completed!')

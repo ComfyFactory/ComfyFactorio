@@ -1323,9 +1323,11 @@ end
 
 -- Returns the current date.
 -- @param pretty<boolean>
--- @return date?
-function Public.get_current_date(pretty)
-    local s = Public.get_current_time()
+-- @param as_table<boolean>
+-- @param current_time<number>
+-- @return date|tuple?
+function Public.get_current_date(pretty, as_table, current_time)
+    local s = current_time or Public.get_current_time()
     if not s then
         return false
     end
@@ -1335,7 +1337,9 @@ function Public.get_current_date(pretty)
         return
     end
 
-    if pretty then
+    if as_table then
+        return {year = date.year, month = date.month, day = date.day}
+    elseif pretty then
         return tonumber(date.year .. '-' .. date.month .. '-' .. date.day)
     else
         return tonumber(date.year .. date.month .. date.day)
