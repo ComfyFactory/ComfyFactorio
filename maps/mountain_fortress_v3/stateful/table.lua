@@ -705,14 +705,15 @@ local apply_settings_token =
             return
         end
 
-        Public.reset_stateful()
-
         this.current_date = settings.current_date
         this.buffs = settings.buffs
 
         settings = apply_startup_settings(settings)
 
         this.rounds_survived = settings.rounds_survived
+
+        Public.reset_stateful()
+        Public.increase_enemy_damage_and_health()
     end
 )
 
