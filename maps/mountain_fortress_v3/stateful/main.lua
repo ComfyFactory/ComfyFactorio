@@ -29,7 +29,7 @@ Event.add(
         end
 
         if name == objectives.research_level_selection.name then
-            objectives.research_level_count = objectives.research_level_count + 1
+            objectives.research_level_selection.research_count = objectives.research_level_selection.research_count + 1
         end
     end
 )
@@ -111,5 +111,6 @@ Event.on_nth_tick(
 )
 
 Event.add(defines.events.on_pre_player_died, Public.on_pre_player_died)
+Event.add(Public.events.on_market_item_purchased, Public.on_market_item_purchased)
 
 return Public

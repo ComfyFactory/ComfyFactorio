@@ -17,7 +17,8 @@ local random = math.random
 
 Public.events = {
     reset_map = Event.generate_event_name('reset_map'),
-    on_entity_mined = Event.generate_event_name('on_entity_mined')
+    on_entity_mined = Event.generate_event_name('on_entity_mined'),
+    on_market_item_purchased = Event.generate_event_name('on_market_item_purchased')
 }
 
 Global.register(

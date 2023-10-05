@@ -282,7 +282,7 @@ local function place_wagon(data, adjusted_zones)
     end
 
     local surface = data.surface
-    local tiles = data.hidden_tiles
+    local tiles = data.tiles
     local entities = data.entities
     local top_y = data.top_y
     local position = {x = data.x, y = top_y + random(4, 12) * 2}

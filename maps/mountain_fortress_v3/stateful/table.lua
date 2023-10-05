@@ -321,6 +321,19 @@ local function on_pre_player_died(event)
     Task.set_timeout_in_ticks(5, search_corpse_token, {player_index = player.index})
 end
 
+local function on_market_item_purchased(event)
+    if not event.cost then
+        return
+    end
+
+    local coins = this.objectives.locomotive_market_coins_spent
+    if not coins then
+        return
+    end
+
+    coins.spent = coins.spent + event.cost
+end
+
 local empty_token =
     Token.register(
     function()
@@ -331,19 +344,20 @@ local empty_token =
 local killed_enemies_token =
     Token.register(
     function()
-        local enemies_killed = Public.get_killed_enemies_count('biter', 'spitter')
-        if enemies_killed >= this.objectives.killed_enemies then
-            return true, {'stateful.enemies_killed'}, {'stateful.done', format_number(this.objectives.killed_enemies, true), format_number(this.objectives.killed_enemies)}, {'stateful.generic_tooltip'}, {'stateful.tooltip_completed'}
+        local actual = Public.get_killed_enemies_count('biter', 'spitter')
+        local expected = this.objectives.killed_enemies
+        if actual >= expected then
+            return true, {'stateful.enemies_killed'}, {'stateful.done', format_number(expected, true), format_number(expected)}, {'stateful.generic_tooltip'}, {'stateful.tooltip_completed'}
         end
 
-        return false, {'stateful.enemies_killed'}, {'stateful.not_done', format_number(enemies_killed, true), format_number(this.objectives.killed_enemies, true)}, {'stateful.generic_tooltip'}, {'stateful.tooltip_not_completed'}
+        return false, {'stateful.enemies_killed'}, {'stateful.not_done', format_number(actual, true), format_number(expected, true)}, {'stateful.generic_tooltip'}, {'stateful.tooltip_not_completed'}
     end
 )
 
 local research_level_selection_token =
     Token.register(
     function()
-        local actual = this.objectives.research_level_count
+        local actual = this.objectives.research_level_selection.research_count
         local expected = this.objectives.research_level_selection.count
         if actual >= expected then
             return true, {'stateful.research', this.objectives.research_level_selection.name}, {'stateful.done', expected, expected}, {'stateful.generic_tooltip'}, {'stateful.tooltip_completed'}
@@ -368,33 +382,36 @@ local locomotive_market_coins_spent_token =
 local trees_farmed_token =
     Token.register(
     function()
-        local trees = get_entity_mined_count('tree')
-        if trees >= this.objectives.trees_farmed then
-            return true, {'stateful.trees_mined'}, {'stateful.done', format_number(this.objectives.trees_farmed, true), format_number(this.objectives.trees_farmed, true)}, {'stateful.generic_tooltip'}, {'stateful.tooltip_completed'}
+        local actual = get_entity_mined_count('tree')
+        local expected = this.objectives.trees_farmed
+        if actual >= expected then
+            return true, {'stateful.trees_mined'}, {'stateful.done', format_number(expected, true), format_number(expected, true)}, {'stateful.generic_tooltip'}, {'stateful.tooltip_completed'}
         end
-        return false, {'stateful.trees_mined'}, {'stateful.not_done', format_number(trees, true), format_number(this.objectives.trees_farmed, true)}, {'stateful.generic_tooltip'}, {'stateful.tooltip_not_completed'}
+        return false, {'stateful.trees_mined'}, {'stateful.not_done', format_number(actual, true), format_number(expected, true)}, {'stateful.generic_tooltip'}, {'stateful.tooltip_not_completed'}
     end
 )
 
 local rocks_farmed_token =
     Token.register(
     function()
-        local rocks = get_entity_mined_count('rock')
-        if rocks >= this.objectives.rocks_farmed then
-            return true, {'stateful.rocks_mined'}, {'stateful.done', format_number(this.objectives.rocks_farmed, true), format_number(this.objectives.rocks_farmed, true)}, {'stateful.generic_tooltip'}, {'stateful.tooltip_completed'}
+        local actual = get_entity_mined_count('rock')
+        local expected = this.objectives.rocks_farmed
+        if actual >= expected then
+            return true, {'stateful.rocks_mined'}, {'stateful.done', format_number(expected, true), format_number(expected, true)}, {'stateful.generic_tooltip'}, {'stateful.tooltip_completed'}
         end
-        return false, {'stateful.rocks_mined'}, {'stateful.not_done', format_number(rocks, true), format_number(this.objectives.rocks_farmed, true)}, {'stateful.generic_tooltip'}, {'stateful.tooltip_not_completed'}
+        return false, {'stateful.rocks_mined'}, {'stateful.not_done', format_number(actual, true), format_number(expected, true)}, {'stateful.generic_tooltip'}, {'stateful.tooltip_not_completed'}
     end
 )
 
 local rockets_launched_token =
     Token.register(
     function()
-        local launched = game.forces.player.rockets_launched
-        if launched >= this.objectives.rockets_launched then
-            return true, {'stateful.launch_rockets'}, {'stateful.done', format_number(this.objectives.rockets_launched, true), format_number(this.objectives.rockets_launched, true)}, {'stateful.generic_tooltip'}, {'stateful.tooltip_completed'}
+        local actual = game.forces.player.rockets_launched
+        local expected = this.objectives.rockets_launched
+        if actual >= expected then
+            return true, {'stateful.launch_rockets'}, {'stateful.done', format_number(expected, true), format_number(expected, true)}, {'stateful.generic_tooltip'}, {'stateful.tooltip_completed'}
         end
-        return false, {'stateful.launch_rockets'}, {'stateful.not_done', format_number(launched, true), format_number(this.objectives.rockets_launched, true)}, {'stateful.generic_tooltip'}, {'stateful.tooltip_not_completed'}
+        return false, {'stateful.launch_rockets'}, {'stateful.not_done', format_number(actual, true), format_number(expected, true)}, {'stateful.generic_tooltip'}, {'stateful.tooltip_not_completed'}
     end
 )
 
@@ -479,10 +496,10 @@ local function get_random_research_recipe()
     shuffle(research_level_list)
 
     if this.test_mode then
-        return {name = research_level_list[1], count = 1}
+        return {name = research_level_list[1], count = 1, research_count = 0}
     end
 
-    return {name = research_level_list[1], count = scale(2, 40, 1.08)}
+    return {name = research_level_list[1], count = scale(2, 40, 1.08), research_count = 0}
 end
 
 local function get_random_objectives()
@@ -734,7 +751,6 @@ function Public.reset_stateful(refresh_gui)
             single_item = get_random_item(),
             killed_enemies = 10,
             research_level_selection = get_random_research_recipe(),
-            research_level_count = 0,
             locomotive_market_coins_spent = 0,
             locomotive_market_coins_spent_required = 1,
             trees_farmed = 10,
@@ -749,10 +765,9 @@ function Public.reset_stateful(refresh_gui)
             single_item = get_random_item(),
             killed_enemies = random(scale(80000, 10000000), scale(100000, 10000000)),
             research_level_selection = get_random_research_recipe(),
-            research_level_count = 0,
             locomotive_market_coins_spent = {
                 spent = 0,
-                required = random(scale(10000, 400000), scale(15000, 400000))
+                required = random(scale(50000), scale(100000))
             },
             trees_farmed = random(scale(9500, 400000), scale(10500, 400000)),
             rocks_farmed = random(scale(45000, 4000000), scale(55000, 4000000)),
@@ -771,8 +786,7 @@ function Public.reset_stateful(refresh_gui)
 
     local t = {
         ['randomized_zone'] = this.objectives.randomized_zone,
-        ['randomized_wave'] = this.objectives.randomized_wave,
-        ['research_level_count'] = this.objectives.research_level_count
+        ['randomized_wave'] = this.objectives.randomized_wave
     }
     for index = 1, #this.selected_objectives do
         local objective = this.selected_objectives[index]
@@ -1014,5 +1028,6 @@ Public.scale = scale
 Public.stateful_spawn_points = stateful_spawn_points
 Public.sizeof_stateful_spawn_points = #stateful_spawn_points
 Public.on_pre_player_died = on_pre_player_died
+Public.on_market_item_purchased = on_market_item_purchased
 
 return Public
