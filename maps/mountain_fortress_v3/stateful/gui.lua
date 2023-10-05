@@ -447,7 +447,6 @@ main_frame = function(player)
     local breached_wall = Public.get('breached_wall')
     breached_wall = breached_wall - 1
     local wave_number = WD.get('wave_number')
-    local converted_chests = LinkedChests.get('converted_chests')
 
     local frame = player.gui.screen.add {type = 'frame', name = main_frame_name, caption = {'stateful.win_conditions'}, direction = 'vertical', tooltip = {'stateful.win_conditions_tooltip'}}
     frame.location = {x = 1, y = 45}
@@ -596,7 +595,6 @@ main_frame = function(player)
             data.randomized_wave_label = wave_right_flow.add({type = 'label', caption = wave_number .. '/' .. stateful.objectives.randomized_wave .. ' [img=utility/not_available]', tooltip = {'stateful.tooltip_not_completed'}})
         end
 
-
         --dynamic conditions
         data.random_objectives = {}
 
@@ -634,7 +632,6 @@ local function update_data()
     local breached_wall = Public.get('breached_wall')
     breached_wall = breached_wall - 1
     local wave_number = WD.get('wave_number')
-    local converted_chests = LinkedChests.get('converted_chests')
     local collection = stateful.collection
 
     for i = 1, #players do
@@ -800,7 +797,6 @@ local function update_raw()
     local stateful = Public.get_stateful()
     local breached_wall = Public.get('breached_wall')
     local wave_number = WD.get('wave_number')
-    local converted_chests = LinkedChests.get('converted_chests')
     local collection = stateful.collection
     local tick = game.tick
 
