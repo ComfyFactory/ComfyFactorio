@@ -713,6 +713,8 @@ local apply_settings_token =
         this.rounds_survived = settings.rounds_survived
 
         Public.reset_stateful()
+
+        apply_startup_settings(settings)
         Public.increase_enemy_damage_and_health()
     end
 )
