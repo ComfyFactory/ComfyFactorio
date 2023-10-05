@@ -9,6 +9,8 @@ local Gui = require 'utils.gui'
 local Alert = require 'utils.alert'
 local Color = require 'utils.color_presets'
 
+local zone_settings = Public.zone_settings
+
 local rpg_main_frame = RPG.main_frame_name
 local random = math.random
 local floor = math.floor
@@ -108,6 +110,18 @@ local function is_around_train(data)
     local loco = data.locomotive.position
     local position = entity.position
     local inside = ((position.x - loco.x) ^ 2 + (position.y - loco.y) ^ 2) < locomotive_aura_radius ^ 2
+
+    if inside then
+        return true
+    end
+    return false
+end
+
+local function is_inside_zone(data)
+    local entity = data.entity
+    local loco = data.locomotive.position
+    local position = entity.position
+    local inside = ((position.y - loco.y) ^ 2) < zone_settings.zone_depth ^ 2
 
     if inside then
         return true
@@ -644,6 +658,36 @@ function Public.is_around_train(entity)
     }
 
     local success = is_around_train(data)
+    return success
+end
+
+function Public.is_inside_zone(entity)
+    local locomotive = Public.get('locomotive')
+    local active_surface_index = Public.get('active_surface_index')
+
+    if not active_surface_index then
+        return false
+    end
+    if not locomotive then
+        return false
+    end
+    if not locomotive.valid then
+        return false
+    end
+
+    if not entity or not entity.valid then
+        return false
+    end
+
+    local surface = game.surfaces[active_surface_index]
+
+    local data = {
+        locomotive = locomotive,
+        surface = surface,
+        entity = entity
+    }
+
+    local success = is_inside_zone(data)
     return success
 end
 

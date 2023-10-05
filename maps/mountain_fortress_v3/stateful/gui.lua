@@ -740,9 +740,10 @@ local function update_data()
                         local objective = stateful.selected_objectives[objective_index]
                         local objective_name = objective.name
                         local callback = Token.get(objective.token)
-                        local _, _, objective_locale_right = callback()
+                        local _, _, objective_locale_right, _, objective_tooltip_right = callback()
                         if name == objective_name and frame and frame.valid then
                             frame.caption = objective_locale_right
+                            frame.tooltip = objective_tooltip_right
                         end
                     end
                 end

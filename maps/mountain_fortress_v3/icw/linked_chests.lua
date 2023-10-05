@@ -604,6 +604,15 @@ local function on_built_entity(event, mode, bypass)
             return
         end
 
+        if not WPT.locomotive.is_around_train(entity) then
+            if entity.type ~= 'entity-ghost' then
+                player.insert({name = 'linked-chest', count = 1})
+            end
+            entity.destroy()
+            player.print(module_name .. 'Linked chests only work inside the locomotive aura.', Color.warning)
+            return
+        end
+
         local trusted_player = Session.get_trusted_player(player)
 
         if not trusted_player then
@@ -667,6 +676,15 @@ local function built_entity_robot(event)
                 end
                 entity.destroy()
                 player.print(module_name .. 'Linked chests only work on the main surface.', Color.warning)
+                return
+            end
+
+            if not WPT.locomotive.is_around_train(entity) then
+                if entity.type ~= 'entity-ghost' then
+                    player.insert({name = 'linked-chest', count = 1})
+                end
+                entity.destroy()
+                player.print(module_name .. 'Linked chests only work inside the locomotive aura.', Color.warning)
                 return
             end
 

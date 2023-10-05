@@ -964,6 +964,8 @@ local function gui_click(event)
     if name == 'upgrade_pickaxe' then
         player.remove_item({name = item.value, count = item.price})
 
+        Event.raise(Public.events.on_market_item_purchased, {cost = item.price})
+
         this.upgrades.pickaxe_tier = this.upgrades.pickaxe_tier + item.stack
 
         local pickaxe_upgrades = Public.pickaxe_upgrades
@@ -996,6 +998,8 @@ local function gui_click(event)
     if name == 'locomotive_max_health' then
         player.remove_item({name = item.value, count = item.price})
         local message = ({'locomotive.health_bought_info', shopkeeper, player.name, format_number(item.price, true)})
+
+        Event.raise(Public.events.on_market_item_purchased, {cost = item.price})
 
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
@@ -1049,6 +1053,8 @@ local function gui_click(event)
         end
         player.remove_item({name = item.value, count = item.price})
 
+        Event.raise(Public.events.on_market_item_purchased, {cost = item.price})
+
         local message = ({'locomotive.aura_bought_info', shopkeeper, player.name, format_number(item.price, true)})
 
         Alert.alert_all_players(5, message)
@@ -1091,6 +1097,8 @@ local function gui_click(event)
         player.remove_item({name = item.value, count = item.price})
         local message = ({'locomotive.xp_bought_info', shopkeeper, player.name, format_number(item.price, true)})
 
+        Event.raise(Public.events.on_market_item_purchased, {cost = item.price})
+
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
@@ -1110,6 +1118,8 @@ local function gui_click(event)
     if name == 'redraw_mystical_chest' then
         player.remove_item({name = item.value, count = item.price})
         local message = ({'locomotive.mystical_bought_info', shopkeeper, player.name, format_number(item.price, true)})
+
+        Event.raise(Public.events.on_market_item_purchased, {cost = item.price})
 
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
@@ -1135,6 +1145,8 @@ local function gui_click(event)
             format_number(item.price, true)
         })
 
+        Event.raise(Public.events.on_market_item_purchased, {cost = item.price})
+
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
@@ -1159,6 +1171,8 @@ local function gui_click(event)
             format_number(item.price, true)
         })
 
+        Event.raise(Public.events.on_market_item_purchased, {cost = item.price})
+
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
@@ -1182,6 +1196,8 @@ local function gui_click(event)
             format_number(item.price, true)
         })
 
+        Event.raise(Public.events.on_market_item_purchased, {cost = item.price})
+
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
@@ -1198,6 +1214,8 @@ local function gui_click(event)
 
     if name == 'flamethrower_turrets' then
         player.remove_item({name = item.value, count = item.price})
+        Event.raise(Public.events.on_market_item_purchased, {cost = item.price})
+
         if item.stack >= 1 then
             local message = ({
                 'locomotive.one_flamethrower_bought_info',
@@ -1237,6 +1255,8 @@ local function gui_click(event)
     if name == 'land_mine' then
         player.remove_item({name = item.value, count = item.price})
 
+        Event.raise(Public.events.on_market_item_purchased, {cost = item.price})
+
         if item.stack >= 1 and this.upgrades.landmine.bought % 10 == 0 then
             local message = ({
                 'locomotive.landmine_bought_info',
@@ -1274,8 +1294,10 @@ local function gui_click(event)
                 player.print(({'locomotive.change_returned'}), {r = 0.98, g = 0.66, b = 0.22})
                 player.insert({name = name, count = inserted_count})
                 player.remove_item({name = item.value, count = ceil(item.price * (inserted_count / item.stack))})
+                Event.raise(Public.events.on_market_item_purchased, {cost = ceil(item.price * (inserted_count / item.stack))})
             else
                 player.remove_item({name = item.value, count = cost})
+                Event.raise(Public.events.on_market_item_purchased, {cost = cost})
             end
             redraw_market_items(data.item_frame, player, data.search_text)
             redraw_coins_left(data.coins_left, player)
