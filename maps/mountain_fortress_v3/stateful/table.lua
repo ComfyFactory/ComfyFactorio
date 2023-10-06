@@ -681,9 +681,6 @@ local function apply_startup_settings(settings)
         end
     end
 
-    local starting_items = Public.get_func('starting_items')
-
-    apply_buffs(starting_items)
     return settings
 end
 
@@ -717,7 +714,7 @@ local apply_settings_token =
 
         this.rounds_survived = settings.rounds_survived
 
-        Public.reset_stateful(false, true)
+        Public.reset_stateful()
         Public.increase_enemy_damage_and_health()
     end
 )
@@ -965,13 +962,6 @@ function Public.increase_enemy_damage_and_health()
             Event.raise(WD.events.on_biters_evolved, {force = game.forces.aggressors_frenzy})
         end
     end
-
-    if this.rounds_survived == 0 then
-        return
-    end
-
-    local message_discord = ({'stateful.warn_biters_boosted', this.rounds_survived})
-    Server.to_discord_embed(message_discord, true)
 end
 
 function Public.get_stateful(key)
