@@ -152,8 +152,8 @@ local function get_random_buff()
             state = 4
         },
         {
-            name = 'starting_items',
-            modifier = 'supplies',
+            name = 'supplies',
+            modifier = 'starting_items',
             limit = nil,
             items = {
                 {name = 'iron-plate', count = 100},
@@ -161,8 +161,8 @@ local function get_random_buff()
             }
         },
         {
-            name = 'starting_items',
-            modifier = 'defense',
+            name = 'defense',
+            modifier = 'starting_items',
             limit = nil,
             items = {
                 {name = 'gun-turret', count = 2},
@@ -170,16 +170,16 @@ local function get_random_buff()
             }
         },
         {
-            name = 'starting_items',
-            modifier = 'armor',
+            name = 'armor',
+            modifier = 'starting_items',
             limit = 1,
             items = {
                 {name = 'heavy-armor', count = 1}
             }
         },
         {
-            name = 'starting_items',
-            modifier = 'production',
+            name = 'production',
+            modifier = 'starting_items',
             limit = nil,
             items = {
                 {name = 'stone-furnace', count = 4},
@@ -187,16 +187,16 @@ local function get_random_buff()
             }
         },
         {
-            name = 'starting_items',
-            modifier = 'fast-startup',
+            name = 'fast-startup',
+            modifier = 'starting_items',
             limit = nil,
             items = {
                 {name = 'assembling-machine', count = 1}
             }
         },
         {
-            name = 'starting_items',
-            modifier = 'heal-thy-buildings',
+            name = 'heal-thy-buildings',
+            modifier = 'starting_items',
             limit = nil,
             items = {
                 {name = 'repair-pack', count = 5}
