@@ -806,6 +806,10 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
 
     this.objectives = t
 
+    local starting_items = Public.get_func('starting_items')
+
+    apply_buffs(starting_items)
+
     if refresh_gui then
         Public.refresh_frames()
     end
