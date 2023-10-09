@@ -952,12 +952,12 @@ function Public.increase_enemy_damage_and_health()
     this.enemies_boosted = true
 
     if this.rounds_survived == 1 then
-        Event.raise(WD.events.on_biters_evolved, {force = game.forces.enemy})
+        Event.raise(WD.events.on_biters_evolved, {force = game.forces.enemy, health_increase = true})
         Event.raise(WD.events.on_biters_evolved, {force = game.forces.aggressors})
         Event.raise(WD.events.on_biters_evolved, {force = game.forces.aggressors_frenzy})
     else
         for _ = 1, this.rounds_survived do
-            Event.raise(WD.events.on_biters_evolved, {force = game.forces.enemy})
+            Event.raise(WD.events.on_biters_evolved, {force = game.forces.enemy, health_increase = true})
             Event.raise(WD.events.on_biters_evolved, {force = game.forces.aggressors})
             Event.raise(WD.events.on_biters_evolved, {force = game.forces.aggressors_frenzy})
         end

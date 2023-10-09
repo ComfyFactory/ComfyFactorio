@@ -655,12 +655,20 @@ local function increase_biter_damage(force)
     local bio = new - 0.02
     local e_old_melee = e.get_ammo_damage_modifier('melee')
     local e_old_biological = e.get_ammo_damage_modifier('biological')
+    local e_old_speed_melee = e.get_gun_speed_modifier('melee')
+    local e_old_speed_biological = e.get_gun_speed_modifier('biological')
 
-    Public.debug_print('Melee: ' .. melee + e_old_melee)
-    Public.debug_print('Biological: ' .. bio + e_old_biological)
+    Public.debug_print('Melee damage: ' .. melee + e_old_melee)
+    Public.debug_print('Biological damage: ' .. bio + e_old_biological)
+
+    Public.debug_print('Melee speed: ' .. melee + e_old_speed_melee)
+    Public.debug_print('Biological speed: ' .. bio + e_old_speed_biological)
 
     e.set_ammo_damage_modifier('melee', melee + e_old_melee)
     e.set_ammo_damage_modifier('biological', bio + e_old_biological)
+
+    e.set_gun_speed_modifier('melee', melee + e_old_speed_melee)
+    e.set_gun_speed_modifier('biological', bio + e_old_speed_biological)
 end
 
 local function increase_biters_health()
@@ -1410,7 +1418,10 @@ Event.add(
         end
 
         increase_biter_damage(event.force)
-        increase_biters_health()
+
+        if event.health_increase then
+            increase_biters_health()
+        end
     end
 )
 

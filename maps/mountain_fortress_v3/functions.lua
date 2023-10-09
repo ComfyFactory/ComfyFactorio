@@ -866,7 +866,11 @@ local function on_wave_created(event)
     local wave_number = event.wave_number
 
     if wave_number % 50 == 0 then
-        WD.set_pause_wave_in_ticks(random(18000, 54000))
+        if wave_number >= 1500 then
+            WD.set_pause_wave_in_ticks(random(36000, 54000))
+        else
+            WD.set_pause_wave_in_ticks(random(18000, 54000))
+        end
     end
 end
 
