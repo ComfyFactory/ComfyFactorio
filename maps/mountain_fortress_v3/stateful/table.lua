@@ -563,6 +563,10 @@ local function apply_buffs(starting_items)
             if buff then
                 if buff.modifier == 'rpg_distance' then
                     for _, buff_name in pairs(buff.modifiers) do
+                        if buff_name == 'character_reach_distance_bonus' then
+                            buff.state = 1
+                        end
+
                         force[buff_name] = force[buff_name] + buff.state
 
                         if not this.buffs_collected[buff_name] then
