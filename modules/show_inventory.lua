@@ -1,3 +1,5 @@
+-- created by Gerkiz
+
 local Global = require 'utils.global'
 local Color = require 'utils.color_presets'
 local SpamProtection = require 'utils.spam_protection'
@@ -23,7 +25,12 @@ local space = {
 }
 
 local function get_player_data(player, remove)
-    if remove and this.data[player.index] then
+    local data = this.data[player.index]
+    if remove and data then
+        if data and data.frame and data.frame.valid then
+            data.frame.destroy()
+        end
+
         this.data[player.index] = nil
         return
     end
@@ -46,17 +53,17 @@ local function unpack_inventory(inventory)
     return unpacked
 end
 
-local function addStyle(guiIn, styleIn)
+local function add_style(guiIn, styleIn)
     for k, v in pairs(styleIn) do
         guiIn.style[k] = v
     end
 end
 
-local function adjustSpace(guiIn)
-    addStyle(guiIn.add {type = 'line', direction = 'horizontal'}, space)
+local function adjust_space(guiIn)
+    add_style(guiIn.add {type = 'line', direction = 'horizontal'}, space)
 end
 
-local function validate_object(obj)
+local function is_valid(obj)
     if not obj then
         return false
     end
@@ -77,11 +84,11 @@ end
 local function watching_inventory(player)
     for index, data in pairs(this.data) do
         if data and data.player_opened == player.index then
-            local sourcePlayer = game.get_player(index)
-            if not sourcePlayer or not sourcePlayer.valid then
+            local source_player = game.get_player(index)
+            if not source_player or not source_player.valid then
                 return false
             else
-                return sourcePlayer
+                return source_player, data
             end
         end
     end
@@ -102,21 +109,6 @@ local function player_opened(player)
     end
 
     return true, opened
-end
-
-local function last_tab(player)
-    local data = get_player_data(player)
-
-    if not data then
-        return false
-    end
-
-    local tab = data.last_tab
-    if not tab then
-        return false
-    end
-
-    return true, tab
 end
 
 local function validate_player(player)
@@ -147,18 +139,39 @@ local function close_player_inventory(player)
 
     local gui = player.gui.screen
 
-    if not validate_object(gui) then
+    if not is_valid(gui) then
         return
     end
 
     local element = gui.inventory_gui
 
-    if not validate_object(element) then
+    if not is_valid(element) then
         return
     end
 
     element.destroy()
     get_player_data(player, true)
+end
+
+local function get_inventory_type(player, inventory_type)
+    local target_types = {
+        ['Main'] = function()
+            return unpack_inventory(player.get_main_inventory())
+        end,
+        ['Armor'] = function()
+            return unpack_inventory(player.get_inventory(defines.inventory.character_armor))
+        end,
+        ['Guns'] = function()
+            return unpack_inventory(player.get_inventory(defines.inventory.character_guns))
+        end,
+        ['Ammo'] = function()
+            return unpack_inventory(player.get_inventory(defines.inventory.character_ammo))
+        end,
+        ['Trash'] = function()
+            return unpack_inventory(player.get_inventory(defines.inventory.character_trash))
+        end
+    }
+    return target_types[inventory_type]()
 end
 
 local function redraw_inventory(gui, source, target, caption, panel_type)
@@ -169,7 +182,7 @@ local function redraw_inventory(gui, source, target, caption, panel_type)
 
     local screen = source.gui.screen
 
-    if not validate_object(screen) then
+    if not is_valid(screen) then
         return
     end
 
@@ -254,7 +267,7 @@ local function open_inventory(source, target)
 
     local screen = source.gui.screen
 
-    if not validate_object(screen) then
+    if not is_valid(screen) then
         return
     end
 
@@ -281,7 +294,7 @@ local function open_inventory(source, target)
     frame.style.minimal_width = 500
     frame.style.minimal_height = 250
 
-    adjustSpace(frame)
+    adjust_space(frame)
 
     local panel = frame.add({type = 'tabbed-pane', name = 'tabbed_pane'})
     panel.selected_tab_index = 1
@@ -309,9 +322,9 @@ local function open_inventory(source, target)
         ['Trash'] = trash
     }
 
-    for k, v in pairs(types) do
-        if v ~= nil then
-            add_inventory(panel, source, target, k, v)
+    for frame_name, callback in pairs(types) do
+        if callback ~= nil then
+            add_inventory(panel, source, target, frame_name, callback)
         end
     end
     source.opened = frame
@@ -361,27 +374,13 @@ local function on_gui_click(event)
         if not viewingPlayer then
             return false
         end
-        local main = unpack_inventory(viewingPlayer.get_main_inventory())
-        if not main then
-            return
-        end
 
-        local armor = unpack_inventory(viewingPlayer.get_inventory(defines.inventory.character_armor))
-        local guns = unpack_inventory(viewingPlayer.get_inventory(defines.inventory.character_guns))
-        local ammo = unpack_inventory(viewingPlayer.get_inventory(defines.inventory.character_ammo))
-        local trash = unpack_inventory(viewingPlayer.get_inventory(defines.inventory.character_trash))
-
-        local target_types = {
-            ['Main'] = main,
-            ['Armor'] = armor,
-            ['Guns'] = guns,
-            ['Ammo'] = ammo,
-            ['Trash'] = trash
-        }
         local frame = Public.get_active_frame(player)
-        local panel_type = target_types[name]
 
-        redraw_inventory(frame, player, viewingPlayer, name, panel_type)
+        if frame then
+            local callback = get_inventory_type(viewingPlayer, name)
+            redraw_inventory(frame, player, viewingPlayer, name, callback)
+        end
     end
 end
 local function gui_closed(event)
@@ -416,45 +415,16 @@ local function update_gui(event)
         return
     end
 
-    if not this.data[player.index] then
+    local source_player, source_data = watching_inventory(player)
+    if not source_player then
         return
     end
 
-    local sourcePlayer = watching_inventory(player)
-    local success, tab = last_tab(player)
-
-    if sourcePlayer and sourcePlayer.valid then
-        if success then
-            local main = player.get_main_inventory()
-            if not main then
-                return
-            end
-
-            main = unpack_inventory(player.get_main_inventory())
-            if not main then
-                return
-            end
-
-            local armor = unpack_inventory(player.get_inventory(defines.inventory.character_armor))
-            local guns = unpack_inventory(player.get_inventory(defines.inventory.character_guns))
-            local ammo = unpack_inventory(player.get_inventory(defines.inventory.character_ammo))
-            local trash = unpack_inventory(player.get_inventory(defines.inventory.character_trash))
-
-            local types = {
-                ['Main'] = main,
-                ['Armor'] = armor,
-                ['Guns'] = guns,
-                ['Ammo'] = ammo,
-                ['Trash'] = trash
-            }
-
-            local frame = Public.get_active_frame(player)
-            local panel_type = types[tab]
-            if frame then
-                if frame.name == tab .. 'tab' then
-                    redraw_inventory(frame, sourcePlayer, player, tab, panel_type)
-                end
-            end
+    local frame = Public.get_active_frame(source_player)
+    if frame and frame.valid then
+        local callback = get_inventory_type(player, source_data.last_tab)
+        if frame.name == source_data.last_tab .. 'tab' then
+            redraw_inventory(frame, source_player, player, source_data.last_tab, callback)
         end
     end
 end
@@ -518,6 +488,10 @@ function Public.module_disabled(state)
 end
 
 Event.add(defines.events.on_player_main_inventory_changed, update_gui)
+Event.add(defines.events.on_player_gun_inventory_changed, update_gui)
+Event.add(defines.events.on_player_ammo_inventory_changed, update_gui)
+Event.add(defines.events.on_player_armor_inventory_changed, update_gui)
+Event.add(defines.events.on_player_trash_inventory_changed, update_gui)
 Event.add(defines.events.on_gui_closed, gui_closed)
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_pre_player_left_game, on_pre_player_left_game)
