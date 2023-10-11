@@ -684,8 +684,6 @@ local function apply_startup_settings(settings)
             Server.set_data(dataset, dataset_key_dev, settings)
         end
     end
-
-    return settings
 end
 
 local apply_settings_token =
@@ -714,7 +712,7 @@ local apply_settings_token =
         this.current_date = settings.current_date
         this.buffs = settings.buffs
 
-        settings = apply_startup_settings(settings)
+        apply_startup_settings(settings)
 
         this.rounds_survived = settings.rounds_survived
 
@@ -729,7 +727,8 @@ function Public.save_settings()
     local settings = {
         rounds_survived = this.rounds_survived,
         test_mode = this.test_mode,
-        buffs = this.buffs
+        buffs = this.buffs,
+        current_date = this.current_date
     }
 
     local server_name_matches = Server.check_server_name('Mtn Fortress')
