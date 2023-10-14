@@ -759,7 +759,6 @@ local function on_player_joined_game(event)
 
     if not rpg_t then
         Public.rpg_reset_player(player)
-        rpg_t = Public.get_value_from_player(player.index)
         if rpg_extra.reward_new_players > 10 then
             Public.gain_xp(player, rpg_extra.reward_new_players)
         end
