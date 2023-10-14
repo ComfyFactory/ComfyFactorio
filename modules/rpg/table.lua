@@ -114,6 +114,7 @@ function Public.reset_table(migrate)
     this.rpg_extra.enable_stone_path = false
     this.rpg_extra.enable_auto_allocate = false
     this.rpg_extra.enable_aoe_punch = true
+    this.rpg_extra.grant_xp_level = nil
     this.rpg_extra.enable_aoe_punch_globally = false
     this.rpg_extra.disable_get_heal_modifier_from_using_fish = false
     this.rpg_extra.tweaked_crafting_items = {
