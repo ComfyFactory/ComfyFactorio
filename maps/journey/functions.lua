@@ -321,6 +321,9 @@ function Public.update_tooltips(journey)
 	local capsulett = {''}
 	local c = 0
 	for k, v in pairs(journey.bonus_goods) do
+		local str = '    '
+		local v2 = tostring(v)
+		v = string.sub(str, 1, -string.len(v2)) .. v2
 		c = c + 1
 		if c % 3 == 0 then
 			capsulett = {'', capsulett, {'journey.tooltip_capsule2', v, k}}
