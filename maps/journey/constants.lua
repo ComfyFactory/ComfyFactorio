@@ -193,7 +193,7 @@ Public.starter_goods_pool = {
         {'red-wire', 256, 512},
         {'heat-exchanger', 1, 2},
         {'heat-pipe', 10, 20},
-        {'nuclear-fuel', 4, 8},
+        {'uranium-fuel-cell', 4, 8},
         {'nuclear-reactor', 1, 1},
         {'advanced-circuit', 16, 32},
         {'construction-robot', 16, 32},
