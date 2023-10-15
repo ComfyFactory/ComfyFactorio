@@ -39,6 +39,14 @@ local function remove_unit(entity)
     if not generated_units.active_biters[unit_number] then
         return
     end
+    local final_battle = Public.get('final_battle')
+    if final_battle then
+        generated_units.active_biters_final_battle = generated_units.active_biters_final_battle - 1
+        if generated_units.active_biters_final_battle <= 0 then
+            generated_units.active_biters_final_battle = 0
+        end
+    end
+
     local m = 1
     local biter_health_boost_units = BiterHealthBooster.get('biter_health_boost_units')
     if not biter_health_boost_units then
@@ -216,8 +224,8 @@ else
 end
 
 function Public.build_nest()
-    local final_boss = Public.get('final_boss')
-    if final_boss then
+    local final_battle = Public.get('final_battle')
+    if final_battle then
         return
     end
 
@@ -237,14 +245,14 @@ function Public.build_nest()
 end
 
 function Public.build_worm()
-    local final_boss = Public.get('final_boss')
+    local final_battle = Public.get('final_battle')
     local threat = Public.get('threat')
-    if threat < 512 and not final_boss then
+    if threat < 512 and not final_battle then
         return
     end
     local worm_building_chance = Public.get('worm_building_chance') --[[@as integer]]
 
-    if random(1, worm_building_chance) ~= 1 then
+    if not final_battle and random(1, worm_building_chance) ~= 1 then
         return
     end
 
@@ -319,6 +327,68 @@ function Public.build_worm()
     remove_unit(unit)
     unit.destroy()
     Public.set('threat', threat - Public.threat_values[worm])
+end
+
+function Public.build_worm_custom()
+    local unit_groups_size = Public.get('unit_groups_size')
+    if unit_groups_size == 0 then
+        return
+    end
+
+    local random_group = Public.get('random_group')
+    if not (random_group and random_group.valid) then
+        return
+    end
+    local generated_units = Public.get('generated_units')
+    local group = generated_units.boss_units
+    if not group then
+        return
+    end
+
+    if not next(group) then
+        return
+    end
+
+    local unit
+    generated_units.boss_unit_index, unit = next(group, generated_units.boss_unit_index)
+
+    if not unit or not unit.valid then
+        table.remove(group, generated_units.boss_unit_index)
+        return
+    end
+
+    local wave_number = Public.get('wave_number')
+    local position = unit.surface.find_non_colliding_position('assembling-machine-1', unit.position, 8, 1)
+    Public.wave_defense_set_worm_raffle(wave_number)
+    local worm = Public.wave_defense_roll_worm_name()
+    if not position then
+        return
+    end
+
+    local worm_building_density = Public.get('worm_building_density')
+    local r = worm_building_density
+    if
+        unit.surface.count_entities_filtered(
+            {
+                type = 'turret',
+                force = unit.force,
+                area = {{position.x - r, position.y - r}, {position.x + r, position.y + r}}
+            }
+        ) > 0
+     then
+        return
+    end
+    local u = unit.surface.create_entity({name = worm, position = position, force = unit.force})
+    local modified_boss_unit_health = Public.get('modified_boss_unit_health')
+
+    BiterHealthBooster.add_boss_unit(u, modified_boss_unit_health.current_value, 0.5)
+
+    table.remove(group, generated_units.boss_unit_index)
+
+    unit.surface.create_entity({name = 'blood-explosion-huge', position = position})
+    unit.surface.create_entity({name = 'blood-explosion-huge', position = unit.position})
+    remove_unit(unit)
+    unit.destroy()
 end
 
 local function shred_simple_entities(entity)

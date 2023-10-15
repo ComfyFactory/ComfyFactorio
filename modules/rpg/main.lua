@@ -756,12 +756,14 @@ local function on_player_joined_game(event)
     local player = game.get_player(event.player_index)
     local rpg_t = Public.get_value_from_player(player.index)
     local rpg_extra = Public.get('rpg_extra')
+
     if not rpg_t then
         Public.rpg_reset_player(player)
         if rpg_extra.reward_new_players > 10 then
             Public.gain_xp(player, rpg_extra.reward_new_players)
         end
     end
+
     for _, p in pairs(game.connected_players) do
         Public.draw_level_text(p)
     end

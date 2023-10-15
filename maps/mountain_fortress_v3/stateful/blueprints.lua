@@ -28,6 +28,17 @@ function Public.blueprint()
     surface.request_to_generate_chunks({0, 0}, 1)
     surface.force_generate_chunk_requests()
 
+    local ents = surface.find_entities_filtered({area = {{position.x - 70, position.y - 70}, {position.x + 70, position.y + 70}}})
+    if #ents == 0 then
+        return
+    end
+
+    for _, e in pairs(ents) do
+        if e and e.valid then
+            e.destroy()
+        end
+    end
+
     local item = surface.create_entity {name = 'item-on-ground', position = position, stack = {name = 'blueprint', count = 1}}
     if not item then
         return

@@ -24,7 +24,7 @@ local directions = {
         end
 
         local surface = game.get_surface(surface_index)
-        if not surface.valid then
+        if not surface or not surface.valid then
             return
         end
         local width = surface.map_gen_settings.width
@@ -42,7 +42,7 @@ local directions = {
         end
 
         local surface = game.get_surface(surface_index)
-        if not surface.valid then
+        if not surface or not surface.valid then
             return
         end
         local width = surface.map_gen_settings.width
@@ -60,7 +60,7 @@ local directions = {
         end
 
         local surface = game.get_surface(surface_index)
-        if not surface.valid then
+        if not surface or not surface.valid then
             return
         end
         local width = surface.map_gen_settings.height
@@ -78,7 +78,7 @@ local directions = {
         end
 
         local surface = game.get_surface(surface_index)
-        if not surface.valid then
+        if not surface or not surface.valid then
             return
         end
         local width = surface.map_gen_settings.height
@@ -125,7 +125,7 @@ local function progress()
     end
 
     local surface = game.get_surface(surface_index)
-    if not surface.valid then
+    if not surface or not surface.valid then
         return
     end
 
@@ -183,7 +183,7 @@ function Public.set_surface_index(surface_index)
     end
 
     local surface = game.get_surface(surface_index)
-    if not surface.valid then
+    if not surface or not surface.valid then
         print_debug(2)
         return
     end

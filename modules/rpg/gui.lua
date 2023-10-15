@@ -185,6 +185,18 @@ local function remove_main_frame(main_frame, screen)
     end
 end
 
+local function toggle_state(player, label, modifier)
+    if label and label.valid then
+        if not label.state then
+            P.disable_single_modifier(player, modifier, true)
+            P.update_player_modifiers(player)
+        elseif label.state then
+            P.disable_single_modifier(player, modifier, false)
+            P.update_player_modifiers(player)
+        end
+    end
+end
+
 local function draw_main_frame(player, location)
     if not player.character then
         return
@@ -543,19 +555,33 @@ Gui.on_click(
         local screen = player.gui.screen
         local frame = screen[settings_frame_name]
         local data = Gui.get_data(event.element)
+        if not data then
+            return
+        end
+
         local health_bar_gui_input = data.health_bar_gui_input
         local reset_gui_input = data.reset_gui_input
         local conjure_gui_input = data.conjure_gui_input
         local spell_gui_input1 = data.spell_gui_input1
         local spell_gui_input2 = data.spell_gui_input2
         local spell_gui_input3 = data.spell_gui_input3
-        local magic_pickup_gui_input = data.magic_pickup_gui_input
-        local movement_speed_gui_input = data.movement_speed_gui_input
         local explosive_bullets_gui_input = data.explosive_bullets_gui_input
         local enable_entity_gui_input = data.enable_entity_gui_input
         local stone_path_gui_input = data.stone_path_gui_input
         local aoe_punch_gui_input = data.aoe_punch_gui_input
         local auto_allocate_gui_input = data.auto_allocate_gui_input
+
+        local character_build_distance_bonus = data.character_build_distance_bonus
+        local character_crafting_speed_modifier = data.character_crafting_speed_modifier
+        local character_health_bonus = data.character_health_bonus
+        local character_inventory_slots_bonus = data.character_inventory_slots_bonus
+        local character_item_drop_distance_bonus = data.character_item_drop_distance_bonus
+        local character_item_pickup_distance_bonus = data.character_item_pickup_distance_bonus
+        local character_loot_pickup_distance_bonus = data.character_loot_pickup_distance_bonus
+        local character_mining_speed_modifier = data.character_mining_speed_modifier
+        local character_reach_distance_bonus = data.character_reach_distance_bonus
+        local character_resource_reach_distance_bonus = data.character_resource_reach_distance_bonus
+        local character_running_speed_modifier = data.character_running_speed_modifier
 
         local rpg_t = Public.get_value_from_player(player.index)
 
@@ -596,35 +622,18 @@ Gui.on_click(
                 end
             end
 
-            if movement_speed_gui_input and movement_speed_gui_input.valid then
-                if not movement_speed_gui_input.state then
-                    P.disable_single_modifier(player, 'character_running_speed_modifier', true)
-                    P.update_player_modifiers(player)
-                elseif movement_speed_gui_input.state then
-                    P.disable_single_modifier(player, 'character_running_speed_modifier', false)
-                    P.update_player_modifiers(player)
-                end
-            end
+            toggle_state(player, character_build_distance_bonus, 'character_build_distance_bonus')
+            toggle_state(player, character_crafting_speed_modifier, 'character_crafting_speed_modifier')
+            toggle_state(player, character_health_bonus, 'character_health_bonus')
+            toggle_state(player, character_inventory_slots_bonus, 'character_inventory_slots_bonus')
+            toggle_state(player, character_item_drop_distance_bonus, 'character_item_drop_distance_bonus')
+            toggle_state(player, character_item_pickup_distance_bonus, 'character_item_pickup_distance_bonus')
+            toggle_state(player, character_loot_pickup_distance_bonus, 'character_loot_pickup_distance_bonus')
+            toggle_state(player, character_mining_speed_modifier, 'character_mining_speed_modifier')
+            toggle_state(player, character_reach_distance_bonus, 'character_reach_distance_bonus')
+            toggle_state(player, character_resource_reach_distance_bonus, 'character_resource_reach_distance_bonus')
+            toggle_state(player, character_running_speed_modifier, 'character_running_speed_modifier')
 
-            if magic_pickup_gui_input and magic_pickup_gui_input.valid then
-                if not magic_pickup_gui_input.state then
-                    P.disable_single_modifier(player, 'character_item_pickup_distance_bonus', true)
-                    P.disable_single_modifier(player, 'character_build_distance_bonus', true)
-                    P.disable_single_modifier(player, 'character_item_drop_distance_bonus', true)
-                    P.disable_single_modifier(player, 'character_reach_distance_bonus', true)
-                    P.disable_single_modifier(player, 'character_loot_pickup_distance_bonus', true)
-                    P.disable_single_modifier(player, 'character_resource_reach_distance_bonus', true)
-                    P.update_player_modifiers(player)
-                elseif magic_pickup_gui_input.state then
-                    P.disable_single_modifier(player, 'character_item_pickup_distance_bonus', false)
-                    P.disable_single_modifier(player, 'character_build_distance_bonus', false)
-                    P.disable_single_modifier(player, 'character_item_drop_distance_bonus', false)
-                    P.disable_single_modifier(player, 'character_reach_distance_bonus', false)
-                    P.disable_single_modifier(player, 'character_loot_pickup_distance_bonus', false)
-                    P.disable_single_modifier(player, 'character_resource_reach_distance_bonus', false)
-                    P.update_player_modifiers(player)
-                end
-            end
             if conjure_gui_input and conjure_gui_input.valid and conjure_gui_input.selected_index then
                 local items = conjure_gui_input.items
                 local spell_name = items[conjure_gui_input.selected_index]

@@ -117,6 +117,30 @@ Module.format_time = function(ticks)
     return table.concat(result, ' ')
 end
 
+-- Convert date from 1999/01/01
+Module.convert_date = function(year, month, day)
+    year = tonumber(year)
+    month = tonumber(month)
+    day = tonumber(day)
+    local function sub(n, d)
+        local a, b = 1, 1
+        if n < 0 then
+            a = -1
+        end
+        if d < 0 then
+            b = -1
+        end
+        return a * b * (math.abs(n) / math.abs(d))
+    end
+    local d
+
+    if (year < 0) or (month < 1) or (month > 12) or (day < 1) or (day > 31) then
+        return
+    end
+    d = sub(month - 14, 12)
+    return (day - 32075 + sub(1461 * (year + 4800 + d), 4) + sub(367 * (month - 2 - d * 12), 12) - sub(3 * sub(year + 4900 + d, 100), 4)) - 2415021
+end
+
 --- Compares positions
 ---@param position table
 ---@param area table

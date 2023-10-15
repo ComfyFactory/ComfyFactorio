@@ -1,4 +1,5 @@
 local Global = require 'utils.global'
+local Core = require 'utils.core'
 local Event = require 'utils.event'
 
 local this = {}
@@ -70,7 +71,7 @@ function Public.reset_wave_defense()
     this.get_random_close_spawner_attempts = 5
     this.group_size = 2
     this.last_wave = game.tick
-    this.final_boss = false
+    this.final_battle = false
     this.max_active_biters = 1280
     this.max_active_unit_groups = 32
     this.max_biter_age = 3600 * 60
@@ -425,6 +426,17 @@ end
 -- @param null
 function Public.disable_spawning_biters(boolean)
     this.game_lost = boolean or false
+end
+
+---Removes the player wave defense gui
+function Public.nuke_wave_gui()
+    Core.iter_players(
+        function(player)
+            if player.gui.top.wave_defense and player.gui.top.wave_defense.valid then
+                player.gui.top.wave_defense.destroy()
+            end
+        end
+    )
 end
 
 --- Toggle debug - when you need to troubleshoot.

@@ -105,7 +105,7 @@ end
 local function on_tick()
     local tick = game.tick
 
-    if tick % 10 == 0 then
+    if tick % 5 == 0 then
         Functions.item_transfer()
     end
 
@@ -170,5 +170,12 @@ Event.add(defines.events.on_player_built_tile, on_player_or_robot_built_tile)
 Event.add(defines.events.on_robot_built_tile, on_player_or_robot_built_tile)
 Event.add(defines.events.on_gui_switch_state_changed, on_gui_switch_state_changed)
 Event.add(defines.events.on_entity_cloned, on_entity_cloned)
+Event.add(
+    defines.events.on_built_entity,
+    function(event)
+        local icw = ICW.get()
+        return Functions.create_wagon(icw, event.created_entity)
+    end
+)
 
 return Public

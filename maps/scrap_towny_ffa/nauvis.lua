@@ -1,19 +1,19 @@
 local Event = require 'utils.event'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local SoftReset = require 'functions.soft_reset'
-local Server = require 'utils.server'
-local Token = require 'utils.token'
+-- local Server = require 'utils.server'
+-- local Token = require 'utils.token'
 local math_random = math.random
 local table_shuffle = table.shuffle_table
 
-local dataset = 'scenario_settings'
-local dataset_key = 'scrap_towny_ffa'
+-- local dataset = 'scenario_settings'
+-- local dataset_key = 'scrap_towny_ffa'
 
 local Public = {}
 
 local map_width = 3840
 local map_height = 3840
-
+--[[
 local set_victory_length_token =
     Token.register(
     function(data)
@@ -42,8 +42,7 @@ local set_victory_length_token =
 
         Server.set_data(dataset, dataset_key, settings)
     end
-)
-
+) ]]
 function Public.nuke(position)
     local this = ScenarioTable.get_table()
     local map_surface = game.get_surface(this.active_surface_index)
@@ -132,6 +131,17 @@ function Public.initialize()
                 ['sand-rock-small'] = {frequency = 10, size = 'normal', richness = 'normal'},
                 ['sand-rock-medium'] = {frequency = 5, size = 'normal', richness = 'normal'}
             }
+        },
+        tile = {
+            settings = {
+                ['deepwater'] = {frequency = 1, size = 0, richness = 1},
+                ['deepwater-green'] = {frequency = 1, size = 0, richness = 1},
+                ['water'] = {frequency = 1, size = 0, richness = 1},
+                ['water-green'] = {frequency = 1, size = 0, richness = 1},
+                ['water-mud'] = {frequency = 1, size = 0, richness = 1},
+                ['water-shallow'] = {frequency = 1, size = 0, richness = 1}
+            },
+            treat_missing_as_default = true
         }
     }
     mgs.cliff_settings = {
@@ -140,10 +150,10 @@ function Public.initialize()
         cliff_elevation_interval = 10,
         richness = 0.4
     }
-    mgs.water = 0.5
+    mgs.water = 0
     mgs.peaceful_mode = false
     mgs.starting_area = 'none'
-    mgs.terrain_segmentation = 3.5
+    mgs.terrain_segmentation = 8
     -- terrain size is 64 x 64 chunks, water size is 80 x 80
     mgs.width = map_width
     mgs.height = map_height
@@ -158,11 +168,7 @@ function Public.initialize()
         -- adjust this value to set how many nests spawn per tile
         ['enemy-base-frequency'] = 0.4,
         -- this will make and average base radius around 12 tiles
-        ['enemy-base-radius'] = 12,
-        ['control-setting:aux:bias'] = '-0.300000',
-        ['control-setting:aux:frequency:multiplier'] = '1.333333',
-        ['control-setting:moisture:bias'] = '-0.200000',
-        ['control-setting:moisture:frequency:multiplier'] = '1.333333'
+        ['enemy-base-radius'] = 12
     }
     mgs.seed = math_random(100000, 9999999)
 
@@ -177,13 +183,13 @@ function Public.initialize()
         return
     end
 
-    Server.try_get_data(dataset, dataset_key, set_victory_length_token)
+    -- Server.try_get_data(dataset, dataset_key, set_victory_length_token)
 
     surface.map_gen_settings = mgs
     surface.peaceful_mode = false
     surface.always_day = false
     surface.freeze_daytime = false
-    surface.map_gen_settings.water = 0.5
+    -- surface.map_gen_settings.water = 0.5
     surface.clear(true)
     surface.regenerate_entity({'rock-huge', 'rock-big', 'sand-rock-big'})
     surface.regenerate_decorative()

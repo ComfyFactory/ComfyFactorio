@@ -90,17 +90,15 @@ local entity_types = {
     ['unit-spawner'] = true
 }
 
-local function clear_unit_from_tbl(unit_number)
-    if this.biter_health_boost_units[unit_number] then
-        this.biter_health_boost_units[unit_number] = nil
-    end
-end
-
-local removeUnit =
+local remove_unit_token =
     Token.register(
     function(data)
         local unit_number = data.unit_number
-        clear_unit_from_tbl(unit_number)
+        if not unit_number then
+            return
+        end
+
+        this.biter_health_boost_units[unit_number] = nil
     end
 )
 
@@ -379,7 +377,7 @@ local function on_entity_died(event)
     local wave_count = WD.get_wave()
 
     if health_pool then
-        Task.set_timeout_in_ticks(30, removeUnit, {unit_number = unit_number})
+        Task.set_timeout_in_ticks(30, remove_unit_token, {unit_number = unit_number})
         if health_pool[3] and health_pool[3].healthbar_id then
             if this.enable_boss_loot then
                 if random(1, 128) == 1 then

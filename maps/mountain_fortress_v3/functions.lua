@@ -866,7 +866,11 @@ local function on_wave_created(event)
     local wave_number = event.wave_number
 
     if wave_number % 50 == 0 then
-        WD.set_pause_wave_in_ticks(random(18000, 54000))
+        if wave_number >= 1500 then
+            WD.set_pause_wave_in_ticks(random(36000, 54000))
+        else
+            WD.set_pause_wave_in_ticks(random(18000, 54000))
+        end
     end
 end
 
@@ -1137,9 +1141,14 @@ end
 function Public.set_spawn_position()
     local collapse_pos = Collapse.get_position()
     local locomotive = Public.get('locomotive')
+    local final_battle = Public.get('final_battle')
+    if final_battle then
+        return
+    end
     if not locomotive or not locomotive.valid then
         return
     end
+    --TODO check if final battle
     local l = locomotive.position
 
     local retries = 0

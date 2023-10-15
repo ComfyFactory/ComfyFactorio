@@ -60,6 +60,37 @@ local function create_custom_label_element(frame, sprite, localised_string, valu
     return subheading
 end
 
+local function create_bonus_label(player, setting_grid, caption, tooltip, modifier)
+    local modifier_label =
+        setting_grid.add(
+        {
+            type = 'label',
+            caption = caption,
+            tooltip = tooltip
+        }
+    )
+
+    local modifier_label_style = modifier_label.style
+    modifier_label_style.horizontally_stretchable = true
+    modifier_label_style.height = 35
+    modifier_label_style.vertical_align = 'center'
+
+    local modifier_input = setting_grid.add({type = 'flow'})
+    local modifier_input_style = modifier_input.style
+    modifier_input_style.height = 35
+    modifier_input_style.vertical_align = 'center'
+    local status
+    local bonus_modifier = P.get_single_disabled_modifier(player, modifier)
+    if bonus_modifier then
+        status = false
+    else
+        status = true
+    end
+    local modifier_gui_input = create_input_element(modifier_input, 'boolean', status)
+    modifier_gui_input.tooltip = ({'rpg_settings.tooltip_check'})
+    return modifier_gui_input
+end
+
 function Public.update_spell_gui_indicator(player)
     local rpg_t = Public.get_value_from_player(player.index)
     if not rpg_t then
@@ -217,6 +248,8 @@ function Public.extra_settings(player)
         return
     end
 
+    local data = {}
+
     local main_frame_style = main_frame.style
     main_frame_style.width = 500
     main_frame.auto_center = true
@@ -235,7 +268,7 @@ function Public.extra_settings(player)
     local scroll_pane = inside_table.add({type = 'scroll-pane'})
     local scroll_style = scroll_pane.style
     scroll_style.vertically_squashable = true
-    scroll_style.maximal_height = 800
+    scroll_style.maximal_height = 400
     scroll_style.bottom_padding = 5
     scroll_style.left_padding = 5
     scroll_style.right_padding = 5
@@ -308,63 +341,21 @@ function Public.extra_settings(player)
         reset_gui_input.enabled = false
         reset_gui_input.tooltip = ({'rpg_settings.used_up'})
     end
+    data.reset_gui_input = reset_gui_input
 
     ::continue::
-    local magic_pickup_label =
-        setting_grid.add(
-        {
-            type = 'label',
-            caption = ({'rpg_settings.reach_text_label'}),
-            tooltip = ({'rpg_settings.reach_text_tooltip'})
-        }
-    )
 
-    local magic_pickup_label_style = magic_pickup_label.style
-    magic_pickup_label_style.horizontally_stretchable = true
-    magic_pickup_label_style.height = 35
-    magic_pickup_label_style.vertical_align = 'center'
-
-    local magic_pickup_input = setting_grid.add({type = 'flow'})
-    local magic_pickup_input_style = magic_pickup_input.style
-    magic_pickup_input_style.height = 35
-    magic_pickup_input_style.vertical_align = 'center'
-    local reach_mod
-    local character_item_pickup_distance_bonus = P.get_single_disabled_modifier(player, 'character_item_pickup_distance_bonus')
-    if character_item_pickup_distance_bonus then
-        reach_mod = false
-    else
-        reach_mod = true
-    end
-    local magic_pickup_gui_input = create_input_element(magic_pickup_input, 'boolean', reach_mod)
-    magic_pickup_gui_input.tooltip = ({'rpg_settings.tooltip_check'})
-
-    local movement_speed_label =
-        setting_grid.add(
-        {
-            type = 'label',
-            caption = ({'rpg_settings.movement_text_label'}),
-            tooltip = ({'rpg_settings.movement_text_tooltip'})
-        }
-    )
-
-    local movement_speed_label_style = movement_speed_label.style
-    movement_speed_label_style.horizontally_stretchable = true
-    movement_speed_label_style.height = 35
-    movement_speed_label_style.vertical_align = 'center'
-
-    local movement_speed_input = setting_grid.add({type = 'flow'})
-    local movement_speed_input_style = movement_speed_input.style
-    movement_speed_input_style.height = 35
-    movement_speed_input_style.vertical_align = 'center'
-    local speed_mod
-    local character_running_speed_modifier = P.get_single_disabled_modifier(player, 'character_running_speed_modifier')
-    if character_running_speed_modifier then
-        speed_mod = false
-    else
-        speed_mod = true
-    end
-    local movement_speed_gui_input = create_input_element(movement_speed_input, 'boolean', speed_mod)
-    movement_speed_gui_input.tooltip = ({'rpg_settings.tooltip_check'})
+    data.character_build_distance_bonus = create_bonus_label(player, setting_grid, ({'rpg_settings.build_dist_label'}), ({'rpg_settings.build_dist_tooltip'}), 'character_build_distance_bonus')
+    data.character_crafting_speed_modifier = create_bonus_label(player, setting_grid, ({'rpg_settings.craft_speed_label'}), ({'rpg_settings.craft_speed_tooltip'}), 'character_crafting_speed_modifier')
+    data.character_health_bonus = create_bonus_label(player, setting_grid, ({'rpg_settings.health_bonus_label'}), ({'rpg_settings.health_bonus_tooltip'}), 'character_health_bonus')
+    data.character_inventory_slots_bonus = create_bonus_label(player, setting_grid, ({'rpg_settings.inv_slots_label'}), ({'rpg_settings.inv_slots_tooltip'}), 'character_inventory_slots_bonus')
+    data.character_item_drop_distance_bonus = create_bonus_label(player, setting_grid, ({'rpg_settings.drop_dist_label'}), ({'rpg_settings.drop_dist_tooltip'}), 'character_item_drop_distance_bonus')
+    data.character_item_pickup_distance_bonus = create_bonus_label(player, setting_grid, ({'rpg_settings.reach_text_label'}), ({'rpg_settings.reach_text_tooltip'}), 'character_item_pickup_distance_bonus')
+    data.character_loot_pickup_distance_bonus = create_bonus_label(player, setting_grid, ({'rpg_settings.loot_pickup_label'}), ({'rpg_settings.loot_pickup_tooltip'}), 'character_loot_pickup_distance_bonus')
+    data.character_mining_speed_modifier = create_bonus_label(player, setting_grid, ({'rpg_settings.mining_speed_label'}), ({'rpg_settings.mining_speed_tooltip'}), 'character_mining_speed_modifier')
+    data.character_reach_distance_bonus = create_bonus_label(player, setting_grid, ({'rpg_settings.char_reach_label'}), ({'rpg_settings.char_reach_tooltip'}), 'character_reach_distance_bonus')
+    data.character_resource_reach_distance_bonus = create_bonus_label(player, setting_grid, ({'rpg_settings.resource_reach_label'}), ({'rpg_settings.resource_reach_tooltip'}), 'character_resource_reach_distance_bonus')
+    data.character_running_speed_modifier = create_bonus_label(player, setting_grid, ({'rpg_settings.mov_speed_label'}), ({'rpg_settings.mov_speed_tooltip'}), 'character_running_speed_modifier')
 
     local enable_entity_gui_input
     local conjure_gui_input
@@ -496,6 +487,7 @@ function Public.extra_settings(player)
         local mana_frame = inside_table.add({type = 'scroll-pane'})
         local mana_style = mana_frame.style
         mana_style.vertically_squashable = true
+        mana_style.maximal_height = 400
         mana_style.bottom_padding = 5
         mana_style.left_padding = 5
         mana_style.right_padding = 5
@@ -658,12 +650,6 @@ function Public.extra_settings(player)
         auto_allocate_gui_input = create_input_element(name_input, 'dropdown', false, names, rpg_t.allocate_index)
     end
 
-    local data = {
-        reset_gui_input = reset_gui_input,
-        magic_pickup_gui_input = magic_pickup_gui_input,
-        movement_speed_gui_input = movement_speed_gui_input
-    }
-
     if rpg_extra.enable_health_and_mana_bars then
         data.health_bar_gui_input = health_bar_gui_input
     end
@@ -712,9 +698,8 @@ function Public.extra_settings(player)
     if not main_frame or not main_frame.valid then
         return
     end
-
-    player.opened = main_frame
     main_frame.auto_center = true
+    player.opened = main_frame
 end
 
 function Public.settings_tooltip(player)

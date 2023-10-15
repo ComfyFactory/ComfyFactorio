@@ -8,6 +8,13 @@ Want to host it? Ask Gerkiz#0001 at discord!
 -- develop setting
 local _DEV_MODE = false
 
+require 'modules.shotgun_buff'
+require 'modules.no_deconstruction_of_neutral_entities'
+require 'modules.spawners_contain_biters'
+require 'maps.mountain_fortress_v3.ic.main'
+require 'modules.wave_defense.main'
+require 'modules.charging_station'
+
 local Event = require 'utils.event'
 local Public = require 'maps.mountain_fortress_v3.core'
 local Discord = require 'utils.discord'
@@ -37,13 +44,7 @@ local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local JailData = require 'utils.datastore.jail_data'
 local RPG_Progression = require 'utils.datastore.rpg_data'
 local OfflinePlayers = require 'modules.clear_vacant_players'
-
-require 'modules.shotgun_buff'
-require 'modules.no_deconstruction_of_neutral_entities'
-require 'modules.spawners_contain_biters'
-require 'maps.mountain_fortress_v3.ic.main'
-require 'modules.wave_defense.main'
-require 'modules.charging_station'
+local Beam = require 'modules.render_beam'
 
 -- Use these settings for live
 local send_ping_to_channel = Discord.channel_names.mtn_channel
@@ -119,7 +120,7 @@ function Public.reset_map()
     Misc.set('creative_enabled', false)
 
     this.active_surface_index = Public.create_surface()
-    -- this.soft_reset_counter = Public.get_reset_counter()
+    this.old_surface_index = this.active_surface_index
 
     Public.stateful.clear_all_frames()
 
@@ -179,6 +180,8 @@ function Public.reset_map()
     Explosives.set_surface_whitelist({[surface.name] = true})
     Explosives.check_growth_below_void(true)
 
+    Beam.reset_valid_targets()
+
     game.forces.player.set_spawn_position({x = -27, y = 25}, surface)
     game.forces.player.manual_mining_speed_modifier = 0
     game.forces.player.set_ammo_damage_modifier('artillery-shell', -0.95)
@@ -235,6 +238,7 @@ function Public.reset_map()
     Collapse.set_position({0, 130})
     Collapse.set_direction('north')
     Collapse.start_now(false)
+    Collapse.disable_collapse(false)
 
     this.locomotive_health = 10000
     this.locomotive_max_health = 10000
@@ -286,7 +290,8 @@ function Public.reset_map()
 
     Public.stateful.enable(true)
     Public.stateful.create()
-    Public.stateful.reset_stateful()
+    Public.stateful.reset_stateful(true, true)
+    Public.stateful.increase_enemy_damage_and_health()
     Public.stateful.apply_startup_settings()
 
     if _DEV_MODE then
@@ -294,7 +299,9 @@ function Public.reset_map()
         WD.disable_spawning_biters(true)
     end
 
-    Task.set_timeout_in_ticks(25, announce_new_map)
+    if not this.disable_startup_notification then
+        Task.set_timeout_in_ticks(25, announce_new_map)
+    end
 end
 
 local is_locomotive_valid = function()
@@ -439,6 +446,11 @@ local compare_collapse_and_train = function()
 end
 
 local collapse_after_wave_200 = function()
+    local final_battle = Public.get('final_battle')
+    if final_battle then
+        return
+    end
+
     local collapse_grace = Public.get('collapse_grace')
     if not collapse_grace then
         return
@@ -449,7 +461,7 @@ local collapse_after_wave_200 = function()
 
     local wave_number = WD.get_wave()
 
-    if wave_number >= 200 then
+    if wave_number >= 200 and not Collapse.get_start_now() then
         Collapse.start_now(true)
         local data = {
             position = Collapse.get_position()
@@ -529,7 +541,15 @@ local on_init = function()
     Explosives.set_whitelist_entity('tank')
 end
 
-Event.add(Server.events.on_changes_detected, handle_changes)
+Server.on_scenario_changed(
+    'Mountain_Fortress_v3',
+    function(data)
+        local scenario = data.scenario
+        if scenario == 'Mountain_Fortress_v3' then
+            handle_changes()
+        end
+    end
+)
 
 Event.on_nth_tick(10, on_tick)
 Event.on_init(on_init)

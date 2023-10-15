@@ -9,10 +9,12 @@ local Math2D = require 'math2d'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local Session = require 'utils.datastore.session_data'
 local AG = require 'utils.antigrief'
+local Core = require 'utils.core'
 local Discord = require 'utils.discord_handler'
 
 local this = {}
 
+local player_frame_name = Where.player_frame_name
 local chest_converter_frame_for_player_name = Gui.uid_name()
 local convert_chest_to_linked = Gui.uid_name()
 local item_name_frame_name = Gui.uid_name()
@@ -159,6 +161,15 @@ local function does_exists(unit_number)
     end
 end
 
+local function check_link_id(entity)
+    local containers = this.main_containers
+    for _, container in pairs(containers) do
+        if container and container.link_id == entity.link_id then
+            return container
+        end
+    end
+end
+
 local function add_object(unit_number, state)
     local containers = this.main_containers
 
@@ -170,12 +181,6 @@ local function add_object(unit_number, state)
 end
 
 local function remove_object(unit_number)
-    local container = this.main_containers[unit_number]
-
-    if container and container.chest and container.chest.valid then
-        container.chest.destroy()
-    end
-
     this.main_containers[unit_number] = nil
 end
 
@@ -193,22 +198,16 @@ local function fetch_share(text)
     return false
 end
 
-local function fetch_link_id(id)
-    local containers = this.main_containers
-    for unit_number, container in pairs(containers) do
-        if container.link_id == id then
-            return true, unit_number, container
-        end
-    end
-    return false
-end
-
 local function create_chest(entity, name, mode)
     entity.active = false
     entity.destructible = false
     local unit_number = entity.unit_number
 
-    entity.link_id = uid_counter()
+    local previous = check_link_id(entity)
+
+    if not previous then
+        entity.link_id = uid_counter()
+    end
 
     if not does_exists(unit_number) then
         local container = {
@@ -220,6 +219,15 @@ local function create_chest(entity, name, mode)
                 name = name or entity.unit_number
             }
         }
+
+        if previous then
+            container.linked_to = previous.unit_number
+            container.link_id = previous.link_id
+            container.chest.link_id = previous.link_id
+            container.mode = 2
+            container.chest.minable = false
+            container.chest.destructible = false
+        end
 
         if mode then
             container.mode = mode
@@ -234,6 +242,9 @@ end
 local function restore_links(unit_number)
     local containers = this.main_containers
     local source_container = fetch_container(unit_number)
+    if not source_container then
+        return
+    end
     local new_unit_number
     for _, container in pairs(containers) do
         if container.chest and container.chest.valid and container.linked_to == unit_number then
@@ -254,6 +265,9 @@ end
 local function restore_link(unit_number, new_unit_number)
     local containers = this.main_containers
     local source_container = fetch_container(unit_number)
+    if not source_container then
+        return
+    end
     for _, container in pairs(containers) do
         if container.chest and container.chest.valid and container.linked_to == unit_number then
             container.linked_to = new_unit_number
@@ -268,13 +282,7 @@ remove_chest = function(unit_number)
     remove_object(unit_number)
 end
 
-local function refund_player(source_player, entity)
-    local unit_number = entity.unit_number
-    local container = fetch_container(unit_number)
-    if not container then
-        return
-    end
-
+local function refund_player(source_player)
     source_player.insert({name = 'coin', count = this.cost_to_convert})
     source_player.remove_item({name = 'linked-chest', count = 99999})
 
@@ -307,84 +315,17 @@ local function on_pre_player_mined_item(event)
         return
     end
     if this.disable_normal_placement then
-        refund_player(player, entity)
+        refund_player(player)
     end
-    remove_chest(entity.unit_number)
     AG.append_scenario_history(player, entity, player.name .. ' mined chest (' .. entity.unit_number .. ')')
     create_message(player, 'Mined chest', entity.position, nil)
+    remove_chest(entity.unit_number)
 
     local data = this.linked_gui[player.name]
     if not data then
         return
     end
     data.frame.destroy()
-end
-
-local function text_changed(event)
-    local element = event.element
-    if not element then
-        return
-    end
-    if not element.valid then
-        return
-    end
-
-    local player = game.get_player(event.player_index)
-
-    local data = this.linked_gui[player.name]
-    if not data then
-        return
-    end
-
-    local name = element.name
-
-    if not data.text_field or not data.text_field.valid then
-        return
-    end
-
-    if not data.text_field.text then
-        return
-    end
-
-    local entity = data.entity
-    if not entity or not entity.valid then
-        return
-    end
-
-    local unit_number = entity.unit_number
-    local container = fetch_container(unit_number)
-
-    if name and name == 'share_name' and element.text then
-        if string.len(element.text) > 2 then
-            if not fetch_share(element.text) then
-                container.share.name = element.text
-            else
-                player.print(module_name .. 'A share with name "' .. element.text .. '" already exists.', Color.fail)
-            end
-        end
-    end
-
-    local value = tonumber(element.text)
-    if not value then
-        return
-    end
-
-    if value ~= '' then
-        if name and name == 'link_id_label' then
-            if value > 4294967295 then
-                player.print(module_name .. 'The data type allows values from 0 to 4294967295.', Color.fail)
-                return
-            end
-
-            if value >= 0 and not fetch_link_id(value) then
-                container.chest.link_id = value
-                container.link_id = value
-            else
-                player.print(module_name .. 'A chest with link-id "' .. value .. '" already exists.', Color.fail)
-            end
-        end
-    end
-    this.linked_gui[player.name].updated = false
 end
 
 --- Iterates all chests.
@@ -409,6 +350,9 @@ local function refresh_main_frame(data)
     local unit_number = data.unit_number
 
     local container = fetch_container(unit_number)
+    if not container then
+        return
+    end
     local entity = container.chest
     if not entity or not entity.valid then
         return
@@ -492,19 +436,35 @@ local function refresh_main_frame(data)
                     horizontal_scroll_policy = 'never'
                 }
                 local chest_scroll_style = chest_scroll_pane.style
-                chest_scroll_style.maximal_height = 150
+                chest_scroll_style.maximal_height = 250
                 chest_scroll_style.vertically_squashable = true
                 chest_scroll_style.bottom_padding = 2
                 chest_scroll_style.left_padding = 2
                 chest_scroll_style.right_padding = 2
                 chest_scroll_style.top_padding = 2
-                local chestlinker = chest_scroll_pane.add {type = 'table', column_count = 8, name = 'chestlinker'}
 
+                if not chest_scroll_pane.first_wagon then
+                    local carriage_label = chest_scroll_pane.add {type = 'label', caption = 'Carriage no. 1', name = 'first_wagon', alignment = 'center'}
+                    carriage_label.style.minimal_width = 400
+                    carriage_label.style.horizontal_align = 'center'
+                    chest_scroll_pane.add {type = 'line'}
+                end
+
+                local chestlinker = chest_scroll_pane.add {type = 'table', column_count = 9}
+
+                local added_count = 0
+                local added_total = 0
+                local added_total_row = 0
+                local carriage_length = 1
                 for i = 1, #chests do
                     if chests then
                         local source_chest = chests[i]
                         if type(source_chest) ~= 'string' and source_chest.share.name ~= '' and source_chest.share.name ~= source_chest.chest.unit_number then
                             local flowlinker = chestlinker.add {type = 'flow'}
+
+                            added_count = added_count + 1
+                            added_total = added_total + 1
+                            added_total_row = added_total_row + 1
                             local chestitem =
                                 flowlinker.add {
                                 type = 'sprite-button',
@@ -513,11 +473,31 @@ local function refresh_main_frame(data)
                                 sprite = 'item/' .. source_chest.chest.name,
                                 tooltip = 'Chest: [color=yellow]' .. source_chest.share.name .. '[/color]\nRight click to show on map.'
                             }
+                            if added_count == 4 and added_total ~= 8 then
+                                added_count = 0
+                                local splitspace = chestlinker.add {type = 'flow'}
+                                splitspace.style.width = 40
+                            end
+                            if added_total == 8 then
+                                added_total = 0
+                                added_count = 0
+                            end
+                            if added_total_row == 16 and i < #chests then
+                                carriage_length = carriage_length + 1
+                                added_total_row = 0
+                                if not chest_scroll_pane[tostring(i)] then
+                                    local carriage_label = chest_scroll_pane.add {type = 'label', caption = 'Carriage no. ' .. carriage_length, name = chest_scroll_pane[tostring(i)], alignment = 'center'}
+                                    carriage_label.style.minimal_width = 400
+                                    carriage_label.style.horizontal_align = 'center'
+                                end
+                                chest_scroll_pane.add {type = 'line'}
+                                chestlinker = chest_scroll_pane.add {type = 'table', column_count = 9}
+                            end
                             if not trusted_player then
                                 chestitem.enabled = false
                                 chestitem.tooltip = '[Antigrief] You have not grown accustomed to this technology yet.'
                             end
-                            Gui.set_data(chestitem, {name = nil, unit_number = unit_number, share = source_chest.share.name})
+                            Gui.set_data_parent(volatile_tbl, chestitem, {name = nil, unit_number = unit_number, share = source_chest.share.name})
                         end
                     end
                 end
@@ -624,6 +604,15 @@ local function on_built_entity(event, mode, bypass)
             return
         end
 
+        if not WPT.locomotive.is_around_train(entity) then
+            if entity.type ~= 'entity-ghost' then
+                player.insert({name = 'linked-chest', count = 1})
+            end
+            entity.destroy()
+            player.print(module_name .. 'Linked chests only work inside the locomotive aura.', Color.warning)
+            return
+        end
+
         local trusted_player = Session.get_trusted_player(player)
 
         if not trusted_player then
@@ -673,36 +662,54 @@ local function built_entity_robot(event)
 
     local net_point = robot.logistic_network
     if net_point and net_point.storage_points and net_point.storage_points[1] and net_point.storage_points[1].owner and net_point.storage_points[1].owner.valid then
-        local player = net_point.storage_points[1].owner.player
-        if not player or not player.valid then
-            return
-        end
-
-        local active_surface_index = WPT.get('active_surface_index')
-
-        if player.surface.index ~= active_surface_index then
-            if entity.type ~= 'entity-ghost' then
-                player.insert({name = 'linked-chest', count = 1})
+        if (net_point.storage_points[1].owner.name == 'character') then
+            local player = net_point.storage_points[1].owner.player
+            if not player or not player.valid then
+                return
             end
-            entity.destroy()
-            player.print(module_name .. 'Linked chests only work on the main surface.', Color.warning)
-            return
-        end
 
-        local trusted_player = Session.get_trusted_player(player)
+            local active_surface_index = WPT.get('active_surface_index')
 
-        if not trusted_player then
-            if entity.type ~= 'entity-ghost' then
-                player.insert({name = 'linked-chest', count = 1})
+            if player.surface.index ~= active_surface_index then
+                if entity.type ~= 'entity-ghost' then
+                    player.insert({name = 'linked-chest', count = 1})
+                end
+                entity.destroy()
+                player.print(module_name .. 'Linked chests only work on the main surface.', Color.warning)
+                return
             end
-            entity.destroy()
-            player.print('[Antigrief] You have not grown accustomed to this technology yet.', Color.warning)
-            return
-        end
 
-        local s = create_chest(entity)
-        if s then
-            gui_opened(event)
+            if not WPT.locomotive.is_around_train(entity) then
+                if entity.type ~= 'entity-ghost' then
+                    player.insert({name = 'linked-chest', count = 1})
+                end
+                entity.destroy()
+                player.print(module_name .. 'Linked chests only work inside the locomotive aura.', Color.warning)
+                return
+            end
+
+            local trusted_player = Session.get_trusted_player(player)
+
+            if not trusted_player then
+                if entity.type ~= 'entity-ghost' then
+                    player.insert({name = 'linked-chest', count = 1})
+                end
+                entity.destroy()
+                player.print('[Antigrief] You have not grown accustomed to this technology yet.', Color.warning)
+                return
+            end
+
+            local s = create_chest(entity)
+            if s then
+                gui_opened(event)
+            end
+        else
+            local created = event.created_entity
+            if created and created.valid then
+                local inventory = robot.get_inventory(defines.inventory.robot_cargo)
+                inventory.insert({name = created.name, count = 1})
+                created.destroy()
+            end
         end
     end
 end
@@ -724,6 +731,9 @@ local function update_gui()
 
         local unit_number = entity.unit_number
         local container = fetch_container(unit_number)
+        if not container then
+            break
+        end
 
         local mode = container.mode
 
@@ -795,7 +805,9 @@ local function gui_closed(event)
         if not data then
             return
         end
-        data.frame.destroy()
+        Where.remove_camera_frame(player)
+        Gui.destroy(data.volatile_tbl)
+        Gui.destroy(data.frame)
         this.linked_gui[player.name] = nil
     end
 end
@@ -967,13 +979,13 @@ local function on_entity_settings_pasted(event)
         return
     end
 
-    if source_container.share.name == '' then
+    if source_container.share.name == '' and not source_container.linked_to then
         player.print(module_name .. 'The source chest is not shared.', Color.fail)
         destination_container.chest.link_id = destination_container.link_id
         return
     end
 
-    if source_container.chest.unit_number == source_container.share.name then
+    if source_container.chest.unit_number == source_container.share.name and not source_container.linked_to then
         player.print(module_name .. 'The source chest is not shared.', Color.fail)
         destination_container.chest.link_id = destination_container.link_id
         return
@@ -1155,26 +1167,49 @@ Event.add(
 Gui.on_click(
     item_name_frame_name,
     function(event)
-        local data = Gui.get_data(event.element)
+        local player = game.get_player(event.player_index)
+        local player_data = this.linked_gui[player.name]
+        local element = event.element
+        if not player_data then
+            Gui.remove_data_recursively(element)
+            return
+        end
+        local parent = player_data.volatile_tbl
+        if not parent or not parent.valid then
+            Gui.remove_data_recursively(element)
+            return
+        end
+
+        local data = Gui.get_data_parent(parent, element)
         if not data then
             return
         end
+
         local button = event.button
 
         local _, _unit_number, share_container = fetch_share(data.share)
         if _unit_number then
             local container = fetch_container(data.unit_number)
-
-            if button == defines.mouse_button_type.right then
-                local player = game.get_player(event.player_index)
-                if player and player.valid then
-                    Where.create_mini_camera_gui(player, {valid = true, name = share_container.share.name, surface = share_container.chest.surface, position = share_container.chest.position}, 0.7, true)
-                end
+            if not container then
                 return
             end
 
-            AG.append_scenario_history(event.player, container.chest, event.player.name .. ' linked chest (' .. data.unit_number .. ') with: ' .. share_container.share.name)
-            create_message(event.player, 'Linked chest', container.chest.position, share_container.chest.position)
+            if button == defines.mouse_button_type.right then
+                local camera_frame =
+                    Where.create_mini_camera_gui(
+                    player,
+                    {valid = true, name = share_container.share.name, surface = share_container.chest.surface, position = share_container.chest.position},
+                    0.5,
+                    true,
+                    'SHIFT + LMB to link to this chest.\nLMB or RMB to exit this view.'
+                )
+                player_data.camera = camera_frame
+                player_data.camera_element = element
+                return
+            end
+
+            AG.append_scenario_history(player, container.chest, player.name .. ' linked chest (' .. data.unit_number .. ') with: ' .. share_container.share.name)
+            create_message(player, 'Linked chest', container.chest.position, share_container.chest.position)
             container.linked_to = _unit_number
             container.chest.link_id = share_container.link_id
             container.link_id = share_container.link_id
@@ -1183,6 +1218,67 @@ Gui.on_click(
 
             this.linked_gui[event.player.name].updated = false
             refresh_main_frame({unit_number = container.unit_number, player = event.player})
+            if element and element.valid then
+                Gui.remove_data_recursively(element)
+            end
+        end
+    end
+)
+Gui.on_click(
+    player_frame_name,
+    function(event)
+        local button = event.button
+        local shift = event.shift
+        if button == defines.mouse_button_type.left and shift then
+            local player = game.get_player(event.player_index)
+            local player_data = this.linked_gui[player.name]
+            local ev_element = event.element
+            if not player_data then
+                Gui.remove_data_recursively(ev_element)
+                return
+            end
+            if not player_data.camera_element then
+                Gui.remove_data_recursively(ev_element)
+                return
+            end
+
+            local element = player_data.camera_element
+
+            local parent = player_data.volatile_tbl
+            if not parent or not parent.valid then
+                Gui.remove_data_recursively(element)
+                return
+            end
+
+            local data = Gui.get_data_parent(parent, element)
+            if not data then
+                return
+            end
+
+            local _, _unit_number, share_container = fetch_share(data.share)
+            if _unit_number then
+                local container = fetch_container(data.unit_number)
+                if not container then
+                    return
+                end
+
+                AG.append_scenario_history(player, container.chest, player.name .. ' linked chest (' .. data.unit_number .. ') with: ' .. share_container.share.name)
+                create_message(player, 'Linked chest', container.chest.position, share_container.chest.position)
+                container.linked_to = _unit_number
+                container.chest.link_id = share_container.link_id
+                container.link_id = share_container.link_id
+
+                container.chest.minable = false
+
+                this.linked_gui[event.player.name].updated = false
+                refresh_main_frame({unit_number = container.unit_number, player = event.player})
+                if element and element.valid then
+                    Gui.remove_data_recursively(element)
+                end
+                if parent and parent.valid then
+                    Gui.remove_data_recursively(parent)
+                end
+            end
         end
     end
 )
@@ -1195,19 +1291,46 @@ local function on_player_changed_position(event)
     end
 
     if data and data.frame and data.frame.valid then
-        local position = data.entity.position
-        local area = {
-            left_top = {x = position.x - 8, y = position.y - 8},
-            right_bottom = {x = position.x + 8, y = position.y + 8}
-        }
-        if Math2D.bounding_box.contains_point(area, player.position) then
-            return
+        if data.entity and data.entity.valid then
+            local position = data.entity.position
+            local area = {
+                left_top = {x = position.x - 8, y = position.y - 8},
+                right_bottom = {x = position.x + 8, y = position.y + 8}
+            }
+            if Math2D.bounding_box.contains_point(area, player.position) then
+                return
+            end
+
+            Where.remove_camera_frame(player)
+            Gui.destroy(data.volatile_tbl)
+            Gui.destroy(data.frame)
+            this.linked_gui[player.name] = nil
         end
-        data.frame.destroy()
     end
 end
 
+function Public.clear_linked_frames()
+    Core.iter_connected_players(
+        function(player)
+            local data = this.linked_gui[player.name]
+            if data and data.frame and data.frame.valid then
+                data.frame.destroy()
+            end
+            this.linked_gui[player.name] = nil
+        end
+    )
+end
+
 function Public.reset()
+    if this.main_containers and next(this.main_containers) then
+        for _, container in pairs(this.main_containers) do
+            local chest = container.chest
+            if chest and chest.valid then
+                chest.get_inventory(defines.inventory.chest).clear()
+            end
+        end
+    end
+
     this.main_containers = {}
     this.linked_gui = {}
     this.valid_chests = {
@@ -1227,7 +1350,6 @@ Event.add(defines.events.on_robot_built_entity, built_entity_robot)
 Event.add(defines.events.on_pre_player_mined_item, on_pre_player_mined_item)
 Event.add(defines.events.on_gui_selection_state_changed, state_changed)
 Event.add(defines.events.on_entity_died, on_entity_died)
-Event.add(defines.events.on_gui_text_changed, text_changed)
 Event.add(defines.events.on_gui_checked_state_changed, on_gui_checked_state_changed)
 Event.add(defines.events.on_entity_settings_pasted, on_entity_settings_pasted)
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)

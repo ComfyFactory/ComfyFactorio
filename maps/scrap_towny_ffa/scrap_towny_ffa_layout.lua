@@ -2,25 +2,11 @@ local Event = require 'utils.event'
 local get_noise = require 'utils.get_noise'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local Scrap = require 'maps.scrap_towny_ffa.scrap'
+local get_perlin = require 'utils.get_perlin'
 
 local table_insert = table.insert
 local math_random = math.random
 local math_floor = math.floor
-
-local start_ground_tiles = {
-    'grass-1',
-    'grass-1',
-    'grass-2',
-    'sand-2',
-    'grass-1',
-    'grass-4',
-    'sand-2',
-    'grass-3',
-    'grass-4',
-    'grass-2',
-    'sand-3',
-    'grass-4'
-}
 
 local scrap_entities = {
     -- simple entity with owner
@@ -298,12 +284,16 @@ local function on_chunk_generated(event)
     for x = 0, 31, 1 do
         for y = 0, 31, 1 do
             position = {x = left_top_x + x, y = left_top_y + y}
-            if math_random(1, 3) > 1 then
-                local tile = surface.get_tile(position)
-                if not tile.collides_with('water-tile') then
-                    noise = get_noise('dungeon_sewer', position, seed)
-                    local index = math_floor(noise * 32) % 11 + 1
-                    surface.set_tiles({{name = start_ground_tiles[index], position = position}}, true)
+            local cave_ponds = get_perlin('cave_ponds', position, seed + seed)
+
+            if cave_ponds > 0.02 and cave_ponds < 0.3 then
+                if cave_ponds > 0.2 then
+                    surface.set_tiles({{name = 'water-shallow', position = position}}, true)
+                else
+                    surface.set_tiles({{name = 'water', position = position}}, true)
+                end
+                if math_random(1, 48) == 1 then
+                    surface.create_entity({name = 'fish', position = position, force = 'neutral'})
                 end
             end
             if math_random(1, 3) > 1 then

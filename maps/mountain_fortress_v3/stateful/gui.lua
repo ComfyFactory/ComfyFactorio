@@ -1,20 +1,26 @@
 local Event = require 'utils.event'
 local SpamProtection = require 'utils.spam_protection'
 local Public = require 'maps.mountain_fortress_v3.table'
+local Stateful = require 'maps.mountain_fortress_v3.stateful.table'
 local Gui = require 'utils.gui'
 local WD = require 'modules.wave_defense.table'
+local Collapse = require 'modules.collapse'
 local Token = require 'utils.token'
 local Task = require 'utils.task'
 local Core = require 'utils.core'
 local Server = require 'utils.server'
 local LinkedChests = require 'maps.mountain_fortress_v3.icw.linked_chests'
+local Discord = require 'utils.discord'
+local format_number = require 'util'.format_number
 
+local send_ping_to_channel = Discord.channel_names.mtn_channel
 local main_button_name = Gui.uid_name()
 local main_frame_name = Gui.uid_name()
 local boss_frame_name = Gui.uid_name()
 local close_button = Gui.uid_name()
 local random = math.random
 local floor = math.floor
+local main_frame
 
 local function create_particles(surface, name, position, amount, cause_position)
     local d1 = (-100 + random(0, 200)) * 0.0004
@@ -61,6 +67,64 @@ local spread_particles_token =
     end
 )
 
+local function notify_won_to_discord()
+    local server_name_matches = Server.check_server_name('Mtn Fortress')
+
+    local stateful = Public.get_stateful()
+
+    local wave = WD.get_wave()
+    local date = Server.get_start_time()
+    game.server_save('Complete_Mtn_v3_' .. tostring(date) .. '_wave' .. tostring(wave))
+
+    local time_played = Core.format_time(game.ticks_played)
+    local total_players = #game.players
+    local total_connected_players = #game.connected_players
+    local pickaxe_upgrades = Public.pickaxe_upgrades
+    local upgrades = Public.get('upgrades')
+    local pick_tier = pickaxe_upgrades[upgrades.pickaxe_tier]
+
+    local text = {
+        title = 'Game won!',
+        description = 'Game statistics from the game is below',
+        color = 'success',
+        field1 = {
+            text1 = 'Time played:',
+            text2 = time_played,
+            inline = 'false'
+        },
+        field2 = {
+            text1 = 'Rounds survived:',
+            text2 = stateful.rounds_survived,
+            inline = 'false'
+        },
+        field3 = {
+            text1 = 'Wave:',
+            text2 = format_number(wave, true),
+            inline = 'false'
+        },
+        field4 = {
+            text1 = 'Total connected players:',
+            text2 = total_players,
+            inline = 'false'
+        },
+        field5 = {
+            text1 = 'Pickaxe Upgrade:',
+            text2 = pick_tier .. ' (' .. upgrades.pickaxe_tier .. ')',
+            inline = 'false'
+        },
+        field6 = {
+            text1 = 'Connected players:',
+            text2 = total_connected_players,
+            inline = 'false'
+        }
+    }
+    if server_name_matches then
+        Server.to_discord_named_parsed_embed(send_ping_to_channel, text)
+    else
+        Server.to_discord_embed_parsed(text)
+    end
+end
+
 local function clear_all_frames()
     Core.iter_players(
         function(player)
@@ -74,6 +138,19 @@ local function clear_all_frames()
             if frame then
                 Gui.remove_data_recursively(frame)
                 frame.destroy()
+            end
+        end
+    )
+end
+
+local function refresh_frames()
+    Core.iter_connected_players(
+        function(player)
+            local frame = player.gui.screen[main_frame_name]
+            if frame then
+                Gui.remove_data_recursively(frame)
+                frame.destroy()
+                main_frame(player)
             end
         end
     )
@@ -162,7 +239,7 @@ local function spacer(frame)
 end
 
 local function objective_frames(stateful, player_frame, objective, data)
-    local objective_name = objective[1]
+    local objective_name = objective.name
     if objective_name == 'supplies' or objective_name == 'single_item' then
         local supplies = stateful.objectives.supplies
         local tbl = player_frame.add {type = 'table', column_count = 2}
@@ -181,15 +258,19 @@ local function objective_frames(stateful, player_frame, objective, data)
         right_flow.style.horizontal_align = 'right'
         right_flow.style.horizontally_stretchable = true
 
-        if stateful.objectives_completed.supplies then
-            data.supply_completed = right_flow.add({type = 'label', caption = ' [img=utility/check_mark_green]', tooltip = {'stateful.tooltip_completed'}})
+        if objective_name == 'single_item' then
+            if stateful.objectives_completed.single_item then
+                data.single_item_complete = right_flow.add({type = 'label', caption = ' [img=utility/check_mark_green]', tooltip = {'stateful.tooltip_completed'}})
+            else
+                data.single_item_complete = right_flow.add({type = 'label', caption = ' [img=utility/not_available]', tooltip = {'stateful.tooltip_not_completed'}})
+            end
         else
-            data.supply_completed = right_flow.add({type = 'label', caption = ' [img=utility/not_available]', tooltip = {'stateful.tooltip_not_completed'}})
+            if stateful.objectives_completed.supplies then
+                data.supply_completed = right_flow.add({type = 'label', caption = ' [img=utility/check_mark_green]', tooltip = {'stateful.tooltip_completed'}})
+            else
+                data.supply_completed = right_flow.add({type = 'label', caption = ' [img=utility/not_available]', tooltip = {'stateful.tooltip_not_completed'}})
+            end
         end
-        -- if objective[1]() then
-        --     right_flow.add({type = 'label', caption = '[img=utility/check_mark_green]'})
-        -- else
-        -- end
 
         data.supply = {}
 
@@ -207,29 +288,7 @@ local function objective_frames(stateful, player_frame, objective, data)
         return
     end
 
-    if objective_name == 'locomotive_market_selection' then
-        local callback_token = stateful.objectives.locomotive_market_selection[1]
-        local callback_data = stateful.objectives.locomotive_market_selection[2]
-        local callback = Token.get(callback_token)
-
-        local _, locale_left, locale_right, tooltip = callback(callback_data)
-        local tbl = player_frame.add {type = 'table', column_count = 2}
-        tbl.style.horizontally_stretchable = true
-        local left_flow = tbl.add({type = 'flow'})
-        left_flow.style.horizontal_align = 'left'
-        left_flow.style.horizontally_stretchable = true
-
-        left_flow.add({type = 'label', caption = locale_left, tooltip = {'stateful.locomotive_tooltip'}})
-        local right_flow = tbl.add({type = 'flow'})
-        right_flow.style.horizontal_align = 'right'
-        right_flow.style.horizontally_stretchable = true
-
-        local locomotive_market = right_flow.add({type = 'label', caption = locale_right, tooltip = tooltip})
-        data.locomotive_market = locomotive_market
-        return
-    end
-
-    local callback = Token.get(objective[2])
+    local callback = Token.get(objective.token)
 
     local _, objective_locale_left, objective_locale_right, tooltip_left, tooltip_right = callback()
 
@@ -308,10 +367,12 @@ local function boss_frame(player, alert)
         attack_right_flow.style.horizontal_align = 'right'
         attack_right_flow.style.horizontally_stretchable = true
 
-        local time_left = floor(collection.time_until_attack / 60 / 60) .. 'm'
+        local time_left
 
         if collection.time_until_attack / 60 / 60 <= 1 then
             time_left = floor(collection.time_until_attack / 60) .. 's'
+        else
+            time_left = floor(collection.time_until_attack / 60 / 60) .. 'm'
         end
 
         if collection.time_until_attack <= 0 then
@@ -373,7 +434,7 @@ local function refresh_boss_frame()
     )
 end
 
-local function main_frame(player)
+main_frame = function(player)
     local main_player_frame = player.gui.screen[main_frame_name]
     if main_player_frame then
         Gui.remove_data_recursively(main_player_frame)
@@ -386,11 +447,10 @@ local function main_frame(player)
     local breached_wall = Public.get('breached_wall')
     breached_wall = breached_wall - 1
     local wave_number = WD.get('wave_number')
-    local converted_chests = LinkedChests.get('converted_chests')
 
     local frame = player.gui.screen.add {type = 'frame', name = main_frame_name, caption = {'stateful.win_conditions'}, direction = 'vertical', tooltip = {'stateful.win_conditions_tooltip'}}
     frame.location = {x = 1, y = 45}
-    frame.style.maximal_height = 500
+    frame.style.maximal_height = 700
     frame.style.minimal_width = 200
     frame.style.maximal_width = 400
     local rounds_survived_tbl = frame.add {type = 'table', column_count = 2}
@@ -410,6 +470,59 @@ local function main_frame(player)
     spacer(frame)
 
     frame.add({type = 'line'})
+
+    spacer(frame)
+
+    if stateful.buffs and next(stateful.buffs) then
+        local buff_tbl = frame.add {type = 'table', column_count = 2}
+        buff_tbl.style.horizontally_stretchable = true
+
+        local buff_left_flow = buff_tbl.add({type = 'flow'})
+        buff_left_flow.style.horizontal_align = 'left'
+        buff_left_flow.style.horizontally_stretchable = true
+
+        local buff_right_flow = buff_tbl.add({type = 'flow'})
+        buff_right_flow.style.horizontal_align = 'right'
+        buff_right_flow.style.horizontally_stretchable = true
+
+        local buffs = ''
+        if stateful.buffs_collected and next(stateful.buffs_collected) then
+            if stateful.buffs_collected.starting_items then
+                buffs = buffs .. 'Starting items:\n'
+                for _, item_data in pairs(stateful.buffs_collected) do
+                    if type(item_data) == 'table' then
+                        for item_name, item_count in pairs(item_data) do
+                            buffs = buffs .. item_name .. ': ' .. item_count
+                            buffs = buffs .. '\n'
+                        end
+                    end
+                end
+                buffs = buffs .. '\n'
+            end
+
+            buffs = buffs .. 'Force buffs:\n'
+            for name, count in pairs(stateful.buffs_collected) do
+                if type(count) ~= 'table' then
+                    if name == 'xp_level' or name == 'character_health_bonus' then
+                        buffs = buffs .. Stateful.buff_to_string[name] .. ': ' .. count
+                    else
+                        buffs = buffs .. Stateful.buff_to_string[name] .. ': ' .. (count * 100) .. '%'
+                    end
+                    buffs = buffs .. '\n'
+                end
+            end
+        end
+
+        buff_right_flow.add({type = 'label', caption = '[img=utility/center]', tooltip = buffs})
+
+        local buff_label = buff_left_flow.add({type = 'label', caption = {'stateful.buffs'}, tooltip = {'stateful.buff_tooltip'}})
+        buff_label.style.single_line = false
+        frame.add({type = 'line', direction = 'vertical'})
+
+        spacer(frame)
+
+        frame.add({type = 'line'})
+    end
 
     spacer(frame)
 
@@ -482,23 +595,6 @@ local function main_frame(player)
             data.randomized_wave_label = wave_right_flow.add({type = 'label', caption = wave_number .. '/' .. stateful.objectives.randomized_wave .. ' [img=utility/not_available]', tooltip = {'stateful.tooltip_not_completed'}})
         end
 
-        -- new frame
-        local linked_left_flow = objective_tbl.add({type = 'flow'})
-        linked_left_flow.style.horizontal_align = 'left'
-        linked_left_flow.style.horizontally_stretchable = true
-
-        linked_left_flow.add({type = 'label', caption = {'stateful.linked'}, tooltip = {'stateful.linked_tooltip'}})
-        frame.add({type = 'line', direction = 'vertical'})
-        local linked_right_flow = objective_tbl.add({type = 'flow'})
-        linked_right_flow.style.horizontal_align = 'right'
-        linked_right_flow.style.horizontally_stretchable = true
-
-        if converted_chests >= stateful.objectives.randomized_linked_chests then
-            data.randomized_linked_label = linked_right_flow.add({type = 'label', caption = converted_chests .. '/' .. stateful.objectives.randomized_linked_chests .. ' [img=utility/check_mark_green]', tooltip = {'stateful.tooltip_completed'}})
-        else
-            data.randomized_linked_label = linked_right_flow.add({type = 'label', caption = converted_chests .. '/' .. stateful.objectives.randomized_linked_chests .. ' [img=utility/not_available]', tooltip = {'stateful.tooltip_not_completed'}})
-        end
-
         --dynamic conditions
         data.random_objectives = {}
 
@@ -512,8 +608,15 @@ local function main_frame(player)
     spacer(frame)
     frame.add({type = 'line'})
     spacer(frame)
-    local final_label = frame.add({type = 'label', caption = {'stateful.tooltip_final'}})
-    final_label.style.single_line = false
+    if not stateful.collection.final_arena_disabled then
+        local final_label = frame.add({type = 'label', caption = {'stateful.tooltip_final'}})
+        final_label.style.single_line = false
+    else
+        local final_label_disabled = frame.add({type = 'label', caption = {'stateful.tooltip_final_disabled'}})
+        final_label_disabled.style.single_line = false
+        local reason_label = frame.add({type = 'label', caption = {'stateful.tooltip_completing'}})
+        reason_label.style.single_line = false
+    end
     spacer(frame)
     frame.add({type = 'line'})
     spacer(frame)
@@ -529,14 +632,7 @@ local function update_data()
     local breached_wall = Public.get('breached_wall')
     breached_wall = breached_wall - 1
     local wave_number = WD.get('wave_number')
-    local converted_chests = LinkedChests.get('converted_chests')
     local collection = stateful.collection
-    local supplies = stateful.objectives.supplies
-    local single_item = stateful.objectives.single_item
-    local callback_token = stateful.objectives.locomotive_market_selection[1]
-    local callback_data = stateful.objectives.locomotive_market_selection[2]
-    local callback_locomotive = Token.get(callback_token)
-    local _, _, locale_right = callback_locomotive(callback_data)
 
     for i = 1, #players do
         local player = players[i]
@@ -549,7 +645,7 @@ local function update_data()
             if data.rounds_survived_label and data.rounds_survived_label.valid then
                 data.rounds_survived_label.caption = stateful.rounds_survived
             end
-            if data.randomized_zone_label and data.randomized_zone_label.valid then
+            if data.randomized_zone_label and data.randomized_zone_label.valid and stateful.objectives.randomized_zone then
                 if breached_wall >= stateful.objectives.randomized_zone then
                     data.randomized_zone_label.caption = breached_wall .. '/' .. stateful.objectives.randomized_zone .. ' [img=utility/check_mark_green]'
                     data.randomized_zone_label.tooltip = {'stateful.tooltip_completed'}
@@ -558,7 +654,7 @@ local function update_data()
                 end
             end
 
-            if data.randomized_wave_label and data.randomized_wave_label.valid then
+            if data.randomized_wave_label and data.randomized_wave_label.valid and stateful.objectives.randomized_wave then
                 if wave_number >= stateful.objectives.randomized_wave then
                     data.randomized_wave_label.caption = wave_number .. '/' .. stateful.objectives.randomized_wave .. ' [img=utility/check_mark_green]'
                     data.randomized_wave_label.tooltip = {'stateful.tooltip_completed'}
@@ -567,38 +663,33 @@ local function update_data()
                 end
             end
 
-            if data.randomized_linked_label and data.randomized_linked_label.valid then
-                if converted_chests >= stateful.objectives.randomized_linked_chests then
-                    data.randomized_linked_label.caption = converted_chests .. '/' .. stateful.objectives.randomized_linked_chests .. ' [img=utility/check_mark_green]'
-                    data.randomized_linked_label.tooltip = {'stateful.tooltip_completed'}
-                else
-                    data.randomized_linked_label.caption = converted_chests .. '/' .. stateful.objectives.randomized_linked_chests .. ' [img=utility/not_available]'
-                end
-            end
-
             if data.supply and next(data.supply) then
                 local items_done = 0
-                for index = 1, #data.supply do
-                    local frame = data.supply[index]
-                    if frame and frame.valid then
-                        local supplies_data = supplies[index]
-                        local count = Public.stateful.get_item_produced_count(supplies_data.name)
-                        if count then
-                            if not supplies_data.total then
-                                supplies_data.total = supplies_data.count
-                            end
-                            supplies_data.count = supplies_data.total - count
-                            if supplies_data.count == 0 then
-                                items_done = items_done + 1
-                                frame.number = nil
-                                frame.sprite = 'utility/check_mark_green'
-                            else
-                                frame.number = supplies_data.count
-                                frame.tooltip = supplies_data.total .. ' / ' .. count
-                            end
-                            if items_done == 3 then
-                                if data.supply_completed and data.supply_completed.valid then
-                                    data.supply_completed.caption = ' [img=utility/check_mark_green]'
+                local supplies = stateful.objectives.supplies
+                if supplies then
+                    for index = 1, #data.supply do
+                        local frame = data.supply[index]
+                        if frame and frame.valid then
+                            local supplies_data = supplies[index]
+                            local count = Stateful.get_item_produced_count(supplies_data.name)
+                            if count then
+                                if not supplies_data.total then
+                                    supplies_data.total = supplies_data.count
+                                end
+                                supplies_data.count = supplies_data.total - count
+                                if supplies_data.count <= 0 then
+                                    supplies_data.count = 0
+                                    items_done = items_done + 1
+                                    frame.number = nil
+                                    frame.sprite = 'utility/check_mark_green'
+                                else
+                                    frame.number = supplies_data.count
+                                    frame.tooltip = count .. ' / ' .. supplies_data.total
+                                end
+                                if items_done == 3 then
+                                    if data.supply_completed and data.supply_completed.valid then
+                                        data.supply_completed.caption = ' [img=utility/check_mark_green]'
+                                    end
                                 end
                             end
                         end
@@ -607,25 +698,28 @@ local function update_data()
             end
 
             if data.single_item and data.single_item.valid then
-                local frame = data.single_item
-                local count = Public.stateful.get_item_produced_count(single_item.name)
-                if count then
-                    if not single_item.total then
-                        single_item.total = single_item.count
-                    end
-                    single_item.count = single_item.total - count
-                    if single_item.count == 0 then
-                        frame.number = nil
-                        frame.sprite = 'utility/check_mark_green'
-                    else
-                        frame.number = single_item.count
-                        frame.tooltip = single_item.total .. ' / ' .. count
+                local single_item = stateful.objectives.single_item
+                if single_item then
+                    local frame = data.single_item
+                    local count = Stateful.get_item_produced_count(single_item.name)
+                    if count then
+                        if not single_item.total then
+                            single_item.total = single_item.count
+                        end
+                        single_item.count = single_item.total - count
+                        if single_item.count <= 0 then
+                            single_item.count = 0
+                            frame.number = nil
+                            frame.sprite = 'utility/check_mark_green'
+                            if data.single_item_complete and data.single_item_complete.valid then
+                                data.single_item_complete.caption = ' [img=utility/check_mark_green]'
+                            end
+                        else
+                            frame.number = single_item.count
+                            frame.tooltip = count .. ' / ' .. single_item.total
+                        end
                     end
                 end
-            end
-
-            if data.locomotive_market and data.locomotive_market.valid then
-                data.locomotive_market.caption = locale_right
             end
 
             if stateful.collection.gather_time and data.gather_time_label and data.gather_time_label.valid then
@@ -644,11 +738,12 @@ local function update_data()
                     local frame = frame_data.frame
                     for objective_index = 1, #stateful.selected_objectives do
                         local objective = stateful.selected_objectives[objective_index]
-                        local objective_name = objective[1]
-                        local callback = Token.get(objective[2])
-                        local _, _, objective_locale_right = callback()
+                        local objective_name = objective.name
+                        local callback = Token.get(objective.token)
+                        local _, _, objective_locale_right, _, objective_tooltip_right = callback()
                         if name == objective_name and frame and frame.valid then
                             frame.caption = objective_locale_right
+                            frame.tooltip = objective_tooltip_right
                         end
                     end
                 end
@@ -703,55 +798,44 @@ local function update_raw()
     local stateful = Public.get_stateful()
     local breached_wall = Public.get('breached_wall')
     local wave_number = WD.get('wave_number')
-    local converted_chests = LinkedChests.get('converted_chests')
     local collection = stateful.collection
     local tick = game.tick
-    local supplies = stateful.objectives.supplies
-    local single_item = stateful.objectives.single_item
-    local callback_token = stateful.objectives.locomotive_market_selection[1]
-    local callback_data = stateful.objectives.locomotive_market_selection[2]
-    local callback_locomotive = Token.get(callback_token)
-    local locomotive_completed, _, _ = callback_locomotive(callback_data)
 
     breached_wall = breached_wall - 1
-    if breached_wall >= stateful.objectives.randomized_zone then
-        if not stateful.objectives_completed.randomized_zone_label then
-            stateful.objectives_completed.randomized_zone_label = true
-            play_achievement_unlocked()
-            Server.to_discord_embed('Objective: **breach zone** has been complete!')
-            stateful.objectives_completed_count = stateful.objectives_completed_count + 1
+    if stateful.objectives.randomized_zone then
+        if breached_wall >= stateful.objectives.randomized_zone then
+            if not stateful.objectives_completed.randomized_zone_label then
+                stateful.objectives_completed.randomized_zone_label = true
+                play_achievement_unlocked()
+                Server.to_discord_embed('Objective: **breach zone** has been complete!')
+                stateful.objectives_completed_count = stateful.objectives_completed_count + 1
+            end
         end
     end
 
-    if wave_number >= stateful.objectives.randomized_wave then
-        if not stateful.objectives_completed.randomized_wave_label then
-            stateful.objectives_completed.randomized_wave_label = true
-            play_achievement_unlocked()
-            Server.to_discord_embed('Objective: **survive until wave** has been complete!')
-            stateful.objectives_completed_count = stateful.objectives_completed_count + 1
+    if stateful.objectives.randomized_wave then
+        if wave_number >= stateful.objectives.randomized_wave then
+            if not stateful.objectives_completed.randomized_wave_label then
+                stateful.objectives_completed.randomized_wave_label = true
+                play_achievement_unlocked()
+                Server.to_discord_embed('Objective: **survive until wave** has been complete!')
+                stateful.objectives_completed_count = stateful.objectives_completed_count + 1
+            end
         end
     end
 
-    if converted_chests >= stateful.objectives.randomized_linked_chests then
-        if not stateful.objectives_completed.randomized_linked_chests then
-            stateful.objectives_completed.randomized_linked_chests = true
-            play_achievement_unlocked()
-            Server.to_discord_embed('Objective: **convert chests** has been complete!')
-            stateful.objectives_completed_count = stateful.objectives_completed_count + 1
-        end
-    end
-
-    if supplies and next(supplies) then
+    if stateful.objectives.supplies and next(stateful.objectives.supplies) then
         local items_done = 0
-        for index = 1, #supplies do
-            local supplies_data = supplies[index]
-            local count = Public.stateful.get_item_produced_count(supplies_data.name)
+        for index = 1, #stateful.objectives.supplies do
+            local supplies_data = stateful.objectives.supplies[index]
+            local count = Stateful.get_item_produced_count(supplies_data.name)
             if count then
                 if not supplies_data.total then
                     supplies_data.total = supplies_data.count
                 end
                 supplies_data.count = supplies_data.total - count
-                if supplies_data.count == 0 then
+                if supplies_data.count <= 0 then
+                    supplies_data.count = 0
                     items_done = items_done + 1
                 end
                 if items_done == 3 then
@@ -766,14 +850,15 @@ local function update_raw()
         end
     end
 
-    if single_item then
-        local count = Public.stateful.get_item_produced_count(single_item.name)
+    if stateful.objectives.single_item then
+        local count = Stateful.get_item_produced_count(stateful.objectives.single_item.name)
         if count then
-            if not single_item.total then
-                single_item.total = single_item.count
+            if not stateful.objectives.single_item.total then
+                stateful.objectives.single_item.total = stateful.objectives.single_item.count
             end
-            single_item.count = single_item.total - count
-            if single_item.count == 0 then
+            stateful.objectives.single_item.count = stateful.objectives.single_item.total - count
+            if stateful.objectives.single_item.count <= 0 then
+                stateful.objectives.single_item.count = 0
                 if not stateful.objectives_completed.single_item then
                     stateful.objectives_completed.single_item = true
                     play_achievement_unlocked()
@@ -784,15 +869,19 @@ local function update_raw()
         end
     end
 
-    if collection.time_until_attack then
+    if collection.time_until_attack and not collection.final_arena_disabled then
         collection.time_until_attack = collection.time_until_attack_timer - tick
         if collection.time_until_attack > 0 then
             collection.time_until_attack = collection.time_until_attack
         elseif collection.time_until_attack and collection.time_until_attack < 0 then
             collection.time_until_attack = 0
             if not collection.nuke_blueprint then
+                collection.survive_for = game.tick + Stateful.scale(random(54000, 72000), 126000)
+                collection.survive_for_timer = collection.survive_for
                 collection.nuke_blueprint = true
-                Public.stateful_blueprints.nuke_blueprint()
+                Public.blueprints.nuke_blueprint()
+                WD.disable_spawning_biters(false)
+                Server.to_discord_embed('Final battle starts now!')
                 refresh_boss_frame()
             end
         end
@@ -806,6 +895,7 @@ local function update_raw()
             collection.gather_time = 0
             if not collection.gather_time_done then
                 collection.gather_time_done = true
+                LinkedChests.clear_linked_frames()
                 stateful.final_battle = true
                 Public.set('final_battle', true)
             end
@@ -826,8 +916,10 @@ local function update_raw()
                 collection.game_won_notified = true
                 refresh_boss_frame()
                 play_game_won()
+                Server.to_discord_embed('Game won!')
                 stateful.rounds_survived = stateful.rounds_survived + 1
-                Public.stateful.save_settings()
+                Stateful.save_settings()
+                notify_won_to_discord()
                 local locomotive = Public.get('locomotive')
                 if locomotive and locomotive.valid then
                     locomotive.surface.spill_item_stack(locomotive.position, {name = 'coin', count = 512}, false)
@@ -837,19 +929,10 @@ local function update_raw()
         end
     end
 
-    if locomotive_completed then
-        if not stateful.objectives_completed.locomotive_market then
-            stateful.objectives_completed.locomotive_market = true
-            Server.to_discord_embed('Objective: **locomotive purchase** has been completed!')
-            play_achievement_unlocked()
-            stateful.objectives_completed_count = stateful.objectives_completed_count + 1
-        end
-    end
-
     for objective_index = 1, #stateful.selected_objectives do
         local objective = stateful.selected_objectives[objective_index]
-        local objective_name = objective[1]
-        local callback = Token.get(objective[2])
+        local objective_name = objective.name
+        local callback = Token.get(objective.token)
         local completed, _, _ = callback()
         if completed and completed == true and not stateful.objectives_completed[objective_name] then
             stateful.objectives_completed[objective_name] = true
@@ -859,23 +942,50 @@ local function update_raw()
         end
     end
 
-    if stateful.objectives_completed_count == 6 and not stateful.objectives_completed.boss_time then
+    if stateful.objectives_completed_count == stateful.tasks_required_to_win and not stateful.objectives_completed.boss_time then
         stateful.objectives_completed.boss_time = true
+
         Server.to_discord_embed('All objectives has been completed!')
+
+        if stateful.collection.final_arena_disabled then
+            game.print('[color=yellow][Mtn v3][/color] Game won!')
+            game.print('[color=yellow][Mtn v3][/color] Final battle arena is currently disabled.')
+            collection.game_won = true
+            stateful.collection.time_until_attack = 0
+            stateful.collection.time_until_attack_timer = 0
+            stateful.collection.gather_time = 0
+            stateful.collection.gather_time_timer = 0
+            collection.survive_for = 0
+            collection.survive_for_timer = 0
+            refresh_frames()
+
+            collection.game_won_notified = true
+            refresh_boss_frame()
+            play_game_won()
+            WD.disable_spawning_biters(true)
+            Collapse.disable_collapse(true)
+            WD.nuke_wave_gui()
+            Server.to_discord_embed('Game won!')
+            stateful.rounds_survived = stateful.rounds_survived + 1
+            Stateful.save_settings()
+            notify_won_to_discord()
+            local locomotive = Public.get('locomotive')
+            if locomotive and locomotive.valid then
+                locomotive.surface.spill_item_stack(locomotive.position, {name = 'coin', count = 512}, false)
+            end
+            Public.set('game_reset_tick', 5400)
+            return
+        end
+
         stateful.collection.gather_time = tick + 54000
         stateful.collection.gather_time_timer = tick + 54000
         play_achievement_unlocked()
+        WD.disable_spawning_biters(true)
+        Collapse.disable_collapse(true)
+        Public.blueprints.blueprint()
+        WD.nuke_wave_gui()
 
-        Core.iter_connected_players(
-            function(player)
-                local frame = player.gui.screen[main_frame_name]
-                if frame then
-                    Gui.remove_data_recursively(frame)
-                    frame.destroy()
-                    main_frame(player)
-                end
-            end
-        )
+        refresh_frames()
     end
 end
 
@@ -963,10 +1073,11 @@ Gui.on_click(
 )
 
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
-Event.on_nth_tick(60, update_data)
-Event.on_nth_tick(120, update_raw)
+Event.on_nth_tick(30, update_data)
+Event.on_nth_tick(30, update_raw)
 
 Public.boss_frame = boss_frame
 Public.clear_all_frames = clear_all_frames
+Stateful.refresh_frames = refresh_frames
 
 return Public

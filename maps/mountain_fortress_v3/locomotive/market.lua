@@ -10,6 +10,7 @@ local Server = require 'utils.server'
 local Alert = require 'utils.alert'
 local Math2D = require 'math2d'
 local SpamProtection = require 'utils.spam_protection'
+local LinkedChests = require 'maps.mountain_fortress_v3.icw.linked_chests'
 
 local format_number = require 'util'.format_number
 
@@ -56,6 +57,7 @@ local function get_items()
     local flamethrower_turrets_cost = round(fixed_prices.flamethrower_turrets_cost * (1 + flame_turret))
     local land_mine_cost = round(fixed_prices.land_mine_cost * (1 + upgrades.landmine.bought))
     local car_health_upgrade_pool = fixed_prices.car_health_upgrade_pool_cost
+    local upgraded_tile_when_mining_cost = fixed_prices.tile_when_mining_cost
 
     local pickaxe_upgrades = Public.pickaxe_upgrades
 
@@ -156,6 +158,31 @@ local function get_items()
             static = true
         }
     end
+
+    if upgrades.has_upgraded_tile_when_mining then
+        main_market_items['upgraded_tile_when_mining_cost'] = {
+            stack = 1,
+            value = 'coin',
+            price = upgraded_tile_when_mining_cost,
+            tooltip = ({'main_market.sold_out'}),
+            sprite = 'achievement/run-forrest-run',
+            enabled = false,
+            upgrade = true,
+            static = true
+        }
+    else
+        main_market_items['upgraded_tile_when_mining_cost'] = {
+            stack = 1,
+            value = 'coin',
+            price = upgraded_tile_when_mining_cost,
+            tooltip = ({'main_market.tile_when_mining'}),
+            sprite = 'achievement/run-forrest-run',
+            enabled = true,
+            upgrade = true,
+            static = true
+        }
+    end
+
     main_market_items['xp_points_boost'] = {
         stack = 1,
         value = 'coin',
@@ -928,8 +955,16 @@ local function gui_click(event)
     local item_count = item.stack * slider_value
 
     local this = Public.get()
+
+    if name == 'linked-chest' then
+        local converted_chests = LinkedChests.get('converted_chests')
+        LinkedChests.set('converted_chests', converted_chests + 1)
+    end
+
     if name == 'upgrade_pickaxe' then
         player.remove_item({name = item.value, count = item.price})
+
+        Event.raise(Public.events.on_market_item_purchased, {cost = item.price})
 
         this.upgrades.pickaxe_tier = this.upgrades.pickaxe_tier + item.stack
 
@@ -963,6 +998,8 @@ local function gui_click(event)
     if name == 'locomotive_max_health' then
         player.remove_item({name = item.value, count = item.price})
         local message = ({'locomotive.health_bought_info', shopkeeper, player.name, format_number(item.price, true)})
+
+        Event.raise(Public.events.on_market_item_purchased, {cost = item.price})
 
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
@@ -1016,6 +1053,8 @@ local function gui_click(event)
         end
         player.remove_item({name = item.value, count = item.price})
 
+        Event.raise(Public.events.on_market_item_purchased, {cost = item.price})
+
         local message = ({'locomotive.aura_bought_info', shopkeeper, player.name, format_number(item.price, true)})
 
         Alert.alert_all_players(5, message)
@@ -1058,6 +1097,8 @@ local function gui_click(event)
         player.remove_item({name = item.value, count = item.price})
         local message = ({'locomotive.xp_bought_info', shopkeeper, player.name, format_number(item.price, true)})
 
+        Event.raise(Public.events.on_market_item_purchased, {cost = item.price})
+
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
@@ -1077,6 +1118,8 @@ local function gui_click(event)
     if name == 'redraw_mystical_chest' then
         player.remove_item({name = item.value, count = item.price})
         local message = ({'locomotive.mystical_bought_info', shopkeeper, player.name, format_number(item.price, true)})
+
+        Event.raise(Public.events.on_market_item_purchased, {cost = item.price})
 
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
@@ -1102,6 +1145,8 @@ local function gui_click(event)
             format_number(item.price, true)
         })
 
+        Event.raise(Public.events.on_market_item_purchased, {cost = item.price})
+
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
@@ -1126,6 +1171,8 @@ local function gui_click(event)
             format_number(item.price, true)
         })
 
+        Event.raise(Public.events.on_market_item_purchased, {cost = item.price})
+
         Alert.alert_all_players(5, message)
         Server.to_discord_bold(
             table.concat {
@@ -1140,8 +1187,35 @@ local function gui_click(event)
         return
     end
 
+    if name == 'upgraded_tile_when_mining_cost' then
+        player.remove_item({name = item.value, count = item.price})
+        local message = ({
+            'locomotive.tile_upgrade_bought_info',
+            shopkeeper,
+            player.name,
+            format_number(item.price, true)
+        })
+
+        Event.raise(Public.events.on_market_item_purchased, {cost = item.price})
+
+        Alert.alert_all_players(5, message)
+        Server.to_discord_bold(
+            table.concat {
+                player.name .. ' the global tile replacement from stone-path to concrete-tile for ' .. format_number(item.price) .. ' coins.'
+            }
+        )
+        this.upgrades.has_upgraded_tile_when_mining = true
+
+        redraw_market_items(data.item_frame, player, data.search_text)
+        redraw_coins_left(data.coins_left, player)
+
+        return
+    end
+
     if name == 'flamethrower_turrets' then
         player.remove_item({name = item.value, count = item.price})
+        Event.raise(Public.events.on_market_item_purchased, {cost = item.price})
+
         if item.stack >= 1 then
             local message = ({
                 'locomotive.one_flamethrower_bought_info',
@@ -1181,6 +1255,8 @@ local function gui_click(event)
     if name == 'land_mine' then
         player.remove_item({name = item.value, count = item.price})
 
+        Event.raise(Public.events.on_market_item_purchased, {cost = item.price})
+
         if item.stack >= 1 and this.upgrades.landmine.bought % 10 == 0 then
             local message = ({
                 'locomotive.landmine_bought_info',
@@ -1218,8 +1294,10 @@ local function gui_click(event)
                 player.print(({'locomotive.change_returned'}), {r = 0.98, g = 0.66, b = 0.22})
                 player.insert({name = name, count = inserted_count})
                 player.remove_item({name = item.value, count = ceil(item.price * (inserted_count / item.stack))})
+                Event.raise(Public.events.on_market_item_purchased, {cost = ceil(item.price * (inserted_count / item.stack))})
             else
                 player.remove_item({name = item.value, count = cost})
+                Event.raise(Public.events.on_market_item_purchased, {cost = cost})
             end
             redraw_market_items(data.item_frame, player, data.search_text)
             redraw_coins_left(data.coins_left, player)

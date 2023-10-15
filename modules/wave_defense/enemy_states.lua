@@ -22,7 +22,8 @@ local this = {
         frenzy_burst_length = 160,
         update_rate = 60,
         enabled = true,
-        track_bosses_only = true
+        track_bosses_only = true,
+        wave_number = 0
     },
     target_settings = {}
 }
@@ -260,7 +261,6 @@ local function area_of_effect(entity, radius, callback, find_entities)
                 else
                     callback(p)
                 end
-                cs.create_trivial_smoke({name = 'fire-smoke', position = p})
             end
         end
     end
@@ -387,7 +387,7 @@ local function on_init()
     this.settings.frenzy_burst_length = 160
     this.settings.update_rate = 120
     this.target_settings = {}
-
+    this.final_battle = false
     set_forces()
 end
 
@@ -654,6 +654,12 @@ end
 
 -- Removes the given entity from tracking
 function Public._esp:remove()
+    if this.final_battle then
+        this.settings.generated_units = this.settings.generated_units - 1
+        if this.settings.generated_units <= 0 then
+            this.settings.generated_units = 0
+        end
+    end
     this.states[self.id] = nil
     this.state_count = this.state_count - 1
 end
@@ -987,10 +993,21 @@ function Public._esp:set_boss()
 
     self.boss_unit = true
 
+    if this.final_battle then
+        if not this.settings.generated_units then
+            this.settings.generated_units = 0
+        end
+
+        this.settings.generated_units = this.settings.generated_units + 1
+        self.go_havoc = true
+        self.proj_int = tick + 120
+        self.clear_go_havoc = tick + 3600
+    end
+
     if this.settings.wave_number > 1499 then
         if this.settings.wave_number % 100 == 0 then
             self.go_havoc = true
-            self.havoc_interval = tick + 50
+            self.proj_int = tick + 120
             self.clear_go_havoc = tick + 3600
         end
     end
@@ -1002,14 +1019,12 @@ function Public._esp:work(tick)
     end
 
     if self.go_havoc and self.clear_go_havoc > tick then
-        if tick > self.havoc_interval then
+        if tick > self.proj_int then
+            self:attack_target()
             self:fire_projectile()
-            self:area_of_spit_attack()
-            if random(1, 10) == 1 then
-                self:aoe_attack()
-            end
-            self.havoc_interval = tick + 50
+            self.proj_int = tick + 120
         end
+        return
     end
 
     self:attack_target()

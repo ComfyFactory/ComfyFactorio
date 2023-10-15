@@ -244,7 +244,16 @@ Event.on_init(on_init)
 Event.on_nth_tick(60, on_nth_tick) -- once every second
 Event.on_nth_tick(60 * 30, ui_smell_evolution)
 Event.on_nth_tick(60, update_score)
-Event.add(Server.events.on_changes_detected, handle_changes)
+
+Server.on_scenario_changed(
+    'Towny',
+    function(data)
+        local scenario = data.scenario
+        if scenario == 'Towny' then
+            handle_changes()
+        end
+    end
+)
 
 --Disable the comfy main gui since we got too many goodies there.
 Event.add(

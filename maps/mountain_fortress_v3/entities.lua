@@ -762,7 +762,12 @@ local function on_player_mined_entity(event)
             give_coin(player)
         end
         if rpg_char.stone_path then
-            entity.surface.set_tiles({{name = 'stone-path', position = entity.position}}, true)
+            local upgrades = Public.get('upgrades')
+            if not upgrades.has_upgraded_tile_when_mining then
+                entity.surface.set_tiles({{name = 'stone-path', position = entity.position}}, true)
+            else
+                entity.surface.set_tiles({{name = 'black-refined-concrete', position = entity.position}}, true)
+            end
         end
 
         local func = get_random_weighted(mining_events)
@@ -1215,6 +1220,7 @@ local function show_mvps(player)
             end
             local time_played = Core.format_time(game.ticks_played)
             local total_players = #game.players
+            local total_connected_players = #game.connected_players
             local pickaxe_upgrades = Public.pickaxe_upgrades
             local upgrades = Public.get('upgrades')
             local pick_tier = pickaxe_upgrades[upgrades.pickaxe_tier]
@@ -1231,54 +1237,46 @@ local function show_mvps(player)
                 field1 = {
                     text1 = 'Time played:',
                     text2 = time_played,
-                    inline = 'true'
+                    inline = 'false'
                 },
                 field2 = {
-                    text1 = 'Game Difficulty:',
-                    text2 = diff.name,
-                    inline = 'true',
-                    emptyField = 'true',
-                    emptyInline = 'true'
+                    text1 = 'Highest wave:',
+                    text2 = wave,
+                    inline = 'false'
                 },
                 field3 = {
-                    text1 = 'Highest wave:',
-                    text2 = format_number(wave, true),
-                    inline = 'true'
-                },
-                field4 = {
                     text1 = 'Total connected players:',
                     text2 = total_players,
-                    inline = 'true',
-                    emptyField = 'true',
-                    emptyInline = 'true'
+                    inline = 'false'
                 },
-                field5 = {
+                field4 = {
                     text1 = 'Threat:',
                     text2 = format_number(threat, true),
-                    inline = 'true'
+                    inline = 'false'
                 },
-                field6 = {
+                field5 = {
                     text1 = 'Pickaxe Upgrade:',
                     text2 = pick_tier .. ' (' .. upgrades.pickaxe_tier .. ')',
-                    inline = 'true',
-                    emptyField = 'true',
-                    emptyInline = 'true'
+                    inline = 'false'
                 },
-                field7 = {
+                field6 = {
                     text1 = 'Collapse Speed:',
                     text2 = collapse_speed,
-                    inline = 'true'
+                    inline = 'false'
                 },
-                field8 = {
+                field7 = {
                     text1 = 'Collapse Amount:',
                     text2 = collapse_amount,
-                    inline = 'true',
-                    emptyField = 'true',
-                    emptyInline = 'true'
+                    inline = 'false'
+                },
+                field8 = {
+                    text1 = 'Connected players:',
+                    text2 = total_connected_players,
+                    inline = 'false'
                 }
             }
             if server_name_matches then
-                if wave >= 1000 then
+                if wave >= 500 then
                     Server.to_discord_named_parsed_embed(send_ping_to_channel, text)
                 end
             else

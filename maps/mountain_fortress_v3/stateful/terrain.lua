@@ -108,7 +108,7 @@ local function void_tiles(p)
 end
 
 local function enemy_spawn_positions(p)
-    if p.x < 200 and p.x >= -212 then
+    if p.x < 230 and p.x >= -242 then
         return false
     end
     return true
@@ -152,7 +152,7 @@ local function border_chunk(p, data)
             name = 'spitter-spawner'
         end
         if enemy_spawn_positions(p) then
-            entities[#entities + 1] = {name = name, position = pos, force = 'enemy', collision = true, active = false, destructible = false}
+            entities[#entities + 1] = {name = name, position = pos, force = 'enemy', collision = true, active = false, destructible = false, random_active = true}
         end
     end
 
@@ -233,9 +233,11 @@ function Public.heavy_functions(data)
         return
     end
 
-    border_chunk(p, data)
-    oozy_tiles(p, data.seed, data.tiles)
-    draw_rails(data)
+    if p.y < 250 then
+        border_chunk(p, data)
+        oozy_tiles(p, data.seed, data.tiles)
+        draw_rails(data)
+    end
 end
 
 return Public
