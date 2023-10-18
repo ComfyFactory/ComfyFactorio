@@ -404,7 +404,7 @@ function Public.on_mothership_chunk_generated(event)
 		for y = 0, 31, 1 do
 			local position = {x = left_top.x + x, y = left_top.y + y}
 			if is_mothership(position) then
-				table.insert(tiles, {name = 'stone-path', position = position})
+				table.insert(tiles, {name = 'black-refined-concrete', position = position})
 			else
 				table.insert(tiles, {name = 'out-of-map', position = position})
 			end
