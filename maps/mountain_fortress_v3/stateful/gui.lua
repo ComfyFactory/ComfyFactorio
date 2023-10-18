@@ -67,7 +67,10 @@ local spread_particles_token =
     end
 )
 
-local function notify_won_to_discord()
+local function notify_won_to_discord(buff)
+    if not buff then
+        return error('Buff is required when sending message to discord.', 2)
+    end
     local server_name_matches = Server.check_server_name('Mtn Fortress')
 
     local stateful = Public.get_stateful()
@@ -115,6 +118,11 @@ local function notify_won_to_discord()
         field6 = {
             text1 = 'Connected players:',
             text2 = total_connected_players,
+            inline = 'false'
+        },
+        field7 = {
+            text1 = 'Buff granted:',
+            text2 = buff.name,
             inline = 'false'
         }
     }
@@ -918,8 +926,8 @@ local function update_raw()
                 play_game_won()
                 Server.to_discord_embed('Game won!')
                 stateful.rounds_survived = stateful.rounds_survived + 1
-                Stateful.save_settings()
-                notify_won_to_discord()
+                local buff = Stateful.save_settings()
+                notify_won_to_discord(buff)
                 local locomotive = Public.get('locomotive')
                 if locomotive and locomotive.valid then
                     locomotive.surface.spill_item_stack(locomotive.position, {name = 'coin', count = 512}, false)
@@ -967,8 +975,8 @@ local function update_raw()
             WD.nuke_wave_gui()
             Server.to_discord_embed('Game won!')
             stateful.rounds_survived = stateful.rounds_survived + 1
-            Stateful.save_settings()
-            notify_won_to_discord()
+            local buff = Stateful.save_settings()
+            notify_won_to_discord(buff)
             local locomotive = Public.get('locomotive')
             if locomotive and locomotive.valid then
                 locomotive.surface.spill_item_stack(locomotive.position, {name = 'coin', count = 512}, false)

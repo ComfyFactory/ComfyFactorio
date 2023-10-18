@@ -20,6 +20,7 @@ local BottomFrame = require 'utils.gui.bottom_frame'
 local Modifiers = require 'utils.player_modifiers'
 
 local zone_settings = Public.zone_settings
+local remove_boost_movement_speed_on_respawn
 local de = defines.events
 
 local this = {
@@ -779,56 +780,21 @@ local function calc_players()
     return total
 end
 
-local retry_final_boost_movement_speed_on_respawn =
+remove_boost_movement_speed_on_respawn =
     Token.register(
     function(data)
         local player = data.player
-        local old_speed = data.old_speed
         if not player or not player.valid then
             return
         end
         if not player.character or not player.character.valid then
+            Task.set_timeout_in_ticks(10, remove_boost_movement_speed_on_respawn, {player = player})
             return
         end
-        player.character.character_running_speed_modifier = old_speed
-        player.print('Movement speed bonus removed!', Color.info)
-        local rpg_t = RPG.get_value_from_player(player.index)
-        rpg_t.has_custom_spell_active = nil
-    end
-)
 
-local retry_boost_movement_speed_on_respawn =
-    Token.register(
-    function(data)
-        local player = data.player
-        local old_speed = data.old_speed
-        if not player or not player.valid then
-            return
-        end
-        if not player.character or not player.character.valid then
-            Task.set_timeout_in_ticks(10, retry_final_boost_movement_speed_on_respawn, {player = player, old_speed = old_speed})
-            return
-        end
-        player.character.character_running_speed_modifier = old_speed
-        player.print('Movement speed bonus removed!', Color.info)
-        local rpg_t = RPG.get_value_from_player(player.index)
-        rpg_t.has_custom_spell_active = nil
-    end
-)
+        Modifiers.update_single_modifier(player, 'character_running_speed_modifier', 'v3_move_boost')
+        Modifiers.update_player_modifiers(player)
 
-local remove_boost_movement_speed_on_respawn =
-    Token.register(
-    function(data)
-        local player = data.player
-        local old_speed = data.old_speed
-        if not player or not player.valid then
-            return
-        end
-        if not player.character or not player.character.valid then
-            Task.set_timeout_in_ticks(10, retry_boost_movement_speed_on_respawn, {player = player, old_speed = old_speed})
-            return
-        end
-        player.character.character_running_speed_modifier = old_speed
         player.print('Movement speed bonus removed!', Color.info)
         local rpg_t = RPG.get_value_from_player(player.index)
         rpg_t.has_custom_spell_active = nil
@@ -849,11 +815,10 @@ local boost_movement_speed_on_respawn =
         local rpg_t = RPG.get_value_from_player(player.index)
         rpg_t.has_custom_spell_active = true
 
-        local old_speed = player.character_running_speed_modifier
-        local new_speed = player.character_running_speed_modifier + 1
+        Modifiers.update_single_modifier(player, 'character_running_speed_modifier', 'v3_move_boost', 1)
+        Modifiers.update_player_modifiers(player)
 
-        Task.set_timeout_in_ticks(800, remove_boost_movement_speed_on_respawn, {player = player, old_speed = old_speed})
-        player.character.character_running_speed_modifier = new_speed
+        Task.set_timeout_in_ticks(800, remove_boost_movement_speed_on_respawn, {player = player})
         player.print('Movement speed bonus applied! Be quick and fetch your corpse!', Color.info)
     end
 )

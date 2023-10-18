@@ -735,6 +735,27 @@ local function on_player_crafted_item(event)
 
     local final_xp = recipe.energy * amount
 
+    local get_dex_modifier = Public.get_dex_modifier(player)
+    if get_dex_modifier >= 10 then
+        local chance = Public.get_crafting_bonus_chance(player) * 10
+        local r = random(0, 1999)
+        local success = r < chance
+        if success then
+            Public.set_crafting_boost(player, get_dex_modifier)
+            local d = random(0, 2999)
+            local item_dupe = d < chance
+            if item_dupe and final_xp < 6 then
+                local reward = {
+                    name = item.name,
+                    count = 1
+                }
+                if player.can_insert(reward) then
+                    player.insert(reward)
+                end
+            end
+        end
+    end
+
     Public.gain_xp(player, final_xp)
     Public.reward_mana(player, amount)
 end

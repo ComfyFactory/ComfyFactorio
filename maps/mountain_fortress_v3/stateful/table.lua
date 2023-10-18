@@ -722,7 +722,8 @@ local apply_settings_token =
 )
 
 function Public.save_settings()
-    this.buffs[#this.buffs + 1] = get_random_buff()
+    local granted_buff = get_random_buff()
+    this.buffs[#this.buffs + 1] = granted_buff
 
     local settings = {
         rounds_survived = this.rounds_survived,
@@ -737,6 +738,8 @@ function Public.save_settings()
     else
         Server.set_data(dataset, dataset_key_dev, settings)
     end
+
+    return granted_buff
 end
 
 function Public.reset_stateful(refresh_gui, clear_buffs)
