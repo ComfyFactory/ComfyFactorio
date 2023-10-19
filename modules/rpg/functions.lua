@@ -1274,14 +1274,14 @@ function Public.rpg_reset_player(player, one_time_reset)
                 }
             }
         )
-    end
 
-    rpg_t = Public.get_value_from_player(player.index)
+        rpg_t = Public.get_value_from_player(player.index)
 
-    if rpg_t and rpg_extra.grant_xp_level and not rpg_t.granted_xp_level then
-        rpg_t.granted_xp_level = true
-        local to_grant = Public.experience_levels[rpg_t.level + rpg_extra.grant_xp_level]
-        Public.gain_xp(player, to_grant, true)
+        if rpg_t and rpg_extra.grant_xp_level and not rpg_t.granted_xp_level then
+            rpg_t.granted_xp_level = true
+            local to_grant = Public.experience_levels[rpg_t.level + rpg_extra.grant_xp_level]
+            Public.gain_xp(player, to_grant, true)
+        end
     end
 
     Public.draw_gui_char_button(player)
