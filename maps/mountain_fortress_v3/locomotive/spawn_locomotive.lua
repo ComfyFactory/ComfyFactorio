@@ -5,6 +5,7 @@ local Token = require 'utils.token'
 local MapFunctions = require 'tools.map_functions'
 
 local random = math.random
+local floor = math.floor
 
 local function initial_cargo_boxes()
     return {
@@ -80,14 +81,13 @@ local place_tiles_token =
             return
         end
 
-        MapFunctions.draw_noise_tile_circle(position, 'hazard-concrete-right', surface, 12)
+        MapFunctions.draw_noise_tile_circle(position, 'black-refined-concrete', surface, 12)
     end
 )
 
-local set_loco_tiles =
+local set_loco_cargo =
     Token.register(
     function(data)
-        local position = data.position
         local surface = data.surface
         if not surface or not surface.valid then
             return
@@ -97,23 +97,17 @@ local set_loco_tiles =
 
         local p = {}
 
-        ---@diagnostic disable-next-line: count-down-loop
-        for x = position.x - 5, 1, 3 do
-            if x == -1 then
-                x = x - 1
-            end
-            if x == 0 then
-                x = x + 1
-            end
-            for y = 1, position.y + 5, 2 do
-                if random(1, 3) == 1 then
-                    p[#p + 1] = {x = x, y = y}
+        local rad = 16 ^ 2
+        for x = -15, 15, 1 do
+            for y = 0, 67, 1 do
+                local va = floor((0 - x) ^ 2 + (53 - y) ^ 2)
+                if ((va < rad - 50) and (va > rad - 100)) then
+                    if random(1, 3) == 1 then
+                        p[#p + 1] = {x = x, y = y}
+                    end
                 end
             end
         end
-
-        MapFunctions.draw_noise_tile_circle(position, 'hazard-concrete-right', surface, 12)
-        Task.set_timeout_in_ticks(300, place_tiles_token, {surface = surface, position = position})
 
         for i = 1, #cargo_boxes, 1 do
             if not p[i] then
@@ -183,13 +177,6 @@ function Public.locomotive_spawn(surface, position)
         )
     end
 
-    local data = {
-        surface = surface,
-        position = position
-    }
-
-    Task.set_timeout_in_ticks(50, set_loco_tiles, data)
-
     for y = -1, 0, 0.05 do
         local scale = random(50, 100) * 0.01
         rendering.draw_sprite(
@@ -218,8 +205,15 @@ function Public.locomotive_spawn(surface, position)
     end
 
     ICW.register_wagon(this.locomotive_cargo)
-
     this.icw_locomotive = locomotive
+
+    local data = {
+        surface = locomotive.surface
+    }
+
+    Task.set_timeout_in_ticks(15, place_tiles_token, {surface = surface, position = position})
+    Task.set_timeout_in_ticks(300, place_tiles_token, {surface = surface, position = position})
+    Task.set_timeout_in_ticks(50, set_loco_cargo, data)
 
     game.forces.player.set_spawn_position({0, 19}, locomotive.surface)
 end

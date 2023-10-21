@@ -101,10 +101,11 @@ function Public.update_single_modifier(player, modifier, category, value)
     for k, _ in pairs(player_modifiers) do
         if modifiers[k] == modifier and player_modifiers[k] then
             if category then
-                if not player_modifiers[k][category] then
-                    player_modifiers[k][category] = 0
+                if value then
+                    player_modifiers[k][category] = value
+                else
+                    player_modifiers[k][category] = nil
                 end
-                player_modifiers[k][category] = value
 
                 if not this.creative_enabled then
                     if category == 'rpg' and modifiers[k] == 'character_inventory_slots_bonus' and player_modifiers[k][category] >= this.rpg_inventory_slot_limit then

@@ -3,7 +3,7 @@ local Task = require 'utils.task'
 local Gui = require 'utils.gui'
 local Color = require 'utils.color_presets'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
-local P = require 'utils.player_modifiers'
+local Modifiers = require 'utils.player_modifiers'
 local Token = require 'utils.token'
 local Alert = require 'utils.alert'
 local Math2D = require 'math2d'
@@ -42,6 +42,19 @@ local travelings = {
     'gas gas gas',
     'comfylatron coming through'
 }
+
+local restore_crafting_boost_token =
+    Token.register(
+    function(event)
+        local player_index = event.player_index
+        local player = game.get_player(player_index)
+        if not player or not player.valid then
+            return
+        end
+
+        Public.restore_crafting_boost(player)
+    end
+)
 
 local desync =
     Token.register(
@@ -281,9 +294,9 @@ local repair_buildings =
         local entity = data.entity
         if entity and entity.valid then
             local rng = 0.1
-            if math.random(1, 5) == 1 then
+            if random(1, 5) == 1 then
                 rng = 0.2
-            elseif math.random(1, 8) == 1 then
+            elseif random(1, 8) == 1 then
                 rng = 0.4
             end
             local to_heal = entity.prototype.max_health * rng
@@ -308,9 +321,9 @@ function Public.repair_aoe(player, position)
 end
 
 function Public.suicidal_comfylatron(pos, surface)
-    local str = travelings[math.random(1, #travelings)]
+    local str = travelings[random(1, #travelings)]
     local symbols = {'', '!', '!', '!!', '..'}
-    str = str .. symbols[math.random(1, #symbols)]
+    str = str .. symbols[random(1, #symbols)]
     local text = str
     local e =
         surface.create_entity(
@@ -765,18 +778,18 @@ function Public.update_player_stats(player)
     local rpg_extra = Public.get('rpg_extra')
     local rpg_t = Public.get_value_from_player(player.index)
     local strength = rpg_t.strength - 10
-    P.update_single_modifier(player, 'character_inventory_slots_bonus', 'rpg', round(strength * 0.2, 3))
-    P.update_single_modifier(player, 'character_mining_speed_modifier', 'rpg', round(strength * 0.006, 3))
-    P.update_single_modifier(player, 'character_maximum_following_robot_count_bonus', 'rpg', round(strength / 2 * 0.03, 3))
+    Modifiers.update_single_modifier(player, 'character_inventory_slots_bonus', 'rpg', round(strength * 0.2, 3))
+    Modifiers.update_single_modifier(player, 'character_mining_speed_modifier', 'rpg', round(strength * 0.006, 3))
+    Modifiers.update_single_modifier(player, 'character_maximum_following_robot_count_bonus', 'rpg', round(strength / 2 * 0.03, 3))
 
     local magic = rpg_t.magicka - 10
     local v = magic * 0.22
-    P.update_single_modifier(player, 'character_build_distance_bonus', 'rpg', math.min(60, round(v * 0.12, 3)))
-    P.update_single_modifier(player, 'character_item_drop_distance_bonus', 'rpg', math.min(60, round(v * 0.05, 3)))
-    P.update_single_modifier(player, 'character_reach_distance_bonus', 'rpg', math.min(60, round(v * 0.12, 3)))
-    P.update_single_modifier(player, 'character_loot_pickup_distance_bonus', 'rpg', math.min(20, round(v * 0.12, 3)))
-    P.update_single_modifier(player, 'character_item_pickup_distance_bonus', 'rpg', math.min(20, round(v * 0.12, 3)))
-    P.update_single_modifier(player, 'character_resource_reach_distance_bonus', 'rpg', math.min(20, round(v * 0.05, 3)))
+    Modifiers.update_single_modifier(player, 'character_build_distance_bonus', 'rpg', math.min(60, round(v * 0.12, 3)))
+    Modifiers.update_single_modifier(player, 'character_item_drop_distance_bonus', 'rpg', math.min(60, round(v * 0.05, 3)))
+    Modifiers.update_single_modifier(player, 'character_reach_distance_bonus', 'rpg', math.min(60, round(v * 0.12, 3)))
+    Modifiers.update_single_modifier(player, 'character_loot_pickup_distance_bonus', 'rpg', math.min(20, round(v * 0.12, 3)))
+    Modifiers.update_single_modifier(player, 'character_item_pickup_distance_bonus', 'rpg', math.min(20, round(v * 0.12, 3)))
+    Modifiers.update_single_modifier(player, 'character_resource_reach_distance_bonus', 'rpg', math.min(20, round(v * 0.05, 3)))
     if rpg_t.mana_max >= rpg_extra.mana_limit then
         rpg_t.mana_max = rpg_extra.mana_limit
     else
@@ -784,10 +797,10 @@ function Public.update_player_stats(player)
     end
 
     local dexterity = rpg_t.dexterity - 10
-    P.update_single_modifier(player, 'character_running_speed_modifier', 'rpg', round(dexterity * 0.0010, 3)) -- reduced since too high speed kills UPS.
-    P.update_single_modifier(player, 'character_crafting_speed_modifier', 'rpg', round(dexterity * 0.015, 3))
-    P.update_single_modifier(player, 'character_health_bonus', 'rpg', round((rpg_t.vitality - 10) * 6, 3))
-    P.update_player_modifiers(player)
+    Modifiers.update_single_modifier(player, 'character_running_speed_modifier', 'rpg', round(dexterity * 0.0010, 3)) -- reduced since too high speed kills UPS.
+    Modifiers.update_single_modifier(player, 'character_crafting_speed_modifier', 'rpg', round(dexterity * 0.015, 3))
+    Modifiers.update_single_modifier(player, 'character_health_bonus', 'rpg', round((rpg_t.vitality - 10) * 6, 3))
+    Modifiers.update_player_modifiers(player)
 end
 
 function Public.level_up_effects(player)
@@ -796,10 +809,10 @@ function Public.level_up_effects(player)
     local b = 0.75
     for _ = 1, 5, 1 do
         local p = {
-            (position.x + 0.4) + (b * -1 + math.random(0, b * 20) * 0.1),
-            position.y + (b * -1 + math.random(0, b * 20) * 0.1)
+            (position.x + 0.4) + (b * -1 + random(0, b * 20) * 0.1),
+            position.y + (b * -1 + random(0, b * 20) * 0.1)
         }
-        player.surface.create_entity({name = 'flying-text', position = p, text = '✚', color = {255, math.random(0, 100), 0}})
+        player.surface.create_entity({name = 'flying-text', position = p, text = '✚', color = {255, random(0, 100), 0}})
     end
     player.play_sound {path = 'utility/achievement_unlocked', volume_modifier = 0.50}
 end
@@ -810,19 +823,19 @@ function Public.cast_spell(player, failed)
     if not failed then
         for _ = 1, 3, 1 do
             local p = {
-                (position.x + 0.4) + (b * -1 + math.random(0, b * 20) * 0.1),
-                position.y + (b * -1 + math.random(0, b * 20) * 0.1)
+                (position.x + 0.4) + (b * -1 + random(0, b * 20) * 0.1),
+                position.y + (b * -1 + random(0, b * 20) * 0.1)
             }
-            player.surface.create_entity({name = 'flying-text', position = p, text = '✔️', color = {255, math.random(0, 100), 0}})
+            player.surface.create_entity({name = 'flying-text', position = p, text = '✔️', color = {255, random(0, 100), 0}})
         end
         player.play_sound {path = 'utility/scenario_message', volume_modifier = 1}
     else
         for _ = 1, 3, 1 do
             local p = {
-                (position.x + 0.4) + (b * -1 + math.random(0, b * 20) * 0.1),
-                position.y + (b * -1 + math.random(0, b * 20) * 0.1)
+                (position.x + 0.4) + (b * -1 + random(0, b * 20) * 0.1),
+                position.y + (b * -1 + random(0, b * 20) * 0.1)
             }
-            player.surface.create_entity({name = 'flying-text', position = p, text = '✖', color = {255, math.random(0, 100), 0}})
+            player.surface.create_entity({name = 'flying-text', position = p, text = '✖', color = {255, random(0, 100), 0}})
         end
         player.play_sound {path = 'utility/cannot_build', volume_modifier = 1}
     end
@@ -834,12 +847,59 @@ function Public.xp_effects(player)
     local b = 0.75
     for _ = 1, 5, 1 do
         local p = {
-            (position.x + 0.4) + (b * -1 + math.random(0, b * 20) * 0.1),
-            position.y + (b * -1 + math.random(0, b * 20) * 0.1)
+            (position.x + 0.4) + (b * -1 + random(0, b * 20) * 0.1),
+            position.y + (b * -1 + random(0, b * 20) * 0.1)
         }
-        player.surface.create_entity({name = 'flying-text', position = p, text = '✚', color = {255, math.random(0, 100), 0}})
+        player.surface.create_entity({name = 'flying-text', position = p, text = '✚', color = {255, random(0, 100), 0}})
     end
     player.play_sound {path = 'utility/achievement_unlocked', volume_modifier = 0.50}
+end
+
+function Public.boost_effects(player)
+    local position = {x = player.position.x - 0.75, y = player.position.y - 1}
+    local b = 0.75
+    for _ = 1, 10, 1 do
+        local p = {
+            (position.x + 0.4) + (b * -1 + random(0, b * 20) * 0.1),
+            position.y + (b * -1 + random(0, b * 20) * 0.1)
+        }
+        player.surface.create_entity({name = 'flying-text', position = p, text = '♻️', color = {random(0, 100), random(0, 100), 0}})
+    end
+end
+
+function Public.set_crafting_boost(player, get_dex_modifier)
+    local rpg_t = Public.get_value_from_player(player.index)
+    if not rpg_t then
+        return false
+    end
+
+    if rpg_t.crafting_boost then
+        return
+    end
+
+    Public.boost_effects(player)
+
+    rpg_t.crafting_boost = get_dex_modifier * 0.03
+    local bonus_length = 3600 * get_dex_modifier * 0.003
+    rpg_t.old_character_crafting_speed_modifier = player.character_crafting_speed_modifier
+    Modifiers.update_single_modifier(player, 'character_crafting_speed_modifier', 'crafting_boost', rpg_t.crafting_boost)
+    Modifiers.update_player_modifiers(player)
+    Task.set_timeout_in_ticks(bonus_length, restore_crafting_boost_token, {player_index = player.index})
+end
+
+function Public.restore_crafting_boost(player)
+    local rpg_t = Public.get_value_from_player(player.index)
+    if not rpg_t then
+        return false
+    end
+
+    if not rpg_t.crafting_boost then
+        return
+    end
+
+    rpg_t.crafting_boost = nil
+    rpg_t.old_character_crafting_speed_modifier = nil
+    Modifiers.update_single_modifier(player, 'character_crafting_speed_modifier', 'crafting_boost')
 end
 
 function Public.get_range_modifier(player)
@@ -860,6 +920,20 @@ function Public.get_melee_modifier(player)
         return false
     end
     local total = (rpg_t.strength - 10) * 0.10
+    return total
+end
+
+function Public.get_dex_modifier(player)
+    local rpg_t = Public.get_value_from_player(player.index)
+    if not rpg_t then
+        return false
+    end
+
+    if rpg_t.dexterity < 100 then
+        return 0
+    end
+
+    local total = (rpg_t.dexterity - 10) * 0.10
     return total
 end
 
@@ -974,6 +1048,18 @@ function Public.get_aoe_punch_chance(player)
         return 0
     end
     local chance = round(rpg_t.strength * 0.007, 1)
+    if chance > 100 then
+        chance = 100
+    end
+    return chance
+end
+
+function Public.get_crafting_bonus_chance(player)
+    local rpg_t = Public.get_value_from_player(player.index)
+    if rpg_t.dexterity < 100 then
+        return 0
+    end
+    local chance = round(rpg_t.dexterity * 0.007, 1)
     if chance > 100 then
         chance = 100
     end
@@ -1188,14 +1274,14 @@ function Public.rpg_reset_player(player, one_time_reset)
                 }
             }
         )
-    end
 
-    rpg_t = Public.get_value_from_player(player.index)
+        rpg_t = Public.get_value_from_player(player.index)
 
-    if rpg_t and rpg_extra.grant_xp_level and not rpg_t.granted_xp_level then
-        rpg_t.granted_xp_level = true
-        local to_grant = Public.experience_levels[rpg_t.level + rpg_extra.grant_xp_level]
-        Public.gain_xp(player, to_grant, true)
+        if rpg_t and rpg_extra.grant_xp_level and not rpg_t.granted_xp_level then
+            rpg_t.granted_xp_level = true
+            local to_grant = Public.experience_levels[rpg_t.level + rpg_extra.grant_xp_level]
+            Public.gain_xp(player, to_grant, true)
+        end
     end
 
     Public.draw_gui_char_button(player)
@@ -1307,7 +1393,7 @@ function Public.global_pool(players, count)
 
     local pool = math.floor(rpg_extra.global_pool)
 
-    local random_amount = math.random(5000, 10000)
+    local random_amount = random(5000, 10000)
 
     if pool <= random_amount then
         return

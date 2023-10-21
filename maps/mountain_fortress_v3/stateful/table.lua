@@ -722,7 +722,8 @@ local apply_settings_token =
 )
 
 function Public.save_settings()
-    this.buffs[#this.buffs + 1] = get_random_buff()
+    local granted_buff = get_random_buff()
+    this.buffs[#this.buffs + 1] = granted_buff
 
     local settings = {
         rounds_survived = this.rounds_survived,
@@ -737,6 +738,8 @@ function Public.save_settings()
     else
         Server.set_data(dataset, dataset_key_dev, settings)
     end
+
+    return granted_buff
 end
 
 function Public.reset_stateful(refresh_gui, clear_buffs)
@@ -772,7 +775,7 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
             randomized_wave = random(scale(180, 1000), scale(200, 1000)),
             supplies = get_random_items(),
             single_item = get_random_item(),
-            killed_enemies = random(scale(80000, 10000000), scale(100000, 10000000)),
+            killed_enemies = random(scale(20000, 80000), scale(40000, 80000)),
             research_level_selection = get_random_research_recipe(),
             locomotive_market_coins_spent = {
                 spent = 0,

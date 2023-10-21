@@ -25,14 +25,14 @@ end
 
 function Public.apply_tiles(tiles)
     if tiles and next(tiles) then
-        local surface = game.get_surface('nauvis')
+        local surface = game.get_surface(this.map_name)
         surface.set_tiles(tiles, true)
     end
 end
 
 function Public.apply_entities(entities)
     if entities and next(entities) then
-        local surface = game.get_surface('nauvis')
+        local surface = game.get_surface(this.map_name)
         for _, e in ipairs(entities) do
             if e then
                 surface.create_entity(e)
@@ -43,9 +43,13 @@ end
 
 function Public.apply_decoratives(decoratives)
     if decoratives and next(decoratives) then
-        local surface = game.get_surface('nauvis')
+        local surface = game.get_surface(this.map_name)
         surface.create_decoratives({check_collision = true, decoratives = decoratives})
     end
+end
+
+function Public.apply_map_name(map_name)
+    this.map_name = map_name or nil
 end
 
 Event.add(
