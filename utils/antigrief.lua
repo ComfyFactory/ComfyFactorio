@@ -711,8 +711,7 @@ local function on_console_chat(event)
         if this.enable_jail_on_long_texts and not player.admin then
             if not this.players_warn_on_long_texts[player.index] then
                 this.players_warn_on_long_texts[player.index] = 1
-                local r = random(7200, 18000)
-                Task.set_timeout_in_ticks(r, clear_players_warn_on_long_texts, {player_index = player.index})
+                Task.set_timeout_in_ticks(108000, clear_players_warn_on_long_texts, {player_index = player.index})
             end
             local warnings = this.players_warn_on_long_texts[player.index]
             if warnings then
