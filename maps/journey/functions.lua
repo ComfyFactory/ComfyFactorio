@@ -1131,7 +1131,6 @@ function Public.create_the_world(journey)
 		local m = (100 + modifier.value) * 0.01
 		local name = modifier.name
 		local extremes = {Constants.modifiers[name].min, Constants.modifiers[name].max}
-		local
 		journey.world_modifiers[name] = math.round(math.min(extremes[2], math.max(extremes[1], journey.world_modifiers[name] * m)) * 100000, 5) / 100000
 	end
 	surface.map_gen_settings = mgs
