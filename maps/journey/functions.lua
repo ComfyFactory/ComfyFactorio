@@ -1131,7 +1131,7 @@ function Public.create_the_world(journey)
 		local m = (100 + modifier.value) * 0.01
 		local name = modifier.name
 		local extremes = {Constants.modifiers[name].min, Constants.modifiers[name].max}
-		journey.world_modifiers[name] = math.round(math.min(extremes[2], math.max(extremes[1], journey.world_modifiers[name] * m)), 5)
+		journey.world_modifiers[name] = math.round(math.min(extremes[2], math.max(extremes[1], journey.world_modifiers[name] * m)) * 100000, 5) / 100000
 	end
 	surface.map_gen_settings = mgs
 	set_map_modifiers(journey)
@@ -1344,10 +1344,12 @@ function Public.world(journey)
 		local inventory = silo.get_inventory(defines.inventory.rocket_silo_rocket) or {}
 		local slot = inventory[1]
 		if slot and slot.valid and slot.valid_for_read then
-			local needs = (journey.mothership_cargo_space[slot.name] or 0) - (journey.mothership_cargo[slot.name] or 0)
-			if needs > 0 and slot.count >= math.min(game.item_prototypes[slot.name].stack_size, needs) then
+			local name = slot.name
+			local count = slot.count
+			local needs = (journey.mothership_cargo_space[name] or 0) - (journey.mothership_cargo[name] or 0)
+			if needs > 0 and count >= math.min(game.item_prototypes[name].stack_size, needs) then
 				if silo.launch_rocket() then
-					table.insert(journey.mothership_messages, {'journey.message_rocket_launched', slot.count, slot.name, silo.position.x, silo.position.y})
+					table.insert(journey.mothership_messages, {'journey.message_rocket_launched', count, name, silo.position.x, silo.position.y})
 				end
 			end
 		end
