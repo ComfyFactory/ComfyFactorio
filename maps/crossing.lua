@@ -1,12 +1,8 @@
---luacheck: ignore
 -- crossing -- by mewmew --
 
-local event = require 'utils.event'
-local math_random = math.random
-local insert = table.insert
+local Event = require 'utils.event'
 local map_functions = require 'tools.map_functions'
-local simplex_noise = require 'utils.simplex_noise'
-local simplex_noise = simplex_noise.d2
+local simplex_noise = require 'utils.simplex_noise'.d2
 
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
@@ -16,9 +12,9 @@ local function on_player_joined_game(event)
         player.insert({name = 'firearm-magazine', count = 16})
         player.insert({name = 'iron-plate', count = 32})
 
-        pos = player.character.surface.find_non_colliding_position('character', {0, -40}, 50, 1)
-        game.forces.player.set_spawn_position(pos, player.character.surface)
-        player.teleport(pos, player.character.surface)
+        local pos = player.character.surface.find_non_colliding_position('character', {0, -40}, 50, 1)
+        game.forces.player.set_spawn_position({x = pos.x, y = pos.y}, player.character.surface)
+        player.teleport({x = pos.x, y = pos.y}, player.character.surface)
     end
 end
 
@@ -106,9 +102,9 @@ local biter_building_inhabitants = {
 
 local function on_entity_died(event)
     if event.entity.name == 'biter-spawner' or event.entity.name == 'spitter-spawner' then
-        local e = math.ceil(game.forces.enemy.evolution_factor * 10, 0)
+        local e = math.ceil(game.forces.enemy.evolution_factor * 10)
         for _, t in pairs(biter_building_inhabitants[e]) do
-            for x = 1, math.random(t[2], t[3]), 1 do
+            for _ = 1, math.random(t[2], t[3]), 1 do
                 local p = event.entity.surface.find_non_colliding_position(t[1], event.entity.position, 6, 1)
                 if p then
                     event.entity.surface.create_entity {name = t[1], position = p}
@@ -118,6 +114,6 @@ local function on_entity_died(event)
     end
 end
 
-event.add(defines.events.on_chunk_generated, on_chunk_generated)
-event.add(defines.events.on_player_joined_game, on_player_joined_game)
-event.add(defines.events.on_entity_died, on_entity_died)
+Event.add(defines.events.on_chunk_generated, on_chunk_generated)
+Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(defines.events.on_entity_died, on_entity_died)
