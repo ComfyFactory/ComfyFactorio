@@ -252,6 +252,8 @@ commands.add_command(
 
         Modifiers.set('creative_enabled', true)
 
+        player.force.enable_all_prototypes()
+
         for _, iter_player in pairs(game.connected_players) do
             if iter_player.character ~= nil then
                 if iter_player.get_inventory(defines.inventory.character_armor) then

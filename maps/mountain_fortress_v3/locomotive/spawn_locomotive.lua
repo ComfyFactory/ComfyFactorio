@@ -122,6 +122,7 @@ local set_loco_cargo =
                 local e = surface.create_entity({name = name, position = p[i], force = 'neutral', create_build_effect_smoke = false})
                 e.minable = false
                 e.destructible = true
+                e.health = random(15, 30)
                 local inventory = e.get_inventory(defines.inventory.chest)
                 inventory.insert(cargo_boxes[i])
             end
