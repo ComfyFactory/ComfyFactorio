@@ -285,8 +285,10 @@ local function give_passive_xp(data)
                     end
                 end
             end
-        else
-            player.character_personal_logistic_requests_enabled = false
+        -- else
+        --     if player.character then
+        --         player.character_personal_logistic_requests_enabled = false
+        --     end
         end
         ::pre_exit::
     end
