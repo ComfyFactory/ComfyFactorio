@@ -39,6 +39,15 @@ journey.import = Token.register(
 	end
 )
 
+journey.check_import = Token.register(
+	function(data)
+		if not data then
+            return
+        end
+		script.raise_event(events.check_import, data)
+	end
+)
+
 local function on_chunk_generated(event)
 	local surface = event.surface
 
