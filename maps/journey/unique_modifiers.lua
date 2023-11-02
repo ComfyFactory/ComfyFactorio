@@ -176,14 +176,14 @@ Public.tarball = {
         local entity = event.created_entity
         if not entity.valid then return end
         if entity.surface.index ~= 1 then return end
-        if entity.type == 'entity-ghost' or entity.type == 'tile-ghost' or entity.type == 'container' or entity.type == 'wall' or entity.type == 'gate' or entity.type == 'pipe' then return end
+        if entity.type == 'entity-ghost' or entity.type == 'tile-ghost' or entity.type == 'container' or entity.type == 'wall' or entity.type == 'gate' or entity.type == 'pipe' or entity.type == 'pipe-to-ground' then return end
         entity.minable = false
     end,
     on_built_entity = function(event)
         local entity = event.created_entity
         if not entity.valid then return end
         if entity.surface.index ~= 1 then return end
-        if entity.type == 'entity-ghost' or entity.type == 'tile-ghost' or entity.type == 'container' or entity.type == 'wall' or entity.type == 'gate' or entity.type == 'pipe' then return end
+        if entity.type == 'entity-ghost' or entity.type == 'tile-ghost' or entity.type == 'container' or entity.type == 'wall' or entity.type == 'gate' or entity.type == 'pipe' or entity.type == 'pipe-to-ground' then return end
         entity.minable = false
     end,
     on_chunk_generated = function(event, journey)
