@@ -44,6 +44,16 @@ local wrecks = {
 }
 local size_of_wrecks = #wrecks
 
+local tarball_minable = {
+    ['entity-ghost'] = true,
+    ['tile-ghost'] = true,
+    ['container'] = true,
+    ['wall'] = true,
+    ['gate'] = true,
+    ['pipe'] = true,
+    ['pipe-to-ground'] = true
+}
+
 local Public = {}
 
 Public.lush = {}
@@ -176,14 +186,14 @@ Public.tarball = {
         local entity = event.created_entity
         if not entity.valid then return end
         if entity.surface.index ~= 1 then return end
-        if entity.type == 'entity-ghost' or entity.type == 'tile-ghost' or entity.type == 'container' or entity.type == 'wall' or entity.type == 'gate' or entity.type == 'pipe' or entity.type == 'pipe-to-ground' then return end
+        if tarball_minable[entity.type] then return end
         entity.minable = false
     end,
     on_built_entity = function(event)
         local entity = event.created_entity
         if not entity.valid then return end
         if entity.surface.index ~= 1 then return end
-        if entity.type == 'entity-ghost' or entity.type == 'tile-ghost' or entity.type == 'container' or entity.type == 'wall' or entity.type == 'gate' or entity.type == 'pipe' or entity.type == 'pipe-to-ground' then return end
+        if tarball_minable[entity.type] then return end
         entity.minable = false
     end,
     on_chunk_generated = function(event, journey)
@@ -206,7 +216,7 @@ end,
 }
 
 Public.swamps = {
-    on_world_start = function(journey)
+    set_specials = function(journey)
         journey.world_specials['water'] = 2
     end,
     on_chunk_generated = function(event, journey)
@@ -371,7 +381,7 @@ Public.infested = {
             render_layer = 'ground'
         }))
     end,
-    on_world_start = function(journey)
+    set_specials = function(journey)
         journey.world_specials['trees_size'] = 4
         journey.world_specials['trees_richness'] = 2
         journey.world_specials['trees_frequency'] = 2
@@ -536,7 +546,7 @@ Public.abandoned_library = {
 }
 
 Public.railworld = {
-    on_world_start = function(journey)
+    set_specials = function(journey)
         journey.world_specials['ore_size'] = 4
         journey.world_specials['ore_frequency'] = 0.25
         journey.world_specials['coal'] = 4
@@ -577,5 +587,26 @@ Public.resupply_station = {
         journey.speedrun.enabled = false
     end,
 }
+
+Public.crazy_science = {
+    set_specials = function(journey)
+        journey.world_specials['technology_price_multiplier'] = 50
+        journey.world_specials['starting_area'] = 3
+        journey.world_specials['copper-ore'] = 2
+        journey.world_specials['iron-ore'] = 4
+    end,
+    on_world_start = function(journey)
+        game.forces.player.laboratory_productivity_bonus = 5
+        game.forces.player.laboratory_speed_modifier = 10
+    end,
+    on_research_finished = function(event, journey)
+        local name = 'technology_price_multiplier'
+        local force = event.research.force
+        journey.world_specials[name] = math.max(0.1, journey.world_specials[name] * 0.95)
+        game.difficulty_settings.technology_price_multiplier = journey.world_modifiers[name] * (journey.world_specials[name] or 1)
+        force.laboratory_productivity_bonus = math.max(0.1, force.laboratory_productivity_bonus * 0.95)
+    end,
+}
+
 
 return Public
