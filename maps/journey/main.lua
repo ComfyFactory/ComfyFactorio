@@ -20,6 +20,7 @@ local journey = {
 
 local events = {
 	import = Event.generate_event_name('import'),
+	check_import = Event.generate_event_name('check_import'),
 }
 
 Global.register(
