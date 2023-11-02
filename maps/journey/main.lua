@@ -131,6 +131,15 @@ local function on_robot_mined_entity(event)
 	if unique_modifier.on_robot_mined_entity then unique_modifier.on_robot_mined_entity(event, journey) end
 end
 
+local function on_research_finished(event)
+	local unique_modifier = Unique_modifiers[journey.world_trait]
+	if unique_modifier.on_research_finished then
+		unique_modifier.on_research_finished(event, journey)
+		Functions.update_tooltips(journey)
+		Functions.draw_gui(journey)
+	end
+end
+
 local function on_entity_damaged(event)
 	local entity = event.entity
 	if not entity or not entity.valid then return end
@@ -189,6 +198,19 @@ local function make_import(data)
 	journey.importing = true
 	game.print('Journey data imported.')
 	journey.game_state = 'importing_world'
+end
+
+local function check_import(data)
+	if not data then
+		return
+	end
+	if data.key ~= 'journey_updating' then
+		return
+	end
+	local importing = data.value
+	if importing then
+		Functions.import_journey(journey)
+	end
 end
 
 local function on_nth_tick()
@@ -267,6 +289,18 @@ commands.add_command(
 )
 
 commands.add_command(
+	'journey-update-now',
+	'Restarts the server with newest version of Journey scenario code right now. Only doable during map selection.',
+	function()
+		local s, _, p = cmd_handler()
+		if s then
+			Functions.restart_server(journey)
+			p('Journey is restarting to apply changes...')
+		end
+	end
+)
+
+commands.add_command(
 	'journey-import',
 	'Sets the journey gamestate to the last exported one.',
 	function()
@@ -284,7 +318,7 @@ commands.add_command(
 	function()
 		local s, _, p = cmd_handler()
 		if s then
-			Functions.export_journey(journey)
+			Functions.export_journey(journey, journey.restart_from_scenario)
 			p('Journey world settings exporting...')
 		end
 	end
@@ -304,4 +338,6 @@ Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)
 Event.add(defines.events.on_console_chat, on_console_chat)
+Event.add(defines.events.on_research_finished, on_research_finished)
 Event.add(events['import'], make_import)
+Event.add(events['check_import'], check_import)

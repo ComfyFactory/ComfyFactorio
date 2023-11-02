@@ -413,7 +413,7 @@ function Public.on_mothership_chunk_generated(event)
 	surface.set_tiles(tiles, true)
 end
 
-function Public.export_journey(journey)
+function Public.export_journey(journey, import_flag)
 	local data = {
 		world_number = journey.world_number,
 		world_modifiers = journey.world_modifiers,
@@ -427,10 +427,10 @@ function Public.export_journey(journey)
         return
     else
 		Server.set_data('scenario_settings', 'journey_data', data)
+		Server.set_data('scenario_settings', 'journey_updating', import_flag)
 		game.print('Journey data exported...')
 	end
 end
-
 
 function Public.import_journey(journey)
 	local state = journey.game_state
@@ -446,10 +446,31 @@ function Public.import_journey(journey)
 	end
 end
 
+local function check_if_restarted(journey)
+	local secs = Server.get_current_time()
+    if not secs then
+        return
+    else
+		Server.try_get_data('scenario_settings', 'journey_updating', journey.check_import)
+	end
+end
+
+function Public.restart_server(journey)
+	local state = journey.game_state
+	if state == 'world' or state == 'dispatch_goods' or state == 'mothership_waiting_for_players' then
+		log('Can force restart only during world selection stages')
+		return
+	end
+	game.print({'journey.cmd_server_restarting'}, {r = 255, g = 255, b = 0})
+	Public.export_journey(journey, true)
+	Server.start_scenario('Journey')
+	return
+end
+
 function Public.hard_reset(journey)
 	if journey.restart_from_scenario then
 		game.print({'journey.cmd_server_restarting'}, {r = 255, g = 255, b = 0})
-		Public.export_journey(journey)
+		Public.export_journey(journey, false)
 		Server.start_scenario('Journey')
 		return
 	end
@@ -651,7 +672,7 @@ function Public.draw_mothership(journey)
 	end
 	Public.draw_gui(journey)
 	surface.daytime = 0.5
-
+	check_if_restarted()
 	journey.game_state = 'set_world_selectors'
 end
 
@@ -762,6 +783,9 @@ local function roll_bonus_goods(journey, trait, amount)
 end
 
 function Public.set_world_selectors(journey)
+	if journey.restart_from_scenario then
+		Public.restart_server(journey)
+	end
 	local surface = game.surfaces.mothership
 
 	local x = Constants.reroll_selector_area.left_top.x + 3.2
@@ -1134,10 +1158,15 @@ function Public.create_the_world(journey)
 		journey.world_modifiers[name] = math.round(math.min(extremes[2], math.max(extremes[1], journey.world_modifiers[name] * m)) * 100000, 5) / 100000
 	end
 	surface.map_gen_settings = mgs
+	journey.world_trait = journey.world_selectors[journey.selected_world].world_trait
+
+	local unique_modifier = Unique_modifiers[journey.world_trait]
+	local set_specials = unique_modifier.set_specials
+	if set_specials then set_specials(journey) end
 	set_map_modifiers(journey)
 	surface.clear(false)
 
-	journey.world_trait = journey.world_selectors[journey.selected_world].world_trait
+
 	journey.nauvis_chunk_positions = nil
 	journey.rocket_silos = {}
 	journey.mothership_cargo['uranium-fuel-cell'] = 0

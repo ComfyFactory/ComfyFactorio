@@ -358,6 +358,12 @@ Public.unique_world_traits = {
         mods = 2,
         loot = {basic = {0, 0}, low = {0, 0}, mil = {0, 1}, inter = {0, 2}, adv = {0, 2}, rare = {1, 1}}
     },
+	['crazy_science'] = {
+		name = 'Crazy Science',
+		desc = 'Stuff is standing on its head',
+		mods = 3,
+		loot = {basic = {0, 1}, low = {0, 0}, mil = {0, 1}, inter = {0, 1}, adv = {0, 1}, rare = {0, 1}}
+	},
 }
 
 return Public
