@@ -672,7 +672,7 @@ function Public.draw_mothership(journey)
 	end
 	Public.draw_gui(journey)
 	surface.daytime = 0.5
-	check_if_restarted(journey)
+
 	journey.game_state = 'set_world_selectors'
 end
 
@@ -1035,7 +1035,7 @@ end
 
 function Public.mothership_world_selection(journey)
 	Public.teleport_players_to_mothership(journey)
-
+	check_if_restarted(journey)
 	local surface = game.surfaces.mothership
 	local daytime = surface.daytime
 	daytime = daytime - 0.025
