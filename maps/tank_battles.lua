@@ -197,11 +197,7 @@ local function create_tank_battle_score_gui()
     )
 end
 
-local function get_valid_random_spawn_position(surface)
-    local chunks = {}
-    for chunk in surface.get_chunks() do
-        insert(chunks, {x = chunk.x, y = chunk.y})
-    end
+local function get_valid_random_spawn_position(surface, chunks)
     chunks = shuffle(chunks)
 
     for _, chunk in pairs(chunks) do
@@ -223,6 +219,13 @@ local function get_valid_random_spawn_position(surface)
 end
 
 local function put_players_into_arena()
+    local surface = game.get_surface('nauvis')
+
+    local chunks = {}
+    for chunk in surface.get_chunks() do
+        insert(chunks, {x = chunk.x, y = chunk.y})
+    end
+
     Core.iter_connected_players(
         function(player)
             local permissions_group = game.permissions.get_group('Default')
@@ -239,16 +242,14 @@ local function put_players_into_arena()
             player.insert({name = 'rocket-launcher', count = 1})
             player.insert({name = 'flamethrower', count = 1})
 
-            local surface = game.get_surface('nauvis')
-
-            local pos = get_valid_random_spawn_position(surface)
+            local pos = get_valid_random_spawn_position(surface, chunks)
 
             player.force.chart(surface, {{x = -1 * arena_size, y = -1 * arena_size}, {x = arena_size, y = arena_size}})
 
             if pos then
                 player.teleport(pos, surface)
             else
-                pos = get_valid_random_spawn_position(surface)
+                pos = get_valid_random_spawn_position(surface, chunks)
             end
             local tank = surface.create_entity({name = 'tank', force = game.forces[player.name], position = pos})
             tank.insert({name = 'coal', count = 24})

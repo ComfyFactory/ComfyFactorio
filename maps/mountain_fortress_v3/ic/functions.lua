@@ -1372,6 +1372,15 @@ function Public.check_entity_healths()
     end
 end
 
+function Public.get_car(unit_number)
+    local cars = IC.get('cars')
+    if not next(cars) then
+        return
+    end
+
+    return cars[unit_number] or nil
+end
+
 function Public.set_damage_health(data)
     local entity = data.entity
     local final_damage_amount = data.final_damage_amount
