@@ -142,26 +142,6 @@ function Public.reset_map()
     OfflinePlayers.set_enabled(true)
     -- OfflinePlayers.set_offline_players_surface_removal(true)
 
-    RPG.rpg_reset_all_players()
-    RPG.set_surface_name({game.surfaces[this.active_surface_index].name, 'boss_room'})
-    RPG.enable_health_and_mana_bars(true)
-    RPG.enable_wave_defense(true)
-    RPG.enable_mana(true)
-    RPG.personal_tax_rate(0.4)
-    RPG.enable_stone_path(true)
-    RPG.enable_aoe_punch(true)
-    RPG.enable_aoe_punch_globally(false)
-    RPG.enable_range_buffs(true)
-    RPG.enable_auto_allocate(true)
-    RPG.enable_explosive_bullets_globally(true)
-    RPG.enable_explosive_bullets(false)
-    RPG_Progression.toggle_module(false)
-    RPG_Progression.set_dataset('mtn_v3_rpg_prestige')
-
-    if Public.get('prestige_system_enabled') then
-        RPG_Progression.restore_xp_on_reset()
-    end
-
     Group.reset_groups()
     Group.alphanumeric_only(false)
 
@@ -288,11 +268,32 @@ function Public.reset_map()
     this.market_announce = game.tick + 1200
     this.game_lost = false
 
+    RPG.reset_table()
     Public.stateful.enable(true)
     Public.stateful.create()
     Public.stateful.reset_stateful(true, true)
     Public.stateful.increase_enemy_damage_and_health()
     Public.stateful.apply_startup_settings()
+
+    RPG.rpg_reset_all_players()
+    RPG.set_surface_name({game.surfaces[this.active_surface_index].name, 'boss_room'})
+    RPG.enable_health_and_mana_bars(true)
+    RPG.enable_wave_defense(true)
+    RPG.enable_mana(true)
+    RPG.personal_tax_rate(0.4)
+    RPG.enable_stone_path(true)
+    RPG.enable_aoe_punch(true)
+    RPG.enable_aoe_punch_globally(false)
+    RPG.enable_range_buffs(true)
+    RPG.enable_auto_allocate(true)
+    RPG.enable_explosive_bullets_globally(true)
+    RPG.enable_explosive_bullets(false)
+    RPG_Progression.toggle_module(false)
+    RPG_Progression.set_dataset('mtn_v3_rpg_prestige')
+
+    if Public.get('prestige_system_enabled') then
+        RPG_Progression.restore_xp_on_reset()
+    end
 
     if _DEV_MODE then
         Collapse.disable_collapse(true)

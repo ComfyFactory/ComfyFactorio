@@ -1232,7 +1232,8 @@ function Public.rpg_reset_player(player, one_time_reset)
         rpg_t.xp = round(old_xp)
         rpg_t.level = old_level
     else
-        Public.set_new_player_tbl(
+        rpg_t =
+            Public.set_new_player_tbl(
             player.index,
             {
                 level = 1,
@@ -1274,8 +1275,6 @@ function Public.rpg_reset_player(player, one_time_reset)
                 }
             }
         )
-
-        rpg_t = Public.get_value_from_player(player.index)
 
         if rpg_t and rpg_extra.grant_xp_level and not rpg_t.granted_xp_level then
             rpg_t.granted_xp_level = true
