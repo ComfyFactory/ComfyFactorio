@@ -486,7 +486,6 @@ local function get_random_research_recipe()
     local research_level_list = {
         'energy-weapons-damage-7',
         'physical-projectile-damage-7',
-        'refined-flammables-7',
         'stronger-explosives-7',
         'mining-productivity-4',
         'worker-robots-speed-6',
@@ -782,7 +781,7 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
                 required = random(scale(50000), scale(100000))
             },
             trees_farmed = random(scale(9500, 400000), scale(10500, 400000)),
-            rocks_farmed = random(scale(45000, 4000000), scale(55000, 4000000)),
+            rocks_farmed = random(scale(45000, 450000), scale(55000, 450000)),
             rockets_launched = random(scale(30, 700), scale(45, 700))
         }
     end

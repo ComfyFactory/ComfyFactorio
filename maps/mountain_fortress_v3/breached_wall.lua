@@ -7,6 +7,7 @@ local Alert = require 'utils.alert'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Color = require 'utils.color_presets'
+local ICF = require 'maps.mountain_fortress_v3.ic.functions'
 
 local floor = math.floor
 local abs = math.abs
@@ -192,6 +193,8 @@ local compare_player_and_train = function(player, entity)
         return
     end
 
+    local car = ICF.get_car(entity.unit_number)
+
     local position = player.position
     local locomotive = Public.get('locomotive')
     if not locomotive or not locomotive.valid then
@@ -220,6 +223,10 @@ local compare_player_and_train = function(player, entity)
 
     if c_y - t_y <= gap_between_zones.neg_gap then
         if entity.health then
+            if car and car.health_pool and car.health_pool.health then
+                car.health_pool.health = car.health_pool.health - 500
+            end
+
             entity.health = entity.health - 500
             if entity.health <= 0 then
                 entity.die('enemy')
@@ -375,12 +382,14 @@ local function on_player_driving_changed_state(event)
     if not (player and player.valid) then
         return
     end
+
     local entity = event.entity
     if not (entity and entity.valid) then
         return
     end
+
     local s = Public.get('validate_spider')
-    if entity.name == 'spidertron' then
+    if player.driving then
         if not s[player.index] then
             s[player.index] = entity
         end
