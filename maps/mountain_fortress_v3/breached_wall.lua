@@ -51,6 +51,35 @@ local collapse_message =
     end
 )
 
+local driving_state_changed_token =
+    Token.register(
+    function(event)
+        local player_index = event.player_index
+        local player = game.get_player(player_index)
+        if not player or not player.valid then
+            return
+        end
+
+        local entity = event.entity
+        if not (entity and entity.valid) then
+            return
+        end
+
+        local s = Public.get('validate_spider')
+        if entity.name == 'spidertron' then
+            if player.driving then
+                if not s[player.index] then
+                    s[player.index] = entity
+                end
+            else
+                if s[player.index] then
+                    s[player.index] = nil
+                end
+            end
+        end
+    end
+)
+
 local spidertron_unlocked =
     Token.register(
     function(event)
@@ -378,7 +407,7 @@ local function on_player_driving_changed_state(event)
         return
     end
 
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
     if not (player and player.valid) then
         return
     end
@@ -388,16 +417,7 @@ local function on_player_driving_changed_state(event)
         return
     end
 
-    local s = Public.get('validate_spider')
-    if player.driving then
-        if not s[player.index] then
-            s[player.index] = entity
-        end
-    else
-        if s[player.index] then
-            s[player.index] = nil
-        end
-    end
+    Task.set_timeout_in_ticks(15, driving_state_changed_token, {player_index = player.index, entity = entity})
 end
 
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)
