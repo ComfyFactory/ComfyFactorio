@@ -191,7 +191,7 @@ local function get_random_buff()
             modifier = 'starting_items',
             limit = nil,
             items = {
-                {name = 'assembling-machine', count = 1}
+                {name = 'assembling-machine-1', count = 1}
             }
         },
         {
@@ -706,6 +706,10 @@ local apply_settings_token =
                 Server.set_data(dataset, dataset_key_dev, settings)
             end
             return
+        end
+
+        if not settings.current_date then
+            settings.current_date = tonumber(current_time)
         end
 
         this.current_date = settings.current_date

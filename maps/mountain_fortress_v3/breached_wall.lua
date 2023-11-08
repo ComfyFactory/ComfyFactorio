@@ -153,21 +153,34 @@ local check_distance_between_player_and_locomotive = function(player)
         return
     end
 
+    local collapse_position = Collapse.get_position()
+
     local gap_between_locomotive = Public.get('gap_between_locomotive')
-
-    if not gap_between_locomotive.highest_pos then
-        gap_between_locomotive.highest_pos = locomotive.position
-    end
-
     gap_between_locomotive.highest_pos = locomotive.position
     gap_between_locomotive = Public.get('gap_between_locomotive')
 
-    local c_y = position.y
+    local p_y = position.y
     local t_y = gap_between_locomotive.highest_pos.y
+    local c_y = collapse_position.y
 
-    if c_y - t_y <= gap_between_locomotive.neg_gap then
+    if p_y - t_y <= gap_between_locomotive.neg_gap then
         player.teleport({position.x, locomotive.position.y + gap_between_locomotive.neg_gap + 2}, surface)
         player.print(({'breached_wall.hinder'}), Color.warning)
+        if player.driving then
+            player.driving = false
+        end
+        if player.character then
+            player.character.health = player.character.health - 5
+            player.character.surface.create_entity({name = 'water-splash', position = position})
+            if player.character.health <= 0 then
+                player.character.die('enemy')
+            end
+        end
+    end
+
+    if p_y - c_y <= gap_between_locomotive.neg_gap_collapse then
+        player.teleport({position.x, c_y + gap_between_locomotive.neg_gap_collapse + 2}, surface)
+        player.print(({'breached_wall.hinder_collapse'}), Color.warning)
         if player.driving then
             player.driving = false
         end
