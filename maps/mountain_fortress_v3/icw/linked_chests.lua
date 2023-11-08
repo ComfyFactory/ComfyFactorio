@@ -660,50 +660,64 @@ local function built_entity_robot(event)
         return
     end
 
+    local active_surface_index = WPT.get('active_surface_index')
+    local disable_link_chest_cheese_mode = WPT.get('disable_link_chest_cheese_mode')
+
     local net_point = robot.logistic_network
-    if net_point and net_point.storage_points and net_point.storage_points[1] and net_point.storage_points[1].owner and net_point.storage_points[1].owner.valid then
-        if (net_point.storage_points[1].owner.name == 'character') then
-            local player = net_point.storage_points[1].owner.player
-            if not player or not player.valid then
-                return
-            end
+    if net_point and net_point.storage_points then
+        for _, point in pairs(net_point.storage_points) do
+            if point then
+                if point.owner and point.owner.valid and point.owner.name == 'character' then
+                    local player = point.owner.player
+                    if not player or not player.valid then
+                        return
+                    end
 
-            local active_surface_index = WPT.get('active_surface_index')
+                    if player.surface.index ~= active_surface_index then
+                        if entity.type ~= 'entity-ghost' then
+                            player.insert({name = 'linked-chest', count = 1})
+                        end
+                        entity.destroy()
+                        player.print(module_name .. 'Linked chests only work on the main surface.', Color.warning)
+                        return
+                    end
 
-            if player.surface.index ~= active_surface_index then
-                if entity.type ~= 'entity-ghost' then
-                    player.insert({name = 'linked-chest', count = 1})
+                    if not WPT.locomotive.is_around_train(entity) then
+                        if entity.type ~= 'entity-ghost' then
+                            player.insert({name = 'linked-chest', count = 1})
+                        end
+                        entity.destroy()
+                        player.print(module_name .. 'Linked chests only work inside the locomotive aura.', Color.warning)
+                        return
+                    end
+
+                    local trusted_player = Session.get_trusted_player(player)
+
+                    if not trusted_player then
+                        if entity.type ~= 'entity-ghost' then
+                            player.insert({name = 'linked-chest', count = 1})
+                        end
+                        entity.destroy()
+                        player.print('[Antigrief] You have not grown accustomed to this technology yet.', Color.warning)
+                        return
+                    end
+
+                    local s = create_chest(entity)
+                    if s then
+                        gui_opened(event)
+                    end
+                else
+                    local created = event.created_entity
+                    if created and created.valid then
+                        local inventory = robot.get_inventory(defines.inventory.robot_cargo)
+                        inventory.insert({name = created.name, count = 1})
+                        created.destroy()
+                    end
                 end
-                entity.destroy()
-                player.print(module_name .. 'Linked chests only work on the main surface.', Color.warning)
-                return
             end
+        end
 
-            if not WPT.locomotive.is_around_train(entity) then
-                if entity.type ~= 'entity-ghost' then
-                    player.insert({name = 'linked-chest', count = 1})
-                end
-                entity.destroy()
-                player.print(module_name .. 'Linked chests only work inside the locomotive aura.', Color.warning)
-                return
-            end
-
-            local trusted_player = Session.get_trusted_player(player)
-
-            if not trusted_player then
-                if entity.type ~= 'entity-ghost' then
-                    player.insert({name = 'linked-chest', count = 1})
-                end
-                entity.destroy()
-                player.print('[Antigrief] You have not grown accustomed to this technology yet.', Color.warning)
-                return
-            end
-
-            local s = create_chest(entity)
-            if s then
-                gui_opened(event)
-            end
-        else
+        if disable_link_chest_cheese_mode then
             local created = event.created_entity
             if created and created.valid then
                 local inventory = robot.get_inventory(defines.inventory.robot_cargo)

@@ -442,7 +442,7 @@ local compare_collapse_and_train = function()
         Public.set_difficulty()
     else
         Collapse.set_speed(1)
-        Collapse.set_amount(4)
+        Collapse.set_amount(40)
     end
 end
 

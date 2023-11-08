@@ -125,6 +125,7 @@ function Public.reset_main_table()
         hinders = {},
         gap = 900,
         neg_gap = -3520, -- earlier 2112 (3 zones, whereas 704 is one zone)
+        neg_gap_collapse = -5520, -- earlier 2112 (3 zones, whereas 704 is one zone)
         highest_pos = nil
     }
     this.force_chunk = false
