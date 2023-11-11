@@ -3,47 +3,29 @@ local simplex_noise = require 'utils.simplex_noise'.d2
 
 --add or use noise templates from here
 local noises = {
-    ['bb_biterland'] = {
-        {modifier = 0.0015, weight = 1.1},
-        {modifier = 0.009, weight = 0.34},
-        {modifier = 0.095, weight = 0.016}
-    },
-    ['bb_ore'] = {{modifier = 0.0046, weight = 0.95}, {modifier = 0.03, weight = 0.077}, {modifier = 0.09, weight = 0.023}},
-    ['cave_ponds'] = {{modifier = 0.011, weight = 0.74}, {modifier = 0.14, weight = 0.079}},
-    ['smol_areas'] = {{modifier = 0.0042, weight = 0.81}, {modifier = 0.129, weight = 0.021}, {modifier = 0.119, weight = 0.03}},
-    ['cave_worms'] = {{modifier = 0.0011, weight = 0.99}, {modifier = 0.09, weight = 0.059}},
+    ['cave_ponds'] = {{modifier = 0.014, weight = 0.77}, {modifier = 0.18, weight = 0.085}},
+    ['smol_areas'] = {{modifier = 0.0052, weight = 0.83}, {modifier = 0.139, weight = 0.022}, {modifier = 0.121, weight = 0.01}},
     ['cave_rivers'] = {
-        {modifier = 0.0077, weight = 0.74},
-        {modifier = 0.0089, weight = 0.29},
-        {modifier = 0.072, weight = 0.028}
+        {modifier = 0.0053, weight = 0.71},
+        {modifier = 0.0086, weight = 0.24},
+        {modifier = 0.070, weight = 0.025}
     },
     ['cave_rivers_2'] = {
-        {modifier = 0.0033, weight = 0.99},
-        {modifier = 0.0099, weight = 0.2},
-        {modifier = 0.049, weight = 0.009}
+        {modifier = 0.0035, weight = 0.90},
+        {modifier = 0.0088, weight = 0.15},
+        {modifier = 0.051, weight = 0.011}
     },
-    ['cave_rivers_3'] = {
-        {modifier = 0.0022, weight = 0.99},
-        {modifier = 0.0099, weight = 0.14},
-        {modifier = 0.049, weight = 0.009}
-    },
-    ['cave_rivers_4'] = {
-        {modifier = 0.0009, weight = 0.99},
-        {modifier = 0.0099, weight = 0.1},
-        {modifier = 0.049, weight = 0.009}
-    },
-    ['decoratives'] = {{modifier = 0.031, weight = 1.05}, {modifier = 0.055, weight = 0.24}, {modifier = 0.11, weight = 0.055}},
-    ['dungeons'] = {{modifier = 0.0033, weight = 1.05}, {modifier = 0.0066, weight = 0.24}},
+    ['dungeons'] = {{modifier = 0.0028, weight = 0.99}, {modifier = 0.0059, weight = 0.21}},
     ['dungeon_sewer'] = {
         {modifier = 0.00055, weight = 1.05},
-        {modifier = 0.0055, weight = 0.014},
+        {modifier = 0.0062, weight = 0.024},
         {modifier = 0.0275, weight = 0.00135}
     },
     ['large_caves'] = {
-        {modifier = 0.00363, weight = 1.05},
-        {modifier = 0.01, weight = 0.23},
         {modifier = 0.055, weight = 0.045},
-        {modifier = 0.11, weight = 0.042}
+        {modifier = 0.11, weight = 0.042},
+        {modifier = 0.00363, weight = 1.05},
+        {modifier = 0.01, weight = 0.23}
     },
     ['n1'] = {{modifier = 0.00011, weight = 1.1}},
     ['n2'] = {{modifier = 0.0011, weight = 1.1}},
@@ -131,7 +113,7 @@ function Public.get_noise(name, pos, seed)
     local d = 0
     for i = 1, #noises[name] do
         local mod = noises[name]
-        noise = noise + simplex_noise(pos.x * mod[i].modifier, pos.y * mod[i].modifier, seed, 0xF) * mod[i].weight
+        noise = noise + simplex_noise(pos.x * mod[i].modifier, pos.y * mod[i].modifier, seed) * mod[i].weight
         d = d + mod[i].weight
         seed = seed + seed / seed
     end

@@ -187,7 +187,8 @@ local function create_button(player)
             type = 'sprite-button',
             name = main_button_name,
             sprite = 'utility/custom_tag_icon',
-            tooltip = 'Has information about all objectives that needs to be completed'
+            tooltip = 'Has information about all objectives that needs to be completed',
+            style = Gui.button_style
         }
     )
     b.style.minimal_height = 38

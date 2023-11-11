@@ -16,6 +16,7 @@ require 'modules.wave_defense.main'
 require 'modules.charging_station'
 
 local Event = require 'utils.event'
+local Gui = require 'utils.gui'
 local Public = require 'maps.mountain_fortress_v3.core'
 local Discord = require 'utils.discord'
 local IC = require 'maps.mountain_fortress_v3.ic.table'
@@ -57,6 +58,8 @@ local role_to_mention = Discord.role_mentions.mtn_fortress
 local floor = math.floor
 local remove = table.remove
 RPG.disable_cooldowns_on_spells()
+Gui.mod_gui_button_enabled = true
+Gui.button_style = 'mod_gui_button'
 
 local collapse_kill = {
     entities = {

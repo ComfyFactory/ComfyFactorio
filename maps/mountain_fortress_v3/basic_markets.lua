@@ -280,7 +280,7 @@ function Public.mountain_market(surface, position, rarity, buy)
     if #items > 0 then
         table.shuffle_table(items)
     end
-    local mrk = surface.create_entity({name = 'market', position = position, force = 'neutral'})
+    local mrk = surface.create_entity({name = 'market', position = position, force = 'neutral', create_build_effect_smoke = false})
 
     for i = 1, random(5, 10), 1 do
         local item = items[i]

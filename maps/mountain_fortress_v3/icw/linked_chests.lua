@@ -526,6 +526,7 @@ local function gui_opened(event)
 
     local container = fetch_container(unit_number)
     if not container then
+        player.opened = nil
         return
     end
 
