@@ -1,10 +1,11 @@
 local Public = require 'modules.wave_defense.table'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
+local Gui = require 'utils.gui'
 
 local floor = math.floor
 
 local function create_gui(player)
-    local frame = player.gui.top.add({type = 'frame', name = 'wave_defense'})
+    local frame = player.gui.top.add({type = 'frame', name = 'wave_defense', style = Gui.frame_style})
     frame.style.maximal_height = 37
 
     local label = frame.add({type = 'label', caption = ' ', name = 'label'})
@@ -19,18 +20,11 @@ local function create_gui(player)
     wave_number_label.style.font_color = {r = 0.33, g = 0.66, b = 0.9}
 
     local progressbar = frame.add({type = 'progressbar', name = 'progressbar', value = 0})
-    local experimental = get_game_version()
-    if experimental then
-        progressbar.style = 'achievement_progressbar'
-        progressbar.style.minimal_width = 96
-        progressbar.style.maximal_width = 96
-        progressbar.style.padding = -1
-        progressbar.style.top_padding = 1
-    else
-        progressbar.style.minimal_width = 96
-        progressbar.style.maximal_width = 96
-        progressbar.style.top_padding = 10
-    end
+    progressbar.style = 'achievement_progressbar'
+    progressbar.style.minimal_width = 96
+    progressbar.style.maximal_width = 96
+    progressbar.style.padding = -1
+    progressbar.style.top_padding = 1
 
     local line = frame.add({type = 'line', direction = 'vertical'})
     line.style.left_padding = 4

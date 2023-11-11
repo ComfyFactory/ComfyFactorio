@@ -26,6 +26,19 @@ local start_ground_tiles = {
     'grass-4'
 }
 
+local nuclear_tiles = {
+    'nuclear-ground',
+    'nuclear-ground',
+    'black-refined-concrete',
+    'tutorial-grid',
+    'nuclear-ground',
+    'red-refined-concrete',
+    'tutorial-grid',
+    'red-refined-concrete',
+    'black-refined-concrete',
+    'red-refined-concrete'
+}
+
 local wagon_raffle = {
     'cargo-wagon',
     'cargo-wagon',
@@ -379,7 +392,7 @@ local function wall(p, data)
                 tiles[#tiles + 1] = {name = 'water', position = p}
             else
                 tiles[#tiles + 1] = {name = 'water-shallow', position = p}
-                if random(1, 26) == 1 then
+                if random(1, 20) == 1 then
                     entities[#entities + 1] = {
                         name = 'land-mine',
                         position = p,
@@ -391,9 +404,11 @@ local function wall(p, data)
                 entities[#entities + 1] = {name = 'fish', position = p}
             end
         else
-            tiles[#tiles + 1] = {name = base_tile, position = p}
+            local noise = Public.get_noise('dungeon_sewer', p, data.seed)
+            local index = floor(noise * 32) % 9 + 1
+            tiles[#tiles + 1] = {name = nuclear_tiles[index], position = p}
 
-            if random(1, 5) ~= 1 then
+            if random(1, 4) ~= 1 then
                 entities[#entities + 1] = {name = rock_raffle[random(1, #rock_raffle)], position = p}
                 if random(1, 26) == 1 then
                     entities[#entities + 1] = {
@@ -405,7 +420,9 @@ local function wall(p, data)
             end
         end
     else
-        tiles[#tiles + 1] = {name = base_tile, position = p}
+        local noise = Public.get_noise('dungeon_sewer', p, data.seed)
+        local index = floor(noise * 32) % 9 + 1
+        tiles[#tiles + 1] = {name = nuclear_tiles[index], position = p}
 
         if
             surface.can_place_entity(
@@ -423,8 +440,8 @@ local function wall(p, data)
                     treasure[#treasure + 1] = {position = p, chest = 'steel-chest'}
                 end
             end
-            if y < 4 or y > 25 then
-                if y <= 23 then
+            if y < 4 or y > 24 then
+                if y <= 22 then
                     if random(1, y + 1) == 1 then
                         entities[#entities + 1] = {
                             name = 'stone-wall',
@@ -1332,7 +1349,7 @@ local function zone_scrap_1(x, y, data, void_or_lab, adjusted_zones)
         entities[#entities + 1] = {name = 'crude-oil', position = p, amount = get_oil_amount(p)}
     end
 
-    tiles[#tiles + 1] = {name = 'stone-path', position = p}
+    tiles[#tiles + 1] = {name = 'red-refined-concrete', position = p}
     if random(1, 256) == 1 then
         entities[#entities + 1] = {name = 'land-mine', position = p, force = 'enemy'}
     end
@@ -1347,8 +1364,8 @@ local function zone_7(x, y, data, void_or_lab, adjusted_zones)
     local markets = data.markets
     local treasure = data.treasure
 
-    local cave_rivers_3 = Public.get_noise('cave_rivers_3', p, seed)
-    local cave_rivers_4 = Public.get_noise('cave_rivers_4', p, seed + seed)
+    local cave_rivers_3 = Public.get_noise('cave_rivers_2', p, seed)
+    local cave_rivers_4 = Public.get_noise('cave_rivers_2', p, seed + seed)
     local no_rocks_2 = Public.get_noise('no_rocks_2', p, seed)
     local smol_areas = Public.get_noise('smol_areas', p, seed + seed)
 
@@ -2488,8 +2505,8 @@ local function starting_zone(x, y, data, void_or_lab, adjusted_zones)
     local cave_rivers = Public.get_noise('cave_rivers', p, seed)
     local no_rocks = Public.get_noise('no_rocks', p, seed)
 
-    if smol_areas < 0.055 and smol_areas > -0.025 then
-        entities[#entities + 1] = {name = rock_raffle[random(1, size_of_rock_raffle)], position = p}
+    if smol_areas < 0.057 and smol_areas > -0.021 then
+        tiles[#tiles + 1] = {name = void_or_lab, position = p}
         if random(1, 32) == 1 then
             Public.spawn_random_buildings(buildings, p, zone_settings.zone_depth)
         end
@@ -2517,7 +2534,7 @@ local function starting_zone(x, y, data, void_or_lab, adjusted_zones)
     end
 
     --Water Ponds
-    if noise_cave_ponds > 0.64 then
+    if noise_cave_ponds > 0.6 then
         if noise_cave_ponds > 0.74 then
             tiles[#tiles + 1] = {name = 'acid-refined-concrete', position = p}
             if random(1, 4) == 1 then
@@ -2536,7 +2553,7 @@ local function starting_zone(x, y, data, void_or_lab, adjusted_zones)
     end
 
     --Rivers
-    if cave_rivers < 0.042 and cave_rivers > -0.062 then
+    if cave_rivers < 0.044 and cave_rivers > -0.072 then
         if noise_cave_ponds > 0.1 then
             tiles[#tiles + 1] = {name = 'water-shallow', position = p}
             if random(1, 64) == 1 then
@@ -2559,7 +2576,7 @@ local function starting_zone(x, y, data, void_or_lab, adjusted_zones)
     end
 
     --Worm oil Zones
-    if no_rocks < 0.035 and no_rocks > -0.145 then
+    if no_rocks < 0.029 and no_rocks > -0.245 then
         if small_caves > 0.081 then
             tiles[#tiles + 1] = {name = 'brown-refined-concrete', position = p}
             if random(1, 250) == 1 then
@@ -2808,17 +2825,12 @@ function Public.heavy_functions(data)
     end
 
     local p = data.position
-    local get_tile = surface.get_tile(p)
 
     local adjusted_zones = Public.get('adjusted_zones')
     init_terrain(adjusted_zones)
 
     if not data.seed then
         data.seed = Public.get('random_seed')
-    end
-
-    if get_tile.valid and get_tile.name == 'out-of-map' then
-        return
     end
 
     if top_y % zone_settings.zone_depth == 0 and top_y < 0 then
@@ -2887,7 +2899,7 @@ Event.add(
             end
         end
 
-        if left_top.y > 32 then
+        if left_top.y < -32 then
             game.forces.player.chart(surface, {{left_top.x, left_top.y}, {left_top.x + 31, left_top.y + 31}})
         end
     end

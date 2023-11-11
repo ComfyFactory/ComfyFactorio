@@ -110,7 +110,7 @@ function Public.iter_connected_players(callback)
     for i = 1, #players do
         local player = players[i]
         if player and player.valid then
-            callback(player)
+            callback(player, i)
         end
     end
 end

@@ -1,3 +1,4 @@
+-- created by Gerkiz for ComfyFactorio
 local Global = require 'utils.global'
 local Session = require 'utils.datastore.session_data'
 local Game = require 'utils.game'
@@ -20,8 +21,8 @@ local votejail = {}
 local votefree = {}
 local revoked_permissions = {}
 local settings = {
-    playtime_for_vote = 25920000, -- 5 days
-    playtime_for_instant_jail = 207360000, -- 40 days
+    playtime_for_vote = 77760000, -- 15 days
+    playtime_for_instant_jail = 362880000, -- 70 days
     -- playtime_for_instant_jail = 103680000, -- 20 days
     clear_voted_player = 36000, -- remove player from vote-tbl after 10 minutes
     clear_terms_tbl = 2000,

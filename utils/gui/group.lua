@@ -32,7 +32,7 @@ local function build_group_gui(data)
     local members_width = 90
     local member_columns = 2
     local actions_width = 130
-    local total_height = frame.style.minimal_height - 60
+    local total_height = (frame.style.minimal_height or 500) - 60
 
     frame.clear()
 

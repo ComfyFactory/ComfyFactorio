@@ -644,7 +644,12 @@ local function show_score(data)
     t = scroll_pane.add {type = 'table', column_count = 5}
 
     -- Score entries
+    local i = 0
     for _, entry in pairs(score_list) do
+        i = i + 1
+        if i == 20 then
+            break
+        end
         local p
         if not (entry and entry.name) then
             p = {color = {r = random(1, 255), g = random(1, 255), b = random(1, 255)}}

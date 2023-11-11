@@ -3,11 +3,23 @@
 --change global.charging_station_multiplier if you want different conversion rate than 1:1.
 local Event = require 'utils.event'
 local SpamProtection = require 'utils.spam_protection'
+local Gui = require 'utils.gui'
 
 local function draw_charging_gui()
     for _, player in pairs(game.connected_players) do
         if not player.gui.top.charging_station then
-            local b = player.gui.top.add({type = 'sprite-button', name = 'charging_station', sprite = 'item/battery-mk2-equipment', tooltip = {'modules.charging_station_tooltip'}})
+            local b =
+                player.gui.top.add(
+                {
+                    type = 'sprite-button',
+                    name = 'charging_station',
+                    sprite = 'item/battery-mk2-equipment',
+                    tooltip = {
+                        'modules.charging_station_tooltip'
+                    },
+                    style = Gui.button_style
+                }
+            )
             b.style.minimal_height = 38
             b.style.maximal_height = 38
         end

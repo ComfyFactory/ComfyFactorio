@@ -11,7 +11,7 @@ local ceil = math.ceil
 local round = math.round
 local queue_task = Task.queue_task
 local tiles_per_call = 8
-local total_calls = ceil(1024 / tiles_per_call)
+local total_calls = ceil(1024 / tiles_per_call) + 5
 local regen_decoratives = false
 local generate_map = Public.heavy_functions
 
@@ -39,77 +39,12 @@ local function get_position(data)
         data.xv = data.xv + 1
     end
 
-    data.position = {x = data.top_x + data.xv, y = data.top_y + data.yv}
+    data.position = {x = (data.top_x + data.xv), y = (data.top_y + data.yv)}
 end
 
 local function do_tile_inner(tiles, tile, pos)
     if type(tile) == 'string' then
         tiles[#tiles + 1] = {name = tile, position = pos}
-    end
-end
-
-local function do_tile(x, y, data, shape)
-    local pos = {x, y}
-
-    -- local coords need to be 'centered' to allow for correct rotation and scaling.
-    local tile = shape(data)
-
-    if type(tile) == 'table' then
-        do_tile_inner(data.tiles, tile.tile, pos)
-
-        local hidden_tile = tile.hidden_tile
-        if hidden_tile then
-            data.hidden_tiles[#data.hidden_tiles + 1] = {tile = hidden_tile, position = pos}
-        end
-
-        local entities = tile.entities
-        if entities then
-            for _, entity in ipairs(entities) do
-                if not entity.position then
-                    entity.position = pos
-                end
-                data.entities[#data.entities + 1] = entity
-            end
-        end
-
-        local buildings = tile.buildings
-        if buildings then
-            for _, entity in ipairs(buildings) do
-                if not entity.position then
-                    entity.position = pos
-                end
-                data.buildings[#data.buildings + 1] = entity
-            end
-        end
-
-        local decoratives = tile.decoratives
-        if decoratives then
-            for _, decorative in ipairs(decoratives) do
-                data.decoratives[#data.decoratives + 1] = decorative
-            end
-        end
-
-        local markets = tile.markets
-        if markets then
-            for _, t in ipairs(markets) do
-                if not t.position then
-                    t.position = pos
-                end
-                data.markets[#data.markets + 1] = t
-            end
-        end
-
-        local treasure = tile.treasure
-        if treasure then
-            for _, t in ipairs(treasure) do
-                if not t.position then
-                    t.position = pos
-                end
-                data.treasure[#data.treasure + 1] = t
-            end
-        end
-    else
-        do_tile_inner(data.tiles, tile, pos)
     end
 end
 
@@ -240,7 +175,8 @@ local function do_place_tiles(data)
     if not surface or not surface.valid then
         return
     end
-    surface.set_tiles(data.tiles, true)
+
+    surface.set_tiles(data.tiles)
 end
 
 local function do_place_hidden_tiles(data)
@@ -248,7 +184,7 @@ local function do_place_hidden_tiles(data)
     if not surface or not surface.valid then
         return
     end
-    surface.set_tiles(data.hidden_tiles, true)
+    surface.set_tiles(data.hidden_tiles)
 end
 
 local function do_place_decoratives(data)
@@ -283,6 +219,7 @@ local function do_place_buildings(data)
                     limit = 1
                 } == 0
              then
+                e.create_build_effect_smoke = false
                 entity = surface.create_entity(e)
                 if entity and entity.valid then
                     if e.direction then
@@ -360,6 +297,7 @@ local function do_place_entities(data)
     for _, e in ipairs(data.entities) do
         if e.collision then
             if surface.can_place_entity(e) then
+                e.create_build_effect_smoke = false
                 entity = surface.create_entity(e)
                 if entity then
                     if e.note then -- flamethrower-turret and artillery-turret are at default health, only gun-turret is modified
@@ -397,6 +335,7 @@ local function do_place_entities(data)
                 end
             end
         else
+            e.create_build_effect_smoke = false
             entity = surface.create_entity(e)
             if entity then
                 if e.note then -- small-worm-turret, medium-worm-turret, big-worm-turret, behemoth-worm-turret
@@ -480,7 +419,7 @@ local function map_gen_action(data)
         repeat
             count = count - 1
             get_position(data)
-            do_tile(x, y, data, shape)
+            shape(data)
 
             x = x + 1
 
@@ -503,30 +442,33 @@ local function map_gen_action(data)
         data.y = 33
         return true
     elseif state == 33 then
-        do_place_hidden_tiles(data)
         data.y = 34
         return true
     elseif state == 34 then
-        do_place_entities(data)
+        do_place_hidden_tiles(data)
         data.y = 35
         return true
     elseif state == 35 then
-        do_place_buildings(data)
+        do_place_entities(data)
         data.y = 36
         return true
     elseif state == 36 then
-        do_place_markets(data)
+        do_place_buildings(data)
         data.y = 37
         return true
     elseif state == 37 then
-        do_place_treasure(data)
+        do_place_markets(data)
         data.y = 38
         return true
     elseif state == 38 then
-        do_place_decoratives(data)
+        do_place_treasure(data)
         data.y = 39
         return true
     elseif state == 39 then
+        do_place_decoratives(data)
+        data.y = 40
+        return true
+    elseif state == 40 then
         run_chart_update(data)
         return false
     end
@@ -581,7 +523,7 @@ end
 
 --- Generates a Chunk of map when called
 -- @param event <table> the event table from on_chunk_generated
-local function do_chunk(event)
+local function force_do_chunk(event)
     local surface = event.surface
     local shape = generate_map
 
@@ -641,7 +583,7 @@ local function on_chunk(event)
     end
 
     if force_chunk then
-        do_chunk(event)
+        force_do_chunk(event)
     else
         schedule_chunk(event)
     end

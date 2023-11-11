@@ -3,6 +3,7 @@ local Public = {}
 local ICT = require 'maps.mountain_fortress_v3.ic.table'
 local Functions = require 'maps.mountain_fortress_v3.ic.functions'
 local Gui = require 'maps.mountain_fortress_v3.ic.gui'
+local CoreGui = require 'utils.gui'
 
 local function validate_player(player)
     if not player then
@@ -30,9 +31,12 @@ local function create_button(player)
             type = 'sprite-button',
             name = 'minimap_button',
             sprite = 'utility/map',
-            tooltip = 'Open or close minimap.'
+            tooltip = 'Open or close minimap.',
+            style = CoreGui.button_style
         }
     )
+    button.style.minimal_height = 38
+    button.style.maximal_height = 38
     button.visible = false
 end
 

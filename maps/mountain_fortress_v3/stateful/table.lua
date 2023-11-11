@@ -139,17 +139,17 @@ local function get_random_buff()
         {
             name = 'manual_crafting_speed_modifier',
             modifier = 'force',
-            state = 0.04
+            state = 0.06
         },
         {
             name = 'xp_bonus',
             modifier = 'rpg',
-            state = 0.02
+            state = 0.08
         },
         {
             name = 'xp_level',
             modifier = 'rpg',
-            state = 4
+            state = 8
         },
         {
             name = 'supplies',
@@ -170,6 +170,33 @@ local function get_random_buff()
             }
         },
         {
+            name = 'defense_2',
+            modifier = 'starting_items',
+            limit = nil,
+            items = {
+                {name = 'flamethrower', count = 1},
+                {name = 'flamethrower-ammo', count = 100}
+            }
+        },
+        {
+            name = 'defense_3',
+            modifier = 'starting_items',
+            limit = nil,
+            items = {
+                {name = 'grenade', count = 50},
+                {name = 'poison-capsule', count = 30}
+            }
+        },
+        {
+            name = 'defense_4',
+            modifier = 'starting_items',
+            limit = nil,
+            items = {
+                {name = 'rocket-launcher', count = 1},
+                {name = 'rocket', count = 100}
+            }
+        },
+        {
             name = 'armor',
             modifier = 'starting_items',
             limit = 1,
@@ -178,7 +205,25 @@ local function get_random_buff()
             }
         },
         {
+            name = 'armor_2',
+            modifier = 'starting_items',
+            limit = 1,
+            items = {
+                {name = 'modular-armor', count = 1},
+                {name = 'solar-panel-equipment', count = 2}
+            }
+        },
+        {
             name = 'production',
+            modifier = 'starting_items',
+            limit = nil,
+            items = {
+                {name = 'stone-furnace', count = 4},
+                {name = 'coal', count = 100}
+            }
+        },
+        {
+            name = 'production_2',
             modifier = 'starting_items',
             limit = nil,
             items = {
@@ -421,8 +466,6 @@ local function scale(setting, limit, factor)
     if limit and scale_value >= limit then
         return limit
     end
-    local random_value = scale_value * 0.9
-    scale_value = random(random_value, scale_value)
     return floor(scale_value)
 end
 

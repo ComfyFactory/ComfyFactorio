@@ -18,7 +18,8 @@ local this = {
     insert_into_furnace = false,
     insert_into_wagon = false,
     bottom_button = false,
-    small_radius = 2
+    small_radius = 2,
+    limit_containers = 50
 }
 
 local Public = {}
@@ -129,7 +130,7 @@ local function sort_entities_by_distance(position, entities)
     local index
     local size_of_entities = #entities
     if size_of_entities < 2 then
-        return
+        return entities
     end
 
     for _, entity in pairs(entities) do
@@ -142,12 +143,18 @@ local function sort_entities_by_distance(position, entities)
     end
 
     local i = 0
+    local containers = {}
     for _, range in pairs(t) do
         for _, entity in pairs(range) do
             i = i + 1
-            entities[i] = entity
+            if i >= (this.limit_containers or 50) then
+                return containers
+            end
+            containers[i] = entity
         end
     end
+
+    return containers
 end
 
 local function get_nearby_chests(player, a, furnace, wagon)
@@ -185,7 +192,7 @@ local function get_nearby_chests(player, a, furnace, wagon)
         end
     end
 
-    sort_entities_by_distance(player.position, containers)
+    containers = sort_entities_by_distance(player.position, containers)
     for _, entity in pairs(containers) do
         size_of_chests = size_of_chests + 1
         chests[size_of_chests] = entity
@@ -591,7 +598,8 @@ local function create_gui_button(player)
                     type = 'sprite-button',
                     name = auto_stash_button_name,
                     sprite = 'item/wooden-chest',
-                    tooltip = tooltip
+                    tooltip = tooltip,
+                    style = Gui.button_style
                 }
             )
         else
@@ -605,7 +613,8 @@ local function create_gui_button(player)
                     type = 'sprite-button',
                     sprite = 'item/wooden-chest',
                     name = auto_stash_button_name,
-                    tooltip = tooltip
+                    tooltip = tooltip,
+                    style = Gui.button_style
                 }
             )
             b.style.font_color = {r = 0.11, g = 0.8, b = 0.44}
@@ -674,6 +683,10 @@ end
 
 function Public.bottom_button(value)
     this.bottom_button = value or false
+end
+
+function Public.limit_containers(value)
+    this.limit_containers = value or 50
 end
 
 function Public.insert_to_neutral_chests(value)

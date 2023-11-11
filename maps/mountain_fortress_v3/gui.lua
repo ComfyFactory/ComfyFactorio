@@ -50,7 +50,8 @@ local function create_button(player)
             type = 'sprite-button',
             name = main_button_name,
             sprite = 'item/dummy-steel-axe',
-            tooltip = 'Shows statistics!'
+            tooltip = 'Shows statistics!',
+            style = Gui.button_style
         }
     )
     b.style.minimal_height = 38
@@ -71,7 +72,8 @@ local function spectate_button(player)
         type = 'sprite-button',
         name = spectate_button_name,
         sprite = 'utility/ghost_time_to_live_modifier_icon',
-        tooltip = 'Spectate!\nThis will kill your character.'
+        tooltip = 'Spectate!\nThis will kill your character.',
+        style = Gui.button_style
     }
 
     b.style.maximal_height = 38
