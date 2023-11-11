@@ -1,3 +1,4 @@
+-- created by Gerkiz for ComfyFactorio
 local Global = require 'utils.global'
 local Game = require 'utils.game'
 local Token = require 'utils.token'

@@ -1,3 +1,4 @@
+-- created by Gerkiz for ComfyFactorio
 local Global = require 'utils.global'
 local Session = require 'utils.datastore.session_data'
 local Game = require 'utils.game'

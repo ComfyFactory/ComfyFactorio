@@ -1,3 +1,4 @@
+-- created by Gerkiz for ComfyFactorio
 local Global = require 'utils.global'
 local Core = require 'utils.core'
 local Color = require 'utils.color_presets'
@@ -228,7 +229,7 @@ function Public.try_dl_data(player_index)
     player_index = tostring(player_index)
     local secs = Server.get_current_time()
     if secs == nil then
-        session[player_index] = game.players[player_index].online_time
+        session[player_index] = game.get_player(player_index).online_time
         return
     else
         try_get_data(session_data_set, player_index, try_download_data_token)
