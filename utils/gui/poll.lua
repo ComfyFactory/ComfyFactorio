@@ -773,7 +773,8 @@ local function player_joined(event)
                 type = 'sprite-button',
                 name = main_button_name,
                 sprite = 'item/programmable-speaker',
-                tooltip = 'Let your question be heard!'
+                tooltip = 'Let your question be heard!',
+                style = Gui.button_style
             }
         )
     else
@@ -789,7 +790,8 @@ local function player_joined(event)
                 type = 'sprite-button',
                 name = main_button_name,
                 sprite = 'item/programmable-speaker',
-                tooltip = 'Let your question be heard!'
+                tooltip = 'Let your question be heard!',
+                style = Gui.button_style
             }
             b.style.maximal_height = 38
         end

@@ -10,6 +10,7 @@ local tostring = tostring
 local next = next
 
 local Public = {}
+Public.events = {on_gui_removal = Event.generate_event_name('on_gui_removal')}
 
 -- local to this file
 local main_gui_tabs = {}
@@ -46,6 +47,7 @@ Public.infinite_icon = 'file/utils/files/infinity.png'
 Public.arrow_up_icon = 'file/utils/files/arrow-up.png'
 Public.arrow_down_icon = 'file/utils/files/arrow-down.png'
 Public.info_icon = 'file/utils/files/info.png'
+Public.mod_gui_button_enabled = false
 
 function Public.uid_name()
     return tostring(Token.uid())
@@ -60,6 +62,11 @@ local main_button_name = Public.uid_name()
 local close_button_name = Public.uid_name()
 
 Public.button_style = 'mod_gui_button'
+
+if not Public.mod_gui_button_enabled then
+    Public.button_style = nil
+end
+
 Public.frame_style = 'non_draggable_frame'
 
 Public.top_main_gui_button = main_button_name
@@ -259,23 +266,12 @@ function Public.add_main_frame_with_toolbar(player, align, set_frame_name, set_s
 
     local inside_frame =
         main_frame.add {
-        type = 'frame',
-        style = 'inside_shallow_frame'
-    }
-
-    local inside_frame_style = inside_frame.style
-    inside_frame_style.vertically_stretchable = true
-    inside_frame_style.maximal_height = 800
-
-    local inside_table =
-        inside_frame.add {
         type = 'table',
         column_count = 1 or inside_table_count,
         name = 'inside_frame'
     }
-    inside_table.style.padding = 3
 
-    return main_frame, inside_table
+    return main_frame, inside_frame
 end
 
 -- Removes data associated with LuaGuiElement and its children recursively.
@@ -467,14 +463,10 @@ function Public.get_main_frame(player)
 
     local left = player.gui.left
     local frame = left[main_frame_name]
-
     if frame and frame.valid then
         local inside_frame = frame.children[2]
         if inside_frame and inside_frame.valid then
-            local inside_table = inside_frame.children[1]
-            if inside_table and inside_table.valid then
-                return inside_table
-            end
+            return inside_frame
         end
         return false
     end
@@ -648,7 +640,6 @@ function Public.reload_active_tab(player, forced)
     if not frame then
         return
     end
-
     local tab = main_gui_tabs[frame.caption]
     if not tab then
         return
@@ -657,24 +648,24 @@ function Public.reload_active_tab(player, forced)
     if not id then
         return
     end
-    local func = Token.get(id)
+    local callback = Token.get(id)
 
     local d = {
         player = player,
         frame = main_tab
     }
 
-    return func(d)
+    return callback(d)
 end
 
 local function top_button(player)
     if settings.mod_gui_top_frame then
-        Public.add_mod_button(player, {type = 'sprite-button', name = main_button_name, sprite = 'item/raw-fish'})
+        Public.add_mod_button(player, {type = 'sprite-button', name = main_button_name, sprite = 'item/raw-fish', style = Public.button_style})
     else
         if player.gui.top[main_button_name] then
             return
         end
-        local button = player.gui.top.add({type = 'sprite-button', name = main_button_name, sprite = 'item/raw-fish'})
+        local button = player.gui.top.add({type = 'sprite-button', name = main_button_name, sprite = 'item/raw-fish', style = Public.button_style})
         button.style.minimal_height = 38
         button.style.maximal_height = 38
         button.style.minimal_width = 40
@@ -692,39 +683,27 @@ local function draw_main_frame(player)
         Public.get_main_frame(player).destroy()
     end
 
-    local frame, inside_frame = Public.add_main_frame_with_toolbar(player, 'left', main_frame_name, nil, close_button_name, 'Comfy Panel')
+    local frame, inside_frame = Public.add_main_frame_with_toolbar(player, 'left', main_frame_name, nil, close_button_name, 'Comfy Factorio')
     local tabbed_pane = inside_frame.add({type = 'tabbed-pane', name = 'tabbed_pane'})
 
-    for name, func in pairs(tabs) do
+    for name, callback in pairs(tabs) do
         if not settings.disabled_tabs[name] then
-            if func.only_server_sided then
+            if callback.only_server_sided then
                 local secs = Server.get_current_time()
                 if secs then
-                    local tab = tabbed_pane.add({type = 'tab', caption = name, name = func.name})
+                    local tab = tabbed_pane.add({type = 'tab', caption = name, name = callback.name})
                     local name_frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
-                    name_frame.style.minimal_height = 480
-                    name_frame.style.maximal_height = 480
-                    name_frame.style.minimal_width = 800
-                    name_frame.style.maximal_width = 800
                     tabbed_pane.add_tab(tab, name_frame)
                 end
-            elseif func.admin == true then
+            elseif callback.admin == true then
                 if player.admin then
-                    local tab = tabbed_pane.add({type = 'tab', caption = name, name = func.name})
+                    local tab = tabbed_pane.add({type = 'tab', caption = name, name = callback.name})
                     local name_frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
-                    name_frame.style.minimal_height = 480
-                    name_frame.style.maximal_height = 480
-                    name_frame.style.minimal_width = 800
-                    name_frame.style.maximal_width = 800
                     tabbed_pane.add_tab(tab, name_frame)
                 end
             else
-                local tab = tabbed_pane.add({type = 'tab', caption = name, name = func.name})
+                local tab = tabbed_pane.add({type = 'tab', caption = name, name = callback.name})
                 local name_frame = tabbed_pane.add({type = 'frame', name = name, direction = 'vertical'})
-                name_frame.style.minimal_height = 480
-                name_frame.style.maximal_height = 480
-                name_frame.style.minimal_width = 800
-                name_frame.style.maximal_width = 800
                 tabbed_pane.add_tab(tab, name_frame)
             end
         end
@@ -738,6 +717,32 @@ local function draw_main_frame(player)
 
     Public.reload_active_tab(player, true)
     return frame, inside_frame
+end
+
+function Public.get_content(player)
+    local left_frame = Public.get_main_frame(player)
+    if not left_frame then
+        return false
+    end
+    return left_frame.tabbed_pane
+end
+
+function Public.refresh(player)
+    local frame = get_player_active_tab(player)
+    if not frame then
+        return false
+    end
+
+    local tabbed_pane = Public.get_content(player)
+
+    for _, tab in pairs(tabbed_pane.tabs) do
+        if tab.content.name ~= frame.name then
+            tab.content.clear()
+        end
+    end
+
+    Public.reload_active_tab(player, true)
+    return true
 end
 
 function Public.call_existing_tab(player, name)
@@ -909,6 +914,40 @@ Public.on_click(
 )
 
 Event.add(
+    defines.events.on_gui_click,
+    function(event)
+        local element = event.element
+        if not element or not element.valid then
+            return
+        end
+
+        local player = game.get_player(event.player_index)
+
+        local name = element.name
+
+        if name == main_button_name then
+            local is_spamming = SpamProtection.is_spamming(player, nil, 'Main GUI Click')
+            if is_spamming then
+                return
+            end
+            Public.refresh(player)
+        end
+
+        if not event.element.caption then
+            return
+        end
+        if event.element.type ~= 'tab' then
+            return
+        end
+
+        local success = Public.refresh(player)
+        if not success then
+            Public.reload_active_tab(player)
+        end
+    end
+)
+
+Event.add(
     defines.events.on_player_created,
     function(event)
         local player = game.get_player(event.player_index)
@@ -921,6 +960,24 @@ Event.add(
     function(event)
         local player = game.get_player(event.player_index)
         top_button(player)
+    end
+)
+
+Event.add(
+    Public.events.on_gui_removal,
+    function(player)
+        local b =
+            Public.get_button_flow(player).add(
+            {
+                type = 'sprite-button',
+                name = main_button_name,
+                sprite = 'utility/expand_dots',
+                style = Public.button_style,
+                tooltip = 'The panel of all the goodies!'
+            }
+        )
+        b.style.padding = 2
+        b.style.width = 20
     end
 )
 

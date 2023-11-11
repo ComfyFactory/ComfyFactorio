@@ -54,6 +54,66 @@ Module.cast_bool = function(var)
     end
 end
 
+Module.get_formatted_playtime = function(x)
+    if x < 5184000 then
+        local y = x / 216000
+        y = tostring(y)
+        local h = ''
+        for i = 1, 10, 1 do
+            local z = string.sub(y, i, i)
+
+            if z == '.' then
+                break
+            else
+                h = h .. z
+            end
+        end
+
+        local m = x % 216000
+        m = m / 3600
+        m = math.floor(m)
+        m = tostring(m)
+
+        if h == '0' then
+            local str = m .. ' minutes'
+            return str
+        else
+            local str = h .. ' hours '
+            str = str .. m
+            str = str .. ' minutes'
+            return str
+        end
+    else
+        local y = x / 5184000
+        y = tostring(y)
+        local h = ''
+        for i = 1, 10, 1 do
+            local z = string.sub(y, i, i)
+
+            if z == '.' then
+                break
+            else
+                h = h .. z
+            end
+        end
+
+        local m = x % 5184000
+        m = m / 216000
+        m = math.floor(m)
+        m = tostring(m)
+
+        if h == '0' then
+            local str = m .. ' days'
+            return str
+        else
+            local str = h .. ' days '
+            str = str .. m
+            str = str .. ' hours'
+            return str
+        end
+    end
+end
+
 Module.find_entities_by_last_user = function(player, surface, filters)
     if type(player) == 'string' or not player then
         error("bad argument #1 to '" .. debug.getinfo(1, 'n').name .. "' (number or LuaPlayer expected, got " .. type(player) .. ')', 1)

@@ -42,7 +42,8 @@ function Public.draw_gui_char_button(player)
                 type = 'sprite-button',
                 name = draw_main_frame_name,
                 caption = '[RPG]',
-                tooltip = 'RPG'
+                tooltip = 'RPG',
+                style = Gui.button_style
             }
         )
         if b then
@@ -58,8 +59,17 @@ function Public.draw_gui_char_button(player)
         if player.gui.top[draw_main_frame_name] then
             return
         end
-        local b = player.gui.top.add({type = 'sprite-button', name = draw_main_frame_name, caption = '[RPG]', tooltip = 'RPG'})
-        b.style.font_color = {165, 165, 165}
+        local b =
+            player.gui.top.add(
+            {
+                type = 'sprite-button',
+                name = draw_main_frame_name,
+                caption = '[RPG]',
+                tooltip = 'RPG',
+                style = Gui.button_style
+            }
+        )
+        b.style.font_color = {0, 0, 0}
         b.style.font = 'heading-3'
         b.style.minimal_height = 38
         b.style.maximal_height = 38
@@ -79,7 +89,7 @@ function Public.update_char_button(player)
         if rpg_t.points_left > 0 then
             ComfyGui.get_button_flow(player)[draw_main_frame_name].style.font_color = {245, 0, 0}
         else
-            ComfyGui.get_button_flow(player)[draw_main_frame_name].style.font_color = {175, 175, 175}
+            ComfyGui.get_button_flow(player)[draw_main_frame_name].style.font_color = {0, 0, 0}
         end
     else
         if not player.gui.top[draw_main_frame_name] then
@@ -88,7 +98,7 @@ function Public.update_char_button(player)
         if rpg_t.points_left > 0 then
             player.gui.top[draw_main_frame_name].style.font_color = {245, 0, 0}
         else
-            player.gui.top[draw_main_frame_name].style.font_color = {175, 175, 175}
+            player.gui.top[draw_main_frame_name].style.font_color = {0, 0, 0}
         end
     end
 end
@@ -273,6 +283,8 @@ local function draw_main_frame(player, location)
     local w1 = 85
     local w2 = 63
 
+    local duped_items = rpg_t.duped_items or 0
+
     add_gui_description(left_bottom_table, ({'rpg_gui.strength_name'}), w1, ({'rpg_gui.strength_tooltip'}))
     add_gui_stat(left_bottom_table, rpg_t.strength, w2, ({'rpg_gui.strength_tooltip'}))
     add_gui_increase_stat(left_bottom_table, 'strength', player)
@@ -281,8 +293,8 @@ local function draw_main_frame(player, location)
     add_gui_stat(left_bottom_table, rpg_t.magicka, w2, ({'rpg_gui.magic_tooltip'}))
     add_gui_increase_stat(left_bottom_table, 'magicka', player)
 
-    add_gui_description(left_bottom_table, ({'rpg_gui.dexterity_name'}), w1, ({'rpg_gui.dexterity_tooltip'}))
-    add_gui_stat(left_bottom_table, rpg_t.dexterity, w2, ({'rpg_gui.dexterity_tooltip'}))
+    add_gui_description(left_bottom_table, ({'rpg_gui.dexterity_name'}), w1, ({'rpg_gui.dexterity_tooltip', duped_items}))
+    add_gui_stat(left_bottom_table, rpg_t.dexterity, w2, ({'rpg_gui.dexterity_tooltip', duped_items}))
 
     add_gui_increase_stat(left_bottom_table, 'dexterity', player)
 

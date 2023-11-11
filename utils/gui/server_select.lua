@@ -139,7 +139,8 @@ local function create_main_button(event)
                 type = 'sprite-button',
                 name = main_button_name,
                 sprite = 'utility/surface_editor_icon',
-                tooltip = 'Connect to another Comfy server!'
+                tooltip = 'Connect to another Comfy server!',
+                style = Gui.button_style
             }
         )
     else
@@ -151,7 +152,8 @@ local function create_main_button(event)
                     type = 'sprite-button',
                     sprite = 'utility/surface_editor_icon',
                     tooltip = 'Connect to another Comfy server!',
-                    name = main_button_name
+                    name = main_button_name,
+                    style = Gui.button_style
                 }
             )
             main_button.style.font_color = {r = 0.11, g = 0.8, b = 0.44}
