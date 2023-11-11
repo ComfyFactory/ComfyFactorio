@@ -1,3 +1,5 @@
+-- created by Gerkiz for ComfyFactorio
+
 local Token = require 'utils.token'
 local Color = require 'utils.color_presets'
 local Server = require 'utils.server'
@@ -25,14 +27,14 @@ Global.register(
 local Public = {}
 
 local function apply_stash(player)
-    local stash = this.logistics[player.index]
+    local stash = this.logistics[player.name]
     if stash then
         for i, slot in pairs(stash) do
             if slot and slot.name then
                 player.set_personal_logistic_slot(i, {name = slot.name, min = slot.min, max = slot.max})
             end
         end
-        this.logistics[player.index] = nil
+        this.logistics[player.name] = nil
     end
 end
 
@@ -71,10 +73,10 @@ local fetch_logistics =
                     if tech then
                         player.set_personal_logistic_slot(i, {name = slot.name, min = slot.min, max = slot.max})
                     else
-                        if not this.logistics[player.index] then
-                            this.logistics[player.index] = {}
+                        if not this.logistics[player.name] then
+                            this.logistics[player.name] = {}
                         end
-                        this.logistics[player.index][i] = {name = slot.name, min = slot.min, max = slot.max}
+                        this.logistics[player.name][i] = {name = slot.name, min = slot.min, max = slot.max}
                     end
                 end
             end
