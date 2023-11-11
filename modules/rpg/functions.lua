@@ -887,6 +887,19 @@ function Public.set_crafting_boost(player, get_dex_modifier)
     Task.set_timeout_in_ticks(bonus_length, restore_crafting_boost_token, {player_index = player.index})
 end
 
+function Public.increment_duped_crafted_items(player)
+    local rpg_t = Public.get_value_from_player(player.index)
+    if not rpg_t then
+        return false
+    end
+
+    if not rpg_t.duped_items then
+        rpg_t.duped_items = 0
+    end
+
+    rpg_t.duped_items = rpg_t.duped_items + 1
+end
+
 function Public.restore_crafting_boost(player)
     local rpg_t = Public.get_value_from_player(player.index)
     if not rpg_t then

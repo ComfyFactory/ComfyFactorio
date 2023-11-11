@@ -599,6 +599,7 @@ local function on_player_rotated_entity(event)
     if rpg_t.rotated_entity_delay > game.tick then
         return
     end
+
     rpg_t.rotated_entity_delay = game.tick + 20
     Public.gain_xp(player, 0.20)
 end
@@ -749,6 +750,7 @@ local function on_player_crafted_item(event)
                     name = item.name,
                     count = 1
                 }
+                Public.increment_duped_crafted_items(player)
                 if player.can_insert(reward) then
                     player.insert(reward)
                 end
