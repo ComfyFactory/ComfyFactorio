@@ -480,14 +480,18 @@ add_toolbar = function(player, remove)
     end
 
     local tooltip = ({'ic.control'})
-    player.gui.top.add(
+    local button =
+        player.gui.top.add(
         {
             type = 'sprite-button',
             sprite = 'item/spidertron',
             name = main_toolbar_name,
-            tooltip = tooltip
+            tooltip = tooltip,
+            style = Gui.button_style
         }
     )
+    button.style.minimal_height = 38
+    button.style.maximal_height = 38
 end
 
 remove_toolbar = function(player)
