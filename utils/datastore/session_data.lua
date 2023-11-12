@@ -158,11 +158,8 @@ local get_total_playtime_token =
 local nth_tick_token =
     Token.register(
     function(data)
-        local index = data.index
-        local player = game.get_player(index)
-        if player and player.valid then
-            Public.try_ul_data(player.name)
-        end
+        local player_name = data.name
+        Public.try_ul_data(player_name)
     end
 )
 
@@ -173,7 +170,7 @@ local function upload_data()
     for i = 1, #players do
         count = count + 10
         local player = players[i]
-        set_timeout_in_ticks(count, nth_tick_token, {index = player.index})
+        set_timeout_in_ticks(count, nth_tick_token, {name = player.name})
     end
 end
 
@@ -329,15 +326,9 @@ function Public.clear_player(player)
         local connected = player.connected
 
         if not connected then
-            if session[name] then
-                session[name] = nil
-            end
-            if online_track[name] then
-                online_track[name] = nil
-            end
-            if trusted[name] then
-                trusted[name] = nil
-            end
+            session[name] = nil
+            online_track[name] = nil
+            trusted[name] = nil
         end
     end
 end
@@ -346,9 +337,7 @@ end
 ---@param player LuaPlayer
 function Public.reset_online_track(player)
     local name = player.name
-    if online_track[name] then
-        online_track[name] = 0
-    end
+    online_track[name] = 0
 end
 
 --- It's vital that we reset the online_track so we

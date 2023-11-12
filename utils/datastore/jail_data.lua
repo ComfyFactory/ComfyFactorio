@@ -319,7 +319,7 @@ local function create_gulag_surface()
     return surface
 end
 
-local function teleport_player_to_gulag(player, action)
+local function teleport_player_to_gulag(player, action, mute)
     local p_data = get_player_data(player)
     if not p_data then
         return
@@ -332,6 +332,7 @@ local function teleport_player_to_gulag(player, action)
             p_data.position = player.position
             p_data.p_group_id = player.permission_group.group_id
             p_data.locked = true
+            p_data.muted = mute or false
         end
         player.teleport(gulag.find_non_colliding_position('character', {0, 0}, 128, 1), gulag.name)
         local data = {
@@ -436,12 +437,12 @@ local function validate_args(data)
     end
 
     if player.name == offender then
-        Utils.print_to(player, module_name .. 'You can´t jail yourself.')
+        Utils.print_to(player, module_name .. 'You can´t select yourself.')
         return false
     end
 
     if get_offender_player.admin and not player.admin then
-        Utils.print_to(player, module_name .. 'You can´t jail an admin.')
+        Utils.print_to(player, module_name .. 'You can´t select an admin.')
         return false
     end
 
@@ -606,13 +607,13 @@ local function jail(player, offender, msg, raised, mute)
         return
     end
 
-    draw_notice_frame(to_jail_player)
-
     if to_jail_player.character and to_jail_player.character.valid and to_jail_player.character.driving then
         to_jail_player.character.driving = false
     end
 
-    teleport_player_to_gulag(to_jail_player, 'jail')
+    teleport_player_to_gulag(to_jail_player, 'jail', mute)
+
+    draw_notice_frame(to_jail_player)
 
     if mute then
         local gulag = get_super_gulag_permission_group()
@@ -666,7 +667,7 @@ local function jail_temporary(player, offender, msg, mute)
         offender.character.driving = false
     end
 
-    teleport_player_to_gulag(offender, 'jail')
+    teleport_player_to_gulag(offender, 'jail', mute)
 
     if mute then
         local gulag = get_super_gulag_permission_group()
@@ -897,6 +898,11 @@ draw_notice_frame = function(player)
 
     local warning_message = '[font=heading-2]You have been jailed.[/font]\nPlease respond to questions if you are asked something.'
 
+    local p_data = get_player_data(player)
+    if p_data and p_data.muted then
+        warning_message = '[font=heading-2]You have been jailed and muted.[/font]\nPlease seek out assistance at our discord: https://getcomfy.eu/discord.'
+    end
+
     label_flow.style.horizontally_stretchable = false
     local label = label_flow.add {type = 'label', caption = warning_message}
     label.style.single_line = false
@@ -1048,6 +1054,24 @@ end
 ---@param value boolean
 function Public.normies_can_jail(value)
     settings.normies_can_jail = value or false
+end
+
+---
+--- Mutes a player completely from chatting
+---@param player LuaPlayer
+function Public.mute_player(player)
+    if not player or not player.valid then
+        return error('Player was not valid.')
+    end
+
+    local gulag = get_super_gulag_permission_group()
+    if not gulag.players[player.index] then
+        gulag.add_player(player)
+        return true
+    else
+        gulag.remove_player(player)
+        return false
+    end
 end
 
 Server.on_data_set_changed(
@@ -1350,7 +1374,7 @@ Event.add(
         if player.surface.index ~= surface.index then
             local p_data = get_player_data(player)
             if jailed[player.name] and p_data and p_data.locked then
-                teleport_player_to_gulag(player, 'jail')
+                teleport_player_to_gulag(player, 'jail', p_data.muted or false)
             end
         end
 
@@ -1379,7 +1403,7 @@ Event.add(
         if player.surface.index ~= surface.index then
             local p_data = get_player_data(player)
             if jailed[player.name] and p_data and p_data.locked then
-                teleport_player_to_gulag(player, 'jail')
+                teleport_player_to_gulag(player, 'jail', p_data.muted or false)
                 draw_notice_frame(player)
             end
         end

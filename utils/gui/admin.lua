@@ -5,10 +5,54 @@ local Jailed = require 'utils.datastore.jail_data'
 local Gui = require 'utils.gui'
 local AntiGrief = require 'utils.antigrief'
 local SpamProtection = require 'utils.spam_protection'
+local Color = require 'utils.color_presets'
+local Server = require 'utils.server'
+local Task = require 'utils.task'
 local Token = require 'utils.token'
 
 local lower = string.lower
 local module_name = Gui.uid_name()
+
+local function clear_validation_action(player_name, action)
+    local admin_button_validation = AntiGrief.get('admin_button_validation')
+    if admin_button_validation and admin_button_validation[action] then
+        admin_button_validation[action][player_name] = nil
+    end
+end
+
+local clear_validation_token =
+    Token.register(
+    function(event)
+        local action = event.action
+        if not action then
+            return
+        end
+        local player_name = event.player_name
+        if not player_name then
+            return
+        end
+
+        local admin_button_validation = AntiGrief.get('admin_button_validation')
+        if admin_button_validation and admin_button_validation[action] then
+            admin_button_validation[action][player_name] = nil
+        end
+    end
+)
+
+local function validate_action(player, action)
+    local admin_button_validation = AntiGrief.get('admin_button_validation')
+    if not admin_button_validation[action] then
+        admin_button_validation[action] = {}
+    end
+
+    if not admin_button_validation[action][player.name] then
+        admin_button_validation[action][player.name] = true
+        Task.set_timeout_in_ticks(100, clear_validation_token, {player_name = player.name, action = action})
+        player.print('Please run this again if you are certain that you want to run this action[' .. action .. '].', Color.warning)
+        return true
+    end
+    return false
+end
 
 local function admin_only_message(str)
     for _, player in pairs(game.connected_players) do
@@ -19,17 +63,48 @@ local function admin_only_message(str)
 end
 
 local function jail(player, source_player)
-    if player.name == source_player.name then
-        return player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+    if validate_action(source_player, 'jail') then
+        return
     end
-    Jailed.try_ul_data(player.name, true, source_player.name, 'Jailed by script!')
+
+    if player.name == source_player.name then
+        player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+        clear_validation_action(player.name, 'jail')
+        return
+    end
+    Jailed.try_ul_data(player.name, true, source_player.name, 'Jailed by ' .. source_player.name .. '!')
+    clear_validation_action(player.name, 'jail')
+end
+
+local function mute(player, source_player)
+    if validate_action(source_player, 'mute') then
+        return
+    end
+
+    if player.name == source_player.name then
+        player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+        clear_validation_action(player.name, 'mute')
+        return
+    end
+    Jailed.try_ul_data(player.name, true, source_player.name, 'Jailed and muted by ' .. source_player.name .. '!', true)
+    local muted = Jailed.mute_player(player)
+    local muted_str = muted and 'muted' or 'unmuted'
+    clear_validation_action(player.name, 'jail')
+    game.print(player.name .. ' was ' .. muted_str .. ' by player ' .. source_player.name .. '!', {r = 1, g = 0.5, b = 0.1})
 end
 
 local function free(player, source_player)
+    if validate_action(source_player, 'free') then
+        return
+    end
+
     if player.name == source_player.name then
-        return player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+        player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+        clear_validation_action(player.name, 'free')
+        return
     end
     Jailed.try_ul_data(player.name, false, source_player.name)
+    clear_validation_action(player.name, 'free')
 end
 
 local bring_player_messages = {
@@ -39,17 +114,25 @@ local bring_player_messages = {
 }
 
 local function bring_player(player, source_player)
+    if validate_action(source_player, 'bring_player') then
+        return
+    end
+
     if player.name == source_player.name then
-        return player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+        player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+        clear_validation_action(player.name, 'bring_player')
+        return
     end
     if player.driving == true then
         source_player.print('Target player is in a vehicle, teleport not available.', {r = 0.88, g = 0.88, b = 0.88})
+        clear_validation_action(player.name, 'bring_player')
         return
     end
     local pos = source_player.surface.find_non_colliding_position('character', source_player.position, 50, 1)
     if pos then
         player.teleport(pos, source_player.surface)
         game.print(player.name .. ' has been teleported to ' .. source_player.name .. '. ' .. bring_player_messages[math.random(1, #bring_player_messages)], {r = 0.98, g = 0.66, b = 0.22})
+        clear_validation_action(player.name, 'bring_player')
     end
 end
 
@@ -58,13 +141,20 @@ local go_to_player_messages = {
     'What are you up to?'
 }
 local function go_to_player(player, source_player)
+    if validate_action(source_player, 'go_to_player') then
+        return
+    end
+
     if player.name == source_player.name then
-        return player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+        player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+        clear_validation_action(player.name, 'go_to_player')
+        return
     end
     local pos = player.surface.find_non_colliding_position('character', player.position, 50, 1)
     if pos then
         source_player.teleport(pos, player.surface)
         game.print(source_player.name .. ' is visiting ' .. player.name .. '. ' .. go_to_player_messages[math.random(1, #go_to_player_messages)], {r = 0.98, g = 0.66, b = 0.22})
+        clear_validation_action(player.name, 'go_to_player')
     end
 end
 
@@ -108,13 +198,19 @@ local kill_messages = {
     ' was struck by lightning.'
 }
 local function kill(player, source_player)
+    if validate_action(source_player, 'kill') then
+        return
+    end
     if player.name == source_player.name then
-        return player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+        player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+        clear_validation_action(player.name, 'kill')
+        return
     end
     if player.character then
         player.character.die('player')
         game.print(player.name .. kill_messages[math.random(1, #kill_messages)], {r = 0.98, g = 0.66, b = 0.22})
         admin_only_message(source_player.name .. ' killed ' .. player.name)
+        clear_validation_action(player.name, 'kill')
     end
 end
 
@@ -123,8 +219,14 @@ local enemy_messages = {
     'Wanted dead or alive!'
 }
 local function enemy(player, source_player)
+    if validate_action(source_player, 'enemy') then
+        return
+    end
+
     if player.name == source_player.name then
-        return player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+        player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+        clear_validation_action(player.name, 'enemy')
+        return
     end
     if not game.forces.enemy_players then
         game.create_force('enemy_players')
@@ -132,22 +234,34 @@ local function enemy(player, source_player)
     player.force = game.forces.enemy_players
     game.print(player.name .. ' is now an enemy! ' .. enemy_messages[math.random(1, #enemy_messages)], {r = 0.95, g = 0.15, b = 0.15})
     admin_only_message(source_player.name .. ' has turned ' .. player.name .. ' into an enemy')
+    clear_validation_action(player.name, 'enemy')
 end
 
 local function ally(player, source_player)
+    if validate_action(source_player, 'ally') then
+        return
+    end
+
     if player.name == source_player.name then
-        return player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+        player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
+        clear_validation_action(player.name, 'ally')
+        return
     end
     player.force = game.forces.player
     game.print(player.name .. ' is our ally again!', {r = 0.98, g = 0.66, b = 0.22})
     admin_only_message(source_player.name .. ' made ' .. player.name .. ' our ally')
+    clear_validation_action(player.name, 'ally')
 end
 
 local function turn_off_global_speakers(player)
+    if validate_action(player, 'turn_off_global_speakers') then
+        return
+    end
+
     local counter = 0
     for _, surface in pairs(game.surfaces) do
         local speakers = surface.find_entities_filtered({name = 'programmable-speaker'})
-        for i, speaker in pairs(speakers) do
+        for _, speaker in pairs(speakers) do
             if speaker.parameters.playback_globally == true then
                 speaker.surface.create_entity({name = 'massive-explosion', position = speaker.position})
                 speaker.destroy()
@@ -163,9 +277,14 @@ local function turn_off_global_speakers(player)
     else
         game.print(player.name .. ' has nuked ' .. counter .. ' global speakers.', {r = 0.98, g = 0.66, b = 0.22})
     end
+    clear_validation_action(player.name, 'turn_off_global_speakers')
 end
 
 local function delete_all_blueprints(player)
+    if validate_action(player, 'delete_all_blueprints') then
+        return
+    end
+
     local counter = 0
     for _, surface in pairs(game.surfaces) do
         for _, ghost in pairs(surface.find_entities_filtered({type = {'entity-ghost', 'tile-ghost'}})) do
@@ -174,6 +293,7 @@ local function delete_all_blueprints(player)
         end
     end
     if counter == 0 then
+        clear_validation_action(player.name, 'delete_all_blueprints')
         return
     end
     if counter == 1 then
@@ -182,6 +302,29 @@ local function delete_all_blueprints(player)
         game.print(counter .. ' blueprints have been cleared!', {r = 0.98, g = 0.66, b = 0.22})
     end
     admin_only_message(player.name .. ' has cleared all blueprints.')
+    clear_validation_action(player.name, 'delete_all_blueprints')
+end
+
+local function pause_game_tick(player)
+    if validate_action(player, 'pause_game_tick') then
+        return
+    end
+
+    local paused = game.tick_paused
+    local paused_str = paused and 'unpaused' or 'paused'
+    game.tick_paused = not paused
+    game.print('Game has been ' .. paused_str .. ' by ' .. player.name, {r = 0.98, g = 0.66, b = 0.22})
+    clear_validation_action(player.name, 'pause_game_tick')
+end
+
+local function save_game(player)
+    if validate_action(player, 'save_game') then
+        return
+    end
+
+    local date = Server.get_start_time() or game.tick
+    game.server_save('_currently_running' .. tostring(date) .. '_' .. player.name)
+    clear_validation_action(player.name, 'save_game')
 end
 
 local function create_mini_camera_gui(player, caption, position, surface)
@@ -386,7 +529,7 @@ local function create_admin_panel(data)
     drop_down.style.right_padding = 12
     drop_down.style.left_padding = 12
 
-    local t = frame.add({type = 'table', column_count = 3})
+    local t = frame.add({type = 'table', column_count = 4})
     local buttons = {
         t.add(
             {
@@ -394,6 +537,14 @@ local function create_admin_panel(data)
                 caption = 'Jail',
                 name = 'jail',
                 tooltip = 'Jails the player, they will no longer be able to perform any actions except writing in chat.'
+            }
+        ),
+        t.add(
+            {
+                type = 'button',
+                caption = 'Mute',
+                name = 'mute',
+                tooltip = 'Jails and mutes the player, they will no longer be able to chat.'
             }
         ),
         t.add({type = 'button', caption = 'Free', name = 'free', tooltip = 'Frees the player from jail.'}),
@@ -410,7 +561,7 @@ local function create_admin_panel(data)
                 type = 'button',
                 caption = 'Make Enemy',
                 name = 'enemy',
-                tooltip = 'Sets the selected players force to enemy_players.          DO NOT USE IN PVP MAPS!!'
+                tooltip = 'Sets the selected players force to enemy_players.\nDO NOT USE IN PVP MAPS!!'
             }
         ),
         t.add(
@@ -418,7 +569,7 @@ local function create_admin_panel(data)
                 type = 'button',
                 caption = 'Make Ally',
                 name = 'ally',
-                tooltip = 'Sets the selected players force back to the default player force.           DO NOT USE IN PVP MAPS!!'
+                tooltip = 'Sets the selected players force back to the default player force.\nDO NOT USE IN PVP MAPS!!'
             }
         ),
         t.add(
@@ -434,7 +585,7 @@ local function create_admin_panel(data)
                 type = 'button',
                 caption = 'Spank',
                 name = 'spank',
-                tooltip = 'Hurts the selected player with minor damage. Can not kill the player.'
+                tooltip = 'Hurts the selected player with minor damage.\nCan not kill the player.'
             }
         ),
         t.add(
@@ -442,7 +593,7 @@ local function create_admin_panel(data)
                 type = 'button',
                 caption = 'Damage',
                 name = 'damage',
-                tooltip = 'Damages the selected player with greater damage. Can not kill the player.'
+                tooltip = 'Damages the selected player with greater damage.\nCan not kill the player.'
             }
         ),
         t.add({type = 'button', caption = 'Kill', name = 'kill', tooltip = 'Kills the selected player instantly.'})
@@ -450,7 +601,6 @@ local function create_admin_panel(data)
     for _, button in pairs(buttons) do
         button.style.font = 'default-bold'
         --button.style.font_color = { r=0.99, g=0.11, b=0.11}
-        button.style.font_color = {r = 0.99, g = 0.99, b = 0.99}
         button.style.minimal_width = 106
     end
 
@@ -459,7 +609,7 @@ local function create_admin_panel(data)
     line.style.bottom_margin = 8
 
     frame.add({type = 'label', caption = 'Global Actions:'})
-    local actionTable = frame.add({type = 'table', column_count = 2})
+    local actionTable = frame.add({type = 'table', column_count = 4})
     local bottomButtons = {
         actionTable.add(
             {
@@ -476,12 +626,27 @@ local function create_admin_panel(data)
                 name = 'delete_all_blueprints',
                 tooltip = 'Deletes all placed blueprints on the map.'
             }
+        ),
+        actionTable.add(
+            {
+                type = 'button',
+                caption = 'Pause game tick',
+                name = 'pause_game_tick',
+                tooltip = 'Pauses the game tick.'
+            }
+        ),
+        actionTable.add(
+            {
+                type = 'button',
+                caption = 'Save game',
+                name = 'save_game',
+                tooltip = 'Saves the game.'
+            }
         )
         ---	t.add({type = "button", caption = "Cancel all deconstruction orders", name = "remove_all_deconstruction_orders"})
     }
     for _, button in pairs(bottomButtons) do
         button.style.font = 'default-bold'
-        button.style.font_color = {r = 0.98, g = 0.66, b = 0.22}
         button.style.minimal_width = 80
     end
 
@@ -557,6 +722,7 @@ local create_admin_panel_token = Token.register(create_admin_panel)
 
 local admin_functions = {
     ['jail'] = jail,
+    ['mute'] = mute,
     ['free'] = free,
     ['bring_player'] = bring_player,
     ['spank'] = spank,
@@ -569,7 +735,9 @@ local admin_functions = {
 
 local admin_global_functions = {
     ['turn_off_global_speakers'] = turn_off_global_speakers,
-    ['delete_all_blueprints'] = delete_all_blueprints
+    ['delete_all_blueprints'] = delete_all_blueprints,
+    ['pause_game_tick'] = pause_game_tick,
+    ['save_game'] = save_game
 }
 
 local function get_surface_from_string(str)
