@@ -1,12 +1,11 @@
 local Public = require 'modules.wave_defense.table'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
-local Gui = require 'utils.gui'
 
 local floor = math.floor
 
 local function create_gui(player)
-    local frame = player.gui.top.add({type = 'frame', name = 'wave_defense', style = Gui.frame_style})
-    frame.style.maximal_height = 37
+    local frame = player.gui.top.add({type = 'frame', name = 'wave_defense', style = 'finished_game_subheader_frame'})
+    frame.style.maximal_height = 38
 
     local label = frame.add({type = 'label', caption = ' ', name = 'label'})
     label.style.font_color = {r = 0.88, g = 0.88, b = 0.88}

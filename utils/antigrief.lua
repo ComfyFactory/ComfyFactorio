@@ -57,7 +57,8 @@ local this = {
     players_warn_when_decon = {},
     players_warn_on_long_texts = {},
     on_cancelled_deconstruction = {tick = 0, count = 0},
-    limit = 2000
+    limit = 2000,
+    admin_button_validation = {}
 }
 
 local blacklisted_types = {
@@ -1193,6 +1194,21 @@ end
 ---@param key string|nil
 function Public.get(key)
     if key then
+        return this[key]
+    else
+        return this
+    end
+end
+
+--- Change or add a value
+---@param key any
+---@param value any
+---@return boolean|string|integer|table
+function Public.set(key, value)
+    if key and (value or value == false) then
+        this[key] = value
+        return this[key]
+    elseif key then
         return this[key]
     else
         return this
