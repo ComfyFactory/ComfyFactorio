@@ -86,10 +86,10 @@ local function create_main_frame(player)
         player.gui.top['wave_defense'].visible = true
     end
 
-    local frame = player.gui.top.add({type = 'frame', name = main_frame_name})
+    local frame = player.gui.top.add({type = 'frame', name = main_frame_name, style = 'finished_game_subheader_frame'})
     frame.location = {x = 1, y = 40}
-    frame.style.minimal_height = 37
-    frame.style.maximal_height = 37
+    frame.style.minimal_height = 38
+    frame.style.maximal_height = 38
 
     label = frame.add({type = 'label', caption = ' ', name = 'label'})
     label.style.font_color = {r = 0.88, g = 0.88, b = 0.88}
