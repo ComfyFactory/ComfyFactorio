@@ -5,13 +5,25 @@ local Global = require 'utils.global'
 local SpamProtection = require 'utils.spam_protection'
 local Event = require 'utils.event'
 local Token = require 'utils.token'
+local Color = require 'utils.color_presets'
 
 local module_name = Gui.uid_name()
 
 local this = {
     player_group = {},
     join_spam_protection = {},
-    tag_groups = {},
+    tag_groups = {
+        ['Miner'] = {name = 'Miner', founder = 'script', description = '[img=item/electric-mining-drill]', static = true},
+        ['Smeltery'] = {name = 'Smeltery', founder = 'script', description = '[img=item/stone-furnace]', static = true},
+        ['Power'] = {name = 'Power', founder = 'script', description = '[img=item/big-electric-pole]', static = true},
+        ['Production'] = {name = 'Production', founder = 'script', description = '[img=item/assembling-machine-1]', static = true},
+        ['Science'] = {name = 'Science', founder = 'script', description = '[img=item/chemical-science-pack]', static = true},
+        ['Trainman'] = {name = 'Trainman', founder = 'script', description = '[img=item/locomotive]', static = true},
+        ['Oil processing'] = {name = 'processing', founder = 'script', description = '[img=fluid/crude-oil]', static = true},
+        ['Trooper'] = {name = 'Trooper', founder = 'script', description = '[img=item/submachine-gun]', static = true},
+        ['Fortifications'] = {name = 'Fortifications', founder = 'script', description = '[img=item/stone-wall]', static = true},
+        ['Support'] = {name = 'Support', founder = 'script', description = '[img=item/repair-pack]', static = true}
+    },
     alphanumeric = true
 }
 
@@ -37,6 +49,7 @@ local function build_group_gui(data)
     frame.clear()
 
     local t = frame.add({type = 'table', column_count = 5})
+
     local headings = {
         {{'gui.title'}, group_name_width},
         {{'gui.description'}, description_width},
@@ -136,21 +149,24 @@ local function build_group_gui(data)
                 b.style.minimal_width = actions_width
                 b.style.maximal_width = actions_width
             end
-            if player.admin == true or group.founder == player.name then
+            if (player.admin == true or group.founder == player.name) and not group.static then
                 local b = tt.add({type = 'button', caption = {'gui.delete'}})
                 b.style.font = 'default-bold'
                 b.style.minimal_width = actions_width
                 b.style.maximal_width = actions_width
             else
-                l = tt.add({type = 'label', caption = ''})
-                l.style.minimal_width = actions_width
-                l.style.maximal_width = actions_width
+                local b = tt.add({type = 'button', caption = {'gui.delete'}})
+                b.enabled = false
+                b.style.font = 'default-bold'
+                b.style.minimal_width = actions_width
+                b.style.maximal_width = actions_width
             end
+            tt.add {type = 'line'}
         end
     end
 
     local frame2 = frame.add({type = 'frame', name = 'frame2'})
-    t = frame2.add({type = 'table', name = 'group_table', column_count = 3})
+    t = frame2.add({type = 'table', name = 'group_table', column_count = 4})
     local textfield = t.add({type = 'textfield', name = 'new_group_name', text = 'Name'})
     textfield.style.minimal_width = 200
     textfield = t.add({type = 'textfield', name = 'new_group_description', text = 'Description'})
@@ -343,6 +359,10 @@ local function on_gui_click(event)
             end
 
             if element.type == 'button' and caption == 'gui.delete' then
+                if this.tag_groups[element.parent.name] and this.tag_groups[element.parent.name].static then
+                    player.print('Static groups cannot be deleted.', Color.warning)
+                    return
+                end
                 for _, players in pairs(game.players) do
                     if this.player_group[players.name] then
                         if this.player_group[players.name] == element.parent.name then
@@ -382,7 +402,13 @@ function Public.reset_groups()
         this.player_group[player.name] = '[Group]'
         this.join_spam_protection[player.name] = game.tick
     end
-    this.tag_groups = {}
+    if this.tag_groups and next(this.tag_groups) then
+        for name, data in pairs(this.tag_groups) do
+            if not data.static then
+                this.tag_groups[name] = nil
+            end
+        end
+    end
 end
 
 Gui.add_tab_to_gui({name = module_name, caption = 'Groups', id = build_group_gui_token, admin = false})
