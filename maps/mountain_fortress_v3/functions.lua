@@ -127,6 +127,15 @@ local function fast_remove(tbl, index)
     tbl[count] = nil
 end
 
+local pause_waves_custom_callback_token =
+    Token.register(
+    function(status)
+        Collapse.disable_collapse(status)
+        local status_str = status and 'has stopped!' or 'is active once again!'
+        Alert.alert_all_players(30, 'Collapse ' .. status_str, nil, 'achievement/tech-maniac', 0.6)
+    end
+)
+
 local function do_refill_turrets()
     local refill_turrets = this.refill_turrets
     local index = refill_turrets.index
@@ -1586,6 +1595,7 @@ Public.uranium_rounds_magazine_ammo = {name = 'uranium-rounds-magazine', count =
 Public.light_oil_ammo = {name = 'light-oil', amount = 100}
 Public.artillery_shell_ammo = {name = 'artillery-shell', count = 15}
 Public.laser_turrent_power_source = {buffer_size = 2400000, power_production = 40000}
+Public.pause_waves_custom_callback_token = pause_waves_custom_callback_token
 
 function Public.get_func(key)
     if key then

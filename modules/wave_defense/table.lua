@@ -2,7 +2,9 @@ local Global = require 'utils.global'
 local Core = require 'utils.core'
 local Event = require 'utils.event'
 
-local this = {}
+local this = {
+    pause_waves_custom_callback = nil
+}
 local Public = {}
 Public.events = {
     on_wave_created = Event.generate_event_name('on_wave_created'),
@@ -437,6 +439,16 @@ function Public.nuke_wave_gui()
             end
         end
     )
+end
+
+--- Sets a custom callback whenever the pause_waves func is run
+function Public.set_pause_waves_custom_callback(value)
+    this.pause_waves_custom_callback = value or nil
+end
+
+--- Gets a custom callback
+function Public.get_pause_waves_custom_callback()
+    return this.pause_waves_custom_callback or nil
 end
 
 --- Toggle debug - when you need to troubleshoot.

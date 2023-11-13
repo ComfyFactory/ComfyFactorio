@@ -249,6 +249,7 @@ function Public.reset_map()
     WD.increase_max_active_unit_groups(true)
     WD.enable_random_spawn_positions(true)
     Event.raise(WD.events.on_game_reset, {})
+    WD.set_pause_waves_custom_callback(Public.pause_waves_custom_callback_token)
 
     Public.set_difficulty()
     Public.disable_creative()
@@ -445,7 +446,7 @@ local compare_collapse_and_train = function()
         Public.set_difficulty()
     else
         Collapse.set_speed(1)
-        Collapse.set_amount(40)
+        Collapse.set_amount(10)
     end
 end
 
