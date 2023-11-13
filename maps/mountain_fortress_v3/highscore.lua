@@ -120,9 +120,6 @@ local function get_sorted_list(column_name, score_list)
     for key, player in ipairs(score_list) do
         sl[key] = player
         i = i + 1
-        if i == 20 then
-            return sl
-        end
     end
     return sl
 end

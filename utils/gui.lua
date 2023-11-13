@@ -138,6 +138,57 @@ function Public.set_data_parent(parent, element, value)
     end
 end
 
+-- Associates data with the LuaGuiElement along with the tag. If data is nil then removes the data
+function Public.set_data_custom(tag, element, value)
+    if not tag then
+        return error('A tag is required', 2)
+    end
+
+    local player_index = element.player_index
+    local values = data[player_index]
+
+    if value == nil then
+        if not values then
+            return
+        end
+
+        local tags = values[tag]
+        if not tags then
+            if next(values) == nil then
+                data[player_index] = nil
+            end
+            return
+        end
+
+        if element.remove then
+            values[tag] = nil
+            return
+        end
+
+        tags[element.index] = nil
+
+        if next(tags) == nil then
+            values[tag] = nil
+        end
+    else
+        if not values then
+            values = {
+                [tag] = {}
+            }
+            data[player_index] = values
+        end
+
+        local tags = values[tag]
+
+        if not tags then
+            values[tag] = {}
+            tags = values[tag]
+        end
+
+        tags[element.index] = value
+    end
+end
+
 -- Gets the Associated data with this LuaGuiElement if any.
 function Public.get_data(element)
     if not element then
@@ -171,6 +222,30 @@ function Public.get_data_parent(parent, element)
     end
 
     values = values[parent.index]
+    if not values then
+        return nil
+    end
+
+    return values[element.index]
+end
+
+-- Gets the Associated data with this LuaGuiElement if any.
+function Public.get_data_custom(tag, element)
+    if not tag then
+        return error('A tag is required', 2)
+    end
+    if not element then
+        return error('An element is required', 2)
+    end
+
+    local player_index = element.player_index
+
+    local values = data[player_index]
+    if not values then
+        return nil
+    end
+
+    values = values[tag]
     if not values then
         return nil
     end
@@ -738,6 +813,7 @@ function Public.refresh(player)
     for _, tab in pairs(tabbed_pane.tabs) do
         if tab.content.name ~= frame.name then
             tab.content.clear()
+            Event.raise(Public.events.on_gui_removal, {player_index = player.index})
         end
     end
 
@@ -762,6 +838,9 @@ function Public.call_existing_tab(player, name)
         end
     end
 end
+
+Public.get_button_flow = mod_gui.get_button_flow
+Public.mod_button = mod_gui.get_button_flow
 
 -- Register a handler for the on_gui_checked_state_changed event for LuaGuiElements with element_name.
 -- Can only have one handler per element name.
@@ -819,66 +898,6 @@ Public.on_player_show_top = custom_handler_factory(on_visible_handlers)
 -- Adds a player field to the event table.
 Public.on_pre_player_hide_top = custom_handler_factory(on_pre_hidden_handlers)
 
-if _DEBUG then
-    local concat = table.concat
-
-    local names = {}
-    Public.names = names
-
-    function Public.uid_name()
-        local info = debug.getinfo(2, 'Sl')
-        local filepath = info.source:match('^.+/currently%-playing/(.+)$'):sub(1, -5)
-        local line = info.currentline
-
-        local token = tostring(Token.uid())
-
-        local name = concat {token, ' - ', filepath, ':line:', line}
-        names[token] = name
-
-        return token
-    end
-
-    function Public.set_data(element, value)
-        local player_index = element.player_index
-        local values = data[player_index]
-
-        if value == nil then
-            if not values then
-                return
-            end
-
-            local index = element.index
-            values[index] = nil
-            element_map[index] = nil
-
-            if next(values) == nil then
-                data[player_index] = nil
-            end
-        else
-            if not values then
-                values = {}
-                data[player_index] = values
-            end
-
-            local index = element.index
-            values[index] = value
-            element_map[index] = element
-        end
-    end
-    set_data = Public.set_data
-
-    function Public.data()
-        return data
-    end
-
-    function Public.element_map()
-        return element_map
-    end
-end
-
-Public.get_button_flow = mod_gui.get_button_flow
-Public.mod_button = mod_gui.get_button_flow
-
 Public.on_click(
     main_button_name,
     function(event)
@@ -891,6 +910,7 @@ Public.on_click(
         if frame then
             remove_data_recursively(frame)
             frame.destroy()
+            Event.raise(Public.events.on_gui_removal, {player_index = player.index})
         else
             draw_main_frame(player)
         end
@@ -963,22 +983,61 @@ Event.add(
     end
 )
 
-Event.add(
-    Public.events.on_gui_removal,
-    function(player)
-        local b =
-            Public.get_button_flow(player).add(
-            {
-                type = 'sprite-button',
-                name = main_button_name,
-                sprite = 'utility/expand_dots',
-                style = Public.button_style,
-                tooltip = 'The panel of all the goodies!'
-            }
-        )
-        b.style.padding = 2
-        b.style.width = 20
+if _DEBUG then
+    local concat = table.concat
+
+    local names = {}
+    Public.names = names
+
+    function Public.uid_name()
+        local info = debug.getinfo(2, 'Sl')
+        local filepath = info.source:match('^.+/currently%-playing/(.+)$'):sub(1, -5)
+        local line = info.currentline
+
+        local token = tostring(Token.uid())
+
+        local name = concat {token, ' - ', filepath, ':line:', line}
+        names[token] = name
+
+        return token
     end
-)
+
+    function Public.set_data(element, value)
+        local player_index = element.player_index
+        local values = data[player_index]
+
+        if value == nil then
+            if not values then
+                return
+            end
+
+            local index = element.index
+            values[index] = nil
+            element_map[index] = nil
+
+            if next(values) == nil then
+                data[player_index] = nil
+            end
+        else
+            if not values then
+                values = {}
+                data[player_index] = values
+            end
+
+            local index = element.index
+            values[index] = value
+            element_map[index] = element
+        end
+    end
+    set_data = Public.set_data
+
+    function Public.data()
+        return data
+    end
+
+    function Public.element_map()
+        return element_map
+    end
+end
 
 return Public

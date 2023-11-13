@@ -4,6 +4,7 @@ local Global = require 'utils.global'
 local Color = require 'utils.color_presets'
 local SpamProtection = require 'utils.spam_protection'
 local Event = require 'utils.event'
+local Gui = require 'utils.gui'
 
 local this = {
     data = {},
@@ -17,6 +18,8 @@ Global.register(
         this = tbl
     end
 )
+
+local main_frame_name = Gui.uid_name()
 
 local space = {
     minimal_height = 10,
@@ -143,7 +146,7 @@ local function close_player_inventory(player)
         return
     end
 
-    local element = gui.inventory_gui
+    local element = gui[main_frame_name]
 
     if not is_valid(element) then
         return
@@ -186,7 +189,7 @@ local function redraw_inventory(gui, source, target, caption, panel_type)
         return
     end
 
-    local inventory_gui = screen.inventory_gui
+    local inventory_gui = screen[main_frame_name]
     inventory_gui.caption = 'Inventory of ' .. target.name
 
     for i = 1, #panel_type do
@@ -271,7 +274,7 @@ local function open_inventory(source, target)
         return
     end
 
-    local inventory_gui = screen.inventory_gui
+    local inventory_gui = screen[main_frame_name]
     if inventory_gui then
         close_player_inventory(source)
     end
@@ -282,7 +285,7 @@ local function open_inventory(source, target)
             type = 'frame',
             caption = 'Inventory',
             direction = 'vertical',
-            name = 'inventory_gui'
+            name = main_frame_name
         }
     )
 
@@ -383,22 +386,6 @@ local function on_gui_click(event)
         end
     end
 end
-local function gui_closed(event)
-    local player = game.get_player(event.player_index)
-    if not this.data[player.index] then
-        return
-    end
-
-    local type = event.gui_type
-
-    if type == defines.gui_type.custom then
-        local data = get_player_data(player)
-        if not data then
-            return
-        end
-        close_player_inventory(player)
-    end
-end
 
 local function on_pre_player_left_game(event)
     local player = game.get_player(event.player_index)
@@ -466,11 +453,36 @@ commands.add_command(
     end
 )
 
-function Public.get_active_frame(player)
-    if not player.gui.screen.inventory_gui then
+function Public.show_inventory(player, target_player)
+    if not player or not player.valid then
         return false
     end
-    return player.gui.screen.inventory_gui.tabbed_pane.tabs[player.gui.screen.inventory_gui.tabbed_pane.selected_tab_index].content
+    if not target_player or not target_player.valid then
+        return false
+    end
+
+    local valid, opened = player_opened(player)
+    if valid then
+        if target_player.index == opened then
+            player.print('You are already viewing this players inventory.', Color.warning)
+            return false
+        end
+    end
+
+    if validate_player(target_player) then
+        open_inventory(player, target_player)
+        return true
+    else
+        player.print('[Inventory] Please type a name of a player who is connected.', Color.warning)
+        return false
+    end
+end
+
+function Public.get_active_frame(player)
+    if not player.gui.screen[main_frame_name] then
+        return false
+    end
+    return player.gui.screen[main_frame_name].tabbed_pane.tabs[player.gui.screen[main_frame_name].tabbed_pane.selected_tab_index].content
 end
 
 function Public.get(key)
@@ -487,13 +499,26 @@ function Public.module_disabled(state)
     this.module_disabled = state or false
 end
 
+Gui.on_custom_close(
+    main_frame_name,
+    function(event)
+        local player = game.get_player(event.player_index)
+        if not this.data[player.index] then
+            return
+        end
+
+        close_player_inventory(player)
+    end
+)
+
 Event.add(defines.events.on_player_main_inventory_changed, update_gui)
 Event.add(defines.events.on_player_gun_inventory_changed, update_gui)
 Event.add(defines.events.on_player_ammo_inventory_changed, update_gui)
 Event.add(defines.events.on_player_armor_inventory_changed, update_gui)
 Event.add(defines.events.on_player_trash_inventory_changed, update_gui)
-Event.add(defines.events.on_gui_closed, gui_closed)
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_pre_player_left_game, on_pre_player_left_game)
+
+Public.close_player_inventory = close_player_inventory
 
 return Public

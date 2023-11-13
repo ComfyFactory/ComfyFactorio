@@ -94,7 +94,7 @@ local function create_mini_camera_gui(player, target, zoom, render, tooltip)
     end
     local player_data
 
-    if validate_player(target) then
+    if validate_player(target) or (target and target.valid and player.admin) then
         player_data = create_player_data(player)
         player_data.target = target
     else
@@ -106,6 +106,8 @@ local function create_mini_camera_gui(player, target, zoom, render, tooltip)
     if not validate_frame(frame) then
         frame = player.gui.screen.add({type = 'frame', name = locate_player_frame_name, caption = target.name})
     end
+
+    player.opened = frame
 
     frame.force_auto_center()
 
@@ -219,6 +221,17 @@ Gui.on_click(
     end
 )
 
+Gui.on_custom_close(
+    locate_player_frame_name,
+    function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Where Locate Player')
+        if is_spamming then
+            return
+        end
+        remove_camera_frame(event.player)
+    end
+)
+
 Gui.on_click(
     player_frame_name,
     function(event)
@@ -226,7 +239,10 @@ Gui.on_click(
         if is_spamming then
             return
         end
-        remove_camera_frame(event.player)
+        local type = event.gui_type
+        if type == defines.gui_type.custom then
+            remove_camera_frame(event.player)
+        end
     end
 )
 

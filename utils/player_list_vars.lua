@@ -413,6 +413,8 @@ Public.gui_data = function(data)
                 tooltip = 'This player is not trusted.' .. minimap .. tooltip
             end
 
+            tooltip = tooltip .. '\nRight-click to view their inventory!'
+
             local caption
             if show_roles_in_list or player.admin then
                 caption = player.name .. ' ' .. trusted
@@ -435,7 +437,7 @@ Public.gui_data = function(data)
                 tooltip = tooltip
             }
 
-            Gui.set_data(name_label, player.index)
+            Gui.set_data_custom('Players', name_label, player.index)
 
             name_label.style.font = 'default'
             name_label.style.font_color = {
@@ -589,7 +591,7 @@ Public.gui_data = function(data)
             poke_flow.style.right_padding = 20
             local poke_label = poke_flow.add {type = 'label', name = 'button_spacer_' .. index, caption = ''}
             local poke_button = poke_flow.add {type = 'button', name = poke_player_frame_name, caption = player.pokes}
-            Gui.set_data(poke_button, player.index)
+            Gui.set_data_custom('Players', poke_button, player.index)
             poke_button.style.font = 'default'
             poke_button.tooltip = 'Poke ' .. player.name .. ' with a random message!\nDoes not work poking yourself :<'
             poke_label.style.font_color = {r = 0.83, g = 0.83, b = 0.83}

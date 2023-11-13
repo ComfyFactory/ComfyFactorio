@@ -12,6 +12,7 @@ local Token = require 'utils.token'
 local Vars = require 'utils.player_list_vars'
 local Utils = require 'utils.utils'
 local Core = require 'utils.core'
+local Inventory = require 'modules.show_inventory'
 
 local Public = {}
 
@@ -23,6 +24,7 @@ local ranks = Vars.ranks
 local pokemessages = Vars.pokemessages
 local get_formatted_playtime = Utils.get_formatted_playtime
 local get_comparator = Vars.get_comparator
+local tag = 'Players'
 
 local this = {
     player_list = {
@@ -248,23 +250,35 @@ Gui.on_click(
         local player = event.player
         local element = event.element
 
-        local data = Gui.get_data(element)
+        local button = event.button
+        local data = Gui.get_data_custom(tag, element)
         if not data then
             return
         end
 
-        local is_spamming = SpamProtection.is_spamming(player, nil, 'PlayerList Locate Player')
-        if is_spamming then
-            return
-        end
+        if button == defines.mouse_button_type.left then
+            local is_spamming = SpamProtection.is_spamming(player, nil, 'PlayerList Locate Player')
+            if is_spamming then
+                return
+            end
 
-        local target = game.get_player(data)
-        if not target or not target.valid then
-            Gui.set_data(element, nil)
-            return
+            local target = game.get_player(data)
+            if not target or not target.valid then
+                return
+            end
+            Where.create_mini_camera_gui(player, target)
+        elseif defines.mouse_button_type.right then
+            local is_spamming = SpamProtection.is_spamming(player, nil, 'PlayerList Show Inventory')
+            if is_spamming then
+                return
+            end
+
+            local target = game.get_player(data)
+            if not target or not target.valid then
+                return
+            end
+            Inventory.show_inventory(player, target)
         end
-        Gui.set_data(element, nil)
-        Where.create_mini_camera_gui(player, target)
     end
 )
 
@@ -274,14 +288,13 @@ Gui.on_click(
         local player = event.player
         local element = event.element
 
-        local data = Gui.get_data(element)
+        local data = Gui.get_data_custom(tag, element)
         if not data then
             return
         end
         local target = game.get_player(data)
 
         if player.index == target.index then
-            Gui.set_data(element, nil)
             return
         end
 
@@ -297,7 +310,6 @@ Gui.on_click(
             game.print(str)
             this.player_list.last_poke_tick[player.index] = game.tick
             this.player_list.pokes[target.index] = this.player_list.pokes[target.index] + 1
-            Gui.set_data(element, nil)
         end
     end
 )
@@ -306,7 +318,7 @@ local function refresh()
     for _, player in pairs(game.connected_players) do
         local frame = Gui.get_player_active_frame(player)
         if frame then
-            if frame.name ~= 'Players' then
+            if frame.name ~= tag then
                 return
             end
             local data = {player = player, frame = frame, sort_by = this.player_list.sorting_method[player.index]}
@@ -342,12 +354,13 @@ function Public.rpg_enabled(value)
     return this.rpg_enabled
 end
 
-Gui.add_tab_to_gui({name = module_name, caption = 'Players', id = player_list_show_token, admin = false})
+Gui.add_tab_to_gui({name = module_name, caption = tag, id = player_list_show_token, admin = false})
 
 Gui.on_click(
     module_name,
     function(event)
         local player = event.player
+        Gui.set_data_custom(tag, {player_index = player.index, remove = true}, nil)
         Gui.reload_active_tab(player)
     end
 )
@@ -370,7 +383,7 @@ Gui.on_click(
         if not frame then
             return
         end
-        if frame.name ~= 'Players' then
+        if frame.name ~= tag then
             return
         end
 
@@ -390,5 +403,11 @@ Gui.on_click(
 
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_left_game, on_player_left_game)
+Event.add(
+    Gui.events.on_gui_removal,
+    function(event)
+        Gui.set_data_custom(tag, {player_index = event.player_index, remove = true}, nil)
+    end
+)
 
 return Public

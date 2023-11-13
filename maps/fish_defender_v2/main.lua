@@ -3,6 +3,7 @@
 --require "modules.rpg"
 
 local Public = require 'maps.fish_defender_v2.core'
+local Gui = require 'utils.gui'
 require 'modules.rocket_launch_always_yields_science'
 require 'modules.launch_fish_to_win'
 require 'modules.biters_yield_coins'
@@ -22,6 +23,9 @@ local format_number = require 'util'.format_number
 local random = math.random
 local insert = table.insert
 local enable_start_grace_period = true
+
+Gui.mod_gui_button_enabled = true
+Gui.button_style = 'mod_gui_button'
 
 local starting_items = {
     ['pistol'] = 1,
@@ -103,7 +107,8 @@ local function create_wave_gui(player)
     if player.gui.top['fish_defense_waves'] then
         player.gui.top['fish_defense_waves'].destroy()
     end
-    local frame = player.gui.top.add({type = 'frame', name = 'fish_defense_waves'})
+    local frame = player.gui.top.add({type = 'frame', name = 'fish_defense_waves', style = 'finished_game_subheader_frame'})
+    frame.style.minimal_height = 38
     frame.style.maximal_height = 38
 
     local wave_count = 0
@@ -215,7 +220,8 @@ local function add_fd_stats_button(player)
         player.gui.top.add {
         type = 'sprite-button',
         name = button_id,
-        sprite = 'item/submachine-gun'
+        sprite = 'item/submachine-gun',
+        style = Gui.button_style
     }
     b.style.maximal_height = 38
 end

@@ -1,6 +1,7 @@
 -- launch fish into space to win the game -- by mewmew
 
 local Event = require 'utils.event'
+local Gui = require 'utils.gui'
 
 local function goals()
     if not global.catplanet_goals then
@@ -98,14 +99,9 @@ local function fish_in_space_toggle_button(player)
     if player.gui.top['fish_in_space_toggle'] then
         return
     end
-    local button = player.gui.top.add {name = 'fish_in_space_toggle', type = 'sprite-button', sprite = 'item/raw-fish', tooltip = 'Fish in Space'}
-    button.style.font = 'default-bold'
+    local button = player.gui.top.add {name = 'fish_in_space_toggle', type = 'sprite-button', sprite = 'item/raw-fish', tooltip = 'Fish in Space', style = Gui.button_style}
     button.style.minimal_height = 38
-    button.style.minimal_width = 38
-    button.style.top_padding = 2
-    button.style.left_padding = 4
-    button.style.right_padding = 4
-    button.style.bottom_padding = 2
+    button.style.maximal_height = 38
 end
 
 local function level_up_popup(player)
@@ -138,6 +134,7 @@ local function fish_in_space_gui(player)
     local frame = player.gui.left.add({type = 'frame', name = 'fish_in_space'})
     local label = frame.add({type = 'label', caption = 'Fish rescued: '})
     label.style.font_color = {r = 0.11, g = 0.8, b = 0.44}
+    frame.style.bottom_padding = -2
 
     local progress = global.fish_in_space / global.catplanet_goals[i + 1].goal
     if progress > 1 then
