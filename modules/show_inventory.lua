@@ -124,7 +124,7 @@ local function validate_player(player)
     if not player.connected then
         return false
     end
-    if not game.players[player.index] then
+    if not game.get_player(player.index) then
         return false
     end
     return true
@@ -331,7 +331,7 @@ local function open_inventory(source, target)
 end
 
 local function on_gui_click(event)
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
     if not this.data[player.index] then
         return
     end
@@ -384,7 +384,7 @@ local function on_gui_click(event)
     end
 end
 local function gui_closed(event)
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
     if not this.data[player.index] then
         return
     end
@@ -401,7 +401,7 @@ local function gui_closed(event)
 end
 
 local function on_pre_player_left_game(event)
-    local player = game.players[event.player_index]
+    local player = game.get_player(event.player_index)
     if not this.data[player.index] then
         return
     end
@@ -443,7 +443,7 @@ commands.add_command(
             if not cmd.parameter then
                 return
             end
-            local target_player = game.players[cmd.parameter]
+            local target_player = game.get_player(cmd.parameter)
 
             if target_player == player and not player.admin then
                 return player.print('Cannot open self.', Color.warning)

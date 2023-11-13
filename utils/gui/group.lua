@@ -19,7 +19,7 @@ local this = {
         ['Production'] = {name = 'Production', founder = 'script', description = '[img=item/assembling-machine-1]', static = true},
         ['Science'] = {name = 'Science', founder = 'script', description = '[img=item/chemical-science-pack]', static = true},
         ['Trainman'] = {name = 'Trainman', founder = 'script', description = '[img=item/locomotive]', static = true},
-        ['Oil processing'] = {name = 'processing', founder = 'script', description = '[img=fluid/crude-oil]', static = true},
+        ['Oil processing'] = {name = 'Oil Processing', founder = 'script', description = '[img=fluid/crude-oil]', static = true},
         ['Trooper'] = {name = 'Trooper', founder = 'script', description = '[img=item/submachine-gun]', static = true},
         ['Fortifications'] = {name = 'Fortifications', founder = 'script', description = '[img=item/stone-wall]', static = true},
         ['Support'] = {name = 'Support', founder = 'script', description = '[img=item/repair-pack]', static = true}

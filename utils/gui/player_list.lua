@@ -155,7 +155,13 @@ local function get_sorted_list(sort_by)
             player_data.admin = player.admin
             player_data.color = player.color
             player_data.index = player.index
-            player_data.coins = player.get_inventory(defines.inventory.character_main).get_item_count('coin') or 0
+            local inventory = player.get_main_inventory()
+            if inventory and inventory.valid then
+                local player_item_count = inventory.get_item_count('coin')
+                player_data.coins = player_item_count
+            else
+                player_data.coins = 0
+            end
 
             player_data.played_time = get_formatted_playtime(player.online_time)
             player_data.played_ticks = player.online_time
