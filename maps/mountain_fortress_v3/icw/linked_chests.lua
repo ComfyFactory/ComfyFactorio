@@ -1085,7 +1085,9 @@ Event.on_nth_tick(
                 if container.chest and container.chest.valid then
                     if container.chest.surface.index == active_surface_index then
                         if not WPT.locomotive.is_around_train(container.chest) then
+                            container.chest.minable = true
                             remove_chest(container.unit_number)
+                            goto continue
                         end
                     end
                     if container.mode == 1 then
@@ -1096,6 +1098,7 @@ Event.on_nth_tick(
                     containers[index] = nil
                 end
             end
+            ::continue::
         end
     end
 )
