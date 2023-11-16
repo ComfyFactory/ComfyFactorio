@@ -196,6 +196,7 @@ local function on_player_joined_game(event)
 end
 
 local function changed_surface(player)
+    local main_toggle_button_name = Gui.main_toggle_button_name
     local poll_button = Polls.main_button_name
     local rpg_button = RPG.draw_main_frame_name
     local rpg_frame = RPG.main_frame_name
@@ -203,6 +204,7 @@ local function changed_surface(player)
     local main = Public.get('locomotive')
     local icw_locomotive = Public.get('icw_locomotive')
     local wagon_surface = icw_locomotive.surface
+    local main_toggle_button = player.gui.top[main_toggle_button_name]
     local info = player.gui.top[main_button_name]
     local wd = player.gui.top['wave_defense']
     local spectate = player.gui.top[spectate_button_name]
@@ -238,6 +240,9 @@ local function changed_surface(player)
 
     if player.surface == main.surface then
         local minimap = player.gui.left.icw_main_frame
+        if main_toggle_button and not main_toggle_button.visible then
+            main_toggle_button.visible = true
+        end
         if minimap and minimap.visible then
             minimap.visible = false
         end
@@ -271,6 +276,9 @@ local function changed_surface(player)
             info.visible = true
         end
     elseif player.surface == wagon_surface then
+        if main_toggle_button and main_toggle_button.visible then
+            main_toggle_button.visible = false
+        end
         if wd then
             wd.visible = false
         end
@@ -313,6 +321,9 @@ local function changed_surface(player)
             end
         end
     else
+        if main_toggle_button and main_toggle_button.visible then
+            main_toggle_button.visible = false
+        end
         if poll_b then
             poll_b.visible = false
         end
@@ -429,6 +440,8 @@ local function enable_guis(event)
         return
     end
 
+    local main_toggle_button_name = Gui.main_toggle_button_name
+    local main_toggle_button = player.gui.top[main_toggle_button_name]
     local rpg_button = RPG.draw_main_frame_name
     local info = player.gui.top[main_button_name]
     local wd = player.gui.top['wave_defense']
@@ -445,10 +458,15 @@ local function enable_guis(event)
         info.sprite = 'item/dummy-steel-axe'
     end
 
+    if main_toggle_button and not main_toggle_button.visible then
+        main_toggle_button.visible = false
+    end
+
     local minimap = player.gui.left.icw_main_frame
     if minimap and minimap.visible then
         minimap.visible = false
     end
+
     if rpg_b and not rpg_b.visible then
         rpg_b.visible = true
     end

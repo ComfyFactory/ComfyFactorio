@@ -1,6 +1,7 @@
 -- toggle your flashlight -- by mewmew
 
 local Event = require 'utils.event'
+local Gui = require 'utils.gui'
 local message_color = {r = 200, g = 200, b = 0}
 
 local function on_gui_click(event)
@@ -54,7 +55,7 @@ local function on_player_joined_game(event)
     if player.gui.top['flashlight_toggle'] then
         return
     end
-    local b = player.gui.top.add({type = 'sprite-button', name = 'flashlight_toggle', sprite = 'item/small-lamp', tooltip = 'Toggle flashlight'})
+    local b = player.gui.top.add({type = 'sprite-button', name = 'flashlight_toggle', sprite = 'item/small-lamp', tooltip = 'Toggle flashlight', style = Gui.button_style})
     b.style.minimal_height = 38
     b.style.maximal_height = 38
     b.style.minimal_width = 38

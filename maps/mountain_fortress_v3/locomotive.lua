@@ -285,7 +285,7 @@ local function give_passive_xp(data)
                     end
                 end
             end
-        elseif player.afk_time > 200 and player.character and player.surface.index == loco_surface.index then
+        elseif player.afk_time > 600 and player.character and player.surface.index == loco_surface.index then
             player.character_personal_logistic_requests_enabled = false
         end
         ::pre_exit::

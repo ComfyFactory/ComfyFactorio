@@ -60,6 +60,7 @@ local remove = table.remove
 RPG.disable_cooldowns_on_spells()
 Gui.mod_gui_button_enabled = true
 Gui.button_style = 'mod_gui_button'
+Gui.set_toggle_button(true)
 
 local collapse_kill = {
     entities = {
