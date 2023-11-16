@@ -485,12 +485,6 @@ local function handler_factory(event_id)
     end
 end
 
-local function custom_handler_factory(handlers)
-    return function(element_name, handler)
-        handlers[element_name] = handler
-    end
-end
-
 --luacheck: ignore custom_raise
 ---@diagnostic disable-next-line: unused-function, unused-local
 local function custom_raise(handlers, element, player)
