@@ -13,10 +13,11 @@ local Public = {}
 Public.events = {on_gui_removal = Event.generate_event_name('on_gui_removal')}
 
 -- local to this file
+local local_settings = {
+    toggle_button = false
+}
 local main_gui_tabs = {}
 local screen_elements = {}
-local on_visible_handlers = {}
-local on_pre_hidden_handlers = {}
 local remove_data_recursively
 
 -- global
@@ -58,6 +59,7 @@ function Public.uid()
 end
 
 local main_frame_name = Public.uid_name()
+local main_toggle_button_name = Public.uid_name()
 local main_button_name = Public.uid_name()
 local close_button_name = Public.uid_name()
 
@@ -71,6 +73,7 @@ Public.frame_style = 'non_draggable_frame'
 
 Public.top_main_gui_button = main_button_name
 Public.main_frame_name = main_frame_name
+Public.main_toggle_button_name = main_toggle_button_name
 
 --- Verifies if a frame is valid and destroys it.
 ---@param align userdata
@@ -482,12 +485,6 @@ local function handler_factory(event_id)
     end
 end
 
-local function custom_handler_factory(handlers)
-    return function(element_name, handler)
-        handlers[element_name] = handler
-    end
-end
-
 --luacheck: ignore custom_raise
 ---@diagnostic disable-next-line: unused-function, unused-local
 local function custom_raise(handlers, element, player)
@@ -585,9 +582,29 @@ function Public.get_mod_gui_top_frame()
     return settings.mod_gui_top_frame
 end
 
+---@param state boolean
+--- If we should show the toggle button or not
+function Public.set_toggle_button(state)
+    if _LIFECYCLE == 8 then
+        error('Calling Gui.set_toggle_button after on_init() or on_load() has run is a desync risk.', 2)
+    end
+    local_settings.toggle_button = state or false
+end
+
+--- Get toggle_button state
+function Public.get_toggle_button()
+    if _LIFECYCLE == 8 then
+        error('Calling Gui.get_toggle_button after on_init() or on_load() has run is a desync risk.', 2)
+    end
+    return local_settings.toggle_button
+end
+
 --- This adds the given gui to the main gui.
 ---@param tbl table
 function Public.add_tab_to_gui(tbl)
+    if _LIFECYCLE == 8 then
+        error('Calling Gui.add_tab_to_gui after on_init() or on_load() has run is a desync risk.', 2)
+    end
     if not tbl then
         return
     end
@@ -666,6 +683,10 @@ function Public.clear_all_active_frames(player)
             remove_data_recursively(child)
             child.destroy()
         end
+    end
+    for _, child in pairs(player.gui.center.children) do
+        remove_data_recursively(child)
+        child.destroy()
     end
 end
 
@@ -746,6 +767,26 @@ local function top_button(player)
         button.style.minimal_width = 40
         button.style.padding = -2
     end
+end
+
+local function top_toggle_button(player)
+    if not player or not player.valid then
+        return
+    end
+
+    local b =
+        player.gui.top.add(
+        {
+            type = 'sprite-button',
+            name = main_toggle_button_name,
+            sprite = 'utility/preset',
+            style = Public.button_style,
+            tooltip = 'Click to hide top buttons!'
+        }
+    )
+    b.style.padding = 2
+    b.style.width = 20
+    b.style.maximal_height = 38
 end
 
 local function draw_main_frame(player)
@@ -884,20 +925,6 @@ Public.on_text_changed = handler_factory(defines.events.on_gui_text_changed)
 -- Adds a player field to the event table.
 Public.on_value_changed = handler_factory(defines.events.on_gui_value_changed)
 
--- Register a handler for when the player shows the top LuaGuiElements with element_name.
--- Assuming the element_name has been added with Public.allow_player_to_toggle_top_element_visibility.
--- Can only have one handler per element name.
--- Guarantees that the element and the player are valid when calling the handler.
--- Adds a player field to the event table.
-Public.on_player_show_top = custom_handler_factory(on_visible_handlers)
-
--- Register a handler for when the player hides the top LuaGuiElements with element_name.
--- Assuming the element_name has been added with Public.allow_player_to_toggle_top_element_visibility.
--- Can only have one handler per element name.
--- Guarantees that the element and the player are valid when calling the handler.
--- Adds a player field to the event table.
-Public.on_pre_player_hide_top = custom_handler_factory(on_pre_hidden_handlers)
-
 Public.on_click(
     main_button_name,
     function(event)
@@ -929,6 +956,42 @@ Public.on_click(
         if frame then
             remove_data_recursively(frame)
             frame.destroy()
+        end
+    end
+)
+
+Public.on_click(
+    main_toggle_button_name,
+    function(event)
+        local button = event.element
+        local player = event.player
+        local top = player.gui.top
+
+        if button.sprite == 'utility/preset' then
+            for _, ele in pairs(top.children) do
+                if ele and ele.valid and ele.name ~= main_toggle_button_name then
+                    ele.visible = false
+                end
+            end
+
+            Public.clear_all_active_frames(player)
+
+            local main_frame = Public.get_main_frame(player)
+            if main_frame then
+                main_frame.destroy()
+            end
+
+            button.sprite = 'utility/expand_dots_white'
+            button.tooltip = 'Click to show top buttons!'
+        else
+            for _, ele in pairs(top.children) do
+                if ele and ele.valid and ele.name ~= main_toggle_button_name then
+                    ele.visible = true
+                end
+            end
+
+            button.sprite = 'utility/preset'
+            button.tooltip = 'Click to hide top buttons!'
         end
     end
 )
@@ -971,6 +1034,9 @@ Event.add(
     defines.events.on_player_created,
     function(event)
         local player = game.get_player(event.player_index)
+        if local_settings.toggle_button then
+            top_toggle_button(player)
+        end
         top_button(player)
     end
 )

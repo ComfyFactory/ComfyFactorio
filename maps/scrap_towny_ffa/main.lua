@@ -41,6 +41,10 @@ local Where = require 'utils.commands.where'
 local Inventory = require 'modules.show_inventory'
 local JailData = require 'utils.datastore.jail_data'
 
+Gui.mod_gui_button_enabled = true
+Gui.button_style = 'mod_gui_button'
+Gui.set_toggle_button(true)
+
 local function spairs(t)
     local keys = {}
     for k in pairs(t) do

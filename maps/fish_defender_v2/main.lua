@@ -26,6 +26,7 @@ local enable_start_grace_period = true
 
 Gui.mod_gui_button_enabled = true
 Gui.button_style = 'mod_gui_button'
+Gui.set_toggle_button(true)
 
 local starting_items = {
     ['pistol'] = 1,

@@ -1,4 +1,5 @@
 local Event = require 'utils.event'
+local Gui = require 'utils.gui'
 
 local Public = {}
 
@@ -53,10 +54,11 @@ function Public.toggle_button(player)
     if player.gui.top['towny_map_intro_button'] then
         return
     end
-    local b = player.gui.top.add({type = 'sprite-button', caption = 'Info', name = 'towny_map_intro_button', tooltip = 'Show Info'})
+    local b = player.gui.top.add({type = 'sprite-button', caption = 'Info', name = 'towny_map_intro_button', tooltip = 'Show Info', style = Gui.button_style})
     b.style.font_color = {r = 0.5, g = 0.3, b = 0.99}
     b.style.font = 'heading-1'
     b.style.minimal_height = 38
+    b.style.maximal_height = 38
     b.style.minimal_width = 80
     b.style.top_padding = 1
     b.style.left_padding = 1

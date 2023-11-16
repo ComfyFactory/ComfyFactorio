@@ -1,3 +1,4 @@
+local Gui = require 'utils.gui'
 local function toggle(player)
     if not player.gui.top.global_chat_toggle then
         return
@@ -26,7 +27,8 @@ local function create_gui_button(player)
         {
             type = 'sprite-button',
             name = 'global_chat_toggle',
-            caption = ''
+            caption = '',
+            style = Gui.button_style
         }
     )
     b.style.font = 'heading-2'
