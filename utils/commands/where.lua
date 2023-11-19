@@ -107,8 +107,6 @@ local function create_mini_camera_gui(player, target, zoom, render, tooltip)
         frame = player.gui.screen.add({type = 'frame', name = locate_player_frame_name, caption = target.name})
     end
 
-    player.opened = frame
-
     frame.force_auto_center()
 
     local surface = tonumber(target.surface.index)
@@ -239,10 +237,7 @@ Gui.on_click(
         if is_spamming then
             return
         end
-        local type = event.gui_type
-        if type == defines.gui_type.custom then
-            remove_camera_frame(event.player)
-        end
+        remove_camera_frame(event.player)
     end
 )
 
