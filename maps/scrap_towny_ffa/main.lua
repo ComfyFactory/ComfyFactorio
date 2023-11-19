@@ -190,7 +190,7 @@ local function on_init()
 
     MapDefaults.initialize()
     Limbo.initialize()
-    Nauvis.initialize()
+    Nauvis.initialize(true)
     Team.initialize()
 end
 
