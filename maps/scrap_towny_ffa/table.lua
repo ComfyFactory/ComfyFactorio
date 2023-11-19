@@ -39,7 +39,9 @@ function Public.reset_table()
     this.suicides = {}
     this.required_time_to_win = 72
     this.required_time_to_win_in_ticks = 15552000
-    this.surface_terrain = 'desert'
+    if not this.surface_terrain then
+        this.surface_terrain = 'desert'
+    end
     this.shuffle_random_victory_time = false
     this.announced_message = nil
     this.soft_reset = true
