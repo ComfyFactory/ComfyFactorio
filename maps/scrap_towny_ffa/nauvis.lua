@@ -1,20 +1,22 @@
 local Event = require 'utils.event'
+local Server = require 'utils.server'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local SoftReset = require 'functions.soft_reset'
--- local Server = require 'utils.server'
--- local Token = require 'utils.token'
+local Token = require 'utils.token'
+
 local math_random = math.random
 local table_shuffle = table.shuffle_table
 
--- local dataset = 'scenario_settings'
--- local dataset_key = 'scrap_towny_ffa'
+local dataset = 'scenario_settings'
+local dataset_key = 'scrap_towny_ffa'
+local dataset_key_dev = 'scrap_towny_ffa_dev'
 
 local Public = {}
 
 local map_width = 3840
 local map_height = 3840
---[[
-local set_victory_length_token =
+
+local apply_startup_settings_token =
     Token.register(
     function(data)
         local this = ScenarioTable.get_table()
@@ -24,25 +26,59 @@ local set_victory_length_token =
             if this.shuffle_random_victory_time and math.random(1, 32) == 1 then
                 this.required_time_to_win = 48
                 this.required_time_to_win_in_ticks = 10368000
+                this.surface_terrain = 'forest'
             end
         else
             local value = data.value
-            local required_time_to_win = value.required_time_to_win
-            if required_time_to_win == 48 then
-                this.required_time_to_win = 168
-                this.required_time_to_win_in_ticks = 36288000
+            if value.required_time_to_win == 48 then
+                this.required_time_to_win = 72
+                this.required_time_to_win_in_ticks = 15552000
             else
                 this.required_time_to_win = 48
                 this.required_time_to_win_in_ticks = 10368000
+            end
+            if value.surface_terrain == 'forest' then
+                this.surface_terrain = 'desert'
+            else
+                this.surface_terrain = 'forest'
             end
         end
 
         settings.required_time_to_win = this.required_time_to_win
         settings.required_time_to_win_in_ticks = this.required_time_to_win_in_ticks
+        settings.surface_terrain = this.surface_terrain
 
         Server.set_data(dataset, dataset_key, settings)
     end
-) ]]
+)
+
+local apply_startup_settings = function(this, server_name_matches)
+    local settings = {}
+
+    if this.required_time_to_win == 48 then
+        this.required_time_to_win = 72
+        this.required_time_to_win_in_ticks = 15552000
+    else
+        this.required_time_to_win = 48
+        this.required_time_to_win_in_ticks = 10368000
+    end
+    if this.surface_terrain == 'forest' then
+        this.surface_terrain = 'desert'
+    else
+        this.surface_terrain = 'forest'
+    end
+
+    settings.required_time_to_win = this.required_time_to_win
+    settings.required_time_to_win_in_ticks = this.required_time_to_win_in_ticks
+    settings.surface_terrain = this.surface_terrain
+
+    if server_name_matches then
+        Server.set_data(dataset, dataset_key, settings)
+    else
+        Server.set_data(dataset, dataset_key_dev, settings)
+    end
+end
+
 function Public.nuke(position)
     local this = ScenarioTable.get_table()
     local map_surface = game.get_surface(this.active_surface_index)
@@ -99,8 +135,14 @@ function Public.armageddon()
     end
 end
 
-function Public.initialize()
+function Public.initialize(init)
     local this = ScenarioTable.get_table()
+
+    if not init then
+        local server_name_matches = Server.check_server_name('Towny')
+        apply_startup_settings(this, server_name_matches)
+    end
+
     local surface_seed = game.surfaces['nauvis']
     -- this overrides what is in the map_gen_settings.json file
     local mgs = surface_seed.map_gen_settings
@@ -154,22 +196,44 @@ function Public.initialize()
     mgs.peaceful_mode = false
     mgs.starting_area = 'none'
     mgs.terrain_segmentation = 8
-    -- terrain size is 64 x 64 chunks, water size is 80 x 80
+    -- terrain size is 64 x 64 chunks, water size is 80w x 80
     mgs.width = map_width
     mgs.height = map_height
     --mgs.starting_points = {
     --	{x = 0, y = 0}
     --}
-    mgs.property_expression_names = {
-        ['starting-lake-noise-amplitude'] = 0,
-        -- allow enemies to get up close on spawn
-        ['starting-area'] = 0,
-        ['enemy-base-intensity'] = 1,
-        -- adjust this value to set how many nests spawn per tile
-        ['enemy-base-frequency'] = 0.4,
-        -- this will make and average base radius around 12 tiles
-        ['enemy-base-radius'] = 12
-    }
+    if this.surface_terrain == 'forest' then
+        mgs.autoplace_controls.trees = {
+            frequency = 0.666,
+            richness = 1,
+            size = 1.5
+        }
+        mgs.property_expression_names = {
+            ['control-setting:aux:bias'] = '-0.500000',
+            ['control-setting:moisture:bias'] = '0.500000',
+            ['control-setting:moisture:frequency:multiplier'] = '4.000000',
+            ['starting-lake-noise-amplitude'] = 0,
+            -- allow enemies to get up close on spawn
+            ['starting-area'] = 0,
+            ['enemy-base-intensity'] = 1,
+            -- adjust this value to set how many nests spawn per tile
+            ['enemy-base-frequency'] = 0.4,
+            -- this will make and average base radius around 12 tiles
+            ['enemy-base-radius'] = 12
+        }
+    else
+        mgs.property_expression_names = {
+            ['starting-lake-noise-amplitude'] = 0,
+            -- allow enemies to get up close on spawn
+            ['starting-area'] = 0,
+            ['enemy-base-intensity'] = 1,
+            -- adjust this value to set how many nests spawn per tile
+            ['enemy-base-frequency'] = 0.4,
+            -- this will make and average base radius around 12 tiles
+            ['enemy-base-radius'] = 12
+        }
+    end
+
     mgs.seed = math_random(100000, 9999999)
 
     if not this.active_surface_index then
@@ -216,5 +280,26 @@ function Public.clear_nuke_schedule()
 end
 
 Event.add(defines.events.on_tick, on_tick)
+
+Event.add(
+    Server.events.on_server_started,
+    function()
+        local this = ScenarioTable.get_table()
+        if this.settings_applied then
+            return
+        end
+
+        local server_name_matches = Server.check_server_name('Towny')
+
+        this.settings_applied = true
+
+        if server_name_matches then
+            Server.try_get_data(dataset, dataset_key, apply_startup_settings_token)
+        else
+            Server.try_get_data(dataset, dataset_key_dev, apply_startup_settings_token)
+            this.test_mode = true
+        end
+    end
+)
 
 return Public
