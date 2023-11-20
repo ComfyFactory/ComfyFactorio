@@ -325,6 +325,8 @@ local function distance(player)
             rpg_extra.reward_new_players = bonus_xp_on_join * rpg_extra.breached_walls
             Public.set('breached_wall', breached_wall + 1)
             biters.amount = 0
+            -- local random_seed = Public.get('random_seed')
+            -- Public.set('random_seed', random_seed + (breached_wall + 1 * 2))
             placed_trains_in_zone.randomized = false
             Public.enemy_weapon_damage()
             local spidertron_unlocked_enabled = Public.get('spidertron_unlocked_enabled')

@@ -30,11 +30,21 @@ local this = {
     magic_fluid_crafters = {index = 1},
     art_table = {index = 1},
     starting_items = {
-        ['pistol'] = 1,
-        ['firearm-magazine'] = 16,
-        ['rail'] = 16,
-        ['wood'] = 16,
-        ['explosives'] = 32
+        ['pistol'] = {
+            count = 1
+        },
+        ['firearm-magazine'] = {
+            count = 16
+        },
+        ['rail'] = {
+            count = 16
+        },
+        ['wood'] = {
+            count = 16
+        },
+        ['explosives'] = {
+            count = 32
+        }
     }
 }
 
@@ -1249,8 +1259,8 @@ function Public.on_player_joined_game(event)
             local death_message = ({'main.death_mode_warning'})
             Alert.alert_player(player, 15, death_message)
         end
-        for item, amount in pairs(this.starting_items) do
-            player.insert({name = item, count = amount})
+        for item, data in pairs(this.starting_items) do
+            player.insert({name = item, count = data.count})
         end
     end
 
@@ -1611,11 +1621,21 @@ function Public.reset_func_table()
     this.magic_crafters = {index = 1}
     this.magic_fluid_crafters = {index = 1}
     this.starting_items = {
-        ['pistol'] = 1,
-        ['firearm-magazine'] = 16,
-        ['rail'] = 16,
-        ['wood'] = 16,
-        ['explosives'] = 32
+        ['pistol'] = {
+            count = 1
+        },
+        ['firearm-magazine'] = {
+            count = 16
+        },
+        ['rail'] = {
+            count = 16
+        },
+        ['wood'] = {
+            count = 16
+        },
+        ['explosives'] = {
+            count = 32
+        }
     }
 end
 

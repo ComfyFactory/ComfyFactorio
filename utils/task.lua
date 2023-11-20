@@ -9,6 +9,7 @@ local PriorityQueue = require 'utils.priority_queue'
 local Event = require 'utils.event'
 local Token = require 'utils.token'
 local Global = require 'utils.global'
+local Color = require 'utils.color_presets'
 
 local floor = math.floor
 local log10 = math.log10
@@ -46,6 +47,23 @@ Global.register(
         primitives = tbl.primitives
 
         PriorityQueue.load(callbacks, comparator)
+    end
+)
+
+local delay_print_token =
+    Token.register(
+    function(event)
+        local text = event.text
+        if not text then
+            return
+        end
+
+        local color = event.color
+        if not color then
+            color = Color.info
+        end
+
+        game.print(text, color)
     end
 )
 
@@ -109,6 +127,19 @@ function Task.set_timeout_in_ticks(ticks, func_token, params)
     end
     local time = game.tick + ticks
     local callback = {time = time, func_token = func_token, params = params}
+    PriorityQueue_push(callbacks, callback)
+end
+
+--- Allows you to set a timer (in ticks) after which the tokened function will be run with params given as an argument
+-- Cannot be called before init
+-- @param ticks <number>
+-- @param params <any> the argument to send to the tokened function
+function Task.set_timeout_in_ticks_text(ticks, params)
+    if not game then
+        error('cannot call when game is not available', 2)
+    end
+    local time = game.tick + ticks
+    local callback = {time = time, func_token = delay_print_token, params = params}
     PriorityQueue_push(callbacks, callback)
 end
 

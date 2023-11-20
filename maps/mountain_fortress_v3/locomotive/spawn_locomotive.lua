@@ -212,6 +212,27 @@ function Public.locomotive_spawn(surface, position)
         surface = locomotive.surface
     }
 
+    local extra_wagons = Public.stateful.get_stateful('extra_wagons')
+
+    if extra_wagons and extra_wagons > 0 then
+        local pos = this.locomotive_cargo.position
+        local inc = 6
+        local new_position = {x = pos.x, y = pos.y + inc}
+
+        for y = pos.y, new_position.y + (6 * extra_wagons), 2 do
+            surface.create_entity({name = 'straight-rail', position = {new_position.x, y}, force = 'player', direction = 0})
+        end
+
+        for _ = 1, extra_wagons do
+            local new_wagon = surface.create_entity({name = 'cargo-wagon', position = new_position, force = 'player', defines.direction.north})
+            if new_wagon and new_wagon.valid then
+                inc = inc + 7
+                new_position = {x = pos.x, y = pos.y + inc}
+                ICW.register_wagon(new_wagon)
+            end
+        end
+    end
+
     Task.set_timeout_in_ticks(15, place_tiles_token, {surface = surface, position = position})
     Task.set_timeout_in_ticks(300, place_tiles_token, {surface = surface, position = position})
     Task.set_timeout_in_ticks(50, set_loco_cargo, data)
