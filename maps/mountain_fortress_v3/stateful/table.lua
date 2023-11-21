@@ -21,8 +21,10 @@ local Beam = require 'modules.render_beam'
 local this = {
     enabled = false,
     rounds_survived = 0,
+    season = 1,
     buffs = {},
-    reset_after = 60
+    reset_after = 60,
+    time_to_reset = 60
 }
 
 local random = math.random
@@ -796,6 +798,8 @@ local function apply_startup_settings(settings)
     local converted_stored_date = round(Utils.convert_date(stored_date_raw.year, stored_date_raw.month, stored_date_raw.day))
 
     local time_to_reset = (current_date - converted_stored_date)
+    this.time_to_reset = this.reset_after - time_to_reset
+
     if time_to_reset and time_to_reset > this.reset_after then
         settings.current_date = current_time
         settings.test_mode = false
@@ -804,7 +808,10 @@ local function apply_startup_settings(settings)
         this.buffs = {}
         this.buffs_collected = {}
         this.rounds_survived = 0
+        this.season = this.season + 1
         this.current_date = current_time
+        settings.season = this.season
+        this.time_to_reset = this.reset_after
         local message = ({'stateful.reset'})
         local message_discord = ({'stateful.reset_discord'})
         game.print(message)
@@ -831,7 +838,8 @@ local apply_settings_token =
         if not settings then
             settings = {
                 rounds_survived = 0,
-                current_date = tonumber(current_time)
+                current_date = tonumber(current_time),
+                season = 1
             }
             if server_name_matches then
                 Server.set_data(dataset, dataset_key, settings)
@@ -851,6 +859,7 @@ local apply_settings_token =
         apply_startup_settings(settings)
 
         this.rounds_survived = settings.rounds_survived
+        this.season = settings.season
 
         Public.reset_stateful()
         Public.increase_enemy_damage_and_health()
@@ -861,7 +870,7 @@ local function apply_startup_dev_settings(settings)
     local current_date = {
         year = 2023,
         month = 10,
-        day = 20
+        day = 30
     }
     if not current_date then
         return
@@ -885,6 +894,7 @@ local function apply_startup_dev_settings(settings)
     local converted_stored_date = round(Utils.convert_date(stored_date_raw.year, stored_date_raw.month, stored_date_raw.day))
 
     local time_to_reset = (current_date - converted_stored_date)
+    this.time_to_reset = this.reset_after - time_to_reset
     if time_to_reset and time_to_reset > this.reset_after then
         settings.current_date = current_time
         settings.test_mode = false
@@ -893,7 +903,10 @@ local function apply_startup_dev_settings(settings)
         this.buffs = {}
         this.buffs_collected = {}
         this.rounds_survived = 0
+        this.season = this.season + 1
         this.current_date = current_time
+        settings.season = this.season
+        this.time_to_reset = this.reset_after
         local message = ({'stateful.reset'})
         local message_discord = ({'stateful.reset_discord'})
         Task.set_timeout_in_ticks_text(60, {text = message})
@@ -935,6 +948,7 @@ function Public.save_settings()
 
     local settings = {
         rounds_survived = this.rounds_survived,
+        season = this.season,
         test_mode = this.test_mode,
         buffs = this.buffs,
         current_date = this.current_date
@@ -1254,6 +1268,7 @@ if _DEBUG then
             local cbl = Token.get(apply_settings_dev_token)
             local data = {
                 rounds_survived = 20,
+                season = 1,
                 test_mode = false,
                 buffs = {
                     {name = 'character_running_speed_modifier', modifier = 'force', state = 0.4},

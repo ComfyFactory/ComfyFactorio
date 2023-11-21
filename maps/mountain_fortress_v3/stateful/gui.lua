@@ -344,6 +344,23 @@ local function boss_frame(player, alert)
     frame.style.maximal_height = 500
     frame.style.minimal_width = 200
     frame.style.maximal_width = 400
+    local season_tbl = frame.add {type = 'table', column_count = 2}
+    season_tbl.style.horizontally_stretchable = true
+
+    local season_left_flow = season_tbl.add({type = 'flow'})
+    season_left_flow.style.horizontal_align = 'left'
+    season_left_flow.style.horizontally_stretchable = true
+
+    season_left_flow.add({type = 'label', caption = {'stateful.season'}, tooltip = {'stateful.season_tooltip', stateful.time_to_reset}})
+    frame.add({type = 'line', direction = 'vertical'})
+    local season_right_flow = season_tbl.add({type = 'flow'})
+    season_right_flow.style.horizontal_align = 'right'
+    season_right_flow.style.horizontally_stretchable = true
+
+    data.season_label = season_right_flow.add({type = 'label', caption = stateful.season})
+
+    spacer(frame)
+
     local rounds_survived_tbl = frame.add {type = 'table', column_count = 2}
     rounds_survived_tbl.style.horizontally_stretchable = true
 
@@ -464,6 +481,23 @@ main_frame = function(player)
     frame.style.maximal_height = 700
     frame.style.minimal_width = 200
     frame.style.maximal_width = 400
+    local season_tbl = frame.add {type = 'table', column_count = 2}
+    season_tbl.style.horizontally_stretchable = true
+
+    local season_left_flow = season_tbl.add({type = 'flow'})
+    season_left_flow.style.horizontal_align = 'left'
+    season_left_flow.style.horizontally_stretchable = true
+
+    season_left_flow.add({type = 'label', caption = {'stateful.season'}, tooltip = {'stateful.season_tooltip', stateful.time_to_reset}})
+    frame.add({type = 'line', direction = 'vertical'})
+    local season_right_flow = season_tbl.add({type = 'flow'})
+    season_right_flow.style.horizontal_align = 'right'
+    season_right_flow.style.horizontally_stretchable = true
+
+    data.season_label = season_right_flow.add({type = 'label', caption = stateful.season})
+
+    spacer(frame)
+
     local rounds_survived_tbl = frame.add {type = 'table', column_count = 2}
     rounds_survived_tbl.style.horizontally_stretchable = true
 
@@ -649,6 +683,9 @@ local function update_data()
         local data_boss = Gui.get_data(b)
 
         if data then
+            if data.season_label and data.season_label.valid then
+                data.season_label.caption = stateful.season
+            end
             if data.rounds_survived_label and data.rounds_survived_label.valid then
                 data.rounds_survived_label.caption = stateful.rounds_survived
             end
@@ -757,6 +794,9 @@ local function update_data()
             end
         end
         if data_boss then
+            if data_boss.season_label and data_boss.season_label.valid then
+                data_boss.season_label.caption = stateful.season
+            end
             if data_boss.rounds_survived_label and data_boss.rounds_survived_label.valid then
                 data_boss.rounds_survived_label.caption = stateful.rounds_survived
             end
