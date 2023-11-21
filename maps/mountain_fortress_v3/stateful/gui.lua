@@ -12,6 +12,7 @@ local Server = require 'utils.server'
 local LinkedChests = require 'maps.mountain_fortress_v3.icw.linked_chests'
 local Discord = require 'utils.discord'
 local format_number = require 'util'.format_number
+local Explosives = require 'modules.explosives'
 
 local send_ping_to_channel = Discord.channel_names.mtn_channel
 local main_button_name = Gui.uid_name()
@@ -198,6 +199,7 @@ end
 local function play_game_won()
     Core.iter_connected_players(
         function(player)
+            Explosives.detonate_entity(player)
             player.play_sound {path = 'utility/game_won', volume_modifier = 0.75}
             Task.set_timeout_in_ticks(10, spread_particles_token, {player_index = player.index, particle = 'iron-ore-particle'})
             Task.set_timeout_in_ticks(15, spread_particles_token, {player_index = player.index, particle = 'branch-particle'})
@@ -342,6 +344,23 @@ local function boss_frame(player, alert)
     frame.style.maximal_height = 500
     frame.style.minimal_width = 200
     frame.style.maximal_width = 400
+    local season_tbl = frame.add {type = 'table', column_count = 2}
+    season_tbl.style.horizontally_stretchable = true
+
+    local season_left_flow = season_tbl.add({type = 'flow'})
+    season_left_flow.style.horizontal_align = 'left'
+    season_left_flow.style.horizontally_stretchable = true
+
+    season_left_flow.add({type = 'label', caption = {'stateful.season'}, tooltip = {'stateful.season_tooltip', stateful.time_to_reset}})
+    frame.add({type = 'line', direction = 'vertical'})
+    local season_right_flow = season_tbl.add({type = 'flow'})
+    season_right_flow.style.horizontal_align = 'right'
+    season_right_flow.style.horizontally_stretchable = true
+
+    data.season_label = season_right_flow.add({type = 'label', caption = stateful.season})
+
+    spacer(frame)
+
     local rounds_survived_tbl = frame.add {type = 'table', column_count = 2}
     rounds_survived_tbl.style.horizontally_stretchable = true
 
@@ -462,6 +481,23 @@ main_frame = function(player)
     frame.style.maximal_height = 700
     frame.style.minimal_width = 200
     frame.style.maximal_width = 400
+    local season_tbl = frame.add {type = 'table', column_count = 2}
+    season_tbl.style.horizontally_stretchable = true
+
+    local season_left_flow = season_tbl.add({type = 'flow'})
+    season_left_flow.style.horizontal_align = 'left'
+    season_left_flow.style.horizontally_stretchable = true
+
+    season_left_flow.add({type = 'label', caption = {'stateful.season'}, tooltip = {'stateful.season_tooltip', stateful.time_to_reset}})
+    frame.add({type = 'line', direction = 'vertical'})
+    local season_right_flow = season_tbl.add({type = 'flow'})
+    season_right_flow.style.horizontal_align = 'right'
+    season_right_flow.style.horizontally_stretchable = true
+
+    data.season_label = season_right_flow.add({type = 'label', caption = stateful.season})
+
+    spacer(frame)
+
     local rounds_survived_tbl = frame.add {type = 'table', column_count = 2}
     rounds_survived_tbl.style.horizontally_stretchable = true
 
@@ -498,24 +534,20 @@ main_frame = function(player)
         if stateful.buffs_collected and next(stateful.buffs_collected) then
             if stateful.buffs_collected.starting_items then
                 buffs = buffs .. 'Starting items:\n'
-                for _, item_data in pairs(stateful.buffs_collected) do
-                    if type(item_data) == 'table' then
-                        for item_name, item_count in pairs(item_data) do
-                            buffs = buffs .. item_name .. ': ' .. item_count
-                            buffs = buffs .. '\n'
-                        end
-                    end
+                for item_name, item_data in pairs(stateful.buffs_collected.starting_items) do
+                    buffs = buffs .. item_name .. ': ' .. item_data.count
+                    buffs = buffs .. '\n'
                 end
                 buffs = buffs .. '\n'
             end
 
             buffs = buffs .. 'Force buffs:\n'
-            for name, count in pairs(stateful.buffs_collected) do
-                if type(count) ~= 'table' then
+            for name, buff_data in pairs(stateful.buffs_collected) do
+                if type(buff_data.amount) ~= 'table' and name ~= 'starting_items' then
                     if name == 'xp_level' or name == 'character_health_bonus' then
-                        buffs = buffs .. Stateful.buff_to_string[name] .. ': ' .. count
+                        buffs = buffs .. Stateful.buff_to_string[name] .. ': ' .. buff_data.count
                     else
-                        buffs = buffs .. Stateful.buff_to_string[name] .. ': ' .. (count * 100) .. '%'
+                        buffs = buffs .. Stateful.buff_to_string[name] .. ': ' .. (buff_data.count * 100) .. '%'
                     end
                     buffs = buffs .. '\n'
                 end
@@ -651,6 +683,9 @@ local function update_data()
         local data_boss = Gui.get_data(b)
 
         if data then
+            if data.season_label and data.season_label.valid then
+                data.season_label.caption = stateful.season
+            end
             if data.rounds_survived_label and data.rounds_survived_label.valid then
                 data.rounds_survived_label.caption = stateful.rounds_survived
             end
@@ -759,6 +794,9 @@ local function update_data()
             end
         end
         if data_boss then
+            if data_boss.season_label and data_boss.season_label.valid then
+                data_boss.season_label.caption = stateful.season
+            end
             if data_boss.rounds_survived_label and data_boss.rounds_survived_label.valid then
                 data_boss.rounds_survived_label.caption = stateful.rounds_survived
             end
@@ -888,7 +926,7 @@ local function update_raw()
                 collection.survive_for = game.tick + Stateful.scale(random(54000, 72000), 126000)
                 collection.survive_for_timer = collection.survive_for
                 collection.nuke_blueprint = true
-                Public.blueprints.nuke_blueprint()
+                Public.stateful_blueprints.nuke_blueprint()
                 WD.disable_spawning_biters(false)
                 Server.to_discord_embed('Final battle starts now!')
                 refresh_boss_frame()
@@ -991,7 +1029,7 @@ local function update_raw()
         play_achievement_unlocked()
         WD.disable_spawning_biters(true)
         Collapse.disable_collapse(true)
-        Public.blueprints.blueprint()
+        Public.stateful_blueprints.blueprint()
         WD.nuke_wave_gui()
 
         refresh_frames()

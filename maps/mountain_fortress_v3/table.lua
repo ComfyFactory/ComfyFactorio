@@ -115,6 +115,7 @@ function Public.reset_main_table()
     this.death_mode = false
     this.locomotive_health = 10000
     this.locomotive_max_health = 10000
+    this.extra_wagons = 0
     this.gap_between_zones = {
         set = false,
         gap = 900,
@@ -183,6 +184,7 @@ function Public.reset_main_table()
     this.pickaxe_speed_per_purchase = 0.07
     this.breached_wall = 1
     this.final_battle = false
+    this.disable_link_chest_cheese_mode = true
     this.left_top = {
         x = 0,
         y = 0
@@ -245,7 +247,7 @@ function Public.reset_main_table()
     this.check_afk_players = true
     this.winter_mode = false
     this.sent_to_discord = false
-    this.random_seed = random(23849829, 1283989182)
+    this.random_seed = random(100000000, 1000000000)
     this.difficulty = {
         multiply = 0.25,
         highest = 10,

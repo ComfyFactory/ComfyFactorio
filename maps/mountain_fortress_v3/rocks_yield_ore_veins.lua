@@ -88,8 +88,8 @@ local function draw_chain(surface, count, ore, ore_entities, ore_positions)
     end
 end
 
-local function ore_vein(event)
-    local surface = event.entity.surface
+local function ore_vein(player, entity)
+    local surface = entity.surface
     local size = size_raffle[random(1, #size_raffle)]
     local ore = this.raffle[random(1, #this.raffle)]
     local icon
@@ -99,45 +99,29 @@ local function ore_vein(event)
         icon = ' '
     end
 
-    local player = game.players[event.player_index]
-    for _, p in pairs(game.connected_players) do
-        if p.index == player.index then
-            p.print(
-                {
-                    'rocks_yield_ore_veins.player_print',
-                    {'rocks_yield_ore_veins_colors.' .. ore},
-                    {'rocks_yield_ore_veins.' .. size[1]},
-                    {'rocks_yield_ore_veins.' .. ore},
-                    icon
-                },
-                {r = 0.80, g = 0.80, b = 0.80}
-            )
-        else
-            game.print(
-                {
-                    'rocks_yield_ore_veins.game_print',
-                    '[color=' .. player.chat_color.r .. ',' .. player.chat_color.g .. ',' .. player.chat_color.b .. ']' .. player.name .. '[/color]',
-                    {'rocks_yield_ore_veins.' .. size[1]},
-                    {'rocks_yield_ore_veins.' .. ore},
-                    icon
-                },
-                {r = 0.80, g = 0.80, b = 0.80}
-            )
-        end
-    end
+    player.print(
+        {
+            'rocks_yield_ore_veins.player_print',
+            {'rocks_yield_ore_veins_colors.' .. ore},
+            {'rocks_yield_ore_veins.' .. size[1]},
+            {'rocks_yield_ore_veins.' .. ore},
+            icon
+        },
+        {r = 0.80, g = 0.80, b = 0.80}
+    )
 
-    local ore_entities = {{name = ore, position = {x = event.entity.position.x, y = event.entity.position.y}, amount = get_amount(event.entity.position)}}
+    local ore_entities = {{name = ore, position = {x = entity.position.x, y = entity.position.y}, amount = get_amount(entity.position)}}
     if ore == 'mixed' then
         ore_entities = {
             {
                 name = this.mixed_ores[random(1, #this.mixed_ores)],
-                position = {x = event.entity.position.x, y = event.entity.position.y},
-                amount = get_amount(event.entity.position)
+                position = {x = entity.position.x, y = entity.position.y},
+                amount = get_amount(entity.position)
             }
         }
     end
 
-    local ore_positions = {[event.entity.position.x .. '_' .. event.entity.position.y] = true}
+    local ore_positions = {[entity.position.x .. '_' .. entity.position.y] = true}
     local count = random(size[2], size[3])
 
     for _ = 1, 128, 1 do
@@ -170,10 +154,23 @@ local function on_player_mined_entity(event)
     if not valid_entities[entity.type] then
         return
     end
-    if random(1, this.chance) ~= 1 then
+    local player = game.get_player(event.player_index)
+    if not player or not player.valid then
         return
     end
-    ore_vein(event)
+
+    local chance = this.chance
+
+    local is_around_train = Public.is_around_train_simple(player)
+    if is_around_train then
+        chance = chance / 2
+    end
+
+    if random(1, chance) ~= 1 then
+        return
+    end
+
+    ore_vein(player, entity)
 end
 
 local function on_init()

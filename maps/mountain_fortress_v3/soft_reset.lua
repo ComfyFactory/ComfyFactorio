@@ -60,8 +60,8 @@ local function equip_players(player_starting_items, data)
             end
             player.clear_items_inside()
             Modifers.update_player_modifiers(player)
-            for item, amount in pairs(player_starting_items) do
-                player.insert({name = item, count = amount})
+            for item, item_data in pairs(player_starting_items) do
+                player.insert({name = item, count = item_data.count})
             end
             show_all_gui(player)
             clear_spec_tag(player)
