@@ -801,7 +801,8 @@ local function apply_startup_settings(settings)
     this.time_to_reset = this.reset_after - time_to_reset
 
     if time_to_reset and time_to_reset > this.reset_after then
-        game.server_save('Season_' .. this.season or 1 .. '_Mtn_v3_' .. tostring(current_time))
+        local s = this.season or 1
+        game.server_save('Season_' .. s .. '_Mtn_v3_' .. tostring(current_time))
         settings.current_date = current_time
         settings.test_mode = false
         settings.rounds_survived = 0
