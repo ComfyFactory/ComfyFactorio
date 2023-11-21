@@ -95,17 +95,17 @@ local function get_random_buff()
         {
             name = 'manual_mining_speed_modifier',
             modifier = 'force',
-            state = 0.05
+            state = 0.15
         },
         {
             name = 'laboratory_speed_modifier',
             modifier = 'force',
-            state = 0.05
+            state = 0.15
         },
         {
             name = 'laboratory_productivity_bonus',
             modifier = 'force',
-            state = 0.05
+            state = 0.15
         },
         {
             name = 'worker_robots_storage_bonus',
@@ -130,7 +130,7 @@ local function get_random_buff()
         {
             name = 'character_health_bonus',
             modifier = 'force',
-            state = 50
+            state = 250
         },
         {
             name = 'distance',
@@ -141,17 +141,17 @@ local function get_random_buff()
         {
             name = 'manual_crafting_speed_modifier',
             modifier = 'force',
-            state = 0.06
+            state = 0.12
         },
         {
             name = 'xp_bonus',
             modifier = 'rpg',
-            state = 0.08
+            state = 0.12
         },
         {
             name = 'xp_level',
             modifier = 'rpg',
-            state = 16
+            state = 20
         },
         {
             name = 'supplies',
@@ -263,7 +263,7 @@ local function get_random_buff()
             modifier = 'starting_items',
             limit = nil,
             items = {
-                {name = 'assembling-machine-1', count = 1}
+                {name = 'assembling-machine-1', count = 2}
             }
         },
         {
@@ -272,7 +272,7 @@ local function get_random_buff()
             limit = nil,
             replaces = 'fast_startup',
             items = {
-                {name = 'assembling-machine-2', count = 1}
+                {name = 'assembling-machine-2', count = 2}
             }
         },
         {
@@ -281,7 +281,7 @@ local function get_random_buff()
             limit = nil,
             replaces = 'fast_startup_2',
             items = {
-                {name = 'assembling-machine-3', count = 1}
+                {name = 'assembling-machine-3', count = 2}
             }
         },
         {
