@@ -1251,6 +1251,9 @@ Gui.on_click(
             local player = game.get_player(event.player_index)
             local player_data = this.linked_gui[player.name]
             local ev_element = event.element
+            if not ev_element or not ev_element.valid or not ev_element.name then
+                return
+            end
             if not player_data then
                 Gui.remove_data_recursively(ev_element)
                 return

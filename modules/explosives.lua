@@ -71,13 +71,17 @@ local function get_explosion_name(health)
     return 'big-artillery-explosion'
 end
 
-local function cell_birth(surface_index, origin_position, origin_tick, position, health)
+local function cell_birth(surface_index, origin_position, origin_tick, position, health, atomic)
     local key = pos_to_key(position)
 
     --Merge cells that are overlapping.
     if this.explosives.cells[key] then
         this.explosives.cells[key].health = this.explosives.cells[key].health + health
         return
+    end
+
+    if not atomic then
+        atomic = false
     end
 
     --Spawn new cell.
@@ -87,7 +91,8 @@ local function cell_birth(surface_index, origin_position, origin_tick, position,
         origin_tick = origin_tick,
         position = {x = position.x, y = position.y},
         spawn_tick = game.tick + speed,
-        health = health
+        health = health,
+        atomic = atomic
     }
 end
 
@@ -121,8 +126,12 @@ local function grow_cell(cell)
         return
     end
 
+    if not cell.atomic then
+        cell.atomic = false
+    end
+
     for _, p in pairs(positions) do
-        cell_birth(cell.surface_index, cell.origin_position, cell.origin_tick, p, new_cell_health)
+        cell_birth(cell.surface_index, cell.origin_position, cell.origin_tick, p, new_cell_health, cell.atomic)
     end
 end
 
@@ -175,7 +184,11 @@ local function damage_area(cell)
     end
 
     if math_random(1, 4) == 1 then
-        surface.create_entity({name = get_explosion_name(cell.health), position = cell.position})
+        if cell.atomic then
+            surface.create_entity({name = 'nuke-explosion', position = cell.position})
+        else
+            surface.create_entity({name = get_explosion_name(cell.health), position = cell.position})
+        end
     end
 
     for _, entity in pairs(
@@ -301,6 +314,23 @@ function Public.detonate_chest(entity)
     end
 
     cell_birth(entity.surface.index, {x = entity.position.x, y = entity.position.y}, game.tick, {x = entity.position.x, y = entity.position.y}, amount * damage)
+    return true
+end
+
+function Public.detonate_entity(entity, amount, damage)
+    if not entity or not entity.valid then
+        return false
+    end
+
+    if not amount then
+        amount = 200
+    end
+
+    if not damage then
+        damage = 700
+    end
+
+    cell_birth(entity.surface.index, {x = entity.position.x, y = entity.position.y}, game.tick, {x = entity.position.x, y = entity.position.y}, amount * damage, true)
     return true
 end
 

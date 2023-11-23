@@ -2,6 +2,7 @@ local Public = require 'modules.rpg.table'
 local Token = require 'utils.token'
 local Task = require 'utils.task'
 local Ai = require 'modules.ai'
+local Modifiers = require 'utils.player_modifiers'
 
 local spells = {}
 local random = math.random
@@ -87,7 +88,6 @@ local restore_movement_speed_token =
     Token.register(
     function(event)
         local player_index = event.player_index
-        local old_speed = event.old_speed
         local rpg_t = event.rpg_t
 
         if rpg_t then
@@ -103,7 +103,8 @@ local restore_movement_speed_token =
             return
         end
 
-        player.character.character_running_speed_modifier = old_speed
+        Modifiers.update_single_modifier(player, 'character_running_speed_modifier', 'rpg_spell', 0)
+        Modifiers.update_player_modifiers(player)
     end
 )
 
@@ -1045,8 +1046,9 @@ spells[#spells + 1] = {
             player.play_sound {path = 'utility/armor_insert', volume_modifier = 1}
         end
 
-        Task.set_timeout_in_ticks(300, restore_movement_speed_token, {player_index = player.index, old_speed = player.character.character_running_speed_modifier, rpg_t = rpg_t})
-        player.character.character_running_speed_modifier = player.character.character_running_speed_modifier + 1
+        Task.set_timeout_in_ticks(300, restore_movement_speed_token, {player_index = player.index, rpg_t = rpg_t})
+        Modifiers.update_single_modifier(player, 'character_running_speed_modifier', 'rpg_spell', 1)
+        Modifiers.update_player_modifiers(player)
         Public.cast_spell(player)
         return true
     end

@@ -5,9 +5,6 @@ Mountain Fortress v3 is maintained by Gerkiz and hosted by Comfy.
 Want to host it? Ask Gerkiz#0001 at discord!
 
 ]]
--- develop setting
-local _DEV_MODE = false
-
 require 'modules.shotgun_buff'
 require 'modules.no_deconstruction_of_neutral_entities'
 require 'modules.spawners_contain_biters'
@@ -300,7 +297,7 @@ function Public.reset_map()
         RPG_Progression.restore_xp_on_reset()
     end
 
-    if _DEV_MODE then
+    if _DEBUG then
         Collapse.disable_collapse(true)
         WD.disable_spawning_biters(true)
     end

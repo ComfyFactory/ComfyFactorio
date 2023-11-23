@@ -8,6 +8,7 @@ local RPG = require 'modules.rpg.main'
 local Gui = require 'utils.gui'
 local Alert = require 'utils.alert'
 local Color = require 'utils.color_presets'
+local Modifiers = require 'utils.player_modifiers'
 
 local zone_settings = Public.zone_settings
 
@@ -256,6 +257,10 @@ local function give_passive_xp(data)
                     Public.add_player_to_permission_group(player, 'near_locomotive')
                 end
 
+                rpg[player.index].inside_aura = true
+                Modifiers.update_single_modifier(player, 'character_crafting_speed_modifier', 'aura', 1)
+                Modifiers.update_player_modifiers(player)
+
                 local pos = player.position
                 RPG.gain_xp(player, 0.5 * (rpg[player.index].bonus + upgrades.xp_points))
 
@@ -277,6 +282,9 @@ local function give_passive_xp(data)
                     end
                 end
             else
+                rpg[player.index].inside_aura = false
+                Modifiers.update_single_modifier(player, 'character_crafting_speed_modifier', 'aura', 0)
+                Modifiers.update_player_modifiers(player)
                 local active_surface_index = Public.get('active_surface_index')
                 local surface = game.surfaces[active_surface_index]
                 if surface and surface.valid then
@@ -629,6 +637,14 @@ function Public.boost_players_around_train()
         rpg = rpg
     }
     give_passive_xp(data)
+end
+
+function Public.is_around_train_simple(player)
+    if not player or not player.valid then
+        return
+    end
+    local inside_aura = RPG.get_value_from_player(player.index, 'inside_aura')
+    return inside_aura
 end
 
 function Public.is_around_train(entity)

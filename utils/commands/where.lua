@@ -58,19 +58,6 @@ local function remove_camera_frame(player)
     end
 end
 
-local function validate_player(player)
-    if not player then
-        return false
-    end
-    if not player.valid then
-        return false
-    end
-    if player.admin then
-        return false
-    end
-    return true
-end
-
 local function validate_frame(frame)
     if not frame then
         return false
@@ -94,7 +81,7 @@ local function create_mini_camera_gui(player, target, zoom, render, tooltip)
     end
     local player_data
 
-    if validate_player(target) or (target and target.valid and player.admin) then
+    if target and target.valid and player.admin or target and target.valid then
         player_data = create_player_data(player)
         player_data.target = target
     else
@@ -106,8 +93,6 @@ local function create_mini_camera_gui(player, target, zoom, render, tooltip)
     if not validate_frame(frame) then
         frame = player.gui.screen.add({type = 'frame', name = locate_player_frame_name, caption = target.name})
     end
-
-    player.opened = frame
 
     frame.force_auto_center()
 
@@ -160,7 +145,7 @@ commands.add_command(
     function(cmd)
         local player = game.player
 
-        if validate_player(player) then
+        if player and player.valid then
             if not cmd.parameter then
                 return
             end
@@ -171,7 +156,7 @@ commands.add_command(
 
             local target = game.get_player(cmd.parameter)
 
-            if validate_player(target) then
+            if target and target.valid then
                 local player_data = create_player_data(player)
                 player_data.target = target
                 create_mini_camera_gui(player, target)
@@ -192,7 +177,7 @@ local function on_nth_tick()
             local camera_frame = data.camera_frame
             local player = game.get_player(p)
 
-            if not (validate_player(player) or validate_player(target)) then
+            if not (player and player.valid or target and target.valid) then
                 remove_player_data(player)
                 goto continue
             end
@@ -239,10 +224,7 @@ Gui.on_click(
         if is_spamming then
             return
         end
-        local type = event.gui_type
-        if type == defines.gui_type.custom then
-            remove_camera_frame(event.player)
-        end
+        remove_camera_frame(event.player)
     end
 )
 
