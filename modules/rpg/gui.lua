@@ -29,7 +29,9 @@ local spell_gui_frame_name = Public.spell_gui_frame_name
 local spell1_button_name = Public.spell1_button_name
 local spell2_button_name = Public.spell2_button_name
 local spell3_button_name = Public.spell3_button_name
-
+local spell4_button_name = Public.spell4_button_name
+local spell5_button_name = Public.spell5_button_name
+local spell6_button_name = Public.spell6_button_name
 local round = math.round
 local floor = math.floor
 
@@ -577,6 +579,9 @@ Gui.on_click(
         local spell_gui_input1 = data.spell_gui_input1
         local spell_gui_input2 = data.spell_gui_input2
         local spell_gui_input3 = data.spell_gui_input3
+        local spell_gui_input4 = data.spell_gui_input4
+        local spell_gui_input5 = data.spell_gui_input5
+        local spell_gui_input6 = data.spell_gui_input6
         local explosive_bullets_gui_input = data.explosive_bullets_gui_input
         local enable_entity_gui_input = data.enable_entity_gui_input
         local stone_path_gui_input = data.stone_path_gui_input
@@ -687,6 +692,36 @@ Gui.on_click(
                     rpg_t.dropdown_select_name_3 = spell_name
                 end
                 rpg_t.dropdown_select_index_3 = spell_gui_input3.selected_index
+            end
+            if spell_gui_input4 and spell_gui_input4.valid and spell_gui_input4.selected_index then
+                local items = spell_gui_input4.items
+                local spell_name = items[spell_gui_input4.selected_index]
+                if spell_name and spell_name[1] then
+                    rpg_t.dropdown_select_name_4 = spell_name[1]
+                elseif spell_name then
+                    rpg_t.dropdown_select_name_4 = spell_name
+                end
+                rpg_t.dropdown_select_index_4 = spell_gui_input4.selected_index
+            end
+            if spell_gui_input5 and spell_gui_input5.valid and spell_gui_input5.selected_index then
+                local items = spell_gui_input5.items
+                local spell_name = items[spell_gui_input5.selected_index]
+                if spell_name and spell_name[1] then
+                    rpg_t.dropdown_select_name_5 = spell_name[1]
+                elseif spell_name then
+                    rpg_t.dropdown_select_name_5 = spell_name
+                end
+                rpg_t.dropdown_select_index_5 = spell_gui_input5.selected_index
+            end
+            if spell_gui_input6 and spell_gui_input6.valid and spell_gui_input6.selected_index then
+                local items = spell_gui_input6.items
+                local spell_name = items[spell_gui_input6.selected_index]
+                if spell_name and spell_name[1] then
+                    rpg_t.dropdown_select_name_6 = spell_name[1]
+                elseif spell_name then
+                    rpg_t.dropdown_select_name_6 = spell_name
+                end
+                rpg_t.dropdown_select_index_6 = spell_gui_input6.selected_index
             end
             if player.gui.screen[spell_gui_frame_name] then
                 Public.update_spell_gui(player, nil)
@@ -970,6 +1005,76 @@ Gui.on_click(
 
         if frame and frame.valid then
             Public.update_spell_gui(player, 3)
+        end
+    end
+)
+
+Gui.on_click(
+    spell4_button_name,
+    function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'RPG Spell_4 Button')
+        if is_spamming then
+            return
+        end
+        local player = event.player
+        local screen = player.gui.screen
+        local frame = screen[spell_gui_frame_name]
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        if not Public.check_is_surface_valid(player) then
+            return
+        end
+
+        if frame and frame.valid then
+            Public.update_spell_gui(player, 4)
+        end
+    end
+)
+Gui.on_click(
+    spell5_button_name,
+    function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'RPG Spell_5 Button')
+        if is_spamming then
+            return
+        end
+        local player = event.player
+        local screen = player.gui.screen
+        local frame = screen[spell_gui_frame_name]
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        if not Public.check_is_surface_valid(player) then
+            return
+        end
+
+        if frame and frame.valid then
+            Public.update_spell_gui(player, 5)
+        end
+    end
+)
+Gui.on_click(
+    spell6_button_name,
+    function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'RPG Spell_6 Button')
+        if is_spamming then
+            return
+        end
+        local player = event.player
+        local screen = player.gui.screen
+        local frame = screen[spell_gui_frame_name]
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        if not Public.check_is_surface_valid(player) then
+            return
+        end
+
+        if frame and frame.valid then
+            Public.update_spell_gui(player, 6)
         end
     end
 )

@@ -25,6 +25,9 @@ local enable_spawning_frame_name = Gui.uid_name()
 local spell1_button_name = Gui.uid_name()
 local spell2_button_name = Gui.uid_name()
 local spell3_button_name = Gui.uid_name()
+local spell4_button_name = Gui.uid_name()
+local spell5_button_name = Gui.uid_name()
+local spell6_button_name = Gui.uid_name()
 
 Global.register(
     this,
@@ -494,6 +497,9 @@ Public.enable_spawning_frame_name = enable_spawning_frame_name
 Public.spell1_button_name = spell1_button_name
 Public.spell2_button_name = spell2_button_name
 Public.spell3_button_name = spell3_button_name
+Public.spell4_button_name = spell4_button_name
+Public.spell5_button_name = spell5_button_name
+Public.spell6_button_name = spell6_button_name
 
 local on_init = function()
     Public.reset_table()
