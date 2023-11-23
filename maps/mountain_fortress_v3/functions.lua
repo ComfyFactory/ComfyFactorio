@@ -1002,16 +1002,19 @@ function Public.render_direction(surface)
         text = 'Welcome to Wintery Mountain Fortress v3!'
     end
 
-    rendering.draw_text {
-        text = 'Season: ' .. Public.stateful.get_stateful('season'),
-        surface = surface,
-        target = {-0, 12},
-        color = {r = 0.98, g = 0.77, b = 0.22},
-        scale = 3,
-        font = 'heading-1',
-        alignment = 'center',
-        scale_with_zoom = false
-    }
+    Public.set(
+        'current_season',
+        rendering.draw_text {
+            text = 'Season: ' .. Public.stateful.get_stateful('season'),
+            surface = surface,
+            target = {-0, 12},
+            color = {r = 0.98, g = 0.77, b = 0.22},
+            scale = 3,
+            font = 'heading-1',
+            alignment = 'center',
+            scale_with_zoom = false
+        }
+    )
 
     if counter then
         rendering.draw_text {

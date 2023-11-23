@@ -1,5 +1,6 @@
 local Public = require 'maps.mountain_fortress_v3.table'
 
+Public.stateful = require 'maps.mountain_fortress_v3.stateful.main'
 Public.balance = require 'maps.mountain_fortress_v3.balance'
 Public.basic_markets = require 'maps.mountain_fortress_v3.basic_markets'
 Public.biters_yield_coins = require 'maps.mountain_fortress_v3.biters_yield_coins'
@@ -27,6 +28,5 @@ Public.friendly_pet = require 'maps.mountain_fortress_v3.locomotive.friendly_pet
 Public.market = require 'maps.mountain_fortress_v3.locomotive.market'
 Public.permission_groups = require 'maps.mountain_fortress_v3.locomotive.permission_groups'
 Public.spawn_locomotive = require 'maps.mountain_fortress_v3.locomotive.spawn_locomotive'
-Public.stateful = require 'maps.mountain_fortress_v3.stateful.main'
 
 return Public

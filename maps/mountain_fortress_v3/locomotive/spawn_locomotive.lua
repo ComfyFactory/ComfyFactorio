@@ -226,6 +226,8 @@ function Public.locomotive_spawn(surface, position)
         for _ = 1, extra_wagons do
             local new_wagon = surface.create_entity({name = 'cargo-wagon', position = new_position, force = 'player', defines.direction.north})
             if new_wagon and new_wagon.valid then
+                new_wagon.minable = false
+                new_wagon.operable = true
                 inc = inc + 7
                 new_position = {x = pos.x, y = pos.y + inc}
                 ICW.register_wagon(new_wagon)
