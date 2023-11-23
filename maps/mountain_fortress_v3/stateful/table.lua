@@ -450,7 +450,7 @@ local killed_enemies_token =
         local actual = Public.get_killed_enemies_count('biter', 'spitter')
         local expected = this.objectives.killed_enemies
         if actual >= expected then
-            return true, {'stateful.enemies_killed'}, {'stateful.done', format_number(expected, true), format_number(expected)}, {'stateful.generic_tooltip'}, {'stateful.tooltip_completed'}
+            return true, {'stateful.enemies_killed'}, {'stateful.done', format_number(expected, true), format_number(expected, true)}, {'stateful.generic_tooltip'}, {'stateful.tooltip_completed'}
         end
 
         return false, {'stateful.enemies_killed'}, {'stateful.not_done', format_number(actual, true), format_number(expected, true)}, {'stateful.generic_tooltip'}, {'stateful.tooltip_not_completed'}
@@ -855,6 +855,10 @@ local apply_settings_token =
             settings.current_date = tonumber(current_time)
         end
 
+        if not settings.season then
+            settings.season = 1
+        end
+
         this.current_date = settings.current_date
         this.buffs = settings.buffs
 
@@ -862,6 +866,9 @@ local apply_settings_token =
 
         this.rounds_survived = settings.rounds_survived
         this.season = settings.season
+
+        local current_season = Public.get('current_season')
+        rendering.set_text(current_season, 'Season: ' .. this.season)
 
         Public.reset_stateful()
         Public.increase_enemy_damage_and_health()
@@ -1291,10 +1298,10 @@ if _DEBUG then
                     {name = 'worker_robots_speed_modifier', modifier = 'force', state = 0.05},
                     {name = 'worker_robots_speed_modifier', modifier = 'force', state = 0.05},
                     {name = 'distance', modifier = 'rpg_distance', modifiers = {'character_resource_reach_distance_bonus', 'character_item_pickup_distance_bonus', 'character_loot_pickup_distance_bonus', 'character_reach_distance_bonus'}, state = 1},
-                    {name = 'xp_level', modifier = 'rpg', state = 16},
+                    {name = 'xp_level', modifier = 'rpg', state = 256},
                     {name = 'manual_mining_speed_modifier', modifier = 'force', state = 0.05},
                     {name = 'defense', modifier = 'starting_items', items = {{name = 'gun-turret', count = 2}, {name = 'firearm-magazine', count = 100}}},
-                    {name = 'xp_level', modifier = 'rpg', state = 16},
+                    {name = 'xp_level', modifier = 'rpg', state = 256},
                     {name = 'production', modifier = 'starting_items', items = {{name = 'stone-furnace', count = 4}, {name = 'coal', count = 100}}},
                     {
                         name = 'production_1',
