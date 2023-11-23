@@ -443,6 +443,7 @@ function Public.import_journey(journey)
         return
     else
 		Server.try_get_data('scenario_settings', 'journey_data', journey.import)
+		Server.set_data('scenario_settings', 'journey_updating', false)
 	end
 end
 
@@ -1209,6 +1210,16 @@ function Public.notify_discord(journey)
 		return
 	end
 	local caption = 'World ' .. journey.world_number .. ' | ' .. Constants.unique_world_traits[journey.world_trait].name
+	local modifier_message = ''
+	for _, mod in pairs(journey.world_selectors[journey.selected_world].modifiers) do
+		local sign = ''
+		if mod.value > 0 then sign = '+' end
+		modifier_message = modifier_message .. sign .. mod.value .. '% ' .. mod.name .. '\n'
+	end
+	local capsules = ''
+	for _, cap in pairs(journey.world_selectors[journey.selected_world].bonus_goods) do
+		capsules = capsules .. cap[2] .. 'x ' .. cap[1] .. '\n'
+	end
 	local message = {
 		title = 'World advanced',
 		description = 'Arriving at target destination!',
@@ -1224,8 +1235,18 @@ function Public.notify_discord(journey)
 			inline = 'true'
 		},
 		field3 = {
-			text1 = 'Fuel cells in mothership cargo:',
-			text2 = journey.mothership_cargo['uranium-fuel-cell'],
+			text1 = 'Satellites in mothership cargo:',
+			text2 = journey.mothership_cargo['satellite'] .. ' / ' .. journey.mothership_cargo_space['satellite'],
+			inline = 'false'
+		},
+		field4 = {
+			text1 = 'Modifiers changed:',
+			text2 = modifier_message,
+			inline = 'false'
+		},
+		field5 = {
+			text1 = 'Capsules gained:',
+			text2 = capsules,
 			inline = 'false'
 		}
 	}

@@ -565,7 +565,6 @@ Public.railworld = {
 
 local delivery_options = {
     'solar-panel',
-    'rocket-part',
     'beacon',
     'assembling-machine-3',
     'low-density-structure',
