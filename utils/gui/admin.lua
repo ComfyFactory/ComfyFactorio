@@ -9,7 +9,9 @@ local Color = require 'utils.color_presets'
 local Server = require 'utils.server'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
+local Public = {}
 
+local insert = table.insert
 local lower = string.lower
 local module_name = Gui.uid_name()
 
@@ -69,11 +71,11 @@ local function jail(player, source_player)
 
     if player.name == source_player.name then
         player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
-        clear_validation_action(player.name, 'jail')
+        clear_validation_action(source_player.name, 'jail')
         return
     end
     Jailed.try_ul_data(player.name, true, source_player.name, 'Jailed by ' .. source_player.name .. '!')
-    clear_validation_action(player.name, 'jail')
+    clear_validation_action(source_player.name, 'jail')
 end
 
 local function mute(player, source_player)
@@ -83,13 +85,13 @@ local function mute(player, source_player)
 
     if player.name == source_player.name then
         player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
-        clear_validation_action(player.name, 'mute')
+        clear_validation_action(source_player.name, 'mute')
         return
     end
     Jailed.try_ul_data(player.name, true, source_player.name, 'Jailed and muted by ' .. source_player.name .. '!', true)
     local muted = Jailed.mute_player(player)
     local muted_str = muted and 'muted' or 'unmuted'
-    clear_validation_action(player.name, 'jail')
+    clear_validation_action(source_player.name, 'jail')
     game.print(player.name .. ' was ' .. muted_str .. ' by player ' .. source_player.name .. '!', {r = 1, g = 0.5, b = 0.1})
 end
 
@@ -100,11 +102,11 @@ local function free(player, source_player)
 
     if player.name == source_player.name then
         player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
-        clear_validation_action(player.name, 'free')
+        clear_validation_action(source_player.name, 'free')
         return
     end
     Jailed.try_ul_data(player.name, false, source_player.name)
-    clear_validation_action(player.name, 'free')
+    clear_validation_action(source_player.name, 'free')
 end
 
 local bring_player_messages = {
@@ -120,19 +122,19 @@ local function bring_player(player, source_player)
 
     if player.name == source_player.name then
         player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
-        clear_validation_action(player.name, 'bring_player')
+        clear_validation_action(source_player.name, 'bring_player')
         return
     end
     if player.driving == true then
         source_player.print('Target player is in a vehicle, teleport not available.', {r = 0.88, g = 0.88, b = 0.88})
-        clear_validation_action(player.name, 'bring_player')
+        clear_validation_action(source_player.name, 'bring_player')
         return
     end
     local pos = source_player.surface.find_non_colliding_position('character', source_player.position, 50, 1)
     if pos then
         player.teleport(pos, source_player.surface)
         game.print(player.name .. ' has been teleported to ' .. source_player.name .. '. ' .. bring_player_messages[math.random(1, #bring_player_messages)], {r = 0.98, g = 0.66, b = 0.22})
-        clear_validation_action(player.name, 'bring_player')
+        clear_validation_action(source_player.name, 'bring_player')
     end
 end
 
@@ -147,14 +149,14 @@ local function go_to_player(player, source_player)
 
     if player.name == source_player.name then
         player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
-        clear_validation_action(player.name, 'go_to_player')
+        clear_validation_action(source_player.name, 'go_to_player')
         return
     end
     local pos = player.surface.find_non_colliding_position('character', player.position, 50, 1)
     if pos then
         source_player.teleport(pos, player.surface)
         game.print(source_player.name .. ' is visiting ' .. player.name .. '. ' .. go_to_player_messages[math.random(1, #go_to_player_messages)], {r = 0.98, g = 0.66, b = 0.22})
-        clear_validation_action(player.name, 'go_to_player')
+        clear_validation_action(source_player.name, 'go_to_player')
     end
 end
 
@@ -203,14 +205,14 @@ local function kill(player, source_player)
     end
     if player.name == source_player.name then
         player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
-        clear_validation_action(player.name, 'kill')
+        clear_validation_action(source_player.name, 'kill')
         return
     end
     if player.character then
         player.character.die('player')
         game.print(player.name .. kill_messages[math.random(1, #kill_messages)], {r = 0.98, g = 0.66, b = 0.22})
         admin_only_message(source_player.name .. ' killed ' .. player.name)
-        clear_validation_action(player.name, 'kill')
+        clear_validation_action(source_player.name, 'kill')
     end
 end
 
@@ -225,7 +227,7 @@ local function enemy(player, source_player)
 
     if player.name == source_player.name then
         player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
-        clear_validation_action(player.name, 'enemy')
+        clear_validation_action(source_player.name, 'enemy')
         return
     end
     if not game.forces.enemy_players then
@@ -234,7 +236,7 @@ local function enemy(player, source_player)
     player.force = game.forces.enemy_players
     game.print(player.name .. ' is now an enemy! ' .. enemy_messages[math.random(1, #enemy_messages)], {r = 0.95, g = 0.15, b = 0.15})
     admin_only_message(source_player.name .. ' has turned ' .. player.name .. ' into an enemy')
-    clear_validation_action(player.name, 'enemy')
+    clear_validation_action(source_player.name, 'enemy')
 end
 
 local function ally(player, source_player)
@@ -244,13 +246,13 @@ local function ally(player, source_player)
 
     if player.name == source_player.name then
         player.print("You can't select yourself!", {r = 1, g = 0.5, b = 0.1})
-        clear_validation_action(player.name, 'ally')
+        clear_validation_action(source_player.name, 'ally')
         return
     end
     player.force = game.forces.player
     game.print(player.name .. ' is our ally again!', {r = 0.98, g = 0.66, b = 0.22})
     admin_only_message(source_player.name .. ' made ' .. player.name .. ' our ally')
-    clear_validation_action(player.name, 'ally')
+    clear_validation_action(source_player.name, 'ally')
 end
 
 local function turn_off_global_speakers(player)
@@ -327,6 +329,26 @@ local function save_game(player)
     clear_validation_action(player.name, 'save_game')
 end
 
+local function clear_items_on_ground(player)
+    if validate_action(player, 'clear_items_on_ground') then
+        return
+    end
+
+    local i = 0
+    for _, entity in pairs(player.surface.find_entities_filtered {type = 'item-entity', name = 'item-on-ground'}) do
+        if entity and entity.valid then
+            entity.destroy()
+            i = i + 1
+        end
+    end
+    if i == 0 then
+        return player.print('No items to clear!', Color.warning)
+    end
+
+    player.print('Cleared: ' .. i .. ' items.', Color.success)
+    clear_validation_action(player.name, 'clear_items_on_ground')
+end
+
 local function create_mini_camera_gui(player, caption, position, surface)
     if player.gui.center['mini_camera'] then
         player.gui.center['mini_camera'].destroy()
@@ -378,22 +400,8 @@ end
 
 local function draw_events(data)
     local frame = data.frame
-    local antigrief = data.antigrief
     local search_text = data.search_text or nil
     local history = frame['admin_history_select'].items[frame['admin_history_select'].selected_index]
-
-    local history_index = {
-        ['Capsule History'] = antigrief.capsule_history,
-        ['Message History'] = antigrief.message_history,
-        ['Friendly Fire History'] = antigrief.friendly_fire_history,
-        ['Mining History'] = antigrief.mining_history,
-        ['Mining Override History'] = antigrief.whitelist_mining_history,
-        ['Landfill History'] = antigrief.landfill_history,
-        ['Corpse Looting History'] = antigrief.corpse_history,
-        ['Cancel Crafting History'] = antigrief.cancel_crafting_history,
-        ['Deconstruct History'] = antigrief.deconstruct_history,
-        ['Scenario History'] = antigrief.scenario_history
-    }
 
     local scroll_pane
     if frame.datalog then
@@ -413,56 +421,22 @@ local function draw_events(data)
         scroll_pane.style.minimal_width = 790
     end
 
-    local tooltip = 'Click to open mini camera.'
-
     local target_player_name = frame['admin_player_select'].items[frame['admin_player_select'].selected_index]
-    if game.players[target_player_name] then
-        if not history_index or not history_index[history] or #history_index[history] <= 0 then
-            return
-        end
 
-        for i = #history_index[history], 1, -1 do
-            if history_index[history][i]:find(target_player_name) then
-                if search_text then
-                    local success = contains_text(history_index[history][i], nil, search_text)
-                    if not success then
-                        goto continue
-                    end
-                end
-
-                if history == 'Message History' then
-                    tooltip = ''
-                end
-
-                frame.datalog.add(
-                    {
-                        type = 'label',
-                        caption = history_index[history][i],
-                        tooltip = tooltip
-                    }
-                )
-                ::continue::
-            end
-        end
-    else
-        for i = #history_index[history], 1, -1 do
-            if search_text then
-                local success = contains_text(history_index[history][i], nil, search_text)
-                if not success then
-                    goto continue
-                end
-            end
-
+    Public.contains_text(
+        history,
+        search_text,
+        target_player_name,
+        function(history_label, tooltip)
             frame.datalog.add(
                 {
                     type = 'label',
-                    caption = history_index[history][i],
-                    tooltip = 'Click to open mini camera.'
+                    caption = history_label,
+                    tooltip = tooltip
                 }
             )
-            ::continue::
         end
-    end
+    )
 end
 
 local function text_changed(event)
@@ -474,7 +448,6 @@ local function text_changed(event)
         return
     end
 
-    local antigrief = AntiGrief.get()
     local player = game.get_player(event.player_index)
 
     local frame = Gui.get_player_active_frame(player)
@@ -492,7 +465,6 @@ local function text_changed(event)
 
     local data = {
         frame = frame,
-        antigrief = antigrief,
         search_text = element.text
     }
 
@@ -511,9 +483,9 @@ local function create_admin_panel(data)
 
     local player_names = {}
     for _, p in pairs(game.connected_players) do
-        table.insert(player_names, tostring(p.name))
+        insert(player_names, tostring(p.name))
     end
-    table.insert(player_names, 'Select Player')
+    insert(player_names, 'Select Player')
 
     local selected_index = #player_names
     if global.admin_panel_selected_player_index then
@@ -642,6 +614,14 @@ local function create_admin_panel(data)
                 name = 'save_game',
                 tooltip = 'Saves the game.'
             }
+        ),
+        actionTable.add(
+            {
+                type = 'button',
+                caption = 'Clear items on ground',
+                name = 'clear_items_on_ground',
+                tooltip = 'Clears all items on the ground.\nThis might lag the game!'
+            }
         )
         ---	t.add({type = "button", caption = "Cancel all deconstruction orders", name = "remove_all_deconstruction_orders"})
     }
@@ -656,34 +636,34 @@ local function create_admin_panel(data)
 
     local histories = {}
     if antigrief.capsule_history then
-        table.insert(histories, 'Capsule History')
+        insert(histories, 'Capsule History')
     end
     if antigrief.message_history then
-        table.insert(histories, 'Message History')
+        insert(histories, 'Message History')
     end
     if antigrief.friendly_fire_history then
-        table.insert(histories, 'Friendly Fire History')
+        insert(histories, 'Friendly Fire History')
     end
     if antigrief.mining_history then
-        table.insert(histories, 'Mining History')
+        insert(histories, 'Mining History')
     end
     if antigrief.whitelist_mining_history then
-        table.insert(histories, 'Mining Override History')
+        insert(histories, 'Mining Override History')
     end
     if antigrief.landfill_history then
-        table.insert(histories, 'Landfill History')
+        insert(histories, 'Landfill History')
     end
     if antigrief.corpse_history then
-        table.insert(histories, 'Corpse Looting History')
+        insert(histories, 'Corpse Looting History')
     end
     if antigrief.cancel_crafting_history then
-        table.insert(histories, 'Cancel Crafting History')
+        insert(histories, 'Cancel Crafting History')
     end
     if antigrief.deconstruct_history then
-        table.insert(histories, 'Deconstruct History')
+        insert(histories, 'Deconstruct History')
     end
     if antigrief.scenario_history then
-        table.insert(histories, 'Scenario History')
+        insert(histories, 'Scenario History')
     end
 
     if #histories == 0 then
@@ -737,7 +717,8 @@ local admin_global_functions = {
     ['turn_off_global_speakers'] = turn_off_global_speakers,
     ['delete_all_blueprints'] = delete_all_blueprints,
     ['pause_game_tick'] = pause_game_tick,
-    ['save_game'] = save_game
+    ['save_game'] = save_game,
+    ['clear_items_on_ground'] = clear_items_on_ground
 }
 
 local function get_surface_from_string(str)
@@ -943,6 +924,79 @@ Gui.on_click(
     end
 )
 
+function Public.contains_text(history, search_text, target_player_name, callback)
+    local antigrief = AntiGrief.get()
+    local history_index = {
+        ['Capsule History'] = antigrief.capsule_history,
+        ['Message History'] = antigrief.message_history,
+        ['Friendly Fire History'] = antigrief.friendly_fire_history,
+        ['Mining History'] = antigrief.mining_history,
+        ['Mining Override History'] = antigrief.whitelist_mining_history,
+        ['Landfill History'] = antigrief.landfill_history,
+        ['Corpse Looting History'] = antigrief.corpse_history,
+        ['Cancel Crafting History'] = antigrief.cancel_crafting_history,
+        ['Deconstruct History'] = antigrief.deconstruct_history,
+        ['Scenario History'] = antigrief.scenario_history
+    }
+
+    local tooltip = 'Click to open mini camera.'
+    local remote_tbl = {}
+
+    if game.players[target_player_name] then
+        if not history_index or not history_index[history] or #history_index[history] <= 0 then
+            return
+        end
+
+        for i = #history_index[history], 1, -1 do
+            if history_index[history][i]:find(target_player_name) then
+                if search_text then
+                    local success = contains_text(history_index[history][i], nil, search_text)
+                    if not success then
+                        goto continue
+                    end
+                end
+
+                if callback then
+                    if history == 'Message History' then
+                        tooltip = ''
+                    end
+
+                    callback(history_index[history][i], tooltip)
+                else
+                    local str = history_index[history][i]:gsub('%[color=yellow]', ''):gsub('%[/color]', '')
+                    remote_tbl[#remote_tbl + 1] = str
+                end
+
+                ::continue::
+            end
+        end
+    else
+        for i = #history_index[history], 1, -1 do
+            if search_text then
+                local success = contains_text(history_index[history][i], nil, search_text)
+                if not success then
+                    goto continue
+                end
+            end
+
+            if callback then
+                callback(history_index[history][i], tooltip)
+            else
+                local str = history_index[history][i]:gsub('%[color=yellow]', ''):gsub('%[/color]', '')
+                remote_tbl[#remote_tbl + 1] = str
+            end
+
+            ::continue::
+        end
+    end
+
+    if not callback then
+        return remote_tbl
+    end
+end
+
 Event.add(defines.events.on_gui_text_changed, text_changed)
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_gui_selection_state_changed, on_gui_selection_state_changed)
+
+return Public
