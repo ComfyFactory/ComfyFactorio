@@ -14,6 +14,7 @@ local remove = table.remove
 local tostring = tostring
 local len = string.len
 local gmatch = string.gmatch
+local newline = '\n'
 
 local raw_print = Print.raw_print
 local minutes_to_ticks = 60 * 60
@@ -32,6 +33,9 @@ local instances = {
     data = {}
 }
 local requests = {}
+local jailed_data_set = 'jailed'
+local data_set_handlers = {}
+local scenario_handlers = {}
 
 Global.register(
     {
@@ -95,12 +99,14 @@ local player_leave_tag = '[PLAYER-LEAVE]'
 
 Public.raw_print = raw_print
 
---- Jail dataset.
-local jailed_data_set = 'jailed'
-
-local data_set_handlers = {}
-
-local scenario_handlers = {}
+local function output_data(...)
+    if start_data and start_data.output then
+        local write = game.write_file
+        write(start_data.output, ... .. newline, true, 0)
+    else
+        raw_print(...)
+    end
+end
 
 local function assert_non_empty_string_and_no_spaces(str, argument_name)
     if type(str) ~= 'string' then
@@ -116,7 +122,7 @@ local function assert_non_empty_string_and_no_spaces(str, argument_name)
     end
 end
 
-local function getOnlineAdmins()
+local function get_online_admins()
     local online = game.connected_players
     local i = 0
     for _, p in pairs(online) do
@@ -132,7 +138,7 @@ local function build_embed_data()
         time = Public.format_time(game.ticks_played),
         onlinePlayers = #game.connected_players,
         totalPlayers = #game.players,
-        onlineAdmins = getOnlineAdmins()
+        onlineAdmins = get_online_admins()
     }
     return d
 end
@@ -165,7 +171,7 @@ function Public.to_discord(message, locale)
     if locale then
         print(message, discord_tag)
     else
-        raw_print(discord_tag .. message)
+        output_data(discord_tag .. message)
     end
 end
 
@@ -176,7 +182,7 @@ function Public.to_discord_raw(message, locale)
     if locale then
         print(message, discord_raw_tag)
     else
-        raw_print(discord_raw_tag .. message)
+        output_data(discord_raw_tag .. message)
     end
 end
 
@@ -187,7 +193,7 @@ function Public.to_discord_bold(message, locale)
     if locale then
         print(message, discord_bold_tag)
     else
-        raw_print(discord_bold_tag .. message)
+        output_data(discord_bold_tag .. message)
     end
 end
 
@@ -195,28 +201,28 @@ end
 -- @param  message<string> message to send.
 function Public.to_discord_named(channel_name, message)
     assert_non_empty_string_and_no_spaces(channel_name, 'channel_name')
-    raw_print(concat({discord_named_tag, channel_name, ' ', message}))
+    output_data(concat({discord_named_tag, channel_name, ' ', message}))
 end
 
 --- Sends a message to the named discord channel. The message is not sanitized of markdown.
 -- @param  message<string> message to send.
 function Public.to_discord_named_raw(channel_name, message)
     assert_non_empty_string_and_no_spaces(channel_name, 'channel_name')
-    raw_print(concat({discord_named_raw_tag, channel_name, ' ', message}))
+    output_data(concat({discord_named_raw_tag, channel_name, ' ', message}))
 end
 
 --- Sends a message to the named discord channel. The message is sanitized of markdown server side, then made bold.
 -- @param  message<string> message to send.
 function Public.to_discord_named_bold(channel_name, message)
     assert_non_empty_string_and_no_spaces(channel_name, 'channel_name')
-    raw_print(concat({discord_named_bold_tag, channel_name, ' ', message}))
+    output_data(concat({discord_named_bold_tag, channel_name, ' ', message}))
 end
 
 --- Sends an embed message to the named discord channel. The message is sanitized of markdown server side.
 -- @param  message<string> the content of the embed.
 function Public.to_discord_named_embed(channel_name, message)
     assert_non_empty_string_and_no_spaces(channel_name, 'channel_name')
-    raw_print(concat({discord_named_embed_tag, channel_name, ' ', message}))
+    output_data(concat({discord_named_embed_tag, channel_name, ' ', message}))
 end
 
 --- Sends an embed message that is parsed to the named discord channel. The message is sanitized of markdown server side.
@@ -238,14 +244,14 @@ function Public.to_discord_named_parsed_embed(channel_name, message)
 
     message.channelName = channel_name
 
-    raw_print(discord_named_embed_parsed_tag, table_to_json(message))
+    output_data(discord_named_embed_parsed_tag, table_to_json(message))
 end
 
 --- Sends an embed message to the named discord channel. The message is not sanitized of markdown.
 -- @param  message<string> the content of the embed.
 function Public.to_discord_named_embed_raw(channel_name, message)
     assert_non_empty_string_and_no_spaces(channel_name, 'channel_name')
-    raw_print(concat({discord_named_embed_raw_tag, channel_name, ' ', message}))
+    output_data(concat({discord_named_embed_raw_tag, channel_name, ' ', message}))
 end
 
 --- Sends a message to the linked admin discord channel. The message is sanitized of markdown server side.
@@ -255,7 +261,7 @@ function Public.to_admin(message, locale)
     if locale then
         print(message, discord_admin_tag)
     else
-        raw_print(discord_admin_tag .. message)
+        output_data(discord_admin_tag .. message)
     end
 end
 
@@ -266,7 +272,7 @@ function Public.to_banned(message, locale)
     if locale then
         print(message, discord_banned_tag)
     else
-        raw_print(discord_banned_tag .. message)
+        output_data(discord_banned_tag .. message)
     end
 end
 --- Sends a message to the linked banned discord channel. The message is sanitized of markdown server side.
@@ -276,7 +282,7 @@ function Public.to_unbanned(message, locale)
     if locale then
         print(message, discord_unbanned_tag)
     else
-        raw_print(discord_unbanned_tag .. message)
+        output_data(discord_unbanned_tag .. message)
     end
 end
 
@@ -287,7 +293,7 @@ function Public.to_jailed(message, locale)
     if locale then
         print(message, discord_jailed_tag)
     else
-        raw_print(discord_jailed_tag .. message)
+        output_data(discord_jailed_tag .. message)
     end
 end
 --- Sends a message to the linked connected discord channel. The message is sanitized of markdown server side.
@@ -297,7 +303,7 @@ function Public.to_unjailed(message, locale)
     if locale then
         print(message, discord_unjailed_tag)
     else
-        raw_print(discord_unjailed_tag .. message)
+        output_data(discord_unjailed_tag .. message)
     end
 end
 
@@ -308,7 +314,7 @@ function Public.to_admin_raw(message, locale)
     if locale then
         print(message, discord_admin_raw_tag)
     else
-        raw_print(discord_admin_raw_tag .. message)
+        output_data(discord_admin_raw_tag .. message)
     end
 end
 
@@ -326,7 +332,7 @@ function Public.to_discord_embed_parsed(message)
     if not message.description then
         return
     end
-    raw_print(discord_embed_parsed_tag .. table_to_json(message))
+    output_data(discord_embed_parsed_tag .. table_to_json(message))
 end
 
 --- Sends a embed message to the linked discord channel. The message is sanitized of markdown server side.
@@ -336,7 +342,7 @@ function Public.to_discord_embed(message, locale)
     if locale then
         print(message, discord_embed_tag)
     else
-        raw_print(discord_embed_tag .. message)
+        output_data(discord_embed_tag .. message)
     end
 end
 
@@ -347,7 +353,7 @@ function Public.to_discord_embed_raw(message, locale)
     if locale then
         print(message, discord_embed_raw_tag)
     else
-        raw_print(discord_embed_raw_tag .. message)
+        output_data(discord_embed_raw_tag .. message)
     end
 end
 
@@ -358,7 +364,7 @@ function Public.to_admin_embed(message, locale)
     if locale then
         print(message, discord_admin_embed_tag)
     else
-        raw_print(discord_admin_embed_tag .. message)
+        output_data(discord_admin_embed_tag .. message)
     end
 end
 
@@ -382,7 +388,7 @@ function Public.to_banned_embed(message, locale)
         if not message.admin then
             return
         end
-        raw_print(discord_banned_embed_tag .. table_to_json(message))
+        output_data(discord_banned_embed_tag .. table_to_json(message))
     end
 end
 
@@ -403,7 +409,7 @@ function Public.to_unbanned_embed(message, locale)
         if not message.admin then
             return
         end
-        raw_print(discord_unbanned_embed_tag .. table_to_json(message))
+        output_data(discord_unbanned_embed_tag .. table_to_json(message))
     end
 end
 
@@ -428,7 +434,7 @@ function Public.to_jailed_embed(message, locale)
         if not message.admin then
             return
         end
-        raw_print(discord_jailed_embed_tag .. table_to_json(message))
+        output_data(discord_jailed_embed_tag .. table_to_json(message))
     end
 end
 
@@ -453,7 +459,7 @@ function Public.to_jailed_named_embed(message, locale)
         if not message.admin then
             return
         end
-        raw_print(discord_jailed_named_embed_tag .. table_to_json(message))
+        output_data(discord_jailed_named_embed_tag .. table_to_json(message))
     end
 end
 
@@ -474,7 +480,7 @@ function Public.to_unjailed_embed(message, locale)
         if not message.admin then
             return
         end
-        raw_print(discord_unjailed_embed_tag .. table_to_json(message))
+        output_data(discord_unjailed_embed_tag .. table_to_json(message))
     end
 end
 
@@ -495,7 +501,7 @@ function Public.to_unjailed_named_embed(message, locale)
         if not message.admin then
             return
         end
-        raw_print(discord_unjailed_named_embed_tag .. table_to_json(message))
+        output_data(discord_unjailed_named_embed_tag .. table_to_json(message))
     end
 end
 
@@ -506,7 +512,7 @@ function Public.to_admin_embed_raw(message, locale)
     if locale then
         print(message, discord_admin_embed_raw_tag)
     else
-        raw_print(discord_admin_embed_raw_tag .. message)
+        output_data(discord_admin_embed_raw_tag .. message)
     end
 end
 
@@ -523,7 +529,7 @@ function Public.start_scenario(scenario_name)
 
     local message = start_scenario_tag .. scenario_name
 
-    raw_print(message)
+    output_data(message)
 end
 
 --- Stops and saves the factorio server.
@@ -533,7 +539,7 @@ end
 function Public.stop_scenario()
     local message = stop_scenario_tag
 
-    raw_print(message)
+    output_data(message)
 end
 
 local default_ping_token =
@@ -552,7 +558,7 @@ local default_ping_token =
 -- The function is passed the tick that the ping was sent.
 function Public.ping(func_token)
     local message = concat({ping_tag, func_token or default_ping_token, ' ', game.tick})
-    raw_print(message)
+    output_data(message)
 end
 
 --- The backend sets instances with data so a player
@@ -634,7 +640,7 @@ function Public.set_data(data_set, key, value)
         message = concat({data_set_tag, '{data_set:"', data_set, '",key:"', key, "\",value:'", value, "'}"})
     end
 
-    raw_print(message)
+    output_data(message)
 end
 
 local function validate_arguments(data_set, key, callback_token)
@@ -664,14 +670,14 @@ local function send_try_get_data(data_set, key, callback_token)
     key = double_escape(key)
 
     local message = concat {data_get_tag, callback_token, ' {', 'data_set:"', data_set, '",key:"', key, '"}'}
-    raw_print(message)
+    output_data(message)
 end
 
 local function send_try_get_ban(username, callback_token)
     username = double_escape(username)
 
     local message = concat {ban_get_tag, callback_token, ' {', 'username:"', username, '"}'}
-    raw_print(message)
+    output_data(message)
 end
 
 local function send_try_get_data_and_print(data_set, key, to_print, callback_token)
@@ -680,7 +686,7 @@ local function send_try_get_data_and_print(data_set, key, to_print, callback_tok
     to_print = double_escape(to_print)
 
     local message = concat {data_get_and_print_tag, callback_token, ' {', 'data_set:"', data_set, '",key:"', key, '",to_print:"', to_print, '"}'}
-    raw_print(message)
+    output_data(message)
 end
 
 local cancelable_callback_token =
@@ -903,7 +909,7 @@ function Public.try_get_all_data(data_set, callback_token)
     data_set = double_escape(data_set)
 
     local message = concat {data_get_all_tag, callback_token, ' {', 'data_set:"', data_set, '"}'}
-    raw_print(message)
+    output_data(message)
 end
 
 local function data_set_changed(data)
@@ -1046,7 +1052,7 @@ function Public.get_tracked_data_sets()
     message[#message + 1] = ']'
 
     message = concat(message)
-    raw_print(message)
+    output_data(message)
 end
 
 --- Called by the web server to determine which scenarios is being tracked.
@@ -1066,7 +1072,7 @@ function Public.get_tracked_scenario()
     end
 
     message = concat(message)
-    raw_print(message)
+    output_data(message)
 end
 
 local function escape(str)
@@ -1189,7 +1195,7 @@ function Public.ban_sync(username, reason, admin)
     admin = escape(admin)
 
     local message = concat({ban_sync_tag, '{username:"', username, '",reason:"', reason, '",admin:"', admin, '"}'})
-    raw_print(message)
+    output_data(message)
 end
 
 --- If the player exists bans the player else throws error.
@@ -1227,7 +1233,7 @@ function Public.unban_sync(username, admin)
     admin = escape(admin)
 
     local message = concat({unbanned_sync_tag, '{username:"', username, '",admin:"', admin, '"}'})
-    raw_print(message)
+    output_data(message)
 end
 
 --- If the player exists unbans the player else throws error.
@@ -1242,6 +1248,12 @@ end
 function Public.set_time(secs)
     server_time.secs = secs
     server_time.tick = game.tick
+end
+
+--- Called by the web server to set output location.
+-- @param  data<string>
+function Public.set_output(data)
+    start_data.output = data
 end
 
 --- Gets a table {secs:number?, tick:number} with secs being the unix epoch timestamp
@@ -1405,7 +1417,7 @@ function Public.query_online_players()
     message[#message + 1] = ']'
 
     message = concat(message)
-    raw_print(message)
+    output_data(message)
 end
 
 function Public.ban_handler(event)
@@ -1525,7 +1537,7 @@ commands.add_command(
             end
         end
         if err or err == false then
-            raw_print(err)
+            output_data(err)
         end
     end
 )
@@ -1540,7 +1552,7 @@ Event.add(
             return
         end
 
-        raw_print(player_join_tag .. player.name)
+        output_data(player_join_tag .. player.name)
     end
 )
 
@@ -1567,7 +1579,7 @@ Event.add(
         end
 
         local reason = leave_reason_map[event.reason] or ''
-        raw_print(player_leave_tag .. player.name .. reason)
+        output_data(player_leave_tag .. player.name .. reason)
     end
 )
 
@@ -1598,7 +1610,7 @@ Event.add(
         end
 
         message = concat(message)
-        raw_print(message)
+        output_data(message)
     end
 )
 

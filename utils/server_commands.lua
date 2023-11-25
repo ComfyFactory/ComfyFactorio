@@ -4,8 +4,6 @@ local Poll = {
 }
 local Token = require 'utils.token'
 local Server = require 'utils.server'
-local branch_version = '1.1' -- define what game version we're using
-local sub = string.sub
 
 --- This module is for the web server to call functions and raise events.
 -- Not intended to be called by scripts.
@@ -34,6 +32,7 @@ function ServerCommands.changes_detected()
 end
 
 ServerCommands.set_time = Server.set_time
+ServerCommands.set_output = Server.set_output
 ServerCommands.set_ups = Server.set_ups
 ServerCommands.get_ups = Server.get_ups
 ServerCommands.export_stats = Server.export_stats
@@ -41,33 +40,6 @@ ServerCommands.set_start_data = Server.set_start_data
 ServerCommands.set_instances = Server.set_instances
 ServerCommands.query_online_players = Server.query_online_players
 ServerCommands.ban_handler = Server.ban_handler
-
-local SC_Interface = {
-    get_ups = function()
-        return ServerCommands.get_ups()
-    end,
-    set_ups = function(tick)
-        if tick then
-            ServerCommands.set_ups(tick)
-        else
-            error("Remote call parameter to ServerCommands set_ups can't be nil.")
-        end
-    end
-}
-
-if not remote.interfaces['ServerCommands'] then
-    remote.add_interface('ServerCommands', SC_Interface)
-end
-
-function get_game_version()
-    local get_active_branch = sub(game.active_mods.base, 3, 4)
-    local is_branch_experimental = sub(branch_version, 3, 4)
-    if get_active_branch >= is_branch_experimental then
-        return true
-    else
-        return false
-    end
-end
 
 function is_loaded(module)
     local res = _G.package.loaded[module]
@@ -97,19 +69,6 @@ function is_game_modded()
         end
     end
     return false
-end
-
-function is_mod_loaded(module)
-    if not module then
-        return false
-    end
-
-    local res = game.active_mods[module]
-    if res then
-        return true
-    else
-        return false
-    end
 end
 
 return ServerCommands
