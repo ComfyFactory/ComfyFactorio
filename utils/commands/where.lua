@@ -224,6 +224,11 @@ Gui.on_click(
         if is_spamming then
             return
         end
+        local button = event.button
+        local shift = event.shift
+        if button == defines.mouse_button_type.left and shift then
+            return
+        end
         remove_camera_frame(event.player)
     end
 )

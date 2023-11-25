@@ -705,7 +705,11 @@ local function built_entity_robot(event)
 
                     local s = create_chest(entity)
                     if s then
+                        event.player_index = player.index
+                        event.gui_type = defines.gui_type.entity
+                        event.entity = entity
                         gui_opened(event)
+                        return
                     end
                 else
                     local created = event.created_entity
@@ -713,6 +717,7 @@ local function built_entity_robot(event)
                         local inventory = robot.get_inventory(defines.inventory.robot_cargo)
                         inventory.insert({name = created.name, count = 1})
                         created.destroy()
+                        return
                     end
                 end
             end
@@ -1293,6 +1298,7 @@ Gui.on_click(
 
                 this.linked_gui[event.player.name].updated = false
                 refresh_main_frame({unit_number = container.unit_number, player = event.player})
+                Where.remove_camera_frame(player)
                 if element and element.valid then
                     Gui.remove_data_recursively(element)
                 end
