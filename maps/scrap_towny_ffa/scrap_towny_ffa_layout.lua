@@ -281,30 +281,46 @@ local function on_chunk_generated(event)
     local position
     local noise
 
-    for x = 0, 31, 1 do
-        for y = 0, 31, 1 do
-            position = {x = left_top_x + x, y = left_top_y + y}
-            local cave_ponds = get_perlin('cave_ponds', position, seed)
-            local bridges = get_perlin('cave_rivers', position, seed)
+    if this.surface_terrain == 'forest' then
+        for x = 0, 31, 1 do
+            for y = 0, 31, 1 do
+                position = {x = left_top_x + x, y = left_top_y + y}
+                local cave_ponds = get_perlin('cave_ponds', position, seed)
+                local bridges = get_perlin('cave_rivers', position, seed)
 
-            if cave_ponds > 0.1 and cave_ponds < 0.3 then
-                if cave_ponds > 0.2 then
-                    surface.set_tiles({{name = 'water-shallow', position = position}}, true)
-                elseif cave_ponds > 0.1 and cave_ponds < 0.25 then
-                    surface.set_tiles({{name = 'water', position = position}}, true)
-                    if cave_ponds > 0.1 and bridges > 0.15 then
+                if cave_ponds > 0.1 and cave_ponds < 0.3 then
+                    if cave_ponds > 0.2 then
                         surface.set_tiles({{name = 'water-shallow', position = position}}, true)
+                    elseif cave_ponds > 0.1 and cave_ponds < 0.25 then
+                        surface.set_tiles({{name = 'water', position = position}}, true)
+                        if cave_ponds > 0.1 and bridges > 0.15 then
+                            surface.set_tiles({{name = 'water-shallow', position = position}}, true)
+                        end
+                    end
+                    if math_random(1, 48) == 1 then
+                        surface.create_entity({name = 'fish', position = position, force = 'neutral'})
                     end
                 end
-                if math_random(1, 48) == 1 then
-                    surface.create_entity({name = 'fish', position = position, force = 'neutral'})
+                if math_random(1, 3) > 1 then
+                    if not surface.get_tile(position).collides_with('resource-layer') then
+                        noise = get_noise('scrap_towny_ffa', position, seed)
+                        if is_scrap_area(noise) then
+                            place_scrap(surface, position)
+                        end
+                    end
                 end
             end
-            if math_random(1, 3) > 1 then
-                if not surface.get_tile(position).collides_with('resource-layer') then
-                    noise = get_noise('scrap_towny_ffa', position, seed)
-                    if is_scrap_area(noise) then
-                        place_scrap(surface, position)
+        end
+    else
+        for x = 0, 31, 1 do
+            for y = 0, 31, 1 do
+                position = {x = left_top_x + x, y = left_top_y + y}
+                if math_random(1, 3) > 1 then
+                    if not surface.get_tile(position).collides_with('resource-layer') then
+                        noise = get_noise('scrap_towny_ffa', position, seed)
+                        if is_scrap_area(noise) then
+                            place_scrap(surface, position)
+                        end
                     end
                 end
             end

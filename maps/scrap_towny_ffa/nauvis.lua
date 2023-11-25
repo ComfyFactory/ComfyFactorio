@@ -203,6 +203,7 @@ function Public.initialize(init)
     --	{x = 0, y = 0}
     --}
     if this.surface_terrain == 'forest' then
+        mgs.terrain_segmentation = 'very-low'
         mgs.autoplace_controls.trees = {
             frequency = 0.666,
             richness = 1,
@@ -222,15 +223,17 @@ function Public.initialize(init)
             ['enemy-base-radius'] = 12
         }
     else
+        mgs.terrain_segmentation = 'very-big'
         mgs.property_expression_names = {
-            ['starting-lake-noise-amplitude'] = 0,
-            -- allow enemies to get up close on spawn
-            ['starting-area'] = 0,
-            ['enemy-base-intensity'] = 1,
-            -- adjust this value to set how many nests spawn per tile
-            ['enemy-base-frequency'] = 0.4,
-            -- this will make and average base radius around 12 tiles
-            ['enemy-base-radius'] = 12
+            ['control-setting:aux:bias'] = '-0.500000',
+            ['control-setting:aux:frequency:multiplier'] = '6.000000',
+            ['control-setting:moisture:bias'] = '-0.500000',
+            ['control-setting:moisture:frequency:multiplier'] = '6.000000',
+            ['enemy-base-frequency'] = '0.4',
+            ['enemy-base-intensity'] = '1',
+            ['enemy-base-radius'] = '12',
+            ['starting-area'] = '0',
+            ['starting-lake-noise-amplitude'] = '0'
         }
     end
 
