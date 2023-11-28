@@ -197,22 +197,12 @@ local function get_random_buff()
             limit = nil,
             replaces = 'defense',
             items = {
-                {name = 'flamethrower', count = 1},
-                {name = 'flamethrower-ammo', count = 100}
-            }
-        },
-        {
-            name = 'defense_3',
-            modifier = 'starting_items',
-            limit = nil,
-            replaces = 'defense',
-            items = {
                 {name = 'grenade', count = 50},
                 {name = 'poison-capsule', count = 30}
             }
         },
         {
-            name = 'defense_4',
+            name = 'defense_3',
             modifier = 'starting_items',
             replaces = 'defense_2',
             limit = nil,
@@ -225,15 +215,6 @@ local function get_random_buff()
             name = 'armor',
             modifier = 'starting_items',
             limit = 1,
-            items = {
-                {name = 'heavy-armor', count = 1}
-            }
-        },
-        {
-            name = 'armor_2',
-            modifier = 'starting_items',
-            limit = 1,
-            replaces = 'armor',
             items = {
                 {name = 'modular-armor', count = 1},
                 {name = 'solar-panel-equipment', count = 2}
@@ -1331,7 +1312,7 @@ if _DEBUG then
                         }
                     },
                     {
-                        name = 'armor_2',
+                        name = 'armor',
                         modifier = 'starting_items',
                         limit = 1,
                         replaces = 'armor',
