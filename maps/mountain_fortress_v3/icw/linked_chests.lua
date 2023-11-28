@@ -359,6 +359,10 @@ local function refresh_main_frame(data)
     end
 
     local player_gui = this.linked_gui[player.name]
+    if not player_gui then
+        return
+    end
+
     local trusted_player = Session.get_trusted_player(player)
     local volatile_tbl = player_gui.volatile_tbl
 
@@ -860,7 +864,7 @@ local function on_gui_checked_state_changed(event)
 
     if element.name == 'disconnect_state' then
         container.chest.link_id = uid_counter()
-        AG.append_scenario_history(player, container.chest, player.name .. ' disconnected link from chest (' .. container.unit_number .. ') to chest (' .. container.linked_to .. ')')
+        AG.append_scenario_history(player, container.chest, player.name .. ' disconnected link from chest (' .. container.unit_number .. ') to chest (' .. container.linked_to or 'unknown' .. ')')
         local destination_chest = fetch_container(container.linked_to)
         if destination_chest then
             create_message(player, 'Disconnected link', container.chest.position, destination_chest.chest.position)
