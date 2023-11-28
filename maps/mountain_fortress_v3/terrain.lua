@@ -247,6 +247,11 @@ local function is_position_near(area, table_to_check)
 end
 
 local function place_wagon(data, adjusted_zones)
+    local final_battle = Public.get('final_battle')
+    if final_battle then
+        return
+    end
+
     local x_min = (-zone_settings.zone_width / 2) + 10
     local x_max = (zone_settings.zone_width / 2) - 10
 

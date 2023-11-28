@@ -25,6 +25,7 @@ local Server = require 'utils.server'
 local Explosives = require 'modules.explosives'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
 local WD = require 'modules.wave_defense.table'
+local LinkedChests = require 'maps.mountain_fortress_v3.icw.linked_chests'
 local Map = require 'modules.map_info'
 local RPG = require 'modules.rpg.main'
 local Score = require 'utils.gui.score'
@@ -119,6 +120,8 @@ function Public.reset_map()
     local wave_defense_table = WD.get_table()
     Misc.set('creative_are_you_sure', false)
     Misc.set('creative_enabled', false)
+
+    LinkedChests.reset()
 
     this.active_surface_index = Public.create_surface()
     this.old_surface_index = this.active_surface_index

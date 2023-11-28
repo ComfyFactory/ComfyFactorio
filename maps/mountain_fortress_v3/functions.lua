@@ -1475,10 +1475,8 @@ function Public.on_research_finished(event)
     local research_name = research.name
     local force = research.force
 
-    local technology_prototypes = game.technology_prototypes
-
     if Public.get('print_tech_to_discord') and force.name == 'player' then
-        Server.to_discord_bold({'functions.researched_complete', technology_prototypes[research_name].localised_name}, true)
+        Server.to_discord_embed_raw('<a:Modded:835932131036364810> ' .. research_name:gsub('^%l', string.upper) .. ' has been researched!')
     end
 
     research.force.character_inventory_slots_bonus = player.mining_drill_productivity_bonus * 50 -- +5 Slots /

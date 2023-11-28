@@ -99,12 +99,12 @@ local player_leave_tag = '[PLAYER-LEAVE]'
 
 Public.raw_print = raw_print
 
-local function output_data(...)
+local function output_data(primary, secondary)
     if start_data and start_data.output then
         local write = game.write_file
-        write(start_data.output, ... .. newline, true, 0)
+        write(start_data.output, primary .. (secondary or '') .. newline, true, 0)
     else
-        raw_print(...)
+        raw_print(primary .. (secondary or ''))
     end
 end
 

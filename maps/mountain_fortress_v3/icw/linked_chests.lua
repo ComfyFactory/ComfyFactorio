@@ -53,6 +53,43 @@ function Public.set(key, value)
     end
 end
 
+local clear_chest_token =
+    Token.register(
+    function(event)
+        local entity = event.entity
+        if not entity or not entity.valid then
+            return
+        end
+        local link_id = event.link_id
+
+        if link_id then
+            entity.link_id = link_id
+        end
+
+        entity.get_inventory(defines.inventory.chest).clear()
+        entity.destroy()
+    end
+)
+
+local create_clear_chest_token =
+    Token.register(
+    function(event)
+        local surface = game.get_surface('gulag')
+        local entity = surface.create_entity {name = 'linked-chest', position = {x = -62, y = -6}, force = game.forces.player}
+        if not entity or not entity.valid then
+            return
+        end
+
+        local link_id = event.link_id
+        if link_id then
+            entity.link_id = link_id
+        end
+
+        entity.get_inventory(defines.inventory.chest).clear()
+        entity.destroy()
+    end
+)
+
 local remove_all_linked_items_token =
     Token.register(
     function(event)
@@ -207,6 +244,7 @@ local function create_chest(entity, name, mode)
 
     if not previous then
         entity.link_id = uid_counter()
+        entity.get_inventory(defines.inventory.chest).set_bar(1)
     end
 
     if not does_exists(unit_number) then
@@ -231,6 +269,7 @@ local function create_chest(entity, name, mode)
 
         if mode then
             container.mode = mode
+            entity.get_inventory(defines.inventory.chest).set_bar()
         end
 
         add_object(unit_number, container)
@@ -600,6 +639,13 @@ local function on_built_entity(event, mode, bypass)
             return
         end
 
+        local final_battle = WPT.get('final_battle')
+        if final_battle then
+            entity.destroy()
+            player.print(module_name .. 'Game will reset shortly.', Color.warning)
+            return
+        end
+
         if player.surface.index ~= active_surface_index then
             if entity.type ~= 'entity-ghost' then
                 player.insert({name = 'linked-chest', count = 1})
@@ -630,6 +676,12 @@ local function on_built_entity(event, mode, bypass)
         end
     end
 
+    local final_battle = WPT.get('final_battle')
+    if final_battle then
+        entity.destroy()
+        return
+    end
+
     local surface = entity.surface
     local position = entity.position
     if mode and entity.name ~= 'linked-chest' then
@@ -657,6 +709,12 @@ local function built_entity_robot(event)
     end
 
     if not this.valid_chests[entity.name] then
+        return
+    end
+
+    local final_battle = WPT.get('final_battle')
+    if final_battle then
+        entity.destroy()
         return
     end
 
@@ -864,7 +922,7 @@ local function on_gui_checked_state_changed(event)
 
     if element.name == 'disconnect_state' then
         container.chest.link_id = uid_counter()
-        AG.append_scenario_history(player, container.chest, player.name .. ' disconnected link from chest (' .. container.unit_number .. ') to chest (' .. container.linked_to or 'unknown' .. ')')
+        AG.append_scenario_history(player, container.chest, player.name .. ' disconnected link from chest (' .. container.unit_number .. ') to chest (' .. container.linked_to .. ')')
         local destination_chest = fetch_container(container.linked_to)
         if destination_chest then
             create_message(player, 'Disconnected link', container.chest.position, destination_chest.chest.position)
@@ -875,6 +933,7 @@ local function on_gui_checked_state_changed(event)
         container.linked_to = nil
         container.link_id = nil
         container.chest.minable = true
+        container.chest.get_inventory(defines.inventory.chest).set_bar(1)
         refresh_main_frame({unit_number = unit_number, player = player})
     end
 
@@ -1037,6 +1096,7 @@ local function on_entity_settings_pasted(event)
         destination_container.mode = 2
         destination_container.chest.minable = false
         destination_container.chest.destructible = false
+        destination_container.chest.get_inventory(defines.inventory.chest).set_bar()
     end
 
     player.print(module_name .. 'Successfully pasted settings.', Color.success)
@@ -1352,16 +1412,47 @@ function Public.clear_linked_frames()
     )
 end
 
-function Public.reset()
+function Public.pre_reset()
+    local surface_index = WPT.get('active_surface_index')
+    if not surface_index then
+        return
+    end
+
+    this.pre_reset_run = true
+
+    local iter = 1
+    for i = 1, 500 do
+        Task.set_timeout_in_ticks(iter, create_clear_chest_token, {link_id = i})
+        iter = iter + 1
+    end
+
+    local surface = game.get_surface(surface_index)
+    if surface and surface.valid then
+        local ents = surface.find_entities_filtered {name = 'linked-chest'}
+        iter = 1
+        if ents and next(ents) then
+            for _, e in pairs(ents) do
+                Task.set_timeout_in_ticks(iter, clear_chest_token, {entity = e})
+                iter = iter + 1
+            end
+        end
+    end
+
     if this.main_containers and next(this.main_containers) then
         for _, container in pairs(this.main_containers) do
             local chest = container.chest
             if chest and chest.valid then
                 chest.get_inventory(defines.inventory.chest).clear()
+                chest.destroy()
             end
         end
     end
+end
 
+function Public.reset()
+    if not this.pre_reset_run then
+        Public.pre_reset()
+    end
     this.main_containers = {}
     this.linked_gui = {}
     this.valid_chests = {
@@ -1374,6 +1465,7 @@ function Public.reset()
     this.convert_enabled = false
     this.cost_to_convert = 500
     this.notify_discord = false
+    this.pre_reset_run = false
 end
 
 Event.add(defines.events.on_built_entity, on_built_entity)
