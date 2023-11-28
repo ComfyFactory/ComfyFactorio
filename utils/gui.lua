@@ -91,7 +91,7 @@ function Public.set_data(element, value)
     if not element or not element.valid then
         return
     end
-    
+
     local player_index = element.player_index
     local values = data[player_index]
 
