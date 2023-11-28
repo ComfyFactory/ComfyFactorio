@@ -765,14 +765,8 @@ local function built_entity_robot(event)
                         return
                     end
 
-                    local s = create_chest(entity)
-                    if s then
-                        event.player_index = player.index
-                        event.gui_type = defines.gui_type.entity
-                        event.entity = entity
-                        gui_opened(event)
-                        return
-                    end
+                    create_chest(entity)
+                    return
                 else
                     local created = event.created_entity
                     if created and created.valid then
@@ -922,7 +916,7 @@ local function on_gui_checked_state_changed(event)
 
     if element.name == 'disconnect_state' then
         container.chest.link_id = uid_counter()
-        AG.append_scenario_history(player, container.chest, player.name .. ' disconnected link from chest (' .. container.unit_number .. ') to chest (' .. container.linked_to .. ')')
+        AG.append_scenario_history(player, container.chest, player.name .. ' disconnected link from chest (' .. container.unit_number .. ') to chest (' .. container.linked_to or 'unknown' .. ')')
         local destination_chest = fetch_container(container.linked_to)
         if destination_chest then
             create_message(player, 'Disconnected link', container.chest.position, destination_chest.chest.position)
