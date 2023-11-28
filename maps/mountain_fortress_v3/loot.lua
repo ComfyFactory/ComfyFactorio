@@ -50,7 +50,7 @@ function Public.add_loot(surface, position, chest)
     local c = game.entity_prototypes[chest]
     local slots = c.get_inventory_size(defines.inventory.chest)
 
-    local item_stacks = LootRaffle.roll(result, slots / 2, blacklist)
+    local item_stacks = LootRaffle.roll(result, slots, blacklist)
     local container = surface.create_entity({name = chest, position = position, force = 'neutral', create_build_effect_smoke = false})
     for _, item_stack in pairs(item_stacks) do
         container.insert(item_stack)
@@ -102,7 +102,7 @@ function Public.add_loot_rare(surface, position, chest, magic)
     local c = game.entity_prototypes[chest]
     local slots = c.get_inventory_size(defines.inventory.chest)
 
-    local item_stacks = LootRaffle.roll(result, slots / 2, blacklist)
+    local item_stacks = LootRaffle.roll(result, slots, blacklist)
     local container = surface.create_entity({name = chest, position = position, force = 'neutral', create_build_effect_smoke = false})
     for _, item_stack in pairs(item_stacks) do
         container.insert(item_stack)
