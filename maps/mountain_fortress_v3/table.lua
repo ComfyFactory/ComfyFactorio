@@ -195,6 +195,11 @@ function Public.reset_main_table()
     }
     this.traps = {}
     this.munch_time = true
+    this.magic_requirement = 50
+    this.loot_stats = {
+        rare = 48,
+        normal = 48
+    }
     this.coin_amount = 1
     this.difficulty_set = false
     this.bonus_xp_on_join = 250
