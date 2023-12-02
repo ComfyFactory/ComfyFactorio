@@ -1149,6 +1149,8 @@ Event.on_nth_tick(
                     if container.chest.surface.index == active_surface_index then
                         if not WPT.locomotive.is_around_train(container.chest) then
                             container.chest.minable = true
+                            container.chest.link_id = 9999
+                            container.chest.get_inventory(defines.inventory.chest).set_bar(1)
                             remove_chest(container.unit_number)
                             goto continue
                         end
