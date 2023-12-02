@@ -131,6 +131,12 @@ function Public.reset_main_table()
     }
     this.force_chunk = false
     this.bw = false
+    this.debug_vars = {
+        enabled = true,
+        vars = {
+            mining_chance = {}
+        }
+    }
     this.allow_decon = true
     this.block_non_trusted_opening_trains = true
     this.allow_decon_main_surface = true

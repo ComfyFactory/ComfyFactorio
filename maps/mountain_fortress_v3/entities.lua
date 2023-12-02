@@ -107,10 +107,11 @@ local reset_game =
     end
 )
 
-local function get_random_weighted(weighted_table, item_index, weight_index)
+local function get_random_weighted(player, weighted_table, item_index, weight_index)
     local total_weight = 0
     item_index = item_index or 1
     weight_index = weight_index or 2
+    local debug_vars = Public.get('debug_vars')
 
     for _, w in pairs(weighted_table) do
         total_weight = total_weight + w[weight_index]
@@ -121,6 +122,12 @@ local function get_random_weighted(weighted_table, item_index, weight_index)
     for _, w in pairs(weighted_table) do
         weight_sum = weight_sum + w[weight_index]
         if weight_sum >= index then
+            if debug_vars and debug_vars.enabled and debug_vars.vars then
+                local vars = debug_vars.vars.mining_chance
+                vars[player.name] = vars[player.name] or {}
+                vars[player.name][w[3]] = vars[player.name][w[3]] or 0
+                vars[player.name][w[3]] = vars[player.name][w[3]] + 1
+            end
             return w[item_index]
         end
     end
@@ -505,6 +512,24 @@ local mining_events = {
         'Nothing'
     },
     {
+        function()
+        end,
+        300000,
+        'Nothing'
+    },
+    {
+        function()
+        end,
+        32384,
+        'Nothing'
+    },
+    {
+        function()
+        end,
+        8096,
+        'Nothing'
+    },
+    {
         function(entity)
             if Public.is_around_train(entity) then
                 entity.destroy()
@@ -515,7 +540,33 @@ local mining_events = {
             entity.destroy()
         end,
         4096,
-        'Angry Biter #2'
+        'Angry Biter_1'
+    },
+    {
+        function(entity)
+            if Public.is_around_train(entity) then
+                entity.destroy()
+                return
+            end
+
+            Public.buried_biter(entity.surface, entity.position)
+            entity.destroy()
+        end,
+        2048,
+        'Angry Biter_2'
+    },
+    {
+        function(entity)
+            if Public.is_around_train(entity) then
+                entity.destroy()
+                return
+            end
+
+            Public.buried_biter(entity.surface, entity.position)
+            entity.destroy()
+        end,
+        1024,
+        'Angry Biter_3'
     },
     {
         function(entity)
@@ -528,7 +579,20 @@ local mining_events = {
             entity.destroy()
         end,
         512,
-        'Angry Biter #2'
+        'Angry Biter_4'
+    },
+    {
+        function(entity)
+            if Public.is_around_train(entity) then
+                entity.destroy()
+                return
+            end
+
+            Public.buried_biter(entity.surface, entity.position)
+            entity.destroy()
+        end,
+        512,
+        'Angry Biter_4'
     },
     {
         function(entity)
@@ -541,7 +605,20 @@ local mining_events = {
             entity.destroy()
         end,
         2048,
-        'Angry Worm'
+        'Angry Worm_1'
+    },
+    {
+        function(entity)
+            if Public.is_around_train(entity) then
+                entity.destroy()
+                return
+            end
+
+            Public.buried_worm(entity.surface, entity.position)
+            entity.destroy()
+        end,
+        4096,
+        'Angry Worm_2'
     },
     {
         function(entity)
@@ -554,7 +631,54 @@ local mining_events = {
             entity.destroy()
         end,
         2048,
-        'Dangerous Trap'
+        'Dangerous Trap_1'
+    },
+    {
+        function(entity)
+            if Public.is_around_train(entity) then
+                entity.destroy()
+                return
+            end
+
+            Public.tick_tack_trap(entity.surface, entity.position)
+            entity.destroy()
+        end,
+        4096,
+        'Dangerous Trap_2'
+    },
+    {
+        function(entity, index)
+            if Public.is_around_train(entity) then
+                entity.destroy()
+                return
+            end
+
+            local player = game.get_player(index)
+
+            if entity.type == 'tree' then
+                angry_tree(entity, player.character, player)
+                entity.destroy()
+            end
+        end,
+        4096,
+        'Angry Tree_1'
+    },
+    {
+        function(entity, index)
+            if Public.is_around_train(entity) then
+                entity.destroy()
+                return
+            end
+
+            local player = game.get_player(index)
+
+            if entity.type == 'tree' then
+                angry_tree(entity, player.character, player)
+                entity.destroy()
+            end
+        end,
+        2048,
+        'Angry Tree_2'
     },
     {
         function(entity, index)
@@ -571,23 +695,7 @@ local mining_events = {
             end
         end,
         1024,
-        'Angry Tree'
-    },
-    {
-        function(entity, index)
-            local player = game.get_player(index)
-            hidden_treasure(player, entity)
-        end,
-        1024,
-        'Treasure_Tier_1'
-    },
-    {
-        function(entity, index)
-            local player = game.get_player(index)
-            hidden_treasure(player, entity)
-        end,
-        512,
-        'Treasure_Tier_2'
+        'Angry Tree_3'
     },
     {
         function(entity, index)
@@ -595,7 +703,7 @@ local mining_events = {
             hidden_treasure(player, entity)
         end,
         256,
-        'Treasure_Tier_3'
+        'Treasure_Tier_1'
     },
     {
         function(entity, index)
@@ -603,7 +711,7 @@ local mining_events = {
             hidden_treasure(player, entity)
         end,
         128,
-        'Treasure_Tier_4'
+        'Treasure_Tier_2'
     },
     {
         function(entity, index)
@@ -611,7 +719,7 @@ local mining_events = {
             hidden_treasure(player, entity)
         end,
         64,
-        'Treasure_Tier_5'
+        'Treasure_Tier_3'
     },
     {
         function(entity, index)
@@ -619,7 +727,7 @@ local mining_events = {
             hidden_treasure(player, entity)
         end,
         32,
-        'Treasure_Tier_6'
+        'Treasure_Tier_4'
     },
     {
         function(entity, index)
@@ -627,7 +735,7 @@ local mining_events = {
             hidden_treasure(player, entity)
         end,
         16,
-        'Treasure_Tier_7'
+        'Treasure_Tier_5'
     },
     {
         function(entity, index)
@@ -646,7 +754,7 @@ local mining_events = {
             Task.set_timeout_in_ticks(300, immunity_spawner, {entity = e})
             Public.unstuck_player(index)
         end,
-        512,
+        1024,
         'Nest'
     },
     {
@@ -701,7 +809,7 @@ local mining_events = {
                 container.health = random(1, container.health)
             end
         end,
-        64,
+        32,
         'VSMG'
     },
     {
@@ -714,7 +822,7 @@ local mining_events = {
             local msg = ({'entity.found_car', player.name})
             Alert.alert_player(player, 15, msg)
         end,
-        32,
+        16,
         'Car'
     }
 }
@@ -771,7 +879,7 @@ local function on_player_mined_entity(event)
             end
         end
 
-        local func = get_random_weighted(mining_events)
+        local func = get_random_weighted(player, mining_events)
         func(entity, player.index)
     end
 end

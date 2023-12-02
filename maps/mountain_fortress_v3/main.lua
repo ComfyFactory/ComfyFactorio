@@ -118,8 +118,7 @@ local announce_new_map =
 function Public.reset_map()
     local this = Public.get()
     local wave_defense_table = WD.get_table()
-    Misc.set('creative_are_you_sure', false)
-    Misc.set('creative_enabled', false)
+    Misc.reset()
 
     LinkedChests.reset()
 

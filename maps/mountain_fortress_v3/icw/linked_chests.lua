@@ -765,6 +765,20 @@ local function built_entity_robot(event)
                         return
                     end
 
+                    if entity.link_id == 99999 then
+                        if entity.type == 'entity-ghost' then
+                            entity.destroy()
+                            player.print(module_name .. 'Blueprinted removed chests does not work.', Color.warning)
+                            return
+                        end
+                        if entity.type ~= 'entity-ghost' then
+                            player.insert({name = 'linked-chest', count = 1})
+                            entity.destroy()
+                            player.print(module_name .. 'Blueprinted removed chests does not work.', Color.warning)
+                            return
+                        end
+                    end
+
                     create_chest(entity)
                     return
                 else
@@ -1018,6 +1032,11 @@ local function on_entity_settings_pasted(event)
     local source_link_id = source.link_id
     local destination_link_id = destination.link_id
 
+    if source_link_id == 99999 or destination_link_id == 99999 then
+        player.print(module_name .. 'Chests with link id 99999 are disabled.', Color.warning)
+        return
+    end
+
     local source_container = fetch_container(source.unit_number)
     local destination_container = fetch_container(destination.unit_number)
 
@@ -1149,12 +1168,19 @@ Event.on_nth_tick(
                     if container.chest.surface.index == active_surface_index then
                         if not WPT.locomotive.is_around_train(container.chest) then
                             container.chest.minable = true
-                            container.chest.link_id = 9999
+                            container.chest.link_id = 99999
                             container.chest.get_inventory(defines.inventory.chest).set_bar(1)
                             remove_chest(container.unit_number)
                             goto continue
                         end
                     end
+                    if container.chest.link_id == 99999 then
+                        container.chest.minable = true
+                        container.chest.get_inventory(defines.inventory.chest).set_bar(1)
+                        remove_chest(container.unit_number)
+                        goto continue
+                    end
+
                     if container.mode == 1 then
                         container.chest.minable = false
                     end
@@ -1471,6 +1497,7 @@ Event.add(defines.events.on_gui_selection_state_changed, state_changed)
 Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_gui_checked_state_changed, on_gui_checked_state_changed)
 Event.add(defines.events.on_entity_settings_pasted, on_entity_settings_pasted)
+Event.add(defines.events.on_pre_entity_settings_pasted, on_entity_settings_pasted)
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)
 
 return Public

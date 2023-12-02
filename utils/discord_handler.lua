@@ -110,4 +110,18 @@ function Public.send_notification_raw(scenario_name, message)
     Server.to_discord_named_embed(notification, data)
 end
 
+function Public.send_notification_debug(player, source_debug, debug_data)
+    local name = player and player.valid and player.name or 'script'
+
+    local data = {
+        title = Server.get_server_name(),
+        description = source_debug,
+        field1 = {
+            text1 = 'Debug data for: ' .. name,
+            text2 = debug_data
+        }
+    }
+    Public.send_notification(data)
+end
+
 return Public
