@@ -436,6 +436,11 @@ local function validate_args(data)
         return false
     end
 
+    if is_revoked(player.name) then
+        Utils.print_to(player, module_name .. 'Your jail permissions have been revoked. Contact an admin to appeal this.')
+        return false
+    end
+
     if player.name == offender then
         Utils.print_to(player, module_name .. 'You can´t select yourself.')
         return false
@@ -595,7 +600,7 @@ local function jail(player, offender, msg, raised, mute)
     end
 
     if not msg then
-        msg = 'Jailed by script'
+        msg = 'Jailed by script - no reason was provided.'
     end
 
     if not game.get_player(offender) then
@@ -637,7 +642,7 @@ local function jail(player, offender, msg, raised, mute)
     data.username = offender
     data.admin = player
     data.reason = msg
-    Server.to_jailed_embed(data)
+    Server.to_jailed_named_embed(data)
 
     if votejail[offender] then
         votejail[offender].jailed = true
@@ -660,7 +665,7 @@ local function jail_temporary(player, offender, msg, mute)
     end
 
     if not msg then
-        msg = 'Jailed by script'
+        msg = 'Jailed by script - no reason was provided.'
     end
 
     if offender.character and offender.character.valid and offender.character.driving then
@@ -686,7 +691,7 @@ local function jail_temporary(player, offender, msg, mute)
     data.username = offender.name
     data.admin = player.name
     data.reason = msg
-    Server.to_jailed_embed(data)
+    Server.to_jailed_named_embed(data)
 
     if votejail[offender.name] then
         votejail[offender.name].jailed = true
@@ -1214,7 +1219,7 @@ Event.add(
         end
 
         local offender = event.parameters
-        local message = 'Temporary jail. Lasts at most 1 week.'
+        local message = 'Temporary jail'
 
         if event.player_index then
             local player = game.get_player(event.player_index)
@@ -1226,7 +1231,7 @@ Event.add(
 
             if is_revoked(player.name) then
                 Utils.warning(player, module_name .. 'You have abused your trusted permissions and therefore')
-                Utils.warning(player, 'your permissions have been revoked!')
+                Utils.warning(player, 'your permissions have been revoked! Contact an admin to appeal this.')
                 return
             end
 
@@ -1272,6 +1277,8 @@ Event.add(
                         return
                     end
 
+                    message = message .. ' executed by ' .. player.name
+
                     Utils.warning(player, 'Logging your actions.')
                     vote_to_jail(player, offender, message)
                     return
@@ -1283,6 +1290,7 @@ Event.add(
             if player.admin then
                 if cmd == 'jail' then
                     Utils.warning(player, 'Logging your actions.')
+                    message = message .. ' executed by ' .. player.name
                     Public.try_ul_data(offender, true, player.name, message)
                     return
                 elseif cmd == 'free' then
@@ -1305,6 +1313,7 @@ Event.add(
                     end
 
                     Utils.warning(player, 'Logging your actions.')
+                    message = message .. ' executed by ' .. player.name
                     jail_temporary(player, offender, message, false)
                     draw_main_frame(player, offender)
 
@@ -1345,6 +1354,7 @@ Event.add(
                 end
 
                 print(module_name .. 'Logging your actions.')
+                message = message .. ' executed by script'
                 Public.try_ul_data(offender, true, 'script', message)
                 return
             elseif cmd == 'free' then
