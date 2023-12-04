@@ -167,8 +167,6 @@ local function create_frame(player, alignment, location, data)
     frame.style.padding = 3
     frame.style.top_padding = 4
 
-    global.a = frame
-
     if alignment == 'vertical' then
         frame.style.minimal_height = 96
     end
