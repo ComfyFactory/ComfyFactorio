@@ -1,8 +1,7 @@
 local Event = require 'utils.event'
 local Public = require 'maps.mountain_fortress_v3.table'
 local Server = require 'utils.server'
-local Token = require 'utils.token'
-local Task = require 'utils.task'
+local Task = require 'utils.task_token'
 local Color = require 'utils.color_presets'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
 local Global = require 'utils.global'
@@ -138,7 +137,7 @@ local function fast_remove(tbl, index)
 end
 
 local pause_waves_custom_callback_token =
-    Token.register(
+    Task.register(
     function(status)
         Collapse.disable_collapse(status)
         local status_str = status and 'has stopped!' or 'is active once again!'
@@ -278,7 +277,7 @@ local function do_magic_fluid_crafters()
 end
 
 local artillery_target_callback =
-    Token.register(
+    Task.register(
     function(data)
         local position = data.position
         local entity = data.entity
@@ -455,7 +454,7 @@ local function tick()
 end
 
 Public.deactivate_callback =
-    Token.register(
+    Task.register(
     function(entity)
         if entity and entity.valid then
             entity.active = false
@@ -466,7 +465,7 @@ Public.deactivate_callback =
 )
 
 Public.neutral_force =
-    Token.register(
+    Task.register(
     function(entity)
         if entity and entity.valid then
             entity.force = 'neutral'
@@ -475,7 +474,7 @@ Public.neutral_force =
 )
 
 Public.enemy_force =
-    Token.register(
+    Task.register(
     function(entity)
         if entity and entity.valid then
             entity.force = 'enemy'
@@ -484,7 +483,7 @@ Public.enemy_force =
 )
 
 Public.active_not_destructible_callback =
-    Token.register(
+    Task.register(
     function(entity)
         if entity and entity.valid then
             entity.active = true
@@ -495,7 +494,7 @@ Public.active_not_destructible_callback =
 )
 
 Public.disable_minable_callback =
-    Token.register(
+    Task.register(
     function(entity)
         if entity and entity.valid then
             entity.minable = false
@@ -504,7 +503,7 @@ Public.disable_minable_callback =
 )
 
 Public.disable_minable_and_ICW_callback =
-    Token.register(
+    Task.register(
     function(entity)
         if entity and entity.valid then
             entity.minable = false
@@ -514,7 +513,7 @@ Public.disable_minable_and_ICW_callback =
 )
 
 Public.disable_destructible_callback =
-    Token.register(
+    Task.register(
     function(entity)
         if entity and entity.valid then
             entity.destructible = false
@@ -523,7 +522,7 @@ Public.disable_destructible_callback =
     end
 )
 Public.disable_active_callback =
-    Token.register(
+    Task.register(
     function(entity)
         if entity and entity.valid then
             entity.active = false
@@ -534,7 +533,7 @@ Public.disable_active_callback =
 local disable_active_callback = Public.disable_active_callback
 
 Public.refill_turret_callback =
-    Token.register(
+    Task.register(
     function(turret, data)
         local refill_turrets = this.refill_turrets
         local callback_data = data.callback_data
@@ -545,7 +544,7 @@ Public.refill_turret_callback =
 )
 
 Public.refill_artillery_turret_callback =
-    Token.register(
+    Task.register(
     function(turret, data)
         local refill_turrets = this.refill_turrets
         local art_table = this.art_table
@@ -579,7 +578,7 @@ Public.refill_artillery_turret_callback =
 )
 
 Public.refill_liquid_turret_callback =
-    Token.register(
+    Task.register(
     function(turret, data)
         local refill_turrets = this.refill_turrets
         local callback_data = data.callback_data
@@ -590,7 +589,7 @@ Public.refill_liquid_turret_callback =
 )
 
 Public.power_source_callback =
-    Token.register(
+    Task.register(
     function(turret)
         local power_sources = this.power_sources
         power_sources[#power_sources + 1] = turret
@@ -598,7 +597,7 @@ Public.power_source_callback =
 )
 
 Public.magic_item_crafting_callback =
-    Token.register(
+    Task.register(
     function(entity, data)
         local callback_data = data.callback_data
         if not (entity and entity.valid) then
@@ -653,7 +652,7 @@ Public.magic_item_crafting_callback =
 )
 
 Public.magic_item_crafting_callback_weighted =
-    Token.register(
+    Task.register(
     function(entity, data)
         local callback_data = data.callback_data
         if not (entity and entity.valid) then
@@ -800,7 +799,7 @@ local function calc_players()
 end
 
 remove_boost_movement_speed_on_respawn =
-    Token.register(
+    Task.register(
     function(data)
         local player = data.player
         if not player or not player.valid then
@@ -821,7 +820,7 @@ remove_boost_movement_speed_on_respawn =
 )
 
 local boost_movement_speed_on_respawn =
-    Token.register(
+    Task.register(
     function(data)
         local player = data.player
         if not player or not player.valid then

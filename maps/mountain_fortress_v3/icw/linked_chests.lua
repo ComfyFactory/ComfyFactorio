@@ -2,8 +2,7 @@ local Event = require 'utils.event'
 local Color = require 'utils.color_presets'
 local Global = require 'utils.global'
 local Gui = require 'utils.gui'
-local Task = require 'utils.task'
-local Token = require 'utils.token'
+local Task = require 'utils.task_token'
 local Where = require 'utils.commands.where'
 local Math2D = require 'math2d'
 local WPT = require 'maps.mountain_fortress_v3.table'
@@ -54,7 +53,7 @@ function Public.set(key, value)
 end
 
 local clear_chest_token =
-    Token.register(
+    Task.register(
     function(event)
         local entity = event.entity
         if not entity or not entity.valid then
@@ -72,7 +71,7 @@ local clear_chest_token =
 )
 
 local create_clear_chest_token =
-    Token.register(
+    Task.register(
     function(event)
         local surface = game.get_surface('gulag')
         local entity = surface.create_entity {name = 'linked-chest', position = {x = -62, y = -6}, force = game.forces.player}
@@ -91,7 +90,7 @@ local create_clear_chest_token =
 )
 
 local remove_all_linked_items_token =
-    Token.register(
+    Task.register(
     function(event)
         local player_index = event.player_index
         local player = game.get_player(player_index)

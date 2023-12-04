@@ -41,8 +41,6 @@ local nuclear_tiles = {
 
 local wagon_raffle = {
     'cargo-wagon',
-    'cargo-wagon',
-    'cargo-wagon',
     'locomotive',
     'fluid-wagon'
 }

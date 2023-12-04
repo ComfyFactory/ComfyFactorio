@@ -1,7 +1,6 @@
 local Utils = require 'utils.core'
 local Color = require 'utils.color_presets'
-local Task = require 'utils.task'
-local Token = require 'utils.token'
+local Task = require 'utils.task_token'
 local IC = require 'maps.mountain_fortress_v3.ic.table'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local RPG = require 'modules.rpg.main'
@@ -624,7 +623,7 @@ local function get_persistent_player_data(player)
 end
 
 local remove_car =
-    Token.register(
+    Task.register(
     function(data)
         local player = data.player
         local car = data.car
@@ -633,7 +632,7 @@ local remove_car =
 )
 
 local find_remove_car =
-    Token.register(
+    Task.register(
     function(data)
         local index = data.index
         local types = data.types

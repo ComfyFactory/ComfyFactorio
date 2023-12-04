@@ -2,8 +2,8 @@ local Event = require 'utils.event'
 local Public = require 'maps.mountain_fortress_v3.table'
 local Global = require 'utils.global'
 local Server = require 'utils.server'
-local Token = require 'utils.token'
 local Gui = require 'utils.gui'
+local Task = require 'utils.task_token'
 local Score = require 'utils.gui.score'
 local WD = require 'modules.wave_defense.table'
 local Core = require 'utils.core'
@@ -431,7 +431,7 @@ local function write_additional_stats(key, difficulty)
 end
 
 local get_scores =
-    Token.register(
+    Task.register(
     function(data)
         local value = data.value
         if not this.score_table['player'] then
@@ -692,7 +692,7 @@ local function show_score(data)
     end -- foreach entry
 end
 
-local show_score_token = Token.register(show_score)
+local show_score_token = Task.register(show_score)
 
 local function on_gui_click(event)
     local element = event.element

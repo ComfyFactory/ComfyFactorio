@@ -565,7 +565,7 @@ function Public.get_parent_frame(player)
 end
 
 --- This adds the given gui to the top gui.
----@param player userdata
+---@param player LuaPlayer
 ---@param frame userdata|table
 function Public.add_mod_button(player, frame)
     if Public.get_button_flow(player)[frame.name] and Public.get_button_flow(player)[frame.name].valid then

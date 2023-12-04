@@ -7,7 +7,8 @@ local SpamProtection = require 'utils.spam_protection'
 local this = {
     players = {},
     activate_custom_buttons = false,
-    bottom_quickbar_button = {}
+    bottom_quickbar_button = {},
+    bottom_quickbar_button_data = {}
 }
 
 Global.register(
@@ -21,7 +22,8 @@ local Public = {}
 
 Public.events = {
     bottom_quickbar_button_name = Event.generate_event_name('bottom_quickbar_button_name'),
-    bottom_quickbar_respawn_raise = Event.generate_event_name('bottom_quickbar_respawn_raise')
+    bottom_quickbar_respawn_raise = Event.generate_event_name('bottom_quickbar_respawn_raise'),
+    bottom_quickbar_location_changed = Event.generate_event_name('bottom_quickbar_location_changed')
 }
 
 local main_frame_name = Gui.uid_name()
@@ -36,7 +38,9 @@ function Public.get_player_data(player, remove_user_data)
         return
     end
     if not this.players[player.index] then
-        this.players[player.index] = {}
+        this.players[player.index] = {
+            state = 'bottom_right'
+        }
     end
     return this.players[player.index]
 end
@@ -80,6 +84,54 @@ end
 
 ----! Gui Functions ! ----
 
+local function create_gui_button(player, frame_data)
+    local button
+    if Gui.get_mod_gui_top_frame() then
+        button =
+            Gui.add_mod_button(
+            player,
+            {
+                type = 'sprite-button',
+                name = clear_corpse_button_name,
+                sprite = 'entity/behemoth-biter',
+                tooltip = {'commands.clear_corpse'},
+                style = Gui.button_style
+            }
+        )
+    else
+        button =
+            player.gui.top[clear_corpse_button_name] or
+            player.gui.top.add(
+                {
+                    type = 'sprite-button',
+                    sprite = 'entity/behemoth-biter',
+                    name = clear_corpse_button_name,
+                    tooltip = {'commands.clear_corpse'},
+                    style = Gui.button_style
+                }
+            )
+        button.style.font_color = {r = 0.11, g = 0.8, b = 0.44}
+        button.style.font = 'heading-1'
+        button.style.minimal_height = 40
+        button.style.maximal_width = 40
+        button.style.minimal_width = 38
+        button.style.maximal_height = 38
+        button.style.padding = 1
+        button.style.margin = 0
+    end
+
+    frame_data = frame_data or Public.get_player_data(player)
+    if not (this.activate_custom_buttons and frame_data ~= nil and not frame_data.top) then
+        if button and button.valid then
+            button.visible = true
+        end
+    else
+        if button and button.valid then
+            button.visible = false
+        end
+    end
+end
+
 local function destroy_frame(player)
     local gui = player.gui
     local frame = gui.screen[main_frame_name]
@@ -88,7 +140,7 @@ local function destroy_frame(player)
     end
 end
 
-local function create_frame(player, alignment, location, portable)
+local function create_frame(player, alignment, location, data)
     local gui = player.gui
     local frame = gui.screen[main_frame_name]
     if frame and frame.valid then
@@ -104,8 +156,6 @@ local function create_frame(player, alignment, location, portable)
         direction = alignment
     }
 
-    local data = Public.get_player_data(player)
-
     if data.visible ~= nil then
         if data.visible then
             frame.visible = true
@@ -117,12 +167,14 @@ local function create_frame(player, alignment, location, portable)
     frame.style.padding = 3
     frame.style.top_padding = 4
 
+    global.a = frame
+
     if alignment == 'vertical' then
         frame.style.minimal_height = 96
     end
 
     frame.location = location
-    if portable then
+    if data.portable then
         frame.caption = '•'
     end
 
@@ -148,12 +200,14 @@ local function create_frame(player, alignment, location, portable)
         style = 'quick_bar_page_button'
     }
 
-    this.bottom_quickbar_button[player.index] = {name = bottom_quickbar_button_name, frame = bottom_quickbar_button}
-
-    if this.bottom_quickbar_button.sprite and this.bottom_quickbar_button.tooltip then
-        bottom_quickbar_button.sprite = this.bottom_quickbar_button.sprite
-        bottom_quickbar_button.tooltip = this.bottom_quickbar_button.tooltip
+    if this.bottom_quickbar_button_data and this.bottom_quickbar_button_data.sprite and this.bottom_quickbar_button_data.tooltip and not data.top then
+        bottom_quickbar_button.sprite = this.bottom_quickbar_button_data.sprite
+        bottom_quickbar_button.tooltip = this.bottom_quickbar_button_data.tooltip
+    else
+        frame.destroy()
     end
+
+    this.bottom_quickbar_button[player.index] = {name = bottom_quickbar_button_name, frame = bottom_quickbar_button}
 
     return frame
 end
@@ -203,9 +257,28 @@ local function set_location(player, state)
         }
     end
 
+    Event.raise(Public.events.bottom_quickbar_location_changed, {player_index = player.index, data = data})
+
     data.state = state
 
-    create_frame(player, alignment, location, data.portable)
+    create_frame(player, alignment, location, data)
+end
+
+--- Sets then frame location of the given player
+---@param player LuaPlayer?
+---@param value boolean
+local function set_top(player, value)
+    local data = Public.get_player_data(player)
+    data.top = value or false
+    Public.set_location(player, 'bottom_right')
+end
+
+--- Returns the current frame location of the given player
+---@param player LuaPlayer
+---@return table|nil
+local function get_location(player)
+    local data = Public.get_player_data(player)
+    return data and data.state or nil
 end
 
 --- Activates the custom buttons
@@ -217,6 +290,22 @@ end
 --- Fetches if the custom buttons are activated
 function Public.is_custom_buttons_enabled()
     return this.activate_custom_buttons
+end
+
+--- Toggles the player frame
+function Public.toggle_player_frame(player, state)
+    local gui = player.gui
+    local frame = gui.screen[main_frame_name]
+    if frame and frame.valid then
+        local data = Public.get_player_data(player)
+        if state then
+            data.visible = true
+            frame.visible = true
+        else
+            data.visible = false
+            frame.visible = false
+        end
+    end
 end
 
 Gui.on_click(
@@ -237,7 +326,14 @@ Gui.on_click(
         if is_spamming then
             return
         end
-        Event.raise(Public.events.bottom_quickbar_button_name, {player = event.player, event = event})
+
+        local data = Public.get_player_data(event.player)
+        if data and data.top then
+            return
+        end
+
+        event.data = data
+        Event.raise(Public.events.bottom_quickbar_button_name, {event = event})
     end
 )
 
@@ -248,6 +344,7 @@ Event.add(
             local player = game.get_player(event.player_index)
             local data = Public.get_player_data(player)
             set_location(player, data.state)
+            create_gui_button(player, data)
         end
     end
 )
@@ -310,24 +407,6 @@ Event.add(
     end
 )
 
-function Public.toggle_player_frame(player, state)
-    local gui = player.gui
-    local frame = gui.screen[main_frame_name]
-    if frame and frame.valid then
-        local data = Public.get_player_data(player)
-        if state then
-            data.visible = true
-            frame.visible = true
-        else
-            data.visible = false
-            frame.visible = false
-        end
-    end
-end
-Public.main_frame_name = main_frame_name
-Public.set_location = set_location
-Gui.screen_to_bypass(main_frame_name)
-
 Event.add(
     Public.events.bottom_quickbar_respawn_raise,
     function(event)
@@ -342,5 +421,26 @@ Event.add(
         end
     end
 )
+
+Event.add(
+    Public.events.bottom_quickbar_location_changed,
+    function(event)
+        if not event or not event.player_index then
+            return
+        end
+
+        if this.activate_custom_buttons then
+            local player = game.get_player(event.player_index)
+            local data = Public.get_player_data(player)
+            create_gui_button(player, data)
+        end
+    end
+)
+
+Public.main_frame_name = main_frame_name
+Public.set_location = set_location
+Public.get_location = get_location
+Public.set_top = set_top
+Gui.screen_to_bypass(main_frame_name)
 
 return Public

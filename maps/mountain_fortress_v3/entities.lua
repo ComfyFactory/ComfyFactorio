@@ -6,9 +6,8 @@ local Server = require 'utils.server'
 local RPG = require 'modules.rpg.main'
 local Collapse = require 'modules.collapse'
 local Alert = require 'utils.alert'
-local Task = require 'utils.task'
+local Task = require 'utils.task_token'
 local Score = require 'utils.gui.score'
-local Token = require 'utils.token'
 local Discord = require 'utils.discord'
 local Core = require 'utils.core'
 local Diff = require 'modules.difficulty_vote_by_amount'
@@ -81,7 +80,7 @@ local protect_types = {
 }
 
 local reset_game =
-    Token.register(
+    Task.register(
     function(data)
         local this = data.this
         if this.soft_reset then
@@ -442,7 +441,7 @@ local function angry_tree(entity, cause, player)
             if e.can_insert(Public.piercing_rounds_magazine_ammo) then
                 e.insert(Public.piercing_rounds_magazine_ammo)
             end
-            local callback = Token.get(cbl)
+            local callback = Task.get(cbl)
             callback(e, data)
             return
         end
@@ -482,7 +481,7 @@ local function give_coin(player)
 end
 
 local immunity_spawner =
-    Token.register(
+    Task.register(
     function(data)
         local entity = data.entity
         if not entity or not entity.valid then

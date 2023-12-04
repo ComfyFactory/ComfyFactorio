@@ -4,8 +4,7 @@ local Color = require 'utils.color_presets'
 local Gui = require 'utils.gui'
 local Tabs = require 'utils.gui'
 local Event = require 'utils.event'
-local Token = require 'utils.token'
-local Task = require 'utils.task'
+local Task = require 'utils.task_token'
 local SpamProtection = require 'utils.spam_protection'
 
 local Public = {}
@@ -771,7 +770,7 @@ Gui.on_click(
 )
 
 local clear_misc_settings =
-    Token.register(
+    Task.register(
     function(data)
         local player_index = data.player_index
         local misc_settings = ICT.get('misc_settings')

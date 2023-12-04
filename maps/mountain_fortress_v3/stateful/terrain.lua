@@ -1,12 +1,12 @@
 local Public = require 'maps.mountain_fortress_v3.stateful.table'
 local map_name = 'boss_room'
+local Task = require 'utils.task_token'
 local random = math.random
 local ceil = math.ceil
 local floor = math.floor
-local Token = require 'utils.token'
 
 local assign_locomotive_token =
-    Token.register(
+    Task.register(
     function(event)
         local entity = event.entity
         if not entity or not entity.valid then

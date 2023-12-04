@@ -1,7 +1,6 @@
 local Public = require 'maps.mountain_fortress_v3.table'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
-local Task = require 'utils.task'
-local Token = require 'utils.token'
+local Task = require 'utils.task_token'
 local MapFunctions = require 'tools.map_functions'
 
 local random = math.random
@@ -70,7 +69,7 @@ local function initial_cargo_boxes()
 end
 
 local place_tiles_token =
-    Token.register(
+    Task.register(
     function(event)
         local surface = event.surface
         if not surface or not surface.valid then
@@ -86,7 +85,7 @@ local place_tiles_token =
 )
 
 local set_loco_cargo =
-    Token.register(
+    Task.register(
     function(data)
         local surface = data.surface
         if not surface or not surface.valid then
