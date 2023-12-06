@@ -693,6 +693,7 @@ local function on_player_joined_game(event)
     local player = game.get_player(event.player_index)
     create_gui_button(player)
     Task.delay(delay_tooltip_token, {player_index = player.index})
+    BottomFrame.add_inner_frame({player = player, element_name = auto_stash_button_name, tooltip = this.tooltip, sprite = 'item/wooden-chest'})
 end
 
 Gui.on_click(
@@ -738,19 +739,6 @@ Event.on_configuration_changed(do_whitelist)
 
 Event.on_init(do_whitelist)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
-
-Event.add(
-    BottomFrame.events.bottom_quickbar_button_name,
-    function(data)
-        local event = data.event
-        if not event then
-            return
-        end
-
-        local player = event.player
-        auto_stash(player, event)
-    end
-)
 
 Event.add(
     BottomFrame.events.bottom_quickbar_location_changed,

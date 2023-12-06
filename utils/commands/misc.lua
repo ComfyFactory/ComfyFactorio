@@ -4,6 +4,9 @@ local Server = require 'utils.server'
 local Color = require 'utils.color_presets'
 local Event = require 'utils.event'
 local Global = require 'utils.global'
+local BottomFrame = require 'utils.gui.bottom_frame'
+local Gui = require 'utils.gui'
+local SpamProtection = require 'utils.spam_protection'
 
 local this = {
     players = {},
@@ -18,6 +21,8 @@ Global.register(
 )
 
 local Public = {}
+
+local clear_corpse_button_name = Gui.uid_name()
 
 commands.add_command(
     'spaghetti',
@@ -428,6 +433,55 @@ function Public.insert_all_items(player)
     end
 end
 
+local function create_clear_corpse_frame(player, bottom_frame_data)
+    local button
+    if Gui.get_mod_gui_top_frame() then
+        button =
+            Gui.add_mod_button(
+            player,
+            {
+                type = 'sprite-button',
+                name = clear_corpse_button_name,
+                sprite = 'entity/behemoth-biter',
+                tooltip = {'commands.clear_corpse'},
+                style = Gui.button_style
+            }
+        )
+    else
+        button =
+            player.gui.top[clear_corpse_button_name] or
+            player.gui.top.add(
+                {
+                    type = 'sprite-button',
+                    sprite = 'entity/behemoth-biter',
+                    name = clear_corpse_button_name,
+                    tooltip = {'commands.clear_corpse'},
+                    style = Gui.button_style
+                }
+            )
+        button.style.font_color = {r = 0.11, g = 0.8, b = 0.44}
+        button.style.font = 'heading-1'
+        button.style.minimal_height = 40
+        button.style.maximal_width = 40
+        button.style.minimal_width = 38
+        button.style.maximal_height = 38
+        button.style.padding = 1
+        button.style.margin = 0
+    end
+
+    bottom_frame_data = bottom_frame_data or BottomFrame.get_player_data(player)
+
+    if bottom_frame_data ~= nil and not bottom_frame_data.top then
+        if button and button.valid then
+            button.visible = false
+        end
+    else
+        if button and button.valid then
+            button.visible = true
+        end
+    end
+end
+
 function Public.get(key)
     if key then
         return this[key]
@@ -471,6 +525,36 @@ Event.add(
     function(event)
         local player = game.players[event.player_index]
         on_player_joined_game(player)
+        create_clear_corpse_frame(player)
+        BottomFrame.add_inner_frame({player = player, element_name = clear_corpse_button_name, tooltip = {'commands.clear_corpse'}, sprite = 'entity/behemoth-biter'})
+    end
+)
+
+Gui.on_click(
+    clear_corpse_button_name,
+    function(event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Clear Corpse')
+        if is_spamming then
+            return
+        end
+        clear_corpses(event)
+    end
+)
+
+Event.add(
+    BottomFrame.events.bottom_quickbar_location_changed,
+    function(event)
+        local player_index = event.player_index
+        if not player_index then
+            return
+        end
+        local player = game.get_player(player_index)
+        if not player or not player.valid then
+            return
+        end
+
+        local bottom_frame_data = event.data
+        create_clear_corpse_frame(player, bottom_frame_data)
     end
 )
 

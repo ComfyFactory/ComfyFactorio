@@ -570,7 +570,7 @@ local function build_config_gui(data)
             if bottom_frame and bottom_frame.top then
                 switch_state = 'left'
             end
-            add_switch(scroll_pane, switch_state, 'top_location', 'Position - top', 'Toggle to select if you want the autostash button at the top or the bottom.')
+            add_switch(scroll_pane, switch_state, 'top_location', 'Position - top', 'Toggle to select if you want the bottom buttons at the top or the bottom.')
         end
         scroll_pane.add({type = 'line'})
 

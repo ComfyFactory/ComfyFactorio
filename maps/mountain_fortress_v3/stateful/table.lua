@@ -513,7 +513,7 @@ local function get_random_items()
         {'copper-cable', scale(20000000, 100000000)},
         {'copper-plate', scale(5000000, 80000000)},
         {'electric-engine-unit', scale(30000, 200000)},
-        {'electronic-circuit', scale(5000000, 50000000)},
+        {'electronic-circuit', scale(5000000, 30000000)},
         {'engine-unit', scale(90000, 750000)},
         {'explosives', scale(700000, 3000000)},
         {'iron-gear-wheel', scale(400000, 3000000)},
