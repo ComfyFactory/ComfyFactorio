@@ -569,7 +569,7 @@ end
 ---@param frame userdata|table
 function Public.add_mod_button(player, frame)
     if Public.get_button_flow(player)[frame.name] and Public.get_button_flow(player)[frame.name].valid then
-        return
+        return Public.get_button_flow(player)[frame.name]
     end
 
     Public.get_button_flow(player).add(frame)

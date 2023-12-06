@@ -618,6 +618,9 @@ end
 local function create_gui_button(player, bottom_frame_data)
     local tooltip = this.tooltip
     local button
+
+    bottom_frame_data = bottom_frame_data or BottomFrame.get_player_data(player)
+
     if Gui.get_mod_gui_top_frame() then
         button =
             Gui.add_mod_button(
@@ -652,14 +655,11 @@ local function create_gui_button(player, bottom_frame_data)
         button.style.margin = 0
     end
 
-    bottom_frame_data = bottom_frame_data or BottomFrame.get_player_data(player)
-    if not (this.bottom_button and bottom_frame_data ~= nil and not bottom_frame_data.top) then
-        if button and button.valid then
-            button.visible = true
-        end
-    else
-        if button and button.valid then
-            button.visible = false
+    if this.bottom_button then
+        if bottom_frame_data ~= nil and not bottom_frame_data.top then
+            if button and button.valid then
+                button.destroy()
+            end
         end
     end
 end

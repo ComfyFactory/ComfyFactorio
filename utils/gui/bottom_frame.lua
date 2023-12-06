@@ -181,6 +181,21 @@ local function add_inner_frame(data)
         return error('Having more than 6 rows is currently not supported.', 2)
     end
 
+    local found = false
+    for _, row_index_data in pairs(storage_data) do
+        if row_index_data and type(row_index_data) == 'table' then
+            for _, row_selection_data in pairs(row_index_data) do
+                if row_selection_data and row_selection_data.name == element_name then
+                    found = true
+                end
+            end
+        end
+    end
+
+    if found then
+        return
+    end
+
     player_data.row_index = sections[player_data.row_selection_added]
 
     if not storage_data[player_data.row_index] then
@@ -321,18 +336,18 @@ set_location = function(player, state)
 
     data.state = state
 
-    local secs = Server.get_current_time()
-    if secs ~= nil then
-        set_data(
-            bottom_dataset,
-            player.name,
-            {
-                bottom_state = data.bottom_state,
-                above = data.above,
-                state = data.state
-            }
-        )
-    end
+    -- local secs = Server.get_current_time()
+    -- if secs ~= nil then
+    --     set_data(
+    --         bottom_dataset,
+    --         player.name,
+    --         {
+    --             bottom_state = data.bottom_state,
+    --             above = data.above,
+    --             state = data.state
+    --         }
+    --     )
+    -- end
 
     create_frame(player, alignment, location, data)
     refresh_inner_frames(player)
@@ -408,6 +423,7 @@ function Public.reset()
         if player and player.valid then
             if not player.connected then
                 this.players[player.index] = nil
+                this.storage[player.index] = nil
             end
         end
     end

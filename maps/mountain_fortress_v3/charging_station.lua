@@ -1,20 +1,19 @@
 --made by Hanakocz
 -- modified by gerkiz
 --charge your armor equipment from nearby accumulators!
---change global.charging_station_multiplier if you want different conversion rate than 1:1.
 local Event = require 'utils.event'
 local SpamProtection = require 'utils.spam_protection'
 local BottomFrame = require 'utils.gui.bottom_frame'
 local Gui = require 'utils.gui'
 local Color = require 'utils.color_presets'
 
+local Public = {}
 local module_name = '[color=blue][Charging station][/color] '
 
 local function draw_charging_gui(player, activate_custom_buttons)
-    local frame = player.gui.top.charging_station
-    if not frame or not frame.valid then
-        frame =
-            player.gui.top.add(
+    local button =
+        player.gui.top['charging_station'] or
+        player.gui.top.add(
             {
                 type = 'sprite-button',
                 name = 'charging_station',
@@ -25,17 +24,20 @@ local function draw_charging_gui(player, activate_custom_buttons)
                 style = Gui.button_style
             }
         )
-        frame.style.minimal_height = 38
-        frame.style.maximal_height = 38
-    end
+    button.style.minimal_height = 38
+    button.style.maximal_height = 38
 
-    frame.visible = not activate_custom_buttons
+    if activate_custom_buttons then
+        if button and button.valid then
+            button.destroy()
+        end
+    end
 end
 
 local function discharge_accumulators(surface, position, force, power_needs)
     local accumulators = surface.find_entities_filtered {name = 'accumulator', force = force, position = position, radius = 13}
     local power_drained = 0
-    power_needs = power_needs * global.charging_station_multiplier
+    power_needs = power_needs * 1
     for _, accu in pairs(accumulators) do
         if accu.valid then
             if accu.energy > 3000000 and power_needs > 0 then
@@ -52,7 +54,7 @@ local function discharge_accumulators(surface, position, force, power_needs)
             end
         end
     end
-    return power_drained / global.charging_station_multiplier
+    return power_drained / 1
 end
 
 local function charge(player)
@@ -134,11 +136,6 @@ local function on_gui_click(event)
     end
 end
 
-local function on_init()
-    global.charging_station_multiplier = 1
-end
-
-Event.on_init(on_init)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_gui_click, on_gui_click)
 
@@ -162,3 +159,5 @@ Event.add(
         end
     end
 )
+
+return Public

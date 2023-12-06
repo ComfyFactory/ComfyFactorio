@@ -435,6 +435,9 @@ end
 
 local function create_clear_corpse_frame(player, bottom_frame_data)
     local button
+
+    bottom_frame_data = bottom_frame_data or BottomFrame.get_player_data(player)
+
     if Gui.get_mod_gui_top_frame() then
         button =
             Gui.add_mod_button(
@@ -469,15 +472,9 @@ local function create_clear_corpse_frame(player, bottom_frame_data)
         button.style.margin = 0
     end
 
-    bottom_frame_data = bottom_frame_data or BottomFrame.get_player_data(player)
-
     if bottom_frame_data ~= nil and not bottom_frame_data.top then
         if button and button.valid then
-            button.visible = false
-        end
-    else
-        if button and button.valid then
-            button.visible = true
+            button.destroy()
         end
     end
 end

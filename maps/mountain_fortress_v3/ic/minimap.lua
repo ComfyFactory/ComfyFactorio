@@ -26,29 +26,32 @@ end
 
 local function create_button(player)
     local button =
+        player.gui.top['minimap_button'] or
         player.gui.top.add(
-        {
-            type = 'sprite-button',
-            name = 'minimap_button',
-            sprite = 'utility/map',
-            tooltip = 'Open or close minimap.',
-            style = CoreGui.button_style
-        }
-    )
+            {
+                type = 'sprite-button',
+                name = 'minimap_button',
+                sprite = 'utility/map',
+                tooltip = 'Open or close minimap.',
+                style = CoreGui.button_style
+            }
+        )
     button.style.minimal_height = 38
     button.style.maximal_height = 38
-    button.visible = false
 end
 
 function Public.toggle_button(player)
     if not player.gui.top['minimap_button'] then
         create_button(player)
     end
+
     local button = player.gui.top['minimap_button']
     if Functions.get_player_surface(player) then
-        button.visible = true
+        create_button(player)
     else
-        button.visible = false
+        if button and button.valid then
+            button.destroy()
+        end
     end
 end
 
