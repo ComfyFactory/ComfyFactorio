@@ -4,7 +4,7 @@ local Gui = require 'utils.gui'
 local Task = require 'utils.task_token'
 local Server = require 'utils.server'
 local try_get_data = Server.try_get_data
-local set_data = Server.set_data
+-- local set_data = Server.set_data
 
 local this = {
     players = {},
