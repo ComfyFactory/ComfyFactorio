@@ -6,9 +6,8 @@ local Server = require 'utils.server'
 local RPG = require 'modules.rpg.main'
 local Collapse = require 'modules.collapse'
 local Alert = require 'utils.alert'
-local Task = require 'utils.task'
+local Task = require 'utils.task_token'
 local Score = require 'utils.gui.score'
-local Token = require 'utils.token'
 local Discord = require 'utils.discord'
 local Core = require 'utils.core'
 local Diff = require 'modules.difficulty_vote_by_amount'
@@ -81,7 +80,7 @@ local protect_types = {
 }
 
 local reset_game =
-    Token.register(
+    Task.register(
     function(data)
         local this = data.this
         if this.soft_reset then
@@ -442,7 +441,7 @@ local function angry_tree(entity, cause, player)
             if e.can_insert(Public.piercing_rounds_magazine_ammo) then
                 e.insert(Public.piercing_rounds_magazine_ammo)
             end
-            local callback = Token.get(cbl)
+            local callback = Task.get(cbl)
             callback(e, data)
             return
         end
@@ -482,7 +481,7 @@ local function give_coin(player)
 end
 
 local immunity_spawner =
-    Token.register(
+    Task.register(
     function(data)
         local entity = data.entity
         if not entity or not entity.valid then
@@ -497,37 +496,19 @@ local mining_events = {
         function()
         end,
         300000,
-        'Nothing'
+        'Nothing #1'
     },
     {
         function()
         end,
         16384,
-        'Nothing'
+        'Nothing #2'
     },
     {
         function()
         end,
         4096,
-        'Nothing'
-    },
-    {
-        function()
-        end,
-        300000,
-        'Nothing'
-    },
-    {
-        function()
-        end,
-        32384,
-        'Nothing'
-    },
-    {
-        function()
-        end,
-        8096,
-        'Nothing'
+        'Nothing #3'
     },
     {
         function(entity)
@@ -540,33 +521,7 @@ local mining_events = {
             entity.destroy()
         end,
         4096,
-        'Angry Biter_1'
-    },
-    {
-        function(entity)
-            if Public.is_around_train(entity) then
-                entity.destroy()
-                return
-            end
-
-            Public.buried_biter(entity.surface, entity.position)
-            entity.destroy()
-        end,
-        2048,
-        'Angry Biter_2'
-    },
-    {
-        function(entity)
-            if Public.is_around_train(entity) then
-                entity.destroy()
-                return
-            end
-
-            Public.buried_biter(entity.surface, entity.position)
-            entity.destroy()
-        end,
-        1024,
-        'Angry Biter_3'
+        'Angry Biter #1'
     },
     {
         function(entity)
@@ -579,20 +534,7 @@ local mining_events = {
             entity.destroy()
         end,
         512,
-        'Angry Biter_4'
-    },
-    {
-        function(entity)
-            if Public.is_around_train(entity) then
-                entity.destroy()
-                return
-            end
-
-            Public.buried_biter(entity.surface, entity.position)
-            entity.destroy()
-        end,
-        512,
-        'Angry Biter_4'
+        'Angry Biter #2'
     },
     {
         function(entity)
@@ -605,20 +547,7 @@ local mining_events = {
             entity.destroy()
         end,
         2048,
-        'Angry Worm_1'
-    },
-    {
-        function(entity)
-            if Public.is_around_train(entity) then
-                entity.destroy()
-                return
-            end
-
-            Public.buried_worm(entity.surface, entity.position)
-            entity.destroy()
-        end,
-        4096,
-        'Angry Worm_2'
+        'Angry Worm #1'
     },
     {
         function(entity)
@@ -631,54 +560,7 @@ local mining_events = {
             entity.destroy()
         end,
         2048,
-        'Dangerous Trap_1'
-    },
-    {
-        function(entity)
-            if Public.is_around_train(entity) then
-                entity.destroy()
-                return
-            end
-
-            Public.tick_tack_trap(entity.surface, entity.position)
-            entity.destroy()
-        end,
-        4096,
-        'Dangerous Trap_2'
-    },
-    {
-        function(entity, index)
-            if Public.is_around_train(entity) then
-                entity.destroy()
-                return
-            end
-
-            local player = game.get_player(index)
-
-            if entity.type == 'tree' then
-                angry_tree(entity, player.character, player)
-                entity.destroy()
-            end
-        end,
-        4096,
-        'Angry Tree_1'
-    },
-    {
-        function(entity, index)
-            if Public.is_around_train(entity) then
-                entity.destroy()
-                return
-            end
-
-            local player = game.get_player(index)
-
-            if entity.type == 'tree' then
-                angry_tree(entity, player.character, player)
-                entity.destroy()
-            end
-        end,
-        2048,
-        'Angry Tree_2'
+        'Dangerous Trap #1'
     },
     {
         function(entity, index)
@@ -695,7 +577,23 @@ local mining_events = {
             end
         end,
         1024,
-        'Angry Tree_3'
+        'Angry Tree #1'
+    },
+    {
+        function(entity, index)
+            local player = game.get_player(index)
+            hidden_treasure(player, entity)
+        end,
+        1024,
+        'Treasure Tier #1'
+    },
+    {
+        function(entity, index)
+            local player = game.get_player(index)
+            hidden_treasure(player, entity)
+        end,
+        512,
+        'Treasure Tier #2'
     },
     {
         function(entity, index)
@@ -703,7 +601,7 @@ local mining_events = {
             hidden_treasure(player, entity)
         end,
         256,
-        'Treasure_Tier_1'
+        'Treasure Tier #3'
     },
     {
         function(entity, index)
@@ -711,7 +609,7 @@ local mining_events = {
             hidden_treasure(player, entity)
         end,
         128,
-        'Treasure_Tier_2'
+        'Treasure Tier #4'
     },
     {
         function(entity, index)
@@ -719,7 +617,7 @@ local mining_events = {
             hidden_treasure(player, entity)
         end,
         64,
-        'Treasure_Tier_3'
+        'Treasure Tier #5'
     },
     {
         function(entity, index)
@@ -727,7 +625,7 @@ local mining_events = {
             hidden_treasure(player, entity)
         end,
         32,
-        'Treasure_Tier_4'
+        'Treasure Tier #6'
     },
     {
         function(entity, index)
@@ -735,27 +633,7 @@ local mining_events = {
             hidden_treasure(player, entity)
         end,
         16,
-        'Treasure_Tier_5'
-    },
-    {
-        function(entity, index)
-            if Public.is_around_train(entity) then
-                entity.destroy()
-                return
-            end
-
-            local ent_to_create = {'biter-spawner', 'spitter-spawner'}
-
-            local position = entity.position
-            local surface = entity.surface
-            local e = surface.create_entity({name = ent_to_create[random(1, #ent_to_create)], position = position, force = 'enemy'})
-
-            e.destructible = false
-            Task.set_timeout_in_ticks(300, immunity_spawner, {entity = e})
-            Public.unstuck_player(index)
-        end,
-        1024,
-        'Nest'
+        'Treasure Tier #7'
     },
     {
         function(entity, index)
@@ -775,7 +653,27 @@ local mining_events = {
             Public.unstuck_player(index)
         end,
         512,
-        'Nest'
+        'Nest #1'
+    },
+    {
+        function(entity, index)
+            if Public.is_around_train(entity) then
+                entity.destroy()
+                return
+            end
+
+            local ent_to_create = {'biter-spawner', 'spitter-spawner'}
+
+            local position = entity.position
+            local surface = entity.surface
+            local e = surface.create_entity({name = ent_to_create[random(1, #ent_to_create)], position = position, force = 'enemy'})
+
+            e.destructible = false
+            Task.set_timeout_in_ticks(300, immunity_spawner, {entity = e})
+            Public.unstuck_player(index)
+        end,
+        512,
+        'Nest #2'
     },
     {
         function(entity)
@@ -784,7 +682,7 @@ local mining_events = {
             surface.create_entity({name = 'compilatron', position = position, force = 'player'})
         end,
         64,
-        'Friendly Compilatron'
+        'Friendly Compilatron #1'
     },
     {
         function(entity)
@@ -798,7 +696,7 @@ local mining_events = {
             surface.create_entity({name = 'compilatron', position = position, force = 'enemy'})
         end,
         128,
-        'Enemy Compilatron'
+        'Enemy Compilatron #1'
     },
     {
         function(entity)
@@ -809,8 +707,8 @@ local mining_events = {
                 container.health = random(1, container.health)
             end
         end,
-        32,
-        'VSMG'
+        64,
+        'VSMG #1'
     },
     {
         function(entity, index)
@@ -822,8 +720,8 @@ local mining_events = {
             local msg = ({'entity.found_car', player.name})
             Alert.alert_player(player, 15, msg)
         end,
-        16,
-        'Car'
+        32,
+        'Car #1'
     }
 }
 

@@ -4,8 +4,7 @@ local Collapse = require 'modules.collapse'
 local RPG = require 'modules.rpg.main'
 local WD = require 'modules.wave_defense.table'
 local Alert = require 'utils.alert'
-local Task = require 'utils.task'
-local Token = require 'utils.token'
+local Task = require 'utils.task_token'
 local Color = require 'utils.color_presets'
 local ICF = require 'maps.mountain_fortress_v3.ic.functions'
 
@@ -40,7 +39,7 @@ local clear_breach_text_and_render = function()
 end
 
 local collapse_message =
-    Token.register(
+    Task.register(
     function(data)
         local pos = data.position
         local message = ({'breached_wall.collapse_start'})
@@ -52,7 +51,7 @@ local collapse_message =
 )
 
 local driving_state_changed_token =
-    Token.register(
+    Task.register(
     function(event)
         local player_index = event.player_index
         local player = game.get_player(player_index)
@@ -81,7 +80,7 @@ local driving_state_changed_token =
 )
 
 local spidertron_unlocked =
-    Token.register(
+    Task.register(
     function(event)
         if event then
             local message = ({'breached_wall.spidertron_unlocked'})
@@ -94,7 +93,7 @@ local spidertron_unlocked =
 )
 
 local first_player_to_zone =
-    Token.register(
+    Task.register(
     function(data)
         local player = data.player
         if not player or not player.valid then
@@ -108,7 +107,7 @@ local first_player_to_zone =
 )
 
 local artillery_warning =
-    Token.register(
+    Task.register(
     function()
         local message = ({'breached_wall.artillery_warning'})
         Alert.alert_all_players(10, message)
@@ -137,7 +136,7 @@ local breach_wall_warning_teleport = function(player)
 end
 
 local spidertron_too_far =
-    Token.register(
+    Task.register(
     function(data)
         local player = data.player
         local message = ({'breached_wall.cheating_through', player.name})

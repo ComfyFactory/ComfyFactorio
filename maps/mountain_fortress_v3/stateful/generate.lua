@@ -1,7 +1,5 @@
 local Event = require 'utils.event'
-local Task = require 'utils.task'
-local Token = require 'utils.token'
-
+local Task = require 'utils.task_token'
 local Public = require 'maps.mountain_fortress_v3.stateful.table'
 
 local ceil = math.ceil
@@ -187,10 +185,10 @@ local function do_place_buildings(data)
                         if c then
                             local d = {callback_data = e.callback.data}
                             if not d then
-                                callback = Token.get(c)
+                                callback = Task.get(c)
                                 callback(entity)
                             else
-                                callback = Token.get(c)
+                                callback = Task.get(c)
                                 callback(entity, d)
                             end
                         end
@@ -235,7 +233,7 @@ local function do_place_entities(data)
                         entity.amount = e.amount
                     end
                     if e.callback then
-                        callback = Token.get(e.callback)
+                        callback = Task.get(e.callback)
                         callback({entity = entity})
                     end
                 end
@@ -259,7 +257,7 @@ local function do_place_entities(data)
                     entity.amount = e.amount
                 end
                 if e.callback then
-                    callback = Token.get(e.callback)
+                    callback = Task.get(e.callback)
                     callback({entity = entity})
                 end
             end
@@ -329,7 +327,7 @@ local function map_gen_action(data)
     end
 end
 
-local map_gen_action_token = Token.register(map_gen_action)
+local map_gen_action_token = Task.register(map_gen_action)
 
 --- Adds generation of a Chunk of the map to the queue
 -- @param event <table> the event table from on_chunk_generated

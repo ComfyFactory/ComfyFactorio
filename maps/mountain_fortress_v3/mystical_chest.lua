@@ -3,8 +3,7 @@ local Event = require 'utils.event'
 local Public = require 'maps.mountain_fortress_v3.table'
 local RPG = require 'modules.rpg.main'
 local Alert = require 'utils.alert'
-local Task = require 'utils.task'
-local Token = require 'utils.token'
+local Task = require 'utils.task_token'
 
 local shuffle = table.shuffle_table
 local random = math.random
@@ -264,7 +263,7 @@ local function roll_item_stacks(remaining_budget, max_slots, blacklist)
 end
 
 local restore_mining_speed_token =
-    Token.register(
+    Task.register(
     function()
         local mc_rewards = Public.get('mc_rewards')
         local force = game.forces.player
@@ -278,7 +277,7 @@ local restore_mining_speed_token =
 )
 
 local restore_crafting_speed_token =
-    Token.register(
+    Task.register(
     function()
         local mc_rewards = Public.get('mc_rewards')
         local force = game.forces.player
@@ -292,7 +291,7 @@ local restore_crafting_speed_token =
 )
 
 local restore_movement_speed_token =
-    Token.register(
+    Task.register(
     function()
         local mc_rewards = Public.get('mc_rewards')
         local force = game.forces.player

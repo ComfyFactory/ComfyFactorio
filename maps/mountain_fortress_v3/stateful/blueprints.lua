@@ -1,10 +1,9 @@
 local Public = require 'maps.mountain_fortress_v3.stateful.table'
 local map_name = 'boss_room'
-local Token = require 'utils.token'
-local Task = require 'utils.task'
+local Task = require 'utils.task_token'
 
 local blueprint_token =
-    Token.register(
+    Task.register(
     function()
         Public.blueprint()
     end

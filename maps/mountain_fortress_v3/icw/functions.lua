@@ -2,9 +2,8 @@ local Public = {}
 
 local ICW = require 'maps.mountain_fortress_v3.icw.table'
 local WPT = require 'maps.mountain_fortress_v3.table'
-local Task = require 'utils.task'
+local Task = require 'utils.task_token'
 local Gui = require 'utils.gui'
-local Token = require 'utils.token'
 local SpamProtection = require 'utils.spam_protection'
 local Core = require 'utils.core'
 local LinkedChests = require 'maps.mountain_fortress_v3.icw.linked_chests'
@@ -30,7 +29,7 @@ end
 local size_of_debris = #fallout_debris
 
 local add_chests_to_wagon_token =
-    Token.register(
+    Task.register(
     function(data)
         local wagon = data.wagon
         local surface = data.surface
@@ -108,7 +107,7 @@ local add_chests_to_wagon_token =
 )
 
 local reconstruct_all_trains =
-    Token.register(
+    Task.register(
     function(data)
         local icw = data.icw
         Public.reconstruct_all_trains(icw)
@@ -116,7 +115,7 @@ local reconstruct_all_trains =
 )
 
 local remove_non_migrated_doors_token =
-    Token.register(
+    Task.register(
     function(data)
         local icw = data.icw
         for _, unit_data in pairs(icw.wagons) do

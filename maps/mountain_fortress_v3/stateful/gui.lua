@@ -5,8 +5,7 @@ local Stateful = require 'maps.mountain_fortress_v3.stateful.table'
 local Gui = require 'utils.gui'
 local WD = require 'modules.wave_defense.table'
 local Collapse = require 'modules.collapse'
-local Token = require 'utils.token'
-local Task = require 'utils.task'
+local Task = require 'utils.task_token'
 local Core = require 'utils.core'
 local Server = require 'utils.server'
 local LinkedChests = require 'maps.mountain_fortress_v3.icw.linked_chests'
@@ -55,7 +54,7 @@ local function create_particles(surface, name, position, amount, cause_position)
 end
 
 local spread_particles_token =
-    Token.register(
+    Task.register(
     function(event)
         local player_index = event.player_index
         local player = game.get_player(player_index)
@@ -166,7 +165,7 @@ local function refresh_frames()
 end
 
 local warn_player_sound_token =
-    Token.register(
+    Task.register(
     function(event)
         local player_index = event.player_index
         local player = game.get_player(player_index)
@@ -299,7 +298,7 @@ local function objective_frames(stateful, player_frame, objective, data)
         return
     end
 
-    local callback = Token.get(objective.token)
+    local callback = Task.get(objective.token)
 
     local _, objective_locale_left, objective_locale_right, tooltip_left, tooltip_right = callback()
 
@@ -783,7 +782,7 @@ local function update_data()
                     for objective_index = 1, #stateful.selected_objectives do
                         local objective = stateful.selected_objectives[objective_index]
                         local objective_name = objective.name
-                        local callback = Token.get(objective.token)
+                        local callback = Task.get(objective.token)
                         local _, _, objective_locale_right, _, objective_tooltip_right = callback()
                         if name == objective_name and frame and frame.valid then
                             frame.caption = objective_locale_right
@@ -979,7 +978,7 @@ local function update_raw()
     for objective_index = 1, #stateful.selected_objectives do
         local objective = stateful.selected_objectives[objective_index]
         local objective_name = objective.name
-        local callback = Token.get(objective.token)
+        local callback = Task.get(objective.token)
         local completed, _, _ = callback()
         if completed and completed == true and not stateful.objectives_completed[objective_name] then
             stateful.objectives_completed[objective_name] = true

@@ -3,13 +3,15 @@
 
 local Global = require 'utils.global'
 local SpamProtection = require 'utils.spam_protection'
+local Color = require 'utils.color_presets'
 local Event = require 'utils.event'
 local BottomFrame = require 'utils.gui.bottom_frame'
 local Gui = require 'utils.gui'
-local floor = math.floor
-local print_color = {r = 120, g = 255, b = 0}
+local Task = require 'utils.task_token'
 
 local auto_stash_button_name = Gui.uid_name()
+local floor = math.floor
+local module_name = '[color=blue][Autostash][/color] '
 
 local this = {
     floating_text_y_offsets = {},
@@ -35,6 +37,54 @@ local bps_blacklist = {
     ['blueprint-book'] = true,
     ['blueprint'] = true
 }
+
+local on_init_token =
+    Task.register(
+    function()
+        local tooltip
+        if this.insert_into_furnace and this.insert_into_wagon then
+            tooltip =
+                'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.\nCTRL+RMB: Fill nearby furnaces.\nSHIFT+LMB: Everything onto filtered slots to wagon.\nSHIFT+RMB: Only ores to wagon'
+        elseif this.insert_into_furnace then
+            tooltip = 'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.\nCTRL+RMB: Fill nearby furnaces.'
+        elseif this.insert_into_wagon then
+            tooltip =
+                'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.\nSHIFT+LMB: Everything onto filtered slots to wagon.\nSHIFT+RMB: Only ores to wagon'
+        else
+            tooltip = 'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.'
+        end
+
+        this.tooltip = tooltip
+        if this.bottom_button then
+            local data = BottomFrame.get('bottom_quickbar_button_data')
+            data.sprite = 'item/wooden-chest'
+            data.tooltip = tooltip
+        end
+    end
+)
+
+local delay_tooltip_token =
+    Task.register(
+    function(event)
+        local player_index = event.player_index
+        local player = game.get_player(player_index)
+        if not player or not player.valid then
+            return
+        end
+
+        if Gui.get_mod_gui_top_frame() then
+            local frame = Gui.get_button_flow(player)[auto_stash_button_name]
+            if frame and frame.valid then
+                frame.tooltip = this.tooltip
+            end
+        else
+            local frame = player.gui.top[auto_stash_button_name]
+            if frame and frame.valid then
+                frame.tooltip = this.tooltip
+            end
+        end
+    end
+)
 
 local function create_floaty_text(surface, position, name, count)
     if this.floating_text_y_offsets[position.x .. '_' .. position.y] then
@@ -454,16 +504,16 @@ local function auto_stash(player, event)
     local ctrl = event.control
     local shift = event.shift
     if not player.character then
-        player.print('It seems that you are not in the realm of the living.', print_color)
+        player.print(module_name 'It seems that you are not in the realm of the living.', Color.warning)
         return
     end
     if not player.character.valid then
-        player.print('It seems that you are not in the realm of the living.', print_color)
+        player.print(module_name 'It seems that you are not in the realm of the living.', Color.warning)
         return
     end
     local inventory = player.get_main_inventory()
     if inventory.is_empty() then
-        player.print('Inventory is empty.', print_color)
+        player.print(module_name 'Inventory is empty.', Color.warning)
         return
     end
 
@@ -484,7 +534,7 @@ local function auto_stash(player, event)
     end
 
     if not chests.chest or not chests.chest[1] then
-        player.print('No valid nearby containers found.', print_color)
+        player.print(module_name .. 'No valid nearby containers found.', Color.warning)
         return
     end
 
@@ -565,71 +615,57 @@ local function auto_stash(player, event)
     end
 end
 
-local function create_gui_button(player)
-    local tooltip
-    if this.insert_into_furnace and this.insert_into_wagon then
-        tooltip =
-            'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.\nCTRL+RMB: Fill nearby furnaces.\nSHIFT+LMB: Everything onto filtered slots to wagon.\nSHIFT+RMB: Only ores to wagon'
-    elseif this.insert_into_furnace then
-        tooltip = 'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.\nCTRL+RMB: Fill nearby furnaces.'
-    elseif this.insert_into_wagon then
-        tooltip = 'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.\nSHIFT+LMB: Everything onto filtered slots to wagon.\nSHIFT+RMB: Only ores to wagon'
-    else
-        tooltip = 'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.'
-    end
-    if this.bottom_button then
-        local data = BottomFrame.get('bottom_quickbar_button')
-        -- save it for later use
-        data.tooltip = tooltip
-        data.sprite = 'item/wooden-chest'
+local function create_gui_button(player, bottom_frame_data)
+    local tooltip = this.tooltip
+    local button
 
-        if data and data[player.index] then
-            local f = data[player.index]
-            if f and f.frame and f.frame.valid then
-                f.frame.sprite = 'item/wooden-chest'
-                f.frame.tooltip = tooltip
-            end
-        end
-    else
-        if Gui.get_mod_gui_top_frame() then
+    bottom_frame_data = bottom_frame_data or BottomFrame.get_player_data(player)
+
+    if Gui.get_mod_gui_top_frame() then
+        button =
             Gui.add_mod_button(
-                player,
+            player,
+            {
+                type = 'sprite-button',
+                name = auto_stash_button_name,
+                sprite = 'item/wooden-chest',
+                tooltip = tooltip,
+                style = Gui.button_style
+            }
+        )
+    else
+        button =
+            player.gui.top[auto_stash_button_name] or
+            player.gui.top.add(
                 {
                     type = 'sprite-button',
-                    name = auto_stash_button_name,
                     sprite = 'item/wooden-chest',
+                    name = auto_stash_button_name,
                     tooltip = tooltip,
                     style = Gui.button_style
                 }
             )
-        else
-            local tb = player.gui.top[auto_stash_button_name]
-            if tb and tb.valid then
-                return
+        button.style.font_color = {r = 0.11, g = 0.8, b = 0.44}
+        button.style.font = 'heading-1'
+        button.style.minimal_height = 40
+        button.style.maximal_width = 40
+        button.style.minimal_width = 38
+        button.style.maximal_height = 38
+        button.style.padding = 1
+        button.style.margin = 0
+    end
+
+    if this.bottom_button then
+        if bottom_frame_data ~= nil and not bottom_frame_data.top then
+            if button and button.valid then
+                button.destroy()
             end
-            local b =
-                player.gui.top.add(
-                {
-                    type = 'sprite-button',
-                    sprite = 'item/wooden-chest',
-                    name = auto_stash_button_name,
-                    tooltip = tooltip,
-                    style = Gui.button_style
-                }
-            )
-            b.style.font_color = {r = 0.11, g = 0.8, b = 0.44}
-            b.style.font = 'heading-1'
-            b.style.minimal_height = 40
-            b.style.maximal_width = 40
-            b.style.minimal_width = 38
-            b.style.maximal_height = 38
-            b.style.padding = 1
-            b.style.margin = 0
         end
     end
 end
 
 local function do_whitelist()
+    Task.delay(on_init_token, {})
     local resources = game.entity_prototypes
     local items = game.item_prototypes
     this.whitelist = {}
@@ -654,7 +690,10 @@ local function do_whitelist()
 end
 
 local function on_player_joined_game(event)
-    create_gui_button(game.players[event.player_index])
+    local player = game.get_player(event.player_index)
+    create_gui_button(player)
+    Task.delay(delay_tooltip_token, {player_index = player.index})
+    BottomFrame.add_inner_frame({player = player, element_name = auto_stash_button_name, tooltip = this.tooltip, sprite = 'item/wooden-chest'})
 end
 
 Gui.on_click(
@@ -702,15 +741,19 @@ Event.on_init(do_whitelist)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 
 Event.add(
-    BottomFrame.events.bottom_quickbar_button_name,
-    function(data)
-        local event = data.event
-        if not event then
+    BottomFrame.events.bottom_quickbar_location_changed,
+    function(event)
+        local player_index = event.player_index
+        if not player_index then
+            return
+        end
+        local player = game.get_player(player_index)
+        if not player or not player.valid then
             return
         end
 
-        local player = event.player
-        auto_stash(player, event)
+        local bottom_frame_data = event.data
+        create_gui_button(player, bottom_frame_data)
     end
 )
 

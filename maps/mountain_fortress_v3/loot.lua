@@ -27,7 +27,7 @@ function Public.get_distance(position)
 end
 
 function Public.add_loot(surface, position, chest)
-    local loot_stats = Public.get('loot_stats')
+    local loot_stats = Public.get('loot_stats') -- loot_stats.normal == 48
     local budget = loot_stats.normal + abs(position.y) * 1.75
     budget = budget * random(25, 175) * 0.01
 
@@ -80,7 +80,7 @@ function Public.add_loot(surface, position, chest)
 end
 
 function Public.add_loot_rare(surface, position, chest, magic)
-    local loot_stats = Public.get('loot_stats')
+    local loot_stats = Public.get('loot_stats') -- loot_stats.rare == 48
     local budget = (magic * loot_stats.rare) + abs(position.y) * 1.75
     budget = budget * random(25, 175) * 0.01
 

@@ -138,6 +138,15 @@ local functions = {
             Module[event.player_index].disabled = true
         end
     end,
+    ['top_location'] = function(event)
+        local player = game.get_player(event.player_index)
+        local data = BottomFrame.get_player_data(player)
+        if data and data.state and not data.top then
+            BottomFrame.set_top(player, true)
+        else
+            BottomFrame.set_top(player, false)
+        end
+    end,
     ['bottom_location'] = function(event)
         local player = game.get_player(event.player_index)
         if event.element.switch_state == 'left' then
@@ -552,6 +561,17 @@ local function build_config_gui(data)
         label.style.vertical_align = 'bottom'
         label.style.font_color = Color.white_smoke
 
+        local autostash = is_loaded('modules.autostash')
+        if autostash then
+            scroll_pane.add({type = 'line'})
+
+            switch_state = 'right'
+            local bottom_frame = BottomFrame.get_player_data(player)
+            if bottom_frame and bottom_frame.top then
+                switch_state = 'left'
+            end
+            add_switch(scroll_pane, switch_state, 'top_location', 'Position - top', 'Toggle to select if you want the bottom buttons at the top or the bottom.')
+        end
         scroll_pane.add({type = 'line'})
 
         switch_state = 'right'

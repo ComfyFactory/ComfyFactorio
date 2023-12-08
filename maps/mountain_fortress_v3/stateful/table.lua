@@ -2,7 +2,7 @@ local Global = require 'utils.global'
 local Event = require 'utils.event'
 local Utils = require 'utils.utils'
 local Server = require 'utils.server'
-local Token = require 'utils.token'
+local Task = require 'utils.task_token'
 local shuffle = table.shuffle_table
 local WD = require 'modules.wave_defense.table'
 local format_number = require 'util'.format_number
@@ -11,7 +11,6 @@ local ICWF = require 'maps.mountain_fortress_v3.icw.functions'
 local ICWT = require 'maps.mountain_fortress_v3.icw.table'
 local Core = require 'utils.core'
 local Public = require 'maps.mountain_fortress_v3.table'
-local Task = require 'utils.task'
 local Alert = require 'utils.alert'
 local IC = require 'maps.mountain_fortress_v3.ic.table'
 local RPG = require 'modules.rpg.table'
@@ -336,14 +335,14 @@ local function get_killed_enemies_count(primary, secondary)
 end
 
 local move_all_players_token =
-    Token.register(
+    Task.register(
     function()
         Public.move_all_players()
     end
 )
 
 local search_corpse_token =
-    Token.register(
+    Task.register(
     function(event)
         local player_index = event.player_index
         local player = game.get_player(player_index)
@@ -419,14 +418,14 @@ local function on_market_item_purchased(event)
 end
 
 local empty_token =
-    Token.register(
+    Task.register(
     function()
         return false
     end
 )
 
 local killed_enemies_token =
-    Token.register(
+    Task.register(
     function()
         local actual = Public.get_killed_enemies_count('biter', 'spitter')
         local expected = this.objectives.killed_enemies
@@ -439,7 +438,7 @@ local killed_enemies_token =
 )
 
 local research_level_selection_token =
-    Token.register(
+    Task.register(
     function()
         local actual = this.objectives.research_level_selection.research_count
         local expected = this.objectives.research_level_selection.count
@@ -451,7 +450,7 @@ local research_level_selection_token =
 )
 
 local locomotive_market_coins_spent_token =
-    Token.register(
+    Task.register(
     function()
         local coins = this.objectives.locomotive_market_coins_spent
         local actual = coins.spent
@@ -464,7 +463,7 @@ local locomotive_market_coins_spent_token =
 )
 
 local trees_farmed_token =
-    Token.register(
+    Task.register(
     function()
         local actual = get_entity_mined_count('tree')
         local expected = this.objectives.trees_farmed
@@ -476,7 +475,7 @@ local trees_farmed_token =
 )
 
 local rocks_farmed_token =
-    Token.register(
+    Task.register(
     function()
         local actual = get_entity_mined_count('rock')
         local expected = this.objectives.rocks_farmed
@@ -488,7 +487,7 @@ local rocks_farmed_token =
 )
 
 local rockets_launched_token =
-    Token.register(
+    Task.register(
     function()
         local actual = game.forces.player.rockets_launched
         local expected = this.objectives.rockets_launched
@@ -514,7 +513,7 @@ local function get_random_items()
         {'copper-cable', scale(20000000, 100000000)},
         {'copper-plate', scale(5000000, 80000000)},
         {'electric-engine-unit', scale(30000, 200000)},
-        {'electronic-circuit', scale(5000000, 50000000)},
+        {'electronic-circuit', scale(5000000, 30000000)},
         {'engine-unit', scale(90000, 750000)},
         {'explosives', scale(700000, 3000000)},
         {'iron-gear-wheel', scale(400000, 3000000)},
@@ -809,7 +808,7 @@ local function apply_startup_settings(settings)
 end
 
 local apply_settings_token =
-    Token.register(
+    Task.register(
     function(data)
         local server_name_matches = Server.check_server_name('Mtn Fortress')
         local settings = data and data.value or nil
@@ -912,7 +911,7 @@ end
 
 ---@diagnostic disable-next-line: unused-local
 local apply_settings_dev_token =
-    Token.register(
+    Task.register(
     function(data)
         local settings = data and data.value or nil
         local current_time = 1700509719
@@ -1255,7 +1254,7 @@ Public.on_market_item_purchased = on_market_item_purchased
 if _DEBUG then
     Event.on_init(
         function()
-            local cbl = Token.get(apply_settings_dev_token)
+            local cbl = Task.get(apply_settings_dev_token)
             local data = {
                 rounds_survived = 20,
                 season = 1,

@@ -10,7 +10,6 @@ require 'modules.no_deconstruction_of_neutral_entities'
 require 'modules.spawners_contain_biters'
 require 'maps.mountain_fortress_v3.ic.main'
 require 'modules.wave_defense.main'
-require 'modules.charging_station'
 
 local Event = require 'utils.event'
 local Gui = require 'utils.gui'
@@ -32,8 +31,7 @@ local Score = require 'utils.gui.score'
 local Poll = require 'utils.gui.poll'
 local Collapse = require 'modules.collapse'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
-local Task = require 'utils.task'
-local Token = require 'utils.token'
+local Task = require 'utils.task_token'
 local Alert = require 'utils.alert'
 local BottomFrame = require 'utils.gui.bottom_frame'
 local AntiGrief = require 'utils.antigrief'
@@ -106,7 +104,7 @@ local is_position_near_tbl = function(position, tbl)
 end
 
 local announce_new_map =
-    Token.register(
+    Task.register(
     function()
         local server_name = Server.check_server_name('Mtn Fortress')
         if server_name then
@@ -400,7 +398,7 @@ local chunk_load = function()
 end
 
 local collapse_message =
-    Token.register(
+    Task.register(
     function(data)
         local pos = data.position
         local message = data.message
