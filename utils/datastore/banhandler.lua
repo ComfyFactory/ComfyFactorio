@@ -47,7 +47,7 @@ Event.add(
         end
 
         local secs = Server.get_current_time()
-        if secs == nil then
+        if secs == nil or secs == false then
             return
         else
             try_get_ban(player.name, try_get_is_banned_token)

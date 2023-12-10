@@ -117,6 +117,7 @@ function Public.reset_map()
     local this = Public.get()
     local wave_defense_table = WD.get_table()
     Misc.reset()
+    Misc.bottom_button(true)
 
     LinkedChests.reset()
 

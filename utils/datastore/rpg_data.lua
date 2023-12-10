@@ -171,7 +171,7 @@ function Public.try_dl_resets()
     end
 
     local secs = Server.get_current_time()
-    if secs == nil then
+    if secs == nil or secs == false then
         return
     else
         try_get_data(this.settings.dataset, this.settings.reset_key, try_download_amount_of_resets_token)
@@ -187,7 +187,7 @@ function Public.try_dl_data(key)
 
     key = tostring(key)
     local secs = Server.get_current_time()
-    if secs == nil then
+    if secs == nil or secs == false then
         return
     else
         try_get_data(this.settings.dataset, key, try_download_data_token)
@@ -203,7 +203,7 @@ function Public.try_ul_data(key)
 
     key = tostring(key)
     local secs = Server.get_current_time()
-    if secs == nil then
+    if secs == nil or secs == false then
         return
     else
         try_get_data(this.settings.dataset, key, try_upload_data_token)

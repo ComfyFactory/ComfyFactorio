@@ -30,7 +30,7 @@ local fetch =
 -- @param data_set player token
 function Public.fetch(key)
     local secs = Server.get_current_time()
-    if secs == nil then
+    if secs == nil or secs == false then
         return
     else
         try_get_data(color_data_set, key, fetch)
