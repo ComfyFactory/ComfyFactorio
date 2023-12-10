@@ -10,7 +10,7 @@ local SpamProtection = require 'utils.spam_protection'
 
 local this = {
     players = {},
-    activate_custom_buttons = false
+    bottom_button = false
 }
 
 Global.register(
@@ -472,7 +472,7 @@ local function create_clear_corpse_frame(player, bottom_frame_data)
         button.style.margin = 0
     end
 
-    if bottom_frame_data ~= nil and not bottom_frame_data.top then
+    if this.bottom_button and bottom_frame_data ~= nil and not bottom_frame_data.top then
         if button and button.valid then
             button.destroy()
         end
@@ -517,13 +517,20 @@ function Public.reset()
     this.players = {}
 end
 
+function Public.bottom_button(value)
+    this.bottom_button = value or false
+end
+
 Event.add(
     defines.events.on_player_joined_game,
     function(event)
         local player = game.players[event.player_index]
         on_player_joined_game(player)
         create_clear_corpse_frame(player)
-        BottomFrame.add_inner_frame({player = player, element_name = clear_corpse_button_name, tooltip = {'commands.clear_corpse'}, sprite = 'entity/behemoth-biter'})
+
+        if this.bottom_button then
+            BottomFrame.add_inner_frame({player = player, element_name = clear_corpse_button_name, tooltip = {'commands.clear_corpse'}, sprite = 'entity/behemoth-biter'})
+        end
     end
 )
 

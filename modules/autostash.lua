@@ -55,11 +55,6 @@ local on_init_token =
         end
 
         this.tooltip = tooltip
-        if this.bottom_button then
-            local data = BottomFrame.get('bottom_quickbar_button_data')
-            data.sprite = 'item/wooden-chest'
-            data.tooltip = tooltip
-        end
     end
 )
 
@@ -83,6 +78,7 @@ local delay_tooltip_token =
                 frame.tooltip = this.tooltip
             end
         end
+        BottomFrame.add_inner_frame({player = player, element_name = auto_stash_button_name, tooltip = this.tooltip, sprite = 'item/wooden-chest'})
     end
 )
 
@@ -504,16 +500,16 @@ local function auto_stash(player, event)
     local ctrl = event.control
     local shift = event.shift
     if not player.character then
-        player.print(module_name 'It seems that you are not in the realm of the living.', Color.warning)
+        player.print(module_name .. 'It seems that you are not in the realm of the living.', Color.warning)
         return
     end
     if not player.character.valid then
-        player.print(module_name 'It seems that you are not in the realm of the living.', Color.warning)
+        player.print(module_name .. 'It seems that you are not in the realm of the living.', Color.warning)
         return
     end
     local inventory = player.get_main_inventory()
     if inventory.is_empty() then
-        player.print(module_name 'Inventory is empty.', Color.warning)
+        player.print(module_name .. 'Inventory is empty.', Color.warning)
         return
     end
 
@@ -692,8 +688,9 @@ end
 local function on_player_joined_game(event)
     local player = game.get_player(event.player_index)
     create_gui_button(player)
-    Task.delay(delay_tooltip_token, {player_index = player.index})
-    BottomFrame.add_inner_frame({player = player, element_name = auto_stash_button_name, tooltip = this.tooltip, sprite = 'item/wooden-chest'})
+    if this.bottom_button then
+        Task.delay(delay_tooltip_token, {player_index = player.index})
+    end
 end
 
 Gui.on_click(

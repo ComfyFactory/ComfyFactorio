@@ -1552,6 +1552,11 @@ Event.add(
             return
         end
 
+        local secs = server_time.secs
+        if secs == nil then
+            return false
+        end
+
         output_data(player_join_tag .. player.name)
     end
 )
@@ -1578,6 +1583,11 @@ Event.add(
             return
         end
 
+        local secs = server_time.secs
+        if secs == nil then
+            return false
+        end
+
         local reason = leave_reason_map[event.reason] or ''
         output_data(player_leave_tag .. player.name .. reason)
     end
@@ -1590,6 +1600,11 @@ Event.add(
 
         if not player or not player.valid then
             return
+        end
+
+        local secs = server_time.secs
+        if secs == nil then
+            return false
         end
 
         local cause = event.cause

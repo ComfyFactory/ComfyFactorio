@@ -213,7 +213,7 @@ function Public.get_and_print_to_player(player, target_player)
     end
 
     local secs = Server.get_current_time()
-    if secs == nil then
+    if secs == nil or secs == false then
         return
     else
         try_get_data_and_print(session_data_set, target_player, player.name, get_total_playtime_token)
@@ -225,7 +225,7 @@ end
 function Public.try_dl_data(player_index)
     player_index = tostring(player_index)
     local secs = Server.get_current_time()
-    if secs == nil then
+    if secs == nil or secs == false then
         session[player_index] = game.get_player(player_index).online_time
         return
     else
@@ -238,7 +238,7 @@ end
 function Public.try_ul_data(player_index)
     player_index = tostring(player_index)
     local secs = Server.get_current_time()
-    if secs == nil then
+    if secs == nil or secs == false then
         return
     else
         try_get_data(session_data_set, player_index, try_upload_data_token)
