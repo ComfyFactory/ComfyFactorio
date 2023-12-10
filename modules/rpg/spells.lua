@@ -13,6 +13,8 @@ local states = {
     ['support'] = 'poison-capsule-smoke'
 }
 
+local restore_movement_speed_token
+
 local repair_buildings =
     Token.register(
     function(data)
@@ -84,7 +86,7 @@ local function area_of_effect(player, position, state, radius, callback, find_en
     end
 end
 
-local restore_movement_speed_token =
+restore_movement_speed_token =
     Token.register(
     function(event)
         local player_index = event.player_index
@@ -100,6 +102,7 @@ local restore_movement_speed_token =
         end
 
         if not player.character or not player.character.valid then
+            Task.set_timeout_in_ticks(60, restore_movement_speed_token, {player_index = player_index, rpg_t = rpg_t})
             return
         end
 
