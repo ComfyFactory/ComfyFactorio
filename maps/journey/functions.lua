@@ -792,11 +792,7 @@ local function roll_bonus_goods(journey, trait, amount)
 end
 
 function Public.set_world_selectors(journey)
-	if journey.restart_from_scenario then
-		Public.restart_server(journey)
-	end
 	local surface = game.surfaces.mothership
-
 	local x = Constants.reroll_selector_area.left_top.x + 3.2
 	journey.reroll_selector.texts = {
 		rendering.draw_text{
@@ -979,7 +975,10 @@ function Public.set_world_selectors(journey)
 
 	destroy_teleporter(journey, game.surfaces.nauvis, Constants.mothership_teleporter_position)
 	destroy_teleporter(journey, surface, Constants.mothership_teleporter_position)
-
+	if journey.restart_from_scenario then
+		Public.restart_server(journey)
+	end
+	
 	Server.to_discord_embed('World ' .. journey.world_number + 1 .. ' selection has started!')
 	Public.set_minimum_to_vote(journey)
 	journey.importing = false
