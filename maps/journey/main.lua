@@ -217,6 +217,7 @@ local function check_import(data)
 	if data.key ~= 'journey_updating' then
 		return
 	end
+	journey.import_checked = true
 	local importing = data.value
 	if importing then
 		Functions.import_journey(journey)
