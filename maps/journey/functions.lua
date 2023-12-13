@@ -2,6 +2,9 @@
 local Map_functions = require 'tools.map_functions'
 local Server = require 'utils.server'
 local Get_noise = require 'utils.get_noise'
+local Autostash = require 'modules.autostash'
+local Misc = require 'utils.commands.misc'
+local BottomFrame = require 'utils.gui.bottom_frame'
 local Constants = require 'maps.journey.constants'
 local Unique_modifiers = require 'maps.journey.unique_modifiers'
 local Vacants = require 'modules.clear_vacant_players'
@@ -449,7 +452,7 @@ end
 
 local function check_if_restarted(journey)
 	local secs = Server.get_current_time()
-    if not secs then
+    if not secs or journey.import_checked then
         return
     else
 		Server.try_get_data('scenario_settings', 'journey_updating', journey.check_import)
@@ -476,6 +479,11 @@ function Public.hard_reset(journey)
 		return
 	end
 	Vacants.reset()
+	BottomFrame.activate_custom_buttons(true)
+	BottomFrame.reset()
+	Autostash.insert_into_furnace(true)
+	Autostash.bottom_button(true)
+	Misc.bottom_button(true)
 	if game.surfaces.mothership and game.surfaces.mothership.valid then
 		game.delete_surface(game.surfaces.mothership)
 	end
@@ -784,11 +792,7 @@ local function roll_bonus_goods(journey, trait, amount)
 end
 
 function Public.set_world_selectors(journey)
-	if journey.restart_from_scenario then
-		Public.restart_server(journey)
-	end
 	local surface = game.surfaces.mothership
-
 	local x = Constants.reroll_selector_area.left_top.x + 3.2
 	journey.reroll_selector.texts = {
 		rendering.draw_text{
@@ -971,7 +975,10 @@ function Public.set_world_selectors(journey)
 
 	destroy_teleporter(journey, game.surfaces.nauvis, Constants.mothership_teleporter_position)
 	destroy_teleporter(journey, surface, Constants.mothership_teleporter_position)
-
+	if journey.restart_from_scenario then
+		Public.restart_server(journey)
+	end
+	
 	Server.to_discord_embed('World ' .. journey.world_number + 1 .. ' selection has started!')
 	Public.set_minimum_to_vote(journey)
 	journey.importing = false
@@ -1126,6 +1133,7 @@ function Public.mothership_arrives_at_world(journey)
 	journey.beacon_objective_resistance = 0.90 - (0.03 * journey.world_number)
 	journey.emergency_triggered = false
 	journey.emergency_selected = false
+	journey.import_checked = false
 	draw_background(journey, surface)
 	Public.update_tooltips(journey)
 end
