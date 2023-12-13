@@ -2,9 +2,6 @@ local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Gui = require 'utils.gui'
 local Task = require 'utils.task_token'
-local Server = require 'utils.server'
-local try_get_data = Server.try_get_data
--- local set_data = Server.set_data
 
 local this = {
     players = {},
@@ -35,7 +32,6 @@ local set_location
 local destroy_frame
 local remove_player
 local get_player_data
-local bottom_dataset = 'bottom_frame_data'
 
 local main_frame_name = Gui.uid_name()
 
@@ -54,7 +50,7 @@ local sections = {
     [12] = 6
 }
 
-local restore_bottom_location_token =
+--[[ local restore_bottom_location_token =
     Task.register(
     function(event)
         local player_index = event.player_index
@@ -79,8 +75,7 @@ local restore_bottom_location_token =
 
         set_location(player, state)
     end
-)
-
+) ]]
 local check_bottom_buttons_token =
     Task.register(
     function(event)
@@ -374,20 +369,6 @@ set_location = function(player, state)
     Event.raise(Public.events.bottom_quickbar_location_changed, {player_index = player.index, data = data})
 
     data.state = state
-
-    -- local secs = Server.get_current_time()
-    -- if secs ~= nil then
-    --     set_data(
-    --         bottom_dataset,
-    --         player.name,
-    --         {
-    --             bottom_state = data.bottom_state,
-    --             above = data.above,
-    --             state = data.state
-    --         }
-    --     )
-    -- end
-
     create_frame(player, alignment, location, data)
     refresh_inner_frames(player)
 end
@@ -558,10 +539,6 @@ Event.add(
             local player = game.get_player(event.player_index)
             local data = get_player_data(player)
             set_location(player, data.state)
-            local secs = Server.get_current_time()
-            if secs ~= nil then
-                try_get_data(bottom_dataset, bottom_dataset.index, restore_bottom_location_token)
-            end
         end
     end
 )

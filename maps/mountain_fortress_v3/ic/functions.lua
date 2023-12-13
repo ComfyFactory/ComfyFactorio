@@ -409,6 +409,10 @@ local function kick_player_from_surface(player, target)
     local c = get_owner_car_object(cars, player)
     local car = cars[c]
 
+    if not validate_entity(car) then
+        return
+    end
+
     if not validate_entity(car.entity) then
         return
     end

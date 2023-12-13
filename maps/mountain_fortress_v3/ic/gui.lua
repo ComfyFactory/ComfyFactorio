@@ -108,7 +108,12 @@ local function transfer_player_table(player, new_player)
         local renders = ICT.get('renders')
         local c = Functions.get_owner_car_object(cars, player)
         local car = cars[c]
+        if not car then
+            return error('Car was not found! This should not happen!', 2)
+        end
         car.owner = new_player.index
+
+        car.entity.minable = true
 
         Functions.render_owner_text(renders, player, car.entity, new_player)
 
