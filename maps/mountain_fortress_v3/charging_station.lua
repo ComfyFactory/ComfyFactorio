@@ -58,21 +58,20 @@ local function discharge_accumulators(surface, position, force, power_needs)
 end
 
 local function charge(player)
-    local msg = player.print(module_name .. 'No valid armor to charge was found.', Color.warning)
     if not player.character then
-        return msg
+        return player.print(module_name .. 'It seems that you are not in the realm of living.', Color.warning)
     end
     local armor_inventory = player.get_inventory(defines.inventory.character_armor)
     if not armor_inventory.valid then
-        return msg
+        return player.print(module_name .. 'No valid armor to charge was found.', Color.warning)
     end
     local armor = armor_inventory[1]
     if not armor.valid_for_read then
-        return msg
+        return player.print(module_name .. 'No valid armor to charge was found.', Color.warning)
     end
     local grid = armor.grid
     if not grid or not grid.valid then
-        return msg
+        return player.print(module_name .. 'No valid armor to charge was found.', Color.warning)
     end
     local equip = grid.equipment
     for _, piece in pairs(equip) do
