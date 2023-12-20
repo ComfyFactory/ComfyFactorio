@@ -282,7 +282,9 @@ local function objective_frames(stateful, player_frame, objective, data)
             end
         end
 
-        data.supply = {}
+        if not data.supply then
+            data.supply = {}
+        end
 
         local flow = player_frame.add({type = 'flow'})
         local item_table = flow.add({type = 'table', name = 'item_table', column_count = 3})
@@ -315,6 +317,7 @@ local function objective_frames(stateful, player_frame, objective, data)
 
     local objective_locale_right_label = right_flow.add({type = 'label', caption = objective_locale_right, tooltip = tooltip_right})
     data.random_objectives[#data.random_objectives + 1] = {name = objective_name, frame = objective_locale_right_label}
+    return
 end
 
 local function boss_frame(player, alert)
@@ -734,6 +737,9 @@ local function update_data()
                                         data.supply_completed.caption = ' [img=utility/check_mark_green]'
                                     end
                                 end
+                            else
+                                frame.number = supplies_data.count
+                                frame.tooltip = '0 / ' .. supplies_data.count
                             end
                         end
                     end
@@ -761,6 +767,9 @@ local function update_data()
                             frame.number = single_item.count
                             frame.tooltip = count .. ' / ' .. single_item.total
                         end
+                    else
+                        frame.number = single_item.count
+                        frame.tooltip = '0 / ' .. single_item.count
                     end
                 end
             end
