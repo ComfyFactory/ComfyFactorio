@@ -558,13 +558,13 @@ end
 
 local function get_random_item()
     local items = {
-        {'effectivity-module', scale(10000, 400000)},
+        {'effectivity-module', scale(1000, 400000)},
         {'productivity-module', scale(10000, 400000)},
         {'speed-module', scale(10000, 400000)},
-        {'effectivity-module-2', scale(1000, 100000)},
+        {'effectivity-module-2', scale(200, 100000)},
         {'productivity-module-2', scale(1000, 100000)},
         {'speed-module-2', scale(1000, 100000)},
-        {'effectivity-module-3', scale(500, 30000)},
+        {'effectivity-module-3', scale(50, 30000)},
         {'productivity-module-3', scale(500, 30000)},
         {'speed-module-3', scale(500, 30000)}
     }
@@ -599,10 +599,6 @@ end
 local function get_random_objectives()
     local items = {
         {
-            name = 'supplies',
-            token = empty_token
-        },
-        {
             name = 'single_item',
             token = empty_token
         },
@@ -635,7 +631,10 @@ local function get_random_objectives()
     shuffle(items)
 
     return {
-        items[1],
+        {
+            name = 'supplies',
+            token = empty_token
+        },
         items[2],
         items[3]
     }
