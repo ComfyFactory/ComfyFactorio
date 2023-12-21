@@ -1,6 +1,7 @@
 local Event = require 'utils.event'
 local SpamProtection = require 'utils.spam_protection'
 local Public = require 'maps.mountain_fortress_v3.table'
+local Alert = require 'utils.alert'
 local Stateful = require 'maps.mountain_fortress_v3.stateful.table'
 local Gui = require 'utils.gui'
 local WD = require 'modules.wave_defense.table'
@@ -862,6 +863,7 @@ local function update_raw()
             if not stateful.objectives_completed.randomized_zone_label then
                 stateful.objectives_completed.randomized_zone_label = true
                 play_achievement_unlocked()
+                Alert.alert_all_players(10, 'Objective: **breach zone** has been complete!')
                 Server.to_discord_embed('Objective: **breach zone** has been complete!')
                 stateful.objectives_completed_count = stateful.objectives_completed_count + 1
             end
@@ -873,6 +875,7 @@ local function update_raw()
             if not stateful.objectives_completed.randomized_wave_label then
                 stateful.objectives_completed.randomized_wave_label = true
                 play_achievement_unlocked()
+                Alert.alert_all_players(10, 'Objective: **survive until wave** has been complete!')
                 Server.to_discord_embed('Objective: **survive until wave** has been complete!')
                 stateful.objectives_completed_count = stateful.objectives_completed_count + 1
             end
@@ -896,6 +899,7 @@ local function update_raw()
                 if items_done == 3 then
                     if not stateful.objectives_completed.supplies then
                         stateful.objectives_completed.supplies = true
+                        Alert.alert_all_players(10, 'Objective: **produce 3 items multiple times** has been complete!')
                         Server.to_discord_embed('Objective: **produce 3 items multiple times** has been complete!')
                         play_achievement_unlocked()
                         stateful.objectives_completed_count = stateful.objectives_completed_count + 1
@@ -917,6 +921,7 @@ local function update_raw()
                 if not stateful.objectives_completed.single_item then
                     stateful.objectives_completed.single_item = true
                     play_achievement_unlocked()
+                    Alert.alert_all_players(10, 'Objective: **produce an item multiple times** has been completed!')
                     Server.to_discord_embed('Objective: **produce an item multiple times** has been completed!')
                     stateful.objectives_completed_count = stateful.objectives_completed_count + 1
                 end
@@ -991,6 +996,7 @@ local function update_raw()
         local completed, _, _ = callback()
         if completed and completed == true and not stateful.objectives_completed[objective_name] then
             stateful.objectives_completed[objective_name] = true
+            Alert.alert_all_players(10, 'Objective: **' .. objective_name .. '** has been completed!')
             Server.to_discord_embed('Objective: **' .. objective_name .. '** has been completed!')
             play_achievement_unlocked()
             stateful.objectives_completed_count = stateful.objectives_completed_count + 1
