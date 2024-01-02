@@ -1178,7 +1178,11 @@ local function zone_scrap_2(x, y, data, void_or_lab, adjusted_zones)
             local scrap_mineable_entities, scrap_mineable_entities_index = get_scrap_mineable_entities()
 
             if random(1, 5) > 1 then
-                entities[#entities + 1] = {name = scrap_mineable_entities[random(1, scrap_mineable_entities_index)], position = p, force = 'neutral'}
+                entities[#entities + 1] = {
+                    name = scrap_mineable_entities[random(1, scrap_mineable_entities_index)],
+                    position = p,
+                    force = 'neutral'
+                }
             end
 
             if random(1, 256) == 1 then
@@ -1307,7 +1311,11 @@ local function zone_scrap_1(x, y, data, void_or_lab, adjusted_zones)
             local scrap_mineable_entities, scrap_mineable_entities_index = get_scrap_mineable_entities()
 
             if random(1, 5) > 1 then
-                entities[#entities + 1] = {name = scrap_mineable_entities[random(1, scrap_mineable_entities_index)], position = p, force = 'neutral'}
+                entities[#entities + 1] = {
+                    name = scrap_mineable_entities[random(1, scrap_mineable_entities_index)],
+                    position = p,
+                    force = 'neutral'
+                }
             end
 
             if random(1, 256) == 1 then
@@ -2754,7 +2762,11 @@ local function border_chunk(p, data)
 
     if not is_out_of_map(pos) then
         if random(1, ceil(pos.y + pos.y) + 32) == 1 then
-            entities[#entities + 1] = {name = scrap_mineable_entities[random(1, scrap_mineable_entities_index)], position = pos, force = 'neutral'}
+            entities[#entities + 1] = {
+                name = scrap_mineable_entities[random(1, scrap_mineable_entities_index)],
+                position = pos,
+                force = 'neutral'
+            }
         end
 
         if random(1, pos.y + 2) == 1 then
@@ -2858,6 +2870,20 @@ function Public.heavy_functions(data)
     end
 end
 
+local chunk_tile_vectors = {}
+for x = 0, 31, 1 do
+    for y = 0, 31, 1 do
+        chunk_tile_vectors[#chunk_tile_vectors + 1] = {x, y}
+    end
+end
+
+local loading_chunk_vectors = {}
+for _, v in pairs(chunk_tile_vectors) do
+    if v[2] == 16 or v[2] == 17 then
+        table.insert(loading_chunk_vectors, v)
+    end
+end
+
 Event.add(
     defines.events.on_chunk_generated,
     function(e)
@@ -2905,6 +2931,15 @@ Event.add(
         if left_top.y < -32 then
             game.forces.player.chart(surface, {{left_top.x, left_top.y}, {left_top.x + 31, left_top.y + 31}})
         end
+
+        local tiles = {}
+
+        if math.abs(left_top.y) > 128 then
+            for k, v in pairs(loading_chunk_vectors) do
+                tiles[k] = {name = 'out-of-map', position = {left_top.x + v[1], left_top.y + v[2]}}
+            end
+        end
+        surface.set_tiles(tiles, false)
     end
 )
 

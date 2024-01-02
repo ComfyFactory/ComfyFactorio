@@ -79,7 +79,7 @@ local buff_to_string = {
     ['character_reach_distance_bonus'] = 'Reach',
     ['distance'] = 'All distance modifiers',
     ['manual_crafting_speed_modifier'] = 'Crafting',
-    ['xp_bonus'] = 'XP Bonus',
+    ['xp_bonus'] = 'XP Points',
     ['xp_level'] = 'XP Level'
 }
 
@@ -87,72 +87,86 @@ local function get_random_buff()
     local buffs = {
         {
             name = 'character_running_speed_modifier',
+            discord = 'Running speed modifier',
             modifier = 'force',
             state = 0.05
         },
         {
             name = 'manual_mining_speed_modifier',
+            discord = 'Mining speed modifier',
             modifier = 'force',
             state = 0.15
         },
         {
             name = 'laboratory_speed_modifier',
+            discord = 'Laboratory speed modifier',
             modifier = 'force',
             state = 0.15
         },
         {
             name = 'laboratory_productivity_bonus',
+            discord = 'Productivity bonus',
             modifier = 'force',
             state = 0.15
         },
         {
             name = 'worker_robots_storage_bonus',
+            discord = 'Robot storage bonus',
             modifier = 'force',
             state = 0.05
         },
         {
             name = 'worker_robots_battery_modifier',
+            discord = 'Robot battery bonus',
             modifier = 'force',
             state = 0.05
         },
         {
             name = 'worker_robots_speed_modifier',
+            discord = 'Robot speed modifier',
             modifier = 'force',
             state = 0.05
         },
         {
             name = 'mining_drill_productivity_bonus',
+            discord = 'Drill productivity bonus',
             modifier = 'force',
             state = 0.05
         },
         {
             name = 'character_health_bonus',
+            discord = 'Character health bonus',
             modifier = 'force',
             state = 250
         },
         {
             name = 'distance',
+            discord = 'RPG reach distance bonus',
             modifier = 'rpg_distance',
             modifiers = {'character_resource_reach_distance_bonus', 'character_item_pickup_distance_bonus', 'character_loot_pickup_distance_bonus', 'character_reach_distance_bonus'},
             state = 0.05
         },
         {
             name = 'manual_crafting_speed_modifier',
+            discord = 'Crafting speed modifier',
             modifier = 'force',
             state = 0.12
         },
         {
             name = 'xp_bonus',
+            discord = 'RPG XP point bonus',
             modifier = 'rpg',
             state = 0.12
         },
         {
             name = 'xp_level',
+            discord = 'RPG XP level bonus',
             modifier = 'rpg',
             state = 20
         },
         {
             name = 'supplies',
+            discord = 'Starting items supplies',
             modifier = 'starting_items',
             limit = nil,
             items = {
@@ -162,6 +176,7 @@ local function get_random_buff()
         },
         {
             name = 'supplies_1',
+            discord = 'Starting items supplies',
             modifier = 'starting_items',
             limit = nil,
             replaces = 'supplies',
@@ -172,6 +187,7 @@ local function get_random_buff()
         },
         {
             name = 'supplies_2',
+            discord = 'Starting items supplies',
             modifier = 'starting_items_1',
             limit = nil,
             replaces = 'supplies',
@@ -182,6 +198,7 @@ local function get_random_buff()
         },
         {
             name = 'defense',
+            discord = 'Defense starting supplies',
             modifier = 'starting_items',
             limit = nil,
             items = {
@@ -191,6 +208,7 @@ local function get_random_buff()
         },
         {
             name = 'defense_2',
+            discord = 'Defense starting supplies',
             modifier = 'starting_items',
             limit = nil,
             replaces = 'defense',
@@ -201,6 +219,7 @@ local function get_random_buff()
         },
         {
             name = 'defense_3',
+            discord = 'Defense starting supplies',
             modifier = 'starting_items',
             replaces = 'defense_2',
             limit = nil,
@@ -211,6 +230,7 @@ local function get_random_buff()
         },
         {
             name = 'armor',
+            discord = 'Armor starting supplies',
             modifier = 'starting_items',
             limit = 1,
             items = {
@@ -220,6 +240,7 @@ local function get_random_buff()
         },
         {
             name = 'production',
+            discord = 'Production starting supplies',
             modifier = 'starting_items',
             limit = nil,
             items = {
@@ -229,6 +250,7 @@ local function get_random_buff()
         },
         {
             name = 'production_1',
+            discord = 'Production starting supplies',
             modifier = 'starting_items',
             limit = nil,
             replaces = 'production',
@@ -239,6 +261,7 @@ local function get_random_buff()
         },
         {
             name = 'fast_startup',
+            discord = 'Assemling starting supplies',
             modifier = 'starting_items',
             limit = nil,
             items = {
@@ -247,6 +270,7 @@ local function get_random_buff()
         },
         {
             name = 'fast_startup_1',
+            discord = 'Assemling starting supplies',
             modifier = 'starting_items',
             limit = nil,
             replaces = 'fast_startup',
@@ -256,6 +280,7 @@ local function get_random_buff()
         },
         {
             name = 'fast_startup_2',
+            discord = 'Assemling starting supplies',
             modifier = 'starting_items',
             limit = nil,
             replaces = 'fast_startup_2',
@@ -265,6 +290,7 @@ local function get_random_buff()
         },
         {
             name = 'heal-thy-buildings',
+            discord = 'Repair starting supplies',
             modifier = 'starting_items',
             limit = nil,
             items = {
@@ -273,6 +299,7 @@ local function get_random_buff()
         },
         {
             name = 'extra_wagons',
+            discord = 'Extra wagon at start',
             modifier = 'locomotive',
             state = 1
         }

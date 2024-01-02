@@ -123,7 +123,7 @@ local function notify_won_to_discord(buff)
         },
         field7 = {
             text1 = 'Buff granted:',
-            text2 = buff.name,
+            text2 = buff.discord,
             inline = 'false'
         }
     }
@@ -547,7 +547,7 @@ main_frame = function(player)
             buffs = buffs .. 'Force buffs:\n'
             for name, buff_data in pairs(stateful.buffs_collected) do
                 if type(buff_data.amount) ~= 'table' and name ~= 'starting_items' then
-                    if name == 'xp_level' or name == 'character_health_bonus' then
+                    if name == 'xp_level' or name == 'xp_bonus' or name == 'character_health_bonus' then
                         buffs = buffs .. Stateful.buff_to_string[name] .. ': ' .. buff_data.count
                     else
                         buffs = buffs .. Stateful.buff_to_string[name] .. ': ' .. (buff_data.count * 100) .. '%'
