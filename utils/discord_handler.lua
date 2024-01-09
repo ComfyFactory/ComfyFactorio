@@ -16,14 +16,14 @@ function Public.send_notification(...)
     local text = {
         title = data.title,
         description = data.description,
-        color = 'success'
+        color = data.color or 'success'
     }
 
     if data.field1 and data.field1.text1 and data.field1.text2 then
         text.field1 = {
             text1 = data.field1.text1,
             text2 = data.field1.text2,
-            inline = 'true'
+            inline = data.field1.inline or 'true'
         }
     end
 
@@ -92,6 +92,18 @@ function Public.send_notification(...)
     end
 
     Server.to_discord_named_parsed_embed(notification, text)
+end
+
+--- Send a parsed message to the connected channel.
+--- Requires at least a title and a description
+---@param ... table
+function Public.send_notification_obj(...)
+    local data = ...
+    if not data.title or not data.description then
+        return error('Title and description is required.', 2)
+    end
+
+    Server.to_discord_named_parsed_embed(notification, data)
 end
 
 --- Send a message to the connected channel.

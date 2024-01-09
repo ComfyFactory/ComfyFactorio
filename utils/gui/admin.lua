@@ -463,12 +463,14 @@ local function text_changed(event)
         return
     end
 
-    local data = {
-        frame = frame,
-        search_text = element.text
-    }
+    if element.text ~= nil then
+        local data = {
+            frame = frame,
+            search_text = element.text:lower()
+        }
 
-    draw_events(data)
+        draw_events(data)
+    end
 end
 
 local function create_admin_panel(data)
@@ -942,7 +944,7 @@ function Public.contains_text(history, search_text, target_player_name, callback
     local tooltip = 'Click to open mini camera.'
     local remote_tbl = {}
 
-    if game.players[target_player_name] then
+    if game.get_player(target_player_name) ~= nil then
         if not history_index or not history_index[history] or #history_index[history] <= 0 then
             return
         end

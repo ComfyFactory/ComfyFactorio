@@ -12,20 +12,20 @@ local Jail = require 'utils.datastore.jail_data'
 local FancyTime = require 'tools.fancy_time'
 local Task = require 'utils.task'
 local Token = require 'utils.token'
+local Discord = require 'utils.discord_handler'
 
 local Public = {}
 local match = string.match
-local capsule_bomb_threshold = 8
 local de = defines.events
 local sub = string.sub
 local format = string.format
 local floor = math.floor
 local random = math.random
 local abs = math.abs
-local max_count_decon = 1500
 
 local this = {
     enabled = true,
+    max_count_decon = 1500,
     landfill_history = {},
     capsule_history = {},
     friendly_fire_history = {},
@@ -41,15 +41,15 @@ local this = {
     players_warned = {},
     damage_history = {},
     punish_cancel_craft = false,
-    do_not_check_trusted = true,
+    do_not_check_trusted = false,
     enable_autokick = false,
     enable_autoban = false,
-    enable_jail = false,
-    enable_capsule_warning = false,
-    enable_capsule_cursor_warning = false,
+    enable_jail = true,
+    enable_capsule_warning = true,
+    enable_capsule_cursor_warning = true,
     required_playtime = 2592000,
+    capsule_bomb_threshold = 8,
     damage_entity_threshold = 20,
-    explosive_threshold = 16,
     enable_jail_when_decon = true,
     enable_jail_on_long_texts = true,
     filtered_types_on_decon = {},
@@ -57,8 +57,7 @@ local this = {
     players_warn_when_decon = {},
     players_warn_on_long_texts = {},
     on_cancelled_deconstruction = {tick = 0, count = 0},
-    limit = 2000,
-    admin_button_validation = {}
+    limit = 2000
 }
 
 local blacklisted_types = {
@@ -222,13 +221,17 @@ local function on_marked_for_deconstruction(event)
     end
 
     local player = game.get_player(event.player_index)
+    if not player or not player.valid then
+        return
+    end
+
     if Session.get_trusted_player(player) or this.do_not_check_trusted then
         return
     end
 
     local playtime = player.online_time
-    if Session.get_session_player(player.name) then
-        playtime = player.online_time + Session.get_session_player(player.name)
+    if Session.get_session_player(player) then
+        playtime = player.online_time + Session.get_session_player(player)
     end
     if playtime < this.required_playtime then
         event.entity.cancel_deconstruction(game.get_player(event.player_index).force.name)
@@ -242,6 +245,10 @@ local function on_player_ammo_inventory_changed(event)
     end
 
     local player = game.get_player(event.player_index)
+    if not player or not player.valid then
+        return
+    end
+
     if player.admin then
         return
     end
@@ -250,8 +257,8 @@ local function on_player_ammo_inventory_changed(event)
     end
 
     local playtime = player.online_time
-    if Session.get_session_player(player.name) then
-        playtime = player.online_time + Session.get_session_player(player.name)
+    if Session.get_session_player(player) then
+        playtime = player.online_time + Session.get_session_player(player)
     end
     if playtime < this.required_playtime then
         if this.enable_capsule_cursor_warning then
@@ -266,9 +273,13 @@ end
 
 local function on_player_joined_game(event)
     local player = game.get_player(event.player_index)
+    if not player then
+        return
+    end
+
     if not this.enabled then
         if not Session.get_trusted_player(player) then
-            Session.set_trusted_player(player.name)
+            Session.set_trusted_player(player)
         end
         return
     end
@@ -300,8 +311,8 @@ local function on_player_built_tile(event)
         overflow(this.landfill_history)
     end
     local t = abs(floor((game.tick) / 60))
-    t = FancyTime.short_fancy_time(t)
-    local str = '[' .. t .. '] '
+    local formatted = FancyTime.short_fancy_time(t)
+    local str = '[' .. formatted .. '] '
     str = str .. player.name .. ' at X:'
     str = str .. placed_tiles[1].position.x
     str = str .. ' Y:'
@@ -320,6 +331,9 @@ local function on_built_entity(event)
 
     if created_entity.type == 'entity-ghost' then
         local player = game.get_player(event.player_index)
+        if not player or not player.valid then
+            return
+        end
 
         if player.admin then
             return
@@ -329,8 +343,8 @@ local function on_built_entity(event)
         end
 
         local playtime = player.online_time
-        if Session.get_session_player(player.name) then
-            playtime = player.online_time + Session.get_session_player(player.name)
+        if Session.get_session_player(player) then
+            playtime = player.online_time + Session.get_session_player(player)
         end
 
         if playtime < this.required_playtime then
@@ -381,7 +395,7 @@ local function on_player_used_capsule(event)
                 end
             end
 
-            if count <= capsule_bomb_threshold then
+            if count <= this.capsule_bomb_threshold then
                 return
             end
 
@@ -402,8 +416,8 @@ local function on_player_used_capsule(event)
         end
 
         local t = abs(floor((game.tick) / 60))
-        t = FancyTime.short_fancy_time(t)
-        local str = '[' .. t .. '] '
+        local formatted = FancyTime.short_fancy_time(t)
+        local str = '[' .. formatted .. '] '
         str = str .. msg
         str = str .. ' at X:'
         str = str .. floor(position.x)
@@ -459,8 +473,8 @@ local function on_entity_died(event)
         end
 
         local t = abs(floor((game.tick) / 60))
-        t = FancyTime.short_fancy_time(t)
-        local str = '[' .. t .. '] '
+        local formatted = FancyTime.short_fancy_time(t)
+        local str = '[' .. formatted .. '] '
         str = str .. name .. ' destroyed '
         str = str .. chest
         str = str .. ' at X:'
@@ -484,8 +498,8 @@ local function on_entity_died(event)
             overflow(this.friendly_fire_history)
         end
         local t = abs(floor((game.tick) / 60))
-        t = FancyTime.short_fancy_time(t)
-        local str = '[' .. t .. '] '
+        local formatted = FancyTime.short_fancy_time(t)
+        local str = '[' .. formatted .. '] '
         if cause and cause.name == 'character' and cause.player then
             str = str .. cause.player.name .. ' destroyed '
         else
@@ -530,8 +544,8 @@ local function on_player_mined_entity(event)
             overflow(this.whitelist_mining_history)
         end
         local t = abs(floor((game.tick) / 60))
-        t = FancyTime.short_fancy_time(t)
-        local str = '[' .. t .. '] '
+        local formatted = FancyTime.short_fancy_time(t)
+        local str = '[' .. formatted .. '] '
         str = str .. player.name .. ' mined '
         str = str .. '[color=yellow]' .. entity.name .. '[/color]'
         str = str .. ' at X:'
@@ -565,8 +579,8 @@ local function on_player_mined_entity(event)
     end
 
     local t = abs(floor((game.tick) / 60))
-    t = FancyTime.short_fancy_time(t)
-    local str = '[' .. t .. '] '
+    local formatted = FancyTime.short_fancy_time(t)
+    local str = '[' .. formatted .. '] '
     str = str .. player.name .. ' mined '
     str = str .. '[color=yellow]' .. event.entity.name .. '[/color]'
     str = str .. ' at X:'
@@ -617,8 +631,8 @@ local function on_gui_opened(event)
         end
 
         local t = abs(floor((game.tick) / 60))
-        t = FancyTime.short_fancy_time(t)
-        local str = '[' .. t .. '] '
+        local formatted = FancyTime.short_fancy_time(t)
+        local str = '[' .. formatted .. '] '
         str = str .. player.name .. ' opened '
         str = str .. '[color=yellow]' .. corpse_owner.name .. '[/color] body'
         str = str .. ' at X:'
@@ -672,8 +686,8 @@ local function on_pre_player_mined_item(event)
         end
 
         local t = abs(floor((game.tick) / 60))
-        t = FancyTime.short_fancy_time(t)
-        local str = '[' .. t .. '] '
+        local formatted = FancyTime.short_fancy_time(t)
+        local str = '[' .. formatted .. '] '
         str = str .. player.name .. ' mined '
         str = str .. '[color=yellow]' .. corpse_owner.name .. '[/color] body'
         str = str .. ' at X:'
@@ -700,9 +714,9 @@ local function on_console_chat(event)
     end
 
     local t = abs(floor((game.tick) / 60))
-    t = FancyTime.short_fancy_time(t)
+    local formatted = FancyTime.short_fancy_time(t)
+    local str = '[' .. formatted .. '] '
     local message = event.message
-    local str = '[' .. t .. '] '
     str = str .. player.name .. ' said: '
     str = str .. '[color=yellow]' .. message .. '[/color]'
     increment(this.message_history, str)
@@ -737,6 +751,10 @@ local function on_player_cursor_stack_changed(event)
     end
 
     local player = game.get_player(event.player_index)
+    if not player or not player.valid then
+        return
+    end
+
     if player.admin then
         return
     end
@@ -757,8 +775,8 @@ local function on_player_cursor_stack_changed(event)
     local name = item.name
 
     local playtime = player.online_time
-    if Session.get_session_player(player.name) then
-        playtime = player.online_time + Session.get_session_player(player.name)
+    if Session.get_session_player(player) then
+        playtime = player.online_time + Session.get_session_player(player)
     end
 
     if playtime < this.required_playtime then
@@ -804,8 +822,8 @@ local function on_player_cancelled_crafting(event)
         end
 
         local t = abs(floor((game.tick) / 60))
-        t = FancyTime.short_fancy_time(t)
-        local str = '[' .. t .. '] '
+        local formatted = FancyTime.short_fancy_time(t)
+        local str = '[' .. formatted .. '] '
         str = str .. player.name .. ' canceled '
         str = str .. ' item [color=yellow]' .. event.recipe.name .. '[/color]'
         str = str .. ' count was a total of: ' .. crafting_queue_item_count
@@ -883,12 +901,16 @@ local function on_player_deconstructed_area(event)
     end
 
     local player = game.get_player(event.player_index)
+    if not player or not player.valid then
+        return
+    end
+
     local area = event.area
     local count = surface.count_entities_filtered({area = area, type = 'resource', invert = true})
     local max_count = 0
     local is_trusted = Session.get_trusted_player(player)
     if is_trusted then
-        max_count = max_count_decon
+        max_count = this.max_count_decon
     end
 
     if next(this.filtered_types_on_decon) then
@@ -922,8 +944,8 @@ local function on_player_deconstructed_area(event)
         end
 
         local t = abs(floor((game.tick) / 60))
-        t = FancyTime.short_fancy_time(t)
-        local str = '[' .. t .. '] '
+        local formatted = FancyTime.short_fancy_time(t)
+        local str = '[' .. formatted .. '] '
         str = str .. msg
         str = str .. ' at lt_x:'
         str = str .. floor(area.left_top.x)
@@ -993,7 +1015,7 @@ local function on_cancelled_deconstruction(event)
         return
     end
 
-    if tick == handler.tick and handler.count >= max_count_decon then
+    if tick == handler.tick and handler.count >= this.max_count_decon then
         return
     end
 
@@ -1044,6 +1066,46 @@ local function on_permission_string_imported(event)
     Utils.log_msg('[Permission_Group]', player.name .. ' imported a permission string')
 end
 
+local function on_player_muted(event)
+    if not this.enabled then
+        return
+    end
+
+    local player = game.get_player(event.player_index)
+
+    local message = {
+        title = 'Muted :mute:',
+        description = 'A player was muted.',
+        color = 'failure',
+        field1 = {
+            text1 = 'Player:',
+            text2 = player.name,
+            inline = 'false'
+        }
+    }
+    Discord.send_notification_obj(message)
+end
+
+local function on_player_unmuted(event)
+    if not this.enabled then
+        return
+    end
+
+    local player = game.get_player(event.player_index)
+
+    local message = {
+        title = 'Unmuted :speaker:',
+        description = 'A player was unmuted.',
+        color = 'success',
+        field1 = {
+            text1 = 'Player:',
+            text2 = player.name,
+            inline = 'false'
+        }
+    }
+    Discord.send_notification_obj(message)
+end
+
 --- This is used for the RPG module, when casting capsules.
 ---@param player userdata
 ---@param position table
@@ -1056,8 +1118,8 @@ function Public.insert_into_capsule_history(player, position, msg)
         this.capsule_history = {}
     end
     local t = abs(floor((game.tick) / 60))
-    t = FancyTime.short_fancy_time(t)
-    local str = '[' .. t .. '] '
+    local formatted = FancyTime.short_fancy_time(t)
+    local str = '[' .. formatted .. '] '
     str = str .. '[color=yellow]' .. msg .. '[/color]'
     str = str .. ' at X:'
     str = str .. floor(position.x)
@@ -1096,6 +1158,20 @@ end
 function Public.do_not_check_trusted(value)
     this.do_not_check_trusted = value or false
     return this.do_not_check_trusted
+end
+
+--- Sets the capsuled bomb threshold for the script to take action
+---@param value number
+function Public.set_capsule_bomb_threshold(value)
+    this.capsule_bomb_threshold = value or 1500
+    return this.capsule_bomb_threshold
+end
+
+--- Sets the max count of entities that can be deconstructed at once.
+---@param value number
+function Public.set_max_count_decon(value)
+    this.max_count_decon = value or 1500
+    return this.max_count_decon
 end
 
 --- If ANY actions should be performed when a player misbehaves.
@@ -1140,16 +1216,6 @@ function Public.decon_surface_blacklist(value)
     return this.decon_surface_blacklist
 end
 
---- Defines what the threshold for amount of explosives in chest should be - logged or not.
----@param value number
-function Public.explosive_threshold(value)
-    if value then
-        this.explosive_threshold = value
-    end
-
-    return this.explosive_threshold
-end
-
 --- Defines if on_player_deconstructed_area should also check for other types.
 ---@param tbl table
 function Public.filtered_types_on_decon(tbl)
@@ -1178,8 +1244,8 @@ function Public.append_scenario_history(player, entity, message)
         this.scenario_history = {}
     end
     local t = abs(floor((game.tick) / 60))
-    t = FancyTime.short_fancy_time(t)
-    local str = '[' .. t .. '] '
+    local formatted = FancyTime.short_fancy_time(t)
+    local str = '[' .. formatted .. '] '
     str = str .. '[color=yellow]' .. message .. '[/color]'
     str = str .. ' at X:'
     str = str .. floor(entity.position.x)
@@ -1235,5 +1301,7 @@ Event.add(de.on_permission_group_deleted, on_permission_group_deleted)
 Event.add(de.on_permission_group_edited, on_permission_group_edited)
 Event.add(de.on_permission_string_imported, on_permission_string_imported)
 Event.add(de.on_console_chat, on_console_chat)
+Event.add(de.on_player_muted, on_player_muted)
+Event.add(de.on_player_unmuted, on_player_unmuted)
 
 return Public
