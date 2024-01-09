@@ -57,7 +57,8 @@ local this = {
     players_warn_when_decon = {},
     players_warn_on_long_texts = {},
     on_cancelled_deconstruction = {tick = 0, count = 0},
-    limit = 2000
+    limit = 2000,
+    admin_button_validation = {}
 }
 
 local blacklisted_types = {

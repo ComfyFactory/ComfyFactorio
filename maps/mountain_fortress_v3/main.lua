@@ -184,7 +184,6 @@ function Public.reset_map()
     AntiGrief.enable_capsule_cursor_warning(false)
     AntiGrief.enable_jail(true)
     AntiGrief.damage_entity_threshold(20)
-    AntiGrief.explosive_threshold(32)
     AntiGrief.decon_surface_blacklist(surface.name)
     AntiGrief.filtered_types_on_decon({'tree', 'simple-entity', 'fish'})
 
