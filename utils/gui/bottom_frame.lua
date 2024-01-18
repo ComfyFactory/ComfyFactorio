@@ -50,32 +50,6 @@ local sections = {
     [12] = 6
 }
 
---[[ local restore_bottom_location_token =
-    Task.register(
-    function(event)
-        local player_index = event.player_index
-        local player = game.get_player(player_index)
-        if not player or not player.valid then
-            return
-        end
-
-        local state = event.state
-        if not state then
-            return
-        end
-
-        local bottom_right = event.bottom_right or 'bottom_right'
-        local above = event.above or false
-
-        local data = get_player_data(player)
-
-        data.bottom_right = bottom_right
-        data.above = above
-        data.state = state
-
-        set_location(player, state)
-    end
-) ]]
 local check_bottom_buttons_token =
     Task.register(
     function(event)
@@ -416,6 +390,30 @@ function Public.toggle_player_frame(player, state)
         else
             data.visible = false
             frame.visible = false
+        end
+    end
+end
+
+--- Returns the current frame of the given player
+---@param player LuaPlayer
+---@param section_name string
+---@return table|boolean|nil
+function Public.get_section(player, section_name)
+    local data = get_player_data(player)
+    local section = data.section
+    if not section then
+        return false
+    end
+
+    for _, section_tbl in pairs(section) do
+        if not section_tbl or not next(section_tbl) then
+            break
+        end
+
+        for _, section_data in pairs(section_tbl) do
+            if section_data and section_data.valid and section_data.name == section_name then
+                return section_data
+            end
         end
     end
 end

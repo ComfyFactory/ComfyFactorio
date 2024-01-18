@@ -8,6 +8,7 @@ local Gui = require 'utils.gui'
 local Color = require 'utils.color_presets'
 local SpamProtection = require 'utils.spam_protection'
 local Polls = require 'utils.gui.poll'
+local BottomFrame = require 'utils.gui.bottom_frame'
 
 local format_number = require 'util'.format_number
 
@@ -215,6 +216,7 @@ local function changed_surface(player)
     local rpg_s = player.gui.screen[rpg_settings]
     local diff = player.gui.top[Difficulty.top_button_name]
     local charging = player.gui.top['charging_station']
+    local charging_frame = BottomFrame.get_section(player, 'charging_station')
     local frame = player.gui.top[main_frame_name]
     local spell_gui_frame_name = RPG.spell_gui_frame_name
     local spell_cast_buttons = player.gui.screen[spell_gui_frame_name]
@@ -270,6 +272,9 @@ local function changed_surface(player)
         if charging and not charging.visible then
             charging.visible = true
         end
+        if charging_frame and not charging_frame.enabled then
+            charging_frame.enabled = true
+        end
         if info then
             info.tooltip = ({'gui.info_tooltip'})
             info.sprite = 'item/dummy-steel-axe'
@@ -308,6 +313,9 @@ local function changed_surface(player)
         end
         if charging then
             charging.visible = false
+        end
+        if charging_frame and charging_frame.enabled then
+            charging_frame.enabled = false
         end
         if info then
             info.tooltip = ({'gui.hide_minimap'})
@@ -449,6 +457,7 @@ local function enable_guis(event)
     local rpg_b = player.gui.top[rpg_button]
     local diff = player.gui.top[Difficulty.top_button_name]
     local charging = player.gui.top['charging_station']
+    local charging_frame = BottomFrame.get_section(player, 'charging_station')
 
     IC_Gui.remove_toolbar(player)
     IC_Minimap.toggle_button(player)
@@ -482,6 +491,9 @@ local function enable_guis(event)
     end
     if charging and not charging.visible then
         charging.visible = true
+    end
+    if charging_frame and not charging.enabled then
+        charging.enabled = true
     end
     if info then
         info.tooltip = ({'gui.info_tooltip'})
