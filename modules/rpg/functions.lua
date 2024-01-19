@@ -1296,6 +1296,8 @@ function Public.rpg_reset_player(player, one_time_reset)
         end
     end
 
+    Modifiers.reset_player_modifiers(player)
+
     Public.draw_gui_char_button(player)
     Public.draw_level_text(player)
     Public.update_char_button(player)

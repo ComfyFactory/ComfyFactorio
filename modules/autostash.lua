@@ -44,12 +44,12 @@ local on_init_token =
         local tooltip
         if this.insert_into_furnace and this.insert_into_wagon then
             tooltip =
-                'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.\nCTRL+RMB: Fill nearby furnaces.\nSHIFT+LMB: Everything onto filtered slots to wagon.\nSHIFT+RMB: Only ores to wagon'
+                'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.\nCTRL+RMB: Fill nearby furnaces.\nSHIFT+LMB: Everything onto filtered slots to wagon/chests.\nSHIFT+RMB: Only ores to wagon'
         elseif this.insert_into_furnace then
             tooltip = 'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.\nCTRL+RMB: Fill nearby furnaces.'
         elseif this.insert_into_wagon then
             tooltip =
-                'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.\nSHIFT+LMB: Everything onto filtered slots to wagon.\nSHIFT+RMB: Only ores to wagon'
+                'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.\nSHIFT+LMB: Everything onto filtered slots to wagon/chests.\nSHIFT+RMB: Only ores to wagon'
         else
             tooltip = 'Sort your inventory into nearby chests.\nLMB: Everything, excluding quickbar items.\nRMB: Only ores to nearby chests, excluding quickbar items.'
         end
@@ -222,7 +222,7 @@ local function get_nearby_chests(player, a, furnace, wagon)
         inventory_type = defines.inventory.furnace_source
     end
     if wagon then
-        container_type = {'cargo-wagon'}
+        container_type = {'cargo-wagon', 'logistic-container'}
         inventory_type = defines.inventory.cargo_wagon
     end
 
@@ -390,6 +390,28 @@ local function insert_into_wagon_filtered(stack, chests, name, floaty_text_list)
             end
         end
     end
+
+    -- Attempt to load filtered slots
+    for chestnr, chest in pairs(chests.chest) do
+        if chest.type == 'logistic-container' then
+            local chest_inventory = chests.inventory[chestnr]
+            for index = 1, chest.request_slot_count do
+                if chest_inventory.can_insert(stack) then
+                    if chest.get_request_slot(index) ~= nil then
+                        local n = chest.get_request_slot(index)
+                        if n and n.name == name then
+                            local inserted_count = chest_inventory.insert(stack)
+                            stack.count = stack.count - inserted_count
+                            prepare_floaty_text(floaty_text_list, chest.surface, chest.position, name, inserted_count)
+                            if stack.count <= 0 then
+                                return chestnr
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
 end
 
 local function insert_item_into_chest(stack, chests, filtered_chests, name, floaty_text_list, previous_insert)
@@ -411,9 +433,34 @@ local function insert_item_into_chest(stack, chests, filtered_chests, name, floa
         end
     end
 
+    --- Attempt to store in req slots that are filtered
+    for chestnr, chest in pairs(chests.chest) do
+        if chest.type == 'logistic-container' then
+            local chest_inventory = chests.inventory[chestnr]
+            for index = 1, chest.request_slot_count do
+                if chest_inventory.can_insert(stack) then
+                    if chest.get_request_slot(index) ~= nil then
+                        local n = chest.get_request_slot(index)
+                        if n and n.name == name then
+                            local inserted_count = chest_inventory.insert(stack)
+                            stack.count = stack.count - inserted_count
+                            prepare_floaty_text(floaty_text_list, chest.surface, chest.position, name, inserted_count)
+                            if stack.count <= 0 then
+                                return chestnr
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+
     --Attempt to store in chests that already have the same item.
     for chestnr, chest in pairs(chests.chest) do
         if container[chest.type] then
+            if chest.request_slot_count and chest.request_slot_count > 0 then
+                goto continue
+            end
             local chest_inventory = chests.inventory[chestnr]
             if chest_inventory and chest_inventory.find_item_stack(stack.name) then
                 if chest_inventory.can_insert(stack) then
@@ -425,12 +472,16 @@ local function insert_item_into_chest(stack, chests, filtered_chests, name, floa
                     end
                 end
             end
+            ::continue::
         end
     end
 
     --Attempt to store in empty chests.
     for chestnr, chest in pairs(filtered_chests.chest) do
         if container[chest.type] then
+            if chest.request_slot_count and chest.request_slot_count > 0 then
+                goto continue
+            end
             local chest_inventory = filtered_chests.inventory[chestnr]
             if not chest_inventory then
                 break
@@ -444,6 +495,7 @@ local function insert_item_into_chest(stack, chests, filtered_chests, name, floa
                     return chestnr
                 end
             end
+            ::continue::
         end
     end
 
@@ -453,6 +505,9 @@ local function insert_item_into_chest(stack, chests, filtered_chests, name, floa
     local item_subgroup = game.item_prototypes[name].subgroup.name
     if item_subgroup then
         for chestnr, chest in pairs(filtered_chests.chest) do
+            if chest.request_slot_count and chest.request_slot_count > 0 then
+                goto continue
+            end
             if container[chest.type] then
                 local chest_inventory = filtered_chests.inventory[chestnr]
                 if not chest_inventory then
@@ -473,12 +528,16 @@ local function insert_item_into_chest(stack, chests, filtered_chests, name, floa
                     end
                 end
             end
+            ::continue::
         end
     end
 
     --Attempt to store in mixed chests.
     for chestnr, chest in pairs(filtered_chests.chest) do
         if container[chest.type] then
+            if chest.request_slot_count and chest.request_slot_count > 0 then
+                goto continue
+            end
             local chest_inventory = filtered_chests.inventory[chestnr]
             if not chest_inventory then
                 break
@@ -491,6 +550,7 @@ local function insert_item_into_chest(stack, chests, filtered_chests, name, floa
                     return chestnr
                 end
             end
+            ::continue::
         end
     end
 end

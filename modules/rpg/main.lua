@@ -729,7 +729,7 @@ local function on_player_crafted_item(event)
     if tweaked_crafting_items_enabled then
         if item and item.valid then
             if is_blacklisted[item.name] then
-                amount = 0.2
+                return -- return if the item is blacklisted
             end
         end
     end
