@@ -492,8 +492,8 @@ local function enable_guis(event)
     if charging and not charging.visible then
         charging.visible = true
     end
-    if charging_frame and not charging.enabled then
-        charging.enabled = true
+    if charging_frame and not charging_frame.enabled then
+        charging_frame.enabled = true
     end
     if info then
         info.tooltip = ({'gui.info_tooltip'})

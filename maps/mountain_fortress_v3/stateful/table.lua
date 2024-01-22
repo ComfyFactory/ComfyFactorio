@@ -16,6 +16,7 @@ local IC = require 'maps.mountain_fortress_v3.ic.table'
 local RPG = require 'modules.rpg.table'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local Beam = require 'modules.render_beam'
+local Discord = require 'utils.discord'
 
 local this = {
     enabled = false,
@@ -31,6 +32,8 @@ local floor = math.floor
 local dataset = 'scenario_settings'
 local dataset_key = 'mtn_v3'
 local dataset_key_dev = 'mtn_v3_dev'
+local dataset_key_previous = 'mtn_v3_previous'
+local send_ping_to_channel = Discord.channel_names.mtn_channel
 
 Global.register(
     this,
@@ -82,6 +85,59 @@ local buff_to_string = {
     ['xp_bonus'] = 'XP Points',
     ['xp_level'] = 'XP Level'
 }
+
+local function notify_season_over_to_discord()
+    local server_name_matches = Server.check_server_name('Mtn Fortress')
+
+    local stateful = Public.get_stateful()
+
+    local buffs = ''
+    if stateful.buffs and next(stateful.buffs) then
+        if stateful.buffs_collected and next(stateful.buffs_collected) then
+            if stateful.buffs_collected.starting_items then
+                buffs = buffs .. 'Starting items:\n'
+                for item_name, item_data in pairs(stateful.buffs_collected.starting_items) do
+                    buffs = buffs .. item_name .. ': ' .. item_data.count
+                    buffs = buffs .. '\n'
+                end
+                buffs = buffs .. '\n'
+            end
+
+            buffs = buffs .. 'Force buffs:\n'
+            for name, buff_data in pairs(stateful.buffs_collected) do
+                if type(buff_data.amount) ~= 'table' and name ~= 'starting_items' then
+                    if name == 'xp_level' or name == 'xp_bonus' or name == 'character_health_bonus' then
+                        buffs = buffs .. buff_to_string[name] .. ': ' .. buff_data.count
+                    else
+                        buffs = buffs .. buff_to_string[name] .. ': ' .. (buff_data.count * 100) .. '%'
+                    end
+                    buffs = buffs .. '\n'
+                end
+            end
+        end
+    end
+
+    local text = {
+        title = 'Season: ' .. stateful.season .. ' is over!',
+        description = 'Game statistics from the season is below',
+        color = 'success',
+        field1 = {
+            text1 = 'Rounds survived:',
+            text2 = stateful.rounds_survived,
+            inline = 'false'
+        },
+        field2 = {
+            text1 = 'Buffs granted:',
+            text2 = buffs,
+            inline = 'false'
+        }
+    }
+    if server_name_matches then
+        Server.to_discord_named_parsed_embed(send_ping_to_channel, text)
+    else
+        Server.to_discord_embed_parsed(text)
+    end
+end
 
 local function get_random_buff()
     local buffs = {
@@ -819,8 +875,13 @@ local function apply_startup_settings(settings)
     this.time_to_reset = this.reset_after - time_to_reset
 
     if time_to_reset and time_to_reset > this.reset_after then
+        if server_name_matches then
+            Server.set_data(dataset, dataset_key_previous, settings)
+        end
+
         local s = this.season or 1
         game.server_save('Season_' .. s .. '_Mtn_v3_' .. tostring(current_time))
+        notify_season_over_to_discord()
         settings.current_date = current_time
         settings.test_mode = false
         settings.rounds_survived = 0

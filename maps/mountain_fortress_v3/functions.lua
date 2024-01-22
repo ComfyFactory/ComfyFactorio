@@ -362,6 +362,36 @@ local function do_clear_enemy_spawners()
     end
 end
 
+local function do_season_fix()
+    local active_surface_index = Public.get('active_surface_index')
+    local surface = game.surfaces[active_surface_index]
+    if not (surface and surface.valid) then
+        return
+    end
+
+    local current_season = Public.get('current_season')
+
+    if current_season then
+        rendering.destroy(current_season)
+    end
+
+    Public.set(
+        'current_season',
+        rendering.draw_text {
+            text = 'Season: ' .. Public.stateful.get_stateful('season'),
+            surface = surface,
+            target = {-0, 12},
+            color = {r = 0.98, g = 0.77, b = 0.22},
+            scale = 3,
+            font = 'heading-1',
+            alignment = 'center',
+            scale_with_zoom = false
+        }
+    )
+end
+
+local do_season_fix_token = Task.register(do_season_fix)
+
 local function do_artillery_turrets_targets()
     local art_table = this.art_table
     local index = art_table.index
@@ -1015,6 +1045,9 @@ function Public.render_direction(surface)
         }
     )
 
+    Task.set_timeout_in_ticks(25, do_season_fix_token, {})
+    Task.set_timeout_in_ticks(50, do_season_fix_token, {})
+
     if counter then
         rendering.draw_text {
             text = text .. '\nRun: ' .. counter,
@@ -1283,7 +1316,8 @@ function Public.on_player_joined_game(event)
     -- end
 
     local final_battle = Public.get('final_battle')
-    if final_battle then
+    local collection = Public.get_stateful('collection')
+    if final_battle and not collection.final_arena_disabled then
         local boss_room = game.get_surface('boss_room')
         if not boss_room or not boss_room.valid then
             return
