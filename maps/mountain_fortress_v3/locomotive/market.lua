@@ -183,16 +183,29 @@ local function get_items()
         }
     end
 
-    main_market_items['xp_points_boost'] = {
-        stack = 1,
-        value = 'coin',
-        price = xp_point_boost_cost,
-        tooltip = ({'main_market.xp_points_boost', upgrades.xp_points_upgrade}),
-        sprite = 'achievement/trans-factorio-express',
-        enabled = true,
-        upgrade = true,
-        static = true
-    }
+    if upgrades.xp_points_upgrade == market_limits.xp_points_limit then
+        main_market_items['xp_points_boost'] = {
+            stack = 1,
+            value = 'coin',
+            price = xp_point_boost_cost,
+            tooltip = ({'locomotive.limit_reached'}),
+            sprite = 'achievement/trans-factorio-express',
+            enabled = false,
+            upgrade = true,
+            static = true
+        }
+    else
+        main_market_items['xp_points_boost'] = {
+            stack = 1,
+            value = 'coin',
+            price = xp_point_boost_cost,
+            tooltip = ({'main_market.xp_points_boost', upgrades.xp_points_upgrade, market_limits.xp_points_limit}),
+            sprite = 'achievement/trans-factorio-express',
+            enabled = true,
+            upgrade = true,
+            static = true
+        }
+    end
 
     main_market_items['redraw_mystical_chest'] = {
         stack = 1,

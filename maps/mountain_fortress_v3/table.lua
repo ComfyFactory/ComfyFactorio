@@ -221,14 +221,15 @@ function Public.reset_main_table()
         chests_outside_limit = 8,
         aura_limit = 100, -- limited to save UPS
         pickaxe_tier_limit = 59,
-        health_upgrades_limit = 100
+        health_upgrades_limit = 100,
+        xp_points_limit = 40
     }
     this.marked_fixed_prices = {
         chests_outside_cost = 3000,
         health_cost = 14000,
         pickaxe_cost = 3000,
         aura_cost = 4000,
-        xp_point_boost_cost = 5000,
+        xp_point_boost_cost = 2500,
         explosive_bullets_cost = 10000,
         flamethrower_turrets_cost = 3000,
         land_mine_cost = 2,
